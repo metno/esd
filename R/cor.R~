@@ -1,1 +1,0 @@
-EOF<-function(X,mon=NULL,n=20,lon=NULL,lat=NULL,silent=TRUE,...) UseMethod("EOF")
