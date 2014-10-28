@@ -21,30 +21,40 @@ slp <- annual(retrieve('data/ERAINT/ERAINT_slp_mon.nc',
 eof.slp <- EOF(slp)
 
 
-# Process the precipitation - predictand:
+# Process the precipitation - predictand as annual mean and annual standard deviation:
+# Perhaps change to use seasonal rather than annual?
 amt <- annual(Tx,FUN='mean')
 ast <- annual(Tx,FUN='sd')
+# Combine the local predictand information in the form of PCAs
 pca.amt <- PCA(amt)
 pca.ast <- PCA(ast)
 
-# The experiment results are provided by the cross-validation 
+# The experiment results are provided by the cross-validation deined by parameter 'm' (used in crossval).
+# Impoertan to set detrend=FALSE to retain original data in the cross-validation.
+# First downscale the annual values:
 z.amt <- DS(pca.amt,eof.t2m,
             m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
+# The results are in the form of a PCA-object - convert back to a group of stations            
 tx.ds <- pca2station(z.amt)
 
+# REpeat the downscaling for the annual standard deviation:
 z.ast <- DS(pca.ast,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
             m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
 txs.ds <- pca2station(z.ast)
 
-# Extract the predicted values:
+# Extract the predicted cross-validation results which follow the experiment:
 d <- dim(attr(tx.ds,'evaluation'))
+# only grab the series of predicted values - not the original data used for calibration
 exp1.tx <- attr(tx.ds,'evaluation')[,seq(2,d[2],by=2)]
+# copy the the original attributes
 exp1.tx <- attrcp(amt,exp1.tx)
 class(exp1.tx) <- class(amt)
+# add some new attributes describing the results:
 attr(exp1.tx,'description') <- 'cross-validation'
 attr(exp1.tx,'experiment') <- 'CORDEX ESD experiment 1'
 attr(exp1.tx,'method') <- 'esd'
 
+# Testing and diagnostics...
 i <- 10
 plot(subset(amt,is=i),xlim=c(1979,2010))
 lines(subset(pca2station(pca.amt),is=i),lwd=2,col="grey")
