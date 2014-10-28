@@ -535,7 +535,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE) {
     V.x <- coredata(cval)
     # The evaluation data are stored as the original calibration
     # predictand followed by the prediction, i.e. station 1,1,2,2,3,3
-    ii1 <- seq(1,d[2]-1,by=2); ii2 <- seq(2,d[2],by=2]
+    ii1 <- seq(1,d[2]-1,by=2); ii2 <- seq(2,d[2],by=2)
     # Recover the staiton data from the original data x and the cross-validation prediction z
     # seperately using the same spatial PCA pattern and eiganvalues:
     x.cvalx <-U %*% diag(W) %*% t(V.x[,ii1])
