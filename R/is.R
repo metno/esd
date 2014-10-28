@@ -1,6 +1,6 @@
 is.T <- function(x) {
   return(sum(is.element(tolower(attr(x,'variable')),
-                        c('t2m','tmax','tmin','tas','tasmax','tasmin','air')))>0)
+                        c('t2m','tmax','tmin','tas','tasmax','tasmin','air','sst')))>0)
 }
 
 is.precip <- function(x) {
