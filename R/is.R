@@ -6,7 +6,7 @@ is.T <- function(x) {
 is.precip <- function(x) {
   return( (sum(is.element(tolower(varid(x)),
                         c('pr','precip','rain','precipitation',
-                          'mu','fw','f[w]')))>0) |
+                          'mu','fw','f[w]','tp')))>0) |
           (sum(is.element(tolower(unit(x)),
-                          c('mm/day','mm/moth','mm/year','mm')))))
+                          c('mm/day','mm/month','mm/year','mm/season','mm')))))
 }
