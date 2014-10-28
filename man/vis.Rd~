@@ -1,0 +1,35 @@
+\name{vis}
+\alias{vis}
+\alias{wheel}
+\alias{wheel.station}
+\alias{wheel.spell}
+\alias{cumugram}
+\alias{climvar}
+\title{Infographics.}
+\description{Various functions for visualisation of results and data and for producing 'infographics'
+
+}
+
+\usage{
+vis(x,...)  
+wheel(x,...)
+wheel.station(x,new=TRUE,lwd=2,col=NULL,bg="grey90",...)
+wheel.spell(x,new=TRUE,lwd=2,col=NULL...)
+cumugram(x,it=NULL,...)
+climvar(x,FUN='sd',plot=TRUE,...)
+}
+
+\arguments{
+  \item{x}{a data object}
+}
+
+\value{The right hand side of the equation}
+
+
+\author{R. Benestad, MET Norway}
+\examples{
+t2m <- t2m.ERAINT(lon=c(-70,-10),lat=c(20,60))
+es <- C.C.eq(t2m)
+map(es)
+}
+\keyword{parameter,element}

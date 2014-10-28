@@ -1,0 +1,116 @@
+# Name		: test.retrieve.ncdf4
+# Description	: Computes the spatial mean surface temperature based on the 92 GCM outputs from the CMIP5 experiment or any other experiment and save the results in an output file if specified.
+# Author 	: Abdelkader Mezghani, METNO
+# contact 	: abdelkaderm@met.no
+# Last Update	: 21-03-2013
+# require	: ncdf4,zoo,retrieve.ncdf4,global.tas
+
+#source("esd/R/retrieve_ncdf4.R")
+#source("esd/R/global_tas.R")
+require(ncdf4)
+require(zoo)
+
+# test <- function(path,...) UseMethod("test")
+
+# Comparing cmip3 to cmip5 over globe
+cmip35.global <- function() { 
+load("Global_mean_tas_anomaly_CMIP5_1986-2005.rda")
+z1 <- z
+load("Global_mean_tas_anomaly_CMIP3_1986-2005.rda")
+z2 <- z
+x11()
+fig1.zoo(z=list(z1=z1,z2=z2),select="noresm")
+dev.copy2pdf(file="Global_mean_tas_anomaly_CMIP3-5_1986-2005.pdf")
+}
+
+# test for cmip3 over Scandinavia
+test.cmip3.scandinavia <- function(...) {
+   test.retrieve.ncdf4(path="CMIP3.monthly/20c3m-sresa1b",param="tas",ctnr = "Scandinavia", lon=c(-10,30),lat=c(50,70),experiment="CMIP3",climatology=c(1986,2005),fig=TRUE,saveinfile =TRUE,outfile=NULL,silent=TRUE) 
+}
+
+# test for cmip5 over Scandinavia
+test.cmip5.scandinavia <- function(...) {
+   test.retrieve.ncdf4(path="CMIP5.monthly/rcp45/",param="tas",ctnr = "Scandinavia", lon=c(-10,30),lat=c(50,70),experiment="CMIP5",climatology=c(1986,2005),fig=TRUE,saveinfile =TRUE,outfile=NULL,silent=TRUE) 
+}
+
+# test cmip3 Global
+test.cmip3.global <- function(...) {
+   test.retrieve.ncdf4(path="CMIP3.monthly/20c3m-sresa1b",param="tas",ctnr = "Global", lon=NULL,lat=NULL,experiment="CMIP3",climatology=c(1986,2005),fig=TRUE,saveinfile =TRUE,outfile=NULL) 
+}
+
+# test cmip5 Global
+test.cmip5.global <- function(...) {
+   test.retrieve.ncdf4(path="CMIP5.monthly/rcp45/",param="tas",ctnr = "Global", lon=NULL,lat=NULL,experiment="CMIP5",climatology=c(1986,2005),fig=TRUE,saveinfile =TRUE,outfile=NULL) 
+}
+
+# test for cmip5 over Arctic
+test.cmip5.arctic <- function(...) {
+   test.retrieve.ncdf4(path="CMIP5.monthly/rcp45/",param="tas",ctnr = "Arctic", lon=NULL,lat=c(60,90),experiment="CMIP5",climatology=c(1986,2005),fig=TRUE,saveinfile =TRUE,outfile=NULL,silent=TRUE) 
+}
+
+# test for cmip3 over Arctic
+test.cmip3.arctic <- function(...) {
+   test.retrieve.ncdf4(path="CMIP3.monthly/20c3m-sresa1b",param="auto",ctnr = "Arctic", lon=NULL,lat=c(60,90),experiment="CMIP3",climatology=c(1986,2005),fig=TRUE,saveinfile =TRUE,outfile=NULL) 
+}
+
+# Function test # 
+test.retrieve.ncdf4 <- function(path="CMIP3.monthly/20c3m-sresa1b",param="auto",ctnr = "Global", lon=NULL,lat=NULL,experiment="CMIP3",climatology=c(1986,2005),fig=TRUE,saveinfile=TRUE,outfile=NULL,silent=TRUE) {
+
+ncfiles <- list.files(path=path,pattern=paste("tas","_",sep=""),full.names=TRUE) # the dash is added to avoid selecting tasmin and tasmax !
+
+if (length(ncfiles)<1) ncfiles <- path
+
+# Initialize
+vmodel <- rep("-",length(ncfiles))
+for (k in 1:length(ncfiles)) {
+    if (substr(ncfiles[k],nchar(ncfiles[k])-1,nchar(ncfiles[k])) != "nc")
+       stop("Netcdf file is needed !")
+    ncid <- nc_open(ncfiles[k])
+    print("-------------------------------------------")
+    print(ncid$filename)
+    gcm <- retrieve.ncdf4(ncfile=ncid,param="auto", lon=lon,lat=lat, lev = NULL,time = NULL,ncdf.check=TRUE,miss2na = TRUE,silent = silent)
+    model_id <- attr(gcm,"model_id")
+    realization <- attr(gcm,"realization")
+    experiment_id <- attr(gcm,"experiment_id")
+    title <- attr(gcm,"title")
+    # Spatial averaging along lon and lat
+    gcm2 <- spatial.avg.field(gcm)
+    gcm.am <- aggregate(x=gcm2,by=format(time(gcm2),"%Y"),FUN=mean) # Annual mean for 1 grid cell
+    year <- time(gcm.am)   
+    agcm.ave <- gcm.am-mean(gcm.am[is.element(as.numeric(year),c(climatology[1]:climatology[2]))])
+    if (k == 1) {      
+       #model_id0 <- model_id
+      X <- matrix(NA,length(year),length(ncfiles)) 
+      if (fig)
+         plot(agcm.ave,col="steelblue" ,xlim=c(1900,2100),ylim=c(-5,5)) 
+    } else if (fig) lines(agcm.ave,col="steelblue")
+    if (!is.null(model_id)) { 
+       vmodel[k] <- paste(model_id,realization,sep="-")
+    }
+    X[,k] <- agcm.ave 
+}
+# output format
+z <- zoo(x=X,order.by=year)
+attr(z,"name") <- param
+attr(z,"country") <- ctnr
+attr(z,"longname") <- "Spatial average of the 2m-Temperature" 
+attr(z,"climatology") <- paste(climatology,collapse="-")
+attr(z,"model_id") <- vmodel
+attr(z,"experiment") <- experiment
+attr(z,"title") <- title
+r_function <- list(name = "test.retrieve.ncdf4" , author = "A. Mezghani, METNO , email : abdelkaderm@met.no" , created = "21-03-2013") 
+attr(z,"R_Function_attr") <- r_function
+attr(z,"Call") <- match.call()
+attr(z,"date") <- date()
+if (saveinfile) { 
+   if (is.null(outfile)) 
+      outfile <- paste(ctnr,"_mean_",param,"_anomaly_",experiment,"_",paste(climatology,collapse="-"),".rda",sep="")
+   attr(z,"file") <- outfile
+   save(z,file=outfile)
+}
+return(z)
+invisible(z)
+}
+# e.g.
+# test.retrieve.ncdf4 <- function(path="CMIP5.monthly/rcp45/",file="Norway_mean_t2m_anomaly_cmip3_1986-2005.rda")
+

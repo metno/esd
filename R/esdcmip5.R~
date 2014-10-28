@@ -1,0 +1,272 @@
+# R.E. Benestad - replacement for old ds.one to downscale the CMIP 5 ensemble
+# monthly mean temperature
+# 30.01.2013
+
+# This script uses old clim.pact station object now - needs to change to new esd station object
+# and new function 'ESD()'.
+
+#require(met.no.REB)
+#source("clim.pact/R/retrieve.nc.R")
+#source("clim.pact/R/ds.R")
+
+getgcmname <- function(filename) {
+  ncid <- open.ncdf(filename)
+  tit <- att.get.ncdf(ncid, 0, 'model_id')
+  if( tit$hasatt ) gcmname <- tit$value  else
+                   gcmname <- ""
+  close.ncdf(ncid)
+  gcmname
+}
+
+
+DSCMIP5.tas <- function(station,path="CMIP5.monthly/rcp45",pattern="tas",
+                        years=seq(1900,2100,by=1),plot=TRUE,dx=15,dy=15,
+                        reanalysis="ERA40_t2m_mon.rda") {
+  # Function to downscale CMIP5 GCM results for temperature - taken from
+  # the KNMI ClimateExplorer
+
+  # Define limited domain around the station
+  x.rng <- round(station$lon + c(-1,1)*dx)
+  y.rng <- round(station$lat + c(-1,1)*dy); y.rng[y.rng > 85] <- 85
+  t.rng <- c(paste("01-Jan-",min(years),sep=""),
+             paste("31-Dec-",max(years),sep=""))
+  
+  # List of netCDf files containing the CMIP5 T(2m) results:
+  files <- list.files(path=path,pattern=pattern,full.names=TRUE)
+  files <- files[grep("_rcp45_",files)]
+  n <- length(files)
+
+  # Use a reanalysis for calibration: 't2m'
+  load(reanalysis)
+
+  # Keep track of the years for dimensioning matrices for storage of results
+  # Results: calibration best-fit in 't2m.fit' and years included in the
+  # calibration:
+  years.era40 <- as.numeric(rownames(table(t2m$yy)))
+  M <- length(years.era40)
+  t2m.fit <- rep(NA,n*12*M); dim(t2m.fit) <- c(n,12,M)
+
+  # The main results: downscaled T(2m) based on CMIP5 in 'ds'
+  N <- length(years)
+  ds <- rep(NA,n*12*N); dim(ds) <- c(n,12,N)
+
+  # Other diagnostics: R-square, p-value, and GCM name
+  gcm.nm <- rep("",n*12); R2 <- matrix(rep(NA,12*n),n,12); p <- R2
+  attr(ds,'years') <- years
+  
+  if (plot) {
+     dev.new(width=6,height=6)
+     par(bty="n",xaxt="n",yaxt="n",pty="m",mar = c(1, 1, 2, 1), xpd=NA)
+     plot(station$yy,rowMeans(station$val),pch=19,type="b",lty=2,
+          main=paste(station$location,station$obs.name),
+          xlim=range(station$yy,years),
+          ylim=range(rowMeans(station$val),na.rm=TRUE) + c(-1,5))
+  }
+  
+  for (i in 1:n) {
+    gcm <- retrieve.nc(files[i],v.nam=pattern,
+                       x.rng=x.rng,y.rng=y.rng,silent=TRUE,
+                       t.rng=t.rng,l.scal=FALSE)
+    nyrs <- length(rownames(table(gcm$yy)))
+    gcm$mm <- rep(1:12,nyrs)
+    gcm.nm[i] <- getgcmname(files[i])
+    obsgcm <- catFields(t2m,gcm,lon=range(gcm$lon),lat=range(gcm$lat))
+    yrs <- as.numeric(rownames(table(gcm$yy)))
+    i1 <- is.element(years,yrs)
+    i2 <- is.element(yrs,years)    
+    print(paste("i=",i,"GCM=",gcm.nm[i],"Matching years",sum(i1),sum(i2)))
+    if (sum(i1)!=sum(i2)) {
+        print(table(yrs))
+      }
+    for (im in 1:12) {
+      eof1 <- EOF(obsgcm,mon=im,plot=FALSE,LINPACK=FALSE,silent=TRUE)
+      ds1 <- DS(station,eof1,plot=FALSE,silent=TRUE)
+      #print(length(ds[i,im,i1])); print(length(ds1$pre.gcm[i2]))
+      ds[i,im,i1] <- ds1$pre.gcm[i2]
+      R2[i,im] <- ds1$fit.r2; p[i,im] <- ds1$fit.p
+      I1 <- is.element(years.era40,ds1$yy.cal)
+      I2 <- is.element(ds1$yy.cal,years.era40)      
+      #print(length(t2m.fit[i,im,I1])); print(length(ds1$pre.y))
+      t2m.fit[i,im,I1] <- ds1$pre.y[I2]
+    }
+    if (plot) {
+      Y <- ds[i,,]; y <- colMeans(Y)
+      lines(years,y,col="grey")
+      Y <- t2m.fit[i,,]; y <- colMeans(Y)
+      lines(years.era40,y,col="steelblue",lty=2)
+    }
+  }
+
+  lines(station$yy,rowMeans(station$val),pch=19,type="b",lty=2)
+  attr(ds,'GCM') <- gcm.nm
+  attr(ds,'R2') <- R2
+  attr(ds,'p-value') <- p
+  attr(ds,'t2m.fit') <- t2m.fit
+  attr(ds,'years.fit') <- years.era40
+  attr(ds,'station') <- station
+  invisible(ds)
+}
+
+# Use mehods...
+plot.CMIP5 <- function(ds,n=100,year=2050,smooth=3) {
+  d <- dim(ds)
+  years <- attr(ds,'years')
+  station <- attr(ds,'station')
+  nt <- d[3]; ng <- d[1]
+  location <- station$location
+  X <- matrix(rep(NA,ng*nt),ng,nt)
+  for (i in 1:ng) {
+    x <- ds[i,,];
+    #print(dim(x)); print(dim(X))
+    
+    X[i,] <- filter(colMeans(x),rep(1,smooth)/smooth)
+   }
+  ensstd <- apply(X,2,sd,na.rm=TRUE)
+  ensave <- apply(X,2,mean,na.rm=TRUE)
+
+  # Main grahpic: plume plot for annual mean value
+  dev.new()
+  par(bty="n",xaxt="s",yaxt="s",pty="m",mar = c(2, 4.5, 2, 1), xpd=NA,cex.main=0.8)
+
+  plot(range(years,na.rm=TRUE),range(X,na.rm=TRUE),type="n",
+       main=paste(location,": Downscaled CMIP5 simulated T(2m) [RCP 4.5]",sep=""),
+       xlab="Year",
+       ylab=expression(paste("Annual mean temperature  ",
+           symbol("\074")~T[2*m]~symbol("\076")," (",degree,C,")")))
+
+  t <- seq(min(X,na.rm=TRUE),max(X,na.rm=TRUE),length=n)
+  for (i in 1:length(years)) {
+    if ( (is.finite(ensave[i])) & (is.finite(ensstd[i])) ) {
+        y <- dnorm(t,mean=ensave[i],sd=ensstd[i])
+        y <- round(y/max(y)*100)
+        blue <- (1- i/length(years))
+        green <- (1 - y/100)
+        red <- i/length(years)
+        col <- rgb(red,green,blue)
+        col[y < 1] <- rgb(1,1,1)
+        points(rep(years[i],n),t,pch=19,col=col)
+      }
+  }
+  lines(years,ensave - 2*ensstd, lty=2,col="grey99")
+  lines(years,ensave + 2*ensstd, lty=2,col="grey99")
+
+  for (ii in 1:ng) {
+
+    ical <- is.element(station$yy,attr(ds,'years.fit'))
+    points(station$yy[ical],rowMeans(station$val)[ical],pch=19,lty=2,col="grey",cex=1.25)
+  }
+  lines(station$yy,rowMeans(station$val),pch=19,type="b",lty=2)
+
+  legend(1901,min(X,na.rm=TRUE) + (max(X,na.rm=TRUE)-min(X,na.rm=TRUE))/50,
+         c("Observations",paste(min(station$yy[ical]),"-",max(station$yy[ical])),year),
+         col=c("black","blue","red"),cex=0.6,
+         lwd=2,lty=c(2,1,1),horiz=TRUE,bty="n")
+  
+  # plot the annual cycle differences
+  par(fig = c(0.17, 0.50, 0.65, 0.90), new = TRUE,
+      mar = c(0.75, 0.5, 1, 1), bty = "n", cex = 0.8, cex.axis = 0.8,
+      xaxt = "n", yaxt = "s", col.axis = "grey",cex.main=0.8,xpd=NA)
+
+  # Estimate the annual mean for the time interval of the DS results that corresponds
+  # with the observations
+  inow <- is.element(years,station$yy)
+  m <- sum(inow)
+  dsnow <- ds[,,inow]; dim(dsnow) <- c(d[1]*d[2],m)
+  # Mean for calendar months over the m years and d[1] GCMs
+  dssn <- apply(dsnow,1,sd); dim(dssn) <- c(d[1],d[2])
+  dsnow <- apply(dsnow,1,mean); dim(dsnow) <- c(d[1],d[2])
+  
+  # Estimate the annual mean for 2050:
+  ifuture <- is.element(years,year + seq(-5,5,by=1))
+  M <- sum(ifuture)
+  dsX <- ds[,,ifuture]; dim(dsX) <- c(d[1]*d[2],M)
+  dssf <- apply(dsX,1,sd); dim(dssf) <- c(d[1],d[2])
+  dsX <- apply(dsX,1,mean); dim(dsX) <- c(d[1],d[2])
+  
+  #print(dsnow)
+  t1 <- apply(dsnow,2,mean)
+  s1 <- apply(dssn,2,mean)
+  #print(s1)
+  t2 <- apply(dsX,2,mean)
+  s2 <- apply(dssf,2,mean)
+  plot(c(1,12),range(t1-s1,t2+s2),type="n",
+       xlab="",ylab="",
+      main=paste("Warming over the seasons by",year))
+  polygon(c(1:12,reverse(1:12)),
+          c(t1-s1,reverse(t1+s1)),
+          col="lightblue",density=25,border="lightblue")
+  polygon(c(1:12,reverse(1:12)),
+          c(t2-s2,reverse(t2+s2)),
+          col="pink",density=25,angle=135,border="pink")
+  lines(1:12,t1,lwd=3,col="blue")
+  lines(1:12,t2,lwd=3,col="red")
+  lines(1:12,colMeans(station$val,na.rm=TRUE),lwd=1,col="grey90")
+  lines(1:12,colMeans(station$val,na.rm=TRUE),lwd=1,lty=2)
+  
+  # plot shift in PDF - get the overlapping years, estimate the annual mean for
+  # all GCMs:
+  XN <- ds[,,inow]; XF <- ds[,,ifuture]
+  T1 <- rep(NA,d[1]*m); dim(T1) <- c(d[1],m)
+  T2 <- rep(NA,d[1]*M); dim(T2) <- c(d[1],M)
+  #print(dim(XN[1,,]))
+  for (i in 1:d[1]) {
+    T1[i,] <- apply(XN[i,,],2,mean)
+    T2[i,] <- apply(XF[i,,],2,mean)
+  }
+  T1 <- c(T1); T2 <- c(T2)
+
+   #print(length(rowMeans(station$val)))
+  par(fig = c(0.65, 0.95, 0.10, 0.27), new = TRUE,
+      mar = c(0.5, 1, 1, 1), bty = "n", cex = 0.8, cex.axis = 0.8,
+      xaxt = "s", yaxt = "n", col.axis = "grey",cex.main=0.8,xpd=NA)
+  x <- seq(floor(min(X,na.rm=TRUE)),ceiling(max(X,na.rm=TRUE)),length=100)
+  plot(x,dnorm(x,mean=mean(T1),sd=sd(T1)),lwd=3,type="l",
+       xlab="",ylab="",col="blue",
+       main=paste("Change in pdf for T(2m) by ",year))
+  lines(x,dnorm(x,mean=mean(T2),sd=sd(T2)),lwd=3,col="red")
+  lines(x,dnorm(x,mean=mean(rowMeans(station$val),na.rm=TRUE),
+                 sd=sd(rowMeans(station$val),na.rm=TRUE)),lty=1,lwd=1,col="grey90")
+  lines(x,dnorm(x,mean=mean(rowMeans(station$val),na.rm=TRUE),
+                 sd=sd(rowMeans(station$val),na.rm=TRUE)),lty=2,lwd=1)
+   #text(0,0,expression(paste("Annual mean temperature  ",
+   #        symbol("\074")~T[2*m]~symbol("\076")," (",degree,C,")")))
+  
+  # qq-normal plot.
+}
+
+#----------------------------------
+
+if (FALSE) {
+svalbard <- read.table("~/Ubuntu\ One/Svalbard_export.txt")
+yr <- svalbard$V1; t2m <- svalbard[,2:13]
+
+ele=101
+
+#stnr(Fylke="Svalbard") -> a
+#i <- is.element(a$NAME,"LONGYEARBYEN")
+station <- station.obj(x=t2m,yy=yr,ele=ele,obs.name="T2m",
+                   station=99860,unit="deg C",
+                   lon=15.625,lat=78.2225,alt=37,
+                   location="Svalbard airport",ref="Nordli")
+}
+
+#station <- KDVH4DS()
+
+if (FALSE) {
+  source("esd/R/station.R")
+  ecsn("De Bilt") -> a
+  b <- as.monthly.station(a,method='IQR')
+  # monthly mean & monthly spread
+
+  station <- station.obj(x=b,yy=attr(b,'year'),mm=attr(b,'month'),
+                         ele=101,obs.name="T2m",
+                         station=attr(b,'StID'),unit="deg C",
+                         lon=attr(b,'longitude'),lat=attr(b,'latitude'),
+                         alt=attr(b,'altitude'),
+                         location="De Bilt",ref="ECA&D")
+}
+#ds <- DSCMIP5.tas(station)
+
+           
+
+

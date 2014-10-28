@@ -1,0 +1,33 @@
+\name{vis}
+\alias{vis}
+\alias{wheel}
+\alias{wheel.station}
+\alias{wheel.spell}
+
+\title{Infographics.}
+\description{Computes different formulas.
+
+\code{C.C.eq}: Clapeyron-Clausius equation (saturation evaporation
+pressure) where  \code{x} is a data object holding the temperature.
+}
+
+\usage{
+wheel(x,...)
+wheel.station(x,new=TRUE,lwd=2,col=NULL,bg="grey90",...)
+wheel.spell(x,new=TRUE,lwd=2,col=NULL...)
+}
+
+\arguments{
+  \item{x}{a data object}
+}
+
+\value{The right hand side of the equation}
+
+
+\author{R. Benestad, MET Norway}
+\examples{
+t2m <- t2m.ERAINT(lon=c(-70,-10),lat=c(20,60))
+es <- C.C.eq(t2m)
+map(es)
+}
+\keyword{parameter,element}

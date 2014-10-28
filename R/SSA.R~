@@ -1,0 +1,96 @@
+SSA <- function(x,m,plot=TRUE,main="SSA analysis",sub="",
+                anom=TRUE,i.eof=1) {
+# After von Storch & Zwiers (1999), Statistical Analysis in Climate Research, p. 312.  
+
+  if ( (class(x)[1] != "station") & (class(x)[1] != "eof") )
+    stop('SSA: need a station object or EOF object')
+  x.mean <- 0
+
+  if (class(x)[2] == "monthly.station.record") param <- "val" else
+  if (class(x)[1] == "eof") param <- "PC[,i.eof]"
+
+  if (anom) x <- anomaly(x) 
+  nt <- length(x)
+  
+  Nm <- nt - m + 1
+  X <- matrix(rep(NA,Nm*m),Nm,m)
+  #print(dim(X))
+  for (i in 1:m) {
+    ii <- i:(Nm-i+1)
+    X[ii,i] <- coredata(x[ii])
+  }
+
+   
+  ssa <- svd(X) 
+
+  if (sub=="") sub <- paste("Window width=",m)
+
+  ssa$m<- m; ssa$Nm <- Nm; ssa$nt <- nt
+  ssa$anom <- anom
+  ssa$param <- x$param
+  ssa$x <- x
+  class(ssa) <- c("ssa",class(x))
+  if (plot) plotSSA(ssa)
+  invisible(ssa)
+}
+
+
+
+test.cca <- function(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,SVD=TRUE,n.pc=4,synthetic=TRUE) {
+  print("version 0.1:")
+  data(eof.slp,envir=environment())
+  print(dim(eof.slp$EOF)); print(dim(eof.slp$PC)); print(length(eof.slp$W))
+  eof.slp$EOF[!is.finite(eof.slp$EOF)] <- 0
+  print(summary(c(eof.slp$EOF)))
+  print(summary(c(eof.slp$PC)))
+  print(summary(c(eof.slp$W)))
+  eof.slp$clim <- eof.slp$EOF[1,]*0
+  dim(eof.slp$clim) <- c(73,144)
+  if (synthetic) {
+    nt <- 200
+    eof.slp$tim <- 1:nt; eof.slp$yy <- 2000 + floor((1:nt)/360)
+    eof.slp$mm <- mod(floor((1:nt)/30),12)+1; eof.slp$dd <- mod(1:nt,30)+1 
+    eof.slp$size[1,1] <- nt
+    #print(rbind(eof.slp$tim,eof.slp$yy,eof.slp$mm,eof.slp$dd))
+    eof.slp$PC <- matrix(rep(0,n.pc*nt),nt,n.pc)
+    eof.slp$id.t <- rep("test",nt)
+  } else nt <- length(eof.slp$tim)
+  eof1 <- eof.slp; eof2 <- eof.slp; rm(eof.slp); gc(reset=TRUE)
+  eof1$PC <- eof1$PC[,1:n.pc]; eof1$EOF <- eof1$EOF[1:n.pc,]; eof1$W <- eof1$W[1:n.pc]
+  eof2$PC <- eof2$PC[,1:n.pc]; eof2$EOF <- eof2$EOF[1:n.pc,]; eof2$W <- eof2$W[1:n.pc]
+  eof1$dW <- eof1$dW[1:n.pc]; eof2$dW <- eof2$dW[1:n.pc]
+  eof1$var.eof <- eof1$var.eof[1:n.pc]; eof2$var.eof <- eof2$var.eof[1:n.pc]
+
+  print(dim(eof1$EOF)); print(dim(eof1$PC)); print(length(eof1$W))
+  y.1 <- EOF2field(eof1,anomalies=TRUE)$dat[,1,1]
+  print(summary(y.1))
+  
+  if (synthetic) {
+    modes <- 1:n.pc; modes <- modes[-mode]
+    print("signal: sin")
+    eof1$PC[,mode] <- 50*sin(seq(-12*pi,12*pi,length=nt))
+    eof2$PC[,mode] <- 50*sin(seq(-12*pi,12*pi,length=nt))
+    print("noise: rnorm")
+    for (i in modes) {
+      eof1$PC[,i] <- rnorm(nt)
+      eof2$PC[,i] <- rnorm(nt)
+    }
+  }
+  if (reconstr) {
+    print("Reconstruct fields...")
+    x1 <- EOF2field(eof1)
+    x2 <- EOF2field(eof2)
+    print(class(x1))
+    print("Run test...")
+    print(paste(method,"(x1,x2,test=",test,
+                 ",LINPACK=",LINPACK,",SVD=",SVD,")",sep=""))
+    cca.test <- eval(parse(text=paste(method,"(x1,x2,test=",test,
+                 ",LINPACK=",LINPACK,",SVD=",SVD,")",sep="")))
+  } else {
+    print(paste(method,"(eof1,eof2,test=",test,
+                 ",LINPACK=",LINPACK,",SVD=",SVD,")",sep=""))
+    cca.test <- eval(parse(text=paste(method,"(eof1,eof2,test=",test,
+                 ",LINPACK=",LINPACK,",SVD=",SVD,")",sep="")))
+  }
+  invisible(cca.test)
+}

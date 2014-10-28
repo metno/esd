@@ -1,0 +1,21 @@
+library(zoo)
+X <- read.table("http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt")
+year <- as.numeric(substr(X$V1,1,4))
+month <-  as.numeric(substr(X$V1,6,7))
+T2m <- zoo(X$V2,as.Date(paste(year,month,"15",sep="-")))
+
+cal <- data.frame(y=X$V2, t=year + (month - 0.5)/12)
+fit1 <- lm(y ~ t,data=cal)
+fit2 <- lm(y ~ I(t) + I(t^2),data=cal)
+fit4 <- lm(y ~ I(t) + I(t^2)+I(t^3)+I(t^4),data=cal)
+
+plot(T2m,lwd=2,ylim=c(-1,1),col="grey")
+lines(zoo(predict(fit1),as.Date(paste(year,month,"15",sep="-"))),col="red")
+lines(zoo(predict(fit2),as.Date(paste(year,month,"15",sep="-"))),col="green")
+lines(zoo(predict(fit4),as.Date(paste(year,month,"15",sep="-"))),col="blue")
+
+legend(as.Date("1850-1-1"),1,c("n=1","n=2","n=4"),lty=1,
+       col=c("red","green","blue"),bty="n")
+text(as.Date("1900-1-1"),0.8,expression(paste("trend=",a*(x-1850)^n - b)),
+     pos=4)
+

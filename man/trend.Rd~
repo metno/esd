@@ -1,0 +1,56 @@
+\name{climatology}
+\alias{climatology}
+\alias{climatology.defaul}
+\alias{climatology.field}
+\alias{climatology.station}
+\alias{anomaly}
+\alias{anomaly.default}
+\alias{anomaly.field}
+\alias{anomaly.station}
+\alias{anomaly.yearly}
+\name{trend}
+\alias{trend}
+\alias{trend.defaul}
+\alias{trend.station}
+\alias{trend.eof}
+\alias{trend.field}
+\title{Trend analysis}
+\description{
+  Various functions for handling climatological objects, such
+  as estimating climatologies (mean plus seasonal variations), the
+  anomalies, or trends (or the detrened residuals).
+
+  An additional function \code{clim2pca} decomposes the data as a sum of
+  wearly shapes (PCA modes), where the leading shape describes the
+  seasonal cycle and the higher order modes describe perturbations to
+  this shape from year to year. 
+}
+\usage{
+trend(x,result="trend",model="y ~ t",...)
+trend.default(x,result="trend",model="y ~ t",...)
+trend.station(x,result="trend",model="y ~ t",...)
+trend.eof(x,result="trend",model="y ~ t",...)
+trend.field(x,result="trend",model="y ~ t",...)
+}
+\arguments{
+Returns a similar object as the input.
+}
+\value{A field object}
+
+\seealso{
+  \code{\link{as.anomaly}}
+}
+
+\author{R.E. Benestad}
+\examples{
+# Example: retrieve a set of station and map their trends
+y <- station(cntr="GERMANY",param="t2m",src="ECAD")
+Y <- as.annual(y)
+map(trend(Y))
+
+# Example: map the trend of NCEP reanalysis temperature
+t2m <- t2m.NCEP()
+warming<-trend(t2m)
+map(warming,projection="sphere")
+}
+\keyword{utilities}

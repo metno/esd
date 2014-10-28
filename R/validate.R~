@@ -1,0 +1,13 @@
+validate <- function(x, ...)  UseMethod("validate")
+
+validate.default <- function(x, ...) {
+}
+
+validate.eof <- function(x, ...) {
+}
+
+validate.ds <- function(x, ...) {
+}
+
+
+

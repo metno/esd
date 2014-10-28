@@ -1,0 +1,122 @@
+## Author      : Abdelkader Mezghani
+## Created     : 30-05-2013
+## Last update : 23.07.2013
+## Functions   : select.station()* ; test.select.station()
+## required    : "station.meta.rda"
+## *           : main script
+
+select.station <- function (stid = NULL, loc=NULL , ele = NULL, lon = NULL, lat = NULL, 
+                            alt = NULL, cntr = NULL, src = NULL,silent=FALSE) 
+{
+  load("station.meta.rda") # load("esd/data/station.meta.rda")
+  station.meta <- as.data.frame(station.meta)
+                                        # get the lenght of data base
+  n <- length(station.meta$stid)
+                                        #STID <- station.meta$stid
+  attach(station.meta,warn.conflicts=FALSE)
+                                    # select parameter or element
+#   if (!is.null(ele)) {
+    #ele <- param2ele(param=param,src=src)
+    #ele <- switch(tolower(param), t2m = "101", tg = "101", 
+    #              rr = "601", slp = "401", cloud = "801", t2 = "101", 
+    #              precip = "601", `101` = "101", `401` = "401", `601` = "601",`801` = "801")
+#    station.meta <- subset(station.meta,element==ele)
+#  }
+                                        # stid sub selection
+  if (!is.null(stid)) {
+    if (is.numeric(stid)) {
+      station.meta <- subset(station.meta,as.numeric(station_id)==stid)
+    }
+    else if (is.character(stid)) {
+      id <- grep(tolower(stid),tolower(location))
+      station.meta <- station.meta[id,]
+    }
+  }
+                                        # lon and lat sub selection
+  if (!is.null(lon) & !is.null(lat)) {
+    if ((length(lon) == 1) & (length(lat) == 1)) {
+      d <- distAB(lon, lat, longitude, latitude)
+      id <- d==min(d,na.rm=TRUE) ; id[is.na(id)] <- FALSE # Ak some of the lon values are NA's
+      station.meta <- subset(station.meta,id)
+    }
+    else if ((length(lon) == 2) & (length(lat) == 2)) {
+      lon.rng <- lon ; lat.rng <- lat 
+      station.meta <- subset(station.meta,((lon >= lon.rng[1]) & (lon <= lon.rng[2])) & (lat >= lat.rng[1]) & (lat <= lat.rng[2]))           
+    }
+    else return(NULL)
+  }
+                                        # Altitude sub selection
+  if (!is.null(alt)) {
+    if (length(alt) == 1) {
+      alt.rng <- c(alt-0.1*alt,alt+.1*alt) # set the altitude range to +/-10% of alt
+    }
+    else if (length(alt) == 2) {
+      alt.rng <- alt      
+    }
+    station.meta <- subset(station.meta,(altitude >= alt.rng[1]) & (altitude <= alt.rng[2]))   
+  }
+                                        # Country sub selection
+  if (!is.null(cntr)) {
+    station.meta <- subset(station.meta,(tolower(country)==tolower(cntr)))   
+  }
+                                        # Element sub selection
+  if (!is.null(ele)) {
+    station.meta <- subset(station.meta,element==ele)   
+  }
+                                        # Location sub selection
+  if (!is.null(loc)) {
+    station.meta <- subset(station.meta,as.character(location)==toupper(loc))
+  }
+                                        # Source sub selection
+  if (!is.null(src)) {
+    station.meta <- subset(station.meta,as.character(source)==src)
+  }
+                                        # Outputs
+  if (dim(station.meta)[1]!=0) {
+    station.meta$station_id <- as.numeric(station.meta$station_id)
+    station.meta$location <- as.character(station.meta$location)
+    station.meta$country <- as.character(station.meta$country)
+    station.meta$source <- as.character(station.meta$source)
+    station.meta <- as.data.frame(station.meta)
+    return(station.meta)
+  } else {
+    if (silent) print("No available stations for your selection")
+    return(NULL)
+  }	
+}
+
+## test.select.station performs a series of tests and print results for visual checks !
+test.select.station <- function() {
+                                        # RUN !
+                                        # Available ECA&D stations for the range of longitude between 0 and 10 deg. East, the range of latitude between 20 and 30 deg. North and for altitudes around 400m +/- 40 m
+  available.station <- select.station(param="101",lon = c(0,10),lat=c(20,30),src="ECAD",alt=560,silent=FALSE)
+  print(available.station)
+                                        # Available 2m temperature stations for ECA&D data
+  available.station <- select.station(param="101",src="ECAD")
+  str(available.station)
+                                        # Available stations for NACD data
+  available.station <- select.station(src="NACD")
+  print(available.station)
+                                        # Available stations for GHCN data
+                                        # Not Run !
+  available.station <- select.station(src="GHCND")
+  str(available.station)
+                                        # Available stations for Norway
+  available.station <- select.station(cntr="NORWAY")
+  str(available.station)
+                                        # Available stations recording 2m-surface temperature
+  available.station <- select.station(param="t2m")
+  str(available.station)
+                                        # Available data sources for Oslo station
+  available.station <- select.station(loc="oslo-blindern")
+  src <- rownames(table(available.station$source))
+  print(src)
+                                        # Available stations within a range of lon and lat
+  available.station <- select.station(lon=c(0,30),lat=c(50,70))
+  str(available.station)
+                                        # Available stations by location
+  available.station <- select.station(loc="oslo-blindern")
+  str(available.station)
+  
+                                        # ....
+}

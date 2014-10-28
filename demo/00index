@@ -1,0 +1,6 @@
+dscmip5.R                    - Downscale t2m for the CMIP5 ensemble of GCMs
+global_tas_anomaly_cmip3.R   - Estimate global mean temperature for CMIP3
+testDS.R                     - Test script for DS.
+testregrid.R                 - test script for regrid.
+hydroex.R                    - Small watershed: runoff, precip, and temperature
+muerror			     - Shows inherent uncertainty for mean of exponential distribution

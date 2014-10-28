@@ -1,0 +1,28 @@
+\name{is}
+\alias{is.T}
+\alias{is.precip}
+
+\title{Test for .}
+\description{Computes different formulas
+}
+
+\usage{
+is.T(x)
+is.precip(x)
+}
+
+\arguments{
+  \item{x}{a data object}
+}
+\value{The right hand side of the equation}
+
+\seealso{
+  \code{\link{}}
+}
+\author{R. Benestad, MET Norway}
+\examples{
+t2m <- t2m.ERAINT(lon=c(-70,-10),lat=c(20,60))
+es <- C.C.eq(t2m)
+map(es)
+}
+\keyword{parameter,element}

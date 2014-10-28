@@ -1,0 +1,29 @@
+# DS.pca
+# This function applies to PCA results for a group of stations.
+# Typically some annual statistics (e.g. mu), stored in compressed form
+# as a PCA-object (similar to EOF, but not gridded and without the area
+# weighting.
+# The data may be pre-filtered using CCA.
+# Rasmus Benestad, 19.08.2013
+
+station2pca <- function(y,lim=0.8) {
+  X <- coredata(y)
+  PCA <- svd(X)
+  var <- cumsum(PCA$d^2)/sum(PCA$d^2)
+  plot(var)
+}
+
+DS.pca <- function(y,X,mon=NULL,
+                   method="lm",swsm="step",
+                   rmtrend=TRUE,eofs=1:10,
+                   plot=TRUE,silent=FALSE) {
+  
+  
+}
+
+DS.cca <- function(y,X,mon=NULL,
+                   method="lm",swsm="step",
+                   rmtrend=TRUE,eofs=1:10,
+                   plot=TRUE,silent=FALSE) {
+  
+}

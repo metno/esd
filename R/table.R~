@@ -1,0 +1,38 @@
+table.dsensemble <- function(x,years=seq(1990,2090,by=20)) {
+    x0 <- subset(x,it=0)
+    djf <- subset(x,it='djf')
+    mam <- subset(x,it='mam')
+    jja <- subset(x,it='jja')
+    son <- subset(x,it='son')
+
+    tab <- rep('',length(years) + 1)
+    tab[1] <- paste(loc(x), '  Annual, DFJ, MAM, JJA, SON')
+    i <- 1
+    #browser()
+    for (yr in years) {
+      i <- i + 1
+      tab[i] <- paste(years[i-1],':    ',
+                 round(mean(coredata(subset(x0,it=years[i-1]))),2),
+                 ' [',round(quantile(subset(x0,it=years[i-1]),0.05),2),', ',
+                 round(quantile(subset(x0,it=years[i-1]),0.95),,2),'],  ',
+                 round(mean(coredata(subset(djf,it=years[i-1]))),2),
+                 ' [',round(quantile(subset(djf,it=years[i-1]),0.05),2),', ',
+                 round(quantile(subset(djf,it=years[i-1]),0.95),2),'],  ',
+                 round(mean(coredata(subset(mam,it=years[i-1]))),2),
+                 ' [',round(quantile(subset(mam,it=years[i-1]),0.05),2),', ',
+                 round(quantile(subset(mam,it=years[i-1]),0.95),2),'],  ',
+                 round(mean(coredata(subset(jja,it=years[i-1]))),2),
+                 ' [',round(quantile(subset(jja,it=years[i-1]),0.05),2),', ',
+                 round(quantile(subset(jja,it=years[i-1]),0.95),2),'],  ',
+                 round(mean(coredata(subset(son,it=years[i-1]))),2),
+                 ' [',round(quantile(subset(son,it=years[i-1]),0.05),2),', ',
+                 round(quantile(subset(son,it=years[i-1]),0.95),2),']',sep='')
+    }
+    tab
+}
+
+table.station <- function(x) {
+}
+
+table.ds <- function(x) {
+}

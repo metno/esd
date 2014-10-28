@@ -1,0 +1,272 @@
+check.ncdf4 <- function(ncid, param=param,silent = TRUE, ...) {
+
+# Load library
+library(ncdf4)
+
+# Checking : Number of variables and select only one from the netcdf file, get variable attributes in v1. The user should decide between the list of variables
+if (tolower(param) == "auto") {
+   if (ncid$nvars > 1) {
+      i <- grep(param, names(ncid$var))
+      if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
+      if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") 
+   } else i <- 1
+   param <- names(ncid$var)[i] # ; rm(i)
+   v1 <- ncid$var[[i]] 
+} else {
+   v1 <- NULL
+   v1 <- eval(parse(text=paste("ncid$var$",param,sep="")))
+   if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
+}
+## Checking : Variable dimensions ...
+ndims <- eval(parse(text=paste("ncid$var$",param,"$ndims",sep="")))
+dimnames <- rep(NA,ndims)
+if (ndims>0) {
+   for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var$",param,"$dim[[",j,"]]$name",sep="")))
+   if (!silent) print("Checking Dimensions --> [ok]")
+   if (!silent) print(paste(as.character(ndims), " dimension(s) has(have) been found :"))
+   if (!silent) print(dimnames)
+} else {
+   stop("Checking Dimensions --> [fail]")
+   if (!silent) print("The variable has no dimensions. The file may be corrupted!")  
+}
+## Get all attribute
+model <- ncatt_get(ncid,0)
+## Checking : Time unit and origin
+# Get system info
+a <- Sys.info()
+# Initialize
+use.cdfcont <- FALSE
+## Get time dimension / val + attributes
+itime <- grep("tim", dimnames)
+if (length(itime) == 0) itime <- NULL else if (length(itime) > 1) stop("Error in time dim") else if (length(itime)==1) time <- eval(parse(text=paste("v1$dim[[",as.character(itime),"]]",sep="")))
+# Get time unit and origin
+tatt <- tolower(names(time))
+itunit <- grep(c("unit"),tatt)
+itorigin <- grep(c("orig"),tatt)
+if (length(itunit)>0) {   
+   tunit <- eval(parse(text = paste("time$",tatt[itunit],sep="")))
+   if (!silent) print(paste("Time unit has been found in time$unit attribute (",tunit,")",sep=""))
+} else tunit <- NULL
+if (!is.null(tunit)) if (!silent) print("Checking Time Unit --> [ok]") else warnings("Checking Time Unit --> [fail]")
+if (!is.null(tunit) & (!is.null(grep("since",tunit)))) {
+   if (!silent) print("Time unit and origin detected in time$unit attribute")
+   tunit <- time$units
+   torigin <- time$origin <- paste(unlist(strsplit(tunit,split=" "))[3:4],collapse=" ")
+   tunit <- time$units <- unlist(strsplit(tunit,split=" "))[1]
+   if (!silent) print(paste("Updating time$unit (",time$unit,") and creating time$origin (",time$origin,") attribute",sep= ""))
+} else if (length(itorigin)>0) {   
+   torigin <- eval(parse(text = paste("time$",tatt[itorigin],sep="")))
+   if (!silent) print(paste("Time origin has been found in time origin attribute and set to:",torigin,sep=" "))
+} else torigin <- NULL
+if (is.null(torigin) & is.null(tunit)) {
+   if (!silent) print("Attributes time unit and origin have not been found -> Sys.time() will be used !")
+   if ((tolower(a[1]) == "linux") & (use.cdfcont)) {
+      if (!silent) print("Linux & use.cdfcont : call cdfcont()")
+      time$origin <- torigin <- cdfcont(ncid$filename)$time.origin
+      time$units <- tunit <- cdfcont(ncid$filename)$time.unit
+   }
+}
+if (is.null(torigin)) {
+   if (!silent) print(paste("Time units:", tunit, " l=", min(tim[is.finite(time$vals)]),"-", max(tim[is.finite(time$vals)])))
+   if (!silent) warning("Cannot determine the time origin!")
+   if (!silent) warning("Example format: '15-Dec-1949'")
+   if (!silent) warning("NCEP reanalysis typically: 01-01-01")
+   if (!silent) warning("ERA-40 typically: 1900-01-01")
+   torigin <- readline("Please enter a valid time origin: ")
+}
+if (!is.null(torigin)) {
+   if (torigin == "1-01-01 00:00:00") {
+      if (!silent) print("bad time origin")
+      torigin <- "0001-01-01 00:00:00"
+      if (!silent) print(paste("Re-setting time origin (",torigin,")",sep=""))
+   }
+} else {
+  torigin <- readline("Give me the time origin (format='YYYY-MM-DD' as '1949-22-01'):")
+  if (!is.null(torigin)) {
+     if (!silent) print(paste("Time origin set to =", torigin))
+     else stop("Could not determine the time origin. The processing has been stopped !")
+  }
+}
+if (!is.null(torigin)) {
+   yorigin <- format.Date(as.Date(torigin),format="%Y")
+   morigin <- format.Date(as.Date(torigin),format="%m")
+   dorigin <- format.Date(as.Date(torigin),format="%d")
+   if (as.numeric(yorigin) == 0) 
+      stop("There is no year zero (Press et al., Numerical recipies)")
+   if (is.na(dorigin)) {
+      if (!silent) warning("Warning : Day origin is missing !")
+      dorigin <- 1
+      if (!silent) warning("Warning : Day origin has been set to:",dorigin)
+   }  
+   if (is.na(dorigin)) {
+      if (!silent) warning("Warning : Month origin is missing !")
+      morigin <- 1
+      if (!silent) warning("Warning : Month origin has been set to:",morigin)
+   }
+torigin1 <- paste(yorigin,morigin,dorigin,sep="-")
+torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ") 
+}
+if (!is.null(torigin)) {if (!silent) print("Checking Time Origin --> [ok]")} else print("Checking Time Origin --> [fail]")
+## Checking : Frequency
+type <- c("Years","Seasons","Months","Days","Hours")
+type.abb <- substr(tolower(type),1,3)
+# Initialize
+freq.att <- NULL
+ifreq <- grep("freq",names(model))
+if (length(ifreq)>0) {  
+   itype <- grep(tolower(eval(parse(text=paste("model$",names(model)[ifreq],sep="")))),tolower(type))
+   if (length(itype>0)) {
+      if (!silent) print(paste("Frequency has been found in model$frequency attribute (",type[itype],")",sep="")) 
+      freq.att <- model$frequency
+   }
+   if (!silent) print("Checking Frequency from attribute --> [ok]")
+} else {
+   print("Checking Frequency from attribute --> [fail]")
+   if (!silent) print("Frequency has not been found in the attributes") 
+}
+# Checking frequency from data
+frequency <- freq.data <- NULL
+browser()
+freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,silent=FALSE)
+if (!is.null(freq.data)) {if (!silent) print("Checking Frequency from the data --> [ok]")} else print("Checking Frequency from the data --> [fail]")
+## Checking Calendar attribute if any, otherwise set to "ordinary"  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day"
+ical <- grep(c("calend"),tatt)
+if (length(ical)>0) {   
+   calendar.att <- eval(parse(text = paste("time$",tatt[ical],sep="")))
+   if (!silent) print("Checking Calendar from time attribute --> [ok]") 
+   if (!silent) print(paste("Calendar attribute has been found in time$calendar (",time$calendar,")",sep =""))
+} else {
+   if (!silent) print("Checking Calendar from time attribute --> [fail]")
+   calendar.att <- NULL
+   warnings("Calendar attribute has not been found in the meta data")
+}
+## Identifying starting and ending dates for the data if possible
+if (!is.null(torigin)) {
+   yorigin <- as.numeric(format.Date(torigin,format="%Y"))
+   morigin <- as.numeric(format.Date(torigin,format="%m"))
+   dorigin <- as.numeric(format.Date(torigin,format="%d"))
+}
+# Get calendar from attribute if any
+if (!is.null(calendar.att)) {
+   if (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) {
+      if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
+      if (grepl("day",tunit)) {
+         time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
+      }
+      if (grepl("mon",tunit)) {
+         if (sum(diff(time$vals>1)) < 1) {
+         year1 <- time$vals[1]%/%12 + yorigin
+         month1 <- morigin
+         time$vdate <- seq(as.Date(paste(as.character(year1),month1,"15",sep="-")), by = "month",length.out=length(time$vals))
+         } else warnings("Monthly data are Mangeled") 
+       } 
+   } else if (!is.na(strtoi(substr(calendar.att, 1, 3)))) {
+             if (!silent) print(paste(substr(calendar.att,1, 3), "-days' model year found in calendar attribute"))
+                time$daysayear <- as.numeric(substr(calendar.att, 1, 3))
+                if (!is.null(time$daysayear)) if (!silent) print(paste("Creating time$daysayear attribute and setting attribute to ", time$daysayear, sep=" "))
+             }
+             if (!is.null(time$daysayear)) {
+                if (time$daysayear==365) 
+                   mndays <- c(31,28,31,30,31,30,31,31,30,31,30,31) # Number of days in each month
+                else if (time$daysayear==360)
+                   mndays <- rep(30,12) # Number of days in each month
+                if (!is.null(time$daysayear) & !is.null(mndays)) {
+                   year1 <- time$vals[1]%/%time$daysayear + yorigin
+                   month1 <- morigin
+                                 
+                   if (sum(diff(time$vals%/%time$daysayear) > 1) & (!silent)) warnings("Jumps of years has been found in the time series ")
+                   if (time$vals[1]%%time$daysayear > 27) {
+                      year1 <- year1 + 1
+                      month1 <- month1 + 1
+                   } 
+                   if (month1>12) month1 <- month1 - 12 
+                   # construct vdate
+                   months <- ((time$vals%%time$daysayear)%/%round(mean(mndays))) + 1
+                   years <- time$vals%/%time$daysayear + yorigin
+                   #shifting mndays by month1 to start with different initial months than january (1)
+                   mndays <- c(0,mndays[month1:length(mndays)-1],mndays[1:month1-1])
+                   days <- time$vals%%time$daysayear - rep(cumsum(mndays),time$len/12)
+                   if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
+                      warnings("Warning: Jumps in data have been found !")
+                      warnings("Warning: Trust the first date and force a continuous vector of dates !")
+                      time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=time$len)
+                   } else time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round(days)
+                   
+             }  
+   } 
+   if (!silent) print(paste("Starting date : ",time$vdate[1],"Ending date : ",time$vdate[length(time$vdate)], sep = " "))
+} else {
+   warnings("Automatic detection of the calendar")
+   calendar.detect <- "auto"
+   # NOT COMPLETE ...
+   if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
+   if (grepl("day",tunit)) time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
+   if (grepl("mon",tunit)) {
+       if (sum(diff(time$vals>1)) < 1) {
+         year1 <- time$vals[1]%/%12 + yorigin
+         month1 <- morigin
+         time$vdate <- seq(as.Date(paste(as.character(year1),month1,"15",sep="-")), by = "month",length.out=length(time$vals))
+       } else warnings("Monthly data are Mangeled") 
+   } 
+}
+if ((length(time$vdate)>0) & (sum(diff(as.numeric(format.Date(time$vdate,"%m")))>1)) & (!silent)) stop("Vector date is mangeled ! Need extra check !")
+# Checking the data / Extra checks / Automatic calendar detection / etc.
+## Check 1 # Regular frequency
+if (length(grep("time$vdate",ls())) > 0) {
+   if (!silent) print("Vector of date is in the form :")
+   if (!silent) print(str(time$vdate))
+} else {
+   if (grepl("day",tunit)) dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
+   if (grepl("hou",tunit)) dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/24))))
+   if (grepl("mon",tunit)) dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
+   if (length(dt)==1) {
+      if (!silent) print("Regular frequency has been detected from the data")
+   } else if (!silent) print("Irregular frequency has been detected from the data")
+   if ((length(dt)==3) & grepl("day",tunit)) {
+      if (!silent) print(paste("Calendar is likely to be a 365-",tunit," with: ",as.character(length(dt))," irregular frequencies",sep = ""))
+         dt <- c(28,30,31)
+         if (!silent) print(paste(as.character(dt),tunit,sep="-"))
+   }
+   if (length(dt)==4 & grepl("day",tunit)) {
+      if (!silent) print(paste("Calendar is likely to be a Gregorian 365/366-",tunit," with: ",as.character(length(dt))," irregular frequencies : ",sep=""))
+      dt <- c(28,29,30,31)
+      if (!silent) print(paste(as.character(dt),tunit,sep="-")) 
+   }
+   if (!is.null(time$daysayear)) {
+      if ((length(dt)==3) & (time$daysayear != 365) & grepl("day",tunit))
+         warning("Calendar does not match with detected frequencies")
+   }
+   if (length(ical)>0)
+      if ((length(dt)!=4) & (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) & grepl("day",tunit))
+      warning("Calendar does not match with detected frequencies")
+   if ((length(dt)==2) | (length(dt)>4)) {
+      if (!silent) print(paste("Warning : Irregular frequencies have been detected - The data might be corrupted and needs extra Checking !"))   
+      if (!silent) print(paste(as.character(dt),tunit,sep=" "))
+   }
+## End check 1
+## Begin check 2 if freq.att matches freq.data
+   if (!is.null(freq.att)) {
+      model$frequency <- freq.att 
+      if (!is.null(freq.data)) {
+         if (grepl(freq.att,freq.data)) {
+            if (!silent) print("Frequency found in the attribute matches the frequency detected in data")
+               model$frequency <- freq.data <- freq.att 
+            } else warnings("Frequency found in the attribute does not match the frequency detected in data")
+         } 
+      } else if (!is.null(freq.data)) model$frequency <- freq.data
+  else stop("Frequency could not be found, neither detected, the data might be corrupted !")
+}
+if (!is.null(model$frequency)) {
+   if (!silent) print(paste("Frequency set to ",model$frequency,sep=""))
+}
+## End check 2
+if (!silent) print("Extra Check --> [Done!]")
+# use zoo library to format the data
+
+## Extra Checking
+#y.test <- data.e <- ncvar_get(ncid, v1$name, start = c(1,1,1), count = c(1,1,-1))
+#ac.gcm <- data.frame(y = y.test, x1 = as.vector(cos(2 * pi * tim/daysayear)), x2 = as.vector(sin(2 * pi * tim/daysayear)))
+result <- list(model=model,time=time)
+invisible(result)
+}
+

@@ -1,0 +1,302 @@
+require(chron)
+
+# Can return one station or a group of stations. A cluster of regional stations can be
+# reppresented in terms of PCA, maintaining the spatial consistencies between them.
+# It is also possible to use a set of station objects to provide multi-information from
+# one location: e.g. T(2m), precip; mean, variance, skewness, & kurtosis...
+
+station <- function(stid=NULL,location=NULL,lon=NULL,lat=NULL,alt=NULL,country=NULL,
+                    param=NULL,...) UseMethod("station")
+  
+station.default <- function(stid=NULL,location=NULL,lon=NULL,lat=NULL,alt=NULL,country=NULL,
+                    param=NULL,src = c("NARP","NACD","ECSN","NORKLIMA","GHCND"),
+                    plot=FALSE,col="alt") {
+  load("esd/data/station.meta.rda")
+  src <- "eca"
+
+  station.select()
+  station.eca(stid=stid,location=location,lon=lon,lat=lat,alt=alt,country=country)
+  
+  if (plot) station.map()
+  
+}
+
+
+
+station.eca <- function(stid=NULL,location=NULL,lon=NULL,lat=NULL,alt=NULL,country=NULL,
+                        param="TG",path="data.eca") {
+  # http://eca.knmi.nl/
+  # ECA&D was initiated by the ECSN in 1998 
+  # Retrieve data from the ECSN (ECA&D) data:
+#  data("eca.meta",envir=environment())
+   load("esd/data/station.meta.rda")
+   if (is.character(stid)) {
+     #print(locid); print(ecsn.meta$STANAME)
+     imatch <- grep(stid,station.meta$location,ignore.case = TRUE)
+     #print(ecsn.meta$STANAME[imatch])
+   } else if (is.numeric(stid)) {
+     imatch <- is.element(station.meta$stid,stid)
+   }
+   #print(table(imatch))
+   if (sum(imatch)==0) return(NULL)
+   lon <- station.meta$lon[imatch]
+   lat <- station.meta$lat[imatch]
+   alt <- station.meta$alt[imatch]
+   country <- station.meta$CN[imatch]
+   STAID <- as.character(station.meta$stid[imatch])
+   location <- station.meta$location[imatch]
+
+   for (i in 1:length(STAID)) 
+     while(nchar(STAID[i]) < 6) STAID[i] <- paste('0',STAID[i],sep="")
+   
+   fnames <- paste(path,'/',upper.case(param),'_STAID',STAID,'.txt',sep="")
+   ipick <- (file.exists(fnames))
+   if (sum(ipick)==0)  return(NULL)
+   if (sum(ipick)!=1) warning('More than one matches!')
+   fname <- fnames[ipick]
+   lon <- lon[ipick]; lat <- lat[ipick]
+   alt <- alt[ipick]; STAID <- STAID[ipick]
+   countryn <- country[ipick]; location <- location[ipick]
+   #print(fname)
+   
+ 
+   ECSN <- read.table(fname,header=TRUE,skip=20,sep=",")
+   scale <- switch(param,'TG'=0.1,'TX'=0.1,'TN'=0.1,'CC'=1,'DD'=1,'FG'=0.1,
+                         'FX'=0.1,'HU'=1,'PP'=0.1,'SS'=0.1,'RR'=0.1)
+   eval(parse(text=paste('ecsn <- scale * ECSN$',param,sep="")))
+   year <- trunc(ECSN$DATE/10000);l <- length(year)
+   month <- trunc(ECSN$DATE/100) - year*100
+   day <- ECSN$DATE - year *10000 - month*100
+   dates <- as.POSIXct(paste(year,'-',month,'-',day,' 00:00:00',sep=''))
+   datee <- as.POSIXct(paste(year,'-',month,'-',day,' 23:59:59',sep=''))
+
+   # Create a time series object:
+   ecsn <- TimeIntervalDataFrame(start =dates,end=datee,
+                                 timezone = "UTC",
+                                 data = data.frame(ecsn))
+   
+   # Add meta data as attributes:
+   attr(ecsn,'StID') <- STAID
+   attr(ecsn,'year') <- year
+   attr(ecsn,'month') <- month
+   attr(ecsn,'day') <- day
+   attr(ecsn,'quality') <- ecsn.meta$Q_TG
+   attr(ecsn,'longitude') <- lon
+   attr(ecsn,'latitude') <- lat
+   attr(ecsn,'altitude') <- alt
+ 
+   attr(ecsn,'source') <- 'ECSN (ECA&D)'
+   attr(ecsn,'URL') <- "http://eca.knmi.nl/utils/downloadfile.php?file=download/ECA_blend_all.zip"
+   attr(ecsn,'history') <- 'ecsn [esd]'
+   attr(ecsn,'data-stamp') <- date()
+   attr(ecsn,'type') <- 'daily station data'
+   attr(ecsn,'unit') <- switch(param,'TG'='deg C','TX'='deg C','TN'='deg C',
+                               'CC'='oktas','DD'='degrees','FG'='m/s',
+                               'FX'='m/s','HU'='%','PP'='hPa',
+                               'SS'='hours','RR'='mm')
+   attr(ecsn,'variable') <- switch(param,'TG'='daily mean Temperature',
+                                   'TX'='daily maximum temperature',
+                                   'TN'='daily minimum temperature',
+                               'CC'='cloud cover','DD'='Wind direction','FG'='Wind speed',
+                               'FX'='Wind gust','HU'='Humidity','PP'='Sea level pressure',
+                               'SS'='Sunshine','RR'='precipitation amount')
+
+   attr(ecsn,'reference') <- "Klein Tank, A.M.G. and Coauthors, 2002. Daily dataset of 20th-century surface air temperature and precipitation series for the European Climate Assessment. Int. J. of Climatol., 22, 1441-1453."
+   attr(ecsn,'info') <- "Data and metadata available at http://eca.knmi.nl"
+   invisible(ecsn)
+}
+
+
+
+station.map <- function(stid=NULL,location=NULL,lon=NULL,lat=NULL,alt=NULL,country=NULL,
+       param=NULL,zexpr="sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )") {
+    load("esd/data/geoborders.rda")
+    station.meta$alt[station.meta$alt < 0] <- NA
+    n <- 100
+    cols <- rgb(sin(pi*(1:n)/n),seq(0.8,0.2,length=n)^0.5,seq(0.2,1,length=n)^2)
+    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
+    plot(station.meta$lon,station.meta$lat,pch=19,col="grey",cex=0.5,
+         xlab="",ylab="")
+    lines(geoborders$x,geoborders$y,col="darkblue")
+    lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,col="pink")
+
+    highlight <- station.select(stid=stid,location=location,lon=lon,lat=lat,
+                                alt=alt,country=country,param=param)
+    if(!is.null(highlight)) {
+      station.meta$lon[!highlight] <- NA
+      station.meta$lat[!highlight] <- NA
+      station.meta$alt[!highlight] <- NA
+    }
+    z <- round( eval(parse(text=zexpr)) * 100)
+    z[z<1] <- 1; z[z>100] <- 100
+    points(station.meta$lon,station.meta$lat,pch=19,col=cols[z],cex=0.5)
+
+    par(fig = c(0.85, 0.99, 0.2, 0.4), new = TRUE, mar=rep(0, 4),
+        xaxt = "n",yaxt = "n",bty = "n")
+    plot(c(0, 1), c(0, 1), type = "n",xlab="",ylab="")
+    rect(0,0,1,1,col="white",border="white")
+    zlim <- seq(0,max(z,na.rm=TRUE),by=1)
+    for (i in zlim) {
+        lines(c(0.70, 1), rep(i/max(zlim), 2),col=cols[zlim[i]],lwd=2)
+        if ( (i %% 10) == 0)
+          text(0.70, i/max(zlim),
+               paste(round(sqrt(zlim[i])/100*max(station.meta$alt,na.rm=TRUE)),'m'),
+               pos=2, cex = 0.5, col = "grey40")
+    }
+
+    par(fig = c(0.01, 0.30, 0.1, 0.3), new = TRUE, mar=rep(0, 4),
+        xaxt = "s",yaxt = "s",bty = "n")
+    h <- hist(station.meta$alt,plot=FALSE,breaks=seq(0,3300,by=50))
+    plot(range(h$mids), c(0, max(h$count)), type = "n",xlab="",ylab="")
+    rect(0,0,max(h$mids),max(h$count),col="white",border="white")
+    lines(h$mids,h$count,lwd=3,type="s")
+
+    invisible(station.meta)
+}
+
+
+# Function that searches the meta data base for the requested station data
+# Search priority: ID, name, coordinates, altitude, country,...
+# Can return several matches 
+
+station.select <- function(stid=NULL,location=NULL,lon=NULL,lat=NULL,alt=NULL,country=NULL,
+                        param=NULL,src=NULL) {
+  load("esd/data/station.meta.rda")
+  n <- length(station.meta$stid)
+  iselect <- rep(FALSE,n)
+  if (!is.null(stid)) {
+    iselect <- is.element(station.meta$stid,stid)
+    return(iselect)
+  }
+  if (!is.null(location)) {
+    iselect <- is.element(tolower(station.meta$stid),tolower(stid))
+    return(iselect)
+  }
+  if (!is.null(lon) & !is.null(lat)) {
+    if ( (length(lon)==1) & (length(lat)==1) ) {
+      # Closest station:
+      d <- distAB(lon,lat,station.meta$lon,station.meta$lat)
+      iselect <- is.element(d,min(d))
+      return(iselect)
+    } else if ( (length(lon)==2) & (length(lat)==2) ) {
+      iselect <- (lon[1] <= station.meta$lon) & (lon[2] >= station.meta$lon) &
+                 (lat[1] <= station.meta$lon) & (lat[1] >= station.meta$lon)
+      return(iselect)
+    } else return(NULL)
+  } 
+  if (!is.null(alt)) {
+    if (length(alt)==1) {
+      if (alt < 0) iselect <- station.meta$alt <= alt else
+      if (alt > 0) iselect <- station.meta$alt >= alt
+      return(iselect)
+    } else if (length(alt)==2) {
+      select <- (alt[1] <= station.meta$alt) & (alt[2] >= station.meta$alt)
+      return(iselect)
+    }
+  }
+  if (!is.null(country)) {
+    iselect <- is.element(tolower(station.meta$country),tolower(country))
+    return(iselect)
+  }
+  if (!is.null(param)) {
+    if (is.numeric(param)) element <- param else
+    if (is.character(param)) element <- switch(param,'t2m'=101,'slp'=401,'precip'=601)             
+    iselect <- is.element(station.meta$element,element)
+    return(iselect)
+  }
+  return(NULL)
+}
+
+
+# Time conversion tools:
+
+as.monthly.station <- function(x,method='mean',na.rm=TRUE) {
+  if (attr(x,'type') != 'daily station data') stop("Needs a 'daily station data' object")
+  yearmonth <- attr(x,'year')*100 + attr(x,'month')
+  YEARMONTH <- as.numeric(rownames(table(yearmonth)))
+  n <- length(YEARMONTH)
+  Y <- rep(NA,n)
+  for (i in 1:n) {
+    ii <- is.element(yearmonth,YEARMONTH[i])
+    eval(parse(text=paste('Y[i] <- ',method,'(x[ii],na.rm=',na.rm,')',sep="")))
+  }
+
+  dates <- as.POSIXct(paste(year,'-',month,'-01 00:00:00',sep=''))
+  datee <- as.POSIXct(paste(year,'-',month,'-',day,' 23:59:59',sep=''))
+
+   # Create a time series object:
+  X <- TimeIntervalDataFrame(start =dates,end=datee,
+                                 timezone = "UTC",
+                                 data = data.frame(Y))
+   
+  attr(X,'year') <- trunc(YEARMONTH/100)
+  attr(X,'month') <-  YEARMONTH -  attr(X,'year')*100
+  attr(X,'day') <- rep(NA,n)
+  attr(X,'quality') <- rep(NA,n)
+  attr(X,'StID') <- attr(x,'StID')
+  attr(X,'longitude') <-  attr(x,'longitude')
+  attr(X,'latitude') <- attr(x,'latitude')
+  attr(X,'altitude') <- attr(x,'altitude')
+  attr(X,'country') <- attr(x,'country')
+  attr(X,'source') <- attr(x,'source')
+  attr(X,'URL') <- attr(x,'URL')
+  attr(X,'history') <- c(attr(x,'history'),paste('as.monthly.station:',method))
+  attr(X,'data-stamp') <- c(attr(x,'data-stamp'),date())
+  attr(X,'type') <- 'monthly station data'
+  attr(X,'unit') <- attr(x,'unit') 
+  attr(X,'variable') <- attr(x,'variable')
+  attr(X,'reference') <- attr(x,'reference')
+  attr(X,'info') <- attr(x,'info')
+  invisible(X)
+}
+
+
+as.annual.station <- function(x,method='mean',na.rm=TRUE) {
+  if (attr(x,'type') != 'daily station data') stop("Needs a 'daily station data' object")
+  year <- attr(x,'year')
+  YEAR <- as.numeric(rownames(table(year)))
+  n <- length(YEAR)
+  Y <- rep(NA,n)
+  for (i in 1:n) {
+    ii <- is.element(yearmonth,YEAR[i])
+    eval(parse(text=paste('Y[i] <- ',method,'(x[ii],na.rm=',na.rm,')',sep="")))
+  }
+
+  dates <- as.POSIXct(paste(year,'-01-01 00:00:00',sep=''))
+  datee <- as.POSIXct(paste(year,'-12-31 23:59:59',sep=''))
+
+   # Create a time series object:
+  X <- TimeIntervalDataFrame(start =dates,end=datee,
+                                 timezone = "UTC",
+                                 data = data.frame(Y))
+  attr(X,'year') <- YEAR
+  attr(X,'month') <-  rep(NA,n)
+  attr(X,'day') <- rep(NA,n)
+  attr(X,'quality') <- rep(NA,n)
+  attr(X,'StID') <- attr(x,'StID')
+  attr(X,'longitude') <-  attr(x,'longitude')
+  attr(X,'latitude') <- attr(x,'latitude')
+  attr(X,'altitude') <- attr(x,'altitude')
+  attr(X,'country') <- attr(x,'country')
+  attr(X,'source') <- attr(x,'source')
+  attr(X,'URL') <- attr(x,'URL')
+  attr(X,'history') <- c(attr(x,'history'),paste('as.monthly.station:',method))
+  attr(X,'data-stamp') <- c(attr(x,'data-stamp'),date())
+  attr(X,'type') <- 'annual station data'
+  attr(X,'unit') <- attr(x,'unit') 
+  attr(X,'variable') <- attr(x,'variable')
+  attr(X,'reference') <- attr(x,'reference')
+  attr(X,'info') <- attr(x,'info')
+  invisible(X)
+}
+
+as.anomaly.station <- function(x) {
+}
+
+as.climatology.station <- function(x) {
+}
+
+as.observed.station <- function(x) {
+}
+
+
