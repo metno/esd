@@ -1,4 +1,4 @@
-SSA <- function(x,m,plot=TRUE,main="SSA analysis",sub="",
+SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
                 anom=TRUE,i.eof=1) {
 # After von Storch & Zwiers (1999), Statistical Analysis in Climate Research, p. 312.  
 
@@ -20,7 +20,7 @@ SSA <- function(x,m,plot=TRUE,main="SSA analysis",sub="",
     X[ii,i] <- coredata(x[ii])
   }
 
-   
+  browser() 
   ssa <- svd(X) 
 
   if (sub=="") sub <- paste("Window width=",m)
