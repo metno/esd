@@ -25,9 +25,10 @@ SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
     ii <- i:(Nm-i+1)
     X[ii,i] <- coredata(y[ii])
   }
-
-  uvd <- svd(X) 
+  
+  str(c(X))
   browser()
+  uvd <- svd(X) 
 
   if (sub=="") sub <- paste("Window width=",m)
 
