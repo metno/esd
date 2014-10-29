@@ -6,7 +6,7 @@ SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
     stop('SSA: need a station object or EOF object')
   x.mean <- 0
 
-  if (class(x)[2] == "monthly.station.record") y <- "val" else
+  if (class(x)[2] == "station") y <- "val" else
   if (class(x)[1] == "eof") y <- "PC[,i.eof]"
 
   if (anom) x <- anomaly(y) 
@@ -26,7 +26,8 @@ SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
     X[ii,i] <- coredata(y[ii])
   }
 
-  ssa <- svd(X) 
+  uvd <- svd(X) 
+  browser()
 
   if (sub=="") sub <- paste("Window width=",m)
 
