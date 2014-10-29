@@ -251,13 +251,29 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
             if (is.null(colbar$col))
                 colbar$col <- colscal(n=length(colbar$breaks))
 
+<<<<<<< HEAD
+=======
+<<<<<<< .merge_file_L8Dbut
+            ## reverse the colour for precip
+            if (is.precip(x)) colbar$col <- rev(colbar$col)
+            
+            icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
+=======
+>>>>>>> metno-master
             ## reverse the colour for precip - rwb
             if (is.precip(x)) colbar$col <- rev(colbar$col)
 
             icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
             bg <- colbar$col[icol]
             col <-collbar$col[icol]
+<<<<<<< HEAD
+=======
+>>>>>>> .merge_file_RbpxKt
+>>>>>>> metno-master
 
+            bg <- colbar$col[icol]
+            col <-collbar$col[icol]
+         
             print(range(y))
             
             par(fig=par0$fig)

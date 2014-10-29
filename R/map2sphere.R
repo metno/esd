@@ -196,13 +196,13 @@ map2sphere <- function(x,it=NULL,is=NULL,lonR=NULL,latR=NULL,axiR=0,new=TRUE,
 
 #map2sphere(x)
 
-vec <- function(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,
+vec <- function(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
                 projection='lonlat',lonR=NULL,latR=NULL,axiR=0,...) {
   x <- subset(x,it=it); y <- subset(y,it=it)
   d <- attr(x,'dimensions')
   #print(d); print(dim(x))
-  if (is.null(ix)) ix <- pretty(lon(x),n=150)
-  if (is.null(iy)) iy <- pretty(lat(x),n=80)
+  if (is.null(ix)) ix <- pretty(lon(x),n=nx)
+  if (is.null(iy)) iy <- pretty(lat(x),n=ny)
   #print(c(d[2],d[1]))
   X <- coredata(x); Y <- coredata(y)
   dim(X) <- c(d[1],d[2])
