@@ -28,16 +28,21 @@ SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
   
   str(c(X))
   browser()
-  uvd <- svd(X) 
+  udv <- svd(X) 
 
   if (sub=="") sub <- paste("Window width=",m)
 
-  ssa$m<- m; ssa$Nm <- Nm; ssa$nt <- nt
-  ssa$anom <- anom
-  ssa$param <- x$param
-  ssa$x <- x
+  ssa <- zoo(uvd$v,order.by=index(x)[1:Nm])
+  attr(ssa,'pattern') <- udv$u 
+  attr(ssa,'eigenvalues') <- udv$d
+  attr(ssa,'m') <- m; 
+  attr(ssa,'Nm') <- Nm
+  attr(ssa,'nt') <- nt
+  attr(ssa,'anom') <- anom
+  attr(ssa,'original') <- x
+  attr(ssa,'history') <- history.stamp()
   class(ssa) <- c("ssa",class(x))
-  if (plot) plotSSA(ssa)
+  if (plot) plot(ssa)
   invisible(ssa)
 }
 
