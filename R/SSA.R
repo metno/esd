@@ -6,21 +6,26 @@ SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
     stop('SSA: need a station object or EOF object')
   x.mean <- 0
 
-  if (class(x)[2] == "monthly.station.record") param <- "val" else
-  if (class(x)[1] == "eof") param <- "PC[,i.eof]"
+  if (class(x)[2] == "monthly.station.record") y <- "val" else
+  if (class(x)[1] == "eof") y <- "PC[,i.eof]"
 
-  if (anom) x <- anomaly(x) 
-  nt <- length(x)
+  if (anom) x <- anomaly(y) 
+  nt <- length(y)
+  
+  if (sum(!is.finite(y))>0) {
+  # need to fill in missing data
+    ok <- (1:nt)[is.finite(y)]
+    y <- approx(ok,y[ok],xout=1:nt)$y
+  }
   
   Nm <- nt - m + 1
   X <- matrix(rep(NA,Nm*m),Nm,m)
   #print(dim(X))
   for (i in 1:m) {
     ii <- i:(Nm-i+1)
-    X[ii,i] <- coredata(x[ii])
+    X[ii,i] <- coredata(y[ii])
   }
 
-  browser() 
   ssa <- svd(X) 
 
   if (sub=="") sub <- paste("Window width=",m)
