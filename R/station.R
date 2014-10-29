@@ -1,10 +1,10 @@
-## Author R.E. Benestad
+## Author A. Mezghani
 ## Can return one station or a group of stations. A cluster of regional stations can be
 ## reppresented in terms of PCA, maintaining the spatial consistencies between them.
 ## It is also possible to use a set of station objects to provide multi-information from
 ## one location: e.g. T(2m), precip; mean, variance, skewness, & kurtosis...
 
-## Major updates : A. Mezghani 29.07.2013 ; 29.08.2013 ; 03.09.2013 ; 25.09.2013 ; 18.10.2013
+## Major updates : 29.07.2013 ; 29.08.2013 ; 03.09.2013 ; 25.09.2013 ; 18.10.2013
 ## station.metno(ok) ; station.nordklim(ok) ; station.nacd(ok) ; station.ecad(ok) ; station.narp(in progress) ; station.ghcnm(ok) ; station.ghcnd(almost done - checking for t2m)  
 ## require(zoo)
 
