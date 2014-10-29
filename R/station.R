@@ -18,17 +18,8 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
     }
 }
 
-## Define methods
+## Define method
 station <- function(stid=NULL,...) UseMethod("station")
-
-## station.metnod <- function(...) UseMethod("station.metnod")
-## station.ecad <- function(...) UseMethod("station.ecad")
-## station.ghcnd <- function(...) UseMethod("station.ghcnd")
-## station.nacd <- function(...) UseMethod("station.nacd")
-## station.narp <- function(...) UseMethod("station.narp")
-## station.nordklim <- function(...) UseMethod("station.nordklim")
-## station.metnom <- function(...) UseMethod("station.metnom")
-## station.ghcnm <- function(...) UseMethod("station.ghcnm")
 
 station.ecad <- function(...) {
     ## 
