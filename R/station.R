@@ -1,4 +1,4 @@
-## Author A. Mezghani -
+## Author A. Mezghani git-test
 ## Can return one station or a group of stations. A cluster of regional stations can be
 ## reppresented in terms of PCA, maintaining the spatial consistencies between them.
 ## It is also possible to use a set of station objects to provide multi-information from
