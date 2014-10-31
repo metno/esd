@@ -74,7 +74,7 @@ pca <- PCA(NACD)
 plot(pca)
 naslp <- slp.NCEP(lon=c(-30,40),lat=c(30,70),anomaly=TRUE)
 map(naslp)
-eof <- EOF(naslp,mon=1)
+eof <- EOF(naslp,it='jan')
 nacca <- CCA(pca,eof)
 plot(nacca)
 }
