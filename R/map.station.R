@@ -251,6 +251,11 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
             if (is.null(colbar$col))
                 colbar$col <- colscal(n=length(colbar$breaks))
 
+            ## reverse the colour for precip
+            if (is.precip(x)) colbar$col <- rev(colbar$col)
+            
+            icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
+
             ## reverse the colour for precip - rwb
             if (is.precip(x)) colbar$col <- rev(colbar$col)
 
@@ -258,6 +263,9 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
             bg <- colbar$col[icol]
             col <-collbar$col[icol]
 
+            bg <- colbar$col[icol]
+            col <-collbar$col[icol]
+         
             print(range(y))
             
             par(fig=par0$fig)
