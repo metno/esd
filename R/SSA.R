@@ -27,7 +27,7 @@ SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
   }
   
   str(c(X))
-  browser()
+  ## browser()
   udv <- svd(X) 
 
   if (sub=="") sub <- paste("Window width=",m)
