@@ -36,12 +36,12 @@ summary.station <- function(x) {
   tab <- matrix(rep(NA,12*7),12,7)
   for (i in 1:12) {
     y <- subset(x,it=month.abb[i])
-    #browser()
     z <- as.numeric(summary(coredata(y)))
     attributes(z) <- NULL
     tab[i,1:length(z)] <-z 
   }
-  colnames(tab) <- attr(summary(coredata(x)),'names')
+  attn <- attr(summary(coredata(x)),'names')
+  if (length(attn)==6) colnames(tab) <- c(attn,"NA's") else colnames(tab) <- attn
   rownames(tab) <- month.abb
   tab  
 }
