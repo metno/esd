@@ -261,10 +261,10 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
 
             icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
             bg <- colbar$col[icol]
-            col <-collbar$col[icol]
+            col <-colbar$col[icol]
 
             bg <- colbar$col[icol]
-            col <-collbar$col[icol]
+            col <-colbar$col[icol]
          
             print(range(y))
             
