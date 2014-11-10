@@ -423,8 +423,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
 #    plot(range(lon),range(lat),type="n",xlab="",ylab="",
 #         xlim=xlim,ylim=ylim)
     #browser()
+    par(fig=par0$fig,mar=par0$mar,new=TRUE)
+    plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
+         xlim=xlim,ylim=ylim)                # to sumerimpose.
   }
-
   
   result <- list(x=lon,y=lat,z=x,breaks=breaks)
   invisible(result)

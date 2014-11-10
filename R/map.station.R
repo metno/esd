@@ -41,10 +41,9 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
                          it = NULL,
                          col.subset="darkred",bg.subset="red",cex.subset=1,
                          add.text.subset=FALSE,
-                         colbar=list(col=NULL,breaks=NULL,n=10,type="p",cex=2,h=0.6,
-                             cex.lab=0.6,v=1),
+                         colbar=list(col=NULL,breaks=NULL,n=10,type="p",cex=2,h=0.6,v=1),
                          showall = FALSE, verbose = FALSE , add.text=FALSE,
-                         height=NULL,width=NULL,cex.axis=1,pch=21,
+                         height=NULL,width=NULL,cex.axis=1,cex.lab=0.6,pch=21,
                          FUN=NULL,from=NULL,to=NULL,showaxis=FALSE,xlim = NULL,
                          ylim = NULL,border=FALSE, full.names=FALSE,
                          full.names.subset=FALSE,new=TRUE,text=FALSE, fancy=FALSE,
@@ -259,11 +258,11 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
                 colbar$col <- colscal(n=colbar$n)
             }
             ## reverse the colour for precip
+            #print(is.precip(x))
             if (is.precip(x)) colbar$col <- rev(colbar$col)
             
             # find color index in colbar
             icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
-            ## print(cbind(icol,coredata(y)))
             bg <- colbar$col[icol]
             col <-colbar$col[icol]
 

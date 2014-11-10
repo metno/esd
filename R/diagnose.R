@@ -176,6 +176,10 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   # Counts outside 90% confidence: binomial distrib. & prob.
   stopifnot(!missing(x),inherits(x,"dsensemble"))
   z <- x
+  # Remove the results with no valid data:
+  n <- apply(z,2,FUN=nv)
+  z <- subset(z,is=(1:length(n))[n > 0])
+  
   d <- dim(z)
   t <- index(z)
   y <- attr(x,'station')

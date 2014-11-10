@@ -10,7 +10,7 @@ crossval.ds <- function(x, m=5, ...) {
   # Repeat the regression from DS, but through several iterations with
   # leave-m-out. These are masked by setting them to NA before the
   # regression.
-  print("crossval.ds")
+  #print("crossval.ds")
 
   CALDAT <- attr(x,'calibration_data')
   calstr <- attr(CALDAT,'calibration_expression')
