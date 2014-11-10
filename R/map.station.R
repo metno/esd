@@ -239,32 +239,36 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
                 else
                     y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
             }
-            y.rng <- floor(range(y,na.rm=TRUE))
-
-            if (is.null(colbar$n) | !is.null(colbar$col))
+            ## y.rng <- floor(range(y,na.rm=TRUE))
+            ## browser()
+            
+            if (is.null(colbar$n) & !is.null(colbar$col))
                 colbar$n <- length(colbar$col)
-            else
-                colbar$n <- 10 ## default value
-            
-            colbar$breaks <- pretty(y,colbar$n)
-            
-            if (is.null(colbar$col))
-                colbar$col <- colscal(n=length(colbar$breaks))
+            else if (!is.null(colbar$breaks)) {              
+                colbar$n <- length(colbar$breaks)
+                colbar$col <- colscal(n=colbar$n)
+            }
+            else { ## set to the default values
+                colbar$n <- 10 
+            }   
 
+            if (is.null(colbar$breaks)) {
+                colbar$breaks <- pretty(y,colbar$n)
+                # update colbar$n and colbar$col according to pretty
+                colbar$n <- length(colbar$breaks)
+                colbar$col <- colscal(n=colbar$n)
+            }
             ## reverse the colour for precip
             if (is.precip(x)) colbar$col <- rev(colbar$col)
             
+            # find color index in colbar
             icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
-
-            ## reverse the colour for precip - rwb
-            if (is.precip(x)) colbar$col <- rev(colbar$col)
-
-            icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
+            ## print(cbind(icol,coredata(y)))
             bg <- colbar$col[icol]
-            col <-collbar$col[icol]
+            col <-colbar$col[icol]
 
             bg <- colbar$col[icol]
-            col <-collbar$col[icol]
+            col <-colbar$col[icol]
          
             print(range(y))
             
@@ -280,13 +284,15 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
                    cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)
             
             if (!is.null(highlight)) {
-                points(highlight$longitude, highlight$latitude, pch = 21 , col = col.subset,bg=bg.subset, cex = cex.subset,...)
+                points(highlight$longitude, highlight$latitude, pch = 21 , col = col.subset,
+                       bg=bg.subset, cex = cex.subset,...)
 
             }
             
             ## add color bar
             if (fancy)
-                col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,col=colbar$col,cex=2,cex.lab=colbar$cex.lab,type="p",verbose=FALSE,vl=1,border=FALSE)
+                col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,col=colbar$col,
+                        cex=2,cex.lab=colbar$cex.lab,type="p",verbose=FALSE,vl=1,border=FALSE)
             else
                 image.plot(horizontal = TRUE, legend.only = T, zlim = range(colbar$breaks),
                            col = colbar$col, legend.width = 1, axis.args = list(cex.axis = 0.8),
