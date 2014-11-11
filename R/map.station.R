@@ -92,19 +92,19 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
         
         ## setting default values for the color bar if not specified
                                         #if (is.null(colbar)) {
-        if (length(col) > 1) {
-            if (is.null(FUN)) {
-                print("Color vector length is higher than 1, only the first value is used")
-            }
-            else if (is.null(colbar$col)) {
-                colbar$n <- 10
-                colbar$col <- colscal(n=colbar$n)
-            }
-            else {
-                colbar$col <- col
-                colbar$n.breaks <- length(col)
-            }
-        } else col <- col[1]
+        #if (length(col) > 1) {
+        #    if (is.null(FUN)) {
+        #        print("Color vector length is higher than 1, only the first value is used")
+        #    }
+        #    else if (is.null(colbar$col)) {
+        #        colbar$n <- 10
+        #        colbar$col <- colscal(n=colbar$n)
+        #    }
+        #    else {
+        #        colbar$col <- col
+        #        colbar$n.breaks <- length(col)
+        #    }
+        #} else col <- col[1]
         
         ##load("~/esd/data/geoborders.rda")
         data("geoborders", envir = environment())
@@ -183,11 +183,17 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
                     ylim <- floor(range(highlight$latitude, na.rm = TRUE))
                 else
                     ylim <-floor(range(highlight$latitude, na.rm = TRUE) + c(-5,5))  # +/- 5 degrees
+
+        ## scaling factor to apply on cex ...
+        if (!inherits(x,"stationmeta") & !is.null(attr(x,'na')))
+            scale <- attr(x,'na')
+        else
+            scale <- 1
         
         if (!is.null(highlight))
-            plot(highlight$longitude, highlight$latitude, pch = pch, col = col[1], bg = bg.all,cex = cex, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
+            plot(highlight$longitude, highlight$latitude, pch = pch, col = col[1], bg = bg.all,cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
         else if (!is.null(ss))
-            plot(ss$longitude, ss$latitude, pch = pch, col = col[1], bg = bg[1], cex = cex, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes = FALSE , frame.plot = FALSE)
+            plot(ss$longitude, ss$latitude, pch = pch, col = col[1], bg = bg[1], cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes = FALSE , frame.plot = FALSE)
 
         
         if (showall) {
@@ -239,8 +245,7 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
                     y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
             }
             ## y.rng <- floor(range(y,na.rm=TRUE))
-            ## browser()
-            
+            ## browser()           
             if (is.null(colbar$n) & !is.null(colbar$col))
                 colbar$n <- length(colbar$col)
             else if (!is.null(colbar$breaks)) {              
@@ -274,7 +279,7 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
             par(fig=par0$fig)
             
             ##scale <- apply(y,2,function(x) sum(!is.na(x))/length(x))
-            if (!inherits(x,"stationmeta") & !is.null(attr(x,'na')))
+            if (!is.null(attr(x,'na'))) ## (!inherits(x,"stationmeta") & 
                 scale <- attr(x,'na')
             else
                 scale <- 1
@@ -362,12 +367,28 @@ col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,t
     par(fig=par0$fig)
 }
 
-trend <- function(x,ns.omit=TRUE,alpha=0.1) {
+#trend <- function(x,ns.omit=TRUE,alpha=0.1) {
+#    t <- 1:length(x)
+#    model <- lm(x ~ t)
+#    y <- c(model$coefficients[2]*10)
+#    if (ns.omit) if (anova(model)$Pr[1] > alpha) y <- NA
+#    names(y) <- c("coefficients")
+#    return(y)
+#}
+
+trend.coefficient <- function(x,ns.omit=TRUE,alpha=0.1) {
     t <- 1:length(x)
     model <- lm(x ~ t)
     y <- c(model$coefficients[2]*10)
-    if (ns.omit) if (anova(model)$Pr[1] > alpha) y <- NA
-    names(y) <- c("coefficients")
+    names(y) <- c("trend.coefficients")
+    return(y)
+}
+
+trend.pvalue <- function(x,ns.omit=TRUE,alpha=0.1) {
+    t <- 1:length(x)
+    model <- lm(x ~ t)
+    y <- anova(model)$Pr[1]
+    names(y) <- c("trend.pvalue")
     return(y)
 }
 
