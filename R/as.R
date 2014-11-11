@@ -81,7 +81,7 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'method') <- method
   #attr(y,'call') <- match.call()
   attr(y,'history') <- history.stamp(x)
-  dt <- as.numeric(diff(index(x))[1])
+  dt <- as.numeric(levels(factor(diff(index(yy)))))
   if (dt==1) tscale <- 'day' else
   if ( ((dt>=28) & (dt <=31)) |
        (dt < 0.1) ) tscale <- 'month' else
