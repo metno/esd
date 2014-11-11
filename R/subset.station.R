@@ -214,6 +214,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #else
     #    ii <- 1:length(t)
     
+    browser()
     y <- x[ii,is]
 
     class(x) <- cls; class(y) <- cls
