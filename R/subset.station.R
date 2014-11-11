@@ -244,7 +244,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(attr(x,'type'))==length(is)) attr(y,'type') <- attr(x,'type')[is]
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
-    attr(y,'history') <- history.stamp(y)
+    attr(y,'history') <- history.stamp(x)
     return(y)
 }
  
