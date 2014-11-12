@@ -44,7 +44,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## cntr - selection by country
 
     nval <- function(x) sum(is.finite(x))
-    
+    browser()
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
     d <- dim(x)
@@ -82,12 +82,12 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 it <- seq(as.Date(it[1]),as.Date(it[2]),by='day')
             else if (inherits(x,"annual")) ## it is a year
                 it <- seq(as.Date(it[1]),as.Date(it[2]),by='year')
-          } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-                if (min(it) > 1500) ## it is a year
-                    it <- seq(it[1],it[2],by=1)
-                #print("HERE"); print(it)
-            }
-      }
+        } else if ((class(it)=="numeric") | (class(it)=="integer")) {
+            if (min(it) > 1500) ## it is a year
+                it <- seq(it[1],it[2],by=1)
+            ##print("HERE"); print(it)
+        }
+    }
   
     ## browser()
     ## get the subset indices in ii
@@ -138,17 +138,19 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       n <- dim(x)[2]
       selx <- rep(TRUE,n); sely <- selx; selz <- selx
       selc <- selx; seli <- selx; selm <- selx; salt <- selx
-      selp <- selx; selF <- selx
+      selp <- selx; selF <- selx ; sell <- selx
       nms <- names(is)
-      ix <- grep('lon',tolower(substr(nms,1,3)))
-      iy <- grep('lat',tolower(substr(nms,1,3)))
+      il <- grep('loc',tolower(nms))
+      ix <- grep('lon',tolower(nms))
+      iy <- grep('lat',tolower(nms))
       #print(nms); print(c(ix,iy))
-      iz <- grep('alt',tolower(substr(nms,1,3)))
-      ic <- grep('cntr',tolower(substr(nms,1,3)))
-      im <- grep('nmin',tolower(substr(nms,1,3)))
-      ip <- grep('param',tolower(substr(nms,1,3)))
-      id <- grep('stid',tolower(substr(nms,1,3)))
-      iF <- grep('FUN',substr(nms,1,3))
+      iz <- grep('alt',tolower(nms))
+      ic <- grep('cntr',tolower(nms))
+      im <- grep('nmin',tolower(nms))
+      ip <- grep('param',tolower(nms))
+      id <- grep('stid',tolower(nms))
+      iF <- grep('FUN',nms)
+      if (length(il)>0) sloc <- is[[il]] else sloc <- NULL
       if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
       if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
       #print(slon); print(range(lon(x)))
@@ -159,6 +161,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (length(id)>0) sstid <- is[[id]] else sstid <- NULL
       if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
       #print(slat); print(range(lat(x)))
+      if (length(sloc)>0) sell <- is.element(tolower(sloc(x)),sloc)
       if (length(slon)==2) selx <- (lon(x) >= min(slon)) & (lon(x) <= max(slon))
       if (length(slat)==2) sely <- (lat(x) >= min(slat)) & (lat(x) <= max(slat))
       #browser()
@@ -174,7 +177,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (length(sstid)>0) seli <- is.element(stid(x),sstid)
       if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...
       ## browser()
-      is <- selx & sely & selz & selc & seli & selm & selp & selF
+      is <- sell & selx & sely & selz & selc & seli & selm & selp & selF
       #print(c(length(is),sum(is),sum(selx),sum(sely)))
     }
     
