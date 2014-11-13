@@ -35,7 +35,7 @@ test.map.station <- function(save=FALSE) {
 map.stationmeta <- function(...)
     map.station(...)
 
-map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "alt",
+map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
                          is=list(x=NULL,stid = NULL, param = NULL, lon = NULL,
                              lat = NULL,alt = NULL, cntr = NULL, src = NULL, nmin = NULL),
                          it = NULL,
@@ -269,10 +269,10 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
             # find color index in colbar
             icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
             bg <- colbar$col[icol]
-            col <-colbar$col[icol]
+            if (is.null(col)) col <- bg
 
             bg <- colbar$col[icol]
-            col <-colbar$col[icol]
+            if (is.null(col)) col <-bg
          
             print(range(y))
             
@@ -284,7 +284,7 @@ map.station <- function (x = NULL,col = "darkgreen",bg="green",cex=.8, zexpr = "
             else
                 scale <- 1
             
-            points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=bg,
+            points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=col,
                    cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)
             
             if (!is.null(highlight)) {
