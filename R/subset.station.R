@@ -44,7 +44,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## cntr - selection by country
 
     nval <- function(x) sum(is.finite(x))
-    browser()
+    #browser()
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
     d <- dim(x)
