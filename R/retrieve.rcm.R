@@ -19,7 +19,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL) {
   # Extract only the time of interest
   if (!is.null(it)) {
     if (is.character(it))
-    
+    #...
   } else it <- NA
   
   time <- ncvar_get(ncold,varid='time')
