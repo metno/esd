@@ -18,7 +18,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL) {
   } else {ix <- NA; iy <- NA}
   # Extract only the time of interest
   if (!is.null(it)) {
-    if (is.character(it))
+    if (is.character(it)) print('not finished...')
     #...
   } else it <- NA
   
