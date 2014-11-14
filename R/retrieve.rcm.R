@@ -10,11 +10,13 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL) {
   longname <- ncatt_get( ncold, varid=param, attname='long_name')
   lat <- c(ncvar_get(ncold,varid='lat'))
   lon <- c(ncvar_get(ncold,varid='lon'))
+  # Extract only the region of interest:
   if (!is.null(is)) {
     nms <- names(is)
     ix <- grep("lon", tolower(substr(nms, 1, 3)))
     iy <- grep("lat", tolower(substr(nms, 1, 3)))
   } else {ix <- NA; iy <- NA}
+  # Extract only the time of interest
   if (!is.null(it)) {
     if (is.character(it))
     
@@ -31,7 +33,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL) {
   RCM <- zoo(t(rcm)*scal,order.by=time)
   attr(RCM,'longitude') <- lon
   attr(RCM,'latitude') <- lat
-  attr(RCM,'altitude) <- rep(NA,length(lon))
+  attr(RCM,'altitude') <- rep(NA,length(lon))
   attr(RCM,'variable') <- param
   attr(RCM,'unit') <- xunit
   attr(RCM,'source') <- fname
