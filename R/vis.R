@@ -131,7 +131,7 @@ colbar <- function(scale,col,fig=c(0.15,0.2,0.15,0.3)) {
 
 # Show the cumulative sum of station value from January 1st. Use
 # different colours for different year.
-cumugram <- function(x,it=NULL,...) {
+cumugram <- function(x,it=NULL,prog=FALSE,...) {
   stopifnot(!missing(x),inherits(x,"station"))
   
   #print("cumugram")
@@ -153,9 +153,12 @@ cumugram <- function(x,it=NULL,...) {
   ylim <- c(NA,NA)
 
   #print('Find the y-range')
+  y.rest <- rep(NA,ny)
   for (i in 1:ny) {
     y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
+    y.rest[i] <- mean(coredata(window(x,start=as.Date(paste(yrs[i],format(Sys.time(),'-%m-%d'),sep='')),
+                                      end=as.Date(paste(yrs[i],'-12-31',sep='')))))
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
     z <- cumsum(coredata(y))/1:length(y)
     ok <- is.finite(z)
@@ -197,6 +200,20 @@ cumugram <- function(x,it=NULL,...) {
     z <- cumsum(coredata(y))/1:length(y)   
     lines(t,z,lwd=5,col="black")
     lines(t,z,lwd=2,col=col[i])
+  }
+  tn <- t[length(t)]; 
+  tm <- julian(as.Date('1900-12-31')) - julian(as.Date('1900-01-01'))
+  zn <- coredata(z[length(z)])
+  zp <- length(z)/n * zn + (1-length(z))/n * quantile(y.rest,0.95,na.rm=TRUE)
+  zm <- length(z)/n * zn + (1-length(z))/n * quantile(y.rest,0.05,na.rm=TRUE)
+  zz <- length(z)/n * zn + (1-length(z))/n * mean(y.rest,na.rm=TRUE)
+  if (prog) {
+    polygon(c(tn,rep(tm,2),tn),c(zn,zp,zm,zn),
+            col=rgb(0.5,0.5,0.5,0.1),border=rgb(0.5,0.5,0.5,0.2),lwd=2)
+    lines(c(tn,tm),c(zn,zz),col=rgb(0.5,0.5,0.5,0.1),lwd=3)
+    text(tm,zp,round(zp,1),pos=4,cex=0.5)
+    text(tm,zm,round(zm,1),pos=4,cex=0.5)
+    text(tm,zz,round(zz,1),pos=4,cex=0.75)
   }
 
   if (varid(x)!='precip') 
