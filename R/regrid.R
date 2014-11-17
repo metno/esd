@@ -425,7 +425,7 @@ regrid.station <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   }
   
   #greenwich <- attr(x,'greenwich')
-  if (verbose) print(paste('greenwich=',greenwich))
+  #if (verbose) print(paste('greenwich=',greenwich))
   # REB 13.05.2014
   if ( (min(lon.new) < 0) & (max(lon.new) <= 180) ) x <- g2dl(x,greenwich=FALSE) else
   if ( (min(lon.new) > 0) & (max(lon.new) <= 360) ) x <- g2dl(x,greenwich=FALSE) else
