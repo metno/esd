@@ -9,7 +9,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   tunit <- tolower(substr(tunit,1,a-2))
   tatt <- ncatt_get( ncold, varid=param )
   if (verbose) print(names(tatt))
-  tunit <- tatt[[is.element(substr(names(tatt)),'unit')]]
+  tunit <- tatt[[is.element(substr(names(tatt,1,4)),'unit')]]
   if (verbose) print(paste('unit: ',xunit,'; time unit: ',tunit,'; time origin: ',torg,sep=''))
   longname <- ncatt_get( ncold, varid=param, attname='long_name')
   lat <- c(ncvar_get(ncold,varid='lat'))
