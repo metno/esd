@@ -287,7 +287,7 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   
   # The coordinates which to grid: lon.new & lat.new
   if ( (is.data.frame(is)) | (is.list(is)) ) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
-  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof')| (inherits(is,'pca')) ) {
+  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof'))| (inherits(is,'pca')) ) {
     lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
   }
   
@@ -420,7 +420,7 @@ regrid.station <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   
   # The coordinates which to grid: lon.new & lat.new
   if ( (is.data.frame(is)) | (is.list(is)) ) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
-  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof') | (inherits(is,'pca')) ) {
+  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof')) | (inherits(is,'pca')) ) {
     lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
   }
   
