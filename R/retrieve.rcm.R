@@ -50,9 +50,12 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       if (lat.rng[1] < min(lat[1,])) lat.rng[1] <- min(lat[1,])
       if (lat.rng[2] > max(lat[1,])) lat.rng[2] <- max(lat[1,])
       suby <- (lat.rng[1] <= lat[mx,]) & (lat.rng[2] >= lat[mx,])
+      print(lat[mx,suby])
       starty <- min( (1:length(lat[1,]))[suby] )
       county <- sum(suby)
-      if (verbose) print(paste('latitudes:',min(is[[iy]]),max(is[[iy]]),'start=',starty,'count=',county))
+      if (verbose) print(paste('latitudes:',min(is[[iy]]),'-',max(is[[iy]]),
+                               'extracted:',min(lat[,suby]),'-',max(lat[,suby]),
+                               'start=',starty,'count=',county))
     } else {starty <- 1; county <- length(lat[1,]); iy <- NA}
   
     ix <- grep("lon", tolower(substr(nms, 1, 3)))
@@ -65,7 +68,9 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       subx <- (lon.rng[1] <= lon[,my]) & (lon.rng[2] >= lon[,my])
       startx <- min( (1:length(lon[,my]))[subx] )
       countx <- sum(subx)
-      if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),'start=',startx,'count=',countx))
+      if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),
+                               'extracted:',min(lon[subx,]),'-',max(lon[subx,]),
+                               'start=',startx,'count=',countx))
     } else {startx <- 1; countx <- length(lon[,1]); ix <- NA}
   } else {
     startx <- 1; countx <- length(lon[,1]); 
