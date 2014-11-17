@@ -44,7 +44,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## cntr - selection by country
 
     nval <- function(x) sum(is.finite(x))
-    browser()
+    #browser()
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
     d <- dim(x)
@@ -228,6 +228,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## mostattributes(y) <- attributes(x)
     attr(y,'longitude') <- attr(x,'longitude')[is]
     attr(y,'latitude') <- attr(x,'latitude')[is]
+    if (!is.logical(is)) is <- is.element(1:d[2],is)
     if (length(alt(x))==length(is)) attr(y,'altitude') <- attr(x,'altitude')[is]
     if (length(cntr(x))==length(is)) attr(y,'country') <- attr(x,'country')[is]
     if (length(src(x))==length(is)) attr(y,'source') <- attr(x,'source')[is]

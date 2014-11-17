@@ -2,9 +2,9 @@
 # This function adds a stamp in the history of x
 # with 'sys.call', 'date()', and 'src (source)
 
-history.stamp <-function(x,y=NULL,...) UseMethod("history.stamp")
+history.stamp <-function(x=NULL,y=NULL,...) UseMethod("history.stamp")
 
-history.stamp.default <- function(x,y=NULL) {
+history.stamp.default <- function(x=NULL,y=NULL) {
 #  if (!is.null(attr(x,'source')))
 #    src <- attr(x,'source') else
 #    src <- "unknown source"
@@ -12,6 +12,7 @@ history.stamp.default <- function(x,y=NULL) {
              esd.version=paste(sessionInfo()$otherPkgs$esd$Package,
                                sessionInfo()$otherPkgs$esd$Version,sep="_"),
              platform=sessionInfo()$platform)
+  if (is.null(x)) x <- 0
   if (!is.null(attr(x,'history'))) {
     history <- attr(x,'history')
     call <- c(sys.call(sys.parent(n = 1)),history$call)
