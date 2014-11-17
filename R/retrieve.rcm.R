@@ -29,7 +29,6 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   lat <- ncvar_get(ncold,varid='lat')
   lon <- ncvar_get(ncold,varid='lon')
   if (verbose) print('region: ',min(lon),'-',max(lon),'E /',min(lat),'-',max(lat))
-  browser()
   
   # Extract only the region of interest: only read the needed data
   if (!is.null(is)) {
@@ -41,12 +40,14 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       startx <- min( (1:length(lon[,my]))[ix >= lon[,my]] )
       stoptx <- max( (1:length(lon[,my]))[ix <= lon[,my]] )
       countx <- stoptx - startx + 1
+      if (verbose) print('longitudes:',min(ix),max(ix),'start=',startx,'count=',countx)
     } else {startx <- 1; countx <- length(lon[,1]); ix <- NA}
     iy <- grep("lat", tolower(substr(nms, 1, 3)))
     if (length(iy)>0) {
       starty <- min( (1:length(lat[1,]))[iy >= lat[1,]] )
       stopty <- max( (1:length(lat[1,]))[iy <= lat[1,]] )
       county <- stopty - starty + 1
+      if (verbose) print('latitudes:',min(iy),max(iy),'start=',starty,'count=',county)
     } else {starty <- 1; county <- length(lat[1,]); iy <- NA}
   } else {
     startx <- 1; countx <- length(lon[,1]); 
