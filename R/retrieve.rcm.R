@@ -31,7 +31,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   lonid <- vnames[is.element(tolower(substr(vnames,1,3)),'lon')]
   lat <- ncvar_get(ncold,varid=latid)
   lon <- ncvar_get(ncold,varid=lonid)
-  str(lat); str(lon)
+  d <- dim(lat)
+  #str(lat); str(lon)
   if (verbose) print(paste('region: ',min(lon),'-',max(lon),'E /',min(lat),'-',max(lat)))
   
   # Extract only the region of interest: only read the needed data
@@ -46,9 +47,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     iy <- grep("lat", tolower(substr(nms, 1, 3)))
     if (length(iy)>0) {
       lat.rng <- range(is[[iy]])
-      mx <- trunc(length(lon[,1])/2)
-      if (lat.rng[1] < min(lat[1,])) lat.rng[1] <- min(lat[1,])
-      if (lat.rng[2] > max(lat[1,])) lat.rng[2] <- max(lat[1,])
+      mx <- trunc(d[1]/2)  # use the middle of the region for defining latitude range
       suby <- (lat.rng[1] <= lat[mx,]) & (lat.rng[2] >= lat[mx,])
       print(lat[mx,suby])
       starty <- min( (1:length(lat[1,]))[suby] )
@@ -56,25 +55,23 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       if (verbose) print(paste('latitudes:',min(is[[iy]]),'-',max(is[[iy]]),
                                'extracted:',min(lat[,suby]),'-',max(lat[,suby]),
                                'start=',starty,'count=',county))
-    } else {starty <- 1; county <- length(lat[1,]); iy <- NA}
+    } else {starty <- 1; county <- d[2]; iy <- NA}
   
     ix <- grep("lon", tolower(substr(nms, 1, 3)))
     if (length(ix)>0) {
     # The coordinates lon and lat are [X,Y] maxtrices:
-      my <- trunc(length(lat[1,])/2)
+      my <- trunc(d[2]/2) # use the middle of the region for defining longitude range
       lon.rng <- range(is[[ix]]) 
-      if (lon.rng[1] < min(lon[,my])) lon.rng[1] <- min(lon[,my])
-      if (lon.rng[2] > max(lon[,my])) lon.rng[2] <- max(lon[,my])
       subx <- (lon.rng[1] <= lon[,my]) & (lon.rng[2] >= lon[,my])
       startx <- min( (1:length(lon[,my]))[subx] )
       countx <- sum(subx)
       if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),
                                'extracted:',min(lon[subx,]),'-',max(lon[subx,]),
                                'start=',startx,'count=',countx))
-    } else {startx <- 1; countx <- length(lon[,1]); ix <- NA}
+    } else {startx <- 1; countx <- d[1]; ix <- NA}
   } else {
-    startx <- 1; countx <- length(lon[,1]); 
-    starty <- 1; county <- length(lat[1,]); 
+    startx <- 1; countx <- d[1]; 
+    starty <- 1; county <- d[2]; 
     ix <- NA; iy <- NA
   }
   
