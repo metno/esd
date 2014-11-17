@@ -5,12 +5,12 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   
   # Extract the time information: unit and time origin
   tatt <- ncatt_get( ncold, varid='time' )
-  if (verbose) print(names(tatt))
+  #if (verbose) print(names(tatt))
   itunit <- (1:length(names(tatt)))[is.element(substr(names(tatt),1,4),'unit')]
   tunit <- tatt[[itunit]]
   a <- regexpr("since",tunit)
   torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
-  tunit <- tolower(substr(tunit,1,a-2))
+  tunit <- tolower(substr(tunit,1,a-2))[1]
   
   # Extract unit etc for the parameter
   vatt <- ncatt_get( ncold, varid=param )
