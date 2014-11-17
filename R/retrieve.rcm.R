@@ -30,14 +30,16 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
     nms <- names(is)
     ix <- grep("lon", tolower(substr(nms, 1, 3)))
     if (length(ix)>0) {
-      startx <- min( (1:length(lon))[ix >= lon] )
-      stoptx <- max( (1:length(lon))[ix <= lon] )
+    # The coordinates lon and lat are [X,Y] maxtrices:
+      my <- (lat[1,] == min(lat))
+      startx <- min( (1:length(lon[,my]))[ix >= lon[,my]] )
+      stoptx <- max( (1:length(lon[,my]))[ix <= lon[,my]] )
       countx <- stoptx - startx + 1
     } else {startx <- NA; countx <- NA; ix <- NA}
     iy <- grep("lat", tolower(substr(nms, 1, 3)))
     if (length(iy)>0) {
-      starty <- min( (1:length(lat))[iy >= lat] )
-      stopty <- max( (1:length(lat))[iy <= lat] )
+      starty <- min( (1:length(lat[1,]))[iy >= lat[1,]] )
+      stopty <- max( (1:length(lat[1,]))[iy <= lat[1,]] )
       county <- stopty - starty + 1
     } else {starty <- NA; county <- NA; iy <- NA}
   } else {
@@ -49,7 +51,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   # Extract only the time of interest: assume only an interval
   time <- ncvar_get(ncold,varid='time')
   print(tunit); browser()
-  time <- switch(str(tunit,1,3),'day'=as.Date(time+julian(as.Date(torg))),
+  time <- switch(substr(tunit,1,3),'day'=as.Date(time+julian(as.Date(torg))),
        'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
   if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
