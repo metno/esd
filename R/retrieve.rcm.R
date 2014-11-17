@@ -43,8 +43,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
       county <- stopty - starty + 1
     } else {starty <- 1; county <- length(lat[1,]); iy <- NA}
   } else {
-    startx <- NA; countx <- NA; 
-    starty <- NA; county <- NA; 
+    startx <- 1; countx <- length(lon[,1]); 
+    starty <- 1; county <- length(lat[1,]); 
     ix <- NA; iy <- NA
   }
   
