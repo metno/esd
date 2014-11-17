@@ -1,9 +1,18 @@
 \name{retrieve}
 \alias{retrieve}
+\alias{retrieve.default}
+\alias{retrieve.ncdf}
+\alias{retrieve.ncdf4}
+\alias{retrieve.rcm}
+\alias{summary.ncdf4}
+\alias{check.ncdf4}
+\alias{check.ncdf}
 \title{Retrieve field data from a netcdf file.}
 \description{Retrieve data from a netcdf file and return a zoo field object with attributes. 
   \code{\link{retrieve}}.
-}
+  
+  While \code{retrieve} assumes data on a regular lon-lat grid, \code{retrieve.rcm} reads data on irregular (rotated) grid, typically output from RCMs.
+}.
 \usage{
 %retrieve.default(...)
 retrieve.default(ncfile,...)
@@ -15,7 +24,7 @@ retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
                lon = NULL, lat = NULL, lev = NULL, time = NULL,
                miss2na = TRUE, greenwich = TRUE , ncdf.check = TRUE,
                verbose = FALSE , plot = TRUE) 
-
+retrieve.rcm(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE)
 summary.ncdf4(ncfile, verbose=FALSE)
 
 check.ncdf4(ncid = ncid, param = "auto" , verbose = FALSE)
