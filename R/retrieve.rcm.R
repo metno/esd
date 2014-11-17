@@ -22,8 +22,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   longname <- ncatt_get( ncold, varid=param, attname='long_name')
   
   # Extract the spatial coordinates:
-  lat <- c(ncvar_get(ncold,varid='lat'))
-  lon <- c(ncvar_get(ncold,varid='lon'))
+  lat <- ncvar_get(ncold,varid='lat')
+  lon <- ncvar_get(ncold,varid='lon')
   
   # Extract only the region of interest: only read the needed data
   if (!is.null(is)) {
@@ -63,6 +63,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
     startt <- min(it); countt <- max(it) - startt + 1
     }
   } else {startt <- 1; countt <- length(time); it <- NA}
+  time <- time[startt:(startt+countt-1)]
 
   start <- c(startx,starty,startt)
   count <- c(countx,county,countt)
@@ -73,8 +74,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   d <- dim(rcm)
   dim(rcm) <- c(d[1]*d[2],d[3])
   RCM <- zoo(t(rcm)*scal,order.by=time)
-  attr(RCM,'longitude') <- lon
-  attr(RCM,'latitude') <- lat
+  attr(RCM,'longitude') <- c(lon[startx:(startx+countx-1),starty:(starty+county-1)])
+  attr(RCM,'latitude') <- c(lat[startx:(startx+countx-1),starty:(starty+county-1)])
   attr(RCM,'altitude') <- rep(NA,length(lon))
   attr(RCM,'variable') <- param
   attr(RCM,'unit') <- vunit
