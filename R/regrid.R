@@ -416,7 +416,7 @@ regrid.station <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   }
   
   #print("regrid.field ")
-  x <- sp2np(x)
+  #x <- sp2np(x)
   
   # The coordinates which to grid: lon.new & lat.new
   if ( (is.data.frame(is)) | (is.list(is)) ) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
@@ -424,7 +424,7 @@ regrid.station <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
     lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
   }
   
-  greenwich <- attr(x,'greenwich')
+  #greenwich <- attr(x,'greenwich')
   if (verbose) print(paste('greenwich=',greenwich))
   # REB 13.05.2014
   if ( (min(lon.new) < 0) & (max(lon.new) <= 180) ) x <- g2dl(x,greenwich=FALSE) else
@@ -500,7 +500,7 @@ regrid.station <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   d <- dim(x)
   X <- x; 
   D <- c(length(lon.new),length(lat.new))
-  y <- matrix(rep(NA,D[1]*D[2]*d[1]),D[1]*D[2],d[1])
+  y <- matrix(rep(NA,D[1]*D[2]*D*d[1]),D[1]*D[2],d[1])
 
   #print(dim(cbind(beta,attr(beta,'index'))))
   
