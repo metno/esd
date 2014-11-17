@@ -54,11 +54,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       county <- sum(suby)
       if (verbose) print(paste('latitudes:',min(is[[iy]]),max(is[[iy]]),'start=',starty,'count=',county))
     } else {starty <- 1; county <- length(lat[1,]); iy <- NA}
-  } else {
-    startx <- 1; countx <- length(lon[,1]); 
-    starty <- 1; county <- length(lat[1,]); 
-    ix <- NA; iy <- NA
-  }
+  
     ix <- grep("lon", tolower(substr(nms, 1, 3)))
     if (length(ix)>0) {
     # The coordinates lon and lat are [X,Y] maxtrices:
@@ -71,7 +67,11 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       countx <- sum(subx)
       if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),'start=',startx,'count=',countx))
     } else {startx <- 1; countx <- length(lon[,1]); ix <- NA}
-
+  } else {
+    startx <- 1; countx <- length(lon[,1]); 
+    starty <- 1; county <- length(lat[1,]); 
+    ix <- NA; iy <- NA
+  }
   
   # Extract only the time of interest: assume only an interval
   time <- ncvar_get(ncold,varid='time')
