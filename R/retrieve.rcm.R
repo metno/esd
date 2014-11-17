@@ -44,6 +44,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL) {
       stoptt <- max( (1:length(time))[it <= year(time)] )
     } else if ( (max(it) <= length(time)) & min(it >= 1) ) {
     startt <- min(it); countt <- max(it) - startt + 1
+    }
   } else {startt <- NA; countt <- NA; it <- NA}
 
   start <- c(startx,starty,startt)
