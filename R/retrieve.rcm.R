@@ -1,5 +1,5 @@
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
-retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
+retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   if (verbose) print(paste('retrieve.rcm',ncfile))
   ncold <- nc_open(ncfile)
   
