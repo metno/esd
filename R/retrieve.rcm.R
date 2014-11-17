@@ -2,19 +2,25 @@
 retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   if (verbose) print(paste('retrieve.rcm',ncfile))
   ncold <- nc_open(ncfile)
+  
   # Extract the time information: unit and time origin
-  tunit <- ncatt_get( ncold, varid='time', attname='units')
+  tatt <- ncatt_get( ncold, varid='time' )
+  if (verbose) print(names(tatt))
+  itunit <- (1:length(names(tatt)))[is.element(substr(names(tatt),1,4),'unit')]
+  tunit <- tatt[[itunit]]
   a <- regexpr("since",tunit)
   torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
   tunit <- tolower(substr(tunit,1,a-2))
-  tatt <- ncatt_get( ncold, varid=param )
-  if (verbose) print(names(tatt))
-  str(tatt)
-  itunit <- (1:length(names(tatt)))[is.element(substr(names(tatt),1,4),'unit')]
-  print(itunit)
-  tunit <- tatt[[itunit]]
-  if (verbose) print(paste('unit: ',xunit,'; time unit: ',tunit,'; time origin: ',torg,sep=''))
+  
+  # Extract unit etc for the parameter
+  vatt <- ncatt_get( ncold, varid=param )
+  if (verbose) print(names(vatt))
+  ivunit <- (1:length(names(vatt)))[is.element(substr(names(vatt),1,4),'unit')]
+  vunit <- vatt[[ivunit]]
+  if (verbose) print(paste('unit: ',vunit,'; time unit: ',tunit,'; time origin: ',torg,sep=''))
   longname <- ncatt_get( ncold, varid=param, attname='long_name')
+  
+  # Extract the spatial coordinates:
   lat <- c(ncvar_get(ncold,varid='lat'))
   lon <- c(ncvar_get(ncold,varid='lon'))
   
@@ -67,7 +73,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   attr(RCM,'latitude') <- lat
   attr(RCM,'altitude') <- rep(NA,length(lon))
   attr(RCM,'variable') <- param
-  attr(RCM,'unit') <- xunit
+  attr(RCM,'unit') <- vunit
   attr(RCM,'source') <- fname
   attr(RCM,'location') <- rep(NA,length(lon))
   attr(RCM,'longname') <- longname
