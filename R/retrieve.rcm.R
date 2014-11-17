@@ -10,21 +10,45 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL) {
   longname <- ncatt_get( ncold, varid=param, attname='long_name')
   lat <- c(ncvar_get(ncold,varid='lat'))
   lon <- c(ncvar_get(ncold,varid='lon'))
-  # Extract only the region of interest:
+  
+  # Extract only the region of interest: only read the needed data
   if (!is.null(is)) {
     nms <- names(is)
     ix <- grep("lon", tolower(substr(nms, 1, 3)))
+    if (length(ix)>0) {
+      startx <- min( (1:length(lon))[ix >= lon] )
+      stoptx <- max( (1:length(lon))[ix <= lon] )
+      countx <- stoptx - startx + 1
+    } else {startx <- NA; countx <- NA; ix <- NA}
     iy <- grep("lat", tolower(substr(nms, 1, 3)))
-  } else {ix <- NA; iy <- NA}
-  # Extract only the time of interest
-  if (!is.null(it)) {
-    if (is.character(it)) print('not finished...')
-    #...
-  } else it <- NA
+    if (length(iy)>0) {
+      starty <- min( (1:length(lat))[iy >= lat] )
+      stopty <- max( (1:length(lat))[iy <= lat] )
+      county <- stopty - starty + 1
+    } else {starty <- NA; county <- NA; iy <- NA}
+  } else {
+    startx <- NA; countx <- NA; 
+    starty <- NA; county <- NA; 
+    ix <- NA; iy <- NA
+  }
   
+  # Extract only the time of interest: assume only an interval
   time <- ncvar_get(ncold,varid='time')
-  time <- switch(str(tunit,1,4),'day'=as.Date(time+julian(as.Date(torg))))
-  
+  time <- switch(str(tunit,1,4),'day'=as.Date(time+julian(as.Date(torg))),
+       'month'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
+  print(paste(start(time),end(time),sep=' - '))
+  if (!is.null(it)) {
+    # Assume the years:
+    if (sum(is.element(it,1600:2200)) > 0) {
+      startt <- min( (1:length(time))[it >= year(time)] )
+      stoptt <- max( (1:length(time))[it <= year(time)] )
+    } else if ( (max(it) <= length(time)) & min(it >= 1) ) {
+    startt <- min(it); countt <- max(it) - startt + 1
+  } else {startt <- NA; countt <- NA; it <- NA}
+
+  start <- c(startx,starty,startt)
+  count <- c(countx,county,countt)
+  print(start); print(count)
   rcm <- ncvar_get(ncold,varid=param,start=start, count=count)
   nc_close( ncold )
 
