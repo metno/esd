@@ -42,27 +42,16 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       is <- list(lon=range(c(lon(y))),lat=range(c(lat(y))))
       rm('y')
     }
-    nms <- names(is)
-    ix <- grep("lon", tolower(substr(nms, 1, 3)))
-    if (length(ix)>0) {
-    # The coordinates lon and lat are [X,Y] maxtrices:
-      my <- (lat[1,] == min(lat))
-      lon.rng <- range(is[[ix]]) 
-      if (lon.rng[1] < min(lon[,my])) lon.rng[1] <- min(lon[,my])
-      if (lon.rng[2] > max(lon[,my])) lon.rng[2] <- max(lon[,my])
-      startx <- max( (1:length(lon[,my]))[lon.rng[1] >= lon[,my]] )
-      stoptx <- min( (1:length(lon[,my]))[lon.rng[2] <= lon[,my]] )
-      countx <- stoptx - startx + 1
-      if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),'start=',startx,'count=',countx))
-    } else {startx <- 1; countx <- length(lon[,1]); ix <- NA}
+    nms <- names(is)    
     iy <- grep("lat", tolower(substr(nms, 1, 3)))
     if (length(iy)>0) {
       lat.rng <- range(is[[iy]])
+      mx <- trunc(length(lon[,1])/2)
       if (lat.rng[1] < min(lat[1,])) lat.rng[1] <- min(lat[1,])
       if (lat.rng[2] > max(lat[1,])) lat.rng[2] <- max(lat[1,])
-      starty <- max( (1:length(lat[1,]))[lat.rng[1] >= lat[1,]] )
-      stopty <- min( (1:length(lat[1,]))[lat.rng[2] <= lat[1,]] )
-      county <- stopty - starty + 1
+      suby <- (lat.rng[1] <= lat[mx,]) & (lat.rng[2] >= lat[mx,])
+      starty <- min( (1:length(lat[1,]))[suby] )
+      county <- sum(suby)
       if (verbose) print(paste('latitudes:',min(is[[iy]]),max(is[[iy]]),'start=',starty,'count=',county))
     } else {starty <- 1; county <- length(lat[1,]); iy <- NA}
   } else {
@@ -70,6 +59,19 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     starty <- 1; county <- length(lat[1,]); 
     ix <- NA; iy <- NA
   }
+    ix <- grep("lon", tolower(substr(nms, 1, 3)))
+    if (length(ix)>0) {
+    # The coordinates lon and lat are [X,Y] maxtrices:
+      my <- trunc(length(lat[1,])/2)
+      lon.rng <- range(is[[ix]]) 
+      if (lon.rng[1] < min(lon[,my])) lon.rng[1] <- min(lon[,my])
+      if (lon.rng[2] > max(lon[,my])) lon.rng[2] <- max(lon[,my])
+      subx <- (lon.rng[1] <= lon[,my]) & (lon.rng[2] >= lon[,my])
+      startx <- min( (1:length(lon[,my]))[subx] )
+      countx <- sum(subx)
+      if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),'start=',startx,'count=',countx))
+    } else {startx <- 1; countx <- length(lon[,1]); ix <- NA}
+
   
   # Extract only the time of interest: assume only an interval
   time <- ncvar_get(ncold,varid='time')
