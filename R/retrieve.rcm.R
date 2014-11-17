@@ -47,17 +47,17 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     if (length(ix)>0) {
     # The coordinates lon and lat are [X,Y] maxtrices:
       my <- (lat[1,] == min(lat))
-      startx <- min( (1:length(lon[,my]))[ix >= lon[,my]] )
-      stoptx <- max( (1:length(lon[,my]))[ix <= lon[,my]] )
+      startx <- min( (1:length(lon[,my]))[is[[ix]] >= lon[,my]] )
+      stoptx <- max( (1:length(lon[,my]))[is[[ix]] <= lon[,my]] )
       countx <- stoptx - startx + 1
-      if (verbose) print(paste('longitudes:',min(ix),max(ix),'start=',startx,'count=',countx))
+      if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),'start=',startx,'count=',countx))
     } else {startx <- 1; countx <- length(lon[,1]); ix <- NA}
     iy <- grep("lat", tolower(substr(nms, 1, 3)))
     if (length(iy)>0) {
-      starty <- min( (1:length(lat[1,]))[iy >= lat[1,]] )
-      stopty <- max( (1:length(lat[1,]))[iy <= lat[1,]] )
+      starty <- min( (1:length(lat[1,]))[is[[iy]] >= lat[1,]] )
+      stopty <- max( (1:length(lat[1,]))[is[[iy]] <= lat[1,]] )
       county <- stopty - starty + 1
-      if (verbose) print(paste('latitudes:',min(iy),max(iy),'start=',starty,'count=',county))
+      if (verbose) print(paste('latitudes:',min(is[[iy]]),max(is[[iy]]),'start=',starty,'count=',county))
     } else {starty <- 1; county <- length(lat[1,]); iy <- NA}
   } else {
     startx <- 1; countx <- length(lon[,1]); 
