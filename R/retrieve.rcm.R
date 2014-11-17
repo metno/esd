@@ -36,6 +36,12 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   
   # Extract only the region of interest: only read the needed data
   if (!is.null(is)) {
+    if (inherits(is,'field','station')) {
+      if (verbose) print('Use spatial coverage from an object')
+      y <- is
+      is <- list(lon=range(c(lon(y))),lat=range(c(lat(y))))
+      rm('y')
+    }
     nms <- names(is)
     ix <- grep("lon", tolower(substr(nms, 1, 3)))
     if (length(ix)>0) {
@@ -44,14 +50,14 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       startx <- min( (1:length(lon[,my]))[ix >= lon[,my]] )
       stoptx <- max( (1:length(lon[,my]))[ix <= lon[,my]] )
       countx <- stoptx - startx + 1
-      if (verbose) print('longitudes:',min(ix),max(ix),'start=',startx,'count=',countx)
+      if (verbose) print(paste('longitudes:',min(ix),max(ix),'start=',startx,'count=',countx))
     } else {startx <- 1; countx <- length(lon[,1]); ix <- NA}
     iy <- grep("lat", tolower(substr(nms, 1, 3)))
     if (length(iy)>0) {
       starty <- min( (1:length(lat[1,]))[iy >= lat[1,]] )
       stopty <- max( (1:length(lat[1,]))[iy <= lat[1,]] )
       county <- stopty - starty + 1
-      if (verbose) print('latitudes:',min(iy),max(iy),'start=',starty,'count=',county)
+      if (verbose) print(paste('latitudes:',min(iy),max(iy),'start=',starty,'count=',county))
     } else {starty <- 1; county <- length(lat[1,]); iy <- NA}
   } else {
     startx <- 1; countx <- length(lon[,1]); 
@@ -66,13 +72,24 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
        'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
   if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
+    if (inherits(it,'field','station')) {
+      if (verbose) print('Use time interval from an object')
+      y <- it
+      it <- c(start(y),end(y))
+      rm('y')
+    }
+    if (inherits(it,'Date')) {
+      startt <- min( (1:length(time))[it >= time] )
+      stoptt <- max( (1:length(time))[it <= time] )
+      countt <- max(it) - startt + 1
+    } else if (sum(is.element(it,1600:2200)) > 0) {
     # Assume the years:
-    if (sum(is.element(it,1600:2200)) > 0) {
       startt <- min( (1:length(time))[it >= year(time)] )
       stoptt <- max( (1:length(time))[it <= year(time)] )
+      countt <- max(it) - startt + 1
     } else if ( (max(it) <= length(time)) & min(it >= 1) ) {
-    startt <- min(it); countt <- max(it) - startt + 1
-    }
+      startt <- min(it); countt <- max(it) - startt + 1
+    } 
   } else {startt <- 1; countt <- length(time); it <- NA}
   time <- time[startt:(startt+countt-1)]
 
