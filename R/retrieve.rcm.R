@@ -36,7 +36,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   
   # Extract only the region of interest: only read the needed data
   if (!is.null(is)) {
-    if (inherits(is,'field','station')) {
+    if (inherits(is,c('field','station'))) {
       if (verbose) print('Use spatial coverage from an object')
       y <- is
       is <- list(lon=range(c(lon(y))),lat=range(c(lat(y))))
@@ -72,7 +72,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
        'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
   if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
-    if (inherits(it,'field','station')) {
+    if (inherits(it,c('field','station'))) {
       if (verbose) print('Use time interval from an object')
       y <- it
       it <- c(start(y),end(y))
