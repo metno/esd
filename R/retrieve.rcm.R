@@ -1,12 +1,16 @@
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
-retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL) {
+retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
+  if (verbose) print(paste('retrieve.rcm',ncfile))
   ncold <- nc_open(ncfile)
   # Extract the time information: unit and time origin
   tunit <- ncatt_get( ncold, varid='time', attname='units')
   a <- regexpr("since",tunit)
   torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
   tunit <- tolower(substr(tunit,1,a-2))
-  xunit <- ncatt_get( ncold, varid=param, attname='units')
+  tatt <- ncatt_get( ncold, varid=param )
+  if (verbose) print(names(tatt))
+  tunit <- tatt[[is.element(substr(names(tatt)),'unit')]]
+  if (verbose) print(paste('unit: ',xunit,'; time unit: ',tunit,'; time origin: ',torg,sep=''))
   longname <- ncatt_get( ncold, varid=param, attname='long_name')
   lat <- c(ncvar_get(ncold,varid='lat'))
   lon <- c(ncvar_get(ncold,varid='lon'))
@@ -36,7 +40,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL) {
   time <- ncvar_get(ncold,varid='time')
   time <- switch(str(tunit,1,4),'day'=as.Date(time+julian(as.Date(torg))),
        'month'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
-  print(paste(start(time),end(time),sep=' - '))
+  if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
     # Assume the years:
     if (sum(is.element(it,1600:2200)) > 0) {
@@ -49,7 +53,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL) {
 
   start <- c(startx,starty,startt)
   count <- c(countx,county,countt)
-  print(start); print(count)
+  if (verbose) {print(start); print(count)}
   rcm <- ncvar_get(ncold,varid=param,start=start, count=count)
   nc_close( ncold )
 
