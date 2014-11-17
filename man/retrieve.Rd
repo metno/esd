@@ -9,10 +9,8 @@
 \alias{check.ncdf}
 \title{Retrieve field data from a netcdf file.}
 \description{Retrieve data from a netcdf file and return a zoo field object with attributes. 
-  \code{\link{retrieve}}.
-  
-  While \code{retrieve} assumes data on a regular lon-lat grid, \code{retrieve.rcm} reads data on irregular (rotated) grid, typically output from RCMs.
-}.
+  \code{retrieve} assumes data on a regular lon-lat grid and \code{retrieve.rcm} reads data on irregular (rotated) grid. typically output from RCMs.
+}
 \usage{
 %retrieve.default(...)
 retrieve.default(ncfile,...)
