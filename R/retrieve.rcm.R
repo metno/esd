@@ -28,6 +28,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   # Extract the spatial coordinates:
   lat <- ncvar_get(ncold,varid='lat')
   lon <- ncvar_get(ncold,varid='lon')
+  if (verbose) print('region: ',min(lon),'-',max(lon),'E /',min(lat),'-',max(lat))
+  browser()
   
   # Extract only the region of interest: only read the needed data
   if (!is.null(is)) {
