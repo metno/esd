@@ -73,7 +73,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
 
   d <- dim(rcm)
   dim(rcm) <- c(d[1]*d[2],d[3])
-  RCM <- zoo(t(rcm)*scal,order.by=time)
+  RCM <- zoo(t(rcm),order.by=time)
   attr(RCM,'longitude') <- c(lon[startx:(startx+countx-1),starty:(starty+county-1)])
   attr(RCM,'latitude') <- c(lat[startx:(startx+countx-1),starty:(starty+county-1)])
   attr(RCM,'altitude') <- rep(NA,length(lon))
