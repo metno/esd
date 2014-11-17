@@ -20,7 +20,11 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   vunit <- vatt[[ivunit]]
   if (verbose) print(paste('unit: ',vunit,'; time unit: ',tunit,'; time origin: ',torg,sep=''))
   longname <- ncatt_get( ncold, varid=param, attname='long_name')
-  
+  if (is.null(longname)) {
+    longname <- switch(param,'t2m'='temperature','tmax'='maximum temperature','tmin'='minimum temperature',
+                             'precip'='precipitation','slp'='mean sea level pressure','pt'='precipitation',
+                             'pr'='precipitation')
+  }
   # Extract the spatial coordinates:
   lat <- ncvar_get(ncold,varid='lat')
   lon <- ncvar_get(ncold,varid='lon')
@@ -79,7 +83,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   attr(RCM,'altitude') <- rep(NA,length(lon))
   attr(RCM,'variable') <- param
   attr(RCM,'unit') <- vunit
-  attr(RCM,'source') <- fname
+  attr(RCM,'source') <- ncfile
   attr(RCM,'location') <- rep(NA,length(lon))
   attr(RCM,'longname') <- longname
   attr(RCM,'history') <- history.stamp(x)
