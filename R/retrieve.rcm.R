@@ -49,7 +49,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       lat.rng <- range(is[[iy]])
       mx <- trunc(d[1]/2)  # use the middle of the region for defining latitude range
       suby <- (lat.rng[1] <= lat[mx,]) & (lat.rng[2] >= lat[mx,])
-      print(lat[mx,suby])
+      #print(lat[mx,suby])
       starty <- min( (1:length(lat[1,]))[suby] )
       county <- sum(suby)
       if (verbose) print(paste('latitudes:',min(is[[iy]]),'-',max(is[[iy]]),
