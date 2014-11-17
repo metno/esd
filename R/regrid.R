@@ -411,9 +411,8 @@ regrid.station <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   stopifnot(inherits(x,'station'))
   print('regrid.station')  
   if (approach=="pca2station") {
-    stop('regrid.pca2station is unfinished')
-    #y <- regrid.pca2station(x,is)
-    #return(y)
+    y <- regrid.pca2station(x,is)
+    return(y)
   }
   
   #print("regrid.field ")
@@ -660,9 +659,93 @@ regrid.eof2field <- function(x,is) {
  #greenwich <- attr(x,'greenwich')
   if ( greenwich & (min(lon.new < 0)) ) x <- g2dl(x,greenwich=FALSE)
   eof0 <- EOF(x)
-  eof1 <- regrid(eof,is)
+  eof1 <- regrid(eof0,is)
   print("Reconstruct field from EOFs")
   y <- eof2field(eof1)
+  if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
+  #attr(y,'history') <- c(attr(X,'history'),'regrid.eof2field')
+  #attr(y,'date-stamp') <- date()
+  #attr(y,'call') <- match.call()
+  attr(y,'history') <- history.stamp(x)
+  return(y)
+}
+
+regrid.pca <- function(x,is,verbose=FALSE) {
+  stopifnot(inherits(x,'pca'))
+  if (is.list(is)) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
+  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof')) ) {
+    lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
+  }
+  lon.old <- attr(x,'longitude'); lat.old <- attr(x,'latitude')
+
+  greenwich <- attr(x,'greenwich')
+  if ( greenwich & (min(lon.new < 0)) ) x <- g2dl(x,greenwich=FALSE)
+  
+  if (sum(is.na(c( MATCH(lon.old, lon.new),
+                   MATCH(lat.old, lat.new) ))) == 0) return(x)
+  
+  if (verbose) print(paste("regrid.field: from",length(lon.old),"x",
+              length(lat.old),"to",
+              length(lon.new),"x",length(lat.new)))  
+
+  beta <- regrid.irregweights(lon.old,lat.old,lon.new,lat.new)
+                                          
+  #print(dim(beta))
+  X <- attr(x,'pattern')
+  d <- dim(X)
+  dim(X) <- c(d[1]*d[2],d[3])
+  D <- c(length(lon.new),length(lat.new))
+  Y <- matrix(rep(NA,D[1]*D[2]*d[3]),D[1]*D[2],d[3])
+  for (i in 1:d[3]) {
+    cat(".")
+#    z <- apply(cbind(beta,attr(beta,'index')),1,sparseMproduct,coredata(X[i,]))
+#   print(c(i,d[1],length(z),length(y[,i]),NA,dim(X),dim(y)))
+#    Y[,i] <- z
+ #   old lines
+ #z <- apply(b, 1, sparseMproduct, X[, i])
+ #print(c(i, d[1], length(z), length(Y[, i]), NA, dim(X), dim(Y)))
+ #Y[, i] <- z
+ # New lines
+    M <- as.matrix(X[attr(beta,"index"),i])
+    dim(M) <- c(D[1] * D[2],4)
+    Y[, i] <- rowSums(as.matrix(beta) * M)      
+    #print(c(i, d[1], length(z), length(Y[, i]), NA, dim(X), dim(Y)))
+    #Y[, i] <- z
+  }
+  #print("set attributes:")
+
+  y <- x
+  if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
+  #mostattributes(y) <- attributes(x)
+  #nattr <- softattr(x,ignore=c('longitude','latitude','dimensions'))
+  #for (i in 1:length(nattr))
+  #  attr(y,nattr[i]) <- attr(x,nattr[i])
+  #dim(Y) <- c(D[1],D[2],d[3])
+  y <- attrcp(x,y)
+  Y ->  attr(y,'pattern')
+  attr(y,'longitude') <- lon.new
+  attr(y,'latitude') <- lat.new
+  attr(y,'dimensions') <- c(D,d[3])
+  if (verbose) print(paste("New dimensions:",attr(y,'dimensions')))
+  #attr(y,'history') <- c(attr(y,'history'),'regrid.field')
+  #attr(y,'date-stamp') <- date()
+  #attr(y,'call') <- match.call()
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+
+
+regrid.pca2station <- function(x,is) {
+  stopifnot(inherits(x,'station'),inherits(is,'list'))
+  print("regrid.pca.station - estimate EOFs")
+
+ #greenwich <- attr(x,'greenwich')
+  if ( greenwich & (min(lon.new < 0)) ) x <- g2dl(x,greenwich=FALSE)
+  pca0 <- PCA(x)
+  pca1 <- regrid(pca0,is)
+  print("Reconstruct field from EOFs")
+  y <- pca2station(pca1)
   if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
   #attr(y,'history') <- c(attr(X,'history'),'regrid.eof2field')
   #attr(y,'date-stamp') <- date()
