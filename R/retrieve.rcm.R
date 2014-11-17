@@ -11,7 +11,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   a <- regexpr("since",tunit)
   torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
   tunit <- tolower(substr(tunit,1,a-2))
-  browser()
+  #browser()
   
   # Extract unit etc for the parameter
   vatt <- ncatt_get( ncold, varid=param )
@@ -49,8 +49,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   # Extract only the time of interest: assume only an interval
   time <- ncvar_get(ncold,varid='time')
   print(tunit)
-  time <- switch(str(tunit,1,4),'day'=as.Date(time+julian(as.Date(torg))),
-       'month'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
+  time <- switch(str(tunit,1,3),'day'=as.Date(time+julian(as.Date(torg))),
+       'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
   if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
     # Assume the years:
