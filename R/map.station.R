@@ -201,12 +201,6 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
             points(ss.all$longitude,ss.all$latitude,pch=".",col="grey50",bg="grey",cex=cex/2)
         }
         
-        lines(geoborders$x, geoborders$y, col = "black")
-        lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
-
-        
-        ## add title
-        
         ## add search info to plot
         
         if (text) {
@@ -274,7 +268,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
             bg <- colbar$col[icol]
             if (is.null(col)) col <-bg
          
-            print(range(y))
+            print(range(y,na.rm=TRUE))
             
             par(fig=par0$fig)
             
@@ -327,6 +321,8 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         if (showaxis) axis(3,seq(xlim[1],xlim[2],by=10),cex.axis=cex.axis)
         
         ## par(fig=par0$fig)
+        lines(geoborders$x, geoborders$y, col = "black")
+        lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
     }
     
 }
