@@ -86,7 +86,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   attr(RCM,'source') <- ncfile
   attr(RCM,'location') <- rep(NA,length(lon))
   attr(RCM,'longname') <- longname
-  attr(RCM,'history') <- history.stamp(x)
+  attr(RCM,'history') <- history.stamp()
   rm('rcm')
   class(RCM) <- c('station','day','zoo')
   return(RCM)
