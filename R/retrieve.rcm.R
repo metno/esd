@@ -50,8 +50,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       lon.rng <- range(is[[ix]]) 
       if (lon.rng[1] < min(lon[,my])) lon.rng[1] <- min(lon[,my])
       if (lon.rng[2] > max(lon[,my])) lon.rng[2] <- max(lon[,my])
-      startx <- max( (1:length(lon[,my]))[lon.rng[1] <= lon[,my]] )
-      stoptx <- min( (1:length(lon[,my]))[lon.rng[2] >= lon[,my]] )
+      startx <- max( (1:length(lon[,my]))[lon.rng[1] >= lon[,my]] )
+      stoptx <- min( (1:length(lon[,my]))[lon.rng[2] <= lon[,my]] )
       countx <- stoptx - startx + 1
       if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),'start=',startx,'count=',countx))
     } else {startx <- 1; countx <- length(lon[,1]); ix <- NA}
@@ -60,8 +60,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       lat.rng <- range(is[[iy]])
       if (lat.rng[1] < min(lat[1,])) lat.rng[1] <- min(lat[1,])
       if (lat.rng[2] > max(lat[1,])) lat.rng[2] <- max(lat[1,])
-      starty <- max( (1:length(lat[1,]))[lat.rng[1] <= lat[1,]] )
-      stopty <- min( (1:length(lat[1,]))[lat.rng[2] >= lat[1,]] )
+      starty <- max( (1:length(lat[1,]))[lat.rng[1] >= lat[1,]] )
+      stopty <- min( (1:length(lat[1,]))[lat.rng[2] <= lat[1,]] )
       county <- stopty - starty + 1
       if (verbose) print(paste('latitudes:',min(is[[iy]]),max(is[[iy]]),'start=',starty,'count=',county))
     } else {starty <- 1; county <- length(lat[1,]); iy <- NA}
