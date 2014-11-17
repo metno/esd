@@ -26,8 +26,12 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
                              'pr'='precipitation')
   }
   # Extract the spatial coordinates:
-  lat <- ncvar_get(ncold,varid='lat')
-  lon <- ncvar_get(ncold,varid='lon')
+  vnames <- names(ncold$var)
+  latid <- vnames[is.element(tolower(substr(vnames,1,3)),'lat')]
+  lonid <- vnames[is.element(tolower(substr(vnames,1,3)),'lon')]
+  lat <- ncvar_get(ncold,varid=latid)
+  lon <- ncvar_get(ncold,varid=lonid)
+  str(lat); str(lon)
   if (verbose) print('region: ',min(lon),'-',max(lon),'E /',min(lat),'-',max(lat))
   
   # Extract only the region of interest: only read the needed data
