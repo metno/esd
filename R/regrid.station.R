@@ -90,10 +90,10 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
   
   # The length of lon/lat is the same as the input data itself, 
 
-  beta <- cbind(rep(Wx[1,],ny)*rep(Wy[1,],nx),
-                rep(Wx[2,],ny)*rep(Wy[1,],nx),
-                rep(Wx[1,],ny)*rep(Wy[2,],nx),
-                rep(Wx[2,],ny)*rep(Wy[2,],nx))
+  beta <- cbind(rep(Wx[1,],ny),
+                rep(Wx[2,],ny),
+                rep(Wy[1,],nx),
+                rep(Wy[2,],nx))
 #print("denom")
   denom <- rep(Wx[8,],ny)*rep(Wy[8,],nx)
   beta <- beta/denom
