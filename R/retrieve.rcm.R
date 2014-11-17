@@ -48,7 +48,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=TRUE) {
   
   # Extract only the time of interest: assume only an interval
   time <- ncvar_get(ncold,varid='time')
-  print(tunit)
+  print(tunit); browser()
   time <- switch(str(tunit,1,3),'day'=as.Date(time+julian(as.Date(torg))),
        'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
   if (verbose) print(paste(start(time),end(time),sep=' - '))
