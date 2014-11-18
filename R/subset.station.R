@@ -218,6 +218,8 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #    ii <- 1:length(t)
     
     #browser()
+    # Need to make sure both it and is are same type: here integers for index rather than logical
+    # otherwise the subindexing results in an empty object
     it <- (1:length(ii))[ii]
     if (is.logical(is)) is <- (1:length(is))[is]
     y <- x[it,is]
