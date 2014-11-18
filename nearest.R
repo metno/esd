@@ -1,4 +1,4 @@
-nearest <- function(x,...) UseMethod("nearest")
+nearest <- function(x,is,...) UseMethod("nearest")
 
 nearest.station <- function(x,is) {
 # This function selects the time series in x that are closest to the locations
@@ -34,7 +34,7 @@ nearest.station <- function(x,is) {
   return(y)
 }
 
-nearest.station <- function(x,is) {
+nearest.field <- function(x,is) {
   # For field, turn the object into a station class:
   xo <- rep(lon(x),length(lat(x)))
   yo <- sort(rep(lat(x),length(lon(x))))
