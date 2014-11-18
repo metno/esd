@@ -179,7 +179,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       ## browser()
       is <- sell & selx & sely & selz & selc & seli & selm & selp & selF
       #print(c(length(is),sum(is),sum(selx),sum(sely)))
-    }
+    } 
     
     #else if (inherits(x0,c("month"))) {
     #    ii <- is.element(mo,it.mo)
@@ -217,7 +217,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #else
     #    ii <- 1:length(t)
     
-    #browser()
+    browser()
     y <- x[ii,is]
 
     class(x) <- cls; class(y) <- cls
