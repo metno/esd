@@ -217,8 +217,10 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #else
     #    ii <- 1:length(t)
     
-    browser()
-    y <- x[ii,is]
+    #browser()
+    it <- (1:length(ii))[ii]
+    if (is.logical(is)) is <- (1:length(is))[is]
+    y <- x[it,is]
 
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))
