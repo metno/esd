@@ -7,10 +7,10 @@
 
 require(zoo)
 
-EOF<-function(X,it=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,...)
+EOF<-function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,...)
   UseMethod("EOF")
 
-EOF.default <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
+EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
                         area.mean.expl=FALSE,verbose=FALSE,...) {
   # Verify Arguments
   if (verbose) print("EOF.default")
@@ -30,7 +30,7 @@ EOF.default <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
 
 # Apply EOF analysis to the monthly mean field values:
 
-EOF.field <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
+EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
                       area.mean.expl=FALSE,verbose=FALSE) {
 
   SF <- function(x) {sum(is.finite(x))}
@@ -56,68 +56,69 @@ EOF.field <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
   cls <- class(X)
   #print(cls)
   # browser()
-  if (!is.null(it)) {
-    if (verbose) print(paste('temporal subset: it=',it))
-    #print(it)
-    #print(table(as.POSIXlt(dates)$mon+1))
-    # Select a subset of the months
-    if ( (min(it) > 0) & (max(it) < 13) & (inherits(X,c("month"))) ) {
-      #keepm <- as.numeric(format(index(X),"%m"))==it
-      #print("Monthly aggregated field")
-      keepm <- is.element(as.POSIXlt(dates)$mon+1,it)
-    } else 
-    if ( (min(it) > 0) & (max(it) < 5) & (inherits(X,c("season"))) ) {
-      #print("Seasonally aggregated field")
-      #print(table(as.POSIXlt(dates)$mon+1))
-      keepm <- is.element(as.POSIXlt(dates)$mon+1,c(1,4,7,10)[it])
-      #print(c(it,sum(keepm)))
-    } else
-    ## Select a range of years (interval)
-    if ( (length(it)>1) & (sum(is.element(it,1500:2500))>0) ) {
-      if (length(it)==2) it <- it[1]:it[2]
-      ##print(it); print(as.POSIXlt(dates)$year+1900); print(dates)
-      keepm <- is.element(as.numeric(format(index(X),"%Y")),it)
-      ## AM replacement 13-11-2013 old line keepm <- is.element(as.POSIXlt(dates)$year+1900,it)
-    } else ## if (inherits(it,"POSIXt"))
-    keepm <- is.element(as.Date(dates),as.Date(it))
-    ## AM replacement 13-11-2013 old line keepm <- is.element(as.POSIXlt(dates),as.POSIXlt(it))
-    dates <- dates[keepm]
-    x <- zoo(X[keepm,],order.by = dates)
-    d[3] <- sum(keepm)
-    #print(d[3])
-  } else x <- X
+  x <- subset(X,it=it,is=is)
+#  if (!is.null(it)) {
+#    if (verbose) print(paste('temporal subset: it=',it))
+#    #print(it)
+#    #print(table(as.POSIXlt(dates)$mon+1))
+#    # Select a subset of the months
+#    if ( (min(it) > 0) & (max(it) < 13) & (inherits(X,c("month"))) ) {
+#      #keepm <- as.numeric(format(index(X),"%m"))==it
+#      #print("Monthly aggregated field")
+#      keepm <- is.element(as.POSIXlt(dates)$mon+1,it)
+#    } else 
+#    if ( (min(it) > 0) & (max(it) < 5) & (inherits(X,c("season"))) ) {
+#      #print("Seasonally aggregated field")
+#      #print(table(as.POSIXlt(dates)$mon+1))
+#      keepm <- is.element(as.POSIXlt(dates)$mon+1,c(1,4,7,10)[it])
+#      #print(c(it,sum(keepm)))
+#    } else
+#    ## Select a range of years (interval)
+#    if ( (length(it)>1) & (sum(is.element(it,1500:2500))>0) ) {
+#      if (length(it)==2) it <- it[1]:it[2]
+#      ##print(it); print(as.POSIXlt(dates)$year+1900); print(dates)
+#      keepm <- is.element(as.numeric(format(index(X),"%Y")),it)
+#      ## AM replacement 13-11-2013 old line keepm <- is.element(as.POSIXlt(dates)$year+1900,it)
+#    } else ## if (inherits(it,"POSIXt"))
+#    keepm <- is.element(as.Date(dates),as.Date(it))
+#    ## AM replacement 13-11-2013 old line keepm <- is.element(as.POSIXlt(dates),as.POSIXlt(it))
+#    dates <- dates[keepm]
+#    x <- zoo(X[keepm,],order.by = dates)
+#    d[3] <- sum(keepm)
+#    #print(d[3])
+#  } else x <- X
   Y <- t(coredata(x))
   #print(dim(Y)); print(d)
   
-  # to select geographicla regions, the zoo aspects are no longer needed:
-  # expand into lon lat dimensions in addition to time:
-  dim(Y) <- d
-  #print(d); A <- Y[,,1]; image(t(A)); dev.new()
-  if (!is.null(lon)) {
-    if (length(lon) != 2)
-      warning("EOF: argument 'lon' must be a range") else { 
-        # Select a subset of the longitudes        
-        keepx <- (attr(X,'longitude') >= min(lon)) &
-                 (attr(X,'longitude') <= max(lon))
-        attr(X,'longitude') <- attr(X,'longitude')[keepx]
-        d[1] <- sum(keepx)
-        Y <- Y[keepx,,]
-      }
-  }
-  if (!is.null(lat)) {
-    if (length(lat) != 2)
-      warning("EOF: argument 'lat' must be a range") else { 
-        # Select a subset of the latitudes
-        keepy <- (attr(X,'latitude') >= min(lat)) &
-                 (attr(X,'latitude') <= max(lat))
-        attr(X,'latitude') <- attr(X,'latitude')[keepy]
-        d[2] <- sum(keepy)
-        Y <- Y[,keepy,]
-      }
-  }
-  d -> attr(X,'dimensions')
-  
-  dim(Y) <- c(d[1]*d[2],d[3])
+#  # to select geographicla regions, the zoo aspects are no longer needed:
+#  # expand into lon lat dimensions in addition to time:
+#  dim(Y) <- d
+#  #print(d); A <- Y[,,1]; image(t(A)); dev.new()
+#  if (!is.null(lon)) {
+#    if (length(lon) != 2)
+#      warning("EOF: argument 'lon' must be a range") else { 
+#        # Select a subset of the longitudes        
+#        keepx <- (attr(X,'longitude') >= min(lon)) &
+#                 (attr(X,'longitude') <= max(lon))
+#        attr(X,'longitude') <- attr(X,'longitude')[keepx]
+#        d[1] <- sum(keepx)
+#        Y <- Y[keepx,,]
+#      }
+#  }
+#  if (!is.null(lat)) {
+#    if (length(lat) != 2)
+#      warning("EOF: argument 'lat' must be a range") else { 
+#        # Select a subset of the latitudes
+#        keepy <- (attr(X,'latitude') >= min(lat)) &
+#                 (attr(X,'latitude') <= max(lat))
+#        attr(X,'latitude') <- attr(X,'latitude')[keepy]
+#        d[2] <- sum(keepy)
+#        Y <- Y[,keepy,]
+#      }
+#  }
+#  d -> attr(X,'dimensions')
+#  
+#  dim(Y) <- c(d[1]*d[2],d[3])
   
   # Apply geographical weighting to account for different grid area at
   # different latitudes:
@@ -224,7 +225,7 @@ EOF.field <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
 }
 
 
-EOF.comb <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
+EOF.comb <- function(X,it=NULL,is=NULL,n=20,
                      area.mean.expl=FALSE,verbose=FALSE) {
 
   iv <- function(x) return(sum(is.finite(x)))
@@ -242,10 +243,10 @@ EOF.comb <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
   ## AM 11-11-2013 added lines begin
 
   #print('subset')
-  if (!is.null(lon) | !is.null(lat))
-    X <- subset(X,it=it,is=list(lon,lat))
-  else if (!is.null(it))
-    X <- subset(X,it=it)
+  if (!is.null(is) | !is.null(it))
+    X <- subset(X,it=it,is=is)
+  #else if (!is.null(it))
+  #  X <- subset(X,it=it,is=is)
   ## AM 11-11-2013 added lines end
   #print(dim(X))
 
@@ -341,7 +342,7 @@ EOF.comb <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
   #print(dim(Y)); print(attr(Y,'dimensions'))
   #browser()
 
-  eof <- EOF.field(Y,n=n,lon=lon,lat=lat,
+  eof <- EOF.field(Y,it=it,is=is,n=n,
                    area.mean.expl=area.mean.expl,verbose=verbose)
 
 #  print("Computed the eofs...")
@@ -383,15 +384,15 @@ EOF.comb <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
 
 
 
-eof2field <- function(x,is=NULL,lon=NULL,lat=NULL,anomaly=FALSE) {
+eof2field <- function(x,it=it,is=NULL,anomaly=FALSE) {
   #print("HERE"); print(lon); print(lat)
   greenwich <- attr(x,'greenwich')
-  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
-  if (!is.null(lat)) lat.rng <- range(lat) else lat.rng <- NULL
-  if ( !is.null(lon.rng) | !is.null(lat.rng) ) 
-    eof <- subset(x,is=list(lon=lon.rng,lat=lat.rng)) else
-  if (!is.null(is))
-    eof <- subset(x,is=is) else
+#  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
+#  if (!is.null(lat)) lat.rng <- range(lat) else lat.rng <- NULL
+  if ( !is.null(it) | !is.null(is) ) 
+    eof <- subset(x,it=it,is=is) else
+#  if (!is.null(is))
+#    eof <- subset(x,is=is) else
     eof <- x
   #print(c(greenwich,attr(eof,'greenwich')))
                                         # REB 04.12.13 comment below 
