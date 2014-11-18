@@ -17,11 +17,11 @@ EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   stopifnot(!missing(X), is.matrix(X),inherits(X,"zoo"))
 
   if ( !zeros(inherits(X,c("comb","zoo"),which=TRUE)) )
-         eof <- EOF.comb(X,it=it,n=n,lon=lon,lat=lat,
+         eof <- EOF.comb(X,it=it,is=is,n=n,
                          area.mean.expl=area.mean.expl,
                          verbose=verbose) else
   if ( !zeros(inherits(X,c("field","zoo"),which=TRUE)) )
-         eof <- EOF.field(X,it=it,n=n,lon=lon,lat=lat,
+         eof <- EOF.field(X,it=it,is=is,n=n,
                        area.mean.expl=area.mean.expl,
                           verbose=verbose) 
   return(eof)
