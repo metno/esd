@@ -131,7 +131,7 @@ colbar <- function(scale,col,fig=c(0.15,0.2,0.15,0.3)) {
 
 # Show the cumulative sum of station value from January 1st. Use
 # different colours for different year.
-cumugram <- function(x,it=NULL,prog=FALSE,...) {
+cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
   stopifnot(!missing(x),inherits(x,"station"))
   
   #print("cumugram")
@@ -153,13 +153,15 @@ cumugram <- function(x,it=NULL,prog=FALSE,...) {
   ylim <- c(NA,NA)
 
   #print('Find the y-range')
-  y.rest <- rep(NA,ny)
+  y.rest <- rep(NA,ny); y2n <- y.rest
   ylim <- max(coredata(x),na.rm=TRUE) # to avoid getting warnings with empty vectors.
   for (i in 1:ny) {
     y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
     y.rest[i] <- mean(coredata(window(x,start=as.Date(paste(yrs[i],format(Sys.time(),'-%m-%d'),sep='')),
                                       end=as.Date(paste(yrs[i],'-12-31',sep='')))))
+    y2n[i] <- mean(coredata(window(x,end=as.Date(paste(yrs[i],format(Sys.time(),'-%m-%d'),sep='')),
+                                     start=as.Date(paste(yrs[i],'-01-01',sep='')))))                                  
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
     z <- cumsum(coredata(y))/1:length(y)
     ok <- is.finite(z)
@@ -169,6 +171,8 @@ cumugram <- function(x,it=NULL,prog=FALSE,...) {
     ylim[2] <- max(c(ylim,z[ok]),na.rm=TRUE)
   }
   #print(ylim)
+  names(y2n) <- yrs
+  y2n <- round(sort(y2n,descending=TRUE),2)
   
   plot(c(0,365),ylim,
        type="n",xlab="",
@@ -213,9 +217,9 @@ cumugram <- function(x,it=NULL,prog=FALSE,...) {
   if (prog) {
     polygon(c(tn,rep(tm,2),tn),c(zn,zp,zm,zn),
             col=rgb(0.5,0.5,0.5,0.1),border=rgb(0.5,0.5,0.5,0.2),lwd=2)
-    lines(c(tn,tm),c(zn,zz),col=rgb(0.5,0.5,0.5,0.1),lwd=3)
-    text(tm,zp,round(zp,1),pos=4,cex=0.5)
-    text(tm,zm,round(zm,1),pos=4,cex=0.5)
+    lines(c(tn,tm),c(zn,zz),col=rgb(0.3,0.3,0.3,0.1),lwd=3)
+    text(tm,zp,round(zp,1),pos=2,cex=0.5,col='grey')
+    text(tm,zm,round(zm,1),pos=2,cex=0.5,col='grey')
     text(tm,zz,round(zz,1),pos=4,cex=0.75)
     print(paste('Prognosis for end-of-year: ',round(zz,1),' (',round(zp,1),',',round(zm,1),')',sep=''))
   }
@@ -231,6 +235,8 @@ cumugram <- function(x,it=NULL,prog=FALSE,...) {
 
   srt <- order(cm,decreasing=TRUE)
   invisible(cbind(yrs[srt],cm[srt]))
+  if (verbose) print(y2n)
+  invisible(y2n)
 }
 
 # Estimate how the variance varies with season 
