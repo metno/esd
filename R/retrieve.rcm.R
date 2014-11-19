@@ -38,9 +38,11 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   # Extract only the region of interest: only read the needed data
   if (!is.null(is)) {
     if (inherits(is,c('field','station'))) {
-      if (verbose) print('Use spatial coverage from an object')
       y <- is
-      is <- list(lon=range(c(lon(y))),lat=range(c(lat(y))))
+      if (verbose) print(paste('Use spatial coverage from an object:',min(c(lon(y)))-1,'-',
+                          max(c(lon(y)))+1,'E /',min(c(lat(y)))-1,'-',max(c(lat(y)))+1,'N'))
+    
+      is <- list(lon=range(c(lon(y))+c(-1,1)),lat=range(c(lat(y))+c(-1,1)))
       rm('y')
     } else if (is.list(is)) {
       nms <- names(is)    
