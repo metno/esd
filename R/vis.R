@@ -172,7 +172,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
   }
   #print(ylim)
   names(y2n) <- yrs
-  y2n <- round(sort(y2n,descending=TRUE),2)
+  y2n <- round(sort(y2n,descreasing=TRUE),2)
   
   plot(c(0,365),ylim,
        type="n",xlab="",
