@@ -221,7 +221,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     text(tm,zp,round(zp,1),pos=3,cex=0.5,col='grey40')
     text(tm,zm,round(zm,1),pos=1,cex=0.5,col='grey40')
     text(tm,zz,round(zz,1),pos=4,cex=0.75)
-    print(paste('Prognosis for end-of-year: ',round(zz,1),' (',round(zp,1),',',round(zm,1),')',sep=''))
+    print(paste('Prognosis for end-of-year: ',round(zz,1),' (',round(zm,1),',',round(zp,1),')',sep=''))
   }
 
   if (varid(x)!='precip') 
