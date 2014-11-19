@@ -158,9 +158,9 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
   for (i in 1:ny) {
     y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
-    y.rest[i] <- mean(coredata(window(x,start=as.Date(paste(yrs[i],format(Sys.time(),'-%m-%d'),sep='')),
+    y.rest[i] <- mean(coredata(window(x,start=as.Date(paste(yrs[i],format(Sys.Date(),'-%m-%d'),sep='')),
                                       end=as.Date(paste(yrs[i],'-12-31',sep='')))))
-    y2n[i] <- mean(coredata(window(x,end=as.Date(paste(yrs[i],format(Sys.time(),'-%m-%d'),sep='')),
+    y2n[i] <- mean(coredata(window(x,end=as.Date(paste(yrs[i],format(Sys.Date()-1,'-%m-%d'),sep='')),
                                      start=as.Date(paste(yrs[i],'-01-01',sep='')))))                                  
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
     z <- cumsum(coredata(y))/1:length(y)
