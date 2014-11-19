@@ -36,13 +36,18 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   if (verbose) print(paste('region: ',min(lon),'-',max(lon),'E /',min(lat),'-',max(lat)))
   
   # Extract only the region of interest: only read the needed data
+  #browser()
   if (!is.null(is)) {
     if (inherits(is,c('field','station'))) {
-      if (verbose) print('Use spatial coverage from an object')
       y <- is
-      is <- list(lon=range(c(lon(y))),lat=range(c(lat(y))))
+      if (verbose) print(paste('Use spatial coverage from an object:',floor(min(c(lon(y)))),'-',
+                          ceiling(max(c(lon(y)))),'E /',floor(min(c(lat(y)))),'-',ceiling(max(c(lat(y)))),'N'))
+    
+      is <- list(lon=c(floor(min(c(lon(y)))),ceiling(max(c(lon(y))))),
+                 lat=c(floor(min(c(lat(y)))),ceiling(max(c(lat(y))))))
       rm('y')
-    } else if (is.list(is)) {
+    } 
+    if (is.list(is)) {
       nms <- names(is)    
       iy <- grep("lat", tolower(substr(nms, 1, 3)))
       if (length(iy)>0) {
@@ -55,7 +60,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
         if (verbose) print(paste('latitudes:',min(is[[iy]]),'-',max(is[[iy]]),
                                   'extracted:',min(lat[,suby]),'-',max(lat[,suby]),
                                   'start=',starty,'count=',county))
-      } else if (len(grep("iy", tolower(substr(nms, 1, 2))))>0) {
+      } else if (length(grep("iy", tolower(substr(nms, 1, 2))))>0) {
       # Select single columns or rows in the spatial maxtix:
         iy <- grep("iy", tolower(substr(nms, 1, 2)))
         starty <- min(is[[iy]]); county <- max(is[[iy]])
@@ -72,7 +77,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
         if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),
                                   'extracted:',min(lon[subx,]),'-',max(lon[subx,]),
                                   'start=',startx,'count=',countx))
-      } else if (len(grep("ix", tolower(substr(nms, 1, 2))))>0) {
+      } else if (length(grep("ix", tolower(substr(nms, 1, 2))))>0) {
       # Select single columns or rows in the spatial maxtix:
         ix <- grep("ix", tolower(substr(nms, 1, 2)))
         startx <- min(is[[ix]]); countx <- max(is[[ix]])
