@@ -23,3 +23,9 @@ q95 <- function(x) quantile(x,probs=.95,na.rm=TRUE)
 
 ## compute the quantile 5% of x
 q5 <- function(x) quantile(x,probs=.5,na.rm=TRUE)
+
+## count the number of valid data points
+nv <- function(x) sum(is.finite(x))
+
+## Compute the coefficient of variation of x
+cv <- function(x,na.rm=TRUE) {sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)}
