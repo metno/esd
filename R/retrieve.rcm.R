@@ -40,10 +40,11 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   if (!is.null(is)) {
     if (inherits(is,c('field','station'))) {
       y <- is
-      if (verbose) print(paste('Use spatial coverage from an object:',min(c(lon(y)))-1,'-',
-                          max(c(lon(y)))+1,'E /',min(c(lat(y)))-1,'-',max(c(lat(y)))+1,'N'))
+      if (verbose) print(paste('Use spatial coverage from an object:',floor(min(c(lon(y)))),'-',
+                          ceiling(max(c(lon(y)))),'E /',floor(min(c(lat(y)))),'-',ceiling(max(c(lat(y)))),'N'))
     
-      is <- list(lon=range(c(lon(y))+c(-1,1)),lat=range(c(lat(y))+c(-1,1)))
+      is <- list(lon=c(floor(min(c(lon(y)))),ceiling(max(c(lon(y))))),
+                 lat=c(floor(min(c(lat(y)))),ceiling(max(c(lat(y))))))
       rm('y')
     } 
     if (is.list(is)) {
