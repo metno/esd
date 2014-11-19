@@ -36,6 +36,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   if (verbose) print(paste('region: ',min(lon),'-',max(lon),'E /',min(lat),'-',max(lat)))
   
   # Extract only the region of interest: only read the needed data
+  browser()
   if (!is.null(is)) {
     if (inherits(is,c('field','station'))) {
       y <- is
