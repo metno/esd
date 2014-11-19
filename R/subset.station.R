@@ -179,7 +179,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       ## browser()
       is <- sell & selx & sely & selz & selc & seli & selm & selp & selF
       #print(c(length(is),sum(is),sum(selx),sum(sely)))
-    }
+    } 
     
     #else if (inherits(x0,c("month"))) {
     #    ii <- is.element(mo,it.mo)
@@ -218,7 +218,11 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #    ii <- 1:length(t)
     
     #browser()
-    y <- x[ii,is]
+    # Need to make sure both it and is are same type: here integers for index rather than logical
+    # otherwise the subindexing results in an empty object
+    it <- (1:length(ii))[ii]
+    if (is.logical(is)) is <- (1:length(is))[is]
+    y <- x[it,is]
 
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))

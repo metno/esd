@@ -1,45 +1,5 @@
-# Uses bi-linear interpolation to regrid one field onto the next
-# First the routine computes a set of weight, then performs a matrix multiplication
-# to map the original data onto the new grid.
-# The weights are based on the distance between points, taking longitude & latitude
-# and use distAB() to estimate the geographical distance in km.
-#
-# X(i,j) is a i-j matrix containing the data on a grid with i logitudes and j latitudes
-# X(i,j) -> Y(k,l)
-# Y = beta X
-# beta(i*j,k*l)
-#  ( Y(1,1) )   (beta(1,1), beta(2,1), beta(3,1), ... ) ( X(1,1) )
-#  ( Y(1,2) ) = (beta(1,2), beta(2,2), beta(3,2), ... ) ( X(1,2) )
-#  ( .....  )   (beta(1,3), beta(2,3), beta(3,3), ... ) ( X(1,3) )
-#
-# Most of the elements in Beta are zero, and only 4 weights are needed to compute
-# the interpolated value within a grid with 4 values at the corners.
-#
-# THe weights are estimated first, and are then applied to each time slice through
-# a sparse matrix multiplication (hence keeking track of indices).
-#
-# The weights are derived according to:
-# http://en.wikipedia.org/wiki/Bilinear_interpolation
-#
-# R.E. Benestad, 
-# rasmus.benestad@met.no
-#
-#------------------------------------------------------------------------
-
-sparseMproduct <- function(beta,x) {
-  # b contains the weights and i the indexes
-  b <- beta[1:4]; i <- beta[5:8]
-  ok <- (i > 0)
-  y <- sum(b[ok]*x[i][ok])  
-  y
-}
-
-regrid <- function(x,is,...)
-  UseMethod("regrid")
-
-
-regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
-# Compute weights for regular grids: (xo,yo) - the field class
+regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
+# Compute the weights for irreguolar grids (xo,yo) - the station class
   
   lindist <- function(x,X) {
     # Linear distance
@@ -64,6 +24,7 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
   dim(xn) <- c(nx,1)
   nyo <- length(yo)
   dim(yn) <- c(ny,1)
+  if (nxo != nyo) stop(paste('regrid.irregweights requires',nx,'=',ny))
   
   # Split the search for weights in two:
   # 1) Find the overlapping coordinates:
@@ -127,20 +88,20 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
   if (verbose) {print(table(Wy[1,],Wy[2,])); print(table(Wy[3,],Wy[4,]))}  
   #print("beta:")
   
-  srty <- order(rep(Wy[5,],nx))
-  beta <- cbind(rep(Wx[1,],ny)*rep(Wy[1,],nx)[srty],
-                rep(Wx[2,],ny)*rep(Wy[1,],nx)[srty],
-                rep(Wx[1,],ny)*rep(Wy[2,],nx)[srty],
-                rep(Wx[2,],ny)*rep(Wy[2,],nx)[srty])
-  #print("denom")
-  denom <- rep(Wx[8,],ny)*rep(Wy[8,],nx)[srty]
-  beta <- beta/denom
+  # The length of lon/lat is the same as the input data itself, 
 
-  #print("indx")
-  indx <- cbind(rep(Wx[3,],ny)+(rep(Wy[3,],nx)[srty]-1)*nxo,
-                rep(Wx[4,],ny)+(rep(Wy[3,],nx)[srty]-1)*nxo,
-                rep(Wx[3,],ny)+(rep(Wy[4,],nx)[srty]-1)*nxo,
-                rep(Wx[4,],ny)+(rep(Wy[4,],nx)[srty]-1)*nxo)
+  beta <- cbind(rep(Wx[1,],ny),
+                rep(Wx[2,],ny),
+                rep(Wy[1,],nx),
+                rep(Wy[2,],nx))
+#print("denom")
+  denom <- rep(Wx[8,],ny)*rep(Wy[8,],nx)
+  beta <- beta/denom
+#print("indx")
+  indx <- cbind(rep(Wx[3,],ny),
+                rep(Wx[4,],ny),
+                rep(Wy[3,],nx),
+                rep(Wy[4,],nx))
   beta[!is.finite(indx)] <- 0
   indx[!is.finite(indx)] <- 1
   attr(beta,'index') <- indx
@@ -154,43 +115,37 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
 
 
 
+regrid.station <- function(x,is,approach="station",clever=FALSE,verbose=FALSE) {
 
-
-regrid.default <- function(x,is,verbose=FALSE,...) {
-  
-}
-
-regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
-
-  stopifnot(inherits(x,'field'))
-  
-  if (approach=="eof2field") {
-    y <- regrid.eof2field(x,is)
+  stopifnot(inherits(x,'station'))
+  print('regrid.station')  
+  if (approach=="pca2station") {
+    y <- regrid.pca2station(x,is)
     return(y)
   }
   
   #print("regrid.field ")
-  x <- sp2np(x)
+  #x <- sp2np(x)
   
   # The coordinates which to grid: lon.new & lat.new
   if ( (is.data.frame(is)) | (is.list(is)) ) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
-  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof'))| (inherits(is,'pca')) ) {
+  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof')) | (inherits(is,'pca')) ) {
     lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
   }
   
-  greenwich <- attr(x,'greenwich')
-  if (verbose) print(paste('greenwich=',greenwich))
+  #greenwich <- attr(x,'greenwich')
+  #if (verbose) print(paste('greenwich=',greenwich))
   # REB 13.05.2014
-  if ( (min(lon.new) < 0) & (max(lon.new) <= 180) ) x <- g2dl(x,greenwich=FALSE) else
-  if ( (min(lon.new) > 0) & (max(lon.new) <= 360) ) x <- g2dl(x,greenwich=FALSE) else
-     stop(paste('Bad longitude range: ',min(lon.new),'-',max(lon.new))) 
+  #if ( (min(lon.new) < 0) & (max(lon.new) <= 180) ) x <- g2dl(x,greenwich=FALSE) else
+  #if ( (min(lon.new) > 0) & (max(lon.new) <= 360) ) x <- g2dl(x,greenwich=FALSE) else
+  #   stop(paste('Bad longitude range: ',min(lon.new),'-',max(lon.new))) 
   
   if (verbose) {print("New coordinates"); print(lon.new); print(lat.new)}
 
   #print("regrid.field before subset:");print(lon(x)); print(lat(x));print("---")
-  x <- subset(x,is=list(lon=c(floor(min(lon.new))-2,ceiling(max(lon.new))+2),
-                        lat=c(floor(min(lat.new))-2,ceiling(max(lat.new))+2)))
-  if (verbose) {print("regrid.field after subset:");print(lon(x));print(lat(x));print("---")}
+  #x <- subset(x,is=list(lon=c(floor(min(lon.new))-2,ceiling(max(lon.new))+2),
+  #                      lat=c(floor(min(lat.new))-2,ceiling(max(lat.new))+2)))
+  #if (verbose) {print("regrid.field after subset:");print(lon(x));print(lat(x));print("---")}
   if (verbose) {print("Longitude range"); print(range(lon.new)); print(range(lon(x)))}
   if (verbose) {print("Latitude range"); print(range(lat.new)); print(range(lat(x)))}
   
@@ -205,38 +160,18 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   }
   
   
+  ns <- length(attr(x,'longitude'))
   if (verbose) print(paste("regrid.field: from",
-                           length(attr(x,'longitude')),"x",
-                           length(attr(x,'latitude')),"to",
-                           length(lon.new),"x",length(lat.new)))  
+                           ns,"locations to", length(lon.new),"x",length(lat.new),'regular grid'))  
   
 # Apply the grid-based subset - only use the nearest longitudes/latitudes
 #  for the regridding. 
 
-  nx <- length(attr(x,'longitude')); ny <- length(attr(x,'latitude'))
-
 # Clever solution (not default): fix edge problems...  
-  if (clever) {
-    if (nx < length(attr(x,'longitude'))) {
-      lonj2w <- rep(NA,nx); lonj2e <- lonj2w
-      latj2n <- rep(NA,ny); latj2s <- latj2n
-      for (i in 1:nx) {
-        lonj2w[i] <- max(lon.new[lon.new <= attr(x,'longitude')[i]])
-        lonj2e[i] <- min(lon.new[lon.new >= attr(x,'longitude')[i]])
-      }
-      lon.old <- union(lonj2w,lonj2e)
-    } else lon.old <- attr(x,'longitude')
-    if (ny < length(attr(x,'latitude'))) {
-      for (j in 1:ny) {
-        latj2s[j] <- max(lat.new[lat.new <= attr(x,'latitude')[j]])
-        latj2n[j] <- min(lat.new[lat.new >= attr(x,'latitude')[j]])
-      }
-      lat.old <- union(latj2s,latj2n)
-    } else lat.old <- attr(x,'latitude')
-  } else {
-    lon.old <- attr(x,'longitude')
-    lat.old <- attr(x,'latitude')
-  }
+ 
+  lon.old <- attr(x,'longitude')
+  lat.old <- attr(x,'latitude')
+ 
   #print("...");print(lonj2w)
   #print(lon.old); print(lat.old)
   if (verbose) print(paste("subsample the original grid and use",length(lon.old),
@@ -248,7 +183,7 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   # x <- subset(x,is=list(i=lon.old,j=lat.old))
   
 #  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
-  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
+  beta <- regrid.irregweights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
   if (verbose) {print("Weight matrix");  print(dim(beta))}
                                           
   d <- dim(x)
@@ -259,6 +194,8 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   #print(dim(cbind(beta,attr(beta,'index'))))
   
   if (verbose) pb <- txtProgressBar(style=3)
+  #str(X); str(beta)
+  
   for (i in 1:d[1]) {
     #if (verbose) cat(".")
     if (verbose) setTxtProgressBar(pb,i/d[1])  
@@ -269,9 +206,9 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
     dim(M) <- c(D[1] * D[2],4)
     y[, i] <- rowSums(as.matrix(beta) * M)      
   }
-  #print("set attributes:")
+  print("set attributes:")
   y <- zoo(t(y),order.by=index(x))
-  class(y) <- class(x)
+  class(y) <- c('field',class(x)[2:3]) 
   #mostattributes(y) <- attributes(x)
   #nattr <- softattr(x,ignore=c('longitude','latitude','dimensions'))
   #for (i in 1:length(nattr))
@@ -279,6 +216,8 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   y <- attrcp(x,y)
   attr(y,'longitude') <- lon.new
   attr(y,'latitude') <- lat.new
+  attr(y,'altitude') <- lat.new+NA
+  attr(y,'location') <- NULL
   attr(y,'dimensions') <- c(D,d[1])
   if (verbose) print(paste("New dimensions:",attr(y,'dimensions')[1],"x",
              attr(y,'dimensions')[2],"x",attr(y,'dimensions')[3] ))
@@ -288,63 +227,13 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)
   #print("---")
 
-  if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
+  #if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
   invisible(y)
 }
 
 
-
-
-regrid.matrix <- function(x,is,verbose=FALSE) {
-# assumes that dimensions of x are [x,y,(t)] and that the coordinates are
-# provided as attributes as in field
-  
-  d <- dim(x)
-  if (length(d)==2) d <- c(d,1)  # if only 2-dimensional maps, then one dimension of 1 is added
-  lon.old <- lon(x)
-  lat.old <- lat(x)
-
-  if ( (is.data.frame(is)) | (is.list(is)) )
-    {lon.new <- is[[1]]; lat.new <- is[[2]]} else
-  if ( (inherits(is,'station')) | (inherits(is,'field')) |
-      (inherits(is,'eof')) ) {
-    lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
-  } else if (is.matrix(is) & !is.null(attr(is,'longitude')) &
-             !is.null(attr(is,'latitude'))) {
-    lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
-  }
-  
-  if (is.null(lon.old) | is.null(lat.old) | is.null(lon.new) | is.null(lat.new)) return(NULL)
-
-  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
-  if (verbose) {print("Weight matrix");  print(dim(beta)); print(attr(beta,"index"))}
-  X <- x;
-  dim(X) <- c(d[1]*d[2],d[3])
-  D <- c(length(lon.new),length(lat.new))
-  y <- matrix(rep(NA,D[1]*D[2]*d[3]),D[1]*D[2],d[3])
-  for (i in 1:d[3]) {
-    if (verbose) cat(".")
-    M <- as.matrix(X[attr(beta,"index"),i])
-    dim(M) <- c(D[1] * D[2],4)
-    y[, i] <- rowSums(as.matrix(beta) * M)      
-  }
-  
-  if (d[3]>1) dim(y) <- c(D[1],D[2],d[3]) else
-              dim(y) <- c(D[1],D[2])
-  y <- attrcp(x,y)
-  attr(y,'longitude') <- lon.new
-  attr(y,'latitude') <- lat.new
-  attr(y,'dimensions') <- dim(y)
-  if (verbose) print(paste("New dimensions:",attr(y,'dimensions')[1],"x",
-             attr(y,'dimensions')[2],"x",attr(y,'dimensions')[3] ))
-  attr(y,'history') <- history.stamp(x)
-  invisible(y)
-}
-
-
-
-regrid.eof <- function(x,is,verbose=FALSE) {
-  stopifnot(inherits(x,'eof'))
+regrid.pca <- function(x,is,verbose=FALSE) {
+  stopifnot(inherits(x,'pca'))
   if (is.list(is)) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
   if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof')) ) {
     lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
@@ -361,7 +250,7 @@ regrid.eof <- function(x,is,verbose=FALSE) {
               length(lat.old),"to",
               length(lon.new),"x",length(lat.new)))  
 
-  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new)
+  beta <- regrid.irregweights(lon.old,lat.old,lon.new,lat.new)
                                           
   #print(dim(beta))
   X <- attr(x,'pattern')
@@ -407,16 +296,18 @@ regrid.eof <- function(x,is,verbose=FALSE) {
   invisible(y)
 }
 
-regrid.eof2field <- function(x,is) {
-  stopifnot(inherits(x,'field'),inherits(is,'list'))
-  print("regrid.eof.field - estimate EOFs")
+
+
+regrid.pca2station <- function(x,is) {
+  stopifnot(inherits(x,'station'),inherits(is,'list'))
+  print("regrid.pca.station - estimate EOFs")
 
  #greenwich <- attr(x,'greenwich')
   if ( greenwich & (min(lon.new < 0)) ) x <- g2dl(x,greenwich=FALSE)
-  eof0 <- EOF(x)
-  eof1 <- regrid(eof0,is)
+  pca0 <- PCA(x)
+  pca1 <- regrid(pca0,is)
   print("Reconstruct field from EOFs")
-  y <- eof2field(eof1)
+  y <- pca2station(pca1)
   if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
   #attr(y,'history') <- c(attr(X,'history'),'regrid.eof2field')
   #attr(y,'date-stamp') <- date()
@@ -424,9 +315,3 @@ regrid.eof2field <- function(x,is) {
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
-
-
-
-
-
-

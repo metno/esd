@@ -7,6 +7,9 @@
 \alias{regrid.eof}
 \alias{regrid.eof2field}
 \alias{sparseMproduct}
+\alias{nearest}
+\alias{nearest.station}
+\alias{nearest.field}
 \title{Regrid}
 \description{Fast transform data from one longitude-latitude grid to another
   through bi-linear interpolation. The regridding is done by first
@@ -41,6 +44,9 @@ regrid.default(x,is,verbose=FALSE,...)
 regrid.field(x,is,verbose=FALSE,...) 
 regrid.matrix(x,is,verbose=FALSE,...) 
 regrid.eof(x,is,verbose=FALSE)
+nearest(x,is,...)
+nearest.station(x,is)
+nearest.field(x,is)
 }
 \arguments{
 \item{xo}{Old x-coordinates (longitudes)}
