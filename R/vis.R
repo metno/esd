@@ -206,10 +206,10 @@ cumugram <- function(x,it=NULL,prog=FALSE,...) {
   tm <- julian(as.Date('1900-12-31')) - julian(as.Date('1900-01-01'))
   zn <- coredata(z[length(z)-1])
   n <- 365
-  browser()
-  zp <- length(z)/n * zn + (1-length(z))/n * quantile(y.rest,0.95,na.rm=TRUE)
-  zm <- length(z)/n * zn + (1-length(z))/n * quantile(y.rest,0.05,na.rm=TRUE)
-  zz <- length(z)/n * zn + (1-length(z))/n * mean(y.rest,na.rm=TRUE)
+  #browser()
+  zp <- length(z)/n * zn + (1-length(z)/n) * quantile(y.rest,0.95,na.rm=TRUE)
+  zm <- length(z)/n * zn + (1-length(z)/n) * quantile(y.rest,0.05,na.rm=TRUE)
+  zz <- length(z)/n * zn + (1-length(z)/n) * mean(y.rest,na.rm=TRUE)
   if (prog) {
     polygon(c(tn,rep(tm,2),tn),c(zn,zp,zm,zn),
             col=rgb(0.5,0.5,0.5,0.1),border=rgb(0.5,0.5,0.5,0.2),lwd=2)
