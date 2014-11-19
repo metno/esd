@@ -114,7 +114,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   RCM <- zoo(t(rcm),order.by=time)
   attr(RCM,'longitude') <- c(lon[startx:(startx+countx-1),starty:(starty+county-1)])
   attr(RCM,'latitude') <- c(lat[startx:(startx+countx-1),starty:(starty+county-1)])
-  attr(RCM,'altitude') <- rep(NA,length(lon))
+  attr(RCM,'altitude') <- rep(NA,length(lon[startx:(startx+countx-1),starty:(starty+county-1)]))
   attr(RCM,'variable') <- param
   attr(RCM,'unit') <- vunit
   attr(RCM,'source') <- ncfile
