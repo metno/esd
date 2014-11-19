@@ -219,7 +219,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
             col=rgb(0.5,0.5,0.5,0.1),border=rgb(0.5,0.5,0.5,0.2),lwd=2)
     lines(c(tn,tm),c(zn,zz),col=rgb(0.3,0.3,0.3,0.1),lwd=3)
     text(tm,zp,round(zp,1),pos=3,cex=0.5,col='grey40')
-    text(tm,zm,round(zm,1),pos=3,cex=0.5,col='grey40')
+    text(tm,zm,round(zm,1),pos=1,cex=0.5,col='grey40')
     text(tm,zz,round(zz,1),pos=4,cex=0.75)
     print(paste('Prognosis for end-of-year: ',round(zz,1),' (',round(zp,1),',',round(zm,1),')',sep=''))
   }
