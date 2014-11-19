@@ -206,6 +206,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,...) {
   tm <- julian(as.Date('1900-12-31')) - julian(as.Date('1900-01-01'))
   zn <- coredata(z[length(z)])
   n <- 365
+  browser()
   zp <- length(z)/n * zn + (1-length(z))/n * quantile(y.rest,0.95,na.rm=TRUE)
   zm <- length(z)/n * zn + (1-length(z))/n * quantile(y.rest,0.05,na.rm=TRUE)
   zz <- length(z)/n * zn + (1-length(z))/n * mean(y.rest,na.rm=TRUE)
