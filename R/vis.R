@@ -154,6 +154,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,...) {
 
   #print('Find the y-range')
   y.rest <- rep(NA,ny)
+  ylim <- max(coredata(x),na.rm=TRUE) # to avoid getting warnings with empty vectors.
   for (i in 1:ny) {
     y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
