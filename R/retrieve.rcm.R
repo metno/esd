@@ -42,37 +42,53 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       y <- is
       is <- list(lon=range(c(lon(y))),lat=range(c(lat(y))))
       rm('y')
-    }
-    nms <- names(is)    
-    iy <- grep("lat", tolower(substr(nms, 1, 3)))
-    if (length(iy)>0) {
-      lat.rng <- range(is[[iy]])
-      mx <- trunc(d[1]/2)  # use the middle of the region for defining latitude range
-      suby <- (lat.rng[1] <= lat[mx,]) & (lat.rng[2] >= lat[mx,])
-      #print(lat[mx,suby])
-      starty <- min( (1:length(lat[1,]))[suby] )
-      county <- sum(suby)
-      if (verbose) print(paste('latitudes:',min(is[[iy]]),'-',max(is[[iy]]),
-                               'extracted:',min(lat[,suby]),'-',max(lat[,suby]),
-                               'start=',starty,'count=',county))
-    } else {starty <- 1; county <- d[2]; iy <- NA}
+    } else if (is.list(is)) {
+      nms <- names(is)    
+      iy <- grep("lat", tolower(substr(nms, 1, 3)))
+      if (length(iy)>0) {
+        lat.rng <- range(is[[iy]])
+        mx <- trunc(d[1]/2)  # use the middle of the region for defining latitude range
+        suby <- (lat.rng[1] <= lat[mx,]) & (lat.rng[2] >= lat[mx,])
+        #print(lat[mx,suby])
+        starty <- min( (1:length(lat[1,]))[suby] )
+        county <- sum(suby)
+        if (verbose) print(paste('latitudes:',min(is[[iy]]),'-',max(is[[iy]]),
+                                  'extracted:',min(lat[,suby]),'-',max(lat[,suby]),
+                                  'start=',starty,'count=',county))
+      } else if (len(grep("iy", tolower(substr(nms, 1, 2))))>0) {
+      # Select single columns or rows in the spatial maxtix:
+        iy <- grep("iy", tolower(substr(nms, 1, 2)))
+        starty <- min(is[[iy]]); county <- max(is[[iy]])
+      } else {starty <- 1; county <- d[2]}
   
-    ix <- grep("lon", tolower(substr(nms, 1, 3)))
-    if (length(ix)>0) {
-    # The coordinates lon and lat are [X,Y] maxtrices:
-      my <- trunc(d[2]/2) # use the middle of the region for defining longitude range
-      lon.rng <- range(is[[ix]]) 
-      subx <- (lon.rng[1] <= lon[,my]) & (lon.rng[2] >= lon[,my])
-      startx <- min( (1:length(lon[,my]))[subx] )
-      countx <- sum(subx)
-      if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),
-                               'extracted:',min(lon[subx,]),'-',max(lon[subx,]),
-                               'start=',startx,'count=',countx))
-    } else {startx <- 1; countx <- d[1]; ix <- NA}
+      ix <- grep("lon", tolower(substr(nms, 1, 3)))
+      if (length(ix)>0) {
+      # The coordinates lon and lat are [X,Y] maxtrices:
+        my <- trunc(d[2]/2) # use the middle of the region for defining longitude range
+        lon.rng <- range(is[[ix]]) 
+        subx <- (lon.rng[1] <= lon[,my]) & (lon.rng[2] >= lon[,my])
+        startx <- min( (1:length(lon[,my]))[subx] )
+        countx <- sum(subx)
+        if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),
+                                  'extracted:',min(lon[subx,]),'-',max(lon[subx,]),
+                                  'start=',startx,'count=',countx))
+      } else if (len(grep("ix", tolower(substr(nms, 1, 2))))>0) {
+      # Select single columns or rows in the spatial maxtix:
+        ix <- grep("ix", tolower(substr(nms, 1, 2)))
+        startx <- min(is[[ix]]); countx <- max(is[[ix]])
+      } else {startx <- 1; countx <- d[1]}
+    
+    } else if (is.numeric(is) | is.integer(is)) {
+    # Select 
+      startx <- 1
+      starty <- min(it) %/% d[1] + 1
+      countx <- d[1]
+      county <- max(it) %/% d[1] + 1
+      if (verbose) print(paste('selecting is: ',min(is),'-',max(is), 'reads rows',starty,'to',county))
+    }
   } else {
     startx <- 1; countx <- d[1]; 
     starty <- 1; county <- d[2]; 
-    ix <- NA; iy <- NA
   }
   
   # Extract only the time of interest: assume only an interval
@@ -102,19 +118,29 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     } 
   } else {startt <- 1; countt <- length(time); it <- NA}
   time <- time[startt:(startt+countt-1)]
-
+  lon <- c(lon[startx:(startx+countx-1),starty:(starty+county-1)])
+  lat <- c(lat[startx:(startx+countx-1),starty:(starty+county-1)])
   start <- c(startx,starty,startt)
   count <- c(countx,county,countt)
   if (verbose) {print(start); print(count)}
   rcm <- ncvar_get(ncold,varid=param,start=start, count=count)
   nc_close( ncold )
-
+  
   d <- dim(rcm)
   dim(rcm) <- c(d[1]*d[2],d[3])
+  
+  if (is.numeric(is) | is.integer(is)) {
+  # If only reading a set index, then remove the ones before and after, i.e. read the first 1000 grid points or
+  # the next 1000 grid points. Useful for processing the data chunck-wise.
+    i1 <- min(it) %% d[1]
+    i2 <- (max(it) %/% d[1])*d[1] + max(it) %% d[1]
+    rcm <- rcm[i1:i2,]
+    lon <- lon[i1:i2]; lat <- lat[i1:i2]
+  }
   RCM <- zoo(t(rcm),order.by=time)
-  attr(RCM,'longitude') <- c(lon[startx:(startx+countx-1),starty:(starty+county-1)])
-  attr(RCM,'latitude') <- c(lat[startx:(startx+countx-1),starty:(starty+county-1)])
-  attr(RCM,'altitude') <- rep(NA,length(lon[startx:(startx+countx-1),starty:(starty+county-1)]))
+  attr(RCM,'longitude') <- lon
+  attr(RCM,'latitude') <- lat
+  attr(RCM,'altitude') <- rep(NA,length(lon))
   attr(RCM,'variable') <- param
   attr(RCM,'unit') <- vunit
   attr(RCM,'source') <- ncfile
