@@ -55,7 +55,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
         if (verbose) print(paste('latitudes:',min(is[[iy]]),'-',max(is[[iy]]),
                                   'extracted:',min(lat[,suby]),'-',max(lat[,suby]),
                                   'start=',starty,'count=',county))
-      } else if (len(grep("iy", tolower(substr(nms, 1, 2))))>0) {
+      } else if (length(grep("iy", tolower(substr(nms, 1, 2))))>0) {
       # Select single columns or rows in the spatial maxtix:
         iy <- grep("iy", tolower(substr(nms, 1, 2)))
         starty <- min(is[[iy]]); county <- max(is[[iy]])
@@ -72,7 +72,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
         if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),
                                   'extracted:',min(lon[subx,]),'-',max(lon[subx,]),
                                   'start=',startx,'count=',countx))
-      } else if (len(grep("ix", tolower(substr(nms, 1, 2))))>0) {
+      } else if (length(grep("ix", tolower(substr(nms, 1, 2))))>0) {
       # Select single columns or rows in the spatial maxtix:
         ix <- grep("ix", tolower(substr(nms, 1, 2)))
         startx <- min(is[[ix]]); countx <- max(is[[ix]])
