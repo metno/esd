@@ -79,7 +79,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       ix <- grep("lon", tolower(substr(nms, 1, 3)))
       if (length(ix)>0) {
       # The coordinates lon and lat are [X,Y] maxtrices:
-        lonn <- apply(lat,1,min); lonx <- apply(lat,1,min)
+        lonn <- apply(lon,1,min); lonx <- apply(lon,1,min)
         #my <- trunc(d[2]/2) # use the middle of the region for defining longitude range
         lon.rng <- range(is[[ix]]) 
         subx <- (lon.rng[1] <= lonn) & (lon.rng[2] >= lonx)
