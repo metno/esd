@@ -182,8 +182,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   RCM <- zoo(t(rcm),order.by=time)
   attr(RCM,'longitude') <- c(lon)
   attr(RCM,'latitude') <- c(lat)
-  #attr(RCM,'lat_ref') <- lat.ref
-  #attr(RCM,'lon_ref') <- lon.ref
+  attr(RCM,'count') <- count
+  attr(RCM,'start') <- start
   attr(RCM,'altitude') <- rep(NA,length(lon))
   attr(RCM,'variable') <- param
   attr(RCM,'unit') <- vunit
