@@ -31,7 +31,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   lonid <- vnames[is.element(tolower(substr(vnames,1,3)),'lon')]
   lat <- ncvar_get(ncold,varid=latid)
   lon <- ncvar_get(ncold,varid=lonid)
-  d <- dim(lat)
+  time <- ncvar_get(ncold,varid='time')
+  d <- c(dim(lat),length(time))
   #str(lat); str(lon)
   if (verbose) print(paste('region: ',min(lon),'-',max(lon),'E /',min(lat),'-',max(lat)))
   
@@ -105,7 +106,6 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   }
   
   # Extract only the time of interest: assume only an interval
-  time <- ncvar_get(ncold,varid='time')
   #print(tunit); browser()
   time <- switch(substr(tunit,1,3),'day'=as.Date(time+julian(as.Date(torg))),
        'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
@@ -130,7 +130,6 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       startt <- min(it); countt <- max(it) - startt + 1
     } 
   } else {startt <- 1; countt <- length(time); it <- NA}
-  time <- time[startt:(startt+countt-1)]
   
   # This information is used when retrieve.rcm is used again to extract similar region
   mx <- trunc(d[1]/2); my <- trunc(d[2]/2)
@@ -148,11 +147,12 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   }
   if (startt + countt > d[3]) {
     countt <- d[3] - startt + 1
-      warning("retrieve.rcm: number of points in time exceeds data dimensions")
+    warning("retrieve.rcm: number of points in time exceeds data dimensions")
   }
   
   lon <- lon[startx:(startx+countx-1),starty:(starty+county-1)]
   lat <- lat[startx:(startx+countx-1),starty:(starty+county-1)]
+  time <- time[startt:(startt+countt-1)]
   start <- c(startx,starty,startt)
   count <- c(countx,county,countt)
   
