@@ -127,13 +127,16 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
                 ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
                 #y <- x[ii,is] # REB Not here
+            } else {
+              ii <- rep(FALSE,length(t))
+              warning("subset.station: did not reckognise the selection citerion for 'it'")
             }
     }
     else {## keep all values
         if (verbose) print('it is not specified')
         it <- 1:length(t); ii <- is.finite(it)
     }
-    browser()
+    #browser()
     
     class(x) -> cls
     ##print(cls)
