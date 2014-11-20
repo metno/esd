@@ -352,9 +352,11 @@ season.abb <- function() {
   season.abb <- c('annual','djf','jfm','fma','mam','amj',
                   'mjj','jja','jas','aso',
                   'son','ond','ndj','ondjfm','amjjas',
-                  'ndjf','jjas','mjjas')
+                  'ndjf','jjas','mjjas',
+                  'dfjm','dfjma','ndjma')
   season<-list(1:12,c(12,1,2),1:3,2:4,3:5,4:6,5:7,6:8,7:9,8:10,9:11,10:12,
-                c(11,12,1),c(10:12,1:3),4:9,c(11,12,1,2),6:9,5:9)
+                c(11,12,1),c(10:12,1:3),4:9,c(11,12,1,2),6:9,5:9,
+                c(12,1,2,3),c(12,1,2,3,4),c(11,12,1,2,3,4))
   names(season) <- season.abb
   season
 }
