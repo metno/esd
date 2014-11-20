@@ -74,21 +74,21 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## Generate sequence of days, months or years if range of it value is given
     if ((length(it)>2) & (is.character(it)))
         it <- as.Date(it)
-    else if ( length(it) == 2 ) {
-        if (is.character(it)) {
-            if (inherits(x,"month")) ## it is a month or season
-                it <- seq(as.Date(it[1]),as.Date(it[2]),by='month')
-            else if (inherits(x,"day")) ## it is a day
-                it <- seq(as.Date(it[1]),as.Date(it[2]),by='day')
-            else if (inherits(x,"annual")) ## it is a year
-                it <- seq(as.Date(it[1]),as.Date(it[2]),by='year')
-        } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-            if (min(it) > 1500) ## it is a year
-                it <- seq(it[1],it[2],by=1)
-            ##print("HERE"); print(it)
-            ii <- it # quick fix
-        }
-    }
+ #   else if ( length(it) == 2 ) {
+ #   # This part will never be carried out? Comment out 
+ #       if (is.character(it)) {
+ #           if (inherits(x,"month")) ## it is a month or season
+ #               it <- seq(as.Date(it[1]),as.Date(it[2]),by='month')
+ #           else if (inherits(x,"day")) ## it is a day
+ #               it <- seq(as.Date(it[1]),as.Date(it[2]),by='day')
+ #           else if (inherits(x,"annual")) ## it is a year
+ #               it <- seq(as.Date(it[1]),as.Date(it[2]),by='year')
+ #       } else if ((class(it)=="numeric") | (class(it)=="integer")) {
+ #           if (min(it) > 1500) ## it is a year
+ #               it <- seq(it[1],it[2],by=1)
+ #           ##print("HERE"); print(it)
+ #       }
+ #   }
   
     ## browser()
     ## get the subset indices in ii
@@ -116,14 +116,14 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     else if (is.character(it)) { ## added AM 10-06-2014
         if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
             ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
-            y <- x[ii,is]
+            #y <- x[ii,is] #  REB Not here
         } else
             if (sum(is.element(tolower(it),names(season.abb())))>0) {
                 if (verbose) print("Seasonally selected")
                 if (verbose) print(table(month(x)))
                 if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
                 ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
-                y <- x[ii,is]
+                #y <- x[ii,is] # REB Not here
             }
     }
     else ## keep all values
