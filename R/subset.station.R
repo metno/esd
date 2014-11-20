@@ -86,6 +86,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             if (min(it) > 1500) ## it is a year
                 it <- seq(it[1],it[2],by=1)
             ##print("HERE"); print(it)
+            ii <- it # quick fix
         }
     }
   
