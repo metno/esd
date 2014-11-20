@@ -128,6 +128,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     }
     else ## keep all values
         ii <- 1:length(t)
+    browser()
     
     class(x) -> cls
     ##print(cls)
