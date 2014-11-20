@@ -54,6 +54,9 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
         lat.rng <- range(is[[iy]])
         mx <- trunc(d[1]/2)  # use the middle of the region for defining latitude range
         suby <- (lat.rng[1] <= lat[mx,]) & (lat.rng[2] >= lat[mx,])
+        if (sum(suby)==0) stop(paste('retrieve.rcm: problems, the requested latitude range (',
+                                      lat.rng[1],'-',lat.rng[2],') is not within present data (',
+                                      min(lat[mx,]),'-',max(lat[mx,]),')'))
         #print(lat[mx,suby])
         starty <- min( (1:length(lat[1,]))[suby] )
         county <- sum(suby)
@@ -72,9 +75,12 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
         my <- trunc(d[2]/2) # use the middle of the region for defining longitude range
         lon.rng <- range(is[[ix]]) 
         subx <- (lon.rng[1] <= lon[,my]) & (lon.rng[2] >= lon[,my])
+        if (sum(subx)==0) stop(paste('retrieve.rcm: problems, the requested longitude range (',
+                                      lon.rng[1],'-',lon.rng[2],') is not within present data (',
+                                      min(lon[,my]),'-',max(lon[,my]),')'))
         startx <- min( (1:length(lon[,my]))[subx] )
         countx <- sum(subx)
-        if (verbose) print(paste('longitudes:',min(is[[ix]]),max(is[[ix]]),
+        if (verbose) print(paste('longitudes:',min(is[[ix]]),'-',max(is[[ix]]),
                                   'extracted:',min(lon[subx,]),'-',max(lon[subx,]),
                                   'start=',startx,'count=',countx))
       } else if (length(grep("ix", tolower(substr(nms, 1, 2))))>0) {
@@ -85,6 +91,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     
     } else if (is.numeric(is) | is.integer(is)) {
     # Select 
+      if (verbose) print('Select by spatial index')
       startx <- 1
       starty <- min(it) %/% d[1] + 1
       countx <- d[1]
