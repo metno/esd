@@ -137,10 +137,16 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   lon.ref <- range(lon[,my])
   lat.ref <- range(lat[mx,])
   
+  # Test the dimensions so that the count does not exceed the array:
+  if (startx + countx > d[1]) countx <- d[1] - startx + 1
+  if (starty + county > d[2]) county <- d[2] - starty + 1
+  if (startt + countt > d[3]) countt <- d[3] - startt + 1
+  
   lon <- lon[startx:(startx+countx-1),starty:(starty+county-1)]
   lat <- lat[startx:(startx+countx-1),starty:(starty+county-1)]
   start <- c(startx,starty,startt)
   count <- c(countx,county,countt)
+  
   if (verbose) {print(start); print(count)}
   rcm <- ncvar_get(ncold,varid=param,start=start, count=count)
   nc_close( ncold )
