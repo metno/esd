@@ -44,7 +44,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       if (verbose) print(paste('Use spatial coverage from an object:',floor(min(c(lon(y)))),'-',
                           ceiling(max(c(lon(y)))),'E /',floor(min(c(lat(y)))),'-',ceiling(max(c(lat(y)))),'N'))
       if (!is.null(attr(y,'lon_ref')) & !is.null(attr(y,'lat_ref'))) 
-        is <- list(lon=attr(y,'lon_ref'),lat=attr(y,'lat_ref')) else
+        is <- list( lon=attr(y,'lon_ref'),
+                    lat=attr(y,'lat_ref') ) else
         is <- list(lon=c(floor(min(c(lon(y)))),ceiling(max(c(lon(y))))),
                    lat=c(floor(min(c(lat(y)))),ceiling(max(c(lat(y))))))
       rm('y')
@@ -102,7 +103,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     }
   } else {
     startx <- 1; countx <- d[1]; 
-    starty <- 1; county <- d[2]; 
+    starty <- 1; county <- d[2];
+    subx <- rep(TRUE,d[1]); suby <- rep(TRUE,d[2])
   }
   
   # Extract only the time of interest: assume only an interval
@@ -133,8 +135,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   
   # This information is used when retrieve.rcm is used again to extract similar region
   mx <- trunc(d[1]/2); my <- trunc(d[2]/2)
-  lon.ref <- range(lon[,my])
-  lat.ref <- range(lat[mx,])
+  lon.ref <- range(lon[subx,my])
+  lat.ref <- range(lat[mx,suby])
   
   # Test the dimensions so that the count does not exceed the array:
   if (startx + countx - 1 > d[1]) {
