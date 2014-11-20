@@ -42,9 +42,10 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       y <- is
       if (verbose) print(paste('Use spatial coverage from an object:',floor(min(c(lon(y)))),'-',
                           ceiling(max(c(lon(y)))),'E /',floor(min(c(lat(y)))),'-',ceiling(max(c(lat(y)))),'N'))
-    
-      is <- list(lon=c(floor(min(c(lon(y)))),ceiling(max(c(lon(y))))),
-                 lat=c(floor(min(c(lat(y)))),ceiling(max(c(lat(y))))))
+      if (!is.null(attr(RCM,'lon_ref')) & !is.null(attr(RCM,'lat_ref'))) 
+        is <- list(lon=attr(RCM,'lon_ref'),lat=attr(RCM,'lat_ref')) else
+        is <- list(lon=c(floor(min(c(lon(y)))),ceiling(max(c(lon(y))))),
+                   lat=c(floor(min(c(lat(y)))),ceiling(max(c(lat(y))))))
       rm('y')
     } 
     if (is.list(is)) {
@@ -130,8 +131,14 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     } 
   } else {startt <- 1; countt <- length(time); it <- NA}
   time <- time[startt:(startt+countt-1)]
-  lon <- c(lon[startx:(startx+countx-1),starty:(starty+county-1)])
-  lat <- c(lat[startx:(startx+countx-1),starty:(starty+county-1)])
+  
+  # This information is used when retrieve.rcm is used again to extract similar region
+  mx <- trunc(d[1]/2); my <- trunc(d[2]/2)
+  lon.ref <- range(lon[,my])
+  lat.ref <- range(lat[mx,])
+  
+  lon <- lon[startx:(startx+countx-1),starty:(starty+county-1)]
+  lat <- lat[startx:(startx+countx-1),starty:(starty+county-1)]
   start <- c(startx,starty,startt)
   count <- c(countx,county,countt)
   if (verbose) {print(start); print(count)}
@@ -150,8 +157,10 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     lon <- lon[i1:i2]; lat <- lat[i1:i2]
   }
   RCM <- zoo(t(rcm),order.by=time)
-  attr(RCM,'longitude') <- lon
-  attr(RCM,'latitude') <- lat
+  attr(RCM,'longitude') <- c(lon)
+  attr(RCM,'latitude') <- c(lat)
+  attr(RCM,'lat_ref') <- lat.ref
+  attr(RCM,'lon_ref') <- lon.ref
   attr(RCM,'altitude') <- rep(NA,length(lon))
   attr(RCM,'variable') <- param
   attr(RCM,'unit') <- vunit
