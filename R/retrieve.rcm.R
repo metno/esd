@@ -72,7 +72,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       } else if (length(grep("iy", tolower(substr(nms, 1, 2))))>0) {
       # Select single columns or rows in the spatial maxtix:
         iy <- grep("iy", tolower(substr(nms, 1, 2)))
-        starty <- min(is[[iy]]); county <- max(is[[iy]])
+        starty <- min(is[[iy]]); county <- length(is[[iy]])
         suby <- is.element(1:d[2],iy)
       } else {starty <- 1; county <- d[2]; suby <- is.finite(1:d[2])}
   
@@ -94,7 +94,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       } else if (length(grep("ix", tolower(substr(nms, 1, 2))))>0) {
       # Select single columns or rows in the spatial maxtix:
         ix <- grep("ix", tolower(substr(nms, 1, 2)))
-        startx <- min(is[[ix]]); countx <- max(is[[ix]])
+        startx <- min(is[[ix]]); countx <- length(is[[ix]])
         subx <- is.element(1:d[1],ix)
       } else {startx <- 1; countx <- d[1]; subx <- is.finite(1:d[1])}
     
