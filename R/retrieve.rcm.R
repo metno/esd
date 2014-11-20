@@ -42,8 +42,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       y <- is
       if (verbose) print(paste('Use spatial coverage from an object:',floor(min(c(lon(y)))),'-',
                           ceiling(max(c(lon(y)))),'E /',floor(min(c(lat(y)))),'-',ceiling(max(c(lat(y)))),'N'))
-      if (!is.null(attr(RCM,'lon_ref')) & !is.null(attr(RCM,'lat_ref'))) 
-        is <- list(lon=attr(RCM,'lon_ref'),lat=attr(RCM,'lat_ref')) else
+      if (!is.null(attr(y,'lon_ref')) & !is.null(attr(y,'lat_ref'))) 
+        is <- list(lon=attr(y,'lon_ref'),lat=attr(y,'lat_ref')) else
         is <- list(lon=c(floor(min(c(lon(y)))),ceiling(max(c(lon(y))))),
                    lat=c(floor(min(c(lat(y)))),ceiling(max(c(lat(y))))))
       rm('y')
