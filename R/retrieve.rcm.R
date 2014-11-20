@@ -44,9 +44,9 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       y <- is
       if (verbose) print(paste('Use spatial coverage from an object:',floor(min(c(lon(y)))),'-',
                           ceiling(max(c(lon(y)))),'E /',floor(min(c(lat(y)))),'-',ceiling(max(c(lat(y)))),'N'))
-      if (!is.null(attr(y,'lon_ref')) & !is.null(attr(y,'lat_ref'))) 
-        is <- list( lon=attr(y,'lon_ref'),
-                    lat=attr(y,'lat_ref') ) else
+#      if (!is.null(attr(y,'lon_ref')) & !is.null(attr(y,'lat_ref'))) 
+#        is <- list( lon=attr(y,'lon_ref'),
+#                    lat=attr(y,'lat_ref') ) else
         is <- list(lon=c(floor(min(c(lon(y)))),ceiling(max(c(lon(y))))),
                    lat=c(floor(min(c(lat(y)))),ceiling(max(c(lat(y))))))
       rm('y')
@@ -56,11 +56,13 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       iy <- grep("lat", tolower(substr(nms, 1, 3)))
       if (length(iy)>0) {
         lat.rng <- range(is[[iy]])
-        mx <- trunc(d[1]/2)  # use the middle of the region for defining latitude range
-        suby <- (lat.rng[1] <= lat[mx,]) & (lat.rng[2] >= lat[mx,])
+        # use the smallest and largest 
+        latn <- apply(lat,2,min); latx <- apply(lat,2,min)
+        #mx <- trunc(d[1]/2)  # use the middle of the region for defining latitude range
+        suby <- (lat.rng[1] <= latn) & (lat.rng[2] >= latx)
         if (sum(suby)==0) stop(paste('retrieve.rcm: problems, the requested latitude range (',
                                       lat.rng[1],'-',lat.rng[2],') is not within present data (',
-                                      min(lat[mx,]),'-',max(lat[mx,]),')'))
+                                      min(latn),'-',max(latx),')'))
         #print(lat[mx,suby])
         starty <- min( (1:length(lat[1,]))[suby] )
         county <- sum(suby)
@@ -77,13 +79,14 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       ix <- grep("lon", tolower(substr(nms, 1, 3)))
       if (length(ix)>0) {
       # The coordinates lon and lat are [X,Y] maxtrices:
-        my <- trunc(d[2]/2) # use the middle of the region for defining longitude range
+        lonn <- apply(lat,1,min); lonx <- apply(lat,1,min)
+        #my <- trunc(d[2]/2) # use the middle of the region for defining longitude range
         lon.rng <- range(is[[ix]]) 
-        subx <- (lon.rng[1] <= lon[,my]) & (lon.rng[2] >= lon[,my])
+        subx <- (lon.rng[1] <= lonn) & (lon.rng[2] >= lonx)
         if (sum(subx)==0) stop(paste('retrieve.rcm: problems, the requested longitude range (',
                                       lon.rng[1],'-',lon.rng[2],') is not within present data (',
-                                      min(lon[,my]),'-',max(lon[,my]),')'))
-        startx <- min( (1:length(lon[,my]))[subx] )
+                                      min(lonn),'-',max(lonx),')'))
+        startx <- min( (1:length(lonx))[subx] )
         countx <- sum(subx)
         if (verbose) print(paste('longitudes:',min(is[[ix]]),'-',max(is[[ix]]),
                                   'extracted:',min(lon[subx,]),'-',max(lon[subx,]),
@@ -137,9 +140,9 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   } else {startt <- 1; countt <- length(time); it <- NA}
   
   # This information is used when retrieve.rcm is used again to extract similar region
-  mx <- trunc(d[1]/2); my <- trunc(d[2]/2)
-  lon.ref <- range(lon[subx,my])
-  lat.ref <- range(lat[mx,suby])
+  #mx <- trunc(d[1]/2); my <- trunc(d[2]/2)
+  #lon.ref <- range(lon[subx,my])
+  #lat.ref <- range(lat[mx,suby])
   
   # Test the dimensions so that the count does not exceed the array:
   if (startx + countx - 1 > d[1]) {
@@ -179,8 +182,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   RCM <- zoo(t(rcm),order.by=time)
   attr(RCM,'longitude') <- c(lon)
   attr(RCM,'latitude') <- c(lat)
-  attr(RCM,'lat_ref') <- lat.ref
-  attr(RCM,'lon_ref') <- lon.ref
+  #attr(RCM,'lat_ref') <- lat.ref
+  #attr(RCM,'lon_ref') <- lon.ref
   attr(RCM,'altitude') <- rep(NA,length(lon))
   attr(RCM,'variable') <- param
   attr(RCM,'unit') <- vunit
