@@ -92,29 +92,32 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   
     ## browser()
     ## get the subset indices in ii
-    if ((class(it)=="numeric") | (class(it)=="integer")) {    
-        if ( ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 13)) &
-             (inherits(x,"month") | inherits(x,"season")) ) {## it is a month or season
-          # REB 23.04.14: need to handle monthly and seasonal object differently
-            if (inherits(x,"month")) it.mo <- it else
-            if (inherits(x,"season")) it.mo <- c(1,4,7,10)[it]
-            ii <- is.element(mo,it.mo)
-        }  #
-        else if ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 31)) {## it is a day
-            it.dy <- it
-            ii <- is.element(dy,it.dy)
-        }
-        else if (min(it) > 1500) {## it is a year
-            it.yr <- it
-            ii <- is.element(yr,it.yr)
-        }
-    }
-    else if (inherits(it,c("Date","yearmon"))) {       
+    if ((class(it)=="numeric") | (class(it)=="integer")) {
+        if (verbose) print('it is numeric or integer')
+        ii <- is.element(1:length(t),it)
+ #       if ( ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 13)) &
+ #            (inherits(x,"month") | inherits(x,"season")) ) {## it is a month or season
+ #         # REB 23.04.14: need to handle monthly and seasonal object differently
+ #           if (inherits(x,"month")) it.mo <- it else
+ #           if (inherits(x,"season")) it.mo <- c(1,4,7,10)[it]
+ #           ii <- is.element(mo,it.mo)
+ #       }  #
+ #       else if ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 31)) {## it is a day
+ #           it.dy <- it
+ #           ii <- is.element(dy,it.dy)
+ #       }
+ #       else if (min(it) > 1500) {## it is a year
+ #           it.yr <- it
+ #           ii <- is.element(yr,it.yr)
+ #       }
+    } else if (inherits(it,c("Date","yearmon"))) {       
 #        ii <- is.element(t,it)
+        if (verbose) print('it is a date object')
         ii <- (t >= min(it)) & (t <= max(it))
-    }
-    else if (is.character(it)) { ## added AM 10-06-2014
+    } else if (is.character(it)) { ## added AM 10-06-2014
+        if (verbose) print('it is a string')
         if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
+            if (verbose) print('Monthly selected')
             ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
             #y <- x[ii,is] #  REB Not here
         } else
@@ -126,8 +129,10 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 #y <- x[ii,is] # REB Not here
             }
     }
-    else ## keep all values
-        ii <- 1:length(t)
+    else {## keep all values
+        if (verbose) print('it is not specified')
+        it <- 1:length(t); ii <- is.finite(it)
+    }
     browser()
     
     class(x) -> cls
