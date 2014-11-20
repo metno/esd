@@ -33,6 +33,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   lon <- ncvar_get(ncold,varid=lonid)
   time <- ncvar_get(ncold,varid='time')
   d <- c(dim(lat),length(time))
+  
   #str(lat); str(lon)
   if (verbose) print(paste('region: ',min(lon),'-',max(lon),'E /',min(lat),'-',max(lat)))
   
@@ -70,7 +71,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       # Select single columns or rows in the spatial maxtix:
         iy <- grep("iy", tolower(substr(nms, 1, 2)))
         starty <- min(is[[iy]]); county <- max(is[[iy]])
-      } else {starty <- 1; county <- d[2]}
+        suby <- is.element(1:d[2],iy)
+      } else {starty <- 1; county <- d[2]; suby <- is.finite(1:d[2])}
   
       ix <- grep("lon", tolower(substr(nms, 1, 3)))
       if (length(ix)>0) {
@@ -90,7 +92,8 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
       # Select single columns or rows in the spatial maxtix:
         ix <- grep("ix", tolower(substr(nms, 1, 2)))
         startx <- min(is[[ix]]); countx <- max(is[[ix]])
-      } else {startx <- 1; countx <- d[1]}
+        subx <- is.element(1:d[1],ix)
+      } else {startx <- 1; countx <- d[1]; subx <- is.finite(1:d[1])}
     
     } else if (is.numeric(is) | is.integer(is)) {
     # Select 
