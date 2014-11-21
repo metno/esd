@@ -237,6 +237,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     # otherwise the subindexing results in an empty object
     it <- (1:length(ii))[ii]
     if (is.logical(is)) is <- (1:length(is))[is]
+    browser()
     y <- x[it,is]
 
     class(x) <- cls; class(y) <- cls
