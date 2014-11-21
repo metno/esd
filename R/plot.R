@@ -48,7 +48,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
       # REB 2014-10-03: add an errorbar to the plots.
       std.err <- attr(x,'standard.error')
       segments(index(x),x-std.err,index(x),x+std.err,
-               lwd=3,col=rgb(1,0.5,0.5,0.25))
+               lwd=3,col=rgb(0.5,0.5,0.5,0.25))
 #      d.err <- dim(std.err)
 #      dt <- 0.3*diff(index(x))[1]
 #      if (is.null(d.err)) d.err <- c(length(std.err),1)
