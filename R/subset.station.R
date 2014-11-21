@@ -136,10 +136,11 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
               ii <- rep(FALSE,length(t))
               warning("subset.station: did not reckognise the selection citerion for 'it'")
             }
+      it <- (1:length(ii))[ii]
     }
     else {## keep all values
         if (verbose) print('it is not specified')
-        it <- 1:length(t); ii <- is.finite(it)
+        it <- 1:length(t)
     }
     #browser()
     
@@ -235,7 +236,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #browser()
     # Need to make sure both it and is are same type: here integers for index rather than logical
     # otherwise the subindexing results in an empty object
-    it <- (1:length(ii))[ii]
+    
     if (is.logical(is)) is <- (1:length(is))[is]
     browser()
     y <- x[it,is]
