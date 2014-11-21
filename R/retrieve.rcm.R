@@ -194,7 +194,13 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   nc_close( ncold )
   
   d <- dim(rcm)
-  browser()
+  #browser()
+  if (length(d) != 3) {
+  # If there are less than 3 dimensions, add one dummy dimension. To avoid crashes...
+    n1 <- (1:3)[count==1]; nm <- (1:3)[count>1]
+    D <- rep(1,3); D[nm] <- d; D[n1] <- 1
+    d <- D; rm('D')
+  }
   dim(rcm) <- c(d[1]*d[2],d[3])
   
   if (is.numeric(is) | is.integer(is)) {
