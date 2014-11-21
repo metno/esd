@@ -17,7 +17,7 @@ if (library("ncdf4", logical.return = TRUE)) {
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 
 ## Default function
-retrieve.default <- function(ncfile,...) {
+retrieve.default <- function(ncfile,verbose=TRUE,...) {
 
     X <- NULL
 
@@ -37,10 +37,31 @@ retrieve.default <- function(ncfile,...) {
             print("Library 'ncdf' or 'ncdf4' could be installed")
         }
     
-    if (library("ncdf4",logical.return=TRUE))
-        X <- retrieve.ncdf4(ncfile,...)
-    else if (library("ncdf",logical.return=TRUE))
-        X <- retrieve.ncdf(ncfile,...)
+    if (library("ncdf4",logical.return=TRUE)) {
+        nc <- nc_open(ncfile)
+        lon <- ncvar_get(nc,"lon")
+        lat <- ncvar_get(nc,"lat")
+        if (is.null(dim(lon)) & is.null(dim(lat))) {
+            if (verbose) print('Regular grid field found')
+            X <- retrieve.ncdf4(ncfile,...)
+        }
+        else {
+            if (verbose) print('Irregular grid field found')
+            X <- retrieve.rcm(ncfile,...) 
+        }
+    }
+    else if (library("ncdf",logical.return=TRUE)) {
+        nc <- nc_open(ncfile)
+        lon <- get.var.ncdf(nc,"lon")
+        lat <- get.var.ncdf(nc,"lat")
+        if (is.null(dim(lon)) & is.null(dim(lat))){
+            if (verbose) print('Regular grid field found')
+            X <- retrieve.ncdf(ncfile,...)
+        } else {
+            if (verbose) print('Irregular grid field found')
+            X <- retrieve.rcm(ncfile,...) 
+        }
+    }
     else print("No suitable ncdf or ncdf4 libraries found to read your file or data")
     
 }

@@ -81,18 +81,23 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'method') <- method
   #attr(y,'call') <- match.call()
   attr(y,'history') <- history.stamp(x)
-  dt <- as.numeric(diff(index(x))[1])
-  if (dt==1) tscale <- 'day' else
-  if ( ((dt>=28) & (dt <=31)) |
-       (dt < 0.1) ) tscale <- 'month' else
-  if ( (dt>=89) & (dt <=93) ) tscale <- 'season' else 
-  if ( (dt>=360) & (dt <=366) ) tscale <- 'annual' else
-                                tscale <- 'annual'
-  class(y) <- c("station",tscale,"zoo")
+  dfi <- diff(index(y))
+  if (length(dfi)>0) {
+      dt <- as.numeric(levels(factor(dfi)))
+      if (dt==1)
+          tscale <- 'day'
+      else if (((dt>=28) & (dt <=31)) | (dt < 0.1))
+          tscale <- 'month'
+      else if ( (dt>=89) & (dt <=93) )
+          tscale <- 'season' else 
+      if ((dt>=360) & (dt <=366))
+          tscale <- 'annual'
+      else tscale <- 'annual'
+      class(y) <- c("station",tscale,"zoo")
+  }
+  else print("Warning - A single value has been recorded in the time index of the data")
   return(y)
 }
-
-
 
 as.station.data.frame <-  function (x, loc = NA, param = NA, unit = NA,
                                     lon = NA, lat = NA,

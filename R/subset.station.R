@@ -44,7 +44,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## cntr - selection by country
 
     nval <- function(x) sum(is.finite(x))
-    
+    #browser()
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
     d <- dim(x)
@@ -74,59 +74,69 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## Generate sequence of days, months or years if range of it value is given
     if ((length(it)>2) & (is.character(it)))
         it <- as.Date(it)
-    else if ( length(it) == 2 ) {
-        if (is.character(it)) {
-            if (inherits(x,"month")) ## it is a month or season
-                it <- seq(as.Date(it[1]),as.Date(it[2]),by='month')
-            else if (inherits(x,"day")) ## it is a day
-                it <- seq(as.Date(it[1]),as.Date(it[2]),by='day')
-            else if (inherits(x,"annual")) ## it is a year
-                it <- seq(as.Date(it[1]),as.Date(it[2]),by='year')
-          } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-                if (min(it) > 1500) ## it is a year
-                    it <- seq(it[1],it[2],by=1)
-                #print("HERE"); print(it)
-            }
-      }
+ #   else if ( length(it) == 2 ) {
+ #   # This part will never be carried out? Comment out 
+ #       if (is.character(it)) {
+ #           if (inherits(x,"month")) ## it is a month or season
+ #               it <- seq(as.Date(it[1]),as.Date(it[2]),by='month')
+ #           else if (inherits(x,"day")) ## it is a day
+ #               it <- seq(as.Date(it[1]),as.Date(it[2]),by='day')
+ #           else if (inherits(x,"annual")) ## it is a year
+ #               it <- seq(as.Date(it[1]),as.Date(it[2]),by='year')
+ #       } else if ((class(it)=="numeric") | (class(it)=="integer")) {
+ #           if (min(it) > 1500) ## it is a year
+ #               it <- seq(it[1],it[2],by=1)
+ #           ##print("HERE"); print(it)
+ #       }
+ #   }
   
     ## browser()
     ## get the subset indices in ii
-    if ((class(it)=="numeric") | (class(it)=="integer")) {    
-        if ( ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 13)) &
-             (inherits(x,"month") | inherits(x,"season")) ) {## it is a month or season
-          # REB 23.04.14: need to handle monthly and seasonal object differently
-            if (inherits(x,"month")) it.mo <- it else
-            if (inherits(x,"season")) it.mo <- c(1,4,7,10)[it]
-            ii <- is.element(mo,it.mo)
-        }  #
-        else if ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 31)) {## it is a day
-            it.dy <- it
-            ii <- is.element(dy,it.dy)
-        }
-        else if (min(it) > 1500) {## it is a year
-            it.yr <- it
-            ii <- is.element(yr,it.yr)
-        }
-    }
-    else if (inherits(it,c("Date","yearmon"))) {       
+    if ((class(it)=="numeric") | (class(it)=="integer")) {
+        if (verbose) print('it is numeric or integer')
+        ii <- is.element(1:length(t),it)
+ #       if ( ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 13)) &
+ #            (inherits(x,"month") | inherits(x,"season")) ) {## it is a month or season
+ #         # REB 23.04.14: need to handle monthly and seasonal object differently
+ #           if (inherits(x,"month")) it.mo <- it else
+ #           if (inherits(x,"season")) it.mo <- c(1,4,7,10)[it]
+ #           ii <- is.element(mo,it.mo)
+ #       }  #
+ #       else if ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 31)) {## it is a day
+ #           it.dy <- it
+ #           ii <- is.element(dy,it.dy)
+ #       }
+ #       else if (min(it) > 1500) {## it is a year
+ #           it.yr <- it
+ #           ii <- is.element(yr,it.yr)
+ #       }
+    } else if (inherits(it,c("Date","yearmon"))) {       
 #        ii <- is.element(t,it)
+        if (verbose) print('it is a date object')
         ii <- (t >= min(it)) & (t <= max(it))
-    }
-    else if (is.character(it)) { ## added AM 10-06-2014
+    } else if (is.character(it)) { ## added AM 10-06-2014
+        if (verbose) print('it is a string')
         if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
+            if (verbose) print('Monthly selected')
             ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
-            y <- x[ii,is]
+            #y <- x[ii,is] #  REB Not here
         } else
             if (sum(is.element(tolower(it),names(season.abb())))>0) {
                 if (verbose) print("Seasonally selected")
                 if (verbose) print(table(month(x)))
                 if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
                 ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
-                y <- x[ii,is]
+                #y <- x[ii,is] # REB Not here
+            } else {
+              ii <- rep(FALSE,length(t))
+              warning("subset.station: did not reckognise the selection citerion for 'it'")
             }
     }
-    else ## keep all values
-        ii <- 1:length(t)
+    else {## keep all values
+        if (verbose) print('it is not specified')
+        it <- 1:length(t); ii <- is.finite(it)
+    }
+    #browser()
     
     class(x) -> cls
     ##print(cls)
@@ -138,17 +148,19 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       n <- dim(x)[2]
       selx <- rep(TRUE,n); sely <- selx; selz <- selx
       selc <- selx; seli <- selx; selm <- selx; salt <- selx
-      selp <- selx; selF <- selx
+      selp <- selx; selF <- selx ; sell <- selx
       nms <- names(is)
-      ix <- grep('lon',tolower(substr(nms,1,3)))
-      iy <- grep('lat',tolower(substr(nms,1,3)))
+      il <- grep('loc',tolower(nms))
+      ix <- grep('lon',tolower(nms))
+      iy <- grep('lat',tolower(nms))
       #print(nms); print(c(ix,iy))
-      iz <- grep('alt',tolower(substr(nms,1,3)))
-      ic <- grep('cntr',tolower(substr(nms,1,3)))
-      im <- grep('nmin',tolower(substr(nms,1,3)))
-      ip <- grep('param',tolower(substr(nms,1,3)))
-      id <- grep('stid',tolower(substr(nms,1,3)))
-      iF <- grep('FUN',substr(nms,1,3))
+      iz <- grep('alt',tolower(nms))
+      ic <- grep('cntr',tolower(nms))
+      im <- grep('nmin',tolower(nms))
+      ip <- grep('param',tolower(nms))
+      id <- grep('stid',tolower(nms))
+      iF <- grep('FUN',nms)
+      if (length(il)>0) sloc <- is[[il]] else sloc <- NULL
       if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
       if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
       #print(slon); print(range(lon(x)))
@@ -159,6 +171,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (length(id)>0) sstid <- is[[id]] else sstid <- NULL
       if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
       #print(slat); print(range(lat(x)))
+      if (length(sloc)>0) sell <- is.element(tolower(sloc(x)),sloc)
       if (length(slon)==2) selx <- (lon(x) >= min(slon)) & (lon(x) <= max(slon))
       if (length(slat)==2) sely <- (lat(x) >= min(slat)) & (lat(x) <= max(slat))
       #browser()
@@ -174,9 +187,9 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (length(sstid)>0) seli <- is.element(stid(x),sstid)
       if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...
       ## browser()
-      is <- selx & sely & selz & selc & seli & selm & selp & selF
+      is <- sell & selx & sely & selz & selc & seli & selm & selp & selF
       #print(c(length(is),sum(is),sum(selx),sum(sely)))
-    }
+    } 
     
     #else if (inherits(x0,c("month"))) {
     #    ii <- is.element(mo,it.mo)
@@ -214,7 +227,12 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #else
     #    ii <- 1:length(t)
     
-    y <- x[ii,is]
+    #browser()
+    # Need to make sure both it and is are same type: here integers for index rather than logical
+    # otherwise the subindexing results in an empty object
+    it <- (1:length(ii))[ii]
+    if (is.logical(is)) is <- (1:length(is))[is]
+    y <- x[it,is]
 
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))
@@ -224,26 +242,27 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## mostattributes(y) <- attributes(x)
     attr(y,'longitude') <- attr(x,'longitude')[is]
     attr(y,'latitude') <- attr(x,'latitude')[is]
-    attr(y,'altitude') <- attr(x,'altitude')[is]
-    attr(y,'country') <- attr(x,'country')[is]
-    attr(y,'source') <- attr(x,'source')[is]
-    attr(y,'station_id') <- attr(x,'station_id')[is]
-    attr(y,'location') <- attr(x,'location')[is]
-    attr(y,'quality') <- attr(x,'quality')[is]
-    attr(y,'URL') <- attr(x,'URL')[is]
-    attr(y,'history') <- attr(x,'history')[is]
-    attr(y,'variable') <- attr(x,'variable')[is]
-    attr(y,'element') <- attr(x,'element')[is]
-    attr(y,'aspect') <- attr(x,'aspect')[is]
-    attr(y,'unit') <- attr(x,'unit')[is]
-    attr(y,'longname') <- attr(x,'longname')[is]
-    attr(y,'reference') <- attr(x,'reference')[is]
-    attr(y,'info') <- attr(x,'info')[is]
-    attr(y,'method') <- attr(x,'method')[is]
-    attr(y,'type') <- attr(x,'type')[is]
+    if (!is.logical(is)) is <- is.element(1:d[2],is)
+    if (length(alt(x))==length(is)) attr(y,'altitude') <- attr(x,'altitude')[is]
+    if (length(cntr(x))==length(is)) attr(y,'country') <- attr(x,'country')[is]
+    if (length(src(x))==length(is)) attr(y,'source') <- attr(x,'source')[is]
+    if (length(stid(x))==length(is)) attr(y,'station_id') <- attr(x,'station_id')[is]
+    if (length(loc(x))==length(is)) attr(y,'location') <- attr(x,'location')[is]
+    if (length(attr(x,'quality'))==length(is)) attr(y,'quality') <- attr(x,'quality')[is]
+    #attr(y,'URL') <- attr(x,'URL')[is]
+    #attr(y,'history') <- attr(x,'history')[is]
+    if (length(varid(x))==length(is)) attr(y,'variable') <- attr(x,'variable')[is]
+    #attr(y,'element') <- attr(x,'element')[is]
+    if (length(attr(x,'aspect'))==length(is)) attr(y,'aspect') <- attr(x,'aspect')[is]
+    if (length(unit(x))==length(is)) attr(y,'unit') <- attr(x,'unit')[is]
+    if (length(attr(x,'longname'))==length(is)) attr(y,'longname') <- attr(x,'longname')[is]
+    if (length(attr(x,'reference'))==length(is)) attr(y,'reference') <- attr(x,'reference')[is]
+    if (length(attr(x,'info'))==length(is)) attr(y,'info') <- attr(x,'info')[is]
+    if (length(attr(x,'method'))==length(is)) attr(y,'method') <- attr(x,'method')[is]
+    if (length(attr(x,'type'))==length(is)) attr(y,'type') <- attr(x,'type')[is]
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
-    attr(y,'history') <- history.stamp(y)
+    attr(y,'history') <- history.stamp(x)
     return(y)
 }
  
