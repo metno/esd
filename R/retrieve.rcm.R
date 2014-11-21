@@ -194,6 +194,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   nc_close( ncold )
   
   d <- dim(rcm)
+  browser()
   dim(rcm) <- c(d[1]*d[2],d[3])
   
   if (is.numeric(is) | is.integer(is)) {
