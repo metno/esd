@@ -49,7 +49,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (is.null(it) & is.null(is)) return(x)
     d <- dim(x)
     if (is.null(d)) d <- c(length(x),1)
-    if (is.null(it)) it <- index(x)
+    if (is.null(it)) it <- 1:d[1]
     if (is.null(is)) is <- 1:d[2]
 
     ## browser()
@@ -238,7 +238,6 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     # otherwise the subindexing results in an empty object
     
     if (is.logical(is)) is <- (1:length(is))[is]
-    browser()
     y <- x[it,is]
 
     class(x) <- cls; class(y) <- cls
