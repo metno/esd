@@ -145,6 +145,31 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   #lat.ref <- range(lat[mx,suby])
   
   # Test the dimensions so that the count does not exceed the array:
+  if (startx > d[1]) {
+    startx <- d[1]
+    warning("retrieve.rcm: points along the longitude exceed data dimensions")
+  }
+  if (starty > d[2]) {
+    starty <- d[2] 
+    warning("retrieve.rcm: points along the latitude exceed data dimensions")
+  }
+  if (startt > d[3]) {
+    startt <- d[3]
+    warning("retrieve.rcm: points in time exceed data dimensions")
+  }
+  if (startx < 1) {
+    startx <- 1
+    warning("retrieve.rcm: points along the longitude exceed data dimensions")
+  }
+  if (starty < 1) {
+    starty <- 1 
+    warning("retrieve.rcm: points along the latitude exceed data dimensions")
+  }
+  if (startt < 1) {
+    startt <- 1
+    warning("retrieve.rcm: points in time exceed data dimensions")
+  }
+  # Test the dimensions so that the count does not exceed the array:
   if (startx + countx - 1 > d[1]) {
     countx <- d[1] - startx + 1
     warning("retrieve.rcm: number of points along the longitude exceeds data dimensions")
