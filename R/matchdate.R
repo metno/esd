@@ -62,6 +62,6 @@ matchdate <- function(x,it) {
   #print(index(y)); print(class(index(y)))
   class(y) <- class(x)
   if (inherits(y,'field')) attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],length(nt))
-  if (!is-null(attr(y,'count'))) attr(y,'count') <- c(attr(y,'count')[1:2],length(nt))
+  if (!is.null(attr(y,'count'))) attr(y,'count') <- c(attr(y,'count')[1:2],length(nt))
   invisible(y) 
 }
