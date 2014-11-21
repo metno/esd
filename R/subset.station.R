@@ -75,7 +75,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if ((length(it)>2) & (is.character(it)))
         it <- as.Date(it)
     else if ( length(it) == 2 ) {
-        if (verbose) print('Between two dates'')
+        if (verbose) print('Between two dates')
         if (nchar(it[1])==4 it[1] <- paste(it[1],'-01-01',sep='')
         if (nchar(it[2])==4 it[1] <- paste(it[1],'-12-31',sep='')
         if (verbose) print(it)
