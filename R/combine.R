@@ -138,7 +138,7 @@ combine.stations <- function(...,all=TRUE) {
   #str(cl)
   args <- list(...)
   #str(args)
-  browser()
+  #browser()
   X <- merge.zoo(...,all=all)
   #plot(X)
   #str(X)
