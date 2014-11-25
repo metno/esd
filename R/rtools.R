@@ -22,7 +22,13 @@ missval <- function(x) sum(is.na(coredata(x)))/length(coredata(x))
 q95 <- function(x) quantile(x,probs=.95,na.rm=TRUE)
 
 ## compute the quantile 5% of x
-q5 <- function(x) quantile(x,probs=.5,na.rm=TRUE)
+q5 <- function(x) quantile(x,probs=.05,na.rm=TRUE)
+
+## compute the quantile 5% of x
+q995 <- function(x) quantile(x,probs=.995,na.rm=TRUE)
+
+## compute the quantile 5% of x
+q975 <- function(x) quantile(x,probs=.975,na.rm=TRUE)
 
 ## count the number of valid data points
 nv <- function(x) sum(is.finite(x))
