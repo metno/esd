@@ -89,7 +89,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   #lat <- lat(ferder) + c(-10,10)
   
   if (is.character(predictor))
-    t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat) else
+    t2m <- retrieve.ncdf4(ncfile=predictor,lon=lon,lat=lat) else
   if (inherits(predictor,'field'))
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
@@ -146,7 +146,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   
   if (verbose) print("loop...") 
   for (i in 1:N) {
-    gcm <- retrieve(ncfile = ncfiles[select[i]],
+    gcm <- retrieve.ncdf4(ncfile = ncfiles[select[i]],
                           lon=range(lon(T2M)),lat=range(lat(T2M)))
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
