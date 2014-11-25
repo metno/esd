@@ -38,7 +38,6 @@ retrieve.default <- function(ncfile,verbose=TRUE,...) {
         }
     
     if (library("ncdf4",logical.return=TRUE)) {
-        browser()
         nc <- nc_open(ncfile)
         lon <- ncvar_get(nc,"lon")
         lat <- ncvar_get(nc,"lat")
