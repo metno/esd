@@ -798,7 +798,7 @@ as.anomaly.field<- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
 # Handy conversion algorithms:
 as.climatology <- function(x,...) {
   ya <- as.anomaly(x)
-  y <- attr(ya,'climatology')
+  y <- zoo(attr(ya,'climatology'))
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(x)
