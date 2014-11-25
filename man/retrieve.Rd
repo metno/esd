@@ -45,7 +45,7 @@ check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
            tmin, tasmin = Minimum temperature (in degrees Celcius)
            }
   \item{plot}{Logical value. if, TRUE provides a map.}
-  \item{greenwich}{Logical value. If FALSE, convert longitudes to -180E/180E or centre maps on Greenwhich meridian (0 deg E).} 
+  \item{greenwich}{Logical value. If FALSE, convert longitudes to -180E/180E or centre maps on Greenwich meridian (0 deg E).} 
   \item{ncdf.check}{Logical value. If TRUE, performs a quick check of the ncfile contents} 
   \item{miss2na}{Logical value. If TRUE missing values are converted to "NA"}
   \item{verbose}{Logical value defaulting to FALSE. If FALSE, do not
