@@ -35,6 +35,11 @@ test.map.station <- function(save=FALSE) {
 map.stationmeta <- function(...)
     map.station(...)
 
+map.data.frame <- function(x,...) {
+    class(x) <- "stationmeta"
+    map.station(x,...)
+}
+
 map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
                          is=list(x=NULL,stid = NULL, param = NULL, lon = NULL,
                              lat = NULL,alt = NULL, cntr = NULL, src = NULL, nmin = NULL),
