@@ -384,7 +384,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
 
 
 
-eof2field <- function(x,it=it,is=NULL,anomaly=FALSE) {
+eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE) {
   #print("HERE"); print(lon); print(lat)
   greenwich <- attr(x,'greenwich')
 #  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
