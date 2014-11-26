@@ -659,12 +659,12 @@ plot.diagnose <- function(x,...) {
   if ( (inherits(x,"eof")) & (inherits(x,"comb")) ) plot.diagnose.comb.eof(x)
 }
 
-plot.diagnose.comb.eof <- function(x,...) {
+plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,...) {
   stopifnot(!missing(x), inherits(x,"diagnose"),inherits(x,"eof"),inherits(x,"comb"))
   dev.new()
   par(bty="n")
-  xlim <- range(c(-1,1,x$mean.diff),na.rm=TRUE)
-  ylim <- range(c(-1,1,x$sd.ratio),na.rm=TRUE)
+  if (is.null(xlim)) xlim <- range(c(-1,1,x$mean.diff),na.rm=TRUE)
+  if (is.null(ylim)) ylim <- range(c(-1,1,x$sd.ratio),na.rm=TRUE)
   wt <- 0:360
   plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
        xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
