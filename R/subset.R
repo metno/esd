@@ -149,11 +149,11 @@ subset.field <- function(x,it=NULL,is=NULL) {
           #print(paste("Number of matches=",sum(ii)))
           #print(years[ii]); print(it)
           y <- x[ii,]
-    } else
-    if (inherits(cls,'month') & (max(it) <= 12) ) y <- x[months==it,]
-    if (inherits(cls,'season')) y <- x[months==it,]
-    if ( (min(it) > 0) & (max(it) <= length(index(x))) ) y <- x[it,] else
-    if (is.character(it)) {
+    } 
+    else if (inherits(cls,'month') & (max(it) <= 12) ) y <- x[months==it,]
+    else if (inherits(cls,'season')) y <- x[months==it,]
+    else if ( (min(it) > 0) & (max(it) <= length(index(x))) ) y <- x[it,] 
+    else if (is.character(it)) {
           #print("Dates")
           y <- matchdate(x,it)
     } else
