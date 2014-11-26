@@ -83,7 +83,7 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'history') <- history.stamp(x)
   dfi <- diff(index(y))
   if (length(dfi)>0) {
-      dt <- as.numeric(levels(factor(dfi)))
+      dt <- as.numeric(median(dfi)))
       if (dt==1)
           tscale <- 'day'
       else if (((dt>=28) & (dt <=31)) | (dt < 0.1))
