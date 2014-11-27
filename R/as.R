@@ -616,9 +616,9 @@ as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...) {
   #print('as.4seasons.day')
   attr(x,'names') <- NULL  
   t <- index(x)
-  year <- as.numeric(format(t,'%Y'))
-  month <- as.numeric(format(t,'%m'))
-  day <- as.numeric(format(t,'%d'))
+  year <- year(t) #as.numeric(format(t,'%Y'))
+  month <- month(t) #as.numeric(format(t,'%m'))
+  day <- day(t) # as.numeric(format(t,'%d'))
   #shift the time stamps by one month, sneaking December into the subsequent year
   month <- month + 1
   dec <- is.element(month,13)
