@@ -141,7 +141,7 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
     #t <- t - julian(t[1]) +
     #  julian(as.Date(paste(interval[1],month(x)[1],day(x)[1],sep='-')))
   }
-
+  browser()
   if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
   ym <- approx(julian(index(amean)),coredata(amean),xout=julian(t),rule=2)$y
   #print(summary(ym))
