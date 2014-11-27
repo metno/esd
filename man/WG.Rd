@@ -41,7 +41,7 @@ spectrum) is therefore similar as the sample provided.
 \code{WG.fw.day.precip} uses the annual wet-day mean and the wet-day frequency
 as input, and takes a sample station of daily values to stochastically simulate
 number consequtive wet days based on its annual mean number. If not
-specified, it's taken from the sample data after being phase scrambeled
+specified, it is taken from the sample data after being phase scrambeled
 (\code{FTscramble}) The number of wet-days per year is estimated from
 the wed-day frequency, it too taken to be phase scrambled estimates from
 the sample data unless specifically specified. The
