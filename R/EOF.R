@@ -55,7 +55,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   d <- attr(X,'dimensions')
   cls <- class(X)
   #print(cls)
-  # browser()
+  browser()
   x <- subset(X,it=it,is=is)
 #  if (!is.null(it)) {
 #    if (verbose) print(paste('temporal subset: it=',it))
