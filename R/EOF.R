@@ -135,12 +135,12 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   #for (it in 1:d[3]) Y[,it] <- (Wght/stdv)*Y[,it]
   
   # Exclude the missing values 'NA' and grid points with sd == 0 for all times:
-  sd0 <- apply(Y,2,sd,na.rm=TRUE)
-  nf <- apply(Y,2,SF)
+  sd0 <- apply(as.matrix(Y),2,sd,na.rm=TRUE)
+  nf <- apply(as.matrix(Y),2,SF)
   y <- Y[,(sd0>0.0) & (nf > 0)]
 
   # Exclude the time slices with missing values:
-  skip <- apply(y,1,SF); npts <- dim(y)[2]
+  skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
   y <- y[skip == npts,]
   
   # Remove the mean value - center the analysis:
