@@ -638,7 +638,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
             method=method,swsm=swsm,m=m,
             rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
-            verbose=verbose,weighted=weighte,pca=pca,npca=npca,...)
+            verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
     return(z)
   }
   
