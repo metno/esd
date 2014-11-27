@@ -143,9 +143,9 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
   }
 
   if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
-  ym <- approx(julian(index(amean)),coredata(amean),xout=julian(t),rule=2)$y
+  ym <- approx(julian(as.Date(index(amean))),coredata(amean),xout=julian(t),rule=2)$y
   #print(summary(ym))
-  ys <- approx(julian(index(asd)),coredata(asd),xout=julian(t),rule=2)$y
+  ys <- approx(julian(as.Date(index(asd))),coredata(asd),xout=julian(t),rule=2)$y
   # Also use approx for the observations? Annual mean and sd?
   
   #qq-transform: temp(N1 -> N2) - year by year or for a given interval?
