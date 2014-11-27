@@ -50,13 +50,14 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
     X <- x
   }
   
-  X <- sp2np(X)
-  dates <- index(X)
-  d <- attr(X,'dimensions')
-  cls <- class(X)
+  x <- subset(X,it=it,is=is)
+  x <- sp2np(x)
+  dates <- index(x)
+  d <- attr(x,'dimensions')
+  cls <- class(x)
   #print(cls)
   # browser()
-  x <- subset(X,it=it,is=is)
+  
 #  if (!is.null(it)) {
 #    if (verbose) print(paste('temporal subset: it=',it))
 #    #print(it)
@@ -141,7 +142,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
 
   # Exclude the time slices with missing values:
   skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
-  y <- y[skip == npts,]
+  y <- as.matrix(y)[skip == npts,]
   
   # Remove the mean value - center the analysis:
   if (verbose) print('center the data')
