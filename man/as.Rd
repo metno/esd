@@ -233,7 +233,7 @@ plot(annual(ferder,FUN="IQR",na.rm=TRUE))
 plot(as.4seasons(ferder))
 
 data(bjornholt)
-plot(annual(bjornholt,FUN="exceedance",fun="counts"))
+plot(annual(bjornholt,FUN="exceedance",fun="count"))
 plot(annual(bjornholt,FUN="exceedance",fun="freq"))
 plot(annual(bjornholt,FUN="exceedance"))
 
