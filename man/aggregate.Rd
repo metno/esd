@@ -45,7 +45,7 @@ y <- combine(ym,ys)
 plot(y)
 
 x <- t2m.NCEP()
-z <- aggregate.area(x)
+z <- aggregate.area(x,FUN='mean')
 plot(z)
 }
 \keyword{utilities}
