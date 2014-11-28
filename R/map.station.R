@@ -325,11 +325,11 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         if (showaxis) axis(4,seq(ylim[1],ylim[2],by=10),cex.axis=cex.axis)
         if (showaxis) axis(3,seq(xlim[1],xlim[2],by=10),cex.axis=cex.axis)
         
-        ## par(fig=par0$fig)
+        par(fig=par0$fig)
         lines(geoborders$x, geoborders$y, col = "black")
         lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
     }
-    
+par(fig=par0$fig)    
 }
 
 col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
