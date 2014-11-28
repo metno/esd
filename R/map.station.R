@@ -35,6 +35,11 @@ test.map.station <- function(save=FALSE) {
 map.stationmeta <- function(...)
     map.station(...)
 
+map.data.frame <- function(x,...) {
+    class(x) <- "stationmeta"
+    map.station(x,...)
+}
+
 map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
                          is=list(x=NULL,stid = NULL, param = NULL, lon = NULL,
                              lat = NULL,alt = NULL, cntr = NULL, src = NULL, nmin = NULL),
@@ -190,6 +195,15 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         else
             scale <- 1
         
+        if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
+        if (new) {
+            #dev.new()
+            par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+            fig=c(0.05,0.95,0.12,0.95),mar=rep(1,4))
+        } else {
+            par(bty="n",xaxt="n",yaxt="n",xpd=TRUE,mar=rep(1,4))
+        }
+
         if (!is.null(highlight))
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col[1], bg = bg.all,cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
         else if (!is.null(ss))
@@ -320,11 +334,11 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         if (showaxis) axis(4,seq(ylim[1],ylim[2],by=10),cex.axis=cex.axis)
         if (showaxis) axis(3,seq(xlim[1],xlim[2],by=10),cex.axis=cex.axis)
         
-        ## par(fig=par0$fig)
+        par(fig=par0$fig)
         lines(geoborders$x, geoborders$y, col = "black")
         lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
     }
-    
+par(fig=par0$fig)    
 }
 
 col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {

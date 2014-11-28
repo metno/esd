@@ -83,7 +83,7 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'history') <- history.stamp(x)
   dfi <- diff(index(y))
   if (length(dfi)>0) {
-      dt <- as.numeric(levels(factor(dfi)))
+      dt <- as.numeric(median(dfi))
       if (dt==1)
           tscale <- 'day'
       else if (((dt>=28) & (dt <=31)) | (dt < 0.1))
@@ -616,9 +616,9 @@ as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...) {
   #print('as.4seasons.day')
   attr(x,'names') <- NULL  
   t <- index(x)
-  year <- as.numeric(format(t,'%Y'))
-  month <- as.numeric(format(t,'%m'))
-  day <- as.numeric(format(t,'%d'))
+  year <- year(t) #as.numeric(format(t,'%Y'))
+  month <- month(t) #as.numeric(format(t,'%m'))
+  day <- day(t) # as.numeric(format(t,'%d'))
   #shift the time stamps by one month, sneaking December into the subsequent year
   month <- month + 1
   dec <- is.element(month,13)
@@ -798,7 +798,7 @@ as.anomaly.field<- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
 # Handy conversion algorithms:
 as.climatology <- function(x,...) {
   ya <- as.anomaly(x)
-  y <- attr(ya,'climatology')
+  y <- zoo(attr(ya,'climatology'))
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(x)

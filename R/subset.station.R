@@ -49,7 +49,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (is.null(it) & is.null(is)) return(x)
     d <- dim(x)
     if (is.null(d)) d <- c(length(x),1)
-    if (is.null(it)) it <- index(x)
+    if (is.null(it)) it <- 1:d[1]
     if (is.null(is)) is <- 1:d[2]
 
     ## browser()
@@ -74,27 +74,32 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## Generate sequence of days, months or years if range of it value is given
     if ((length(it)>2) & (is.character(it)))
         it <- as.Date(it)
- #   else if ( length(it) == 2 ) {
- #   # This part will never be carried out? Comment out 
- #       if (is.character(it)) {
- #           if (inherits(x,"month")) ## it is a month or season
- #               it <- seq(as.Date(it[1]),as.Date(it[2]),by='month')
- #           else if (inherits(x,"day")) ## it is a day
- #               it <- seq(as.Date(it[1]),as.Date(it[2]),by='day')
- #           else if (inherits(x,"annual")) ## it is a year
- #               it <- seq(as.Date(it[1]),as.Date(it[2]),by='year')
- #       } else if ((class(it)=="numeric") | (class(it)=="integer")) {
- #           if (min(it) > 1500) ## it is a year
- #               it <- seq(it[1],it[2],by=1)
- #           ##print("HERE"); print(it)
- #       }
- #   }
+    else if ( length(it) == 2 ) {
+        if (verbose) print('Between two dates')
+        if (nchar(it[1])==4) it[1] <- paste(it[1],'-01-01',sep='')
+        if (nchar(it[2])==4) it[1] <- paste(it[1],'-12-31',sep='')
+        if (verbose) print(it)
+        if (is.character(it)) {
+            if (inherits(x,"month")) ## it is a month or season
+                it <- seq(as.Date(it[1]),as.Date(it[2]),by='month')
+            else if (inherits(x,"day")) ## it is a day
+                it <- seq(as.Date(it[1]),as.Date(it[2]),by='day')
+            else if (inherits(x,"annual")) ## it is a year
+                it <- seq(as.Date(it[1]),as.Date(it[2]),by='year')
+        } else if ((class(it)=="numeric") | (class(it)=="integer")) {
+            if (min(it) > 1500) ## it is a year
+                it <- seq(it[1],it[2],by=1)
+            ##print("HERE"); print(it)
+        }
+    ii <- (t >= it[1]) & (t <= it[2])
+   }
   
     ## browser()
     ## get the subset indices in ii
     if ((class(it)=="numeric") | (class(it)=="integer")) {
         if (verbose) print('it is numeric or integer')
-        ii <- is.element(1:length(t),it)
+        if (length(it)==2) ii <- is.element(yr,it[1]:it[2]) else 
+                           ii <- is.element(1:length(t),it)
  #       if ( ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 13)) &
  #            (inherits(x,"month") | inherits(x,"season")) ) {## it is a month or season
  #         # REB 23.04.14: need to handle monthly and seasonal object differently
@@ -131,10 +136,11 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
               ii <- rep(FALSE,length(t))
               warning("subset.station: did not reckognise the selection citerion for 'it'")
             }
+      it <- (1:length(ii))[ii]
     }
     else {## keep all values
         if (verbose) print('it is not specified')
-        it <- 1:length(t); ii <- is.finite(it)
+        it <- 1:length(t)
     }
     #browser()
     
@@ -230,7 +236,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #browser()
     # Need to make sure both it and is are same type: here integers for index rather than logical
     # otherwise the subindexing results in an empty object
-    it <- (1:length(ii))[ii]
+    
     if (is.logical(is)) is <- (1:length(is))[is]
     y <- x[it,is]
 

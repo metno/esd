@@ -145,6 +145,31 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   #lat.ref <- range(lat[mx,suby])
   
   # Test the dimensions so that the count does not exceed the array:
+  if (startx > d[1]) {
+    startx <- d[1]
+    warning("retrieve.rcm: points along the longitude exceed data dimensions")
+  }
+  if (starty > d[2]) {
+    starty <- d[2] 
+    warning("retrieve.rcm: points along the latitude exceed data dimensions")
+  }
+  if (startt > d[3]) {
+    startt <- d[3]
+    warning("retrieve.rcm: points in time exceed data dimensions")
+  }
+  if (startx < 1) {
+    startx <- 1
+    warning("retrieve.rcm: points along the longitude exceed data dimensions")
+  }
+  if (starty < 1) {
+    starty <- 1 
+    warning("retrieve.rcm: points along the latitude exceed data dimensions")
+  }
+  if (startt < 1) {
+    startt <- 1
+    warning("retrieve.rcm: points in time exceed data dimensions")
+  }
+  # Test the dimensions so that the count does not exceed the array:
   if (startx + countx - 1 > d[1]) {
     countx <- d[1] - startx + 1
     warning("retrieve.rcm: number of points along the longitude exceeds data dimensions")
@@ -169,6 +194,13 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   nc_close( ncold )
   
   d <- dim(rcm)
+  #browser()
+  if (length(d) != 3) {
+  # If there are less than 3 dimensions, add one dummy dimension. To avoid crashes...
+    n1 <- (1:3)[count==1]; nm <- (1:3)[count>1]
+    D <- rep(1,3); D[nm] <- d; D[n1] <- 1
+    d <- D; rm('D')
+  }
   dim(rcm) <- c(d[1]*d[2],d[3])
   
   if (is.numeric(is) | is.integer(is)) {

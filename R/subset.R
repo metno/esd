@@ -90,7 +90,7 @@
 subset.field <- function(x,it=NULL,is=NULL) {
   #print("subset.field")
 
-  
+    browser()
   x0 <- x
   if (is.null(it) & is.null(is)) return(x)
   if (is.null(it) & is.null(is[[1]]) & is.null(is[[2]])) return(x) 
@@ -142,17 +142,19 @@ subset.field <- function(x,it=NULL,is=NULL) {
         y <- x[ii,is]
       }
   } else
-    if (sum(is.element(it,1600:2200)) > 0) {
-      if (length(it)==2) ii <- is.element(years,min(it):max(it)) else
-                         ii <- is.element(years,it)
-          #print('years')
-          #print(paste("Number of matches=",sum(ii)))
-          #print(years[ii]); print(it)
+      if (sum(is.element(it,1600:2200)) > 0) {
+          if (length(it)==2) ii <- is.element(years,min(it):max(it)) else
+          ii <- is.element(years,it)
+                                        #print('years')
+                                        #print(paste("Number of matches=",sum(ii)))
+                                        #print(years[ii]); print(it)
           y <- x[ii,]
-    } else
-    if ( (min(it) > 0) & (max(it) <= length(index(x))) ) y <- x[it,] else
-    if (is.character(it)) {
-          #print("Dates")
+      } 
+      else if (is.element('month',cls) & (max(it) <= 12) ) y <- x[months==it,]
+      else if (is.element('season',cls)) y <- x[months==it,]
+      else if ( (min(it) > 0) & (max(it) <= length(index(x))) ) y <- x[it,] 
+      else if (is.character(it)) {
+                                        #print("Dates")
           y <- matchdate(x,it)
     } else
     if (inherits(it,c('field','station','zoo'))) {

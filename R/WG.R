@@ -141,11 +141,11 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
     #t <- t - julian(t[1]) +
     #  julian(as.Date(paste(interval[1],month(x)[1],day(x)[1],sep='-')))
   }
-
+  browser()
   if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
-  ym <- approx(julian(index(amean)),coredata(amean),xout=julian(t),rule=2)$y
+  ym <- approx(julian(as.Date(index(amean))),coredata(amean),xout=julian(as.Date(t)),rule=2)$y
   #print(summary(ym))
-  ys <- approx(julian(index(asd)),coredata(asd),xout=julian(t),rule=2)$y
+  ys <- approx(julian(as.Date(index(asd))),coredata(asd),xout=julian(as.Date(t)),rule=2)$y
   # Also use approx for the observations? Annual mean and sd?
   
   #qq-transform: temp(N1 -> N2) - year by year or for a given interval?
@@ -196,7 +196,7 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
   ncdd.cwd <- spell(x,threshold=threshold)
   x.nd <- subset(annual(ncdd.cwd),is=1)
   # extract the time interval between the start of each dry spell
-  ndbr <- diff(julian(index(ncdd.cwd[is.finite(ncdd.cwd[,1]),1])))
+  ndbr <- diff(julian(as.Date(index(ncdd.cwd[is.finite(ncdd.cwd[,1]),1]))))
   if (plot) {
     dev.new()
     f.k <- dgeom(0:max(ndbr), prob=1/mean(ndbr))
@@ -295,7 +295,7 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
     ny <- length(rownames(table(year(mu)))) 
     interval <- c(ly-ny+1,ny)
     t <- index(x)
-    t <- t - julian(t[1]) +
+    t <- t - julian(as.Date(t[1])) +
       julian(as.Date(paste(interval[1],month(x)[1],day(x)[1],sep='-')))
     if (verbose) print(interval)
   }
@@ -465,9 +465,9 @@ WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL) 
   tenss <- rowMeans(zts,na.rm=TRUE) - mean(zts,na.rm=TRUE)
   penss <- rowMeans(zpm,na.rm=TRUE) - mean(zpm,na.rm=TRUE)
 
-  ytm <- approx(julian(index(ztm)),tensm,xout=julian(t),rule=2)$y
-  yts <- approx(julian(index(zts)),tensm,xout=julian(t),rule=2)$y
-  ypm <- approx(julian(index(ztm)),pensm,xout=julian(t),rule=2)$y
+  ytm <- approx(julian(as.Date(index(ztm))),tensm,xout=julian(as.Date(t)),rule=2)$y
+  yts <- approx(julian(as.Date(index(zts))),tensm,xout=julian(as.Date(t)),rule=2)$y
+  ypm <- approx(julian(as.Date(index(ztm))),pensm,xout=julian(as.Date(t)),rule=2)$y
   
   #qq-transform: temp(N1 -> N2) - year by year or for a given interval?
   t2m.x <- qnorm(pnorm(q=t2m.x,mean=mean(t2m.x,na.rm=TRUE),sd=sd(t2m.x,na.rm=TRUE)),

@@ -41,7 +41,7 @@ retrieve.default <- function(ncfile,verbose=TRUE,...) {
         nc <- nc_open(ncfile)
         lon <- ncvar_get(nc,"lon")
         lat <- ncvar_get(nc,"lat")
-        if (is.null(dim(lon)) & is.null(dim(lat))) {
+        if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
             if (verbose) print('Regular grid field found')
             X <- retrieve.ncdf4(ncfile,...)
         }
@@ -54,7 +54,7 @@ retrieve.default <- function(ncfile,verbose=TRUE,...) {
         nc <- nc_open(ncfile)
         lon <- get.var.ncdf(nc,"lon")
         lat <- get.var.ncdf(nc,"lat")
-        if (is.null(dim(lon)) & is.null(dim(lat))){
+        if ( (length(dim(lon))==1) & (length(dim(lat))==1) ) {
             if (verbose) print('Regular grid field found')
             X <- retrieve.ncdf(ncfile,...)
         } else {

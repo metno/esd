@@ -50,14 +50,15 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
     X <- x
   }
   
-  X <- sp2np(X)
-  dates <- index(X)
-  d <- attr(X,'dimensions')
-  cls <- class(X)
-  #print(cls)
-  # browser()
   x <- subset(X,it=it,is=is)
-#  if (!is.null(it)) {
+  x <- sp2np(x)
+  dates <- index(x)
+  d <- attr(x,'dimensions')
+  cls <- class(x)
+  #print(cls)
+  ## browser()
+  
+  ##  if (!is.null(it)) {
 #    if (verbose) print(paste('temporal subset: it=',it))
 #    #print(it)
 #    #print(table(as.POSIXlt(dates)$mon+1))
@@ -135,13 +136,13 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   #for (it in 1:d[3]) Y[,it] <- (Wght/stdv)*Y[,it]
   
   # Exclude the missing values 'NA' and grid points with sd == 0 for all times:
-  sd0 <- apply(Y,2,sd,na.rm=TRUE)
-  nf <- apply(Y,2,SF)
+  sd0 <- apply(as.matrix(Y),2,sd,na.rm=TRUE)
+  nf <- apply(as.matrix(Y),2,SF)
   y <- Y[,(sd0>0.0) & (nf > 0)]
-
+  browser()
   # Exclude the time slices with missing values:
-  skip <- apply(y,1,SF); npts <- dim(y)[2]
-  y <- y[skip == npts,]
+  skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
+  y <- as.matrix(y)[skip == npts,]
   
   # Remove the mean value - center the analysis:
   if (verbose) print('center the data')
@@ -384,7 +385,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
 
 
 
-eof2field <- function(x,it=it,is=NULL,anomaly=FALSE) {
+eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE) {
   #print("HERE"); print(lon); print(lat)
   greenwich <- attr(x,'greenwich')
 #  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL

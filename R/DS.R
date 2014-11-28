@@ -303,7 +303,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
           #if (verbose) print("+++")
       }
       } else if (inherits(X,'field')) {
-          if (verbose) print("the predictor is an field-object")
+          if (verbose) print("the predictor is a field-object")
           # X is a field
           ds <- DS.field(y=z,X=X,biascorrect=biascorrect,mon=mon,
                    method=method,swsm=swsm,
@@ -430,24 +430,24 @@ DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
                          mon=mon,method=method,swsm=swsm,m=m,
                          rmtrend=rmtrend,eofs=eofs,
                          area.mean.expl=area.mean.expl,
-                         verbose=verbose,...) else
+                         verbose=verbose) else
     if (inherits(X,'season')) 
       ds <- DS.t2m.season.field(y=y,X=X,biascorrect=biascorrect,
                          method=method,swsm=swsm,m=m,
                          rmtrend=rmtrend,eofs=eofs,
                          area.mean.expl=area.mean.expl,
-                         verbose=verbose,...) else
+                         verbose=verbose) else
     if (inherits(X,'annual')) 
       ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
                          method=method,swsm=swsm,m=m,
                          rmtrend=rmtrend,eofs=eofs,
                          area.mean.expl=area.mean.expl,
-                         verbose=verbose,...)
+                         verbose=verbose)
   } else if (tolower(attr(y,'variable'))=='precip')
     ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
                        method=method,swsm=swsm,m=m,
                        rmtrend=rmtrend,eofs=eofs,
-                       area.mean.expl=area.mean.expl,verbose=verbose,...)
+                       area.mean.expl=area.mean.expl,verbose=verbose)
   invisible(ds)
 }
 
@@ -638,7 +638,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
             method=method,swsm=swsm,m=m,
             rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
-            verbose=verbose,weighted=weighte,pca=pca,npca=npca,...)
+            verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
     return(z)
   }
   
