@@ -74,7 +74,7 @@ data(Oslo)
 plot(as.anomaly(Oslo))
 
 data(ferder)
-plot(annual(ferder,FUN=min))
+plot(annual(ferder,FUN='min'))
 plot(annual(ferder,FUN=IQR,na.rm=TRUE))
 plot(as.4seasons(ferder))
 
