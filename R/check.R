@@ -11,7 +11,7 @@
 ## source("esd/R/frequency.R")
 
 check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FALSE - AM 22-10-2013 not used any more ! 
-    browser()
+    ## browser()
     ## Load library
     library(ncdf4)
     

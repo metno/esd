@@ -139,7 +139,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   sd0 <- apply(as.matrix(Y),2,sd,na.rm=TRUE)
   nf <- apply(as.matrix(Y),2,SF)
   y <- Y[,(sd0>0.0) & (nf > 0)]
-  browser()
+  ## browser()
   # Exclude the time slices with missing values:
   skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
   y <- as.matrix(y)[skip == npts,]

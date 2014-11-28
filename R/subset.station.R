@@ -44,7 +44,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## cntr - selection by country
 
     nval <- function(x) sum(is.finite(x))
-    #browser()
+    ## browser()
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
     d <- dim(x)
@@ -76,8 +76,8 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         it <- as.Date(it)
     else if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
-        if (nchar(it[1])==4) it[1] <- paste(it[1],'-01-01',sep='')
-        if (nchar(it[2])==4) it[1] <- paste(it[1],'-12-31',sep='')
+        ##if (nchar(it[1])==4) it[1] <- paste(it[1],'-01-01',sep='')
+        ##if (nchar(it[2])==4) it[2] <- paste(it[1],'-12-31',sep='')
         if (verbose) print(it)
         if (is.character(it)) {
             if (inherits(x,"month")) ## it is a month or season
@@ -91,7 +91,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 it <- seq(it[1],it[2],by=1)
             ##print("HERE"); print(it)
         }
-    ii <- (t >= it[1]) & (t <= it[2])
+    ii <- (t >= it[1]) & (t <= it[length(it)])
    }
   
     ## browser()
@@ -99,7 +99,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if ((class(it)=="numeric") | (class(it)=="integer")) {
         if (verbose) print('it is numeric or integer')
         if (length(it)==2) ii <- is.element(yr,it[1]:it[2]) else 
-                           ii <- is.element(1:length(t),it)
+                           ii <- is.element(t,it)
  #       if ( ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 13)) &
  #            (inherits(x,"month") | inherits(x,"season")) ) {## it is a month or season
  #         # REB 23.04.14: need to handle monthly and seasonal object differently

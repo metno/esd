@@ -90,7 +90,7 @@
 subset.field <- function(x,it=NULL,is=NULL) {
   #print("subset.field")
 
-    browser()
+  ## browser()
   x0 <- x
   if (is.null(it) & is.null(is)) return(x)
   if (is.null(it) & is.null(is[[1]]) & is.null(is[[2]])) return(x) 
