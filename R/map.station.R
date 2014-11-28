@@ -195,6 +195,15 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         else
             scale <- 1
         
+        if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
+        if (new) {
+            #dev.new()
+            par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+            fig=c(0.05,0.95,0.12,0.95),mar=rep(1,4))
+        } else {
+            par(bty="n",xaxt="n",yaxt="n",xpd=TRUE,mar=rep(1,4))
+        }
+
         if (!is.null(highlight))
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col[1], bg = bg.all,cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
         else if (!is.null(ss))
