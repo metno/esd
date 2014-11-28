@@ -190,7 +190,7 @@ as.pca.station(x)
   \item{info}{define info attribute \code{attr(x,'info')}}
   \item{method}{define method attribute \code{attr(x,'method')}}
   \item{FUN}{function}
-  \item{na.rm}{TRUE: ignore NA's}
+  \item{na.rm}{TRUE: ignore NA values}
   \item{dateindex}{}
   \item{monthly}{}
   \item{aspect}{}
@@ -228,8 +228,8 @@ data(Oslo)
 plot(as.anomaly(Oslo))
 
 data(ferder)
-plot(annual(ferder,FUN=min))
-plot(annual(ferder,FUN=IQR,na.rm=TRUE))
+plot(annual(ferder,FUN="min"))
+plot(annual(ferder,FUN="IQR",na.rm=TRUE))
 plot(as.4seasons(ferder))
 
 data(bjornholt)
