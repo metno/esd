@@ -136,6 +136,8 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
   
   #print("cumugram")
   yrs <- as.numeric(rownames(table(year(x))))
+  today <- Sys.Date(); yesterday <- seq(today, length.out=2, by=-1)[2]
+  
   #print(yrs)
   ny <- length(yrs)
   j <- 1:ny
@@ -188,7 +190,6 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
     z <- cumsum(coredata(y))/1:length(y)
 
-    today <- Sys.Date(); yesterday <- seq(today, length.out=2, by=-1)[2]
     mm <- format(yesterday, "%m")
     dd <- as.numeric(yesterday, "%d"))
     
