@@ -176,12 +176,13 @@ as.station.list <- function(x) {
 #  Oct <- x$Oct + attr(x$Oct,'mean')
 #  Nov <- x$Nov + attr(x$Nov,'mean')
 #  Dec <- x$Dec + attr(x$Dec,'mean')
-  cline <- "merge.zoo("
+#  cline <- "merge.zoo("  # AM/REB 2014-12-01
+  cline <- "rbind("
   if (is.list(x)) {
     for (i in 1:length(x)) {
       ave <- switch(attr(x[[i]],'aspect'),
-                    'original'=0,
-                    'anomaly'=attr(x[[i]],'mean'))
+                                'original'=0,
+                                'anomaly'=attr(x[[i]],'mean'))
       attr(x[[i]],'type') <- 'downscaled results'
       z <- x[[i]] + ave
       eval(parse(text=paste("ds.",i," <- z",sep="")))
@@ -191,7 +192,7 @@ as.station.list <- function(x) {
     cline <- paste(substr(cline,1,nchar(cline)-1),')-> ALL')
     #print(cline)
     eval(parse(text=cline))
-    y <- zoo(rowMeans(coredata(ALL),na.rm=TRUE),order.by=index(ALL))
+    #y <- zoo(rowMeans(coredata(ALL),na.rm=TRUE),order.by=index(ALL))
     #print(names(y))
   } else {
     if (inherits(x,'ds')) {
