@@ -191,7 +191,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     z <- cumsum(coredata(y))/1:length(y)
 
     mm <- format(yesterday, "%m")
-    dd <- as.numeric(yesterday, "%d"))
+    dd <- as.numeric(yesterday, "%d")
     
     cm[i] <- mean(coredata(window(x,
             start=as.Date(paste(yrs[i],'-01-01',sep='')),
