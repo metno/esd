@@ -181,15 +181,17 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
 
   cm <- rep(NA,ny)
   
-  browser()
+  #browser()
   for (i in 1:ny) {
     y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
     z <- cumsum(coredata(y))/1:length(y)
 
-    mm <- format(Sys.time(), "%m")
-    dd <- as.numeric(format(Sys.time(), "%d")) - 1
+    today <- Sys.Date(); yesterday <- seq(today, length.out=2, by=-1)[2]
+    mm <- format(yesterday, "%m")
+    dd <- as.numeric(yesterday, "%d"))
+    
     cm[i] <- mean(coredata(window(x,
             start=as.Date(paste(yrs[i],'-01-01',sep='')),
             end=as.Date(paste(yrs[i],mm,dd,sep='-')))))
