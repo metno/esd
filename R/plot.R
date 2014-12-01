@@ -636,7 +636,7 @@ plot.cca <- function(x,icca=1) {
        main=paste("CCA pattern ",icca," for ",varid(x),
          "; r= ",round(r,2),sep=""),
        xlab="",ylab="")
-  lines(v.m,col="red",lwd=2
+  lines(v.m,col="red",lwd=2)
 
   par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
