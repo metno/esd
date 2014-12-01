@@ -57,7 +57,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
 { 
     
     par0 <- par()
-    
+    print(par()$fig)
     ## X <- coredata(x)
     ##if (dim(X)[1]==1) X <- coredata(x[1,]) else
     ##if (inherits(X,"matrix")) X <- apply(x,2,FUN=FUN,na.rm=TRUE)
@@ -161,7 +161,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         cols <- rgb(seq(0, 0.5, length = 100)^2, seq(0.5, 1, length = 100), 
                     seq(0, 0.5, length = 100)^2)
 
-        ##if (new) dev.new(height=height,width=width)
+        ## if (new) dev.new(height=height,width=width)
                                         #par(bty = "n", xaxt = "n", yaxt = "n", xpd = FALSE)
 
         ## Select a subdomain in the x-axis
@@ -195,26 +195,28 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         else
             scale <- 1
         
-        if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
-        if (new) {
-            #dev.new()
-            par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-            fig=c(0.05,0.95,0.12,0.95),mar=rep(1,4))
-        } else {
-            par(bty="n",xaxt="n",yaxt="n",xpd=TRUE,mar=rep(1,4))
-        }
-
+##        if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
+##        if (new) {
+##            #dev.new()
+##            par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+##            fig=c(0.05,0.95,0.12,0.95),mar=rep(1,4))
+##        } else {
+##            par(bty="n",xaxt="n",yaxt="n",xpd=TRUE,mar=rep(1,4),new=new)
+##        }
+        ## browser()
         if (!is.null(highlight))
-            plot(highlight$longitude, highlight$latitude, pch = pch, col = col[1], bg = bg.all,cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
+            plot(highlight$longitude, highlight$latitude, pch = pch, col = col, bg = bg.all,cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
         else if (!is.null(ss))
-            plot(ss$longitude, ss$latitude, pch = pch, col = col[1], bg = bg[1], cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes = FALSE , frame.plot = FALSE)
+            plot(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg[1], cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes = FALSE , frame.plot = FALSE)
 
-        
+        par(fig=par0$fig)
+        print(par()$fig)
         if (showall) {
             ss.all <- select.station(param=is$param)
             points(ss.all$longitude,ss.all$latitude,pch=".",col="grey50",bg="grey",cex=cex/2)
         }
-        
+        par(fig=par0$fig)
+        print(par()$fig)
         ## add search info to plot
         
         if (text) {
@@ -284,7 +286,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
          
             print(range(y,na.rm=TRUE))
             
-            par(fig=par0$fig)
+            ## par(fig=par0$fig,new=TRUE)
             
             ##scale <- apply(y,2,function(x) sum(!is.na(x))/length(x))
             if (!is.null(attr(x,'na'))) ## (!inherits(x,"stationmeta") & 
@@ -294,12 +296,17 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
             
             points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=col,
                    cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)
+             par(fig=par0$fig)
+        print(par()$fig)
             
             if (!is.null(highlight)) {
                 points(highlight$longitude, highlight$latitude, pch = 21 , col = col.subset,
                        bg=bg.subset, cex = cex.subset,...)
 
             }
+
+            par(fig=par0$fig)
+            print(par()$fig)
             
             ## add color bar
             if (fancy)
@@ -374,7 +381,7 @@ col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,t
         
         text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl, labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
     } 
-    par(fig=par0$fig)
+    par(fig=par0$fig,new=TRUE)
 }
 
 #trend <- function(x,ns.omit=TRUE,alpha=0.1) {
@@ -407,7 +414,7 @@ colbar2 <- function(x,col) {
     nl <- pretty(x)
     n <- length(nl)
     image(cbind(1:n,1:n),col=col) 
-    par(xaxt="s")
+    par(xaxt="s",new=new)
     axis(1,at=seq(0,1,length=length(nl)),label=nl)
 }
 
@@ -504,7 +511,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,
   
 # Plot the results:  
   if (new) dev.new()
-  par(bty="n",xaxt="n",yaxt="n")
+  par(bty="n",xaxt="n",yaxt="n",new=TRUE)
   plot(x,z,pch=".",col="white",xlab="",ylab="")
  
 # plot the grid boxes, but only the gridboxes facing the view point:
