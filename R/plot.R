@@ -230,7 +230,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))
          unit[i] <- 'degree*C'
   }
-
+  
   if (is.null(ylab))
    ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
                                "*phantom(0)*(",unit,"))"))),silent=TRUE)
@@ -242,7 +242,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   
   cols <- rep("blue",100)
   model <- attr(x,'model')
-
+  
   if (new) dev.new()
   if (plot.type=="single") new <- TRUE
   par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
@@ -619,8 +619,9 @@ plot.mvr <- function(x) {
 
 plot.cca <- function(x,icca=1) {
   print("plot.cca")
+  ## browser()
   dev.new()
-  par(mfrow=c(2,1),mar=c(0.5,0.5,2.5,0.5),bty="n",xaxt="n",yaxt="n")
+  par(mfrow=c(2,1),bty="n",xaxt="n",yaxt="n")
   map.cca(x,icca=icca,what=c("fill","contour","ts"))
 
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
@@ -635,7 +636,7 @@ plot.cca <- function(x,icca=1) {
        main=paste("CCA pattern ",icca," for ",varid(x),
          "; r= ",round(r,2),sep=""),
        xlab="",ylab="")
-  lines(v.m,col="red",lwd=2)
+  lines(v.m,col="red",lwd=2
 
   par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")

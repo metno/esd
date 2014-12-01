@@ -504,7 +504,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
                     axiR=0,gridlines=TRUE,col=NULL,breaks=NULL,...) {
   #print('map.cca')
   #x <- subset(x,it=it,is=is)
-
+  ## browser()
   # For plotting, keep the same kind of object, but replace the patterns in
   # the eof/pca with the CCA patterns
   Y <- x$Y
@@ -545,9 +545,10 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
   if (is.precip(Y)) col.y <- rev(col) else
                     col.y <- col
   
-  if (sum(is.element(what,'ts'))>0)
-    par(fig=c(0,0.5,0.5,1),new=TRUE) else
-    par(fig=c(0,0.5,0,1),new=TRUE)
+  if (sum(is.element(what,'map'))>0)
+    par(fig=c(0,0.5,0.5,1),new=TRUE)
+  else 
+    par(fig=c(0.5,1,0,0.5),new=TRUE)
   map(Y,icca,xlim=xlim,ylim=ylim,what=what,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',
@@ -562,7 +563,8 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
       gridlines=gridlines,FUN='mean',
       colbar=list(col=col.x,type='r',v=0),
       col=col.x,bg=col.x,showall=FALSE,new=FALSE)
-  invisible(list(U=U,V=V))
+
+    invisible(list(U=U,V=V))
 }
 
 
