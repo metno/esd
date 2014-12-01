@@ -20,8 +20,8 @@ wheel.station <- function(x,new=TRUE,lwd=2,col=NULL,bg="grey90",...) {
   par(bty="n",xaxt="n",yaxt="n") -> par0
   plot(c(-1.2,1.2)*(r+mx),c(-1.2,1.2)*(r+mx),type="n",
        xlab="",ylab="",
-       main=paste("Seasonal 'wheel' for",attr(x,'location')),
-       sub=attr(x,'variable'))
+       main=paste("Seasonal 'wheel' for",attr(x,'location')[1]),
+       sub=paste(attr(x,'variable'),collapse=', '))
   rect(-(r+mx),(r+mx),0,0,col=bg,border=NA)
   rect(0,0,(r+mx),-(r+mx),col=bg,border=NA)
   lines(c(-1,1)*(r+mx),c(0,0))

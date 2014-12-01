@@ -136,6 +136,8 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
   
   #print("cumugram")
   yrs <- as.numeric(rownames(table(year(x))))
+  today <- Sys.Date(); yesterday <- seq(today, length.out=2, by=-1)[2]
+  
   #print(yrs)
   ny <- length(yrs)
   j <- 1:ny
@@ -165,7 +167,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
     z <- cumsum(coredata(y))/1:length(y)
     ok <- is.finite(z)
-    #print(c(range(z[ok],na.rm=TRUE),ylim))
+    #rint(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
     ylim[!is.finite(ylim)] <- NA
     ylim[1] <- min(c(ylim,z[ok]),na.rm=TRUE)
     ylim[2] <- max(c(ylim,z[ok]),na.rm=TRUE)
@@ -181,19 +183,21 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
 
   cm <- rep(NA,ny)
   
+  #browser()
   for (i in 1:ny) {
     y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
     z <- cumsum(coredata(y))/1:length(y)
 
-    mm <- format(Sys.time(), "%m")
-    dd <- as.numeric(format(Sys.time(), "%d")) - 1
+    mm <- format(yesterday, "%m")
+    dd <- as.numeric(yesterday, "%d")
+    
     cm[i] <- mean(coredata(window(x,
             start=as.Date(paste(yrs[i],'-01-01',sep='')),
             end=as.Date(paste(yrs[i],mm,dd,sep='-')))))
     lines(t,z,lwd=2,col=col[i])
-    #print(c(i,ny,yrs[i],sum(is.finite(z))))
+    print(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
   }
   if (is.null(it)) {
     lines(t,z,lwd=5,col="black")

@@ -225,14 +225,15 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       writeLines(ds4[[1]],con=flog)
     }
     if (verbose) print("Combine the 4 seasons")
+    ## browser()
     ds <- try(combine(list(ds1,ds2,ds3,ds4)))
-#    ds <- c(zoo(ds1),zoo(ds2),zoo(ds3),zoo(ds4))
-#    ds <- attrcp(y,ds)
-#    attr(ds,'appendix.1') <- c(attr(ds1,'appendix.1'),
-#                               attr(ds2,'appendix.1'),
-#                               attr(ds3,'appendix.1'),
-#                               attr(ds4,'appendix.1'))
-#    class(ds) <- class(y)
+    ##ds <- c(zoo(ds1),zoo(ds2),zoo(ds3),zoo(ds4))
+    ##ds <- attrcp(y,ds)
+    ##attr(ds,'appendix.1') <- c(attr(ds1,'appendix.1'),
+    ##                           attr(ds2,'appendix.1'),
+    ##                           attr(ds3,'appendix.1'),
+    ##                           attr(ds4,'appendix.1'))
+    ##class(ds) <- class(y)
     
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
@@ -248,7 +249,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print("post-processing")
       z <- attr(ds,'appendix.1')
     #save(file='inside.dsens.1.rda',ds,y,Z)
-    
+    ##browser()
     # The test lines are included to assess for non-stationarity
       if (non.stationarity.check) {
         testds <- DS(testy,testZ,biascorrect=biascorrect,
@@ -296,7 +297,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       } else diag <- NULL
     
     # diagnose for ds-objects
-
+      
       if (verbose) print('...')
       if (is.null(diag)) {
         diag <- diagnose(z,plot=FALSE)
@@ -324,7 +325,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       quality <- 100*(1-mean(scorestats[i,]))
       qcol <- quality
       qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
-
+     
       if (plot) {
         lines(annual(z),lwd=2,col=cols[qcol])
         lines(ya,type="b",pch=19)

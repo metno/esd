@@ -1,0 +1,23 @@
+clean.station <- function(x,miss=.1,verbose=TRUE) {
+
+    stopifnot(inherits(x,"station"))
+    loc <- loc(x)
+    par(mfrow=c(2,1))
+    
+    if (verbose) image(coredata(annual(x)))
+    if (verbose) title('Original data')
+    # compute number of finite values
+    n <- apply(coredata(x),2,FUN=nv)
+
+    if (verbose) summary(n)
+    keep <- n > (dim(x)[1]*miss)
+
+    if (verbose) 
+        x <- subset(x,is=keep)
+    print("Removed stations ...")
+    print(loc[!keep])
+    if (verbose) image(coredata(annual(x)))
+    if (verbose) title('Filtered data')
+    return(x)
+
+}
