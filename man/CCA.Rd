@@ -69,7 +69,7 @@ plot(cca)
 # CCA with PCA and EOF:
 NACD <- station.nacd()
 plot(annual(NACD))
-map(NACD,fun="sd")
+map(NACD,FUN="sd")
 pca <- PCA(NACD)
 plot(pca)
 naslp <- slp.NCEP(lon=c(-30,40),lat=c(30,70),anomaly=TRUE)

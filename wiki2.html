@@ -1,0 +1,69 @@
+Unfortunately, `esd` cannot be installed directly from the R-cran repository. So you need to do the installation manually. 
+First, download the esd zipped file whcih corresponds to your operating system. Then, download the zipped file from the `esd` repository on your local machine, and finally, type the following to begin the installation 
+
+on a linux shell, 
+
+`$ R CMD INSTALL esd.tar.zip`
+
+on R shell,  
+
+`> install.packages("esd.tar.gz")`
+
+A progress message is shown on the screen and a confirmation "DONE" is be displayed when the installation is completed.
+> Screenshot
+```rout 
+* installing to library ‘/home/abdelkaderm/R_libs’
+* installing *source* package ‘esd’ ...
+** R
+** data
+** demo
+** preparing package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (esd)
+```
+
+Open an R session,
+ 
+`$ R`
+
+> screenshot
+```rout
+R version 3.0.3 (2014-03-06) -- "Warm Puppy"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+  Natural language support but running in an English locale
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+[Previously saved workspace restored]
+´´´
+
+Load the library into R  
+
+`> library(esd)`
+
+> screenshot
+```rout
+Loading required package: ncdf4
+Loading required package: zoo
+Attaching package: ‘zoo’
+The following objects are masked from ‘package:base’:
+    as.Date, as.Date.numeric
+```
+
+Check the package version by typing
+ 
+`> packageVersion("esd")`
+> screenshot
+```rout
+[1] ‘0.5.1’
+```

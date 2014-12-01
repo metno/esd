@@ -126,15 +126,25 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,xlim=xlim,ylim=ylim,
   print('map.ds')
   stopifnot(inherits(x,'ds'))
   x <- subset(x,it=it,is=is)
+
   projection <- tolower(projection)
   X <- attr(x,'pattern')
   if (is.list(X)) {
     X <- X[[1]]
   }
-#  attr(X,'longitude') <- attr(X,'longitude')
-#  attr(X,'latitude') <- attr(x,'latitude')
+  
+  # Check if there are several patterns: one for each month/seasons
+  d <- dim(X)
+  if (length(d)>2) {
+    dim(X) <- c(d[1],d[2]*d[3])
+    X <- colMeans(X)
+    dim(X) <- c(d[2],d[3])
+    attr(X,'longitude') <- lon(attr(x,'pattern'))
+    attr(X,'latitude') <- lat(attr(x,'pattern'))
+  }
   attr(X,'variable') <- varid(x)
-
+  attr(X,'unit') <- unit(x)
+  
   unit <- attr(x,'unit')
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
   for (i in 1:length(unit)) {

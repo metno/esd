@@ -6,7 +6,7 @@
 zeros <- function(x) (sum(is.infinite(1/x)) > 0)
 
 rbind.field <- function(...) {
-    print('note: the results inerit the metadata from the first argument')
+    print('note: the results inherit the metadata from the first argument')
     x <- list(...)
     y <- rbind.zoo(...)
     y <- attrcp(x[[1]],y)
@@ -219,7 +219,7 @@ combine.ds <- function(...,all=TRUE) {
                                         # The main results looks like a station object:
                                         #    X <- as.station.ds(z)
             X <- as.station.list(z)
-            X <- rbind(z[[1]],z[[2]],z[[3]],z[[4]]) # AM 27.11.2014 quick fix must be included in as.station.list ..
+            #X <- rbind(z[[1]],z[[2]],z[[3]],z[[4]]) # AM 27.11.2014 quick fix must be included in as.station.list ..
                                         #print("HERE"); print(names(X))
                                         #plot(X,col="red")
             
@@ -301,8 +301,10 @@ combine.ds <- function(...,all=TRUE) {
             dim(pattern) <- c(m,d[1],d[2])
             attr(pattern,'dimensions') <- c('month','longitude','latitude')
             attr(pattern,'month') <- month.abb
-            attr(pattern,'longitude') <- attr(z[[1]],'longitude')
-            attr(pattern,'latitude') <- attr(z[[1]],'latidude')
+#            attr(pattern,'longitude') <- attr(z[[1]],'longitude')
+#            attr(pattern,'latitude') <- attr(z[[1]],'latidude')
+            attr(pattern,'longitude') <- lon(attr(z[[1]],'pattern'))
+            attr(pattern,'latitude') <- lat(attr(z[[1]],'pattern'))
             
             attr(X,'pattern') <- pattern
                                         #print(class(X))
