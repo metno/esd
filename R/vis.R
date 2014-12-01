@@ -165,7 +165,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
     z <- cumsum(coredata(y))/1:length(y)
     ok <- is.finite(z)
-    print(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
+    #rint(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
     ylim[!is.finite(ylim)] <- NA
     ylim[1] <- min(c(ylim,z[ok]),na.rm=TRUE)
     ylim[2] <- max(c(ylim,z[ok]),na.rm=TRUE)
@@ -193,7 +193,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
             start=as.Date(paste(yrs[i],'-01-01',sep='')),
             end=as.Date(paste(yrs[i],mm,dd,sep='-')))))
     lines(t,z,lwd=2,col=col[i])
-    #print(c(i,ny,yrs[i],sum(is.finite(z))))
+    print(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
   }
   if (is.null(it)) {
     lines(t,z,lwd=5,col="black")
