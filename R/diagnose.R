@@ -141,7 +141,7 @@ diagnose.station <- function(x,it=NULL,...) {
   if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
       unit <- expression(degree*C) else
       unit <- attr(x,'unit')
-  eval(parse(text=paste("main <- expression(paste('Running cumulative mean of ',",
+  eval(parse(text=paste("main <- expression(paste('Seasonal evaution: ',",
                attr(x,'variable'),"))")))
   dev.new()
   par(bty="n")
