@@ -621,8 +621,8 @@ plot.cca <- function(x,icca=1) {
   print("plot.cca")
   ## browser()
   dev.new()
-  par(mfrow=c(2,1),bty="n",xaxt="n",yaxt="n")
-  map.cca(x,icca=icca,what=c("fill","contour","ts"))
+  par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
+  map.cca(x,icca=icca)
 
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
              sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
@@ -631,23 +631,23 @@ plot.cca <- function(x,icca=1) {
   r <- cor(x$w.m[,icca],x$v.m[,icca])
   
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
-      fig=c(0,1,0.05,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
+      fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.6,cex.lab=0.6)
   plot(w.m,col="blue",lwd=2,
        main=paste("CCA pattern ",icca," for ",varid(x),
          "; r= ",round(r,2),sep=""),
        xlab="",ylab="")
   lines(v.m,col="red",lwd=2)
 
-  par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
+  par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
   legend(0.01,0.90,c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
                      paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),
          col=c("red","blue"),lwd=2,lty=1,
          bty="n",cex=0.5,ncol=2,text.col="grey40")
   
-  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-      fig=c(0,1,0.1,1),new=TRUE)
-  par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))
+  ##par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+  ##    fig=c(0,1,0.1,1),new=TRUE)
+  ## par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))
 }
 
 

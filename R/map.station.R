@@ -57,7 +57,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
 { 
     
     par0 <- par()
-    print(par()$fig)
+    ##print(par()$fig)
     ## X <- coredata(x)
     ##if (dim(X)[1]==1) X <- coredata(x[1,]) else
     ##if (inherits(X,"matrix")) X <- apply(x,2,FUN=FUN,na.rm=TRUE)
@@ -204,19 +204,26 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
 ##            par(bty="n",xaxt="n",yaxt="n",xpd=TRUE,mar=rep(1,4),new=new)
 ##        }
         ## browser()
+        ##print(par()$fig)
+        par(fig=par0$fig,new=new)
+        if (!is.null(FUN)) col <- "white" 
         if (!is.null(highlight))
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col, bg = bg.all,cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
         else if (!is.null(ss))
             plot(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg[1], cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes = FALSE , frame.plot = FALSE)
+        
+        ## Add geoborders
+        lines(geoborders$x, geoborders$y, col = "black")
+        lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
 
-        par(fig=par0$fig)
-        print(par()$fig)
+        ## par(fig=par0$fig)
+        ## print(par()$fig)
         if (showall) {
             ss.all <- select.station(param=is$param)
             points(ss.all$longitude,ss.all$latitude,pch=".",col="grey50",bg="grey",cex=cex/2)
         }
-        par(fig=par0$fig)
-        print(par()$fig)
+        ## par(fig=par0$fig)
+        ## print(par()$fig)
         ## add search info to plot
         
         if (text) {
@@ -286,7 +293,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
          
             print(range(y,na.rm=TRUE))
             
-            ## par(fig=par0$fig,new=TRUE)
+            par(fig=par0$fig,new=TRUE)
             
             ##scale <- apply(y,2,function(x) sum(!is.na(x))/length(x))
             if (!is.null(attr(x,'na'))) ## (!inherits(x,"stationmeta") & 
@@ -296,8 +303,8 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
             
             points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=col,
                    cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)
-             par(fig=par0$fig)
-        print(par()$fig)
+            par(fig=par0$fig,new=TRUE)
+            ## print(par()$fig)
             
             if (!is.null(highlight)) {
                 points(highlight$longitude, highlight$latitude, pch = 21 , col = col.subset,
@@ -305,8 +312,12 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
 
             }
 
-            par(fig=par0$fig)
-            print(par()$fig)
+            ## Add geoborders
+            lines(geoborders$x, geoborders$y, col = "black")
+            lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
+            
+            ## par(fig=par0$fig)
+            ## print(par()$fig)
             
             ## add color bar
             if (fancy)
@@ -341,11 +352,11 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         if (showaxis) axis(4,seq(ylim[1],ylim[2],by=10),cex.axis=cex.axis)
         if (showaxis) axis(3,seq(xlim[1],xlim[2],by=10),cex.axis=cex.axis)
         
-        par(fig=par0$fig)
-        lines(geoborders$x, geoborders$y, col = "black")
-        lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
+        ## par(fig=par0$fig)
+        ## lines(geoborders$x, geoborders$y, col = "black")
+        ## lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
     }
-par(fig=par0$fig)    
+par(fig=par0$fig,new=TRUE)    
 }
 
 col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
@@ -381,7 +392,7 @@ col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,t
         
         text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl, labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
     } 
-    par(fig=par0$fig,new=TRUE)
+    par(fig=par0$fig)
 }
 
 #trend <- function(x,ns.omit=TRUE,alpha=0.1) {

@@ -556,25 +556,25 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
                     col.y <- col
   
   if (sum(is.element(what,'map'))>0)
-    par(fig=c(0,0.5,0.5,1),new=TRUE)
+    par(fig=c(0,0.5,0.5,1)) ## mar=c(0.05,.05,0.05,0.05),
   else 
-    par(fig=c(0.5,1,0,0.5),new=TRUE)
+    par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
   map(Y,icca,xlim=xlim,ylim=ylim,what=what,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',
       colbar=list(col=col.y,type='r',v=0),
       col=col.y,bg=col.y,showall=FALSE,new=FALSE)
-
+  ## browser()
   if (sum(is.element(what,'ts'))>0)
-    par(fig=c(0.5,1,0.5,1),new=TRUE) else
-    par(fig=c(0.5,1,0,1),new=TRUE)
+      par(fig=c(0,1,0.5,1),new=TRUE) else
+  par(fig=c(0.5,1,0.5,1),new=TRUE) ## mar=c(0,0,0,0),
   map(X,icca,xlim=xlim,ylim=ylim,what=what,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',
       colbar=list(col=col.x,type='r',v=0),
       col=col.x,bg=col.x,showall=FALSE,new=FALSE)
-
-    invisible(list(U=U,V=V))
+  
+  invisible(list(U=U,V=V))
 }
 
 

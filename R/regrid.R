@@ -163,7 +163,7 @@ regrid.default <- function(x,is,verbose=FALSE,...) {
 regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
 
   stopifnot(inherits(x,'field'))
-  
+ 
   if (approach=="eof2field") {
     y <- regrid.eof2field(x,is)
     return(y)
