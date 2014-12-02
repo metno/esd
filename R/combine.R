@@ -571,6 +571,7 @@ combine.field.station <- function(x,y,all=FALSE,
         y <- yy
         swapped <- TRUE
     } 
+    print(swapped)
     clsx <- class(x)
     clsy <- class(y)
     index(y) <- as.Date(index(y))
@@ -583,8 +584,7 @@ combine.field.station <- function(x,y,all=FALSE,
         colnames(y) <- paste("y",1:dim(y)[2],sep=".") 
     if (length(dim(x))==2)
         colnames(x) <- paste("x",1:dim(x)[2],sep=".")
-
-    comb <- merge(x,y,all=all)
+    comb <- merge(x,y,all=all) # AM 2014-12-02 An extra column is added here and the attribute dimensions could not be used anymore !!! so map will not work here ...
                                         #print(summary(comb))
 
     if (orig.format) {
@@ -608,8 +608,9 @@ combine.field.station <- function(x,y,all=FALSE,
                                         #    for (i in 1:length(nattr2))
                                         #      attr(yy,nattr2[i]) <- attr(y,nattr2[i])
         yy <- attrcp(y,yy,ignore='names')
-        attr(XX,'dimensions') <- attr(y,'dimensions')
-        attr(yy,'dimensions') <- attr(x,'dimensions')
+       
+        attr(XX,'dimensions') <- attr(x,'dimensions')
+        ##attr(yy,'dimensions') <- attr(x,'dimensions')
         
                                         #    mostattributes(yy) <- attributes(x)
                                         #    mostattributes(XX) <- attributes(y)
@@ -617,9 +618,11 @@ combine.field.station <- function(x,y,all=FALSE,
         clsy -> class(yy)
         
                                         #print(clsx); print(clsy); print(dim(XX)); print(length(yy))
-        if (swapped) X <- list(y=XX,X=yy) else
-        X <- list(y=yy,X=XX)
-    } else {
+        if (swapped)
+            X <- list(y=XX,X=yy)
+        else
+            X <- list(y=yy,X=XX)
+    } else {   
         X <- comb
         X <- attrcp(x,X,ignore='names')
                                         #     nattr2 <- softattr(x)
@@ -627,6 +630,7 @@ combine.field.station <- function(x,y,all=FALSE,
                                         #       attr(X,nattr1[i]) <- attr(x,nattr1[i])
                                         #mostattributes(comb) <- attributes(x)
         attr(X,'X.attributes') <- attributes(y)
+        class(X) <- c("comb",clsx)
     }
                                         #print(summary(combined))
     attr(X,'history') <- history.stamp(X)

@@ -479,7 +479,7 @@ DS.t2m.month.field <- function(y,X,biascorrect=FALSE,mon=NULL,
     eval(parse(text=cline))
   }
   #print(summary(ds))
-  browser()
+  
   if (station) ds <- combine.ds(ds) else
                cls <- c("list","dsfield",cls)
 

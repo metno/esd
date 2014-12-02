@@ -189,7 +189,8 @@ map.field <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
                       FUN='mean',n=15,projection="lonlat",
                       lonR=NULL,latR=NULL,na.rm=TRUE,colorbar=TRUE,
                       axiR=0,gridlines=FALSE,col=NULL,breaks=NULL,...) {
-  stopifnot(inherits(x,'field'))
+    browser()
+    stopifnot(inherits(x,'field'))
   #print('map.field')
   x <- subset(x,it=it,is=is)
   #print(length(x)); print(attr(x,'dimensions')[1:2])
