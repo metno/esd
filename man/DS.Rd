@@ -203,8 +203,9 @@ ds <- DS(Oslo,eof)
 plot(ds)
 
 DS(Oslo,X,station=FALSE) -> y
-Y <- combine.ds.comb(y)
-plot(Y)
+plot(y)
+##Y <- combine.ds.comb(y)
+##plot(Y)
 
 data(ferder)
 t2m <- t2m.NCEP(lon=c(-30,50),lat=c(40,70))
@@ -218,7 +219,9 @@ sametimescale(y,X) -> z
 ym <- as.4seasons(y,FUN="mean")
 ys <- as.4seasons(y,FUN="sd")
 dsm <- DS(ym,X)
+plot(dsm)
 dss <- DS(ys,Z)
+plot(dss)
 }
 \keyword{models}
 \keyword{multivariate}
