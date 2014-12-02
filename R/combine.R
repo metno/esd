@@ -138,7 +138,7 @@ combine.stations <- function(...,all=TRUE) {
                                         #str(cl)
     args <- list(...)
                                         #str(args)
-                                        #browser()
+                                        
     X <- merge.zoo(...,all=all)
                                         #plot(X)
                                         #str(X)
@@ -222,7 +222,7 @@ combine.ds <- function(...,all=TRUE) {
             #X <- rbind(z[[1]],z[[2]],z[[3]],z[[4]]) # AM 27.11.2014 quick fix must be included in as.station.list ..
                                         #print("HERE"); print(names(X))
                                         #plot(X,col="red")
-            
+           
                                         # The original data & fitted values:
                                         #print("combine the training data ...")
             m <- length(z)
@@ -265,7 +265,6 @@ combine.ds <- function(...,all=TRUE) {
                         eval(parse(text=paste("diag$s.",i," <- attr(eof,'diagnose')",sep="")))
                 }
             }
-            ## browser()
                                         #print(argsx)
                                         #str(x.1); print(class(x.1))
                                         #print("---")
@@ -290,8 +289,7 @@ combine.ds <- function(...,all=TRUE) {
                                         #str(x.1); print(class(xv.1))
             cline4 <- parse(text=paste("xY <- rbind(",argsxY,")")) ## cline4 <- parse(text=paste("xY <- merge(",argsxY,",all=TRUE)"))
             eval(cline4)
-                                        #browser()
-            
+                                                    
             attr(X,'calibration_data') <- X0
             attr(X,'fitted_values') <- Y
             attr(X,'evaluation') <- xY
@@ -389,7 +387,6 @@ combine.ds.comb <- function(...,all=TRUE) {
                 }
             }
 
-                                        #browser()
                                         #print(argsx)
                                         #print("combine.station -> appendix.x")
                                         #plot(c(x.1,x.2,x.3,x.4)); dev.new()  
@@ -505,7 +502,7 @@ combine.station.eof <- function(x,y,all=FALSE,orig.format=TRUE) {
         
         clsy -> class(yy)
         clsx -> class(XX)
-                                        #browser()
+                                        
         if (!is.null(attr(yy,'standard.error'))) {
             sterr <- attr(yy,'standard.error')
             sterr <- matchdate(sterr,yy)
@@ -518,7 +515,6 @@ combine.station.eof <- function(x,y,all=FALSE,orig.format=TRUE) {
                                         # and additional uniform pattern.
         comb <- merge(y,x,all=all)
 
-                                        #browser()
         d <- dim(y)
         if (is.null(d)) {
             s <- sd(y,na.rm=TRUE)
@@ -641,7 +637,7 @@ combine.field.station <- function(x,y,all=FALSE,
 
 combine.field <- function(x,y,all=FALSE,dimension="time",
                           approach="field",orig.format=TRUE) {
-
+ 
                                         #print("combine.field")
     if (inherits(y,'station')) {
         xy <- combine.field.station(x=x,y=y,orig.format=orig.format)
@@ -819,7 +815,7 @@ g2dl.field <- function(x,greenwich=TRUE) {
         wh <- lon > 180
         lon[wh] <- lon[wh] - 360
     }
-    
+
     xsrt <- order(lon)
     X <- t(coredata(x))
     dim(X) <- d

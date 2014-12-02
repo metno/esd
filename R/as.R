@@ -163,7 +163,7 @@ as.station.pca <- function(x) {
 
 
 as.station.list <- function(x) {
-  #print("as.station.ds")
+#print("as.station.ds")
 #  Jan <- x$Jan + attr(x$Jan,'mean')
 #  Feb <- x$Feb + attr(x$Feb,'mean')
 #  Mar <- x$Mar + attr(x$Mar,'mean')
@@ -180,9 +180,10 @@ as.station.list <- function(x) {
   cline <- "rbind("
   if (is.list(x)) {
     for (i in 1:length(x)) {
-      ave <- switch(attr(x[[i]],'aspect'),
-                                'original'=0,
-                                'anomaly'=attr(x[[i]],'mean'))
+        ave <- switch(attr(x[[i]],'aspect'),
+                                 'original'=0,
+                                 'downscaled'=0, ## AM 2014-12-02 x[[i]] could be downscaled results
+                    'anomaly'=attr(x[[i]],'mean'))
       attr(x[[i]],'type') <- 'downscaled results'
       z <- x[[i]] + ave
       eval(parse(text=paste("ds.",i," <- z",sep="")))
@@ -192,7 +193,7 @@ as.station.list <- function(x) {
     cline <- paste(substr(cline,1,nchar(cline)-1),')-> ALL')
     #print(cline)
     eval(parse(text=cline))
-    #y <- zoo(rowMeans(coredata(ALL),na.rm=TRUE),order.by=index(ALL))
+    y <- zoo(coredata(ALL),order.by=index(ALL))
     #print(names(y))
   } else {
     if (inherits(x,'ds')) {
@@ -233,7 +234,10 @@ as.station.list <- function(x) {
   #attr(y,'date') <- date()
   #attr(y,'call') <- match.call()
   attr(y,'history') <- history.stamp(x)
-  class(y) <- c("station",class(x[[1]]))
+  if (attr(x[[i]],'type')== 'downscaled results')
+      class(y) <- class(x[[1]])
+  else
+      class(y) <- c("station",class(x[[1]]))
   return(y)
 }
 
@@ -503,7 +507,7 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean', ...) {
   start.1 <- as.numeric(as.Date(paste(years[1],start,sep='-')))
   end.1 <- as.numeric(as.Date(paste(years[1],end,sep='-')))
   if (start.1 > end.1) twoyears <- 1 else twoyears <- 0
-  #browser()
+  
   for (i in 1:n) {
     z <- coredata(window(x,start=as.Date(paste(years[i],start,sep='-')),
                            end=as.Date(paste(years[i]+twoyears,end,sep='-'))))
@@ -638,7 +642,7 @@ as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...) {
   X <- zoo(coredata(x),order.by=tshifted)
   nd <- aggregate(X,as.yearqtr,FUN=IV)
   ok <- nd >= 85
-  #browser()
+ 
   # Test for the presens of 'na.rm' in argument list - this is a crude fix and not a
   # very satisfactory one. Fails for FUN==primitive function.
   if (is.function(FUN)) test.na.rm <- FALSE else
