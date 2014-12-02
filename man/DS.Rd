@@ -178,11 +178,6 @@ T2m <- (t2m.ERA40())
 yT2m <- merge.zoo(y,T2m)
 plot(coredata(yT2m[,1]),coredata(yT2m[,2]))
 
-t2m.DNMI <- t2m.DNMI()
-y <- station.ecad("Oslo")
-X <- EOF(t2m.DNMI,it=1)
-ds <- DS(y,X)
-
 # Example: downscale annual wet-day mean precipitation -calibrate over
 # part of the record and use the other part for evaluation.
 T2M <- as.annual(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
