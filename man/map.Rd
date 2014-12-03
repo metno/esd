@@ -129,7 +129,7 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
 \examples{
 # select stations in ss and map the geographical location of the selected stations with a zoom on Norway.
 ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
-map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70),showaxis=T)
+map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70))
 
 ## Get NACD data and map the mean values
 y <- station.nacd()
