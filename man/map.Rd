@@ -90,8 +90,8 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
     of x-coordinates.}
   \item{pattern}{Which EOF pattern (mode) to plot}
   \item{col}{Colour scales, either as an output from \code{\link{rbg}}
-    or a single character string 'bwr' (blue-white-red) og 'rwb'
-    (red-white-blue')}
+    or a single character string 'bwr' (blue-white-red) or 'rwb'
+    ('red-white-blue')}
   \item{it}{see \code{\link{subset}}}
   \item{is}{see \code{\link{subset}}}
   \item{new}{TRUE: create a new graphics device}
@@ -129,8 +129,7 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
 \examples{
 # Example: use aggregate to compute annual mean temperature for Svalbard:
 data(Svalbard)
-year <- as.numeric( format(index(Svalbard), '\%Y') ) 
-y <- aggregate(Svalbard, by=year, mean, na.rm = FALSE) 
+y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
 plot(y)
 }
 \keyword{hplot}
