@@ -74,7 +74,7 @@ data(Oslo)
 ds <- DS(Oslo,t2m)
 
 # Plot the results for January month
-plot(ds$Jan)
+# plot(subset(ds,it='Jan'))
 
 # Plot the residuals:
 residual <- as.residual(ds)
