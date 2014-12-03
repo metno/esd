@@ -95,8 +95,8 @@ plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
 data(ferder)
 plot(T2m,ferder)
 
-# Plot Hovmuller diagram:
-plot(T2m,is=list(lon=0))
+# Plot Hovmuller diagram: Not working ...
+## plot(T2m,is=list(lon=0)) 
 
 print("Extract a subset - the January month")
 x <- subset(t2m,it=1)
