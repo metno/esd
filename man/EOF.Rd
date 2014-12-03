@@ -121,7 +121,7 @@ plot(ds)
 
 # Recover the station data:
 Z <- pca2station(pca)
-plot(Z)
+plot(Z,plot.type='multiple')
 
 }
 \keyword{spatial}
