@@ -7,7 +7,6 @@
 \alias{DS.field}
 \alias{DS.t2m.month.field}
 \alias{DS.t2m.season.field}
-\alias{DS.t2m.annual.field}
 \alias{DS.precip.season.field}
 \alias{DS.freq}
 \alias{DS.spell}
@@ -65,36 +64,31 @@
 }
 \usage{
 DS(y,X,verbose=TRUE,plot=FALSE,...)
-DS.default(y,X,mon=NULL,
-           method="lm",swsm="step",
-           rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-           verbose=FALSE,...)
+DS.default(y, X, mon = NULL, method = "lm", swsm = "step", m = 5,
+  rmtrend = TRUE, eofs = 1:7, 
+  area.mean.expl = FALSE, verbose = FALSE, weighted = TRUE, ...)
 DS.station(y,X,biascorrect=FALSE,mon=NULL,
-           method="lm",swsm="step",
+           method="lm",swsm="step",m = 5,
            rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
            verbose=FALSE,pca=TRUE,neofs=20,...)
 DS.eof(X,y,mon=NULL,
-       method="lm",swsm="step",
+       method="lm",swsm="step",m=5,
        rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
        verbose=FALSE,pca=TRUE,npca=20,...)
 DS.comb(X,y,biascorrect=FALSE,mon=NULL,
-        method="lm",swsm="step",
+        method="lm",swsm="step",m=5,
         rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
         verbose=FALSE,...) 
 DS.field(X,y,biascorrect=FALSE,mon=NULL,
-         method="lm",swsm="step",
+         method="lm",swsm="step",m=5,
          rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
          verbose=FALSE,...) 
-DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,
+DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
                    method="lm",swsm="step",
                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,station=TRUE)
 DS.t2m.season.field(y,X,biascorrect=FALSE,
-                    method="lm",swsm="step",
-                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                    verbose=FALSE,station=TRUE)
-DS.t2m.annual.field(y,X,biascorrect=FALSE,
-                    method="lm",swsm="step",
+                    method="lm",swsm="step",m=5,
                     rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,station=TRUE)
 DS.precip.season.field(y,X,biascorrect=FALSE,
@@ -129,7 +123,12 @@ biasfix(x)
 \item{station}{TRUE: convert monthly data to station class using
   \code{\link{combine.ds}}, else return a list of different monthly DS-results.}
 \item{area.mean.expl}{When TRUE, subtract the area mean for the domain
-  and use as a the first co-variate before the PCs from the EOF analysis.}
+  and use as a the first co-variate before the PCs from the EOF
+  analysis.}
+  \item{m}{passed on to \code{\link{crossval}}}
+  \item{weighted}{TRUE: use the attribute '\code{error.estimate}' as
+    weight for the regresion analysis.}
+  \item{\dots}{ }
 }
 
 \value{
