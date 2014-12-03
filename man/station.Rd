@@ -10,7 +10,7 @@
 \alias{station.metnom}
 \alias{station.ghcnd}
 \alias{station.ghcnm}
-
+\alias{station.ghcnm}
 \title{Retrieve meta data and data from observational weather stations.}
 
 \description{Retrieve station record from a given data source.}
@@ -113,9 +113,6 @@ precip.dly <- station.ecad(loc="Oxford",param="precip") ; plot(precip.dly)
 precip.ann <- as.annual(precip.dly,FUN="sum") ; plot(precip.ann)
 
 # Get daily data from the GHCND data source
-# select the meta data of a subset of stations in ss and map the geographical location of the selected stations with a zoom on Norway.
-ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
-map(ss, xlim = c(-10,30) , ylim = c(50,70))
 # Select a subset of stations across Norway with a minimum number of
 # 130 years using "GHCND" as a data source, retrieve the data and show its
 # structure.
