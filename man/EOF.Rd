@@ -104,8 +104,9 @@ ceof <- EOF(OBSGCM)
 plot(ceof)
 
 # Example for using PCA in downscaling
-nacd <- station(src='nacd')
-X <- annual(nacd)
+## nacd <- station(src='nacd')
+## X <- annual(nacd)
+X <- station(src='nacd')
 nv <- function(x) sum(is.finite(x))
 ok <- (1:dim(X)[2])[apply(X,2,nv) == dim(X)[1]]
 X <- subset(X,is=ok)
