@@ -120,7 +120,7 @@ ds <- DS(pca,eof)
 plot(ds)
 
 # Recover the station data:
-Z <- pca2station(ds)
+Z <- pca2station(pca)
 plot(Z)
 
 }
