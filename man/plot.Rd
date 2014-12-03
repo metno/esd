@@ -1,4 +1,4 @@
-\name{plot.station}
+\name{plot}
 \alias{plot.station}
 \alias{plot.eof}
 \alias{plot.eof.field}
@@ -63,7 +63,7 @@ plot.dsensemble(x,pts=FALSE,showci=TRUE,showtrend=TRUE,legend=TRUE,it=0,
 # Example: use aggregate to compute annual mean temperature for Svalbard:
 data(Svalbard)
 year <- as.numeric( format(index(Svalbard), '\%Y') ) 
-y <- aggregate(Svalbard, by=year, mean, na.rm = FALSE) 
+y <- aggregate(Svalbard, by=year, FUN='mean', na.rm = FALSE) 
 plot(y)
 
 # Example with downscaling:
