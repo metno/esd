@@ -127,11 +127,10 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
 
 \author{R.E. Benestad}
 \examples{
-# Example: use aggregate to compute annual mean temperature for Svalbard:
-data(Svalbard)
-y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-plot(y)
+# select stations in ss and map the geographical location of the selected stations with a zoom on Norway.
+ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
+map(ss, xlim = c(-10,30) , ylim = c(50,70))
 }
-\keyword{hplot}
+\keyword{map}
 
 
