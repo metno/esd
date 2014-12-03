@@ -108,7 +108,7 @@ subset.field <- function(x,it=NULL,is=NULL) {
                                         #print(years); print(it)
     
     if (is.null(is)) is <- 1:dim(x)[2]
-
+    
     if (!is.null(it)) {
                                         #print("select time"); print(it)
                                         #  if (sum(is.element(dimension,"time"))) {
@@ -143,28 +143,31 @@ subset.field <- function(x,it=NULL,is=NULL) {
                     ii <- is.element(years,seq(year(it)[1],year(it)[2],1))
                     y <- x[ii,is]
                 }
-        } else
-            if (sum(is.element(it,1600:2200)) > 0) {
-                if (length(it)==2) ii <- is.element(years,min(it):max(it)) else
-                ii <- is.element(years,it)
+        }
+        else if (sum(is.element(it,1600:2200)) > 0) {
+            if (length(it)==2) ii <- is.element(years,min(it):max(it)) else
+            ii <- is.element(years,it)
                                         #print('years')
                                         #print(paste("Number of matches=",sum(ii)))
                                         #print(years[ii]); print(it)
-                y <- x[ii,is]
-            } 
-            else if (is.element('month',cls) & (max(it) <= 12) ) y <- x[months==it,]
-            else if (is.element('season',cls)) y <- x[months==it,]
-            else if (is.element('annual',cls)) y <- x[years==it,]
-            else if ( (min(it) > 0) & (max(it) <= length(index(x))) ) y <- x[it,] 
-            else if (is.character(it)) {
+            y <- x[ii,is]
+        } 
+        else if (is.element('month',cls) & (max(it) <= 12) ) y <- x[months==it,]
+        else if (is.element('season',cls)) {
+            it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10)
+            y <- x[months==it,]
+        }
+        else if (is.element('annual',cls)) y <- x[years==it,]
+        else if ( (min(it) > 0) & (max(it) <= length(index(x))) ) y <- x[it,] 
+        else if (is.character(it)) {
                                         #print("Dates")
-                y <- matchdate(x,it)
-            } else
-                if (inherits(it,c('field','station','zoo'))) {
+            y <- matchdate(x,it)
+        } else
+            if (inherits(it,c('field','station','zoo'))) {
                                         # Match the times of another esd-data object
                                         # print('field/station')
-                    y <- matchdate(x,it)
-                }
+                y <- matchdate(x,it)
+            }
         d[3] <- length(index(y))
         class(y) <- cls
         d -> attr(y,'dimensions')
