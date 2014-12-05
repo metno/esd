@@ -47,8 +47,10 @@ DS.default <- function(y,X,mon=NULL,
                        method="lm",swsm="step",m=5,
                        rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,...) {
-
-  if (verbose) print("DS.default")
+    ## 
+    class(y)
+    class(X)
+    if (verbose) print("DS.default")
   swapped <- FALSE
   if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
     yy <- X
@@ -78,15 +80,15 @@ DS.default <- function(y,X,mon=NULL,
   if (class(index(X))=="numeric")
     index(X) <- as.Date(paste(index(X),'-01-01',sep=''))
   
-  y <- sametimescale(y,X)
+  y <- matchdate(y,X) ## sametimescale(y,X)
   #print("index(y):");print(index(y)[1:24])
   
-  if (!is.null(mon)) y <- station.subset(y,it=mon)
+  if (!is.null(mon)) y <- subset(y,it=mon)
   
 # synchronise the series: use the 'zoo' merge function through combine:
   #print(index(y)[1:24]); print(index(X)[1:24]);
 
-  #browser()
+  ## 
   yX <- combine.station.eof(y,X)
   y <- yX$y; X <- yX$X
   year <- as.numeric( format(index(y), '%Y') ) 
@@ -217,7 +219,7 @@ DS.eof <- function(X,y,mon=NULL,
                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,pca=TRUE,...) {
   #if (verbose) print("DS.eof")
-  ds <- DS.default(y,X,mon=mon,
+    ds <- DS.default(y,X,mon=mon,
                    method=method,swsm=swsm,m=m,
                    rmtrend=rmtrend,eofs=eofs,
                    area.mean.expl=area.mean.expl,
@@ -231,7 +233,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm="step",m=5,
                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
-  
+  ## 
   stopifnot(!missing(y),!missing(X),inherits(y,"station"))
   if (verbose) print("DS.station")
   
@@ -388,7 +390,7 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
   for (i in 1:n.app) {
     #print("HERE")
     Z <- eval(parse(text=paste("attr(X0,'appendix.",i,"')",sep="")))
-    #browser()
+    #
     newdata <- data.frame(X=Z)
     colnames(newdata) <- paste("X",1:length(colnames(X)),sep=".")
     #print(summary(newdata))
@@ -505,7 +507,7 @@ DS.t2m.season.field <- function(y,X,biascorrect=FALSE,
   #y.mean <- aggregate(as.4season(ya,FUN="mean"))
   #y.sd <- aggregate(as.4season(ya,FUN="sd"))
   #X.4s <- aggregate(as.4season(X,FUN="mean"))
-  #str(X); browser()
+  #str(X);
   Z1 <- EOF(subset(X,it='djf'),area.mean.expl=area.mean.expl)
   if (verbose) print("downscale DJF")
   ds1 <- DS(y,Z1,biascorrect=biascorrect,eofs=eofs)
@@ -528,7 +530,7 @@ DS.t2m.season.field <- function(y,X,biascorrect=FALSE,
          crossval(ds3,m=m),crossval(ds4,m=m))
   attr(ds,'evaluation') <- z
   save(file='inside.ds.seas.f.1.rda',y,Z1,ds1,Z2,ds2,Z3,ds3,Z4,ds4,X)
-  #browser()
+  #
   invisible(ds)
 }
 
@@ -716,7 +718,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
       zp <- predict(z,newdata=X)
       y.out[,i] <- coredata(zp)
       #plot(ys); lines(zoo(z,order.by=year(z)))
-      #lines(zoo(y.out[,i],order.by=year(X)),col='blue',lty=2); browser()
+      #lines(zoo(y.out[,i],order.by=year(X)),col='blue',lty=2); 
       #print(c(i,dy[2])); print(summary(y.out[,i]))
       # If common EOFs, then also capture the predictions:
       if (!is.null(attr(z,'appendix.1'))) {
