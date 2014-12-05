@@ -95,7 +95,6 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ii <- (t >= it[1]) & (t <= it[length(it)])
     } ## get the subset indices in ii
     else if ((class(it)=="numeric") | (class(it)=="integer")) {
-        browser()
         if (verbose) print('it is numeric or integer')
         if (length(it)==2)
             ii <- is.element(yr,it[1]:it[2])
