@@ -89,10 +89,10 @@
 
 subset.field <- function(x,it=NULL,is=NULL) {
                                         #print("subset.field")
-
+           
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
-    if (is.null(it) & is.null(is[[1]]) & is.null(is[[2]])) return(x) 
+    ## if (is.null(it) & is.null(is[[1]]) & is.null(is[[2]])) return(x) 
     t <- index(x)
     datetype <- class(t)
     years <- year(x)
@@ -179,10 +179,8 @@ subset.field <- function(x,it=NULL,is=NULL) {
         x <- y
     }
 
-    
     if (!is.null(is)) {
-                                        #print("Sub-region"); print(is)
-        if (length(is)==1) is[[2]] <- NULL
+                                        #print("Sub-region"); print(is)        
                                         #  if (sum(is.element(dimension,"space"))) {
         if ( (is.list(is)) | (is.data.frame(is)) ) {
             if ( (is.null(is[[1]])) | (sum(is.finite(is[[1]])) < 2) ) is[[1]] <- c(-180,360)

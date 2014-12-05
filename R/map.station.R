@@ -291,7 +291,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
             bg <- colbar$col[icol]
             if (is.null(col)) col <-bg
          
-            print(range(y,na.rm=TRUE))
+            if (verbose) print(range(y,na.rm=TRUE))
             
             par(fig=par0$fig,new=TRUE)
             

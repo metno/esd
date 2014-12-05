@@ -633,7 +633,7 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
 DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,eofs=1:10,
                    rmtrend=TRUE,verbose=FALSE,...) {
-
+    
   if (is.list(X)) {
     z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
             method=method,swsm=swsm,m=m,

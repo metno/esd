@@ -90,7 +90,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     model <- ncatt_get(ncid,0)
     ## Get variable attributes in v1
     namevars <- names(ncid$var)
-    if (tolower(param) == "auto") {
+        if (tolower(param) == "auto") {
         if (ncid$nvars > 1) {
             i <- grep(param, names(ncid$var))
             if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
@@ -100,7 +100,8 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
-        v1 <- eval(parse(text=paste("ncid$var$",param,sep="")))
+        ##i <- grep(param,ncid$var)
+        v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
     ## Get dimensions
@@ -462,7 +463,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
-        v1 <- eval(parse(text=paste("ncid$var$",param,sep="")))
+        v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",param,sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
     ## Get dimensions
@@ -816,14 +817,14 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
-        v1 <- eval(parse(text=paste("ncid$var$",param,sep="")))
+        v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
     ## Checking : Variable dimensions ...
-    ndims <- eval(parse(text=paste("ncid$var$",param,"$ndims",sep="")))
+    ndims <- eval(parse(text=paste("ncid$var[[",i,"]]$ndims",sep="")))
     dimnames <- rep(NA,ndims)
     if (ndims>0) {
-        for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var$",param,"$dim[[",j,"]]$name",sep="")))
+        for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var[[",i,"]]$dim[[",j,"]]$name",sep="")))
         if (verbose) print("Checking Dimensions --> [ok]")
         if (verbose) print(paste(as.character(ndims), " dimension(s) has(have) been found :"))
         if (verbose) print(dimnames)
@@ -1174,14 +1175,14 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
-        v1 <- eval(parse(text=paste("ncid$var$",param,sep="")))
+        v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
     ## Checking : Variable dimensions ...
-    ndims <- eval(parse(text=paste("ncid$var$",param,"$ndims",sep="")))
+    ndims <- eval(parse(text=paste("ncid$var[[",i,"]]$ndims",sep="")))
     dimnames <- rep(NA,ndims)
     if (ndims>0) {
-        for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var$",param,"$dim[[",j,"]]$name",sep="")))
+        for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var[[",i,"]]$dim[[",j,"]]$name",sep="")))
         if (verbose) print("Checking Dimensions --> [ok]")
         if (verbose) print(paste(as.character(ndims), " dimension(s) has(have) been found :"))
         if (verbose) print(dimnames)

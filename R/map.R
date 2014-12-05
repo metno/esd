@@ -189,7 +189,7 @@ map.field <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
                       FUN='mean',n=15,projection="lonlat",
                       lonR=NULL,latR=NULL,na.rm=TRUE,colorbar=TRUE,
                       axiR=0,gridlines=FALSE,col=NULL,breaks=NULL,...) {
-    browser()
+    
     stopifnot(inherits(x,'field'))
   #print('map.field')
   x <- subset(x,it=it,is=is)
@@ -314,7 +314,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") )
     unit <- "degree*C"
   if (unit=="%") unit <- "'%'"
-  if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") )
+  if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") | (tolower(variable)=="2t") )
     variable <- "T[2*m]"
 #  if (inherits(x,'corfield'))
 #    main=eval(parse(text=paste('expression(paste("correlation: ",',

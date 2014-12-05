@@ -171,8 +171,17 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   
   #print("regrid.field ")
   x <- sp2np(x)
-  
-  # The coordinates which to grid: lon.new & lat.new
+
+  ## case wether lon or lat is given in is i.e. regrid on these values along the other dimension
+  if (length(is)==1) {
+      nm <- names(is)
+      if (length(nm)==0) print("Please rewrite 'is' as in is=list(lon=...) or is=list(lat=...)")
+      if (grepl("lon",nm))
+          is <- list(lon=rep(is[[1]],length(lon(x))),lat=lat(x))
+      else if (grepl("lat",nm))
+          is <- list(lon=lon(x),lat=is[[2]])            
+  }
+  ## The coordinates which to grid: lon.new & lat.new
   if ( (is.data.frame(is)) | (is.list(is)) ) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
   if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof'))| (inherits(is,'pca')) ) {
     lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')

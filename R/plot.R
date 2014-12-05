@@ -442,16 +442,16 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
       lat <- is[[2]]
       z <- NULL
   } else if (!is.null(is)) {
-    nms <- names(is)
+      nms <- names(is)
     lon <- attr(x,'longitude')
     lat <- attr(x,'latitude')
     #print(nms)
     if (length(nms)==2) { lon <- is[[1]]; lat=is[[2]] } else
-    if ( (length(nms)==1) & (tolower(nms)=="lon") ) {
+        if ( (length(nms)==1) & (tolower(nms)=="lon") ) {
       # Hovmuller diagram along latitude
       #print(is[[1]]); print(lon); print(d)
       if (length(is[[1]])== 1) {
-        picklon <- max( (1:length(lon))[lon <= is[[1]]] )
+        picklon <- lon[max( (1:length(lon))[lon <= is[[1]]] )]
         #print(picklon)
         xy <- rep(lon,length(lat))
         yx <- sort(rep(lat,length(lon)))
@@ -477,7 +477,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
     } else if ( (length(nms)==1) & (tolower(nms)=="lat") ) {
       # Hovmuller diagram along longitude
       if (length(is[[1]])== 1) {
-        picklat <- max( (1:length(lat))[lat <= is[[1]]] )
+        picklat <- lat[max( (1:length(lat))[lat <= is[[1]]] )]
         xy <- rep(attr(x,'longitude'),length(lat))
         yx <- sort(rep(attr(x,'latitude'),length(lon)))
         iy <- is.element(yx,picklat)
@@ -500,7 +500,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
     
   } else {lon <- NULL; lat <- NULL}
 
-  if ( (is.null(lon)) & (is.null(lat)) ) {
+  if ( is.null(lon) & is.null(lat) ) {
     #print("aggregate")
     z <- aggregate.area(x,is=is,FUN=FUN)
     class(z) <- c('station',class(x)[-1])
@@ -886,28 +886,29 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
 }
 
 plot.xsection <- function(x,...) {
-  #print("plot.xsection")
-  d <- attr(x,'dimensions')
-  #print(d)
-  X <- coredata(x)
+                                        #print("plot.xsection")
+    d <- attr(x,'dimensions')
+                                        #print(d)
+    X <- coredata(x)
+    
+    if (d[1]==1) {
+        attr(X,'longitude') <- index(x)
+        attr(X,'latitude') <- attr(x,'latitude')
+        attr(X,'dimensions') <- attr(x,'dimensions')[c(3,2)]
+        
+    } else {
+        attr(X,'longitude') <- attr(x,'longitude')
+        attr(X,'latitude') <- index(x)
+        attr(X,'dimensions') <- attr(x,'dimensions')[c(1,3)]
+        X <- t(X)
+    }
+    attr(X,'variable') <- attr(x,'variable')
+    
+    attr(X,'unit') <- attr(x,'unit')
+    attr(X,'source') <- attr(x,'source')
 
-  if (d[1]==1) {
-    attr(X,'longitude') <- index(x)
-    attr(X,'latitude') <- attr(x,'latitude')
-    attr(X,'dimensions') <- attr(x,'dimensions')[c(3,2)]
-  } else {
-    attr(X,'longitude') <- attr(x,'longitude')
-    attr(X,'latitude') <- index(x)
-    attr(X,'dimensions') <- attr(x,'dimensions')[c(1,3)]
-    X <- t(X)
-  }
-  attr(X,'variable') <- attr(x,'variable')
-
-  attr(X,'unit') <- attr(x,'unit')
-  attr(X,'source') <- attr(x,'source')
-
-  # print(dim(X)); print(c(length(lon(X)),length(lat(X))))
-  lonlatprojection(x=X,what="fill",geography=FALSE,...)
+                                        # print(dim(X)); print(c(length(lon(X)),length(lat(X))))
+    lonlatprojection(x=X,what="fill",geography=FALSE,...)
 }
 
 

@@ -72,14 +72,15 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
     ## Generate sequence of days, months or years if range of it value is given
-    if ((length(it)>2) & (is.character(it)))
-        it <- as.Date(it)
-    else if ( length(it) == 2 ) {
-        if (verbose) print('Between two dates')
-        ##if (nchar(it[1])==4) it[1] <- paste(it[1],'-01-01',sep='')
-        ##if (nchar(it[2])==4) it[2] <- paste(it[1],'-12-31',sep='')
-        if (verbose) print(it)
-        if (is.character(it)) {
+    if (is.character(it)) {
+        if ((length(it)>2) & (is.character(it)))
+            it <- as.Date(it)
+        else if ( length(it) == 2 ) {
+            if (verbose) print('Between two dates')
+            ##if (nchar(it[1])==4) it[1] <- paste(it[1],'-01-01',sep='')
+            ##if (nchar(it[2])==4) it[2] <- paste(it[1],'-12-31',sep='')
+            if (verbose) print(it)
+            
             if (inherits(x,"month")) ## it is a month or season
                 it <- seq(as.Date(it[1]),as.Date(it[2]),by='month')
             else if (inherits(x,"day")) ## it is a day
@@ -91,15 +92,24 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 it <- seq(it[1],it[2],by=1)
             ##print("HERE"); print(it)
         }
-    ii <- (t >= it[1]) & (t <= it[length(it)])
-   }
-  
-    ## browser()
-    ## get the subset indices in ii
-    if ((class(it)=="numeric") | (class(it)=="integer")) {
+        ii <- (t >= it[1]) & (t <= it[length(it)])
+    } ## get the subset indices in ii
+    else if ((class(it)=="numeric") | (class(it)=="integer")) {
         if (verbose) print('it is numeric or integer')
-        if (length(it)==2) ii <- is.element(yr,it[1]:it[2]) else 
-                           ii <- is.element(t,it)
+        if (length(it)==2)
+            ii <- is.element(yr,it[1]:it[2])
+        else (length(it)>2) 
+            ii <- is.element(t,it)
+        else {
+            if (inherits(x,"month"))
+                ii <- is.element(month(t)==it)
+            if (inherits(x,"day"))
+                ii <- is.element(month(t)==it)
+            if (inherits(x,"season"))
+                ii <- is.element(season(t)==it)
+             if (inherits(x,"annual"))
+                 ii <- is.element(year(t)==it)
+        }
  #       if ( ((min(it,na.rm=TRUE) > 0) & (max(it,na.rm=TRUE) < 13)) &
  #            (inherits(x,"month") | inherits(x,"season")) ) {## it is a month or season
  #         # REB 23.04.14: need to handle monthly and seasonal object differently

@@ -432,7 +432,7 @@ PCA.default <- function(X,...) {
 }
 
 PCA.station <- function(X,neofs=20,na.action='fill',verbose=FALSE) {
-
+   
   if (na.action=='fill') {
     if (verbose) print('Fill missing data gaps')
     # Use interpolation to till missing data gaps. OK for small glitches.
