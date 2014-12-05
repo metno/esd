@@ -27,13 +27,13 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if (is.null(col)) col <- rainbow(length(x[1,]))
 
   ns <- length(stid(x))
-  if (ns > 1) {
-    for (i in 1:ns) {
-        z <- try(eval(parse(text=paste("ylab[",i,"] <- expression(",ylab[i],
-                      "*phantom(0)*(",unit[i],"))"))),silent=TRUE)
-        if (inherits(z,"try-error")) ylab[i] <- unit[i]
-      }
-  }
+#  if ( (ns > 1) & (plot.type=="multiple") ) {
+#    for (i in 1:ns) {
+#        z <- try(eval(parse(text=paste("ylab[",i,"] <- expression(",ylab[i],
+#                      "*phantom(0)*(",unit[i],"))"))),silent=TRUE)
+#        if (inherits(z,"try-error")) ylab[i] <- unit[i]
+#      }
+#  }
 
   errorbar <- errorbar & !is.null(attr(x,'standard.error'))
   
