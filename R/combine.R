@@ -634,6 +634,7 @@ combine.field.station <- function(x,y,all=FALSE,
     }
                                         #print(summary(combined))
     attr(X,'history') <- history.stamp(X)
+    
     invisible(X)
 }
 

@@ -707,6 +707,7 @@ nam2expr <- function(x) {
 
 
 plot.xval <- function(x,...) {
+  dev.new()
   par(bty="n")
   unit <- attr(x,'unit')
   cols <- rgb(seq(0,1,length=20),rep(0,20),rep(0,20))
@@ -715,7 +716,7 @@ plot.xval <- function(x,...) {
                          names(attr(x,'original_model')$coefficients[-1])))
   print(eofindex)
   if (unit=='deg C') unit <- expression(degree*C)
-
+  
   class(x) <- "zoo"
   plot(x[,1],type="b",pch=19,lwd=2,
        main=paste("Cross-validation:",attr(x,'location'),attr(x,'variable')),
@@ -725,10 +726,9 @@ plot.xval <- function(x,...) {
   lines(x[,2],lwd=2,col="red")
   lines(attr(x,'fitted_values_all'),col="red",lty=3,pch="x")
   
-  par(new=TRUE,fig=c(0.5,0.9,0.85,0.9))
-  plot(c(0,1),c(0,1),type="",xlab="",ylab="")
-  legend(0.05,0.75,c("obs","x-valid","fit to all"),
-         col=c("black","red","red"),lwd=c(2,2,1),lty=c(1,1,3),bty="n")
+  ## par(new=TRUE,fig=c(0.1,1,0.1,0.5),bty="n")
+  ## plot(c(0,1),c(0,1),col="white",xlab="",ylab="",axes=F)
+  legend(rep(range(index(x))[1],2),rep(range(x)[2],2),c("obs","x-valid","fit to all"), col=c("black","red","red"),lwd=c(2,2,1),lty=c(1,1,3),bty="n")
   
   dev.new()
   par(bty="n")
