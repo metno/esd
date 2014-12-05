@@ -100,7 +100,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
-        ##i <- grep(param,ncid$var)
+        i <- grep(param,namevars)
         v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
@@ -463,6 +463,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
+        i <- grep(param, names(ncid$var))
         v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",param,sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
@@ -817,6 +818,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
+        i <- grep(param, names(ncid$var))
         v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
@@ -1175,6 +1177,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
+        i <- grep(param, names(ncid$var))
         v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
