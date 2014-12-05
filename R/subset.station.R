@@ -7,7 +7,7 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
                            stid = NULL ,lon = NULL, lat = NULL, 
                            alt = NULL, cntr = NULL, src = NULL , nmin = NULL,
                            verbose=FALSE) {
-    ## browser()
+    ## 
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
         print('field/station')
@@ -16,14 +16,14 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
     }
     ##print("subset.station")
     if (is.null(dim(x))) {
-        x2 <- station.subset(x,it=it,is=1)
+        x2 <- station.subset(x,it=it,is=1,verbose=verbose)
     } else {
         ##print("here")
-        x2 <- station.subset(x,it=it,is=is)
-        ## browser()
+        x2 <- station.subset(x,it=it,is=is,verbose=verbose)
+        ## 
         ## extra selection based on meta data
         ## ss <- select.station(x=x2,loc = loc , param = param,  stid = stid ,lon = lon, lat = lat, alt = alt, cntr = cntr, src = src , nmin = nmin)
-        ## browser()
+        ## 
         ## if (!is.null(ss)) {
         ##    id <- is.element(attr(x2,'station_id'),ss$station_id)
         ## Keep selected stations only
@@ -42,17 +42,24 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ##         if two-element vectors, define a region
     ## alt - positive values: any above; negative any below height
     ## cntr - selection by country
-
+    ## 
     nval <- function(x) sum(is.finite(x))
-    ## browser()
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
+    ## 
     d <- dim(x)
-    if (is.null(d)) d <- c(length(x),1)
-    if (is.null(it)) it <- 1:d[1]
+    if (is.null(d)) {
+        if (verbose)
+            print("Warning : One dimensional vector has been found in the coredata")
+        x <- zoo(as.matrix(coredata(x)),order.by=index(x))
+        x <- attrcp(x0,x)
+        class(x) <- class(x0)
+    } 
+    d <- dim(x)
     if (is.null(is)) is <- 1:d[2]
+    if (is.null(it)) it <- 1:d[1]
 
-    ## browser()
+    ## 
     ##print("HERE")
     ## get time in t
     t <- index(x)
@@ -68,7 +75,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         dy <- day(x)
     } else if (inherits(t,c("numeric","integer"))) {
         yr <- t
-        mo <- rep(1,length(t)); dy <- mo
+        mo <- dy <- rep(1,length(t))
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
     ## Generate sequence of days, months or years if range of it value is given
@@ -93,23 +100,36 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             ##print("HERE"); print(it)
         }
         ii <- (t >= it[1]) & (t <= it[length(it)])
-    } ## get the subset indices in ii
+    }
+    ## get the subset indices in ii
     else if ((class(it)=="numeric") | (class(it)=="integer")) {
         if (verbose) print('it is numeric or integer')
-        if (length(it)==2)
-            ii <- is.element(yr,it[1]:it[2])
-        else if (length(it)>2)
-            ii <- is.element(t,it)
-        else {
-            if (inherits(x,"month"))
-                ii <- is.element(month(t),it)
-            if (inherits(x,"day"))
-                ii <- is.element(day(t),it)
-            if (inherits(x,"season")) {
-                it <- switch(it,"1"=1,"2"=4,"3"=7,"4"=10)
-                ii <- is.element(monht(t),it) }
-            if (inherits(x,"annual"))
-                ii <- is.element(year(t)==it)
+        nlev <- as.numeric(levels(factor(nchar(it))))
+        if ((length(nlev)==1)) {
+            if (nlev==4) {
+                if (verbose) print("it are most probably years")
+                if (length(it)==2)
+                    ii <- is.element(yr,it[1]:it[2])
+                else if (length(it)>2)
+                    ii <- is.element(yr,it)
+            } else if (nlev<=4) {
+                if (inherits(x,'season')) {
+                    if (verbose)  print("The 'it' value must be a month index. If not please use character strings instead. e.g. it='djf'")
+                    it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10)
+                    ii <- is.element(mo,it)
+                 } else if (inherits(x,'month')) {
+                     if (verbose)
+                         print("The 'it' value must be a month index. If not please use character strings instead")
+                     ii <- is.element(mo,it)
+                 }
+            } else if (nlev<=12) {
+                if (verbose)
+                         print("The 'it' value are most probably a month index. If not please use character strings instead")
+                ii <- is.element(mo,it)
+            }        
+        } else {
+            if (verbose)  print("it are most probably indices")
+            ii <- it
         }
     } else if (inherits(it,c("Date","yearmon"))) {       
         ##        ii <- is.element(t,it)
@@ -134,7 +154,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             }
     }
     it <- (1:length(ii))[ii]
-    ##browser()
+    ## 
     
     class(x) -> cls
     ##print(cls)
@@ -172,7 +192,6 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (length(sloc)>0) sell <- is.element(tolower(sloc(x)),sloc)
         if (length(slon)==2) selx <- (lon(x) >= min(slon)) & (lon(x) <= max(slon))
         if (length(slat)==2) sely <- (lat(x) >= min(slat)) & (lat(x) <= max(slat))
-                                        #browser()
         if (length(salt)==2) selz <- (alt(x) >= min(salt)) & (alt(x) <= max(salt))
         if (length(salt)==1) {
             if (salt < 0) selz <- alt(x) <= abs(salt) else
@@ -184,9 +203,9 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (length(sstid)==2) seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) else
         if (length(sstid)>0) seli <- is.element(stid(x),sstid)
         if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...
-        ## browser()
+        ##
         is <- sell & selx & sely & selz & selc & seli & selm & selp & selF
-        ##browser()
+        ##
         ## Need to make sure both it and is are same type: here integers for index rather than logical
         ## otherwise the subindexing results in an empty object
     }
@@ -217,6 +236,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)   
+    if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))
     return(y)
 }
     
