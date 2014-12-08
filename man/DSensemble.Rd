@@ -82,16 +82,16 @@ DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
 \examples{
 data(Oslo)
 ## Download NorESM1-M from 'climexp.knmi.nl' in the temporary (for linux '/tmp') folder
-download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_NorESM1-M_rcp45_000.nc", 
-              destfile="/tmp/tas_Amon_NorESM1-M_rcp45_000.nc", method = "auto", quiet = FALSE,
-              mode = "w",cacheOK = TRUE)
+## download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_NorESM1-M_rcp45_000.nc", 
+##              destfile="/tmp/tas_Amon_NorESM1-M_rcp45_000.nc", method = "auto", quiet = FALSE,
+##              mode = "w",cacheOK = TRUE)
 ## Download NorESM1-ME from the rcp45 
-download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_NorESM1-ME_rcp45_000.nc", 
-              destfile="/tmp/tas_Amon_NorESM1-ME_rcp45_000.nc", method = "auto", quiet = FALSE,
-              mode = "w",cacheOK = TRUE)
-              
-rcp4.5 <- DSensemble(Oslo,rcp='rcp45',path='/tmp/',pattern = "tas_Amon_",
-                     predictor = "/tmp/air.mon.mean.nc",plot=TRUE)
+## download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_FIO-ESM_rcp45_000.nc", 
+##              destfile="/tmp/tas_Amon_FIO-ESM_rcp45_000.nc", method = "auto", quiet = FALSE,
+##              mode = "w",cacheOK = TRUE)
+##              
+rcp4.5 <- DSensemble.t2m(Oslo,rcp='rcp45',path='/tmp/',pattern = "tas_Amon_",biascorrection=T,
+                     areal.mean.expl=T, predictor = "/tmp/air.2m.mon.mean.nc",plot=TRUE)
 
 # Evaluation: (1) combare the past trend with downscaled trends for same
 # interval by ranking and by fitting a Gaussian to the model ensemble;
