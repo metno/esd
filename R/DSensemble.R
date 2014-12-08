@@ -42,7 +42,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),
                            select=NULL,FUN="mean",FUNX="mean",
                            pattern="tas_Amon_ens_",verbose=FALSE) {
-
+  
   #print("predictand")
   #if ( (deparse(substitute(FUN))=='sd') | (deparse(substitute(FUN))=='ar1') )
   if ((FUN=='sd') | (FUN =='ar1')) {
