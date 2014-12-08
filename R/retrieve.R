@@ -92,9 +92,11 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     namevars <- names(ncid$var)
         if (tolower(param) == "auto") {
         if (ncid$nvars > 1) {
-            i <- grep(param, names(ncid$var))
-            if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
-            if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") 
+            i <- length(namevars)
+            ## print(i)
+                                        #i <- grep(param, names(ncid$var))
+            #if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
+            #if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") 
         } else i <- 1
         param <- names(ncid$var)[i] # ; rm(i)
         v1 <- ncid$var[[i]] 
@@ -328,7 +330,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     if (length(iunit)>0) {
         text=paste("v1$",names(v1)[iunit],sep="")
         units <- eval(parse(text=text))
-        if ((units=="K")) {
+        if ((units=="K") | (units=="degK")) {
             val <- val - 273 
             units <- "degC"
         }
@@ -690,7 +692,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     if (length(iunit)>0) {
         text=paste("v1$",names(v1)[iunit],sep="")
         units <- eval(parse(text=text))
-        if ((units=="K")) {
+        if ((units=="K") | (unit=="degK")) {
             val <- val - 273 
             units <- "degC"
         }
@@ -810,9 +812,10 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ## Checking : Number of variables and select only one from the netcdf file, get variable attributes in v1. The user should decide between the list of variables
     if (tolower(param) == "auto") {
         if (ncid$nvars > 1) {
-            i <- grep(param, names(ncid$var))
-            if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
-            if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") 
+            i <- length(names(ncid$var))
+            ##i <- grep(param, names(ncid$var))
+            ##if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
+            ##if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") 
         } else i <- 1
         param <- names(ncid$var)[i] # ; rm(i)
         v1 <- ncid$var[[i]] 
