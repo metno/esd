@@ -87,9 +87,9 @@
                                         #}
 
 
-subset.field <- function(x,it=NULL,is=NULL) {
+subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                                         #print("subset.field")
-           
+        
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
     ## if (is.null(it) & is.null(is[[1]]) & is.null(is[[2]])) return(x) 
@@ -112,37 +112,39 @@ subset.field <- function(x,it=NULL,is=NULL) {
     if (!is.null(it)) {
                                         #print("select time"); print(it)
                                         #  if (sum(is.element(dimension,"time"))) {
+        
         class(x) <- "zoo"
         d <- attr(x,'dimensions')
         if ( inherits(it[1],"logical") & (length(it)==length(x)) )
-            y <- x[it,] else
-                                        #   if (sum(is.element(it,1:12)) > 0) {
-                                        #         ii <- is.element(month,it)
-                                        #         y <- x[ii,]
-                                        #       } else
-                                        #    if ( (min(it) > 0) & (max(it) < 13) & (inherits(x0,c("month"))) ) {
-        if (is.character(it)) {
+            y <- x[it,]
+        else if (is.character(it)) {
+            if (levels(factor(nchar(it)))==10)
+                it <- as.Date(it)
             if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
-                                        #keepm <- as.numeric(format(index(X),"%m"))==it
-                                        #print("Monthly aggregated field")
-                                        #keepm <- is.element(as.POSIXlt(dates)$mon+1,it)
                 ii <- is.element(months,(1:12)[is.element(tolower(month.abb),
                                                           tolower(substr(it,1,3)))])
                 y <- x[ii,is]
-            } else 
-                                        #if ( (min(it) > 0) & (max(it) < 5) & (inherits(x0,c("season"))) ) {
-                if (sum(is.element(tolower(it),names(season.abb())))>0) {
-                                        #print("Seasonally selected")
-                                        #print(table(months))
-                                        #keepm <- is.element(months,c(1,4,7,10)[it])
-                                        #print(c(it,sum(keepm)))
-                                        #print(table(months)); print(eval(parse(text=paste('season.abb()$',it,sep=''))))
-                    ii <- is.element(months,eval(parse(text=paste('season.abb()$',it,sep=''))))
-                    y <- x[ii,is]
-                } else if (is.element("annual",cls)) {
-                    ii <- is.element(years,seq(year(it)[1],year(it)[2],1))
-                    y <- x[ii,is]
+            } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
+                ii <- is.element(months,eval(parse(text=paste('season.abb()$',it,sep=''))))
+                y <- x[ii,is]
+            } else if (is.element("annual",cls)) {
+                ii <- is.element(years,seq(year(it)[1],year(it)[2],1))
+                y <- x[ii,is]
+            } else if (inherits(it,"Date")) {
+                if ( length(it) == 2 ) {
+                    if (verbose) print('Between two dates')
+                    if (verbose) print(it)          
+                    if (is.element("month",cls)) ## it is a month or season
+                        it <- seq(it[1],it[2],by='month')
+                    else if (is.element("day",cls)) ## it is a day
+                        it <- seq(it[1],it[2],by='day')
+                    else if (is.element("annual",cls))  ## it is a year
+                        it <- seq(it[1],it[2],by='year')
+
+                    ii <- is.element(t,it)                   
                 }
+                y <- x[ii,is]
+            }
         }
         else if (sum(is.element(it,1600:2200)) > 0) {
             if (length(it)==2) ii <- is.element(years,min(it):max(it)) else

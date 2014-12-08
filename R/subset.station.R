@@ -133,7 +133,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                     ii <- is.element(yr,it)
             } else if (nlev<=4) {
                 if (inherits(x,'season')) {
-                    if (verbose)  print("The 'it' value must be a month index. If not please use character strings instead. e.g. it='djf'")
+                    if (verbose)  print("The 'it' value must be a season index between 1 and 4. If not please use character strings instead. e.g. it='djf'")
                     it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10)
                     ii <- is.element(mo,it)
                  } else if (inherits(x,'month') | (inherits(x,'day'))) {
