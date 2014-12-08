@@ -51,12 +51,20 @@ station.subset(x,it=NULL,is=NULL)
 \author{R.E. Benestad and A.  Mezghanil}
 \examples{
 data(Oslo)
-
 # January months:
 jan <- subset(Oslo,1)
-
 # The last 10 years:
 recent <- subset(Oslo,2003:2012)
+# JJA season
+jja <- subset(Oslo,it="jja")
+# Seasonl values for MAM
+mam <- subset(as.4seasons(Oslo),it=2)
+
+data(ferder)
+# Aggregated values for May (it=5)
+may <- subset(as.monthly(Oslo),it=5)
+# The last 10 aggregated annual values 
+recent.ann <- subset(as.annual(Oslo),it=2004:2013)
 
 gcm <- t2m.NorESM.M()
 # Extract July months from a field:
