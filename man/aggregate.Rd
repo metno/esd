@@ -39,8 +39,8 @@ plot(y)
 
 # Example for getting seasonal aggregate of standard deviation of
 oslo <- station("Oslo Blindern",stid="193",src="ECAD")
-ym <- as.4seasons(oslo,FUN=mean)
-ys <- as.4seasons(oslo,FUN=sd)
+ym <- as.4seasons(oslo,FUN='mean')
+ys <- as.4seasons(oslo,FUN='sd')
 y <- combine(ym,ys)
 plot(y)
 
