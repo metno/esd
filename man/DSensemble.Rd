@@ -91,7 +91,7 @@ data(Oslo)
 ##              mode = "w",cacheOK = TRUE)
 ##              
 rcp4.5 <- DSensemble.t2m(Oslo,rcp='rcp45',path='/tmp/',pattern = "tas_Amon_",biascorrect=TRUE,
-                     area.mean.expl=T, predictor = "/tmp/air.2m.mon.mean.nc",plot=TRUE)
+                     area.mean.expl=TRUE, predictor = "/tmp/air.2m.mon.mean.nc",plot=TRUE)
 
 # Evaluation: (1) combare the past trend with downscaled trends for same
 # interval by ranking and by fitting a Gaussian to the model ensemble;
