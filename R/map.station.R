@@ -205,7 +205,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
 ##        }
         ## browser()
         ##print(par()$fig)
-        par(fig=par0$fig,new=new)
+        par(fig=par0$fig)
         if (!is.null(FUN)) col <- "white" 
         if (!is.null(highlight))
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col, bg = bg.all,cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
