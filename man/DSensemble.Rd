@@ -90,7 +90,7 @@ data(Oslo)
 ##              destfile="/tmp/tas_Amon_FIO-ESM_rcp45_000.nc", method = "auto", quiet = FALSE,
 ##              mode = "w",cacheOK = TRUE)
 ##              
-rcp4.5 <- DSensemble.t2m(Oslo,rcp='rcp45',path='/tmp/',pattern = "tas_Amon_",biascorrect=T,
+rcp4.5 <- DSensemble.t2m(Oslo,rcp='rcp45',path='/tmp/',pattern = "tas_Amon_",biascorrect=TRUE,
                      area.mean.expl=T, predictor = "/tmp/air.2m.mon.mean.nc",plot=TRUE)
 
 # Evaluation: (1) combare the past trend with downscaled trends for same
