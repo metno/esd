@@ -49,7 +49,7 @@
   the methods \code{\link{station}}. 
   
   Also reduced representation of re-analyses, where the data have been
-  sampled by skipping grid points to reduce the spatila dimensions and
+  sampled by skipping grid points to reduce the spatial dimensions and
   stored as 20 EOFS (30 for precipitation). The data compression
   facilitated by the EOFs can provide 80-90\% of the variance in the
   data. ESD uses the large-scale features from these reanalyses, and
