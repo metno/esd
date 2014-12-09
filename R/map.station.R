@@ -404,22 +404,6 @@ col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,t
 #    return(y)
 #}
 
-trend.coefficient <- function(x,ns.omit=TRUE,alpha=0.1) {
-    t <- 1:length(x)
-    model <- lm(x ~ t)
-    y <- c(model$coefficients[2]*10)
-    names(y) <- c("trend.coefficients")
-    return(y)
-}
-
-trend.pvalue <- function(x,ns.omit=TRUE,alpha=0.1) {
-    t <- 1:length(x)
-    model <- lm(x ~ t)
-    y <- anova(model)$Pr[1]
-    names(y) <- c("trend.pvalue")
-    return(y)
-}
-
 colbar2 <- function(x,col) {
     par(mar=c(1,0,0,0),fig=c(0.5,1,0.665,0.695),new=TRUE,cex.axis=0.6)
     nl <- pretty(x)
