@@ -356,7 +356,6 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         ## lines(geoborders$x, geoborders$y, col = "black")
         ## lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
     }
-par(fig=par0$fig,new=TRUE)    
 }
 
 col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
