@@ -19,9 +19,7 @@ The subset method tries to be 'intelligent', and if the list has no names, then 
 }
 \usage{
 subset(x,it=NULL,is=NULL,...)
-subset.station(x,loc=NULL , param = NULL,  stid = NULL ,lon = NULL,
-               lat = NULL, alt = NULL, cntr = NULL, src = NULL , it = NULL ,
-               nmin = NULL, is = NULL)
+subset.station(x,it = NULL,is = NULL)
 subset.eof(x,it=NULL,is=NULL,verbose=FALSE)
 subset.cca(x,it=NULL,is=NULL)
 subset.mvr(x,it=NULL,is=NULL)
@@ -35,7 +33,6 @@ subset.ds(x,it=NULL,is=NULL)
 subset.trend(x,it=NULL,is=NULL)
 subset.dsensemble(x,it=NULL,is=NULL)
 matchdate(x,it)
-station.subset(x,it=NULL,is=NULL)
 }
 \arguments{
 \item{x}{Data object from which the subset is taken}
