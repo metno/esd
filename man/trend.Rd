@@ -27,6 +27,8 @@ trend.zoo(x,result="trend",model="y ~ t",...)
 
 \author{R.E. Benestad}
 \examples{
-
+data(ferder)
+tr <- trend(annual(ferder,'max'))
+attr(tr,'coefficients')
 }
 \keyword{utilities}
