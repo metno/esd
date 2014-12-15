@@ -532,21 +532,23 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE) {
   # REB 2014-10-27: if the object is DS-results, then look for
   # cross-validation
   if (!is.null(attr(pca,'evaluation'))) {
-    cval <- attr(pca,'evaluation')
+     cval <- attr(pca,'evaluation')
     d.cval <- dim(cval)
     V.x <- coredata(cval)
     # The evaluation data are stored as the original calibration
     # predictand followed by the prediction, i.e. station 1,1,2,2,3,3
-    ii1 <- seq(1,d[2]-1,by=2); ii2 <- seq(2,d[2],by=2)
-    # Recover the staiton data from the original data x and the cross-validation prediction z
+    ii1 <- seq(1,d.cval[2]-1,by=2); ii2 <- seq(2,d.cval[2],by=2)
+    # Recover the staiton data from the original data x and the
+    # cross-validation prediction z
     # seperately using the same spatial PCA pattern and eiganvalues:
+    #browser()
     x.cvalx <-U %*% diag(W) %*% t(V.x[,ii1])
     x.cvalz <-U %*% diag(W) %*% t(V.x[,ii2])
-    # Combine the two together and then sort so that the prediction of the first station follows the observation
+    # Combine the two together and then sort so that the prediction
+    # of the first station follows the observation
     # from the first station:
-    ii <- order(seq(1,d[2],by=1),seq(1,d[2],by=1)+0.5)
-    browser()
-    x.cval <- rbind(x.cvalx,x.cvalz)[ii]
+    ii <- order(seq(1,d.cval[1],by=1),seq(1,d.cval[1],by=1)+0.5)
+    x.cval <- rbind(x.cvalx,x.cvalz)[,ii]
     mpca <- c(attr(pca,'mean'))
     jj <- order(c(1:length(mpca),1:length(mpca)+0.5))
     #browser()
