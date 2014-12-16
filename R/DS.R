@@ -650,6 +650,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
   nattr <- softattr(y)
 
   # synchronise the two zoo objects through 'merge' (zoo)
+  y <- matchdate(y,it=X) # REB: 2014-12-16
+  X <- matchdate(X,it=y) # REB: 2014-12-16
   dy <- dim(y)
   dx <- dim(X)
 
