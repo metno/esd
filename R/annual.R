@@ -315,31 +315,45 @@ day <- function(x) {
 # Manipulate the zoo-object by shifting the year/chonology so that
 # zoo thinks the year defined as December-November is January-December.
 
-season <- function(x,format="numeric", ...) {
-  if (inherits(x,'integer')) x <- as.numeric(x)
-  if ( (inherits(x,'numeric')) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 5) )
-    return(x)
-  
-  if (inherits(x,c('station','field','zoo'))) {
-    y <- season(index(x))
-    return(y)
-  }
-  if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
-    y <- season(as.Date(x))
-    return(y)
-  }  
-  if (class(x)[1]=="Date") {
-    xl <- x
-    n <- length(x)
-    xl[2:n] <- x[1:n-1]
-    xl[1] <- NA
-    y <- yearqtr(xl)    
-    y <- as.numeric(format(x, '%q'))
-  }
-  if (format=="character") y <- season.name[y+1]
-  return(y)
-}
+#season <- function(x,format="numeric", ...) {
+#  if (inherits(x,'integer')) x <- as.numeric(x)
+#  if ( (inherits(x,'numeric')) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 5) )
+#    return(x)
+#  
+#  if (inherits(x,c('station','field','zoo'))) {
+#    y <- season(index(x))
+#    return(y)
+#  }
+#  if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
+#    y <- season(as.Date(x))
+#    return(y)
+# }  
+#  if (class(x)[1]=="Date") {
+#    xl <- x
+#    n <- length(x)
+#    xl[2:n] <- x[1:n-1]
+#    xl[1] <- NA
+#    y <- yearqtr(xl)    
+#    y <- as.numeric(format(x, '%q'))
+#  }
+#  if (format=="character") y <- season.name[y+1]
+#  return(y)
+#}
 
+season <- function(x, ...) UseMethod("season")
+
+season.default <- function(x) {
+  nt <- length(index(x))
+  season <- rep('',nt)
+  m <- month(x)
+  if (inherits(x,'season')) {
+    for (i in 1:nt)  season[i] <- switch(m[i],
+                                        '1'='djf','2'='mam','3'='jja','4'='son')
+  } else if (inherits(x,c('day','month'))) {
+     season <- paste(substr(month.abb[as.numeric(rownames(table(month(x))))],1,1),sep='')
+  }
+  season
+}
 
 
 seasonal.yearmon <- function(x) {
