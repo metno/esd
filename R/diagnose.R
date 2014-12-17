@@ -104,7 +104,8 @@ diagnose.ds <- function(x,plot=FALSE) {
   if (length(dim(y))==0) {
     beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
     beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
-  } else {beta <- NA; beta.error <- NA}
+    ar1 <- acf(y,plot=FALSE)$acf[2]
+  } else {beta <- NA; beta.error <- NA; ar1 <- NA}
   
   if (plot) {
     plot(xval)
@@ -113,7 +114,7 @@ diagnose.ds <- function(x,plot=FALSE) {
     par(bty="n",mfcol=c(3,2))
     plot(y)
     
-    acf(y) -> ar
+    acf(y)
 
     plot(z,y)
     spectrum(y)
@@ -126,7 +127,7 @@ diagnose.ds <- function(x,plot=FALSE) {
   }
   
   diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,
-                      ar1=ar$acf[2],beta=beta, H=(beta+1)/2, beta.error=beta.error)
+                      ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error)
   return(diagnostics)
 }
 
