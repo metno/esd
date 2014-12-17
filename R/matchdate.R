@@ -57,6 +57,10 @@ matchdate <- function(x,it) {
   if (!is.null(attr(y,'standard.error'))) {
     attr(y,'standard.error') <- matchdate(attr(y,'standard.error'),y)
   }
+  if (!is.null(attr(x,'n.app'))) {
+    attr(y,'n.app') <- attr(x,'n.app')
+    attr(y,'appendix.1') <- attr(x,'appendix.1')
+  }
   nt <- index(y)
   attr(y,'history') <- history.stamp(x)
   #print(index(y)); print(class(index(y)))
