@@ -628,17 +628,198 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
   return(Z)
 }
 
-
 DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
                           predictor="ERA40_t2m_mon.nc",
                           non.stationarity.check=FALSE,
                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
-                          select=NULL,FUN="wetmean",
-                          FUNX="C.C.eq",threshold=1,
+                          select=NULL,FUN="mean",rmtrend=TRUE,
+                          FUNX="mean",threshold=1,
                           pattern="tas_Amon_ens_",verbose=FALSE) {
   
   # This function is for downscaling PCA to represent a group of stations
-  
+  if (!is.na(attr(y,'longitude'))[1])
+    lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
+  if (!is.na(attr(y,'latitude'))[1])
+    lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
+  if (is.character(predictor))
+    t2m <- retrieve.ncdf4(ncfile=predictor,lon=lon,lat=lat) else
+  if (inherits(predictor,'field'))
+    t2m <- subset(predictor,is=list(lon=lon,lat=lat))
+
+  if (inherits(y,'season')) {
+    T2M <- as.4seasons(t2m,FUN=FUNX)
+    T2M <- matchdate(T2M,y)
+  } else if (inherits(y,'annual')) {
+    T2M <- annual(t2m,FUN=FUNX)
+    T2M <- matchdate(T2M,y)
+  }
+  
+  # Ensemble GCMs
+  path <- file.path(path,rcp,fsep = .Platform$file.sep)
+  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  N <- length(ncfiles)
+
+  if (is.null(select)) select <- 1:N else
+                       N <- length(select)
+  if (verbose) print(ncfiles[select])
+
+  d.y <- dim(y)
+  years <- 1900:2100
+  m <- length(years)
+  months <- rep(month(y)[1],m)
+  X <- matrix(rep(NA,N*m*d.y[2]),N,m*d.y[2])
+  dim(X) <- c(N,m,d.y[2])
+  gcmnm <- rep("",N)
+  scorestats <- matrix(rep(NA,N*8),N,8)
+  colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
+                            "res.trend","res.K-S","res.ar1",'amplitude.ration')
+
+  #browser()
+  t <- as.Date(paste(years,months,'01',sep='-'))
+
+  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
+
+  flog <- file("DSensemble.pca-log.txt","at")
+
+  if (verbose) print("loop...") 
+  for (i in 1:N) {
+    gcm <- retrieve.ncdf4(ncfile = ncfiles[select[i]],
+                          lon=range(lon(T2M)),lat=range(lat(T2M)))
+    #gcmnm[i] <- attr(gcm,'model_id')
+    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+    GCM <- subset(gcm,it=season(T2M)[1])
+    rm("gcm"); gc(reset=TRUE)
+    T2MGCM <- combine(T2M,GCM)
+    if (verbose) print("- - - > EOFs")
+    Z <- try(EOF(T2MGCM))
+
+        # The test lines are included to assess for non-stationarity
+    if (non.stationarity.check) {
+      testGCM <- subset(GCM,it=range(year(T2M))) # REB 29.04.2014
+      testy <- as.station(regrid(testGCM,is=y))  # REB 29.04.2014
+      attr(testGCM,'source') <- 'testGCM'        # REB 29.04.2014
+      testZ <- combine(testGCM,GCM)              # REB 29.04.2014
+      rm("testGCM"); gc(reset=TRUE)
+    }
+
+    if (verbose) print("- - - > DS")
+    if (biascorrect) Z <- biasfix(Z)
+    ds <- try(DS(y,Z,biascorrect=biascorrect,
+              method=method,swsm=swsm,m=m,eofs=eofs,
+              rmtrend=rmtrend,verbose=verbose))
+    if (verbose) print("post-processing")
+    z <- attr(ds,'appendix.1')
+
+    # The test lines are included to assess for non-stationarity
+    if (non.stationarity.check) {
+        if (verbose) print('non.stationarity.check')
+        testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)
+                                                                # REB 29.04.2014
+        testz <- attr(testds,'appendix.1')                      # REB 29.04.2014
+        difference.z <- testy - testz                           # REB 29.04.2014
+    }
+        
+    i1 <- is.element(paste(years,months,sep='-'),
+                     paste(year(z),month(z),sep='-'))
+    i2 <- is.element(paste(year(z),month(z),sep='-'),
+                     paste(years,months,sep='-'))
+    
+    if (verbose) print(paste('i=',i,gcmnm[i],'data points',
+                             sum(i1),'=',sum(i2)))
+    X[i,i1,] <- z[i2,]
+
+    # Diagnose the residual: ACF, pdf, trend. These will together with the
+    # cross-validation and the common EOF diagnostics provide a set of
+    # quality indicators.
+      cal <- coredata(attr(ds,"original_data"))
+      fit <- coredata(attr(ds,"fitted_values"))
+      if (verbose) print('examine residuals...')
+      res <- as.residual(ds)
+      res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
+      ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
+#      ar <- as.numeric(acf(trend(cal-fit,result="residual"),
+#                           plot=FALSE)[[1]][2]) 
+      ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1]),
+                           plot=FALSE)[[1]][2])
+      if (verbose) print(paste("Residual trend=",
+                               res.trend,'D/decade; K.S. p-val',
+                               ks,'; AR(1)=',ar))
+
+    # Evaluation: here are lots of different aspects...
+    # Get the diagnostics: this is based on the analysis of common EOFs...
+
+      xval <- attr(ds,'evaluation')
+      r.xval <- round(cor(xval[,1],xval[,2]),3)
+      if (verbose) print(paste("x-validation r=",r.xval))
+      ds.ratio <- round(sd(ds[,1],na.rm=TRUE)/sd(y[,1],na.rm=TRUE),4)
+      
+      if (verbose) print(paste("sd ratio=",ds.ratio))
+
+    #print(names(attributes(ds)))
+      if (biascorrect) {
+        if (verbose) print('biascorrect')
+        diag <- attr(ds,'diagnose')
+        if ( (verbose) & !is.null(diag)) str(diag)
+      } else diag <- NULL
+    
+    # diagnose for ds-objects
+      
+      if (verbose) print('...')
+      #browser()
+      if (is.null(diag)) {
+        if (verbose) print('no diag')
+        diag <- diagnose(ds,plot=FALSE)
+        scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,ds.ratio)
+        mdiff <- (mean(subset(y,it=range(year(ds))),na.rm=TRUE)-
+                  mean(subset(ds,it=range(year(y))),na.rm=TRUE))/
+                    sd(y,na.rm=TRUE)
+        srati <- sd(subset(ds,it=range(year(y))),na.rm=TRUE)/
+                 sd(subset(y,it=range(year(ds))),na.rm=TRUE)
+        arati <- ar1(ds)/ar1(y)
+      } else {
+        if (verbose) print('diag ok')
+    # Extract the mean score for leading EOF from the 4 seasons:
+        mdiff <- mean(c(diag$s.1$mean.diff[1]/diag$s.1$sd0[1],
+                        diag$s.2$mean.diff[1]/diag$s.2$sd0[1],
+                        diag$s.3$mean.diff[1]/diag$s.3$sd0[1],
+                        diag$s.4$mean.diff[1]/diag$s.4$sd0[1]))
+        srati <- mean(1 - c(diag$s.1$sd.ratio[1],diag$s.2$sd.ratio[1],
+                            diag$s.3$sd.ratio[1],diag$s.4$sd.ratio[1]))
+        arati <- mean(1 - c(diag$s.1$autocorr.ratio[1],
+                            diag$s.2$autocorr.ratio[1],
+                            diag$s.3$autocorr.ratio[1],
+                            diag$s.4$autocorr.ratio[1]))
+      }
+      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio)
+      if (verbose) print(scorestats[i,])
+      quality <- 100*(1-mean(scorestats[i,],na.rm=TRUE))
+      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
+            "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
+            'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
+            "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
+                    round(quality)))
+  }
+
+    X <- zoo(t(X),order.by=t)
+  colnames(X) <- gcmnm
+  attr(X,"model_id") <- gcmnm
+  #X <- attrcp(y,X)
+  attr(X,'station') <- y
+  attr(X,'predictor') <- attr(T2M,'source')
+  attr(X,'domain') <- list(lon=lon,lat=lat)
+  attr(X,'scorestats') <- scorestats
+  attr(X,'path') <- path
+  attr(X,'scenario') <- rcp
+  attr(X,'history') <- history.stamp(y)
+  if (non.stationarity.check)
+    attr(X,'on.stationarity.check') <- difference.z else
+    attr(X,'on.stationarity.check') <- NULL
+  if (area.mean.expl) attr(X,'area.mean.expl') <- TRUE else
+                      attr(X,'area.mean.expl') <- FALSE
+  class(X) <- c("dsensemble","zoo")
+  save(file="DSensemble.rda",X)
+  print("---")
+  invisible(X)
 }
