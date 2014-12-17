@@ -101,8 +101,10 @@ diagnose.ds <- function(x,plot=FALSE) {
 
   spectrum(coredata(y),plot=FALSE) -> s
   sp <- data.frame(y=log(s$spec),x=log(s$freq))
-  beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
-  beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
+  if (length(dim(y))==0) {
+    beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
+    beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
+  } else {beta <- NA; beta.error <- NA}
   
   if (plot) {
     plot(xval)
