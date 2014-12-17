@@ -631,11 +631,6 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
 # The data may be pre-filtered using CCA.
 # Rasmus Benestad, 19.08.2013
 
-
-DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
-                   method="lm",swsm=NULL,m=5,eofs=1:10,
-                   rmtrend=TRUE,verbose=FALSE,...) {
-    
   if (is.list(X)) {
     z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
             method=method,swsm=swsm,m=m,
@@ -646,8 +641,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
   
   print('DS.pca')
   cls <- class(y)
-  Z <- y; pca <- X
-  nattr <- softattr(y)
+  y0 <- y; X0 <- X
+  #nattr <- softattr(y)
 
   # synchronise the two zoo objects through 'merge' (zoo)
   y <- matchdate(y,it=X) # REB: 2014-12-16
@@ -659,99 +654,110 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
   #str(y); str(X)
   if (verbose) print(method)
   if (toupper(method)=='mvr') {
-    
+    print('MVR')
     if (is.null(dy)) dy <- c(length(y),1)
     if (dy[2]>1) colnames(y) <- paste("y",1:dy[2],sep=".")
     if (is.null(dx)) dx <- c(length(x),1)
     if (dx[2]>1) colnames(X) <- paste("X",1:dx[2],sep=".") 
   #colnames(y) <- paste("y",1:dim(y)[2],sep=".")
   #colnames(X) <- paste("X",1:dim(y)[2],sep=".")
-    yX <- merge(y,X,all=FALSE)
-
-    vars <- names(yX)
-    ys <- vars[grep('y',vars)]
-    Xs <- vars[grep('X',vars)]
-    ix <- is.element(vars,Xs)
-    iy <- is.element(vars,ys)
-    x <- zoo(coredata(yX[,ix]),order.by=index(yX))
-    y <- zoo(coredata(yX[,iy]),order.by=index(yX))
-    class(y) <- cls
-
+#    yX <- merge(y,X,all=FALSE)
+#
+#    vars <- names(yX)
+#    ys <- vars[grep('y',vars)]
+#    Xs <- vars[grep('X',vars)]
+#    ix <- is.element(vars,Xs)
+#    iy <- is.element(vars,ys)
+#    x <- zoo(coredata(yX[,ix]),order.by=index(yX))
+#    y <- zoo(coredata(yX[,iy]),order.by=index(yX))
+#    class(y) <- cls
+    
     print('WARNING: does not operate on combined objects')
     model <- eval(parse(text=paste(method,"(y,x)",sep="")))
       # Reconstruct the entire data, and then apply the PCA to this
-    V <- predict(model); W <- attr(Z,'eigenvalues')
-    U <- attr(Z,'pattern')
+    V <- predict(model); W <- attr(y0,'eigenvalues')
+    U <- attr(y0,'pattern')
     UWV <- U %*% diag(W) %*% t(V)
     pca <- svd(UWV)
     #str(pca)
     ds <- zoo(pca$v,order.by=index(X))
     model$fitted.values <- zoo(model$fitted.values,order.by=index(X)) +
-#    attr(Z,'mean') + offset  # REB 04.12.13: included attr(Z,'mean') in
+#    attr(y0,'mean') + offset  # REB 04.12.13: included attr(y0,'mean') in
 #                             # addition to offset
     model$calibration.data <- X
-    class(model$fitted.values) <- class(Z)
+    class(model$fitted.values) <- class(y0)
     attr(ds,'model') <- model
     attr(ds,'quality') <- var(coredata(model$fitted.values))/var(y,na.rm=TRUE)
     attr(ds,'eigenvalues') <- pca$d
     attr(ds,'sum.eigenv') <- sum(pca$d)
     attr(ds,'pattern') <- pca$u
   } else {
+    if (verbose) print('Default')
       # treat each PC as a station
     if (verbose) print('Prepare output data')
-    y.out <- matrix(rep(NA,dx[1]*dy[2]),dx[1],dy[2])
     # If common EOFs, then accomodate for the additional predictions
-    if (!is.null(attr(Z,'appendix.1')))
-      y.app <- attr(Z,'appendix.1')
+    #browser()
+    if (!is.null(attr(X0,'n.apps'))) {
+      Xp <- attr(X0,'appendix.1')
+    } else Xp <- X
+    y.out <- matrix(rep(NA,dx[1]*dy[2]),dx[1],dy[2])
+    fit.val <- y.out
+    yp.out <- matrix(rep(NA,dim(Xp)[1]*dy[2]),dim(Xp)[1],dy[2])
 
     if (verbose) print(eofs)
-    # For each PC
-    
+    # Loop over the PCs...
     for (i in 1:dy[2]) {
       ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],
                        unit=unit(y)[i],lon=lon(y)[i],lat=lat(y)[i],
                        alt=alt(y)[i],cntr=cntr(y)[i],stid=stid(y)[i])
-      class(ys) <- class(y)[-1]
+                       class(ys) <- class(y)[-1]
       z <- DS(ys,X,biascorrect=biascorrect,
-              method=method,swsm=swsm,m=m,eofs=eofs,
-              rmtrend=rmtrend,verbose=verbose,...)
+              eofs=eofs,rmtrend=rmtrend,verbose=verbose)
 
-      attr(z,'mean') <- 0
-      zp <- predict(z,newdata=X)
-      y.out[,i] <- coredata(zp)
-      #plot(ys); lines(zoo(z,order.by=year(z)))
-      #lines(zoo(y.out[,i],order.by=year(X)),col='blue',lty=2); 
-      #print(c(i,dy[2])); print(summary(y.out[,i]))
-      # If common EOFs, then also capture the predictions:
-      if (!is.null(attr(z,'appendix.1'))) {
-        y.app[,i] <- attr(zp,'appendix.1.')
-      }
-
+      attr(z,'mean') <- 0 # can't remember why... REB
+      # Collect the projections in a matrix:
+      #zp <- predict(z,newdata=Xp)
+      #y.out[,i] <- coredata(zp)
+      y.out[,i] <- coredata(z)
+      fit.val[,i] <- attr(z,'fitted_values')
+      if (!is.null(attr(X0,'n.apps')))
+        yp.out[,i] <- attr(z,'appendix.1')
+      
       if (i==1)                         # Also keep the cross-validation
          cval <- attr(z,'evaluation') else
          cval <- merge(cval,attr(z,'evaluation'))
                                         # REB 2014-10-27
     }
-    if (verbose) print('Transform back into a PCA-object')
+    
+    if (verbose) print(paste('Transform back into a PCA-object of dim',
+                             dim(y.out),collapse=' '))
     ds <- zoo(y.out,order.by=index(X))
     ds <- attrcp(y,ds)
-    attr(ds,'eigenvalues') <- attr(Z,'eigenvalues')
-    attr(ds,'sum.eigenv') <- attr(Z,'sum.eigenv')
-    attr(ds,'pattern') <- attr(Z,'pattern')
+    attr(ds,'eigenvalues') <- attr(y0,'eigenvalues')
+    attr(ds,'sum.eigenv') <- attr(y0,'sum.eigenv')
+    attr(ds,'pattern') <- attr(y0,'pattern')
     names(cval) <- paste(c('X','Z'),'PCA',sort(rep(1:dy[2],2)),sep='.')
     attr(ds,'evaluation') <- cval
-    if (!is.null(attr(z,'appendix.1')))  # REB 2014-10-27
-        y.app -> attr(ds,'appendix.1.')      
+    if (!is.null(attr(X0,'n.apps'))) {
+      attr(ds,'n.apps') <- 1
+      yp.out <- zoo(yp.out,order.by=index(Xp))
+      yp.out -> attr(ds,'appendix.1')
+    }
  }
-  #print(class(model)); str(model)
-  attr(ds,'variable') <- varid(Z)
-  attr(ds,'mean') <- attr(Z,'mean') # + offset
-  attr(ds,'max.autocor') <- attr(Z,'max.autocor')
-  attr(ds,'tot.var') <- attr(Z,'tot.var')
+    #print(class(model)); str(model)
+  attr(ds,'calibration_data') <- attr(z,'calibration_data')
+  attr(ds,'fitted_values') <- zoo(fit.val,
+                                  order.by=index(attr(z,'fitted_values')))
+  class(attr(ds,'fitted_values')) <- class(y0)
+  attr(ds,'original_data') <- y
+  attr(ds,'variable') <- varid(y0)
+  attr(ds,'mean') <- attr(y0,'mean') # + offset
+  attr(ds,'max.autocor') <- attr(y0,'max.autocor')
+  attr(ds,'tot.var') <- attr(y0,'tot.var')
    #attr(ds,'dimensions') <- c(du[1],du[2])
-  attr(ds,'longitude') <- lon(Z)
-  attr(ds,'latitude') <- lat(Z)
-#  attr(ds,'source') <- paste(attr(Z,'source'),attr(X,'source'),sep="-")
+  attr(ds,'longitude') <- lon(y0)
+  attr(ds,'latitude') <- lat(y0)
+#  attr(ds,'source') <- paste(attr(y0,'source'),attr(X,'source'),sep="-")
   attr(ds,'source') <- attr(X,'source')
   attr(ds,'history') <- history.stamp(y)
   attr(ds,'call') <- match.call()
@@ -763,6 +769,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
   
   invisible(ds)
 }
+
 
 
 DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
