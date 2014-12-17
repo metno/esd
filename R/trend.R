@@ -6,7 +6,7 @@
 trend<-function(x,result="trend",model="y ~ t",...) UseMethod("trend")
 
 trend.default <- function(x,result="trend",model="y ~ t",...) {
-  trendx <- data.frame(t=1:length(x),y=x)
+  trendx <- data.frame(t=1:length(index(x)),y=x)
   eval(parse(text=paste("xt <- lm(",model,",data=trendx)")))
   y <- switch(result,"trend"=zoo(predict(xt,newdata=trendx),order.by=index(x)),
                      "residual"=zoo(xt$residuals,order.by=index(x)))
