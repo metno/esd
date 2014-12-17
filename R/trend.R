@@ -196,7 +196,7 @@ trend.zoo <- function(x,result="trend",model="y ~ t",...) {
 }
 
 trend.zoo.multi <- function(x,result="trend",model="y ~ t",...) {
-  y <- apply(coredata(x),2,trend)
+  y <- apply(coredata(x),2,trend,result=result,model=model)
   y <- zoo(y,order.by=index(x))
   return(y)
 }
