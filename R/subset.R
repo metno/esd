@@ -286,12 +286,21 @@ subset.comb <- function(x,it=NULL,is=NULL) {
     invisible(y)
 }
 
-subset.eof <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
                                         #print("subset.eof")
-    if (is.null(is) & is.null(it)) return(x)
-    if (is.null(it) & is.null(is[1]) & is.null(is[2])) return(x) 
+    if (is.null(is) & is.null(it) & is.null(pattern)) return(x)                                    
+    if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(pattern)) return(x) 
     d <- dim(x); greenwich <- TRUE
     clim <- attr(x,'mean')
+    if (is.null(pattern)) {
+      y <- x[,pattern]
+      y <- attrcp(x,y)
+      class(y) <- class(x)
+      attr(y,'eigenvalues') <- attr(y,'eigenvalues')[pattern]
+      attr(y,'pattern') <- attr(y,'pattern')[,,pattern]
+      x <- y
+    } 
+    
     if (is.null(is)) is <- 1:d[length(d)] else
 
     if (is.list(is)) {
@@ -415,8 +424,16 @@ subset.pattern <- function(x,is) {
     return(x)
 }
 
-subset.pca <- function(x,it=NULL,is=NULL) {
-    x
+subset.pca <- function(x,pattern=NULL,it=NULL,is=NULL) {
+  #print('subset.pca')
+  if (is.null(pattern)) {
+    y <- x[,pattern]
+    y <- attrcp(x,y)
+    class(y) <- class(x)
+    attr(y,'eigenvalues') <- attr(y,'eigenvalues')[pattern]
+    attr(y,'pattern') <- attr(y,'pattern')[,pattern]
+  } else y <- x
+  return(y)
 }
 
 
