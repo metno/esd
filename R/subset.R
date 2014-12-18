@@ -292,14 +292,20 @@ subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(pattern)) return(x) 
     d <- dim(x); greenwich <- TRUE
     clim <- attr(x,'mean')
-    if (is.null(pattern)) {
+    
+    # Pattern extracts certain modes/patterns
+    if (!is.null(pattern)) {
       y <- x[,pattern]
       y <- attrcp(x,y)
       class(y) <- class(x)
       attr(y,'eigenvalues') <- attr(y,'eigenvalues')[pattern]
       attr(y,'pattern') <- attr(y,'pattern')[,,pattern]
+      if (!is.null(attr(x,'n.apps'))) {
+        attr(y,'n.apps') <- attr(x,'n.apps')
+        attr(y,'appendix.1') <- attr(x,'appendix.1')
+      }
       x <- y
-    } 
+    }
     
     if (is.null(is)) is <- 1:d[length(d)] else
 
@@ -425,14 +431,19 @@ subset.pattern <- function(x,is) {
 }
 
 subset.pca <- function(x,pattern=NULL,it=NULL,is=NULL) {
-  #print('subset.pca')
-  if (is.null(pattern)) {
+  print('subset.pca')
+  if (!is.null(pattern)) {
     y <- x[,pattern]
     y <- attrcp(x,y)
     class(y) <- class(x)
     attr(y,'eigenvalues') <- attr(y,'eigenvalues')[pattern]
     attr(y,'pattern') <- attr(y,'pattern')[,pattern]
+    if (!is.null(attr(x,'n.apps'))) {
+      attr(y,'n.apps') <- attr(x,'n.apps')
+      attr(y,'appendix.1') <- attr(x,'appendix.1')
+    }
   } else y <- x
+  #browser()
   return(y)
 }
 
