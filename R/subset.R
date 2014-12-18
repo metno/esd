@@ -382,18 +382,18 @@ subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
     
     class(x) -> cls
     ##keep <- is.element(index(x),it)
-    y <- x[keep,is]
+    y <- x[keep,]
     
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c('greenwich','mean'))
     attr(y,'greenwich') <- greenwich
     clim -> attr(y,'mean')
     ## browser()
-    attr(y,'pattern') <- attr(x,"pattern")[,,is]
-    attr(y,'eigenvalues') <-attr(x,"eigenvalues")[is]
+    attr(y,'pattern') <- attr(x,"pattern")
+    attr(y,'eigenvalues') <-attr(x,"eigenvalues")
                                         #attr(y,'date-stamp') <- date()
                                         #attr(y,'call') <- match.call()
-    attr(y, "dimensions") <- dim(attr(x,"pattern")[,,is])
+    attr(y, "dimensions") <- dim(attr(x,"pattern"))
     attr(y,'history') <- history.stamp(x)
     return(y)
 }
