@@ -972,7 +972,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     if (!is.null(torigin)) {if (verbose) print("Checking Time Origin --> [ok]")} else if (verbose) print("Checking Time Origin --> [fail]")
     ##
     ## Checking : Frequency
-    type <- c("year","season","months","Days","Hours","minutes","seconds")
+    type <- c("year","season","months","Days","hours","minutes","seconds")
     type.abb <- substr(tolower(type),1,3)
     ## Initialize
     freq.att <- NULL
@@ -988,7 +988,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         if (verbose) print("Checking Frequency from attribute --> [fail]")
         if (verbose) print("Frequency has not been found in the attributes") 
     }
-    ## 
+    browser() 
     ## Checking frequency from data
     frequency <- freq.data <- NULL
     freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
