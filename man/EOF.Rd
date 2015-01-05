@@ -16,7 +16,6 @@
   analysis) for combinations of data sets, typically from
   gridded data, reanalysis and climate models results.
   
-  
   [ref: Benestad (2001), "A comparison between two empirical downscaling
   strategies", \emph{Int. J. Climatology}, \bold{vol 21}, Issue 13,
   pp.1645-1668. DOI 10.1002/joc.703]. and  \code{\link{mixFields}} prepares for
