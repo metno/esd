@@ -66,6 +66,7 @@ year <- as.numeric( format(index(Svalbard), '\%Y') )
 y <- aggregate(Svalbard, by=year, FUN='mean', na.rm = FALSE) 
 plot(y)
 
+
 # Example with downscaling:
 lon <- c(-12,37)
 lat <- c(52,72)
