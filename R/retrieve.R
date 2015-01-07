@@ -17,10 +17,10 @@ if (library("ncdf4", logical.return = TRUE)) {
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 
 ## Default function
-retrieve.default <- function(ncfile,verbose=TRUE,...) {
+retrieve.default <- function(ncfile,param="auto",verbose=TRUE,...) {
 
     X <- NULL
-
+    browser()
     if (is.character(ncfile)) {
         fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
         stopifnot(fext=="nc")
@@ -39,30 +39,29 @@ retrieve.default <- function(ncfile,verbose=TRUE,...) {
     
     if (library("ncdf4",logical.return=TRUE)) {
         nc <- nc_open(ncfile)
-        lon <- ncvar_get(nc,"lon")
-        lat <- ncvar_get(nc,"lat")
+        dimnames <- names(nc$dim)
+        lon <- ncvar_get(nc,dimnames[grep("lon",dimnames)])
+        lat <- ncvar_get(nc,dimnames[grep("lat",dimnames)])
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
             if (verbose) print('Regular grid field found')
-            X <- retrieve.ncdf4(ncfile,...)
+            X <- retrieve.ncdf4(ncfile,param="auto",...)
         }
         else {
             if (verbose) print('Irregular grid field found')
             X <- retrieve.rcm(ncfile,...) 
         }
-    }
-    else if (library("ncdf",logical.return=TRUE)) {
+    } else if (library("ncdf",logical.return=TRUE)) {
         nc <- nc_open(ncfile)
-        lon <- get.var.ncdf(nc,"lon")
-        lat <- get.var.ncdf(nc,"lat")
+        lon <- get.var.ncdf(nc,dimnames[grep("lon",dimnames)])
+        lat <- get.var.ncdf(nc,dimnames[grep("lat",dimnames)])
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) ) {
             if (verbose) print('Regular grid field found')
-            X <- retrieve.ncdf(ncfile,...)
+            X <- retrieve.ncdf(ncfile,param="auto",...)
         } else {
             if (verbose) print('Irregular grid field found')
             X <- retrieve.rcm(ncfile,...) 
         }
-    }
-    else print("No suitable ncdf or ncdf4 libraries found to read your file or data")
+    } else print("No suitable ncdf or ncdf4 libraries found to read your file or data")
     
 }
  
@@ -330,7 +329,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     if (length(iunit)>0) {
         text=paste("v1$",names(v1)[iunit],sep="")
         units <- eval(parse(text=text))
-        if ((units=="K") | (units=="degK")) {
+        if (((units=="K") | (units=="degK")) & !grepl("anom",v1$longname)) {
             val <- val - 273 
             units <- "degC"
         }
@@ -988,7 +987,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         if (verbose) print("Checking Frequency from attribute --> [fail]")
         if (verbose) print("Frequency has not been found in the attributes") 
     }
-    browser() 
+    ## browser() 
     ## Checking frequency from data
     frequency <- freq.data <- NULL
     freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
