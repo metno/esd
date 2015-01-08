@@ -7,7 +7,7 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
                            stid = NULL ,lon = NULL, lat = NULL, 
                            alt = NULL, cntr = NULL, src = NULL , nmin = NULL,
                            verbose=FALSE) {
-   
+    browser()
     ## 
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
@@ -217,18 +217,18 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ## Need to make sure both it and is are same type: here integers for index rather than logical
         ## otherwise the subindexing results in an empty object
     }
+    browser()
     y <- x[ii,is]
-    if (is.logical(is)) is <- (1:length(is))[is]  
+    ## if (is.logical(is))
+    ##    is <- (1:length(is))[is]
+    ##else 
+    ##    is <- is.element(1:d[2],is)
+    
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))
     attr(y,'longitude') <- attr(x,'longitude')[is]
     attr(y,'latitude') <- attr(x,'latitude')[is]
-    if (!is.logical(is)) {
-        if (is>0)
-            is <- is.element(1:d[2],is)
-        else if (is <0)
-            is <- !is.element(1:d[2],-is)
-    }
+    
     if (length(alt(x))==length(is)) attr(y,'altitude') <- attr(x,'altitude')[is]
     if (length(cntr(x))==length(is)) attr(y,'country') <- attr(x,'country')[is]
     if (length(src(x))==length(is)) attr(y,'source') <- attr(x,'source')[is]
@@ -247,6 +247,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(attr(x,'method'))==length(is)) attr(y,'method') <- attr(x,'method')[is]
     if (length(attr(x,'type'))==length(is)) attr(y,'type') <- attr(x,'type')[is]
     if (length(attr(x,'URL'))==length(is)) attr(y,'URL') <- attr(x,'URL')[is]
+    if (length(attr(x,'standard.error'))==length(is)) attr(y,'standard.error') <- attr(x,'standard.error')[is]
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)   
