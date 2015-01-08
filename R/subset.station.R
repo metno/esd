@@ -7,7 +7,7 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
                            stid = NULL ,lon = NULL, lat = NULL, 
                            alt = NULL, cntr = NULL, src = NULL , nmin = NULL,
                            verbose=FALSE) {
-    browser()
+    
     ## 
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
@@ -217,7 +217,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ## Need to make sure both it and is are same type: here integers for index rather than logical
         ## otherwise the subindexing results in an empty object
     }
-    browser()
+   
     y <- x[ii,is]
     ## if (is.logical(is))
     ##    is <- (1:length(is))[is]
