@@ -17,8 +17,11 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, ...) {
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0) )
 #    y <- aggregate(x,yr,FUN=FUN,...,na.rm=na.rm) else
 #    y <- aggregate(x,yr,FUN=FUN,...)
-    y <- aggregate(x,year,FUN=FUN,...,na.rm=na.rm) else
-    y <- aggregate(x,year,FUN=FUN,...)
+      y <- aggregate(x,year,FUN=FUN,...,na.rm=na.rm)
+  else
+      y <- aggregate(x,year,FUN=FUN,...)
+  ## replace infinite values by NA
+  y[which(is.infinite(y))] <- NA
   invisible(y)
 }
 
@@ -184,6 +187,7 @@ annual.station <- function(x,FUN='mean',nmin=NULL,...) {
     y <- annual.default(x,FUN=FUN,nmin=nmin,...)
 #    if (i==1) y <- z else y <- c(y,z)
 #  }
+   y[which(is.infinite(y))] <- NA
   return(y)
 }
 
@@ -229,6 +233,7 @@ annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, ...) {
   attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],length(index(y)))
   class(y) <- cls
   class(y)[2] <- "annual"
+  y[which(is.infinite(y))] <- NA
   invisible(y)
 }
 
