@@ -217,10 +217,10 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ## Need to make sure both it and is are same type: here integers for index rather than logical
         ## otherwise the subindexing results in an empty object
     }
-   
+    
     y <- x[ii,is]
-    ## if (is.logical(is))
-    ##    is <- (1:length(is))[is]
+    if (!is.logical(is))
+        is <- (1:length(is))[is]
     ##else 
     ##    is <- is.element(1:d[2],is)
     
@@ -229,25 +229,40 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     attr(y,'longitude') <- attr(x,'longitude')[is]
     attr(y,'latitude') <- attr(x,'latitude')[is]
     
-    if (length(alt(x))==length(is)) attr(y,'altitude') <- attr(x,'altitude')[is]
-    if (length(cntr(x))==length(is)) attr(y,'country') <- attr(x,'country')[is]
-    if (length(src(x))==length(is)) attr(y,'source') <- attr(x,'source')[is]
-    if (length(stid(x))==length(is)) attr(y,'station_id') <- attr(x,'station_id')[is]
-    if (length(loc(x))==length(is)) attr(y,'location') <- attr(x,'location')[is]
-    if (length(attr(x,'quality'))==length(is)) attr(y,'quality') <- attr(x,'quality')[is]
-                                        #attr(y,'URL') <- attr(x,'URL')[is]
-                                        #attr(y,'history') <- attr(x,'history')[is]
-    if (length(varid(x))==length(is)) attr(y,'variable') <- attr(x,'variable')[is]
-                                        #attr(y,'element') <- attr(x,'element')[is]
-    if (length(attr(x,'aspect'))==length(is)) attr(y,'aspect') <- attr(x,'aspect')[is]
-    if (length(unit(x))==length(is)) attr(y,'unit') <- attr(x,'unit')[is]
-    if (length(attr(x,'longname'))==length(is)) attr(y,'longname') <- attr(x,'longname')[is]
-    if (length(attr(x,'reference'))==length(is)) attr(y,'reference') <- attr(x,'reference')[is]
-    if (length(attr(x,'info'))==length(is)) attr(y,'info') <- attr(x,'info')[is]
-    if (length(attr(x,'method'))==length(is)) attr(y,'method') <- attr(x,'method')[is]
-    if (length(attr(x,'type'))==length(is)) attr(y,'type') <- attr(x,'type')[is]
-    if (length(attr(x,'URL'))==length(is)) attr(y,'URL') <- attr(x,'URL')[is]
-    if (length(attr(x,'standard.error'))==length(is)) attr(y,'standard.error') <- attr(x,'standard.error')[is]
+    if (!is.null(attr(y,'altitude')))
+        attr(y,'altitude') <- attr(x,'altitude')[is]
+    if (!is.null(attr(y,'country')))
+        attr(y,'country') <- attr(x,'country')[is]
+    if (!is.null(attr(y,'source')))
+        attr(y,'source') <- attr(x,'source')[is]
+    if (!is.null(attr(y,'station_id')))
+        attr(y,'station_id') <- attr(x,'station_id')[is]
+    if (!is.null(attr(y,'location')))
+        attr(y,'location') <- attr(x,'location')[is]
+    if (!is.null(attr(y,'quality')))
+        attr(y,'quality') <- attr(x,'quality')[is]
+    ## attr(y,'history') <- attr(x,'history')[is]
+    if (!is.null(attr(y,'variable')))
+        attr(y,'variable') <- attr(x,'variable')[is]
+    ## attr(y,'element') <- attr(x,'element')[is]
+    if (!is.null(attr(y,'aspect')))
+        attr(y,'aspect') <- attr(x,'aspect')[is]
+    if (!is.null(attr(y,'unit')))
+        attr(y,'unit') <- attr(x,'unit')[is]
+    if (!is.null(attr(y,'longname')))
+        attr(y,'longname') <- attr(x,'longname')[is]
+    if (!is.null(attr(y,'reference')))
+        attr(y,'reference') <- attr(x,'reference')[is]
+    if (!is.null(attr(y,'info')))
+        attr(y,'info') <- attr(x,'info')[is]
+    if (!is.null(attr(y,'method')))
+        attr(y,'method') <- attr(x,'method')[is]
+    if (!is.null(attr(y,'type')))
+        attr(y,'type') <- attr(x,'type')[is]
+    if (!is.null(attr(y,'URL')))
+        attr(y,'URL') <- attr(x,'URL')[is]
+    if (!is.null(attr(y,'standard.error')))
+        attr(y,'standard.error') <- attr(x,'standard.error')[is]
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)   
