@@ -110,8 +110,8 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   #print(FUN); print(sum(is.element(names(formals(FUN)),'na.rm')))
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0) )
-    y <- aggregate(X,year,FUN=match.fun(FUN),...,na.rm=na.rm) else
-    y <- aggregate(X,year,FUN=match.fun(FUN),...) # REB.
+    y <- aggregate(X,year,FUN=FUN,...,na.rm=na.rm) else
+    y <- aggregate(X,year,FUN=FUN,...) # REB.
   y[!is.finite(y)] <- NA ## AM
   y <- attrcp(x,y,ignore="names")
 
