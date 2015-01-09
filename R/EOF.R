@@ -386,7 +386,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
 
 
 eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE) {
-  #print("HERE"); print(lon); print(lat)
+#  print("HERE"); print(lon); print(lat)
   greenwich <- attr(x,'greenwich')
 #  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
 #  if (!is.null(lat)) lat.rng <- range(lat) else lat.rng <- NULL
@@ -395,7 +395,7 @@ eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE) {
 #  if (!is.null(is))
 #    eof <- subset(x,is=is) else
     eof <- x
-  #print(c(greenwich,attr(eof,'greenwich')))
+#  print(c(greenwich,attr(eof,'greenwich')))
                                         # REB 04.12.13 comment below 
   U <- attr(eof,'pattern')
   d <- dim(U); dim(U) <- c(d[1]*d[2],d[3])
@@ -503,7 +503,7 @@ PCA.station <- function(X,neofs=20,na.action='fill',verbose=FALSE) {
 pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if (inherits(X,'ds')) class(X) <- class(X)[-1]
-  #print('pca2station')
+  print('pca2station')
   
   pca <- X
   cls <- class(pca)
@@ -532,7 +532,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE) {
   # REB 2014-10-27: if the object is DS-results, then look for
   # cross-validation
   if (!is.null(attr(pca,'evaluation'))) {
-     cval <- attr(pca,'evaluation')
+    cval <- attr(pca,'evaluation')
     d.cval <- dim(cval)
     V.x <- coredata(cval)
     # The evaluation data are stored as the original calibration
