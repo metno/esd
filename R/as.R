@@ -701,7 +701,7 @@ as.anomaly <- function(x,...) UseMethod("as.anomaly")
 as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
 # The argument monthly can be used to force the method to be
 # julian-day regression-based or based on monthly mean
-    browser()
+ 
 #  print('as.anomaly.default')
 #  yr <- as.integer(format(index(x),'%Y'))
 #  mon <- as.integer(format(index(x),'%m'))
