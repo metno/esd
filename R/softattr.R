@@ -8,7 +8,7 @@ attrcp <- function(x,y,ignore=c("name","model","n.apps","appendix")) {
     if (length(nattr)>0)
         for (i in 1:length(nattr))
             attr(y,nattr[i]) <- attr(x,nattr[i])
-    if (!is.null((attr(x,"dimensions"))) & !is.element("dimensions",ignore)) attr(y,"dimensions") <- attr(x,"dimensions")
+#    if (!is.null((attr(x,"dimensions"))) & !is.element("dimensions",ignore)) attr(y,"dimensions") <- attr(x,"dimensions")
     invisible(y)
 }
 
