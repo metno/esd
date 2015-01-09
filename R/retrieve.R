@@ -20,7 +20,7 @@ retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 retrieve.default <- function(ncfile,param="auto",verbose=TRUE,...) {
 
     X <- NULL
-    browser()
+    
     if (is.character(ncfile)) {
         fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
         stopifnot(fext=="nc")
