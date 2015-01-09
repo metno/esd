@@ -219,8 +219,8 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     }
     
     y <- x[ii,is]
-    if (!is.logical(is))
-        is <- (1:length(is))[is]
+    #if (is.logical(is))
+    #    is <- (1:length(is))[is]
     ##else 
     ##    is <- is.element(1:d[2],is)
     
