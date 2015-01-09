@@ -217,7 +217,7 @@ DS.default <- function(y,X,mon=NULL,
 DS.eof <- function(X,y,mon=NULL,
                    method="lm",swsm="step",m=5,
                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                   verbose=FALSE,pca=TRUE,...) {
+                   verbose=FALSE,weighted=TRUE,pca=TRUE,...) {
                                         #if (verbose) print("DS.eof")
     ds <- DS.default(y,X,mon=mon,
                      method=method,swsm=swsm,m=m,
@@ -348,7 +348,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
 DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                    verbose=FALSE,...) {
+                    verbose=FALSE,weighted=TRUE,...) {
 
     if (verbose) print("DS.comb")
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
@@ -413,7 +413,7 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
 DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
                      method="lm",swsm="step",m=5,
                      rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                     verbose=FALSE,...) {
+                     verbose=FALSE,weighted=TRUE,...) {
     if (verbose) print("DS.field")
                                         # Keep track of which is an eof object and which is a station record:
     swapped <- FALSE
@@ -460,7 +460,7 @@ DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
 DS.t2m.month.field <- function(y,X,biascorrect=FALSE,mon=NULL,
                                method="lm",swsm="step",m=m,
                                rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                               verbose=FALSE,station=TRUE) {
+                               verbose=FALSE,weighted=TRUE,station=TRUE) {
     if (verbose) print("DS.t2m.month.field")
     if (inherits(X,'comb')) type <- 'eof.comb' else type <- "eof.field"
     cls <- class(y)
@@ -499,7 +499,7 @@ DS.t2m.month.field <- function(y,X,biascorrect=FALSE,mon=NULL,
 DS.t2m.season.field <- function(y,X,biascorrect=FALSE,
                                 method="lm",swsm="step",m=5,
                                 rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                                verbose=FALSE,station=TRUE) {
+                                verbose=FALSE,weighted=TRUE,station=TRUE) {
                                         # Downscale seasonal mean and standard deviation
     if (verbose) print("DS.t2m.season.field")
                                         #ya <- as.anomaly(y)
@@ -537,7 +537,7 @@ DS.t2m.season.field <- function(y,X,biascorrect=FALSE,
 DS.t2m.annual.field <- function(y,X,biascorrect=FALSE,
                                 method="lm",swsm="step",m=5,
                                 rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                                verbose=FALSE,station=TRUE) {
+                                verbose=FALSE,weighted=TRUE,station=TRUE) {
                                         # Downscale seasonal mean and standard deviation
     if (verbose) print("DS.t2m.annual.field")
                                         #ya <- as.anomaly(y)
@@ -556,7 +556,7 @@ DS.t2m.annual.field <- function(y,X,biascorrect=FALSE,
 DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
                                    method="lm",swsm="step",m=5,
                                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                                   verbose=FALSE,...) {
+                                   verbose=FALSE,weighted=TRUE,...) {
 
                                         # Computes the annual mean values for wet-day mean mu, wet-day frequency, and spell.
                                         # Also computes seasonal variations from PCA X[year,calendar months].
@@ -588,7 +588,7 @@ DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
                                         # Use family='gaussian' for sample sizes gt 30 - > central limit theorem
 DS.freq <- function(y,X,threshold=1,biascorrect=FALSE,method="glm",
                     family="gaussian",swsm="step",m=5,
-                    rmtrend=TRUE,eofs=1:7,verbose=FALSE,...) {
+                    rmtrend=TRUE,eofs=1:7,verbose=FALSE,weighted=TRUE,...) {
     if (inherits(X,'month'))
         Z <- aggregate(y,as.yearmon,FUN=wetfreq,threshold=threshold) else
     if (inherits(X,'season'))
@@ -604,7 +604,7 @@ DS.freq <- function(y,X,threshold=1,biascorrect=FALSE,method="glm",
 
 DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
                      method="glm",family="gaussian",swsm="step",m=5,
-                     rmtrend=TRUE,eofs=1:7,verbose=FALSE,...) {
+                     rmtrend=TRUE,eofs=1:7,verbose=FALSE,weighted=TRUE,...) {
                                         # Downscale the spell length using a GLM with poisson family.
                                         # Thate the mean spell length over a given interval:
     if (inherits(y,'spell')) z <- as.station(y) else
@@ -632,7 +632,7 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
                                         # Rasmus Benestad, 19.08.2013
 DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,eofs=1:10,
-                   rmtrend=TRUE,verbose=FALSE,...) {
+                   rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
     
     if (is.list(X)) {
         z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
