@@ -261,6 +261,8 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         attr(y,'type') <- attr(x,'type')[is]
     if (!is.null(attr(y,'URL')))
         attr(y,'URL') <- attr(x,'URL')[is]
+    if (!is.null(attr(y,'na')))
+        attr(y,'na') <- attr(x,'na')[is]
     if (!is.null(attr(y,'standard.error')))
         attr(y,'standard.error') <- attr(x,'standard.error')[is]
     ##attr(y,'date-stamp') <- date()

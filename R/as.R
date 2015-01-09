@@ -701,7 +701,7 @@ as.anomaly <- function(x,...) UseMethod("as.anomaly")
 as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
 # The argument monthly can be used to force the method to be
 # julian-day regression-based or based on monthly mean
-
+    browser()
 #  print('as.anomaly.default')
 #  yr <- as.integer(format(index(x),'%Y'))
 #  mon <- as.integer(format(index(x),'%m'))
@@ -768,7 +768,7 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
     clim <- predict(acfit,newdata=pre)
     y <- zoo(coredata(x) - clim,order.by=index(x))
     clim <-  predict(acfit,newdata=pre1)
-  }
+  } 
   #print("attributes")
   y <- attrcp(x,y)
   attr(y,"aspect") <- 'anomaly'

@@ -2,8 +2,7 @@ clean.station <- function(x,miss=.1,verbose=TRUE) {
 
     stopifnot(inherits(x,"station"))
     loc <- loc(x)
-    par(mfrow=c(2,1))
-    
+    if (verbose) par(mfrow=c(2,1))
     if (verbose) image(coredata(annual(x)))
     if (verbose) title('Original data')
     # compute number of finite values
@@ -11,11 +10,9 @@ clean.station <- function(x,miss=.1,verbose=TRUE) {
 
     if (verbose) summary(n)
     keep <- n > (dim(x)[1]*miss)
-
-    if (verbose) 
-        x <- subset(x,is=keep)
-    print("Removed stations ...")
-    print(loc[!keep])
+    x <- subset(x,is=keep)
+    if (verbose) print("Removed stations ...")
+    if (verbose) print(loc[!keep])
     if (verbose) image(coredata(annual(x)))
     if (verbose) title('Filtered data')
     return(x)
