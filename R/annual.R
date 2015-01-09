@@ -300,20 +300,24 @@ month <- function(x) {
 }
 
 day <- function(x) {
-  if (inherits(x,c('numeric','integer'))) x <- as.numeric(x)
-  if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 32) )
-    return(x)
-  if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) ) y <- rep(1,length(x))  
   if (inherits(x,c('station','field','zoo'))) {
     y <- day(index(x))
     return(y)
   }
+  if (inherits(x,c('numeric','integer'))) x <- as.numeric(x)
+  if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 32) )
+    return(x)
+  if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) ) y <- rep(1,length(x))  
   if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
     y <- day(as.Date(x))
     return(y)
   }
-  if (class(x)[1]=="Date") day <- as.numeric(format(x, '%d'))
-  return(day)
+  if ( (class(x)[1]=="character") & (nchar(x[1])==4) ) {
+    y <- rep(1,length(x)) 
+    return(y)
+  }
+  if (class(x)[1]=="Date") y <- as.numeric(format(x, '%d'))
+  return(y)
 }
 
 # Used to estimate Dec-Feb, Mar-May, Jun-Aug, and Sep-Nov statistics
