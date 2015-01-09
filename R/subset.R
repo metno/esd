@@ -89,7 +89,7 @@
 
 subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                                         #print("subset.field")
-        
+   
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
     ## if (is.null(it) & is.null(is[[1]]) & is.null(is[[2]])) return(x) 
@@ -172,8 +172,8 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             }
         d[3] <- length(index(y))
         class(y) <- cls
-        d -> attr(y,'dimensions')
         y <- attrcp(x,y)
+        d -> attr(y,'dimensions')
                                         #nattr <- softattr(x)
                                         #for (i in 1:length(nattr))
                                         #  attr(y,nattr[i]) <- attr(x,nattr[i])
