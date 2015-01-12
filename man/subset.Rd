@@ -11,6 +11,7 @@
 \alias{subset.comb}
 \alias{subset.field}
 \alias{subset.spell}
+\alias{subset.zoo}
 \alias{station.subset}
 \alias{matchdate}
 \title{Subsetting esd objects}
@@ -32,6 +33,7 @@ subset.spell(x,is=NULL,it=NULL)
 subset.ds(x,it=NULL,is=NULL)
 subset.trend(x,it=NULL,is=NULL)
 subset.dsensemble(x,it=NULL,is=NULL)
+subset.zoo(x,it=NULL)
 matchdate(x,it)
 }
 \arguments{
