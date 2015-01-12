@@ -78,6 +78,8 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
     ##class(X) <- class(x)
     ##str(X)
     
+    if (FUN='trend') FUN <- 'trend.coef'
+    
     if (projection=="sphere")
         sphere(x,lonR=lonR,latR=latR,axiR=axiR,
                    gridlines=gridlines,
