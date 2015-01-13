@@ -41,7 +41,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            area.mean.expl=FALSE,
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),
                            select=NULL,FUN="mean",FUNX="mean",
-                           pattern="tas_Amon_ens_",verbose=FALSE) {
+                           pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL) {
   
   #print("predictand")
   #if ( (deparse(substitute(FUN))=='sd') | (deparse(substitute(FUN))=='ar1') )
@@ -50,8 +50,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     attr(y,'aspect') <- 'original'
   }
   
-  ya <- annual(y,FUN=FUN)
-  y <- as.4seasons(y,FUN=FUN)
+  ya <- annual(y,FUN=FUN,nmin=nmin*4)
+  y <- as.4seasons(y,FUN=FUN,nmin=nmin)
   
 
 #  yr <- as.4seasons(ya,FUN=ltp)
@@ -375,21 +375,21 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),
                               select=NULL,FUN="exceedance",
                               FUNX="sum",threshold=1,
-                              pattern="pr_Amon_ens_",verbose=FALSE) {
+                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
 
   if (verbose) print('DSensemble.precip')
 #  if (deparse(substitute(FUN))=='spell') {
   if ( (FUN=='wet') | (FUN=='dry')) {
     y <- spell(y,threshold=threshold)
-    y <- annual(y)
+    y <- annual(y,nmin=nmin)
     #plot(y); browser()
     y <- switch(FUN,'wet'=subset(y,is=1),'dry'=subset(y,is=2))
   } else
 #    y <- annual(y,FUN=FUN,threshold=threshold)
     if (sum(is.element(names(formals(FUN)),'threshold')==1))
-        y <- annual(y,FUN=FUN,threshold=threshold) else
-        y <- annual(y,FUN=FUN)
+        y <- annual(y,FUN=FUN,threshold=threshold,nmin=nmin) else
+        y <- annual(y,FUN=FUN,nmin=nmin)
   #browser()
   index(y) <- year(y)
   
@@ -609,7 +609,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
                           select=NULL,FUN="wetmean",
                           FUNX="C.C.eq",threshold=1,
-                          pattern="tas_Amon_ens_",verbose=FALSE) {
+                          pattern="tas_Amon_ens_",verbose=FALSE,nmin=nmin) {
 
 # This function is for downscaling wet-day mean using SLP to
 # remove the internal variations and then the global mean temperature
@@ -635,7 +635,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
                           select=NULL,FUN="mean",rmtrend=TRUE,
                           FUNX="mean",threshold=1,
-                          pattern="tas_Amon_ens_",verbose=FALSE) {
+                          pattern="tas_Amon_ens_",verbose=FALSE,nmin=nmin) {
   
   # This function is for downscaling PCA to represent a group of stations
   if (!is.na(attr(y,'longitude'))[1])
@@ -649,10 +649,10 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
   if (inherits(y,'season')) {
-    T2M <- as.4seasons(t2m,FUN=FUNX)
+    T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
   } else if (inherits(y,'annual')) {
-    T2M <- annual(t2m,FUN=FUNX)
+    T2M <- annual(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
   }
   
