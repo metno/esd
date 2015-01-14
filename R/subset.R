@@ -155,8 +155,8 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             y <- x[ii,is]
         } 
         else if (is.element('month',cls) & (max(it) <= 12) ) y <- x[months==it,]
-        else if (is.element('season',cls)) {
-            it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10,,'djf'=1,'mam'=4,'jja'=7,'son'=10)
+        else if (is.element('season',cls) & (length(it)==1)) {
+            it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
             y <- x[months==it,]
         }
         else if (is.element('annual',cls)) y <- x[years==it,]
