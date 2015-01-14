@@ -35,7 +35,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 #      }
 #  }
 
-  errorbar <- errorbar & !is.null(attr(x,'standard.error'))
+  errorbar <- errorbar & !is.null(err(x))
   
   #print(ylab)
   class(x) <- "zoo"
@@ -46,8 +46,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if (plot.type=="single") {
     if (errorbar) {
       # REB 2014-10-03: add an errorbar to the plots.
-      std.err <- attr(x,'standard.error')
-      segments(index(x),x-std.err,index(x),x+std.err,
+      segments(index(x),x-err(x),index(x),x+err(x),
                lwd=3,col=rgb(0.5,0.5,0.5,0.25))
 #      d.err <- dim(std.err)
 #      dt <- 0.3*diff(index(x))[1]

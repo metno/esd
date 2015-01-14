@@ -1,5 +1,5 @@
-matchdate <- function(x,it) {
-  #print('matchdate')
+matchdate <- function(x,it,verbose=FALSE) {
+  if (verbose) print('matchdate'); # str(x)
   t <- index(x)
 
   if (inherits(it,'character')) {
@@ -12,6 +12,8 @@ matchdate <- function(x,it) {
     it <- as.Date(it)
   } 
   if (inherits(it,c('field','station','zoo'))) it <- index(it)
+  if (is.logical(it)) it <- (1 <- length(it))[it]
+  
   #print(c(t[1],it[1]));   print(c(class(t),class(it)))
   
   # Convert indeces all to 'Date':
@@ -22,22 +24,29 @@ matchdate <- function(x,it) {
   if ( (is.character(t)) & (nchar(t[1])==10) )  t <- as.Date(t)
 
   # The time index to match:
+  it0 <- it
   if ( (is.numeric(it)) | (is.integer(it)) |
      ( (is.character(it)) & (nchar(it[1])==4) ) ) it <- as.Date(paste(it,'-01-01',sep='')) 
   if ( (is.character(it)) & (nchar(it[1])==10) )  it <- as.Date(it)
   
-  #print(c(t[1],it[1]))
+  if (verbose) print(c(t[1],it[1],it0[1]))
   
   if (length(it)>2) {
+    if (verbose) print(paste('select',length(it),'dates'))
     y <- x[is.element(t,it),]
+    ii <- is.element(it,t)
+    #print(sum(ii))
+    if (sum(ii)==length(index(y))) index(y) <- it0[ii] # REB 2015-01-14: to ensure same index class as it.
+    #print('Index(y)'); print(index(y))
+    #browser()
   } else if (length(it)==2) {
   # Pick an interval
-    #print('an interval')
+    if (verbose) print('select an interval',it,collapse=' ')
     dates <- range(it)
     y <- window(x,start=dates[1],end=dates[2])
   } else {
   # Pick one date:
-    #print('one date')
+    if (verbose) print('one date')
     if (inherits(x,c('day','zoo'))) ii <- is.element(t,it) else
     if (inherits(x,c('month','seasonal')))
       ii <- is.element(year(t)*100+month(t),year(it)*100+month(it)) else
@@ -53,10 +62,14 @@ matchdate <- function(x,it) {
        y <- zoo(coredata(y1)+coredata(y2),order.by=it)
      }
   }
+
   y <- attrcp(x,y)
-  if (!is.null(attr(y,'standard.error'))) {
-    attr(y,'standard.error') <- matchdate(attr(y,'standard.error'),y)
+  if (!is.null(err(x))) {
+    if (verbose) print('match date for error')
+    attr(y,'standard.error') <- matchdate(err(x),y)
+    #str(err(y))
   }
+  
   if (!is.null(attr(x,'n.app'))) {
     attr(y,'n.app') <- attr(x,'n.app')
     attr(y,'appendix.1') <- attr(x,'appendix.1')

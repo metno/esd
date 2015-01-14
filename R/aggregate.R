@@ -107,6 +107,7 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
     attr(y,'unit') <- 'degree-days'
   } else attr(y,'unit') <- attr(x,'unit')
 
+
   attr(y,'history') <- history.stamp(y)
   return(y)
 }

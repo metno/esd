@@ -17,22 +17,23 @@
                                         # Needs to work also for daily, annual and seasonal data
                                         #
 
-sametimescale <- function(y,X,FUN='mean') {
+sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
                                         # Function to ensure that station y has the same time scales as X
+    if (verbose) print('sametimescale')
     tsx <- class(X)[length(class(X))-1]
     tsy <- class(y)[length(class(y))-1]
-                                        #print(c(tsx,tsy))
-    index(y) <- as.Date(index(y))
+    if (verbose) print(c(tsx,tsy))
     if (tsx==tsy) return(y)
 
+    if (verbose) print('Need to aggregate')
     if (tsx=="day") agrscly <- as.Date(index(y)) else
     if (tsx=="month") agrscly <- as.yearmon(index(y)) else
     if (tsx=="annual") agrscly <- year(y) else
     if (tsx=="year") agrscly <- year(y)
-                                        #str(agrscly)
+    if (verbose) str(agrscly)
     if (tsx !="season")
         y <- aggregate(y, agrscly, match.fun(FUN)) else 
-    y <- as.4seasons(y, FUN=match.fun(FUN),dateindex=TRUE)
+        y <- as.4seasons(y, FUN=match.fun(FUN),dateindex=TRUE)
     return(y)
 }
 
@@ -47,10 +48,12 @@ DS.default <- function(y,X,mon=NULL,
                        method="lm",swsm="step",m=5,
                        rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,...) {
-    ## 
+    ##
+    if (verbose) print('DS.default')
+    #print('err(y)'); print(err(y))
+    if (verbose) {print('index(y)'); print(index(y))}
     class(y)
     class(X)
-    if (verbose) print("DS.default")
     swapped <- FALSE
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
         yy <- X
@@ -60,43 +63,52 @@ DS.default <- function(y,X,mon=NULL,
     }
     stopifnot(!missing(y),!missing(X), is.matrix(X),
               inherits(X,"eof"),inherits(y,"station"))
-    
     y0 <- y
     X0 <- X 
     W <- attr(X,'eigenvalues')
     cls <- class(X)
                                         #print("index(y):");print(index(y)[1:24])
     
-    if ( (is.character(index(y))) & (nchar(index(y)[1])==4) )
-        index(y) <- as.numeric(index(y))
-    if ( (is.character(index(X))) & (nchar(index(X)[1])==4) )
-        index(X) <- as.numeric(index(y))
-    if ( (is.character(index(y))) & (nchar(index(y)[1])==10) )
-        index(y) <- as.Date(index(y))
-    if ( (is.character(index(X))) & (nchar(index(X)[1])==10) )
-        index(X) <- as.Date(index(y))
-    if (class(index(y))=="numeric")
-        index(y) <- as.Date(paste(index(y),'-01-01',sep=''))
-    if (class(index(X))=="numeric")
-        index(X) <- as.Date(paste(index(X),'-01-01',sep=''))
-    
-    y <- matchdate(y,X) ## sametimescale(y,X)
-                                        #print("index(y):");print(index(y)[1:24])
+#    if ( (is.character(index(y))) & (nchar(index(y)[1])==4) )
+#        index(y) <- as.numeric(index(y))
+#    if ( (is.character(index(X))) & (nchar(index(X)[1])==4) )
+#        index(X) <- as.numeric(index(y))
+#    if ( (is.character(index(y))) & (nchar(index(y)[1])==10) )
+#        index(y) <- as.Date(index(y))
+#    if ( (is.character(index(X))) & (nchar(index(X)[1])==10) )
+#        index(X) <- as.Date(index(y))
+#    if (class(index(y))=="numeric")
+#        index(y) <- as.Date(paste(index(y),'-01-01',sep=''))
+#    if (class(index(X))=="numeric")
+#        index(X) <- as.Date(paste(index(X),'-01-01',sep=''))
+
+    if (verbose) print('Ensure matching time scale')
+    #print('index(y) before sametimescale:'); print(index(y))
+    y <- sametimescale(y,X,verbose=verbose) # REB is needed to ensure that maye y annual if X is annual
+    #print('index(y) after sametimescale:'); print(index(y))
+    if (verbose) print('Match dates')
+    y <- matchdate(y,X) ##
+    #print('index(y)'); print(index(y))
+    X <- matchdate(X,y) # REB 2015-01-14
+    if (verbose) {print("index(y) & index(X):");print(index(y)); print(index(X))}
     
     if (!is.null(mon)) y <- subset(y,it=mon)
     
                                         # synchronise the series: use the 'zoo' merge function through combine:
                                         #print(index(y)[1:24]); print(index(X)[1:24]);
 
-    ## 
-    yX <- combine.station.eof(y,X)
-    y <- yX$y; X <- yX$X
+    ##
+    
+    #yX <- combine.station.eof(y,X)
+    #y <- yX$y; X <- yX$X
+    X0 <- X; y0 <- y
     year <- as.numeric( format(index(y), '%Y') ) 
     month <- as.numeric( format(index(y), '%m') )
                                         #print(length(y)); print(table(year)); print(table(month))
     
                                         # De-trend the data used for model calibration:
     if (rmtrend) {
+        if (verbose) print('detrend')
         offset <- mean(y,na.rm=TRUE)
         y <- trend(y,result="residual")
         offset <- offset - mean(y,na.rm=TRUE)
@@ -111,10 +123,11 @@ DS.default <- function(y,X,mon=NULL,
     weights <- rep(1,length(y))
     weights[!is.finite(weights)] <- 0
     if (is.null(attr(y,'standard.error'))) weighted <- FALSE
-    
+    if (verbose) {print(paste('weights',weighted)); print(weights)}
+
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
                          weights=weights)
-    predat <- data.frame(X=as.matrix(coredata(yX$X)))
+    predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:length(colnames(predat)),sep=".")
 
     Xnames <- paste("X.",1:length(names(X)),sep="")
@@ -183,7 +196,7 @@ DS.default <- function(y,X,mon=NULL,
     attr(ds,'fitted_values') <- zoo(model$fitted.values +
                                     offset,order.by=index(X))
     class(attr(ds,'fitted_values')) <- class(y0)
-    attr(ds,'original_data') <- yX$y
+    attr(ds,'original_data') <- y0
     r2 <- var(coredata(model$fitted.values))/var(y,na.rm=TRUE)
     attr(r2,'description') <- ' var(fitted.values))/var(y)'
     attr(ds,'quality') <- r2
@@ -236,6 +249,8 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     ## 
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
     if (verbose) print("DS.station")
+    #print('err(y)'); print(err(y))
+    #print('index(y)'); print(index(y))
     
     if ( (!inherits(X,'eof')) & (inherits(X,'field')) ) {
                                         #print("HERE")
@@ -351,6 +366,8 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
                     verbose=FALSE,weighted=TRUE,...) {
 
     if (verbose) print("DS.comb")
+    #print('index(y)'); print(index(y))
+    #print('err(y)'); print(err(y))
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
         yy <- X
         X <- y
@@ -376,8 +393,7 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
         X <- biasfix(X)
     }
     
-    ds <- DS.eof(X,y,mon=mon,
-                 method=method,swsm=swsm,m=m,
+    ds <- DS.eof(X,y,mon=mon,method=method,swsm=swsm,m=m,
                  rmtrend=rmtrend,eofs=eofs,
                  area.mean.expl=area.mean.expl,verbose=verbose,...)
 

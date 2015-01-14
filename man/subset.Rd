@@ -98,7 +98,7 @@ plot(z)
 
 # Test of subset the commutative property of subset and combine: 
 T2M <- as.4seasons(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
-GCM <- as.4seasons(t2m.NorESM.M(lon = c(-10, 30), lat = c(50, 70)))
+GCM <- as.4seasons(t2m.NorESM.M(lon = range(lon(T2M))+c(-2,2), lat = range(lat(T2M))+c(-2,2)))
 XY <- combine(T2M,GCM)
 X1 <- subset(XY,it=3)
 X2 <- combine(subset(T2M,it=3),subset(GCM,it=3))

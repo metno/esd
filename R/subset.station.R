@@ -264,8 +264,9 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         attr(y,'URL') <- attr(x,'URL')[is]
     if (!is.null(attr(y,'na')))
         attr(y,'na') <- attr(x,'na')[is]
-    if (!is.null(attr(y,'standard.error')))
-        attr(y,'standard.error') <- attr(x,'standard.error')[is]
+    
+    if (!is.null(err(y)))
+        attr(y,'standard.error') <- err(x)[ii,is]
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)   

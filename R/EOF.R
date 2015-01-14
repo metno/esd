@@ -277,6 +277,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   # Synthetise a new object with combined data that looks like a
   # field object, and then call the ordinary EOF method:
 
+  if (verbose) print("combine original and appended fields")
   Y <- zoo(YY,order.by=as.Date(fakedates))
   #plot(rowMeans(YY,na.rm=TRUE),type="l")
 
@@ -291,21 +292,23 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   #print(class(Y)); print(index(Y)[1:24])
   
   attr(Y,'dimensions') <- c(d[1,1],d[1,2],sum(ngood>0))
-  #print(dim(Y)); print(attr(Y,'dimensions'))
+  print(dim(Y)); print(attr(Y,'dimensions'))
   #browser()
 
   eof <- EOF.field(Y,it=it,is=is,n=n,
                    area.mean.expl=area.mean.expl,verbose=verbose)
 
-#  print("Computed the eofs...")
+  if (verbose) print("Computed the eofs:")
   # After the EOF, the results must be reorganised to reflect the different
   # data sets.
-  ## browser()
+  #browser()
   ceof <- eof
   ii <- is.element(id.t,ID.t[1])
   if (verbose) {print("Check:"); print(sum(ii)); print(ID.t); print(table(id.t))
                 print(realdates[ii]); print(dim(eof))}
-  ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii])) 
+
+  ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii]))
+  if (verbose) {print("Copy attributes"); print(names(attributes(eof)))}
   ceof <- attrcp(eof,ceof)
   dim(clim) <- attr(X,'dimensions')[1:2]
   attr(ceof,'mean') <- clim
