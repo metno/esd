@@ -292,7 +292,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   #print(class(Y)); print(index(Y)[1:24])
   
   attr(Y,'dimensions') <- c(d[1,1],d[1,2],sum(ngood>0))
-  print(dim(Y)); print(attr(Y,'dimensions'))
+  #print(dim(Y)); print(attr(Y,'dimensions'))
   #browser()
 
   eof <- EOF.field(Y,it=it,is=is,n=n,

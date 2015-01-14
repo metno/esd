@@ -147,7 +147,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (verbose) print("loop...") 
   for (i in 1:N) {
     gcm <- retrieve.ncdf4(ncfile = ncfiles[select[i]],
-                          lon=range(lon(T2M)),lat=range(lat(T2M)))
+                          lon=range(lon(T2M))+c(-2,2),
+                          lat=range(lat(T2M))+c(-2,2))
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     # REB: 30.04.2014 - new lines...
@@ -470,7 +471,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   for (i in 1:N) {
     #browser()
     gcm <- retrieve(ncfile = ncfiles[select[i]],
-                    lon=range(lon(PRE)),lat=range(lat(PRE)))
+                    lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2))
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
@@ -686,7 +687,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (verbose) print("loop...") 
   for (i in 1:N) {
     gcm <- retrieve.ncdf4(ncfile = ncfiles[select[i]],
-                          lon=range(lon(T2M)),lat=range(lat(T2M)))
+                          lon=range(lon(T2M))+c(-2,2),
+                          lat=range(lat(T2M))+c(-2,2))
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     GCM <- subset(gcm,it=season(T2M)[1])
