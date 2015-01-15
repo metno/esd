@@ -60,15 +60,17 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     d <- dim(x)
     if (is.null(is)) is <- 1:d[2]
     if (is.null(it)) it <- 1:d[1]
-
+    
     ## 
     ##print("HERE")
     ## get time in t
     t <- index(x)
+    ii <- is.finite(t)
                                         #if (class(it)!=class(t)) print("Index and it class do not match !")
 
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
+       if (verbose) print('years ++')
         ## REB: replaced by lines below:
         ##    year <- as.numeric( format(t, '%Y') ) 
         ##    month <- as.numeric( format(t, '%m') )
@@ -76,9 +78,11 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         mo <- month(x)
         dy <- day(x)
     } else if (inherits(t,c("numeric","integer"))) {
+        if (verbose) print('years')
         yr <- t
         mo <- dy <- rep(1,length(t))
     } else print("Index of x should be a Date, yearmon, or numeric object")
+    
     ## Generate sequence of days, months or years if range of it value is given
     if (is.character(it)) {
         if ((levels(factor(nchar(it)))==10)) ##  convert as Date
@@ -126,7 +130,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     } else if ((class(it)=="numeric") | (class(it)=="integer")) {
         if (verbose) print('it is numeric or integer')
         nlev <- as.numeric(levels(factor(nchar(it))))
-        if ((length(nlev)==1)) {
+         if ((length(nlev)==1)) {
             if (nlev==4) {
                 if (verbose) print("it are most probably years")
                 if (length(it)==2)
@@ -134,6 +138,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 else if ((length(it)==1) | (length(it)>2))
                     ii <- is.element(yr,it)
             } else if (nlev<=4) {
+                if (verbose) print("it are most probably seasons")
                 if (inherits(x,'season') & (length(it)==1)) {
                     if (verbose)  print(paste("The 'it' value must be a season index between 1 and 4.",
                                               "If not please use character strings instead. e.g. it='djf'"))
@@ -160,16 +165,16 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     } else {
         ii <- rep(FALSE,length(t))
         warning("subset.station: did not reckognise the selection citerion for 'it'")
-    }
+    } 
     
     ## it <- (1:length(t))[ii]
     ## 
-    
+
     class(x) -> cls
     ##print(cls)
     ## update the class of x
     class(x) <- "zoo" 
-    
+   
                                         # REB 11.04.2014: is can be a list to select region or according to other criterion
     if (inherits(is,'list')) {
         n <- dim(x)[2]
