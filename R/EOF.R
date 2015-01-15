@@ -51,7 +51,10 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   }
 
   # Remove time slices with missing data:
-  nok <- !is.finite(rowMeans(X))
+#  nok <- !is.finite(rowMeans(X))
+  # The regridded appendix may contain some NA's if its domain exceeds that of the original field.
+  # Get rid of time slices with all NAs.
+  nok <- apply(X,1,nv) < 0.5*dim(X)[2]
   if (sum(nok)> 0) {
     it <- (1:length(nok))[!nok]
     if (verbose) print(paste('removing ',sum(nok),'NA time slices'))
