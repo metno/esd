@@ -66,7 +66,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## get time in t
     t <- index(x)
     ii <- is.finite(t)
-                                        #if (class(it)!=class(t)) print("Index and it class do not match !")
+    if (verbose) print(it)                            
 
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
@@ -85,6 +85,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     
     ## Generate sequence of days, months or years if range of it value is given
     if (is.character(it)) {
+        if (verbose) print('it is character')
         if ((levels(factor(nchar(it)))==10)) ##  convert as Date
             it <- as.Date(it)
         if ( length(it) == 2 ) {
@@ -112,9 +113,11 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
                                         #y <- x[ii,is] # REB Not here
             }
-            else if (inherits(it,"Date"))
+            else if (inherits(it,"Date")) {
+                print('it is a Date object')
                 ii <- is.element(t,it)
-            else {
+            } else {
+                str(it); print(class(it))
                 ii <- rep(FALSE,length(t))
                 warning("subset.station: did not recognise the selection citerion for 'it'")
             }
@@ -129,14 +132,20 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## get the subset indices in ii
     } else if ((class(it)=="numeric") | (class(it)=="integer")) {
         if (verbose) print('it is numeric or integer')
-        nlev <- as.numeric(levels(factor(nchar(it))))
+# REB bug        nlev <- as.numeric(levels(factor(nchar(it))))
+# nchar returns the string length, but these lines need to find the number of different levels/categories
+        nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
+        if (verbose) {print(nlev); print(it)}
          if ((length(nlev)==1)) {
             if (nlev==4) {
                 if (verbose) print("it are most probably years")
                 if (length(it)==2)
                     ii <- is.element(yr,it[1]:it[2])
-                else if ((length(it)==1) | (length(it)>2))
+                # if it is years:
+                else if (min(it)> length(it)) {
+                    if (verbose) print("match years")
                     ii <- is.element(yr,it)
+                  } 
             } else if (nlev<=4) {
                 if (verbose) print("it are most probably seasons")
                 if (inherits(x,'season') & (length(it)==1)) {
@@ -148,14 +157,18 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                      if (verbose)
                          print("The 'it' value must be a month index. If not please use character strings instead")
                      ii <- is.element(mo,it)
-                 } 
+                 }  else {
+                    if (verbose) print("it represents indices")
+                    ii <- it
+                }
             } else if (nlev<=12) {
                 if (verbose)
                          print("The 'it' value are most probably a month index. If not please use character strings instead")
                 ii <- is.element(mo,it)
             }        
         } else {
-            if (verbose)  print("it are most probably indices")
+            #  length(nlev) > 1
+            if (verbose)  print("it most probably holds indices")
             ii <- it
         }
     } else if (inherits(it,c("Date","yearmon"))) {       
@@ -223,7 +236,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ## Need to make sure both it and is are same type: here integers for index rather than logical
         ## otherwise the subindexing results in an empty object
     }
-    
+
     y <- x[ii,is]
     #if (is.logical(is))
     #    is <- (1:length(is))[is]

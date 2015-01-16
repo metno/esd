@@ -135,7 +135,9 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
         param0 <- param
         ssn <- select.station(param="tmin",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,src=src,it=it,nmin=nmin)
         ssx <- select.station(param="tmax",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,src=src,it=it,nmin=nmin)
-        class(ssn) <- class(ssx) <- "data.frame"
+        if (!is.null(ssn) & !is.null(ssx))
+             class(ssn) <- class(ssx) <- "data.frame" else
+             {print('Found no stations with given criteria'); return(NULL)}
         ss <- subset(ssx,ssx$station_id==ssn$station_id) # keep only stations recording both min and max
         if (is.null(ss))
             return(NULL)

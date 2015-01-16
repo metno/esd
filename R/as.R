@@ -614,7 +614,7 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,...) {
   return(y) 
 }
 
-as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...) {
+as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,...) {
 
   IV <- function(x) sum(is.finite(x))
 
@@ -640,8 +640,6 @@ as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...) {
   tshifted <-  ISOdate(year=year,month=month,day=day,hour=hour)
   #print(summary(tshifted))
   X <- zoo(coredata(x),order.by=tshifted)
-  nd <- aggregate(X,as.yearqtr,FUN=IV)
-  ok <- nd >= 85
  
   # Test for the presens of 'na.rm' in argument list - this is a crude fix and not a
   # very satisfactory one. Fails for FUN==primitive function.
@@ -650,8 +648,14 @@ as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...) {
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) | (test.na.rm) )
      y <- aggregate(X,as.yearqtr,FUN=match.fun(FUN),...,na.rm=na.rm) else
      y <- aggregate(X,as.yearqtr,FUN=match.fun(FUN),...)
+
+  # Set to missing for seasons with small data samples:
+  nd <- aggregate(X,as.yearqtr,FUN=IV)
+  ok <- nd >= nmin  
+  coredata(y)[!ok] <- NA
+  # dateindex: convert "1775 Q1" to "1775-01-01"
   if (dateindex)
-    y <- zoo(coredata(y[ok]),order.by=as.Date(index(y)[ok]))
+    y <- zoo(coredata(y),order.by=as.Date(index(y)))
   unit <- attr(y,'unit')
   y <- attrcp(x,y,ignore=c("unit","names"))
   unit -> attr(y,'unit')

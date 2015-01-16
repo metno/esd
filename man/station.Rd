@@ -11,10 +11,17 @@
 \alias{station.ghcnd}
 \alias{station.ghcnm}
 \alias{station.ghcnm}
+\alias{clean.station}
+\alias{allgood}
 \title{Retrieve meta data and data from observational weather stations.}
 
-\description{Retrieve station record from a given data source.}
+\description{Retrieve station record from a given data source.
 
+\code{allgood} and \code{clean.station} provide two filters for
+extracting stations with good data (discarding missing
+values). \code{allgood} will not leave any NA's whereas
+\code{clean.station} provides a more 'gentle' filtering.
+}
 \usage{
 
 # Retrieve meta data 
@@ -41,7 +48,8 @@ station.metnom(...)
 station.ecad(..., path="data.ECAD")
 station.ghcnd(..., path="data.GHCND")
 station.metnod(...)
-
+allgood(x,miss=.1,verbose=TRUE)
+clean.station(x,miss=.1,verbose=TRUE)
 }
 
 \arguments{

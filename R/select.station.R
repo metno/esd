@@ -39,7 +39,9 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = 
       source <- attr(x,"source")
       quality <- attr(x,"quality")
 
-      station.meta <- data.frame(station_id = station_id,location = location, country = country,longitude = longitude, latitude = latitude,altitude = altitude,element = element, start = start,end = end,source = source,quality= quality)
+      station.meta <- data.frame(station_id = station_id,location = location, country = country,
+                                 longitude = longitude, latitude = latitude,altitude = altitude,
+                                 element = element, start = start,end = end,source = source,quality= quality)
 
       # update ele using element
       ## ele <- element
@@ -108,16 +110,21 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = 
     id <- is.element(tolower(station.meta$source),tolower(src))
     station.meta <- station.meta[id,]
   }
-  ## Search by location
+  ## Search by lsum(ocation
   if (!is.null(loc)) {
     id <- grep(tolower(loc),tolower(station.meta$location))
     station.meta <- station.meta[id,]
   }
   ## Search by starting and ending years
-  ## browser()
   if (!is.null(it)) { 
     it.rng <- range(as.numeric(it),na.rm=TRUE)
     id <- (as.numeric(station.meta$start) <= it.rng[1]) & (as.numeric(station.meta$end) >= it.rng[2])
+    #browser()
+    if (sum(id)==0) {
+      print(paste('No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
+                  min(as.numeric(station.meta$start)),' and latest observation from ',
+                  max(as.numeric(station.meta$end)),sep=''))
+    }
     station.meta <- station.meta[id,]
   }
 

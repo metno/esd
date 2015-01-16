@@ -118,7 +118,7 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if ( inherits(it[1],"logical") & (length(it)==length(x)) )
             y <- x[it,]
         else if (is.character(it)) {
-            if (levels(factor(nchar(it)))==10)
+            if ((levels(factor(nchar(it)))==10)) # REB 2015-01-15
                 it <- as.Date(it)
             if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
                 ii <- is.element(months,(1:12)[is.element(tolower(month.abb),

@@ -101,8 +101,11 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   #print(c(sum(ok),length(ok),nmin)); print(YR[is.element(YR,yr[ok])])
 
   # Make a new zoo-object without incomplete years
-  if (length(d)==2) X <- zoo(coredata(x[ok,]),order.by=index(x)[ok]) else
-                    X <- zoo(coredata(x[ok]),order.by=index(x)[ok])
+#  if (length(d)==2) X <- zoo(coredata(x[ok,]),order.by=index(x)[ok]) else
+#                    X <- zoo(coredata(x[ok]),order.by=index(x)[ok])
+  # REB 2015-01-16: the two commented-out lines produced errors in some cases; lines below are more robust.
+  X <- zoo(coredata(x),order.by=index(x))
+  if (sum(ok)>0) coredata(X)[!ok] <- NA 
   #print(summary(X))
   if (FUN == 'sum') na.rm <- FALSE ## AM
   #y <- aggregate(X,yr[ok],FUN=FUN,...,na.rm=na.rm) ## AM
@@ -140,20 +143,30 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     #print("Wet-day mean")
     attr(y,'variable') <- rep('mu',d[2])
     attr(y,'unit') <- rep('mm/day',d[2])
-    n <- count(X,threshold=threshold)
+#    n <- count(X,threshold=threshold) # REB
+    n <- aggregate(X,year,FUN='count',threshold=threshold, ...,
+                   regular = regular, frequency = frequency)
+    bad <- coredata(n)==0
+    coredata(n)[bad] <- 1
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
+    std.err[bad] <- NA
     attributes(std.err) <- NULL
+    dim(std.err) <- dim(sigma)
     attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
   } else if (FUN=="mean") {
     #print("mean")
-    #browser()
     sigma <- aggregate(X, year, FUN='sd', ...,
                        regular = regular, frequency = frequency)
 #    n <- count(x,threshold=threshold)
     n <- aggregate(X,year,FUN='count',threshold=threshold, ...,
                    regular = regular, frequency = frequency)
+    #browser()
+    bad <- coredata(n)==0
+    coredata(n)[bad] <- 1
     std.err <- 2*coredata(sigma)/sqrt(coredata(n)-1)
+    std.err[bad] <- NA
     attributes(std.err) <- NULL
+    dim(std.err) <- dim(sigma)
     attr(y,'standard.error') <- zoo(std.err,order.by=index(sigma))
   } else if (FUN=="HDD") {
     attr(y,'variable') <- rep('HDD',d[2])
