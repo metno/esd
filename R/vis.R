@@ -77,15 +77,19 @@ diagram.dsensemble <- function(x,it=0,...) {
 diagram.ds <- function(x,...) {
 }
 
-diagram.station <- function(x,...) {
+diagram.station <- function(x,main='Data availability',
+                            xlab='',ylab='station',
+                            sub=src(x),...) {
   d <- dim(x)
   if (is.null(d)) return('Need more than one station')
-  par(fig=c(0,0.8,0,1),las=1,xpd=TRUE,cex.lab=0.5,cex.axis=0.5)
-  image(index(x),1:d[2],coredata(x),
-        main='Data availability',xlab='',ylab='station',
-        sub=src(x))
+  par(mar=c(5, 4, 4, 5),las=1,xpd=TRUE,cex.lab=0.5,cex.axis=0.5)
   
+  image(index(x),1:d[2],coredata(x),
+        main=main,xlab=xlab,ylab=ylab,
+        sub=sub,...)
   axis(4,at=1:d[2],labels=substr(loc(x),1,6),cex.lab=0.5,col='grey')
+  par(xpd=FALSE)
+  grid(nx=d[1],ny=d[2])
 }
 
 

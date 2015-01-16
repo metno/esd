@@ -6,8 +6,7 @@ allgood <- function(x,miss=.1,verbose=TRUE) {
   d <- dim(x)
   if (verbose) {
     par(mfrow=c(2,1))
-    image(year(annual(x)),1:d[2],coredata(annual(x)))
-    title('Original data')
+    diagram(x,main='Original data')
   }
   nok <- apply(coredata(x),1,nv)
   x <- subset(x,it=(1:d[1])[nok>=(1-miss)*d[2]])
@@ -18,8 +17,7 @@ allgood <- function(x,miss=.1,verbose=TRUE) {
   if (verbose) {
     print("Removed stations ...")
     print(loc(x)[!is.element(loc(x),loc(y))])
-    image(year(annual(y)),1:dim(y)[2],coredata(annual(y)))
-    title('Filtered data')
+    diagram(y,main='Filtered data')
   }
   return(y)
 }
