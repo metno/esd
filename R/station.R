@@ -107,15 +107,15 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
                             path.metnod=NULL,url.metnod=NULL) {
     ## 
     ## check wether x is a 'location' or a 'stationmeta' object
-    if (inherits(loc,"stationmeta"))
+   
+    if (inherits(loc,"stationmeta")) {
         ss <- loc
-    else if (is.character(loc)) {
+    } else if (is.character(loc)) {
         loc <- loc
         ss <- NULL
     } else ss <- NULL
     ## else stop("x must be either a stationmeta or location object")
 
-    print("Retrieving data ...")
     ## Initialize X
     X <- NULL
     SRC <- src
@@ -168,6 +168,9 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
     end <- ss$end
     param <- apply(as.matrix(ss$element),1,esd2ele)
     rm(ss)
+
+    print(paste("Retrieving data from",length(id),"records ..."))
+
     
     ## start loap on available stations
     for (i in 1:length(id)) {

@@ -77,6 +77,17 @@ diagram.dsensemble <- function(x,it=0,...) {
 diagram.ds <- function(x,...) {
 }
 
+diagram.station <- function(x,...) {
+  d <- dim(x)
+  if (is.null(d)) return('Need more than one station')
+  par(fig=c(0,0.8,0,1),las=1,xpd=TRUE,cex.lab=0.5,cex.axis=0.5)
+  image(index(x),1:d[2],coredata(x),
+        main='Data availability',xlab='',ylab='station',
+        sub=src(x))
+  
+  axis(4,at=1:d[2],labels=substr(loc(x),1,6),cex.lab=0.5,col='grey')
+}
+
 
 colscal <- function(n=30,col="bwr",test=FALSE) {
 
