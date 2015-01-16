@@ -710,20 +710,30 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
 #  yr <- as.integer(format(index(x),'%Y'))
 #  mon <- as.integer(format(index(x),'%m'))
 #  dy <- as.integer(format(index(x),'%d'))
+#  str(x)
+#  browser()
+  if ((is.numeric(x)) & (!is.null(attr(x, "names")))) x <- zoo(x,order.by=as.Date(attr(x, "names")))
   yr <- year(x);  mon <- month(x);  dy <- day(x)
   if (is.null(ref))
-    ref <- seq(min(yr),max(yr),by=1)
+    ref <- seq(min(yr,na.rm=TRUE),max(yr,na.rm=TRUE),by=1)
   # Check whether the object is a time series of monthly data.
   ndd <- length(table(dy))
-  #print(ndd)
+  #print(ndd); print(class(x))
   if ( (ndd==1) & is.null(monthly) ) monthly <- TRUE else
                                      monthly <- FALSE
-  y <- coredata(x)
   
-  if (monthly) {
-    # If monthly, subtract the
+  # Check if x contains one or more stations
+  d <- dim(x)
+
+  if (is.null(d)) {
+    # single records
+    #cat('.')
+    y <- coredata(x)
+    
+    if (monthly) {
+    # If monthly, subtract the monthly mean
     #print(table(month))
-    if (is.null(dim(x))) {
+#    if (is.null(dim(x))) {
       #print("1D")
       clim <- rep(0,12)
       for (i in 1:12) {
@@ -732,47 +742,53 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
         clim[i] <- z
         y[im] <- y[im] - clim[i]
       }
+      
       y <- zoo(y,order.by=index(x))
+#    } else {
+#      #print("2D")
+#      y <- t(y)
+#      clim <- rep(0,length(y[,1])*12); dim(clim) <- c(length(y[,1]),12)
+#      for (i in 1:12) {
+#        im <- is.element(mon,i)
+#        z <- rowMeans(y[,im & is.element(yr,ref)],na.rm=na.rm) 
+#        #print(c(length(z),length(clim[,1]))); plot(z)
+#        clim[,i] <- z
+#        y[,im] <- y[,im] - clim[,i]
+#        #print(c(i,sum(im),mean(clim[,i])))
+#      }
+#      y <- zoo(t(y),order.by=index(x))
+
     } else {
-      #print("2D")
-      y <- t(y)
-      clim <- rep(0,length(y[,1])*12); dim(clim) <- c(length(y[,1]),12)
-      for (i in 1:12) {
-        im <- is.element(mon,i)
-        z <- rowMeans(y[,im & is.element(yr,ref)],na.rm=na.rm) 
-        #print(c(length(z),length(clim[,1]))); plot(z)
-        clim[,i] <- z
-        y[,im] <- y[,im] - clim[,i]
-        #print(c(i,sum(im),mean(clim[,i])))
-      }
-      y <- zoo(t(y),order.by=index(x))
-   }
-  } else {
-    #print("daily")
-    t0 <- julian(index(x)[is.element(yr,ref)]) -
-          julian(as.Date(paste(yr[is.element(yr,ref)],"-01-01",sep="")))
-    t <- julian(index(x)) -
+ #     print("daily"); print(class(x))
+      t0 <- julian(index(x)[is.element(yr,ref)]) -
+            julian(as.Date(paste(yr[is.element(yr,ref)],"-01-01",sep="")))
+      t <- julian(index(x)) -
          julian(as.Date(paste(yr,"-01-01",sep="")))
-    c1 <- cos(pi*t0/365.25); s1 <- sin(pi*t0/365.25)
-    c2 <- cos(2*pi*t0/365.25); s2 <- sin(2*pi*t0/365.25)
-    c3 <- cos(3*pi*t0/365.25); s3 <- sin(3*pi*t0/365.25)
-    c4 <- cos(4*pi*t0/365.25); s4 <- sin(4*pi*t0/365.25)
-    C1 <- cos(pi*t/365.25); S1 <- sin(pi*t/365.25)
-    C2 <- cos(2*pi*t/365.25); S2 <- sin(2*pi*t/365.25)
-    C3 <- cos(3*pi*t/365.25); S3 <- sin(3*pi*t/365.25)
-    C4 <- cos(4*pi*t/365.25); S4 <- sin(4*pi*t/365.25)
-    cal <- data.frame(y=coredata(x),c1=c1,c2=c2,c3=c3,c4=c4,
-                      s1=s1,s2=s2,s3=s3,s4=s4)
-    pre <- data.frame(c1=C1,c2=C2,c3=C3,c4=C4,
-                      s1=S1,s2=S2,s3=S3,s4=S4)
-    i1 <- is.element(year(x),year(x)[1])
-    pre1 <- data.frame(c1=C1[i1],c2=C2[i1],c3=C3[i1],c4=C4[i1],
-                      s1=S1[i1],s2=S2[i1],s3=S3[i1],s4=S4[i1])
-    acfit <- lm(y ~ c1 + s1 + c2 + s2 + c3 + s3 + c4 + s4,data=cal)
-    clim <- predict(acfit,newdata=pre)
-    y <- zoo(coredata(x) - clim,order.by=index(x))
-    clim <-  predict(acfit,newdata=pre1)
-  } 
+      c1 <- cos(pi*t0/365.25); s1 <- sin(pi*t0/365.25)
+      c2 <- cos(2*pi*t0/365.25); s2 <- sin(2*pi*t0/365.25)
+      c3 <- cos(3*pi*t0/365.25); s3 <- sin(3*pi*t0/365.25)
+      c4 <- cos(4*pi*t0/365.25); s4 <- sin(4*pi*t0/365.25)
+      C1 <- cos(pi*t/365.25);   S1 <- sin(pi*t/365.25)
+      C2 <- cos(2*pi*t/365.25); S2 <- sin(2*pi*t/365.25)
+      C3 <- cos(3*pi*t/365.25); S3 <- sin(3*pi*t/365.25)
+      C4 <- cos(4*pi*t/365.25); S4 <- sin(4*pi*t/365.25)
+      cal <- data.frame(y=coredata(x),c1=c1,c2=c2,c3=c3,c4=c4,
+                        s1=s1,s2=s2,s3=s3,s4=s4)
+      pre <- data.frame(c1=C1,c2=C2,c3=C3,c4=C4,
+                        s1=S1,s2=S2,s3=S3,s4=S4)
+      i1 <- is.element(year(x),year(x)[1])
+      pre1 <- data.frame(c1=C1[i1],c2=C2[i1],c3=C3[i1],c4=C4[i1],
+                         s1=S1[i1],s2=S2[i1],s3=S3[i1],s4=S4[i1])
+      acfit <- lm(y ~ c1 + s1 + c2 + s2 + c3 + s3 + c4 + s4,data=cal)
+      clim <- predict(acfit,newdata=pre)
+      y <- zoo(coredata(x) - clim,order.by=index(x))
+      clim <-  predict(acfit,newdata=pre1)
+    }
+  } else {
+    print("many stations")
+    y <- apply(x,2,FUN='as.anomaly.default',ref=ref)
+    y <- zoo(y,order.by=index(x))
+  }
   #print("attributes")
   y <- attrcp(x,y)
   attr(y,"aspect") <- 'anomaly'

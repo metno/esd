@@ -145,28 +145,35 @@ anomaly.season <- function(x,ref=NULL) {
 
 
 anomaly.day <- function(x,ref=NULL) {
+  print('anomaly.day')
+  d <- dim(x)
   X <- x
+  if (is.null(d)) {
 # This function computes the anomalies by a best-fit regression to the first
 # 4 hermonics of the 365.25-day cycle.
-  t <- as.numeric(as.Date(index(X)))
-  x <- coredata(X)
-  l <- length(x)
-  ndy <- switch(attr(x,'calendar'),
-                'gregorian'=365.25)
-  c1 <- cos(2*pi*t/ndy); s1 <- sin(2*pi*t/ndy)
-  c2 <- cos(4*pi*t/ndy); s2 <- sin(4*pi*t/ndy)
-  c3 <- cos(6*pi*t/ndy); s3 <- sin(6*pi*t/ndy)
-  c4 <- cos(8*pi*t/ndy); s4 <- sin(8*pi*t/ndy)
-  clim.fit <- lm(x ~ c1 + s1 + c2 + s2 + c3 + s3 + c4 + s4)
-  clim <- predict(clim.fit)[1:366]
-  attributes(clim) <- NULL
-  x <- zoo(clim.fit$residual,order.by=index(X))
+    t <- as.numeric(as.Date(index(X)))
+    x <- coredata(X)
+    l <- length(x)
+    ndy <- switch(attr(x,'calendar'),
+                'gregorian'=365.2425,'julian'=365.25,'no.leap'=365,'all.leap'=366,'360.day'=360)
+    c1 <- cos(2*pi*t/ndy); s1 <- sin(2*pi*t/ndy)
+    c2 <- cos(4*pi*t/ndy); s2 <- sin(4*pi*t/ndy)
+    c3 <- cos(6*pi*t/ndy); s3 <- sin(6*pi*t/ndy)
+    c4 <- cos(8*pi*t/ndy); s4 <- sin(8*pi*t/ndy)
+    clim.fit <- lm(x ~ c1 + s1 + c2 + s2 + c3 + s3 + c4 + s4)
+    clim <- predict(clim.fit)[1:366]
+    attributes(clim) <- NULL
+    x <- zoo(clim.fit$residual,order.by=index(X))
   
-  x <- attrcp(X,x,ignore="names")
+    x <- attrcp(X,x,ignore="names")
 #  nattr <- softattr(X)
 #  for (i in 1:length(nattr))
 #    attr(x,nattr[i]) <- attr(X,nattr[i])
-  attr(x,'climatology') <- clim
+    attr(x,'climatology') <- clim
+  } else {
+    print('Many locations')
+    x <- apply(X,2,FUN='anomaly.day')
+  }
   attr(x,'aspect') <- 'anomaly'
   class(x) <- class(X)
   return(x)
