@@ -7,7 +7,7 @@ allgood <- function(x,miss=.1,verbose=TRUE) {
   mfcol0 <- par()$mfcol
   if (verbose) {
     par(mfrow=c(2,1))
-    diagram(x,main='Original data')
+    diagnose(x,main='Original data')
   }
   nok <- apply(coredata(x),1,nv)
   x <- subset(x,it=(1:d[1])[nok>=(1-miss)*d[2]])
@@ -18,7 +18,7 @@ allgood <- function(x,miss=.1,verbose=TRUE) {
   if (verbose) {
     print("Removed stations ...")
     print(loc(x)[!is.element(loc(x),loc(y))])
-    diagram(y,main='Filtered data')
+    diagnose(y,main='Filtered data')
   }
   par(mfcol=mfcol0)
   return(y)
