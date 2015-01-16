@@ -785,9 +785,10 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
       clim <-  predict(acfit,newdata=pre1)
     }
   } else {
-    print("many stations")
+    #print("many stations")
     y <- apply(x,2,FUN='as.anomaly.default',ref=ref)
     y <- zoo(y,order.by=index(x))
+    clim <- x - y
   }
   #print("attributes")
   y <- attrcp(x,y)

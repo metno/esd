@@ -35,6 +35,7 @@ for (season in c('djf','mam','jja','son')) {
   eof.olr <- EOF(subset(olr,it=season))
   eof.t2m <- EOF(subset(t2m,it=season))
 # Combine the local predictand information in the form of PCAs
+  
   pca.mt <- PCA(subset(mt4s,it=season))
   pca.st <- PCA(subset(st4s,it=season))
 
@@ -45,15 +46,37 @@ for (season in c('djf','mam','jja','son')) {
 # Impoertan to set detrend=FALSE to retain original data in the cross-validation.
 # First downscale the mean values:
   z.mt <- DS(pca.mt,eof.t2m,
-               m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
+             m='cordex-esd-exp1',detrend=FALSE,verbose=FALSE)
 # The results are in the form of a PCA-object - convert back to a group of stations            
   txm.ds <- pca2station(z.mt)
+  
+  # Check: Figure: scatter plot
+  x <- matchdate(subset(mt4s,it=season),txm.ds)
+  par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1))
+  plot(coredata(x),coredata(txm.ds),
+       pch=19,col=rgb(1,0,0,0.5),
+       xlab=expression(paste('Observed ',T[2*m],(degree*C))),
+       ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
+       main=paste(toupper(season),' mean temperature'),
+       sub=paste('predictand: CLARIS; #PCA=',npca))
+  grid()
 
 # Repeat the downscaling for the standard deviation:
-  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
+#  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
+#               m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
+  z.st <- DS(pca.st,eof.t2m,
                m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
   txs.ds <- pca2station(z.st)
 
+  # Check: Figure: scatter plot
+  x <- matchdate(subset(st4s,it=season),txm.ds)
+  plot(coredata(x),coredata(txs.ds),
+       pch=19,col=rgb(1,0,0,0.5),
+       xlab=expression(paste('Observed ',T[2*m],(degree*C))),
+       ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
+       main=paste(toupper(season),' standard deviation'),
+       sub=paste('predictand: CLARIS; #PCA=',npca))
+  grid()
 # Extract the predicted cross-validation results which follow the experiment:
   d <- dim(attr(tx.ds,'evaluation'))
 
