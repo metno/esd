@@ -122,11 +122,45 @@ diagram.station <- function(x,it=NULL,...) {
   image(1:2,yrs,colbar,col=col)
 }
 
+#seNorge
+#nodata	10000
+#nobits	16
+#header1	*Temperatur
+#header2	*Siste døgn (18-18 UTC)
+#legend	*Grader Celsius
+#From	To	R	G	B	Forklaring
+#2931	10000	204	0	0	*Over 20 
+#2881	2931	255	25	0	*15 - 20
+#2831	2881	255	102	0	*10 - 15
+#2781	2831	255	179	0	*5 - 10
+#2761	2781	255	230	77	*3 - 5
+#2741	2761	255	255	64	*1 - 3
+#2731	2741	255	255	190	*0 - 1
+#2721	2731	217	255	255	*÷1 - 0
+#2701	2721	179	255	255	*÷3 - ÷1
+#2681	2701	128	235	255	*÷5 - ÷3
+#2631	2681	64	204	255	*÷10 - ÷5
+#2581	2631	0 	153	255	*÷15 - ÷10
+#2531	2581	0 	25	255	*÷20 - ÷15
+#0	2531	0	0	153	*Under ÷20
 
 
+#nodata	10000
+#nobits	16
+#header1	*Nedbør
+#header2	*Siste døgn (06-06 UTC)
+#legend	*mm
+#From	To	R	G	B	Forklaring
+#1500	10000	0	0	153	*Over 150 
+#750	1500	0 	25	255	*75 - 150 
+#500	750	0 	153	255	*50 - 75
+#300	500	64	204	255	*30 - 50
+#200	300	128	235	255	*20 - 30
+#100	200	179	255	255	*10 - 20
+#1	100	217	255	255	*Under 10
+#0	1	229	229	229	*Ikke nedbør
 
-
-colscal <- function(n=30,col="bwr",test=FALSE) {
+colscal <- function(n=14,col="bwr",test=FALSE) {
 
   test.col <- function(r,g,b) {
     dev.new()
@@ -135,7 +169,34 @@ colscal <- function(n=30,col="bwr",test=FALSE) {
     points(b,col="blue")
     points(g,col="green")
   }
+
+#R	G	B
+  seNorgeT <- c(204,  0,    0,	
+               255, 25,    0,	
+               255, 102,   0,	
+               255, 179,   0,	
+               255, 230,  77,	
+               255, 255,  64,	
+               255, 255, 190,	
+               217, 255, 255,	
+               179, 255, 255,	
+               128, 235, 255,	
+               64, 204, 255,	
+               0, 153, 255,	
+               0,  25, 255,	
+               0,   0, 153)	
+  dim(seNorgeT) <- c(3,14)
+
+  seNorgeP <- c(0, 0, 153,
+                0, 25, 255,
+                0, 153, 255,
+                64, 204, 255,
+                128, 235, 255,
+                179, 255, 255,
+                217, 255, 255,
+                229, 229, 229)
   
+  dim(seNorgeP) <- c(3,8)
   # Set up colour-palette
   x <- 1:n
   r0 <- round(n*0.55)
@@ -165,8 +226,17 @@ colscal <- function(n=30,col="bwr",test=FALSE) {
     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
     col <- rgb(b,g,r)
+  } else if (col=="t2m") {
+    r <- round(0.01*approx(seNorgeT[1,],n=n)$x)
+    g <- round(0.01*approx(seNorgeT[2,],n=n)$x)
+    b <- round(0.01*approx(seNorgeT[3,],n=n)$x)
+    col <- rgb(b,g,r)
+  } else if (col=="precip") {
+    r <- round(0.01*approx(seNorgeP[1,],n=n)$x)
+    g <- round(0.01*approx(seNorgeP[2,],n=n)$x)
+    b <- round(0.01*approx(seNorgeP[3,],n=n)$x)
+    col <- rgb(b,g,r)
   }
-
   if (test) test.col(r,g,b)
   return(col)
 }
