@@ -47,7 +47,7 @@ imilast2matrix <- function(x) {
   attr(X, "aspect")= "interpolated"
   attr(X, "reference")= "Neu, et al. , 2013: IMILAST: A Community Effort to Intercompare Extratropical Cyclone Detection and Tracking Algorithms. Bull. Amer. Meteor. Soc., 94, 529–547."
   attr(X, "info")= NA
-  attr(X, "method")= x$Method
+  attr(X, "method")= x$Method[1]
   attr(X, "history")= history.stamp()
   class(X) <- 'stormmatrix'
   invisible(X)
