@@ -370,7 +370,10 @@ season.default <- function(x) {
   m <- month(x)
   if (inherits(x,'season')) {
     for (i in 1:nt)  season[i] <- switch(m[i],
-                                        '1'='djf','2'='mam','3'='jja','4'='son')
+                                        '1'='djf','2'='djf','12'='djf',
+                                         '3'='mam','4'='mam','5'='mam',
+                                         '6'='jja','7'='jja','8'='jja',
+                                         '9'='son','10'='son','11'='son')
   } else if (inherits(x,c('day','month'))) {
      season <- paste(substr(month.abb[as.numeric(rownames(table(month(x))))],1,1),sep='')
   }
