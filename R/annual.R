@@ -151,7 +151,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
     std.err[bad] <- NA
     attributes(std.err) <- NULL
-    dim(std.err) <- dim(sigma)
+    dim(std.err) <- dim(y)
     attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
   } else if (FUN=="mean") {
     #print("mean")

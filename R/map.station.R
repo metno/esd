@@ -269,7 +269,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
                 colbar$n <- length(colbar$col)
             else if (!is.null(colbar$breaks)) {              
                 colbar$n <- length(colbar$breaks)
-                colbar$col <- colscal(n=colbar$n)
+                colbar$col <- colscal(n=colbar$n,col=varid(x))
             }
             else { ## set to the default values
                 colbar$n <- 10 
@@ -279,7 +279,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
                 colbar$breaks <- pretty(y,colbar$n)
                 # update colbar$n and colbar$col according to pretty
                 colbar$n <- length(colbar$breaks)
-                colbar$col <- colscal(n=colbar$n)
+                colbar$col <- colscal(n=colbar$n,col=varid(x))
             }
             ## reverse the colour for precip
             #print(is.precip(x))
@@ -480,7 +480,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,
 
   ## Define colour palette:
   if (!is.null(FUN)) {
-      if (is.null(col)) col <- colscal(n=n) else
+      if (is.null(col)) col <- colscal(n=n,col=varid(x)) else
       if (length(col)==1) {
           palette <- col
           col <- colscal(palette=palette,n=n)

@@ -520,7 +520,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
 
 plot.pca <- function(y,cex=1.5,new=TRUE) {
 
-  col <- colscal(); nc <- length(col)
+  col <- colscal(col=varid(y)); nc <- length(col)
   if (is.precip(y)) col <- rev(col)
   lon <- attr(y,'longitude') 
   lat <- attr(y,'latitude') 
@@ -553,6 +553,7 @@ plot.pca <- function(y,cex=1.5,new=TRUE) {
   plot(lon,lat,
        main="Climatology",
        col=col[a.T[1,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
   data(geoborders,envir=environment())
   lines(geoborders)
   lines(geoborders$x - 360,geoborders$y)
@@ -560,18 +561,21 @@ plot.pca <- function(y,cex=1.5,new=TRUE) {
   plot(lon,lat,
        main=paste("EOF #1:",R2[1],"% of variance"),
        col=col[a.T[2,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
   lines(geoborders)
   lines(geoborders$x - 360,geoborders$y)
 
   plot(lon,lat,
        main=paste("EOF #2:",R2[2],"% of variance"),
        col=col[a.T[3,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
   lines(geoborders)
   lines(geoborders$x - 360,geoborders$y)
 
   plot(lon,lat,
        main=paste("EOF #3:",R2[3],"% of variance"),
        col=col[a.T[4,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
   lines(geoborders)
   lines(geoborders$x - 360,geoborders$y)
 

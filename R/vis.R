@@ -160,7 +160,7 @@ diagram.station <- function(x,it=NULL,...) {
 #1	100	217	255	255	*Under 10
 #0	1	229	229	229	*Ikke nedbør
 
-colscal <- function(n=14,col="bwr",test=FALSE) {
+colscal <- function(n=14,col="t2m",test=FALSE) {
 
   test.col <- function(r,g,b) {
     dev.new()
@@ -170,6 +170,15 @@ colscal <- function(n=14,col="bwr",test=FALSE) {
     points(g,col="green")
   }
 
+  # Set up colour-palette
+  x <- 1:n
+  r0 <- round(n*0.55)
+  g0 <- round(n*0.5)
+  b0 <- round(n*0.45)
+  s <- -0.1/n
+  if (n < 30) sg <- s*2.5 else sg <- s
+  n1 <- g0; n2 <- n-n1
+  
 #R	G	B
   seNorgeT <- c(204,  0,    0,	
                255, 25,    0,	
@@ -195,16 +204,13 @@ colscal <- function(n=14,col="bwr",test=FALSE) {
                 179, 255, 255,
                 217, 255, 255,
                 229, 229, 229)
-  
   dim(seNorgeP) <- c(3,8)
-  # Set up colour-palette
-  x <- 1:n
-  r0 <- round(n*0.55)
-  g0 <- round(n*0.5)
-  b0 <- round(n*0.45)
-  s <- -0.1/n
-  if (n < 30) sg <- s*2.5 else sg <- s
-  n1 <- g0; n2 <- n-n1
+
+  if (is.character(col) &
+      (sum(is.element(c('t2m','precip','bwr','rwb',
+                        'faint.bwr','faint.rwb'),col)==0)))
+      col <- 'bwr'
+
 
   if (col=="bwr") {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
@@ -227,15 +233,15 @@ colscal <- function(n=14,col="bwr",test=FALSE) {
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
     col <- rgb(b,g,r)
   } else if (col=="t2m") {
-    r <- round(0.01*approx(seNorgeT[1,],n=n)$x)
-    g <- round(0.01*approx(seNorgeT[2,],n=n)$x)
-    b <- round(0.01*approx(seNorgeT[3,],n=n)$x)
+    r <- approx(seNorgeT[1,],n=n)$y/255
+    g <- approx(seNorgeT[2,],n=n)$y/255
+    b <- approx(seNorgeT[3,],n=n)$y/255
     col <- rgb(b,g,r)
   } else if (col=="precip") {
-    r <- round(0.01*approx(seNorgeP[1,],n=n)$x)
-    g <- round(0.01*approx(seNorgeP[2,],n=n)$x)
-    b <- round(0.01*approx(seNorgeP[3,],n=n)$x)
-    col <- rgb(b,g,r)
+    r <- approx(seNorgeP[1,],n=n)$y/255
+    g <- approx(seNorgeP[2,],n=n)$y/255
+    b <- approx(seNorgeP[3,],n=n)$y/255
+    col <- rgb(r,g,b)
   }
   if (test) test.col(r,g,b)
   return(col)

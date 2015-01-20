@@ -130,15 +130,17 @@ DS.default <- function(y,X,mon=NULL,
     predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:length(colnames(predat)),sep=".")
 
+    if (is.null(names(X))) names(X) <- 1:dim(X)[2]
     Xnames <- paste("X.",1:length(names(X)),sep="")
     colnames(caldat) <- c("y",Xnames,'weights')
     Xnames <- Xnames[eofs]
+    #browser()
                                         # REB 2014-10-03:
     if (weighted)
         calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                         ", weights=weights, data=caldat, ...)",sep="") else
-    calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
-                    ", data=caldat, ...)",sep="")
+        calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
+                        ", data=caldat, ...)",sep="")
     MODEL <- eval(parse(text=calstr))
     FSUM <- summary(MODEL)
     if (verbose) print(FSUM)
@@ -168,10 +170,16 @@ DS.default <- function(y,X,mon=NULL,
     dc <- dim(COEFS)
 
     U <- attr(X,'pattern'); du <- dim(U)
+    # REB 2015-01-19: Also allow for patterns consisting of vectors - weights of mixed predictors
+    # See DS.list.
+    if (verbose) {print('pattern dimension'); print(du); str(U)}
     if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3])
-    pattern <- t(COEFS[2:dc[1],1]) %*%
-        diag(attr(X,'eigenvalues')[eofs]) %*% t(U[,eofs])
-    dim(pattern) <- c(du[1],du[2])
+    if (!is.null(du)) {
+      pattern <- t(COEFS[2:dc[1],1]) %*%
+          diag(attr(X,'eigenvalues')[eofs]) %*% t(U[,eofs])
+      dim(pattern) <- c(du[1],du[2])
+    } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[eofs]
+                                                 
     
                                         #  ds <- zoo(predict(model),order.by=index(X)) + offset
                                         #  ds <- zoo(predict(model,newdata=caldat),order.by=index(X)) + offset
@@ -795,11 +803,11 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
-                                        # This method combines different EOFs into one predictor by making a new
-                                        # data matrix consisting of the PCs, then weight (w) these according to their
-                                        # eigenvalues (normalised so that each predictor/EOF type carry similar
-                                        # weight). Then a SVD is applied to this new set of combined PCs to make
-                                        # an object that looks like on EOF.
+              # This method combines different EOFs into one predictor by making a new
+              # data matrix consisting of the PCs, then weight (w) these according to their
+              # eigenvalues (normalised so that each predictor/EOF type carry similar
+              # weight). Then a SVD is applied to this new set of combined PCs to make
+              # an object that looks like on EOF.
     print('DS.list')
     preds <- names(X)
     print(preds)
@@ -808,12 +816,18 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
                                         # Test: if there is only one predictor, use the method for one predictor
     if (np==1) {
         if (verbose) print('Single predictor')
-        ds <- DS(y,X[[1]],biascorrect=biascorrect,mon=mon,
-                 method=method,swsm=swsm,
-                 rmtrend=rmtrend,eofs=eofs,
-                 area.mean.expl=area.mean.expl,verbose=verbose,
-                 weighted=TRUE,pca=FALSE,npca=20,...)
+        predictands <- names(y)
+        ds <- list(description='ESD')
+        for ( i in 1:length(predictands)) {
+          ds1 <- DS(y[[i]],X,biascorrect=biascorrect,mon=mon,
+                    method=method,swsm=swsm,
+                    rmtrend=rmtrend,eofs=eofs,
+                    area.mean.expl=area.mean.expl,verbose=verbose,
+                    weighted=TRUE,pca=FALSE,npca=20,...)
+          eval(parse(text=paste('ds$',predictands[i],' <- ds1',sep='')))
+        }
         return(ds)
+        
     } else if (verbose) print('Several predictors')
 
                                         # Combine the different predictors into one matrix: also for comb...
@@ -872,17 +886,20 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
     dim(pattern) <- c(1,dim(pattern))
     if (verbose) str(pattern)
     attr(eof,'eigenvalues') <- udv$d[1:20]
-    attr(eof,'pattern') <- pattern
+    attr(eof,'pattern') <- rep(1,20)
+    names(eof) <- paste("X.",1:20,sep="")
+    
     class(eof) <- class(X[[1]])
     if (inherits(X[[1]],'comb'))
         attr(eof,'appendix.1') <- z
 
+    #browser()
     if (verbose) print('DS(y,eof,...)')
-    ds <- DS(y,eof,biascorrect=biascorrect,mon=mon,
+    ds <- DS(y,eof,biascorrect=biascorrect,
              method=method,swsm=swsm,m=m,
              rmtrend=rmtrend,eofs=eofs,
              area.mean.expl=area.mean.expl,verbose=verbose,
-             weighted=TRUE,pca=FALSE,npca=20,...)
+             weighted=TRUE,pca=FALSE,...)
 
                                         # Now, we need to reconstruct the spatial maps/patterns. There will be
                                         # one pattern for each EOF

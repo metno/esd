@@ -307,14 +307,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   data("geoborders",envir=environment())
   if(sum(is.finite(x))==0) stop('No valid data')
   # To deal with grid-conventions going from north-to-south or east-to-west:
-  srtx <- order(attr(x,'longitude')); lon <- attr(x,'longitude')[srtx]
-  srty <- order(attr(x,'latitude')); lat <- attr(x,'latitude')[srty]
+  srtx <- order(attr(x,'longitude')); lon <- lon(x)[srtx]
+  srty <- order(attr(x,'latitude'));  lat <- lat(x)[srty]
   #print('meta-stuff')
-  unit <- attr(x,'unit'); variable <- attr(x,'variable')
+  unit <- unit(x); variable <- varid(x); varid <- varid(x)
   if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") )
     unit <- "degree*C"
   if (unit=="%") unit <- "'%'"
-  if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") | (tolower(variable)=="2t") )
+  if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") |
+      (tolower(variable)=="2t") )
     variable <- "T[2*m]"
 #  if (inherits(x,'corfield'))
 #    main=eval(parse(text=paste('expression(paste("correlation: ",',
@@ -364,7 +365,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     breaks <- pretty(c(x),n=n)
   #print(breaks)
   
-  if (is.null(col)) col <- colscal(n=length(breaks)-1) else
+  if (is.null(col)) col <- colscal(n=length(breaks)-1,col=varid) else
   if (length(col)==1) {
      palette <- col
      col <- colscal(col=palette,n=length(breaks)-1)
@@ -492,7 +493,7 @@ map.pca <- function(x,new=TRUE,FUN='mean',pattern=1,
   attr(X,'latitude') <- lat(x)
   class(X) <- 'station'
   if (is.null(col)) {
-    col <- colscal(30)
+    col <- colscal(30,col=varid(x))
     if (is.precip(x)) col <- rev(col)
   }
   map.station(X,new=new,FUN=FUN,col=col,bg=col,
@@ -550,7 +551,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
 #  col <- rgb( c(rep(0,15),1-sqrt(seq(0,1,length=15))),
 #              abs(sin(seq(0,pi,length=30))),
 #              c(sqrt(seq(0,1,length=15)),rep(1,15)) )
-  col <- colscal(30)
+  col <- colscal(30,col=varid(x))
   if (is.precip(X)) col.x <- rev(col) else
                     col.x <- col
   if (is.precip(Y)) col.y <- rev(col) else

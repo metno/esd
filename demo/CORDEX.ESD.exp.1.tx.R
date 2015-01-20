@@ -27,6 +27,8 @@ t2m <- as.4seasons(retrieve('data/ERAINT/ERAINT_t2m_mon.nc',
 slp <- as.4seasons(retrieve('data/ERAINT/ERAINT_slp_mon.nc',
                        lon=c(-90,-30),lat=c(-35,-15)),FUN='mean')
 
+X <- list(description='cordex-esd-exp1')
+
 # Loop through the seasons:
 for (season in c('djf','mam','jja','son')) {
   print(paste('Season:',season))
@@ -52,7 +54,8 @@ for (season in c('djf','mam','jja','son')) {
   
   # Check: Figure: scatter plot
   x <- matchdate(subset(mt4s,it=season),txm.ds)
-  par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1))
+  dev.new(width=5,height=9)
+  par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1),cex=0.5)
   plot(coredata(x),coredata(txm.ds),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
@@ -61,11 +64,10 @@ for (season in c('djf','mam','jja','son')) {
        sub=paste('predictand: CLARIS; #PCA=',npca))
   grid()
 
-# Repeat the downscaling for the standard deviation:
-#  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
-#               m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
-  z.st <- DS(pca.st,eof.t2m,
+# Repeat the downscaling for the standard deviation: use a mix of predictors.
+  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
                m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
+
   txs.ds <- pca2station(z.st)
 
   # Check: Figure: scatter plot
@@ -78,21 +80,18 @@ for (season in c('djf','mam','jja','son')) {
        sub=paste('predictand: CLARIS; #PCA=',npca))
   grid()
 # Extract the predicted cross-validation results which follow the experiment:
-  d <- dim(attr(tx.ds,'evaluation'))
+  d <- dim(attr(txs.ds,'evaluation'))
 
 # only grab the series of predicted values - not the original data used for calibration
-  exp1.tx <- attr(tx.ds,'evaluation')[,seq(2,d[2],by=2)]
+  exp1.tx <- attr(txs.ds,'evaluation')[,seq(2,d[2],by=2)]
 # copy the the original attributes
-  exp1.tx <- attrcp(amt,exp1.tx)
-  class(exp1.tx) <- class(mt)
+  exp1.tx <- attrcp(mt4s,exp1.tx)
+  class(exp1.tx) <- class(mt4s)
 
-  eval(parse(paste('X$',season,' <- txm.ds',sep='')))
-  eval(parse(paste('Y$',season,' <- txs.ds',sep='')))
+  eval(parse(text=paste('X$txm.',season,' <- txm.ds',sep='')))
+  eval(parse(text=paste('X$txs.',season,' <- txs.ds',sep='')))
 }
 
-attributes(Y) <- NULL;
-dim(Y) <- dim(X)
-attr(X,'standard.deviation') <- Y
 # add some new attributes describing the results:
 attr(X,'description') <- 'cross-validation'
 attr(X,'experiment') <- 'CORDEX ESD experiment 1'
@@ -103,6 +102,6 @@ attr(X,'predictand_file') <- 'claris.Tx.rda'
 attr(X,'predictor_file') <- c('ERAINT_olr_mon.nc','ERAINT_t2m_mon.nc','ERAINT_slp_mon.nc')
 attr(X,'predictor_domain') <- 'lon=c(-90,-30),lat=c(-35,-15)'
 attr(X,'history') <- history.stamp()
-attr(X,'R-script') <- readLines('CORDEX.ESD.exp1.tx.R')
+attr(X,'R-script') <- readLines('CORDEX.ESD.exp.1.tx.R')
 
 save(file='CORDEX.ESD.exp1.tx.esd.rda',X)
