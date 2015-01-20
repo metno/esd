@@ -7,16 +7,16 @@ npca <- 4
 
 # load the predictands: CLARIS precip
 print('Get the CLARIS data')
-load('~/Dropbox/Public/CORDEX-ESDM/CORDEX-ESDM-data-clumps/claris.Tx.rda')
+load('~/Dropbox/Public/CORDEX-ESDM/CORDEX-ESDM-data-clumps/claris.Tn.rda')
 
 print('Take the anomalies')
-Tx <- anomaly(Tx)
+Tn <- anomaly(Tn)
 
 # Process the precipitation - predictand as annual mean and annual standard deviation:
 # Perhaps change to use seasonal rather than annual?
 print('Estimate seasonal statistics')
-mt4s <- as.4seasons(Tx,FUN='mean')
-st4s <- as.4seasons(anomaly(Tx),FUN='sd')
+mt4s <- as.4seasons(Tn,FUN='mean')
+st4s <- as.4seasons(anomaly(Tn),FUN='sd')
 
 # retrieve the predictors
 print('Get the predictor data')
@@ -56,13 +56,13 @@ for (season in c('djf','mam','jja','son')) {
   z.mt <- DS(pca.mt,eof.t2m,
              m='cordex-esd-exp1',detrend=FALSE,verbose=FALSE)
 # The results are in the form of a PCA-object - convert back to a group of stations            
-  txm.ds <- pca2station(z.mt)
+  tnm.ds <- pca2station(z.mt)
   
   # Check: Figure: scatter plot
-  x <- matchdate(subset(mt4s,it=season),txm.ds)
+  x <- matchdate(subset(mt4s,it=season),tnm.ds)
   dev.new(width=5,height=9)
   par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1),cex=0.5)
-  plot(coredata(x),coredata(txm.ds),
+  plot(coredata(x),coredata(tnm.ds),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
        ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
@@ -74,11 +74,11 @@ for (season in c('djf','mam','jja','son')) {
   z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
                m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
 
-  txs.ds <- pca2station(z.st)
+  tns.ds <- pca2station(z.st)
 
   # Check: Figure: scatter plot
-  x <- matchdate(subset(st4s,it=season),txm.ds)
-  plot(coredata(x),coredata(txs.ds),
+  x <- matchdate(subset(st4s,it=season),tnm.ds)
+  plot(coredata(x),coredata(tns.ds),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
        ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
@@ -86,24 +86,24 @@ for (season in c('djf','mam','jja','son')) {
        sub=paste('predictand: CLARIS; #PCA=',npca))
   grid()
 # Extract the predicted cross-validation results which follow the experiment:
-  d <- dim(attr(txs.ds,'evaluation'))
+  d <- dim(attr(tns.ds,'evaluation'))
 
 # only grab the series of predicted values - not the original data used for calibration
-  exp1.txm <- attr(txm.ds,'evaluation')[,seq(2,d[2],by=2)]
-  exp1.txs <- attr(txs.ds,'evaluation')[,seq(2,d[2],by=2)]
+  exp1.tnm <- attr(tnm.ds,'evaluation')[,seq(2,d[2],by=2)]
+  exp1.tns <- attr(tns.ds,'evaluation')[,seq(2,d[2],by=2)]
 # copy the the original attributes
-  exp1.txm <- attrcp(mt4s,exp1.txm)
-  exp1.txs <- attrcp(mt4s,exp1.txs)
-  class(exp1.txm) <- class(mt4s)
-  class(exp1.txs) <- class(mt4s)
+  exp1.tnm <- attrcp(mt4s,exp1.tnm)
+  exp1.tns <- attrcp(mt4s,exp1.tns)
+  class(exp1.tnm) <- class(mt4s)
+  class(exp1.tns) <- class(mt4s)
 
-  eval(parse(text=paste('X$txm.',season,' <- txm.ds',sep='')))
-  eval(parse(text=paste('X$txs.',season,' <- txs.ds',sep='')))
+  eval(parse(text=paste('X$tnm.',season,' <- tnm.ds',sep='')))
+  eval(parse(text=paste('X$tns.',season,' <- tns.ds',sep='')))
 
-  # The independent validation is contained in exp1.txm (seasonal mean)
-  # and exp1.txm (seasonal standard deviation)
-  eval(parse(text=paste('X$exp1.txm.',season,' <- exp1.txm',sep='')))
-  eval(parse(text=paste('X$exp1.txs.',season,' <- exp1.txs',sep='')))
+  # The independent validation is contained in exp1.tnm (seasonal mean)
+  # and exp1.tnm (seasonal standard deviation)
+  eval(parse(text=paste('X$exp1.tnm.',season,' <- exp1.tnm',sep='')))
+  eval(parse(text=paste('X$exp1.tns.',season,' <- exp1.tns',sep='')))
 }
 
 # add some new attributes describing the results:
@@ -112,10 +112,10 @@ attr(X,'experiment') <- 'CORDEX ESD experiment 1'
 attr(X,'method') <- 'esd'
 attr(X,'url') <- 'https://github.com/metno/esd'
 attr(X,'information') <- 'PCAs used to represent seasonal mean and standard deviation for all CLARIS stations, and DS applied to the PCs'
-attr(X,'predictand_file') <- 'claris.Tx.rda'
+attr(X,'predictand_file') <- 'claris.Tn.rda'
 attr(X,'predictor_file') <- c('ERAINT_olr_mon.nc','ERAINT_t2m_mon.nc','ERAINT_slp_mon.nc')
 attr(X,'predictor_domain') <- 'lon=c(-90,-30),lat=c(-35,-15)'
 attr(X,'history') <- history.stamp()
-attr(X,'R-script') <- readLines('CORDEX.ESD.exp.1.tx.R')
+attr(X,'R-script') <- readLines('CORDEX.ESD.exp.1.tn.R')
 
-save(file='CORDEX.ESD.exp1.tx.esd.rda',X)
+save(file='CORDEX.ESD.exp1.tn.esd.rda',X)

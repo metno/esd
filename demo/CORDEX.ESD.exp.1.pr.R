@@ -1,5 +1,10 @@
-# Script for setting up and running CORDEX ESD experiment 1
-# 
+# Script for setting up and running CORDEX ESD experiment 1 for precip
+# R.E. Benestad
+
+# Number of PCAs used to represent the predictand data - determines the degree
+# of detail but also the robustness of the results
+npca <- 20
+
 
 # load the predictands: CLARIS precip
 load('~/Dropbox/Public/CORDEX-ESDM/CORDEX-ESDM-data-clumps/claris.Pr.rda')
@@ -30,25 +35,23 @@ pca.mu <- PCA(mu)
 fw <- annual(Pr,FUN='wetfreq',nmin=100)
 pca.fw <- PCA(fw)
 
-# The experiment results are provided by the cross-validation 
-#z.mu <- DS(pca.mu,list(olr=eof.olr,es=eof.es,slp=eof.slp),
-#           eofs=1:20,m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
-#mu.ds <- pca2station(z.mu)
-#z.fw <- DS(pca.fw,list(olr=eof.olr,es=eof.es,slp=eof.slp),
-#           eofs=1:20,m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
+pca.mu <- subset(pca.mu,pattern=1:npca)
+pca.fw <- subset(pca.fw,pattern=1:npca)
 
-
-
+# All post-processing is finished. Proceed with the actual downscaling:
 z.mu <- DS(pca.mu,list(olr=eof.olr,es=eof.es),
            m='cordex-esd-exp1',eofs=1:10,detrend=FALSE,verbose=FALSE)
 z.fw <- DS(pca.fw,list(olr=eof.olr,es=eof.es,slp=eof.slp),
            m='cordex-esd-exp1',eofs=1:10,detrend=FALSE,verbose=FALSE)
+
+# Post-processing - get the data into the right format:
 mu.ds <- attr(z.mu,'evaluation')
 fw.ds <- attr(z.fw,'evaluation')
 
 y <- pca2station(z.mu)
 x <- matchdate(mu,y)
 
+# Check the results:
 dev.new(width=5,height=9)
 par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1),cex=0.5)
 plot(coredata(x),coredata(y),
@@ -62,7 +65,7 @@ grid()
 y <- pca2station(z.fw)
 x <- matchdate(fw,y)
 
-                                        # Check: Figure: scatter plot
+# Check: Figure: scatter plot
 plot(coredata(x),coredata(y),
      pch=19,col=rgb(0,0,1,0.5),
      xlab=expression(paste('Observed ',f[w])),
@@ -71,18 +74,14 @@ plot(coredata(x),coredata(y),
      sub=paste('predictand: CLARIS; #PCA=',npca))
 grid()
 
-mu.ds <- attrcp(mu,mu.ds)
-attr(mu.ds,'description') <- 'cross-validation'
-attr(mu.ds,'experiment') <- 'CORDEX ESD experiment 1'
-class(mu.ds) <- class(mu)
-fw.ds <- attrcp(fw,fw.ds)
-class(fw.ds) <- class(fw)
-attr(fw.ds,'description') <- 'cross-validation'
-attr(fw.ds,'experiment') <- 'CORDEX ESD experiment 1'
+X <- list(mu.exp1=mu.ds,fw.exp1=fw.ds,z.mu=z.mu,z.fw=z.fw)
+attr(X,'description') <- 'cross-validation'
+attr(X,'experiment') <- 'CORDEX ESD experiment 1'
 attr(X,'predictand_file') <- 'claris.Pr.rda'
 attr(X,'predictor_file') <- c('ERAINT_olr_mon.nc','ERAINT_t2m_mon.nc','ERAINT_slp_mon.nc')
 attr(X,'predictor_domain') <- 'lon=c(-90,-30),lat=c(-35,-15)'
 attr(X,'history') <- history.stamp()
 attr(X,'R-script') <- readLines('CORDEX.ESD.exp.1.pr.R')
 
+save(file='CORDEX.ESD.exp1.pr.esd.rda',X)
 
