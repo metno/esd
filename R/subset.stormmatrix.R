@@ -20,20 +20,14 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     dy <- as.numeric(strftime(t,"%d"))
     
     # Generate sequence of days, months or years if range of it value is given
-    is.months <- function(x) {
-      (sum(is.element(tolower(substr(x,1,3)),tolower(month.abb)))>0)
-    }
-    is.seasons <- function(x) {
-      (sum(is.element(tolower(substr(x,1,3)),names(season.abb())))>0)
-    }
-    is.dates <- function(x) {
-      (!is.months(x) & levels(factor(nchar(x)))==10)
-    }
-    is.years <- function(x) {
-      (!is.months(x) & levels(factor(nchar(x)))==4)
-    }
-
     if (!is.null(it)) {
+      is.months <- function(x) (sum(is.element(tolower(substr(x,1,3)),
+                                               tolower(month.abb)))>0)
+      is.seasons <- function(x) (sum(is.element(tolower(substr(x,1,3)),
+                                                names(season.abb())))>0)
+      is.dates <- function(x) (!is.months(x) & levels(factor(nchar(x)))==10)
+      is.years <- function(x) (!is.months(x) & levels(factor(nchar(x)))==4)
+
       if (is.months(it)) {
         if (verbose) print('Monthly selected')
         ii <- is.element(mo,(1:12)[is.element(tolower(month.abb),
