@@ -555,8 +555,9 @@ plot.pca <- function(y,cex=1.5,new=TRUE) {
        col=col[a.T[1,]],pch=19,xlab="",ylab="",cex=cex)
   points(lon,lat,cex=cex)
   data(geoborders,envir=environment())
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[1,]],pch=19,cex=cex)
 
   plot(lon,lat,
        main=paste("EOF #1:",R2[1],"% of variance"),
@@ -564,20 +565,23 @@ plot.pca <- function(y,cex=1.5,new=TRUE) {
   points(lon,lat,cex=cex)
   lines(geoborders)
   lines(geoborders$x - 360,geoborders$y)
+  points(lon,lat,cex=cex,col=col[a.T[2,]],pch=19,cex=cex)
 
   plot(lon,lat,
        main=paste("EOF #2:",R2[2],"% of variance"),
        col=col[a.T[3,]],pch=19,xlab="",ylab="",cex=cex)
   points(lon,lat,cex=cex)
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[3,]],pch=19,cex=cex)
 
   plot(lon,lat,
        main=paste("EOF #3:",R2[3],"% of variance"),
        col=col[a.T[4,]],pch=19,xlab="",ylab="",cex=cex)
   points(lon,lat,cex=cex)
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[4,]],pch=19,cex=cex)
 
   par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.665,0.695),new=TRUE,cex.axis=0.6)
   image(cbind(1:nc,1:nc),col=col)

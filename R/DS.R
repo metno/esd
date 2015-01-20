@@ -102,8 +102,10 @@ DS.default <- function(y,X,mon=NULL,
     #yX <- combine.station.eof(y,X)
     #y <- yX$y; X <- yX$X
     X0 <- X; y0 <- y
-    year <- as.numeric( format(index(y), '%Y') ) 
-    month <- as.numeric( format(index(y), '%m') )
+    #year <- as.numeric( format(index(y), '%Y') ) 
+    #month <- as.numeric( format(index(y), '%m') )
+    year <- year(y)
+    month <- month(y)
                                         #print(length(y)); print(table(year)); print(table(month))
     
                                         # De-trend the data used for model calibration:

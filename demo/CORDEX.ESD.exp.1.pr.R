@@ -40,9 +40,9 @@ pca.fw <- PCA(fw)
 
 
 z.mu <- DS(pca.mu,list(olr=eof.olr,es=eof.es),
-           m='cordex-esd-exp1',eofs=1:10,detrend=FALSE)
+           m='cordex-esd-exp1',eofs=1:10,detrend=FALSE,verbose=FALSE)
 z.fw <- DS(pca.fw,list(olr=eof.olr,es=eof.es,slp=eof.slp),
-           m='cordex-esd-exp1',eofs=1:10,detrend=FALSE)
+           m='cordex-esd-exp1',eofs=1:10,detrend=FALSE,verbose=FALSE)
 mu.ds <- attr(z.mu,'evaluation')
 fw.ds <- attr(z.fw,'evaluation')
 
@@ -63,8 +63,7 @@ y <- pca2station(z.fw)
 x <- matchdate(fw,y)
 
                                         # Check: Figure: scatter plot
-x <- matchdate(subset(st4s,it=season),txm.ds)
-plot(coredata(fw.ds[,1]),coredata(fw.ds[,2]),
+plot(coredata(x),coredata(y),
      pch=19,col=rgb(0,0,1,0.5),
      xlab=expression(paste('Observed ',f[w])),
      ylab=expression(paste('Downscaled ',f[w])),
