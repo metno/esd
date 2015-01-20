@@ -9,6 +9,7 @@ annual <- function(x, ...) UseMethod("annual")
   
 annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, ...) {
   #print("annual.zoo")
+  if (inherits(x,'annual')) return(x)
   attr(x,'names') <- NULL
 #  yr <- year(x)  REB: 08.09.2014
   class(x) <- 'zoo'
@@ -58,6 +59,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
                            regular=NULL,frequency=NULL) {
 
   #print('annual.default')
+  if (inherits(x,'annual')) return(x)
   nv <- function(x) sum(is.finite(x))
 
   #browser()

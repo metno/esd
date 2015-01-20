@@ -637,7 +637,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           select=NULL,FUN="mean",rmtrend=TRUE,
                           FUNX="mean",threshold=1,
                           pattern="tas_Amon_ens_",verbose=FALSE,nmin=nmin) {
-  
+
+  if (verbose) print('DSensemble.pca')
   # This function is for downscaling PCA to represent a group of stations
   if (!is.na(attr(y,'longitude'))[1])
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
@@ -652,6 +653,27 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (inherits(y,'season')) {
     T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
+
+    # Recursive: do each season seperately if there are more than one season
+    if (length(table(season(y)))>1) {
+      if (verbose) print('--- Apply DS to seasons seperately ---')
+      Z <- list(info='DSensembe.pca for different seasons')
+      for (season in names(table(season(y)))) {
+        browser()
+        if (verbose) print(paste('Select',season))
+        z <- DSensemble.pca(subset(y,it=season),plot=plot,path=path,
+                            rcp=rcp,biascorrect=biascorrect,predictor=T2M,
+                            non.stationarity.check=non.stationarity.check,
+                            eofs=eofs,lon=lon,lat=lat,
+                            select=select,FUN=FUN,rmtrend=rmtrend,
+                            FUNX=FUNX,threshold=threshold,
+                            pattern=pattern,verbose=verbose,nmin=nmin)
+        parse(eval(text=paste('Z$',season,' <- z',sep='')))
+      }
+      if (verbose) print('--- REsults returned as a list ---')
+      return(Z)
+    }
+
   } else if (inherits(y,'annual')) {
     T2M <- annual(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
@@ -691,7 +713,13 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           lat=range(lat(T2M))+c(-2,2))
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
-    GCM <- subset(gcm,it=season(T2M)[1])
+    if (inherits(y,'season')) {
+      GCM <- as.4seasons(gcm,FUN=FUNX)
+      GCM <- subset(gcm,it=season(T2M)[1])
+    } else if (inherits(y,'annual')) {
+      GCM <- annual(gcm,FUN=FUNX)
+
+    }
     rm("gcm"); gc(reset=TRUE)
     T2MGCM <- combine(T2M,GCM)
     if (verbose) print("- - - > EOFs")

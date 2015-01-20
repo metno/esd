@@ -486,6 +486,7 @@ as.annual.spell <- function(x, ...) annual.spell(x,...)
 #}
 
 as.monthly <- function(x,FUN='mean',...) {
+if (inherits(x,'month')) return(x)
   y <- aggregate(as.zoo(x),function(tt) as.Date(as.yearmon(tt)),FUN=FUN,...)
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
@@ -542,8 +543,9 @@ as.4seasons <- function(x,...) UseMethod("as.4seasons")
 
 as.4seasons.default <- function(x,FUN='mean',slow=FALSE,...) {
   #print('as.4seasons.default')
-  attr(x,'names') <- NULL
 
+  if (inherits(x,'season')) return(x)
+  attr(x,'names') <- NULL
   d <- dim(coredata(x))
   #print(d)
   if (is.null(d)) d <- c(length(x),1)

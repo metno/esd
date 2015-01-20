@@ -20,11 +20,11 @@ The subset method tries to be 'intelligent', and if the list has no names, then 
 }
 \usage{
 subset(x,it=NULL,is=NULL,...)
-subset.station(x,it = NULL,is = NULL)
+subset.station(x,it = NULL,is = NULL,verbose=FALSE)
 subset.eof(x,it=NULL,is=NULL,verbose=FALSE)
 subset.cca(x,it=NULL,is=NULL)
 subset.mvr(x,it=NULL,is=NULL)
-subset.pca(x,it=NULL,is=NULL)
+subset.pca(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE)
 subset.trend(x,it=NULL,is=NULL)
 subset.corfield(x,it=NULL,is=NULL)
 subset.comb(x,it=NULL,is=NULL) 
@@ -40,7 +40,9 @@ matchdate(x,it)
 \item{x}{Data object from which the subset is taken}
 \item{it}{A list or data.frame providing time index, e.g. month}
 \item{is}{A list or data.frame providing space index, e.g. station record}
-\item{dimension}{qualifier for field objects: tme or space?}
+\item{pattern}{selection of patterns in PCA or EOF (used for e.g. filtreing
+  the data)}
+\item{verbose}{Dump diagnostics to the screen}
  }
 \value{A field object}
 
