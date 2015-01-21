@@ -680,25 +680,25 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     d <- dim(x)
     if (is.null(d)) {
         if (verbose)
-            print("Warning : One dimensional vector has been found in the coredata")
+            print("station.subset: Warning - One dimensional vector has been found in the coredata")
         x <- zoo(as.matrix(coredata(x)),order.by=index(x))
         x <- attrcp(x0,x)
         class(x) <- class(x0)
     } 
     d <- dim(x)
     if (is.null(is)) is <- 1:d[2]
-    if (is.null(it)) it <- 1:d[1]
+#    if (is.null(it)) it <- 1:d[1] This lines causes a bug if is is given but not it...
     
     ## 
     ##print("HERE")
     ## get time in t
     t <- index(x)
     ii <- is.finite(t)
-    if (verbose) print(it)                            
+    if (verbose) {print('station.subset: time index it'); print(it)}                            
 
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
-       if (verbose) print('years ++')
+       if (verbose) print('x is a Date or yearmon object')
         ## REB: replaced by lines below:
         ##    year <- as.numeric( format(t, '%Y') ) 
         ##    month <- as.numeric( format(t, '%m') )
@@ -706,7 +706,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         mo <- month(x)
         dy <- day(x)
     } else if (inherits(t,c("numeric","integer"))) {
-        if (verbose) print('years')
+        if (verbose) print('X has a numeric index - select by years')
         yr <- t
         mo <- dy <- rep(1,length(t))
     } else print("Index of x should be a Date, yearmon, or numeric object")
@@ -721,13 +721,15 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             # REB 2015-01-20: Need to convert it to dates - otherwise the code crashes! 
            if (nchar(it[1])==4) it <- as.Date(c(paste(it[1],'-01-01',sep=''), 
                                                 paste(it[2],'-12-31',sep='')))
-             if (verbose) print(it)          
+            if (verbose) print(it)          
             if (inherits(x,"month")) ## it is a month or season
                 it <- seq(it[1],it[2],by='month')
-            else if (inherits(x,"day")) ## it is a day
-                it <- seq(it[1],it[2],by='day')
+            if (inherits(x,"month")) ## it is a month or season
+                it <- seq(it[1],it[2],by='season')
             else if (inherits(x,"annual")) ## it is a year
                 it <- seq(it[1],it[2],by='year')
+            else (inherits(x,"day")) ## assume it is a day
+                it <- seq(it[1],it[2],by='day')
             ii <- is.element(t,it)
         } else { ## added AM 10-06-2014
             if (verbose) print('it is a string')
@@ -775,6 +777,12 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             if ( (min(it) >= min(yr)) & (max(it) <= max(yr)) ) {
               if (verbose) print("it most probably contains years")
               ii <- is.element(yr,it[1]:it[2])
+            } else  if (min(it) >= min(yr)) {
+              if (verbose) print("it most probably contains years")
+              ii <- is.element(yr,it[1]:max(yr))
+            } else  if (max(it) <= max(yr)) {
+              if (verbose) print("it most probably contains years")
+              ii <- is.element(yr,min(yr):it[2])
             }
         } else if (length(it)>2) {
           # if it is years:
@@ -823,7 +831,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ##        ii <- is.element(t,it)
         if (verbose) print('it is a date object')
         ii <- (t >= min(it)) & (t <= max(it))
-      } else {
+      } else if (!is.null(it)) {
         ii <- rep(FALSE,length(t))
         warning("subset.station: did not reckognise the selection citerion for 'it'")
       } 

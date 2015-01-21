@@ -659,7 +659,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print('--- Apply DS to seasons seperately ---')
       Z <- list(info='DSensembe.pca for different seasons')
       for (season in names(table(season(y)))) {
-        browser()
         if (verbose) print(paste('Select',season))
         z <- DSensemble.pca(subset(y,it=season),plot=plot,path=path,
                             rcp=rcp,biascorrect=biascorrect,predictor=T2M,
@@ -736,9 +735,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
-    ds <- try(DS(y,Z,biascorrect=biascorrect,
-              method=method,swsm=swsm,m=m,eofs=eofs,
-              rmtrend=rmtrend,verbose=verbose))
+    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
     if (verbose) print("post-processing")
     z <- attr(ds,'appendix.1')
 

@@ -83,14 +83,14 @@ DS.default <- function(y,X,mon=NULL,
 #        index(X) <- as.Date(paste(index(X),'-01-01',sep=''))
 
     if (verbose) print('Ensure matching time scale')
-    #print('index(y) before sametimescale:'); print(index(y))
+    if (verbose) {print('index(y) before sametimescale:'); print(index(y))}
     y <- sametimescale(y,X,verbose=verbose) # REB is needed to ensure that maye y annual if X is annual
-    #print('index(y) after sametimescale:'); print(index(y))
-    if (verbose) print('Match dates')
-    y <- matchdate(y,X) ##
-    #print('index(y)'); print(index(y))
-    X <- matchdate(X,y) # REB 2015-01-14
-    if (verbose) {print("index(y) & index(X):");print(index(y)); print(index(X))}
+    #if (verbose) {print('index(y) after sametimescale:'); print(index(y))}
+    #if (verbose) print('Match dates')
+    y <- matchdate(y,X,verbose=verbose) ##
+    #if (verbose) {print('index(y) after matchdate'); print(index(y))}
+    X <- matchdate(X,y,verbose=verbose) # REB 2015-01-14
+    if (verbose) {print("index(y) & index(X) after synch:");print(index(y)); print(index(X))}
     
     if (!is.null(mon)) y <- subset(y,it=mon)
     
@@ -413,6 +413,8 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
     model <- attr(ds,'model')
     n.app <- attr(X,'n.apps')
     attr(ds,'n.apps') <- n.app
+    if (verbose) {print(paste('For combined fields, n.apps=',n.app));
+                  print(names(attributes(X))[grep('app',names(attributes(X)))]) }
     for (i in 1:n.app) {
                                         #print("HERE")
         Z <- eval(parse(text=paste("attr(X0,'appendix.",i,"')",sep="")))
@@ -660,22 +662,23 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,eofs=1:10,
                    rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
     
+    if (verbose) print('DS.pca')
     if (is.list(X)) {
-        z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
-                     method=method,swsm=swsm,m=m,
-                     rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
-                     verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
-        return(z)
+      if (verbose) print('Predictors represented by a list object')
+      z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
+                   method=method,swsm=swsm,m=m,
+                   rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
+                   verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+      return(z)
     }
 
-    print('DS.pca')
     cls <- class(y)
     y0 <- y; X0 <- X
                                         #nattr <- softattr(y)
 
                                         # synchronise the two zoo objects through 'merge' (zoo)
-    y <- matchdate(y,it=X) # REB: 2014-12-16
-    X <- matchdate(X,it=y) # REB: 2014-12-16
+    y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
+    X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
     dy <- dim(y)
     dx <- dim(X)
 
