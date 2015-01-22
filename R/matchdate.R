@@ -37,9 +37,9 @@ matchdate <- function(x,it,verbose=FALSE) {
     if (verbose) {print(paste('select',length(it),'dates')); print(it)}
     y <- x[is.element(t,it),]
     ii <- is.element(it,t)
-    print(sum(ii))
+    if (verbose) print(paste(sum(ii),'matching dates'))
     if (sum(ii)==length(index(y))) index(y) <- it0[ii] # REB 2015-01-14: to ensure same index class as it.
-    if (verbose) print('matchdate: index(y)'); print(index(y))
+    if (verbose) {print('matchdate: index(y)'); print(index(y))}
     #browser()
   } else if (length(it)==2) {
   # Pick an interval

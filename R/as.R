@@ -704,7 +704,7 @@ as.4seasons.field <- function(x,FUN='mean',...) {
 
 as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
-as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
+as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE) {
 # The argument monthly can be used to force the method to be
 # julian-day regression-based or based on monthly mean
  
@@ -714,15 +714,37 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
 #  dy <- as.integer(format(index(x),'%d'))
 #  str(x)
 #  browser()
-  if ((is.numeric(x)) & (!is.null(attr(x, "names")))) x <- zoo(x,order.by=as.Date(attr(x, "names")))
-  yr <- year(x);  mon <- month(x);  dy <- day(x)
+  if ((is.numeric(x)) & (!is.null(attr(x, "names"))))
+  if ((!is.zoo(x)) & (!is.null(attr(x, "names"))))
+    x <- zoo(x,order.by=as.Date(attr(x, "names")))
+  yr <- year(x);  mon <- month(x);  dy <- day(x); seas <- season(x,format='numeric')
   if (is.null(ref))
     ref <- seq(min(yr,na.rm=TRUE),max(yr,na.rm=TRUE),by=1)
   # Check whether the object is a time series of monthly data.
-  ndd <- length(table(dy))
+  ndd <- length(table(dy)); nmm <- max(diff(mon))
+  #print(c(ndd,nmm))
+  if ((ndd==0) & (nmm==0)) {
+    # Only one month/season
+    return(x - mean(x,na.rm=TRUE))
+  }
+  
   #print(ndd); print(class(x))
-  if ( (ndd==1) & is.null(monthly) ) monthly <- TRUE else
-                                     monthly <- FALSE
+  #if ( (ndd==1) & is.null(monthly) ) monthly <- TRUE else
+  #                                   monthly <- FALSE
+
+  if ( (inherits(x,'month')) | ((ndd==1) & (nmm==1)) ) {
+    # Monthly data
+    print('monthly')
+    monthly <- TRUE
+    nm <- 12
+  } else monthly <- FALSE
+  if ( (inherits(x,'seasonal')) | ((ndd==1) & (nmm==3)) ) {
+    # seasonal data
+    #print('seasonal')
+    seasonal <- TRUE
+    mon <- seas
+    nm <- 4
+  } else seasonal <- FALSE
   
   # Check if x contains one or more stations
   d <- dim(x)
@@ -732,13 +754,13 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
     #cat('.')
     y <- coredata(x)
     
-    if (monthly) {
+    if ( (monthly | seasonal) ) {
     # If monthly, subtract the monthly mean
-    #print(table(month))
+#    print(mon)
 #    if (is.null(dim(x))) {
-      #print("1D")
-      clim <- rep(0,12)
-      for (i in 1:12) {
+      print("1D")
+      clim <- rep(0,nm)
+      for (i in 1:nm) {
         im <- is.element(mon,i)
         z <- mean(y[im & is.element(yr,ref)],na.rm=na.rm)
         clim[i] <- z
@@ -761,7 +783,7 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
 #      y <- zoo(t(y),order.by=index(x))
 
     } else {
- #     print("daily"); print(class(x))
+#      print("daily"); print(class(x))
       t0 <- julian(index(x)[is.element(yr,ref)]) -
             julian(as.Date(paste(yr[is.element(yr,ref)],"-01-01",sep="")))
       t <- julian(index(x)) -
@@ -788,6 +810,7 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
     }
   } else {
     #print("many stations")
+    rownames(x) <- as.character(index(x))
     y <- apply(x,2,FUN='as.anomaly.default',ref=ref)
     y <- zoo(y,order.by=index(x))
     clim <- x - y
@@ -804,20 +827,20 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
   invisible(y)
 }
 
-as.anomaly.zoo <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
-  y <- as.anomaly.station(x,ref,monthly,na.rm)
+as.anomaly.zoo <- function(x,ref=NULL,na.rm=TRUE) {
+  y <- as.anomaly.station(x,ref,na.rm)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-as.anomaly.station <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
-  y <- as.anomaly.default(x,ref,monthly,na.rm)
+as.anomaly.station <- function(x,ref=NULL,na.rm=TRUE) {
+  y <- as.anomaly.default(x,ref,na.rm)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-as.anomaly.field<- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
-   y <- as.anomaly.default(x,ref,monthly,na.rm)
+as.anomaly.field<- function(x,ref=NULL,na.rm=TRUE) {
+   y <- as.anomaly.default(x,ref,na.rm)
    attr(y,'history') <- history.stamp(x)
    attr(y,'dimensions') <- attr(x,'dimensions')
    invisible(y)
