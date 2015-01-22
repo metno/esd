@@ -34,6 +34,7 @@ subset.ds(x,it=NULL,is=NULL)
 subset.trend(x,it=NULL,is=NULL)
 subset.dsensemble(x,it=NULL,is=NULL)
 subset.zoo(x,it=NULL)
+subset.stormmatrix(x,it=NULL,is=NULL)
 matchdate(x,it)
 }
 \arguments{
