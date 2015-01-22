@@ -10,17 +10,16 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (is.null(it) & is.null(is)) return(x)
  
     l <- dim(x)[1]
-    if (is.null(is)) is <- rep(TRUE,l)
-    if (is.null(it)) it <- rep(TRUE,l)
-    
-    ## get time in t
-    t <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
-    yr <- as.numeric(strftime(t,"%Y"))
-    mo <- as.numeric(strftime(t,"%m"))
-    dy <- as.numeric(strftime(t,"%d"))
-    
+    if (is.null(it)) ii <- rep(TRUE,l)
+    if (is.null(is)) ij <- rep(TRUE,l)
+
     # Generate sequence of days, months or years if range of it value is given
     if (!is.null(it)) {
+      t <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
+      yr <- as.numeric(strftime(t,"%Y"))
+      mo <- as.numeric(strftime(t,"%m"))
+      dy <- as.numeric(strftime(t,"%d"))
+    
       is.months <- function(x) (sum(is.element(tolower(substr(x,1,3)),
                                                tolower(month.abb)))>0)
       is.seasons <- function(x) (sum(is.element(tolower(substr(x,1,3)),
@@ -63,7 +62,7 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ii <- rep(FALSE,length(t))
         warning("subset.station: did not recognise the selection citerion for 'it'")
       }
-    } else ii <- rep(TRUE,l)
+    }
         
     # is can be a list to select region or according to other criterion
     if (inherits(is,'list')) {
@@ -92,7 +91,7 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           }
         if (length(sFUN)>0) selF <- apply(x,1,sFUN) # Not quite finished...
         ij <- selx & sely & selp & selF
-     } else ij <- rep(TRUE,l)
+     }
 
     ist <- (1:l)[(ii & ij)]
     y <- x[ist,]
