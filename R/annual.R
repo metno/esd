@@ -366,19 +366,26 @@ day <- function(x) {
 
 season <- function(x, ...) UseMethod("season")
 
-season.default <- function(x) {
+season.default <- function(x,format="character") {
   nt <- length(index(x))
   season <- rep('',nt)
   m <- month(x)
-  if (inherits(x,'season')) {
+  if ( (inherits(x,'zoo')) & (format=="character") ) {
     for (i in 1:nt)  season[i] <- switch(m[i],
                                         '1'='djf','2'='djf','12'='djf',
                                          '3'='mam','4'='mam','5'='mam',
                                          '6'='jja','7'='jja','8'='jja',
                                          '9'='son','10'='son','11'='son')
-  } else if (inherits(x,c('day','month'))) {
-     season <- paste(substr(month.abb[as.numeric(rownames(table(month(x))))],1,1),sep='')
+  } else if ( (inherits(x,'zoo')) & (format=="numeric") ){
+    for (i in 1:nt)  season[i] <- switch(m[i],'1'=1,'2'=1,'12'=1,
+                                         '3'=2,'4'=2,'5'=2,
+                                         '6'=3,'7'=3,'8'=3,
+                                         '9'=4,'10'=4,'11'=4)
+    season <- as.numeric(season)
+  } else {
+    season <- paste(substr(month.abb[as.numeric(rownames(table(month(x))))],1,1),sep='')
   }
+#  browser()
   season
 }
 

@@ -745,7 +745,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                                         #y <- x[ii,is] # REB Not here
             }
             else if (inherits(it,"Date")) {
-                print('it is a Date object')
+                if (verbose) print('it is a Date object')
                 ii <- is.element(t,it)
             } else {
                 str(it); print(class(it))
@@ -786,12 +786,12 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             }
         } else if (length(it)>2) {
           # if it is years:
-                if (min(it) > length(it)) {
+                if (min(it) > length(yr)) {
                   if (verbose) print("match years")
                   ii <- is.element(yr,it)
-                } else if (max(it) <= length(it)) {
+                } else if (max(it) <= length(yr)) {
                   if (verbose) print("pick by indices")
-                  ii <- (1:length(yr))[it[1]:it[2]]                 
+                  ii <- (1:length(yr))[it]                 
                 }
               } else if ((nlev<=4) & (it <=4)) {
                 if (verbose) print("it are most probably seasons")

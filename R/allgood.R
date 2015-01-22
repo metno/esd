@@ -4,8 +4,8 @@
 allgood <- function(x,miss=.1,verbose=TRUE) {
 
   d <- dim(x)
-  mfcol0 <- par()$mfcol
   if (verbose) {
+    mfcol0 <- par()$mfcol
     par(mfrow=c(2,1))
     diagnose(x,main='Original data')
   }
@@ -19,7 +19,7 @@ allgood <- function(x,miss=.1,verbose=TRUE) {
     print("Removed stations ...")
     print(loc(x)[!is.element(loc(x),loc(y))])
     diagnose(y,main='Filtered data')
+    par(mfcol=mfcol0)
   }
-  par(mfcol=mfcol0)
   return(y)
 }
