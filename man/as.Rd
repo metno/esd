@@ -73,6 +73,7 @@
 \alias{as.pca.station}
 \alias{as.comb}
 \alias{as.comb.eof}
+\alias{as.stormmatrix}
 \title{Conversion to esd objects.}
 \description{
   Various methods for converting objects from one shape to
@@ -171,6 +172,7 @@ as.station.spell(x)
 as.station.eof(x,pattern=1:10)
 as.pca.ds(x)
 as.pca.station(x)
+as.stormmatrix(x)
 }
 \arguments{
   \item{x}{Data object}
