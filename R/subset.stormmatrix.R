@@ -1,7 +1,7 @@
 
 ## Author K. Parding
 ## Based on subset.station.R by Rasmus E. Benestad and A. Mezghani
-## Last updated 19.01.2015
+## Last updated 22.01.2015
 
 subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
@@ -68,16 +68,14 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     # is can be a list to select region or according to other criterion
     if (inherits(is,'list')) {
         selx <- rep(TRUE,l); sely <- selx;
-        selm <- selx; selp <- selx; selF <- selx
+        selp <- selx; selF <- selx
         nms <- names(is)
         ix <- grep('lon',tolower(nms))
         iy <- grep('lat',tolower(nms))
-        im <- grep('nmin',tolower(nms))
         ip <- grep('slp',tolower(nms))
         iF <- grep('FUN',nms)
         if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
         if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
-        if (length(im)>0) snmin <- is[[im]] else snmin <- NULL
         if (length(ip)>0) sslp <- is[[ip]] else sslp <- NULL        
         if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
         if (length(slon)==2) {
@@ -88,13 +86,12 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           fn <- function(x) any(x>=min(slat) & x<=max(slat))
           sely <- apply(x[,colnames(x)=='lat'],1,fn)
         }
-        if (length(snmin)>0) selm <- (x$n > snmin)
         if (length(sslp)>0) {
           fn <- function(x) any(x>=min(sslp) & x<=max(sslp))
           selp <- apply(x$slp,1,fn)
           }
         if (length(sFUN)>0) selF <- apply(x,1,sFUN) # Not quite finished...
-        ij <- selx & sely & selm & selp & selF
+        ij <- selx & sely & selp & selF
      } else ij <- rep(TRUE,l)
 
     ist <- (1:l)[(ii & ij)]
