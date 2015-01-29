@@ -208,9 +208,14 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
 
   if (is.character(col) &
       (sum(is.element(c('t2m','precip','bwr','rwb',
-                        'faint.bwr','faint.rwb'),col)==0)))
+                        'faint.bwr','faint.rwb','rainbow',
+                        'gray.colors','heat.colors','terrain.colors',
+                        'topo.colors','cm.colors'),col))==0))
       col <- 'bwr'
 
+  if (exists("r")) remove(r)
+  if (exists("g")) remove(g) 
+  if (exists("b")) remove(b)
 
   if (col=="bwr") {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
@@ -242,7 +247,25 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255
     col <- rgb(r,g,b)
+  } else if (col=="rainbow") {
+    col <- rainbow(n,start=0,end=4/6)
+  } else if (col=="gray.colors") {
+    col <- gray.colors(n)
+  } else if (col=="heat.colors") {
+    col <- heat.colors(n)
+  } else if (col=="terrain.colors") {
+    col <- terrain.colors(n)
+  } else if (col=="topo.colors") {
+    col <- topo.colors(n)
+  } else if (col=="cm.colors") {
+    col <- cm.colors(n)
   }
+
+  if (test & !exists("r")) {
+    RGB <- col2rgb(col)/255
+    r <- RGB[1,]; g <- RGB[2,]; b <- RGB[3,]
+  }
+  
   if (test) test.col(r,g,b)
   return(col)
 }
