@@ -9,8 +9,11 @@ npca <- 4
 print('Get the CLARIS data')
 load('~/Dropbox/Public/CORDEX-ESDM/CORDEX-ESDM-data-clumps/claris.Tn.rda')
 
+Tx0 <- Tx # Keep original copy
+
 print('Take the anomalies')
 Tn <- anomaly(Tn)
+clim <- Tx0 - Tx # climatology
 
 # Process the precipitation - predictand as annual mean and annual standard deviation:
 # Perhaps change to use seasonal rather than annual?
@@ -90,6 +93,8 @@ for (season in c('djf','mam','jja','son')) {
 
 # only grab the series of predicted values - not the original data used for calibration
   exp1.tnm <- attr(tnm.ds,'evaluation')[,seq(2,d[2],by=2)]
+  print('add climatology to tnm')
+  exp1.tnm <- exp1.tnm + matchdate(clim,it=exp1.tnm)
   exp1.tns <- attr(tns.ds,'evaluation')[,seq(2,d[2],by=2)]
 # copy the the original attributes
   exp1.tnm <- attrcp(mt4s,exp1.tnm)
