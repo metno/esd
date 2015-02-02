@@ -207,7 +207,7 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
   dim(seNorgeP) <- c(3,8)
 
   if (!is.null(col))
-    if (length(col)==1) & is.character(col) &
+    if ((length(col)==1) & is.character(col) &
         (sum(is.element(c('t2m','precip','bwr','rwb',
                           'faint.bwr','faint.rwb','rainbow',
                           'gray.colors','heat.colors','terrain.colors',
