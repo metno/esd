@@ -682,7 +682,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     d <- dim(x)
     if (is.null(d)) {
         if (verbose)
-            print("station.subset: Warning - One dimensional vector has been found in the coredata")
+            print("default.subset: Warning - One dimensional vector has been found in the coredata")
         x <- zoo(as.matrix(coredata(x)),order.by=index(x))
         x <- attrcp(x0,x)
         class(x) <- class(x0)
@@ -696,7 +696,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## get time in t
     t <- index(x)
     ii <- is.finite(t)
-    if (verbose) {print('station.subset: time index it'); print(it)}                            
+    if (verbose) {print('default.subset: time index it'); print(it)}                            
 
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
@@ -752,7 +752,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             } else {
                 str(it); print(class(it))
                 ii <- rep(FALSE,length(t))
-                warning("subset.station: did not recognise the selection citerion for 'it'")
+                warning("default.subset: did not recognise the selection citerion for 'it'")
             }
         }
         ##    } else if ((class(it)=="numeric") | (class(it)=="integer")) {
@@ -835,7 +835,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ii <- (t >= min(it)) & (t <= max(it))
       } else if (!is.null(it)) {
         ii <- rep(FALSE,length(t))
-        warning("subset.station: did not reckognise the selection citerion for 'it'")
+        warning("default.subset: did not reckognise the selection citerion for 'it'")
       } 
     
     ## it <- (1:length(t))[ii]
@@ -847,7 +847,9 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     #class(x) <- "zoo" 
 
     n <- dim(x)[2]
-    selx <- rep(TRUE,n); sely <- selx; selz <- selx
+    selx <- is.finite(lon(x)); sely <- is.finite(lat(x))
+      
+    selz <- rep(TRUE,n)
     selc <- selx; seli <- selx; selm <- selx; salt <- selx
     selp <- selx; selF <- selx ; sell <- selx
     
@@ -903,7 +905,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     } else if ( inherits(is,'list') & inherits(x,'field') ) {
       y <- default.subregion(x,is=is,verbose=verbose)
       is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
-    }
+    } else is <- rep(TRUE,d[2])
     if (verbose) print(paste('number of points:',sum(ii),sum(is)))
     y <- x[ii,is]
     #if (is.logical(is))
@@ -914,6 +916,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))
     if (inherits(x,'station')) {
+      if (verbose) print('station attributes')
       attr(y,'longitude') <- attr(x,'longitude')[is]
       attr(y,'latitude') <- attr(x,'latitude')[is]
       if (!is.null(attr(y,'altitude')))
@@ -954,7 +957,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (!is.null(err(y)))
         attr(y,'standard.error') <- err(x)[ii,is]
     } else {
-      
       attr(y,'longitude') <- attr(x,'longitude')[selx]
       attr(y,'latitude') <- attr(x,'latitude')[sely]
       c(sum(selx),sum(sely),sum(ii)) -> attr(y,'dimensions')

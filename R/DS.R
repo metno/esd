@@ -1,21 +1,21 @@
-                                        # Empirical downscaling using EOFs of monthly values from eof.R
-                                        # Predictand is a time series of monthly values from NACD or climate station.
-                                        #
-                                        # Reference: R.E. Benestad et al. (2002),
-                                        #            Empirically downscaled temperature scenarios for Svalbard,
-                                        #            doi.10.1006/asle.2002.005, September 18.
-                                        #
-                                        #            R.E. Benestad (2001),
-                                        #            A comparison between two empirical downscaling strategies,
-                                        #            Int. J. Climatology, 1645-1668, vol. 21, DOI 10.1002/joc.703
-                                        #
-                                        # R.E. Benestad, met.no, Oslo, Norway 11.04.2013
-                                        # rasmus.benestad@met.no
-                                        #------------------------------------------------------------------------
+# Empirical downscaling using EOFs of monthly values from eof.R
+# Predictand is a time series of monthly values from NACD or climate station.
+#
+# Reference: R.E. Benestad et al. (2002),
+#            Empirically downscaled temperature scenarios for Svalbard,
+#            doi.10.1006/asle.2002.005, September 18.
+#
+#            R.E. Benestad (2001),
+#            A comparison between two empirical downscaling strategies,
+#            Int. J. Climatology, 1645-1668, vol. 21, DOI 10.1002/joc.703
+#
+# R.E. Benestad, met.no, Oslo, Norway 11.04.2013
+# rasmus.benestad@met.no
+#------------------------------------------------------------------------
 
-                                        # dat -> y; preds -> X
-                                        # Needs to work also for daily, annual and seasonal data
-                                        #
+# dat -> y; preds -> X
+# Needs to work also for daily, annual and seasonal data
+#
 
 sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
                                         # Function to ensure that station y has the same time scales as X
@@ -813,7 +813,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
               # eigenvalues (normalised so that each predictor/EOF type carry similar
               # weight). Then a SVD is applied to this new set of combined PCs to make
               # an object that looks like on EOF.
-    print('DS.list')
+    if (verbose) print('DS.list')
     preds <- names(X)
     print(preds)
     np <- length(preds)
