@@ -81,7 +81,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
     if (projection=="sphere")
         sphere(x,lonR=lonR,latR=latR,axiR=axiR,
                    gridlines=gridlines,
-                   col=col,new=new,FUN=FUN,...)
+                   col=col,new=new,FUN=FUN,cex=cex,...)
     else if (projection=="np")
         sphere(x,lonR=lonR,latR=90,axiR=axiR,
                    gridlines=gridlines,
@@ -504,7 +504,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,
   #print(dim(rbind(X,Z)))
   
 # Plot the results:  
-  if (new) dev.new()
+  dev.new()
   par(bty="n",xaxt="n",yaxt="n",new=TRUE)
   plot(x,z,pch=".",col="white",xlab="",ylab="")
  
