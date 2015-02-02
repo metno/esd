@@ -5,10 +5,15 @@
 \alias{q5}
 \alias{q95}
 \alias{q995}
+\alias{lag.station}
+\alias{lag.field}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
 Simple and handy functions.
+
+\code{lag.station} and \code{lag.station} are wrap-around functions for
+\code{\link[zoo]{lag.zoo}} that maintains all the attributes.
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
@@ -22,6 +27,8 @@ q95(x)
 q995(x)
 trend.coef(x)
 trend.pval(x)
+lag.station(x,...)
+lag.field(x,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

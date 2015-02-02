@@ -49,77 +49,28 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
     class(x) <- class(X)
     X <- x
   }
+
+  # Remove time slices with missing data:
+#  nok <- !is.finite(rowMeans(X))
+  # The regridded appendix may contain some NA's if its domain exceeds that of the original field.
+  # Get rid of time slices with all NAs.
+  nok <- apply(X,1,nv) < 0.5*dim(X)[2]
+  if (sum(nok)> 0) {
+    it <- (1:length(nok))[!nok]
+    if (verbose) print(paste('removing ',sum(nok),'NA time slices'))
+  }
   
   x <- subset(X,it=it,is=is)
   x <- sp2np(x)
   dates <- index(x)
+  if (verbose) print(dates)
+  
   d <- attr(x,'dimensions')
   cls <- class(x)
   #print(cls)
   ## browser()
   
-  ##  if (!is.null(it)) {
-#    if (verbose) print(paste('temporal subset: it=',it))
-#    #print(it)
-#    #print(table(as.POSIXlt(dates)$mon+1))
-#    # Select a subset of the months
-#    if ( (min(it) > 0) & (max(it) < 13) & (inherits(X,c("month"))) ) {
-#      #keepm <- as.numeric(format(index(X),"%m"))==it
-#      #print("Monthly aggregated field")
-#      keepm <- is.element(as.POSIXlt(dates)$mon+1,it)
-#    } else 
-#    if ( (min(it) > 0) & (max(it) < 5) & (inherits(X,c("season"))) ) {
-#      #print("Seasonally aggregated field")
-#      #print(table(as.POSIXlt(dates)$mon+1))
-#      keepm <- is.element(as.POSIXlt(dates)$mon+1,c(1,4,7,10)[it])
-#      #print(c(it,sum(keepm)))
-#    } else
-#    ## Select a range of years (interval)
-#    if ( (length(it)>1) & (sum(is.element(it,1500:2500))>0) ) {
-#      if (length(it)==2) it <- it[1]:it[2]
-#      ##print(it); print(as.POSIXlt(dates)$year+1900); print(dates)
-#      keepm <- is.element(as.numeric(format(index(X),"%Y")),it)
-#      ## AM replacement 13-11-2013 old line keepm <- is.element(as.POSIXlt(dates)$year+1900,it)
-#    } else ## if (inherits(it,"POSIXt"))
-#    keepm <- is.element(as.Date(dates),as.Date(it))
-#    ## AM replacement 13-11-2013 old line keepm <- is.element(as.POSIXlt(dates),as.POSIXlt(it))
-#    dates <- dates[keepm]
-#    x <- zoo(X[keepm,],order.by = dates)
-#    d[3] <- sum(keepm)
-#    #print(d[3])
-#  } else x <- X
   Y <- t(coredata(x))
-  #print(dim(Y)); print(d)
-  
-#  # to select geographicla regions, the zoo aspects are no longer needed:
-#  # expand into lon lat dimensions in addition to time:
-#  dim(Y) <- d
-#  #print(d); A <- Y[,,1]; image(t(A)); dev.new()
-#  if (!is.null(lon)) {
-#    if (length(lon) != 2)
-#      warning("EOF: argument 'lon' must be a range") else { 
-#        # Select a subset of the longitudes        
-#        keepx <- (attr(X,'longitude') >= min(lon)) &
-#                 (attr(X,'longitude') <= max(lon))
-#        attr(X,'longitude') <- attr(X,'longitude')[keepx]
-#        d[1] <- sum(keepx)
-#        Y <- Y[keepx,,]
-#      }
-#  }
-#  if (!is.null(lat)) {
-#    if (length(lat) != 2)
-#      warning("EOF: argument 'lat' must be a range") else { 
-#        # Select a subset of the latitudes
-#        keepy <- (attr(X,'latitude') >= min(lat)) &
-#                 (attr(X,'latitude') <= max(lat))
-#        attr(X,'latitude') <- attr(X,'latitude')[keepy]
-#        d[2] <- sum(keepy)
-#        Y <- Y[,keepy,]
-#      }
-#  }
-#  d -> attr(X,'dimensions')
-#  
-#  dim(Y) <- c(d[1]*d[2],d[3])
   
   # Apply geographical weighting to account for different grid area at
   # different latitudes:
@@ -138,6 +89,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   # Exclude the missing values 'NA' and grid points with sd == 0 for all times:
   sd0 <- apply(as.matrix(Y),2,sd,na.rm=TRUE)
   nf <- apply(as.matrix(Y),2,SF)
+  if (verbose) print(paste('Exclude the missing values/zero-sd:',sum(sd0>0.0),sum(nf > 0)))
   y <- Y[,(sd0>0.0) & (nf > 0)]
   ## browser()
   # Exclude the time slices with missing values:
@@ -183,6 +135,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   Ave[skip == npts] <- ave
 
   if (area.mean.expl) {
+    if (verbose) print('area.mean.expl')
     ave <- ave + mean(A,na.rm=TRUE)
     A <- A - mean(A,na.rm=TRUE)
     s <- sd(A,na.rm=TRUE)
@@ -198,6 +151,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
 
   # Make all the EOF vectors havine the same sense rather than
   # being random:
+  if (verbose) print(paste("Invert EOF",(1:length(invert))[invert],collapse=' '))
   pattern[,invert] <- -pattern[,invert]
   eof[,invert] <- -eof[,invert]
   
@@ -326,6 +280,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   # Synthetise a new object with combined data that looks like a
   # field object, and then call the ordinary EOF method:
 
+  if (verbose) print("combine original and appended fields")
   Y <- zoo(YY,order.by=as.Date(fakedates))
   #plot(rowMeans(YY,na.rm=TRUE),type="l")
 
@@ -346,15 +301,17 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   eof <- EOF.field(Y,it=it,is=is,n=n,
                    area.mean.expl=area.mean.expl,verbose=verbose)
 
-#  print("Computed the eofs...")
+  if (verbose) print("Computed the eofs:")
   # After the EOF, the results must be reorganised to reflect the different
   # data sets.
-  ## browser()
+  #browser()
   ceof <- eof
   ii <- is.element(id.t,ID.t[1])
   if (verbose) {print("Check:"); print(sum(ii)); print(ID.t); print(table(id.t))
                 print(realdates[ii]); print(dim(eof))}
-  ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii])) 
+
+  ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii]))
+  if (verbose) {print("Copy attributes"); print(names(attributes(eof)))}
   ceof <- attrcp(eof,ceof)
   dim(clim) <- attr(X,'dimensions')[1:2]
   attr(ceof,'mean') <- clim

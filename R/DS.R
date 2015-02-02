@@ -17,22 +17,23 @@
                                         # Needs to work also for daily, annual and seasonal data
                                         #
 
-sametimescale <- function(y,X,FUN='mean') {
+sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
                                         # Function to ensure that station y has the same time scales as X
+    if (verbose) print('sametimescale')
     tsx <- class(X)[length(class(X))-1]
     tsy <- class(y)[length(class(y))-1]
-                                        #print(c(tsx,tsy))
-    index(y) <- as.Date(index(y))
+    if (verbose) print(c(tsx,tsy))
     if (tsx==tsy) return(y)
 
+    if (verbose) print('Need to aggregate')
     if (tsx=="day") agrscly <- as.Date(index(y)) else
     if (tsx=="month") agrscly <- as.yearmon(index(y)) else
     if (tsx=="annual") agrscly <- year(y) else
     if (tsx=="year") agrscly <- year(y)
-                                        #str(agrscly)
+    if (verbose) str(agrscly)
     if (tsx !="season")
         y <- aggregate(y, agrscly, match.fun(FUN)) else 
-    y <- as.4seasons(y, FUN=match.fun(FUN),dateindex=TRUE)
+        y <- as.4seasons(y, FUN=match.fun(FUN),dateindex=TRUE)
     return(y)
 }
 
@@ -47,10 +48,12 @@ DS.default <- function(y,X,mon=NULL,
                        method="lm",swsm="step",m=5,
                        rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,...) {
-    ## 
+    ##
+    if (verbose) print('DS.default')
+    #print('err(y)'); print(err(y))
+    if (verbose) {print('index(y)'); print(index(y))}
     class(y)
     class(X)
-    if (verbose) print("DS.default")
     swapped <- FALSE
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
         yy <- X
@@ -60,43 +63,54 @@ DS.default <- function(y,X,mon=NULL,
     }
     stopifnot(!missing(y),!missing(X), is.matrix(X),
               inherits(X,"eof"),inherits(y,"station"))
-    
     y0 <- y
     X0 <- X 
     W <- attr(X,'eigenvalues')
     cls <- class(X)
                                         #print("index(y):");print(index(y)[1:24])
     
-    if ( (is.character(index(y))) & (nchar(index(y)[1])==4) )
-        index(y) <- as.numeric(index(y))
-    if ( (is.character(index(X))) & (nchar(index(X)[1])==4) )
-        index(X) <- as.numeric(index(y))
-    if ( (is.character(index(y))) & (nchar(index(y)[1])==10) )
-        index(y) <- as.Date(index(y))
-    if ( (is.character(index(X))) & (nchar(index(X)[1])==10) )
-        index(X) <- as.Date(index(y))
-    if (class(index(y))=="numeric")
-        index(y) <- as.Date(paste(index(y),'-01-01',sep=''))
-    if (class(index(X))=="numeric")
-        index(X) <- as.Date(paste(index(X),'-01-01',sep=''))
-    
-    y <- matchdate(y,X) ## sametimescale(y,X)
-                                        #print("index(y):");print(index(y)[1:24])
+#    if ( (is.character(index(y))) & (nchar(index(y)[1])==4) )
+#        index(y) <- as.numeric(index(y))
+#    if ( (is.character(index(X))) & (nchar(index(X)[1])==4) )
+#        index(X) <- as.numeric(index(y))
+#    if ( (is.character(index(y))) & (nchar(index(y)[1])==10) )
+#        index(y) <- as.Date(index(y))
+#    if ( (is.character(index(X))) & (nchar(index(X)[1])==10) )
+#        index(X) <- as.Date(index(y))
+#    if (class(index(y))=="numeric")
+#        index(y) <- as.Date(paste(index(y),'-01-01',sep=''))
+#    if (class(index(X))=="numeric")
+#        index(X) <- as.Date(paste(index(X),'-01-01',sep=''))
+
+    if (verbose) print('Ensure matching time scale')
+    if (verbose) {print('index(y) before sametimescale:'); print(index(y))}
+    y <- sametimescale(y,X,verbose=verbose) # REB is needed to ensure that maye y annual if X is annual
+    #if (verbose) {print('index(y) after sametimescale:'); print(index(y))}
+    #if (verbose) print('Match dates')
+    y <- matchdate(y,X,verbose=verbose) ##
+    #if (verbose) {print('index(y) after matchdate'); print(index(y))}
+    X <- matchdate(X,y,verbose=verbose) # REB 2015-01-14
+    if (verbose) {print("index(y) & index(X) after synch:");print(index(y)); print(index(X))}
     
     if (!is.null(mon)) y <- subset(y,it=mon)
     
                                         # synchronise the series: use the 'zoo' merge function through combine:
                                         #print(index(y)[1:24]); print(index(X)[1:24]);
 
-    ## 
-    yX <- combine.station.eof(y,X)
-    y <- yX$y; X <- yX$X
-    year <- as.numeric( format(index(y), '%Y') ) 
-    month <- as.numeric( format(index(y), '%m') )
+    ##
+    
+    #yX <- combine.station.eof(y,X)
+    #y <- yX$y; X <- yX$X
+    X0 <- X; y0 <- y
+    #year <- as.numeric( format(index(y), '%Y') ) 
+    #month <- as.numeric( format(index(y), '%m') )
+    year <- year(y)
+    month <- month(y)
                                         #print(length(y)); print(table(year)); print(table(month))
     
                                         # De-trend the data used for model calibration:
     if (rmtrend) {
+        if (verbose) print('detrend')
         offset <- mean(y,na.rm=TRUE)
         y <- trend(y,result="residual")
         offset <- offset - mean(y,na.rm=TRUE)
@@ -111,21 +125,24 @@ DS.default <- function(y,X,mon=NULL,
     weights <- rep(1,length(y))
     weights[!is.finite(weights)] <- 0
     if (is.null(attr(y,'standard.error'))) weighted <- FALSE
-    
+    if (verbose) {print(paste('weights',weighted)); print(weights)}
+
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
                          weights=weights)
-    predat <- data.frame(X=as.matrix(coredata(yX$X)))
+    predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:length(colnames(predat)),sep=".")
 
+    if (is.null(names(X))) names(X) <- 1:dim(X)[2]
     Xnames <- paste("X.",1:length(names(X)),sep="")
     colnames(caldat) <- c("y",Xnames,'weights')
     Xnames <- Xnames[eofs]
+    #browser()
                                         # REB 2014-10-03:
     if (weighted)
         calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                         ", weights=weights, data=caldat, ...)",sep="") else
-    calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
-                    ", data=caldat, ...)",sep="")
+        calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
+                        ", data=caldat, ...)",sep="")
     MODEL <- eval(parse(text=calstr))
     FSUM <- summary(MODEL)
     if (verbose) print(FSUM)
@@ -155,10 +172,16 @@ DS.default <- function(y,X,mon=NULL,
     dc <- dim(COEFS)
 
     U <- attr(X,'pattern'); du <- dim(U)
+    # REB 2015-01-19: Also allow for patterns consisting of vectors - weights of mixed predictors
+    # See DS.list.
+    if (verbose) {print('pattern dimension'); print(du); str(U)}
     if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3])
-    pattern <- t(COEFS[2:dc[1],1]) %*%
-        diag(attr(X,'eigenvalues')[eofs]) %*% t(U[,eofs])
-    dim(pattern) <- c(du[1],du[2])
+    if (!is.null(du)) {
+      pattern <- t(COEFS[2:dc[1],1]) %*%
+          diag(attr(X,'eigenvalues')[eofs]) %*% t(U[,eofs])
+      dim(pattern) <- c(du[1],du[2])
+    } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[eofs]
+                                                 
     
                                         #  ds <- zoo(predict(model),order.by=index(X)) + offset
                                         #  ds <- zoo(predict(model,newdata=caldat),order.by=index(X)) + offset
@@ -183,7 +206,7 @@ DS.default <- function(y,X,mon=NULL,
     attr(ds,'fitted_values') <- zoo(model$fitted.values +
                                     offset,order.by=index(X))
     class(attr(ds,'fitted_values')) <- class(y0)
-    attr(ds,'original_data') <- yX$y
+    attr(ds,'original_data') <- y0
     r2 <- var(coredata(model$fitted.values))/var(y,na.rm=TRUE)
     attr(r2,'description') <- ' var(fitted.values))/var(y)'
     attr(ds,'quality') <- r2
@@ -236,6 +259,8 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     ## 
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
     if (verbose) print("DS.station")
+    #print('err(y)'); print(err(y))
+    #print('index(y)'); print(index(y))
     
     if ( (!inherits(X,'eof')) & (inherits(X,'field')) ) {
                                         #print("HERE")
@@ -351,6 +376,8 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
                     verbose=FALSE,weighted=TRUE,...) {
 
     if (verbose) print("DS.comb")
+    #print('index(y)'); print(index(y))
+    #print('err(y)'); print(err(y))
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
         yy <- X
         X <- y
@@ -376,8 +403,7 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
         X <- biasfix(X)
     }
     
-    ds <- DS.eof(X,y,mon=mon,
-                 method=method,swsm=swsm,m=m,
+    ds <- DS.eof(X,y,mon=mon,method=method,swsm=swsm,m=m,
                  rmtrend=rmtrend,eofs=eofs,
                  area.mean.expl=area.mean.expl,verbose=verbose,...)
 
@@ -387,6 +413,8 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
     model <- attr(ds,'model')
     n.app <- attr(X,'n.apps')
     attr(ds,'n.apps') <- n.app
+    if (verbose) {print(paste('For combined fields, n.apps=',n.app));
+                  print(names(attributes(X))[grep('app',names(attributes(X)))]) }
     for (i in 1:n.app) {
                                         #print("HERE")
         Z <- eval(parse(text=paste("attr(X0,'appendix.",i,"')",sep="")))
@@ -634,22 +662,23 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,eofs=1:10,
                    rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
     
+    if (verbose) print('DS.pca')
     if (is.list(X)) {
-        z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
-                     method=method,swsm=swsm,m=m,
-                     rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
-                     verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
-        return(z)
+      if (verbose) print('Predictors represented by a list object')
+      z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
+                   method=method,swsm=swsm,m=m,
+                   rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
+                   verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+      return(z)
     }
 
-    print('DS.pca')
     cls <- class(y)
     y0 <- y; X0 <- X
                                         #nattr <- softattr(y)
 
                                         # synchronise the two zoo objects through 'merge' (zoo)
-    y <- matchdate(y,it=X) # REB: 2014-12-16
-    X <- matchdate(X,it=y) # REB: 2014-12-16
+    y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
+    X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
     dy <- dim(y)
     dx <- dim(X)
 
@@ -779,11 +808,11 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
-                                        # This method combines different EOFs into one predictor by making a new
-                                        # data matrix consisting of the PCs, then weight (w) these according to their
-                                        # eigenvalues (normalised so that each predictor/EOF type carry similar
-                                        # weight). Then a SVD is applied to this new set of combined PCs to make
-                                        # an object that looks like on EOF.
+              # This method combines different EOFs into one predictor by making a new
+              # data matrix consisting of the PCs, then weight (w) these according to their
+              # eigenvalues (normalised so that each predictor/EOF type carry similar
+              # weight). Then a SVD is applied to this new set of combined PCs to make
+              # an object that looks like on EOF.
     print('DS.list')
     preds <- names(X)
     print(preds)
@@ -792,12 +821,18 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
                                         # Test: if there is only one predictor, use the method for one predictor
     if (np==1) {
         if (verbose) print('Single predictor')
-        ds <- DS(y,X[[1]],biascorrect=biascorrect,mon=mon,
-                 method=method,swsm=swsm,
-                 rmtrend=rmtrend,eofs=eofs,
-                 area.mean.expl=area.mean.expl,verbose=verbose,
-                 weighted=TRUE,pca=FALSE,npca=20,...)
+        predictands <- names(y)
+        ds <- list(description='ESD')
+        for ( i in 1:length(predictands)) {
+          ds1 <- DS(y[[i]],X,biascorrect=biascorrect,mon=mon,
+                    method=method,swsm=swsm,
+                    rmtrend=rmtrend,eofs=eofs,
+                    area.mean.expl=area.mean.expl,verbose=verbose,
+                    weighted=TRUE,pca=FALSE,npca=20,...)
+          eval(parse(text=paste('ds$',predictands[i],' <- ds1',sep='')))
+        }
         return(ds)
+        
     } else if (verbose) print('Several predictors')
 
                                         # Combine the different predictors into one matrix: also for comb...
@@ -856,17 +891,20 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
     dim(pattern) <- c(1,dim(pattern))
     if (verbose) str(pattern)
     attr(eof,'eigenvalues') <- udv$d[1:20]
-    attr(eof,'pattern') <- pattern
+    attr(eof,'pattern') <- rep(1,20)
+    names(eof) <- paste("X.",1:20,sep="")
+    
     class(eof) <- class(X[[1]])
     if (inherits(X[[1]],'comb'))
         attr(eof,'appendix.1') <- z
 
+    #browser()
     if (verbose) print('DS(y,eof,...)')
-    ds <- DS(y,eof,biascorrect=biascorrect,mon=mon,
+    ds <- DS(y,eof,biascorrect=biascorrect,
              method=method,swsm=swsm,m=m,
              rmtrend=rmtrend,eofs=eofs,
              area.mean.expl=area.mean.expl,verbose=verbose,
-             weighted=TRUE,pca=FALSE,npca=20,...)
+             weighted=TRUE,pca=FALSE,...)
 
                                         # Now, we need to reconstruct the spatial maps/patterns. There will be
                                         # one pattern for each EOF

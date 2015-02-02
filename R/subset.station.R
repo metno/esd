@@ -60,15 +60,17 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     d <- dim(x)
     if (is.null(is)) is <- 1:d[2]
     if (is.null(it)) it <- 1:d[1]
-
+    
     ## 
     ##print("HERE")
     ## get time in t
     t <- index(x)
-                                        #if (class(it)!=class(t)) print("Index and it class do not match !")
+    ii <- is.finite(t)
+    if (verbose) print(it)                            
 
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
+       if (verbose) print('years ++')
         ## REB: replaced by lines below:
         ##    year <- as.numeric( format(t, '%Y') ) 
         ##    month <- as.numeric( format(t, '%m') )
@@ -76,11 +78,14 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         mo <- month(x)
         dy <- day(x)
     } else if (inherits(t,c("numeric","integer"))) {
+        if (verbose) print('years')
         yr <- t
         mo <- dy <- rep(1,length(t))
     } else print("Index of x should be a Date, yearmon, or numeric object")
+    
     ## Generate sequence of days, months or years if range of it value is given
     if (is.character(it)) {
+        if (verbose) print('it is character')
         if ((levels(factor(nchar(it)))==10)) ##  convert as Date
             it <- as.Date(it)
         if ( length(it) == 2 ) {
@@ -108,9 +113,11 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
                                         #y <- x[ii,is] # REB Not here
             }
-            else if (inherits(it,"Date"))
+            else if (inherits(it,"Date")) {
+                print('it is a Date object')
                 ii <- is.element(t,it)
-            else {
+            } else {
+                str(it); print(class(it))
                 ii <- rep(FALSE,length(t))
                 warning("subset.station: did not recognise the selection citerion for 'it'")
             }
@@ -125,31 +132,43 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## get the subset indices in ii
     } else if ((class(it)=="numeric") | (class(it)=="integer")) {
         if (verbose) print('it is numeric or integer')
-        nlev <- as.numeric(levels(factor(nchar(it))))
-        if ((length(nlev)==1)) {
+# REB bug        nlev <- as.numeric(levels(factor(nchar(it))))
+# nchar returns the string length, but these lines need to find the number of different levels/categories
+        nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
+        if (verbose) {print(nlev); print(it)}
+         if ((length(nlev)==1)) {
             if (nlev==4) {
                 if (verbose) print("it are most probably years")
                 if (length(it)==2)
                     ii <- is.element(yr,it[1]:it[2])
-                else if ((length(it)==1) | (length(it)>2))
+                # if it is years:
+                else if (min(it)> length(it)) {
+                    if (verbose) print("match years")
                     ii <- is.element(yr,it)
+                  } 
             } else if (nlev<=4) {
-                if (inherits(x,'season')) {
-                    if (verbose)  print("The 'it' value must be a season index between 1 and 4. If not please use character strings instead. e.g. it='djf'")
-                    it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10)
+                if (verbose) print("it are most probably seasons")
+                if (inherits(x,'season') & (length(it)==1)) {
+                    if (verbose)  print(paste("The 'it' value must be a season index between 1 and 4.",
+                                              "If not please use character strings instead. e.g. it='djf'"))
+                    it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
                     ii <- is.element(mo,it)
                  } else if (inherits(x,'month') | (inherits(x,'day'))) {
                      if (verbose)
                          print("The 'it' value must be a month index. If not please use character strings instead")
                      ii <- is.element(mo,it)
-                 } 
+                 }  else {
+                    if (verbose) print("it represents indices")
+                    ii <- it
+                }
             } else if (nlev<=12) {
                 if (verbose)
                          print("The 'it' value are most probably a month index. If not please use character strings instead")
                 ii <- is.element(mo,it)
             }        
         } else {
-            if (verbose)  print("it are most probably indices")
+            #  length(nlev) > 1
+            if (verbose)  print("it most probably holds indices")
             ii <- it
         }
     } else if (inherits(it,c("Date","yearmon"))) {       
@@ -159,16 +178,16 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     } else {
         ii <- rep(FALSE,length(t))
         warning("subset.station: did not reckognise the selection citerion for 'it'")
-    }
+    } 
     
     ## it <- (1:length(t))[ii]
     ## 
-    
+
     class(x) -> cls
     ##print(cls)
     ## update the class of x
     class(x) <- "zoo" 
-    
+   
                                         # REB 11.04.2014: is can be a list to select region or according to other criterion
     if (inherits(is,'list')) {
         n <- dim(x)[2]
@@ -217,7 +236,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ## Need to make sure both it and is are same type: here integers for index rather than logical
         ## otherwise the subindexing results in an empty object
     }
-    
+
     y <- x[ii,is]
     #if (is.logical(is))
     #    is <- (1:length(is))[is]
@@ -263,8 +282,9 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         attr(y,'URL') <- attr(x,'URL')[is]
     if (!is.null(attr(y,'na')))
         attr(y,'na') <- attr(x,'na')[is]
-    if (!is.null(attr(y,'standard.error')))
-        attr(y,'standard.error') <- attr(x,'standard.error')[is]
+    
+    if (!is.null(err(y)))
+        attr(y,'standard.error') <- err(x)[ii,is]
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)   

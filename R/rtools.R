@@ -53,3 +53,14 @@ trend.pval <- function(x) {
     names(y) <- c("trend.pvalue")
     return(y)
 }
+
+# Wrap-around for lag.zoo to work on station and field objects:
+lag.station <- function(x,...) {
+  y <- lag(zoo(x),...)
+  y <- attrcp(x,y)
+  class(y) <- class(x)
+  invisible(y)
+}
+
+lag.field <- function(x,...) lag.station(x,...)
+  

@@ -9,6 +9,7 @@ annual <- function(x, ...) UseMethod("annual")
   
 annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, ...) {
   #print("annual.zoo")
+  if (inherits(x,'annual')) return(x)
   attr(x,'names') <- NULL
 #  yr <- year(x)  REB: 08.09.2014
   class(x) <- 'zoo'
@@ -58,6 +59,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
                            regular=NULL,frequency=NULL) {
 
   #print('annual.default')
+  if (inherits(x,'annual')) return(x)
   nv <- function(x) sum(is.finite(x))
 
   #browser()
@@ -101,8 +103,11 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   #print(c(sum(ok),length(ok),nmin)); print(YR[is.element(YR,yr[ok])])
 
   # Make a new zoo-object without incomplete years
-  if (length(d)==2) X <- zoo(coredata(x[ok,]),order.by=index(x)[ok]) else
-                    X <- zoo(coredata(x[ok]),order.by=index(x)[ok])
+#  if (length(d)==2) X <- zoo(coredata(x[ok,]),order.by=index(x)[ok]) else
+#                    X <- zoo(coredata(x[ok]),order.by=index(x)[ok])
+  # REB 2015-01-16: the two commented-out lines produced errors in some cases; lines below are more robust.
+  X <- zoo(coredata(x),order.by=index(x))
+  if (sum(ok)>0) coredata(X)[!ok] <- NA 
   #print(summary(X))
   if (FUN == 'sum') na.rm <- FALSE ## AM
   #y <- aggregate(X,yr[ok],FUN=FUN,...,na.rm=na.rm) ## AM
@@ -140,20 +145,30 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     #print("Wet-day mean")
     attr(y,'variable') <- rep('mu',d[2])
     attr(y,'unit') <- rep('mm/day',d[2])
-    n <- count(X,threshold=threshold)
+#    n <- count(X,threshold=threshold) # REB
+    n <- aggregate(X,year,FUN='count',threshold=threshold, ...,
+                   regular = regular, frequency = frequency)
+    bad <- coredata(n)==0
+    coredata(n)[bad] <- 1
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
+    std.err[bad] <- NA
     attributes(std.err) <- NULL
+    dim(std.err) <- dim(y)
     attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
   } else if (FUN=="mean") {
     #print("mean")
-    #browser()
     sigma <- aggregate(X, year, FUN='sd', ...,
                        regular = regular, frequency = frequency)
 #    n <- count(x,threshold=threshold)
     n <- aggregate(X,year,FUN='count',threshold=threshold, ...,
                    regular = regular, frequency = frequency)
+    #browser()
+    bad <- coredata(n)==0
+    coredata(n)[bad] <- 1
     std.err <- 2*coredata(sigma)/sqrt(coredata(n)-1)
+    std.err[bad] <- NA
     attributes(std.err) <- NULL
+    dim(std.err) <- dim(sigma)
     attr(y,'standard.error') <- zoo(std.err,order.by=index(sigma))
   } else if (FUN=="HDD") {
     attr(y,'variable') <- rep('HDD',d[2])
@@ -351,16 +366,26 @@ day <- function(x) {
 
 season <- function(x, ...) UseMethod("season")
 
-season.default <- function(x) {
+season.default <- function(x,format="character") {
   nt <- length(index(x))
   season <- rep('',nt)
   m <- month(x)
-  if (inherits(x,'season')) {
+  if ( (inherits(x,'zoo')) & (format=="character") ) {
     for (i in 1:nt)  season[i] <- switch(m[i],
-                                        '1'='djf','2'='mam','3'='jja','4'='son')
-  } else if (inherits(x,c('day','month'))) {
-     season <- paste(substr(month.abb[as.numeric(rownames(table(month(x))))],1,1),sep='')
+                                        '1'='djf','2'='djf','12'='djf',
+                                         '3'='mam','4'='mam','5'='mam',
+                                         '6'='jja','7'='jja','8'='jja',
+                                         '9'='son','10'='son','11'='son')
+  } else if ( (inherits(x,'zoo')) & (format=="numeric") ){
+    for (i in 1:nt)  season[i] <- switch(m[i],'1'=1,'2'=1,'12'=1,
+                                         '3'=2,'4'=2,'5'=2,
+                                         '6'=3,'7'=3,'8'=3,
+                                         '9'=4,'10'=4,'11'=4)
+    season <- as.numeric(season)
+  } else {
+    season <- paste(substr(month.abb[as.numeric(rownames(table(month(x))))],1,1),sep='')
   }
+#  browser()
   season
 }
 

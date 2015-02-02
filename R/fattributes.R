@@ -40,3 +40,4 @@ pattern <- function(x) return(attr(x,"pattern"))
 
 ele <- element <- function(x) return(attr(x,"element"))
 
+err <- function(x) return(attr(x,"standard.error"))

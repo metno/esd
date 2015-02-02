@@ -653,26 +653,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (inherits(y,'season')) {
     T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
-
-    # Recursive: do each season seperately if there are more than one season
-    if (length(table(season(y)))>1) {
-      if (verbose) print('--- Apply DS to seasons seperately ---')
-      Z <- list(info='DSensembe.pca for different seasons')
-      for (season in names(table(season(y)))) {
-        if (verbose) print(paste('Select',season))
-        z <- DSensemble.pca(subset(y,it=season),plot=plot,path=path,
-                            rcp=rcp,biascorrect=biascorrect,predictor=T2M,
-                            non.stationarity.check=non.stationarity.check,
-                            eofs=eofs,lon=lon,lat=lat,
-                            select=select,FUN=FUN,rmtrend=rmtrend,
-                            FUNX=FUNX,threshold=threshold,
-                            pattern=pattern,verbose=verbose,nmin=nmin)
-        eval(parse(text=paste('Z$',season,' <- z',sep='')))
-      }
-      if (verbose) print('--- Results returned as a list ---')
-      return(Z)
-    }
-
   } else if (inherits(y,'annual')) {
     T2M <- annual(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
@@ -692,7 +672,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   m <- length(years)
   months <- rep(month(y)[1],m)
   X <- matrix(rep(NA,N*m*d.y[2]),N,m*d.y[2])
-  dim(X) <- c(d.y[2],N,m)
+  dim(X) <- c(N,m,d.y[2])
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*8),N,8)
   colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
@@ -711,7 +691,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2))
     #gcmnm[i] <- attr(gcm,'model_id')
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
+    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     if (inherits(y,'season')) {
       GCM <- as.4seasons(gcm,FUN=FUNX)
       GCM <- subset(gcm,it=season(T2M)[1])
@@ -735,7 +715,9 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
-    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
+    ds <- try(DS(y,Z,biascorrect=biascorrect,
+              method=method,swsm=swsm,m=m,eofs=eofs,
+              rmtrend=rmtrend,verbose=verbose))
     if (verbose) print("post-processing")
     z <- attr(ds,'appendix.1')
 
@@ -755,41 +737,41 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     
     if (verbose) print(paste('i=',i,gcmnm[i],'data points',
                              sum(i1),'=',sum(i2)))
-    X[,i,i1] <- z[i2,]
+    X[i,i1,] <- z[i2,]
 
     # Diagnose the residual: ACF, pdf, trend. These will together with the
     # cross-validation and the common EOF diagnostics provide a set of
     # quality indicators.
-    cal <- coredata(attr(ds,"original_data"))
-    fit <- coredata(attr(ds,"fitted_values"))
-    if (verbose) print('examine residuals...')
-    res <- as.residual(ds)
-    res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
-    ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
+      cal <- coredata(attr(ds,"original_data"))
+      fit <- coredata(attr(ds,"fitted_values"))
+      if (verbose) print('examine residuals...')
+      res <- as.residual(ds)
+      res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
+      ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
 #      ar <- as.numeric(acf(trend(cal-fit,result="residual"),
 #                           plot=FALSE)[[1]][2]) 
-    ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1]),
-                         plot=FALSE)[[1]][2])
-    if (verbose) print(paste("Residual trend=",
-                             res.trend,'D/decade; K.S. p-val',
-                             ks,'; AR(1)=',ar))
+      ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1]),
+                           plot=FALSE)[[1]][2])
+      if (verbose) print(paste("Residual trend=",
+                               res.trend,'D/decade; K.S. p-val',
+                               ks,'; AR(1)=',ar))
 
     # Evaluation: here are lots of different aspects...
     # Get the diagnostics: this is based on the analysis of common EOFs...
 
-    xval <- attr(ds,'evaluation')
-    r.xval <- round(cor(xval[,1],xval[,2]),3)
-    if (verbose) print(paste("x-validation r=",r.xval))
-    ds.ratio <- round(sd(ds[,1],na.rm=TRUE)/sd(y[,1],na.rm=TRUE),4)
+      xval <- attr(ds,'evaluation')
+      r.xval <- round(cor(xval[,1],xval[,2]),3)
+      if (verbose) print(paste("x-validation r=",r.xval))
+      ds.ratio <- round(sd(ds[,1],na.rm=TRUE)/sd(y[,1],na.rm=TRUE),4)
       
-    if (verbose) print(paste("sd ratio=",ds.ratio))
+      if (verbose) print(paste("sd ratio=",ds.ratio))
 
     #print(names(attributes(ds)))
-    if (biascorrect) {
-      if (verbose) print('biascorrect')
-      diag <- attr(ds,'diagnose')
-      if ( (verbose) & !is.null(diag)) str(diag)
-    } else diag <- NULL
+      if (biascorrect) {
+        if (verbose) print('biascorrect')
+        diag <- attr(ds,'diagnose')
+        if ( (verbose) & !is.null(diag)) str(diag)
+      } else diag <- NULL
     
     # diagnose for ds-objects
       
@@ -829,55 +811,24 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                     round(quality)))
   }
 
-  if (verbose) print('Downscaling finished - need to convert PCAs to stations')
-
-  # Unpacking the information tangled up in GCMs, PCs and stations:
-  # Save GCM-wise
-  gcmnm <- gsub('-','.',gcmnm)
-  Y <- as.station(y)
-  Z <- list(info='DSensemble.pca')
-  if (verbose) print('Unscramble the results')
-  for (i in 1:N) {
-    pca1 <- zoo(t(X[,i,]),order.by=t)
-    pca1 <- attrcp(y,pca1)
-    class(pca1) <- class(y) 
-    z.pca <- as.station(pca1)
-    class(z.pca) <- c("dsensemble","zoo")
-    attr(z.pca,'GCM') <- gcmnm[i]
-    cl <- paste('Z$i',i,'_',gcmnm[i],' <- z.pca',sep='')
-    eval(parse(text=cl))
-    if (verbose) print(paste(i,cl))
-  }
-
-  # Save the information station-wise
-  if (verbose) print('Save the results station-wise')
-  x <- matrix(rep(NA,dim(X)[3]*dim(X)[2]),dim(X)[3],dim(X)[2])
-  for (i in 1:(length(names(Z[[2]])))) {
-    x[,] <- NA
-    for (j in 1:N){
-      x[,j] <- Z[[j+1]][,i]
-    }
-    yloc <- loc(Z[[j+1]])[i]
-    yloc <- gsub('-','.',yloc)
-    yloc <- gsub(' ','.',yloc)
-    yloc <- gsub('/','.',yloc)
-    attr(z.pca,'station') <- subset(Y,is=i)
-    eval(parse(text=paste('Z$',yloc,' <- z.pca',sep='')))
-  }
-
-  #Z <- attrcp(y,Z)
-  attr(Z,'predictor') <- attr(T2M,'source')
-  attr(Z,'domain') <- list(lon=lon,lat=lat)
-  attr(Z,'scorestats') <- scorestats
-  attr(Z,'path') <- path
-  attr(Z,'scenario') <- rcp
-  attr(Z,'history') <- history.stamp(y)
+    X <- zoo(t(X),order.by=t)
+  colnames(X) <- gcmnm
+  attr(X,"model_id") <- gcmnm
+  #X <- attrcp(y,X)
+  attr(X,'station') <- y
+  attr(X,'predictor') <- attr(T2M,'source')
+  attr(X,'domain') <- list(lon=lon,lat=lat)
+  attr(X,'scorestats') <- scorestats
+  attr(X,'path') <- path
+  attr(X,'scenario') <- rcp
+  attr(X,'history') <- history.stamp(y)
   if (non.stationarity.check)
-    attr(Z,'on.stationarity.check') <- difference.z else
-    attr(Z,'on.stationarity.check') <- NULL
-  attr(Z,'area.mean.expl') <- FALSE
-
-  save(file="DSensemble.rda",Z)
+    attr(X,'on.stationarity.check') <- difference.z else
+    attr(X,'on.stationarity.check') <- NULL
+  if (area.mean.expl) attr(X,'area.mean.expl') <- TRUE else
+                      attr(X,'area.mean.expl') <- FALSE
+  class(X) <- c("dsensemble","zoo")
+  save(file="DSensemble.rda",X)
   print("---")
-  invisible(Z)
+  invisible(X)
 }

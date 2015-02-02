@@ -29,7 +29,7 @@ annual.field(x,FUN="mean",na.rm=TRUE, nmin=NULL, ...)
 year(x, ...)
 month(x, ...)
 day(x, ...)
-season(x,format="numeric", ...)
+season(x,format="character")
 season.name()
 pentad(x,l=5,...)
 }

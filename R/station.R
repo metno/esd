@@ -107,15 +107,15 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
                             path.metnod=NULL,url.metnod=NULL) {
     ## 
     ## check wether x is a 'location' or a 'stationmeta' object
-    if (inherits(loc,"stationmeta"))
+   
+    if (inherits(loc,"stationmeta")) {
         ss <- loc
-    else if (is.character(loc)) {
+    } else if (is.character(loc)) {
         loc <- loc
         ss <- NULL
     } else ss <- NULL
     ## else stop("x must be either a stationmeta or location object")
 
-    print("Retrieving data ...")
     ## Initialize X
     X <- NULL
     SRC <- src
@@ -135,7 +135,9 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
         param0 <- param
         ssn <- select.station(param="tmin",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,src=src,it=it,nmin=nmin)
         ssx <- select.station(param="tmax",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,src=src,it=it,nmin=nmin)
-        class(ssn) <- class(ssx) <- "data.frame"
+        if (!is.null(ssn) & !is.null(ssx))
+             class(ssn) <- class(ssx) <- "data.frame" else
+             {print('Found no stations with given criteria'); return(NULL)}
         ss <- subset(ssx,ssx$station_id==ssn$station_id) # keep only stations recording both min and max
         if (is.null(ss))
             return(NULL)
@@ -166,6 +168,9 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
     end <- ss$end
     param <- apply(as.matrix(ss$element),1,esd2ele)
     rm(ss)
+
+    print(paste("Retrieving data from",length(id),"records ..."))
+
     
     ## start loap on available stations
     for (i in 1:length(id)) {

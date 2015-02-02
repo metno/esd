@@ -40,7 +40,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   # Extract only the region of interest: only read the needed data
  
   if (!is.null(is)) {
-      browser()
+      #browser()
       if (inherits(is,c('field','station'))) {
       y <- is
       if (verbose) print(paste('Use spatial coverage from an object:',floor(min(c(lon(y)))),'-',
@@ -179,7 +179,7 @@ retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     county <- d[2] - starty + 1
     warning("retrieve.rcm: number of points along the latitude exceeds data dimensions")
   }
-  browser()
+  #browser()
   if (startt + countt - 1> d[3]) {
     countt <- d[3] - startt + 1
     warning("retrieve.rcm: number of points in time exceeds data dimensions")

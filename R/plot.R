@@ -35,7 +35,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 #      }
 #  }
 
-  errorbar <- errorbar & !is.null(attr(x,'standard.error'))
+  errorbar <- errorbar & !is.null(err(x))
   
   #print(ylab)
   class(x) <- "zoo"
@@ -46,8 +46,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if (plot.type=="single") {
     if (errorbar) {
       # REB 2014-10-03: add an errorbar to the plots.
-      std.err <- attr(x,'standard.error')
-      segments(index(x),x-std.err,index(x),x+std.err,
+      segments(index(x),x-err(x),index(x),x+err(x),
                lwd=3,col=rgb(0.5,0.5,0.5,0.25))
 #      d.err <- dim(std.err)
 #      dt <- 0.3*diff(index(x))[1]
@@ -521,7 +520,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
 
 plot.pca <- function(y,cex=1.5,new=TRUE) {
 
-  col <- colscal(); nc <- length(col)
+  col <- colscal(col=varid(y)); nc <- length(col)
   if (is.precip(y)) col <- rev(col)
   lon <- attr(y,'longitude') 
   lat <- attr(y,'latitude') 
@@ -554,27 +553,35 @@ plot.pca <- function(y,cex=1.5,new=TRUE) {
   plot(lon,lat,
        main="Climatology",
        col=col[a.T[1,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
   data(geoborders,envir=environment())
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[1,]],pch=19)
 
   plot(lon,lat,
        main=paste("EOF #1:",R2[1],"% of variance"),
        col=col[a.T[2,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
   lines(geoborders)
   lines(geoborders$x - 360,geoborders$y)
+  points(lon,lat,cex=cex,col=col[a.T[2,]],pch=19)
 
   plot(lon,lat,
        main=paste("EOF #2:",R2[2],"% of variance"),
        col=col[a.T[3,]],pch=19,xlab="",ylab="",cex=cex)
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
+  points(lon,lat,cex=cex)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[3,]],pch=19)
 
   plot(lon,lat,
        main=paste("EOF #3:",R2[3],"% of variance"),
        col=col[a.T[4,]],pch=19,xlab="",ylab="",cex=cex)
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
+  points(lon,lat,cex=cex)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[4,]],pch=19)
 
   par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.665,0.695),new=TRUE,cex.axis=0.6)
   image(cbind(1:nc,1:nc),col=col)
