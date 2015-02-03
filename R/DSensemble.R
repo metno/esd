@@ -628,7 +628,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (verbose) print('DSensemble.mu')
 
   if (verbose) print(paste('The predictor: annual',FUN))
-  y <- annual(y,FUN=FUN,threshold=threshold,nmin=nmin)
+  if (!inherits(y,'annual')) y <- annual(y,FUN=FUN,threshold=threshold,nmin=nmin)
   index(y) <- year(y)
   
   if (!is.na(attr(y,'longitude')))
@@ -674,7 +674,9 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
-  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  ncfiles1 <- list.files(path=path,pattern=pattern1,full.name=TRUE)
+  ncfiles2 <- list.files(path=path,pattern=pattern2,full.name=TRUE)
+  ncfiles3 <- list.files(path=path,pattern=pattern3,full.name=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else
@@ -691,60 +693,96 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration')
 
   flog <- file("DSensemble.precip-log.txt","at")
+  dse <- list(description='DSensemble.mu')
+  
   for (i in 1:N) {
-    #browser()
-    gcm <- retrieve(ncfile = ncfiles[select[i]],
-                    lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2))
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+    ## Need to ensure that the different predictor files match...
+    print(paste(i,N,ncfiles1[select[i]],ncfiles2[select[i]],ncfiles3[select[i]]))
+    gcm1 <- retrieve(ncfile = ncfiles1[select[i]],
+                    lon=range(lon(PRE1))+c(-2,2),lat=range(lat(PRE1))+c(-2,2))
+    gcm2 <- retrieve(ncfile = ncfiles2[select[i]],
+                    lon=range(lon(PRE2))+c(-2,2),lat=range(lat(PRE2))+c(-2,2))
+    gcm3 <- retrieve(ncfile = ncfiles3[select[i]],
+                    lon=range(lon(PRE3))+c(-2,2),lat=range(lat(PRE3))+c(-2,2))
+    gcmnm[i] <- paste(attr(gcm1,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
-    if (verbose) print(varid(gcm))
+    if (verbose) print(varid(gcm1))
     
-    if (FUNX!='C.C.eq')
-      GCMX <- annual(gcm,FUN=FUNX) else
-      GCMX <- annual(C.C.eq(gcm),FUN='mean')
-#    GCM <- zoo(100*coredata(GCMX)/colMeans(coredata(subset(GCMX,it=1961:1990))),order.by=year(GCMX))
-    if (is.precip(GCMX)) {
-          GCM <- zoo(100*coredata(GCMX)/mean(c(coredata(subset(GCMX,it=1961:1990)))),
-                     order.by=year(GCMX))
-      GCM <- attrcp(GCMX,GCM)
-      attr(GCM, "unit" ) <- "%"
-      attr(GCM, "dimensions" ) <- attr(GCMX, "dimensions" )
-      class(GCM) <- class(GCMX)
-    } else
-          GCM <- GCMX
-    #browser()
-    #str(GCM)
-    model.id <- attr(gcm,'model_id')
+    GCM1 <- annual(C.C.eq(gcm1),FUN='mean')
+    GCM2 <- annual(gcm2,FUN='mean')
+    GCM3 <- annual(gcm3,FUN='mean')
+
+    model.id <- attr(gcm1,'model_id')
     rm("gcm","GCMX"); gc(reset=TRUE)
-    if (verbose) print("combine")
+    if (verbose) print("combine the three predictors")
     #browser()
-    PREGCM <- combine(PRE,GCM)
+    PREGCM1 <- combine(PRE1,GCM1)
+    PREGCM2 <- combine(PRE2,GCM2)
+    PREGCM3 <- combine(PRE3,GCM3)
     if (verbose) print("EOF")
-    Z <- EOF(PREGCM)
-    
-    # The test lines are included to assess for non-stationarity
-    if (non.stationarity.check) {
-      testGCM <- subset(GCM,it=range(year(PRE))) # REB 29.04.2014
-      testy <- as.station(regrid(testGCM,is=y))  # REB 29.04.2014
-      attr(testGCM,'source') <- 'testGCM'        # REB 29.04.2014
-      testZ <- EOF(combine(testGCM,GCM))         # REB 29.04.2014
-      rm("testGCM"); gc(reset=TRUE)
-    }
-    rm("GCM"); gc(reset=TRUE)
-     
-    # The test lines are included to assess for non-stationarity
-    if (non.stationarity.check) {
-      testds <- DS(testy,testZ,biascorrect=biascorrect,
-                   area.mean.expl=area.mean.expl,eofs=eofs)  # REB 29.04.2014
-      testz <- attr(testds,'appendix.1')                     # REB 29.04.2014
-      difference.z <- testy - testz                          # REB 29.04.2014
-    }
+    Z1 <- EOF(PREGCM1)
+    Z2 <- EOF(PREGCM2)
+    Z3 <- EOF(PREGCM3)
     
     if (verbose) print("diagnose")
-    diag <- diagnose(Z)
-    if (biascorrect) Z <- biasfix(Z)
+    diag1 <- diagnose(Z1)
+    diag2 <- diagnose(Z2)
+    diag3 <- diagnose(Z3)
+
+    if (biascorrect) 
+      X <- list(Z1=biasfix(Z1),
+                Z2=biasfix(Z2),
+                Z3=biasfix(Z3)) else
+      X < list(Z1=Z1,
+               Z2=Z2,
+               Z3=Z3)
+    x <- zoo(X[[1]])
+    np <- length(names(x))
+    for (i in 2:np) {
+        x <- merge(x,zoo(X[[i]]),all=TRUE)
+        w <- c(w,attr(X[[i]],'eigenvalues')/sum(attr(X[[i]],'eigenvalues')))
+        id <- c(id,rep(i,length(attr(X[[i]],'eigenvalues'))))
+      }
+    if (verbose) print(c(dim(x),length(w)))
+    t <- index(x)
+    ## apply the weights
+    x <- x %*% diag(w)
+    xm <- rowMeans(x)
+    x <- x[is.finite(xm),]; t <- t[is.finite(xm)]
+
+    ## Apply an SVD to the combined PCs to extract the common signal in the
+    ## different predictors - these are more likely to contain real physics
+    ## and be related to the predictand.
+    if (verbose) print('svd')
+    udv <- svd(coredata(x))
+    if (verbose) print(summary(udv))
+
+    ## If the predictor is a common EOF, then also combine the appended fields
+    ## the same way as the original flield.
+    if (inherits(X[[1]],'comb')) {
+        z <- z %*% diag(w)
+        udvz <- svd(coredata(z))
+    }
+
+    eof <- zoo(udv$u[,1:20],order.by=t)
+    ## Let the pattern contain the weights for the EOFs in the combined
+    ## PC matrix, rather than spatial patterns. The spatial patterns are
+    ## then reconstructed from these.
+    pattern <- matrix(rep(1,length(udv$v[,1:20])),dim(udv$v[,1:20]))
+
+    ## Do a little 'fake': here the pattern is not a geographical map but weight
+    ## for the EOFs.
+    dim(pattern) <- c(1,dim(pattern))
+    if (verbose) str(pattern)
+    attr(eof,'eigenvalues') <- udv$d[1:20]
+    attr(eof,'pattern') <- rep(1,20)
+    names(eof) <- paste("X.",1:20,sep="")
+    
+    class(eof) <- class(X[[1]])
+
+    ## Downscale the results:
     if (verbose) print("- - - > DS")
-    ds <- try(DS(y,Z,eofs=eofs,area.mean.expl=area.mean.expl,verbose=verbose))
+    ds <- try(DS(y,eof,eofs=eofs,verbose=verbose))
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds[[1]],con=flog)
@@ -754,7 +792,6 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       i1 <- is.element(years,year(z))
       i2 <- is.element(year(z),years)
     #browser()
-      X[i,i1] <- z[i2]
 
     # Diagnose the residual: ACF, pdf, trend. These will together with the
     # cross-validation and the common EOF diagnostics provide a set of
@@ -781,7 +818,8 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       mdiff <- diag$mean.diff[1]/diag$sd0[1]
       srati <- 1 - diag$sd.ratio[1]
       arati <- 1 - diag$autocorr.ratio[1]
-      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio)
+      attr(z,'scorestats') <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio)
+      dse[[i]] <- z
       
       quality <- 100*(1-mean(scorestats[i,]))
       qcol <- quality
@@ -802,26 +840,17 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
   }
 
   #browser()
-  X <- zoo(t(X),order.by=years)
-  colnames(X) <- gcmnm
-  attr(X,"model_id") <- gcmnm
+  names(dse) <- gcmnm
   #X <- attrcp(y,X)
-  attr(X,'station') <- y
-  attr(X,'predictor') <- attr(PRE,'source')
-  attr(X,'domain') <- list(lon=lon,lat=lat)
-  attr(X,'scorestats') <- scorestats
-  attr(X,'path') <- path
-  attr(X,'scenario') <- rcp
-  if (non.stationarity.check)
-    attr(X,'on.stationarity.check') <- difference.z else
-    attr(X,'on.stationarity.check') <- NULL
-  if (area.mean.expl) attr(X,'area.mean.expl') <- TRUE else
-                      attr(X,'area.mean.expl') <- FALSE
-  attr(X,'history') <- history.stamp(y)
+  attr(dse,'station') <- y
+  attr(dse,'predictor') <- c(attr(PRE1,'source'),attr(PRE2,'source'),attr(PRE3,'source'))
+  attr(dse,'domain') <- list(lon=lon,lat=lat)
+  attr(dse,'scenario') <- rcp
+  attr(dse,'history') <- history.stamp(y)
   class(X) <- c("dsensemble","zoo")
   save(file="DSensemble.rda",X)
   print("---")
-  invisible(X)
+  invisible(dse)
 }
 
 

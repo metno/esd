@@ -1,24 +1,25 @@
-# Empirical downscaling using EOFs of monthly values from eof.R
-# Predictand is a time series of monthly values from NACD or climate station.
-#
-# Reference: R.E. Benestad et al. (2002),
-#            Empirically downscaled temperature scenarios for Svalbard,
-#            doi.10.1006/asle.2002.005, September 18.
-#
-#            R.E. Benestad (2001),
-#            A comparison between two empirical downscaling strategies,
-#            Int. J. Climatology, 1645-1668, vol. 21, DOI 10.1002/joc.703
-#
-# R.E. Benestad, met.no, Oslo, Norway 11.04.2013
-# rasmus.benestad@met.no
-#------------------------------------------------------------------------
+### Empirical downscaling using EOFs of monthly values from eof.R
+## Predictand is a time series of monthly values from NACD or climate station.
+###
+### Reference: R.E. Benestad et al. (2002),
+###            Empirically downscaled temperature scenarios for Svalbard,
+###            doi.10.1006/asle.2002.005, September 18.
+###
+###            R.E. Benestad (2001),
+###            A comparison between two empirical downscaling strategies,
+###            Int. J. Climatology, 1645-1668, vol. 21, DOI 10.1002/joc.703
+###
+### R.E. Benestad, met.no, Oslo, Norway 11.04.2013
+### rasmus.benestad@met.no
+###------------------------------------------------------------------------
 
-# dat -> y; preds -> X
-# Needs to work also for daily, annual and seasonal data
-#
+## dat -> y; preds -> X
+## Needs to work also for daily, annual and seasonal data
+##
 
 sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
-                                        # Function to ensure that station y has the same time scales as X
+ ### Function to ensure that station y has the same time scales as X
+  
     if (verbose) print('sametimescale')
     tsx <- class(X)[length(class(X))-1]
     tsy <- class(y)[length(class(y))-1]
@@ -67,24 +68,11 @@ DS.default <- function(y,X,mon=NULL,
     X0 <- X 
     W <- attr(X,'eigenvalues')
     cls <- class(X)
-                                        #print("index(y):");print(index(y)[1:24])
-    
-#    if ( (is.character(index(y))) & (nchar(index(y)[1])==4) )
-#        index(y) <- as.numeric(index(y))
-#    if ( (is.character(index(X))) & (nchar(index(X)[1])==4) )
-#        index(X) <- as.numeric(index(y))
-#    if ( (is.character(index(y))) & (nchar(index(y)[1])==10) )
-#        index(y) <- as.Date(index(y))
-#    if ( (is.character(index(X))) & (nchar(index(X)[1])==10) )
-#        index(X) <- as.Date(index(y))
-#    if (class(index(y))=="numeric")
-#        index(y) <- as.Date(paste(index(y),'-01-01',sep=''))
-#    if (class(index(X))=="numeric")
-#        index(X) <- as.Date(paste(index(X),'-01-01',sep=''))
-
+ 
     if (verbose) print('Ensure matching time scale')
     if (verbose) {print('index(y) before sametimescale:'); print(index(y))}
-    y <- sametimescale(y,X,verbose=verbose) # REB is needed to ensure that maye y annual if X is annual
+    y <- sametimescale(y,X,verbose=verbose)
+    ## REB is needed to ensure that maye y annual if X is annual
     #if (verbose) {print('index(y) after sametimescale:'); print(index(y))}
     #if (verbose) print('Match dates')
     y <- matchdate(y,X,verbose=verbose) ##
@@ -94,7 +82,7 @@ DS.default <- function(y,X,mon=NULL,
     
     if (!is.null(mon)) y <- subset(y,it=mon)
     
-                                        # synchronise the series: use the 'zoo' merge function through combine:
+    ## synchronise the series: use the 'zoo' merge function through combine:
                                         #print(index(y)[1:24]); print(index(X)[1:24]);
 
     ##
@@ -108,7 +96,7 @@ DS.default <- function(y,X,mon=NULL,
     month <- month(y)
                                         #print(length(y)); print(table(year)); print(table(month))
     
-                                        # De-trend the data used for model calibration:
+    ## De-trend the data used for model calibration:
     if (rmtrend) {
         if (verbose) print('detrend')
         offset <- mean(y,na.rm=TRUE)
@@ -119,7 +107,7 @@ DS.default <- function(y,X,mon=NULL,
 
                                         #str(y); print(class(y))
 
-                                        # REB: 2014-10-03: add weights if available
+    ## REB: 2014-10-03: add weights if available
     if (!is.null(attr(y,'standard.error')))
         weights <- 1/coredata(attr(y,'standard.error')) else
     weights <- rep(1,length(y))
@@ -147,7 +135,7 @@ DS.default <- function(y,X,mon=NULL,
     FSUM <- summary(MODEL)
     if (verbose) print(FSUM)
 
-                                        # Stepwise regression
+    ## Stepwise regression
     if (!is.null(swsm)) {
         cline <- paste("model <- ",swsm,"(MODEL,trace=0)",sep="")
         eval(parse(text=cline))
@@ -172,8 +160,8 @@ DS.default <- function(y,X,mon=NULL,
     dc <- dim(COEFS)
 
     U <- attr(X,'pattern'); du <- dim(U)
-    # REB 2015-01-19: Also allow for patterns consisting of vectors - weights of mixed predictors
-    # See DS.list.
+### REB 2015-01-19: Also allow for patterns consisting of vectors - weights of mixed predictors
+### See DS.list.
     if (verbose) {print('pattern dimension'); print(du); str(U)}
     if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3])
     if (!is.null(du)) {
@@ -183,8 +171,8 @@ DS.default <- function(y,X,mon=NULL,
     } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[eofs]
                                                  
     
-                                        #  ds <- zoo(predict(model),order.by=index(X)) + offset
-                                        #  ds <- zoo(predict(model,newdata=caldat),order.by=index(X)) + offset
+                                        ##  ds <- zoo(predict(model),order.by=index(X)) + offset
+                                        ##  ds <- zoo(predict(model,newdata=caldat),order.by=index(X)) + offset
     ds <- zoo(predict(model,newdata=predat),order.by=index(X)) + offset
                                         #plot(y,lwd=4); lines(ds,col="red",lwd=2)
                                         #lines(zoo(model$fitted.values,order.by=index(ds)),col="blue",lwd=2)
@@ -221,7 +209,7 @@ DS.default <- function(y,X,mon=NULL,
     attr(ds,'dimensions') <- c(du[1],du[2])
     attr(ds,'longitude') <- attr(y0,'longitude')
     attr(ds,'latitude') <- attr(y0,'latitude')
-                                        #attr(ds,'source') <- paste(attr(y0,'source'),attr(X0,'source'),sep="-")
+    ##attr(ds,'source') <- paste(attr(y0,'source'),attr(X0,'source'),sep="-")
     attr(ds,'aspect') <- 'downscaled'
     attr(ds,'source') <- attr(X0,'source')
     attr(ds,'type') <- "downscaled results"
@@ -281,39 +269,37 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
         return(ds)
     } 
 
-                                        # REB inserted lines to accomodate for multiple stations
+    ## REB inserted lines to accomodate for multiple stations
     d <- dim(y)
     if (!is.null(d)) ns <- d[2] else ns <- 1
     if (!is.null(d)) {
         if (verbose) print(paste('predictand contains',ns,'stations'))
-                                        # More than one station
+        ## More than one station
         Y <- y
         if (pca) {
             if (verbose) print("PCA")
-                                        # PCA is used when y represents a group of variables and when
-                                        # their covariance is a concern: it preserves the covariance
-                                        # as seen in the past, as the PCs and eigenvectors are orthogonal.
-                                        # Useful for spatial response, wind vectors, temperature/precipitation
+            ## PCA is used when y represents a group of variables and when
+            ## their covariance is a concern: it preserves the covariance
+            ## as seen in the past, as the PCs and eigenvectors are orthogonal.
+            ## Useful for spatial response, wind vectors, temperature/precipitation
             Y <- PCA(y,npca)
         }
         ns <- dim(Y)[2]
     } else Y <- y
     
-                                        #print(class(Y)); print(class(X)); print(paste(ns,"stations"))
 
-                                        # Loop over the different PCs or stations
+    ## Loop over the different PCs or stations
     for (i in 1:ns) {
         if (verbose) print(paste("i=",i))
         z <- subset(Y,is=i)
-                                        #str(z)
-                                        #if (verbose) {print(class(z)); print(names(attributes(z)))}
+        if (verbose) {print(class(z)); print(names(attributes(z)))}
         if (inherits(X,'eof')) {
             if (verbose) print("The predictor is some kind of EOF-object")
-                                        # Call different functions, depending on the class of X:
+            ## Call different functions, depending on the class of X:
                                         #print("the predictor is an EOF-object")
             if (inherits(X,'comb')) {
                 if (verbose) print("*** Comb ***")
-                                        # X is combined EOFs
+                ## X is combined EOFs
                 ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,mon=mon,
                               method=method,swsm=swsm,
                               rmtrend=rmtrend,eofs=eofs,
@@ -321,7 +307,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                 if (verbose) print("---")
             } else if (inherits(X,'eof')) {
                 if (verbose) print("*** EOF ***")
-                                        # X is ordinary EOF
+                ## X is ordinary EOF
                 ds <- DS.default(y=z,X=X,mon=mon,
                                  method=method,swsm=swsm,
                                  rmtrend=rmtrend,eofs=eofs,
@@ -331,13 +317,13 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
             }
         } else if (inherits(X,'field')) {
             if (verbose) print("the predictor is a field-object")
-                                        # X is a field
+            ## X is a field
             ds <- DS.field(y=z,X=X,biascorrect=biascorrect,mon=mon,
                            method=method,swsm=swsm,
                            rmtrend=rmtrend,eofs=eofs,
                            area.mean.expl=area.mean.expl,verbose=verbose,...)
         }
-                                        # May need an option for coombined field: x is 'field' + 'comb'
+        ## May need an option for coombined field: x is 'field' + 'comb'
         if (verbose) print("Cross-validation")
         xval <- crossval(ds,m=m)
         attr(ds,'evaluation') <- zoo(xval)
@@ -354,9 +340,9 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         #print("---")
                                         #str(dsall)
 
-                                        # If PCA was used to transform the predictands to preserve the
-                                        # spatial covariance, then do the inverse to recover the results
-                                        # in a structure comparable to the original stations.
+    ## If PCA was used to transform the predictands to preserve the
+    ## spatial covariance, then do the inverse to recover the results
+    ## in a structure comparable to the original stations.
     if ( (ns>1) & pca ) {
         attr(dsall,'pattern') <- attr(Y,'pattern')
         attr(dsall,'eigenvalues') <- attr(Y,'eigenvalues')    
@@ -367,8 +353,8 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
 }
 
 
-                                        # DS for combined fields - to make predictions not based on the
-                                        # calibration data
+## DS for combined fields - to make predictions not based on the
+## calibration data
 
 DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
                     method="lm",swsm="step",m=5,
@@ -376,8 +362,8 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
                     verbose=FALSE,weighted=TRUE,...) {
 
     if (verbose) print("DS.comb")
-    #print('index(y)'); print(index(y))
-    #print('err(y)'); print(err(y))
+    ##print('index(y)'); print(index(y))
+    ##print('err(y)'); print(err(y))
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
         yy <- X
         X <- y
@@ -390,9 +376,9 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
     stopifnot(!missing(y),!missing(X),is.matrix(X),
               inherits(X,"comb"),inherits(y,"station"))
     
-                                        # For combined fields/common EOFs, do the DS-fitting once, and then
-                                        # use the model n times to predict the values associated with the
-                                        # appended fields:
+    ## For combined fields/common EOFs, do the DS-fitting once, and then
+    ## use the model n times to predict the values associated with the
+    ## appended fields:
 
     
     if (!inherits(X,"eof")) X <- EOF(X,mon=mon,area.mean.expl=area.mean.expl)
@@ -407,8 +393,8 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
                  rmtrend=rmtrend,eofs=eofs,
                  area.mean.expl=area.mean.expl,verbose=verbose,...)
 
-                                        # For combined fields, make sure to add the appended PCs to
-                                        # the results.
+    ## For combined fields, make sure to add the appended PCs to
+    ## the results.
                                         #print(names(attributes(X)))
     model <- attr(ds,'model')
     n.app <- attr(X,'n.apps')
@@ -434,16 +420,16 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
 }
 
 
-                                        # This function takes care of downscaling based on a field-object X.
-                                        # X can be a combined field. This function calls more primitive DS methods,
-                                        # depending on the time scale represented in X (monthly or seasonal).
+## This function takes care of downscaling based on a field-object X.
+## X can be a combined field. This function calls more primitive DS methods,
+## depending on the time scale represented in X (monthly or seasonal).
 
 DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
                      method="lm",swsm="step",m=5,
                      rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                      verbose=FALSE,weighted=TRUE,...) {
     if (verbose) print("DS.field")
-                                        # Keep track of which is an eof object and which is a station record:
+    ## Keep track of which is an eof object and which is a station record:
     swapped <- FALSE
     if ( inherits(y,c("field")) & inherits(X,c("station"))) {
         yy <- X
@@ -483,8 +469,8 @@ DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
 
 
 
-                                        # Downscales all 12-calendar months for a field by stepping through the months
-                                        # and compute the EOFs before applying the default DS method.
+## Downscales all 12-calendar months for a field by stepping through the months
+## and compute the EOFs before applying the default DS method.
 DS.t2m.month.field <- function(y,X,biascorrect=FALSE,mon=NULL,
                                method="lm",swsm="step",m=m,
                                rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
@@ -528,14 +514,9 @@ DS.t2m.season.field <- function(y,X,biascorrect=FALSE,
                                 method="lm",swsm="step",m=5,
                                 rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                                 verbose=FALSE,weighted=TRUE,station=TRUE) {
-                                        # Downscale seasonal mean and standard deviation
+  ## Downscale seasonal mean and standard deviation
     if (verbose) print("DS.t2m.season.field")
-                                        #ya <- as.anomaly(y)
-                                        #yc <- as.climatology(y) 
-                                        #y.mean <- aggregate(as.4season(ya,FUN="mean"))
-                                        #y.sd <- aggregate(as.4season(ya,FUN="sd"))
-                                        #X.4s <- aggregate(as.4season(X,FUN="mean"))
-                                        #str(X);
+
     Z1 <- EOF(subset(X,it='djf'),area.mean.expl=area.mean.expl)
     if (verbose) print("downscale DJF")
     ds1 <- DS(y,Z1,biascorrect=biascorrect,eofs=eofs)
@@ -546,8 +527,6 @@ DS.t2m.season.field <- function(y,X,biascorrect=FALSE,
     if (verbose) print("downscale JJA")
     ds3 <- DS(y,Z3,biascorrect=biascorrect,eofs=eofs)
     
-                                        #  load('control.ds.1.rda'); Z3x <- EOF(PREGCM,area.mean.expl=area.mean.expl)
-                                        #  ds3 <- DS(y,Z3x,biascorrect=biascorrect,eofs=eofs)
     
     Z4 <- EOF(subset(X,it='son'),area.mean.expl=area.mean.expl)
     if (verbose) print("downscale SON")
@@ -566,16 +545,12 @@ DS.t2m.annual.field <- function(y,X,biascorrect=FALSE,
                                 method="lm",swsm="step",m=5,
                                 rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                                 verbose=FALSE,weighted=TRUE,station=TRUE) {
-                                        # Downscale seasonal mean and standard deviation
+  ## Downscale seasonal mean and standard deviation
     if (verbose) print("DS.t2m.annual.field")
-                                        #ya <- as.anomaly(y)
-                                        #yc <- as.climatology(y) 
-                                        #y.mean <- aggregate(as.4season(ya,FUN="mean"))
-                                        #y.sd <- aggregate(as.4season(ya,FUN="sd"))
-                                        #X.4s <- aggregate(as.4season(X,FUN="mean"))
+
     
-    Z <- EOF(X,area.mean.expl=area.mean.expl)
-    ds <- DS(y,Z,biascorrect=biascorrect)
+    Z <- EOF(annual(X),area.mean.expl=area.mean.expl)
+    ds <- DS(annual(y),Z,biascorrect=biascorrect)
     invisible(ds)
 }
 
@@ -586,9 +561,9 @@ DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
                                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                                    verbose=FALSE,weighted=TRUE,...) {
 
-                                        # Computes the annual mean values for wet-day mean mu, wet-day frequency, and spell.
-                                        # Also computes seasonal variations from PCA X[year,calendar months].
-                                        # One PC for each year.
+  ## Computes the annual mean values for wet-day mean mu, wet-day frequency, and spell.
+  ## Also computes seasonal variations from PCA X[year,calendar months].
+  ## One PC for each year.
 
     mu <- as.4seasons(y,FUN="exceedance",threshold=threshold)
     fw <- as.4seasons(y,FUN="exceedance",fun="freq")
@@ -608,17 +583,17 @@ DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
                           verbose=verbose,...)
     }
     
-                                        # DS mu, fw, spell, total
+    ## DS mu, fw, spell, total
     ds <- NULL
     invisible(ds)
 }
 
-                                        # Use family='gaussian' for sample sizes gt 30 - > central limit theorem
+## Use family='gaussian' for sample sizes gt 30 - > central limit theorem
 DS.freq <- function(y,X,threshold=1,biascorrect=FALSE,method="glm",
                     family="gaussian",swsm="step",m=5,
                     rmtrend=TRUE,eofs=1:7,verbose=FALSE,weighted=TRUE,...) {
     if (inherits(X,'month'))
-        Z <- aggregate(y,as.yearmon,FUN=wetfreq,threshold=threshold) else
+        Z <- aggregate(y,as.yearmon,FUN="wetfreq",threshold=threshold) else
     if (inherits(X,'season'))
         Z <- as.4seasons(y,FUN=wetfreq,threshold=threshold) else
     if (inherits(X,'annual'))
@@ -633,8 +608,8 @@ DS.freq <- function(y,X,threshold=1,biascorrect=FALSE,method="glm",
 DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
                      method="glm",family="gaussian",swsm="step",m=5,
                      rmtrend=TRUE,eofs=1:7,verbose=FALSE,weighted=TRUE,...) {
-                                        # Downscale the spell length using a GLM with poisson family.
-                                        # Thate the mean spell length over a given interval:
+  ## Downscale the spell length using a GLM with poisson family.
+  ##  the mean spell length over a given interval:
     if (inherits(y,'spell')) z <- as.station(y) else
     if (inherits(y,'sstation')) {
         z <- as.station(spell(y))
@@ -651,13 +626,13 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
 }
 
 
-                                        # DS.pca
-                                        # This function applies to PCA results for a group of stations.
-                                        # Typically some annual statistics (e.g. mu), stored in compressed form
-                                        # as a PCA-object (similar to EOF, but not gridded and without the area
-                                        # weighting.
-                                        # The data may be pre-filtered using CCA.
-                                        # Rasmus Benestad, 19.08.2013
+## DS.pca
+## This function applies to PCA results for a group of stations.
+## Typically some annual statistics (e.g. mu), stored in compressed form
+## as a PCA-object (similar to EOF, but not gridded and without the area
+## weighting.
+## The data may be pre-filtered using CCA.
+## Rasmus Benestad, 19.08.2013
 DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,eofs=1:10,
                    rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
@@ -808,17 +783,17 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
-              # This method combines different EOFs into one predictor by making a new
-              # data matrix consisting of the PCs, then weight (w) these according to their
-              # eigenvalues (normalised so that each predictor/EOF type carry similar
-              # weight). Then a SVD is applied to this new set of combined PCs to make
-              # an object that looks like on EOF.
+              ### This method combines different EOFs into one predictor by making a new
+              ### data matrix consisting of the PCs, then weight (w) these according to their
+              ### eigenvalues (normalised so that each predictor/EOF type carry similar
+              ### weight). Then a SVD is applied to this new set of combined PCs to make
+              ### an object that looks like on EOF.
     if (verbose) print('DS.list')
     preds <- names(X)
     print(preds)
     np <- length(preds)
 
-                                        # Test: if there is only one predictor, use the method for one predictor
+## Test: if there is only one predictor, use the method for one predictor
     if (np==1) {
         if (verbose) print('Single predictor')
         predictands <- names(y)
@@ -835,12 +810,12 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
         
     } else if (verbose) print('Several predictors')
 
-                                        # Combine the different predictors into one matrix: also for comb...
+## Combine the different predictors into one matrix: also for comb...
     x <- zoo(X[[1]])
     w <- attr(X[[1]],'eigenvalues')/sum(attr(X[[1]],'eigenvalues'))
     id <- rep(1,length(attr(X[[1]],'eigenvalues')))
 
-                                        # If combined EOF - need to get the appended fields too
+## If combined EOF - need to get the appended fields too
     if (inherits(X[[1]],'comb')) {
         n.app <- attr(X[[1]],'n.apps')
         if (n.app > 1) print('This only works with n.app==1')
@@ -860,20 +835,20 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
 
     if (verbose) print(c(dim(x),length(w)))
     t <- index(x)
-                                        # applyy the weights
+    ## apply the weights
     x <- x %*% diag(w)
     xm <- rowMeans(x)
     x <- x[is.finite(xm),]; t <- t[is.finite(xm)]
 
-                                        # Apply an SVD to the combined PCs to extract the common signal in the
-                                        # different predictors - these are more likely to contain real physics
-                                        # and be related to the predictand.
+    ## Apply an SVD to the combined PCs to extract the common signal in the
+    ## different predictors - these are more likely to contain real physics
+    ## and be related to the predictand.
     if (verbose) print('svd')
     udv <- svd(coredata(x))
     if (verbose) print(summary(udv))
 
-                                        # If the predictor is a common EOF, then also combine the appended fields
-                                        # the same way as the original flield.
+    ## If the predictor is a common EOF, then also combine the appended fields
+    ## the same way as the original flield.
     if (inherits(X[[1]],'comb')) {
         z <- z %*% diag(w)
         udvz <- svd(coredata(z))
@@ -881,13 +856,13 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
 
     eof <- zoo(udv$u[,1:20],order.by=t)
 
-                                        # Let the pattern contain the weights for the EOFs in the combined
-                                        # PC matrix, rather than spatial patterns. The spatial patterns are
-                                        # then reconstructed from these.
+    ## Let the pattern contain the weights for the EOFs in the combined
+    ## PC matrix, rather than spatial patterns. The spatial patterns are
+    ## then reconstructed from these.
     pattern <- matrix(rep(1,length(udv$v[,1:20])),dim(udv$v[,1:20]))
 
-                                        # Do a little 'fake': here the pattern is not a geographical map but weight
-                                        # for the EOFs.
+    ## Do a little 'fake': here the pattern is not a geographical map but weight
+    ## for the EOFs.
     dim(pattern) <- c(1,dim(pattern))
     if (verbose) str(pattern)
     attr(eof,'eigenvalues') <- udv$d[1:20]
@@ -906,13 +881,13 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
              area.mean.expl=area.mean.expl,verbose=verbose,
              weighted=TRUE,pca=FALSE,...)
 
-                                        # Now, we need to reconstruct the spatial maps/patterns. There will be
-                                        # one pattern for each EOF
+    ## Now, we need to reconstruct the spatial maps/patterns. There will be
+    ## one pattern for each EOF
     if (verbose) print('synthesise patterns and store in a list')
     zpattern <- list()
     if (class(y)[1] != 'pca') {
-                                        # When y is a pca-object, then pattern is defined for the predictands
-                                        # and not the predictor.
+      ## When y is a pca-object, then pattern is defined for the predictands
+      ## and not the predictor.
         for (i in 1:np) {
             diag(c(attr(ds,'pattern'))) %*% udv$v -> eofweights
             U <- attr(X[[i]],'pattern'); du <- dim(U)
@@ -934,7 +909,7 @@ DS.station.pca <- function(y,X,mon=NULL,
                            method="lm",swsm="step",m=5,
                            rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                            verbose=FALSE,weighted=TRUE,...) {
-                                        # This function does the same as DS.eof
+  ## This function does the same as DS.eof
     z <- DS.default(y=y,X=X,mon=mon,method=method,swsm=swsm,m=m,
                     rmtrend=trend,eofs=eofs,area.mean.expl=area.mean.expl,
                     verbose=verbose,weighted=weighted,..)
@@ -943,16 +918,16 @@ DS.station.pca <- function(y,X,mon=NULL,
 
 biasfix <- function(x) {
     stopifnot(!missing(x), inherits(x,"eof"),inherits(x,"comb"))
-                                        # Check if the results already have been bias-corrected
+    ## Check if the results already have been bias-corrected
     if (!is.null(attr(x,'diagnose'))) return(x)
     diag <- diagnose(x)
     n <- attr(x,'n.apps')
     for ( i in 1:n ) {
         eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
         Z <- coredata(z)
-                                        #print(dim(Z)); print(length(diag$sd.ratio)); print(length(diag$mean.diff))
-                                        # diagnose: (1 + sd(z))/(1 + sd(x))
-                                        # x is reanalysis; z is gcm:
+
+        ## diagnose: (1 + sd(z))/(1 + sd(x))
+        ## x is reanalysis; z is gcm:
         for (j in 1:length(Z[1,]))
             Z[,j] <- Z[,j]/diag$sd.ratio[i,j] + diag$mean.diff[i,j]
         y <- zoo(Z,order.by=index(z))

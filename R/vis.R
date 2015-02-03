@@ -218,47 +218,47 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
   if (exists("g")) remove(g) 
   if (exists("b")) remove(b)
 
-  if (col=="bwr") {
+  if (col[1]=="bwr") {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
     g <- exp(sg*(x - g0)^2)^2
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
     col <- rgb(r,g,b)
-  } else if (col=="rwb") {
+  } else if (col[1]=="rwb") {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
     g <- exp(sg*(x - g0)^2)^2
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
     col <- rgb(b,g,r)
-  } else if (col=="faint.bwr") {
+  } else if (col[1]=="faint.bwr") {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
     col <- rgb(r,g,b)
-  } else if (col=="faint.rwb") {
+  } else if (col[1]=="faint.rwb") {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
     col <- rgb(b,g,r)
-  } else if (col=="t2m") {
+  } else if (col[1]=="t2m") {
     r <- approx(seNorgeT[1,],n=n)$y/255
     g <- approx(seNorgeT[2,],n=n)$y/255
     b <- approx(seNorgeT[3,],n=n)$y/255
     col <- rgb(b,g,r)
-  } else if ((col=="precip") | (col=="mu") | (col=="fw")) {
+  } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw")) {
     r <- approx(seNorgeP[1,],n=n)$y/255
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255
     col <- rgb(r,g,b)
-  } else if (col=="rainbow") {
+  } else if (col[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6)
   } else if (col=="gray.colors") {
     col <- gray.colors(n)
-  } else if (col=="heat.colors") {
+  } else if (col[1]=="heat.colors") {
     col <- heat.colors(n)
-  } else if (col=="terrain.colors") {
+  } else if (col[1]=="terrain.colors") {
     col <- terrain.colors(n)
-  } else if (col=="topo.colors") {
+  } else if (col[1]=="topo.colors") {
     col <- topo.colors(n)
-  } else if (col=="cm.colors") {
+  } else if (col[1]=="cm.colors") {
     col <- cm.colors(n)
   }
 
