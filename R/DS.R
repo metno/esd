@@ -865,8 +865,8 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
     ## for the EOFs.
     dim(pattern) <- c(1,dim(pattern))
     if (verbose) str(pattern)
-    attr(eof,'eigenvalues') <- udv$d[1:20]
-    attr(eof,'pattern') <- rep(1,20)
+    attr(eof,'eigenvalues') <- udv$d
+    attr(eof,'pattern') <- rep(1,dim(udv$v)[1])
     names(eof) <- paste("X.",1:20,sep="")
     
     class(eof) <- class(X[[1]])
@@ -888,11 +888,14 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
     if (class(y)[1] != 'pca') {
       ## When y is a pca-object, then pattern is defined for the predictands
       ## and not the predictor.
-        for (i in 1:np) {
-            diag(c(attr(ds,'pattern'))) %*% udv$v -> eofweights
+      if (verbose) str(attr(ds,'pattern'))
+      dp <- length(attr(ds,'pattern'))
+      
+      for (i in 1:np) {
+            diag(c(attr(ds,'pattern'))) %*% udv$v[1:dp,is.element(id,i)] -> eofweights
             U <- attr(X[[i]],'pattern'); du <- dim(U)
             dim(U) <- c(du[1]*du[2],du[3])
-            z <- diag(eofweights[is.element(id,1),]) %*% t(U)
+            z <- diag(eofweights) %*% t(U)
             dim(z) <- c(du[1],du[2])
             attr(z,'longitude') <- lon(X[[i]])
             attr(z,'latitude') <- lat(X[[i]])
