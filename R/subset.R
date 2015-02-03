@@ -852,7 +852,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     selz <- rep(TRUE,n)
     selc <- selx; seli <- selx; selm <- selx; salt <- selx
     selp <- selx; selF <- selx ; sell <- selx
-    
+
     # REB 11.04.2014: is can be a list to select region or according to other criterion
     if ( inherits(is,'list') & inherits(x,'station') ) {
         if (verbose) {print('spatial selection'); print(is)}
@@ -905,7 +905,13 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     } else if ( inherits(is,'list') & inherits(x,'field') ) {
       y <- default.subregion(x,is=is,verbose=verbose)
       is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
-    } else is <- rep(TRUE,d[2])
+    } else
+    if ( is.null(is) ) is <- rep(TRUE,d[2]) else
+    if ( is.numeric(is)) {
+      iss <- rep(FALSE,d[2]); iss[is] <- TRUE
+      is <- iss
+    }
+  
     if (verbose) print(paste('number of points:',sum(ii),sum(is)))
     y <- x[ii,is]
     #if (is.logical(is))

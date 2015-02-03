@@ -605,29 +605,225 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
 DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
-                          predictor="ERA40_t2m_mon.nc",
+                          predictor=list(t2m="data/ncep/air.mon.mean.nc",
+                                         olr="data/ncep/OLR.mon.mean.nc",
+                                         slp="data/ncep/slp.mon.mean.nc"),
                           non.stationarity.check=FALSE,
                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
                           select=NULL,FUN="wetmean",
-                          FUNX="C.C.eq",threshold=1,
-                          pattern="tas_Amon_ens_",verbose=FALSE,nmin=nmin) {
+                          threshold=1,
+                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=nmin) {
 
-# This function is for downscaling wet-day mean using SLP to
-# remove the internal variations and then the global mean temperature
-# to downscale the slow changes due to a global warming.
+# This function is for downscaling wet-day mean using a combination of predictors
 
+  
+  
   # Get the global mean temeprature: pentads
 
   # Or a combination of OLR + C.C.eq(t2m) + SLP
 
-  Z <- DSensemble.precip(y=y,plot=plot,path=path,rcp=rcp,
-                         biascorrect=biascorrect,predictor=predictor,
-                         non.stationarity.check=non.stationarity.check,
-                         eofs=eofs,lon=lon,lat=lat,select=select,
-                         FUN=FUN,FUNX=FUNX,threshold=threshold,
-                         pattern=pattern,verbose=verbose)
-  return(Z)
+
+    # FUN: exceedance, wetfreq, wet, dry
+
+  if (verbose) print('DSensemble.mu')
+
+  if (verbose) print(paste('The predictor: annual',FUN))
+  y <- annual(y,FUN=FUN,threshold=threshold,nmin=nmin)
+  index(y) <- year(y)
+  
+  if (!is.na(attr(y,'longitude')))
+    lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
+  if (!is.na(attr(y,'latitude')))
+    lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
+  
+  # Get the predictor: NCEP/NCAR
+  if (verbose) print(paste("Get the set of predictors:",names(predictor),collapse=' '))
+  if (is.character(predictor[[1]])) pre1 <- retrieve(ncfile=predictor[[1]],lon=lon,lat=lat)
+  if (is.character(predictor[[2]])) pre2 <- retrieve(ncfile=predictor[[2]],lon=lon,lat=lat)
+  if (is.character(predictor[[3]])) pre3 <- retrieve(ncfile=predictor[[3]],lon=lon,lat=lat)
+
+  # Combine the predictors
+  if (verbose) print("Annual mean - predictors")
+  PREX1 <- annual(C.C.eq(pre1),FUN='mean') # Clausius-Claperyron eq. -> sat. vapour pressure
+  PREX2 <- annual(pre2,FUN='mean')
+  PREX3 <- annual(pre3,FUN='mean')
+  
+  if (verbose) print("graphics")
+  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
+  unit <- attr(y,'unit')
+  #ylim <- switch(deparse(substitute(FUN)),
+
+  ylim <- switch(FUN,
+                 'exceedance'=c(0,10),'wetmean'=c(0,10),
+                 'wetfreq'=c(0,0),'spell'=c(0,0),
+                 'mean'=c(-10,50),'sd'=c(-5,10),'ar1'=c(-0.5,0.7),
+                 'HDD'=c(0,5000),'CDD'=c(0,500),'GDD'=c(0,2000))
+  if (is.null(ylim)) ylim <- c(0,0)
+  
+  if (plot) {
+    par(bty="n")
+    plot.zoo(y,type="b",pch=19,main=attr(y,'location'),
+             xlab="year",ylab=unit,
+             sub=paste('Station: ',attr(y,'station_id'),'; coordinates: ',
+             round(attr(y,'longitude'),4),'E/',
+             round(attr(y,'latitude'),4),'N; ',
+             attr(y,'altitude'),'m.a.s.l',sep=''),
+             ylim=ylim + range(coredata(y),na.rm=TRUE),xlim=c(1900,2100))
+    grid()
+  }
+
+  # Ensemble GCMs
+  path <- file.path(path,rcp,fsep = .Platform$file.sep)
+  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  N <- length(ncfiles)
+
+  if (is.null(select)) select <- 1:N else
+                       N <- length(select)
+  if (verbose) print(ncfiles[select])
+
+  # set up results matrix and tables of diagnostics:
+  years <- sort(1900:2100)
+  m <- length(years)
+  X <- matrix(rep(NA,N*m),N,m)
+  gcmnm <- rep("",N)
+  scorestats <- matrix(rep(NA,N*8),N,8)
+  colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
+                            "res.trend","res.K-S","res.ar1",'amplitude.ration')
+
+  flog <- file("DSensemble.precip-log.txt","at")
+  for (i in 1:N) {
+    #browser()
+    gcm <- retrieve(ncfile = ncfiles[select[i]],
+                    lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2))
+    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+    #gcmnm[i] <- attr(gcm,'model_id')
+    if (verbose) print(varid(gcm))
+    
+    if (FUNX!='C.C.eq')
+      GCMX <- annual(gcm,FUN=FUNX) else
+      GCMX <- annual(C.C.eq(gcm),FUN='mean')
+#    GCM <- zoo(100*coredata(GCMX)/colMeans(coredata(subset(GCMX,it=1961:1990))),order.by=year(GCMX))
+    if (is.precip(GCMX)) {
+          GCM <- zoo(100*coredata(GCMX)/mean(c(coredata(subset(GCMX,it=1961:1990)))),
+                     order.by=year(GCMX))
+      GCM <- attrcp(GCMX,GCM)
+      attr(GCM, "unit" ) <- "%"
+      attr(GCM, "dimensions" ) <- attr(GCMX, "dimensions" )
+      class(GCM) <- class(GCMX)
+    } else
+          GCM <- GCMX
+    #browser()
+    #str(GCM)
+    model.id <- attr(gcm,'model_id')
+    rm("gcm","GCMX"); gc(reset=TRUE)
+    if (verbose) print("combine")
+    #browser()
+    PREGCM <- combine(PRE,GCM)
+    if (verbose) print("EOF")
+    Z <- EOF(PREGCM)
+    
+    # The test lines are included to assess for non-stationarity
+    if (non.stationarity.check) {
+      testGCM <- subset(GCM,it=range(year(PRE))) # REB 29.04.2014
+      testy <- as.station(regrid(testGCM,is=y))  # REB 29.04.2014
+      attr(testGCM,'source') <- 'testGCM'        # REB 29.04.2014
+      testZ <- EOF(combine(testGCM,GCM))         # REB 29.04.2014
+      rm("testGCM"); gc(reset=TRUE)
+    }
+    rm("GCM"); gc(reset=TRUE)
+     
+    # The test lines are included to assess for non-stationarity
+    if (non.stationarity.check) {
+      testds <- DS(testy,testZ,biascorrect=biascorrect,
+                   area.mean.expl=area.mean.expl,eofs=eofs)  # REB 29.04.2014
+      testz <- attr(testds,'appendix.1')                     # REB 29.04.2014
+      difference.z <- testy - testz                          # REB 29.04.2014
+    }
+    
+    if (verbose) print("diagnose")
+    diag <- diagnose(Z)
+    if (biascorrect) Z <- biasfix(Z)
+    if (verbose) print("- - - > DS")
+    ds <- try(DS(y,Z,eofs=eofs,area.mean.expl=area.mean.expl,verbose=verbose))
+    if (inherits(ds,"try-error")) {    
+      writeLines(gcmnm[i],con=flog)
+      writeLines(ds[[1]],con=flog)
+    } else {
+      if (verbose) print("post-processing")
+      z <- attr(ds,'appendix.1')
+      i1 <- is.element(years,year(z))
+      i2 <- is.element(year(z),years)
+    #browser()
+      X[i,i1] <- z[i2]
+
+    # Diagnose the residual: ACF, pdf, trend. These will together with the
+    # cross-validation and the common EOF diagnostics provide a set of
+    # quality indicators.
+      cal <- coredata(attr(ds,"original_data"))
+      fit <- coredata(attr(ds,"fitted_values"))
+      res <- as.residual(ds)
+      res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
+      ks <- ks.test(coredata(res),pnorm)$p.value
+      ar <- as.numeric(acf(trend(cal-fit,result="residual"),plot=FALSE)[[1]][2])
+    ## ar <- ar1(coredata(res))
+
+    # Evaluation: here are lots of different aspects...
+    # Get the diagnostics: this is based on the analysis of common EOFs...
+
+      xval <- attr(ds,'evaluation')
+      r.xval <- cor(xval[,1],xval[,2])
+
+    #browser()
+      xy <- merge.zoo(z,y)
+      ds.ratio <- sd(xy[,1],na.rm=TRUE)/sd(xy[,2],na.rm=TRUE)
+    
+    # Extract the mean score for leading EOF from the 4 seasons:
+      mdiff <- diag$mean.diff[1]/diag$sd0[1]
+      srati <- 1 - diag$sd.ratio[1]
+      arati <- 1 - diag$autocorr.ratio[1]
+      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio)
+      
+      quality <- 100*(1-mean(scorestats[i,]))
+      qcol <- quality
+      qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
+
+      index(z) <- year(z); index(ds) <- year(ds)
+      if (plot) {
+        lines(z,lwd=2,col=cols[qcol])
+        lines(y,type="b",pch=19)
+        lines(ds,lwd=2,col="grey")
+     }
+      #browser()
+      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
+                  "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
+                  'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
+                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
+    }
+  }
+
+  #browser()
+  X <- zoo(t(X),order.by=years)
+  colnames(X) <- gcmnm
+  attr(X,"model_id") <- gcmnm
+  #X <- attrcp(y,X)
+  attr(X,'station') <- y
+  attr(X,'predictor') <- attr(PRE,'source')
+  attr(X,'domain') <- list(lon=lon,lat=lat)
+  attr(X,'scorestats') <- scorestats
+  attr(X,'path') <- path
+  attr(X,'scenario') <- rcp
+  if (non.stationarity.check)
+    attr(X,'on.stationarity.check') <- difference.z else
+    attr(X,'on.stationarity.check') <- NULL
+  if (area.mean.expl) attr(X,'area.mean.expl') <- TRUE else
+                      attr(X,'area.mean.expl') <- FALSE
+  attr(X,'history') <- history.stamp(y)
+  class(X) <- c("dsensemble","zoo")
+  save(file="DSensemble.rda",X)
+  print("---")
+  invisible(X)
 }
+
 
 DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
