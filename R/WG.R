@@ -121,7 +121,6 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
   
   xa <- anomaly(x); clim <- x - xa
 
-  
   # Time axis for projection:
   if (is.null(t)) {
     print("set the time index")
@@ -150,7 +149,7 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
   
   if (plot) {
     dev.new()
-    plot(merge(zoo(xa),zoo(y)),plot.type='single',lwd=c(2,1),
+    plot(merge(zoo(xa),zoo(anomaly(y))),plot.type='single',lwd=c(2,1),
          col=c('black','grey'))
   }
 
