@@ -388,8 +388,9 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     y <- switch(FUN,'wet'=subset(y,is=1),'dry'=subset(y,is=2))
   } else
 #    y <- annual(y,FUN=FUN,threshold=threshold)
-    if (sum(is.element(names(formals(FUN)),'threshold')==1))
-        y <- annual(y,FUN=FUN,threshold=threshold,nmin=nmin) else
+  # REB: the two next lines give errors... :(
+#    if (sum(is.element(names(formals(FUN)),'threshold')==1))
+#        y <- annual(y,FUN=FUN,threshold=threshold,nmin=nmin) else
         y <- annual(y,FUN=FUN,nmin=nmin)
   #browser()
   index(y) <- year(y)

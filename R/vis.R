@@ -880,5 +880,6 @@ diagnose.station <- function(x,main='Data availability',
         sub=sub,...)
   axis(4,at=1:d[2],labels=substr(loc(x),1,6),cex.lab=0.5,col='grey')
   par(xpd=FALSE)
-  grid(nx=d[1],ny=d[2])
+  nyrs <- length(rownames(table(year(x))))
+  grid(nx=nyrs,ny=d[2])
 }

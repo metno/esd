@@ -133,7 +133,12 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
             }
             else if (inherits(x,"station")) {
                 if (is.null(dim(x))) dim(x) <- c(length(x),1)
-                ss <- list(station_id=attr(x,"station_id"),location=attr(x,'location'),country=attr(x,'country'),longitude=attr(x,"longitude"),latitude=attr(x,'latitude'),altitude=attr(x,'altitude'),variable=attr(x,"variable"),longname=attr(x,"longname"),start=rep(start(x),dim(x)[2]),end=rep(end(x),dim(x)[2]),source=attr(x,"source"))
+                ss <- list(station_id=attr(x,"station_id"),location=attr(x,'location'),
+                           country=attr(x,'country'),longitude=attr(x,"longitude"),
+                           latitude=attr(x,'latitude'),altitude=attr(x,'altitude'),
+                           variable=attr(x,"variable"),longname=attr(x,"longname"),
+                           start=rep(start(x),dim(x)[2]),end=rep(end(x),dim(x)[2]),
+                           source=attr(x,"source"))
             }
         } else
             ss <- select.station()
@@ -144,12 +149,20 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         if (!is.null(unlist(is))) { ## highlight a subset of station
             
             if (is.null(is$x)) {
-                highlight <- select.station(x=is$x,loc=is$loc,stid = is$stid, param = is$param, lon = is$lon, lat = is$lat, alt = is$alt, cntr = is$cntr, src = is$src, nmin = is$nmin , it = is$it)
+                highlight <- select.station(x=is$x,loc=is$loc,stid = is$stid,
+                                            param = is$param, lon = is$lon,
+                                            lat = is$lat, alt = is$alt, cntr = is$cntr,
+                                            src = is$src, nmin = is$nmin , it = is$it)
                 highlight$variable <-apply(as.matrix(highlight$element),1,esd2ele)
             } else if (inherits(is$x,"station")) {
                 if (is.null(dim(is$x)))
                     dim(is$x) <- c(length(is$x),1)
-                highlight <- list(station_id=attr(is$x,"station_id"),location=attr(is$x,'location'),country=attr(is$x,'country'),longitude=attr(is$x,"longitude"),latitude=attr(is$x,'latitude'),altitude=attr(is$x,'altitude'),variable=attr(is$x,"variable"),longname=attr(is$x,"longname"), start=rep(start(is$x),dim(is$x)[2]),end=rep(end(is$x),dim(is$x)[2]),source=attr(is$x,"source"))
+                highlight <- list(station_id=attr(is$x,"station_id"),
+                                  location=attr(is$x,'location'),country=attr(is$x,'country'),
+                                  longitude=attr(is$x,"longitude"),latitude=attr(is$x,'latitude'),
+                                  altitude=attr(is$x,'altitude'),variable=attr(is$x,"variable"),
+                                  longname=attr(is$x,"longname"), start=rep(start(is$x),dim(is$x)[2]),
+                                  end=rep(end(is$x),dim(is$x)[2]),source=attr(is$x,"source"))
             }
             highlight$element <- apply(as.matrix(highlight$variable),1,esd2ele)
         }  else highlight <-  NULL
@@ -160,8 +173,8 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         
         tte <- "rwb"
         
-        cols <- rgb(seq(0, 0.5, length = 100)^2, seq(0.5, 1, length = 100), 
-                    seq(0, 0.5, length = 100)^2)
+##        cols <- rgb(seq(0, 0.5, length = 100)^2, seq(0.5, 1, length = 100), 
+##                    seq(0, 0.5, length = 100)^2)
 
         ## if (new) dev.new(height=height,width=width)
                                         #par(bty = "n", xaxt = "n", yaxt = "n", xpd = FALSE)
@@ -208,11 +221,15 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         ## browser()
         ##print(par()$fig)
         par(fig=par0$fig)
-        if (!is.null(FUN)) col <- "white" 
+#        if (!is.null(FUN)) col <- "white" 
+        if (!is.null(FUN)) col <- "black"  
         if (!is.null(highlight))
-            plot(highlight$longitude, highlight$latitude, pch = pch, col = col, bg = bg.all,cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
+            plot(highlight$longitude, highlight$latitude, pch = pch, col = col, bg = bg.all,
+                 cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes =FALSE ,
+                 frame.plot = FALSE)
         else if (!is.null(ss))
-            plot(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg[1], cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes = FALSE , frame.plot = FALSE)
+            plot(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg[1], cex = cex*scale,
+                 xlab = "", ylab = "", xlim = xlim, ylim = ylim , axes = FALSE , frame.plot = FALSE)
         
         ## Add geoborders
         lines(geoborders$x, geoborders$y, col = "black")
@@ -230,24 +247,32 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         
         if (text) {
             if (!is.null(highlight)) {
-                title(main=paste("SOURCE(S) : ", paste(levels(factor(highlight$source)),collapse="/" )),line=3,cex.main=.8)
+                title(main=paste("SOURCE(S) : ", paste(levels(factor(highlight$source)),collapse="/" )),
+                      line=3,cex.main=.8)
                 title(main=paste(length(levels(factor(highlight$location)))),line=2,cex.main=.8)
-                title(main=paste(min(highlight$start,na.rm=TRUE),"/",max(highlight$end,na.rm=TRUE)),line=2,cex.main=.8,adj=1)
+                title(main=paste(min(highlight$start,na.rm=TRUE),"/",max(highlight$end,na.rm=TRUE)),
+                      line=2,cex.main=.8,adj=1)
                 if (!is.null(FUN))
-                    title(main=paste(paste(toupper(apply(as.matrix(levels(factor(highlight$variable))),1,esd2ele)),collapse="/"),toupper(FUN),sep="/"),line=2,cex.main=.8 , adj = 0)
+                    title(main=paste(paste(toupper(apply(as.matrix(levels(factor(highlight$variable))),
+                            1,esd2ele)),collapse="/"),toupper(FUN),sep="/"),line=2,cex.main=.8 , adj = 0)
                 else
-                    title(main=paste(toupper(apply(as.matrix(levels(factor(highlight$variable))),1,esd2ele)),collapse="/"),line=2,cex.main=.8 , adj = 0)
+                    title(main=paste(toupper(apply(as.matrix(levels(factor(highlight$variable))),
+                            1,esd2ele)),collapse="/"),line=2,cex.main=.8 , adj = 0)
             }
             else {
-                title(main=paste("SOURCE(S) : ", paste(levels(factor(ss$source)),collapse="/" )),line=3,cex.main=.8)
+                title(main=paste("SOURCE(S) : ", paste(levels(factor(ss$source)),collapse="/" )),
+                      line=3,cex.main=.8)
                 title(main=paste(length(ss$location)),line=2,cex.main=.8)
-                title(main=paste(max(ss$start,na.rm=TRUE),"/",min(ss$end,na.rm=TRUE)),line=2,cex.main=.8,adj=1)
-                title(main=paste(paste(toupper(levels(factor(ss$variable))),collapse="/"),toupper(FUN),sep="/"),line=2,cex.main=.8 , adj = 0)
+                title(main=paste(max(ss$start,na.rm=TRUE),"/",min(ss$end,na.rm=TRUE)),line=2,
+                      cex.main=.8,adj=1)
+                title(main=paste(paste(toupper(levels(factor(ss$variable))),collapse="/"),
+                        toupper(FUN),sep="/"),line=2,cex.main=.8 , adj = 0)
             }
         }
         ## title(main=attr(z,"title"),line=2.2,cex.main=0.7)
         ## add margin text
-        if (text) mtext(paste(("ESD package - map.station() - MET Norway 2014"),"(www.met.no)",sep=" "),side=1,line=4,cex=0.6)
+        if (text) mtext(paste(("ESD package - map.station() - MET Norway 2014"),
+                              "(www.met.no)",sep=" "),side=1,line=4,cex=0.6)
         
         ## add grid
         grid()
@@ -256,7 +281,9 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
             if (is.element(FUN,c('lon','lat','alt')))
                 eval(parse(text=paste('y <-',FUN,'(x)',sep="")))
             else {
-                if (is.element("na.rm",names(formals(FUN))) | is.element("...",names(formals(FUN))) | (is.element(FUN,c("max","min"))))
+                if (is.element("na.rm",names(formals(FUN))) |
+                    is.element("...",names(formals(FUN))) |
+                    (is.element(FUN,c("max","min","sum"))))
                     y <- apply(coredata(x),2,FUN=FUN,na.rm=TRUE)
                 else if (FUN=="trend")
                     y <- apply(x,2,FUN=FUN,na.omit=FALSE)
@@ -264,7 +291,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
                     y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
             }
             ## y.rng <- floor(range(y,na.rm=TRUE))
-            ## browser()           
+            ##browser()           
             if (is.null(colbar$n) & !is.null(colbar$col))
                 colbar$n <- length(colbar$col)
             else if (!is.null(colbar$breaks)) {              
@@ -279,7 +306,8 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
                 colbar$breaks <- pretty(y,colbar$n)
                 # update colbar$n and colbar$col according to pretty
                 colbar$n <- length(colbar$breaks)
-                colbar$col <- colscal(n=colbar$n,col=varid(x))
+                if (is.null(colbar$col)) colbar$col <- colscal(n=colbar$n,col=varid(x)) else
+                                  colbar$col <- colscal(n=colbar$n,col=colbar$col)
             }
             ## reverse the colour for precip
             #print(is.precip(x))
