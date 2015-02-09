@@ -121,12 +121,6 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
   
   xa <- anomaly(x); clim <- x - xa
 
-  if (plot) {
-    dev.new()
-    plot(merge(zoo(xa),zoo(y)),plot.type='single',lwd=c(2,1),
-         col=c('black','grey'))
-  }
-  
   # Time axis for projection:
   if (is.null(t)) {
     print("set the time index")
@@ -152,6 +146,12 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
   y <- zoo(FTscramble(xa,t),order.by=t)
   if (verbose) print("add climatology")
   y <- y + matchdate(clim,y)
+  
+  if (plot) {
+    dev.new()
+    plot(merge(zoo(xa),zoo(anomaly(y))),plot.type='single',lwd=c(2,1),
+         col=c('black','grey'))
+  }
 
   cdf <- pnorm(q=y,mean=mean(y,na.rm=TRUE),sd=sd(y,na.rm=TRUE))
   q2 <- qnorm(cdf,mean=ym,sd=ys)

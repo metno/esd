@@ -50,6 +50,224 @@ vis.dsensemble <- function(x,...) {
 vis.ds <- function(x,...) {
 }
 
+ 
+# Plot binned scatterplot with sunflowers
+binscatter.sunflower <- function(x,y,petalsize=7,
+                          dx=NULL,dy=NULL,x.range=NULL,y.range=NULL,
+                          xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
+                          leg=TRUE,rotate=TRUE,alpha=0.6,leg.loc=2) {
+
+  stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
+
+  if (is.null(dx)) dx <- (max(x)-min(x))/15
+  if (is.null(dy)) dy <- (max(y)-min(y))/15
+  if (is.null(x.range)) x.range = c(min(x),max(x))
+  if (is.null(y.range)) y.range = c(min(y),max(y))
+  
+  # Define grid 
+  x.grid <- seq(min(x.range),max(x.range),dx*3/4)
+  y.grid <- seq(min(y.range),max(y.range),dy*sin(2*pi/6))
+  Y <- replicate(length(x.grid),y.grid)
+  X <- t(replicate(length(y.grid),x.grid))
+  Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
+
+  dx <- dx*0.85
+  dy <- dy*0.85
+  
+  # Count observations in each grid point
+  XYN <- binscatter.bin(x,y,X,Y)
+  X <- XYN[,1]; Y <- XYN[,2]; N <- XYN[,3]
+  
+  # Define stuff for plot
+  if (is.null(xlim)) xlim <- c(min(x)-dx/2,max(x)+dx/2)
+  if (is.null(ylim)) ylim <- c(min(y)-dy/2,max(y)+dy/2)
+  xr <- 0.35*dx
+  yr <- 0.35*dy
+  n <- length(X)
+
+  # Generate figure
+  plot(X,Y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,type='n')
+
+  # Grid points with 1 observation
+  if (any(N==1)) symbols(X[N==1],Y[N==1],
+            circles=rep(1,sum(N==1)),fg='blue',bg=F,
+            inches=xr/(max(xlim)-min(xlim)),add=T)
+
+  # Grid points with few observations
+  if (any(N>1) & any(N<petalsize*2)) {
+    i.multi <- (1L:n)[( N>1 & N<petalsize*2 )]
+    # Plot hexagons
+    mapply(polygon.fill,X[i.multi],Y[i.multi],dx/2,dy/2,
+           col=adjustcolor('khaki1',alpha.f=alpha),
+           border=adjustcolor('khaki3',alpha=alpha),n=6)
+    # Draw sunflowers
+    i.rep <- rep.int(i.multi, N[i.multi])
+    z <- numeric()
+    for(i in i.multi)
+       z <- c(z, 1L:N[i] + if(rotate) stats::runif(1) else 0)
+    deg <- (2 * pi * z)/N[i.rep]
+    segments(X[i.rep], Y[i.rep],
+             X[i.rep] + xr * sin(deg),
+             Y[i.rep] + yr * cos(deg),
+             col="orange", lwd=1.5)
+  }
+
+  # Grid points with many observations
+  if (any(N>=(petalsize*2))) {
+    N2 <- floor(N/petalsize)
+    i.multi <- (1L:n)[( N2>1 )]
+    # Plot hexagons
+    mapply(polygon.fill,X[i.multi],Y[i.multi],dx/2,dy/2,
+           col=adjustcolor('coral',alpha.f=alpha),
+           border=adjustcolor('coral2',alpha.f=alpha),n=6)
+    # Draw sunflowers
+    i.rep <- rep.int(i.multi, N2[i.multi])
+    z <- numeric()
+    for(i in i.multi)
+       z <- c(z, 1L:N2[i] + if(rotate) stats::runif(1) else 0)
+    deg <- (2 * pi * z)/N2[i.rep]
+    segments(X[i.rep], Y[i.rep],
+             X[i.rep] + xr * sin(deg),
+             Y[i.rep] + yr * cos(deg),
+             col="tomato4", lwd=1.5)
+  }
+
+  # Legend
+  if (leg) {
+
+    dx <- (max(xlim)-min(xlim))/20
+    dy <- (max(ylim)-min(ylim))/20
+
+    if (any( leg.loc %in% c(1,'upper right'))) {
+      xy <- polygon.vertex(
+       max(xlim)-3.2*dx,max(ylim)-dy/2,5.3*dx,dy*1.5,n=4,rot=pi/4)
+    } else if (any( leg.loc %in% c(2,'upper left',NULL))) {
+      xy <- polygon.vertex(
+       min(xlim)+3.2*dx,max(ylim)-dy/2,5.3*dx,dy*1.5,n=4,rot=pi/4)
+    } else if (any( leg.loc %in% c(3,'lower left'))) {
+      xy <- polygon.vertex(
+       min(xlim)+3.2*dx,min(ylim)+dy/2,5.3*dx,dy*1.5,n=4,rot=pi/4)
+    } else if (any( leg.loc %in% c(4,'lower right'))) {
+      xy <- polygon.vertex(
+       max(xlim)-3.2*dx,min(ylim)+dy/2,5.3*dx,dy*1.5,n=4,rot=pi/4)
+    }
+    
+    polygon(xy[,1],xy[,2],col='white',border='gray')
+    polygon.fill(xy[2,1]+dx/2,xy[2,2]-dy*0.6,dx*0.35,dy*0.35,
+     col=adjustcolor('khaki1',alpha.f=alpha),
+     border=adjustcolor('khaki3',alpha.f=alpha),n=6)
+    polygon.fill(xy[3,1]+dx/2,xy[3,2]+dy*0.6,dx*0.35,dy*0.35,
+     col=adjustcolor('coral',alpha.f=alpha),
+     border=adjustcolor('coral2',alpha.f=alpha),n=6)
+    points(xy[2,1]+dx/2,xy[2,2]-dy*0.6,pch=3,col="orange",lwd=1)
+    points(xy[3,1]+dx/2,xy[3,2]+dy*0.6,pch=3,col="tomato4",lwd=1)
+    text(xy[2,1]+dx,xy[2,2]-dy*0.7,'1 petal = 1 obs',pos=4)
+    text(xy[3,1]+dx,xy[3,2]+dy*0.5,paste('1 petal = ',
+                     as.character(petalsize),' obs'),pos=4)
+  }
+}
+
+# Plot binned scatterplot with hexagons
+binscatter.hex <- function(x,y,new=TRUE,Nmax=NULL,
+                          dx=NULL,dy=NULL,x.range=NULL,y.range=NULL,
+                          xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
+                          leg=TRUE,col='blue',border='black') {
+
+  stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
+
+  if (is.null(dx)) dx <- (max(x)-min(x))/20
+  if (is.null(dy)) dy <- (max(y)-min(y))/20
+  if (is.null(x.range)) x.range = c(min(x),max(x))
+  if (is.null(y.range)) y.range = c(min(y),max(y))
+  
+  # Define grid 
+  x.grid <- seq(min(x.range),max(x.range),dx*3/4)
+  y.grid <- seq(min(y.range),max(y.range),dy*sin(2*pi/6))
+  Y <- replicate(length(x.grid),y.grid)
+  X <- t(replicate(length(y.grid),x.grid))
+  Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
+
+  # Count observations in each grif point
+  XYN <- binscatter.bin(x,y,X,Y)
+  X <- XYN[,1]; Y <- XYN[,2]; N <- XYN[,3]
+  if(is.null(Nmax)) Nmax <- max(N)
+  Nf <- sapply(N/Nmax,function(x) min(1,x))
+                         
+  # Plot
+  if (is.null(xlim)) xlim <- c(min(X)-dx,max(X)+dx)
+  if (is.null(ylim)) ylim <- c(min(Y)-dy,max(Y)+dy)
+  if(leg) par(xpd=NA,mai=c(1.02,0.82,0.82,1.02))
+  if(new) plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,type='n')
+
+  mapply(polygon.fill,X[N>0],Y[N>0],dx/2*Nf[N>0],dy/2*Nf[N>0],
+         n=6,col=col,border=border)
+
+  # Legend
+  if (leg) {
+    x0 <- max(xlim)
+    y0 <- max(ylim)
+    dy0 <- (max(ylim)-min(ylim))/10
+    dx0 <- (max(xlim)-min(xlim))/10
+    polygon.fill(x0+2*dx,y0,dx/2,dy/2,n=6,col=col,border=border)
+    if (max(N)>Nmax) {
+      text(x0+1.2*dx0,y0,paste("\u2265",as.character(Nmax)),pos=4)
+    } else {
+      text(x0+1.2*dx0,y0,as.character(Nmax),pos=4)
+    }
+
+    ivec <- sort(unique(N[(N>0 & N<Nmax)]))
+    if (length(ivec)>10) ivec <- seq(min(ivec),max(ivec),
+                                     max(1,round((max(ivec)-min(ivec))/7)))
+
+    j <- 0
+    for (i in ivec) {
+      polygon.fill(x0+2*dx,y0-(length(ivec)-j)*dy0*0.55,
+                   dx/2*min(1,i/Nmax),
+                   dy/2*min(1,i/Nmax),
+                   n=6,col=col,border=border)
+      text(x0+1.2*dx0,y0-(length(ivec)-j)*dy0*0.55,as.character(i),pos=4)
+      j <- j+1
+    }
+  }
+}
+
+# Count observations (x,y) in grid points (X,Y)
+binscatter.bin <- function(x,y,X,Y) {
+  fn <- function(x,y) {
+    d <- sqrt( (X-x)**2 + (Y-y)**2 )
+    imin <- which(d==min(d),arr.ind=T)
+    if (length(imin)>2) imin <- imin[1,]
+    invisible(imin)
+  }
+  ibin <- mapply(fn,x,y)
+  N <- matrix(rep(0,nrow(X)*ncol(X)),nrow(X),ncol(X))
+  for (k in 1:(dim(ibin)[2])) {
+    i <- ibin[1,k]
+    j <- ibin[2,k]
+    N[i,j] <- N[i,j]+1
+  }
+  N <- array(N,length(N))
+  X <- array(X,length(X))
+  Y <- array(Y,length(Y))
+  invisible(cbind(X,Y,N))
+}
+
+# Vertices of polygon with n sides, width dx, height dy, center (x0,y0)
+polygon.vertex <- function(x0,y0,dx,dy=NULL,n=6,rot=0) {
+  if (is.null(dy)) dy <- dx
+  if (!findInterval(rot,c(-2*pi,2*pi))) rot <- 0
+  i <- seq(0,n-1,1)
+  x <- x0 + dx*cos(2*pi*i/n + rot)
+  y <- y0 + dy*sin(2*pi*i/n + rot)
+  invisible(cbind(x,y))
+}
+
+# Plot polygon defined by polygon.vertex
+polygon.fill <- function(x0,y0,dx,dy,n=6,col='white',border='black',rot=0) {
+  xy <- polygon.vertex(x0,y0,dx,dy,n=n,rot=rot)
+  polygon(xy[,1],xy[,2],col=col,border=border)
+}
+
 
 diagram <- function(x,...) UseMethod("diagram")
 
