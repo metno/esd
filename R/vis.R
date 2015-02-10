@@ -51,7 +51,7 @@ vis.ds <- function(x,...) {
 }
 
 vis.trends <- function(x,unitlabel="unit",varlabel="",
- alpha=0.01,minlen=10,lwd=NA,cticks=NA,new=TRUE) {
+ alpha=0.01,minlen=10,lwd=NA,vmax=NA,new=TRUE) {
 
   T <- calculate.trends(x,minlen=minlen)
   trends <- T$trends*10
@@ -62,22 +62,37 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   
   ticks <- seq(1,length(cols),signif(length(cols)/10,1))
   if (is.na(lwd)) lwd <- max(3-0.05*length(cols),0.2)
-    
-  vmax <- max(abs(trends),na.rm=TRUE)
-  vq <- q995(abs(trends))
-  dv <- signif(vq/5,1)
-  v0 <- signif(dv/2,1)#0
-  vstep <- seq(v0,signif(vq,1),dv)
+   
+  if (is.na(vmax) | vmax=="q995") vmax <- q995(abs(trends))
+  if (vmax=="max") vmax <- max(abs(trends),na.rm=T)
+  if (vmax<1) vmax <- signif(vmax,1)
+  if (vmax>1) vmax <- signif(vmax,2)
+  dv <- signif(vmax/8,1)
+  v0 <- 0#signif(dv/2,1)
+  vstep <- seq(v0,vmax,dv)
   vstep <- unique(c(-1*vstep,vstep))
   vstep <- vstep[order(vstep)]
-  cstep <- colscal(n=length(vstep)-1,col="bwr")
-  breaks <- c(-vmax,vstep[2:(length(vstep)-1)],vmax)
+  cticks <- vstep[2:length(vstep)]-dv/2
+
+  #cstep <- colscal(n=length(vstep)-1,col="bwr")
+  cmin <- rgb(239,138,98,max=255) # blue
+  cmid <- rgb(247,247,247,max=255) # white
+  cmax <- rgb(103,169,207,max=255) # red
+  rgb.palette <- colorRampPalette(c(cmax,cmid,cmin),space="rgb")
+  cstep <- rgb.palette(n=length(vstep)-1)
   
   # Plot trend as color
   if (new) dev.new()
-  image(rows,cols,t(trends),breaks=breaks,col=cstep,
+  image(rows,cols,t(trends),breaks=vstep,col=cstep,
         xlab='end year',ylab="start year",
         main=paste(c(varlabel," trend (",unitlabel,"/decade)"),collapse=""))
+
+  trends.plus <- t(trends)
+  trends.plus[trends.plus<max(vstep)] <- NA
+  image(rows,cols,trends.plus,col=cstep[length(cstep)],add=TRUE)
+  trends.minus <- t(trends)
+  trends.minus[trends.minus>min(vstep)] <- NA
+  image(rows,cols,trends.minus,col=cstep[1],add=TRUE)
 
   # Mark significant trends with dark borders
   i <- which((is.finite(t(p)) & t(p)<alpha))
@@ -89,7 +104,7 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
 
   # Add colorbar. Ticks look slightly off.
-  colbar(vstep,cstep,fig=c(0.15,0.2,0.65,0.85))
+  colbar(cticks,cstep,fig=c(0.2,0.25,0.65,0.85))
 }
  
 calculate.trends <- function(x,minlen=10){
