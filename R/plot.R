@@ -625,11 +625,11 @@ plot.mvr <- function(x) {
 
 
 plot.cca <- function(x,icca=1) {
-  print("plot.cca")
+  #print("plot.cca")
   ## browser()
   dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
-  map.cca(x,icca=icca)
+  map.cca(x,icca=icca,colorbar=FALSE)
 
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
              sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)

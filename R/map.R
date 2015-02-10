@@ -523,7 +523,7 @@ map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
 map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
                     what=c("fill","contour"),
                     n=15,projection="lonlat",
-                    lonR=NULL,latR=NULL,
+                    lonR=NULL,latR=NULL,colorbar=TRUE,
                     axiR=0,gridlines=TRUE,col=NULL,breaks=NULL,...) {
   #print('map.cca')
   #x <- subset(x,it=it,is=is)
@@ -574,7 +574,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
     par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
   map(Y,icca,xlim=xlim,ylim=ylim,what=what,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-      gridlines=gridlines,FUN='mean',
+      gridlines=gridlines,FUN='mean',colorbar=colorbar,
       colbar=list(col=col.y,type='r',v=0),
       col=col.y,bg=col.y,showall=FALSE,new=FALSE)
   ## browser()
@@ -583,7 +583,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
   par(fig=c(0.5,1,0.5,1),new=TRUE) ## mar=c(0,0,0,0),
   map(X,icca,xlim=xlim,ylim=ylim,what=what,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-      gridlines=gridlines,FUN='mean',
+      gridlines=gridlines,FUN='mean',colorbar=colorbar,
       colbar=list(col=col.x,type='r',v=0),
       col=col.x,bg=col.x,showall=FALSE,new=FALSE)
   
