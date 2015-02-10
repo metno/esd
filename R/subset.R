@@ -4,175 +4,9 @@
 subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print("subset.field")
    
-#    x0 <- x
-    if (is.null(it) & is.null(is)) return(x)
-    ## if (is.null(it) & is.null(is[[1]]) & is.null(is[[2]])) return(x) 
-#    t <- index(x)
-#    datetype <- class(t)
-#    years <- year(x)
-#    months=month(x)
-                                        #  if (datetype=="Date") {
-                                        #    years <- as.numeric( format(t, '%Y') ) 
-                                        #    months <- as.numeric( format(t, '%m') )
-                                        #  } else
-                                        #  if (datetype=="numeric") years <- t
 
-#    class(x) -> cls
-                                        #print(cls)
-                                        #print(years); print(it)
-    
-#    if (is.null(is)) is <- 1:dim(x)[2]
-    
-#    if (!is.null(it)) {
-#        if (verbose) {print("select time"); print(it)}
-                                        #  if (sum(is.element(dimension,"time"))) {
-        
-#        class(x) <- "zoo"
-#        d <- attr(x,'dimensions')
-#        if ( inherits(it[1],"logical") & (length(it)==length(x)) )
-#            y <- x[it,]
-#        else if (is.character(it)) {
-#            if ((levels(factor(nchar(it)))==10)) # REB 2015-01-15
-#                it <- as.Date(it)
-#            if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
-#                ii <- is.element(months,(1:12)[is.element(tolower(month.abb),
-#                                                          tolower(substr(it,1,3)))])
-#                y <- x[ii,is]
-#            } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
-#                ii <- is.element(months,eval(parse(text=paste('season.abb()$',it,sep=''))))
-#                y <- x[ii,is]
-#            } else if (is.element("annual",cls)) {
-#                ii <- is.element(years,seq(year(it)[1],year(it)[2],1))
-#                y <- x[ii,is]
-#            } else if (inherits(it,"Date")) {
-#                if ( length(it) == 2 ) {
-#                    if (verbose) print('Between two dates')
-#                    if (verbose) print(it)          
-#                    if (is.element("month",cls)) ## it is a month or season
-#                        it <- seq(it[1],it[2],by='month')
-#                    else if (is.element("day",cls)) ## it is a day
-#                        it <- seq(it[1],it[2],by='day')
-#                    else if (is.element("annual",cls))  ## it is a year
-#                        it <- seq(it[1],it[2],by='year')
-#
-#                    ii <- is.element(t,it)                   
-#                }
-#                y <- x[ii,is]
-#            }
-#        }
-#        else if (sum(is.element(it,1600:2200)) > 0) {
-#            if (length(it)==2) ii <- is.element(years,min(it):max(it)) else
-#            ii <- is.element(years,it)
-#                                        #print('years')
-#                                        #print(paste("Number of matches=",sum(ii)))
-#                                        #print(years[ii]); print(it)
-#            y <- x[ii,is]
-#        } 
-#        else if (is.element('month',cls) & (max(it) <= 12) ) y <- x[months==it,]
-#        else if (is.element('season',cls) & (length(it)==1)) {
-#            it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
-#            y <- x[months==it,]
-#        }
-#        else if (is.element('annual',cls)) y <- x[years==it,]
-#        else if ( (min(it) > 0) & (max(it) <= length(index(x))) ) y <- x[it,] 
-#        else if (is.character(it)) {
-#                                        #print("Dates")
-#            y <- matchdate(x,it)
-#        } else
-#            if (inherits(it,c('field','station','zoo'))) {
-                                        # Match the times of another esd-data object
-                                        # print('field/station')
-#                y <- matchdate(x,it)
-#            }
-#        d[3] <- length(index(y))
-#        class(y) <- cls
-#        y <- attrcp(x,y)
-#        d -> attr(y,'dimensions')
-    #nattr <- softattr(x)
-    #for (i in 1:length(nattr))
-    #  attr(y,nattr[i]) <- attr(x,nattr[i])
-    # Need to assign the changes to x to make an effect on subsequent spatial subsetting. 
-#        x <- y
-#    }
-#
-#    if (!is.null(is)) {
-#        if (verbose) {print("Sub-region"); print(is)}       
-                                        #  if (sum(is.element(dimension,"space"))) {
-#        if ( (is.list(is)) | (is.data.frame(is)) ) {
-#            if ( (is.null(is[[1]])) | (sum(is.finite(is[[1]])) < 2) ) is[[1]] <- c(-180,360)
-#            if ( (is.null(is[[2]])) | (sum(is.finite(is[[2]])) < 2) ) is[[2]] <- c(-90,90)
-#            nam <- names(is)
-#            if (is.null(nam)) nam <- c("lon","lat")
-#            if ( (length(is[[1]])==2) & (length(is[[2]])==2) &
-#                (nam[1]=="lon") & (nam[2]=="lat") ) {
-                # Select according to longitude-latitude ranges
-#                lon.rng <- range(is[[1]]); lat.rng <- range(is[[2]])
-                #if ( (is.null(lon.rng)) | (sum(is.finite(lon.rng)) < 2) )
-                #    lon.rng <- c(-180,180)
-                #if ( (is.null(lat.rng))  | (sum(is.finite(lat.rng)) < 2) )
-                #    lat.rng <- c(-90,90)
-                #print("subset.field: lon.rng/lat.rng"); print(lon.rng); print(lat.rng)
-                #print(class(x))
-                #print("g2dl"); print(attr(x,'dimensions')); print(dim(x)); print(class(x))
-#                if ( (min(lon.rng) < 0) & (max(lon.rng) <= 180) )
-#                    x <- g2dl.field(x,greenwich=FALSE) else
-#                if ( (min(lon.rng) >= 0) & (max(lon.rng) > 180) )
-#                    x <- g2dl.field(x,greenwich=TRUE)
-                                        #print("sp2np")
-#                x <- sp2np(x)
-                
-                #print("subset.field: lon.rng/lat.rng"); print(lon.rng); print(lat.rng)
-#                d <- attr(x,'dimensions')
-#                                        #print(d)
-#                xy <- rep(attr(x,'longitude'),d[2])
-#                yx <- sort(rep(attr(x,'latitude'),d[1]))
-#                inside <- (xy >= lon.rng[1]) &
-#                    (xy <= lon.rng[2]) &
-#                        (yx >= lat.rng[1]) &
-#                            (yx <= lat.rng[2])
-                                        #print(c(length(inside),sum(inside)))
-#                y <- x[,inside]
-#                ix <- (attr(x,'longitude') >= lon.rng[1]) &
-#                    (attr(x,'longitude') <= lon.rng[2])
-#                iy <- (attr(x,'latitude') >= lat.rng[1]) &
-#                    (attr(x,'latitude') <= lat.rng[2])
-#                d <- c(sum(ix),sum(iy),d[3])
-#                d -> attr(y,'dimensions')
-#                attr(y,'longitude') <- attr(x,'longitude')[ix]
-#                attr(y,'latitude') <- attr(x,'latitude')[iy]
-                                        #print(d)
-#            } else {
-                                        # Select the specific grid point values from the longitude
-                                        # and latitude coordinates
-#                lon.pick <- is[[1]]; lat.pick <- is[[2]]
-#                d <- attr(x,'dimensions')
-#                print(paste("Select ",length(lon.pick),"x",length(lat.pick),
-#                            "grid points from the",d[1],"x",d[2],"grid"))
-#                                        #print(d)
-#                xy <- rep(attr(x,'longitude'),d[2])
-#                yx <- sort(rep(attr(x,'latitude'),d[1]))
-#                ixy <- is.element(xy, lon.pick) &
-#                    is.element(yx, lat.pick)
-#                ix <- is.element(attr(x,'longitude'),lon.pick)
-#                iy <- is.element(attr(x,'latitude'),lat.pick)
-#                y <- x[,ixy]
-#                d <-  c(sum(ix),sum(iy),d[3])
-#                d -> attr(y,'dimensions')
-                                        #print(paste("d=",d[1],d[2],d[3]," sum(ixy)=",sum(ixy),"=",d[1]*d[2]))
-#                attr(y,'longitude') <- attr(x,'longitude')[ix]
-#                attr(y,'latitude') <- attr(x,'latitude')[iy]
-#            }
-#        }
-#    } 
-#    
-#    class(x) <- cls; class(y) <- cls
-#    y <- attrcp(x,y,ignore=c('longitude','latitude'))
-#                                        #nattr <- softattr(x,ignore=c('longitude','latitude'))
-#                                        #for (i in 1:length(nattr))
-#                                        #  attr(y,nattr[i]) <- attr(x,nattr[i])
-#                                        #mostattributes(y) <- attributes(x)
-#                                        #attr(y,'date-stamp') <- date()
-#                                        #attr(y,'call') <- match.call()
+    if (is.null(it) & is.null(is)) return(x)
+
     y <- default.subset(x,is=is,it=it,verbose=verbose)
     attr(y,'history') <- history.stamp(x)
     return(y)
@@ -720,19 +554,22 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             it <- as.Date(it)
         if ( length(it) == 2 ) {
             if (verbose) print('Between two dates')
-            # REB 2015-01-20: Need to convert it to dates - otherwise the code crashes! 
+            # REB 2015-01-20: Need to convert it to dates -
+            # otherwise the code crashes! 
            if (nchar(it[1])==4) it <- as.Date(c(paste(it[1],'-01-01',sep=''), 
                                                 paste(it[2],'-12-31',sep='')))
-            if (verbose) print(it)          
-            if (inherits(x,"month")) ## it is a month or season
+            if (verbose) {print(it); print(class(x))}
+            #browser()
+            if (inherits(x,"month")) ## it is a month
                 it <- seq(it[1],it[2],by='month')
-            if (inherits(x,"month")) ## it is a month or season
+            else if (inherits(x,"season")) ## it is a season
                 it <- seq(it[1],it[2],by='season')
             else if (inherits(x,"annual")) ## it is a year
                 it <- seq(it[1],it[2],by='year')
             else (inherits(x,"day")) ## assume it is a day
                 it <- seq(it[1],it[2],by='day')
             ii <- is.element(t,it)
+            if (verbose) print(paste('sum(ii)=',sum(ii)))
         } else { ## added AM 10-06-2014
             if (verbose) print('it is a string')
             if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
@@ -850,8 +687,8 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     selx <- is.finite(lon(x)); sely <- is.finite(lat(x))
       
     selz <- rep(TRUE,n)
-    selc <- selx; seli <- selx; selm <- selx; salt <- selx
-    selp <- selx; selF <- selx ; sell <- selx
+    selc <- selz; seli <- selz; selm <- selz; salt <- selz
+    selp <- selz; selF <- selz ; sell <- selz
 
     # REB 11.04.2014: is can be a list to select region or according to other criterion
     if ( inherits(is,'list') & inherits(x,'station') ) {
@@ -944,7 +781,8 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (!is.null(attr(y,'aspect')))
         attr(y,'aspect') <- attr(x,'aspect')[is]
       if (!is.null(attr(y,'unit')))
-        attr(y,'unit') <- attr(x,'unit')[is]
+        if (length(attr(x,'unit'))==length(is)) attr(y,'unit') <- attr(x,'unit')[is] else
+                                                attr(y,'unit') <- attr(x,'unit')
       if (!is.null(attr(y,'longname')))
         attr(y,'longname') <- attr(x,'longname')[is]
       if (!is.null(attr(y,'reference')))
