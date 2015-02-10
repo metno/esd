@@ -533,7 +533,7 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
     g <- approx(seNorgeT[2,],n=n)$y/255
     b <- approx(seNorgeT[3,],n=n)$y/255
     col <- rgb(b,g,r)
-  } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw")) {
+  } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") | (col[1]=="f[w]")) {
     r <- approx(seNorgeP[1,],n=n)$y/255
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255

@@ -82,23 +82,23 @@ spell.station <-  function(x,threshold,upper=150,...) {
 
 
 
-count <- function(x,threshold=1,fraction=FALSE) {
+count <- function(x,threshold=1,fraction=FALSE,...) {
   count <- sum(x > threshold,na.rm=TRUE)
   if (fraction) count <- count/sum(is.finite(x))
   return(count)
 }
 
-wetfreq <- function(x,threshold=1) {
+wetfreq <- function(x,threshold=1,...) {
   y <- exceedance.default(x,threshold=threshold,fun="freq")
   return(y)
 }
 
-nevents <- function(x,threshold=1) {
+nevents <- function(x,threshold=1,...) {
   y <- exceedance.default(x,threshold=threshold,fun="count")
   return(y)
 }
 
-wetmean <- function(x,threshold=1) {
+wetmean <- function(x,threshold=1,...) {
    y <- exceedance.default(x,threshold=threshold,fun="mean")
    # Also add the standard error estimate based on the sample size
    # and assuming an exponential distribtion for daily data
