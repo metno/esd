@@ -378,7 +378,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
     col <- rev(col)
   
-  print(c(length(breaks),length(col)))
+  #print(c(length(breaks),length(col)))
   #if (is.Date(what))
 
   if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
@@ -386,10 +386,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if (new) {
     #dev.new()
     par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-        fig=c(0.05,0.95,0.12,0.95),mar=rep(1,4))
+        fig=c(0.05,0.95,0.13,0.95),mar=rep(1,4))
+#    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+#        fig=c(0.05,0.95,0.12,0.95))
   } else {
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-        mar=rep(1,4))
+    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,mar=rep(1,4))
+#    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
   }
 
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
@@ -397,8 +399,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   par0 <- par()
   if (sum(is.element(tolower(what),'fill'))>0)   
     image(lon,lat,x,xlab="",ylab="",add=TRUE,
-          col=col,breaks=breaks,xlim=xlim,ylim=ylim,...) 
-    
+          col=col,breaks=breaks,xlim=xlim,ylim=ylim,...)
+  
   if (geography) {
     lines(geoborders$x,geoborders$y,col="darkblue")
     lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,col="pink")
@@ -416,15 +418,19 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if (!is.null(period))
     text(lon[length(lon)],lat[length(lat)] + dlat,period,pos=2,cex=0.7,col="grey30")
   if (!is.null(method))
-    text(lon[length(lon)],lat[1] - dlat,method,col="grey30",pos=2,cex=0.7)
+    text(lon[length(lon)],lat[1] - 0.5*dlat,method,col="grey30",pos=2,cex=0.7)
   if (colorbar) {
-    #browser()
+    par(xaxt="s",fig=c(0.05,0.95,0.01,1))
+    breaks <- round(seq(min(x,na.rm=TRUE),max(x,na.rm=TRUE),length=length(col)),1)
     image.plot(horizontal=TRUE,legend.only=TRUE,zlim=range(x,na.rm=TRUE),
-               col=col,legend.width=1,axis.args=list(cex.axis=0.8),
-               border=FALSE,add=TRUE,graphics.reset=TRUE)
+               lab.breaks=breaks,col=col,axis.args=list(cex.axis=0.8),
+               border=FALSE)
+#    image.plot(horizontal=TRUE,legend.only=TRUE,zlim=range(x,na.rm=TRUE),
+#               lab.breaks=pretty(x),col=col,legend.width=1,axis.args=list(cex.axis=0.8),
+#               border=FALSE,add=TRUE,graphics.reset=TRUE)
 #    par(fig = c(0.3, 0.7, 0.05, 0.10),mar=rep(0,4),cex=0.8,
 #        new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
-  #print("colourbar")
+#     print("colourbar"); print(pretty(x))
 #    bar <- cbind(breaks,breaks)
 #    image(breaks,c(1,2),bar,col=col,breaks=breaks)
   
@@ -435,11 +441,16 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
 #    plot(range(lon),range(lat),type="n",xlab="",ylab="",
 #         xlim=xlim,ylim=ylim)
     #browser()
-    par(fig=par0$fig,mar=par0$mar,new=TRUE)
+    par(fig=par0$fig,mar=par0$mar,new=TRUE,xaxt="n")
     plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
          xlim=xlim,ylim=ylim)                # to sumerimpose.
   }
-  
+  par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',cex.lab=0.7,cex.axis=0.7)
+  axis(2,at=pretty(lat(x)),col='grey')
+  axis(3,at=pretty(lon(x)),col='grey')
+  grid()
+
+  par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1)
   result <- list(x=lon,y=lat,z=x,breaks=breaks)
   invisible(result)
 }

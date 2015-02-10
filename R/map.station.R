@@ -363,9 +363,11 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
         if (!is.null(unlist(is)))
             if (add.text.subset)
                 if (full.names.subset)
-                    text(highlight$longitude, highlight$latitude,highlight$location,pos=3,cex=cex.subset/2)
+                    text(highlight$longitude, highlight$latitude,highlight$location,
+                         pos=3,cex=cex.subset/2)
                 else
-                    text(highlight$longitude, highlight$latitude,substr(toupper(highlight$location),1,3),pos=3,cex=cex.subset/2)
+                    text(highlight$longitude, highlight$latitude,
+                         substr(toupper(highlight$location),1,3),pos=3,cex=cex.subset/2)
         
         if (add.text)
             if (full.names)
@@ -388,7 +390,8 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
     }
 }
 
-col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
+col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
+                    type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
     par0 <- par()
     xleft <- par()$usr[1] 
     xright <- par()$usr[2]
@@ -410,16 +413,19 @@ col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,t
         if (!is.null(v)) 
             if (i == 1) k <- k + v/2 else k <- k + v  
         if (type == "r") { ## "r" for rectangle
-            rect(xleft= k  + xleft + steps[i] ,xright= k + xleft + steps[i+1],ybottom=ybottom,ytop=ytop,col=col[i],border=border)
+            rect(xleft= k  + xleft + steps[i] ,xright= k + xleft + steps[i+1],
+                 ybottom=ybottom,ytop=ytop,col=col[i],border=border)
             
             ## text(x = k + xleft + steps[i], y = ybottom - 1,labels=sprintf("%.1f",icn[i]),cex=cex)
         }
         else if (type == "p") { ## "p" points
-            points(x= k + xleft + (steps[i]+ steps[i+1])/2, y=(ybottom + ytop)/2,pch=pch, bg=col[i],cex=cex,...)
+            points(x= k + xleft + (steps[i]+ steps[i+1])/2, y=(ybottom + ytop)/2,
+                   pch=pch, bg=col[i],cex=cex,...)
             
         }
         
-        text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl, labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
+        text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl,
+             labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
     } 
     par(fig=par0$fig)
 }

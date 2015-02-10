@@ -115,7 +115,7 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
 #  if (length(grep('pc',what))>0) result <- as.station(x) else
 #  if (length(grep('var',what))>0) result <- attr(x,'tot.var')
     
-  ylab <- paste("PC",1:n)
+  ylab <- paste("PC",n)
   main <- paste(attr(x,'longname'),n,"leading EOFs: ",
                  round(sum(var.eof[1:n]),1),"% of variance")
 
@@ -128,7 +128,7 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
   if (length(grep('pc',what))>0) {
     par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
       fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
-    plot.zoo(x[,1:n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim)
+    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim)
   }
   
   par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
