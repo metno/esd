@@ -449,6 +449,17 @@ as.field.eof <- function(x,iapp=NULL,...) {
   return(y)
 }
 
+
+as.field.ds <- function(x,iapp=NULL,...) {
+  ##print(class(x))
+  if (inherits(x,'eof')) {
+    class(x) <- class(x)[-1]
+    y <- as.field.eof(x,iapp,...)
+  } else y <- NULL
+  return(y)
+}
+
+
 as.field.station <- function(x,lon=NULL,lat=NULL...) {
   if (is.null(lon)) lon <- seq(min(lon(x)),max(lon(x)),length=30)
   if (is.null(lat)) lat <- seq(min(lat(x)),max(lat(x)),length=30)
