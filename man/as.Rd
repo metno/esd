@@ -14,6 +14,7 @@
 \alias{as.field.zoo}
 \alias{as.field.comb}
 \alias{as.field.eof}
+\alias{as.field.ds}
 \alias{as.field.field}
 \alias{as.field.station}
 \alias{as.anomaly}
@@ -131,6 +132,7 @@ as.field.default(x,index,lon,lat,param,unit,
                  greenwich=TRUE, method= NA,type=NA,aspect=NA)
 as.field.eof(x,...)
 as.field.comb(x,iapp=NULL,...)
+as.field.ds(x,iapp=NULL,...)
 as.field.station(x,...)
 as.fitted.values(x)
 as.fitted.values.ds(x)

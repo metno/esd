@@ -190,19 +190,27 @@ map.field <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
                       lonR=NULL,latR=NULL,na.rm=TRUE,colorbar=TRUE,
                       axiR=0,gridlines=FALSE,col=NULL,breaks=NULL,...) {
     
-    stopifnot(inherits(x,'field'))
+  stopifnot(inherits(x,'field'))
   #print('map.field')
   x <- subset(x,it=it,is=is)
   #print(length(x)); print(attr(x,'dimensions')[1:2])
   projection <- tolower(projection)
+  if (FUN=='trend') FUN <- 'trend.coef'
 
   if (!is.null(xlim)) {
     if (xlim[1] < 0) x <- g2dl(x,greenwich=FALSE)
   }
   #str(X)
   X <- coredata(x)
+  ## If one time slice, then map this time slice
   if (dim(X)[1]==1) X <- coredata(x[1,]) else
-  if (inherits(X,"matrix")) X <- apply(x,2,FUN=FUN,na.rm=na.rm)
+  if (is.null(X)) X <- coredata(X) else if (inherits(X,"matrix")) {
+  ## If several time slices, map the required statistics
+    good <- apply(coredata(x),2,nv) > 1
+    X <- rep(NA,length(good))
+    xx <- coredata(x[,good])
+    X[good] <- apply(xx,2,FUN=FUN,na.rm=na.rm)
+  }
   #print(length(X))
   attr(X,'longitude') <- attr(x,'longitude')
   attr(X,'latitude') <- attr(x,'latitude')

@@ -37,16 +37,16 @@ nv <- function(x) sum(is.finite(x))
 cv <- function(x,na.rm=TRUE) {sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)}
 
 ## Compute the linear trend
-trend.coef <- function(x) {
-    t <- 1:length(x)
-    model <- lm(x ~ t)
-    y <- c(model$coefficients[2]*10)
-    names(y) <- c("trend.coefficients")
-    return(y)
+trend.coef <- function(x,...) {
+  t <- 1:length(x)
+  model <- lm(x ~ t)
+  y <- c(model$coefficients[2]*10)
+  names(y) <- c("trend.coefficients")
+  return(y)
 }
 
 ## Compute the p-value of the linear trend 
-trend.pval <- function(x) {
+trend.pval <- function(x,...) {
     t <- 1:length(x)
     model <- lm(x ~ t)
     y <- anova(model)$Pr[1]
