@@ -354,7 +354,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
                 col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,col=colbar$col,
                         cex=2,cex.lab=colbar$cex.lab,type="p",verbose=FALSE,vl=1,border=FALSE)
             else
-                image.plot(horizontal = TRUE, legend.only = T, zlim = range(colbar$breaks),
+                image.plot(lab.breaks=colbar$breaks,horizontal = TRUE, legend.only = T, zlim = range(colbar$breaks),
                            col = colbar$col, legend.width = 1, axis.args = list(cex.axis = 0.8),
                            border = FALSE)
         }    

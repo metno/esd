@@ -50,7 +50,79 @@ vis.dsensemble <- function(x,...) {
 vis.ds <- function(x,...) {
 }
 
+vis.trends <- function(x,unitlabel="unit",varlabel="",
+ alpha=0.01,minlen=10,lwd=NA,cticks=NA,new=TRUE) {
+
+  T <- calculate.trends(x,minlen=minlen)
+  trends <- T$trends*10
+  p <- T$p
+  cols <- as.numeric(colnames(trends))
+  rows <- as.numeric(rownames(trends))
+  significant <- ifelse(p<alpha,trends,NA)
+  
+  ticks <- seq(1,length(cols),signif(length(cols)/10,1))
+  if (is.na(lwd)) lwd <- max(3-0.05*length(cols),0.2)
+    
+  vmax <- max(abs(trends),na.rm=TRUE)
+  vq <- q995(abs(trends))
+  dv <- signif(vq/5,1)
+  v0 <- signif(dv/2,1)#0
+  vstep <- seq(v0,signif(vq,1),dv)
+  vstep <- unique(c(-1*vstep,vstep))
+  vstep <- vstep[order(vstep)]
+  cstep <- colscal(n=length(vstep)-1,col="bwr")
+  breaks <- c(-vmax,vstep[2:(length(vstep)-1)],vmax)
+  
+  # Plot trend as color
+  if (new) dev.new()
+  image(rows,cols,t(trends),breaks=breaks,col=cstep,
+        xlab='end year',ylab="start year",
+        main=paste(c(varlabel," trend (",unitlabel,"/decade)"),collapse=""))
+
+  # Mark significant trends with dark borders
+  i <- which((is.finite(t(p)) & t(p)<alpha))
+  x <- rep(rows,nrow(p))[i]
+  y <- array(sapply(cols,function(x) rep(x,nrow(p))),length(p))[i]
+  matlines(rbind(x-1/2,x+1/2),rbind(y-1/2,y-1/2),col='black',lwd=lwd,lty=1)
+  matlines(rbind(x-1/2,x+1/2),rbind(y+1/2,y+1/2),col='black',lwd=lwd,lty=1)
+  matlines(rbind(x-1/2,x-1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
+  matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
+
+  # Add colorbar. Ticks look slightly off.
+  colbar(vstep,cstep,fig=c(0.15,0.2,0.65,0.85))
+}
  
+calculate.trends <- function(x,minlen=10){
+  # Calculate trends of time series x
+  stopifnot(inherits(x,'zoo'))
+  xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean")
+  xy <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="mean")
+  ny <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="nv")
+  xy <- xy[ny==max(ny)] # exclude years with missing months 
+  year <- as.numeric(index(xy))
+  firstyear <- min(year):(max(year)-minlen+1)
+  lastyear <- firstyear+minlen-1
+  n <- length(firstyear)
+  trends <- matrix(NA,n,n)
+  colnames(trends) <- lastyear
+  rownames(trends) <- firstyear
+  p <- trends
+  # speed up with apply?
+  for (i in firstyear) {
+    jvec <- (i+minlen-1):(max(year)+1)
+    for (j in jvec) {
+      ij <- which(year %in% i:j)
+      ij.model <- lm(xy[ij]~year[ij])
+      #ij.kendall <- Kendall(x[ij],year[ij])
+      iout <- as.numeric(colnames(trends))==j
+      jout <- as.numeric(rownames(trends))==i
+      trends[jout,iout] <- ij.model$coefficients[2]
+      p[jout,iout] <- anova(ij.model)$Pr[1]#ij.kendall$sl[1]
+    }
+  }  
+  return(list("trends"=trends,"p"=p))
+}
+
 # Plot binned scatterplot with sunflowers
 binscatter.sunflower <- function(x,y,petalsize=7,
                           dx=NULL,dy=NULL,x.range=NULL,y.range=NULL,
