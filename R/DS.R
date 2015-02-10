@@ -714,9 +714,9 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             
             if (verbose) {print(class(ys)); print(class(X))}
             z <- DS(ys,X,biascorrect=biascorrect,
-                    eofs=eofs,rmtrend=rmtrend,verbose=verbose)
+                    eofs=eofs,rmtrend=rmtrend,verbose=verbose,...)
 
-            print('---HERE---')
+            ##print('---HERE---')
             attr(z,'mean') <- 0 # can't remember why... REB
                                         # Collect the projections in a matrix:
                                         #zp <- predict(z,newdata=Xp)
@@ -789,7 +789,7 @@ DS.eof <- function(y,X,mon=NULL,
 
 DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
                     method="lm",swsm="step",m=5,
-                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                    rmtrend=TRUE,eofs=1:7,
                     verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
               ### This method combines different EOFs into one predictor by making a new
               ### data matrix consisting of the PCs, then weight (w) these according to their
@@ -798,7 +798,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
               ### an object that looks like on EOF.
     if (verbose) print('DS.list')
     preds <- names(X)
-    print(preds)
+    if (verbose) print(preds)
     np <- length(preds)
 
 ## Test: if there is only one predictor, use the method for one predictor
@@ -810,7 +810,6 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
           ds1 <- DS(y[[i]],X,biascorrect=biascorrect,mon=mon,
                     method=method,swsm=swsm,
                     rmtrend=rmtrend,eofs=eofs,
-                    area.mean.expl=area.mean.expl,verbose=verbose,
                     weighted=TRUE,pca=FALSE,npca=20,...)
           eval(parse(text=paste('ds$',predictands[i],' <- ds1',sep='')))
         }
@@ -886,7 +885,6 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
     ds <- DS(y,eof,biascorrect=biascorrect,
              method=method,swsm=swsm,m=m,
              rmtrend=rmtrend,eofs=eofs,
-             area.mean.expl=area.mean.expl,verbose=verbose,
              weighted=TRUE,pca=FALSE,...)
 
     ## Now, we need to reconstruct the spatial maps/patterns. There will be
@@ -898,12 +896,29 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
       ## and not the predictor.
       if (verbose) str(attr(ds,'pattern'))
       dp <- length(attr(ds,'pattern'))
-      
+
       for (i in 1:np) {
-            diag(c(attr(ds,'pattern'))) %*% udv$v[1:dp,is.element(id,i)] -> eofweights
+            xp <- attr(ds,'pattern')
+            if (is.null(dim(xp))) {
+              ## PCA-based predictands: the pattern stores the weights of
+              ## the regression coefficients
+              if (verbose) print('DS pattern: 1D')
+              ##diag(c(xp)) %*% udv$v[1:dp,is.element(id,i)] -> eofweights
+              ## Y = beta U^T
+              xp %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
+            } else {
+              ## EOF-based predictand:
+              browser()
+              if (verbose) print('DS pattern: 3D')
+              xd <- dim(xp)
+              dim(xp) <- c(xd[1]*xd[2],xd[3])
+              xd %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
+            }
+              
             U <- attr(X[[i]],'pattern'); du <- dim(U)
             dim(U) <- c(du[1]*du[2],du[3])
-            z <- diag(eofweights) %*% t(U)
+            if (is.null(dim(eofweights))) z <- U %*% diag(eofweights) else
+                                          z <- U %*% t(eofweights)
             dim(z) <- c(du[1],du[2])
             attr(z,'longitude') <- lon(X[[i]])
             attr(z,'latitude') <- lat(X[[i]])

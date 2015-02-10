@@ -561,14 +561,15 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             if (verbose) {print(it); print(class(x))}
             #browser()
             if (inherits(x,"month")) ## it is a month
-                it <- seq(it[1],it[2],by='month')
-            else if (inherits(x,"season")) ## it is a season
-                it <- seq(it[1],it[2],by='season')
-            else if (inherits(x,"annual")) ## it is a year
-                it <- seq(it[1],it[2],by='year')
-            else (inherits(x,"day")) ## assume it is a day
+                it <- seq(it[1],it[2],by='month') else
+            if (inherits(x,"season")) ## it is a season
+                it <- seq(it[1],it[2],by='season') else
+            if (inherits(x,"annual")) ## it is a year
+                it <- seq(it[1],it[2],by='year') else 
+            if (inherits(x,"day")) ## assume it is a day
                 it <- seq(it[1],it[2],by='day')
             ii <- is.element(t,it)
+            #print(it); print(t)
             if (verbose) print(paste('sum(ii)=',sum(ii)))
         } else { ## added AM 10-06-2014
             if (verbose) print('it is a string')
