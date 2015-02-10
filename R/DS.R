@@ -53,8 +53,8 @@ DS.default <- function(y,X,mon=NULL,
     if (verbose) print('DS.default')
     #print('err(y)'); print(err(y))
     if (verbose) {print('index(y)'); print(index(y))}
-    class(y)
-    class(X)
+    if (verbose) {print(class(y)); print(class(X))}
+    
     swapped <- FALSE
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
         yy <- X
@@ -225,18 +225,6 @@ DS.default <- function(y,X,mon=NULL,
 }
 
 
-DS.eof <- function(X,y,mon=NULL,
-                   method="lm",swsm="step",m=5,
-                   rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                   verbose=FALSE,weighted=TRUE,pca=TRUE,...) {
-                                        #if (verbose) print("DS.eof")
-    ds <- DS.default(y,X,mon=mon,
-                     method=method,swsm=swsm,m=m,
-                     rmtrend=rmtrend,eofs=eofs,
-                     area.mean.expl=area.mean.expl,
-                     verbose=verbose,...)
-    return(ds)
-}
 
 
 
@@ -439,7 +427,7 @@ DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
     }
     
                                         #print(class(X)); print(attr(y,'variable'))
-    
+    if (verbose) {print(class(X)); print(varid(y))}
     if (sum(is.element(tolower(attr(y,'variable')),c('t2m','tmax','tmin'))) >0) {
         if (inherits(X,'month')) 
             ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
@@ -464,6 +452,11 @@ DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
                                      method=method,swsm=swsm,m=m,
                                      rmtrend=rmtrend,eofs=eofs,
                                      area.mean.expl=area.mean.expl,verbose=verbose)
+    else ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
+                          method=method,swsm=swsm,m=m,
+                          rmtrend=rmtrend,eofs=eofs,
+                          area.mean.expl=area.mean.expl,verbose=verbose)
+    if (verbose) print('return downscaled results')
     invisible(ds)
 }
 
@@ -637,7 +630,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,eofs=1:10,
                    rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
     
-    if (verbose) print('DS.pca')
+    if (verbose) {print('DS.pca'); print(class(X))}
     if (is.list(X)) {
       if (verbose) print('Predictors represented by a list object')
       z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
@@ -661,7 +654,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         #str(y); str(X)
     if (verbose) print(method)
     if (toupper(method)=='mvr') {
-        print('MVR')
+        if (verbose) print('MVR')
         if (is.null(dy)) dy <- c(length(y),1)
         if (dy[2]>1) colnames(y) <- paste("y",1:dy[2],sep=".")
         if (is.null(dx)) dx <- c(length(x),1)
@@ -689,8 +682,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         #str(pca)
         ds <- zoo(pca$v,order.by=index(X))
         model$fitted.values <- zoo(model$fitted.values,order.by=index(X)) +
-                                        #    attr(y0,'mean') + offset  # REB 04.12.13: included attr(y0,'mean') in
-                                        #                             # addition to offset
+          ##    attr(y0,'mean') + offset  # REB 04.12.13: included attr(y0,'mean') in
+          ##                              # addition to offset
             model$calibration.data <- X
         class(model$fitted.values) <- class(y0)
         attr(ds,'model') <- model
@@ -700,27 +693,30 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         attr(ds,'pattern') <- pca$u
     } else {
         if (verbose) print('Default')
-                                        # treat each PC as a station
+        ## treat each PC as a station
         if (verbose) print('Prepare output data')
-                                        # If common EOFs, then accomodate for the additional predictions
-                                        #browser()
+        ## If common EOFs, then accomodate for the additional predictions
         if (!is.null(attr(X0,'n.apps'))) {
-            Xp <- attr(X0,'appendix.1')
+          if (verbose) print(attr(X0,'n.apps'))
+          Xp <- attr(X0,'appendix.1')
         } else Xp <- X
         y.out <- matrix(rep(NA,dx[1]*dy[2]),dx[1],dy[2])
         fit.val <- y.out
         yp.out <- matrix(rep(NA,dim(Xp)[1]*dy[2]),dim(Xp)[1],dy[2])
 
-        if (verbose) print(eofs)
+        if (verbose) print(paste('PC',eofs,collapse=' '))
                                         # Loop over the PCs...
         for (i in 1:dy[2]) {
             ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],
                              unit=unit(y)[i],lon=lon(y)[i],lat=lat(y)[i],
                              alt=alt(y)[i],cntr=cntr(y)[i],stid=stid(y)[i])
-            class(ys) <- class(y)[-1]
+            class(ys) <- c('station',class(y)[-c(1:2)])
+            
+            if (verbose) {print(class(ys)); print(class(X))}
             z <- DS(ys,X,biascorrect=biascorrect,
                     eofs=eofs,rmtrend=rmtrend,verbose=verbose)
 
+            print('---HERE---')
             attr(z,'mean') <- 0 # can't remember why... REB
                                         # Collect the projections in a matrix:
                                         #zp <- predict(z,newdata=Xp)
@@ -777,6 +773,18 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     invisible(ds)
 }
 
+DS.eof <- function(y,X,mon=NULL,
+                   method="lm",swsm="step",m=5,
+                   rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                   verbose=FALSE,weighted=TRUE,pca=TRUE,...) {
+    if (verbose) print("DS.eof")
+    ds <- DS.pca(y,X,mon=mon,
+                 method=method,swsm=swsm,m=m,
+                 rmtrend=rmtrend,eofs=eofs,
+                 area.mean.expl=area.mean.expl,
+                 verbose=verbose,...)
+    return(ds)
+}
 
 
 DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
