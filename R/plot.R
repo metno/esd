@@ -95,7 +95,7 @@ plot.eof <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
 
 plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
                            what=c("pc","eof","var"),colorbar=FALSE,...) {
-  print("plot.eof.field")
+  #print("plot.eof.field")
   n <- pattern
   what <- tolower(what)
   #str(pattern); stop("HERE")
