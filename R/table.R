@@ -9,13 +9,14 @@ summary.dsensemble <- function(x,years=seq(1990,2090,by=20)) {
     tab <- rep('',length(years) + 1)
     tab[1] <- paste(loc(x), '  Annual, DFJ, MAM, JJA, SON')
     i <- 1
-    #browser()
+    ##browser()
     for (yr in years) {
       i <- i + 1
+      ##print(i,yr)
       tab[i] <- paste(years[i-1],':    ',
                  round(mean(coredata(subset(x0,it=years[i-1]))),2),
                  ' [',round(quantile(subset(x0,it=years[i-1]),0.05),2),', ',
-                 round(quantile(subset(x0,it=years[i-1]),0.95),,2),'],  ',
+                 round(quantile(subset(x0,it=years[i-1]),0.95),2),'],  ',
                  round(mean(coredata(subset(djf,it=years[i-1]))),2),
                  ' [',round(quantile(subset(djf,it=years[i-1]),0.05),2),', ',
                  round(quantile(subset(djf,it=years[i-1]),0.95),2),'],  ',
@@ -28,6 +29,7 @@ summary.dsensemble <- function(x,years=seq(1990,2090,by=20)) {
                  round(mean(coredata(subset(son,it=years[i-1]))),2),
                  ' [',round(quantile(subset(son,it=years[i-1]),0.05),2),', ',
                  round(quantile(subset(son,it=years[i-1]),0.95),2),']',sep='')
+      ##print(tab[i])
     }
     tab
 }

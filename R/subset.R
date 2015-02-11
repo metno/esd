@@ -247,9 +247,9 @@ subset.trend <- function(x,it=NULL,is=NULL) {
     return(y)
 }
 
-subset.dsensemble <- function(x,it=NULL,is=NULL) {
+subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (is.null(it) & is.null(is)) return(x)
-                                        #print("subset.dsensemble"); print(it)
+    if (verbose) {print("subset.dsensemble"); print(it)}
     x0 <- x
     d <- dim(x)
     if (is.null(is)) is <- 1:d[2]
@@ -257,11 +257,11 @@ subset.dsensemble <- function(x,it=NULL,is=NULL) {
         if (is.character(it)) it <- tolower(it)
         if ( (length(rownames(table(month(x))))==1) & (it==0) )
             return(x)
-                                        # Different ways of selecting along the time dimension
+        ## Different ways of selecting along the time dimension
         if ( inherits(it[1],"logical") & (length(it)==length(x)) )
             y <- x[it,is] else
         if (it[1]==0) {
-                                        #print("Annual means")
+            if (verbose) print("Annual means")
             djf <- subset(x,it='djf',is=is)
             mam <- subset(x,it='mam',is=is)
             jja <- subset(x,it='jja',is=is)
@@ -287,7 +287,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL) {
             y <- attrcp(x0,y)
             class(y) <- class(x0)
         } else if (is.character(it)) {
-                                        #print("it is character")
+            if (verbose) print("it is character")
             months <- month(x)
             if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
                 ii <- is.element(months,(1:12)[is.element(tolower(month.abb),
@@ -307,18 +307,19 @@ subset.dsensemble <- function(x,it=NULL,is=NULL) {
                                         #      y <- x[ii,is]
             } } else
                 if (sum(is.element(it,1600:2200)) > 0) {
-                                        #print("it contains year(s)")
+                    if (verbose) print("it contains year(s)")
                     ii <- is.element(year(x),it)
-                                        #print(paste("Number of matches=",sum(ii)))
+                    if (verbose) print(paste("Number of matches=",sum(ii)))
                     y <- x[ii,is]
                 } else if (is.character(it)) {
-                                        #print("Dates")
+                    if (verbose) print("Dates")
                     x <- matchdate(x,it)
                 } else if (inherits(is,c('field','station'))) {
-                                        # Match the times of another esd-data object
+                  ## Match the times of another esd-data object
+                    if (verbose) print("Match date with another object")
                     x <- matchdate(x,it)
                 }
-                                        #print("housekeeping")
+        if (verbose) print("housekeeping")
         d[3] <- length(index(y))
         class(y) <- class(x0)
         d -> attr(y,'dimensions')
@@ -327,15 +328,17 @@ subset.dsensemble <- function(x,it=NULL,is=NULL) {
                                         #print("station"); str(attr(x,'station')); print(class(attr(x,'station')))
                                         #plot(subset(attr(x,'station'),it=it))
                                         #browser()
-        if ( (it!=0) & (!inherits(attr(x,'station'),'annual')) )
-            attr(y,'station') <- subset(attr(x,'station'),it=it) else
-        attr(y,'station') <- annual(attr(x,'station'))
+        if ( (it!=0) & (!inherits(attr(x,'station'),'annual')) & (it <= max(year(attr(x,'station')))) ) {
+          if (verbose) print('Also extract the same data for the station')
+          attr(y,'station') <- subset(attr(x,'station'),it=it,verbose=verbose) }
+        else
+          attr(y,'station') <- annual(attr(x,'station'))
                                         #print("HERE")
                                         #nattr <- softattr(x)
                                         #for (i in 1:length(nattr))
                                         #  attr(y,nattr[i]) <- attr(x,nattr[i])
     } else {
-                                        # Bug-fix AM: 2014-09-22
+      ## Bug-fix AM: 2014-09-22
         y <- x[,is]
         y <- attrcp(x,y)
         attr(y, "model_id") <- attr(x, "model_id")[is]
@@ -344,7 +347,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL) {
         attr(y,"history") <- history.stamp(x)
         if (length(is)==1) class(y) <- c("ds","zoo") else class(y) <- class(x)
     }
-                                        #print("exit")
+    if (verbose) print("exit subset.dsensemble")
     return(y)  
 }
 
