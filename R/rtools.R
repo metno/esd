@@ -19,19 +19,19 @@ as.decimal <- function(x=NULL) {
 missval <- function(x) sum(is.na(coredata(x)))/length(coredata(x))
 
 ## compute the quantile 95% of x
-q95 <- function(x) quantile(x,probs=.95,na.rm=TRUE)
+q95 <- function(x,na.rm=TRUE) quantile(x,probs=.95,na.rm=na.rm)
 
 ## compute the quantile 5% of x
-q5 <- function(x) quantile(x,probs=.05,na.rm=TRUE)
+q5 <- function(x,na.rm=TRUE) quantile(x,probs=.05,na.rm=na.rm)
 
 ## compute the quantile 5% of x
-q995 <- function(x) quantile(x,probs=.995,na.rm=TRUE)
+q995 <- function(x,na.rm=TRUE) quantile(x,probs=.995,na.rm=na.rm)
 
 ## compute the quantile 5% of x
-q975 <- function(x) quantile(x,probs=.975,na.rm=TRUE)
+q975 <- function(x,na.rm=TRUE) quantile(x,probs=.975,na.rm=na.rm)
 
 ## count the number of valid data points
-nv <- function(x) sum(is.finite(x))
+nv <- function(x,...) sum(is.finite(x))
 
 ## Compute the coefficient of variation of x
 cv <- function(x,na.rm=TRUE) {sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)}
