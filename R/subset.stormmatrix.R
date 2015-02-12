@@ -20,15 +20,15 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       mo <- as.numeric(strftime(t,"%m"))
       dy <- as.numeric(strftime(t,"%d"))
     
-      is.months <- function(x) (sum(is.element(tolower(substr(x,1,3)),
+      is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
                                                tolower(month.abb)))>0)
-      is.seasons <- function(x) (sum(is.element(tolower(substr(x,1,3)),
+      is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
                                                 names(season.abb())))>0)
-      is.dates <- function(x) (!is.months(x) &
+      is.dates <- function(x) all(!is.months(x) &
                               (levels(factor(nchar(x)))==10) |
-                              (is.numeric(it) & levels(factor(nchar(x)))==8))
-      is.years <- function(x) (!is.months(x) & levels(factor(nchar(x)))==4)
-
+                              (is.numeric(x) & levels(factor(nchar(x)))==8))
+      is.years <- function(x) all(!is.months(x) & levels(factor(nchar(x)))==4)
+      
       if (is.months(it)) {
         if (verbose) print('Monthly selected')
         ii <- is.element(mo,(1:12)[is.element(tolower(month.abb),
@@ -61,6 +61,11 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           if (verbose) print('it is a string of years')
           ii <- is.element(yr,it)
         }
+      } else if (is.logical(it) & length(it)==length(t)) {
+          ii <- it
+      } else if (is.integer(it) & max(is)<=length(t)) {
+          ii <- rep(FALSE,length(t))
+          ii[it] <- TRUE
       } else {
         ii <- rep(FALSE,length(t))
         warning("subset.station: did not recognise the selection citerion for 'it'")
