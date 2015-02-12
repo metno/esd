@@ -140,26 +140,35 @@ calculate.trends <- function(x,minlen=10){
 
 # Plot binned scatterplot with sunflowers
 binscatter.sunflower <- function(x,y,petalsize=7,
-                          dx=NULL,dy=NULL,x.range=NULL,y.range=NULL,
+                          dx=NULL,dy=NULL,xgrid=NULL,ygrid=NULL,
                           xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
                           leg=TRUE,rotate=TRUE,alpha=0.6,leg.loc=2) {
 
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
 
-  if (is.null(dx)) dx <- (max(x)-min(x))/15
-  if (is.null(dy)) dy <- (max(y)-min(y))/15
-  if (is.null(x.range)) x.range = c(min(x),max(x))
-  if (is.null(y.range)) y.range = c(min(y),max(y))
+  # Define grid
+  if (is.null(dx) & length(xgrid)<=2) dx <- (max(x)-min(x))/20
+  if (is.null(dy) & length(ygrid)<=2) dy <- (max(y)-min(y))/20
   
-  # Define grid 
-  x.grid <- seq(min(x.range),max(x.range),dx*3/4)
-  y.grid <- seq(min(y.range),max(y.range),dy*sin(2*pi/6))
-  Y <- replicate(length(x.grid),y.grid)
-  X <- t(replicate(length(y.grid),x.grid))
-  Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
+  if (is.null(xgrid)) {
+    xgrid <- seq(min(x),max(x),dx*3/4)
+  } else if (length(xgrid)==2) {
+    xgrid <- seq(min(xgrid),max(xgrid),dx*3/4)
+  } else if (length(xgrid)>2) {
+    dx <- min(xgrid[2:length(xgrid)]-xgrid[1:(length(xgrid)-1)])
+  }
 
-  dx <- dx*0.85
-  dy <- dy*0.85
+  if (is.null(ygrid)) {
+    ygrid <- seq(min(y),max(y),dy*sin(2*pi/6))
+  } else if (length(ygrid)==2) {
+    ygrid <- seq(min(ygrid),max(ygrid),dy*sin(2*pi/6))
+  } else if (length(ygrid)>2) {
+    dy <- min(ygrid[2:length(ygrid)]-ygrid[1:(length(ygrid)-1)])
+  }
+  
+  Y <- replicate(length(xgrid),ygrid)
+  X <- t(replicate(length(ygrid),xgrid))
+  Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
   
   # Count observations in each grid point
   XYN <- binscatter.bin(x,y,X,Y)
@@ -256,36 +265,47 @@ binscatter.sunflower <- function(x,y,petalsize=7,
 
 # Plot binned scatterplot with hexagons
 binscatter.hex <- function(x,y,new=TRUE,Nmax=NULL,
-                          dx=NULL,dy=NULL,x.range=NULL,y.range=NULL,
-                          xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
-                          leg=TRUE,col='blue',border='black') {
+                           dx=NULL,dy=NULL,xgrid=NULL,ygrid=NULL,
+                           xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
+                           leg=TRUE,col='blue',border='black') {
 
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
 
-  if (is.null(dx)) dx <- (max(x)-min(x))/20
-  if (is.null(dy)) dy <- (max(y)-min(y))/20
-  if (is.null(x.range)) x.range = c(min(x),max(x))
-  if (is.null(y.range)) y.range = c(min(y),max(y))
+  # Define grid
+  if (is.null(dx) & length(xgrid)<=2) dx <- (max(x)-min(x))/20
+  if (is.null(dy) & length(ygrid)<=2) dy <- (max(y)-min(y))/20
   
-  # Define grid 
-  x.grid <- seq(min(x.range),max(x.range),dx*3/4)
-  y.grid <- seq(min(y.range),max(y.range),dy*sin(2*pi/6))
-  Y <- replicate(length(x.grid),y.grid)
-  X <- t(replicate(length(y.grid),x.grid))
+  if (is.null(xgrid)) {
+    xgrid <- seq(min(x),max(x),dx*3/4)
+  } else if (length(xgrid)==2) {
+    xgrid <- seq(min(xgrid),max(xgrid),dx*3/4)
+  } else if (length(xgrid)>2) {
+    dx <- xgrid[2:length(xgrid)]-xgrid[1:(length(xgrid)-1)]           
+  }
+
+  if (is.null(ygrid)) {
+    ygrid <- seq(min(y),max(y),dy*sin(2*pi/6))
+  } else if (length(ygrid)==2) {
+    ygrid <- seq(min(ygrid),max(ygrid),dy*sin(2*pi/6))
+  } else if (length(ygrid)>2) {
+    dy <- ygrid[2:length(ygrid)]-ygrid[1:(length(ygrid)-1)]
+  }
+  
+  Y <- replicate(length(xgrid),ygrid)
+  X <- t(replicate(length(ygrid),xgrid))
   Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
 
-  # Count observations in each grif point
+  # Count observations in each grid point
   XYN <- binscatter.bin(x,y,X,Y)
   X <- XYN[,1]; Y <- XYN[,2]; N <- XYN[,3]
   if(is.null(Nmax)) Nmax <- max(N)
   Nf <- sapply(N/Nmax,function(x) min(1,x))
-                         
+  
   # Plot
   if (is.null(xlim)) xlim <- c(min(X)-dx,max(X)+dx)
   if (is.null(ylim)) ylim <- c(min(Y)-dy,max(Y)+dy)
   if(leg) par(xpd=NA,mai=c(1.02,0.82,0.82,1.02))
   if(new) plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,type='n')
-
   mapply(polygon.fill,X[N>0],Y[N>0],dx/2*Nf[N>0],dy/2*Nf[N>0],
          n=6,col=col,border=border)
 
