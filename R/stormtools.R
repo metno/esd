@@ -1,6 +1,6 @@
 ## Author     K. Parding
-## Last update   29.01.2015
-## Tools for analysing IMILAST stormtrack files
+## Last update   12.02.2015
+## Tools for analyzing IMILAST stormtrack files
 
 year.stormmatrix <- function(x) {
   start <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")
@@ -27,9 +27,42 @@ slp.stormmatrix <- function(x,FUN=min) {
   invisible(slp)
 }
 
-stormcount <- function(x,...) UseMethod("stormcount.time")
-  
-stormcount.time <- function(x,by='year') {
+sort.stormmatrix <- function(x) {
+  if (any('sorted' %in% attr(x,'aspect'))) {
+    invisible(x)
+  } else {
+    start <- x[,colnames(x)=='start']
+    date <- strptime(start,format="%Y%m%d%H")
+    while (sum(duplicated(date))>0) {
+      date[duplicated(date)] <- date[duplicated(date)]+60
+    }
+    y <- zoo(x,order.by=date)
+    y <- attrcp(x,y)
+    attr(y,'aspect') <- c('sorted',attr(x,'aspect'))
+    class(y) <- c('zoo',class(x))
+    invisible(y)
+  }
+}
+
+anomaly.stormmatrix <- function(x) {
+  if (any('anomaly' %in% attr(x,'aspect'))) {
+    invisible(x)
+  } else {
+    ilat <- which(colnames(x)=='lat')
+    ilon <- which(colnames(x)=='lon')
+    lat.anomaly <- apply(x,1,function(x) x[ilat]-x[ilat[1]])
+    lon.anomaly <- apply(x,1,function(x) x[ilon]-x[ilon[1]])
+    x[,ilat] <- t(lat.anomaly)
+    x[,ilon] <- t(lon.anomaly)
+    y <- x
+    y <- attrcp(x,y)
+    attr(y,'aspect') <- c('anomaly',attr(x,'aspect'))
+    attr(y,'history') <- history.stamp(x)
+    invisible(y)
+  }
+}
+
+stormcount <- function(x,by='year') {
   t <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
   if (by=='year') {
     fmt <- "%Y"
@@ -44,36 +77,34 @@ stormcount.time <- function(x,by='year') {
   invisible(nz)
 }
 
-stormcount.space <- function(x,dlon=5,dlat=2,digits=6) {
-  lats <- x[,colnames(x)=='lat']
-  lons <- x[,colnames(x)=='lon']
-  D <- dim(lons)
-  if (length(D)==2) {
-    lons <- matrix(lons,1,D[1]*D[2])
-    lats <- matrix(lats,1,D[1]*D[2])
-  }
-  lons <- round(lons/dlon)*dlon
-  lats <- round(lats/dlat)*dlat
-  xy <- xy.coords(lons,lats,'lon','lat','')
-  tt <- xyTable(xy, digits=digits)
-  invisible(tt)
-}
-
   
 # Takes forever! What's wrong? I am using apply...
 polyfit.stormmatrix <- function(X) {
-  Z <- apply(X,1,function(x) polyfit(x[1:10],x[11:20])) 
+  Z <- apply(X,1,function(x) pfit(x[1:10],x[11:20])) 
   return(Z)
 }
 
-polyfit <- function(x,y) {
+pfit <- function(x,y) {
   pfit <- lm(y ~ I(x) + I(x^2) + I(x^3) + I(x^4) + I(x^5))
   z <- predict(pfit)
   attr(z,'model') <- pfit$coef
   return(z)
 }
 
-pca.stormmatrix <- function(x) {
 
-}
-
+# Should count storms in equal area bins (hexagonal?), not lat-lon grid
+# Use binscatter.bin?
+## stormbin <- function(x,dlon=5,dlat=2,digits=6) {
+##   lats <- x[,colnames(x)=='lat']
+##   lons <- x[,colnames(x)=='lon']
+##   D <- dim(lons)
+##   if (length(D)==2) {
+##     lons <- matrix(lons,1,D[1]*D[2])
+##     lats <- matrix(lats,1,D[1]*D[2])
+##   }
+##   lons <- round(lons/dlon)*dlon
+##   lats <- round(lats/dlat)*dlat
+##   xy <- xy.coords(lons,lats,'lon','lat','')
+##   tt <- xyTable(xy, digits=digits)
+##   invisible(tt)
+## }

@@ -24,7 +24,9 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                                                tolower(month.abb)))>0)
       is.seasons <- function(x) (sum(is.element(tolower(substr(x,1,3)),
                                                 names(season.abb())))>0)
-      is.dates <- function(x) (!is.months(x) & levels(factor(nchar(x)))==10)
+      is.dates <- function(x) (!is.months(x) &
+                              (levels(factor(nchar(x)))==10) |
+                              (is.numeric(it) & levels(factor(nchar(x)))==8))
       is.years <- function(x) (!is.months(x) & levels(factor(nchar(x)))==4)
 
       if (is.months(it)) {
@@ -38,12 +40,13 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ii <- is.element(mo,eval(parse(text=paste('season.abb()$',it,sep=''))))
       } else if (is.dates(it)) {
         it <- as.Date(it)
+        t <- as.Date(t)
         if ( length(it) == 2 ) {
           if (verbose) print('Between two dates')
           if (verbose) print(it)          
-          id <- strftime(seq(it[1],it[2],by='day'),format="%Y%m%d")
-          d <- strftime(t,format="%Y%m%d")
-          ii <- is.element(d,id)
+          it <- strftime(seq(it[1],it[2],by='day'),format="%Y%m%d")
+          t <- strftime(t,format="%Y%m%d")
+          ii <- is.element(t,it)
         } else { 
           if (verbose) print('it is a string of dates')
           ii <- is.element(t,it)
@@ -98,7 +101,7 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     
     class(y) <- cls
     y <- attrcp(x,y)
-    attr(y,'history') <- history.stamp(x)   
+    attr(y,'history') <- history.stamp(x)
     invisible(y)
 }
     
