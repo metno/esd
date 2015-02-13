@@ -863,7 +863,10 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                     pattern="tas_Amon_ens_",verbose=FALSE) {
   if (verbose) print('DSensemble.mu.worstcase')
 
-  ## The predictor is based on the seasonal variations
+  ## The predictor is based on the seasonal variations and assumes that the seasnoal cycle in the
+  ## wet-day mean mu is follows a systematic dependency to the seasonal variations in the temperature
+  ## - the calibration uses the Clausius Clapeiron equation to estimate the saturation water vapour
+  ## rather than using the temeprature directly.
   if (verbose) print(paste('The predictor: seasonal',FUN))
   ys <- aggregate(y,by=month,FUN=FUN)
 
