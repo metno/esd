@@ -921,7 +921,8 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (plot) {
     dev.new()
-    plot(aggregate(y,by=year,FUN='wetmean'),xlim=c(1900,2100))
+    plot(aggregate(y,by=year,FUN='wetmean'),xlim=c(1900,2100),
+         ylim=c(0,2*max(aggregate(y,by=year,FUN='wetmean'),na.rm=TRUE))
   }
   
   for (i in 1:N) {
@@ -943,9 +944,8 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(X,"model_id") <- gcmnm
   #X <- attrcp(y,X)
   attr(X,'station') <- aggregate(y,by=year,FUN='wetmean')
-  attr(X,'predictor') <- attr(PRE,'source')
+  attr(X,'predictor') <- attr(pre,'source')
   attr(X,'domain') <- list(lon=lon,lat=lat)
-  attr(X,'scorestats') <- scorestats
   attr(X,'path') <- path
   attr(X,'scenario') <- rcp
   attr(X,'history') <- history.stamp(y)

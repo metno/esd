@@ -4,6 +4,7 @@
 \alias{DSensemble.t2m}
 \alias{DSensemble.precip}
 \alias{DSensemble.mu}
+\alias{DSensemble.mu.worstcase}
 \title{Downscale ensemble runs}
 \description{
 Downscales an ensemble of climate model runs, e.g. CMIP5, taking the
@@ -68,6 +69,12 @@ DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
               select=NULL,FUN="wetmean",
               FUNX="C.C.eq",threshold=1,
               pattern="tas_Amon_ens_",verbose=FALSE)
+DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
+                        predictor="ERA40_t2m_mon.nc",
+                        rcp="rcp45",biascorrect=FALSE,
+                        eofs=1:6,lon=c(-20,20),lat=c(-10,10),
+                        select=NULL,FUN="wetmean",
+                        pattern="tas_Amon_ens_",verbose=FALSE)
 }
 \arguments{
     \item{y}{A station object.}
