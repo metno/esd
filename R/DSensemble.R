@@ -889,11 +889,16 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     par(bty='n',cex.sub=0.7,col.sub='grey40')
     ylim <- range(cal$y,na.rm=TRUE); xlim=range(cal$x,na.rm=TRUE); dy <- diff(ylim)/25
     plot(cal$x,cal$y,pch=19,cex=1.5,col='grey',
-         xlab=expression(paste(mu,' (mm/day)')),
-         ylab=expression(paste(e[s],' (Pa)')),
+         ylab=expression(paste(mu,' (mm/day)')),
+         xlab=expression(paste(e[s],' (Pa)')),
          ylim=ylim,xlim=xlim,
          main='Worst-case based on seasonal variations',
          sub=paste(loc(y),' (',round(lon(y),2),'E/',round(lat(y),2),'N; ',alt(y),'m.a.s.l.)',sep=''))
+    segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y+2*attr(ys,'standard.error'),col='grey')
+    segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y-2*attr(ys,'standard.error'),col='grey')
+    segments(x0=cal$x,y0=cal$y,x1=cal$x+2*attr(x,'standard.error'),y1=cal$y,col='grey')
+    segments(x0=cal$x,y0=cal$y,x1=cal$x-2*attr(x,'standard.error'),y1=cal$y,col='grey')
+    points(cal$x,cal$y,pch=19,cex=1.5,col='grey')
     grid()
     abline(wc.model)
     text(xlim[1],ylim[2],paste('Correlation=',round(stats$estimate,2),
@@ -924,7 +929,10 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (plot) {
     dev.new()
-    plot(aggregate(y,by=year,FUN='wetmean'),xlim=c(1900,2100))
+    plot(aggregate(y,by=year,FUN='wetmean'),xlim=c(1900,2100),
+         ylim=range(aggregate(y,by=year,FUN='wetmean'),na.rm=TRUE)*c(0.75,1.5))
+    grid()
+    
   }
   
   for (i in 1:N) {
@@ -932,12 +940,13 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
       GCM <- spatial.avg.field(C.C.eq(gcm))
-      z <- annual(GCM,FUN="mean")
+      z <- annual(GCM,FUN="max")
       z <- z - mean(coredata(subset(z,it=c(1961,1990)))) + normal61.90
       i1 <- is.element(year(z),years)
       i2 <- is.element(years,year(z))
       prex <- data.frame(x=coredata(z[i1]))
-      X[i,i2] <- predict(wc.model, newdata=prex)
+      X[i,i2] <- predict(wc.model, newdata=prex) +
+        rnorm(n=sum(i1),sd=max(attr(ys,'standard.error'))) 
       if (plot) lines(years,X[i,i2],col=rgb(0,0.3,0.6,0.2))
       print(paste("i=",i,"GCM=",gcmnm[i]))
     }

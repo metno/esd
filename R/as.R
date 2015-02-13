@@ -81,6 +81,15 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'method') <- method
   #attr(y,'call') <- match.call()
   attr(y,'history') <- history.stamp(x)
+
+  ## Make sure that the index is a Date object:
+  ##print(index(y))
+  if (is.numeric(index(y)) | is.integer(index(y)) |
+      (is.character(index(y)) & (max(nchar(index(y))) ==4))) {
+    tdate <- paste(index(y),'-01-01',sep='')
+    ##print(tdate)
+    index(y) <- as.Date(tdate)
+  }
   dfi <- diff(index(y))
   if (length(dfi)>0) {
       dt <- as.numeric(median(dfi))

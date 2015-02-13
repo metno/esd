@@ -344,7 +344,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
 ## DS for combined fields - to make predictions not based on the
 ## calibration data
 
-DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
+DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,weighted=TRUE,...) {
@@ -377,9 +377,9 @@ DS.comb <- function(X,y,biascorrect=FALSE,mon=NULL,
         X <- biasfix(X)
     }
     
-    ds <- DS.eof(X,y,mon=mon,method=method,swsm=swsm,m=m,
-                 rmtrend=rmtrend,eofs=eofs,
-                 area.mean.expl=area.mean.expl,verbose=verbose,...)
+    ds <- DS.default(y,X,mon=mon,method=method,swsm=swsm,m=m,
+                     rmtrend=rmtrend,eofs=eofs,
+                     area.mean.expl=area.mean.expl,verbose=verbose,...)
 
     ## For combined fields, make sure to add the appended PCs to
     ## the results.
