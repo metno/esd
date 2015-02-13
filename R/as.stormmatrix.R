@@ -1,6 +1,4 @@
-as.stormmatrix <- function(x,...) UseMethod("as.stormmatrix")
-
-as.stormmatrix.default <- function(x) {
+as.storm <- function(x) {
   x$cyclone <- as.numeric(as.character(x$cyclone))
   x$Date <- as.numeric(as.character(x$Date))
   x$Year <- as.numeric(as.character(x$Year))
@@ -49,7 +47,7 @@ imilast2matrix <- function(x) {
   attr(X, "info")= NA
   attr(X, "method")= x$Method[1]
   attr(X, "history")= history.stamp()
-  class(X) <- 'stormmatrix'
+  class(X) <- 'storm'
   invisible(X)
 }
 
