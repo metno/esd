@@ -3,11 +3,11 @@
 
 # Principle Component Analysis (PCA) of storm tracks
 
-PCA.stormmatrix <- function(X,neofs=20,anomaly=TRUE,verbose=FALSE) {
-  stopifnot(!missing(X), inherits(X,"stormmatrix"))
+PCA.storm <- function(X,neofs=20,anomaly=TRUE,verbose=FALSE) {
+  stopifnot(!missing(X), inherits(X,"storm"))
 
-  X <- sort.stormmatrix(X)
-  if (anomaly) X <- anomaly.stormmatrix(X)
+  X <- sort.storm(X)
+  if (anomaly) X <- anomaly.storm(X)
   xy <- X[,is.element(colnames(X),c('lon','lat'))]
   D <- dim(xy)
 
@@ -43,9 +43,9 @@ PCA.stormmatrix <- function(X,neofs=20,anomaly=TRUE,verbose=FALSE) {
 }
 
 
-pca2stormmatrix <- function(X) {
+pca2storm <- function(X) {
   stopifnot(!missing(X), inherits(X,"pca"))
-  print('pca2stormmatrix')
+  print('pca2storm')
   
   pca <- X
   cls <- class(pca)
@@ -66,7 +66,7 @@ pca2stormmatrix <- function(X) {
 
 
 
-plot.pca.stormmatrix <- function(X,cex=1.5,new=TRUE) {
+plot.pca.storm <- function(X,cex=1.5,new=TRUE) {
   stopifnot(!missing(X), inherits(X,"pca"))
 
   pca <- X
