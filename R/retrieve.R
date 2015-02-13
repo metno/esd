@@ -17,7 +17,7 @@ if (library("ncdf4", logical.return = TRUE)) {
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 
 ## Default function
-retrieve.default <- function(ncfile,param="auto",verbose=TRUE,...) {
+retrieve.default <- function(ncfile,param="auto",verbose=FALSE,...) {
 
     X <- NULL
     

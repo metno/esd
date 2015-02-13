@@ -863,10 +863,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                     pattern="tas_Amon_ens_",verbose=FALSE) {
   if (verbose) print('DSensemble.mu.worstcase')
 
-  ## The predictor is based on the seasonal variations and assumes that the seasnoal cycle in the
-  ## wet-day mean mu is follows a systematic dependency to the seasonal variations in the temperature
-  ## - the calibration uses the Clausius Clapeiron equation to estimate the saturation water vapour
-  ## rather than using the temeprature directly.
+  ## The predictor is based on the seasonal variations
   if (verbose) print(paste('The predictor: seasonal',FUN))
   ys <- aggregate(y,by=month,FUN=FUN)
 
@@ -924,7 +921,8 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (plot) {
     dev.new()
-    plot(aggregate(y,by=year,FUN='wetmean'),xlim=c(1900,2100))
+    plot(aggregate(y,by=year,FUN='wetmean'),xlim=c(1900,2100),
+         ylim=c(0,2*max(aggregate(y,by=year,FUN='wetmean'),na.rm=TRUE))
   }
   
   for (i in 1:N) {
@@ -938,7 +936,6 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       i2 <- is.element(years,year(z))
       prex <- data.frame(x=coredata(z[i1]))
       X[i,i2] <- predict(wc.model, newdata=prex)
-      if (plot) lines(years,X[i,i2],col=rgb(0,0.3,0.6,0.2))
       print(paste("i=",i,"GCM=",gcmnm[i]))
     }
       
