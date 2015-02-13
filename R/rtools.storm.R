@@ -62,7 +62,8 @@ anomaly.storm <- function(x) {
   }
 }
 
-count.storm <- function(x,by='year') {
+# count or aggregate?
+aggregate.storm <- function(x,by='year') {
   t <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
   if (by=='year') {
     fmt <- "%Y"
