@@ -98,7 +98,7 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           selp <- apply(x$slp,1,fn)
           }
         #if (length(sFUN)>0) selF <- apply(x,1,sFUN) # Not quite finished...
-        #ij <- selx & sely & selp & selF
+        ij <- selx & sely & selp & selF
      }
 
     ist <- (1:l)[(ii & ij)]
