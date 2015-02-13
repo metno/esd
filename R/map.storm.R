@@ -1,19 +1,19 @@
 ## Author 	 Kajsa Parding
-## Last update   29.01.2015
+## Last update   13.02.2015
 ## Require 	 geoborders.rda
 
-# map.stormmatrix: Storm tracks that pass the date line
+# map.storm: Storm tracks that pass the date line
 # are excluded because they look terrible. Should they be
 # split and plotted as two separate parts on each side of dateline?
 
-map.stormmatrix <- function(x,it=NULL,is=NULL,FUN=NULL,
+map.storm <- function(x,it=NULL,is=NULL,FUN=NULL,
       projection="sphere",lonR=10,latR=90,
       col='red',colmap='rainbow',alpha=0.3,pfit=FALSE,
       xlim=NULL,ylim=NULL,new=TRUE) {
 
-  y <- subset.stormmatrix(x,it=it,is=is)
+  y <- subset.storm(x,it=it,is=is)
   if (pfit) {
-    lats <- t(polyfit.stormmatrix(y))
+    lats <- t(polyfit.storm(y))
     y[,colnames(y)=='lat'] <- lats
   }
 
@@ -29,16 +29,16 @@ map.stormmatrix <- function(x,it=NULL,is=NULL,FUN=NULL,
   if (projection=="sphere" | projection=="np" | projection=="sp") {
     if (projection=="np") latR <- 90
     if (projection=="sp") latR <- -90
-    sphere.stormmatrix(y,new=new,
+    sphere.storm(y,new=new,
     lonR=lonR,latR=latR,col=col,alpha=alpha)
   } else if (projection=="latlon" | projection=="lonlat") {
-    lonlat.stormmatrix(y,new=new,
+    lonlat.storm(y,new=new,
     xlim=xlim,ylim=ylim,col=col,alpha=alpha)
   }
 }
 
 
-lonlat.stormmatrix <- function(x,
+lonlat.storm <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
     size=1/16,lty=1,lwd=1,new=TRUE) {
   
@@ -79,7 +79,7 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 }
 
 
-sphere.stormmatrix <- function(x,
+sphere.storm <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
     lty=1,lwd=1,lonR=0,latR=90,new=TRUE) {
   
@@ -119,7 +119,7 @@ sphere.stormmatrix <- function(x,
 }
 
 
-petals.stormmatrix <- function(x,dlon=5,dlat=2,digits=6) {
+petals.storm <- function(x,dlon=5,dlat=2,digits=6) {
   x0 <- x
   lats <- x[,colnames(x)=='lat']
   lons <- x[,colnames(x)=='lon']
@@ -134,7 +134,7 @@ petals.stormmatrix <- function(x,dlon=5,dlat=2,digits=6) {
 }
 
 
-sunflower.stormmatrix <- function(x, it = NULL, is = NULL,
+sunflower.storm <- function(x, it = NULL, is = NULL,
              xlab = NULL, ylab = NULL, xlim = NULL, ylim = NULL,
              add = FALSE, rotate = FALSE, leg=TRUE,
              projection='latlon', petalsize = 10, dlon = 5, dlat = 2,
@@ -144,8 +144,8 @@ sunflower.stormmatrix <- function(x, it = NULL, is = NULL,
              alpha = 0.5, lonR = 0, latR = 90, ...)
 {
   
-  y <- subset.stormmatrix(x,it=it,is=is)
-  tt <- petals.stormmatrix(y,dlon=dlon,dlat=dlat)
+  y <- subset.storm(x,it=it,is=is)
+  tt <- petals.storm(y,dlon=dlon,dlat=dlat)
   
   if(!add & (projection=='latlon' | projection=='lonlat')) {
      xlab <- if (is.null(xlab)) 'lon' else xlab
@@ -223,12 +223,12 @@ sunflower.stormmatrix <- function(x, it = NULL, is = NULL,
 
 
 #library(esd)
-#source('as.stormmatrix.R')
-#source('subset.stormmatrix.R')
+#source('as.storm.R')
+#source('subset.storm.R')
 #source('stormtools.R')
 #
 # fname="/vol/fou/klima/IMILAST/ERAinterim_0.75_NH_M07_19790101_20091231.txt"
 # m07 <- read.fwf(fname,width=c(2,7,4,11,5,3,3,3,8,8,9),
 #         col.names=c("Code99","cyclone","timeStep","Date","Year",
 #         "Month","Day","Time","Lon","Lat","Pressure"))
-# x <- as.stormmatrix(m07)
+# x <- as.storm(m07)

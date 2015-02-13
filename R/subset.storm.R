@@ -1,9 +1,9 @@
 
 ## Author K. Parding
 ## Based on subset.station.R by Rasmus E. Benestad and A. Mezghani
-## Last updated 22.01.2015
+## Last updated 13.02.2015
 
-subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
     x0 <- x
     cls <- class(x)
@@ -97,7 +97,7 @@ subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           fn <- function(x) any(x>=min(sslp) & x<=max(sslp))
           selp <- apply(x$slp,1,fn)
           }
-        if (length(sFUN)>0) selF <- apply(x,1,sFUN) # Not quite finished...
+        #if (length(sFUN)>0) selF <- apply(x,1,sFUN) # Not quite finished...
         ij <- selx & sely & selp & selF
      }
 

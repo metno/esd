@@ -13,7 +13,7 @@
 \alias{subset.spell}
 \alias{subset.zoo}
 \alias{station.subset}
-\alias{subset.stormmatrix}
+\alias{subset.storm}
 \alias{matchdate}
 \title{Subsetting esd objects}
 \description{
@@ -35,7 +35,7 @@ subset.ds(x,it=NULL,is=NULL)
 subset.trend(x,it=NULL,is=NULL)
 subset.dsensemble(x,it=NULL,is=NULL)
 subset.zoo(x,it=NULL)
-subset.stormmatrix(x,it=NULL,is=NULL)
+subset.storm(x,it=NULL,is=NULL)
 matchdate(x,it)
 }
 \arguments{
