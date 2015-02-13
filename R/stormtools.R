@@ -2,32 +2,32 @@
 ## Last update   12.02.2015
 ## Tools for analyzing IMILAST stormtrack files
 
-year.stormmatrix <- function(x) {
+year.storm <- function(x) {
   start <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")
   yr <- as.numeric(strftime(start,format="%Y"))
   invisible(yr)
 }
 
-month.stormmatrix <- function(x) {
+month.storm <- function(x) {
   start <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")
   mn <- as.numeric(strftime(start,format="%m"))
   invisible(mn)
 }
 
-season.stormmatrix <- function(x) {
-  mn <- month.stormmatrix(x)
+season.storm <- function(x) {
+  mn <- month.storm(x)
   mlist <- c(12,1:11)
   slist <- c(1,1,1,2,2,2,3,3,3,4,4,4)
   sn <- sapply(mn,function(x) slist[mlist==x])
   invisible(sn)
 }
   
-slp.stormmatrix <- function(x,FUN=min) {
+slp.storm <- function(x,FUN=min) {
   slp <- apply(x[,colnames(x)=='slp'],1,FUN)
   invisible(slp)
 }
 
-sort.stormmatrix <- function(x) {
+sort.storm <- function(x) {
   if (any('sorted' %in% attr(x,'aspect'))) {
     invisible(x)
   } else {
@@ -44,7 +44,7 @@ sort.stormmatrix <- function(x) {
   }
 }
 
-anomaly.stormmatrix <- function(x) {
+anomaly.storm <- function(x) {
   if (any('anomaly' %in% attr(x,'aspect'))) {
     invisible(x)
   } else {
@@ -62,7 +62,7 @@ anomaly.stormmatrix <- function(x) {
   }
 }
 
-stormcount <- function(x,by='year') {
+count.storm <- function(x,by='year') {
   t <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
   if (by=='year') {
     fmt <- "%Y"
@@ -78,8 +78,8 @@ stormcount <- function(x,by='year') {
 }
 
   
-# Takes forever! What's wrong? I am using apply...
-polyfit.stormmatrix <- function(X) {
+# Takes too long! 
+polyfit.storm <- function(X) {
   Z <- apply(X,1,function(x) pfit(x[1:10],x[11:20])) 
   return(Z)
 }
@@ -94,7 +94,7 @@ pfit <- function(x,y) {
 
 # Should count storms in equal area bins (hexagonal?), not lat-lon grid
 # Use binscatter.bin?
-## stormbin <- function(x,dlon=5,dlat=2,digits=6) {
+## bin.storm <- function(x,dlon=5,dlat=2,digits=6) {
 ##   lats <- x[,colnames(x)=='lat']
 ##   lons <- x[,colnames(x)=='lon']
 ##   D <- dim(lons)
