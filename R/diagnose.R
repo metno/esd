@@ -101,8 +101,11 @@ diagnose.ds <- function(x,plot=FALSE) {
 
   spectrum(coredata(y),plot=FALSE) -> s
   sp <- data.frame(y=log(s$spec),x=log(s$freq))
-  beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
-  beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
+  if (length(dim(y))==0) {
+    beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
+    beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
+    ar1 <- acf(y,plot=FALSE)$acf[2]
+  } else {beta <- NA; beta.error <- NA; ar1 <- NA}
   
   if (plot) {
     plot(xval)
@@ -111,7 +114,7 @@ diagnose.ds <- function(x,plot=FALSE) {
     par(bty="n",mfcol=c(3,2))
     plot(y)
     
-    acf(y) -> ar
+    acf(y)
 
     plot(z,y)
     spectrum(y)
@@ -124,7 +127,7 @@ diagnose.ds <- function(x,plot=FALSE) {
   }
   
   diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,
-                      ar1=ar$acf[2],beta=beta, H=(beta+1)/2, beta.error=beta.error)
+                      ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error)
   return(diagnostics)
 }
 
@@ -141,7 +144,7 @@ diagnose.station <- function(x,it=NULL,...) {
   if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
       unit <- expression(degree*C) else
       unit <- attr(x,'unit')
-  eval(parse(text=paste("main <- expression(paste('Running cumulative mean of ',",
+  eval(parse(text=paste("main <- expression(paste('Seasonal evaution: ',",
                attr(x,'variable'),"))")))
   dev.new()
   par(bty="n")
@@ -176,6 +179,10 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   # Counts outside 90% confidence: binomial distrib. & prob.
   stopifnot(!missing(x),inherits(x,"dsensemble"))
   z <- x
+  # Remove the results with no valid data:
+  n <- apply(z,2,FUN=nv)
+  z <- subset(z,is=(1:length(n))[n > 0])
+  
   d <- dim(z)
   t <- index(z)
   y <- attr(x,'station')

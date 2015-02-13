@@ -9,13 +9,14 @@ summary.dsensemble <- function(x,years=seq(1990,2090,by=20)) {
     tab <- rep('',length(years) + 1)
     tab[1] <- paste(loc(x), '  Annual, DFJ, MAM, JJA, SON')
     i <- 1
-    #browser()
+    ##browser()
     for (yr in years) {
       i <- i + 1
+      ##print(i,yr)
       tab[i] <- paste(years[i-1],':    ',
                  round(mean(coredata(subset(x0,it=years[i-1]))),2),
                  ' [',round(quantile(subset(x0,it=years[i-1]),0.05),2),', ',
-                 round(quantile(subset(x0,it=years[i-1]),0.95),,2),'],  ',
+                 round(quantile(subset(x0,it=years[i-1]),0.95),2),'],  ',
                  round(mean(coredata(subset(djf,it=years[i-1]))),2),
                  ' [',round(quantile(subset(djf,it=years[i-1]),0.05),2),', ',
                  round(quantile(subset(djf,it=years[i-1]),0.95),2),'],  ',
@@ -28,6 +29,7 @@ summary.dsensemble <- function(x,years=seq(1990,2090,by=20)) {
                  round(mean(coredata(subset(son,it=years[i-1]))),2),
                  ' [',round(quantile(subset(son,it=years[i-1]),0.05),2),', ',
                  round(quantile(subset(son,it=years[i-1]),0.95),2),']',sep='')
+      ##print(tab[i])
     }
     tab
 }
@@ -36,12 +38,12 @@ summary.station <- function(x) {
   tab <- matrix(rep(NA,12*7),12,7)
   for (i in 1:12) {
     y <- subset(x,it=month.abb[i])
-    #browser()
     z <- as.numeric(summary(coredata(y)))
     attributes(z) <- NULL
     tab[i,1:length(z)] <-z 
   }
-  colnames(tab) <- attr(summary(coredata(x)),'names')
+  attn <- attr(summary(coredata(x)),'names')
+  if (length(attn)==6) colnames(tab) <- c(attn,"NA's") else colnames(tab) <- attn
   rownames(tab) <- month.abb
   tab  
 }

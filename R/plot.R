@@ -27,15 +27,15 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if (is.null(col)) col <- rainbow(length(x[1,]))
 
   ns <- length(stid(x))
-  if (ns > 1) {
-    for (i in 1:ns) {
-        z <- try(eval(parse(text=paste("ylab[",i,"] <- expression(",ylab[i],
-                      "*phantom(0)*(",unit[i],"))"))),silent=TRUE)
-        if (inherits(z,"try-error")) ylab[i] <- unit[i]
-      }
-  }
+#  if ( (ns > 1) & (plot.type=="multiple") ) {
+#    for (i in 1:ns) {
+#        z <- try(eval(parse(text=paste("ylab[",i,"] <- expression(",ylab[i],
+#                      "*phantom(0)*(",unit[i],"))"))),silent=TRUE)
+#        if (inherits(z,"try-error")) ylab[i] <- unit[i]
+#      }
+#  }
 
-  errorbar <- errorbar & !is.null(attr(x,'standard.error'))
+  errorbar <- errorbar & !is.null(err(x))
   
   #print(ylab)
   class(x) <- "zoo"
@@ -46,9 +46,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if (plot.type=="single") {
     if (errorbar) {
       # REB 2014-10-03: add an errorbar to the plots.
-      std.err <- attr(x,'standard.error')
-      segments(index(x),x-std.err,index(x),x+std.err,
-               lwd=3,col=rgb(1,0.5,0.5,0.25))
+      segments(index(x),x-err(x),index(x),x+err(x),
+               lwd=3,col=rgb(0.5,0.5,0.5,0.25))
 #      d.err <- dim(std.err)
 #      dt <- 0.3*diff(index(x))[1]
 #      if (is.null(d.err)) d.err <- c(length(std.err),1)
@@ -96,7 +95,7 @@ plot.eof <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
 
 plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
                            what=c("pc","eof","var"),colorbar=FALSE,...) {
-  print("plot.eof.field")
+  #print("plot.eof.field")
   n <- pattern
   what <- tolower(what)
   #str(pattern); stop("HERE")
@@ -116,7 +115,7 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
 #  if (length(grep('pc',what))>0) result <- as.station(x) else
 #  if (length(grep('var',what))>0) result <- attr(x,'tot.var')
     
-  ylab <- paste("PC",1:n)
+  ylab <- paste("PC",n)
   main <- paste(attr(x,'longname'),n,"leading EOFs: ",
                  round(sum(var.eof[1:n]),1),"% of variance")
 
@@ -129,7 +128,7 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
   if (length(grep('pc',what))>0) {
     par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
       fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
-    plot.zoo(x[,1:n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim)
+    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim)
   }
   
   par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
@@ -230,7 +229,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))
          unit[i] <- 'degree*C'
   }
-
+  
   if (is.null(ylab))
    ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
                                "*phantom(0)*(",unit,"))"))),silent=TRUE)
@@ -242,7 +241,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   
   cols <- rep("blue",100)
   model <- attr(x,'model')
-
+  
   if (new) dev.new()
   if (plot.type=="single") new <- TRUE
   par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
@@ -442,16 +441,16 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
       lat <- is[[2]]
       z <- NULL
   } else if (!is.null(is)) {
-    nms <- names(is)
+      nms <- names(is)
     lon <- attr(x,'longitude')
     lat <- attr(x,'latitude')
     #print(nms)
     if (length(nms)==2) { lon <- is[[1]]; lat=is[[2]] } else
-    if ( (length(nms)==1) & (tolower(nms)=="lon") ) {
+        if ( (length(nms)==1) & (tolower(nms)=="lon") ) {
       # Hovmuller diagram along latitude
       #print(is[[1]]); print(lon); print(d)
       if (length(is[[1]])== 1) {
-        picklon <- max( (1:length(lon))[lon <= is[[1]]] )
+        picklon <- lon[max( (1:length(lon))[lon <= is[[1]]] )]
         #print(picklon)
         xy <- rep(lon,length(lat))
         yx <- sort(rep(lat,length(lon)))
@@ -477,7 +476,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
     } else if ( (length(nms)==1) & (tolower(nms)=="lat") ) {
       # Hovmuller diagram along longitude
       if (length(is[[1]])== 1) {
-        picklat <- max( (1:length(lat))[lat <= is[[1]]] )
+        picklat <- lat[max( (1:length(lat))[lat <= is[[1]]] )]
         xy <- rep(attr(x,'longitude'),length(lat))
         yx <- sort(rep(attr(x,'latitude'),length(lon)))
         iy <- is.element(yx,picklat)
@@ -500,7 +499,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
     
   } else {lon <- NULL; lat <- NULL}
 
-  if ( (is.null(lon)) & (is.null(lat)) ) {
+  if ( is.null(lon) & is.null(lat) ) {
     #print("aggregate")
     z <- aggregate.area(x,is=is,FUN=FUN)
     class(z) <- c('station',class(x)[-1])
@@ -521,7 +520,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
 
 plot.pca <- function(y,cex=1.5,new=TRUE) {
 
-  col <- colscal(); nc <- length(col)
+  col <- colscal(col=varid(y)); nc <- length(col)
   if (is.precip(y)) col <- rev(col)
   lon <- attr(y,'longitude') 
   lat <- attr(y,'latitude') 
@@ -554,27 +553,35 @@ plot.pca <- function(y,cex=1.5,new=TRUE) {
   plot(lon,lat,
        main="Climatology",
        col=col[a.T[1,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
   data(geoborders,envir=environment())
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[1,]],pch=19)
 
   plot(lon,lat,
        main=paste("EOF #1:",R2[1],"% of variance"),
        col=col[a.T[2,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
   lines(geoborders)
   lines(geoborders$x - 360,geoborders$y)
+  points(lon,lat,cex=cex,col=col[a.T[2,]],pch=19)
 
   plot(lon,lat,
        main=paste("EOF #2:",R2[2],"% of variance"),
        col=col[a.T[3,]],pch=19,xlab="",ylab="",cex=cex)
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
+  points(lon,lat,cex=cex)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[3,]],pch=19)
 
   plot(lon,lat,
        main=paste("EOF #3:",R2[3],"% of variance"),
        col=col[a.T[4,]],pch=19,xlab="",ylab="",cex=cex)
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
+  points(lon,lat,cex=cex)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[4,]],pch=19)
 
   par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.665,0.695),new=TRUE,cex.axis=0.6)
   image(cbind(1:nc,1:nc),col=col)
@@ -618,10 +625,11 @@ plot.mvr <- function(x) {
 
 
 plot.cca <- function(x,icca=1) {
-  print("plot.cca")
+  #print("plot.cca")
+  ## browser()
   dev.new()
-  par(mfrow=c(2,1),mar=c(0.5,0.5,2.5,0.5),bty="n",xaxt="n",yaxt="n")
-  map.cca(x,icca=icca,what=c("fill","contour","ts"))
+  par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
+  map.cca(x,icca=icca,colorbar=FALSE)
 
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
              sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
@@ -630,23 +638,23 @@ plot.cca <- function(x,icca=1) {
   r <- cor(x$w.m[,icca],x$v.m[,icca])
   
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
-      fig=c(0,1,0.05,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
+      fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.6,cex.lab=0.6)
   plot(w.m,col="blue",lwd=2,
        main=paste("CCA pattern ",icca," for ",varid(x),
          "; r= ",round(r,2),sep=""),
        xlab="",ylab="")
   lines(v.m,col="red",lwd=2)
 
-  par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
+  par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
   legend(0.01,0.90,c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
                      paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),
          col=c("red","blue"),lwd=2,lty=1,
          bty="n",cex=0.5,ncol=2,text.col="grey40")
   
-  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-      fig=c(0,1,0.1,1),new=TRUE)
-  par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))
+  ##par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+  ##    fig=c(0,1,0.1,1),new=TRUE)
+  ## par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))
 }
 
 
@@ -659,12 +667,12 @@ plot.diagnose <- function(x,...) {
   if ( (inherits(x,"eof")) & (inherits(x,"comb")) ) plot.diagnose.comb.eof(x)
 }
 
-plot.diagnose.comb.eof <- function(x,...) {
+plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,...) {
   stopifnot(!missing(x), inherits(x,"diagnose"),inherits(x,"eof"),inherits(x,"comb"))
   dev.new()
   par(bty="n")
-  xlim <- range(c(-1,1,x$mean.diff),na.rm=TRUE)
-  ylim <- range(c(-1,1,x$sd.ratio),na.rm=TRUE)
+  if (is.null(xlim)) xlim <- range(c(-1,1,x$mean.diff),na.rm=TRUE)
+  if (is.null(ylim)) ylim <- range(c(-1,1,x$sd.ratio),na.rm=TRUE)
   wt <- 0:360
   plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
        xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
@@ -704,8 +712,9 @@ nam2expr <- function(x) {
   return(y)
 }
 
-
+ 
 plot.xval <- function(x,...) {
+  dev.new()
   par(bty="n")
   unit <- attr(x,'unit')
   cols <- rgb(seq(0,1,length=20),rep(0,20),rep(0,20))
@@ -714,7 +723,7 @@ plot.xval <- function(x,...) {
                          names(attr(x,'original_model')$coefficients[-1])))
   print(eofindex)
   if (unit=='deg C') unit <- expression(degree*C)
-
+  
   class(x) <- "zoo"
   plot(x[,1],type="b",pch=19,lwd=2,
        main=paste("Cross-validation:",attr(x,'location'),attr(x,'variable')),
@@ -724,10 +733,9 @@ plot.xval <- function(x,...) {
   lines(x[,2],lwd=2,col="red")
   lines(attr(x,'fitted_values_all'),col="red",lty=3,pch="x")
   
-  par(new=TRUE,fig=c(0.5,0.9,0.85,0.9))
-  plot(c(0,1),c(0,1),type="",xlab="",ylab="")
-  legend(0.05,0.75,c("obs","x-valid","fit to all"),
-         col=c("black","red","red"),lwd=c(2,2,1),lty=c(1,1,3),bty="n")
+  ## par(new=TRUE,fig=c(0.1,1,0.1,0.5),bty="n")
+  ## plot(c(0,1),c(0,1),col="white",xlab="",ylab="",axes=F)
+  legend(rep(range(index(x))[1],2),rep(range(x)[2],2),c("obs","x-valid","fit to all"), col=c("black","red","red"),lwd=c(2,2,1),lty=c(1,1,3),bty="n")
   
   dev.new()
   par(bty="n")
@@ -885,28 +893,29 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
 }
 
 plot.xsection <- function(x,...) {
-  #print("plot.xsection")
-  d <- attr(x,'dimensions')
-  #print(d)
-  X <- coredata(x)
+                                        #print("plot.xsection")
+    d <- attr(x,'dimensions')
+                                        #print(d)
+    X <- coredata(x)
+    
+    if (d[1]==1) {
+        attr(X,'longitude') <- index(x)
+        attr(X,'latitude') <- attr(x,'latitude')
+        attr(X,'dimensions') <- attr(x,'dimensions')[c(3,2)]
+        
+    } else {
+        attr(X,'longitude') <- attr(x,'longitude')
+        attr(X,'latitude') <- index(x)
+        attr(X,'dimensions') <- attr(x,'dimensions')[c(1,3)]
+        X <- t(X)
+    }
+    attr(X,'variable') <- attr(x,'variable')
+    
+    attr(X,'unit') <- attr(x,'unit')
+    attr(X,'source') <- attr(x,'source')
 
-  if (d[1]==1) {
-    attr(X,'longitude') <- index(x)
-    attr(X,'latitude') <- attr(x,'latitude')
-    attr(X,'dimensions') <- attr(x,'dimensions')[c(3,2)]
-  } else {
-    attr(X,'longitude') <- attr(x,'longitude')
-    attr(X,'latitude') <- index(x)
-    attr(X,'dimensions') <- attr(x,'dimensions')[c(1,3)]
-    X <- t(X)
-  }
-  attr(X,'variable') <- attr(x,'variable')
-
-  attr(X,'unit') <- attr(x,'unit')
-  attr(X,'source') <- attr(x,'source')
-
-  # print(dim(X)); print(c(length(lon(X)),length(lat(X))))
-  lonlatprojection(x=X,what="fill",geography=FALSE,...)
+                                        # print(dim(X)); print(c(length(lon(X)),length(lat(X))))
+    lonlatprojection(x=X,what="fill",geography=FALSE,...)
 }
 
 

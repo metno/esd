@@ -14,6 +14,7 @@
 \alias{as.field.zoo}
 \alias{as.field.comb}
 \alias{as.field.eof}
+\alias{as.field.ds}
 \alias{as.field.field}
 \alias{as.field.station}
 \alias{as.anomaly}
@@ -73,6 +74,7 @@
 \alias{as.pca.station}
 \alias{as.comb}
 \alias{as.comb.eof}
+\alias{as.stormmatrix}
 \title{Conversion to esd objects.}
 \description{
   Various methods for converting objects from one shape to
@@ -98,10 +100,10 @@ as.annual.yearqtr(x, frac = 0, ...)
 as.annual.spell(x, ...)
 as.annual.station(x, ...)
 as.anomaly(x,...)
-as.anomaly.default(x,ref=NULL,monthly=NULL,na.rm=TRUE)
-as.anomaly.station(x,ref=NULL,monthly=NULL,na.rm=TRUE)
-as.anomaly.field(x,ref=NULL,monthly=NULL,na.rm=TRUE)
-as.anomaly.zoo(x,ref=NULL,monthly=NULL,na.rm=TRUE)
+as.anomaly.default(x,ref=NULL,na.rm=TRUE)
+as.anomaly.station(x,ref=NULL,na.rm=TRUE)
+as.anomaly.field(x,ref=NULL,na.rm=TRUE)
+as.anomaly.zoo(x,ref=NULL,na.rm=TRUE)
 as.appended(x,...)
 as.appended.ds.comb(x,iapp=1)
 as.appended.eof.comb(x,iapp=1)
@@ -130,6 +132,7 @@ as.field.default(x,index,lon,lat,param,unit,
                  greenwich=TRUE, method= NA,type=NA,aspect=NA)
 as.field.eof(x,...)
 as.field.comb(x,iapp=NULL,...)
+as.field.ds(x,iapp=NULL,...)
 as.field.station(x,...)
 as.fitted.values(x)
 as.fitted.values.ds(x)
@@ -171,6 +174,7 @@ as.station.spell(x)
 as.station.eof(x,pattern=1:10)
 as.pca.ds(x)
 as.pca.station(x)
+as.stormmatrix(x)
 }
 \arguments{
   \item{x}{Data object}
@@ -190,7 +194,7 @@ as.pca.station(x)
   \item{info}{define info attribute \code{attr(x,'info')}}
   \item{method}{define method attribute \code{attr(x,'method')}}
   \item{FUN}{function}
-  \item{na.rm}{TRUE: ignore NA's}
+  \item{na.rm}{TRUE: ignore NA values}
   \item{dateindex}{}
   \item{monthly}{}
   \item{aspect}{}
@@ -228,12 +232,12 @@ data(Oslo)
 plot(as.anomaly(Oslo))
 
 data(ferder)
-plot(annual(ferder,FUN=min))
-plot(annual(ferder,FUN=IQR,na.rm=TRUE))
+plot(annual(ferder,FUN="min"))
+plot(annual(ferder,FUN="IQR",na.rm=TRUE))
 plot(as.4seasons(ferder))
 
 data(bjornholt)
-plot(annual(bjornholt,FUN="exceedance",fun="counts"))
+plot(annual(bjornholt,FUN="exceedance",fun="count"))
 plot(annual(bjornholt,FUN="exceedance",fun="freq"))
 plot(annual(bjornholt,FUN="exceedance"))
 

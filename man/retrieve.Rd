@@ -1,8 +1,15 @@
 \name{retrieve}
 \alias{retrieve}
+\alias{retrieve.default}
+\alias{retrieve.ncdf}
+\alias{retrieve.ncdf4}
+\alias{retrieve.rcm}
+\alias{summary.ncdf4}
+\alias{check.ncdf4}
+\alias{check.ncdf}
 \title{Retrieve field data from a netcdf file.}
 \description{Retrieve data from a netcdf file and return a zoo field object with attributes. 
-  \code{\link{retrieve}}.
+  \code{retrieve} assumes data on a regular lon-lat grid and \code{retrieve.rcm} reads data on irregular (rotated) grid. typically output from RCMs.
 }
 \usage{
 %retrieve.default(...)
@@ -15,7 +22,7 @@ retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
                lon = NULL, lat = NULL, lev = NULL, time = NULL,
                miss2na = TRUE, greenwich = TRUE , ncdf.check = TRUE,
                verbose = FALSE , plot = TRUE) 
-
+retrieve.rcm(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE)
 summary.ncdf4(ncfile, verbose=FALSE)
 
 check.ncdf4(ncid = ncid, param = "auto" , verbose = FALSE)
@@ -38,7 +45,7 @@ check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
            tmin, tasmin = Minimum temperature (in degrees Celcius)
            }
   \item{plot}{Logical value. if, TRUE provides a map.}
-  \item{greenwich}{Logical value. If FALSE, convert longitudes to -180E/180E or centre maps on Greenwhich meridian (0 deg E).} 
+  \item{greenwich}{Logical value. If FALSE, convert longitudes to -180E/180E or centre maps on Greenwich meridian (0 deg E).} 
   \item{ncdf.check}{Logical value. If TRUE, performs a quick check of the ncfile contents} 
   \item{miss2na}{Logical value. If TRUE missing values are converted to "NA"}
   \item{verbose}{Logical value defaulting to FALSE. If FALSE, do not
@@ -55,11 +62,12 @@ check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
 #\dontrun{
 # Download air surface temperature (tas) for the 'NorESM1-ME' model
 # output prepared for 'CMIP5 RCP4.5' and for run 'r1i1p1' from the climate
-# explorer web portal (http://climexp.knmi.nl) and store the file into the temporary folder '/tmp' (Size ~96Mb)
-download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_NorESM1-ME_rcp45_000.nc",
- destfile="/tmp/tas_Amon_NorESM1-ME_rcp45_000.nc", method = "auto", quiet = FALSE,mode = "w",cacheOK = TRUE)
+# explorer web portal (http://climexp.knmi.nl) and store the file into the 
+# local machine, e.g. temporary folder '/tmp' (Size ~96Mb) using the following
+# command if needed. Otherwise, specify a netcdf file to retrieve data from. 
+# download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_NorESM1-ME_rcp45_000.nc", destfile="/tmp/tas_Amon_NorESM1-ME_rcp45_000.nc", method = "auto", quiet = FALSE,mode = "w",cacheOK = TRUE)
 # Retrieve the data into "gcm" object
-gcm <-retrieve.ncdf4(ncfile="/tmp/tas_Amon_NorESM1-ME_rcp45_000.nc",param="tas",plot=TRUE)
+gcm <-retrieve(ncfile="/tmp/tas_Amon_NorESM1-ME_rcp45_000.nc",param="tas",plot=TRUE)
 # Download the air surface temperature (tas) for RCP 4.5 scenarios and
 # NorESM1-ME model from the climate explorer and store it in destfile. 
 # Compute the anomalies

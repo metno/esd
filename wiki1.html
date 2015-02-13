@@ -1,0 +1,39 @@
+Welcome to the esd wiki!
+
+The **esd** R package or library is made freely available by the Norwegian Meteorological Institute ([MET Norway](www.met.no)) and is for use by the climate community. It was primarily built for statistical downscaling of climate variables and parameters form global climate models (e.g. ENSEMBLEs, CMIP3/5 model results), and has recently been extended to deal with data I/O (e.g. global climate datasets), statistical analysis, and visualization.
+
+It consists in i) retrieving and manipulating large samples of climate and model data from various sources, ii) computing Empirical Orthogonal Functions (EOFs), Principal Component Analysis (PCA), and Multi-Variate Regressions (MVRs) using very simple R commands and procedures (See Examples).
+
+The **esd** library has been built with the emphasis of traceability, compatibility, and transparency of the data, methods, procedures, and results. 
+
+As the library has been built on R system, it inherits from the large number of R built-in functions and procedures.
+
+>* [How to install the package and load the library?](https://github.com/abdelkaderm/esd-git/wiki/0.-How-to-install%3F)
+* [Some recommendations before starting using the library.](https://github.com/abdelkaderm/esd-git/wiki/1.-Before-starting)
+
+The **esd** library can be easily tailored to various downscaling projects with few adaptations such as the few examples shown here. 
+
+The main functionalities of the `esd` are 
+
+### Data handling 
+  * Formatted datasets (`data(package='esd')`)
+  * Select weather station from meta data (stationmeta) based on a list of selection criteria (`select.station()`)
+  * Retrieving data from observational weather stations included in the package (`station()`)
+  * Retrieving field data from a netcdf file (`retrieve()`)
+  * Regridding (`regrid()`)
+  * Subsetting (`subset()`)
+  * Aggregating - Spatial and temporal aggregation (`aggregate()`)
+
+### Data processing
+  * Empirical Orthogonal Functions for fields' objects (`EOF()`)
+  * Principal component Analysis for stations' objects (`PCA()`) 
+
+### Downscaling
+  * Downscale an ensemble of stations (`DS()`)
+  * Downscale an ensemble of stations from an ensemble of gcms (`DSE()`).
+
+### Visualizations
+  * Plots for esd objects (`plot()`)
+  * Maps for esd objects (`map()`)
+
+

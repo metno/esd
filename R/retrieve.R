@@ -17,10 +17,10 @@ if (library("ncdf4", logical.return = TRUE)) {
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 
 ## Default function
-retrieve.default <- function(ncfile,...) {
+retrieve.default <- function(ncfile,param="auto",verbose=TRUE,...) {
 
     X <- NULL
-
+    
     if (is.character(ncfile)) {
         fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
         stopifnot(fext=="nc")
@@ -37,11 +37,31 @@ retrieve.default <- function(ncfile,...) {
             print("Library 'ncdf' or 'ncdf4' could be installed")
         }
     
-    if (library("ncdf4",logical.return=TRUE))
-        X <- retrieve.ncdf4(ncfile,...)
-    else if (library("ncdf",logical.return=TRUE))
-        X <- retrieve.ncdf(ncfile,...)
-    else print("No suitable ncdf or ncdf4 libraries found to read your file or data")
+    if (library("ncdf4",logical.return=TRUE)) {
+        nc <- nc_open(ncfile)
+        dimnames <- names(nc$dim)
+        lon <- ncvar_get(nc,dimnames[grep("lon",dimnames)])
+        lat <- ncvar_get(nc,dimnames[grep("lat",dimnames)])
+        if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
+            if (verbose) print('Regular grid field found')
+            X <- retrieve.ncdf4(ncfile,param="auto",...)
+        }
+        else {
+            if (verbose) print('Irregular grid field found')
+            X <- retrieve.rcm(ncfile,...) 
+        }
+    } else if (library("ncdf",logical.return=TRUE)) {
+        nc <- nc_open(ncfile)
+        lon <- get.var.ncdf(nc,dimnames[grep("lon",dimnames)])
+        lat <- get.var.ncdf(nc,dimnames[grep("lat",dimnames)])
+        if ( (length(dim(lon))==1) & (length(dim(lat))==1) ) {
+            if (verbose) print('Regular grid field found')
+            X <- retrieve.ncdf(ncfile,param="auto",...)
+        } else {
+            if (verbose) print('Irregular grid field found')
+            X <- retrieve.rcm(ncfile,...) 
+        }
+    } else print("No suitable ncdf or ncdf4 libraries found to read your file or data")
     
 }
  
@@ -69,17 +89,20 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     model <- ncatt_get(ncid,0)
     ## Get variable attributes in v1
     namevars <- names(ncid$var)
-    if (tolower(param) == "auto") {
+        if (tolower(param) == "auto") {
         if (ncid$nvars > 1) {
-            i <- grep(param, names(ncid$var))
-            if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
-            if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") 
+            i <- length(namevars)
+            ## print(i)
+                                        #i <- grep(param, names(ncid$var))
+            #if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
+            #if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") 
         } else i <- 1
         param <- names(ncid$var)[i] # ; rm(i)
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
-        v1 <- eval(parse(text=paste("ncid$var$",param,sep="")))
+        i <- grep(param,namevars)
+        v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
     ## Get dimensions
@@ -306,7 +329,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     if (length(iunit)>0) {
         text=paste("v1$",names(v1)[iunit],sep="")
         units <- eval(parse(text=text))
-        if ((units=="K")) {
+        if (((units=="K") | (units=="degK")) & !grepl("anom",v1$longname)) {
             val <- val - 273 
             units <- "degC"
         }
@@ -417,7 +440,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     
 { # Begin of function
     ## Update argument names for internal use only
-    library(ncdf)
+    ## library(ncdf)
     lon.rng  <- lon
     lat.rng  <- lat
     lev.rng  <- lev
@@ -441,7 +464,8 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
-        v1 <- eval(parse(text=paste("ncid$var$",param,sep="")))
+        i <- grep(param, names(ncid$var))
+        v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",param,sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
     ## Get dimensions
@@ -667,7 +691,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     if (length(iunit)>0) {
         text=paste("v1$",names(v1)[iunit],sep="")
         units <- eval(parse(text=text))
-        if ((units=="K")) {
+        if ((units=="K") | (unit=="degK")) {
             val <- val - 273 
             units <- "degC"
         }
@@ -787,22 +811,24 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ## Checking : Number of variables and select only one from the netcdf file, get variable attributes in v1. The user should decide between the list of variables
     if (tolower(param) == "auto") {
         if (ncid$nvars > 1) {
-            i <- grep(param, names(ncid$var))
-            if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
-            if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") 
+            i <- length(names(ncid$var))
+            ##i <- grep(param, names(ncid$var))
+            ##if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
+            ##if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") 
         } else i <- 1
         param <- names(ncid$var)[i] # ; rm(i)
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
-        v1 <- eval(parse(text=paste("ncid$var$",param,sep="")))
+        i <- grep(param, names(ncid$var))
+        v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
     ## Checking : Variable dimensions ...
-    ndims <- eval(parse(text=paste("ncid$var$",param,"$ndims",sep="")))
+    ndims <- eval(parse(text=paste("ncid$var[[",i,"]]$ndims",sep="")))
     dimnames <- rep(NA,ndims)
     if (ndims>0) {
-        for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var$",param,"$dim[[",j,"]]$name",sep="")))
+        for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var[[",i,"]]$dim[[",j,"]]$name",sep="")))
         if (verbose) print("Checking Dimensions --> [ok]")
         if (verbose) print(paste(as.character(ndims), " dimension(s) has(have) been found :"))
         if (verbose) print(dimnames)
@@ -945,7 +971,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     if (!is.null(torigin)) {if (verbose) print("Checking Time Origin --> [ok]")} else if (verbose) print("Checking Time Origin --> [fail]")
     ##
     ## Checking : Frequency
-    type <- c("year","season","months","Days","Hours","minutes","seconds")
+    type <- c("year","season","months","Days","hours","minutes","seconds")
     type.abb <- substr(tolower(type),1,3)
     ## Initialize
     freq.att <- NULL
@@ -961,7 +987,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         if (verbose) print("Checking Frequency from attribute --> [fail]")
         if (verbose) print("Frequency has not been found in the attributes") 
     }
-    ## 
+    ## browser() 
     ## Checking frequency from data
     frequency <- freq.data <- NULL
     freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
@@ -1140,7 +1166,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
 check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FALSE - AM 22-10-2013 not used any more ! 
     
     ## Load library
-    library(ncdf)
+    ## library(ncdf)
     
     ## Checking : Number of variables and select only one from the netcdf file, get variable attributes in v1. The user should decide between the list of variables
     if (tolower(param) == "auto") {
@@ -1153,14 +1179,15 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         v1 <- ncid$var[[i]] 
     } else {
         v1 <- NULL
-        v1 <- eval(parse(text=paste("ncid$var$",param,sep="")))
+        i <- grep(param, names(ncid$var))
+        v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
     }
     ## Checking : Variable dimensions ...
-    ndims <- eval(parse(text=paste("ncid$var$",param,"$ndims",sep="")))
+    ndims <- eval(parse(text=paste("ncid$var[[",i,"]]$ndims",sep="")))
     dimnames <- rep(NA,ndims)
     if (ndims>0) {
-        for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var$",param,"$dim[[",j,"]]$name",sep="")))
+        for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var[[",i,"]]$dim[[",j,"]]$name",sep="")))
         if (verbose) print("Checking Dimensions --> [ok]")
         if (verbose) print(paste(as.character(ndims), " dimension(s) has(have) been found :"))
         if (verbose) print(dimnames)

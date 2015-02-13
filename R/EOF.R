@@ -7,21 +7,21 @@
 
 require(zoo)
 
-EOF<-function(X,it=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,...)
+EOF<-function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,...)
   UseMethod("EOF")
 
-EOF.default <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
+EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
                         area.mean.expl=FALSE,verbose=FALSE,...) {
   # Verify Arguments
   if (verbose) print("EOF.default")
   stopifnot(!missing(X), is.matrix(X),inherits(X,"zoo"))
 
   if ( !zeros(inherits(X,c("comb","zoo"),which=TRUE)) )
-         eof <- EOF.comb(X,it=it,n=n,lon=lon,lat=lat,
+         eof <- EOF.comb(X,it=it,is=is,n=n,
                          area.mean.expl=area.mean.expl,
                          verbose=verbose) else
   if ( !zeros(inherits(X,c("field","zoo"),which=TRUE)) )
-         eof <- EOF.field(X,it=it,n=n,lon=lon,lat=lat,
+         eof <- EOF.field(X,it=it,is=is,n=n,
                        area.mean.expl=area.mean.expl,
                           verbose=verbose) 
   return(eof)
@@ -30,7 +30,7 @@ EOF.default <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
 
 # Apply EOF analysis to the monthly mean field values:
 
-EOF.field <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
+EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
                       area.mean.expl=FALSE,verbose=FALSE) {
 
   SF <- function(x) {sum(is.finite(x))}
@@ -49,75 +49,28 @@ EOF.field <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
     class(x) <- class(X)
     X <- x
   }
+
+  # Remove time slices with missing data:
+#  nok <- !is.finite(rowMeans(X))
+  # The regridded appendix may contain some NA's if its domain exceeds that of the original field.
+  # Get rid of time slices with all NAs.
+  nok <- apply(X,1,nv) < 0.5*dim(X)[2]
+  if (sum(nok)> 0) {
+    it <- (1:length(nok))[!nok]
+    if (verbose) print(paste('removing ',sum(nok),'NA time slices'))
+  }
   
-  X <- sp2np(X)
-  dates <- index(X)
-  d <- attr(X,'dimensions')
-  cls <- class(X)
+  x <- subset(X,it=it,is=is)
+  x <- sp2np(x)
+  dates <- index(x)
+  if (verbose) print(dates)
+  
+  d <- attr(x,'dimensions')
+  cls <- class(x)
   #print(cls)
-  # browser()
-  if (!is.null(it)) {
-    if (verbose) print(paste('temporal subset: it=',it))
-    #print(it)
-    #print(table(as.POSIXlt(dates)$mon+1))
-    # Select a subset of the months
-    if ( (min(it) > 0) & (max(it) < 13) & (inherits(X,c("month"))) ) {
-      #keepm <- as.numeric(format(index(X),"%m"))==it
-      #print("Monthly aggregated field")
-      keepm <- is.element(as.POSIXlt(dates)$mon+1,it)
-    } else 
-    if ( (min(it) > 0) & (max(it) < 5) & (inherits(X,c("season"))) ) {
-      #print("Seasonally aggregated field")
-      #print(table(as.POSIXlt(dates)$mon+1))
-      keepm <- is.element(as.POSIXlt(dates)$mon+1,c(1,4,7,10)[it])
-      #print(c(it,sum(keepm)))
-    } else
-    ## Select a range of years (interval)
-    if ( (length(it)>1) & (sum(is.element(it,1500:2500))>0) ) {
-      if (length(it)==2) it <- it[1]:it[2]
-      ##print(it); print(as.POSIXlt(dates)$year+1900); print(dates)
-      keepm <- is.element(as.numeric(format(index(X),"%Y")),it)
-      ## AM replacement 13-11-2013 old line keepm <- is.element(as.POSIXlt(dates)$year+1900,it)
-    } else ## if (inherits(it,"POSIXt"))
-    keepm <- is.element(as.Date(dates),as.Date(it))
-    ## AM replacement 13-11-2013 old line keepm <- is.element(as.POSIXlt(dates),as.POSIXlt(it))
-    dates <- dates[keepm]
-    x <- zoo(X[keepm,],order.by = dates)
-    d[3] <- sum(keepm)
-    #print(d[3])
-  } else x <- X
+  ## browser()
+  
   Y <- t(coredata(x))
-  #print(dim(Y)); print(d)
-  
-  # to select geographicla regions, the zoo aspects are no longer needed:
-  # expand into lon lat dimensions in addition to time:
-  dim(Y) <- d
-  #print(d); A <- Y[,,1]; image(t(A)); dev.new()
-  if (!is.null(lon)) {
-    if (length(lon) != 2)
-      warning("EOF: argument 'lon' must be a range") else { 
-        # Select a subset of the longitudes        
-        keepx <- (attr(X,'longitude') >= min(lon)) &
-                 (attr(X,'longitude') <= max(lon))
-        attr(X,'longitude') <- attr(X,'longitude')[keepx]
-        d[1] <- sum(keepx)
-        Y <- Y[keepx,,]
-      }
-  }
-  if (!is.null(lat)) {
-    if (length(lat) != 2)
-      warning("EOF: argument 'lat' must be a range") else { 
-        # Select a subset of the latitudes
-        keepy <- (attr(X,'latitude') >= min(lat)) &
-                 (attr(X,'latitude') <= max(lat))
-        attr(X,'latitude') <- attr(X,'latitude')[keepy]
-        d[2] <- sum(keepy)
-        Y <- Y[,keepy,]
-      }
-  }
-  d -> attr(X,'dimensions')
-  
-  dim(Y) <- c(d[1]*d[2],d[3])
   
   # Apply geographical weighting to account for different grid area at
   # different latitudes:
@@ -134,13 +87,14 @@ EOF.field <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
   #for (it in 1:d[3]) Y[,it] <- (Wght/stdv)*Y[,it]
   
   # Exclude the missing values 'NA' and grid points with sd == 0 for all times:
-  sd0 <- apply(Y,2,sd,na.rm=TRUE)
-  nf <- apply(Y,2,SF)
+  sd0 <- apply(as.matrix(Y),2,sd,na.rm=TRUE)
+  nf <- apply(as.matrix(Y),2,SF)
+  if (verbose) print(paste('Exclude the missing values/zero-sd:',sum(sd0>0.0),sum(nf > 0)))
   y <- Y[,(sd0>0.0) & (nf > 0)]
-
+  ## browser()
   # Exclude the time slices with missing values:
-  skip <- apply(y,1,SF); npts <- dim(y)[2]
-  y <- y[skip == npts,]
+  skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
+  y <- as.matrix(y)[skip == npts,]
   
   # Remove the mean value - center the analysis:
   if (verbose) print('center the data')
@@ -181,6 +135,7 @@ EOF.field <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
   Ave[skip == npts] <- ave
 
   if (area.mean.expl) {
+    if (verbose) print('area.mean.expl')
     ave <- ave + mean(A,na.rm=TRUE)
     A <- A - mean(A,na.rm=TRUE)
     s <- sd(A,na.rm=TRUE)
@@ -196,6 +151,7 @@ EOF.field <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
 
   # Make all the EOF vectors havine the same sense rather than
   # being random:
+  if (verbose) print(paste("Invert EOF",(1:length(invert))[invert],collapse=' '))
   pattern[,invert] <- -pattern[,invert]
   eof[,invert] <- -eof[,invert]
   
@@ -224,7 +180,7 @@ EOF.field <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
 }
 
 
-EOF.comb <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
+EOF.comb <- function(X,it=NULL,is=NULL,n=20,
                      area.mean.expl=FALSE,verbose=FALSE) {
 
   iv <- function(x) return(sum(is.finite(x)))
@@ -242,10 +198,10 @@ EOF.comb <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
   ## AM 11-11-2013 added lines begin
 
   #print('subset')
-  if (!is.null(lon) | !is.null(lat))
-    X <- subset(X,it=it,is=list(lon,lat))
-  else if (!is.null(it))
-    X <- subset(X,it=it)
+  if (!is.null(is) | !is.null(it))
+    X <- subset(X,it=it,is=is)
+  #else if (!is.null(it))
+  #  X <- subset(X,it=it,is=is)
   ## AM 11-11-2013 added lines end
   #print(dim(X))
 
@@ -324,6 +280,7 @@ EOF.comb <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
   # Synthetise a new object with combined data that looks like a
   # field object, and then call the ordinary EOF method:
 
+  if (verbose) print("combine original and appended fields")
   Y <- zoo(YY,order.by=as.Date(fakedates))
   #plot(rowMeans(YY,na.rm=TRUE),type="l")
 
@@ -341,18 +298,20 @@ EOF.comb <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
   #print(dim(Y)); print(attr(Y,'dimensions'))
   #browser()
 
-  eof <- EOF.field(Y,n=n,lon=lon,lat=lat,
+  eof <- EOF.field(Y,it=it,is=is,n=n,
                    area.mean.expl=area.mean.expl,verbose=verbose)
 
-#  print("Computed the eofs...")
+  if (verbose) print("Computed the eofs:")
   # After the EOF, the results must be reorganised to reflect the different
   # data sets.
-  ## browser()
+  #browser()
   ceof <- eof
   ii <- is.element(id.t,ID.t[1])
   if (verbose) {print("Check:"); print(sum(ii)); print(ID.t); print(table(id.t))
                 print(realdates[ii]); print(dim(eof))}
-  ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii])) 
+
+  ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii]))
+  if (verbose) {print("Copy attributes"); print(names(attributes(eof)))}
   ceof <- attrcp(eof,ceof)
   dim(clim) <- attr(X,'dimensions')[1:2]
   attr(ceof,'mean') <- clim
@@ -383,17 +342,17 @@ EOF.comb <- function(X,it=NULL,n=20,lon=NULL,lat=NULL,
 
 
 
-eof2field <- function(x,is=NULL,lon=NULL,lat=NULL,anomaly=FALSE) {
-  #print("HERE"); print(lon); print(lat)
+eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE) {
+#  print("HERE"); print(lon); print(lat)
   greenwich <- attr(x,'greenwich')
-  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
-  if (!is.null(lat)) lat.rng <- range(lat) else lat.rng <- NULL
-  if ( !is.null(lon.rng) | !is.null(lat.rng) ) 
-    eof <- subset(x,is=list(lon=lon.rng,lat=lat.rng)) else
-  if (!is.null(is))
-    eof <- subset(x,is=is) else
+#  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
+#  if (!is.null(lat)) lat.rng <- range(lat) else lat.rng <- NULL
+  if ( !is.null(it) | !is.null(is) ) 
+    eof <- subset(x,it=it,is=is) else
+#  if (!is.null(is))
+#    eof <- subset(x,is=is) else
     eof <- x
-  #print(c(greenwich,attr(eof,'greenwich')))
+#  print(c(greenwich,attr(eof,'greenwich')))
                                         # REB 04.12.13 comment below 
   U <- attr(eof,'pattern')
   d <- dim(U); dim(U) <- c(d[1]*d[2],d[3])
@@ -430,7 +389,7 @@ PCA.default <- function(X,...) {
 }
 
 PCA.station <- function(X,neofs=20,na.action='fill',verbose=FALSE) {
-
+   
   if (na.action=='fill') {
     if (verbose) print('Fill missing data gaps')
     # Use interpolation to till missing data gaps. OK for small glitches.
@@ -501,7 +460,7 @@ PCA.station <- function(X,neofs=20,na.action='fill',verbose=FALSE) {
 pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if (inherits(X,'ds')) class(X) <- class(X)[-1]
-  #print('pca2station')
+  print('pca2station')
   
   pca <- X
   cls <- class(pca)
@@ -535,16 +494,18 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE) {
     V.x <- coredata(cval)
     # The evaluation data are stored as the original calibration
     # predictand followed by the prediction, i.e. station 1,1,2,2,3,3
-    ii1 <- seq(1,d[2]-1,by=2); ii2 <- seq(2,d[2],by=2)
-    # Recover the staiton data from the original data x and the cross-validation prediction z
+    ii1 <- seq(1,d.cval[2]-1,by=2); ii2 <- seq(2,d.cval[2],by=2)
+    # Recover the staiton data from the original data x and the
+    # cross-validation prediction z
     # seperately using the same spatial PCA pattern and eiganvalues:
+    #browser()
     x.cvalx <-U %*% diag(W) %*% t(V.x[,ii1])
     x.cvalz <-U %*% diag(W) %*% t(V.x[,ii2])
-    # Combine the two together and then sort so that the prediction of the first station follows the observation
+    # Combine the two together and then sort so that the prediction
+    # of the first station follows the observation
     # from the first station:
-    ii <- order(seq(1,d[2],by=1),seq(1,d[2],by=1)+0.5)
-    browser()
-    x.cval <- rbind(x.cvalx,x.cvalz)[ii]
+    ii <- order(seq(1,d.cval[1],by=1),seq(1,d.cval[1],by=1)+0.5)
+    x.cval <- rbind(x.cvalx,x.cvalz)[,ii]
     mpca <- c(attr(pca,'mean'))
     jj <- order(c(1:length(mpca),1:length(mpca)+0.5))
     #browser()

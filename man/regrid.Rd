@@ -7,6 +7,9 @@
 \alias{regrid.eof}
 \alias{regrid.eof2field}
 \alias{sparseMproduct}
+\alias{nearest}
+\alias{nearest.station}
+\alias{nearest.field}
 \title{Regrid}
 \description{Fast transform data from one longitude-latitude grid to another
   through bi-linear interpolation. The regridding is done by first
@@ -41,6 +44,9 @@ regrid.default(x,is,verbose=FALSE,...)
 regrid.field(x,is,verbose=FALSE,...) 
 regrid.matrix(x,is,verbose=FALSE,...) 
 regrid.eof(x,is,verbose=FALSE)
+nearest(x,is,...)
+nearest.station(x,is)
+nearest.field(x,is)
 }
 \arguments{
 \item{xo}{Old x-coordinates (longitudes)}
@@ -61,9 +67,8 @@ interpolated to the longitude/latitude held by is.}
 
 \author{R.E. Benestad and A.  Mezghanil}
 \examples{
-\dontrun{
 # Use regrid to interpolate to station location:
-t2m <- retrieve.ncdf4("~/data/ERAINT/ERAINT_t2m_mon.nc",param="t2m")
+t2m <- t2m.ERAINT()
 data(Oslo)
 z.oslo <- regrid(t2m,is=Oslo)
 plot(Oslo)
@@ -77,8 +82,10 @@ map(Z)
 # Example using regrid on a matrix object:
 t2m.mean <- as.pattern(t2m,FUN='mean')
 z <- regrid(t2m.mean,is=list(seq(min(lon(t2m)),max(lon(t2m)),by=0.5),
-                             seq(min(lat(t2m)),max(lat(t2m),by=0.5)))
+                             seq(min(lat(t2m)),max(lat(t2m),by=0.5))))
 image(lon(z),lat(z),z)
-}
+# Add land borders on top
+data(geoborders)
+lines(geoborders)
 }
 \keyword{utilities}

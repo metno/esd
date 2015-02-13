@@ -38,14 +38,14 @@ y <- aggregate(Svalbard, year, FUN='mean', na.rm = FALSE)
 plot(y)
 
 # Example for getting seasonal aggregate of standard deviation of
-oslo <- station("Oslo Blindern",stid="193",src="ECAD")
-ym <- as.4seasons(oslo,FUN=mean)
-ys <- as.4seasons(oslo,FUN=sd)
+data(Oslo)
+ym <- as.4seasons(Oslo,FUN='mean')
+ys <- as.4seasons(Oslo,FUN='sd')
 y <- combine(ym,ys)
 plot(y)
 
 x <- t2m.NCEP()
-z <- aggregate.area(x)
+z <- aggregate.area(x,FUN='mean')
 plot(z)
 }
 \keyword{utilities}

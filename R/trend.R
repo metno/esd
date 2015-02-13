@@ -6,7 +6,7 @@
 trend<-function(x,result="trend",model="y ~ t",...) UseMethod("trend")
 
 trend.default <- function(x,result="trend",model="y ~ t",...) {
-  trendx <- data.frame(t=1:length(x),y=x)
+  trendx <- data.frame(t=1:length(index(x)),y=x)
   eval(parse(text=paste("xt <- lm(",model,",data=trendx)")))
   y <- switch(result,"trend"=zoo(predict(xt,newdata=trendx),order.by=index(x)),
                      "residual"=zoo(xt$residuals,order.by=index(x)))
@@ -178,6 +178,10 @@ trend.field <- function(x,result="trend",model="y ~ t",...) {
 }
 
 trend.zoo <- function(x,result="trend",model="y ~ t",...) {
+  if (length(dim(x))==2) {
+    y <- trend.zoo.multi(x,result=result,model=model,...)
+    return(y)
+  }
   trendx <- data.frame(t=year(x),y=coredata(x))
   eval(parse(text=paste("xt <- lm(",model,",data=trendx)")))
   y <- switch(result,"trend"=zoo(predict(xt,newdata=trendx),order.by=index(x)),
@@ -189,4 +193,10 @@ trend.zoo <- function(x,result="trend",model="y ~ t",...) {
   attr(y,'unit') <- paste(unit,'/ year')
   return(y)
   invisible(y)
+}
+
+trend.zoo.multi <- function(x,result="trend",model="y ~ t",...) {
+  y <- apply(coredata(x),2,trend,result=result,model=model)
+  y <- zoo(y,order.by=index(x))
+  return(y)
 }

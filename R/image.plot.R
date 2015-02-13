@@ -103,7 +103,7 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
     }
     ## print(old$fig)
     par(fig = old$fig)
-    par(mfcol=old$mfcol)
+    par(mfrow=old$mfrow)
 }
 
 

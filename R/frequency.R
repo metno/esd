@@ -24,7 +24,7 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
        freq <- "week"
     if ((dt==14) & grepl("day",unit))
        freq <- "2weeks"
-    if ((dt==1) & grepl("hou",unit))
+    if (((dt==1) & grepl("hou",unit)) | ((dt==3600) & grepl("hou",unit)))
        freq <- "hour"
     if ((dt==12) & grepl("hou",unit))
        freq <- "12hour"

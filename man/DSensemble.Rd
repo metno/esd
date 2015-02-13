@@ -4,6 +4,7 @@
 \alias{DSensemble.t2m}
 \alias{DSensemble.precip}
 \alias{DSensemble.mu}
+\alias{DSensemble.mu.worstcase}
 \title{Downscale ensemble runs}
 \description{
 Downscales an ensemble of climate model runs, e.g. CMIP5, taking the
@@ -68,6 +69,12 @@ DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
               select=NULL,FUN="wetmean",
               FUNX="C.C.eq",threshold=1,
               pattern="tas_Amon_ens_",verbose=FALSE)
+DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
+                        predictor="ERA40_t2m_mon.nc",
+                        rcp="rcp45",biascorrect=FALSE,
+                        eofs=1:6,lon=c(-20,20),lat=c(-10,10),
+                        select=NULL,FUN="wetmean",
+                        pattern="tas_Amon_ens_",verbose=FALSE)
 }
 \arguments{
     \item{y}{A station object.}
@@ -80,16 +87,24 @@ DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
 \value{A 'dsensembele' object - a list object holding DS-results.}
 \author{R.E. Benestad and A. Mezghani}
 \examples{
-y <- station.metnod("Oslo - Blindern")
-rcp4.5 <- DSensemble(subset(y,is=1),plot=TRUE)
-plot(rcp4.5)
+data(Oslo)
+## Download NorESM1-M from 'climexp.knmi.nl' in the temporary (for linux '/tmp') folder
+## download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_NorESM1-M_rcp45_000.nc", 
+##              destfile="/tmp/tas_Amon_NorESM1-M_rcp45_000.nc", method = "auto", quiet = FALSE,
+##              mode = "w",cacheOK = TRUE)
+## Download NorESM1-ME from the rcp45 
+## download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_FIO-ESM_rcp45_000.nc", 
+##              destfile="/tmp/tas_Amon_FIO-ESM_rcp45_000.nc", method = "auto", quiet = FALSE,
+##              mode = "w",cacheOK = TRUE)
+##              
+rcp4.5 <- DSensemble.t2m(Oslo,rcp='rcp45',path='/tmp/',pattern = "tas_Amon_",biascorrect=TRUE,
+                     area.mean.expl=TRUE, predictor = "/tmp/air.2m.mon.mean.nc",plot=TRUE)
 
 # Evaluation: (1) combare the past trend with downscaled trends for same
 # interval by ranking and by fitting a Gaussian to the model ensemble;
 # (2) estimate the probabilty for the counts outside the 90
 # percent confidence interval according to a binomial distribution.
 
-dstest <- diagnose(rcp4.5)
-plot(dstest)
+diagnose(rcp4.5, plot = TRUE, type = "target")
 }
 \keyword{manip}

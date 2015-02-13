@@ -107,6 +107,7 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
     attr(y,'unit') <- 'degree-days'
   } else attr(y,'unit') <- attr(x,'unit')
 
+
   attr(y,'history') <- history.stamp(y)
   return(y)
 }
@@ -252,7 +253,8 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   }
 
-  Y <- as.station(y,loc=attr(x,'source'),param=attr(x,'variable'),
+  Y <- as.station(y,loc=paste('area',FUN,'of',src(x)),
+                  param=attr(x,'variable'),
                   unit=attr(x,'unit'),
                   lon=range(lon(x)),lat=range(lat(x)),alt=NA,cntr=NA,
                   longname=paste(FUN,attr(x,'longname')),stid=NA,quality=NA,

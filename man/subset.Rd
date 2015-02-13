@@ -11,7 +11,9 @@
 \alias{subset.comb}
 \alias{subset.field}
 \alias{subset.spell}
+\alias{subset.zoo}
 \alias{station.subset}
+\alias{subset.stormmatrix}
 \alias{matchdate}
 \title{Subsetting esd objects}
 \description{
@@ -19,13 +21,11 @@ The subset method tries to be 'intelligent', and if the list has no names, then 
 }
 \usage{
 subset(x,it=NULL,is=NULL,...)
-subset.station(x,loc=NULL , param = NULL,  stid = NULL ,lon = NULL,
-               lat = NULL, alt = NULL, cntr = NULL, src = NULL , it = NULL ,
-               nmin = NULL, is = NULL)
+subset.station(x,it = NULL,is = NULL,verbose=FALSE)
 subset.eof(x,it=NULL,is=NULL,verbose=FALSE)
 subset.cca(x,it=NULL,is=NULL)
 subset.mvr(x,it=NULL,is=NULL)
-subset.pca(x,it=NULL,is=NULL)
+subset.pca(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE)
 subset.trend(x,it=NULL,is=NULL)
 subset.corfield(x,it=NULL,is=NULL)
 subset.comb(x,it=NULL,is=NULL) 
@@ -34,14 +34,17 @@ subset.spell(x,is=NULL,it=NULL)
 subset.ds(x,it=NULL,is=NULL)
 subset.trend(x,it=NULL,is=NULL)
 subset.dsensemble(x,it=NULL,is=NULL)
+subset.zoo(x,it=NULL)
+subset.stormmatrix(x,it=NULL,is=NULL)
 matchdate(x,it)
-station.subset(x,it=NULL,is=NULL)
 }
 \arguments{
 \item{x}{Data object from which the subset is taken}
 \item{it}{A list or data.frame providing time index, e.g. month}
 \item{is}{A list or data.frame providing space index, e.g. station record}
-\item{dimension}{qualifier for field objects: tme or space?}
+\item{pattern}{selection of patterns in PCA or EOF (used for e.g. filtering
+  the data)}
+\item{verbose}{Dump diagnostics to the screen}
  }
 \value{A field object}
 
@@ -51,12 +54,20 @@ station.subset(x,it=NULL,is=NULL)
 \author{R.E. Benestad and A.  Mezghanil}
 \examples{
 data(Oslo)
-
 # January months:
 jan <- subset(Oslo,1)
-
 # The last 10 years:
 recent <- subset(Oslo,2003:2012)
+# JJA season
+jja <- subset(Oslo,it="jja")
+# Seasonl values for MAM
+mam <- subset(as.4seasons(Oslo),it=2)
+
+data(ferder)
+# Aggregated values for May (it=5)
+may <- subset(as.monthly(Oslo),it=5)
+# The last 10 aggregated annual values 
+recent.ann <- subset(as.annual(Oslo),it=2004:2013)
 
 gcm <- t2m.NorESM.M()
 # Extract July months from a field:
@@ -91,7 +102,7 @@ plot(z)
 
 # Test of subset the commutative property of subset and combine: 
 T2M <- as.4seasons(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
-GCM <- as.4seasons(t2m.NorESM.M(lon = c(-10, 30), lat = c(50, 70)))
+GCM <- as.4seasons(t2m.NorESM.M(lon = range(lon(T2M))+c(-2,2), lat = range(lat(T2M))+c(-2,2)))
 XY <- combine(T2M,GCM)
 X1 <- subset(XY,it=3)
 X2 <- combine(subset(T2M,it=3),subset(GCM,it=3))

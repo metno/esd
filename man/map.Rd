@@ -90,8 +90,8 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
     of x-coordinates.}
   \item{pattern}{Which EOF pattern (mode) to plot}
   \item{col}{Colour scales, either as an output from \code{\link{rbg}}
-    or a single character string 'bwr' (blue-white-red) og 'rwb'
-    (red-white-blue')}
+    or a single character string 'bwr' (blue-white-red) or 'rwb'
+    ('red-white-blue')}
   \item{it}{see \code{\link{subset}}}
   \item{is}{see \code{\link{subset}}}
   \item{new}{TRUE: create a new graphics device}
@@ -127,12 +127,14 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
 
 \author{R.E. Benestad}
 \examples{
-# Example: use aggregate to compute annual mean temperature for Svalbard:
-data(Svalbard)
-year <- as.numeric( format(index(Svalbard), '\%Y') ) 
-y <- aggregate(Svalbard, by=year, mean, na.rm = FALSE) 
-plot(y)
+# select stations in ss and map the geographical location of the selected stations with a zoom on Norway.
+ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
+map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70))
+
+## Get NACD data and map the mean values
+y <- station.nacd()
+map(y,FUN='mean',cex=2)
 }
-\keyword{hplot}
+\keyword{map}
 
 

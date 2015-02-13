@@ -81,18 +81,23 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'method') <- method
   #attr(y,'call') <- match.call()
   attr(y,'history') <- history.stamp(x)
-  dt <- as.numeric(diff(index(x))[1])
-  if (dt==1) tscale <- 'day' else
-  if ( ((dt>=28) & (dt <=31)) |
-       (dt < 0.1) ) tscale <- 'month' else
-  if ( (dt>=89) & (dt <=93) ) tscale <- 'season' else 
-  if ( (dt>=360) & (dt <=366) ) tscale <- 'annual' else
-                                tscale <- 'annual'
-  class(y) <- c("station",tscale,"zoo")
+  dfi <- diff(index(y))
+  if (length(dfi)>0) {
+      dt <- as.numeric(median(dfi))
+      if (dt==1)
+          tscale <- 'day'
+      else if (((dt>=28) & (dt <=31)) | (dt < 0.1))
+          tscale <- 'month'
+      else if ( (dt>=89) & (dt <=93) )
+          tscale <- 'season' else 
+      if ((dt>=360) & (dt <=366))
+          tscale <- 'annual'
+      else tscale <- 'annual'
+      class(y) <- c("station",tscale,"zoo")
+  }
+  else print("Warning - A single value has been recorded in the time index of the data")
   return(y)
 }
-
-
 
 as.station.data.frame <-  function (x, loc = NA, param = NA, unit = NA,
                                     lon = NA, lat = NA,
@@ -158,7 +163,7 @@ as.station.pca <- function(x) {
 
 
 as.station.list <- function(x) {
-  #print("as.station.ds")
+#print("as.station.ds")
 #  Jan <- x$Jan + attr(x$Jan,'mean')
 #  Feb <- x$Feb + attr(x$Feb,'mean')
 #  Mar <- x$Mar + attr(x$Mar,'mean')
@@ -171,11 +176,13 @@ as.station.list <- function(x) {
 #  Oct <- x$Oct + attr(x$Oct,'mean')
 #  Nov <- x$Nov + attr(x$Nov,'mean')
 #  Dec <- x$Dec + attr(x$Dec,'mean')
-  cline <- "merge.zoo("
+#  cline <- "merge.zoo("  # AM/REB 2014-12-01
+  cline <- "rbind("
   if (is.list(x)) {
     for (i in 1:length(x)) {
-      ave <- switch(attr(x[[i]],'aspect'),
-                    'original'=0,
+        ave <- switch(attr(x[[i]],'aspect'),
+                                 'original'=0,
+                                 'downscaled'=0, ## AM 2014-12-02 x[[i]] could be downscaled results
                     'anomaly'=attr(x[[i]],'mean'))
       attr(x[[i]],'type') <- 'downscaled results'
       z <- x[[i]] + ave
@@ -186,7 +193,7 @@ as.station.list <- function(x) {
     cline <- paste(substr(cline,1,nchar(cline)-1),')-> ALL')
     #print(cline)
     eval(parse(text=cline))
-    y <- zoo(rowMeans(coredata(ALL),na.rm=TRUE),order.by=index(ALL))
+    y <- zoo(coredata(ALL),order.by=index(ALL))
     #print(names(y))
   } else {
     if (inherits(x,'ds')) {
@@ -227,7 +234,10 @@ as.station.list <- function(x) {
   #attr(y,'date') <- date()
   #attr(y,'call') <- match.call()
   attr(y,'history') <- history.stamp(x)
-  class(y) <- c("station",class(x[[1]]))
+  if (attr(x[[i]],'type')== 'downscaled results')
+      class(y) <- class(x[[1]])
+  else
+      class(y) <- c("station",class(x[[1]]))
   return(y)
 }
 
@@ -439,6 +449,17 @@ as.field.eof <- function(x,iapp=NULL,...) {
   return(y)
 }
 
+
+as.field.ds <- function(x,iapp=NULL,...) {
+  ##print(class(x))
+  if (inherits(x,'eof')) {
+    class(x) <- class(x)[-1]
+    y <- as.field.eof(x,iapp,...)
+  } else y <- NULL
+  return(y)
+}
+
+
 as.field.station <- function(x,lon=NULL,lat=NULL...) {
   if (is.null(lon)) lon <- seq(min(lon(x)),max(lon(x)),length=30)
   if (is.null(lat)) lat <- seq(min(lat(x)),max(lat(x)),length=30)
@@ -476,6 +497,7 @@ as.annual.spell <- function(x, ...) annual.spell(x,...)
 #}
 
 as.monthly <- function(x,FUN='mean',...) {
+if (inherits(x,'month')) return(x)
   y <- aggregate(as.zoo(x),function(tt) as.Date(as.yearmon(tt)),FUN=FUN,...)
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
@@ -497,7 +519,7 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean', ...) {
   start.1 <- as.numeric(as.Date(paste(years[1],start,sep='-')))
   end.1 <- as.numeric(as.Date(paste(years[1],end,sep='-')))
   if (start.1 > end.1) twoyears <- 1 else twoyears <- 0
-  #browser()
+  
   for (i in 1:n) {
     z <- coredata(window(x,start=as.Date(paste(years[i],start,sep='-')),
                            end=as.Date(paste(years[i]+twoyears,end,sep='-'))))
@@ -532,8 +554,9 @@ as.4seasons <- function(x,...) UseMethod("as.4seasons")
 
 as.4seasons.default <- function(x,FUN='mean',slow=FALSE,...) {
   #print('as.4seasons.default')
-  attr(x,'names') <- NULL
 
+  if (inherits(x,'season')) return(x)
+  attr(x,'names') <- NULL
   d <- dim(coredata(x))
   #print(d)
   if (is.null(d)) d <- c(length(x),1)
@@ -604,16 +627,16 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,...) {
   return(y) 
 }
 
-as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...) {
+as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,...) {
 
   IV <- function(x) sum(is.finite(x))
 
   #print('as.4seasons.day')
   attr(x,'names') <- NULL  
   t <- index(x)
-  year <- as.numeric(format(t,'%Y'))
-  month <- as.numeric(format(t,'%m'))
-  day <- as.numeric(format(t,'%d'))
+  year <- year(t) #as.numeric(format(t,'%Y'))
+  month <- month(t) #as.numeric(format(t,'%m'))
+  day <- day(t) # as.numeric(format(t,'%d'))
   #shift the time stamps by one month, sneaking December into the subsequent year
   month <- month + 1
   dec <- is.element(month,13)
@@ -630,9 +653,7 @@ as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...) {
   tshifted <-  ISOdate(year=year,month=month,day=day,hour=hour)
   #print(summary(tshifted))
   X <- zoo(coredata(x),order.by=tshifted)
-  nd <- aggregate(X,as.yearqtr,FUN=IV)
-  ok <- nd >= 85
-  #browser()
+ 
   # Test for the presens of 'na.rm' in argument list - this is a crude fix and not a
   # very satisfactory one. Fails for FUN==primitive function.
   if (is.function(FUN)) test.na.rm <- FALSE else
@@ -640,8 +661,14 @@ as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...) {
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) | (test.na.rm) )
      y <- aggregate(X,as.yearqtr,FUN=match.fun(FUN),...,na.rm=na.rm) else
      y <- aggregate(X,as.yearqtr,FUN=match.fun(FUN),...)
+
+  # Set to missing for seasons with small data samples:
+  nd <- aggregate(X,as.yearqtr,FUN=IV)
+  ok <- nd >= nmin  
+  coredata(y)[!ok] <- NA
+  # dateindex: convert "1775 Q1" to "1775-01-01"
   if (dateindex)
-    y <- zoo(coredata(y[ok]),order.by=as.Date(index(y)[ok]))
+    y <- zoo(coredata(y),order.by=as.Date(index(y)))
   unit <- attr(y,'unit')
   y <- attrcp(x,y,ignore=c("unit","names"))
   unit -> attr(y,'unit')
@@ -688,76 +715,116 @@ as.4seasons.field <- function(x,FUN='mean',...) {
 
 as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
-as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
+as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE) {
 # The argument monthly can be used to force the method to be
 # julian-day regression-based or based on monthly mean
-
+ 
 #  print('as.anomaly.default')
 #  yr <- as.integer(format(index(x),'%Y'))
 #  mon <- as.integer(format(index(x),'%m'))
 #  dy <- as.integer(format(index(x),'%d'))
-  yr <- year(x);  mon <- month(x);  dy <- day(x)
+#  str(x)
+#  browser()
+  if ((is.numeric(x)) & (!is.null(attr(x, "names"))))
+  if ((!is.zoo(x)) & (!is.null(attr(x, "names"))))
+    x <- zoo(x,order.by=as.Date(attr(x, "names")))
+  yr <- year(x);  mon <- month(x);  dy <- day(x); seas <- season(x,format='numeric')
   if (is.null(ref))
-    ref <- seq(min(yr),max(yr),by=1)
+    ref <- seq(min(yr,na.rm=TRUE),max(yr,na.rm=TRUE),by=1)
   # Check whether the object is a time series of monthly data.
-  ndd <- length(table(dy))
-  #print(ndd)
-  if ( (ndd==1) & is.null(monthly) ) monthly <- TRUE else
-                                     monthly <- FALSE
-  y <- coredata(x)
+  ndd <- length(table(dy)); nmm <- max(diff(mon))
+  #print(c(ndd,nmm))
+  if ((ndd==0) & (nmm==0)) {
+    # Only one month/season
+    return(x - mean(x,na.rm=TRUE))
+  }
   
-  if (monthly) {
-    # If monthly, subtract the
-    #print(table(month))
-    if (is.null(dim(x))) {
-      #print("1D")
-      clim <- rep(0,12)
-      for (i in 1:12) {
+  #print(ndd); print(class(x))
+  #if ( (ndd==1) & is.null(monthly) ) monthly <- TRUE else
+  #                                   monthly <- FALSE
+
+  if ( (inherits(x,'month')) | ((ndd==1) & (nmm==1)) ) {
+    # Monthly data
+    print('monthly')
+    monthly <- TRUE
+    nm <- 12
+  } else monthly <- FALSE
+  if ( (inherits(x,'seasonal')) | ((ndd==1) & (nmm==3)) ) {
+    # seasonal data
+    #print('seasonal')
+    seasonal <- TRUE
+    mon <- seas
+    nm <- 4
+  } else seasonal <- FALSE
+  
+  # Check if x contains one or more stations
+  d <- dim(x)
+
+  if (is.null(d)) {
+    # single records
+    #cat('.')
+    y <- coredata(x)
+    
+    if ( (monthly | seasonal) ) {
+    # If monthly, subtract the monthly mean
+#    print(mon)
+#    if (is.null(dim(x))) {
+      print("1D")
+      clim <- rep(0,nm)
+      for (i in 1:nm) {
         im <- is.element(mon,i)
         z <- mean(y[im & is.element(yr,ref)],na.rm=na.rm)
         clim[i] <- z
         y[im] <- y[im] - clim[i]
       }
+      
       y <- zoo(y,order.by=index(x))
+#    } else {
+#      #print("2D")
+#      y <- t(y)
+#      clim <- rep(0,length(y[,1])*12); dim(clim) <- c(length(y[,1]),12)
+#      for (i in 1:12) {
+#        im <- is.element(mon,i)
+#        z <- rowMeans(y[,im & is.element(yr,ref)],na.rm=na.rm) 
+#        #print(c(length(z),length(clim[,1]))); plot(z)
+#        clim[,i] <- z
+#        y[,im] <- y[,im] - clim[,i]
+#        #print(c(i,sum(im),mean(clim[,i])))
+#      }
+#      y <- zoo(t(y),order.by=index(x))
+
     } else {
-      #print("2D")
-      y <- t(y)
-      clim <- rep(0,length(y[,1])*12); dim(clim) <- c(length(y[,1]),12)
-      for (i in 1:12) {
-        im <- is.element(mon,i)
-        z <- rowMeans(y[,im & is.element(yr,ref)],na.rm=na.rm) 
-        #print(c(length(z),length(clim[,1]))); plot(z)
-        clim[,i] <- z
-        y[,im] <- y[,im] - clim[,i]
-        #print(c(i,sum(im),mean(clim[,i])))
-      }
-      y <- zoo(t(y),order.by=index(x))
-   }
-  } else {
-    #print("daily")
-    t0 <- julian(index(x)[is.element(yr,ref)]) -
-          julian(as.Date(paste(yr[is.element(yr,ref)],"-01-01",sep="")))
-    t <- julian(index(x)) -
+#      print("daily"); print(class(x))
+      t0 <- julian(index(x)[is.element(yr,ref)]) -
+            julian(as.Date(paste(yr[is.element(yr,ref)],"-01-01",sep="")))
+      t <- julian(index(x)) -
          julian(as.Date(paste(yr,"-01-01",sep="")))
-    c1 <- cos(pi*t0/365.25); s1 <- sin(pi*t0/365.25)
-    c2 <- cos(2*pi*t0/365.25); s2 <- sin(2*pi*t0/365.25)
-    c3 <- cos(3*pi*t0/365.25); s3 <- sin(3*pi*t0/365.25)
-    c4 <- cos(4*pi*t0/365.25); s4 <- sin(4*pi*t0/365.25)
-    C1 <- cos(pi*t/365.25); S1 <- sin(pi*t/365.25)
-    C2 <- cos(2*pi*t/365.25); S2 <- sin(2*pi*t/365.25)
-    C3 <- cos(3*pi*t/365.25); S3 <- sin(3*pi*t/365.25)
-    C4 <- cos(4*pi*t/365.25); S4 <- sin(4*pi*t/365.25)
-    cal <- data.frame(y=coredata(x),c1=c1,c2=c2,c3=c3,c4=c4,
-                      s1=s1,s2=s2,s3=s3,s4=s4)
-    pre <- data.frame(c1=C1,c2=C2,c3=C3,c4=C4,
-                      s1=S1,s2=S2,s3=S3,s4=S4)
-    i1 <- is.element(year(x),year(x)[1])
-    pre1 <- data.frame(c1=C1[i1],c2=C2[i1],c3=C3[i1],c4=C4[i1],
-                      s1=S1[i1],s2=S2[i1],s3=S3[i1],s4=S4[i1])
-    acfit <- lm(y ~ c1 + s1 + c2 + s2 + c3 + s3 + c4 + s4,data=cal)
-    clim <- predict(acfit,newdata=pre)
-    y <- zoo(coredata(x) - clim,order.by=index(x))
-    clim <-  predict(acfit,newdata=pre1)
+      c1 <- cos(pi*t0/365.25); s1 <- sin(pi*t0/365.25)
+      c2 <- cos(2*pi*t0/365.25); s2 <- sin(2*pi*t0/365.25)
+      c3 <- cos(3*pi*t0/365.25); s3 <- sin(3*pi*t0/365.25)
+      c4 <- cos(4*pi*t0/365.25); s4 <- sin(4*pi*t0/365.25)
+      C1 <- cos(pi*t/365.25);   S1 <- sin(pi*t/365.25)
+      C2 <- cos(2*pi*t/365.25); S2 <- sin(2*pi*t/365.25)
+      C3 <- cos(3*pi*t/365.25); S3 <- sin(3*pi*t/365.25)
+      C4 <- cos(4*pi*t/365.25); S4 <- sin(4*pi*t/365.25)
+      cal <- data.frame(y=coredata(x),c1=c1,c2=c2,c3=c3,c4=c4,
+                        s1=s1,s2=s2,s3=s3,s4=s4)
+      pre <- data.frame(c1=C1,c2=C2,c3=C3,c4=C4,
+                        s1=S1,s2=S2,s3=S3,s4=S4)
+      i1 <- is.element(year(x),year(x)[1])
+      pre1 <- data.frame(c1=C1[i1],c2=C2[i1],c3=C3[i1],c4=C4[i1],
+                         s1=S1[i1],s2=S2[i1],s3=S3[i1],s4=S4[i1])
+      acfit <- lm(y ~ c1 + s1 + c2 + s2 + c3 + s3 + c4 + s4,data=cal)
+      clim <- predict(acfit,newdata=pre)
+      y <- zoo(coredata(x) - clim,order.by=index(x))
+      clim <-  predict(acfit,newdata=pre1)
+    }
+  } else {
+    #print("many stations")
+    rownames(x) <- as.character(index(x))
+    y <- apply(x,2,FUN='as.anomaly.default',ref=ref)
+    y <- zoo(y,order.by=index(x))
+    clim <- x - y
   }
   #print("attributes")
   y <- attrcp(x,y)
@@ -771,20 +838,20 @@ as.anomaly.default <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
   invisible(y)
 }
 
-as.anomaly.zoo <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
-  y <- as.anomaly.station(x,ref,monthly,na.rm)
+as.anomaly.zoo <- function(x,ref=NULL,na.rm=TRUE) {
+  y <- as.anomaly.station(x,ref,na.rm)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-as.anomaly.station <- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
-  y <- as.anomaly.default(x,ref,monthly,na.rm)
+as.anomaly.station <- function(x,ref=NULL,na.rm=TRUE) {
+  y <- as.anomaly.default(x,ref,na.rm)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-as.anomaly.field<- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
-   y <- as.anomaly.default(x,ref,monthly,na.rm)
+as.anomaly.field<- function(x,ref=NULL,na.rm=TRUE) {
+   y <- as.anomaly.default(x,ref,na.rm)
    attr(y,'history') <- history.stamp(x)
    attr(y,'dimensions') <- attr(x,'dimensions')
    invisible(y)
@@ -793,7 +860,7 @@ as.anomaly.field<- function(x,ref=NULL,monthly=NULL,na.rm=TRUE) {
 # Handy conversion algorithms:
 as.climatology <- function(x,...) {
   ya <- as.anomaly(x)
-  y <- attr(ya,'climatology')
+  y <- zoo(attr(ya,'climatology'))
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(x)

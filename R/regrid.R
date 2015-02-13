@@ -37,11 +37,13 @@ sparseMproduct <- function(beta,x) {
 regrid <- function(x,is,...)
   UseMethod("regrid")
 
-regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
 
+regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
+# Compute weights for regular grids: (xo,yo) - the field class
   
   lindist <- function(x,X) {
-    # This function works for non-oerlapping coordinates:
+    # Linear distance
+    # This function works for non-overlapping coordinates:
     I <- 1:length(X)
     lt <- X < x; gt <- X > x
     if ( (sum(lt)>0) & (sum(gt)>0) ) {
@@ -124,6 +126,7 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
   }
   if (verbose) {print(table(Wy[1,],Wy[2,])); print(table(Wy[3,],Wy[4,]))}  
   #print("beta:")
+  
   srty <- order(rep(Wy[5,],nx))
   beta <- cbind(rep(Wx[1,],ny)*rep(Wy[1,],nx)[srty],
                 rep(Wx[2,],ny)*rep(Wy[1,],nx)[srty],
@@ -149,6 +152,10 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
 }
 
 
+
+
+
+
 regrid.default <- function(x,is,verbose=FALSE,...) {
   
 }
@@ -156,7 +163,7 @@ regrid.default <- function(x,is,verbose=FALSE,...) {
 regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
 
   stopifnot(inherits(x,'field'))
-  
+ 
   if (approach=="eof2field") {
     y <- regrid.eof2field(x,is)
     return(y)
@@ -164,18 +171,27 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   
   #print("regrid.field ")
   x <- sp2np(x)
-  
-  # The coordinates which to grid: lon.new & lat.new
+
+  ## case wether lon or lat is given in is i.e. regrid on these values along the other dimension
+  if (length(is)==1) {
+      nm <- names(is)
+      if (length(nm)==0) print("Please rewrite 'is' as in is=list(lon=...) or is=list(lat=...)")
+      if (grepl("lon",nm))
+          is <- list(lon=rep(is[[1]],length(lon(x))),lat=lat(x))
+      else if (grepl("lat",nm))
+          is <- list(lon=lon(x),lat=is[[2]])            
+  }
+  ## The coordinates which to grid: lon.new & lat.new
   if ( (is.data.frame(is)) | (is.list(is)) ) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
-  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof')) ) {
+  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof'))| (inherits(is,'pca')) ) {
     lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
   }
   
   greenwich <- attr(x,'greenwich')
   if (verbose) print(paste('greenwich=',greenwich))
   # REB 13.05.2014
-  if ( (min(lon.new) < 0) & (max(lon.new) <= 180) ) x <- g2dl(x,greenwich=FALSE) else
-  if ( (min(lon.new) > 0) & (max(lon.new) <= 360) ) x <- g2dl(x,greenwich=FALSE) else
+  if ( (min(lon.new) <= 0) & (max(lon.new) <= 180) ) x <- g2dl(x,greenwich=FALSE) else
+  if ( (min(lon.new) >= 0) & (max(lon.new) <= 360) ) x <- g2dl(x,greenwich=FALSE) else
      stop(paste('Bad longitude range: ',min(lon.new),'-',max(lon.new))) 
   
   if (verbose) {print("New coordinates"); print(lon.new); print(lat.new)}
@@ -284,6 +300,7 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
   invisible(y)
 }
+
 
 
 
@@ -406,7 +423,7 @@ regrid.eof2field <- function(x,is) {
  #greenwich <- attr(x,'greenwich')
   if ( greenwich & (min(lon.new < 0)) ) x <- g2dl(x,greenwich=FALSE)
   eof0 <- EOF(x)
-  eof1 <- regrid(eof,is)
+  eof1 <- regrid(eof0,is)
   print("Reconstruct field from EOFs")
   y <- eof2field(eof1)
   if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
@@ -416,6 +433,7 @@ regrid.eof2field <- function(x,is) {
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
+
 
 
 

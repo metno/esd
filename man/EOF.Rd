@@ -16,7 +16,6 @@
   analysis) for combinations of data sets, typically from
   gridded data, reanalysis and climate models results.
   
-  
   [ref: Benestad (2001), "A comparison between two empirical downscaling
   strategies", \emph{Int. J. Climatology}, \bold{vol 21}, Issue 13,
   pp.1645-1668. DOI 10.1002/joc.703]. and  \code{\link{mixFields}} prepares for
@@ -54,7 +53,7 @@ EOF.default(X,it=NULL,n=20,lon=NULL,lat=NULL,
 EOF.field(X,it=NULL,n=20,lon=NULL,lat=NULL,
           area.mean.expl=TRUE,verbose=FALSE)
 EOF.comb(X,it=NULL,n=20,lon=NULL,lat=NULL,area.mean.expl=TRUE,verbose=FALSE)
-eof2field(eof,is=NULL,lon=NULL,lat=NULL,anomaly=FALSE)
+eof2field(x,it=NULL,is=NULL,anomaly=FALSE)
 PCA(X,...) 
 EOF.default(X,...)
 PCA.station(X,na.action='fill',verbose=FALSE)
@@ -104,8 +103,9 @@ ceof <- EOF(OBSGCM)
 plot(ceof)
 
 # Example for using PCA in downscaling
-nacd <- station(src='nacd')
-X <- annual(nacd)
+## nacd <- station(src='nacd')
+## X <- annual(nacd)
+X <- station(src='nacd')
 nv <- function(x) sum(is.finite(x))
 ok <- (1:dim(X)[2])[apply(X,2,nv) == dim(X)[1]]
 X <- subset(X,is=ok)
@@ -119,8 +119,8 @@ ds <- DS(pca,eof)
 plot(ds)
 
 # Recover the station data:
-Z <- pca2station(ds)
-plot(Z)
+Z <- pca2station(pca)
+plot(Z,plot.type='multiple')
 
 }
 \keyword{spatial}

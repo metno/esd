@@ -2,8 +2,11 @@
 \alias{wheel}
 \alias{wheel.station}
 \alias{wheel.spell}
-
+\alias{diagram}
+\alias{diagram.dsensemble}
+\alias{diagram.station}
 \alias{seasevol}
+\alias{seasevol.station}
 \alias{vis}
 \alias{diagram}
 \alias{cumugram}
@@ -29,10 +32,11 @@
 vis(x,...)
 diagram(x,...)
 diagram.dsensemble(x,it=0,...)
+diagram.station(x,...)
 wheel(x,...)
 wheel.station(x,new=TRUE,lwd=2,col=NULL,bg="grey90",...)
 wheel.spell(x,new=TRUE,lwd=2,col=NULL...)
-cumugram(x,it=NULL,...)
+cumugram(x,it=NULL,prog=FALSE,...)
 climvar(x,FUN='sd',plot=TRUE,...)
 colscal(n=30,col="bwr",test=FALSE)
 seasevol(x,...)

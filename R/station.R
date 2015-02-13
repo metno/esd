@@ -1,10 +1,10 @@
-## Author R.E. Benestad
+## Author A. Mezghani git-test
 ## Can return one station or a group of stations. A cluster of regional stations can be
 ## reppresented in terms of PCA, maintaining the spatial consistencies between them.
 ## It is also possible to use a set of station objects to provide multi-information from
 ## one location: e.g. T(2m), precip; mean, variance, skewness, & kurtosis...
 
-## Major updates : A. Mezghani 29.07.2013 ; 29.08.2013 ; 03.09.2013 ; 25.09.2013 ; 18.10.2013
+## Major updates : 29.07.2013 ; 29.08.2013 ; 03.09.2013 ; 25.09.2013 ; 18.10.2013
 ## station.metno(ok) ; station.nordklim(ok) ; station.nacd(ok) ; station.ecad(ok) ; station.narp(in progress) ; station.ghcnm(ok) ; station.ghcnd(almost done - checking for t2m)  
 ## require(zoo)
 
@@ -18,17 +18,8 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
     }
 }
 
-## Define methods
+## Define method
 station <- function(stid=NULL,...) UseMethod("station")
-
-## station.metnod <- function(...) UseMethod("station.metnod")
-## station.ecad <- function(...) UseMethod("station.ecad")
-## station.ghcnd <- function(...) UseMethod("station.ghcnd")
-## station.nacd <- function(...) UseMethod("station.nacd")
-## station.narp <- function(...) UseMethod("station.narp")
-## station.nordklim <- function(...) UseMethod("station.nordklim")
-## station.metnom <- function(...) UseMethod("station.metnom")
-## station.ghcnm <- function(...) UseMethod("station.ghcnm")
 
 station.ecad <- function(...) {
     ## 
@@ -116,15 +107,15 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
                             path.metnod=NULL,url.metnod=NULL) {
     ## 
     ## check wether x is a 'location' or a 'stationmeta' object
-    if (inherits(loc,"stationmeta"))
+   
+    if (inherits(loc,"stationmeta")) {
         ss <- loc
-    else if (is.character(loc)) {
+    } else if (is.character(loc)) {
         loc <- loc
         ss <- NULL
     } else ss <- NULL
     ## else stop("x must be either a stationmeta or location object")
 
-    print("Retrieving data ...")
     ## Initialize X
     X <- NULL
     SRC <- src
@@ -144,7 +135,9 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
         param0 <- param
         ssn <- select.station(param="tmin",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,src=src,it=it,nmin=nmin)
         ssx <- select.station(param="tmax",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,src=src,it=it,nmin=nmin)
-        class(ssn) <- class(ssx) <- "data.frame"
+        if (!is.null(ssn) & !is.null(ssx))
+             class(ssn) <- class(ssx) <- "data.frame" else
+             {print('Found no stations with given criteria'); return(NULL)}
         ss <- subset(ssx,ssx$station_id==ssn$station_id) # keep only stations recording both min and max
         if (is.null(ss))
             return(NULL)
@@ -175,6 +168,9 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
     end <- ss$end
     param <- apply(as.matrix(ss$element),1,esd2ele)
     rm(ss)
+
+    print(paste("Retrieving data from",length(id),"records ..."))
+
     
     ## start loap on available stations
     for (i in 1:length(id)) {
@@ -739,7 +735,11 @@ metnod.station <-  function(re=14, ...) {
         attr(y,"source") <- "METNOD"
     invisible(y)
 }
-metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,qual=NULL,start=NULL,end=NULL,param=NULL,verbose=FALSE, re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A", url = "http://klapp/metnopub/production/") {
+metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
+                          qual=NULL,start=NULL,end=NULL,param=NULL,verbose=FALSE,
+                          re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",
+                          url = "http://klapp/metnopub/production/") {
+    
     if (verbose) print("http://eklima.met.no")
     
     ## if (!is.na(end)) end1 <- format(Sys.time(),'%d.%m.%Y')
@@ -759,9 +759,9 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
         if (!is.null(h)) 
             Filnavn <- paste(Filnavn, "&dup=", dup, sep = "")
     } else stop("The url must be specified")
-
+    
     if (verbose) print(Filnavn)
-
+    
     firstline <- readLines(Filnavn, n = 1, encoding = "latin1")
     if (substr(firstline, 1, 3) == "***") {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
     ## 
@@ -769,7 +769,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
     Datasett$RR[Datasett$RR == "."] <- "0"
     eval(parse(text = paste("y <- as.numeric(Datasett$", param1, ")",sep = "")))
     if (sum(y,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
-
+    
     type <- switch(re, `14` = "daily values", `17` = "observations", '15' = "Monthly means")
     ## 
     if (is.na(end)) end <- format(Sys.time(),'%Y')
@@ -778,18 +778,21 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
     month <- Datasett$Month ## rep(1:12,length(c(start:end)))
     if (re==14) day <- Datasett$Day else day <- "01" ## rep(1,length(year))
     
-    METNO <- zoo(y,order.by = as.Date(paste(year, month, day, sep = "-")))
-                                        #
-
-    if (sum(METNO,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
+    METNO <- zoo(y,order.by = as.Date(paste(year, month, day, sep = "-")))                                  
+    
+    if (sum(METNO,na.rm=TRUE)==0) {
+        print("Warning : No recorded values are found for this station -> Ignored")
+        return(NULL)
+    } 
     ##print("attributes")
-
-
+    
     ## Add meta data as attributes:
     METNO <- as.station(METNO,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,
                         ##frequency=1,calendar='gregorian',
-                        cntr=cntr,loc=loc,src='METNO', url=Filnavn,longname=as.character(ele2param(ele=esd2ele(param),src="METNO")[2]),
-                        unit=as.character(ele2param(ele=esd2ele(param),src="METNO")[4]), param=param, aspect="original",
+                        cntr=cntr,loc=loc,src='METNO', url=Filnavn,
+                        longname=as.character(ele2param(ele=esd2ele(param),src="METNO")[2]),
+                        unit=as.character(ele2param(ele=esd2ele(param),src="METNO")[4]),
+                        param=param, aspect="original",
                         reference="Klimadata Vare Huset archive (http://eklima.met.no)",
                         info="Klima Data Vare Huset archive (http://eklima.met.no)")
     
@@ -942,7 +945,7 @@ replace.char <- function (c, s, ny.c)  {
 as.monthly <- function (x, FUN = "mean", ...) 
 {
     y <- aggregate(zoo(x), function(tt) as.Date(as.yearmon(tt)), 
-        FUN = FUN, ...)
+                   FUN = FUN, ...)
     y <- attrcp(x, y)
     attr(y, "history") <- history.stamp(x)
     class(y) <- class(x)

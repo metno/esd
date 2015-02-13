@@ -126,15 +126,25 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,xlim=xlim,ylim=ylim,
   print('map.ds')
   stopifnot(inherits(x,'ds'))
   x <- subset(x,it=it,is=is)
+
   projection <- tolower(projection)
   X <- attr(x,'pattern')
   if (is.list(X)) {
     X <- X[[1]]
   }
-#  attr(X,'longitude') <- attr(X,'longitude')
-#  attr(X,'latitude') <- attr(x,'latitude')
+  
+  # Check if there are several patterns: one for each month/seasons
+  d <- dim(X)
+  if (length(d)>2) {
+    dim(X) <- c(d[1],d[2]*d[3])
+    X <- colMeans(X)
+    dim(X) <- c(d[2],d[3])
+    attr(X,'longitude') <- lon(attr(x,'pattern'))
+    attr(X,'latitude') <- lat(attr(x,'pattern'))
+  }
   attr(X,'variable') <- varid(x)
-
+  attr(X,'unit') <- unit(x)
+  
   unit <- attr(x,'unit')
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
   for (i in 1:length(unit)) {
@@ -179,19 +189,28 @@ map.field <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
                       FUN='mean',n=15,projection="lonlat",
                       lonR=NULL,latR=NULL,na.rm=TRUE,colorbar=TRUE,
                       axiR=0,gridlines=FALSE,col=NULL,breaks=NULL,...) {
+    
   stopifnot(inherits(x,'field'))
   #print('map.field')
   x <- subset(x,it=it,is=is)
   #print(length(x)); print(attr(x,'dimensions')[1:2])
   projection <- tolower(projection)
+  if (FUN=='trend') FUN <- 'trend.coef'
 
   if (!is.null(xlim)) {
     if (xlim[1] < 0) x <- g2dl(x,greenwich=FALSE)
   }
   #str(X)
   X <- coredata(x)
+  ## If one time slice, then map this time slice
   if (dim(X)[1]==1) X <- coredata(x[1,]) else
-  if (inherits(X,"matrix")) X <- apply(x,2,FUN=FUN,na.rm=na.rm)
+  if (is.null(X)) X <- coredata(X) else if (inherits(X,"matrix")) {
+  ## If several time slices, map the required statistics
+    good <- apply(coredata(x),2,nv) > 1
+    X <- rep(NA,length(good))
+    xx <- coredata(x[,good])
+    X[good] <- apply(xx,2,FUN=FUN,na.rm=na.rm)
+  }
   #print(length(X))
   attr(X,'longitude') <- attr(x,'longitude')
   attr(X,'latitude') <- attr(x,'latitude')
@@ -296,14 +315,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   data("geoborders",envir=environment())
   if(sum(is.finite(x))==0) stop('No valid data')
   # To deal with grid-conventions going from north-to-south or east-to-west:
-  srtx <- order(attr(x,'longitude')); lon <- attr(x,'longitude')[srtx]
-  srty <- order(attr(x,'latitude')); lat <- attr(x,'latitude')[srty]
+  srtx <- order(attr(x,'longitude')); lon <- lon(x)[srtx]
+  srty <- order(attr(x,'latitude'));  lat <- lat(x)[srty]
   #print('meta-stuff')
-  unit <- attr(x,'unit'); variable <- attr(x,'variable')
+  unit <- unit(x); variable <- varid(x); varid <- varid(x)
   if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") )
     unit <- "degree*C"
   if (unit=="%") unit <- "'%'"
-  if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") )
+  if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") |
+      (tolower(variable)=="2t") )
     variable <- "T[2*m]"
 #  if (inherits(x,'corfield'))
 #    main=eval(parse(text=paste('expression(paste("correlation: ",',
@@ -353,7 +373,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     breaks <- pretty(c(x),n=n)
   #print(breaks)
   
-  if (is.null(col)) col <- colscal(n=length(breaks)-1) else
+  if (is.null(col)) col <- colscal(n=length(breaks)-1,col=varid) else
   if (length(col)==1) {
      palette <- col
      col <- colscal(col=palette,n=length(breaks)-1)
@@ -366,7 +386,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
     col <- rev(col)
   
-  print(c(length(breaks),length(col)))
+  #print(c(length(breaks),length(col)))
   #if (is.Date(what))
 
   if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
@@ -374,10 +394,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if (new) {
     #dev.new()
     par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-        fig=c(0.05,0.95,0.12,0.95),mar=rep(1,4))
+        fig=c(0.05,0.95,0.13,0.95),mar=rep(1,4))
+#    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+#        fig=c(0.05,0.95,0.12,0.95))
   } else {
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-        mar=rep(1,4))
+    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,mar=rep(1,4))
+#    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
   }
 
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
@@ -385,8 +407,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   par0 <- par()
   if (sum(is.element(tolower(what),'fill'))>0)   
     image(lon,lat,x,xlab="",ylab="",add=TRUE,
-          col=col,breaks=breaks,xlim=xlim,ylim=ylim,...) 
-    
+          col=col,breaks=breaks,xlim=xlim,ylim=ylim,...)
+  
   if (geography) {
     lines(geoborders$x,geoborders$y,col="darkblue")
     lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,col="pink")
@@ -404,15 +426,19 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if (!is.null(period))
     text(lon[length(lon)],lat[length(lat)] + dlat,period,pos=2,cex=0.7,col="grey30")
   if (!is.null(method))
-    text(lon[length(lon)],lat[1] - dlat,method,col="grey30",pos=2,cex=0.7)
+    text(lon[length(lon)],lat[1] - 0.5*dlat,method,col="grey30",pos=2,cex=0.7)
   if (colorbar) {
-    #browser()
+    par(xaxt="s",fig=c(0.05,0.95,0.01,1))
+    breaks <- round(seq(min(x,na.rm=TRUE),max(x,na.rm=TRUE),length=length(col)),1)
     image.plot(horizontal=TRUE,legend.only=TRUE,zlim=range(x,na.rm=TRUE),
-               col=col,legend.width=1,axis.args=list(cex.axis=0.8),
-               border=FALSE,add=TRUE,graphics.reset=TRUE)
+               lab.breaks=breaks,col=col,axis.args=list(cex.axis=0.8),
+               border=FALSE)
+#    image.plot(horizontal=TRUE,legend.only=TRUE,zlim=range(x,na.rm=TRUE),
+#               lab.breaks=pretty(x),col=col,legend.width=1,axis.args=list(cex.axis=0.8),
+#               border=FALSE,add=TRUE,graphics.reset=TRUE)
 #    par(fig = c(0.3, 0.7, 0.05, 0.10),mar=rep(0,4),cex=0.8,
 #        new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
-  #print("colourbar")
+#     print("colourbar"); print(pretty(x))
 #    bar <- cbind(breaks,breaks)
 #    image(breaks,c(1,2),bar,col=col,breaks=breaks)
   
@@ -423,9 +449,16 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
 #    plot(range(lon),range(lat),type="n",xlab="",ylab="",
 #         xlim=xlim,ylim=ylim)
     #browser()
+    par(fig=par0$fig,mar=par0$mar,new=TRUE,xaxt="n")
+    plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
+         xlim=xlim,ylim=ylim)                # to sumerimpose.
   }
+  par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',cex.lab=0.7,cex.axis=0.7)
+  axis(2,at=pretty(lat(x)),col='grey')
+  axis(3,at=pretty(lon(x)),col='grey')
+  grid()
 
-  
+  par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1)
   result <- list(x=lon,y=lat,z=x,breaks=breaks)
   invisible(result)
 }
@@ -479,7 +512,7 @@ map.pca <- function(x,new=TRUE,FUN='mean',pattern=1,
   attr(X,'latitude') <- lat(x)
   class(X) <- 'station'
   if (is.null(col)) {
-    col <- colscal(30)
+    col <- colscal(30,col=varid(x))
     if (is.precip(x)) col <- rev(col)
   }
   map.station(X,new=new,FUN=FUN,col=col,bg=col,
@@ -498,11 +531,11 @@ map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
 map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
                     what=c("fill","contour"),
                     n=15,projection="lonlat",
-                    lonR=NULL,latR=NULL,
+                    lonR=NULL,latR=NULL,colorbar=TRUE,
                     axiR=0,gridlines=TRUE,col=NULL,breaks=NULL,...) {
   #print('map.cca')
   #x <- subset(x,it=it,is=is)
-
+  ## browser()
   # For plotting, keep the same kind of object, but replace the patterns in
   # the eof/pca with the CCA patterns
   Y <- x$Y
@@ -537,29 +570,31 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
 #  col <- rgb( c(rep(0,15),1-sqrt(seq(0,1,length=15))),
 #              abs(sin(seq(0,pi,length=30))),
 #              c(sqrt(seq(0,1,length=15)),rep(1,15)) )
-  col <- colscal(30)
+  col <- colscal(30,col=varid(x))
   if (is.precip(X)) col.x <- rev(col) else
                     col.x <- col
   if (is.precip(Y)) col.y <- rev(col) else
                     col.y <- col
   
-  if (sum(is.element(what,'ts'))>0)
-    par(fig=c(0,0.5,0.5,1),new=TRUE) else
-    par(fig=c(0,0.5,0,1),new=TRUE)
+  if (sum(is.element(what,'map'))>0)
+    par(fig=c(0,0.5,0.5,1)) ## mar=c(0.05,.05,0.05,0.05),
+  else 
+    par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
   map(Y,icca,xlim=xlim,ylim=ylim,what=what,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-      gridlines=gridlines,FUN='mean',
+      gridlines=gridlines,FUN='mean',colorbar=colorbar,
       colbar=list(col=col.y,type='r',v=0),
       col=col.y,bg=col.y,showall=FALSE,new=FALSE)
-
+  ## browser()
   if (sum(is.element(what,'ts'))>0)
-    par(fig=c(0.5,1,0.5,1),new=TRUE) else
-    par(fig=c(0.5,1,0,1),new=TRUE)
+      par(fig=c(0,1,0.5,1),new=TRUE) else
+  par(fig=c(0.5,1,0.5,1),new=TRUE) ## mar=c(0,0,0,0),
   map(X,icca,xlim=xlim,ylim=ylim,what=what,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-      gridlines=gridlines,FUN='mean',
+      gridlines=gridlines,FUN='mean',colorbar=colorbar,
       colbar=list(col=col.x,type='r',v=0),
       col=col.x,bg=col.x,showall=FALSE,new=FALSE)
+  
   invisible(list(U=U,V=V))
 }
 

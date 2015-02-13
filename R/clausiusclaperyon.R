@@ -1,8 +1,8 @@
 # Clapeyron-Clausius equation (saturation evaporation pressure)
 
 C.C.eq <- function(x) {
-  stopifnot(!missing(x),(varid(x)=='t2m') | (varid(x)=='tas' |
-                        (varid(x)=='sst')))
+  stopifnot(!missing(x),(varid(x)=='t2m') | (varid(x)=='tas') |
+                        (varid(x)=='air') | (varid(x)=='sst'))
   unit <- attr(x,'unit')[1]
 
   # Check units:
@@ -12,7 +12,7 @@ C.C.eq <- function(x) {
          unit[i] <- 'deg C'
   }
   # If units are in deg C, convert to deg K: 
-  if (unit[i]=='deg C') {
+  if ((unit[i]=='deg C') | (unit[i]=='degC')) {
     x <- x + 273.15
     unit[i] <- 'deg K'
   }

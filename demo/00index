@@ -4,3 +4,7 @@ testDS.R                     - Test script for DS.
 testregrid.R                 - test script for regrid.
 hydroex.R                    - Small watershed: runoff, precip, and temperature
 muerror			     - Shows inherent uncertainty for mean of exponential distribution
+CORDEX.ESD.exp.1.tx          - CORDEX-ESD experiment 1 for Tmax
+CORDEX.ESD.exp.1.tn          - CORDEX-ESD experiment 1 for Tmin
+CORDEX.ESD.exp.1.pr          - CORDEX-ESD experiment 1 for precipitation
+EuropeT2mRconstr             - Plot the Luterbacher et al. (2004) temperature reconstruction for Europe.

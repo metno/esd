@@ -7,7 +7,6 @@
 \alias{DS.field}
 \alias{DS.t2m.month.field}
 \alias{DS.t2m.season.field}
-\alias{DS.t2m.annual.field}
 \alias{DS.precip.season.field}
 \alias{DS.freq}
 \alias{DS.spell}
@@ -65,36 +64,31 @@
 }
 \usage{
 DS(y,X,verbose=TRUE,plot=FALSE,...)
-DS.default(y,X,mon=NULL,
-           method="lm",swsm="step",
-           rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-           verbose=FALSE,...)
+DS.default(y, X, mon = NULL, method = "lm", swsm = "step", m = 5,
+  rmtrend = TRUE, eofs = 1:7, 
+  area.mean.expl = FALSE, verbose = FALSE, weighted = TRUE, ...)
 DS.station(y,X,biascorrect=FALSE,mon=NULL,
-           method="lm",swsm="step",
+           method="lm",swsm="step",m = 5,
            rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
            verbose=FALSE,pca=TRUE,neofs=20,...)
 DS.eof(X,y,mon=NULL,
-       method="lm",swsm="step",
+       method="lm",swsm="step",m=5,
        rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
        verbose=FALSE,pca=TRUE,npca=20,...)
 DS.comb(X,y,biascorrect=FALSE,mon=NULL,
-        method="lm",swsm="step",
+        method="lm",swsm="step",m=5,
         rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
         verbose=FALSE,...) 
 DS.field(X,y,biascorrect=FALSE,mon=NULL,
-         method="lm",swsm="step",
+         method="lm",swsm="step",m=5,
          rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
          verbose=FALSE,...) 
-DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,
+DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
                    method="lm",swsm="step",
                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,station=TRUE)
 DS.t2m.season.field(y,X,biascorrect=FALSE,
-                    method="lm",swsm="step",
-                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-                    verbose=FALSE,station=TRUE)
-DS.t2m.annual.field(y,X,biascorrect=FALSE,
-                    method="lm",swsm="step",
+                    method="lm",swsm="step",m=5,
                     rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,station=TRUE)
 DS.precip.season.field(y,X,biascorrect=FALSE,
@@ -129,7 +123,12 @@ biasfix(x)
 \item{station}{TRUE: convert monthly data to station class using
   \code{\link{combine.ds}}, else return a list of different monthly DS-results.}
 \item{area.mean.expl}{When TRUE, subtract the area mean for the domain
-  and use as a the first co-variate before the PCs from the EOF analysis.}
+  and use as a the first co-variate before the PCs from the EOF
+  analysis.}
+  \item{m}{passed on to \code{\link{crossval}}}
+  \item{weighted}{TRUE: use the attribute '\code{error.estimate}' as
+    weight for the regresion analysis.}
+  \item{\dots}{ }
 }
 
 \value{
@@ -164,7 +163,8 @@ biasfix(x)
 X <- t2m.ERA40(lon=c(-40,50),lat=c(40,75))
 data(Oslo)
 #X <- OptimalDomain(X,Oslo)
-Y <- DS(Oslo,X)
+eof <- EOF(X,it='jan')
+Y <- DS(Oslo,eof)
 plot(Y)
 str(Y)
 
@@ -176,11 +176,6 @@ plot(y)
 T2m <- (t2m.ERA40())
 yT2m <- merge.zoo(y,T2m)
 plot(coredata(yT2m[,1]),coredata(yT2m[,2]))
-
-data(t2m.DNMI)
-y <- station.eca("Oslo")
-X <- EOF(t2m.DNMI,mon=1)
-ds <- DS.month.eof(y,X)
 
 # Example: downscale annual wet-day mean precipitation -calibrate over
 # part of the record and use the other part for evaluation.
@@ -207,8 +202,9 @@ ds <- DS(Oslo,eof)
 plot(ds)
 
 DS(Oslo,X,station=FALSE) -> y
-Y <- combine.ds.comb(y)
-plot(Y)
+plot(y)
+##Y <- combine.ds.comb(y)
+##plot(Y)
 
 data(ferder)
 t2m <- t2m.NCEP(lon=c(-30,50),lat=c(40,70))
@@ -222,7 +218,9 @@ sametimescale(y,X) -> z
 ym <- as.4seasons(y,FUN="mean")
 ys <- as.4seasons(y,FUN="sd")
 dsm <- DS(ym,X)
+plot(dsm)
 dss <- DS(ys,Z)
+plot(dss)
 }
 \keyword{models}
 \keyword{multivariate}

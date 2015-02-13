@@ -2,7 +2,7 @@
 \alias{test.retrieve.ncdf4}
 \alias{test.cmip3.arctic}
 \alias{test.cmip5.arctic}
-\alias{test.cmip5.globa}
+\alias{test.cmip5.global}
 \alias{test.cmip3.global}
 \alias{test.cmip5.scandinavia}
 \alias{test.cmip3.scandinavia}
@@ -50,7 +50,6 @@ test.cmip35.global()
 
 \author{A.  Mezghanil}
 \examples{
-\dontrun{
 # Eg.1 : 
 # Compute the global mean surface temperature anomalies from CMIP3 experiment
 test.cmip3.global(...)
@@ -64,6 +63,6 @@ test.cmip3.arctic(...)
 
 # Eg.3 Compute the mean surface temperature anomalies from CMIP5 experiment over Scandinavia.
 test.cmip5.scandinavia(...)
-}
+
 }
 \keyword{utilities}

@@ -22,7 +22,7 @@ spatial.avg.field <- function(x) {
   attr(z,"station_id") <- "999"
   attr(z,"longitude") <- mean(lon(x),na.rm=TRUE)
   attr(z,"latitude") <- mean(lat(x),na.rm=TRUE)
-  
+  attr(z,"loc") <- paste('area mean of',src(x))
   ## update the class of the object
   ## class(x)[1] <- "station"
   ## class(z) <- class(x)
