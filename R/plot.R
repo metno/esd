@@ -1,4 +1,4 @@
-plot <- function(x,y, ...)  UseMethod("plot")
+##plot <- function(x,y, ...)  UseMethod("plot")
      
 plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
