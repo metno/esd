@@ -935,6 +935,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       i2 <- is.element(years,year(z))
       prex <- data.frame(x=coredata(z[i1]))
       X[i,i2] <- predict(wc.model, newdata=prex)
+      if (plot) lines(years,X[i,i2],col=rgb(0,0.3,0.6,0.2))
       print(paste("i=",i,"GCM=",gcmnm[i]))
     }
       
@@ -943,7 +944,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(X,"model_id") <- gcmnm
   #X <- attrcp(y,X)
   attr(X,'station') <- aggregate(y,by=year,FUN='wetmean')
-  attr(X,'predictor') <- attr(PRE,'source')
+  attr(X,'predictor') <- attr(pre,'source')
   attr(X,'domain') <- list(lon=lon,lat=lat)
   attr(X,'scorestats') <- scorestats
   attr(X,'path') <- path
