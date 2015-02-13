@@ -1,9 +1,9 @@
 
 ## Author K. Parding
 ## Based on subset.station.R by Rasmus E. Benestad and A. Mezghani
-## Last updated 22.01.2015
+## Last updated 13.02.2015
 
-subset.stormmatrix <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
     x0 <- x
     cls <- class(x)
