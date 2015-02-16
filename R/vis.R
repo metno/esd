@@ -138,11 +138,11 @@ calculate.trends <- function(x,minlen=10){
   return(list("trends"=trends,"p"=p))
 }
 
-# Plot binned scatterplot with sunflowers
-binscatter.sunflower <- function(x,y,petalsize=7,
-                          dx=NULL,dy=NULL,xgrid=NULL,ygrid=NULL,
-                          xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
-                          leg=TRUE,rotate=TRUE,alpha=0.6,leg.loc=2) {
+# Binned scatterplot with sunflowers
+binscatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
+                          xgrid=NULL,ygrid=NULL,xlim=NULL,ylim=NULL,
+                          xlab=NULL,ylab=NULL,leg=TRUE,rotate=TRUE,
+                          alpha=0.6,leg.loc=2,new=TRUE) {
 
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
 
@@ -175,6 +175,8 @@ binscatter.sunflower <- function(x,y,petalsize=7,
   X <- XYN[,1]; Y <- XYN[,2]; N <- XYN[,3]
   
   # Define stuff for plot
+  dx <- 0.8*dx
+  dy <- 0.8*dy
   if (is.null(xlim)) xlim <- c(min(x)-dx/2,max(x)+dx/2)
   if (is.null(ylim)) ylim <- c(min(y)-dy/2,max(y)+dy/2)
   xr <- 0.35*dx
@@ -183,7 +185,7 @@ binscatter.sunflower <- function(x,y,petalsize=7,
 
   # Generate figure
   plot(X,Y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,type='n')
-
+      
   # Grid points with 1 observation
   if (any(N==1)) symbols(X[N==1],Y[N==1],
             circles=rep(1,sum(N==1)),fg='blue',bg=F,
@@ -249,21 +251,21 @@ binscatter.sunflower <- function(x,y,petalsize=7,
     }
     
     polygon(xy[,1],xy[,2],col='white',border='gray')
-    polygon.fill(xy[2,1]+dx/2,xy[2,2]-dy*0.6,dx*0.35,dy*0.35,
+    polygon.fill(xy[2,1]+dx,xy[2,2]-dy*0.6,dx*0.35,dy*0.35,
      col=adjustcolor('khaki1',alpha.f=alpha),
      border=adjustcolor('khaki3',alpha.f=alpha),n=6)
-    polygon.fill(xy[3,1]+dx/2,xy[3,2]+dy*0.6,dx*0.35,dy*0.35,
+    polygon.fill(xy[3,1]+dx,xy[3,2]+dy*0.6,dx*0.35,dy*0.35,
      col=adjustcolor('coral',alpha.f=alpha),
      border=adjustcolor('coral2',alpha.f=alpha),n=6)
-    points(xy[2,1]+dx/2,xy[2,2]-dy*0.6,pch=3,col="orange",lwd=1)
-    points(xy[3,1]+dx/2,xy[3,2]+dy*0.6,pch=3,col="tomato4",lwd=1)
-    text(xy[2,1]+dx,xy[2,2]-dy*0.7,'1 petal = 1 obs',pos=4)
-    text(xy[3,1]+dx,xy[3,2]+dy*0.5,paste('1 petal = ',
+    points(xy[2,1]+dx,xy[2,2]-dy*0.6,pch=3,col="orange",lwd=1)
+    points(xy[3,1]+dx,xy[3,2]+dy*0.6,pch=3,col="tomato4",lwd=1)
+    text(xy[2,1]+dx*1.5,xy[2,2]-dy*0.7,'1 petal = 1 obs',pos=4)
+    text(xy[3,1]+dx*1.5,xy[3,2]+dy*0.5,paste('1 petal = ',
                      as.character(petalsize),' obs'),pos=4)
   }
 }
 
-# Plot binned scatterplot with hexagons
+# Binned scatterplot with hexagons
 binscatter.hex <- function(x,y,new=TRUE,Nmax=NULL,
                            dx=NULL,dy=NULL,xgrid=NULL,ygrid=NULL,
                            xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
@@ -304,7 +306,7 @@ binscatter.hex <- function(x,y,new=TRUE,Nmax=NULL,
   # Plot
   if (is.null(xlim)) xlim <- c(min(X)-dx,max(X)+dx)
   if (is.null(ylim)) ylim <- c(min(Y)-dy,max(Y)+dy)
-  if(leg) par(xpd=NA,mai=c(1.02,0.82,0.82,1.02))
+  if(leg) par(xpd=NA,mar=c(5.1,4.1,4.1,5.4))
   if(new) plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,type='n')
   mapply(polygon.fill,X[N>0],Y[N>0],dx/2*Nf[N>0],dy/2*Nf[N>0],
          n=6,col=col,border=border)
