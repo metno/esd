@@ -118,7 +118,7 @@ sphere.storm <- function(x,
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 }
 
-hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
+map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
       xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
       xlim=NULL,ylim=NULL,col='red',border='firebrick4') {
 
@@ -148,7 +148,7 @@ hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
   points(mlon[OK],mlat[OK],pch=".",col='grey60')
 }
 
-sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
+map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
       xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
       xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6) {
 
