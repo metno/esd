@@ -132,9 +132,9 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## get the subset indices in ii
     } else if ((class(it)=="numeric") | (class(it)=="integer")) {
         if (verbose) print('it is numeric or integer')
-# REB bug        nlev <- as.numeric(levels(factor(nchar(it))))
+nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug        
 # nchar returns the string length, but these lines need to find the number of different levels/categories
-        nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
+# AM 2015-02-16 DO not agree    nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
         if (verbose) {print(nlev); print(it)}
          if ((length(nlev)==1)) {
             if (nlev==4) {
