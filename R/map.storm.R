@@ -54,11 +54,11 @@ lonlat.storm <- function(x,
   mlat <- geoborders$y[ok]
   
   if (new) dev.new()
-  par(bty="n",xaxt="n",yaxt="n",new=TRUE)
+  par(bty="n",xaxt="n",yaxt="n")
   plot(mlon,mlat,pch=".",col="white",
     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
 
-  OK <- apply(lons,1,function(x) !(any(x < -90) & any(x > 90)))
+  OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
   #matlines(t(lons[!OK,]),t(lats[!OK,]),col='red',lty=1)
@@ -118,107 +118,113 @@ sphere.storm <- function(x,
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 }
 
-
-petals.storm <- function(x,dlon=5,dlat=2,digits=6) {
-  x0 <- x
-  lats <- x[,colnames(x)=='lat']
-  lons <- x[,colnames(x)=='lon']
-  D <- dim(lons)
-  lons <- matrix(lons,1,D[1]*D[2])
-  lats <- matrix(lats,1,D[1]*D[2])
-  lons <- round(lons/dlon)*dlon
-  lats <- round(lats/dlat)*dlat
-  xy <- xy.coords(lons,lats,'lon','lat','')
-  tt <- xyTable(xy, digits=digits)
-  invisible(tt)  
+hexbin.storm <- function(x,dlon=5,dlat=2) {
+  lon <- x[,colnames(x)=='lon']
+  lat <- x[,colnames(x)=='lat']
+  lon <- matrix(lon,length(lon),1)
+  lat <- matrix(lat,length(lat),1)
 }
 
+## petals.storm <- function(x,dlon=5,dlat=2,digits=6) {
+##   x0 <- x
+##   lats <- x[,colnames(x)=='lat']
+##   lons <- x[,colnames(x)=='lon']
+##   D <- dim(lons)
+##   lons <- matrix(lons,1,D[1]*D[2])
+##   lats <- matrix(lats,1,D[1]*D[2])
+##   lons <- round(lons/dlon)*dlon
+##   lats <- round(lats/dlat)*dlat
+##   xy <- xy.coords(lons,lats,'lon','lat','')
+##   tt <- xyTable(xy, digits=digits)
+##   invisible(tt)  
+## }
 
-sunflower.storm <- function(x, it = NULL, is = NULL,
-             xlab = NULL, ylab = NULL, xlim = NULL, ylim = NULL,
-             add = FALSE, rotate = FALSE, leg=TRUE,
-             projection='latlon', petalsize = 10, dlon = 5, dlat = 2,
-             pch = 1, cex = 0.8, cex.fact =  1.5,
-             col = 'red', col.small = 'grey',
-             bg = 'white', size = 1/24, seg.lwd = 1.5,
-             alpha = 0.5, lonR = 0, latR = 90, ...)
-{
+
+## sunflower.storm <- function(x, it = NULL, is = NULL,
+##              xlab = NULL, ylab = NULL, xlim = NULL, ylim = NULL,
+##              add = FALSE, rotate = FALSE, leg=TRUE,
+##              projection='latlon', petalsize = 10, dlon = 5, dlat = 2,
+##              pch = 1, cex = 0.8, cex.fact =  1.5,
+##              col = 'red', col.small = 'grey',
+##              bg = 'white', size = 1/24, seg.lwd = 1.5,
+##              alpha = 0.5, lonR = 0, latR = 90, ...)
+## {
   
-  y <- subset.storm(x,it=it,is=is)
-  tt <- petals.storm(y,dlon=dlon,dlat=dlat)
+##   y <- subset.storm(x,it=it,is=is)
+##   tt <- petals.storm(y,dlon=dlon,dlat=dlat)
   
-  if(!add & (projection=='latlon' | projection=='lonlat')) {
-     xlab <- if (is.null(xlab)) 'lon' else xlab
-     ylab <- if (is.null(ylab)) 'lat' else ylab
-     xlim <- if (is.null(xlim)) range(tt$x[is.finite(tt$x)]) else xlim
-     ylim <- if (is.null(ylim)) range(tt$y[is.finite(tt$y)]) else ylim
-  }
+##   if(!add & (projection=='latlon' | projection=='lonlat')) {
+##      xlab <- if (is.null(xlab)) 'lon' else xlab
+##      ylab <- if (is.null(ylab)) 'lat' else ylab
+##      xlim <- if (is.null(xlim)) range(tt$x[is.finite(tt$x)]) else xlim
+##      ylim <- if (is.null(ylim)) range(tt$y[is.finite(tt$y)]) else ylim
+##   }
 
-  lon <- tt$x
-  lat <- tt$y
-  number <- tt$number
-  number.original <- number
-  if (is.numeric(petalsize) & (petalsize>1)) {
-    number <- sapply(number,function(x) max(c(1,floor(x/petalsize)))) }
+##   lon <- tt$x
+##   lat <- tt$y
+##   number <- tt$number
+##   number.original <- number
+##   if (is.numeric(petalsize) & (petalsize>1)) {
+##     number <- sapply(number,function(x) max(c(1,floor(x/petalsize)))) }
 
-  if (projection=='sphere' | projection=='np' | projection=='sp') {
-    A <- sphere.rotate(lon,lat)
-    X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-    lon <- X[Y>0]; lat <- Z[Y>0]
-    xlim <- NULL; ylim <- NULL
-    xlab <- ''; ylab <- ''
-    par(bty="n",xaxt="n",yaxt="n",new=TRUE)
-  } 
+##   if (projection=='sphere' | projection=='np' | projection=='sp') {
+##     A <- sphere.rotate(lon,lat)
+##     X <- A[1,]; Y <- A[2,]; Z <- A[3,]
+##     lon <- X[Y>0]; lat <- Z[Y>0]
+##     xlim <- NULL; ylim <- NULL
+##     xlab <- ''; ylab <- ''
+##     par(bty="n",xaxt="n",yaxt="n",new=TRUE)
+##   } 
   
-  if(!add) {
-    plot(lon, lat, xlab = xlab, ylab = ylab,
-      xlim=xlim, ylim=ylim, type="n",frame.plot=F)
-  }
+##   if(!add) {
+##     plot(lon, lat, xlab = xlab, ylab = ylab,
+##       xlim=xlim, ylim=ylim, type="n",frame.plot=F)
+##   }
 
-  n <- length(lon)
-  n.is1 <- number == 1
-  if(any(n.is1))
-    points(lon[ n.is1], lat[ n.is1], pch=pch, col=col.small, bg=bg, cex= cex)
-  if(any(!n.is1)) {
-    points(lon[!n.is1], lat[!n.is1], pch=pch,
-           col=adjustcolor(col,alpha.f=alpha),bg=bg,
-           cex= cex/cex.fact,)
-    i.multi <- (1L:n)[number > 1]
-    ppin <- par("pin")
-    pusr <- par("usr")
-    xr <- size * abs(pusr[2L] - pusr[1L])/ppin[1L]
-    yr <- size * abs(pusr[4L] - pusr[3L])/ppin[2L]
+##   n <- length(lon)
+##   n.is1 <- number == 1
+##   if(any(n.is1))
+##     points(lon[ n.is1], lat[ n.is1], pch=pch, col=col.small, bg=bg, cex= cex)
+##   if(any(!n.is1)) {
+##     points(lon[!n.is1], lat[!n.is1], pch=pch,
+##            col=adjustcolor(col,alpha.f=alpha),bg=bg,
+##            cex= cex/cex.fact,)
+##     i.multi <- (1L:n)[number > 1]
+##     ppin <- par("pin")
+##     pusr <- par("usr")
+##     xr <- size * abs(pusr[2L] - pusr[1L])/ppin[1L]
+##     yr <- size * abs(pusr[4L] - pusr[3L])/ppin[2L]
 
-    i.rep <- rep.int(i.multi, number[number > 1])
-    z <- numeric()
-    for(i in i.multi)
-       z <- c(z, 1L:number[i] + if(rotate) stats::runif(1) else 0)
-    deg <- (2 * pi * z)/number[i.rep]
-    segments(lon[i.rep], lat[i.rep],
-             lon[i.rep] + xr * sin(deg),
-             lat[i.rep] + yr * cos(deg),
-             col=adjustcolor(col,alpha.f=alpha), lwd = seg.lwd)
-  }
+##     i.rep <- rep.int(i.multi, number[number > 1])
+##     z <- numeric()
+##     for(i in i.multi)
+##        z <- c(z, 1L:number[i] + if(rotate) stats::runif(1) else 0)
+##     deg <- (2 * pi * z)/number[i.rep]
+##     segments(lon[i.rep], lat[i.rep],
+##              lon[i.rep] + xr * sin(deg),
+##              lat[i.rep] + yr * cos(deg),
+##              col=adjustcolor(col,alpha.f=alpha), lwd = seg.lwd)
+##   }
 
-  data("geoborders",envir=environment())
-  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  mlon <- geoborders$x[ok]
-  mlat <- geoborders$y[ok]
+##   data("geoborders",envir=environment())
+##   ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
+##   mlon <- geoborders$x[ok]
+##   mlat <- geoborders$y[ok]
   
-  if (projection=='sphere' | projection=='np' | projection=='sp') {
-    A <- sphere.rotate(mlon,mlat)
-    X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-    mlon <- X[Y>0]; mlat <- Z[Y>0]
-  }  
+##   if (projection=='sphere' | projection=='np' | projection=='sp') {
+##     A <- sphere.rotate(mlon,mlat)
+##     X <- A[1,]; Y <- A[2,]; Z <- A[3,]
+##     mlon <- X[Y>0]; mlat <- Z[Y>0]
+##   }  
 
-  points(mlon,mlat,pch=".")
-  lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
+##   points(mlon,mlat,pch=".")
+##   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 
-  if (leg) legend("bottomleft",inset=c(0,0),pch=3,lty=0,
-    legend=paste('1 petal =',as.character(petalsize),'obs'),
-        col=adjustcolor(col,alpha.f=alpha),
-        lwd=seg.lwd,bg='white')
-}
+##   if (leg) legend("bottomleft",inset=c(0,0),pch=3,lty=0,
+##     legend=paste('1 petal =',as.character(petalsize),'obs'),
+##         col=adjustcolor(col,alpha.f=alpha),
+##         lwd=seg.lwd,bg='white')
+## }
 
 
 
