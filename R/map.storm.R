@@ -126,8 +126,8 @@ map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
   lat <- x[,colnames(x)=='lat']
   lon <- matrix(lon,length(lon),1)
   lat <- matrix(lat,length(lat),1)
-  if (is.null(xlim)) xlim <- range(lons)
-  if (is.null(ylim)) ylim <- range(lats)
+  if (is.null(xlim)) xlim <- range(lon)
+  if (is.null(ylim)) ylim <- range(lat)
 
   data("geoborders",envir=environment())
   ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
@@ -135,7 +135,8 @@ map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
   mlat <- geoborders$y[ok]
 
   if(!add) {
-    if(leg) par(xpd=NA,mar=c(5.1,4.1,4.1,5.5))
+    if(leg) par(bty="n",mar=c(5.0,4.0,3.0,5.3))
+    else par(bty="n",mar=c(4.4,4.0,1.0,1.0))
     plot(lon, lat, xlab="lon", ylab="lat",
          xlim=xlim,ylim=ylim,type="n",frame.plot=F)
   }
@@ -156,16 +157,18 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
   lat <- x[,colnames(x)=='lat']
   lon <- matrix(lon,length(lon),1)
   lat <- matrix(lat,length(lat),1)
-  if (is.null(xlim)) xlim <- range(lons)
-  if (is.null(ylim)) ylim <- range(lats)
+  if (is.null(xlim)) xlim <- range(lon)
+  if (is.null(ylim)) ylim <- range(lat)
 
   data("geoborders",envir=environment())
   ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   mlon <- geoborders$x[ok]
   mlat <- geoborders$y[ok]
 
+  par(bty="n",mar=c(4.4,4.0,1.0,1.0))
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
-  binscatter.sunflower(lon[OK],lat[OK],dx=dx,dy=dy,petalsize=petalsize,
+  binscatter.sunflower(lon[OK],lat[OK],petalsize=petalsize,
+              dx=dx,dy=dy,xlab='lon',yla='lat',
               xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
               xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha)
 
