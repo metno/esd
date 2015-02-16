@@ -44,28 +44,6 @@ sort.storm <- function(x) {
   }
 }
 
-## anomaly.storm <- function(x) {
-##   if (any('anomaly' %in% attr(x,'aspect'))) {
-##     invisible(x)
-##   } else {
-##     ilat <- which(colnames(x)=='lat')
-##     ilon <- which(colnames(x)=='lon')  
-##     dateline <- apply(x,1,function(x) (max(x[ilon])-min(x[ilon]))>180 )
-##     lon <- x[dateline,ilon]
-##     lon[lon<0] <- lon[lon<0]+360
-##     x[dateline,ilon] <- lon
-##     lat.anomaly <- apply(x,1,function(x) x[ilat]-x[ilat[1]])
-##     lon.anomaly <- apply(x,1,function(x) x[ilon]-x[ilon[1]])
-##     x[,ilat] <- t(lat.anomaly)
-##     x[,ilon] <- t(lon.anomaly)
-##     y <- x
-##     y <- attrcp(x,y)
-##     attr(y,'aspect') <- c('anomaly',attr(x,'aspect'))
-##     attr(y,'history') <- history.stamp(x)
-##     invisible(y)
-##   }
-## }
-
 anomaly.storm <- function(x,param=c('lon','lat')) {
   if (any('lon' %in% param)) {
     i <- which(colnames(x)=='lon')
