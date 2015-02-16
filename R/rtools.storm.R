@@ -36,30 +36,55 @@ sort.storm <- function(x) {
     while (sum(duplicated(date))>0) {
       date[duplicated(date)] <- date[duplicated(date)]+60
     }
-    y <- zoo(x,order.by=date)
+    y <- x[order(date),]
     y <- attrcp(x,y)
     attr(y,'aspect') <- c('sorted',attr(x,'aspect'))
-    class(y) <- c('zoo',class(x))
+    class(y) <- class(x)
     invisible(y)
   }
 }
 
-anomaly.storm <- function(x) {
-  if (any('anomaly' %in% attr(x,'aspect'))) {
-    invisible(x)
-  } else {
-    ilat <- which(colnames(x)=='lat')
-    ilon <- which(colnames(x)=='lon')
-    lat.anomaly <- apply(x,1,function(x) x[ilat]-x[ilat[1]])
-    lon.anomaly <- apply(x,1,function(x) x[ilon]-x[ilon[1]])
-    x[,ilat] <- t(lat.anomaly)
-    x[,ilon] <- t(lon.anomaly)
-    y <- x
-    y <- attrcp(x,y)
-    attr(y,'aspect') <- c('anomaly',attr(x,'aspect'))
-    attr(y,'history') <- history.stamp(x)
-    invisible(y)
+## anomaly.storm <- function(x) {
+##   if (any('anomaly' %in% attr(x,'aspect'))) {
+##     invisible(x)
+##   } else {
+##     ilat <- which(colnames(x)=='lat')
+##     ilon <- which(colnames(x)=='lon')  
+##     dateline <- apply(x,1,function(x) (max(x[ilon])-min(x[ilon]))>180 )
+##     lon <- x[dateline,ilon]
+##     lon[lon<0] <- lon[lon<0]+360
+##     x[dateline,ilon] <- lon
+##     lat.anomaly <- apply(x,1,function(x) x[ilat]-x[ilat[1]])
+##     lon.anomaly <- apply(x,1,function(x) x[ilon]-x[ilon[1]])
+##     x[,ilat] <- t(lat.anomaly)
+##     x[,ilon] <- t(lon.anomaly)
+##     y <- x
+##     y <- attrcp(x,y)
+##     attr(y,'aspect') <- c('anomaly',attr(x,'aspect'))
+##     attr(y,'history') <- history.stamp(x)
+##     invisible(y)
+##   }
+## }
+
+anomaly.storm <- function(x,param=c('lon','lat')) {
+  if (any('lon' %in% param)) {
+    i <- which(colnames(x)=='lon')
+    dateline <- apply(x,1,function(x) (max(x[i])-min(x[i]))>180 )
+    lon <- x[dateline,i]
+    lon[lon<0] <- lon[lon<0]+360
+    x[dateline,i] <- lon
   }
+  for (p in param) {
+    i <- which(colnames(x)==p)
+    if (p=='slp') p.anomaly <- x[,i]-mean(x[,i])
+    else p.anomaly <- apply(x,1,function(x) x[i]-x[i[1]])
+    x[,i] <- t(p.anomaly)
+  }
+  y <- x
+  y <- attrcp(x,y)
+  attr(y,'aspect') <- c('anomaly',attr(x,'aspect'))
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
 }
 
 # count or aggregate?
