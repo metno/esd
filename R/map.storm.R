@@ -1,5 +1,5 @@
 ## Author 	 Kajsa Parding
-## Last update   13.02.2015
+## Last update   16.02.2015
 ## Require 	 geoborders.rda
 
 # map.storm: Storm tracks that pass the date line
@@ -118,123 +118,74 @@ sphere.storm <- function(x,
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 }
 
-hexbin.storm <- function(x,dlon=5,dlat=2) {
+hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
+      xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
+      xlim=NULL,ylim=NULL,col='red',border='firebrick4') {
+
   lon <- x[,colnames(x)=='lon']
   lat <- x[,colnames(x)=='lat']
   lon <- matrix(lon,length(lon),1)
   lat <- matrix(lat,length(lat),1)
+  if (is.null(xlim)) xlim <- range(lons)
+  if (is.null(ylim)) ylim <- range(lats)
+
+  data("geoborders",envir=environment())
+  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
+  mlon <- geoborders$x[ok]
+  mlat <- geoborders$y[ok]
+
+  if(!add) {
+    if(leg) par(xpd=NA,mar=c(5.1,4.1,4.1,5.5))
+    plot(lon, lat, xlab="lon", ylab="lat",
+         xlim=xlim,ylim=ylim,type="n",frame.plot=F)
+  }
+  
+  OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
+  binscatter.hex(lon[OK],lat[OK],dx=dx,dy=dy,xgrid=xgrid,ygrid=ygrid,
+                 new=FALSE,leg=leg,col=col,border=border,Nmax=Nmax)
+
+  OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
+  points(mlon[OK],mlat[OK],pch=".",col='grey60')
 }
 
-## petals.storm <- function(x,dlon=5,dlat=2,digits=6) {
-##   x0 <- x
-##   lats <- x[,colnames(x)=='lat']
-##   lons <- x[,colnames(x)=='lon']
-##   D <- dim(lons)
-##   lons <- matrix(lons,1,D[1]*D[2])
-##   lats <- matrix(lats,1,D[1]*D[2])
-##   lons <- round(lons/dlon)*dlon
-##   lats <- round(lats/dlat)*dlat
-##   xy <- xy.coords(lons,lats,'lon','lat','')
-##   tt <- xyTable(xy, digits=digits)
-##   invisible(tt)  
-## }
+sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
+      xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
+      xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6) {
 
+  lon <- x[,colnames(x)=='lon']
+  lat <- x[,colnames(x)=='lat']
+  lon <- matrix(lon,length(lon),1)
+  lat <- matrix(lat,length(lat),1)
+  if (is.null(xlim)) xlim <- range(lons)
+  if (is.null(ylim)) ylim <- range(lats)
 
-## sunflower.storm <- function(x, it = NULL, is = NULL,
-##              xlab = NULL, ylab = NULL, xlim = NULL, ylim = NULL,
-##              add = FALSE, rotate = FALSE, leg=TRUE,
-##              projection='latlon', petalsize = 10, dlon = 5, dlat = 2,
-##              pch = 1, cex = 0.8, cex.fact =  1.5,
-##              col = 'red', col.small = 'grey',
-##              bg = 'white', size = 1/24, seg.lwd = 1.5,
-##              alpha = 0.5, lonR = 0, latR = 90, ...)
-## {
-  
-##   y <- subset.storm(x,it=it,is=is)
-##   tt <- petals.storm(y,dlon=dlon,dlat=dlat)
-  
-##   if(!add & (projection=='latlon' | projection=='lonlat')) {
-##      xlab <- if (is.null(xlab)) 'lon' else xlab
-##      ylab <- if (is.null(ylab)) 'lat' else ylab
-##      xlim <- if (is.null(xlim)) range(tt$x[is.finite(tt$x)]) else xlim
-##      ylim <- if (is.null(ylim)) range(tt$y[is.finite(tt$y)]) else ylim
-##   }
+  data("geoborders",envir=environment())
+  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
+  mlon <- geoborders$x[ok]
+  mlat <- geoborders$y[ok]
 
-##   lon <- tt$x
-##   lat <- tt$y
-##   number <- tt$number
-##   number.original <- number
-##   if (is.numeric(petalsize) & (petalsize>1)) {
-##     number <- sapply(number,function(x) max(c(1,floor(x/petalsize)))) }
+  OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
+  binscatter.sunflower(lon[OK],lat[OK],dx=dx,dy=dy,petalsize=petalsize,
+              xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
+              xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha)
 
-##   if (projection=='sphere' | projection=='np' | projection=='sp') {
-##     A <- sphere.rotate(lon,lat)
-##     X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-##     lon <- X[Y>0]; lat <- Z[Y>0]
-##     xlim <- NULL; ylim <- NULL
-##     xlab <- ''; ylab <- ''
-##     par(bty="n",xaxt="n",yaxt="n",new=TRUE)
-##   } 
-  
-##   if(!add) {
-##     plot(lon, lat, xlab = xlab, ylab = ylab,
-##       xlim=xlim, ylim=ylim, type="n",frame.plot=F)
-##   }
+  OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
+  if (leg) {
+    if (leg.loc==1) {
+      xbox <- c(max(xlim)-0.35*(max(xlim)-min(xlim)),max(xlim))
+      ybox <- c(max(ylim)-0.1*(max(ylim)-min(ylim)),max(ylim))
+    } else if (leg.loc==2 | is.null(leg.loc)) {
+      xbox <- c(min(xlim),min(xlim)+0.35*(max(xlim)-min(xlim)))
+      ybox <- c(max(ylim)-0.1*(max(ylim)-min(ylim)),max(ylim))
+    } else if (leg.loc==3) {
+      xbox <- c(min(xlim),min(xlim)+0.35*(max(xlim)-min(xlim)))
+      ybox <- c(min(ylim),min(ylim)+0.1*(max(ylim)-min(ylim)))
+    } else if (leg.loc==4) {
+      xbox <- c(max(xlim)-0.35*(max(xlim)-min(xlim)),max(xlim))
+      ybox <- c(min(ylim),min(ylim)+0.1*(max(ylim)-min(ylim)))
+    }
+    OK <- OK & !(findInterval(mlon,xbox)==1 & findInterval(mlat,ybox)==1)
+  }
+  points(mlon[OK],mlat[OK],pch=".",col='grey20')
+}
 
-##   n <- length(lon)
-##   n.is1 <- number == 1
-##   if(any(n.is1))
-##     points(lon[ n.is1], lat[ n.is1], pch=pch, col=col.small, bg=bg, cex= cex)
-##   if(any(!n.is1)) {
-##     points(lon[!n.is1], lat[!n.is1], pch=pch,
-##            col=adjustcolor(col,alpha.f=alpha),bg=bg,
-##            cex= cex/cex.fact,)
-##     i.multi <- (1L:n)[number > 1]
-##     ppin <- par("pin")
-##     pusr <- par("usr")
-##     xr <- size * abs(pusr[2L] - pusr[1L])/ppin[1L]
-##     yr <- size * abs(pusr[4L] - pusr[3L])/ppin[2L]
-
-##     i.rep <- rep.int(i.multi, number[number > 1])
-##     z <- numeric()
-##     for(i in i.multi)
-##        z <- c(z, 1L:number[i] + if(rotate) stats::runif(1) else 0)
-##     deg <- (2 * pi * z)/number[i.rep]
-##     segments(lon[i.rep], lat[i.rep],
-##              lon[i.rep] + xr * sin(deg),
-##              lat[i.rep] + yr * cos(deg),
-##              col=adjustcolor(col,alpha.f=alpha), lwd = seg.lwd)
-##   }
-
-##   data("geoborders",envir=environment())
-##   ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-##   mlon <- geoborders$x[ok]
-##   mlat <- geoborders$y[ok]
-  
-##   if (projection=='sphere' | projection=='np' | projection=='sp') {
-##     A <- sphere.rotate(mlon,mlat)
-##     X <- A[1,]; Y <- A[2,]; Z <- A[3,]
-##     mlon <- X[Y>0]; mlat <- Z[Y>0]
-##   }  
-
-##   points(mlon,mlat,pch=".")
-##   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
-
-##   if (leg) legend("bottomleft",inset=c(0,0),pch=3,lty=0,
-##     legend=paste('1 petal =',as.character(petalsize),'obs'),
-##         col=adjustcolor(col,alpha.f=alpha),
-##         lwd=seg.lwd,bg='white')
-## }
-
-
-
-#library(esd)
-#source('as.storm.R')
-#source('subset.storm.R')
-#source('stormtools.R')
-#
-# fname="/vol/fou/klima/IMILAST/ERAinterim_0.75_NH_M07_19790101_20091231.txt"
-# m07 <- read.fwf(fname,width=c(2,7,4,11,5,3,3,3,8,8,9),
-#         col.names=c("Code99","cyclone","timeStep","Date","Year",
-#         "Month","Day","Time","Lon","Lat","Pressure"))
-# x <- as.storm(m07)
