@@ -102,7 +102,7 @@ sphere.storm <- function(x,
   x <- a[1,]; y <- a[2,]; z <- a[3,]
     
   if (new) dev.new()
-  par(bty="n",xaxt="n",yaxt="n",new=TRUE)
+  par(bty="n",xaxt="n",yaxt="n")
   plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="")
 
   OK <- apply(x0[,ilons],1,function(x) !(any(x < -90) & any(x > 90)))
@@ -120,12 +120,14 @@ sphere.storm <- function(x,
 
 map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
       xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
-      xlim=NULL,ylim=NULL,col='red',border='firebrick4') {
+      xlim=NULL,ylim=NULL,col='red',border='firebrick4',
+      new=TRUE) {
 
-  lon <- x[,colnames(x)=='lon']
-  lat <- x[,colnames(x)=='lat']
-  lon <- matrix(lon,length(lon),1)
-  lat <- matrix(lat,length(lat),1)
+  ilon <- colnames(x)=='lon'
+  ilat <- colnames(x)=='lat'
+  ilen <- colnames(x)=='n' 
+  lon <- unlist(apply(x,1,function(x) approx(x[ilon],n=x[ilen])$y))
+  lat <- unlist(apply(x,1,function(x) approx(x[ilat],n=x[ilen])$y))
   if (is.null(xlim)) xlim <- range(lon)
   if (is.null(ylim)) ylim <- range(lat)
 
@@ -134,12 +136,11 @@ map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
   mlon <- geoborders$x[ok]
   mlat <- geoborders$y[ok]
 
-  if(!add) {
-    if(leg) par(bty="n",mar=c(5.0,4.0,3.0,5.3))
-    else par(bty="n",mar=c(4.4,4.0,1.0,1.0))
-    plot(lon, lat, xlab="lon", ylab="lat",
+  if(new) dev.new()
+  if(leg) par(bty="n",mar=c(5.0,4.0,3.0,5.3))
+  else par(bty="n",mar=c(4.4,4.0,1.0,1.0))
+  if(!add) plot(lon, lat, xlab="lon", ylab="lat",
          xlim=xlim,ylim=ylim,type="n",frame.plot=F)
-  }
   
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
   binscatter.hex(lon[OK],lat[OK],dx=dx,dy=dy,xgrid=xgrid,ygrid=ygrid,
@@ -151,12 +152,13 @@ map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
 
 map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
       xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
-      xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6) {
+      xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6,new=TRUE) {
 
-  lon <- x[,colnames(x)=='lon']
-  lat <- x[,colnames(x)=='lat']
-  lon <- matrix(lon,length(lon),1)
-  lat <- matrix(lat,length(lat),1)
+  ilon <- colnames(x)=='lon'
+  ilat <- colnames(x)=='lat'
+  ilen <- colnames(x)=='n' 
+  lon <- unlist(apply(x,1,function(x) approx.lon(x[ilon],n=x[ilen])$y))
+  lat <- unlist(apply(x,1,function(x) approx(x[ilat],n=x[ilen])$y))
   if (is.null(xlim)) xlim <- range(lon)
   if (is.null(ylim)) ylim <- range(lat)
 
@@ -165,12 +167,13 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
   mlon <- geoborders$x[ok]
   mlat <- geoborders$y[ok]
 
+  if(new) dev.new()
   par(bty="n",mar=c(4.4,4.0,1.0,1.0))
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
   binscatter.sunflower(lon[OK],lat[OK],petalsize=petalsize,
-              dx=dx,dy=dy,xlab='lon',yla='lat',
-              xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
-              xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha)
+           dx=dx,dy=dy,xlab='lon',yla='lat',
+           xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
+           xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha,new=FALSE)
 
   OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
   if (leg) {
