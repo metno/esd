@@ -511,7 +511,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## both field and station objects.
     
     nval <- function(x) sum(is.finite(x))
-
+   
     if (verbose) print("default.subset")
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
@@ -754,7 +754,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     }
   
     if (verbose) print(paste('number of points:',sum(ii),sum(is)))
-    y <- x[ii,is]
+    y <- coredata(x)[ii,is] ## Need coredata here, with logical ii and/or is
     #if (is.logical(is))
     #    is <- (1:length(is))[is]
     ##else 
