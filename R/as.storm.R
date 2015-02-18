@@ -15,11 +15,10 @@ as.storm <- function(x) {
 }
 
 imilast2matrix <- function(x) {
-  fn <- function(x) approx(x,n=10)$y
   x <- data.frame(x)
-  aggregate(x$Lon, list(x$cyclone), fn)$x -> lon
-  aggregate(x$Lat, list(x$cyclone), fn)$x -> lat
-  aggregate(x$Pressure, list(x$cyclone), fn)$x -> slp
+  aggregate(x$Lon, list(x$cyclone), function(x) approx.lon(x,n=10)$y)$x -> lon
+  aggregate(x$Lat, list(x$cyclone), function(x) approx(x,n=10)$y)$x -> lat
+  aggregate(x$Pressure, list(x$cyclone), function(x) approx(x,n=10)$y)$x -> slp
   aggregate(x$Date, list(x$cyclone), function(x) x[1])$x -> t1
   aggregate(x$Date, list(x$cyclone), function(x) x[length(x)])$x -> t2
   aggregate(x$Date, list(x$cyclone), length)$x -> n
@@ -51,6 +50,38 @@ imilast2matrix <- function(x) {
   invisible(X)
 }
 
+matrix2imilast <- function(x) {
+  Cyclone <- unlist(mapply(function(i,n) rep(i,n),seq(1,dim(x)[1]),x[,33]))
+  ilon <- colnames(x)=='lon'
+  ilat <- colnames(x)=='lat'
+  islp <- colnames(x)=='slp'
+  ilen <- colnames(x)=='n'
+  Lon <- unlist(apply(x,1,function(x) approx.lon(x[ilon],n=x[ilen])$y))
+  Lat <- unlist(apply(x,1,function(x) approx(x[ilat],n=x[ilen])$y))
+  Pressure <- unlist(apply(x,1,function(x) approx(x[islp],n=x[ilen])$y))
+  fn <- function(x) {
+    d <- strptime(x[31:32],format="%Y%m%d%H")
+    d <- seq(d[1],d[2],length=x[ilen])
+    d <- as.numeric(strftime(d,"%Y%m%d%H"))
+    invisible(d)
+  }
+  Date <- unlist(apply(x,1,fn))
+  Year <- as.integer(Date*1E-6)
+  Code99 <- rep(as.numeric(substring(attr(x,"method"),2)),length(Date))
+  X <- data.frame(Cyclone,Date,Year,Lon,Lat,Pressure,Code99)
+}
+
+approx.lon <- function(lon,n=10) {
+  if ((max(lon)-min(lon))>180) {
+    lon[lon<0] <- lon[lon<0]+360
+    x <- approx(lon,n=n)
+    x$y[x$y>180] <- x$y[x$y>180]-360
+  } else {
+    x <- approx(lon,n=n)
+  }
+  return(x)
+}
+  
 #fname="/vol/fou/klima/IMILAST/ERAinterim_1.5_NH_M03_19890101_20090331_ST.txt"
 #m03 <- read.fwf(fname,width=c(2,7,4,11,5,5,5,4,7,7,10),
 #        col.names=c("Code99","cyclone","timeStep","Date","Year",

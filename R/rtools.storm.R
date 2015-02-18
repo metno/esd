@@ -44,7 +44,7 @@ sort.storm <- function(x) {
   }
 }
 
-anomaly.storm <- function(x,param=c('lon','lat')) {
+anomaly.storm <- function(x,param=c('lon','lat','slp')) {
   if (any('lon' %in% param)) {
     i <- which(colnames(x)=='lon')
     dateline <- apply(x,1,function(x) (max(x[i])-min(x[i]))>180 )
@@ -52,13 +52,21 @@ anomaly.storm <- function(x,param=c('lon','lat')) {
     lon[lon<0] <- lon[lon<0]+360
     x[dateline,i] <- lon
   }
+  m <- vector(mode="list", length=length(param))
+  names(m) <- param
   for (p in param) {
     i <- which(colnames(x)==p)
-    if (p=='slp') p.anomaly <- x[,i]-mean(x[,i])
-    else p.anomaly <- apply(x,1,function(x) x[i]-x[i[1]])
+    if (p=='slp') {
+      p.anomaly <- x[,i]-mean(x[,i])
+      m[param==p] <- list(mean(x[,i]))
+    } else {
+      p.anomaly <- apply(x,1,function(x) x[i]-x[i[1]])
+      m[param==p] <- list(x[,i[1]])
+    }
     x[,i] <- t(p.anomaly)
   }
   y <- x
+  attr(y,'mean') <- m
   y <- attrcp(x,y)
   attr(y,'aspect') <- c('anomaly',attr(x,'aspect'))
   attr(y,'history') <- history.stamp(x)
@@ -81,7 +89,17 @@ aggregate.storm <- function(x,by='year') {
   invisible(nz)
 }
 
-  
+approx.lon <- function(lon,n=10) {
+  if ((max(lon)-min(lon))>180) {
+    lon[lon<0] <- lon[lon<0]+360
+    x <- approx(lon,n=n)
+    x$y[x$y>180] <- x$y[x$y>180]-360
+  } else {
+    x <- approx(lon,n=n)
+  }
+  return(x)
+}
+
 # Takes too long! 
 polyfit.storm <- function(X) {
   Z <- apply(X,1,function(x) pfit(x[1:10],x[11:20])) 
