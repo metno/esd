@@ -195,7 +195,7 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
      stop(paste('Bad longitude range: ',min(lon.new),'-',max(lon.new))) 
   
   if (verbose) {print("New coordinates"); print(lon.new); print(lat.new)}
-
+  
   #print("regrid.field before subset:");print(lon(x)); print(lat(x));print("---")
   x <- subset(x,is=list(lon=c(floor(min(lon.new))-2,ceiling(max(lon.new))+2),
                         lat=c(floor(min(lat.new))-2,ceiling(max(lat.new))+2)))
@@ -266,7 +266,7 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   y <- matrix(rep(NA,D[1]*D[2]*d[1]),D[1]*D[2],d[1])
 
   #print(dim(cbind(beta,attr(beta,'index'))))
-  
+  browser()
   if (verbose) pb <- txtProgressBar(style=3)
   for (i in 1:d[1]) {
     #if (verbose) cat(".")
