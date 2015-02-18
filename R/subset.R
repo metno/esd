@@ -752,9 +752,9 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       iss <- rep(FALSE,d[2]); iss[is] <- TRUE
       is <- iss
     }
-  
+    browser()
     if (verbose) print(paste('number of points:',sum(ii),sum(is)))
-    y <- coredata(x)[ii,is] ## Need coredata here, with logical ii and/or is
+    y <- x[which(ii),which(is)]
     #if (is.logical(is))
     #    is <- (1:length(is))[is]
     ##else 
