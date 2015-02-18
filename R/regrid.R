@@ -266,7 +266,7 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   y <- matrix(rep(NA,D[1]*D[2]*d[1]),D[1]*D[2],d[1])
 
   #print(dim(cbind(beta,attr(beta,'index'))))
-  browser()
+  
   if (verbose) pb <- txtProgressBar(style=3)
   for (i in 1:d[1]) {
     #if (verbose) cat(".")
