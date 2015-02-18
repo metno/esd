@@ -752,9 +752,9 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       iss <- rep(FALSE,d[2]); iss[is] <- TRUE
       is <- iss
     }
-    browser()
+    
     if (verbose) print(paste('number of points:',sum(ii),sum(is)))
-    y <- x[which(ii),which(is)]
+    y <- x[which(ii),which(is)] ## AM 2015-02-17 do not work with logical indexes
     #if (is.logical(is))
     #    is <- (1:length(is))[is]
     ##else 
