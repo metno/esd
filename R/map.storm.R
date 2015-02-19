@@ -54,7 +54,7 @@ lonlat.storm <- function(x,
   mlat <- geoborders$y[ok]
   
   if (new) dev.new()
-  par(bty="n",xaxt="n",yaxt="n")
+  par(bty="n")
   plot(mlon,mlat,pch=".",col="white",
     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
 
@@ -195,3 +195,45 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
   points(mlon[OK],mlat[OK],pch=".",col='grey20')
 }
 
+
+map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
+      xlim=NULL,ylim=NULL) {
+
+  stopifnot(!missing(X), inherits(X,"storm"))
+  if (inherits(X,'pca')) {
+    pca <- X; X <- pca2storm(pca)
+  } else pca <- PCA.storm(X)
+
+  U <- attr(pca,'pattern')
+  V <- coredata(pca)
+  W <- attr(pca,'eigenvalues')
+
+  colvec <- c('red3','mediumblue', 'chartreuse3',
+              'darkorange','darkturquoise')
+  projection <- 'latlon'
+
+  map.storm(X,projection=projection,lonR=lonR,latR=latR,
+    col='grey20',alpha=0.1,xlim=xlim,ylim=ylim,new=TRUE)
+  
+  for (i in 1:3) { 
+    X.PC.max <- max(V[,i]) * (U[,i]*W[i])
+    X.PC.min <- min(V[,i]) * (U[,i]*W[i])
+    if (any(aspect(pca)=='anomaly')) {
+      for (j in 1:length(attr(pca,'mean'))) {
+        X.PC.max[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] <-
+          X.PC.max[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] +
+          mean(unlist(attr(pca,'mean')[j]))
+       X.PC.min[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] <-
+          X.PC.min[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] +
+          mean(unlist(attr(pca,'mean')[j]))
+      }
+    }
+
+    points(X.PC.max[attr(pca,'colnames')=='lon'],
+        X.PC.max[attr(pca,'colnames')=='lat'],col=colvec[i],
+           type='b',lwd=2,lty=1,pch=19)
+    points(X.PC.min[attr(pca,'colnames')=='lon'],
+        X.PC.min[attr(pca,'colnames')=='lat'],col=colvec[i],
+           type='b',lwd=2,lty=1,pch=1)
+  }
+}
