@@ -1,14 +1,22 @@
 # Author 	Kajsa Parding
-# Last update   11.02.2015
+# Last update   19.02.2015
 
 # Principle Component Analysis (PCA) of storm tracks
 
-PCA.storm <- function(X,neofs=20,anomaly=TRUE,verbose=FALSE) {
+PCA.storm <- function(X,neofs=20,param=c('lon','lat','slp'),
+                      anomaly=TRUE,verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"storm"))
 
   X <- sort.storm(X)
-  if (anomaly) X <- anomaly.storm(X)
-  xy <- X[,is.element(colnames(X),c('lon','lat'))]
+  if (anomaly) X <- anomaly.storm(X,param)
+  else {
+    i.lon <- colnames(X)=='lon'
+    i.dateline <- apply(X,1,function(x) (max(x[i.lon])-min(x[i.lon]))>180)
+    lon.dateline <- X[i.dateline,i.lon]
+    lon.dateline[lon.dateline<0] <- lon.dateline[lon.dateline<0]+360
+    X[i.dateline,i.lon] <- lon.dateline
+  }
+  xy <- X[,is.element(colnames(X),param)]
   D <- dim(xy)
 
   xyt <- t(coredata(xy))
@@ -31,10 +39,14 @@ PCA.storm <- function(X,neofs=20,anomaly=TRUE,verbose=FALSE) {
   y[,invert] <- -y[,invert]
 
   y <- attrcp(X,y)
+  if (anomaly) attr(y,'mean') <- attr(X,'mean') 
+  attr(y,'start') <- X[,colnames(X)=='start']
+  attr(y,'end') <- X[,colnames(X)=='end']
+  attr(y,'n') <- X[,colnames(X)=='n']
+  attr(y,'colnames') <- colnames(xy)
   attr(y,'pattern') <- U
   attr(y,'dimensions') <- D
   attr(y,'eigenvalues') <- pca$d[1:neofs]
-  attr(y,'colnames') <- colnames(xy)
   attr(y,'sum.eigenv') <- sum(pca$d)
   attr(y,'tot.var') <- sum(pca$d^2)
   attr(y,'history') <- history.stamp(X)
@@ -55,28 +67,59 @@ pca2storm <- function(X) {
   V <- coredata(pca)
   V[!is.finite(V)] <- 0
   x <-U %*% diag(W) %*% t(V)
-  
-  x <- zoo(t(x),order.by=index(pca))
-  colnames(x) <- attr(pca,"colnames") 
+
+  x <- cbind(t(x),attr(pca,'start'),attr(pca,'end'),attr(pca,'n'))
+  colnames(x) <- c(attr(pca,"colnames"),'start','end','n')
+
+  if (any("anomaly" %in% aspect(pca))) {
+    for (i in 1:length(attr(pca,'mean'))) {
+      param.i <- names(attr(pca,'mean'))[i]
+      mean.i <- unlist(attr(pca,'mean')[i])
+      if (param.i=='slp') {
+        x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] + mean.i
+      } else {
+        x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] +
+           matrix( rep(array(mean.i),sum(colnames(x)==param.i)),
+           length(mean.i), sum(colnames(x)==param.i) )
+      }
+    }
+  }
+
+  lon <- x[,colnames(x)=='lon']
+  lon[lon>180] <- lon[lon>180]-360
+  x[,colnames(x)=='lon'] <- lon
+
   x <- attrcp(pca,x)
+  attr(x,'aspect') <- attr(pca,'aspect')[attr(pca,'aspect')!="anomaly"]
   attr(x,'history') <- history.stamp(pca)
   class(x) <- cls[-1]
   invisible(x)
+
 }
 
 
 
-plot.pca.storm <- function(X,cex=1.5,new=TRUE) {
+plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=3) {
   stopifnot(!missing(X), inherits(X,"pca"))
 
   pca <- X
-  colvec <- c('red3','mediumblue','darkolivegreen3','darkturquoise','darkorange')
+  colvec <- c('red3','mediumblue','darkolivegreen3',
+              'darkturquoise','darkorange')
   U <- attr(pca,'pattern')
-  m <- min(3,dim(U)[2])
   R2 <- round(100*attr(pca,'eigenvalues')^2/attr(pca,'tot.var'),2)
-  V <- zoo(coredata(pca),order.by=index(pca))
-  V.avg <- aggregate(V,FUN="mean",by=as.yearmon(index(V)))#strftime(index(V),"%Y"))#
 
+  if (!is.null(m)) m <- min(m,dim(U)[2])
+  else m <- sum(R2>=5)
+    
+  date <- strptime(attr(pca,'start'),'%Y%m%d%H')
+  while (sum(duplicated(date))>0) {
+    date[duplicated(date)] <- date[duplicated(date)]+60
+  }
+  V <- zoo(coredata(pca),order.by=date)
+  V.avg <- aggregate(V,FUN="mean",by=as.yearmon(index(V)))
+                                     #strftime(index(V),"%Y"))
+
+  if (new) dev.new()
   par( oma=c(1.5,1,1,1.0), mar=c(4,4,2,1) , bty='n' )
   layout(matrix(c(1,2,3,3), 2, 2, byrow = TRUE),
    widths=c(1.5,1), heights=c(2.5,2))
