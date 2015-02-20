@@ -139,7 +139,7 @@ calculate.trends <- function(x,minlen=10){
 }
 
 # Binned scatterplot with sunflowers
-binscatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
+scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
                           xgrid=NULL,ygrid=NULL,xlim=NULL,ylim=NULL,
                           xlab=NULL,ylab=NULL,leg=TRUE,rotate=TRUE,
                           alpha=0.6,leg.loc=2,new=TRUE) {
@@ -171,7 +171,7 @@ binscatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
   Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
   
   # Count observations in each grid point
-  XYN <- binscatter.bin(x,y,X,Y)
+  XYN <- bin(x,y,X,Y)
   X <- XYN[,1]; Y <- XYN[,2]; N <- XYN[,3]
   
   # Define stuff for plot
@@ -184,6 +184,7 @@ binscatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
   n <- length(X)
 
   # Generate figure
+  if(new) dev.new()
   plot(X,Y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,type='n')
       
   # Grid points with 1 observation
@@ -266,7 +267,7 @@ binscatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
 }
 
 # Binned scatterplot with hexagons
-binscatter.hex <- function(x,y,new=TRUE,Nmax=NULL,
+scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
                            dx=NULL,dy=NULL,xgrid=NULL,ygrid=NULL,
                            xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
                            leg=TRUE,col='blue',border='black') {
@@ -298,7 +299,7 @@ binscatter.hex <- function(x,y,new=TRUE,Nmax=NULL,
   Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
 
   # Count observations in each grid point
-  XYN <- binscatter.bin(x,y,X,Y)
+  XYN <- bin(x,y,X,Y)
   X <- XYN[,1]; Y <- XYN[,2]; N <- XYN[,3]
   if(is.null(Nmax)) Nmax <- max(N)
   Nf <- sapply(N/Nmax,function(x) min(1,x))
@@ -341,7 +342,7 @@ binscatter.hex <- function(x,y,new=TRUE,Nmax=NULL,
 }
 
 # Count observations (x,y) in grid points (X,Y)
-binscatter.bin <- function(x,y,X,Y) {
+bin <- function(x,y,X,Y) {
   fn <- function(x,y) {
     d <- sqrt( (X-x)**2 + (Y-y)**2 )
     imin <- which(d==min(d),arr.ind=T)
