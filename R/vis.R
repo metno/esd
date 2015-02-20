@@ -51,14 +51,14 @@ vis.ds <- function(x,...) {
 }
 
 vis.trends <- function(x,unitlabel="unit",varlabel="",
- alpha=0.01,minlen=10,lwd=NA,vmax=NA,new=TRUE) {
+ pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE) {
 
   T <- calculate.trends(x,minlen=minlen)
   trends <- T$trends*10
   p <- T$p
   cols <- as.numeric(colnames(trends))
   rows <- as.numeric(rownames(trends))
-  significant <- ifelse(p<alpha,trends,NA)
+  significant <- ifelse(p<pmax,trends,NA)
   
   ticks <- seq(1,length(cols),signif(length(cols)/10,1))
   if (is.na(lwd)) lwd <- max(3-0.05*length(cols),0.2)
@@ -74,7 +74,7 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   vstep <- vstep[order(vstep)]
   cticks <- vstep[2:length(vstep)]-dv/2
 
-  #cstep <- colscal(n=length(vstep)-1,col="bwr")
+  #cstep <- colscal(n=length(vstep)-1,col="t2m")
   cmin <- rgb(239,138,98,max=255) # blue
   cmid <- rgb(247,247,247,max=255) # white
   cmax <- rgb(103,169,207,max=255) # red
@@ -95,7 +95,7 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   image(rows,cols,trends.minus,col=cstep[1],add=TRUE)
 
   # Mark significant trends with dark borders
-  i <- which((is.finite(t(p)) & t(p)<alpha))
+  i <- which((is.finite(t(p)) & t(p)<pmax))
   x <- rep(rows,nrow(p))[i]
   y <- array(sapply(cols,function(x) rep(x,nrow(p))),length(p))[i]
   matlines(rbind(x-1/2,x+1/2),rbind(y-1/2,y-1/2),col='black',lwd=lwd,lty=1)
@@ -103,7 +103,6 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   matlines(rbind(x-1/2,x-1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
   matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
 
-  # Add colorbar. Ticks look slightly off.
   colbar(cticks,cstep,fig=c(0.2,0.25,0.65,0.85))
 }
  
@@ -145,6 +144,8 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
                           alpha=0.6,leg.loc=2,new=TRUE) {
 
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
+  i <- !(is.na(x) | is.na(y))
+  x <- x[i]; y <- y[i]
 
   # Define grid
   if (is.null(dx) & length(xgrid)<=2) dx <- (max(x)-min(x))/20
@@ -273,7 +274,9 @@ scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
                            leg=TRUE,col='blue',border='black') {
 
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
-
+  i <- !(is.na(x) | is.na(y))
+  x <- x[i]; y <- y[i]
+  
   # Define grid
   if (is.null(dx) & length(xgrid)<=2) dx <- (max(x)-min(x))/20
   if (is.null(dy) & length(ygrid)<=2) dy <- (max(y)-min(y))/20
