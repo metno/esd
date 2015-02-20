@@ -62,16 +62,19 @@ lonlat.storm <- function(x,
   matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
 
+  # storms crossing the dateline plotted in two parts
   fn <- function(lon,lat) {
     lon[lon<0] <- lon[lon<0]+360
     xy <- approx(lon,lat,sort(c(lon,180)))
     lon <- xy$x; lat <- xy$y
-    lines(lon,lat,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
+    lines(lon[lon<=180],lat[lon<=180],
+          lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
+    lines(lon[lon>=180]-360,lat[lon>=180],
+          lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
   }
-  mapply(fn,lons,lats)
-  #matlines(t(lons[!OK,]),t(lats[!OK,]),col='red',lty=1)
+  for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
 
-  points(mlon,mlat,pch=".")
+  points(mlon,mlat,pch=".",col='grey30')
 }
 
 
@@ -94,6 +97,10 @@ sphere.storm <- function(x,
   x0 <- x
   ilons <- colnames(x)=='lon'
   ilats <- colnames(x)=='lat'
+  lon <- x[,ilons]
+  lon[lon<0] <- lon[lon<0]+360
+  x[,ilons] <- lon
+  
   fn <- function(x) sphere.rotate(x[ilons],x[ilats],lonR=lonR,latR=latR)
   A <- apply(x,1,fn)
   n <- length(ilons[ilons])
@@ -113,16 +120,9 @@ sphere.storm <- function(x,
   par(bty="n",xaxt="n",yaxt="n")
   plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="")
 
-  OK <- apply(x0[,ilons],1,function(x) !(any(x < -90) & any(x > 90)))
-  j <- 1
-  lines(X[,OK][,j],Z[,OK][,j],lty=lty,lwd=lwd,
-        col=adjustcolor(col,alpha.f=alpha))
-  matlines(X[,OK],Z[,OK],lty=lty,lwd=lwd,
-           col=adjustcolor(col,alpha.f=alpha))
-  # crossing the dateline messes everything up: 
-  #matlines(X[,!OK],Z[,!OK],col='black',lty=1)
-
-  points(x[y>0],z[y>0],pch=".")
+  matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
+  
+  points(x[y>0],z[y>0],pch=".",col='grey30')
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 }
 
@@ -204,8 +204,9 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
 }
 
 
+
 map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
-      xlim=NULL,ylim=NULL) {
+      xlim=NULL,ylim=NULL,m=2) {
 
   stopifnot(!missing(X), inherits(X,"storm"))
   if (inherits(X,'pca')) {
@@ -215,15 +216,18 @@ map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
   U <- attr(pca,'pattern')
   V <- coredata(pca)
   W <- attr(pca,'eigenvalues')
+  R2 <- round(100*attr(pca,'eigenvalues')^2/attr(pca,'tot.var'),2)
 
+  if (!is.null(m)) m <- min(m,dim(U)[2])
+  else m <- sum(R2>=5)
+  
   colvec <- c('red3','mediumblue', 'chartreuse3',
               'darkorange','darkturquoise')
-  projection <- 'latlon'
 
   map.storm(X,projection=projection,lonR=lonR,latR=latR,
     col='grey20',alpha=0.1,xlim=xlim,ylim=ylim,new=TRUE)
   
-  for (i in 1:3) { 
+  for (i in 1:m) { 
     X.PC.max <- max(V[,i]) * (U[,i]*W[i])
     X.PC.min <- min(V[,i]) * (U[,i]*W[i])
     if (any(aspect(pca)=='anomaly')) {
@@ -237,11 +241,24 @@ map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
       }
     }
 
-    points(X.PC.max[attr(pca,'colnames')=='lon'],
-        X.PC.max[attr(pca,'colnames')=='lat'],col=colvec[i],
-           type='b',lwd=2,lty=1,pch=19)
-    points(X.PC.min[attr(pca,'colnames')=='lon'],
-        X.PC.min[attr(pca,'colnames')=='lat'],col=colvec[i],
-           type='b',lwd=2,lty=1,pch=1)
+    lon.max <- X.PC.max[attr(pca,'colnames')=='lon']
+    lat.max <- X.PC.max[attr(pca,'colnames')=='lat']
+    lon.min <- X.PC.min[attr(pca,'colnames')=='lon']
+    lat.min <- X.PC.min[attr(pca,'colnames')=='lat']
+    if (any(projection %in% c('sphere','np','sp'))) {
+      # rotate lon.max and lat.max
+      a <- sphere.rotate(lon.max,lat.max,lonR=lonR,latR=latR)
+      x <- a[1,]; y <- a[2,]; z <- a[3,]
+      lon.max <- x[y>0]; lat.max <- z[y>0]
+      # rotate lon.min and lat.min
+      a <- sphere.rotate(lon.min,lat.min,lonR=lonR,latR=latR)
+      x <- a[1,]; y <- a[2,]; z <- a[3,]
+      lon.min <- x[y>0]; lat.min <- z[y>0] 
+    }
+    points(lon.max,lat.max,col=colvec[i],type='l',lwd=2,lty=1)#,pch=19)
+    points(lon.max[1],lat.max[1],col=colvec[i],type='p',pch=19)
+    points(lon.min,lat.min,col=colvec[i],type='l',lwd=2,lty=2)
+    points(lon.min[1],lat.min[1],col=colvec[i],type='p',pch=19)
   }
 }
+
