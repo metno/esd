@@ -63,8 +63,12 @@ lonlat.storm <- function(x,
            col=adjustcolor(col,alpha.f=alpha))
 
   fn <- function(lon,lat) {
-    
+    lon[lon<0] <- lon[lon<0]+360
+    xy <- approx(lon,lat,sort(c(lon,180)))
+    lon <- xy$x; lat <- xy$y
+    lines(lon,lat,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
   }
+  mapply(fn,lons,lats)
   #matlines(t(lons[!OK,]),t(lats[!OK,]),col='red',lty=1)
 
   points(mlon,mlat,pch=".")
@@ -147,7 +151,7 @@ map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
          xlim=xlim,ylim=ylim,type="n",frame.plot=F)
   
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
-  binscatter.hex(lon[OK],lat[OK],dx=dx,dy=dy,xgrid=xgrid,ygrid=ygrid,
+  scatter.hexbin(lon[OK],lat[OK],dx=dx,dy=dy,xgrid=xgrid,ygrid=ygrid,
                  new=FALSE,leg=leg,col=col,border=border,Nmax=Nmax)
 
   OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
@@ -174,7 +178,7 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
   if(new) dev.new()
   par(bty="n",mar=c(4.4,4.0,1.0,1.0))
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
-  binscatter.sunflower(lon[OK],lat[OK],petalsize=petalsize,
+  scatter.sunflower(lon[OK],lat[OK],petalsize=petalsize,
            dx=dx,dy=dy,xlab='lon',yla='lat',
            xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
            xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha,new=FALSE)
