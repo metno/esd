@@ -61,6 +61,10 @@ lonlat.storm <- function(x,
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
+
+  fn <- function(lon,lat) {
+    
+  }
   #matlines(t(lons[!OK,]),t(lats[!OK,]),col='red',lty=1)
 
   points(mlon,mlat,pch=".")
