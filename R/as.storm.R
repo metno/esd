@@ -71,16 +71,6 @@ matrix2imilast <- function(x) {
   X <- data.frame(Cyclone,Date,Year,Lon,Lat,Pressure,Code99)
 }
 
-approx.lon <- function(lon,n=10) {
-  if ((max(lon)-min(lon))>180) {
-    lon[lon<0] <- lon[lon<0]+360
-    x <- approx(lon,n=n)
-    x$y[x$y>180] <- x$y[x$y>180]-360
-  } else {
-    x <- approx(lon,n=n)
-  }
-  return(x)
-}
   
 #fname="/vol/fou/klima/IMILAST/ERAinterim_1.5_NH_M03_19890101_20090331_ST.txt"
 #m03 <- read.fwf(fname,width=c(2,7,4,11,5,5,5,4,7,7,10),
