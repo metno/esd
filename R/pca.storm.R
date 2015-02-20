@@ -97,9 +97,7 @@ pca2storm <- function(X) {
 
 }
 
-
-
-plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=3) {
+plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2) {
   stopifnot(!missing(X), inherits(X,"pca"))
 
   pca <- X
@@ -152,110 +150,58 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=3) {
 }
 
 
-#============= THE END ==============
+map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
+      xlim=NULL,ylim=NULL,m=2) {
 
-  # Show patterns in units of lon-lat. 
-  #W <- attr(y,'eigenvalues')
-  #dev.new()
-  #plot(0,0,type='n',xlim=c(-90,90),ylim=c(-90,90))
-  #for (i in 1:m) {
-  #  PCi <- median(V[,i])*(U[,i]*W[i])
-  #  lines(PCi[1:10],PCi[11:20],lty=1,col=colvec[i])
-  #  points(PCi[1],PCi[11],col=colvec[i],pch=19)
-  #  PCi <- max(V[,i])*(U[,i]*W[i])
-  #  lines(PCi[1:10],PCi[11:20],lty=3,col=colvec[i])
-  #  points(PCi[1],PCi[11],col=colvec[i],pch=20)
-  #  PCi <- min(V[,i])*(U[,i]*W[i])
-  #  lines(PCi[1:10],PCi[11:20],lty=4,col=colvec[i])
-  #  points(PCi[1],PCi[11],col=colvec[i],pch=20)
-  #}
-#}
+  stopifnot(!missing(X), inherits(X,"storm"))
+  if (inherits(X,'pca')) {
+    pca <- X; X <- pca2storm(pca)
+  } else pca <- PCA.storm(X)
 
- # Set scale for colour scheme
-  #str(y)
-  ## a.T <- matrix(rep(NA,4*N),4,N)
-  ## ax <- quantile(abs(attr(y,'mean')),0.99,na.rm=TRUE)
-  ## if (min(attr(y,'mean'))<0) scale0 <- seq(-ax,ax,length=nc) else
-  ##                            scale0 <- seq(0,ax,length=nc)
-  ## ax <- quantile(abs(attr(y,'pattern')),0.99,na.rm=TRUE)
-  ## scale <- seq(-ax,ax,length=nc)
+  U <- attr(pca,'pattern')
+  V <- coredata(pca)
+  W <- attr(pca,'eigenvalues')
 
-  ## #print("here")
-  ## for (i in 1:N) {
-  ##   a.T[1,i] <-  sum(attr(y,'mean')[i] > scale0)
-  ##   for (j in 1:m) 
-  ##     a.T[j+1,i] <-  sum(attr(y,'pattern')[i,j] > scale)
-  ## }
-  ## a.T[a.T < 1] <- 1; a.T[a.T > 100] <- 100
+  R2 <- round(100*attr(pca,'eigenvalues')^2/attr(pca,'tot.var'),2)
+
+  if (!is.null(m)) m <- min(m,dim(U)[2])
+  else m <- sum(R2>=5)
   
-  #if (new) dev.new(width=7,height=9)
-  #par(mfrow=c(3,2),mar=c(3.5,3,3.5,3),bty="n",xaxt="n",yaxt="n")
+  colvec <- c('red3','mediumblue', 'chartreuse3',
+              'darkorange','darkturquoise')
 
-  ## plot(lon,lat,
-  ##      main="Climatology",
-  ##      col=col[a.T[1,]],pch=19,xlab="",ylab="",cex=cex)
-  ## points(lon,lat,cex=cex)
-  ## data(geoborders,envir=environment())
-  ## lines(geoborders,col='grey40')
-  ## lines(geoborders$x - 360,geoborders$y,col='grey40')
-  ## points(lon,lat,cex=cex,col=col[a.T[1,]],pch=19)
-
-  ## plot(lon,lat,
-  ##      main=paste("EOF #1:",R2[1],"% of variance"),
-  ##      col=col[a.T[2,]],pch=19,xlab="",ylab="",cex=cex)
-  ## points(lon,lat,cex=cex)
-  ## lines(geoborders)
-  ## lines(geoborders$x - 360,geoborders$y)
-  ## points(lon,lat,cex=cex,col=col[a.T[2,]],pch=19)
-
-  ## plot(lon,lat,
-  ##      main=paste("EOF #2:",R2[2],"% of variance"),
-  ##      col=col[a.T[3,]],pch=19,xlab="",ylab="",cex=cex)
-  ## points(lon,lat,cex=cex)
-  ## lines(geoborders,col='grey40')
-  ## lines(geoborders$x - 360,geoborders$y,col='grey40')
-  ## points(lon,lat,cex=cex,col=col[a.T[3,]],pch=19)
-
-  ## plot(lon,lat,
-  ##      main=paste("EOF #3:",R2[3],"% of variance"),
-  ##      col=col[a.T[4,]],pch=19,xlab="",ylab="",cex=cex)
-  ## points(lon,lat,cex=cex)
-  ## lines(geoborders,col='grey40')
-  ## lines(geoborders$x - 360,geoborders$y,col='grey40')
-  ## points(lon,lat,cex=cex,col=col[a.T[4,]],pch=19)
-
-  ## par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.665,0.695),new=TRUE,cex.axis=0.6)
-  ## image(cbind(1:nc,1:nc),col=col)
-  ## nl <- pretty(scale0)
-  ## par(xaxt="s")
-  ## axis(1,at=seq(0,1,length=length(nl)),label=nl)
-
-  ## par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
-  ## image(cbind(1:nc,1:nc),col=col)
-  ## nl <- pretty(scale)
-  ## par(xaxt="s")
-  ## axis(1,at=seq(0,1,length=length(nl)),label=nl)
-
-  ## par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.665,0.695),new=TRUE,cex.axis=0.6,xaxt="n")
-  ## image(cbind(1:nc,1:nc),col=col)
-  ## nl <- pretty(scale)
-  ## par(xaxt="s")
-  ## axis(1,at=seq(0,1,length=length(nl)),label=nl)
-
-  ## par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
-  ## image(cbind(1:nc,1:nc),col=col)
-  ## nl <- pretty(scale)
-  ## par(xaxt="s")
-  ## axis(1,at=seq(0,1,length=length(nl)),label=nl)
+  map.storm(X,projection=projection,lonR=lonR,latR=latR,
+    col='grey20',alpha=0.1,xlim=xlim,ylim=ylim,new=TRUE)
   
-  ## par(mfcol=c(1,1),fig=c(0,1,0,0.33),new=TRUE,xaxt="s",yaxt="n",bty="n",
-  ##     mar=c(2,2,1,1))
-  ## ylim <- 2*range(coredata(y[,1:m]),na.rm=TRUE)
-  ## plot(y[,1]+0.5*ylim[2],lwd=2,ylim=ylim)
-  ## grid()
-  ## col <- c("red","blue")
-  ## for (j in 1:m) lines(y[,j+1]+(1-j)*0.5*ylim[2],lwd=2,col=col[j])
-  ## legend(index(y)[1],ylim[1],c('PC 1','PC 2','PC 3'),
-  ##        col=c('black','red','blue'),bty='n',lwd=2)
-  ## invisible(a.T)
-#}
+  for (i in 1:m) { 
+    X.PC.max <- max(V[,i]) * (U[,i]*W[i])
+    X.PC.min <- min(V[,i]) * (U[,i]*W[i])
+    if (any(aspect(pca)=='anomaly')) {
+      for (j in 1:length(attr(pca,'mean'))) {
+        X.PC.max[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] <-
+          X.PC.max[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] +
+          mean(unlist(attr(pca,'mean')[j]))
+       X.PC.min[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] <-
+          X.PC.min[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] +
+          mean(unlist(attr(pca,'mean')[j]))
+      }
+    }
+
+    lon.max <- X.PC.max[attr(pca,'colnames')=='lon']
+    lat.max <- X.PC.max[attr(pca,'colnames')=='lat']
+    lon.min <- X.PC.min[attr(pca,'colnames')=='lon']
+    lat.min <- X.PC.min[attr(pca,'colnames')=='lat']
+    if (any(projection %in% c('sphere','np','sp'))) {
+      # rotate lon.max and lat.max
+      a <- sphere.rotate(lon.max,lat.max,lonR=lonR,latR=latR)
+      x <- a[1,]; y <- a[2,]; z <- a[3,]
+      lon.max <- x[y>0]; lat.max <- z[y>0]
+      # rotate lon.min and lat.min
+      a <- sphere.rotate(lon.min,lat.min,lonR=lonR,latR=latR)
+      x <- a[1,]; y <- a[2,]; z <- a[3,]
+      lon.min <- x[y>0]; lat.min <- z[y>0] 
+    }
+    points(lon.max,lat.max,col=colvec[i],type='b',lwd=2,lty=1,pch=19)
+    points(lon.min,lat.min,col=colvec[i],type='b',lwd=2,lty=1,pch=1)
+  }
+}
