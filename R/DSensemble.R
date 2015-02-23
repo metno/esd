@@ -902,10 +902,12 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     grid()
     abline(wc.model)
     text(xlim[1],ylim[2],paste('Correlation=',round(stats$estimate,2),
-                               '(','p-value=',100*round(stats$p.value,4),'%)'),pos=4,cex=0.7,col='grey')
+                               '(','p-value=',100*round(stats$p.value,4),'%)'),
+         pos=4,cex=0.7,col='grey')
     text(xlim[1],ylim[2]-dy,paste('Regression: y=',round(wc.model$coeff[1],4), '+',
                                   round(wc.model$coeff[2],4), 'x (R2=',
-                                  round(summary(wc.model)$r.squared,2),')'),pos=4,cex=0.7,col='grey')
+                                  round(summary(wc.model)$r.squared,2),')'),
+         pos=4,cex=0.7,col='grey')
     par(new=TRUE,fig=c(0.5,0.97,0.1,0.5),yaxt='n',xpd=TRUE,cex.axis=0.7,col.axis='grey')
     plot((cal$x - mean(cal$x))/sd(cal$x),type='l',lwd=2,ylab='',xlab='',col=rgb(0.6,0.3,0))
     axis(1,col='grey')

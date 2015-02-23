@@ -60,6 +60,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     d <- dim(x)
     if (is.null(is)) is <- 1:d[2]
     if (is.null(it)) it <- 1:d[1]
+    if (is.logical(it)) it <- (1:d[1])[it]
     
     ## 
     ##print("HERE")
@@ -139,10 +140,12 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
          if ((length(nlev)==1)) {
             if (nlev==4) {
                 if (verbose) print("it are most probably years")
-                if (length(it)==2)
+                if (length(it)==2) {
                     ii <- is.element(yr,it[1]:it[2])
+                     if (verbose) print(paste('Subset of',sum(ii),'data points between',
+                                             min(yr),'-',max(yr),'total:',length(yr)))
                 # if it is years:
-                else if (min(it)> length(it)) {
+                  } else if (min(it)> length(it)) {
                     if (verbose) print("match years")
                     ii <- is.element(yr,it)
                   } 
@@ -186,9 +189,9 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
     class(x) -> cls
     ##print(cls)
     ## update the class of x
-    class(x) <- "zoo" 
-   
-                                        # REB 11.04.2014: is can be a list to select region or according to other criterion
+    class(x) <- "zoo"
+
+    ## REB 11.04.2014: is can be a list to select region or according to other criterion
     if (inherits(is,'list')) {
         n <- dim(x)[2]
         selx <- rep(TRUE,n); sely <- selx; selz <- selx
@@ -237,6 +240,9 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
         ## otherwise the subindexing results in an empty object
     }
 
+     if (verbose) print(paste('Subset of',sum(ii),'data points between',
+                                             min(yr),'-',max(yr),'total:',length(yr)))
+    
     y <- x[ii,is]
     #if (is.logical(is))
     #    is <- (1:length(is))[is]
