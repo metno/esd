@@ -169,7 +169,8 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,xlim=xlim,ylim=ylim,
       #browser()
       for (i in (2:length(nms))) 
         contour(lon(Xa[[i]]),lat(Xa[[i]]),Xa[[i]],add=TRUE,col=col[i])
-    }
+    } else if (sum(is.element(what,'contour'))>0)
+       contour(lon(X),lat(X),X,add=TRUE,col=col[1])
   } else
   if (projection=="sphere") map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
                                        what=what,gridlines=gridlines,
