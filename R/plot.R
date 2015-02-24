@@ -215,7 +215,7 @@ plot.eof.comb <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
 
 
 plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
-                    lwd=3,type='l',pch=0,main=NULL,col=NULL,
+                    lwd=1,type='l',pch=0,main=NULL,col=NULL,
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,...) {
   #print('plot.ds')
   if (inherits(x,'pca')) {
@@ -354,6 +354,9 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   ## Replot observations and prediction for calibration period
   lines(y0,lwd=1,type='b',pch=19)
   lines(x,col="red",type="l",lwd=lwd)
+print(legcol)
+
+  legend(x="topleft",legend=c("Obs.","Cal.","Proj"),bty="n",horiz=TRUE,col=c("black","red","blue"),lwd=c(1,1,1),pch=c(19,1,1))
   
   if (plot.type=="single") {
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
