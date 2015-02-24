@@ -351,6 +351,9 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     
   } else  legcol <- c("black","red")
 
+  ## Replot observations and prediction for calibration period
+  lines(y0,lwd=1,type='b',pch=19)
+  lines(x,col="red",type="l",lwd=lwd)
   
   if (plot.type=="single") {
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
