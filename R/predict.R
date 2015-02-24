@@ -37,7 +37,7 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
     newdata=data.frame(X=coredata(X))
   } else X <- newdata
   #print(summary(newdata))
-  colnames(newdata) <- Xnames 
+  names(newdata) <- Xnames 
   
   model <- attr(x,'model')
   y <- predict(model,newdata) + attr(x,'mean')
@@ -65,14 +65,14 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
   #print("predict.ds.comb")
   X <- attr(x,'eof')
   neofs <- length(attr(X,'eigenvalues'))
-
+  
   # For some reason, the column names of newdata is muddled here,
   # and hence Xnames is used to enforce names 'X.1', 'X.2', 'X.3', ...
   Xnames <- paste("X.",1:neofs,sep="")
   if (is.null(newdata)) {
     newdata=data.frame(X=coredata(X))
   } else X <- newdata
-  colnames(newdata) <- Xnames 
+  names(newdata) <- Xnames 
   #print(Xnames)
   
   #print(names(attributes(x)))
@@ -88,20 +88,20 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
   rownm[1] <- attr(x,'source')
     
   for (i in 1:n.app) {
-    X <- attr(x,paste('appendix.',i,sep=""))
+    Z <- attr(X,paste('appendix.',i,sep=""))
     #print(dim(X))
     #print(names(attributes(X)))
-    rownm[i+1] <- attr(X,'source')
-    newdata <- data.frame(X=coredata(X))
+    rownm[i+1] <- attr(Z,'source')
+    newdata <- data.frame(X=coredata(Z))
     #print(summary(newdata))
-    colnames(newdata) <- Xnames
+    names(newdata) <- Xnames
     #print("Data for GCM:"); print(summary(newdata))
     #print("DS values:"); print(summary(predict(model,newdata=newdata)))
     y <- zoo(predict(model,newdata=newdata)+ attr(x,'mean'),
-             order.by=index(X))
-    Y <- merge(Y,y,all=TRUE)
+             order.by=index(Z))
+    Y <- merge(y,Y,all=TRUE)
   }
-
+  
   residual <- model$residuals
   if (addnoise) {
     l <- length(residual)
@@ -110,7 +110,7 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
       noise[i,] <- FTscramble(noise)
     attr(Y,'noise') <- noise
   }
-  Y <- zoo(Y,order.by=index(x))
+  Y <- zoo(Y,order.by=index(Y))
   #print(dim(Y)); print(rownm)
   #print(names(Y))
   names(Y) <- rownm
