@@ -614,7 +614,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (length(it)==2) {
           if ( (min(it) <= min(yr)) & (max(it) <= length(yr)) ) {
             if (verbose) print("it most probably contains indices")
-            ii <- (1:length(yr))[it[1]:it[2]]
+            ii <- is.element(1:length(yr),it[1]:it[2])
           }
           else
             if ( (min(it) >= min(yr)) & (max(it) <= max(yr)) ) {
@@ -634,7 +634,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                   ii <- is.element(yr,it)
                 } else if (max(it) <= length(yr)) {
                   if (verbose) print("pick by indices")
-                  ii <- (1:length(yr))[it]                 
+                  ii <- is.element(1:length(yr),it)
                 }
               } else if ((nlev<=4) & (it <=4)) {
                 if (verbose) print("it are most probably seasons")
