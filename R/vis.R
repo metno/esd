@@ -169,7 +169,14 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
   
   Y <- replicate(length(xgrid),ygrid)
   X <- t(replicate(length(ygrid),xgrid))
-  Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
+  fn <- function(x) {
+    dx <- x[2:length(x)]-x[1:(length(x)-1)]
+    x[1:(length(x)-1)] <- x[1:(length(x)-1)]+dx/2
+    x[length(x)] <- x[length(x)]+dx[length(dx)]/2*sin(2*pi/6)
+    return(x)
+  }
+  Y[,seq(2,dim(Y)[2],2)] <- apply(Y[,seq(2,dim(Y)[2],2)],2,fn)
+
   
   # Count observations in each grid point
   XYN <- bin(x,y,X,Y)
