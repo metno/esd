@@ -161,6 +161,7 @@ as.station.ds <- function(x) {
   attr(y,'history') <- history.stamp(x)
   attr(y,'method') <- attr(x,'method')
   attr(y,'info') <- attr(x,'info')
+  class(y) <- c("station", class(x)[-(1:(length(class(x))-2))])
   return(y)
 }
 
