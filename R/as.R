@@ -1010,6 +1010,11 @@ as.eof.zoo <- function(x,...) {
   return(x)
 }
 
+as.eof.ds <- function(x,iapp=NULL) {
+  y <- as.eof(attr(x,'eof'),iapp) 
+  return(y)
+}
+
 as.eof.eof <-function(x,iapp=NULL) {
   if (inherits(x,'comb')) x <- as.eof.comb(x,iapp) 
   return(x)
