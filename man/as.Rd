@@ -26,6 +26,7 @@
 \alias{as.eof}
 \alias{as.eof.zoo}
 \alias{as.eof.eof}
+\alias{as.eof.ds}
 \alias{as.eof.comb}
 \alias{as.eof.field}
 \alias{as.eof.appendix}
@@ -110,6 +111,7 @@ as.appended.eof.comb(x,iapp=1)
 as.appended.field.comb(x,iapp=1)
 as.eof(x,...)
 as.eof.zoo(x,...)
+as.eof.ds(x,iapp=NULL)
 as.eof.eof(x,iapp=NULL)
 as.eof.comb(x,iapp=NULL)
 as.eof.field(x,iapp=NULL,...)

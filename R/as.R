@@ -161,6 +161,7 @@ as.station.ds <- function(x) {
   attr(y,'history') <- history.stamp(x)
   attr(y,'method') <- attr(x,'method')
   attr(y,'info') <- attr(x,'info')
+  class(y) <- c("station", class(x)[-(1:(length(class(x))-2))])
   return(y)
 }
 
@@ -1007,6 +1008,11 @@ as.eof <- function(x,...) UseMethod("as.eof")
 as.eof.zoo <- function(x,...) {
   class(x) <- c('eof','zoo')
   return(x)
+}
+
+as.eof.ds <- function(x,iapp=NULL) {
+  y <- as.eof(attr(x,'eof'),iapp) 
+  return(y)
 }
 
 as.eof.eof <-function(x,iapp=NULL) {
