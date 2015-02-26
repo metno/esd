@@ -7,6 +7,7 @@
 \alias{q995}
 \alias{lag.station}
 \alias{lag.field}
+\alias{exit}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -29,6 +30,7 @@ trend.coef(x)
 trend.pval(x)
 lag.station(x,...)
 lag.field(x,...)
+exit()
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -47,6 +49,8 @@ lag.field(x,...)
   
   'trend.coef' and 'trend.pval' return the coefficient and the p-value
   of the linear trend.
+
+  'exit' is a handy function for exiting the R session without saving.
 }
 \value{
  \item{as.decimal }{Decimal value}
