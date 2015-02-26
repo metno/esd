@@ -64,3 +64,4 @@ lag.station <- function(x,...) {
 
 lag.field <- function(x,...) lag.station(x,...)
   
+exit <- function() q(save="no")

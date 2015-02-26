@@ -22,7 +22,6 @@ predict.mvr(object, newdata = NULL, ...)
 \arguments{
   \item{x}{A ds object}
 %%     ~~Describe \code{x} here~~
-}
   \item{newdata}{An eof object containing the new data sets on which
     the prediction is made.
 %%     ~~Describe \code{newdata} here~~
@@ -86,5 +85,6 @@ plot(ds.pre)
 attr(ds.pre, "aspect")
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
+}
 \keyword{ ~kwd1 }
 \keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

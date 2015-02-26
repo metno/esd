@@ -484,3 +484,5 @@ export(sort.storm)
 export(polyfit.storm)
 export(count.storm)
 export(approx.lon)
+
+export(exit)
