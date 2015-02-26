@@ -169,7 +169,15 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
   
   Y <- replicate(length(xgrid),ygrid)
   X <- t(replicate(length(ygrid),xgrid))
-  Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
+  
+  fn <- function(x) {
+    dx <- x[2:length(x)]-x[1:(length(x)-1)]
+    x[1:(length(x)-1)] <- x[1:(length(x)-1)]+dx/2*sin(2*pi/6)
+    x[length(x)] <- x[length(x)]+dx[length(dx)]/2*sin(2*pi/6)
+    return(x)
+  }
+  Y[,seq(2,dim(Y)[2],2)] <- apply(Y[,seq(2,dim(Y)[2],2)],2,fn)
+
   
   # Count observations in each grid point
   XYN <- bin(x,y,X,Y)
@@ -271,7 +279,7 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
 scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
                            dx=NULL,dy=NULL,xgrid=NULL,ygrid=NULL,
                            xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
-                           leg=TRUE,col='blue',border='black') {
+                           leg=TRUE,col='blue',border='white') {
 
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
   i <- !(is.na(x) | is.na(y))
@@ -299,13 +307,19 @@ scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
   
   Y <- replicate(length(xgrid),ygrid)
   X <- t(replicate(length(ygrid),xgrid))
-  Y[,seq(2,dim(Y)[2],2)] <- Y[,seq(2,dim(Y)[2],2)]+(dy/2)*sin(2*pi/6)
-
+  fn <- function(x) {
+    dx <- x[2:length(x)]-x[1:(length(x)-1)]
+    x[1:(length(x)-1)] <- x[1:(length(x)-1)]+dx/2*sin(2*pi/6)
+    x[length(x)] <- x[length(x)]+dx[length(dx)]/2*sin(2*pi/6)
+    return(x)
+  }
+  Y[,seq(2,dim(Y)[2],2)] <- apply(Y[,seq(2,dim(Y)[2],2)],2,fn)
+  
   # Count observations in each grid point
   XYN <- bin(x,y,X,Y)
   X <- XYN[,1]; Y <- XYN[,2]; N <- XYN[,3]
   if(is.null(Nmax)) Nmax <- max(N)
-  Nf <- sapply(N/Nmax,function(x) min(1,x))
+  Nf <- sapply(N/Nmax,function(x) 0.2+0.8*min(1,x))
   
   # Plot
   if (is.null(xlim)) xlim <- c(min(X)-dx,max(X)+dx)
@@ -319,26 +333,32 @@ scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
   if (leg) {
     x0 <- max(xlim)
     y0 <- max(ylim)
-    dy0 <- (max(ylim)-min(ylim))/10
-    dx0 <- (max(xlim)-min(xlim))/10
-    polygon.fill(x0+2*dx,y0,dx/2,dy/2,n=6,col=col,border=border)
+    dy0 <- (max(ylim)-min(ylim))/20
+    dx0 <- (max(xlim)-min(xlim))/12
+    text(x0+1.3*dx0,y0+dy0/4,"count")
+    polygon.fill(x0+dx0,y0-dy0,mean(dx)/2,mean(dy)/2,
+                 n=6,col=col,border=border)
     if (max(N)>Nmax) {
-      text(x0+1.2*dx0,y0,paste("\u2265",as.character(Nmax)),pos=4)
+      text(x0+1.2*dx0,y0-dy0,paste("\u2265",as.character(Nmax)),pos=4)
     } else {
-      text(x0+1.2*dx0,y0,as.character(Nmax),pos=4)
+      text(x0+1.2*dx0,y0-dy0,as.character(Nmax),pos=4)
     }
 
     ivec <- sort(unique(N[(N>0 & N<Nmax)]))
-    if (length(ivec)>10) ivec <- seq(min(ivec),max(ivec),
-                                     max(1,round((max(ivec)-min(ivec))/7)))
-
+    if (length(ivec)>10) {
+      di <- max(1,round((max(ivec)-min(ivec))/8))
+      if (di>20) di <- round(di/10)*10
+      if (di>80) di <- round(di/100)*100
+      ivec <- unique(c(1,seq(di,max(ivec),di)))
+    }
+    
     j <- 0
     for (i in ivec) {
-      polygon.fill(x0+2*dx,y0-(length(ivec)-j)*dy0*0.55,
-                   dx/2*min(1,i/Nmax),
-                   dy/2*min(1,i/Nmax),
+      polygon.fill(x0+dx0,y0-(length(ivec)+1-j)*dy0,
+                   mean(dx)/2*(0.2+0.8*min(1,i/Nmax)),
+                   mean(dy)/2*(0.2+0.8*min(1,i/Nmax)),
                    n=6,col=col,border=border)
-      text(x0+1.2*dx0,y0-(length(ivec)-j)*dy0*0.55,as.character(i),pos=4)
+      text(x0+1.2*dx0,y0-(length(ivec)+1-j)*dy0,as.character(i),pos=4)
       j <- j+1
     }
   }
