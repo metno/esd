@@ -3,9 +3,11 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
+Color bar
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
+Display a color bar object on an existing plot
 }
 \usage{
 col.bar(breaks, horiz = TRUE, pch = 21, v = 1, h = 1, col = col, cex = 2, cex.lab = 0.6, type = "r", verbose = FALSE, vl = 0.5, border = FALSE, ...)
