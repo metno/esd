@@ -154,9 +154,9 @@ as.station.ds <- function(x) {
     if (!is.null(attr(x,"original_data")))
       y <- attrcp(attr(x,"original_data"),y) else
       y <- attrcp(x,y)
-    if (!is.null(attr(x,"original_data")))
-      class(y) <- class(attr(x,"original_data")) else
-      class(y) <-class(x)
+    ##if (!is.null(attr(x,"original_data")))
+      class(y) <- class(attr(x,"original_data"))## else
+    ##  class(y) <-class(x)
   }
   attr(y,'history') <- history.stamp(x)
   attr(y,'method') <- attr(x,'method')
