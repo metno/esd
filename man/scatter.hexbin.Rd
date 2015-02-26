@@ -29,8 +29,7 @@ scatter.hexbin(x, y, new = TRUE, Nmax = NULL, dx = NULL, dy = NULL, xgrid = NULL
 
 \author{Kajsa Parding}
 
-\seealso{\code{\link{scatter.sunflower}}, \code\link{{scatter.smooth}}
-}
+\seealso{\code{\link{scatter.sunflower}}}
 
 \examples{
 x <- sample(seq(1,5,1e-2),5000,rep=T)
@@ -46,6 +45,6 @@ scatter.hexbin(x,y,Nmax=500,
   col="red",border="white",xlab="Tmax",ylab="Tmin")
 }
 
-\keyword{ scatter }
-\keyword{ hexbin }
+\keyword{scatter}
+\keyword{hexbin}
 
