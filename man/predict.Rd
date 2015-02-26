@@ -12,22 +12,26 @@ Prediction based on DS model
 
 }
 \usage{
+
 predict.ds(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.eof(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.comb(x, newdata = NULL, addnoise = FALSE, n = 100)
+predict.mvr(object, newdata = NULL, ...) 
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{
+  \item{x}{A ds object}
 %%     ~~Describe \code{x} here~~
 }
-  \item{newdata}{
+  \item{newdata}{An eof object containing the new data sets on which
+    the prediction is made.
 %%     ~~Describe \code{newdata} here~~
 }
-  \item{addnoise}{
+  \item{addnoise}{If TRUE, will add an attribute called "noise" to the
+    ouput based on WG
 %%     ~~Describe \code{addnoise} here~~
 }
-  \item{n}{
+  \item{n}{Number of runs to be generated, used only if addnoise is set to TRUE
 %%     ~~Describe \code{n} here~~
 }
 }
@@ -35,7 +39,8 @@ predict.ds.comb(x, newdata = NULL, addnoise = FALSE, n = 100)
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
+Predicted ds values.
+  %%  ~Describe the value returned
 %%  If it is a LIST, use
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
@@ -55,39 +60,30 @@ A. Mezghani
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{DS}} %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (x, newdata = NULL, addnoise = FALSE, n = 100) 
-{
-    stopifnot(!missing(x), inherits(x, "ds"))
-    if ((inherits(x, "eof")) & (is.null(newdata))) {
-        if (inherits(x, "comb")) 
-            y <- predict.ds.comb(x, newdata = newdata, addnoise = addnoise, 
-                n = n)
-        else if (inherits(x, "field")) 
-            y <- predict.ds.eof(x, newdata = newdata, addnoise = addnoise, 
-                n = n)
-    }
-    else if (inherits(x, "eof")) {
-        if (inherits(newdata, "comb")) 
-            y <- predict.ds.comb(x, newdata = newdata, addnoise = addnoise, 
-                n = n)
-        else if (inherits(newdata, "eof")) 
-            y <- predict.ds.eof(x, newdata = newdata, addnoise = addnoise, 
-                n = n)
-    }
-    y <- attrcp(attr(x, "original_data"), y)
-    attr(y, "history") <- history.stamp(x)
-    class(y) <- class(x)
-    invisible(y)
-  }
-}
+# Get predictor
+## Get reanalysis
+X <- t2m.ERA40(lon=c(-40,50),lat=c(40,75))
+## Get Gcm output
+Y <- t2m.NorESM.M(lon=c(-40,50),lat=c(40,75))
+## Combine
+XY <- combine(X,Y)
+# Compute common eof for January
+ceof <- EOF(XY,it='jan')
+# Get predictand
+data(Oslo)
+# Do the downscaling
+ds <- DS(Oslo,ceof)
+# Plot ds results
+plot(ds)
+# Do the prediction
+ds.pre <- predict.ds(ds)
+#Plot predicted results based on ds object
+plot(ds.pre)
+# Display the attribute "aspect"
+attr(ds.pre, "aspect")
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ ~kwd1 }
