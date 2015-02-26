@@ -1,7 +1,7 @@
 \name{predict.ds}
 \alias{predict.ds}
 \alias{predict.ds.eof}
-alias{predict.ds.com}
+\alias{predict.ds.com}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
