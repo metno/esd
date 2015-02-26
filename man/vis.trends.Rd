@@ -37,5 +37,6 @@ vis.trends(subset(Oslo,it='jja'), unitlabel="oC",
 vis.trends(subset(Oslo,it='mam'), unitlabel="oC",
   varlabel = "Temperature MAM",
   pmax = 1e-3, vmax=0.5, minlen = 40)
+}
 
 \keyword{ trend }
