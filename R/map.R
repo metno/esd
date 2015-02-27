@@ -514,7 +514,6 @@ map.pca <- function(x,new=TRUE,FUN='mean',pattern=1,
   class(X) <- 'station'
   if (is.null(col)) {
     col <- colscal(30,col=varid(x))
-    if (is.precip(x)) col <- rev(col)
   }
   map.station(X,new=new,FUN=FUN,col=col,bg=col,
               colbar=list(col=col,type='r',v=0))
@@ -571,30 +570,32 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
 #  col <- rgb( c(rep(0,15),1-sqrt(seq(0,1,length=15))),
 #              abs(sin(seq(0,pi,length=30))),
 #              c(sqrt(seq(0,1,length=15)),rep(1,15)) )
-  col <- colscal(30,col=varid(x))
-  if (is.precip(X)) col.x <- rev(col) else
-                    col.x <- col
-  if (is.precip(Y)) col.y <- rev(col) else
-                    col.y <- col
-  
+#  col <- colscal(30,col=varid(x))
+#  if (is.precip(X)) col.x <- rev(col) else
+#                    col.x <- col
+#  if (is.precip(Y)) col.y <- rev(col) else
+#                    col.y <- col
+# REB: removed col=col.y,bg=col.y
+
   if (sum(is.element(what,'map'))>0)
     par(fig=c(0,0.5,0.5,1)) ## mar=c(0.05,.05,0.05,0.05),
   else 
     par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
-  map(Y,icca,xlim=xlim,ylim=ylim,what=what,
+#  browser()
+  map(Y,icca,xlim=xlim,ylim=ylim,what=what,cex=1.5,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',colorbar=colorbar,
       colbar=list(col=col.y,type='r',v=0),
-      col=col.y,bg=col.y,showall=FALSE,new=FALSE)
+      showall=FALSE,new=FALSE)
   ## browser()
   if (sum(is.element(what,'ts'))>0)
       par(fig=c(0,1,0.5,1),new=TRUE) else
   par(fig=c(0.5,1,0.5,1),new=TRUE) ## mar=c(0,0,0,0),
-  map(X,icca,xlim=xlim,ylim=ylim,what=what,
+  map(X,icca,xlim=xlim,ylim=ylim,what=what,cex=1.5,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',colorbar=colorbar,
       colbar=list(col=col.x,type='r',v=0),
-      col=col.x,bg=col.x,showall=FALSE,new=FALSE)
+      showall=FALSE,new=FALSE)
   
   invisible(list(U=U,V=V))
 }
