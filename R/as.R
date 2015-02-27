@@ -506,7 +506,9 @@ as.annual.spell <- function(x, ...) annual.spell(x,...)
 #  return(y)
 #}
 
-as.monthly <- function(x,FUN='mean',...) {
+as.monthly <- function(x, ...) UseMethod("as.monthly")
+
+as.monthly.field <- function(x,FUN='mean',...) {
 if (inherits(x,'month')) return(x)
   y <- aggregate(as.zoo(x),function(tt) as.Date(as.yearmon(tt)),FUN=FUN,...)
   y <- attrcp(x,y)
@@ -515,6 +517,18 @@ if (inherits(x,'month')) return(x)
   class(y) <- class(x)
   class(y)[2] <- "month" 
   return(y)
+}
+
+## This is a dublicate of that in as.R
+as.monthly.station <- function (x, FUN = "mean", ...) 
+{
+    y <- aggregate(zoo(x), function(tt) as.Date(as.yearmon(tt)), 
+                   FUN = FUN, ...)
+    y <- attrcp(x, y)
+    attr(y, "history") <- history.stamp(x)
+    class(y) <- class(x)
+    class(y)[2] <- "month"
+    return(y)
 }
 
 

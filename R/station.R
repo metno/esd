@@ -942,13 +942,3 @@ replace.char <- function (c, s, ny.c)  {
     s
 }
 
-as.monthly <- function (x, FUN = "mean", ...) 
-{
-    y <- aggregate(zoo(x), function(tt) as.Date(as.yearmon(tt)), 
-                   FUN = FUN, ...)
-    y <- attrcp(x, y)
-    attr(y, "history") <- history.stamp(x)
-    class(y) <- class(x)
-    class(y)[2] <- "month"
-    return(y)
-}
