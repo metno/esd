@@ -17,8 +17,10 @@ Prediction based on DS model
 predict.ds(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.eof(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.comb(x, newdata = NULL, addnoise = FALSE, n = 100)
-project.ds(x, newdata = NULL, addnoise = FALSE, n = 100) # Not yet finished
+
 predict.mvr(object, newdata = NULL, ...) 
+
+project.ds(x, newdata = NULL, addnoise = FALSE, n = 100) # Not yet finished
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -38,6 +40,10 @@ predict.mvr(object, newdata = NULL, ...)
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
+'predict' is similar to the predict function in R
+
+'project' returns projection of climate 
+
 }
 \value{
 Predicted ds values.

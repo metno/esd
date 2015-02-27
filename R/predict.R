@@ -143,7 +143,7 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
   attr(Y,'residual.sd') <- sd(residual,na.rm=TRUE)
   #print("HERE")
     Y <- attrcp(x,Y)
-    attr(Y,'aspect') <- 'predict'
+    attr(Y,'aspect') <- 'predicted'
     invisible(Y)
 }
 
@@ -222,6 +222,7 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
   attr(Y,'residual.sd') <- sd(residual,na.rm=TRUE)
   #print("HERE")
     Y <- attrcp(x,Y)
-    attr(Y,'aspect') <- 'project'
+    attr(Y,'aspect') <- 'projected'
+    Y <- as.station(Y)
     invisible(Y)
 }
