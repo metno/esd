@@ -180,7 +180,7 @@ subset.pattern <- function(x,is) {
 }
 
 subset.pca <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
-  print('subset.pca')
+  if (verbose) print('subset.pca')
   if (!is.null(pattern)) {
     y <- x[,pattern]
     y <- attrcp(x,y)
@@ -391,7 +391,7 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
     ## 
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
-        print('field/station')
+        if (verbose) print('field/station')
         x2 <- matchdate(x,it)
         return(x2)
     }
@@ -473,8 +473,8 @@ default.subregion <- function(x,is=NULL,verbose=FALSE) {
                                         # and latitude coordinates
       lon.pick <- is[[1]]; lat.pick <- is[[2]]
       d <- attr(x,'dimensions')
-      print(paste("Select ",length(lon.pick),"x",length(lat.pick),
-                  "grid points from the",d[1],"x",d[2],"grid"))
+      if (verbose) print(paste("Select ",length(lon.pick),"x",length(lat.pick),
+                               "grid points from the",d[1],"x",d[2],"grid"))
                                         #print(d)
       xy <- rep(attr(x,'longitude'),d[2])
       yx <- sort(rep(attr(x,'latitude'),d[1]))

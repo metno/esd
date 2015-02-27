@@ -11,7 +11,7 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
     ## 
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
-        print('field/station')
+        if (verbose) print('field/station')
         x2 <- matchdate(x,it)
         return(x2)
     }
@@ -115,7 +115,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                                         #y <- x[ii,is] # REB Not here
             }
             else if (inherits(it,"Date")) {
-                print('it is a Date object')
+                if (verbose) print('it is a Date object')
                 ii <- is.element(t,it)
             } else {
                 str(it); print(class(it))
