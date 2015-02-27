@@ -2,6 +2,7 @@
 \alias{predict.ds}
 \alias{predict.ds.eof}
 \alias{predict.ds.com}
+\alias{project.ds}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -16,6 +17,7 @@ Prediction based on DS model
 predict.ds(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.eof(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.comb(x, newdata = NULL, addnoise = FALSE, n = 100)
+project.ds(x, newdata = NULL, addnoise = FALSE, n = 100) # Not yet finished
 predict.mvr(object, newdata = NULL, ...) 
 }
 %- maybe also 'usage' for other objects documented here.
