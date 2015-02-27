@@ -252,6 +252,7 @@ as.station.list <- function(x) {
 }
 
 as.station.field <- function(x,is=NULL) {
+  index <- index(x)
   stopifnot(!missing(x),
            !zeros(inherits(x,c("field","zoo"),which=TRUE) ))
   if (!is.null(is)) y <- regrid.field(x,list(lon,lat)) else
@@ -261,6 +262,7 @@ as.station.field <- function(x,is=NULL) {
                       cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,
                       url=NA,reference=NA,info=NA, method="field",
                       type=NA,aspect=NA)
+  index(y) <- index
   attr(y,'history') <- history.stamp(x)
   class(y)[2] <- class(x)[2]
   if (dim(y)[2]==1) y <- subset(y,is=1)
