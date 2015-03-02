@@ -45,10 +45,12 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## cntr - selection by country
     ## 
     
+    if (verbose) print("station.subset")
     nval <- function(x) sum(is.finite(x))
     x0 <- x
     if (is.null(it) & is.null(is)) return(x)
-    ## 
+
+    ## Check whether matrix of vector
     d <- dim(x)
     if (is.null(d)) {
         if (verbose)
@@ -58,12 +60,12 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         class(x) <- class(x0)
     } 
     d <- dim(x)
+    
     if (is.null(is)) is <- 1:d[2]
     if (is.null(it)) it <- 1:d[1]
     if (is.logical(it)) it <- (1:d[1])[it]
+    if (is.logical(is)) is <- (1:d[2])[is]
     
-    ## 
-    ##print("HERE")
     ## get time in t
     t <- index(x)
     ii <- is.finite(t)
@@ -193,6 +195,7 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
 
     ## REB 11.04.2014: is can be a list to select region or according to other criterion
     if (inherits(is,'list')) {
+      if (verbose) print('is is a list object')
         n <- dim(x)[2]
         selx <- rep(TRUE,n); sely <- selx; selz <- selx
         selc <- selx; seli <- selx; selm <- selx; salt <- selx
