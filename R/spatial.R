@@ -42,6 +42,7 @@ spatial.avg.field <- function(x) {
   for (t in 1:d[3]) 
     z[t] <- sum(wl*x[,t],na.rm=TRUE)/sum(wl)
   z <- as.station(z)
+  index(z) <- index
   ## return(z)
   invisible(z)
 }
