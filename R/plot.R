@@ -673,7 +673,7 @@ plot.diagnose <- function(x,...) {
   if ( (inherits(x,"eof")) & (inherits(x,"comb")) ) plot.diagnose.comb.eof(x)
 }
 
-plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,...) {
+plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   stopifnot(!missing(x), inherits(x,"diagnose"),inherits(x,"eof"),inherits(x,"comb"))
   dev.new()
   par(bty="n")
@@ -693,6 +693,12 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,...) {
   cex <- x$autocorr.ratio;
   pch <- 19; pch[cex < 0] <- 21
   cex <- abs(cex); cex[cex > 2] <- 2
+  if (verbose) {
+     print('Mean difference:');print(x$mean.diff)
+     print('Ration of standard deviation');print(x$sd.ratio)
+     points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
+  }
+  
   points(x$mean.diff,1-x$sd.ratio,pch=pch,col=col,cex=cex,lwd=2)
 
   legend(xlim[1],ylim[2],c("same sign","different sign"),
