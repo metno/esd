@@ -63,18 +63,20 @@ lonlat.storm <- function(x,
            col=adjustcolor(col,alpha.f=alpha))
 
   # storms crossing the dateline plotted in two parts
-  fn <- function(lon,lat) {
-    lon[lon<0] <- lon[lon<0]+360
-    xy <- approx(lon,lat,sort(c(lon,180)))
-    lon <- xy$x; lat <- xy$y
-    lines(lon[lon<=180],lat[lon<=180],
+  if (sum(!OK)>0) {
+    fn <- function(lon,lat) {
+      lon[lon<0] <- lon[lon<0]+360
+      xy <- approx(lon,lat,sort(c(lon,180)))
+      lon <- xy$x; lat <- xy$y
+      lines(lon[lon<=180],lat[lon<=180],
           lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
-    lines(lon[lon>=180]-360,lat[lon>=180],
+      lines(lon[lon>=180]-360,lat[lon>=180],
           lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
+    }
+    for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
   }
-  for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
 
-  points(mlon,mlat,pch=".",col='grey30')
+  points(mlon,mlat,pch=".",col='grey20',cex=1.4)
 }
 
 
@@ -155,7 +157,7 @@ map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
                  new=FALSE,leg=leg,col=col,border=border,Nmax=Nmax)
 
   OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
-  points(mlon[OK],mlat[OK],pch=".",col='grey60')
+  points(mlon[OK],mlat[OK],pch=".",col='grey20',cex=1.4)
 }
 
 map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
@@ -200,7 +202,7 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
     }
     OK <- OK & !(findInterval(mlon,xbox)==1 & findInterval(mlat,ybox)==1)
   }
-  points(mlon[OK],mlat[OK],pch=".",col='grey20')
+  points(mlon[OK],mlat[OK],pch=".",col='grey20',cex=1.4)
 }
 
 
