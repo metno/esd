@@ -3,28 +3,30 @@
 
 \title{Produce a binned scatter plot with a hexagon grid}
 \description{
-  Multiple points are plotted as hexagons of different sizes such that
+  Multiple points are plotted as hexagons of different sizes or colors such that
     overplotting is visualized instead of accidental and invisible.
-    The size of the hexagonal markers represents the count in each grid point. 
 }
 \usage{
-scatter.hexbin(x, y, new = TRUE, Nmax = NULL, dx = NULL, dy = NULL, xgrid = NULL, ygrid = NULL, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL, leg = TRUE, col = "blue", border = "black")
+scatter.hexbin(x, y, new = TRUE, scale.col=TRUE, scale.size=TRUE, Nmax = NULL, dx = NULL, dy = NULL, xgrid = NULL, ygrid = NULL, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL, leg = TRUE, colmap='gray.colors', col = "blue", border = "black")
 }
 \arguments{
   \item{x, y}{the ‘x’ and ‘y’ arguments provide the x and y coordinates for
           the plot.  Any reasonable way of defining the coordinates is
           acceptable.  See the function ‘xy.coords’ for details.}
-  \item{Nmax}{the minimum count represented by the largest hexagonal marker.}
-  \item{dx, dy}{width and height of the grid points.}
+  \item{scale.col}{logical. If TRUE, a color scale represents the count in each grid point. If FALSE, all markers are the same color.}
+  \item{scale.size}{logical. If TRUE, the marker size represent the count in each grid point. If FALSE, all markers are the same size.}
+  \item{colmap}{color scale of markers if scale.col is TRUE}
+  \item{col}{face color of markers if scale.col is FALSE}
+  \item{border}{border color of markers if scale.col is FALSE}
+  \item{Nmax}{minimum count in grid points with the largest hexagonal marker. used only if scale.size is TRUE.}
+  \item{dx, dy}{circumradius of the hexagonal markers in the x and y direction.}
   \item{xgrid, ygrid}{the first row and column of the hexagonal grid. 
-          If 'xgrid' is of length 2, it is interpreted as the first and last point of a grid with distance 'dx' between the intermediate points.}
+          If 'xgrid' is of length 2, it is interpreted as the edges of a grid of hexagons of circumradius 'dx' and 'dy'.}
+  \item{leg}{logical. If TRUE, shows legend.}
   \item{xlim}{limits of the x-axis}
   \item{ylim}{limits of the y-axis}
   \item{xlab}{a label for the x-axis}
   \item{ylab}{a label for the y-axis}
-  \item{leg}{logical. If TRUE, shows legend.}
-  \item{col}{face color of markers}
-  \item{border}{border color of markers}
 }
 
 \author{Kajsa Parding}
