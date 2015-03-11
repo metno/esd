@@ -952,7 +952,8 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (plot) lines(years,X[i,i2],col=rgb(0,0.3,0.6,0.2))
       print(paste("i=",i,"GCM=",gcmnm[i]))
     }
-      
+  if (plot) lines(aggregate(y,by=year,FUN='wetmean'),col='red',lwd=3)
+  
   X <- zoo(t(X),order.by=years)
   colnames(X) <- gcmnm
   attr(X,"model_id") <- gcmnm

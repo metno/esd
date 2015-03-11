@@ -559,7 +559,7 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
 
   if (!is.null(col))
     if ((length(col)==1) & is.character(col) &
-        (sum(is.element(c('t2m','precip','bwr','rwb','mu','fw',
+        (sum(is.element(c('t2m','precip','bwr','rwb','mu','fw','tp',
                           'faint.bwr','faint.rwb','rainbow',
                           'gray.colors','heat.colors','terrain.colors',
                           'topo.colors','cm.colors'),col))==0))
@@ -594,7 +594,8 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
     g <- approx(seNorgeT[2,],n=n)$y/255
     b <- approx(seNorgeT[3,],n=n)$y/255
     col <- rgb(b,g,r)
-  } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") | (col[1]=="f[w]")) {
+  } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
+             (col[1]=="f[w]") | (col[1]=="tp")) {
     r <- approx(seNorgeP[1,],n=n)$y/255
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255
@@ -727,7 +728,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     print(paste('Prognosis for end-of-year: ',round(zz,1),' (',round(zm,1),',',round(zp,1),')',sep=''))
   }
 
-  if (varid(x)!='precip') 
+  if (!is.precip(x))
     par(new=TRUE,fig=c(0.70,0.85,0.20,0.35),mar=c(0,3,0,0),
         cex.axis=0.7,yaxt="s",xaxt="n",las=1)
   else

@@ -331,7 +331,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
 #                               variable," *(",unit,")))",sep=""))) else
   main=eval(parse(text=paste('expression(',variable," *(",unit,"))",sep="")))
   sub <- attr(x,'source')
-
+  colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   if (is.null(colorbar)) colorbar <- (sum(is.element(what,'fill')>0))
                                       
   #print('time')
@@ -373,8 +373,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if (is.null(breaks))
     breaks <- pretty(c(x),n=n)
   #print(breaks)
-  
-  if (is.null(col)) col <- colscal(n=length(breaks)-1,col=varid) else
+
+  if (is.null(col)) col <- colscal(n=length(breaks)-1,col=colid) else
   if (length(col)==1) {
      palette <- col
      col <- colscal(col=palette,n=length(breaks)-1)
@@ -384,8 +384,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
                   length=length(col)+1)
                       
   #print(variable)
-  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
-    col <- rev(col)
+#  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
+   if (colid=='precip') col <- rev(col)
   
   #print(c(length(breaks),length(col)))
   #if (is.Date(what))

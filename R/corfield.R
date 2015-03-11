@@ -11,8 +11,8 @@ corfield.default <- function(x,y,...) {
 }
 
 
-corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',...) {
-  #print("corfield.zoo:")
+corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,...) {
+  if (verbose) {print("corfield.zoo:"); print('station against field')}
 
   # Keep track of which is an eof object and which is a station record:
   swapped <- FALSE
@@ -31,11 +31,11 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',...) {
   }
 
   #print("HERE")
-  #print(length(x)); print(dim(y))
-  yx <- merge(x,y,all=FALSE)
+  if (verbose) {print(dim(x)); print(dim(y)); print(class(x)); print(class(y))}
+  yx <- merge(zoo(x),zoo(y),all=FALSE)
   #print("OK so far?")
 
-  d <- dim(xy)
+  d <- dim(yx)
   r <- apply(coredata(yx[,2:d[2]]),2,cor,coredata(yx[,1]),use=use,...)
   #print(length(r))
   
@@ -56,8 +56,9 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',...) {
   return(r)
 }
 
-corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',...) {
-
+corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,...) {
+ 
+  if (verbose) {print('corfield.field'); print('field against field')}
   cor2s <- function(x,use,...) {
     n <- length(x);
     #print(n); print(length(x[1:(n/2)])); print(length(x[(n/2+1):n]))
