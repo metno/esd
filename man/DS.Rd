@@ -221,6 +221,28 @@ dsm <- DS(ym,X)
 plot(dsm)
 dss <- DS(ys,Z)
 plot(dss)
+
+## Example for downscaling with missing data
+data(Oslo)
+era40 <- t2m.ERA40(lon=c(-10,20),lat=c(55,65))
+y <- subset(Oslo,it='jan')
+X <- EOF(subset(era40,it='jan'))
+ds <- DS(y,X)
+plot(ds) # Looks OK
+# Now we replace some values of y with missing data:
+y2 <- y
+set2na <- order(rnorm(length(y)))[1:50]
+y2[set2na] <- NA
+ds2 <- DS(y2,X)
+plot(ds2) 
+
+## Use downscale results to fill in missin gata:
+y3 <- predict(ds2,newdata=X)
+plot(y,col='grey80',lwd=4,xlim=range(index(y3)))
+points(as.station(predict(ds2)))
+# The downscaled 
+lines(y3,lty=2)
+
 }
 \keyword{models}
 \keyword{multivariate}

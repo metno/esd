@@ -158,26 +158,49 @@ subset.mvr <- function(x,it=NULL,is=NULL) {
     x
 }
 
-subset.pattern <- function(x,is) {
+subset.pattern <- function(x,is,verbose=FALSE) {
+  if (verbose) print('subset.pattern')
     if (is.list(is)) {
         y <- attr(x,'pattern')
         lons <- attr(x,'longitude')
         lats <- attr(x,'latitude')
         nms <- substr(tolower(names(is)),1,3)
-        if (sum(is.element(nms,'lon'))>0)
-            ix <- (lons >= min(is[[is.element(nms,'lon')]])) &
-                (lons >= max(is[[is.element(nms,'lon')]])) else
-        ix <- is.finite(lons)
-        if (sum(is.element(nms,'lat'))>0)
-            iy <- (lons >= min(is[[is.element(nms,'lat')]])) &
-                (lons >= max(is[[is.element(nms,'lat')]])) else
-        iy <- is.finite(lats)
-        y[ix,iy] -> attr(x,'pattern')
-        lons -> attr(x,'longitude')
-        lats -> attr(x,'latitude')
-    }
+        IS <- 1:length(nms)
+        if (verbose) print(nms)
+        if (sum(is.element(nms,'lon'))>0) {
+          inm <- IS[is.element(nms,'lon')]
+            ix <- (lons >= min(is[[inm]])) &
+                  (lons <= max(is[[inm]]))
+          } else ix <- is.finite(lons)
+        if (sum(is.element(nms,'lat'))>0) {
+          inm <- IS[is.element(nms,'lat')]
+            iy <- (lats >= min(is[[inm]])) &
+                  (lats <= max(is[[inm]]))
+          } else iy <- is.finite(lats)
+
+        if (!is.null(attr(x,'pattern'))) {
+          if (verbose) print('replace the pattern argument')
+          y[ix,iy] -> attr(x,'pattern')
+          lons[ix] -> attr(x,'longitude')
+          lats[iy] -> attr(x,'latitude')
+        } else {
+          if (verbose) print('subset the matrix')
+          if (verbose) print(dim(x))
+          y <- x[ix,iy]
+          y <- attrcp(x,y)
+          attr(y,'variable') <- varid(x)
+          attr(y,'unit') <- unit(x)
+          lons[ix] -> attr(y,'longitude')
+          lats[iy] -> attr(y,'latitude')
+          x <- y
+        }
+    } 
     return(x)
 }
+
+subset.matrix <- function(x,is,verbose=FALSE)
+  subset.pattern(x,is,verbose=verbose)
+  
 
 subset.pca <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print('subset.pca')

@@ -65,7 +65,9 @@ DS.default <- function(y,X,mon=NULL,
     stopifnot(!missing(y),!missing(X), is.matrix(X),
               inherits(X,"eof"),inherits(y,"station"))
     y0 <- y
-    X0 <- X 
+    X0 <- X
+
+    y <- subset(y,it=is.finite(coredata(y)))
     W <- attr(X,'eigenvalues')
     cls <- class(X)
  
@@ -78,12 +80,13 @@ DS.default <- function(y,X,mon=NULL,
     y <- matchdate(y,X,verbose=verbose) ##
     #if (verbose) {print('index(y) after matchdate'); print(index(y))}
     X <- matchdate(X,y,verbose=verbose) # REB 2015-01-14
-    if (verbose) {print("index(y) & index(X) after synch:");print(index(y)); print(index(X))}
+    if (verbose) {print("index(y) & index(X) after synch:");
+                  print(index(y)); print(index(X))}
     
     if (!is.null(mon)) y <- subset(y,it=mon)
     
     ## synchronise the series: use the 'zoo' merge function through combine:
-                                        #print(index(y)[1:24]); print(index(X)[1:24]);
+    ##print(index(y)[1:24]); print(index(X)[1:24]);
 
     ##
     
@@ -94,7 +97,7 @@ DS.default <- function(y,X,mon=NULL,
     #month <- as.numeric( format(index(y), '%m') )
     year <- year(y)
     month <- month(y)
-                                        #print(length(y)); print(table(year)); print(table(month))
+    ##print(length(y)); print(table(year)); print(table(month))
     
     ## De-trend the data used for model calibration:
     if (rmtrend) {

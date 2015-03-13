@@ -122,6 +122,7 @@ plot(ds)
 Z <- pca2station(pca)
 plot(Z,plot.type='multiple')
 
+
 }
 \keyword{spatial}
 \keyword{ts}
