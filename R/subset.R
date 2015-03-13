@@ -328,6 +328,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                                         #print("station"); str(attr(x,'station')); print(class(attr(x,'station')))
                                         #plot(subset(attr(x,'station'),it=it))
                                         #browser()
+        browser()
         if ( (it!=0) & (!inherits(attr(x,'station'),'annual')) & (it <= max(year(attr(x,'station')))) ) {
           if (verbose) print('Also extract the same data for the station')
           attr(y,'station') <- subset(attr(x,'station'),it=it,verbose=verbose) }
