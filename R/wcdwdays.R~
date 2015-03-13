@@ -1,0 +1,18 @@
+# number of wet, cold, dry, or wet days
+mildwinterdays <- function(x,dse=NULL,threshold=0,verbose=FALSE,plot=TRUE) {
+  # Estimate
+  if (verbose) print('mildwinterdays')
+  stopifnot(inherits(x,'station'))
+  djf <- subset(x,it='djf') 
+  mam <- subset(x,it='mam')
+  nwd1 <- annual(-djf,FUN='count',threshold=threshold,nmin=90)
+  mwd1 <- annual(djf,FUN='mean',nmin=90)
+  nwd2 <- annual(-mam,FUN='count',threshold=threshold,nmin=90)
+  mwd2 <- annual(mam,FUN='mean',nmin=90)
+
+  cal <- data.frame(x=c(coredata(mwd1),coredata(mwd2)),
+                    y=c(coredata(nwd1),coredata(nwd2)))
+
+  if plot() {
+  }
+}
