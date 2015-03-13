@@ -184,7 +184,7 @@ subset.pattern <- function(x,is,verbose=FALSE) {
           lons[ix] -> attr(x,'longitude')
           lats[iy] -> attr(x,'latitude')
         } else {
-          if (verbose) print('subset the matrix')
+          if (verbose) print(paste('subset the matrix:',sum(ix),sum(iy)))
           if (verbose) print(dim(x))
           y <- x[ix,iy]
           y <- attrcp(x,y)

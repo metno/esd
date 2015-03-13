@@ -124,5 +124,10 @@ HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_seri
 data(Oslo)
 year <- as.numeric( format(index(Oslo), '\%Y') ) 
 plot(aggregate(Oslo, by=year, mean, na.rm = FALSE))
+
+data(etopo5)
+z <- subset(etopo5,is=list(lon=c(-10,30),lat=c(40,60)))
+map(z)
+
 }
 \keyword{datasets}
