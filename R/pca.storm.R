@@ -8,8 +8,8 @@ PCA.storm <- function(X,neofs=20,param=c('lon','lat','slp'),
   stopifnot(!missing(X), inherits(X,"storm"))
 
   X <- sort.storm(X)
-  if (anomaly) X <- anomaly.storm(X,param)
-  else {
+  if (anomaly) { X <- anomaly.storm(X,param)#anomaly.storm(X,param)
+  } else {
     i.lon <- colnames(X)=='lon'
     i.dateline <- apply(X,1,function(x) (max(x[i.lon])-min(x[i.lon]))>180)
     lon.dateline <- X[i.dateline,i.lon]
@@ -20,7 +20,7 @@ PCA.storm <- function(X,neofs=20,param=c('lon','lat','slp'),
   D <- dim(xy)
 
   xyt <- t(coredata(xy))
-  neofs <- min(neofs,D[1])
+  neofs <- min(neofs,D[2])
   ok.time <- is.finite(colMeans(xyt))
   z <- xyt[,ok.time]
   ok.site <- is.finite(rowMeans(z))
@@ -75,7 +75,7 @@ pca2storm <- function(X) {
     for (i in 1:length(attr(pca,'mean'))) {
       param.i <- names(attr(pca,'mean'))[i]
       mean.i <- unlist(attr(pca,'mean')[i])
-      if (param.i=='slp') {
+      if (length(mean.i)==1) {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] + mean.i
       } else {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] +
@@ -94,7 +94,6 @@ pca2storm <- function(X) {
   attr(x,'history') <- history.stamp(pca)
   class(x) <- cls[-1]
   invisible(x)
-
 }
 
 plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2) {
