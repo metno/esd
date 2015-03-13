@@ -46,7 +46,6 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
     \code{\link{map2sphere}}}
   \item{leg}{logical. If TRUE, legend is shown.}
   \item{alpha}{factor modifying the opacity alpha; typically in [0,1]}
- \value{A field object}
 }
 \seealso{
   \code{\link{map}},\code{\link{scatter.hexbin}},\code{\link{scatter.sunflower}}
