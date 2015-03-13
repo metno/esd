@@ -12,6 +12,7 @@
 \alias{subset.field}
 \alias{subset.spell}
 \alias{subset.zoo}
+\alias{subset.storm}
 \alias{station.subset}
 \alias{matchdate}
 \title{Subsetting esd objects}
@@ -34,6 +35,7 @@ subset.ds(x,it=NULL,is=NULL)
 subset.trend(x,it=NULL,is=NULL)
 subset.dsensemble(x,it=NULL,is=NULL)
 subset.zoo(x,it=NULL)
+subset.storm(x,it=NULL,is=NULL)
 matchdate(x,it)
 }
 \arguments{
@@ -110,6 +112,19 @@ eof3 <- biasfix(eof2)
 plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2))
 # OK - identical results
+
+# Extract storm tracks for specific periods and regions
+data(imilast.M03)
+# spring season (march, april, may)
+x1 <- subset.storm(imilast.M03,it='mam') 
+# years 1990-1995
+x2 <- subset.storm(imilast.M03,it=c(1990,1995))
+# region 10W-10E/55-65N
+x3 <- subset.storm(imilast.M03,is=list(lat=c(55,65),lon=c(-10,10)))
+# storms with a minimum sea level pressure less than 980hPa
+x4 <- subset.storm(imilast.M03,it=(slp.storm(imilast.M03)<980))
+# storms longer than 2 days (8x6hours)
+x5 <- subset.storm(imilast.M03,it=(imilast.M03[,33]>8))
 
 }
 \keyword{utilities}
