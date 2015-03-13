@@ -27,7 +27,8 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       is.dates <- function(x) all(!is.months(x) &
                               (levels(factor(nchar(x)))==10) |
                               (is.numeric(x) & levels(factor(nchar(x)))==8))
-      is.years <- function(x) all(!is.months(x) & levels(factor(nchar(x)))==4)
+      is.years <- function(x) all(!is.months(x) & 
+                              is.numeric(x) & levels(factor(nchar(x)))==4)
       
       if (is.months(it)) {
         if (verbose) print('Monthly selected')
