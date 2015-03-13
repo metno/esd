@@ -8,8 +8,8 @@ PCA.storm <- function(X,neofs=20,param=c('lon','lat','slp'),
   stopifnot(!missing(X), inherits(X,"storm"))
 
   X <- sort.storm(X)
-  if (anomaly) X <- anomaly.storm(X,param)
-  else {
+  if (anomaly) { X <- anomaly.storm(X,param)#anomaly.storm(X,param)
+  } else {
     i.lon <- colnames(X)=='lon'
     i.dateline <- apply(X,1,function(x) (max(x[i.lon])-min(x[i.lon]))>180)
     lon.dateline <- X[i.dateline,i.lon]
@@ -20,7 +20,7 @@ PCA.storm <- function(X,neofs=20,param=c('lon','lat','slp'),
   D <- dim(xy)
 
   xyt <- t(coredata(xy))
-  neofs <- min(neofs,D[1])
+  neofs <- min(neofs,D[2])
   ok.time <- is.finite(colMeans(xyt))
   z <- xyt[,ok.time]
   ok.site <- is.finite(rowMeans(z))
@@ -75,7 +75,7 @@ pca2storm <- function(X) {
     for (i in 1:length(attr(pca,'mean'))) {
       param.i <- names(attr(pca,'mean'))[i]
       mean.i <- unlist(attr(pca,'mean')[i])
-      if (param.i=='slp') {
+      if (length(mean.i)==1) {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] + mean.i
       } else {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] +
@@ -94,20 +94,22 @@ pca2storm <- function(X) {
   attr(x,'history') <- history.stamp(pca)
   class(x) <- cls[-1]
   invisible(x)
-
 }
 
 plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2) {
-  stopifnot(!missing(X), inherits(X,"pca"))
 
-  pca <- X
+  stopifnot(!missing(X), inherits(X,"storm"))
+  if (inherits(X,'pca')) {
+    pca <- X; X <- pca2storm(pca)
+  } else pca <- PCA.storm(X)
+  
   colvec <- c('red3','mediumblue','darkolivegreen3',
               'darkturquoise','darkorange')
   U <- attr(pca,'pattern')
   R2 <- round(100*attr(pca,'eigenvalues')^2/attr(pca,'tot.var'),2)
 
   if (!is.null(m)) m <- min(m,dim(U)[2])
-  else m <- sum(R2>=5)
+  else m <- min(3,sum(R2>=2))
     
   date <- strptime(attr(pca,'start'),'%Y%m%d%H')
   while (sum(duplicated(date))>0) {
@@ -121,17 +123,44 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2) {
   par( oma=c(1.5,1,1,1.0), mar=c(4,4,2,1) , bty='n' )
   layout(matrix(c(1,2,3,3), 2, 2, byrow = TRUE),
    widths=c(1.5,1), heights=c(2.5,2))
+
+  param <- unique(attr(pca,"colnames"))
   
   # Patterns - space
-  xlim <- c(min(U[1:10,1:m]),max(U[1:10,1:m]))
-  ylim <- c(min(U[11:20,1:m]),max(U[11:20,1:m]))
-  plot(0,0,type='n',xlab="",ylab="",xlim=xlim,ylim=ylim,
+  if (length(param)==1) {
+    uy <- U
+    ux <- matrix(rep(1:(dim(U)[1]),m),dim(U)[1],m)
+    xlab <- ""; ylab <- param
+  } else if (length(param)==2) {
+    ux <- U[attr(pca,"colnames")==param[1],]
+    uy <- U[attr(pca,"colnames")==param[2],]
+    xlab <- param[1]; ylab <- param[2]
+  } else if (length(param)==3) {
+    ux <- U[attr(pca,"colnames")==param[1],]
+    uy <- U[attr(pca,"colnames")==param[2],]
+    uz <- U[attr(pca,"colnames")==param[3],]
+    xlab <- param[1]; ylab <- param[2]; zlab <- param[3]
+  }
+ 
+  xlim <- c(min(ux),max(ux))
+  ylim <- c(min(uy),max(uy))
+  plot(0,0,type='n',xlab=xlab,ylab=ylab,xlim=xlim,ylim=ylim,
        main="PCA components")
   for (i in 1:m) {
-    lines(U[1:10,i],U[11:20,i],lty=1,col=colvec[i])
-    points(U[1:10,i],U[11:20,i],pch='o',col=colvec[i])
-    points(U[1,i],U[11,i],col=colvec[i],pch=19)
+    lines(ux[,i],uy[,i],lty=1,col=colvec[i])
+    points(ux[,i],uy[,i],pch='o',col=colvec[i])
+    points(ux[1,i],uy[1,i],col=colvec[i],pch=19)
   }
+
+  #xlim <- c(min(U[1:10,1:m]),max(U[1:10,1:m]))
+  #ylim <- c(min(U[11:20,1:m]),max(U[11:20,1:m]))
+  #plot(0,0,type='n',xlab="",ylab="",xlim=xlim,ylim=ylim,
+  #     main="PCA components")
+  #for (i in 1:m) {
+  #  lines(U[1:10,i],U[11:20,i],lty=1,col=colvec[i])
+  #  points(U[1:10,i],U[11:20,i],pch='o',col=colvec[i])
+  #  points(U[1,i],U[11,i],col=colvec[i],pch=19)
+  #}
 
   # Explained variance - R2
   plot(0,0,type='n',xlim=c(0.5,10),ylim=c(0,100),xlab='EOF #',
