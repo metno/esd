@@ -13,7 +13,6 @@
 \alias{subset.spell}
 \alias{subset.zoo}
 \alias{station.subset}
-\alias{subset.stormmatrix}
 \alias{matchdate}
 \title{Subsetting esd objects}
 \description{
@@ -42,7 +41,7 @@ matchdate(x,it)
 \item{x}{Data object from which the subset is taken}
 \item{it}{A list or data.frame providing time index, e.g. month}
 \item{is}{A list or data.frame providing space index, e.g. station record}
-\item{pattern}{selection of patterns in PCA or EOF (used for e.g. filtering
+\item{pattern}{selection of patterns in PCA or EOF (used for e.g. filtreing
   the data)}
 \item{verbose}{Dump diagnostics to the screen}
  }
