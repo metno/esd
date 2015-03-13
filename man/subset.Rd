@@ -12,6 +12,7 @@
 \alias{subset.field}
 \alias{subset.spell}
 \alias{subset.zoo}
+\alias{subset.storm}
 \alias{station.subset}
 \alias{matchdate}
 \title{Subsetting esd objects}
