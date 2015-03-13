@@ -140,61 +140,58 @@ calculate.trends <- function(x,minlen=10){
 # Binned scatterplot with sunflowers
 scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
                           xgrid=NULL,ygrid=NULL,xlim=NULL,ylim=NULL,
-                          xlab=NULL,ylab=NULL,leg=TRUE,rotate=TRUE,
+                          xlab=NULL,ylab=NULL,main=NULL,leg=TRUE,rotate=TRUE,
                           alpha=0.6,leg.loc=2,new=TRUE) {
 
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
   i <- !(is.na(x) | is.na(y))
   x <- x[i]; y <- y[i]
-
+  
   # Define grid
   if (is.null(dx) & length(xgrid)<=2) dx <- (max(x)-min(x))/20
   if (is.null(dy) & length(ygrid)<=2) dy <- (max(y)-min(y))/20
   
   if (is.null(xgrid)) {
-    xgrid <- seq(min(x),max(x),dx*3/4)
+    xgrid <- seq(min(x),max(x),dx*(1+sin(pi/6)))
   } else if (length(xgrid)==2) {
-    xgrid <- seq(min(xgrid),max(xgrid),dx*3/4)
+    xgrid <- seq(min(xgrid),max(xgrid),dx*(1+sin(pi/6)))
   } else if (length(xgrid)>2) {
-    dx <- min(xgrid[2:length(xgrid)]-xgrid[1:(length(xgrid)-1)])
+    dx <- mean(xgrid[2:length(xgrid)]-xgrid[1:(length(xgrid)-1)])/(1+sin(pi/6))
   }
 
   if (is.null(ygrid)) {
-    ygrid <- seq(min(y),max(y),dy*sin(2*pi/6))
+    ygrid <- seq(min(y),max(y),2*dy*cos(pi/6))
   } else if (length(ygrid)==2) {
-    ygrid <- seq(min(ygrid),max(ygrid),dy*sin(2*pi/6))
+    ygrid <- seq(min(ygrid),max(ygrid),2*dy*cos(pi/6))
   } else if (length(ygrid)>2) {
-    dy <- min(ygrid[2:length(ygrid)]-ygrid[1:(length(ygrid)-1)])
+    dy <- mean(ygrid[2:length(ygrid)]-ygrid[1:(length(ygrid)-1)])/(2*cos(pi/6))
   }
   
   Y <- replicate(length(xgrid),ygrid)
   X <- t(replicate(length(ygrid),xgrid))
-  
   fn <- function(x) {
     dx <- x[2:length(x)]-x[1:(length(x)-1)]
-    x[1:(length(x)-1)] <- x[1:(length(x)-1)]+dx/2*sin(2*pi/6)
-    x[length(x)] <- x[length(x)]+dx[length(dx)]/2*sin(2*pi/6)
+    x[1:(length(x)-1)] <- x[1:(length(x)-1)]+dx/2
+    x[length(x)] <- x[length(x)]+dx[length(dx)]/2
     return(x)
   }
   Y[,seq(2,dim(Y)[2],2)] <- apply(Y[,seq(2,dim(Y)[2],2)],2,fn)
-
   
   # Count observations in each grid point
   XYN <- bin(x,y,X,Y)
   X <- XYN[,1]; Y <- XYN[,2]; N <- XYN[,3]
   
   # Define stuff for plot
-  dx <- 0.8*dx
-  dy <- 0.8*dy
+  dx <- 0.9*dx; dy <- dy*0.9
   if (is.null(xlim)) xlim <- c(min(x)-dx/2,max(x)+dx/2)
   if (is.null(ylim)) ylim <- c(min(y)-dy/2,max(y)+dy/2)
-  xr <- 0.35*dx
-  yr <- 0.35*dy
+  xr <- 0.8*dx
+  yr <- 0.8*dy
   n <- length(X)
 
   # Generate figure
   if(new) dev.new()
-  plot(X,Y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,type='n')
+  plot(X,Y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,main=main,type='n')
       
   # Grid points with 1 observation
   if (any(N==1)) symbols(X[N==1],Y[N==1],
@@ -205,7 +202,7 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
   if (any(N>1) & any(N<petalsize*2)) {
     i.multi <- (1L:n)[( N>1 & N<petalsize*2 )]
     # Plot hexagons
-    mapply(polygon.fill,X[i.multi],Y[i.multi],dx/2,dy/2,
+    mapply(polygon.fill,X[i.multi],Y[i.multi],dx,dy,
            col=adjustcolor('khaki1',alpha.f=alpha),
            border=adjustcolor('khaki3',alpha=alpha),n=6)
     # Draw sunflowers
@@ -225,7 +222,7 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
     N2 <- floor(N/petalsize)
     i.multi <- (1L:n)[( N2>1 )]
     # Plot hexagons
-    mapply(polygon.fill,X[i.multi],Y[i.multi],dx/2,dy/2,
+    mapply(polygon.fill,X[i.multi],Y[i.multi],dx,dy,
            col=adjustcolor('coral',alpha.f=alpha),
            border=adjustcolor('coral2',alpha.f=alpha),n=6)
     # Draw sunflowers
@@ -278,8 +275,11 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
 # Binned scatterplot with hexagons
 scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
                            dx=NULL,dy=NULL,xgrid=NULL,ygrid=NULL,
-                           xlim=NULL,ylim=NULL,xlab=NULL,ylab=NULL,
-                           leg=TRUE,col='blue',border='white') {
+                           xlim=NULL,ylim=NULL,
+                           xlab=NULL,ylab=NULL,main=NULL,
+                           leg=TRUE,col='blue',border='white',
+                           colmap='gray.colors',
+                           scale.col=TRUE,scale.size=FALSE) {
 
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
   i <- !(is.na(x) | is.na(y))
@@ -290,27 +290,27 @@ scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
   if (is.null(dy) & length(ygrid)<=2) dy <- (max(y)-min(y))/20
   
   if (is.null(xgrid)) {
-    xgrid <- seq(min(x),max(x),dx*3/4)
+    xgrid <- seq(min(x),max(x),dx*(1+sin(pi/6)))
   } else if (length(xgrid)==2) {
-    xgrid <- seq(min(xgrid),max(xgrid),dx*3/4)
+    xgrid <- seq(min(xgrid),max(xgrid),dx*(1+sin(pi/6)))
   } else if (length(xgrid)>2) {
-    dx <- xgrid[2:length(xgrid)]-xgrid[1:(length(xgrid)-1)]           
+    dx <- mean(xgrid[2:length(xgrid)]-xgrid[1:(length(xgrid)-1)])/(1+sin(pi/6))
   }
 
   if (is.null(ygrid)) {
-    ygrid <- seq(min(y),max(y),dy*sin(2*pi/6))
+    ygrid <- seq(min(y),max(y),2*dy*cos(pi/6))
   } else if (length(ygrid)==2) {
-    ygrid <- seq(min(ygrid),max(ygrid),dy*sin(2*pi/6))
+    ygrid <- seq(min(ygrid),max(ygrid),2*dy*cos(pi/6))
   } else if (length(ygrid)>2) {
-    dy <- ygrid[2:length(ygrid)]-ygrid[1:(length(ygrid)-1)]
+    dy <- mean(ygrid[2:length(ygrid)]-ygrid[1:(length(ygrid)-1)])/(2*cos(pi/6))
   }
   
   Y <- replicate(length(xgrid),ygrid)
   X <- t(replicate(length(ygrid),xgrid))
   fn <- function(x) {
     dx <- x[2:length(x)]-x[1:(length(x)-1)]
-    x[1:(length(x)-1)] <- x[1:(length(x)-1)]+dx/2*sin(2*pi/6)
-    x[length(x)] <- x[length(x)]+dx[length(dx)]/2*sin(2*pi/6)
+    x[1:(length(x)-1)] <- x[1:(length(x)-1)]+dx/2
+    x[length(x)] <- x[length(x)]+dx[length(dx)]/2
     return(x)
   }
   Y[,seq(2,dim(Y)[2],2)] <- apply(Y[,seq(2,dim(Y)[2],2)],2,fn)
@@ -320,45 +320,68 @@ scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
   X <- XYN[,1]; Y <- XYN[,2]; N <- XYN[,3]
   if(is.null(Nmax)) Nmax <- max(N)
   Nf <- sapply(N/Nmax,function(x) 0.2+0.8*min(1,x))
+  X <- X[N>0]; Y <- Y[N>0]
+  Nf <- Nf[N>0]; N <- N[N>0]
   
   # Plot
+  if (scale.col) {
+    colorscale <- colscal(n=10,colmap)[seq(10,1,-1)]
+    col <- colorscale[round(Nf*10)]
+    border <- colorscale[round(Nf*10)]
+  }
+  if (scale.size) {
+    dX <- dx*Nf
+    dY <- dy*Nf
+  } else {
+    dX <- dx
+    dY <- dy
+  }
   if (is.null(xlim)) xlim <- c(min(X)-dx,max(X)+dx)
   if (is.null(ylim)) ylim <- c(min(Y)-dy,max(Y)+dy)
-  if(leg) par(xpd=NA,mar=c(5.1,4.1,4.1,5.4))
-  if(new) plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,type='n')
-  mapply(polygon.fill,X[N>0],Y[N>0],dx/2*Nf[N>0],dy/2*Nf[N>0],
-         n=6,col=col,border=border)
+  par(bty='n',xpd=NA,mar=c(5.1,4.1,4.1,5.4))
+  if(new) plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,main=main,type='n')
+  mapply(polygon.fill,X,Y,dX,dY,n=6,col=col,border=border)
 
   # Legend
   if (leg) {
+    dn <- round(Nmax/7)
+    if (dn>5 & dn<50) { dn <- round(dn/5)*5 
+    } else if (dn>50) { dn <- signif(dn,digits=(nchar(dn)-1))}
+    nticks <- seq(Nmax,1,-dn)
+    if (length(dX)>1) {
+      szticks <- sapply(nticks/Nmax,function(x) 0.2+0.8*min(1,x))
+    } else {
+      szticks <- rep(1,length(nticks))
+    }
+    if (length(col)>1) {
+      cticks <- colorscale[round(nticks/Nmax*10)]
+      bticks <- colorscale[round(nticks/Nmax*10)]
+    } else {
+      cticks <- rep(col,length(nticks))
+      bticks <- rep(border,length(nticks))  
+    }              
     x0 <- max(xlim)
     y0 <- max(ylim)
-    dy0 <- (max(ylim)-min(ylim))/20
-    dx0 <- (max(xlim)-min(xlim))/12
-    text(x0+1.3*dx0,y0+dy0/4,"count")
-    polygon.fill(x0+dx0,y0-dy0,mean(dx)/2,mean(dy)/2,
-                 n=6,col=col,border=border)
+    dy0 <- max(szticks)*dy*2.1
+    dx0 <- (max(xlim)-min(xlim))/10+max(szticks)*dy/2
+    text(x0+dx0,y0+dy0/2+(max(ylim)-min(ylim))/30,"count")
+    polygon.fill(x0+dx0,y0,dx*szticks[1],dy*szticks[1],
+                 n=6,col=cticks[1],border=bticks[1])
     if (max(N)>Nmax) {
-      text(x0+1.2*dx0,y0-dy0,paste("\u2265",as.character(Nmax)),pos=4)
+      text(x0+dx0+max(szticks)*dx,y0,
+           paste("\u2265",as.character(nticks[1])),pos=4)
     } else {
-      text(x0+1.2*dx0,y0-dy0,as.character(Nmax),pos=4)
+      text(x0+dx0+max(szticks)*dx,y0,as.character(nticks[1]),pos=4)
     }
 
-    ivec <- sort(unique(N[(N>0 & N<Nmax)]))
-    if (length(ivec)>10) {
-      di <- max(1,round((max(ivec)-min(ivec))/8))
-      if (di>20) di <- round(di/10)*10
-      if (di>80) di <- round(di/100)*100
-      ivec <- unique(c(1,seq(di,max(ivec),di)))
-    }
-    
-    j <- 0
+    ivec <- 2:10
+    j <- 1
     for (i in ivec) {
-      polygon.fill(x0+dx0,y0-(length(ivec)+1-j)*dy0,
-                   mean(dx)/2*(0.2+0.8*min(1,i/Nmax)),
-                   mean(dy)/2*(0.2+0.8*min(1,i/Nmax)),
-                   n=6,col=col,border=border)
-      text(x0+1.2*dx0,y0-(length(ivec)+1-j)*dy0,as.character(i),pos=4)
+      polygon.fill(x0+dx0,y0-j*dy0,
+                   dx*szticks[i],dy*szticks[i],
+                   n=6,col=cticks[i],border=bticks[i])
+      text(x0+dx0+max(szticks)*dx,y0-j*dy0,
+           as.character(nticks[i]),pos=4)
       j <- j+1
     }
   }
@@ -565,9 +588,9 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
                           'topo.colors','cm.colors'),col))==0))
         col <- 'bwr'
 
-  if (exists("r")) remove(r)
-  if (exists("g")) remove(g) 
-  if (exists("b")) remove(b)
+  #if (exists("r")) remove(r)
+  #if (exists("g")) remove(g) 
+  #if (exists("b")) remove(b)
 
   if (col[1]=="bwr") {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
@@ -614,7 +637,7 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
     col <- cm.colors(n)
   }
 
-  if (test & !exists("r")) {
+  if (test) { #& !exists("r")) {
     RGB <- col2rgb(col)/255
     r <- RGB[1,]; g <- RGB[2,]; b <- RGB[3,]
   }

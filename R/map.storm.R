@@ -2,14 +2,10 @@
 ## Last update   16.02.2015
 ## Require 	 geoborders.rda
 
-# map.storm: Storm tracks that pass the date line
-# are excluded because they look terrible. Should they be
-# split and plotted as two separate parts on each side of dateline?
-
-map.storm <- function(x,it=NULL,is=NULL,FUN=NULL,
+map.storm <- function(x,it=NULL,is=NULL,
       projection="sphere",lonR=10,latR=90,
       col='red',colmap='rainbow',alpha=0.3,pfit=FALSE,
-      xlim=NULL,ylim=NULL,new=TRUE) {
+      main=NULL,xlim=NULL,ylim=NULL,new=TRUE) {
 
   y <- subset.storm(x,it=it,is=is)
   if (pfit) {
@@ -17,30 +13,21 @@ map.storm <- function(x,it=NULL,is=NULL,FUN=NULL,
     y[,colnames(y)=='lat'] <- lats
   }
 
-  if (!is.null(FUN)) {
-    z <- round(FUN(y))
-    uz <- sort(unique(z))
-    dz <- min(uz[2:length(uz)]-uz[1:(length(uz)-1)])
-    zlist <- seq(min(z),max(z),dz)
-    clist <- colscal(n=length(zlist),col=colmap)
-    col <- sapply(z,function(x) clist[zlist==x])
-  }
-  
   if (projection=="sphere" | projection=="np" | projection=="sp") {
     if (projection=="np") latR <- 90
     if (projection=="sp") latR <- -90
     sphere.storm(y,new=new,
-    lonR=lonR,latR=latR,col=col,alpha=alpha)
+    lonR=lonR,latR=latR,col=col,alpha=alpha,main=main)
   } else if (projection=="latlon" | projection=="lonlat") {
     lonlat.storm(y,new=new,
-    xlim=xlim,ylim=ylim,col=col,alpha=alpha)
+    xlim=xlim,ylim=ylim,col=col,alpha=alpha,main=main)
   }
 }
 
 
 lonlat.storm <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
-    size=1/16,lty=1,lwd=1,new=TRUE) {
+    lty=1,lwd=1,main=NULL,new=TRUE) {
   
   x0 <- x
   lons <- x[,colnames(x)=='lon']
@@ -52,10 +39,11 @@ lonlat.storm <- function(x,
   ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   mlon <- geoborders$x[ok]
   mlat <- geoborders$y[ok]
+
   
-  if (new) dev.new()
+  if (new) dev.new(width=8,height=7)
   par(bty="n")
-  plot(mlon,mlat,pch=".",col="white",
+  plot(mlon,mlat,pch=".",col="white",main=main,
     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
 
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
@@ -63,18 +51,20 @@ lonlat.storm <- function(x,
            col=adjustcolor(col,alpha.f=alpha))
 
   # storms crossing the dateline plotted in two parts
-  fn <- function(lon,lat) {
-    lon[lon<0] <- lon[lon<0]+360
-    xy <- approx(lon,lat,sort(c(lon,180)))
-    lon <- xy$x; lat <- xy$y
-    lines(lon[lon<=180],lat[lon<=180],
+  if (sum(!OK)>0) {
+    fn <- function(lon,lat) {
+      lon[lon<0] <- lon[lon<0]+360
+      xy <- approx(lon,lat,sort(c(lon,180)))
+      lon <- xy$x; lat <- xy$y
+      lines(lon[lon<=180],lat[lon<=180],
           lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
-    lines(lon[lon>=180]-360,lat[lon>=180],
+      lines(lon[lon>=180]-360,lat[lon>=180],
           lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
+    }
+    for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
   }
-  for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
 
-  points(mlon,mlat,pch=".",col='grey30')
+  points(mlon,mlat,pch=".",col='grey20',cex=1.4)
 }
 
 
@@ -92,7 +82,7 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 
 sphere.storm <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
-    lty=1,lwd=1,lonR=0,latR=90,new=TRUE) {
+    lty=1,lwd=1,lonR=0,latR=90,main=NULL,new=TRUE) {
   
   x0 <- x
   ilons <- colnames(x)=='lon'
@@ -118,7 +108,7 @@ sphere.storm <- function(x,
     
   if (new) dev.new()
   par(bty="n",xaxt="n",yaxt="n")
-  plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="")
+  plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
 
   matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
   
@@ -126,41 +116,40 @@ sphere.storm <- function(x,
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 }
 
-map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
-      xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
-      xlim=NULL,ylim=NULL,col='red',border='firebrick4',
-      new=TRUE) {
 
+map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
+          xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
+          xlim=NULL,ylim=NULL,col='red',border='firebrick4',
+          colmap='heat.colors',scale.col=TRUE,scale.size=TRUE,
+          main=NULL,new=TRUE) {
   ilon <- colnames(x)=='lon'
   ilat <- colnames(x)=='lat'
-  ilen <- colnames(x)=='n' 
+  ilen <- colnames(x)=='n'
   lon <- unlist(apply(x,1,function(x) approx(x[ilon],n=x[ilen])$y))
   lat <- unlist(apply(x,1,function(x) approx(x[ilat],n=x[ilen])$y))
   if (is.null(xlim)) xlim <- range(lon)
   if (is.null(ylim)) ylim <- range(lat)
-
   data("geoborders",envir=environment())
   ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   mlon <- geoborders$x[ok]
   mlat <- geoborders$y[ok]
-
-  if(new) dev.new()
+  if(new) dev.new(width=8,height=7)
   if(leg) par(bty="n",mar=c(5.0,4.0,3.0,5.3))
   else par(bty="n",mar=c(4.4,4.0,1.0,1.0))
-  if(!add) plot(lon, lat, xlab="lon", ylab="lat",
-         xlim=xlim,ylim=ylim,type="n",frame.plot=F)
-  
+  if(!add) plot(lon, lat, xlab="lon", ylab="lat", main=main,
+                xlim=xlim,ylim=ylim,type="n",frame.plot=F)
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
   scatter.hexbin(lon[OK],lat[OK],dx=dx,dy=dy,xgrid=xgrid,ygrid=ygrid,
-                 new=FALSE,leg=leg,col=col,border=border,Nmax=Nmax)
-
+                 new=FALSE,leg=leg,col=col,border=border,Nmax=Nmax,
+                 scale.col=scale.col,scale.size=scale.size,colmap=colmap)
   OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
-  points(mlon[OK],mlat[OK],pch=".",col='grey60')
+  points(mlon[OK],mlat[OK],pch=".",col='grey20',cex=1.4)
 }
 
 map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
       xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
-      xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6,new=TRUE) {
+      xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6,
+      main=NULL,new=TRUE) {
 
   ilon <- colnames(x)=='lon'
   ilat <- colnames(x)=='lat'
@@ -175,13 +164,14 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
   mlon <- geoborders$x[ok]
   mlat <- geoborders$y[ok]
 
-  if(new) dev.new()
+  if(new) dev.new(width=8,height=7)
   par(bty="n",mar=c(4.4,4.0,1.0,1.0))
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
   scatter.sunflower(lon[OK],lat[OK],petalsize=petalsize,
            dx=dx,dy=dy,xlab='lon',yla='lat',
            xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
-           xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha,new=FALSE)
+           xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha,
+           main=main,new=FALSE)
 
   OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
   if (leg) {
@@ -200,13 +190,13 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
     }
     OK <- OK & !(findInterval(mlon,xbox)==1 & findInterval(mlat,ybox)==1)
   }
-  points(mlon[OK],mlat[OK],pch=".",col='grey20')
+  points(mlon[OK],mlat[OK],pch=".",col='grey20',cex=1.4)
 }
 
 
 
 map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
-      xlim=NULL,ylim=NULL,m=2) {
+      xlim=NULL,ylim=NULL,main=NULL,m=2) {
 
   stopifnot(!missing(X), inherits(X,"storm"))
   if (inherits(X,'pca')) {
@@ -225,7 +215,7 @@ map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
               'darkorange','darkturquoise')
 
   map.storm(X,projection=projection,lonR=lonR,latR=latR,
-    col='grey20',alpha=0.1,xlim=xlim,ylim=ylim,new=TRUE)
+    col='grey20',alpha=0.1,xlim=xlim,ylim=ylim,main=main,new=TRUE)
   
   for (i in 1:m) { 
     X.PC.max <- max(V[,i]) * (U[,i]*W[i])
@@ -261,4 +251,7 @@ map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
     points(lon.min[1],lat.min[1],col=colvec[i],type='p',pch=19)
   }
 }
+
+
+
 
