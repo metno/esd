@@ -27,9 +27,14 @@ pca2storm(X)
 # Simple EOF for annual mean SST:
 data(imilast.M03)
 x <- subset(imilast.M03,is=list(lon=c(-20,20),lat=c(50,70)))
-pca <- PCA.storm(x)
+# PCA of longitude and latitude
+pca <- PCA.storm(x,param=c('lon','lat'))
 plot.pca.storm(pca)
 map.pca.storm(pca,projection='latlon')
+
+# latitude only
+pca <- PCA.storm(x,param=c('lat'))
+plot.pca.storm(pca)
 }
 
 \keyword{spatial}
