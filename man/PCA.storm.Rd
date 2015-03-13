@@ -22,7 +22,6 @@ pca2storm(X)
   \item{param}{parameters to include in principle component analysis.}
 }
 
-}
 \author{K. Parding}
 \examples{
 # Simple EOF for annual mean SST:
@@ -31,8 +30,8 @@ x <- subset(imilast.M03,is=list(lon=c(-20,20),lat=c(50,70)))
 pca <- PCA.storm(x)
 plot.pca.storm(pca)
 map.pca.storm(pca,projection='latlon')
-
 }
+
 \keyword{spatial}
 \keyword{ts}
 \keyword{multivariate}
