@@ -124,7 +124,7 @@ x3 <- subset.storm(imilast.M03,is=list(lat=c(55,65),lon=c(-10,10))
 # storms with a minimum sea level pressure less than 980hPa
 x4 <- subset.storm(imilast.M03,it=(slp.storm(imilast.M03)<980))
 # storms longer than 2 days (8x6hours)
-x5 <- subset.storm(imilast.M03,it=(imilast.M03[,33]>8)))
+x5 <- subset.storm(imilast.M03,it=(imilast.M03[,33]>8))
 
 }
 \keyword{utilities}
