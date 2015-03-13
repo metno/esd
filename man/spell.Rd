@@ -14,7 +14,7 @@
 \alias{HDD}
 \alias{CDD}
 \alias{GDD}
-\alias{mildwinterdays}
+\alias{coldwinterdays}
 \title{Spell statistics}
 \description{Statistics of spell durations (consecutive wet and dry
   days), e.g. dry and wet periods or duration of extremes.
@@ -39,7 +39,7 @@ wetmean(x,threshold=1)
 HDD(x,x0=18,na.rm=TRUE)
 CDD(x,x0=22,na.rm=TRUE)
 GDD(x,x0=10,na.rm=TRUE)
-mildwinterdays(x,dse=NULL,threshold=0,verbose=FALSE,plot=TRUE)
+coldwinterdays(x,dse=NULL,threshold=0,verbose=FALSE,plot=TRUE)
 }
 
 \arguments{
@@ -71,6 +71,6 @@ plot(as.seasons(ferder,FUN='GDD'))
 # Mild winter days - number of days in the winter season with
 # above freezing temperatures
 data(ferder)
-mildwinterdays(ferder)
+coldwinterdays(ferder)
 }
 \keyword{utilities}

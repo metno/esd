@@ -1,5 +1,5 @@
 # number of wet, cold, dry, or wet days
-mildwinterdays <- function(x,dse=NULL,threshold=0,verbose=FALSE,plot=TRUE) {
+coldwinterdays <- function(x,dse=NULL,threshold=0,verbose=FALSE,plot=TRUE) {
   # Estimate
   if (verbose) print('mildwinterdays')
   stopifnot(inherits(x,'station'))
