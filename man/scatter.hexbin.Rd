@@ -44,7 +44,7 @@ OK <- (!is.na(x) & !is.na(y))
 x <- x[OK]; y <- y[OK]
 scatter.hexbin(x,y,Nmax=500,
   dx=2,dy=1.5,xlim=c(-20,35),ylim=c(-25,25),
-  colmap="heat.colors"xlab="Tmax",ylab="Tmin")
+  colmap="heat.colors",xlab="Tmax",ylab="Tmin")
 }
 
 \keyword{scatter}
