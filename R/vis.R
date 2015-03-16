@@ -453,7 +453,7 @@ diagram.ds <- function(x,...) {
 
 # Show the temperatures against the day of the year. Use
 # different colours for different year.
-diagram.station <- function(x,it=NULL,...) {
+diagram.station <- function(x,it=NULL,new=TRUE,...) {
   yrs <- as.numeric(rownames(table(year(x))))
   d <- dim(x)
   #print(yrs)
@@ -467,7 +467,7 @@ diagram.station <- function(x,it=NULL,...) {
       unit <- attr(x,'unit')
   eval(parse(text=paste("main <- expression(paste('Seasonal evaution: ',",
                attr(x,'variable'),"))")))
-  dev.new()
+  if (new) dev.new()
   par(bty="n")
   z <- coredata(x)
   plot(c(0,365),1.25*range(z,na.rm=TRUE),
