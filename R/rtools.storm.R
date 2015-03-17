@@ -27,6 +27,21 @@ slp.storm <- function(x,FUN=min) {
   invisible(slp)
 }
 
+length.storm <- function(x) {
+  n <- x[,colnames(x)=='n']
+  invisible(n)
+}
+
+lat.storm <- function(x,FUN=mean) {
+  lat <- apply(x[,colnames(x)=='lat'],1,FUN)
+  invisible(lat)
+}
+
+lon.storm <- function(x,FUN=mean) {
+  lon <- apply(x[,colnames(x)=='lon'],1,FUN)
+  invisible(lon)
+}
+
 sort.storm <- function(x) {
   if (any('sorted' %in% attr(x,'aspect'))) {
     invisible(x)
@@ -78,14 +93,20 @@ count.storm <- function(x,by='year') {
   t <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
   if (by=='year') {
     fmt <- "%Y"
+    cls <- 'annual'
   } else if (by=='month') {
     fmt <- "%Y%m%d"
     t <- as.yearmon(t)
+    cls <- 'month'
+  } else if (by=='day') {
+    fmt <- "%Y%m%d"
+    cls <- 'day'
   }
   d <- strftime(t,format=fmt)
   n <- table(d)
   dn <- as.Date(strptime(dimnames(n)$d,format=fmt))
   nz <- zoo(n,order.by=dn)
+  class(nz) <- c(class(nz),cls) 
   invisible(nz)
 }
 
