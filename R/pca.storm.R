@@ -16,7 +16,7 @@ PCA.storm <- function(X,neofs=20,param=c('lon','lat','slp'),
     lon.dateline[lon.dateline<0] <- lon.dateline[lon.dateline<0]+360
     X[i.dateline,i.lon] <- lon.dateline
   }
-  i <- sapply(param,function(p) which(colnames(x) %in% p))
+  i <- sapply(param,function(p) which(colnames(X) %in% p))
   i <- array(i,length(i))
   #xy <- X[,is.element(colnames(X),param)]
   xy <- X[,i]
@@ -145,10 +145,12 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat')) {
     xlab <- param[1]; ylab <- param[2]; zlab <- param[3]
   }
  
-  xlim <- c(min(ux),max(ux))
-  ylim <- c(min(uy),max(uy))
+  xlim <- c(min(ux[,1:m]),max(ux[,1:m]))
+  ylim <- c(min(uy[,1:m]),max(uy[,1:m]))
   plot(0,0,type='n',xlab=xlab,ylab=ylab,xlim=xlim,ylim=ylim,
-       main="PCA components")
+       main="PCA components",xaxt='n',yaxt='n')
+  axis(side=1,labels=FALSE)
+  axis(side=2,labels=FALSE)
   for (i in 1:m) {
     lines(ux[,i],uy[,i],lty=1,col=colvec[i])
     points(ux[,i],uy[,i],pch='o',col=colvec[i])
@@ -166,7 +168,8 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat')) {
   # time 
   plot(V.yr[,1],type='n',ylim=c(min(V.yr[,1:m])-5e-3,max(V.yr[,1:m])+5e-3),
        xlab="Time",ylab="",main="")
-  lines(index(V.mn),rep(0,length(index(V.mn))),col='grey80',lwd=1.4)
+  #lines(index(V.mn),rep(0,length(index(V.mn))),col='grey80',lwd=1.4)
+  lines(as.Date(c("1900-01-01","2020-01-01")),c(0,0),col='grey90',lwd=1)
   for (i in 1:m) {
     lines(V.yr[,i],col=colvec[i],lty=1)
     points(V.mn[,i],col=colvec[i],pch=20)
