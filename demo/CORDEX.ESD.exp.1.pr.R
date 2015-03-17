@@ -7,7 +7,7 @@ npca <- 20
 
 
 # load the predictands: CLARIS precip
-load('~/Dropbox/Public/CORDEX-ESDM/CORDEX-ESDM-data-clumps/claris.Pr.rda')
+load('~/Dropbox/Public/CORDEX-ESD/CORDEX-ESD-data-clumps/claris.Pr.rda')
 attr(Pr,'location')[77:81] <- c("Aerodromo de Pedro Juan Caballero","Aerodromo de Concepcion",
                                 "Villarrica del Espedritu Santo","Aerodromo de Pilar",
                                 "Encarnacion")
