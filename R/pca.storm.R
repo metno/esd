@@ -1,5 +1,5 @@
 # Author 	Kajsa Parding
-# Last update   19.02.2015
+# Last update   17.03.2015
 
 # Principle Component Analysis (PCA) of storm tracks
 
@@ -37,7 +37,13 @@ PCA.storm <- function(X,neofs=20,param=c('lon','lat','slp'),
   y <- zoo(V,order.by=index(X)[ok.time])
   names(y) <- paste("X.",1:neofs,sep="")
 
-  invert <- apply(U,2,mean) < 0
+  U.anom <- U
+  for (p in param) {
+    for (i in 1:neofs) {
+      U.anom[colnames(xy)==p,i] <- U[colnames(xy)==p,i]-U[colnames(xy)==p,i][1]
+    }
+  }  
+  invert <- apply(U.anom,2,mean) < 0#apply(U,2,mean) < 0
   U[,invert] <- -U[,invert]
   y[,invert] <- -y[,invert]
 
@@ -99,7 +105,8 @@ pca2storm <- function(X) {
   invisible(x)
 }
 
-plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat')) {
+plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
+                           main=NULL) {
 
   stopifnot(!missing(X), inherits(X,"storm"))
   if (inherits(X,'pca')) {
@@ -122,44 +129,63 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat')) {
   V.mn <- aggregate(V,FUN="mean",by=as.yearmon(index(V)))
   V.yr <- aggregate(V,FUN="mean",by=strftime(index(V),"%Y"))
 
-  if (new) dev.new()
-  par( oma=c(1.5,1,1,1.0), mar=c(4,4,2,1) , bty='n' )
-  layout(matrix(c(1,2,3,3), 2, 2, byrow = TRUE),
-   widths=c(1.5,1), heights=c(2.5,2))
-
   param <- unique(attr(pca,"colnames"))
   
   # Patterns - space
   if (length(param)==1) {
     uy <- U
     ux <- matrix(rep(1:(dim(U)[1]),m),dim(U)[1],m)
-    xlab <- ""; ylab <- param
+    xlab <- ""
+    ylab <- paste("PCA component,",param)
   } else if (length(param)==2) {
     ux <- U[attr(pca,"colnames")==param[1],]
     uy <- U[attr(pca,"colnames")==param[2],]
-    xlab <- param[1]; ylab <- param[2]
+    xlab <- paste("PCA component,",param[1])
+    ylab <- paste("PCA component,",param[2])
   } else if (length(param)==3) {
     ux <- U[attr(pca,"colnames")==param[1],]
     uy <- U[attr(pca,"colnames")==param[2],]
     uz <- U[attr(pca,"colnames")==param[3],]
-    xlab <- param[1]; ylab <- param[2]; zlab <- param[3]
+    xlab <- paste("PCA component,",param[1])
+    ylab <- paste("PCA component,",param[2])
+    zlab <- paste("PCA component,",param[3])
   }
- 
+
   xlim <- c(min(ux[,1:m]),max(ux[,1:m]))
   ylim <- c(min(uy[,1:m]),max(uy[,1:m]))
-  plot(0,0,type='n',xlab=xlab,ylab=ylab,xlim=xlim,ylim=ylim,
-       main="PCA components",xaxt='n',yaxt='n')
-  axis(side=1,labels=FALSE)
-  axis(side=2,labels=FALSE)
+ 
+  if (new) dev.new()
+  par( oma=c(1.5,1,1,1.0), mar=c(4,4,2,1) , bty='n' )
+  if (length(param)<3) {
+    layout(matrix(c(1,2,3,3), 2, 2, byrow = TRUE),
+     widths=c(1.5,1), heights=c(2.5,2))
+  } else if (length(param)==3) {
+    layout(matrix(c(1,1,1,2,2,2,3,3,4,4,4,4), 2, 6, byrow = TRUE),
+     widths=c(1,1,1,1,1,1), heights=c(2,2.5))
+  }
+
+  plot(0,0,type='n',xlab=xlab,
+       ylab=ylab,xlim=xlim,ylim=ylim)#,main="PCA components")
   for (i in 1:m) {
     lines(ux[,i],uy[,i],lty=1,col=colvec[i])
     points(ux[,i],uy[,i],pch='o',col=colvec[i])
     points(ux[1,i],uy[1,i],col=colvec[i],pch=19)
   }
 
+  if (length(param)==3) {
+    zlim <- c(min(uz[,1:m]),max(uz[,1:m]))
+    plot(0,0,type='n',xlab=zlab,ylab=ylab,
+         xlim=zlim,ylim=ylim)#,main="PCA components")
+    for (i in 1:m) {
+      lines(uz[,i],uy[,i],lty=1,col=colvec[i])
+      points(uz[,i],uy[,i],pch='o',col=colvec[i])
+      points(uz[1,i],uy[1,i],col=colvec[i],pch=19)
+    }
+  }
+    
   # Explained variance - R2
   plot(0,0,type='n',xlim=c(0.5,10),ylim=c(0,100),xlab='EOF #',
-       ylab="(%)",main='Explained variance')
+     ylab="Explained variance (%)")#,main='Explained variance')
   points(R2,type='b',pch=20,col='black')
   for (i in 1:m) {
     points(i,R2[i],col=colvec[i],pch=19)
@@ -167,12 +193,15 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat')) {
 
   # time 
   plot(V.yr[,1],type='n',ylim=c(min(V.yr[,1:m])-5e-3,max(V.yr[,1:m])+5e-3),
-       xlab="Time",ylab="",main="")
+     xlab="Time",ylab="",main="")
   #lines(index(V.mn),rep(0,length(index(V.mn))),col='grey80',lwd=1.4)
   lines(as.Date(c("1900-01-01","2020-01-01")),c(0,0),col='grey90',lwd=1)
   for (i in 1:m) {
     lines(V.yr[,i],col=colvec[i],lty=1)
     points(V.mn[,i],col=colvec[i],pch=20)
   }
+
+  title(main=main,outer=T)
+  invisible(pca)
 }
 
