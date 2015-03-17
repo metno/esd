@@ -193,15 +193,24 @@ map.sunflower.storm <- function(x,dx=6,dy=2,petalsize=7,
   points(mlon[OK],mlat[OK],pch=".",col='grey20',cex=1.4)
 }
 
-
-
-map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
-      xlim=NULL,ylim=NULL,main=NULL,m=2) {
+mean.lon <- function(lon) {
+  if (!any(lon<0) | (mean(lon[lon>0])-mean(lon[lon<0]))<120) {
+    x <- mean(lon)
+  } else {
+    lon[lon<0] <- lon[lon<0]+360
+    x <- mean(lon)
+    if (x>180) x <- x-360
+  }
+  return(x)
+}
+  
+map.pca.storm <- function(X,projection="sphere",lonR=NULL,latR=NULL,
+      xlim=NULL,ylim=NULL,main=NULL,m=2,param=c('lon','lat')) {
 
   stopifnot(!missing(X), inherits(X,"storm"))
   if (inherits(X,'pca')) {
     pca <- X; X <- pca2storm(pca)
-  } else pca <- PCA.storm(X)
+  } else pca <- PCA.storm(X,param=param)
 
   U <- attr(pca,'pattern')
   V <- coredata(pca)
@@ -214,20 +223,25 @@ map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
   colvec <- c('red3','mediumblue', 'chartreuse3',
               'darkorange','darkturquoise')
 
+  if (is.null(latR)) latR <- 90
+  if (is.null(lonR)) lonR <- mean.lon(X[,colnames(X)=='lon'])
   map.storm(X,projection=projection,lonR=lonR,latR=latR,
     col='grey20',alpha=0.1,xlim=xlim,ylim=ylim,main=main,new=TRUE)
-  
+ 
   for (i in 1:m) { 
     X.PC.max <- max(V[,i]) * (U[,i]*W[i])
     X.PC.min <- min(V[,i]) * (U[,i]*W[i])
     if (any(aspect(pca)=='anomaly')) {
       for (j in 1:length(attr(pca,'mean'))) {
+        if ((names(attr(pca,'mean'))[j])=='lon') {
+          mj <- mean.lon(unlist(attr(pca,'mean')[j]))
+        } else {
+          mj <- mean(unlist(attr(pca,'mean')[j]))
+        }
         X.PC.max[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] <-
-          X.PC.max[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] +
-          mean(unlist(attr(pca,'mean')[j]))
-       X.PC.min[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] <-
-          X.PC.min[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] +
-          mean(unlist(attr(pca,'mean')[j]))
+          X.PC.max[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] + mj
+        X.PC.min[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] <-
+          X.PC.min[attr(pca,'colnames')==names(attr(pca,'mean'))[j]] + mj
       }
     }
 
@@ -250,6 +264,8 @@ map.pca.storm <- function(X,projection="sphere",lonR=10,latR=90,
     points(lon.min,lat.min,col=colvec[i],type='l',lwd=2,lty=2)
     points(lon.min[1],lat.min[1],col=colvec[i],type='p',pch=19)
   }
+
+  invisible(pca)
 }
 
 
