@@ -7,7 +7,7 @@ npca <- 4
 
 # load the predictands: CLARIS precip
 print('Get the CLARIS data')
-load('~/Dropbox/Public/CORDEX-ESDM/CORDEX-ESDM-data-clumps/claris.Tx.rda')
+load('~/Dropbox/Public/CORDEX-ESD/CORDEX-ESD-data-clumps/claris.Tx.rda')
 
 Tx0 <- Tx # Keep original copy
 
