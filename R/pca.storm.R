@@ -16,7 +16,10 @@ PCA.storm <- function(X,neofs=20,param=c('lon','lat','slp'),
     lon.dateline[lon.dateline<0] <- lon.dateline[lon.dateline<0]+360
     X[i.dateline,i.lon] <- lon.dateline
   }
-  xy <- X[,is.element(colnames(X),param)]
+  i <- sapply(param,function(p) which(colnames(x) %in% p))
+  i <- array(i,length(i))
+  #xy <- X[,is.element(colnames(X),param)]
+  xy <- X[,i]
   D <- dim(xy)
 
   xyt <- t(coredata(xy))
@@ -96,12 +99,12 @@ pca2storm <- function(X) {
   invisible(x)
 }
 
-plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2) {
+plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat')) {
 
   stopifnot(!missing(X), inherits(X,"storm"))
   if (inherits(X,'pca')) {
     pca <- X; X <- pca2storm(pca)
-  } else pca <- PCA.storm(X)
+  } else pca <- PCA.storm(X,param=param)
   
   colvec <- c('red3','mediumblue','darkolivegreen3',
               'darkturquoise','darkorange')
@@ -116,8 +119,8 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2) {
     date[duplicated(date)] <- date[duplicated(date)]+60
   }
   V <- zoo(coredata(pca),order.by=date)
-  V.avg <- aggregate(V,FUN="mean",by=as.yearmon(index(V)))
-                                     #strftime(index(V),"%Y"))
+  V.mn <- aggregate(V,FUN="mean",by=as.yearmon(index(V)))
+  V.yr <- aggregate(V,FUN="mean",by=strftime(index(V),"%Y"))
 
   if (new) dev.new()
   par( oma=c(1.5,1,1,1.0), mar=c(4,4,2,1) , bty='n' )
@@ -152,16 +155,6 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2) {
     points(ux[1,i],uy[1,i],col=colvec[i],pch=19)
   }
 
-  #xlim <- c(min(U[1:10,1:m]),max(U[1:10,1:m]))
-  #ylim <- c(min(U[11:20,1:m]),max(U[11:20,1:m]))
-  #plot(0,0,type='n',xlab="",ylab="",xlim=xlim,ylim=ylim,
-  #     main="PCA components")
-  #for (i in 1:m) {
-  #  lines(U[1:10,i],U[11:20,i],lty=1,col=colvec[i])
-  #  points(U[1:10,i],U[11:20,i],pch='o',col=colvec[i])
-  #  points(U[1,i],U[11,i],col=colvec[i],pch=19)
-  #}
-
   # Explained variance - R2
   plot(0,0,type='n',xlim=c(0.5,10),ylim=c(0,100),xlab='EOF #',
        ylab="(%)",main='Explained variance')
@@ -171,10 +164,12 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2) {
   }
 
   # time 
-  plot(V.avg[,1],type='n',ylim=c(min(V.avg[,1:m])-5e-3,max(V.avg[,1:m])+5e-3),
+  plot(V.yr[,1],type='n',ylim=c(min(V.yr[,1:m])-5e-3,max(V.yr[,1:m])+5e-3),
        xlab="Time",ylab="",main="")
+  lines(index(V.mn),rep(0,length(index(V.mn))),col='grey80',lwd=1.4)
   for (i in 1:m) {
-    lines(V.avg[,i],col=colvec[i])
+    lines(V.yr[,i],col=colvec[i],lty=1)
+    points(V.mn[,i],col=colvec[i],pch=20)
   }
 }
 
