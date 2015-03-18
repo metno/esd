@@ -4,12 +4,12 @@
 
 iid.test <- function(x,...) UseMethod("iid.test")
 
-iid.test.station <- function(x,...) {
+iid.test.station <- function(x,verbose=TRUE,...) {
   # Re-orders the station data into parallel time series for each calendar
   # month into new matrix X. Then apply the iid.test to this matrix.
 
-  ts2mon <- function(x) {
-    print('ts2mon')
+  ts2mon <- function(x,verbose=TRUE) {
+    if (verbose) print('ts2mon')
     yrs <- year(x); n <- length(rownames(table(yrs)))
     d <- dim(x)
   # Test for multiple series:
@@ -17,13 +17,16 @@ iid.test.station <- function(x,...) {
                     m <- d[2]    # multiple
     X <- matrix(rep(NA,m*n*12),n,m*12)
     dim(X) <- c(n,m,12)
-    print(dim(X))
+    if (verbose) print(dim(X))
   
     for (i in 1:12) {
-      y <- subset(x,it=month.abb[i])
+      y <- subset(x,it=month.abb[i],verbose=verbose)
     #print(dim(y))
+      if (verbose) print(paste(month.abb[i],(1 + n-length(y)),length((1 + n-length(y)):n)))
+      if (verbose) print(dim(y))
       X[(1 + n-length(y)):n,1:m,i] <- coredata(y)
     }
+    if (verbose) print('set dimensions')
     dim(X) <- c(n,m*12)
     attr(X,'description') <- 'data matrix re-orderd on month and location'
     attr(X,'original_dimensions') <- c(n,m,12)
@@ -33,19 +36,20 @@ iid.test.station <- function(x,...) {
 
   
   print('iid.test.station')
-  X <- ts2mon(x)
+  X <- ts2mon(x,verbose=verbose)
+  print('weed out bad data')
   good <- is.finite(rowMeans(X))
-  iid <- iid.test.default(X[good,])
+  iid <- iid.test.default(X[good,],verbose=verbose)
   invisible(iid)
 }
 
-iid.test.field <- function(x,...) {
+iid.test.field <- function(x,verbose=TRUE,...) {
   # Uses EOFs to account for spatial co-variance, and test the PCs rather
   # than the grid points.
   # Re-orders the PCs into parallel time series for each calendar
   # month into new matrix X. Then apply the iid.test to this matrix. 
 
-  print('iid.test.field')
+  if (verbose) print('iid.test.field')
   yrs <- year(x); n <- length(rownames(table(yrs)))
   X <- matrix(rep(NA,20*12*n),n,12*20)
   for (i in 1:12) {
@@ -65,14 +69,14 @@ iid.test.field <- function(x,...) {
     X[(1 + n-m):n,1:20 + (i-1)*20] <- coredata(eof)
   }
   good <- is.finite(rowMeans(X))
-  iid <- iid.test.default(X[good,])
+  iid <- iid.test.default(X[good,],verbose=verbose)
   invisible(iid)
 }
 
 
 
 iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
-                             N.test=200,rev.plot.rev=TRUE) {
+                             N.test=200,rev.plot.rev=TRUE,verbose=TRUE) {
   Y <- as.matrix(x)
   Y[!is.finite(Y)] <- NA
   t.r <- dim(Y)
