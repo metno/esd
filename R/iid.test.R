@@ -38,7 +38,7 @@ iid.test.station <- function(x,verbose=TRUE,...) {
 
   
   print('iid.test.station')
-  X <- ts2mon(x,verbose=verbose) else
+  X <- ts2mon(x,verbose=verbose)
   print('weed out bad data')
   good <- is.finite(rowMeans(X))
   iid <- iid.test.default(X[good,],verbose=verbose)
