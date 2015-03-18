@@ -22,10 +22,11 @@ iid.test.station <- function(x,verbose=TRUE,...) {
     for (i in 1:12) {
       y <- subset(x,it=month.abb[i],verbose=verbose)
       y <- aggregate(y,year,FUN='max',na.rm=TRUE) # one estimate for each month/year
-    #print(dim(y))
-      if (verbose) print(paste(month.abb[i],(1 + n-length(y)),length((1 + n-length(y)):n)))
-      if (verbose) print(length(y))
-      X[(1 + n-length(y)):n,1:m,i] <- coredata(y)
+      if (verbose) print(dim(y))
+      if (verbose) print(paste(month.abb[i],(1 + n-length(index(y))),
+                               length((1 + n-length(index(y))):n)))
+      if (verbose) print(length(index(y)))
+      X[(1 + n-length(index(y))):n,1:m,i] <- coredata(y)
     }
     if (verbose) print('set dimensions')
     dim(X) <- c(n,m*12)
@@ -37,7 +38,7 @@ iid.test.station <- function(x,verbose=TRUE,...) {
 
   
   print('iid.test.station')
-  X <- ts2mon(x,verbose=verbose)
+  X <- ts2mon(x,verbose=verbose) else
   print('weed out bad data')
   good <- is.finite(rowMeans(X))
   iid <- iid.test.default(X[good,],verbose=verbose)
