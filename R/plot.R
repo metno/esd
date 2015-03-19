@@ -522,9 +522,9 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
   invisible(z)
 }
 
+plot.pca <- function(y,...) plot.eof.field(y,...)
 
-
-plot.pca <- function(y,cex=1.5,new=TRUE) {
+vis.pca <- function(y,cex=1.5,new=TRUE) {
 
   col <- colscal(col=varid(y)); nc <- length(col)
   if (is.precip(y)) col <- rev(col)
@@ -553,7 +553,7 @@ plot.pca <- function(y,cex=1.5,new=TRUE) {
   }
   a.T[a.T < 1] <- 1; a.T[a.T > 100] <- 100
 
-  if (new) dev.new(width=7,height=9)
+  if (new) dev.new(width=5,height=7)
   par(mfrow=c(3,2),mar=c(3.5,3,3.5,3),bty="n",xaxt="n",yaxt="n")
   
   plot(lon,lat,
