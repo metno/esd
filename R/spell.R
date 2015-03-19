@@ -190,6 +190,33 @@ hist.spell <- function(x,family='geom',...) {
   
 }
 
+qqgeom <- function(x,treshold=1,...) {
+  s <- spell(x,threshold=treshold)
+  x1 <- qgeom(seq(0,1,length=101),prob=1/mean(coredata(s[,1]),na.rm=TRUE))
+  y1 <- quantile(as.numeric(s[,1]),probs=seq(0,1,length=101),na.rm=TRUE)
+  x2 <- qgeom(seq(0,1,length=101),prob=1/mean(coredata(s[,2]),na.rm=TRUE))
+  y2 <- quantile(as.numeric(s[,2]),probs=seq(0,1,length=101),na.rm=TRUE)
+  xp1 <- qpois(seq(0,1,length=101),lambda=mean(coredata(s[,1]),na.rm=TRUE))
+  xp2 <- qpois(seq(0,1,length=101),lambda=mean(coredata(s[,2]),na.rm=TRUE))
+  
+   par(bty='n')
+   xy <- c(x1,x2,xp1,xp2,y1,y2,y1,y2); ok <- is.finite(xy)
+   plot(range(xy[ok]),range(xy[ok]),
+        type='l',main='q-q geometric/Poisson',
+        xlab='geometric/Poisson',ylab=expression(q[p]))
+   points(xp1,y1,pch=15,col=rgb(0.7,0.7,1))
+   points(xp2,y2,pch=15,col=rgb(1,0.7,0.7))
+   points(x1,y1,pch=19,col=rgb(0.2,0.2,1))
+   points(x2,y2,pch=19,col=rgb(1,0.2,0.2))
+   grid()
+   
+   legend(min(xy[ok]),max(xy[ok]),
+           c(paste('geom.',varid(s)[1]),paste('geom.',varid(s)[2]),
+             paste('pois.',varid(s)[1]),paste('pois.',varid(s)[2])),
+           col=c(rgb(0.2,0.2,1),rgb(1,0.2,0.2),rgb(0.7,0.7,1),rgb(1,0.7,0.7)),
+           pch=c(rep(19,2),rep(15,2)),bty='n')
+}
+
 # Heating degree day
 HDD <- function(x,x0=18,na.rm=TRUE) {
   cold <- x < x0
