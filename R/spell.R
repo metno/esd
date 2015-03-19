@@ -158,8 +158,8 @@ hist.spell <- function(x, ...) {
   hl <- hist(abs(x[,2]),breaks=n,plot=FALSE)
 #  dh <- dpois(n,lambda=mean(x[,1],na.rm=TRUE))
 #  dl <- dpois(n,lambda=mean(abs(x[,2]),na.rm=TRUE))
-  dh <- dgeom(n,attr(x,'p.above'))
-  dl <- dgeom(n,1-attr(x,'p.above'))
+  dh <- dgeom(n,attr(x,'p.above')[1])
+  dl <- dgeom(n,attr(x,'p.above')[2])
 
   col <- c('red','blue')
   runs <- c('hot','cold')
