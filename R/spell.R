@@ -175,7 +175,7 @@ hist.spell <- function(x,family='geom',...) {
     spelltype <- 'wet and dry' 
   }
 
-  main=paste(attr(x,'location'),spelltype,'spell duration')
+  main=paste(attr(x,'location')[1],spelltype,'spell duration')
   par(bty="n")
   plot(hh$mids,hh$density,type="s",col=col[1],lwd=3,
        xlab="",ylab="days",main=main,
