@@ -152,15 +152,20 @@ exceedance.field <- function(x,threshold=1,fun='mean',...) {
   return(y)
 }
 
-hist.spell <- function(x, ...) {
+hist.spell <- function(x,family='geom',...) {
   n <- seq(0,ceiling(max(c(abs(x)),na.rm=TRUE))+1,by=1)
   hh <- hist(x[,1],breaks=n,plot=FALSE)
   hl <- hist(abs(x[,2]),breaks=n,plot=FALSE)
-#  dh <- dpois(n,lambda=mean(x[,1],na.rm=TRUE))
-#  dl <- dpois(n,lambda=mean(abs(x[,2]),na.rm=TRUE))
-  dh <- dgeom(n,attr(x,'p.above')[1])
-  dl <- dgeom(n,attr(x,'p.above')[2])
 
+#  dh <- dgeom(n,attr(x,'p.above')[1])
+#  dl <- dgeom(n,1-attr(x,'p.above')[2])
+  if (substr(family,1,4)=='pois') {
+    dh <- dpois(n,lambda=mean(x[,1],na.rm=TRUE))
+    dl <- dpois(n,lambda=mean(abs(x[,2]),na.rm=TRUE))
+  } else {
+    dh <- dgeom(n,prob=1/mean(x[,1],na.rm=TRUE))
+    dl <- dgeom(n,prob=1/mean(abs(x[,2]),na.rm=TRUE))
+  }
   col <- c('red','blue')
   runs <- c('hot','cold')
   spelltype <- 'hot and cold'
