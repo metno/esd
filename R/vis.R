@@ -7,11 +7,17 @@ vis.station <- function(x,...) {
   if (is.T(x)) vis.station.t2m(x,...)
 }
 
-vis.station.precip <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),...) {
+vis.station.precip <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1,...) {
   # From qqplotter:
-  qp <- apply(coredata(x),2,quantile,prob=p,na.rm=TRUE)
-  qmu <- -log(1-p)%o%apply(coredata(x),2,wetmean)
-  fw <- round(100*apply(coredata(x),2,wetfreq))
+  x[x < threshold] <- NA
+  if (is.null(dim(x))) {
+    qp <- quantile(x,prob=p,na.rm=TRUE)
+    qmu <- -log(1-p)*mean(x,na.rm=TRUE)
+  } else {
+    qp <- apply(coredata(x),2,quantile,prob=p,na.rm=TRUE)
+    qmu <- -log(1-p)%o%apply(coredata(x),2,wetmean,na.rm=TRUE)
+    #fw <- round(100*apply(coredata(x),2,wetfreq))
+  }
   plot(qp,qmu,pch=19,col=rgb(0,0,1,0.2))
   lines(range(qp,qmu),range(qp,qmu))
   grid()
@@ -19,11 +25,17 @@ vis.station.precip <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),...) {
 
 vis.station.t2m <- function(x,p=c(0.01,0.02,0.03,0.04,seq(0.1,0.95,0.05),
                                 0.97,0.98,0.99),...) {
-  qp <- apply(coredata(x),2,quantile,prob=p,na.rm=TRUE)
-  qmu <- qp + NA
-  for (i in 1:dim(qmu)[1])
-    qmu[i,] <- qnorm(p=p[i],mean=apply(coredata(x),2,mean,na.rm=TRUE),
-                     sd=apply(coredata(x),2,sd,na.rm=TRUE))
+  d <- dim(x); if (is.null(d)) d <- c(length(x),1)
+  if (is.null(dim(x))) {
+    qp <- quantile(x,prob=p,na.rm=TRUE)
+    qmu <-  qnorm(p=p,mean=mean(coredata(x),na.rm=TRUE),sd=sd(coredata(x),na.rm=TRUE))
+  } else {
+    qp <- apply(coredata(x),2,quantile,prob=p,na.rm=TRUE)
+    qmu <- qp + NA
+    for (i in 1:length(p))
+      qmu[i,] <- qnorm(p=p[i],mean=apply(coredata(x),2,mean,na.rm=TRUE),
+                       sd=apply(coredata(x),2,sd,na.rm=TRUE))
+  }
   plot(qp,qmu,pch=19,col=rgb(1,0,0,0.2))
   lines(range(qp,qmu),range(qp,qmu))
   grid() 
@@ -912,9 +924,10 @@ diagnose.cca <- function(x) {
 # Display cross-validation and statistics on the residual
 diagnose.ds <- function(x,plot=FALSE) {
 
-  # the attribute 'evaluation' contains cross-validation
+  ## the attribute 'evaluation' contains cross-validation
   if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
                                       xval <- crossval(x)
+  ## Check the residuals
   y <- as.residual(x)
   z <- as.original.data(x)
   anova <- summary(attr(x,'model'))
@@ -934,15 +947,20 @@ diagnose.ds <- function(x,plot=FALSE) {
     plot(xval)
 
     dev.new()
+    ## Timer series of the residual
     par(bty="n",mfcol=c(3,2))
-    plot(y)
+    plot(y,main='contains a trend?')
+    lines(trend(y))
     
-    acf(y)
+    ## Auto-correlation of the residual
+    acf(y,main='contains persistence?')
 
-    plot(z,y)
-    spectrum(y)
+    ## Rsidual correlated with original data?
+    plot(z,y,main='Residual correlated with original data?')
+    spectrum(y,main='Residual normally distributed?')
 
-    qqnorm(y)
+    ## Residual normally distributed?
+    qqnorm(y,main='Residual normally distributed?')
     qqline(y)
 
     if  (!is.null(attr(x,'diagnose'))) 
