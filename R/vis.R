@@ -944,20 +944,25 @@ diagnose.ds <- function(x,plot=FALSE) {
   } else {beta <- NA; beta.error <- NA; ar1 <- NA}
   
   if (plot) {
-    plot(xval)
-
-    dev.new()
     ## Timer series of the residual
+    dev.new()
     par(bty="n",mfcol=c(3,2))
+    plot(xval,plot.type='single',col=c("blue","red"),
+         main='cross-validation',
+         sub=paste('correlation=',round(cor(xval)[2,1],2)))
+
     plot(y,main='contains a trend?')
     lines(trend(y))
     
     ## Auto-correlation of the residual
-    acf(y,main='contains persistence?')
+    ar <- acf(y,plot=FALSE)
+    plot(ar$lag,ar$acf,type='b',main='Residual ACF?')
 
     ## Rsidual correlated with original data?
-    plot(z,y,main='Residual correlated with original data?')
-    spectrum(y,main='Residual normally distributed?')
+    plot(coredata(z),coredata(y),main='Residual correlated with original data?')
+  
+    sp <- spectrum(y,plot=FALSE)
+    plot(sp$freq,sp$spec,type='l',main='Residual power-spectrum',log='xy')
 
     ## Residual normally distributed?
     qqnorm(y,main='Residual normally distributed?')

@@ -445,7 +445,6 @@ export(WG.pca.day.t2m.precip)
 export(rbind.field)
 export(cbind.field)
 
-export(nfinite)
 export(HadCRUT4)
 export(C.C.eq)
 export(is.T)
