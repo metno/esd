@@ -72,17 +72,20 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
                           select=NULL,lon=c(-20,20),lat=c(-20,20),
                           plot=FALSE,biascorrect=TRUE,verbose=TRUE) {
   if (verbose) print('WG.FT.day.t2m')
-  # Single function for just temperature.
-  # The arguments mean and sd are time series predicted through ESD
-  # (zoo or station objects)
+  ## Single function for just temperature.
+  ## The arguments mean and sd are time series predicted through ESD or
+  ## adopted from a zoo or station object (x). 
   if (is.null(x)) {
+  ## If no stations objects is given, use default 
     if (verbose) print("use default: Ferder, Norway")
     data(ferder,envir=environment())
     x <- ferder
     rm('ferder')
   }
 
+## Different options for annual mean temperature. Default - estimate from the station
   if (is.null(amean)) amean <- annual(x) else
+  ## If NA, then compute using DSensemble
   if (is.na(amean)) {
     if (verbose) print('Estimate mean change')
     T2M <- retrieve('~/data/ERAINT/ERAINT_t2m_mon.nc',
@@ -93,9 +96,12 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
     amean <- zoo(rowMeans(ztm,na.rm=TRUE) - mean(ztm,na.rm=TRUE),
                  order.by=index(ztm))
   } else if (inherits(amean,'dsensemble'))
+  ## Or use prescribed projections
      amean <- rowMeans(amean,na.rm=TRUE) - mean(amean,na.rm=TRUE)
   print(paste('mean(amean)=',mean(amean)))
   
+  ## Also select annual standard deviations estimated from daly anomalies -
+  ## repeat the same procedure as for the mean.
   if (is.null(asd)) asd <- annual(anomaly(x),FUN='sd') else
   if (is.na(asd)) {
     if (verbose) print('Estimate standard deviation change')
@@ -116,14 +122,13 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
   } else if (inherits(asd,'dsensemble'))
     asd <- rowMeans(asd,na.rm=TRUE) - mean(asd,na.rm=TRUE) 
  
-  # Also allow for estimating the AR(1) coefficient of the Hurst coefficient
-# Fractional Gaussian noise...?
-  
+## Get the daily anomalies and the climatology
   xa <- anomaly(x); clim <- x - xa
 
-  # Time axis for projection:
+## Define time axis for projection based on the annual mean data either from station or
+## downscaled projections
   if (is.null(t)) {
-    print("set the time index")
+    if (verbose) print("set the time index")
     ly <- max(year(amean)); ny <- length(rownames(table(year(amean)))) 
     interval <- c(ly-ny+1,ly)
     print(interval)
@@ -135,14 +140,16 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
     #t <- t - julian(t[1]) +
     #  julian(as.Date(paste(interval[1],month(x)[1],day(x)[1],sep='-')))
   }
+  
+  ## Estimate a smooth curve for the annual mean and standard deviation that has a daily resolution
   if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
   ym <- approx(julian(as.Date(index(amean))),coredata(amean),xout=julian(as.Date(t)),rule=2)$y
   #print(summary(ym))
   ys <- approx(julian(as.Date(index(asd))),coredata(asd),xout=julian(as.Date(t)),rule=2)$y
-  # Also use approx for the observations? Annual mean and sd?
-  
-  #qq-transform: temp(N1 -> N2) - year by year or for a given interval?
-  if (verbose) print("Construct a station object:")
+
+  ## New object y that contains random variable as original data but with same spectral 
+  ## characteristics and same climatology
+  if (verbose) print("Construct a station object with random timing but original time structure:")
   y <- zoo(FTscramble(xa,t),order.by=t)
   if (verbose) print("add climatology")
   y <- y + matchdate(clim,y)
@@ -153,6 +160,10 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
          col=c('black','grey'))
   }
 
+  ## qq-transform to transform the temperature distribution from present shape to future shape
+  ## assuming a normal distribution: ~N(m1,s1) -> ~N(m2,s2). Estimate probabilities based on the 
+  ## scrambeled series y and use these probabilities to derive new quantiles based on the shifted 
+  ## pdf.
   cdf <- pnorm(q=y,mean=mean(y,na.rm=TRUE),sd=sd(y,na.rm=TRUE))
   q2 <- qnorm(cdf,mean=ym,sd=ys)
   #print(summary(cdf)); print(summary(q2))
@@ -168,7 +179,10 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
   return(z)
 }
 
-nfinite <- function(x) return(sum(is.finite(x)))
+## Fuure considerations -lso allow for estimating the AR(1) coefficient of the Hurst coefficient?
+## Fractional Gaussian noise...?
+  
+## --- Precipitation  
   
 WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
                              ncwd=NULL,ndbr=NULL,t=NULL,
@@ -211,7 +225,7 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
 
   # Estimate number of wet events each year:
   wet <-   subset(ncdd.cwd,is=1)
-  nawe <- aggregate(wet,by=year(wet),FUN="nfinite")
+  nawe <- aggregate(wet,by=year(wet),FUN="nv")
   attributes(nawe) <- NULL
   if (verbose) print(coredata(nawe))
   
