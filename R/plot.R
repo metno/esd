@@ -522,7 +522,10 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
   invisible(z)
 }
 
-plot.pca <- function(y,...) plot.eof.field(y,...)
+plot.pca <- function(y,...) {
+  attr(y,'longname') <- attr(y,'longname')[1]
+  plot.eof.field(y,new=FALSE,...)
+}
 
 vis.pca <- function(y,cex=1.5,new=TRUE) {
 
