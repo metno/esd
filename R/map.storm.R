@@ -120,7 +120,7 @@ sphere.storm <- function(x,
 map.hexbin.storm <- function(x,dx=6,dy=2,Nmax=NULL,
           xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
           xlim=NULL,ylim=NULL,col='red',border='firebrick4',
-          colmap='heat.colors',scale.col=TRUE,scale.size=TRUE,
+          colmap='heat.colors',scale.col=TRUE,scale.size=FALSE,
           main=NULL,new=TRUE) {
   ilon <- colnames(x)=='lon'
   ilat <- colnames(x)=='lat'
