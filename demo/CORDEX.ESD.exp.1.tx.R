@@ -65,7 +65,7 @@ for (season in c('djf','mam','jja','son')) {
   x <- matchdate(subset(mt4s,it=season),txm.ds)
   dev.new(width=5,height=9)
   par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1),cex=0.5)
-  plot(coredata(anomaly(x)),coredata(anoaly(txm.ds)),
+  plot(coredata(anomaly(x)),coredata(anomaly(txm.ds)),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
        ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),

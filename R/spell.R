@@ -89,7 +89,11 @@ count <- function(x,threshold=1,fraction=FALSE,...) {
 }
 
 wetfreq <- function(x,threshold=1,...) {
-  y <- exceedance.default(x,threshold=threshold,fun="freq")
+  ## REB 2015-03-23 - slow
+##  y <- exceedance.default(x,threshold=threshold,fun="freq")
+  ## REB 2015-03-23 - faster
+  x[x < threshold] <- NA
+  y <- sum(is.finite(x))/length(x)
   return(y)
 }
 
@@ -99,11 +103,16 @@ nevents <- function(x,threshold=1,...) {
 }
 
 wetmean <- function(x,threshold=1,...) {
-   y <- exceedance.default(x,threshold=threshold,fun="mean")
-   # Also add the standard error estimate based on the sample size
-   # and assuming an exponential distribtion for daily data
-   # (sigma = mu)
-   return(y)
+  ## REB 2015-03-23 - slow
+#   y <- exceedance.default(x,threshold=threshold,fun="mean")
+  ## REB 2015-03-23 - faster
+  ## Also add the standard error estimate based on the sample size
+  ## and assuming an exponential distribtion for daily data
+  ## (sigma = mu)
+  x[x < threshold] <- NA
+  y <- mean(x,na.rm=TRUE)
+  ##error <- sd(x,na.rm=TRUE)/sqrt(sum(is.finite(x))-1)
+  return(y)
 }
 
 # Exceedance is a function that 
