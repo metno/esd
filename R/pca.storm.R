@@ -3,7 +3,7 @@
 
 # Principle Component Analysis (PCA) of storm tracks
 
-PCA.storm <- function(X,neofs=20,param=c('lon','lat','slp'),
+PCA.storm <- function(X,neofs=20,param=c('lon','lat'),
                       anomaly=TRUE,verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"storm"))
 
