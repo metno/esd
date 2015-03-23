@@ -6,6 +6,9 @@ validate.default <- function(x, ...) {
 validate.eof <- function(x, ...) {
 }
 
+validate.pca <- function(x, ...) {
+}
+
 validate.eof.field <- function(x, ...) {
 }
 
@@ -19,12 +22,13 @@ validate.eof.comb <- function(x, ...) {
   lines(attr(zz,'clim'),col="red")
 }
 
-  
-
-
+ 
 validate.ds <- function(x, ...) {
+  
 }
 
+validate.cca <- function(x, ...) {
+}
 
 
 test.EOF <- function() {

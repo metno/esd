@@ -7,7 +7,7 @@ npca <- 20
 
 
 # load the predictands: CLARIS precip
-load('~/Dropbox/Public/CORDEX-ESD/CORDEX-ESD-data-clumps/claris.Pr.rda')
+load('claris.Pr.rda')
 attr(Pr,'location')[77:81] <- c("Aerodromo de Pedro Juan Caballero","Aerodromo de Concepcion",
                                 "Villarrica del Espedritu Santo","Aerodromo de Pilar",
                                 "Encarnacion")
@@ -54,7 +54,7 @@ x <- matchdate(mu,y)
 # Check the results:
 dev.new(width=5,height=9)
 par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1),cex=0.5)
-plot(coredata(x),coredata(y),
+plot(coredata(anomaly(x)),coredata(anomaly(y)),
      pch=19,col=rgb(0,0,1,0.5),
      xlab=expression(paste('Observed ',mu,(mm/day))),
      ylab=expression(paste('Downscaled ',mu,(mm/day))),
@@ -66,15 +66,16 @@ y <- pca2station(z.fw)
 x <- matchdate(fw,y)
 
 # Check: Figure: scatter plot
-plot(coredata(x),coredata(y),
+plot(coredata(anomaly(x)),coredata(anomaly(y)),
      pch=19,col=rgb(0,0,1,0.5),
      xlab=expression(paste('Observed ',f[w])),
      ylab=expression(paste('Downscaled ',f[w])),
      main='Wet-day frequency',
      sub=paste('predictand: CLARIS; #PCA=',npca))
 grid()
+dev.copy2eps(file='CORDEX.ESD.exp1.pr.esd.eps')
 
-X <- list(mu.exp1=mu.ds,fw.exp1=fw.ds,z.mu=z.mu,z.fw=z.fw)
+X <- list(mu.exp1=mu.ds,fw.exp1=fw.ds,z.mu=z.mu,z.fw=z.fw,mu0=mu,fw0=fw)
 attr(X,'description') <- 'cross-validation'
 attr(X,'experiment') <- 'CORDEX ESD experiment 1'
 attr(X,'predictand_file') <- 'claris.Pr.rda'

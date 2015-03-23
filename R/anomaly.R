@@ -63,20 +63,24 @@ anomaly.station <- function(x,...) {
 #  if ((dy==0) & (dm==0) & (dd==1))
 #    x <- anomaly.daily(X)
 #  attr(x,'history') <- history.stamp(X)
-  x <- as.anomaly(x)
+  x <- anomaly.default(x,...)
   return(x)
 }
 
-anomaly.annual <- function(x,ref=1961:1990) {
-  X <- x
+anomaly.annual <- function(x,ref=1961:1990,verbose=FALSE) {
+  if (verbose) print('anomaly.annual')
+  X <- x;  x <- coredata(X)
   t <- index(X)
-  x <- coredata(X)
   datetype <- class(t)
-  if (datetype=="Date") years <- as.numeric(fomat(t),'%Y') else
+  if (verbose) print(datetype)
+  if (datetype=="Date") years <- year(X) else
   if (datetype=="numeric") years <- t
-  clim <- mean(x[is.element(years,ref)],na.rm=TRUE)
-  x <- x - clim
-  x <- zoo(x,order.by=t)
+  if (is.null(dim(x))) 
+    clim <- mean(x[is.element(years,ref)],na.rm=TRUE) else
+    clim <- apply(x,2,FUN=mean,na.rm=TRUE)
+  if (verbose) print(clim)
+  x <- t(t(x) - clim)
+  x <- zoo(x,order.by=index(X))
   x <- attrcp(X,x)
   #nattr <- softattr(X)
   #for (i in 1:length(nattr))
@@ -88,95 +92,120 @@ anomaly.annual <- function(x,ref=1961:1990) {
   return(x)
 }
 
-anomaly.month <- function(x,ref=NULL) {
+anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
 
+  anomaly.month1 <- function(x,yr=NULL,ref=NULL) {
 # This function computes the anomalies by removing the 12-month seasonal cycle
-  X <- x
-  t <- index(x)
-  x <- coredata(x)
-  l <- length(x); n <- ceiling(l/12)
+    l <- length(x); n <- ceiling(l/12)
+    ## base-line period
+    if (!is.null(yr) & !is.null(ref)) iref <- is.element(yr,ref) else
+                                      iref <- rep(TRUE,n)
   # If the record is not full years, pad the extra months of the last year
-  pad <- l %% 12
-  if (pad>0) x <- c(rep(NA,pad),x)
+    pad <- l %% 12
+    if (pad>0) x <- c(rep(NA,pad),x)
   #Fast way to compute the climatology: clim
-  dim(x) <- c(12,n)
-  clim <- rowMeans(x,na.rm=TRUE)
-  x <- c(x - clim)
-  if (pad>0) x <- x[-(1:pad)]
-  x <- zoo(x,order.by=t)
-  x <- attrcp(X,x)
-  #nattr <- softattr(X)
-  #for (i in 1:length(nattr))
-  #  attr(x,nattr[i]) <- attr(X,nattr[i])
-  attr(x,'climatology') <- clim
-  attr(x,'aspect') <- 'anomaly'
-  class(x) <- class(X)
-  return(x)
-}
-
-
-anomaly.season <- function(x,ref=NULL) {
-
-# This function computes the anomalies by removing the 12-month seasonal cycle
-  X <- x
-  t <- index(x)
-  years <- year(t)
-  x <- coredata(x)
-  l <- length(x); n <- ceiling(l/4)
-  # If the record is not full years, pad the extra months of the last year
-  pad <- l %% 4
-  if (pad>0) x <- c(rep(NA,pad),x)
-  #Fast way to compute the climatology: clim
-  dim(x) <- c(4,n)
-  clim <- rowMeans(x,na.rm=TRUE)
-  x <- c(x - clim)
-  if (pad>0) x <- x[-(1:pad)]
-  x <- zoo(x,order.by=t)
-
-  x <- attrcp(X,x)
-  #nattr <- softattr(X)
-  #for (i in 1:length(nattr))
-  #  attr(x,nattr[i]) <- attr(X,nattr[i])
-  attr(x,'climatology') <- clim
-  attr(x,'aspect') <- 'anomaly'
-  class(x) <- class(X)
-  return(x)
-}
-
-
-anomaly.day <- function(x,ref=NULL) {
-  print('anomaly.day')
-  d <- dim(x)
-  X <- x
-  if (is.null(d)) {
-# This function computes the anomalies by a best-fit regression to the first
-# 4 hermonics of the 365.25-day cycle.
-    t <- as.numeric(as.Date(index(X)))
-    x <- coredata(X)
-    l <- length(x)
-    ndy <- switch(attr(x,'calendar'),
-                'gregorian'=365.2425,'julian'=365.25,'no.leap'=365,'all.leap'=366,'360.day'=360)
-    c1 <- cos(2*pi*t/ndy); s1 <- sin(2*pi*t/ndy)
-    c2 <- cos(4*pi*t/ndy); s2 <- sin(4*pi*t/ndy)
-    c3 <- cos(6*pi*t/ndy); s3 <- sin(6*pi*t/ndy)
-    c4 <- cos(8*pi*t/ndy); s4 <- sin(8*pi*t/ndy)
-    clim.fit <- lm(x ~ c1 + s1 + c2 + s2 + c3 + s3 + c4 + s4)
-    clim <- predict(clim.fit)[1:366]
-    attributes(clim) <- NULL
-    x <- zoo(clim.fit$residual,order.by=index(X))
-  
-    x <- attrcp(X,x,ignore="names")
-#  nattr <- softattr(X)
-#  for (i in 1:length(nattr))
-#    attr(x,nattr[i]) <- attr(X,nattr[i])
-    attr(x,'climatology') <- clim
-  } else {
-    print('Many locations')
-    x <- apply(X,2,FUN='anomaly.day')
+    dim(x) <- c(12,n)
+    clim <- rowMeans(x[,iref],na.rm=TRUE)
+    x <- c(x - clim)
+    if (pad>0) x <- x[-(1:pad)]
+    return(x)
   }
+  
+  X <- x
+  if (verbose) print('anomaly.month')
+  t <- index(x); yr <- year(x)
+  
+  if (is.null(dim(x))) Y <- anomaly.month1(coredata(x),yr,ref=ref) else
+                       Y <- apply(coredata(x),2,FUN='anomaly.month1',yr=yr,ref=ref)
+  y <- Y
+  x <- zoo(y,order.by=t)
+  x <- attrcp(X,x)
+  #nattr <- softattr(X)
+  #for (i in 1:length(nattr))
+  #  attr(x,nattr[i]) <- attr(X,nattr[i])
+  attr(x,'climatology') <- (X - Y)[1:12,]
   attr(x,'aspect') <- 'anomaly'
   class(x) <- class(X)
   return(x)
+}
+
+
+anomaly.season <- function(x,ref=NULL,verbose=FALSE) {
+
+  anomaly.season1 <- function(x,yr=NULL,ref=NULL) {
+# This function computes the anomalies by removing the 12-month seasonal cycle
+    l <- length(x); n <- ceiling(l/4)
+    ## base-line period
+    if (!is.null(yr) & !is.null(ref)) iref <- is.element(yr,ref) else
+                                    iref <- rep(TRUE,n)
+    ## If the record is not full years, pad the extra months of the last year
+    pad <- l %% 4
+    if (pad>0) x <- c(rep(NA,pad),x)
+    ##Fast way to compute the climatology: clim
+    dim(x) <- c(4,n)
+    clim <- rowMeans(x,na.rm=TRUE)
+    x <- c(x - clim)
+    if (pad>0) x <- x[-(1:pad)]
+    return(x)
+}
+  X <- x
+  if (verbose) print('anomaly.season')
+  t <- index(x); yr <- year(x)
+  if (is.null(dim(x))) y <- anomaly.season1(coredata(x),yr,ref=ref) else
+                       y <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref)
+  x <- zoo(y,order.by=t)
+  x <- attrcp(X,x)
+  #nattr <- softattr(X)
+  #for (i in 1:length(nattr))
+  #  attr(x,nattr[i]) <- attr(X,nattr[i])
+  attr(x,'climatology') <- clim
+  attr(x,'aspect') <- 'anomaly'
+  class(x) <- class(X)
+  return(x)
+}
+
+
+anomaly.day <- function(x,ref=NULL,verbose=FALSE) {
+
+  anomaly.day.1 <- function(x,t0,t,ref=NULL) {
+    ## One station 
+    c1 <- cos(pi*t0/365.25); s1 <- sin(pi*t0/365.25)
+    c2 <- cos(2*pi*t0/365.25); s2 <- sin(2*pi*t0/365.25)
+    c3 <- cos(3*pi*t0/365.25); s3 <- sin(3*pi*t0/365.25)
+    c4 <- cos(4*pi*t0/365.25); s4 <- sin(4*pi*t0/365.25)
+    C1 <- cos(pi*t/365.25);   S1 <- sin(pi*t/365.25)
+    C2 <- cos(2*pi*t/365.25); S2 <- sin(2*pi*t/365.25)
+    C3 <- cos(3*pi*t/365.25); S3 <- sin(3*pi*t/365.25)
+    C4 <- cos(4*pi*t/365.25); S4 <- sin(4*pi*t/365.25)
+    cal <- data.frame(y=coredata(x),c1=c1,c2=c2,c3=c3,c4=c4,
+                      s1=s1,s2=s2,s3=s3,s4=s4)
+    pre <- data.frame(c1=C1,c2=C2,c3=C3,c4=C4,
+                      s1=S1,s2=S2,s3=S3,s4=S4)
+    i1 <- is.element(year(x),year(x)[1])
+    pre1 <- data.frame(c1=C1[i1],c2=C2[i1],c3=C3[i1],c4=C4[i1],
+                       s1=S1[i1],s2=S2[i1],s3=S3[i1],s4=S4[i1])
+    acfit <- lm(y ~ c1 + s1 + c2 + s2 + c3 + s3 + c4 + s4,data=cal)
+    clim <- predict(acfit,newdata=pre)
+    y <- zoo(coredata(x) - clim,order.by=index(x))
+    return(y)
+  }
+  
+  if (verbose) {print('anomaly.day');print(class(x))}
+  yr <- year(x)
+  if (is.null(ref)) ref <- seq(min(yr,na.rm=TRUE),max(yr,na.rm=TRUE),by=1)
+  t0 <- julian(index(x)[is.element(yr,ref)]) -
+    julian(as.Date(paste(yr[is.element(yr,ref)],"-01-01",sep="")))
+  t <- julian(index(x)) - julian(as.Date(paste(yr,"-01-01",sep="")))
+  if (is.null(dim(x))) 
+    y <- anomaly.day.1(x=coredata(x),t0=t0,t=t,ref=ref) else 
+    y <- apply(coredata(x),2,FUN='anomaly.day.1',t0=t0,t=t,ref=ref)
+  y <- zoo(y,order.by=index(x))
+  y <- attrcp(x,y)
+  class(y) <- class(x)
+  clim <- (x - y)[is.element(yr,yr[1]),] 
+  attr(y,'climatology') <- clim
+  attr(y,'aspect') <- 'anomaly'
+  return(y)
 }
 
 

@@ -40,7 +40,7 @@ map.default <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 }
 
 map.matrix <- function(x,new=TRUE,projection="lonlat",...) {
-
+  
 # If x is provided, map only x...
 
   # default with no arguments will produce a map showing the station data in the esd package.
@@ -51,9 +51,17 @@ map.matrix <- function(x,new=TRUE,projection="lonlat",...) {
   if (projection=="sphere") map2sphere(x=x,new=new,...) else
   if (projection=="np") map2sphere(x,new=new,...) else
   if (projection=="sp") map2sphere(x,new=new,...)
-  invisible(x)
   
   #map.station(NULL,...)
+}
+
+map.array <- function(x,pattern=1,new=TRUE,projection="lonlat",...) {
+  z <- x[,,pattern]
+  attr(z,'longitude') <- lon(x)
+  attr(z,'latitude') <- lat(x)
+  attr(z,'variable') <- varid(x)
+  attr(z,'unit') <- unit(x)
+  map(z)
 }
 
 
@@ -122,8 +130,8 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,xlim=xlim,ylim=ylim,
                    what=c("fill","contour"),
                    n=15,projection="lonlat",
                    lonR=NULL,latR=NULL,axiR=0,gridlines=TRUE,
-                   col=NULL,breaks=NULL,...) {
-  print('map.ds')
+                   col=NULL,breaks=NULL,verbose=FALSE,...) {
+  if (verbose) print('map.ds')
   stopifnot(inherits(x,'ds'))
   x <- subset(x,it=it,is=is)
 
@@ -503,10 +511,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
 #  colbar(scale0,col,fig=c(0.90,0.95,0.05,0.25))
 #}
 
-map.pca <- function(x,new=TRUE,FUN='mean',pattern=1,
-                    col=NULL,...) {
+map.pca <- function(x,pattern=1,new=TRUE,FUN='mean',
+                    col=NULL,cex=1.5,xlim=NULL,ylim=NULL,...) {
   X <- rbind(attr(x,'pattern')[,pattern],attr(x,'pattern')[,pattern])
-  print(dim(X))
+  #print(dim(X))
   #str(x)
   X <- attrcp(x,X)
   attr(X,'longitude') <- lon(x)
@@ -516,7 +524,7 @@ map.pca <- function(x,new=TRUE,FUN='mean',pattern=1,
     col <- colscal(30,col=varid(x))
   }
   map.station(X,new=new,FUN=FUN,col=col,bg=col,
-              colbar=list(col=col,type='r',v=0))
+              colbar=list(col=col,type='r',v=0),cex=cex,xlim=xlim,ylim=ylim)
 }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
@@ -529,7 +537,7 @@ map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
 }
 
 map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
-                    what=c("fill","contour"),
+                    what=c("fill","contour"),cex=1.5,
                     n=15,projection="lonlat",
                     lonR=NULL,latR=NULL,colorbar=TRUE,
                     axiR=0,gridlines=TRUE,col=NULL,breaks=NULL,...) {
@@ -582,7 +590,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
   else 
     par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
 #  browser()
-  map(Y,icca,xlim=xlim,ylim=ylim,what=what,cex=1.5,
+  map(Y,pattern=icca,xlim=xlim,ylim=ylim,what=what,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',colorbar=colorbar,
       colbar=list(col=col.y,type='r',v=0),
@@ -591,7 +599,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
   if (sum(is.element(what,'ts'))>0)
       par(fig=c(0,1,0.5,1),new=TRUE) else
   par(fig=c(0.5,1,0.5,1),new=TRUE) ## mar=c(0,0,0,0),
-  map(X,icca,xlim=xlim,ylim=ylim,what=what,cex=1.5,
+  map(X,pattern=icca,xlim=xlim,ylim=ylim,what=what,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',colorbar=colorbar,
       colbar=list(col=col.x,type='r',v=0),

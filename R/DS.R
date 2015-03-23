@@ -67,6 +67,8 @@ DS.default <- function(y,X,mon=NULL,
     y0 <- y
     X0 <- X
 
+    if (verbose) {print(paste(sum(!is.finite(coredata(y))),'missing values in y'))}
+    if (verbose)  {print('index(y) before removing missing values:'); print(index(y))}
     y <- subset(y,it=is.finite(coredata(y)))
     W <- attr(X,'eigenvalues')
     cls <- class(X)
@@ -174,8 +176,9 @@ DS.default <- function(y,X,mon=NULL,
     } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[eofs]
                                                  
     
-                                        ##  ds <- zoo(predict(model),order.by=index(X)) + offset
-                                        ##  ds <- zoo(predict(model,newdata=caldat),order.by=index(X)) + offset
+    ##  ds <- zoo(predict(model),order.by=index(X)) + offset
+    ##  ds <- zoo(predict(model,newdata=caldat),order.by=index(X)) + offset
+    if (verbose) print('predict')
     ds <- zoo(predict(model,newdata=predat),order.by=index(X)) + offset
                                         #plot(y,lwd=4); lines(ds,col="red",lwd=2)
                                         #lines(zoo(model$fitted.values,order.by=index(ds)),col="blue",lwd=2)
@@ -191,6 +194,7 @@ DS.default <- function(y,X,mon=NULL,
     pattern <- attrcp(X0,pattern,ignore=c('longitude','latitude','names'))
     
     caldat <- zoo(as.matrix(caldat),order.by=index(X))
+    if (verbose) print('Set attributes')
     attr(caldat,'calibration_expression') <- calstr
     attr(caldat,'stepwise_screening') <- swsm
     attr(ds,'calibration_data') <- caldat
@@ -224,6 +228,7 @@ DS.default <- function(y,X,mon=NULL,
                                         #print("Completed")
                                         #lines(ds,col="darkred",lwd=2,lty=2)
                                         #lines(attr(ds,'original_data'),col="green",lwd=2,lty=2)
+    if (verbose) print('exit DS.default')
     invisible(ds)
 }
 
@@ -696,6 +701,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         attr(ds,'pattern') <- pca$u
     } else {
         if (verbose) print('Default')
+        if (!verbose) pb <- txtProgressBar(style=3)
         ## treat each PC as a station
         if (verbose) print('Prepare output data')
         ## If common EOFs, then accomodate for the additional predictions
@@ -709,7 +715,20 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
 
         if (verbose) print(paste('PC',eofs,collapse=' '))
                                         # Loop over the PCs...
+        ## REB 2015-03-23
+        ## The predictor pattern associated with PCA-predictands: one
+        ## pattern for each PC. Combine into one matrix. The predictor pattern
+        ## for each station can be recovered by multiplying with the PCA pattern
+        if (verbose) print('Predictor pattern')
+        x0p <- attr(X0,'pattern')
+        dp <- dim(x0p)
+        if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs
+        #str(x0p); print(dp); print(dy)
+        predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
+        dim(predpatt) <- c(dp[1]*dp[2],dy[2])
+        dim(x0p) <- c(dp[1]*dp[2],dp[3])
         for (i in 1:dy[2]) {
+            if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
             ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],
                              unit=unit(y)[i],lon=lon(y)[i],lat=lat(y)[i],
                              alt=alt(y)[i],cntr=cntr(y)[i],stid=stid(y)[i])
@@ -719,28 +738,45 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             z <- DS(ys,X,biascorrect=biascorrect,
                     eofs=eofs,rmtrend=rmtrend,verbose=verbose,...)
 
-            ##print('---HERE---')
+            if (verbose) print('--- return to DS.pca ---')
             attr(z,'mean') <- 0 # can't remember why... REB
                                         # Collect the projections in a matrix:
                                         #zp <- predict(z,newdata=Xp)
                                         #y.out[,i] <- coredata(zp)
-            y.out[,i] <- coredata(z)
-            fit.val[,i] <- attr(z,'fitted_values')
+            if (verbose) print(paste(i,'y.out[,i]:',
+                                     length(y.out[is.finite(ys),i]),'=',length(z),'?'))
+            y.out[is.finite(ys),i] <- coredata(z)
+            fit.val[is.finite(ys),i] <- attr(z,'fitted_values')
             if (!is.null(attr(X0,'n.apps')))
-                yp.out[,i] <- attr(z,'appendix.1')
+                yp.out[is.finite(ys),i] <- attr(z,'appendix.1')
             
             if (i==1)                         # Also keep the cross-validation
                 cval <- attr(z,'evaluation') else
             cval <- merge(cval,attr(z,'evaluation'))
                                         # REB 2014-10-27
+            ## REB 2015-03-23
+            if (verbose) print('Calculate predictor pattern:')
+            ## Only if one type of predictor - case with mixed predictors a
+            ## bit more complicated -> return NAs.
+            if (dp[3] >= length(attr(z,'model')$coefficients)-1)
+              predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] %*%
+                attr(z,'model')$coefficients[-1]
         }
-        
+
         if (verbose) print(paste('Transform back into a PCA-object of dim',
                                  dim(y.out),collapse=' '))
         ds <- zoo(y.out,order.by=index(X))
         ds <- attrcp(y,ds)
         attr(ds,'eigenvalues') <- attr(y0,'eigenvalues')
         attr(ds,'sum.eigenv') <- attr(y0,'sum.eigenv')
+        ## REB 2015-03-23
+        dim(predpatt) <- c(dp[1],dp[2],dy[2])
+        attr(predpatt,'longitude') <- lon(X0)
+        attr(predpatt,'latitude') <- lat(X0)
+        attr(predpatt,'variable') <- varid(X0)
+        attr(predpatt,'unit') <- unit(X0)
+        attr(ds,'predictor.pattern') <- predpatt
+        ## REB 2015-03-23
         attr(ds,'pattern') <- attr(y0,'pattern')
         names(cval) <- paste(c('X','Z'),'PCA',sort(rep(1:dy[2],2)),sep='.')
         attr(ds,'evaluation') <- cval
@@ -888,7 +924,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
     ds <- DS(y,eof,biascorrect=biascorrect,
              method=method,swsm=swsm,m=m,
              rmtrend=rmtrend,eofs=eofs,
-             weighted=TRUE,pca=FALSE,...)
+             weighted=TRUE,pca=FALSE,verbose=verbose,...)
 
     ## Now, we need to reconstruct the spatial maps/patterns. There will be
     ## one pattern for each EOF
@@ -911,7 +947,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
               xp %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
             } else {
               ## EOF-based predictand:
-              browser()
+              #browser()
               if (verbose) print('DS pattern: 3D')
               xd <- dim(xp)
               dim(xp) <- c(xd[1]*xd[2],xd[3])

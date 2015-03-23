@@ -7,12 +7,12 @@ npca <- 4
 
 # load the predictands: CLARIS precip
 print('Get the CLARIS data')
-load('~/Dropbox/Public/CORDEX-ESD/CORDEX-ESD-data-clumps/claris.Tx.rda')
+load('claris.Tx.rda')
 
 Tx0 <- Tx # Keep original copy
 
 print('Take the anomalies')
-Tx <- anomaly(Tx)
+Tx <- anomaly(Tx0)
 clim <- Tx0 - Tx # climatology
 
 # Process the precipitation - predictand as annual mean and annual standard deviation:
@@ -65,7 +65,7 @@ for (season in c('djf','mam','jja','son')) {
   x <- matchdate(subset(mt4s,it=season),txm.ds)
   dev.new(width=5,height=9)
   par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1),cex=0.5)
-  plot(coredata(x),coredata(txm.ds),
+  plot(coredata(anomaly(x)),coredata(anoaly(txm.ds)),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
        ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
@@ -81,7 +81,7 @@ for (season in c('djf','mam','jja','son')) {
 
   # Check: Figure: scatter plot
   x <- matchdate(subset(st4s,it=season),txm.ds)
-  plot(coredata(x),coredata(txs.ds),
+  plot(coredata(anomaly(x)),coredata(anomaly(txs.ds)),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
        ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
@@ -104,7 +104,9 @@ for (season in c('djf','mam','jja','son')) {
 
   eval(parse(text=paste('X$txm.',season,' <- txm.ds',sep='')))
   eval(parse(text=paste('X$txs.',season,' <- txs.ds',sep='')))
-
+  eval(parse(text=paste('X$txm0.',season,' <- mt4s',sep='')))
+  eval(parse(text=paste('X$txs0.',season,' <- st4s',sep='')))
+  
   # The independent validation is contained in exp1.txm (seasonal mean)
   # and exp1.txm (seasonal standard deviation)
   eval(parse(text=paste('X$exp1.txm.',season,' <- exp1.txm',sep='')))

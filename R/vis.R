@@ -637,7 +637,7 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
     col <- rgb(r,g,b)
   } else if (col[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6)
-  } else if (col=="gray.colors") {
+  } else if (col[1]=="gray.colors") {
     col <- gray.colors(n)
   } else if (col[1]=="heat.colors") {
     col <- heat.colors(n)
@@ -859,13 +859,13 @@ diagnose.eof <- function(x) {
   return(y)
 }
 
-diagnose.comb.eof <- function(x) {
+diagnose.comb.eof <- function(x,verbose=FALSE) {
 
   ACF <- function(x) acf(x,plot=FALSE,na.action=na.omit)$acf[2]
   sign <- function(x,y) {z<-x*y; z[z<0] <- -1; z[z>0] <- 1; z}
   
   stopifnot(!missing(x), inherits(x,"eof"),inherits(x,"comb"))
-  #print("diagnose.comb.eof")
+  if (verbose) print("diagnose.comb.eof")
 
   # The original field, e.g. reanalyses
   Y <- zoo(coredata(x),order.by=index(x))
@@ -873,7 +873,8 @@ diagnose.comb.eof <- function(x) {
   m <- length(attr(x,'eigenvalues'))
   dm <- rep(NA,n*m); dim(dm) <- c(n,m)
   sr <- dm; ar <- sr
-
+  if (verbose) print(paste(n,'different added fields with',m,'PCs'))
+  
   # The appended fields, e.g. GCM results
   rowname <- rep("GCM",n)
   for ( i in 1:n ) {
@@ -898,6 +899,7 @@ diagnose.comb.eof <- function(x) {
   rownames(dm) <- rowname
   rownames(sr) <- rowname
   rownames(ar) <- rowname
+  if (verbose) {print(dm); print(sr); print(ar)}
   diag <- list(mean.diff=dm,sd.ratio=sr,autocorr.ratio=ar,
                common.period=range(index(Y)),sd0=Ys,
                calibrationdata=attr(x,'source'))

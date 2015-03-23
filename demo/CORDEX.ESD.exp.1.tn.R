@@ -7,13 +7,13 @@ npca <- 4
 
 # load the predictands: CLARIS precip
 print('Get the CLARIS data')
-load('~/Dropbox/Public/CORDEX-ESD/CORDEX-ESD-data-clumps/claris.Tn.rda')
+load('claris.Tn.rda')
 
-Tx0 <- Tx # Keep original copy
+Tn0 <- Tn # Keep original copy
 
 print('Take the anomalies')
-Tn <- anomaly(Tn)
-clim <- Tx0 - Tx # climatology
+Tn <- anomaly(Tn0)
+clim <- Tn0 - Tn # climatology
 
 # Process the precipitation - predictand as annual mean and annual standard deviation:
 # Perhaps change to use seasonal rather than annual?
@@ -65,7 +65,7 @@ for (season in c('djf','mam','jja','son')) {
   x <- matchdate(subset(mt4s,it=season),tnm.ds)
   dev.new(width=5,height=9)
   par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1),cex=0.5)
-  plot(coredata(x),coredata(tnm.ds),
+  plot(coredata(anomaly(x)),coredata(anomaly(tnm.ds)),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
        ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
@@ -81,7 +81,7 @@ for (season in c('djf','mam','jja','son')) {
 
   # Check: Figure: scatter plot
   x <- matchdate(subset(st4s,it=season),tnm.ds)
-  plot(coredata(x),coredata(tns.ds),
+  plot(coredata(anomaly(x)),coredata(anomaly(tns.ds)),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
        ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
@@ -104,6 +104,8 @@ for (season in c('djf','mam','jja','son')) {
 
   eval(parse(text=paste('X$tnm.',season,' <- tnm.ds',sep='')))
   eval(parse(text=paste('X$tns.',season,' <- tns.ds',sep='')))
+  eval(parse(text=paste('X$tnm0.',season,' <- mt4s',sep='')))
+  eval(parse(text=paste('X$tns0.',season,' <- st4s',sep='')))
 
   # The independent validation is contained in exp1.tnm (seasonal mean)
   # and exp1.tnm (seasonal standard deviation)

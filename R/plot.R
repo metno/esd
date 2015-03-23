@@ -94,8 +94,8 @@ plot.eof <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
 
 
 plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
-                           what=c("pc","eof","var"),colorbar=FALSE,...) {
-  #print("plot.eof.field")
+                           what=c("pc","eof","var"),colorbar=FALSE,verbose=FALSE,...) {
+  if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   n <- pattern
   what <- tolower(what)
   #str(pattern); stop("HERE")
@@ -110,7 +110,8 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
   par(mfrow=mfrow,mar=c(0.5,0.5,2.5,0.5),bty="n",xaxt="n",yaxt="n")
 
   if (length(grep('eof',what))>0) {
-    map(x,pattern=pattern,new=FALSE,colorbar=colorbar)
+    if (verbose) {print('Show map'); print(class(x))}
+    map(x,pattern=pattern,new=FALSE,colorbar=FALSE,verbose=verbose,...)
   }
 #  if (length(grep('pc',what))>0) result <- as.station(x) else
 #  if (length(grep('var',what))>0) result <- attr(x,'tot.var')
@@ -216,10 +217,10 @@ plot.eof.comb <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
 
 plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                     lwd=1,type='l',pch=0,main=NULL,col=NULL,
-                    xlim=NULL,ylim=NULL,xlab="",ylab=NULL,...) {
-  #print('plot.ds')
+                    xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE,...) {
+  if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
   if (inherits(x,'pca')) {
-    plot.pca(x)
+    plot.ds.pca(x,verbose=verbose)
     return()
   }
 
@@ -235,7 +236,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                                "*phantom(0)*(",unit,"))"))),silent=TRUE)
   if (inherits(ylab,"try-error")) ylab <- unit(x)
   
-  #print('HERE'); print(ylab)
+  if (verbose)  print(ylab)
   if (is.null(main)) main <- attr(x,'longname')[1]               
   if (is.null(col)) col <- rainbow(length(x[1,]))  
   
@@ -247,8 +248,9 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
 
   if (sum(is.element(what,'map'))>0) {
+    if (verbose) print('Show map...')
     par(bty="n",fig=c(0,0.5,0.5,1),mar=c(1,1,1,1))
-    map(x,new=FALSE)
+    map(x,new=FALSE,verbose=verbose)
     points(lon(x),lat(x),lwd=3,cex=1.5)
   }
 
@@ -522,10 +524,22 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
   invisible(z)
 }
 
-plot.pca <- function(y,...) {
+plot.pca <- function(y,verbose=FALSE,...) {
+  if (verbose) print('plot.pca')
   attr(y,'longname') <- attr(y,'longname')[1]
-  plot.eof.field(y,new=FALSE,...)
+  plot.eof.field(y,verbose=verbose,new=FALSE,...)
 }
+
+plot.ds.pca <- function(y,verbose=FALSE,...) {
+  if (verbose) print('plot.ds.pca')
+  attr(y,'longname') <- attr(y,'longname')[1]
+  par(mfcol=c(2,2))
+  map.pca(y,verbose=verbose,new=FALSE,...)
+  map(attr(y,'predictor.pattern'),new=FALSE)
+  par(mfcol=c(2,1),new=TRUE)
+  plot(zoo(y),plot.type='single')
+}
+
 
 vis.pca <- function(y,cex=1.5,new=TRUE) {
 
@@ -633,12 +647,12 @@ plot.mvr <- function(x) {
 }
 
 
-plot.cca <- function(x,icca=1) {
+plot.cca <- function(x,icca=1,...) {
   #print("plot.cca")
   ## browser()
   dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
-  map.cca(x,icca=icca,colorbar=FALSE)
+  map.cca(x,icca=icca,colorbar=FALSE,...)
 
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
              sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
@@ -668,12 +682,12 @@ plot.cca <- function(x,icca=1) {
 
 
 plot.list <- function(x,...) {
-  plot(combine.ds(x))
+  plot(combine.ds(x),...)
 }
 
 
 plot.diagnose <- function(x,...) {
-  if ( (inherits(x,"eof")) & (inherits(x,"comb")) ) plot.diagnose.comb.eof(x)
+  if ( (inherits(x,"eof")) & (inherits(x,"comb")) ) plot.diagnose.comb.eof(x,...)
 }
 
 plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
@@ -681,7 +695,7 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   dev.new()
   par(bty="n")
   if (is.null(xlim)) xlim <- range(c(-1,1,x$mean.diff),na.rm=TRUE)
-  if (is.null(ylim)) ylim <- range(c(-1,1,x$sd.ratio),na.rm=TRUE)
+  if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
   wt <- 0:360
   plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
        xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
@@ -694,21 +708,24 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   j <- 1:n
   col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n))
   cex <- x$autocorr.ratio;
-  pch <- 19; pch[cex < 0] <- 21
+  pch <- rep(19,n); pch[cex < 0] <- 21
   cex <- abs(cex); cex[cex > 2] <- 2
   if (verbose) {
      print('Mean difference:');print(x$mean.diff)
      print('Ration of standard deviation');print(x$sd.ratio)
+     print('Size');print(cex)
+     print('col');print(col)
      points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
   }
   
-  points(x$mean.diff,1-x$sd.ratio,pch=pch,col=col,cex=cex,lwd=2)
-
+  points(x$mean.diff,1-x$sd.ratio,pch=pch,col=col,cex=cex)
   legend(xlim[1],ylim[2],c("same sign","different sign"),
          pch=c(19,21),bty="n",col="grey")
-  text(xlim[1],ylim[2],'AR(1)')
+  par(xpd=TRUE)
+  text(xlim[1],ylim[2],'AR(1) - symbol size',col='grey40',pos=3)
 
-  par(new=TRUE,fig=c(0.80,0.9,0.80,0.95),mar=c(0,3,0,0),
+  text(xlim[2],ylim[2],'EOF #',col='grey40',cex=0.8,pos=3)
+  par(new=TRUE,fig=c(0.85,0.95,0.70,0.85),mar=c(0,3,0,0),
       cex.axis=0.7,yaxt="s",xaxt="n",las=1)
   colbar <- rbind(1:n,1:n)
   image(1:2,1:n,colbar,col=col)  
