@@ -40,6 +40,7 @@
 \alias{vardo}
 \alias{ferder}
 \alias{HadCRUT4}
+\alias{dse.Oslo}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -102,6 +103,7 @@ t2m.NorESM.M(lon=NULL,lat=NULL,anomaly=FALSE)
 data(NAOI)
 data(sunspots)
 data(NINO3.4)
+data(dse.Oslo)
 HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt",plot=FALSE)
 }
 

@@ -758,7 +758,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             if (verbose) print('Calculate predictor pattern:')
             ## Only if one type of predictor - case with mixed predictors a
             ## bit more complicated -> return NAs.
-            if (dp[3] >= length(attr(z,'model')$coefficients)-1)
+            if ( (dp[3] >= length(attr(z,'model')$coefficients)-1) &
+                 (length(attr(z,'model')$coefficients) > 2) )
               predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] %*%
                 attr(z,'model')$coefficients[-1]
         }
