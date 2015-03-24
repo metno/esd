@@ -94,7 +94,8 @@ plot.eof <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
 
 
 plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
-                           what=c("pc","eof","var"),colorbar=FALSE,verbose=FALSE,...) {
+                           what=c("pc","eof","var"),colorbar=FALSE,
+                           verbose=FALSE,...) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   n <- pattern
   what <- tolower(what)
@@ -111,7 +112,10 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
 
   if (length(grep('eof',what))>0) {
     if (verbose) {print('Show map'); print(class(x))}
+    if (inherits(x,'pca')) par(fig=c(0,0.45,0.5,0.975))
     map(x,pattern=pattern,new=FALSE,colorbar=FALSE,verbose=verbose,...)
+    if (inherits(x,'pca')) par(new=TRUE,fig=c(0.5,0.95,0.5,0.95))
+    
   }
 #  if (length(grep('pc',what))>0) result <- as.station(x) else
 #  if (length(grep('var',what))>0) result <- attr(x,'tot.var')
@@ -527,7 +531,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
 plot.pca <- function(y,verbose=FALSE,...) {
   if (verbose) print('plot.pca')
   attr(y,'longname') <- attr(y,'longname')[1]
-  plot.eof.field(y,verbose=verbose,new=FALSE,...)
+  plot.eof.field(y,verbose=verbose,new=TRUE,...)
 }
 
 plot.ds.pca <- function(y,verbose=FALSE,...) {
