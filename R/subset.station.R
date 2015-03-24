@@ -154,23 +154,37 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
             } else if (nlev<=4) {
                 if (verbose) print("it are most probably seasons")
                 if (inherits(x,'season') & (length(it)==1)) {
-                    if (verbose)  print(paste("The 'it' value must be a season index between 1 and 4.",
-                                              "If not please use character strings instead. e.g. it='djf'"))
+                    if (verbose) print(paste("The 'it' value must be a season index between 1 and 4.",
+                                       "If not please use character strings instead. e.g. it='djf'"))
                     it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
                     ii <- is.element(mo,it)
-                 } else if (inherits(x,'month') | (inherits(x,'day'))) {
-                     if (verbose)
-                         print("The 'it' value must be a month index. If not please use character strings instead")
+                 } else if ( (inherits(x,'month') | (inherits(x,'day'))) &
+                             ( (max(it) <= 12) & (min(it) >= 1) ) ) {
+                     if (verbose) {
+                         print(paste("The 'it' value must be a month index.",
+                                     "If not please use character strings instead"))
+                         print(range(it))
+                       }
                      ii <- is.element(mo,it)
                  }  else {
                     if (verbose) print("it represents indices")
                     ii <- it
                 }
-            } else if (nlev<=12) {
-                if (verbose)
-                         print("The 'it' value are most probably a month index. If not please use character strings instead")
+            } else if (nlev<=12  &
+                             ( (max(it) <= 12) & (min(it) >= 1) )) {
+                if (verbose) {
+                         print(paste("The 'it' value are most probably a month index.",
+                                     "If not please use character strings instead"))
+                         print(range(it))
+                       }
                 ii <- is.element(mo,it)
-            }        
+            }  else {
+              if (verbose) {
+                         print("The 'it' value are most probably an index.")
+                         print(range(it))
+                         ii <- it
+                       }
+            }
         } else {
             #  length(nlev) > 1
             if (verbose)  print("it most probably holds indices")
