@@ -53,7 +53,7 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
                          ylim = NULL,border=FALSE, full.names=FALSE,
                          full.names.subset=FALSE,new=TRUE,text=FALSE, fancy=FALSE,
                          projection="lonlat",what=NULL,gridlines=FALSE, lonR=NULL,
-                         latR=45,axiR=NULL,na.rm=TRUE,...) 
+                         latR=45,axiR=NULL,na.rm=TRUE,colorbar=TRUE,...) 
 { 
     
     par0 <- par()
@@ -350,10 +350,10 @@ map.station <- function (x = NULL,col = NULL,bg="green",cex=.8, zexpr = "alt",
             ## print(par()$fig)
             
             ## add color bar
-            if (fancy)
+            if (fancy & colorbar)
                 col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,col=colbar$col,
                         cex=2,cex.lab=colbar$cex.lab,type="p",verbose=FALSE,vl=1,border=FALSE)
-            else
+            else if (colorbar)
                 image.plot(lab.breaks=colbar$breaks,horizontal = TRUE, legend.only = T, zlim = range(colbar$breaks),
                            col = colbar$col, legend.width = 1, axis.args = list(cex.axis = 0.8),
                            border = FALSE)
