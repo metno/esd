@@ -57,7 +57,7 @@ eof2field(x,it=NULL,is=NULL,anomaly=FALSE)
 PCA(X,...) 
 EOF.default(X,...)
 PCA.station(X,na.action='fill',verbose=FALSE)
-pca2station(X,lon=NULL,lat=NULL,anomaly=FALSE)
+pca2station(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE)
 }
 \arguments{
   \item{X}{a 'field' or 'pca' object}
@@ -71,7 +71,11 @@ pca2station(X,lon=NULL,lat=NULL,anomaly=FALSE)
   and use as a the first co-variate before the PCs from the EOF
   analysis.}
   \item{na.action}{'fill' uses \code{\link{approx}} to interpolate the
-  NA-values before the PCA.}
+    NA-values before the PCA.}
+  \item{what}{Default set to 'pca' for convertin the PCA-results, but
+    also works on downscaled PCA results. Option 'xval' returns the
+    station values for cross-validation results and 'test' returns the
+    station values used in the cross-validation (same interval as for 'xval').}
 }
 \value{File containing an 'eof' object which is based on the 'zoo' class.
 

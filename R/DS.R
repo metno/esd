@@ -752,7 +752,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             
             if (i==1)                         # Also keep the cross-validation
                 cval <- attr(z,'evaluation') else
-            cval <- merge(cval,attr(z,'evaluation'))
+                cval <- merge(cval,attr(z,'evaluation'))
                                         # REB 2014-10-27
             ## REB 2015-03-23
             if (verbose) print('Calculate predictor pattern:')

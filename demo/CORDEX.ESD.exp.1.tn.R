@@ -53,13 +53,23 @@ for (season in c('djf','mam','jja','son')) {
   pca.mt <- subset(pca.mt,pattern=1:npca)
   pca.st <- subset(pca.st,pattern=1:npca)
 
-# The experiment results are provided by the cross-validation deined by parameter 'm' (used in crossval).
-# Impoertan to set detrend=FALSE to retain original data in the cross-validation.
-# First downscale the mean values:
+  ## The experiment results are provided by the cross-validation deined by parameter 'm' (used in crossval).
+  ## Impoertan to set detrend=FALSE to retain original data in the cross-validation.
+  ## First downscale the mean values:
   z.mt <- DS(pca.mt,eof.t2m,
              m='cordex-esd-exp1',detrend=FALSE,verbose=FALSE)
-# The results are in the form of a PCA-object - convert back to a group of stations            
+  ## The results are in the form of a PCA-object - convert back to a group of stations            
   tnm.ds <- pca2station(z.mt)
+
+  ## Extract the predicted cross-validation results which follow the experiment:
+  ## only grab the series of predicted values - not the original data used for calibration
+  exp1.tnm <- pca2station(z.mt,what='xval')
+
+  # Repeat the downscaling for the standard deviation: use a mix of predictors.
+  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
+               m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
+  tns.ds <- pca2station(z.st)
+  exp1.tns <- pca2station(z.st,what='xval')
   
   # Check: Figure: scatter plot
   x <- matchdate(subset(mt4s,it=season),tnm.ds)
@@ -72,13 +82,14 @@ for (season in c('djf','mam','jja','son')) {
        main=paste(toupper(season),' mean temperature'),
        sub=paste('predictand: CLARIS; #PCA=',npca))
   grid()
-
-# Repeat the downscaling for the standard deviation: use a mix of predictors.
-  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
-               m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
-
-  tns.ds <- pca2station(z.st)
-
+  
+  x <- c(coredata(anomaly(matchdate(x,exp1.tnm))))
+  y <- c(coredata(anomaly(exp1.tnm)))
+  points(x,y,col=rgb(1,0,0,0.5),lwd=2)
+  abline(lm(y ~ x),col=rgb(1,0,0),lty=2)
+  ok <-  is.finite(x) & is.finite(y)
+  mtext(side=4,paste('r=',round(cor(x[ok],y[ok]),3)),las=3)
+  
   # Check: Figure: scatter plot
   x <- matchdate(subset(st4s,it=season),tnm.ds)
   plot(coredata(anomaly(x)),coredata(anomaly(tns.ds)),
@@ -88,19 +99,12 @@ for (season in c('djf','mam','jja','son')) {
        main=paste(toupper(season),' standard deviation'),
        sub=paste('predictand: CLARIS; #PCA=',npca))
   grid()
-# Extract the predicted cross-validation results which follow the experiment:
-  d <- dim(attr(tns.ds,'evaluation'))
-
-# only grab the series of predicted values - not the original data used for calibration
-  exp1.tnm <- attr(tnm.ds,'evaluation')[,seq(2,d[2],by=2)]
-  print('add climatology to tnm')
-  exp1.tnm <- exp1.tnm + matchdate(clim,it=exp1.tnm)
-  exp1.tns <- attr(tns.ds,'evaluation')[,seq(2,d[2],by=2)]
-# copy the the original attributes
-  exp1.tnm <- attrcp(mt4s,exp1.tnm)
-  exp1.tns <- attrcp(mt4s,exp1.tns)
-  class(exp1.tnm) <- class(mt4s)
-  class(exp1.tns) <- class(mt4s)
+  x <- c(coredata(anomaly(matchdate(x,exp1.tns))))
+  y <- c(coredata(anomaly(exp1.tns)))
+  points(x,y,col=rgb(1,0,0,0.5),lwd=2)
+  abline(lm(y ~ x),col=rgb(1,0,0),lty=2)
+  ok <-  is.finite(x) & is.finite(y)
+  mtext(side=4,paste('r=',round(cor(x[ok],y[ok]),3)),las=3)
 
   eval(parse(text=paste('X$tnm.',season,' <- tnm.ds',sep='')))
   eval(parse(text=paste('X$tns.',season,' <- tns.ds',sep='')))
