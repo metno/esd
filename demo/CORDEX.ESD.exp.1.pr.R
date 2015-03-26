@@ -13,6 +13,8 @@ load('claris.Pr.rda')
 attr(Pr,'location')[77:81] <- c("Aerodromo de Pedro Juan Caballero","Aerodromo de Concepcion",
                                 "Villarrica del Espedritu Santo","Aerodromo de Pilar",
                                 "Encarnacion")
+# Limit to the prescribed interval
+Pr <- subset(Pr,it=c(1979,2006))
 
 # retrieve the predictors
 # Out-going long-wave radiation
@@ -31,6 +33,11 @@ eof.es <- EOF(es)
 slp <- annual(retrieve('data/ERAINT/ERAINT_slp_mon.nc',
                        lon=c(-90,-30),lat=c(-35,-15)),FUN='mean')
 eof.slp <- EOF(slp)
+
+t2m.c1 <- subset(t2m,it=c(1979,1995));  t2m.v1 <- subset(t2m,it=c(1996,2006));
+slp.c1 <- subset(t2m,it=c(1979,1995));  slp.v1 <- subset(t2m,it=c(1996,2006));
+olr.c1 <- subset(t2m,it=c(1979,1995));  olr.v1 <- subset(t2m,it=c(1996,2006));
+
 
 # Process the precipitation - predictand:
 print('prepare the predictand')

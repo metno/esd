@@ -534,14 +534,25 @@ plot.pca <- function(y,verbose=FALSE,...) {
   plot.eof.field(y,verbose=verbose,new=TRUE,...)
 }
 
-plot.ds.pca <- function(y,verbose=FALSE,...) {
+plot.ds.pca <- function(y,pattern=1,verbose=FALSE,...) {
   if (verbose) print('plot.ds.pca')
   attr(y,'longname') <- attr(y,'longname')[1]
-  par(mfcol=c(2,2))
-  map.pca(y,verbose=verbose,new=FALSE,...)
+  par(fig=c(0,0.45,0.5,0.975),new=TRUE)
+  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,...)
+  par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
   map(attr(y,'predictor.pattern'),new=FALSE)
-  par(mfcol=c(2,1),new=TRUE)
-  plot(zoo(y),plot.type='single')
+  par(fig=c(0,0.45,0.05,0.475),new=TRUE)
+  plot(attr(x,'evaluation')[,1],attr(x,'evaluation')[,2],
+       main='Cross-validation',xlab='original data',
+       ylab='prediction',pch=19,col="grey")
+  lines(range(c(attr(x,'evaluation')),na.rm=TRUE),
+        range(c(attr(x,'evaluation')),na.rm=TRUE),lty=2)
+  cal <- data.frame(y=coredata(attr(x,'evaluation')[,1]),
+                    x=coredata(attr(x,'evaluation')[,2]))
+  xvalfit <- lm(y ~ x, data = cal)
+    abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
+  par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
+  plot(zoo(y[,pattern]),plot.type='single')
 }
 
 

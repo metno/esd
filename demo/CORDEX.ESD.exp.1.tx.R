@@ -9,6 +9,13 @@ npca <- 4
 print('Get the CLARIS data')
 load('claris.Tx.rda')
 
+# The location names of the last stations contain unsupported characters
+attr(Tx,'location')[77:81] <- c("Aerodromo de Pedro Juan Caballero","Aerodromo de Concepcion",
+                                "Villarrica del Espedritu Santo","Aerodromo de Pilar",
+                                "Encarnacion")
+
+# Limit to the prescribed interval
+Tx <- subset(Tx,it=c(1979,2006))
 Tx0 <- Tx # Keep original copy
 
 print('Take the anomalies')
@@ -19,7 +26,7 @@ clim <- Tx0 - Tx # climatology
 # Perhaps change to use seasonal rather than annual?
 print('Estimate seasonal statistics')
 mt4s <- as.4seasons(Tx,FUN='mean')
-st4s <- as.4seasons(anomaly(Tx),FUN='sd')
+st4s <- as.4seasons(Tx,FUN='sd')
 
 # retrieve the predictors
 print('Get the predictor data')
@@ -35,6 +42,10 @@ t2m <- as.4seasons(retrieve('data/ERAINT/ERAINT_t2m_mon.nc',
 # Mean sea level pressure
 slp <- as.4seasons(retrieve('data/ERAINT/ERAINT_slp_mon.nc',
                        lon=c(-90,-30),lat=c(-35,-15)),FUN='mean')
+
+t2m.c1 <- subset(t2m,it=c(1979,1995));  t2m.v1 <- subset(t2m,it=c(1996,2006));
+slp.c1 <- subset(t2m,it=c(1979,1995));  slp.v1 <- subset(t2m,it=c(1996,2006));
+olr.c1 <- subset(t2m,it=c(1979,1995));  olr.v1 <- subset(t2m,it=c(1996,2006));
 
 X <- list(description='cordex-esd-exp1')
 
@@ -75,15 +86,15 @@ for (season in c('djf','mam','jja','son')) {
   x <- matchdate(subset(mt4s,it=season),txm.ds)
   dev.new(width=5,height=9)
   par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1),cex=0.5)
-  plot(coredata(anomaly(x)),coredata(anomaly(txm.ds)),
+  plot(coredata(x),coredata(txm.ds),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
        ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
        main=paste(toupper(season),' mean temperature'),
        sub=paste('predictand: CLARIS; #PCA=',npca))
   grid()
-  x <- c(coredata(anomaly(matchdate(x,exp1.txm))))
-  y <- c(coredata(anomaly(exp1.txm)))
+  x <- c(coredata(matchdate(x,exp1.txm)))
+  y <- c(coredata(exp1.txm))
   points(x,y,col=rgb(1,0,0,0.5),lwd=2)
   abline(lm(y ~ x),col=rgb(1,0,0),lty=2)
   ok <-  is.finite(x) & is.finite(y)
@@ -91,15 +102,15 @@ for (season in c('djf','mam','jja','son')) {
   
   # Check: Figure: scatter plot
   x <- matchdate(subset(st4s,it=season),txm.ds)
-  plot(coredata(anomaly(x)),coredata(anomaly(txs.ds)),
+  plot(coredata(x),coredata(txs.ds),
        pch=19,col=rgb(1,0,0,0.5),
        xlab=expression(paste('Observed ',T[2*m],(degree*C))),
        ylab=expression(paste('Downscaled ',T[2*m],(degree*C))),
        main=paste(toupper(season),' standard deviation'),
        sub=paste('predictand: CLARIS; #PCA=',npca))
   grid()
-  x <- c(coredata(anomaly(matchdate(x,exp1.txs))))
-  y <- c(coredata(anomaly(exp1.txs)))
+  x <- c(coredata(matchdate(x,exp1.txs)))
+  y <- c(coredata(exp1.txs))
   points(x,y,col=rgb(1,0,0,0.5),lwd=2)
   abline(lm(y ~ x),col=rgb(1,0,0),lty=2)
   ok <-  is.finite(x) & is.finite(y)
@@ -115,6 +126,14 @@ for (season in c('djf','mam','jja','son')) {
   eval(parse(text=paste('X$exp1.txm.',season,' <- exp1.txm',sep='')))
   eval(parse(text=paste('X$exp1.txs.',season,' <- exp1.txs',sep='')))
 }
+
+txm.4s <- rbind(coredata(X$exp1.txm.djf),coredata(X$exp1.txm.mam),
+                coredata(X$exp1.txm.jja),coredata(X$exp1.txm.son))
+t <- c(index(X$exp1.txm.djf),index(X$exp1.txm.mam),index(X$exp1.txm.jja),index(X$exp1.txm.son))
+txm.exp1 <- zoo(txm.4s,order.by=t) + matchdate(clim,it=t)
+txm.exp1 <- attrcp(X$exp1.txm.djf,txm.exp1)
+class(txm.exp1) <- class(X$exp1.txm.djf)
+X$txm.exp1 <- txm.exp1
 
 # add some new attributes describing the results:
 attr(X,'description') <- 'cross-validation'
