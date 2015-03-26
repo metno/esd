@@ -61,7 +61,7 @@ map.array <- function(x,pattern=1,new=TRUE,projection="lonlat",...) {
   attr(z,'latitude') <- lat(x)
   attr(z,'variable') <- varid(x)
   attr(z,'unit') <- unit(x)
-  map(z,new=new,projection=projection)
+  map(z,new=new,projection=projection,...)
 }
 
 
