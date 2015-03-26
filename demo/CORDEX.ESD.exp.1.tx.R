@@ -63,13 +63,13 @@ for (season in c('djf','mam','jja','son')) {
 
   ## Extract the predicted cross-validation results which follow the experiment:
   ## only grab the series of predicted values - not the original data used for calibration
-  exp1.tnm <- pca2station(z.mt,what='xval')
+  exp1.txm <- pca2station(z.mt,what='xval')
 
   # Repeat the downscaling for the standard deviation: use a mix of predictors.
   z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
                m='cordex-esd-exp1',detrend=FALSE,verbose=TRUE)
   txs.ds <- pca2station(z.st)
-  exp1.tns <- pca2station(z.st,what='xval')
+  exp1.txs <- pca2station(z.st,what='xval')
   
   # Check: Figure: scatter plot
   x <- matchdate(subset(mt4s,it=season),txm.ds)
@@ -88,11 +88,6 @@ for (season in c('djf','mam','jja','son')) {
   abline(lm(y ~ x),col=rgb(1,0,0),lty=2)
   ok <-  is.finite(x) & is.finite(y)
   mtext(side=4,paste('r=',round(cor(x[ok],y[ok]),3)),las=3)
-  
-  ## Extract the predicted cross-validation results which follow the experiment:
-  ## only grab the series of predicted values - not the original data used for calibration
-  exp1.tnm <- pca2station(tnm.ds,what='xval')
-  exp1.tns <- pca2station(tns.ds,what='xval')
   
   # Check: Figure: scatter plot
   x <- matchdate(subset(st4s,it=season),txm.ds)

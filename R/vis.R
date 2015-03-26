@@ -557,6 +557,7 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
   }
 
   # Set up colour-palette
+  col <- tolower(col)
   x <- 1:n
   r0 <- round(n*0.55)
   g0 <- round(n*0.5)
