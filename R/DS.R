@@ -730,7 +730,9 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
         dim(predpatt) <- c(dp[1]*dp[2],dy[2])
         dim(x0p) <- c(dp[1]*dp[2],dp[3])
-        x0p <- x0p %*% diag(attr(X0,'eigenvalues'))
+        ## This works for single predictors, but is more complicated for
+        #3 multiple predictors.
+        if (dp[3] == length(attr(X0,'eigenvalues'))) x0p <- x0p %*% diag(attr(X0,'eigenvalues'))
         model <- list(); eof <- list()
         for (i in 1:dy[2]) {
             if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
