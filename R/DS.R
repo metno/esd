@@ -320,9 +320,11 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                            area.mean.expl=area.mean.expl,verbose=verbose,...)
         }
         ## May need an option for coombined field: x is 'field' + 'comb'
-        if (verbose) print("Cross-validation")
-        xval <- crossval(ds,m=m)
-        attr(ds,'evaluation') <- zoo(xval)
+        if ( (verbose) & (!is.null(m)) ) {
+          print("Cross-validation")
+          xval <- crossval(ds,m=m)
+          attr(ds,'evaluation') <- zoo(xval)
+        } else attr(ds,'evaluation') <- NULL
 
         if (verbose) print(names(attributes(ds)))
         if (ns==1) dsall <- ds else {
@@ -750,10 +752,11 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             if (!is.null(attr(X0,'n.apps')))
                 yp.out[is.finite(ys),i] <- attr(z,'appendix.1')
             
-            if (i==1)                         # Also keep the cross-validation
-                cval <- attr(z,'evaluation') else
-                cval <- merge(cval,attr(z,'evaluation'))
-                                        # REB 2014-10-27
+                                    # Also keep the cross-validation
+            if (!is.null(attr(z,'evaluation'))) { ## REB 2015-03-27
+              if (i==1) cval <- attr(z,'evaluation') else
+              cval <- merge(cval,attr(z,'evaluation'))
+            } else cval <- NULL
             ## REB 2015-03-23
             if (verbose) print('Calculate predictor pattern:')
             ## Only if one type of predictor - case with mixed predictors a
@@ -779,7 +782,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         attr(ds,'predictor.pattern') <- predpatt
         ## REB 2015-03-23
         attr(ds,'pattern') <- attr(y0,'pattern')
-        names(cval) <- paste(c('X','Z'),'PCA',sort(rep(1:dy[2],2)),sep='.')
+        if (!is.null(cval))
+          names(cval) <- paste(c('X','Z'),'PCA',sort(rep(1:dy[2],2)),sep='.')
         attr(ds,'evaluation') <- cval
         if (!is.null(attr(X0,'n.apps'))) {
             attr(ds,'n.apps') <- 1

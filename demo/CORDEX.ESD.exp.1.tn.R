@@ -77,8 +77,9 @@ for (season in c('djf','mam','jja','son')) {
 
   print(paste('Tear 1: Season:',season,' calibrate on the period:',
               start(pca.mt),'-',end(pca.mt)))
-  z.mt <- DS(pca.mt,eof.t2m,detrend=FALSE,verbose=FALSE)
-  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),detrend=FALSE,verbose=FALSE)
+  z.mt <- DS(pca.mt,eof.t2m,detrend=FALSE,m=NULL,verbose=FALSE)
+  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
+             detrend=FALSE,m=NULL,verbose=FALSE)
 
   ## Predict the 
   mt.tier1 <-predict(z.mt,newdata=eof.t2m)

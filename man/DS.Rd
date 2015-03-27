@@ -125,7 +125,8 @@ biasfix(x)
 \item{area.mean.expl}{When TRUE, subtract the area mean for the domain
   and use as a the first co-variate before the PCs from the EOF
   analysis.}
-  \item{m}{passed on to \code{\link{crossval}}}
+  \item{m}{passed on to \code{\link{crossval}}. A NULL value suppresses
+    the cross-validation, e.g. for short data series.}
   \item{weighted}{TRUE: use the attribute '\code{error.estimate}' as
     weight for the regresion analysis.}
   \item{\dots}{ }
