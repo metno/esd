@@ -240,4 +240,12 @@ predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     class(y) <- c('ds','eof','zoo')
     Z[[i]] <- predict.ds.eof(y,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
   }
+  ## Copy the original object and only change the predicted values
+ 
+  ## Replace 
+  #browser()
+  y <- zoo(matrix(unlist(Z), ncol = npca, byrow = TRUE), order.by=index(Z[[1]]))
+  y <- attrcp(x,y)
+  class(y) <- class(x)[-1]
+  return(y)
 }

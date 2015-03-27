@@ -20,17 +20,24 @@ attr(Tn,'location')[77:81] <- c("Aerodromo de Pedro Juan Caballero","Aerodromo d
 
 # Limit to the prescribed interval
 Tn <- subset(Tn,it=c(1979,2006))
-Tn0 <- Tn # Keep original copy
+#Tn0 <- Tn # Keep original copy
 
-print('Take the anomalies')
-Tn <- anomaly(Tn0)
-clim <- Tn0 - Tn # climatology
+## Daily anomalies:
+#print('Take the anomalies')
+#Tn <- anomaly(Tn0)
+#clim <- Tn0 - Tn # climatology
 
 # Process the precipitation - predictand as annual mean and annual standard deviation:
 # Perhaps change to use seasonal rather than annual?
 print('Estimate seasonal statistics')
 Mt4s <- as.4seasons(Tn,FUN='mean',nmin=30)
 st4s <- as.4seasons(Tn,FUN='sd',nmin=30)
+
+#Tn0 <- Tn # Keep original copy
+print('Take the anomalies')
+Mt4s0 <- Mt4s
+Mt4s <- anomaly(Mt4s0)
+clim <- Mt4s0 - Mt4s  # climatology
 
 # retrieve the predictors
 print('Get the predictor data')
@@ -81,9 +88,9 @@ for (season in c('djf','mam','jja','son')) {
   z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
              detrend=FALSE,m=NULL,verbose=FALSE)
 
-  ## Predict the 
-  mt.tier1 <-predict(z.mt,newdata=eof.t2m)
-  st.tier1 <-predict(z.st,newdata=list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr))
+  ## Predict the results.
+  mt.tier1 <-as.station(predict(z.mt,newdata=eof.t2m,verbose=FALSE))
+  st.tier1 <-as.station(predict(z.st,newdata=list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr)))
   
   print(paste('Tear 2: Season:',season))
   
