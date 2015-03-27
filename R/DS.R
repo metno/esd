@@ -50,7 +50,7 @@ DS.default <- function(y,X,mon=NULL,
                        rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,...) {
     ##
-    if (verbose) print('DS.default')
+    if (verbose) print('--- DS.default ---')
     #print('err(y)'); print(err(y))
     if (verbose) {print('index(y)'); print(index(y))}
     if (verbose) {print(class(y)); print(class(X))}
@@ -228,7 +228,7 @@ DS.default <- function(y,X,mon=NULL,
                                         #print("Completed")
                                         #lines(ds,col="darkred",lwd=2,lty=2)
                                         #lines(attr(ds,'original_data'),col="green",lwd=2,lty=2)
-    if (verbose) print('exit DS.default')
+    if (verbose) print('--- exit DS.default ---')
     invisible(ds)
 }
 
@@ -242,7 +242,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
     ## 
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
-    if (verbose) print("DS.station")
+    if (verbose) print("--- DS.station ---")
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
     
@@ -309,7 +309,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                                  rmtrend=rmtrend,eofs=eofs,
                                  area.mean.expl=area.mean.expl,
                                  verbose=verbose,...)
-                                        #if (verbose) print("+++")
+            if (verbose) print("+++")
             }
         } else if (inherits(X,'field')) {
             if (verbose) print("the predictor is a field-object")
@@ -320,10 +320,10 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                            area.mean.expl=area.mean.expl,verbose=verbose,...)
         }
         ## May need an option for coombined field: x is 'field' + 'comb'
-        if (verbose) print("Cross-validation")
 
         ## Unless told not to - carry out a cross-validation
         if (!is.null(m))  {
+          if (verbose) print("Cross-validation")
           xval <- crossval(ds,m=m)
           attr(ds,'evaluation') <- zoo(xval)
         } else attr(ds,'evaluation') <- NULL
@@ -722,13 +722,15 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         ## pattern for each PC. Combine into one matrix. The predictor pattern
         ## for each station can be recovered by multiplying with the PCA pattern
         if (verbose) print('Predictor pattern')
-        x0p <- attr(X0,'pattern') %*% attr(X0,'eigenvalues')
+        #browser()
+        x0p <- attr(X0,'pattern') 
         dp <- dim(x0p)
         if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs
         #str(x0p); print(dp); print(dy)
         predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
         dim(predpatt) <- c(dp[1]*dp[2],dy[2])
         dim(x0p) <- c(dp[1]*dp[2],dp[3])
+        x0p <- x0p %*% diag(attr(X0,'eigenvalues'))
         model <- list(); eof <- list()
         for (i in 1:dy[2]) {
             if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
@@ -738,11 +740,12 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             class(ys) <- c('station',class(y)[-c(1:2)])
             
             if (verbose) {print(class(ys)); print(class(X))}
-            z <- DS(ys,X,biascorrect=biascorrect,
+            z <- DS(ys,X,biascorrect=biascorrect,m=m,
                     eofs=eofs,rmtrend=rmtrend,verbose=verbose,...)
+            if (verbose) print('--- return to DS.pca ---')
+
             model[[i]] <- attr(z,'model')
             eof[[i]] <- X
-            if (verbose) print('--- return to DS.pca ---')
             attr(z,'mean') <- 0 # can't remember why... REB
 
             ## Check:
@@ -757,6 +760,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             
             ## Also keep the cross-validation
             if (!is.null(attr(z,'evaluation'))) { ## REB 2015-03-27
+              if (verbose) print('extract cross-validation')
               if (i==1) cval <- attr(z,'evaluation') else
                         cval <- merge(cval,attr(z,'evaluation'))
             } else cval <- NULL
@@ -764,6 +768,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             if (verbose) print('Calculate predictor pattern:')
             ## Only if one type of predictor - case with mixed predictors a
             ## bit more complicated -> return NAs.
+            #browser()
             if ( (dp[3] >= length(attr(z,'model')$coefficients)-1) &
                  (length(attr(z,'model')$coefficients) > 2) )
               predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] %*%
