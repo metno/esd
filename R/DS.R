@@ -320,8 +320,10 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                            area.mean.expl=area.mean.expl,verbose=verbose,...)
         }
         ## May need an option for coombined field: x is 'field' + 'comb'
-        if ( (verbose) & (!is.null(m)) ) {
-          print("Cross-validation")
+        if (verbose) print("Cross-validation")
+
+        ## Unless told not to - carry out a cross-validation
+        if (!is.null(m))  {
           xval <- crossval(ds,m=m)
           attr(ds,'evaluation') <- zoo(xval)
         } else attr(ds,'evaluation') <- NULL
@@ -720,7 +722,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         ## pattern for each PC. Combine into one matrix. The predictor pattern
         ## for each station can be recovered by multiplying with the PCA pattern
         if (verbose) print('Predictor pattern')
-        x0p <- attr(X0,'pattern')
+        x0p <- attr(X0,'pattern') %*% attr(X0,'eigenvalues')
         dp <- dim(x0p)
         if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs
         #str(x0p); print(dp); print(dy)
@@ -742,20 +744,21 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             eof[[i]] <- X
             if (verbose) print('--- return to DS.pca ---')
             attr(z,'mean') <- 0 # can't remember why... REB
-                                        # Collect the projections in a matrix:
-                                        #zp <- predict(z,newdata=Xp)
-                                        #y.out[,i] <- coredata(zp)
+
+            ## Check:
             if (verbose) print(paste(i,'y.out[,i]:',
                                      length(y.out[is.finite(ys),i]),'=',length(z),'?'))
+            
+            ## Collect the projections in a matrix:
             y.out[is.finite(ys),i] <- coredata(z)
             fit.val[is.finite(ys),i] <- attr(z,'fitted_values')
             if (!is.null(attr(X0,'n.apps')))
                 yp.out[is.finite(ys),i] <- attr(z,'appendix.1')
             
-                                    # Also keep the cross-validation
+            ## Also keep the cross-validation
             if (!is.null(attr(z,'evaluation'))) { ## REB 2015-03-27
               if (i==1) cval <- attr(z,'evaluation') else
-              cval <- merge(cval,attr(z,'evaluation'))
+                        cval <- merge(cval,attr(z,'evaluation'))
             } else cval <- NULL
             ## REB 2015-03-23
             if (verbose) print('Calculate predictor pattern:')

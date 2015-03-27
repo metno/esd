@@ -31,7 +31,7 @@ Tn <- subset(Tn,it=c(1979,2006))
 # Perhaps change to use seasonal rather than annual?
 print('Estimate seasonal statistics')
 Mt4s <- as.4seasons(Tn,FUN='mean',nmin=30)
-st4s <- as.4seasons(Tn,FUN='sd',nmin=30)
+St4s <- as.4seasons(anomaly(Tn),FUN='sd',nmin=30)
 
 #Tn0 <- Tn # Keep original copy
 print('Take the anomalies')
@@ -73,10 +73,10 @@ for (season in c('djf','mam','jja','son')) {
   st4sc <- subset(st4s,it=c(1979,1995))
 
   ## Missing values are a problem for PCA - replace missing anomalies with zero
-  miss.m <- !is.finite(coredata(mt4sc))
-  coredata(mt4sc)[miss.m] <- 0
-  miss.s <- !is.finite(coredata(st4sc))
-  coredata(st4sc)[miss.s] <- 0
+  miss.mc <- !is.finite(coredata(mt4sc))
+  coredata(mt4sc)[miss.mc] <- 0
+  miss.sc <- !is.finite(coredata(st4sc))
+  coredata(st4sc)[miss.sc] <- 0
 
   ## Combine the local predictand information in the form of PCAs
   pca.mt <- PCA(mt4sc,neofs=npca)
@@ -84,35 +84,47 @@ for (season in c('djf','mam','jja','son')) {
 
   print(paste('Tear 1: Season:',season,' calibrate on the period:',
               start(pca.mt),'-',end(pca.mt)))
-  z.mt <- DS(pca.mt,eof.t2m,detrend=FALSE,m=NULL,verbose=FALSE)
-  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
+  z.mt1 <- DS(pca.mt,eof.t2m,detrend=FALSE,m=NULL,verbose=FALSE)
+  z.st1 <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
              detrend=FALSE,m=NULL,verbose=FALSE)
 
   ## Predict the results.
-  mt.tier1 <-as.station(predict(z.mt,newdata=eof.t2m,verbose=FALSE))
-  st.tier1 <-as.station(predict(z.st,newdata=list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr)))
+  mt.tier1 <-as.station(predict(z.mt1,newdata=eof.t2m,verbose=FALSE))
+  st.tier1 <-as.station(predict(z.st1,newdata=list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr)))
   
   print(paste('Tear 2: Season:',season))
+
+  ## Missing values are a problem for PCA - replace missing anomalies with zero
+  miss.m <- !is.finite(coredata(mt4s))
+  coredata(mt4s)[miss.m] <- 0
+  miss.s <- !is.finite(coredata(st4s))
+  coredata(st4s)[miss.s] <- 0
   
-  ## The experiment results are provided by the cross-validation deined by parameter 'm' (used in crossval).
-  ## Impoertan to set detrend=FALSE to retain original data in the cross-validation.
+  ## Combine the local predictand information in the form of PCAs
+  pca.mt <- PCA(mt4s,neofs=npca)
+  pca.st <- PCA(st4s,neofs=npca)
+  
+  ## The experiment results are provided by the cross-validation defined by
+  ## parameter 'm' (used in crossval).
+  ## Importan to set detrend=FALSE to retain original data in the cross-validation.
   ## First downscale the mean values:
-  z.mt <- DS(pca.mt,eof.t2m,
-             m='cordex-esd-exp1',detrend=FALSE,verbose=FALSE)
-  ## The results are in the form of a PCA-object - convert back to a group of stations            
-  tnm.ds <- pca2station(z.mt)
+  z.mt2 <- DS(pca.mt,eof.t2m,m='cordex-esd-exp1',detrend=FALSE,verbose=FALSE)
+
+  ## The results are in the form of a PCA-object - convert back to a group of stations     
+  tnm.ds <- pca2station(z.mt2)
 
   ## Extract the predicted cross-validation results which follow the experiment:
   ## only grab the series of predicted values - not the original data used for calibration
-  exp1.tnm <- pca2station(z.mt,what='xval')
+  mt.tier2 <- pca2station(z.mt2,what='xval',verbose=TRUE)
 
   # Repeat the downscaling for the standard deviation: use a mix of predictors.
-  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
+  z.st2 <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
                m='cordex-esd-exp1',detrend=FALSE,verbose=FALSE)
-  tns.ds <- pca2station(z.st)
-  exp1.tns <- pca2station(z.st,what='xval')
+  tns.ds <- pca2station(z.st2)
+  exp1.tns <- pca2station(z.st2,what='xval')
   
   # Check: Figure: scatter plot
+  
   x <- matchdate(subset(mt4s,it=season),tnm.ds)
   dev.new(width=5,height=9)
   par(bty='n',las=1,oma=rep(0.25,4),mfcol=c(2,1),cex=0.5)
