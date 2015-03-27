@@ -6,7 +6,7 @@
 
 crossval <- function(x, m=5, ...) UseMethod("crossval")
 
-crossval.ds <- function(x, m=5, ...) {
+crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
   # Repeat the regression from DS, but through several iterations with
   # leave-m-out. These are masked by setting them to NA before the
   # regression.
@@ -21,11 +21,11 @@ crossval.ds <- function(x, m=5, ...) {
   nt <- length(CALDAT$y); nv <- dim(CALDAT)[2]
 
   if (is.character(m)) {
-    print(paste('predefined set-up:',m))
+    if (verbose) print(paste('predefined set-up:',m))
     yr <- switch(tolower(m),
                  'cordex-esd-exp1'=c(1979,1984,1989,1994,1999))
     ii <- (1:length(year(x)))[is.element(year(x),yr)]
-    print(year(x)[ii]); print(ii)
+    if (verbose) {print(year(x)[ii]); print(ii)}
     m <- switch(tolower(m),
                  'cordex-esd-exp1'=c(5,5,5,5,5))
   } else if (is.numeric(m) | is.integer(m)) {
