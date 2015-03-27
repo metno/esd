@@ -29,7 +29,7 @@ clim <- Tn0 - Tn # climatology
 # Process the precipitation - predictand as annual mean and annual standard deviation:
 # Perhaps change to use seasonal rather than annual?
 print('Estimate seasonal statistics')
-mt4s <- as.4seasons(Tn,FUN='mean',nmin=30)
+Mt4s <- as.4seasons(Tn,FUN='mean',nmin=30)
 st4s <- as.4seasons(Tn,FUN='sd',nmin=30)
 
 # retrieve the predictors
@@ -47,39 +47,45 @@ t2m <- as.4seasons(retrieve('data/ERAINT/ERAINT_t2m_mon.nc',
 slp <- as.4seasons(retrieve('data/ERAINT/ERAINT_slp_mon.nc',
                        lon=c(-90,-30),lat=c(-35,-15)),FUN='mean')
 
-t2m.c1 <- subset(t2m,it=c(1979,1995));  t2m.v1 <- subset(t2m,it=c(1996,2006));
-slp.c1 <- subset(t2m,it=c(1979,1995));  slp.v1 <- subset(t2m,it=c(1996,2006));
-olr.c1 <- subset(t2m,it=c(1979,1995));  olr.v1 <- subset(t2m,it=c(1996,2006));
-
 X <- list(description='cordex-esd-exp1')
 
 # Loop through the seasons:
 for (season in c('djf','mam','jja','son')) {
-  print(paste('Tear 1: Season:',season))
-  eof.slp.c1 <- EOF(subset(slp.c1,it=season))
-  eof.olr.c1 <- EOF(subset(olr.c1,it=season))
-  eof.t2m.c1 <- EOF(subset(t2m.c1,it=season))
-  eof.slp.v1 <- EOF(subset(slp.v1,it=season))
-  eof.olr.v1 <- EOF(subset(olr.v1,it=season))
-  eof.t2m.v1 <- EOF(subset(t2m.v1,it=season))
-  z.mt <- DS(pca.mt,eof.t2m,detrend=FALSE,verbose=FALSE)
-  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),detrend=FALSE,verbose=FALSE)
-  mt.tier1 <-predict(z.mt,newdata=eof.t2m.v1)
-  st.tier1 <-predict(z.st,newdata=list(t2m=eof.t2m.v1,slp=eof.slp.v1,olr=eof.olr.v1))
-  
-  print(paste('Tear 2: Season:',season))
-  
+
+  ## Prepare the predictors: use all available data
   eof.slp <- EOF(subset(slp,it=season))
   eof.olr <- EOF(subset(olr,it=season))
   eof.t2m <- EOF(subset(t2m,it=season))
-# Combine the local predictand information in the form of PCAs
+
+  ## Extract the predictands for the specified season
+  mt4s <- subset(Mt4s,it=season)
+  st4s <- subset(St4s,it=season)
+
+  ## Extract the predictands for the calibration period:
+  mt4sc <- subset(mt4s,it=c(1979,1995))
+  st4sc <- subset(st4s,it=c(1979,1995))
+
+  ## Missing values are a problem for PCA - replace missing anomalies with zero
+  miss.m <- !is.finite(coredata(mt4sc))
+  coredata(mt4sc)[miss.m] <- 0
+  miss.s <- !is.finite(coredata(st4sc))
+  coredata(st4sc)[miss.s] <- 0
+
+  ## Combine the local predictand information in the form of PCAs
+  pca.mt <- PCA(mt4sc,neofs=npca)
+  pca.st <- PCA(st4sc,neofs=npca)
+
+  print(paste('Tear 1: Season:',season,' calibrate on the period:',
+              start(pca.mt),'-',end(pca.mt)))
+  z.mt <- DS(pca.mt,eof.t2m,detrend=FALSE,verbose=FALSE)
+  z.st <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),detrend=FALSE,verbose=FALSE)
+
+  ## Predict the 
+  mt.tier1 <-predict(z.mt,newdata=eof.t2m)
+  st.tier1 <-predict(z.st,newdata=list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr))
   
-  pca.mt <- PCA(subset(mt4s,it=season))
-  pca.st <- PCA(subset(st4s,it=season))
-
-  pca.mt <- subset(pca.mt,pattern=1:npca)
-  pca.st <- subset(pca.st,pattern=1:npca)
-
+  print(paste('Tear 2: Season:',season))
+  
   ## The experiment results are provided by the cross-validation deined by parameter 'm' (used in crossval).
   ## Impoertan to set detrend=FALSE to retain original data in the cross-validation.
   ## First downscale the mean values:

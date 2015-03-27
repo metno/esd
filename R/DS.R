@@ -324,18 +324,14 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
         xval <- crossval(ds,m=m)
         attr(ds,'evaluation') <- zoo(xval)
 
-                                        #if (verbose) print(names(attributes(ds)))
+        if (verbose) print(names(attributes(ds)))
         if (ns==1) dsall <- ds else {
             if (i==1) dsall <- list(ds.1=ds) else
             eval(parse(text=paste('dsall$ds.',i,' <- ds',sep='')))
         }
 
     }
-                                        #str(dsall)
     
-                                        #print("---")
-                                        #str(dsall)
-
     ## If PCA was used to transform the predictands to preserve the
     ## spatial covariance, then do the inverse to recover the results
     ## in a structure comparable to the original stations.
@@ -345,6 +341,8 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
         attr(dsall,'mean') <- attr(Y,'mean')    
         ds.results <- pca2station(dsall)
     } else ds.results <- dsall
+    
+    if (verbose) print("--- exit DS.station ---")
     invisible(ds.results)  
 }
 
@@ -727,6 +725,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
         dim(predpatt) <- c(dp[1]*dp[2],dy[2])
         dim(x0p) <- c(dp[1]*dp[2],dp[3])
+        model <- list(); eof <- list()
         for (i in 1:dy[2]) {
             if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
             ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],
@@ -737,7 +736,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             if (verbose) {print(class(ys)); print(class(X))}
             z <- DS(ys,X,biascorrect=biascorrect,
                     eofs=eofs,rmtrend=rmtrend,verbose=verbose,...)
-
+            model[[i]] <- attr(z,'model')
+            eof[[i]] <- X
             if (verbose) print('--- return to DS.pca ---')
             attr(z,'mean') <- 0 # can't remember why... REB
                                         # Collect the projections in a matrix:
@@ -792,6 +792,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     attr(ds,'fitted_values') <- zoo(fit.val,
                                     order.by=index(attr(z,'fitted_values')))
     class(attr(ds,'fitted_values')) <- class(y0)
+    attr(ds,'model') <- model
+    attr(ds,'eof') <- eof
     attr(ds,'original_data') <- y
     attr(ds,'variable') <- varid(y0)
     attr(ds,'mean') <- attr(y0,'mean') # + offset

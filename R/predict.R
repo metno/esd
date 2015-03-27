@@ -2,19 +2,22 @@
 # apply the DS model.
 # Rasmus Benestad
 
-predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
+predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+  if (verbose) print('predict.ds')
   stopifnot(!missing(x),inherits(x,"ds"))
   if ( (inherits(x,'eof')) & (is.null(newdata)) ) {
-  if (inherits(x,'comb'))
-      y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n) else
+  if (inherits(x,'comb')) 
+      y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose) else
   if (inherits(x,'field'))
-      y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n)
+      y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
   } else if (inherits(x,'eof')) {
      if (inherits(newdata,'comb'))
-       y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n) else
+       y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose) else
      if (inherits(newdata,'eof'))
-       y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n)
-  }
+       y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
+  } else if (inherits(x,'pca')) {
+       y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
+     }
   
   y <- attrcp(attr(x,'original_data'),y)
   attr(y,'history') <- history.stamp(x)
@@ -22,11 +25,10 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
   invisible(y)
 }
 
-predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
+predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   stopifnot(!missing(x),inherits(x,"ds"))
-  #print("predict.ds.eof")
+  if (verbose) print("predict.ds.eof")
   X <- attr(x,'eof')
-  W <- attr(x,'eigenvalues')
   #print(dim(X))
   neofs <- length(attr(X,'eigenvalues'))
   
@@ -68,10 +70,10 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
   invisible(y)
 }
 
-predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
+predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     ## based on predict.ds.eof function
     stopifnot(!missing(x),inherits(x,"ds"))
-  #print("predict.ds.comb")
+  if (verbose) print("predict.ds.comb")
 
   
   if (is.null(newdata))
@@ -147,10 +149,10 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
     invisible(Y)
 }
 
-project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
+project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     ## based on predict.ds.eof function
     stopifnot(!missing(x),inherits(x,"ds"),inherits(x,'comb'))
-  #print("predict.ds.comb")
+  if (verbose) print("predict.ds.comb")
 
   
   if (is.null(newdata))
@@ -225,4 +227,17 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100) {
     attr(Y,'aspect') <- 'projected'
     Y <- as.station(Y)
     invisible(Y)
+}
+
+predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+  npca <- length(attr(x,'model'))
+  Z <- list()
+  for (i in 1:npca) {
+    y <- zoo(x[,i])
+    attr(y,'model') <- attr(x,'model')[[i]]
+    attr(y,'eof') <- attr(x,'eof')[[i]]
+    attr(y,'mean') <- 0
+    class(y) <- c('ds','eof','zoo')
+    Z[[i]] <- predict.ds.eof(y,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
+  }
 }
