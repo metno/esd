@@ -321,21 +321,21 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
         }
         ## May need an option for coombined field: x is 'field' + 'comb'
         if (verbose) print("Cross-validation")
-        xval <- crossval(ds,m=m)
-        attr(ds,'evaluation') <- zoo(xval)
 
-                                        #if (verbose) print(names(attributes(ds)))
+        ## Unless told not to - carry out a cross-validation
+        if (!is.null(m))  {
+          xval <- crossval(ds,m=m)
+          attr(ds,'evaluation') <- zoo(xval)
+        } else attr(ds,'evaluation') <- NULL
+
+        if (verbose) print(names(attributes(ds)))
         if (ns==1) dsall <- ds else {
             if (i==1) dsall <- list(ds.1=ds) else
             eval(parse(text=paste('dsall$ds.',i,' <- ds',sep='')))
         }
 
     }
-                                        #str(dsall)
     
-                                        #print("---")
-                                        #str(dsall)
-
     ## If PCA was used to transform the predictands to preserve the
     ## spatial covariance, then do the inverse to recover the results
     ## in a structure comparable to the original stations.
@@ -345,6 +345,8 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
         attr(dsall,'mean') <- attr(Y,'mean')    
         ds.results <- pca2station(dsall)
     } else ds.results <- dsall
+    
+    if (verbose) print("--- exit DS.station ---")
     invisible(ds.results)  
 }
 
@@ -720,13 +722,14 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         ## pattern for each PC. Combine into one matrix. The predictor pattern
         ## for each station can be recovered by multiplying with the PCA pattern
         if (verbose) print('Predictor pattern')
-        x0p <- attr(X0,'pattern')
+        x0p <- attr(X0,'pattern') %*% attr(X0,'eigenvalues')
         dp <- dim(x0p)
         if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs
         #str(x0p); print(dp); print(dy)
         predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
         dim(predpatt) <- c(dp[1]*dp[2],dy[2])
         dim(x0p) <- c(dp[1]*dp[2],dp[3])
+        model <- list(); eof <- list()
         for (i in 1:dy[2]) {
             if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
             ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],
@@ -737,23 +740,26 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             if (verbose) {print(class(ys)); print(class(X))}
             z <- DS(ys,X,biascorrect=biascorrect,
                     eofs=eofs,rmtrend=rmtrend,verbose=verbose,...)
-
+            model[[i]] <- attr(z,'model')
+            eof[[i]] <- X
             if (verbose) print('--- return to DS.pca ---')
             attr(z,'mean') <- 0 # can't remember why... REB
-                                        # Collect the projections in a matrix:
-                                        #zp <- predict(z,newdata=Xp)
-                                        #y.out[,i] <- coredata(zp)
+
+            ## Check:
             if (verbose) print(paste(i,'y.out[,i]:',
                                      length(y.out[is.finite(ys),i]),'=',length(z),'?'))
+            
+            ## Collect the projections in a matrix:
             y.out[is.finite(ys),i] <- coredata(z)
             fit.val[is.finite(ys),i] <- attr(z,'fitted_values')
             if (!is.null(attr(X0,'n.apps')))
                 yp.out[is.finite(ys),i] <- attr(z,'appendix.1')
             
-            if (i==1)                         # Also keep the cross-validation
-                cval <- attr(z,'evaluation') else
-                cval <- merge(cval,attr(z,'evaluation'))
-                                        # REB 2014-10-27
+            ## Also keep the cross-validation
+            if (!is.null(attr(z,'evaluation'))) { ## REB 2015-03-27
+              if (i==1) cval <- attr(z,'evaluation') else
+                        cval <- merge(cval,attr(z,'evaluation'))
+            } else cval <- NULL
             ## REB 2015-03-23
             if (verbose) print('Calculate predictor pattern:')
             ## Only if one type of predictor - case with mixed predictors a
@@ -779,7 +785,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         attr(ds,'predictor.pattern') <- predpatt
         ## REB 2015-03-23
         attr(ds,'pattern') <- attr(y0,'pattern')
-        names(cval) <- paste(c('X','Z'),'PCA',sort(rep(1:dy[2],2)),sep='.')
+        if (!is.null(cval))
+          names(cval) <- paste(c('X','Z'),'PCA',sort(rep(1:dy[2],2)),sep='.')
         attr(ds,'evaluation') <- cval
         if (!is.null(attr(X0,'n.apps'))) {
             attr(ds,'n.apps') <- 1
@@ -792,6 +799,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     attr(ds,'fitted_values') <- zoo(fit.val,
                                     order.by=index(attr(z,'fitted_values')))
     class(attr(ds,'fitted_values')) <- class(y0)
+    attr(ds,'model') <- model
+    attr(ds,'eof') <- eof
     attr(ds,'original_data') <- y
     attr(ds,'variable') <- varid(y0)
     attr(ds,'mean') <- attr(y0,'mean') # + offset

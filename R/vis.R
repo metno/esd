@@ -557,6 +557,7 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
   }
 
   # Set up colour-palette
+  col <- tolower(col)
   x <- 1:n
   r0 <- round(n*0.55)
   g0 <- round(n*0.5)
@@ -604,7 +605,8 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
   #if (exists("g")) remove(g) 
   #if (exists("b")) remove(b)
 
-  if (col[1]=="bwr") {
+  if ( (col[1]=="bwr") | (col[1]=="slp") | (col[1]=="mslp") |
+      (col[1]=="pressure") ) {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
     g <- exp(sg*(x - g0)^2)^2
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
@@ -624,7 +626,8 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
     col <- rgb(b,g,r)
-  } else if (col[1]=="t2m") {
+  } else if ( (col[1]=="t2m") | (col[1]=="tmax") | (col[1]=="tmin") |
+             (col[1]=="sst")  | (col[1]=="air") ){
     r <- approx(seNorgeT[1,],n=n)$y/255
     g <- approx(seNorgeT[2,],n=n)$y/255
     b <- approx(seNorgeT[3,],n=n)$y/255
