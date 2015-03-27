@@ -65,9 +65,9 @@ check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
 # explorer web portal (http://climexp.knmi.nl) and store the file into the 
 # local machine, e.g. temporary folder '/tmp' (Size ~96Mb) using the following
 # command if needed. Otherwise, specify a netcdf file to retrieve data from. 
-# download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_NorESM1-ME_rcp45_000.nc", destfile="/tmp/tas_Amon_NorESM1-ME_rcp45_000.nc", method = "auto", quiet = FALSE,mode = "w",cacheOK = TRUE)
+download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_NorESM1-ME_rcp45_000.nc", destfile="tas_Amon_NorESM1-ME_rcp45_000.nc", method = "auto", quiet = FALSE,mode = "w",cacheOK = TRUE)
 # Retrieve the data into "gcm" object
-gcm <-retrieve(ncfile="/tmp/tas_Amon_NorESM1-ME_rcp45_000.nc",param="tas",plot=TRUE)
+gcm <-retrieve(ncfile="tas_Amon_NorESM1-ME_rcp45_000.nc",param="tas",plot=TRUE)
 # Download the air surface temperature (tas) for RCP 4.5 scenarios and
 # NorESM1-ME model from the climate explorer and store it in destfile. 
 # Compute the anomalies
