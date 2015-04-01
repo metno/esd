@@ -1,4 +1,4 @@
-import(ncdf4)
+import(ncdf)
 import(zoo)
 
 # Exports - in alphabetic order
