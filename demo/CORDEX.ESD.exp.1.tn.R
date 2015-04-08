@@ -112,6 +112,7 @@ for (season in c('djf','mam','jja','son')) {
 
   ## The results are in the form of a PCA-object - convert back to a group of stations     
   tnm.ds <- pca2station(z.mt2)
+  exp1.tnm <- pca2station(z.mt2,what='xval')
 
   ## Extract the predicted cross-validation results which follow the experiment:
   ## only grab the series of predicted values - not the original data used for calibration

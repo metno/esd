@@ -132,7 +132,7 @@ anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
 
 anomaly.season <- function(x,ref=NULL,verbose=FALSE) {
 
-  anomaly.season1 <- function(x,yr=NULL,ref=NULL,verbose=FALSE) {
+  anomaly.season1 <- function(x,yr=NULL,ref=NULL,verbose=FALSE,what='anomaly') {
 # This function computes the anomalies by removing the 12-month seasonal cycle
     l <- length(x); n <- ceiling(l/4)
 #    pad <- l %% 4
@@ -149,18 +149,25 @@ anomaly.season <- function(x,ref=NULL,verbose=FALSE) {
     clim <- rowMeans(x,na.rm=TRUE)
     x <- c(x - clim)
     if (pad>0) x <- x[-(1:pad)]
+    if (substr(what,1,4)=='clim') x <- clim
     return(x)
 }
   X <- x
   if (verbose) print('anomaly.season')
   t <- index(x); yr <- year(x)
-  if (is.null(dim(x))) y <- anomaly.season1(coredata(x),yr,ref=ref,verbose=verbose) else
-                       y <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref,verbose=verbose)
+  if (is.null(dim(x))) {
+    y <- anomaly.season1(coredata(x),yr,ref=ref,verbose=verbose)
+    clim <- anomaly.season1(coredata(x),yr,ref=ref,verbose=verbose,what='clim')
+  } else {
+    y <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref,verbose=verbose)
+    clim <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref,verbose=verbose,what='clim')
+  }
   x <- zoo(y,order.by=t)
   x <- attrcp(X,x)
   #nattr <- softattr(X)
   #for (i in 1:length(nattr))
   #  attr(x,nattr[i]) <- attr(X,nattr[i])
+  #browser()
   attr(x,'climatology') <- clim
   attr(x,'aspect') <- 'anomaly'
   class(x) <- class(X)
