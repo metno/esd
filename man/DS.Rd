@@ -125,7 +125,8 @@ biasfix(x)
 \item{area.mean.expl}{When TRUE, subtract the area mean for the domain
   and use as a the first co-variate before the PCs from the EOF
   analysis.}
-  \item{m}{passed on to \code{\link{crossval}}}
+  \item{m}{passed on to \code{\link{crossval}}. A NULL value suppresses
+    the cross-validation, e.g. for short data series.}
   \item{weighted}{TRUE: use the attribute '\code{error.estimate}' as
     weight for the regresion analysis.}
   \item{\dots}{ }
@@ -180,8 +181,8 @@ plot(coredata(yT2m[,1]),coredata(yT2m[,2]))
 # Example: downscale annual wet-day mean precipitation -calibrate over
 # part of the record and use the other part for evaluation.
 T2M <- as.annual(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
-cal <- subset(T2M,it=c("1948-01-01","1980-01-01"))
-pre <- subset(T2M,it=c("1981-01-01","2013-01-01"))
+cal <- subset(T2M,it=c(1948,1980))
+pre <- subset(T2M,it=c(1981,2013))
 comb <- combine(cal,pre)
 X <- EOF(comb)
 data(bjornholt)
@@ -236,9 +237,10 @@ y2[set2na] <- NA
 ds2 <- DS(y2,X)
 plot(ds2) 
 
-## Use downscale results to fill in missin gata:
+## Use downscale results to fill in missin data:
 y3 <- predict(ds2,newdata=X)
-plot(y,col='grey80',lwd=4,xlim=range(index(y3)))
+## Plot a subset of y based on dates in predicted y3
+plot(subset(y,it=range(index(y3))),col='grey80',lwd=4)
 points(as.station(predict(ds2)))
 # The downscaled 
 lines(y3,lty=2)

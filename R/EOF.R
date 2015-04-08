@@ -457,17 +457,23 @@ PCA.station <- function(X,neofs=20,na.action='fill',verbose=FALSE) {
 }
 
 # Transfer PCA back to station data
-pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE) {
+pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if (inherits(X,'ds')) class(X) <- class(X)[-1]
-  print('pca2station')
+  if (verbose) print('pca2station')
   
   pca <- X
   cls <- class(pca)
   U <- attr(pca,'pattern')
   d <- dim(U)
   W <- attr(pca,'eigenvalues')
-  V <- coredata(pca)
+  if (what=='pca') V <- coredata(pca) else if (what=='xval') {
+    if (verbose) print('Retrieve the cross-validation data')
+    V <- coredata(attr(X,'evaluation')[,seq(2,dim(attr(X,'evaluation'))[2],by=2)])
+  } else if (what=='test') {
+    if (verbose) print('Retrieve the cross-validation observations')
+    V <- coredata(attr(X,'evaluation')[,seq(1,dim(attr(X,'evaluation'))[2]-1,by=2)])
+  }
   V[!is.finite(V)] <- 0
   #str(U); str(W); str(V)
   x <-U %*% diag(W) %*% t(V)

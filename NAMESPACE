@@ -1,4 +1,4 @@
-import(ncdf4)
+import(ncdf)
 import(zoo)
 
 # Exports - in alphabetic order
@@ -278,6 +278,7 @@ export(predict.ds)
 export(predict.mvr)
 export(predict.cca)
 export(predict.ds.eof)
+export(predict.ds.pca)
 export(predict.ds.comb)
 export(project.ds)
 export(regrid.weights)

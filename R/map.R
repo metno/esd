@@ -38,7 +38,7 @@ map.default <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   
   invisible(X)
 }
-
+ 
 map.matrix <- function(x,new=TRUE,projection="lonlat",...) {
   
 # If x is provided, map only x...
@@ -61,7 +61,7 @@ map.array <- function(x,pattern=1,new=TRUE,projection="lonlat",...) {
   attr(z,'latitude') <- lat(x)
   attr(z,'variable') <- varid(x)
   attr(z,'unit') <- unit(x)
-  map(z)
+  map(z,new=new,projection=projection,...)
 }
 
 
@@ -126,8 +126,8 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,pattern=1,
 }
 
 
-map.ds <- function(x,it=NULL,is=NULL,new=TRUE,xlim=xlim,ylim=ylim,
-                   what=c("fill","contour"),
+map.ds <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
+                   what=c("fill","contour"),pattern=1,
                    n=15,projection="lonlat",
                    lonR=NULL,latR=NULL,axiR=0,gridlines=TRUE,
                    col=NULL,breaks=NULL,verbose=FALSE,...) {
@@ -135,6 +135,14 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,xlim=xlim,ylim=ylim,
   stopifnot(inherits(x,'ds'))
   x <- subset(x,it=it,is=is)
 
+## REB 2015-03-26
+  if (inherits(x,'pca')) {
+    map.pca(x,pattern=pattern,verbose=verbose,new=new,
+            xlim=xlim,ylim=ylim,projection=projection,
+            lonR=lonR,latR=latR,axiR=axiR,gridlines=gridlines,
+            col=col,breaks=breaks)
+    return()
+  }
   projection <- tolower(projection)
   X <- attr(x,'pattern')
   if (is.list(X)) {
@@ -512,8 +520,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
 #}
 
 map.pca <- function(x,pattern=1,new=TRUE,FUN='mean',
-                    col=NULL,cex=1.5,xlim=NULL,ylim=NULL,...) {
-  X <- rbind(attr(x,'pattern')[,pattern],attr(x,'pattern')[,pattern])
+                    col=NULL,cex=1.5,xlim=NULL,ylim=NULL,colbar=NULL,...) {
+    ##
+    #args <- list(...)
+    #print(args)
+    X <- rbind(attr(x,'pattern')[,pattern],attr(x,'pattern')[,pattern])
   #print(dim(X))
   #str(x)
   X <- attrcp(x,X)
@@ -523,6 +534,7 @@ map.pca <- function(x,pattern=1,new=TRUE,FUN='mean',
   if (is.null(col)) {
     col <- colscal(30,col=varid(x))
   }
+    
   map.station(X,new=new,FUN=FUN,col=col,bg=col,
               colbar=list(col=col,type='r',v=0),
               cex=cex,xlim=xlim,ylim=ylim,...)
@@ -590,11 +602,11 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
     par(fig=c(0,0.5,0.5,1)) ## mar=c(0.05,.05,0.05,0.05),
   else 
     par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
-#  browser()
+  
   map(Y,pattern=icca,xlim=xlim,ylim=ylim,what=what,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',colorbar=colorbar,
-      colbar=list(col=col.y,type='r',v=0),
+      colbar=list(col=col,type='r',v=0),
       showall=FALSE,new=FALSE)
   ## browser()
   if (sum(is.element(what,'ts'))>0)
@@ -603,7 +615,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
   map(X,pattern=icca,xlim=xlim,ylim=ylim,what=what,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',colorbar=colorbar,
-      colbar=list(col=col.x,type='r',v=0),
+      colbar=list(col=col,type='r',v=0),
       showall=FALSE,new=FALSE)
   
   invisible(list(U=U,V=V))

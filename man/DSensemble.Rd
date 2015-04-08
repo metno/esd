@@ -88,17 +88,20 @@ DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
 \author{R.E. Benestad and A. Mezghani}
 \examples{
 data(Oslo)
-## Download NorESM1-M from 'climexp.knmi.nl' in the temporary (for linux '/tmp') folder
-## download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_NorESM1-M_rcp45_000.nc", 
-##              destfile="/tmp/tas_Amon_NorESM1-M_rcp45_000.nc", method = "auto", quiet = FALSE,
-##              mode = "w",cacheOK = TRUE)
-## Download NorESM1-ME from the rcp45 
-## download.file(url="http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_FIO-ESM_rcp45_000.nc", 
-##              destfile="/tmp/tas_Amon_FIO-ESM_rcp45_000.nc", method = "auto", quiet = FALSE,
-##              mode = "w",cacheOK = TRUE)
-##              
-rcp4.5 <- DSensemble.t2m(Oslo,rcp='rcp45',path='/tmp/',pattern = "tas_Amon_",biascorrect=TRUE,
-                     area.mean.expl=TRUE, predictor = "/tmp/air.2m.mon.mean.nc",plot=TRUE)
+## Download NorESM1-M from 'climexp.knmi.nl' in default directory
+## (home directory for linux/mac users)
+url <-"http://climexp.knmi.nl/CMIP5/monthly/tas/"
+## Download NorESM1-ME from the rcp45
+noresm <- "tas_Amon_NorESM1-M_rcp45_000.nc"
+if (!file.exists(noresm))
+    download.file(url=file.path(url,noresm), destfile=noresm,
+                 method = "auto",quiet=FALSE,mode = "w",cacheOK = TRUE)
+fioesm <- "tas_Amon_FIO-ESM_rcp45_000.nc"
+if (!file.exists(fioesm))
+    download.file(url=file.path(url,fioesm), destfile=fioesm,
+                  method = "auto", quiet = FALSE, mode = "w",cacheOK = TRUE)
+## Downscale 2m temperature             
+rcp4.5 <- DSensemble.t2m(Oslo,path=getwd(),rcp='',pattern = "tas_Amon_",biascorrect=TRUE, area.mean.expl=TRUE, predictor = "air.2m.mon.mean.nc",plot=TRUE)
 
 # Evaluation: (1) combare the past trend with downscaled trends for same
 # interval by ranking and by fitting a Gaussian to the model ensemble;

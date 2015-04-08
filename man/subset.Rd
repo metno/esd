@@ -89,8 +89,8 @@ cal <- subset(t2m,it=c("1948-01-01","1980-12-31"))
 # split-sample test...
 
 T2M <- as.annual(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
-cal <- subset(T2M,it=c("1948","1980"))
-pre <- subset(T2M,it=c("1981","2012"))
+cal <- subset(T2M,it=c(1948,1980))
+pre <- subset(T2M,it=c(1981,2012))
 comb <- combine(cal,pre) 
 X <- EOF(comb)
 plot(X)
