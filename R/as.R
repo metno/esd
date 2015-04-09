@@ -1081,6 +1081,20 @@ as.eof.appendix <- function(x,iapp=1) {
   return(y)
 }
 
+as.eof.list <- function(x,iapp=NULL) {
+  #print("as.eof.appendix")
+  stopifnot(inherits(x,'list'))
+  wPC <- function(z) {
+    eigv <- attr(z,'eigenvalues')
+    w <- eigv/sum(eigv)
+    
+  }
+  X <- lapply(x,wPC)
+  X <- matrix(unlist(X),ncol=
+  return(y)
+}
+
+
 
 as.appended <- function(x,...) UseMethod("as.appended")
 

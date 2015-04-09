@@ -203,14 +203,14 @@ t1 <- c(index(X$mean.tier1.djf),index(X$mean.tier1.mam),
 tnm.tier1 <- zoo(tnm1.4s,order.by=t1) + matchdate(clim,it=t1)
 tnm.tier1 <- attrcp(X$mean.tier1.djf,tnm.tier1)
 class(tnm.tier1) <- class(X$mean.tier1.djf)
-X$tier1 <- tnm.tier1
+X$tier1 <- subset(tnm.tier1,it=c(1996,2006))
 tnm2.4s <- rbind(coredata(X$mean.tier2.djf),coredata(X$mean.tier2.mam),
                  coredata(X$mean.tier2.jja),coredata(X$mean.tier2.son))
 t2 <- c(index(X$mean.tier2.djf),index(X$mean.tier2.mam),index(X$mean.tier2.jja),index(X$mean.tier2.son))
 tnm.tier2 <- zoo(tnm2.4s,order.by=t1) + matchdate(clim,it=t2)
 tnm.tier2 <- attrcp(X$mean.tier2.djf,tnm.tier2)
 class(tnm.tier2) <- class(X$mean.tier2.djf)
-X$tier2 <- tnm.tier2
+X$tier2 <- subset(tnm.tier2,it=c(1979,2003))
 
 # add some new attributes describing the results:
 print('add new attributes')

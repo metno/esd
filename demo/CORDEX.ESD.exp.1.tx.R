@@ -191,7 +191,6 @@ for (season in c('djf','mam','jja','son')) {
 
 }
 
-
 print("Finished looping and downscaling; organise the data using rbind:")
 txm1.4s <- rbind(coredata(X$mean.tier1.djf),coredata(X$mean.tier1.mam),
                  coredata(X$mean.tier1.jja),coredata(X$mean.tier1.son))
@@ -200,14 +199,14 @@ t1 <- c(index(X$mean.tier1.djf),index(X$mean.tier1.mam),
 txm.tier1 <- zoo(txm1.4s,order.by=t1) + matchdate(clim,it=t1)
 txm.tier1 <- attrcp(X$mean.tier1.djf,txm.tier1)
 class(txm.tier1) <- class(X$mean.tier1.djf)
-X$tier1 <- txm.tier1
+X$tier1 <- subset(txm.tier1,it=c(1996,2006))
 txm2.4s <- rbind(coredata(X$mean.tier2.djf),coredata(X$mean.tier2.mam),
                  coredata(X$mean.tier2.jja),coredata(X$mean.tier2.son))
 t2 <- c(index(X$mean.tier2.djf),index(X$mean.tier2.mam),index(X$mean.tier2.jja),index(X$mean.tier2.son))
 txm.tier2 <- zoo(txm2.4s,order.by=t1) + matchdate(clim,it=t2)
 txm.tier2 <- attrcp(X$mean.tier2.djf,txm.tier2)
 class(txm.tier2) <- class(X$mean.tier2.djf)
-X$tier2 <- txm.tier2
+X$tier2 <- subset(txm.tier2,it=c(1979,2003))
 
 # add some new attributes describing the results:
 print('add new attributes')

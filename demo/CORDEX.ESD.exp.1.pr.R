@@ -1,5 +1,8 @@
 # Script for setting up and running CORDEX ESD experiment 1 for precip
 # R.E. Benestad
+# The experiment protocol: http://wcrp-cordex.ipsl.jussieu.fr/images/pdf/guidelines/CORDEX_ESD_Experiment1.pdf
+# Tier 1: calibration: 1979-1995; validation: 1996-2006 
+# Tier 2: 5-fold cross-validation: [1979,1983], [1984,1988],[1989,1993],[1994,1998],[1999,2003] 
 
 rm(list=ls()); gc(reset=TRUE)
 print('CORDEX.ESD.exp.1.pr')
@@ -165,9 +168,12 @@ abline(lm(y ~ x),col=rgb(0,0,1),lty=2)
 ok <-  is.finite(x) & is.finite(y)
 mtext(side=4,paste('r=',round(cor(x[ok],y[ok]),3)),las=3)
 
-
-
 dev.copy2pdf(file='CORDEX.ESD.exp1.pr.esd.pdf')
+
+mu.tier1 <- subset(mu.tier1,it=c(1996,2006))
+fw.tier1 <- subset(fw.tier1,it=c(1996,2006))
+mu.tier2 <- subset(mu.tier1,it=c(1979,2003))
+fw.tier2 <- subset(fw.tier1,it=c(1979,2003))
 
 X <- list(mu.tier1=mu.tier1,fw.tier1=fw.tier1,
           mu.tier2=mu.tier2,fw.tier2=fw.tier2,
