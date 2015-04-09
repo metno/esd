@@ -89,14 +89,18 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   ## REB: modified the code 2015-04-09
   if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
-  if (is.null(newdata)) newdata <- data.frame(coredata(as.eof(x))) else
-                        newdata <- data.frame(coredata(as.eof(newdata)))
+  if (is.null(newdata)) {
+    newdata <- data.frame(coredata(as.eof(x)))
+    t <- index(as.eof(x))
+  } else {
+    t <- index(as.eof(newdata))
+    newdata <- data.frame(coredata(as.eof(newdata)))
   }
   
   d <- dim(newdata)
   if (is.null(d)) d <- c(length(x),1)
   model <- attr(x,'model')
-  browser()
+#  browser()
   y <- lapply(model,predict,newdata)
   y <- matrix(unlist(y),nrow=d[1],ncol=length(model))
 #  Z <- list()
@@ -113,7 +117,7 @@ predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
  
   ## Replace 
   #browser()
-  y <- zoo(y, order.by=index(newdata))
+  y <- zoo(y, order.by=t)
   y <- attrcp(x,y)
   class(y) <- class(x)[-1]
   return(y)
