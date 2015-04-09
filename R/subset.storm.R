@@ -63,10 +63,12 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           ii <- is.element(yr,it)
         }
       } else if (is.logical(it) & length(it)==length(t)) {
-          ii <- it
-      } else if (is.integer(it) & max(is)<=length(t)) {
-          ii <- rep(FALSE,length(t))
-          ii[it] <- TRUE
+        if (verbose) print('it is a logical array')
+        ii <- it
+      } else if (is.integer(it) & max(it)<=length(t)) {
+        if (verbose) print('it is an index array')
+        ii <- rep(FALSE,length(t))
+        ii[it] <- TRUE
       } else {
         ii <- rep(FALSE,length(t))
         warning("subset.station: did not recognise the selection citerion for 'it'")
@@ -87,18 +89,20 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (length(ip)>0) sslp <- is[[ip]] else sslp <- NULL        
         if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
         if (length(slon)==2) {
+          if (verbose) print(paste('is selects longitudes ',slon[1],'–',slon[2],'E',sep=""))
           fn <- function(x) any(x>=min(slon) & x<=max(slon))
           selx <- apply(x[,colnames(x)=='lon'],1,fn)
         }
         if (length(slat)==2) {
+          if (verbose) print(paste('is selects latitudes ',slat[1],'–',slat[2],'N',sep=""))
           fn <- function(x) any(x>=min(slat) & x<=max(slat))
           sely <- apply(x[,colnames(x)=='lat'],1,fn)
         }
         if (length(sslp)>0) {
+          if (verbose) print(paste('is selects slp ',min(sslp),'–',max(sslp),sep=""))
           fn <- function(x) any(x>=min(sslp) & x<=max(sslp))
-          selp <- apply(x$slp,1,fn)
+          selp <- apply(x[,colnames(x)=='slp'],1,fn)
           }
-        #if (length(sFUN)>0) selF <- apply(x,1,sFUN) # Not quite finished...
         ij <- selx & sely & selp & selF
      }
 
@@ -107,6 +111,10 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     
     class(y) <- cls
     y <- attrcp(x,y)
+    if (inherits(is,'list')) {
+      if (length(slon)==2) attr(y,'longitude') <- slon
+      if (length(slat)==2) attr(y,'latitude') <- slat
+    }
     attr(y,'history') <- history.stamp(x)
     invisible(y)
 }
