@@ -3,7 +3,7 @@
 plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
-                         errorbar=TRUE,...) {
+                         errorbar=TRUE,legend.show=TRUE,...) {
 
   #print('plot.station')
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
@@ -64,13 +64,15 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-    legend(0.01,0.95,paste(attr(x,'location'),": ",
+    if(legend.show) {
+      legend(0.01,0.95,paste(attr(x,'location'),": ",
                            #attr(x,'aspect'),
                            #attr(x,'longname')," - ",
                            round(attr(x,'longitude'),2),"E/",
                            round(attr(x,'latitude'),2),"N (",
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
+    }
     par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
         fig=c(0,1,0.1,1),new=TRUE)
 
