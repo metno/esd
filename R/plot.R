@@ -279,6 +279,8 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     text(0,0.5,paste('x-correlation=',
            round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
          pos=4,cex=0.8,col='grey')
+  }  else {
+    xvalfit <- NULL
   }
   
  
@@ -360,9 +362,10 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   ## Replot observations and prediction for calibration period
   lines(y0,lwd=1,type='b',pch=19)
   lines(x,col="red",type="l",lwd=lwd)
-print(legcol)
+  #print(legcol)
 
-  legend(x="topleft",legend=c("Obs.","Cal.","Proj"),bty="n",horiz=TRUE,col=c("black","red","blue"),lwd=c(1,1,1),pch=c(19,1,1))
+  legend(x="topleft",legend=c("Obs.","Cal.","Proj"),bty="n",horiz=TRUE,
+         col=c("black","red","blue"),lwd=c(1,1,1),pch=c(19,1,1))
   
   if (plot.type=="single") {
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
@@ -537,7 +540,8 @@ plot.pca <- function(y,verbose=FALSE,...) {
 plot.ds.pca <- function(y,pattern=1,verbose=FALSE,...) {
   if (verbose) print('plot.ds.pca')
   attr(y,'longname') <- attr(y,'longname')[1]
-  par(fig=c(0,0.45,0.5,0.975),new=TRUE)
+#  par(fig=c(0,0.45,0.5,0.975),new=TRUE)
+  par(fig=c(0,0.45,0.5,0.975))
   map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,...)
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
   map(attr(y,'predictor.pattern'),new=FALSE,colorbar=FALSE)
@@ -559,6 +563,7 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,...) {
     par(fig=c(0.05,0.975,0.05,0.475),new=TRUE)
     plot(zoo(y[,pattern]),lwd=2,col='red',type='b')
     lines(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    xvalfit <- NULL
   }
 }
 

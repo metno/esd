@@ -1038,7 +1038,7 @@ as.eof.ds <- function(x,iapp=NULL) {
 }
 
 as.eof.eof <-function(x,iapp=NULL) {
-  if (inherits(x,'comb')) x <- as.eof.comb(x,iapp) 
+  if (inherits(x,'comb')) x <- as.eof.comb(x,iapp) else
   return(x)
 }
   

@@ -801,6 +801,12 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             yp.out -> attr(ds,'appendix.1')
         }
     }
+
+    ## Check the 'eof' attribute
+    if ( (!is.list(X0)) & is.list(eof) ) {
+          eof <- eof[[1]]
+          if (verbose) print('Check suggests that eof is stored as list -> eof')
+        }
                                         #print(class(model)); str(model)
     attr(ds,'calibration_data') <- attr(z,'calibration_data')
     attr(ds,'fitted_values') <- zoo(fit.val,

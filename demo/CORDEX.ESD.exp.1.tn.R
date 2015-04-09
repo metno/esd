@@ -1,9 +1,16 @@
 # Script for setting up and running CORDEX ESD experiment 1 for Tmax
 # R.E. Benestad
 
+rm(list=ls()); gc(reset=TRUE)
+print('CORDEX.ESD.exp.1.tn')
+
 # Number of PCAs used to represent the predictand data- determines the degree
 # of detail but also the robustness of the results
-npca <- 4
+#npca <- 7; lon <- c(-90,-30); lat <- c(-35,-15); eofs <- 1:10 # m:r=[0.56,0.78];s:r=[0.5,0.75]
+#npca <- 3; lon <- c(-90,-30); lat <- c(-35,-15); eofs <- 1:5 # m:r=[0.58,0.84];s:r=[0.58,0.81]
+#npca <- 15; lon <- c(-90,-30); lat <- c(-35,-15); eofs <- 1:10 # m:r=[0.53,0.76];s:r=[0.46,0.72]
+#npca <- 7; lon <- c(-90,-30); lat <- c(-35,-15); eofs <- 1:10 # m:r=[0.56,0.78];s:r=[0.5,0.76]
+npca <- 3; lon <- c(-70,-15); lat <- c(-37,-17); eofs <- 1:5  # mu: r=[0.64,0.8]; fw: r= [0.6,0.81]
 
 # load the predictands: CLARIS precip
 print('Get the CLARIS data')
@@ -19,7 +26,7 @@ attr(Tn,'location')[77:81] <- c("Aerodromo de Pedro Juan Caballero","Aerodromo d
 # Tier 2: 5-fold cross-validation: [1979,1983], [1984,1988],[1989,1993],[1994,1998],[1999,2003] 
 
 # Limit to the prescribed interval
-Tn <- subset(Tn,it=c(1979,2006))
+Tn <- subset(Tn,it=c(1979,2007))
 #Tn0 <- Tn # Keep original copy
 
 ## Daily anomalies:
@@ -43,16 +50,20 @@ clim <- Mt4s0 - Mt4s  # climatology
 print('Get the predictor data')
 # Out-going long-wave radiation
 olr <- as.4seasons(retrieve('data/ERAINT/ERAINT_olr_mon.nc',
-                       lon=c(-90,-30),lat=c(-35,-15)),FUN='mean')
+                       lon=lon,lat=lat),FUN='mean')
 attr(olr,'unit') <- "W * m**-2"
 
 # Temperature
 t2m <- as.4seasons(retrieve('data/ERAINT/ERAINT_t2m_mon.nc',
-                            lon=c(-90,-30),lat=c(-35,-15)))
+                            lon=lon,lat=lat))
 
 # Mean sea level pressure
 slp <- as.4seasons(retrieve('data/ERAINT/ERAINT_slp_mon.nc',
-                       lon=c(-90,-30),lat=c(-35,-15)),FUN='mean')
+                       lon=lon,lat=lat),FUN='mean')
+
+olr <- subset(olr,it=c(1979,2007))
+slp <- subset(slp,it=c(1979,2007))
+t2m <- subset(t2m,it=c(1979,2007))
 
 X <- list(description='cordex-esd-exp1')
 
@@ -84,9 +95,9 @@ for (season in c('djf','mam','jja','son')) {
 
   print(paste('Tear 1: Season:',season,' calibrate on the period:',
               start(pca.mt),'-',end(pca.mt)))
-  z.mt1 <- DS(pca.mt,eof.t2m,detrend=FALSE,m=NULL,verbose=FALSE)
+  z.mt1 <- DS(pca.mt,eof.t2m,rmtrend=FALSE,m=NULL,verbose=FALSE,eofs=eofs)
   z.st1 <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
-             detrend=FALSE,m=NULL,verbose=FALSE)
+             rmtrend=FALSE,m=NULL,verbose=FALSE,eofs=eofs)
 
   ## Predict the results.
   mt.tier1 <-as.station(predict(z.mt1,newdata=eof.t2m,verbose=FALSE))
@@ -106,9 +117,9 @@ for (season in c('djf','mam','jja','son')) {
   
   ## The experiment results are provided by the cross-validation defined by
   ## parameter 'm' (used in crossval).
-  ## Importan to set detrend=FALSE to retain original data in the cross-validation.
+  ## Importan to set rmtrend=FALSE to retain original data in the cross-validation.
   ## First downscale the mean values:
-  z.mt2 <- DS(pca.mt,eof.t2m,m='cordex-esd-exp1',detrend=FALSE,verbose=FALSE)
+  z.mt2 <- DS(pca.mt,eof.t2m,m='cordex-esd-exp1',rmtrend=FALSE,verbose=FALSE,eofs=eofs)
 
   ## The results are in the form of a PCA-object - convert back to a group of stations     
   tnm.ds <- pca2station(z.mt2)
@@ -120,9 +131,15 @@ for (season in c('djf','mam','jja','son')) {
 
   # Repeat the downscaling for the standard deviation: use a mix of predictors.
   z.st2 <- DS(pca.st,list(t2m=eof.t2m,slp=eof.slp,olr=eof.olr),
-               m='cordex-esd-exp1',detrend=FALSE,verbose=FALSE)
+               m='cordex-esd-exp1',rmtrend=FALSE,verbose=FALSE,eofs=eofs)
   tns.ds <- pca2station(z.st2)
   exp1.tns <- pca2station(z.st2,what='xval')
+
+  ## Reset missing values to missing values
+  coredata(mt4sc)[miss.mc] <- NA
+  coredata(st4sc)[miss.sc] <- NA
+  coredata(mt4s)[miss.m] <- NA
+  coredata(st4s)[miss.s] <- NA
   
   # Check: Figure: scatter plot
   
@@ -136,13 +153,16 @@ for (season in c('djf','mam','jja','son')) {
        main=paste(toupper(season),' mean temperature'),
        sub=paste('predictand: CLARIS; #PCA=',npca))
   grid()
-  
+
+  if (season(exp1.tnm)[1]=='djf') exp1.tnm <- subset(exp1.tnm,it=c(1980,2004)) else
+                                  exp1.tnm <- subset(exp1.tnm,it=c(1979,2003))
   x <- c(coredata(matchdate(x,exp1.tnm)))
   y <- c(coredata(exp1.tnm))
   points(x,y,col=rgb(1,0,0,0.25),lwd=2)
   abline(lm(y ~ x),col=rgb(0.8,0,0),lty=2)
   ok <-  is.finite(x) & is.finite(y)
   mtext(side=4,paste('r=',round(cor(x[ok],y[ok]),3)),las=3)
+
   
   # Check: Figure: scatter plot
   x <- matchdate(subset(st4s,it=season),tnm.ds)
@@ -153,6 +173,9 @@ for (season in c('djf','mam','jja','son')) {
        main=paste(toupper(season),' standard deviation'),
        sub=paste('predictand: CLARIS; #PCA=',npca))
   grid()
+
+  if (season(exp1.tnm)[1]=='djf') exp1.tns <- subset(exp1.tns,it=c(1980,2004)) else
+                                  exp1.tns <- subset(exp1.tns,it=c(1979,2003))
   x <- c(coredata(matchdate(x,exp1.tns)))
   y <- c(coredata(exp1.tns))
   points(x,y,col=rgb(1,0,0,0.25),lwd=2)
@@ -160,26 +183,37 @@ for (season in c('djf','mam','jja','son')) {
   ok <-  is.finite(x) & is.finite(y)
   mtext(side=4,paste('r=',round(cor(x[ok],y[ok]),3)),las=3)
 
-  eval(parse(text=paste('X$tnm.',season,' <- tnm.ds',sep='')))
-  eval(parse(text=paste('X$tns.',season,' <- tns.ds',sep='')))
-  eval(parse(text=paste('X$tnm0.',season,' <- mt4s',sep='')))
-  eval(parse(text=paste('X$tns0.',season,' <- st4s',sep='')))
-
   # The independent validation is contained in exp1.tnm (seasonal mean)
   # and exp1.tnm (seasonal standard deviation)
-  eval(parse(text=paste('X$exp1.tnm.',season,' <- exp1.tnm',sep='')))
-  eval(parse(text=paste('X$exp1.tns.',season,' <- exp1.tns',sep='')))
+  eval(parse(text=paste('X$mean.tier1.',season,' <- mt.tier1',sep='')))
+  eval(parse(text=paste('X$sd.tier1.',season,' <- st.tier1',sep='')))
+  eval(parse(text=paste('X$mean.tier2.',season,' <- exp1.tnm',sep='')))
+  eval(parse(text=paste('X$sd.tier2.',season,' <- exp1.tns',sep='')))
+  ## Original data
+  eval(parse(text=paste('X$mean.obs.',season,' <- mt4s',sep='')))
+  eval(parse(text=paste('X$sd.obs.',season,' <- st4s',sep='')))
+
 }
 
-tnm.4s <- rbind(coredata(X$exp1.tnm.djf),coredata(X$exp1.tnm.mam),
-                coredata(X$exp1.tnm.jja),coredata(X$exp1.tnm.son))
-t <- c(index(X$exp1.tnm.djf),index(X$exp1.tnm.mam),index(X$exp1.tnm.jja),index(X$exp1.tnm.son))
-tnm.exp1 <- zoo(tnm.4s,order.by=t) + matchdate(clim,it=t)
-tnm.exp1 <- attrcp(X$exp1.tnm.djf,tnm.exp1)
-class(tnm.exp1) <- class(X$exp1.tnm.djf)
-X$tier2 <- tnm.exp1
+print("Finished looping and downscaling; organise the data using rbind:")
+tnm1.4s <- rbind(coredata(X$mean.tier1.djf),coredata(X$mean.tier1.mam),
+                 coredata(X$mean.tier1.jja),coredata(X$mean.tier1.son))
+t1 <- c(index(X$mean.tier1.djf),index(X$mean.tier1.mam),
+        index(X$mean.tier1.jja),index(X$mean.tier1.son))
+tnm.tier1 <- zoo(tnm1.4s,order.by=t1) + matchdate(clim,it=t1)
+tnm.tier1 <- attrcp(X$mean.tier1.djf,tnm.tier1)
+class(tnm.tier1) <- class(X$mean.tier1.djf)
+X$tier1 <- tnm.tier1
+tnm2.4s <- rbind(coredata(X$mean.tier2.djf),coredata(X$mean.tier2.mam),
+                 coredata(X$mean.tier2.jja),coredata(X$mean.tier2.son))
+t2 <- c(index(X$mean.tier2.djf),index(X$mean.tier2.mam),index(X$mean.tier2.jja),index(X$mean.tier2.son))
+tnm.tier2 <- zoo(tnm2.4s,order.by=t1) + matchdate(clim,it=t2)
+tnm.tier2 <- attrcp(X$mean.tier2.djf,tnm.tier2)
+class(tnm.tier2) <- class(X$mean.tier2.djf)
+X$tier2 <- tnm.tier2
 
 # add some new attributes describing the results:
+print('add new attributes')
 attr(X,'description') <- 'cross-validation'
 attr(X,'experiment') <- 'CORDEX ESD experiment 1'
 attr(X,'method') <- 'esd'
@@ -191,4 +225,7 @@ attr(X,'predictor_domain') <- 'lon=c(-90,-30),lat=c(-35,-15)'
 attr(X,'history') <- history.stamp()
 attr(X,'R-script') <- readLines('CORDEX.ESD.exp.1.tn.R')
 
+print('Save the results')
 save(file='CORDEX.ESD.exp1.tn.esd.rda',X)
+
+print('finished')
