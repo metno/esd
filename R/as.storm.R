@@ -1,11 +1,12 @@
 as.storm <- function(x) {
-  x$cyclone <- as.numeric(as.character(x$cyclone))
-  x$Date <- as.numeric(as.character(x$Date))
-  x$Year <- as.numeric(as.character(x$Year))
-  x$Lon <- as.numeric(as.character(x$Lon))
-  x$Lat <- as.numeric(as.character(x$Lat))
-  x$Pressure <- as.numeric(as.character(x$Pressure))
+  x$Code99 <- as.numeric(as.character(x$Code99))
   x <- x[x$Code99<90,]
+  x$cyclone <- factor2numeric(x$cyclone)
+  x$Date <- factor2numeric(x$Date)
+  x$Year <- factor2numeric(x$Year)
+  x$Lon <- factor2numeric(x$Lon)
+  x$Lat <- factor2numeric(x$Lat)
+  x$Pressure <- factor2numeric(x$Pressure)
   if (x$Code99[1]>9) {
     m <- paste("M",as.character(x$Code99[1]),sep="")
   } else m <- paste("M0",as.character(x$Code99[1]),sep="")
@@ -13,6 +14,9 @@ as.storm <- function(x) {
   M <- imilast2matrix(x)
   invisible(M)
 }
+
+factor2numeric <- function(x) {
+  suppressWarnings(as.numeric(levels(x))[x])}
 
 imilast2matrix <- function(x) {
   x <- data.frame(x)
