@@ -4,7 +4,7 @@
 plot.storm <- function(x,it=NULL,is=NULL,
       main=NULL,xlim=NULL,ylim=NULL,
       col=NULL,pch=0,type='l',lwd=3,
-      xlab="",ylab=NULL,new=TRUE,verbose=TRUE) {
+      xlab="",ylab=NULL,new=TRUE,verbose=FALSE) {
   y <- subset.storm(x,it=it,is=is)
   n <- count.storm(y,by='year')
   plot.station(n,main=main,new=new,col=col,
