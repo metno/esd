@@ -2,20 +2,8 @@
 ## Last update   12.02.2015
 ## Tools for analyzing IMILAST stormtrack files
 
-year.storm <- function(x) {
-  start <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")
-  yr <- as.numeric(strftime(start,format="%Y"))
-  invisible(yr)
-}
-
-month.storm <- function(x) {
-  start <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")
-  mn <- as.numeric(strftime(start,format="%m"))
-  invisible(mn)
-}
-
 season.storm <- function(x) {
-  mn <- month.storm(x)
+  mn <- month(x)
   mlist <- c(12,1:11)
   slist <- c(1,1,1,2,2,2,3,3,3,4,4,4)
   sn <- sapply(mn,function(x) slist[mlist==x])
@@ -91,14 +79,14 @@ anomaly.storm <- function(x,param=c('lon','lat','slp')) {
 count.storm <- function(x,it=NULL,is=NULL,by='year') {
   y <- subset.storm(x,it=it,is=is)
   if (by=='year') {
-    i <- seq(min(which(min(month.storm(y))==month.storm(y))),
-         max(which(max(month.storm(y))==month.storm(y))))
+    i <- seq(min(which(min(month(y))==month(y))),
+         max(which(max(month(y))==month(y))))
     y <- subset.storm(y,it=i)
   }
   t <- strptime(y[,colnames(y)=="start"],format="%Y%m%d%H")
   if (by=='year') {
     fmt <- "%Y"
-    cls <- 'annual'
+    if (inherits(y,'season')) {cls <- NULL} else {cls <- 'annual'}
   } else if (by=='month') {
     fmt <- "%Y%m%d"
     t <- as.yearmon(t)

@@ -302,6 +302,7 @@ month <- function(x) {
   }
   if (inherits(x,'storm')) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mon + 1
+    return(y)
   }
   if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
     y <- month(as.Date(x))
@@ -328,6 +329,7 @@ day <- function(x) {
   }
   if (inherits(x,'storm')) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mday
+    return(y)
   }
   if (inherits(x,c('numeric','integer'))) x <- as.numeric(x)
   if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 32) )
