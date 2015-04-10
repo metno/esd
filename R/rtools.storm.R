@@ -97,7 +97,8 @@ count.storm <- function(x,it=NULL,is=NULL,by='year') {
   }
   d <- strftime(t,format=fmt)
   n <- table(d)
-  dn <- as.Date(strptime(dimnames(n)$d,format=fmt))
+  if (by=='year') {dn <- dimnames(n)$d
+  } else dn <- as.Date(strptime(dimnames(n)$d,format=fmt))
   nz <- zoo(n,order.by=dn)
   class(nz) <- c(class(nz),cls)
   attrcp(y,nz)
