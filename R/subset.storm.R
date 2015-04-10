@@ -15,10 +15,15 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
     # Generate sequence of days, months or years if range of it value is given
     if (!is.null(it)) {
-      t <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
-      yr <- as.numeric(strftime(t,"%Y"))
-      mo <- as.numeric(strftime(t,"%m"))
-      dy <- as.numeric(strftime(t,"%d"))
+      if(verbose) print('Generate sequence of time if it value is given')
+      t <- strftime(strptime(x[,colnames(x)=="start"],format="%Y%m%d%H"),
+                    format="%Y%m%d")
+      yr <- year(x)
+      mo <- month(x)
+      dy <- day(x)
+      if(verbose) print(paste('years',paste(unique(yr),collapse=",")))
+      if(verbose) print(paste('months',paste(unique(mo),collapse=",")))
+      if(verbose) print(paste('mdays',paste(unique(dy),collapse=",")))
     
       is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
                                                tolower(month.abb)))>0)
@@ -115,6 +120,7 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (length(slon)==2) attr(y,'longitude') <- slon
       if (length(slat)==2) attr(y,'latitude') <- slat
     }
+    if (is.seasons(it)) class(y) <- c(class(y),'season')
     attr(y,'history') <- history.stamp(x)
     invisible(y)
 }
