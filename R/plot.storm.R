@@ -29,5 +29,3 @@ plot.storm <- function(x,it=NULL,is=NULL,
          text.col="grey40",lty=1,col=col)
   }
 }
-
-
