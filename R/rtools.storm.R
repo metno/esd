@@ -86,8 +86,12 @@ count.storm <- function(x,it=NULL,is=NULL,by='year') {
   t <- strptime(y[,colnames(y)=="start"],format="%Y%m%d%H")
   if (by=='year') {
     fmt <- "%Y"
-    if (inherits(y,'season')) {cls <- NULL} else {cls <- 'annual'}
-  } else if (by=='month') {
+    if (inherits(y,'season')) {
+      cls <- 'season'
+    } else {
+      cls <- 'annual'
+    }
+  } else if (by %in% c('month','4seasons')) {
     fmt <- "%Y%m%d"
     t <- as.yearmon(t)
     cls <- 'month'
@@ -100,7 +104,8 @@ count.storm <- function(x,it=NULL,is=NULL,by='year') {
   if (by=='year') {dn <- dimnames(n)$d
   } else dn <- as.Date(strptime(dimnames(n)$d,format=fmt))
   nz <- zoo(n,order.by=dn)
-  class(nz) <- c(class(nz),cls)
+  class(nz) <- c(cls,"zoo")
+  if (by=='4seasons') nz <- as.4seasons(nz,FUN=sum)
   attrcp(y,nz)
   attr(nz,'longname') <- 'storm count'
   attr(nz,'unit') <- 'storms/year'

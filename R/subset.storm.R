@@ -21,6 +21,8 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       yr <- year(x)
       mo <- month(x)
       dy <- day(x)
+      if(verbose) print(paste('length of t',length(t),'yr',length(yr),
+                              'mo',length(mo),'dy',length(dy)))
       if(verbose) print(paste('years',paste(unique(yr),collapse=",")))
       if(verbose) print(paste('months',paste(unique(mo),collapse=",")))
       if(verbose) print(paste('mdays',paste(unique(dy),collapse=",")))
@@ -111,8 +113,11 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ij <- selx & sely & selp & selF
      }
 
+    if(verbose) print(paste('length(ii)',length(ii),'length(ij)',length(ij)))
+    if(verbose) print(paste('it selects',sum(ii),'is selects',sum(ij)))
     ist <- (1:l)[(ii & ij)]
     y <- x[ist,]
+    if(verbose) print(paste('total subset',sum(ii & ij)))
     
     class(y) <- cls
     y <- attrcp(x,y)
