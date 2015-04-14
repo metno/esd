@@ -39,10 +39,12 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   
   #print(ylab)
   class(x) <- "zoo"
-  plot.zoo(x,plot.type=plot.type,ylab=ylab,xlab=xlab,
-           main=main,col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch)
-  par0 <- par()
 
+  plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
+           main=main,col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch)
+  
+  par0 <- par()
+  
   if (plot.type=="single") {
     if (errorbar) {
       # REB 2014-10-03: add an errorbar to the plots.
