@@ -87,9 +87,9 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   #data(ferder)
   #lon <- lon(ferder) + c(-20,20)
   #lat <- lat(ferder) + c(-10,10)
-  
+  browser()
   if (is.character(predictor))
-    t2m <- retrieve.ncdf4(ncfile=predictor,lon=lon,lat=lat) else
+    t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat) else
   if (inherits(predictor,'field'))
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
