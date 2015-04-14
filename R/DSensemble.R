@@ -87,7 +87,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   #data(ferder)
   #lon <- lon(ferder) + c(-20,20)
   #lat <- lat(ferder) + c(-10,10)
-  browser()
+  
   if (is.character(predictor))
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat) else
   if (inherits(predictor,'field'))
@@ -226,7 +226,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       writeLines(ds4[[1]],con=flog)
     }
     if (verbose) print("Combine the 4 seasons")
-    ## browser()
+    ## 
     ds <- try(combine(list(ds1,ds2,ds3,ds4)))
     ##ds <- c(zoo(ds1),zoo(ds2),zoo(ds3),zoo(ds4))
     ##ds <- attrcp(y,ds)
@@ -242,7 +242,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     } else {
       x.val <- c(crossval(ds1),crossval(ds2),crossval(ds3),crossval(ds4))
       attr(ds,'evaluation') <- x.val
-#    browser()
+#    
 #    ds <- DS(y,Z,biascorrect=biascorrect,eofs=eofs,
 #             area.mean.expl=area.mean.expl,verbose=verbose)
 #    ds <- DS.t2m.season.field(y,Z,biascorrect=biascorrect,eofs=eofs,
@@ -250,7 +250,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print("post-processing")
       z <- attr(ds,'appendix.1')
     #save(file='inside.dsens.1.rda',ds,y,Z)
-    ##browser()
+    ##
     # The test lines are included to assess for non-stationarity
       if (non.stationarity.check) {
         testds <- DS(testy,testZ,biascorrect=biascorrect,
@@ -262,7 +262,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                        paste(year(z),month(z),sep='-'))
       i2 <- is.element(paste(year(z),month(z),sep='-'),
                        paste(years,months,sep='-'))
-    #browser()
+    #
       X[i,i1] <- z[i2]
 
     # Diagnose the residual: ACF, pdf, trend. These will together with the
@@ -336,7 +336,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
 #      lines(jja,lwd=2,col=cols[quality])
 #      lines(zoo(subset(y,it=3),order.by=year(subset(y,it=3))),type="b",pch=19)
 #      lines(zoo(subset(ds,it=3),order.by=year(subset(ds,it=3))),lwd=2,col="grey")
-      #browser()
+      #
       }
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
                   "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
@@ -384,7 +384,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if ( (FUN=='wet') | (FUN=='dry')) {
     y <- spell(y,threshold=threshold)
     y <- annual(y,nmin=nmin)
-    #plot(y); browser()
+    #plot(y); 
     y <- switch(FUN,'wet'=subset(y,is=1),'dry'=subset(y,is=2))
   } else
 #    y <- annual(y,FUN=FUN,threshold=threshold)
@@ -392,7 +392,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
 #    if (sum(is.element(names(formals(FUN)),'threshold')==1))
 #        y <- annual(y,FUN=FUN,threshold=threshold,nmin=nmin) else
         y <- annual(y,FUN=FUN,nmin=nmin)
-  #browser()
+  #
   index(y) <- year(y)
   
   if (!is.na(attr(y,'longitude')))
@@ -470,7 +470,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   flog <- file("DSensemble.precip-log.txt","at")
   for (i in 1:N) {
-    #browser()
+    #
     gcm <- retrieve(ncfile = ncfiles[select[i]],
                     lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2))
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -490,12 +490,12 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
       class(GCM) <- class(GCMX)
     } else
           GCM <- GCMX
-    #browser()
+    #
     #str(GCM)
     model.id <- attr(gcm,'model_id')
     rm("gcm","GCMX"); gc(reset=TRUE)
     if (verbose) print("combine")
-    #browser()
+    #
     PREGCM <- combine(PRE,GCM)
     if (verbose) print("EOF")
     Z <- EOF(PREGCM)
@@ -531,7 +531,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
       z <- attr(ds,'appendix.1')
       i1 <- is.element(years,year(z))
       i2 <- is.element(year(z),years)
-    #browser()
+    #
       X[i,i1] <- z[i2]
 
     # Diagnose the residual: ACF, pdf, trend. These will together with the
@@ -551,7 +551,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
       xval <- attr(ds,'evaluation')
       r.xval <- cor(xval[,1],xval[,2])
 
-    #browser()
+    #
       xy <- merge.zoo(z,y)
       ds.ratio <- sd(xy[,1],na.rm=TRUE)/sd(xy[,2],na.rm=TRUE)
     
@@ -571,7 +571,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
         lines(y,type="b",pch=19)
         lines(ds,lwd=2,col="grey")
      }
-      #browser()
+      #
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
                   "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
                   'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
@@ -579,7 +579,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
   }
 
-  #browser()
+  #
   X <- zoo(t(X),order.by=years)
   colnames(X) <- gcmnm
   attr(X,"model_id") <- gcmnm
@@ -716,7 +716,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
     model.id <- attr(gcm1,'model_id')
     rm("gcm","GCMX"); gc(reset=TRUE)
     if (verbose) print("combine the three predictors")
-    #browser()
+    #
     PREGCM1 <- combine(PRE1,GCM1)
     PREGCM2 <- combine(PRE2,GCM2)
     PREGCM3 <- combine(PRE3,GCM3)
@@ -792,7 +792,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       z <- attr(ds,'appendix.1')
       i1 <- is.element(years,year(z))
       i2 <- is.element(year(z),years)
-    #browser()
+    #
 
     # Diagnose the residual: ACF, pdf, trend. These will together with the
     # cross-validation and the common EOF diagnostics provide a set of
@@ -811,7 +811,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       xval <- attr(ds,'evaluation')
       r.xval <- cor(xval[,1],xval[,2])
 
-    #browser()
+    #
       xy <- merge.zoo(z,y)
       ds.ratio <- sd(xy[,1],na.rm=TRUE)/sd(xy[,2],na.rm=TRUE)
     
@@ -832,7 +832,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
         lines(y,type="b",pch=19)
         lines(ds,lwd=2,col="grey")
      }
-      #browser()
+      #
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
                   "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
                   'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
@@ -840,7 +840,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
   }
 
-  #browser()
+  #
   names(dse) <- gcmnm
   #X <- attrcp(y,X)
   attr(dse,'station') <- y
@@ -938,7 +938,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   }
   
   for (i in 1:N) {
-    #browser(
+    #
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
       GCM <- spatial.avg.field(C.C.eq(gcm))
@@ -1040,7 +1040,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration')
 
-  #browser()
+  #
   t <- as.Date(paste(years,months,'01',sep='-'))
 
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
@@ -1136,7 +1136,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     # diagnose for ds-objects
       
       if (verbose) print('...')
-      #browser()
+      #
       if (is.null(diag)) {
         if (verbose) print('no diag')
         diag <- diagnose(ds,plot=FALSE)
