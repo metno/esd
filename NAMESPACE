@@ -495,8 +495,6 @@ export(cv)
 export(trend.coef)
 export(trend.pval)
 
-export(year.storm)
-export(month.storm)
 export(season.storm)
 export(slp.storm)
 export(lat.storm)
