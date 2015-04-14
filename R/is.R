@@ -21,3 +21,13 @@ is.daily <- function(x) (sum(inherits(x,'day')) > 0)
 is.monthly <- function(x) (sum(inherits(x,'month')) > 0)
 is.seasonal <- function(x) (sum(inherits(x,'season')) > 0)
 is.annual <- function(x) (sum(inherits(x,'annual')) > 0)
+
+is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+                                            tolower(month.abb)))>0)
+is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+                                             names(season.abb())))>0)
+is.dates <- function(x) all(!is.months(x) &
+                            (levels(factor(nchar(x)))==10) |
+                            (is.numeric(x) & levels(factor(nchar(x)))==8))
+is.years <- function(x) all(!is.months(x) & 
+                            is.numeric(x) & levels(factor(nchar(x)))==4)
