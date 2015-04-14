@@ -116,7 +116,7 @@ HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_seri
 }
 
 \seealso{
- \code{\link{spatial.avg.field}} \code{\link{as.4seasons}}, \code{\link{annual}}
+ \code{\link{aggregate.area}} \code{\link{as.4seasons}}, \code{\link{annual}}
 }
 
 
@@ -125,7 +125,7 @@ HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_seri
 \examples{
 data(Oslo)
 year <- as.numeric( format(index(Oslo), '\%Y') ) 
-plot(aggregate(Oslo, by=year, mean, na.rm = FALSE))
+plot(aggregate(Oslo, by=year,FUN='mean', na.rm = FALSE))
 
 data(etopo5)
 z <- subset(etopo5,is=list(lon=c(-10,30),lat=c(40,60)))
