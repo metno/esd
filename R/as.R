@@ -1038,7 +1038,7 @@ as.eof.ds <- function(x,iapp=NULL) {
 }
 
 as.eof.eof <-function(x,iapp=NULL) {
-  if (inherits(x,'comb')) x <- as.eof.comb(x,iapp) 
+  if (inherits(x,'comb')) x <- as.eof.comb(x,iapp) else
   return(x)
 }
   
@@ -1070,8 +1070,8 @@ as.eof.field <- function(x,iapp=NULL,...) {
   return(y)
 }
 
-as.eof.appendix <- function(x,iapp=1) {
-  #print("as.eof.appendix")
+as.eof.appendix <- function(x,iapp=1,verbose=FALSE) {
+  if (verbose) print("as.eof.appendix")
   stopifnot(inherits(x,'comb'))
   y <- eval(parse(text=paste("attr(x,'appendix.",iapp,"')",sep="")))
   x <- as.eof.comb(x)
@@ -1080,6 +1080,47 @@ as.eof.appendix <- function(x,iapp=1) {
   class(y) <- class(x)
   return(y)
 }
+
+as.eof.list <- function(x,verbose=FALSE) {
+  stopifnot(inherits(x,'list'),inherits(x[[1]],'eof'))
+  if (verbose) print('as.eof.list')
+  
+  wPC <- function(z,iapp=NULL) {
+    eigv <- attr(z,'eigenvalues')
+    w <- eigv/sum(eigv)
+    if (is.null(iapp)) Z <- z %*% diag(w) else
+                       Z <- attr(z,paste('appendix.',iapp,sep='')) %*% diag(w)
+    Z <- zoo(Z,order.by=index(z))
+    return(Z)
+  }
+
+  if (verbose) print(summary(x))
+  X.list <- lapply(x,wPC)
+  X <- do.call("merge", X.list)
+  if (verbose) print(summary(X))
+  t <- index(X)
+  udv <- svd(coredata(X))
+  eof <- zoo(udv$u[,1:20],order.by=t)
+  attr(eof,'eigenvalues') <- udv$d
+  pattern <- rep(1,dim(udv$v)[1])
+  names(pattern) <- names(X)
+  attr(eof,'pattern') <- pattern
+  if (inherits(x[[1]],'comb')) {
+    if (verbose) print('Combined field: appendix.1')
+    for (i in 1:attr( attr(x[[1]],'n.apps'))) {
+      z.list <- lapply(x,wPC,iapp=i)
+      udv1 <- svd(coredata(do.call("merge", z.list)))
+      attr(eof,paste('appendix.',i,sep='')) <- zoo(udv1$u[,1:20],
+               order.by=index(attr(x,paste('appendix.',i,sep=''))))
+      names(attr(eof,paste('appendix.',i,sep=''))) <- paste("X.",1:20,sep="")
+    }
+  }
+  attr(eof,'original.list.of.eofs') <- x
+  names(eof) <- paste("X.",1:20,sep="")
+  class(eof) <- class(x[[1]])
+  return(eof)
+}
+
 
 
 as.appended <- function(x,...) UseMethod("as.appended")

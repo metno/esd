@@ -21,11 +21,21 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
   nt <- length(CALDAT$y); nv <- dim(CALDAT)[2]
 
   if (is.character(m)) {
+    ## The settings for CORDEX-ESD experiment 1 Tier 2:
+    ## 5-fold cross-validation: [1979,1983], [1984,1988],[1989,1993],[1994,1998],[1999,2003]
+    ## The experiment protocol:
+    ## http://wcrp-cordex.ipsl.jussieu.fr/images/pdf/guidelines/CORDEX_ESD_Experiment1.pdf
     if (verbose) print(paste('predefined set-up:',m))
+    segments <- c(1979,1984,1989,1994,1999)
+    ## For winter season Dec-Feb, use the year corresponding to Jan-Dec.
+    if (season(x)[1]=='djf') segments <- segments + 1
     yr <- switch(tolower(m),
-                 'cordex-esd-exp1'=c(1979,1984,1989,1994,1999))
+                 'cordex-esd-exp1'=segments)
     ii <- (1:length(year(x)))[is.element(year(x),yr)]
-    if (verbose) {print(year(x)[ii]); print(ii)}
+    if (verbose) {
+      print(paste('x spans over',min(year(x)),'-',max(year(x))))
+      print(year(x)[ii]); print(ii)
+    }
     m <- switch(tolower(m),
                  'cordex-esd-exp1'=c(5,5,5,5,5))
   } else if (is.numeric(m) | is.integer(m)) {
@@ -63,8 +73,10 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
     Z[j] <- z[j]
   }
   #str(Z);str(Y)
-  Y <- Y + attr(x,'mean')
-  Z <- Z + attr(x,'mean')
+  if (!inherits(x,'pca')) { 
+    Y <- Y + attr(x,'mean')
+    Z <- Z + attr(x,'mean')
+  }
   X <- zoo(cbind(Y,Z),order.by=index(CALDAT))
   attr(X,'location') <- attr(x,'location')
   attr(X,'longitude') <- attr(x,'longitude')

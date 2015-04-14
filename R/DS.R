@@ -801,6 +801,12 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             yp.out -> attr(ds,'appendix.1')
         }
     }
+
+    ## Check the 'eof' attribute
+    if ( (!is.list(X0)) & is.list(eof) ) {
+          eof <- eof[[1]]
+          if (verbose) print('Check suggests that eof is stored as list -> eof')
+        }
                                         #print(class(model)); str(model)
     attr(ds,'calibration_data') <- attr(z,'calibration_data')
     attr(ds,'fitted_values') <- zoo(fit.val,
@@ -873,69 +879,73 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
         
     } else if (verbose) print('Several predictors')
 
-## Combine the different predictors into one matrix: also for comb...
-    x <- zoo(X[[1]])
-    w <- attr(X[[1]],'eigenvalues')/sum(attr(X[[1]],'eigenvalues'))
-    id <- rep(1,length(attr(X[[1]],'eigenvalues')))
+## REB 2015-04-09: replace the lines below with
+      eof <- as.eof.list(X,verbose=verbose)
 
+### Combine the different predictors into one matrix: also for comb...
+#    x <- zoo(X[[1]])
+#    w <- attr(X[[1]],'eigenvalues')/sum(attr(X[[1]],'eigenvalues'))
+#    id <- rep(1,length(attr(X[[1]],'eigenvalues')))
+#
 ## If combined EOF - need to get the appended fields too
-    if (inherits(X[[1]],'comb')) {
-        n.app <- attr(X[[1]],'n.apps')
-        if (n.app > 1) print('This only works with n.app==1')
-        print("combined field")
-        z <- attr(X[[1]],'appendix.1')
-    }
-    for (i in 2:np) {
-        x <- merge(x,zoo(X[[i]]),all=TRUE)
-        w <- c(w,attr(X[[i]],'eigenvalues')/sum(attr(X[[i]],'eigenvalues')))
-        id <- c(id,rep(i,length(attr(X[[i]],'eigenvalues'))))
-        if (inherits(X[[1]],'comb')) {
-            if ( (!inherits(X[[i]],'comb')) | (attr(X[[i]],'n.apps') != n.app) )
-                stop('DS.list: the predictors in the list must match')
-            z <- merge(z,attr(X[[1]],'appendix.1'))
-        }
-    }
-
-    if (verbose) print(c(dim(x),length(w)))
-    t <- index(x)
-    ## apply the weights
-    x <- x %*% diag(w)
-    xm <- rowMeans(x)
-    x <- x[is.finite(xm),]; t <- t[is.finite(xm)]
-
-    ## Apply an SVD to the combined PCs to extract the common signal in the
-    ## different predictors - these are more likely to contain real physics
-    ## and be related to the predictand.
-    if (verbose) print('svd')
-    udv <- svd(coredata(x))
-    if (verbose) print(summary(udv))
-
-    ## If the predictor is a common EOF, then also combine the appended fields
-    ## the same way as the original flield.
-    if (inherits(X[[1]],'comb')) {
-        z <- z %*% diag(w)
-        udvz <- svd(coredata(z))
-    }
-
-    eof <- zoo(udv$u[,1:20],order.by=t)
-
-    ## Let the pattern contain the weights for the EOFs in the combined
-    ## PC matrix, rather than spatial patterns. The spatial patterns are
-    ## then reconstructed from these.
-    pattern <- matrix(rep(1,length(udv$v[,1:20])),dim(udv$v[,1:20]))
-
-    ## Do a little 'fake': here the pattern is not a geographical map but weight
-    ## for the EOFs.
-    dim(pattern) <- c(1,dim(pattern))
-    if (verbose) str(pattern)
-    attr(eof,'eigenvalues') <- udv$d
-    attr(eof,'pattern') <- rep(1,dim(udv$v)[1])
-    names(eof) <- paste("X.",1:20,sep="")
-    
-    class(eof) <- class(X[[1]])
-    if (inherits(X[[1]],'comb'))
-        attr(eof,'appendix.1') <- z
-
+#    if (inherits(X[[1]],'comb')) {
+#        n.app <- attr(X[[1]],'n.apps')
+#        if (n.app > 1) print('This only works with n.app==1')
+#        print("combined field")
+#        z <- attr(X[[1]],'appendix.1')
+#    }
+#    for (i in 2:np) {
+## Old code      
+#        x <- merge(x,zoo(X[[i]]),all=TRUE)
+#        w <- c(w,attr(X[[i]],'eigenvalues')/sum(attr(X[[i]],'eigenvalues')))
+#        id <- c(id,rep(i,length(attr(X[[i]],'eigenvalues'))))
+#        if (inherits(X[[1]],'comb')) {
+#            if ( (!inherits(X[[i]],'comb')) | (attr(X[[i]],'n.apps') != n.app) )
+#                stop('DS.list: the predictors in the list must match')
+#            z <- merge(z,attr(X[[1]],'appendix.1'))
+#        }
+#    }
+#
+#    if (verbose) print(c(dim(x),length(w)))
+#    t <- index(x)
+#    ## apply the weights
+#    x <- x %*% diag(w)
+#    xm <- rowMeans(x)
+#    x <- x[is.finite(xm),]; t <- t[is.finite(xm)]
+#
+#    ## Apply an SVD to the combined PCs to extract the common signal in the
+#    ## different predictors - these are more likely to contain real physics
+#    ## and be related to the predictand.
+#    if (verbose) print('svd')
+#    udv <- svd(coredata(x))
+#    if (verbose) print(summary(udv))
+#
+#    ## If the predictor is a common EOF, then also combine the appended fields
+#    ## the same way as the original flield.
+#    if (inherits(X[[1]],'comb')) {
+#        z <- z %*% diag(w)
+#        udvz <- svd(coredata(z))
+#    }
+#
+#    eof <- zoo(udv$u[,1:20],order.by=t)
+#
+#    ## Let the pattern contain the weights for the EOFs in the combined
+#    ## PC matrix, rather than spatial patterns. The spatial patterns are
+#    ## then reconstructed from these.
+#    pattern <- matrix(rep(1,length(udv$v[,1:20])),dim(udv$v[,1:20]))
+#
+#    ## Do a little 'fake': here the pattern is not a geographical map but weight
+#    ## for the EOFs.
+#    dim(pattern) <- c(1,dim(pattern))
+#    if (verbose) str(pattern)
+#    attr(eof,'eigenvalues') <- udv$d
+#    attr(eof,'pattern') <- rep(1,dim(udv$v)[1])
+#    names(eof) <- paste("X.",1:20,sep="")
+#    
+#    class(eof) <- class(X[[1]])
+#    if (inherits(X[[1]],'comb'))
+#        attr(eof,'appendix.1') <- z
+#
     #browser()
     if (verbose) print('DS(y,eof,...)')
     ds <- DS(y,eof,biascorrect=biascorrect,

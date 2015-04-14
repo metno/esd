@@ -15,10 +15,17 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
     # Generate sequence of days, months or years if range of it value is given
     if (!is.null(it)) {
-      t <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
-      yr <- as.numeric(strftime(t,"%Y"))
-      mo <- as.numeric(strftime(t,"%m"))
-      dy <- as.numeric(strftime(t,"%d"))
+      if(verbose) print('Generate sequence of time if it value is given')
+      t <- strftime(strptime(x[,colnames(x)=="start"],format="%Y%m%d%H"),
+                    format="%Y%m%d")
+      yr <- year(x)
+      mo <- month(x)
+      dy <- day(x)
+      if(verbose) print(paste('length of t',length(t),'yr',length(yr),
+                              'mo',length(mo),'dy',length(dy)))
+      if(verbose) print(paste('years',paste(unique(yr),collapse=",")))
+      if(verbose) print(paste('months',paste(unique(mo),collapse=",")))
+      if(verbose) print(paste('mdays',paste(unique(dy),collapse=",")))
     
       is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
                                                tolower(month.abb)))>0)
@@ -63,10 +70,12 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           ii <- is.element(yr,it)
         }
       } else if (is.logical(it) & length(it)==length(t)) {
-          ii <- it
-      } else if (is.integer(it) & max(is)<=length(t)) {
-          ii <- rep(FALSE,length(t))
-          ii[it] <- TRUE
+        if (verbose) print('it is a logical array')
+        ii <- it
+      } else if (is.integer(it) & max(it)<=length(t)) {
+        if (verbose) print('it is an index array')
+        ii <- rep(FALSE,length(t))
+        ii[it] <- TRUE
       } else {
         ii <- rep(FALSE,length(t))
         warning("subset.station: did not recognise the selection citerion for 'it'")
@@ -87,26 +96,36 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (length(ip)>0) sslp <- is[[ip]] else sslp <- NULL        
         if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
         if (length(slon)==2) {
+          if (verbose) print(paste('is selects longitudes ',slon[1],'–',slon[2],'E',sep=""))
           fn <- function(x) any(x>=min(slon) & x<=max(slon))
           selx <- apply(x[,colnames(x)=='lon'],1,fn)
         }
         if (length(slat)==2) {
+          if (verbose) print(paste('is selects latitudes ',slat[1],'–',slat[2],'N',sep=""))
           fn <- function(x) any(x>=min(slat) & x<=max(slat))
           sely <- apply(x[,colnames(x)=='lat'],1,fn)
         }
         if (length(sslp)>0) {
+          if (verbose) print(paste('is selects slp ',min(sslp),'–',max(sslp),sep=""))
           fn <- function(x) any(x>=min(sslp) & x<=max(sslp))
-          selp <- apply(x$slp,1,fn)
+          selp <- apply(x[,colnames(x)=='slp'],1,fn)
           }
-        #if (length(sFUN)>0) selF <- apply(x,1,sFUN) # Not quite finished...
         ij <- selx & sely & selp & selF
      }
 
+    if(verbose) print(paste('length(ii)',length(ii),'length(ij)',length(ij)))
+    if(verbose) print(paste('it selects',sum(ii),'is selects',sum(ij)))
     ist <- (1:l)[(ii & ij)]
     y <- x[ist,]
+    if(verbose) print(paste('total subset',sum(ii & ij)))
     
     class(y) <- cls
     y <- attrcp(x,y)
+    if (inherits(is,'list')) {
+      if (length(slon)==2) attr(y,'longitude') <- slon
+      if (length(slat)==2) attr(y,'latitude') <- slat
+    }
+    if (is.seasons(it)) class(y) <- c(class(y),'season')
     attr(y,'history') <- history.stamp(x)
     invisible(y)
 }

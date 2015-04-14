@@ -2,20 +2,8 @@
 ## Last update   12.02.2015
 ## Tools for analyzing IMILAST stormtrack files
 
-year.storm <- function(x) {
-  start <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")
-  yr <- as.numeric(strftime(start,format="%Y"))
-  invisible(yr)
-}
-
-month.storm <- function(x) {
-  start <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")
-  mn <- as.numeric(strftime(start,format="%m"))
-  invisible(mn)
-}
-
 season.storm <- function(x) {
-  mn <- month.storm(x)
+  mn <- month(x)
   mlist <- c(12,1:11)
   slist <- c(1,1,1,2,2,2,3,3,3,4,4,4)
   sn <- sapply(mn,function(x) slist[mlist==x])
@@ -88,13 +76,22 @@ anomaly.storm <- function(x,param=c('lon','lat','slp')) {
   invisible(y)
 }
 
-# count or aggregate?
-count.storm <- function(x,by='year') {
-  t <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
+count.storm <- function(x,it=NULL,is=NULL,by='year') {
+  y <- subset.storm(x,it=it,is=is)
+  if (by=='year') {
+    i <- seq(min(which(min(month(y))==month(y))),
+         max(which(max(month(y))==month(y))))
+    y <- subset.storm(y,it=i)
+  }
+  t <- strptime(y[,colnames(y)=="start"],format="%Y%m%d%H")
   if (by=='year') {
     fmt <- "%Y"
-    cls <- 'annual'
-  } else if (by=='month') {
+    if (inherits(y,'season')) {
+      cls <- 'season'
+    } else {
+      cls <- 'annual'
+    }
+  } else if (by %in% c('month','4seasons')) {
     fmt <- "%Y%m%d"
     t <- as.yearmon(t)
     cls <- 'month'
@@ -104,31 +101,51 @@ count.storm <- function(x,by='year') {
   }
   d <- strftime(t,format=fmt)
   n <- table(d)
-  dn <- as.Date(strptime(dimnames(n)$d,format=fmt))
+  if (by=='year') {dn <- dimnames(n)$d
+  } else dn <- as.Date(strptime(dimnames(n)$d,format=fmt))
   nz <- zoo(n,order.by=dn)
-  class(nz) <- c(class(nz),cls) 
+  class(nz) <- c(cls,"zoo")
+  if (by=='4seasons') nz <- as.4seasons(nz,FUN=sum)
+  attrcp(y,nz)
+  attr(nz,'longname') <- 'storm count'
+  attr(nz,'unit') <- 'storms/year'
   invisible(nz)
 }
 
 approx.lon <- function(lon,n=10) {
-  if ((max(lon)-min(lon))>180) {
+  if (!any(lon>0)|!any(lon<0)|(mean(lon[lon>0])-mean(lon[lon<0]))<120){
+    x <- approx(lon,n=n)
+  } else {
     lon[lon<0] <- lon[lon<0]+360
     x <- approx(lon,n=n)
     x$y[x$y>180] <- x$y[x$y>180]-360
+  }
+  return(x)
+}
+
+mean.lon <- function(lon) {
+  if (!any(lon>0)|!any(lon<0)|(mean(lon[lon>0])-mean(lon[lon<0]))<120){
+    x <- mean(lon)
   } else {
-    x <- approx(lon,n=n)
+    lon[lon<0] <- lon[lon<0]+360
+    x <- mean(lon)
+    if (x>180) x <- x-360
   }
   return(x)
 }
 
 # Takes too long! 
 polyfit.storm <- function(X) {
-  Z <- apply(X,1,function(x) pfit(x[1:10],x[11:20])) 
+  ilon <- colnames(X,'lon')
+  ilat <- colnames(X,'lat')
+  Z <- apply(X,1,function(x) pfit(x[ilon],x[ilat]))
   return(Z)
 }
 
-pfit <- function(x,y) {
-  pfit <- lm(y ~ I(x) + I(x^2) + I(x^3) + I(x^4) + I(x^5))
+pfit <- function(lon,lat) {
+  OK <- !any(lon>0) | !any(lon<0) | (mean(lon[lon>0])-mean(lon[lon<0]))<120
+  if (!OK) lon[lon<0] <- lon[lon<0]+360
+  pfit <- lm(lat ~ I(lon) + I(lon^2) + I(lon^3) + I(lon^4) + I(lon^5))
   z <- predict(pfit)
   attr(z,'model') <- pfit$coef
   return(z)

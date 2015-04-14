@@ -3,21 +3,25 @@
 # Rasmus Benestad
 
 predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
-  if (verbose) print('predict.ds')
+  if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
   stopifnot(!missing(x),inherits(x,"ds"))
+  
   if ( (inherits(x,'eof')) & (is.null(newdata)) ) {
-  if (inherits(x,'comb')) 
+    ## If now new data is provided
+    if (inherits(x,'comb')) 
       y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose) else
-  if (inherits(x,'field'))
+    if (inherits(x,'field'))
       y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
   } else if (inherits(x,'eof')) {
-     if (inherits(newdata,'comb'))
-       y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose) else
+    str(x)
+    ## If new data is provided
+    if (inherits(newdata,'comb'))
+      y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose) else
      if (inherits(newdata,'eof'))
        y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
   } else if (inherits(x,'pca')) {
-       y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
-     }
+    y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
+  }
   
   y <- attrcp(attr(x,'original_data'),y)
   attr(y,'history') <- history.stamp(x)
@@ -27,32 +31,42 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 
 predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   stopifnot(!missing(x),inherits(x,"ds"))
-  if (verbose) print("predict.ds.eof")
-  X <- attr(x,'eof')
+  if (verbose) print(paste("predict.ds.eof",paste(class(x),collapse='-')))
+  X <- as.eof(x)
+  if (verbose) print(paste(class(X),collapse='-'))
   #print(dim(X))
   neofs <- length(attr(X,'eigenvalues'))
   
   # For some reason, the column names of newdata is muddled here,
   # and hence Xnames is used to enforce names 'X.1', 'X.2', 'X.3', ...
   Xnames <- paste("X.",1:neofs,sep="")
+  if (verbose) print(Xnames)
   if (is.null(newdata)) {
+    if (verbose) print('Use calibration data')
     newdata <- data.frame(X=coredata(X))
     src <- attr(X,'source')
     idx <- index(X)
 } else {
+      if (verbose) print('Use new data')
       idx <- index(newdata)
       src <- attr(newdata,'source')
       newdata <- as.data.frame(newdata)
   }
   #print(summary(newdata))
   names(newdata) <- Xnames 
-  
+ 
   model <- attr(x,'model')
-  y <- predict(model,newdata) + attr(x,'mean')
+  if (verbose) print(summary(model))
+  if (!is.list(model)) y <- predict(model,newdata) + attr(x,'mean') else {
+    if (!is.null(newdata)) y <- lapply(model,predict,newdata) else
+                           y <- lapply(model,predict)
+    y <- matrix(unlist(y),nrow=length(idx),ncol=length(model))
+  }
   
 #  predict - phase scramble of residual
   residual <- model$residuals
   if (addnoise) {
+    if (verbose) print('add noise')
     l <- length(index(x))
     noise <- matrix(rep(NA,n*l),n,l)
     for (i in 1:n)
@@ -63,11 +77,50 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 
   y <- zoo(y,order.by=idx)
   attr(y,'source') <- src
-  attr(y,'residual.mean') <- mean(residual,na.rm=TRUE)
-  attr(y,'residual.sd') <- sd(residual,na.rm=TRUE)
+  if (!is.null(residual)) attr(y,'residual.mean') <- mean(residual,na.rm=TRUE)
+  if (!is.null(residual)) attr(y,'residual.sd') <- sd(residual,na.rm=TRUE)
   class(y) <- class(x)
   y <- attrcp(x,y)
+  if (verbose) print('predict.ds.eof complete')
   invisible(y)
+}
+
+
+predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+  ## REB: modified the code 2015-04-09
+  if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
+  if (is.null(newdata)) {
+    newdata <- data.frame(coredata(as.eof(x)))
+    t <- index(as.eof(x))
+  } else {
+    t <- index(as.eof(newdata))
+    newdata <- data.frame(coredata(as.eof(newdata)))
+  }
+  
+  d <- dim(newdata)
+  if (is.null(d)) d <- c(length(x),1)
+  model <- attr(x,'model')
+#  browser()
+  y <- lapply(model,predict,newdata)
+  y <- matrix(unlist(y),nrow=d[1],ncol=length(model))
+#  Z <- list()
+#  for (i in 1:npca) {
+#    y <- zoo(x[,i])
+#    attr(y,'model') <- attr(x,'model')[[i]]
+#    attr(y,'eof') <- attr(x,'eof')[[i]]
+#    attr(y,'eof') <- as.eof(x)
+#    attr(y,'mean') <- 0
+#    class(y) <- c('ds','eof','zoo')
+#    Z[[i]] <- predict.ds.eof(y,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
+#  }
+  ## Copy the original object and only change the predicted values
+ 
+  ## Replace 
+  #browser()
+  y <- zoo(y, order.by=t)
+  y <- attrcp(x,y)
+  class(y) <- class(x)[-1]
+  return(y)
 }
 
 predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
@@ -229,23 +282,3 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     invisible(Y)
 }
 
-predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
-  npca <- length(attr(x,'model'))
-  Z <- list()
-  for (i in 1:npca) {
-    y <- zoo(x[,i])
-    attr(y,'model') <- attr(x,'model')[[i]]
-    attr(y,'eof') <- attr(x,'eof')[[i]]
-    attr(y,'mean') <- 0
-    class(y) <- c('ds','eof','zoo')
-    Z[[i]] <- predict.ds.eof(y,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
-  }
-  ## Copy the original object and only change the predicted values
- 
-  ## Replace 
-  #browser()
-  y <- zoo(matrix(unlist(Z), ncol = npca, byrow = TRUE), order.by=index(Z[[1]]))
-  y <- attrcp(x,y)
-  class(y) <- class(x)[-1]
-  return(y)
-}

@@ -263,6 +263,10 @@ year <- function(x) {
     y <- year(index(x))
     return(y)
   }
+  if (inherits(x,'storm')) {
+    y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$year + 1900
+    return(y)
+  }
   if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
     y <- year(as.Date(x))
     return(y)
@@ -296,6 +300,10 @@ month <- function(x) {
     y <- month(index(x))
     return(y)
   }
+  if (inherits(x,'storm')) {
+    y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mon + 1
+    return(y)
+  }
   if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
     y <- month(as.Date(x))
     return(y)
@@ -317,6 +325,10 @@ month <- function(x) {
 day <- function(x) {
   if (inherits(x,c('station','field','zoo'))) {
     y <- day(index(x))
+    return(y)
+  }
+  if (inherits(x,'storm')) {
+    y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mday
     return(y)
   }
   if (inherits(x,c('numeric','integer'))) x <- as.numeric(x)
@@ -388,7 +400,6 @@ season.default <- function(x,format="character") {
 #  browser()
   season
 }
-
 
 seasonal.yearmon <- function(x) {
 

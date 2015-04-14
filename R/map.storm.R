@@ -5,7 +5,8 @@
 map.storm <- function(x,it=NULL,is=NULL,
       projection="sphere",lonR=10,latR=90,
       col='red',colmap='rainbow',alpha=0.3,pfit=FALSE,
-      main=NULL,xlim=NULL,ylim=NULL,new=TRUE) {
+      main=NULL,xlim=NULL,ylim=NULL,
+      verbose=FALSE,new=TRUE) {
 
   y <- subset.storm(x,it=it,is=is)
   if (pfit) {
@@ -16,10 +17,10 @@ map.storm <- function(x,it=NULL,is=NULL,
   if (projection=="sphere" | projection=="np" | projection=="sp") {
     if (projection=="np") latR <- 90
     if (projection=="sp") latR <- -90
-    sphere.storm(y,new=new,
+    sphere.storm(y,new=new,verbose=verbose,
     lonR=lonR,latR=latR,col=col,alpha=alpha,main=main)
   } else if (projection=="latlon" | projection=="lonlat") {
-    lonlat.storm(y,new=new,
+    lonlat.storm(y,new=new,verbose=verbose,
     xlim=xlim,ylim=ylim,col=col,alpha=alpha,main=main)
   }
 }
@@ -27,26 +28,28 @@ map.storm <- function(x,it=NULL,is=NULL,
 
 lonlat.storm <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
-    lty=1,lwd=1,main=NULL,new=TRUE) {
+    lty=1,lwd=1,main=NULL,new=TRUE,verbose=FALSE) {
   
   x0 <- x
   lons <- x[,colnames(x)=='lon']
   lats <- x[,colnames(x)=='lat']
   if (is.null(xlim)) xlim <- range(lons)
   if (is.null(ylim)) ylim <- range(lats)
+  if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
+                          ', ylim',paste(ylim,collapse="-")))
 
   data("geoborders",envir=environment())
   ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   mlon <- geoborders$x[ok]
   mlat <- geoborders$y[ok]
 
-  
   if (new) dev.new(width=8,height=7)
   par(bty="n")
   plot(mlon,mlat,pch=".",col="white",main=main,
     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
 
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
+  if(verbose) print(paste(dim(lons)[1],'storms,',sum(!OK),'crossing dateline'))
   matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
 
@@ -64,8 +67,36 @@ lonlat.storm <- function(x,
     for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
   }
 
+  # draw coastlines
   points(mlon,mlat,pch=".",col='grey20',cex=1.4)
+  
+  # box marking the spatial subset
+  slon <- attr(x0,'longitude')
+  slat <- attr(x0,'latitude')
+  if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
+                          'lat',paste(slat,collapse="-")))
+  if (any(!is.na(c(slat,slon)))) {
+    if(verbose) print('draw subset box')
+    if (sum(is.na(attr(x0,'longitude')))==0) {
+      xlim <- attr(x0,'longitude')
+    } else {
+      xlim <- c(min(x0[,colnames(x0)=='lon']),
+                max(x0[,colnames(x0)=='lon']))
+    }
+    if (sum(is.na(attr(x0,'latitude')))==0) {
+      ylim <- attr(x0,'latitude')
+    } else {
+      ylim <- c(min(x0[,colnames(x0)=='lat']),
+                max(x0[,colnames(x0)=='lat']))
+    }
+    if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
+                            'ylim',paste(ylim,collapse="-")))
+    xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
+    ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
+    lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
+  }
 }
+ 
 
 
 sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
@@ -82,7 +113,8 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 
 sphere.storm <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
-    lty=1,lwd=1,lonR=0,latR=90,main=NULL,new=TRUE) {
+    lty=1,lwd=1,lonR=0,latR=90,main=NULL,
+    verbose=FALSE,new=TRUE) {
   
   x0 <- x
   ilons <- colnames(x)=='lon'
@@ -114,6 +146,36 @@ sphere.storm <- function(x,
   
   points(x[y>0],z[y>0],pch=".",col='grey30')
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
+
+  # box marking the spatial subset
+  slon <- attr(x0,'longitude')
+  slat <- attr(x0,'latitude')
+  if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
+                          'lat',paste(slat,collapse="-")))
+  if (any(!is.na(c(slat,slon)))) {
+    if(verbose) print('draw subset box')
+    if (sum(is.na(attr(x0,'longitude')))==0) {
+      xlim <- attr(x0,'longitude')
+    } else {
+      xlim <- c(min(x0[,colnames(x0)=='lon']),
+                max(x0[,colnames(x0)=='lon']))
+    }
+    if (sum(is.na(attr(x0,'latitude')))==0) {
+      ylim <- attr(x0,'latitude')
+    } else {
+      ylim <- c(min(x0[,colnames(x0)=='lat']),
+                max(x0[,colnames(x0)=='lat']))
+    }
+    if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
+                            'ylim',paste(ylim,collapse="-")))
+    xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
+    ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
+    xbox <- approx(xbox,n=200)$y
+    ybox <- approx(ybox,n=200)$y
+    a <- sphere.rotate(xbox,ybox,lonR=lonR,latR=latR)
+    x <- a[1,]; y <- a[2,]; z <- a[3,]
+    lines(x,z,lty=1,col='grey20',lwd=1.0)
+  }
 }
 
 
@@ -121,7 +183,7 @@ map.hexbin.storm <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
           xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
           xlim=NULL,ylim=NULL,col='red',border='firebrick4',
           colmap='heat.colors',scale.col=TRUE,scale.size=FALSE,
-          main=NULL,new=TRUE) {
+          main=NULL,new=TRUE,verbose=FALSE) {
 
   x <- subset.storm(x,it=it,is=is)
   ilon <- colnames(x)=='lon'
@@ -146,13 +208,38 @@ map.hexbin.storm <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
                  scale.col=scale.col,scale.size=scale.size,colmap=colmap)
   OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
   points(mlon[OK],mlat[OK],pch=".",col='grey20',cex=1.4)
+  # box marking the spatial subset
+  slon <- attr(x,'longitude')
+  slat <- attr(x,'latitude')
+  if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
+                          'lat',paste(slat,collapse="-")))
+  if (any(!is.na(c(slat,slon)))) {
+    if(verbose) print('draw subset box')
+    if (sum(is.na(attr(x,'longitude')))==0) {
+      xlim <- attr(x,'longitude')
+    } else {
+      xlim <- c(min(x[,colnames(x)=='lon']),
+                max(x[,colnames(x)=='lon']))
+    }
+    if (sum(is.na(attr(x,'latitude')))==0) {
+      ylim <- attr(x,'latitude')
+    } else {
+      ylim <- c(min(x[,colnames(x)=='lat']),
+                max(x[,colnames(x)=='lat']))
+    }
+    if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
+                            'ylim',paste(ylim,collapse="-")))
+    xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
+    ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
+    lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
+  }
 }
 
 map.sunflower.storm <- function(x,it=NULL,is=NULL,
       dx=6,dy=2,petalsize=7,
       xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
       xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6,
-      main=NULL,new=TRUE) {
+      main=NULL,new=TRUE,verbose=FALSE) {
 
   x <- subset.storm(x,it=it,is=is)
   ilon <- colnames(x)=='lon'
@@ -195,10 +282,37 @@ map.sunflower.storm <- function(x,it=NULL,is=NULL,
     OK <- OK & !(findInterval(mlon,xbox)==1 & findInterval(mlat,ybox)==1)
   }
   points(mlon[OK],mlat[OK],pch=".",col='grey20',cex=1.4)
+
+  # box marking the spatial subset
+  slon <- attr(x,'longitude')
+  slat <- attr(x,'latitude')
+  if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
+                          'lat',paste(slat,collapse="-")))
+  if (any(!is.na(c(slat,slon)))) {
+    if(verbose) print('draw subset box')
+    if (sum(is.na(attr(x,'longitude')))==0) {
+      xlim <- attr(x,'longitude')
+    } else {
+      xlim <- c(min(x[,colnames(x)=='lon']),
+                max(x[,colnames(x)=='lon']))
+    }
+    if (sum(is.na(attr(x,'latitude')))==0) {
+      ylim <- attr(x,'latitude')
+    } else {
+      ylim <- c(min(x[,colnames(x)=='lat']),
+                max(x[,colnames(x)=='lat']))
+    }
+    if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
+                            'ylim',paste(ylim,collapse="-")))
+    xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
+    ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
+    lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
+  }
 }
 
+
 mean.lon <- function(lon) {
-  if (!any(lon<0) | (mean(lon[lon>0])-mean(lon[lon<0]))<120) {
+  if (!any(lon>0)|!any(lon<0)|(mean(lon[lon>0])-mean(lon[lon<0]))<120){
     x <- mean(lon)
   } else {
     lon[lon<0] <- lon[lon<0]+360
