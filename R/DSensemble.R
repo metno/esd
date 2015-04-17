@@ -34,8 +34,8 @@ DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
   return(z)
 }
 
-DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
-                           predictor="ERA40_t2m_mon.nc",
+DSensemble.t2m <- function(y,plot=TRUE,path="~/CMIP5.monthly/",
+                           predictor="~/ERA40_t2m_mon.nc",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,
                            area.mean.expl=FALSE,

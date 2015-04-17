@@ -67,6 +67,7 @@ check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
 # command if needed. Otherwise, specify a netcdf file to retrieve data from. 
 url <- "http://climexp.knmi.nl/CMIP5/monthly/tas"
 noresm <- "tas_Amon_NorESM1-ME_rcp45_000.nc"
+if (!file.exists(noresm))
 download.file(url=file.path(url,noresm), destfile=noresm, method = "auto", quiet = FALSE,mode = "w",cacheOK = TRUE)
 # Retrieve the data into "gcm" object
 gcm <-retrieve(ncfile=noresm,param="tas",plot=TRUE)

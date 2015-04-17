@@ -530,13 +530,13 @@ narp.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     ##print("station.narp")
     ##data("station.meta",envir=environment())
     ##load("esd/data/station.meta.rda")
-    if (is.null(stid)) return(NULL) 
-
+    ## if (is.null(stid)) return(NULL) 
+    ## browser()
     ## load the original data
     data(NARP,envir=environment())
     ## Get esd ele from param argument.
     ele <- esd2ele(param=param)
-    
+    browser()
     x.name <- as.character(ele2param(ele=ele,src="NARP")[2])
     unit <-  as.character(ele2param(ele=ele,src="NARP")[4])
 

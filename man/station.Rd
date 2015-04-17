@@ -41,12 +41,12 @@ station.default(loc=NULL, param="t2m", src = c("GHCNM", "ECAD", "GHCND",
 station.nordklim(...)
 station.narp(...)
 station.nacd(...)
-station.ghcnm(...,path="data.GHCNM")
+station.ghcnm(...,path="~/data.GHCNM")
 station.metnom(...)
 
 #Daily weather stations
-station.ecad(..., path="data.ECAD")
-station.ghcnd(..., path="data.GHCND")
+station.ecad(..., path="~/data.ECAD")
+station.ghcnd(..., path="~/data.GHCND")
 station.metnod(...)
 allgood(x,miss=.1,verbose=TRUE)
 clean.station(x,miss=.1,verbose=TRUE)
@@ -108,9 +108,9 @@ t2m.mon <- station.metnom(stid="18700",param="t2m")
 ss <- select.station(loc = "de bilt",param="t2m",src="ECAD")
 # Retrieve the data from the local directory specified in path based on
 # previous selected station 
-t2m.dly <- station.ecad(loc=ss,path="data.ECAD")
+t2m.dly <- station.ecad(loc=ss,path="~/data.ECAD")
 # or directly retrieve the data without a prior selection 
-t2m.dly <- station.ecad(loc = "oslo - blindern",param="t2m",path="data.ECAD")
+t2m.dly <- station.ecad(loc = "oslo - blindern",param="t2m",path="~/data.ECAD")
 plot(t2m.dly)
 # Aggregate to monthly and annual mean temperature values and plot the results
 t2m.mon <- as.monthly(t2m.dly, FUN="mean") ; plot(t2m.mon)
@@ -125,7 +125,7 @@ precip.ann <- as.annual(precip.dly,FUN="sum") ; plot(precip.ann)
 # 130 years using "GHCND" as a data source, retrieve the data and show its
 # structure.
 ss <- select.station(cntr="NORWAY",param="precip",src="GHCND",nmin=130)
-y <- station.ghcnd(loc=ss , path="data.GHCND",plot=TRUE)
+y <- station.ghcnd(loc=ss , path="~/data.GHCND",plot=TRUE)
 str(y)
 # Subselect one station and display the geographical location of both selected stations and highlight the subselected station (is=2).
 y1 <- subset(y,is=2)

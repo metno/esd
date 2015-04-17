@@ -34,8 +34,8 @@ scatter.hexbin(x, y, new = TRUE, scale.col=TRUE, scale.size=TRUE, Nmax = NULL, d
 \seealso{\code{\link{scatter.sunflower}}}
 
 \examples{
-x <- sample(seq(1,5,1e-2),5000,rep=T)
-y <- sample(seq(5,10,1e-2),5000,rep=T)
+x <- sample(seq(1,5,1e-2),size=5000,replace=TRUE)
+y <- sample(seq(5,10,1e-2),size=5000,replace=TRUE)
 scatter.hexbin(x,y)
 
 x <- station.metnod(stid=39100,param="Tmax")
@@ -43,7 +43,7 @@ y <- station.metnod(stid=39100,param="Tmin")
 OK <- (!is.na(x) & !is.na(y))
 x <- x[OK]; y <- y[OK]
 scatter.hexbin(x,y,
-  scale.size=T,scale.col=T,Nmax=500,colmap="heat.colors",
+  scale.size=TRUE,scale.col=TRUE,Nmax=500,colmap="heat.colors",
   dx=2,dy=1.5,xlim=c(-20,35),ylim=c(-25,25),xlab="Tmax",ylab="Tmin")
 }
 

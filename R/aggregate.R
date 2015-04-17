@@ -167,7 +167,8 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     #print(class(x))
     #print(class(index(x)))
     #print('aggregate')
-    y <- aggregate(x, by, match.fun(FUN), ...)
+    ## y <- aggregate(x, by, match.fun(FUN), ...) ## AM quick fix replaced by
+    y <- aggregate(x, by, FUN, ...)
     class(x) <- cls; class(y) <- cls
     class(y)[2] <- clsy2
     
@@ -199,8 +200,9 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     print(paste("spatial aggregation:",d[1],"x",d[2]," ->",D[1],"x",D[2]))
     Z <- t(coredata(x)); attributes(Z) <- NULL
     dim(Z) <- c(d[1]*d[2],d[3]); rownames(Z) <- xy   
-    z0 <- aggregate(Z,by=list(xy), match.fun(FUN),simplify=TRUE)
-    #browser()
+    ## z0 <- aggregate(Z,by=list(xy), match.fun(FUN),simplify=TRUE) ## AM 14-04-2015 replaced by
+    z0 <- aggregate(Z,by=list(xy), FUN,simplify=TRUE)
+                                        #browser()
 
     # The aggregate function rearranges the order of lon-lat:
     lonlat <- z0$Group.1

@@ -448,34 +448,37 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
     l1 <- 0; l2 <- 0
   }
   #print(c(l1,l2))
-  
   if (inherits(is,'station')) {
     # If a station object is provided - extract a time series for a
     # the corresponding location
       lon <- attr(is,'longitude')
       lat <- attr(is,'latitude')
-    } else if ((inherits(x,'list')) & twocoord & (l1==1) & (l2==1) ) {
+  } else if ((inherits(x,'list')) & twocoord & (l1==1) & (l2==1) ) {
     # Is spatial coordinates  
       lon <- is[[1]]
       lat <- is[[2]]
       z <- NULL
   } else if (!is.null(is)) {
       nms <- names(is)
-    lon <- attr(x,'longitude')
-    lat <- attr(x,'latitude')
-    #print(nms)
-    if (length(nms)==2) { lon <- is[[1]]; lat=is[[2]] } else
-        if ( (length(nms)==1) & (tolower(nms)=="lon") ) {
+      lon <- attr(x,'longitude')
+      lat <- attr(x,'latitude')
+                                        #print(nms)
+      if (length(nms)==2) {
+          lon <- is[[1]]
+          lat <- is[[2]]
+          y <- subset(x,is=is,it=it)
+          z <- aggregate.area(y,FUN=FUN)
+      } else if ( (length(nms)==1) & (tolower(nms)=="lon") ) {
       # Hovmuller diagram along latitude
       #print(is[[1]]); print(lon); print(d)
-      if (length(is[[1]])== 1) {
-        picklon <- lon[max( (1:length(lon))[lon <= is[[1]]] )]
+          if (length(is[[1]])== 1) {
+              picklon <- lon[max( (1:length(lon))[lon <= is[[1]]] )]
         #print(picklon)
-        xy <- rep(lon,length(lat))
-        yx <- sort(rep(lat,length(lon)))
-        ix <- is.element(xy,picklon)
-        z <- x[,ix]
-        z <- attrcp(x,z)
+              xy <- rep(lon,length(lat))
+              yx <- sort(rep(lat,length(lon)))
+              ix <- is.element(xy,picklon)
+              z <- x[,ix]
+              z <- attrcp(x,z)
         #image(z)
         attr(z,'longitude') <- picklon
         attr(z,'latitude') <- attr(x,'latitude')
@@ -506,7 +509,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
         attr(z,'dimensions') <- c(attr(x,'dimensions')[1],1,attr(x,'dimensions')[3])
         class(z) <- c('xsection',class(x)[-1])
       } else if (length(is[[1]])== 2) {
-        y <- subset(x,is=list(lon=range(lon),lat=is[[1]]))
+          y <- subset(x,is=list(lon=range(lon),lat=is[[1]]))
         xy <- rep(attr(x,'longitude'),d[2])
         yx <- sort(rep(attr(x,'latitude'),d[1]))
         X <- as.data.frame(coredata(x)); colnames(xy)

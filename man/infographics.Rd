@@ -56,8 +56,8 @@ seasevol.station(x,it=NULL,nv=25,...)
 data(bjornholt)
 wheel(bjornholt)
 
-z <- spell(bjornholt)
-wheel(spell,dry=TRUE)
+z <- spell(bjornholt,threshold=1)
+wheel(z)
 
 }
 \keyword{utilities}

@@ -71,6 +71,6 @@ plot(as.seasons(ferder,FUN='GDD'))
 # Mild winter days - number of days in the winter season with
 # above freezing temperatures
 data(ferder)
-coldwinterdays(ferder)
+try(coldwinterdays(ferder))
 }
 \keyword{utilities}

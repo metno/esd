@@ -40,8 +40,8 @@ scatter.sunflower(x, y, petalsize = 7, dx = NULL, dy = NULL, xgrid = NULL, ygrid
 
 \examples{
 
-x <- sample(seq(1,5,1e-2),5000,rep=T)
-y <- sample(seq(5,10,1e-2),5000,rep=T)
+x <- sample(seq(1,5,1e-2),5000,replace=TRUE)
+y <- sample(seq(5,10,1e-2),5000,replace=TRUE)
 scatter.sunflower(x,y)
 
 x <- station.metnod(stid=39100,param="Tmax")
