@@ -722,10 +722,11 @@ plot.diagnose <- function(x,...) {
 }
 
 plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
-  stopifnot(!missing(x), inherits(x,"diagnose"),inherits(x,"eof"),inherits(x,"comb"))
+  stopifnot(!missing(x), inherits(x,"diagnose"),
+            inherits(x,"eof"),inherits(x,"comb"))
   dev.new()
   par(bty="n")
-  if (is.null(xlim)) xlim <- range(c(-1,1,x$mean.diff),na.rm=TRUE)
+  if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
   if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
   wt <- 0:360
   plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
@@ -733,8 +734,8 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
        main=paste("Diagnostics: common EOFs",attr(x,'variable')),
        xlim=xlim,ylim=ylim,col="grey",
        sub=paste(x$calibrationdata," - ",rownames(x$mean.diff),collapse = "/"))
-  lines(c(-10,10),rep(0,2))
-  lines(rep(0,2),c(-10,10))
+  lines(c(0,10),rep(0,2))
+  lines(rep(0,2),c(0,10))
   n <- length(x$mean.diff)
   j <- 1:n
   col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n))
@@ -749,7 +750,7 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
      points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
   }
   
-  points(x$mean.diff,1-x$sd.ratio,pch=pch,col=col,cex=cex)
+  points(abs(x$mean.diff),1-x$sd.ratio,pch=pch,col=col,cex=cex)
   legend(xlim[1],ylim[2],c("same sign","different sign"),
          pch=c(19,21),bty="n",col="grey")
   par(xpd=TRUE)
