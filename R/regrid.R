@@ -197,8 +197,9 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   if (verbose) {print("New coordinates"); print(lon.new); print(lat.new)}
   
   #print("regrid.field before subset:");print(lon(x)); print(lat(x));print("---")
-  x <- subset(x,is=list(lon=c(floor(min(lon.new))-2,ceiling(max(lon.new))+2),
-                        lat=c(floor(min(lat.new))-2,ceiling(max(lat.new))+2)))
+  ## AM 20-04-2015 the value "2" has been changed to "10"
+  x <- subset(x,is=list(lon=c(floor(min(lon.new))-10,ceiling(max(lon.new))+10),
+                    lat=c(floor(min(lat.new))-10,ceiling(max(lat.new))+10)))
   if (verbose) {print("regrid.field after subset:");print(lon(x));print(lat(x));print("---")}
   if (verbose) {print("Longitude range"); print(range(lon.new)); print(range(lon(x)))}
   if (verbose) {print("Latitude range"); print(range(lat.new)); print(range(lat(x)))}
