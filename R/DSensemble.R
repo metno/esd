@@ -146,7 +146,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="~/CMIP5.monthly/",
   
   if (verbose) print("loop...") 
   for (i in 1:N) {
-    gcm <- retrieve.ncdf4(ncfile = ncfiles[select[i]],
+    gcm <- retrieve(ncfile = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2))
     #gcmnm[i] <- attr(gcm,'model_id')
@@ -988,7 +988,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
   if (is.character(predictor))
-    t2m <- retrieve.ncdf4(ncfile=predictor,lon=lon,lat=lat) else
+    t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat) else
   if (inherits(predictor,'field'))
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
@@ -1018,6 +1018,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   } else if (inherits(y,'annual')) {
     T2M <- annual(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
+  } else if (inherits(y,'month')) {
+    T2M <- matchdate(t2m,y)
   }
   
   # Ensemble GCMs
@@ -1049,7 +1051,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (verbose) print("loop...") 
   for (i in 1:N) {
-    gcm <- retrieve.ncdf4(ncfile = ncfiles[select[i]],
+    gcm <- retrieve(ncfile = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2))
     #gcmnm[i] <- attr(gcm,'model_id')
@@ -1059,7 +1061,10 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       GCM <- subset(gcm,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
       GCM <- annual(gcm,FUN=FUNX)
-
+    } else if (inherits(y,'month')) {
+      if (length(table(month(y)))==1)
+        GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
+        GCM <- gcm
     }
     rm("gcm"); gc(reset=TRUE)
     T2MGCM <- combine(T2M,GCM)
