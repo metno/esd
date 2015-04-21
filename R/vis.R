@@ -1057,7 +1057,10 @@ diagnose.station <- function(x,main='Data availability',
                             xlab='',ylab='station',
                             sub=src(x),...) {
   d <- dim(x)
-  if (is.null(d)) return('Need more than one station')
+  if (is.null(d)) {
+    z <- diagnose.distr(x,...)
+    return(z)
+  }
   par(mar=c(5, 4, 4, 5),las=1,xpd=TRUE,cex.lab=0.5,cex.axis=0.5)
   
   image(index(x),1:d[2],coredata(x),
@@ -1068,3 +1071,64 @@ diagnose.station <- function(x,main='Data availability',
   nyrs <- length(rownames(table(year(x))))
   grid(nx=nyrs,ny=d[2])
 }
+
+
+diagnose.distr <- function(x,main=NULL,
+                           xlab='mean',ylab=expression(q[p]),
+                           sub=src(x),probs=0.95) {
+  x0 <- x
+  if (is.T(x)) {
+    y <- anomaly(x)
+    djf <- subset(y,it='djf')
+    mam <- subset(y,it='mam')
+    jja <- subset(y,it='jja')
+    son <- subset(y,it='son')
+    m.djf <- aggregate(djf,year,FUN='mean',na.rm=TRUE)
+    q.djf <- aggregate(djf,year,FUN='quantile',probs=probs,na.rm=TRUE)
+    m.mam <- aggregate(mam,year,FUN='mean',na.rm=TRUE)
+    q.mam <- aggregate(mam,year,FUN='quantile',probs=probs,na.rm=TRUE)
+    m.jja <- aggregate(jja,year,FUN='mean',na.rm=TRUE)
+    q.jja <- aggregate(jja,year,FUN='quantile',probs=probs,na.rm=TRUE)
+    m.son <- aggregate(son,year,FUN='mean',na.rm=TRUE)
+    q.son <- aggregate(son,year,FUN='quantile',probs=probs,na.rm=TRUE)
+
+    x <- c(coredata(m.djf),coredata(m.mam),coredata(m.jja),coredata(m.son))
+    y <- c(coredata(q.djf),coredata(q.mam),coredata(q.jja),coredata(q.son))
+    col <- c(rep(rgb(0.2,0.2,0.6,0.3,length(m.djf))),
+             rep(rgb(0.1,0.6,0.1,0.3,length(m.mam))),
+             rep(rgb(0.7,0.7,0.1,0.3,length(m.jja))),
+             rep(rgb(0.7,0.5,0.5,0.3,length(m.son))))
+    par(bty='n')
+    r <- cor.test(x,y)
+    if (is.null(main)) main <- paste(loc(x0),'T(2m): mean v.s. quantile')
+    plot(x,y,main=main,xlab=xlab,ylab=ylab,col=col,pch=19,
+         sub=paste('Anomaly: p=',probs,'; r=',round(r$estimate,3),' [',
+           round(r$conf.int[1],3),', ',round(r$conf.int[1],3),']',sep=''))
+    model.djf <- lm(coredata(q.djf) ~ coredata(m.djf))
+    model.mam <- lm(coredata(q.mam) ~ coredata(m.mam))
+    model.jja <- lm(coredata(q.jja) ~ coredata(m.jja))
+    model.son <- lm(coredata(q.son) ~ coredata(m.son))
+    abline(model.djf,col=rgb(0.2,0.2,0.6))
+    abline(model.mam,col=rgb(0.1,0.6,0.1))
+    abline(model.jja,col=rgb(0.7,0.7,0.1))
+    abline(model.son,col=rgb(0.7,0.5,0.5))
+    grid()
+    signf <- c(rep(summary(model.djf)$coefficients[8] < 0.05,length(m.djf)),
+               rep(summary(model.mam)$coefficients[8] < 0.05,length(m.mam)),
+               rep(summary(model.jja)$coefficients[8] < 0.05,length(m.jja)),
+               rep(summary(model.son)$coefficients[8] < 0.05,length(m.son)))
+    points(x[signf],y[signf])
+    legend(min(x),max(y),c(paste('DJF',round(model.djf$coefficients[2],3)),
+                           paste('MAM',round(model.mam$coefficients[2],3)),
+                           paste('JJA',round(model.jja$coefficients[2],3)),
+                           paste('SON',round(model.son$coefficients[2],3))),pch=19,
+           col=c(rgb(0.2,0.2,0.6),rgb(0.1,0.6,0.1),
+             rgb(0.7,0.7,0.1),rgb(0.7,0.5,0.5)),bty='n')
+    text(max(x),min(y),expression(q[p]==mu + sigma*sqrt(2)*erf^-1 *(2*p - 1)),
+         pos=2,col='grey')
+    invisible(list(DJF=model.djf,MAM=model.mam,JJA=model.jja,SON=model.son))
+  }
+}
+    
+  
+

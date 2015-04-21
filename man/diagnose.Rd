@@ -8,6 +8,7 @@
 \alias{diagnose.cca}
 \alias{diagnose.ds}
 \alias{diagnose.station}
+\alias{diagnose.distr}
 \alias{diagnose.dsensemble}
 \title{Diagnose}
 \description{Diagnose and examine combined fields, MVR, and CCA
@@ -34,6 +35,9 @@ diagnose.cca(x)
 diagnose.ds(x,plot=FALSE)
 diagnose.station(x,it=NULL,...)
 diagnose.dsensemble(x,plot=TRUE,plot.type='target',...)
+diagnose.distr(x,main='Mean - quantile',
+               xlab='mean',ylab=expression(q[p]),
+               sub=src(x),probs=0.95)
 }
 \arguments{
   \item{x}{data object}

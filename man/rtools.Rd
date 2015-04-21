@@ -7,6 +7,8 @@
 \alias{q995}
 \alias{lag.station}
 \alias{lag.field}
+\alias{filt}
+\alias{filt.default}
 \alias{exit}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
@@ -31,11 +33,17 @@ trend.pval(x)
 lag.station(x,...)
 lag.field(x,...)
 exit()
+filt(x,...)
+filt.default(x,n,type='ma',lowpass=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{A data.frame or a coredata zoo object.}
    \item{na.rm}{If TRUE, remove NA's from data}
+   \item{type}{'ma' for moving average (box-car), 'gauss' for Gaussian,
+     'binom' for binomial filter,' parzen' for Parzen filter, 'hanning'
+     for Hanning filter, or 'welch' for Welch filter.}
+   \item{lowpass}{True for smoothing, otherwise the highpass results is returned}
 }
 \details{
   'as.decimal' converts between degree-minute-second into decimal value.
