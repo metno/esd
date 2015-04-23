@@ -611,9 +611,8 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                          slp="data/ncep/slp.mon.mean.nc"),
                           non.stationarity.check=FALSE,
                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
-                          select=NULL,FUN="wetmean",
-                          threshold=1,
-                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=nmin) {
+                          select=NULL,FUN="wetmean",threshold=1,
+                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365) {
 
 # This function is for downscaling wet-day mean using a combination of predictors
 
