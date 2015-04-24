@@ -265,7 +265,7 @@ year <- function(x) {
     y <- year(index(x))
     return(y)
   }
-  if (inherits(x,'storm')) {
+  if (inherits(x,c('storm','trajectory'))) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$year + 1900
     return(y)
   }
@@ -302,7 +302,7 @@ month <- function(x) {
     y <- month(index(x))
     return(y)
   }
-  if (inherits(x,'storm')) {
+  if (inherits(x,c('storm','trajectory'))) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mon + 1
     return(y)
   }
@@ -329,7 +329,7 @@ day <- function(x) {
     y <- day(index(x))
     return(y)
   }
-  if (inherits(x,'storm')) {
+  if (inherits(x,c('storm','trajectory'))) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mday
     return(y)
   }
