@@ -551,7 +551,7 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,...) {
   par(fig=c(0,0.45,0.5,0.975))
   map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,...)
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
-  map(attr(y,'predictor.pattern'),new=FALSE,colorbar=FALSE)
+  map(attr(y,'predictor.pattern'),new=FALSE,colorbar=FALSE,verbose=verbose)
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     plot(attr(y,'evaluation')[,1],attr(y,'evaluation')[,2],

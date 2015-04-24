@@ -271,7 +271,7 @@ subset.trend <- function(x,it=NULL,is=NULL) {
 }
 
 subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-    if (is.null(it) & is.null(is)) return(x)
+    if (is.null(it) & is.null(is) & length(table(month(x)))==1) return(x)
     if (verbose) {print("subset.dsensemble"); print(it)}
     x0 <- x
     d <- dim(x)
