@@ -1,7 +1,7 @@
 # Author 	Kajsa Parding
 # Last update   17.03.2015
 
-# Principle Component Analysis (PCA) of storm tracks
+# Principle Component Analysis (PCA) of trajectory object, e.g., storm tracks
 
 PCA.trajectory <- function(X,neofs=20,param=c('lon','lat'),
                       anomaly=TRUE,verbose=FALSE) {
@@ -106,8 +106,8 @@ plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
 
   stopifnot(!missing(X), inherits(X,"trajectory"))
   if (inherits(X,'pca')) {
-    pca <- X; X <- pca2storm(pca)
-  } else pca <- PCA.storm(X,param=param)
+    pca <- X; X <- pca2trajectory(pca)
+  } else pca <- PCA.trajectory(X,param=param)
   
   colvec <- c('red3','mediumblue','darkolivegreen3',
               'darkturquoise','darkorange')
