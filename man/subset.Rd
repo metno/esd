@@ -12,7 +12,7 @@
 \alias{subset.field}
 \alias{subset.spell}
 \alias{subset.zoo}
-\alias{subset.storm}
+\alias{subset.trajectory}
 \alias{station.subset}
 \alias{matchdate}
 \title{Subsetting esd objects}
@@ -35,7 +35,7 @@ subset.ds(x,it=NULL,is=NULL)
 subset.trend(x,it=NULL,is=NULL)
 subset.dsensemble(x,it=NULL,is=NULL)
 subset.zoo(x,it=NULL)
-subset.storm(x,it=NULL,is=NULL)
+subset.trajectory(x,it=NULL,is=NULL)
 matchdate(x,it)
 }
 \arguments{
@@ -114,18 +114,19 @@ plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
 # OK - identical results
 
 # Extract storm tracks for specific periods and regions
+# from the example 'trajectory' object imilast.M03
 data(imilast.M03)
 # spring season (march, april, may)
-x1 <- subset.storm(imilast.M03,it='mam') 
-plot.storm(x1)
+x1 <- subset(imilast.M03,it='mam') 
+plot(x1)
 
 # region 10W-10E/55-65N
-x2 <- subset.storm(imilast.M03,is=list(lat=c(55,65),lon=c(-10,10)))
-map.storm(x2)
+x2 <- subset(imilast.M03,is=list(lat=c(55,65),lon=c(-10,10)))
+map(x2)
 
-# storms longer than 2 days (8x6 hours)
-x3 <- subset.storm(imilast.M03,it=(length.storm(imilast.M03)>8))
-map.storm(x3)
+# storms longer than 3 days (12x6 hours)
+x3 <- subset(imilast.M03,it=(param.trajectory(imilast.M03,param='n')>12))
+map(x3)
 
 }
 \keyword{utilities}
