@@ -88,6 +88,7 @@ pca2trajectory <- function(X,verbose=FALSE) {
   colnames(x) <- c(attr(pca,"colnames"),'start','end','n')
 
   if (any("anomaly" %in% aspect(pca))) {
+    class(x,'trajectory')
     x <- anomaly2trajectory(x)  
   }
 
