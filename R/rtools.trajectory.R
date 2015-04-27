@@ -172,16 +172,20 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
     fmt <- "%Y"
     if (inherits(y,'season')) {
       cls <- 'season'
+      unit <- 'events/season'
     } else {
       cls <- 'annual'
+      unit <- 'events/year'
     }
   } else if (by %in% c('month','4seasons')) {
     fmt <- "%Y%m%d"
     t <- as.yearmon(t)
     cls <- 'month'
+    unit <- 'events/month'
   } else if (by=='day') {
     fmt <- "%Y%m%d"
     cls <- 'day'
+    unit <- 'events/day'
   }
   d <- strftime(t,format=fmt)
   n <- table(d)
@@ -191,8 +195,8 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   class(nz) <- c(cls,"zoo")
   if (by=='4seasons') nz <- as.4seasons(nz,FUN=sum)
   attrcp(y,nz)
-  attr(nz,'longname') <- 'storm count'
-  attr(nz,'unit') <- 'storms/year'
+  attr(nz,'longname') <- paste(attr(x,'longname'),'event count',sep=', ')
+  attr(nz,'unit') <- unit
   invisible(nz)
 }
 
