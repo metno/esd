@@ -1,24 +1,24 @@
-\name{PCA.storm}
-\alias{PCA.storm}
-\alias{pca2storm}
-\alias{plot.PCA.storm}
+\name{PCA.trajectory}
+\alias{PCA.trajectory}
+\alias{pca2trajectory}
+\alias{plot.PCA.trajectory}
 
-\title{Principle component analysis of storm tracks.}
+\title{Principle component analysis of trajectory objects.}
 \description{
-  Computes principal component analysis for storm track data.
+  Computes principal component analysis for trajectory data, e.g., storm tracks.
   Add some reference and details about the method.
   The PCA is based on \code{\link{svd}}.
 }
 
 \usage{
-PCA.storm(X,neofs=20,param=c('lon','lat','slp'),anomaly=TRUE,verbose=FALSE)
-pca2storm(X)
+PCA.trajectory(X,neofs=20,param=c('lon','lat'),anomaly=TRUE,verbose=FALSE)
+pca2trajectory(X)
 }
 \arguments{
-  \item{X}{a 'storm' object}
+  \item{X}{a 'trajectory' object}
   \item{verbose}{TRUE - clutter the screen with messages}
   \item{anomaly}{logical. If TRUE, subtract the first latitude/longitude
-    from each storm track.}
+    from each trajectory.}
   \item{param}{parameters to include in principle component analysis.}
 }
 
@@ -28,13 +28,13 @@ pca2storm(X)
 data(imilast.M03)
 x <- subset(imilast.M03,is=list(lon=c(-20,20),lat=c(50,70)))
 # PCA of longitude and latitude
-pca <- PCA.storm(x,param=c('lon','lat'))
-plot.pca.storm(pca)
-map.pca.storm(pca,projection='latlon')
+pca <- PCA.trajectory(x,param=c('lon','lat'))
+plot.pca.trajectory(pca)
+map.pca.trajectory(pca,projection='latlon')
 
 # latitude only
-pca <- PCA.storm(x,param=c('lat'))
-plot.pca.storm(pca)
+pca <- PCA.trajectory(x,param=c('lat'))
+plot.pca.trajectory(pca)
 }
 
 \keyword{spatial}
