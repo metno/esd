@@ -101,13 +101,9 @@ trajectory2field <- function(x) {
 
 
 ## trajectory2station <- function(x,it=NULL,is=NULL,loc=NULL,FUN='count') {
-##   y <- subset.storm(x,it=it,is=is)
+##   y <- subset(x,it=it,is=is)
 ##   if (FUN=='count') {
-##     n <- count.storm(y,by='month') # monthly storm count?
-##   } else if (FUN=='slp') {
-##     n <- slp.storm(y,FUN='min')
-##     attr(n,'long name') <- 'minimum sea level pressure'
-##     attr(n,'unit') <- 'hPa'
+##     n <- count.trajectory(y,by='month') # monthly storm count?
 ##   } else if (FUN=='lat1') {
 ##     n <- y[,which(colnames(y)=='lat')[1]]
 ##     attr(n,'long name') <- 'genesis latitude'
@@ -127,13 +123,3 @@ trajectory2field <- function(x) {
 ##   class(ns) <- c("station",class(n))
 ##   invisible(ns)
 ## }
-
-## storm2field <- function(x,it=NULL,is=NULL) {
-
-## }
-
-#fname="/vol/fou/klima/IMILAST/ERAinterim_1.5_NH_M03_19890101_20090331_ST.txt"
-#m03 <- read.fwf(fname,width=c(2,7,4,11,5,5,5,4,7,7,10),
-#        col.names=c("Code99","cyclone","timeStep","Date","Year",
-#        "Month","Day","Time","Lon","Lat","Pressure"))
-#x <- as.stormtrack(m03)
