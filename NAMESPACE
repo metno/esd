@@ -141,7 +141,7 @@ export(combine.field)
 export(combine.list)
 export(combine.zoo)
 export(crossval)
-export(crossval.ds)as
+export(crossval.ds)
 export(crossval.list)
 export(corfield)
 export(corfield.default)
