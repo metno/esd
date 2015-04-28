@@ -7,8 +7,8 @@ annual <- function(x, ...) UseMethod("annual")
 
 
   
-annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, ...) {
-  #print("annual.zoo")
+annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
+  if (verbose) print("annual.zoo")
   if (inherits(x,'annual')) return(x)
   attr(x,'names') <- NULL
 #  yr <- year(x)  REB: 08.09.2014
@@ -56,9 +56,9 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, ...) {
 
 
 annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
-                           regular=NULL,frequency=NULL) {
+                           regular=NULL,frequency=NULL,threshold=NULL,verbose=FALSE) {
 
-  #print('annual.default')
+  if (verbose) print('annual.default')
   if (inherits(x,'annual')) return(x)
   nv <- function(x) sum(is.finite(x))
 
@@ -72,6 +72,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   #print(table(yr))
   YR <- as.numeric(rownames(table(yr)))
   nyr <- as.numeric(table(yr))
+  if (verbose) print('Number of valid data points')
   nval <- aggregate(zoo(x,order.by=index(x)),year,FUN=nv)
   #print(c(length(nval),length(nyr),length(yr),length(YR))); plot(nval)
   #print(YR)
@@ -116,6 +117,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   #print(names(list(...))); print(names(formals(FUN)))
   #browser()
   #print(FUN); print(sum(is.element(names(formals(FUN)),'na.rm')))
+  if (verbose) print('aggregate')
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0) )
     y <- aggregate(X,year,FUN=FUN,...,na.rm=na.rm) else
@@ -124,25 +126,25 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   y <- attrcp(x,y,ignore="names")
 
   args <- list(...)
-  #print(names(args))
+  if (verbose) print(names(args))
   ix0 <- grep('threshold',names(args))
   if (length(ix0)>0) threshold <- args[[ix0]] else threshold <- 1
   if (FUN=="counts")  {
-    #print("Count")
+    if (verbose) print("Count")
     attr(y,'unit') <-
       rep(paste("counts | X >",threshold," * ",attr(x,'unit')),d[2])
   } else if (FUN=="freq") {
-    #print("Frequency")
+    if (verbose) print("Frequency")
     attr(y,'variable') <- rep('f',d[2])
     attr(y,'unit') <- 'fraction'
 #    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
   } else if (FUN=="wetfreq") {
-    #print("Wet-day frequency")
+    if (verbose) print("Wet-day frequency")
     attr(y,'variable') <- rep('f[w]',d[2])
     attr(y,'unit') <- 'fraction'
 #    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
   } else if (FUN=="wetmean") {
-    #print("Wet-day mean")
+    if (verbose) print("Wet-day mean")
     attr(y,'variable') <- rep('mu',d[2])
     attr(y,'unit') <- rep('mm/day',d[2])
 #    n <- count(X,threshold=threshold) # REB
@@ -156,7 +158,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     dim(std.err) <- dim(y)
     attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
   } else if (FUN=="mean") {
-    #print("mean")
+    if (verbose) print("mean")
     sigma <- aggregate(X, year, FUN='sd', ...,
                        regular = regular, frequency = frequency)
 #    n <- count(x,threshold=threshold)
@@ -190,8 +192,8 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
 }
 
 
-annual.station <- function(x,FUN='mean',nmin=NULL,...) {
-  #print('annual.station')
+annual.station <- function(x,FUN='mean',nmin=NULL,threshold=NULL,verbose=FALSE,...) {
+  if (verbose) print('annual.station')
   attr(x,'names') <- NULL
 #  if (inherits(x,'day')) {
 #    y <- annual.station.day(x,FUN=match.fun(FUN),...)
@@ -199,14 +201,14 @@ annual.station <- function(x,FUN='mean',nmin=NULL,...) {
 #  ns <- length(x[1,])
 #  for (i in 1:ns) {
 #    y <- annual.default(x,FUN=match.fun(FUN),nmin=nmin,...)
-    y <- annual.default(x,FUN=FUN,nmin=nmin,...)
+    y <- annual.default(x,FUN=FUN,nmin=nmin,verbose=verbose,threshold=threshold,...)
 #    if (i==1) y <- z else y <- c(y,z)
 #  }
    y[which(is.infinite(y))] <- NA
   return(y)
 }
 
-annual.spell <- function(x,FUN='mean',nmin=0,...) {
+annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
   attr(x,'names') <- NULL
   if ( (inherits(x,'mon'))  & is.null(nmin) ) {
     iy <- year(x)
@@ -216,7 +218,7 @@ annual.spell <- function(x,FUN='mean',nmin=0,...) {
     na.rm=FALSE
   }
   #y <- annual.default(x,FUN=match.fun(FUN),...)
-  y <- annual.default(x,FUN=FUN,nmin=nmin,...)
+  y <- annual.default(x,FUN=FUN,nmin=nmin,threshold=threshold,...)
   return(y)
 }
 
@@ -263,7 +265,7 @@ year <- function(x) {
     y <- year(index(x))
     return(y)
   }
-  if (inherits(x,'storm')) {
+  if (inherits(x,'trajectory')) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$year + 1900
     return(y)
   }
@@ -300,7 +302,7 @@ month <- function(x) {
     y <- month(index(x))
     return(y)
   }
-  if (inherits(x,'storm')) {
+  if (inherits(x,'trajectory')) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mon + 1
     return(y)
   }
@@ -327,7 +329,7 @@ day <- function(x) {
     y <- day(index(x))
     return(y)
   }
-  if (inherits(x,'storm')) {
+  if (inherits(x,'trajectory')) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mday
     return(y)
   }

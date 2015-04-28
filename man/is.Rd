@@ -6,7 +6,7 @@
 \alias{is.eof}
 \alias{is.pca}
 \alias{is.cca}
-\alias{is.storm}
+\alias{is.trajectory}
 \alias{is.daily}
 \alias{is.monthly}
 \alias{is.seasonal}
@@ -23,7 +23,7 @@ is.station(x)
 is.eof(x) 
 is.pca(x) 
 is.cca(x) 
-is.storm(x)
+is.trajectory(x)
 is.daily(x)
 is.monthly(x) 
 is.seasonal(x)

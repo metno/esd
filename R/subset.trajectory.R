@@ -1,9 +1,9 @@
 
 ## Author K. Parding
 ## Based on subset.station.R by Rasmus E. Benestad and A. Mezghani
-## Last updated 13.02.2015
+## Last updated 23.04.2015
 
-subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
     x0 <- x
     cls <- class(x)
@@ -84,34 +84,31 @@ subset.storm <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         
     # is can be a list to select region or according to other criterion
     if (inherits(is,'list')) {
-        selx <- rep(TRUE,l); sely <- selx;
-        selp <- selx; selF <- selx
-        nms <- names(is)
-        ix <- grep('lon',tolower(nms))
-        iy <- grep('lat',tolower(nms))
-        ip <- grep('slp',tolower(nms))
-        iF <- grep('FUN',nms)
-        if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
-        if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
-        if (length(ip)>0) sslp <- is[[ip]] else sslp <- NULL        
-        if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
-        if (length(slon)==2) {
-          if (verbose) print(paste('is selects longitudes ',slon[1],'–',slon[2],'E',sep=""))
-          fn <- function(x) any(x>=min(slon) & x<=max(slon))
-          selx <- apply(x[,colnames(x)=='lon'],1,fn)
-        }
-        if (length(slat)==2) {
-          if (verbose) print(paste('is selects latitudes ',slat[1],'–',slat[2],'N',sep=""))
-          fn <- function(x) any(x>=min(slat) & x<=max(slat))
-          sely <- apply(x[,colnames(x)=='lat'],1,fn)
-        }
-        if (length(sslp)>0) {
-          if (verbose) print(paste('is selects slp ',min(sslp),'–',max(sslp),sep=""))
-          fn <- function(x) any(x>=min(sslp) & x<=max(sslp))
-          selp <- apply(x[,colnames(x)=='slp'],1,fn)
-          }
-        ij <- selx & sely & selp & selF
-     }
+      selx <- rep(TRUE,l); sely <- selx;
+      selp <- selx; selF <- selx
+      nms <- names(is)
+      ix <- grep('lon',tolower(nms))
+      iy <- grep('lat',tolower(nms))
+      ip <- grep('slp',tolower(nms))
+      iF <- grep('FUN',nms)
+      if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
+      if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
+      if (length(ip)>0) sslp <- is[[ip]] else sslp <- NULL        
+      if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
+      if (length(slon)==2) {
+        if (verbose) print(paste('is selects longitudes ',
+                       slon[1],'–',slon[2],'E',sep=""))
+        fn <- function(x) any(x>=min(slon) & x<=max(slon))
+        selx <- apply(x[,colnames(x)=='lon'],1,fn)
+      }
+      if (length(slat)==2) {
+        if (verbose) print(paste('is selects latitudes ',
+                       slat[1],'–',slat[2],'N',sep=""))
+        fn <- function(x) any(x>=min(slat) & x<=max(slat))
+        sely <- apply(x[,colnames(x)=='lat'],1,fn)
+      }
+      ij <- selx & sely & selp & selF
+    }
 
     if(verbose) print(paste('length(ii)',length(ii),'length(ij)',length(ij)))
     if(verbose) print(paste('it selects',sum(ii),'is selects',sum(ij)))

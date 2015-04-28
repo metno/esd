@@ -1,15 +1,22 @@
 # Author 	Kajsa Parding
 # Last update   17.03.2015
 
-# Principle Component Analysis (PCA) of storm tracks
+# Principle Component Analysis (PCA) of trajectory object, e.g., storm tracks
 
-PCA.storm <- function(X,neofs=20,param=c('lon','lat'),
+PCA.trajectory <- function(X,neofs=20,param=c('lon','lat'),
                       anomaly=TRUE,verbose=FALSE) {
-  stopifnot(!missing(X), inherits(X,"storm"))
+  stopifnot(!missing(X), inherits(X,"trajectory"))
 
-  X <- sort.storm(X)
-  if (anomaly) { X <- anomaly.storm(X,param)#anomaly.storm(X,param)
-  } else {
+  X <- sort(X)
+  if (anomaly) {
+    p <- param[!param %in% names(attr(X,'mean'))]
+    if(verbose) print('calculating anomaly')
+    if(verbose) print(p)
+    if(length(p)>0) X <- anomaly.trajectory(X,param=p)
+  } else if (!anomaly & "anomaly" %in% attr(X,'aspect')) {
+    X <- anomaly2trajectory(X)
+  }
+  if ("lon" %in% param & !anomaly) {
     i.lon <- colnames(X)=='lon'
     i.dateline <- apply(X,1,function(x) (max(x[i.lon])-min(x[i.lon]))>180)
     lon.dateline <- X[i.dateline,i.lon]
@@ -64,9 +71,9 @@ PCA.storm <- function(X,neofs=20,param=c('lon','lat'),
 }
 
 
-pca2storm <- function(X) {
+pca2trajectory <- function(X,verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
-  print('pca2storm')
+  if(verbose) print('pca2trajectory')
   
   pca <- X
   cls <- class(pca)
@@ -81,23 +88,13 @@ pca2storm <- function(X) {
   colnames(x) <- c(attr(pca,"colnames"),'start','end','n')
 
   if (any("anomaly" %in% aspect(pca))) {
-    for (i in 1:length(attr(pca,'mean'))) {
-      param.i <- names(attr(pca,'mean'))[i]
-      mean.i <- unlist(attr(pca,'mean')[i])
-      if (length(mean.i)==1) {
-        x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] + mean.i
-      } else {
-        x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] +
-           matrix( rep(array(mean.i),sum(colnames(x)==param.i)),
-           length(mean.i), sum(colnames(x)==param.i) )
-      }
-    }
+    class(x,'trajectory')
+    x <- anomaly2trajectory(x)  
   }
 
   lon <- x[,colnames(x)=='lon']
   lon[lon>180] <- lon[lon>180]-360
   x[,colnames(x)=='lon'] <- lon
-
   x <- attrcp(pca,x)
   attr(x,'aspect') <- attr(pca,'aspect')[attr(pca,'aspect')!="anomaly"]
   attr(x,'history') <- history.stamp(pca)
@@ -105,13 +102,13 @@ pca2storm <- function(X) {
   invisible(x)
 }
 
-plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
+plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
                            main=NULL) {
 
-  stopifnot(!missing(X), inherits(X,"storm"))
+  stopifnot(!missing(X), inherits(X,"trajectory"))
   if (inherits(X,'pca')) {
-    pca <- X; X <- pca2storm(pca)
-  } else pca <- PCA.storm(X,param=param)
+    pca <- X; X <- pca2trajectory(pca)
+  } else pca <- PCA.trajectory(X,param=param)
   
   colvec <- c('red3','mediumblue','darkolivegreen3',
               'darkturquoise','darkorange')
@@ -135,7 +132,7 @@ plot.pca.storm <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
   if (length(param)==1) {
     uy <- U
     ux <- matrix(rep(1:(dim(U)[1]),m),dim(U)[1],m)
-    xlab <- ""
+    xlab <- "step"
     ylab <- paste("PCA component,",param)
   } else if (length(param)==2) {
     ux <- U[attr(pca,"colnames")==param[1],]

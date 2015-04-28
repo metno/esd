@@ -75,7 +75,7 @@
 \alias{as.pca.station}
 \alias{as.comb}
 \alias{as.comb.eof}
-\alias{as.storm}
+\alias{as.trajectory}
 \title{Conversion to esd objects.}
 \description{
   Various methods for converting objects from one shape to
@@ -168,6 +168,10 @@ as.station.data.frame(x,location=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
 as.station.zoo(x,location=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                       cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,url=NA,
                       reference=NA,info=NA, method= NA,type=NA,aspect=NA)
+as.trajectory(x,n=10,loc=NA,param=NA,unit=NA,lon=NA,
+                          lat=NA,alt=NA,cntr=NA,longname=NA,stid=NA,
+                          quality=NA,src=NA,url=NA,reference=NA,info=NA,
+                          method= NA,verbose=FALSE)
 as.station.list(x)
 as.station.ds(x)
 as.station.pca(x)
@@ -176,7 +180,6 @@ as.station.spell(x)
 as.station.eof(x,pattern=1:10)
 as.pca.ds(x)
 as.pca.station(x)
-as.storm(x)
 }
 \arguments{
   \item{x}{Data object}

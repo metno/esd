@@ -2,31 +2,47 @@
 ## Last update   16.02.2015
 ## Require 	 geoborders.rda
 
-map.storm <- function(x,it=NULL,is=NULL,
+map.trajectory <- function(x,it=NULL,is=NULL,
       projection="sphere",lonR=10,latR=90,
       col='red',colmap='rainbow',alpha=0.3,pfit=FALSE,
       main=NULL,xlim=NULL,ylim=NULL,
       verbose=FALSE,new=TRUE) {
 
-  y <- subset.storm(x,it=it,is=is)
-  if (pfit) {
-    lats <- t(polyfit.storm(y))
-    y[,colnames(y)=='lat'] <- lats
-  }
-
-  if (projection=="sphere" | projection=="np" | projection=="sp") {
-    if (projection=="np") latR <- 90
-    if (projection=="sp") latR <- -90
-    sphere.storm(y,new=new,verbose=verbose,
-    lonR=lonR,latR=latR,col=col,alpha=alpha,main=main)
-  } else if (projection=="latlon" | projection=="lonlat") {
-    lonlat.storm(y,new=new,verbose=verbose,
-    xlim=xlim,ylim=ylim,col=col,alpha=alpha,main=main)
+  if('anomaly' %in% attr(x,'aspect') &
+  any(c('lon','lat') %in% names(attr(x,'mean')))) {
+    y <- subset.trajectory(x,it=it)
+    anomalymap.trajectory(x,col=col,colmap=colmap,alpha=alpha,
+     main=main,xlim=xlim,ylim=ylim,verbose=verbose,new=new)
+  } else {
+    y <- subset.trajectory(x,it=it,is=is)
+    if (pfit) {
+      lats <- t(pfit.trajectory(y))
+      y[,colnames(y)=='lat'] <- lats
+    }
+    if (projection=="sphere" | projection=="np" | projection=="sp") {
+      if (projection=="np") latR <- 90
+      if (projection=="sp") latR <- -90
+      sphere.trajectory(y,new=new,verbose=verbose,
+      lonR=lonR,latR=latR,col=col,alpha=alpha,main=main)
+    } else if (projection=="latlon" | projection=="lonlat") {
+      lonlat.trajectory(y,new=new,verbose=verbose,
+      xlim=xlim,ylim=ylim,col=col,alpha=alpha,main=main)
+    }
   }
 }
 
-
-lonlat.storm <- function(x,
+anomalymap.trajectory <- function(x,col='red',colmap='rainbow',alpha=0.3,
+ main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1,verbose=FALSE,new=TRUE) {
+    if(new) dev.new()
+    par(bty="n")
+    lons <- x[,colnames(x)=='lon']
+    lats <- x[,colnames(x)=='lat']
+    plot(lons,lats,type='n',main=main,xlim=xlim,ylim=ylim)
+    matlines(t(lons),t(lats),lty=lty,lwd=lwd,
+           col=adjustcolor(col,alpha.f=alpha))
+}
+  
+lonlat.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
     lty=1,lwd=1,main=NULL,new=TRUE,verbose=FALSE) {
   
@@ -39,9 +55,9 @@ lonlat.storm <- function(x,
                           ', ylim',paste(ylim,collapse="-")))
 
   data("geoborders",envir=environment())
-  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  mlon <- geoborders$x[ok]
-  mlat <- geoborders$y[ok]
+  #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
+  mlon <- geoborders$x#[ok]
+  mlat <- geoborders$y#[ok]
 
   if (new) dev.new(width=8,height=7)
   par(bty="n")
@@ -49,11 +65,12 @@ lonlat.storm <- function(x,
     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
 
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
-  if(verbose) print(paste(dim(lons)[1],'storms,',sum(!OK),'crossing dateline'))
+  if(verbose) print(paste(dim(lons)[1],'trajectories,',
+                          sum(!OK),'crossing dateline'))
   matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
 
-  # storms crossing the dateline plotted in two parts
+  # trajectories crossing the dateline plotted in two parts
   if (sum(!OK)>0) {
     fn <- function(lon,lat) {
       lon[lon<0] <- lon[lon<0]+360
@@ -68,7 +85,8 @@ lonlat.storm <- function(x,
   }
 
   # draw coastlines
-  points(mlon,mlat,pch=".",col='grey20',cex=1.4)
+  #points(mlon,mlat,pch=".",col='grey20',cex=1.4)
+  lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
   
   # box marking the spatial subset
   slon <- attr(x0,'longitude')
@@ -97,8 +115,6 @@ lonlat.storm <- function(x,
   }
 }
  
-
-
 sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
   theta <- pi*lon/180
   phi <- pi*lat/180
@@ -111,7 +127,7 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 }
 
 
-sphere.storm <- function(x,
+sphere.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
     lty=1,lwd=1,lonR=0,latR=90,main=NULL,
     verbose=FALSE,new=TRUE) {
@@ -179,13 +195,13 @@ sphere.storm <- function(x,
 }
 
 
-map.hexbin.storm <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
+map.hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
           xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
           xlim=NULL,ylim=NULL,col='red',border='firebrick4',
           colmap='heat.colors',scale.col=TRUE,scale.size=FALSE,
           main=NULL,new=TRUE,verbose=FALSE) {
 
-  x <- subset.storm(x,it=it,is=is)
+  x <- subset.trajectory(x,it=it,is=is)
   ilon <- colnames(x)=='lon'
   ilat <- colnames(x)=='lat'
   ilen <- colnames(x)=='n'
@@ -194,9 +210,8 @@ map.hexbin.storm <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
   if (is.null(xlim)) xlim <- range(lon)
   if (is.null(ylim)) ylim <- range(lat)
   data("geoborders",envir=environment())
-  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  mlon <- geoborders$x[ok]
-  mlat <- geoborders$y[ok]
+  mlon <- geoborders$x
+  mlat <- geoborders$y
   if(new) dev.new(width=8,height=7)
   if(leg) par(bty="n",mar=c(5.0,4.0,3.0,5.3))
   else par(bty="n",mar=c(4.4,4.0,1.0,1.0))
@@ -207,7 +222,7 @@ map.hexbin.storm <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
                  new=FALSE,leg=leg,col=col,border=border,Nmax=Nmax,
                  scale.col=scale.col,scale.size=scale.size,colmap=colmap)
   OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
-  points(mlon[OK],mlat[OK],pch=".",col='grey20',cex=1.4)
+  lines(mlon[OK],mlat[OK],lty=1,col='grey20',lwd=1.0)
   # box marking the spatial subset
   slon <- attr(x,'longitude')
   slat <- attr(x,'latitude')
@@ -235,13 +250,13 @@ map.hexbin.storm <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
   }
 }
 
-map.sunflower.storm <- function(x,it=NULL,is=NULL,
+map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
       dx=6,dy=2,petalsize=7,
       xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
       xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6,
       main=NULL,new=TRUE,verbose=FALSE) {
 
-  x <- subset.storm(x,it=it,is=is)
+  x <- subset.trajectory(x,it=it,is=is)
   ilon <- colnames(x)=='lon'
   ilat <- colnames(x)=='lat'
   ilen <- colnames(x)=='n' 
@@ -251,9 +266,8 @@ map.sunflower.storm <- function(x,it=NULL,is=NULL,
   if (is.null(ylim)) ylim <- range(lat)
 
   data("geoborders",envir=environment())
-  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  mlon <- geoborders$x[ok]
-  mlat <- geoborders$y[ok]
+  mlon <- geoborders$x
+  mlat <- geoborders$y
 
   if(new) dev.new(width=8,height=7)
   par(bty="n",mar=c(4.4,4.0,1.0,1.0))
@@ -281,7 +295,7 @@ map.sunflower.storm <- function(x,it=NULL,is=NULL,
     }
     OK <- OK & !(findInterval(mlon,xbox)==1 & findInterval(mlat,ybox)==1)
   }
-  points(mlon[OK],mlat[OK],pch=".",col='grey20',cex=1.4)
+  lines(mlon[OK],mlat[OK],lty=1,col='grey20',lwd=1)
 
   # box marking the spatial subset
   slon <- attr(x,'longitude')
@@ -309,26 +323,14 @@ map.sunflower.storm <- function(x,it=NULL,is=NULL,
     lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
   }
 }
-
-
-mean.lon <- function(lon) {
-  if (!any(lon>0)|!any(lon<0)|(mean(lon[lon>0])-mean(lon[lon<0]))<120){
-    x <- mean(lon)
-  } else {
-    lon[lon<0] <- lon[lon<0]+360
-    x <- mean(lon)
-    if (x>180) x <- x-360
-  }
-  return(x)
-}
   
-map.pca.storm <- function(X,projection="sphere",lonR=NULL,latR=NULL,
+map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
       xlim=NULL,ylim=NULL,main=NULL,m=2,param=c('lon','lat')) {
 
-  stopifnot(!missing(X), inherits(X,"storm"))
+  stopifnot(!missing(X), inherits(X,"trajectory"))
   if (inherits(X,'pca')) {
-    pca <- X; X <- pca2storm(pca)
-  } else pca <- PCA.storm(X,param=param)
+    pca <- X; X <- pca2trajectory(pca)
+  } else pca <- PCA.trajectory(X,param=param)
 
   U <- attr(pca,'pattern')
   V <- coredata(pca)
@@ -340,10 +342,10 @@ map.pca.storm <- function(X,projection="sphere",lonR=NULL,latR=NULL,
   
   colvec <- c('red3','mediumblue', 'chartreuse3',
               'darkorange','darkturquoise')
-
+  mean.lon <- fnlon(mean)
   if (is.null(latR)) latR <- 90
   if (is.null(lonR)) lonR <- mean.lon(X[,colnames(X)=='lon'])
-  map.storm(X,projection=projection,lonR=lonR,latR=latR,
+  map.trajectory(X,projection=projection,lonR=lonR,latR=latR,
     col='grey20',alpha=0.1,xlim=xlim,ylim=ylim,main=main,new=TRUE)
  
   for (i in 1:m) { 

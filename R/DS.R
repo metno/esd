@@ -825,7 +825,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         #  attr(ds,'source') <- paste(attr(y0,'source'),attr(X,'source'),sep="-")
     attr(ds,'source') <- attr(X,'source')
     attr(ds,'history') <- history.stamp(y)
-    attr(ds,'call') <- match.call()
+    #attr(ds,'call') <- match.call()
     class(ds) <- c("ds",cls)
 
                                         #plot(zoo(y[,1],order.by=year(y)),lwd=3)

@@ -611,9 +611,8 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                          slp="data/ncep/slp.mon.mean.nc"),
                           non.stationarity.check=FALSE,
                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
-                          select=NULL,FUN="wetmean",
-                          threshold=1,
-                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=nmin) {
+                          select=NULL,FUN="wetmean",threshold=1,
+                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365) {
 
 # This function is for downscaling wet-day mean using a combination of predictors
 
@@ -869,7 +868,8 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   ## rather than using the temeprature directly.
   if (verbose) print(paste('The predictor: seasonal',FUN))
   ys <- aggregate(y,by=month,FUN=FUN)
-
+  ya <- aggregate(y,by=year,FUN=FUN)
+  
   if (!is.na(attr(y,'longitude')))
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
   if (!is.na(attr(y,'latitude')))
@@ -931,7 +931,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (plot) {
     dev.new()
-    plot(aggregate(y,by=year,FUN='wetmean'),xlim=c(1900,2100),
+    plot(ya,xlim=c(1900,2100),
          ylim=range(aggregate(y,by=year,FUN='wetmean'),na.rm=TRUE)*c(0.75,1.5))
     grid()
     
@@ -981,6 +981,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           pattern="tas_Amon_ens_",verbose=FALSE,nmin=nmin) {
 
   if (verbose) print('DSensemble.pca')
+  cls <- class(y)
   # This function is for downscaling PCA to represent a group of stations
   if (!is.na(attr(y,'longitude'))[1])
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
@@ -1178,41 +1179,47 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (verbose) print('Downscaling finished - need to convert PCAs to stations')
 
-  # Unpacking the information tangled up in GCMs, PCs and stations:
-  # Save GCM-wise
+  ## Unpacking the information tangled up in GCMs, PCs and stations:
+  ## Save GCM-wise in the form of PCAs
   gcmnm <- gsub('-','.',gcmnm)
   Y <- as.station(y)
   Z <- list(info='DSensemble.pca')
   if (verbose) print('Unscramble the results')
   for (i in 1:N) {
-    pca1 <- zoo(t(X[,i,]),order.by=t)
-    pca1 <- attrcp(y,pca1)
-    class(pca1) <- class(y) 
-    z.pca <- as.station(pca1)
-    class(z.pca) <- c("dsensemble","zoo")
+    z.pca <- zoo(t(X[,i,]),order.by=t)
+    z.pca <- attrcp(y,z.pca)
+    class(z.pca) <- class(y) 
+    class(z.pca) <- c("ds",cls)
     attr(z.pca,'GCM') <- gcmnm[i]
     cl <- paste('Z$i',i,'_',gcmnm[i],' <- z.pca',sep='')
     eval(parse(text=cl))
     if (verbose) print(paste(i,cl))
   }
 
-  # Save the information station-wise
+  ## Save the information station-wise 
   if (verbose) print('Save the results station-wise')
   x <- matrix(rep(NA,dim(X)[3]*dim(X)[2]),dim(X)[3],dim(X)[2])
-  for (i in 1:(length(names(Z[[2]])))) {
+  ns <- length(loc(y))
+  if (verbose) print(loc(y))
+  for (i in 1:(ns)) {
     x[,] <- NA
+    ## Loop over the GCMs and pick the selected downscaled station series:
     for (j in 1:N){
-      x[,j] <- Z[[j+1]][,i]
+      x[,j] <- as.station(Z[[j+1]])[,i]
     }
-    yloc <- loc(Z[[j+1]])[i]
+    yloc <- tolower(loc(y)[i])
     yloc <- gsub('-','.',yloc)
     yloc <- gsub(' ','.',yloc)
     yloc <- gsub('/','.',yloc)
-    attr(z.pca,'station') <- subset(Y,is=i)
-    eval(parse(text=paste('Z$',yloc,' <- z.pca',sep='')))
+    if (verbose) {print(yloc); str(x)}
+    ds.x <- zoo(x,order.by=index(Z[[2]]))
+    attr(ds.x,'station') <- subset(Y,is=i)
+    class(ds.x) <- c('dsensemble','zoo')
+    eval(parse(text=paste('Z$',yloc,' <- ds.x',sep='')))
   }
 
   #Z <- attrcp(y,Z)
+  if (verbose) print('Set attributes')
   attr(Z,'predictor') <- attr(T2M,'source')
   attr(Z,'domain') <- list(lon=lon,lat=lat)
   attr(Z,'scorestats') <- scorestats
@@ -1225,6 +1232,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(Z,'area.mean.expl') <- FALSE
 
   save(file="DSensemble.rda",Z)
-  print("---")
+  if (verbose) print("---")
   invisible(Z)
 }
