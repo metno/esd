@@ -120,18 +120,24 @@ anomaly2trajectory <- function(x,verbose=FALSE) {
     for (i in 1:length(attr(x,'mean'))) {
       param.i <- names(attr(x,'mean'))[i]
       mean.i <- unlist(attr(x,'mean')[i])
-      if(verbose) print(paste(i,param.i,'length:',paste(length(mean.i),collapse=" ")))
+      if(verbose) print(paste(i,param.i,'length:',
+                     paste(length(mean.i),collapse=" ")))
       if (length(mean.i)==1) {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] + mean.i
       } else if (length(mean.i)==sum(colnames(x)==param.i)) {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] +
-         t(matrix( rep(array(mean.i),dim(x)[1]), sum(colnames(x)==param.i), dim(x)[1]))
+         t(matrix( rep(array(mean.i),dim(x)[1]),
+                  sum(colnames(x)==param.i), dim(x)[1]))
       } else if (length(mean.i)==dim(x)[1]) {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] +
-         matrix( rep(array(mean.i),sum(colnames(x)==param.i)), dim(x)[1], sum(colnames(x)==param.i)) 
+         matrix( rep(array(mean.i),sum(colnames(x)==param.i)),
+                dim(x)[1], sum(colnames(x)==param.i)) 
       }
     }
   }
+  lon <- x[,colnames(x)=='lon']
+  lon[lon>180] <- lon[lon>180]-360
+   x[,colnames(x)=='lon'] <- lon
   attr(x,'aspect') <- attr(x,'aspect')[attr(x,'aspect')!='anomaly']
   invisible(x)
 }
