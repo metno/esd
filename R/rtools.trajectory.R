@@ -168,12 +168,15 @@ polyfit <- function(x,y) {
 
 count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   y <- subset(x,it=it,is=is)
+  t1 <- strptime(y[,colnames(y)=="start"],format="%Y%m%d%H")
+  t2 <- strptime(y[,colnames(y)=="end"],format="%Y%m%d%H")
+  t <- mapply(function(a,b) seq(a,b,by="day"),as.Date(t1),as.Date(t2))
+  t <- as.Date(sort(unlist(t)))
   if (by=='year') {
-    i <- seq(min(which(min(month(y))==month(y))),
-         max(which(max(month(y))==month(y))))
-    y <- subset(y,it=i)
+    i <- c(min(which(min(month(t))==month(t))),
+           max(which(max(month(t))==month(t))))
+    t <- t[i[1]:i[2]]
   }
-  t <- strptime(y[,colnames(y)=="start"],format="%Y%m%d%H")
   if (by=='year') {
     fmt <- "%Y"
     if (inherits(y,'season')) {
