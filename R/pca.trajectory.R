@@ -86,19 +86,14 @@ pca2trajectory <- function(X,verbose=FALSE) {
 
   x <- cbind(t(x),attr(pca,'start'),attr(pca,'end'),attr(pca,'n'))
   colnames(x) <- c(attr(pca,"colnames"),'start','end','n')
-
-  if (any("anomaly" %in% aspect(pca))) {
-    class(x,'trajectory')
-    x <- anomaly2trajectory(x)  
-  }
-
-  lon <- x[,colnames(x)=='lon']
-  lon[lon>180] <- lon[lon>180]-360
-  x[,colnames(x)=='lon'] <- lon
   x <- attrcp(pca,x)
-  attr(x,'aspect') <- attr(pca,'aspect')[attr(pca,'aspect')!="anomaly"]
+  attr(x,'aspect') <- attr(pca,'aspect')
   attr(x,'history') <- history.stamp(pca)
-  class(x) <- cls[-1]
+  class(x) <- 'trajectory'
+
+  if (any("anomaly" %in% attr(x,'aspect'))) {
+    x <- anomaly2trajectory(x)
+  }
   invisible(x)
 }
 
@@ -133,19 +128,19 @@ plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
     uy <- U
     ux <- matrix(rep(1:(dim(U)[1]),m),dim(U)[1],m)
     xlab <- "step"
-    ylab <- paste("PCA component,",param)
+    ylab <- paste(param,"component")
   } else if (length(param)==2) {
     ux <- U[attr(pca,"colnames")==param[1],]
     uy <- U[attr(pca,"colnames")==param[2],]
-    xlab <- paste("PCA component,",param[1])
-    ylab <- paste("PCA component,",param[2])
+    xlab <- paste(param[1],"component")
+    ylab <- paste(param[2],"component")
   } else if (length(param)==3) {
     ux <- U[attr(pca,"colnames")==param[1],]
     uy <- U[attr(pca,"colnames")==param[2],]
     uz <- U[attr(pca,"colnames")==param[3],]
-    xlab <- paste("PCA component,",param[1])
-    ylab <- paste("PCA component,",param[2])
-    zlab <- paste("PCA component,",param[3])
+    xlab <- paste(param[1],"component")
+    ylab <- paste(param[2],"component")
+    zlab <- paste(param[3],"component")
   }
 
   xlim <- c(min(ux[,1:m]),max(ux[,1:m]))
@@ -162,7 +157,7 @@ plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
   }
 
   plot(0,0,type='n',xlab=xlab,
-       ylab=ylab,xlim=xlim,ylim=ylim)#,main="PCA components")
+       ylab=ylab,xlim=xlim,ylim=ylim,main="loading pattern")
   for (i in 1:m) {
     lines(ux[,i],uy[,i],lty=1,col=colvec[i])
     points(ux[,i],uy[,i],pch='o',col=colvec[i])
@@ -172,7 +167,7 @@ plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
   if (length(param)==3) {
     zlim <- c(min(uz[,1:m]),max(uz[,1:m]))
     plot(0,0,type='n',xlab=zlab,ylab=ylab,
-         xlim=zlim,ylim=ylim)#,main="PCA components")
+         xlim=zlim,ylim=ylim,main="loading pattern")
     for (i in 1:m) {
       lines(uz[,i],uy[,i],lty=1,col=colvec[i])
       points(uz[,i],uy[,i],pch='o',col=colvec[i])
@@ -182,20 +177,22 @@ plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
     
   # Explained variance - R2
   plot(0,0,type='n',xlim=c(0.5,10),ylim=c(0,100),xlab='EOF #',
-     ylab="Explained variance (%)")#,main='Explained variance')
+     ylab="(%)",main='explained variance')
   points(R2,type='b',pch=20,col='black')
   for (i in 1:m) {
     points(i,R2[i],col=colvec[i],pch=19)
   }
 
   # time 
-  plot(V.yr[,1],type='n',ylim=c(min(V.yr[,1:m])-5e-3,max(V.yr[,1:m])+5e-3),
-     xlab="Time",ylab="",main="")
+  plot(V.yr[,1],type='n',ylim=c(min(V.mn[,1:m])-5e-3,max(V.mn[,1:m])+5e-3),
+     xlab="Time",ylab="PC",main="")
   #lines(index(V.mn),rep(0,length(index(V.mn))),col='grey80',lwd=1.4)
-  lines(as.Date(c("1900-01-01","2020-01-01")),c(0,0),col='grey90',lwd=1)
+  lines(as.Date(c("1900-01-01","2020-01-01")),c(0,0),col='grey80',lwd=1)
   for (i in 1:m) {
-    lines(V.yr[,i],col=colvec[i],lty=1)
-    points(V.mn[,i],col=colvec[i],pch=20)
+    #lines(V.yr[,i],col=colvec[i],lty=1)
+    #points(V.mn[,i],col=colvec[i],pch=20)
+    lines(V.mn[,i],col=colvec[i],lty=1)
+    #lines(trend(V.mn[,i]),col=colvec[i],lty=2,lwd=2)
   }
 
   title(main=main,outer=T)

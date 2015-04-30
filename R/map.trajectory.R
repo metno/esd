@@ -332,6 +332,8 @@ map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
     pca <- X; X <- pca2trajectory(pca)
   } else pca <- PCA.trajectory(X,param=param)
 
+  if (any('anomaly' %in% attr(X,'aspect'))) X <- anomaly2trajectory(X)
+  
   U <- attr(pca,'pattern')
   V <- coredata(pca)
   W <- attr(pca,'eigenvalues')

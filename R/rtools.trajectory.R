@@ -120,18 +120,24 @@ anomaly2trajectory <- function(x,verbose=FALSE) {
     for (i in 1:length(attr(x,'mean'))) {
       param.i <- names(attr(x,'mean'))[i]
       mean.i <- unlist(attr(x,'mean')[i])
-      if(verbose) print(paste(i,param.i,'length:',paste(length(mean.i),collapse=" ")))
+      if(verbose) print(paste(i,param.i,'length:',
+                     paste(length(mean.i),collapse=" ")))
       if (length(mean.i)==1) {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] + mean.i
       } else if (length(mean.i)==sum(colnames(x)==param.i)) {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] +
-         t(matrix( rep(array(mean.i),dim(x)[1]), sum(colnames(x)==param.i), dim(x)[1]))
+         t(matrix( rep(array(mean.i),dim(x)[1]),
+                  sum(colnames(x)==param.i), dim(x)[1]))
       } else if (length(mean.i)==dim(x)[1]) {
         x[,colnames(x)==param.i] <- x[,colnames(x)==param.i] +
-         matrix( rep(array(mean.i),sum(colnames(x)==param.i)), dim(x)[1], sum(colnames(x)==param.i)) 
+         matrix( rep(array(mean.i),sum(colnames(x)==param.i)),
+                dim(x)[1], sum(colnames(x)==param.i)) 
       }
     }
   }
+  lon <- x[,colnames(x)=='lon']
+  lon[lon>180] <- lon[lon>180]-360
+   x[,colnames(x)=='lon'] <- lon
   attr(x,'aspect') <- attr(x,'aspect')[attr(x,'aspect')!='anomaly']
   invisible(x)
 }
@@ -162,12 +168,15 @@ polyfit <- function(x,y) {
 
 count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   y <- subset(x,it=it,is=is)
+  t1 <- strptime(y[,colnames(y)=="start"],format="%Y%m%d%H")
+  t2 <- strptime(y[,colnames(y)=="end"],format="%Y%m%d%H")
+  t <- mapply(function(a,b) seq(a,b,by="day"),as.Date(t1),as.Date(t2))
+  t <- as.Date(sort(unlist(t)))
   if (by=='year') {
-    i <- seq(min(which(min(month(y))==month(y))),
-         max(which(max(month(y))==month(y))))
-    y <- subset(y,it=i)
+    i <- c(min(which(min(month(t))==month(t))),
+           max(which(max(month(t))==month(t))))
+    t <- t[i[1]:i[2]]
   }
-  t <- strptime(y[,colnames(y)=="start"],format="%Y%m%d%H")
   if (by=='year') {
     fmt <- "%Y"
     if (inherits(y,'season')) {
