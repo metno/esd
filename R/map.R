@@ -273,7 +273,7 @@ map.corfield <- function(x,new=TRUE,xlim=NULL,ylim=NULL,n=15,
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
   dim(x) <- attr(x,'dimensions')[1:2]
-
+  browser()
   if (projection=="lonlat") lonlatprojection(x=x,n=n,col=col,breaks=breaks,
                              what=what,gridlines=gridlines,new=new,...) else
   if (projection=="sphere") map2sphere(x=x,lonR=lonR,latR=latR,axiR=axiR,
@@ -398,7 +398,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if (length(breaks) != length(col)+1)
     breaks <- seq(min(c(x),na.rm=TRUE),max(c(x),na.rm=TRUE),
                   length=length(col)+1)
-                      
+  browser()                   
   #print(variable)
 #  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
    if (colid=='precip') col <- rev(col)
@@ -446,8 +446,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     text(lon[length(lon)],lat[1] - 0.5*dlat,method,col="grey30",pos=2,cex=0.7)
   if (colorbar) {
     par(xaxt="s",fig=c(0.05,0.95,0.01,1))
-    breaks <- round(seq(min(x,na.rm=TRUE),max(x,na.rm=TRUE),length=length(col)),1)
-    image.plot(horizontal=TRUE,legend.only=TRUE,zlim=range(x,na.rm=TRUE),
+    if (is.null(breaks)) {
+        breaks <- round(seq(min(x,na.rm=TRUE),max(x,na.rm=TRUE),length=length(col)),1)
+        zlim=range(x,na.rm=TRUE)
+    } else zlim <- range(breaks,na.rm=TRUE) 
+    image.plot(horizontal=TRUE,legend.only=TRUE,zlim=zlim,
                lab.breaks=breaks,col=col,axis.args=list(cex.axis=0.8),
                border=FALSE)
 #    image.plot(horizontal=TRUE,legend.only=TRUE,zlim=range(x,na.rm=TRUE),
