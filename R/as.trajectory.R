@@ -131,8 +131,8 @@ trajectory2station <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',
   } else {
     z <- param.trajectory(y,param=param,FUN=FUN)
     t <- strptime(y[,colnames(y)=='start'],"%Y%m%d%H")
-    n <- zoo(n,order.by=t)
-    n <- aggregate(n,by=as.Date(t))
+    z <- zoo(z,order.by=t)
+    z <- aggregate(z,by=as.Date(t))
     shortname <- paste(param,FUN)
   }
   z <- attrcp(y,z)
