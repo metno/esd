@@ -273,7 +273,7 @@ map.corfield <- function(x,new=TRUE,xlim=NULL,ylim=NULL,n=15,
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
   dim(x) <- attr(x,'dimensions')[1:2]
-  browser()
+  
   if (projection=="lonlat") lonlatprojection(x=x,n=n,col=col,breaks=breaks,
                              what=what,gridlines=gridlines,new=new,...) else
   if (projection=="sphere") map2sphere(x=x,lonR=lonR,latR=latR,axiR=axiR,
@@ -398,7 +398,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if (length(breaks) != length(col)+1)
     breaks <- seq(min(c(x),na.rm=TRUE),max(c(x),na.rm=TRUE),
                   length=length(col)+1)
-  browser()                   
+                   
   #print(variable)
 #  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
    if (colid=='precip') col <- rev(col)
