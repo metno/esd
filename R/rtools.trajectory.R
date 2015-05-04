@@ -166,7 +166,7 @@ polyfit <- function(x,y) {
   return(z)
 }
 
-count.trajectory <- function(x,it=NULL,is=NULL,by='month') {
+count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   y <- subset(x,it=it,is=is)
   t <- as.Date(strptime(y[,colnames(y)=="start"],format="%Y%m%d%H"))
   if (by=='year') {
