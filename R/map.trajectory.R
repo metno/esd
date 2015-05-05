@@ -16,7 +16,7 @@ map.trajectory <- function(x,it=NULL,is=NULL,
   } else {
     y <- subset.trajectory(x,it=it,is=is)
     if (pfit) {
-      lats <- t(pfit.trajectory(y))
+      lats <- t(polyfit.trajectory(y))
       y[,colnames(y)=='lat'] <- lats
     }
     if (projection=="sphere" | projection=="np" | projection=="sp") {

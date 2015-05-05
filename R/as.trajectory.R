@@ -94,7 +94,7 @@ tdf2numeric <- function(x,verbose=verbose) {
   x <- data.frame(x)
   names(x) <- tolower(names(x))
   if ('code99' %in% names(x)) {
-    x$code99 <- as.numeric(as.character(x$code99))
+    x$code99 <- factor2numeric(x$code99)
     x <- x[x$code99<90,]
   }
   nlist1 <- c('trajectory','lat','lon','year','month','day','time')
@@ -118,8 +118,9 @@ tdf2numeric <- function(x,verbose=verbose) {
 }
 
 factor2numeric <- function(x) {
-  suppressWarnings(as.numeric(levels(x))[x])}
-
+  if(!is.null(levels(x))) {suppressWarnings(as.numeric(levels(x))[x])
+  } else as.numeric(as.character(x))
+}
 
 trajectory2station <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',
                                longname=NULL,unit=NULL,loc=NULL) {
@@ -146,17 +147,19 @@ trajectory2station <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',
   invisible(z)
 }
 
+
 trajectory2field <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',
                              unit=NULL) {
 
-  y <- subset(x,it=it,is=is)
-  
-  lon <- seq(min(lon(y)),max(lon(y)),length=30)
-  lat <- seq(min(lat(y)),max(lat(y)),length=30)
+  ## y <- subset(x,it=it,is=is)
 
-  z <- c()
-  z <- attrcp(y,z)
-  as.field.zoo(z,lon,lat,param,unit)
+  ## lon <- min(y[,colnames(y)=='lon'])
+  ## lon <- seq(min(lon(y)),max(lon(y)),length=30)
+  ## lat <- seq(min(lat(y)),max(lat(y)),length=30)
+
+  ## z <- c()
+  ## z <- attrcp(y,z)
+  ## as.field.zoo(z,lon,lat,param,unit)
   
   
 }
