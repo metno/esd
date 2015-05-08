@@ -24,7 +24,8 @@ print('CORDEX.ESD.exp.1.pr')
 ## ----------------------------
 #npca <- 3; lon <- c(-70,-15); lat <- c(-37,-17); eofs <- 1:5  # mu: r= 0.83; fw: r= 0.8
 # Single predictors:
-npca <- 3; lon <- c(-70,-15); lat <- c(-37,-17); eofs <- 1:5  #
+#npca <- 3; lon <- c(-70,-15); lat <- c(-37,-17); eofs <- 1:5  #
+npca <- 17; lon <- c(-70,-15); lat <- c(-37,-17); eofs <- 1:5  #
 
 # load the predictands: CLARIS precip
 print('Predictand')
@@ -172,8 +173,8 @@ dev.copy2pdf(file='CORDEX.ESD.exp1.pr.esd.pdf')
 
 mu.tier1 <- subset(mu.tier1,it=c(1996,2006))
 fw.tier1 <- subset(fw.tier1,it=c(1996,2006))
-mu.tier2 <- subset(mu.tier1,it=c(1979,2003))
-fw.tier2 <- subset(fw.tier1,it=c(1979,2003))
+mu.tier2 <- subset(mu.tier2,it=c(1979,2003))
+fw.tier2 <- subset(fw.tier2,it=c(1979,2003))
 
 X <- list(mu.tier1=mu.tier1,fw.tier1=fw.tier1,
           mu.tier2=mu.tier2,fw.tier2=fw.tier2,
