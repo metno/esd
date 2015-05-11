@@ -525,4 +525,5 @@ export(fnlon)
 export(approxlon)
 export(subset.trajectory)
 export(corfield.trajectory)
+export(DS.trajectory)
 

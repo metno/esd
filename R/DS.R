@@ -1031,3 +1031,30 @@ biasfix <- function(x) {
     attr(x,'diagnose') <- diag
     return(x)
 }
+
+
+
+DS.trajectory <- function(y,X,it=NULL,is=NULL,FUN='count',param=NULL,
+                       unit=NULL,longname=NULL,loc=NULL,
+                       biascorrect=FALSE,mon=NULL,
+                       method="lm",swsm="step",m=5,
+                       rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                       verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
+   
+  stopifnot(!missing(y),!missing(X),inherits(y,"trajectory"))
+  if (verbose) print("--- DS.trajectory ---")
+
+  y <- subset(y,it=it,is=is)
+  ys <- trajectory2station(y,param=param,FUN=FUN,unit=unit,
+                           longname=longname,loc=loc)
+  if(any("season" %in% class(X))) {
+    ys <- as.4seasons(ys)
+  } else if (any("month" %in% class(y))) {
+    ys <- as.monthly(ys)
+  }
+  ys <- subset(ys,it=X)
+  ds <- DS(ys,X,biascorrect=biascorrect,mon=mon,method=method,swsm=swsm,m=m,
+     rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
+     verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+  invisible(ds)
+}
