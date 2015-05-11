@@ -1,37 +1,56 @@
 
-as.trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,unit=NA,lon=NA,
-                          lat=NA,alt=NA,cntr=NA,longname=NA,stid=NA,
-                          quality=NA,src=NA,url=NA,reference=NA,info=NA,
-                          method= NA,n=10) {
-  if (verbose) print("as.trajectory")
-  if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
-  if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
-  X <- tdf2matrix(x,n=n,verbose=verbose)
-  attr(X, "location")= loc
-  attr(X, "variable")= param
-  attr(X, "unit")= unit
-  attr(X, "longitude")= lon
-  attr(X, "latitude")= lat
-  attr(X, "altitude")= alt
-  attr(X, "country")= cntr
-  attr(X, "longname")= longname
-  attr(X, "station_id")= stid
-  attr(X, "quality")= quality
-  attr(X, "calendar")= "gregorian"
-  attr(X, "source")= src
-  attr(X, "URL")= url
-  attr(X, "type")= "analysis"
-  attr(X, "aspect")= "interpolated"
-  attr(X, "reference")= reference
-  attr(X, "info")= info
-  attr(X, "method")= method
-  attr(X, "history")= history.stamp()
-  class(X) <- 'trajectory'
+as.trajectory <- function(x,...) {
+  X <- trajectory(x,...)
   invisible(X)
 }
 
-tdf2matrix <- function(x,n=10,verbose=FALSE) {
-  x <- tdf2numeric(x)
+trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
+                          quality=NA,src=NA,url=NA,reference=NA,info=NA,
+                          method=NA,n=10) {
+  if (verbose) print("trajectory")
+  if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
+  if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
+  names(x) <- tolower(names(x))
+  names(x)[grep("lat",names(x))] <- "lat"
+  names(x)[grep("lon",names(x))] <- "lon"
+  names(x)[grep("step",names(x))] <- "timestep"
+
+  if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
+  if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
+  if(is.na(unit) & !is.null(attr(x,"unit"))) unit <- attr(x,"unit")
+  if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
+  if(is.na(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
+  if(is.na(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
+  if(is.na(url) & !is.null(attr(x,"URL"))) url <- attr(x,"URL")
+  if(is.na(reference) & !is.null(attr(x,"reference"))) reference <- attr(x,"reference")
+  if(is.na(info) & !is.null(attr(x,"info"))) info <- attr(x,"info")
+  if(is.na(method) & !is.null(attr(x,"method"))) method <- attr(x,"method")
+  
+  # transform data in data.frame x to numeric values
+  x <- data.frame(x)
+  fn <- function(x) {
+    if(!is.null(levels(x))) {suppressWarnings(as.numeric(levels(x))[x])
+    } else as.numeric(as.character(x))
+  }
+  nlist1 <- c('trajectory','lat','lon','year','month','day','time')
+  if (sum(nlist1 %in% names(x))==length(nlist1)) {
+    x$trajectory <- fn(x$trajectory)
+    x$lat <- fn(x$lat)
+    x$lon <- fn(x$lon)
+    x$year <- fn(x$year)
+    x$month <- fn(x$month)
+    x$day <- fn(x$day)
+    x$time <- fn(x$time)
+    x$date <- x$year*1E6+x$month*1E4+x$day*1E2+x$time
+  } else {
+    print(paste(paste(nlist1[!(nlist1 %in% names(x))],collapse=' '),'missing'))
+  }
+  nlist2 <- names(x)[!(names(x) %in% c('code99','date',nlist1))]
+  for (name in nlist2) {
+    eval(parse(text=paste("x$",name,"<-fn(x$",name,")",sep="")))
+  }
+
+  # interpolate all trajectories to same length n
   aggregate(x$date, list(x$trajectory), function(x) x[1])$x -> t1
   aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> t2
   aggregate(x$date, list(x$trajectory), length)$x -> len
@@ -58,8 +77,66 @@ tdf2matrix <- function(x,n=10,verbose=FALSE) {
         paste(nlist2,"=",nlist2,sep="",collapse=","),
         "start=t1,end=t2,n=len)",sep=",")))
   }
+
+  # add attributes to trajectory matrix X
+  attr(X, "location")= loc
+  attr(X, "variable")= param
+  attr(X, "longname")= longname
+  attr(X, "quality")= quality
+  attr(X, "calendar")= "gregorian"
+  attr(X, "source")= src
+  attr(X, "URL")= url
+  attr(X, "type")= "analysis"
+  attr(X, "aspect")= "interpolated"
+  attr(X, "reference")= reference
+  attr(X, "info")= info
+  attr(X, "method")= method
+  attr(x,"lon") <- NA
+  attr(x,"lat") <- NA
+  attr(x,"alt") <- NA
+  attr(x,"cntr") <- NA
+  attr(x,"stid") <- NA
+  attr(X, "history")= history.stamp()
+  class(X) <- 'trajectory'
   invisible(X)
 }
+
+
+read.imilast <- function(fname,path=NULL) {
+  fname <- paste(path,fname,sep="")
+  # read file header
+  h <- strsplit(readLines(fname,1),",")
+  h <- tolower(unlist(h))
+  h <- gsub("^\\s+|\\s+$","",h)
+  h[grep("cyclone",h)] <- "trajectory"
+  h[grep("99",h)] <- "code99"
+  h[grep("step",h)] <- "timestep"
+  h[grep("date",h)] <- "date"
+  h[grep("lat",h)] <- "lat"
+  h[grep("lon",h)] <- "lon"
+  # check width of columns
+  l <- readLines(fname,4)[4]
+  blanks <- unlist(gregexpr(" ",l))
+  breaks <- blanks[!(blanks %in% as.integer(blanks+1))]
+  w <- c(blanks[1]-1,
+         breaks[2:length(breaks)]-breaks[1:(length(breaks)-1)],
+         nchar(l)-breaks[length(breaks)]+1)
+  # read data
+  x <- read.fwf(fname,width=w,col.names=h,skip=1)
+  x <- x[x$code99<90,]
+  # add attributes
+  attr(x, "variable")= "storm tracks"
+  attr(x, "longname")= "mid-latitude storm trajectories"
+  attr(x, "source")= "IMILAST"
+  attr(x, "URL")= "http://journals.ametsoc.org/doi/abs/10.1175/BAMS-D-11-00154.1"
+  attr(x, "reference")= "Neu, et al. , 2013: IMILAST: A Community Effort to Intercompare Extratropical Cyclone Detection and Tracking Algorithms. Bull. Amer. Meteor. Soc., 94, 529–547."
+  if (x$code99[1]>9) {
+    attr(x, "method") <- paste("M",as.character(x$code99[1]),sep="")
+  } else attr(x, "method") <- paste("M0",as.character(x$code99[1]),sep="")
+  attr(x, "history")= history.stamp()
+  invisible(x)
+}
+
 
 matrix2tdf <- function(x) {
   i.t <- colnames(x) %in% c('start','end')
@@ -90,51 +167,20 @@ matrix2tdf <- function(x) {
   invisible(X)
 }
 
-tdf2numeric <- function(x,verbose=verbose) {
-  x <- data.frame(x)
-  names(x) <- tolower(names(x))
-  if ('code99' %in% names(x)) {
-    x$code99 <- factor2numeric(x$code99)
-    x <- x[x$code99<90,]
-  }
-  nlist1 <- c('trajectory','lat','lon','year','month','day','time')
-  if (sum(nlist1 %in% names(x))==length(nlist1)) {
-    x$trajectory <- factor2numeric(x$trajectory)
-    x$lat <- factor2numeric(x$lat)
-    x$lon <- factor2numeric(x$lon)
-    x$year <- factor2numeric(x$year)
-    x$month <- factor2numeric(x$month)
-    x$day <- factor2numeric(x$day)
-    x$time <- factor2numeric(x$time)
-    x$date <- x$year*1E6+x$month*1E4+x$day*1E2+x$time
-  } else {
-    print(paste(paste(nlist1[!(nlist1 %in% names(x))],collapse=' '),'missing'))
-  }
-  nlist2 <- names(x)[!(names(x) %in% c('code99','date',nlist1))]
-  for (name in nlist2) {
-    eval(parse(text=paste("x$",name,"<-factor2numeric(x$",name,")",sep="")))
-  }
-  invisible(x)
-}
-
-factor2numeric <- function(x) {
-  if(!is.null(levels(x))) {suppressWarnings(as.numeric(levels(x))[x])
-  } else as.numeric(as.character(x))
-}
 
 trajectory2station <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',
                                longname=NULL,unit=NULL,loc=NULL) {
   y <- subset(x,it=it,is=is)
   if (FUN=='count') {
     z <- count.trajectory(y,by='month')
-    shortname <- 'trajectory count'
+    shortname <- 'trajectories'
     unit <- 'events/month'
   } else {
     z <- param.trajectory(y,param=param,FUN=FUN)
     t <- strptime(y[,colnames(y)=='start'],"%Y%m%d%H")
     z <- zoo(z,order.by=t)
-    z <- aggregate(z,by=as.Date(t))
-    shortname <- paste(param,FUN)
+    z <- aggregate(z,by=as.Date(t),FUN='mean')
+    shortname <- paste(param,FUN,sep=".")
   }
   z <- attrcp(y,z)
   attr(z,'variable') <- shortname
