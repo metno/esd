@@ -48,6 +48,11 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
      ifix <- Wxol[4,] > nxo
      if (sum(ifix)>0) Wxol[4,ifix] <- nxo
      Wx[,olx] <- Wxol[,]
+     if (verbose) {
+       print('x-overlaps:')
+       print(xo[Wx[3,olx]])
+       print(xo[Wx[4,olx]])
+     }
   }
   if (sum(oly)>0) {
      JJ <-  (1:nyo)[is.element(yo,yn)]
@@ -60,6 +65,11 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
      jfix <- Wyol[4,] > nyo
      if (sum(jfix)>0) Wyol[4,jfix] <- nyo
      Wy[,oly] <- Wyol[,]
+     if (verbose) {
+       print('y-overlaps:')
+       print(yo[Wy[3,oly]])
+       print(yo[Wy[4,oly]])
+     }
    }
    #print(dim(Wx)); print(dim(Wy))
   
@@ -72,42 +82,92 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
   if (sum(!olx)>0) {
     Wxno <- apply(xno,1,lindist,xo) # REB 29.01.2014
     Wx[,!olx] <- Wxno[,]
+    if (verbose) {
+       print('x-interp:')
+       print(xo[Wx[3,!olx]])
+       print(xo[Wx[4,!olx]])
+     }
   }
   if (sum(!oly)>0) {
     Wyno <- apply(yno,1,lindist,yo)  # REB 29.01.2014              
     #str(Wxno); str(Wx)
     Wy[,!oly] <- Wyno[,]
+    if (verbose) {
+       print('y-interp:')
+       print(yo[Wy[3,!oly]])
+       print(yo[Wy[4,!oly]])
+     }
   }
   #print(dim(Wx)); print(dim(Wy))
-  if (verbose) print("test: colsums: sum of weights should be 1")
+  if (verbose) print("test: colsums: sum of weights should be 1 or NA")
   if (verbose) {
     if (dim(Wx)[2]>1) print(colSums(Wx[1:2,])/Wx[8,]) else
                             print(Wx)
     if (dim(Wx)[2]>1) print(colSums(Wy[1:2,])/Wy[8,]) else
                             print(Wy)
   }
-  if (verbose) {print(table(Wy[1,],Wy[2,])); print(table(Wy[3,],Wy[4,]))}  
+  if (verbose) {
+    print(table(round(Wy[1,],2),round(Wy[2,],2)))
+    print(table(round(Wy[3,],2),round(Wy[4,],2)))
+  }  
   #print("beta:")
   
   # The length of lon/lat is the same as the input data itself, 
+  ## Wx has dimension nx, 8, where nx is the number of longitudes in new
+  ## regular grid. Wy has dimension ny, 8. Use rep since the new grid is regular.
 
-  beta <- cbind(rep(Wx[1,],ny),
-                rep(Wx[2,],ny),
-                rep(Wy[1,],nx),
-                rep(Wy[2,],nx))
-#print("denom")
-  denom <- rep(Wx[8,],ny)*rep(Wy[8,],nx)
+  ## From regular regrid:
+  srty <- order(rep(Wy[5,],nx))
+  if (verbose) print("beta")
+  beta <- cbind(rep(Wx[1,],ny)*rep(Wy[1,],nx)[srty],
+                rep(Wx[2,],ny)*rep(Wy[1,],nx)[srty],
+                rep(Wx[1,],ny)*rep(Wy[2,],nx)[srty],
+                rep(Wx[2,],ny)*rep(Wy[2,],nx)[srty])
+  if (verbose) print(dim(beta))
+  if (verbose) print("denom")
+  denom <- rep(Wx[8,],ny)*rep(Wy[8,],nx)[srty]
   beta <- beta/denom
-#print("indx")
+
+#  if (verbose) print("indx")
+#  indx <- cbind(rep(Wx[3,],ny)+(rep(Wy[3,],nx)[srty]-1)*nxo,
+#                rep(Wx[4,],ny)+(rep(Wy[3,],nx)[srty]-1)*nxo,
+#                rep(Wx[3,],ny)+(rep(Wy[4,],nx)[srty]-1)*nxo,
+#                rep(Wx[4,],ny)+(rep(Wy[4,],nx)[srty]-1)*nxo)
+#  beta[!is.finite(indx)] <- 0
+#  indx[!is.finite(indx)] <- 1
+
+# All points have an individual lon-lat coordinate
+#  
+#  srty <- order(rep(Wy[5,],nx))
+#  beta <- cbind(rep(Wx[1,],ny),
+#                rep(Wx[2,],ny),
+#                rep(Wy[1,],nx),
+#                rep(Wy[2,],nx))
+#  
+#  if (verbose) print("denom")
+#  denom <- rep(Wx[8,],ny)*rep(Wy[8,],nx)
+#  beta <- beta/denom
+#  
+  if (verbose) print("indx")
   indx <- cbind(rep(Wx[3,],ny),
                 rep(Wx[4,],ny),
                 rep(Wy[3,],nx),
                 rep(Wy[4,],nx))
   beta[!is.finite(indx)] <- 0
   indx[!is.finite(indx)] <- 1
+  
   attr(beta,'index') <- indx
   attr(beta,'Wx') <- Wx
   attr(beta,'Wy') <- Wy
+  if (verbose) {
+    print('longitude from indx:')
+    print(rbind(xo[Wx[3,]],xo[Wx[4,]]))
+    print('latitude from indx:')
+    print(rbind(yo[Wy[3,]],yo[Wy[4,]]))
+    par(mfcol=c(2,1))
+    image(xo[Wx[3,]]%o%yo[Wy[3,]])
+    image(xo[Wx[4,]]%o%yo[Wy[4,]])
+  }
   t2 <- Sys.time()
   if (verbose) {print("Computation time:"); print(t2 - t1)}
   invisible(beta)
@@ -118,6 +178,7 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 
 regrid.station <- function(x,is,approach="station",clever=FALSE,verbose=FALSE) {
 
+  print('regrid.station does not work - there is a problem with a bug!')
   stopifnot(inherits(x,'station'))
   print('regrid.station')  
   if (approach=="pca2station") {
@@ -185,24 +246,24 @@ regrid.station <- function(x,is,approach="station",clever=FALSE,verbose=FALSE) {
   
 #  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
   beta <- regrid.irregweights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
-  if (verbose) {print("Weight matrix");  print(dim(beta))}
                                           
   d <- dim(x)
   X <- x; 
   D <- c(length(lon.new),length(lat.new))
   y <- matrix(rep(NA,D[1]*D[2]*d[1]),D[1]*D[2],d[1])
-
-  #print(dim(cbind(beta,attr(beta,'index'))))
+  if (verbose) {
+    print("Weight matrix");  print(dim(beta))
+    print('input data dimensions'); print(c(D,D[1]*D[2]))
+    print('output data dimensions'); print(dim(y))
+    print('indx:'); print(dim(attr(beta,'index')))
+    print(range(c(attr(beta,'index'))))
+  }
   
   if (verbose) pb <- txtProgressBar(style=3)
   #str(X); str(beta)
   
   for (i in 1:d[1]) {
-    #if (verbose) cat(".")
     if (verbose) setTxtProgressBar(pb,i/d[1])  
-    #z <- apply(cbind(beta,attr(beta,'index')),1,sparseMproduct,coredata(x[i,]))
-    #if (verbose) print(c(i,d[1],length(z),length(y[,i]),NA,dim(x),dim(y)))
-    #y[,i] <- z
     M <- as.matrix(X[i,attr(beta,"index")])
     dim(M) <- c(D[1] * D[2],4)
     y[, i] <- rowSums(as.matrix(beta) * M)      

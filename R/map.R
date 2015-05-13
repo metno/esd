@@ -18,7 +18,7 @@ map.default <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   attr(X,'longitude') <- lon(x)
   attr(X,'latitude') <- lat(x)
   attr(X,'variable') <- attr(x,'variable')
-  attr(X,'unit') <- attr(x,'unit')
+  attr(X,'unit') <- attr(x,'unit')[1]
   attr(X,'source') <- attr(x,'source')
   attr(X,'variable') <- varid(x)
   if (inherits(X,'zoo')) attr(X,'time') <- range(index(x)) else
@@ -60,7 +60,7 @@ map.array <- function(x,pattern=1,new=TRUE,projection="lonlat",...) {
   attr(z,'longitude') <- lon(x)
   attr(z,'latitude') <- lat(x)
   attr(z,'variable') <- varid(x)
-  attr(z,'unit') <- unit(x)
+  attr(z,'unit') <- unit(x)[1]
   map(z,new=new,projection=projection,...)
 }
 
@@ -105,7 +105,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,pattern=1,
   attr(X,'longitude') <- attr(x,'longitude')
   attr(X,'latitude') <- attr(x,'latitude')
   attr(X,'variable') <- attr(x,'variable')
-  attr(X,'unit') <- attr(x,'unit')
+  attr(X,'unit') <- attr(x,'unit')[1]
   attr(X,'source') <- attr(x,'source')
   attr(X,'time') <- range(index(x))
   if ( (pattern==1) & !is.null(attr(x, "area.mean.expl")) )
@@ -159,7 +159,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
     attr(X,'latitude') <- lat(attr(x,'pattern'))
   }
   attr(X,'variable') <- varid(x)
-  attr(X,'unit') <- unit(x)
+  attr(X,'unit') <- unit(x)[1]
   
   unit <- attr(x,'unit')
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
@@ -231,9 +231,14 @@ map.field <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
   #print(length(X))
   attr(X,'longitude') <- attr(x,'longitude')
   attr(X,'latitude') <- attr(x,'latitude')
-  attr(X,'variable') <- attr(x,'variable')
+  attr(X,'variable') <- attr(x,'variable')[1]
 #  if (attr(x,'unit')=="deg C") attr(X,'unit') <- expression(degree*C) else
-  attr(X,'unit') <- attr(x,'unit')
+  unit <- attr(x,'unit')[1]
+  if ( (is.na(unit) | is.null(unit)) ) unit <- " "
+  if ((unit=='degree Celsius') | (unit=='deg C') | (unit=='degC'))
+       unit <- 'degree*C'
+
+  attr(X,'unit') <- unit
   attr(X,'source') <- attr(x,'source')
   attr(X,'time') <- range(index(x))
   attr(X,'method') <- FUN
