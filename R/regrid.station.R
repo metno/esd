@@ -37,6 +37,7 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
   oly <- is.element(yn,yo); dy <- min(diff(yo))
 #  print(c(sum(olx),sum(oly),length(olx),length(oly),dx,dy))
   if (sum(olx)>0) {
+    ## II has different length to the other elements.
      II <- (1:nxo)[is.element(xo,xn)]
      Wxol <- rbind(rep(1,sum(olx))*dx, rep(0,sum(olx)),  # Weights
                    II,    II+1,                          # indices
