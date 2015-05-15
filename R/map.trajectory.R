@@ -4,7 +4,7 @@
 
 map.trajectory <- function(x,it=NULL,is=NULL,
       projection="sphere",lonR=10,latR=90,
-      col='red',colmap='rainbow',alpha=0.3,pfit=FALSE,
+      col='red',colmap='rainbow',alpha=0.1,pfit=FALSE,
       main=NULL,xlim=NULL,ylim=NULL,
       verbose=FALSE,new=TRUE) {
 
@@ -31,7 +31,7 @@ map.trajectory <- function(x,it=NULL,is=NULL,
   }
 }
 
-anomalymap.trajectory <- function(x,col='red',colmap='rainbow',alpha=0.3,
+anomalymap.trajectory <- function(x,col='red',colmap='rainbow',alpha=0.1,
  main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1,verbose=FALSE,new=TRUE) {
     if(new) dev.new()
     par(bty="n")
@@ -44,7 +44,7 @@ anomalymap.trajectory <- function(x,col='red',colmap='rainbow',alpha=0.3,
   
 lonlat.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
-    lty=1,lwd=1,main=NULL,new=TRUE,verbose=FALSE) {
+    lty=1,lwd=2,main=NULL,new=TRUE,verbose=FALSE) {
   
   x0 <- x
   lons <- x[,colnames(x)=='lon']
@@ -129,7 +129,7 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 
 sphere.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
-    lty=1,lwd=1,lonR=0,latR=90,main=NULL,
+    lty=1,lwd=2,lonR=0,latR=90,main=NULL,
     verbose=FALSE,new=TRUE) {
   
   x0 <- x
@@ -192,6 +192,15 @@ sphere.trajectory <- function(x,
     x <- a[1,]; y <- a[2,]; z <- a[3,]
     lines(x,z,lty=1,col='grey20',lwd=1.0)
   }
+}
+
+
+map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
+      n=150,col=rev(colscal('precip',n=30)),...) {
+  stopifnot(is.trajectory(x))
+  x <- subset(x,it=it,is=is)
+  X <- trajectory2field(x,dt='year',dx=dx,dy=dy,n=n)
+  map(X,col=col,...)
 }
 
 
