@@ -1131,6 +1131,10 @@ as.eof.list <- function(x,verbose=FALSE) {
     }
   }
   attr(eof,'original.list.of.eofs') <- x
+  attr(eof,'udv') <- udv
+  id <- c()
+  for (i in 1:length(x)) id <- c(id,rep(i,length(attr(x[[i]],'eigenvalues'))))
+  attr(eof,'id') <- id
   names(eof) <- paste("X.",1:20,sep="")
   class(eof) <- class(x[[1]])
   return(eof)

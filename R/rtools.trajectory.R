@@ -53,7 +53,8 @@ sort.trajectory <- function(x) {
   }
 }
 
-anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),verbose=FALSE) {
+anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
+                               verbose=FALSE) {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   i <- which(colnames(x)=='lon')
   dateline <- apply(x,1,function(x) (!any(x>0) | !any(x<0) |
@@ -142,7 +143,7 @@ anomaly2trajectory <- function(x,verbose=FALSE) {
   invisible(x)
 }
 
-pfit.trajectory <- function(x) {
+polyfit.trajectory <- function(x) {
   ilon <- which(colnames(x)=='lon')
   ilat <- which(colnames(x)=='lat')
   OK <- apply(x[,ilon],1,function(y) !any(y>0) | !any(y<0) |
@@ -154,12 +155,13 @@ pfit.trajectory <- function(x) {
   coefs <- apply(x,1,function(y) attr(polyfit(y[ilon],y[ilat]),'model'))
   z <- x
   z[,ilat] <- t(latfit)
-  attr(z,'aspect') <- unique(c("polyfit",attr(x,'aspect')))
+  attr(z,'aspect') <- unique(c("pfit",attr(x,'aspect')))
   attr(z,'coefs') <- coefs
   return(z)
 }
 
-polyfit <- function(x,y) {
+polyfit <- function(x,y=NULL) {
+  if(all(is.null(y))) y <- x; x <- seq(1,length(x))
   pfit <- lm(y ~ I(x) + I(x^2) + I(x^3) + I(x^4) + I(x^5))
   z <- predict(pfit)
   attr(z,'model') <- pfit$coef
@@ -168,15 +170,7 @@ polyfit <- function(x,y) {
 
 count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   y <- subset(x,it=it,is=is)
-  t1 <- strptime(y[,colnames(y)=="start"],format="%Y%m%d%H")
-  t2 <- strptime(y[,colnames(y)=="end"],format="%Y%m%d%H")
-  t <- mapply(function(a,b) seq(a,b,by="day"),as.Date(t1),as.Date(t2))
-  t <- as.Date(sort(unlist(t)))
-  if (by=='year') {
-    i <- c(min(which(min(month(t))==month(t))),
-           max(which(max(month(t))==month(t))))
-    t <- t[i[1]:i[2]]
-  }
+  t <- as.Date(strptime(y[,colnames(y)=="start"],format="%Y%m%d%H"))
   if (by=='year') {
     fmt <- "%Y"
     if (inherits(y,'season')) {

@@ -146,6 +146,15 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
   attr(beta,'index') <- indx
   attr(beta,'Wx') <- Wx
   attr(beta,'Wy') <- Wy
+  if (verbose) {
+    print('longitude from indx:')
+    print(rbind(xo[Wx[3,]],xo[Wx[4,]]))
+    print('latitude from indx:')
+    print(rbind(yo[Wy[3,]],yo[Wy[4,]]))
+    #par(mfcol=c(2,1))
+    #image(xo[Wx[3,]]%o%yo[Wy[3,]])
+    #image(xo[Wx[4,]]%o%yo[Wy[4,]])
+  }
   t2 <- Sys.time()
   if (verbose) {print("Computation time:"); print(t2 - t1)}
   invisible(beta)

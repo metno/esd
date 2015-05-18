@@ -11,7 +11,7 @@ Author: Rasmus E. Benestad and Abdelkader Mezghani
 
 Maintainer: Rasmus E. Benestad (rasmus.benestad-at-met.no) and Abdelkader Mezghani (abdelkader.mezghani-at-met.no)
 
-Depends: ncdf4, zoo, R (>= 2.10.0)
+Depends: ncdf, zoo, R (>= 2.10.0)
 Description: The package contains R functions for retrieving data, making climate analysis and downscaling of monthly mean and daily mean global climate scenarios.
 
 License: GPL (>= 2)

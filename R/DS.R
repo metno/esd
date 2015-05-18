@@ -256,7 +256,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
         return(ds)
     } else if (is.list(X)) {
                                         # REB 2014-10-08
-        print("The predictor is a list")
+        if (verbose) print("The predictor is a list")
         ds <- DS.list(y=y,X=X,biascorrect=biascorrect,mon=mon,
                       method=method,swsm=swsm,m=m,
                       rmtrend=rmtrend,eofs=eofs,
@@ -963,6 +963,9 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
       if (verbose) str(attr(ds,'pattern'))
       dp <- length(attr(ds,'pattern'))
 
+      ## udv holds the SVD results applied to the EOFs in the list.
+      udv <- attr(eof,'udv')
+      id <- attr(eof,'id')
       for (i in 1:np) {
             xp <- attr(ds,'pattern')
             if (is.null(dim(xp))) {
@@ -1030,4 +1033,34 @@ biasfix <- function(x) {
     attr(x,'quality') <- "'bias' corrected -  ref (Imbert & Benestad (2005); Theor. Appl. Clim.; DOI: 10.1007/s00704-005-0133-4"
     attr(x,'diagnose') <- diag
     return(x)
+}
+
+
+
+DS.trajectory <- function(y,X,it=NULL,is=NULL,FUN='count',param=NULL,
+                       unit=NULL,longname=NULL,loc=NULL,
+                       biascorrect=FALSE,mon=NULL,
+                       method="lm",swsm="step",m=5,
+                       rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                       verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
+   
+  stopifnot(!missing(y),!missing(X),inherits(y,"trajectory"))
+  if (verbose) print("--- DS.trajectory ---")
+
+  y <- subset(y,it=it,is=is)
+  ys <- trajectory2station(y,param=param,FUN=FUN,unit=unit,
+                           longname=longname,loc=loc)
+  
+  cls <- class(X)
+  if(is.list(X)) cls <- class(X[[1]])
+  if(any("season" %in% cls)) {
+    ys <- as.4seasons(ys)
+  } else if (any("month" %in% cls)) {
+    ys <- as.monthly(ys)
+  }
+  
+  ds <- DS(ys,X,biascorrect=biascorrect,mon=mon,method=method,swsm=swsm,m=m,
+     rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
+     verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+  invisible(ds)
 }

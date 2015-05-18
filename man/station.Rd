@@ -56,7 +56,7 @@ clean.station(x,miss=.1,verbose=TRUE)
   \item{loc}{A string of characters as the name of the location
     (weather/climate station) or an object of class "stationmeta".}
   \item{param}{Parameter or element type or variable identifier. There are several core parameters or elements as well as a number of additional parameters. The parameters or elements are:
-    prcp, pr     = Precipitation (mm)
+    precip       = Precipitation (mm)
     tas, tavg    = 2m-surface temperature (in degrees Celcius)
     tmax, tasmax = Maximum temperature (in degrees Celcius)
     tmin, tasmin = Minimum temperature (in degrees Celcius)

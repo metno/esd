@@ -7,7 +7,8 @@
 #npca <- 3; lon <- c(-90,-30); lat <- c(-35,-15); eofs <- 1:5 # m:r=[];s:r=[]
 #npca <- 15; lon <- c(-90,-30); lat <- c(-35,-15); eofs <- 1:10 # m:r=[];s:r=[]
 #npca <- 7; lon <- c(-90,-30); lat <- c(-35,-15); eofs <- 1:10 # m:r=[];s:r=[]
-npca <- 3; lon <- c(-70,-15); lat <- c(-37,-17); eofs <- 1:5  # mu: r=[]; fw: r= []
+#npca <- 3; lon <- c(-70,-15); lat <- c(-37,-17); eofs <- 1:5  # m: r=[]; fw: r= []
+npca <- 17; lon <- c(-70,-15); lat <- c(-37,-17); eofs <- 1:5  # m: r=[0.653,0.714]; s: r= [0.496,0.774]
 
 # load the predictands: CLARIS precip
 print('Get the CLARIS data')
@@ -192,21 +193,29 @@ for (season in c('djf','mam','jja','son')) {
 }
 
 print("Finished looping and downscaling; organise the data using rbind:")
-txm1.4s <- rbind(coredata(X$mean.tier1.djf),coredata(X$mean.tier1.mam),
-                 coredata(X$mean.tier1.jja),coredata(X$mean.tier1.son))
-t1 <- c(index(X$mean.tier1.djf),index(X$mean.tier1.mam),
-        index(X$mean.tier1.jja),index(X$mean.tier1.son))
-txm.tier1 <- zoo(txm1.4s,order.by=t1) + matchdate(clim,it=t1)
-txm.tier1 <- attrcp(X$mean.tier1.djf,txm.tier1)
-class(txm.tier1) <- class(X$mean.tier1.djf)
+## Tier 1
+txm1.4s <- c(X$mean.tier1.djf,X$mean.tier1.mam,
+             X$mean.tier1.jja,X$mean.tier1.son)
+
 X$tier1 <- subset(txm.tier1,it=c(1996,2006))
-txm2.4s <- rbind(coredata(X$mean.tier2.djf),coredata(X$mean.tier2.mam),
-                 coredata(X$mean.tier2.jja),coredata(X$mean.tier2.son))
-t2 <- c(index(X$mean.tier2.djf),index(X$mean.tier2.mam),index(X$mean.tier2.jja),index(X$mean.tier2.son))
-txm.tier2 <- zoo(txm2.4s,order.by=t1) + matchdate(clim,it=t2)
+
+## Tier 2
+txm2.4s <- c(X$mean.tier2.djf,X$mean.tier2.mam,
+             X$mean.tier2.jja,X$mean.tier2.son)
+t2 <- index(txm2.4s)
+txm.tier2 <- zoo(txm2.4s,order.by=t2) + matchdate(clim,it=t2)
 txm.tier2 <- attrcp(X$mean.tier2.djf,txm.tier2)
 class(txm.tier2) <- class(X$mean.tier2.djf)
 X$tier2 <- subset(txm.tier2,it=c(1979,2003))
+
+## Observed temperature
+obs <- c(X$mean.obs.djf,X$mean.obs.mam,
+         X$mean.obs.jja,X$mean.obs.son)
+t0 <- index(obs)
+txm.obs <- zoo(obs,order.by=t0) + matchdate(clim,it=t0)
+txm.obs <- attrcp(X$mean.obs.djf,txm.obs)
+class(txm.obs) <- class(X$mean.obs.djf)
+x$obs <- txm.obs
 
 # add some new attributes describing the results:
 print('add new attributes')

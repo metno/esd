@@ -243,3 +243,33 @@ corfield.eof <- function(x,y,pattern=1,plot=TRUE,
   invisible(r)
 }
 
+
+
+corfield.trajectory <- function(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
+                                unit=NULL,longname=NULL,loc=NULL,
+                                use="pairwise.complete.obs",
+                                method="pearson") {
+
+  swapped <- FALSE
+  if ( inherits(y,c("trajectory")) & inherits(x,c("field"))) {
+    yy <- x
+    x <- y
+    y <- yy
+    swapped <- TRUE
+  }
+  stopifnot(inherits(x,'trajectory'),inherits(y,'field'))
+
+  x <- subset(x,it=it,is=is)
+  y <- subset(y,it=it)
+    
+  xs <- trajectory2station(x,param=param,FUN=FUN,
+                          unit=unit,longname=longname,loc=loc)
+  if(any("season" %in% class(y))) {
+    xs <- as.4seasons(xs)
+  } else if (any("month" %in% class(y))) {
+    xs <- as.monthly(xs)
+  }
+  xs <- subset(xs,it=y)
+  r <- corfield(xs,y,use=use,method=method)
+  invisible(r)
+}
