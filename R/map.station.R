@@ -240,7 +240,7 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
         ##print(par()$fig)
         par(fig=par0$fig)
 #        if (!is.null(FUN)) col <- "white" 
-        if (!is.null(FUN)) col <- "black"  
+        if (!is.null(FUN)) col <- col #"black"  
         if (!is.null(highlight))
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
                  bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
@@ -253,7 +253,7 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
         ## Add geoborders
         lines(geoborders$x, geoborders$y, col = "black")
         lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y,
-              col = "grey90")
+              col = "pink")##"grey90"
 
         ## par(fig=par0$fig)
         ## print(par()$fig)
@@ -316,24 +316,50 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
                     y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
             }
             ## y.rng <- floor(range(y,na.rm=TRUE))
-            ##           
-            if (is.null(colbar$n) & !is.null(colbar$col))
+            ## AM Added 12-05-2015           
+            browser()
+            if (!is.null(colbar$col)) {
                 colbar$n <- length(colbar$col)
-            else if (!is.null(colbar$breaks)) {              
-                colbar$n <- length(colbar$breaks)
-                colbar$col <- colscal(n=colbar$n,col=varid(x))
-            }
-            else { ## set to the default values
-                colbar$n <- 10 
-            }   
-
-            if (is.null(colbar$breaks)) {
+                if (is.null(colbar$breaks)) {
+                    colbar$breaks <- pretty(y,n=length(colbar$col))
+                    colbar$n <- length(colbar$breaks) + 1
+                    colbar$col <- colscal(n=colbar$n,col=varid(x))
+                }
+            } else if (!is.null(colbar$n)) {
                 colbar$breaks <- pretty(y,colbar$n)
-                # update colbar$n and colbar$col according to pretty
-                colbar$n <- length(colbar$breaks)
-                if (is.null(colbar$col)) colbar$col <- colscal(n=colbar$n,col=varid(x)) else
-                                  colbar$col <- colscal(n=colbar$n,col=colbar$col)
+                colbar$n <- length(colbar$breaks) - 1
+                colbar$col <- colscal(n=colbar$n,col=varid(x))
+            } else if(!is.null(colbar$breaks)) {
+                colbar$n <- length(colbar$breaks) - 1
+                colbar$col <- colscal(n=colbar$n,col=varid(x))
+            } else {
+                n <- 20
+                colbar$breaks <- pretty(y,n=n)
+                colbar$col <- colscal(n=n,col=varid(x))
             }
+            
+            ## AM removed 12-05-2015
+            ## if (is.null(colbar$n) & !is.null(colbar$col))
+            ##    colbar$n <- length(colbar$col)
+            ##else if (!is.null(colbar$breaks)) {              
+            ##    colbar$n <- length(colbar$breaks)
+            ##    colbar$col <- colscal(n=colbar$n,col=varid(x))
+            ##}
+            ##else { ## set to the default values
+            ##    colbar$n <- 10 
+            ##}   
+
+            ## AM removed 12-05-2015
+            ##if (is.null(colbar$breaks)) {
+            ##    colbar$breaks <- pretty(y,colbar$n)
+            ##    # update colbar$n and colbar$col according to pretty
+            ##    colbar$n <- length(colbar$breaks)
+            ##    if (is.null(colbar$col))
+            ##        colbar$col <- colscal(n=colbar$n,col=varid(x))
+            ##    else
+            ##        colbar$col <- colscal(n=colbar$n,col=colbar$col)
+            ##}
+
             ## reverse the colour for precip
             #print(is.precip(x))
             if (is.precip(x)) colbar$col <- rev(colbar$col)
@@ -369,7 +395,7 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
 
             ## Add geoborders
             lines(geoborders$x, geoborders$y, col = "black")
-            lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
+            lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "pink") ##"grey90"
             
             ## par(fig=par0$fig)
             ## print(par()$fig)
@@ -385,7 +411,11 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
                            col = colbar$col, legend.width = 1,
                            axis.args = list(cex.axis = 0.8), border = FALSE)
         }    
-        
+        if (verbose) {
+            print(paste('colbar$breaks are ', paste(colbar$breaks,collapse="/"),'of length',length(colbar$breaks)))
+            print(paste('colbar$col are ', paste(colbar$col,collapse="/"),'of length',length(colbar$col)))      
+            print(paste('colbar$n ', paste(colbar$n,collapse="/")))
+        }
         ## add text if TRUE
         if (!is.null(unlist(is)))
             if (add.text.subset)
