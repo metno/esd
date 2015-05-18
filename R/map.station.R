@@ -317,7 +317,7 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
             }
             ## y.rng <- floor(range(y,na.rm=TRUE))
             ## AM Added 12-05-2015           
-            browser()
+           
             if (!is.null(colbar$col)) {
                 colbar$n <- length(colbar$col)
                 if (is.null(colbar$breaks)) {
