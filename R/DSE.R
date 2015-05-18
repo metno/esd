@@ -113,7 +113,7 @@ DSE <- function(stid="18700",cntr="NORWAY",src="METNOD",param="t2m",lon=c(-10,10
                     print(paste("DOWNSCALING MONTHLY",toupper(FUN),text))
                     ## if (plot) par(new=TRUE)
                     if (tolower(param)=='t2m') {
-                        z <- try(DSensemble.t2m.month(y,FUN=FUN,rcp=rcp,predictor=predictor,biascorrect=biascorrect,path=path,lon=lon,lat=lat,select=select,plot=FALSE,...))
+                        z <- try(DSensemble.month(y,FUN=FUN,rcp=rcp,predictor=predictor,biascorrect=biascorrect,path=path,lon=lon,lat=lat,select=select,plot=FALSE,...))
                         attr(z,"method") <- FUN
                     } else if (tolower(param)=='precip') {
                         z <- try(DSensemble.precip(y,FUN=FUN,rcp=rcp,predictor=predictor,biascorrect=biascorrect,path=path,lon=lon,lat=lat,select=select,plot=FALSE,...))
