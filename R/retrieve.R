@@ -50,8 +50,9 @@ retrieve.default <- function(ncfile,param="auto",verbose=FALSE,...) {
             if (verbose) print('Irregular grid field found')
             X <- retrieve.rcm(ncfile,...) 
         }
-    } else if (library("ncdf",logical.return=TRUE)) {
-        nc <- nc_open(ncfile)
+    } else
+    if (library("ncdf",logical.return=TRUE)) {
+        nc <- open.ncdf(ncfile)
         lon <- get.var.ncdf(nc,dimnames[grep("lon",dimnames)])
         lat <- get.var.ncdf(nc,dimnames[grep("lat",dimnames)])
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) ) {
