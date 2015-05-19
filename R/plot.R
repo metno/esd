@@ -548,7 +548,7 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,...) {
   if (verbose) print('plot.ds.pca')
   attr(y,'longname') <- attr(y,'longname')[1]
 #  par(fig=c(0,0.45,0.5,0.975),new=TRUE)
-  par(fig=c(0,0.45,0.5,0.975)) ## par(fig=c(0,0.6,0.4,0.975)) #par(fig=c(0,0.45,0.5,0.975))
+  par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
   map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colorbar=FALSE,...)
   title(paste("PCA Pattern # ",pattern,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
