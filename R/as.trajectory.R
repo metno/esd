@@ -104,16 +104,21 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
 
 read.imilast <- function(fname,path=NULL) {
   fname <- paste(path,fname,sep="")
-  # read file header
-  h <- strsplit(readLines(fname,1),",")
-  h <- tolower(unlist(h))
+  # read and rearrange file header
+  h <- tolower(readLines(fname,1))
+  h <- unlist(strsplit(h,","))
+  if(length(h)==1) h <- unlist(strsplit(h," "))
   h <- gsub("^\\s+|\\s+$","",h)
-  h[grep("cyclone",h)] <- "trajectory"
-  h[grep("99",h)] <- "code99"
-  h[grep("step",h)] <- "timestep"
-  h[grep("date",h)] <- "date"
+  h[grepl("cyclone",h) | grepl("trackn",h)] <- "trajectory"
   h[grep("lat",h)] <- "lat"
   h[grep("lon",h)] <- "lon"
+  h[grepl("99",h) | grepl("code",h)] <- "code99"
+  h[grepl("date",h) | grepl("yyyymmddhh",h)] <- "date"
+  h[grep("yyyy",h)] <- "year"
+  h[grep("mm",h)] <- "month"
+  h[grep("dd",h)] <- "day"
+  h[grepl("hh",h) | grepl("timestep.",h) | grepl("timestep_",h)] <- "time"
+  h[grepl("step",h) | grepl("ptn",h)] <- "timestep"
   # check width of columns
   l <- readLines(fname,4)[4]
   l <- gsub("^\\s+|\\s+$","",l)
