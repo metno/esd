@@ -24,6 +24,7 @@ param.trajectory <- function(x,param=NULL,FUN=mean) {
       param <- 'n'
     }
   }
+  if (FUN=='first') FUN <- function(x) x[1]
   if (param=='lon') {
     fn <- FUN
     FUN <- fnlon(fn)
@@ -57,8 +58,8 @@ anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
                                verbose=FALSE) {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   i <- which(colnames(x)=='lon')
-  dateline <- apply(x,1,function(x) (!any(x>0) | !any(x<0) |
-                                     (mean(x[x>0])-mean(x[x<0]))<120))
+  dateline <- apply(x,1,function(x) (all(x>0) | all(x<0) |
+                         (mean(x[x>0])-mean(x[x<0]))<120))
   lon <- x[dateline,i]
   lon[lon<0] <- lon[lon<0]+360
   x[dateline,i] <- lon

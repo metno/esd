@@ -4,17 +4,18 @@
 
 map.trajectory <- function(x,it=NULL,is=NULL,
       projection="sphere",lonR=10,latR=90,
-      col='red',colmap='rainbow',alpha=0.1,pfit=FALSE,
-      main=NULL,xlim=NULL,ylim=NULL,
+      col='red',colmap='rainbow',alpha=NULL,pfit=FALSE,
+      main=NULL,xlim=NULL,ylim=NULL,lwd=2,
       verbose=FALSE,new=TRUE) {
 
+  y <- subset.trajectory(x,it=it,is=is)
+  if(is.null(alpha)) alpha <- 0.01 + min(10/(dim(y)[1]),0.5)
+    
   if('anomaly' %in% attr(x,'aspect') &
   any(c('lon','lat') %in% names(attr(x,'mean')))) {
-    y <- subset.trajectory(x,it=it)
     anomalymap.trajectory(x,col=col,colmap=colmap,alpha=alpha,
      main=main,xlim=xlim,ylim=ylim,verbose=verbose,new=new)
   } else {
-    y <- subset.trajectory(x,it=it,is=is)
     if (pfit) {
       lats <- t(polyfit.trajectory(y))
       y[,colnames(y)=='lat'] <- lats
@@ -22,16 +23,16 @@ map.trajectory <- function(x,it=NULL,is=NULL,
     if (projection=="sphere" | projection=="np" | projection=="sp") {
       if (projection=="np") latR <- 90
       if (projection=="sp") latR <- -90
-      sphere.trajectory(y,new=new,verbose=verbose,
+      sphere.trajectory(y,new=new,verbose=verbose,lwd=lwd,
       lonR=lonR,latR=latR,col=col,alpha=alpha,main=main)
     } else if (projection=="latlon" | projection=="lonlat") {
-      lonlat.trajectory(y,new=new,verbose=verbose,
+      lonlat.trajectory(y,new=new,verbose=verbose,lwd=lwd,
       xlim=xlim,ylim=ylim,col=col,alpha=alpha,main=main)
     }
   }
 }
 
-anomalymap.trajectory <- function(x,col='red',colmap='rainbow',alpha=0.1,
+anomalymap.trajectory <- function(x,col='red',colmap='rainbow',alpha=0.05,
  main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1,verbose=FALSE,new=TRUE) {
     if(new) dev.new()
     par(bty="n")
@@ -43,7 +44,7 @@ anomalymap.trajectory <- function(x,col='red',colmap='rainbow',alpha=0.1,
 }
   
 lonlat.trajectory <- function(x,
-    xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
+    xlim=NULL,ylim=NULL,col='blue',alpha=0.05,
     lty=1,lwd=2,main=NULL,new=TRUE,verbose=FALSE) {
   
   x0 <- x
@@ -128,7 +129,7 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 
 
 sphere.trajectory <- function(x,
-    xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
+    xlim=NULL,ylim=NULL,col='blue',alpha=0.05,
     lty=1,lwd=2,lonR=0,latR=90,main=NULL,
     verbose=FALSE,new=TRUE) {
   
