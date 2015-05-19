@@ -539,7 +539,7 @@ map.pca <- function(x,pattern=1,new=TRUE,FUN='mean',
   if (is.null(col)) {
     col <- colscal(30,col=varid(x))
   }
-    
+  
   map.station(X,new=new,FUN=FUN,col=col,bg=col,
               colbar=list(col=col,type='r',v=0),
               cex=cex,xlim=xlim,ylim=ylim,...)
