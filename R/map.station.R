@@ -116,7 +116,7 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
         #        colbar$n.breaks <- length(col)
         #    }
         #} else col <- col[1]
-        
+         
         ##load("~/esd/data/geoborders.rda")
         data("geoborders", envir = environment())
         ##load("station.meta.rda") # data("station.meta", envir = environment())
@@ -201,26 +201,26 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
                 if (length(is$lon) > 1)
                     xlim <- floor(range(ss$longitude, na.rm = TRUE))
                 else
-                    xlim <-floor(range(ss$longitude, na.rm = TRUE) + c(-5,5))  # +/- 5 degrees
+                    xlim <-floor(range(ss$longitude, na.rm = TRUE) + c(-1,1))  # +/- 5 degrees
             else
                 if (length(is$lon) > 1)
                     xlim <- floor(range(highlight$longitude, na.rm = TRUE))
                 else
                     xlim <-floor(range(highlight$longitude, na.rm = TRUE),
-                                 + c(-5,5))  # +/- 5 degrees
+                                 + c(-1,1))  # +/- 5 degrees
         ## Select a subdomain in the y-axis
         if (is.null(ylim))
             if (is.null(highlight) | showall)
                 if (length(is$lat) > 1)
                     ylim <- floor(range(ss$latitude, na.rm = TRUE))
                 else
-                    ylim <- floor(range(ss$latitude, na.rm = TRUE) + c(-5,5))
+                    ylim <- floor(range(ss$latitude, na.rm = TRUE) + c(-1,1))
             else
                 if (length(is$lat) > 1)
                     ylim <- floor(range(highlight$latitude, na.rm = TRUE))
                 else
                     ylim <-floor(range(highlight$latitude, na.rm = TRUE),
-                                 + c(-5,5))  # +/- 5 degrees
+                                 + c(-1,1))  # +/- 5 degrees
 
         ## scaling factor to apply on cex ...
         if (!inherits(x,"stationmeta") & !is.null(attr(x,'na')))
@@ -245,11 +245,15 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
                  bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
                  xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
-        else if (!is.null(ss))
-            plot(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg[1],
+        else if (!is.null(ss) & !is.null(FUN))
+            plot(ss$longitude, ss$latitude, pch = pch, col = "white",
+                 bg = "white", cex = cex*scale, xlab = "", ylab = "",
+                 xlim = xlim, ylim = ylim , axes = FALSE ,
+                 frame.plot = FALSE)
+        else
+            plot(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg,
                  cex = cex*scale, xlab = "", ylab = "", xlim = xlim,
                  ylim = ylim , axes = FALSE , frame.plot = FALSE)
-        
         ## Add geoborders
         lines(geoborders$x, geoborders$y, col = "black")
         lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y,
@@ -269,7 +273,8 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
         if (text) {
             if (!is.null(highlight)) {
                 title(main=paste("SOURCE(S): ",
-                          paste(levels(factor(highlight$source)),collapse="/" )), line=3,cex.main=.8)
+                          paste(levels(factor(highlight$source)),
+                                collapse="/" )), line=3,cex.main=.8)
                 title(main=paste(length(levels(factor(highlight$location)))),
                       line=2,cex.main=.8)
                 title(main=paste(min(highlight$start,na.rm=TRUE),"/",
@@ -282,7 +287,7 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
                           line=2,cex.main=.8 , adj = 0)
                 else
                     title(main=paste(toupper(apply(as.matrix(levels(factor(highlight$variable))),
-                            1,esd2ele)),collapse="/"),line=2,cex.main=.8 , adj = 0)
+                              1,esd2ele)),collapse="/"),line=2,cex.main=.8 , adj = 0)
             }
             else {
                 title(main=paste("SOURCE(S) : ", paste(levels(factor(ss$source)),collapse="/" )),
@@ -291,14 +296,14 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
                 title(main=paste(max(ss$start,na.rm=TRUE),"/",min(ss$end,na.rm=TRUE)),line=2,
                       cex.main=.8,adj=1)
                 title(main=paste(paste(toupper(levels(factor(ss$variable))),collapse="/"),
-                        toupper(FUN),sep="/"),line=2,cex.main=.8 , adj = 0)
+                          toupper(FUN),sep="/"),line=2,cex.main=.8 , adj = 0)
             }
         }
         ## title(main=attr(z,"title"),line=2.2,cex.main=0.7)
         ## add margin text
         if (text) mtext(paste(("ESD package - map.station() - MET Norway 2014"),
                               "(www.met.no)",sep=" "),side=1,line=4,cex=0.6)
-        
+         
         ## add grid
         grid()
         ## insert color bar                                    
@@ -366,12 +371,10 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
             
             # find color index in colbar
             icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
-            bg <- colbar$col[icol]
-            if (is.null(col)) col <- bg
+           
+            if (is.null(col)) col <- colbar$col[icol]
+            if (is.null(bg)) bg <- colbar$col[icol]
 
-            bg <- colbar$col[icol]
-            if (is.null(col)) col <-bg
-         
             if (verbose) print(range(y,na.rm=TRUE))
             
             par(fig=par0$fig,new=TRUE)
