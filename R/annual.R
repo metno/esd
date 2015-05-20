@@ -56,7 +56,7 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
 
 
 annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
-                           regular=NULL,frequency=NULL,threshold=NULL,verbose=FALSE) {
+                           regular=NULL,frequency=NULL,verbose=FALSE) { ## threshold=NULL,
 
   if (verbose) print('annual.default')
   if (inherits(x,'annual')) return(x)
@@ -124,12 +124,12 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     y <- aggregate(X,year,FUN=FUN,...) # REB.
   y[!is.finite(y)] <- NA ## AM
   y <- attrcp(x,y,ignore="names")
-
   args <- list(...)
   if (verbose) print(names(args))
-  ix0 <- grep('threshold',names(args))
-  if (length(ix0)>0) threshold <- args[[ix0]] else threshold <- 1
-  if (FUN=="counts")  {
+  ix0 <- grep('threshold',names(args)) ## AM modified 20-05-2015
+  if (length(ix0)>0) threshold <- args[[ix0]] else threshold <- 1 ## AM modified 20-05-2015
+  ##if (is.null(threshold)) threshold <- 1 ## AM added 20-05-2015
+  if (FUN=="count")  {
     if (verbose) print("Count")
     attr(y,'unit') <-
       rep(paste("counts | X >",threshold," * ",attr(x,'unit')),d[2])
