@@ -197,11 +197,13 @@ sphere.trajectory <- function(x,
 
 
 map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
-      n=150,col=rev(colscal('precip',n=30)),...) {
+      n=150,col=rev(colscal('precip',n=30)),projection='sphere',
+      latR=90,lonR=10,gridlines=FALSE,...) {
   stopifnot(is.trajectory(x))
   x <- subset(x,it=it,is=is)
   X <- trajectory2field(x,dt='year',dx=dx,dy=dy,n=n)
-  map(X,col=col,...)
+  map(X,col=col,projection=projection,latR=latR,lonR=lonR,
+      gridlines=gridlines,...)
 }
 
 
