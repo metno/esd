@@ -39,7 +39,7 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
     }
     m <- switch(tolower(m),
                  'cordex-esd-exp1'=c(5,5,5,5,5),
-                 'value-esd-exp1'=c(6,6,6,6,6))
+                 'value-exp1'=c(6,6,6,6,6))
   } else if (is.numeric(m) | is.integer(m)) {
      ii <- seq(1,nt,by=m)
      m <- rep(m,length(ii))
