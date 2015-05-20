@@ -51,21 +51,42 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,n=150,it=NULL,is=NULL) {
   invisible(Y)
 }
 
-density.trajectory <- function(x,it=NULL,is=NULL,dx=1,dy=1,n=150) {
-  xbin <- bin.trajectory(x,it=it,is=is,dx=dx,dy=dy,n=n)
-  lon <- as.numeric(levels(xbin$lon))[xbin$lon]
-  lat <- as.numeric(levels(xbin$lat))[xbin$lat]
-  freq <- as.numeric(xbin$Freq)
-  A <- mapply(surfacearea,lon,lat,dx,dy)
+factor2numeric <- function(f) {
+  if(!is.null(levels(f))) {return(as.numeric(levels(f))[f])
+  } else return(as.numeric(f))
+}
+
+density.trajectory <- function(x,it=NULL,is=NULL,dx=1,dy=1,n=150,R=6371) {
+  stopifnot(is.trajectory(x))
+  x <- subset(x,it=it,is=is)
+  xbin <- bin.trajectory(x,dx=dx,dy=dy,n=n)
+  lon <- factor2numeric(xbin$lon)
+  lat <- factor2numeric(xbin$lat)
+  freq <- factor2numeric(xbin$Freq)
+  A <- mapply(surfacearea,lon,lat,dx,dy,R=R)
   dens <- freq/A*1000
   dens[is.infinite(dens)] <- NA
+  if(any(lat>88)) {
+    f90 <- sum(freq[lat>88])
+    A90 <- 2*pi*R**2*(1-sin(88*pi/180))
+    d90 <- f90/A90
+    lon90 <- seq(-180,180,dx)
+    lon <- c(lon90,lon[lat<=88])
+    dens <- c(rep(d90,length(lon90)),freq[lat<=88])
+    lat <- c(rep(89,length(lon90)),lat[lat<=88])
+  }
   X <- data.frame(lon=lon,lat=lat,density=dens)
   invisible(X)
 }
 
-surfacearea <- function(lon,lat,dx,dy,R=6371) {
-  return(R**2*( (lon+dx/2)*pi/180 - (lon-dx/2)*pi/180) *
-       ( sin((lat+dy/2)*pi/180) - sin((lat-dy/2)*pi/180)) )
+surfacearea <- function(lon,lat,dx,dy,R=6371,radians=FALSE) {
+  if(!radians) {
+    lat <- lat*pi/180
+    lon <- lon*pi/180
+    dx <- dx*pi/180
+    dy <- dy*pi/180
+  }
+  return(R**2*cos(lat)*dx*2*sin(dy/2))
 }
 
 bin.trajectory <- function(x,it=NULL,is=NULL,dx=1,dy=1,n=150) {
@@ -79,9 +100,18 @@ bin.trajectory <- function(x,it=NULL,is=NULL,dx=1,dy=1,n=150) {
 }
 
 gridbin <- function(x,y,dx=1,dy=1,n=150) {
-  x <- approxlon(x,n=n)$y
-  y <- approxlon(y,n=n)$y
-  hit <- as.data.frame(table(round(x/dx)*dx,round(y/dy)*dy))
+  xx <- approxlon(x,n=n)$y
+  yy <- approxlon(y,n=n)$y
+  xx <- round(xx/dx)*dx
+  yy <- round(yy/dy)*dy
+  if(all(yy==90)) {
+    xx <- fnlon(mean)(xx)
+    yy <- 90
+  } else if(any(yy==90) & any(yy<90)) {
+    xx <- c(xx[yy<90],fnlon(mean)(xx))
+    yy <- c(yy[yy<90],90)
+  }
+  hit <- as.data.frame(table(xx,yy))
   hit <- hit[hit$Freq>0,]
-  invisible(data.frame(x=hit$Var1,y=hit$Var2))
+  invisible(data.frame(x=hit$xx,y=hit$yy))
 }
