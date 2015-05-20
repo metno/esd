@@ -11,7 +11,7 @@ season.trajectory <- function(x) {
   invisible(sn)
 }
 
-param.trajectory <- function(x,param=NULL,FUN=mean) {
+param.trajectory <- function(x,param=NULL,FUN='mean') {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   if (is.null(param)) {
     param <- colnames(x)[(!(colnames(x) %in%
