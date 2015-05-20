@@ -148,8 +148,8 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     attr(y,'variable') <- rep('mu',d[2])
     attr(y,'unit') <- rep('mm/day',d[2])
 #    n <- count(X,threshold=threshold) # REB
-    n <- aggregate(X,year,FUN='count',threshold=threshold, ...,
-                   regular = regular, frequency = frequency)
+    n <- aggregate(X,year,FUN='count', ...,
+                   regular = regular, frequency = frequency) ## threshold=threshold,
     bad <- coredata(n)==0
     coredata(n)[bad] <- 1
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
@@ -192,7 +192,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
 }
 
 
-annual.station <- function(x,FUN='mean',nmin=NULL,threshold=NULL,verbose=FALSE,...) {
+annual.station <- function(x,FUN='mean',nmin=NULL,verbose=FALSE,...) { ##threshold=NULL,
   if (verbose) print('annual.station')
   attr(x,'names') <- NULL
 #  if (inherits(x,'day')) {
@@ -201,7 +201,7 @@ annual.station <- function(x,FUN='mean',nmin=NULL,threshold=NULL,verbose=FALSE,.
 #  ns <- length(x[1,])
 #  for (i in 1:ns) {
 #    y <- annual.default(x,FUN=match.fun(FUN),nmin=nmin,...)
-    y <- annual.default(x,FUN=FUN,nmin=nmin,verbose=verbose,threshold=threshold,...)
+    y <- annual.default(x,FUN=FUN,nmin=nmin,verbose=verbose,...) ## threshold=threshold,
 #    if (i==1) y <- z else y <- c(y,z)
 #  }
    y[which(is.infinite(y))] <- NA
