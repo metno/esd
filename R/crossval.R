@@ -26,7 +26,8 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
     ## The experiment protocol:
     ## http://wcrp-cordex.ipsl.jussieu.fr/images/pdf/guidelines/CORDEX_ESD_Experiment1.pdf
     if (verbose) print(paste('predefined set-up:',m))
-    segments <- switch('cordex-esd-exp1'= c(1979,1984,1989,1994,1999),
+    segments <- switch(tolower(m),
+                       'cordex-esd-exp1'= c(1979,1984,1989,1994,1999),
                        'value-exp1'=c(1979,1985,1991,1997,2003))
     ## For winter season Dec-Feb, use the year corresponding to Jan-Dec.
     if (season(x)[1]=='djf') segments <- segments + 1
