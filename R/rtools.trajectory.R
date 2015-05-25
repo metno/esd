@@ -59,12 +59,6 @@ sort.trajectory <- function(x) {
 anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
                                verbose=FALSE) {
   stopifnot(!missing(x), inherits(x,"trajectory"))
-  i <- which(colnames(x)=='lon')
-  dateline <- apply(x[,i],1,function(x) (!all(x>=0) & !all(x<=0) &
-                         (mean(x[x>0])-mean(x[x<0]))>120))
-  lon <- x[dateline,i]
-  lon[lon<0] <- lon[lon<0]+360
-  x[dateline,i] <- lon
 
   if(is.null(param)) {
     param <- unique(colnames(x)[!(colnames(x) %in% c('start','end','n'))])
@@ -80,6 +74,10 @@ anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
   m <- vector(mode="list",length=length(param))
   names(m) <- param
 
+  if (any('lon' %in% param)) {
+  	x[,colnames(x)=='lon'] <- apply(x[,colnames(x)=='lon'],1,lon2track)
+  }
+
   for (p in param) {
     i <- which(colnames(x)==p)
     if (type=='first') {
@@ -88,10 +86,11 @@ anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
     } else if (type=='mean') {
       m[param==p] <- list(mean(x[,i]))
       p.anomaly <- apply(x,1,function(x) x[i]-m[param==p][[1]])
-    } else if (type=='trajectory') {
-      m[param==p] <- list(apply(x[,i],2,mean))
-      p.anomaly <- apply(x,1,function(x) x[i]-m[param==p][[1]])
-    }
+      
+    #} else if (type=='trajectory') {
+    #  m[param==p] <- list(apply(x[,i],2,mean))
+    #  p.anomaly <- apply(x,1,function(x) x[i]-m[param==p][[1]])
+    #}
     if(verbose) print(p)
     if(verbose) print(dim(x[,i]))
     if(verbose) print(dim(p.anomaly))
@@ -206,28 +205,65 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   invisible(nz)
 }
 
-fnlon <- function(FUN=mean) {
-  fn <- function(lon) {
-    if (!any(lon>0)|!any(lon<0)|(mean(lon[lon>0])-mean(lon[lon<0]))<120){
-      x <- FUN(lon)
-    } else {
-      lon[lon<0] <- lon[lon<0]+360
-      x <- FUN(lon)
-      x[x>180] <- x[x>180]-360
-    }
-    return(x)
-  }
-  return(fn)
-}
-
 approxlon <- function(lon,n=10) {
-  if (!any(lon>0)|!any(lon<0)|(mean(lon[lon>0])-mean(lon[lon<0]))<120){
-    x <- approx(lon,n=n)
-  } else {
-    lon[lon<0] <- lon[lon<0]+360
-    x <- approx(lon,n=n)
-    x$y[x$y>180] <- x$y[x$y>180]-360
-  }
+  x <- approx(lon2track(lon),n=n)
+  x$y <- lon2dateline(x$y)
   return(x)
 }
 
+lon2track <- function(lon) {
+  lon0 <- lon2dateline(lon)
+  n <- length(lon)
+  dlon <- lon[2:n]-lon[1:(n-1)]
+  if (any(abs(dlon)>200)) {
+    signs <- sign(lon0); signs[signs==0] <- 1
+    i.change <- which(signs[2:n]!=signs[1:(n-1)] | abs(dlon)>200)
+    lon <- lon2greenwich(lon)
+    for (i in seq(1,length(i.change))) {
+      dlon <- lon[2:n]-lon[1:(n-1)]
+      i1 <- i.change[i]
+      if (any(abs(dlon[(i1-1):min(i1+1,n-1)])>200)) {
+      	if (abs(dlon[i1])<200) {
+      	  if (abs(dlon[i1-1])>200) i1<i1-1 else i1<-i1+1
+      	}
+      	if (i<length(i.change)) i2<-i.change[i+1] else i2<-n
+        add <- round(-dlon[i1]/360)*360
+        j <- sign(lon0)!=sign(lon0[i1]) & seq(1,n) %in% seq(i1,i2)
+        lon[j] <- lon[j] + add
+      }
+    }
+    if (mean(lon)>360) { lon <- lon-360
+    } else if (mean(lon)<-180) lon <- lon+360
+  }
+  invisible(lon)	
+}
+
+lon2dateline <- function(lon) {
+  while (any(lon > 180) | any(lon < -180)) {
+    lon[lon > 180] = lon[lon > 180] - 360
+    lon[lon < -180] = lon[lon < -180] + 360
+  }
+  invisible(lon)
+}
+
+lon2greenwich <- function(lon) {
+  while (any(lon > 360) | any(lon < 0)) {
+    lon[lon < 0] = lon[lon < 0] + 360
+    lon[lon > 360] = lon[lon > 360] - 360
+  }
+  invisible(lon)
+}
+
+fnlon <- function(FUN=mean,...) {
+  fn <- function(lon,...) {
+  	lon <- lon2dateline(lon)
+    if (any(lon[2:length(lon)]-lon[1:(length(lon)-1)]>200)) {
+      lon <- lon2greenwich(lon)
+      x <- FUN(lon,...)
+      return(lon2dateline(x))
+    } else {
+      return(FUN(lon,...))
+    }
+  }
+  return(fn)
+}
