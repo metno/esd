@@ -17,7 +17,6 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
 
   if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
   if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
-  if(is.na(unit) & !is.null(attr(x,"unit"))) unit <- attr(x,"unit")
   if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
   if(is.na(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
   if(is.na(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")

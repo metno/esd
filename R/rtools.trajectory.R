@@ -72,18 +72,16 @@ anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
   m <- vector(mode="list",length=length(param))
   names(m) <- param
 
-  if (any('lon' %in% param)) {
-    x[,colnames(x)=='lon'] <- apply(x[,colnames(x)=='lon'],1,lontrack)
-  }
-
   for (p in param) {
     i <- which(colnames(x)==p)
+    xi <- x[,i]
+    if (p=='lon') xi <- t(apply(x[,i],1,lontrack))
     if (type=='first') {
-      m[param==p] <- list(x[,i[1]])
-      p.anomaly <- apply(x,1,function(x) x[i]-x[i][1])
+      m[param==p] <- list(xi[1])
+      p.anomaly <- apply(xi,1,function(x) x-x[1])
     } else if (type=='mean') {
       m[param==p] <- list(mean(x[,i]))
-      p.anomaly <- apply(x,1,function(x) x[i]-m[param==p][[1]])
+      p.anomaly <- apply(x,1,function(x) xi-m[param==p][[1]])
     }
     if(verbose) print(p)
     if(verbose) print(dim(x[,i]))
@@ -133,7 +131,7 @@ anomaly2trajectory <- function(x,verbose=FALSE) {
     }
   }
   if (any('lon' %in% names(attr(x,'mean')))) {
-    x[,colnames(x)=='lon'] <- apply(x[,colnames(x)=='lon'],1,lon2dateline)
+    x[,colnames(x)=='lon'] <- t(apply(x[,colnames(x)=='lon'],1,lon2dateline))
   }
   attr(x,'aspect') <- attr(x,'aspect')[attr(x,'aspect')!='anomaly']
   invisible(x)
