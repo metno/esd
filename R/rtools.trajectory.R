@@ -26,10 +26,7 @@ param.trajectory <- function(x,param=NULL,FUN='mean') {
   }
   if (!is.null(FUN) & !is.na(FUN)) {
     if(FUN=='first') FUN <- function(x) x[1]
-    if (param=='lon') {
-      fn <- FUN
-      FUN <- fnlon(fn)
-    }
+    if (param=='lon') FUN <- fnlon(FUN)
   }
   y <- x[,colnames(x)==param]
   if (sum(colnames(x)==param)>1) {
@@ -63,7 +60,8 @@ anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
   if(is.null(param)) {
     param <- unique(colnames(x)[!(colnames(x) %in% c('start','end','n'))])
   } else if (any(!param %in% colnames(x))) {
-    print(paste('Warning! Input error: param',paste(param[!param %in% colnames(x)],collapse=" "),"missing"))
+    print(paste('Warning! Input error: param',
+     paste(param[!param %in% colnames(x)],collapse=" "),"missing"))
   }
   if(verbose) print(param)
 
@@ -75,7 +73,7 @@ anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
   names(m) <- param
 
   if (any('lon' %in% param)) {
-  	x[,colnames(x)=='lon'] <- apply(x[,colnames(x)=='lon'],1,lon2track)
+    x[,colnames(x)=='lon'] <- apply(x[,colnames(x)=='lon'],1,lontrack)
   }
 
   for (p in param) {
@@ -86,11 +84,7 @@ anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
     } else if (type=='mean') {
       m[param==p] <- list(mean(x[,i]))
       p.anomaly <- apply(x,1,function(x) x[i]-m[param==p][[1]])
-      
-    #} else if (type=='trajectory') {
-    #  m[param==p] <- list(apply(x[,i],2,mean))
-    #  p.anomaly <- apply(x,1,function(x) x[i]-m[param==p][[1]])
-    #}
+    }
     if(verbose) print(p)
     if(verbose) print(dim(x[,i]))
     if(verbose) print(dim(p.anomaly))
@@ -138,9 +132,9 @@ anomaly2trajectory <- function(x,verbose=FALSE) {
       }
     }
   }
-  lon <- x[,colnames(x)=='lon']
-  lon[lon>180] <- lon[lon>180]-360
-   x[,colnames(x)=='lon'] <- lon
+  if (any('lon' %in% names(attr(x,'mean')))) {
+    x[,colnames(x)=='lon'] <- apply(x[,colnames(x)=='lon'],1,lon2dateline)
+  }
   attr(x,'aspect') <- attr(x,'aspect')[attr(x,'aspect')!='anomaly']
   invisible(x)
 }
@@ -206,12 +200,12 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
 }
 
 approxlon <- function(lon,n=10) {
-  x <- approx(lon2track(lon),n=n)
+  x <- approx(lontrack(lon),n=n)
   x$y <- lon2dateline(x$y)
   return(x)
 }
 
-lon2track <- function(lon) {
+lontrack <- function(lon) {
   lon0 <- lon2dateline(lon)
   n <- length(lon)
   dlon <- lon[2:n]-lon[1:(n-1)]
@@ -254,15 +248,15 @@ lon2greenwich <- function(lon) {
   invisible(lon)
 }
 
-fnlon <- function(FUN=mean,...) {
-  fn <- function(lon,...) {
-  	lon <- lon2dateline(lon)
+fnlon <- function(FUN=mean) {
+  fn <- function(lon) {
+    lon <- lon2dateline(lon)
     if (any(lon[2:length(lon)]-lon[1:(length(lon)-1)]>200)) {
       lon <- lon2greenwich(lon)
-      x <- FUN(lon,...)
+      x <- FUN(lon)
       return(lon2dateline(x))
     } else {
-      return(FUN(lon,...))
+      return(FUN(lon))
     }
   }
   return(fn)
