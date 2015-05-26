@@ -227,7 +227,7 @@ lontrack <- function(lon) {
       }
     }
     if (mean(lon)>360) { lon <- lon-360
-    } else if (mean(lon)<-180) lon <- lon+360
+    } else if (mean(lon) < -180) lon <- lon+360
   }
   invisible(lon)	
 }
