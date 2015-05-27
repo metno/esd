@@ -138,6 +138,8 @@ anomaly2trajectory <- function(x,verbose=FALSE) {
 }
 
 polyfit.trajectory <- function(x) {
+  stopifnot(is.trajectory(x))
+  if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly.trajectory(x)
   ilon <- which(colnames(x)=='lon')
   ilat <- which(colnames(x)=='lat')
   OK <- apply(x[,ilon],1,function(y) !any(y>0) | !any(y<0) |
@@ -206,20 +208,18 @@ approxlon <- function(lon,n=10) {
 lontrack <- function(lon) {
   lon0 <- lon2dateline(lon)
   n <- length(lon)
-  dlon <- lon[2:n]-lon[1:(n-1)]
-  if (any(abs(dlon)>200)) {
+  if (any(abs(diff(lon))>200)) {
     signs <- sign(lon0); signs[signs==0] <- 1
-    i.change <- which(signs[2:n]!=signs[1:(n-1)] | abs(dlon)>200)
+    i.change <- which(abs(diff(signs))>0 | abs(diff(lon))>200)
     lon <- lon2greenwich(lon)
     for (i in seq(1,length(i.change))) {
-      dlon <- lon[2:n]-lon[1:(n-1)]
       i1 <- i.change[i]
-      if (any(abs(dlon[(i1-1):min(i1+1,n-1)])>200)) {
-      	if (abs(dlon[i1])<200) {
-      	  if (abs(dlon[i1-1])>200) i1<i1-1 else i1<-i1+1
+      if (any(abs(diff(lon)[(i1-1):min(i1+1,n-1)])>200)) {
+      	if (abs(diff(lon)[i1])<200) {
+      	  if (abs(diff(lon)[i1-1])>200) i1<i1-1 else i1<-i1+1
       	}
       	if (i<length(i.change)) i2<-i.change[i+1] else i2<-n
-        add <- round(-dlon[i1]/360)*360
+        add <- round(-diff(lon)[i1]/360)*360
         j <- sign(lon0)!=sign(lon0[i1]) & seq(1,n) %in% seq(i1,i2)
         lon[j] <- lon[j] + add
       }
@@ -249,7 +249,7 @@ lon2greenwich <- function(lon) {
 fnlon <- function(FUN=mean) {
   fn <- function(lon) {
     lon <- lon2dateline(lon)
-    if (any(lon[2:length(lon)]-lon[1:(length(lon)-1)]>200)) {
+    if (any(abs(diff(lon))>200)) {
       lon <- lon2greenwich(lon)
       x <- FUN(lon)
       return(lon2dateline(x))
