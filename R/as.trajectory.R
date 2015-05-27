@@ -17,7 +17,6 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
 
   if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
   if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
-  if(is.na(unit) & !is.null(attr(x,"unit"))) unit <- attr(x,"unit")
   if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
   if(is.na(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
   if(is.na(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
@@ -104,18 +103,24 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
 
 read.imilast <- function(fname,path=NULL) {
   fname <- paste(path,fname,sep="")
-  # read file header
-  h <- strsplit(readLines(fname,1),",")
-  h <- tolower(unlist(h))
+  # read and rearrange file header
+  h <- tolower(readLines(fname,1))
+  h <- unlist(strsplit(h,","))
+  if(length(h)==1) h <- unlist(strsplit(h," "))
   h <- gsub("^\\s+|\\s+$","",h)
-  h[grep("cyclone",h)] <- "trajectory"
-  h[grep("99",h)] <- "code99"
-  h[grep("step",h)] <- "timestep"
-  h[grep("date",h)] <- "date"
+  h[grepl("cyclone",h) | grepl("trackn",h)] <- "trajectory"
   h[grep("lat",h)] <- "lat"
   h[grep("lon",h)] <- "lon"
+  h[grepl("99",h) | grepl("code",h)] <- "code99"
+  h[grepl("date",h) | grepl("yyyymmddhh",h)] <- "date"
+  h[grep("yyyy",h)] <- "year"
+  h[grep("mm",h)] <- "month"
+  h[grep("dd",h)] <- "day"
+  h[grepl("hh",h) | grepl("timestep.",h) | grepl("timestep_",h)] <- "time"
+  h[grepl("step",h) | grepl("ptn",h)] <- "timestep"
   # check width of columns
   l <- readLines(fname,4)[4]
+  l <- gsub("^\\s+|\\s+$","",l)
   blanks <- unlist(gregexpr(" ",l))
   breaks <- blanks[!(blanks %in% as.integer(blanks+1))]
   w <- c(blanks[1]-1,
@@ -180,7 +185,7 @@ trajectory2station <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',
     t <- strptime(y[,colnames(y)=='start'],"%Y%m%d%H")
     z <- zoo(z,order.by=t)
     z <- aggregate(z,by=as.Date(t),FUN='mean')
-    shortname <- paste(param,FUN,sep=".")
+    shortname <- paste(param,FUN,sep="")
   }
   z <- attrcp(y,z)
   attr(z,'variable') <- shortname
@@ -191,22 +196,5 @@ trajectory2station <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',
   attr(z,'latitude') <- lat(y)
   z <- as.station.zoo(z)
   invisible(z)
-}
-
-
-trajectory2field <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',
-                             unit=NULL) {
-
-  ## y <- subset(x,it=it,is=is)
-
-  ## lon <- min(y[,colnames(y)=='lon'])
-  ## lon <- seq(min(lon(y)),max(lon(y)),length=30)
-  ## lat <- seq(min(lat(y)),max(lat(y)),length=30)
-
-  ## z <- c()
-  ## z <- attrcp(y,z)
-  ## as.field.zoo(z,lon,lat,param,unit)
-  
-  
 }
 

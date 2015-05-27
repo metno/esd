@@ -94,6 +94,10 @@ diagnose.ds <- function(x,plot=FALSE) {
                                       xval <- crossval(x)
   y <- as.residual(x)
   z <- as.original.data(x)
+  
+  ## Test whether the distribution is normal: the Shapiro-Wilk test of normality. 
+  sw.test <- shapiro.test(coredata(x))
+  
   anova <- summary(attr(x,'model'))
   eof <- attr(x,'eof')
   if (inherits(eof,'comb')) bias.diag <- diagnose(eof) else
@@ -126,7 +130,7 @@ diagnose.ds <- function(x,plot=FALSE) {
       plot(attr(x,'diagnose'))
   }
   
-  diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,
+  diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,sw.test=sw.test,
                       ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error)
   return(diagnostics)
 }

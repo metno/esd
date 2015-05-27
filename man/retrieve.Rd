@@ -67,9 +67,9 @@ check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
 # command if needed. Otherwise, specify a netcdf file to retrieve data from. 
 url <- "http://climexp.knmi.nl/CMIP5/monthly/tas"
 noresm <- "tas_Amon_NorESM1-ME_rcp45_000.nc"
-download.file(url=file.path(url,noresm), destfile=noresm, method = "auto", quiet = FALSE,mode = "w",cacheOK = TRUE)
+# download.file(url=file.path(url,noresm), destfile=noresm, method = "auto", quiet = FALSE,mode = "w",cacheOK = TRUE)
 # Retrieve the data into "gcm" object
-gcm <-retrieve(ncfile=noresm,param="tas",plot=TRUE)
+gcm <-retrieve(ncfile=file.path(~,noresm),param="tas",lon=c(-20,30),lat=c(40,90),plot=TRUE)
 # Download the air surface temperature (tas) for RCP 4.5 scenarios and
 # NorESM1-ME model from the climate explorer and store it in destfile. 
 # Compute the anomalies

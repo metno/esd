@@ -4,7 +4,7 @@ as.station <- function(x,...) UseMethod("as.station")
 as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                           cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,
                           url=NA,reference=NA,info=NA, method= NA,type=NA,
-                           aspect=NA) {
+                           aspect=NA,verbose=FALSE) {
   #print(c(length(X),length(index)))
   y <- zoo(x,order.by=index(x))
 
@@ -104,7 +104,7 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
       else tscale <- 'annual'
       class(y) <- c("station",tscale,"zoo")
   }
-  else print("Warning - A single value has been recorded in the time index of the data")
+  else if (verbose) print("Warning - A single value has been recorded in the time index of the data")
   return(y)
 }
 
@@ -738,7 +738,21 @@ as.4seasons.field <- function(x,FUN='mean',...) {
   return(y)
 }
 
-
+as.4seasons.dsensemble <- function(x,FUN='mean',...) {
+    cls <- class(x)
+    class(x) <- c("station",cls[2],"zoo")
+    attrx <- attributes(x)
+    y <- as.4seasons.station(x,FUN,...)
+    ##attributes(y) <- attrx
+    browser()
+    y <- attrcp(x,y)
+    attr(y,"station") <- as.4seasons.station(attr(x,"station"))
+   
+    attr(y,'history') <- history.stamp(x)
+    
+    class(y) <- c("dsensemble","season","zoo")
+    return(y)
+}
 
 as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
@@ -892,7 +906,8 @@ as.anomaly.field<- function(x,ref=NULL,na.rm=TRUE) {
 # Handy conversion algorithms:
 as.climatology <- function(x,...) {
   ya <- as.anomaly(x)
-  y <- zoo(attr(ya,'climatology'))
+  clim <- coredata(attr(ya,'climatology'))
+  y <- zoo(clim,order.by=1:length(clim))
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(x)

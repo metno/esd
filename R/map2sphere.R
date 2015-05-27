@@ -51,9 +51,11 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 # W,E,S,N
 # xleft, ybottom, xright, ytop
   i <- round(x[9])
+  if(i==0) {border <- rgb(0,0,0,0.1)
+  } else border <- col[i]
 #  rect(x[1], x[3], x[2], x[4],col=cols[i],border=cols[i])
   polygon(c(x[1:4],x[1]),c(x[5:8],x[5]),
-          col=col[i],border=col[i])
+          col=col[i],border=border)
 }
 
 #angleofview <- function(r,P) {
@@ -128,7 +130,7 @@ map2sphere <- function(x,it=NULL,is=NULL,lonR=NULL,latR=NULL,axiR=0,new=TRUE,
   
   index <- round( nc*( map - min(breaks) )/
                     ( max(breaks) - min(breaks) ) )
-
+  
 # Rotate coastlines:
   a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
   a <- rotM(x=latR,y=0,z=0) %*% a
@@ -149,7 +151,7 @@ map2sphere <- function(x,it=NULL,is=NULL,lonR=NULL,latR=NULL,axiR=0,new=TRUE,
   if (new) dev.new()
   par(bty="n",xaxt="n",yaxt="n")
   plot(x,z,pch=".",col="grey90",xlab="",ylab="",...)
-
+  
 # plot the grid boxes, but only the gridboxes facing the view point:
   Visible <- colMeans(Y) > 0
   X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]

@@ -1050,12 +1050,15 @@ DS.trajectory <- function(y,X,it=NULL,is=NULL,FUN='count',param=NULL,
   y <- subset(y,it=it,is=is)
   ys <- trajectory2station(y,param=param,FUN=FUN,unit=unit,
                            longname=longname,loc=loc)
-  if(any("season" %in% class(X))) {
+  
+  cls <- class(X)
+  if(is.list(X)) cls <- class(X[[1]])
+  if(any("season" %in% cls)) {
     ys <- as.4seasons(ys)
-  } else if (any("month" %in% class(y))) {
+  } else if (any("month" %in% cls)) {
     ys <- as.monthly(ys)
   }
-  ys <- subset(ys,it=X)
+  
   ds <- DS(ys,X,biascorrect=biascorrect,mon=mon,method=method,swsm=swsm,m=m,
      rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
      verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)

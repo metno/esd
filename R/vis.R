@@ -593,13 +593,13 @@ colscal <- function(n=14,col="t2m",test=FALSE) {
                 229, 229, 229)
   dim(seNorgeP) <- c(3,8)
 
-  if (!is.null(col))
-    if ((length(col)==1) & is.character(col) &
-        (sum(is.element(c('t2m','precip','bwr','rwb','mu','fw','tp',
-                          'faint.bwr','faint.rwb','rainbow',
-                          'gray.colors','heat.colors','terrain.colors',
-                          'topo.colors','cm.colors'),col))==0))
-        col <- 'bwr'
+  ##if (!is.null(col))
+  ##  if ((length(col)==1) & is.character(col) &
+  ##      (sum(is.element(c('t2m','precip','bwr','rwb','mu','fw','tp',
+  ##                        'faint.bwr','faint.rwb','rainbow',
+  ##                        'gray.colors','heat.colors','terrain.colors',
+  ##                        'topo.colors','cm.colors'),col))==0))
+  ##      col <- 'bwr'
 
   #if (exists("r")) remove(r)
   #if (exists("g")) remove(g) 

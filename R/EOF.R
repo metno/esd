@@ -102,9 +102,10 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   #print(c(length(ave),dim(y)))
   y <- y - ave
   npca <- min(dim(y)) 
-  
+  ny <- min(c(dim(y),20)) # REB 2015-05-21
   # Apply the SVD decomposition: see e.g. Strang (1988) or Press et al. (1989)
-  SVD <- svd(y,nu=min(c(20,npca)),nv=min(c(20,npca)))
+  #SVD <- svd(y,nu=min(c(20,npca)),nv=min(c(20,npca)))
+  SVD <- svd(y,nu=min(c(ny,npca)),nv=min(c(ny,npca)))
 
   #print("---"); print(dim(SVD$u)); print(dim(SVD$v)); print("---")
 
