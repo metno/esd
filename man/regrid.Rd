@@ -93,7 +93,7 @@ lines(geoborders)
 ## nearest stations: quick and dirty method
 
 if (!file.exists("stationsVALUE_exp1a.rda")) {
-  download.file("http://files.figshare.com/2085589/value_predictands4exp1a.R","value_predictands4exp1a.R")
+  download.file("http://files.figshare.com/2085591/value_predictands4exp1a.R","value_predictands4exp1a.R")
   source("value_predictands4exp1a.R")
 }
    
