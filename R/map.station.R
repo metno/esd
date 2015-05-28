@@ -32,8 +32,8 @@ test.map.station <- function(save=FALSE) {
 
 
 ## The main function to produce map of subseted stations
-##map.stationmeta <- function(...)
-##    map.station(...)
+map.stationmeta <- function(...)
+    map.station(...)
 
 map.data.frame <- function(x,...) {
 
