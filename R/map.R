@@ -6,15 +6,25 @@
 map <- function(x,it=NULL,is=NULL,new=TRUE,...) UseMethod("map")
 
 map.default <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
-                        xlim=NULL,ylim=NULL,n=15,
+                        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                         col=NULL,breaks=NULL,
                         what=NULL,gridlines=FALSE,
-                        lonR=NULL,latR=-90,axiR=NULL,...) {
+                        lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
 
   # default with no arguments will produce a map showing the station data in the esd package.
-  
+
+  if (verbose) print('map.default')
   x <- subset(x,it=it,is=is)
   X <- attr(x,'pattern')
+
+  ## if zlim is specified, then mask data outside this range
+  if (!is.null(zlim)) {
+    d <- dim(X)
+    mask <- (X < min(zlim)) | (X > max(zlim))
+    X[mask] <- NA
+    dim(X) <- d
+    if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
+  }
   attr(X,'longitude') <- lon(x)
   attr(X,'latitude') <- lat(x)
   attr(X,'variable') <- attr(x,'variable')
@@ -55,21 +65,26 @@ map.matrix <- function(x,new=TRUE,projection="lonlat",...) {
   #map.station(NULL,...)
 }
 
-map.array <- function(x,pattern=1,new=TRUE,projection="lonlat",...) {
+map.array <- function(x,pattern=1,new=TRUE,verbose=FALSE,
+                      projection="lonlat",...) {
+  if (verbose) print('map.array')
   z <- x[,,pattern]
   attr(z,'longitude') <- lon(x)
   attr(z,'latitude') <- lat(x)
   attr(z,'variable') <- varid(x)
   attr(z,'unit') <- unit(x)[1]
-  map(z,new=new,projection=projection,...)
+
+  map(z,new=new,projection=projection,verbose=verbose,...)
 }
 
 
-map.comb <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
+map.comb <- function(x,it=NULL,is=NULL,new=TRUE,
+                     xlim=NULL,ylim=NULL,zlim=NULL,
                      pattern=1,n=15,
                      projection="lonlat",col=NULL,breaks=NULL,
                      lonR=NULL,latR=NULL,axiR=0,what=c("fill","contour"),
-                     gridlines=TRUE,...) {
+                     gridlines=TRUE,verbose=FALSE,...) {
+  if (verbose) print('map.comb')
   stopifnot(inherits(x,'eof'))
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -81,19 +96,19 @@ map.comb <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
   if (is.null(varid(x))) attr(x,'variable') <- 'NA'
   if (tolower(varid(x))=='precip') col <- rev(col) 
   
-  map.eof(x=x,xlim=xlim,ylim=ylim,pattern=pattern,
+  map.eof(x=x,xlim=xlim,ylim=ylim,zlim=zlim,pattern=pattern,
           n=n,projection=projection,col=col,new=new,
           breaks=breaks,lonR=lonR,latR=latR,axiR=axiR,what=what,
-          gridlines=gridlines,...) -> result
+          gridlines=gridlines,verbose=verbose,...) -> result
   invisible(result)
  }
 
 map.eof <- function(x,it=NULL,is=NULL,new=TRUE,pattern=1,
-                    xlim=NULL,ylim=NULL,n=15,
+                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                     projection="lonlat",col=NULL,
                     breaks=NULL,lonR=NULL,latR=NULL,axiR=0,
-                    what=c("fill","contour"),gridlines=TRUE,...) {
-  #print('map.eof')
+                    what=c("fill","contour"),gridlines=TRUE,verbose=FALSE,...) {
+  if (verbose) print('map.eof')
   stopifnot(inherits(x,'eof'))
   #x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -101,6 +116,15 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,pattern=1,
   D <- attr(x,'eigenvalues')
   var.eof <- 100* D^2/tot.var
   X <- attr(x,'pattern')[,,pattern]
+
+  ## if zlim is specified, then mask data outside this range
+  if (!is.null(zlim)) {
+    d <- dim(X)
+    mask <- (X < min(zlim)) | (X > max(zlim))
+    X[mask] <- NA
+    dim(X) <- d
+    if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
+  }
   #str(x)
   attr(X,'longitude') <- attr(x,'longitude')
   attr(X,'latitude') <- attr(x,'latitude')
@@ -112,16 +136,17 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,pattern=1,
     if (attr(x, "area.mean.expl")) what="fill"
   if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,
                              n=n,col=col,breaks=breaks,new=new,
-                             what=what,gridlines=gridlines,...) else
+                             what=what,gridlines=gridlines,
+        verbose=verbose,...) else
   if (projection=="sphere") map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
                                        what=what,gridlines=gridlines,
-                                       col=col,new=new,...) else
+                                       col=col,new=new,verbose=verbose,...) else
   if (projection=="np") map2sphere(X,lonR=lonR,latR=90,axiR=axiR,
                                        what=what,gridlines=gridlines,
-                                       col=col,new=new,...) else
+                                       col=col,new=new,verbose=verbose,...) else
   if (projection=="sp") map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,
                                        what=what,gridlines=gridlines,
-                                       col=col,new=new,...)
+                                       col=col,new=new,verbose=verbose,...)
   invisible(X)
 }
 
@@ -201,14 +226,16 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
 }
 
 
-map.field <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
+map.field <- function(x,it=NULL,is=NULL,new=TRUE,
+                      xlim=NULL,ylim=NULL,zlim=NULL,
                       what=c("fill","contour"),
                       FUN='mean',n=15,projection="lonlat",
                       lonR=NULL,latR=NULL,na.rm=TRUE,colorbar=TRUE,
-                      axiR=0,gridlines=FALSE,col=NULL,breaks=NULL,...) {
-    
+                      axiR=0,gridlines=FALSE,col=NULL,breaks=NULL,
+                      verbose=FALSE,...) {
+
   stopifnot(inherits(x,'field'))
-  #print('map.field')
+  if (verbose) print('map.field')
   x <- subset(x,it=it,is=is)
   #print(length(x)); print(attr(x,'dimensions')[1:2])
   projection <- tolower(projection)
@@ -219,6 +246,8 @@ map.field <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
   }
   #str(X)
   X <- coredata(x)
+  
+
   ## If one time slice, then map this time slice
   if (dim(X)[1]==1) X <- coredata(x[1,]) else
   if (is.null(X)) X <- coredata(X) else if (inherits(X,"matrix")) {
@@ -228,6 +257,19 @@ map.field <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
     xx <- coredata(x[,good])
     X[good] <- apply(xx,2,FUN=FUN,na.rm=na.rm)
   }
+
+    ## if zlim is specified, then mask data outside this range
+  if (!is.null(zlim)) {
+    d <- dim(X)
+    mask <- (X < min(zlim)) | (X > max(zlim))
+    rng <- range(X,na.rm=TRUE)
+    X[mask] <- NA
+    dim(X) <- d
+    if (verbose) print(paste('zlim=',zlim[1],zlim[2],
+                             '  sum(mask)=',print(sum(mask)),
+                             '  range(X)=',rng[1],rng[2]))
+  }
+  
   #print(length(X))
   attr(X,'longitude') <- attr(x,'longitude')
   attr(X,'latitude') <- attr(x,'latitude')
@@ -268,16 +310,26 @@ map.field <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
 }
 
 
-map.corfield <- function(x,new=TRUE,xlim=NULL,ylim=NULL,n=15,
+map.corfield <- function(x,new=TRUE,
+                         xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                          projection="lonlat",
                          col=NULL,breaks=seq(-1,1,0.1),
                          lonR=NULL,latR=NULL,axiR=0,what=c("fill","contour"),
-                         gridlines=TRUE,...) {
-  #print("map.corfield")
+                         gridlines=TRUE,verbose=FALSE,...) {
+  if (verbose) print("map.corfield")
   stopifnot(inherits(x,'corfield'))
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
   dim(x) <- attr(x,'dimensions')[1:2]
+  
+  ## if zlim is specified, then mask data outside this range
+  if (!is.null(zlim)) {
+    d <- dim(x)
+    mask <- (x < min(zlim)) | (x > max(zlim))
+    x[mask] <- NA
+    dim(x) <- d
+    if (verbose) {print(zlim); print(dim(x)); print(sum(mask))}
+  }
 
   if (projection=="lonlat") lonlatprojection(x=x,n=n,col=col,breaks=breaks,
                              what=what,gridlines=gridlines,new=new,...) else
@@ -296,15 +348,26 @@ map.corfield <- function(x,new=TRUE,xlim=NULL,ylim=NULL,n=15,
 }
 
 
-map.trend <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,n=15,
+map.trend <- function(x,it=NULL,is=NULL,new=TRUE,
+                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                       projection="lonlat",
                       col=NULL,breaks=NULL,
                      lonR=NULL,latR=NULL,axiR=0,what=c("fill","contour"),
-                     gridlines=TRUE,...) {
+                     gridlines=TRUE,verbose=FALSE,...) {
+  if (verbose) print('map.trend')
   stopifnot(inherits(x,'field'),inherits(x,'trend'))
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
   X <- attr(x,'pattern')
+
+  ## if zlim is specified, then mask data outside this range
+  if (!is.null(zlim)) {
+    d <- dim(x)
+    mask <- (x < min(zlim)) | (x > max(zlim))
+    x[mask] <- NA
+    dim(x) <- d
+    if (verbose) {print(zlim); print(dim(x)); print(sum(mask))}
+  } 
   attr(X,'longitude') <- attr(x,'longitude')
   attr(X,'latitude') <- attr(x,'latitude')
   attr(X,'variable') <- paste(attr(x,'variable'),'trend')
@@ -331,9 +394,10 @@ map.trend <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,n=15,
 lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
                              n=15,col=NULL,breaks=NULL,geography=TRUE,
                              what=c("fill","contour"),gridlines=TRUE,
-                             new=TRUE,colorbar=NULL,...) {
-  #print('lonlatprojection')
-  #print(dim(x)); print(c(length(attr(x,'longitude')),length(attr(x,'latitude'))))
+                             new=TRUE,colorbar=NULL,verbose=FALSE,...) {
+  if (verbose) print('lonlatprojection')
+  #print(dim(x));
+  #print(c(length(attr(x,'longitude')),length(attr(x,'latitude'))))
   data("geoborders",envir=environment())
   if(sum(is.finite(x))==0) stop('No valid data')
   # To deal with grid-conventions going from north-to-south or east-to-west:
@@ -525,7 +589,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
 #}
 
 map.pca <- function(x,pattern=1,new=TRUE,FUN='mean',
-                    col=NULL,cex=1.5,xlim=NULL,ylim=NULL,colbar=NULL,...) {
+                    col=NULL,cex=1.5,xlim=NULL,ylim=NULL,zlim=NULL,
+                    colbar=NULL,verbose=FALSE,...) {
     ##
     #args <- list(...)
     #print(args)
@@ -533,6 +598,15 @@ map.pca <- function(x,pattern=1,new=TRUE,FUN='mean',
   #print(dim(X))
   #str(x)
   X <- attrcp(x,X)
+
+  ## if zlim is specified, then mask data outside this range
+  if (!is.null(zlim)) {
+    d <- dim(X)
+    mask <- (X < min(zlim)) | (X > max(zlim))
+    X[mask] <- NA
+    dim(X) <- d
+    if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
+  }    
   attr(X,'longitude') <- lon(x)
   attr(X,'latitude') <- lat(x)
   class(X) <- 'station'
@@ -549,16 +623,18 @@ map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
                     n=15,projection="lonlat",
                     col=NULL,breaks=NULL,
                     lonR=NULL,latR=NULL,axiR=0,what=c("fill","contour"),
-                    gridlines=TRUE,...) {
+                    gridlines=TRUE,verbose=FALSE,...) {
   x <- subset(x,it=it,is=is)
   
 }
 
-map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
+map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,
+                    xlim=NULL,ylim=NULL,zlim=NULL,
                     what=c("fill","contour"),cex=1.5,
                     n=15,projection="lonlat",
                     lonR=NULL,latR=NULL,colorbar=TRUE,
-                    axiR=0,gridlines=TRUE,col=NULL,breaks=NULL,...) {
+                    axiR=0,gridlines=TRUE,col=NULL,
+                    breaks=NULL,verbose=FALSE,...) {
   #print('map.cca')
   #x <- subset(x,it=it,is=is)
   ## browser()
@@ -607,6 +683,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,icca=1,xlim=NULL,ylim=NULL,
     par(fig=c(0,0.5,0.5,1)) ## mar=c(0.05,.05,0.05,0.05),
   else 
     par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
+
   
   map(Y,pattern=icca,xlim=xlim,ylim=ylim,what=what,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
