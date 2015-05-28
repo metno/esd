@@ -140,12 +140,12 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   } else if (FUN=="freq") {
     if (verbose) print("Frequency")
     attr(y,'variable') <- rep('f',d[2])
-    attr(y,'unit') <- 'fraction'
+    attr(y,'unit') <- rep('fraction',d[2])
 #    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
   } else if (FUN=="wetfreq") {
     if (verbose) print("Wet-day frequency")
     attr(y,'variable') <- rep('f[w]',d[2])
-    attr(y,'unit') <- 'fraction'
+    attr(y,'unit') <- rep('fraction',d[2])
 #    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
   } else if (FUN=="wetmean") {
     if (verbose) print("Wet-day mean")

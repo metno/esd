@@ -65,8 +65,9 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 
 map2sphere <- function(x,it=NULL,is=NULL,lonR=NULL,latR=NULL,axiR=0,new=TRUE,
                        what=c("fill","contour"),colorbar=TRUE,breaks=NULL,
-                       gridlines=TRUE,col=NULL,...) {
+                       gridlines=TRUE,col=NULL,verbose=FALSE,...) {
 
+  if (verbose) print('map2sphere')
   if (!is.null(it) | !is.null(it)) x <- subset(x,it=it,is=is)
   # Data to be plotted:
   lon <- attr(x,'longitude')
