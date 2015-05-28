@@ -4,7 +4,8 @@ distAB <- function(lon,lat,lons,lats,a=6.378e06) {
   lats <- lats[good]
   if ( (length(lon) !=1) | (length(lat) !=1) |
        (length(lons)!=length(lats)) ) {
-    print(paste("distAB [clim.pact]: length(lon)=",length(lon),"length(lat)=",length(lat),
+    print(paste("distAB [clim.pact]: length(lon)=",length(lon),
+                "length(lat)=",length(lat),
                 "length(lons)=",length(lons),"length(lats)=",length(lats)))
     print("length(lons) must equal length(lats) and lon and lat must have length=1")
     stop('Error in distAB - argument lengths do not match!')

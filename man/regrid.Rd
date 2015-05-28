@@ -87,5 +87,15 @@ image(lon(z),lat(z),z)
 # Add land borders on top
 data(geoborders)
 lines(geoborders)
+
+## Regrid station data using weights defined by the distance of the 4
+## nearest stations:
+
+download.file("http://files.figshare.com/2085580/stationsVALUE_exp1a.rda",
+              "stationsVALUE_exp1a.rda")
+load("stationsVALUE_exp1a.rda")
+TX <- regrid(Tx,is=list(lon=seq(-8,30,by=1),lat=seq(40,60,by=0.5)))
+map(TX)
+
 }
 \keyword{utilities}
