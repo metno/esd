@@ -13,7 +13,8 @@
 \title{Regrid}
 \description{Fast transform data from one longitude-latitude grid to another
   through bi-linear interpolation. The regridding is done by first
-  calculating a set of weights
+  calculating a set of weights. This is a "QUICK & DIRTY" way of getting approximate results.
+  More sophisticated methods exist (e.g. Kriging - LatticeKrig).
 
  Let X(i,j) be a i-j matrix containing the data on a grid with i
  logitudes and j latitudes. We want to transform this to a different
@@ -89,10 +90,10 @@ data(geoborders)
 lines(geoborders)
 
 ## Regrid station data using weights defined by the distance of the 4
-## nearest stations:
+## nearest stations: quick and dirty method
 
-download.file("http://files.figshare.com/2085580/stationsVALUE_exp1a.rda",
-              "stationsVALUE_exp1a.rda")
+if (!file.exists("stationsVALUE_exp1a.rda"))
+   source("http://files.figshare.com/2085589/value_predictands4exp1a.R")
 load("stationsVALUE_exp1a.rda")
 TX <- regrid(Tx,is=list(lon=seq(-8,30,by=1),lat=seq(40,60,by=0.5)))
 map(TX)
