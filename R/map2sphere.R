@@ -63,12 +63,20 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 #  return(angle)
 #}
 
-map2sphere <- function(x,it=NULL,is=NULL,lonR=NULL,latR=NULL,axiR=0,new=TRUE,
-                       what=c("fill","contour"),colorbar=TRUE,breaks=NULL,
-                       gridlines=TRUE,col=NULL,verbose=FALSE,...) {
+map2sphere <- function(x,it=NULL,is=NULL,
+                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                       lonR=NULL,latR=NULL,axiR=0,new=TRUE,
+                       what=c("fill","contour"),
+                       colbar=list(col=NULL, breaks=NULL, type="r",
+                              cex=2, h=0.6, v=1),
+                       gridlines=TRUE,fancy=FALSE,verbose=FALSE,...) {
 
+  
   if (verbose) print('map2sphere')
+  if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
+  if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
   if (!is.null(it) | !is.null(it)) x <- subset(x,it=it,is=is)
+
   # Data to be plotted:
   lon <- attr(x,'longitude')
   lat <- attr(x,'latitude')
@@ -151,7 +159,7 @@ map2sphere <- function(x,it=NULL,is=NULL,lonR=NULL,latR=NULL,axiR=0,new=TRUE,
 # Plot the results:
   if (new) dev.new()
   par(bty="n",xaxt="n",yaxt="n")
-  plot(x,z,pch=".",col="grey90",xlab="",ylab="",...)
+  plot(x,z,pch=".",col="grey90",xlab="",ylab="",xlim=xlim,ylim=ylim,...)
   
 # plot the grid boxes, but only the gridboxes facing the view point:
   Visible <- colMeans(Y) > 0
@@ -171,26 +179,36 @@ map2sphere <- function(x,it=NULL,is=NULL,lonR=NULL,latR=NULL,axiR=0,new=TRUE,
 # Add grid ?
   
 # Colourbar:
-  if (colorbar) {
-    #print(breaks)
-    par0 <- par()
-    par(fig = c(0.3, 0.7, 0.05, 0.10),cex=0.8,
-        new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
-  #print("colourbar")
-    if (is.null(breaks))
-      breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/
-                      ( max(map) - min(map) ) )
-    bar <- cbind(breaks,breaks)
-    #browser()
-    image(breaks,c(1,2),bar,col=col)
-
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-        xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
-    
+  if (!is.null(colbar)) {
+#    #print(breaks)
+#    par0 <- par()
+#    par(fig = c(0.3, 0.7, 0.05, 0.10),cex=0.8,
+#        new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
+#  #print("colourbar")
+#    if (is.null(breaks))
+#      breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/
+#                      ( max(map) - min(map) ) )
+#    bar <- cbind(breaks,breaks)
+#    #browser()
+#    image(breaks,c(1,2),bar,col=col)
+#
+#    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+#        xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
+#
+    # Adopt from map.station
+    if (fancy & !is.null(colbar))
+      col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
+              col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
+              type=type,verbose=FALSE,vl=1,border=FALSE)
+    else if (!is.null(colbar))
+      image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+                 legend.only = T, zlim = range(colbar$breaks),
+                 col = colbar$col, legend.width = 1,
+                 axis.args = list(cex.axis = 0.8), border = FALSE)
   }
   plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
        xlab="",ylab="")
-  text(-0.95,0.95,paste(param,' (',unit,')',sep=''),cex=1.5,pos=4)
+  text(-0.95,0.95,expression(paste(param,' (',unit,')')),cex=1.5,pos=4)
   
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   result <- NULL # For now...

@@ -4,35 +4,36 @@
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
 
-map.station <- function (x=NULL,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
-                         col=NULL,colbar= list(col=NULL, breaks=NULL, type="p",
+                         colbar= list(col=NULL, breaks=NULL, type="p",
                              cex=2, h=0.6, v=1),
                          type=NULL,gridlines=FALSE,
                          lonR=NULL, latR=45,axiR=NULL,verbose=FALSE,
                          cex=.8, zexpr = "alt",cex.subset=1,
                          add.text.subset=FALSE,showall = FALSE, add.text=FALSE,
                          height=NULL, width=NULL, cex.axis=1, cex.lab=0.6,
-                         pch=21, FUN=NULL, from=NULL, to=NULL, showaxis=FALSE,
+                         pch=21, from=NULL, to=NULL, showaxis=FALSE,
                          border=FALSE,full.names=FALSE,full.names.subset=FALSE, 
                          text=FALSE, fancy=FALSE, 
-                         na.rm=TRUE, colorbar=TRUE,...) { 
+                         na.rm=TRUE,...) { 
     
     arg <- list(...)
 
+    col <- colbar$col
     bg="green"; col.subset="darkred"; bg.subset="red"
     if (is.list(col)) {
       colnms <- names(col)
-      if (sum(is.element(colnms,'col.subset'))) {
+      if (sum(is.element(colnms,'col.subset'))>0) {
         col.subset <- col$col.subset
         colnms[is.element(colnms,'col.subset')] <- 'done'
       }
-      if (sum(is.element(colnms,'bg.subset'))) {
+      if (sum(is.element(colnms,'bg.subset'))>0) {
         bg.subset <- col$bg.subset
         colnms[is.element(colnms,'bg.subset')] <- 'done'
       }
-        if (sum(is.element(colnms,'bg'))) bg <- col$bg
-      if (sum(is.element(colnms,'col'))) col <- col$col else col <- NULL    
+      if (sum(is.element(colnms,'bg'))>0) bg <- col$bg
+      if (sum(is.element(colnms,'col'))>0) col <- col$col else col <- NULL    
     }
     
     if (verbose) print(paste("List of the tree dots arguments listed below ",
@@ -58,6 +59,11 @@ map.station <- function (x=NULL,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     ##dim(X) <- c(length(lon(x)),length(lat(x)))
     ##class(X) <- class(x)
     ##str(X)
+
+    if (sum(is.element(type,c('fill','contour')))) {
+      x0 <- x
+      x <- as.field(x)
+    }
     
     if (!is.null(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
     
@@ -381,19 +387,21 @@ map.station <- function (x=NULL,it=NULL,is=NULL,new=TRUE,projection="lonlat",
             ## print(par()$fig)
             
             ## add color bar
-            if (fancy & colorbar)
+            if (fancy & !is.null(colbar))
                 col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
                         col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
                         type="p",verbose=FALSE,vl=1,border=FALSE)
-            else if (colorbar)
+            else if (!is.null(colbar))
                 image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
                            legend.only = T, zlim = range(colbar$breaks),
                            col = colbar$col, legend.width = 1,
                            axis.args = list(cex.axis = 0.8), border = FALSE)
         }    
         if (verbose) {
-            print(paste('colbar$breaks are ', paste(colbar$breaks,collapse="/"),'of length',length(colbar$breaks)))
-            print(paste('colbar$col are ', paste(colbar$col,collapse="/"),'of length',length(colbar$col)))      
+            print(paste('colbar$breaks are ', paste(colbar$breaks,collapse="/"),
+                        'of length',length(colbar$breaks)))
+            print(paste('colbar$col are ', paste(colbar$col,collapse="/"),'of length',
+                        length(colbar$col)))      
             print(paste('colbar$n ', paste(colbar$n,collapse="/")))
         }
         ## add text if TRUE
