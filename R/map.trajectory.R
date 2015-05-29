@@ -2,45 +2,37 @@
 ## Last update   16.02.2015
 ## Require 	 geoborders.rda
 
-map.trajectory <- function(x,it=NULL,is=NULL,
-      projection="sphere",lonR=10,latR=90,
-      col='red',colmap='rainbow',alpha=NULL,pfit=FALSE,
-      main=NULL,xlim=NULL,ylim=NULL,lwd=2,
-      verbose=FALSE,new=TRUE) {
-
+map.trajectory <- function(x,it=NULL,is=NULL,type="paths",projection="sphere",...) {
+  stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
-  if(is.null(alpha)) alpha <- 0.01 + min(10/(dim(y)[1]),0.5)
-    
-  if('anomaly' %in% attr(x,'aspect') &
-  any(c('lon','lat') %in% names(attr(x,'mean')))) {
-    anomalymap.trajectory(x,col=col,colmap=colmap,alpha=alpha,
-     main=main,xlim=xlim,ylim=ylim,verbose=verbose,new=new)
-  } else {
-    if (pfit) {
-      lats <- t(polyfit.trajectory(y))
-      y[,colnames(y)=='lat'] <- lats
-    }
+  if (type=='paths' | is.null(type)) {
     if (projection=="sphere" | projection=="np" | projection=="sp") {
       if (projection=="np") latR <- 90
       if (projection=="sp") latR <- -90
-      sphere.trajectory(y,new=new,verbose=verbose,lwd=lwd,
-      lonR=lonR,latR=latR,col=col,alpha=alpha,main=main)
+      sphere.trajectory(y,...)
     } else if (projection=="latlon" | projection=="lonlat") {
-      lonlat.trajectory(y,new=new,verbose=verbose,lwd=lwd,
-      xlim=xlim,ylim=ylim,col=col,alpha=alpha,main=main)
-    }
+      lonlat.trajectory(y,...)                
+    } 
+  } else if (type=='density') {
+    map.density.trajectory(x,...)
+  } else if (type=='shapes') {
+    map.anomaly.trajectory(x,...)
   }
 }
 
-anomalymap.trajectory <- function(x,col='red',colmap='rainbow',alpha=0.05,
+map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
  main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1,verbose=FALSE,new=TRUE) {
-    if(new) dev.new()
-    par(bty="n")
-    lons <- x[,colnames(x)=='lon']
-    lats <- x[,colnames(x)=='lat']
-    plot(lons,lats,type='n',main=main,xlim=xlim,ylim=ylim)
-    matlines(t(lons),t(lats),lty=lty,lwd=lwd,
-           col=adjustcolor(col,alpha.f=alpha))
+  stopifnot(is.trajectory(x))
+  if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly(x)
+  if(is.null(alpha)) alpha <- 0.01 + min(10/(dim(x)[1]),0.5)
+  if(is.null(col)) col <- "red"
+  if(new) dev.new()
+  par(bty="n")
+  lons <- x[,colnames(x)=='lon']
+  lats <- x[,colnames(x)=='lat']
+  plot(lons,lats,type='n',main=main,xlim=xlim,ylim=ylim)
+  matlines(t(lons),t(lats),lty=lty,lwd=lwd,
+         col=adjustcolor(col,alpha.f=alpha))
 }
   
 lonlat.trajectory <- function(x,
