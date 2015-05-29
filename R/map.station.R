@@ -4,65 +4,37 @@
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
 
-## Perform a series of tests that produce and save maps of the different data sources into the local directory.
-test.map.station <- function(save=FALSE) {
-
-    map.station(src="NACD",col="darkgreen",bg="green")
-    if (save) dev.copy2pdf(file="NACD-Network.pdf")
-    if (save) dev.off()
-    map.station(src="ECAD",col="darkgreen",bg="green")
-    if (save) dev.copy2pdf(file="ECAD-Network.pdf")
-    if (save) dev.off()
-    map.station(src="GHCNM",col="darkgreen",bg="green")
-    if (save) dev.copy2pdf(file="GHCNM-Network.pdf")
-    if (save) dev.off()
-    map.station(src="GHCND",col="darkgreen",bg="green")
-    if (save) dev.copy2pdf(file="GHCND-Network.pdf")
-    if (save) dev.off()
-    map.station(src="NORDKLIM",col="darkgreen",bg="green")
-    if (save) dev.copy2pdf(file="NORDKLIM-Network.pdf")
-    if (save) dev.off()
-    map.station(src="NARP",col="darkgreen",bg="green")
-    if (save) dev.copy2pdf(file="NARP-Network.pdf")
-    if (save) dev.off()
-
-    locs <- map.station(ele=101)
-    locs <- map.station(cntr="NORWAY",ele=101,src="ECAD")
-}
-
-
-## The main function to produce map of subseted stations
-map.stationmeta <- function(...)
-    map.station(...)
-
-map.data.frame <- function(x,...) {
-
-    att <- c("station_id","location","country","longitude","latitude","altitude","element","start","end","source","wmo","quality") 
-    if (sum(is.element(names(ss),att))==12) {   
-        class(x) <- c("data.frame","stationmeta")
-        map.station(x,...)
-    }
-    else print("x is not a stationmeta object")
-}
-
-map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
-                         is=list(x=NULL,stid = NULL, param = NULL, lon = NULL,
-                             lat = NULL,alt = NULL, cntr = NULL, src = NULL,
-                             nmin = NULL),
-                         it = NULL, col.subset="darkred", bg.subset="red",
-                         cex.subset=1, add.text.subset=FALSE,
-                         colbar= list(col=NULL, breaks=NULL, n=10, type="p",
+map.station <- function (x=NULL,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+                         xlim = NULL, ylim = NULL,zlim=NULL,n=15,
+                         col=NULL,colbar= list(col=NULL, breaks=NULL, type="p",
                              cex=2, h=0.6, v=1),
-                         showall = FALSE, verbose = FALSE , add.text=FALSE,
+                         type=NULL,gridlines=FALSE,
+                         lonR=NULL, latR=45,axiR=NULL,verbose=FALSE,
+                         cex=.8, zexpr = "alt",cex.subset=1,
+                         add.text.subset=FALSE,showall = FALSE, add.text=FALSE,
                          height=NULL, width=NULL, cex.axis=1, cex.lab=0.6,
                          pch=21, FUN=NULL, from=NULL, to=NULL, showaxis=FALSE,
-                         xlim = NULL, ylim = NULL, border=FALSE,
-                         full.names=FALSE, full.names.subset=FALSE, new=TRUE,
-                         text=FALSE, fancy=FALSE, projection="lonlat",what=NULL,
-                         gridlines=FALSE, lonR=NULL, latR=45,axiR=NULL,
-                         na.rm=TRUE, colorbar=TRUE,...) { # AM 25.03.15 removed 
+                         border=FALSE,full.names=FALSE,full.names.subset=FALSE, 
+                         text=FALSE, fancy=FALSE, 
+                         na.rm=TRUE, colorbar=TRUE,...) { 
     
     arg <- list(...)
+
+    bg="green"; col.subset="darkred"; bg.subset="red"
+    if (is.list(col)) {
+      colnms <- names(col)
+      if (sum(is.element(colnms,'col.subset'))) {
+        col.subset <- col$col.subset
+        colnms[is.element(colnms,'col.subset')] <- 'done'
+      }
+      if (sum(is.element(colnms,'bg.subset'))) {
+        bg.subset <- col$bg.subset
+        colnms[is.element(colnms,'bg.subset')] <- 'done'
+      }
+        if (sum(is.element(colnms,'bg'))) bg <- col$bg
+      if (sum(is.element(colnms,'col'))) col <- col$col else col <- NULL    
+    }
+    
     if (verbose) print(paste("List of the tree dots arguments listed below ",
                              arg,sep=""))
     par0 <- par()
@@ -103,7 +75,7 @@ map.station <- function (x = NULL, col = NULL,bg="green",cex=.8, zexpr = "alt",
                    col=col,new=new,FUN=FUN,...)
     ## else if (projection=="lonlat")
     ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
-    ##                     what=what,gridlines=gridlines,...)
+    ##                     type=type,gridlines=gridlines,...)
     else if (projection=="lonlat") {
         
         ## setting default values for the color bar if not specified
@@ -658,4 +630,45 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,
   else if (inherits(x0,"station"))
       result <- data.frame(x=Y,y=Z,z=map)
   invisible(result)
+}
+
+## Perform a series of tests that produce and save maps of the different data sources into the local directory.
+test.map.station <- function(save=FALSE) {
+
+    map.station(src="NACD",col="darkgreen",bg="green")
+    if (save) dev.copy2pdf(file="NACD-Network.pdf")
+    if (save) dev.off()
+    map.station(src="ECAD",col="darkgreen",bg="green")
+    if (save) dev.copy2pdf(file="ECAD-Network.pdf")
+    if (save) dev.off()
+    map.station(src="GHCNM",col="darkgreen",bg="green")
+    if (save) dev.copy2pdf(file="GHCNM-Network.pdf")
+    if (save) dev.off()
+    map.station(src="GHCND",col="darkgreen",bg="green")
+    if (save) dev.copy2pdf(file="GHCND-Network.pdf")
+    if (save) dev.off()
+    map.station(src="NORDKLIM",col="darkgreen",bg="green")
+    if (save) dev.copy2pdf(file="NORDKLIM-Network.pdf")
+    if (save) dev.off()
+    map.station(src="NARP",col="darkgreen",bg="green")
+    if (save) dev.copy2pdf(file="NARP-Network.pdf")
+    if (save) dev.off()
+
+    locs <- map.station(ele=101)
+    locs <- map.station(cntr="NORWAY",ele=101,src="ECAD")
+}
+
+
+## The main function to produce map of subseted stations
+map.stationmeta <- function(...)
+    map.station(...)
+
+map.data.frame <- function(x,...) {
+
+    att <- c("station_id","location","country","longitude","latitude","altitude","element","start","end","source","wmo","quality") 
+    if (sum(is.element(names(ss),att))==12) {   
+        class(x) <- c("data.frame","stationmeta")
+        map.station(x,...)
+    }
+    else print("x is not a stationmeta object")
 }
