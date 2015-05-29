@@ -25,10 +25,10 @@
 \usage{
 map(x,it=NULL,is=NULL,new=TRUE,...)
 map.default(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
-                        xlim=NULL,ylim=NULL,n=15,
+                        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                         col=NULL,breaks=NULL,
                         what=NULL,gridlines=FALSE,
-                        lonR=NULL,latR=-90,axiR=NULL,...)
+                        lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...)
 map.matrix(x,new=TRUE,projection="lonlat",...)
 map.comb(x,it=NULL,is=NULL,new=TRUE,xlim=NULL,ylim=NULL,
                      pattern=1,n=15,

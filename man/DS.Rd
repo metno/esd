@@ -11,6 +11,7 @@
 \alias{DS.freq}
 \alias{DS.spell}
 \alias{DS.pca}
+\alias{DS.seasonalcycle}
 \alias{biasfix}
 \alias{sametimescale}
 \title{Downscale}
@@ -54,6 +55,14 @@
   [ref: Benestad (2001), "The cause of warming over Norway in the
   ECHAM4/OPYC3 GHG integration", \emph{Int. J. Clim.}, 15 March,
   \bold{vol 21}, p.371-387.].
+
+  \code{DS.seasonalcycle} is an experimental set-up where the
+  calibration is carried out based on the similarity of the seasonal
+  variation to make most use of available information on a 'worst-case'
+  basis, taking the upper limit view that at most, all the seasonal
+  cycle is connected to the corresponding seasonal cycle in the
+  predictor. See Benestad (2009) 'On Tropical Cyclone Frequency and the
+  Warm Pool Area' Nat. Hazards Earth Syst. Sci., 9, 635-645, 2009 \url{http://www.nat-hazards-earth-syst-sci.net/9/635/2009/nhess-9-635-2009.html}.
 
   The function \code{biasfix} provides a type of 'bias correction' based
   on the method \code{\link{diagnose}} which estimates the difference in
@@ -102,7 +111,11 @@ DS.spell(y,X,threshold=1,biascorrect=FALSE,method="glm",
 family="gaussian",swsm="step",
          rmtrend=TRUE,eofs=1:7,verbose=FALSE,...)
 DS.pca(y,X,biascorrect=FALSE,mon=NULL,
-       method="MVR",swsm=NULL,rmtrend=TRUE,...) 
+       method="MVR",swsm=NULL,rmtrend=TRUE,...)
+DS.seasonalcycle(y,X,mon=NULL,FUN='wetmean',fun='mean',
+                            method="lm",swsm="step",m=1,
+                            eofs=1:7,area.mean.expl=FALSE,
+                            verbose=FALSE,weighted=TRUE,...)
 predict.ds.mon(x,...) 
 sametimescale(y,X,FUN='mean')
 biasfix(x)
