@@ -532,3 +532,8 @@ export(subset.trajectory)
 export(corfield.trajectory)
 export(DS.trajectory)
 
+export(dX)
+export(dY)
+export(dT)
+export(regfit)
+
