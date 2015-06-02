@@ -453,7 +453,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
   
   map.station(X,new=new,FUN="mean",
               colbar=list(col=col,type='r',v=0),
-              cex=cex,xlim=xlim,ylim=ylim,zlim=zlim,...)
+              xlim=xlim,ylim=ylim,zlim=zlim,...)
 }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
