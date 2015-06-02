@@ -423,7 +423,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 
 
-map.pca <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar=list(col=NULL, breaks=NULL, type="r",
                               cex=2, h=0.6, v=1),
