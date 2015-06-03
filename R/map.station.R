@@ -223,7 +223,10 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="l
         ##print(par()$fig)
         par(fig=par0$fig)
 #        if (!is.null(FUN)) col <- "white" 
-        if (!is.null(FUN)) col <- col #"black"  
+        if (!is.null(FUN)) {
+         col <- col #"black" 
+         bg.all <- col # REB 2015-06-03 fix?
+        }
         if (!is.null(highlight))
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
                  bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
