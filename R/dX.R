@@ -140,7 +140,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.371e06,
                   lon=lon,lat=lat,dx=diff(lon)[1],span=range(lon))
   class(results) <- "map"
   attr(results,"long_name") <- "y-derivative"
-  attr(results,"spatial units") <- "km"
+  attr(results,"spatial units") <- "hPa/m"
   attr(results,"descr") <- "dX()"
   invisible(results)
 }

@@ -2,11 +2,9 @@
 
 #library(esd)
 #slp <- slp.ERAINT()
-#Z <- subset(slp,is=list(lon=c(-180,180),lat=c(0,90)),it='djf')
+#cyclones <- CCI(slp,is=list(lon=c(-180,180),lat=c(0,90)),it='djf')
 
-CCI <- function(Z,m=14,nsim=10,it=NULL,is=NULL,
-                cyclones=TRUE,accuracy=NULL,verbose=FALSE) {
-
+CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,verbose=FALSE) {
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   
@@ -15,6 +13,10 @@ CCI <- function(Z,m=14,nsim=10,it=NULL,is=NULL,
   resx <- dX(Z,m=m,accuracy=accuracy,verbose=verbose)
   resy <- dY(Z,m=m,accuracy=accuracy,verbose=verbose)
 
+  ## Spatial resolution
+  dx <- diff(resx$lon)[1]
+  dy <- diff(resx$lat)[1]
+  
   ## Search for zero crossings of the first derivative:
   ## Reorganize and reshape
   if(verbose) print("Reshape arrays")
@@ -25,10 +27,10 @@ CCI <- function(Z,m=14,nsim=10,it=NULL,is=NULL,
   dim(latXY) <- c(ny-1,nx-1); latXY <- t(latXY)
   Zx <- as.matrix(resx$Z.fit); dim(Zx) <- c(nt,nx,ny)
   Zy <- as.matrix(resy$Z.fit); dim(Zy) <- c(nt,nx,ny)
-  dy <- as.matrix(resy$dZ); dim(dy) <- c(nt,nx,ny)
-  dx <- as.matrix(resx$dZ); dim(dx) <- c(nt,nx,ny)
-  dx2 <- as.matrix(resx$dZ2); dim(dx2) <- c(nt,nx,ny)
-  dy2 <- as.matrix(resy$dZ2); dim(dy2) <- c(nt,nx,ny)
+  slpdy <- as.matrix(resy$dZ); dim(dy) <- c(nt,nx,ny)
+  slpdx <- as.matrix(resx$dZ); dim(dx) <- c(nt,nx,ny)
+  slpdx2 <- as.matrix(resx$dZ2); dim(dx2) <- c(nt,nx,ny)
+  slpdy2 <- as.matrix(resy$dZ2); dim(dy2) <- c(nt,nx,ny)
   px <- 0.25*(Zx[,1:(nx-1),2:ny] + Zx[,2:nx,2:ny] +
               Zx[,1:(nx-1),1:(ny-1)] + Zx[,2:nx,1:(ny-1)])
   py <- 0.25*(Zy[,1:(nx-1),2:ny] + Zy[,2:nx,2:ny] +
@@ -53,10 +55,10 @@ CCI <- function(Z,m=14,nsim=10,it=NULL,is=NULL,
   ## Zero crossing in x-direction
   if(verbose) print("Find zero crossing of first derivative in x-direction")
   P.lowx <- rep(0,nt*(nx-1)*(ny-1)); dim(P.lowx) <- c(nt,nx-1,ny-1) 
-  dx11 <- 0.5*(dx[,2:nx,2:ny]+dx[,2:nx,1:(ny-1)])
-  dx12 <- 0.5*(dx[,1:(nx-1),2:ny]+dx[,1:(nx-1),1:(ny-1)])
-  dx21 <- 0.5*(dx2[,2:nx,2:ny]+dx2[,2:nx,1:(ny-1)])
-  dx22 <- 0.5*(dx2[,1:(nx-1),2:ny]+dx2[,1:(nx-1),1:(ny-1)])
+  dx11 <- 0.5*(slpdx[,2:nx,2:ny] + slpdx[,2:nx,1:(ny-1)])
+  dx12 <- 0.5*(slpdx[,1:(nx-1),2:ny] + slpdx[,1:(nx-1),1:(ny-1)])
+  dx21 <- 0.5*(slpdx2[,2:nx,2:ny] + slpdx2[,2:nx,1:(ny-1)])
+  dx22 <- 0.5*(slpdx2[,1:(nx-1),2:ny] + slpdx2[,1:(nx-1),1:(ny-1)])
   if (cyclones) { i.low <- (dx11*dx12 < 0) & (dx21+dx22 > 0) &
               is.finite(dx11 + dx12 + dx21 + dx22)
   } else { i.low <- (dx11*dx12 < 0) & (dx21+dx22 < 0) &
@@ -110,44 +112,67 @@ CCI <- function(Z,m=14,nsim=10,it=NULL,is=NULL,
 
   # Geostrophic wind speed
   # CHECK THE UNITS
-   if(verbose) print("Geostrophic wind")
+  if(verbose) print("Geostrophic wind")
   f <- 1.47e-04*sin(pi*latXY/180)
   f[abs(latXY)<10] <- NA # not valid close to equator
   rho <- 1.2922
   A <- rep(f*rho,nt); dim(A) <- c(nx-1,ny-1,nt); A <- aperm(A,c(3,1,2))
-  u <- -DX/A*100
-  v <- DY/A*100
-  wind <- sqrt(u^2 + v^2)
-  # SLP in hPa -> Pa, but dx and dy in m.
+  dslp <- sqrt(DX^2+DY^2)*100 # SLP in hPa -> Pa, but dx and dy in m
+  wind <- dslp/A
  
   # Find points of inflexion (2nd derivative==0) to estimate the storm radius
-  # CAN I DO THIS WITHOUT LOOPING OVER ALL STORMS?
+  # and maximum 
   if(verbose) print("Find points of inflexion")
+  rmin <- 10; rmax <- 2000 # km
   NX <- dim(lonXY)[1]; NY <- dim(latXY)[2]
-  inflx <- DX2[,2:NX,]*DX2[,1:(NX-1),]<0
-  infly <- DY2[,,2:NY]*DY2[,,1:(NY-1)]<0
-  date.old <- 0
-  radius <- c()
+  lonXX <- rep(0.25*(lonXY[2:NX,2:NY]+lonXY[2:NX,1:(NY-1)]+
+           lonXY[1:(NX-1),2:NY]+lonXY[1:(NX-1),1:(NY-1)]),nt)
+  dim(lonXX) <- c(NX-1,NY-1,nt); lonXX <- aperm(lonXX,c(3,1,2))
+  latXX <- rep(0.25*(latXY[2:NX,2:NY]+latXY[2:NX,1:(NY-1)]+
+           latXY[1:(NX-1),2:NY]+latXY[1:(NX-1),1:(NY-1)]),nt)
+  dim(latXX) <- c(NX-1,NY-1,nt); latXX <- aperm(latXX,c(3,1,2))
+  dateXX <- rep(index(Z),(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
+  inflx <- DX2[,2:NX,2:NY]*DX2[,1:(NX-1),2:NY]<0 &
+           DX2[,2:NX,1:(NY-1)]*DX2[,1:(NX-1),1:(NY-1)]<0 &
+           !is.na(DX2[,2:NX,2:NY]*DX2[,1:(NX-1),1:(NY-1)])
+  infly <- DY2[,2:NX,2:NY]*DY2[,2:NX,1:(NY-1)]<0 &
+           DY2[,1:(NX-1),2:NY]*DY2[,1:(NX-1),1:(NY-1)]<0 &
+           !is.na(DY2[,2:NX,2:NY]*DY2[,1:(NX-1),1:(NY-1)])
+  lon.infl <- lonXX[inflx & infly]
+  lat.infl <- latXX[inflx & infly]
+  date.infl <- dateXX[inflx & infly]
+  radius <- rep(NA,length(date))
+  max.dslp <- rep(NA,length(date))
+  max.speed <- rep(NA,length(date))
   for (i in order(date)) {
-    i.inflx <- inflx[index(Z)==date[i],,latXY[1,]==lat[i]]
-    i.infly <- infly[index(Z)==date[i],lonXY[,1]==lon[i],]
-    i.x <- which(i.inflx)[which.min(abs(lonXY[i.inflx,1]-lon[i]))]
-    i.y <- which(i.infly)[which.min(abs(latXY[1,i.infly]-lat[i]))]
-    r.x <- distAB(lon[i],lat[i],lonXY[i.x,1],lat[i])
-    r.y <- distAB(lon[i],lat[i],lon[i],latXY[1,i.y])
-    r.i <- sqrt(r.x^2 + r.y^2)
-    radius <- c(radius,r.i)
-    if(plot) {
-      if(i==1 | date[i]!=date.old) {
-        dev.new()
-        image(resx$lon,resy$lat,Zy[index(Z)==date[i],,],main=date[i])
-      }
-      points(lon[i],lat[i])
-      lines(c(lon[i],lonXY[i.x,1]),c(lat[i],lat[i]))
-      lines(c(lon[i],lon[i]),c(lat[i],latXY[1,i.y]))
-    }
-    date.old <- date[i]
+     i.infl <- which(date.infl==date[i])
+     distance <- distAB(lon[i],lat[i],lon.infl[i.infl],lat.infl[i.infl])*1E-3
+     distance[distance<rmin | distance>rmax] <- NA
+     i.min <- which.min(distance)
+     if(any(i.min)) {
+       radius[i] <- distance[i.min]
+       i.x <- which(abs(lonXY[,1]-lon[i])<=abs(lon.infl[i.infl[i.min]]-lon[i]))
+       i.y <- which(abs(latXY[1,]-lat[i])<=abs(lat.infl[i.infl[i.min]]-lat[i]))
+       max.dslp[i] <- max(dslp[index(Z)==date[i],i.x,i.y],na.rm=T)
+       max.speed[i] <- max(wind[index(Z)==date[i],i.x,i.y],na.rm=T)
+     }
   }
- 
 
+  # Add attributes
+  attr(lon,'units') <- 'degrees'
+  attr(lat,'units') <- 'degrees'
+  attr(pcent,'units') <- 'hPa'
+  attr(max.dpsl,'units') <- 'Pa/m'
+  attr(max.dpsl,'location') <- 'at inflexion points at lon/lat lines through storm center'
+  attr(max.speed,'units') <- 'm/s'
+  attr(max.speed,'location') <- 'at inflexion points at lon/lat lines through storm center'
+  attr(radius,'units') <- 'km'
+  
+  results <- list(lon=lon,lat=lat,tim=date,pcent=pcent,
+                  yy=year(date),mm=month(date),dd=day(date),i=1:length(date),label=label,
+                  max.dpsl=max.dpsl,max.speed=max.speed,
+                  radius=radius,dx=dx,dy=dy,
+                  version="cyclones v2.1-1 (after June 3, 2015)")
+  save(file=fname,results)
+  invisible(results)
 }
