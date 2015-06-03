@@ -80,13 +80,16 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   #print(class(x))
   # Need to accomodate for the possibility of more than one station series.
   if (inherits(x,'day')) {
+    ## Set minimum size of annual samples to default unless specified
     if (is.null(nmin)) nmin <- 30*nmo
-    fewd <- coredata(nval) < nmin
-    nyr[fewd] <- coredata(nval)[fewd]
+    ## REB 2015-06-01 the following did not work on multi-station objects:
+    #fewd <- coredata(nval) < nmin
+    #nyr[fewd] <- coredata(nval)[fewd]
     #print(fewd)
     #x[fewd] <- NA
-    ok <- is.element(yr,YR[nyr >= nmin])
+    #ok <- is.element(yr,YR[nyr >= nmin])
     #browser()
+    ok <- coredata(nval) >= nmin
   } else   if ( (inherits(x,'mon')) & is.null(nmin) ) {
       iy <- year(x)
       nmy <- as.numeric(table(iy))
