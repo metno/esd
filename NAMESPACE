@@ -537,3 +537,7 @@ export(DS.trajectory)
 #export(dT)
 #export(regfit)
 
+export(prob)
+export(prob.default)
+export(prob.station)
+export(prob.station.precip)
