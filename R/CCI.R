@@ -4,7 +4,8 @@
 #slp <- slp.ERAINT()
 #cyclones <- CCI(slp,is=list(lon=c(-180,180),lat=c(0,90)),it='djf')
 
-CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,verbose=FALSE) {
+CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
+                label=NULL,fname="cyclones.rda",verbose=FALSE) {
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   
@@ -27,10 +28,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,verbose=FALSE
   dim(latXY) <- c(ny-1,nx-1); latXY <- t(latXY)
   Zx <- as.matrix(resx$Z.fit); dim(Zx) <- c(nt,nx,ny)
   Zy <- as.matrix(resy$Z.fit); dim(Zy) <- c(nt,nx,ny)
-  slpdy <- as.matrix(resy$dZ); dim(dy) <- c(nt,nx,ny)
-  slpdx <- as.matrix(resx$dZ); dim(dx) <- c(nt,nx,ny)
-  slpdx2 <- as.matrix(resx$dZ2); dim(dx2) <- c(nt,nx,ny)
-  slpdy2 <- as.matrix(resy$dZ2); dim(dy2) <- c(nt,nx,ny)
+  slpdy <- as.matrix(resy$dZ); dim(slpdy) <- c(nt,nx,ny)
+  slpdx <- as.matrix(resx$dZ); dim(slpdx) <- c(nt,nx,ny)
+  slpdx2 <- as.matrix(resx$dZ2); dim(slpdx2) <- c(nt,nx,ny)
+  slpdy2 <- as.matrix(resy$dZ2); dim(slpdy2) <- c(nt,nx,ny)
   px <- 0.25*(Zx[,1:(nx-1),2:ny] + Zx[,2:nx,2:ny] +
               Zx[,1:(nx-1),1:(ny-1)] + Zx[,2:nx,1:(ny-1)])
   py <- 0.25*(Zy[,1:(nx-1),2:ny] + Zy[,2:nx,2:ny] +
@@ -39,10 +40,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,verbose=FALSE
   ## Search for zero crossing in y-direction
   if(verbose) print("Find zero crossing of first derivative in y-direction")
   P.lowy <- rep(0,nt*(nx-1)*(ny-1)); dim(P.lowy) <- c(nt,nx-1,ny-1) 
-  dy11 <- 0.5*(dy[,2:nx,2:ny]+dy[,1:(nx-1),2:ny])
-  dy12 <- 0.5*(dy[,2:nx,1:(ny-1)]+dy[,1:(nx-1),1:(ny-1)])
-  dy21 <- 0.5*(dy2[,2:nx,2:ny]+dy2[,1:(nx-1),2:ny])
-  dy22 <- 0.5*(dy2[,2:nx,1:(ny-1)]+dy2[,1:(nx-1),1:(ny-1)])
+  dy11 <- 0.5*(slpdy[,2:nx,2:ny]+slpdy[,1:(nx-1),2:ny])
+  dy12 <- 0.5*(slpdy[,2:nx,1:(ny-1)]+slpdy[,1:(nx-1),1:(ny-1)])
+  dy21 <- 0.5*(slpdy2[,2:nx,2:ny]+slpdy2[,1:(nx-1),2:ny])
+  dy22 <- 0.5*(slpdy2[,2:nx,1:(ny-1)]+slpdy2[,1:(nx-1),1:(ny-1)])
   if (cyclones) { i.low <- (dy11*dy12 < 0) & (dy21+dy22 > 0) &
               is.finite(dy11+dy12+dy21+dy22)
   } else { i.low <- (dy11*dy12 < 0) & (dy21+dy22 < 0) &
