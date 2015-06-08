@@ -1137,7 +1137,7 @@ prob.default <- function(x,...) {
 
 }
 
-prob.station <- function(x,y=NULL,is=1,...) {
+prob.station <- function(x,y=NULL,is=1,dy=0.01,...) {
   if (is.precip(x)) prob.station.precip(x,y=y,is=is,...) 
 }
 
@@ -1155,14 +1155,16 @@ prob.station.precip <- function(x,y=NULL,is=1,threshold=1,...) {
   col <- col[srtc]
   breaks <- seq(floor(min(x,na.rm=TRUE)),ceiling(max(x,na.rm=TRUE))+5,by=5)
   z <- aggregate(x,year,FUN='histo',breaks=breaks,threshold=threshold)
+  dy <- max(z)*dy
   mu <- aggregate(x,year,FUN='wetmean',threshold=threshold)
   mids <- 0.5*(breaks[-1] + breaks[-length(breaks)])
   par(bty='n')
-  plot(range(breaks),c(0,max(z)),type='n',
+  plot(range(breaks),c(0,max(z) + length(year(x))*dy),type='n',
   ylab='f(x)',xlab=paste(varid(x),unit(x)),main=paste('Statistical distribution for',loc(x)))
   for (i in 1:length(year(x))) {
-    lines(mids,z[i,],col=col[i],lwd=3)
-    lines(mids,exp(-mids/coredata(mu[i]))/coredata(mu[i]),col=col[i],lty=2)
+    lines(mids,z[i,]+dy*i,col=col[i],lwd=3)
+    lines(mids,dy*i + exp(-mids/coredata(mu[i]))/coredata(mu[i]),
+          col=col[i],lty=2)
   }
 }
 

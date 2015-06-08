@@ -1,0 +1,9 @@
+NINO3.4 <- function(url='ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/ersst3b.nino.mth.ascii',header=TRUE) {
+  enso <- read.table(url,header=header)
+  nino3.4 <- zoo(enso$NINO3.4,
+                 order.by=as.Date(paste(enso$YR,enso$MON,'01',sep='-')))
+  nino3.4 <- as.station(nino3.4,loc='Nino3.4',param='Nino3.4',
+                        unit='dimensionless')
+  attr(nino3.4,'url') <- url
+  return(nino3.4)
+}
