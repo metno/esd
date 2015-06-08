@@ -897,7 +897,7 @@ as.anomaly.station <- function(x,ref=NULL,na.rm=TRUE) {
 }
 
 as.anomaly.field<- function(x,ref=NULL,na.rm=TRUE) {
-   y <- as.anomaly.default(x,ref,na.rm)
+   y <- anomaly.default(x,ref,na.rm)
    attr(y,'history') <- history.stamp(x)
    attr(y,'dimensions') <- attr(x,'dimensions')
    invisible(y)
