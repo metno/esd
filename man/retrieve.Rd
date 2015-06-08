@@ -15,16 +15,16 @@
 %retrieve.default(...)
 retrieve.default(ncfile,...)
 retrieve.ncdf(ncfile = ncfile, path = path , param = "auto",
-               lon = NULL, lat = NULL, lev = NULL, time = NULL,
-               miss2na = TRUE, greenwich = TRUE , ncdf.check = TRUE,
+               lon = NULL, lat = NULL, lev = NULL, it = NULL,
+               miss2na = TRUE, greenwich = TRUE,
                verbose = FALSE , plot = TRUE)
 retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
-               lon = NULL, lat = NULL, lev = NULL, time = NULL,
-               miss2na = TRUE, greenwich = TRUE , ncdf.check = TRUE,
+               lon = NULL, lat = NULL, lev = NULL, it = NULL,
+               miss2na = TRUE, greenwich = TRUE,
                verbose = FALSE , plot = TRUE) 
 retrieve.rcm(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE)
-summary.ncdf4(ncfile, verbose=FALSE)
 
+summary.ncdf4(ncfile, verbose=FALSE)
 check.ncdf4(ncid = ncid, param = "auto" , verbose = FALSE)
 check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
 }
@@ -36,13 +36,13 @@ check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
   \item{lon}{Numeric value of longitude for the reference point (in decimal degrees East) or a vector containing the range of longitude values in the form of c(lon.min,lon.max)}
   \item{lat}{Numeric value of latitude for the reference point (in decimal degrees North) or a vector containing the range of latitude values in the form of c(lat.min,lat.max)}
   \item{lev}{Numeric value of pressure levels or a vector containing the range of pressure level values in the form of c(lev.min,lev.max) }
-  \item{time}{Numerical year values or date values of time or a vector containing the range of values in the form of c(time.min,time.max). Date format should be in the form of "YYYY-MM-DD".}
+  \item{it}{Numerical or date values of time or a vector containing the range of values in the form of c(start,end). Date format should be in the form of "YYYY-MM-DD".}
   \item{param}{Parameter or element type. There are several core parameters or elements as well as a number of additional parameters. The parameters or elements are:
-           auto         = automatic selection.
-           prcp, pr     = Precipitation (mm)
-   	   tas, tavg    = 2m-surface temperature (in degrees Celcius)
-           tmax, tasmax = Maximum temperature (in degrees Celcius)
-           tmin, tasmin = Minimum temperature (in degrees Celcius)
+           auto             = automatic selection.
+           precip, prcp, pr = Precipitation (mm)
+   	   tas, tavg        = 2m-surface temperature (in degrees Celcius)
+           tmax, tasmax     = Maximum temperature (in degrees Celcius)
+           tmin, tasmin     = Minimum temperature (in degrees Celcius)
            }
   \item{plot}{Logical value. if, TRUE provides a map.}
   \item{greenwich}{Logical value. If FALSE, convert longitudes to -180E/180E or centre maps on Greenwich meridian (0 deg E).} 
