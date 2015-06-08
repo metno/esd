@@ -280,7 +280,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     plot(c(0,1),c(0,1),type='n',xlab='',ylab='')
     ok <- is.finite(attr(x,'evaluation')[,1]) &
           is.finite(attr(x,'evaluation')[,2])
-    text(0,0.5,paste('x-correlation=',
+    text(0,0.5,paste('correlation=',
            round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
          pos=4,cex=0.8,col='grey')
   }  else {

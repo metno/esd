@@ -93,22 +93,22 @@ anomaly.annual <- function(x,ref=1961:1990,verbose=FALSE) {
 }
 
 anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
-   anomaly.month1 <- function(x,yr=NULL,ref=NULL) {
-# This function computes the anomalies by removing the 12-month seasonal cycle
-       l <- length(x); n <- ceiling(l/12)
-    ## base-line period
-    if (!is.null(yr) & !is.null(ref)) iref <- is.element(yr,ref) else
-                                      iref <- rep(TRUE,n)
-  # If the record is not full years, pad the extra months of the last year
-    pad <- l %% 12
-    if (pad>0) x <- c(rep(NA,pad),x)
-  #Fast way to compute the climatology: clim
-    dim(x) <- c(12,n)
-    clim <- rowMeans(x[,iref],na.rm=TRUE)
-    x <- c(x - clim)
-    if (pad>0) x <- x[-(1:pad)]
-    return(x)
-  }
+#   anomaly.month1 <- function(x,yr=NULL,ref=NULL) {
+## This function computes the anomalies by removing the 12-month seasonal cycle
+#       l <- length(x); n <- ceiling(l/12)
+#    ## base-line period
+#    if (!is.null(yr) & !is.null(ref)) iref <- is.element(yr,ref) else
+#                                      iref <- rep(TRUE,n)
+#  # If the record is not full years, pad the extra months of the last year
+#    pad <- l %% 12
+#    if (pad>0) x <- c(rep(NA,pad),x)
+#  #Fast way to compute the climatology: clim
+#    dim(x) <- c(12,n)
+#    clim <- rowMeans(x[,iref],na.rm=TRUE)
+#    x <- c(x - clim)
+#    if (pad>0) x <- x[-(1:pad)]
+#    return(x)
+#  }
   ## AM 21-05-2015 Alternative function as a quick fix 
   anomaly.month1 <- function(x,t=NULL,ref=NULL) {
       if (is.null(ref)) ref <- year(t)
@@ -134,7 +134,8 @@ anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
   t <- index(x); yr <- year(x)
  
   if (is.null(dim(x))) Y <- anomaly.month1(x,t=t,ref=ref) else
-                       Y <- apply(coredata(x),2,FUN='anomaly.month1',t=t,ref=ref)
+                       Y <- apply(coredata(x),2,FUN='anomaly.month1',
+                                  t=t,ref=ref)
    
    y <- Y
    x <- zoo(y,order.by=t)

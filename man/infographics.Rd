@@ -13,6 +13,7 @@
 \alias{climvar}
 \title{InfoGraphics.}
 \alias{colscal}
+\alias{prob}
 \description{
   Wheel
 
@@ -27,6 +28,8 @@
   diagram
 
   cumugram
+  
+  prob
 }
 \usage{
 vis(x,...)
@@ -41,6 +44,10 @@ climvar(x,FUN='sd',plot=TRUE,...)
 colscal(n=30,col="bwr",test=FALSE)
 seasevol(x,...)
 seasevol.station(x,it=NULL,nv=25,...)
+prob(x,...) 
+prob.default(x,...)
+prob.station(x,y=NULL,is=1,...)
+prob.station.precip(x,y=NULL,is=1,threshold=1,...)
 }
 \arguments{
  \item{x}{a data object}
