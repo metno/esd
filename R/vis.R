@@ -685,8 +685,8 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
   if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
       unit <- expression(degree*C) else
       unit <- attr(x,'unit')
-  eval(parse(text=paste("main <- expression(paste('Running cumulative mean of ',",
-               attr(x,'variable'),"))")))
+  eval(parse(text=paste("main <- expression(paste('Running cumulative mean of  ',",
+               attr(x,'variable'),sep=' ',"))")))
   dev.new()
   par(bty="n")
   z <- coredata(x)
