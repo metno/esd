@@ -1130,31 +1130,35 @@ diagnose.distr <- function(x,main=NULL,
   }
 }
 
+
+histwet <- function(x,breaks=NULL,threshold=1) {
+  if (is.null(breaks)) breaks=seq(0,1.1*max(x,na.rm=TRUE),by=5)
+  h <- hist(x[x > threshold],breaks=breaks,plot=FALSE)
+  return(h$density)
+}
+
 ## Some additional infographics: show p.d.f. for each year    
-prob <- function(x,...) UseMethod("prob")
+visprob <- function(x,...) UseMethod("visprob")
 
-prob.default <- function(x,...) {
+visprob.default <- function(x,...) {
 
 }
 
-prob.station <- function(x,y=NULL,is=1,dy=0.01,...) {
-  if (is.precip(x)) prob.station.precip(x,y=y,is=is,...) 
+visprob.station <- function(x,y=NULL,is=1,dy=0.01,...) {
+  if (is.precip(x)) prob.station.precip(x,y=y,is=is,dy=dy,...) 
 }
 
-prob.station.precip <- function(x,y=NULL,is=1,threshold=1,...) {
+visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.01,...) {
 ## Plot the histogram for each year in different colours, depending on y. Iy y
 ## is NULL, use the year to set the colour
 
-  histo <- function(x,breaks,threshold) {
-    h <- hist(x[x > threshold],breaks=breaks,plot=FALSE)
-    return(h$density)
-  }
+
   if (is.null(y)) y <- year(annual(x))
   col <- colscal(n=length(y))
   srtc <- order(y)
   col <- col[srtc]
   breaks <- seq(floor(min(x,na.rm=TRUE)),ceiling(max(x,na.rm=TRUE))+5,by=5)
-  z <- aggregate(x,year,FUN='histo',breaks=breaks,threshold=threshold)
+  z <- aggregate(x,year,FUN='histwet',breaks=breaks,threshold=threshold)
   dy <- max(z)*dy
   mu <- aggregate(x,year,FUN='wetmean',threshold=threshold)
   mids <- 0.5*(breaks[-1] + breaks[-length(breaks)])
