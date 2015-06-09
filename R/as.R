@@ -391,6 +391,7 @@ as.field.zoo <- function(x,lon,lat,param,unit,
   if (dmo>0)  timescale <- "month"
   if (dmo==3)  timescale <- "season"
   if (dda>0)  timescale <- "day"
+  if (dyr==0 & dmo==0 & dda==0) timescale <- "sub-daily"
   #print(timescale)
   
 # Add attributes to x

@@ -3,6 +3,26 @@
 #library(esd)
 #slp <- slp.ERAINT()
 #cyclones <- CCI(slp,is=list(lon=c(-180,180),lat=c(0,90)),it='djf')
+#ncfile <- "/home/kajsamp/data/ecmwf/ERAinterim_slp_1979.nc"
+#ncid <- open.ncdf(ncfile)
+#lon <- get.var.ncdf(ncid,"longitude")
+#lat <- get.var.ncdf(ncid,"latitude")
+#time <- get.var.ncdf(ncid,"time")
+#time <- as.POSIXlt(time*60*60,origin="1900-01-01")
+#tunits <- att.get.ncdf(ncid, "time", "units")
+#nt <- length(time)
+#nlon <- length(lon)
+#nlat <- length(lat)
+#msl <- get.var.ncdf(ncid,"msl")
+#msl <- aperm(msl,c(3,1,2))
+#slp <- msl; dim(slp) <- c(nt,nlon*nlat)
+#slp <- zoo(slp,order.by=time)
+#Y <- as.field(slp,lon=lon,lat=lat,
+#              unit="hPa",longname="mean sea level pressure",
+#              param="slp",quality=NULL,src="ERAinterim")
+
+
+# TRY WITH 6-HOURLY SLP DATA!
 
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
                 label=NULL,fname="cyclones.rda",verbose=FALSE) {
@@ -28,10 +48,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
   dim(latXY) <- c(ny-1,nx-1); latXY <- t(latXY)
   Zx <- as.matrix(resx$Z.fit); dim(Zx) <- c(nt,nx,ny)
   Zy <- as.matrix(resy$Z.fit); dim(Zy) <- c(nt,nx,ny)
-  slpdy <- as.matrix(resy$dZ); dim(slpdy) <- c(nt,nx,ny)
-  slpdx <- as.matrix(resx$dZ); dim(slpdx) <- c(nt,nx,ny)
-  slpdx2 <- as.matrix(resx$dZ2); dim(slpdx2) <- c(nt,nx,ny)
-  slpdy2 <- as.matrix(resy$dZ2); dim(slpdy2) <- c(nt,nx,ny)
+  dslpdy <- as.matrix(resy$dZ); dim(dslpdy) <- c(nt,nx,ny)
+  dslpdx <- as.matrix(resx$dZ); dim(dslpdx) <- c(nt,nx,ny)
+  dslpdx2 <- as.matrix(resx$dZ2); dim(dslpdx2) <- c(nt,nx,ny)
+  dslpdy2 <- as.matrix(resy$dZ2); dim(dslpdy2) <- c(nt,nx,ny)
   px <- 0.25*(Zx[,1:(nx-1),2:ny] + Zx[,2:nx,2:ny] +
               Zx[,1:(nx-1),1:(ny-1)] + Zx[,2:nx,1:(ny-1)])
   py <- 0.25*(Zy[,1:(nx-1),2:ny] + Zy[,2:nx,2:ny] +
@@ -40,10 +60,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
   ## Search for zero crossing in y-direction
   if(verbose) print("Find zero crossing of first derivative in y-direction")
   P.lowy <- rep(0,nt*(nx-1)*(ny-1)); dim(P.lowy) <- c(nt,nx-1,ny-1) 
-  dy11 <- 0.5*(slpdy[,2:nx,2:ny]+slpdy[,1:(nx-1),2:ny])
-  dy12 <- 0.5*(slpdy[,2:nx,1:(ny-1)]+slpdy[,1:(nx-1),1:(ny-1)])
-  dy21 <- 0.5*(slpdy2[,2:nx,2:ny]+slpdy2[,1:(nx-1),2:ny])
-  dy22 <- 0.5*(slpdy2[,2:nx,1:(ny-1)]+slpdy2[,1:(nx-1),1:(ny-1)])
+  dy11 <- 0.5*(dslpdy[,2:nx,2:ny]+dslpdy[,1:(nx-1),2:ny])
+  dy12 <- 0.5*(dslpdy[,2:nx,1:(ny-1)]+dslpdy[,1:(nx-1),1:(ny-1)])
+  dy21 <- 0.5*(dslpdy2[,2:nx,2:ny]+dslpdy2[,1:(nx-1),2:ny])
+  dy22 <- 0.5*(dslpdy2[,2:nx,1:(ny-1)]+dslpdy2[,1:(nx-1),1:(ny-1)])
   if (cyclones) { i.low <- (dy11*dy12 < 0) & (dy21+dy22 > 0) &
               is.finite(dy11+dy12+dy21+dy22)
   } else { i.low <- (dy11*dy12 < 0) & (dy21+dy22 < 0) &
@@ -56,10 +76,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
   ## Zero crossing in x-direction
   if(verbose) print("Find zero crossing of first derivative in x-direction")
   P.lowx <- rep(0,nt*(nx-1)*(ny-1)); dim(P.lowx) <- c(nt,nx-1,ny-1) 
-  dx11 <- 0.5*(slpdx[,2:nx,2:ny] + slpdx[,2:nx,1:(ny-1)])
-  dx12 <- 0.5*(slpdx[,1:(nx-1),2:ny] + slpdx[,1:(nx-1),1:(ny-1)])
-  dx21 <- 0.5*(slpdx2[,2:nx,2:ny] + slpdx2[,2:nx,1:(ny-1)])
-  dx22 <- 0.5*(slpdx2[,1:(nx-1),2:ny] + slpdx2[,1:(nx-1),1:(ny-1)])
+  dx11 <- 0.5*(dslpdx[,2:nx,2:ny] + dslpdx[,2:nx,1:(ny-1)])
+  dx12 <- 0.5*(dslpdx[,1:(nx-1),2:ny] + dslpdx[,1:(nx-1),1:(ny-1)])
+  dx21 <- 0.5*(dslpdx2[,2:nx,2:ny] + dslpdx2[,2:nx,1:(ny-1)])
+  dx22 <- 0.5*(dslpdx2[,1:(nx-1),2:ny] + dslpdx2[,1:(nx-1),1:(ny-1)])
   if (cyclones) { i.low <- (dx11*dx12 < 0) & (dx21+dx22 > 0) &
               is.finite(dx11 + dx12 + dx21 + dx22)
   } else { i.low <- (dx11*dx12 < 0) & (dx21+dx22 < 0) &
@@ -118,8 +138,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
   f[abs(latXY)<10] <- NA # not valid close to equator
   rho <- 1.2922
   A <- rep(f*rho,nt); dim(A) <- c(nx-1,ny-1,nt); A <- aperm(A,c(3,1,2))
-  dslp <- sqrt(DX^2+DY^2)*100 # SLP in hPa -> Pa, but dx and dy in m
-  wind <- dslp/A
+  dpsl <- sqrt(DX^2+DY^2)*100 # SLP in hPa -> Pa, but dx and dy in m
+  wind <- dpsl/A
  
   # Find points of inflexion (2nd derivative==0) to estimate the storm radius
   # and maximum 
@@ -143,7 +163,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
   lat.infl <- latXX[inflx & infly]
   date.infl <- dateXX[inflx & infly]
   radius <- rep(NA,length(date))
-  max.dslp <- rep(NA,length(date))
+  max.dpsl <- rep(NA,length(date))
   max.speed <- rep(NA,length(date))
   for (i in order(date)) {
      i.infl <- which(date.infl==date[i])
@@ -154,7 +174,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
        radius[i] <- distance[i.min]
        i.x <- which(abs(lonXY[,1]-lon[i])<=abs(lon.infl[i.infl[i.min]]-lon[i]))
        i.y <- which(abs(latXY[1,]-lat[i])<=abs(lat.infl[i.infl[i.min]]-lat[i]))
-       max.dslp[i] <- max(dslp[index(Z)==date[i],i.x,i.y],na.rm=T)
+       max.dpsl[i] <- max(dpsl[index(Z)==date[i],i.x,i.y],na.rm=T)
        max.speed[i] <- max(wind[index(Z)==date[i],i.x,i.y],na.rm=T)
      }
   }
