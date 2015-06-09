@@ -4,10 +4,11 @@
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
 
-map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
+                         projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
-                         colbar= list(col=NULL, breaks=NULL, type="p",
-                             cex=2, h=0.6, v=1),
+                         colbar= list(col=NULL, breaks=NULL, type="p",cex=2,
+                                      h=0.6, v=1),
                          type=NULL,gridlines=FALSE,
                          lonR=NULL, latR=45,axiR=NULL,verbose=FALSE,
                          cex=.8, zexpr = "alt",cex.subset=1,
@@ -16,12 +17,17 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="l
                          pch=21, from=NULL, to=NULL, showaxis=FALSE,
                          border=FALSE,full.names=FALSE,full.names.subset=FALSE, 
                          text=FALSE, fancy=FALSE, 
-                         na.rm=TRUE,...) { 
+                         na.rm=TRUE,show.val=FALSE,...) { 
     
     arg <- list(...)
-
+    ## browser()
     col <- colbar$col
-    bg="green"; col.subset="darkred"; bg.subset="red"
+    if (!is.null(FUN))
+        bg <- col
+    else
+        bg <- "green"
+
+    col.subset="darkred"; bg.subset="red"
     if (is.list(col)) {
       colnms <- names(col)
       if (sum(is.element(colnms,'col.subset'))>0) {
@@ -36,29 +42,10 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="l
       if (sum(is.element(colnms,'col'))>0) col <- col$col else col <- NULL    
     }
     
-    if (verbose) print(paste("List of the tree dots arguments listed below ",
-                             arg,sep=""))
+    if (verbose)
+        print(paste("List of arguments in the three-dots listed below ",arg,sep=""))
     par0 <- par()
-    ##print(par()$fig)
-    ## X <- coredata(x)
-    ##if (dim(X)[1]==1) X <- coredata(x[1,]) else
-    ##if (inherits(X,"matrix")) X <- apply(x,2,FUN=FUN,na.rm=TRUE)
-    ##print(length(X))
-    ##X <- diag(X,nrow=length(lon(x)),ncol=length(lat(x)))
-    ##attr(X,'longitude') <- attr(x,'longitude')
-    ##attr(X,'latitude') <- attr(x,'latitude')
-    ##attr(X,'variable') <- attr(x,'variable')
-    ##  if (attr(x,'unit')=="deg C") attr(X,'unit') <- expression(degree*C) else
-    ##attr(X,'unit') <- attr(x,'unit')
-    ##attr(X,'source') <- attr(x,'source')
-    ##attr(X,'time') <- range(index(x))
-    ##attr(X,'method') <- FUN
-    ##attr(X,'timescale') <- class(x)[2]
-    ##print(length(X)); print(attr(x,'dimensions'))
-    ##X <- diag(X,nrow=length(lon(X)),ncol=length(lat(X)))
-    ##dim(X) <- c(length(lon(x)),length(lat(x)))
-    ##class(X) <- class(x)
-    ##str(X)
+   
 
     if (sum(is.element(type,c('fill','contour')))) {
       x0 <- x
@@ -84,27 +71,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="l
     ##                     type=type,gridlines=gridlines,...)
     else if (projection=="lonlat") {
         
-        ## setting default values for the color bar if not specified
-                                        #if (is.null(colbar)) {
-        #if (length(col) > 1) {
-        #    if (is.null(FUN)) {
-        #        print("Color vector length is higher than 1, only the first value is used")
-        #    }
-        #    else if (is.null(colbar$col)) {
-        #        colbar$n <- 10
-        #        colbar$col <- colscal(n=colbar$n)
-        #    }
-        #    else {
-        #        colbar$col <- col
-        #        colbar$n.breaks <- length(col)
-        #    }
-        #} else col <- col[1]
-         
-        ##load("~/esd/data/geoborders.rda")
         data("geoborders", envir = environment())
-        ##load("station.meta.rda") # data("station.meta", envir = environment())
-        ##load("t2m.NORDKLIM.rda") # data("t2m.NORDKLIM", envir = environment())
-        ##data("precip.NORDKLIM", envir = environment())
         if (zexpr == "alt") 
             zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
         ## n <- 100
@@ -112,7 +79,6 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="l
         ## if (!is.null(subset)) {col = "white" ; bg="white"} 
         
         ## if (!is.null(unlist(subset)) & !showall) {col = "white" ; bg="white"} 
-
         if (!is.null(x)) { 
             if (inherits(x,"stationmeta")) {      
                 ss <- x
@@ -211,15 +177,6 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="l
         else
             scale <- 1
         
-##        if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
-##        if (new) {
-##            #dev.new()
-##            par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-##            fig=c(0.05,0.95,0.12,0.95),mar=rep(1,4))
-##        } else {
-##            par(bty="n",xaxt="n",yaxt="n",xpd=TRUE,mar=rep(1,4),new=new)
-##        }
-        ## 
         ##print(par()$fig)
         par(fig=par0$fig)
 #        if (!is.null(FUN)) col <- "white" 
@@ -329,28 +286,6 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="l
                 colbar$col <- colscal(n=n,col=varid(x))
             }
             
-            ## AM removed 12-05-2015
-            ## if (is.null(colbar$n) & !is.null(colbar$col))
-            ##    colbar$n <- length(colbar$col)
-            ##else if (!is.null(colbar$breaks)) {              
-            ##    colbar$n <- length(colbar$breaks)
-            ##    colbar$col <- colscal(n=colbar$n,col=varid(x))
-            ##}
-            ##else { ## set to the default values
-            ##    colbar$n <- 10 
-            ##}   
-
-            ## AM removed 12-05-2015
-            ##if (is.null(colbar$breaks)) {
-            ##    colbar$breaks <- pretty(y,colbar$n)
-            ##    # update colbar$n and colbar$col according to pretty
-            ##    colbar$n <- length(colbar$breaks)
-            ##    if (is.null(colbar$col))
-            ##        colbar$col <- colscal(n=colbar$n,col=varid(x))
-            ##    else
-            ##        colbar$col <- colscal(n=colbar$n,col=colbar$col)
-            ##}
-
             ## reverse the colour for precip
             #print(is.precip(x))
             if (is.precip(x)) colbar$col <- rev(colbar$col)
@@ -383,8 +318,12 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,projection="l
             }
 
             ## Add geoborders
-            lines(geoborders$x, geoborders$y, col = "black")
+            lines(geoborders$x, geoborders$y, col = "grey50")
             lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "pink") ##"grey90"
+
+            if (show.val)
+                text(ss$longitude,ss$latitude,round(y,digits=2),
+                     cex=cex/4)
             
             ## par(fig=par0$fig)
             ## print(par()$fig)
