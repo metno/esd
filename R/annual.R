@@ -266,7 +266,8 @@ year <- function(x) {
   #str(x); print(class(x)); print(index(x))
   if (inherits(x,'integer')) x <- as.numeric(x)
   
-  if ( (inherits(x,'numeric')) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 3000) )
+  if ( (inherits(x,'numeric')) & (min(x,na.rm=TRUE) > 0) &
+      (max(x,na.rm=TRUE) < 3000) )
     return(x)
   
   if (inherits(x,c('station','field','zoo'))) {
@@ -277,7 +278,11 @@ year <- function(x) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$year + 1900
     return(y)
   }
-  if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
+  if (inherits(x,"POSIXt")) {
+    y <- as.numeric(format(x, '%Y'))
+    return(y)
+  }
+  if ( (class(x)[1]=="character") & (nchar(x[1])==10)) {
     y <- year(as.Date(x))
     return(y)
   }
@@ -285,7 +290,7 @@ year <- function(x) {
     y <- trunc(index(x))
     return(y)
   }
-  #print("here"); print(index(x))
+  print("here"); print(index(x))
   if (class(x)[1]=="Date")
     y <- as.numeric(format(x, '%Y')) else
   if (class(x)[1]=="yearmon") y <- trunc(as.numeric(x)) else
@@ -314,7 +319,11 @@ month <- function(x) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mon + 1
     return(y)
   }
-  if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
+  if (inherits(x,"POSIXt")) {
+    y <- as.numeric(format(x, '%m'))
+    return(y)
+  }
+  if ( (class(x)[1]=="character") & (nchar(x[1])==10)) {
     y <- month(as.Date(x))
     return(y)
   }
@@ -345,6 +354,10 @@ day <- function(x) {
   if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 32) )
     return(x)
   if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) ) y <- rep(1,length(x))  
+  if (inherits(x,"POSIXt")) {
+    y <- as.numeric(format(x, '%d'))
+    return(y)
+  }
   if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
     y <- day(as.Date(x))
     return(y)
