@@ -187,7 +187,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     map.pca(x,it=it,verbose=verbose,new=new,
             xlim=xlim,ylim=ylim,projection=projection,
             lonR=lonR,latR=latR,axiR=axiR,gridlines=gridlines,
-            col=col,breaks=breaks)
+            colbar=colbar) ##col=col,breaks=breaks)
     return()
   }
   projection <- tolower(projection)
@@ -425,8 +425,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar=list(col=NULL, breaks=NULL, type="r",
-                              cex=2, h=0.6, v=1),
+                   colbar=list(col=NULL, breaks=NULL, type="r",cex=2, h=0.6, v=1),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
     ##
     #args <- list(...)
@@ -447,12 +446,12 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
   attr(X,'longitude') <- lon(x)
   attr(X,'latitude') <- lat(x)
   class(X) <- 'station'
-  if (is.null(col)) {
-    col <- colscal(30,col=varid(x))
-  }
+  ##if (is.null(colbar$col) | is.null(colbar)) {
+  ##  colbar$col <- colscal(30,col=varid(x))
+  ##}
   
   map.station(X,new=new,FUN="mean",
-              colbar=list(col=col,type='r',v=0),
+              colbar=colbar,
               xlim=xlim,ylim=ylim,zlim=zlim,...)
 }
 
@@ -463,7 +462,7 @@ map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
   x <- subset(x,it=it,is=is)
   map.field(x,new=new,FUN=FUN,col=col,bg=col,
-              colbar=list(col=col,type='r',v=0),
+              colbar=colbar,
               cex=cex,xlim=xlim,ylim=ylim,...)
   
 }
@@ -522,7 +521,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   else 
     par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
 
-  colbar <- list(col=NULL, breaks=NULL, type="r",cex=2, h=0.6, v=1)
+  ##colbar <- list(col=NULL, breaks=NULL, type="r",cex=2, h=0.6, v=1)
   
   map(Y,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
