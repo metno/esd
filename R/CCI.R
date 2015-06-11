@@ -5,24 +5,24 @@
 ##slp <- slp.ERAINT()
 ##cyclones <- CCI(slp,is=list(lon=c(-180,180),lat=c(0,90)),it='djf')
 ### 6-HOURLY SLP DATA:
-ncfile <- "/home/kajsamp/data/ecmwf/ERAinterim_slp_1979.nc"
-ncid <- open.ncdf(ncfile)
-lon <- get.var.ncdf(ncid,"longitude")
-lat <- get.var.ncdf(ncid,"latitude")
-time <- get.var.ncdf(ncid,"time")
-tunits <- att.get.ncdf(ncid, "time", "units")
-slp <- get.var.ncdf(ncid,"msl")
-close.ncdf(ncid)
-time <- as.POSIXlt(time*60*60,origin="1900-01-01")
-nt <- length(time); nlon <- length(lon); nlat <- length(lat)
-slp <- aperm(slp,c(3,1,2)); dim(slp) <- c(nt,nlon*nlat)
-slp <- zoo(slp,order.by=time)
-slp <- as.field(slp,lon=lon,lat=lat,
-              unit="Pa",longname="mean sea level pressure",
-              param="slp",quality=NULL,src="ERAinterim")
-#slp <- subset(slp,it="december")
-#Z <- slp
-cyclones <- CCI(slp,it="december",fname="cyclones.ERAint.1979.12.rda")
+## ncfile <- "/home/kajsamp/data/ecmwf/ERAinterim_slp_1979.nc"
+## ncid <- open.ncdf(ncfile)
+## lon <- get.var.ncdf(ncid,"longitude")
+## lat <- get.var.ncdf(ncid,"latitude")
+## time <- get.var.ncdf(ncid,"time")
+## tunits <- att.get.ncdf(ncid, "time", "units")
+## slp <- get.var.ncdf(ncid,"msl")
+## close.ncdf(ncid)
+## time <- as.POSIXlt(time*60*60,origin="1900-01-01")
+## nt <- length(time); nlon <- length(lon); nlat <- length(lat)
+## slp <- aperm(slp,c(3,1,2)); dim(slp) <- c(nt,nlon*nlat)
+## slp <- zoo(slp,order.by=time)
+## slp <- as.field(slp,lon=lon,lat=lat,
+##               unit="Pa",longname="mean sea level pressure",
+##               param="slp",quality=NULL,src="ERAinterim")
+## #slp <- subset(slp,it="december")
+## #Z <- slp
+## cyclones <- CCI(slp,it="december",fname="cyclones.ERAint.1979.12.rda")
 
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
                 accuracy=NULL,label=NULL,fname="cyclones.rda",
