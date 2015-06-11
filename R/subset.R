@@ -559,7 +559,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## get time in t
     t <- index(x)
     if(!inherits(t,"POSIXt")) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
-    if (verbose) print('default.subset: time index it'); print(it)
+    if (verbose) {print('default.subset: time index it'); print(it)}
 
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {

@@ -290,7 +290,7 @@ year <- function(x) {
     y <- trunc(index(x))
     return(y)
   }
-  print("here"); print(index(x))
+  #print("here"); print(index(x))
   if (class(x)[1]=="Date")
     y <- as.numeric(format(x, '%Y')) else
   if (class(x)[1]=="yearmon") y <- trunc(as.numeric(x)) else

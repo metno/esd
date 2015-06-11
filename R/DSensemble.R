@@ -89,7 +89,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="~/CMIP5.monthly/",
   #lat <- lat(ferder) + c(-10,10)
   
   if (is.character(predictor))
-    t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat) else
+    t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,verbose=verbose) else
   if (inherits(predictor,'field'))
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
@@ -148,7 +148,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="~/CMIP5.monthly/",
   for (i in 1:N) {
     gcm <- retrieve(ncfile = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
-                          lat=range(lat(T2M))+c(-2,2))
+                          lat=range(lat(T2M))+c(-2,2),verbose=verbose)
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     # REB: 30.04.2014 - new lines...
@@ -403,7 +403,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   # Get the predictor: ERA40
   if (verbose) print("predictor")
   if (is.character(predictor))
-    pre <- retrieve(ncfile=predictor,lon=lon,lat=lat) else
+    pre <- retrieve(ncfile=predictor,lon=lon,lat=lat,verbose=verbose) else
   if (inherits(predictor,'field')) pre <- predictor
   rm("predictor"); gc(reset=TRUE)
   attr(pre,"source") <- "ERA40"
@@ -472,7 +472,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   for (i in 1:N) {
     #
     gcm <- retrieve(ncfile = ncfiles[select[i]],
-                    lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2))
+                    lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2),verbose=verbose)
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
@@ -638,9 +638,12 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
   
   # Get the predictor: NCEP/NCAR
   if (verbose) print(paste("Get the set of predictors:",names(predictor),collapse=' '))
-  if (is.character(predictor[[1]])) pre1 <- retrieve(ncfile=predictor[[1]],lon=lon,lat=lat)
-  if (is.character(predictor[[2]])) pre2 <- retrieve(ncfile=predictor[[2]],lon=lon,lat=lat)
-  if (is.character(predictor[[3]])) pre3 <- retrieve(ncfile=predictor[[3]],lon=lon,lat=lat)
+  if (is.character(predictor[[1]])) pre1 <- retrieve(ncfile=predictor[[1]],
+                                                     lon=lon,lat=lat,verbose=verbose)
+  if (is.character(predictor[[2]])) pre2 <- retrieve(ncfile=predictor[[2]],
+                                                     lon=lon,lat=lat,verbose=verbose)
+  if (is.character(predictor[[3]])) pre3 <- retrieve(ncfile=predictor[[3]],
+                                                     lon=lon,lat=lat,verbose=verbose)
 
   # Combine the predictors
   if (verbose) print("Annual mean - predictors")
@@ -699,11 +702,11 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
     ## Need to ensure that the different predictor files match...
     print(paste(i,N,ncfiles1[select[i]],ncfiles2[select[i]],ncfiles3[select[i]]))
     gcm1 <- retrieve(ncfile = ncfiles1[select[i]],
-                    lon=range(lon(PRE1))+c(-2,2),lat=range(lat(PRE1))+c(-2,2))
+                    lon=range(lon(PRE1))+c(-2,2),lat=range(lat(PRE1))+c(-2,2),verbose=verbose)
     gcm2 <- retrieve(ncfile = ncfiles2[select[i]],
-                    lon=range(lon(PRE2))+c(-2,2),lat=range(lat(PRE2))+c(-2,2))
+                    lon=range(lon(PRE2))+c(-2,2),lat=range(lat(PRE2))+c(-2,2),verbose=verbose)
     gcm3 <- retrieve(ncfile = ncfiles3[select[i]],
-                    lon=range(lon(PRE3))+c(-2,2),lat=range(lat(PRE3))+c(-2,2))
+                    lon=range(lon(PRE3))+c(-2,2),lat=range(lat(PRE3))+c(-2,2),verbose=verbose)
     gcmnm[i] <- paste(attr(gcm1,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm1))
@@ -877,7 +880,8 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (verbose) print("predictor")
   if (is.character(predictor))
-    pre <- spatial.avg.field(C.C.eq(retrieve(ncfile=predictor,lon=lon,lat=lat))) else
+    pre <- spatial.avg.field(C.C.eq(retrieve(ncfile=predictor,lon=lon,lat=lat,
+                                             verbose=verbose))) else
   if (inherits(predictor,'field')) pre <- predictor
   rm("predictor"); gc(reset=TRUE)
   normal61.90 <- mean(coredata(subset(pre,it=c(1961,1990))))
@@ -939,7 +943,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   
   for (i in 1:N) {
     #
-      gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat)
+      gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,verbose=verbose)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
       GCM <- spatial.avg.field(C.C.eq(gcm))
       z <- annual(GCM,FUN="max")
@@ -989,7 +993,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
   if (is.character(predictor))
-    t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat) else
+    t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,verbose=verbose) else
   if (inherits(predictor,'field'))
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
@@ -1054,7 +1058,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   for (i in 1:N) {
     gcm <- retrieve(ncfile = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
-                          lat=range(lat(T2M))+c(-2,2))
+                          lat=range(lat(T2M))+c(-2,2),verbose=verbose)
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
     if (inherits(y,'season')) {
