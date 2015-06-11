@@ -558,8 +558,8 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ##print("HERE")
     ## get time in t
     t <- index(x)
-    ii <- is.finite(t)
-    if (verbose) {print('default.subset: time index it'); print(it)}                            
+    if(!inherits(t,"POSIXt")) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
+    if (verbose) print('default.subset: time index it'); print(it)
 
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
@@ -574,6 +574,14 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (verbose) print('X has a numeric index - select by years')
         yr <- t
         mo <- dy <- rep(1,length(t))
+    } else if (inherits(t,"POSIXt")) {
+        if (verbose) print('X has a POSIXt index')
+        yr <- year(t)
+        mo <- month(t)
+        dy <- day(t)
+        hr <- as.numeric(format(t,"%H"))
+        mn <- as.numeric(format(t,"%M"))
+        t <- format(t,"%Y-%m-%d")
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
     ## Generate sequence of days, months or years if range of it value is given
@@ -700,6 +708,8 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ##        ii <- is.element(t,it)
         if (verbose) print('it is a date object')
         ii <- (t >= min(it)) & (t <= max(it))
+      } else if (inherits(it,"logical") & length(it)==length(yr)) {
+        ii <- it
       } else if (!is.null(it)) {
         ii <- rep(FALSE,length(t))
         warning("default.subset: did not reckognise the selection citerion for 'it'")

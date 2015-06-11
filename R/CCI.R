@@ -1,42 +1,44 @@
 # K Parding, 29.05.2015
 
 #library(esd)
+## MONTHLY SLP DATA:
 #slp <- slp.ERAINT()
 #cyclones <- CCI(slp,is=list(lon=c(-180,180),lat=c(0,90)),it='djf')
+## 6-HOURLY SLP DATA:
 #ncfile <- "/home/kajsamp/data/ecmwf/ERAinterim_slp_1979.nc"
 #ncid <- open.ncdf(ncfile)
 #lon <- get.var.ncdf(ncid,"longitude")
 #lat <- get.var.ncdf(ncid,"latitude")
 #time <- get.var.ncdf(ncid,"time")
-#time <- as.POSIXlt(time*60*60,origin="1900-01-01")
 #tunits <- att.get.ncdf(ncid, "time", "units")
-#nt <- length(time)
-#nlon <- length(lon)
-#nlat <- length(lat)
-#msl <- get.var.ncdf(ncid,"msl")
-#msl <- aperm(msl,c(3,1,2))
-#slp <- msl; dim(slp) <- c(nt,nlon*nlat)
+#slp <- get.var.ncdf(ncid,"msl")
+#close.ncdf(ncid)
+#time <- as.POSIXlt(time*60*60,origin="1900-01-01")
+#nt <- length(time); nlon <- length(lon); nlat <- length(lat)
+#slp <- aperm(slp,c(3,1,2)); dim(slp) <- c(nt,nlon*nlat)
 #slp <- zoo(slp,order.by=time)
-#Y <- as.field(slp,lon=lon,lat=lat,
-#              unit="hPa",longname="mean sea level pressure",
+#slp <- as.field(slp,lon=lon,lat=lat,
+#              unit="Pa",longname="mean sea level pressure",
 #              param="slp",quality=NULL,src="ERAinterim")
+#slp <- subset(slp,it="december")
+#Z <- slp
+#cyclones <- CCI(slp,it="december",fname="cyclones.ERAint.1979.12.rda")
 
-
-# TRY WITH 6-HOURLY SLP DATA!
-
-CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
-                label=NULL,fname="cyclones.rda",verbose=FALSE) {
+CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
+                accuracy=NULL,label=NULL,fname="cyclones.rda",
+                plot=FALSE,verbose=FALSE) {
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
-  
+  if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
+    
   ## Calculate first and second derivative
   if(verbose) print("Calculate first and second derivative")
   resx <- dX(Z,m=m,accuracy=accuracy,verbose=verbose)
   resy <- dY(Z,m=m,accuracy=accuracy,verbose=verbose)
 
   ## Spatial resolution
-  dx <- diff(resx$lon)[1]
-  dy <- diff(resx$lat)[1]
+  dx <- abs(diff(resx$lon))[1]
+  dy <- abs(diff(resx$lat))[1]
   
   ## Search for zero crossings of the first derivative:
   ## Reorganize and reshape
@@ -94,17 +96,22 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
   pcent <- 0.5*(px[lows]+py[lows])
   strength <- order(pcent)
   if (!cyclones) strength <- reverse(strength)
-  
+
+  ## Handle time index
+  t <- index(Z)
+  if (inherits(t,"POSIXt")) t <- as.numeric(format(t,"%Y%m%d%H%M"))
+    
   ## Remove secondary cyclones near a deeper one (same cyclonic system):
   if(verbose) print("Remove secondary cyclones")
   mindistance <- 1E4 # minimum distance between cyclones [m]
   lon<-rep(lonXY,nt); dim(lon)<-c(nx-1,ny-1,nt); lon<-aperm(lon,c(3,1,2)) 
-  lat<-rep(latXY,nt); dim(lat)<-c(nx-1,ny-1,nt); lat<-aperm(lat,c(3,1,2)) 
-  date<-rep(index(Z),(nx-1)*(ny-1)); dim(date)<-c(nt,nx-1,ny-1)
+  lat<-rep(latXY,nt); dim(lat)<-c(nx-1,ny-1,nt); lat<-aperm(lat,c(3,1,2))
+  date<-rep(t,(nx-1)*(ny-1)); dim(date)<-c(nt,nx-1,ny-1)
   lon <- lon[lows]; date <- date[lows]; lat<-lat[lows]
   del <- rep(TRUE,length(date))
   for (d in unique(date)) {
-    i <- which(date==as.Date(d))
+    if (inherits(t,'Date')) d <- as.Date(d)
+    i <- which(date==d)
     distance <- apply(cbind(lon[i],lat[i]),1,
      function(x) suppressWarnings(distAB(x[1],x[2],lon[i],lat[i])))
     diag(distance) <- NA; distance[lower.tri(distance)] <- NA
@@ -123,14 +130,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
   pcent <- pcent[del]
   strength <-  order(pcent)
   
-  # Order lon, lat and pressure of lows
-  if(verbose) print("Order cyclones by date")
-  lon <- lon[strength]
-  lat <- lat[strength]
-  date <- date[strength]
-  pcent <- pcent[strength]
-  strength <- strength[strength]
-
   # Geostrophic wind speed
   # CHECK THE UNITS
   if(verbose) print("Geostrophic wind")
@@ -138,7 +137,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
   f[abs(latXY)<10] <- NA # not valid close to equator
   rho <- 1.2922
   A <- rep(f*rho,nt); dim(A) <- c(nx-1,ny-1,nt); A <- aperm(A,c(3,1,2))
-  dpsl <- sqrt(DX^2+DY^2)*100 # SLP in hPa -> Pa, but dx and dy in m
+  dpsl <- sqrt(DX^2+DY^2)
+  if (attr(Z,"unit")=="hPa") dpsl <- dpsl*100
   wind <- dpsl/A
  
   # Find points of inflexion (2nd derivative==0) to estimate the storm radius
@@ -152,15 +152,15 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
   latXX <- rep(0.25*(latXY[2:NX,2:NY]+latXY[2:NX,1:(NY-1)]+
            latXY[1:(NX-1),2:NY]+latXY[1:(NX-1),1:(NY-1)]),nt)
   dim(latXX) <- c(NX-1,NY-1,nt); latXX <- aperm(latXX,c(3,1,2))
-  dateXX <- rep(index(Z),(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
+  dateXX <- rep(t,(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
   inflx <- DX2[,2:NX,2:NY]*DX2[,1:(NX-1),2:NY]<0 &
            DX2[,2:NX,1:(NY-1)]*DX2[,1:(NX-1),1:(NY-1)]<0 &
            !is.na(DX2[,2:NX,2:NY]*DX2[,1:(NX-1),1:(NY-1)])
   infly <- DY2[,2:NX,2:NY]*DY2[,2:NX,1:(NY-1)]<0 &
            DY2[,1:(NX-1),2:NY]*DY2[,1:(NX-1),1:(NY-1)]<0 &
            !is.na(DY2[,2:NX,2:NY]*DY2[,1:(NX-1),1:(NY-1)])
-  lon.infl <- lonXX[inflx & infly]
-  lat.infl <- latXX[inflx & infly]
+  lon.infl <- lonXX[inflx | infly]
+  lat.infl <- latXX[inflx | infly]
   date.infl <- dateXX[inflx & infly]
   radius <- rep(NA,length(date))
   max.dpsl <- rep(NA,length(date))
@@ -174,19 +174,42 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
        radius[i] <- distance[i.min]
        i.x <- which(abs(lonXY[,1]-lon[i])<=abs(lon.infl[i.infl[i.min]]-lon[i]))
        i.y <- which(abs(latXY[1,]-lat[i])<=abs(lat.infl[i.infl[i.min]]-lat[i]))
-       max.dpsl[i] <- max(dpsl[index(Z)==date[i],i.x,i.y],na.rm=T)
-       max.speed[i] <- max(wind[index(Z)==date[i],i.x,i.y],na.rm=T)
+       max.dpsl[i] <- max(dpsl[t==date[i],i.x,i.y],na.rm=T)
+       max.speed[i] <- max(wind[t==date[i],i.x,i.y],na.rm=T)
      }
   }
 
+  
+
+  if (plot) {
+    data(geoborders)
+    i <- 10; xi <- lonXY[,1]; yi <- latXY[1,]; zi <- px[i,,]
+    if (!(all(diff(xi)>0))) {xi <- rev(xi); zi <- apply(zi,2,rev)}
+    if (!(all(diff(yi)>0))) {yi <- rev(yi); zi <- t(apply(t(zi),2,rev))}
+    image(xi,yi,zi)
+    lines(geoborders)
+    for (j in seq(i,i+4)) {
+      points(lon[date==t[j]],lat[date==t[j]],pch=j)
+      #rj <- radius[date==t[j]]
+    }
+  }
+    
+
+    
+  # Check units
+  if (attr(Z,"unit")=='Pa') pcent <- pcent*1E2
+  if (inherits(index(Z),"POSIXt")) date <- strptime(date,"%Y%m%d%H%M")
+  
   # Add attributes
   attr(lon,'units') <- 'degrees'
   attr(lat,'units') <- 'degrees'
   attr(pcent,'units') <- 'hPa'
   attr(max.dpsl,'units') <- 'Pa/m'
-  attr(max.dpsl,'location') <- 'at inflexion points at lon/lat lines through storm center'
+  attr(max.dpsl,'location') <-
+    'at inflexion points at lon/lat lines through storm center'
   attr(max.speed,'units') <- 'm/s'
-  attr(max.speed,'location') <- 'at inflexion points at lon/lat lines through storm center'
+  attr(max.speed,'location') <-
+    'at inflexion points at lon/lat lines through storm center'
   attr(radius,'units') <- 'km'
   
   results <- list(lon=lon,lat=lat,tim=date,pcent=pcent,
@@ -194,6 +217,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,accuracy=NULL,
                   max.dpsl=max.dpsl,max.speed=max.speed,
                   radius=radius,dx=dx,dy=dy,
                   version="cyclones v2.1-1 (after June 3, 2015)")
-  save(file=fname,results)
+  save(file=fname,results) 
   invisible(results)
 }

@@ -56,8 +56,8 @@ spell.default <- function(x,threshold,upper=150,...) {
 
   y <- merge(Above,Below,all=TRUE)
 
-  if (attr(x,'variable')=='t2m') attr(y,'variable') <-  c("warm","cold") else
-                                 attr(y,'variable') <-  c("wet","dry")
+  if (is.T(x)) attr(y,'variable') <-  c("warm","cold") else
+               attr(y,'variable') <-  c("wet","dry")
   attr(y,'unit') <- rep("days",2)
   attr(y,'threshold') <- rep(threshold,2)
   attr(y,'threshold.unit') <- rep(attr(x,'unit'),2)
