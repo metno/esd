@@ -7,7 +7,7 @@ Package: esd
 
 Title: Climate analysis and empirical-statistical downscaling (ESD) package for monthly and daily data.
 
-Author: Rasmus E. Benestad and Abdelkader Mezghani
+Author: Rasmus E. Benestad, Abdelkader Mezghani, and Kajsa M. Parding
 
 Maintainer: Rasmus E. Benestad (rasmus.benestad-at-met.no) and Abdelkader Mezghani (abdelkader.mezghani-at-met.no)
 
