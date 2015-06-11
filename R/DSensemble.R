@@ -49,8 +49,9 @@ DSensemble.t2m <- function(y,plot=TRUE,path="~/CMIP5.monthly/",
     y <- anomaly(y)
     attr(y,'aspect') <- 'original'
   }
-  
-  ya <- annual(y,FUN=FUN,nmin=nmin*4)
+
+  if (is.null(nmin)) nmin4 <- nmin else nmin4 <- nmin*4
+  ya <- annual(y,FUN=FUN,nmin=nmin4)
   y <- as.4seasons(y,FUN=FUN,nmin=nmin)
   
 

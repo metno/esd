@@ -80,3 +80,9 @@ coldwinterdays <- function(x,dse=NULL,threshold=0,verbose=FALSE,plot=TRUE) {
   attr(Nwd,'info') <- paste('number of cold days: t2m < ',threshold)
   invisible(Nwd)
 }
+
+heatwaves <- function(x,dse=NULL,threshold=30,verbose=FALSE,plot=TRUE) {
+  ## Use the coldwinterdays algorithm, but invert all
+  hw <- coldwinterdays(-x,dse=dse,threshold=-threshold,verbose=verbose,plot=plot)
+  return(hw)
+}
