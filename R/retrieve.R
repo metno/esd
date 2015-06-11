@@ -7,11 +7,7 @@
 ## require	: zoo, summary_ncdf4 , check_ncdf4
 ## input	: a zoo field object / 3 dimensional field with dimensions (time,lon,lat)
 
-## Check if ncdf4 library exists and install it if not
-
-## if (library("ncdf4", logical.return = TRUE)) {
-##     library(ncdf4) 
-## } else install.packages("ncdf4")
+## depends on both ncdf and ncdf4 library, one of the two must be installed
 
 ## Define retrieve as method
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
@@ -27,15 +23,6 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",verbose=TRUE,...) {
     }
     
     test <- NULL
-    ## if (!library("ncdf",logical.return=TRUE)) 
-    ##    test <- try(install.packages("ncdf",repos="http://cran.rstudio.com/"))
-    ## else if (!library("ncdf4",logical.return=TRUE)) 
-    ## test <- try(install.packages("ncdf4",repos="http://cran.rstudio.com/"))
-    ## if (!is.null(test)) 
-    ##    if (grep('error',test)>0) {
-    ##        return(NULL)
-    ##        print("Library 'ncdf' or 'ncdf4' could be installed")
-    ##    }
     
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
         nc <- open.ncdf(ncfile)
@@ -500,7 +487,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     
 { # Begin of function
     ## Update argument names for internal function use only
-    ## library(ncdf)
+    
     lon.rng  <- lon
     lat.rng  <- lat
     lev.rng  <- lev
@@ -921,22 +908,19 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
 } # End of the function
 
 ## ------ check.ncdf --------
-                                        # Name		: check.ncdf4
-                                        # Description	: check the netcdf file attributes and data and update attributes if necessary for further use within ESD package.
-                                        # Author 	: A. Mezghani, METNO
-                                        # contact 	: abdelkaderm@met.no
-                                        # Last Update	: 11-04-2013 ; 17-03-2014
-                                        # require	: ncdf4
+## Name		: check.ncdf4
+## Description	: check the netcdf file attributes and data and update attributes if necessary for further use within ESD package.
+## Author 	: A. Mezghani, METNO
+## contact 	: abdelkaderm@met.no
+## Last Update	: 11-04-2013 ; 17-03-2014
+## require	: ncdf4
 
-                                        # Define check as a method
-                                        # check <- function(ncid,...) UseMethod("check")
+## Define check as a method
+## check <- function(ncid,...) UseMethod("check")
 
 ## source("esd/R/frequency.R")
 
 check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FALSE - AM 22-10-2013 not used any more ! 
-    
-    ## Load library
-    ## library(ncdf4)
     
     ## Checking : Number of variables and select only one from the netcdf file, get variable attributes in v1. The user should decide between the list of variables
     if (tolower(param) == "auto") {
@@ -1294,10 +1278,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
 }
 
 check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FALSE - AM 22-10-2013 not used any more ! 
-    
-    ## Load library
-    ## library(ncdf)
-    
+      
     ## Checking : Number of variables and select only one from the netcdf file, get variable attributes in v1. The user should decide between the list of variables
     if (tolower(param) == "auto") {
         if (ncid$nvars > 1) {
