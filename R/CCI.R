@@ -179,7 +179,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
      }
   }
 
-  if(plot) {
+  
+
+  if (plot) {
     data(geoborders)
     i <- 10; xi <- lonXY[,1]; yi <- latXY[1,]; zi <- px[i,,]
     if (!(all(diff(xi)>0))) {xi <- rev(xi); zi <- apply(zi,2,rev)}
@@ -189,8 +191,11 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     for (j in seq(i,i+4)) {
       points(lon[date==t[j]],lat[date==t[j]],pch=j)
       #rj <- radius[date==t[j]]
+    }
   }
-   
+    
+
+    
   # Check units
   if (attr(Z,"unit")=='Pa') pcent <- pcent*1E2
   if (inherits(index(Z),"POSIXt")) date <- strptime(date,"%Y%m%d%H%M")
