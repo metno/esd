@@ -13,6 +13,7 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
   attr(x,'names') <- NULL
 #  yr <- year(x)  REB: 08.09.2014
   class(x) <- 'zoo'
+  
 #  y <- aggregate(x,yr,FUN=match.fun(FUN),...,na.rm=na.rm)
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0) )
@@ -23,35 +24,20 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
       y <- aggregate(x,year,FUN=FUN,...)
   ## replace infinite values by NA
   y[which(is.infinite(y))] <- NA
+  ## Check minimum valid data points:
+  d <- dim(y)
+  if (!is.null(nmin)) {
+    ## Need to account for both multiple and single series
+    if (verbose) print(paste('nmin=',nmin))
+    nok <- coredata(aggregate(x,year,FUN='nv'))
+    ycd <- coredata(y) 
+    ycd[nok < nmin] <-  NA
+    ## If multivariate/matrix: reset dimensions
+    if (!is.null(d)) dim(ycd) <- d
+    coredata(y) <- ycd
+  }
   invisible(y)
 }
-
-#annual.station.day <- function(x,FUN=mean,na.rm=TRUE,nmin=350, ...) {
-#  attr(x,'names') <- NULL
-  #print(class(index(x)))
-#  yr <- year(x)
-#  years <- as.numeric(rownames(table(yr)))
-  #print(table(years))
-#  ndyr <- as.numeric(table(yr))
-  #print(table(ndyr))
-#  ok <- is.element(yr,years[ndyr > nmin]) 
-  #print(sum(ok))
-#  X <- zoo(x[ok,],order.by=index(x)[ok])
-#  yr <- yr[ok]
-#  attr(X,'unit') <- attr(x,'unit')
-  #print(ndyr)
-#  cls <- class(x)
-#  class(x) <- "zoo"
-#  y <- aggregate.station(X,yr,match.fun(FUN),...,na.rm=na.rm)
-#  unit <- attr(y,'unit')
-#  y <- attrcp(x,y,ignore="unit")
-#  unit -> attr(y,'unit')
-#  #str(y); print(unit)
-#  attr(y,'history') <- history.stamp(x)
-#  class(y) <- cls
-#  class(y)[2] <- "annual"
-#  invisible(y)
-#}
 
 
 
@@ -71,6 +57,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   d <- dim(x)
   if(is.null(d)) d <- c(length(x),1)
   #print(table(yr))
+  
   YR <- as.numeric(rownames(table(yr)))
   nyr <- as.numeric(table(yr))
   if (verbose) print('Number of valid data points')
@@ -80,62 +67,53 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   #print(class(x))
   # Need to accomodate for the possibility of more than one station series.
   if (inherits(x,'day')) {
-    ## Set minimum size of annual samples to default unless specified
     if (is.null(nmin)) nmin <- 30*nmo
-    ## REB 2015-06-01 the following did not work on multi-station objects:
-    #fewd <- coredata(nval) < nmin
-    #nyr[fewd] <- coredata(nval)[fewd]
-    #print(fewd)
-    #x[fewd] <- NA
-    #ok <- is.element(yr,YR[nyr >= nmin])
-    #browser()
-    ok <- coredata(nval) >= nmin
-  } else   if ( (inherits(x,'mon')) & is.null(nmin) ) {
-      iy <- year(x)
-      nmy <- as.numeric(table(iy))
-      full <- nmy[nmy==12]
-      x[is.element(iy,!full),] <- NA
-      na.rm=FALSE
-      N <- 12 
-  } else
+  }  else
   if (inherits(x,'month')) {
-    OK <- nyr == 12
-    ok <- is.element(yr,YR[OK])
+    if (is.null(nmin)) nmin <- 12
   } else if (inherits(x,'season')) {
-    OK <- nyr == 4
-    ok <- is.element(yr,YR[OK])
-  } else ok <- is.finite(yr)
-  #print(c(sum(ok),length(ok),nmin)); print(YR[is.element(YR,yr[ok])])
-  ##browser()
-  # Make a new zoo-object without incomplete years
-#  if (length(d)==2) X <- zoo(coredata(x[ok,]),order.by=index(x)[ok]) else
-#                    X <- zoo(coredata(x[ok]),order.by=index(x)[ok])
-  # REB 2015-01-16: the two commented-out lines produced errors in some cases; lines below are more robust.
+    if (is.null(nmin)) nmin <-  4
+  } 
+
+  ## Convert x to a zoo-object:
   X <- zoo(coredata(x),order.by=index(x))
-  if (sum(ok)>0) coredata(X)[!ok] <- NA 
-  #print(summary(X))
+  
+  ## Check how manye valid data points)
+  nok <- aggregate(X,year,FUN='nv')
+
   if (FUN == 'sum') na.rm <- FALSE ## AM
-  #y <- aggregate(X,yr[ok],FUN=FUN,...,na.rm=na.rm) ## AM
-  #browser()
-  #y <- aggregate(X,year,FUN==FUN,...,na.rm=na.rm) ## AM
-  #print(names(list(...))); print(names(formals(FUN)))
-  #browser()
-  #print(FUN); print(sum(is.element(names(formals(FUN)),'na.rm')))
   if (verbose) print('aggregate')
+
+  ## If threshold needed - set a default:
   if (is.null(threshold)) threshold <- 1 ## AM added 20-05-2015
-  if ((sum(is.element(names(formals(FUN)),'na.rm')==1)) | (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0))
+  if ((sum(is.element(names(formals(FUN)),'na.rm')==1)) |
+      (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0))
       y <- aggregate(X,year,FUN=FUN,...,na.rm=na.rm)
   else if (sum(is.element(names(formals(FUN)),'threshold')==1))
       y <- aggregate(X,year,FUN=FUN,...,threshold=threshold) ## AM 20-05-2015
   else
       y <- aggregate(X,year,FUN=FUN,...) # REB
   y[!is.finite(y)] <- NA ## AM
+
+  ## Flag the data with incomplete sampling as NA
+  if (nmin !=0) {
+    ## Need to account for both multiple and single series
+    if (verbose) {print(paste('nmin=',nmin)); print(nok)}
+    #nok <- coredata(aggregate(x,year,FUN='nv'))
+    ycd <- coredata(y) 
+    ycd[coredata(nok) < nmin] <-  NA
+    ## If multivariate/matrix: reset dimensions
+    if (!is.null(dim(x))) dim(ycd) <- dim(y)
+    y <- zoo(ycd,order.by=index(y))
+    if (verbose) print(paste('mask',sum(nok < nmin),'years with nv <',nmin))
+  }
+
+  ## Copy the old attributes and reset as the original class:
   y <- attrcp(x,y,ignore="names")
   args <- list(...)
   if (verbose) print(names(args))
-  ##ix0 <- grep('threshold',names(args)) ## AM modified 20-05-2015
-  ##if (length(ix0)>0) threshold <- args[[ix0]] else threshold <- 1 ## AM modified 20-05-2015
-  
+
+  ## Set appropriate units and varaible names:
   if (FUN=="count")  {
     if (verbose) print("Count")
     attr(y,'unit') <-
@@ -155,8 +133,9 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     attr(y,'variable') <- rep('mu',d[2])
     attr(y,'unit') <- rep('mm/day',d[2])
 #    n <- count(X,threshold=threshold) # REB
-    n <- aggregate(X,year,FUN='count', threshold=threshold,...,
-                   regular = regular, frequency = frequency) 
+#    n <- aggregate(X,year,FUN='count', threshold=threshold,...,
+#                   regular = regular, frequency = frequency)
+    n <- nok  # Not the count above threshold byut number of valid data points
     bad <- coredata(n)==0
     coredata(n)[bad] <- 1
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
