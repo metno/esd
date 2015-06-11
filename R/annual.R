@@ -46,9 +46,13 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
                            verbose=FALSE) { ## 
 
   if (verbose) print('annual.default')
-  if (inherits(x,'annual')) return(x)
-  nv <- function(x) sum(is.finite(x))
 
+  ## If already annual, then return
+  if (inherits(x,'annual')) return(x)
+
+  ## This line to make the function more robust.
+  if (length(grep('nmin',ls()))==0) nmin <- NULL
+  
   #browser()
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB110314
   attr(x,'names') <- NULL
@@ -60,12 +64,9 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   
   YR <- as.numeric(rownames(table(yr)))
   nyr <- as.numeric(table(yr))
-  if (verbose) print('Number of valid data points')
-  nval <- aggregate(zoo(x,order.by=index(x)),year,FUN=nv)
-  #print(c(length(nval),length(nyr),length(yr),length(YR))); plot(nval)
-  #print(YR)
-  #print(class(x))
+
   # Need to accomodate for the possibility of more than one station series.
+  
   if (inherits(x,'day')) {
     if (is.null(nmin)) nmin <- 30*nmo
   }  else
@@ -74,8 +75,9 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   } else if (inherits(x,'season')) {
     if (is.null(nmin)) nmin <-  4
   } 
-
+  
   ## Convert x to a zoo-object:
+  if (verbose) print('Number of valid data points')
   X <- zoo(coredata(x),order.by=index(x))
   
   ## Check how manye valid data points)
@@ -96,7 +98,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   y[!is.finite(y)] <- NA ## AM
 
   ## Flag the data with incomplete sampling as NA
-  if (nmin !=0) {
+  if (!is.na(nmin)) {
     ## Need to account for both multiple and single series
     if (verbose) {print(paste('nmin=',nmin)); print(nok)}
     #nok <- coredata(aggregate(x,year,FUN='nv'))

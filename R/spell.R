@@ -12,6 +12,15 @@ spell <- function(x,threshold,...) UseMethod("spell")
 spell.default <- function(x,threshold,upper=150,...) {
   x[!is.finite(x)] <- 0
   above <- coredata(x) > threshold
+  below <- coredata(x) <= threshold
+
+  ## Check if threshold is outside the range of data:
+  if (sum(above)*sum(below)==0) {
+    print(paste('The threshold',threshold,'is outside the range',
+                paste(range(coredata(x,na.rm=TRUE)),collapse=' - ')))
+    return(NULL)
+  }
+  
   n <- length(index(x))
   t <- 1:n
   cth <- cumsum(above)
@@ -22,11 +31,12 @@ spell.default <- function(x,threshold,upper=150,...) {
   #print(summary(dt))
   start <- t[dt > 0]
   end <- t[dt < 0]
+  
   #dev.new(); hist(diff(start),col="blue",breaks=0:60)
   #dev.new(); hist(diff(end),col="red",breaks=0:60)
   #print(c(length(start),length(end)))
 
-  # Always start with a fresh spell
+  ## Always start with a fresh spell
   if (start[1] > end[1]) {
     end <- end[-1]
   }
@@ -73,6 +83,7 @@ spell.default <- function(x,threshold,upper=150,...) {
 
 spell.station <-  function(x,threshold,upper=150,...) {
   y <- spell.default(x,threshold=threshold,upper=upper,...)
+  if (is.null(y)) return(y)
   y <- attrcp(x,y,ignore=c("variable","unit"))
   natr <- names(attributes(y))
   for (i in 1:length(natr)) 
