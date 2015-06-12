@@ -135,46 +135,94 @@ diagnose.ds <- function(x,plot=FALSE) {
   return(diagnostics)
 }
 
-# Show the temperatures against the day of the year. Use
-# different colours for different year.
-diagnose.station <- function(x,it=NULL,...) {
-  yrs <- as.numeric(rownames(table(year(x))))
-  #print(yrs)
-  ny <- length(yrs)
-  j <- 1:ny
-  col <- rgb(j/ny,abs(sin(pi*j/ny)),(1-j/ny),0.2)
-  class(x) <- "zoo"
 
-  if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
-      unit <- expression(degree*C) else
-      unit <- attr(x,'unit')
-  eval(parse(text=paste("main <- expression(paste('Seasonal evaution: ',",
-               attr(x,'variable'),"))")))
-  dev.new()
+diagnose.station <- function(x,main='Data availability',
+                            xlab='',ylab='station',
+                            sub=src(x),...) {
+  d <- dim(x)
+  if (is.null(d)) {
+    z <- diagnose.distr(x,...)
+    return(z)
+  }
+  par(mar=c(5, 4, 4, 5),las=1,xpd=TRUE,cex.lab=0.5,cex.axis=0.5)
+  
+  image(index(x),1:d[2],coredata(x),
+        main=main,xlab=xlab,ylab=ylab,
+        sub=sub,...)
+  axis(4,at=1:d[2],labels=substr(loc(x),1,6),cex.lab=0.5,col='grey')
+  par(xpd=FALSE)
+  nyrs <- length(rownames(table(year(x))))
+  grid(nx=nyrs,ny=d[2])
+}
+
+
+
+diagnose.mvr <- function(x) {
+  print("Not finished")
+}
+
+diagnose.cca <- function(x) {
   par(bty="n")
-  z <- coredata(x)
-  plot(c(0,365),1.25*range(z,na.rm=TRUE),
-       type="n",xlab="",
-       main=main,
-       sub=attr(x,'location'),ylab=unit)
+  plot(x$r,pch=19,cex=1.5,main="Canonical correlations",
+       ylim=c(-1,1),ylab="correlation",xlab="pattern number")
+  lines(c(0,length(x$r)),rep(0,2),col="grey")
   grid()
-  for (i in 1:ny) {
-    y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
-                    end=as.Date(paste(yrs[i],'-12-31',sep='')))
-    t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
-    points(t,coredata(y),lwd=2,col=col[i],pch=19,cex=0.5)
-  }
-  if (!is.null(it)) {
-    y <- window(x,start=as.Date(paste(it,'-01-01',sep='')),
-                    end=as.Date(paste(it,'-12-31',sep='')))
-    t <- julian(index(y)) - julian(as.Date(paste(it,'-01-01',sep='')))
-  }
-  points(t,coredata(y),col="black",cex=0.7)
+}
 
-  par(new=TRUE,fig=c(0.70,0.85,0.70,0.85),mar=c(0,3,0,0),
-      cex.axis=0.7,yaxt="s",xaxt="n",las=1)
-  colbar <- rbind(1:ny,1:ny)
-  image(1:2,yrs,colbar,col=col)
+# Display cross-validation and statistics on the residual
+diagnose.ds <- function(x,plot=FALSE) {
+
+  ## the attribute 'evaluation' contains cross-validation
+  if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
+                                      xval <- crossval(x)
+  ## Check the residuals
+  y <- as.residual(x)
+  z <- as.original.data(x)
+  anova <- summary(attr(x,'model'))
+  eof <- attr(x,'eof')
+  if (inherits(eof,'comb')) bias.diag <- diagnose(eof) else
+                            bias.diag <- NULL
+
+  spectrum(coredata(y),plot=FALSE) -> s
+  sp <- data.frame(y=log(s$spec),x=log(s$freq))
+  if (length(dim(y))==0) {
+    beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
+    beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
+    ar1 <- acf(y,plot=FALSE)$acf[2]
+  } else {beta <- NA; beta.error <- NA; ar1 <- NA}
+  
+  if (plot) {
+    ## Timer series of the residual
+    dev.new()
+    par(bty="n",mfcol=c(3,2))
+    plot(xval,plot.type='single',col=c("blue","red"),
+         main='cross-validation',
+         sub=paste('correlation=',round(cor(xval)[2,1],2)))
+
+    plot(y,main='contains a trend?')
+    lines(trend(y))
+    
+    ## Auto-correlation of the residual
+    ar <- acf(y,plot=FALSE)
+    plot(ar$lag,ar$acf,type='b',main='Residual ACF?')
+
+    ## Rsidual correlated with original data?
+    plot(coredata(z),coredata(y),main='Residual correlated with original data?')
+  
+    sp <- spectrum(y,plot=FALSE)
+    plot(sp$freq,sp$spec,type='l',main='Residual power-spectrum',log='xy')
+
+    ## Residual normally distributed?
+    qqnorm(y,main='Residual normally distributed?')
+    qqline(y)
+
+    if  (!is.null(attr(x,'diagnose'))) 
+      plot(attr(x,'diagnose'))
+  }
+  
+  diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,
+                      ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error)
+  return(diagnostics)
 }
 
 
@@ -247,4 +295,139 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
 
   invisible(diag)
 }
+
+
+diagnose.distr <- function(x,main=NULL,
+                           xlab='mean',ylab=expression(q[p]),
+                           sub=src(x),probs=0.95,plot=TRUE) {
+  x0 <- x
+  if (is.T(x)) {
+    y <- anomaly(x)
+    djf <- subset(y,it='djf')
+    mam <- subset(y,it='mam')
+    jja <- subset(y,it='jja')
+    son <- subset(y,it='son')
+    m.djf <- aggregate(djf,year,FUN='mean',na.rm=TRUE)
+    q.djf <- aggregate(djf,year,FUN='quantile',probs=probs,na.rm=TRUE)
+    m.mam <- aggregate(mam,year,FUN='mean',na.rm=TRUE)
+    q.mam <- aggregate(mam,year,FUN='quantile',probs=probs,na.rm=TRUE)
+    m.jja <- aggregate(jja,year,FUN='mean',na.rm=TRUE)
+    q.jja <- aggregate(jja,year,FUN='quantile',probs=probs,na.rm=TRUE)
+    m.son <- aggregate(son,year,FUN='mean',na.rm=TRUE)
+    q.son <- aggregate(son,year,FUN='quantile',probs=probs,na.rm=TRUE)
+
+    x <- c(coredata(m.djf),coredata(m.mam),coredata(m.jja),coredata(m.son))
+    y <- c(coredata(q.djf),coredata(q.mam),coredata(q.jja),coredata(q.son))
+    col <- c(rep(rgb(0.2,0.2,0.6,0.3,length(m.djf))),
+             rep(rgb(0.1,0.6,0.1,0.3,length(m.mam))),
+             rep(rgb(0.7,0.7,0.1,0.3,length(m.jja))),
+             rep(rgb(0.7,0.5,0.5,0.3,length(m.son))))
+    par(bty='n')
+    r <- cor.test(x,y)
+    if (is.null(main)) main <- paste(loc(x0),'T(2m): mean v.s. quantile')
+    model.djf <- lm(coredata(q.djf) ~ coredata(m.djf))
+    model.mam <- lm(coredata(q.mam) ~ coredata(m.mam))
+    model.jja <- lm(coredata(q.jja) ~ coredata(m.jja))
+    model.son <- lm(coredata(q.son) ~ coredata(m.son))
+    signf <- c(rep(summary(model.djf)$coefficients[8] < 0.05,length(m.djf)),
+               rep(summary(model.mam)$coefficients[8] < 0.05,length(m.mam)),
+               rep(summary(model.jja)$coefficients[8] < 0.05,length(m.jja)),
+               rep(summary(model.son)$coefficients[8] < 0.05,length(m.son)))
+
+    if (plot) {
+      plot(x,y,main=main,xlab=xlab,ylab=ylab,col=col,pch=19,
+           sub=paste('Anomaly: p=',probs,'; r=',round(r$estimate,3),' [',
+                     round(r$conf.int[1],3),', ',round(r$conf.int[1],3),']',sep=''))
+
+      abline(model.djf,col=rgb(0.2,0.2,0.6))
+      abline(model.mam,col=rgb(0.1,0.6,0.1))
+      abline(model.jja,col=rgb(0.7,0.7,0.1))
+      abline(model.son,col=rgb(0.7,0.5,0.5))
+      grid()
+      points(x[signf],y[signf])
+      legend(min(x),max(y),c(paste('DJF',round(model.djf$coefficients[2],3)),
+                             paste('MAM',round(model.mam$coefficients[2],3)),
+                             paste('JJA',round(model.jja$coefficients[2],3)),
+                             paste('SON',round(model.son$coefficients[2],3))),pch=19,
+               col=c(rgb(0.2,0.2,0.6),rgb(0.1,0.6,0.1),
+                     rgb(0.7,0.7,0.1),rgb(0.7,0.5,0.5)),bty='n')
+      text(max(x),min(y),expression(q[p]==mu + sigma*sqrt(2)*erf^-1 *(2*p - 1)),
+           pos=2,col='grey')
+    }
+    invisible(list(DJF=model.djf,MAM=model.mam,JJA=model.jja,SON=model.son))
+  }
+}
+
+
+
+diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
+  # Trend-evaluation: rank
+  # Counts outside 90% confidence: binomial distrib. & prob.
+  stopifnot(!missing(x),inherits(x,"dsensemble"))
+  z <- x
+  # Remove the results with no valid data:
+  n <- apply(z,2,FUN=nv)
+  z <- subset(z,is=(1:length(n))[n > 0])
+  
+  d <- dim(z)
+  t <- index(z)
+  y <- attr(x,'station')
+  
+  # statistics: past trends
+  #browser()
+  i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
+  i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
+  obs <- data.frame(y=y[i1],t=year(y)[i1])
+  #print(summary(obs)); print(sum(i1)); print(sum(i2)); browser()
+  deltaobs <- lm(y ~ t,data=obs)$coefficients[2]*10  # deg C/decade
+  deltagcm <- rep(NA,d[2])
+  for (j in 1:d[2]) {
+    gcm <- data.frame(y=z[i2,j],t=year(z)[i2])
+    deltagcm[j] <- lm(y ~ t,data=gcm)$coefficients[2]*10  # deg C/decade
+  }
+  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
+  #print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])
+
+  # apply to extract mean and sd from the selected objects:
+  mu <- apply(coredata(z),1,mean,na.rm=TRUE)
+  si <- apply(coredata(z),1,sd,na.rm=TRUE)
+  q05 <- qnorm(0.05,mean=mu,sd=si)
+  q95 <- qnorm(0.95,mean=mu,sd=si)
+  # number of points outside conf. int. (binom)
+  above <- y[i1] > q95[i2]
+  below <- y[i1] < q05[i2]
+  #browser()
+  outside <- sum(above) + sum(below)
+  N <- sum(i1)
+  
+  if (plot) {
+    x <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
+    y <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),sd=sd(deltagcm))),2)
+    #print(c(x,y))
+    
+    par(bty="n",xaxt="n",yaxt="n")
+    plot(c(-100,100),c(-100,100),type="n",ylab="magnitude",xlab="trend")
+    
+    bcol=c("grey95","grey40")
+    for (i in 1:10) {
+      r <- (11-i)*10
+      polygon(r*cos(pi*seq(0,2,length=360)),
+              r*sin(pi*seq(0,2,length=360)),
+              col=bcol[i %% 2 + 1],border="grey15")
+    }
+    for (i in seq(0,90,by=1))
+      points(x,y,pch=19,cex=2 - i/50,col=rgb(i/90,0,0))
+  }
+  diag <- list(robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
+               outside=outside,above=above,below=below,
+               y=y[i1],N=N,i1=i1,
+               mu=zoo(mu,order.by=index(x)),
+               si=zoo(si,order.by=index(x)),
+               q05=zoo(q05,order.by=index(x)),
+               q95=zoo(q95,order.by=index(x)))
+  attr(diag,'history') <- history.stamp(x)
+
+  invisible(diag)
+}
+
 

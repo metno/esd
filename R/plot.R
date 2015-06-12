@@ -1011,14 +1011,22 @@ plot.spell <- function(x,xlim=NULL,ylim=NULL) {
     spelltype <- 'wet and dry' 
   }
 
+  tunit <- attr(x,'threshold.unit')[1]
+  for (i in 1:length(tunit)) {
+    if ( (is.na(tunit[i]) | is.null(tunit[i])) ) tunit[i] <- " "
+    if ((tunit[i]=='degree Celsius') | (tunit[i]=='deg C') | (tunit[i]=='degC'))
+         tunit[i] <- 'degree*C'
+  }
+
+
   plot(range(t),c(-1,1)*max(c(h,l),na.rm=TRUE),type="n",
        xlab="",ylab="Spell length",xlim=xlim,ylim=ylim,
        main=paste(attr(x,'location')[1],": ",spelltype[1],sep=""))
   leg <- eval(parse(text=paste("expression(paste(X > ",
-                      attr(x,'threshold'),"*",attr(x,'threshold.unit'),"))")))
+                      attr(x,'threshold'),"*",tunit,"))")))
   text(t[1],0.75*max(c(h,l),na.rm=TRUE),leg,srt=90,cex=0.7,col="grey")
   leg <- eval(parse(text=paste("expression(paste(X <= ",
-                      attr(x,'threshold'),"*",attr(x,'threshold.unit'),"))")))
+                      attr(x,'threshold'),"*",tunit,"))")))
   text(t[1],-0.75*max(c(h,l),na.rm=TRUE),leg,srt=90,cex=0.7,col="grey")
   lines(range(t),rep(0,2))
   apply(cbind(th1,rep(0,length(h)),th2,h),1,bar,col[1])
