@@ -633,7 +633,7 @@ colscal <- function(n=14,col="t2m",alpha=NULL,test=FALSE) {
     if (is.null(alpha)) col <- rgb(b,g,r)  else
                         col <- rgb(r,g,b,alpha)
   } else if ( (col[1]=="t2m") | (col[1]=="tmax") | (col[1]=="tmin") |
-             (col[1]=="sst")  | (col[1]=="air") ){
+             (col[1]=="sst")  | (col[1]=="air") | (col[1]=="tas") {
     r <- approx(seNorgeT[1,],n=n)$y/255
     g <- approx(seNorgeT[2,],n=n)$y/255
     b <- approx(seNorgeT[3,],n=n)$y/255
@@ -869,8 +869,8 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
 
   ## If y is provided, synchronise the two time series:
   if (!is.null(y)) {
-    y <- matchdate(y,x)
-    x <- matchdate(x,y)
+    y <- subset(y,,it=c(start(x),end(x)))
+    x <- subset(x,it=c(start(y),end(y)))
     y <- annual(y)
   } else y <- year(annual(x))
   mu <- aggregate(x,year,FUN='wetmean',threshold=threshold)
@@ -887,7 +887,7 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
   plot(range(breaks),c(0,max(z,na.rm=TRUE) + length(y)*dy),type='n',
   ylab='f(x)',xlab=paste(varid(x),unit(x)),
        main=paste('Statistical distribution for',loc(x)),...)
-  for (i in 1:length(y)) {
+  for (i in seq(length(y),1,by=-1)) {
     lines(mids,z[i,]+dy*i,col="grey",lwd=5)
     lines(mids,z[i,]+dy*i,col=col[i],lwd=4)
   }
@@ -897,6 +897,8 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
             col='black',lty=2)
     }
   }
+  if (!is.null(loc(y)))
+    text(par()$xaxp[2],par()$yaxp[2],loc(y),pos=2)
 }
 
   
