@@ -81,7 +81,13 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,verbose=FALSE,plot=TR
   invisible(Nwd)
 }
 
-heatwaves <- function(x,dse=NULL,it='jja',threshold=30,verbose=FALSE,plot=TRUE) {
+coldspells <- function(x,dse=NULL,it='jja',threshold=30,verbose=FALSE,plot=TRUE) {
+}
+
+hotsummerdays <- function(x,dse=NULL,it='djf',threshold=0,verbose=FALSE,plot=TRUE) {
+}
+
+heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,verbose=FALSE,plot=TRUE) {
   ## Use the 
   if (verbose) print('heatwaves')
   stopifnot(inherits(x,'station'))
