@@ -633,7 +633,7 @@ colscal <- function(n=14,col="t2m",alpha=NULL,test=FALSE) {
     if (is.null(alpha)) col <- rgb(b,g,r)  else
                         col <- rgb(r,g,b,alpha)
   } else if ( (col[1]=="t2m") | (col[1]=="tmax") | (col[1]=="tmin") |
-             (col[1]=="sst")  | (col[1]=="air") | (col[1]=="tas") {
+             (col[1]=="sst")  | (col[1]=="air") | (col[1]=="tas") ) {
     r <- approx(seNorgeT[1,],n=n)$y/255
     g <- approx(seNorgeT[2,],n=n)$y/255
     b <- approx(seNorgeT[3,],n=n)$y/255
