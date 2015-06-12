@@ -13,7 +13,7 @@
 }
 \usage{
 %retrieve.default(...)
-retrieve.default(ncfile,...)
+retrieve.default(ncfile,type="ncdf",...)
 retrieve.ncdf(ncfile = ncfile, path = path , param = "auto",
                lon = NULL, lat = NULL, lev = NULL, it = NULL,
                miss2na = TRUE, greenwich = TRUE,
@@ -32,6 +32,7 @@ check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
 \arguments{
   \item{ncfile}{A character string of full path netcdf file name
   (include the path if necessary) or any object of class 'ncdf' or 'ncdf4'.}
+  \item{type}{The type of the NetCDF format to be returned as "ncdf" or "ncdf4".}
   \item{ncid}{An object of class 'ncdf' or 'ncdf4'.}
   \item{lon}{Numeric value of longitude for the reference point (in decimal degrees East) or a vector containing the range of longitude values in the form of c(lon.min,lon.max)}
   \item{lat}{Numeric value of latitude for the reference point (in decimal degrees North) or a vector containing the range of latitude values in the form of c(lat.min,lat.max)}
