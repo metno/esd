@@ -10,8 +10,25 @@ spell <- function(x,threshold,...) UseMethod("spell")
 
 
 spell.default <- function(x,threshold,upper=150,...) {
-  x[!is.finite(x)] <- 0
-  above <- coredata(x) > threshold
+  z <- coredata(x)
+  ## Deal with missing data
+  missing <- !is.finite(z)
+  ## Use interpolation to fill in
+  if (sum(missing)>0) print(paste('Warning: ',sum(missing),
+                                  'missing values filled by interpolation'))
+  z <- approx(x=index(x)[!missing],y=z[!missing],xout=index(x))$y
+  
+  above <- z > threshold
+  below <- z <= threshold
+
+  ## Check if threshold is outside the range of data:
+  
+  if (sum(above,na.rm=TRUE)*sum(below,na.rm=TRUE)==0) {
+    print(paste('The threshold',threshold,'is outside the range',
+                paste(range(coredata(x,na.rm=TRUE)),collapse=' - ')))
+    return(NULL)
+  }
+  
   n <- length(index(x))
   t <- 1:n
   cth <- cumsum(above)
@@ -22,11 +39,12 @@ spell.default <- function(x,threshold,upper=150,...) {
   #print(summary(dt))
   start <- t[dt > 0]
   end <- t[dt < 0]
+  
   #dev.new(); hist(diff(start),col="blue",breaks=0:60)
   #dev.new(); hist(diff(end),col="red",breaks=0:60)
   #print(c(length(start),length(end)))
 
-  # Always start with a fresh spell
+  ## Always start with a fresh spell
   if (start[1] > end[1]) {
     end <- end[-1]
   }
@@ -39,6 +57,7 @@ spell.default <- function(x,threshold,upper=150,...) {
   chksum <- sum( (start - end) < 0)    
   #print(c(length(start),length(end)))
   #dev.new(); plot(start,end,pch="."); lines(c(0,100000),c(0,100000),col="grey")
+  browser()
   
   low <- t[start[-1]] - t[end[-length(end)]]
   high <- t[end] - t[start]
@@ -65,7 +84,7 @@ spell.default <- function(x,threshold,upper=150,...) {
   attr(y,'uncredibly.high') <- rep(t[ignoreh],2)
   attr(y,'uncredibly.low') <- rep(t[ignorel],2)
   attr(y,'p.above') <- rep(sum(above)/length(above),2)
-
+  attr(y,'interpolated.missing') <- index(x)[missing]
   class(y) <- c("spell",class(x))
   invisible(y)
 }
@@ -73,6 +92,7 @@ spell.default <- function(x,threshold,upper=150,...) {
 
 spell.station <-  function(x,threshold,upper=150,...) {
   y <- spell.default(x,threshold=threshold,upper=upper,...)
+  if (is.null(y)) return(y)
   y <- attrcp(x,y,ignore=c("variable","unit"))
   natr <- names(attributes(y))
   for (i in 1:length(natr)) 
