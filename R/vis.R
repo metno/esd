@@ -1241,6 +1241,8 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.01,...) {
 ## Plot the histogram for each year in different colours, depending on y. Iy y
 ## is NULL, use the year to set the colour
 
+## Get the version from PC4409!
+
 
   if (is.null(y)) y <- year(annual(x))
   col <- colscal(n=length(y))
@@ -1252,9 +1254,9 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.01,...) {
   mu <- aggregate(x,year,FUN='wetmean',threshold=threshold)
   mids <- 0.5*(breaks[-1] + breaks[-length(breaks)])
   par(bty='n')
-  plot(range(breaks),c(0,max(z) + length(year(x))*dy),type='n',
+  plot(range(breaks),c(0,max(z) + length(y)*dy),type='n',
   ylab='f(x)',xlab=paste(varid(x),unit(x)),main=paste('Statistical distribution for',loc(x)))
-  for (i in 1:length(year(x))) {
+  for (i in 1:length(y)) {
     lines(mids,z[i,]+dy*i,col=col[i],lwd=3)
     lines(mids,dy*i + exp(-mids/coredata(mu[i]))/coredata(mu[i]),
           col=col[i],lty=2)
