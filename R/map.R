@@ -153,6 +153,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   attr(X,'unit') <- attr(x,'unit')[1]
   attr(X,'source') <- attr(x,'source')
   attr(X,'time') <- range(index(x))
+  col <- colbar$col
   if ( (pattern==1) & !is.null(attr(x, "area.mean.expl")) )
     if (attr(x, "area.mean.expl")) type="fill"
   if (projection=="lonlat") lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
