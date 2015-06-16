@@ -66,7 +66,7 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 map2sphere <- function(x,it=NULL,is=NULL,
                        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                        lonR=NULL,latR=NULL,axiR=0,new=TRUE,
-                       what=c("fill","contour"),
+                       type=c("fill","contour"),
                        colbar=list(col=NULL, breaks=NULL, type="r",
                               cex=2, h=0.6, v=1),
                        gridlines=TRUE,fancy=FALSE,verbose=FALSE,...) {

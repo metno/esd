@@ -2,7 +2,8 @@
 ## Last update   16.02.2015
 ## Require 	 geoborders.rda
 
-map.trajectory <- function(x,it=NULL,is=NULL,type="paths",projection="sphere",...) {
+map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
+                           projection="sphere",...) {
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
   if (type=='paths' | is.null(type)) {
@@ -14,10 +15,10 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="paths",projection="sphere",..
       lonlat.trajectory(y,...)                
     } 
   } else if (type=='density') {
-    map.density.trajectory(x,...)
+    map.density.trajectory(y,projection=projection,...)
   } else if (type=='shapes') {
-    map.anomaly.trajectory(x,...)
-  }
+    map.anomaly.trajectory(y,projection=projection,...)
+  } else print("unkown map type")
 }
 
 map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
@@ -189,13 +190,13 @@ sphere.trajectory <- function(x,
 
 
 map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
-      n=150,col=rev(colscal('precip',n=30)),projection='sphere',
-      latR=90,lonR=10,gridlines=FALSE,...) {
-  stopifnot(is.trajectory(x))
+      n=150,breaks=NULL,col=rev(colscal('precip',n=30)),
+      projection='sphere',latR=90,lonR=10,gridlines=FALSE,...) {
+  stopifnot(is.trajectory(x) | )
   x <- subset(x,it=it,is=is)
   X <- trajectory2field(x,dt='year',dx=dx,dy=dy,n=n)
-  map(X,col=col,projection=projection,latR=latR,lonR=lonR,
-      gridlines=gridlines,...)
+  map(X,colbar=list(col=col,breaks=breaks,type="r",cex=2,h=0.6,v=1),
+      projection=projection,latR=latR,lonR=lonR,gridlines=gridlines,...)
 }
 
 
