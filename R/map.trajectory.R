@@ -192,7 +192,7 @@ sphere.trajectory <- function(x,
 map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
       n=150,breaks=NULL,col=rev(colscal('precip',n=30)),
       projection='sphere',latR=90,lonR=10,gridlines=FALSE,...) {
-  stopifnot(inherits(x,c("trajectory","field"))
+  stopifnot(inherits(x,c("trajectory","field")))
   x <- subset(x,it=it,is=is)
   if (!inherits(x,"field")) {
     X <- trajectory2field(x,dt='year',dx=dx,dy=dy,n=n)
