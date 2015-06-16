@@ -116,8 +116,8 @@ map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   if (tolower(varid(x))=='precip') col <- rev(col) 
   
   map.eof(x=x,xlim=xlim,ylim=ylim,zlim=zlim,pattern=pattern,
-          n=n,projection=projection,col=col,new=new,
-          breaks=breaks,lonR=lonR,latR=latR,axiR=axiR,type=type,
+          n=n,projection=projection,colbar=colbar,new=new,
+          lonR=lonR,latR=latR,axiR=axiR,type=type,
           gridlines=gridlines,verbose=verbose,...) -> result
   invisible(result)
  }
