@@ -85,20 +85,20 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
 
 plot.eof <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
-                     pattern=1,what=c("pc","eof","var"),colorbar=FALSE,...) {
+                     pattern=1,what=c("pc","eof","var"),colbar=NULL,...) {
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
-                  pattern=pattern,what=what,colorbar=colorbar,...) else
+                  pattern=pattern,what=what,colbar=colbar,...) else
   if (inherits(x,"field"))
     plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
-                   pattern=pattern,what=what,colorbar=colorbar,...)
+                   pattern=pattern,what=what,colbar=colbar,...)
 }
 
 
 
 
 plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
-                           what=c("pc","eof","var"),colorbar=FALSE,
+                           what=c("pc","eof","var"),colbar=NULL,
                            verbose=FALSE,...) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   n <- pattern
@@ -117,7 +117,7 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
   if (length(grep('eof',what))>0) {
     if (verbose) {print('Show map'); print(class(x))}
     if (inherits(x,'pca')) par(fig=c(0,0.45,0.5,0.975))
-    map(x,pattern=pattern,new=FALSE,colorbar=FALSE,verbose=verbose,...)
+    map(x,pattern=pattern,new=FALSE,colbar=colbar,verbose=verbose,...)
     if (inherits(x,'pca')) par(new=TRUE,fig=c(0.5,0.95,0.5,0.95))
     
   }
@@ -153,7 +153,7 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
 
 plot.eof.comb <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
                           pattern=1,col=c("red"),
-                          what=c("pc","eof","var"),colorbar=FALSE,...) {
+                          what=c("pc","eof","var"),colbar=NULL,...) {
   #print("plot.eof.comb")
   n <- pattern
   D <- attr(x,'eigenvalues')
@@ -168,7 +168,7 @@ plot.eof.comb <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
   par(mfrow=mfrow,mar=c(0.5,0.5,2.5,0.5),bty="n",xaxt="n",yaxt="n")
 
   if (length(grep('eof',what))>0)
-    map(x,pattern=pattern,new=TRUE,colorbar=colorbar)
+    map(x,pattern=pattern,new=TRUE,colbar=colbar)
 
   n.app <- attr(x,'n.apps')
   col <- rep(col,n.app)
@@ -544,15 +544,15 @@ plot.pca <- function(y,verbose=FALSE,...) {
   plot.eof.field(y,verbose=verbose,new=TRUE,...)
 }
 
-plot.ds.pca <- function(y,pattern=1,verbose=FALSE,...) {
+plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   if (verbose) print('plot.ds.pca')
   attr(y,'longname') <- attr(y,'longname')[1]
 #  par(fig=c(0,0.45,0.5,0.975),new=TRUE)
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
-  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colorbar=FALSE,...)
+  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,...)
   title(paste("PCA Pattern # ",pattern,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
-  map(attr(y,'predictor.pattern'),new=FALSE,colorbar=FALSE,verbose=verbose)
+  map(attr(y,'predictor.pattern'),new=FALSE,colbar=colbar,verbose=verbose)
   title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
@@ -684,12 +684,12 @@ plot.mvr <- function(x) {
 }
 
 
-plot.cca <- function(x,icca=1,...) {
+plot.cca <- function(x,icca=1,colbar=NULL,...) {
   #print("plot.cca")
   ## browser()
   dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
-  map.cca(x,icca=icca,colorbar=FALSE,...)
+  map.cca(x,icca=icca,colbar=colbar,...)
 
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
              sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
