@@ -51,8 +51,8 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   if (class(index(y))=="yearqtr") cls[length(cls) - 1] <- "qtr" else
   if (class(index(y))=="numeric") cls[length(cls) - 1] <- "annual" else
   if (class(index(y))=="character") cls[length(cls) - 1] <- "annual"
-  if ( (length(yr) <= 12) and (class(index(y))=="numeric") and 
-       (min(yr) >= 1) and (max(yr) <= 12) ) cls[length(cls) - 1] <- "seasonalcycle"
+  if ( (length(yr) <= 12) & (class(index(y))=="numeric") & 
+       (min(yr) >= 1) & (max(yr) <= 12) ) cls[length(cls) - 1] <- "seasonalcycle"
   class(y) <- cls
   y <- attrcp(x,y)
 
