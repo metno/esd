@@ -562,8 +562,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   data("geoborders",envir=environment())
   if(sum(is.finite(x))==0) stop('No valid data')
   ## To deal with grid-conventions going from north-to-south or east-to-west:
-  srtx <- order(attr(x,'longitude')); lon <- lon(x)[srtx]
-  srty <- order(attr(x,'latitude'));  lat <- lat(x)[srty]
+  srtx <- order(lon(x)); lon <- lon(x)[srtx]
+  srty <- order(lat(x));  lat <- lat(x)[srty]
   if (verbose) print('meta-stuff')
   unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
   if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") )
@@ -594,8 +594,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     }
     period <- paste('[',t1,', ',t2,']',sep='')
   } else period <- NULL
-  if (verbose) print(period)
+  if (verbose) print(paste('period:',period))
   method <- attr(x,'method')
+  if (verbose) print(c(dim(x),length(srtx),length(srty)))
+  browser()
   x <- x[srtx,srty]
   if (verbose) {print(xlim); str(x)}
   if (!is.null(xlim)) {
