@@ -637,12 +637,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
       
   if (new) {
     #dev.new()
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-        fig=c(0.05,0.95,0.13,0.95),mar=rep(1,4))
+    # REB 2015-06-17
 #    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-#        fig=c(0.05,0.95,0.12,0.95))
+#        fig=c(0.05,0.95,0.13,0.95),mar=rep(1,4))
+##    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+##        fig=c(0.05,0.95,0.12,0.95))
   } else {
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,mar=rep(1,4))
+#    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,mar=rep(1,4))
 #    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
   }
 
