@@ -739,6 +739,12 @@ colscal <- function(n=14,col="t2m",alpha=NULL,test=FALSE) {
     col <- topo.colors(n)
   } else if (col[1]=="cm.colors") {
     col <- cm.colors(n)
+  } else {
+    r <- approx(seNorgeT[1,],n=n)$y/255
+    g <- approx(seNorgeT[2,],n=n)$y/255
+    b <- approx(seNorgeT[3,],n=n)$y/255
+    if (is.null(alpha)) col <- rgb(r,g,b)  else
+                        col <- rgb(r,g,b,alpha)
   }
 
   if (test) { #& !exists("r")) {
