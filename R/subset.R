@@ -12,8 +12,8 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
 
-subset.comb <- function(x,it=NULL,is=NULL) {
-                                        #print("subset.comb")
+subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+    if (verbose) print("subset.comb")
     y <- subset.field(x,it=it,is=is)
     y <- attrcp(x,y)
     n.app <- attr(x,'n.apps')
@@ -229,7 +229,8 @@ subset.pca <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
 }
 
 
-subset.corfield <- function(x,it=NULL,is=NULL) {
+subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+    if (verbose) print('nsubset.corfield - not finished - return original data')
     x
 }
 
