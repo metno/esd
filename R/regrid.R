@@ -290,8 +290,11 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   }
   #print("set attributes:")
   y <- zoo(t(y),order.by=index(x))
-  if ( (is.station(is)) | (is.field(is)) ) class(y) <- class(is) else
-                                           class(y) <- class(x)
+  if ( (is.station(is)) | (is.field(is)) ) {
+    class(y) <- class(is)
+    class(y)[2] <- class(x)[2]
+  }  else class(y) <- class(x)
+  
   #mostattributes(y) <- attributes(x)
   #nattr <- softattr(x,ignore=c('longitude','latitude','dimensions'))
   #for (i in 1:length(nattr))
