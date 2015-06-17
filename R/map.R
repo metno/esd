@@ -564,7 +564,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   ## To deal with grid-conventions going from north-to-south or east-to-west:
   srtx <- order(attr(x,'longitude')); lon <- lon(x)[srtx]
   srty <- order(attr(x,'latitude'));  lat <- lat(x)[srty]
-  #print('meta-stuff')
+  if (verbose) print('meta-stuff')
   unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
   if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") )
     unit <- "degree*C"
@@ -577,9 +577,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   if (sum(is.element(type,'fill'))==0) colbar <- NULL
                                       
-  #print('time')
+  if (verbose) print('time')
   if (!is.null(attr(x,'timescale'))) {
-    #print(attr(x,'timescale'))
+    if (verbose) print(attr(x,'timescale'))
     timescale <- attr(x,'timescale')
     if (timescale == 'annual') {
       t1 <- year(attr(x,'time'))[1]
@@ -594,10 +594,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     }
     period <- paste('[',t1,', ',t2,']',sep='')
   } else period <- NULL
-  #print(period)
+  if (verbose) print(period)
   method <- attr(x,'method')
   x <- x[srtx,srty]
-  #print("HERE"); print(xlim); str(x)
+  if (verbose) {print(xlim); str(x)}
   if (!is.null(xlim)) {
     outside <- (lon < xlim[1]) | (lon > xlim[2])
     x[outside,] <- NA
@@ -610,10 +610,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
   if (!is.null(col))
     if (length(col)>1) n <- length(col)
-  #print(n); print(summary(c(x)))
+  if (verbose) {print(n); print(summary(c(x)))}
   if (is.null(breaks))
     breaks <- pretty(c(x),n=n)
-  #print(breaks)
+  if (verbose) print(breaks)
 
   if (is.null(col)) col <- colscal(n=length(breaks)-1,col=colid) else
   if (length(col)==1) {
@@ -624,7 +624,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     breaks <- seq(min(c(x),na.rm=TRUE),max(c(x),na.rm=TRUE),
                   length=length(col)+1)
                       
-  #print(variable)
+  if (verbose) print(variable)
 #  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
    if (colid=='precip') col <- rev(col)
   
