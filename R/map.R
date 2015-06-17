@@ -351,7 +351,8 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     if (verbose) {print(zlim); print(dim(x)); print(sum(mask))}
   }
 
-  if (verbose) print(projection)
+  if (verbose) {print(projection); print(dim(x))}
+  
   if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                              colbar=colbar,type=type,new=new,
                                              gridlines=gridlines,...) else
