@@ -337,12 +337,13 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
   if (verbose) print("map.corfield")
   stopifnot(inherits(x,'corfield'))
-  x <- subset(x,it=it,is=is)
+  x <- subset(x,it=it,is=is,verbose=verbose)
   projection <- tolower(projection)
   dim(x) <- attr(x,'dimensions')[1:2]
   
   ## if zlim is specified, then mask data outside this range
   if (!is.null(zlim)) {
+    if (verbose) print(zlim)
     d <- dim(x)
     mask <- (x < min(zlim)) | (x > max(zlim))
     x[mask] <- NA
@@ -350,6 +351,7 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     if (verbose) {print(zlim); print(dim(x)); print(sum(mask))}
   }
 
+  if (verbose) print(projection)
   if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                              colbar=colbar,type=type,new=new,
                                              gridlines=gridlines,...) else
