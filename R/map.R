@@ -635,17 +635,19 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
   if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
       
-  if (new) {
+#  if (new) {
     #dev.new()
     # REB 2015-06-17
 #    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
 #        fig=c(0.05,0.95,0.13,0.95),mar=rep(1,4))
 ##    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
 ##        fig=c(0.05,0.95,0.12,0.95))
-  } else {
+
+#  } else {
 #    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,mar=rep(1,4))
 #    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
-  }
+#  }
+  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
 
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
          xlim=xlim,ylim=ylim)                # to sumerimpose.
@@ -676,6 +678,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   ## Add a colourbar
   if (!is.null(colbar)) {
     if (verbose) print('Add colourbar')
+    par(xaxt="s",yaxt="s")
     
 # Old    
 #    par(xaxt="s",fig=c(0.05,0.95,0.01,1))
