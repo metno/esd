@@ -214,6 +214,7 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,use='pairwise.complete.
   r <- attrcp(y,r)
 
   if (verbose) {print(names(attributes(x))); print(attr(y,'dimensions'))}
+  dim(r) <- attr(y,'dimensions')[1:2]
   attr(r,'dimensions') <- attr(y,'dimensions')[1:2]
   attr(r,'longitude') <- attr(y,'longitude')
   attr(r,'latitude') <- attr(y,'latitude')
