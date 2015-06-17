@@ -353,18 +353,18 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
   if (verbose) {print(projection); print(dim(x))}
   
-  if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+  if (projection=="lonlat") lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                              colbar=colbar,type=type,new=new,verbose=verbose,
                                              gridlines=gridlines,...) else
-  if (projection=="sphere") map2sphere(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+  if (projection=="sphere") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                        lonR=lonR,latR=latR,axiR=axiR,
                                        type=type,gridlines=gridlines,
                                        colbar=colbar,new=new,...) else
-  if (projection=="np") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+  if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                    lonR=lonR,latR=90,axiR=axiR,
                                    type=type,gridlines=gridlines,
                                    colbar=colbar,new=new,...) else
-  if (projection=="sp") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+  if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                    lonR=lonR,latR=-90,axiR=axiR,
                                    type=type,gridlines=gridlines,
                                    colbar=colbar,new=new,...)
@@ -597,7 +597,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   if (verbose) print(paste('period:',period))
   method <- attr(x,'method')
   if (verbose) print(c(dim(x),length(srtx),length(srty)))
-  browser()
+  #browser()
   x <- x[srtx,srty]
   if (verbose) {print(xlim); str(x)}
   if (!is.null(xlim)) {
