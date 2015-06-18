@@ -57,7 +57,6 @@ spell.default <- function(x,threshold,upper=150,...) {
   chksum <- sum( (start - end) < 0)    
   #print(c(length(start),length(end)))
   #dev.new(); plot(start,end,pch="."); lines(c(0,100000),c(0,100000),col="grey")
-  browser()
   
   low <- t[start[-1]] - t[end[-length(end)]]
   high <- t[end] - t[start]

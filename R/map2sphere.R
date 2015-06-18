@@ -67,6 +67,7 @@ map2sphere <- function(x,it=NULL,is=NULL,
                        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                        lonR=NULL,latR=NULL,axiR=0,new=TRUE,
                        type=c("fill","contour"),
+
                        colbar= list(palette='heat.colors',rev=FALSE,n=10,
                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
                        gridlines=TRUE,fancy=FALSE,verbose=FALSE,...) {

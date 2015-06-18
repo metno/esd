@@ -37,7 +37,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
   if (inherits(X,'zoo')) attr(X,'time') <- range(index(x)) else
   if (!is.null(attr(x,'time'))) attr(X,'time') <- attr(x,'time')
   if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,n=n,
-                                             colbar=colbar,
+                                             colbar=colbar,verbose=verbose,
                                              type=type,new=new,
                                              gridlines=gridlines,...) else
   if (projection=="sphere") map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
@@ -119,7 +119,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   
   map.eof(x=x,xlim=xlim,ylim=ylim,zlim=zlim,pattern=pattern,
           n=n,projection=projection,colbar=colbar,new=new,
-          breaks=breaks,lonR=lonR,latR=latR,axiR=axiR,type=type,
+          lonR=lonR,latR=latR,axiR=axiR,type=type,
           gridlines=gridlines,verbose=verbose,...) -> result
   invisible(result)
  }
@@ -156,25 +156,21 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   attr(X,'source') <- attr(x,'source')
   attr(X,'time') <- range(index(x))
   if ( (pattern==1) & !is.null(attr(x, "area.mean.expl")) )
-      if (attr(x, "area.mean.expl")) type="fill"
-  
-  if (projection=="lonlat")
-      lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
-                       n=n,colbar=colbar,new=new,
-                       type=type,gridlines=gridlines,
-                       verbose=verbose,...)
-  else if (projection=="sphere")
-      map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
-                 type=type,gridlines=gridlines,
-                 colbar=colbar,new=new,verbose=verbose,...)
-  else if (projection=="np")
-      map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,
-                 type=type,gridlines=gridlines,
-                 colbar=colbar,new=new,verbose=verbose,...)
-  else if (projection=="sp")
-      map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,
-                 type=type,gridlines=gridlines,
-                 colbar=colbar,new=new,verbose=verbose,...)
+
+  if (attr(x, "area.mean.expl")) type="fill"
+  if (projection=="lonlat") lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
+          n=n,colbar=colbar,new=new,verbose=verbose,
+          type=type,gridlines=gridlines,
+          verbose=verbose,...) else
+  if (projection=="sphere") map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
+          type=type,gridlines=gridlines,
+                                       col=col,new=new,verbose=verbose,...) else
+  if (projection=="np") map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,
+                                       type=type,gridlines=gridlines,
+                                       col=col,new=new,verbose=verbose,...) else
+  if (projection=="sp") map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,
+          type=type,gridlines=gridlines,
+          col=col,new=new,verbose=verbose,...)
   invisible(X)
 }
 
@@ -228,7 +224,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   #print(c(dim(X),length(attr(X,'longitude')),length(attr(X,'longitude'))))
 
   if (projection=="lonlat") {
-    lonlatprojection(x=X,n=n,colbar=colbar,breaks=breaks,
+    lonlatprojection(x=X,n=n,colbar=colbar,verbose=verbose,
                      type='fill',gridlines=gridlines,new=new,...)
     if (is.list(attr(x,'pattern'))) {
       Xa <- attr(x,'pattern')
@@ -344,12 +340,13 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
   if (verbose) print("map.corfield")
   stopifnot(inherits(x,'corfield'))
-  x <- subset(x,it=it,is=is)
+  x <- subset(x,it=it,is=is,verbose=verbose)
   projection <- tolower(projection)
   dim(x) <- attr(x,'dimensions')[1:2]
   
   ## if zlim is specified, then mask data outside this range
   if (!is.null(zlim)) {
+    if (verbose) print(zlim)
     d <- dim(x)
     mask <- (x < min(zlim)) | (x > max(zlim))
     x[mask] <- NA
@@ -357,18 +354,20 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     if (verbose) {print(zlim); print(dim(x)); print(sum(mask))}
   }
 
-  if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                             colbar=colbar,type=type,new=new,
+  if (verbose) {print(projection); print(dim(x))}
+  
+  if (projection=="lonlat") lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                                             colbar=colbar,type=type,new=new,verbose=verbose,
                                              gridlines=gridlines,...) else
-  if (projection=="sphere") map2sphere(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+  if (projection=="sphere") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                        lonR=lonR,latR=latR,axiR=axiR,
                                        type=type,gridlines=gridlines,
                                        colbar=colbar,new=new,...) else
-  if (projection=="np") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+  if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                    lonR=lonR,latR=90,axiR=axiR,
                                    type=type,gridlines=gridlines,
                                    colbar=colbar,new=new,...) else
-  if (projection=="sp") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+  if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                    lonR=lonR,latR=-90,axiR=axiR,
                                    type=type,gridlines=gridlines,
                                    colbar=colbar,new=new,...)
@@ -409,7 +408,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   #str(X)
 
   if (projection=="lonlat") lonlatprojection(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                             colbar=colbar,type=type,new=new,
+                                             colbar=colbar,type=type,new=new,verbose=verbose,
                                              gridlines=gridlines,...) else
   if (projection=="sphere") map2sphere(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                        lonR=lonR,latR=latR,axiR=axiR,
@@ -601,9 +600,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     data("geoborders",envir=environment())
   if(sum(is.finite(x))==0) stop('No valid data')
   ## To deal with grid-conventions going from north-to-south or east-to-west:
-  srtx <- order(attr(x,'longitude')); lon <- lon(x)[srtx]
-  srty <- order(attr(x,'latitude'));  lat <- lat(x)[srty]
-  #print('meta-stuff')
+  srtx <- order(lon(x)); lon <- lon(x)[srtx]
+  srty <- order(lat(x));  lat <- lat(x)[srty]
+  if (verbose) print('meta-stuff')
   unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
   if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") )
     unit <- "degree*C"
@@ -616,9 +615,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   if (sum(is.element(type,'fill'))==0) colbar <- NULL
                                       
-  #print('time')
+  if (verbose) print('time')
   if (!is.null(attr(x,'timescale'))) {
-    #print(attr(x,'timescale'))
+    if (verbose) print(attr(x,'timescale'))
     timescale <- attr(x,'timescale')
     if (timescale == 'annual') {
       t1 <- year(attr(x,'time'))[1]
@@ -633,10 +632,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     }
     period <- paste('[',t1,', ',t2,']',sep='')
   } else period <- NULL
-  #print(period)
+  if (verbose) print(paste('period:',period))
   method <- attr(x,'method')
+  if (verbose) print(c(dim(x),length(srtx),length(srty)))
+  #browser()
   x <- x[srtx,srty]
-  #print("HERE"); print(xlim); str(x)
+  if (verbose) {print(xlim); str(x)}
   if (!is.null(xlim)) {
     outside <- (lon < xlim[1]) | (lon > xlim[2])
     x[outside,] <- NA
@@ -649,10 +650,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
   if (!is.null(col))
     if (length(col)>1) n <- length(col)
-  #print(n); print(summary(c(x)))
+  if (verbose) {print(n); print(summary(c(x)))}
   if (is.null(breaks))
     breaks <- pretty(c(x),n=n)
-  #print(breaks)
+  if (verbose) print(breaks)
 
   if (is.null(col))
       col <- colscal(n=length(breaks)-1,col=colid,rev=colbar$rev) else
@@ -664,7 +665,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     breaks <- seq(min(c(x),na.rm=TRUE),max(c(x),na.rm=TRUE),
                   length=length(col)+1)
                       
-  #print(variable)
+  if (verbose) print(variable)
 #  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
    if (colid=='precip') col <- rev(col)
   
@@ -673,7 +674,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
   if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
       
-  if (new) {
+#  if (new) {
     #dev.new()
     ##par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
     ##    fig=fig0,mar=c(2,1,1,1)) # c(0.05,0.95,0.13,0.95),mar=rep(1,4)
@@ -689,6 +690,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
          xlim=xlim,ylim=ylim,                # to sumerimpose.
          xaxt="n",yaxt="n") # AM 17.06.2015
   ##par0 <- par()
+
   if (sum(is.element(tolower(type),'fill'))>0)   
     image(lon,lat,x,xlab="",ylab="",add=TRUE,
           col=col,breaks=breaks,xlim=xlim,ylim=ylim,...)
@@ -712,10 +714,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   if (!is.null(method))
     text(lon[length(lon)],lat[1] - 0.5*dlat,method,col="grey30",pos=2,cex=0.7)
 
-  ## Add a colourbar
     if (!is.null(colbar)) {
         if (verbose) print('Add colourbar')
-    
+
+## =======
+##  if (!is.null(colbar)) {
+##    if (verbose) print('Add colourbar')
+##    par(xaxt="s",yaxt="s")
+## 1072ef5b4e555d6484178b0115e5d62be3dbd386
+   
 # Old    
 #    par(xaxt="s",fig=c(0.05,0.95,0.01,1))
 #    breaks <- round(seq(min(x,na.rm=TRUE),max(x,na.rm=TRUE),length=length(col)),1)

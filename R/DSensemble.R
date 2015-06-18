@@ -34,7 +34,7 @@ DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
   return(z)
 }
 
-DSensemble.t2m <- function(y,plot=TRUE,path="~/CMIP5.monthly/",
+DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            predictor="~/ERA40_t2m_mon.nc",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,
@@ -125,8 +125,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="~/CMIP5.monthly/",
 
   if (is.null(select)) select <- 1:N else
                        N <- length(select)
-  if (verbose) print(ncfiles[select])
-
+  if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
+  
   # set up results matrix and tables of diagnostics:
   years <- sort(rep(1900:2100,4))
   months <- rep(c(1,4,7,10),length(1900:2100))
@@ -147,6 +147,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="~/CMIP5.monthly/",
   
   if (verbose) print("loop...") 
   for (i in 1:N) {
+    if (verbose) print(ncfiles[select[i]])
     gcm <- retrieve(ncfile = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
@@ -1035,7 +1036,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (is.null(select)) select <- 1:N else
                        N <- length(select)
-  if (verbose) print(ncfiles[select])
+  if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
 
   d.y <- dim(y)
   years <- 1900:2100
@@ -1057,6 +1058,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (verbose) print("loop...") 
   for (i in 1:N) {
+    if (verbose) print(ncfiles[select[i]])
     gcm <- retrieve(ncfile = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)

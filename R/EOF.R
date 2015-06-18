@@ -389,7 +389,7 @@ PCA.default <- function(X,...) {
   stop("Don't know how to handle objects other than station")
 }
 
-PCA.station <- function(X,neofs=20,na.action='fill',verbose=FALSE) {
+PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE) {
    
   if (na.action=='fill') {
     if (verbose) print('Fill missing data gaps')
@@ -403,6 +403,7 @@ PCA.station <- function(X,neofs=20,na.action='fill',verbose=FALSE) {
   
   # Re-order dimensions: space x time
   x <- t(coredata(X))
+  neofs <- n
   D <- dim(x)
   neofs <- min(neofs,D[1])
   ok.time <- is.finite(colMeans(x))

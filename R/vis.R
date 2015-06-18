@@ -62,18 +62,63 @@ vis.dsensemble <- function(x,...) {
 vis.ds <- function(x,...) {
 }
 
-vis.trends <- function(x,unitlabel="unit",varlabel="",
- pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE) {
+vis.trends <- function(x,unitlabel=NA,varlabel=NA,
+ pmax=0.01,minlen=20,lwd=NA,vmax=NA,new=TRUE,type="decadal",
+ verbose=FALSE) {
 
-  T <- calculate.trends(x,minlen=minlen)
-  trends <- T$trends*10
-  p <- T$p
+  stopifnot(inherits(x,'zoo'))
+  if(verbose) print("Calculate trends")
+  T <- alltrends(x,minlen=minlen)
+
+  # Prepare labels
+  if (is.na(unitlabel) & !is.null(attr(x,"unit"))) {
+    unitlabel <- attr(x,"unit")
+  } else if (is.na(unitlabel) & is.null(attr(x,"unit"))) {
+    unitlabel <- "unit"
+  }
+             
+  if (is.na(varlabel) & !is.null(attr(x,"variable"))) {
+    varlabel <- attr(x,"variable")
+  } else if (is.na(varlabel) & is.null(attr(x,"variable"))) {
+    varlabel <- " "
+  }
+
+  if (type=="decadal") {
+    td <- T$trends*10
+    mainlabel <- paste(c(varlabel," trend (",unitlabel,"/decade)"),collapse="")
+  } else if (type=="change"){
+    td <- T$trends*T$len
+    if(unitlabel=="unit") {
+      mainlabel <- paste(c(varlabel,"change"),collapse=" ")
+    } else {
+      mainlabel <- paste(c(varlabel," change (",unitlabel,")"),collapse="")
+    }
+  } else {
+    td <- T$trends
+    mainlabel <- paste(c(varlabel," trend (",unitlabel,"/year)"),collapse="")
+  }
+  
+  #Prepare trend matrix
+  trends <- matrix(NA,length(unique(T$first)),length(unique(T$len)))
+  p <- matrix(NA,length(unique(T$first)),length(unique(T$len)))
+  rownames(trends) <- sort(unique(T$first))
+  colnames(trends) <- sort(unique(T$len))
+  rows <- sapply(T$first,function(x) which(x==rownames(trends)))
+  cols <- sapply(T$len,function(x) which(x==colnames(trends)))
+  for (i in unique(rows)) {
+    trends[i,cols[rows==i]] <- td[rows==i]
+    p[i,cols[rows==i]] <- T$p[rows==i]
+  }
   cols <- as.numeric(colnames(trends))
   rows <- as.numeric(rownames(trends))
-  significant <- ifelse(p<pmax,trends,NA)
-  
-  ticks <- seq(1,length(cols),signif(length(cols)/10,1))
-  if (is.na(lwd)) lwd <- max(3-0.05*length(cols),0.2)
+
+  # Set ticks
+  dy <- signif((max(T$len)-minlen)/10,1)
+  yticks <- c(seq(minlen,max(T$len),dy),max(T$len))
+  xticks <- c(min(T$first),seq(signif(min(T$first),3)+10,max(T$first),dy))
+  ixticks <- sapply(xticks,function(x) which(x==rows))
+  iyticks <- sapply(yticks,function(x) which(x==cols))
+  if (is.na(lwd)) lwd <- max(3-0.05*length(unique(T$first)),0.1)
    
   if (is.na(vmax) | vmax=="q995") vmax <- q995(abs(trends))
   if (vmax=="max") vmax <- max(abs(trends),na.rm=T)
@@ -86,28 +131,31 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   vstep <- vstep[order(vstep)]
   cticks <- vstep[2:length(vstep)]-dv/2
 
-  #cstep <- colscal(n=length(vstep)-1,col="t2m")
+  # Set color scale
   cmin <- rgb(239,138,98,max=255) # blue
   cmid <- rgb(247,247,247,max=255) # white
   cmax <- rgb(103,169,207,max=255) # red
   rgb.palette <- colorRampPalette(c(cmax,cmid,cmin),space="rgb")
   cstep <- rgb.palette(n=length(vstep)-1)
-  
-  # Plot trend as color
-  if (new) dev.new()
-  image(rows,cols,t(trends),breaks=vstep,col=cstep,
-        xlab='end year',ylab="start year",
-        main=paste(c(varlabel," trend (",unitlabel,"/decade)"),collapse=""))
 
-  trends.plus <- t(trends)
+  # Plot trends
+  if (new) dev.new()
+  image(rows,cols,trends,breaks=vstep,col=cstep,
+        xlab='start year',ylab="length of period (years)",
+        main=mainlabel,axes=FALSE)
+  axis(1,xticks)#at=ixticks,label=xticks)
+  axis(2,yticks)#,at=iyticks,label=yticks)
+  
+  # For trends stronger than the range of the color map
+  trends.plus <- trends
   trends.plus[trends.plus<max(vstep)] <- NA
   image(rows,cols,trends.plus,col=cstep[length(cstep)],add=TRUE)
-  trends.minus <- t(trends)
+  trends.minus <- trends
   trends.minus[trends.minus>min(vstep)] <- NA
   image(rows,cols,trends.minus,col=cstep[1],add=TRUE)
 
   # Mark significant trends with dark borders
-  i <- which((is.finite(t(p)) & t(p)<pmax))
+  i <- which((is.finite(p) & p<pmax))
   x <- rep(rows,nrow(p))[i]
   y <- array(sapply(cols,function(x) rep(x,nrow(p))),length(p))[i]
   matlines(rbind(x-1/2,x+1/2),rbind(y-1/2,y-1/2),col='black',lwd=lwd,lty=1)
@@ -115,10 +163,23 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   matlines(rbind(x-1/2,x-1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
   matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
 
-  colbar(cticks,cstep,fig=c(0.2,0.25,0.65,0.85))
+  # Legend and colorbar
+  polygon(c(min(rows)+diff(range(rows))*0.45,
+            min(rows)+diff(range(rows))*0.45+1,
+            min(rows)+diff(range(rows))*0.45+1,
+            min(rows)+diff(range(rows))*0.45),
+          c(max(cols)-diff(range(cols))*0.05,
+            max(cols)-diff(range(cols))*0.05,
+            max(cols)-diff(range(cols))*0.05+1,
+            max(cols)-diff(range(cols))*0.05+1),lwd=0.5)
+  text(min(rows)+diff(range(rows))*0.47,
+       max(cols)-diff(range(cols))*0.05,
+       labels=paste("significant trend (p<",pmax,")",
+       sep=""),adj=c(0,0.5),cex=0.8)
+  colbar(cticks,cstep,fig=c(0.85,0.9,0.65,0.85)) 
 }
  
-calculate.trends <- function(x,minlen=10){
+alltrends <- function(x,minlen=20){
   # Calculate trends of time series x
   stopifnot(inherits(x,'zoo'))
   xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean")
@@ -126,28 +187,48 @@ calculate.trends <- function(x,minlen=10){
   ny <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="nv")
   xy <- xy[ny==max(ny)] # exclude years with missing months 
   year <- as.numeric(index(xy))
-  firstyear <- min(year):(max(year)-minlen+1)
-  lastyear <- firstyear+minlen-1
-  n <- length(firstyear)
-  trends <- matrix(NA,n,n)
-  colnames(trends) <- lastyear
-  rownames(trends) <- firstyear
-  p <- trends
-  # speed up with apply?
-  for (i in firstyear) {
-    jvec <- (i+minlen-1):(max(year)+1)
-    for (j in jvec) {
-      ij <- which(year %in% i:j)
-      ij.model <- lm(xy[ij]~year[ij])
-      #ij.kendall <- Kendall(x[ij],year[ij])
-      iout <- as.numeric(colnames(trends))==j
-      jout <- as.numeric(rownames(trends))==i
-      trends[jout,iout] <- ij.model$coefficients[2]
-      p[jout,iout] <- anova(ij.model)$Pr[1]#ij.kendall$sl[1]
-    }
-  }  
-  return(list("trends"=trends,"p"=p))
+  first <- c()
+  last <- c()
+  len <- c()
+  for (i in unique(year[year<(max(year)-minlen)-1])) {
+    first <- c(first,rep(i,max(year)-minlen-i+2))
+    last <- c(last,seq(i+minlen-1,max(year)))
+    len <- c(len,seq(minlen,max(year)-i+1))
+  }
+  # Make more efficient?
+  tp <- mapply(function(y1,y2) {
+          j <- which(year %in% y1:y2)
+          model <- lm(xy[j]~year[j])
+          t <- model$coefficients[2]
+          p <- anova(model)$Pr[1]
+          invisible(cbind(t,p))},first,last)
+  return(list("first"=first,"last"=last,"len"=len,
+              "trends"=tp[1,],"p"=tp[2,]))
 }
+  ##firstyear <- min(year):(max(year)-minlen+1)
+  ##lastyear <- firstyear+minlen-1
+  ##n <- length(firstyear)
+  ##trends <- rep(NA,length(firstyear))
+  ##p <- rep(NA,length(firstyear))
+  ## trends <- matrix(NA,n,n)
+  ## colnames(trends) <- lastyear
+  ## rownames(trends) <- firstyear
+  ## p <- trends
+  ## # speed up with apply?
+  ## for (i in firstyear) {
+  ##   jvec <- (i+minlen-1):(max(year)+1)
+  ##   for (j in jvec) {
+  ##     ij <- which(year %in% i:j)
+  ##     ij.model <- lm(xy[ij]~year[ij])
+  ##     #ij.kendall <- Kendall(x[ij],year[ij])
+  ##     iout <- as.numeric(colnames(trends))==j
+  ##     jout <- as.numeric(rownames(trends))==i
+  ##     trends[jout,iout] <- ij.model$coefficients[2]
+  ##     p[jout,iout] <- anova(ij.model)$Pr[1]#ij.kendall$sl[1]
+  ##   }
+  ## }  
+  ##return(list("trends"=trends,"p"=p))
+##}
 
 # Binned scatterplot with sunflowers
 scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
@@ -658,6 +739,12 @@ colscal <- function(n=14,col="t2m",alpha=NULL,test=FALSE) {
     col <- topo.colors(n)
   } else if (col[1]=="cm.colors") {
     col <- cm.colors(n)
+  } else {
+    r <- approx(seNorgeT[1,],n=n)$y/255
+    g <- approx(seNorgeT[2,],n=n)$y/255
+    b <- approx(seNorgeT[3,],n=n)$y/255
+    if (is.null(alpha)) col <- rgb(r,g,b)  else
+                        col <- rgb(r,g,b,alpha)
   }
 
   if (test) { #& !exists("r")) {
@@ -1153,12 +1240,14 @@ visprob.default <- function(x,...) {
 }
 
 visprob.station <- function(x,y=NULL,is=1,dy=0.01,...) {
-  if (is.precip(x)) prob.station.precip(x,y=y,is=is,dy=dy,...) 
+  if (is.precip(x)) visprob.station.precip(x,y=y,is=is,dy=dy,...) 
 }
 
 visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.01,...) {
 ## Plot the histogram for each year in different colours, depending on y. Iy y
 ## is NULL, use the year to set the colour
+
+## Get the version from PC4409!
 
 
   if (is.null(y)) y <- year(annual(x))
@@ -1171,9 +1260,9 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.01,...) {
   mu <- aggregate(x,year,FUN='wetmean',threshold=threshold)
   mids <- 0.5*(breaks[-1] + breaks[-length(breaks)])
   par(bty='n')
-  plot(range(breaks),c(0,max(z) + length(year(x))*dy),type='n',
+  plot(range(breaks),c(0,max(z) + length(y)*dy),type='n',
   ylab='f(x)',xlab=paste(varid(x),unit(x)),main=paste('Statistical distribution for',loc(x)))
-  for (i in 1:length(year(x))) {
+  for (i in 1:length(y)) {
     lines(mids,z[i,]+dy*i,col=col[i],lwd=3)
     lines(mids,dy*i + exp(-mids/coredata(mu[i]))/coredata(mu[i]),
           col=col[i],lty=2)

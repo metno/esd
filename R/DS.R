@@ -246,6 +246,12 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
     
+     if ( (!inherits(y,'seasonalcycle')) & (inherits(X,'seasonalcycle')) ) {
+                                        #print("HERE")
+        ds <- DS.seasonalcycle(y=y,X=X,eofs=eofs,verbose=verbose,...) 
+        return(ds)
+    }
+    
     if ( (!inherits(X,'eof')) & (inherits(X,'field')) ) {
                                         #print("HERE")
         ds <- DS.field(y=y,X=X,biascorrect=biascorrect,mon=mon,

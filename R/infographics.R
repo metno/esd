@@ -546,133 +546,7 @@ diagram.station <- function(x,it=NULL,new=TRUE,...) {
 #1	100	217	255	255	*Under 10
 #0	1	229	229	229	*Ikke nedbør
 
-colscal <- function(n=14,col="t2m",alpha=NULL,test=FALSE) {
 
-  test.col <- function(r,g,b) {
-    dev.new()
-    par(bty="n")
-    plot(r,col="red")
-    points(b,col="blue")
-    points(g,col="green")
-  }
-
-  # Set up colour-palette
-  col <- tolower(col)
-  x <- 1:n
-  r0 <- round(n*0.55)
-  g0 <- round(n*0.5)
-  b0 <- round(n*0.45)
-  s <- -0.1/n
-  if (n < 30) sg <- s*2.5 else sg <- s
-  n1 <- g0; n2 <- n-n1
-  
-#R	G	B
-  seNorgeT <- c(204,  0,    0,	
-               255, 25,    0,	
-               255, 102,   0,	
-               255, 179,   0,	
-               255, 230,  77,	
-               255, 255,  64,	
-               255, 255, 190,	
-               217, 255, 255,	
-               179, 255, 255,	
-               128, 235, 255,	
-               64, 204, 255,	
-               0, 153, 255,	
-               0,  25, 255,	
-               0,   0, 153)	
-  dim(seNorgeT) <- c(3,14)
-
-  seNorgeP <- c(0, 0, 153,
-                0, 25, 255,
-                0, 153, 255,
-                64, 204, 255,
-                128, 235, 255,
-                179, 255, 255,
-                217, 255, 255,
-                229, 229, 229)
-  dim(seNorgeP) <- c(3,8)
-
-  ##if (!is.null(col))
-  ##  if ((length(col)==1) & is.character(col) &
-  ##      (sum(is.element(c('t2m','precip','bwr','rwb','mu','fw','tp',
-  ##                        'faint.bwr','faint.rwb','rainbow',
-  ##                        'gray.colors','heat.colors','terrain.colors',
-  ##                        'topo.colors','cm.colors'),col))==0))
-  ##      col <- 'bwr'
-
-  #if (exists("r")) remove(r)
-  #if (exists("g")) remove(g) 
-  #if (exists("b")) remove(b)
-
-  if (!is.null(alpha)) alpha <- rep(alpha[1],n)
-  
-  if ( (col[1]=="bwr") | (col[1]=="slp") | (col[1]=="mslp") |
-      (col[1]=="pressure") ) {
-    r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
-    g <- exp(sg*(x - g0)^2)^2
-    b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
-    if (is.null(alpha)) col <- rgb(r,g,b) else
-                        col <- rgb(r,g,b,alpha)
-  } else if (col[1]=="rwb") {
-    r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
-    g <- exp(sg*(x - g0)^2)^2
-    b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
-    if (is.null(alpha)) col <- rgb(b,g,r)  else
-                        col <- rgb(r,g,b,alpha)
-  } else if (col[1]=="faint.bwr") {
-    r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
-    g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
-    b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
-    if (is.null(alpha)) col <- rgb(r,g,b)  else
-                        col <- rgb(r,g,b,alpha)
-  } else if (col[1]=="faint.rwb") {
-    r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
-    g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
-    b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
-    if (is.null(alpha)) col <- rgb(b,g,r)  else
-                        col <- rgb(r,g,b,alpha)
-  } else if ( (col[1]=="t2m") | (col[1]=="tmax") | (col[1]=="tmin") |
-             (col[1]=="sst")  | (col[1]=="air") ){
-    r <- approx(seNorgeT[1,],n=n)$y/255
-    g <- approx(seNorgeT[2,],n=n)$y/255
-    b <- approx(seNorgeT[3,],n=n)$y/255
-    if (is.null(alpha)) col <- rgb(b,g,r)  else
-                        col <- rgb(r,g,b,alpha)
-  } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
-             (col[1]=="f[w]") | (col[1]=="tp")) {
-    r <- approx(seNorgeP[1,],n=n)$y/255
-    g <- approx(seNorgeP[2,],n=n)$y/255
-    b <- approx(seNorgeP[3,],n=n)$y/255
-    if (is.null(alpha)) col <- rgb(r,g,b)  else
-                        col <- rgb(r,g,b,alpha)
-  } else if (col[1]=="rainbow") {
-    col <- rainbow(n,start=0,end=4/6)
-  } else if (col[1]=="gray.colors") {
-    col <- gray.colors(n)
-  } else if (col[1]=="heat.colors") {
-    col <- heat.colors(n)
-  } else if (col[1]=="terrain.colors") {
-    col <- terrain.colors(n)
-  } else if (col[1]=="topo.colors") {
-    col <- topo.colors(n)
-  } else if (col[1]=="cm.colors") {
-    col <- cm.colors(n)
-  }
-
-  if (test) { #& !exists("r")) {
-    RGB <- col2rgb(col)/255
-    r <- RGB[1,]; g <- RGB[2,]; b <- RGB[3,]
-  }
-  
-  if (test) test.col(r,g,b)
-  return(col)
-}
-
-colbar <- function(scale,col,fig=c(0.15,0.2,0.15,0.3)) {
-  par(xaxt="n",yaxt="s",fig=fig,mar=c(0,1,0,0),new=TRUE,las=1,cex.axis=0.6)
-  image(1:2,scale,rbind(scale,scale),col=col)
-}
 
 
 # Show the cumulative sum of station value from January 1st. Use
@@ -858,19 +732,20 @@ visprob.default <- function(x,...) {
 
 }
 
-visprob.station <- function(x,y=NULL,is=1,dy=0.01,...) {
-  if (is.precip(x)) visprob.station.precip(x,y=y,is=is,dy=dy,...) 
+visprob.station <- function(x,y=NULL,is=1,dy=0.01,verbose=FALSE,...) {
+  if (is.precip(x)) visprob.station.precip(x,y=y,is=is,
+                                           dy=dy,verbose=verbose,...) 
 }
 
 visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
-                                   breaks=NULL,pdf=FALSE,...) {
+                                   breaks=NULL,pdf=FALSE,verbose=FALSE,...) {
 ## Plot the histogram for each year in different colours, depending on y. Iy y
 ## is NULL, use the year to set the colour
-
+  if (verbose) print('visprob.station.precip')
   ## If y is provided, synchronise the two time series:
   if (!is.null(y)) {
-    y <- matchdate(y,x)
-    x <- matchdate(x,y)
+    y <- subset(y,,it=c(start(x),end(x)))
+    x <- subset(x,it=c(start(y),end(y)))
     y <- annual(y)
   } else y <- year(annual(x))
   mu <- aggregate(x,year,FUN='wetmean',threshold=threshold)
@@ -881,23 +756,26 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
   if (is.null(breaks))
     breaks <- seq(floor(min(x,na.rm=TRUE)),ceiling(max(x,na.rm=TRUE))+5,by=5)
   z <- aggregate(x,year,FUN='histwet',breaks=breaks,threshold=threshold)
+  if (verbose) print(c(dim(z),length(y)))
   dy <- abs(max(z,na.rm=TRUE)*dy)
   mids <- 0.5*(breaks[-1] + breaks[-length(breaks)])
   par(bty='n',yaxt='n')
   plot(range(breaks),c(0,max(z,na.rm=TRUE) + length(y)*dy),type='n',
   ylab='f(x)',xlab=paste(varid(x),unit(x)),
        main=paste('Statistical distribution for',loc(x)),...)
-  for (i in 1:length(y)) {
+  for (i in seq(length(y),1,by=-1)) {
     lines(mids,z[i,]+dy*i,col="grey",lwd=5)
     lines(mids,z[i,]+dy*i,col=col[i],lwd=4)
   }
   if (pdf) {
+    if (verbose) print('add pdfs')
     for (i in 1:length(y)) {
       lines(mids,dy*i + exp(-mids/coredata(mu[i]))/coredata(mu[i]),
             col='black',lty=2)
     }
   }
+  if (!is.null(loc(y)))
+    text(par()$xaxp[2],par()$yaxp[2],loc(y),pos=2)
 }
 
-  
 

@@ -144,20 +144,22 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
 }
 
 
-corfield.field.station <- function(x,y,plot=TRUE,
+corfield.field.station <- function(x,y,plot=TRUE,verbose=FALSE,
                                    use='pairwise.complete.obs',...) {
-  r <- corfield.station(y,x,plot=plot,use=use,...)
+  r <- corfield.station(y,x,plot=plot,verbose=verbose,use=use,...)
   return(r)
 }
 
 
-corfield.station <- function(x,y,plot=TRUE,use='pairwise.complete.obs',na.action='na.omit',...) {
-  #print("corfield.station:")
+corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,use='pairwise.complete.obs',na.action='na.omit',...) {
+  if (verbose) print("corfield.station:")
+  
   # Keep track of which is an eof object and which is a station record:
   nval <- function(x) sum(is.finite(x))
   
   swapped <- FALSE
   if ( inherits(y,c("station")) & inherits(x,c("field"))) {
+    if (verbose) print('swap station and field')
     yy <- x
     x <- y
     y <- yy
@@ -187,14 +189,15 @@ corfield.station <- function(x,y,plot=TRUE,use='pairwise.complete.obs',na.action
     #y <- yx$y; x <- yx$X
   ngood <- apply(coredata(y),2,nval)
   ok <- ngood == length(index(y))
+  
   if (sum(ok)==0) {
     print('Problem with missing data. Try with the following argument')
     print('na.action="na.omit"')
     stop()
   }
-  #print(table(ngood)); print(sum(ok))
+  if (verbose) { print(paste(sum(ok),'good data points')); print(table(ngood)) }
   yok <- y[,ok]
-  #print(table(apply(coredata(yok),2,nval)))
+  if (verbose) print(table(apply(coredata(yok),2,nval)))
   #print(dim(yok)); image(coredata(yok))
   merge(zoo(x),yok,all=FALSE) -> xy
   d <- dim(xy)
@@ -202,15 +205,16 @@ corfield.station <- function(x,y,plot=TRUE,use='pairwise.complete.obs',na.action
   X <- xy[,2:d[2]]
   
   #browser()
-  #print(d);print(dim(X)); print(length(y)); print(class(x)); print(class(y))
+  if (verbose) {print(d);print(dim(X)); print(length(y)); print(class(x)); print(class(y))}
   rok <- apply(coredata(X),2,cor,coredata(Y),use=use,...)
   r <- rep(NA,dim(y)[2])
   r[ok] <- rok
-  #print(length(r))
+  if (verbose) {print(length(r))}
   
   r <- attrcp(y,r)
 
-  #print(names(attributes(x))); print(attr(y,'dimensions'))
+  if (verbose) {print(names(attributes(x))); print(attr(y,'dimensions'))}
+  dim(r) <- attr(y,'dimensions')[1:2]
   attr(r,'dimensions') <- attr(y,'dimensions')[1:2]
   attr(r,'longitude') <- attr(y,'longitude')
   attr(r,'latitude') <- attr(y,'latitude')
@@ -231,7 +235,7 @@ corfield.station <- function(x,y,plot=TRUE,use='pairwise.complete.obs',na.action
   class(r) <- 'corfield'
 
   #print("map")
-  if (plot) map(r)
+  if (plot) map(r,verbose=verbose)
   invisible(r)
 }
 
