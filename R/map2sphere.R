@@ -66,15 +66,32 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 map2sphere <- function(x,it=NULL,is=NULL,
                        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                        lonR=NULL,latR=NULL,axiR=0,new=TRUE,
-                       what=c("fill","contour"),
-                       colbar=list(col=NULL, breaks=NULL, type="r",
-                              cex=2, h=0.6, v=1),
+                       type=c("fill","contour"),
+                       colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                            breaks=NULL,type="p",cex=2,h=0.6, v=1),
                        gridlines=TRUE,fancy=FALSE,verbose=FALSE,...) {
 
   
   if (verbose) print('map2sphere')
-  if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
-  if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
+  if (!is.null(colbar$palette) & (!is.null(colbar$n) | !is.null(colbar$breaks))) {
+        ##colbar$breaks <- pretty(y,n=length(colbar$col))
+        ##colbar$n <- length(colbar$breaks) + 1
+        if (is.null(colbar$breaks) & !is.null(colbar$n)) {
+            colbar$breaks <- pretty(x,n=colbar$n)
+            colbar$n <- length(colbar$breaks)-1
+        } else if (!is.null(colbar$breaks) & is.null(colbar$n))
+            colbar$n <- length(colbar$breaks)-1
+        else if (length(colbar$n)!= (length(colbar$breaks) -1))
+            stop('The length of breaks must equal (n-1)')# default
+        ##browser()
+        if (verbose) print(paste("n=",colbar$n))
+        if (verbose) print(paste("breaks",colbar$breaks))
+        if (verbose) print(paste("length(breaks) =",length(colbar$breaks)))
+        colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev)
+        if (verbose) print(paste("length(col) =",length(colbar$col)))
+    }
+  ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
+  ## if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
   if (!is.null(it) | !is.null(it)) x <- subset(x,it=it,is=is)
 
   # Data to be plotted:
@@ -126,19 +143,20 @@ map2sphere <- function(x,it=NULL,is=NULL,
   #print(c( min(x),max(x)))
 
 # Define colour palette:
-  if (is.null(breaks)) {
-    n <- 30
-    breaks <- pretty(c(map),n=n)
-  } else n <- length(breaks)
-  if (is.null(col)) col <- colscal(n=n) else
-  if (length(col)==1) {
-     palette <- col
-     col <- colscal(palette=palette,n=n)
-  }
-  nc <- length(col)
-  
-  index <- round( nc*( map - min(breaks) )/
-                    ( max(breaks) - min(breaks) ) )
+  ##if (is.null(breaks)) {
+  ##  n <- 30
+  ##  breaks <- pretty(c(map),n=n)
+  ##} else n <- length(breaks)
+  ## AM commented
+  ##if (is.null(col)) col <- colscal(n=n) else
+  ##if (length(col)==1) {
+  ##    palette <- col
+  ##   col <- colscal(palette=palette,n=n)
+  ## }
+  nc <- length(colbar$col)
+  ## AM commented
+  index <- round( nc*( map - min(colbar$breaks) )/
+                    ( max(colbar$breaks) - min(colbar$breaks) ) )
   
 # Rotate coastlines:
   a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
@@ -158,14 +176,14 @@ map2sphere <- function(x,it=NULL,is=NULL,
 
 # Plot the results:
   if (new) dev.new()
-  par(bty="n",xaxt="n",yaxt="n")
-  plot(x,z,pch=".",col="grey90",xlab="",ylab="",xlim=xlim,ylim=ylim,...)
+  par(bty="n") ## ,xaxt="n",yaxt="n")
+  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",xlim=xlim,ylim=ylim,...)
   
 # plot the grid boxes, but only the gridboxes facing the view point:
   Visible <- colMeans(Y) > 0
   X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
   index <- index[Visible]
-  apply(rbind(X,Z,index),2,gridbox,col)
+  apply(rbind(X,Z,index),2,gridbox,colbar$col) ## AM replaced col
   # c(W,E,S,N, colour)
   # xleft, ybottom, xright, ytop
 
@@ -196,19 +214,27 @@ map2sphere <- function(x,it=NULL,is=NULL,
 #        xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
 #
     # Adopt from map.station
-    if (fancy & !is.null(colbar))
-      col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
-              col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
-              type=type,verbose=FALSE,vl=1,border=FALSE)
-    else if (!is.null(colbar))
-      image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-                 legend.only = T, zlim = range(colbar$breaks),
-                 col = colbar$col, legend.width = 1,
-                 axis.args = list(cex.axis = 0.8), border = FALSE)
+      if (fancy & !is.null(colbar))
+          col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
+                  col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
+                  type=type,verbose=FALSE,vl=1,border=FALSE)
+      else if (!is.null(colbar))
+          image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+                     legend.only = T, zlim = range(colbar$breaks),
+                     col = colbar$col, legend.width = 1,
+                     axis.args = list(cex.axis = 0.8,
+                         xaxp=c(range(colbar$breaks),n=colbar$n)),
+                     border = FALSE,...)
+      ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+      ##             legend.only = T, zlim = range(colbar$breaks),
+      ##             col = colbar$col, legend.width = 1,
+      ##             axis.args = list(cex.axis = 0.8), border = FALSE)
   }
-  plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
-       xlab="",ylab="")
-  text(-0.95,0.95,expression(paste(param,' (',unit,')')),cex=1.5,pos=4)
+  
+  ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
+  ##     xlab="",ylab="",add=FALSE)
+  txt <- paste(param,' (',unit,')',sep=" ")
+  text(-0.95,0.95,eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4)
   
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   result <- NULL # For now...
