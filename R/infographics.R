@@ -860,7 +860,7 @@ visprob.default <- function(x,...) {
 
 visprob.station <- function(x,y=NULL,is=1,dy=0.01,verbose=FALSE,...) {
   if (is.precip(x)) visprob.station.precip(x,y=y,is=is,
-                                           dy=dy,verbose=verbose...) 
+                                           dy=dy,verbose=verbose,...) 
 }
 
 visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
