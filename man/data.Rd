@@ -39,6 +39,7 @@
 \alias{bjornholt}
 \alias{vardo}
 \alias{ferder}
+\alias{dse.ferder}
 \alias{HadCRUT4}
 \alias{dse.Oslo}
 \title{Sample data.}
@@ -68,6 +69,7 @@
 \usage{
 data(bjornholt)
 data(ferder)
+data(dse.ferder)
 data(vardo)
 data(eca.meta)
 data(station.meta)
