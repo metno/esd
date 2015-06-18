@@ -3,6 +3,7 @@
 \alias{coldwinterdays}
 \alias{coldspells}
 \alias{heatwavespells}
+\alias{nwetdays}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Projection of hot and cold day statistics}
 \description{
@@ -11,7 +12,8 @@ The functions \code{hotsummerdays}, \code{heatwavespells},
 heatwaves/hot days or cold spells based on seasonal mean
 temperatures. The estimations are based on a regression analysis (GLM) between
 observed number of events or spell lengths and seasonal mean from
-station data. 
+station data. \code{nwetdays} estimates the number of days per year with
+precipitation amount exceeding a threshold values.
 }
 \usage{
 coldwinterdays(x,dse=NULL,it='djf',threshold=0,
@@ -22,7 +24,8 @@ hotsummerdays(x, dse = NULL, it = "jja", threshold = 30,
                verbose = FALSE, plot = TRUE)
 heatwavespells(x,dse=NULL,it='jja',threshold=30,
                verbose=FALSE,plot=TRUE)
-
+nwetdays(x,dse=NULL,threshold=10,
+         FUN='mu',verbose=FALSE,plot=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -41,7 +44,11 @@ heatwavespells(x,dse=NULL,it='jja',threshold=30,
 %%     ~~Describe \code{plot} here~~
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+The estimation of these statistics makes use of general linear models
+(GLMs) and take the counts to follow the 'Poisson family' whereas the
+spall lengths belong to the geometric distribution. The seasonal mean
+temperature or annual wet-mean precipitation are used as independent
+variable.
 }
 \value{
 %%  ~Describe the value returned

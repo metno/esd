@@ -376,7 +376,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               non.stationarity.check=FALSE,
                               area.mean.expl=FALSE,
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),
-                              select=NULL,FUN="exceedance",
+                              select=NULL,FUN="wetmean",
                               FUNX="sum",threshold=1,
                               pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
