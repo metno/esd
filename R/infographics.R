@@ -858,15 +858,16 @@ visprob.default <- function(x,...) {
 
 }
 
-visprob.station <- function(x,y=NULL,is=1,dy=0.01,...) {
-  if (is.precip(x)) visprob.station.precip(x,y=y,is=is,dy=dy,...) 
+visprob.station <- function(x,y=NULL,is=1,dy=0.01,verbose=FALSE,...) {
+  if (is.precip(x)) visprob.station.precip(x,y=y,is=is,
+                                           dy=dy,verbose=verbose...) 
 }
 
 visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
-                                   breaks=NULL,pdf=FALSE,...) {
+                                   breaks=NULL,pdf=FALSE,verbose=FALSE,...) {
 ## Plot the histogram for each year in different colours, depending on y. Iy y
 ## is NULL, use the year to set the colour
-
+  if (verbose) print('visprob.station.precip')
   ## If y is provided, synchronise the two time series:
   if (!is.null(y)) {
     y <- subset(y,,it=c(start(x),end(x)))
@@ -881,6 +882,7 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
   if (is.null(breaks))
     breaks <- seq(floor(min(x,na.rm=TRUE)),ceiling(max(x,na.rm=TRUE))+5,by=5)
   z <- aggregate(x,year,FUN='histwet',breaks=breaks,threshold=threshold)
+  if (verbose) print(c(dim(z),length(y)))
   dy <- abs(max(z,na.rm=TRUE)*dy)
   mids <- 0.5*(breaks[-1] + breaks[-length(breaks)])
   par(bty='n',yaxt='n')
@@ -892,6 +894,7 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
     lines(mids,z[i,]+dy*i,col=col[i],lwd=4)
   }
   if (pdf) {
+    if (verbose) print('add pdfs')
     for (i in 1:length(y)) {
       lines(mids,dy*i + exp(-mids/coredata(mu[i]))/coredata(mu[i]),
             col='black',lty=2)
