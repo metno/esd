@@ -901,5 +901,4 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
     text(par()$xaxp[2],par()$yaxp[2],loc(y),pos=2)
 }
 
-  
 
