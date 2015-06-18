@@ -109,7 +109,7 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
   var.eof <- 100* D^2/tot.var
   if (length(what)==3) mfrow <- c(2,2) else
   if (length(what)==2) mfrow <- c(2,1)
-  
+  browser()
   if (new) dev.new()
   par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   par(mfrow=mfrow,mar=c(0.5,0.5,2.5,0.5),bty="n",xaxt="n",yaxt="n")
