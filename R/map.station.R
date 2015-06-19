@@ -7,9 +7,10 @@
 map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
                          projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
-                         colbar= list(col=NULL, breaks=NULL, type="p",cex=2,
-                                      h=0.6, v=1),
-                         type=NULL,gridlines=FALSE,
+                         col="darkred",bg="orange",
+                         colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1), # col=NULL replaced by palette
+                         type=NULL,gridlines=TRUE,
                          lonR=NULL, latR=45,axiR=NULL,verbose=FALSE,
                          cex=.8, zexpr = "alt",cex.subset=1,
                          add.text.subset=FALSE,showall = FALSE, add.text=FALSE,
@@ -17,35 +18,57 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
                          pch=21, from=NULL, to=NULL, showaxis=FALSE,
                          border=FALSE,full.names=FALSE,full.names.subset=FALSE, 
                          text=FALSE, fancy=FALSE, 
-                         na.rm=TRUE,show.val=FALSE,...) { 
-    
+                         na.rm=TRUE,show.val=FALSE,
+                         colorbar=TRUE,
+                         legend.shrink=0.5,...) { 
+    ## browser()
     arg <- list(...)
     ## browser()
-    col <- colbar$col
-    if (!is.null(FUN))
-        bg <- col
-    else
-        bg <- "green"
+    ## col <- colbar$col
+    ##if (!is.null(FUN))
+    ##    bg <- col
+    ##else
+    ##    bg <- "green"
 
-    col.subset="darkred"; bg.subset="red"
-    if (is.list(col)) {
-      colnms <- names(col)
-      if (sum(is.element(colnms,'col.subset'))>0) {
-        col.subset <- col$col.subset
-        colnms[is.element(colnms,'col.subset')] <- 'done'
-      }
-      if (sum(is.element(colnms,'bg.subset'))>0) {
-        bg.subset <- col$bg.subset
-        colnms[is.element(colnms,'bg.subset')] <- 'done'
-      }
-      if (sum(is.element(colnms,'bg'))>0) bg <- col$bg
-      if (sum(is.element(colnms,'col'))>0) col <- col$col else col <- NULL    
+    ## col.subset="darkred"; bg.subset="red"
+    ## if (is.list(col)) {
+    ##  colnms <- names(col)
+    ##  if (sum(is.element(colnms,'col.subset'))>0) {
+    ##    col.subset <- col$col.subset
+    ##    colnms[is.element(colnms,'col.subset')] <- 'done'
+    ##  }
+    ##  if (sum(is.element(colnms,'bg.subset'))>0) {
+    ##    bg.subset <- col$bg.subset
+    ##    colnms[is.element(colnms,'bg.subset')] <- 'done'
+    ##  }
+    ##  if (sum(is.element(colnms,'bg'))>0) bg <- col$bg
+    ##  if (sum(is.element(colnms,'col'))>0) col <- col$col else col <- NULL    
+    ##}
+
+    ##par(mar=c(4,1,1,1))
+    par0 <- par()
+    fig0 <- par()$fig
+    if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) )
+        new <- FALSE
+    
+    if (new) {
+        dev.new()
     }
+    ##    par(fig=fig0,mar=c(2.5,2,2,2),bty="n") # c(0.05,0.95,0.13,0.95),mar=rep(1,4)
+    ##    ##    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+    ##    ##    fig=c(0.05,0.95,0.12,0.95))
+    ##} else {
+    ##    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,mar=rep(1,4))
+    ##}
+
+    ## Defining default values for colbar
+    if (is.null(colbar$palette))
+        colbar$palette <- as.character(levels(factor(varid(x))))
+    if (is.null(colbar$n)) n <- 10
     
     if (verbose)
         print(paste("List of arguments in the three-dots listed below ",arg,sep=""))
-    par0 <- par()
-   
+    
 
     if (sum(is.element(type,c('fill','contour')))) {
       x0 <- x
@@ -70,7 +93,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
     ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
     ##                     type=type,gridlines=gridlines,...)
     else if (projection=="lonlat") {
-        
+        ## browser()
         data("geoborders", envir = environment())
         if (zexpr == "alt") 
             zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
@@ -178,12 +201,23 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
             scale <- 1
         
         ##print(par()$fig)
-        par(fig=par0$fig)
+        par(fig=par0$fig,mar=rep(2,4))
 #        if (!is.null(FUN)) col <- "white" 
         if (!is.null(FUN)) {
          col <- col #"black" 
          bg.all <- col # REB 2015-06-03 fix?
         }
+        ##fig0 <- par0$fig
+        if (!is.null(FUN) & colorbar) {
+            if (showaxis)
+                fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200 ##0.075
+            else
+                fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/180 ##0.05
+        } else 
+            fig0 <- par0$fig
+
+        par(fig=fig0)
+        
         if (!is.null(highlight))
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
                  bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
@@ -197,6 +231,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
             plot(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg,
                  cex = cex*scale, xlab = "", ylab = "", xlim = xlim,
                  ylim = ylim , axes = FALSE , frame.plot = FALSE)
+
         ## Add geoborders
         lines(geoborders$x, geoborders$y, col = "black")
         lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y,
@@ -247,8 +282,6 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
         if (text) mtext(paste(("ESD package - map.station() - MET Norway 2014"),
                               "(www.met.no)",sep=" "),side=1,line=4,cex=0.6)
          
-        ## add grid
-        grid()
         ## insert color bar                                    
         if (!is.null(FUN)) {
             if (is.element(FUN,c('lon','lat','alt')))
@@ -266,39 +299,65 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
             ## y.rng <- floor(range(y,na.rm=TRUE))
             ## AM Added 12-05-2015           
            
-            if (!is.null(colbar$col)) {
-                colbar$n <- length(colbar$col)
-                if (is.null(colbar$breaks)) {
-                    colbar$breaks <- pretty(y,n=length(colbar$col))
-                    colbar$n <- length(colbar$breaks) + 1
-                    colbar$col <- colscal(n=colbar$n,col=varid(x))
-                }
-            } else if (!is.null(colbar$n)) {
-                colbar$breaks <- pretty(y,colbar$n)
-                colbar$n <- length(colbar$breaks) - 1
-                colbar$col <- colscal(n=colbar$n,col=varid(x))
-            } else if(!is.null(colbar$breaks)) {
-                colbar$n <- length(colbar$breaks) - 1
-                colbar$col <- colscal(n=colbar$n,col=varid(x))
-            } else {
-                n <- 20
-                colbar$breaks <- pretty(y,n=n)
-                colbar$col <- colscal(n=n,col=varid(x))
+            ##if (!is.null(colbar$col)) {
+            ##    colbar$n <- length(colbar$col)
+            ##if (is.null(colbar$breaks)) {
+            ##        colbar$breaks <- pretty(y,n=length(colbar$col))
+            ##        colbar$n <- length(colbar$breaks) + 1
+            ##        colbar$col <- colscal(n=colbar$n,col=varid(x))
+            ##    }
+            ##}
+            ## browser()
+            y.rng <- range(y,na.rm=TRUE)
+            if (verbose) print(paste("range of mapped values",paste(y.rng,collapse="/")))
+            if (!is.null(colbar$palette) & (!is.null(colbar$n) | !is.null(colbar$breaks))) {
+                ##colbar$breaks <- pretty(y,n=length(colbar$col))
+                ##colbar$n <- length(colbar$breaks) + 1
+                if (is.null(colbar$breaks) & !is.null(colbar$n)) {
+                    colbar$breaks <- pretty(y,n=colbar$n)
+                    colbar$n <- length(colbar$breaks)-1
+                } else if (!is.null(colbar$breaks) & is.null(colbar$n)) { # 
+                    if (length(colbar$breaks)==2)
+                        colbar$breaks <- pretty(colbar$breaks)
+                    colbar$n <- length(colbar$breaks)-1
+                } else if (!is.null(colbar$n)) { # 
+                    if (length(colbar$breaks)==2)
+                        colbar$breaks <- pretty(colbar$breaks,n=colbar$n)
+                    colbar$n <- length(colbar$breaks)-1
+                } else if (length(colbar$n)!= (length(colbar$breaks) -1))
+                    stop('The length of breaks must equal (n-1)')# default
+                ##browser()
+                if (verbose) print(paste("n=",colbar$n))
+                if (verbose) print(paste("breaks",colbar$breaks))
+                
+                if (verbose) print(paste("length(breaks) =",length(colbar$breaks)))
+                colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev)
+                if (verbose) print(paste("length(col) =",length(colbar$col)))
             }
+            ##}else if (!is.null(colbar$n)) {
+            ##    colbar$breaks <- pretty(y,colbar$n)
+            ##    colbar$n <- length(colbar$breaks) - 1
+            ##    colbar$col <- colscal(n=colbar$n,col=varid(x))
+            ##} else if(!is.null(colbar$breaks)) {
+            ##    colbar$n <- length(colbar$breaks) - 1
+            ##    colbar$col <- colscal(n=colbar$n,col=varid(x))
+            ##} else {
+            ##    n <- 20
+            ##    colbar$breaks <- pretty(y,n=n)
+            ##    colbar$col <- colscal(n=n,col=varid(x))
+            ##}
             
             ## reverse the colour for precip
             #print(is.precip(x))
-            if (is.precip(x)) colbar$col <- rev(colbar$col)
+            ##if (is.precip(x)) colbar$col <- rev(colbar$col)
             
             # find color index in colbar
             icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
            
-            if (is.null(col)) col <- colbar$col[icol]
-            if (is.null(bg)) bg <- colbar$col[icol]
+            ## if (is.null(col)) col <- colbar$col[icol]
+            ## if (is.null(bg)) bg <- colbar$col[icol]
 
             if (verbose) print(range(y,na.rm=TRUE))
-            
-            par(fig=par0$fig,new=TRUE)
             
             ##scale <- apply(y,2,function(x) sum(!is.na(x))/length(x))
             if (!is.null(attr(x,'na'))) ## (!inherits(x,"stationmeta") & 
@@ -306,17 +365,24 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
             else
                 scale <- 1
             
-            points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=col,
-                   cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)
-            par(fig=par0$fig,new=TRUE)
+            ##points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=col,
+            ##       cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)
+            if (is.null(col)) colbar$col <- rep(col,length(colbar$col[icol]))
+            points(ss$longitude, ss$latitude, pch = pch,
+                   bg=colbar$col[icol], col=colbar$col[icol],
+                   cex = cex*scale, xlab = "", ylab = "",
+                   xlim = xlim, ylim = ylim,...)
+            par(fig=fig0,new=TRUE)
+            
             ## print(par()$fig)
             
             if (!is.null(highlight)) {
-                points(highlight$longitude, highlight$latitude, pch = 21 , col = col.subset,
+                points(highlight$longitude, highlight$latitude, pch = 21 ,
+                       col = col.subset,
                        bg=bg.subset, cex = cex.subset,...)
-
+                
             }
-
+            
             ## Add geoborders
             lines(geoborders$x, geoborders$y, col = "grey50")
             lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "pink") ##"grey90"
@@ -325,20 +391,30 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
                 text(ss$longitude,ss$latitude,round(y,digits=2),
                      cex=cex/4)
             
-            ## par(fig=par0$fig)
+            par(fig=fig0,new=TRUE)
             ## print(par()$fig)
-            
+ 
             ## add color bar
             if (fancy & !is.null(colbar))
                 col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
                         col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
-                        type="p",verbose=FALSE,vl=1,border=FALSE)
-            else if (!is.null(colbar))
+                        type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
+            else if (!is.null(colbar)) {
+                
+                ##fig1 <- par0$fig
+                par(fig=par0$fig,new=TRUE)
                 image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
                            legend.only = T, zlim = range(colbar$breaks),
                            col = colbar$col, legend.width = 1,
-                           axis.args = list(cex.axis = 0.8), border = FALSE)
+                           axis.args = list(cex.axis = 0.8,
+                               xaxp=c(range(colbar$breaks),n=colbar$n)),
+                           border = FALSE,
+                           legend.shrink=legend.shrink)
+                           #bigplot=c(0,0,1,1),
+                           #smallplot=c(0,0,1,1))
+            }
         }    
+        ##par(fig=fig0,new=TRUE) ## AM 18-06-2015 comment
         if (verbose) {
             print(paste('colbar$breaks are ', paste(colbar$breaks,collapse="/"),
                         'of length',length(colbar$breaks)))
@@ -363,77 +439,23 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
                 text(ss$longitude, ss$latitude,substr(toupper(ss$location),1,3),pos=3,cex=cex/2)
         ##add label text
         
-        if (showaxis) title(xlab = "Longitude",line=2.2 , cex.lab = cex.lab) 
-        if (showaxis) title(ylab = "Latitude",line=2.2 , cex.lab = cex.lab) 
+        if (showaxis) title(xlab = "Longitude",line=2.2 , cex.lab = cex.lab,col="grey50") 
+        if (showaxis) title(ylab = "Latitude",line=2.2 , cex.lab = cex.lab, col="grey50") 
         ## format axes
-        if (showaxis) axis(1,seq(xlim[1],xlim[2],by=10),cex.axis=cex.axis) # 0.7
-        if (showaxis) axis(2,seq(ylim[1],ylim[2],by=10),cex.axis=cex.axis)
-        if (showaxis) axis(4,seq(ylim[1],ylim[2],by=10),cex.axis=cex.axis)
-        if (showaxis) axis(3,seq(xlim[1],xlim[2],by=10),cex.axis=cex.axis)
+        if (showaxis) axis(1,pretty(seq(xlim[1],xlim[2],by=5),n=5),cex.axis=cex.axis,col="grey50",col.ticks="grey50") # 0.7
+        if (showaxis) axis(2,pretty(seq(ylim[1],ylim[2],by=5),n=5),cex.axis=cex.axis,col="grey50",col.ticks="grey50")
+        if (showaxis) axis(4,pretty(seq(ylim[1],ylim[2],by=5),n=5),cex.axis=cex.axis,col="grey50",col.ticks="grey50")
+        if (showaxis) axis(3,pretty(seq(xlim[1],xlim[2],by=5),n=5),cex.axis=cex.axis,col="grey50",col.ticks="grey50")
+         ## add grid
+        par(fig=par0$fig,new=TRUE)
+        if (gridlines)
+            grid()
         
-        ## par(fig=par0$fig)
         ## lines(geoborders$x, geoborders$y, col = "black")
         ## lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
     }
 }
 
-col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
-                    type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
-    par0 <- par()
-    xleft <- par()$usr[1] 
-    xright <- par()$usr[2]
-    ybottom <- par()$usr[4] - 1 - h
-    ytop <-  par()$usr[4] - 1 
-    
-    by <- (xright - xleft - v * (length(col)))/(length(breaks))
-    steps <-   seq(0, (xright -xleft - v * (length(col))) ,by=by ) # 
-    nsteps <- length(steps) 
-    
-    if (verbose) print(steps)
-    if (verbose) print(breaks)
-    if (verbose) print(nsteps)
-    
-    ## if (max(abs(breaks))<=1) breaks <- round(breaks,digits=2)
-    
-    k <- 1/2
-    for (i in 1 :(nsteps-2)) {  
-        if (!is.null(v)) 
-            if (i == 1) k <- k + v/2 else k <- k + v  
-        if (type == "r") { ## "r" for rectangle
-            rect(xleft= k  + xleft + steps[i] ,xright= k + xleft + steps[i+1],
-                 ybottom=ybottom,ytop=ytop,col=col[i],border=border)
-            
-            ## text(x = k + xleft + steps[i], y = ybottom - 1,labels=sprintf("%.1f",icn[i]),cex=cex)
-        }
-        else if (type == "p") { ## "p" points
-            points(x= k + xleft + (steps[i]+ steps[i+1])/2, y=(ybottom + ytop)/2,
-                   pch=pch, bg=col[i],cex=cex,...)
-            
-        }
-        
-        text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl,
-             labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
-    } 
-    par(fig=par0$fig)
-}
-
-#trend <- function(x,ns.omit=TRUE,alpha=0.1) {
-#    t <- 1:length(x)
-#    model <- lm(x ~ t)
-#    y <- c(model$coefficients[2]*10)
-#    if (ns.omit) if (anova(model)$Pr[1] > alpha) y <- NA
-#    names(y) <- c("coefficients")
-#    return(y)
-#}
-
-colbar2 <- function(x,col) {
-    par(mar=c(1,0,0,0),fig=c(0.5,1,0.665,0.695),new=TRUE,cex.axis=0.6)
-    nl <- pretty(x)
-    n <- length(nl)
-    image(cbind(1:n,1:n),col=col) 
-    par(xaxt="s",new=new)
-    axis(1,at=seq(0,1,length=length(nl)),label=nl)
-}
 
 
 sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,
