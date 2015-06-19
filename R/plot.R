@@ -98,7 +98,7 @@ plot.eof <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
 
 
 plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
-                           what=c("pc","eof","var"),colbar=NULL,
+                           what=c("pc","eof","var"),## colbar=NULL,
                            verbose=FALSE,...) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   n <- pattern
@@ -109,35 +109,39 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
   var.eof <- 100* D^2/tot.var
   if (length(what)==3) mfrow <- c(2,2) else
   if (length(what)==2) mfrow <- c(2,1)
-  browser()
+  
   if (new) dev.new()
-  par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-  par(mfrow=mfrow,mar=c(0.5,0.5,2.5,0.5),bty="n",xaxt="n",yaxt="n")
+  ## par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
+  par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
 
   if (length(grep('eof',what))>0) {
-    if (verbose) {print('Show map'); print(class(x))}
-    if (inherits(x,'pca')) par(fig=c(0,0.45,0.5,0.975))
-    map(x,pattern=pattern,new=FALSE,colbar=colbar,verbose=verbose,...)
-    if (inherits(x,'pca')) par(new=TRUE,fig=c(0.5,0.95,0.5,0.95))
-    
+      if (verbose) {print('Show map'); print(class(x))}
+      if (inherits(x,'eof')) {## inherits(x,'pca') |
+          par(fig=c(0,0.5,0.5,1))
+          ## par(fig=c(0.025,0.5,0.5,0.975)) ## c(0,0.45,0.5,0.975) c(0.05,0.5,0.55,0.95)
+          map(x,pattern=pattern,verbose=verbose,...) ## AM formely new=FALSE colbar=colbar,
+      } else if (inherits(x,'pca')) {
+          par(fig=c(0,0.5,0.5,1))
+          map(x,verbose=verbose,...) ## colbar=colbar,
+      }
   }
-#  if (length(grep('pc',what))>0) result <- as.station(x) else
+  ##  if (length(grep('pc',what))>0) result <- as.station(x) else
 #  if (length(grep('var',what))>0) result <- attr(x,'tot.var')
     
   ylab <- paste("PC",n)
   main <- paste(attr(x,'longname'),n,"leading EOFs: ",
                  round(sum(var.eof[1:n]),1),"% of variance")
-
+  ## browser()
   if (length(grep('var',what))>0) {
-    par(xaxt="s",yaxt="s")
-    plot.eof.var(x,new=FALSE,cex.main=0.7)
+    par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
+    plot.eof.var(x,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
   
   #print(main)
   if (length(grep('pc',what))>0) {
-    par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
-      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
-    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim)
+    ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
+      par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1)
   }
   
   par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
@@ -404,15 +408,15 @@ plot.eof.var <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=20,...) {
   dD <- D*sqrt(2.0/n.eff)
   main <- paste(attr(x,'longname'),n,"leading EOFs: ",
                  round(sum(var.eof[1:n]),1),"% of variance")
-  if (is.null(xlim)) xlim <- c(0.7,n+0.3)
+  if (is.null(xlim)) xlim <- c(0,n) ##c(0.7,n+0.3)
   if (is.null(ylim)) ylim <- c(0,100)
   if (new) dev.new()
-  par(bty="n",xaxt="n")
+  ##par(bty="n") ##,xaxt="n")
   plot(var.eof,type="n",
        main=main,ylab="Variance (%)",xlab="EOF order",
        xlim=xlim,ylim=ylim,...)
   lines(cumsum(var.eof),lwd=3,col=rgb(1,0.8,0.8))
-  grid(nx=21,ny=12)
+  grid() ## nx=21,ny=12)
   lines(var.eof,type="b",pch=19)
   for (i in 1:length(var.eof)) {
     lines(rep(i,2),100*c((D[i]+dD[i])^2/tot.var,(D[i]-dD[i])^2/tot.var),
