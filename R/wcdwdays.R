@@ -192,8 +192,8 @@ heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
   if (verbose) print('heatwaves')
   stopifnot(inherits(x,'station'))
   ## Annual number of consequtive warm days
-  ncwd <- annual(subset(spell(x,threshold=treshold),is=1))
-  
+  ncwd <- aggregate(subset(spell(x,threshold=threshold),is=1),
+                    year,FUN='mean')
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
   ## Warm season of dse
@@ -206,7 +206,9 @@ heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
   wdse <- wdse - mean(coredata(ovl),na.rm=TRUE) +
                        mean(coredata(xws),na.rm=TRUE)
   ## Predictor data
-  cal <- data.frame(y=coredata(ncwd), x=coredata(xws))
+  irm <- setdiff(index(xws),index(ncwd))
+  cal <- data.frame(y=coredata(ncwd)[!is.element(index(ncwd),irm)],
+                    x=coredata(xws)[!is.element(index(xws),irm)])
   model <- lm(y ~ x, data=cal)
   
   q1 <- data.frame(x=apply(coredata(wdse),1,quantile,probs=0.05,na.rm=TRUE))

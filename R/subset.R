@@ -276,15 +276,20 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) {print("subset.dsensemble"); print(it)}
     x0 <- x
     d <- dim(x)
+    if (verbose) print(d)
     if (is.null(is)) is <- 1:d[2]
     if (!is.null(it)) {
         if (is.character(it)) it <- tolower(it)
-        if ( (length(rownames(table(month(x))))==1) & (it==0) )
-            return(x)
+        if (verbose) print(table(month(x)))
+        if ( (length(rownames(table(month(x))))==1) & (it==0) ) {
+          if (verbose) print('Only one season is available')
+          return(x)
+          }
         ## Different ways of selecting along the time dimension
-        if ( inherits(it[1],"logical") & (length(it)==length(x)) )
-            y <- x[it,is] else
-        if (it[1]==0) {
+        if ( inherits(it[1],"logical") & (length(it)==length(x)) ) {
+          if (verbose) print('subindexing with boolean index: y <- x[it,is]')
+          y <- x[it,is]
+        } else if (it[1]==0) {
             if (verbose) print("Annual means")
             djf <- subset(x,it='djf',is=is)
             mam <- subset(x,it='mam',is=is)
@@ -297,12 +302,12 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             yr <- yr1[is.element(yr1,yr2)]
             yr <- yr[is.element(yr,yr3)]
             yr <- yr[is.element(yr,yr4)]
-                                        #print(yr)
+            if (verbose) print(yr)
             i1 <- is.element(yr1,yr)
             i2 <- is.element(yr2,yr)
             i3 <- is.element(yr3,yr)
             i4 <- is.element(yr4,yr)
-                                        #print(c(sum(i1),sum(i2),sum(i3),sum(i4)))
+            if (verbose) print(c(sum(i1),sum(i2),sum(i3),sum(i4)))
             y <- zoo(0.25*(coredata(djf[i1,]) +
                            coredata(mam[i2,]) +
                            coredata(jja[i3,]) +
@@ -311,17 +316,19 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             y <- attrcp(x0,y)
             class(y) <- class(x0)
         } else if (is.character(it)) {
-            if (verbose) print("it is character")
+            if (verbose) print("it is character - select a season")
             months <- month(x)
             if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
                 ii <- is.element(months,(1:12)[is.element(tolower(month.abb),
                                                           tolower(substr(it,1,3)))])
+                if (verbose) print(ii)
                 y <- x[ii,is]
             } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
-                                        #print("season")
+                if (verbose) print("season")
                 mon <- eval(parse(text=paste('season.abb()$',it,sep='')))
-                                        #print(mon)
+                if (verbose) print(mon)
                 ii <- is.element(months,mon)
+                if (verbose) print(ii)
                 y <- x[ii,is]
                                         #      }
                                         #    if ( (min(it) > 0) & (max(it) < 5) ) {
