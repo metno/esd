@@ -1100,3 +1100,21 @@ plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
       grid()
     }
   }
+
+plot.nevents <- function(x,verbose=FALSE,...) {
+  # Plot the results from 
+  if (verbose) print('plot.nevents')
+  dev.new()
+  par(bty='n')
+  if (is.T(attr(x,'observation')))
+    col <- c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
+         rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)) else
+    col <- c(rgb(0.3,0.3,0.6,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.5,0.5,0.7,0.5),
+         rgb(0.6,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.8,0.5,0.8,0.5))
+  plot.zoo(x,plot.type='single',lwd=5,main=loc(x),
+       xlab="",ylab=attr(x,'info'),col=col,...)
+  grid()
+  points(attr(x,'observation'),pch=19)
+  lines(attr(x,'nwd.pre'),col=rgb(0.5,0.5,0.5,0.5))
+}
+

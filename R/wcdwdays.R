@@ -13,6 +13,9 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
 
   cal <- data.frame(x=c(coredata(mwd1),coredata(mwd2)),
                     y=c(coredata(nwd1),coredata(nwd2)))
+  ## Use polymomial as two different seasons are involved and the
+  ## analysis involves a interpolation more than an extrapolation
+  ## since winter is expected to become more similar to spring/autumn
   dfit <- glm(y ~ x + I(x^2) + I(x^3),family='poisson',data=cal)
 
   if (plot) {
@@ -36,7 +39,7 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
   djf.dse <- subset(dse,it='djf')
-  ovl <- window(djf.dse,start=start(y),end=end(y))
+  ovl <- window(djf.dse,start=start(x),end=end(x))
   djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
                        mean(coredata(mwd1),na.rm=TRUE)
 
@@ -79,6 +82,10 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
   Nwd <- attrcp(x,Nwd)
   attr(Nwd,'unit') <- 'days'
   attr(Nwd,'info') <- paste('number of cold days: t2m < ',threshold)
+  attr(Nwd,'observation') <- nwd1
+  attr(Nwd,'nwd.pre') <- nwd.pre
+  index(Nwd) <- t
+  class(Nwd) <- c('nevents','zoo')
   invisible(Nwd)
 }
 
@@ -97,7 +104,8 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
 
   cal <- data.frame(x=c(coredata(mwd1)),
                     y=c(coredata(nwd1)))
-#  dfit <- glm(y ~ x + I(x^2) + I(x^3),family='poisson',data=cal)
+  ## Use linear fit rather than polynomial as this analysis only
+  ## involves one season and to a greater degree extrapolation.
   dfit <- glm(y ~ x,family='poisson',data=cal)
 
   if (plot) {
@@ -122,7 +130,7 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
   djf.dse <- subset(dse,it='djf')
-  ovl <- window(djf.dse,start=start(y),end=end(y))
+  ovl <- window(djf.dse,start=start(x),end=end(x))
   djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
                        mean(coredata(mwd1),na.rm=TRUE)
 
@@ -171,6 +179,10 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
   Nwd <- attrcp(x,Nwd)
   attr(Nwd,'unit') <- 'days'
   attr(Nwd,'info') <- paste('number of cold days: t2m < ',threshold)
+  attr(Nwd,'observation') <- nwd1
+  attr(Nwd,'nwd.pre') <- nwd.pre
+  index(Nwd) <- t
+  class(Nwd) <- c('nevents','zoo')
   invisible(Nwd)
 }
 
@@ -189,7 +201,7 @@ heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
   ## Warm season of x
   xws <- annual(subset(x,it=it),FUN='mean',nmin=90)
   ## Same period as in x (synchronise)
-  ovl <- window(wdse,start=start(y),end=end(y))
+  ovl <- window(wdse,start=start(x),end=end(x))
   ## Bias correction: ensure same mean
   wdse <- wdse - mean(coredata(ovl),na.rm=TRUE) +
                        mean(coredata(xws),na.rm=TRUE)
@@ -233,33 +245,93 @@ heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
 
   Nwd <- attrcp(x,Nwd)
   attr(Nwd,'unit') <- 'days'
-  attr(Nwd,'info')
+  attr(Nwd,'info') <- paste('mean spell duration: ',varid(x),
+                            '> ',threshold,unit(x))
+  attr(Nwd,'observation') <- nwd1
+  attr(Nwd,'nwd.pre') <- nwd.pre
+  index(Nwd) <- t
+  class(Nwd) <- c('nevents','zoo')
   return(Nwd)
 }
 
 nwetdays <- function(x,dse=NULL,threshold=10,
-                     FUN='mu',verbose=FALSE,plot=TRUE) {
+                     verbose=FALSE,plot=TRUE) {
   nw <- annual(x,FUN='count',threshold = threshold)
   mu <- annual(x,FUN='wetmean')
-  fw <- annual(x,FUN='wetmean',threshold = threshold)
-  pr <- annual(x,FUN='precip.Pr',threshold = threshold)
-  X <- eval(parse(text=FUN)) 
-  cal <- data.frame(x=X,y=nw)
+  cal <- data.frame(x=mu,y=nw)
   dfit <- glm(y ~ x,family='poisson',data=cal)
 
   if (plot) {
     dev.new()
     par(bty='n')
     plot(cal,pch=19,
-         xlab=paste(varid(X),unit(X)),
+         xlab=paste(varid(mu),unit(mu)),
          ylab='count (events/year)',main=loc(x))
     pre <- data.frame(x=seq(min(cal$x,na.rm=TRUE)-1,
                         max(cal$x,na.rm=TRUE)+5,by=0.1))
     lines(pre$x,exp(predict(dfit,newdata=pre)),col=rgb(1,0,0,0.3),lwd=3)
   }
 
-    if (is.null(dse)) dse <-  DSensemble.mu(x,biascorrect=TRUE,
-                                            verbose=verbose,plot=plot)
+   if (is.null(dse)) dse <-  DSensemble.precip(x,biascorrect=TRUE,
+                                               predictor='air.mon.mean.nc',
+                                               pattern="tas_Amon_ens_",
+                                               verbose=verbose,plot=plot)
 
+  dse <- subset(dse,it=0)
+  ovl <- window(dse,start=start(x),end=end(x))
+  dse <- dse - mean(coredata(ovl),na.rm=TRUE) +
+               mean(coredata(mu),na.rm=TRUE)
+
+  q1 <- data.frame(x=apply(coredata(dse),1,quantile,probs=0.05,na.rm=TRUE))
+  q2 <- data.frame(x=apply(coredata(dse),1,quantile,probs=0.95,na.rm=TRUE))
+  qm <- data.frame(x=apply(coredata(dse),1,mean,na.rm=TRUE))
+  obs <- data.frame(x=coredata(mu))
+
+  t <- year(index(dse))
+  preq1 <- exp(predict(dfit,newdata=q1))
+  preq1[preq1 > 360] <- NA  # maximum length of the summer season
+  tr1 <- predict(lm(preq1 ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
+  tr1[!is.finite(preq1)] <- NA
+  preq2 <- exp(predict(dfit,newdata=q2))
+  preq2[preq2 > 360] <- NA  # maximum length of the summer season
+  tr2 <- predict(lm(preq2 ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
+  tr2[!is.finite(preq2)] <- NA
+  prem  <- exp(predict(dfit,newdata=qm))
+  prem[prem > 360] <- NA  # maximum length of the summer season 
+  tr3 <- predict(lm(prem ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
+  tr3[!is.finite(prem)] <- NA
+  Nwd <- zoo(cbind(preq1,preq2,prem,tr1,tr2,tr3),order.by=t)
+  nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mu))
+
+  if (plot) {
+    dev.new()
+    par(bty='n')
+    plot(zoo(dse,order.by=year(dse)),
+         plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
+         ylab=expression(paste('mean temperature - winter',(degree*C))),
+         xlab='',main=loc(x))
+    points(mu,pch=19)
+    grid()
+    
+    dev.new()
+    par(bty='n')
+    plot(Nwd,plot.type='single',lwd=5,main=loc(x),
+         xlab="",ylab=paste('number of days per year with P > ',
+                   threshold,'mm/day'),
+         col=c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
+               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)))
+    grid()
+    points(nw,pch=19)
+    lines(nwd.pre,col=rgb(0.5,0.5,0.5,0.5))
+  }
+
+  Nwd <- attrcp(x,Nwd)
+  attr(Nwd,'unit') <- 'days'
+  attr(Nwd,'info') <- paste('number of cold days: t2m < ',threshold)
+  attr(Nwd,'observation') <- nw
+  attr(Nwd,'nwd.pre') <- nwd.pre
+  index(Nwd) <- index(dse)
+  class(Nwd) <- c('nevents','zoo')
+  invisible(Nwd)
 }
   

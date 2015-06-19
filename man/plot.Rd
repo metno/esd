@@ -13,6 +13,7 @@
 \alias{plot.diagnose}
 \alias{plot.xval}
 \alias{plot.diagnose.comb.eof}
+\alias{plot.nevents}
 \alias{nam2expr}
 \title{Plot esd objects}
 \description{
@@ -39,6 +40,7 @@ plot.diagnose.comb.eof(x,...)
 plot.xval(x,...)
 plot.dsensemble(x,pts=FALSE,showci=TRUE,showtrend=TRUE,legend=TRUE,it=0,
                 envcol=c(1,0,0,0.2),...)
+plot.nevents(x,verbose=FALSE,...)
 }
 \arguments{
   \item{x}{the object to be plotted}
