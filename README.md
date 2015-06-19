@@ -16,6 +16,6 @@ Description: The package contains R functions for retrieving data, making climat
 
 License: GPL (>= 2)
 
-URL: http://rcg.gvc.gu.se/edu/esd.pdf
+URL: http://figshare.com/articles/_esd_The_Empirical_Statistical_Downscaling_tool_amp_its_visualisation_capabilities_/1454425
 
 ZipData: no 
