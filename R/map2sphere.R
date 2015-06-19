@@ -67,30 +67,32 @@ map2sphere <- function(x,it=NULL,is=NULL,
                        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                        lonR=NULL,latR=NULL,axiR=0,new=TRUE,
                        type=c("fill","contour"),
-
-                       colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                       colbar= list(palette='t2m',rev=FALSE,n=10,
                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
                        gridlines=TRUE,fancy=FALSE,verbose=FALSE,...) {
 
   
   if (verbose) print('map2sphere')
-  if (!is.null(colbar$palette) & (!is.null(colbar$n) | !is.null(colbar$breaks))) {
-        ##colbar$breaks <- pretty(y,n=length(colbar$col))
-        ##colbar$n <- length(colbar$breaks) + 1
-        if (is.null(colbar$breaks) & !is.null(colbar$n)) {
-            colbar$breaks <- pretty(x,n=colbar$n)
-            colbar$n <- length(colbar$breaks)-1
-        } else if (!is.null(colbar$breaks) & is.null(colbar$n))
-            colbar$n <- length(colbar$breaks)-1
-        else if (length(colbar$n)!= (length(colbar$breaks) -1))
-            stop('The length of breaks must equal (n-1)')# default
-        ##browser()
-        if (verbose) print(paste("n=",colbar$n))
-        if (verbose) print(paste("breaks",colbar$breaks))
-        if (verbose) print(paste("length(breaks) =",length(colbar$breaks)))
-        colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev)
-        if (verbose) print(paste("length(col) =",length(colbar$col)))
-    }
+
+  ## If only a few items are provided in colbar - hen set the rest to the default
+  if (!is.null(colbar)) {
+    if (verbose) print('sort out the colours')
+    if (is.null(colbar$palette)) colbar$palette <- 't2m'
+    if (is.null(colbar$rev)) colbar$rev <- FALSE
+    if (is.null(colbar$n)) colbar$n <- 10
+    if (is.null(colbar$breaks)) {
+      colbar$breaks <- pretty(x,n=colbar$n)
+    } else if (length(colbar$breaks)==2)
+      colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
+    colbar$n <- length(colbar$breaks)-1
+    if (is.null(colbar$type)) colbar$type <- 'p'
+    if (is.null(colbar$cex)) colbar$cex <- 2
+    if (is.null(colbar$h)) colbar$h <- 0.6
+    if (is.null(colbar$v)) colbar$v <- 1
+    if (verbose) print(colbar)
+    colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
+    if (verbose) print(paste("length(col) =",length(colbar$col)))
+  }
   ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
   ## if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
   if (!is.null(it) | !is.null(it)) x <- subset(x,it=it,is=is)
@@ -158,6 +160,7 @@ map2sphere <- function(x,it=NULL,is=NULL,
   ## AM commented
   index <- round( nc*( map - min(colbar$breaks) )/
                     ( max(colbar$breaks) - min(colbar$breaks) ) )
+  if (verbose) print('set colours')
   
 # Rotate coastlines:
   a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
@@ -199,6 +202,7 @@ map2sphere <- function(x,it=NULL,is=NULL,
   
 # Colourbar:
   if (!is.null(colbar)) {
+    if (verbose) print('plot colourbar')
 #    #print(breaks)
 #    par0 <- par()
 #    par(fig = c(0.3, 0.7, 0.05, 0.10),cex=0.8,
