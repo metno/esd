@@ -122,14 +122,19 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
           map(x,pattern=pattern,verbose=verbose,...) ## AM formely new=FALSE colbar=colbar,
       } else if (inherits(x,'pca')) {
           par(fig=c(0,0.5,0.5,1))
-          map(x,verbose=verbose,...) ## colbar=colbar,
+          main0 <- paste(paste(attr(x,'source')[1],attr(x,'variable')[1]))
+          main1 <- paste('Leading EOF#',pattern, ' (',
+                         round(var.eof[pattern],digits=2),"%)",sep='')
+          map(x,pattern=pattern,verbose=verbose,...) ## colbar=colbar,
+          title(main=main0,cex.main=0.6,col.main="grey40",adj=0)
+          title(main=main1,cex.main=0.8)
       }
   }
   ##  if (length(grep('pc',what))>0) result <- as.station(x) else
 #  if (length(grep('var',what))>0) result <- attr(x,'tot.var')
     
   ylab <- paste("PC",n)
-  main <- paste(attr(x,'longname'),n,"leading EOFs: ",
+  main <- paste('First',n,"leading EOFs: ", ## attr(x,'longname')
                  round(sum(var.eof[1:n]),1),"% of variance")
   ## browser()
   if (length(grep('var',what))>0) {
@@ -141,13 +146,19 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
       par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1)
+      main <- paste('Leading PC#',pattern,'of ',attr(x,'longname'),
+                 " - Explained variance = ",round(var.eof[pattern],digits=2),
+                    "%",sep='')
+      
+      plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
+               cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
+      axis(1,at=pretty(index(x[,n]),n=10),cex.axis=0.9)
   }
-  
-  par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
+ 
+  par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-  legend(0.01,0.90,paste(attr(x,'source')[1],attr(x,'variable')[1]),
-         bty="n",cex=0.5,ncol=2,text.col="grey40")
+  legend(0,0.83,paste(attr(x,'source')[1],attr(x,'variable')[1]),
+         bty="n",cex=0.8,ncol=2,text.col="grey40")
   
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
@@ -406,8 +417,10 @@ plot.eof.var <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=20,...) {
   n.eff <- round(nt * (1.0-attr(x,'max.autocor'))/
                       (1.0+attr(x,'max.autocor')))  
   dD <- D*sqrt(2.0/n.eff)
-  main <- paste(attr(x,'longname'),n,"leading EOFs: ",
-                 round(sum(var.eof[1:n]),1),"% of variance")
+  main <- paste('First',n,"leading EOFs: ", ## attr(x,'longname')
+                 round(sum(var.eof[1:n]),digits=1),"% of variance")
+  ##main <- paste(attr(x,'longname'),n,"leading EOFs: ",
+  ##               round(sum(var.eof[1:n]),1),"% of variance")
   if (is.null(xlim)) xlim <- c(0,n) ##c(0.7,n+0.3)
   if (is.null(ylim)) ylim <- c(0,100)
   if (new) dev.new()
