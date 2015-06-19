@@ -43,8 +43,9 @@ if (verbose) print("loop...")
     y <- aggregate.area(MAMGCM,FUN='mean')
 
     if (diff(range(y,na.rm=TRUE)) > 10) {
-      print(paste(attr(gcm,'model_id'),'- temperature difference',diff(range(y,na.rm=TRUE))),
-            'min time step',min(diff(index(gcm))),'max time step',max(diff(index(gcm))))
+      print(paste(attr(gcm,'model_id'),'. Max T(2m) diff.',diff(range(y,na.rm=TRUE)),
+            'min time step',min(diff(index(gcm))),'max time step',max(diff(index(gcm)))))
+      print(attr(gcm,'calendar'))
     }
     
     lines(y,col=rgb(0.5,0.5,0.5,0.3))
