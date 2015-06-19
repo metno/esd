@@ -9,7 +9,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
                         projection="lonlat",
                         xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                         colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                            breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                            breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                         type=c("fill","contour"),gridlines=FALSE,
                         lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
     
@@ -56,7 +56,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
 map.matrix <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                      colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
                      pattern=1,...) {
@@ -101,7 +101,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
 map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                      colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
                      pattern=1,...) {
@@ -127,7 +127,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                     colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
                     pattern=1,...) {
@@ -159,7 +159,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
   if (attr(x, "area.mean.expl")) type="fill"
   if (projection=="lonlat") lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
-          n=n,colbar=colbar,new=new,verbose=verbose,
+          n=n,colbar=colbar,new=new,##verbose=verbose,
           type=type,gridlines=gridlines,
           verbose=verbose,...) else
   if (projection=="sphere") map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
@@ -178,7 +178,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
   if (verbose) print('map.ds')
@@ -238,14 +238,14 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
        contour(lon(X),lat(X),X,add=TRUE,col=col[1])
   } else
   if (projection=="sphere") map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
-                                       type=type,gridlines=gridlines,
+                                       type=type,gridlines=gridlines,verbose=verbose,
                                        colbar=colbar,new=new,...) else
   if (projection=="np") map2sphere(X,lonR=lonR,latR=90,axiR=axiR,
                                        type=type,gridlines=gridlines,
-                                       colbar=colbar,new=new,...) else
+                                       colbar=colbar,new=new,verbose=verbose,...) else
   if (projection=="sp") map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,
                                    type=type,gridlines=gridlines,
-                                   colbar=colbar,new=new,...)
+                                   colbar=colbar,new=new,verbose=verbose,...)
   invisible(X)
 }
 
@@ -253,7 +253,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,na.rm=TRUE,...) {
 
@@ -335,7 +335,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
 map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
   if (verbose) print("map.corfield")
@@ -357,20 +357,21 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   if (verbose) {print(projection); print(dim(x))}
   
   if (projection=="lonlat") lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                             colbar=colbar,type=type,new=new,verbose=verbose,
+                                             colbar=colbar,type=type,new=new,
+                                             verbose=verbose,
                                              gridlines=gridlines,...) else
   if (projection=="sphere") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                        lonR=lonR,latR=latR,axiR=axiR,
                                        type=type,gridlines=gridlines,
-                                       colbar=colbar,new=new,...) else
+                                       colbar=colbar,new=new,verbose=verbose,...) else
   if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                    lonR=lonR,latR=90,axiR=axiR,
                                    type=type,gridlines=gridlines,
-                                   colbar=colbar,new=new,...) else
+                                   colbar=colbar,new=new,verbose=verbose,...) else
   if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                    lonR=lonR,latR=-90,axiR=axiR,
                                    type=type,gridlines=gridlines,
-                                   colbar=colbar,new=new,...)
+                                   colbar=colbar,new=new,verbose=verbose,...)
 
   if (!is.null(attr(x,'x.longitude')) & !is.null(attr(x,'x.latitude')))
       points(attr(x,'x.longitude'),attr(x,'x.latitude'),lwd=2,cex=1.2)
@@ -381,7 +382,7 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
   if (verbose) print('map.trend')
@@ -408,20 +409,21 @@ map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   #str(X)
 
   if (projection=="lonlat") lonlatprojection(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                             colbar=colbar,type=type,new=new,verbose=verbose,
+                                             colbar=colbar,type=type,new=new,
+                                             verbose=verbose,
                                              gridlines=gridlines,...) else
   if (projection=="sphere") map2sphere(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                        lonR=lonR,latR=latR,axiR=axiR,
                                        type=type,gridlines=gridlines,
-                                       colbar=colbar,new=new,...) else
+                                       colbar=colbar,new=new,verbose=verbose,...) else
   if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                    lonR=lonR,latR=90,axiR=axiR,
                                    type=type,gridlines=gridlines,
-                                   colbar=colbar,new=new,...) else
+                                   colbar=colbar,new=new,verbose=verbose,...) else
   if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
                                    lonR=lonR,latR=-90,axiR=axiR,
                                    type=type,gridlines=gridlines,
-                                   colbar=colbar,new=new,...)
+                                   colbar=colbar,new=new,verbose=verbose,...)
   invisible(X)
 }
 
@@ -459,18 +461,18 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
   
   map.station(X,new=new,FUN="mean",
               colbar=colbar,
-              xlim=xlim,ylim=ylim,zlim=zlim,...)
+              xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
 }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
   x <- subset(x,it=it,is=is)
   map.field(x,new=new,FUN=FUN,
               colbar=colbar,
-              cex=cex,xlim=xlim,ylim=ylim,...)
+              cex=cex,xlim=xlim,ylim=ylim,verbose=verbose,...)
   
 }
 
@@ -532,7 +534,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   
   map(Y,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-      gridlines=gridlines,FUN='mean',
+      gridlines=gridlines,FUN='mean',verbose=verbose,
       colbar=colbar,showall=FALSE,new=FALSE)
   ## browser()
   if (sum(is.element(type,'ts'))>0)
@@ -540,7 +542,7 @@ map.cca <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   par(fig=c(0.5,1,0.5,1),new=TRUE) ## mar=c(0,0,0,0),
   map(X,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-      gridlines=gridlines,FUN='mean',
+      gridlines=gridlines,FUN='mean',verbose=verbose,
       colbar=colbar,showall=FALSE,new=FALSE)
   
   invisible(list(U=U,V=V))
@@ -555,7 +557,7 @@ map.googleearth <- function(x) {
 lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,
                    geography=TRUE,fancy=FALSE,colorbar=TRUE,...) {
 
@@ -564,8 +566,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     if (is.null(colbar$palette)) colbar$palette <- "heat.colors"
     if (is.null(colbar$rev)) colbar$rev <- FALSE
     ## browser()
-    if (is.null(colbar$n) & is.null(colbar$breaks)) colbar$n <- 10 
-
+    if (is.null(colbar$n) & is.null(colbar$breaks)) colbar$n <- 10
+    
     par0 <- par()
     fig0 <- par()$fig
     
@@ -591,9 +593,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
     
     if (verbose) print('lonlatprojection')
-    ##
+    ## browser()
     if (colorbar) {
-        fig0[3] <- par0$fig[3] + 0.05
+        fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
     } else 
         fig0 <- par0$fig
     par(fig=fig0)
@@ -673,7 +675,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   #if (is.Date(type))
 
     if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
-    browser()     
+    ## browser()     
     if (new) {
         dev.new()
     ## par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
@@ -768,6 +770,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
   par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1)
   result <- list(x=lon,y=lat,z=x,breaks=breaks)
-    par(fig=par0()$fig)
+    par(fig=par0$fig)
     invisible(result)
 }
