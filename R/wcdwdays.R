@@ -1,6 +1,6 @@
 # number of wet, cold, dry, or wet days
 coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
-                           verbose=FALSE,plot=TRUE) {
+                           verbose=FALSE,plot=TRUE,...) {
   # Estimate number of days with low temperatures
   if (verbose) print('mildwinterdays')
   stopifnot(inherits(x,'station'))
@@ -73,7 +73,8 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
     plot(Nwd,plot.type='single',lwd=5,main=loc(x),ylim=c(0,100),
          xlab="",ylab=paste('number of cold days: T(2m) < ',threshold),
          col=c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
-               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)))
+               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)),
+         ...)
     grid()
     points(nwd1,pch=19)
     lines(nwd.pre,col=rgb(0.5,0.5,0.5,0.5))
@@ -89,12 +90,9 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
   invisible(Nwd)
 }
 
-coldspells <- function(x,dse=NULL,it='jja',threshold=0,
-                       verbose=FALSE,plot=TRUE) {
-}
 
 hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
-                          verbose=FALSE,plot=TRUE) {
+                          verbose=FALSE,plot=TRUE,...) {
     # Estimate number of days with low temperatures
   if (verbose) print('mildwinterdays')
   stopifnot(inherits(x,'station'))
@@ -170,7 +168,8 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
     plot(Nwd,plot.type='single',lwd=5,main=loc(x),ylim=c(0,90),
          xlab="",ylab=paste('number of hot days: T(2m) > ',threshold),
          col=c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
-               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)))
+               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)),
+         ...)
     grid()
     points(nwd1,pch=19)
     lines(nwd.pre,col=rgb(0.5,0.5,0.5,0.5))
@@ -187,13 +186,14 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
 }
 
 heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
-                           verbose=FALSE,plot=TRUE) {
+                           verbose=FALSE,plot=TRUE,ylab=NULL,is=1,...) {
   ## Use the 
   if (verbose) print('heatwaves')
   stopifnot(inherits(x,'station'))
   ## Annual number of consequtive warm days
-  ncwd <- aggregate(subset(spell(x,threshold=threshold),is=1),
+  ncwd <- aggregate(subset(spell(x,threshold=threshold),is=is),
                     year,FUN='mean')
+  
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
   ## Warm season of dse
@@ -209,6 +209,7 @@ heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
   irm <- setdiff(index(xws),index(ncwd))
   cal <- data.frame(y=coredata(ncwd)[!is.element(index(ncwd),irm)],
                     x=coredata(xws)[!is.element(index(xws),irm)])
+  obs <- data.frame(x=coredata(xws))
   model <- lm(y ~ x, data=cal)
   
   q1 <- data.frame(x=apply(coredata(wdse),1,quantile,probs=0.05,na.rm=TRUE))
@@ -217,44 +218,62 @@ heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
   
   t <- year(index(wdse))
   preq1 <- predict(model,newdata=q1)
-  tr1 <- lm(preq1 ~ t + I(t^2) + I(t^3))
+  tr1 <- predict(lm(preq1 ~ t + I(t^2) + I(t^3)))
   preq2 <- predict(model,newdata=q2)
-  tr2 <- lm(preq2 ~ t + I(t^2) + I(t^3))
+  tr2 <- predict(lm(preq2 ~ t + I(t^2) + I(t^3)))
   prem  <- predict(model,newdata=qm)
-  tr3 <- lm(prem ~ t + I(t^2) + I(t^3))
+  tr3 <- predict(lm(prem ~ t + I(t^2) + I(t^3)))
   Nwd <- zoo(cbind(preq1,preq2,prem,tr1,tr2,tr3),order.by=t)
+  nwd.pre <- zoo(predict(model,newdata=obs),order.by=year(xws))
 
+  if (is.null(ylab)) ylab <- paste('mean spell duration in days: ',varid(x),
+                                   '> ',threshold,unit(x))
   if (plot) {
+    dev.new()
+    qqnorm(ncwd); qqline(ncwd)
+    
     dev.new()
     par(bty='n')
     plot(zoo(wdse,order.by=year(wdse)),
          plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
          ylab=expression(paste('mean temperature - ',toupper(it),(degree*C))),
          xlab='',main=loc(x))
-    points(mwd1,pch=19)
+    points(xws,pch=19)
     grid()
     
     dev.new()
     par(bty='n')
-    plot(Nwd,plot.type='single',lwd=5,main=loc(x),ylim=c(0,100),
-         xlab="",ylab=paste('number of hot days: T(2m) > ',threshold),
+    plot(Nwd,plot.type='single',lwd=5,main=loc(x),
+         xlab="",ylab=ylab,
          col=c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
-               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)))
+               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)),
+         ...)
     grid()
-    points(nwd1,pch=19)
+    points(ncwd,pch=19)
     lines(nwd.pre,col=rgb(0.5,0.5,0.5,0.5))
   }
 
   Nwd <- attrcp(x,Nwd)
   attr(Nwd,'unit') <- 'days'
-  attr(Nwd,'info') <- paste('mean spell duration: ',varid(x),
-                            '> ',threshold,unit(x))
-  attr(Nwd,'observation') <- nwd1
+  attr(Nwd,'info') <- ylab
+  attr(Nwd,'observation') <- ncwd
   attr(Nwd,'nwd.pre') <- nwd.pre
   index(Nwd) <- t
   class(Nwd) <- c('nevents','zoo')
   return(Nwd)
 }
+
+coldspells <- function(x,dse=NULL,it='djf',threshold=0,
+                       verbose=FALSE,plot=TRUE,...) {
+
+  ylab <- paste('mean spell duration in days: ',varid(x),
+                            '< ',threshold,unit(x))
+  y <- heatwavespells(x,dse=dse,it=it,threshold=threshold,
+                      verbose=verbose,plot=plot,ylab=ylab,is=2,...)
+
+  invisible(y)
+}
+
 
 nwetdays <- function(x,dse=NULL,threshold=10,
                      verbose=FALSE,plot=TRUE) {
@@ -280,7 +299,7 @@ nwetdays <- function(x,dse=NULL,threshold=10,
                                                verbose=verbose,plot=plot)
 
   dse <- subset(dse,it=0)
-  ovl <- window(dse,start=start(x),end=end(x))
+  ovl <- window(dse,start=year(start(x)),end=year(end(x)))
   dse <- dse - mean(coredata(ovl),na.rm=TRUE) +
                mean(coredata(mu),na.rm=TRUE)
 
@@ -310,7 +329,7 @@ nwetdays <- function(x,dse=NULL,threshold=10,
     par(bty='n')
     plot(zoo(dse,order.by=year(dse)),
          plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
-         ylab=expression(paste('mean temperature - winter',(degree*C))),
+         ylab=paste('annual mean',varid(x),' (',unit(x),')',sep=''),
          xlab='',main=loc(x))
     points(mu,pch=19)
     grid()
