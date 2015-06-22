@@ -39,7 +39,8 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
   djf.dse <- subset(dse,it='djf')
-  ovl <- window(djf.dse,start=start(x),end=end(x))
+  index(djf.dse) <- year(djf.dse)
+  ovl <- window(djf.dse,start=year(start(x)),end=year(end(x)))
   djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
                        mean(coredata(mwd1),na.rm=TRUE)
 
@@ -128,7 +129,8 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
   djf.dse <- subset(dse,it='djf')
-  ovl <- window(djf.dse,start=start(x),end=end(x))
+  index(djf.dse) <- year(djf.dse)
+  ovl <- window(djf.dse,start=year(start(x)),end=year(end(x)))
   djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
                        mean(coredata(mwd1),na.rm=TRUE)
 
@@ -158,7 +160,7 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
     par(bty='n')
     plot(zoo(djf.dse,order.by=year(djf.dse)),
          plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
-         ylab=expression(paste('mean temperature - winter',(degree*C))),
+         ylab=expression(paste('mean temperature',(degree*C))),
          xlab='',main=loc(x))
     points(mwd1,pch=19)
     grid()
@@ -177,7 +179,7 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
 
   Nwd <- attrcp(x,Nwd)
   attr(Nwd,'unit') <- 'days'
-  attr(Nwd,'info') <- paste('number of cold days: t2m < ',threshold)
+  attr(Nwd,'info') <- paste('number of hot days: t2m > ',threshold)
   attr(Nwd,'observation') <- nwd1
   attr(Nwd,'nwd.pre') <- nwd.pre
   index(Nwd) <- t
@@ -201,7 +203,8 @@ heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
   ## Warm season of x
   xws <- annual(subset(x,it=it),FUN='mean',nmin=90)
   ## Same period as in x (synchronise)
-  ovl <- window(wdse,start=start(x),end=end(x))
+  index(wdse) <- year(wdse)
+  ovl <- window(wdse,start=year(start(x)),end=year(end(x)))
   ## Bias correction: ensure same mean
   wdse <- wdse - mean(coredata(ovl),na.rm=TRUE) +
                        mean(coredata(xws),na.rm=TRUE)
@@ -299,6 +302,7 @@ nwetdays <- function(x,dse=NULL,threshold=10,
                                                verbose=verbose,plot=plot)
 
   dse <- subset(dse,it=0)
+  index(dse) <- year(dse)
   ovl <- window(dse,start=year(start(x)),end=year(end(x)))
   dse <- dse - mean(coredata(ovl),na.rm=TRUE) +
                mean(coredata(mu),na.rm=TRUE)

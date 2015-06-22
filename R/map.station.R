@@ -198,7 +198,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
             scale <- attr(x,'na')
         else
             scale <- 1
-        browser()        
+        #browser()        
         ##print(par()$fig)
         par(fig=par0$fig,mar=rep(2,4))
 #        if (!is.null(FUN)) col <- "white" 

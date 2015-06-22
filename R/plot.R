@@ -1121,7 +1121,6 @@ plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
 plot.nevents <- function(x,verbose=FALSE,...) {
   # Plot the results from 
   if (verbose) print('plot.nevents')
-  dev.new()
   par(bty='n')
   if (is.T(attr(x,'observation')))
     col <- c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),

@@ -9,7 +9,9 @@
 spell <- function(x,threshold,...) UseMethod("spell")
 
 
-spell.default <- function(x,threshold,upper=150,...) {
+spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
+
+  if (verbose) print('spell.default')
   z <- coredata(x)
   ## Deal with missing data
   missing <- !is.finite(z)
@@ -17,71 +19,110 @@ spell.default <- function(x,threshold,upper=150,...) {
   if (sum(missing)>0) print(paste('Warning: ',sum(missing),
                                   'missing values filled by interpolation'))
   z <- approx(x=index(x)[!missing],y=z[!missing],xout=index(x))$y
-  
+
+  ## Highligh the times when the values is above and below the given
+  ## threshold:
   above <- z > threshold
   below <- z <= threshold
-
-  ## Check if threshold is outside the range of data:
+  if (verbose) print(paste('above=',sum(above),'below=',sum(below)))
   
+  ## Check if threshold is outside the range of data:
   if (sum(above,na.rm=TRUE)*sum(below,na.rm=TRUE)==0) {
     print(paste('The threshold',threshold,'is outside the range',
                 paste(range(coredata(x,na.rm=TRUE)),collapse=' - ')))
     return(NULL)
   }
-  
+
+  ## Estimate the length of the streaks of above/below
   n <- length(index(x))
   t <- 1:n
-  cth <- cumsum(above)
+
+  ## Use cumsum for calculating the number of days
+  cath <- cumsum(above)
+  cbth <- cumsum(below)
+  ## Use diff to find the times when the streaks start and stop
   dt <- c(0,diff(above))
-  #col <- c("blue","grey","red")
-  #dev.new(); plot(cth,pch=".",col=col[ds+2])
-  dt <- dt[is.finite(dt)]
-  #print(summary(dt))
+  if (verbose) print(table(dt))
+
+  ## A streak starts the fist day when values is above
   start <- t[dt > 0]
-  end <- t[dt < 0]
+  ## A strak ends the day before the value is below 
+  end <- t[dt < 0]-1
   
-  #dev.new(); hist(diff(start),col="blue",breaks=0:60)
-  #dev.new(); hist(diff(end),col="red",breaks=0:60)
-  #print(c(length(start),length(end)))
+  ## Remove NA's:
+  start <- start[is.finite(start)]
+  end <- end[is.finite(end)]
+  
+  if (verbose) print(c(length(start),length(end)))
 
   ## Always start with a fresh spell
   if (start[1] > end[1]) {
     end <- end[-1]
   }
+  ## Make sure that there are as many starts as endings
   if (length(start) > length(end)) {
     start <- start[-length(start)]
   }
   if (length(start) < length(end)) {
     end <- end[-length(end)]
   }
-  chksum <- sum( (start - end) < 0)    
-  #print(c(length(start),length(end)))
-  #dev.new(); plot(start,end,pch="."); lines(c(0,100000),c(0,100000),col="grey")
   
-  low <- t[start[-1]] - t[end[-length(end)]]
-  high <- t[end] - t[start]
-  #print(summary(high))  
-  #print("low:"); print(summary(low))
-  ignoreh <- high > upper 
-  ignorel <- abs(low) > upper 
-  high[ignoreh] <- NA
-  low[ignorel] <- NA
+  chksum <- sum( (start - end) < 0)    
+
+  if (verbose) {
+    print(paste('Check sum=',chksum))
+    print(c(length(start),length(end)))
+    col <- c("blue","grey","red")
+    dev.new()
+    plot(t,cath,pch=19,cex=0.3,col=col[c(1+above-below)],...)
+    points(t[start],cath[start],col='red',lwd=2,cex=0.7)
+    points(t[end],cath[end],col='blue',lwd=2)
+    dev.new(); hist(diff(start),col="blue")
+
+    dev.new(); hist(diff(end),col="red")
+
+    dev.new(); plot(start,end,pch=19,cex=0.3)
+    lines(c(0,100000),c(0,100000),col=rgb(0.7,0.7,0.7,0.3))
+  }
+  
+  ## Estimate the streaks:
+#  low <- t[start[-1]] - t[end[-length(end)]]
+#  high <- t[end] - t[start]
+  high <- diff(cath[start])
+  low <- diff(cbth[end])
+  if (verbose) print(summary(high))  
+  if (verbose) print("low:"); print(summary(low))
+
+  ## If an upper limit is provided then ignore the long spells
+  if (!is.null(upper)) {
+    ignoreh <- high > upper 
+    ignorel <- abs(low) > upper 
+    high[ignoreh] <- NA
+    low[ignorel] <- NA
+  } else {
+    ignoreh <- rep(FALSE,length(high))
+    ignorel <- rep(FALSE,length(low))
+  }
   
   Above <- zoo(high,order.by=index(x)[start])
-  #dev.new(); plot(Above)
   Below <- zoo(low,order.by=index(x)[end])
-  #dev.new(); plot(Below)
 
+  #browser()
   y <- merge(Above,Below,all=TRUE)
 
+  if (verbose) {
+    dev.new(); plot(y,main=paste(varid(x),'above/below',
+                        threshold,unit(x),'at',loc(x)))
+  }
+  
   if (is.T(x)) attr(y,'variable') <-  c("warm","cold") else
                attr(y,'variable') <-  c("wet","dry")
   attr(y,'unit') <- rep("days",2)
   attr(y,'threshold') <- rep(threshold,2)
   attr(y,'threshold.unit') <- rep(attr(x,'unit'),2)
   attr(y,'chksum') <- rep(chksum,2)
-  attr(y,'uncredibly.high') <- rep(t[ignoreh],2)
-  attr(y,'uncredibly.low') <- rep(t[ignorel],2)
+  attr(y,'uncredibly.high') <- t[ignoreh]
+  attr(y,'uncredibly.low') <- t[ignorel]
   attr(y,'p.above') <- rep(sum(above)/length(above),2)
   attr(y,'interpolated.missing') <- index(x)[missing]
   class(y) <- c("spell",class(x))
@@ -89,8 +130,8 @@ spell.default <- function(x,threshold,upper=150,...) {
 }
 
 
-spell.station <-  function(x,threshold,upper=150,...) {
-  y <- spell.default(x,threshold=threshold,upper=upper,...)
+spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
+  y <- spell.default(x,threshold=threshold,upper=upper,verbose=verbose,...)
   if (is.null(y)) return(y)
   y <- attrcp(x,y,ignore=c("variable","unit"))
   natr <- names(attributes(y))
