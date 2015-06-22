@@ -84,20 +84,20 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 }
 
 
-plot.eof <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
-                     pattern=1,what=c("pc","eof","var"),colbar=NULL,...) {
+plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
+                     pattern=1,what=c("pc","eof","var"),colbar=NULL,verbose=FALSE,...) {
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
-                  pattern=pattern,what=what,colbar=colbar,...) else
+                  pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
   if (inherits(x,"field"))
     plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
-                   pattern=pattern,what=what,colbar=colbar,...)
+                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...)
 }
 
 
 
 
-plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
+plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
                            what=c("pc","eof","var"),## colbar=NULL,
                            verbose=FALSE,...) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
@@ -166,10 +166,10 @@ plot.eof.field <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,
 }
 
 
-plot.eof.comb <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
+plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
                           pattern=1,col=c("red"),
-                          what=c("pc","eof","var"),colbar=NULL,...) {
-  #print("plot.eof.comb")
+                          what=c("pc","eof","var"),colbar=NULL,verbose=FALSE,...) {
+  if (verbose) print("plot.eof.comb")
   n <- pattern
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
@@ -179,11 +179,13 @@ plot.eof.comb <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
   if (length(what)==2) mfrow <- c(2,1)
   
   if (new) dev.new()
-  par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-  par(mfrow=mfrow,mar=c(0.5,0.5,2.5,0.5),bty="n",xaxt="n",yaxt="n")
+  #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
+  par(mfrow=mfrow)
 
-  if (length(grep('eof',what))>0)
-    map(x,pattern=pattern,new=TRUE,colbar=colbar)
+  if (length(grep('eof',what))>0) {
+    par(fig=c(0,0.5,0.5,1))
+    map(x,pattern=pattern,verbose=verbose,colbar=colbar,...)
+  }
 
   n.app <- attr(x,'n.apps')
   col <- rep(col,n.app)
@@ -192,10 +194,12 @@ plot.eof.comb <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
   ylab <- paste("PC",1:n)
   main <- paste("EOF: ",n,"accounts for",
                 round(var.eof[n],1),"% of variance")
-  
+
   if (length(grep('var',what))>0)  {
-    par(xaxt="s",yaxt="s")
-    plot.eof.var(x,new=FALSE,cex.main=0.7)
+#    par(xaxt="s",yaxt="s")
+#    plot.eof.var(x,new=FALSE,cex.main=0.7)
+    par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
+    plot.eof.var(x,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
 
   if (is.null(ylim)) {
@@ -215,27 +219,44 @@ plot.eof.comb <- function(x,new=TRUE,xlim=NULL,ylim=NULL,
   }
 
   if (length(grep('pc',what))>0) {
-    par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
-      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
-    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
-                                          xlim=xlim,ylim=ylim)
-    par0 <- par()
-    for (i in 1:n.app) {
-      z <- attr(x,paste('appendix.',i,sep=""))
-      lines(z[,n],col=col[i],lwd=2)
-      #print(attr(z,'source'))
-      src[i+1] <- attr(z,'source')
-    }
-    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
-        mar=rep(0,4),new=TRUE)
-    plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-    legend(0,1,src,col=c("black",col),lwd=2,ncol=4,bty="n",cex=0.7)
-    par(xaxt="n",yaxt="n",bty="n",fig=par0$fig,mar=par0$mar,new=TRUE)
-    plot.zoo(x[,n],type="n",xlab="",ylab="")
-  }
-  
-}
+#    par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
+#      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
+#    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
+#                                          xlim=xlim,ylim=ylim)
+      par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+      main <- paste('Leading PC#',pattern,'of ',attr(x,'longname'),
+                 " - Explained variance = ",round(var.eof[pattern],digits=2),
+                    "%",sep='')
+      
+      plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
+               cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
+      axis(1,at=pretty(index(x[,n]),n=10),cex.axis=0.9)    
+#    par0 <- par()
 
+      ## Plot the common PCs
+      for (i in 1:n.app) {
+        z <- attr(x,paste('appendix.',i,sep=""))
+        lines(z[,n],col=col[i],lwd=2)
+        if (verbose) print(attr(z,'source'))
+        src[i+1] <- attr(z,'source')
+      }
+    }
+#    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
+#        mar=rep(0,4),new=TRUE)
+#    plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+#    legend(0,1,src,col=c("black",col),lwd=2,ncol=4,bty="n",cex=0.7)
+#    par(xaxt="n",yaxt="n",bty="n",fig=par0$fig,mar=par0$mar,new=TRUE)
+#    plot.zoo(x[,n],type="n",xlab="",ylab="")
+  
+  par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+  plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+  legend(0,0.83,paste(attr(x,'source')[1],attr(x,'variable')[1]),
+         bty="n",cex=0.8,ncol=2,text.col="grey40")
+  
+  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+      fig=c(0,1,0.1,1),new=TRUE)
+  par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))  
+}
 
 
 plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
@@ -1121,7 +1142,6 @@ plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
 plot.nevents <- function(x,verbose=FALSE,...) {
   # Plot the results from 
   if (verbose) print('plot.nevents')
-  dev.new()
   par(bty='n')
   if (is.T(attr(x,'observation')))
     col <- c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),

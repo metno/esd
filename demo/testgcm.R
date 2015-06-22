@@ -2,11 +2,11 @@
 
 library(esd)
 
-retrieve <- function(x,...) {
-  require(ncdf4)
-  y <- retrieve.ncdf4(x,...)
-  return(y)
-}
+#retrieve <- function(x,...) {
+#  require(ncdf4)
+#  y <- retrieve.ncdf4(x,...)
+#  return(y)
+#}
 
 path <- 'CMIP5.monthly/'; rcp <- 'rcp45'
 verbose <- FALSE
@@ -16,7 +16,8 @@ predictor="ERA40_t2m_mon.nc"
 FUNX="mean"
 pattern="tas_Amon_ens_"
 
-t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,verbose=verbose) 
+t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,type='ncdf4',
+                verbose=verbose) 
 
   #rm("predictor"); gc(reset=TRUE)
   #t2m <- t2m.ERA40(lon=lon,lat=lat)
@@ -37,7 +38,7 @@ N <- length(ncfiles)
 if (verbose) print("loop...") 
   for (i in 1:N) {
     print(ncfiles[i])
-    gcm <- retrieve(ncfile = ncfiles[i],
+    gcm <- retrieve(ncfile = ncfiles[i],type='ncdf4',
                           lon=range(lon(T2M)),
                           lat=range(lat(T2M)),verbose=verbose)
     #gcmnm[i] <- attr(gcm,'model_id')

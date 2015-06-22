@@ -8,7 +8,7 @@ map <- function(x,it=NULL,is=NULL,new=TRUE,...) UseMethod("map")
 map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
                         projection="lonlat",
                         xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                        colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                        colbar= list(palette='t2m',rev=FALSE,n=10,
                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                         type=c("fill","contour"),gridlines=FALSE,
                         lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -32,6 +32,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
     if (is.null(colbar$cex)) colbar$cex <- 2
     if (is.null(colbar$h)) colbar$h <- 0.6
     if (is.null(colbar$v)) colbar$v <- 1
+    if (is.null(colbar$pos)) colbar$pos <- 0.05
     if (verbose) print(colbar)
     colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col)))
@@ -76,7 +77,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
  
 map.matrix <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                     colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                     colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
@@ -121,7 +122,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                     colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                     colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
@@ -147,7 +148,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                    colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                    colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
@@ -180,8 +181,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
   if (attr(x, "area.mean.expl")) type="fill"
   if (projection=="lonlat") lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
-          n=n,colbar=colbar,new=new,##verbose=verbose,
-          type=type,gridlines=gridlines,
+          n=n,colbar=colbar,new=new,type=type,gridlines=gridlines,
           verbose=verbose,...) else
   if (projection=="sphere") map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
           type=type,gridlines=gridlines,
@@ -198,7 +198,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -273,7 +273,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,na.rm=TRUE,...) {
@@ -356,7 +356,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -403,7 +403,7 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -455,7 +455,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
     ##
@@ -488,7 +488,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
 
 map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
   x <- subset(x,it=it,is=is)
@@ -500,7 +500,7 @@ map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.cca <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
   #print('map.cca')
@@ -576,14 +576,17 @@ map.googleearth <- function(x) {
 }
 
 
-lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,
-                   geography=TRUE,fancy=FALSE,colorbar=TRUE,...) {
+                   geography=TRUE,fancy=FALSE,...) {
 
-
+  if (verbose) print('lonlatprojection')
+  colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
+  colorbar <- !is.null(colbar)
+  
   ## If only a few items are provided in colbar - hen set the rest to the default
   if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
@@ -599,38 +602,48 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     if (is.null(colbar$cex)) colbar$cex <- 2
     if (is.null(colbar$h)) colbar$h <- 0.6
     if (is.null(colbar$v)) colbar$v <- 1
+    if (is.null(colbar$pos)) colbar$pos <- 0.05
     if (verbose) print(colbar)
     colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col)))
+    breaks <- colbar$breaks
+    col <- colbar$col
+  } else {
+    if (verbose) print('colbar=NULL - set col etc')
+    n <- 25
+    breaks <- pretty(c(x),n=n)
+    if (verbose) print(breaks)
+    if (verbose) print(varid(x))
+    col <- colscal(n=length(breaks)-1,col=colid)
+#  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
+   if (colid=='precip') col <- rev(col)
   }
   
- 
     par0 <- par()
     fig0 <- par()$fig
     
-    if (!is.null(colbar$palette) & (!is.null(colbar$n) | !is.null(colbar$breaks))) {
-        ##colbar$breaks <- pretty(y,n=length(colbar$col))
-        ##colbar$n <- length(colbar$breaks) + 1
-        if (is.null(colbar$breaks) & !is.null(colbar$n)) {
-            colbar$breaks <- pretty(x,n=colbar$n)
-            colbar$n <- length(colbar$breaks)-1
-        } else if (!is.null(colbar$breaks) & is.null(colbar$n))
-            colbar$n <- length(colbar$breaks)-1
-        else if (n != (length(colbar$breaks) -1))
-            stop('The length of breaks must equal (n-1)')# default
-        ##
-        if (verbose) print(paste("n=",colbar$n))
-        if (verbose) print(paste("breaks",colbar$breaks))
-        if (verbose) print(paste("length(breaks) =",length(colbar$breaks)))
-        colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev)
-        if (verbose) print(paste("length(col) =",length(colbar$col)))
-    }
-
-    if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
-    if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
-    
-    if (verbose) print('lonlatprojection')
-    ## browser()
+#    if (!is.null(colbar$palette) & (!is.null(colbar$n) | !is.null(colbar$breaks))) {
+#        ##colbar$breaks <- pretty(y,n=length(colbar$col))
+#        ##colbar$n <- length(colbar$breaks) + 1
+#        if (is.null(colbar$breaks) & !is.null(colbar$n)) {
+#            colbar$breaks <- pretty(x,n=colbar$n)
+#            colbar$n <- length(colbar$breaks)-1
+#        } else if (!is.null(colbar$breaks) & is.null(colbar$n))
+#            colbar$n <- length(colbar$breaks)-1
+#        else if (n != (length(colbar$breaks) -1))
+#            stop('The length of breaks must equal (n-1)')# default
+#        ##
+#        if (verbose) print(paste("n=",colbar$n))
+#        if (verbose) print(paste("breaks",colbar$breaks))
+#        if (verbose) print(paste("length(breaks) =",length(colbar$breaks)))
+#        colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev)
+#        if (verbose) print(paste("length(col) =",length(colbar$col)))
+#    }
+#
+#    if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
+#    if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
+#   
+#    ## browser()
     if (colorbar) {
         fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
     } else 
@@ -640,7 +653,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   if(sum(is.finite(x))==0) stop('No valid data')
   ## To deal with grid-conventions going from north-to-south or east-to-west:
   srtx <- order(lon(x)); lon <- lon(x)[srtx]
-  srty <- order(lat(x));  lat <- lat(x)[srty]
+  srty <- order(lat(x)); lat <- lat(x)[srty]
   if (verbose) print('meta-stuff')
   unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
   if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") )
@@ -651,7 +664,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     variable <- "T[2*m]"
   main=eval(parse(text=paste('expression(',variable," *(",unit,"))",sep="")))
   sub <- attr(x,'source')
-  colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   if (sum(is.element(type,'fill'))==0) colbar <- NULL
                                       
   if (verbose) print('time')
@@ -686,27 +698,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     outside <- (lat < ylim[1]) | (lat > ylim[2])
     x[,outside] <- NA
   } else ylim=range(lat)
-
-  if (!is.null(col))
-    if (length(col)>1) n <- length(col)
-  if (verbose) {print(n); print(summary(c(x)))}
-  if (is.null(breaks))
-    breaks <- pretty(c(x),n=n)
-  if (verbose) print(breaks)
-
-  if (is.null(col))
-      col <- colscal(n=length(breaks)-1,col=colid,rev=colbar$rev) else
-  if (length(col)==1) {
-     palette <- col
-     col <- colscal(col=palette,n=length(breaks)-1,rev=colbar$rev)
-  }
-  if (length(breaks) != length(col)+1)
-    breaks <- seq(min(c(x),na.rm=TRUE),max(c(x),na.rm=TRUE),
-                  length=length(col)+1)
-                      
-  if (verbose) print(variable)
-#  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
-   if (colid=='precip') col <- rev(col)
   
   #print(c(length(breaks),length(col)))
   #if (is.Date(type))
