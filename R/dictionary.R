@@ -83,12 +83,12 @@ ele2param <- function(ele = NULL , src = NULL) {
 }
 # Selected elements from NORDKLIM database 
 nordklim.ele <- function() {
-x <- rbind(c("101" , "Mean temperature"		 	, "0.1"   		, "°C" 	, "T"),
-	   c("111" , "Mean maximum temperature"	 	, "0.1"   		, "°C" 	, "Tx"), 
- 	   c("112" , "Highest maximum temperature"  	, "0.1"   		, "°C" 	, "Th"),
+x <- rbind(c("101" , "Mean temperature"		 	, "0.1"   		, "degree*C" 	, "T"),
+	   c("111" , "Mean maximum temperature"	 	, "0.1"   		, "degree*C" 	, "Tx"), 
+ 	   c("112" , "Highest maximum temperature"  	, "0.1"   		, "degree*C" 	, "Th"),
 	   c("113" , "Day of Th" 			, "1"     		, "date", "Thd"),
-	   c("121" , "Mean minimum temperature" 	, "0.1"   		, "°C" 	, "Tn"),
-	   c("122" , "Lowest minimum temperature" 	, "0.1"   		, "°C"	, "Tl"),
+	   c("121" , "Mean minimum temperature" 	, "0.1"   		, "degree*C" 	, "Tn"),
+	   c("122" , "Lowest minimum temperature" 	, "0.1"   		, "degree*C"	, "Tl"),
 	   c("123" , "Day of Tl"			, "1"	  		, "date", "Tld"),
 	   c("401" , "Mean Pressure" 		 	, "0.1"   		, "hPa" , "P"),
 	   c("601" , "Precipitation Sum"		, "0.1"   		, "mm"	, "R"),
@@ -100,12 +100,12 @@ return(y)
 }
 # Selected elements from NACD database / Same elements as nordklim database
 nacd.ele <- function() {
-x <- rbind(c("101" , "Mean temperature"			, "0.1"   		, "°C" 	, "T"),
-	   c("111" , "Mean maximum temperature"		, "0.1"   		, "°C" 	, "Tx"), 
- 	   c("112" , "Highest maximum temperature"  	, "0.1"   		, "°C" 	, "Th"),
+x <- rbind(c("101" , "Mean temperature"			, "0.1"   		, "degree*C" 	, "T"),
+	   c("111" , "Mean maximum temperature"		, "0.1"   		, "degree*C" 	, "Tx"), 
+ 	   c("112" , "Highest maximum temperature"  	, "0.1"   		, "degree*C" 	, "Th"),
 	   c("113" , "Day of Th" 			, "1"     		, "date", "Thd"),
-	   c("121" , "Mean minimum temperature" 	, "0.1"   		, "°C" 	, "Tn"),
-	   c("122" , "Lowest minimum temperature" 	, "0.1"   		, "°C"	, "Tl"),
+	   c("121" , "Mean minimum temperature" 	, "0.1"   		, "degree*C" 	, "Tn"),
+	   c("122" , "Lowest minimum temperature" 	, "0.1"   		, "degree*C"	, "Tl"),
 	   c("123" , "Day of Tl"			, "1"	  		, "date", "Tld"),
 	   c("401" , "Mean Pressure" 		 	, "0.1"   		, "hPa" , "P"),
 	   c("601" , "Precipitation Sum"		, "0.1"   		, "mm"	, "R"),
@@ -117,12 +117,12 @@ return(y)
 }
 # Selected elements from NARP database / Same elements as nordklim database
 narp.ele <- function() {
-x <- rbind(c("101" , "Mean temperature"		 	, "0.1"   		, "°C" 	, "T"),
-	   c("111" , "Mean maximum temperature"	 	, "0.1"   		, "°C" 	, "Tx"), 
- 	   c("112" , "Highest maximum temperature"   	, "0.1"   		, "°C" 	, "Th"),
+x <- rbind(c("101" , "Mean temperature"		 	, "0.1"   		, "degree*C" 	, "T"),
+	   c("111" , "Mean maximum temperature"	 	, "0.1"   		, "degree*C" 	, "Tx"), 
+ 	   c("112" , "Highest maximum temperature"   	, "0.1"   		, "degree*C" 	, "Th"),
 	   c("113" , "Day of Th" 			, "1"     		, "date", "Thd"),
-	   c("121" , "Mean minimum temperature" 	, "0.1"   		, "°C" 	, "Tn"),
-	   c("122" , "Lowest minimum temperature" 	, "0.1"   		, "°C"	, "Tl"),
+	   c("121" , "Mean minimum temperature" 	, "0.1"   		, "degree*C" 	, "Tn"),
+	   c("122" , "Lowest minimum temperature" 	, "0.1"   		, "degree*C"	, "Tl"),
 	   c("123" , "Day of Tl"			, "1"	  		, "date", "Tld"),
 	   c("401" , "Mean Pressure" 		 	, "0.1"   		, "hPa" , "P"),
 	   c("601" , "Precipitation Sum"		, "0.1"   		, "mm"	, "R"),
@@ -137,17 +137,17 @@ ecad.ele <- function() {
 x <- rbind(c("601" , "Precipitation amount"		, "0.1"	  		, "mm"	, "RR"),
 	   c("401" , "Sea level pressure" 		, "0.1"	  		, "hPa"	, "PP"),
 	   c("901" , "Snow depth" 			, "1"	  		, "cm" 	, "SD"),
-	   c("111" , "Maximum temperature" 	 	, "0.1"   		, "°C" 	, "TX"),
-	   c("121" , "Minimum temperature" 		, "0.1"	  		, "°C" 	, "TN"),
-	   c("101" , "Mean temperature" 		, "0.1"   		, "°C" 	, "TG"))
+	   c("111" , "Maximum temperature" 	 	, "0.1"   		, "degree*C" 	, "TX"),
+	   c("121" , "Minimum temperature" 		, "0.1"	  		, "degree*C" 	, "TN"),
+	   c("101" , "Mean temperature" 		, "0.1"   		, "degree*C" 	, "TG"))
 y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "ECAD",stringsAsFactors=FALSE)
 return(y)
 }
 # Selected elements from GHCNM database
 ghcnm.ele <- function() {
-x <- rbind(c("101" , "monthly mean temperature"	 	, "0.01" 		, "°C" , "TAVG"), 
-	   c("111" , "monthly maximum temperature"  	, "0.01" 		, "°C" , "TMAX"),
-	   c("121" , "monthly minimum temperature"  	, "0.01" 		, "°C" , "TMIN"))
+x <- rbind(c("101" , "monthly mean temperature"	 	, "0.01" 		, "degree*C" , "TAVG"), 
+	   c("111" , "monthly maximum temperature"  	, "0.01" 		, "degree*C" , "TMAX"),
+	   c("121" , "monthly minimum temperature"  	, "0.01" 		, "degree*C" , "TMIN"))
 y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "GHCNM",stringsAsFactors=FALSE)
 return(y)
 }
@@ -156,8 +156,8 @@ ghcnd.ele <- function() {
 x <- rbind(c("601" , "Precipitation"		 	, "0.1"	  		, "mm"	, "PRCP"),
 	   c("999" , "Snowfall"			 	, "1" 	  		, "mm" 	, "SNOW"),
 	   c("901" , "Snow depth"			, "1" 	  		, "mm" 	, "SNWD"),
-	   c("111" , "Maximum temperature" 	 	, "0.1"   		, "°C"	, "TMAX"),
-	   c("121" , "Minimum temperature" 	 	, "0.1"	  		, "°C" 	, "TMIN"))
+	   c("111" , "Maximum temperature" 	 	, "0.1"   		, "degree*C"	, "TMAX"),
+	   c("121" , "Minimum temperature" 	 	, "0.1"	  		, "degree*C" 	, "TMIN"))
 y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "GHCND",stringsAsFactors=FALSE)
 return(y)
 }
@@ -166,9 +166,9 @@ metno.ele <- function() { ## must be updated - AM 2014-02-21
   x <- rbind(c("601" , "Precipitation"		 	, "1"	  		, "mm"	, "RR"),
              c("999" , "Snowfall"			, "1" 	  		, "mm" 	, "SNOW"),
              c("901" , "Snow depth"			, "1" 	  		, "mm" 	, "SNWD"),
-             c("101" , "Mean temperature"	        , "1" 		        , "°C"  , "TAM"),
-             c("111" , "Maximum temperature" 	 	, "1"   		, "°C"	, "TAX"),
-             c("121" , "Minimum temperature" 	 	, "1"	  		, "°C" 	, "TAN"))
+             c("101" , "Mean temperature"	        , "1" 		        , "degree*C"  , "TAM"),
+             c("111" , "Maximum temperature" 	 	, "1"   		, "degree*C"	, "TAX"),
+             c("121" , "Minimum temperature" 	 	, "1"	  		, "degree*C" 	, "TAN"))
   y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO",stringsAsFactors=FALSE)
   return(y)
 }

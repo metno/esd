@@ -9,7 +9,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                          col="darkred",bg="orange",
                          colbar= list(palette='heat.colors',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1), # col=NULL replaced by palette
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05), # col=NULL replaced by palette
                          type=NULL,gridlines=TRUE,
                          lonR=NULL, latR=45,axiR=NULL,verbose=FALSE,
                          cex=.8, zexpr = "alt",cex.subset=1,
@@ -20,7 +20,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
                          text=FALSE, fancy=FALSE, 
                          na.rm=TRUE,show.val=FALSE,
                          colorbar=TRUE,
-                         legend.shrink=0.5,...) { 
+                         legend.shrink=1,...) { 
     ## browser()
     arg <- list(...)
     ## browser()
@@ -50,10 +50,9 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
     fig0 <- par()$fig
     if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) )
         new <- FALSE
+    ##else 
+    ##    dev.new()
     
-    if (new) {
-        dev.new()
-    }
     ##    par(fig=fig0,mar=c(2.5,2,2,2),bty="n") # c(0.05,0.95,0.13,0.95),mar=rep(1,4)
     ##    ##    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
     ##    ##    fig=c(0.05,0.95,0.12,0.95))
@@ -199,7 +198,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
             scale <- attr(x,'na')
         else
             scale <- 1
-        
+        browser()        
         ##print(par()$fig)
         par(fig=par0$fig,mar=rep(2,4))
 #        if (!is.null(FUN)) col <- "white" 
@@ -207,12 +206,15 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
          col <- col #"black" 
          bg.all <- col # REB 2015-06-03 fix?
         }
+
+        if(is.null(colbar$pos)) pos <- 0.05
+
         ##fig0 <- par0$fig
         if (!is.null(FUN) & colorbar) {
             if (showaxis)
-                fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200 ##0.075
+                fig0[3] <- par0$fig[3] + colbar$pos ## (par0$fig[4]-par0$fig[3])/150 ##0.075
             else
-                fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/180 ##0.05
+                fig0[3] <- par0$fig[3] + colbar$pos ## (par0$fig[4]-par0$fig[3])/120 ##0.05
         } else 
             fig0 <- par0$fig
 
