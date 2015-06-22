@@ -37,7 +37,8 @@
 #1	100	217	255	255	*Under 10
 #0	1	229	229	229	*Ikke nedbør
 
-colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,test=FALSE) {
+
+colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,test=FALSE,verbose=FALSE) {
 
   test.col <- function(r,g,b) {
     dev.new()
@@ -47,6 +48,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,test=FALSE) {
     points(g,col="green")
   }
 
+  if (verbose) print(paste('colscal',col))
   # Set up colour-palette
   col <- tolower(col)
   x <- 1:n
@@ -123,13 +125,6 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,test=FALSE) {
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
     if (is.null(alpha)) col <- rgb(b,g,r)  else
                         col <- rgb(r,g,b,alpha)
-  } else if ( (col[1]=="t2m") | (col[1]=="tmax") | (col[1]=="tmin") |
-             (col[1]=="sst")  | (col[1]=="air") ){
-    r <- approx(seNorgeT[1,],n=n)$y/255
-    g <- approx(seNorgeT[2,],n=n)$y/255
-    b <- approx(seNorgeT[3,],n=n)$y/255
-    if (is.null(alpha)) col <- rgb(b,g,r)  else
-                        col <- rgb(r,g,b,alpha)
   } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
              (col[1]=="f[w]") | (col[1]=="tp")) {
     r <- approx(seNorgeP[1,],n=n)$y/255
@@ -149,7 +144,13 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,test=FALSE) {
     col <- topo.colors(n,alpha=alpha)
   } else if (col[1]=="cm.colors") {
     col <- cm.colors(n,alpha=alpha)
-  }
+  } else {
+    r <- approx(seNorgeT[1,],n=n)$y/255
+    g <- approx(seNorgeT[2,],n=n)$y/255
+    b <- approx(seNorgeT[3,],n=n)$y/255
+    if (is.null(alpha)) col <- rgb(b,g,r)  else
+                        col <- rgb(r,g,b,alpha)
+  } 
 
   if (test) { #& !exists("r")) {
     RGB <- col2rgb(col)/255

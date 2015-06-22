@@ -1,6 +1,13 @@
 ## R-script made to test the reading of GCMs in the ensemble.
 
 library(esd)
+
+retrieve <- function(x,...) {
+  require(ncdf4)
+  y <- retrieve.ncdf4(x,...)
+  return(y)
+}
+
 path <- 'CMIP5.monthly/'; rcp <- 'rcp45'
 verbose <- FALSE
 lon <- c(0,30)
