@@ -8,7 +8,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
                          projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                          col="darkred",bg="orange",
-                         colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                         colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05), # col=NULL replaced by palette
                          type=NULL,gridlines=TRUE,
                          lonR=NULL, latR=45,axiR=NULL,verbose=FALSE,
@@ -23,6 +23,33 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
                          legend.shrink=1,...) { 
     ## browser()
     arg <- list(...)
+
+    if (!is.null(colbar)) {
+    if (verbose) print('sort out the colours')
+    if (is.null(colbar$rev)) colbar$rev <- FALSE
+    if (is.null(FUN)) FUN <- 'NULL'
+    if (is.null(colbar$palette)) {
+      if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='wetmean') | (FUN=='mean')) )
+        { colbar$palette <- 'precip'
+          colbar$rev <- TRUE
+        }
+    } else colbar$palette <- 't2m'
+    if (FUN=='NULL') FUN <- NULL
+    if (is.null(colbar$n)) colbar$n <- 10
+    if (is.null(colbar$breaks)) {
+      colbar$breaks <- pretty(x,n=colbar$n)
+    } else if (length(colbar$breaks)==2)
+      colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
+    colbar$n <- length(colbar$breaks)-1
+    if (is.null(colbar$type)) colbar$type <- 'p'
+    if (is.null(colbar$cex)) colbar$cex <- 2
+    if (is.null(colbar$h)) colbar$h <- 0.6
+    if (is.null(colbar$v)) colbar$v <- 1
+    if (is.null(colbar$pos)) colbar$pos <- 0.05
+    if (verbose) print(colbar)
+    colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
+    if (verbose) print(paste("length(col) =",length(colbar$col)))
+  }
     ## browser()
     ## col <- colbar$col
     ##if (!is.null(FUN))

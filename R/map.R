@@ -8,7 +8,7 @@ map <- function(x,it=NULL,is=NULL,new=TRUE,...) UseMethod("map")
 map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
                         projection="lonlat",
                         xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                        colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                        colbar= list(palette='t2m',rev=FALSE,n=10,
                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                         type=c("fill","contour"),gridlines=FALSE,
                         lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -32,6 +32,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
     if (is.null(colbar$cex)) colbar$cex <- 2
     if (is.null(colbar$h)) colbar$h <- 0.6
     if (is.null(colbar$v)) colbar$v <- 1
+    if (is.null(colbar$pos)) colbar$pos <- 0.05
     if (verbose) print(colbar)
     colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col)))
@@ -76,7 +77,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
  
 map.matrix <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                     colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                     colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
@@ -121,7 +122,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                     colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                     colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
@@ -147,7 +148,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                    colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                    colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
@@ -198,7 +199,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -273,7 +274,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,na.rm=TRUE,...) {
@@ -356,7 +357,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -403,7 +404,7 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -455,7 +456,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
     ##
@@ -488,7 +489,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
 
 map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
   x <- subset(x,it=it,is=is)
@@ -500,7 +501,7 @@ map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 map.cca <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='heat.colors',rev=FALSE,n=10,
+                   colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
   #print('map.cca')
@@ -599,6 +600,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
     if (is.null(colbar$cex)) colbar$cex <- 2
     if (is.null(colbar$h)) colbar$h <- 0.6
     if (is.null(colbar$v)) colbar$v <- 1
+    if (is.null(colbar$pos)) colbar$pos <- 0.05
     if (verbose) print(colbar)
     colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col)))

@@ -89,6 +89,7 @@ map2sphere <- function(x,it=NULL,is=NULL,
     if (is.null(colbar$cex)) colbar$cex <- 2
     if (is.null(colbar$h)) colbar$h <- 0.6
     if (is.null(colbar$v)) colbar$v <- 1
+    if (is.null(colbar$pos)) colbar$pos <- 0.05
     if (verbose) print(colbar)
     colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col)))
