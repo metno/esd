@@ -63,12 +63,12 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 #  return(angle)
 #}
 
-map2sphere <- function(x,it=NULL,is=NULL,
-                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                       lonR=NULL,latR=NULL,axiR=0,new=TRUE,
-                       type=c("fill","contour"),
+map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
+                       xlim=NULL,ylim=NULL,zlim=NULL,
                        colbar= list(palette='t2m',rev=FALSE,n=10,
-                            breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                           breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                       lonR=NULL,latR=NULL,axiR=0,
+                       type=c("fill","contour"),                      
                        gridlines=TRUE,fancy=FALSE,verbose=FALSE,...) {
 
   
