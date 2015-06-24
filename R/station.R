@@ -107,7 +107,7 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
                             path.metnod=NULL,url.metnod=NULL) {
     ## 
     ## check wether x is a 'location' or a 'stationmeta' object
-   
+    
     if (inherits(loc,"stationmeta")) {
         ss <- loc
     } else if (is.character(loc)) {
@@ -662,7 +662,7 @@ ghcnd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
     ## Retrieve data from the GHCND data:
     ##  data("station.meta",envir=environment())
     ## depends on ghcnd.data(), 
-
+    
     ## Convert param to esd element
     ele <-esd2ele(param=param) 
     param1 <-as.character(ele2param(ele=ele,src="GHCND")[5])
