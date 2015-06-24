@@ -22,6 +22,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
                          colorbar=TRUE,
                          legend.shrink=1,...) { 
     ## browser()
+  if (verbose) print('map.station')
     arg <- list(...)
 
     if (!is.null(colbar)) {
@@ -29,15 +30,16 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
     if (is.null(colbar$rev)) colbar$rev <- FALSE
     if (is.null(FUN)) FUN <- 'NULL'
     if (is.null(colbar$palette)) {
-      if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='wetmean') | (FUN=='mean')) )
-        { colbar$palette <- 'precip'
-          colbar$rev <- TRUE
-        }
+      if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
+                             (FUN=='wetmean') | (FUN=='mean')) ) {
+        colbar$palette <- 'precip'
+        colbar$rev <- TRUE
+      }
     } else colbar$palette <- 't2m'
     if (FUN=='NULL') FUN <- NULL
     if (is.null(colbar$n)) colbar$n <- 10
     if (is.null(colbar$breaks)) {
-      colbar$breaks <- pretty(x,n=colbar$n)
+      colbar$breaks <- pretty(coredata(x),n=colbar$n)
     } else if (length(colbar$breaks)==2)
       colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
     colbar$n <- length(colbar$breaks)-1
