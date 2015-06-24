@@ -30,6 +30,7 @@ nearest.station <- function(x,is) {
   Xo <- rbind(xn,Xo); Yo <- rbind(yn,Yo)
   X <- rbind(Xo,Yo)
   i <- apply(X,2,FUN=mind)
+  
   y <- subset(x,is=i)
   return(y)
 }
@@ -39,7 +40,7 @@ nearest.field <- function(x,is) {
   xo <- rep(lon(x),length(lat(x)))
   yo <- sort(rep(lat(x),length(lon(x))))
   y <- x
-  lon(y) <- xo; lat(y) <- yo
+  ##lon(y) <- xo; lat(y) <- yo
   class(y) <- c('station',class(x)[-1])
   z <- nearest.station(y,is)
   return(z)
