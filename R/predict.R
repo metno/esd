@@ -204,7 +204,7 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 
 project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     ## based on predict.ds.eof function
-    stopifnot(!missing(x),inherits(x,"ds"),inherits(x,'comb'))
+    stopifnot(!missing(x),inherits(x,"ds")) ## ,inherits(x,'comb')
   if (verbose) print("predict.ds.comb")
 
   
