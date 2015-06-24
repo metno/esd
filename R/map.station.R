@@ -39,8 +39,11 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
       if (FUN=='NULL') FUN <- NULL
       if (is.null(colbar$n)) colbar$n <- 10
 
-      if (!is.null(FUN)) X <- apply(coredata(x),2,FUN=FUN,na.rm=na.rm) else X <- x
-      if (is.null(colbar$breaks)) {
+      if (!is.null(FUN))
+          X <- apply(coredata(x),2,FUN=FUN,na.rm=na.rm)
+      else
+          X <- x
+      if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
           colbar$breaks <- pretty(coredata(X),n=colbar$n)
       } else if (length(colbar$breaks)==2)
           colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
@@ -51,7 +54,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
       if (is.null(colbar$v)) colbar$v <- 1
       if (is.null(colbar$pos)) colbar$pos <- 0.05
       if (verbose) print(colbar)
-      colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
+      if (!inherits(x,"stationmeta"))
+          colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
       if (verbose) print(paste("length(col) =",length(colbar$col)))
   }
     ## browser()
