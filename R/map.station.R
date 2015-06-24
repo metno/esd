@@ -25,32 +25,34 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
   if (verbose) print('map.station')
     arg <- list(...)
 
-    if (!is.null(colbar)) {
-    if (verbose) print('sort out the colours')
-    if (is.null(colbar$rev)) colbar$rev <- FALSE
-    if (is.null(FUN)) FUN <- 'NULL'
-    if (is.null(colbar$palette)) {
-      if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
-                             (FUN=='wetmean') | (FUN=='mean')) ) {
-        colbar$palette <- 'precip'
-        colbar$rev <- TRUE
-      }
-    } else colbar$palette <- 't2m'
-    if (FUN=='NULL') FUN <- NULL
-    if (is.null(colbar$n)) colbar$n <- 10
-    if (is.null(colbar$breaks)) {
-      colbar$breaks <- pretty(coredata(x),n=colbar$n)
-    } else if (length(colbar$breaks)==2)
-      colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
-    colbar$n <- length(colbar$breaks)-1
-    if (is.null(colbar$type)) colbar$type <- 'p'
-    if (is.null(colbar$cex)) colbar$cex <- 2
-    if (is.null(colbar$h)) colbar$h <- 0.6
-    if (is.null(colbar$v)) colbar$v <- 1
-    if (is.null(colbar$pos)) colbar$pos <- 0.05
-    if (verbose) print(colbar)
-    colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
-    if (verbose) print(paste("length(col) =",length(colbar$col)))
+  if (!is.null(colbar)) {
+      if (verbose) print('sort out the colours')
+      if (is.null(colbar$rev)) colbar$rev <- FALSE
+      if (is.null(FUN)) FUN <- 'NULL'
+      if (is.null(colbar$palette)) {
+          if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
+                                 (FUN=='wetmean') | (FUN=='mean')) ) {
+              colbar$palette <- 'precip'
+              colbar$rev <- TRUE
+          }
+      } else colbar$palette <- 't2m'
+      if (FUN=='NULL') FUN <- NULL
+      if (is.null(colbar$n)) colbar$n <- 10
+
+      if (!is.null(FUN)) X <- apply(coredata(x),2,FUN=FUN,na.rm=na.rm) else X <- x
+      if (is.null(colbar$breaks)) {
+          colbar$breaks <- pretty(coredata(X),n=colbar$n)
+      } else if (length(colbar$breaks)==2)
+          colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
+      colbar$n <- length(colbar$breaks)-1
+      if (is.null(colbar$type)) colbar$type <- 'p'
+      if (is.null(colbar$cex)) colbar$cex <- 2
+      if (is.null(colbar$h)) colbar$h <- 0.6
+      if (is.null(colbar$v)) colbar$v <- 1
+      if (is.null(colbar$pos)) colbar$pos <- 0.05
+      if (verbose) print(colbar)
+      colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
+      if (verbose) print(paste("length(col) =",length(colbar$col)))
   }
     ## browser()
     ## col <- colbar$col
