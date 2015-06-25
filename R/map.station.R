@@ -9,7 +9,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                          col="darkred",bg="orange",
                          colbar= list(palette='t2m',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05), # col=NULL replaced by palette
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1), # col=NULL replaced by palette
                          type=NULL,gridlines=TRUE,
                          lonR=NULL, latR=45,axiR=NULL,verbose=FALSE,
                          cex=.8, zexpr = "alt",cex.subset=1,
@@ -52,7 +52,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if (is.null(colbar$cex)) colbar$cex <- 2
       if (is.null(colbar$h)) colbar$h <- 0.6
       if (is.null(colbar$v)) colbar$v <- 1
-      if (is.null(colbar$pos)) colbar$pos <- 0.05
+      if (is.null(colbar$pos)) colbar$pos <- 0.1
       if (verbose) print(colbar)
       if (!inherits(x,"stationmeta"))
           colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
