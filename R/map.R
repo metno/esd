@@ -8,7 +8,7 @@ map <- function(x,it=NULL,is=NULL,new=FALSE,...) UseMethod("map")
 map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                         projection="lonlat",
                         xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                        colbar= list(palette='t2m',rev=FALSE,n=10,
+                        colbar= list(palette=NULL,rev=FALSE,n=10,
                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                         type=c("fill","contour"),gridlines=FALSE,
                         lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -20,7 +20,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
   ## If only a few items are provided in colbar - hen set the rest to the default
   if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
-    if (is.null(colbar$palette)) colbar$palette <- 't2m'
+    if (is.null(colbar$palette)) colbar$palette <- varid(x)
     if (is.null(colbar$rev)) colbar$rev <- FALSE
     if (is.null(colbar$n)) colbar$n <- 10
     if (is.null(colbar$breaks)) {
@@ -34,7 +34,8 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     if (is.null(colbar$v)) colbar$v <- 1
     if (is.null(colbar$pos)) colbar$pos <- 0.05
     if (verbose) print(colbar)
-    colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
+    colbar$col <- colscal(n=colbar$n,col=colbar$palette,
+                          rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col)))
   }
   
@@ -77,7 +78,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
  
 map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                     colbar= list(palette='t2m',rev=FALSE,n=10,
+                     colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
@@ -122,7 +123,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,projection="lonlat"
 
 map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                     colbar= list(palette='t2m',rev=FALSE,n=10,
+                     colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
@@ -148,7 +149,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                    colbar= list(palette='t2m',rev=FALSE,n=10,
+                    colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
@@ -198,7 +199,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='t2m',rev=FALSE,n=10,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -271,9 +272,10 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 
-map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
+                      projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='t2m',rev=FALSE,n=10,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,na.rm=TRUE,...) {
@@ -356,7 +358,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,projection="lonlat"
 
 map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='t2m',rev=FALSE,n=10,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -403,7 +405,7 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='t2m',rev=FALSE,n=10,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
@@ -488,7 +490,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
 
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='t2m',rev=FALSE,n=10,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
   x <- subset(x,it=it,is=is)
@@ -500,7 +502,7 @@ map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 map.cca <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='t2m',rev=FALSE,n=10,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...) {
   #print('map.cca')
@@ -578,7 +580,7 @@ map.googleearth <- function(x) {
 
 lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette='t2m',rev=FALSE,n=10,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,
                    geography=TRUE,fancy=FALSE,...) {
@@ -590,7 +592,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## If only a few items are provided in colbar - hen set the rest to the default
   if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
-    if (is.null(colbar$palette)) colbar$palette <- 't2m'
+    if (is.null(colbar$palette)) colbar$palette <- varid(x)
     if (is.null(colbar$rev)) colbar$rev <- FALSE
     if (is.null(colbar$n)) colbar$n <- 10
     if (is.null(colbar$breaks)) {
@@ -604,7 +606,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (is.null(colbar$v)) colbar$v <- 1
     if (is.null(colbar$pos)) colbar$pos <- 0.05
     if (verbose) print(colbar)
-    colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
+    colbar$col <- colscal(n=colbar$n,col=colbar$palette,
+                          rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col)))
     breaks <- colbar$breaks
     col <- colbar$col
@@ -807,6 +810,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
   par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1)
   result <- list(x=lon,y=lat,z=x,breaks=breaks)
-    par(fig=par0$fig)
+    #par(fig=par0$fig)
     invisible(result)
 }

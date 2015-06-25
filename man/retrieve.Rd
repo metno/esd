@@ -13,7 +13,7 @@
 }
 \usage{
 %retrieve.default(...)
-retrieve.default(ncfile,type="ncdf",...)
+retrieve.default(ncfile,type="ncdf",verbose=FALSE,...)
 retrieve.ncdf(ncfile = ncfile, path = path , param = "auto",
                lon = NULL, lat = NULL, lev = NULL, it = NULL,
                miss2na = TRUE, greenwich = TRUE,

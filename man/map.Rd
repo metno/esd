@@ -24,58 +24,79 @@
 }
 \usage{
 map(x,it=NULL,is=NULL,new=FALSE,...)
-map.default(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.default(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
+                        projection="lonlat",
                         xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                        col=NULL,breaks=NULL,
-                        type=NULL,gridlines=FALSE,
+                        colbar= list(palette=NULL,rev=FALSE,n=10,
+                            breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                        type=c("fill","contour"),gridlines=FALSE,
                         lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...)
-map.matrix(x,new=FALSE,projection="lonlat",...)
-map.comb(x,it=NULL,is=NULL,new=FALSE,xlim=NULL,ylim=NULL,
-                     pattern=1,n=15,
-                     projection="lonlat",col=NULL,breaks=NULL,
-                     lonR=NULL,latR=NULL,axiR=0,type=c("fill","contour"),
-                     gridlines=TRUE,...)
-map.eof(x,it=NULL,is=NULL,new=FALSE,pattern=1,
-                    xlim=NULL,ylim=NULL,n=15,
-                    projection="lonlat",col=NULL,
-                    breaks=NULL,lonR=NULL,latR=NULL,axiR=0,
-                    type=c("fill","contour"),gridlines=TRUE,...)
-map.ds(x,it=NULL,is=NULL,new=FALSE,xlim=xlim,ylim=ylim,
-                   type=c("fill","contour"),
-                   n=15,projection="lonlat",
-                   lonR=NULL,latR=NULL,axiR=0,gridlines=TRUE,
-                   col=NULL,breaks=NULL,...)
-map.field(x,it=NULL,is=NULL,new=FALSE,xlim=NULL,ylim=NULL,
-                      type=c("fill","contour"),
-                      FUN='mean',n=15,projection="lonlat",
-                      lonR=NULL,latR=NULL,na.rm=TRUE,colorbar=TRUE,
-                      axiR=0,gridlines=FALSE,col=NULL,breaks=NULL,...)
-map.corfield(x,new=FALSE,xlim=NULL,ylim=NULL,n=15,
-             projection="lonlat",
-             col=NULL,breaks=seq(-1,1,0.1),
-             lonR=NULL,latR=NULL,axiR=0,type=c("fill","contour"),
-             gridlines=TRUE,...)
-map.trend(x,it=NULL,is=NULL,new=FALSE,xlim=NULL,ylim=NULL,n=15,
-          projection="lonlat",
-          col=NULL,breaks=NULL,
-          lonR=NULL,latR=NULL,axiR=0,type=c("fill","contour"),
-          gridlines=TRUE,...)
-map.pca(x,new=FALSE,FUN='mean',pattern=1,
-                    col=NULL,...)
-map.mvr(x,it=NULL,is=NULL,new=FALSE,xlim=NULL,ylim=NULL,
-        n=15,projection="lonlat",
-        col=NULL,breaks=NULL,
-        lonR=NULL,latR=NULL,axiR=0,type=c("fill","contour"),
-        gridlines=TRUE,...)
-map.cca(x,it=NULL,is=NULL,new=FALSE,icca=1,xlim=NULL,ylim=NULL,
-        type=c("fill","contour"),
-        n=15,projection="lonlat",
-        lonR=NULL,latR=NULL,
-        axiR=0,gridlines=FALSE,col=NULL,breaks=NULL,...)
-lonlatprojection(x,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                             n=15,col=NULL,breaks=NULL,geography=TRUE,
-                             type=c("fill","contour"),gridlines=TRUE,
-                             new=FALSE,colorbar=NULL,...)
+map.matrix(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                     xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                     colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                     type=c("fill","contour"),gridlines=FALSE,
+                     lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
+                     pattern=1,...)
+map.comb(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                     xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                     colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                     type=c("fill","contour"),gridlines=FALSE,
+                     lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
+                     pattern=1,...)
+map.eof(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                    colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                    type=c("fill","contour"),gridlines=FALSE,
+                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
+                    pattern=1,...)
+map.ds(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                   xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                   type=c("fill","contour"),gridlines=FALSE,
+                   lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...)
+map.field(x,FUN='mean',it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                   xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                   type=c("fill","contour"),gridlines=FALSE,
+                   lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,na.rm=TRUE,...)
+map.corfield(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                   xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                   type=c("fill","contour"),gridlines=FALSE,
+                   lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...)
+map.trend(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                   xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                   type=c("fill","contour"),gridlines=FALSE,
+                   lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...)
+map.pca(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
+                   xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                   type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...)
+map.mvr(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                   xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                   type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...)
+map.cca(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                   xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1),
+                   type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,...)
+lonlatprojection(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                   xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                   colbar= list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                   type=c("fill","contour"),gridlines=FALSE,verbose=FALSE,
+                   geography=TRUE,fancy=FALSE,...)
 map.googleearth(x)
 rotM(x=0,y=0,z=0)
 gridbox(x,col,density = NULL, angle = 45)
