@@ -358,8 +358,8 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
 
 map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                   colbar= list(palette=NULL,rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                   colbar= list(palette=NULL,rev=FALSE,n=NULL,
+                             breaks=seq(-1,1,by=0.05),type="p",cex=2,h=0.6, v=1,pos=0.05),
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
   if (verbose) print("map.corfield")
@@ -367,12 +367,14 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   x <- subset(x,it=it,is=is,verbose=verbose)
   projection <- tolower(projection)
   dim(x) <- attr(x,'dimensions')[1:2]
+  if (!is.null(colbar)) colbar$palette <- varid(x)[2]
+  attr(x,'variable') <- paste(varid(x),collapse='/')
   
   ## if zlim is specified, then mask data outside this range
   if (!is.null(zlim)) {
     if (verbose) print(zlim)
     d <- dim(x)
-    mask <- (x < min(zlim)) | (x > max(zlim))
+    mask <- (x < min(zlim,na.rm=TRUE)) | (x > max(zlim,na.rm=TRUE))
     x[mask] <- NA
     dim(x) <- d
     if (verbose) {print(zlim); print(dim(x)); print(sum(mask))}

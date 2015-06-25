@@ -71,7 +71,7 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
   #print(dim(y)); print(attr(y,"dimensions"))
  
   if (inherits(y,'station')) {
-    r <- corfield.field.station(y,x,use=use,...)
+    r <- corfield.field.station(y,x,use=use,verbose=verbose,...)
     return(r)
   }
   #print("synchonise")
@@ -99,11 +99,11 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
     x <- g2dl(x,greenwich=FALSE); y <- g2dl(y,greenwich=FALSE)
     #print(attr(x,'longitude')); print(attr(y,'longitude'))
     #print(attr(x,'latitude')); print(attr(y,'latitude'))
-    
-    lon.rng <- c(max(min(attr(x,'longitude')), min(attr(y,'longitude'))),
-                 min(max(attr(x,'longitude')), max(attr(y,'longitude'))))
-    lat.rng <- c(max(min(attr(x,'latitude')), min(attr(y,'latitude'))),
-                 min(max(attr(x,'latitude')), max(attr(y,'latitude'))))
+
+    lon.rng <- c(max(min(lon(x),lon(y),na.rm=TRUE)),
+                 min(max(lon(x),lon(y),na.rm=TRUE)))
+    lat.rng <- c(max(min(lat(x),lat(y),na.rm=TRUE)),
+                 min(max(lat(x),lat(y),na.rm=TRUE)))
     #print("Region:"); print(c(lon.rng,lat.rng))
     x <- subset(x,is=list(lon.rng,lat.rng))
     y <- subset(y,is=list(lon.rng,lat.rng))
@@ -128,16 +128,14 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
   attr(r,'longitude') <- attr(x,'longitude')
   attr(r,'latitude') <- attr(x,'latitude')
   attr(r,'time') <- range(index(x))
-  if (attr(x,'variable')==attr(y,'variable'))
-    attr(r,'variable') <- attr(x,'variable') else
-    attr(r,'variable') <- attr(x,'variable')   # Need to finalise this...
-#    attr(r,'variable') <- paste(attr(x,'variable'),attr(y,'variable'),sep="/")
+  if (attr(x,'variable')[1]==attr(y,'variable')[1])
+    attr(r,'variable') <- attr(x,'variable')[1] else
+    attr(r,'variable') <- c(attr(x,'variable')[1], attr(y,'variable')[1])
   attr(r,'source') <- paste(attr(x,'source'),attr(y,'source'),sep="/")
   attr(r,'location') <- attr(y,'location')
-  if (attr(x,'unit')==attr(y,'unit')) 
-    attr(r,'unit') <- attr(x,'unit') else
-    attr(r,'unit') <- attr(x,'unit')   # Need to finalise this...
-#    attr(r,'unit') <- paste(attr(x,'unit'),attr(y,'unit'),sep="/")
+  if (attr(x,'unit')[1]==attr(y,'unit')[1]) 
+    attr(r,'unit') <- attr(x,'unit')[1] else
+    attr(r,'unit') <- c(attr(x,'unit')[1],attr(y,'unit')[1])   
   class(r) <- 'corfield'
   if (plot) map(r)
   return(r)
@@ -151,7 +149,8 @@ corfield.field.station <- function(x,y,plot=TRUE,verbose=FALSE,
 }
 
 
-corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,use='pairwise.complete.obs',na.action='na.omit',...) {
+corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,use='pairwise.complete.obs',
+                             na.action='na.omit',...) {
   if (verbose) print("corfield.station:")
   
   # Keep track of which is an eof object and which is a station record:
@@ -219,9 +218,9 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,use='pairwise.complete.
   attr(r,'longitude') <- attr(y,'longitude')
   attr(r,'latitude') <- attr(y,'latitude')
   attr(r,'time') <- range(index(X))
-  if (attr(x,'variable')==attr(y,'variable'))
+  if (attr(x,'variable')[1]==attr(y,'variable')[1])
     attr(r,'variable') <- attr(x,'variable') else
-    attr(r,'variable') <- attr(x,'variable')   # Need to finalise this...
+    attr(r,'variable') <- c(varid(x)[1],varid(y)[1])
   attr(r,'source') <- paste(attr(x,'source'),attr(y,'source'),sep="/")
   attr(r,'location') <- attr(x,'location')
   attr(r,'x.longitude') <- attr(x,'longitude')
@@ -229,9 +228,9 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,use='pairwise.complete.
   attr(r,'x.altitude') <- attr(x,'altitude')
   attr(r,'stadion_id') <- attr(x,'station_id')
   attr(r,'country') <- attr(x,'country')
-  if (attr(x,'unit')==attr(y,'unit')) 
-    attr(r,'unit') <- attr(x,'unit') else
-    attr(r,'unit') <- attr(y,'unit') # Need to finalise this...
+  if (attr(x,'unit')[1]==attr(y,'unit')[1]) 
+    attr(r,'unit') <- attr(x,'unit')[1] else
+    attr(r,'unit') <- c(unit(x)[1],unit(y)[1])
   class(r) <- 'corfield'
 
   #print("map")
