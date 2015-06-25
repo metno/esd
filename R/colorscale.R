@@ -38,7 +38,8 @@
 #0	1	229	229	229	*Ikke nedbør
 
 
-colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,test=FALSE,verbose=FALSE) {
+colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
+                    test=FALSE,verbose=FALSE) {
 
   test.col <- function(r,g,b) {
     dev.new()
@@ -49,6 +50,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,test=FALSE,verbose=FALSE)
   }
 
   if (verbose) print(paste('colscal',col))
+  if (is.null(col)) col <- 't2m'
   # Set up colour-palette
   col <- tolower(col)
   x <- 1:n
@@ -132,6 +134,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,test=FALSE,verbose=FALSE)
     b <- approx(seNorgeP[3,],n=n)$y/255
     if (is.null(alpha)) col <- rgb(r,g,b)  else
                         col <- rgb(r,g,b,alpha)
+    rev <- TRUE
   } else if (col[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6,alpha=alpha)
   } else if (col[1]=="gray.colors") {
@@ -204,7 +207,7 @@ col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
         text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl,
              labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
     } 
-    par(fig=par0$fig)
+    #par(fig=par0$fig)
 }
 
 colbar2 <- function(x,col) {

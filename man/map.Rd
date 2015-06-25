@@ -23,6 +23,7 @@
 \description{Make map of geophysical data. These plot functions are S3 methods for esd objects.
 }
 \usage{
+<<<<<<< HEAD
 map(x,it=NULL,is=NULL,new=TRUE,...)
 map.default(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
               xlim=NULL,ylim=NULL,zlim=NULL,n=15,
@@ -38,7 +39,7 @@ map.station(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
               type = NULL,gridlines= TRUE, 
               lonR = NULL,latR=45,axiR=NULL,verbose=FALSE,
               FUN = NULL, 
-              colbar = list(palette="t2m",rev=FALSE,n=10,breaks=NULL,
+              colbar = list(palette=NULL,rev=FALSE,n=10,breaks=NULL,
                             type="p",cex=2,h=0.6,v=1,pos=0.05),
               cex=0.8,zexpr = "alt",
               cex.subset = 1, add.text.subset = FALSE, showall = FALSE, 
@@ -51,28 +52,28 @@ map.station(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
 
 map.comb(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
            xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-           colbar=list(palette="t2m",rev=FALSE,n=10,breaks=NULL,type="p",
+           colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
                        cex=2,h=0.6,v=1,pos=0.05),
            type=c("fill", "contour"),gridlines=FALSE,
            lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,pattern=1,...)
 
 map.eof(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
            xlim= NULL,ylim=NULL,zlim=NULL,n=15,
-           colbar=list(palette="t2m",rev=FALSE,n=10,breaks=NULL,type="p",
+           colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
                        cex=2,h=0.6,v=1,pos=0.05),
            type=c("fill","contour"),gridlines=FALSE,
            lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,pattern=1,...)
 
 map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-         colbar=list(palette = "t2m",rev=FALSE,n=10,breaks=NULL,
+         colbar=list(palette = NULL,rev=FALSE,n=10,breaks=NULL,
                      type="p",cex = 2,h=0.6,v=1,pos=0.05),
          type= c("fill", "contour"),gridlines=FALSE,
          lonR=NULL,latR=-90,axiR = NULL,verbose = FALSE,...) 
 
 map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
             xlim=NULL,ylim=NULL,zlim=NULL, 
-            colbar= list(palette="t2m",rev=FALSE,n=10,breaks = NULL,
+            colbar= list(palette=NULL,rev=FALSE,n=10,breaks = NULL,
                          type = "p", cex = 2, h = 0.6, v = 1, pos = 0.05), 
             type = c("fill", "contour"), gridlines = FALSE,
             lonR = NULL,latR = -90, axiR = NULL, verbose = FALSE,
@@ -80,14 +81,14 @@ map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
 
 map.corfield(x,it=NULL,is=NULL,new=TRUE,projection= "lonlat", 
                xlim=NULL,ylim=NULL,zlim=NULL,n = 15,
-               colbar=list(palette="t2m",rev=FALSE,n=10,breaks=NULL,
+               colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,
                            type="p",cex=2,h=0.6,v=1,pos=0.05),
                type=c("fill", "contour"),gridlines=FALSE,
                lonR=NULL,latR=-90,axiR = NULL,verbose = FALSE, ...)
  
 map.trend(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
             xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-            colbar=list(palette="t2m",rev=FALSE,n=10,breaks=NULL,type="p",
+            colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
                         cex=2,h=0.6,v=1,pos=0.05),
             type=c("fill", "contour"),gridlines=FALSE,
             lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...)
@@ -101,20 +102,20 @@ map.pca(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
 
 map.mvr(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-          colbar=list(palette="t2m",rev=FALSE,n=10,breaks=NULL,type="p",
+          colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
                       cex=2,h=0.6,v=1,pos=0.05),
           type=c("fill", "contour"),gridlines = FALSE, verbose = FALSE, ...)
 
 
 map.cca(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-          colbar=list(palette="t2m",rev=FALSE,n=10,breaks=NULL,type="p",
+          colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
                       cex = 2,h=0.6,v=1,pos=0.05),
           type = c("fill","contour"),gridlines = FALSE,verbose=FALSE,...)
 
 lonlatprojection(x,it=NULL,is=NULL,new=FALSE,projection="lonlat", 
                    xlim=NULL,ylim=NULL,zlim=NULL,n =15,
-                   colbar=list(palette="t2m",rev=FALSE,n=10,breaks=NULL,
+                   colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,
                                type="p",cex=2,h=0.6,v=1,pos=0.05),
                    type = c("fill", "contour"),geography=TRUE,
                    gridlines = FALSE, verbose = FALSE,fancy=FALSE,...) 
@@ -127,10 +128,10 @@ gridbox(x,col,density = NULL, angle = 45)
 
 map2sphere(x,it=NULL,is=NULL,new = TRUE,
              xlim=NULL,ylim=NULL,zlim = NULL,
-             colbar= list(palette="t2m",rev=FALSE,n=10,breaks=NULL,
+             colbar= list(palette=NULL,rev=FALSE,n=10,breaks=NULL,
                           type="p",cex=2,h=0.6,v=1,pos=0.05),
              lonR = NULL, latR = NULL, axiR = 0, 
-             type = c("fill", "contour"),
+             type = c("fill", "contour"),colorbar=TRUE,
              gridlines = TRUE, fancy = FALSE, verbose = FALSE,...) 
 
 vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
@@ -180,7 +181,7 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
   \item{add.text}{Add abbreviated location names.}
   \item{full.names}{Show the full name of the location.}
   \item{showall}{Default is set to FALSE}
-  \item{showaxis}{}
+  \item{showaxis}{If set to FALSE, the axis are not displayed in the plot.}
   show.val = FALSE, 
   colorbar = TRUE, legend.shrink = 1
   \item{fancy}{If set to true, will use \code{col.bar} instead of

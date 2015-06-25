@@ -53,7 +53,7 @@ EOF.default(X,it=NULL,n=20,lon=NULL,lat=NULL,
 EOF.field(X,it=NULL,n=20,lon=NULL,lat=NULL,
           area.mean.expl=TRUE,verbose=FALSE)
 EOF.comb(X,it=NULL,n=20,lon=NULL,lat=NULL,area.mean.expl=TRUE,verbose=FALSE)
-eof2field(x,it=NULL,is=NULL,anomaly=FALSE)
+eof2field(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE)
 PCA(X,...) 
 EOF.default(X,...)
 PCA.station(X,na.action='fill',verbose=FALSE)

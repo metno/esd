@@ -4,7 +4,7 @@
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
 
-map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=TRUE,
+map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                          col="darkred",bg="orange",

@@ -117,7 +117,7 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
 aggregate.comb <- function(x,by,FUN = 'mean', ...,
                               regular = NULL, frequency = NULL) {
   # Also need to apply the aggregation to the appended fields
-  print("aggregate.comb")
+  #print("aggregate.comb")
   #print(class(x))
 
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
@@ -144,7 +144,7 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
                               regular = NULL, frequency = NULL) {
 
   class(x) -> cls
-  print(class(index(x)))
+  #print(class(index(x)))
   class(x) <- "zoo"
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   #str(X); plot(X)

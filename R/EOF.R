@@ -38,6 +38,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   if (verbose) print("EOF.field")
   stopifnot(!missing(X), is.matrix(X),
             inherits(X,c("field","zoo")))
+  
 
   # REB: 29.04.2014
   if (area.mean.expl) {
@@ -60,12 +61,15 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
     if (verbose) print(paste('removing ',sum(nok),'NA time slices'))
   }
   
-  x <- subset(X,it=it,is=is)
+  x <- subset(X,it=it,is=is,verbose=verbose)
   x <- sp2np(x)
   dates <- index(x)
   if (verbose) print(dates)
   
   d <- attr(x,'dimensions')
+  if ((length(d) != 3) | min(d) == 1)
+    stop(paste('EOF.field: too small data dimensions'))
+    
   cls <- class(x)
   #print(cls)
   ## browser()
@@ -89,13 +93,14 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   # Exclude the missing values 'NA' and grid points with sd == 0 for all times:
   sd0 <- apply(as.matrix(Y),2,sd,na.rm=TRUE)
   nf <- apply(as.matrix(Y),2,SF)
-  if (verbose) print(paste('Exclude the missing values/zero-sd:',sum(sd0>0.0),sum(nf > 0)))
+  if (verbose) print(paste('Exclude the missing values/zero-sd:',
+                           sum(sd0>0.0),sum(nf > 0)))
   y <- Y[,(sd0>0.0) & (nf > 0)]
   ## browser()
   # Exclude the time slices with missing values:
   skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
   y <- as.matrix(y)[skip == npts,]
-  
+
   # Remove the mean value - center the analysis:
   if (verbose) print('center the data')
   ave <- rowMeans(y)
@@ -200,7 +205,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
 
   #print('subset')
   if (!is.null(is) | !is.null(it))
-    X <- subset(X,it=it,is=is)
+    X <- subset(X,it=it,is=is,verbose=verbose)
   #else if (!is.null(it))
   #  X <- subset(X,it=it,is=is)
   ## AM 11-11-2013 added lines end
@@ -343,13 +348,13 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
 
 
 
-eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE) {
-#  print("HERE"); print(lon); print(lat)
+eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE) {
+  if (verbose) {print("eof2field"); print(lon); print(lat)}
   greenwich <- attr(x,'greenwich')
 #  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
 #  if (!is.null(lat)) lat.rng <- range(lat) else lat.rng <- NULL
   if ( !is.null(it) | !is.null(is) ) 
-    eof <- subset(x,it=it,is=is) else
+    eof <- subset(x,it=it,is=is,verbose=verbose) else
 #  if (!is.null(is))
 #    eof <- subset(x,is=is) else
     eof <- x
