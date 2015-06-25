@@ -740,7 +740,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (sum(is.element(tolower(type),'contour'))>0)
      contour(lon,lat,x,lwd=1,col="grey70",add=TRUE)
   if (gridlines) grid()
-  par(xpd=TRUE)
+  par(xpd=FALSE)
   dlat <- diff(range(lat))/60
   #print(dlat)
   text(lon[1],lat[length(lat)] + dlat,main,pos=4,font=2)

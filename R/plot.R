@@ -85,7 +85,10 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
 
 plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
-                     pattern=1,what=c("pc","eof","var"),colbar=NULL,verbose=FALSE,...) {
+                     pattern=1,what=c("pc","eof","var"),
+                     colbar=list(palette=NULL,rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                     verbose=FALSE,...) {
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
@@ -619,7 +622,7 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
 vis.pca <- function(y,cex=1.5,new=TRUE) {
 
   col <- colscal(col=varid(y)); nc <- length(col)
-  if (is.precip(y)) col <- rev(col)
+  #if (is.precip(y)) col <- rev(col)
   lon <- attr(y,'longitude') 
   lat <- attr(y,'latitude') 
   N <- length(lon)
