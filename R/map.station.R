@@ -39,15 +39,15 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if (FUN=='NULL') FUN <- NULL
       if (is.null(colbar$n)) colbar$n <- 10
 
-      if (!is.null(FUN))
-          X <- apply(coredata(x),2,FUN=FUN,na.rm=na.rm)
-      else
-          X <- x
-      if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
-          colbar$breaks <- pretty(coredata(X),n=colbar$n)
-      } else if (length(colbar$breaks)==2)
-          colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
-      colbar$n <- length(colbar$breaks)-1
+      ##if (!is.null(FUN))
+      ##    X <- apply(coredata(x),2,FUN=FUN,na.rm=na.rm)
+      ##else
+      ##    X <- x
+      ##if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
+      ##    colbar$breaks <- pretty(coredata(X),n=colbar$n)
+      ##} else if (length(colbar$breaks)==2)
+      ##    colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
+      ##colbar$n <- length(colbar$breaks)-1
       if (is.null(colbar$type)) colbar$type <- 'p'
       if (is.null(colbar$cex)) colbar$cex <- 2
       if (is.null(colbar$h)) colbar$h <- 0.6
@@ -305,13 +305,15 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                               1,esd2ele)),collapse="/"),line=2,cex.main=.8 , adj = 0)
             }
             else {
-                title(main=paste("SOURCE(S) : ", paste(levels(factor(ss$source)),collapse="/" )),
+                title(main=paste("SOURCE(S) : ",
+                          paste(levels(factor(ss$source)),collapse="/" )),
                       line=3,cex.main=.8)
                 title(main=paste(length(ss$location)),line=2,cex.main=.8)
-                title(main=paste(max(ss$start,na.rm=TRUE),"/",min(ss$end,na.rm=TRUE)),line=2,
-                      cex.main=.8,adj=1)
-                title(main=paste(paste(toupper(levels(factor(ss$variable))),collapse="/"),
-                          toupper(FUN),sep="/"),line=2,cex.main=.8 , adj = 0)
+                title(main=paste(max(ss$start,na.rm=TRUE),"/",
+                          min(ss$end,na.rm=TRUE)),line=2,cex.main=.8,adj=1)
+                title(main=paste(paste(toupper(levels(factor(ss$variable))),
+                          collapse="/"),toupper(FUN),sep="/"),
+                      line=2,cex.main=.8 , adj = 0)
             }
         }
         ## title(main=attr(z,"title"),line=2.2,cex.main=0.7)
@@ -333,6 +335,17 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                 else
                     y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
             }
+
+            
+            if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
+                colbar$breaks <- pretty(coredata(y),n=colbar$n)
+            } else if (length(colbar$breaks)==2)
+                colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
+                                     length=colbar$n)
+            colbar$n <- length(colbar$breaks)-1
+
+
+
             ## y.rng <- floor(range(y,na.rm=TRUE))
             ## AM Added 12-05-2015           
            
@@ -404,11 +417,13 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             
             ##points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=col,
             ##       cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)
-            if (is.null(col)) colbar$col <- rep(col,length(colbar$col[icol]))
+            ##if (is.null(col)) colbar$col <- rep(col,length(colbar$col[icol]))
+            if (!is.null(col)) col <- col else col <- colbar$col[icol]
             points(ss$longitude, ss$latitude, pch = pch,
-                   bg=colbar$col[icol], col=colbar$col[icol],
+                   bg=colbar$col[icol], col=col, ##col=colbar$col[icol]
                    cex = cex*scale, xlab = "", ylab = "",
                    xlim = xlim, ylim = ylim,...)
+            
             par(fig=fig0,new=TRUE)
             
             ## print(par()$fig)
