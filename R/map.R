@@ -3,9 +3,9 @@
 
 #require(zoo)
 
-map <- function(x,it=NULL,is=NULL,new=TRUE,...) UseMethod("map")
+map <- function(x,it=NULL,is=NULL,new=FALSE,...) UseMethod("map")
 
-map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
+map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                         projection="lonlat",
                         xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                         colbar= list(palette='t2m',rev=FALSE,n=10,
@@ -75,7 +75,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,
   invisible(X)
 }
  
-map.matrix <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                      colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
@@ -97,7 +97,7 @@ map.matrix <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   #map.station(NULL,...)
 }
 
-map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                      #colbar=list(col=NULL, breaks=NULL, type="r",
                      #         cex=2, h=0.6, v=1),
@@ -120,7 +120,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
 }
 
 
-map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                      colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
@@ -146,7 +146,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   invisible(result)
  }
 
-map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                     colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
@@ -196,7 +196,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 }
 
 
-map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
@@ -271,7 +271,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 }
 
 
-map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
@@ -354,7 +354,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=TRUE,projection="lonlat",
 }
 
 
-map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
@@ -401,7 +401,7 @@ map.corfield <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 }
 
 
-map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
@@ -453,7 +453,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
 
 
 
-map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
+map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1),
@@ -486,7 +486,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat",
               xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
 }
 
-map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
@@ -498,7 +498,7 @@ map.mvr <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
   
 }
 
-map.cca <- function(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
+map.cca <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                    colbar= list(palette='t2m',rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1),
@@ -586,7 +586,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (verbose) print('lonlatprojection')
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   colorbar <- !is.null(colbar)
-  
+
   ## If only a few items are provided in colbar - hen set the rest to the default
   if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
@@ -619,8 +619,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
    if (colid=='precip') col <- rev(col)
   }
   
-    par0 <- par()
-    fig0 <- par()$fig
+#    par0 <- par()                             # REB 2015-06-25 these lines open an
+#    fig0 <- par()$fig                         # unused window.
+     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
     
 #    if (!is.null(colbar$palette) & (!is.null(colbar$n) | !is.null(colbar$breaks))) {
 #        ##colbar$breaks <- pretty(y,n=length(colbar$col))
@@ -645,10 +646,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 #   
 #    ## browser()
     if (colorbar) {
-        fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
+#        fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
+        fig0[3] <- fig0[3] + (fig0[4]-fig0[3])/200##0.05   # REB 2015-06-25
     } else 
-        fig0 <- par0$fig
-    par(fig=fig0)
+        fig0 <- fig0                                       # REB 2015-06-25
+#        fig0 <- par0$fig
+#     par(fig=fig0)                                        # REB 2015-06-25 opens extra window
     data("geoborders",envir=environment())
   if(sum(is.finite(x))==0) stop('No valid data')
   ## To deal with grid-conventions going from north-to-south or east-to-west:
@@ -702,17 +705,18 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   #print(c(length(breaks),length(col)))
   #if (is.Date(type))
 
-    if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
+    #if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
     ## browser()     
     if (new) {
+        par(fig=fig0) 
         dev.new()
-    ## par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+        par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
     ## fig=fig0,mar=c(2,1,1,1)) # c(0.05,0.95,0.13,0.95),mar=rep(1,4)
-       par(fig=fig0,mar=c(2.5,2,2,2),bty="n") # c(0.05,0.95,0.13,0.95),mar=rep(1,4)
+   ##    par(fig=fig0,mar=c(2.5,2,2,2),bty="n") # c(0.05,0.95,0.13,0.95),mar=rep(1,4)
                                         #    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
 #        fig=c(0.05,0.95,0.12,0.95))
     } else {
-       par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,mar=rep(1,4))
+       par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
     ## par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
     }
     ##
@@ -770,13 +774,22 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         ##if (is.null(colbar$breaks)) colbar$breaks <- pretty(x,n=length(colbar$col))
         
         ##if (isprecip) colbar$col <- rev(colbar$col)
+
+        par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
+        cex.lab=0.7,cex.axis=0.7)
+        axis(2,at=pretty(lat(x)),col='grey')
+        axis(3,at=pretty(lon(x)),col='grey')
+        grid()
+
+        par(col.axis='black',col.lab='black',
+            cex.lab=0.5,cex.axis=0.5)
         
         if (fancy)
             col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
                     col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
                     type=type,verbose=FALSE,vl=1,border=FALSE)
         else {
-            par(fig=par0$fig)
+            #par(fig=par0$fig)
             ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
             ##           legend.only = T, zlim = range(colbar$breaks),
             ##           col = colbar$col, legend.width = 1,
@@ -790,11 +803,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         }
     }
 
-    par(fig=fig0)
-    par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',cex.lab=0.7,cex.axis=0.7)
-  axis(2,at=pretty(lat(x)),col='grey')
-  axis(3,at=pretty(lon(x)),col='grey')
-  grid()
+    #par(fig=fig0)
 
   par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1)
   result <- list(x=lon,y=lat,z=x,breaks=breaks)
