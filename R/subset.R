@@ -657,10 +657,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (verbose) {print(nlev); print(it)}
 #         if ((length(nlev)==1)) { REB 2015-01-20: the lines below will never happen with this line:
         if (length(it)==2) {
-          if ( (min(it) >= min(yr)) & (max(it) <= max(yr)) ) {
-            if (verbose) print("it most probably contains years")
-            ii <- is.element(yr,it[1]:it[2])
-          } else if ( (min(it) >= 1800) & (max(it) <= 2500) ) {
+          if ( (min(it) >= 1800) & (max(it) <= 2500) ) {
             if (verbose) print("it most probably contains a years")
             ii <- is.element(yr,year(it[1]):year(it[2]))
           } else if ( (min(it) <= min(yr)) & (max(it) <= length(yr)) ) {

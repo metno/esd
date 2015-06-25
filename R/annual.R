@@ -75,6 +75,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   } else if (inherits(x,'season')) {
     if (is.null(nmin)) nmin <-  4
   } 
+  if (verbose) {print(paste('nmin=',nmin)); print(class(x))}
   
   ## Convert x to a zoo-object:
   if (verbose) print('Number of valid data points')
@@ -219,12 +220,13 @@ annual.dsensemble <- function(x,FUN='mean') {
 
 
 
-annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, ...) {
+annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
+  if (verbose) print('annual.field')
   attr(x,'names') <- NULL
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB110314
   yr <- year(x)
   cls <- class(x)
-  class(x) <- "zoo"
+#  class(x) <- "zoo"
   if ( (inherits(x,'mon'))  & is.null(nmin) ) {
     iy <- year(x)
     nmy <- as.numeric(table(iy))
@@ -233,7 +235,8 @@ annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, ...) {
     na.rm=FALSE
   }
 #  y <- aggregate(x,yr,FUN=match.fun(FUN),...,na.rm=na.rm)
-  y <- aggregate(x,yr,FUN=FUN,...,na.rm=na.rm)
+#  y <- aggregate(x,yr,FUN=FUN,...,na.rm=na.rm)
+  y <- annual.default(x,FUN=FUN,nmin=nmin,verbose=verbose,...) 
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],length(index(y)))
