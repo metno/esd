@@ -177,20 +177,20 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
   \item{colorbar}{Show the color bar in the map (default TRUE). If
     FALSE, the colorbar is not added into the map (ignored).}
   
-  \item{cex.subset}{}
+  \item{cex.subset}{...}
   \item{add.text}{Add abbreviated location names.}
   \item{full.names}{Show the full name of the location.}
   \item{showall}{Default is set to FALSE}
   \item{showaxis}{If set to FALSE, the axis are not displayed in the plot.}
-  show.val = FALSE, 
-  colorbar = TRUE, legend.shrink = 1
-  \item{fancy}{If set to true, will use \code{col.bar} instead of
+  \item{fancy}{If set to true, will use \code{\link{col.bar}} instead of
     \code{image} to produce the colour bar} 
   \item{text}{If TRUE, display text info on the map.The default is set
-  to FALSE}
+    to FALSE}
   \item{show.val}{Display the values of `x' or `FUN(x)' on top of the
-  coloured map.}
-\item {...}{further arguments passed to or from other methods.}	 
+    coloured map.}
+  \item{legend.shrink}{If set, the size of the color bar is shrinked
+    (values between 0 and 1)}
+  \item{...}{further arguments passed to or from other methods.}	 
 }
 \value{A field object}
 
