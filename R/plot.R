@@ -146,6 +146,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   }
   
   #print(main)
+  #browser()
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
       par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
@@ -154,8 +155,8 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
                     "%",sep='')
       
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
-               cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
-      axis(1,at=pretty(index(x[,n]),n=10),cex.axis=0.9)
+               cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1)
+      #axis(1,at=pretty(index(x),n=10),labels=,cex.axis=0.9)
   }
  
   par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
