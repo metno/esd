@@ -808,7 +808,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
     #par(fig=fig0)
 
-  par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1)
+  par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
+      xaxt="s",yaxt="s")
   result <- list(x=lon,y=lat,z=x,breaks=breaks)
     #par(fig=par0$fig)
     invisible(result)
