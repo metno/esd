@@ -2,14 +2,12 @@
 
 
 subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-    if (verbose) print("subset.field")
-   
-
-    if (is.null(it) & is.null(is)) return(x)
-
-    y <- default.subset(x,is=is,it=it,verbose=verbose)
-    attr(y,'history') <- history.stamp(x)
-    return(y)
+  if (is.null(it) & is.null(is)) return(x)
+  if (verbose) print("subset.field")
+  
+  y <- default.subset(x,is=is,it=it,verbose=verbose)
+  attr(y,'history') <- history.stamp(x)
+  return(y)
 }
 
 subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE) {
@@ -545,10 +543,15 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## both field and station objects.
     
     nval <- function(x) sum(is.finite(x))
-   
-    if (verbose) print("default.subset")
-    x0 <- x
+    
+    ## Sometimes 'it' = 'integer(0)' - reset to NULL!
+    if (length(it)==0) it <- NULL
+    if (length(is)==0) is <- NULL
+    ## Return the original value if 'it' and 'is' are not specified
     if (is.null(it) & is.null(is)) return(x)
+    
+    if (verbose) {print("default.subset"); print(it); print(is); print('---')}
+    x0 <- x
     ## 
     d <- dim(x)
     if (is.null(d)) {
