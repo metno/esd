@@ -17,6 +17,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
 
   if (verbose) print('map.default')
 
+  if (is.logical(colbar)) colbar <- NULL
   ## If only a few items are provided in colbar - hen set the rest to the default
   if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
@@ -37,9 +38,9 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     colbar$col <- colscal(n=colbar$n,col=colbar$palette,
                           rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col)))
-  }
+    col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev) # colbar$col
+  } else col <- 'black'
   
-  col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev) # colbar$col
   x <- subset(x,it=it,is=is)
   X <- attr(x,'pattern')
 

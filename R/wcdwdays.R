@@ -1,15 +1,15 @@
 # number of wet, cold, dry, or wet days
 coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
-                           verbose=FALSE,plot=TRUE,...) {
+                           verbose=FALSE,plot=TRUE,nmin=90,...) {
   # Estimate number of days with low temperatures
   if (verbose) print('mildwinterdays')
   stopifnot(inherits(x,'station'))
   djf <- subset(x,it=it)     # Winter
   mam <- subset(x,it='mam')  # Spring/autumn
-  nwd1 <- annual(-djf,FUN='count',threshold=threshold,nmin=90)
-  mwd1 <- annual(djf,FUN='mean',nmin=90)
-  nwd2 <- annual(-mam,FUN='count',threshold=threshold,nmin=90)
-  mwd2 <- annual(mam,FUN='mean',nmin=90)
+  nwd1 <- annual(-djf,FUN='count',threshold=threshold,nmin=nmin)
+  mwd1 <- annual(djf,FUN='mean',nmin=nmin)
+  nwd2 <- annual(-mam,FUN='count',threshold=threshold,nmin=nmin)
+  mwd2 <- annual(mam,FUN='mean',nmin=nmin)
 
   cal <- data.frame(x=c(coredata(mwd1),coredata(mwd2)),
                     y=c(coredata(nwd1),coredata(nwd2)))
@@ -72,7 +72,7 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
     dev.new()
     par(bty='n')
     plot(Nwd,plot.type='single',lwd=5,main=loc(x),ylim=c(0,100),
-         xlab="",ylab=paste('number of cold days: T(2m) < ',threshold),
+         xlab="",ylab=paste('number of cold days: T(2m) < ',threshold,unit(x)),
          col=c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
                rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)),
          ...)
@@ -93,13 +93,13 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
 
 
 hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
-                          verbose=FALSE,plot=TRUE,...) {
+                          verbose=FALSE,plot=TRUE,nmin=90,...) {
     # Estimate number of days with low temperatures
   if (verbose) print('mildwinterdays')
   stopifnot(inherits(x,'station'))
   djf <- subset(x,it=it)     # summer
-  nwd1 <- annual(djf,FUN='count',threshold=threshold,nmin=90)
-  mwd1 <- annual(djf,FUN='mean',nmin=90)
+  nwd1 <- annual(djf,FUN='count',threshold=threshold,nmin=nmin)
+  mwd1 <- annual(djf,FUN='mean',nmin=nmin)
 
   cal <- data.frame(x=c(coredata(mwd1)),
                     y=c(coredata(nwd1)))
@@ -168,7 +168,7 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
     dev.new()
     par(bty='n')
     plot(Nwd,plot.type='single',lwd=5,main=loc(x),ylim=c(0,90),
-         xlab="",ylab=paste('number of hot days: T(2m) > ',threshold),
+         xlab="",ylab=paste('number of hot days: T(2m) > ',threshold,unit(x)),
          col=c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
                rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)),
          ...)

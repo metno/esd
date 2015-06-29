@@ -66,13 +66,17 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   #lat <- round( attr(y,'latitude') + lat )
 
   # The units
-  if ( (attr(y,'unit') == "deg C") | (attr(y,'unit') == "degree Celsius") )
+  if ( (unit(y)[1] == "deg C") | (unit(y)[1] == "degree Celsius") |
+       (unit(y)[1] == "degC") | (unit(y)[1] == "Celsius") )
         unit <- expression(degree*C) else
         unit <- attr(y,'unit')
+  if (verbose) print(paste('Units:',unit))
 
   #ylim <- switch(deparse(substitute(FUN)),
-  ylim <- switch(FUN,
-                 'mean'=c(-2,8),'sd'=c(-0.5,1),'ar1'=c(-0.5,0.7))
+  ylim <- c(0,0)
+  ylim <- switch(FUN,'mean'=c(-2,8),'sd'=c(-0.5,1),'ar1'=c(-0.5,0.7))
+  if (verbose) print(paste('set ylim based on "',FUN,'" -> c(',ylim[1],', ',ylim[2],')',sep=''))
+  
   if (plot) {
     par(bty="n")
     plot.zoo(ya,type="b",pch=19,main=attr(y,'location'),
