@@ -25,11 +25,15 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   if (verbose) print('map.station')
     arg <- list(...)
 
-  if (is.logical(colbar)) if (!colbar) colbar <- NULL else
-                                       colbar= list(palette='t2m',rev=FALSE,n=10,
-                                                    breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1)
+  if (is.logical(colbar)) {
+    ## If colbar set to FALSE, treat it as set to NULL
+    if (!colbar) colbar <- NULL else
+                 colbar= list(palette='t2m',rev=FALSE,n=10,
+                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1)
+  }
+                           
   if (!is.null(colbar)) {
-      if (verbose) print('sort out the colours')
+      if (verbose) print(paste('sort out the colours. varid=',varid(x)[1],'FUN=',FUN))
       if (is.null(colbar$rev)) colbar$rev <- FALSE
       if (is.null(FUN)) FUN <- 'NULL'
       if (is.null(colbar$palette)) {
@@ -37,8 +41,9 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                                  (FUN=='wetmean') | (FUN=='mean')) ) {
               colbar$palette <- 'precip'
               colbar$rev <- TRUE
-          }
-      } else colbar$palette <- 't2m'
+          } else colbar$palette <- 't2m'
+      } 
+
       if (FUN=='NULL') FUN <- NULL
       if (is.null(colbar$n)) colbar$n <- 10
 
