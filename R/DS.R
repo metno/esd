@@ -66,6 +66,7 @@ DS.default <- function(y,X,mon=NULL,
               inherits(X,"eof"),inherits(y,"station"))
     y0 <- y
     X0 <- X
+    eofs <- eofs[eofs <= length(attr(X,'eigenvalues'))]
 
     if (verbose) {print(paste(sum(!is.finite(coredata(y))),'missing values in y'))}
     if (verbose)  {print('index(y) before removing missing values:'); print(index(y))}
@@ -129,13 +130,15 @@ DS.default <- function(y,X,mon=NULL,
     Xnames <- paste("X.",1:length(names(X)),sep="")
     colnames(caldat) <- c("y",Xnames,'weights')
     Xnames <- Xnames[eofs]
-    #browser()
                                         # REB 2014-10-03:
     if (weighted)
         calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                         ", weights=weights, data=caldat, ...)",sep="") else
         calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                         ", data=caldat, ...)",sep="")
+
+    #browser()
+
     MODEL <- eval(parse(text=calstr))
     FSUM <- summary(MODEL)
     if (verbose) print(FSUM)
