@@ -38,6 +38,58 @@
 #0	1	229	229	229	*Ikke nedbør
 
 
+colbar.ini <- function(x,FUN=NULL,colbar=NULL) {
+    ## browser()
+    if (is.logical(colbar)) colbar <- NULL
+    
+    ##if (!is.null(colbar)) {
+    if (verbose) print('sort out the colours')
+    if (is.null(colbar$pal)) colbar$pal <- varid(x)
+    if (is.null(colbar$rev)) colbar$rev <- FALSE
+    if (is.null(colbar$n)) colbar$n <- 10
+    if (is.null(colbar$breaks)) {
+        colbar$breaks <- pretty(x,n=colbar$n)
+    } else if (length(colbar$breaks)==2)
+        colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
+                             length=colbar$n)
+    colbar$n <- length(colbar$breaks)-1
+    if (is.null(colbar$type)) colbar$type <- 'p'
+    if (is.null(colbar$cex)) colbar$cex <- 2
+    if (is.null(colbar$h)) colbar$h <- 0.6
+    if (is.null(colbar$v)) colbar$v <- 1
+    if (is.null(colbar$pos)) colbar$pos <- 0.05
+    if (is.null(colbar$show)) colbar$show <-TRUE 
+    if (verbose) print(colbar)
+    colbar$col <- colscal(n=colbar$n,col=colbar$pal,
+                          rev=colbar$rev,verbose=verbose)
+    if (verbose) print(paste("length(col) =",length(colbar$col)))
+    col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev)       
+    
+    if (is.null(colbar$pal)) {
+        if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
+                               (FUN=='wetmean') | (FUN=='mean')) ) {
+            colbar$pal <- 'precip'
+            colbar$rev <- TRUE
+        } else colbar$pal <- 't2m'
+    } 
+
+    if (!is.null(FUN)) {
+        if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
+            colbar$breaks <- pretty(x,n=colbar$n)
+        } else if (length(colbar$breaks)==2)
+            colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
+                                 length=colbar$n)
+        colbar$n <- length(colbar$breaks)-1
+    }
+
+    if (!inherits(x,"stationmeta"))
+        colbar$col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev,verbose=verbose)
+    if (verbose) print(paste("length(col) =",length(colbar$col)))
+
+    ##}
+    invisible(colbar)
+}
+
 colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
                     test=FALSE,verbose=FALSE) {
 

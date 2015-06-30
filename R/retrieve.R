@@ -545,13 +545,11 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     }
 
     ## Get dimensions
-
     ## Get dimension names
     dimnames <- rep(NA,v1$ndims)
     for (i in 1:v1$ndim)
         dimnames[i] <- tolower(v1$dim[[i]]$name)
     ## Get lon, lat, lev, time attr and values and update values if necessary
-
     ## Longitudes
     ilon <- grep("lon", dimnames)
     if (length(ilon) ==0)
@@ -598,7 +596,9 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         stop("Error in dim lat")
     if (!is.null(ilat))
         lat <- eval(parse(text=paste("v1$dim[[",as.character(ilat),"]]",sep="")))
-    else lat <- NULL
+    else
+        lat <- NULL
+    ##
     ## Pressure Level if pressure variable / not used for surface variables
     ilev <- grep("lev", dimnames)
     if (length(ilev) ==0)
@@ -635,9 +635,9 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         if (!is.null(lon.rng)) {
             if (length(lon.rng) > 2) stop("lon.rng should be in the form of c(x1,x2)")
             else if (length(lon.rng) == 1) {
-                lon.w <- which((lon$vals-lon.rng) == min(abs(lon$vals-lon.rng)))
+                lon.w <- which((lon$vals-lon.rng) == min(abs(lon$vals-lon.rng))) 
                 if (verbose)
-                    print(paste("Single point extraction / Selected nearest grid cell lon :",
+                    print(paste("Single lon extraction / Selected nearest grid cell to lon :",
                                 as.character(lon$vals[lon.w]),lon$unit,sep=" "))
             }
             else if (length(lon.rng) == 2)  {
@@ -663,7 +663,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
                 if (verbose)
                     print(paste("Single point extraction / Selected nearest grid cell lat :",
                                 as.character(lat$vals[lat.w]),lat$unit,sep=" "))
-            }
+                }
             if (length(lat.rng) == 2) { 
                 lat.w <- which((lat$vals >= lat.rng[1]) & (lat$vals <= lat.rng[length(lat.rng)]))
                 if (verbose)
@@ -675,7 +675,24 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         ## lat$vals <- as.vector(lat$vals[lat.w])
         lat$len <- length(lat.w)
     }
-    
+    ##
+    ## Single point extraction
+    one.cell <- FALSE
+    if ((length(lon.rng) == 1) & (length(lat.rng)==1)) {
+        lons <- rep(as.vector(lon$vals),length(lat$vals))
+        lats <- rep(as.vector(lat$vals),length(lon$vals))
+        
+        dmin <- distAB(lon=lon.rng,lat=lat.rng,lons=lons,lats=lats) 
+        id <- which(dmin==min(dmin,na.rm=TRUE))
+        lon.w <- which(lon$vals==lons[id])
+        lat.w <- which(lat$vals==lats[id])
+        if (verbose) {
+            print(paste("Single point extraction"))
+            print(paste("Selected nearest grid cell lon :",
+                        as.character(lon$vals[lon.w]),lon$unit,sep=" "))
+        }  
+        one.cell <- TRUE
+    }
     ## time extract range
     if (!is.null(itime)) {
         if (!is.null(time.rng)) {
@@ -715,23 +732,40 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     ## level extract range
     if (!is.null(ilev)) {
         if (!is.null(lev.rng)) {
-            if (length(lev.rng) > 2) stop("lev.rng should be in the form of c(z1,z2)")
+            if (length(lev.rng) > 2)
+                stop("lev.rng should be in the form of c(z1,z2)")
             if (length(lev.rng) == 1) {
                 lev.w <- which((lev$vals-lev.rng) == min(abs(lev$vals-lev.rng)))
-                if (verbose) print(paste("Single level extraction:",as.character(lev$vals[lev.w]),lev$unit,sep=" "))
+                if (verbose) print(paste("Single level extraction:",
+                                         as.character(lev$vals[lev.w]),
+                                         lev$unit,sep=" "))
             }
             if (length(lev.rng) == 2) { 
                 lev.w <- which((lev$vals >= lev.rng[1]) & (lev$vals <= lev.rng[length(lev.rng)]))
-                if (verbose) print(paste("Selected Levels:",paste(as.character(lev$vals[lev.w]),collapse="/"),lev$units,sep=" "))
+                if (verbose) print(paste("Selected Levels:",paste(as.character(lev$vals[lev.w]),
+                                                                  collapse="/"),lev$units,sep=" "))
             }
         } else lev.w <- rank(lev$vals)
         ## lev$vals <- as.vector(lev$vals[lev.w])
         lev$len <- length(lev.w)
     }
-    
+    ##browser()
     ## Extract values and add Scale Factor and offset if any
     if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
-    if ((!is.null(ilon)) & (!is.null(itime))) {  
+
+    if ((one.cell) & (!is.null(itime))) {
+        if (!is.null(ilev)) {
+            start1 <- c(lon.w,lat.w,lev.w[1],time.w[1])
+            count1 <- c(1,1,length(lev.w),length(time.w))
+            val <- get.var.ncdf(ncid,param,start1,count1)
+        } else {
+            start1 <- c(lon.w,lat.w,time.w[1])
+            count1 <- c(1,1,length(time.w))
+            val <- get.var.ncdf(ncid,param,start1,count1)
+        }
+        lon$vals <- lon$vals[lon.w]
+        lat$vals <- lat$vals[lat.w]
+    } else if ((!is.null(ilon)) & (!is.null(itime))) {  
         diff.lon.w <- diff(rank(lon$vals[lon.w]))
         id2 <- which(diff.lon.w!=1)
         if (!is.null(ilev)) {
@@ -859,48 +893,63 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     
     ## Create output and save attributes to the results # 
     
-    
+    ## browser()
     d <- dim(val)
-    if (length(ilev)==1)
-        dim(val) <- c(d[ilon]*d[ilat],d[itime])
-    else
-        dim(val) <- c(d[ilon]*d[ilat],d[ilev],d[itime])
+    if (one.cell) {
+        z <- zoo(x=val,order.by=time$vdate)
+        
+    } else {
+        if (length(ilev)==1)
+            dim(val) <- c(d[ilon]*d[ilat],d[itime])
+        else
+            dim(val) <- c(d[ilon]*d[ilat],d[ilev],d[itime])
+        ##create a zoo object z
+        z <- zoo(x=t(val),order.by=time$vdate)
+    }
     ## d <- dim(val)
-    ##create a zoo object z
-    z <- zoo(x=t(val),order.by=time$vdate)
+    
     ## Add attributes to z
     if (!is.null(v1)) {
-        attr(z,"variable") <- param
-        attr(z,"longname") <- v1$longname
-        attr(z,"units") <- units
-        attr(z,"dimensions") <- d
+        attr(z,"variable") <- ifelse(!is.null(param),param,NA)
+        attr(z,"longname") <- ifelse(!is.null(v1$longname),v1$longname,NA)
+        attr(z,"units") <- ifelse(!is.null(units),units,NA)
+        attr(z,"dimensions") <- ifelse(!is.null(d),d,NA)
     }  
     if (!is.null(ilon)) {
-        attr(z,"longitude") <- lon$vals
-        attr(z,"greenwich") <- greenwich
+        attr(z,"longitude") <- ifelse(!is.null(lon$vals),lon$vals,NA)
+        attr(z,"greenwich") <- ifelse(!is.null(greenwich),greenwich,NA)
     }
     if (!is.null(ilat)) {
-        attr(z,"latitude") <- lat$vals
+        attr(z,"latitude") <- ifelse(!is.null(lat$vals),lat$vals,NA)
     }
     if (!is.null(ilev)) {
-        attr(z,"level")        <- lev$vals
-        attr(z,"levelUnit")    <- lev$units
+        attr(z,"level") <- ifelse(!is.null(lev$vals),lev$vals,NA)
+        attr(z,"levelUnit") <- ifelse(!is.null(lev$units),lev$units,NA)
     }
     if (!is.null(itime)) {
-        attr(z,"calendar") <- time$calendar
+        attr(z,"calendar") <- ifelse(!is.null(model$calendar),
+                                     model$calendar,NA)
     }
     ## Add attributes
-    attr(z, "file")           <- ifelse(!is.null(model$filename),model$filename, NA)
-    attr(z, "title")          <- ifelse(!is.null(model$title), model$title, NA)
+    attr(z, "file") <- ifelse(!is.null(model$filename),
+                              model$filename, NA)
+    attr(z, "title") <- ifelse(!is.null(model$title),
+                               model$title, NA)
     
     ##attr(z, "project_id")     <- ifelse(!is.null(model$project_id), model$project_id, NA)
-    attr(z, "source")         <- ifelse(!is.null(model$project_id), model$project_id, NA)
-    attr(z, "model_id")       <- ifelse(!is.null(model$model_id), model$model_id, NA)
-    attr(z, "experiment_id")  <- ifelse(!is.null(model$experiment_id),model$experiment_id, NA)
-    attr(z, "realization")    <- ifelse(!is.null(model$realization),model$realization,NA)
-    attr(z, 'timeunit')       <- ifelse(!is.null(model$frequency),model$frequency, NA)
-    attr(z, 'frequency')      <- 1
-    attr(z, 'type')           <- ifelse(!is.null(model$type),model$type, 'field')
+    attr(z,'source') <- ifelse(!is.null(model$project_id),
+                               model$project_id, NA)
+    attr(z,'model_id') <- ifelse(!is.null(model$model_id),
+                                 model$model_id, NA)
+    attr(z,'experiment_id') <- ifelse(!is.null(model$experiment_id),
+                                      model$experiment_id, NA)
+    attr(z,'realization') <- ifelse(!is.null(model$realization),
+                                    model$realization,NA)
+    attr(z,'timeunit') <- ifelse(!is.null(model$frequency),
+                                 model$frequency, NA)
+    attr(z,'frequency') <- 1
+    attr(z,'type') <- ifelse(!is.null(model$type),
+                             model$type, 'field')
     ## attr(z, "timestamp")      <- date()
     ## attr(z, "anomaly")        <- FALSE
     ## attr(z, "time:method")    <- NA
@@ -912,7 +961,11 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     attr(z, "institution")    <- NA 
     attr(z, "reference")      <- NA
     attr(z, "history")        <- history.stamp(z)
-    class(z)                  <- c("field",model$frequency,"zoo")
+
+    if (one.cell)
+        class(z) <- c("station",model$frequency,"zoo")
+    else 
+        class(z) <- c("field",model$frequency,"zoo")
     
     ## plot the results
     if (plot) map(z,...)
@@ -1240,6 +1293,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             if (verbose) print(paste(as.character(dt),tunit,sep="-"))
         }
         if ((length(dt)==4) & grepl("day",tunit)) {
+            browser()
             if (verbose) print(paste("Calendar is likely to be a Gregorian 365/366-",tunit," with: ",as.character(length(dt))," irregular frequencies : ",sep=""))
             dt <- c(28,29,30,31)
             if (verbose) print(paste(as.character(dt),tunit,sep="-")) 
@@ -1630,8 +1684,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
             } else print("Warning : Monthly data are Mangeled") 
         } 
     }
-
-    
+ 
     ## Checking the data / Extra checks / Automatic calendar detection / etc.
     ## Check 1 # Frequency
     ## 
@@ -1647,13 +1700,13 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         if (verbose)
             print("Irregular frequency has been detected from the data")
     
-
     if (!is.null(time$vdate)) {
         if (verbose) print("Vector of date is in the form :")
         if (verbose) print(str(time$vdate))
         if (verbose)
             print(paste("Time difference dt : ",paste(dt,collapse="/"))) ## diff(time$vdate))
     }
+    ## browser()
     if (!is.null(time$vdate)) {
         if (grepl("sec",tunit))
             dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60*60)))))
@@ -1666,7 +1719,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         if (grepl("mon",tunit))
             dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
         
-        if ((length(dt)==3) & grepl("day",tunit)) {
+        if ((length(dt)==3)) {## & grepl("day",tunit)) {
             if (verbose)
                 print(paste("Calendar is likely to be a 365-",
                             tunit," with: ",as.character(length(dt)),
@@ -1676,7 +1729,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
             if (verbose)
                 print(paste(as.character(dt),tunit,sep="-"))
         }
-        if ((length(dt)==4) & grepl("day",tunit)) {
+        if (length(dt)==4) {## & grepl("day",tunit)) {
             if (verbose)
                 print(paste("Calendar is likely to be a Gregorian 365/366-",
                             tunit," with: ",as.character(length(dt)),

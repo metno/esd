@@ -7,109 +7,44 @@
 map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
-                         col="darkred",bg="orange",
-                         colbar= list(palette='t2m',rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1), # col=NULL replaced by palette
+                         col=NULL,bg=NULL,
+                         colbar= list(pal='t2m',rev=FALSE,n=10,
+                             breaks=NULL,type="p",cex=2,h=0.6, v=1,
+                             pos=0.1,show=TRUE),
+                                        # col=NULL replaced by palette
                          type=NULL,gridlines=TRUE,
-                         lonR=NULL, latR=45,axiR=NULL,verbose=FALSE,
-                         cex=.8, zexpr = "alt",cex.subset=1,
-                         add.text.subset=FALSE,showall = FALSE, add.text=FALSE,
-                         height=NULL, width=NULL, cex.axis=1, cex.lab=0.6,
-                         pch=21, from=NULL, to=NULL, showaxis=FALSE,
-                         border=FALSE,full.names=FALSE,full.names.subset=FALSE, 
+                         lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
+                         cex=.8,zexpr="alt",cex.subset=1,
+                         add.text.subset=FALSE,showall=FALSE,
+                         add.text=FALSE,
+                         height=NULL,width=NULL,cex.axis=1,cex.lab=0.6,
+                         pch=21, from=NULL,to=NULL,showaxis=FALSE,
+                         border=FALSE,full.names=FALSE,
+                         full.names.subset=FALSE, 
                          text=FALSE, fancy=FALSE, 
                          na.rm=TRUE,show.val=FALSE,
-                         colorbar=TRUE,
+                         ##colorbar=TRUE,
                          legend.shrink=1,...) { 
-    ## browser()
-  if (verbose) print('map.station')
+  ##browser()
+    if (verbose) print('map.station')
     arg <- list(...)
-
-  if (is.logical(colbar)) {
-    ## If colbar set to FALSE, treat it as set to NULL
-    if (!colbar) colbar <- NULL else
-                 colbar= list(palette='t2m',rev=FALSE,n=10,
-                              breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1)
-  }
-                           
-  if (!is.null(colbar)) {
-      if (verbose) print(paste('sort out the colours. varid=',varid(x)[1],'FUN=',FUN))
-      if (is.null(colbar$rev)) colbar$rev <- FALSE
-      if (is.null(FUN)) FUN <- 'NULL'
-      if (is.null(colbar$palette)) {
-          if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
-                                 (FUN=='wetmean') | (FUN=='mean')) ) {
-              colbar$palette <- 'precip'
-              colbar$rev <- TRUE
-          } else colbar$palette <- 't2m'
-      } 
-
-      if (FUN=='NULL') FUN <- NULL
-      if (is.null(colbar$n)) colbar$n <- 10
-
-      ##if (!is.null(FUN))
-      ##    X <- apply(coredata(x),2,FUN=FUN,na.rm=na.rm)
-      ##else
-      ##    X <- x
-      ##if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
-      ##    colbar$breaks <- pretty(coredata(X),n=colbar$n)
-      ##} else if (length(colbar$breaks)==2)
-      ##    colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
-      ##colbar$n <- length(colbar$breaks)-1
-      if (is.null(colbar$type)) colbar$type <- 'p'
-      if (is.null(colbar$cex)) colbar$cex <- 2
-      if (is.null(colbar$h)) colbar$h <- 0.6
-      if (is.null(colbar$v)) colbar$v <- 1
-      if (is.null(colbar$pos)) colbar$pos <- 0.1
-      if (verbose) print(colbar)
-      if (!inherits(x,"stationmeta"))
-          colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
-      if (verbose) print(paste("length(col) =",length(colbar$col)))
-  }
-    ## browser()
-    ## col <- colbar$col
-    ##if (!is.null(FUN))
-    ##    bg <- col
-    ##else
-    ##    bg <- "green"
-
-    ## col.subset="darkred"; bg.subset="red"
-    ## if (is.list(col)) {
-    ##  colnms <- names(col)
-    ##  if (sum(is.element(colnms,'col.subset'))>0) {
-    ##    col.subset <- col$col.subset
-    ##    colnms[is.element(colnms,'col.subset')] <- 'done'
-    ##  }
-    ##  if (sum(is.element(colnms,'bg.subset'))>0) {
-    ##    bg.subset <- col$bg.subset
-    ##    colnms[is.element(colnms,'bg.subset')] <- 'done'
-    ##  }
-    ##  if (sum(is.element(colnms,'bg'))>0) bg <- col$bg
-    ##  if (sum(is.element(colnms,'col'))>0) col <- col$col else col <- NULL    
-    ##}
-
+    
+    if (FUN=="NULL") FUN <- NULL
+    
+    if (is.null(col) & ((inherits(x,"stationmeta") | is.null(FUN)))) {
+        col <- "darkred"
+        bg <- "orange"
+    }
+    
     ##par(mar=c(4,1,1,1))
     par0 <- par()
     fig0 <- par()$fig
     if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) )
         new <- FALSE
-    ##else 
-    ##    dev.new()
-    
-    ##    par(fig=fig0,mar=c(2.5,2,2,2),bty="n") # c(0.05,0.95,0.13,0.95),mar=rep(1,4)
-    ##    ##    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-    ##    ##    fig=c(0.05,0.95,0.12,0.95))
-    ##} else {
-    ##    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,mar=rep(1,4))
-    ##}
 
-    ## Defining default values for colbar
-    if (is.null(colbar$palette))
-        colbar$palette <- as.character(levels(factor(varid(x))))
-    if (is.null(colbar$n)) n <- 10
-    
     if (verbose)
-        print(paste("List of arguments in the three-dots listed below ",arg,sep=""))
+        print(paste("List of arguments in the three-dots listed below ",
+                    arg,sep=""))
     
 
     if (sum(is.element(type,c('fill','contour')))) {
@@ -139,11 +74,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         data("geoborders", envir = environment())
         if (zexpr == "alt") 
             zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
-        ## n <- 100
-        
-        ## if (!is.null(subset)) {col = "white" ; bg="white"} 
-        
-        ## if (!is.null(unlist(subset)) & !showall) {col = "white" ; bg="white"} 
+        ## browser()
         if (!is.null(x)) { 
             if (inherits(x,"stationmeta")) {      
                 ss <- x
@@ -202,12 +133,6 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ss$altitude[ss$altitude < 0] <- NA
         
         tte <- "rwb"
-        
-##        cols <- rgb(seq(0, 0.5, length = 100)^2, seq(0.5, 1, length = 100), 
-##                    seq(0, 0.5, length = 100)^2)
-
-        ## if (new) dev.new(height=height,width=width)
-                                        #par(bty = "n", xaxt = "n", yaxt = "n", xpd = FALSE)
 
         ## Select a subdomain in the x-axis
         if (is.null(xlim))
@@ -235,7 +160,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                 else
                     ylim <-floor(range(highlight$latitude, na.rm = TRUE),
                                  + c(-1,1))  # +/- 5 degrees
-
+        
         ## scaling factor to apply on cex ...
         if (!inherits(x,"stationmeta") & !is.null(attr(x,'na')))
             scale <- attr(x,'na')
@@ -244,32 +169,86 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         #browser()        
         ##print(par()$fig)
         par(fig=par0$fig,mar=rep(2,4))
-#        if (!is.null(FUN)) col <- "white" 
+                                       
         if (!is.null(FUN)) {
-         col <- col #"black" 
-         bg.all <- col # REB 2015-06-03 fix?
+            col <- col #"black" 
+            bg.all <- col # REB 2015-06-03 fix?
         }
+        
+        
+        ## Transform x using FUN and insert color bar                                    
+        if (!is.null(FUN)) {
+            if (is.element(FUN,c('lon','lat','alt')))
+                eval(parse(text=paste('y <-',FUN,'(x)',sep="")))
+            else {
+                if (is.element("na.rm",names(formals(FUN))) |
+                    is.element("...",names(formals(FUN))) |
+                    (is.element(FUN,c("max","min","sum"))))
+                    y <- apply(coredata(x),2,FUN=FUN,na.rm=TRUE)
+                else if (FUN=="trend")
+                    y <- apply(x,2,FUN=FUN,na.omit=FALSE)
+                else
+                    y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
+            }
+            
+            ## AM 30-06-2015 ...
+            if (is.logical(colbar)) {
+                ## If colbar set to FALSE, treat it as set to NULL
+                if (!colbar) colbar <- NULL else
+                colbar= list(palette='t2m',rev=FALSE,n=10,
+                    breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1)
+            }
+            ## browser()                        
+            ##if (!is.null(colbar)) {
+            colbar <- colbar.ini(y,FUN=FUN,colbar=colbar)
+            if (verbose)
+                print("length(col) =",length(colbar$col))
+
+            ## browser()
+            y.rng <- range(y,na.rm=TRUE)
+            if (verbose)
+                print(paste("range of mapped values",paste(y.rng,
+                                                           collapse="/")))
+            
+                                        # find color index in colbar
+            icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
+            
+            ## if (is.null(col)) col <- colbar$col[icol]
+            ## if (is.null(bg)) bg <- colbar$col[icol]
+            
+            if (verbose) print(range(y,na.rm=TRUE))
+
+        }
+        
+        ##scale <- apply(y,2,function(x) sum(!is.na(x))/length(x))
+        if (!is.null(attr(x,'na'))) ## (!inherits(x,"stationmeta") & 
+            scale <- attr(x,'na')
+        else
+            scale <- 1
+        
+        ##points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=col,
+        ##       cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)       
 
         if(is.null(colbar$pos)) pos <- 0.05
-
-        ##fig0 <- par0$fig
-        if (!is.null(FUN) & colorbar) {
-            if (showaxis)
-                fig0[3] <- par0$fig[3] + colbar$pos ## (par0$fig[4]-par0$fig[3])/150 ##0.075
-            else
-                fig0[3] <- par0$fig[3] + colbar$pos ## (par0$fig[4]-par0$fig[3])/120 ##0.05
+    ## browser()
+    ##fig0 <- par0$fig
+        if (!is.null(FUN) & (!is.null(colbar)) & colbar$show) {
+            if (showaxis) fig0[3] <- par0$fig[3] + colbar$pos
+            ## (par0$fig[4]-par0$fig[3])/150 ##0.075
+            else fig0[3] <- par0$fig[3] + colbar$pos
+            ## (par0$fig[4]-par0$fig[3])/120 ##0.05
         } else 
             fig0 <- par0$fig
-
+        ## browser()
         par(fig=fig0)
-        
+    
         if (!is.null(highlight))
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
                  bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
-                 xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
-        else if (!is.null(ss) & !is.null(FUN))
-            plot(ss$longitude, ss$latitude, pch = pch, col = "white",
-                 bg = "white", cex = cex*scale, xlab = "", ylab = "",
+             xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE)
+    else if (!is.null(ss) & !is.null(FUN))
+        plot(ss$longitude, ss$latitude, pch = pch, col = "white",
+             bg = "white", cex = cex*scale, xlab = "", ylab = "",
                  xlim = xlim, ylim = ylim , axes = FALSE ,
                  frame.plot = FALSE)
         else
@@ -326,106 +305,13 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         }
         ## title(main=attr(z,"title"),line=2.2,cex.main=0.7)
         ## add margin text
-        if (text) mtext(paste(("ESD package - map.station() - MET Norway 2014"),
-                              "(www.met.no)",sep=" "),side=1,line=4,cex=0.6)
-         
-        ## insert color bar                                    
-        if (!is.null(FUN)) {
-            if (is.element(FUN,c('lon','lat','alt')))
-                eval(parse(text=paste('y <-',FUN,'(x)',sep="")))
-            else {
-                if (is.element("na.rm",names(formals(FUN))) |
-                    is.element("...",names(formals(FUN))) |
-                    (is.element(FUN,c("max","min","sum"))))
-                    y <- apply(coredata(x),2,FUN=FUN,na.rm=TRUE)
-                else if (FUN=="trend")
-                    y <- apply(x,2,FUN=FUN,na.omit=FALSE)
-                else
-                    y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
-            }
-
+        if (text)
+            mtext(paste(("ESD package - map.station() - MET Norway 2014"),
+                        "(www.met.no)",sep=" "),side=1,line=4,cex=0.6)
             
-            if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
-                colbar$breaks <- pretty(coredata(y),n=colbar$n)
-            } else if (length(colbar$breaks)==2)
-                colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
-                                     length=colbar$n)
-            colbar$n <- length(colbar$breaks)-1
-
-
-
-            ## y.rng <- floor(range(y,na.rm=TRUE))
-            ## AM Added 12-05-2015           
-           
-            ##if (!is.null(colbar$col)) {
-            ##    colbar$n <- length(colbar$col)
-            ##if (is.null(colbar$breaks)) {
-            ##        colbar$breaks <- pretty(y,n=length(colbar$col))
-            ##        colbar$n <- length(colbar$breaks) + 1
-            ##        colbar$col <- colscal(n=colbar$n,col=varid(x))
-            ##    }
-            ##}
-            ## browser()
-            y.rng <- range(y,na.rm=TRUE)
-            if (verbose) print(paste("range of mapped values",paste(y.rng,collapse="/")))
-            if (!is.null(colbar$palette) & (!is.null(colbar$n) | !is.null(colbar$breaks))) {
-                ##colbar$breaks <- pretty(y,n=length(colbar$col))
-                ##colbar$n <- length(colbar$breaks) + 1
-                if (is.null(colbar$breaks) & !is.null(colbar$n)) {
-                    colbar$breaks <- pretty(y,n=colbar$n)
-                    colbar$n <- length(colbar$breaks)-1
-                } else if (!is.null(colbar$breaks) & is.null(colbar$n)) { # 
-                    if (length(colbar$breaks)==2)
-                        colbar$breaks <- pretty(colbar$breaks)
-                    colbar$n <- length(colbar$breaks)-1
-                } else if (!is.null(colbar$n)) { # 
-                    if (length(colbar$breaks)==2)
-                        colbar$breaks <- pretty(colbar$breaks,n=colbar$n)
-                    colbar$n <- length(colbar$breaks)-1
-                } else if (length(colbar$n)!= (length(colbar$breaks) -1))
-                    stop('The length of breaks must equal (n-1)')# default
-                ##browser()
-                if (verbose) print(paste("n=",colbar$n))
-                if (verbose) print(paste("breaks",colbar$breaks))
-                
-                if (verbose) print(paste("length(breaks) =",length(colbar$breaks)))
-                colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev)
-                if (verbose) print(paste("length(col) =",length(colbar$col)))
-            }
-            ##}else if (!is.null(colbar$n)) {
-            ##    colbar$breaks <- pretty(y,colbar$n)
-            ##    colbar$n <- length(colbar$breaks) - 1
-            ##    colbar$col <- colscal(n=colbar$n,col=varid(x))
-            ##} else if(!is.null(colbar$breaks)) {
-            ##    colbar$n <- length(colbar$breaks) - 1
-            ##    colbar$col <- colscal(n=colbar$n,col=varid(x))
-            ##} else {
-            ##    n <- 20
-            ##    colbar$breaks <- pretty(y,n=n)
-            ##    colbar$col <- colscal(n=n,col=varid(x))
-            ##}
-            
-            ## reverse the colour for precip
-            #print(is.precip(x))
-            ##if (is.precip(x)) colbar$col <- rev(colbar$col)
-            
-            # find color index in colbar
-            icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
-           
-            ## if (is.null(col)) col <- colbar$col[icol]
-            ## if (is.null(bg)) bg <- colbar$col[icol]
-
-            if (verbose) print(range(y,na.rm=TRUE))
-            
-            ##scale <- apply(y,2,function(x) sum(!is.na(x))/length(x))
-            if (!is.null(attr(x,'na'))) ## (!inherits(x,"stationmeta") & 
-                scale <- attr(x,'na')
-            else
-                scale <- 1
-            
-            ##points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=col,
-            ##       cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)
+            if (!is.null(FUN)) {
             ##if (is.null(col)) colbar$col <- rep(col,length(colbar$col[icol]))
+            ## browser()
             if (!is.null(col)) col <- col else col <- colbar$col[icol]
             points(ss$longitude, ss$latitude, pch = pch,
                    bg=colbar$col[icol], col=col, ##col=colbar$col[icol]
@@ -445,7 +331,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             
             ## Add geoborders
             lines(geoborders$x, geoborders$y, col = "grey50")
-            lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "pink") ##"grey90"
+            lines(attr(geoborders, "borders")$x,
+                  attr(geoborders, "borders")$y, col = "pink") ##"grey90"
 
             if (show.val)
                 text(ss$longitude,ss$latitude,round(y,digits=2),
@@ -453,32 +340,34 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             
             par(fig=fig0,new=TRUE)
             ## print(par()$fig)
- 
+            
             ## add color bar
-            if (fancy & !is.null(colbar))
-                col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
-                        col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
-                        type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
-            else if (!is.null(colbar)) {
-                
-                ##fig1 <- par0$fig
-                par(fig=par0$fig,new=TRUE)
-                image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-                           legend.only = T, zlim = range(colbar$breaks),
-                           col = colbar$col, legend.width = 1,
-                           axis.args = list(cex.axis = 0.8,
-                               xaxp=c(range(colbar$breaks),n=colbar$n)),
-                           border = FALSE,
-                           legend.shrink=legend.shrink)
-                           #bigplot=c(0,0,1,1),
-                           #smallplot=c(0,0,1,1))
-            }
+            if (colbar$show) 
+                if (fancy & !is.null(colbar))
+                    col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
+                            col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
+                            type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
+                else if (!is.null(colbar)) {
+                    ##fig1 <- par0$fig
+                    par(fig=par0$fig,new=TRUE)
+                    image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+                               legend.only = T, zlim = range(colbar$breaks),
+                               col = colbar$col, legend.width = 1,
+                               axis.args = list(cex.axis = 0.8,
+                                   xaxp=c(range(colbar$breaks),n=colbar$n)),
+                               border = FALSE,
+                               legend.shrink=legend.shrink)
+                    ##bigplot=c(0,0,1,1),
+                    ##smallplot=c(0,0,1,1))
+                }
         }    
         ##par(fig=fig0,new=TRUE) ## AM 18-06-2015 comment
         if (verbose) {
-            print(paste('colbar$breaks are ', paste(colbar$breaks,collapse="/"),
+            print(paste('colbar$breaks are ',
+                        paste(colbar$breaks,collapse="/"),
                         'of length',length(colbar$breaks)))
-            print(paste('colbar$col are ', paste(colbar$col,collapse="/"),'of length',
+            print(paste('colbar$col are ',
+                        paste(colbar$col,collapse="/"),'of length',
                         length(colbar$col)))      
             print(paste('colbar$n ', paste(colbar$n,collapse="/")))
         }
@@ -581,12 +470,12 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,
   Z <- sin(Phi)
   #print(c( min(x),max(x)))
 
-  ## Define colour palette:
+  ## Define colour pal:
   if (!is.null(FUN)) {
       if (is.null(col)) col <- colscal(n=n,col=varid(x)) else
       if (length(col)==1) {
-          palette <- col
-          col <- colscal(palette=palette,n=n)
+          pal <- col
+          col <- colscal(pal=pal,n=n)
       }
       nc <- length(col)
       index <- round( nc*( map - min(map) )/

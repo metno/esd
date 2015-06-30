@@ -86,8 +86,9 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
 plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
                      pattern=1,what=c("pc","eof","var"),
-                     colbar=list(palette=NULL,rev=FALSE,n=10,
-                             breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                     colbar=list(pal=NULL,rev=FALSE,n=10,
+                         breaks=NULL,type="p",cex=2,show=TRUE,
+                         h=0.6,v=1,pos=0.05),
                      verbose=FALSE,...) {
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
@@ -110,8 +111,12 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
-  if (length(what)==3) mfrow <- c(2,2) else
-  if (length(what)==2) mfrow <- c(2,1)
+  if (length(what)==3) {
+      mfrow <- c(2,2)
+      
+  } else
+  if (length(what)==2) mfrow <- c(2,1) else
+  if (length(what)==1) mfrow <- c(1,1)
   
   if (new) dev.new()
   ## par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
