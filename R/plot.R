@@ -444,7 +444,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 
 
 plot.eof.var <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=20,...) {
-  n <- pattern
+  n <- min(c(pattern,length(attr(x,'eigenvalues'))))
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
