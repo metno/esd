@@ -134,7 +134,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
           main1 <- paste('Leading EOF#',pattern, ' (',
                          round(var.eof[pattern],digits=2),"%)",sep='')
           map(x,pattern=pattern,verbose=verbose,...) ## colbar=colbar,
-          title(main=main0,cex.main=0.6,col.main="grey40",adj=0)
+          title(main=main0,cex.main=0.6,col.main="grey40",adj=0,line=0)
           title(main=main1,cex.main=0.8)
       }
   }
@@ -154,7 +154,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   #browser()
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
-      par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+      par(fig=c(0.05,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
       main <- paste('Leading PC#',pattern,'of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[pattern],digits=2),
                     "%",sep='')
@@ -164,7 +164,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
       #axis(1,at=pretty(index(x),n=10),labels=,cex.axis=0.9)
   }
  
-  par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+  par(fig=c(0,1,0,0.55),new=TRUE, mar=c(1,1,1,1),xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
   legend(0,0.83,paste(attr(x,'source')[1],attr(x,'variable')[1]),
          bty="n",cex=0.8,ncol=2,text.col="grey40")
@@ -270,13 +270,16 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 
 plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                     lwd=1,type='l',pch=0,main=NULL,col=NULL,
+                    colbar=list(pal=NULL,rev=FALSE,n=10,
+                        breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
   if (inherits(x,'pca')) {
     plot.ds.pca(x,verbose=verbose)
     return()
   }
-
+  
   unit <- attr(x,'unit')
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
   for (i in 1:length(unit)) {
@@ -295,6 +298,9 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   
   cols <- rep("blue",100)
   model <- attr(x,'model')
+  ## browser()
+  if (length(what)==2) mfrow <- c(2,1) else
+  if (length(what)==1) mfrow <- c(1,1)
   
   if (new) dev.new()
   if (plot.type=="single") new <- TRUE
@@ -302,15 +308,14 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 
   if (sum(is.element(what,'map'))>0) {
     if (verbose) print('Show map...')
-    par(bty="n",fig=c(0,0.5,0.5,1),mar=c(1,1,1,1))
-    map(x,new=FALSE,verbose=verbose)
+    par(fig=c(0,0.5,0.5,1)) ## par(bty="n",fig=c(0,0.5,0.5,1),mar=c(1,1,1,1))
+    map(x,new=FALSE,colbar=list(show=FALSE),verbose=verbose,...)
     points(lon(x),lat(x),lwd=3,cex=1.5)
   }
 
   if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ){
     #if (is.null(attr(x,'evaluation'))) attr(x,'evaluation') <- crossval(x)
-    par(bty="n",fig=c(0.55,0.95,0.55,0.95),mar=c(4,3,1,1),new=TRUE,
-        xaxt='s',yaxt='s',cex.sub=0.7)
+     par(new=TRUE,fig=c(0.5,1,0.5,1)) ##par(bty="n",fig=c(0.55,0.95,0.55,0.95),mar=c(4,3,1,1),new=TRUE, xaxt='s',yaxt='s',cex.sub=0.7)
     plot(attr(x,'evaluation')[,1],attr(x,'evaluation')[,2],
          main='Cross-validation',xlab='original data',
          ylab='prediction',pch=19,col="grey")
@@ -363,8 +368,8 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     xlim <- range(index(x),index(y0),x.rng,na.rm=TRUE)
 
 
-  par(bty="n",fig=c(0,1,0.1,0.5),mar=c(3,4.5,2,2),new=TRUE,
-      xaxt='s',yaxt='s')
+  par(fig=c(0.025,1,0.025,0.475),new=TRUE)
+  par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
   ds <- list(obs=y0)
   plot.zoo(y0,plot.type=plot.type,ylab=ylab,xlab=xlab,
            main=main,xlim=xlim,ylim=ylim,lwd=1,type='b',pch=19)

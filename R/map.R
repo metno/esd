@@ -234,7 +234,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(X,'source') <- attr(x,'source')
   #dim(X) <- attr(x,'dimensions')[1:2]
   #print(c(dim(X),length(attr(X,'longitude')),length(attr(X,'longitude'))))
-
+  ##browser()
   if (projection=="lonlat") {
     lonlatprojection(x=X,n=n,colbar=colbar,verbose=verbose,
                      type='fill',gridlines=gridlines,new=new,...)
@@ -247,7 +247,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       for (i in (2:length(nms))) 
         contour(lon(Xa[[i]]),lat(Xa[[i]]),Xa[[i]],add=TRUE,col=col[i])
     } else if (sum(is.element(type,'contour'))>0)
-       contour(lon(X),lat(X),X,add=TRUE,col=col[1])
+       contour(lon(X),lat(X),X,add=TRUE,col="grey50")
   } else
   if (projection=="sphere") map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
                                        type=type,gridlines=gridlines,verbose=verbose,
