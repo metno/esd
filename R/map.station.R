@@ -201,7 +201,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             }
             ## browser()                        
             ##if (!is.null(colbar)) {
-            colbar <- colbar.ini(y,FUN=FUN,colbar=colbar)
+            colbar <- colbar.ini(y,FUN=FUN,colbar=colbar,verbose=verbose)
             if (verbose)
                 print("length(col) =",length(colbar$col))
 

@@ -38,7 +38,7 @@
 #0	1	229	229	229	*Ikke nedbør
 
 
-colbar.ini <- function(x,FUN=NULL,colbar=NULL) {
+colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     ## browser()
     if (is.logical(colbar)) colbar <- NULL
     

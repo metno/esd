@@ -21,7 +21,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
   if (is.logical(colbar)) colbar <- NULL
   ## If only a few items are provided in colbar - then set the rest to the default
   if (!is.null(colbar)) {
-    colbar <- colbar.ini(x,FUN=FUN,colbar=colbar)
+    colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=verbose)
   } else col <- 'black'
   
   x <- subset(x,it=it,is=is)
@@ -595,7 +595,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## If only a few items are provided in colbar - hen set the rest to the default
   ## browser()
   if (!is.null(colbar)) {
-      colbar <- colbar.ini(x,FUN=NULL,colbar=colbar)
+      colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
   } else {
       if (verbose) print('colbar=NULL - set col etc')
       n <- 25
