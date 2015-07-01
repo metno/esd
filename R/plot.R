@@ -604,7 +604,8 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,...)
   title(paste("PCA Pattern # ",pattern,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
-  map(attr(y,'predictor.pattern'),new=FALSE,colbar=colbar,verbose=verbose)
+  map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
+      colbar=colbar,verbose=verbose)
   title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)

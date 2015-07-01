@@ -86,13 +86,22 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       projection="lonlat",
                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                      ##colbar=list(col=NULL, breaks=NULL, type="r",
-                      ##         cex=2, h=0.6, v=1),
+                      colbar=list(col=NULL, breaks=NULL, type="r",
+                                  cex=2, h=0.6, v=1,show=TRUE),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
   if (verbose) print('map.array')
-  z <- x[,,it]
+  if (is.null(it)) {
+    ## If it is NULL, then aggregate all of 3rd dimension
+    D <- dim(x)
+    x2d <- x
+    dim(x2d) <- c(D[1]*D[2],D[3])
+    z <- apply(x2d,2,FUN,...)
+    dim(z) <- c(D[1],D[2])
+  } else  z <- x[,,it]
   d <- dim(z)
+
+  ## if it is a vector of indices aggregate the selected indices
   if (length(d)==3) {
     dim(z) <- c(d[1]*d[2],d[3])
     z <- apply(z,2,FUN)
@@ -103,7 +112,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
   attr(z,'variable') <- varid(x)
   attr(z,'unit') <- unit(x)[1]
 
-  map(z,new=new,projection=projection,verbose=verbose,...)
+  map(z,new=new,projection=projection,colbar=colbar,verbose=verbose,...)
 }
 
 

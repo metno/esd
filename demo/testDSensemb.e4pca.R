@@ -1,0 +1,44 @@
+##  Test DSensemble for PCA data.
+
+library(esd)
+it <- 'djf'
+
+## Test data - Norwegian temperature series.
+## Only download if the data is not stored locally
+if (!file.exists('Norway.Tx.rda')) {
+  url <- 'http://files.figshare.com/2073466/Norway.Tx.rda'
+  download.file(url,'Norway.Tx.rda')
+}
+
+load('Norway.Tx.rda')
+
+## Problem with the unit - quick fix.
+attr(Tx,'unit') <- rep('deg C',length(unit(Tx)))
+
+## Get the winter season
+print('Extract winter temperatures')
+X <- as.4seasons(Tx)
+X <- subset(X,it=it)
+
+## Extract one station series for probing
+y.0 <- zoo(X[,1])
+
+## Do the PCA
+pca <- PCA(X,n=4,verbose=TRUE)
+
+#3 Extract one PC for probing
+pc.1 <- zoo(pca[,1])
+
+## Do the downscaling with reduced ensemble:
+zpca <- DSensemble.pca(pca,biascorrect=TRUE,select=1:2,verbose=TRUE)
+zobs <- DSensemble.pca(subset(Tx,is=1),biascorrect=TRUE,select=1:2,verbose=TRUE)
+
+zpc1 <- zpca[[2]]
+zpc.1 <-  zoo(zpca1[,1])
+lines(zpca.1,col='red',lwd=2)
+plot(pc.1,lwd=3,xlim=range(index(zpc.1)),
+     ylim=range(c(coredata(zpca.1),coredata(pc.1)),na.rm=TRUE))
+
+zpc1 <- zpca[[3]]
+zpc.1 <-  zoo(zpca1[,1])
+lines(zpca.1,col='blue',lty=2)

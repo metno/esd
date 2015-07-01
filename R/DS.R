@@ -658,6 +658,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
       return(z)
     }
+    stopifnot(!missing(y),!missing(X),
+              inherits(X,"eof"),inherits(y,"station"))
 
     cls <- class(y)
     y0 <- y; X0 <- X
@@ -735,7 +737,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         x0p <- attr(X0,'pattern') 
         dp <- dim(x0p)
         if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs
-        #str(x0p); print(dp); print(dy)
+        if (verbose) {str(x0p); print(dp); print(dy)}
         predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
         dim(predpatt) <- c(dp[1]*dp[2],dy[2])
         dim(x0p) <- c(dp[1]*dp[2],dp[3])
