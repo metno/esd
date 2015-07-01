@@ -14,6 +14,7 @@ retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 
 ## Default function
 retrieve.default <- function(ncfile,param="auto",type="ncdf",verbose=FALSE,...) {
+    if (verbose) print('retrieve.default')
     ##
     X <- NULL
     
@@ -415,7 +416,11 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     ## Create output and save attributes to the results # 
     ## 
     ## 
-    d <- dim(val)
+  d <- dim(val)
+  if (verbose) {print("dimensions")
+                print(d)
+            }
+  
     if (!is.null(ilev)) {
         if (length(ilev)==1)
             dim(val) <- c(d[ilon]*d[ilat],d[itime])
@@ -488,7 +493,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     
 { # Begin of function
     ## Update argument names for internal function use only
-    
+    if (verbose) print('retrieve.ncdf')
     lon.rng  <- lon
     lat.rng  <- lat
     lev.rng  <- lev
@@ -892,9 +897,12 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     close.ncdf(ncid)
     
     ## Create output and save attributes to the results # 
-    
-    ## browser()
     d <- dim(val)
+    if (verbose) {print("dimensions")
+                print(d)
+            }
+    ## browser()
+    
     if (one.cell) {
         z <- zoo(x=val,order.by=time$vdate)
         
@@ -910,46 +918,37 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     
     ## Add attributes to z
     if (!is.null(v1)) {
-        attr(z,"variable") <- ifelse(!is.null(param),param,NA)
-        attr(z,"longname") <- ifelse(!is.null(v1$longname),v1$longname,NA)
-        attr(z,"units") <- ifelse(!is.null(units),units,NA)
-        attr(z,"dimensions") <- ifelse(!is.null(d),d,NA)
+        attr(z,"variable") <- param
+        attr(z,"longname") <- v1$longname
+        attr(z,"units") <- units
+        attr(z,"dimensions") <- d
     }  
     if (!is.null(ilon)) {
-        attr(z,"longitude") <- ifelse(!is.null(lon$vals),lon$vals,NA)
-        attr(z,"greenwich") <- ifelse(!is.null(greenwich),greenwich,NA)
+        attr(z,"longitude") <- lon$vals
+        attr(z,"greenwich") <- greenwich
     }
     if (!is.null(ilat)) {
-        attr(z,"latitude") <- ifelse(!is.null(lat$vals),lat$vals,NA)
+        attr(z,"latitude") <- lat$vals
     }
     if (!is.null(ilev)) {
-        attr(z,"level") <- ifelse(!is.null(lev$vals),lev$vals,NA)
-        attr(z,"levelUnit") <- ifelse(!is.null(lev$units),lev$units,NA)
+        attr(z,"level") <- lev$vals
+        attr(z,"levelUnit") <- lev$units
     }
     if (!is.null(itime)) {
-        attr(z,"calendar") <- ifelse(!is.null(model$calendar),
-                                     model$calendar,NA)
+        attr(z,"calendar") <- model$calendar
     }
     ## Add attributes
-    attr(z, "file") <- ifelse(!is.null(model$filename),
-                              model$filename, NA)
-    attr(z, "title") <- ifelse(!is.null(model$title),
-                               model$title, NA)
+    attr(z, "file") <- model$filename
+    attr(z, "title") <- model$title
     
     ##attr(z, "project_id")     <- ifelse(!is.null(model$project_id), model$project_id, NA)
-    attr(z,'source') <- ifelse(!is.null(model$project_id),
-                               model$project_id, NA)
-    attr(z,'model_id') <- ifelse(!is.null(model$model_id),
-                                 model$model_id, NA)
-    attr(z,'experiment_id') <- ifelse(!is.null(model$experiment_id),
-                                      model$experiment_id, NA)
-    attr(z,'realization') <- ifelse(!is.null(model$realization),
-                                    model$realization,NA)
-    attr(z,'timeunit') <- ifelse(!is.null(model$frequency),
-                                 model$frequency, NA)
+    attr(z,'source') <- model$project_id
+    attr(z,'model_id') <- model$model_id
+    attr(z,'experiment_id') <- model$experiment_id
+    attr(z,'realization') <- model$realization
+    attr(z,'timeunit') <- model$frequency
     attr(z,'frequency') <- 1
-    attr(z,'type') <- ifelse(!is.null(model$type),
-                             model$type, 'field')
+    attr(z,'type') <- model$type
     ## attr(z, "timestamp")      <- date()
     ## attr(z, "anomaly")        <- FALSE
     ## attr(z, "time:method")    <- NA
