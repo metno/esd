@@ -20,18 +20,18 @@ t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,verbose=verbose)
 
   #rm("predictor"); gc(reset=TRUE)
   #t2m <- t2m.ERA40(lon=lon,lat=lat)
-t2m <- subset(as.4seasons(t2m,FUN=FUNX),it='djf')
-T2m <- as.anomaly(as.annual(aggregate.area(t2m,FUN=FUNX),FUN=FUNX))
+t2m.4s <- as.4seasons(t2m,FUN=FUNX)
+T2m <- aggregate.area(t2m.4s,FUN=FUNX)
 
 ##T2M <- as.4seasons(t2m,FUN=FUNX)
   # Fix - there is a bug with 'T2M <- as.4seasons(t2m,FUN=FUNX)' - the date is not correct
-##DJF <- subset(as.4seasons(t2m,FUN=FUNX),it='djf')
-##MAM <- subset(as.4seasons(t2m,FUN=FUNX),it='mam')
-#JJA <- subset(as.4seasons(t2m,FUN=FUNX),it='jja')
-#SON <- subset(as.4seasons(t2m,FUN=FUNX),it='son')
-
+djf <- subset(t2m.4s,it='djf')
+##mam <- subset(t2m.4s,it='mam')
+##jja <- subset(t2m.4s,it='jja')
+##son <- subset(t2m.4s,it='son')
+browser()
 ##plot(MAM,xlim=as.Date(c('1900-01-01','2100-12-31')),ylim=c(-5,10))
-plot(T2m,xlim=c(1900,2100),ylim=c(-4,6))
+plot(anomaly(djf),xlim=c(as.Date("1900-01-01"),as.Date("2100-12-31")),ylim=c(-8,10))
 
 ## browser()
 ## Ensemble GCMs
@@ -47,14 +47,16 @@ if (verbose) print("loop...")
                           lat=lat,verbose=verbose)
     print(attr(gcm,'model_id'))
     ## REB: 30.04.2014 - new lines...
-    browser()
+    ## browser()
     print('...')
-    gcm <- subset(as.4seasons(gcm,FUN=FUNX),it='djf')
-    ##MAMGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='mam')
-    ##JJAGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='jja')
-    ##SONGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='son')
+    gcm.4s <- as.4seasons(gcm,FUN=FUNX)
+    DJF <- subset(gcm.4s,it='djf')
+    ##MAM <- subset(gcm.4s,it='mam')
+    ##JJA <- subset(gcm.4s,it='jja')
+    ##SON <- subset(gcm.4s,it='son')
     ##y  <- as.anomaly(as.annual(aggregate.area(gcm,FUN=FUNX),FUN=FUNX))
-    y <- aggregate.area(as.anomaly(gcm),FUN='mean')
+    y <- anomaly(aggregate.area(DJF,FUN='mean'))
+
     if (diff(range(y,na.rm=TRUE)) > 10) {
         print(paste(attr(gcm,'model_id'),'. Max T(2m) diff.',
                     diff(range(y,na.rm=TRUE)),
@@ -65,4 +67,4 @@ if (verbose) print("loop...")
     
     lines(y,col=rgb(0.5,0.5,0.5,0.3))
 }
-lines(T2m,xlim=c(1900,2100),ylim=c(-4,6))
+lines(anomaly(djf),xlim=c(as.Date("1900-01-01"),as.Date("2100-12-31")),ylim=c(-8,10))

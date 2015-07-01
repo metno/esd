@@ -1,5 +1,4 @@
-save2ncdf <- function(x,file,...)
-    UseMethod("save2ncdf")
+save2ncdf <- function(x,file,...) UseMethod("save2ncdf")
 
 ## https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDL-Data-Types.html:
 ## short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
@@ -89,8 +88,7 @@ save2ncdf.station <- function(x,file,prec='short',missval=-99.9,offs=0,
             if (verbose) print(paste(atts[i],attrprec[i],sep=': '))
             ncatt_put( ncid, 0, atts[i], attr(x,atts[i]), prec=attrprec[i] )
         }
-    }
-    
+    }    
     nc_close(ncid)
     if (verbose) print('close')
 }

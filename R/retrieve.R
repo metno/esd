@@ -53,9 +53,10 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",verbose=FALSE,...) 
 
 ## Set retrieve for ncdf4 object
 retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
-                            lon = NULL, lat = NULL, lev = NULL, it = NULL,
-                            miss2na = TRUE, greenwich = FALSE , ##ncdf4.check = TRUE ,
-                            plot = FALSE , verbose = FALSE , type="ncdf",...) 
+                           lon = NULL, lat = NULL, lev = NULL, it = NULL,
+                           miss2na = TRUE, greenwich = FALSE ,
+                           ##ncdf4.check = TRUE ,
+                           plot = FALSE , verbose = FALSE , type="ncdf",...) 
     
 { # Begin of function
     ## Update argument names for internal use only
@@ -873,7 +874,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) {
                 if (sum(round(diff(time$vals)) > 1) < 1) {
                     year1 <- time$vals[1]%/%12 + yorigin
                     month1 <- morigin
-                    time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=length(time$vals))
+                    ##time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=length(time$vals))
                 } else print("Warning : Monthly data are mangeled") 
             } 
         } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap",calendar.att)) {
@@ -902,15 +903,15 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) {
             if (sum(diff(time$vals>1)) < 1) {
                 year1 <- time$vals[1]%/%12 + yorigin
                 month1 <- morigin
-                time$vdate <- seq(as.Date(paste(as.character(year1),month1,"15",sep="-")),
-                                  by = "month",length.out=length(time$vals))
+                ##time$vdate <- seq(as.Date(paste(as.character(year1),month1,"15",sep="-")),
+                  ##                by = "month",length.out=length(time$vals))
             } else print("Warning : Monthly data are mangeled") 
         }
     }
     ## browser()
     if ((length(time$vdate)>0) & (sum(diff(as.numeric(format.Date(time$vdate,"%m")))>1)) & (verbose))
         print("Warning : Vector date is mangeled ! Doing additional checks ...!")
-
+    browser()
     ## Checking the data / Extra checks / Automatic calendar detection / etc.
     ## Check 1 # Frequency
     ## 
@@ -926,6 +927,12 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) {
         if (verbose)
             print("Irregular frequency has been detected from the data")
 
+    ##if (sum((dt >= 28) & (dt<=31))>0)
+    ##        freq.data <- "month"
+
+    ## Get the frequency from the data
+    freq.data <- frequency.data(time$vals,unit=tunit)
+
     if (!is.null(time$vdate)) {
         if (verbose) print("Vector of date is in the form :")
         if (verbose) print(str(time$vdate))
@@ -935,51 +942,68 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) {
             dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60*60)))))
         if (grepl("min",tunit))
             dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60)))))
+
         if (grepl("day",tunit))
             dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
+
         if (grepl("hou",tunit))
             dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/24))))
-        if (grepl("mon",tunit)) 
+
+        dt.unit <- "day"
+
+        if (grepl("mon",tunit)) { 
             dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
-        tunit <- "day"
-        if (length(dt)==1) {
+            dt.unit <- "month"
+        }
+        ##tunit <- "day"
+        if ((length(dt)==1) & grepl("day",dt.unit)) {
             if (verbose)
                 print("Regular frequency has been detected from the data")
-            time$daysayear
-        } else if (verbose)
-            print("Irregular frequency has been detected from the data")
-        
-        if ((length(dt)==3) & grepl("day",tunit)) {
-            if (verbose) print(paste("Calendar is likely to be a 365-days with: ",as.character(length(dt))," irregular frequencies",sep = ""))
-            dt <- c(28,30,31)
-            calendar.att <- "365-days"
-            if (verbose) print(paste(as.character(dt),"days",collapse="-"))
-        }
-        if ((length(dt)==4)) { ## & grepl("day",tunit)) {
+            calendar.att <- "360-days"
+            daysayear <- 360
+        } else {
             if (verbose)
-                print(paste("Calendar is likely to be a Gregorian 365/366-",
-                            tunit," with: ",as.character(length(dt)),
-                            " irregular frequencies : ",sep=""))
-            dt <- c(28,29,30,31)
-            calendar.att <- "Gregorian"
-            if (verbose) print(paste(as.character(dt),tunit,sep="-")) 
+                print("Irregular frequency has been detected from the data")
+            
+            if (grepl("month",freq.data) & grepl("day",dt.unit)) {
+                if (length(dt)==3) {
+                    if (verbose)
+                        print(paste("Calendar is likely to be a 365-days with: ",
+                                    as.character(length(dt)),
+                                    " irregular frequencies",sep = ""))
+                    dt <- c(28,30,31)
+                    calendar.att <- "365-days"
+                    daysayear <- 365
+                    if (verbose) print(paste(as.character(dt),dt.unit,collapse="-"))
+                } else if (length(dt)==4) { ## & grepl("day",tunit)) {
+                    if (verbose)
+                        print(paste("Calendar is likely to be a Gregorian 365/366-",
+                                    tunit," with: ",as.character(length(dt)),
+                                " irregular frequencies : ",sep=""))
+                    dt <- c(28,29,30,31)
+                    calendar.att <- "Gregorian"
+                    daysayear <- NULL
+                    if (verbose) print(paste(as.character(dt),tunit,sep="-")) 
+                }
+                ##if (!is.null(time$daysayear)) {
+            ##    if ((length(dt)==3) & (time$daysayear != 365) & grepl("day",tunit))
+            ##        print("Warning: Calendar does not match with detected frequencies")
+            ##}
+            
+            
         }
-        if (!is.null(time$daysayear)) {
-            if ((length(dt)==3) & (time$daysayear != 365) & grepl("day",tunit))
-                print("Warning: Calendar does not match with detected frequencies")
+    }
+
+    ## Check calendar consistency ...
+    if (length(ical)>0)
+        if ((length(dt)!=4) & (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) & grepl("day",tunit))
+            print("Warning: Calendar does not match with detected frequencies")
+    if ((length(dt)==2) | (length(dt)>4)) {
+        if (verbose) {
+            print("Warning : Irregular frequencies have been detected")
+            print("The data might be corrupted and needs extra Checking !")
+            print(paste(as.character(dt),tunit,sep=" "))
         }
-        if (length(ical)>0)
-            if ((length(dt)!=4) & (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) & grepl("day",tunit))
-                print("Warning: Calendar does not match with detected frequencies")
-        if ((length(dt)==2) | (length(dt)>4)) {
-            if (verbose) {
-                print("Warning : Irregular frequencies have been detected")
-                print("The data might be corrupted and needs extra Checking !")
-                print(paste(as.character(dt),tunit,sep=" "))
-            }
-        }
-        if (sum((dt >= 28) & (dt<=31))>0)
-            freq.data <- "month"
     }
     
     if (!is.null(time$daysayear)) {
@@ -990,45 +1014,72 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) {
         ##else if
         ##mndays <- c(29.5,29.5,30.5,30.5,30.5,30.5,31.0,30.5,30.5,30.5,30.5,31.0)
         if (!is.null(time$daysayear) & !is.null(mndays)) {
-            year1 <- time$vals[1]%/%time$daysayear + yorigin
-            month1 <- morigin
+            browser()
+            ## generate months and years from time$vals
+            vals <- time$vals
+            l <- length(vals)/12
+            mo <- morigin
+            my1 <- seq(mo,by=1,length=12-mo+1) ## months in year 1
+            mye <- seq(1,by=1,length= l - ((l-1)-length(my1)+1))
+            months <- c(my1,rep(rep(1:12),l-2),mye)
+            yrs <- vals%/%mndays + yorigin
+            time$vdate <- as.Date(paste(yrs,months,"01",sep="-"))
+        }
+
+        ## if (!is.null(time$daysayear) & !is.null(mndays)) {
+        ##     year1 <- time$vals[1]%/%time$daysayear + yorigin
+        ##     month1 <- morigin
             
-            if (sum(diff(time$vals%/%time$daysayear) > 1) & (verbose))
-                print("Warning : Jumps of years has been found in the time series ")
-            if (time$vals[1]%%time$daysayear > 27) {
-                year1 <- year1 + 1
-                month1 <- month1 + 1
-                } 
-            if (month1>12) month1 <- month1 - 12 
-                                        # construct vdate
-            months <- ((time$vals%%time$daysayear)%/%round(mean(mndays))) + 1
-            years <- time$vals%/%time$daysayear + yorigin
-                                        #shifting mndays by month1 to start with different initial months than january (1)
-            mndays <- c(0,mndays[month1:length(mndays)-1],mndays[1:month1-1])
-            days <- time$vals%%time$daysayear - rep(cumsum(mndays),time$len/12)
-            if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
-                print("Warning : Jumps in data have been found !")
-                print("Warning: Trust the first date and force a continuous vector of dates !")
-                time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")),
-                                  by = "month",length.out=time$len)
-            } else
-                time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)                  
-        }  
+        ##     if (sum(diff(time$vals%/%time$daysayear) > 1) & (verbose))
+        ##         print("Warning : Jumps of years has been found in the time series ")
+        ##     if (time$vals[1]%%time$daysayear > 27) {
+        ##         year1 <- year1 + 1
+        ##         month1 <- month1 + 1
+        ##         } 
+        ##     if (month1>12) month1 <- month1 - 12 
+        ##                                 # construct vdate
+        ##     months <- ((time$vals%%time$daysayear)%/%round(mean(mndays))) + 1
+        ##     years <- time$vals%/%time$daysayear + yorigin
+        ##                                 #shifting mndays by month1 to start with different initial months than january (1)
+        ##     mndays <- c(0,mndays[month1:length(mndays)-1],mndays[1:month1-1])
+        ##     days <- time$vals%%time$daysayear - rep(cumsum(mndays),time$len/12)
+        ##     if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
+        ##         print("Warning : Jumps in data have been found !")
+        ##         print("Warning: Trust the first date and force a continuous vector of dates !")
+        ##         time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")),
+        ##                           by = "month",length.out=time$len)
+        ##     } else
+        ##         time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)                  
+        ## } 
+        
     } else  
         if (verbose) {
             print(time$vdate[1])
             print(paste("Starting date : ",time$vdate[1],"Ending date : ",
-                            time$vdate[length(time$vdate)], sep = " "))
+                        time$vdate[length(time$vdate)], sep = " "))
+            time$vdate <- seq(as.Date(paste(as.character(year1),
+                                            month1,"01",sep="-")),
+                              by = "month",length.out=time$len)
         }
     
-
-
+    
 
     ## browser()
     ## set calendar automatically
     model$calendar <- calendar.att
     if (verbose) print(paste("Calendar set to : ",model$calendar))
     ## End check 1
+
+    ## Generate vector of dates from calendar
+    if (grepl("standard",model$calendar) | grepl("gregor",model$calendar))
+        time$vdate <- seq(as.Date(paste(as.character(year1),
+                                        month1,"01",sep="-")),
+                          by = freq.data,length.out=time$len)
+    ##else if (time$daysayear=="365")
+
+    ##    else if (time$daysayear=="360")
+
+
 
     ## Begin check 2 if freq.att matches freq.data
     if (length(time$vals)>1) {
