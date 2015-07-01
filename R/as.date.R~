@@ -1,5 +1,0 @@
-vals <- nc$dim$time$vals
-yrs <- time$vals%/%time$daysayear + yorigin
-mns <-
-
-ndays <- (vals/365-vals%/%365) * 365
