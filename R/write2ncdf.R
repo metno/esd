@@ -5,14 +5,14 @@ save2ncdf <- function(x,file,...) UseMethod("save2ncdf")
 
 save2ncdf.station <- function(x,file,prec='short',missval=-99.9,offs=0,
                               scalf=0.1,torg='1899-12-31',verbose=FALSE) {
-    ##require(ncdf4)
+    require(ncdf4)
     if (verbose) print('save2ncdf.station')
     
     ## Save a station object as a netCDF file using the short-type combined with add_offset and scale_factor
     ## to reduce the size.   
     ## Examine the station object: dimensions and attributes  
     d <- dim(x)
-
+    
     if (is.null(d)) d <- c(length(x),1)
     if (verbose) print(paste('dimension of station: ',paste(d, collapse= ' x ')))
     atts <- names(attributes(x))
@@ -71,8 +71,10 @@ save2ncdf.station <- function(x,file,prec='short',missval=-99.9,offs=0,
     ncatt_put( ncid, ncvar, 'add_offset',offs,prec='float')
     ncatt_put( ncid, ncvar, 'scale_factor',scalf,prec='float')
     ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
-    ncatt_put( ncid, ncvar, 'location',paste(loc(x),collapse=", "),prec='character')
-    ncatt_put( ncid, ncvar, 'country',paste(cntr(x),collapse=", "),prec='character')
+    ncatt_put( ncid, ncvar, 'location',paste(loc(x),collapse=", "),
+              prec='character')
+    ncatt_put( ncid, ncvar, 'country',paste(cntr(x),collapse=", "),
+              prec='character')
     
     if (verbose) print('save attributes')
     for (i in 1:na) {
@@ -91,4 +93,5 @@ save2ncdf.station <- function(x,file,prec='short',missval=-99.9,offs=0,
     }    
     nc_close(ncid)
     if (verbose) print('close')
+
 }

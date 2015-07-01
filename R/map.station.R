@@ -28,7 +28,6 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   ##browser()
     if (verbose) print('map.station')
     arg <- list(...)
-<<<<<<< HEAD
     
     if (FUN=="NULL") FUN <- NULL
     
@@ -37,67 +36,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         bg <- "orange"
     }
     
-=======
 
-  if (is.logical(colbar)) if (!colbar) colbar <- NULL else
-                                       colbar= list(palette='t2m',rev=FALSE,n=10,
-                                                    breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1)
-  if (!is.null(colbar)) {
-      if (verbose) print('sort out the colours')
-      if (is.null(colbar$rev)) colbar$rev <- FALSE
-      if (is.null(FUN)) FUN <- 'NULL'
-      if (is.null(colbar$palette)) {
-          if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
-                                 (FUN=='wetmean') | (FUN=='mean')) ) {
-              colbar$palette <- 'precip'
-              colbar$rev <- TRUE
-          }
-      } else colbar$palette <- 't2m'
-      if (FUN=='NULL') FUN <- NULL
-      if (is.null(colbar$n)) colbar$n <- 10
-
-      ##if (!is.null(FUN))
-      ##    X <- apply(coredata(x),2,FUN=FUN,na.rm=na.rm)
-      ##else
-      ##    X <- x
-      ##if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
-      ##    colbar$breaks <- pretty(coredata(X),n=colbar$n)
-      ##} else if (length(colbar$breaks)==2)
-      ##    colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
-      ##colbar$n <- length(colbar$breaks)-1
-      if (is.null(colbar$type)) colbar$type <- 'p'
-      if (is.null(colbar$cex)) colbar$cex <- 2
-      if (is.null(colbar$h)) colbar$h <- 0.6
-      if (is.null(colbar$v)) colbar$v <- 1
-      if (is.null(colbar$pos)) colbar$pos <- 0.1
-      if (verbose) print(colbar)
-      if (!inherits(x,"stationmeta"))
-          colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
-      if (verbose) print(paste("length(col) =",length(colbar$col)))
-  }
-    ## browser()
-    ## col <- colbar$col
-    ##if (!is.null(FUN))
-    ##    bg <- col
-    ##else
-    ##    bg <- "green"
-
-    ## col.subset="darkred"; bg.subset="red"
-    ## if (is.list(col)) {
-    ##  colnms <- names(col)
-    ##  if (sum(is.element(colnms,'col.subset'))>0) {
-    ##    col.subset <- col$col.subset
-    ##    colnms[is.element(colnms,'col.subset')] <- 'done'
-    ##  }
-    ##  if (sum(is.element(colnms,'bg.subset'))>0) {
-    ##    bg.subset <- col$bg.subset
-    ##    colnms[is.element(colnms,'bg.subset')] <- 'done'
-    ##  }
-    ##  if (sum(is.element(colnms,'bg'))>0) bg <- col$bg
-    ##  if (sum(is.element(colnms,'col'))>0) col <- col$col else col <- NULL    
-    ##}
-
->>>>>>> parent of af95d66... mimor fixes in colbar palette for precip
     ##par(mar=c(4,1,1,1))
     par0 <- par()
     fig0 <- par()$fig
