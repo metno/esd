@@ -29,7 +29,7 @@ djf <- subset(t2m.4s,it='djf')
 ##mam <- subset(t2m.4s,it='mam')
 ##jja <- subset(t2m.4s,it='jja')
 ##son <- subset(t2m.4s,it='son')
-browser()
+## browser()
 ##plot(MAM,xlim=as.Date(c('1900-01-01','2100-12-31')),ylim=c(-5,10))
 plot(anomaly(djf),xlim=c(as.Date("1900-01-01"),as.Date("2100-12-31")),ylim=c(-8,10))
 
