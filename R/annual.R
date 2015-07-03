@@ -97,7 +97,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   else
       y <- aggregate(X,year,FUN=FUN,...) # REB
   y[!is.finite(y)] <- NA ## AM
-
+  ## browser()
   ## Flag the data with incomplete sampling as NA
   if (!is.na(nmin)) {
     ## Need to account for both multiple and single series
@@ -178,7 +178,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   class(y)[length(class(y))-1] <- "annual"
   if (class(y)[1]=="spell") class(y) <- class(y)[-1]
   #print(class(y)); print(class(x))
-  return(y)
+  invisible(y)
 }
 
 
@@ -195,7 +195,7 @@ annual.station <- function(x,FUN='mean',nmin=NULL,threshold=NULL,verbose=FALSE,.
 #    if (i==1) y <- z else y <- c(y,z)
 #  }
    y[which(is.infinite(y))] <- NA
-  return(y)
+  invisible(y)
 }
 
 annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
@@ -209,13 +209,21 @@ annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
   }
   #y <- annual.default(x,FUN=match.fun(FUN),...)
   y <- annual.default(x,FUN=FUN,nmin=nmin,threshold=threshold,...) 
-  return(y)
+  invisible(y)
 }
 
-annual.dsensemble <- function(x,FUN='mean') {
-  #print("annual.dsensemble")
-  y <- subset(x,it=0)
-  return(y)
+annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
+  if (verbose) print("annual.dsensemble")
+  browser()
+  clsx <- class(x)
+  clss <- class(attr(x,'station'))
+  class(x) <- c(clsx[1],clss[2],clsx[2])
+  if (inherits(cls,'season'))
+      y <- subset(x,it=0,verbose=verbose)
+  else
+      y <- annual.default(x,FUN=FUN,verbose=verbose,...)
+  names(y) <- names(x)
+  invisible(y)
 }
 
 

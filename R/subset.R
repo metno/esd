@@ -270,6 +270,7 @@ subset.trend <- function(x,it=NULL,is=NULL) {
 }
 
 subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+    browser()
     if (is.null(it) & is.null(is) & length(table(month(x)))==1) return(x)
     if (verbose) {print("subset.dsensemble"); print(it)}
     x0 <- x
@@ -328,12 +329,12 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 ii <- is.element(months,mon)
                 if (verbose) print(ii)
                 y <- x[ii,is]
-                                        #      }
-                                        #    if ( (min(it) > 0) & (max(it) < 5) ) {
-                                        #      # dsensemble is not for monthly data
-                                        #      #print("Seasonal selection")
-                                        #      ii <- is.element(month(x),c(1,4,7,10)[it])
-                                        #      y <- x[ii,is]
+                ##      }
+                ##    if ( (min(it) > 0) & (max(it) < 5) ) {
+                ##      # dsensemble is not for monthly data
+                ##      #print("Seasonal selection")
+                ##      ii <- is.element(month(x),c(1,4,7,10)[it])
+                ##      y <- x[ii,is]
             } } else
                 if (sum(is.element(it,1600:2200)) > 0) {
                     if (verbose) print("it contains year(s)")
@@ -352,25 +353,26 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         d[3] <- length(index(y))
         class(y) <- class(x0)
         d -> attr(y,'dimensions')
-                                        #str(y)
+        ##str(y)
         y <- attrcp(x,y,ignore='station')
-                                        #print("station"); str(attr(x,'station')); print(class(attr(x,'station')))
-                                        #plot(subset(attr(x,'station'),it=it))
-                                        #browser()
-#        browser()
+        ##print("station"); str(attr(x,'station')); print(class(attr(x,'station')))
+        browser()
+        ##plot(subset(attr(x,'station'),it=it))
+        ##browser()
+        ##        browser()
 ### BUG       if ( (it!=0) & (!inherits(attr(x,'station'),'annual')) & (it <= max(year(attr(x,'station')))) ) {
 ### Why '(it <= max(year(attr(x,'station'))))' - causes problems and it's not clear what the intention was     
         if ( (it!=0) & (!inherits(attr(x,'station'),'annual')) ) {
-          if (verbose) print('Also extract the same data for the station')
-          attr(y,'station') <- subset(attr(x,'station'),it=it,verbose=verbose) }
+            if (verbose) print('Also extract the same data for the station')
+            attr(y,'station') <- subset(attr(x,'station'),it=it,verbose=verbose) }
         else
-          attr(y,'station') <- annual(attr(x,'station'))
+            attr(y,'station') <- annual(attr(x,'station'))
                                         #print("HERE")
                                         #nattr <- softattr(x)
                                         #for (i in 1:length(nattr))
                                         #  attr(y,nattr[i]) <- attr(x,nattr[i])
     } else {
-      ## Bug-fix AM: 2014-09-22
+        ## Bug-fix AM: 2014-09-22
         y <- x[,is]
         y <- attrcp(x,y)
         attr(y, "model_id") <- attr(x, "model_id")[is]
@@ -380,7 +382,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (length(is)==1) class(y) <- c("ds","zoo") else class(y) <- class(x)
     }
     if (verbose) print("exit subset.dsensemble")
-    return(y)  
+    invisible(y)  
 }
 
 subset.spell <- function(x,is=NULL,it=NULL) {
