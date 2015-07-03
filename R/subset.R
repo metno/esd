@@ -318,7 +318,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 y <- attrcp(x0,y)
                 class(y) <- class(x0)
             } else if (inherits(x,'month')) {     
-                browser()
+                ## browser()
                 jan <- subset(x,it='jan',is=is)
                 feb <- subset(x,it='feb',is=is)
                 mar <- subset(x,it='mar',is=is)
