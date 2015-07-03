@@ -745,7 +745,7 @@ as.4seasons.dsensemble <- function(x,FUN='mean',...) {
     attrx <- attributes(x)
     y <- as.4seasons.station(x,FUN,...)
     ##attributes(y) <- attrx
-    browser()
+    ## browser()
     y <- attrcp(x,y)
     attr(y,"station") <- as.4seasons.station(attr(x,"station"))
    

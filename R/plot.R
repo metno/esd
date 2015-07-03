@@ -880,9 +880,9 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
     z <- x
   #print("diagnose")
-  #browser()
+  ## browser()
   diag <- diagnose(z,plot=FALSE)
-  #browser()
+  
   y <- attr(z,'station')
   attr(y,'standard.error') <- NULL
   
