@@ -226,75 +226,76 @@ diagnose.ds <- function(x,plot=FALSE) {
 }
 
 
-diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
-  # Trend-evaluation: rank
-  # Counts outside 90% confidence: binomial distrib. & prob.
-  stopifnot(!missing(x),inherits(x,"dsensemble"))
-  z <- x
-  # Remove the results with no valid data:
-  n <- apply(z,2,FUN=nv)
-  z <- subset(z,is=(1:length(n))[n > 0])
+## diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
+##   # Trend-evaluation: rank
+##   # Counts outside 90% confidence: binomial distrib. & prob.
+##   stopifnot(!missing(x),inherits(x,"dsensemble"))
+##   z <- x
+##   # Remove the results with no valid data:
+##   n <- apply(z,2,FUN=nv)
+##   browser()
+##   z <- subset(z,is=(1:length(n))[n > 0])
   
-  d <- dim(z)
-  t <- index(z)
-  y <- attr(x,'station')
+##   d <- dim(z)
+##   t <- index(z)
+##   y <- attr(x,'station')
   
-  # statistics: past trends
-  #browser()
-  i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
-  i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
-  obs <- data.frame(y=y[i1],t=year(y)[i1])
-  #print(summary(obs)); print(sum(i1)); print(sum(i2)); browser()
-  deltaobs <- lm(y ~ t,data=obs)$coefficients[2]*10  # deg C/decade
-  deltagcm <- rep(NA,d[2])
-  for (j in 1:d[2]) {
-    gcm <- data.frame(y=z[i2,j],t=year(z)[i2])
-    deltagcm[j] <- lm(y ~ t,data=gcm)$coefficients[2]*10  # deg C/decade
-  }
-  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
-  #print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])
+##   # statistics: past trends
+  
+##   i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
+##   i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
+##   obs <- data.frame(y=y[i1],t=year(y)[i1])
+##   #print(summary(obs)); print(sum(i1)); print(sum(i2)); browser()
+##   deltaobs <- lm(y ~ t,data=obs)$coefficients[2]*10  # deg C/decade
+##   deltagcm <- rep(NA,d[2])
+##   for (j in 1:d[2]) {
+##     gcm <- data.frame(y=z[i2,j],t=year(z)[i2])
+##     deltagcm[j] <- lm(y ~ t,data=gcm)$coefficients[2]*10  # deg C/decade
+##   }
+##   robs <- round(100*sum(deltaobs < deltagcm)/d[2])
+##   #print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])
 
-  # apply to extract mean and sd from the selected objects:
-  mu <- apply(coredata(z),1,mean,na.rm=TRUE)
-  si <- apply(coredata(z),1,sd,na.rm=TRUE)
-  q05 <- qnorm(0.05,mean=mu,sd=si)
-  q95 <- qnorm(0.95,mean=mu,sd=si)
-  # number of points outside conf. int. (binom)
-  above <- y[i1] > q95[i2]
-  below <- y[i1] < q05[i2]
-  #browser()
-  outside <- sum(above) + sum(below)
-  N <- sum(i1)
+##   # apply to extract mean and sd from the selected objects:
+##   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
+##   si <- apply(coredata(z),1,sd,na.rm=TRUE)
+##   q05 <- qnorm(0.05,mean=mu,sd=si)
+##   q95 <- qnorm(0.95,mean=mu,sd=si)
+##   # number of points outside conf. int. (binom)
+##   above <- y[i1] > q95[i2]
+##   below <- y[i1] < q05[i2]
+##   #browser()
+##   outside <- sum(above) + sum(below)
+##   N <- sum(i1)
   
-  if (plot) {
-    x <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
-    y <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),sd=sd(deltagcm))),2)
-    #print(c(x,y))
+##   if (plot) {
+##     x <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
+##     y <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),sd=sd(deltagcm))),2)
+##     #print(c(x,y))
     
-    par(bty="n",xaxt="n",yaxt="n")
-    plot(c(-100,100),c(-100,100),type="n",ylab="magnitude",xlab="trend")
+##     par(bty="n",xaxt="n",yaxt="n")
+##     plot(c(-100,100),c(-100,100),type="n",ylab="magnitude",xlab="trend")
     
-    bcol=c("grey95","grey40")
-    for (i in 1:10) {
-      r <- (11-i)*10
-      polygon(r*cos(pi*seq(0,2,length=360)),
-              r*sin(pi*seq(0,2,length=360)),
-              col=bcol[i %% 2 + 1],border="grey15")
-    }
-    for (i in seq(0,90,by=1))
-      points(x,y,pch=19,cex=2 - i/50,col=rgb(i/90,0,0))
-  }
-  diag <- list(robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
-               outside=outside,above=above,below=below,
-               y=y[i1],N=N,i1=i1,
-               mu=zoo(mu,order.by=index(x)),
-               si=zoo(si,order.by=index(x)),
-               q05=zoo(q05,order.by=index(x)),
-               q95=zoo(q95,order.by=index(x)))
-  attr(diag,'history') <- history.stamp(x)
+##     bcol=c("grey95","grey40")
+##     for (i in 1:10) {
+##       r <- (11-i)*10
+##       polygon(r*cos(pi*seq(0,2,length=360)),
+##               r*sin(pi*seq(0,2,length=360)),
+##               col=bcol[i %% 2 + 1],border="grey15")
+##     }
+##     for (i in seq(0,90,by=1))
+##       points(x,y,pch=19,cex=2 - i/50,col=rgb(i/90,0,0))
+##   }
+##   diag <- list(robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
+##                outside=outside,above=above,below=below,
+##                y=y[i1],N=N,i1=i1,
+##                mu=zoo(mu,order.by=index(x)),
+##                si=zoo(si,order.by=index(x)),
+##                q05=zoo(q05,order.by=index(x)),
+##                q95=zoo(q95,order.by=index(x)))
+##   attr(diag,'history') <- history.stamp(x)
 
-  invisible(diag)
-}
+##   invisible(diag)
+## }
 
 
 diagnose.distr <- function(x,main=NULL,
@@ -366,6 +367,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   stopifnot(!missing(x),inherits(x,"dsensemble"))
   z <- x
   # Remove the results with no valid data:
+  ## browser()
   n <- apply(z,2,FUN=nv)
   z <- subset(z,is=(1:length(n))[n > 0])
   
@@ -397,9 +399,9 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   above <- y[i1] > q95[i2]
   below <- y[i1] < q05[i2]
   #browser()
-  outside <- sum(above) + sum(below)
-  N <- sum(i1)
-  
+  outside <- sum(above,na.rm=TRUE) + sum(below,na.rm=TRUE)
+  N <- sum(i1,na.rm=TRUE)
+  ## browser()
   if (plot) {
     x <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
     y <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),sd=sd(deltagcm))),2)
@@ -418,6 +420,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
     for (i in seq(0,90,by=1))
       points(x,y,pch=19,cex=2 - i/50,col=rgb(i/90,0,0))
   }
+  ##browser()
   diag <- list(robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
                outside=outside,above=above,below=below,
                y=y[i1],N=N,i1=i1,
