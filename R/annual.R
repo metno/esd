@@ -214,7 +214,6 @@ annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
 
 annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
   if (verbose) print("annual.dsensemble")
-  browser()
   clsx <- class(x)
   clss <- class(attr(x,'station'))
   class(x) <- c(clsx[1],clss[2],clsx[2])
