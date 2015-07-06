@@ -582,7 +582,7 @@ as.4seasons <- function(x,...) UseMethod("as.4seasons")
 
 as.4seasons.default <- function(x,FUN='mean',slow=FALSE,...) {
   #print('as.4seasons.default')
-
+    ##browser()
   if (inherits(x,'season')) return(x)
   attr(x,'names') <- NULL
   d <- dim(coredata(x))
@@ -656,9 +656,9 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,...) {
 }
 
 as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,...) {
-
+    ##browser()
   IV <- function(x) sum(is.finite(x))
-
+    if (inherits(x,'month')) nmin <- 3 # AM 06-07-2015
   #print('as.4seasons.day')
   attr(x,'names') <- NULL  
   t <- index(x)
@@ -740,12 +740,13 @@ as.4seasons.field <- function(x,FUN='mean',...) {
 }
 
 as.4seasons.dsensemble <- function(x,FUN='mean',...) {
+    ##browser()
     cls <- class(x)
-    class(x) <- c("station",cls[2],"zoo")
+    class(x) <- c("station",cls[2],"zoo") ## AM 06-07-2015 Quick fix here, time step added into the class of x
     attrx <- attributes(x)
     y <- as.4seasons.station(x,FUN,...)
     ##attributes(y) <- attrx
-    ## browser()
+    
     y <- attrcp(x,y)
     attr(y,"station") <- as.4seasons.station(attr(x,"station"))
    
