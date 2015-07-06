@@ -877,6 +877,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   #print("plot.dsensemble")
   stopifnot(inherits(x,'dsensemble'))
   #print("subset") 
+  ## browser()
   if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
     z <- x
   #print("diagnose")
@@ -951,13 +952,13 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
 #  below <- y[i1] < q05[i2]
 #  outside <- sum(above) + sum(below)
 #  #print(outside); print(pbinom(outside,size=sum(i1),prob=0.1))
-
+  
   #str(diag$y); browser()
   index(diag$y) <- year(diag$y)
   #points(diag$y,cex=0.5,col="green")
   #points(diag$y[diag$above | diag$below],col="grey")
   outside <- diag$above | diag$below
-  points(zoo(coredata(diag$y)[outside],order.by=year(diag$y)[outside]),col="grey")
+  points(zoo(coredata(diag$y)[which(outside)],order.by=year(diag$y)[which(outside)]),col="grey")
   #browser()
   
   if (showci) {
