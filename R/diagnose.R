@@ -369,6 +369,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   # Remove the results with no valid data:
   ## browser()
   n <- apply(z,2,FUN=nv)
+  ## browser()
   z <- subset(z,is=(1:length(n))[n > 0])
   
   d <- dim(z)
@@ -383,6 +384,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   #print(summary(obs)); print(sum(i1)); print(sum(i2)); browser()
   deltaobs <- lm(y ~ t,data=obs)$coefficients[2]*10  # deg C/decade
   deltagcm <- rep(NA,d[2])
+  ## browser()
   for (j in 1:d[2]) {
     gcm <- data.frame(y=z[i2,j],t=year(z)[i2])
     deltagcm[j] <- lm(y ~ t,data=gcm)$coefficients[2]*10  # deg C/decade
