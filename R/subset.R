@@ -270,7 +270,7 @@ subset.trend <- function(x,it=NULL,is=NULL) {
 }
 
 subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-    ##browser()
+    ## browser()
     class(x) <- c(class(x)[1],class(attr(x,'station'))[2],"zoo")
 
     if (is.null(it) & is.null(is) & length(table(month(x)))==1) return(x)
@@ -391,7 +391,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 class(y) <- class(x0)  
             }
         } else if (is.character(it)) {
-            ##browser()
+            ## browser()
             if (verbose) print("it is character - select a season")
             months <- month(x)
             if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
