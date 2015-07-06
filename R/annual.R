@@ -214,13 +214,17 @@ annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
 
 annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
   if (verbose) print("annual.dsensemble")
+  ## browser()
   clsx <- class(x)
   clss <- class(attr(x,'station'))
-  class(x) <- c(clsx[1],clss[2],clsx[2])
+  if (!inherits(x,c('day','month','annual','season')))
+      class(x) <- c(clsx[1],clss[2],clsx[2])
   if (inherits(cls,'season'))
       y <- subset(x,it=0,verbose=verbose)
   else
       y <- annual.default(x,FUN=FUN,verbose=verbose,...)
+
+  attr(y,'station') <- annual.station(attr(x,'station'),...)
   names(y) <- names(x)
   invisible(y)
 }
