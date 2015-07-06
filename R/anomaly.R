@@ -13,6 +13,16 @@ anomaly.default <- function(x,...) {
     return(y)
 }
 
+anomaly.dsensemble <- function(x,ref=NULL,...) {
+    
+    yr.obs <- year(attr(x,'station'))
+    ref <- range(yr.obs[!is.na(attr(x,'station'))],na.rm=TRUE)
+    stopifnot(inherits(x,"dsensemble"))
+    x <- anomaly.default(x,ref=ref,...)
+    attr(x,'station') <- anomaly(attr(x,'station'),ref=ref,...)
+    return(x)
+}
+
 anomaly.field <- function(x,...) {
   stopifnot(inherits(x,"field"))
   x <- as.anomaly(x)
@@ -111,6 +121,7 @@ anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
 #  }
   ## AM 21-05-2015 Alternative function as a quick fix 
   anomaly.month1 <- function(x,t=NULL,ref=NULL) {
+      ## browser()
       if (is.null(ref)) ref <- year(t)
       x <- zoo(x,order.by=t)
       yr.ref <- seq(range(ref)[1],range(ref)[2],by=1)
@@ -121,14 +132,14 @@ anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
                        as.Date(paste(y.rng[2],"12","31",sep="-")),
                        by="month")
       z <- zoo(NA,order.by=full.date)
-      z <- merge(z,x)[,2] # expand to the full dates
+      z <- merge(z,x)[,2] # expand to cover full dates
       z <- subset(z,it=ref) # extract the base period
       X <- coredata(z) ; dim(X)<- c(12,length(X)/12)
       clim <- rowMeans(X,na.rm=TRUE)  ; rm("X")
       x <- x - clim[month(x)]
       invisible(x)
   }
-
+  ## browser()
   X <- x
   if (verbose) print('anomaly.month')
   t <- index(x); yr <- year(x)
