@@ -208,12 +208,23 @@ as.pca.station(x)
     \code{attr(x,'appendix.1')})}
   \item{pattern}{Which EOF pattern (mode) to extract as a series for PC}
  }
+ \details{
+  `field' object must be a two dimensional object
+  (time,nlon*nlat). Time index must be the first dimension. The second
+  dimension is a product of the number of longitudes by the number of
+  latitudes. For a different format, users can use `aperm' function
+  (Transpose an array by permuting its dimensions) to rearrange the
+  object to meet the required format and `dim' function can be used to
+  transform a 3D (d1,d2,d3) object into 2D (d1,d2*d3) object as
+  dim(3D) <- c(d1,d2*d3) 
+}
+ 
 \value{A field object}
 
 \seealso{
 }
 
-\author{R.E. Benestad and A.  Mezghanil}
+\author{R.E. Benestad and A.  Mezghani}
 \examples{
 # Example: how to generate a new station object.
 data <- round(matrix(rnorm(20*12),20,12),2); colnames(data) <- month.abb
