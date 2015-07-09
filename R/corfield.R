@@ -155,7 +155,7 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,use='pairwise.complete.
   
   # Keep track of which is an eof object and which is a station record:
   nval <- function(x) sum(is.finite(x))
-  
+ 
   swapped <- FALSE
   if ( inherits(y,c("station")) & inherits(x,c("field"))) {
     if (verbose) print('swap station and field')
