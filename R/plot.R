@@ -15,13 +15,17 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))
          unit[i] <- 'degree*C'
   }
-
+ 
   if (plot.type=="single") {
-    if (is.null(ylab))
-         ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
-                                 "*phantom(0)*(",unit,"))"))),silent=TRUE)
-    if (inherits(ylab,"try-error")) ylab <- unit(x)
-  } else if (length(stid(x)>1)) ylab= stid(x)
+      if (is.null(ylab))
+          ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
+                                     "*phantom(0)*(",unit,"))"))),silent=TRUE)
+      if (inherits(ylab,"try-error")) ylab <- unit(x)
+  }
+  else if (is.null(ylab) & (length(levels(factor(stid(x))))>1))
+      ylab <- stid(x)
+  else if (is.null(ylab))
+      ylab <- apply(x,1,varid)
   
   if (is.null(main)) main <- attr(x,'longname')[1]              
   if (is.null(col)) col <- rainbow(length(x[1,]))
@@ -39,7 +43,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   
   #print(ylab)
   class(x) <- "zoo"
-
+  
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
            main=main,col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch)
   
