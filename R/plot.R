@@ -9,6 +9,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
       fig=c(0,1,0.05,0.95))
 
+  if (is.null(ylim))
+      ylim=pretty(x)
   unit <- attr(x,'unit')[1]
   for (i in 1:length(unit)) {
     if ( (is.na(unit[i]) | is.null(unit[i])) ) unit[i] <- " "
@@ -45,7 +47,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   class(x) <- "zoo"
   
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
-           main=main,col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch)
+           main=main,col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,...)
   
   par0 <- par()
   
