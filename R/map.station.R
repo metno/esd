@@ -14,7 +14,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                                         # col=NULL replaced by palette
                          type=NULL,gridlines=TRUE,
                          lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
-                         cex=.8,zexpr="alt",cex.subset=1,
+                         cex=NULL,zexpr="alt",cex.subset=1,
                          add.text.subset=FALSE,showall=FALSE,
                          add.text=FALSE,
                          height=NULL,width=NULL,cex.axis=1,cex.lab=0.6,
@@ -25,18 +25,18 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          na.rm=TRUE,show.val=FALSE,
                          ##colorbar=TRUE,
                          legend.shrink=1,...) { 
-  ##browser()
+  ##
     if (verbose) print('map.station')
     arg <- list(...)
     
-    if (FUN=="NULL") FUN <- NULL
+    if (!is.null(FUN))
+        if (FUN=="NULL") FUN <- NULL
     
     if (is.null(col) & ((inherits(x,"stationmeta") | is.null(FUN)))) {
         col <- "darkred"
         bg <- "orange"
     }
     
-
     ##par(mar=c(4,1,1,1))
     par0 <- par()
     fig0 <- par()$fig
@@ -71,11 +71,11 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
     ##                     type=type,gridlines=gridlines,...)
     else if (projection=="lonlat") {
-        ## browser()
+        ## 
         data("geoborders", envir = environment())
         if (zexpr == "alt") 
             zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
-        ## browser()
+        ## 
         if (!is.null(x)) { 
             if (inherits(x,"stationmeta")) {      
                 ss <- x
@@ -135,6 +135,9 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         
         tte <- "rwb"
 
+        if (is.null(cex))
+            cex <- 5/log(dim(ss)[1])
+        
         ## Select a subdomain in the x-axis
         if (is.null(xlim))
             if (is.null(highlight) | showall)
@@ -167,7 +170,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             scale <- attr(x,'na')
         else
             scale <- 1
-        #browser()        
+        ##       
         ##print(par()$fig)
         par(fig=par0$fig,mar=rep(2,4))
                                        
@@ -196,16 +199,16 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             if (is.logical(colbar)) {
                 ## If colbar set to FALSE, treat it as set to NULL
                 if (!colbar) colbar <- NULL else
-                colbar= list(palette='t2m',rev=FALSE,n=10,
-                    breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1)
+                colbar <- list(palette='t2m',rev=FALSE,n=10,
+                    breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE)
             }
-            ## browser()                        
+            ##                       
             ##if (!is.null(colbar)) {
             colbar <- colbar.ini(y,FUN=FUN,colbar=colbar,verbose=verbose)
             if (verbose)
                 print("length(col) =",length(colbar$col))
 
-            ## browser()
+            ## 
             y.rng <- range(y,na.rm=TRUE)
             if (verbose)
                 print(paste("range of mapped values",paste(y.rng,
@@ -222,7 +225,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         }
         
         ##scale <- apply(y,2,function(x) sum(!is.na(x))/length(x))
-        if (!is.null(attr(x,'na'))) ## (!inherits(x,"stationmeta") & 
+        if (!is.null(attr(x,'na')) & (!inherits(x,"stationmeta"))) 
             scale <- attr(x,'na')
         else
             scale <- 1
@@ -231,7 +234,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ##       cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)       
 
         if(is.null(colbar$pos)) pos <- 0.05
-    ## browser()
+    ## 
     ##fig0 <- par0$fig
         if (!is.null(FUN) & (!is.null(colbar)) & colbar$show) {
             if (showaxis) fig0[3] <- par0$fig[3] + colbar$pos
@@ -240,9 +243,9 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             ## (par0$fig[4]-par0$fig[3])/120 ##0.05
         } else 
             fig0 <- par0$fig
-        ## browser()
+        ## 
         par(fig=fig0)
-    
+        
         if (!is.null(highlight))
             plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
                  bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
@@ -312,7 +315,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             
             if (!is.null(FUN)) {
             ##if (is.null(col)) colbar$col <- rep(col,length(colbar$col[icol]))
-            ## browser()
+            ## 
             if (!is.null(col)) col <- col else col <- colbar$col[icol]
             points(ss$longitude, ss$latitude, pch = pch,
                    bg=colbar$col[icol], col=col, ##col=colbar$col[icol]
