@@ -28,8 +28,8 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",verbose=FALSE,...) 
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
         nc <- open.ncdf(ncfile)
         dimnames <- names(nc$dim)
-        lon <- get.var.ncdf(nc,dimnames[grep("lon",dimnames)])
-        lat <- get.var.ncdf(nc,dimnames[grep("lat",dimnames)])
+        lon <- get.var.ncdf(nc,dimnames[grep("lon",tolower(dimnames))])
+        lat <- get.var.ncdf(nc,dimnames[grep("lat",tolower(dimnames))])
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) ) {
             if (verbose) print('Regular grid field found')
             X <- retrieve.ncdf(ncfile,param=param,verbose=verbose,...)
@@ -40,8 +40,8 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",verbose=FALSE,...) 
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
         nc <- nc_open(ncfile)
         dimnames <- names(nc$dim)
-        lon <- ncvar_get(nc,dimnames[grep("lon",dimnames)])
-        lat <- ncvar_get(nc,dimnames[grep("lat",dimnames)])
+        lon <- ncvar_get(nc,dimnames[grep("lon",tolower(dimnames))])
+        lat <- ncvar_get(nc,dimnames[grep("lat",tolower(dimnames))])
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
             if (verbose) print('Regular grid field found')
             X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
@@ -387,13 +387,18 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
             units <- "hPa"
         }
         ## 
-        if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1")) {
+        if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(val,na.rm=TRUE)<0.001)) {
             val <- val * (24*60*60) 
             units <- "mm/day"
         }
         if (verbose) print(paste("Data converted to unit:",units, sep= " "))
+    } else if (max(val,na.rm=TRUE)<0.001) {
+        if (verbose) print('Variable is likely to be precipitation intensity !')
+        val <- val * (24*60*60) 
+        units <- "mm/day"
     }
-    ## replace missval by NA
+  
+  ## replace missval by NA
     if (miss2na) {
         imissval <- grep("miss",names(v1))
         if (length(imissval)>0) {
@@ -754,7 +759,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         ## lev$vals <- as.vector(lev$vals[lev.w])
         lev$len <- length(lev.w)
     }
-    ##browser()
+    ##
     ## Extract values and add Scale Factor and offset if any
     if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
 
@@ -855,7 +860,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
             ##dim(val) <- count
         }
     }
-    ##
+    ## 
     ## Convert units
     iunit <- grep("unit",names(v1))
     if (length(iunit)>0) {
@@ -870,12 +875,17 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
             units <- "hPa"
         }
         ## 
-        if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1")) {
+        if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(val,na.rm=TRUE)<0.1)) {
             val <- val * (24*60*60) 
-            units <- "mm/day"
+            units <- "mm"
         }
         if (verbose) print(paste("Data converted to unit:",units, sep= " "))
+    } else if (max(val,na.rm=TRUE)<0.001) {
+        if (verbose) print('Variable is likely to be precipitation intensity !')
+        val <- val * (24*60*60) 
+        units <- "mm"
     }
+
     ## replace missval by NA
     if (miss2na) {
         imissval <- grep("miss",names(v1))
@@ -901,7 +911,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     if (verbose) {print("dimensions")
                 print(d)
             }
-    ## browser()
+    ## 
     
     if (one.cell) {
         z <- zoo(x=val,order.by=time$vdate)
@@ -1016,7 +1026,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         stop("Checking Dimensions --> [fail]")
         if (verbose) print("The variable has no dimensions. The file may be corrupted!")  
     }
-    dimnames <- tolower(dimnames)
+    dimnames <- dimnames
     ## Get all attributes in model, check and update
     model <- ncatt_get(ncid,0)
     ## Update CMIP3 attributes to match those of CMIP5 
@@ -1292,7 +1302,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             if (verbose) print(paste(as.character(dt),tunit,sep="-"))
         }
         if ((length(dt)==4) & grepl("day",tunit)) {
-            browser()
+            ## 
             if (verbose) print(paste("Calendar is likely to be a Gregorian 365/366-",tunit," with: ",as.character(length(dt))," irregular frequencies : ",sep=""))
             dt <- c(28,29,30,31)
             if (verbose) print(paste(as.character(dt),tunit,sep="-")) 
@@ -1705,7 +1715,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         if (verbose)
             print(paste("Time difference dt : ",paste(dt,collapse="/"))) ## diff(time$vdate))
     }
-    ## browser()
+    ## 
     if (!is.null(time$vdate)) {
         if (grepl("sec",tunit))
             dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60*60)))))
