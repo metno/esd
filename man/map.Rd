@@ -25,11 +25,13 @@
 \usage{
 <<<<<<< HEAD
 map(x,it=NULL,is=NULL,new=TRUE,...)
-map.default(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
-              xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-              col=NULL,breaks=NULL,
-              type=NULL,gridlines=FALSE,
-              lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...)
+
+map.default(x,FUN="mean",it=NULL,is=NULL,new=FALSE,
+            projection="lonlat",xlim=NULL,ylim=NULL,zlim=NULL,n = 15,  
+            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05, 
+            type="p",cex=2,show=TRUE,h=0.6,v=1,pos=0.05), 
+            type=c("fill","contour"),gridlines=FALSE,lonR=NULL, 
+            latR=-90,axiR=NULL,verbose=FALSE, ...)
 
 map.matrix(x,new=TRUE,projection="lonlat",...)
 
@@ -39,8 +41,8 @@ map.station(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
               type = NULL,gridlines= TRUE, 
               lonR = NULL,latR=45,axiR=NULL,verbose=FALSE,
               FUN = NULL, 
-              colbar = list(palette=NULL,rev=FALSE,n=10,breaks=NULL,
-                            type="p",cex=2,h=0.6,v=1,pos=0.05),
+              colbar = list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                            type="p",cex=2,h=0.6,v=1),
               cex=0.8,zexpr = "alt",
               cex.subset = 1, add.text.subset = FALSE, showall = FALSE, 
               add.text = FALSE, height = NULL, width = NULL, cex.axis = 1, 
@@ -52,71 +54,71 @@ map.station(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
 
 map.comb(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
            xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-           colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
-                       cex=2,h=0.6,v=1,pos=0.05),
+           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                       type="p",cex=2,h=0.6,v=1),
            type=c("fill", "contour"),gridlines=FALSE,
            lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,pattern=1,...)
 
 map.eof(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
            xlim= NULL,ylim=NULL,zlim=NULL,n=15,
-           colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
-                       cex=2,h=0.6,v=1,pos=0.05),
+           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                       type="p",cex=2,h=0.6,v=1),
            type=c("fill","contour"),gridlines=FALSE,
            lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,pattern=1,...)
 
 map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-         colbar=list(palette = NULL,rev=FALSE,n=10,breaks=NULL,
+         colbar=list(pal = NULL,rev=FALSE,n=10,breaks=NULL,
                      type="p",cex = 2,h=0.6,v=1,pos=0.05),
          type= c("fill", "contour"),gridlines=FALSE,
          lonR=NULL,latR=-90,axiR = NULL,verbose = FALSE,...) 
 
 map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
             xlim=NULL,ylim=NULL,zlim=NULL, 
-            colbar= list(palette=NULL,rev=FALSE,n=10,breaks = NULL,
-                         type = "p", cex = 2, h = 0.6, v = 1, pos = 0.05), 
+            colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                         type="p",cex=2,h=0.6,v=1), 
             type = c("fill", "contour"), gridlines = FALSE,
             lonR = NULL,latR = -90, axiR = NULL, verbose = FALSE,
             na.rm = TRUE, ...)
 
 map.corfield(x,it=NULL,is=NULL,new=TRUE,projection= "lonlat", 
                xlim=NULL,ylim=NULL,zlim=NULL,n = 15,
-               colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,
-                           type="p",cex=2,h=0.6,v=1,pos=0.05),
+               colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                           type="p",cex=2,h=0.6,v=1),
                type=c("fill", "contour"),gridlines=FALSE,
                lonR=NULL,latR=-90,axiR = NULL,verbose = FALSE, ...)
  
 map.trend(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
             xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-            colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
-                        cex=2,h=0.6,v=1,pos=0.05),
+            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                        type="p",cex=2,h=0.6,v=1,),
             type=c("fill", "contour"),gridlines=FALSE,
             lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...)
 
 map.pca(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat", 
           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-          colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
-                      cex=2,h=0.6,v=1,pos=0.05),
+          colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                      type="p",cex=2,h=0.6,v=1),
           type=c("fill","contour"),gridlines=FALSE,verbose = FALSE, ...)
 
 
 map.mvr(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-          colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
-                      cex=2,h=0.6,v=1,pos=0.05),
+          colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                      type="p",cex=2,h=0.6,v=1),
           type=c("fill", "contour"),gridlines = FALSE, verbose = FALSE, ...)
 
 
 map.cca(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-          colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
-                      cex = 2,h=0.6,v=1,pos=0.05),
+          colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                      type="p",cex = 2,h=0.6,v=1),
           type = c("fill","contour"),gridlines = FALSE,verbose=FALSE,...)
 
 lonlatprojection(x,it=NULL,is=NULL,new=FALSE,projection="lonlat", 
                    xlim=NULL,ylim=NULL,zlim=NULL,n =15,
-                   colbar=list(palette=NULL,rev=FALSE,n=10,breaks=NULL,
-                               type="p",cex=2,h=0.6,v=1,pos=0.05),
+                   colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                               type="p",cex=2,h=0.6,v=1),
                    type = c("fill", "contour"),geography=TRUE,
                    gridlines = FALSE, verbose = FALSE,fancy=FALSE,...) 
 
@@ -128,7 +130,7 @@ gridbox(x,col,density = NULL, angle = 45)
 
 map2sphere(x,it=NULL,is=NULL,new = TRUE,
              xlim=NULL,ylim=NULL,zlim = NULL,
-             colbar= list(palette=NULL,rev=FALSE,n=10,breaks=NULL,
+             colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                           type="p",cex=2,h=0.6,v=1,pos=0.05),
              lonR = NULL, latR = NULL, axiR = 0, 
              type = c("fill", "contour"),colorbar=TRUE,
@@ -143,12 +145,13 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
   \item{FUN}{The function to be applied on x before mapping (e.g. \code{mean})}
   \item{pattern}{Which EOF pattern (mode) to plot}
   \item{colbar}{The colour scales defined through \code{colscal}. Users can
-                specify the colour palette (`palette'), the number of
-                breaks (`n'), values of the `breaks', and the position of
-                the color bar from the big plot (`pos'). The `rev' argument,
+                specify the colour `pal'*ette (`pal'), the number of
+                breaks (`n'), values of `breaks', and the position of
+                the color bar from the main plot (`pos'). The `rev' argument,
                 will produce a reversed color bar if set to TRUE. The other
-                arguments are more specific to \code{col.bar} and are
-                used only if argument `fancy' is set to TRUE (not yet finished).}
+                arguments (`type',`h' and `v') are more specific to
+		\code{col.bar} and are used only if argument `fancy' is
+		set to TRUE (not yet finished).}
   \item{it}{see \code{\link{subset}}}
   \item{is}{see \code{\link{subset}}}
   \item{new}{TRUE: create a new graphic device.}
@@ -206,7 +209,7 @@ map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70))
 
 ## Get NACD data and map the mean values
 y <- station.nacd()
-map(y,FUN='mean',colbar=list(palette=varid(y),n=10),cex=2)
+map(y,FUN='mean',colbar=list(pal=varid(y),n=10),cex=2)
 }
 \keyword{map}
 
