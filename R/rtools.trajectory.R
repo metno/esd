@@ -216,7 +216,7 @@ lontrack <- function(lon) {
       i1 <- i.change[i]
       if (any(abs(diff(lon)[(i1-1):min(i1+1,n-1)])>200)) {
       	if (abs(diff(lon)[i1])<200) {
-      	  if (abs(diff(lon)[i1-1])>200) i1<i1-1 else i1<-i1+1
+      	  if (i1>1 & abs(diff(lon)[max(1,i1-1)])>200) i1<i1-1 else i1<-i1+1
       	}
       	if (i<length(i.change)) i2<-i.change[i+1] else i2<-n
         add <- round(-diff(lon)[i1]/360)*360

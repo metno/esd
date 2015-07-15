@@ -11,8 +11,8 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
   if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
   names(x) <- tolower(names(x))
-  names(x)[grep("lat",names(x))] <- "lat"
-  names(x)[grep("lon",names(x))] <- "lon"
+  names(x)[grep("latitude",names(x))] <- "lat"
+  names(x)[grep("longitude",names(x))] <- "lon"
   names(x)[grep("step",names(x))] <- "timestep"
 
   if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
@@ -26,6 +26,7 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   if(is.na(method) & !is.null(attr(x,"method"))) method <- attr(x,"method")
   
   # transform data in data.frame x to numeric values
+  if(verbose) print('data.frame to numeric values')
   x <- data.frame(x)
   fn <- function(x) {
     if(!is.null(levels(x))) {suppressWarnings(as.numeric(levels(x))[x])
@@ -50,10 +51,12 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   }
 
   # interpolate all trajectories to same length n
+  if(verbose) print('interpolate trajectories')
   aggregate(x$date, list(x$trajectory), function(x) x[1])$x -> t1
   aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> t2
   aggregate(x$date, list(x$trajectory), length)$x -> len
   aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat
+  #for(i in seq(11000,12000)) loni<-approxlon(x$lon[x$trajectory==i]);print(i)
   aggregate(x$lon,list(x$trajectory),function(x) approxlon(x,n=n)$y)$x -> lon
   colnames(lon) <- rep('lon',n)
   colnames(lat) <- rep('lat',n)
@@ -101,23 +104,28 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
 }
 
 
-read.imilast <- function(fname,path=NULL) {
+read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   fname <- paste(path,fname,sep="")
   # read and rearrange file header
+  if(verbose) print(paste("reading file header:"))
   h <- tolower(readLines(fname,1))
+  if(verbose) print(h)
+  if(verbose) print("rearranging")
   h <- unlist(strsplit(h,","))
   if(length(h)==1) h <- unlist(strsplit(h," "))
   h <- gsub("^\\s+|\\s+$","",h)
   h[grepl("cyclone",h) | grepl("trackn",h)] <- "trajectory"
-  h[grep("lat",h)] <- "lat"
-  h[grep("lon",h)] <- "lon"
+  h[grepl("lati",h) | grepl("latn",h)] <- "lat"
+  h[grep("long",h)] <- "lon"
   h[grepl("99",h) | grepl("code",h)] <- "code99"
   h[grepl("date",h) | grepl("yyyymmddhh",h)] <- "date"
   h[grep("yyyy",h)] <- "year"
   h[grep("mm",h)] <- "month"
   h[grep("dd",h)] <- "day"
-  h[grepl("hh",h) | grepl("timestep.",h) | grepl("timestep_",h)] <- "time"
+  h[grepl("hh",h) | grepl("timestep\\.",h) | grepl("timestep\\_",h)] <- "time"
   h[grepl("step",h) | grepl("ptn",h)] <- "timestep"
+  h <- unique(h)
+  if(verbose) print(paste(h,collapse=", "))
   # check width of columns
   l <- readLines(fname,4)[4]
   l <- gsub("^\\s+|\\s+$","",l)
@@ -126,7 +134,9 @@ read.imilast <- function(fname,path=NULL) {
   w <- c(blanks[1]-1,
          breaks[2:length(breaks)]-breaks[1:(length(breaks)-1)],
          nchar(l)-breaks[length(breaks)]+1)
+  if(verbose) print(paste("width of columns:",paste(w,collapse=",")))                
   # read data
+  if(verbose) print("reading data")
   x <- read.fwf(fname,width=w,col.names=h,skip=1)
   x <- x[x$code99<90,]
   # add attributes
