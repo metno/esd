@@ -662,7 +662,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         ## lon$vals <- as.vector(lon$vals[lon.w])
         lon$len <- length(lon.w)
     }
-    
+
     ## latitude extract range
     if (!is.null(ilat)) {
         if (!is.null(lat.rng)) {
@@ -685,6 +685,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         ## lat$vals <- as.vector(lat$vals[lat.w])
         lat$len <- length(lat.w)
     }
+    
     ##
     ## Single point extraction
     one.cell <- FALSE
@@ -759,10 +760,11 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         ## lev$vals <- as.vector(lev$vals[lev.w])
         lev$len <- length(lev.w)
     }
+   
     ##
     ## Extract values and add Scale Factor and offset if any
     if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
-
+    
     if ((one.cell) & (!is.null(itime))) {
         if (!is.null(ilev)) {
             start1 <- c(lon.w,lat.w,lev.w[1],time.w[1])
@@ -775,11 +777,11 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         }
         lon$vals <- lon$vals[lon.w]
         lat$vals <- lat$vals[lat.w]
-    } else if ((!is.null(ilon)) & (!is.null(itime))) {  
+    } else if ((!is.null(ilon)) & (!is.null(itime))) {
         diff.lon.w <- diff(rank(lon$vals[lon.w]))
         id2 <- which(diff.lon.w!=1)
         if (!is.null(ilev)) {
-            if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich    
+            if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich
                 count <- c(length(lon.w),length(lat.w),length(lev.w),length(time.w))
                 lon.w1 <-lon.w[1:id2]
                 lon.w2 <- lon.w[(id2+1):length(lon.w)]
@@ -827,11 +829,13 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
                 count1 <- c(length(lon.w1),length(lat.w),length(time.w))
                 val1 <- get.var.ncdf(ncid,param,start1,count1)## ,collapse_degen=FALSE)
                 d1 <- dim(val1)
+                if(length(d1)<3) dim(val1) <- c(1,d1); d1 <- dim(val1)
                 dim(val1) <- c(d1[1],prod(d1[2:length(d1)]))
                 start2 <- c(lon.w2[1],lat.w[1],time.w[1])
                 count2 <- c(length(lon.w2),length(lat.w),length(time.w))
                 val2 <- get.var.ncdf(ncid,param,start2,count2)##,collapse_degen=FALSE)
                 d2 <- dim(val2)
+                if(length(d2)<3) dim(val2) <- c(1,d2); d2 <- dim(val2)
                 dim(val2) <- c(d2[1],prod(d2[2:length(d2)]))
                 val <- rbind(val1,val2)
                 stopifnot((d1[2]==d2[2]) | (d1[3]==d2[3]))
@@ -860,6 +864,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
             ##dim(val) <- count
         }
     }
+    
     ## 
     ## Convert units
     iunit <- grep("unit",names(v1))
