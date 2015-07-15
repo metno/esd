@@ -131,7 +131,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else
-                       N <- length(select)
+      select <- select[select<=N]; N <- length(select)
   if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
   
   # set up results matrix and tables of diagnostics:
@@ -208,27 +208,28 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       rm("testGCM"); gc(reset=TRUE)
     }
 
+    #browser()
     # REB: 30.04.2014 - new lines...
     if (verbose) print("- - - > DS")
-    if (biascorrect) Z1 <- biasfix(Z1)
+    if (biascorrect) try(Z1 <- biasfix(Z1))
     ds1 <- try(DS(subset(y,it='djf'),Z1,eofs=eofs))
     if (inherits(ds1,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds1[[1]],con=flog)
     }
-    if (biascorrect) Z2 <- biasfix(Z2)
+    if (biascorrect) try(Z2 <- biasfix(Z2))
     ds2 <- try(DS(subset(y,it='mam'),Z2,eofs=eofs))
     if (inherits(ds2,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds2[[1]],con=flog)
     }
-    if (biascorrect) Z3 <- biasfix(Z3)
+    if (biascorrect) try(Z3 <- biasfix(Z3))
     ds3 <- try(DS(subset(y,it='jja'),Z3,eofs=eofs))
     if (inherits(ds3,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds3[[1]],con=flog)
     }
-    if (biascorrect) Z4 <- biasfix(Z4)
+    if (biascorrect) try(Z4 <- biasfix(Z4))
     ds4 <- try(DS(subset(y,it='son'),Z4,eofs=eofs))
     if (inherits(ds4,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
