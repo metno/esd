@@ -26,6 +26,7 @@ anomaly.default(x,...)
 anomaly.comb(x,...)
 anomaly.field(x,...)
 anomaly.station(x,...)
+anomaly.dsensemble(x,ref=NULL,...)
 anomaly.annual(x,ref=1961:1990)
 anomaly.month(x,ref=NULL)
 anomaly.season(x,ref=NULL) 
@@ -43,7 +44,12 @@ clim2pca.day(x)
   \item{x}{A station or field object}
   \item{ref}{vector defining the reference interval}
 }
-\value{The call returns a similar object as x}
+\value{The call returns a similar object as x containing anomalies and
+  data climatology.
+
+In `anomaly.dsensemble', the default value of the reference period is
+taken as the available time period from observations, i.e. same time
+period as in attribute `station' is used as baseperiod to compute anomalies of GCM downscaled results.}
 
 \seealso{
  \code{\link{as.anomaly}}, \code{\link{as.climatology}}

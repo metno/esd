@@ -120,22 +120,26 @@ anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
  ##    return(x)
  ##  }
   ## AM 21-05-2015 Alternative function as a quick fix 
-    clim.month <- function(x) {
+    clim.month <- function(x,t=NULL,ref=NULL,verbose=FALSE) {
+        ##
+        if (is.null(ref)) ref <- year(t)
+        x <- zoo(x,order.by=t)
         y.rng <- year(range(index(x)))
         full.date <- seq(as.Date(paste(y.rng[1],"01","01",sep="-")),
                          as.Date(paste(y.rng[2],"12","31",sep="-")),
                          by="month")
         z <- zoo(NA,order.by=full.date)
         z <- merge(z,x)[,2] # expand to cover full dates
-        z <- subset(z,it=index(x)) # extract the base period
+        z <- subset(z,it=ref) # extract the base period
         X <- coredata(z) ; dim(X)<- c(12,length(X)/12)
         clim <- rowMeans(X,na.rm=TRUE)  ; rm("X")
         names(clim) <- month.abb
         return(clim)
     }
     
-    anomaly.month1 <- function(x,t=NULL,ref=NULL) {
-        ##browser()
+    anomaly.month1 <- function(x,t=NULL,ref=NULL,verbose=FALSE) {
+        if (verbose) print('anomaly.month1')
+        ## 
         if (is.null(ref)) ref <- year(t)
         x <- zoo(x,order.by=t)
         yr.ref <- seq(range(ref)[1],range(ref)[2],by=1)
@@ -151,21 +155,24 @@ anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
         ## z <- subset(z,it=ref) # extract the base period
         ## X <- coredata(z) ; dim(X)<- c(12,length(X)/12)
         ## clim <- rowMeans(X,na.rm=TRUE)  ; rm("X")
-        x <- x - clim(x)[month(x)]
+        clim <- clim.month(x,t=index(x),ref=ref)
+        x <- x - clim[month(x)]
         ##attr(x,'climatology') <- clim
         invisible(x)
     }
-    ##browser()
+    ##
     X <- x
     if (verbose) print('anomaly.month')
     t <- index(x); yr <- year(x)
     
     if (is.null(dim(x))) {
-        Y <- anomaly.month1(x,t=t,ref=ref)
-        Yc <- clim.month(x)
+         Yc <- clim.month(x,t=t,ref=ref)
+         Y <- X-Yc[month(x)] ##anomaly.month1(x,t=t,ref=ref)
+       
     } else {
-        Y <- apply(coredata(x),2,FUN='anomaly.month1',t=t,ref=ref)
         Yc <- apply(coredata(x),2,FUN='clim.month',t=t,ref=ref)
+        Y <- X-Yc[month(x),] ## apply(coredata(x),2,FUN='anomaly.month1',t=t,ref=ref)
+        
     }
     
     y <- Y
@@ -214,10 +221,10 @@ anomaly.season <- function(x,ref=NULL,verbose=FALSE) {
   }
   x <- zoo(y,order.by=t)
   x <- attrcp(X,x)
-  #nattr <- softattr(X)
-  #for (i in 1:length(nattr))
-  #  attr(x,nattr[i]) <- attr(X,nattr[i])
-  #browser()
+  ## nattr <- softattr(X)
+  ## for (i in 1:length(nattr))
+  ##  attr(x,nattr[i]) <- attr(X,nattr[i])
+  ##
   attr(x,'climatology') <- clim
   attr(x,'aspect') <- 'anomaly'
   class(x) <- class(X)

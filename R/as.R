@@ -907,13 +907,18 @@ as.anomaly.field<- function(x,ref=NULL,na.rm=TRUE) {
 
 # Handy conversion algorithms:
 as.climatology <- function(x,...) {
-  ya <- as.anomaly(x)
-  clim <- coredata(attr(ya,'climatology'))
-  y <- zoo(clim,order.by=1:length(clim))
-  y <- attrcp(x,y)
-  attr(y,'history') <- history.stamp(x)
-  class(y) <- class(x)
-  invisible(y)
+    ya <- as.anomaly(x,...)
+    clim <- coredata(attr(ya,'climatology'))
+    if (!is.null(dim(clim)))
+        len.clim <- dim(clim)[1]
+    else
+        len.clim <- length(clim)
+    y <- zoo(clim,order.by=1:len.clim)      
+    y <- attrcp(x,y)
+    attr(y,'aspect') <- 'climatology'
+    attr(y,'history') <- history.stamp(x)
+    class(y) <- class(x)
+    invisible(y)
 }
 
 as.residual <- function(x) UseMethod("as.residual")
