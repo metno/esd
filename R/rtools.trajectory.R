@@ -25,8 +25,8 @@ param.trajectory <- function(x,param=NULL,FUN='mean') {
     }
   }
   if (!is.null(FUN) & !is.na(FUN)) {
-    if(FUN=='first') FUN <- function(x) x[1]
-    if (param=='lon') FUN <- fnlon(FUN)
+    if (FUN=='first') FUN <- function(x) x[1] else
+    if (FUN!='first' & param=='lon') FUN <- fnlon(FUN)
   }
   y <- x[,colnames(x)==param]
   if (sum(colnames(x)==param)>1) {
