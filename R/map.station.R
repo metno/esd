@@ -55,6 +55,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     if (!is.null(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
     
+    if (verbose) print(projection)
+    
     if (projection=="sphere")
         sphere(x,lonR=lonR,latR=latR,axiR=axiR,
                    gridlines=gridlines,
@@ -71,7 +73,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
     ##                     type=type,gridlines=gridlines,...)
     else if (projection=="lonlat") {
-        ## 
+        ##
         data("geoborders", envir = environment())
         if (zexpr == "alt") 
             zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
@@ -101,6 +103,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if (is.null(attr(ss,"element")))
             ss$element <-apply(as.matrix(ss$variable),1,esd2ele)   
 
+        if (verbose) str(ss)
+        
         if (!is.null(unlist(is))) { ## highlight a subset of station
             
             if (is.null(is$x)) {
@@ -135,8 +139,11 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         
         tte <- "rwb"
 
-        if (is.null(cex))
-            cex <- 5/log(dim(ss)[1])
+        ## An attempt to set the size of the symbols automatically,
+        ## but this fails if ss is a list.
+        if ( (is.null(cex)) & !is.null(dim(ss)) )
+            cex <- 5/log(dim(ss)[1]) else
+            cex <- 5/log(length(ss[[1]]))
         
         ## Select a subdomain in the x-axis
         if (is.null(xlim))

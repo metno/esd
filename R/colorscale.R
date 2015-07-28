@@ -179,8 +179,8 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
     if (is.null(alpha)) col <- rgb(b,g,r)  else
                         col <- rgb(r,g,b,alpha)
-  } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
-             (col[1]=="f[w]") | (col[1]=="tp")) {
+  } else if ( (col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
+              (col[1]=="f[w]") | (col[1]=="tp") | (col[1]=='rr') | (col[1]=='prate') ) {
     r <- approx(seNorgeP[1,],n=n)$y/255
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255
