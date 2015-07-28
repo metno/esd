@@ -243,6 +243,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if(is.null(colbar$pos)) pos <- 0.05
     ## 
     ##fig0 <- par0$fig
+        if (is.null(colbar$show)) colbar$show <- TRUE ## quick fix REB
         if (!is.null(FUN) & (!is.null(colbar)) & colbar$show) {
             if (showaxis) fig0[3] <- par0$fig[3] + colbar$pos
             ## (par0$fig[4]-par0$fig[3])/150 ##0.075
