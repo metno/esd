@@ -26,19 +26,20 @@ y.0 <- zoo(X[,1])
 ## Do the PCA
 pca <- PCA(X,n=4,verbose=TRUE)
 
-#3 Extract one PC for probing
-pc.1 <- zoo(pca[,1])
 
 ## Do the downscaling with reduced ensemble:
-zpca <- DSensemble.pca(pca,biascorrect=TRUE,select=1:2,verbose=TRUE)
-zobs <- DSensemble.pca(subset(Tx,is=1),biascorrect=TRUE,select=1:2,verbose=TRUE)
+zpca <- DSensemble.pca(pca,biascorrect=TRUE,select=1:10,verbose=TRUE)
+zobs <- DSensemble.t2m(subset(Tx,is=1),biascorrect=TRUE,select=1:10,verbose=TRUE)
 
-zpc1 <- zpca[[2]]
-zpc.1 <-  zoo(zpca1[,1])
-lines(zpca.1,col='red',lwd=2)
-plot(pc.1,lwd=3,xlim=range(index(zpc.1)),
-     ylim=range(c(coredata(zpca.1),coredata(pc.1)),na.rm=TRUE))
+## Extract one PC for probing
+plot(zoo(pca[,1]),lwd=3,col='grey')
+lines(zoo(zpca[[2]][,1]),lwd=2)
 
-zpc1 <- zpca[[3]]
-zpc.1 <-  zoo(zpca1[,1])
-lines(zpca.1,col='blue',lty=2)
+zpc1 <- zoo(zpca[[12]])
+plot(zpc1,lwd=3,xlim=range(index(zpc1)),
+     ylim=range(c(coredata(zpc1),coredata(zobs)),na.rm=TRUE))
+
+z <- zoo(zobs)
+lines(z,col='blue',lty=2)
+
+lines(zoo(subset(Tx,is=1)))
