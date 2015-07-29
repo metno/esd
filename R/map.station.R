@@ -142,9 +142,11 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ## An attempt to set the size of the symbols automatically,
         ## but this fails if ss is a list.
 
+        nok <- apply(coredata(x),2,FUN='nv')
         if ( (is.null(cex)) & !is.null(dim(ss)) )
             cex <- 5/log(dim(ss)[1]) else
-            if (is.null(cex)) cex <- 5/log(length(ss[[1]]))
+            if (is.null(cex)) cex <- 5/log(length(ss[[1]])) else
+            if (cex==0) cex <- 1.25*nok/max(nok,na.rm=TRUE)
         
         ## Select a subdomain in the x-axis
         if (is.null(xlim))
