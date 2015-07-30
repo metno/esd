@@ -958,6 +958,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     
   }
   
+  sd.noise <- max(attr(ys,'standard.error'),sd(wc.model$residuals))
   for (i in 1:N) {
     #
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,
@@ -970,10 +971,11 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       i2 <- is.element(years,year(z))
       prex <- data.frame(x=coredata(z[i1]))
       X[i,i2] <- predict(wc.model, newdata=prex) +
-        rnorm(n=sum(i1),sd=max(attr(ys,'standard.error'))) 
-      if (plot) lines(years,X[i,i2],col=rgb(0,0.3,0.6,0.2))
-      print(paste("i=",i,"GCM=",gcmnm[i]))
-    }
+        rnorm(n=sum(i1),sd=sd.noise)
+      print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
+      #if (sum(i2) != length(years)) browser()
+     if (plot) lines(years[i2],X[i,i2],col=rgb(0,0.3,0.6,0.2))
+     }
   if (plot) lines(aggregate(y,by=year,FUN='wetmean'),col='red',lwd=3)
   
   X <- zoo(t(X),order.by=years)
