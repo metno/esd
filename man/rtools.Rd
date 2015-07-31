@@ -10,6 +10,8 @@
 \alias{filt}
 \alias{filt.default}
 \alias{exit}
+\alias{figlab}
+
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -35,6 +37,7 @@ lag.field(x,...)
 exit()
 filt(x,...)
 filt.default(x,n,type='ma',lowpass=TRUE)
+figlab(x,xpos=0.001,ypos=0.001)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -59,6 +62,8 @@ filt.default(x,n,type='ma',lowpass=TRUE)
   of the linear trend.
 
   'exit' is a handy function for exiting the R session without saving.
+
+  'figlab' is a handy function for labelling figures (e.g. 'Figure 1')
 }
 \value{
  \item{as.decimal }{Decimal value}
