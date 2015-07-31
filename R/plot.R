@@ -10,14 +10,14 @@ plot.station <- function(x,plot.type="single",new=TRUE,
       fig=c(0,1,0.05,0.95))
 
   if (is.null(ylim))
-      ylim=pretty(x)
+      ylim=pretty(as.numeric(x))
   unit <- attr(x,'unit')[1]
   for (i in 1:length(unit)) {
     if ( (is.na(unit[i]) | is.null(unit[i])) ) unit[i] <- " "
     if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))
          unit[i] <- 'degree*C'
   }
- 
+  
   if (plot.type=="single") {
       if (is.null(ylab))
           ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
