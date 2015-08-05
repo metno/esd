@@ -72,11 +72,14 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                         # default with no arguments will produce a map showing the station data in the esd package.
 
                                         #  image(lon(x),lat(x),x)
+    if (verbose) print('map.matrix')
+    if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
     if (inherits(x,'zoo')) attr(x,'time') <- range(index(x)) 
-    if (projection=="lonlat") lonlatprojection(x=x,new=new,...)  else
-    if (projection=="sphere") map2sphere(x=x,new=new,...) else
-    if (projection=="np") map2sphere(x,new=new,...) else
-    if (projection=="sp") map2sphere(x,new=new,...)
+    if (projection=="lonlat") lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+                                               type=type,gridlines=gridlines,verbose=verbose,...)  else
+    if (projection=="sphere") map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,verbose=verbose,...) else
+    if (projection=="np") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,verbose=verbose,...) else
+    if (projection=="sp") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,verbose=verbose,...)
     
                                         #map.station(NULL,...)
 }
@@ -89,6 +92,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       type=c("fill","contour"),gridlines=FALSE,
                       lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
     if (verbose) print('map.array')
+    if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
     if (is.null(it)) {
         ## If it is NULL, then aggregate all of 3rd dimension
         D <- dim(x)
@@ -110,7 +114,8 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(z,'variable') <- varid(x)
     attr(z,'unit') <- unit(x)[1]
 
-    map(z,new=new,projection=projection,colbar=colbar,verbose=verbose,...)
+    map(z,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+        type=type,gridlines=gridlines,projection=projection,verbose=verbose,...)
 }
 
 
