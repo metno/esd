@@ -8,9 +8,13 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   #print('plot.station')
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
       fig=c(0,1,0.05,0.95))
+  ## browser()
+  ## if (is.null(ylim))
+  ##     if (is.null(dim(x)))
+  ##         ylim <- pretty(x)
+  ##     else              
+  ##         ylim <- apply(x,2,pretty,n=5)
 
-  if (is.null(ylim))
-      ylim=pretty(x)
   unit <- attr(x,'unit')[1]
   for (i in 1:length(unit)) {
     if ( (is.na(unit[i]) | is.null(unit[i])) ) unit[i] <- " "
