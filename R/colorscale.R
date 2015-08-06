@@ -66,6 +66,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev)       
     
     if (is.null(colbar$pal)) {
+        if (is.null(FUN) | !is.precip(x)) colbar$pal <- 't2m' else
         if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
                                (FUN=='wetmean') | (FUN=='mean')) ) {
             colbar$pal <- 'precip'
@@ -101,7 +102,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     points(g,col="green")
   }
 
-  if (verbose) print(paste('colscal',col))
+  if (verbose) print(paste('colscal:',col))
   if (is.null(col)) col <- 't2m'
   # Set up colour-palette
   col <- tolower(col)
@@ -179,8 +180,8 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
     if (is.null(alpha)) col <- rgb(b,g,r)  else
                         col <- rgb(r,g,b,alpha)
-  } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
-             (col[1]=="f[w]") | (col[1]=="tp")) {
+  } else if ( (col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
+              (col[1]=="f[w]") | (col[1]=="tp") | (col[1]=='rr') | (col[1]=='prate') ) {
     r <- approx(seNorgeP[1,],n=n)$y/255
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255

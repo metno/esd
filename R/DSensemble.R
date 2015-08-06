@@ -41,7 +41,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            area.mean.expl=FALSE,type='ncdf',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),
                            select=NULL,FUN="mean",FUNX="mean",
-                           pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL) {
+                           pattern="tas_Amon_ens_",verbose=FALSE,
+                           path.ds=NULL,file.ds="DSensemble.rda",nmin=NULL) {
 
 
   
@@ -372,7 +373,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (area.mean.expl) attr(X,'area.mean.expl') <- TRUE else
                       attr(X,'area.mean.expl') <- FALSE
   class(X) <- c("dsensemble","zoo")
-  save(file="DSensemble.rda",X)
+  if (!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
+  save(file=file.ds,X)#"DSensemble.rda",X)
   print("---")
   invisible(X)
 } 
@@ -958,6 +960,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     
   }
   
+  sd.noise <- max(attr(ys,'standard.error'),sd(wc.model$residuals))
   for (i in 1:N) {
     #
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,
@@ -970,10 +973,11 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       i2 <- is.element(years,year(z))
       prex <- data.frame(x=coredata(z[i1]))
       X[i,i2] <- predict(wc.model, newdata=prex) +
-        rnorm(n=sum(i1),sd=max(attr(ys,'standard.error'))) 
-      if (plot) lines(years,X[i,i2],col=rgb(0,0.3,0.6,0.2))
-      print(paste("i=",i,"GCM=",gcmnm[i]))
-    }
+        rnorm(n=sum(i1),sd=sd.noise)
+      print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
+      #if (sum(i2) != length(years)) browser()
+     if (plot) lines(years[i2],X[i,i2],col=rgb(0,0.3,0.6,0.2))
+     }
   if (plot) lines(aggregate(y,by=year,FUN='wetmean'),col='red',lwd=3)
   
   X <- zoo(t(X),order.by=years)
@@ -1000,7 +1004,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
                           select=NULL,FUN="mean",rmtrend=TRUE,
                           FUNX="mean",threshold=1,type='ncdf',
-                          pattern="tas_Amon_ens_",verbose=FALSE,nmin=nmin) {
+                          pattern="tas_Amon_ens_",verbose=FALSE,
+                          file.ds="DSensemble.rda",path.ds=NULL,nmin=nmin) {
 
   if (verbose) print('DSensemble.pca')
   cls <- class(y)
@@ -1045,6 +1050,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   } else if (inherits(y,'month')) {
     T2M <- matchdate(t2m,y)
   }
+  if (inherits(T2M,"eof")) T2M <- as.field(T2M)
   
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
@@ -1072,7 +1078,10 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
 
   flog <- file("DSensemble.pca-log.txt","at")
-
+  
+  ## Set up a list environment to keep all the results
+  Q <- list(info='DSensemble.pca',pca=y)
+  
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
@@ -1096,7 +1105,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM))
 
-        # The test lines are included to assess for non-stationarity
+    ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
       testGCM <- subset(GCM,it=range(year(T2M))) # REB 29.04.2014
       testy <- as.station(regrid(testGCM,is=y))  # REB 29.04.2014
@@ -1109,8 +1118,18 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (biascorrect) Z <- biasfix(Z)
     ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
     if (verbose) print("post-processing")
-    z <- attr(ds,'appendix.1')
 
+    ## Keep the results for the projections:
+    if (verbose) print('Extract the downscaled projection')
+    z <- attr(ds,'appendix.1')
+    cl <- paste('Q$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
+    eval(parse(text=cl))
+
+    if (verbose) {
+        print('Test to see if as.station has all information needed')
+        test.stations <- as.station(z)
+    }
+    
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
         if (verbose) print('non.stationarity.check')
@@ -1128,7 +1147,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (verbose) print(paste('i=',i,gcmnm[i],'data points',
                              sum(i1),'=',sum(i2)))
     X[,i,i1] <- z[i2,]
-
+    
     # Diagnose the residual: ACF, pdf, trend. These will together with the
     # cross-validation and the common EOF diagnostics provide a set of
     # quality indicators.
@@ -1200,47 +1219,36 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
             "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
                     round(quality)))
   }
-
+  
   if (verbose) print('Downscaling finished - need to convert PCAs to stations')
 
   ## Unpacking the information tangled up in GCMs, PCs and stations:
   ## Save GCM-wise in the form of PCAs
   gcmnm <- gsub('-','.',gcmnm)
   Y <- as.station(y)
-  Z <- list(info='DSensemble.pca')
-  if (verbose) print('Unscramble the results')
-  for (i in 1:N) {
-    z.pca <- zoo(t(X[,i,]),order.by=t)
-    z.pca <- attrcp(y,z.pca)
-    class(z.pca) <- class(y) 
-    class(z.pca) <- c("ds",cls)
-    attr(z.pca,'GCM') <- gcmnm[i]
-    cl <- paste('Z$i',i,'_',gcmnm[i],' <- z.pca',sep='')
-    eval(parse(text=cl))
-    if (verbose) print(paste(i,cl))
-  }
+
 
   ## Save the information station-wise 
-  if (verbose) print('Save the results station-wise')
-  x <- matrix(rep(NA,dim(X)[3]*dim(X)[2]),dim(X)[3],dim(X)[2])
-  ns <- length(loc(y))
-  if (verbose) print(loc(y))
-  for (i in 1:(ns)) {
-    x[,] <- NA
-    ## Loop over the GCMs and pick the selected downscaled station series:
-    for (j in 1:N){
-      x[,j] <- as.station(Z[[j+1]])[,i]
-    }
-    yloc <- tolower(loc(y)[i])
-    yloc <- gsub('-','.',yloc)
-    yloc <- gsub(' ','.',yloc)
-    yloc <- gsub('/','.',yloc)
-    if (verbose) {print(yloc); str(x)}
-    ds.x <- zoo(x,order.by=index(Z[[2]]))
-    attr(ds.x,'station') <- subset(Y,is=i)
-    class(ds.x) <- c('dsensemble','zoo')
-    eval(parse(text=paste('Z$',yloc,' <- ds.x',sep='')))
-  }
+#  if (verbose) print('Save the results station-wise')
+#  x <- matrix(rep(NA,dim(X)[3]*dim(X)[2]),dim(X)[3],dim(X)[2])
+#  ns <- length(loc(y))
+#  if (verbose) print(loc(y))
+#  for (i in 1:(ns)) {
+#    x[,] <- NA
+#    ## Loop over the GCMs and pick the selected downscaled station series:
+#    for (j in 1:N){
+#      x[,j] <- as.station(Z[[j+1]])[,i]
+#    }
+#    yloc <- tolower(loc(y)[i])
+#    yloc <- gsub('-','.',yloc)
+#    yloc <- gsub(' ','.',yloc)
+#    yloc <- gsub('/','.',yloc)
+#    if (verbose) {print(yloc); str(x)}
+#    ds.x <- zoo(x,order.by=index(Z[[2]]))
+#    attr(ds.x,'station') <- subset(Y,is=i)
+#    class(ds.x) <- c('dsensemble','zoo')
+#    eval(parse(text=paste('Z$',yloc,' <- ds.x',sep='')))
+#  }
 
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
@@ -1255,7 +1263,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     attr(Z,'on.stationarity.check') <- NULL
   attr(Z,'area.mean.expl') <- FALSE
 
-  save(file="DSensemble.rda",Z)
+  if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds) ## KMP 2015-08-05
+  save(file=file.ds,Z)
   if (verbose) print("---")
   invisible(Z)
 }

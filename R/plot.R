@@ -15,13 +15,18 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   ##     else              
   ##         ylim <- apply(x,2,pretty,n=5)
 
+##<<<<<<< HEAD
+##=======
+##  if (is.null(ylim))
+##      ylim <- pretty(as.numeric(x))
+##>>>>>>> d6d9c84656c9b9b73e711c2e7ee2c8d0fb230980
   unit <- attr(x,'unit')[1]
   for (i in 1:length(unit)) {
     if ( (is.na(unit[i]) | is.null(unit[i])) ) unit[i] <- " "
     if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))
          unit[i] <- 'degree*C'
   }
- 
+  
   if (plot.type=="single") {
       if (is.null(ylab))
           ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
@@ -613,7 +618,7 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
   map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,...)
   title(paste("PCA Pattern # ",pattern,sep=""))
-  par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
+  par(fig=c(0.55,0.975,0.5,0.975))
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
       colbar=colbar,verbose=verbose)
   title(paste("EOF Pattern # ",pattern,sep=""))

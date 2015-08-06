@@ -189,7 +189,11 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
 
 heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
                            verbose=FALSE,plot=TRUE,ylab=NULL,is=1,...) {
-  ## Use the 
+  ## Use the downscaled temperatures from ensembles to estimate the
+  ## mean length og heatwaves
+  ## Or use Warm Spell Duration Index (WSDI)?
+  ## http://www.clipc.eu/media/clipc/org/documents/Deliverables/clipc_del7%201_final.pdf
+  
   if (verbose) print('heatwaves')
   stopifnot(inherits(x,'station'))
   ## Annual number of consequtive warm days
@@ -359,4 +363,47 @@ nwetdays <- function(x,dse=NULL,threshold=10,
   class(Nwd) <- c('nevents','zoo')
   invisible(Nwd)
 }
-  
+
+## Catalog of potential impact and climate change indicators for CLIPC.
+## Tier-1; Tier-2; Tier-3.
+#    Arctic and Baltic Sea ice extent  (Tier-1)
+#    River flow change (Tier-2)
+#    Bathing water quality (Tier-1)
+#    100 years flood return level (Tier-2)
+#    Chlorophyll-a concentration (Tier-1)
+#    Water-limited crop yield (Tier-2)
+# Cold days (Tier-1)
+#    River flood occurrence (Tier-2)
+# Cold nights (Tier-1)
+#    River flow (Tier-2)
+# Cold spell duration index (Tier-1)
+#    Water scarcity (Tier-2)
+# Consecutive dry days (Tier-1)
+#    Water temperature (Tier-2)
+# Consecutive wet days (Tier-1)
+#    Water-limited crop productivity (Tier-2)
+# Diurnal temperature range (Tier-1)
+# Intensity of urban heat island with city size (Tier-2)
+# Frost days Heating degree-days (Tier-1)
+#    Mass balance of glaciers (Tier-2)
+# Rainfall Deciles (Tier-2)
+#    Sea level change (Tier-1)
+#    Reconnaissance Drought Index (Tier-2)
+#    Greenland ice sheet mass balance (Tier-1)
+# Growing Degree Days (Tier-2)
+#    Grow season length of vegetation (Tier-1)
+#    Chilling Units (Tier-2)
+#    Hazardous substances in marine organisms (Tier-1)
+#    Climatic favorability of tree species (Tier-2)
+# Heavy precipitation days (Tier-1)
+#    Distribution of marine species (Tier-2)
+#    Ice days (Tier-1)
+#    Freshwater biodiversity and water quality (Tier-2)
+#    Lake and river ice cover duration (Tier-1)
+#    Growing season for agriculture (Tier-2)
+#    Lake and river ice phenology (Tier-1)
+#    Land-cover extension below projected sea-level (Tier-2)
+#    Lake Ice extension (Tier-1)
+#    Moth Phenology Index (Tier-2)
+# Max 1 day precipitation (Tier-1)
+#    Coastal flood damage and adaptation costs (Tier-3)

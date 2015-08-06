@@ -248,6 +248,13 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     if (verbose) print("--- DS.station ---")
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
+
+    ## Used for extracting a subset of calendar months
+    if (!is.null(mon)) {
+      if (verbose) print(paste('mon=',mon))
+      if ( (is.numeric(mon)) | is.integer(mon) ) mon <- month.abb[mon]
+      if (inherits(y,'station')) y <- subset(y,it=mon)
+    }
     
      if ( (!inherits(y,'seasonalcycle')) & (inherits(X,'seasonalcycle')) ) {
                                         #print("HERE")

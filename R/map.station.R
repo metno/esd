@@ -55,6 +55,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     if (!is.null(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
     
+    if (verbose) print(projection)
+    
     if (projection=="sphere")
         sphere(x,lonR=lonR,latR=latR,axiR=axiR,
                    gridlines=gridlines,
@@ -71,7 +73,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
     ##                     type=type,gridlines=gridlines,...)
     else if (projection=="lonlat") {
-        ## 
+        ##
         data("geoborders", envir = environment())
         if (zexpr == "alt") 
             zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
@@ -101,6 +103,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if (is.null(attr(ss,"element")))
             ss$element <-apply(as.matrix(ss$variable),1,esd2ele)   
 
+        if (verbose) str(ss)
+        
         if (!is.null(unlist(is))) { ## highlight a subset of station
             
             if (is.null(is$x)) {
@@ -135,8 +139,19 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         
         tte <- "rwb"
 
+##<<<<<<< HEAD
         ##if (is.null(cex))
         ##    cex <- 5/log(dim(ss)[1])
+##=======
+        ## An attempt to set the size of the symbols automatically,
+        ## but this fails if ss is a list.
+
+        nok <- apply(coredata(x),2,FUN='nv')
+        if ( (is.null(cex)) & !is.null(dim(ss)) )
+            cex <- 5/log(dim(ss)[1]) else
+            if (is.null(cex)) cex <- 5/log(length(ss[[1]])) else
+            if (cex==0) cex <- 1.25*nok/max(nok,na.rm=TRUE)
+##>>>>>>> d6d9c84656c9b9b73e711c2e7ee2c8d0fb230980
         
         ## Select a subdomain in the x-axis
         if (is.null(xlim))
@@ -236,6 +251,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if(is.null(colbar$pos)) pos <- 0.05
     ## 
     ##fig0 <- par0$fig
+        if (is.null(colbar$show)) colbar$show <- TRUE ## quick fix REB
         if (!is.null(FUN) & (!is.null(colbar)) & colbar$show) {
             if (showaxis) fig0[3] <- par0$fig[3] + colbar$pos
             ## (par0$fig[4]-par0$fig[3])/150 ##0.075

@@ -1,5 +1,6 @@
 
-trajectory2field <- function(x,dt='month',dx=2,dy=2,n=150,it=NULL,is=NULL) {
+trajectory2field <- function(x,dt='month',dx=2,dy=2,n=150,
+                             it=NULL,is=NULL,verbose=FALSE) {
   stopifnot(is.trajectory(x))
   x <- subset(x,it=it,is=is)
   lons <- round(x[,colnames(x)=='lon']/dx)*dx
@@ -7,9 +8,10 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,n=150,it=NULL,is=NULL) {
   lats <- round(x[,colnames(x)=='lat']/dy)*dy
   lats <- seq(min(lats),max(lats),dy)
   dates <- as.Date(strptime(x[,colnames(x)=='start'],format='%Y%m%d%H'))
-  fn <- function(x,it=NULL) {
+  fn <- function(x,it=NULL,verbose=FALSE) {
     x <- subset(x,it=it)
     X <- array(rep(0,),dim=c(length(lons),length(lats)))
+    if(verbose)print(dim(x))
     if(!is.null(dim(x)) & length(x)>0) {
       A <- density.trajectory(x,dx=dx,dy=dy,n=n)
       lat <- A$lat
@@ -19,16 +21,18 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,n=150,it=NULL,is=NULL) {
         X[lons==lon[j],lats==lat[j]] <- den[j]	
       }
       dim(X) <- length(X)
+    } else {
+        if(verbose) print("no storms")
     }
     invisible(X)
   }
   if (grepl('month',dt)) {   
-    dvec <- seq(min(dates),max(dates),by='month')
+    dvec <- seq(min(as.Date(as.yearmon(dates))),max(dates),by='month')
     dall <- as.Date(as.yearmon(dates))
     X <- t(sapply(dvec,function(di) fn(x,it=(dall==di))))
     unit <- 'events/month/area'
   } else if (grepl('season',dt) | grepl('quarter',dt)) {
-    dvec <- seq(min(dates),max(dates),by='quarter')
+    dvec <- seq(min(as.Date(as.yearmon(dates))),max(dates),by='quarter')
     dall <- as.Date(as.yearqtr(dates))
     X <- t(sapply(dvec,function(di) fn(x,it=(dall==di))))
     unit <- 'events/quarter/area'
