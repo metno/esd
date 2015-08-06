@@ -493,6 +493,7 @@ export(q95)
 export(q995)
 export(cv)
 export(trend.coef)
+export(trend.err)
 export(trend.pval)
 
 export(coldwinterdays)

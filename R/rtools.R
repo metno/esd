@@ -45,6 +45,16 @@ trend.coef <- function(x,...) {
   return(y)
 }
 
+## Compute the linear trend
+trend.err <- function(x,...) {
+  t <- 1:length(x)
+  model <- lm(x ~ t)
+  y <- c(model$coefficients[4]*10)
+  names(y) <- c("trend.standard.error")
+  return(y)
+}
+
+
 ## Compute the p-value of the linear trend 
 trend.pval <- function(x,...) {
     t <- 1:length(x)
