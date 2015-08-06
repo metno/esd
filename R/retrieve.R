@@ -106,7 +106,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         dimnames[i] <- tolower(v1$dim[[i]]$name)
     ## Get lon, lat, lev, time attr and values and update values if necessary
     ## Longitudes
-    ilon <- grep("lon", dimnames)
+    ilon <- grep("lon|x", dimnames)
     if (length(ilon) ==0)
         ilon <- NULL
     else if (length(ilon)>1)
@@ -141,7 +141,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     }##else if (!(sum(id) > 0)) lon$vals <- lon$vals + 180
     
     ## Latitudes
-    ilat <- grep("lat", dimnames)
+    ilat <- grep("lat|y", dimnames)
     if (length(ilat) ==0)
         ilat <- NULL
     else if (length(ilat) > 1)
@@ -284,7 +284,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         ## lev$vals <- as.vector(lev$vals[lev.w])
         lev$len <- length(lev.w)
     }
-    ## 
+    ## browser()
     ## Extract values and add Scale Factor and offset if any
     if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
     if ((!is.null(ilon)) & (!is.null(itime))) {  
