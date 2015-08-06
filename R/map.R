@@ -85,7 +85,7 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
-                      projection="lonlat",
+                      projection="lonlat",na.rm=TRUE,
                       xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                       colbar=list(col=NULL,rev=FALSE,breaks=NULL,pos=0.05,
                           show=TRUE,type="r",cex=2,h=0.6,v=1),
@@ -98,8 +98,10 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
         D <- dim(x)
         x2d <- x
         dim(x2d) <- c(D[1]*D[2],D[3])
-        z <- apply(x2d,2,FUN,...)
+        z <- apply(x2d,1,FUN,na.rm=na.rm)
+        z <- as.matrix(z)
         dim(z) <- c(D[1],D[2])
+        str(z)
     } else  z <- x[,,it]
     d <- dim(z)
 

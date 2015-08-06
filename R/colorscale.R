@@ -66,6 +66,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev)       
     
     if (is.null(colbar$pal)) {
+        if (is.null(FUN) | !is.precip(x)) colbar$pal <- 't2m' else
         if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
                                (FUN=='wetmean') | (FUN=='mean')) ) {
             colbar$pal <- 'precip'
@@ -101,7 +102,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     points(g,col="green")
   }
 
-  if (verbose) print(paste('colscal',col))
+  if (verbose) print(paste('colscal:',col))
   if (is.null(col)) col <- 't2m'
   # Set up colour-palette
   col <- tolower(col)
