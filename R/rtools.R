@@ -49,7 +49,7 @@ trend.coef <- function(x,...) {
 trend.err <- function(x,...) {
   t <- 1:length(x)
   model <- lm(x ~ t)
-  y <- c(model$coefficients[4]*10)
+  y <- c(summary(model)$coefficients[4]*10)
   names(y) <- c("trend.standard.error")
   return(y)
 }
