@@ -135,8 +135,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         
         tte <- "rwb"
 
-        if (is.null(cex))
-            cex <- 5/log(dim(ss)[1])
+        ##if (is.null(cex))
+        ##    cex <- 5/log(dim(ss)[1])
         
         ## Select a subdomain in the x-axis
         if (is.null(xlim))
