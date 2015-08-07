@@ -392,20 +392,15 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) {print(projection); print(dim(x))}
     
     if (projection=="lonlat") lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-            colbar=colbar,type=type,new=new,
-            verbose=verbose,
-            gridlines=gridlines,...) else
+            colbar=colbar,type=type,new=new,verbose=verbose,gridlines=gridlines,...) else
     if (projection=="sphere") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-            lonR=lonR,latR=latR,axiR=axiR,
-            type=type,gridlines=gridlines,
+            lonR=lonR,latR=latR,axiR=axiR,type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...) else
     if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-            lonR=lonR,latR=90,axiR=axiR,
-            type=type,gridlines=gridlines,
+            lonR=lonR,latR=90,axiR=axiR,type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...) else
     if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-            lonR=lonR,latR=-90,axiR=axiR,
-            type=type,gridlines=gridlines,
+            lonR=lonR,latR=-90,axiR=axiR,type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...)
 
     if (!is.null(attr(x,'x.longitude')) & !is.null(attr(x,'x.latitude')))
@@ -603,7 +598,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) print('lonlatprojection')
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
-    print(formals(...))
+    #print(formals(...))
     ## If only a few items are provided in colbar - hen set the rest to the default
     ## browser()
     if (!is.null(colbar)) {
