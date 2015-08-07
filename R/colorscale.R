@@ -218,9 +218,14 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
   return(col)
 }
 
-colbar <- function(scale,col,fig=c(0.15,0.2,0.15,0.3)) {
-  par(xaxt="n",yaxt="s",fig=fig,mar=c(0,1,0,0),new=TRUE,las=1,cex.axis=0.6)
-  image(1:2,scale,rbind(scale,scale),col=col)
+colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE) {
+  if (horiz) {
+    par(xaxt="s",yaxt="n",fig=fig,mar=c(1,0,0,0),new=TRUE,las=1,cex.axis=0.6)
+    image(breaks,1:2,cbind(breaks,breaks),col=col)
+  } else {
+    par(xaxt="n",yaxt="s",fig=fig,mar=c(0,1,0,0),new=TRUE,las=1,cex.axis=0.6)
+    image(1:2,breaks,rbind(breaks,breaks),col=col)
+  }
 }
 
 col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,

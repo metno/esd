@@ -379,6 +379,9 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ## if (!is.null(colbar)) colbar$pal <- varid(x)[2] ## AM 08-07-2015 comment 
     attr(x,'variable') <- paste(varid(x),collapse='/')
     
+    #if (length(unit(x))>1) attr(x,'unit') <- paste(unit(x),collapse='/')
+    attr(x,'unit') <- unit(x)[1]
+    
     ## if zlim is specified, then mask data outside this range
     if (!is.null(zlim)) {
         if (verbose) print(zlim)
