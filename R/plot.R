@@ -614,14 +614,15 @@ plot.pca <- function(y,verbose=FALSE,...) {
 plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   if (verbose) print('plot.ds.pca')
   attr(y,'longname') <- attr(y,'longname')[1]
-#  par(fig=c(0,0.45,0.5,0.975),new=TRUE)
+  #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
   map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,...)
   title(paste("PCA Pattern # ",pattern,sep=""))
-  par(fig=c(0.55,0.975,0.5,0.975))
+  par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
-      colbar=colbar,verbose=verbose)
-  title(paste("EOF Pattern # ",pattern,sep=""))
+      colbar=colbar,verbose=verbose,
+      main=paste("EOF Pattern # ",pattern,sep=""))
+  #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     plot(attr(y,'evaluation')[,1],attr(y,'evaluation')[,2],
@@ -634,13 +635,17 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
     par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
-    plot(zoo(y[,pattern]),lwd=2,col='red',type='b')
-    lines(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
-    legend(x=index(zoo(y[,pattern]))[1],y=max(zoo(y[,pattern]),na.rm=TRUE),legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),lwd=c(2,2),pch=c(21,19),bty="n")
+    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,pattern])[1],
+           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,pattern]))/10,
+           legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
+           lwd=c(2,2),pch=c(21,19),bty="n")
   } else {
     par(fig=c(0.05,0.975,0.05,0.475),new=TRUE)
-    plot(zoo(y[,pattern]),lwd=2,col='red',type='b')
-    lines(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
     xvalfit <- NULL
   }
 }

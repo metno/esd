@@ -379,6 +379,9 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ## if (!is.null(colbar)) colbar$pal <- varid(x)[2] ## AM 08-07-2015 comment 
     attr(x,'variable') <- paste(varid(x),collapse='/')
     
+    #if (length(unit(x))>1) attr(x,'unit') <- paste(unit(x),collapse='/')
+    attr(x,'unit') <- unit(x)[1]
+    
     ## if zlim is specified, then mask data outside this range
     if (!is.null(zlim)) {
         if (verbose) print(zlim)
@@ -392,20 +395,15 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) {print(projection); print(dim(x))}
     
     if (projection=="lonlat") lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-            colbar=colbar,type=type,new=new,
-            verbose=verbose,
-            gridlines=gridlines,...) else
+            colbar=colbar,type=type,new=new,verbose=verbose,gridlines=gridlines,...) else
     if (projection=="sphere") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-            lonR=lonR,latR=latR,axiR=axiR,
-            type=type,gridlines=gridlines,
+            lonR=lonR,latR=latR,axiR=axiR,type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...) else
     if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-            lonR=lonR,latR=90,axiR=axiR,
-            type=type,gridlines=gridlines,
+            lonR=lonR,latR=90,axiR=axiR,type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...) else
     if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-            lonR=lonR,latR=-90,axiR=axiR,
-            type=type,gridlines=gridlines,
+            lonR=lonR,latR=-90,axiR=axiR,type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...)
 
     if (!is.null(attr(x,'x.longitude')) & !is.null(attr(x,'x.latitude')))
@@ -597,27 +595,30 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                  pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
-                             verbose=FALSE,geography=TRUE,fancy=FALSE,...) {
+                             verbose=FALSE,geography=TRUE,fancy=FALSE,
+                             main=NA,...) {
 
     if (verbose) print('lonlatprojection')
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
-    print(formals(...))
+    #print(formals(...))
     ## If only a few items are provided in colbar - hen set the rest to the default
     ## browser()
     if (!is.null(colbar)) {
         colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
     } else {
         if (verbose) print('colbar=NULL - set col etc')
-        n <- 25
-        breaks <- pretty(c(x),n=n)
-        if (verbose) print(breaks)
+        colbar$n <- 25
+        colbar$breaks <- pretty(c(x),n=colbar$n)
+        if (verbose) print(colbar$breaks)
         if (verbose) print(varid(x))
-        col <- colscal(n=length(breaks)-1,col=colid)
+        colbar$col <- colscal(n=length(colbar$breaks)-1,col=colid)
         ##  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
         if (colid=='precip') col <- rev(col)
+        colbar$show <- TRUE
+        colbar$pos <- 0.05
     }
-    
+ 
     ##    par0 <- par()                             # REB 2015-06-25 these lines open an
     ##    fig0 <- par()$fig                         # unused window.
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
@@ -643,7 +644,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ##    if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
     ##    if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
     ##   
-    ##    ## browser()
+    #browser()
     if (colbar$show) { ## AM 14-07-2015
         ##        fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
         fig0[3] <- fig0[3] + colbar$pos ## (fig0[4]-fig0[3])/200##0.05   # REB 2015-06-25
@@ -664,7 +665,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") |
         (tolower(variable)=="2t") )
         variable <- "T[2*m]"
-    main=eval(parse(text=paste('expression(',variable," *(",unit,"))",sep="")))
+    varlabel=eval(parse(text=paste('expression(',
+                variable," *(",unit,"))",sep="")))
     sub <- attr(x,'source')
     if (sum(is.element(type,'fill'))==0) colbar <- NULL
     
@@ -705,7 +707,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ##if (is.Date(type))
     
     ##if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
-    ## browser()     
+    ## browser()
+    
     if (new) {
         par(fig=fig0) 
         dev.new()
@@ -718,9 +721,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
         ## par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
     }
-    ##
+    
     plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
-         xlim=xlim,ylim=ylim,                # to sumerimpose.
+         xlim=xlim,ylim=ylim,main=main, # to sumerimpose.
          xaxt="n",yaxt="n") # AM 17.06.2015
     ##par0 <- par()
 
@@ -739,14 +742,14 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(xpd=FALSE)
     dlat <- diff(range(lat))/60
                                         #print(dlat)
-    text(lon[1],lat[length(lat)] + dlat,main,pos=4,font=2)
+    text(lon[1],lat[length(lat)] + dlat,varlabel,pos=4,font=2)
     text(lon[1],lat[1] - dlat,sub,col="grey30",pos=4,cex=0.7)
 
     if (!is.null(period))
         text(lon[length(lon)],lat[length(lat)] + dlat,period,pos=2,cex=0.7,col="grey30")
     if (!is.null(method))
         text(lon[length(lon)],lat[1] - 0.5*dlat,method,col="grey30",pos=2,cex=0.7)
-
+    
     if (!is.null(colbar)) {
         if (verbose) print('Add colourbar')
 
