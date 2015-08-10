@@ -54,7 +54,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",verbose=FALSE,...) 
     else print("No suitable ncdf or ncdf4 libraries found to read your file or data")
     
 }
- 
+
 ## Set retrieve for ncdf4 object
 retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
                             lon = NULL, lat = NULL, lev = NULL, it = NULL,
@@ -63,8 +63,8 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     
 { # Begin of function
     ## Update argument names for internal use only
-  require(ncdf4) # REB
-  
+    require(ncdf4) # REB
+    
     lon.rng  <- lon
     lat.rng  <- lat
     lev.rng  <- lev
@@ -82,7 +82,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     model <- ncatt_get(ncid,0)
     ## Get variable attributes in v1
     namevars <- names(ncid$var)
-        if (tolower(param) == "auto") {
+    if (tolower(param) == "auto") {
         if (ncid$nvars > 1) {
             i <- length(namevars)
             ## print(i)
@@ -226,6 +226,24 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         ## lat$vals <- as.vector(lat$vals[lat.w])
         lat$len <- length(lat.w)
     }
+
+    ## Single point extraction
+    one.cell <- FALSE
+    if ((length(lon.rng) == 1) & (length(lat.rng)==1)) {
+        lons <- rep(as.vector(lon$vals),length(lat$vals))
+        lats <- rep(as.vector(lat$vals),length(lon$vals))
+        
+        dmin <- distAB(lon=lon.rng,lat=lat.rng,lons=lons,lats=lats) 
+        id <- which(dmin==min(dmin,na.rm=TRUE))
+        lon.w <- which(lon$vals==lons[id])
+        lat.w <- which(lat$vals==lats[id])
+        if (verbose) {
+            print(paste("Single point extraction"))
+            print(paste("Selected nearest grid cell lon :",
+                        as.character(lon$vals[lon.w]),lon$unit,sep=" "))
+        }  
+        one.cell <- TRUE
+    }
     
     ## time extract range
     if (!is.null(itime)) {
@@ -264,8 +282,13 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     
     ## level extract range
     if (!is.null(ilev)) {
+        lev.rng <- as.integer(readline(paste("Warning: 'esd-package' cannot handle more than one pressure level, specify one level from the list and type 'Enter'",
+                                             paste(param,"(",
+                                                   paste(lev$val,collapse="/"),
+                                                   lev$levelUnit,")",sep=""))))
         if (!is.null(lev.rng)) {
-            if (length(lev.rng) > 2) stop("lev.rng should be in the form of c(z1,z2)")
+            if (length(lev.rng) > 2)
+                stop("lev.rng should be in the form of c(z1,z2)")
             if (length(lev.rng) == 1) {
                 lev.w <- which((lev$vals-lev.rng) == min(abs(lev$vals-lev.rng)))
                 if (verbose)
@@ -277,17 +300,30 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
                 lev.w <- which((lev$vals >= lev.rng[1]) &
                                (lev$vals <= lev.rng[length(lev.rng)]))
                 if (verbose)
-                    print(paste("Selected Levels:",paste(as.character(lev$vals[lev.w]),
-                                                         collapse="/"),lev$units,sep=" "))
+                    print(paste("Selected Levels:",
+                                paste(as.character(lev$vals[lev.w]),
+                                      collapse="/"),lev$units,sep=" "))
             }
-        } else lev.w <- rank(lev$vals)
+        } else lev.w <- seq(1,length(lev$vals),1)
         ## lev$vals <- as.vector(lev$vals[lev.w])
         lev$len <- length(lev.w)
     }
-    ## browser()
+    ##
     ## Extract values and add Scale Factor and offset if any
     if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
-    if ((!is.null(ilon)) & (!is.null(itime))) {  
+    if ((one.cell) & (!is.null(itime))) {
+        if (!is.null(ilev)) {
+            start1 <- c(lon.w,lat.w,lev.w[1],time.w[1])
+            count1 <- c(1,1,length(lev.w),length(time.w))
+            val <- get.var.ncdf(ncid,param,start1,count1)
+        } else {
+            start1 <- c(lon.w,lat.w,time.w[1])
+            count1 <- c(1,1,length(time.w))
+            val <- get.var.ncdf(ncid,param,start1,count1)
+        }
+        lon$vals <- lon$vals[lon.w]
+        lat$vals <- lat$vals[lat.w]
+    } else if ((!is.null(ilon)) & (!is.null(itime))) {  
         diff.lon.w <- diff(rank(lon$vals[lon.w]))
         id2 <- which(diff.lon.w!=1)
         if (!is.null(ilev)) {
@@ -329,6 +365,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
             } ## else lat.srt = seq(1,length(lat$vals),1)
             val <- val[lon.srt,lat.srt,,]
             dim(val) <- count
+            ##if (length(lev.w)==1) dim(val) <- count[-3]
         }
         else {
             if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich
@@ -387,7 +424,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
             units <- "hPa"
         }
         ## 
-        if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(val,na.rm=TRUE)<0.001)) {
+        if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(abs(val),na.rm=TRUE)<0.001)) {
             val <- val * (24*60*60) 
             units <- "mm/day"
         }
@@ -397,8 +434,8 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         val <- val * (24*60*60) 
         units <- "mm/day"
     }
-  
-  ## replace missval by NA
+    
+    ## replace missval by NA
     if (miss2na) {
         imissval <- grep("miss",names(v1))
         if (length(imissval)>0) {
@@ -421,21 +458,34 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     ## Create output and save attributes to the results # 
     ## 
     ## 
-  d <- dim(val)
-  if (verbose) {print("dimensions")
-                print(d)
-            }
-  
-    if (!is.null(ilev)) {
-        if (length(ilev)==1)
-            dim(val) <- c(d[ilon]*d[ilat],d[itime])
-        else if (length(ilev)>1)
-            {print("Error - Cannot handle more than one level (or heigth) - Please select one level to retrieve the data (e.g. lev=1)")}
+    d <- dim(val)
+    if (verbose) {
+        print("dimensions")
+        print(d)
     }
-    else dim(val) <- c(d[ilon]*d[ilat],d[itime])
+    ##
+    if (is.null(ilev) )
+        dim(val) <- c(d[ilon]*d[ilat],d[itime])
+    else {
+        if (length(lev.w)==1) {
+            dim(val) <- c(d[ilon]*d[ilat],d[itime]) ## AM 10.08.2015 Single level selection
+            d <- d[-ilev]
+        } else {
+            dim(val) <- c(d[ilon]*d[ilat]*d[ilev],d[itime])
+            print("Warning: 'esd-package' cannot handle more than one level (or heigth) - Please select one level to retrieve the data (e.g. lev=1000)")
+        }   
+    }
+        
     ## d <- dim(val)
     ##create a zoo object z
-    z <- zoo(x=t(val),order.by=time$vdate)
+    
+    if (one.cell) {
+        z <- zoo(x=val,order.by=time$vdate)  
+    } else {
+        ##create a zoo object z
+        z <- zoo(x=t(val),order.by=time$vdate)
+    }
+    ## z <- zoo(x=t(val),order.by=time$vdate)
     ## Add attributes to z
     if (!is.null(v1)) {
         attr(z,"variable") <- param
@@ -451,24 +501,24 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         attr(z,"latitude") <- lat$vals
     }
     if (!is.null(ilev)) {
-        attr(z,"level")        <- lev$vals
+        attr(z,"level")        <- lev$vals[lev.w]
         attr(z,"levelUnit")    <- lev$units
     }
     if (!is.null(itime)) {
         attr(z,"calendar") <- time$calendar
     }
     ## Add attributes
-    attr(z, "file")           <- ifelse(!is.null(model$filename),model$filename, NA)
-    attr(z, "title")          <- ifelse(!is.null(model$title), model$title, NA)
+    attr(z, "file")           <- model$filename
+    attr(z, "title")          <- model$title
     
     ##attr(z, "project_id")     <- ifelse(!is.null(model$project_id), model$project_id, NA)
-    attr(z, "source")         <- ifelse(!is.null(model$project_id), model$project_id, NA)
-    attr(z, "model_id")       <- ifelse(!is.null(model$model_id), model$model_id, NA)
-    attr(z, "experiment_id")  <- ifelse(!is.null(model$experiment_id),model$experiment_id, NA)
-    attr(z, "realization")    <- ifelse(!is.null(model$realization),model$realization,NA)
-    attr(z, 'timeunit')       <- ifelse(!is.null(model$frequency),model$frequency, NA)
+    attr(z, "source")         <- model$project_id
+    attr(z, "model_id")       <- model$model_id
+    attr(z, "experiment_id")  <- model$experiment_id
+    attr(z, "realization")    <- model$realization
+    attr(z, 'timeunit')       <- model$frequency
     attr(z, 'frequency')      <- 1
-    attr(z, 'type')           <- ifelse(!is.null(model$type),model$type, 'field')
+    attr(z, 'type')           <- model$type
     ## attr(z, "timestamp")      <- date()
     ## attr(z, "anomaly")        <- FALSE
     ## attr(z, "time:method")    <- NA
@@ -480,8 +530,10 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     attr(z, "institution")    <- NA 
     attr(z, "reference")      <- NA
     attr(z, "history")        <- history.stamp(z)
-    class(z)                  <- c("field",model$frequency,"zoo")
-    
+    if (!one.cell)
+        class(z) <- c("field",model$frequency,"zoo")
+    else
+        class(z) <- c("station",model$frequency,"zoo")
     ## plot the results
     if (plot) map(z,...)
     
@@ -519,13 +571,13 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     ## Read and put attributes in model
     ## model <- att.get.ncdf(ncid,0,"global")
     globalatt <- list('CDI','history','institution','Conventions','references',
-                   'institute_id','experiment_id','model_id','forcing',
-                   'parent_experiment_id','parent_experiment_rip','branch_time',
-                   'contact','initialization_method','physics_version',
-                   'tracking_id','version_number','product', 'experiment',
-                   'frequency','creation_date','project_id','table_id','title',
-                   'parent_experiment','modeling_realm','realization',
-                   'cmor_version','CDO','NCO')
+                      'institute_id','experiment_id','model_id','forcing',
+                      'parent_experiment_id','parent_experiment_rip','branch_time',
+                      'contact','initialization_method','physics_version',
+                      'tracking_id','version_number','product', 'experiment',
+                      'frequency','creation_date','project_id','table_id','title',
+                      'parent_experiment','modeling_realm','realization',
+                      'cmor_version','CDO','NCO')
     get.att.val <- function(x,nc) return(att.get.ncdf(nc,0,x)$value)
     model <- lapply(as.matrix(globalatt),get.att.val,nc=ncid)
     names(model) <- globalatt
@@ -673,7 +725,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
                 if (verbose)
                     print(paste("Single point extraction / Selected nearest grid cell lat :",
                                 as.character(lat$vals[lat.w]),lat$unit,sep=" "))
-                }
+            }
             if (length(lat.rng) == 2) { 
                 lat.w <- which((lat$vals >= lat.rng[1]) & (lat$vals <= lat.rng[length(lat.rng)]))
                 if (verbose)
@@ -742,7 +794,16 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     ## 
     ## level extract range
     if (!is.null(ilev)) {
-        if (!is.null(lev.rng)) {
+        if (is.null(lev.rng))
+            lev.rng <- as.integer(readline(paste("Warning: 'esd-package' cannot handle more than one pressure level, enter one level from the list and type 'Enter'",
+                                             paste(param,"(",
+                                                   paste(lev$val,collapse="/"),
+                                                   lev$levelUnit,")",sep=""))))
+        else {
+            if (length(lev.rng)>1)
+                lev.rng <- as.integer(readline(paste("Warning: 'esd-package' cannot handle more than one pressure level, enter one level from the list and type 'Enter'", paste(param,"(",paste(lev$val,collapse="/"),lev$levelUnit,")",sep=""))))
+        }
+            if (!is.null(lev.rng)) {
             if (length(lev.rng) > 2)
                 stop("lev.rng should be in the form of c(z1,z2)")
             if (length(lev.rng) == 1) {
@@ -752,15 +813,18 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
                                          lev$unit,sep=" "))
             }
             if (length(lev.rng) == 2) { 
-                lev.w <- which((lev$vals >= lev.rng[1]) & (lev$vals <= lev.rng[length(lev.rng)]))
-                if (verbose) print(paste("Selected Levels:",paste(as.character(lev$vals[lev.w]),
-                                                                  collapse="/"),lev$units,sep=" "))
+                lev.w <- which((lev$vals >= lev.rng[1]) &
+                               (lev$vals <= lev.rng[length(lev.rng)]))
+                if (verbose)
+                    print(paste("Selected Levels:",
+                                paste(as.character(lev$vals[lev.w]),
+                                      collapse="/"),lev$units,sep=" "))
             }
-        } else lev.w <- rank(lev$vals)
+        } else lev.w <- seq(1,length(lev$vals),by=1)
         ## lev$vals <- as.vector(lev$vals[lev.w])
         lev$len <- length(lev.w)
     }
-   
+    
     ##
     ## Extract values and add Scale Factor and offset if any
     if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
@@ -782,24 +846,31 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
         id2 <- which(diff.lon.w!=1)
         if (!is.null(ilev)) {
             if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich
-                count <- c(length(lon.w),length(lat.w),length(lev.w),length(time.w))
+                count <- c(length(lon.w),length(lat.w),length(lev.w),
+                           length(time.w))
                 lon.w1 <-lon.w[1:id2]
                 lon.w2 <- lon.w[(id2+1):length(lon.w)]
                 start1 <- c(lon.w1[1],lat.w[1],lev.w[1],time.w[1])
-                count1 <- c(length(lon.w1),length(lat.w),length(lev.w),length(time.w))
-                val1 <- get.var.ncdf(ncid,param,start1,count1)## ,collapse_degen=FALSE)
+                count1 <- c(length(lon.w1),length(lat.w),length(lev.w),
+                            length(time.w))
+                val1 <- get.var.ncdf(ncid,param,start1,count1)
+                ## ,collapse_degen=FALSE)
                 d1 <- dim(val1)
                 dim(val1) <- c(d1[1],prod(d1[2:length(d1)]))
                 start2 <- c(lon.w2[1],lat.w[1],lev.w[1],time.w[1])
-                count2 <- c(length(lon.w2),length(lat.w),length(lev.w),length(time.w))
-                val2 <- get.var.ncdf(ncid,param,start2,count2)##,collapse_degen=FALSE)
+                count2 <- c(length(lon.w2),length(lat.w),length(lev.w),
+                            length(time.w))
+                val2 <- get.var.ncdf(ncid,param,start2,count2)
+                ##,collapse_degen=FALSE)
                 d2 <- dim(val2)
                 dim(val2) <- c(d2[1],prod(d2[2:length(d2)]))
                 val <- rbind(val1,val2)
             } else {
                 start <- c(lon.w[1],lat.w[1],lev.w[1],time.w[1])
-                count <- c(length(lon.w),length(lat.w),length(lev.w),length(time.w))
-                val <- get.var.ncdf(ncid,param,start,count)##,collapse_degen=FALSE)
+                count <- c(length(lon.w),length(lat.w),length(lev.w),
+                           length(time.w))
+                val <- get.var.ncdf(ncid,param,start,count)
+                ##,collapse_degen=FALSE)
             }
             dim(val) <- count
             ## sort longitudes ...
@@ -880,7 +951,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
             units <- "hPa"
         }
         ## 
-        if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(val,na.rm=TRUE)<0.1)) {
+        if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(abs(val),na.rm=TRUE)<0.1)) {
             val <- val * (24*60*60) 
             units <- "mm"
         }
@@ -914,19 +985,24 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     ## Create output and save attributes to the results # 
     d <- dim(val)
     if (verbose) {print("dimensions")
-                print(d)
-            }
+                  print(d)
+              }
     ## 
-    
+    if (!is.null(ilev)) {
+        if (length(lev.w)==1) {## AM 10.08.2015 Single level selection
+            dim(val) <- c(d[ilon]*d[ilat],d[itime]) 
+            d <- d[-ilev]
+        } else {
+            dim(val) <- c(d[ilon]*d[ilat]*d[ilev],d[itime])
+            print("Warning : Cannot handle more than one level (or heigth) - Please select one level to retrieve the data (e.g. lev=1000)")
+        }   
+    } else
+        dim(val) <- c(d[ilon]*d[ilat],d[itime])
+
+    ##create a zoo object z
     if (one.cell) {
-        z <- zoo(x=val,order.by=time$vdate)
-        
+        z <- zoo(x=val,order.by=time$vdate)  
     } else {
-        if (length(ilev)==1)
-            dim(val) <- c(d[ilon]*d[ilat],d[itime])
-        else
-            dim(val) <- c(d[ilon]*d[ilat],d[ilev],d[itime])
-        ##create a zoo object z
         z <- zoo(x=t(val),order.by=time$vdate)
     }
     ## d <- dim(val)
@@ -1197,7 +1273,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     } else {
         if (verbose) print("Checking Calendar from time attribute --> [fail]")
         calendar.att <- NULL
-        print("Warning : Calendar attribute has not been found in the meta data")
+        print("Warning : Calendar attribute has not been found in the meta data and will be set automatically.")
     }
     ## Identifying starting and ending dates for the data if possible
     if (!is.null(torigin)) {
@@ -1263,10 +1339,10 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         } else  
 
 
-        if (verbose) {
-            print(time$vdate[1])
-            print(paste("Starting date : ",time$vdate[1],"Ending date : ",time$vdate[length(time$vdate)], sep = " "))
-        }
+            if (verbose) {
+                print(time$vdate[1])
+                print(paste("Starting date : ",time$vdate[1],"Ending date : ",time$vdate[length(time$vdate)], sep = " "))
+            }
     } else {
         if (verbose) print("warnings : Automatic detection of the calendar")
         calendar.detect <- "auto"
@@ -1361,9 +1437,6 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
 }
 
 
-
-
-
 check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FALSE - AM 22-10-2013 not used any more ! 
     ##
     ## Checking : Number of variables and select only one from the netcdf file, get variable attributes in v1. The user should decide between the list of variables
@@ -1398,13 +1471,13 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     ## Get global attributes in model, check and update
     model <- att.get.ncdf(ncid,0,"model")
     globalatt <- list('CDI','history','institution','Conventions','references',
-                   'institute_id','experiment_id','model_id','forcing',
-                   'parent_experiment_id','parent_experiment_rip','branch_time',
-                   'contact','initialization_method','physics_version',
-                   'tracking_id','version_number','product', 'experiment',
-                   'frequency','creation_date','project_id','table_id','title',
-                   'parent_experiment','modeling_realm','realization',
-                   'cmor_version','CDO','NCO')
+                      'institute_id','experiment_id','model_id','forcing',
+                      'parent_experiment_id','parent_experiment_rip','branch_time',
+                      'contact','initialization_method','physics_version',
+                      'tracking_id','version_number','product', 'experiment',
+                      'frequency','creation_date','project_id','table_id','title',
+                      'parent_experiment','modeling_realm','realization',
+                      'cmor_version','CDO','NCO')
     get.att.val <- function(x,nc) return(att.get.ncdf(nc,0,x)$value)
     model <- lapply(as.matrix(globalatt),get.att.val,nc=ncid)
     names(model) <- globalatt
@@ -1459,7 +1532,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         }
     }
     if (verbose)
-         print(paste("experiment_id : ",model$experiment_id))
+        print(paste("experiment_id : ",model$experiment_id))
     ## 
 
     ## Get title 
@@ -1473,7 +1546,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         model$type <- modelid[2] 
     }
     if (verbose)
-         print(paste("experiment_title : ",experiment.title))
+        print(paste("experiment_title : ",experiment.title))
     ## END CMIP3 MODEL NAMES UPDATE
     ##
     ## Checking : Time unit and origin
@@ -1671,11 +1744,11 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         } else  
 
 
-        if (verbose) {
-            print(time$vdate[1])
-            print(paste("Starting date : ",time$vdate[1],"Ending date : ",
-                        time$vdate[length(time$vdate)], sep = " "))
-        }
+            if (verbose) {
+                print(time$vdate[1])
+                print(paste("Starting date : ",time$vdate[1],"Ending date : ",
+                            time$vdate[length(time$vdate)], sep = " "))
+            }
     } else {
         if (verbose) print("warnings : Automatic detection of the calendar")
         calendar.detect <- "auto"
@@ -1698,7 +1771,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
             } else print("Warning : Monthly data are Mangeled") 
         } 
     }
- 
+    
     ## Checking the data / Extra checks / Automatic calendar detection / etc.
     ## Check 1 # Frequency
     ## 
