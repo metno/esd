@@ -64,7 +64,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
 { # Begin of function
     ## Update argument names for internal use only
     require(ncdf4) # REB
-    
+    browser()
     lon.rng  <- lon
     lat.rng  <- lat
     lev.rng  <- lev
@@ -182,6 +182,25 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     ## ()
     if (verbose) print(model$frequency)
     ## Subselect a spatial and a temporal domain
+    ##
+    ## Single point extraction
+    one.cell <- FALSE
+    if ((length(lon.rng) == 1) & (length(lat.rng)==1)) {
+        lons <- rep(as.vector(lon$vals),length(lat$vals))
+        lats <- rep(as.vector(lat$vals),length(lon$vals))
+        
+        dmin <- distAB(lon=lon.rng,lat=lat.rng,lons=lons,lats=lats) 
+        id <- which(dmin==min(dmin,na.rm=TRUE))
+        lon.w <- which(lon$vals==lons[id])
+        lat.w <- which(lat$vals==lats[id])
+        if (verbose) {
+            print(paste("Single point extraction"))
+            print(paste("Selected nearest grid cell lon :",
+                        as.character(lon$vals[lon.w]),lon$unit,sep=" "))
+        }  
+        one.cell <- TRUE
+    }
+
     ## longitude extract range
     if (!is.null(ilon)) {
         if (!is.null(lon.rng)) {
@@ -227,24 +246,6 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         lat$len <- length(lat.w)
     }
 
-    ## Single point extraction
-    one.cell <- FALSE
-    if ((length(lon.rng) == 1) & (length(lat.rng)==1)) {
-        lons <- rep(as.vector(lon$vals),length(lat$vals))
-        lats <- rep(as.vector(lat$vals),length(lon$vals))
-        
-        dmin <- distAB(lon=lon.rng,lat=lat.rng,lons=lons,lats=lats) 
-        id <- which(dmin==min(dmin,na.rm=TRUE))
-        lon.w <- which(lon$vals==lons[id])
-        lat.w <- which(lat$vals==lats[id])
-        if (verbose) {
-            print(paste("Single point extraction"))
-            print(paste("Selected nearest grid cell lon :",
-                        as.character(lon$vals[lon.w]),lon$unit,sep=" "))
-        }  
-        one.cell <- TRUE
-    }
-    
     ## time extract range
     if (!is.null(itime)) {
         if (!is.null(time.rng)) {
@@ -282,29 +283,34 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     
     ## level extract range
     if (!is.null(ilev)) {
-        lev.rng <- as.integer(readline(paste("Warning: 'esd-package' cannot handle more than one pressure level, specify one level from the list and type 'Enter'",
-                                             paste(param,"(",
-                                                   paste(lev$val,collapse="/"),
-                                                   lev$levelUnit,")",sep=""))))
-        if (!is.null(lev.rng)) {
-            if (length(lev.rng) > 2)
-                stop("lev.rng should be in the form of c(z1,z2)")
-            if (length(lev.rng) == 1) {
-                lev.w <- which((lev$vals-lev.rng) == min(abs(lev$vals-lev.rng)))
-                if (verbose)
-                    print(paste("Single level extraction:",
-                                as.character(lev$vals[lev.w]),
-                                lev$unit,sep=" "))
-            }
-            if (length(lev.rng) == 2) { 
-                lev.w <- which((lev$vals >= lev.rng[1]) &
-                               (lev$vals <= lev.rng[length(lev.rng)]))
-                if (verbose)
-                    print(paste("Selected Levels:",
-                                paste(as.character(lev$vals[lev.w]),
+        if (is.null(lev.rng)) {
+            lev.rng <- as.integer(readline(paste("Warning: 'esd-package' cannot handle more than one pressure level, specify one level from the list and type 'Enter'",
+                                                 paste(param,"(",
+                                                       paste(lev$val,collapse="/"),
+                                                       lev$levelUnit,")",sep=""))))
+            if (length(lev.rng)>1)
+                lev.rng <- as.integer(readline(paste("Warning: 'esd-package' cannot handle more than one pressure level, enter a single level value from the list and type 'Enter'",
+                                                     paste(param,"(",
+                                                           paste(lev$val,collapse="/"),
+                                                           lev$levelUnit,")",sep=""))))
+        }
+        if (length(lev.rng) > 2)
+            stop("lev.rng should be in the form of c(z1,z2)")
+        else if (length(lev.rng) == 1) {
+            lev.w <- which((lev$vals-lev.rng) == min(abs(lev$vals-lev.rng)))
+            if (verbose)
+                print(paste("Single level extraction:",
+                            as.character(lev$vals[lev.w]),
+                            lev$unit,sep=" "))
+        } else if (length(lev.rng) == 2) { 
+            lev.w <- which((lev$vals >= lev.rng[1]) &
+                           (lev$vals <= lev.rng[length(lev.rng)]))
+            if (verbose)
+                print(paste("Selected Levels:",
+                            paste(as.character(lev$vals[lev.w]),
                                       collapse="/"),lev$units,sep=" "))
-            }
-        } else lev.w <- seq(1,length(lev$vals),1)
+        } else
+            lev.w <- seq(1,length(lev$vals),1)
         ## lev$vals <- as.vector(lev$vals[lev.w])
         lev$len <- length(lev.w)
     }
@@ -313,13 +319,13 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
     if ((one.cell) & (!is.null(itime))) {
         if (!is.null(ilev)) {
-            start1 <- c(lon.w,lat.w,lev.w[1],time.w[1])
-            count1 <- c(1,1,length(lev.w),length(time.w))
-            val <- get.var.ncdf(ncid,param,start1,count1)
+            start <- c(lon.w,lat.w,lev.w[1],time.w[1])
+            count <- c(1,1,length(lev.w),length(time.w))
+            val <- ncvar_get(ncid,param,start,count)
         } else {
-            start1 <- c(lon.w,lat.w,time.w[1])
-            count1 <- c(1,1,length(time.w))
-            val <- get.var.ncdf(ncid,param,start1,count1)
+            start <- c(lon.w,lat.w,time.w[1])
+            count <- c(1,1,length(time.w))
+            val <- ncvar_get(ncid,param,start,count)
         }
         lon$vals <- lon$vals[lon.w]
         lat$vals <- lat$vals[lat.w]
@@ -463,19 +469,20 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         print("dimensions")
         print(d)
     }
-    ##
-    if (is.null(ilev) )
-        dim(val) <- c(d[ilon]*d[ilat],d[itime])
-    else {
-        if (length(lev.w)==1) {
-            dim(val) <- c(d[ilon]*d[ilat],d[itime]) ## AM 10.08.2015 Single level selection
-            d <- d[-ilev]
-        } else {
-            dim(val) <- c(d[ilon]*d[ilat]*d[ilev],d[itime])
-            print("Warning: 'esd-package' cannot handle more than one level (or heigth) - Please select one level to retrieve the data (e.g. lev=1000)")
-        }   
+    ##    
+    if (!one.cell) {
+        if (is.null(ilev))
+            dim(val) <- c(d[ilon]*d[ilat],d[itime])
+        else {
+            if (length(lev.w)==1) {
+                dim(val) <- c(d[ilon]*d[ilat],d[itime]) ## AM 10.08.2015 Single level selection
+                d <- d[-ilev]
+            } else {
+                dim(val) <- c(d[ilon]*d[ilat]*d[ilev],d[itime])
+                print("Warning: 'esd-package' cannot handle more than one level (or heigth) - Please select one level to retrieve the data (e.g. lev=1000)")
+            }   
+        }
     }
-        
     ## d <- dim(val)
     ##create a zoo object z
     
@@ -530,10 +537,12 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     attr(z, "institution")    <- NA 
     attr(z, "reference")      <- NA
     attr(z, "history")        <- history.stamp(z)
-    if (!one.cell)
-        class(z) <- c("field",model$frequency,"zoo")
-    else
+    if (one.cell) {
         class(z) <- c("station",model$frequency,"zoo")
+        attr(z,'location') <- 'Grid cell'
+    } else 
+        class(z) <- c("field",model$frequency,"zoo")
+
     ## plot the results
     if (plot) map(z,...)
     
@@ -587,14 +596,11 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     namevars <- names(ncid$var)
     if (tolower(param) == "auto") {
         if (ncid$nvars > 1) {
-            i <- grep(param, names(ncid$var))
-            if (length(i) == 0)
-                i <- as.integer(readline(paste("Choose variable ",
-                                               paste(namevars,collapse="/") ,
-                                               "(from 1 - ",length(namevars), "): ",
-                                               sep = "")))
-            if (!is.integer(i))
-                stop("You should introduce an integer value and at least select one variable") 
+            i <- length(namevars)
+            ## print(i)
+            ##i <- grep(param, names(ncid$var))
+            ##if (length(i) == 0) i <- as.integer(readline(paste("Choose variable ",paste(namevars,collapse="/") ,"(from 1 - ",length(namevars), "): ",sep = "")))
+            ##if (!is.integer(i)) stop("You should introduce an integer value and at least select one variable") i <- grep(param, names(ncid$var))
         } else i <- 1
         param <- names(ncid$var)[i] # ; rm(i)
         v1 <- ncid$var[[i]] 
@@ -803,7 +809,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
             if (length(lev.rng)>1)
                 lev.rng <- as.integer(readline(paste("Warning: 'esd-package' cannot handle more than one pressure level, enter one level from the list and type 'Enter'", paste(param,"(",paste(lev$val,collapse="/"),lev$levelUnit,")",sep=""))))
         }
-            if (!is.null(lev.rng)) {
+        if (!is.null(lev.rng)) {
             if (length(lev.rng) > 2)
                 stop("lev.rng should be in the form of c(z1,z2)")
             if (length(lev.rng) == 1) {
@@ -987,18 +993,21 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     if (verbose) {print("dimensions")
                   print(d)
               }
-    ## 
-    if (!is.null(ilev)) {
-        if (length(lev.w)==1) {## AM 10.08.2015 Single level selection
-            dim(val) <- c(d[ilon]*d[ilat],d[itime]) 
-            d <- d[-ilev]
-        } else {
-            dim(val) <- c(d[ilon]*d[ilat]*d[ilev],d[itime])
-            print("Warning : Cannot handle more than one level (or heigth) - Please select one level to retrieve the data (e.g. lev=1000)")
-        }   
-    } else
-        dim(val) <- c(d[ilon]*d[ilat],d[itime])
-
+    ## Convert into 1D or 2D object
+    if (!one.cell) {
+        if (is.null(ilev))
+            dim(val) <- c(d[ilon]*d[ilat],d[itime])
+        else {
+            if (length(lev.w)==1) {
+                dim(val) <- c(d[ilon]*d[ilat],d[itime]) ## AM 10.08.2015 Single level selection
+                d <- d[-ilev]
+            } else {
+                dim(val) <- c(d[ilon]*d[ilat]*d[ilev],d[itime])
+                print("Warning: 'esd-package' cannot handle more than one level (or heigth) - Please select one level to retrieve the data (e.g. lev=1000)")
+            }   
+        }
+    }
+    
     ##create a zoo object z
     if (one.cell) {
         z <- zoo(x=val,order.by=time$vdate)  
@@ -1052,9 +1061,10 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     attr(z, "reference")      <- NA
     attr(z, "history")        <- history.stamp(z)
 
-    if (one.cell)
+    if (one.cell) {
         class(z) <- c("station",model$frequency,"zoo")
-    else 
+        attr(z,'location') <- 'Grid cell'
+    } else 
         class(z) <- c("field",model$frequency,"zoo")
     
     ## plot the results
