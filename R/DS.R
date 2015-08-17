@@ -426,7 +426,7 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
         Y <- zoo(z,order.by=index(Z))
         Y <- attrcp(Z,Y)
 
-                                        # Store in a similar structure as in the common EOF:
+        # Store in a similar structure as in the common EOF:
         eval(parse(text=paste("attr(ds,'appendix.",i,"') <- Y",sep="")))
     }
     rm("X0"); gc(reset=TRUE)

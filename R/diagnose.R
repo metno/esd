@@ -405,8 +405,8 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   N <- sum(i1,na.rm=TRUE)
   ## browser()
   if (plot) {
-    x <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
-    y <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),sd=sd(deltagcm))),2)
+    x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),sd=sd(deltagcm))),2)
+    y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
     #print(c(x,y))
     
     par(bty="n",xaxt="n",yaxt="n")
