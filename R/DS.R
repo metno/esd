@@ -264,12 +264,12 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     
     if ( (!inherits(X,'eof')) & (inherits(X,'field')) ) {
                                         #print("HERE")
-        ds <- DS.field(y=y,X=X,biascorrect=biascorrect,mon=mon,
-                       method=method,swsm=swsm,m=m,
-                       rmtrend=rmtrend,eofs=eofs,
-                       area.mean.expl=area.mean.expl,verbose=verbose,
-                       weighted=TRUE,pca=FALSE,npca=20,...) 
-        return(ds)
+      ds <- DS.field(y=y,X=X,biascorrect=biascorrect,mon=mon,
+                     method=method,swsm=swsm,m=m,
+                     rmtrend=rmtrend,eofs=eofs,
+                     area.mean.expl=area.mean.expl,verbose=verbose,
+                     weighted=TRUE,pca=FALSE,npca=20,...) 
+      return(ds)
     } else if (is.list(X)) {
                                         # REB 2014-10-08
         if (verbose) print("The predictor is a list")
@@ -665,6 +665,24 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
       return(z)
     }
+
+    if (!inherits(X,"eof") & inherits(X,"zoo")) {
+      ## If the predictor is an index, then use the same code to
+      ## estimate teleconnection patterns
+      attr(X,'history') <- history.stamp()
+      attr(X,'pattern') <- attr(y,'pattern')
+      attr(X,'eigenvalues') <- attr(y,'eigenvalues')
+      attr(X,'longitude') <- lon(y)
+      attr(X,'latitude') <- lat(y)
+      attr(X,'variable') <- varid(y)
+      attr(X,'unit') <- unit(y)
+  
+      class(X) <- c('eof',class(X))
+      z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
+                  eofs=eofs,rmtrend=rmtrend,verbose=verbose,
+                  weighted=weighted,...)
+      return(z)
+    }
     stopifnot(!missing(y),!missing(X),
               inherits(X,"eof"),inherits(y,"station"))
 
@@ -675,8 +693,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         # synchronise the two zoo objects through 'merge' (zoo)
     y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
     X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
-    dy <- dim(y)
-    dx <- dim(X)
+    dy <- dim(y); if (is.null(dy)) dy <- c(length(y),1)
+    dx <- dim(X); if (is.null(dx)) dx <- c(length(X),1)
 
                                         # Use method for downscaling
                                         #str(y); str(X)
@@ -729,9 +747,12 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
           if (verbose) print(attr(X0,'n.apps'))
           Xp <- attr(X0,'appendix.1')
         } else Xp <- X
+
+        
         y.out <- matrix(rep(NA,dx[1]*dy[2]),dx[1],dy[2])
         fit.val <- y.out
-        yp.out <- matrix(rep(NA,dim(Xp)[1]*dy[2]),dim(Xp)[1],dy[2])
+        dxp <- dim(Xp); if (is.null(dxp)) dxp <- c(length(Xp),1)
+        yp.out <- matrix(rep(NA,dxp[1]*dy[2]),dxp[1],dy[2])
 
         if (verbose) print(paste('PC',eofs,collapse=' '))
                                         # Loop over the PCs...
@@ -740,16 +761,16 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         ## pattern for each PC. Combine into one matrix. The predictor pattern
         ## for each station can be recovered by multiplying with the PCA pattern
         if (verbose) print('Predictor pattern')
-        #browser()
-        x0p <- attr(X0,'pattern') 
+        x0p <- attr(X0,'pattern')
         dp <- dim(x0p)
         if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs
+        if (length(dp)==2) dp <- c(dp,1)[1,3,2]    # if PCA rather than EOF
         if (verbose) {str(x0p); print(dp); print(dy)}
         predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
         dim(predpatt) <- c(dp[1]*dp[2],dy[2])
         dim(x0p) <- c(dp[1]*dp[2],dp[3])
         ## This works for single predictors, but is more complicated for
-        #3 multiple predictors.
+        ## multiple predictors.
         if (dp[3] == length(attr(X0,'eigenvalues'))) x0p <- x0p %*% diag(attr(X0,'eigenvalues'))
         model <- list(); eof <- list()
         for (i in 1:dy[2]) {
