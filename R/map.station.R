@@ -25,7 +25,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          na.rm=TRUE,show.val=FALSE,
                          ##colorbar=TRUE,
                          legend.shrink=1,...) { 
-  ##
+    ##
     if (verbose) print('map.station')
     arg <- list(...)
     
@@ -195,7 +195,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         }
         
         
-        ## Transform x using FUN and insert color bar                                    
+        ## Transform x using FUN and insert color bar
+        ## 
         if (!is.null(FUN)) {
             if (is.element(FUN,c('lon','lat','alt')))
                 eval(parse(text=paste('y <-',FUN,'(x)',sep="")))
@@ -209,12 +210,13 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                 else
                     y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
             }
-            
+            y <- attrcp(x,y)
+            class(y) <- class(x)
             ## AM 30-06-2015 ...
             if (is.logical(colbar)) {
                 ## If colbar set to FALSE, treat it as set to NULL
                 if (!colbar) colbar <- NULL else
-                colbar <- list(palette='t2m',rev=FALSE,n=10,
+                colbar <- list(pal='t2m',rev=FALSE,n=10,
                     breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE)
             }
             ##                       
@@ -249,7 +251,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ##       cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)       
 
         if(is.null(colbar$pos)) pos <- 0.05
-    ## 
+
+        ## 
     ##fig0 <- par0$fig
         if (is.null(colbar$show)) colbar$show <- TRUE ## quick fix REB
         if (!is.null(FUN) & (!is.null(colbar)) & colbar$show) {
@@ -291,7 +294,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ## par(fig=par0$fig)
         ## print(par()$fig)
         ## add search info to plot
-        
+       
         if (text) {
             if (!is.null(highlight)) {
                 title(main=paste("SOURCE(S): ",
@@ -328,11 +331,12 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if (text)
             mtext(paste(("ESD package - map.station() - MET Norway 2014"),
                         "(www.met.no)",sep=" "),side=1,line=4,cex=0.6)
-            
-            if (!is.null(FUN)) {
+        par1 <- par()    
+        if (!is.null(FUN)) {
             ##if (is.null(col)) colbar$col <- rep(col,length(colbar$col[icol]))
             ## 
             if (!is.null(col)) col <- col else col <- colbar$col[icol]
+
             points(ss$longitude, ss$latitude, pch = pch,
                    bg=colbar$col[icol], col=col, ##col=colbar$col[icol]
                    cex = cex*scale, xlab = "", ylab = "",
@@ -423,6 +427,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ## lines(geoborders$x, geoborders$y, col = "black")
         ## lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
     }
+    return(par1)
 }
 
 
