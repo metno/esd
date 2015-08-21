@@ -374,7 +374,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                       attr(X,'area.mean.expl') <- FALSE
   class(X) <- c("dsensemble","zoo")
   if (!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
-  save(file=file.ds,X)#"DSensemble.rda",X)
+  #save(file=file.ds,X)#"DSensemble.rda",X)
   print("---")
   invisible(X)
 } 
@@ -1028,7 +1028,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     # Recursive: do each season seperately if there are more than one season
     if (length(table(season(y)))>1) {
       if (verbose) print('--- Apply DS to seasons seperately ---')
-      Z <- list(info='DSensembe.pca for different seasons')
+      Z <- list(info='DSensemble.pca for different seasons')
       for (season in names(table(season(y)))) {
         if (verbose) print(paste('Select',season))
         z <- DSensemble.pca(subset(y,it=season),plot=plot,path=path,
@@ -1080,8 +1080,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   flog <- file("DSensemble.pca-log.txt","at")
   
   ## Set up a list environment to keep all the results
-  Q <- list(info='DSensemble.pca',pca=y)
-  
+  Q <- list(info='DSensemble.pca',pca=y) ## KMP 06-08-2015
+ 
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
@@ -1092,7 +1092,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
     if (inherits(y,'season')) {
       GCM <- as.4seasons(gcm,FUN=FUNX)
-      GCM <- subset(gcm,it=season(T2M)[1])
+      GCM <- subset(GCM,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
       GCM <- annual(gcm,FUN=FUNX)
     } else if (inherits(y,'month')) {
@@ -1102,6 +1102,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
     rm("gcm"); gc(reset=TRUE)
     T2MGCM <- combine(T2M,GCM)
+    
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM))
 
@@ -1118,36 +1119,26 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (biascorrect) Z <- biasfix(Z)
     ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
     if (verbose) print("post-processing")
-
+    
     ## Keep the results for the projections:
     if (verbose) print('Extract the downscaled projection')
-    z <- attr(ds,'appendix.1')
+    z <- attr(ds,'appendix.1') ## KMP 09.08.2015
+    ##attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
+    ## model takes up too much space! can it be stored more efficiently?
+    attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
+    attr(z,'evaluation') <- attr(ds,'evaluation')
+    ##class(z) <- class(ds)
+    
     cl <- paste('Q$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
     eval(parse(text=cl))
-
+    ##browser()
     if (verbose) {
-        print('Test to see if as.station has all information needed')
-        test.stations <- as.station(z)
+       print('Test to see if as.station has all information needed')
+       test.stations.ds <- as.station(ds)
+       a <- attrcp(y,z);  class(a) <- c("ds",class(y))
+       test.stations.z <- as.station(a)
     }
-    
-    # The test lines are included to assess for non-stationarity
-    if (non.stationarity.check) {
-        if (verbose) print('non.stationarity.check')
-        testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)
-                                                                # REB 29.04.2014
-        testz <- attr(testds,'appendix.1')                      # REB 29.04.2014
-        difference.z <- testy - testz                           # REB 29.04.2014
-    }
-        
-    i1 <- is.element(paste(years,months,sep='-'),
-                     paste(year(z),month(z),sep='-'))
-    i2 <- is.element(paste(year(z),month(z),sep='-'),
-                     paste(years,months,sep='-'))
-    
-    if (verbose) print(paste('i=',i,gcmnm[i],'data points',
-                             sum(i1),'=',sum(i2)))
-    X[,i,i1] <- z[i2,]
-    
+       
     # Diagnose the residual: ACF, pdf, trend. These will together with the
     # cross-validation and the common EOF diagnostics provide a set of
     # quality indicators.
@@ -1220,51 +1211,33 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                     round(quality)))
   }
   
-  if (verbose) print('Downscaling finished - need to convert PCAs to stations')
+  if (verbose) print('Downscaling finished')
 
   ## Unpacking the information tangled up in GCMs, PCs and stations:
   ## Save GCM-wise in the form of PCAs
   gcmnm <- gsub('-','.',gcmnm)
-  Y <- as.station(y)
-
-
-  ## Save the information station-wise 
-#  if (verbose) print('Save the results station-wise')
-#  x <- matrix(rep(NA,dim(X)[3]*dim(X)[2]),dim(X)[3],dim(X)[2])
-#  ns <- length(loc(y))
-#  if (verbose) print(loc(y))
-#  for (i in 1:(ns)) {
-#    x[,] <- NA
-#    ## Loop over the GCMs and pick the selected downscaled station series:
-#    for (j in 1:N){
-#      x[,j] <- as.station(Z[[j+1]])[,i]
-#    }
-#    yloc <- tolower(loc(y)[i])
-#    yloc <- gsub('-','.',yloc)
-#    yloc <- gsub(' ','.',yloc)
-#    yloc <- gsub('/','.',yloc)
-#    if (verbose) {print(yloc); str(x)}
-#    ds.x <- zoo(x,order.by=index(Z[[2]]))
-#    attr(ds.x,'station') <- subset(Y,is=i)
-#    class(ds.x) <- c('dsensemble','zoo')
-#    eval(parse(text=paste('Z$',yloc,' <- ds.x',sep='')))
-#  }
+  ##Y <- as.station(y)
 
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
-  attr(Z,'predictor') <- attr(T2M,'source')
-  attr(Z,'domain') <- list(lon=lon,lat=lat)
-  attr(Z,'scorestats') <- scorestats
-  attr(Z,'path') <- path
-  attr(Z,'scenario') <- rcp
-  attr(Z,'history') <- history.stamp(y)
+  attr(Q,'predictor') <- attr(T2M,'source')
+  attr(Q,'domain') <- list(lon=lon,lat=lat)
+  attr(Q,'scorestats') <- scorestats
+  attr(Q,'path') <- path
+  attr(Q,'scenario') <- rcp
+  attr(Q,'variable') <- attr(y,"variable")[1]
+   attr(Q,'unit') <- attr(y,"unit")[1]
+  attr(Q,'history') <- history.stamp(y)
   if (non.stationarity.check)
-    attr(Z,'on.stationarity.check') <- difference.z else
-    attr(Z,'on.stationarity.check') <- NULL
-  attr(Z,'area.mean.expl') <- FALSE
+    attr(Q,'on.stationarity.check') <- difference.z else
+    attr(Q,'on.stationarity.check') <- NULL
+  attr(Q,'area.mean.expl') <- FALSE
+  class(Q) <- c("dsensemble","pca","list")
 
+  ##browser()
+  dse.pca <- Q
   if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds) ## KMP 2015-08-05
-  save(file=file.ds,Z)
+  save(file=file.ds,dse.pca)
   if (verbose) print("---")
-  invisible(Z)
+  invisible(dse.pca)
 }

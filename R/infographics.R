@@ -744,7 +744,7 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
   if (verbose) print('visprob.station.precip')
   ## If y is provided, synchronise the two time series:
   if (!is.null(y)) {
-    y <- subset(y,,it=c(start(x),end(x)))
+    y <- subset(y,it=c(start(x),end(x)))
     x <- subset(x,it=c(start(y),end(y)))
     y <- annual(y)
   } else y <- year(annual(x))

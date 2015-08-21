@@ -4,13 +4,23 @@
 
 wheel <- function(x,...) UseMethod("wheel")
 
-wheel.station <- function(x,new=TRUE,lwd=2,col=NULL,bg="grey90",...) {
+wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,
+                          bg="grey90",verbose=FALSE,...) {
+
+  if (verbose) print('wheel.station')
+  ## Copied from visprob.station.precip:
+  ## If y is provided, synchronise the two time series:
+  if (!is.null(y)) {
+    y <- subset(y,it=c(start(x),end(x)))
+    x <- subset(x,it=c(start(y),end(y)))
+    years <- annual(y)
+  } else years <- year(annual(x))
   mx <- max(abs(coredata(x)),na.rm=TRUE)
 #  r <- mean(coredata(x),na.rm=TRUE)
   r <- mx
   #jday <- julian(zoo(x))
   MD <- month(x)*100 + day(x)
-  years <- as.integer(rownames(table(year(x))))
+  #REB2015-08-20 years <- as.integer(rownames(table(year(x))))
   #print(years)
   ny <- length(years)
   md <- as.integer(rownames(table(MD)))
@@ -33,6 +43,12 @@ wheel.station <- function(x,new=TRUE,lwd=2,col=NULL,bg="grey90",...) {
   w <- seq(0,2*pi,length=m)
   j <- 1:ny
   col <- rgb(j/ny,abs(sin(pi*j/ny)),(1-j/ny))
+  ## REB 2015-08-20: if y is given, use it for setting the colours.
+  ## e.g. according to an index like NINO3.4
+  srtc <- order(years)
+  col <- col[srtc]
+  years <- year(annual(x))
+  if (verbose) {print(srtc); print(col)}
   
   for (i in 1:m) {
     wj <- -w[i]
@@ -62,13 +78,22 @@ wheel.station <- function(x,new=TRUE,lwd=2,col=NULL,bg="grey90",...) {
   image(1:2,years,colbar,col=col)
 }
 
-wheel.spell <- function(x,new=TRUE,lwd=2,col=NULL...) {
+wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,verbose=FALSE,...) {
+
+    if (verbose) print('wheel.spell')
+    ## Copied from visprob.station.precip:
+  ## If y is provided, synchronise the two time series:
+  if (!is.null(y)) {
+    y <- subset(y,it=c(start(x),end(x)))
+    x <- subset(x,it=c(start(y),end(y)))
+    years <- annual(y)
+  } else years <- year(annual(x))
   mx <- max(abs(coredata(x)),na.rm=TRUE)
 #  r <- mean(coredata(x),na.rm=TRUE)
   r <- mx
   #jday <- julian(zoo(x))
   MD <- month(x)*100 + day(x)
-  years <- as.integer(rownames(table(year(x))))
+  #REB2015-08-20 years years <- as.integer(rownames(table(year(x))))
   #print(years)
   ny <- length(years)
   md <- as.integer(rownames(table(MD)))
@@ -91,6 +116,12 @@ wheel.spell <- function(x,new=TRUE,lwd=2,col=NULL...) {
   w <- seq(0,2*pi,length=m)
   j <- 1:ny
   col <- rgb(j/ny,abs(sin(pi*j/ny)),(1-j/ny))
+  ## REB 2015-08-20: if y is given, use it for setting the colours.
+  ## e.g. according to an index like NINO3.4
+  srtc <- order(years)
+  col <- col[srtc]
+  years <- year(annual(x))
+  if (verbose) {print(srtc); print(col)}
   
   for (i in 1:m) {
     wj <- -w[i]
