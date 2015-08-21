@@ -4,8 +4,10 @@
 
 wheel <- function(x,...) UseMethod("wheel")
 
-wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,bg="grey90",...) {
+wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,
+                          bg="grey90",verbose=FALSE,...) {
 
+  if (verbose) print('wheel.station')
   ## Copied from visprob.station.precip:
   ## If y is provided, synchronise the two time series:
   if (!is.null(y)) {
@@ -43,8 +45,10 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,bg="grey90",...) {
   col <- rgb(j/ny,abs(sin(pi*j/ny)),(1-j/ny))
   ## REB 2015-08-20: if y is given, use it for setting the colours.
   ## e.g. according to an index like NINO3.4
-  srtc <- order(y)
+  srtc <- order(years)
   col <- col[srtc]
+  years <- year(annual(x))
+  if (verbose) {print(srtc); print(col)}
   
   for (i in 1:m) {
     wj <- -w[i]
@@ -74,7 +78,9 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,bg="grey90",...) {
   image(1:2,years,colbar,col=col)
 }
 
-wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL...) {
+wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,verbose=FALSE,...) {
+
+    if (verbose) print('wheel.spell')
     ## Copied from visprob.station.precip:
   ## If y is provided, synchronise the two time series:
   if (!is.null(y)) {
@@ -112,8 +118,10 @@ wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL...) {
   col <- rgb(j/ny,abs(sin(pi*j/ny)),(1-j/ny))
   ## REB 2015-08-20: if y is given, use it for setting the colours.
   ## e.g. according to an index like NINO3.4
-  srtc <- order(y)
+  srtc <- order(years)
   col <- col[srtc]
+  years <- year(annual(x))
+  if (verbose) {print(srtc); print(col)}
   
   for (i in 1:m) {
     wj <- -w[i]

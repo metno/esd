@@ -669,6 +669,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     if (!inherits(X,"eof") & inherits(X,"zoo")) {
       ## If the predictor is an index, then use the same code to
       ## estimate teleconnection patterns
+      if (verbose) print('Predictor is a zoo object')
       attr(X,'history') <- history.stamp()
       attr(X,'pattern') <- attr(y,'pattern')
       attr(X,'eigenvalues') <- attr(y,'eigenvalues')
@@ -764,7 +765,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         x0p <- attr(X0,'pattern')
         dp <- dim(x0p)
         if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs
-        if (length(dp)==2) dp <- c(dp,1)[1,3,2]    # if PCA rather than EOF
+        if (length(dp)==2) dp <- c(dp,1)[c(1,3,2)] # if PCA rather than EOF
         if (verbose) {str(x0p); print(dp); print(dy)}
         predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
         dim(predpatt) <- c(dp[1]*dp[2],dy[2])
