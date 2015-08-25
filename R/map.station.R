@@ -427,7 +427,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ## lines(geoborders$x, geoborders$y, col = "black")
         ## lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
     }
-    return(par1)
+    ## return(par1)
 }
 
 
