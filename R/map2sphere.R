@@ -65,7 +65,7 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        xlim=NULL,ylim=NULL,zlim=NULL,
-                       colbar= list(palette='t2m',rev=FALSE,n=10,
+                       colbar= list(pal='t2m',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
                        type=c("fill","contour"),                      
@@ -77,7 +77,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## If only a few items are provided in colbar - hen set the rest to the default
   if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
-    if (is.null(colbar$palette)) colbar$palette <- 't2m'
+    if (is.null(colbar$pal)) colbar$pal <- 't2m'
     if (is.null(colbar$rev)) colbar$rev <- FALSE
     if (is.null(colbar$n)) colbar$n <- 10
     if (is.null(colbar$breaks)) {
@@ -91,7 +91,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
     if (is.null(colbar$v)) colbar$v <- 1
     if (is.null(colbar$pos)) colbar$pos <- 0.05
     if (verbose) print(colbar)
-    colbar$col <- colscal(n=colbar$n,col=colbar$palette,rev=colbar$rev,verbose=verbose)
+    colbar$col <- colscal(n=colbar$n,col=colbar$pal,
+                          rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col)))
   }
   ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
@@ -155,7 +156,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ##if (is.null(col)) col <- colscal(n=n) else
   ##if (length(col)==1) {
   ##    palette <- col
-  ##   col <- colscal(palette=palette,n=n)
+  ##    col <- colscal(col=palette,n=n)
   ## }
   nc <- length(colbar$col)
   ## AM commented
