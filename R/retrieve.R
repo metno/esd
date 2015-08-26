@@ -834,7 +834,6 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     ##
     ## Extract values and add Scale Factor and offset if any
     if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
-    
     if ((one.cell) & (!is.null(itime))) {
         if (!is.null(ilev)) {
             start1 <- c(lon.w,lat.w,lev.w[1],time.w[1])
@@ -854,7 +853,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
             if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich
                 count <- c(length(lon.w),length(lat.w),length(lev.w),
                            length(time.w))
-                lon.w1 <-lon.w[1:id2]
+                lon.w1 <- lon.w[1:id2]
                 lon.w2 <- lon.w[(id2+1):length(lon.w)]
                 start1 <- c(lon.w1[1],lat.w[1],lev.w[1],time.w[1])
                 count1 <- c(length(lon.w1),length(lat.w),length(lev.w),
@@ -905,14 +904,14 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
                 start1 <- c(lon.w1[1],lat.w[1],time.w[1])
                 count1 <- c(length(lon.w1),length(lat.w),length(time.w))
                 val1 <- get.var.ncdf(ncid,param,start1,count1)## ,collapse_degen=FALSE)
+                dim(val1) <- count1
                 d1 <- dim(val1)
-                if(length(d1)<3) dim(val1) <- c(1,d1); d1 <- dim(val1)
                 dim(val1) <- c(d1[1],prod(d1[2:length(d1)]))
                 start2 <- c(lon.w2[1],lat.w[1],time.w[1])
                 count2 <- c(length(lon.w2),length(lat.w),length(time.w))
                 val2 <- get.var.ncdf(ncid,param,start2,count2)##,collapse_degen=FALSE)
+                dim(val2) <- count2
                 d2 <- dim(val2)
-                if(length(d2)<3) dim(val2) <- c(1,d2); d2 <- dim(val2)
                 dim(val2) <- c(d2[1],prod(d2[2:length(d2)]))
                 val <- rbind(val1,val2)
                 stopifnot((d1[2]==d2[2]) | (d1[3]==d2[3]))
@@ -938,7 +937,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
                 lat$vals <- lat$vals[lat.srt]
             } ## else lat.srt = seq(1,length(lat$vals),1)
             val <- val[lon.srt,lat.srt,]
-            ##dim(val) <- count
+            dim(val) <- count
         }
     }
     
