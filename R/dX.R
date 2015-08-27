@@ -18,7 +18,7 @@ regfit <- function(z,cal.dat,terms) {
   return(modelcoefs)
 }
 
-dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.371e06,
+dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
                chk.conf=1,accuracy=NULL,verbose=FALSE) {
 # REB: 08.02.2007: To improve accuracy/spatial resolution of the fit
 
@@ -100,7 +100,8 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.371e06,
   ## Remove temporary variable and release the memory:
   rm('zz0','zz','z.fit'); gc(reset=TRUE)
 
-  dx <- rep(diff(lon)[1]*(r*cos(phi)),m*nt)
+  dx <- rep(mapply(distAB,lon[1],lat,lon[2],lat),m*nt)
+  #rep(diff(lon)[1]*(r*cos(phi)),m*nt) ## 27.08.2015 KMP incorrect distance
   dim(dx) <- c(ny,m,nt); dx <- aperm(dx,c(2,1,3))
   dx[,cos(phi)<1E-3,] <- NA
   

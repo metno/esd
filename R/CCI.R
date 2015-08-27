@@ -133,13 +133,13 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   # Geostrophic wind speed
   # CHECK THE UNITS
   if(verbose) print("Geostrophic wind")
-  f <- 1.47e-04*sin(pi*latXY/180)
-  f[abs(latXY)<10] <- NA # not valid close to equator
+  #f <- 1.47e-04*sin(pi*latXY/180)
+  #f[abs(latXY)<10] <- NA # not valid close to equator
   rho <- 1.2922
-  A <- rep(f*rho,nt); dim(A) <- c(nx-1,ny-1,nt); A <- aperm(A,c(3,1,2))
+  #A <- rep(f*rho,nt); dim(A) <- c(nx-1,ny-1,nt); A <- aperm(A,c(3,1,2))
   dpsl <- sqrt(DX^2+DY^2)
   if (attr(Z,"unit")=="hPa") dpsl <- dpsl*100
-  wind <- dpsl/A
+  #wind <- dpsl/A
  
   # Find points of inflexion (2nd derivative==0) to estimate the storm radius
   # and maximum 
@@ -151,35 +151,70 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   latXX <- rep(0.5*(latXY[2:NX,2:NY]+latXY[2:NX,1:(NY-1)]),nt)
   dim(latXX) <- c(NX-1,NY-1,nt); latXX <- aperm(latXX,c(3,1,2))
   dateXX <- rep(t,(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
-  inflx <- DX2[,2:NX,2:NY]*DX2[,1:(NX-1),2:NY]<0 &
-           DX2[,2:NX,1:(NY-1)]*DX2[,1:(NX-1),1:(NY-1)]<0 &
-           !is.na(DX2[,2:NX,2:NY]*DX2[,1:(NX-1),1:(NY-1)])
-  infly <- DY2[,2:NX,2:NY]*DY2[,2:NX,1:(NY-1)]<0 &
-           DY2[,1:(NX-1),2:NY]*DY2[,1:(NX-1),1:(NY-1)]<0 &
-           !is.na(DY2[,2:NX,2:NY]*DY2[,1:(NX-1),1:(NY-1)])
+  ## inflx <- DX2[,2:NX,2:NY]*DX2[,1:(NX-1),2:NY]<0 &
+  ##          DX2[,2:NX,1:(NY-1)]*DX2[,1:(NX-1),1:(NY-1)]<0 &
+  ##          !is.na(DX2[,2:NX,2:NY]*DX2[,1:(NX-1),1:(NY-1)])
+  ## infly <- DY2[,2:NX,2:NY]*DY2[,2:NX,1:(NY-1)]<0 &
+  ##          DY2[,1:(NX-1),2:NY]*DY2[,1:(NX-1),1:(NY-1)]<0 &
+  ##          !is.na(DY2[,2:NX,2:NY]*DY2[,1:(NX-1),1:(NY-1)])
   radius <- rep(NA,length(date))
-  lon.radius <- rep(NA,length(date))
-  lat.radius <- rep(NA,length(date))
-  max.dpsl <- rep(NA,length(date))
+  max.dslp <- rep(NA,length(date))
   max.speed <- rep(NA,length(date))
-  for (i in order(date)) {
+  max.vg <- rep(NA,length(date))
+  for (i in seq(1,length(date))) {
     ilon <- abs(lonXX[1,,1]-lon[i])<dx
     ilat <- abs(latXX[1,1,]-lat[i])<dy
-    lon.i <- c(lonXX[1,,ilat][inflx[t==date[i],,ilat]],
-               lonXX[1,ilon,][infly[t==date[i],ilon,]])
-    lat.i <- c(latXX[1,,ilat][inflx[t==date[i],,ilat]],
-               latXX[1,ilon,][infly[t==date[i],ilon,]])
-    distance <- distAB(lon[i],lat[i],lon.i,lat.i)*1E-3
-    distance[distance<rmin | distance>rmax] <- NA
-    i.min <- which.min(distance)
-    if(any(i.min)) {
-      radius[i] <- distance[i.min]
-      lon.radius[i] <- lon.i[i.min]
-      lat.radius[i] <- lat.i[i.min]
-      i.x <- which(abs(lonXY[,1]-lon[i])<=abs(lon.radius[i]-lon[i]))
-      i.y <- which(abs(latXY[1,]-lat[i])<=abs(lat.radius[i]-lat[i]))
-      max.dpsl[i] <- max(dpsl[t==date[i],i.x,i.y],na.rm=T)
-      max.speed[i] <- max(wind[t==date[i],i.x,i.y],na.rm=T)
+    inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
+        DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
+    infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
+        DY2[date[i]==t,lonXY[,1]==lon[i],1:(NY-1)]
+    lon.infl <- lonXY[inflx<0,1]
+    lat.infl <- latXY[1,infly<0]
+    dlon <- lon.infl-lon[i]
+    dlat <- lat.infl-lat[i]
+    ilon <- c()
+    ilat <- c()
+    if (any(dlat>0)) {
+      ilon <- c(ilon,which(lonXY[,1]==lon[i]))
+      ilat <- c(ilat,which(latXY[1,]==lat.infl[dlat==min(dlat[dlat>0])]))
+    }
+    if (any(dlat<0)) {
+      ilon <- c(ilon,which(lonXY[,1]==lon[i]))
+      ilat <- c(ilat,which(latXY[1,]==lat.infl[dlat==max(dlat[dlat<0])]))
+    }
+    if (any(dlon>0)) {
+      ilon <- c(ilon,which(lonXY[,1]==lon.infl[dlon==min(dlon[dlon>0])]))
+      ilat <- c(ilat,which(latXY[1,]==lat[i]))
+    }
+    if (any(dlon<0)) {
+      ilon <- c(ilon,which(lonXY[,1]==lon.infl[dlon==max(dlon[dlon<0])]))
+      ilat <- c(ilat,which(latXY[1,]==lat[i]))
+    }
+    dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
+    ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
+    fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
+    # gradient wind
+    vg <- dpi/(fi*rho)
+    v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
+    radius[i] <- ri[which.max(dpi)]
+    max.dslp[i] <- dpi[which.max(dpi)]
+    max.speed[i] <- v.grad[which.max(dpi)]
+    max.vg[i] <- vg[which.max(dp)]
+    if (plot & i<5) {
+      pxi <- px[date[i]==t,,]
+      pyi <- py[date[i]==t,,]
+      lon.i <- lonXY[ilon,1]
+      lat.i <- latXY[1,ilat] 
+      dev.new()
+      plot(lonXY[,1],pxi[,latXY[1,]==lat[i]],lty=1,type="l")
+      points(lon[i],pxi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
+      points(lonXY[inflx<0,1],pxi[inflx<0,latXY[1,]==lat[i]],col="red",pch=1)
+      points(lon.i[lat.i==lat[i]],pxi[ilon[lat.i==lat[i]],latXY[1,]==lat[i]],col="red",pch=20)
+      dev.new()
+      plot(latXY[1,],pyi[lonXY[,1]==lon[i],],lty=1,type="l")
+      points(lat[i],pyi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
+      points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
+      points(lat.i[lon.i==lon[i]],pyi[lonXY[,1]==lon[i],ilat[lon.i==lon[i]]],col="red",pch=20)
     }
   }
 

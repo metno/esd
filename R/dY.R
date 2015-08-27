@@ -10,7 +10,7 @@
 #slp <- slp.ERAINT()
 #slp.dx <- dX(slp,verbose=TRUE)
 
-dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.371e06,
+dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
                chk.conf=1,accuracy=NULL,verbose=FALSE) {
 # REB: 08.02.2007: To improve accuracy/spatial resolution of the fit
 
@@ -91,7 +91,8 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.371e06,
   ## Remove temporary variable and release the memory:
   rm('zz0','zz','z.fit'); gc(reset=TRUE)
 
-  dy <- diff(lat)[1]*r
+  dy <- distAB(lon[1],lat[1],lon[1],lat[2])
+       #diff(lat)[1]*r ## 28.08.2015 KMP: incorrect distance
 
   ## Derive the first derivative:
   if (verbose) print('Find the first derivative')
