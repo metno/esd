@@ -10,7 +10,7 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                           show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
-                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     
     ## default with no arguments will produce a map showing available station
     ## data in the esd package.
@@ -64,7 +64,7 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                        colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                            pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        type=c("fill","contour"),gridlines=FALSE,
-                       lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
+                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                        pattern=1,...) {
     
                                         # If x is provided, map only x...
@@ -90,7 +90,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       colbar=list(col=NULL,rev=FALSE,breaks=NULL,pos=0.05,
                           show=TRUE,type="r",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
-                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     if (verbose) print('map.array')
     if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
     if (is.null(it)) {
@@ -126,7 +126,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                          pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                      type=c("fill","contour"),gridlines=FALSE,
-                     lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
+                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                      pattern=1,...) {
     if (verbose) print('map.comb')
     stopifnot(inherits(x,'eof'))
@@ -152,7 +152,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                     pattern=1,...) {
     ## browser()
     if (verbose) print('map.eof')
@@ -206,7 +206,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                        pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                    type=c("fill","contour"),gridlines=FALSE,
-                   lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
+                   lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     if (verbose) print('map.ds')
     stopifnot(inherits(x,'ds'))
     x <- subset(x,is=is)
@@ -284,7 +284,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
-                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                       na.rm=TRUE,...) {
     
     stopifnot(inherits(x,'field'))
@@ -369,7 +369,7 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              breaks=seq(-1,1,by=0.05),pos=0.05,show=TRUE,
                              type="p",cex=2,h=0.6,v=1),
                          type=c("fill","contour"),gridlines=FALSE,
-                         lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
+                         lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     
     if (verbose) print("map.corfield")
     stopifnot(inherits(x,'corfield'))
@@ -417,7 +417,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
-                      lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...) {
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     if (verbose) print('map.trend')
     stopifnot(inherits(x,'field'),inherits(x,'trend'))
     x <- subset(x,it=it,is=is)

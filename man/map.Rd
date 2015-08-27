@@ -31,7 +31,7 @@ map.default(x,FUN="mean",it=NULL,is=NULL,new=FALSE,
             colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05, 
             type="p",cex=2,show=TRUE,h=0.6,v=1,pos=0.05), 
             type=c("fill","contour"),gridlines=FALSE,lonR=NULL, 
-            latR=-90,axiR=NULL,verbose=FALSE, ...)
+            latR=NULL,axiR=NULL,verbose=FALSE, ...)
 
 map.matrix(x,new=TRUE,projection="lonlat",...)
 
@@ -57,28 +57,28 @@ map.comb(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                        type="p",cex=2,h=0.6,v=1),
            type=c("fill", "contour"),gridlines=FALSE,
-           lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,pattern=1,...)
+           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,pattern=1,...)
 
 map.eof(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
            xlim= NULL,ylim=NULL,zlim=NULL,n=15,
            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                        type="p",cex=2,h=0.6,v=1),
            type=c("fill","contour"),gridlines=FALSE,
-           lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,pattern=1,...)
+           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,pattern=1,...)
 
 map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
          colbar=list(pal = NULL,rev=FALSE,n=10,breaks=NULL,
                      type="p",cex = 2,h=0.6,v=1,pos=0.05),
          type= c("fill", "contour"),gridlines=FALSE,
-         lonR=NULL,latR=-90,axiR = NULL,verbose = FALSE,...) 
+         lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE,...) 
 
 map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
             xlim=NULL,ylim=NULL,zlim=NULL, 
             colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                          type="p",cex=2,h=0.6,v=1), 
             type = c("fill", "contour"), gridlines = FALSE,
-            lonR = NULL,latR = -90, axiR = NULL, verbose = FALSE,
+            lonR = NULL,latR = NULL, axiR = NULL, verbose = FALSE,
             na.rm = TRUE, ...)
 
 map.corfield(x,it=NULL,is=NULL,new=TRUE,projection= "lonlat", 
@@ -86,14 +86,14 @@ map.corfield(x,it=NULL,is=NULL,new=TRUE,projection= "lonlat",
                colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                            type="p",cex=2,h=0.6,v=1),
                type=c("fill", "contour"),gridlines=FALSE,
-               lonR=NULL,latR=-90,axiR = NULL,verbose = FALSE, ...)
+               lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE, ...)
  
 map.trend(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
             xlim=NULL,ylim=NULL,zlim=NULL,n=15,
             colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                         type="p",cex=2,h=0.6,v=1,),
             type=c("fill", "contour"),gridlines=FALSE,
-            lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,...)
+            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...)
 
 map.pca(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat", 
           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
