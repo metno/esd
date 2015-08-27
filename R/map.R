@@ -153,7 +153,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
-                    pattern=1,...) {
+                    pattern=1,cex=1,...) {
     ## browser()
     if (verbose) print('map.eof')
     stopifnot(inherits(x,'eof'))
@@ -511,7 +511,7 @@ map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     
 }
 
-map.cca <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
