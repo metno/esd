@@ -67,7 +67,17 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   DX <- 0.5*(dx11+dx12)
   DX2 <- 0.5*(dx21+dx22)
 
+  ## Mask the cylcones already selected
+  #P.lowy[lows] <- 0; P.lowx[lows] <- 0
+  ## widen mask in x-direction
+  #P.lowx[,2:(nx-1),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
+  #P.lowx[,1:(nx-2),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
+  ## widen mask in y-direction
+  #P.lowy[,,2:(ny-1)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
+  #P.lowy[,,1:(ny-2)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
+
   ## Find zero crossings in both directions
+  ## Plowx & P.lowy are matrices with 0's and 1's.
   lows <- (P.lowy & P.lowx)
   pcent <- 0.5*(px[lows]+py[lows])
   strength <- order(pcent)
@@ -79,7 +89,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     
   ## Remove secondary cyclones near a deeper one (same cyclonic system):
   if(verbose) print("Remove secondary cyclones")
-  mindistance <- 1E4 # minimum distance between cyclones [m]
+  mindistance <- 5E4 # minimum distance between cyclones [m]
   lon<-rep(lonXY,nt); dim(lon)<-c(nx-1,ny-1,nt); lon<-aperm(lon,c(3,1,2)) 
   lat<-rep(latXY,nt); dim(lat)<-c(nx-1,ny-1,nt); lat<-aperm(lat,c(3,1,2))
   date<-rep(t,(nx-1)*(ny-1)); dim(date)<-c(nt,nx-1,ny-1)
@@ -113,16 +123,11 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   pcent <- pcent[i]
   strength <-  order(pcent)
   
-  # Geostrophic wind speed
-  # CHECK THE UNITS
-  if(verbose) print("Geostrophic wind")
-  #f <- 1.47e-04*sin(pi*latXY/180)
-  #f[abs(latXY)<10] <- NA # not valid close to equator
+  # Pressure gradient
+  if(verbose) print("Pressure gradient")
   rho <- 1.2922
-  #A <- rep(f*rho,nt); dim(A) <- c(nx-1,ny-1,nt); A <- aperm(A,c(3,1,2))
   dpsl <- sqrt(DX^2+DY^2)
   if (attr(Z,"unit")=="hPa") dpsl <- dpsl*100
-  #wind <- dpsl/A
 
   # Find points of inflexion (2nd derivative==0) to estimate the storm radius
   # and maximum speed and pressure gradient
@@ -192,6 +197,14 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(950,1010),nlevels=6)
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1060),nlevels=5)
       lines(geoborders)
+      a <- which(P.lowx[t==date[i],,]==1,arr.ind=TRUE)
+      b <- which(P.lowy[t==date[i],,]==1,arr.ind=TRUE)
+      lon.a <- mapply(function(i1,i2) lonXY[i1,i2],a[,1],a[,2])
+      lat.a <- mapply(function(i1,i2) latXY[i1,i2],a[,1],a[,2])
+      lon.b <- mapply(function(i1,i2) lonXY[i1,i2],b[,1],b[,2])
+      lat.b <- mapply(function(i1,i2) latXY[i1,i2],b[,1],b[,2])
+      points(lon.a,lat.a,col="black",pch="-",cex=1,lwd=0.5)
+      points(lon.b,lat.b,col="black",pch="|",cex=0.5,lwd=0.5)
       points(lon[date==date[i]],lat[date==date[i]],pch=21,lwd=2,
              bg="white",col="black",cex=2)
       points(lon[i],lat[i],pch=4,col="black",cex=1)
@@ -221,8 +234,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
 
   # Arrange results
   if (inherits(index(Z),"POSIXt")) date <- strptime(date,"%Y%m%d%H%M")
-  dd <- strftime(date,"%Y%m%d")
-  hh <- strftime(date,"%H")
+  dd <- as.numeric(strftime(date,"%Y%m%d"))
+  hh <- as.numeric(strftime(date,"%H"))
   results <- data.frame(date=dd,time=hh,lon=lon,lat=lat,
                   pcent=pcent,max.dslp=max.dslp,
                   max.speed=max.speed,radius=radius)
