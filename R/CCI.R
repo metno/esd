@@ -175,10 +175,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     vg <- dpi/(fi*rho)
     ## gradient wind
     v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
-    radius[i] <- ri[which.max(dpi)]
-    max.dslp[i] <- dpi[which.max(dpi)]
-    max.speed[i] <- v.grad[which.max(dpi)]
-    max.vg[i] <- vg[which.max(dpi)]
+    radius[i] <- mean(ri)#ri[which.max(dpi)]
+    max.dslp[i] <- mean(dpi)#dpi[which.max(dpi)]
+    max.speed[i] <- mean(v.grad)#v.grad[which.max(dpi)]
+    max.vg[i] <- mean(vg)#vg[which.max(dpi)]
 
     if (plot & i<4) {
       pxi <- px[date[i]==t,,];  pyi <- py[date[i]==t,,]
