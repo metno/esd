@@ -72,8 +72,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        gridlines=TRUE,fancy=FALSE,verbose=FALSE,...) {
 
   
-  if (verbose) print('map2sphere')
-
+  if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
+  if (verbose) {print(lon(x)); print(lat(x))}
   ## If only a few items are provided in colbar - hen set the rest to the default
   if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
@@ -97,14 +97,15 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   }
   ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
   ## if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
-  if (!is.null(it) | !is.null(it)) x <- subset(x,it=it,is=is)
+  if (!is.null(it) | !is.null(it))
+    x <- subset(x,it=it,is=is,verbose=verbose)
 
   # Data to be plotted:
-  lon <- attr(x,'longitude')
-  lat <- attr(x,'latitude')
+  lon <- lon(x)  # attr(x,'longitude')
+  lat <- lat(x)  # attr(x,'latitude')
   # To deal with grid-conventions going from north-to-south or east-to-west:
-  srtx <- order(attr(x,'longitude')); lon <- lon[srtx]
-  srty <- order(attr(x,'latitude')); lat <- lat[srty]
+  srtx <- order(lon); lon <- lon[srtx]
+  srty <- order(lat); lat <- lat[srty]
   map <- x[srtx,srty]
   param <- attr(x,'variable')
   unit <- attr(x,'unit')
@@ -112,6 +113,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   # Rotatio:
   if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
   if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
+  if (verbose) print(paste('lonR=',lonR,'latR=',latR))
   # axiR: rotation of Earth's axis
 
   # coastline data:
