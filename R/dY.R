@@ -12,7 +12,6 @@
 
 dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
                chk.conf=1,accuracy=NULL,verbose=FALSE) {
-# REB: 08.02.2007: To improve accuracy/spatial resolution of the fit
 
   ## Convert the field object into 3D objects with lon-lat dimensions
   ## seperated.
@@ -92,7 +91,6 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   rm('zz0','zz','z.fit'); gc(reset=TRUE)
 
   dy <- distAB(lon[1],lat[1],lon[1],lat[2])
-       #diff(lat)[1]*r ## 28.08.2015 KMP: incorrect distance
 
   ## Derive the first derivative:
   if (verbose) print('Find the first derivative')
