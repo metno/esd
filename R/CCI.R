@@ -70,18 +70,17 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   ## Mask the cylcones already selected
   #P.lowy[lows] <- 0; P.lowx[lows] <- 0
   ## widen mask in x-direction
-  #P.lowx[,2:(nx-1),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
-  #P.lowx[,1:(nx-2),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
+  P.lowx[,2:(nx-1),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
+  P.lowx[,1:(nx-2),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
   ## widen mask in y-direction
-  #P.lowy[,,2:(ny-1)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
-  #P.lowy[,,1:(ny-2)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
+  P.lowy[,,2:(ny-1)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
+  P.lowy[,,1:(ny-2)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
 
   ## Find zero crossings in both directions
   ## Plowx & P.lowy are matrices with 0's and 1's.
   lows <- (P.lowy & P.lowx)
   pcent <- 0.5*(px[lows]+py[lows])
   strength <- order(pcent)
-  if (!cyclones) strength <- reverse(strength)
 
   ## Handle time index
   t <- index(Z)
@@ -89,7 +88,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     
   ## Remove secondary cyclones near a deeper one (same cyclonic system):
   if(verbose) print("Remove secondary cyclones")
-  mindistance <- 5E4 # minimum distance between cyclones [m]
+  mindistance <- 1E4 # minimum distance between cyclones [m]
   lon<-rep(lonXY,nt); dim(lon)<-c(nx-1,ny-1,nt); lon<-aperm(lon,c(3,1,2)) 
   lat<-rep(latXY,nt); dim(lat)<-c(nx-1,ny-1,nt); lat<-aperm(lat,c(3,1,2))
   date<-rep(t,(nx-1)*(ny-1)); dim(date)<-c(nt,nx-1,ny-1)
@@ -122,6 +121,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   date <- date[i]
   pcent <- pcent[i]
   strength <-  order(pcent)
+  if (!cyclones) strength <- rev(strength)
   
   # Pressure gradient
   if(verbose) print("Pressure gradient")
@@ -224,7 +224,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
              col="red",pch=20)
     }
   }
-
+  
   ## Remove temporary variable and release the memory:
   rm('lonXX','latXX','dateXX','inflx','infly'); gc(reset=TRUE)
   
