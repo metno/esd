@@ -1010,9 +1010,9 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (verbose) print('DSensemble.pca')
   cls <- class(y)
   # This function is for downscaling PCA to represent a group of stations
-  if (!is.na(attr(y,'longitude'))[1])
+  if (!is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) )
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-  if (!is.na(attr(y,'latitude'))[1])
+  if (!is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)))
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
   if (is.character(predictor))
@@ -1051,6 +1051,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     T2M <- matchdate(t2m,y)
   }
   if (inherits(T2M,"eof")) T2M <- as.field(T2M)
+  rm("predictor","t2m"); gc(reset=TRUE)
   
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
@@ -1072,7 +1073,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration')
 
-  #
   t <- as.Date(paste(years,months,'01',sep='-'))
 
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
@@ -1080,8 +1080,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   flog <- file("DSensemble.pca-log.txt","at")
   
   ## Set up a list environment to keep all the results
-  Q <- list(info='DSensemble.pca',pca=y) ## KMP 06-08-2015
- 
+  dse.pca <- list(info='DSensemble.pca',pca=y) ## KMP 06-08-2015
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
@@ -1100,12 +1099,11 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
         GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
         GCM <- gcm
     }
-    rm("gcm"); gc(reset=TRUE)
     T2MGCM <- combine(T2M,GCM)
     
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM))
-
+   
     ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
       testGCM <- subset(GCM,it=range(year(T2M))) # REB 29.04.2014
@@ -1114,12 +1112,13 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       testZ <- combine(testGCM,GCM)              # REB 29.04.2014
       rm("testGCM"); gc(reset=TRUE)
     }
+    rm("gcm","GCM"); gc(reset=TRUE)
 
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
     ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
     if (verbose) print("post-processing")
-    
+   
     ## Keep the results for the projections:
     if (verbose) print('Extract the downscaled projection')
     z <- attr(ds,'appendix.1') ## KMP 09.08.2015
@@ -1127,11 +1126,9 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     ## model takes up too much space! can it be stored more efficiently?
     attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
     attr(z,'evaluation') <- attr(ds,'evaluation')
-    ##class(z) <- class(ds)
     
-    cl <- paste('Q$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
+    cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
     eval(parse(text=cl))
-    ##browser()
     if (verbose) {
        print('Test to see if as.station has all information needed')
        test.stations.ds <- as.station(ds)
@@ -1166,7 +1163,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       
     if (verbose) print(paste("sd ratio=",ds.ratio))
 
-    #print(names(attributes(ds)))
+    print(names(attributes(ds)))
     if (biascorrect) {
       if (verbose) print('biascorrect')
       diag <- attr(ds,'diagnose')
@@ -1216,27 +1213,24 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   ## Unpacking the information tangled up in GCMs, PCs and stations:
   ## Save GCM-wise in the form of PCAs
   gcmnm <- gsub('-','.',gcmnm)
-  ##Y <- as.station(y)
 
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
-  attr(Q,'predictor') <- attr(T2M,'source')
-  attr(Q,'domain') <- list(lon=lon,lat=lat)
-  attr(Q,'scorestats') <- scorestats
-  attr(Q,'path') <- path
-  attr(Q,'scenario') <- rcp
-  attr(Q,'variable') <- attr(y,"variable")[1]
-   attr(Q,'unit') <- attr(y,"unit")[1]
-  attr(Q,'history') <- history.stamp(y)
+  attr(dse.pca,'predictor') <- attr(T2M,'source')
+  attr(dse.pca,'domain') <- list(lon=lon,lat=lat)
+  attr(dse.pca,'scorestats') <- scorestats
+  attr(dse.pca,'path') <- path
+  attr(dse.pca,'scenario') <- rcp
+  attr(dse.pca,'variable') <- attr(y,"variable")[1]
+   attr(dse.pca,'unit') <- attr(y,"unit")[1]
+  attr(dse.pca,'history') <- history.stamp(y)
   if (non.stationarity.check)
-    attr(Q,'on.stationarity.check') <- difference.z else
-    attr(Q,'on.stationarity.check') <- NULL
-  attr(Q,'area.mean.expl') <- FALSE
-  class(Q) <- c("dsensemble","pca","list")
+    attr(dse.pca,'on.stationarity.check') <- difference.z else
+    attr(dse.pca,'on.stationarity.check') <- NULL
+  attr(dse.pca,'area.mean.expl') <- FALSE
+  class(dse.pca) <- c("dsensemble","pca","list")
 
-  ##browser()
-  dse.pca <- Q
-  if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds) ## KMP 2015-08-05
+  if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
   save(file=file.ds,dse.pca)
   if (verbose) print("---")
   invisible(dse.pca)
