@@ -5,14 +5,12 @@
 
 corfield<-function(x,y,...) UseMethod("corfield")
 
-
 corfield.default <- function(x,y,...) {
   cor(x,y)
 }
 
-
 corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,...) {
-  if (verbose) {print("corfield.zoo:"); print('station against field')}
+  if (verbose) { print("corfield.zoo:"); print('station against field') }
 
   # Keep track of which is an eof object and which is a station record:
   swapped <- FALSE
