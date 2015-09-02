@@ -147,13 +147,17 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ## but this fails if ss is a list.
 
         nok <- apply(coredata(x),2,FUN='nv')
+        if (verbose) { print('nok:'); print(nok) }
         if ( (is.null(cex)) & !is.null(dim(ss)) )
             cex <- 5/log(dim(ss)[1]) else
             if (is.null(cex)) cex <- 5/log(length(ss[[1]])) else
             if (cex==0) cex <- 1.25*nok/max(nok,na.rm=TRUE)
+            if (cex<0) cex <- abs(cex)*nok/max(nok,na.rm=TRUE)
 ##>>>>>>> d6d9c84656c9b9b73e711c2e7ee2c8d0fb230980
         
         ## Select a subdomain in the x-axis
+
+        if (verbose) { print('cex:'); print(cex) }
         if (is.null(xlim))
             if (is.null(highlight) | showall)
                 if (length(is$lon) > 1)
