@@ -660,7 +660,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     srty <- order(lat(x)); lat <- lat(x)[srty]
     if (verbose) print('meta-stuff')
     unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
-    if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") )
+    if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") | (unit=="degree Celsius"))
         unit <- "degree*C"
     if (unit=="%") unit <- "'%'"
     if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") |
