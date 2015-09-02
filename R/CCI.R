@@ -6,6 +6,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
+
+  # Rearrange time index
+  t <- index(Z)
+  if (inherits(t,"POSIXt")) t <- as.numeric(strftime(t,format="%Y%m%d%h%m"))
     
   ## Calculate first and second derivative
   if(verbose) print("Calculate first and second derivative")
@@ -34,7 +38,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
               Zx[,1:(nx-1),1:(ny-1)] + Zx[,2:nx,1:(ny-1)])
   py <- 0.25*(Zy[,1:(nx-1),2:ny] + Zy[,2:nx,2:ny] +
               Zy[,1:(nx-1),1:(ny-1)] + Zy[,2:nx,1:(ny-1)])
-
+  
   ## Search for zero crossing in y-direction
   if(verbose) print("Find zero crossing of first derivative in y-direction")
   P.lowy <- rep(0,nt*(nx-1)*(ny-1)); dim(P.lowy) <- c(nt,nx-1,ny-1) 
@@ -67,35 +71,50 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   DX <- 0.5*(dx11+dx12)
   DX2 <- 0.5*(dx21+dx22)
 
-  ## Mask the cylcones already selected
-  #P.lowy[lows] <- 0; P.lowx[lows] <- 0
-  ## widen mask in x-direction
-  P.lowx[,2:(nx-1),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
-  P.lowx[,1:(nx-2),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
-  ## widen mask in y-direction
-  P.lowy[,,2:(ny-1)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
-  P.lowy[,,1:(ny-2)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
-
+  # Clear temporary objects from working memory
+  rm("resx","resy","dx11","dx12","dx21","dx22",
+     "dy11","dy12","dy21","dy22"); gc(reset=TRUE)
+  
   ## Find zero crossings in both directions
   ## Plowx & P.lowy are matrices with 0's and 1's.
   lows <- (P.lowy & P.lowx)
-  pcent <- 0.5*(px[lows]+py[lows])
-  strength <- order(pcent)
+  strength <- matrix(NA,dim(lows))
+  pcent <- 0.5*(px+py)
+  strength[lows] <- order(pcent[lows])
+  if (!cyclones) strength[lows] <- rev(strength[lows])
 
-  ## Handle time index
-  t <- index(Z)
-  if (inherits(t,"POSIXt")) t <- as.numeric(format(t,"%Y%m%d%H%M"))
-    
-  ## Remove secondary cyclones near a deeper one (same cyclonic system):
-  if(verbose) print("Remove secondary cyclones")
-  mindistance <- 1E4 # minimum distance between cyclones [m]
+  ## Find missed zero crossings using the widened masks
+  ## Mask the cylcones already selected
+  P.lowx2 <- P.lowx; P.lowy2 <- P.lowy
+  P.lowx2[lows1] <- 0; P.lowy2[lows1] <- 0
+  ## widen mask in x-direction
+  P.lowx2[,2:(nx-1),] <- P.lowx2[,1:(nx-2),] | P.lowx2[,2:(nx-1),]
+  P.lowx2[,1:(nx-2),] <- P.lowx2[,1:(nx-2),] | P.lowx2[,2:(nx-1),]
+  ## widen mask in y-direction
+  P.lowy2[,,2:(ny-1)] <- P.lowy2[,,1:(ny-2)] | P.lowy2[,,2:(ny-1)]
+  P.lowy2[,,1:(ny-2)] <- P.lowy2[,,1:(ny-2)] | P.lowy2[,,2:(ny-1)]
+  ## Find zero crossings
+  lows2 <- (P.lowy2 & P.lowx2)
+  strength[lows2] <- order(pcent[lows2]) + max(strength,na.rm=T)
+  if (!cyclones) strength[lows2] <- rev(strength[lows2])
+
+  ## Add extra cyclones from widened masks 
+  lows <- lows | lows2
+  pcent <- pcent[lows]
+  strength <- strength[lows]
+ 
+  ## Lat, lon, and dates of cyclones
   lon<-rep(lonXY,nt); dim(lon)<-c(nx-1,ny-1,nt); lon<-aperm(lon,c(3,1,2)) 
   lat<-rep(latXY,nt); dim(lat)<-c(nx-1,ny-1,nt); lat<-aperm(lat,c(3,1,2))
   date<-rep(t,(nx-1)*(ny-1)); dim(date)<-c(nt,nx-1,ny-1)
   lon <- lon[lows]; date <- date[lows]; lat<-lat[lows]
+
+  ## Remove secondary cyclones near a deeper one (same cyclonic system):
+  if(verbose) print("Remove secondary cyclones")
+  mindistance <- 1E4 # minimum distance between cyclones [m]
   del <- rep(TRUE,length(date))
   for (d in unique(date)) {
-    if (inherits(t,'Date')) d <- as.Date(d)
+    if (inherits(index(Z),'Date')) d <- as.Date(d)
     i <- which(date==d)
     distance <- apply(cbind(lon[i],lat[i]),1,
      function(x) suppressWarnings(distAB(x[1],x[2],lon[i],lat[i])))
@@ -127,7 +146,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   if(verbose) print("Pressure gradient")
   rho <- 1.2922
   dpsl <- sqrt(DX^2+DY^2)
-  if (attr(Z,"unit")=="hPa") dpsl <- dpsl*100
+  if (attr(A,"unit")=="hPa") dpsl <- dpsl*100
 
   # Find points of inflexion (2nd derivative==0) to estimate the storm radius
   # and maximum speed and pressure gradient
@@ -185,12 +204,26 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     max.speed[i] <- mean(v.grad)#v.grad[which.max(dpi)]
     max.vg[i] <- mean(vg)#vg[which.max(dpi)]
 
-    if (plot & i<4) {
+    if (plot & i==min(10,length(date))) {
       pxi <- px[date[i]==t,,];  pyi <- py[date[i]==t,,]
       lon.i <- lonXY[ilon,1]; lat.i <- latXY[1,ilat] 
       xi <- lonXY[,1]; yi <- latXY[1,]; zi <- pxi
       if (!(all(diff(xi)>0))) {xi <- rev(xi); zi <- apply(zi,2,rev)}
       if (!(all(diff(yi)>0))) {yi <- rev(yi); zi <- t(apply(t(zi),2,rev))}
+      dev.new()
+      plot(lonXY[,1],pxi[,latXY[1,]==lat[i]],lty=1,type="l",main=t[i],
+           xlab="lon",ylab="slp (hPa)")
+      points(lon[i],pxi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
+      points(lonXY[inflx<0,1],pxi[inflx<0,latXY[1,]==lat[i]],col="red",pch=1)
+      points(lon.i[lat.i==lat[i]],pxi[ilon[lat.i==lat[i]],latXY[1,]==lat[i]],
+             col="red",pch=20)
+      dev.new()
+      plot(latXY[1,],pyi[lonXY[,1]==lon[i],],lty=1,type="l",main=t[i],
+           xlab="lat",ylab="slp (hPa)")
+      points(lat[i],pyi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
+      points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
+      points(lat.i[lon.i==lon[i]],pyi[lonXY[,1]==lon[i],ilat[lon.i==lon[i]]],
+             col="red",pch=20)
       dev.new()
       image(xi,yi,zi,main=t[i],col=colscal(col="t2m",n=12,rev=FALSE),
             xlab="lon",ylab="lat")
@@ -208,20 +241,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       points(lon[date==date[i]],lat[date==date[i]],pch=21,lwd=2,
              bg="white",col="black",cex=2)
       points(lon[i],lat[i],pch=4,col="black",cex=1)
-      dev.new()
-      plot(lonXY[,1],pxi[,latXY[1,]==lat[i]],lty=1,type="l",main=t[i],
-           xlab="lon",ylab="slp (hPa)")
-      points(lon[i],pxi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
-      points(lonXY[inflx<0,1],pxi[inflx<0,latXY[1,]==lat[i]],col="red",pch=1)
-      points(lon.i[lat.i==lat[i]],pxi[ilon[lat.i==lat[i]],latXY[1,]==lat[i]],
-             col="red",pch=20)
-      dev.new()
-      plot(latXY[1,],pyi[lonXY[,1]==lon[i],],lty=1,type="l",main=t[i],
-           xlab="lat",ylab="slp (hPa)")
-      points(lat[i],pyi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
-      points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
-      points(lat.i[lon.i==lon[i]],pyi[lonXY[,1]==lon[i],ilat[lon.i==lon[i]]],
-             col="red",pch=20)
     }
   }
   
@@ -255,6 +274,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   attr(results,"file") <- attr(Z,"file")
   attr(results,"version") <- "CCI in esd v1.0 (after August 25, 2015)"
   class(results) <- c("events",class(results))
+  browser()
+  
   if(!is.null(fname)) save(file=fname,results)
   invisible(results)
 }
