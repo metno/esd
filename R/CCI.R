@@ -2,7 +2,7 @@
 
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
                 accuracy=NULL,label=NULL,fname="cyclones.rda",
-                plot=FALSE,verbose=FALSE) {
+                plot=FALSE,verbose=FALSE,secondary=TRUE) {
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
@@ -79,29 +79,35 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   ## Plowx & P.lowy are matrices with 0's and 1's.
   lows <- (P.lowy & P.lowx)
   strength <- matrix(NA,dim(lows))
+  qf <- matrix(0,dim(lows))
   pcent <- 0.5*(px+py)
   strength[lows] <- order(pcent[lows])
   if (!cyclones) strength[lows] <- rev(strength[lows])
-
+  qf[lows] <- 1
+  
   ## Find missed zero crossings using the widened masks
-  ## Mask the cylcones already selected
-  P.lowx2 <- P.lowx; P.lowy2 <- P.lowy
-  P.lowx2[lows1] <- 0; P.lowy2[lows1] <- 0
-  ## widen mask in x-direction
-  P.lowx2[,2:(nx-1),] <- P.lowx2[,1:(nx-2),] | P.lowx2[,2:(nx-1),]
-  P.lowx2[,1:(nx-2),] <- P.lowx2[,1:(nx-2),] | P.lowx2[,2:(nx-1),]
-  ## widen mask in y-direction
-  P.lowy2[,,2:(ny-1)] <- P.lowy2[,,1:(ny-2)] | P.lowy2[,,2:(ny-1)]
-  P.lowy2[,,1:(ny-2)] <- P.lowy2[,,1:(ny-2)] | P.lowy2[,,2:(ny-1)]
-  ## Find zero crossings
-  lows2 <- (P.lowy2 & P.lowx2)
-  strength[lows2] <- order(pcent[lows2]) + max(strength,na.rm=T)
-  if (!cyclones) strength[lows2] <- rev(strength[lows2])
-
-  ## Add extra cyclones from widened masks 
-  lows <- lows | lows2
+  if (secondary) {
+    if(verbose) print("Find missed cyclones using widened masks")
+    ## Mask the cylcones already selected
+     P.lowx[lows] <- 0; P.lowy[lows] <- 0
+    ## widen mask in x-direction
+    P.lowx[,2:(nx-1),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
+    P.lowx[,1:(nx-2),] <- P.lowx[,1:(nx-2),] | P.lowx[,2:(nx-1),]
+    ## widen mask in y-direction
+    P.lowy[,,2:(ny-1)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
+    P.lowy[,,1:(ny-2)] <- P.lowy[,,1:(ny-2)] | P.lowy[,,2:(ny-1)]
+    ## Find zero crossings
+    lows2 <- (P.lowy & P.lowx)
+    strength[lows2] <- order(pcent[lows2]) + max(strength,na.rm=T)
+    if (!cyclones) strength[lows2] <- rev(strength[lows2])
+    qf[lows2] <- 2
+    lows <- lows | lows2
+  }
+  
+  ## Extract pressure and strength for lows
   pcent <- pcent[lows]
   strength <- strength[lows]
+  qf <- qf[lows]
  
   ## Lat, lon, and dates of cyclones
   lon<-rep(lonXY,nt); dim(lon)<-c(nx-1,ny-1,nt); lon<-aperm(lon,c(3,1,2)) 
@@ -257,12 +263,12 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   hh <- as.numeric(strftime(date,"%H"))
   results <- data.frame(date=dd,time=hh,lon=lon,lat=lat,
                   pcent=pcent,max.dslp=max.dslp,
-                  max.speed=max.speed,radius=radius)
+                  max.speed=max.speed,radius=radius,qf=qf)
   attr(results,"label") <- label
   attr(results,"dx") <- dx
   attr(results,"dy") <- dy
   attr(results,"units") <- c("date","hour CET","degrees","degrees",
-                             "hPa","hPa/m","m/s","km")  
+                             "hPa","hPa/m","m/s","km","QF")
   if (cyclones) {
     attr(results,"longname") <- "low pressure systems identified with CCI method"
     attr(results,"variable") <- "cyclones"
@@ -270,6 +276,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     attr(results,"longname") <- "high-pressure systems identified with CCI method"
     attr(results,"variable") <- "anti-cyclones"
   }
+  attr(results,"QF") <- paste("1:",attr(results,"variable"),
+        "identified in cross-sections between EW and NS pressure gradient zero crossings;",
+        "2: less accurate",attr(results,"variable"),
+        "identification from widened EW and NS pressure gradient zero crossings")
   attr(results,"source") <- attr(Z,"source")
   attr(results,"file") <- attr(Z,"file")
   attr(results,"version") <- "CCI in esd v1.0 (after August 25, 2015)"
