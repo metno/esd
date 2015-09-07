@@ -98,13 +98,15 @@ pca2trajectory <- function(X,verbose=FALSE) {
 }
 
 plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
-                           main=NULL) {
+                           main=NULL,verbose=FALSE) {
 
+  if(verbose) print("plot.pca.trajectory")
   stopifnot(!missing(X), inherits(X,"trajectory"))
   if (inherits(X,'pca')) {
     pca <- X; X <- pca2trajectory(pca)
   } else pca <- PCA.trajectory(X,param=param)
   
+  if(verbose) print("Extractpatterns, PCs and eigenvalues")
   colvec <- c('red3','mediumblue','darkolivegreen3',
               'darkturquoise','darkorange')
   U <- attr(pca,'pattern')
@@ -112,7 +114,8 @@ plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
 
   if (!is.null(m)) m <- min(m,dim(U)[2])
   else m <- min(3,sum(R2>=2))
-    
+
+  if(verbose) print("Aggregate time series")
   date <- strptime(attr(pca,'start'),'%Y%m%d%H')
   while (sum(duplicated(date))>0) {
     date[duplicated(date)] <- date[duplicated(date)]+60
@@ -122,7 +125,8 @@ plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
   V.yr <- aggregate(V,FUN="mean",by=strftime(index(V),"%Y"))
 
   param <- unique(attr(pca,"colnames"))
-  
+
+  if(verbose) print("Arrange patterns")
   # Patterns - space
   if (length(param)==1) {
     uy <- U
@@ -156,6 +160,7 @@ plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
      widths=c(1,1,1,1,1,1), heights=c(2,2.5))
   }
 
+  if(verbose) print("Plot map")
   plot(0,0,type='n',xlab=xlab,
        ylab=ylab,xlim=xlim,ylim=ylim,main="loading pattern")
   for (i in 1:m) {

@@ -304,6 +304,68 @@ as.station.eof <- function(x,pattern=1:10) {
   invisible(y)
 }
 
+as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
+  if (verbose) print('as.station.dsensemble.pca')
+  stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
+  if (inherits(X,"station")) {
+      invisible(X)
+  } else {
+    N <- names(X)[grepl("^[a-z][0-9]",names(X))]
+    ns <- length(loc(X$pca))
+    Y <- as.station(X$pca)
+    if (is.null(is)) is <- 1:ns 
+
+    if (verbose) print('Extract the results model-wise')
+    Q <- list()
+    for (j in 1:length(N)) {
+      eval(parse(text=paste("xj <- X$",N[j],sep="")))
+      if(verbose) print(sub(".*_","",N[j]))
+      xj <- attrcp(X$pca,xj)
+      class(xj) <- c("ds",class(X$pca))
+      qj <- as.station(xj)
+      eval(parse(text=paste("qj -> Q$",N[j],sep="")))
+    }
+  
+    if (verbose) print('Arrange the results station-wise')
+    d <- index(Q[[1]])
+    m <- unique(month(index(Q[[1]])))
+    m[m<10] <- paste(0,m[m<10],sep="")
+    dates <- as.Date(paste(seq(min(year(d)),max(year(d))),m,'01',sep="-"))
+    x <- matrix(rep(NA,dim(Q[[1]])[1]*length(N)),
+                  dim(Q[[1]])[1],length(N))
+    x <- zoo(x,order.by=dates)
+    x <- attrcp(X,x)
+    # Loop over stations
+    pb <- txtProgressBar(style=3)
+    for (i in is) {
+      setTxtProgressBar(pb,i/(length(is))) 
+      x[,] <- NA
+      # Loop over models
+      for (j in 1:length(N)) {
+        eval(parse(text=paste("xj <- Q$",N[j],sep="")))
+        i1 <- is.element(index(xj),as.Date(dates))
+        i2 <- is.element(as.Date(dates),index(xj))
+        x[i2,j] <- xj[i1,i]
+      }
+      # Set attributes
+      yloc <- tolower(loc(X$pca)[i])
+      yloc <- gsub('^\\s+|\\s+$',"",yloc)
+      yloc <- gsub('-|/|[[:space:]]','.',yloc)
+      yloc <- gsub("\\.{2}", ".",yloc)
+      if (verbose) print(yloc)
+      colnames(x) <- N
+      attr(x,'location') <- yloc
+      attr(x,'longitude') <- attr(subset(Y,is=i),'longitude')
+      attr(x,'latitude') <- attr(subset(Y,is=i),'latitude')
+      attr(x,'station') <- subset(Y,is=i)
+      attr(x,'model_id') <- sub(".*_","",N)
+      class(x) <- c('dsensemble','zoo')
+      eval(parse(text=paste('X$',yloc,' <- x',sep='')))
+    }
+    class(X) <- c("dsensemble","pca","station","list")
+    invisible(X)
+  }
+}
 
 as.pca <- function(x) UseMethod("as.pca")
 
@@ -1210,3 +1272,29 @@ as.original.station <- function(x) {
   attr(X,'history') <- history.stamp(x)
   return(X)
 }
+
+as.events <- function(x,label=NULL,dx=NULL,dy=NULL,
+                      units=NULL,longname=NULL,variable=NULL,
+                      qflabel=NULL,src=NULL,file=NULL,
+                      version=NULL,verbose=FALSE) {
+  if (verbose) print("as.events")
+  X <- data.frame(x)
+  n <- names(X)
+  if (!all(c("date","time","lon","lat") %in% names(X))) {
+    print(paste("Missing input:",
+     names(X)[!c("date","time","lon","lat")%in%names(X)]))
+  }
+  attr(X,"label") <- label
+  attr(X,"dx") <- dx
+  attr(X,"dy") <- dy
+  attr(X,"longname") <- longname
+  attr(X,"variable") <- variable
+  attr(X,"QF") <- qflabel
+  attr(X,"source") <- src
+  attr(X,"file") <- file
+  attr(X,"version") <- version
+  class(X) <- c("events",class(X))
+  attr(X,"history") <- history.stamp(X)
+  invisible(X)
+}
+                        
