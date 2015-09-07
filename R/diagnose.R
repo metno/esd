@@ -86,56 +86,6 @@ diagnose.cca <- function(x) {
   grid()
 }
 
-# Display cross-validation and statistics on the residual
-diagnose.ds <- function(x,plot=FALSE) {
-
-  # the attribute 'evaluation' contains cross-validation
-  if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
-                                      xval <- crossval(x)
-  y <- as.residual(x)
-  z <- as.original.data(x)
-  
-  ## Test whether the distribution is normal: the Shapiro-Wilk test of normality. 
-  sw.test <- shapiro.test(coredata(x))
-  
-  anova <- summary(attr(x,'model'))
-  eof <- attr(x,'eof')
-  if (inherits(eof,'comb')) bias.diag <- diagnose(eof) else
-                            bias.diag <- NULL
-
-  spectrum(coredata(y),plot=FALSE) -> s
-  sp <- data.frame(y=log(s$spec),x=log(s$freq))
-  if (length(dim(y))==0) {
-    beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
-    beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
-    ar1 <- acf(y,plot=FALSE)$acf[2]
-  } else {beta <- NA; beta.error <- NA; ar1 <- NA}
-  
-  if (plot) {
-    plot(xval)
-
-    dev.new()
-    par(bty="n",mfcol=c(3,2))
-    plot(y)
-    
-    acf(y)
-
-    plot(z,y)
-    spectrum(y)
-
-    qqnorm(y)
-    qqline(y)
-
-    if  (!is.null(attr(x,'diagnose'))) 
-      plot(attr(x,'diagnose'))
-  }
-  
-  diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,sw.test=sw.test,
-                      ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error)
-  return(diagnostics)
-}
-
-
 diagnose.station <- function(x,main='Data availability',
                             xlab='',ylab='station',
                             sub=src(x),...) {
@@ -155,8 +105,6 @@ diagnose.station <- function(x,main='Data availability',
   grid(nx=nyrs,ny=d[2])
 }
 
-
-
 diagnose.mvr <- function(x) {
   print("Not finished")
 }
@@ -170,9 +118,16 @@ diagnose.cca <- function(x) {
 }
 
 # Display cross-validation and statistics on the residual
-diagnose.ds <- function(x,plot=FALSE) {
-
+diagnose.ds <- function(x,plot=FALSE,verbose=FALSE) {
+  
   ## the attribute 'evaluation' contains cross-validation
+  if (verbose) print("diagnose.ds")
+  stopifnot(inherits(x,"ds"))
+  if (inherits(x,"pca")) {
+    diagnostics <- diagnose.ds.pca(x,plot=plot,verbose=verbose)
+    return(diagnostics)
+  }
+    
   if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
                                       xval <- crossval(x)
   ## Check the residuals
@@ -203,14 +158,14 @@ diagnose.ds <- function(x,plot=FALSE) {
     lines(trend(y))
     
     ## Auto-correlation of the residual
-    ar <- acf(y,plot=FALSE)
+    ar <- acf(y,plot=TRUE)
     plot(ar$lag,ar$acf,type='b',main='Residual ACF?')
 
     ## Rsidual correlated with original data?
     plot(coredata(z),coredata(y),main='Residual correlated with original data?')
-  
-    sp <- spectrum(y,plot=FALSE)
-    plot(sp$freq,sp$spec,type='l',main='Residual power-spectrum',log='xy')
+
+    #sp <- spectrum(y,plot=FALSE)
+    plot(s$freq,s$spec,type='l',main='Residual power-spectrum',log='xy')
 
     ## Residual normally distributed?
     qqnorm(y,main='Residual normally distributed?')
@@ -225,6 +180,121 @@ diagnose.ds <- function(x,plot=FALSE) {
   return(diagnostics)
 }
 
+# Display cross-validation and statistics on the residual
+diagnose.ds.pca <- function(x,plot=FALSE,verbose=FALSE) {
+
+  ## the attribute 'evaluation' contains cross-validation
+  if (verbose) print("diagnose.ds.pca")
+  if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
+                                      xval <- crossval(x)
+  ## Check the residuals
+  y <- as.residual(x)
+  y <- as.station(y)
+  z <- matchdate(as.original.data(x),y)
+  anova <- summary(attr(x,'model'))
+  eof <- attr(x,'eof')
+  if (inherits(eof,'comb')) bias.diag <- diagnose(eof) else
+                            bias.diag <- NULL
+
+  w <- coredata(y)
+  ok <- apply(w,1,function(x) !any(is.na(x)))
+  w <- w[ok,]
+  spectrum(w,plot=FALSE) -> s
+  sp <- data.frame(y=log(s$spec),x=log(s$freq))
+  if (length(dim(y))==0) {
+    beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
+    beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
+    ar1 <- acf(y,plot=FALSE)$acf[2]
+  } else {beta <- NA; beta.error <- NA; ar1 <- NA}
+  
+  if (plot) {
+    ## Timer series of the residual
+    dev.new()
+    #par(bty="n",mfcol=c(3,2))
+    plot(xval,plot.type='single',col=c("blue","red"),
+         main='cross-validation',
+         sub=paste('correlation=',round(cor(xval)[2,1],2)))
+
+    dev.new()
+    matplot(y,type="p",pch=1,main='contains a trend?')
+    matplot(trend(y),type="l",add=TRUE)
+    
+    ## Auto-correlation of the residual
+    dev.new()
+    ar <- acf(w,plot=FALSE)
+    matplot(ar$lag,ar$acf,type='b',main='Residual ACF?')
+
+    ## Residual correlated with original data?
+    dev.new()
+    matplot(coredata(z),coredata(y),main='Residual correlated with original data?')
+
+    #sp <- spectrum(y,plot=FALSE)
+    dev.new()
+    matplot(s$freq,s$spec,type='l',main='Residual power-spectrum',log='xy')
+
+    ## Residual normally distributed?
+    dev.new()
+    qqnorm(w,main='Residual normally distributed?')
+    qqline(w)
+
+    if  (!is.null(attr(x,'diagnose'))) 
+      plot(attr(x,'diagnose'))
+  }
+  
+  diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,
+                      ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error)
+  return(diagnostics)
+}
+
+## # Display cross-validation and statistics on the residual
+## diagnose.ds <- function(x,plot=FALSE) {
+
+##   # the attribute 'evaluation' contains cross-validation
+##   if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
+##                                       xval <- crossval(x)
+##   y <- as.residual(x)
+##   z <- as.original.data(x)
+  
+##   ## Test whether the distribution is normal: the Shapiro-Wilk test of normality. 
+##   sw.test <- shapiro.test(coredata(x))
+  
+##   anova <- summary(attr(x,'model'))
+##   eof <- attr(x,'eof')
+##   if (inherits(eof,'comb')) bias.diag <- diagnose(eof) else
+##                             bias.diag <- NULL
+
+##   spectrum(coredata(y),plot=FALSE) -> s
+##   sp <- data.frame(y=log(s$spec),x=log(s$freq))
+##   if (length(dim(y))==0) {
+##     beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
+##     beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
+##     ar1 <- acf(y,plot=FALSE)$acf[2]
+##   } else {beta <- NA; beta.error <- NA; ar1 <- NA}
+  
+##   if (plot) {
+##     plot(xval)
+
+##     dev.new()
+##     par(bty="n",mfcol=c(3,2))
+##     plot(y)
+
+##     acf(y)
+
+##     browse()
+##     plot(z,y)
+##     spectrum(y)
+
+##     qqnorm(y)
+##     qqline(y)
+
+##     if  (!is.null(attr(x,'diagnose'))) 
+##       plot(attr(x,'diagnose'))
+##   }
+  
+##   diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,sw.test=sw.test,
+##                       ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error)
+##   return(diagnostics)
+## }
 
 ## diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
 ##   # Trend-evaluation: rank
@@ -365,11 +435,15 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   # Trend-evaluation: rank
   # Counts outside 90% confidence: binomial distrib. & prob.
   stopifnot(!missing(x),inherits(x,"dsensemble"))
+  
+  if (inherits(x,"pca")) {
+    diag <- diagnose.dsensemble.pca(x,plot=plot,...)
+    invisible(diag)
+  }
+ 
   z <- x
   # Remove the results with no valid data:
-  ## browser()
   n <- apply(z,2,FUN=nv)
-  ## browser()
   z <- subset(z,is=(1:length(n))[n > 0])
   
   d <- dim(z)
@@ -377,14 +451,12 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   y <- attr(x,'station')
   
   # statistics: past trends
-  #browser()
   i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
   i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
   obs <- data.frame(y=y[i1],t=year(y)[i1])
   #print(summary(obs)); print(sum(i1)); print(sum(i2)); browser()
   deltaobs <- lm(y ~ t,data=obs)$coefficients[2]*10  # deg C/decade
   deltagcm <- rep(NA,d[2])
-  ## browser()
   for (j in 1:d[2]) {
     gcm <- data.frame(y=z[i2,j],t=year(z)[i2])
     deltagcm[j] <- lm(y ~ t,data=gcm)$coefficients[2]*10  # deg C/decade
@@ -400,10 +472,8 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   # number of points outside conf. int. (binom)
   above <- y[i1] > q95[i2]
   below <- y[i1] < q05[i2]
-  #browser()
   outside <- sum(above,na.rm=TRUE) + sum(below,na.rm=TRUE)
   N <- sum(i1,na.rm=TRUE)
-  ## browser()
   if (plot) {
     x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),sd=sd(deltagcm))),2)
     y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
@@ -422,7 +492,6 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
     for (i in seq(0,90,by=1))
       points(x,y,pch=19,cex=2 - i/50,col=rgb(i/90,0,0))
   }
-  ##browser()
   diag <- list(robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
                outside=outside,above=above,below=below,
                y=y[i1],N=N,i1=i1,

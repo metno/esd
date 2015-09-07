@@ -209,7 +209,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       rm("testGCM"); gc(reset=TRUE)
     }
 
-    #browser()
     # REB: 30.04.2014 - new lines...
     if (verbose) print("- - - > DS")
     if (biascorrect) try(Z1 <- biasfix(Z1))
@@ -1088,7 +1087,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
     #gcmnm[i] <- attr(gcm,'model_id')
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
+    gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
     if (inherits(y,'season')) {
       GCM <- as.4seasons(gcm,FUN=FUNX)
       GCM <- subset(GCM,it=season(T2M)[1])
@@ -1117,61 +1116,63 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
     ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
-    if (verbose) print("post-processing")
+    if(inherits(ds,"try-error")) {
+      print(paste("esd failed for",gcmnm.i))
+    } else {
+      if (verbose) print("post-processing")
+      gcmnm[i] <- gcmnm.i
    
-    ## Keep the results for the projections:
-    if (verbose) print('Extract the downscaled projection')
-    z <- attr(ds,'appendix.1') ## KMP 09.08.2015
-    ##attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
-    ## model takes up too much space! can it be stored more efficiently?
-    attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
-    attr(z,'evaluation') <- attr(ds,'evaluation')
+      ## Keep the results for the projections:
+      if (verbose) print('Extract the downscaled projection')
+      z <- attr(ds,'appendix.1') ## KMP 09.08.2015
+      ##attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
+      ## model takes up too much space! can it be stored more efficiently?
+      attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
+      attr(z,'evaluation') <- attr(ds,'evaluation')
     
-    cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
-    eval(parse(text=cl))
-    if (verbose) {
-       print('Test to see if as.station has all information needed')
-       test.stations.ds <- as.station(ds)
-       a <- attrcp(y,z);  class(a) <- c("ds",class(y))
-       test.stations.z <- as.station(a)
-    }
+      cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
+      eval(parse(text=cl))
+      if (verbose) {
+        print('Test to see if as.station has all information needed')
+        test.stations.ds <- as.station(ds)
+        a <- attrcp(y,z);  class(a) <- c("ds",class(y))
+        test.stations.z <- as.station(a)
+      }
        
-    # Diagnose the residual: ACF, pdf, trend. These will together with the
-    # cross-validation and the common EOF diagnostics provide a set of
-    # quality indicators.
-    cal <- coredata(attr(ds,"original_data"))
-    fit <- coredata(attr(ds,"fitted_values"))
-    if (verbose) print('examine residuals...')
-    res <- as.residual(ds)
-    res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
-    ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
+      # Diagnose the residual: ACF, pdf, trend. These will together with the
+      # cross-validation and the common EOF diagnostics provide a set of
+      # quality indicators.
+      cal <- coredata(attr(ds,"original_data"))
+      fit <- coredata(attr(ds,"fitted_values"))
+      if (verbose) print('examine residuals...')
+      res <- as.residual(ds)
+      res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
+      ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
 #      ar <- as.numeric(acf(trend(cal-fit,result="residual"),
 #                           plot=FALSE)[[1]][2]) 
-    ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1]),
+      ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1]),
                          plot=FALSE)[[1]][2])
-    if (verbose) print(paste("Residual trend=",
+      if (verbose) print(paste("Residual trend=",
                              res.trend,'D/decade; K.S. p-val',
                              ks,'; AR(1)=',ar))
 
-    # Evaluation: here are lots of different aspects...
-    # Get the diagnostics: this is based on the analysis of common EOFs...
+      # Evaluation: here are lots of different aspects...
+      # Get the diagnostics: this is based on the analysis of common EOFs...
 
-    xval <- attr(ds,'evaluation')
-    r.xval <- round(cor(xval[,1],xval[,2]),3)
-    if (verbose) print(paste("x-validation r=",r.xval))
-    ds.ratio <- round(sd(ds[,1],na.rm=TRUE)/sd(y[,1],na.rm=TRUE),4)
+      xval <- attr(ds,'evaluation')
+      r.xval <- round(cor(xval[,1],xval[,2]),3)
+      if (verbose) print(paste("x-validation r=",r.xval))
+      ds.ratio <- round(sd(ds[,1],na.rm=TRUE)/sd(y[,1],na.rm=TRUE),4)
       
-    if (verbose) print(paste("sd ratio=",ds.ratio))
-
-    print(names(attributes(ds)))
-    if (biascorrect) {
-      if (verbose) print('biascorrect')
-      diag <- attr(ds,'diagnose')
-      if ( (verbose) & !is.null(diag)) str(diag)
-    } else diag <- NULL
-    
-    # diagnose for ds-objects
+      if (verbose) print(paste("sd ratio=",ds.ratio))
+      print(names(attributes(ds)))
+      if (biascorrect) {
+        if (verbose) print('biascorrect')
+        diag <- attr(ds,'diagnose')
+        if ( (verbose) & !is.null(diag)) str(diag)
+      } else diag <- NULL
       
+      # diagnose for ds-objects
       if (verbose) print('...')
       #
       if (is.null(diag)) {
@@ -1186,7 +1187,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
         arati <- ar1(ds)/ar1(y)
       } else {
         if (verbose) print('diag ok')
-    # Extract the mean score for leading EOF from the 4 seasons:
+     # Extract the mean score for leading EOF from the 4 seasons:
         mdiff <- mean(c(diag$s.1$mean.diff[1]/diag$s.1$sd0[1],
                         diag$s.2$mean.diff[1]/diag$s.2$sd0[1],
                         diag$s.3$mean.diff[1]/diag$s.3$sd0[1],
@@ -1206,9 +1207,10 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
             'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
             "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
                     round(quality)))
-  }
+   }
   
-  if (verbose) print('Downscaling finished')
+    if (verbose) print('Downscaling finished')
+  }
 
   ## Unpacking the information tangled up in GCMs, PCs and stations:
   ## Save GCM-wise in the form of PCAs

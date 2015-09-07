@@ -137,7 +137,6 @@ DS.default <- function(y,X,mon=NULL,
         calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                         ", data=caldat, ...)",sep="")
 
-    #browser()
 
     MODEL <- eval(parse(text=calstr))
     FSUM <- summary(MODEL)
@@ -175,7 +174,7 @@ DS.default <- function(y,X,mon=NULL,
     if (!is.null(du)) {
       pattern <- t(COEFS[2:dc[1],1]) %*%
           diag(attr(X,'eigenvalues')[eofs]) %*% t(U[,eofs])
-      dim(pattern) <- c(du[1],du[2])
+      dim(pattern) <- c(du[1],du[2]) 
     } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[eofs]
                                                  
     
@@ -195,7 +194,6 @@ DS.default <- function(y,X,mon=NULL,
                                         #  attr(pattern,nattrX[i]) <- attr(X0,nattrX[i])
     ds <- attrcp(y0,ds,ignore='names')
     pattern <- attrcp(X0,pattern,ignore=c('longitude','latitude','names'))
-    
     caldat <- zoo(as.matrix(caldat),order.by=index(X))
     if (verbose) print('Set attributes')
     attr(caldat,'calibration_expression') <- calstr
@@ -665,8 +663,9 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
       return(z)
     }
-
-    if (!inherits(X,"eof") & inherits(X,"zoo")) {
+    if (!inherits(X,"eof") & inherits(X,"field")) {
+      X <- EOF(X)
+    } else if (!inherits(X,"eof") & !inherits(X,"field") & inherits(X,"zoo")) {
       ## If the predictor is an index, then use the same code to
       ## estimate teleconnection patterns
       if (verbose) print('Predictor is a zoo object')
@@ -754,7 +753,6 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         fit.val <- y.out
         dxp <- dim(Xp); if (is.null(dxp)) dxp <- c(length(Xp),1)
         yp.out <- matrix(rep(NA,dxp[1]*dy[2]),dxp[1],dy[2])
-
         if (verbose) print(paste('PC',eofs,collapse=' '))
                                         # Loop over the PCs...
         ## REB 2015-03-23
@@ -792,13 +790,13 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
 
             ## Check:
             if (verbose) print(paste(i,'y.out[,i]:',
-                                     length(y.out[is.finite(ys),i]),'=',length(z),'?'))
+               length(y.out[is.finite(ys),i]),'=',length(z),'?'))
             
             ## Collect the projections in a matrix:
             y.out[is.finite(ys),i] <- coredata(z)
             fit.val[is.finite(ys),i] <- attr(z,'fitted_values')
             if (!is.null(attr(X0,'n.apps')))
-                yp.out[is.finite(ys),i] <- attr(z,'appendix.1')
+                yp.out[,i] <- attr(z,'appendix.1')
             
             ## Also keep the cross-validation
             if (!is.null(attr(z,'evaluation'))) { ## REB 2015-03-27
@@ -810,7 +808,6 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             if (verbose) print('Calculate predictor pattern:')
             ## Only if one type of predictor - case with mixed predictors a
             ## bit more complicated -> return NAs.
-            #browser()
             if ( (dp[3] >= length(attr(z,'model')$coefficients)-1) &
                  (length(attr(z,'model')$coefficients) > 2) )
               predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] %*%
@@ -849,8 +846,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         }
                                         #print(class(model)); str(model)
     attr(ds,'calibration_data') <- attr(z,'calibration_data')
-    attr(ds,'fitted_values') <- zoo(fit.val,
-                                    order.by=index(attr(z,'fitted_values')))
+    attr(ds,'fitted_values') <- zoo(fit.val,order.by=index(attr(z,'fitted_values')))
     class(attr(ds,'fitted_values')) <- class(y0)
     attr(ds,'model') <- model
     attr(ds,'eof') <- eof
