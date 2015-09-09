@@ -859,7 +859,7 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
   col.q5 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q5,alpha)
   col.q95 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q95,alpha)
 
-  browser()
+  ##browser()
   dev.new()
   par0 <- par(mgp=c(0,0.5,0))
   plot(range(lons)+c(-2,2),range(lats)+c(-2,2),type="n",
