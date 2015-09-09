@@ -165,8 +165,12 @@ as.station.ds <- function(x) {
   return(y)
 }
 
-as.station.pca <- function(x) {
-  y <- pca2station(x)
+as.station.pca <- function(x,...) {
+  if (inherits(x,"dsensemble")) {
+    y <- as.station.dsensemble.pca(x,...)
+  } else {
+    y <- pca2station(x,...)
+  }
   return(y)
 }
 
@@ -327,6 +331,7 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
     }
   
     if (verbose) print('Arrange the results station-wise')
+    W <- list()
     d <- index(Q[[1]])
     m <- unique(month(index(Q[[1]])))
     m[m<10] <- paste(0,m[m<10],sep="")
@@ -336,9 +341,9 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
     x <- zoo(x,order.by=dates)
     x <- attrcp(X,x)
     # Loop over stations
-    pb <- txtProgressBar(style=3)
+    if(!verbose) pb <- txtProgressBar(style=3)
     for (i in is) {
-      setTxtProgressBar(pb,i/(length(is))) 
+      if(!verbose) setTxtProgressBar(pb,i/(length(is))) 
       x[,] <- NA
       # Loop over models
       for (j in 1:length(N)) {
@@ -360,10 +365,14 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
       attr(x,'station') <- subset(Y,is=i)
       attr(x,'model_id') <- sub(".*_","",N)
       class(x) <- c('dsensemble','zoo')
-      eval(parse(text=paste('X$',yloc,' <- x',sep='')))
+      eval(parse(text=paste('W$',yloc,' <- x',sep='')))
+      #eval(parse(text=paste('X$',yloc,' <- x',sep='')))
     }
-    class(X) <- c("dsensemble","pca","station","list")
-    invisible(X)
+    class(W) <- c("dsensemble","station","list")
+    attr(W,"history") <- history.stamp()
+    invisible(W)
+    #class(X) <- c("dsensemble","pca","station","list")
+    #invisible(X)
   }
 }
 
