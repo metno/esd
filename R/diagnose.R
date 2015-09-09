@@ -510,10 +510,9 @@ diagnose.dsensemble.pca <- function(X,
   if (verbose) print('diagnose.dsensemble.pca')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
 
-  Y <- as.station.dsensemble.pca(X,verbose=verbose)
-  #stations <- which(!grepl("^[a-z][0-9]",names(Y)))
+  Y <- as.station(X,verbose=verbose)
+  ##stations <- which(!grepl("^[a-z][0-9]",names(Y)))
   gcms <- attr(Y[[1]],"model_id")
-
   if (verbose) print("Compare magnitudes and trends")
   outside <- matrix(NA,length(Y))
   deltagcm <- matrix(NA,length(Y),length(gcms))
@@ -536,6 +535,7 @@ diagnose.dsensemble.pca <- function(X,
   d$location <- names(Y)
                      
   if(plot) {
+    if(verbose) print("target plot")
     dev.new()
     par(bty="n",xaxt="n",yaxt="n",fig=c(0.05,0.95,0,0.9))
     plot(c(-100,100),c(-100,100),type="n",ylab="magnitude",xlab="trend",
