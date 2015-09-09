@@ -511,19 +511,17 @@ diagnose.dsensemble.pca <- function(X,
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
 
   Y <- as.station.dsensemble.pca(X,verbose=verbose)
-  stations <- which(!grepl("^[a-z][0-9]",names(Y)))
-  stations <- stations[stations>2]
-  gcms <- attr(Y[[stations[1]]],"model_id")
+  #stations <- which(!grepl("^[a-z][0-9]",names(Y)))
+  gcms <- attr(Y[[1]],"model_id")
 
   if (verbose) print("Compare magnitudes and trends")
-  outside <- matrix(NA,length(stations))
-  deltagcm <- matrix(NA,length(stations),length(gcms))
-  deltaobs <- matrix(NA,length(stations))
-  N <- matrix(NA,length(stations))
-  for (i in 1:length(stations)) {
-    yi <- Y[[stations[i]]]
-    if (verbose) print(loc(yi))
-    di <- diagnose(yi,plot=FALSE)
+  outside <- matrix(NA,length(Y))
+  deltagcm <- matrix(NA,length(Y),length(gcms))
+  deltaobs <- matrix(NA,length(Y))
+  N <- matrix(NA,length(Y))
+  for (i in 1:length(Y)) {
+    if (verbose) print(loc(Y[[i]]))
+    di <- diagnose(Y[[i]],plot=FALSE)
     outside[i] <- di$outside
     deltaobs[i] <- di$deltaobs
     deltagcm[i,] <- di$deltagcm
@@ -535,7 +533,7 @@ diagnose.dsensemble.pca <- function(X,
   d$deltaobs <- deltaobs
   d$deltagcm <- deltagcm
   d$N <- di$N
-  d$location <- names(Y)[stations]
+  d$location <- names(Y)
                      
   if(plot) {
     dev.new()
