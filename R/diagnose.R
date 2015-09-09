@@ -527,12 +527,12 @@ diagnose.dsensemble.pca <- function(X,
     N[i] <- di$N
   }
   
-  d <- list()
-  d$outside <- outside
-  d$deltaobs <- deltaobs
-  d$deltagcm <- deltagcm
-  d$N <- di$N
-  d$location <- names(Y)
+  diag <- list()
+  diag$outside <- outside
+  diag$deltaobs <- deltaobs
+  diag$deltagcm <- deltagcm
+  diag$N <- di$N
+  diag$location <- names(Y)
                      
   if(plot) {
     if(verbose) print("target plot")
@@ -547,7 +547,7 @@ diagnose.dsensemble.pca <- function(X,
               r*sin(pi*seq(0,2,length=360)),
               col=bcol[i %% 2 + 1],border="grey15")
     }
-    col <- colscal(col="rainbow",n=length(d$outside),alpha=0.6)
+    col <- colscal(col="rainbow",n=length(diag$outside),alpha=0.6)
     data(geoborders)
     lon <- geoborders$x
     lat <- geoborders$y
@@ -569,6 +569,7 @@ diagnose.dsensemble.pca <- function(X,
     points(lon(X$pca)[i],lat(X$pca)[i],
            pch=21,cex=1,col='Grey',bg=col,lwd=0.5)    
   }
-  invisible(d)  
+
+  invisible(diag)
 }                     
 
