@@ -787,12 +787,11 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
   data("geoborders",envir=environment())
 
-  X <- as.station.dsensemble.pca(X,verbose=verbose)
-  stations <- which(!grepl("^[a-z][0-9]",names(X)))
-  stations <- stations[stations>2]
-  gcms <- attr(X[[stations[1]]],"model_id")
-  lon <- sapply(X[stations],function(x) attr(x,"longitude"))
-  lat <- sapply(X[stations],function(x) attr(x,"latitude"))
+  Y <- as.station.dsensemble.pca(X,verbose=verbose)
+  #stations <- which(!grepl("^[a-z][0-9]",names(Y)))
+  gcms <- attr(Y[[1]],"model_id")
+  lons <- sapply(Y,lon)
+  lats <- sapply(Y,lat)
 
   if (FUN=='trend') {
     FUN <- trend.coef
@@ -803,32 +802,28 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
     FUN2 <- NULL
     label_fun <- FUN
   }
-  Y <- matrix(rep(NA,length(gcms)*length(stations)),
-              length(stations),length(gcms))
-  for (i in 1:length(stations)) {
-     xi <- X[[stations[i]]]
-     Y[i,] <- apply(xi,2,FUN)
+  Z <- matrix(rep(NA,length(gcms)*length(Y)),length(Y),length(gcms))
+  for (i in 1:length(Y)) {
+     Z[i,] <- apply(Y[[i]],2,FUN)
   }
-  y <- apply(Y,1,mean)
-  y.q5 <- apply(Y,1,q5)
-  y.q95 <- apply(Y,1,q95)
+  z <- apply(Z,1,mean)
+  z.q5 <- apply(Z,1,q5)
+  z.q95 <- apply(Z,1,q95)
   
   if (!is.null(FUN2)) {
-    P <- matrix(rep(NA,length(gcms)*length(stations)),
-              length(stations),length(gcms))
-    for (i in 1:length(stations)) {
-      xi <- X[[stations[i]]]
-      P[i,] <- apply(xi,2,FUN2)
+    P <- matrix(rep(NA,length(gcms)*length(Y)),length(Y),length(gcms))
+    for (i in 1:length(Y)) {
+      P[i,] <- apply(Y[[i]],2,FUN2)
     }
-    p <- apply(P,1,median)
-  } else p <- rep(0,length(y))
+    p <- apply(P,1,mean)
+  } else p <- rep(0,length(z))
    
   if (is.null(colbar)) {
       colbar=list(palette='t2m',rev=FALSE,n=n,breaks=NULL,
           type="p",cex=2,h=0.6,v=1,pos=0.1,show=TRUE)
   }
   if (is.null(colbar$breaks)) {
-      colbar$breaks <- c(-max(abs(y.q95)),max(abs(y.q95)))
+      colbar$breaks <- c(-max(abs(z.q95)),max(abs(z.q95)))
   }
 
   d <- diagnose.dsensemble.pca(X,verbose=verbose)
@@ -838,47 +833,50 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
                              sd=sd(d$deltagcm))))
   outside <- abs(2*(0.5-pbinom(d$outside,size=d$N,prob=0.1)))
   #od <- sqrt(outside^2 + delta^2)
-  cex <- 1.5+(1-outside)*1.5
-  alpha <- 0.6+(1-delta)*0.4
+  cex <- 1+(1-outside)*2
+  alpha <- 0.5+(1-delta)*0.5
   if(verbose) print('quality measures:')
   if(verbose) print('transparency - trend')
   if(verbose) print('size - magnitude')
   
-  colbar <- colbar.ini(y,colbar=colbar,verbose=verbose)
+  colbar <- colbar.ini(z,colbar=colbar,verbose=verbose)
   colbar$breaks <- signif(colbar$breaks,digits=2)
 
-  icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
+  icol <- apply(as.matrix(z),2,findInterval,colbar$breaks)
   col <- colbar$col[icol]
-  icol.q5 <- apply(as.matrix(y.q5),2,findInterval,colbar$breaks)
+  icol.q5 <- apply(as.matrix(z.q5),2,findInterval,colbar$breaks)
   col.q5 <- colbar$col[icol.q5]
-  icol.q95 <- apply(as.matrix(y.q95),2,findInterval,colbar$breaks)
+  icol.q95 <- apply(as.matrix(z.q95),2,findInterval,colbar$breaks)
   col.q95 <- colbar$col[icol.q95]
-  col[as.matrix(y)>max(colbar$breaks)] <- colbar$col[n-1]
-  col[as.matrix(y)<min(colbar$breaks)] <- colbar$col[1]
-  col.q5[as.matrix(y.q5)>max(colbar$breaks)] <- colbar$col[n-1]
-  col.q5[as.matrix(y.q5)<min(colbar$breaks)] <- colbar$col[1]
-  col.q95[as.matrix(y.q95)>max(colbar$breaks)] <- colbar$col[n-1]
-  col.q95[as.matrix(y.q95)<min(colbar$breaks)] <- colbar$col[1]
+  col[as.matrix(z)>max(colbar$breaks)] <- colbar$col[n-1]
+  col[as.matrix(z)<min(colbar$breaks)] <- colbar$col[1]
+  col.q5[as.matrix(z.q5)>max(colbar$breaks)] <- colbar$col[n-1]
+  col.q5[as.matrix(z.q5)<min(colbar$breaks)] <- colbar$col[1]
+  col.q95[as.matrix(z.q95)>max(colbar$breaks)] <- colbar$col[n-1]
+  col.q95[as.matrix(z.q95)<min(colbar$breaks)] <- colbar$col[1]
   
   col <- mapply(function(a,b) adjustcolor(a,alpha=b),col,alpha)
   col.q5 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q5,alpha)
   col.q95 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q95,alpha)
 
-  par0 <- par()
-  plot(range(lon)+c(-2,2),range(lat)+c(-2,2),type="n",
+  browser()
+  dev.new()
+  par0 <- par(mgp=c(0,0.5,0))
+  plot(range(lons)+c(-2,2),range(lats)+c(-2,2),type="n",
        xlab=NA,ylab=NA,axes=FALSE)
+  title(paste("dsensemble ",label_fun,", ",paste(year(range(index(Y[[1]]))),
+        collapse="-"),sep=""),line=3)
   axis(2)
   axis(3)
   lines(geoborders$x,geoborders$y,col="darkblue")
   lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,col="pink")
   lines(geoborders$x+360,geoborders$y,col="darkblue")
-  points(lon,lat,pch=21,col=col.q95,bg=col,cex=cex,lwd=cex)
-  points(lon,lat,pch=21,col=col,bg=col.q5,cex=cex/4,lwd=0.5)
-  points(lon[p>plim],lat[p>plim],pch=1,cex=cex*1.3,
-         col="Grey20",lwd=cex/2)
-  text(mean(lon),min(lat)-2,cex=1.5,
-       labels=paste('dsensemble ', attr(X,"variable")," ",label_fun,', ',
-           paste(year(range(index(X[[3]]))),collapse="-"),sep=""))
+  points(lons,lats,pch=21,col=col.q95,bg=col,cex=cex,lwd=cex)
+  points(lons,lats,pch=21,col=col,bg=col.q5,cex=cex/3,lwd=0.5)
+  points(lons[p>plim],lats[p>plim],pch=4,cex=cex[p>plim],
+         col="Grey20",lwd=0.3)
+  text(mean(lons),min(lats)-2,cex=1,labels=paste(attr(X,"var"),
+    " ",label_fun," (",attr(X,"unit"),")",sep="")) 
   if (colbar$show) {
     par(fig=par0$fig,new=TRUE)
     image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
