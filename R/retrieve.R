@@ -64,7 +64,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
 { # Begin of function
     ## Update argument names for internal use only
     require(ncdf4) # REB
-    browser()
+    ## browser()
     lon.rng  <- lon
     lat.rng  <- lat
     lev.rng  <- lev
