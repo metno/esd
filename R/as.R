@@ -255,7 +255,7 @@ as.station.field <- function(x,is=NULL) {
   index <- index(x)
   stopifnot(!missing(x),
            !zeros(inherits(x,c("field","zoo"),which=TRUE) ))
-  if (!is.null(is)) y <- regrid.field(x,list(lon,lat)) else
+  if (!is.null(is)) y <- regrid.field(x,is=is) else
                     y <- x
   y <- as.station.zoo(y,loc=NA,param=varid(y),unit=unit(y),
                       lon=lon(y),lat=lat(y),alt=NA,
