@@ -436,10 +436,10 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   # Counts outside 90% confidence: binomial distrib. & prob.
   stopifnot(!missing(x),inherits(x,"dsensemble"))
   
-  if (inherits(x,"pca")) {
+  if (inherits(x,"pca") | inherits(x,"list")) {
     diag <- diagnose.dsensemble.pca(x,plot=plot,...)
     invisible(diag)
-  }
+  } else {
  
   z <- x
   # Remove the results with no valid data:
@@ -502,74 +502,65 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
   attr(diag,'history') <- history.stamp(x)
 
   invisible(diag)
+  }
 }
 
-diagnose.dsensemble.pca <- function(X,
-   plot=FALSE,verbose=FALSE,...) {
-
+diagnose.dsensemble.pca <- function(X,plot=FALSE,verbose=FALSE,...) {
   if (verbose) print('diagnose.dsensemble.pca')
-  stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
-
-  Y <- as.station(X,verbose=verbose)
-  ##stations <- which(!grepl("^[a-z][0-9]",names(Y)))
-  gcms <- attr(Y[[1]],"model_id")
+  stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
+  if (inherits(X,"pca")) X <- as.station(X,verbose=verbose)
+  gcms <- attr(X[[1]],"model_id")
   if (verbose) print("Compare magnitudes and trends")
-  outside <- matrix(NA,length(Y))
-  deltagcm <- matrix(NA,length(Y),length(gcms))
-  deltaobs <- matrix(NA,length(Y))
-  N <- matrix(NA,length(Y))
-  for (i in 1:length(Y)) {
-    if (verbose) print(loc(Y[[i]]))
-    di <- diagnose(Y[[i]],plot=FALSE)
+  outside <- matrix(NA,length(X))
+  deltagcm <- matrix(NA,length(X),length(gcms))
+  deltaobs <- matrix(NA,length(X))
+  N <- matrix(NA,length(X))
+  for (i in 1:length(X)) {
+    if (verbose) print(loc(X[[i]]))
+    di <- diagnose(X[[i]],plot=FALSE,verbose=verbose)
     outside[i] <- di$outside
     deltaobs[i] <- di$deltaobs
     deltagcm[i,] <- di$deltagcm
     N[i] <- di$N
   }
-  
-  diag <- list()
-  diag$outside <- outside
-  diag$deltaobs <- deltaobs
-  diag$deltagcm <- deltagcm
-  diag$N <- di$N
-  diag$location <- names(Y)
-                     
+  d <- list(outside=outside,deltaobs=deltaobs,deltagcm=deltagcm,
+            N=di$N,location=names(X))
   if(plot) {
-    if(verbose) print("target plot")
+    if(verbose) print("target plot") 
     dev.new()
     par(bty="n",xaxt="n",yaxt="n",fig=c(0.05,0.95,0,0.9))
     plot(c(-100,100),c(-100,100),type="n",ylab="magnitude",xlab="trend",
          mgp=c(0.5,0.5,0))
     bcol=c("grey95","grey40")
     for (i in 1:10) {
-      r <- (11-i)*10
-      polygon(r*cos(pi*seq(0,2,length=360)),
-              r*sin(pi*seq(0,2,length=360)),
+      ri <- (11-i)*10
+      polygon(ri*cos(pi*seq(0,2,length=360)),
+              ri*sin(pi*seq(0,2,length=360)),
               col=bcol[i %% 2 + 1],border="grey15")
     }
-    col <- colscal(col="rainbow",n=length(diag$outside),alpha=0.6)
+    col <- colscal(col="rainbow",n=length(d$outside),alpha=0.6)
     data(geoborders)
     lon <- geoborders$x
     lat <- geoborders$y
-    ok <- lon>(min(lon(X$pca))-1) & lon<(max(lon(X$pca))+1) &
-        lat>(min(lat(X$pca))-1) & lat<(max(lat(X$pca))+1)
+    xlon <- sapply(X,lon)
+    xlat <- sapply(X,lat)
+    ok <- lon>(min(xlon)-1) & lon<(max(xlon)+1) &
+        lat>(min(xlat)-1) & lat<(max(xlat)+1)
     lon2 <- attr(geoborders,"borders")$x
     lat2 <- attr(geoborders,"borders")$y
-    ok2 <- lon2>(min(lon(X$pca))-1) & lon2<(max(lon(X$pca))+1) &
-           lat2>(min(lat(X$pca))-1) & lat2<(max(lat(X$pca))+1)
+    ok2 <- lon2>(min(xlon)-1) & lon2<(max(xlon)+1) &
+           lat2>(min(xlat)-1) & lat2<(max(xlat)+1)
     x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
                                sd=sd(deltagcm))),2)
     y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
-    i <- order(lat(X$pca))
+    i <- order(xlat)
     points(x[i],y[i],pch=21,cex=2,col='black',bg=col)
     par(fig=c(0.05,0.2,0.9,0.98),new=TRUE, mar=c(0,0,0,0),
         cex.main=0.75,xpd=NA,col.main="grey")
     plot(lon[ok],lat[ok],lwd=1,col="black",type='l',xlab=NA,ylab=NA)
     lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)   
-    points(lon(X$pca)[i],lat(X$pca)[i],
-           pch=21,cex=1,col='Grey',bg=col,lwd=0.5)    
+    points(xlon[i],xlat[i],pch=21,cex=1,col='Grey',bg=col,lwd=0.5)    
   }
-
-  invisible(diag)
-}                     
+  invisible(d)
+}
 

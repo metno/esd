@@ -56,9 +56,6 @@ vis.cca <- function(x,...) {
 vis.mvr <- function(x,...) {
 }
 
-vis.dsensemble <- function(x,...) {
-}
-
 vis.ds <- function(x,...) {
 }
 
@@ -779,16 +776,24 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
 }
 
 
+vis.dsensemble <- function(x,...) {
+  stopifnot(inherits(x,"dsensemble"))
+  if (inherits(x,"list")) {
+    vis.dsensemble.pca(x,...)
+  } 
+}
 
 vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
     colbar=NULL,legend.shrink=1,n=11,plim=0.01,...) {
 
   if (verbose) print('vis.dsensemble.pca')
-  stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
-  data("geoborders",envir=environment())
+  stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
 
-  Y <- as.station.dsensemble.pca(X,verbose=verbose)
-  #stations <- which(!grepl("^[a-z][0-9]",names(Y)))
+  if (inherits(X,"pca")) {
+    if(verbose) print("as.station(dsensemble.pca)")
+    Y <- as.station(X)
+  } else Y <- X
+  
   gcms <- attr(Y[[1]],"model_id")
   lons <- sapply(Y,lon)
   lats <- sapply(Y,lat)
@@ -802,6 +807,7 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
     FUN2 <- NULL
     label_fun <- FUN
   }
+  if(verbose) print(paste("calculate",label_fun))
   Z <- matrix(rep(NA,length(gcms)*length(Y)),length(Y),length(gcms))
   for (i in 1:length(Y)) {
      Z[i,] <- apply(Y[[i]],2,FUN)
@@ -811,6 +817,7 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
   z.q95 <- apply(Z,1,q95)
   
   if (!is.null(FUN2)) {
+    if(verbose) print(paste("calculate significance"))
     P <- matrix(rep(NA,length(gcms)*length(Y)),length(Y),length(gcms))
     for (i in 1:length(Y)) {
       P[i,] <- apply(Y[[i]],2,FUN2)
@@ -826,19 +833,32 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
       colbar$breaks <- c(-max(abs(z.q95)),max(abs(z.q95)))
   }
 
-  d <- diagnose.dsensemble.pca(X,verbose=verbose)
-  #cex <- (1-apply(d$nrmsdq,1,mean))*2.5
-
+  if (inherits(X,"pca")) {
+    xval <- lapply(X[3:length(X)],function(x) attr(x,"evaluation"))
+    r2 <- sapply(xval,function(x) 100*cor(x[,1],x[,2])^2)
+    if(verbose) {
+      print(paste("calibration period",
+        paste(range(year(index(xval[[1]]))),collapse="-")))
+      print(paste("x-validation: r2 = ",round(mean(r2)),"%",
+        " (",round(q5(r2)),"%,",round(q95(r2)),"%)",sep=""))
+    }
+  }
+  
+  if(verbose) print("diagnose")
+  d <- diagnose(Y,verbose=verbose,plot=FALSE)
   delta <- abs(2*(0.5-pnorm(d$deltaobs,mean=mean(d$deltagcm),
                              sd=sd(d$deltagcm))))
   outside <- abs(2*(0.5-pbinom(d$outside,size=d$N,prob=0.1)))
-  #od <- sqrt(outside^2 + delta^2)
-  cex <- 1+(1-outside)*2
-  alpha <- 0.5+(1-delta)*0.5
-  if(verbose) print('quality measures:')
-  if(verbose) print('transparency - trend')
-  if(verbose) print('size - magnitude')
+  quality <- 1-0.5*(delta + outside)
+  cex <- 1 + 2*quality
   
+  pch <- rep(21,length(p))
+  pch[p>0.05] <- 23
+  cex[pch==23] <- cex[pch==23]*0.9
+  
+  if(verbose) print('shape - significance of trend')
+  if(verbose) print('size - quality of fit (magnitude & trend)')
+
   colbar <- colbar.ini(z,colbar=colbar,verbose=verbose)
   colbar$breaks <- signif(colbar$breaks,digits=2)
 
@@ -855,15 +875,25 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
   col.q95[as.matrix(z.q95)>max(colbar$breaks)] <- colbar$col[n-1]
   col.q95[as.matrix(z.q95)<min(colbar$breaks)] <- colbar$col[1]
   
-  col <- mapply(function(a,b) adjustcolor(a,alpha=b),col,alpha)
-  col.q5 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q5,alpha)
-  col.q95 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q95,alpha)
+  #alpha <- p
+  #alpha[p>0.05] <- 0.5
+  #col <- mapply(function(a,b) adjustcolor(a,alpha=b),col,alpha)
+  #col.q5 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q5,alpha)
+  #col.q95 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q95,alpha)
 
-  ##browser()
+  data("geoborders",envir=environment())
+  dx <- max(diff(range(lons))/10,2)
+  dy <- max(diff(range(lats))/10,2)
+  xrange <- range(lons) + c(-dx,dx)
+  yrange <- range(lats) + c(-0.5*dy,1.5*dy)
+  dlon <- diff(xrange)/6
+  dlat <- diff(yrange)/5
+
+  if(verbose) print("plot map of trends")
   dev.new()
-  par0 <- par(mgp=c(0,0.5,0))
-  plot(range(lons)+c(-2,2),range(lats)+c(-2,2),type="n",
-       xlab=NA,ylab=NA,axes=FALSE)
+  par0 <- par()
+  par(mgp=c(0,0.5,0),lheight=.9)
+  plot(xrange,yrange,type="n",xlab=NA,ylab=NA,axes=FALSE)
   title(paste("dsensemble ",label_fun,", ",paste(year(range(index(Y[[1]]))),
         collapse="-"),sep=""),line=3)
   axis(2)
@@ -871,13 +901,12 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
   lines(geoborders$x,geoborders$y,col="darkblue")
   lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,col="pink")
   lines(geoborders$x+360,geoborders$y,col="darkblue")
-  points(lons,lats,pch=21,col=col.q95,bg=col,cex=cex,lwd=cex)
-  points(lons,lats,pch=21,col=col,bg=col.q5,cex=cex/3,lwd=0.5)
-  points(lons[p>plim],lats[p>plim],pch=4,cex=cex[p>plim],
-         col="Grey20",lwd=0.3)
-  text(mean(lons),min(lats)-2,cex=1,labels=paste(attr(X,"var"),
+  points(lons,lats,pch=pch,col=col.q95,bg=col,cex=cex,lwd=cex)
+  points(lons,lats,pch=pch,col=col,bg=col.q5,cex=cex/3,lwd=0.5)
+  text(mean(xrange),min(yrange),cex=1,labels=paste(attr(X,"var"),
     " ",label_fun," (",attr(X,"unit"),")",sep="")) 
   if (colbar$show) {
+    if(verbose) print("add colorbar")
     par(fig=par0$fig,new=TRUE)
     image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
                legend.only = T, zlim = range(colbar$breaks),
@@ -886,5 +915,40 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
                axis.args = list(cex.axis = 0.8,
                xaxp=c(range(colbar$breaks),n=colbar$n)))
   }
+
+  ## Add legends
+  if(verbose) print("add legends")
+  rect(min(xrange)-0.1*dlon,max(yrange)-0.9*dlat,
+       mean(xrange)+0.3*dlon,max(yrange)+0.2*dlat,
+       col=adjustcolor("white",alpha=0.8),border="grey50")
+  ## inner and outer layers
+  points(min(xrange)+dlon/3,max(yrange)-dlat/3,pch=21,
+         col="grey70",bg="grey80",cex=7,lwd=7)
+  points(min(xrange)+dlon/3,max(yrange)-dlat/3,pch=21,col="grey95",
+         bg="grey95",cex=2,lwd=0.5)
+  text(min(xrange)+dlon/3,max(yrange)-dlat/3,"q5",cex=0.7)
+  text(min(xrange)+dlon/3,max(yrange)-dlat*0.2,"mean",cex=0.7)
+  text(min(xrange)+dlon/3,max(yrange)-dlat*0.05,"q95",cex=0.7)
+  ## size
+  points(min(xrange)+2.0*dlon,max(yrange)-0.3*dlat,pch=21,
+         bg="grey70",col="grey70",cex=3)
+  points(min(xrange)+1.3*dlon,max(yrange)-0.3*dlat,
+         pch=23,bg="grey70",col="grey70",cex=3*0.9)
+  points(min(xrange)+2.0*dlon,max(yrange)-0.55*dlat,
+         pch=21,bg="grey70",col="grey70",cex=2)
+  points(min(xrange)+1.3*dlon,max(yrange)-0.55*dlat,
+         pch=23,bg="grey70",col="grey70",cex=2*0.9)
+  points(min(xrange)+2.0*dlon,max(yrange)-0.75*dlat,
+         pch=21,bg="grey70",col="grey70",cex=1)
+  points(min(xrange)+1.3*dlon,max(yrange)-0.75*dlat,
+         pch=23,bg="grey70",col="grey70",cex=0.9)
+  text(min(xrange)+2.0*dlon,max(yrange),"sign. trend\n(95%-level)",cex=0.7)
+  text(min(xrange)+1.3*dlon,max(yrange),"not sign.\n trend",cex=0.7)
+  text(min(xrange)+2.3*dlon,max(yrange)-0.3*dlat,
+       "quality of esd:\nexcellent",pos=4,cex=0.7)
+  text(min(xrange)+2.3*dlon,max(yrange)-0.55*dlat,"ok",pos=4,cex=0.7)
+  text(min(xrange)+2.3*dlon,max(yrange)-0.75*dlat,"bad",pos=4,cex=0.7)
+
+  if(verbose) print("finished!")
   invisible(d)
 }
