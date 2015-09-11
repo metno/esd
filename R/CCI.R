@@ -1,8 +1,9 @@
 # K Parding, 29.05.2015
 
-CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
-                accuracy=NULL,label=NULL,fname="cyclones.rda",
-                plot=FALSE,verbose=FALSE) {
+CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
+                label=NULL,fname="cyclones.rda",
+                accuracy=NULL,rmin=10,rmax=2000,
+                lplot=FALSE,verbose=FALSE) {
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
@@ -104,13 +105,13 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   ## Cyclones found with ordinary method
   lon1 <- lon[lows1]; lat1<-lat[lows1]; date1 <- date[lows1]
   pcent1 <- 0.5*(px[lows1]+py[lows1])
-  strength1 <- order(pcent1)
-  if (!cyclones) strength1 <- rev(strength1)
+  strength1 <- rank(-pcent1)
+  if (!cyclones) strength1 <- rank(pcent1)
   ## Cyclones found after widening zero crossing masks
   lon2 <- lon[lows2]; lat2<-lat[lows2]; date2 <- date[lows2]
   pcent2 <- 0.5*(px[lows2]+py[lows2])
-  strength2 <- order(pcent2)
-  if (!cyclones) strength2 <- rev(strength2)
+  strength2 <- rank(-pcent2)
+  if (!cyclones) strength2 <- rank(pcent2)
    
   ## Remove secondary cyclones near a deeper one (same cyclonic system):
   if(verbose) print("Remove secondary cyclones")
@@ -195,8 +196,21 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   date <- date[i]
   pcent <- pcent[i]
   qf <- qf[i]
-  strength <-  order(pcent)
-  if (!cyclones) strength <- rev(strength)
+  strength <- rank(-pcent)
+  if (!cyclones) strength <- rank(pcent)
+
+  ## Keep only the nsim strongest cyclones each time step
+  ##browser()
+  if(!is.null(nsim)) {
+    s <- sapply(date,function(d) rank(strength[date==d]))
+    lon <- lon[s<nsim]
+    lat <- lat[s<nsim]
+    date <- date[s<nsim]
+    pcent <- pcent[s<nsim]
+    qf <- qf[s<nsim]
+    strength <- rank(-pcent)
+    if (!cyclones) strength <- rank(pcent)   
+  }
   
   ## Pressure gradient
   if(verbose) print("Pressure gradient")
@@ -207,7 +221,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   # Find points of inflexion (2nd derivative==0) to estimate
   # the storm radius and maximum speed and pressure gradient
   if(verbose) print("Find points of inflexion")
-  rmin <- 10; rmax <- 2000 # km
   NX <- dim(lonXY)[1]; NY <- dim(latXY)[2]
   lonXX <- rep(0.5*(lonXY[2:NX,2:NY]+lonXY[1:(NX-1),2:NY]),nt)
   dim(lonXX) <- c(NX-1,NY-1,nt); lonXX <- aperm(lonXX,c(3,1,2))
@@ -218,7 +231,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   max.dslp <- rep(NA,length(date))
   max.speed <- rep(NA,length(date))
   max.vg <- rep(NA,length(date))
-  if (plot) data(geoborders)
+  if (lplot) data(geoborders)
   for (i in seq(1,length(date))) {
     ilon <- abs(lonXX[1,,1]-lon[i])<dx
     ilat <- abs(latXX[1,1,]-lat[i])<dy
@@ -259,9 +272,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     max.dslp[i] <- mean(dpi)#dpi[which.max(dpi)]
     max.speed[i] <- mean(v.grad)#v.grad[which.max(dpi)]
     max.vg[i] <- mean(vg)#vg[which.max(dpi)]
-
+    
     ## Plot examples of cyclones
-    if (plot & i==10) {
+    if (lplot & i==10) {
       pxi <- px[date[i]==t,,];  pyi <- py[date[i]==t,,]
       lon.i <- lonXY[ilon,1]; lat.i <- latXY[1,ilat] 
       xi <- lonXY[,1]; yi <- latXY[1,]; zi <- pxi
