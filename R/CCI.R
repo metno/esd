@@ -330,7 +330,7 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
   dd <- as.numeric(strftime(date,"%Y%m%d"))
   hh <- as.numeric(strftime(date,"%H"))
   units <- c("date","hour CET","degrees","degrees","hPa","hPa/m",
-             "m/s","km","QF")
+             "m/s","km","quality")
   if (cyclones) {
     longname <- "low pressure systems identified with CCI method"
     variable <- "cyclones"
