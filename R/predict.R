@@ -57,13 +57,19 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   model <- attr(x,'model')
   if (verbose) print(summary(model))
   ## AM 04-04-2015 model is always a list object - Quick fix here ...
-  if (!is.list(model) | names(model)[1]=="coefficients") y <- predict(model,newdata) + attr(x,'mean') else {
-    if (!is.null(newdata)) y <- lapply(model,predict,newdata) else
-                           y <- lapply(model,predict)
-    y <- matrix(unlist(y),nrow=length(idx),ncol=length(model))
+  ##browser()
+  if (!is.list(model)) {
+      if (names(model)[1]=="coefficients")
+          y <- predict(model,newdata) + attr(x,'mean')
+  } else {
+      if (!is.null(newdata))
+          y <- lapply(model,predict,newdata)
+      else
+          y <- lapply(model,predict)
+      y <- matrix(unlist(y),nrow=length(idx),ncol=length(model))
   }
   
-#  predict - phase scramble of residual
+  ##  predict - phase scramble of residual
   residual <- model$residuals
   if (addnoise) {
     if (verbose) print('add noise')
