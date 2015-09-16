@@ -88,7 +88,8 @@ diagnose.cca <- function(x) {
 
 diagnose.station <- function(x,main='Data availability',
                             xlab='',ylab='station',
-                            sub=src(x),...) {
+                            sub=src(x),verbose=FALSE,...) {
+  if(verbose) print("diagnose.station")
   d <- dim(x)
   if (is.null(d)) {
     z <- diagnose.distr(x,...)
