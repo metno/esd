@@ -223,6 +223,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 #        xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
 #
     # Adopt from map.station
+    par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.7)
+    
       if (fancy & !is.null(colbar))
           col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
                   col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
