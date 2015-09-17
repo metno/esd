@@ -1281,29 +1281,4 @@ as.original.station <- function(x) {
   attr(X,'history') <- history.stamp(x)
   return(X)
 }
-
-as.events <- function(x,label=NULL,dx=NULL,dy=NULL,
-                      units=NULL,longname=NULL,variable=NULL,
-                      qflabel=NULL,src=NULL,file=NULL,
-                      version=NULL,verbose=FALSE) {
-  if (verbose) print("as.events")
-  X <- data.frame(x)
-  n <- names(X)
-  if (!all(c("date","time","lon","lat") %in% names(X))) {
-    print(paste("Missing input:",
-     names(X)[!c("date","time","lon","lat")%in%names(X)]))
-  }
-  attr(X,"label") <- label
-  attr(X,"dx") <- dx
-  attr(X,"dy") <- dy
-  attr(X,"longname") <- longname
-  attr(X,"variable") <- variable
-  attr(X,"QF") <- qflabel
-  attr(X,"source") <- src
-  attr(X,"file") <- file
-  attr(X,"version") <- version
-  class(X) <- c("events",class(X))
-  attr(X,"history") <- history.stamp(X)
-  invisible(X)
-}
                         
