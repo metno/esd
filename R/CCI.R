@@ -2,7 +2,7 @@
 
 CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
                 label=NULL,fname="cyclones.rda",mindistance=1E6,
-                accuracy=NULL,pmax=NULL,rmin=1E4,rmax=2E6,
+                accuracy=NULL,pmax="mean",rmin=1E4,rmax=2E6,
                 lplot=FALSE,verbose=FALSE) {
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
@@ -124,9 +124,9 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
     } else if(is.character(pmax)) {
       pmax <- eval(parse(text=paste(pmax,"(Z,na.rm=T)",sep="")))
     }
-    ok <- pcent < pmax
-    if(!cyclones) ok <- pcent > pmax
-    del1[!ok] <- FALSE
+    ok1 <- pcent1 < pmax
+    if(!cyclones) ok1 <- pcent1 > pmax
+    del1[!ok1] <- FALSE
     ok2 <- pcent2 > pmax
     if(!cyclones) ok2 <- pcent2 > pmax
     del2[!ok2] <- FALSE
@@ -212,7 +212,12 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   date <- date[lows]
   pcent <- 0.5*(px[lows]+py[lows])
   qf <- qf[lows]
-  
+
+  ## Clear temporary objects from working memory
+  rm("lows1","lows2","lon1","lon2","lat1","lat2",
+     "date1","date2","strength1","strength2",
+     "pcent1","pcent2","del1","del2"); gc(reset=TRUE)
+
   ## Put cyclones in order of date
   i <- order(date)
   lon <- lon[i]
