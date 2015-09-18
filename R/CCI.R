@@ -254,6 +254,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   dim(latXX) <- c(NX-1,NY-1,nt); latXX <- aperm(latXX,c(3,1,2))
   dateXX <- rep(t,(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
   radius <- rep(NA,length(date))
+  depth <- rep(NA,length(date))
   max.dslp <- rep(NA,length(date))
   max.speed <- rep(NA,length(date))
   max.vg <- rep(NA,length(date))
