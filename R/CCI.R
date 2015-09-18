@@ -1,8 +1,8 @@
 # K Parding, 29.05.2015
 
-CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
-                label=NULL,fname="cyclones.rda",
-                accuracy=NULL,rmin=10,rmax=2000,
+CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
+                label=NULL,fname="cyclones.rda",mindistance=1E6,
+                accuracy=NULL,pmax="mean",rmin=1E4,rmax=2E6,
                 lplot=FALSE,verbose=FALSE) {
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
@@ -39,7 +39,10 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
               Zx[,1:(nx-1),1:(ny-1)] + Zx[,2:nx,1:(ny-1)])
   py <- 0.25*(Zy[,1:(nx-1),2:ny] + Zy[,2:nx,2:ny] +
               Zy[,1:(nx-1),1:(ny-1)] + Zy[,2:nx,1:(ny-1)])
-  
+
+  ## Clear temporary objects from working memory
+  rm("Zx","Zy","resx","resy"); gc(reset=TRUE)
+   
   ## Search for zero crossing in y-direction
   if(verbose) print("Find zero crossing of first derivative in y-direction")
   P.lowy <- rep(0,nt*(nx-1)*(ny-1)); dim(P.lowy) <- c(nt,nx-1,ny-1) 
@@ -73,8 +76,7 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
   DX2 <- 0.5*(dx21+dx22)
 
   ## Clear temporary objects from working memory
-  rm("resx","resy","dx11","dx12","dx21","dx22",
-     "dy11","dy12","dy21","dy22"); gc(reset=TRUE)
+  rm("dx11","dx12","dx21","dx22","dy11","dy12","dy21","dy22"); gc(reset=TRUE)
   
   ## Find zero crossings in both directions
   ## Plowx & P.lowy are matrices with 0's and 1's.
@@ -105,14 +107,37 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
   ## Cyclones found with ordinary method
   lon1 <- lon[lows1]; lat1<-lat[lows1]; date1 <- date[lows1]
   pcent1 <- 0.5*(px[lows1]+py[lows1])
-  strength1 <- rank(-pcent1)
-  if (!cyclones) strength1 <- rank(pcent1)
+  strength1 <- rank(pcent1)
+  if (!cyclones) strength1 <- rank(-pcent1)
   ## Cyclones found after widening zero crossing masks
   lon2 <- lon[lows2]; lat2<-lat[lows2]; date2 <- date[lows2]
   pcent2 <- 0.5*(px[lows2]+py[lows2])
-  strength2 <- rank(-pcent2)
-  if (!cyclones) strength2 <- rank(pcent2)
-   
+  strength2 <- rank(pcent2)
+  if (!cyclones) strength2 <- rank(-pcent2)
+
+  ## Keep only cyclones that are deeper than pmax
+  del1 <- rep(TRUE,length(date1))
+  del2 <- rep(TRUE,length(date2))
+  if(!is.null(pmax)) {
+    if(is.function(pmax)) {
+      pmax <- pmax(Z,na.rm=T)
+    } else if(is.character(pmax)) {
+      pmax <- eval(parse(text=paste(pmax,"(Z,na.rm=T)",sep="")))
+    }
+    ok1 <- pcent1 < pmax
+    if(!cyclones) ok1 <- pcent1 > pmax
+    del1[!ok1] <- FALSE
+    ok2 <- pcent2 > pmax
+    if(!cyclones) ok2 <- pcent2 > pmax
+    del2[!ok2] <- FALSE
+  }
+  lows1[lows1] <- del1
+  lon1 <- lon1[del1]; lat1 <- lat1[del1]; date1 <- date1[del1]
+  pcent1 <- pcent1[del1]; strength1 <- strength1[del1]
+  lows2[lows2] <- del2
+  lon2 <- lon2[del2]; lat2 <- lat2[del2]; date2 <- date2[del2]
+  pcent2 <- pcent2[del2]; strength2 <- strength2[del2]
+  
   ## Remove secondary cyclones near a deeper one (same cyclonic system):
   if(verbose) print("Remove secondary cyclones")
   del1 <- rep(TRUE,length(date1))
@@ -126,7 +151,7 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
       distance <- apply(cbind(lon1[i1],lat1[i1]),1,
        function(x) suppressWarnings(distAB(x[1],x[2],lon1[i1],lat1[i1])))
       diag(distance) <- NA; distance[lower.tri(distance)] <- NA
-      del.i1 <- which(distance<1E6,arr.ind=TRUE)
+      del.i1 <- which(distance<mindistance,arr.ind=TRUE)
       if(any(del.i1)) {
         col.del <- rep(1,length(del.i1)/2)
         if (is.null(dim(del.i1))) {
@@ -150,7 +175,6 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
     if(any(i2) & any(i1)) {
       distance <- apply(cbind(lon2[i2],lat2[i2]),1,
        function(x) suppressWarnings(distAB(x[1],x[2],lon1[i1],lat1[i1])))
-      diag(distance) <- NA; distance[lower.tri(distance)] <- NA
       del.i2 <- unique(which(distance<2E6,arr.ind=TRUE)[,2])
       del2[i2[del.i2]] <- FALSE
       i2 <- i2[!1:length(i2) %in% del.i2]
@@ -179,7 +203,7 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
   }
   lows1[lows1] <- del1
   lows2[lows2] <- del2
-
+ 
   ## Add the two groups of cyclones together,
   ## keep track of which is which with the quality flag qf
   lows <- lows1 | lows2
@@ -188,7 +212,12 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
   date <- date[lows]
   pcent <- 0.5*(px[lows]+py[lows])
   qf <- qf[lows]
-  
+
+  ## Clear temporary objects from working memory
+  rm("lows1","lows2","lon1","lon2","lat1","lat2",
+     "date1","date2","strength1","strength2",
+     "pcent1","pcent2","del1","del2"); gc(reset=TRUE)
+
   ## Put cyclones in order of date
   i <- order(date)
   lon <- lon[i]
@@ -196,11 +225,10 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
   date <- date[i]
   pcent <- pcent[i]
   qf <- qf[i]
-  strength <- rank(-pcent)
-  if (!cyclones) strength <- rank(pcent)
-
+  strength <- rank(pcent)
+  if (!cyclones) strength <- rank(-pcent)
+ 
   ## Keep only the nsim strongest cyclones each time step
-  ##browser()
   if(!is.null(nsim)) {
     s <- sapply(date,function(d) rank(strength[date==d]))
     lon <- lon[s<nsim]
@@ -208,10 +236,8 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
     date <- date[s<nsim]
     pcent <- pcent[s<nsim]
     qf <- qf[s<nsim]
-    strength <- rank(-pcent)
-    if (!cyclones) strength <- rank(pcent)   
   }
-  
+
   ## Pressure gradient
   if(verbose) print("Pressure gradient")
   rho <- 1.2922
@@ -228,6 +254,7 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
   dim(latXX) <- c(NX-1,NY-1,nt); latXX <- aperm(latXX,c(3,1,2))
   dateXX <- rep(t,(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
   radius <- rep(NA,length(date))
+  depth <- rep(NA,length(date))
   max.dslp <- rep(NA,length(date))
   max.speed <- rep(NA,length(date))
   max.vg <- rep(NA,length(date))
@@ -272,9 +299,10 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
     max.dslp[i] <- mean(dpi)#dpi[which.max(dpi)]
     max.speed[i] <- mean(v.grad)#v.grad[which.max(dpi)]
     max.vg[i] <- mean(vg)#vg[which.max(dpi)]
-    
+  
     ## Plot examples of cyclones
-    if (lplot & i==10) {
+    if (lplot & radius[i]>rmin & radius[i]<rmax & length(ilon)==4) {
+      if(verbose) print("plot examples of cyclone identification")
       pxi <- px[date[i]==t,,];  pyi <- py[date[i]==t,,]
       lon.i <- lonXY[ilon,1]; lat.i <- latXY[1,ilat] 
       xi <- lonXY[,1]; yi <- latXY[1,]; zi <- pxi
@@ -315,12 +343,29 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
              bg="white",col="black",cex=2)
       points(lon[j][qf[j]==2],lat[j][qf[j]==2],pch=21,lwd=2,
              bg="white",col="black",cex=1)
+      points(lon[i],lat[i],pch=4,lwd=2,col="black",cex=1)
       dev.copy(jpeg,"cyclones.map.jpg"); dev.off()
+      lplot <- FALSE
     }
   }
-  
   ## Remove temporary variables and release the memory:
   rm('lonXX','latXX','dateXX','inflx','infly'); gc(reset=TRUE)
+  
+  ## Keep only cyclones with radius within the range (rmin,rmax)
+  ok <- rep(TRUE,length(date))
+  if(!is.null(rmin)) ok <- ok & radius>rmin
+  if(!is.null(rmax)) ok <- ok & radius<rmax
+  lon <- lon[ok]
+  lat <- lat[ok]
+  date <- date[ok]
+  pcent <- pcent[ok]
+  qf <- qf[ok]
+  max.dslp <- max.dslp[ok]
+  max.speed <- max.speed[ok]
+  radius <- radius[ok]
+  strength <- rank(pcent)
+  if (!cyclones) strength <- rank(-pcent)   
+ 
   ## Check units
   if (attr(Z,"unit")=='Pa') pcent <- pcent*100 # Pa -> hPa
   max.dslp <- max.dslp*100 # Pa -> hPa
@@ -330,7 +375,7 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
   dd <- as.numeric(strftime(date,"%Y%m%d"))
   hh <- as.numeric(strftime(date,"%H"))
   units <- c("date","hour CET","degrees","degrees","hPa","hPa/m",
-             "m/s","km","QF")
+             "m/s","km","quality")
   if (cyclones) {
     longname <- "low pressure systems identified with CCI method"
     variable <- "cyclones"
@@ -343,7 +388,7 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
      "2: less accurate",variable,"identification from widened",
      "EW and NS pressure gradient zero crossings")
   X <- data.frame(date=dd,time=hh,lon=lon,lat=lat,pcent=pcent,
-         max.dslp=max.dslp,max.speed=max.speed,radius=radius,qf=qf)
+         max.dslp=max.dslp,max.speed=max.speed,radius=radius,quality=qf)
   X <- as.events(X,label=label,dx=dx,dy=dy,units=units,longname=longname,
          variable=variable,qflabel=qflabel,src=attr(Z,"source"),
          file=attr(Z,"file"),version="CCI in esd v1.0 (after August 25, 2015)")
@@ -378,3 +423,7 @@ CCI <- function(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
 ## #slp <- subset(slp,it="december")
 ## #Z <- slp
 ## cyclones <- CCI(slp,it="december",fname="cyclones.ERAint.1979.12.rda")
+
+
+
+
