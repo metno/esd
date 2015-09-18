@@ -17,7 +17,7 @@ as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
   attr(X,"dy") <- dy
   attr(X,"longname") <- longname
   attr(X,"variable") <- variable
-  attr(X,"QF") <- qflabel
+  attr(X,"quality") <- qflabel
   attr(X,"source") <- src
   attr(X,"file") <- file
   attr(X,"version") <- version
