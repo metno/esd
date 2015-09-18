@@ -261,7 +261,6 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   max.dslp <- rep(NA,length(date))
   max.speed <- rep(NA,length(date))
   max.vg <- rep(NA,length(date))
-  if (lplot) data(geoborders)
   for (i in seq(1,length(date))) {
     ilon <- abs(lonXX[1,,1]-lon[i])<dx
     ilat <- abs(latXX[1,1,]-lat[i])<dy
@@ -310,6 +309,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
     ## Plot examples of cyclones
     if (lplot & length(ilon)==4) {
       if(verbose) print("plot examples of cyclone identification")
+      data(geoborders)
       pxi <- px[date[i]==t,,];  pyi <- py[date[i]==t,,]
       lon.i <- lonXY[ilon,1]; lat.i <- latXY[1,ilat] 
       xi <- lonXY[,1]; yi <- latXY[1,]; zi <- pxi
@@ -352,7 +352,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
              bg="white",col="black",cex=1)
       points(lon[i],lat[i],pch=4,lwd=2,col="black",cex=1)
       dev.copy(jpeg,"cyclones.map.jpg"); dev.off()
-      lplot <- FALSE
+      lplot <- FALSE; rm("geoborders")
     }
   }
   ## Remove temporary variables and release the memory:
