@@ -37,13 +37,14 @@ map.events <- function(x,it=NULL,is=NULL,
 }
 
 as.field.events <- function(x,...) {
-  y <- events2field(x,...)
+  y <- density.events(x,...)
   invisible(y)  
 }
 
-events2field <- function(x,dt="month",dx=2,dy=2,it=NULL,is=NULL,
-                         verbose=FALSE,R=6371,...) {
-  y <- subset(x,it=it,is=is)
+density.events <- function(x,dt="month",dx=2,dy=2,it=NULL,is=NULL,
+                         verbose=FALSE,...) {
+  if (verbose) print("density.events")
+  y <- subset.events(x,it=it,is=is)
   if(is.null(dx)) dx <- min(diff(sort(unique(y["lon"][[1]]))))
   if(is.null(dy)) dy <- min(diff(sort(unique(y["lat"][[1]]))))
   lons <- round(x["lon"]/dx)*dx
@@ -81,12 +82,10 @@ events2field <- function(x,dt="month",dx=2,dy=2,it=NULL,is=NULL,
     if (verbose) print(as.Date(i))
     yi <- subset.events(y,it=(d==i))
     if (!is.null(dim(yi)) & length(yi)>0) {
-      di <- density.events(yi,dx=dx,dy=dy)
-      lat <- di$lat
-      lon <- di$lon
-      den <- di$density
-      for(j in 1:length(lat)) {
-        X[dvec==i,lons==lon[j],lats==lat[j]] <- den[j]
+      print("events")
+      di <- lonlatdensity(yi["lon"][[1]],yi["lat"][[1]],dx=dx,dy=dy,verbose=verbose)
+      for(j in 1:length(di$lat)) {
+        X[dvec==i,lons==di$lon[j],lats==di$lat[j]] <- di$density[j]
       }
     }
   }
@@ -108,19 +107,18 @@ factor2numeric <- function(f) {
   } else return(as.numeric(f))
 }
 
-density.events <- function(x,it=NULL,is=NULL,dx=NULL,dy=NULL,
-                           verbose=FALSE,R=6371,...) {
-   y <- subset(y,it=it,is=is)
-   lons <- round(y["lon"][[1]]/dx)*dx
-   lats <- round(y["lat"][[1]]/dy)*dy
+lonlatdensity <- function(lons,lats,dx=NULL,dy=NULL,verbose=FALSE,R=6371,...) {
+   if (verbose) print("lonlatdensity")
+   lons <- round(lons/dx)*dx
+   lats <- round(lats/dy)*dy
    hits <- as.data.frame(table(lons,lats))
    hits <- hits[hits$Freq>0,]
    lons <- factor2numeric(hits$lon)
    lats <- factor2numeric(hits$lat)
    A <- dx*(pi/180)*R**2*abs(sin((lats+dy/2)*pi/180)-
                             sin((lats-dy/2)*pi/180))
-   dens <- hits$Freq/A
-   X <- data.frame(lon=lons,lat=lats,density=dens)
+   d <- hits$Freq/A
+   X <- data.frame(lon=lons,lat=lats,density=d)
    invisible(X)
 }
 
