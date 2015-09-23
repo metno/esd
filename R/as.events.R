@@ -3,8 +3,8 @@ as.events <- function(x,...) UseMethod("as.events")
 
 as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
                       units=NULL,longname=NULL,variable=NULL,
-                      qflabel=NULL,src=NULL,file=NULL,
-                      version=NULL,verbose=FALSE) {
+                      qflabel=NULL,method=NULL,src=NULL,reference=NULL,
+                      file=NULL,version=NULL,verbose=FALSE) {
   if (verbose) print("as.events")
   X <- data.frame(x)
   n <- names(X)
@@ -21,6 +21,9 @@ as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
   attr(X,"source") <- src
   attr(X,"file") <- file
   attr(X,"version") <- version
+  attr(X,"method") <- method
+  attr(X,"URL") <- url
+  attr(X,"reference") <- reference
   class(X) <- c("events",class(X))
   attr(X,"history") <- history.stamp(X)
   invisible(X)
@@ -39,34 +42,65 @@ as.field.events <- function(x,...) {
 }
 
 events2field <- function(x,dt="month",dx=2,dy=2,it=NULL,is=NULL,
-                         verbose=FALSE,...) {
+                         verbose=FALSE,R=6371,...) {
   y <- subset(x,it=it,is=is)
-  lons <- round(y["lon"]/dx)*dx
+  if(is.null(dx)) dx <- min(diff(sort(unique(y["lon"][[1]]))))
+  if(is.null(dy)) dy <- min(diff(sort(unique(y["lat"][[1]]))))
+  lons <- round(x["lon"]/dx)*dx
   lons <- seq(min(lons),max(lons),dx)
-  lats <- round(y["lat"]/dy)*dy
+  lats <- round(x["lat"]/dy)*dy
   lats <- seq(min(lats),max(lats),dy)
   if (grepl('day',dt)) {
     d <- as.Date(strptime(y["date"][[1]],"%Y%m%d"))
     dvec <- seq(min(d),max(d),by="day")
+    unit <- 'events/day/km^2'
   } else if (grepl('month',dt)) {
     d <- as.Date(as.yearmon(strptime(y["date"][[1]],"%Y%m%d")))
     dvec <- seq(min(d),max(d),by="month")
+    unit <- 'events/month/km^2'
   } else if (grepl('season',dt) | grepl('quarter',dt)) {
     d <- as.Date(as.yearqtr(strptime(y["date"][[1]],"%Y%m%d")))
     dvec <- seq(min(d),max(d),by="quarter")
+    unit <- 'events/quarter/km^2'
   } else if (grepl('year',dt) | grepl('annual',dt)) {
     d <- as.Date(paste(year(strptime(y["date"][[1]],"%Y%m%d")),"-01-01",sep=""))
     dvec <- seq(min(d),max(d),by="year")
+    unit <- 'events/year/km^2'
   } else if (grepl('hour',dt)) {
     d <- as.POSIXct(strptime(paste(y["date"][[1]],y["time"][[1]]),format="%Y%m%d %H"))
-    dvec <- seq(min(d),max(d),by=min(diff(sort(unique(y["time"][[1]]))))*60*60)
+    dh <- min(diff(sort(unique(y["time"][[1]]))))
+    dvec <- seq(min(d),max(d),by=dh*60*60)
+    unit <- paste('events/',dh,'hours/km^2',sep='')
+  } else {
+    print(paste("WARNING! invalid time resolution dt",dt))
+    break
   }
+  X <- array(rep(0,),dim=c(length(dvec),length(lons),length(lats)))
+  if (verbose) print("looping...")
   for (i in dvec) {
-    yi <- subset(y,it=i)
-    dens <- density.events(yi)
-    hits <- as.data.frame(table(lon,lat))
+    if (verbose) print(as.Date(i))
+    yi <- subset.events(y,it=(d==i))
+    if (!is.null(dim(yi)) & length(yi)>0) {
+      di <- density.events(yi,dx=dx,dy=dy)
+      lat <- di$lat
+      lon <- di$lon
+      den <- di$density
+      for(j in 1:length(lat)) {
+        X[dvec==i,lons==lon[j],lats==lat[j]] <- den[j]
+      }
+    }
   }
-  invisible(y)
+  d <- dim(X)
+  dim(X) <- c(d[1],d[2]*d[3])
+  longname <- paste("event density",attr(x,'longname'),sep=', ')
+  param <- 'density'
+  Y <- as.field(X,index=dvec,lon=lons,lat=lats,
+          unit=unit,longname=longname,param=param,
+          quality=attr(x,'quality'),src=attr(x,'source'),
+          url=attr(x,'URL'),reference=attr(x,'reference'),
+          info=attr(x,'info'),calendar=attr(x,'calendar'),
+          method=attr(x,'method'),aspect=attr(x,'aspect'))
+  invisible(Y)
 }
 
 factor2numeric <- function(f) {
@@ -76,22 +110,18 @@ factor2numeric <- function(f) {
 
 density.events <- function(x,it=NULL,is=NULL,dx=NULL,dy=NULL,
                            verbose=FALSE,R=6371,...) {
-  y <- subset(x,it=it,is=is)
-  lons <- y["lon"][[1]]
-  lats <- y["lat"][[1]]
-  if(!is.null(dx)) { lons <- round(lons/dx)*dx
-  } else dx <- min(diff(sort(unique(lons))))
-  if(!is.null(dy)) { lats <- round(lats/dy)*dy
-  } else dy <- min(diff(sort(unique(lats))))
-  hits <- as.data.frame(table(lons,lats))
-  hits <- hits[hits$Freq>0,]
-  lons <- factor2numeric(hits$lon)
-  lats <- factor2numeric(hits$lat)
-  A <- dx*(pi/180)*R**2*abs(sin((lat+dy/2)*pi/180)-
-                            sin((lat-dy/2)*pi/180))
-  dens <- hits$Freq/A
-  X <- data.frame(lon=lon,lat=lat,density=dens)
-  invisible(X)
+   y <- subset(y,it=it,is=is)
+   lons <- round(y["lon"][[1]]/dx)*dx
+   lats <- round(y["lat"][[1]]/dy)*dy
+   hits <- as.data.frame(table(lons,lats))
+   hits <- hits[hits$Freq>0,]
+   lons <- factor2numeric(hits$lon)
+   lats <- factor2numeric(hits$lat)
+   A <- dx*(pi/180)*R**2*abs(sin((lats+dy/2)*pi/180)-
+                            sin((lats-dy/2)*pi/180))
+   dens <- hits$Freq/A
+   X <- data.frame(lon=lons,lat=lats,density=dens)
+   invisible(X)
 }
 
 subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {

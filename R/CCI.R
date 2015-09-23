@@ -405,7 +405,11 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
          radius=radius,depth=depth,quality=qf)
   X <- as.events(X,label=label,dx=dx,dy=dy,units=units,longname=longname,
          variable=variable,qflabel=qflabel,src=attr(Z,"source"),
-         file=attr(Z,"file"),version="CCI in esd v1.0 (after August 25, 2015)")
+         file=attr(Z,"file"),
+         method="calculus based cylone identification, CCI",
+         version="CCI in esd v1.0.2 (after September 23, 2015)",
+         reference="Benestad & Chen, 2006, The use of a calculus-based cyclone identification method for generating storm statistics, Tellus A 58(4), 473-486.",
+          url="http://onlinelibrary.wiley.com/doi/10.1111/j.1600-0870.2006.00191.x/abstract")
   if(!is.null(fname)) save(file=fname,X)
   invisible(X)
 }
