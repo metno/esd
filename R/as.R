@@ -1312,4 +1312,7 @@ as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
   invisible(X)
 }
 
-
+as.field.events <- function(x,...) {
+  y <- events2field(x,...)
+  return(y)
+}
