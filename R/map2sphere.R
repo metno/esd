@@ -64,7 +64,6 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 #}
 
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
-                       xlim=NULL,ylim=NULL,zlim=NULL,
                        colbar= list(pal='t2m',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
@@ -109,7 +108,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   map <- x[srtx,srty]
   param <- attr(x,'variable')
   unit <- attr(x,'unit')
-  
   # Rotatio:
   if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
   if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
@@ -185,7 +183,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 # Plot the results:
   if (new) dev.new()
   par(bty="n") ## ,xaxt="n",yaxt="n")
-  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",xlim=xlim,ylim=ylim,...)
+  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",...)
   
 # plot the grid boxes, but only the gridboxes facing the view point:
   Visible <- colMeans(Y) > 0
