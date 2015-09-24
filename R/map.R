@@ -6,7 +6,7 @@
 map <- function(x,it=NULL,is=NULL,new=FALSE,...) UseMethod("map")
 
 map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
-                      projection="lonlat",xlim=NULL,ylim=NULL,zlim=NULL,##n=15
+                      projection="lonlat",xlim=NULL,ylim=NULL,zlim=NULL,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                           show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
@@ -42,7 +42,7 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(X,'variable') <- varid(x)
     if (inherits(X,'zoo')) attr(X,'time') <- range(index(x)) else
     if (!is.null(attr(x,'time'))) attr(X,'time') <- attr(x,'time')
-    if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,n=n,
+    if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,
             colbar=colbar,verbose=verbose,
             type=type,new=new,
             gridlines=gridlines,...) else
@@ -815,4 +815,24 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     result <- list(x=lon,y=lat,z=x,breaks=colbar$breaks)
                                         #par(fig=par0$fig)
     invisible(result)
+}
+
+map.events <- function(x,it=NULL,is=NULL,dx=2,dy=2,dt="year",
+               colbar=list(pal="precip",rev=FALSE,n=10,
+               breaks=NULL,pos=0.05,show=TRUE,type="p",
+               cex=2,h=0.6,v=1),FUN="mean",projection="sphere",
+               verbose=FALSE,...) {
+  if (verbose) print("map.events")
+  y <- subset(x,it=it,is=is,verbose=verbose)
+  Y <- as.field(y,dx=dx,dy=dy,dt=dt,verbose=verbose)
+  if (projection!="lonlat") xlim=NULL; ylim=NULL
+  #if (is.null(colbar$breaks)) {
+  #  Yc <- coredata(Y)
+  #  vals <- Yc[Yc>0 & !is.infinite(Yc)]
+  #  breaks <- pretty(seq(0,q95(vals),q95(vals)/(colbar$n-1)))
+  #  colbar$breaks <- c(breaks,max(vals))
+  #  colbar$n <- NULL
+  #}
+  map(Y,colbar=colbar,FUN=FUN,verbose=verbose,
+      projection=projection,...)  
 }
