@@ -35,7 +35,8 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   X <- as.eof(x)
   if (verbose) print(paste(class(X),collapse='-'))
   #print(dim(X))
-  neofs <- length(attr(X,'eigenvalues'))
+  if (is.null(newdata)) neofs <- length(attr(X,'eigenvalues')) else
+                        neofs <- length(attr(newdata,'eigenvalues'))
   
   # For some reason, the column names of newdata is muddled here,
   # and hence Xnames is used to enforce names 'X.1', 'X.2', 'X.3', ...
@@ -51,6 +52,8 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
       idx <- index(newdata)
       src <- attr(newdata,'source')
       newdata <- as.data.frame(newdata)
+      if ((length(attr(X,'eigenvalues'))) != (length(attr(newdata,'eigenvalues'))))
+        warning('newdata and X have different number of EOFs')
   }
   #print(summary(newdata))
   names(newdata) <- Xnames 
