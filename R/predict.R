@@ -13,7 +13,7 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     if (inherits(x,'field'))
       y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
   } else if (inherits(x,'eof')) {
-    str(x)
+    ## str(x)
     ## If new data is provided
     if (inherits(newdata,'comb'))
       y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose) else
@@ -126,7 +126,7 @@ predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   y <- zoo(y, order.by=t)
   y <- attrcp(x,y)
   class(y) <- class(x)[-1]
-  return(y)
+  invisible(y)
 }
 
 predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
