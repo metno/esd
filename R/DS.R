@@ -35,7 +35,7 @@ sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
     if (tsx !="season")
         y <- aggregate(y, agrscly, match.fun(FUN)) else 
         y <- as.4seasons(y, FUN=match.fun(FUN),dateindex=TRUE)
-    return(y)
+    invisible(y)
 }
 
 
@@ -639,7 +639,7 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
     ds <- DS(Z,X,biascorrect=biascorrect,method=method,swsm=swsm,m=m,
              rmtrend=rmtrend,eofs=eofs,
              verbose=verbose,...)
-    return(ds)
+    invisible(ds)
 }
 
 
@@ -881,7 +881,7 @@ DS.eof <- function(y,X,mon=NULL,
                  rmtrend=rmtrend,eofs=eofs,
                  area.mean.expl=area.mean.expl,
                  verbose=verbose,...)
-    return(ds)
+    invisible(ds)
 }
 
 
@@ -1033,7 +1033,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
         if (verbose)print(summary(zpattern))
         attr(ds,'pattern') <- zpattern
     }
-    return(ds)
+    invisible(ds)
 }
 
 DS.station.pca <- function(y,X,mon=NULL,
@@ -1068,7 +1068,7 @@ biasfix <- function(x) {
     attr(x,'history') <- history.stamp(x)
     attr(x,'quality') <- "'bias' corrected -  ref (Imbert & Benestad (2005); Theor. Appl. Clim.; DOI: 10.1007/s00704-005-0133-4"
     attr(x,'diagnose') <- diag
-    return(x)
+    invisible(x)
 }
 
 
