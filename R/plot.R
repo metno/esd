@@ -103,12 +103,14 @@ plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
                          breaks=NULL,type="p",cex=2,show=TRUE,
                          h=0.6,v=1,pos=0.05),
                      verbose=FALSE,...) {
+  if (verbose) print(paste('plot.eof',paste(what,collapse=',')))
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
   if (inherits(x,"field"))
     plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
-                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...)
+                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
+    print("x does not have 'comb' or 'field' aspects...")
 }
 
 
@@ -290,6 +292,10 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
   if (inherits(x,'pca')) {
     plot.ds.pca(x,verbose=verbose)
+    return()
+  }
+  if (inherits(x,'eof')) {
+    plot.ds.eof(x,verbose=verbose)
     return()
   }
   
@@ -648,6 +654,9 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   }
 }
 
+plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
+  plot.ds.pca(y=y,pattern=pattern,verbose=verbose,colbar=colbar,...)
+}
 
 vis.pca <- function(y,cex=1.5,new=TRUE) {
 
