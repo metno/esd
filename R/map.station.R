@@ -235,8 +235,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                 print(paste("range of mapped values",paste(y.rng,
                                                            collapse="/")))
             
-                                        # find color index in colbar
-            icol <- apply(as.matrix(as.vector(y)),2,findInterval,colbar$col)
+            ## find color index in colbar
+            icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
             
             ## if (is.null(col)) col <- colbar$col[icol]
             ## if (is.null(bg)) bg <- colbar$col[icol]
