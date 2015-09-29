@@ -41,44 +41,44 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            area.mean.expl=FALSE,type='ncdf',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),
                            select=NULL,FUN="mean",FUNX="mean",
-                           pattern="tas_Amon_ens_",verbose=FALSE,
-                           path.ds=NULL,file.ds="DSensemble.rda",nmin=NULL) {
-
+                           pattern="tas_Amon_ens_",
+                           path.ds=NULL,file.ds="DSensemble.rda",
+                           nmin=NULL,verbose=FALSE) {
 
   
   #print("predictand")
   #if ( (deparse(substitute(FUN))=='sd') | (deparse(substitute(FUN))=='ar1') )
+  if(verbose) print("DSensemble.t2m")
   if ((FUN=='sd') | (FUN =='ar1')) {
     y <- anomaly(y)
     attr(y,'aspect') <- 'original'
   }
 
+  if(verbose) print("aggregate time series")
   if (is.null(nmin)) nmin4 <- nmin else nmin4 <- nmin*4
   ya <- annual(y,FUN=FUN,nmin=nmin4)
   y <- as.4seasons(y,FUN=FUN,nmin=nmin)
-  
 
-#  yr <- as.4seasons(ya,FUN=ltp)
-  if (!is.na(attr(y,'longitude')))
+  if(verbose) print("Set lon/lat predictor range")
+  if ( !is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) )
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-  if (!is.na(attr(y,'latitude')))
+  if ( !is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) )
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
-  #lon <- round( attr(y,'longitude') + lon )
-  #lat <- round( attr(y,'latitude') + lat )
 
   # The units
+  if(verbose) print("Arrange units")
   if ( (unit(y)[1] == "deg C") | (unit(y)[1] == "degree Celsius") |
        (unit(y)[1] == "degC") | (unit(y)[1] == "Celsius") )
         unit <- expression(degree*C) else
         unit <- attr(y,'unit')
   if (verbose) print(paste('Units:',unit))
 
-  #ylim <- switch(deparse(substitute(FUN)),
   ylim <- c(0,0)
   ylim <- switch(FUN,'mean'=c(-2,8),'sd'=c(-0.5,1),'ar1'=c(-0.5,0.7))
   if (verbose) print(paste('set ylim based on "',FUN,'" -> c(',ylim[1],', ',ylim[2],')',sep=''))
   
   if (plot) {
+    if(verbose) print("Plot station data (predictand)")
     par(bty="n")
     plot.zoo(ya,type="b",pch=19,main=attr(y,'location'),
              xlab="year",ylab=unit,
@@ -90,22 +90,15 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     grid()
   }
 
-  # Get the predictor: ERA40
-  #print("predictor")
-  #data(ferder)
-  #lon <- lon(ferder) + c(-20,20)
-  #lat <- lat(ferder) + c(-10,10)
-  
+  if(verbose) print("Retrieve predictor data")
   if (is.character(predictor))
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,
                     type=type,verbose=verbose) else
   if (inherits(predictor,'field'))
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
-  #rm("predictor"); gc(reset=TRUE)
-  #t2m <- t2m.ERA40(lon=lon,lat=lat)
+  if(verbose) print("Aggregate seasonal values")
   T2M <- as.4seasons(t2m,FUN=FUNX)
-  # Fix - there is a bug with 'T2M <- as.4seasons(t2m,FUN=FUNX)' - the date is not correct
   DJF <- subset(as.4seasons(t2m,FUN=FUNX),it='djf')
   MAM <- subset(as.4seasons(t2m,FUN=FUNX),it='mam')
   JJA <- subset(as.4seasons(t2m,FUN=FUNX),it='jja')
@@ -120,13 +113,10 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   ok4 <- is.finite(rowSums(SON))
   SON <- subset(SON,it=range(year(SON)[ok4]))
 
-  #ok <- is.finite(rowSums(T2M))
-  #T2M <- subset(T2M,it=range(year(T2M)[ok]))
-  #eofjja <- EOF(subset(T2M,it=3)); save(file='eof.rda',eofjja)
-  #load('T2M.rda')
   rm("t2m"); gc(reset=TRUE)
   
   # Ensemble GCMs
+  if(verbose) print("Retrieve & arrange GCMs")
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
   ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
   N <- length(ncfiles)
@@ -135,7 +125,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       select <- select[select<=N]; N <- length(select)
   if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
   
-  # set up results matrix and tables of diagnostics:
+  if(verbose) print("Set up results matrix & table of diagnostics")
   years <- sort(rep(1900:2100,4))
   months <- rep(c(1,4,7,10),length(1900:2100))
   m <- length(years)
@@ -149,7 +139,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
 
-  # Quick test:
+  if(verbose) print("Quick test")  
   #load('control.ds.1.rda'); T2M.ctl -> T2M
   flog <- file("DSensemble.t2m-log.txt","at")
   
@@ -172,9 +162,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     X.JJA <- combine(JJA,JJAGCM)
     X.SON <- combine(SON,SONGCM)
 
-    #load('control.ds.1.rda')
-    #X.JJA <- PREGCM
-    # REB: 30.04.2014 - new lines...
     if (verbose) print("- - - > EOFs")
     
     Z1 <- try(EOF(X.DJF,area.mean.expl=area.mean.expl))
@@ -236,15 +223,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       writeLines(ds4[[1]],con=flog)
     }
     if (verbose) print("Combine the 4 seasons")
-    ## 
     ds <- try(combine(list(ds1,ds2,ds3,ds4)))
-    ##ds <- c(zoo(ds1),zoo(ds2),zoo(ds3),zoo(ds4))
-    ##ds <- attrcp(y,ds)
-    ##attr(ds,'appendix.1') <- c(attr(ds1,'appendix.1'),
-    ##                           attr(ds2,'appendix.1'),
-    ##                           attr(ds3,'appendix.1'),
-    ##                           attr(ds4,'appendix.1'))
-    ##class(ds) <- class(y)
+    rm("Z1","Z2","Z3","Z4","ds1","ds2","ds3","ds4"); gc(reset=TRUE)
     
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
@@ -252,16 +232,11 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     } else {
       x.val <- c(crossval(ds1),crossval(ds2),crossval(ds3),crossval(ds4))
       attr(ds,'evaluation') <- x.val
-#    
-#    ds <- DS(y,Z,biascorrect=biascorrect,eofs=eofs,
-#             area.mean.expl=area.mean.expl,verbose=verbose)
-#    ds <- DS.t2m.season.field(y,Z,biascorrect=biascorrect,eofs=eofs,
-#                              area.mean.expl=area.mean.expl,verbose=verbose)
+
       if (verbose) print("post-processing")
       z <- attr(ds,'appendix.1')
     #save(file='inside.dsens.1.rda',ds,y,Z)
-    ##
-    # The test lines are included to assess for non-stationarity
+
       if (non.stationarity.check) {
         testds <- DS(testy,testZ,biascorrect=biascorrect,
                      area.mean.expl=area.mean.expl,eofs=eofs)   # REB 29.04.2014
@@ -341,12 +316,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
         lines(annual(z),lwd=2,col=cols[qcol])
         lines(ya,type="b",pch=19)
         lines(dsa,lwd=2,col="grey")
-      #zoo(subset(y,it=3),order.by=year(subset(y,it=3)))
-#      jja <- zoo(z[is.element(month(z),7)],order.by=year(z[is.element(month(z),7)]))
-#      lines(jja,lwd=2,col=cols[quality])
-#      lines(zoo(subset(y,it=3),order.by=year(subset(y,it=3))),type="b",pch=19)
-#      lines(zoo(subset(ds,it=3),order.by=year(subset(ds,it=3))),lwd=2,col="grey")
-      #
       }
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
                   "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
@@ -354,6 +323,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                 "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
+  if(verbose) print("Done with downscaling!")
+  rm("GCM",)
 
   X <- zoo(t(X),order.by=t)
   colnames(X) <- gcmnm
@@ -373,7 +344,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                       attr(X,'area.mean.expl') <- FALSE
   class(X) <- c("dsensemble","zoo")
   if (!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
-  #save(file=file.ds,X)#"DSensemble.rda",X)
+  save(file=file.ds,X)#"DSensemble.rda",X)
   print("---")
   invisible(X)
 } 
