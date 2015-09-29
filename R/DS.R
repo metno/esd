@@ -696,8 +696,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
       z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
                   eofs=eofs,rmtrend=rmtrend,verbose=verbose,
                   weighted=weighted,...)
-      browser()
-      class(z)[3:4] <- c('eof','field')
+      class(z)[2:3] <- c('eof','field')
       attr(z,'pattern') <- attr(y,'pattern')
       attr(z,'eigenvalues') <- attr(y,'eigenvalues')
       attr(z,'longitude') <- lon(y)
@@ -748,7 +747,6 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         V <- predict(model); W <- attr(y0,'eigenvalues')
         U <- attr(y0,'pattern')
         dU <- dim(U)
-        browser()
         if (length(dU)==3) {
           if (verbose) print('3D -> 2D')
           dim(U) <- c(dU[1]*dU[2],dU[3])
