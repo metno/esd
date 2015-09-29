@@ -545,6 +545,7 @@ export(corfield.trajectory)
 export(DS.trajectory)
 
 export(events2field)
+export(map.events)
 
 export(CCI)
 export(dX)
