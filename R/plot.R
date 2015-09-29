@@ -292,6 +292,11 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     plot.ds.pca(x,verbose=verbose)
     return()
   }
+  if (inherits(x,'eof')) {
+    plot.ds.eof(x,verbose=verbose)
+    return()
+  }
+  
   
   unit <- attr(x,'unit')
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
