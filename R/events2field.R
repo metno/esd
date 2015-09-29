@@ -83,7 +83,6 @@ factor2numeric <- function(f) {
 
 lonlatdensity <- function(lons,lats,radius=NULL,dx=NULL,dy=NULL,
                           R=6371,verbose=FALSE,...) {
-  if (verbose) print("lonlatdensity")
   if (!is.null(dx)) {
     lons <- round(lons/dx)*dx
   } else {
