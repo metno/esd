@@ -30,7 +30,6 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 }
 
 predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
-    browser()
     stopifnot(!missing(x),inherits(x,"ds"))
   if (verbose) print(paste("predict.ds.eof",paste(class(x),collapse='-')))
   X <- as.eof(x)
