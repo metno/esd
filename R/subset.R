@@ -35,6 +35,7 @@ subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
 subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
                                         #print("subset.eof")
+    ## browser()
     if (is.null(is) & is.null(it) & is.null(pattern)) return(x)                                    
     if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(pattern)) return(x) 
     d <- dim(x); greenwich <- TRUE
@@ -101,9 +102,14 @@ subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
                                         #print("numeric it")
             if (max(nchar(as.character(it)))<=2)
                 keep <- is.element(as.numeric(format(index(x),"%m")),it)
-            else {
-                it <- seq(it[1],it[2],1)
-                keep <- is.element(as.numeric(format(index(x),"%Y")),it)      
+            else if (sum(nchar(as.character(it))==4) == length(it)) {
+                if (length(it)==2)
+                    if (diff(it)>1)
+                        it <- seq(it[1],it[2],1)
+                if (is.character(index(x)) | inherits(index(x),'Date'))
+                    keep <- is.element(as.numeric(format(index(x),"%Y")),it)
+                else
+                    keep <- is.element(index(x),it)
             }
         }
         else if (is.character(it))
