@@ -30,7 +30,8 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 }
 
 predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
-  stopifnot(!missing(x),inherits(x,"ds"))
+    browser()
+    stopifnot(!missing(x),inherits(x,"ds"))
   if (verbose) print(paste("predict.ds.eof",paste(class(x),collapse='-')))
   X <- as.eof(x)
   if (verbose) print(paste(class(X),collapse='-'))
@@ -73,7 +74,8 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   }
   
   ##  predict - phase scramble of residual
-  residual <- model$residuals
+  ## There is a bug in the following lines, works only if model is not a list object -- need fixes here ...  
+    residual <- model$residuals
   if (addnoise) {
     if (verbose) print('add noise')
     l <- length(index(x))
@@ -88,7 +90,7 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   attr(y,'source') <- src
   if (!is.null(residual)) attr(y,'residual.mean') <- mean(residual,na.rm=TRUE)
   if (!is.null(residual)) attr(y,'residual.sd') <- sd(residual,na.rm=TRUE)
-  class(y) <- class(x)
+  class(y) <- class(x)[-1] ## AM remove 'ds' from output class
   y <- attrcp(x,y)
   if (verbose) print('predict.ds.eof complete')
   invisible(y)
