@@ -615,7 +615,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         if (verbose) print(varid(x))
         colbar$col <- colscal(n=length(colbar$breaks)-1,col=colid)
         ##  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
-        if (colid=='precip') col <- rev(col)
+        if (colid=='precip') colbar$col <- rev(colbar$col)
         colbar$show <- TRUE
         colbar$pos <- 0.05
     }

@@ -198,7 +198,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             bg.all <- col # REB 2015-06-03 fix?
         }
         
-        
+        ## browser()
         ## Transform x using FUN and insert color bar
         ## 
         if (!is.null(FUN)) {
@@ -235,7 +235,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                 print(paste("range of mapped values",paste(y.rng,
                                                            collapse="/")))
             
-                                        # find color index in colbar
+            ## find color index in colbar
             icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
             
             ## if (is.null(col)) col <- colbar$col[icol]
@@ -368,7 +368,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             
             par(fig=fig0,new=TRUE)
             ## print(par()$fig)
-            
+            ## browser()
             ## add color bar
             if (colbar$show) 
                 if (fancy & !is.null(colbar))

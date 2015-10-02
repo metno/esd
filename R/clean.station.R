@@ -9,7 +9,7 @@ clean.station <- function(x,miss=.1,verbose=TRUE) {
     n <- apply(coredata(x),2,FUN=nv)
 
     if (verbose) summary(n)
-    keep <- n > (dim(x)[1]*miss)
+    keep <- n > (dim(x)[1]*(1-miss))
     x <- subset(x,is=keep)
     if (verbose) print("Removed stations ...")
     if (verbose) print(loc[!keep])

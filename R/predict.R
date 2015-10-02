@@ -13,7 +13,7 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     if (inherits(x,'field'))
       y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
   } else if (inherits(x,'eof')) {
-    str(x)
+    ## str(x)
     ## If new data is provided
     if (inherits(newdata,'comb'))
       y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose) else
@@ -30,12 +30,13 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 }
 
 predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
-  stopifnot(!missing(x),inherits(x,"ds"))
+    stopifnot(!missing(x),inherits(x,"ds"))
   if (verbose) print(paste("predict.ds.eof",paste(class(x),collapse='-')))
   X <- as.eof(x)
   if (verbose) print(paste(class(X),collapse='-'))
   #print(dim(X))
-  neofs <- length(attr(X,'eigenvalues'))
+  if (is.null(newdata)) neofs <- length(attr(X,'eigenvalues')) else
+                        neofs <- length(attr(newdata,'eigenvalues'))
   
   # For some reason, the column names of newdata is muddled here,
   # and hence Xnames is used to enforce names 'X.1', 'X.2', 'X.3', ...
@@ -51,6 +52,8 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
       idx <- index(newdata)
       src <- attr(newdata,'source')
       newdata <- as.data.frame(newdata)
+      if ((length(attr(X,'eigenvalues'))) != (length(attr(newdata,'eigenvalues'))))
+        warning('newdata and X have different number of EOFs')
   }
   #print(summary(newdata))
   names(newdata) <- Xnames 
@@ -70,7 +73,8 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   }
   
   ##  predict - phase scramble of residual
-  residual <- model$residuals
+  ## There is a bug in the following lines, works only if model is not a list object -- need fixes here ...  
+    residual <- model$residuals
   if (addnoise) {
     if (verbose) print('add noise')
     l <- length(index(x))
@@ -85,7 +89,7 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   attr(y,'source') <- src
   if (!is.null(residual)) attr(y,'residual.mean') <- mean(residual,na.rm=TRUE)
   if (!is.null(residual)) attr(y,'residual.sd') <- sd(residual,na.rm=TRUE)
-  class(y) <- class(x)
+  class(y) <- class(x)[-1] ## AM remove 'ds' from output class
   y <- attrcp(x,y)
   if (verbose) print('predict.ds.eof complete')
   invisible(y)
@@ -126,7 +130,7 @@ predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   y <- zoo(y, order.by=t)
   y <- attrcp(x,y)
   class(y) <- class(x)[-1]
-  return(y)
+  invisible(y)
 }
 
 predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {

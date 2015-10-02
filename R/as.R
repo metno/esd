@@ -455,16 +455,17 @@ as.field.zoo <- function(x,lon,lat,param,unit,
   #dyr <- as.numeric(format(t[2],'%Y')) - as.numeric(format(t[1],'%Y')) 
   #dmo <- as.numeric(format(t[2],'%m')) - as.numeric(format(t[1],'%m')) 
   #dda <- as.numeric(format(t[2],'%d')) - as.numeric(format(t[1],'%d'))
-  dyr <- diff(year(x))[1]
-  dmo <- diff(month(x))[1]
-  dda <- diff(day(x))[1]
-  timescale <- "annual"
-  if (dmo>0)  timescale <- "month"
-  if (dmo==3)  timescale <- "season"
-  if (dda>0)  timescale <- "day"
-  if (dyr==0 & dmo==0 & dda==0) timescale <- "sub-daily"
-  #print(timescale)
-  
+  if (length(year(x))!=1) {
+      dyr <- diff(year(x))[1]
+      dmo <- diff(month(x))[1]
+      dda <- diff(day(x))[1]
+      timescale <- "annual"
+      if (dmo>0)  timescale <- "month"
+      if (dmo==3)  timescale <- "season"
+      if (dda>0)  timescale <- "day"
+      if (dyr==0 & dmo==0 & dda==0) timescale <- "sub-daily"
+      ##print(timescale)
+  } else timescale <- "day"
 # Add attributes to x
   attr(x,"variable") <- param
   attr(x,"longname") <- longname

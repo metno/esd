@@ -35,7 +35,7 @@ sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
     if (tsx !="season")
         y <- aggregate(y, agrscly, match.fun(FUN)) else 
         y <- as.4seasons(y, FUN=match.fun(FUN),dateindex=TRUE)
-    return(y)
+    invisible(y)
 }
 
 
@@ -639,7 +639,7 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
     ds <- DS(Z,X,biascorrect=biascorrect,method=method,swsm=swsm,m=m,
              rmtrend=rmtrend,eofs=eofs,
              verbose=verbose,...)
-    return(ds)
+    invisible(ds)
 }
 
 
@@ -655,6 +655,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
     
     if (verbose) {print('DS.pca'); print(class(X))}
+
+    ## If the predictor is a list, then use DS.list
     if (is.list(X)) {
       if (verbose) print('Predictors represented by a list object')
       z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
@@ -663,6 +665,8 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
       return(z)
     }
+
+    ## Check the predictor
     if (!inherits(X,"eof") & inherits(X,"field")) {
       X <- EOF(X)
     } else if (!inherits(X,"eof") & !inherits(X,"field") & inherits(X,"zoo")) {
@@ -682,7 +686,26 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                   eofs=eofs,rmtrend=rmtrend,verbose=verbose,
                   weighted=weighted,...)
       return(z)
+    } else if (verbose) print('Predictor is OK - an EOF object')
+
+    ## Check the predictand
+    if (inherits(y,"eof") & inherits(y,"field")) {
+      if (verbose) print('Make the EOFs lool like PCAs before downscaling')
+      cls0 <- class(y)
+      class(y)[1:2] <- c('pca','station')
+      z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
+                  eofs=eofs,rmtrend=rmtrend,verbose=verbose,
+                  weighted=weighted,...)
+      class(z)[2:3] <- c('eof','field')
+      attr(z,'pattern') <- attr(y,'pattern')
+      attr(z,'eigenvalues') <- attr(y,'eigenvalues')
+      attr(z,'longitude') <- lon(y)
+      attr(z,'latitude') <- lat(y)
+      attr(z,'variable') <- varid(y)
+      attr(z,'unit') <- unit(y)      
+      return(z)
     }
+    
     stopifnot(!missing(y),!missing(X),
               inherits(X,"eof"),inherits(y,"station"))
 
@@ -723,6 +746,11 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         # Reconstruct the entire data, and then apply the PCA to this
         V <- predict(model); W <- attr(y0,'eigenvalues')
         U <- attr(y0,'pattern')
+        dU <- dim(U)
+        if (length(dU)==3) {
+          if (verbose) print('3D -> 2D')
+          dim(U) <- c(dU[1]*dU[2],dU[3])
+        }
         UWV <- U %*% diag(W) %*% t(V)
         pca <- svd(UWV)
                                         #str(pca)
@@ -881,7 +909,7 @@ DS.eof <- function(y,X,mon=NULL,
                  rmtrend=rmtrend,eofs=eofs,
                  area.mean.expl=area.mean.expl,
                  verbose=verbose,...)
-    return(ds)
+    invisible(ds)
 }
 
 
@@ -1033,7 +1061,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
         if (verbose)print(summary(zpattern))
         attr(ds,'pattern') <- zpattern
     }
-    return(ds)
+    invisible(ds)
 }
 
 DS.station.pca <- function(y,X,mon=NULL,
@@ -1068,7 +1096,7 @@ biasfix <- function(x) {
     attr(x,'history') <- history.stamp(x)
     attr(x,'quality') <- "'bias' corrected -  ref (Imbert & Benestad (2005); Theor. Appl. Clim.; DOI: 10.1007/s00704-005-0133-4"
     attr(x,'diagnose') <- diag
-    return(x)
+    invisible(x)
 }
 
 
