@@ -93,41 +93,52 @@ lonlatdensity <- function(lons,lats,radius=NULL,dx=NULL,dy=NULL,
   } else {
     dy <- min(diff(sort(unique(lats))))
   }
-  if (is.null(radius)) {
-    rlons <- lons
-    rlats <- lats
-  } else {
+  fn <- function(x,y,r,dx,dy) {
     xvec <- seq(round(-180/dx)*dx,round(180/dx)*dx,dx)
     yvec <- seq(round(-90/dy)*dy,round(90/dy)*dy,dy)
     xx <- as.vector(sapply(xvec,function(x) rep(x,length(yvec))))
     yy <- rep(yvec,length(xvec))
-    rlons <- c(); rlats <- c()
-    for (j in 1:length(lons)) {
-      d <- distAB(lons[j],lats[j],xx,yy)
-      rlons <- c(rlons, xx[d<=radius[j]])
-      rlats <- c(rlats, yy[d<=radius[j]])
-    }
+    i <- mapply(function(a,b,d) distAB(a,b,xx,yy)<d,x,y,r)
+    rx <- unlist(apply(i,2,function(j) xx[j]))
+    ry <- unlist(apply(i,2,function(j) yy[j]))
+    ok <- !is.na(rx) & !is.na(ry); rx <- rx[ok]; ry <- ry[ok]
+    hits <- as.data.frame(table(lon=rx,lat=ry))
+    hits <- hits[hits$Freq>0,]
+    hx <- factor2numeric(hits$lon)
+    hy <- factor2numeric(hits$lat)
+    A <- dx*(pi/180)*R**2*abs(sin(min(hy+dy/2,90)*pi/180))-
+                           sin((hy-dy/2)*pi/180)
+    d <- hits$Freq/A
+    d[is.infinite(d)] <- NA
+    invisible(cbind(hx,hy,d))
   }
-  hits <- as.data.frame(table(lon=rlons,lat=rlats))
-  hits <- hits[hits$Freq>0,]
-  hlons <- factor2numeric(hits$lon)
-  hlats <- factor2numeric(hits$lat)
-  A <- dx*(pi/180)*R**2*abs(sin((hlats+dy/2)*pi/180)-
-                           sin((hlats-dy/2)*pi/180))
-  d <- hits$Freq/A
-  d[A<1] <- NA
-  if(any(hlats>=(90-dy))) {
-    f90 <- sum(hits$Freq[hlats>(90-dy)])
-    A90 <- 2*pi*R**2*(1-sin((90-dy)*pi/180))
-    d90 <- f90/A90
-    lon90 <- seq(-180,180,dx)
-    d <- c(rep(d90,length(lon90)),d[hlats<=(90-dy)])
-    hlons <- c(lon90,hlons[hlats<=(90-dy)])
-    hlats <- c(rep(89,length(lon90)),hlats[hlats<=(90-dy)])
-  }
+  if (is.null(radius)) radius <- 1E4
+  dens <- fn(lons,lats,radius,dx,dy)
+  hlons <- dens[,1]
+  hlats <- dens[,2]
+  d <- dens[,3]
   X <- data.frame(lon=hlons,lat=hlats,density=d)
   invisible(X)
 }
 
  
- 
+
+  ## highlat <- 90
+  ## if (any(lats>highlat)) {
+  ##   if (length(radius)>1) r90 <- radius[abs(lats)>highlat-10] else r90 <- radius
+  ##   dx2 <- dx*5
+  ##   d90 <- fn(lons[abs(lats)>highlat-10],lats[abs(lats)>highlat-10],r90,dx2,dy)
+  ##   d90 <- d90[d90[,2]>highlat,]
+  ##   xvec <- round(seq(round(-180/dx)*dx,round(180/dx)*dx,dx)/dx2)*dx2
+  ##   yvec <- seq(min(lats[lats>highlat]),max(lats),dy)
+  ##   d2 <- array(0,dim=c(length(xvec),length(yvec)))
+  ##   for (i in 1:dim(d90)[1]) {
+  ##     d2[xvec==d90[i,1],yvec==d90[i,2]] <- d90[i,3]
+  ##   }
+  ##   hlons2 <- rep(xvec,length(yvec))[d2>0]
+  ##   hlats2 <- as.vector(sapply(yvec,function(x) rep(x,length(xvec))))[d2>0]
+  ##   d2 <- d2[d2>0]
+  ##   d <- c(d[hlats<=highlat],d2)
+  ##   hlons <- c(hlons[hlats<=highlat],hlons2)
+  ##   hlats <- c(hlats[hlats<=highlat],hlats2)
+  ## }
