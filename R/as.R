@@ -1287,7 +1287,7 @@ as.events <- function(x,...) UseMethod("as.events")
 as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
                       units=NULL,longname=NULL,variable=NULL,
                       qflabel=NULL,method=NULL,src=NULL,reference=NULL,
-                      file=NULL,version=NULL,verbose=FALSE) {
+                      file=NULL,version=NULL,url=NULL,verbose=FALSE) {
   if (verbose) print("as.events")
   X <- data.frame(x)
   n <- names(X)
