@@ -13,9 +13,25 @@ t2m.MERRA <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
   t2m.MERRA
 }
 
-t2m.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
-  data("eof.t2m.NCEP",envir=environment())
-  t2m.NCEP<- eof2field(eof.t2m.NCEP,is=list(lon=lon,lat=lat),anomaly=anomaly)
+t2m.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE,latest=FALSE,
+                     url='ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc') {
+  if (latest) {
+    ## If the URL exists, check if a newer version should be downloaded
+    if (file.exists('air.mon.mean.nc')) {
+      ## If it exists locally, check if the two are the same version
+      finfo.url <- file.info(url)
+      finfo.loc <- file.info('air.mon.mean.nc')
+      if (as.Date(finfo.loc$ctime) < as.Date(Sys.time()) - 7) {
+          if (verbose) print(paste('download from',url))
+          download.file(url,'air.mon.mean.nc')
+      }
+    } else download.file(url,'air.mon.mean.nc')
+    t2m.NCEP <- retrieve('air.mon.mean.nc',lon=lon,lat=lat)
+    if (anomaly) t2m.NCEP <- anomaly(t2m.NCEP)
+  } else {
+    data("eof.t2m.NCEP",envir=environment())
+    t2m.NCEP<- eof2field(eof.t2m.NCEP,is=list(lon=lon,lat=lat),anomaly=anomaly)
+  }
   t2m.NCEP
 }
 
