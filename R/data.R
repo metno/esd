@@ -23,6 +23,7 @@ t2m.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE,latest=FALSE,
       finfo.loc <- file.info('air.mon.mean.nc')
       if (as.Date(finfo.loc$ctime) < as.Date(Sys.time()) - 7) {
           if (verbose) print(paste('download from',url))
+          file.remove('air.mon.mean.nc')
           download.file(url,'air.mon.mean.nc')
       }
     } else download.file(url,'air.mon.mean.nc')
