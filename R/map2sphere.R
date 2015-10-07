@@ -64,7 +64,6 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 #}
 
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
-                       xlim=NULL,ylim=NULL,zlim=NULL,
                        colbar= list(pal='t2m',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
@@ -109,7 +108,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   map <- x[srtx,srty]
   param <- attr(x,'variable')
   unit <- attr(x,'unit')
-  
   # Rotatio:
   if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
   if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
@@ -164,6 +162,25 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## AM commented
   index <- round( nc*( map - min(colbar$breaks) )/
                     ( max(colbar$breaks) - min(colbar$breaks) ) )
+  ## KMP 2015-09-29: extra colors if higher/lower values occur
+  crgb <- col2rgb(colbar$col)
+  if(any(map>max(colbar$breaks))) {
+    cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
+    crgb <- cbind(crgb,cmax)
+    index[index>nc] <- nc+1
+    colbar$breaks <- c(colbar$breaks,max(map))
+  }
+  if(any(map<min(colbar$breaks))) {
+    cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
+    crgb <- cbind(cmin,crgb)
+    index[index>nc] <- nc+1
+    colbar$breaks <- c(min(map),colbar$breaks)
+  }
+  crgb[crgb>255] <- 255; crgb[crgb<0] <- 0
+  colbar$col <- rgb(t(crgb),maxColorValue=255)
+  colbar$n <- length(colbar$col)-1
+  #if (min(colbar$breaks)<min(map)) index[map<min(colbar$breaks)] <- 1
+  #if (max(colbar$breaks)>max(map)) index[map>max(colbar$breaks)] <- nc
   if (verbose) print('set colours')
   
 # Rotate coastlines:
@@ -185,26 +202,23 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 # Plot the results:
   if (new) dev.new()
   par(bty="n") ## ,xaxt="n",yaxt="n")
-  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",xlim=xlim,ylim=ylim,...)
+  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="")
   
 # plot the grid boxes, but only the gridboxes facing the view point:
   Visible <- colMeans(Y) > 0
   X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
   index <- index[Visible]
-  apply(rbind(X,Z,index),2,gridbox,colbar$col) ## AM replaced col
+  apply(rbind(X,Z,index),2,gridbox,colbar$col)
   # c(W,E,S,N, colour)
   # xleft, ybottom, xright, ytop
-
-# Plot the coast lines  
+  # Plot the coast lines  
   visible <- y > 0
   points(x[visible],z[visible],pch=".")
   #plot(x[visible],y[visible],type="l",xlab="",ylab="")
   lines(cos(pi/180*1:360),sin(pi/180*1:360))
-
-# Add contour lines?
-# Add grid ?
-  
-# Colourbar:
+  # Add contour lines?
+  # Add grid ?
+  # Colourbar:
   if (!is.null(colbar)) {
     if (verbose) print('plot colourbar')
 #    #print(breaks)
@@ -216,7 +230,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 #      breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/
 #                      ( max(map) - min(map) ) )
 #    bar <- cbind(breaks,breaks)
-#    #browser()
 #    image(breaks,c(1,2),bar,col=col)
 #
 #    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
@@ -224,24 +237,28 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 #
     # Adopt from map.station
     par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.7)
-    
-      if (fancy & !is.null(colbar))
-          col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
-                  col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
-                  type=type,verbose=FALSE,vl=1,border=FALSE)
-      else if (!is.null(colbar))
-          image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-                     legend.only = T, zlim = range(colbar$breaks),
-                     col = colbar$col, legend.width = 1,
-                     axis.args = list(cex.axis = 0.8,
-                         xaxp=c(range(colbar$breaks),n=colbar$n)),
-                     border = FALSE,...)
+    if (fancy & !is.null(colbar)) {
+      if (verbose) print("fancy colbar")
+      col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
+              col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
+              type=type,verbose=FALSE,vl=1,border=FALSE)
+    } else if (!is.null(colbar)) {
+      if (verbose) print("regular colbar")
+      image.plot(breaks=colbar$breaks,
+                 lab.breaks=signif(colbar$breaks,digits=2),
+                  horizontal = TRUE,legend.only = T,
+                   zlim = range(colbar$breaks),
+                   col = colbar$col, legend.width = 1,
+                   axis.args = list(cex.axis = 0.8),border=FALSE,...)
+                   #xaxp=c(range(colbar$breaks),colbar$n)),
+                   #border = FALSE,...)
       ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
       ##             legend.only = T, zlim = range(colbar$breaks),
       ##             col = colbar$col, legend.width = 1,
       ##             axis.args = list(cex.axis = 0.8), border = FALSE)
+    }
   }
-  
+
   ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
   ##     xlab="",ylab="",add=FALSE)
   txt <- paste(param,' (',unit,')',sep=" ")
@@ -265,15 +282,13 @@ vec <- function(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
   X <- coredata(x); Y <- coredata(y)
   dim(X) <- c(d[1],d[2])
   dim(Y) <- c(d[1],d[2])
-  #browser()
-#  X <- t(X); Y <- t(Y)
+  #X <- t(X); Y <- t(Y)
   x0 <- rep(ix,length(iy))
   y0 <- sort(rep(iy,length(ix)))
   ij <- is.element(ix,lon(x))
   ji <- is.element(iy,lat(x))
   #print(ix); print(lon(x)); print(sum(ij))
   #print(iy); print(lat(x)); print(sum(ji))
-  #browser()
   dim(x0) <- c(length(ij),length(ji)); dim(y0) <- dim(x0)
   x0 <- x0[ij,ji]
   y0 <- y0[ij,ji]

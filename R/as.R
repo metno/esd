@@ -455,16 +455,17 @@ as.field.zoo <- function(x,lon,lat,param,unit,
   #dyr <- as.numeric(format(t[2],'%Y')) - as.numeric(format(t[1],'%Y')) 
   #dmo <- as.numeric(format(t[2],'%m')) - as.numeric(format(t[1],'%m')) 
   #dda <- as.numeric(format(t[2],'%d')) - as.numeric(format(t[1],'%d'))
-  dyr <- diff(year(x))[1]
-  dmo <- diff(month(x))[1]
-  dda <- diff(day(x))[1]
-  timescale <- "annual"
-  if (dmo>0)  timescale <- "month"
-  if (dmo==3)  timescale <- "season"
-  if (dda>0)  timescale <- "day"
-  if (dyr==0 & dmo==0 & dda==0) timescale <- "sub-daily"
-  #print(timescale)
-  
+  if (length(year(x))!=1) {
+      dyr <- diff(year(x))[1]
+      dmo <- diff(month(x))[1]
+      dda <- diff(day(x))[1]
+      timescale <- "annual"
+      if (dmo>0)  timescale <- "month"
+      if (dmo==3)  timescale <- "season"
+      if (dda>0)  timescale <- "day"
+      if (dyr==0 & dmo==0 & dda==0) timescale <- "sub-daily"
+      ##print(timescale)
+  } else timescale <- "day"
 # Add attributes to x
   attr(x,"variable") <- param
   attr(x,"longname") <- longname
@@ -1281,4 +1282,38 @@ as.original.station <- function(x) {
   attr(X,'history') <- history.stamp(x)
   return(X)
 }
-                        
+
+as.events <- function(x,...) UseMethod("as.events")
+
+as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
+                      units=NULL,longname=NULL,variable=NULL,
+                      qflabel=NULL,method=NULL,src=NULL,reference=NULL,
+                      file=NULL,version=NULL,url=NULL,verbose=FALSE) {
+  if (verbose) print("as.events")
+  X <- data.frame(x)
+  n <- names(X)
+  if (!all(c("date","time","lon","lat") %in% names(X))) {
+    print(paste("Missing input:",
+     names(X)[!c("date","time","lon","lat")%in%names(X)]))
+  }
+  attr(X,"label") <- label
+  attr(X,"dx") <- dx
+  attr(X,"dy") <- dy
+  attr(X,"longname") <- longname
+  attr(X,"variable") <- variable
+  attr(X,"quality") <- qflabel
+  attr(X,"source") <- src
+  attr(X,"file") <- file
+  attr(X,"version") <- version
+  attr(X,"method") <- method
+  attr(X,"URL") <- url
+  attr(X,"reference") <- reference
+  class(X) <- c("events",class(X))
+  attr(X,"history") <- history.stamp(X)
+  invisible(X)
+}
+
+as.field.events <- function(x,...) {
+  y <- events2field(x,...)
+  return(y)
+}

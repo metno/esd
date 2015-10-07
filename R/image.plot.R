@@ -41,14 +41,23 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
         par(old.par)
         stop("plot region too small to add legend\n")
     }
+    breaks <- list(...)$breaks
     ix <- 1
     minz <- info$zlim[1]
     maxz <- info$zlim[2]
-    binwidth <- (maxz - minz)/nlevel
-    midpoints <- seq(minz + binwidth/2, maxz - binwidth/2, by = binwidth)
-    iy <- midpoints
-    iz <- matrix(iy, nrow = 1, ncol = length(iy))
-    breaks <- list(...)$breaks
+    ## KMP 2015-09-23: for unevenly spaced breaks
+    if(is.null(breaks)) {
+      binwidth <- (maxz - minz)/nlevel
+      midpoints <- seq(minz + binwidth/2, maxz - binwidth/2, by = binwidth)
+      iy <- midpoints
+      iz <- matrix(iy, nrow = 1, ncol = length(iy))
+    } else {
+      z <- unique(c(minz,breaks,maxz))
+      binwidth <- diff(z)
+      midpoints <- z[1:(length(z)-1)]+binwidth/2
+      iy <- midpoints
+      iz <- matrix(iy, nrow = 1, ncol = length(iy))
+    }
     par(new = TRUE, pty = "m", plt = smallplot, err = -1)
     if (!is.null(breaks) & !is.null(lab.breaks)) {
         axis.args <- c(list(side = ifelse(horizontal, 1, 4), 

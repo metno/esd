@@ -103,12 +103,14 @@ plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
                          breaks=NULL,type="p",cex=2,show=TRUE,
                          h=0.6,v=1,pos=0.05),
                      verbose=FALSE,...) {
+  if (verbose) print(paste('plot.eof',paste(what,collapse=',')))
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
   if (inherits(x,"field"))
     plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
-                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...)
+                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
+    print("x does not have 'comb' or 'field' aspects...")
 }
 
 
@@ -290,6 +292,10 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
   if (inherits(x,'pca')) {
     plot.ds.pca(x,verbose=verbose)
+    return()
+  }
+  if (inherits(x,'eof')) {
+    plot.ds.eof(x,verbose=verbose)
     return()
   }
   
@@ -648,6 +654,44 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   }
 }
 
+plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
+  if (verbose) print('plot.ds.eof')
+  attr(y,'longname') <- attr(y,'longname')[1]
+  #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
+  par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
+  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,...)
+  title(paste("EOF Pattern # ",pattern,sep=""))
+  par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
+  map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
+      colbar=colbar,verbose=verbose,
+      main=paste("EOF Pattern # ",pattern,sep=""))
+  #title(paste("EOF Pattern # ",pattern,sep=""))
+  if (!is.null(attr(y,'evaluation'))) {
+    par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
+    plot(attr(y,'evaluation')[,1],attr(y,'evaluation')[,2],
+         main='Cross-validation',xlab='original data',
+         ylab='prediction',pch=19,col="grey")
+    lines(range(c(attr(y,'evaluation')),na.rm=TRUE),
+          range(c(attr(y,'evaluation')),na.rm=TRUE),lty=2)
+    cal <- data.frame(y=coredata(attr(y,'evaluation')[,1]),
+                      x=coredata(attr(y,'evaluation')[,2]))
+    xvalfit <- lm(y ~ x, data = cal)
+    abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
+    par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
+    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,pattern])[1],
+           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,pattern]))/10,
+           legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
+           lwd=c(2,2),pch=c(21,19),bty="n")
+  } else {
+    par(fig=c(0.05,0.975,0.05,0.475),new=TRUE)
+    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
+    xvalfit <- NULL
+  }  
+}
 
 vis.pca <- function(y,cex=1.5,new=TRUE) {
 
