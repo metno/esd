@@ -224,7 +224,7 @@ DS.default <- function(y,X,mon=NULL,
     attr(ds,'history.predictand') <- attr(y0,'history')
     attr(ds,'history') <- history.stamp(X0)
                                         #print("HERE"); print(cls)
-    class(ds) <- c("ds",cls)
+    class(ds) <- c("ds",cls[-1])
     rm("y0","X0")
                                         #print("Completed")
                                         #lines(ds,col="darkred",lwd=2,lty=2)
@@ -241,7 +241,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                        method="lm",swsm="step",m=5,
                        rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
-    ## 
+    browser() 
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
     if (verbose) print("--- DS.station ---")
     #print('err(y)'); print(err(y))
