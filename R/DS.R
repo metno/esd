@@ -241,7 +241,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                        method="lm",swsm="step",m=5,
                        rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
-    browser() 
+    ##  
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
     if (verbose) print("--- DS.station ---")
     #print('err(y)'); print(err(y))
