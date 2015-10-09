@@ -376,11 +376,19 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     text  <- unlist(strsplit(fdata,split="/"))
     text2 <- text[length(text)]
     destfile <- file.path(path,text2,fsep= .Platform$file.sep)
-    ##
-    if (!file.exists(destfile)) { 
+    text3 <- paste('ECA','blend',tolower(param1),sep='_')
+    destfile2 <- file.path(path,text3,fsep= .Platform$file.sep)
+    ## 
+    ## If zip file exist and not the data folder, then unzip
+    if (file.exists(destfile) & !file.exists(destfile2)) {
+        unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
+    } 
+    ## if folder does not exist, then download and unzip
+    if (!file.exists(destfile2)) { 
         download.file(fdata,destfile,method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))
         unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
     }
+
     if (verbose) print("station.ecad")
     newpath <- substr(destfile,1,nchar(destfile)-4) 
     ## 
