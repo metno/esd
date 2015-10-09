@@ -415,7 +415,6 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (verbose) print("graphics")
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
   unit <- attr(y,'unit')
-  #ylim <- switch(deparse(substitute(FUN)),
 
   ylim <- switch(FUN,
                  'exceedance'=c(0,10),'wetmean'=c(0,10),
@@ -599,9 +598,10 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
 
-  if (verbose) print('DSensemble.precip')
+  if (verbose) print('DSensemble.annual')
 #  if (deparse(substitute(FUN))=='spell') {
-
+  index(y) <- year(y)
+  
   if (!abscoords) {
     ## If relative coordinates:
     if (!is.na(attr(y,'longitude')))
@@ -626,7 +626,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (verbose) print("graphics")
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
   unit <- attr(y,'unit')
-  #ylim <- switch(deparse(substitute(FUN)),
+  ylim <- c(0,10)
 
   if (plot) {
     par(bty="n")
