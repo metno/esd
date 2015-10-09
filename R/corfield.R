@@ -9,7 +9,7 @@ corfield.default <- function(x,y,...) {
   cor(x,y)
 }
 
-corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,...) {
+corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,colbar=list(rev=TRUE)) {
   if (verbose) { print("corfield.zoo:"); print('station against field') }
 
   # Keep track of which is an eof object and which is a station record:
@@ -50,11 +50,11 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE
   class(r) <- 'corfield'
 
   #print("map")
-  if (plot) map(r)
+  if (plot) map(r,colbar=list(rev=TRUE))
   return(r)
 }
 
-corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,...) {
+corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,colbar=list(rev=TRUE),...) {
  
   if (verbose) {print('corfield.field'); print('field against field')}
   cor2s <- function(x,use,...) {
@@ -135,7 +135,7 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
     attr(r,'unit') <- attr(x,'unit')[1] else
     attr(r,'unit') <- c(attr(x,'unit')[1],attr(y,'unit')[1])   
   class(r) <- 'corfield'
-  if (plot) map(r)
+  if (plot) map(r,colbar=list(rev=TRUE))
   return(r)
 }
 
@@ -147,8 +147,9 @@ corfield.field.station <- function(x,y,plot=TRUE,verbose=FALSE,
 }
 
 
-corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,use='pairwise.complete.obs',
-                             na.action='na.omit',...) {
+corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,
+                             use='pairwise.complete.obs',
+                             na.action='na.omit',colbar=list(rev=TRUE),...) {
   if (verbose) print("corfield.station:")
   
   # Keep track of which is an eof object and which is a station record:
@@ -232,7 +233,7 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,use='pairwise.complete.
   class(r) <- 'corfield'
 
   #print("map")
-  if (plot) map(r,verbose=verbose)
+  if (plot) map(r,verbose=verbose,colbar=list(rev=TRUE),...)
   invisible(r)
 }
 

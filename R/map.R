@@ -471,7 +471,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     verbose=FALSE,...) {
-    ##
+    browser()##
                                         #args <- list(...)
                                         #print(args)
     X <- rbind(attr(x,'pattern')[,pattern],attr(x,'pattern')[,pattern])
@@ -494,7 +494,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
     ##  colbar$col <- colscal(30,col=varid(x))
     ##}
     
-    map.station(X,new=new,FUN="mean",
+    map.station(X,new=new,##FUN="mean",
                 colbar=colbar,
                 xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
 }
