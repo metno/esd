@@ -9,7 +9,7 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       projection="lonlat",xlim=NULL,ylim=NULL,zlim=NULL,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                           show=TRUE,type="p",cex=2,h=0.6,v=1),
-                      type=c("fill","contour"),gridlines=FALSE,
+                      type=c("fill","contour"),gridlines=FALSE,cex=2,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     
     ## default with no arguments will produce a map showing available station
@@ -494,7 +494,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
     ##  colbar$col <- colscal(30,col=varid(x))
     ##}
     
-    map.station(X,new=new,FUN="mean",
+    map.station(X,new=new,##FUN="mean",
                 colbar=colbar,
                 xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
 }
@@ -517,7 +517,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    verbose=FALSE,...) {
+                    verbose=FALSE,cex=2,...) {
     ##print('map.cca')
     ##x <- subset(x,it=it,is=is)
     ## browser()
