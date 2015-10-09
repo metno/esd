@@ -596,7 +596,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),
                               abscoords=FALSE,select=NULL,FUN=NULL,
                               FUNX="mean",threshold=1,
-                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL) {
+                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
 
   if (verbose) print('DSensemble.precip')
