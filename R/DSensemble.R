@@ -26,12 +26,13 @@ DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
   stopifnot(!missing(y),inherits(y,"station"),file.exists(paste(path,rcp,sep="")))
   
   if (is.null(attr(y,'aspect'))) attr(y,'aspect') <- "original"
+  
+  if (inherits(y,'annual'))
+    z <- DSensemble.annual(y,path=path,rcp=rcp,threshold=1,...) else
   if (is.T(y))
     z <- DSensemble.t2m(y,path=path,rcp=rcp,...) else
   if (is.precip(y))
     z <- DSensemble.precip(y,path=path,rcp=rcp,threshold=1,...) else
-  if (inherits(y,'annual'))
-    z <- DSensemble.annual(y,path=path,rcp=rcp,threshold=1,...) else
     z <- NULL 
     
   return(z)
