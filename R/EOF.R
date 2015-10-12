@@ -394,7 +394,9 @@ PCA.default <- function(X,...) {
   stop("Don't know how to handle objects other than station")
 }
 
-PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE) {
+PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL) {
+    if (!is.null(it) | !is.null(is))
+        X <- subset(X,it=it,is=is)
    
   if (na.action=='fill') {
     if (verbose) print('Fill missing data gaps')
