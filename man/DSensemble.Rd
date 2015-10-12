@@ -3,6 +3,7 @@
 \alias{DSensemble.default}
 \alias{DSensemble.t2m}
 \alias{DSensemble.precip}
+\alias{DSensemble.annual}
 \alias{DSensemble.mu}
 \alias{DSensemble.mu.worstcase}
 \title{Downscale ensemble runs}
@@ -53,14 +54,23 @@ DSensemble.t2m(y,plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",FUNX="mean",
                            pattern="tas_Amon_ens_",verbose=FALSE)
 DSensemble.precip(y,plot=TRUE,path="CMIP5.monthly/",
-                              rcp="rcp45",biascorrect=FALSE,
-                              predictor="~/ERA40_pr_mon.nc",
-                              area.mean.expl=FALSE,
-                              non.stationarity.check=FALSE,
-                              eofs=1:6,lon=c(-15,15),lat=c(-10,10),
-                              select=NULL,FUN="exceedance",
-                              FUNX="sum",threshold=1,
-                              pattern="pr_Amon_ens_",verbose=FALSE)
+                  rcp="rcp45",biascorrect=FALSE,
+                  predictor="~/ERA40_pr_mon.nc",
+                  area.mean.expl=FALSE,
+                  non.stationarity.check=FALSE,
+                  eofs=1:6,lon=c(-15,15),lat=c(-10,10),
+                  select=NULL,FUN="exceedance",
+                  FUNX="sum",threshold=1,
+                  pattern="pr_Amon_ens_",verbose=FALSE)
+DSensemble.annual(y,plot=TRUE,path="CMIP5.monthly/",
+                  rcp="rcp45",biascorrect=FALSE,
+                  predictor="ERA40_t2m_mon.nc",
+                  non.stationarity.check=FALSE,
+                  area.mean.expl=FALSE,type='ncdf',
+                  eofs=1:6,lon=c(-10,10),lat=c(-10,10),
+                  abscoords=FALSE,select=NULL,FUN=NULL,
+                  FUNX="mean",threshold=1,
+                  pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL)
 DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
               rcp="rcp45",biascorrect=FALSE,
               predictor="~/ERA40_t2m_mon.nc",
