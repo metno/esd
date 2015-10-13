@@ -20,7 +20,7 @@ fitpc <- function(y,x,eofs=1:7) {
 #  invisible(z)
 #}
 
-pcafill <- function(X,insertmiss=0,neofs=7,test=FALSE,verbose=FALSE) {
+pcafill <- function(X,insertmiss=0,eofs=1:7,test=FALSE,verbose=FALSE) {
   X0 <- X ## For debugging
   if (insertmiss>0) {
     ## Test by inserting false missing values in the data
@@ -54,7 +54,7 @@ pcafill <- function(X,insertmiss=0,neofs=7,test=FALSE,verbose=FALSE) {
   Y <- X
   ## Replace the data in Y with predicted based on the PCA
   #  coredata(Y) <- fillmiss(X,pca,neofs=neofs)
-  coredata(Y) <- apply(coredata(X),2,fitpc,coredata(pca),neofs=neofs)
+  coredata(Y) <- apply(coredata(X),2,fitpc,coredata(pca),eofs=eofs)
     
   if (insertmiss>0) {
     if (verbose) print('Assess the test results')
