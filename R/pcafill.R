@@ -4,7 +4,7 @@
 
 ## Function for one time series based on multiple regression
 ## Allow EOFs with different number of PCs.
-fitpc <- function(y,x,eofs=1:7) {
+fitpc <- function(y,x,eofs=1:4) {
   caldat <- data.frame(y=y,x)
   #print(summary(caldat))
   eofs <- eofs[eofs <=dim(x)[2]]
@@ -20,7 +20,7 @@ fitpc <- function(y,x,eofs=1:7) {
 #  invisible(z)
 #}
 
-pcafill <- function(X,insertmiss=0,eofs=1:7,test=FALSE,verbose=FALSE) {
+pcafill <- function(X,insertmiss=0,eofs=1:4,test=FALSE,verbose=FALSE) {
   X0 <- X ## For debugging
   if (insertmiss>0) {
     ## Test by inserting false missing values in the data
@@ -47,6 +47,11 @@ pcafill <- function(X,insertmiss=0,eofs=1:7,test=FALSE,verbose=FALSE) {
   X <- subset(X,it=nok > 0)
   mok <- apply(X,2,nv)
 
+  if (verbose) print(paste(sum(nok>0),'stations with',
+                           sum(mok>0),'data points'))
+  if (sum(mok==length(index(X))) <= 1)
+    stop('pcafill: Too many missing data or too small set of stations')
+  
   ## PCA for stations with complete data
   pca <- PCA(subset(X,is=mok==length(index(X))))
 
@@ -81,8 +86,8 @@ pcafill <- function(X,insertmiss=0,eofs=1:7,test=FALSE,verbose=FALSE) {
   invisible(Y)
 }
 
-pcafill.test <- function(X,N=100,max.miss=100,verbose=FALSE) {
-  insertmiss <- round(order(runif(N)*max.miss))
+pcafill.test <- function(X,N=100,max.miss=100,eofs=1:4,verbose=FALSE) {
+  insertmiss <- round(runif(N)*max.miss)
   insertmiss[insertmiss<1] <- 2
   par(bty='n')
   plot(range(c(coredata(X)),na.rm=TRUE),
@@ -94,7 +99,7 @@ pcafill.test <- function(X,N=100,max.miss=100,verbose=FALSE) {
   grid()
   for (i in 1:N) {
     if (verbose) print(insertmiss[i])
-    Y.test <- pcafill(X,insertmiss=insertmiss[i],verbose=verbose)
+    Y.test <- pcafill(X,insertmiss=insertmiss[i],eofs=eofs,verbose=verbose)
     points(attr(Y.test,'na.test'),pch=19,col=rgb(0,0,0.6,0.1))
     if (i==1) test.res <- attr(Y.test,'na.test') else
               test.res <- rbind(test.res,attr(Y.test,'na.test'))
