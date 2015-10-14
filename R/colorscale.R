@@ -41,20 +41,19 @@
 colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     
     if (is.logical(colbar)) colbar <- NULL
-    
     ##if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
     if (is.null(colbar$pal)) colbar$pal <- varid(x)[1]
     if (is.null(colbar$rev)) colbar$rev <- FALSE
     if (is.null(colbar$n)) colbar$n <- 10
-    ##if (is.null(colbar$pal)) {
+    if (is.null(colbar$pal)) {
         if (is.null(FUN) | !is.precip(x)) colbar$pal <- 't2m' else
         if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
                                (FUN=='wetmean') | (FUN=='mean')) ) {
             colbar$pal <- 'precip'
             colbar$rev <- TRUE
         } else colbar$pal <- 't2m'
-    ##} 
+    } 
     if (is.zoo(x)) x <- coredata(x)
     if (is.null(colbar$breaks)) {
         colbar$breaks <- pretty(x,n=colbar$n)

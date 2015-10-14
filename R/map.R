@@ -190,15 +190,15 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     else if (projection=="sphere")
         map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
                    type=type,gridlines=gridlines,
-                   col=col,new=new,verbose=verbose,...)
+                   colbar=colbar,new=new,verbose=verbose,...)
     else if (projection=="np")
         map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,
                    type=type,gridlines=gridlines,
-                   col=col,new=new,verbose=verbose,...)
+                   colbar=colbar,new=new,verbose=verbose,...)
     else if (projection=="sp")
         map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,
                    type=type,gridlines=gridlines,
-                   col=col,new=new,verbose=verbose,...)
+                   colbar=colbar,new=new,verbose=verbose,...)
     invisible(X)
 }
 
@@ -619,7 +619,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         colbar$show <- TRUE
         colbar$pos <- 0.05
     }
- 
     ##    par0 <- par()                             # REB 2015-06-25 these lines open an
     ##    fig0 <- par()$fig                         # unused window.
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
@@ -704,6 +703,24 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         x[,outside] <- NA
     } else ylim=range(lat)
     
+    ## KMP 2015-10-14: extra colors if higher/lower values occur 
+    nc <- length(colbar$col)
+    crgb <- col2rgb(colbar$col)
+    if(any(x>max(colbar$breaks))) {
+      cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
+      crgb <- cbind(crgb,cmax)
+      colbar$breaks <- c(colbar$breaks,max(x))
+    }
+    if (any(x<min(colbar$breaks))) {
+      cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
+      crgb <- cbind(cmin,crgb)
+      colbar$breaks <- c(min(x),colbar$breaks)
+    }
+    crgb[crgb>255] <- 255
+    crgb[crgb<0] <- 0
+    colbar$col <- rgb(t(crgb),maxColorValue=255)
+    colbar$n <- length(colbar$col)-1
+
     ##print(c(length(breaks),length(col)))
     ##if (is.Date(type))
     
@@ -743,13 +760,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(xpd=FALSE)
     dlat <- diff(range(lat))/60
                                         #print(dlat)
-    text(lon[1],lat[length(lat)] + dlat,varlabel,pos=4,font=2)
-    text(lon[1],lat[1] - dlat,sub,col="grey30",pos=4,cex=0.7)
+    text(lon[1],lat[length(lat)] + 0.5*dlat,varlabel,pos=4,font=2)
+    text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
 
     if (!is.null(period))
-        text(lon[length(lon)],lat[length(lat)] + dlat,period,pos=2,cex=0.7,col="grey30")
+        text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
     if (!is.null(method))
-        text(lon[length(lon)],lat[1] - 0.5*dlat,method,col="grey30",pos=2,cex=0.7)
+        text(lon[length(lon)],lat[1] - dlat,method,col="grey30",pos=2,cex=0.7)
     
     if (!is.null(colbar)) {
         if (verbose) print('Add colourbar')
@@ -799,12 +816,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     ##           legend.only = T, zlim = range(colbar$breaks),
                     ##           col = colbar$col, legend.width = 1,
                     ##           axis.args = list(cex.axis = 0.8), border = FALSE)
-                    image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-                               legend.only = T, zlim = range(colbar$breaks),
-                               col = colbar$col, legend.width = 1,
-                               axis.args = list(cex.axis = 0.8,
-                                   xaxp=c(range(colbar$breaks),n=colbar$n)),
-                               border = FALSE,...)
+                   image.plot(breaks=colbar$breaks,
+                    lab.breaks=signif(colbar$breaks,digits=2),
+                    horizontal = TRUE,legend.only = T,
+                    zlim = range(colbar$breaks),
+                    col = colbar$col, legend.width = 1,
+                    axis.args = list(cex.axis = 0.8),border=FALSE,...)
                 }
     }
 
