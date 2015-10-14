@@ -466,13 +466,13 @@ map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
-                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+                    xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     verbose=FALSE,...) {
     ##
-                                        #args <- list(...)
+    args <- list(...)
                                         #print(args)
     X <- rbind(attr(x,'pattern')[,pattern],attr(x,'pattern')[,pattern])
                                         #print(dim(X))
@@ -493,10 +493,13 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
     ##if (is.null(colbar$col) | is.null(colbar)) {
     ##  colbar$col <- colscal(30,col=varid(x))
     ##}
-    
-    map.station(X,new=new,##FUN="mean",
-                colbar=colbar,
-                xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
+    if (is.element(FUN,args)) 
+        map.station(X,new=new,
+                    colbar=colbar,
+                    xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
+    else
+        map.station(X,new=new,colbar=colbar,FUN=FUN,
+                    xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
 }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
