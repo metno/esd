@@ -550,6 +550,8 @@ export(DS.trajectory)
 
 export(events2field)
 export(map.events)
+export(Track.events)
+export(NearestNeighbour)
 
 export(CCI)
 export(dX)
