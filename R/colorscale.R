@@ -58,8 +58,8 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     if (is.null(colbar$breaks)) {
         colbar$breaks <- pretty(x,n=colbar$n)
     } else if (length(colbar$breaks)==2)
-        colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
-                             length=colbar$n)
+        colbar$breaks <- pretty(seq(colbar$breaks[1],colbar$breaks[2],
+                             length=colbar$n))
     colbar$n <- length(colbar$breaks)-1
     if (is.null(colbar$type)) colbar$type <- 'p'
     if (is.null(colbar$cex)) colbar$cex <- 2

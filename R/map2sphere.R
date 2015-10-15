@@ -245,13 +245,13 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
     } else if (!is.null(colbar)) {
       if (verbose) print("regular colbar")
       image.plot(breaks=colbar$breaks,
-                 lab.breaks=signif(colbar$breaks,digits=2),
-                  horizontal = TRUE,legend.only = T,
-                   zlim = range(colbar$breaks),
-                   col = colbar$col, legend.width = 1,
-                   axis.args = list(cex.axis = 0.8),border=FALSE,...)
-                   #xaxp=c(range(colbar$breaks),colbar$n)),
-                   #border = FALSE,...)
+                 lab.breaks=colbar$breaks,
+                 horizontal = TRUE,legend.only = T,
+                 zlim = range(colbar$breaks),
+                 col = colbar$col, legend.width = 1,
+                 axis.args = list(cex.axis = 0.8),border=FALSE,...)
+                 #xaxp=c(range(colbar$breaks),colbar$n)),
+                 #border = FALSE,...)
       ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
       ##             legend.only = T, zlim = range(colbar$breaks),
       ##             col = colbar$col, legend.width = 1,

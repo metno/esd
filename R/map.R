@@ -815,16 +815,17 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                             type=type,verbose=FALSE,vl=1,border=FALSE)
                 else {
                                         #par(fig=par0$fig)
-                    ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-                    ##           legend.only = T, zlim = range(colbar$breaks),
-                    ##           col = colbar$col, legend.width = 1,
-                    ##           axis.args = list(cex.axis = 0.8), border = FALSE)
                    image.plot(breaks=colbar$breaks,
-                    lab.breaks=signif(colbar$breaks,digits=2),
-                    horizontal = TRUE,legend.only = T,
-                    zlim = range(colbar$breaks),
-                    col = colbar$col, legend.width = 1,
-                    axis.args = list(cex.axis = 0.8),border=FALSE,...)
+                              lab.breaks=colbar$breaks,horizontal = TRUE,
+                              legend.only = T, zlim = range(colbar$breaks),
+                              col = colbar$col, legend.width = 1,
+                              axis.args = list(cex.axis = 0.8), border = FALSE)
+                   #image.plot(breaks=colbar$breaks,
+                   # lab.breaks=signif(colbar$breaks,digits=2),
+                   # horizontal = TRUE,legend.only = T,
+                   # zlim = range(colbar$breaks),
+                   # col = colbar$col, legend.width = 1,
+                   # axis.args = list(cex.axis = 0.8),border=FALSE,...)
                 }
     }
 
