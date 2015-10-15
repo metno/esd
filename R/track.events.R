@@ -11,14 +11,19 @@ Track.events <- function(x,it=NULL,is=NULL,dmax=1E6,lplot=FALSE,verbose=FALSE) {
   datetime <- strptime(paste(dates,times),"%Y%m%d %H")
   d <- sort(unique(datetime))
   num[datetime==d[1]] <- 1:sum(datetime==d[1])
+  t1 <- Sys.time()
+  pb <- txtProgressBar(style=3)
   for (i in 1:(length(d)-1)) {
-    print(i)
-    nn <- NearestNeighbour(lons[datetime==d[i]],lats[datetime==d[i]],
+    setTxtProgressBar(pb,i/(length(d)-1)) 
+     nn <- NearestNeighbour(lons[datetime==d[i]],lats[datetime==d[i]],
                  lons[datetime==d[i+1]],lats[datetime==d[i+1]],dmax=dmax)
     num.i <- num[datetime==d[i]][nn]
     num.i[is.na(num.i)] <- 1:sum(is.na(num.i)) + max(num,na.rm=TRUE)
     num[datetime==d[i+1]] <- num.i
   }
+  t2 <- Sys.time()
+  if (verbose) print(paste('Nearest neighbour tracking took',
+                round(as.numeric(t2-t1,units="secs")),'s'))
   if(lplot) {
     data(geoborders)
     plot(geoborders,type="l",col="grey20",lwd=0.5,xlim=c(-180,180),ylim=c(0,90))
@@ -30,7 +35,8 @@ Track.events <- function(x,it=NULL,is=NULL,dmax=1E6,lplot=FALSE,verbose=FALSE) {
   invisible(x)
 }
 
-NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,lplot=FALSE) {
+NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,lplot=FALSE,verbose=FALSE) {
+  if (verbose) print("NearestNeighbour")
   distance <- mapply(function(x,y) distAB(x,y,lon1,lat1),lon2,lat2)
   num <- as.numeric(apply(distance,2,function(x) which(rank(x)==1)))
   d.num <- sapply(1:length(num),function(x) distance[num[x],x])
