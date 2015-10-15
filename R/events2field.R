@@ -4,15 +4,20 @@ events2field <- function(x,verbose=FALSE,...) {
   invisible(y)  
 }
 
-density.events <- function(x,dt="month",dx=2,dy=2,it=NULL,is=NULL,
+density.events <- function(x,dt="month",dx=2,dy=2,
+                         lons=NULL,lats=NULL,it=NULL,is=NULL,
                          radius=TRUE,verbose=FALSE,...) {
   if (verbose) print("density.events")
-  y <- subset.events(x,it=it,is=is)
-  if(is.null(dx)) dx <- min(diff(sort(unique(y["lon"][[1]]))))
-  if(is.null(dy)) dy <- min(diff(sort(unique(y["lat"][[1]]))))
-  lons <- round(x["lon"]/dx)*dx
+  ok <- !is.na(x["time"][[1]]) & !is.na(x["lon"][[1]]) & !is.na(x["lat"][[1]])
+  x <- subset(x,it=ok)
+  y <- subset(x,it=it,is=is)
+  if(is.null(lons)) lons <- y["lon"][[1]]
+  if(is.null(lats)) lats <- y["lat"][[1]]
+  if(is.null(dx)) dx <- min(diff(sort(unique(lons))))
+  if(is.null(dy)) dy <- min(diff(sort(unique(lats))))
+  lons <- round(lons/dx)*dx
   lons <- seq(min(lons),max(lons),dx)
-  lats <- round(x["lat"]/dy)*dy
+  lats <- round(lats/dy)*dy
   lats <- seq(min(lats),max(lats),dy)
   if (grepl('day',dt)) {
     d <- as.Date(strptime(y["date"][[1]],"%Y%m%d"))
@@ -120,25 +125,3 @@ lonlatdensity <- function(lons,lats,radius=NULL,dx=NULL,dy=NULL,
   X <- data.frame(lon=hlons,lat=hlats,density=d)
   invisible(X)
 }
-
- 
-
-  ## highlat <- 90
-  ## if (any(lats>highlat)) {
-  ##   if (length(radius)>1) r90 <- radius[abs(lats)>highlat-10] else r90 <- radius
-  ##   dx2 <- dx*5
-  ##   d90 <- fn(lons[abs(lats)>highlat-10],lats[abs(lats)>highlat-10],r90,dx2,dy)
-  ##   d90 <- d90[d90[,2]>highlat,]
-  ##   xvec <- round(seq(round(-180/dx)*dx,round(180/dx)*dx,dx)/dx2)*dx2
-  ##   yvec <- seq(min(lats[lats>highlat]),max(lats),dy)
-  ##   d2 <- array(0,dim=c(length(xvec),length(yvec)))
-  ##   for (i in 1:dim(d90)[1]) {
-  ##     d2[xvec==d90[i,1],yvec==d90[i,2]] <- d90[i,3]
-  ##   }
-  ##   hlons2 <- rep(xvec,length(yvec))[d2>0]
-  ##   hlats2 <- as.vector(sapply(yvec,function(x) rep(x,length(xvec))))[d2>0]
-  ##   d2 <- d2[d2>0]
-  ##   d <- c(d[hlats<=highlat],d2)
-  ##   hlons <- c(hlons[hlats<=highlat],hlons2)
-  ##   hlats <- c(hlats[hlats<=highlat],hlats2)
-  ## }
