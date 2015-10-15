@@ -18,10 +18,10 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",verbose=FALSE,...) 
     ##
     X <- NULL
     
-    if (is.character(ncfile)) {
-        fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
-        stopifnot(fext=="nc")
-    }
+    ##if (is.character(ncfile)) {
+    ##    fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
+    ##    stopifnot(fext=="nc")
+    ##}
     
     test <- NULL
     
@@ -64,7 +64,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
 { # Begin of function
     ## Update argument names for internal use only
     require(ncdf4) # REB
-    ## browser()
+    ##
     lon.rng  <- lon
     lat.rng  <- lat
     lev.rng  <- lev
