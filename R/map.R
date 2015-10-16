@@ -77,7 +77,9 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (inherits(x,'zoo')) attr(x,'time') <- range(index(x)) 
     if (projection=="lonlat") lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
                                                type=type,gridlines=gridlines,verbose=verbose,...)  else
-    if (projection=="sphere") map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,verbose=verbose,...) else
+    if (projection=="sphere")
+      map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+                 lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...) else
     if (projection=="np") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,verbose=verbose,...) else
     if (projection=="sp") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,verbose=verbose,...)
     
@@ -117,6 +119,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(z,'unit') <- unit(x)[1]
 
     map(z,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+        lonR=lonR,latR=latR,axiR=axiR,
         type=type,gridlines=gridlines,projection=projection,verbose=verbose,...)
 }
 
