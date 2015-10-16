@@ -439,7 +439,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',
   stopifnot(!missing(x),inherits(x,"dsensemble"))
   
   if (inherits(x,"pca") | inherits(x,"list")) {
-    diag <- diagnose.dsensemble.pca(x,plot=plot,...)
+    diag <- diagnose.dsensemble.list(x,plot=plot,...)
     invisible(diag)
   } else {
  
@@ -537,9 +537,9 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',
   }
 }
 
-diagnose.dsensemble.pca <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
+diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
                                     xrange=NULL,yrange=NULL,...) {
-  if (verbose) print('diagnose.dsensemble.pca')
+  if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
   if (inherits(X,"pca")) X <- as.station(X,verbose=verbose)
   gcms <- attr(X[[1]],"model_id")

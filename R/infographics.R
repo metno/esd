@@ -779,20 +779,25 @@ visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
 vis.dsensemble <- function(x,...) {
   stopifnot(inherits(x,"dsensemble"))
   if (inherits(x,"list")) {
-    vis.dsensemble.pca(x,...)
+    vis.dsensemble.list(x,...)
   } 
 }
 
-vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
+vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
     colbar=NULL,legend.shrink=1,n=11,plim=0.01,...) {
 
-  if (verbose) print('vis.dsensemble.pca')
+  if (verbose) print('vis.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
 
   if (inherits(X,"pca")) {
-    if(verbose) print("as.station(dsensemble.pca)")
+    if(verbose) print("as.station.dsensemble.pca")
     Y <- as.station(X)
-  } else Y <- X
+  } else {
+    Y <- X
+  }
+
+  if (is.null(attr(Y,"unit"))) attr(Y,"unit") <- attr(Y[[1]],"unit")
+  if (is.null(attr(Y,"variable"))) attr(Y,"variable") <- attr(Y[[1]],"variable")
   
   gcms <- attr(Y[[1]],"model_id")
   lons <- sapply(Y,lon)
@@ -801,7 +806,8 @@ vis.dsensemble.pca <- function(X,verbose=FALSE,FUN='trend',
   if (FUN=='trend') {
     FUN <- trend.coef
     FUN2 <- trend.pval
-    label_fun <- "trends"
+    label_fun <- "trend"
+    attr(X,"unit") <- paste(attr(X,"unit"),"/decade",sep="")
   } else {
     FUN <- trend.coef
     FUN2 <- NULL

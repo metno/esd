@@ -318,7 +318,6 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
     ns <- length(loc(X$pca))
     Y <- as.station(X$pca)
     if (is.null(is)) is <- 1:ns 
-
     if (verbose) print('Extract the results model-wise')
     Q <- list()
     for (j in 1:length(N)) {
@@ -357,6 +356,10 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
       yloc <- gsub('^\\s+|\\s+$',"",yloc)
       yloc <- gsub('-|/|[[:space:]]','.',yloc)
       yloc <- gsub("\\.{2}", ".",yloc)
+      yloc <- gsub("\\;.","_",yloc)
+      yloc <- gsub("\\(","_",yloc)
+      yloc <- gsub("*\\)","",yloc)
+      yloc <- gsub("__)","_",yloc)
       if (verbose) print(yloc)
       colnames(x) <- N
       attr(x,'location') <- yloc
@@ -1302,6 +1305,7 @@ as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
   attr(X,"longname") <- longname
   attr(X,"variable") <- variable
   attr(X,"quality") <- qflabel
+  attr(X,"units") <- units
   attr(X,"source") <- src
   attr(X,"file") <- file
   attr(X,"version") <- version
