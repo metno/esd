@@ -796,8 +796,8 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
     Y <- X
   }
 
-  if (is.null(attr(Y,"unit"))) attr(Y,"unit") <- attr(Y[[1]],"unit")
-  if (is.null(attr(Y,"variable"))) attr(Y,"variable") <- attr(Y[[1]],"variable")
+  if (is.null(attr(X,"unit"))) attr(X,"unit") <- attr(Y[[1]],"unit")
+  if (is.null(attr(X,"variable"))) attr(X,"variable") <- attr(Y[[1]],"variable")
   
   gcms <- attr(Y[[1]],"model_id")
   lons <- sapply(Y,lon)
@@ -891,7 +891,7 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
   dx <- max(diff(range(lons))/10,2)
   dy <- max(diff(range(lats))/10,2)
   xrange <- range(lons) + c(-dx,dx)
-  yrange <- range(lats) + c(-0.5*dy,1.5*dy)
+  yrange <- range(lats) + c(-0.5*dy,2*dy)
   dlon <- diff(xrange)/6
   dlat <- diff(yrange)/5
 
@@ -909,6 +909,7 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
   lines(geoborders$x+360,geoborders$y,col="darkblue")
   points(lons,lats,pch=pch,col=col.q95,bg=col,cex=cex,lwd=cex)
   points(lons,lats,pch=pch,col=col,bg=col.q5,cex=cex/3,lwd=0.5)
+  ##browser()
   text(mean(xrange),min(yrange),cex=1,labels=paste(attr(X,"var"),
     " ",label_fun," (",attr(X,"unit"),")",sep="")) 
   if (colbar$show) {
