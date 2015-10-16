@@ -74,7 +74,7 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                         #  image(lon(x),lat(x),x)
     if (verbose) print('map.matrix')
     if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
-    if (inherits(x,'zoo')) attr(x,'time') <- range(index(x)) 
+    if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
     if (projection=="lonlat") lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
                                                type=type,gridlines=gridlines,verbose=verbose,...)  else
     if (projection=="sphere")
@@ -696,7 +696,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) print(paste('period:',period))
     method <- attr(x,'method')
     if (verbose) print(c(dim(x),length(srtx),length(srty)))
-                                        #browser()
+
     x <- x[srtx,srty]
     if (verbose) {print(xlim); str(x)}
     if (!is.null(xlim)) {
@@ -712,12 +712,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ## KMP 2015-10-14: extra colors if higher/lower values occur 
     nc <- length(colbar$col)
     crgb <- col2rgb(colbar$col)
-    if(any(x>max(colbar$breaks))) {
+    if(any(x>max(colbar$breaks),na.rm=TRUE)) {
       cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
       crgb <- cbind(crgb,cmax)
       colbar$breaks <- c(colbar$breaks,max(x))
     }
-    if (any(x<min(colbar$breaks))) {
+
+    if (any(x<min(colbar$breaks),na.rm=TRUE)) {
       cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
       crgb <- cbind(cmin,crgb)
       colbar$breaks <- c(min(x),colbar$breaks)

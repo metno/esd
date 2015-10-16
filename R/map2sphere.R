@@ -73,7 +73,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
-  ## If only a few items are provided in colbar - hen set the rest to the default
+  ## If only a few items are provided in colbar - then set the rest to the default
   if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
     if (is.null(colbar$pal)) colbar$pal <- 't2m'
