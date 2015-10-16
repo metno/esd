@@ -3,6 +3,7 @@
 Track.events <- function(x,it=NULL,is=NULL,dmax=1E6,lplot=FALSE,verbose=FALSE) {
   if (verbose) print("Track.events - nearest neighbour cyclone tracking")
   stopifnot(inherits(x,"events"))
+  x <- subset(x,it=!is.na(x["date"][[1]]))
   dates <- x["date"][[1]]
   times <- x["time"][[1]]
   lons <- x["lon"][[1]]
@@ -14,8 +15,8 @@ Track.events <- function(x,it=NULL,is=NULL,dmax=1E6,lplot=FALSE,verbose=FALSE) {
   t1 <- Sys.time()
   pb <- txtProgressBar(style=3)
   for (i in 1:(length(d)-1)) {
-    setTxtProgressBar(pb,i/(length(d)-1)) 
-     nn <- NearestNeighbour(lons[datetime==d[i]],lats[datetime==d[i]],
+    setTxtProgressBar(pb,i/(length(d)-1))
+    nn <- NearestNeighbour(lons[datetime==d[i]],lats[datetime==d[i]],
                  lons[datetime==d[i+1]],lats[datetime==d[i+1]],dmax=dmax)
     num.i <- num[datetime==d[i]][nn]
     num.i[is.na(num.i)] <- 1:sum(is.na(num.i)) + max(num,na.rm=TRUE)
@@ -46,9 +47,9 @@ NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,lplot=FALSE,verbose=FA
   while (any(duplicated(num[!is.na(num)]))) {
     for (i in num[duplicated(num) & !is.na(num)]) {
       j <- which(num==i)
-      k <- j[d.num[j]==max(d.num[j])]
-      num.k <- which(rank(distance[,k])==2)
-      if (!any(num==num.k,nar.rm=TRUE) & distance[num.k,k]<=dmax) {
+      k <- j[d.num[j]==max(d.num[j])][1]
+      num.k <- which(rank(distance[,k],ties.method="first")==2)
+      if (!any(num==num.k,na.rm=TRUE) & distance[num.k,k]<=dmax) {
         num[k] <- num.k
       } else {
         num[k] <- NA
