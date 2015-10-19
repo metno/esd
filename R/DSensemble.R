@@ -136,7 +136,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*8),N,8)
-  colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
+  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration')
 
   t <- as.Date(paste(years,months,'01',sep='-'))
