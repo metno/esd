@@ -135,9 +135,10 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   m <- length(years)
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
-  scorestats <- matrix(rep(NA,N*8),N,8)
+  scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
-                            "res.trend","res.K-S","res.ar1",'amplitude.ration','R2')
+                            "res.trend","res.K-S","res.ar1",'amplitude.ration',
+                            'R2')
 
   t <- as.Date(paste(years,months,'01',sep='-'))
 
@@ -322,10 +323,11 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
         lines(ya,type="b",pch=19)
         lines(dsa,lwd=2,col="grey")
       }
+      R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
-                  "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
-                'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
-                "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
+                  "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
+                  ' 1- sd1/sd2=',round(srati,3),
+                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
   if(verbose) print("Done with downscaling!")
@@ -451,7 +453,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   m <- length(years)
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
-  scorestats <- matrix(rep(NA,N*8),N,8)
+  scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration')
 
@@ -559,9 +561,10 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
         lines(ds,lwd=2,col="grey")
      }
       #
+      R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
-                  "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
-                  'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
+                  "R2=",R2,'% ', 'Common EOF: bias=',round(mdiff,2),
+                  ' 1- sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
@@ -656,7 +659,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   m <- length(years)
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
-  scorestats <- matrix(rep(NA,N*8),N,8)
+  scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration')
 
@@ -751,10 +754,12 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
         lines(ds,lwd=2,col="grey")
      }
       #
+      R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
-                  "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
-                  'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
-                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
+                  "R2=",R2,'% ','Common EOF: bias=',
+                  round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
+                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),
+                  'quality=',round(quality)))
     }
   }
 
@@ -876,9 +881,10 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
   m <- length(years)
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
-  scorestats <- matrix(rep(NA,N*8),N,8)
+  scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
-                            "res.trend","res.K-S","res.ar1",'amplitude.ration')
+                            "res.trend","res.K-S","res.ar1",
+                            'amplitude.ration','R2')
 
   flog <- file("DSensemble.precip-log.txt","at")
   dse <- list(description='DSensemble.mu')
@@ -1006,7 +1012,8 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       mdiff <- diag$mean.diff[1]/diag$sd0[1]
       srati <- 1 - diag$sd.ratio[1]
       arati <- 1 - diag$autocorr.ratio[1]
-      attr(z,'scorestats') <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio)
+      attr(z,'scorestats') <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,
+                                ds.ratio)
       dse[[i]] <- z
       
       quality <- 100*(1-mean(scorestats[i,]))
@@ -1020,9 +1027,10 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
         lines(ds,lwd=2,col="grey")
      }
       #
+      R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
-                  "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
-                  'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
+                  "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
+                  ' 1- sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
@@ -1235,9 +1243,10 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   X <- matrix(rep(NA,N*m*d.y[2]),N,m*d.y[2])
   dim(X) <- c(d.y[2],N,m)
   gcmnm <- rep("",N)
-  scorestats <- matrix(rep(NA,N*8),N,8)
+  scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
-                            "res.trend","res.K-S","res.ar1",'amplitude.ration',"R2=")
+                            "res.trend","res.K-S","res.ar1",'amplitude.ration',
+                            "R2=")
 
   t <- as.Date(paste(years,months,'01',sep='-'))
 
@@ -1370,11 +1379,12 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           round(100*sd(xval[,2])/sd(xval[,1]),2))
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(scorestats[i,],na.rm=TRUE))
+      R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
-            "R2=",round(100*sd(xval[,2])/sd(xval[,1]),2),'% ',
-            'Common EOF: bias=',round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
-            "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
-                    round(quality)))
+                  "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
+                  ' 1- sd1/sd2=',round(srati,3),
+                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
+                  round(quality)))
    }
   
     if (verbose) print('Downscaling finished')
