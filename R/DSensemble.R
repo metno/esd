@@ -137,7 +137,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*8),N,8)
   colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
-                            "res.trend","res.K-S","res.ar1",'amplitude.ration')
+                            "res.trend","res.K-S","res.ar1",'amplitude.ration','R2')
 
   t <- as.Date(paste(years,months,'01',sep='-'))
 
@@ -291,7 +291,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print('...')
       if (is.null(diag)) {
         diag <- diagnose(z,plot=FALSE)
-        scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,ds.ratio)
+        scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,ds.ratio,
+                            round(100*sd(xval[,2])/sd(xval[,1]),2))
         mdiff <- (mean(subset(ya,it=range(year(dsa))),na.rm=TRUE)-
                   mean(subset(dsa,it=range(year(ya))),na.rm=TRUE))/sd(ya,na.rm=TRUE)
         srati <- sd(subset(dsa,it=range(year(ya))),na.rm=TRUE)/
@@ -1235,8 +1236,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   dim(X) <- c(d.y[2],N,m)
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*8),N,8)
-  colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
-                            "res.trend","res.K-S","res.ar1",'amplitude.ration')
+  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
+                            "res.trend","res.K-S","res.ar1",'amplitude.ration',"R2=")
 
   t <- as.Date(paste(years,months,'01',sep='-'))
 
@@ -1365,7 +1366,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                             diag$s.3$autocorr.ratio[1],
                             diag$s.4$autocorr.ratio[1]))
       }
-      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio)
+      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio,
+                          round(100*sd(xval[,2])/sd(xval[,1]),2))
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(scorestats[i,],na.rm=TRUE))
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
