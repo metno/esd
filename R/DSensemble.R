@@ -268,8 +268,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
       ar <- as.numeric(acf(trend(cal-fit,result="residual"),plot=FALSE)[[1]][2]) ##ar <- ar1(coredata(res))
       if (verbose) print(paste("Examine residuals: trend=",
-                               res.trend,'D/decade; K.S. p-val',
-                               ks,'; AR(1)=',ar))
+                               round(res.trend,3),'D/decade; K.S. p-val',
+                               round(ks,2),'; AR(1)=',round(ar,2)))
 
     # Evaluation: here are lots of different aspects...
     # Get the diagnostics: this is based on the analysis of common EOFs...
@@ -318,6 +318,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       scorestats[i,] <- c(1-r.xval,mdiff,1-srati,1-arati,res.trend,ks,ar,
                           1-ds.ratio,
                           1- var(xval[,2])/var(xval[,1]))
+      if (verbose) print('scorestats')
       if (verbose) print(scorestats[i,])
 
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
@@ -332,7 +333,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-                  ' 1- sd1/sd2=',round(srati,3),
+                  ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
@@ -571,7 +572,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ', 'Common EOF: bias=',round(mdiff,2),
-                  ' 1- sd1/sd2=',round(srati,3),
+                  ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
@@ -765,7 +766,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',
-                  round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
+                  round(mdiff,2),' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),
                   'quality=',round(quality)))
     }
@@ -1023,6 +1024,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       
       attr(z,'scorestats') <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,
                                 1-ds.ratio,1-var(xval[,2])/var(xval[,1]))
+      if (verbose) print('scorestats')
       if (verbose) print(attr(z,'scorestats'))
       dse[[i]] <- z
       
@@ -1040,7 +1042,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-                  ' 1- sd1/sd2=',round(srati,3),
+                  ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
@@ -1339,8 +1341,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1]),
                          plot=FALSE)[[1]][2])
       if (verbose) print(paste("Residual trend=",
-                             res.trend,'D/decade; K.S. p-val',
-                             ks,'; AR(1)=',ar))
+                             round(res.trend,3),'D/decade; K.S. p-val',
+                             round(ks,2),'; AR(1)=',round(ar,2)))
 
       # Evaluation: here are lots of different aspects...
       # Get the diagnostics: this is based on the analysis of common EOFs...
@@ -1388,12 +1390,13 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       }
       scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,1-ds.ratio,
                           1-round(var(xval[,2])/var(xval[,1]),2))
+      if (verbose) print('scorestats')
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-                  ' 1- sd1/sd2=',round(srati,3),
+                  ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
                   round(quality)))
    }
