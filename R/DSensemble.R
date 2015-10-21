@@ -136,7 +136,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*9),N,9)
-  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
+  colnames(scorestats) <- c("1-r.xval","mean.diff","1-sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration',
                             '1-R2')
 
@@ -307,12 +307,12 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                         diag$s.2$mean.diff[1]/diag$s.2$sd0[1],
                         diag$s.3$mean.diff[1]/diag$s.3$sd0[1],
                         diag$s.4$mean.diff[1]/diag$s.4$sd0[1]))
-        srati <- mean(1 - c(diag$s.1$sd.ratio[1],diag$s.2$sd.ratio[1],
+        srati <- mean(c(diag$s.1$sd.ratio[1],diag$s.2$sd.ratio[1],
                             diag$s.3$sd.ratio[1],diag$s.4$sd.ratio[1]))
-        arati <- mean(1 - c(diag$s.1$autocorr.ratio[1],diag$s.2$autocorr.ratio[1],
+        arati <- mean(c(diag$s.1$autocorr.ratio[1],diag$s.2$autocorr.ratio[1],
                             diag$s.3$autocorr.ratio[1],diag$s.4$autocorr.ratio[1]))
       }
-      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,1-ds.ratio,
+      scorestats[i,] <- c(1-r.xval,mdiff,1-srati,arati,res.trend,ks,ar,1-ds.ratio,
       1- round(var(xval[,2])/var(xval[,1]),2))
       if (verbose) print(scorestats[i,])
 
