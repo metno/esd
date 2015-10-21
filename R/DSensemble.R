@@ -200,7 +200,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       testZ <- combine(testGCM,GCM)              # REB 29.04.2014
       rm("testGCM"); gc(reset=TRUE)
     }
-
+    ##
     # REB: 30.04.2014 - new lines...
     if (verbose) print("- - - > DS")
     if (biascorrect) try(Z1 <- biasfix(Z1))
@@ -229,7 +229,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
     if (verbose) print("Combine the 4 seasons")
     ds <- try(combine(list(ds1,ds2,ds3,ds4)))
-    rm("Z1","Z2","Z3","Z4","ds1","ds2","ds3","ds4"); gc(reset=TRUE)
+    rm("Z1","Z2","Z3","Z4")
+    gc(reset=TRUE) ##rm("ds1","ds2","ds3","ds4")
     
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
@@ -288,7 +289,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       } else diag <- NULL
     
     # diagnose for ds-objects
-      
+      ##
       if (verbose) print('...')
       if (is.null(diag)) {
         diag <- diagnose(z,plot=FALSE)
