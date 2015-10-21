@@ -138,7 +138,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration',
-                            'R2')
+                            '1-R2')
 
   t <- as.Date(paste(years,months,'01',sep='-'))
 
@@ -294,7 +294,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (is.null(diag)) {
         ##diag <- diagnose(z,plot=FALSE)
         scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,ds.ratio,
-                            round(100*sd(xval[,2])/sd(xval[,1]),2))
+                            1-round(var(xval[,2])/var(xval[,1]),2))
         mdiff <- (mean(subset(ya,it=range(year(dsa))),na.rm=TRUE)-
                   mean(subset(dsa,it=range(year(ya))),na.rm=TRUE))/sd(ya,na.rm=TRUE)
         srati <- sd(subset(dsa,it=range(year(ya))),na.rm=TRUE)/
@@ -312,7 +312,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
         arati <- mean(1 - c(diag$s.1$autocorr.ratio[1],diag$s.2$autocorr.ratio[1],
                             diag$s.3$autocorr.ratio[1],diag$s.4$autocorr.ratio[1]))
       }
-      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio)
+      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio,
+      1- round(var(xval[,2])/var(xval[,1]),2))
       if (verbose) print(scorestats[i,])
 
       quality <- 100*(1-mean(scorestats[i,]))
@@ -456,7 +457,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
-                            "res.trend","res.K-S","res.ar1",'amplitude.ration')
+                            "res.trend","res.K-S","res.ar1",'amplitude.ration','1-R2')
 
   flog <- file("DSensemble.precip-log.txt","at")
   for (i in 1:N) {
@@ -549,7 +550,8 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
       mdiff <- diag$mean.diff[1]/diag$sd0[1]
       srati <- 1 - diag$sd.ratio[1]
       arati <- 1 - diag$autocorr.ratio[1]
-      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio)
+      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio,
+      1-round(var(xval[,2])/var(xval[,1]),2))
       
       quality <- 100*(1-mean(scorestats[i,]))
       qcol <- quality
@@ -662,7 +664,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
-                            "res.trend","res.K-S","res.ar1",'amplitude.ration')
+                            "res.trend","res.K-S","res.ar1",'amplitude.ration','1-R2')
 
   flog <- file("DSensemble.precip-log.txt","at")
   for (i in 1:N) {
@@ -742,7 +744,8 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
       mdiff <- diag$mean.diff[1]/diag$sd0[1]
       srati <- 1 - diag$sd.ratio[1]
       arati <- 1 - diag$autocorr.ratio[1]
-      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio)
+      scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio,
+      1-round(var(xval[,2])/var(xval[,1]),2))
       
       quality <- 100*(1-mean(scorestats[i,]))
       qcol <- quality
@@ -885,7 +888,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
   scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",
-                            'amplitude.ration','R2')
+                            'amplitude.ration','1-R2')
 
   flog <- file("DSensemble.precip-log.txt","at")
   dse <- list(description='DSensemble.mu')
@@ -1014,7 +1017,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       srati <- 1 - diag$sd.ratio[1]
       arati <- 1 - diag$autocorr.ratio[1]
       attr(z,'scorestats') <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,
-                                ds.ratio)
+                                ds.ratio,1-round(var(xval[,2])/var(xval[,1]),2))
       dse[[i]] <- z
       
       quality <- 100*(1-mean(scorestats[i,]))
@@ -1247,7 +1250,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   scorestats <- matrix(rep(NA,N*9),N,9)
   colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration',
-                            "R2=")
+                            "1-R2")
 
   t <- as.Date(paste(years,months,'01',sep='-'))
 
@@ -1355,7 +1358,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (is.null(diag)) {
         if (verbose) print('no diag')
         ##diag <- diagnose(ds,plot=FALSE)
-        scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,ds.ratio)
+        scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,ds.ratio,
+        1-round(var(xval[,2])/var(xval[,1]),2))
         mdiff <- (mean(subset(y,it=range(year(ds))),na.rm=TRUE)-
                   mean(subset(ds,it=range(year(y))),na.rm=TRUE))/
                     sd(y,na.rm=TRUE)
@@ -1377,7 +1381,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                             diag$s.4$autocorr.ratio[1]))
       }
       scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,ds.ratio,
-                          round(100*sd(xval[,2])/sd(xval[,1]),2))
+                          1-round(var(xval[,2])/var(xval[,1]),2))
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(scorestats[i,],na.rm=TRUE))
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
