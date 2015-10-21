@@ -292,7 +292,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       ##
       if (verbose) print('...')
       if (is.null(diag)) {
-        diag <- diagnose(z,plot=FALSE)
+        ##diag <- diagnose(z,plot=FALSE)
         scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,ds.ratio,
                             round(100*sd(xval[,2])/sd(xval[,1]),2))
         mdiff <- (mean(subset(ya,it=range(year(dsa))),na.rm=TRUE)-
@@ -1354,7 +1354,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       #
       if (is.null(diag)) {
         if (verbose) print('no diag')
-        diag <- diagnose(ds,plot=FALSE)
+        ##diag <- diagnose(ds,plot=FALSE)
         scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,ds.ratio)
         mdiff <- (mean(subset(y,it=range(year(ds))),na.rm=TRUE)-
                   mean(subset(ds,it=range(year(y))),na.rm=TRUE))/
