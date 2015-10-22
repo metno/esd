@@ -25,13 +25,17 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",
     ##}
 
     ## set path
-    if (!is.character(path)) {
-      path <- getwd()
-    } else if (!file.exists(path)) {
-      path <- getwd()
-    } else {
+    if (!is.null(path)) {
       path <- gsub("\\/$","",path)
       path <- gsub("\\/{2}","/",path)
+    } else {
+      i <- max(gregexpr("/",ncfile)[[1]])
+      if (i>0) {
+        path <- substr(ncfile,1,i)
+        ncfile <- substr(ncfile,i+1,nchar(ncfile))
+      } else {
+        path <- getwd()
+      }
     }
     
     test <- NULL
@@ -84,15 +88,11 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     time.rng <- it
 
     ## set path
-    if (!is.character(path)) {
-      path <- getwd()
-    } else if (!file.exists(path)) {
-      path <- getwd()
-    } else {
+    if (!is.null(path)) {
       path <- gsub("\\/$","",path)
       path <- gsub("\\/{2}","/",path)
+      ncfile <- file.path(path,ncfile)
     }
-    ncfile <- file.path(path,ncfile)
     
     ## check if file exists and type of ncfile object
     if (is.character(ncfile)) {
@@ -592,15 +592,11 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     ##
 
     ## set path
-    if (!is.character(path)) {
-      path <- getwd()
-    } else if (!file.exists(path)) {
-      path <- getwd()
-    } else {
+    if (!is.null(path)) {
       path <- gsub("\\/$","",path)
       path <- gsub("\\/{2}","/",path)
+      ncfile <- file.path(path,ncfile)
     }
-    ncfile <- file.path(path,ncfile)
 
     ## check if file exists and type of ncfile object
     if (is.character(ncfile)) {
