@@ -38,9 +38,6 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",
       }
     }
     
-    if (!file.exists(file.path(path,ncfile))) {
-      warning(paste("file",file.path(path,ncfile),"does not exist!"))
-    }
     test <- NULL
     
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
