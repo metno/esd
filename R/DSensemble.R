@@ -136,7 +136,9 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*9),N,9)
-  colnames(scorestats) <- c("1-r.xval","mean.diff","1-sd.ratio","autocorr.ratio",
+
+  colnames(scorestats) <- c("1-r.xval","mean.diff","1-sd.ratio",
+                            "1-autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration',
                             '1-R2')
 
@@ -266,20 +268,20 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
       ar <- as.numeric(acf(trend(cal-fit,result="residual"),plot=FALSE)[[1]][2]) ##ar <- ar1(coredata(res))
       if (verbose) print(paste("Examine residuals: trend=",
-                               res.trend,'D/decade; K.S. p-val',
-                               ks,'; AR(1)=',ar))
+                               round(res.trend,3),'D/decade; K.S. p-val',
+                               round(ks,2),'; AR(1)=',round(ar,2)))
 
     # Evaluation: here are lots of different aspects...
     # Get the diagnostics: this is based on the analysis of common EOFs...
 
       xval <- attr(ds,'evaluation')
-      r.xval <- round(cor(xval[,1],xval[,2]),3)
+      r.xval <- cor(xval[,1],xval[,2])
       if (verbose) print(paste("x-validation r=",r.xval))
     
       dsa <- annual(ds)                     # annual mean value
 
       xy <- merge.zoo(annual(z),ya)
-      ds.ratio <- round(sd(xy[,1],na.rm=TRUE)/sd(xy[,2],na.rm=TRUE),4)
+      ds.ratio <- sd(xy[,1],na.rm=TRUE)/sd(xy[,2],na.rm=TRUE)
       if (verbose) print(paste("sd ratio=",ds.ratio))
 
     #print(names(attributes(ds)))
@@ -293,7 +295,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print('...')
       if (is.null(diag)) {
         ##diag <- diagnose(z,plot=FALSE)
-        scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,1-ds.ratio,
+        scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,1-ar,1-ds.ratio,
                             1-round(var(xval[,2])/var(xval[,1]),2))
         mdiff <- (mean(subset(ya,it=range(year(dsa))),na.rm=TRUE)-
                   mean(subset(dsa,it=range(year(ya))),na.rm=TRUE))/sd(ya,na.rm=TRUE)
@@ -312,11 +314,14 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
         arati <- mean(c(diag$s.1$autocorr.ratio[1],diag$s.2$autocorr.ratio[1],
                             diag$s.3$autocorr.ratio[1],diag$s.4$autocorr.ratio[1]))
       }
-      scorestats[i,] <- c(1-r.xval,mdiff,1-srati,arati,res.trend,ks,ar,1-ds.ratio,
-      1- round(var(xval[,2])/var(xval[,1]),2))
+
+      scorestats[i,] <- c(1-r.xval,mdiff,1-srati,1-arati,res.trend,ks,ar,
+                          1-ds.ratio,
+                          1- var(xval[,2])/var(xval[,1]))
+      if (verbose) print('scorestats')
       if (verbose) print(scorestats[i,])
 
-      quality <- 100*(1-mean(scorestats[i,]))
+      quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
       qcol <- quality
       qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
      
@@ -326,14 +331,14 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
         lines(dsa,lwd=2,col="grey")
       }
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
-      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
+      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-                  ' 1- sd1/sd2=',round(srati,3),
+                  ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
   if(verbose) print("Done with downscaling!")
-  rm("GCM",)
+  rm("GCM")
 
   X <- zoo(t(X),order.by=t)
   colnames(X) <- gcmnm
@@ -456,7 +461,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*9),N,9)
-  colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
+  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration','1-R2')
 
   flog <- file("DSensemble.precip-log.txt","at")
@@ -551,9 +556,9 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
       srati <- 1 - diag$sd.ratio[1]
       arati <- 1 - diag$autocorr.ratio[1]
       scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,1-ds.ratio,
-      1-round(var(xval[,2])/var(xval[,1]),2))
-      
-      quality <- 100*(1-mean(scorestats[i,]))
+      1-var(xval[,2])/var(xval[,1]))
+      if (verbose) print(scorestats[i,])
+      quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
       qcol <- quality
       qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
 
@@ -565,9 +570,9 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
      }
       #
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
-      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
+      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ', 'Common EOF: bias=',round(mdiff,2),
-                  ' 1- sd1/sd2=',round(srati,3),
+                  ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
@@ -663,7 +668,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*9),N,9)
-  colnames(scorestats) <- c("r.xval","mean.diff","sd.ratio","autocorr.ratio",
+  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration','1-R2')
 
   flog <- file("DSensemble.precip-log.txt","at")
@@ -745,9 +750,9 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
       srati <- 1 - diag$sd.ratio[1]
       arati <- 1 - diag$autocorr.ratio[1]
       scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,1-ds.ratio,
-      1-round(var(xval[,2])/var(xval[,1]),2))
-      
-      quality <- 100*(1-mean(scorestats[i,]))
+      1-var(xval[,2])/var(xval[,1]))
+      if (verbose) print(scorestats[i,])
+      quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
       qcol <- quality
       qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
 
@@ -759,9 +764,9 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
      }
       #
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
-      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
+      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',
-                  round(mdiff,2),' 1- sd1/sd2=',round(srati,3),
+                  round(mdiff,2),' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),
                   'quality=',round(quality)))
     }
@@ -1016,11 +1021,14 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       mdiff <- diag$mean.diff[1]/diag$sd0[1]
       srati <- 1 - diag$sd.ratio[1]
       arati <- 1 - diag$autocorr.ratio[1]
+      
       attr(z,'scorestats') <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,
-                                1-ds.ratio,1-round(var(xval[,2])/var(xval[,1]),2))
+                                1-ds.ratio,1-var(xval[,2])/var(xval[,1]))
+      if (verbose) print('scorestats')
+      if (verbose) print(attr(z,'scorestats'))
       dse[[i]] <- z
       
-      quality <- 100*(1-mean(scorestats[i,]))
+      quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
       qcol <- quality
       qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
 
@@ -1032,9 +1040,9 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
      }
       #
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
-      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
+      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-                  ' 1- sd1/sd2=',round(srati,3),
+                  ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',round(quality)))
     }
   }
@@ -1333,8 +1341,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1]),
                          plot=FALSE)[[1]][2])
       if (verbose) print(paste("Residual trend=",
-                             res.trend,'D/decade; K.S. p-val',
-                             ks,'; AR(1)=',ar))
+                             round(res.trend,3),'D/decade; K.S. p-val',
+                             round(ks,2),'; AR(1)=',round(ar,2)))
 
       # Evaluation: here are lots of different aspects...
       # Get the diagnostics: this is based on the analysis of common EOFs...
@@ -1382,12 +1390,13 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       }
       scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,1-ds.ratio,
                           1-round(var(xval[,2])/var(xval[,1]),2))
+      if (verbose) print('scorestats')
       if (verbose) print(scorestats[i,])
-      quality <- 100*(1-mean(scorestats[i,],na.rm=TRUE))
+      quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
-      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(r.xval,2),
+      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-                  ' 1- sd1/sd2=',round(srati,3),
+                  ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
                   round(quality)))
    }
