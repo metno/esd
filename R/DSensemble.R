@@ -338,7 +338,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
   }
   if(verbose) print("Done with downscaling!")
-  rm("GCM",)
+  rm("GCM")
 
   X <- zoo(t(X),order.by=t)
   colnames(X) <- gcmnm
