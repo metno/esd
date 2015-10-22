@@ -71,6 +71,18 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     lat.rng  <- lat
     lev.rng  <- lev
     time.rng <- it
+
+    ## set path
+    if (!is.character(path)) {
+      path <- getwd()
+    } else if (!file.exists(path)) {
+      path <- getwd()
+    } else {
+      path <- gsub("\\/$","",path)
+      path <- gsub("\\/{2}","/",path)
+    }
+    ncfile <- file.path(path,'ncfile')
+    
     ## check if file exists and type of ncfile object
     if (is.character(ncfile)) {
         if (!file.exists(ncfile)) {
@@ -567,6 +579,18 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     lev.rng  <- lev
     time.rng <- it
     ##
+
+    ## set path
+    if (!is.character(path)) {
+      path <- getwd()
+    } else if (!file.exists(path)) {
+      path <- getwd()
+    } else {
+      path <- gsub("\\/$","",path)
+      path <- gsub("\\/{2}","/",path)
+    }
+    ncfile <- file.path(path,'ncfile')
+
     ## check if file exists and type of ncfile object
     if (is.character(ncfile)) {
         if (!file.exists(ncfile)) {
