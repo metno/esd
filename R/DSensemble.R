@@ -121,7 +121,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   
   # Ensemble GCMs
   if(verbose) print("Retrieve & arrange GCMs")
-  path <- file.path(path,rcp,fsep = .Platform$file.sep)
+  path <- file.path(gsub("\\/$","",path),rcp,fsep = .Platform$file.sep)
   ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
   N <- length(ncfiles)
 
