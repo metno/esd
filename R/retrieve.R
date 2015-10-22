@@ -28,7 +28,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",
     if (!is.null(path)) {
       path <- gsub("\\/$","",path)
       path <- gsub("\\/{2}","/",path)
-    } else {
+    } else if (!is.null(ncfile)){
       i <- max(gregexpr("/",ncfile)[[1]])
       if (i>0) {
         path <- substr(ncfile,1,i)
@@ -38,6 +38,9 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",
       }
     }
     
+    if (!file.exists(file.path(path,ncfile))) {
+      warning(paste("file",file.path(path,ncfile),"does not exist!"))
+    }
     test <- NULL
     
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
