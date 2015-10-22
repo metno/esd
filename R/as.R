@@ -314,68 +314,34 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
   if (inherits(X,"station")) {
       invisible(X)
   } else {
-    N <- names(X)[grepl("^[a-z][0-9]",names(X))]
-    ns <- length(loc(X$pca))
-    Y <- as.station(X$pca)
-    if (is.null(is)) is <- 1:ns 
+    if (is.null(is)) is <- 1:length(loc(X$pca)) 
     if (verbose) print('Extract the results model-wise')
-    Q <- list()
-    for (j in 1:length(N)) {
-      eval(parse(text=paste("xj <- X$",N[j],sep="")))
-      if(verbose) print(sub(".*_","",N[j]))
-      xj <- attrcp(X$pca,xj)
-      class(xj) <- c("ds",class(X$pca))
-      qj <- as.station(xj)
-      eval(parse(text=paste("qj -> Q$",N[j],sep="")))
+    fn <- function(y) {
+      y <- attrcp(X$pca,y)
+      class(y) <- c("ds",class(X$pca))
+      invisible(as.station(y))
     }
-  
+    Q <- lapply(X[3:length(X)],fn)
     if (verbose) print('Arrange the results station-wise')
-    W <- list()
-    d <- index(Q[[1]])
-    m <- unique(month(index(Q[[1]])))
-    m[m<10] <- paste(0,m[m<10],sep="")
-    dates <- as.Date(paste(seq(min(year(d)),max(year(d))),m,'01',sep="-"))
-    x <- matrix(rep(NA,dim(Q[[1]])[1]*length(N)),
-                  dim(Q[[1]])[1],length(N))
-    x <- zoo(x,order.by=dates)
-    x <- attrcp(X,x)
-    # Loop over stations
-    if(!verbose) pb <- txtProgressBar(style=3)
-    for (i in is) {
-      if(!verbose) setTxtProgressBar(pb,i/(length(is))) 
-      x[,] <- NA
-      # Loop over models
-      for (j in 1:length(N)) {
-        eval(parse(text=paste("xj <- Q$",N[j],sep="")))
-        i1 <- is.element(index(xj),as.Date(dates))
-        i2 <- is.element(as.Date(dates),index(xj))
-        x[i2,j] <- xj[i1,i]
-      }
-      # Set attributes
-      yloc <- tolower(loc(X$pca)[i])
-      yloc <- gsub('^\\s+|\\s+$',"",yloc)
-      yloc <- gsub('-|/|[[:space:]]','.',yloc)
-      yloc <- gsub("\\.{2}", ".",yloc)
-      yloc <- gsub("\\;.","_",yloc)
-      yloc <- gsub("\\(","_",yloc)
-      yloc <- gsub("*\\)","",yloc)
-      yloc <- gsub("__)","_",yloc)
-      if (verbose) print(yloc)
-      colnames(x) <- N
-      attr(x,'location') <- yloc
-      attr(x,'longitude') <- attr(subset(Y,is=i),'longitude')
-      attr(x,'latitude') <- attr(subset(Y,is=i),'latitude')
-      attr(x,'station') <- subset(Y,is=i)
-      attr(x,'model_id') <- sub(".*_","",N)
-      class(x) <- c('dsensemble','zoo')
-      eval(parse(text=paste('W$',yloc,' <- x',sep='')))
-      #eval(parse(text=paste('X$',yloc,' <- x',sep='')))
+    W <- array(unlist(Q), dim = c(dim(Q[[1]]), length(Q)))
+    W <- lapply(split(W, arrayInd(seq_along(W),dim(W))[,2]),array,dim=dim(W)[-2])
+    Y <- as.station(X$pca)
+    locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(Y,"location")))
+    locations <- gsub("__","_",locations)
+    locations <- paste(paste("i",attr(Y,"station_id"),sep=""),locations,sep=".")
+    W <- setNames(W,locations)
+    for (i in 1:length(W)) {
+       attr(W[[i]],"longitude") <- attr(Y,"longitude")[i]
+       attr(W[[i]],"latitude") <- attr(Y,"latitude")[i]
+       attr(W[[i]],"station_id") <- attr(Y,"station_id")[i]
+       attr(W[[i]],"location") <- attr(Y,"location")[i]
+       attr(W[[i]],'model_id') <- sub(".*_","",names(Q))
+       class(W[[i]]) <- c('dsensemble','zoo')
     }
     class(W) <- c("dsensemble","station","list")
+    attr(W,"aspect") <- "dsensemble.pca transformed to stations"
     attr(W,"history") <- history.stamp()
     invisible(W)
-    #class(X) <- c("dsensemble","pca","station","list")
-    #invisible(X)
   }
 }
 
