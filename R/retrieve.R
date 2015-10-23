@@ -13,44 +13,59 @@
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 
 ## Default function
-retrieve.default <- function(ncfile,param="auto",type="ncdf",verbose=FALSE,...) {
+retrieve.default <- function(ncfile,param="auto",type="ncdf",
+                             path=NULL,verbose=FALSE,...) {
     if (verbose) print('retrieve.default')
     ##
     X <- NULL
-    
+     
     ##if (is.character(ncfile)) {
     ##    fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
     ##    stopifnot(fext=="nc")
     ##}
+
+    ## set path
+    if (!is.null(path)) {
+      path <- gsub("[[:punct:]]$","",path)
+      path <- gsub('([[:punct:]])\\1+','\\1',path)
+    } else if (!is.null(ncfile)){
+      i <- max(gregexpr("/",ncfile)[[1]])
+      if (i>0) {
+        path <- substr(ncfile,1,i-1)
+        ncfile <- substr(ncfile,i+1,nchar(ncfile))
+      } else {
+        path <- getwd()
+      }
+    }
     
     test <- NULL
     
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
-        nc <- open.ncdf(ncfile)
+        nc <- open.ncdf(file.path(path,ncfile))
         dimnames <- names(nc$dim)
         lon <- get.var.ncdf(nc,dimnames[grep("lon|x",tolower(dimnames))])
         lat <- get.var.ncdf(nc,dimnames[grep("lat|y",tolower(dimnames))])
         close.ncdf(nc)
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) ) {
             if (verbose) print('Regular grid field found')
-            X <- retrieve.ncdf(ncfile,param=param,verbose=verbose,...)
+            X <- retrieve.ncdf(ncfile,path=path,param=param,verbose=verbose,...)
         } else {
             if (verbose) print('Irregular grid field found')
-            X <- retrieve.rcm(ncfile,param=param,verbose=verbose,...) 
+            X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
-        nc <- nc_open(ncfile)
+        nc <- nc_open(file.path(path,ncfile))
         dimnames <- names(nc$dim)
         lon <- ncvar_get(nc,dimnames[grep("lon|x",tolower(dimnames))])
         lat <- ncvar_get(nc,dimnames[grep("lat|y",tolower(dimnames))])
         nc_close(nc)
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
             if (verbose) print('Regular grid field found')
-            X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
+            X <- retrieve.ncdf4(ncfile,path=path,param=param,verbose=verbose,...)
         }
         else {
             if (verbose) print('Irregular grid field found')
-            X <- retrieve.rcm(ncfile,param=param,verbose=verbose,...) 
+            X <- retrieve.rcm(file.path(path,ncfile),param=param,verbose=verbose,...) 
         }
     }
     else print("No suitable ncdf or ncdf4 libraries found to read your file or data")
@@ -71,6 +86,13 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     lat.rng  <- lat
     lev.rng  <- lev
     time.rng <- it
+
+    ## set path
+    if (!is.null(path)) {
+      path <- gsub("[[:punct:]]$","",path)
+      ncfile <- file.path(path,ncfile)
+    }
+    
     ## check if file exists and type of ncfile object
     if (is.character(ncfile)) {
         if (!file.exists(ncfile)) {
@@ -567,6 +589,13 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     lev.rng  <- lev
     time.rng <- it
     ##
+
+    ## set path
+    if (!is.null(path)) {
+      path <- gsub("[[:punct:]]$","",path)
+      ncfile <- file.path(path,ncfile)
+    }
+
     ## check if file exists and type of ncfile object
     if (is.character(ncfile)) {
         if (!file.exists(ncfile)) {
