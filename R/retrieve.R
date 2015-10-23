@@ -27,7 +27,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",
     ## set path
     if (!is.null(path)) {
       path <- gsub("[[:punct:]]$","",path)
-      path <- gsub('([[:punct:]])\\1+','\\1',path)
+      ##path <- gsub('([[:punct:]])\\1+','\\1',path)
     } else if (!is.null(ncfile)){
       i <- max(gregexpr("/",ncfile)[[1]])
       if (i>0) {
@@ -90,7 +90,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
     ## set path
     if (!is.null(path)) {
       path <- gsub("[[:punct:]]$","",path)
-      path <- gsub('([[:punct:]])\\1+','\\1',path)
+      ##path <- gsub('([[:punct:]])\\1+','\\1',path)
       ncfile <- file.path(path,ncfile)
     }
     
@@ -594,7 +594,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
     ## set path
     if (!is.null(path)) {
       path <- gsub("[[:punct:]]$","",path)
-      path <- gsub('([[:punct:]])\\1+','\\1',path)
+      ##path <- gsub('([[:punct:]])\\1+','\\1',path)
       ncfile <- file.path(path,ncfile)
     }
 
