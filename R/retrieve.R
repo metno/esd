@@ -26,8 +26,8 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",
 
     ## set path
     if (!is.null(path)) {
-      path <- gsub("\\/$","",path)
-      path <- gsub("\\/{2}","/",path)
+      path <- gsub("[[:punct:]]$","",path)
+      ##path <- gsub('([[:punct:]])\\1+','\\1',path)
     } else if (!is.null(ncfile)){
       i <- max(gregexpr("/",ncfile)[[1]])
       if (i>0) {
