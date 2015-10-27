@@ -119,7 +119,7 @@ lonlatdensity <- function(lons,lats,radius=NULL,dx=NULL,dy=NULL,
   }
   if (is.null(radius)) radius <- 1E4
   dens <- fn(lons,lats,radius,dx,dy)
-  hlons <- dens[,1]
+  hlons <- dens[,]
   hlats <- dens[,2]
   d <- dens[,3]
   X <- data.frame(lon=hlons,lat=hlats,density=d)
