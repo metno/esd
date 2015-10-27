@@ -612,4 +612,3 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
   }
   invisible(d)
 }
-
