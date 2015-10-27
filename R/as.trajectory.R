@@ -21,7 +21,8 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   if(is.na(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
   if(is.na(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
   if(is.na(url) & !is.null(attr(x,"URL"))) url <- attr(x,"URL")
-  if(is.na(reference) & !is.null(attr(x,"reference"))) reference <- attr(x,"reference")
+  if(is.na(reference) & !is.null(attr(x,"reference"))) reference <- attr(x,"refe
+rence")
   if(is.na(info) & !is.null(attr(x,"info"))) info <- attr(x,"info")
   if(is.na(method) & !is.null(attr(x,"method"))) method <- attr(x,"method")
   
@@ -55,9 +56,17 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   aggregate(x$date, list(x$trajectory), function(x) x[1])$x -> t1
   aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> t2
   aggregate(x$date, list(x$trajectory), length)$x -> len
-  aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat
-  #for(i in seq(11000,12000)) loni<-approxlon(x$lon[x$trajectory==i]);print(i)
-  aggregate(x$lon,list(x$trajectory),function(x) approxlon(x,n=n)$y)$x -> lon
+  a <- 6.378e06
+  xx <- a * cos( y$lat*pi/180 ) * cos( y$lon*pi/180 )
+  yy <- a * cos( y$lat*pi/180 ) * sin( y$lon*pi/180 )
+  zz <- a * sin( y$lat*pi/180 )
+  xa <- aggregate(xx, list(y$trajectory), function(x) approx(x,n=n)$y)$x
+  ya <- aggregate(yy, list(y$trajectory), function(x) approx(x,n=n)$y)$x
+  za <- aggregate(zz, list(y$trajectory), function(x) approx(x,n=n)$y)$x
+  lon <- atan2( ya, xa )*180/pi
+  lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
+  #aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat
+  #aggregate(x$lon,list(x$trajectory),function(x) approxlon(x,n=n)$y)$x -> lon
   colnames(lon) <- rep('lon',n)
   colnames(lat) <- rep('lat',n)
   if(verbose) print(n[1:n])
@@ -207,4 +216,3 @@ trajectory2station <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',
   z <- as.station.zoo(z)
   invisible(z)
 }
-
