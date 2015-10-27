@@ -552,6 +552,7 @@ export(events2field)
 export(map.events)
 export(Track.events)
 export(NearestNeighbour)
+export(Trackstats)
 
 export(CCI)
 export(dX)
