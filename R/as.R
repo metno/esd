@@ -1283,6 +1283,12 @@ as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
   invisible(X)
 }
 
+as.events.trajectory <- function(x,verbose=FALSE,...) {
+  if(verbose) print("as.events.trajectory")
+  stopifnot(inherits(x,"trajectory"))
+  invisible(x)
+}
+
 as.field.events <- function(x,...) {
   y <- events2field(x,...)
   return(y)

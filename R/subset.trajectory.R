@@ -17,7 +17,7 @@ subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (!is.null(it)) {
       if(verbose) print('Generate sequence of time if it value is given')
       t <- strftime(strptime(x[,colnames(x)=="start"],format="%Y%m%d%H"),
-                    format="%Y%m%d")
+                    format="%Y-%m-%d")
       yr <- year(x)
       mo <- month(x)
       dy <- day(x)

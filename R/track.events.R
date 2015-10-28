@@ -4,7 +4,6 @@ Track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,nmax=31*24,
                          nmin=5,dmin=1E5,lplot=FALSE,progress=TRUE,
                          verbose=FALSE) {
   if (verbose) print("Track.events - nearest neighbour cyclone tracking")
-  stopifnot(inherits(x,"events"))
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
   if (!("trajectory" %in% names(x))) {
@@ -98,9 +97,15 @@ Track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,nmax=31*24,
   if (verbose) print("calculate trajectory statistics")
   x <- Trackstats(x)
   n <- x["trackcount"][[1]]
+  d <- x["tracklength"][[1]]
   options(digits=12)
   dnum <- as.numeric(paste(x["date"][[1]],x["time"][[1]],sep="."))
-  y <- subset(x,it=(n>nmin & dnum!=min(dnum) & dnum!=max(dnum)))
+  ok <- rep(TRUE,length(n))
+  ends <- dnum==min(dnum) | dnum==max(dnum)
+  if (!is.null(nmin)) ok <- n>=nmin | ends
+  if (!is.null(dmin)) ok <- ok & (d>=dmin | ends)
+  browser()
+  y <- subset(x,it=ok)
   rnum <- Enumerate(y)
   if (i.start>1) rnum <- rnum + max(num[1:(i.start-1)])
   y["trajectory"] <- rnum
@@ -153,23 +158,17 @@ NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,lplot=FALSE,
 
 Trackstats <- function(x,verbose=FALSE) {
   if(verbose) print("Trackstats")
-  stopifnot(inherits(x,"events"))
   if (!any("trajectory" %in% names(x))) x <- Track.events(x,verbose=verbose)
-  y <- x[order(x["trajectory"][[1]]),]
+  y <- x[order(x$trajectory),]
   y <- attrcp(x,y)
   class(y) <- class(x)
   lons <- y["lon"][[1]]
   lats <- y["lat"][[1]]
-  rnum <- Enumerate(y)
-  #num <- y["trajectory"][[1]]
-  #rnum <- num[2:length(num)]-num[1:(length(num)-1)]
-  #rnum[rnum>0] <- 2:(sum(rnum>0)+1)
-  #rnum <- c(1,rnum)    
-  #while(any(rnum==0)) {
-  #  rnum[rnum==0] <- rnum[which(rnum==0)-1]
-  #}
-  dy <- y["distance"][[1]]
-  dy[is.na(dy)] <- 0
+  if (!identical(unique(y$trajectory),1:length(unique(y$trajectory)))) {
+    rnum <- Enumerate(y)
+  } else {
+    rnum <- y$trajectory
+  }
   if(verbose) print("trackcount")
   trackcount <- data.frame(table(rnum))
   if(verbose) print("timestep")
@@ -177,8 +176,14 @@ Trackstats <- function(x,verbose=FALSE) {
   timestep <- rep(NA,length(ts))
   timestep[order(rnum)] <- ts
   if(verbose) print("tracklength")
+  #dy <- y["distance"][[1]]
+  #dy[is.na(dy)] <- 0
   #tracklength <- as.numeric(by(dy,rnum,sum))
-  #lon1 <- y[]
+  lon1 <- as.numeric(by(y$lon,rnum,function(x) x[1]))
+  lat1 <- as.numeric(by(y$lat,rnum,function(x) x[1]))
+  lon2 <- as.numeric(by(y$lon,rnum,function(x) x[length(x)]))
+  lat2 <- as.numeric(by(y$lat,rnum,function(x) x[length(x)]))
+  tracklength <- round(mapply(distAB,lon1,lat1,lon2,lat2)*1E-3)
   y$trackcount <-  trackcount$Freq[rnum]
   y$timestep <- timestep
   y$tracklength <- tracklength[rnum]
@@ -188,11 +193,10 @@ Trackstats <- function(x,verbose=FALSE) {
   invisible(y)
 }
 
-Enumerate <- function(x,verbose=TRUE) {
+Enumerate <- function(x,param="trajectory",verbose=FALSE) {
   if(verbose) print("Enumerate")
-  stopifnot(inherits(x,"events"))
-  if (!any("trajectory" %in% names(x))) x <- Track.events(x,verbose=verbose)
-  num <- x["trajectory"][[1]]
+  stopifnot(inherits(x,"data.frame"))
+  num <- x[param][[1]]
   rnum <- num[2:length(num)]-num[1:(length(num)-1)]
   rnum[rnum>0] <- 2:(sum(rnum>0)+1)
   rnum <- c(1,rnum)    
@@ -201,3 +205,4 @@ Enumerate <- function(x,verbose=TRUE) {
   }
   invisible(rnum)
 }
+

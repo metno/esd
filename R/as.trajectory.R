@@ -1,12 +1,22 @@
+as.trajectory <- function(x,...) UseMethod("as.trajectory")
 
-as.trajectory <- function(x,...) {
+as.trajectory.default <- function(x,...) {
   X <- trajectory(x,...)
   invisible(X)
 }
 
+as.trajectory.events <- function(x,verbose=FALSE,...) {
+  if (verbose) print("as.trajectory.events")
+  stopifnot(inherits(x,"events"))
+  if (!("trajectory" %in% names(x))) x <- Track.events(x,verbose=verbose,...)
+  if (!("trackstats" %in% names(x))) x <- Trackstats(x,verbose=verbose)
+  y <- trajectory(x,verbose=verbose,...)
+  invisible(y)
+}
+
 trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
-                          method=NA,n=10) {
+                          method=NA,nmin=5,n=10) {
   if (verbose) print("trajectory")
   if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
   if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
@@ -14,7 +24,7 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   names(x)[grep("latitude",names(x))] <- "lat"
   names(x)[grep("longitude",names(x))] <- "lon"
   names(x)[grep("step",names(x))] <- "timestep"
-
+  
   if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
   if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
   if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
@@ -33,62 +43,64 @@ rence")
     if(!is.null(levels(x))) {suppressWarnings(as.numeric(levels(x))[x])
     } else as.numeric(as.character(x))
   }
-  nlist1 <- c('trajectory','lat','lon','year','month','day','time')
-  if (sum(nlist1 %in% names(x))==length(nlist1)) {
-    x$trajectory <- fn(x$trajectory)
-    x$lat <- fn(x$lat)
-    x$lon <- fn(x$lon)
-    x$year <- fn(x$year)
-    x$month <- fn(x$month)
-    x$day <- fn(x$day)
-    x$time <- fn(x$time)
-    x$date <- x$year*1E6+x$month*1E4+x$day*1E2+x$time
-  } else {
-    print(paste(paste(nlist1[!(nlist1 %in% names(x))],collapse=' '),'missing'))
-  }
-  nlist2 <- names(x)[!(names(x) %in% c('code99','date',nlist1))]
-  for (name in nlist2) {
+  for (name in names(x)) {
     eval(parse(text=paste("x$",name,"<-fn(x$",name,")",sep="")))
   }
-
+  # remove trajectories short trajectories
+  if (!("trackcount" %in% names(x))) {
+    x <- Trackstats(x)
+  }
+  x <- subset.events(x,it=x$trackcount>nmin)
+  x["trajectory"] <- Enumerate(x)
+  
   # interpolate all trajectories to same length n
   if(verbose) print('interpolate trajectories')
-  aggregate(x$date, list(x$trajectory), function(x) x[1])$x -> t1
-  aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> t2
-  aggregate(x$date, list(x$trajectory), length)$x -> len
+  aggregate(x$date, list(x$trajectory), function(x) x[1])$x -> d1
+  aggregate(x$time, list(x$trajectory), function(x) x[1])$x -> t1
+  aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> d2
+  aggregate(x$time, list(x$trajectory), function(x) x[length(x)])$x -> t2
+  dt1 <- as.numeric(strftime(strptime(paste(d1,t1),format="%Y%m%d %H"),format="%Y%m%d%H"))
+  dt2 <- as.numeric(strftime(strptime(paste(d2,t2),format="%Y%m%d %H"),format="%Y%m%d%H"))
+  #aggregate(x$date, list(x$trajectory), length)$x -> len
+  aggregate(x$trackcount, list(x$trajectory), function(x) x[1])$x -> len
+  aggregate(x$tracklength, list(x$trajectory), function(x) x[1])$x -> distance
   a <- 6.378e06
-  xx <- a * cos( y$lat*pi/180 ) * cos( y$lon*pi/180 )
-  yy <- a * cos( y$lat*pi/180 ) * sin( y$lon*pi/180 )
-  zz <- a * sin( y$lat*pi/180 )
-  xa <- aggregate(xx, list(y$trajectory), function(x) approx(x,n=n)$y)$x
-  ya <- aggregate(yy, list(y$trajectory), function(x) approx(x,n=n)$y)$x
-  za <- aggregate(zz, list(y$trajectory), function(x) approx(x,n=n)$y)$x
-  lon <- atan2( ya, xa )*180/pi
+  xx <- a * cos( x$lat*pi/180 ) * cos( x$lon*pi/180 )
+  yy <- a * cos( x$lat*pi/180 ) * sin( x$lon*pi/180 )
+  zz <- a * sin( x$lat*pi/180 )
+  xa <- aggregate(xx, list(x$trajectory), function(x) approx(x,n=n)$y)$x
+  ya <- aggregate(yy, list(x$trajectory), function(x) approx(x,n=n)$y)$x
+  za <- aggregate(zz, list(x$trajectory), function(x) approx(x,n=n)$y)$x
+  lon <- atan2( ya, xa )*180/pi 
   lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
   #aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat
   #aggregate(x$lon,list(x$trajectory),function(x) approxlon(x,n=n)$y)$x -> lon
   colnames(lon) <- rep('lon',n)
   colnames(lat) <- rep('lat',n)
-  if(verbose) print(n[1:n])
-  nlist1 <- c('trajectory','lat','lon','year','month','day','time',
-             'date','code99','timestep')
+  #if(verbose) print(n[1:n])
+  #nlist1 <- c('trajectory','lat','lon','year','month','day','time',
+  #           'date','code99','timestep')
+  #nlist2 <- names(x)[!(names(x) %in% nlist1)]
+  nlist1 <- c("trajectory","code99","date","time","trackcount",
+              "tracklength","timestep","lon","lat")
+  nlist1 <- nlist1[nlist1 %in% names(x)]
   nlist2 <- names(x)[!(names(x) %in% nlist1)]
   if(is.null(nlist2)) {
-    X <- cbind(lon=lon,lat=lat,start=t1,end=t2,n=len)
+    X <- cbind(trajectory=unique(x$trajectory),lon=lon,lat=lat,
+               start=dt1,end=dt2,n=len,d=distance)
   } else {
     for(name in nlist2) {
       if(verbose) print(name)
       eval(parse(text=paste("aggregate(x$",name,
-       ",list(x$trajectory),function(x) approx(x,n=",
-                   n,")$y)$x ->",name,sep="")))
+           ",list(x$trajectory),function(x) approx(x,n=",
+           n,")$y)$x ->",name,sep="")))
       eval(parse(text=paste("colnames(",name,
-                   ")<-rep('",name,"',",n,")",sep="")))
+           ")<-rep('",name,"',",n,")",sep="")))
     }
-    X <- eval(parse(text=paste("cbind(lon=lon,lat=lat",
+    X <- eval(parse(text=paste("cbind(trajectory=unique(x$trajectory),lon=lon,lat=lat",
         paste(nlist2,"=",nlist2,sep="",collapse=","),
-        "start=t1,end=t2,n=len)",sep=",")))
+        "start=dt1,end=dt2,n=len,d=distance)",sep=",")))
   }
-
   # add attributes to trajectory matrix X
   attr(X, "location")= loc
   attr(X, "variable")= param
@@ -108,13 +120,13 @@ rence")
   attr(x,"cntr") <- NA
   attr(x,"stid") <- NA
   attr(X, "history")= history.stamp()
-  class(X) <- 'trajectory'
+  class(X) <- c('trajectory','matrix')
   invisible(X)
 }
 
 
 read.imilast <- function(fname,path=NULL,verbose=FALSE) {
-  fname <- paste(path,fname,sep="")
+  fname <- file.path(path,fname)
   # read and rearrange file header
   if(verbose) print(paste("reading file header:"))
   h <- tolower(readLines(fname,1))
@@ -127,7 +139,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   h[grepl("lati",h) | grepl("latn",h)] <- "lat"
   h[grep("long",h)] <- "lon"
   h[grepl("99",h) | grepl("code",h)] <- "code99"
-  h[grepl("date",h) | grepl("yyyymmddhh",h)] <- "date"
+  h[grepl("date",h) | grepl("yyyymmddhh",h)] <- "datetime"
   h[grep("yyyy",h)] <- "year"
   h[grep("mm",h)] <- "month"
   h[grep("dd",h)] <- "day"
@@ -148,16 +160,28 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   if(verbose) print("reading data")
   x <- read.fwf(fname,width=w,col.names=h,skip=1)
   x <- x[x$code99<90,]
-  # add attributes
-  attr(x, "variable")= "storm tracks"
-  attr(x, "longname")= "mid-latitude storm trajectories"
-  attr(x, "source")= "IMILAST"
-  attr(x, "URL")= "http://journals.ametsoc.org/doi/abs/10.1175/BAMS-D-11-00154.1"
-  attr(x, "reference")= "Neu, et al. , 2013: IMILAST: A Community Effort to Intercompare Extratropical Cyclone Detection and Tracking Algorithms. Bull. Amer. Meteor. Soc., 94, 529–547."
+  # rearrange date and time information
+  dates <- round(x["datetime"][[1]]*1E-2)
+  times <- x["datetime"][[1]] - round(dates)*1E2
+  x["date"] <- dates
+  x["time"] <- times
+  x <- x[,-which(names(x) %in% c("datetime","year","month","day","timestep"))]
+  #add attributes
+  variable <- "storm tracks"
+  longname <- "mid-latitude storm trajectories"
+  src <- "IMILAST"
+  url <- "http://journals.ametsoc.org/doi/abs/10.1175/BAMS-D-11-00154.1"
+  ref <- "Neu, et al. , 2013: IMILAST: A Community Effort to Intercompare Extratropical Cyclone Detection and Tracking Algorithms. Bull. Amer. Meteor. Soc., 94, 529–547."
   if (x$code99[1]>9) {
-    attr(x, "method") <- paste("M",as.character(x$code99[1]),sep="")
-  } else attr(x, "method") <- paste("M0",as.character(x$code99[1]),sep="")
-  attr(x, "history")= history.stamp()
+    method <- paste("M",as.character(x$code99[1]),sep="")
+  } else {
+    method <- paste("M0",as.character(x$code99[1]),sep="")
+  }
+  x <- as.events(x,label="imilast",dx=min(diff(sort(unique(x["lon"][[1]])))),
+                 dy=min(diff(sort(unique(x["lat"][[1]])))),
+                 longname=longname,variable=variable,method=method,src=src,
+                 reference=ref,file=file.path(path,fname),url=url)
+  attr(x, "history")= history.stamp() 
   invisible(x)
 }
 

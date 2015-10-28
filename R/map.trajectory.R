@@ -3,7 +3,8 @@
 ## Require 	 geoborders.rda
 
 map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
-                           projection="sphere",...) {
+                           projection="sphere",verbose=TRUE,...) {
+  if (verbose) print("map.trajectory")
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
   if (type=='paths' | is.null(type)) {
@@ -23,6 +24,7 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
 
 map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
  main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1,verbose=FALSE,new=TRUE) {
+  if (verbose) print('map.anomaly.trajectory')
   stopifnot(is.trajectory(x))
   if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly(x)
   if(is.null(alpha)) alpha <- 0.01 + min(10/(dim(x)[1]),0.5)
@@ -39,7 +41,7 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
 lonlat.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,
     lty=1,lwd=2,main=NULL,new=TRUE,verbose=FALSE) {
-  
+  if (verbose) print("lonlat.trajectory")
   x0 <- x
   lons <- x[,colnames(x)=='lon']
   lats <- x[,colnames(x)=='lat']
@@ -75,7 +77,11 @@ lonlat.trajectory <- function(x,
       lines(lon[lon>=180]-360,lat[lon>=180],
           lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
     }
-    for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
+    if (sum(!OK)==1) {
+      fn(lons[!OK,],lats[!OK,])
+    } else {
+      for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
+    }
   }
 
   # draw coastlines
@@ -85,9 +91,10 @@ lonlat.trajectory <- function(x,
   # box marking the spatial subset
   slon <- attr(x0,'longitude')
   slat <- attr(x0,'latitude')
-  if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
+    
+  if(verbose & !is.null(slon)) print(paste('subset','lon',paste(slon,collapse="-"),
                           'lat',paste(slat,collapse="-")))
-  if (any(!is.na(c(slat,slon)))) {
+  if (any(!is.null(c(slat,slon)))) {
     if(verbose) print('draw subset box')
     if (sum(is.na(attr(x0,'longitude')))==0) {
       xlim <- attr(x0,'longitude')
