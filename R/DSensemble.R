@@ -1289,7 +1289,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       GCM <- subset(GCM,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
       if (FUNX!='C.C.eq') GCM <- annual(gcm,FUN=FUNX) else
-                          GCMX <- annual(C.C.eq(gcm),FUN='mean')
+                          GCM <- annual(C.C.eq(gcm),FUN='mean')
     } else if (inherits(y,'month')) {
       if (length(table(month(y)))==1)
         GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
