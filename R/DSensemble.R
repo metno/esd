@@ -407,9 +407,11 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   # Use proportional variaions
   if (verbose) print("Annual mean")
-  if (FUNX!='C.C.eq')
-    PREX <- annual(pre,FUN=FUNX) else
-    PREX <- annual(C.C.eq(pre),FUN='mean')
+  if (!is.annual(pre)) {
+    if (FUNX!='C.C.eq')  
+      PREX <- annual(pre,FUN=FUNX) else
+      PREX <- annual(C.C.eq(pre),FUN='mean')
+  }
   #print("estimate %-changes")
   PRE.ref <- subset(PREX,it=1961:1990)
 #  PRE <- zoo(100*coredata(PREX)/colMeans(coredata(PRE.ref)),order.by=year(PREX))
@@ -1208,6 +1210,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
   if (inherits(y,'season')) {
+    if (verbose) print('seasonal data')
     T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
 
@@ -1231,7 +1234,12 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
 
   } else if (inherits(y,'annual')) {
-    T2M <- annual(t2m,FUN=FUNX,nmin=nmin)
+    if (verbose) print('annual data')
+    if (!is.annual(t2m)) {
+      if (FUNX!='C.C.eq')
+        T2M <- annual(t2m,FUN=FUNX,nmin=nmin) else
+        T2M <- annual(C.C.eq(t2m),FUN='mean')
+  }
     T2M <- matchdate(T2M,y)
   } else if (inherits(y,'month')) {
     T2M <- matchdate(t2m,y)
@@ -1280,7 +1288,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       GCM <- as.4seasons(gcm,FUN=FUNX)
       GCM <- subset(GCM,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
-      GCM <- annual(gcm,FUN=FUNX)
+      if (FUNX!='C.C.eq') GCM <- annual(gcm,FUN=FUNX) else
+                          GCMX <- annual(C.C.eq(gcm),FUN='mean')
     } else if (inherits(y,'month')) {
       if (length(table(month(y)))==1)
         GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
