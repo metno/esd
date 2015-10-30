@@ -1239,7 +1239,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (FUNX!='C.C.eq')
         T2M <- annual(t2m,FUN=FUNX,nmin=nmin) else
         T2M <- annual(C.C.eq(t2m),FUN='mean')
-  }
+  } else T2M <- t2m
     T2M <- matchdate(T2M,y)
   } else if (inherits(y,'month')) {
     T2M <- matchdate(t2m,y)
@@ -1312,6 +1312,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
+
     ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
