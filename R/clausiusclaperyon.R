@@ -3,18 +3,19 @@
 C.C.eq <- function(x) {
   stopifnot(!missing(x),(varid(x)=='t2m') | (varid(x)=='tas') |
                         (varid(x)=='air') | (varid(x)=='sst'))
-  unit <- attr(x,'unit')[1]
-
+  units <- unit(x)[1]
+  if (is.null(units)) units <- 'deg C'
+  
   # Check units:
-  for (i in 1:length(unit)) {
-    if ( (is.na(unit[i]) | is.null(unit[i])) ) unit[i] <- " "
-    if ((unit[i]=='degree Celsius') | (unit[i]=='degC'))
-         unit[i] <- 'deg C'
+  for (i in 1:length(units)) {
+    if ( (is.na(units[i]) | is.null(units[i])) ) units[i] <- " "
+    if ((units[i]=='degree Celsius') | (units[i]=='degC'))
+         units[i] <- 'deg C'
   }
   # If units are in deg C, convert to deg K: 
-  if ((unit[i]=='deg C') | (unit[i]=='degC')) {
+  if ((units[i]=='deg C') | (units[i]=='degC')) {
     x <- x + 273.15
-    unit[i] <- 'deg K'
+    units[i] <- 'deg K'
   }
 
   z <- (11.40 - 2353/x)

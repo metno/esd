@@ -10,7 +10,7 @@
 
 aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
                               regular = NULL, frequency = NULL) {
-  #print('aggregate.station')
+  #if (verbose) print('aggregate.station')
   class(x) -> cls
   #print(deparse(substitute(by)))
   class(x) <- "zoo"
@@ -117,7 +117,7 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
 aggregate.comb <- function(x,by,FUN = 'mean', ...,
                               regular = NULL, frequency = NULL) {
   # Also need to apply the aggregation to the appended fields
-  #print("aggregate.comb")
+  #if (verbose) print("aggregate.comb")
   #print(class(x))
 
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
@@ -143,6 +143,8 @@ aggregate.comb <- function(x,by,FUN = 'mean', ...,
 aggregate.field <- function(x,by,FUN = 'mean', ...,
                               regular = NULL, frequency = NULL) {
 
+  #verbose <- TRUE; str(...)
+  #if (verbose) print("aggregate.field")
   class(x) -> cls
   #print(class(index(x)))
   class(x) <- "zoo"
@@ -235,10 +237,11 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
 
 
 aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
-                           na.rm=TRUE,smallx=FALSE) {
+                           na.rm=TRUE,smallx=FALSE,verbose=FALSE) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
-    x <- subset(x,is=is,it=it)
-   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
+  if (verbose) print("aggregate.area")
+  x <- subset(x,is=is,it=it)
+  if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   d <- attr(x,'dimensions')
   #image(attr(x,'longitude'),attr(x,'latitude'),area)
   #print(c(length(colSums(area)),length(attr(x,'latitude')),sum(colSums(area))))
