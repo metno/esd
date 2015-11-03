@@ -331,8 +331,10 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
     locations <- paste(paste("i",attr(Y,"station_id"),sep=""),locations,sep=".")
     W <- setNames(W,locations)
     for (i in 1:length(W)) {
+       attr(W[[i]],"station") <- subset(Y,is=i)
        attr(W[[i]],"longitude") <- attr(Y,"longitude")[i]
        attr(W[[i]],"latitude") <- attr(Y,"latitude")[i]
+       attr(W[[i]],"altitude") <- attr(Y,"altitude")[i]
        attr(W[[i]],"station_id") <- attr(Y,"station_id")[i]
        attr(W[[i]],"location") <- attr(Y,"location")[i]
        attr(W[[i]],'model_id') <- sub(".*_","",names(Q))
