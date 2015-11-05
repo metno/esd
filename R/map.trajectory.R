@@ -169,7 +169,7 @@ sphere.trajectory <- function(x,
   slat <- attr(x0,'latitude')
   if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
                           'lat',paste(slat,collapse="-")))
-  if (any(!is.na(c(slat,slon)))) {
+  if (any(!is.null(c(slat,slon)))) {
     if(verbose) print('draw subset box')
     if (sum(is.na(attr(x0,'longitude')))==0) {
       xlim <- attr(x0,'longitude')
