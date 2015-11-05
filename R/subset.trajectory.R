@@ -95,19 +95,27 @@ subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
       if (length(ip)>0) sslp <- is[[ip]] else sslp <- NULL        
       if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
-      if (length(slon)==2) {
+      if (length(slon)==2 & length(slat)==2) {
+        if (verbose) print(paste('is selects longitudes ',
+                       slon[1],'–',slon[2],'E ',
+                       "and latitudes ",
+                       slat[1],'–',slat[2],'N ',sep=""))
+        jx <- colnames(x)=='lon'
+        jy <- colnames(x)=='lat'
+        selx <- apply(x,1,function(x) any(x[jx]>=min(slon) &
+           x[jx]<=max(slon) & x[jy]>=min(slat) & x[jy]<=max(slat)))        
+      } else if (length(slon)==2) {
         if (verbose) print(paste('is selects longitudes ',
                        slon[1],'–',slon[2],'E',sep=""))
-        fn <- function(x) any(x>=min(slon) & x<=max(slon))
-        selx <- apply(x[,colnames(x)=='lon'],1,fn)
-      }
-      if (length(slat)==2) {
+        jx <- colnames(x)=='lon'
+        selx <- apply(x,1,function(x) any(x[jx]>=min(slon) & x[jx]<=max(slon)))
+      } else if (length(slat)==2) {
         if (verbose) print(paste('is selects latitudes ',
                        slat[1],'–',slat[2],'N',sep=""))
-        fn <- function(x) any(x>=min(slat) & x<=max(slat))
-        sely <- apply(x[,colnames(x)=='lat'],1,fn)
+        jy <- colnames(x)=='lat'
+        selx <- apply(x,1,function(x) any(x[jy]>=min(slat) & x[jy]<=max(slat)))
       }
-      ij <- selx & sely & selp & selF
+      ij <- selx & selp & selF
     }
 
     if(verbose) print(paste('length(ii)',length(ii),'length(ij)',length(ij)))
