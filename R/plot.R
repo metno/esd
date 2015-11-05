@@ -1065,9 +1065,9 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
     legend(0.5,0.90,c(expression(paste(levels(factor(unit(x)))[1]/d*e*c*a*d*e),
                       "ensemble trends > obs.",
                       "outside ensemble 90% conf.int.",
-                      paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
+                      paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%"))),
             bty="n",cex=0.7,text.col="grey40")
-}
+  }
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
   par(fig=fig,new=TRUE, mar=mar)
