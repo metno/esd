@@ -1062,7 +1062,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
                       paste(diag$outside,"observations"),
                       "p-value: "),
             bty="n",cex=0.7,text.col="grey40")
-    legend(0.5,0.90,c(expression(degree*C/d*e*c*a*d*e),
+    legend(0.5,0.90,c(expression(paste(levels(factor(unit(x)))[1]/d*e*c*a*d*e),
                       "ensemble trends > obs.",
                       "outside ensemble 90% conf.int.",
                       paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),

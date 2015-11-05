@@ -80,13 +80,16 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   ## Convert x to a zoo-object:
   if (verbose) print('Number of valid data points')
   X <- zoo(coredata(x),order.by=index(x))
+  attr(X,'units') <- unit(x)
+  attr(X,'variable') <- varid(x)
   
   ## Check how manye valid data points)
   nok <- aggregate(X,year,FUN='nv')
 
   if (FUN == 'sum') na.rm <- FALSE ## AM
-  if (verbose) print('aggregate')
+  if (verbose) print(paste('aggregate: FUN=',FUN))
 
+  if (verbose) str(X)
   ## If threshold needed - set a default:
   if (is.null(threshold)) threshold <- 1 ## AM added 20-05-2015
   if ((sum(is.element(names(formals(FUN)),'na.rm')==1)) |
@@ -98,6 +101,8 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
       y <- aggregate(X,year,FUN=FUN,...) # REB
   y[!is.finite(y)] <- NA ## AM
   ## browser()
+
+  if (verbose) print('check for incomplete sampling')
   ## Flag the data with incomplete sampling as NA
   if (!is.na(nmin)) {
     ## Need to account for both multiple and single series
@@ -116,7 +121,8 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   args <- list(...)
   if (verbose) print(names(args))
 
-  ## Set appropriate units and varaible names:
+  ## Set appropriate units and variable names:
+  if (verbose) print('Set appropriate units and variable names')
   if (FUN=="count")  {
     if (verbose) print("Count")
     attr(y,'unit') <-
