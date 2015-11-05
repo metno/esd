@@ -1293,3 +1293,8 @@ as.field.events <- function(x,...) {
   y <- events2field(x,...)
   return(y)
 }
+
+as.field.trajectory <- function(x,...) {
+  y <- trajectory2field(x,...)
+  return(y)
+}
