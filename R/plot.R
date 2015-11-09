@@ -933,6 +933,25 @@ plot.xval <- function(x,...) {
   grid()
 }
 
+plot.dsensemble.pca <- function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
+                               envcol=rgb(1,0,0,0.2),legend=TRUE,verbose=FALSE,...) {
+  if (verbose) print("plot.dsensemble.pca")
+  stopifnot(inherits(x,'dsensemble') & inherits(x,'pca'))
+  d <- index(x[[3]])
+  pc <- x[3:length(x)]
+  pc <- array(unlist(pc), dim = c(dim(pc[[1]]), length(pc)))
+  pc <- lapply(split(pc, arrayInd(seq_along(pc),dim(pc))[,2]),array,dim=dim(pc)[-2])
+  fn <- function(x) {
+    x <- zoo(x,order.by=d)
+    class(x) <- c("dsensemble","station","zoo")
+    invisible(x)
+  }
+  pc <- lapply(pc,fn)
+  for (i in 1:length(pc)) {
+    attr(pc[[i]],"station") <- x[[2]][,i]
+  }
+  plot(pc[[1]])
+}
 
 plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
                              envcol=rgb(1,0,0,0.2),legend=TRUE,...) {
@@ -943,7 +962,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
     z <- x
   #print("diagnose")
-  ## browser()
+  ##browser()
   diag <- diagnose(z,plot=FALSE)
   
   y <- attr(z,'station')
@@ -966,7 +985,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
                       ylim <- args[[iyl]]  
   #print("...")
-  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim)
+  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black")
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)
