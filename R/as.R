@@ -316,34 +316,63 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
   } else {
     if (is.null(is)) is <- 1:length(loc(X$pca)) 
     if (verbose) print('Extract the results model-wise')
-    fn <- function(y) {
-      y <- attrcp(X$pca,y)
-      class(y) <- c("ds",class(X$pca))
-      invisible(as.station(y))
+    d <- apply(sapply(X[3:length(X)],dim),1,min)
+    V <- array(unlist(lapply( X[3:length(X)],
+      function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    U <- attr(X$pca,'pattern')
+    d <- dim(U)
+    W <- attr(X$pca,'eigenvalues')
+    S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
+    dim(S) <- c(dim(U)[1], dim(V)[1], length(X)-2)
+    for (i in seq(1:dim(S)[1])) {
+      S[i,,] <- S[i,,] + c(attr(X$pca,'mean'))[i]
     }
-    Q <- lapply(X[3:length(X)],fn)
-    if (verbose) print('Arrange the results station-wise')
-    W <- array(unlist(Q), dim = c(dim(Q[[1]]), length(Q)))
-    W <- lapply(split(W, arrayInd(seq_along(W),dim(W))[,2]),array,dim=dim(W)[-2])
+    
+    S <- lapply(split(S, arrayInd(seq_along(S),dim(S))[,1]),
+                array,dim=dim(S)[-1])
+    S <- lapply(S,function(x) zoo(x,order.by=index(X[[3]])))
+    ##dev.new()
+    ##plot(S[[1]][,1],ylim=c(-35,5),col=adjustcolor("blue",alpha=0.3),type="l")
+    ##for (i in 2:dim(S[[1]])[2]) {
+    ##  lines(S[[1]][,i],col=adjustcolor("blue",alpha=0.3))
+    #}
+    if (verbose) print('Set attributes')
     Y <- as.station(X$pca)
     locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(Y,"location")))
     locations <- gsub("__","_",locations)
-    locations <- paste(paste("i",attr(Y,"station_id"),sep=""),locations,sep=".")
-    W <- setNames(W,locations)
-    for (i in 1:length(W)) {
-       attr(W[[i]],"station") <- subset(Y,is=i)
-       attr(W[[i]],"longitude") <- attr(Y,"longitude")[i]
-       attr(W[[i]],"latitude") <- attr(Y,"latitude")[i]
-       attr(W[[i]],"altitude") <- attr(Y,"altitude")[i]
-       attr(W[[i]],"station_id") <- attr(Y,"station_id")[i]
-       attr(W[[i]],"location") <- attr(Y,"location")[i]
-       attr(W[[i]],'model_id') <- sub(".*_","",names(Q))
-       class(W[[i]]) <- c('dsensemble','zoo')
+    ##locations <- paste(paste("i",attr(X$pca,"station_id"),sep=""),
+    ##                   locations,sep=".")
+    S <- setNames(S,locations)
+    lons <- attr(X$pca,"longitude")
+    lats <- attr(X$pca,"latitude")
+    alts <- attr(X$pca,"altitude")
+    stid <- attr(X$pca,"station_id")
+    locs <- attr(X$pca,"location")
+    gcms <- sub(".*_","",names(X)[3:length(X)])
+    for (i in 1:length(S)) {
+       yi <- Y[,i]
+       class(yi) <- class(Y)
+       yi <- attrcp(Y,yi)
+       attr(yi,"longitude") <- lons[i]
+       attr(yi,"latitude") <- lats[i]
+       attr(yi,"altitude") <- alts[i]
+       attr(yi,"station_id") <- stid[i]
+       attr(yi,"location") <- locs[i]
+       attr(yi,"unit") <- attr(Y,"unit")
+       attr(S[[i]],"station") <- yi
+       attr(S[[i]],'aspect') <- 'original'
+       attr(S[[i]],"longitude") <- lons[i]
+       attr(S[[i]],"latitude") <- lats[i]
+       attr(S[[i]],"altitude") <- alts[i]
+       attr(S[[i]],"station_id") <- stid[i]
+       attr(S[[i]],"location") <- locs[i]
+       attr(S[[i]],'model_id') <- gcms
+       class(S[[i]]) <- c('dsensemble','zoo')
     }
-    class(W) <- c("dsensemble","station","list")
-    attr(W,"aspect") <- "dsensemble.pca transformed to stations"
-    attr(W,"history") <- history.stamp()
-    invisible(W)
+    class(S) <- c("dsensemble","station","list")
+    attr(S,"aspect") <- "dsensemble.pca transformed to stations"
+    attr(S,"history") <- history.stamp()
+    invisible(S)
   }
 }
 
@@ -1298,5 +1327,10 @@ as.field.events <- function(x,...) {
 
 as.field.trajectory <- function(x,...) {
   y <- trajectory2field(x,...)
+  return(y)
+}
+
+as.station.trajectory <- function(x,...) {
+  y <- trajectory2station(x,...)
   return(y)
 }
