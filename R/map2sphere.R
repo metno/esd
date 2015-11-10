@@ -115,6 +115,15 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   map <- x[srtx,srty]
   param <- attr(x,'variable')
   unit <- attr(x,'unit')
+  ## KMP 10-11-2015: prepare unit and parameter labels
+  if(!is.null(param)) param <- gsub(" ","~",param)
+  if(!is.null(unit)) unit <- gsub(" ","~",unit)
+  if(length(param)>1) param <- param[1]
+  if(length(unit)>1) unit <- unit[1]
+  if (is.T(x)) {
+    unit <- "degrees*C"
+  }
+ 
   # Rotatio:
   if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
   if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
@@ -278,8 +287,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 
   ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
   ##     xlab="",ylab="",add=FALSE)
-  txt <- paste(param,' (',unit,')',sep=" ")
-  text(-0.95,0.9,eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4)
+  txt <- param
+  if (!is.null(unit)) txt <- paste(param,'~(',unit,')')
+  text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),
+       cex=1.5,pos=4)
   
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   result <- NULL # For now...
