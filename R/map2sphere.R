@@ -68,7 +68,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                            breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
                        type=c("fill","contour"),                      
-                       gridlines=TRUE,fancy=FALSE,verbose=FALSE,...) {
+                       gridlines=TRUE,fancy=FALSE,
+                       xlim=NULL,ylim=NULL,verbose=FALSE,...) {
 
   
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
@@ -96,8 +97,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   }
   ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
   ## if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
-  if (!is.null(it) | !is.null(it))
+  if (!is.null(it) | !is.null(is))
     x <- subset(x,it=it,is=is,verbose=verbose)
+
+  ## KMP 10-11-2015: apply xlim and ylim
+  is <- NULL
+  if (!is.null(xlim)) is$lon <- xlim
+  if (!is.null(ylim)) is$lat <- ylim
+  x <- subset(x,is=is)
 
   # Data to be plotted:
   lon <- lon(x)  # attr(x,'longitude')
@@ -108,6 +115,15 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   map <- x[srtx,srty]
   param <- attr(x,'variable')
   unit <- attr(x,'unit')
+  ## KMP 10-11-2015: prepare unit and parameter labels
+  if(!is.null(param)) param <- gsub(" ","~",param)
+  if(!is.null(unit)) unit <- gsub(" ","~",unit)
+  if(length(param)>1) param <- param[1]
+  if(length(unit)>1) unit <- unit[1]
+  if (is.T(x)) {
+    unit <- "degrees*C"
+  }
+ 
   # Rotatio:
   if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
   if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
@@ -116,8 +132,18 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 
   # coastline data:
   data("geoborders",envir=environment())
-  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
+  #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
+  #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
+
+  ## KMP 10-11-2015: apply xlim and ylim
+  gx <- geoborders$x
+  gy <- geoborders$y
+  ok <- is.finite(gx) & is.finite(gy)
+   if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  theta <- pi*gx[ok]/180
+  phi <- pi*gy[ok]/180
+
   x <- sin(theta)*cos(phi)
   y <- cos(theta)*cos(phi)
   z <- sin(phi)
@@ -198,7 +224,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   X <- A[1,]; Y <- A[2,]; Z <- A[3,]
   dim(X) <- d; dim(Y) <- d; dim(Z) <- d
   #print(dim(rbind(X,Z)))
-
+  
 # Plot the results:
   if (new) dev.new()
   par(bty="n") ## ,xaxt="n",yaxt="n")
@@ -261,8 +287,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 
   ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
   ##     xlab="",ylab="",add=FALSE)
-  txt <- paste(param,' (',unit,')',sep=" ")
-  text(-0.95,0.9,eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4)
+  txt <- param
+  if (!is.null(unit)) txt <- paste(param,'~(',unit,')')
+  text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),
+       cex=1.5,pos=4)
   
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   result <- NULL # For now...
