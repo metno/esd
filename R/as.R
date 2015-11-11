@@ -959,19 +959,19 @@ as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE) anomaly.default(x)
 #}
 
 as.anomaly.zoo <- function(x,ref=NULL,na.rm=TRUE) {
-  y <- as.anomaly.station(x,ref,na.rm)
+  y <- as.anomaly.station(x,ref=ref,na.rm=na.rm)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
 as.anomaly.station <- function(x,ref=NULL,na.rm=TRUE) {
-  y <- as.anomaly.default(x,ref,na.rm)
+  y <- as.anomaly.default(x,ref=ref,na.rm=na.rm)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
 as.anomaly.field<- function(x,ref=NULL,na.rm=TRUE) {
-   y <- anomaly.default(x,ref,na.rm)
+   y <- anomaly.default(x,ref=ref,na.rm=na.rm)
    attr(y,'history') <- history.stamp(x)
    attr(y,'dimensions') <- attr(x,'dimensions')
    invisible(y)
