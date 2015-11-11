@@ -17,7 +17,8 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   missing <- !is.finite(z)
   ## Use interpolation to fill in
   if (sum(missing)>0) print(paste('Warning: ',sum(missing),
-                                  'missing values filled by interpolation'))
+                                  'missing values (',round(100*sum(missing)/length(z),1),
+                                  ' %) filled by interpolation'))
   z <- approx(x=index(x)[!missing],y=z[!missing],xout=index(x))$y
 
   ## Highligh the times when the values is above and below the given
