@@ -3,18 +3,18 @@
 plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
-                         errorbar=TRUE,legend.show=TRUE,...) {
+                         errorbar=TRUE,legend.show=FALSE,
+                         map.show=TRUE,...) {
 
   #print('plot.station')
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
-      fig=c(0,1,0.05,0.95))
+  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,
+      fig=c(0,1,0,0.8),mar=c(4.5,4.5,0.5,0.5))
   ## browser()
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
   ##         ylim <- pretty(x)
   ##     else              
   ##         ylim <- apply(x,2,pretty,n=5)
-
   if (is.null(ylim))
       ylim <- pretty(as.numeric(x))
   
@@ -37,7 +37,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
       ylab <- apply(x,1,varid)
   
   if (is.null(main)) main <- attr(x,'longname')[1]              
-  if (is.null(col)) col <- rainbow(length(x[1,]))
+  if (is.null(col)) col <- adjustcolor(rainbow(length(x[1,])),alpha=0.5)
 
   ns <- length(stid(x))
 #  if ( (ns > 1) & (plot.type=="multiple") ) {
@@ -88,11 +88,32 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-        fig=c(0,1,0.1,1),new=TRUE)
+    if(map.show) {
+       xrange <- range(lon(x)) + c(-10,10)
+       yrange <- range(lat(x)) + c(-5,5)
+       data(geoborders)
+       lon <- geoborders$x
+       lat <- geoborders$y
+       ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
+             lat>(min(yrange)-1) & lat<(max(yrange)+1)
+       lon2 <- attr(geoborders,"borders")$x
+       lat2 <- attr(geoborders,"borders")$y
+       ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
+              lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
+       par(fig=c(0.76,0.97,0.76,0.97),new=TRUE, mar=c(0,0,0,0),
+           xpd=NA,col.main="grey",bty="n")
+       plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
+            xlab=NA,ylab=NA,axes=FALSE)
+       axis(1,mgp=c(3,.5,0),cex.axis=0.75)
+       axis(2,mgp=c(2,.5,0),cex.axis=0.75)
+       lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)   
+       points(lon(x),lat(x),pch=21,cex=1,col=col,bg=col,lwd=1)     
+    }
+    ## par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+    ##     fig=c(0,1,0.1,1),new=TRUE)
 
-    par(fig=c(0,1,0.05,0.95),new=TRUE,mar=par0$mar,xaxt="n",yaxt="n",bty="n")
-    plot.zoo(x,plot.type=plot.type,type="n",ylab="",xlab="",xlim=xlim,ylim=ylim)
+    ## par(fig=c(0,1,0.05,0.95),new=TRUE,mar=par0$mar,xaxt="n",yaxt="n",bty="n")
+    ## plot.zoo(x,plot.type=plot.type,type="n",ylab="",xlab="",xlim=xlim,ylim=ylim)
   }
 }
 
