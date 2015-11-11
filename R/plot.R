@@ -4,11 +4,11 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
-                         map.show=TRUE,...) {
+                         map.show=TRUE,alpha=0.3,...) {
 
   #print('plot.station')
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,
-      fig=c(0,1,0,0.8),mar=c(4.5,4.5,0.5,0.5))
+      fig=c(0,1,0,0.8),mar=c(4.5,4.5,0.75,0.5))
   ## browser()
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
@@ -37,8 +37,15 @@ plot.station <- function(x,plot.type="single",new=TRUE,
       ylab <- apply(x,1,varid)
   
   if (is.null(main)) main <- attr(x,'longname')[1]              
-  if (is.null(col)) col <- adjustcolor(rainbow(length(x[1,])),alpha=0.5)
-
+  if (is.null(col)) {
+    nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
+    ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
+    col <- rgb(1-ny,nx,ny,alpha)
+    ##col <- adjustcolor(rainbow(length(x[1,])),alpha=0.5)
+  } else if (!is.null(alpha)) {
+    col <- adjustcolor(col,alpha.f=alpha)
+  }
+  
   ns <- length(stid(x))
 #  if ( (ns > 1) & (plot.type=="multiple") ) {
 #    for (i in 1:ns) {
@@ -52,7 +59,6 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   
   #print(ylab)
   class(x) <- "zoo"
-  
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
            main=main,col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,...)
   
