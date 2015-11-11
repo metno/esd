@@ -90,8 +90,8 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
 #  high <- t[end] - t[start]
   high <- diff(cath[start])
   low <- diff(cbth[end])
-  if (verbose) print(summary(high))  
-  if (verbose) print("low:"); print(summary(low))
+  if (verbose) {print("high:"); print(summary(high))}  
+  if (verbose) {print("low:"); print(summary(low))}
 
   ## If an upper limit is provided then ignore the long spells
   if (!is.null(upper)) {
