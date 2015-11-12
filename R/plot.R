@@ -19,8 +19,10 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   ##         ylim <- pretty(x)
   ##     else              
   ##         ylim <- apply(x,2,pretty,n=5)
+  if (is.null(xlim))
+    xlim <- range(index(x))
   if (is.null(ylim))
-      ylim <- pretty(as.numeric(x))
+    ylim <- pretty(as.numeric(x))
   
   unit <- attr(x,'unit')[1]
   for (i in 1:length(unit)) {
@@ -128,15 +130,11 @@ plot.station <- function(x,plot.type="single",new=TRUE,
          rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
               border="black",lwd=1,lty=2)
        }
-    }
-    ## par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-    ##     fig=c(0,1,0.1,1),new=TRUE)
-
-    ## par(fig=c(0,1,0.05,0.95),new=TRUE,mar=par0$mar,xaxt="n",yaxt="n",bty="n")
-    ## plot.zoo(x,plot.type=plot.type,type="n",ylab="",xlab="",xlim=xlim,ylim=ylim)
+   }
+   par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=TRUE)
+   plot.zoo(x,type="n",xlab="",ylab="",xlim=xlim,ylim=ylim)
   }
 }
-
 
 plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
                      pattern=1,what=c("pc","eof","var"),
