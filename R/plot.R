@@ -210,7 +210,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
       par(fig=c(0.05,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-      main <- paste('Leading PC#',pattern,'of ',attr(x,'longname'),
+      main <- paste('Leading PC#',pattern,' of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[pattern],digits=2),
                     "%",sep='')
       
