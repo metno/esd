@@ -217,6 +217,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
                cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1)
       #axis(1,at=pretty(index(x),n=10),labels=,cex.axis=0.9)
+      grid()
   }
  
   par(fig=c(0,1,0,0.55),new=TRUE, mar=c(1,1,1,1),xaxt="n",yaxt="n",bty="n")
