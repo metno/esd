@@ -296,6 +296,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
                cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
       axis(1,at=pretty(index(x[,n]),n=10),cex.axis=0.9)    
+      grid()
 #    par0 <- par()
 
       ## Plot the common PCs
