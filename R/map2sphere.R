@@ -116,9 +116,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   param <- attr(x,'variable')
   unit <- attr(x,'unit')
   ## KMP 10-11-2015: prepare unit and parameter labels
-  param <- as.character(param); unit <- as.character(unit)
-  if(!is.null(param)) param <- gsub(" ","~",param)
-  if(!is.null(unit)) unit <- gsub(" ","~",unit)
+  if(!is.null(param) & !inherits(param,'expression')) param <- gsub(" ","~",param)
+  if(!is.null(unit) & !inherits(param,'expression')) unit <- gsub(" ","~",unit)
   if(length(param)>1) param <- param[1]
   if(length(unit)>1) unit <- unit[1]
   if (is.T(x)) {
@@ -289,6 +288,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
   ##     xlab="",ylab="",add=FALSE)
   txt <- param
+  param <- as.character(param); unit <- as.character(unit)
   if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
      if(!is.null(unit)) txt <- param
   text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),

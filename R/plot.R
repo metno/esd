@@ -222,8 +222,12 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
  
   par(fig=c(0,1,0,0.55),new=TRUE, mar=c(1,1,1,1),xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-  legend(0,0.83,paste(attr(x,'source')[1],attr(x,'variable')[1]),
-         bty="n",cex=0.8,ncol=2,text.col="grey40")
+
+  varnm <- varid(x)
+  if (inherits(varnm,'expression'))
+    vartxt <- expression(paste(attr(x,'source')[1],varnm[1])) else
+    vartxt <- paste(attr(x,'source')[1],varnm[1])
+  legend(0,0.83,vartxt,bty="n",cex=0.8,ncol=2,text.col="grey40")
   
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
