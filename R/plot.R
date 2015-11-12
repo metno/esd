@@ -132,7 +132,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
        }
    }
    par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=TRUE)
-   plot.zoo(x,type="n",xlab="",ylab="",xlim=xlim,ylim=ylim)
+   plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
+            xlim=xlim,ylim=ylim,new=FALSE)
   }
 }
 
