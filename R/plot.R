@@ -4,11 +4,15 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
-                         map.show=TRUE,alpha=0.3,...) {
+                         map.show=TRUE,map.type="points",
+                         alpha=0.3,verbose=FALSE,...) {
 
-  #print('plot.station')
+  if (verbose) print('plot.station')
+  fig <- c(0,1,0,0.95)
+  if (map.show) fig[4] <- 0.8
+  if (legend.show) fig[3] <- 0.05  
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,
-      fig=c(0,1,0,0.8),mar=c(4.5,4.5,0.75,0.5))
+      fig=fig,mar=c(4.5,4.5,0.75,0.5))
   ## browser()
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
@@ -38,11 +42,16 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   
   if (is.null(main)) main <- attr(x,'longname')[1]              
   if (is.null(col)) {
-    nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
-    ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
-    col <- rgb(1-ny,nx,ny,alpha)
-    ##col <- adjustcolor(rainbow(length(x[1,])),alpha=0.5)
-  } else if (!is.null(alpha)) {
+    if (is.null(dim(x))) {
+      col <- "blue"
+    } else if (!is.null(lon(x)) & !is.null(lat(x))) {
+      nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
+      ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
+      col <- rgb(1-ny,nx,ny,alpha)
+    } else {
+      col <- adjustcolor(rainbow(length(x[1,])),alpha=alpha)
+    }
+  } else {
     col <- adjustcolor(col,alpha.f=alpha)
   }
   
@@ -60,8 +69,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   #print(ylab)
   class(x) <- "zoo"
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
-           main=main,col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,...)
-  
+           col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,...)
+  mtext(main,side=3,line=1,adj=0,cex=1.1)
   par0 <- par()
   
   if (plot.type=="single") {
@@ -112,8 +121,13 @@ plot.station <- function(x,plot.type="single",new=TRUE,
             xlab=NA,ylab=NA,axes=FALSE)
        axis(1,mgp=c(3,.5,0),cex.axis=0.75)
        axis(2,mgp=c(2,.5,0),cex.axis=0.75)
-       lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)   
-       points(lon(x),lat(x),pch=21,cex=1,col=col,bg=col,lwd=1)     
+       lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+       if (map.type=="points") {
+         points(lon(x),lat(x),pch=21,cex=1,col=col,bg=col,lwd=1)
+       } else if (map.type=="rectangle") {
+         rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
+              border="black",lwd=1,lty=2)
+       }
     }
     ## par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
     ##     fig=c(0,1,0.1,1),new=TRUE)
