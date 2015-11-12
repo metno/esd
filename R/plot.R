@@ -185,11 +185,10 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
           map(x,pattern=pattern,verbose=verbose,...) ## AM formely new=FALSE colbar=colbar,
       } else if (inherits(x,'pca')) {
           par(fig=c(0,0.5,0.5,1))
-          main0 <- paste(paste(attr(x,'source')[1],attr(x,'variable')[1]))
           main1 <- paste('Leading EOF#',pattern, ' (',
                          round(var.eof[pattern],digits=2),"%)",sep='')
           map(x,pattern=pattern,verbose=verbose,...) ## colbar=colbar,
-          title(main=main0,cex.main=0.6,col.main="grey40",adj=0,line=0)
+          title(main=src(x)[1],cex.main=0.6,col.main="grey40",adj=0,line=0)
           title(main=main1,cex.main=0.8)
       }
   }
@@ -224,10 +223,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
 
   varnm <- varid(x)
-  if (inherits(varnm,'expression'))
-    vartxt <- expression(paste(attr(x,'source')[1],varnm[1])) else
-    vartxt <- paste(attr(x,'source')[1],varnm[1])
-  legend(0,0.83,vartxt,bty="n",cex=0.8,ncol=2,text.col="grey40")
+  legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
@@ -321,10 +317,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
   varnm <- varid(x)
-  if (inherits(varnm,'expression'))
-    vartxt <- expression(paste(attr(x,'source')[1],varnm[1])) else
-    vartxt <- paste(attr(x,'source')[1],varnm[1])
-  legend(0,0.83,vartxt,bty="n",cex=0.8,ncol=2,text.col="grey40")
+  legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
