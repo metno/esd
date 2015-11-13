@@ -8,6 +8,13 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          alpha=0.3,verbose=FALSE,...) {
 
   if (verbose) print('plot.station')
+
+  if (is.null(lon(x)) | is.null(lat(x))) {
+    map.show <- FALSE
+  } else if (length(lon(x))!=length(lat(x))) {
+    map.type <- "rectangle"
+  }
+  
   fig <- c(0,1,0,0.95)
   if (map.show) fig[4] <- 0.8
   if (legend.show) fig[3] <- 0.05  
@@ -42,11 +49,13 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   else if (is.null(ylab))
       ylab <- apply(x,1,varid)
   
-  if (is.null(main)) main <- attr(x,'longname')[1]              
+  if (is.null(main)) main <- attr(x,'longname')[1] 
   if (is.null(col)) {
     if (is.null(dim(x))) {
       col <- "blue"
-    } else if (!is.null(lon(x)) & !is.null(lat(x))) {
+    } else if (!is.null(lon(x)) & !is.null(lat(x)) &
+               length(lon(x))==dim(x)[2] &
+               length(lat(x))==dim(x)[2]) {
       nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
       ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
       col <- rgb(1-ny,nx,ny,alpha)
@@ -74,7 +83,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,...)
   mtext(main,side=3,line=1,adj=0,cex=1.1)
   par0 <- par()
-  
+ 
   if (plot.type=="single") {
     if (errorbar) {
       # REB 2014-10-03: add an errorbar to the plots.
@@ -96,6 +105,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+    
     if(legend.show) {
       legend(0.01,0.95,paste(attr(x,'location'),": ",
                            #attr(x,'aspect'),
