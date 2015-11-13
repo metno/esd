@@ -195,11 +195,10 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
           map(x,pattern=pattern,verbose=verbose,...) ## AM formely new=FALSE colbar=colbar,
       } else if (inherits(x,'pca')) {
           par(fig=c(0,0.5,0.5,1))
-          main0 <- paste(paste(attr(x,'source')[1],attr(x,'variable')[1]))
           main1 <- paste('Leading EOF#',pattern, ' (',
                          round(var.eof[pattern],digits=2),"%)",sep='')
           map(x,pattern=pattern,verbose=verbose,...) ## colbar=colbar,
-          title(main=main0,cex.main=0.6,col.main="grey40",adj=0,line=0)
+          title(main=src(x)[1],cex.main=0.6,col.main="grey40",adj=0,line=0)
           title(main=main1,cex.main=0.8)
       }
   }
@@ -220,19 +219,21 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
       par(fig=c(0.05,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-      main <- paste('Leading PC#',pattern,'of ',attr(x,'longname'),
+      main <- paste('Leading PC#',pattern,' of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[pattern],digits=2),
                     "%",sep='')
       
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
                cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1)
       #axis(1,at=pretty(index(x),n=10),labels=,cex.axis=0.9)
+      grid()
   }
  
   par(fig=c(0,1,0,0.55),new=TRUE, mar=c(1,1,1,1),xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-  legend(0,0.83,paste(attr(x,'source')[1],attr(x,'variable')[1]),
-         bty="n",cex=0.8,ncol=2,text.col="grey40")
+
+  varnm <- varid(x)
+  legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
@@ -305,6 +306,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
                cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
       axis(1,at=pretty(index(x[,n]),n=10),cex.axis=0.9)    
+      grid()
 #    par0 <- par()
 
       ## Plot the common PCs
@@ -324,8 +326,8 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   
   par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-  legend(0,0.83,paste(attr(x,'source')[1],attr(x,'variable')[1]),
-         bty="n",cex=0.8,ncol=2,text.col="grey40")
+  varnm <- varid(x)
+  legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)

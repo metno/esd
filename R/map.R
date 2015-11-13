@@ -338,6 +338,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     if ((unit=='degree Celsius') | (unit=='deg C') | (unit=='degC'))
         unit <- 'degree*C'
 
+    unit <- as.character(unit)
     attr(X,'unit') <- unit
     attr(X,'source') <- attr(x,'source')
     attr(X,'time') <- range(index(x))
@@ -665,6 +666,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     srty <- order(lat(x)); lat <- lat(x)[srty]
     if (verbose) print('meta-stuff')
     unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
+    variable <- as.character(variable); unit <- as.character(unit)
     if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") | (unit=="degree Celsius"))
         unit <- "degree*C"
     if (unit=="%") unit <- "'%'"
