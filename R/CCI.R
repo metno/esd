@@ -329,7 +329,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   if (lplot) {
     if(verbose) print("plot example of cyclone identification")
     data(geoborders,envir=environment())
-    i <- length(date/2)
+    i <- length(date)/2
     inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
     infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
@@ -352,10 +352,10 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
     dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
     dev.new()
     image(xi,yi,zi,main=date[i],col=colscal(col="t2m",n=12,rev=FALSE),
-          xlab="lon",ylab="lat")
-    contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(950,1010),nlevels=6)
+          xlab="lon",ylab="lat",breaks=seq(940,1060,10))
+    contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(940,1010),nlevels=6)
     contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1060),nlevels=5)
-    lines(geoborders)
+    lines(geoborders,col="grey10")
     a <- which(P.lowx[t==date[i],,]==1,arr.ind=TRUE)
     b <- which(P.lowy[t==date[i],,]==1,arr.ind=TRUE)
     lon.a <- mapply(function(i1,i2) lonXY[i1,i2],a[,1],a[,2])
