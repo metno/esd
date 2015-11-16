@@ -199,6 +199,18 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     col <- topo.colors(n,alpha=alpha)
   } else if (col[1]=="cm.colors") {
     col <- cm.colors(n,alpha=alpha)
+  } else if (col[1]=="cold") {
+    r <- approx(seNorgeT[1,1:7],n=n)$y/255
+    g <- approx(seNorgeT[2,1:7],n=n)$y/255
+    b <- approx(seNorgeT[3,1:7],n=n)$y/255
+    if (is.null(alpha)) col <- rgb(b,g,r)  else
+                        col <- rgb(r,g,b,alpha)    
+  }  else if (col[1]=="warm") {
+    r <- approx(seNorgeT[1,8:14],n=n)$y/255
+    g <- approx(seNorgeT[2,8:14],n=n)$y/255
+    b <- approx(seNorgeT[3,8:14],n=n)$y/255
+    if (is.null(alpha)) col <- rgb(b,g,r)  else
+                        col <- rgb(r,g,b,alpha)    
   } else {
     r <- approx(seNorgeT[1,],n=n)$y/255
     g <- approx(seNorgeT[2,],n=n)$y/255
