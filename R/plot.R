@@ -5,6 +5,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
                          map.show=TRUE,map.type="points",
+                         mar=c(4.5,4.5,0.75,0.5),
                          alpha=0.3,verbose=FALSE,...) {
 
   if (verbose) print('plot.station')
@@ -18,8 +19,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   fig <- c(0,1,0,0.95)
   if (map.show) fig[4] <- 0.8
   if (legend.show) fig[3] <- 0.05  
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,
-      fig=fig,mar=c(4.5,4.5,0.75,0.5))
+  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,fig=fig,mar=mar)
   ## browser()
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
@@ -734,7 +734,7 @@ plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     plot(attr(y,'original_data')[,pattern],
          ylab=attr(y,'unit'),
-         ylim=range(attr(y,'original_data')[,pattern])*c(1.1,1.4),
+         ylim=range(attr(y,'original_data')[,pattern])*c(1.2,1.4),
          lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,pattern])[1],
@@ -746,7 +746,7 @@ plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
     par(fig=c(0,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     plot(attr(y,'original_data')[,pattern],
          ylab=attr(y,'unit'),
-         ylim=range(attr(y,'original_data')[,pattern])*c(1.1,1.4),
+         ylim=range(attr(y,'original_data')[,pattern])*c(1.2,1.4),
          lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,pattern])[1],
