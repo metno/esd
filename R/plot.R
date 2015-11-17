@@ -722,7 +722,8 @@ plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
     pc.obs <- attr(y,'evaluation')[,1*pattern]
     pc.ds <- attr(y,'evaluation')[,1*pattern+1]
     plot(pc.obs,pc.ds,main='Cross-validation',xlab='original data',
-         ylab='prediction',pch=19,col="grey")
+         ylab='prediction',pch=19,col="grey",
+         xlim=range(pc.obs,pc.ds),ylim=range(pc.obs,pc.ds))
     lines(range(c(attr(y,'evaluation')),na.rm=TRUE),
           range(c(attr(y,'evaluation')),na.rm=TRUE),lty=2)
     cal <- data.frame(y=coredata(pc.obs),x=coredata(pc.ds))
@@ -733,8 +734,8 @@ plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
          pos=4,cex=0.9)
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     plot(attr(y,'original_data')[,pattern],
-         ylab=attr(y,'unit'),
-         ylim=range(attr(y,'original_data')[,pattern])*c(1.2,1.4),
+         main="PC1",ylab="",
+         ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
          lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,pattern])[1],
@@ -745,8 +746,8 @@ plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   } else {
     par(fig=c(0,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     plot(attr(y,'original_data')[,pattern],
-         ylab=attr(y,'unit'),
-         ylim=range(attr(y,'original_data')[,pattern])*c(1.2,1.4),
+         main="PC1",ylab="",
+         ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
          lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,pattern])[1],
