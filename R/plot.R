@@ -709,38 +709,51 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
 plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   if (verbose) print('plot.ds.eof')
   attr(y,'longname') <- attr(y,'longname')[1]
-  #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
-  par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
-  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,...)
-  title(paste("EOF Pattern # ",pattern,sep=""))
-  par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
+  par(fig=c(0,0.5,0.5,1),mar=c(3,5,4.2,1),mgp=c(3,0.5,0.5))
+  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,
+          main=paste("Predictand EOF pattern # ",pattern,sep=""),...)
+  par(fig=c(0.5,1,0.5,1),mar=c(3,4,4.2,1),new=TRUE)
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
       colbar=colbar,verbose=verbose,
-      main=paste("EOF Pattern # ",pattern,sep=""))
+      main=paste("Predictor EOF pattern # ",pattern,sep=""))
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
-    par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
-    plot(attr(y,'evaluation')[,1],attr(y,'evaluation')[,2],
-         main='Cross-validation',xlab='original data',
+    par(fig=c(0,0.5,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
+    pc.obs <- attr(y,'evaluation')[,1*pattern]
+    pc.ds <- attr(y,'evaluation')[,1*pattern+1]
+    plot(pc.obs,pc.ds,main='Cross-validation',xlab='original data',
          ylab='prediction',pch=19,col="grey")
     lines(range(c(attr(y,'evaluation')),na.rm=TRUE),
           range(c(attr(y,'evaluation')),na.rm=TRUE),lty=2)
-    cal <- data.frame(y=coredata(attr(y,'evaluation')[,1]),
-                      x=coredata(attr(y,'evaluation')[,2]))
+    cal <- data.frame(y=coredata(pc.obs),x=coredata(pc.ds))
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
-    par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    text(min(pc.obs)+diff(range(pc.obs))/12,max(pc.ds),
+         paste("r =",round(xvalfit$coefficients[2],digits=2)),
+         pos=4,cex=0.9)
+    par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
+    plot(attr(y,'original_data')[,pattern],
+         ylab=attr(y,'unit'),
+         ylim=range(attr(y,'original_data')[,pattern])*c(1.1,1.4),
+         lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,pattern])[1],
            y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,pattern]))/10,
+               diff(range(attr(y,'original_data')[,pattern]))/3,
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
   } else {
-    par(fig=c(0.05,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    par(fig=c(0,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
+    plot(attr(y,'original_data')[,pattern],
+         ylab=attr(y,'unit'),
+         ylim=range(attr(y,'original_data')[,pattern])*c(1.1,1.4),
+         lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,pattern])[1],
+           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,pattern]))/3,
+           legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
+           lwd=c(2,2),pch=c(21,19),bty="n")
     xvalfit <- NULL
   }  
 }
