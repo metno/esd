@@ -5,21 +5,32 @@
 predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
   stopifnot(!missing(x),inherits(x,"ds"))
-  
   if ( (inherits(x,'eof')) & (is.null(newdata)) ) {
-    ## If now new data is provided
-    if (inherits(x,'comb')) 
-      y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose) else
-    if (inherits(x,'field'))
-      y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
+    if(verbose) print("no new predictor data is provided")
+    if(verbose) print("predictand is an EOF")
+    if (inherits(x,'comb')) {
+      if(verbose) print("predictand is a combined EOF")
+      y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,
+                           n=n,verbose=verbose)
+    }
+  } else if (inherits(x,'field')) {
+    if (verbose) print("predictand is a field object") 
+    y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,
+                        n=n,verbose=verbose)
   } else if (inherits(x,'eof')) {
-    ## str(x)
-    ## If new data is provided
-    if (inherits(newdata,'comb'))
-      y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose) else
-     if (inherits(newdata,'eof'))
-       y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
+    if (verbose) print("predictand is an EOF") 
+    if(verbose) print("new predictor data is provided")
+    if (inherits(newdata,'comb')) {
+      if (verbose) print("new predictor data is a combined EOF") 
+      y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,
+                           n=n,verbose=verbose)
+    } else if (inherits(newdata,'eof')) {
+      if (verbose) print("new predictor data is an EOF") 
+      y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,
+                          n=n,verbose=verbose)
+    }
   } else if (inherits(x,'pca')) {
+    if(verbose) print("predictand is PCA")
     y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
   }
   
@@ -60,18 +71,20 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   model <- attr(x,'model')
   if (verbose) print(summary(model))
   ## AM 04-04-2015 model is always a list object - Quick fix here ...
-  ##browser()
-  if (!is.list(model)) {
-      if (names(model)[1]=="coefficients")
-          y <- predict(model,newdata) + attr(x,'mean')
+  ## KMP 19-11-2015 the if (!is.list(model)) solution
+  ##                does not work when there is only one model
+  ##                which is a list of coefficients, residuals, ...
+  #if (!is.list(model)) {
+  if (names(model)[1]=="coefficients") {
+    y <- predict(model,newdata) + attr(x,'mean')
   } else {
-      if (!is.null(newdata))
-          y <- lapply(model,predict,newdata)
-      else
-          y <- lapply(model,predict)
-      y <- matrix(unlist(y),nrow=length(idx),ncol=length(model))
+    if (!is.null(newdata)) {
+        y <- lapply(model,predict,newdata)
+    } else {
+        y <- lapply(model,predict)
+    }
+    y <- matrix(unlist(y),nrow=length(idx),ncol=length(model))
   }
-  
   ##  predict - phase scramble of residual
   ## There is a bug in the following lines, works only if model is not a list object -- need fixes here ...  
     residual <- model$residuals
