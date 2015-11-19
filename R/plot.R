@@ -865,9 +865,8 @@ plot.mvr <- function(x) {
 }
 
 
-plot.cca <- function(x,icca=1,colbar=NULL,...) {
-  #print("plot.cca")
-  ## browser()
+plot.cca <- function(x,icca=1,colbar=NULL,verbose=FALSE,...) {
+  if (verbose) print("plot.cca")
   dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
   map.cca(x,icca=icca,colbar=colbar,...)
@@ -877,16 +876,16 @@ plot.cca <- function(x,icca=1,colbar=NULL,...) {
   v.m <- zoo((x$v.m[,icca]-mean(x$v.m[,icca],na.rm=TRUE))/
              sd(x$v.m[,icca],na.rm=TRUE),order.by=x$index)
   r <- cor(x$w.m[,icca],x$v.m[,icca])
-  
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
-      fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.6,cex.lab=0.6)
+  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,mar=c(2,1.5,1.5,0.5),
+      fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.8,cex.lab=0.8)
   plot(w.m,col="blue",lwd=2,
        main=paste("CCA pattern ",icca," for ",varid(x),
          "; r= ",round(r,2),sep=""),
        xlab="",ylab="")
   lines(v.m,col="red",lwd=2)
 
-  par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n")
+  par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n",
+      mar=c(0,0,0,0))
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
   legend(0.01,0.90,c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
                      paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),

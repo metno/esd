@@ -525,7 +525,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     verbose=FALSE,cex=2,...) {
-    ##print('map.cca')
+    if (verbose) print('map.cca')
     ##x <- subset(x,it=it,is=is)
     ## browser()
     ## For plotting, keep the same kind of object, but replace the patterns in
@@ -569,21 +569,22 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ##                    col.y <- col
     ## REB: removed col=col.y,bg=col.y
 
-    if (sum(is.element(type,'map'))>0)
-        par(fig=c(0,0.5,0.5,1)) ## mar=c(0.05,.05,0.05,0.05),
-    else 
-        par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
-
+    if (sum(is.element(type,'map'))>0) {
+      par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
+    } else {
+      par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
+    }
     ##colbar <- list(col=NULL, breaks=NULL, type="r",cex=2, h=0.6, v=1)
-    
     map(Y,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
         projection=projection,lonR=lonR,latR=latR,axiR=axiR,
         gridlines=gridlines,FUN='mean',verbose=verbose,
         colbar=colbar,showall=FALSE,new=FALSE)
-    ## browser()
-    if (sum(is.element(type,'ts'))>0)
-        par(fig=c(0,1,0.5,1),new=TRUE) else
-    par(fig=c(0.5,1,0.5,1),new=TRUE) ## mar=c(0,0,0,0),
+    
+    if (sum(is.element(type,'ts'))>0) {
+      par(fig=c(0,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
+    } else {
+      par(fig=c(0.5,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
+    }
     map(X,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
         projection=projection,lonR=lonR,latR=latR,axiR=axiR,
         gridlines=gridlines,FUN='mean',verbose=verbose,
@@ -769,7 +770,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(xpd=FALSE)
     dlat <- diff(range(lat))/60
                                         #print(dlat)
-    text(lon[1],lat[length(lat)] + 0.5*dlat,varlabel,pos=4,font=2)
+    text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2)
     text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
 
     if (!is.null(period))
