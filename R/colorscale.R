@@ -103,6 +103,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
 
   if (verbose) print(paste('colscal:',col))
   if (is.null(col)) col <- 't2m'
+  if (is.null(alpha)) alpha <- 1
   # Set up colour-palette
   col <- tolower(col)
   x <- 1:n
@@ -140,18 +141,6 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
                 229, 229, 229)
   dim(seNorgeP) <- c(3,8)
 
-  ##if (!is.null(col))
-  ##  if ((length(col)==1) & is.character(col) &
-  ##      (sum(is.element(c('t2m','precip','bwr','rwb','mu','fw','tp',
-  ##                        'faint.bwr','faint.rwb','rainbow',
-  ##                        'gray.colors','heat.colors','terrain.colors',
-  ##                        'topo.colors','cm.colors'),col))==0))
-  ##      col <- 'bwr'
-
-  #if (exists("r")) remove(r)
-  #if (exists("g")) remove(g) 
-  #if (exists("b")) remove(b)
-
   if (!is.null(alpha)) alpha <- rep(alpha[1],n)
   
   if ( (col[1]=="bwr") | (col[1]=="slp") | (col[1]=="mslp") |
@@ -159,8 +148,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
     g <- exp(sg*(x - g0)^2)^2
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
-    if (is.null(alpha)) col <- rgb(r,g,b) else
-                        col <- rgb(r,g,b,alpha)
+    col <- rgb(r,g,b,alpha)
   } else if (col[1]=="rwb") {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
     g <- exp(sg*(x - g0)^2)^2
@@ -171,21 +159,18 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
-    if (is.null(alpha)) col <- rgb(r,g,b)  else
-                        col <- rgb(r,g,b,alpha)
+    col <- rgb(r,g,b,alpha)
   } else if (col[1]=="faint.rwb") {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
-    if (is.null(alpha)) col <- rgb(b,g,r)  else
-                        col <- rgb(r,g,b,alpha)
+    col <- rgb(r,g,b,alpha)
   } else if ( (col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
               (col[1]=="f[w]") | (col[1]=="tp") | (col[1]=='rr') | (col[1]=='prate') ) {
     r <- approx(seNorgeP[1,],n=n)$y/255
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255
-    if (is.null(alpha)) col <- rgb(r,g,b)  else
-                        col <- rgb(r,g,b,alpha)
+    col <- rgb(r,g,b,alpha)
     rev <- TRUE
   } else if (col[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6,alpha=alpha)
@@ -199,26 +184,95 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     col <- topo.colors(n,alpha=alpha)
   } else if (col[1]=="cm.colors") {
     col <- cm.colors(n,alpha=alpha)
-  } else if (col[1]=="cold") {
+  } else if (col[1]==tolower("GrMg")) {
+    cols <- list(
+     r=c(0,0,0,0,0.316,0.526,0.737,1,1,1,1,1,0.947,0.737,0.526,0.316),
+     g=c(0.316,0.526,0.737,0.947,1,1,1,1,0.947,0.737,0.526,0.316,0,0,0,0),
+     b=c(0,0,0,0,0.316,0.526,0.737,1,1,1,1,1,0.947,0.737,0.526,0.316))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]==tolower("BrBu")) {
+    cols <- list(
+     r=c(0.2,0.4,0.6,0.8,0.85,0.95,0.8,0.6,0.4,0.2,0,0),
+     g=c(0.1,0.187,0.379,0.608,0.688,0.855,0.993,0.973,0.94,0.893,0.667,0.48),
+     b=c(0,0,0.21,0.480,0.595,0.808,1,1,1,1,0.8,0.6))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]==tolower("BuDOr")) {
+    cols <- list(
+     r=c(0.12,0.32,0.6,0.7,0.8,0.9,1,1,1,1,0.8,0.6),
+     g=c(0.56,0.768,0.98,0.99,0.997,1,0.9,0.793,0.68,0.56,0.347,0.250),
+     b=c(0.6,0.8,1,1,1,1,0.8,0.6,0.4,0.2,0,0))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]==tolower("BuDRd")) {
+    cols <- list(
+     r=c(0.142,0.097,0.16,0.24,0.34,0.46,0.6,0.74,0.92,1,
+       1,1,1,1,1,0.97,0.85,0.65),
+     g=c(0,0.112,0.342,0.531,0.692,0.829,0.920,0.978,1,1,
+       0.948,0.840,0.676,0.472,0.240,0.155,0.085,0),
+     b=c(0.85,0.97,1,1,1,1,1,1,1,0.92,0.74,0.6,0.46,0.34,0.24,0.21,0.187,0.13))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]==tolower("BuGr")) {
+    cols <- list(
+     r=c(0,0.2,0.4,0.6,0.7,0.8,0.9,0.9,0.8,0.7,0.6,0.4,0.2,0),
+     g=c(0,0.2,0.4,0.6,0.7,0.8,0.9,1,1,1,1,1,1,1),
+     b=c(1,1,1,1,1,1,1,0.9,0.8,0.7,0.6,0.4,0.2,0))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]==tolower("BuGy")) {
+    cols <- list(
+     r=c(0,0.4,0.6,0.8,0.9,0.6,0.4,0.2),
+     g=c(0.6,0.9,1,1,0.9,0.6,0.4,0.2),
+     b=c(0.8,1,1,1,0.9,0.6,0.4,0.2))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]==tolower("BuOr")) {
+    cols <- list(
+     r=c(0,0.1,0.2,0.4,0.6,0.8,1,1,1,1,1,1),
+     g=c(0.167,0.4,0.6,0.8,0.933,1,1,0.933,0.8,0.6,0.4,0.167),
+     b=c(1,1,1,1,1,1,0.8,0.6,0.4,0.2,0.1,0))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]==tolower("BuOrR")) {
+    cols <- list(
+     r=c(0.03,0.2,0.35,0.55,0.75,0.9,0.97,1,1,1,1,1,1,1),
+     g=c(0.353,0.467,0.567,0.7,0.833,0.933,0.98,1,1,1,0.8,0.6,0.4,0),
+     b=c(1,1,1,1,1,1,1,0.8,0.6,0,0,0,0,0))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]=="bu") {
+    cols <- list(
+     r=c(0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0),
+     g=c(1,0.983,0.95,0.9,0.833,0.75,0.65,0.533,0.4,0.250),
+     b=c(1,1,1,1,1,1,1,1,1,1))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]=="cat") {
+    cols <- list(
+     r=c(1,1,1,1,0.7,0.2,0.65,0.1,0.8,0.4,1,0.9),
+     g=c(0.75,0.5,1,1,1,1,0.93,0.7,0.75,0.3,0.6,0.10),
+     b=c(0.5,0,0.6,0.2,0.55,0,1,1,1,1,0.75,0.2))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]=="warm") {
     r <- approx(seNorgeT[1,1:7],n=n)$y/255
     g <- approx(seNorgeT[2,1:7],n=n)$y/255
     b <- approx(seNorgeT[3,1:7],n=n)$y/255
-    if (is.null(alpha)) col <- rgb(b,g,r)  else
-                        col <- rgb(r,g,b,alpha)    
-  }  else if (col[1]=="warm") {
+    col <- rgb(r,g,b,alpha)    
+  }  else if (col[1]=="cold") {
     r <- approx(seNorgeT[1,8:14],n=n)$y/255
     g <- approx(seNorgeT[2,8:14],n=n)$y/255
     b <- approx(seNorgeT[3,8:14],n=n)$y/255
-    if (is.null(alpha)) col <- rgb(b,g,r)  else
-                        col <- rgb(r,g,b,alpha)    
+    col <- rgb(r,g,b,alpha)    
   } else {
     r <- approx(seNorgeT[1,],n=n)$y/255
     g <- approx(seNorgeT[2,],n=n)$y/255
     b <- approx(seNorgeT[3,],n=n)$y/255
-    if (is.null(alpha)) col <- rgb(b,g,r)  else
-                        col <- rgb(r,g,b,alpha)
+    col <- rgb(r,g,b,alpha)
   } 
-
+  
   if (test) { #& !exists("r")) {
     RGB <- col2rgb(col)/255
     r <- RGB[1,]; g <- RGB[2,]; b <- RGB[3,]
@@ -287,6 +341,64 @@ colbar2 <- function(x,col) {
     par(xaxt="s",new=new)
     axis(1,at=seq(0,1,length=length(nl)),label=nl)
 }
+
+## colorscheme <- function(pal="BuDOr",n=12,alpha=1) {
+##   if (pal=="GrMg") {
+##     cols <- list(
+##      r=c(0,0,0,0,0.316,0.526,0.737,1,1,1,1,1,0.947,0.737,0.526,0.316),
+##      g=c(0.316,0.526,0.737,0.947,1,1,1,1,0.947,0.737,0.526,0.316,0,0,0,0),
+##      b=c(0,0,0,0,0.316,0.526,0.737,1,1,1,1,1,0.947,0.737,0.526,0.316))
+##   } else if (pal=="BrBu") {
+##     cols <- list(
+##      r=c(0.2,0.4,0.6,0.8,0.85,0.95,0.8,0.6,0.4,0.2,0,0),
+##      g=c(0.1,0.187,0.379,0.608,0.688,0.855,0.993,0.973,0.94,0.893,0.667,0.48),
+##      b=c(0,0,0.21,0.480,0.595,0.808,1,1,1,1,0.8,0.6))
+##   } else if (pal=="BuDOr") {
+##     cols <- list(
+##      r=c(0.12,0.32,0.6,0.7,0.8,0.9,1,1,1,1,0.8,0.6),
+##      g=c(0.56,0.768,0.98,0.99,0.997,1,0.9,0.793,0.68,0.56,0.347,0.250),
+##      b=c(0.6,0.8,1,1,1,1,0.8,0.6,0.4,0.2,0,0))
+##   } else if (pal=="BuDRd") {
+##     cols <- list(
+##      r=c(0.142,0.097,0.16,0.24,0.34,0.46,0.6,0.74,0.92,1,
+##        1,1,1,1,1,0.97,0.85,0.65),
+##      g=c(0,0.112,0.342,0.531,0.692,0.829,0.920,0.978,1,1,
+##        0.948,0.840,0.676,0.472,0.240,0.155,0.085,0),
+##      b=c(0.85,0.97,1,1,1,1,1,1,1,0.92,0.74,0.6,0.46,0.34,0.24,0.21,0.187,0.13))
+##   } else if (pal=="BuGr") {
+##     cols <- list(
+##      r=c(0,0.2,0.4,0.6,0.7,0.8,0.9,0.9,0.8,0.7,0.6,0.4,0.2,0),
+##      g=c(0,0.2,0.4,0.6,0.7,0.8,0.9,1,1,1,1,1,1,1),
+##      b=c(1,1,1,1,1,1,1,0.9,0.8,0.7,0.6,0.4,0.2,0))
+##   } else if (pal=="BuGy") {
+##     cols <- list(
+##      r=c(0,0.4,0.6,0.8,0.9,0.6,0.4,0.2),
+##      g=c(0.6,0.9,1,1,0.9,0.6,0.4,0.2),
+##      b=c(0.8,1,1,1,0.9,0.6,0.4,0.2))
+##   } else if (pal=="BuOr") {
+##     cols <- list(
+##      r=c(0,0.1,0.2,0.4,0.6,0.8,1,1,1,1,1,1),
+##      g=c(0.167,0.4,0.6,0.8,0.933,1,1,0.933,0.8,0.6,0.4,0.167),
+##      b=c(1,1,1,1,1,1,0.8,0.6,0.4,0.2,0.1,0))
+##   } else if (pal=="BuOrR") {
+##     cols <- list(
+##      r=c(0.03,0.2,0.35,0.55,0.75,0.9,0.97,1,1,1,1,1,1,1,),
+##      g=c(0.353,0.467,0.567,0.7,0.833,0.933,0.98,1,1,1,0.8,0.6,0.4,0),
+##      b=c(1,1,1,1,1,1,1,0.8,0.6,0,0,0,0,0))
+##   } else if (pal=="Bu") {
+##     cols <- list(
+##      r=c(0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0),
+##      g=c(1,0.983,0.95,0.9,0.833,0.75,0.65,0.533,0.4,0.250),
+##      b=c(1,1,1,1,1,1,1,1,1,1))
+##   } else if (pal=="Cat") {
+##     cols <- list(
+##      r=c(1,1,1,1,0.7,0.2,0.65,0.1,0.8,0.4,1,0.9),
+##      g=c(0.75,0.5,1,1,1,1,0.93,0.7,0.75,0.3,0.6,0.10),
+##      b=c(0.5,0,0.6,0.2,0.55,0,1,1,1,1,0.75,0.2))
+##   }
+##   cols <- lapply(cols,function(x) approx(x,n=n)$y)
+##   return(rgb(cols$r,cols$g,cols$b,alpha))
+## }
 
 ## from DSE ...
 ## col.bar <- function(x,horiz=TRUE,v=1,h=1,col=col,cex=0.7,type="r",...) {
