@@ -407,7 +407,6 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,...) {
   if (verbose) print("param.events")
   dates <- as.Date(strptime(paste(x$date,x$time),format="%Y%m%d %H"))
   fn <- function(x) as.Date(as.yearmon(x))
-  browser()
   if (param=="count") {
     N <- count.events(x,...)
   } else if (param %in% names(x)) {
@@ -427,6 +426,8 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,...) {
     N <- subset(N,it=month.abb[mn])
     class(N) <- c("station",class(x)[2],"zoo")
   }
+  attr(N,"lat") <- attr(x,"lat")
+  attr(N,"lon") <- attr(x,"lon")
   invisible(N)
 }
 
