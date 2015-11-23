@@ -474,7 +474,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    verbose=FALSE,...) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     ##
     args <- list(...)
                                         #print(args)
@@ -524,7 +524,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    verbose=FALSE,cex=2,...) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,...) {
     if (verbose) print('map.cca')
     ##x <- subset(x,it=it,is=is)
     ## browser()
