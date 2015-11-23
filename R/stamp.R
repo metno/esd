@@ -14,7 +14,9 @@ history.stamp.default <- function(x=NULL,y=NULL) {
              platform=sessionInfo()$platform)
   if (is.null(x)) x <- 0
   if (!is.null(attr(x,'history'))) {
-    history <- attr(x,'history')
+    ## kmp 2015-11-18: error when history attribute is not a list
+    ##                 add list() as temporary fix
+    history <- list(attr(x,'history'))
     call <- c(sys.call(sys.parent(n = 1)),history$call)
     sessioninfo <- c(si,history$sessioninfo)
     timestamp <- c(date(),history$timestamp)

@@ -5,14 +5,21 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
                          map.show=TRUE,map.type="points",
+                         mar=c(4.5,4.5,0.75,0.5),
                          alpha=0.3,verbose=FALSE,...) {
 
   if (verbose) print('plot.station')
+
+  if (is.null(lon(x)) | is.null(lat(x))) {
+    map.show <- FALSE
+  } else if (length(lon(x))!=length(lat(x))) {
+    map.type <- "rectangle"
+  }
+  
   fig <- c(0,1,0,0.95)
   if (map.show) fig[4] <- 0.8
   if (legend.show) fig[3] <- 0.05  
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,
-      fig=fig,mar=c(4.5,4.5,0.75,0.5))
+  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,fig=fig,mar=mar)
   ## browser()
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
@@ -42,11 +49,13 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   else if (is.null(ylab))
       ylab <- apply(x,1,varid)
   
-  if (is.null(main)) main <- attr(x,'longname')[1]              
+  if (is.null(main)) main <- attr(x,'longname')[1] 
   if (is.null(col)) {
     if (is.null(dim(x))) {
       col <- "blue"
-    } else if (!is.null(lon(x)) & !is.null(lat(x))) {
+    } else if (!is.null(lon(x)) & !is.null(lat(x)) &
+               length(lon(x))==dim(x)[2] &
+               length(lat(x))==dim(x)[2]) {
       nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
       ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
       col <- rgb(1-ny,nx,ny,alpha)
@@ -74,7 +83,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,...)
   mtext(main,side=3,line=1,adj=0,cex=1.1)
   par0 <- par()
-  
+ 
   if (plot.type=="single") {
     if (errorbar) {
       # REB 2014-10-03: add an errorbar to the plots.
@@ -96,6 +105,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+    
     if(legend.show) {
       legend(0.01,0.95,paste(attr(x,'location'),": ",
                            #attr(x,'aspect'),
@@ -699,38 +709,52 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
 plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   if (verbose) print('plot.ds.eof')
   attr(y,'longname') <- attr(y,'longname')[1]
-  #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
-  par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
-  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,...)
-  title(paste("EOF Pattern # ",pattern,sep=""))
-  par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
+  par(fig=c(0,0.5,0.5,1),mar=c(3,5,4.2,1),mgp=c(3,0.5,0.5))
+  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,
+          main=paste("Predictand EOF pattern # ",pattern,sep=""),...)
+  par(fig=c(0.5,1,0.5,1),mar=c(3,4,4.2,1),new=TRUE)
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
       colbar=colbar,verbose=verbose,
-      main=paste("EOF Pattern # ",pattern,sep=""))
+      main=paste("Predictor EOF pattern # ",pattern,sep=""))
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
-    par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
-    plot(attr(y,'evaluation')[,1],attr(y,'evaluation')[,2],
-         main='Cross-validation',xlab='original data',
-         ylab='prediction',pch=19,col="grey")
+    par(fig=c(0,0.5,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
+    pc.obs <- attr(y,'evaluation')[,1*pattern]
+    pc.ds <- attr(y,'evaluation')[,1*pattern+1]
+    plot(pc.obs,pc.ds,main='Cross-validation',xlab='original data',
+         ylab='prediction',pch=19,col="grey",
+         xlim=range(pc.obs,pc.ds),ylim=range(pc.obs,pc.ds))
     lines(range(c(attr(y,'evaluation')),na.rm=TRUE),
           range(c(attr(y,'evaluation')),na.rm=TRUE),lty=2)
-    cal <- data.frame(y=coredata(attr(y,'evaluation')[,1]),
-                      x=coredata(attr(y,'evaluation')[,2]))
+    cal <- data.frame(y=coredata(pc.obs),x=coredata(pc.ds))
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
-    par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    text(min(pc.obs)+diff(range(pc.obs))/12,max(pc.ds),
+         paste("r =",round(xvalfit$coefficients[2],digits=2)),
+         pos=4,cex=0.9)
+    par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
+    plot(attr(y,'original_data')[,pattern],
+         main="PC1",ylab="",
+         ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
+         lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,pattern])[1],
            y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,pattern]))/10,
+               diff(range(attr(y,'original_data')[,pattern]))/3,
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
   } else {
-    par(fig=c(0.05,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
+    par(fig=c(0,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
+    plot(attr(y,'original_data')[,pattern],
+         main="PC1",ylab="",
+         ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
+         lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,pattern])[1],
+           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,pattern]))/3,
+           legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
+           lwd=c(2,2),pch=c(21,19),bty="n")
     xvalfit <- NULL
   }  
 }
@@ -841,9 +865,8 @@ plot.mvr <- function(x) {
 }
 
 
-plot.cca <- function(x,icca=1,colbar=NULL,...) {
-  #print("plot.cca")
-  ## browser()
+plot.cca <- function(x,icca=1,colbar=NULL,verbose=FALSE,...) {
+  if (verbose) print("plot.cca")
   dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
   map.cca(x,icca=icca,colbar=colbar,...)
@@ -853,16 +876,16 @@ plot.cca <- function(x,icca=1,colbar=NULL,...) {
   v.m <- zoo((x$v.m[,icca]-mean(x$v.m[,icca],na.rm=TRUE))/
              sd(x$v.m[,icca],na.rm=TRUE),order.by=x$index)
   r <- cor(x$w.m[,icca],x$v.m[,icca])
-  
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
-      fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.6,cex.lab=0.6)
+  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,mar=c(2,1.5,1.5,0.5),
+      fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.8,cex.lab=0.8)
   plot(w.m,col="blue",lwd=2,
        main=paste("CCA pattern ",icca," for ",varid(x),
          "; r= ",round(r,2),sep=""),
        xlab="",ylab="")
   lines(v.m,col="red",lwd=2)
 
-  par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n")
+  par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n",
+      mar=c(0,0,0,0))
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
   legend(0.01,0.90,c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
                      paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),

@@ -24,8 +24,8 @@ diagnose.eof <- function(x) {
   return(y)
 }
 
-diagnose.comb.eof <- function(x) {
-
+diagnose.comb.eof <- function(x,verbose=FALSE) {
+  if (verbose) print("diagnose.comb.eof")
   ACF <- function(x) acf(x,plot=FALSE,na.action=na.omit)$acf[2]
   sign <- function(x,y) {z<-x*y; z[z<0] <- -1; z[z>0] <- 1; z}
   
@@ -63,7 +63,8 @@ diagnose.comb.eof <- function(x) {
   rownames(dm) <- rowname
   rownames(sr) <- rowname
   rownames(ar) <- rowname
-  diag <- list(mean.diff=dm,sd.ratio=sr,autocorr.ratio=ar,
+  ## KMP 19-11-2015: added abs(dm) because the sign is arbitrary
+  diag <- list(mean.diff=abs(dm),sd.ratio=sr,autocorr.ratio=ar,
                common.period=range(index(Y)),sd0=Ys,
                calibrationdata=attr(x,'source'))
   attr(diag,'variable') <- attr(x,'variable')
