@@ -407,19 +407,25 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,...) {
   if (verbose) print("param.events")
   dates <- as.Date(strptime(paste(x$date,x$time),format="%Y%m%d %H"))
   fn <- function(x) as.Date(as.yearmon(x))
+  browser()
   if (param=="count") {
     N <- count.events(x,...)
   } else if (param %in% names(x)) {
     y <- zoo(x[,param],order.by=dates)
     N <- aggregate(y,by=fn,FUN=FUN)
     nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,
-                format="%Y%m%d"))
+              format="%Y%m%d"))
     N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
     N <- merge(N, N0)
     N <- attrcp(x,N)
     N <- as.station(N)
   } else {
     print(paste("input error: param =",param))
+  }
+  if (inherits(x,c("season","month"))) {
+    mn <- unique(month(N[!is.na(N) & N>0]))
+    N <- subset(N,it=month.abb[mn])
+    class(N) <- c("station",class(x)[2],"zoo")
   }
   invisible(N)
 }
