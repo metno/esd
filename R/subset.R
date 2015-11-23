@@ -1123,6 +1123,8 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   ij <- ii & jj
   y <- x[ij,]
   attr(y,"aspect") <- "subset"
+  if (!is.null(is$lat)) attr(y,"lat") <- is$lat
+  if (!is.null(is$lon)) attr(y,"lon") <- is$lon
   class(y) <- cls
   invisible(y)
 }
