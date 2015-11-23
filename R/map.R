@@ -214,7 +214,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) print('map.ds')
     stopifnot(inherits(x,'ds'))
     x <- subset(x,is=is)
-browser()
+##browser()
     ## REB 2015-03-26
     if (inherits(x,'pca')) {
         map.pca(x,it=it,verbose=verbose,new=new,
