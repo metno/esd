@@ -963,6 +963,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
 subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if(verbose) print("subset.events")
+  cls <- class(x)
 
   ## Sometimes 'it' = 'integer(0)' - reset to NULL!
   if (length(it)==0) it <- NULL
@@ -1010,11 +1011,13 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
         if (verbose) print('Monthly selected')
         ii <- is.element(mo,(1:12)[is.element(tolower(month.abb),
                                               tolower(substr(it,1,3)))])
+        cls <- c(cls[1],"month",cls[2:length(cls)])
       } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
         if (verbose) print("Seasonally selected")
         if (verbose) print(table(mo))
         if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
         ii <- is.element(mo,eval(parse(text=paste('season.abb()$',it,sep=''))))
+        cls <- c(cls[1],"season",cls[2:length(cls)])
       } else {
         str(it); print(class(it))
         ii <- rep(FALSE,length(d))
@@ -1055,12 +1058,14 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
            "e.g., it='djf'"))
         it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10)
         ii <- is.element(mo,it)
+        cls <- c(cls[1],"season",cls[2:length(cls)])
     } else if (max(it) <=12) {
       if (verbose) {
         print("The 'it' value must be a month index.")
         print("If not please use character strings instead")
       }
       ii <- is.element(mo,it)
+      cls <- c(cls[1],"month",cls[2:length(cls)])
       } else {
         if (verbose) print("it represents indices")
         ii <- it
@@ -1070,7 +1075,8 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
         print("The 'it' value are most probably a month index. ")
         print("If not please use character strings instead")
       }
-      ii <- is.element(mo,it)       
+      ii <- is.element(mo,it)
+      cls <- c(cls[1],"month",cls[2:length(cls)])
     } else {
       if ( (min(it) >= min(yr)) & (max(it) <= max(yr)) ) {
         if (verbose) print("it most probably contains years")
@@ -1117,5 +1123,6 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   ij <- ii & jj
   y <- x[ij,]
   attr(y,"aspect") <- "subset"
+  class(y) <- cls
   invisible(y)
 }
