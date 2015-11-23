@@ -10,7 +10,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
   if (verbose) print('plot.station')
 
-  if (is.null(lon(x)) | is.null(lat(x))) {
+  if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
   } else if (length(lon(x))!=length(lat(x))) {
     map.type <- "rectangle"
@@ -83,7 +83,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,...)
   mtext(main,side=3,line=1,adj=0,cex=1.1)
   par0 <- par()
- 
+  
   if (plot.type=="single") {
     if (errorbar) {
       # REB 2014-10-03: add an errorbar to the plots.
