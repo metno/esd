@@ -709,7 +709,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else xlim <- range(lon)
     
     if (!is.null(ylim)) {
-        outside <- (lat < min(ylim) | (lat > max(ylim))
+        outside <- (lat < min(ylim)) | (lat > max(ylim))
         if (verbose) print(paste('mask',sum(outside),length(outside)))
         x[,outside] <- NA
     } else ylim=range(lat)
