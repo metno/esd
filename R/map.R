@@ -607,7 +607,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              verbose=FALSE,geography=TRUE,fancy=FALSE,
                              main=NA,...) {
 
-    if (verbose) print('lonlatprojection')
+    if (verbose) {print('lonlatprojection'); str(x)}
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
     #print(formals(...))
