@@ -703,12 +703,14 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     x <- x[srtx,srty]
     if (verbose) {print(xlim); str(x)}
     if (!is.null(xlim)) {
-        outside <- (lon < xlim[1]) | (lon > xlim[2])
+        outside <- (lon < min(xlim)) | (lon > max(xlim))
+        if (verbose) print(paste('mask',sum(outside),length(outside)))
         x[outside,] <- NA
     } else xlim <- range(lon)
     
     if (!is.null(ylim)) {
-        outside <- (lat < ylim[1]) | (lat > ylim[2])
+        outside <- (lat < min(ylim) | (lat > max(ylim))
+        if (verbose) print(paste('mask',sum(outside),length(outside)))
         x[,outside] <- NA
     } else ylim=range(lat)
     
@@ -716,12 +718,14 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     nc <- length(colbar$col)
     crgb <- col2rgb(colbar$col)
     if(any(x>max(colbar$breaks),na.rm=TRUE)) {
+      if (verbose) print('any(x>max(colbar$breaks)')
       cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
       crgb <- cbind(crgb,cmax)
       colbar$breaks <- c(colbar$breaks,max(x))
     }
 
     if (any(x<min(colbar$breaks),na.rm=TRUE)) {
+      if (verbose) print('any(x<min(colbar$breaks)')
       cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
       crgb <- cbind(cmin,crgb)
       colbar$breaks <- c(min(x),colbar$breaks)
