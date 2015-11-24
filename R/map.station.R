@@ -14,7 +14,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                                         # col=NULL replaced by palette
                          type=NULL,gridlines=TRUE,
                          lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
-                         cex=NULL,zexpr="alt",cex.subset=1,
+                         cex=2,zexpr="alt",cex.subset=1,
                          add.text.subset=FALSE,showall=FALSE,
                          add.text=FALSE,
                          height=NULL,width=NULL,cex.axis=1,cex.lab=0.6,
