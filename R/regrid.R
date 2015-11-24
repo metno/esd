@@ -293,6 +293,8 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   if (inherits(is,'station')) {
     if (verbose) print('select the station coordinates and not a regular grid')
     y <- y[,seq(1,D[1] * D[2],by=D[2])]
+    attr(y,'altitude') <- alt(is)
+    attr(y,'location') <- loc(is)
     if (verbose) {
       print(dim(y)); print(dim(is)); print(lon(is)); print(lat(is))
     }
