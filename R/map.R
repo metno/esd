@@ -698,7 +698,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else period <- NULL
     if (verbose) print(paste('period:',period))
     method <- attr(x,'method')
-    if (verbose) print(c(dim(x),length(srtx),length(srty)))
+    if (verbose) {
+      print(c(dim(x),length(srtx),length(srty)))
+      ## There is something strange happening with x - in some cases it is filled with NAs (REB)
+      print(srtx); print(srty)
+    }
 
     x <- x[srtx,srty]
     if (verbose) {print(xlim); str(x)}
