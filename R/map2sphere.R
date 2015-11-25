@@ -190,7 +190,16 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## AM commented
   index <- round( nc*( map - min(colbar$breaks) )/
                     ( max(colbar$breaks) - min(colbar$breaks) ) )
-  ## KMP 2015-09-29: extra colors if higher/lower values occur
+
+  ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
+  print('Clip the value range to extremes of colour scale')
+  toohigh <- map>max(colbar$breaks)
+  if (sum(toohigh)>0) map[toohigh] <- max(colbar$breaks)
+  toolow <- map<min(colbar$breaks)
+  if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
+  print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
+  
+  ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
   crgb <- col2rgb(colbar$col)
   if(any(map>max(colbar$breaks))) {
     cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
