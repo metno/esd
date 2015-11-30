@@ -8,12 +8,24 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
                            alt = NULL, cntr = NULL, src = NULL , nmin = NULL,
                            verbose=FALSE) {
     
-    ## 
+    ##
+    if (verbose) print('subset.station')
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
         if (verbose) print('field/station')
         x2 <- matchdate(x,it)
         return(x2)
+    }
+    if (is.character(is)) {
+      if (verbose) print('search on location names')
+      ## search on location name
+      locs <- tolower(loc(x))
+      locs <- substr(locs,1,min(nchar(is)))
+      is <- substr(is,1,min(nchar(is)))
+      illoc <- is.element(locs,tolower(is))
+      x2 <- subset(x,it=it,is=illoc,verbose=verbose)
+      if (verbose) {print(is); print(loc(x2))}
+      return(x2)
     }
     ##print("subset.station")
     if (is.null(dim(x))) {
