@@ -115,7 +115,15 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
-    if(map.show) {
+   if(map.show) vis.map(x,col,map.type)
+   par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=TRUE)
+   plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
+            xlim=xlim,ylim=ylim,new=FALSE)
+  }
+}
+
+vis.map <- function(x,col='red',map.type='points') {
+#  print('vis.map')
        xrange <- range(lon(x)) + c(-10,10)
        yrange <- range(lat(x)) + c(-5,5)
        data(geoborders)
@@ -140,11 +148,6 @@ plot.station <- function(x,plot.type="single",new=TRUE,
          rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
               border="black",lwd=1,lty=2)
        }
-   }
-   par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=TRUE)
-   plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
-            xlim=xlim,ylim=ylim,new=FALSE)
-  }
 }
 
 plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
@@ -1209,7 +1212,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
 
   if (legend) {
 #    par(fig=c(0.5,0.9,0,0.15),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
-    par(fig=c(0.1,0.5,0.7,0.75),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+    par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
     legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
                       paste(diag$robs,'%'),

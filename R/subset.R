@@ -280,6 +280,8 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
     if (verbose) print('subset.dsensemble')
 
+    if (inherits(x,'list') & inherits(x,'pca'))
+      x <- as.station(x)
     if (inherits(x,'list') & !inherits(x,'zoo')) {
       if (verbose) print('list of elements')
       ## If x is a list of objects search through its elements
@@ -297,15 +299,15 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (length(illoc)==1) {
           x2 <- x[[illoc]]
           x2 <- subset(x2,it=it,verbose=verbose)
-        } else {
+        } else if (length(illoc)>1) {
           x2 <- list()
           for (i in 1:length(illoc)) {
             xx2 <- x[[illoc[i]]]
             xx2 <- subset(xx2,it=it,verbose=verbose)
             eval(parse(text=paste('x2$',Locs[illoc[i]],' <- xx2',sep='')))
             rm('xx2'); gc(reset=TRUE)
-          }
-        }
+          } 
+        } else if (length(illoc)==0) return(NULL)
         if (verbose) {print(is); print(loc(x2))}
         return(x2)
       }
