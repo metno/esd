@@ -8,7 +8,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                          col=NULL,bg=NULL,
-                         colbar= list(pal='t2m',rev=FALSE,n=10,
+                         colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,
                              pos=0.1,show=TRUE),
                                         # col=NULL replaced by palette
@@ -61,15 +61,15 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (projection=="sphere")
         sphere(x,lonR=lonR,latR=latR,axiR=axiR,
                    gridlines=gridlines,
-                   col=col,new=new,FUN=FUN,cex=cex,...)
+                   col=colbar$col,new=new,FUN=FUN,cex=cex,...)
     else if (projection=="np")
         sphere(x,lonR=lonR,latR=90,axiR=axiR,
                    gridlines=gridlines,
-                   col=col,new=new,FUN=FUN,...) else
+                   col=colbar$col,new=new,FUN=FUN,...) else
     if (projection=="sp")
         sphere(x,lonR=lonR,latR=-90,axiR=axiR,
                    ,gridlines=gridlines,
-                   col=col,new=new,FUN=FUN,...)
+                   col=colbar$col,new=new,FUN=FUN,...)
     ## else if (projection=="lonlat")
     ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
     ##                     type=type,gridlines=gridlines,...)
@@ -226,7 +226,9 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             }
             ##                       
             ##if (!is.null(colbar)) {
-            colbar <- colbar.ini(y,FUN=FUN,colbar=colbar,verbose=verbose)
+                colbar <- colbar.ini(y,FUN=FUN,colbar=colbar,verbose=verbose)
+
+            ## browser()
             if (verbose)
                 print("length(col) =",length(colbar$col))
 
@@ -341,7 +343,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             ##if (is.null(col)) colbar$col <- rep(col,length(colbar$col[icol]))
             ## 
             if (!is.null(col)) col <- col else col <- colbar$col[icol]
-
+            ## browser()
             points(ss$longitude, ss$latitude, pch = pch,
                    bg=colbar$col[icol], col=col, ##col=colbar$col[icol]
                    cex = cex*scale, xlab = "", ylab = "",
@@ -379,6 +381,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                 else if (!is.null(colbar)) {
                     ##fig1 <- par0$fig
                     par(fig=par0$fig,new=TRUE)
+                    ## browser()
                     image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
                                legend.only = T, zlim = range(colbar$breaks),
                                col = colbar$col, legend.width = 1,
@@ -540,13 +543,22 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,
   # c(W,E,S,N, colour)
   # xleft, ybottom, xright, ytop
   
-  if (!is.null(FUN)) {
-      breaks <- pretty(map,n=n)
-      colb <- colscal(n=length(breaks)) 
-      col <- colb[findInterval(map,breaks)]
-      bg <- col
-      nc <- length(colb)
-  }
+  ##if (!is.null(FUN)) {
+  ##    breaks <- pretty(map,n=n)
+  ##    colb <- colscal(n=length(breaks)) 
+  ##    col <- colb[findInterval(map,breaks)]
+  ##    bg <- col
+  ##    nc <- length(colb)
+  ##}
+
+  ## Initialise colbar
+  colbar <- colbar.ini(x,FUN=FUN)
+  breaks <- colbar$breaks
+  colb <- colbar$col 
+  col <- colb[findInterval(map,breaks)]
+  bg <- col
+  nc <- length(colb)
+
   visible <- Y > 0
   points(X[visible],Z[visible],cex=cex,pch=pch,col=col,bg=bg)
   
