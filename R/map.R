@@ -75,6 +75,7 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) print('map.matrix')
     if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
     if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
+    if (verbose) str(x)
     if (projection=="lonlat") lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
                                                type=type,gridlines=gridlines,verbose=verbose,...)  else
     if (projection=="sphere")
@@ -214,7 +215,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) print('map.ds')
     stopifnot(inherits(x,'ds'))
     x <- subset(x,is=is)
-
+##browser()
     ## REB 2015-03-26
     if (inherits(x,'pca')) {
         map.pca(x,it=it,verbose=verbose,new=new,
@@ -338,6 +339,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     if ((unit=='degree Celsius') | (unit=='deg C') | (unit=='degC'))
         unit <- 'degree*C'
 
+    unit <- as.character(unit)
     attr(X,'unit') <- unit
     attr(X,'source') <- attr(x,'source')
     attr(X,'time') <- range(index(x))
@@ -473,7 +475,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    verbose=FALSE,...) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     ##
     args <- list(...)
                                         #print(args)
@@ -523,8 +525,8 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    verbose=FALSE,cex=2,...) {
-    ##print('map.cca')
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,...) {
+    if (verbose) print('map.cca')
     ##x <- subset(x,it=it,is=is)
     ## browser()
     ## For plotting, keep the same kind of object, but replace the patterns in
@@ -568,21 +570,22 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ##                    col.y <- col
     ## REB: removed col=col.y,bg=col.y
 
-    if (sum(is.element(type,'map'))>0)
-        par(fig=c(0,0.5,0.5,1)) ## mar=c(0.05,.05,0.05,0.05),
-    else 
-        par(fig=c(0,0.5,0.5,1),mar=c(0.2,.2,0.2,0.2))
-
+    if (sum(is.element(type,'map'))>0) {
+      par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
+    } else {
+      par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
+    }
     ##colbar <- list(col=NULL, breaks=NULL, type="r",cex=2, h=0.6, v=1)
-    
     map(Y,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
         projection=projection,lonR=lonR,latR=latR,axiR=axiR,
         gridlines=gridlines,FUN='mean',verbose=verbose,
         colbar=colbar,showall=FALSE,new=FALSE)
-    ## browser()
-    if (sum(is.element(type,'ts'))>0)
-        par(fig=c(0,1,0.5,1),new=TRUE) else
-    par(fig=c(0.5,1,0.5,1),new=TRUE) ## mar=c(0,0,0,0),
+    
+    if (sum(is.element(type,'ts'))>0) {
+      par(fig=c(0,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
+    } else {
+      par(fig=c(0.5,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
+    }
     map(X,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
         projection=projection,lonR=lonR,latR=latR,axiR=axiR,
         gridlines=gridlines,FUN='mean',verbose=verbose,
@@ -605,7 +608,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              verbose=FALSE,geography=TRUE,fancy=FALSE,
                              main=NA,...) {
 
-    if (verbose) print('lonlatprojection')
+    if (verbose) {print('lonlatprojection'); str(x)}
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
     #print(formals(...))
@@ -665,6 +668,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     srty <- order(lat(x)); lat <- lat(x)[srty]
     if (verbose) print('meta-stuff')
     unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
+    variable <- as.character(variable); unit <- as.character(unit)
     if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") | (unit=="degree Celsius"))
         unit <- "degree*C"
     if (unit=="%") unit <- "'%'"
@@ -695,17 +699,23 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else period <- NULL
     if (verbose) print(paste('period:',period))
     method <- attr(x,'method')
-    if (verbose) print(c(dim(x),length(srtx),length(srty)))
+    if (verbose) {
+      print(c(dim(x),length(srtx),length(srty)))
+      ## There is something strange happening with x - in some cases it is filled with NAs (REB)
+      print(srtx); print(srty)
+    }
 
     x <- x[srtx,srty]
     if (verbose) {print(xlim); str(x)}
     if (!is.null(xlim)) {
-        outside <- (lon < xlim[1]) | (lon > xlim[2])
+        outside <- (lon < min(xlim)) | (lon > max(xlim))
+        if (verbose) print(paste('mask',sum(outside),length(outside)))
         x[outside,] <- NA
     } else xlim <- range(lon)
     
     if (!is.null(ylim)) {
-        outside <- (lat < ylim[1]) | (lat > ylim[2])
+        outside <- (lat < min(ylim)) | (lat > max(ylim))
+        if (verbose) print(paste('mask',sum(outside),length(outside)))
         x[,outside] <- NA
     } else ylim=range(lat)
     
@@ -713,12 +723,14 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     nc <- length(colbar$col)
     crgb <- col2rgb(colbar$col)
     if(any(x>max(colbar$breaks),na.rm=TRUE)) {
+      if (verbose) print('any(x>max(colbar$breaks)')
       cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
       crgb <- cbind(crgb,cmax)
       colbar$breaks <- c(colbar$breaks,max(x))
     }
 
     if (any(x<min(colbar$breaks),na.rm=TRUE)) {
+      if (verbose) print('any(x<min(colbar$breaks)')
       cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
       crgb <- cbind(cmin,crgb)
       colbar$breaks <- c(min(x),colbar$breaks)
@@ -767,7 +779,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(xpd=FALSE)
     dlat <- diff(range(lat))/60
                                         #print(dlat)
-    text(lon[1],lat[length(lat)] + 0.5*dlat,varlabel,pos=4,font=2)
+    text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2)
     text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
 
     if (!is.null(period))

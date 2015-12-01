@@ -166,7 +166,7 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
 
 
 regrid.default <- function(x,is,verbose=FALSE,...) {
-  
+  print('not used')
 }
 
 regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
@@ -208,7 +208,7 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   #print("regrid.field before subset:");print(lon(x)); print(lat(x));print("---")
   ## AM 20-04-2015 the value "2" has been changed to "10"
   x <- subset(x,is=list(lon=c(floor(min(lon.new))-10,ceiling(max(lon.new))+10),
-                    lat=c(floor(min(lat.new))-10,ceiling(max(lat.new))+10)))
+                        lat=c(floor(min(lat.new))-10,ceiling(max(lat.new))+10)))
   if (verbose) {print("regrid.field after subset:");print(lon(x));print(lat(x));print("---")}
   if (verbose) {print("Longitude range"); print(range(lon.new)); print(range(lon(x)))}
   if (verbose) {print("Latitude range"); print(range(lat.new)); print(range(lat(x)))}
@@ -290,11 +290,21 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   }
   #print("set attributes:")
   y <- zoo(t(y),order.by=index(x))
+  if (inherits(is,'station')) {
+    if (verbose) print('select the station coordinates and not a regular grid')
+    y <- y[,seq(1,D[1] * D[2],by=D[2])]
+    attr(y,'altitude') <- alt(is)
+    attr(y,'location') <- loc(is)
+    if (verbose) {
+      print(dim(y)); print(dim(is)); print(lon(is)); print(lat(is))
+    }
+  }
+
   if ( (is.station(is)) | (is.field(is)) ) {
     class(y) <- class(is)
     class(y)[2] <- class(x)[2]
   }  else class(y) <- class(x)
-  
+
   #mostattributes(y) <- attributes(x)
   #nattr <- softattr(x,ignore=c('longitude','latitude','dimensions'))
   #for (i in 1:length(nattr))
@@ -363,6 +373,7 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
+
 
 
 

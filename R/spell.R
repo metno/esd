@@ -17,7 +17,8 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   missing <- !is.finite(z)
   ## Use interpolation to fill in
   if (sum(missing)>0) print(paste('Warning: ',sum(missing),
-                                  'missing values filled by interpolation'))
+                                  'missing values (',round(100*sum(missing)/length(z),1),
+                                  ' %) filled by interpolation'))
   z <- approx(x=index(x)[!missing],y=z[!missing],xout=index(x))$y
 
   ## Highligh the times when the values is above and below the given
@@ -90,8 +91,8 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
 #  high <- t[end] - t[start]
   high <- diff(cath[start])
   low <- diff(cbth[end])
-  if (verbose) print(summary(high))  
-  if (verbose) print("low:"); print(summary(low))
+  if (verbose) {print("high:"); print(summary(high))}  
+  if (verbose) {print("low:"); print(summary(low))}
 
   ## If an upper limit is provided then ignore the long spells
   if (!is.null(upper)) {

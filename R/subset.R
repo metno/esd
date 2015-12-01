@@ -277,6 +277,39 @@ subset.trend <- function(x,it=NULL,is=NULL) {
 
 subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## browser()
+
+    if (verbose) print('subset.dsensemble')
+
+    if (inherits(x,'list') & !inherits(x,'zoo')) {
+      if (verbose) print('list of elements')
+      ## If x is a list of objects search through its elements
+      Locs <- unlist(lapply(x,function(x) loc(attr(x,'station'))))
+      Locs <- gsub(' ','',Locs)
+      Locs <- gsub('-','.',Locs)
+      if (is.character(is)) {
+        
+        if (verbose) print('search on location names')
+      ## search on location name
+        Locs <- tolower(Locs)
+        locs <- substr(Locs,1,min(nchar(is)))
+        is <- substr(is,1,min(nchar(is)))
+        illoc <- (1:length(x))[is.element(locs,tolower(is))]
+        if (length(illoc)==1) {
+          x2 <- x[[illoc]]
+          x2 <- subset(x2,it=it,verbose=verbose)
+        } else {
+          x2 <- list()
+          for (i in 1:length(illoc)) {
+            xx2 <- x[[illoc[i]]]
+            xx2 <- subset(xx2,it=it,verbose=verbose)
+            eval(parse(text=paste('x2$',Locs[illoc[i]],' <- xx2',sep='')))
+            rm('xx2'); gc(reset=TRUE)
+          }
+        }
+        if (verbose) {print(is); print(loc(x2))}
+        return(x2)
+      }
+    }
     class(x) <- c(class(x)[1],class(attr(x,'station'))[2],"zoo")
 
     if (is.null(it) & is.null(is) & length(table(month(x)))==1) return(x)
@@ -963,6 +996,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
 subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if(verbose) print("subset.events")
+  cls <- class(x)
 
   ## Sometimes 'it' = 'integer(0)' - reset to NULL!
   if (length(it)==0) it <- NULL
@@ -1010,11 +1044,13 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
         if (verbose) print('Monthly selected')
         ii <- is.element(mo,(1:12)[is.element(tolower(month.abb),
                                               tolower(substr(it,1,3)))])
+        cls <- c(cls[1],"month",cls[2:length(cls)])
       } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
         if (verbose) print("Seasonally selected")
         if (verbose) print(table(mo))
         if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
         ii <- is.element(mo,eval(parse(text=paste('season.abb()$',it,sep=''))))
+        cls <- c(cls[1],"season",cls[2:length(cls)])
       } else {
         str(it); print(class(it))
         ii <- rep(FALSE,length(d))
@@ -1055,12 +1091,14 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
            "e.g., it='djf'"))
         it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10)
         ii <- is.element(mo,it)
+        cls <- c(cls[1],"season",cls[2:length(cls)])
     } else if (max(it) <=12) {
       if (verbose) {
         print("The 'it' value must be a month index.")
         print("If not please use character strings instead")
       }
       ii <- is.element(mo,it)
+      cls <- c(cls[1],"month",cls[2:length(cls)])
       } else {
         if (verbose) print("it represents indices")
         ii <- it
@@ -1070,7 +1108,8 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
         print("The 'it' value are most probably a month index. ")
         print("If not please use character strings instead")
       }
-      ii <- is.element(mo,it)       
+      ii <- is.element(mo,it)
+      cls <- c(cls[1],"month",cls[2:length(cls)])
     } else {
       if ( (min(it) >= min(yr)) & (max(it) <= max(yr)) ) {
         if (verbose) print("it most probably contains years")
@@ -1117,5 +1156,8 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   ij <- ii & jj
   y <- x[ij,]
   attr(y,"aspect") <- "subset"
+  if (!is.null(is$lat)) attr(y,"lat") <- is$lat
+  if (!is.null(is$lon)) attr(y,"lon") <- is$lon
+  class(y) <- cls
   invisible(y)
 }

@@ -24,8 +24,8 @@ diagnose.eof <- function(x) {
   return(y)
 }
 
-diagnose.comb.eof <- function(x) {
-
+diagnose.comb.eof <- function(x,verbose=FALSE) {
+  if (verbose) print("diagnose.comb.eof")
   ACF <- function(x) acf(x,plot=FALSE,na.action=na.omit)$acf[2]
   sign <- function(x,y) {z<-x*y; z[z<0] <- -1; z[z>0] <- 1; z}
   
@@ -63,7 +63,8 @@ diagnose.comb.eof <- function(x) {
   rownames(dm) <- rowname
   rownames(sr) <- rowname
   rownames(ar) <- rowname
-  diag <- list(mean.diff=dm,sd.ratio=sr,autocorr.ratio=ar,
+  ## KMP 19-11-2015: added abs(dm) because the sign is arbitrary
+  diag <- list(mean.diff=abs(dm),sd.ratio=sr,autocorr.ratio=ar,
                common.period=range(index(Y)),sd0=Ys,
                calibrationdata=attr(x,'source'))
   attr(diag,'variable') <- attr(x,'variable')
@@ -432,8 +433,9 @@ diagnose.distr <- function(x,main=NULL,
 
 
 
-diagnose.dsensemble <- function(x,plot=TRUE,type='target',
-                                xrange=NULL,yrange=NULL,...) {
+diagnose.dsensemble <- function(x,plot=TRUE,map=TRUE,type='target',
+                                xrange=NULL,yrange=NULL,verbose=FALSE,...) {
+  if (verbose) print('diagnose.dsensemble')
   # Trend-evaluation: rank
   # Counts outside 90% confidence: binomial distrib. & prob.
   stopifnot(!missing(x),inherits(x,"dsensemble"))
@@ -476,62 +478,18 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',
   below <- y[i1] < q05[i2]
   outside <- sum(above,na.rm=TRUE) + sum(below,na.rm=TRUE)
   N <- sum(i1,na.rm=TRUE)
-  if (plot) {
-    x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),sd=sd(deltagcm))),2)
-    y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
-    dev.new()
-    par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=c(2,1,.5),xpd=TRUE)
-    plot(c(-100,100),c(-100,100),type="n",
-         axes=FALSE,ylab="magnitude",xlab="trend")
-    u <- par("usr")
-    dx <- (u[2]-u[1])/20
-    dy <- (u[4]-u[3])/20
-    arrows(u[1],u[3]-dy,u[2],u[3]-dy,code=2,xpd=TRUE)
-    arrows(u[2],u[3]-dy,u[1],u[3]-dy,code=2,xpd=TRUE)
-    arrows(u[1]-dx,u[4],u[1]-dx,u[3],code=2,xpd=TRUE)
-    arrows(u[1]-dx,u[3],u[1]-dx,u[4],code=2,xpd=TRUE)
-    text(u[1]+dx,u[3]-dy/2,"weaker (obs < dse)",pos=4)
-    text(u[2]-dx,u[3]-dy/2,"stronger",pos=2)
-    text(u[1],u[3]+2*dy,"smaller",pos=3,srt=90)
-    text(u[1],u[4]-2*dy,"larger",pos=2,srt=90)    
-    bcol=c("grey95","grey40")
-    for (i in 1:10) {
-      r <- (11-i)*10
-      polygon(r*cos(pi*seq(0,2,length=360)),
-              r*sin(pi*seq(0,2,length=360)),
-              col=bcol[i %% 2 + 1],border="grey15")
-    }
-    for (i in seq(0,90,by=1))
-      points(x,y,pch=19,cex=2 - i/50,col=rgb(i/90,0,0))
-    ## Add map of station location
-    if(is.null(xrange)) xrange <- c(lon(z)-15,lon(z)+15)
-    if(is.null(yrange)) yrange <- c(lat(z)-10,lat(z)+10)
-    data(geoborders)
-    lon <- geoborders$x
-    lat <- geoborders$y
-    ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
-          lat>(min(yrange)-1) & lat<(max(yrange)+1)
-    lon2 <- attr(geoborders,"borders")$x
-    lat2 <- attr(geoborders,"borders")$y
-    ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
-           lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
-    par(fig=c(0.78,0.97,0.78,0.97),new=TRUE, mar=c(0,0,0,0),
-        cex.main=0.75,xpd=NA,col.main="grey",bty="n")
-    plot(lon[ok],lat[ok],lwd=1,col="black",type='l',xlab=NA,ylab=NA,axes=FALSE)
-    axis(1,mgp=c(3,.5,0))
-    axis(2,mgp=c(2,.5,0))
-    lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)   
-    points(lon(z),lat(z),pch=21,cex=1,col='black',bg='red',lwd=1)
-  }
-  
-  diag <- list(robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
+
+  if (verbose) print('make list object')
+  diag <- list(z=z,robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
                outside=outside,above=above,below=below,
-               y=y[i1],N=N,i1=i1,
+               y=y[i1],N=N,i1=i1,xrange=xrange,yrange=yrange,
                mu=zoo(mu,order.by=index(x)),
                si=zoo(si,order.by=index(x)),
                q05=zoo(q05,order.by=index(x)),
                q95=zoo(q95,order.by=index(x)))
   attr(diag,'history') <- history.stamp(x)
+  class(diag) <- c('diagnose','dsensembles','list')
+  if (plot) plot(diag,map=map,verbose=verbose)
 
   invisible(diag)
   }

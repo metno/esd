@@ -628,13 +628,19 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     lines(t,z,lwd=2,col=col[i])
   }
   tn <- t[length(t)]; 
-  tm <- julian(as.Date('1900-12-31')) - julian(as.Date('1900-01-01'))
-  zn <- coredata(z[length(z)-1])
-  n <- 365
+
+  ## Here is some difference between monthly and daily data:
+  if (!is.na(coredata(z[length(z)]))) zn <- coredata(z[length(z)]) else
+                                      zn <- coredata(z[length(z)-1])
+  n <- max(table(year(x)))
+  if (n>=365) n <- as.numeric(diff(as.Date(c(paste(yrs[ny],'-01-01',sep=''),
+                                             paste(yrs[ny],'-12-31',sep=''))))+1)
+  if (n>=365) tm <- julian(as.Date('1900-12-31')) - julian(as.Date('1900-01-01')) else
+              tm <- julian(as.Date('1900-12-01')) - julian(as.Date('1900-01-01'))
   #browser()
-  zp <- length(z)/n * zn + (1-length(z)/n) * quantile(y.rest,0.95,na.rm=TRUE)
-  zm <- length(z)/n * zn + (1-length(z)/n) * quantile(y.rest,0.05,na.rm=TRUE)
-  zz <- length(z)/n * zn + (1-length(z)/n) * mean(y.rest,na.rm=TRUE)
+  zp <- length(z)/n * zn + (n-length(z))/n * quantile(y.rest,0.95,na.rm=TRUE)
+  zm <- length(z)/n * zn + (n-length(z))/n * quantile(y.rest,0.05,na.rm=TRUE)
+  zz <- length(z)/n * zn + (n-length(z))/n * mean(y.rest,na.rm=TRUE)
   if (prog) {
     polygon(c(tn,rep(tm,2),tn),c(zn,zp,zm,zn),
             col=rgb(0.5,0.5,0.5,0.1),border=rgb(0.5,0.5,0.5,0.2),lwd=2)
@@ -814,23 +820,21 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
     label_fun <- FUN
   }
   if(verbose) print(paste("calculate",label_fun))
-  Z <- matrix(rep(NA,length(gcms)*length(Y)),length(Y),length(gcms))
-  for (i in 1:length(Y)) {
-     Z[i,] <- apply(Y[[i]],2,FUN)
-  }
-  z <- apply(Z,1,mean)
-  z.q5 <- apply(Z,1,q5)
-  z.q95 <- apply(Z,1,q95)
+  d <- dim(Y[[1]])
+  Z <- sapply(Y,function(x) {
+              y <- apply(x,2,FUN=FUN)
+              invisible( rbind(q5(y),mean(y),q95(y)) )} )
+  z.q5 <- Z[,1]
+  z <- Z[,2]
+  z.q95 <- Z[,3]
   
   if (!is.null(FUN2)) {
     if(verbose) print(paste("calculate significance"))
-    P <- matrix(rep(NA,length(gcms)*length(Y)),length(Y),length(gcms))
-    for (i in 1:length(Y)) {
-      P[i,] <- apply(Y[[i]],2,FUN2)
-    }
-    p <- apply(P,1,mean)
-  } else p <- rep(0,length(z))
-   
+    p <- sapply(Y,function(x) mean(apply(x,2,FUN=FUN2)) )   
+  } else {
+    p <- rep(0,length(z))
+  }
+  
   if (is.null(colbar)) {
       colbar=list(palette='t2m',rev=FALSE,n=n,breaks=NULL,
           type="p",cex=2,h=0.6,v=1,pos=0.1,show=TRUE)

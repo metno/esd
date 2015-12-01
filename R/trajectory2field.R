@@ -1,17 +1,19 @@
 
 trajectory2field <- function(x,dt='month',dx=2,dy=2,n=150,
                              it=NULL,is=NULL,verbose=FALSE) {
+  if(verbose) print("trajectory2field")
   stopifnot(is.trajectory(x))
   x <- subset(x,it=it,is=is)
   lons <- round(x[,colnames(x)=='lon']/dx)*dx
   lons <- seq(min(lons),max(lons),dx)
   lats <- round(x[,colnames(x)=='lat']/dy)*dy
   lats <- seq(min(lats),max(lats),dy)
-  dates <- as.Date(strptime(x[,colnames(x)=='start'],format='%Y%m%d%H'))
-  fn <- function(x,it=NULL,verbose=FALSE) {
+  dates <- as.Date(strptime(x[,'start'],format='%Y%m%d%H'))
+  fn <- function(x,it=NULL) {
     x <- subset(x,it=it)
+    if(verbose) print(paste(range(x[,'start']),collapse="-"))
     X <- array(rep(0,),dim=c(length(lons),length(lats)))
-    if(verbose)print(dim(x))
+    if(verbose) print(dim(x))
     if(!is.null(dim(x)) & length(x)>0) {
       A <- density.trajectory(x,dx=dx,dy=dy,n=n)
       lat <- A$lat
@@ -26,17 +28,21 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,n=150,
     }
     invisible(X)
   }
+  if(verbose) print("calculate trajectory density")
   if (grepl('month',dt)) {   
+    if(verbose) print("monthly")
     dvec <- seq(min(as.Date(as.yearmon(dates))),max(dates),by='month')
     dall <- as.Date(as.yearmon(dates))
     X <- t(sapply(dvec,function(di) fn(x,it=(dall==di))))
     unit <- 'events/month/area'
   } else if (grepl('season',dt) | grepl('quarter',dt)) {
+    if(verbose) print("seasonal")
     dvec <- seq(min(as.Date(as.yearmon(dates))),max(dates),by='quarter')
     dall <- as.Date(as.yearqtr(dates))
     X <- t(sapply(dvec,function(di) fn(x,it=(dall==di))))
     unit <- 'events/quarter/area'
   } else if (grepl('year',dt) | grepl('annual',dt)) {
+    if(verbose) print("annual")
     dvec <- seq(min(dates),max(dates),by='year')
     X <- t(sapply(year(dvec),function(yi) fn(x,it=c(yi,yi))))
     unit <- 'events/year/area'
@@ -46,12 +52,14 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,n=150,
   }
   longname <- paste("trajectory density",attr(x,'longname'),sep=', ')
   param <- 'density'
+  if(verbose) print("transform to field")
   Y <- as.field(X,index=dvec,lon=lons,lat=lats,
           unit=unit,longname=longname,param=param,
           quality=attr(x,'quality'),src=attr(x,'source'),
           url=attr(x,'URL'),reference=attr(x,'reference'),
           info=attr(x,'info'),calendar=attr(x,'calendar'),
           method=attr(x,'method'),aspect=attr(x,'aspect'))
+  if(verbose) print("done")
   invisible(Y)
 }
 

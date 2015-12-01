@@ -14,7 +14,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                                         # col=NULL replaced by palette
                          type=NULL,gridlines=TRUE,
                          lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
-                         cex=NULL,zexpr="alt",cex.subset=1,
+                         cex=2,zexpr="alt",cex.subset=1,
                          add.text.subset=FALSE,showall=FALSE,
                          add.text=FALSE,
                          height=NULL,width=NULL,cex.axis=1,cex.lab=0.6,
@@ -28,6 +28,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     ##
     if (verbose) print('map.station')
     arg <- list(...)
+    attr(x,'unit') <- as.character(unit(x))
+    attr(x,'variable') <- as.character(varid(x))
     
     if (!is.null(FUN))
         if (FUN=="NULL") FUN <- NULL
@@ -46,7 +48,6 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (verbose)
         print(paste("List of arguments in the three-dots listed below ",
                     arg,sep=""))
-    
 
     if (sum(is.element(type,c('fill','contour')))) {
       x0 <- x

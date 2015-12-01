@@ -279,6 +279,10 @@ year <- function(x) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$year + 1900
     return(y)
   }
+  if (inherits(x,'events')) {
+    y <- strptime(x$date,format="%Y%m%d")$year + 1900
+    return(y)
+  }
   if (inherits(x,"POSIXt")) {
     y <- as.numeric(format(x, '%Y'))
     return(y)
@@ -320,6 +324,10 @@ month <- function(x) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mon + 1
     return(y)
   }
+  if (inherits(x,'events')) {
+    y <- strptime(x$date,format="%Y%m%d")$mon + 1
+    return(y)
+  }
   if (inherits(x,"POSIXt")) {
     y <- as.numeric(format(x, '%m'))
     return(y)
@@ -349,6 +357,10 @@ day <- function(x) {
   }
   if (inherits(x,'trajectory')) {
     y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mday
+    return(y)
+  }
+  if (inherits(x,'events')) {
+    y <- strptime(x$date,format="%Y%m%d")$mday
     return(y)
   }
   if (inherits(x,c('numeric','integer'))) x <- as.numeric(x)

@@ -173,12 +173,12 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
       i1 <- i1[!1:length(i1) %in% del.i1]
     }
     ## Remove secondary cyclones identified with the widened masks,
-    ## requiring longer distance between cyclones (2000 km)
+    ## requiring 1000 km distance to nearest neighbouring cyclone
     i2 <- which(date2==d)
     if(any(i2) & any(i1)) {
       distance <- apply(cbind(lon2[i2],lat2[i2]),1,
        function(x) suppressWarnings(distAB(x[1],x[2],lon1[i1],lat1[i1])))
-      del.i2 <- unique(which(distance<2E6,arr.ind=TRUE)[,2])
+      del.i2 <- unique(which(distance<mindistance,arr.ind=TRUE)[,2])
       del2[i2[del.i2]] <- FALSE
       i2 <- i2[!1:length(i2) %in% del.i2]
     }
@@ -186,7 +186,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
       distance <- apply(cbind(lon2[i2],lat2[i2]),1,
        function(x) suppressWarnings(distAB(x[1],x[2],lon2[i2],lat2[i2])))
       diag(distance) <- NA; distance[lower.tri(distance)] <- NA
-      del.i2 <- which(distance<2E6,arr.ind=TRUE)
+      del.i2 <- which(distance<mindistance,arr.ind=TRUE)
       if(any(del.i2)) {
         col.del <- rep(1,length(del.i2)/2)
         if (is.null(dim(del.i2))) {
@@ -308,13 +308,12 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
   max.dslp <- max.dslp*1E-2*1E3
 
-  browser()
   ## Keep only cyclones with radius within the range (rmin,rmax)
   ## and pressure gradient stronger than dpmin
   ok <- rep(TRUE,length(date))
-  if(!is.null(rmin)) ok <- ok & radius>rmin
-  if(!is.null(rmax)) ok <- ok & radius<rmax
-  if(!is.null(dpmin)) ok <- ok & max.dslp>dpmin
+  if(!is.null(rmin)) ok <- ok & radius>=rmin
+  if(!is.null(rmax)) ok <- ok & radius<=rmax
+  if(!is.null(dpmin)) ok <- ok & max.dslp>=dpmin
   lon <- lon[ok]
   lat <- lat[ok]
   date <- date[ok]
@@ -329,8 +328,8 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
 
   if (lplot) {
     if(verbose) print("plot example of cyclone identification")
-    data(geoborders)
-    i <- length(date/2)
+    data(geoborders,envir=environment())
+    i <- length(date)/2
     inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
     infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
@@ -353,10 +352,10 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
     dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
     dev.new()
     image(xi,yi,zi,main=date[i],col=colscal(col="t2m",n=12,rev=FALSE),
-          xlab="lon",ylab="lat")
-    contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(950,1010),nlevels=6)
+          xlab="lon",ylab="lat",breaks=seq(940,1060,10))
+    contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(940,1010),nlevels=6)
     contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1060),nlevels=5)
-    lines(geoborders)
+    lines(geoborders,col="grey10")
     a <- which(P.lowx[t==date[i],,]==1,arr.ind=TRUE)
     b <- which(P.lowy[t==date[i],,]==1,arr.ind=TRUE)
     lon.a <- mapply(function(i1,i2) lonXY[i1,i2],a[,1],a[,2])

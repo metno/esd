@@ -53,7 +53,7 @@ pcafill <- function(X,insertmiss=0,eofs=1:4,test=FALSE,verbose=FALSE) {
     stop('pcafill: Too many missing data or too small set of stations')
   
   ## PCA for stations with complete data
-  pca <- PCA(subset(X,is=mok==length(index(X))))
+  pca <- PCA(subset(X,is=mok==length(index(X))),n=max(eofs))
 
   ## Y contains the more complete data set - copy all the attributes from X
   Y <- X
