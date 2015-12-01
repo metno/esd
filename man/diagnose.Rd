@@ -34,7 +34,7 @@ diagnose.mvr(x)
 diagnose.cca(x)
 diagnose.ds(x,plot=FALSE)
 diagnose.station(x,it=NULL,...)
-diagnose.dsensemble(x,plot=TRUE,plot.type='target',...)
+diagnose.dsensemble(x,plot=TRUE,map=TRUE,plot.type='target',...)
 diagnose.distr(x,main='Mean - quantile',
                xlab='mean',ylab=expression(q[p]),
                sub=src(x),probs=0.95)
