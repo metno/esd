@@ -213,6 +213,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
   }
   
   if (test) test.col(r,g,b)
+  ## browser()
   if (rev) col <- rev(col)
   return(col)
 }
