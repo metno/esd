@@ -223,6 +223,12 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                 lonR=lonR,latR=latR,axiR=axiR,gridlines=gridlines,
                 colbar=colbar) ##col=col,breaks=breaks)
         return()
+    } else if (inherits(x,'eof')) {
+        map.eof(x,it=it,verbose=verbose,new=new,
+                xlim=xlim,ylim=ylim,projection=projection,
+                lonR=lonR,latR=latR,axiR=axiR,gridlines=gridlines,
+                colbar=colbar) ##col=col,breaks=breaks)
+        return()
     }
     projection <- tolower(projection)
     X <- attr(x,'pattern')
@@ -617,7 +623,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (!is.null(colbar)) {
         colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
     } else {
-        if (verbose) print('colbar=NULL - no colour bar')
+        if (verbose) print('colbar=NULL - no colour bar')    
 # REB 2015-12-02        
 #        colbar$n <- 25
 #        colbar$breaks <- pretty(c(x),n=colbar$n)
@@ -655,11 +661,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ##    if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
     ##   
     #browser()
-    if (colbar$show) { ## AM 14-07-2015
-        ##        fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
-        fig0[3] <- fig0[3] + colbar$pos ## (fig0[4]-fig0[3])/200##0.05   # REB 2015-06-25
-    } else 
-        fig0 <- fig0                                       # REB 2015-06-25
+# This causes a crash    
+#    if (is.null(colbar$show)) colbar$show <-TRUE #3 Quick fix REB 2015-12-02
+#    if (colbar$show) { ## AM 14-07-2015
+#        ##        fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
+#        fig0[3] <- fig0[3] + colbar$pos ## (fig0[4]-fig0[3])/200##0.05   # REB 2015-06-25
+#    } else 
+#        fig0 <- fig0                                       # REB 2015-06-25
     ##        fig0 <- par0$fig
     ##     par(fig=fig0)                                        ## REB 2015-06-25 opens extra window
     data("geoborders",envir=environment())

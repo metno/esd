@@ -710,11 +710,11 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   }
 }
 
-plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
+plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=list(show=FALSE),...) {
   if (verbose) print('plot.ds.eof')
   attr(y,'longname') <- attr(y,'longname')[1]
   par(fig=c(0,0.5,0.5,1),mar=c(3,5,4.2,1),mgp=c(3,0.5,0.5))
-  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,
+  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar,
           main=paste("Predictand EOF pattern # ",pattern,sep=""),...)
   par(fig=c(0.5,1,0.5,1),mar=c(3,4,4.2,1),new=TRUE)
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,

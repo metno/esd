@@ -12,10 +12,16 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
       if(verbose) print("predictand is a combined EOF")
       y <- predict.ds.comb(x,newdata=newdata,addnoise=addnoise,
                            n=n,verbose=verbose)
+    } else {
+      if(verbose) print("predictand is an EOF, but use PCA call")
+      y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,
+                           n=n,verbose=verbose)
     }
   } else if (inherits(x,'field')) {
     if (verbose) print("predictand is a field object") 
-    y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,
+#    y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,
+#                        n=n,verbose=verbose)
+    y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,
                         n=n,verbose=verbose)
   } else if (inherits(x,'eof')) {
     if (verbose) print("predictand is an EOF") 
@@ -26,7 +32,9 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
                            n=n,verbose=verbose)
     } else if (inherits(newdata,'eof')) {
       if (verbose) print("new predictor data is an EOF") 
-      y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,
+#      y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,
+#                          n=n,verbose=verbose)
+      y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,
                           n=n,verbose=verbose)
     }
   } else if (inherits(x,'pca')) {
