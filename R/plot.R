@@ -214,7 +214,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   ## browser()
   if (length(grep('var',what))>0) {
     par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
+    plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
   
   #print(main)
@@ -517,8 +517,8 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 
 
 
-plot.eof.var <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=20,...) {
-  n <- min(c(pattern,length(attr(x,'eigenvalues'))))
+plot.eof.var <- function(x,pattern=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
+  n <- min(c(n,length(attr(x,'eigenvalues'))))
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
@@ -548,8 +548,9 @@ plot.eof.var <- function(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=20,...) {
     lines(c(i-0.25,i+0.25),100*rep((D[i]-dD[i])^2/tot.var,2),
           lwd=1,col="darkgrey")
   }
-  points(var.eof)
-  points(var.eof,pch=20,cex=0.8,col="darkgrey")
+  points(var.eof,cex=1.5)
+  points(var.eof,pch=20,cex=1.2,col="darkgrey")
+  points(pattern,var.eof[pattern],pch=20,col="red",cex=1.2)
   attr(var.eof,'errorbar') <- cbind(100*(D-dD)^2/tot.var,100*(D+dD)^2/tot.var)
   invisible(var.eof)
 }
