@@ -617,16 +617,17 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (!is.null(colbar)) {
         colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
     } else {
-        if (verbose) print('colbar=NULL - set col etc')
-        colbar$n <- 25
-        colbar$breaks <- pretty(c(x),n=colbar$n)
-        if (verbose) print(colbar$breaks)
-        if (verbose) print(varid(x))
-        colbar$col <- colscal(n=length(colbar$breaks)-1,col=colid)
-        ##  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
-        if (colid=='precip') colbar$col <- rev(colbar$col)
-        colbar$show <- TRUE
-        colbar$pos <- 0.05
+        if (verbose) print('colbar=NULL - no colour bar')
+# REB 2015-12-02        
+#        colbar$n <- 25
+#        colbar$breaks <- pretty(c(x),n=colbar$n)
+#        if (verbose) print(colbar$breaks)
+#        if (verbose) print(varid(x))
+#        colbar$col <- colscal(n=length(colbar$breaks)-1,col=colid)
+#        ##  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
+#        if (colid=='precip') colbar$col <- rev(colbar$col)
+#        colbar$show <- TRUE
+#        colbar$pos <- 0.05
     }
     ##    par0 <- par()                             # REB 2015-06-25 these lines open an
     ##    fig0 <- par()$fig                         # unused window.
@@ -720,25 +721,27 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else ylim=range(lat)
     
     ## KMP 2015-10-14: extra colors if higher/lower values occur 
-    nc <- length(colbar$col)
-    crgb <- col2rgb(colbar$col)
-    if(any(x>max(colbar$breaks),na.rm=TRUE)) {
-      if (verbose) print('any(x>max(colbar$breaks)')
-      cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
-      crgb <- cbind(crgb,cmax)
-      colbar$breaks <- c(colbar$breaks,max(x))
-    }
-
-    if (any(x<min(colbar$breaks),na.rm=TRUE)) {
-      if (verbose) print('any(x<min(colbar$breaks)')
-      cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
-      crgb <- cbind(cmin,crgb)
-      colbar$breaks <- c(min(x),colbar$breaks)
-    }
-    crgb[crgb>255] <- 255
-    crgb[crgb<0] <- 0
-    colbar$col <- rgb(t(crgb),maxColorValue=255)
-    colbar$n <- length(colbar$col)-1
+# REB 2015-12-02: changing colbar$breaks gives strange looking scale with non-pretty numbers     
+#    nc <- length(colbar$col)
+#    crgb <- col2rgb(colbar$col)
+#    if(any(x>max(colbar$breaks),na.rm=TRUE)) {
+#      if (verbose) print('any(x>max(colbar$breaks)')
+#      cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
+#      crgb <- cbind(crgb,cmax)
+#      colbar$breaks <- c(colbar$breaks,max(x))
+#    }
+#
+#    if (any(x<min(colbar$breaks),na.rm=TRUE)) {
+#      if (verbose) print('any(x<min(colbar$breaks)')
+#      cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
+#      crgb <- cbind(cmin,crgb)
+#      colbar$breaks <- c(min(x),colbar$breaks)
+#    }
+#    crgb[crgb>255] <- 255
+#    crgb[crgb<0] <- 0
+# REB 2015-12-02: The colours should not be changed if colbar$col is specified    
+#    colbar$col <- rgb(t(crgb),maxColorValue=255)
+#    colbar$n <- length(colbar$col)-1
 
     ##print(c(length(breaks),length(col)))
     ##if (is.Date(type))

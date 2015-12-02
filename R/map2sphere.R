@@ -76,25 +76,29 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   if (verbose) {print(lon(x)); print(lat(x))}
   ## If only a few items are provided in colbar - then set the rest to the default
   if (!is.null(colbar)) {
-    if (verbose) print('sort out the colours')
-    if (is.null(colbar$pal)) colbar$pal <- 't2m'
-    if (is.null(colbar$rev)) colbar$rev <- FALSE
-    if (is.null(colbar$n)) colbar$n <- 10
-    if (is.null(colbar$breaks)) {
-      colbar$breaks <- pretty(x,n=colbar$n)
-    } else if (length(colbar$breaks)==2)
-      colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
-    colbar$n <- length(colbar$breaks)-1
-    if (is.null(colbar$type)) colbar$type <- 'p'
-    if (is.null(colbar$cex)) colbar$cex <- 2
-    if (is.null(colbar$h)) colbar$h <- 0.6
-    if (is.null(colbar$v)) colbar$v <- 1
-    if (is.null(colbar$pos)) colbar$pos <- 0.05
-    if (verbose) print(colbar)
-    colbar$col <- colscal(n=colbar$n,col=colbar$pal,
-                          rev=colbar$rev,verbose=verbose)
-    if (verbose) print(paste("length(col) =",length(colbar$col)))
-  }
+        colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
+    } else 
+        if (verbose) print('colbar=NULL - no colour bar')
+  #if (!is.null(colbar)) {
+  #  if (verbose) print('sort out the colours')
+  #  if (is.null(colbar$pal)) colbar$pal <- 't2m'
+  #  if (is.null(colbar$rev)) colbar$rev <- FALSE
+  #  if (is.null(colbar$n)) colbar$n <- 10
+  #  if (is.null(colbar$breaks)) {
+  #    colbar$breaks <- pretty(x,n=colbar$n)
+  #  } else if (length(colbar$breaks)==2)
+  #    colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
+  #  colbar$n <- length(colbar$breaks)-1
+  #  if (is.null(colbar$type)) colbar$type <- 'p'
+  #  if (is.null(colbar$cex)) colbar$cex <- 2
+  #  if (is.null(colbar$h)) colbar$h <- 0.6
+  #  if (is.null(colbar$v)) colbar$v <- 1
+  #  if (is.null(colbar$pos)) colbar$pos <- 0.05
+  #  if (verbose) print(colbar)
+  #  colbar$col <- colscal(n=colbar$n,col=colbar$pal,
+  #                        rev=colbar$rev,verbose=verbose)
+  #  if (verbose) print(paste("length(col) =",length(colbar$col)))
+  #}
   ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
   ## if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
   if (!is.null(it) | !is.null(is))
