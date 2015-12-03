@@ -8,3 +8,4 @@ CORDEX.ESD.exp.1.tx          - CORDEX-ESD experiment 1 for Tmax
 CORDEX.ESD.exp.1.tn          - CORDEX-ESD experiment 1 for Tmin
 CORDEX.ESD.exp.1.pr          - CORDEX-ESD experiment 1 for precipitation
 EuropeT2mRconstr             - Plot the Luterbacher et al. (2004) temperature reconstruction for Europe.
+globt.R                      - Plot the clombal mean temperature on top of the earth
