@@ -4,7 +4,7 @@ events2field <- function(x,verbose=FALSE,...) {
   invisible(y)  
 }
 
-density.events <- function(x,dt="month",dx=2,dy=2,
+density.events <- function(x,dt="month",dx=1,dy=1,
                          lons=NULL,lats=NULL,it=NULL,is=NULL,
                          radius=FALSE,verbose=FALSE,...) {
   if (verbose) print("density.events")
@@ -94,33 +94,33 @@ factor2numeric <- function(f) {
 
 
 trackdensity <- function(lons,lats,track,dx=NULL,dy=NULL,
-                         r=1E6,verbose=FALSE) {
+                         r=5E5,verbose=FALSE) {
   if (is.null(dx)) dx <- min(diff(sort(unique(lons))))
   if (is.null(dy)) dy <- min(diff(sort(unique(lats))))
   fn <- function(A,a=6.378e06) {
     A <- unique(A)
     lon <- A$lon
     lat <- A$lat
-    if(length(lon)>1) {
-      x <- a * cos( lon*pi/180 ) * cos( lon*pi/180 )
-      y <- a * cos( lat*pi/180 ) * sin( lon*pi/180 )
-      z <- a * sin( lat*pi/180 )
-      n <- length(x)*2
-      xa <- approx(x,n=n)$y
-      ya <- approx(y,n=n)$y
-      za <- approx(z,n=n)$y
-      lon <- atan2( ya, xa )*180/pi 
-      lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
-    }
+    #if(length(lon)>1) {
+    #  x <- a * cos( lon*pi/180 ) * cos( lon*pi/180 )
+    #  y <- a * cos( lat*pi/180 ) * sin( lon*pi/180 )
+    #  z <- a * sin( lat*pi/180 )
+    #  n <- length(x)*2
+    #  xa <- approx(x,n=n)$y
+    #  ya <- approx(y,n=n)$y
+    #  za <- approx(z,n=n)$y
+    #  lon <- atan2( ya, xa )*180/pi 
+    #  lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
+    #}
     xvec <- seq(round(min(lon)/dx)*dx-dx*10,round(max(lon)/dx)*dx+dx*10,dx)
     yvec <- seq(round(min(lat)/dy)*dy-dy*10,round(max(lat)/dy)*dy+dy*10,dy)
     xx <- as.vector(sapply(xvec,function(x) rep(x,length(yvec))))
     yy <- rep(yvec,length(xvec))
     if(length(lon)>1) {
       #i <- mapply(function(a,b,d) distAB(a,b,xx,yy)<d,lon,lat,r)
-      i <- apply(cbind(lon,lat),2,function(x) distAB(x[1],x[2],xx,yy)<r)
-      rx <- unlist(apply(i,2,function(j) xx[j]))
-      ry <- unlist(apply(i,2,function(j) yy[j]))
+      i <- lapply(1:length(lon),function(i) distAB(lon[i],lat[i],xx,yy)<r)
+      rx <- unlist(lapply(i,function(j) xx[j]))
+      ry <- unlist(lapply(i,function(j) yy[j]))
     } else {
       i <- distAB(lon,lat,xx,yy)<r
       rx <- xx[i]
@@ -169,7 +169,7 @@ cyclonedensity <- function(lons,lats,radius=NULL,dx=NULL,dy=NULL,
     d[is.infinite(d)] <- NA
     invisible(cbind(hx,hy,d))
   }
-  if (is.null(radius)) radius <- 1E6
+  if (is.null(radius)) radius <- 5E5
   dens <- fn(lons,lats,radius,dx,dy)
   hlons <- dens[,]
   hlats <- dens[,2]
