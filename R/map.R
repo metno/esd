@@ -75,6 +75,7 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) print('map.matrix')
     if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
     if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
+    if (verbose) str(x)
     if (projection=="lonlat") lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
                                                type=type,gridlines=gridlines,verbose=verbose,...)  else
     if (projection=="sphere")
@@ -214,10 +215,16 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) print('map.ds')
     stopifnot(inherits(x,'ds'))
     x <- subset(x,is=is)
-
+##browser()
     ## REB 2015-03-26
     if (inherits(x,'pca')) {
         map.pca(x,it=it,verbose=verbose,new=new,
+                xlim=xlim,ylim=ylim,projection=projection,
+                lonR=lonR,latR=latR,axiR=axiR,gridlines=gridlines,
+                colbar=colbar) ##col=col,breaks=breaks)
+        return()
+    } else if (inherits(x,'eof')) {
+        map.eof(x,it=it,verbose=verbose,new=new,
                 xlim=xlim,ylim=ylim,projection=projection,
                 lonR=lonR,latR=latR,axiR=axiR,gridlines=gridlines,
                 colbar=colbar) ##col=col,breaks=breaks)
@@ -474,7 +481,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    verbose=FALSE,...) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     ##
     args <- list(...)
                                         #print(args)
@@ -524,7 +531,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    verbose=FALSE,cex=2,...) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,...) {
     if (verbose) print('map.cca')
     ##x <- subset(x,it=it,is=is)
     ## browser()
@@ -607,7 +614,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              verbose=FALSE,geography=TRUE,fancy=FALSE,
                              main=NA,...) {
 
-    if (verbose) print('lonlatprojection')
+    if (verbose) {print('lonlatprojection'); str(x)}
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
     #print(formals(...))
@@ -616,16 +623,17 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (!is.null(colbar)) {
         colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
     } else {
-        if (verbose) print('colbar=NULL - set col etc')
-        colbar$n <- 25
-        colbar$breaks <- pretty(c(x),n=colbar$n)
-        if (verbose) print(colbar$breaks)
-        if (verbose) print(varid(x))
-        colbar$col <- colscal(n=length(colbar$breaks)-1,col=colid)
-        ##  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
-        if (colid=='precip') colbar$col <- rev(colbar$col)
-        colbar$show <- TRUE
-        colbar$pos <- 0.05
+        if (verbose) print('colbar=NULL - no colour bar')    
+# REB 2015-12-02        
+#        colbar$n <- 25
+#        colbar$breaks <- pretty(c(x),n=colbar$n)
+#        if (verbose) print(colbar$breaks)
+#        if (verbose) print(varid(x))
+#        colbar$col <- colscal(n=length(colbar$breaks)-1,col=colid)
+#        ##  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
+#        if (colid=='precip') colbar$col <- rev(colbar$col)
+#        colbar$show <- TRUE
+#        colbar$pos <- 0.05
     }
     ##    par0 <- par()                             # REB 2015-06-25 these lines open an
     ##    fig0 <- par()$fig                         # unused window.
@@ -653,11 +661,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ##    if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
     ##   
     #browser()
-    if (colbar$show) { ## AM 14-07-2015
-        ##        fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
-        fig0[3] <- fig0[3] + colbar$pos ## (fig0[4]-fig0[3])/200##0.05   # REB 2015-06-25
-    } else 
-        fig0 <- fig0                                       # REB 2015-06-25
+# This causes a crash    
+#    if (is.null(colbar$show)) colbar$show <-TRUE #3 Quick fix REB 2015-12-02
+#    if (colbar$show) { ## AM 14-07-2015
+#        ##        fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
+#        fig0[3] <- fig0[3] + colbar$pos ## (fig0[4]-fig0[3])/200##0.05   # REB 2015-06-25
+#    } else 
+#        fig0 <- fig0                                       # REB 2015-06-25
     ##        fig0 <- par0$fig
     ##     par(fig=fig0)                                        ## REB 2015-06-25 opens extra window
     data("geoborders",envir=environment())
@@ -698,38 +708,48 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else period <- NULL
     if (verbose) print(paste('period:',period))
     method <- attr(x,'method')
-    if (verbose) print(c(dim(x),length(srtx),length(srty)))
+    if (verbose) {
+      print(c(dim(x),length(srtx),length(srty)))
+      ## There is something strange happening with x - in some cases it is filled with NAs (REB)
+      print(srtx); print(srty)
+    }
 
     x <- x[srtx,srty]
     if (verbose) {print(xlim); str(x)}
     if (!is.null(xlim)) {
-        outside <- (lon < xlim[1]) | (lon > xlim[2])
+        outside <- (lon < min(xlim)) | (lon > max(xlim))
+        if (verbose) print(paste('mask',sum(outside),length(outside)))
         x[outside,] <- NA
     } else xlim <- range(lon)
     
     if (!is.null(ylim)) {
-        outside <- (lat < ylim[1]) | (lat > ylim[2])
+        outside <- (lat < min(ylim)) | (lat > max(ylim))
+        if (verbose) print(paste('mask',sum(outside),length(outside)))
         x[,outside] <- NA
     } else ylim=range(lat)
     
     ## KMP 2015-10-14: extra colors if higher/lower values occur 
-    nc <- length(colbar$col)
-    crgb <- col2rgb(colbar$col)
-    if(any(x>max(colbar$breaks),na.rm=TRUE)) {
-      cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
-      crgb <- cbind(crgb,cmax)
-      colbar$breaks <- c(colbar$breaks,max(x))
-    }
-
-    if (any(x<min(colbar$breaks),na.rm=TRUE)) {
-      cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
-      crgb <- cbind(cmin,crgb)
-      colbar$breaks <- c(min(x),colbar$breaks)
-    }
-    crgb[crgb>255] <- 255
-    crgb[crgb<0] <- 0
-    colbar$col <- rgb(t(crgb),maxColorValue=255)
-    colbar$n <- length(colbar$col)-1
+# REB 2015-12-02: changing colbar$breaks gives strange looking scale with non-pretty numbers     
+#    nc <- length(colbar$col)
+#    crgb <- col2rgb(colbar$col)
+#    if(any(x>max(colbar$breaks),na.rm=TRUE)) {
+#      if (verbose) print('any(x>max(colbar$breaks)')
+#      cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
+#      crgb <- cbind(crgb,cmax)
+#      colbar$breaks <- c(colbar$breaks,max(x))
+#    }
+#
+#    if (any(x<min(colbar$breaks),na.rm=TRUE)) {
+#      if (verbose) print('any(x<min(colbar$breaks)')
+#      cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
+#      crgb <- cbind(cmin,crgb)
+#      colbar$breaks <- c(min(x),colbar$breaks)
+#    }
+#    crgb[crgb>255] <- 255
+#    crgb[crgb<0] <- 0
+# REB 2015-12-02: The colours should not be changed if colbar$col is specified    
+#    colbar$col <- rgb(t(crgb),maxColorValue=255)
+#    colbar$n <- length(colbar$col)-1
 
     ##print(c(length(breaks),length(col)))
     ##if (is.Date(type))

@@ -39,53 +39,114 @@
 
 
 colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
-    
-    if (is.logical(colbar)) colbar <- NULL
+
+    ## browser()
+    if (is.logical(colbar)) return(NULL)
     ##if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
-    if (is.null(colbar$pal)) colbar$pal <- varid(x)[1]
-    if (is.null(colbar$rev)) colbar$rev <- FALSE
-    if (is.null(colbar$n)) colbar$n <- 10
-    if (is.null(colbar$pal)) {
-        if (is.null(FUN) | !is.precip(x)) colbar$pal <- 't2m' else
-        if ( (is.precip(x)) & ( (FUN=='sum') | (FUN=='trend') |
-                               (FUN=='wetmean') | (FUN=='mean')) ) {
-            colbar$pal <- 'precip'
-            colbar$rev <- TRUE
-        } else colbar$pal <- 't2m'
-    } 
+
+    ##if (!is.null(colbar$col)) {
+    ##    colbar$n <- length(colbar$col) + 1
+    ##    colbar$pal <- NULL
+    ##}   
+   
+    if (is.null(colbar$n))
+        if (!is.null(colbar$col))
+            colbar$n <- length(colbar$col)
+        else
+            colbar$n <- 10
+
     if (is.zoo(x)) x <- coredata(x)
-    if (is.null(colbar$breaks)) {
-        colbar$breaks <- pretty(x,n=colbar$n)
-    } else if (length(colbar$breaks)==2)
-        colbar$breaks <- pretty(seq(colbar$breaks[1],colbar$breaks[2],
-                             length=colbar$n))
-    colbar$n <- length(colbar$breaks)-1
-    if (is.null(colbar$type)) colbar$type <- 'p'
-    if (is.null(colbar$cex)) colbar$cex <- 2
-    if (is.null(colbar$h)) colbar$h <- 0.6
-    if (is.null(colbar$v)) colbar$v <- 1
-    if (is.null(colbar$pos)) colbar$pos <- 0.05
-    if (is.null(colbar$show)) colbar$show <-TRUE 
-    if (verbose) print(colbar)
-    colbar$col <- colscal(n=colbar$n,col=colbar$pal,
-                          rev=colbar$rev,verbose=verbose)
-    if (verbose) print(paste("length(col) =",length(colbar$col)))
-    col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev)       
-    
-    if (!is.null(FUN)) {
-        if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
-            colbar$breaks <- pretty(x,n=colbar$n)
-        } else if (length(colbar$breaks)==2)
-            colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
-                                 length=colbar$n)
-        colbar$n <- length(colbar$breaks)-1
+    x.rng <- range(x,na.rm=TRUE)
+
+    ## very easy case if colbar$col and breaks are provided
+    if (!is.null(colbar$col)) {
+        pal <- NULL ## desactivate pal
+        if (!is.null(colbar$breaks)) {  
+            if (length(colbar$col) != length(colbar$breaks) - 1)
+                stop('Length of breaks must be the lenght of color + 1')   
+        } else colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=colbar$n+1)
+        ## if only colbar$col is provided, then the breaks are set using seq   
     }
 
-    if (!inherits(x,"stationmeta"))
-        colbar$col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev,verbose=verbose)
-    if (verbose) print(paste("length(col) =",length(colbar$col)))
+    ## if breaks are null then use pretty
+    if (is.null(colbar$breaks)) { 
+        if (verbose) print("pretty is used here to set break values ...")
+        if (!is.null(colbar$n))
+            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n))
+        else
+            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2]))
+    }
+    
+    if (is.null(colbar$type)) colbar$type <- 'p'
 
+    if (is.null(colbar$cex)) colbar$cex <- 2
+
+    if (is.null(colbar$h)) colbar$h <- 0.6
+
+    if (is.null(colbar$v)) colbar$v <- 1
+
+    if (is.null(colbar$pos)) colbar$pos <- 0.05
+
+    if (is.null(colbar$show)) colbar$show <-TRUE 
+    ## activate pallette (pal)
+    if (is.null(colbar$pal)) {
+      colbar$pal <- varid(x)[1]
+      if (!is.precip(x)) {
+        colbar$pal <- 't2m'
+        if (is.null(colbar$rev)) colbar$rev <- FALSE
+      } else  {
+        colbar$pal <- 'precip'
+        if (is.null(colbar$rev)) colbar$rev <- TRUE
+      } 
+    }
+# REB 2015-12-02: I do not understand these two lines    
+#    if (!is.null(FUN)) {
+#        if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
+#            colbar$breaks <- pretty(x,n=colbar$n)
+# Replaced by the following line:
+    if (is.null(colbar$breaks)) {
+      ## If colbar$breaks is unspecified, then set up the levels for colour scale:
+      if (verbose) print('define breaks')
+      if (is.null(colbar$col)) {
+        ## If colbar$col is unspecified, then use pretty to provide pretty numbers
+            colbar$breaks <- pretty(x,n=colbar$n)
+      } else {
+        ## If colbar$col *is* specified, then the numbers are given
+        colbar$n <- length(colbar$col)
+        colbar$breaks <- seq(min(x,na.rm=TRUE),max(x,na.rm=TRUE),length=colbar$n+1)
+      }
+    } else if (length(colbar$breaks)==2) {
+      ## If colbar is a vector of two, then it is taken as a range
+      if (!is.null(colbar$col)) colbar$n <- length(colbar$col) else
+      if (!is.null(colbar$n)) colbar$n <- 11 
+      colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
+                           length=colbar$n+1)
+    }
+    colbar$n <- length(colbar$breaks) -1
+
+    
+    ## if colbar$col is null
+    if (is.null(colbar$col)) {
+      if (verbose) print('define col')
+
+        ## colscal is used as default to set the colors
+      if (verbose) print(paste('colbar$n',colbar$n))
+        colbar$col <- colscal(n=colbar$n,col=colbar$pal,
+                              rev=colbar$rev,verbose=verbose)
+      }
+    if (verbose) print(colbar)
+    
+    ##    if (verbose) print(paste("length(col) =",length(colbar$col)))
+    ##    col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev)       
+    
+    ## if (!inherits(x,"stationmeta"))
+    ##     colbar$col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev,verbose=verbose)
+    if (verbose) print(paste("length(col) =",length(colbar$col),
+                             "length(breaks) =",length(colbar$breaks)))
+
+    if (length(colbar$col) != length(colbar$breaks)-1)
+      stop('colbar.ini: Error in setting colbar!')
     ##}
     invisible(colbar)
 }
@@ -279,6 +340,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
   }
   
   if (test) test.col(r,g,b)
+  ## browser()
   if (rev) col <- rev(col)
   return(col)
 }

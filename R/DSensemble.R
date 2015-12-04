@@ -1363,7 +1363,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       ds.ratio <- round(sd(ds[,1],na.rm=TRUE)/sd(y[,1],na.rm=TRUE),4)
       
       if (verbose) print(paste("sd ratio=",ds.ratio))
-      print(names(attributes(ds)))
+      if (verbose) print(names(attributes(ds)))
       if (biascorrect) {
         if (verbose) print('biascorrect')
         diag <- attr(ds,'diagnose')

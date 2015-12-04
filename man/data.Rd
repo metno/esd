@@ -36,6 +36,7 @@
 \alias{NAOI}
 \alias{sunspots}
 \alias{NINO3.4}
+\alias{SOI}
 \alias{bjornholt}
 \alias{vardo}
 \alias{ferder}
@@ -64,6 +65,10 @@
 
   The object \code{geoborders} contains data on coastlines and borders, used in
   the methods \code{\link{map}}.
+
+  Some data sets, such as NINO3.4 and NAOI come with a 'frozen' version
+  in the package, but there are also functions that read the most recent
+  version of these indeces from the Internet.
 
 }
 \usage{
@@ -102,9 +107,12 @@ t2m.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 slp.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 sst.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.NorESM.M(lon=NULL,lat=NULL,anomaly=FALSE)
-data(NAOI)
 data(sunspots)
 data(NINO3.4)
+data(NAOI)
+NINO3.4(url='ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/ersst3b.nino.mth.ascii',header=TRUE)
+NAO(url='http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii.table',header=FALSE)
+SOI(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',header=FALSE)
 data(dse.Oslo)
 HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt",plot=FALSE)
 }
