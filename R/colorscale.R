@@ -88,7 +88,10 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
 
     if (is.null(colbar$pos)) colbar$pos <- 0.05
 
-    if (is.null(colbar$show)) colbar$show <-TRUE 
+    if (is.null(colbar$show)) colbar$show <-TRUE
+
+    if (is.null(colbar$rev)) colbar$rev <- FALSE
+    
     ## activate pallette (pal)
     if (is.null(colbar$pal)) {
       colbar$pal <- varid(x)[1]
@@ -245,28 +248,28 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     col <- topo.colors(n,alpha=alpha)
   } else if (col[1]=="cm.colors") {
     col <- cm.colors(n,alpha=alpha)
-  } else if (col[1]==tolower("GrMg")) {
+  } else if (col[1]==tolower("grmg")) {
     cols <- list(
      r=c(0,0,0,0,0.316,0.526,0.737,1,1,1,1,1,0.947,0.737,0.526,0.316),
      g=c(0.316,0.526,0.737,0.947,1,1,1,1,0.947,0.737,0.526,0.316,0,0,0,0),
      b=c(0,0,0,0,0.316,0.526,0.737,1,1,1,1,1,0.947,0.737,0.526,0.316))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
-  } else if (col[1]==tolower("BrBu")) {
+  } else if (col[1]==tolower("brbu")) {
     cols <- list(
      r=c(0.2,0.4,0.6,0.8,0.85,0.95,0.8,0.6,0.4,0.2,0,0),
      g=c(0.1,0.187,0.379,0.608,0.688,0.855,0.993,0.973,0.94,0.893,0.667,0.48),
      b=c(0,0,0.21,0.480,0.595,0.808,1,1,1,1,0.8,0.6))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
-  } else if (col[1]==tolower("BuDOr")) {
+  } else if (col[1]==tolower("budor")) {
     cols <- list(
      r=c(0.12,0.32,0.6,0.7,0.8,0.9,1,1,1,1,0.8,0.6),
      g=c(0.56,0.768,0.98,0.99,0.997,1,0.9,0.793,0.68,0.56,0.347,0.250),
      b=c(0.6,0.8,1,1,1,1,0.8,0.6,0.4,0.2,0,0))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
-  } else if (col[1]==tolower("BuDRd")) {
+  } else if (col[1]==tolower("budrd")) {
     cols <- list(
      r=c(0.142,0.097,0.16,0.24,0.34,0.46,0.6,0.74,0.92,1,
        1,1,1,1,1,0.97,0.85,0.65),
@@ -275,28 +278,28 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
      b=c(0.85,0.97,1,1,1,1,1,1,1,0.92,0.74,0.6,0.46,0.34,0.24,0.21,0.187,0.13))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
-  } else if (col[1]==tolower("BuGr")) {
+  } else if (col[1]==tolower("bugr")) {
     cols <- list(
      r=c(0,0.2,0.4,0.6,0.7,0.8,0.9,0.9,0.8,0.7,0.6,0.4,0.2,0),
      g=c(0,0.2,0.4,0.6,0.7,0.8,0.9,1,1,1,1,1,1,1),
      b=c(1,1,1,1,1,1,1,0.9,0.8,0.7,0.6,0.4,0.2,0))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
-  } else if (col[1]==tolower("BuGy")) {
+  } else if (col[1]==tolower("bugy")) {
     cols <- list(
      r=c(0,0.4,0.6,0.8,0.9,0.6,0.4,0.2),
      g=c(0.6,0.9,1,1,0.9,0.6,0.4,0.2),
      b=c(0.8,1,1,1,0.9,0.6,0.4,0.2))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
-  } else if (col[1]==tolower("BuOr")) {
+  } else if (col[1]==tolower("buor")) {
     cols <- list(
      r=c(0,0.1,0.2,0.4,0.6,0.8,1,1,1,1,1,1),
      g=c(0.167,0.4,0.6,0.8,0.933,1,1,0.933,0.8,0.6,0.4,0.167),
      b=c(1,1,1,1,1,1,0.8,0.6,0.4,0.2,0.1,0))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
-  } else if (col[1]==tolower("BuOrR")) {
+  } else if (col[1]==tolower("buorr")) {
     cols <- list(
      r=c(0.03,0.2,0.35,0.55,0.75,0.9,0.97,1,1,1,1,1,1,1),
      g=c(0.353,0.467,0.567,0.7,0.833,0.933,0.98,1,1,1,0.8,0.6,0.4,0),
@@ -340,7 +343,6 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
   }
   
   if (test) test.col(r,g,b)
-  ## browser()
   if (rev) col <- rev(col)
   return(col)
 }
