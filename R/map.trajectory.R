@@ -134,6 +134,12 @@ sphere.trajectory <- function(x,
     verbose=FALSE,new=TRUE) {
   
   x0 <- x
+  ## KMP 2015-12-07: apply xlim and ylim
+  is <- NULL
+  if (!is.null(xlim)) is$lon <- xlim
+  if (!is.null(ylim)) is$lat <- ylim
+  x <- subset(x,is=is)
+
   ilons <- colnames(x)=='lon'
   ilats <- colnames(x)=='lat'
   lon <- x[,ilons]
@@ -149,10 +155,12 @@ sphere.trajectory <- function(x,
   X[Y<=0] = NA; Z[Y<=0] <- NA
 
   data("geoborders",envir=environment())
-  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  mlon <- geoborders$x[ok]
-  mlat <- geoborders$y[ok]
-  a <- sphere.rotate(mlon,mlat,lonR=lonR,latR=latR)
+  gx <- geoborders$x
+  gy <- geoborders$y
+  ok <- is.finite(gx) & is.finite(gy)
+  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  a <- sphere.rotate(gx[ok],gy[ok],lonR=lonR,latR=latR)
   x <- a[1,]; y <- a[2,]; z <- a[3,]
     
   if (new) dev.new()
