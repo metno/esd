@@ -50,41 +50,47 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     ##    colbar$n <- length(colbar$col) + 1
     ##    colbar$pal <- NULL
     ##}   
-   
-    if (is.null(colbar$n))
-        if (!is.null(colbar$col))
-            colbar$n <- length(colbar$col)
-        else
-            colbar$n <- 10
-
+    
     if (is.zoo(x)) x <- coredata(x)
     x.rng <- range(x,na.rm=TRUE)
-
-    ## very easy case if colbar$col and breaks are provided
+    
     if (!is.null(colbar$col)) {
-        pal <- NULL ## desactivate pal
-        if (!is.null(colbar$breaks)) {  
-            if (length(colbar$col) != length(colbar$breaks) - 1)
-                stop('Length of breaks must be the lenght of color + 1')   
-        } else colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=colbar$n+1)
-        ## if only colbar$col is provided, then the breaks are set using seq   
-    } else {
-        if (is.null(colbar$pal)) pal <- varid(x)
-        if (!is.null(colbar$breaks))
-          colbar$n <- length(colbar$breaks) -1 else
-          if (!is.null(colbar$n)) colbar$n <- 15
-        colbar$col <- colscal(colbar$n,pal)
+      colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=length(colbar$col)-1)
+      colbar$n <- length(colbar$col)
     }
-
+    
     ## if breaks are null then use pretty
     if (is.null(colbar$breaks)) { 
         if (verbose) print("pretty is used here to set break values ...")
         if (!is.null(colbar$n))
-            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n))
-        else
+            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n+1))
+        else 
             colbar$breaks <- pretty(seq(x.rng[1],x.rng[2]))
-    }
+        colbar$n <- length(colbar$breaks)-1      
+    }        
     
+    #if (is.null(colbar$n))
+    #    if (!is.null(colbar$col))
+    #        colbar$n <- length(colbar$breaks) - 1
+    #    else
+    #        colbar$n <- 10
+
+    ## very easy case if colbar$col and breaks are provided
+    if (!is.null(colbar$col)) {
+        pal <- NA ## disactivate pal
+        if (!is.null(colbar$breaks)) {  
+            if (length(colbar$col) != length(colbar$breaks) - 1)
+                stop('colbar.ini: This should never happen!')   
+        } else colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=colbar$n+1)
+        ## if only colbar$col is provided, then the breaks are set using seq   
+    } else {
+        if (is.null(colbar$pal)) pal <- varid(x)
+    #    if (!is.null(colbar$breaks))
+    #      colbar$n <- length(colbar$breaks) -1 else
+    #      if (!is.null(colbar$n)) colbar$n <- 15
+        colbar$col <- colscal(colbar$n,pal)
+    }
+
     if (is.null(colbar$type)) colbar$type <- 'p'
 
     if (is.null(colbar$cex)) colbar$cex <- 2
