@@ -887,7 +887,7 @@ plot.cca <- function(x,icca=1,colbar=list(pal=NULL,rev=FALSE,n=10,
   plot(w.m,col="blue",lwd=2,
        main=paste("CCA pattern ",icca," for ",varid(x),
          "; r= ",round(r,2),sep=""),
-       xlab="",ylab="",verbose=verbose)
+       xlab="",ylab="")
   lines(v.m,col="red",lwd=2)
 
   par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n",
