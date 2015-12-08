@@ -4,13 +4,14 @@ events2field <- function(x,verbose=FALSE,...) {
   invisible(y)  
 }
 
-density.events <- function(x,dt="month",dx=2,dy=2,
+density.events <- function(x,dt="month",dx=1,dy=1,
                          lons=NULL,lats=NULL,it=NULL,is=NULL,
-                         radius=TRUE,verbose=FALSE,...) {
+                         radius=FALSE,verbose=FALSE,...) {
   if (verbose) print("density.events")
   ok <- !is.na(x["time"][[1]]) & !is.na(x["lon"][[1]]) & !is.na(x["lat"][[1]])
   x <- subset(x,it=ok)
   y <- subset(x,it=it,is=is)
+  if (!"trajectory" %in% colnames(y)) y <- Track.events(y)
   if(is.null(lons)) lons <- y["lon"][[1]]
   if(is.null(lats)) lats <- y["lat"][[1]]
   if(is.null(dx)) dx <- min(diff(sort(unique(lons))))
@@ -24,29 +25,29 @@ density.events <- function(x,dt="month",dx=2,dy=2,
     if (verbose) print("daily")
     d <- as.Date(strptime(y["date"][[1]],"%Y%m%d"))
     dvec <- seq(min(d),max(d),by="day")
-    unit <- 'events/day/(IOOOkm)^2'
+    unit <- 'tracks/day/unit~area'
   } else if (grepl('month',dt)) {
     if (verbose) print("monthly")
     d <- as.Date(as.yearmon(strptime(y["date"][[1]],"%Y%m%d")))
     dvec <- seq(min(d),max(d),by="month")
-    unit <- 'events/month/(IOOOkm)^2'
+    unit <- 'tracks/month/unit~area'
   } else if (grepl('season',dt) | grepl('quarter',dt)) {
     if (verbose) print("seasonal")
     d <- as.Date(as.yearqtr(strptime(y["date"][[1]],"%Y%m%d")))
     dvec <- seq(min(d),max(d),by="quarter")
-    unit <- 'events/quarter/(IOOOkm)^2'
+    unit <- 'tracks/season/unit~area'
   } else if (grepl('year',dt) | grepl('annual',dt)) {
     if (verbose) print("annual")
     d <- as.Date(paste(year(strptime(y["date"][[1]],"%Y%m%d")),"-01-01",sep=""))
     dvec <- seq(min(d),max(d),by="year")
-    unit <- 'events/year/(IOOOkm)^2'
+    unit <- 'tracks/year/unit~area'
   } else if (grepl('hour',dt)) {
     if (verbose) print("hourly")
     d <- as.POSIXct(strptime(paste(y["date"][[1]],y["time"][[1]]),
                              format="%Y%m%d %H"))
     dh <- min(diff(sort(unique(y["time"][[1]]))))
     dvec <- seq(min(d),max(d),by=dh*60*60)
-    unit <- paste('events/',dh,'hours/(IOOOkm)^2',sep='')
+    unit <- paste('tracks/',dh,'hours/unit~area',sep='')
   } else {
     print(paste("WARNING! invalid time resolution dt",dt))
     break
@@ -56,20 +57,18 @@ density.events <- function(x,dt="month",dx=2,dy=2,
   t1 <- Sys.time()
   pb <- txtProgressBar(style=3)
   for (i in 1:length(dvec)) {
-    setTxtProgressBar(pb,i/length(dvec)) 
+    setTxtProgressBar(pb,i/length(dvec))
     yi <- subset.events(y,it=(d==dvec[i]))
     if (!is.null(dim(yi)) & dim(yi)[1]>0) {
-      if (is.numeric(radius)) {
-        ri <- radius
-      } else if (radius==TRUE & "radius" %in% colnames(y)) {
-        ri <- yi["radius"][[1]]
+      if (radius==FALSE | !"radius" %in% colnames(y)) {
+        di <- trackdensity(yi["lon"][[1]],yi["lat"][[1]],
+              yi["trajectory"][[1]],dx=dx,dy=dy,verbose=verbose)
       } else {
-        ri <- NULL
+        di <- cyclonedensity(yi["lon"][[1]],yi["lat"][[1]],
+                radius=yi["radius"][[1]],dx=dx,dy=dy,verbose=verbose)
       }
-      di <- lonlatdensity(yi["lon"][[1]],yi["lat"][[1]],
-                radius=ri,dx=dx,dy=dy,verbose=verbose)
       for(j in 1:length(di$lat)) {
-        X[dvec==dvec[i],lons==di$lon[j],lats==di$lat[j]] <- di$density[j]*1E6
+        X[dvec==dvec[i],lons==di$lon[j],lats==di$lat[j]] <- di$density[j]
       }
     }
   }
@@ -78,10 +77,9 @@ density.events <- function(x,dt="month",dx=2,dy=2,
                 round(as.numeric(t2-t1,units="secs")),'s'))
   d <- dim(X)
   dim(X) <- c(d[1],d[2]*d[3])
-  longname <- paste("event density",attr(x,'longname'),sep=', ')
-  param <- 'density'
+  longname <- paste("track density",attr(x,'longname'),sep=', ')
   Y <- as.field(X,index=dvec,lon=lons,lat=lats,
-          unit=unit,longname=longname,param=param,
+          unit=unit,longname=longname,param='track~density',
           quality=attr(x,'quality'),src=attr(x,'source'),
           url=attr(x,'URL'),reference=attr(x,'reference'),
           info=attr(x,'info'),calendar=attr(x,'calendar'),
@@ -94,8 +92,54 @@ factor2numeric <- function(f) {
   } else return(as.numeric(f))
 }
 
-lonlatdensity <- function(lons,lats,radius=NULL,dx=NULL,dy=NULL,
-                          R=6371,verbose=FALSE,...) {
+
+trackdensity <- function(lons,lats,track,dx=NULL,dy=NULL,
+                         r=5E5,verbose=FALSE) {
+  if (is.null(dx)) dx <- min(diff(sort(unique(lons))))
+  if (is.null(dy)) dy <- min(diff(sort(unique(lats))))
+  fn <- function(A,a=6.378e06) {
+    A <- unique(A)
+    lon <- A$lon
+    lat <- A$lat
+    #if(length(lon)>1) {
+    #  x <- a * cos( lon*pi/180 ) * cos( lon*pi/180 )
+    #  y <- a * cos( lat*pi/180 ) * sin( lon*pi/180 )
+    #  z <- a * sin( lat*pi/180 )
+    #  n <- length(x)*2
+    #  xa <- approx(x,n=n)$y
+    #  ya <- approx(y,n=n)$y
+    #  za <- approx(z,n=n)$y
+    #  lon <- atan2( ya, xa )*180/pi 
+    #  lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
+    #}
+    xvec <- seq(round(min(lon)/dx)*dx-dx*10,round(max(lon)/dx)*dx+dx*10,dx)
+    yvec <- seq(round(min(lat)/dy)*dy-dy*10,round(max(lat)/dy)*dy+dy*10,dy)
+    xx <- as.vector(sapply(xvec,function(x) rep(x,length(yvec))))
+    yy <- rep(yvec,length(xvec))
+    if(length(lon)>1) {
+      #i <- mapply(function(a,b,d) distAB(a,b,xx,yy)<d,lon,lat,r)
+      i <- lapply(1:length(lon),function(i) distAB(lon[i],lat[i],xx,yy)<r)
+      rx <- unlist(lapply(i,function(j) xx[j]))
+      ry <- unlist(lapply(i,function(j) yy[j]))
+    } else {
+      i <- distAB(lon,lat,xx,yy)<r
+      rx <- xx[i]
+      ry <- yy[i]
+    }
+    xy <- unique(data.frame(x=rx,y=ry))
+    invisible(xy)
+  }
+  lonlat <- do.call(rbind,by(data.frame(lon=lons,lat=lats),track,fn))
+  hits <- as.data.frame(table(lon=lonlat[,1],lat=lonlat[,2]))
+  hx <- factor2numeric(hits$lon)
+  hy <- factor2numeric(hits$lat)
+  d <- hits$Freq
+  invisible(data.frame(lon=hx,lat=hy,density=d))
+}
+
+
+cyclonedensity <- function(lons,lats,radius=NULL,dx=NULL,dy=NULL,
+                          R=6371,verbose=FALSE) {
   if (!is.null(dx)) {
     lons <- round(lons/dx)*dx
   } else {
@@ -121,11 +165,11 @@ lonlatdensity <- function(lons,lats,radius=NULL,dx=NULL,dy=NULL,
     hy <- factor2numeric(hits$lat)
     A <- dx*(pi/180)*R**2*abs(sin(min(hy+dy/2,90)*pi/180)-
                            sin((hy-dy/2)*pi/180))
-    d <- hits$Freq/A
+    d <- hits$Freq/A*1E6
     d[is.infinite(d)] <- NA
     invisible(cbind(hx,hy,d))
   }
-  if (is.null(radius)) radius <- 1E5
+  if (is.null(radius)) radius <- 5E5
   dens <- fn(lons,lats,radius,dx,dy)
   hlons <- dens[,]
   hlats <- dens[,2]

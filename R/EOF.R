@@ -75,7 +75,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   ## browser()
   
   Y <- t(coredata(x))
-  
+
   # Apply geographical weighting to account for different grid area at
   # different latitudes:
   if (verbose) print('svd:')
@@ -110,8 +110,23 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   ny <- min(c(dim(y),20)) # REB 2015-05-21
   # Apply the SVD decomposition: see e.g. Strang (1988) or Press et al. (1989)
   #SVD <- svd(y,nu=min(c(20,npca)),nv=min(c(20,npca)))
-  SVD <- svd(y,nu=min(c(ny,npca)),nv=min(c(ny,npca)))
-
+  ## KMP 23-11-2015
+  ## When running DSensemble, this convergence error comes up occasionally:
+  ## "Error in La.svd(x, nu, nv) : error code 1 from Lapack routine 'dgesdd'."
+  ## For some reason rounding the matrix before performing svd helps.
+  ## Another alternative is to do svd on the matrix transpose
+  #y <- round(y,digits=10)
+  #SVD <- svd(y,nu=min(c(ny,npca)),nv=min(c(ny,npca)))
+  SVD <- try(svd(y,nu=min(c(ny,npca)),nv=min(c(ny,npca))))
+  if (inherits(SVD,"try-error")) {
+    if (verbose) print("svd(x) failed. try svd(t(x))")
+    SVD <- try(svd(t(y),nu=min(c(ny,npca)),nv=min(c(ny,npca))))
+    temp <- SVD$u
+    SVD$u <- SVD$v
+    SVD$v <- temp
+  }
+  if (inherits(SVD,"try-error") & verbose) print("both svd(x) and svd(t(x) failed.")
+      
   #print("---"); print(dim(SVD$u)); print(dim(SVD$v)); print("---")
 
   autocor <- 0
@@ -230,7 +245,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     fakedates <- paste(t,'-01-01',sep='')
     realdates <- paste(t,'-01-01',sep='')
   }
-
+  
   #print(realdates)
   # Keep track of the different fields:
   if (is.null(attr(X,'source'))) attr(X,'source') <- "0"
@@ -302,7 +317,6 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   
   attr(Y,'dimensions') <- c(d[1,1],d[1,2],sum(ngood>0))
   #print(dim(Y)); print(attr(Y,'dimensions'))
-  #browser()
 
   eof <- EOF.field(Y,it=it,is=is,n=n,
                    area.mean.expl=area.mean.expl,verbose=verbose)
