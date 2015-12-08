@@ -56,7 +56,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     x.rng <- range(x,na.rm=TRUE)
     
     if (!is.null(colbar$col)) {
-      colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=length(colbar$col)-1)
+      colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1)
       colbar$n <- length(colbar$col)
     }
     
