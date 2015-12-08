@@ -41,6 +41,7 @@
 colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
 
     ## browser()
+    if (verbose) {print('colbar.ini'); str(colbar)}
     if (is.null(colbar)) colbar <- list(show=FALSE)
     if (is.logical(colbar)) colbar <- list(show=colbar)
     ##if (!is.null(colbar)) {
