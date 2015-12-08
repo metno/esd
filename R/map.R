@@ -634,7 +634,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 #        if (colid=='precip') colbar$col <- rev(colbar$col)
 #        colbar$show <- TRUE
 #        colbar$pos <- 0.05
-    }
+#    }
     ##    par0 <- par()                             # REB 2015-06-25 these lines open an
     ##    fig0 <- par()$fig                         # unused window.
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
