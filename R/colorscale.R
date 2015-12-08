@@ -68,6 +68,12 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
                 stop('Length of breaks must be the lenght of color + 1')   
         } else colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=colbar$n+1)
         ## if only colbar$col is provided, then the breaks are set using seq   
+    } else {
+        if (is.null(colbar$pal) pal <- varid(x)
+        if (!is.null(colbar$breaks))
+          colbar$n <- length(colbar$breaks) -1 else
+          if (!is.null(colbar$n)) colbar$n <- 15
+        colbar$col <- colscal(colbar$n,pal)
     }
 
     ## if breaks are null then use pretty
