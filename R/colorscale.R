@@ -80,8 +80,10 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     if (!is.null(colbar$col)) {
         pal <- NA ## disactivate pal
         if (!is.null(colbar$breaks)) {  
-            if (length(colbar$col) != length(colbar$breaks) - 1)
+            if (length(colbar$col) != length(colbar$breaks) - 1) {
+                str(colbar)
                 stop('colbar.ini: This should never happen!')   
+            }
         } else colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=colbar$n+1)
         ## if only colbar$col is provided, then the breaks are set using seq   
     } else {
