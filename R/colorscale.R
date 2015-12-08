@@ -87,11 +87,11 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
         } else colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=colbar$n+1)
         ## if only colbar$col is provided, then the breaks are set using seq   
     } else {
-        if (is.null(colbar$pal)) pal <- varid(x)
+        if (is.null(colbar$pal)) colbar$pal <- varid(x)
     #    if (!is.null(colbar$breaks))
     #      colbar$n <- length(colbar$breaks) -1 else
     #      if (!is.null(colbar$n)) colbar$n <- 15
-        colbar$col <- colscal(colbar$n,pal)
+        colbar$col <- colscal(colbar$n,colbar$pal)
     }
 
     if (is.null(colbar$type)) colbar$type <- 'p'
