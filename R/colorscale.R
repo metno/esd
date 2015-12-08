@@ -41,7 +41,8 @@
 colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
 
     ## browser()
-    if (is.logical(colbar)) return(NULL)
+    if (is.null(colbar)) colbar <- list(show=FALSE)
+    if (is.logical(colbar)) colbar <- list(show=colbar)
     ##if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
 
