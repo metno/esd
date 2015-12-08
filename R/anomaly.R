@@ -4,11 +4,12 @@
 
 anomaly <-function(x,...) UseMethod("anomaly")
 
-anomaly.default <- function(x,...) {
-    if (inherits(x,'annual')) y <- anomaly.annual(x,...) else
-    if (inherits(x,'month')) y <- anomaly.month(x,...) else
-    if (inherits(x,'day')) y <- anomaly.day(x,...) else
-    if (inherits(x,'season')) y <- anomaly.season(x,...) else
+anomaly.default <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
+    if (verbose) print(class(x))
+    if (inherits(x,'annual')) y <- anomaly.annual(x,ref=ref,na.rm=na.rm,...) else
+    if (inherits(x,'month')) y <- anomaly.month(x,ref=ref,na.rm=na.rm,...) else
+    if (inherits(x,'day')) y <- anomaly.day(x,ref=ref,na.rm=na.rm,...) else
+    if (inherits(x,'season')) y <- anomaly.season(x,ref=ref,na.rm=na.rm,...) else
     y <- as.annual(x,...)
     return(y)
 }
@@ -23,9 +24,9 @@ anomaly.dsensemble <- function(x,ref=NULL,...) {
     return(x)
 }
 
-anomaly.field <- function(x,...) {
+anomaly.field <- function(x,ref=NULL,na.rm=TRUE,...) {
   stopifnot(inherits(x,"field"))
-  x <- as.anomaly(x)
+  x <- as.anomaly(x,...)
   return(x)
 }
 
