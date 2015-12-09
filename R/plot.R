@@ -1215,7 +1215,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   if (showtrend) {
 #    par(fig=c(0.6,0.9,0.25,0.4),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
 #        cex.main=0.75,xpd=NA,col.main="grey30")
-    par(fig=c(0.22,0.45,0.75,0.96),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
+    par(fig=c(0.23,0.45,0.78,0.98),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
 #    h <- hist(diag$deltagcm,plot=FALSE)
 #    hist(diag$deltagcm,freq=FALSE,col="grey80",lwd=2,border="grey",
@@ -1253,7 +1253,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
       lat2 <- attr(geoborders,"borders")$y
       ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
       lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
-      par(fig=c(0.68,0.95,0.73,0.96),new=TRUE, mar=c(0,0,0,0),
+      par(fig=c(0.7,0.95,0.78,0.98),new=TRUE, mar=c(0,0,0,0),
         cex.main=0.75,xpd=NA,col.main="grey",bty="n")
       plot(lon[ok],lat[ok],lwd=1,col="black",type='l',xlab=NA,ylab=NA,
          axes=FALSE)
