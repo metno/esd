@@ -620,10 +620,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     #print(formals(...))
     ## If only a few items are provided in colbar - hen set the rest to the default
     ## browser()
-    if (!is.null(colbar)) {
+    #if (!is.null(colbar)) {
         colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
-    } else {
-        if (verbose) print('colbar=NULL - no colour bar')    
+    #} else {
+    #    if (verbose) print('colbar=NULL - no colour bar')    
 # REB 2015-12-02        
 #        colbar$n <- 25
 #        colbar$breaks <- pretty(c(x),n=colbar$n)
@@ -634,7 +634,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 #        if (colid=='precip') colbar$col <- rev(colbar$col)
 #        colbar$show <- TRUE
 #        colbar$pos <- 0.05
-    }
+#    }
     ##    par0 <- par()                             # REB 2015-06-25 these lines open an
     ##    fig0 <- par()$fig                         # unused window.
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25

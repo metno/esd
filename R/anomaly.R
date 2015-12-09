@@ -4,11 +4,12 @@
 
 anomaly <-function(x,...) UseMethod("anomaly")
 
-anomaly.default <- function(x,...) {
-    if (inherits(x,'annual')) y <- anomaly.annual(x,...) else
-    if (inherits(x,'month')) y <- anomaly.month(x,...) else
-    if (inherits(x,'day')) y <- anomaly.day(x,...) else
-    if (inherits(x,'season')) y <- anomaly.season(x,...) else
+anomaly.default <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
+    if (verbose) print(class(x))
+    if (inherits(x,'annual')) y <- anomaly.annual(x,ref=ref,na.rm=na.rm,...) else
+    if (inherits(x,'month')) y <- anomaly.month(x,ref=ref,na.rm=na.rm,...) else
+    if (inherits(x,'day')) y <- anomaly.day(x,ref=ref,na.rm=na.rm,...) else
+    if (inherits(x,'season')) y <- anomaly.season(x,ref=ref,na.rm=na.rm,...) else
     y <- as.annual(x,...)
     return(y)
 }
@@ -23,9 +24,9 @@ anomaly.dsensemble <- function(x,ref=NULL,...) {
     return(x)
 }
 
-anomaly.field <- function(x,...) {
+anomaly.field <- function(x,ref=NULL,na.rm=TRUE,...) {
   stopifnot(inherits(x,"field"))
-  x <- as.anomaly(x)
+  x <- as.anomaly(x,...)
   return(x)
 }
 
@@ -77,7 +78,7 @@ anomaly.station <- function(x,...) {
   return(x)
 }
 
-anomaly.annual <- function(x,ref=1961:1990,verbose=FALSE) {
+anomaly.annual <- function(x,ref=1961:1990,verbose=FALSE,...) {
   if (verbose) print('anomaly.annual')
   X <- x;  x <- coredata(X)
   t <- index(X)
@@ -102,7 +103,7 @@ anomaly.annual <- function(x,ref=1961:1990,verbose=FALSE) {
   return(x)
 }
 
-anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
+anomaly.month <- function(x,ref=NULL,verbose=FALSE,...) {
 #   anomaly.month1 <- function(x,yr=NULL,ref=NULL) {
  ## This function computes the anomalies by removing the 12-month seasonal cycle
  ##       l <- length(x); n <- ceiling(l/12)
@@ -187,7 +188,7 @@ anomaly.month <- function(x,ref=NULL,verbose=FALSE) {
 }
 
 
-anomaly.season <- function(x,ref=NULL,verbose=FALSE) {
+anomaly.season <- function(x,ref=NULL,verbose=FALSE,...) {
 
   anomaly.season1 <- function(x,yr=NULL,ref=NULL,verbose=FALSE,what='anomaly') {
 # This function computes the anomalies by removing the 12-month seasonal cycle
@@ -232,7 +233,7 @@ anomaly.season <- function(x,ref=NULL,verbose=FALSE) {
 }
 
 
-anomaly.day <- function(x,ref=NULL,verbose=FALSE) {
+anomaly.day <- function(x,ref=NULL,verbose=FALSE,...) {
 
   anomaly.day.1 <- function(x,t0,t,ref=NULL) {
     ## One station 

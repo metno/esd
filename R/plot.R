@@ -869,11 +869,13 @@ plot.mvr <- function(x) {
 }
 
 
-plot.cca <- function(x,icca=1,colbar=NULL,verbose=FALSE,...) {
+plot.cca <- function(x,icca=1,colbar=list(pal=NULL,rev=FALSE,n=10,
+                        breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),verbose=FALSE,...) {
   if (verbose) print("plot.cca")
   dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
-  map.cca(x,icca=icca,colbar=colbar,...)
+  map.cca(x,icca=icca,colbar=colbar,verbose=verbose,...)
 
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
              sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
