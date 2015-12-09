@@ -68,7 +68,8 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
         else 
             colbar$breaks <- pretty(seq(x.rng[1],x.rng[2]))
         colbar$n <- length(colbar$breaks)-1      
-    }        
+    }
+    if (is.null(colbar$n)) colbar$n <- length(colbar$breaks)-1 
     
     #if (is.null(colbar$n))
     #    if (!is.null(colbar$col))

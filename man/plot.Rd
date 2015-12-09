@@ -19,13 +19,15 @@
 \alias{nam2expr}
 \title{Plot esd objects}
 \description{
-  These plot functions are S3 methods for esd objects.
+  These plot functions are S3 methods for esd objects, based on \code{plot}.
 }
 \usage{
 nam2expr(x)
-plot.station(x,plot.type="single",new=TRUE,
-             lwd=3,type='l',pch=0,main=NULL,col=NULL,
-             xlim=NULL,ylim=NULL,xlab="",ylab=NULL,...)
+plot.station(x, plot.type = "single", new = TRUE, lwd = 3, type = "l", 
+    pch = 0, main = NULL, col = NULL, xlim = NULL, ylim = NULL, 
+    xlab = "", ylab = NULL, errorbar = TRUE, legend.show = FALSE, 
+    map.show = TRUE, map.type = "points", mar = c(4.5, 4.5, 0.75, 
+        0.5), alpha = 0.3, verbose = FALSE, ...) 
 plot.eof(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,what=c("pc","eof","var"),...)
 plot.eof.field(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,what=c("pc","eof","var"),...)
 plot.eof.comb(x,new=TRUE,xlim=NULL,ylim=NULL,
@@ -58,10 +60,12 @@ vis.map(x,col='red',map.type='points')
   \item{it}{For subsetting in time - See \code{link{subset}}.'it=0'
     returns the annual means (mean of DJF + MAM + JJA + SON)}
   \item{FUN}{function}
+  \item{map.show}{Show a small map of the location}
+  \item{map.type}{}
  }
 \value{A field object}
 
-\seealso{
+\seealso{\code{\link{plot}}
 }
 
 \author{R.E. Benestad}
