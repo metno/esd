@@ -204,22 +204,22 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
   
   ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
-  crgb <- col2rgb(colbar$col)
-  if(any(map>max(colbar$breaks))) {
-    cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
-    crgb <- cbind(crgb,cmax)
-    index[index>nc] <- nc+1
-    colbar$breaks <- c(colbar$breaks,max(map))
-  }
-  if(any(map<min(colbar$breaks))) {
-    cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
-    crgb <- cbind(cmin,crgb)
-    index[index>nc] <- nc+1
-    colbar$breaks <- c(min(map),colbar$breaks)
-  }
-  crgb[crgb>255] <- 255; crgb[crgb<0] <- 0
-  colbar$col <- rgb(t(crgb),maxColorValue=255)
-  colbar$n <- length(colbar$col)-1
+#  crgb <- col2rgb(colbar$col)
+#  if(any(map>max(colbar$breaks))) {
+#    cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
+#    crgb <- cbind(crgb,cmax)
+#    index[index>nc] <- nc+1
+#    colbar$breaks <- c(colbar$breaks,max(map))
+#  }
+#  if(any(map<min(colbar$breaks))) {
+#    cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
+#    crgb <- cbind(cmin,crgb)
+#    index[index>nc] <- nc+1
+#    colbar$breaks <- c(min(map),colbar$breaks)
+#  }
+#  crgb[crgb>255] <- 255; crgb[crgb<0] <- 0
+#  colbar$col <- rgb(t(crgb),maxColorValue=255)
+#  colbar$n <- length(colbar$col)-1
   #if (min(colbar$breaks)<min(map)) index[map<min(colbar$breaks)] <- 1
   #if (max(colbar$breaks)>max(map)) index[map>max(colbar$breaks)] <- nc
   if (verbose) print('set colours')

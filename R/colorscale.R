@@ -40,6 +40,15 @@
 
 colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
 
+  ## Number of digits when rounding off - to get a prettier scale
+    ndig <- function(x) {
+      i0 <- x==0
+      if (sum(i0)>0) x[i0] <- 1
+      y <- -trunc(log(abs(x))/log(10))
+      if (sum(i0)>0) y[i0] <- 0
+      return(y)
+    }
+    
     ## browser()
     if (verbose) {print('colbar.ini'); str(colbar)}
     if (is.null(colbar)) colbar <- list(show=FALSE)
@@ -54,9 +63,11 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     
     if (is.zoo(x)) x <- coredata(x)
     x.rng <- range(x,na.rm=TRUE)
-    
+    nd <- max(0,ndig(x.rng)+2)
+
     if (!is.null(colbar$col)) {
-      colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1)
+      if (is.null(colbar$breaks))
+        colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1),nd)
       colbar$n <- length(colbar$col)
     }
     
@@ -68,7 +79,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
         else 
             colbar$breaks <- pretty(seq(x.rng[1],x.rng[2]))
         colbar$n <- length(colbar$breaks)-1      
-    }
+      }
     if (is.null(colbar$n)) colbar$n <- length(colbar$breaks)-1 
     
     #if (is.null(colbar$n))
@@ -85,7 +96,8 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
                 str(colbar)
                 stop('colbar.ini: This should never happen!')   
             }
-        } else colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=colbar$n+1)
+        } else if (is.null(colbar$breaks))
+          colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),nd)
         ## if only colbar$col is provided, then the breaks are set using seq   
     } else {
         if (is.null(colbar$pal)) colbar$pal <- varid(x)
