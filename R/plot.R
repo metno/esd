@@ -973,18 +973,18 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
   u <- par("usr")
   dx <- (u[2]-u[1])/20
   dy <- (u[4]-u[3])/20
-  arrows(u[1]+dx,u[3]+0.4*dy,u[2]-dx,u[3]+0.4*dy,
+  arrows(u[1]+dx,u[3],u[2]-dx,u[3],
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
-  arrows(u[2]-dx,u[3]+0.4*dy,u[1]+dx,u[3]+0.4*dy,
+  arrows(u[2]-dx,u[3],u[1]+dx,u[3],
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
-  arrows(u[1]+0.4*dx,u[4]-dy,u[1]+0.4*dx,u[3]+dy,
+  arrows(u[1],u[4]-dy,u[1],u[3]+dy,
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
-  arrows(u[1]+0.4*dx,u[3]+dy,u[1]+0.4*dx,u[4]-dy,
+  arrows(u[1],u[3]+dy,u[1],u[4]-dy,
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
-  mtext("ensemble < obs",side=1,line=0,adj=0,cex=par("cex")*0.75)
-  mtext("ensemble > obs",side=1,line=0,adj=1,cex=par("cex")*0.75)
-  mtext("ensemble < obs",side=2,line=0.5,adj=0,cex=par("cex")*0.75)
-  mtext("ensemble > obs",side=2,line=0.5,adj=1,cex=par("cex")*0.75)  
+  mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.75)
+  mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.75)
+  mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.75)
+  mtext("ensemble < obs",side=2,line=0.5,adj=1,cex=par("cex")*0.75)  
   bcol=c("grey95","grey40")
   for (i in 1:10) {
     r <- (11-i)*10
@@ -1101,12 +1101,16 @@ plot.dsensemble.pca <- function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
 
 plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
                              envcol=rgb(1,0,0,0.2),legend=TRUE,
-                             map.show=FALSE,map.type="points",
+                             map.show=FALSE,map.type="points",new=TRUE,
                              xrange=NULL,yrange=NULL,verbose=FALSE,...) {
-  #print("plot.dsensemble")
+  if(verbose) print("plot.dsensemble")
   stopifnot(inherits(x,'dsensemble'))
   #print("subset") 
   ## browser()
+  #if (inherits(x,'pca')) {
+  #  plot.dsensemble.pca(x,)
+  #} else {
+    
   if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
     z <- x
   #print("diagnose")
@@ -1133,6 +1137,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
                       ylim <- args[[iyl]]  
   #print("...")
+  if(new) dev.new()
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='')
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
@@ -1210,7 +1215,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   if (showtrend) {
 #    par(fig=c(0.6,0.9,0.25,0.4),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
 #        cex.main=0.75,xpd=NA,col.main="grey30")
-    par(fig=c(0.20,0.45,0.77,0.99),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
+    par(fig=c(0.22,0.45,0.75,0.96),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
 #    h <- hist(diag$deltagcm,plot=FALSE)
 #    hist(diag$deltagcm,freq=FALSE,col="grey80",lwd=2,border="grey",
@@ -1238,7 +1243,6 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
     if(is.null(yrange) & !is.null(attr(z,"lat"))) {
       yrange <- range(attr(z,"lat")) + c(-10,10)
     }
-    ##browser()
     if (!is.null(xrange) & !is.null(xrange)) {
       data(geoborders)
       lon <- geoborders$x
@@ -1249,7 +1253,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
       lat2 <- attr(geoborders,"borders")$y
       ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
       lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
-      par(fig=c(0.68,0.95,0.78,0.97),new=TRUE, mar=c(0,0,0,0),
+      par(fig=c(0.68,0.95,0.73,0.96),new=TRUE, mar=c(0,0,0,0),
         cex.main=0.75,xpd=NA,col.main="grey",bty="n")
       plot(lon[ok],lat[ok],lwd=1,col="black",type='l',xlab=NA,ylab=NA,
          axes=FALSE)
@@ -1268,19 +1272,24 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   # finished plotting
 
   if (legend) {
-#    par(fig=c(0.5,0.9,0,0.15),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
-    par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+    par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+    #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
     legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
                       paste(diag$robs,'%'),
                       paste(diag$outside,"observations"),
                       "p-value: "),
             bty="n",cex=0.7,text.col="grey40")
-    legend(0.5,0.90,c(expression(paste(levels(factor(unit(x)))[1]/d*e*c*a*d*e)),
+    #legend(0.5,0.90,c(expression(paste(levels(factor(unit(x)))[1]/d*e*c*a*d*e)),
+    #                  "ensemble trends > obs.",
+    #                  "outside ensemble 90% conf.int.",
+    #                  paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
+    #        bty="n",cex=0.7,text.col="grey40")
+    legend(0.5,0.90,c(paste(levels(factor(unit(y)))[1],"/decade",sep=""),
                       "ensemble trends > obs.",
                       "outside ensemble 90% conf.int.",
                       paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
-            bty="n",cex=0.7,text.col="grey40")
+            bty="n",cex=0.7,text.col="grey40")    
   }
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
