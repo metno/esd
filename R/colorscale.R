@@ -50,7 +50,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     }
     
     ## browser()
-    if (verbose) {print('colbar.ini'); str(colbar)}
+    if (verbose) {print('colbar.ini'); print(colbar)}
     if (is.null(colbar)) colbar <- list(show=FALSE)
     if (is.logical(colbar)) colbar <- list(show=colbar)
     ##if (!is.null(colbar)) {
@@ -180,6 +180,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     if (length(colbar$col) != length(colbar$breaks)-1)
       stop('colbar.ini: Error in setting colbar!')
     ##}
+    if (verbose) {print(colbar); print(' exists colbar.ini')}
     invisible(colbar)
 }
 
@@ -194,7 +195,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     points(g,col="green")
   }
 
-  if (verbose) print(paste('colscal:',col))
+  if (verbose) print(paste('colscal:',col,'rev=',rev,'n=',n,'alpha=',alpha))
   if (is.null(col)) col <- 't2m'
   if (is.null(alpha)) alpha <- 1
   # Set up colour-palette
@@ -264,7 +265,6 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
-    rev <- TRUE
   } else if (col[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6,alpha=alpha)
   } else if (col[1]=="gray.colors") {
