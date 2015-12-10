@@ -956,6 +956,50 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   image(1:2,1:n,colbar,col=col)  
 }
 
+plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+  if (verbose) print('plot.diagnose.matrix')
+  x <- as.data.frame(x)
+  par(bty="n")
+  if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
+  if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
+  wt <- 0:360
+  dev.new()
+  plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
+       xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
+       main=paste("Diagnostics: common EOFs",attr(x,'variable')),
+       xlim=xlim,ylim=ylim,col="grey",
+       sub=paste(x$calibrationdata," - ",rownames(x$mean.diff),collapse = "/"))
+  lines(c(0,10),rep(0,2))
+  lines(rep(0,2),c(0,10))
+  n <- length(x$mean.diff)
+  j <- 1:n
+  col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n))
+  cex <- x$autocorr.ratio;
+  cex[!is.finite(cex)] <- 1
+  pch <- rep(19,n); pch[cex < 0] <- 21
+  cex <- abs(cex); cex[cex > 2] <- 2
+  if (verbose) {
+     print('Mean difference:');print(x$mean.diff)
+     print('Ration of standard deviation');print(x$sd.ratio)
+     print('Size');print(cex)
+     print('col');print(col)
+     points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
+  }
+  
+  points(abs(x$mean.diff),1-x$sd.ratio,pch=pch,col=col,cex=cex)
+  legend(xlim[1],ylim[2],c("same sign","different sign"),
+         pch=c(19,21),bty="n",col="grey")
+  par(xpd=TRUE)
+  text(xlim[1],ylim[2],'AR(1) - symbol size',col='grey40',pos=3)
+
+  text(xlim[2],ylim[2],'EOF #',col='grey40',cex=0.8,pos=3)
+  par(new=TRUE,fig=c(0.85,0.95,0.70,0.85),mar=c(0,3,0,0),
+      cex.axis=0.7,yaxt="s",xaxt="n",las=1)
+  colbar <- rbind(1:n,1:n)
+  image(1:2,1:n,colbar,col=col)  
+}
+
+
 plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=TRUE,
                                      map.type="points",verbose=FALSE,...) {
   if (verbose) print('plot.diagnose.dsensemble')
