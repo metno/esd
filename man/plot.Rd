@@ -14,6 +14,7 @@
 \alias{plot.diagnose}
 \alias{plot.xval}
 \alias{plot.diagnose.comb.eof}
+\alias{plot.diagnose.matrix}
 \alias{plot.diagnose.dsensemble}
 \alias{plot.nevents}
 \alias{nam2expr}
@@ -41,6 +42,7 @@ plot.field(x,is=NULL,it=NULL,FUN="mean",...)
 plot.spell(x)
 plot.diagnose(x,...) 
 plot.diagnose.comb.eof(x,...)
+plot.diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,...)
 plot.diagnose.dsensemble(x,map=TRUE,verbose=FALSE,new=TRUE,cex=NULL)
 plot.xval(x,...)
 plot.dsensemble(x,pts=FALSE,showci=TRUE,showtrend=TRUE,legend=TRUE,it=0,
