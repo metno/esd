@@ -1661,6 +1661,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                             diag$s.2$autocorr.ratio[1],
                             diag$s.3$autocorr.ratio[1],
                             diag$s.4$autocorr.ratio[1]))
+        
       }
       scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,1-ds.ratio,
                           1-round(var(xval[,2])/var(xval[,1]),2))

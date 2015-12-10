@@ -37,17 +37,18 @@
 #1	100	217	255	255	*Under 10
 #0	1	229	229	229	*Ikke nedbør
 
+ndig <- function(x) {
+  i0 <- (x==0) & !is.finite(x)
+  if (sum(i0)>0) x[i0] <- 1
+  y <- -trunc(log(abs(x))/log(10))
+  if (sum(i0)>0) y[i0] <- 0
+  return(y)
+}
 
 colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
 
   ## Number of digits when rounding off - to get a prettier scale
-    ndig <- function(x) {
-      i0 <- x==0
-      if (sum(i0)>0) x[i0] <- 1
-      y <- -trunc(log(abs(x))/log(10))
-      if (sum(i0)>0) y[i0] <- 0
-      return(y)
-    }
+
     
     ## browser()
     if (verbose) {print('colbar.ini'); print(colbar)}
