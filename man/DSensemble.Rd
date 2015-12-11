@@ -4,8 +4,10 @@
 \alias{DSensemble.t2m}
 \alias{DSensemble.precip}
 \alias{DSensemble.annual}
+\alias{DSensemble.season}
 \alias{DSensemble.mu}
 \alias{DSensemble.mu.worstcase}
+\alias{DSensemble.pca}
 \title{Downscale ensemble runs}
 \description{
 Downscales an ensemble of climate model runs, e.g. CMIP5, taking the
@@ -23,10 +25,11 @@ philosophy as the old R-package '\code{clim.pact}', but there is a new
 default way of handling the predictors. In order to attempt to ensure a
 degree of consistency between the downscaled results and those of the
 GCMs, a fist covariate is introduced before the principal components
-(PCs) describing the \code{\link{EOF}s}. The argument
-\code{area.mean.expl=TRUE} will take the time series describing area
-mean value for the selected predictor domain as the first covariate,
-followed by the PCs. These are then used in the regression analysis. 
+(PCs) describing the \code{\link{EOF}s}. 
+
+\code{DSensemble.pca} is used to downscale a predictor represented in
+terms of PCA, and can reduce the computation time significantly. See
+Benestad et al. (2015) \url{http://dx.doi.org/10.3402/tellusa.v67.28326}. 
 
 The argument \code{non.stationarity.check} is used to conduct an
 additional test, taking the GCM results as 'pseudo-reality' where the
@@ -46,53 +49,95 @@ conf. int and comparing trends for the past.
 DSensemble(y,...)
 DSensemble.default(y,path='CMIP5.monthly/',rcp='rcp45',...) 
 DSensemble.t2m(y,plot=TRUE,path="CMIP5.monthly/",
-                           predictor="~/ERA40_t2m_mon.nc",
+                           predictor="ERA40_t2m_mon.nc",
                            rcp="rcp45",biascorrect=FALSE,
-                           area.mean.expl=FALSE,
-                           non.stationarity.check=FALSE,
-                           eofs=1:6,lon=c(-15,15),lat=c(-10,10),
+                           non.stationarity.check=FALSE,type='ncdf',
+                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",
-                           pattern="tas_Amon_ens_",verbose=FALSE)
-DSensemble.precip(y,plot=TRUE,path="CMIP5.monthly/",
-                  rcp="rcp45",biascorrect=FALSE,
-                  predictor="~/ERA40_pr_mon.nc",
-                  area.mean.expl=FALSE,
-                  non.stationarity.check=FALSE,
-                  eofs=1:6,lon=c(-15,15),lat=c(-10,10),
-                  select=NULL,FUN="exceedance",
-                  FUNX="sum",threshold=1,
-                  pattern="pr_Amon_ens_",verbose=FALSE)
+                           pattern="tas_Amon_ens_",
+                           path.ds=NULL,file.ds="DSensemble.rda",
+                           nmin=NULL,verbose=FALSE)
+DSensemble.precip((y,plot=TRUE,path="CMIP5.monthly/",
+                              rcp="rcp45",biascorrect=FALSE,
+                              predictor="ERA40_pr_mon.nc",
+                              non.stationarity.check=FALSE,
+                              type='ncdf',
+                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                              select=NULL,FUN="wetmean",
+                              FUNX="sum",threshold=1,
+                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL)
 DSensemble.annual(y,plot=TRUE,path="CMIP5.monthly/",
-                  rcp="rcp45",biascorrect=FALSE,
-                  predictor="ERA40_t2m_mon.nc",
-                  non.stationarity.check=FALSE,
-                  area.mean.expl=FALSE,type='ncdf',
-                  eofs=1:6,lon=c(-10,10),lat=c(-10,10),
-                  abscoords=FALSE,select=NULL,FUN=NULL,
-                  FUNX="mean",threshold=1,
-                  pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL)
+                              rcp="rcp45",biascorrect=FALSE,
+                              predictor="ERA40_t2m_mon.nc",
+                              non.stationarity.check=FALSE,type='ncdf',
+                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                              abscoords=FALSE,select=NULL,FUN=NULL,
+                              FUNX="mean",threshold=1,
+                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL)
+DSensemble.season(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
+                           predictor="slp.mon.mean.nc",
+                           rcp="rcp45",biascorrect=FALSE,
+                           non.stationarity.check=FALSE,type='ncdf',
+                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                           select=NULL,FUN="mean",FUNX="mean",
+                           pattern="psl_Amon_ens_",
+                           path.ds=NULL,file.ds=NULL,
+                           nmin=NULL,verbose=FALSE)
 DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
-              rcp="rcp45",biascorrect=FALSE,
-              predictor="~/ERA40_t2m_mon.nc",
-              non.stationarity.check=FALSE,
-              eofs=1:16,lon=c(-30,20),lat=c(-20,10),
-              select=NULL,FUN="wetmean",
-              FUNX="C.C.eq",threshold=1,
-              pattern="tas_Amon_ens_",verbose=FALSE)
-DSensemble.mu.worstcase(y,plot=TRUE,path="~/CMIP5.monthly/",
-                        predictor="~/ERA40_t2m_mon.nc",
-                        rcp="rcp45",biascorrect=FALSE,
-                        eofs=1:6,lon=c(-20,20),lat=c(-10,10),
-                        select=NULL,FUN="wetmean",
-                        pattern="tas_Amon_ens_",verbose=FALSE)
+                          rcp="rcp45",biascorrect=FALSE,
+                          predictor=list(t2m="data/ncep/air.mon.mean.nc",
+                                         olr="data/ncep/OLR.mon.mean.nc",
+                                         slp="data/ncep/slp.mon.mean.nc"),
+                          non.stationarity.check=FALSE,type='ncdf',
+                          eofs=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
+                          select=NULL,FUN="wetmean",threshold=1,
+                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365)
+DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
+                                    predictor="ERA40_t2m_mon.nc",
+                                    rcp="rcp45",biascorrect=FALSE,
+                                    lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                                    select=NULL,FUN="wetmean",type='ncdf',
+                                    pattern="tas_Amon_ens_",verbose=FALSE)
+DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
+                          rcp="rcp45",biascorrect=FALSE,
+                          predictor="ERA40_t2m_mon.nc",
+                          non.stationarity.check=FALSE,
+                          eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
+                          select=NULL,FUN="mean",rmtrend=TRUE,
+                          FUNX="mean",threshold=1,type='ncdf',
+                          pattern="tas_Amon_ens_",verbose=FALSE,
+                          file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL)
 }
 \arguments{
     \item{y}{A station object.}
     \item{plot}{Plot intermediate results if TRUE.}
     \item{path}{The path where the GCM results are stored.}
     \item{rcp}{Which (RCP) scenario}
-    \item{area.mean.expl}{When TRUE, subtract the area mean for the domain
-  and use as a the first co-variate before the PCs from the EOF analysis.}
+    \item{biascorrect}{TRUE, apply a bias adjustment using \code{\link{biasfix}}}
+    \item{predictor}{}
+    \item{non.stationarity.check}{}
+    \item{eofs}{Which EOFs to include in the step-wise multiple regresion}
+    \item{rmtrend}{TRUE: detrend before calibrating the regression model.}
+    \item{lon}{Longitude range for predictor}
+    \item{lat}{Latitude range for predictor}
+    \item{rel.cord}{TRUE: use the range relative to predictand; FALSE
+use absolute range}
+    \item{it}{Used to extract months or a time period. See \code{\slink{subset}}.}
+    \item{select}{GCMs to select, e.g .subsample the ensemble (1:3
+selects the three first GCMs)}
+    \item{FUN}{Function for aggregating the predictand (daily),
+e.g. 'mean', 'wetmean'}
+    \item{treshold}{Used together with FUN for some functions ('wetmean').}
+    \item{nmin}{Minimum number of day used in \code{\link{annual}} used
+for aggregating the predictand/predictor}
+    \item{FUNX}{Function for transforming the predictor, e.g. '\code{\link{C.C.eq}}'
+to estimate the saturation water vapout}
+    \item{type}{Type of netCDF used in \code{\link{retrieve}} for
+reading GCM data.}
+    \item{pattern}{File name pattern for GCM data.}
+    \item{verbose}{TRUE for checking and debugging the functions.}
+    \item{file.ds}{Name of file savming the results.}
+    \item{path.ds}{Path of file savming the results.}
  }
 \value{A 'dsensembele' object - a list object holding DS-results.}
 \author{R.E. Benestad and A. Mezghani}
@@ -111,7 +156,7 @@ if (!file.exists(fioesm))
     download.file(url=file.path(url,fioesm), destfile=fioesm,
                   method = "auto", quiet = FALSE, mode = "w",cacheOK = TRUE)
 ## Downscale 2m temperature             
-rcp4.5 <- DSensemble.t2m(Oslo,path='~',rcp='',pattern = "tas_Amon_",biascorrect=TRUE, area.mean.expl=TRUE, predictor = "~/air.2m.mon.mean.nc",plot=TRUE)
+rcp4.5 <- DSensemble.t2m(Oslo,path='~',rcp='',pattern = "tas_Amon_",biascorrect=TRUE, predictor = "~/air.2m.mon.mean.nc",plot=TRUE)
 
 # Evaluation: (1) combare the past trend with downscaled trends for same
 # interval by ranking and by fitting a Gaussian to the model ensemble;

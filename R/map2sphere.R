@@ -222,7 +222,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 #  colbar$n <- length(colbar$col)-1
   #if (min(colbar$breaks)<min(map)) index[map<min(colbar$breaks)] <- 1
   #if (max(colbar$breaks)>max(map)) index[map>max(colbar$breaks)] <- nc
-  if (verbose) print('set colours')
+  if (verbose) {print('map2sphere: set colours'); print(colbar)}
   
 # Rotate coastlines:
   a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)

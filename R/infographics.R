@@ -839,9 +839,10 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
       colbar=list(palette='t2m',rev=FALSE,n=n,breaks=NULL,
           type="p",cex=2,h=0.6,v=1,pos=0.1,show=TRUE)
   }
-  if (is.null(colbar$breaks)) {
-      colbar$breaks <- c(-max(abs(z.q95)),max(abs(z.q95)))
-  }
+  ## REB: 2015-12-10: drop these after colbar.ini has been revised
+#  if (is.null(colbar$breaks)) {
+#      colbar$breaks <- round(c(-max(abs(z.q95)),max(abs(z.q95))),ndig(z.q95))
+#  }
 
   if (inherits(X,"pca")) {
     xval <- lapply(X[3:length(X)],function(x) attr(x,"evaluation"))
@@ -870,7 +871,7 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
   if(verbose) print('size - quality of fit (magnitude & trend)')
 
   colbar <- colbar.ini(z,colbar=colbar,verbose=verbose)
-  colbar$breaks <- signif(colbar$breaks,digits=2)
+#  colbar$breaks <- signif(colbar$breaks,digits=2)
 
   icol <- apply(as.matrix(z),2,findInterval,colbar$breaks)
   col <- colbar$col[icol]

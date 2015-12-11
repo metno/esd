@@ -577,3 +577,8 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
   }  
   invisible(d)
 }
+
+diagnose.matrix <- function(X,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+  if (verbose) print('diagnose.matrix')
+  plot.diagnose.matrix(X,xlim=xlim,ylim=ylim,verbose=verbose)
+}
