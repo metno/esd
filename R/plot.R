@@ -914,21 +914,24 @@ plot.diagnose <- function(x,...) {
   if (inherits(x,"dsensembles")) plot.diagnose.dsensemble(x,...)
 }
 
-plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,...) {
   stopifnot(!missing(x), inherits(x,"diagnose"),
             inherits(x,"eof"),inherits(x,"comb"))
-  dev.new()
-  par(bty="n")
-  if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
-  if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
-  wt <- 0:360
-  plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
-       xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
-       main=paste("Diagnostics: common EOFs",attr(x,'variable')),
-       xlim=xlim,ylim=ylim,col="grey",
-       sub=paste(x$calibrationdata," - ",rownames(x$mean.diff),collapse = "/"))
-  lines(c(0,10),rep(0,2))
-  lines(rep(0,2),c(0,10))
+
+  if (!add) {
+    dev.new()
+    par(bty="n")
+    if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
+    if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
+    wt <- 0:360
+    plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
+         xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
+         main=paste("Diagnostics: common EOFs",attr(x,'variable')),
+         xlim=xlim,ylim=ylim,col="grey",
+         sub=paste(x$calibrationdata," - ",rownames(x$mean.diff),collapse = "/"))
+    lines(c(0,10),rep(0,2))
+    lines(rep(0,2),c(0,10))
+  }
   n <- length(x$mean.diff)
   j <- 1:n
   col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n))

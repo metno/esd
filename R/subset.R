@@ -956,10 +956,10 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       c(sum(selx),sum(sely),sum(ii)) -> attr(y,'dimensions')
     }
     
-
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)   
+    if (verbose) print('exit default.subset')
     if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))
     return(y)
 }
