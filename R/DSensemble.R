@@ -41,9 +41,8 @@ DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
 DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            predictor="ERA40_t2m_mon.nc",
                            rcp="rcp45",biascorrect=FALSE,
-                           non.stationarity.check=FALSE,
-                           area.mean.expl=FALSE,type='ncdf',
-                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),
+                           non.stationarity.check=FALSE,type='ncdf',
+                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",
                            pattern="tas_Amon_ens_",
                            path.ds=NULL,file.ds="DSensemble.rda",
@@ -64,9 +63,9 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   y <- as.4seasons(y,FUN=FUN,nmin=nmin)
 
   if(verbose) print("Set lon/lat predictor range")
-  if ( !is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) )
+  if ( !is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) & rel.cord)
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-  if ( !is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) )
+  if ( !is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
   # The units
@@ -171,22 +170,22 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
     if (verbose) print("- - - > EOFs")
     
-    Z1 <- try(EOF(X.DJF,area.mean.expl=area.mean.expl))
+    Z1 <- try(EOF(X.DJF))
     if (inherits(Z1,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(Z1[[1]],con=flog)
     }
-    Z2 <- try(EOF(X.MAM,area.mean.expl=area.mean.expl))
+    Z2 <- try(EOF(X.MAM))
     if (inherits(Z2,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(Z2[[1]],con=flog)
     }
-    Z3 <- try(EOF(X.JJA,area.mean.expl=area.mean.expl))
+    Z3 <- try(EOF(X.JJA))
     if (inherits(Z3,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(Z3[[1]],con=flog)
     }
-    Z4 <- try(EOF(X.SON,area.mean.expl=area.mean.expl))
+    Z4 <- try(EOF(X.SON))
     if (inherits(Z4,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(Z4[[1]],con=flog)
@@ -245,8 +244,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #save(file='inside.dsens.1.rda',ds,y,Z)
 
       if (non.stationarity.check) {
-        testds <- DS(testy,testZ,biascorrect=biascorrect,
-                     area.mean.expl=area.mean.expl,eofs=eofs)   # REB 29.04.2014
+        testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)   # REB 29.04.2014
         testz <- attr(testds,'appendix.1')                      # REB 29.04.2014
         difference.z <- testy - testz                           # REB 29.04.2014
       }
@@ -353,8 +351,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (non.stationarity.check)
     attr(X,'on.stationarity.check') <- difference.z else
     attr(X,'on.stationarity.check') <- NULL
-  if (area.mean.expl) attr(X,'area.mean.expl') <- TRUE else
-                      attr(X,'area.mean.expl') <- FALSE
   class(X) <- c("dsensemble","zoo")
   if (!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
   save(file=file.ds,X)#"DSensemble.rda",X)
@@ -367,8 +363,8 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_pr_mon.nc",
                               non.stationarity.check=FALSE,
-                              area.mean.expl=FALSE,type='ncdf',
-                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),
+                              type='ncdf',
+                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
                               FUNX="sum",threshold=1,
                               pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL) {
@@ -390,9 +386,9 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   #
   index(y) <- year(y)
   
-  if (!is.na(attr(y,'longitude')))
+  if (!is.na(attr(y,'longitude')) & rel.cord)
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-  if (!is.na(attr(y,'latitude')))
+  if (!is.na(attr(y,'latitude')) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
   
   # Get the predictor: ERA40
@@ -509,8 +505,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
      
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
-      testds <- DS(testy,testZ,biascorrect=biascorrect,
-                   area.mean.expl=area.mean.expl,eofs=eofs)  # REB 29.04.2014
+      testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)  # REB 29.04.2014
       testz <- attr(testds,'appendix.1')                     # REB 29.04.2014
       difference.z <- testy - testz                          # REB 29.04.2014
     }
@@ -519,7 +514,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     diag <- diagnose(Z)
     if (biascorrect) Z <- biasfix(Z)
     if (verbose) print("- - - > DS")
-    ds <- try(DS(y,Z,eofs=eofs,area.mean.expl=area.mean.expl,verbose=verbose))
+    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds[[1]],con=flog)
@@ -592,8 +587,6 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (non.stationarity.check)
     attr(X,'on.stationarity.check') <- difference.z else
     attr(X,'on.stationarity.check') <- NULL
-  if (area.mean.expl) attr(X,'area.mean.expl') <- TRUE else
-                      attr(X,'area.mean.expl') <- FALSE
   attr(X,'history') <- history.stamp(y)
   class(X) <- c("dsensemble","zoo")
   save(file="DSensemble.rda",X)
@@ -604,9 +597,8 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
 DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_t2m_mon.nc",
-                              non.stationarity.check=FALSE,
-                              area.mean.expl=FALSE,type='ncdf',
-                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),
+                              non.stationarity.check=FALSE,type='ncdf',
+                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
                               FUNX="mean",threshold=1,
                               pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL) {
@@ -618,9 +610,9 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   
   if (!abscoords) {
     ## If relative coordinates:
-    if (!is.na(attr(y,'longitude')))
+    if (!is.na(attr(y,'longitude')) & rel-cord)
       lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-    if (!is.na(attr(y,'latitude')))
+    if (!is.na(attr(y,'latitude')) & rel.cord)
       lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
   }
   
@@ -633,9 +625,18 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   rm("predictor"); gc(reset=TRUE)
   attr(pre,"source") <- "ERA40"
 
+  if (!is.null(it)) {
+    if (verbose) print('Extract some months ot a time period')
+    if (verbose) print(it)
+    pre <- subset(pre,it=it)
+      ## if it is character, then then extraction of months reduces number of
+      ## months per year.
+    if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+  }
+
   # Use proportional variaions
   if (verbose) print("Annual mean")
-  PRE <- annual(pre,FUN=FUNX) 
+  PRE <- annual(pre,FUN=FUNX,nmin=nmin) 
 
   if (verbose) print("graphics")
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
@@ -680,8 +681,14 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realisation'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
+
+    if (!is.null(it)) {
+      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print(it)
+      gcm <- subset(gcm,it=it)
+    }
     
-    GCM <- annual(gcm,FUN=FUNX)
+    GCM <- annual(gcm,FUN=FUNX,nmin=nmin)
 
     model.id <- attr(gcm,'model_id')
 
@@ -703,8 +710,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
      
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
-      testds <- DS(testy,testZ,biascorrect=biascorrect,
-                   area.mean.expl=area.mean.expl,eofs=eofs)  # REB 29.04.2014
+      testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)  # REB 29.04.2014
       testz <- attr(testds,'appendix.1')                     # REB 29.04.2014
       difference.z <- testy - testz                          # REB 29.04.2014
     }
@@ -713,7 +719,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     diag <- diagnose(Z)
     if (biascorrect) Z <- biasfix(Z)
     if (verbose) print("- - - > DS")
-    ds <- try(DS(y,Z,eofs=eofs,area.mean.expl=area.mean.expl,verbose=verbose))
+    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds[[1]],con=flog)
@@ -789,8 +795,6 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (non.stationarity.check)
     attr(X,'on.stationarity.check') <- difference.z else
     attr(X,'on.stationarity.check') <- NULL
-  if (area.mean.expl) attr(X,'area.mean.expl') <- TRUE else
-                      attr(X,'area.mean.expl') <- FALSE
   attr(X,'history') <- history.stamp(y)
   class(X) <- c("dsensemble","zoo")
   save(file="DSensemble.rda",X)
@@ -801,9 +805,8 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
 DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,
-                           non.stationarity.check=FALSE,
-                           area.mean.expl=FALSE,type='ncdf',
-                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),
+                           non.stationarity.check=FALSE,type='ncdf',
+                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",
                            pattern="psl_Amon_ens_",
                            path.ds=NULL,file.ds=NULL,
@@ -816,9 +819,9 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   }
        
   if(verbose) print("Set lon/lat predictor range")
-  if ( !is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) )
+  if ( !is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) & rel.cord)
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-  if ( !is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) )
+  if ( !is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
   if(verbose) print("Arrange units")
@@ -835,8 +838,8 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   if (nchar(s1)==1) s1 <- paste("0",s1,sep="")
   if (nchar(s2)==1) s2 <- paste("0",s2,sep="")
   if (is.null(nmin)) nmin <- length(sm)
-  ys <- as.seasons(y,start=paste(s1,"01",sep="-"),
-                  end=paste(s2,"28",sep="-"),FUN=FUN)
+  ys <- as.4seasons(y,start=paste(s1,"01",sep="-"),
+                            end=paste(s2,"28",sep="-"),FUN=FUN)
   ys <- ys[attr(ys,"n.valid")>=nmin]
   if (FUN=="sum" & grepl("month",attr(ys,"unit"))) {
     attr(ys,"unit") <- gsub("month","season",attr(ys,"unit"))
@@ -913,7 +916,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
     rm("gcm"); gc(reset=TRUE)
     SLPGCM <- combine(SLP,GCM)
     if (verbose) print("- - - > EOFs")
-    Z <- EOF(SLPGCM,area.mean.expl=area.mean.expl)
+    Z <- EOF(SLPGCM)
 
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
@@ -935,8 +938,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print("post-processing")
       z <- attr(ds,'appendix.1')
       if (non.stationarity.check) {
-        testds <- DS(testy,testZ,biascorrect=biascorrect,
-                     area.mean.expl=area.mean.expl,eofs=eofs)   # REB 29.04.2014
+        testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)   # REB 29.04.2014
         testz <- attr(testds,'appendix.1')                      # REB 29.04.2014
         difference.z <- testy - testz                           # REB 29.04.2014
       }
@@ -1046,11 +1048,6 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   } else {
     attr(X,'non.stationarity.check') <- NULL
   }
-  if (area.mean.expl) {
-    attr(X,'area.mean.expl') <- TRUE
-  } else {
-    attr(X,'area.mean.expl') <- FALSE
-  }
   class(X) <- c("dsensemble","season","zoo")
   if (is.null(file.ds)) {
     file.ds <- paste("DSensemble",rcp,N,attr(y,"variable"),
@@ -1069,7 +1066,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                          olr="data/ncep/OLR.mon.mean.nc",
                                          slp="data/ncep/slp.mon.mean.nc"),
                           non.stationarity.check=FALSE,type='ncdf',
-                          eofs=1:16,lon=c(-30,20),lat=c(-20,10),
+                          eofs=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="wetmean",threshold=1,
                           pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365) {
 
@@ -1090,9 +1087,9 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (!inherits(y,'annual')) y <- annual(y,FUN=FUN,threshold=threshold,nmin=nmin)
   index(y) <- year(y)
   
-  if (!is.na(attr(y,'longitude')))
+  if (!is.na(attr(y,'longitude')) & rel.cord)
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-  if (!is.na(attr(y,'latitude')))
+  if (!is.na(attr(y,'latitude')) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
   
   # Get the predictor: NCEP/NCAR
@@ -1331,7 +1328,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
 DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                     predictor="ERA40_t2m_mon.nc",
                                     rcp="rcp45",biascorrect=FALSE,
-                                    lon=c(-20,20),lat=c(-10,10),
+                                    lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf',
                                     pattern="tas_Amon_ens_",verbose=FALSE) {
   if (verbose) print('DSensemble.mu.worstcase')
@@ -1344,9 +1341,9 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   ys <- aggregate(y,by=month,FUN=FUN)
   ya <- aggregate(y,by=year,FUN=FUN)
   
-  if (!is.na(attr(y,'longitude')))
+  if (!is.na(attr(y,'longitude')) & rel.cord)
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-  if (!is.na(attr(y,'latitude')))
+  if (!is.na(attr(y,'latitude')) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
   if (verbose) print("predictor")
@@ -1453,18 +1450,18 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
                           predictor="ERA40_t2m_mon.nc",
                           non.stationarity.check=FALSE,
-                          eofs=1:16,lon=c(-30,20),lat=c(-20,10),
+                          eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="mean",rmtrend=TRUE,
                           FUNX="mean",threshold=1,type='ncdf',
                           pattern="tas_Amon_ens_",verbose=FALSE,
-                          file.ds="DSensemble.rda",path.ds=NULL,nmin=nmin) {
+                          file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
 
   if (verbose) print('DSensemble.pca')
   cls <- class(y)
   # This function is for downscaling PCA to represent a group of stations
-  if (!is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) )
+  if (!is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) & rel.cord)
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
-  if (!is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)))
+  if (!is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
   if (is.character(predictor))
@@ -1475,7 +1472,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data')
-    T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
+    T2M <- as.4seasons(t2m,FUN=FUNX)
     T2M <- matchdate(T2M,y)
 
     # Recursive: do each season seperately if there are more than one season
@@ -1499,10 +1496,18 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   } else if (inherits(y,'annual')) {
     if (verbose) print('annual data')
+    if (!is.null(it)) {
+      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print(it)
+      t2m <- subset(t2m,it=it)
+      ## if it is character, then then extraction of months reduces number of
+      ## days per year.
+      if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+    }
     if (!is.annual(t2m)) {
       if (FUNX!='C.C.eq')
         T2M <- annual(t2m,FUN=FUNX,nmin=nmin) else
-        T2M <- annual(C.C.eq(t2m),FUN='mean')
+        T2M <- annual(C.C.eq(t2m),FUN='mean',nmin=nmin)
   } else T2M <- t2m
     T2M <- matchdate(T2M,y)
   } else if (inherits(y,'month')) {
@@ -1546,14 +1551,19 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
+    if (!is.null(it)) {
+      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print(it)
+      gcm <- subset(gcm,it=it)
+    }
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
     if (inherits(y,'season')) {
       GCM <- as.4seasons(gcm,FUN=FUNX)
       GCM <- subset(GCM,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
-      if (FUNX!='C.C.eq') GCM <- annual(gcm,FUN=FUNX) else
-                          GCM <- annual(C.C.eq(gcm),FUN='mean')
+      if (FUNX!='C.C.eq') GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+                          GCM <- annual(C.C.eq(gcm),FUN='mean',nmin=nmin)
     } else if (inherits(y,'month')) {
       if (length(table(month(y)))==1)
         GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
@@ -1696,7 +1706,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (non.stationarity.check)
     attr(dse.pca,'on.stationarity.check') <- difference.z else
     attr(dse.pca,'on.stationarity.check') <- NULL
-  attr(dse.pca,'area.mean.expl') <- FALSE
   class(dse.pca) <- c("dsensemble","pca","list")
 
   if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
