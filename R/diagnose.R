@@ -18,8 +18,8 @@ diagnose.comb <- function(x) {
 }
 
 
-diagnose.eof <- function(x) {
-  if (inherits(x,'comb')) y <- diagnose.comb.eof(x) else
+diagnose.eof <- function(x,...) {
+  if (inherits(x,'comb')) y <- diagnose.comb.eof(x,...) else
                           y <- x
   return(y)
 }
@@ -68,6 +68,7 @@ diagnose.comb.eof <- function(x,verbose=FALSE) {
                common.period=range(index(Y)),sd0=Ys,
                calibrationdata=attr(x,'source'))
   attr(diag,'variable') <- attr(x,'variable')
+  attr(diag,'evaluation_period') <- paste(start(Y),end(Y),sep='-')
   #print(summary(diag))
   attr(diag,'history') <- history.stamp(x)
   class(diag) <- c("diagnose","comb","eof","list")

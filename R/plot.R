@@ -915,6 +915,7 @@ plot.diagnose <- function(x,...) {
 }
 
 plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,...) {
+  if (verbose) print('plot.diagnose.comb.eof')
   stopifnot(!missing(x), inherits(x,"diagnose"),
             inherits(x,"eof"),inherits(x,"comb"))
 
@@ -922,12 +923,13 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
   j <- 1:n
   col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n),0.3)
 
+  if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
+  if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
+  
   if (!add) {
     dev.new()
     par(bty="n")
     par0 <- par()
-    if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
-    if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
     wt <- 0:360
     plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
          xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
@@ -941,7 +943,6 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
            pch=c(19,21),bty="n",col="grey")
     par(xpd=TRUE)
     text(xlim[1],ylim[2],'AR(1) - symbol size',col='grey40',pos=3)
-
     text(xlim[2],ylim[2],'EOF #',col='grey40',cex=0.8,pos=3)
 
     par(new=TRUE,fig=c(0.85,0.95,0.70,0.85),mar=c(0,3,0,0),
@@ -949,9 +950,9 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
      colbar <- rbind(1:n,1:n)
     image(1:2,1:n,colbar,col=col)
     par(fig=par0$fig,mar=par0$mar,cex.axis=par0$cex.axis,
-        xlab='',ylab='',main='',sub='',
         yaxt=par0$yaxt,xaxt=par0$xaxt,las=par0$las,new=TRUE)
-    plot(cos(pi*wt/180),sin(pi*wt/180),type="n",xlim=xlim,ylim=ylim)
+    plot(cos(pi*wt/180),sin(pi*wt/180),type="n",xlim=xlim,ylim=ylim,
+         xlab='',ylab='',main='',sub='')
     par(par0$new)
   }
   cex <- x$autocorr.ratio;
@@ -962,7 +963,7 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
      print('Ration of standard deviation');print(x$sd.ratio)
      print('Size');print(cex)
      print('col');print(col)
-     points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
+     #points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
   }
   
   points(abs(x$mean.diff),1-x$sd.ratio,pch=pch,col=col,cex=cex)
