@@ -652,11 +652,11 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
               inherits(x,'field'),inherits(y,'field'))
     clsx <- class(x); clsy <- class(y)
     hst <- c(attr(x,'history'),attr(y,'history'))
-    if ( (unit(x)=="hPa") & (unit(x)=="hPa")) {
+    if ( (unit(x)=="hPa") & (unit(y)=="Pa")) {
         coredata(x) <- 100*coredata(x)
         attr(x,'unit') <- 'Pa'
     }
-    if ( (unit(y)=="hPa") & (unit(y)=="hPa")) {
+    if ( (unit(y)=="hPa") & (unit(x)=="Pa")) {
         coredata(y) <- 100*coredata(y)
         attr(y,'unit') <- 'Pa'
     }

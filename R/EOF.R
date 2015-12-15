@@ -155,19 +155,20 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   Ave <- rep(NA,d[1]*d[2])
   Ave[skip == npts] <- ave
 
-  if (area.mean.expl) {
-    if (verbose) print('area.mean.expl')
-    ave <- ave + mean(A,na.rm=TRUE)
-    A <- A - mean(A,na.rm=TRUE)
-    s <- sd(A,na.rm=TRUE)
-    A <- A/s
-    n <- n + 1
-    #print(dim(pattern))
-    pattern <- cbind(rep(1,d[1]*d[2]),pattern)
-    SVD$d <- c(d[1]*d[2]*s,SVD$d)
-    #print(dim(pattern))
-    eof <- merge(zoo(A,order.by=index(eof)),eof)
-  }
+  ## Do no longer use this REB
+#  if (area.mean.expl) {
+#    if (verbose) print('area.mean.expl')
+#    ave <- ave + mean(A,na.rm=TRUE)
+#    A <- A - mean(A,na.rm=TRUE)
+#    s <- sd(A,na.rm=TRUE)
+#    A <- A/s
+#    n <- n + 1
+#    #print(dim(pattern))
+#    pattern <- cbind(rep(1,d[1]*d[2]),pattern)
+#    SVD$d <- c(d[1]*d[2]*s,SVD$d)
+#    #print(dim(pattern))
+#    eof <- merge(zoo(A,order.by=index(eof)),eof)
+#  }
   #print(dim(pattern)); print(d); print(n)
 
   # Make all the EOF vectors havine the same sense rather than
@@ -228,8 +229,8 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
 
   #print('soutpole-to-northpole')
   X <- sp2np(X)
-  YYt <- t(coredata(X)); 
-  clim <- rowMeans(YYt,na.rm=TRUE);
+  YYt <- t(coredata(X));
+  clim <- rowMeans(YYt,na.rm=TRUE)
   YYt <- YYt - clim
   YY <- t(YYt)
   d <- attr(X,'dimensions')

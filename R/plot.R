@@ -269,7 +269,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   col <- rep(col,n.app)
   src <- rep("",n.app+1)
   src[1] <- attr(x,'source')
-  ylab <- paste("PC",1:n)
+  ylab <- paste("PC",n)
   main <- paste("EOF: ",n,"accounts for",
                 round(var.eof[n],1),"% of variance")
 
@@ -277,7 +277,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 #    par(xaxt="s",yaxt="s")
 #    plot.eof.var(x,new=FALSE,cex.main=0.7)
     par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
+    plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
 
   if (is.null(ylim)) {
