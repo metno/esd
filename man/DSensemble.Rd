@@ -122,7 +122,7 @@ DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
     \item{lat}{Latitude range for predictor}
     \item{rel.cord}{TRUE: use the range relative to predictand; FALSE
 use absolute range}
-    \item{it}{Used to extract months or a time period. See \code{\slink{subset}}.}
+    \item{it}{Used to extract months or a time period. See \code{\link{subset}}.}
     \item{select}{GCMs to select, e.g .subsample the ensemble (1:3
 selects the three first GCMs)}
     \item{FUN}{Function for aggregating the predictand (daily),

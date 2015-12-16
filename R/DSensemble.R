@@ -67,7 +67,12 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
   if ( !is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
-
+  
+  if (sum(!is.finite(lon))>0) 
+    warning(paste('Bad longitude range provided: ',paste(lon,collapse='-')))
+  if (sum(!is.finite(lat))>0) 
+    warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
+  
   # The units
   if(verbose) print("Arrange units")
   if ( (unit(y)[1] == "deg C") | (unit(y)[1] == "degree Celsius") |
@@ -390,6 +395,11 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
   if (!is.na(attr(y,'latitude')) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
+
+  if (sum(!is.finite(lon))>0) 
+    warning(paste('Bad longitude range provided: ',paste(lon,collapse='-')))
+  if (sum(!is.finite(lat))>0) 
+    warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
   # Get the predictor: ERA40
   if (verbose) print("predictor")
@@ -615,6 +625,11 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (!is.na(attr(y,'latitude')) & rel.cord)
       lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
   }
+
+  if (sum(!is.finite(lon))>0) 
+    warning(paste('Bad longitude range provided: ',paste(lon,collapse='-')))
+  if (sum(!is.finite(lat))>0) 
+    warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
   # Get the predictor: ERA40
   if (verbose) print("predictor")
@@ -824,6 +839,11 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   if ( !is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
+  if (sum(!is.finite(lon))>0) 
+    warning(paste('Bad longitude range provided: ',paste(lon,collapse='-')))
+  if (sum(!is.finite(lat))>0) 
+    warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
+  
   if(verbose) print("Arrange units")
   if ( (unit(y)[1] == "deg C") | (unit(y)[1] == "degree Celsius") |
        (unit(y)[1] == "degC") | (unit(y)[1] == "Celsius") )
@@ -1091,6 +1111,11 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
   if (!is.na(attr(y,'latitude')) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
+
+  if (sum(!is.finite(lon))>0) 
+    warning(paste('Bad longitude range provided: ',paste(lon,collapse='-')))
+  if (sum(!is.finite(lat))>0) 
+    warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
   # Get the predictor: NCEP/NCAR
   if (verbose) print(paste("Get the set of predictors:",names(predictor),collapse=' '))
@@ -1346,6 +1371,11 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (!is.na(attr(y,'latitude')) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
+  if (sum(!is.finite(lon))>0) 
+    warning(paste('Bad longitude range provided: ',paste(lon,collapse='-')))
+  if (sum(!is.finite(lat))>0) 
+    warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
+  
   if (verbose) print("predictor")
   if (is.character(predictor))
     pre <- spatial.avg.field(C.C.eq(retrieve(ncfile=predictor,lon=lon,lat=lat,
@@ -1464,6 +1494,11 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (!is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) & rel.cord)
     lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
 
+  if (sum(!is.finite(lon))>0) 
+    warning(paste('Bad longitude range provided: ',paste(lon,collapse='-')))
+  if (sum(!is.finite(lat))>0) 
+    warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
+    
   if (is.character(predictor))
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,
                     type=type,verbose=verbose) else
