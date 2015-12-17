@@ -118,7 +118,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   srty <- order(lat); lat <- lat[srty]
   map <- x[srtx,srty]
   param <- attr(x,'variable')
-  unit <- attr(x,'unit')
+  unit <- attr(x,'unit')[1]
+  if (!is.null(unit)) if (unit =='%') unit <- "'%'"
+  
   ## KMP 10-11-2015: prepare unit and parameter labels
   if(!is.null(param) & !inherits(param,'expression'))
     param <- gsub(" ","~",param)
@@ -145,7 +147,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   gx <- geoborders$x
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
-   if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
   if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   theta <- pi*gx[ok]/180
   phi <- pi*gy[ok]/180
@@ -307,8 +309,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
     param <- as.character(param); unit <- as.character(unit)
     if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
       if(!is.null(unit)) txt <- param
-    text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),
-       cex=1.5,pos=4) 
+    text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4) 
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   result <- NULL # For now...

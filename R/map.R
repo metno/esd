@@ -38,6 +38,7 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(X,'latitude') <- lat(x)
     attr(X,'variable') <- attr(x,'variable')
     attr(X,'unit') <- attr(x,'unit')[1]
+    if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
     attr(X,'source') <- attr(x,'source')
     attr(X,'variable') <- varid(x)
     if (inherits(X,'zoo')) attr(X,'time') <- range(index(x)) else
@@ -182,6 +183,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     attr(X,'latitude') <- attr(x,'latitude')
     attr(X,'variable') <- attr(x,'variable')
     attr(X,'unit') <- attr(x,'unit')[1]
+    if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
     attr(X,'source') <- attr(x,'source')
     attr(X,'time') <- range(index(x))
     if ( (pattern==1) & !is.null(attr(x, "area.mean.expl")) )
@@ -341,6 +343,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(X,'variable') <- attr(x,'variable')[1]
                                         #  if (attr(x,'unit')=="deg C") attr(X,'unit') <- expression(degree*C) else
     unit <- attr(x,'unit')[1]
+    if (unit =='%') unit <- "'%'"
     if ( (is.na(unit) | is.null(unit)) ) unit <- " "
     if ((unit=='degree Celsius') | (unit=='deg C') | (unit=='degC'))
         unit <- 'degree*C'
