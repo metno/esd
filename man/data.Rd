@@ -42,6 +42,7 @@
 \alias{ferder}
 \alias{dse.ferder}
 \alias{HadCRUT4}
+\alias{NASAgiss}
 \alias{dse.Oslo}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
@@ -115,6 +116,7 @@ NAO(url='http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthl
 SOI(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',header=FALSE)
 data(dse.Oslo)
 HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt",plot=FALSE)
+NASAgiss(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt')
 }
 
 \arguments{

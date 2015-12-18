@@ -14,6 +14,7 @@
 \title{InfoGraphics.}
 \alias{colscal}
 \alias{prob}
+\alias{balls}
 \description{
   Wheel
 
