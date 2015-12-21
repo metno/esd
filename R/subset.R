@@ -354,8 +354,8 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 y <- zoo(0.25*(coredata(djf[i1,]) +
                                coredata(mam[i2,]) +
                                coredata(jja[i3,]) +
-                               coredata(son[i4,])),
-                         order.by=as.Date(paste(yr,'01-01',sep='-')))
+                               coredata(son[i4,])),order.by=yr)
+#                         order.by=as.Date(paste(yr,'01-01',sep='-')))
                 y <- attrcp(x0,y)
                 class(y) <- class(x0)
             } else if (inherits(x,'month')) {     

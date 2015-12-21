@@ -981,19 +981,17 @@ vis.default <- function(X,it=NULL,img=NULL,verbose=FALSE,
   y <- attr(X,'station')
   dev.new()
   if (!is.null(img)) {
+    par0 <- par()
     par(mar=rep(0,4))
     plot(c(0,1),c(0,1),type='n')
     rasterImage(img, -0.05, -0.05, 1.05, 1.05)
-    par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n')  
+    par(new=TRUE,col.axis='white',col.lab='white',xaxt='s',yaxt='s',mar=par0$mar)  
   }
   par(bty='n')
   plot(zoo(y),lwd=5,col='black',ylim=range(y,na.rm=TRUE)+ c(-1,5),xlim=range(index(X)),
        ylab=expression(T[2*m]*~(degree*C)),xlab='Time')
-  for (i in 1:dim(X)[2]) {
-    offs <- mean(window(y,start=ref[1],end=ref[2]),na.rm=TRUE) -
-            mean(window(X[,i],start=ref[1],end=ref[2]),na.rm=TRUE)
-    lines(X[,i]+offs,lwd=7,col=rgb(1,0.7,0.7,0.1))
-  }
+  for (i in 1:dim(X)[2]) lines(X[,i],lwd=7,col=rgb(1,0.7,0.7,0.1))
+  
   lines(y,lty=2,lwd=3)
   balls(y) 
 }
