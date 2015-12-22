@@ -49,9 +49,9 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
 
   ## Number of digits when rounding off - to get a prettier scale
 
-    
     ## browser()
     if (verbose) {print('colbar.ini'); print(colbar)}
+    if (length(x)==0) stop('colbar.ini: x is empty!')
     if (is.null(colbar)) colbar <- list(show=FALSE,n=14,rev=TRUE,alpha=NULL)
     if (is.logical(colbar)) colbar <- list(show=colbar)
     ##if (!is.null(colbar)) {
@@ -71,7 +71,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
         colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1),nd)
       colbar$n <- length(colbar$col)
     }
-    
+
     ## if breaks are null then use pretty
     if (is.null(colbar$breaks)) { 
         if (verbose) print("pretty is used here to set break values ...")

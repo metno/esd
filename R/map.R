@@ -486,6 +486,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     ##
+    if (verbose) print(paste('map.pca',FUN))
     args <- list(...)
                                         #print(args)
     X <- rbind(attr(x,'pattern')[,pattern],attr(x,'pattern')[,pattern])
@@ -503,10 +504,12 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
     }    
     attr(X,'longitude') <- lon(x)
     attr(X,'latitude') <- lat(x)
+    attr(X,'mean') <- NULL
     class(X) <- 'station'
     ##if (is.null(colbar$col) | is.null(colbar)) {
     ##  colbar$col <- colscal(30,col=varid(x))
     ##}
+    if (verbose) str(X)
     if (is.element(FUN,args)) 
         map.station(X,new=new,
                     colbar=colbar,

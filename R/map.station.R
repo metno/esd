@@ -26,7 +26,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          ##colorbar=TRUE,
                          legend.shrink=1,...) { 
     ##
-    if (verbose) print('map.station')
+    if (verbose) print(paste('map.station',FUN))
     arg <- list(...)
     attr(x,'unit') <- as.character(unit(x))
     
@@ -37,14 +37,16 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if (!is.null(FUN)) if (FUN=='alt') FUN <- 'altitude'
       if (verbose) print(names(x))
     }
-    
+
     if (!is.null(FUN)) 
         if (is.character(FUN)) if (FUN=="NULL") FUN <- NULL else
     if (sum(is.element(names(attributes(x)),FUN))>0){
       ## REB 2015-12-17: Use FUN to colour the symbols according to some attribute:
-      if (verbose) print('FUN refers to an attribute')
-      FUN <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
+      if (verbose) print('FUN refers to an attribute') 
+      #FUN <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
       #FUN <- paste("function(x) attr(x,",FUN,")")
+        x <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
+        FUN <- NULL      
     } else if (sum(is.element(names(x),FUN))>0){
       ## REB 2015-12-17: Use FUN to colour the symbols according to some list element (stationmeta-objects):
       if (verbose) print('FUN refers to an attribute')
@@ -222,6 +224,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ## browser()
         ## Transform x using FUN and insert color bar
         ##
+
         if (verbose) { print('FUN:'); print(FUN) }
         if (!is.null(FUN)) {
           if (is.function(FUN)) {

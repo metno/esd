@@ -1,7 +1,10 @@
-gridmap <- function(Y,breaks=NULL,pal=NULL,verbose=FALSE) {
+gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NULL,verbose=FALSE) {
+  if (verbose) print(paste(gridmap,FUN))
   require(LatticeKrig)
 
-  y <- apply(annual(Y,FUN='sum'),2,'mean',na.rm=TRUE)
+  if (is.null(xlim)) xlim <- range(lon(Y))
+  if (is.null(ylim)) ylim <- range(lat(Y))
+  y <- apply(Y,2,FUN,na.rm=TRUE)
 
   ## Get data on the topography on the 5-minute resolution
   data(etopo5)
@@ -42,11 +45,7 @@ gridmap <- function(Y,breaks=NULL,pal=NULL,verbose=FALSE) {
 
   ## Make a projection that zooms in on the Barents region
 
-  rev <- switch(varid(Y)[1],'t2m'=FALSE,'precip'=TRUE)
-  Wx <- max(abs(W),na.rm=TRUE)
-  if (is.null(breaks)) breaks <- round(seq(-Wx,Wx,length=31),2) 
-  if (is.null(pal)) pal <- varid(Y)[1]
-  map(W,xlim=range(lon(W)),ylim=range(lat(W)),
-      colbar=list(pal=pal))
+  map(W,xlim=xlim,ylim=ylim,
+      colbar=colbar,project=project)
   invisible(W)
 }
