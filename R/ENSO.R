@@ -1,9 +1,18 @@
-NINO3.4 <- function(url='ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/ersst3b.nino.mth.ascii',header=TRUE) {
+NINO3.4 <- function(url='ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/ersst3b.nino.mth.ascii',header=TRUE,
+url2='http://www.cpc.ncep.noaa.gov/data/indices/sstoi.indices') {
   enso <- read.table(url,header=header)
   nino3.4 <- zoo(enso[10],
                  order.by=as.Date(paste(enso$YR,enso$MON,'01',sep='-')))
   nino3.4 <- as.station(nino3.4,loc='Nino3.4',param='Nino3.4',
                         unit='dimensionless')
+  ## Combine with more updated data from url2 (which do not extend far back in time)                     
+  if (!is.null(url2)) {
+    y <- read.table(url2,header=TRUE)
+    y <- zoo(y$ANOM.3,order.by=as.Date(paste(y$YR,y$MON,'01',sep='-')))
+    y <- as.station(y,loc='Nino3.4',param='Nino3.4',
+                    unit='dimensionless')
+    nino3.4 <- combine(nino3.4,y)                
+  }
   attr(nino3.4,'url') <- url
   return(nino3.4)
 }
