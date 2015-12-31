@@ -1000,3 +1000,19 @@ balls <- function(x) {
   for (i in 1:20) points(x,cex=seq(2,0.1,length=20)[i],
   col=rgb(i/20,i/20,i/20))
 }
+
+graph <- function(x,...) UseMethod("graph")
+
+graph.default <- function(x,col='black',lwd=5,xlim=NULL,ylim=NULL,img=NULL) {
+    ## Produce the graphics:
+    dev.new()
+    plot(x)
+    if (!is.null(img)) {
+        par(mar=rep(0,4))
+        plot(c(0,1),c(0,1),type='n')
+        rasterImage(img, -0.05, -0.05, 1.05, 1.05)
+        par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n')
+    }
+    plot(x,lwd=lwd,col=col,ylim=ylim,xlim=xlim)
+}
+
