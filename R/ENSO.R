@@ -49,3 +49,16 @@ SOI <- function(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext
                     ref=paste(SOI[7:9],collapse=', '),longname=SOI[3])
   return(soi)
 }
+
+GSL <- function(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv') {
+
+    sl <- read.csv(url,skip=6,header=TRUE)
+    zsl <- zoo(sl[[2]]*2.54,order.by=sl[[1]])
+    sl <- as.station(zsl,loc=NA,param='height',unit='cm',
+                     lon=NA,lat=NA,alt=NA,
+                     cntr=NA,longname='CSIRO - Adjusted global mean sea level',
+                     stid=NA,quality=NA,src='CSIRO, 2015',url=url,
+                     reference="EPA's Climate Change Indicators in the United States: www.epa.gov/climatechange",info=NA, method= NA)
+    return(sl)
+}
+  
