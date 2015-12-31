@@ -70,7 +70,7 @@
 
   Some data sets, such as NINO3.4 and NAOI come with a 'frozen' version
   in the package, but there are also functions that read the most recent
-  version of these indeces from the Internet.
+  version of these indeces from the Internet. GSL reads the global mean sea level.
 
 }
 \usage{
