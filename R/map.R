@@ -890,3 +890,15 @@ map.events <- function(x,it=NULL,is=NULL,dx=2,dy=2,dt="year",
   map(Y,colbar=colbar,FUN=FUN,verbose=verbose,
       projection=projection,...)  
 }
+
+## Function that masks either ocean or land
+mask <- function(x,land=TRUE) {
+  data(etopo5)
+  h <- regrid(etopo5,is=x)
+  if (land) h[h < -5] <- NA else
+            h[h > 5] <- NA
+  X <- coredata(x)
+  X[,is.na(h)] <- NA
+  X -> coredata(x)
+  return(x)
+}
