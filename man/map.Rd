@@ -18,6 +18,7 @@
 \alias{gridbox}
 \alias{map2sphere}
 \alias{vec}
+\alias{mask}
 
 \title{Plot maps for esd objects}
 \description{Make map of geophysical data. These plot functions are S3 methods for esd objects.
@@ -138,6 +139,7 @@ map2sphere(x,it=NULL,is=NULL,new = TRUE,
 
 vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
                 projection='lonlat',lonR=NULL,latR=NULL,axiR=0,...)
+mask(x,land=FALSE)
 }
 \arguments{
   \item{x}{the object to be plotted; in \code{rotM}, x holds a vector
@@ -189,11 +191,12 @@ vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
     \code{image} to produce the colour bar} 
   \item{text}{If TRUE, display text info on the map.The default is set
     to FALSE}
-  \item{show.val}{Display the values of `x' or `FUN(x)' on top of the
+  \item{show.val}{Display the values of 'x' or 'FUN(x)' on top of the
     coloured map.}
   \item{legend.shrink}{If set, the size of the color bar is shrinked
     (values between 0 and 1)}
-  \item{...}{further arguments passed to or from other methods.}	 
+  \item{...}{further arguments passed to or from other methods.}
+  \item{land}{if TRUE mask land, else mask ocean}
 }
 \value{A field object}
 
