@@ -38,6 +38,7 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(X,'latitude') <- lat(x)
     attr(X,'variable') <- attr(x,'variable')
     attr(X,'unit') <- attr(x,'unit')[1]
+    if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
     attr(X,'source') <- attr(x,'source')
     attr(X,'variable') <- varid(x)
     if (inherits(X,'zoo')) attr(X,'time') <- range(index(x)) else
@@ -156,7 +157,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=-90,axiR=NULL,verbose=FALSE,
+                    lonR=NULL,latR=0,axiR=NULL,verbose=FALSE,
                     pattern=1,cex=1,...) {
 
     ## browser()
@@ -182,6 +183,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     attr(X,'latitude') <- attr(x,'latitude')
     attr(X,'variable') <- attr(x,'variable')
     attr(X,'unit') <- attr(x,'unit')[1]
+    if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
     attr(X,'source') <- attr(x,'source')
     attr(X,'time') <- range(index(x))
     if ( (pattern==1) & !is.null(attr(x, "area.mean.expl")) )
@@ -341,6 +343,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(X,'variable') <- attr(x,'variable')[1]
                                         #  if (attr(x,'unit')=="deg C") attr(X,'unit') <- expression(degree*C) else
     unit <- attr(x,'unit')[1]
+    if (unit =='%') unit <- "'%'"
     if ( (is.na(unit) | is.null(unit)) ) unit <- " "
     if ((unit=='degree Celsius') | (unit=='deg C') | (unit=='degC'))
         unit <- 'degree*C'
@@ -483,6 +486,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     ##
+    if (verbose) print(paste('map.pca',FUN))
     args <- list(...)
                                         #print(args)
     X <- rbind(attr(x,'pattern')[,pattern],attr(x,'pattern')[,pattern])
@@ -500,10 +504,12 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
     }    
     attr(X,'longitude') <- lon(x)
     attr(X,'latitude') <- lat(x)
+    attr(X,'mean') <- NULL
     class(X) <- 'station'
     ##if (is.null(colbar$col) | is.null(colbar)) {
     ##  colbar$col <- colscal(30,col=varid(x))
     ##}
+    if (verbose) str(X)
     if (is.element(FUN,args)) 
         map.station(X,new=new,
                     colbar=colbar,
@@ -883,4 +889,16 @@ map.events <- function(x,it=NULL,is=NULL,dx=2,dy=2,dt="year",
   #}
   map(Y,colbar=colbar,FUN=FUN,verbose=verbose,
       projection=projection,...)  
+}
+
+## Function that masks either ocean or land
+mask <- function(x,land=FALSE) {
+  data(etopo5)
+  h <- regrid(etopo5,is=x)
+  if (!land) h[h < -5] <- NA else
+             h[h > 5] <- NA
+  X <- coredata(x)
+  X[,is.na(h)] <- NA
+  X -> coredata(x)
+  return(x)
 }

@@ -18,8 +18,8 @@ diagnose.comb <- function(x) {
 }
 
 
-diagnose.eof <- function(x) {
-  if (inherits(x,'comb')) y <- diagnose.comb.eof(x) else
+diagnose.eof <- function(x,...) {
+  if (inherits(x,'comb')) y <- diagnose.comb.eof(x,...) else
                           y <- x
   return(y)
 }
@@ -68,6 +68,7 @@ diagnose.comb.eof <- function(x,verbose=FALSE) {
                common.period=range(index(Y)),sd0=Ys,
                calibrationdata=attr(x,'source'))
   attr(diag,'variable') <- attr(x,'variable')
+  attr(diag,'evaluation_period') <- paste(start(Y),end(Y),sep='-')
   #print(summary(diag))
   attr(diag,'history') <- history.stamp(x)
   class(diag) <- c("diagnose","comb","eof","list")
@@ -433,8 +434,8 @@ diagnose.distr <- function(x,main=NULL,
 
 
 
-diagnose.dsensemble <- function(x,plot=TRUE,map=TRUE,type='target',
-                                xrange=NULL,yrange=NULL,verbose=FALSE,...) {
+diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NULL,
+                                map.show=TRUE,map.type="points",verbose=FALSE,...) {
   if (verbose) print('diagnose.dsensemble')
   # Trend-evaluation: rank
   # Counts outside 90% confidence: binomial distrib. & prob.
@@ -489,14 +490,13 @@ diagnose.dsensemble <- function(x,plot=TRUE,map=TRUE,type='target',
                q95=zoo(q95,order.by=index(x)))
   attr(diag,'history') <- history.stamp(x)
   class(diag) <- c('diagnose','dsensembles','list')
-  if (plot) plot(diag,map=map,verbose=verbose)
-
+  if (plot) plot(diag,map.show=map.show,map.type=map.type,verbose=verbose)
   invisible(diag)
   }
 }
 
 diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
-                                    xrange=NULL,yrange=NULL,...) {
+                                    map.show=TRUE,xrange=NULL,yrange=NULL,...) {
   if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
   if (inherits(X,"pca")) X <- as.station(X,verbose=verbose)
@@ -521,18 +521,24 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
     dev.new()
     par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=c(2,1,.5),xpd=TRUE)
     plot(c(-100,100),c(-100,100),type="n",
-         axes=FALSE,ylab="magnitude",xlab="trend")
+         axes=FALSE,ylab="",xlab="")
+    mtext("trend",side=1,line=1.5,cex=par("cex"))
+    mtext("magnitude",side=2,line=2,cex=par("cex"))
     u <- par("usr")
     dx <- (u[2]-u[1])/20
     dy <- (u[4]-u[3])/20
-    arrows(u[1],u[3]-dy,u[2],u[3]-dy,code=2,xpd=TRUE)
-    arrows(u[2],u[3]-dy,u[1],u[3]-dy,code=2,xpd=TRUE)
-    arrows(u[1]-dx,u[4],u[1]-dx,u[3],code=2,xpd=TRUE)
-    arrows(u[1]-dx,u[3],u[1]-dx,u[4],code=2,xpd=TRUE)
-    text(u[1]+dx,u[3]-dy/2,paste("weaker (obs < dse average)",sep=""),pos=4)
-    text(u[2]-dx,u[3]-dy/2,"stronger",pos=2)
-    text(u[1],u[3]+2*dy,"smaller",pos=3,srt=90)
-    text(u[1],u[4]-2*dy,"larger",pos=2,srt=90)
+    arrows(u[1]+dx,u[3],u[2]-dx,u[3],
+         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+    arrows(u[2]-dx,u[3],u[1]+dx,u[3],
+         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+    arrows(u[1],u[4]-dy,u[1],u[3]+dy,
+         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+    arrows(u[1],u[3]+dy,u[1],u[4]-dy,
+         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+    mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.75)
+    mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.75)
+    mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.75)
+    mtext("ensemble < obs",side=2,line=0.5,adj=1,cex=par("cex")*0.75)  
     bcol=c("grey95","grey40")
     for (i in 1:10) {
       ri <- (11-i)*10
@@ -545,28 +551,35 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
     xlat <- sapply(X,lat)
     if(is.null(xrange)) xrange <- c(min(xlon)-1,max(xlon)+1)
     if(is.null(yrange)) yrange <- c(min(xlat)-1,max(xlat)+1)
-    data(geoborders)
-    lon <- geoborders$x
-    lat <- geoborders$y
-    ok <- lon>min(xrange) & lon<max(xrange) &
+    if (map.show & !is.null(xlon) & !is.null(xlat)) {
+      data(geoborders)
+      lon <- geoborders$x
+      lat <- geoborders$y
+      ok <- lon>min(xrange) & lon<max(xrange) &
           lat>min(yrange) & lat<max(yrange)
-    lon2 <- attr(geoborders,"borders")$x
-    lat2 <- attr(geoborders,"borders")$y
-    ok2 <- lon2>min(xrange) & lon2<max(xrange) &
+      lon2 <- attr(geoborders,"borders")$x
+      lat2 <- attr(geoborders,"borders")$y
+      ok2 <- lon2>min(xrange) & lon2<max(xrange) &
            lat2>min(yrange) & lat2<max(yrange)
-    x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
+      x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
                                sd=sd(deltagcm))),2)
-    y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
-    i <- order(xlat)
-    points(x[i],y[i],pch=21,cex=2,col='black',bg=col)
-    par(fig=c(0.8,0.97,0.8,0.97),new=TRUE, mar=c(0,0,0,0),
-        cex.main=0.75,xpd=NA,col.main="grey",bty="n")
-    plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
+      y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
+      i <- order(xlat)
+      points(x[i],y[i],pch=21,cex=2*par("cex"),col='black',bg=col)
+      par(fig=c(0.8,0.97,0.8,0.97),new=TRUE, mar=c(0,0,0,0),
+        cex.axis=0.75*par("cex"),xpd=NA,col.main="grey",bty="n")
+      plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
          xlab=NA,ylab=NA,axes=FALSE,xlim=xrange,ylim=yrange)
-    axis(1,mgp=c(3,.5,0))
-    axis(2,mgp=c(2,.5,0))
-    lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
-    points(xlon[i],xlat[i],pch=21,cex=1,col='Grey',bg=col,lwd=0.5)
-  }
+      axis(1,mgp=c(3,.5,0))
+      axis(2,mgp=c(2,.5,0))
+      lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+      points(xlon[i],xlat[i],pch=21,cex=1,col='Grey',bg=col,lwd=0.5)
+    }
+  }  
   invisible(d)
+}
+
+diagnose.matrix <- function(X,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+  if (verbose) print('diagnose.matrix')
+  plot.diagnose.matrix(X,xlim=xlim,ylim=ylim,verbose=verbose)
 }

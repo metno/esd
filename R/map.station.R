@@ -7,7 +7,7 @@
 map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
-                         col=NULL,bg=NULL,
+                         col='darkred',bg='orange',
                          colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,
                              pos=0.1,show=TRUE),
@@ -26,18 +26,39 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          ##colorbar=TRUE,
                          legend.shrink=1,...) { 
     ##
-    if (verbose) print('map.station')
+    if (verbose) print(paste('map.station',FUN))
     arg <- list(...)
     attr(x,'unit') <- as.character(unit(x))
+    
     attr(x,'variable') <- as.character(varid(x))
-    
-    if (!is.null(FUN))
-        if (FUN=="NULL") FUN <- NULL
-    
-    if (is.null(col) & ((inherits(x,"stationmeta") | is.null(FUN)))) {
-        col <- "darkred"
-        bg <- "orange"
+
+    if (inherits(x,"stationmeta")) {
+      x$years <- as.numeric(x$end) - as.numeric(x$start) + 1
+      if (!is.null(FUN)) if (FUN=='alt') FUN <- 'altitude'
+      if (verbose) print(names(x))
     }
+
+    if (!is.null(FUN)) 
+        if (is.character(FUN)) if (FUN=="NULL") FUN <- NULL else
+    if (sum(is.element(names(attributes(x)),FUN))>0){
+      ## REB 2015-12-17: Use FUN to colour the symbols according to some attribute:
+      if (verbose) print('FUN refers to an attribute') 
+      #FUN <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
+      #FUN <- paste("function(x) attr(x,",FUN,")")
+        x <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
+        FUN <- NULL      
+    } else if (sum(is.element(names(x),FUN))>0){
+      ## REB 2015-12-17: Use FUN to colour the symbols according to some list element (stationmeta-objects):
+      if (verbose) print('FUN refers to an attribute')
+      FUN <- eval(parse(text=paste("function(x,...) x$",FUN,sep='')))
+      #FUN <- paste("function(x) x$",FUN,sep='')
+    }
+    if (verbose) print(FUN)
+
+#    if (is.null(col) & ((inherits(x,"stationmeta") | is.null(FUN)))) {
+#        col <- "darkred"
+#        bg <- "orange"
+#    }
     
     ##par(mar=c(4,1,1,1))
     par0 <- par()
@@ -54,21 +75,21 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       x <- as.field(x)
     }
     
-    if (!is.null(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
+    if ((!is.null(FUN)) & is.character(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
     
     if (verbose) print(projection)
     
     if (projection=="sphere")
         sphere(x,lonR=lonR,latR=latR,axiR=axiR,
-                   gridlines=gridlines,
+                   gridlines=gridlines,xlim=xlim,ylim=ylim,
                    col=colbar$col,new=new,FUN=FUN,cex=cex,...)
     else if (projection=="np")
         sphere(x,lonR=lonR,latR=90,axiR=axiR,
-                   gridlines=gridlines,
+                   gridlines=gridlines,xlim=xlim,ylim=ylim,
                    col=colbar$col,new=new,FUN=FUN,...) else
     if (projection=="sp")
         sphere(x,lonR=lonR,latR=-90,axiR=axiR,
-                   ,gridlines=gridlines,
+                   ,gridlines=gridlines,xlim=xlim,ylim=ylim,
                    col=colbar$col,new=new,FUN=FUN,...)
     ## else if (projection=="lonlat")
     ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
@@ -186,6 +207,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                                  + c(-1,1))  # +/- 5 degrees
         
         ## scaling factor to apply on cex ...
+        if (verbose) print('scale:')
         if (!inherits(x,"stationmeta") & !is.null(attr(x,'na')))
             scale <- attr(x,'na')
         else
@@ -201,19 +223,32 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         
         ## browser()
         ## Transform x using FUN and insert color bar
-        ## 
+        ##
+
+        if (verbose) { print('FUN:'); print(FUN) }
         if (!is.null(FUN)) {
-            if (is.element(FUN,c('lon','lat','alt')))
-                eval(parse(text=paste('y <-',FUN,'(x)',sep="")))
-            else {
+          if (is.function(FUN)) {
+            if (verbose) print('function')
+            y <- as.numeric(FUN(x))
+            colbar <- colbar.ini(y,colbar=colbar,verbose=verbose)
+          } else if (is.character(FUN)) {
+            if (verbose) print('string')
+            if (is.element(FUN,c('lon','lat','alt'))) {
+              if (verbose) print(paste('FUN=',FUN,'(lon/lat/alt)'))
+              if (is.character(FUN)) eval(parse(text=paste('y <-',FUN,'(x)',sep="")))               
+            } else {
+                if (verbose) print(FUN)
                 if (is.element("na.rm",names(formals(FUN))) |
                     is.element("...",names(formals(FUN))) |
-                    (is.element(FUN,c("max","min","sum"))))
+                    (is.element(FUN,c("max","min","sum","mean","sd"))))
                     y <- apply(coredata(x),2,FUN=FUN,na.rm=TRUE)
-                else if (FUN=="trend")
+                else if (FUN=="trend") {
+                    if (verbose) print("trend")
                     y <- apply(x,2,FUN=FUN,na.omit=FALSE)
-                else
-                    y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
+                } else {
+                  if (verbose) print('other')
+                  y <- apply(coredata(x),2,FUN=FUN) ## ,na.rm=TRUE)
+                }
             }
             y <- attrcp(x,y)
             class(y) <- class(x)
@@ -224,28 +259,25 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                 colbar <- list(pal='t2m',rev=FALSE,n=10,
                     breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE)
             }
+            
             ##                       
             ##if (!is.null(colbar)) {
-                colbar <- colbar.ini(y,FUN=FUN,colbar=colbar,verbose=verbose)
+            colbar <- colbar.ini(y,FUN=FUN,colbar=colbar,verbose=verbose)
+          }
+          if (verbose)
+            print("length(col) =",length(colbar$col))
 
-            ## browser()
-            if (verbose)
-                print("length(col) =",length(colbar$col))
-
-            ## 
-            y.rng <- range(y,na.rm=TRUE)
-            if (verbose)
-                print(paste("range of mapped values",paste(y.rng,
-                                                           collapse="/")))
+          ## Range of scale
+          y.rng <- range(y,na.rm=TRUE)
+          if (verbose)
+            print(paste("range of mapped values",paste(y.rng,
+                                                           collapse="/")))          
+          ## find color index in colbar
+          icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
             
-            ## find color index in colbar
-            icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
-            
-            ## if (is.null(col)) col <- colbar$col[icol]
-            ## if (is.null(bg)) bg <- colbar$col[icol]
-            
-            if (verbose) print(range(y,na.rm=TRUE))
-
+          ## if (is.null(col)) col <- colbar$col[icol]
+          ## if (is.null(bg)) bg <- colbar$col[icol]           
+          if (verbose) print(range(y,na.rm=TRUE))
         }
         
         ##scale <- apply(y,2,function(x) sum(!is.na(x))/length(x))
@@ -440,7 +472,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 
 
 
-sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,
+sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
                          gridlines=TRUE,col="green",bg="darkgreen",cex=0.2,pch=".",new=TRUE) {
   x0 <- x
   ## Data to be plotted:
@@ -472,6 +504,15 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,
 
   # coastline data:
   data("geoborders",envir=environment())
+ ## KMP 10-11-2015: apply xlim and ylim
+  gx <- geoborders$x
+  gy <- geoborders$y
+  ok <- is.finite(gx) & is.finite(gy)
+  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  theta <- pi*gx[ok]/180
+  phi <- pi*gy[ok]/180
+
   ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
   x <- sin(theta)*cos(phi)

@@ -37,12 +37,22 @@
 #1	100	217	255	255	*Under 10
 #0	1	229	229	229	*Ikke nedbør
 
+ndig <- function(x) {
+  i0 <- (x==0) & !is.finite(x)
+  if (sum(i0)>0) x[i0] <- 1
+  y <- -trunc(log(abs(x))/log(10))
+  if (sum(i0)>0) y[i0] <- 0
+  return(y)
+}
 
 colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
 
+  ## Number of digits when rounding off - to get a prettier scale
+
     ## browser()
-    if (verbose) {print('colbar.ini'); str(colbar)}
-    if (is.null(colbar)) colbar <- list(show=FALSE)
+    if (verbose) {print('colbar.ini'); print(colbar)}
+    if (length(x)==0) stop('colbar.ini: x is empty!')
+    if (is.null(colbar)) colbar <- list(show=FALSE,n=14,rev=TRUE,alpha=NULL)
     if (is.logical(colbar)) colbar <- list(show=colbar)
     ##if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
@@ -54,12 +64,14 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     
     if (is.zoo(x)) x <- coredata(x)
     x.rng <- range(x,na.rm=TRUE)
-    
+    nd <- max(0,ndig(x.rng)+2)
+
     if (!is.null(colbar$col)) {
-      colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1)
+      if (is.null(colbar$breaks))
+        colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1),nd)
       colbar$n <- length(colbar$col)
     }
-    
+
     ## if breaks are null then use pretty
     if (is.null(colbar$breaks)) { 
         if (verbose) print("pretty is used here to set break values ...")
@@ -68,7 +80,8 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
         else 
             colbar$breaks <- pretty(seq(x.rng[1],x.rng[2]))
         colbar$n <- length(colbar$breaks)-1      
-    }        
+      }
+    if (is.null(colbar$n)) colbar$n <- length(colbar$breaks)-1 
     
     #if (is.null(colbar$n))
     #    if (!is.null(colbar$col))
@@ -84,14 +97,15 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
                 str(colbar)
                 stop('colbar.ini: This should never happen!')   
             }
-        } else colbar$breaks <- seq(x.rng[1],x.rng[2],length.out=colbar$n+1)
+        } else if (is.null(colbar$breaks))
+          colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),nd)
         ## if only colbar$col is provided, then the breaks are set using seq   
     } else {
-        if (is.null(colbar$pal)) pal <- varid(x)
+        if (is.null(colbar$pal)) colbar$pal <- varid(x)
     #    if (!is.null(colbar$breaks))
     #      colbar$n <- length(colbar$breaks) -1 else
     #      if (!is.null(colbar$n)) colbar$n <- 15
-        colbar$col <- colscal(colbar$n,pal)
+        colbar$col <- colscal(colbar$n,colbar$pal)
     }
 
     if (is.null(colbar$type)) colbar$type <- 'p'
@@ -167,6 +181,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     if (length(colbar$col) != length(colbar$breaks)-1)
       stop('colbar.ini: Error in setting colbar!')
     ##}
+    if (verbose) {print(colbar); print(' exists colbar.ini')}
     invisible(colbar)
 }
 
@@ -181,7 +196,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     points(g,col="green")
   }
 
-  if (verbose) print(paste('colscal:',col))
+  if (verbose) print(paste('colscal:',col,'rev=',rev,'n=',n,'alpha=',alpha))
   if (is.null(col)) col <- 't2m'
   if (is.null(alpha)) alpha <- 1
   # Set up colour-palette
@@ -251,7 +266,6 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
-    rev <- TRUE
   } else if (col[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6,alpha=alpha)
   } else if (col[1]=="gray.colors") {

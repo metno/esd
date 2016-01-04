@@ -235,7 +235,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   par(fig=c(0,1,0,0.55),new=TRUE, mar=c(1,1,1,1),xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
 
-  varnm <- varid(x)
+  varnm <- varid(x)[1]
   legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
@@ -269,7 +269,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   col <- rep(col,n.app)
   src <- rep("",n.app+1)
   src[1] <- attr(x,'source')
-  ylab <- paste("PC",1:n)
+  ylab <- paste("PC",n)
   main <- paste("EOF: ",n,"accounts for",
                 round(var.eof[n],1),"% of variance")
 
@@ -277,7 +277,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 #    par(xaxt="s",yaxt="s")
 #    plot.eof.var(x,new=FALSE,cex.main=0.7)
     par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
+    plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
 
   if (is.null(ylim)) {
@@ -914,14 +914,70 @@ plot.diagnose <- function(x,...) {
   if (inherits(x,"dsensembles")) plot.diagnose.dsensemble(x,...)
 }
 
-plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,...) {
+  if (verbose) print('plot.diagnose.comb.eof')
   stopifnot(!missing(x), inherits(x,"diagnose"),
             inherits(x,"eof"),inherits(x,"comb"))
-  dev.new()
+
+  n <- length(x$mean.diff)
+  j <- 1:n
+  col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n),0.3)
+
+  if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
+  if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
+  
+  if (!add) {
+    dev.new()
+    par(bty="n")
+    par0 <- par()
+    wt <- 0:360
+    plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
+         xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
+         main=paste("Diagnostics: common EOFs",attr(x,'variable')),
+         xlim=xlim,ylim=ylim,col="grey",
+         sub=paste(x$calibrationdata," - ",rownames(x$mean.diff),collapse = "/"))
+    lines(c(0,10),rep(0,2))
+    lines(rep(0,2),c(0,10))
+    grid()
+    legend(xlim[1],ylim[2],c("same sign","different sign"),
+           pch=c(19,21),bty="n",col="grey")
+    par(xpd=TRUE)
+    text(xlim[1],ylim[2],'AR(1) - symbol size',col='grey40',pos=3)
+    text(xlim[2],ylim[2],'EOF #',col='grey40',cex=0.8,pos=3)
+
+    par(new=TRUE,fig=c(0.85,0.95,0.70,0.85),mar=c(0,3,0,0),
+        cex.axis=0.7,yaxt="s",xaxt="n",las=1)
+     colbar <- rbind(1:n,1:n)
+    image(1:2,1:n,colbar,col=col)
+    par(fig=par0$fig,mar=par0$mar,cex.axis=par0$cex.axis,
+        yaxt=par0$yaxt,xaxt=par0$xaxt,las=par0$las,new=TRUE)
+    plot(cos(pi*wt/180),sin(pi*wt/180),type="n",xlim=xlim,ylim=ylim,
+         xlab='',ylab='',main='',sub='')
+    par(par0$new)
+  }
+  cex <- x$autocorr.ratio;
+  pch <- rep(19,n); pch[cex < 0] <- 21
+  cex <- abs(cex); cex[cex > 2] <- 2
+  if (verbose) {
+     print('Mean difference:');print(x$mean.diff)
+     print('Ration of standard deviation');print(x$sd.ratio)
+     print('Size');print(cex)
+     print('col');print(col)
+     #points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
+  }
+  
+  points(abs(x$mean.diff),1-x$sd.ratio,pch=pch,col=col,cex=cex)
+
+}
+
+plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+  if (verbose) print('plot.diagnose.matrix')
+  x <- as.data.frame(x)
   par(bty="n")
   if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
   if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
   wt <- 0:360
+  dev.new()
   plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
        xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
        main=paste("Diagnostics: common EOFs",attr(x,'variable')),
@@ -933,6 +989,7 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   j <- 1:n
   col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n))
   cex <- x$autocorr.ratio;
+  cex[!is.finite(cex)] <- 1
   pch <- rep(19,n); pch[cex < 0] <- 21
   cex <- abs(cex); cex[cex > 2] <- 2
   if (verbose) {
@@ -956,42 +1013,54 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   image(1:2,1:n,colbar,col=col)  
 }
 
-plot.diagnose.dsensemble <- function(x,map=TRUE,verbose=FALSE,new=TRUE,cex=NULL) {
-    if (verbose) print('plot.diagnose.dsensemble')
-    Y <- -round(200*(0.5-pbinom(x$outside,size=x$N,prob=0.1)),2)
-    X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),sd=sd(x$deltagcm))),2)
-    if (new) {
-      dev.new()
-      par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=c(2,1,.5),xpd=TRUE)
-    }
-    if (!is.null(cex)) par(cex=cex)
-    plot(c(-100,100),c(-100,100),type="n",
-         axes=FALSE,ylab="magnitude",xlab="trend")
-    u <- par("usr")
-    dx <- (u[2]-u[1])/20
-    dy <- (u[4]-u[3])/20
-    arrows(u[1],u[3]-dy,u[2],u[3]-dy,code=2,xpd=TRUE)
-    arrows(u[2],u[3]-dy,u[1],u[3]-dy,code=2,xpd=TRUE)
-    arrows(u[1]-dx,u[4],u[1]-dx,u[3],code=2,xpd=TRUE)
-    arrows(u[1]-dx,u[3],u[1]-dx,u[4],code=2,xpd=TRUE)
-    text(u[1]+dx,u[3]-dy/2,"weaker (obs < dse)",pos=4)
-    text(u[2]-dx,u[3]-dy/2,"stronger",pos=2)
-    text(u[1],u[3]+2*dy,"smaller",pos=3,srt=90)
-    text(u[1],u[4]-2*dy,"larger",pos=2,srt=90)    
-    bcol=c("grey95","grey40")
-    for (i in 1:10) {
-      r <- (11-i)*10
-      polygon(r*cos(pi*seq(0,2,length=360)),
-              r*sin(pi*seq(0,2,length=360)),
-              col=bcol[i %% 2 + 1],border="grey15")
-    }
-    for (i in seq(0,90,by=1))
-      points(X,Y,pch=19,cex=2 - i/50,col=rgb(i/90,0,0))
-    ## Add map of station location
 
-    if (map) { 
-      if(is.null(x$xrange)) x$xrange <- c(lon(x$z)-15,lon(x$z)+15)
-      if(is.null(x$yrange)) x$yrange <- c(lat(x$z)-10,lat(x$z)+10)
+plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=TRUE,
+                                     map.type="points",verbose=FALSE,...) {
+  if (verbose) print('plot.diagnose.dsensemble')
+  Y <- -round(200*(0.5-pbinom(x$outside,size=x$N,prob=0.1)),2)
+  X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),
+                             sd=sd(x$deltagcm))),2)
+  if (new) {
+    dev.new()
+    par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=mgp)
+  }
+  if (!is.null(cex)) par(cex=cex)
+  plot(c(-100,100),c(-100,100),type="n",axes=FALSE,mgp=mgp,ylab="",xlab="")
+  mtext("trend",side=1,line=1.5,cex=par("cex"))
+  mtext("magnitude",side=2,line=2,cex=par("cex"))
+  u <- par("usr")
+  dx <- (u[2]-u[1])/20
+  dy <- (u[4]-u[3])/20
+  arrows(u[1]+dx,u[3],u[2]-dx,u[3],
+         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+  arrows(u[2]-dx,u[3],u[1]+dx,u[3],
+         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+  arrows(u[1],u[4]-dy,u[1],u[3]+dy,
+         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+  arrows(u[1],u[3]+dy,u[1],u[4]-dy,
+         lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
+  mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.75)
+  mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.75)
+  mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.75)
+  mtext("ensemble < obs",side=2,line=0.5,adj=1,cex=par("cex")*0.75)  
+  bcol=c("grey95","grey40")
+  for (i in 1:10) {
+    r <- (11-i)*10
+    polygon(r*cos(pi*seq(0,2,length=360)),
+            r*sin(pi*seq(0,2,length=360)),
+            col=bcol[i %% 2 + 1],border="grey15")
+  }
+  for (i in seq(0,90,by=1))
+    points(X,Y,pch=19,cex=2 - i/50,col=rgb(i/90,0,0))
+  if (map.show) {
+    if(verbose) print("add map") 
+    if(is.null(x$xrange) & !is.null(attr(x$z,"lon"))) {
+      x$xrange <- c(attr(x$z,"lon")-15,attr(x$z,"lon")+15)
+    }
+    if(is.null(x$yrange) & !is.null(attr(x$z,"lat"))) {
+      x$yrange <- c(attr(x$z,"lat")-10,attr(x$z,"lat")+10)
+    }
+    if (!is.null(x$xrange) & !is.null(x$xrange)) {
       data(geoborders)
       lon <- geoborders$x
       lat <- geoborders$y
@@ -1002,14 +1071,21 @@ plot.diagnose.dsensemble <- function(x,map=TRUE,verbose=FALSE,new=TRUE,cex=NULL)
       ok2 <- lon2>(min(x$xrange)-1) & lon2<(max(x$xrange)+1) &
       lat2>(min(x$yrange)-1) & lat2<(max(x$yrange)+1)
       par(fig=c(0.78,0.97,0.78,0.97),new=TRUE, mar=c(0,0,0,0),
-          cex.main=0.75,xpd=NA,col.main="grey",bty="n")
+        cex.main=0.75,xpd=NA,col.main="grey",bty="n")
       plot(lon[ok],lat[ok],lwd=1,col="black",type='l',xlab=NA,ylab=NA,
-           axes=FALSE)
+         axes=FALSE)
       axis(1,mgp=c(3,.5,0))
       axis(2,mgp=c(2,.5,0))
-      lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)   
-      points(lon(x$z),lat(x$z),pch=21,cex=1,col='black',bg='red',lwd=1)
-    }
+      lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+      if("points" %in% map.type) {
+        points(attr(x$z,"lon"),attr(x$z,"lat"),pch=21,cex=1,col='black',bg='red',lwd=1)
+      }
+      if("rectangle" %in% map.type) {
+        rect(min(attr(x$z,"lon")),min(attr(x$z,"lat")),max(attr(x$z,"lon")),
+             max(attr(x$z,"lat")),lwd=1,col=NA,border='red',lty=2)
+      }
+    } 
+  }  
 }
 
 nam2expr <- function(x) {
@@ -1082,11 +1158,17 @@ plot.dsensemble.pca <- function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
 }
 
 plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
-                             envcol=rgb(1,0,0,0.2),legend=TRUE,...) {
-  #print("plot.dsensemble")
+                             envcol=rgb(1,0,0,0.2),legend=TRUE,
+                             map.show=FALSE,map.type="points",new=TRUE,
+                             xrange=NULL,yrange=NULL,verbose=FALSE,...) {
+  if(verbose) print("plot.dsensemble")
   stopifnot(inherits(x,'dsensemble'))
   #print("subset") 
   ## browser()
+  #if (inherits(x,'pca')) {
+  #  plot.dsensemble.pca(x,)
+  #} else {
+    
   if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
     z <- x
   #print("diagnose")
@@ -1113,6 +1195,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
                       ylim <- args[[iyl]]  
   #print("...")
+  if(new) dev.new()
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='')
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
@@ -1120,7 +1203,6 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   
   if (pts) for (i in 1:d[2])
     points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
-
 
   # Produce a transparent envelope
   nt <- length(index(z))
@@ -1191,7 +1273,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   if (showtrend) {
 #    par(fig=c(0.6,0.9,0.25,0.4),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
 #        cex.main=0.75,xpd=NA,col.main="grey30")
-    par(fig=c(0.40,0.65,0.75,0.975),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
+    par(fig=c(0.23,0.45,0.78,0.98),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
 #    h <- hist(diag$deltagcm,plot=FALSE)
 #    hist(diag$deltagcm,freq=FALSE,col="grey80",lwd=2,border="grey",
@@ -1208,25 +1290,64 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
 #  #lines(h$mids,h$density)
 #    points(diag$deltaobs,dnorm(diag$deltaobs,mean=mean(diag$deltagcm),
 #    sd=sd(diag$deltagcm)),pch=19)
-    plot(diag,map=FALSE,new=FALSE,cex=0.75)
+    plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
   } 
   
+  if (map.show) {
+    if(verbose) print("add map") 
+    if(is.null(xrange) & !is.null(attr(z,"lon"))) {
+      xrange <- range(attr(z,"lon")) + c(-15,15)
+    }
+    if(is.null(yrange) & !is.null(attr(z,"lat"))) {
+      yrange <- range(attr(z,"lat")) + c(-10,10)
+    }
+    if (!is.null(xrange) & !is.null(xrange)) {
+      data(geoborders)
+      lon <- geoborders$x
+      lat <- geoborders$y
+      ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
+      lat>(min(yrange)-1) & lat<(max(yrange)+1)
+      lon2 <- attr(geoborders,"borders")$x
+      lat2 <- attr(geoborders,"borders")$y
+      ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
+      lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
+      par(fig=c(0.7,0.95,0.78,0.98),new=TRUE, mar=c(0,0,0,0),
+        cex.main=0.75,xpd=NA,col.main="grey",bty="n")
+      plot(lon[ok],lat[ok],lwd=1,col="black",type='l',xlab=NA,ylab=NA,
+         axes=FALSE)
+      axis(1,mgp=c(3,.5,0))
+      axis(2,mgp=c(2,.5,0))
+      lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+      if("points" %in% map.type) {
+        points(attr(z,"lon"),attr(z,"lat"),pch=21,cex=1,col='black',bg='red',lwd=1)
+      }
+      if("rectangle" %in% map.type) {
+        rect(min(attr(z,"lon")),min(attr(z,"lat")),max(attr(z,"lon")),
+             max(attr(z,"lat")),lwd=1,col=NA,border='red',lty=2)
+      }
+    } 
+  }  
   # finished plotting
 
   if (legend) {
-#    par(fig=c(0.5,0.9,0,0.15),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
-    par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+    par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+    #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
     legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
                       paste(diag$robs,'%'),
                       paste(diag$outside,"observations"),
                       "p-value: "),
             bty="n",cex=0.7,text.col="grey40")
-    legend(0.5,0.90,c(expression(paste(levels(factor(unit(x)))[1]/d*e*c*a*d*e)),
+    #legend(0.5,0.90,c(expression(paste(levels(factor(unit(x)))[1]/d*e*c*a*d*e)),
+    #                  "ensemble trends > obs.",
+    #                  "outside ensemble 90% conf.int.",
+    #                  paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
+    #        bty="n",cex=0.7,text.col="grey40")
+    legend(0.5,0.90,c(paste(levels(factor(unit(y)))[1],"/decade",sep=""),
                       "ensemble trends > obs.",
                       "outside ensemble 90% conf.int.",
                       paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
-            bty="n",cex=0.7,text.col="grey40")
+            bty="n",cex=0.7,text.col="grey40")    
   }
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
@@ -1234,7 +1355,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   plot(usr[1:2],usr[3:4],
        type="n",ylab="",xlab="",xlim=usr[1:2],ylim=usr[3:4])
 
-  # target: perfect scoare is bull's eye
+  # target: perfect score is bull's eye
   # from diagnostics?
 }
 

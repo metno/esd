@@ -11,6 +11,7 @@
 \alias{filt.default}
 \alias{exit}
 \alias{figlab}
+\alias{ndig}
 
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
@@ -35,6 +36,7 @@ trend.pval(x)
 lag.station(x,...)
 lag.field(x,...)
 exit()
+ndig(x)
 filt(x,...)
 filt.default(x,n,type='ma',lowpass=TRUE)
 figlab(x,xpos=0.001,ypos=0.001)
@@ -64,6 +66,9 @@ figlab(x,xpos=0.001,ypos=0.001)
   'exit' is a handy function for exiting the R session without saving.
 
   'figlab' is a handy function for labelling figures (e.g. 'Figure 1')
+
+  'ndig' estimates the number of digits for round(x,ndig), e.g. in
+  scales for plotting.
 }
 \value{
  \item{as.decimal }{Decimal value}

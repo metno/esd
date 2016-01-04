@@ -75,10 +75,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
   ## If only a few items are provided in colbar - then set the rest to the default
-  if (!is.null(colbar)) {
-        colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
-    } else 
-        if (verbose) print('colbar=NULL - no colour bar')
+  #if (!is.null(colbar)) {
+        colbar <- colbar.ini(x,colbar=colbar,verbose=verbose)
+ #   } else 
+ #       if (verbose) print('colbar=NULL - no colour bar')
   #if (!is.null(colbar)) {
   #  if (verbose) print('sort out the colours')
   #  if (is.null(colbar$pal)) colbar$pal <- 't2m'
@@ -118,7 +118,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   srty <- order(lat); lat <- lat[srty]
   map <- x[srtx,srty]
   param <- attr(x,'variable')
-  unit <- attr(x,'unit')
+  unit <- attr(x,'unit')[1]
+  if (!is.null(unit)) if (unit =='%') unit <- "'%'"
+  
   ## KMP 10-11-2015: prepare unit and parameter labels
   if(!is.null(param) & !inherits(param,'expression'))
     param <- gsub(" ","~",param)
@@ -145,7 +147,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   gx <- geoborders$x
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
-   if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
   if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   theta <- pi*gx[ok]/180
   phi <- pi*gy[ok]/180
@@ -204,25 +206,25 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
   
   ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
-  crgb <- col2rgb(colbar$col)
-  if(any(map>max(colbar$breaks))) {
-    cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
-    crgb <- cbind(crgb,cmax)
-    index[index>nc] <- nc+1
-    colbar$breaks <- c(colbar$breaks,max(map))
-  }
-  if(any(map<min(colbar$breaks))) {
-    cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
-    crgb <- cbind(cmin,crgb)
-    index[index>nc] <- nc+1
-    colbar$breaks <- c(min(map),colbar$breaks)
-  }
-  crgb[crgb>255] <- 255; crgb[crgb<0] <- 0
-  colbar$col <- rgb(t(crgb),maxColorValue=255)
-  colbar$n <- length(colbar$col)-1
+#  crgb <- col2rgb(colbar$col)
+#  if(any(map>max(colbar$breaks))) {
+#    cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
+#    crgb <- cbind(crgb,cmax)
+#    index[index>nc] <- nc+1
+#    colbar$breaks <- c(colbar$breaks,max(map))
+#  }
+#  if(any(map<min(colbar$breaks))) {
+#    cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
+#    crgb <- cbind(cmin,crgb)
+#    index[index>nc] <- nc+1
+#    colbar$breaks <- c(min(map),colbar$breaks)
+#  }
+#  crgb[crgb>255] <- 255; crgb[crgb<0] <- 0
+#  colbar$col <- rgb(t(crgb),maxColorValue=255)
+#  colbar$n <- length(colbar$col)-1
   #if (min(colbar$breaks)<min(map)) index[map<min(colbar$breaks)] <- 1
   #if (max(colbar$breaks)>max(map)) index[map>max(colbar$breaks)] <- nc
-  if (verbose) print('set colours')
+  if (verbose) {print('map2sphere: set colours'); print(colbar)}
   
 # Rotate coastlines:
   a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
@@ -307,8 +309,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
     param <- as.character(param); unit <- as.character(unit)
     if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
       if(!is.null(unit)) txt <- param
-    text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),
-       cex=1.5,pos=4) 
+    text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4) 
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   result <- NULL # For now...

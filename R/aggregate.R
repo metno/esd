@@ -166,7 +166,11 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     #print(clsy2)
     if (deparse(substitute(by))=="year") 
       by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
-
+    if (deparse(substitute(by))=="year") {
+      by <- month(x)
+      index(x) <- month(x)
+    }
+    #browser()
     #print(deparse(substitute(by)))
     #print(class(x))
     #print(class(index(x)))

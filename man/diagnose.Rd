@@ -9,6 +9,7 @@
 \alias{diagnose.ds}
 \alias{diagnose.station}
 \alias{diagnose.distr}
+\alias{diagnose.matrix}
 \alias{diagnose.dsensemble}
 \title{Diagnose}
 \description{Diagnose and examine combined fields, MVR, and CCA
@@ -34,6 +35,7 @@ diagnose.mvr(x)
 diagnose.cca(x)
 diagnose.ds(x,plot=FALSE)
 diagnose.station(x,it=NULL,...)
+diagnose.matrix(X,xlim=NULL,ylim=NULL,verbose=FALSE,...)
 diagnose.dsensemble(x,plot=TRUE,map=TRUE,plot.type='target',...)
 diagnose.distr(x,main='Mean - quantile',
                xlab='mean',ylab=expression(q[p]),

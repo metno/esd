@@ -354,8 +354,8 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                 y <- zoo(0.25*(coredata(djf[i1,]) +
                                coredata(mam[i2,]) +
                                coredata(jja[i3,]) +
-                               coredata(son[i4,])),
-                         order.by=as.Date(paste(yr,'01-01',sep='-')))
+                               coredata(son[i4,])),order.by=yr)
+#                         order.by=as.Date(paste(yr,'01-01',sep='-')))
                 y <- attrcp(x0,y)
                 class(y) <- class(x0)
             } else if (inherits(x,'month')) {     
@@ -791,7 +791,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           if ( (min(it) >= 1800) & (max(it) <= 2500) ) {
             if (verbose) print("it most probably contains a years")
             ii <- is.element(yr,year(it[1]):year(it[2]))
-          } else if ( (min(it) <= min(yr)) & (max(it) <= length(yr)) ) {
+          } else if ( (min(it) >= 1) & (max(it) <= length(yr)) ) {
             if (verbose) print("it most probably contains a indices")
             ii <- is.element(1:length(yr),it[1]:it[2])
           } else  if (min(it) >= min(yr)) {
@@ -801,49 +801,19 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             if (verbose) print("it most probably contains years")
             ii <- is.element(yr,min(yr):it[2])
           }
-        } else if (length(it)>2) {
+        } else if ((length(it)>2) | length(it==1)) {
           # if it is years:
                 if (min(it) > length(yr)) {
                   if (verbose) print("match years")
                   ii <- is.element(yr,it)
                 } else if (max(it) <= length(yr)) {
                   if (verbose) print("pick by indices")
-                  ii <- is.element(1:length(yr),it)
-                }
-              } else if ((nlev<=4) & (it <=4)) {
-                if (verbose) print("it are most probably seasons")
-                if (inherits(x,'season') & (length(it)==1)) {
-                    if (verbose)  print(paste("The 'it' value must be a season index between 1 and 4.",
-                                              "If not please use character strings instead. e.g. it='djf'"))
-                    it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10)
-                    ii <- is.element(mo,it)
-                 } else if ( (max(it) <=12) &
-                             (inherits(x,'month') | (inherits(x,'day')))) {
-                     if (verbose) {
-                         print("The 'it' value must be a month index.")
-                         print("If not please use character strings instead")
-                       }
-                     ii <- is.element(mo,it)
-                 }  else {
-                    if (verbose) print("it represents indices")
-                    ii <- it
-                }
-            } else if (nlev<=12) {
-                if (verbose) {
-                  print("The 'it' value are most probably a month index. ")
-                  print("If not please use character strings instead")
-                }
-                ii <- is.element(mo,it)       
-              } else {
-            #  length(nlev) > 1
-                if ( (min(it) >= min(yr)) & (max(it) <= max(yr)) ) {
-                  if (verbose) print("it most probably contains years")
-                  ii <- is.element(yr,it)
+                  ii <- is.element(1:length(t),it)
                 } else {
-                  if (verbose)  print("it most probably holds indices")
-                  ii <- it
+                  ii <- rep(FALSE,length(t))
+                  warning("default.subset: did not reckognise the selection citerion for 'it'")
                 }
-              }
+        }
       } else if (inherits(it,c("Date","yearmon"))) {       
         ##        ii <- is.element(t,it)
         if (verbose) print('it is a date object')
@@ -986,10 +956,10 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       c(sum(selx),sum(sely),sum(ii)) -> attr(y,'dimensions')
     }
     
-
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)   
+    if (verbose) print('exit default.subset')
     if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))
     return(y)
 }

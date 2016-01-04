@@ -2,6 +2,8 @@
 
 vis <- function(x,...) UseMethod("vis")
 
+
+
 vis.station <- function(x,...) {
   if (is.precip(x)) vis.station.precip(x,...) else
   if (is.T(x)) vis.station.t2m(x,...)
@@ -786,7 +788,7 @@ vis.dsensemble <- function(x,...) {
   stopifnot(inherits(x,"dsensemble"))
   if (inherits(x,"list")) {
     vis.dsensemble.list(x,...)
-  } 
+  } else vis.default(x,...)
 }
 
 vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
@@ -839,9 +841,10 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
       colbar=list(palette='t2m',rev=FALSE,n=n,breaks=NULL,
           type="p",cex=2,h=0.6,v=1,pos=0.1,show=TRUE)
   }
-  if (is.null(colbar$breaks)) {
-      colbar$breaks <- c(-max(abs(z.q95)),max(abs(z.q95)))
-  }
+  ## REB: 2015-12-10: drop these after colbar.ini has been revised
+#  if (is.null(colbar$breaks)) {
+#      colbar$breaks <- round(c(-max(abs(z.q95)),max(abs(z.q95))),ndig(z.q95))
+#  }
 
   if (inherits(X,"pca")) {
     xval <- lapply(X[3:length(X)],function(x) attr(x,"evaluation"))
@@ -870,7 +873,7 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
   if(verbose) print('size - quality of fit (magnitude & trend)')
 
   colbar <- colbar.ini(z,colbar=colbar,verbose=verbose)
-  colbar$breaks <- signif(colbar$breaks,digits=2)
+#  colbar$breaks <- signif(colbar$breaks,digits=2)
 
   icol <- apply(as.matrix(z),2,findInterval,colbar$breaks)
   col <- colbar$col[icol]
@@ -963,3 +966,53 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
   if(verbose) print("finished!")
   invisible(d)
 }
+
+
+vis.default <- function(X,it=NULL,img=NULL,verbose=FALSE,
+                        ref=c(as.Date('1961-01-01'),as.Date('1990-12-31')),...) {
+  if (!is.null(img)) {
+    if (is.character(img)) {
+      require(jpeg)
+      img <- readJPEG(img)
+    }
+  }
+
+  if (!is.null(it)) X <- subset(X,it=it)
+  y <- attr(X,'station')
+  dev.new()
+  if (!is.null(img)) {
+    par0 <- par()
+    par(mar=rep(0,4))
+    plot(c(0,1),c(0,1),type='n')
+    rasterImage(img, -0.05, -0.05, 1.05, 1.05)
+    par(new=TRUE,col.axis='white',col.lab='white',xaxt='s',yaxt='s',mar=par0$mar)  
+  }
+  par(bty='n')
+  plot(zoo(y),lwd=5,col='black',ylim=range(y,na.rm=TRUE)+ c(-1,5),xlim=range(index(X)),
+       ylab=expression(T[2*m]*~(degree*C)),xlab='Time')
+  for (i in 1:dim(X)[2]) lines(X[,i],lwd=7,col=rgb(1,0.7,0.7,0.1))
+  
+  lines(y,lty=2,lwd=3)
+  balls(y) 
+}
+
+balls <- function(x) {
+  for (i in 1:20) points(x,cex=seq(2,0.1,length=20)[i],
+  col=rgb(i/20,i/20,i/20))
+}
+
+graph <- function(x,...) UseMethod("graph")
+
+graph.default <- function(x,col='black',lwd=5,xlim=NULL,ylim=NULL,img=NULL) {
+    ## Produce the graphics:
+    dev.new()
+    plot(x)
+    if (!is.null(img)) {
+        par(mar=rep(0,4))
+        plot(c(0,1),c(0,1),type='n')
+        rasterImage(img, -0.05, -0.05, 1.05, 1.05)
+        par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n')
+    }
+    plot(x,lwd=lwd,col=col,ylim=ylim,xlim=xlim)
+}
+

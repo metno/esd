@@ -14,6 +14,8 @@
 \title{InfoGraphics.}
 \alias{colscal}
 \alias{prob}
+\alias{balls}
+\alias{graph}
 \description{
   Wheel
 
@@ -30,6 +32,8 @@
   cumugram
   
   prob
+  
+  graph
 }
 \usage{
 vis(x,...)
@@ -48,6 +52,8 @@ prob(x,...)
 prob.default(x,...)
 prob.station(x,y=NULL,is=1,...)
 prob.station.precip(x,y=NULL,is=1,threshold=1,...)
+graph(x,...)
+graph.default(x,col='black',lwd=5,xlim=NULL,ylim=NULL,img=NULL)
 }
 \arguments{
  \item{x}{a data object}

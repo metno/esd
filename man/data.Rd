@@ -37,11 +37,13 @@
 \alias{sunspots}
 \alias{NINO3.4}
 \alias{SOI}
+\alias{GSL}
 \alias{bjornholt}
 \alias{vardo}
 \alias{ferder}
 \alias{dse.ferder}
 \alias{HadCRUT4}
+\alias{NASAgiss}
 \alias{dse.Oslo}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
@@ -68,7 +70,7 @@
 
   Some data sets, such as NINO3.4 and NAOI come with a 'frozen' version
   in the package, but there are also functions that read the most recent
-  version of these indeces from the Internet.
+  version of these indeces from the Internet. GSL reads the global mean sea level.
 
 }
 \usage{
@@ -115,6 +117,8 @@ NAO(url='http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthl
 SOI(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',header=FALSE)
 data(dse.Oslo)
 HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt",plot=FALSE)
+NASAgiss(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt')
+GSL <- function(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv') 
 }
 
 \arguments{
