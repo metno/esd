@@ -8,7 +8,7 @@
 select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = NULL ,lon = NULL, lat = NULL, 
                             alt = NULL, cntr = NULL, src = NULL , it = NULL , nmin = NULL , verbose=FALSE) 
 {
-    ## browser()
+    ##
     if (is.null(x)) {
     data("station.meta",envir=environment())
     ## load("station.meta.rda")
@@ -18,7 +18,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = 
   }
   else {
     if (inherits(x,"station")) {
-      ## browser()
+      ##
       ##var2param <- function(x) {
       ##  variable <- as.matrix(as.character(attr(x,"variable")))
       ##  var2prm <- function(x) switch(x,"T[2 * m]"="t2m")
@@ -32,7 +32,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = 
       latitude <- attr(x,"latitude")
       altitude <- attr(x,"altitude")
       ## element <- apply(as.matrix(var2param(x)),1,esd2ele)
-      ##browser()
+      ##
       element <- apply(as.matrix(attr(x,"variable")),1,esd2ele)
       start <- rep(year(x)[1],length(station_id))
       end <- rep(year(x)[length(index(x))],length(station_id))
@@ -49,7 +49,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = 
     }
     else stop("x must be an object of calss 'station'") 
   }
-  ##browser()   
+  ##
   if (!is.null(param) & is.null(ele)) {
     print("No variable found for your selection or the param identifier has not been set correctly.")
     print("Please refrech your selection based on the list below")
@@ -69,7 +69,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = 
   }
   ## Search by the closest station to longitude and latitude values
   if (length(lon)==1 & length(lat)==1) {
-    ## AM 25.09.2013 STILL NEED TO TEST browser()
+    ## AM 25.09.2013 STILL NEED TO TEST
     d <- distAB(lon, lat, station.meta$longitude, station.meta$latitude)
     id <- d==min(d,na.rm=TRUE)
     ##id[is.na(id)] <- FALSE # Ak some of the lon values are NA's
@@ -104,29 +104,35 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = 
     id <- is.element(tolower(station.meta$country),tolower(cntr))
     station.meta <- station.meta[id,]   
   }
-  ## browser()
+  ##
   ## Search by data source
   if (!is.null(src)) {
     id <- is.element(tolower(station.meta$source),tolower(src))
     station.meta <- station.meta[id,]
   }
-  ## Search by lsum(ocation
+    ##
+    ## Search by location
   if (!is.null(loc)) {
-    id <- grep(tolower(loc),tolower(station.meta$location))
+    id <- is.element(tolower(station.meta$location),tolower(loc))
     station.meta <- station.meta[id,]
   }
-  ## Search by starting and ending years
-  if (!is.null(it)) { 
-    it.rng <- range(as.numeric(it),na.rm=TRUE)
-    id <- (as.numeric(station.meta$start) <= it.rng[1]) & (as.numeric(station.meta$end) >= it.rng[2])
-    #browser()
-    if (sum(id)==0) {
-      print(paste('No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
-                  min(as.numeric(station.meta$start)),' and latest observation from ',
-                  max(as.numeric(station.meta$end)),sep=''))
+    ##
+    ## Search by starting and ending years
+    if (!is.null(it)) { 
+        it.rng <- range(as.numeric(it),na.rm=TRUE)
+        id <- (as.numeric(station.meta$start) <= it.rng[1]) & (as.numeric(station.meta$end) >= it.rng[2])
+        ##
+        if (sum(id,na.rm=TRUE)==0) {
+            print(paste('No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
+                        min(as.numeric(station.meta$start)),' and latest observation from ',
+                        max(as.numeric(station.meta$end)),sep=''))
+        }
+        station.meta <- station.meta[id,]
+        station.meta$start <- rep(it.rng[1],length(station.meta$loc))
+        ## paste('01-01-',rep(it.rng[1],length(station.meta$loc)),sep='')
+        station.meta$end <- rep(it.rng[2],length(station.meta$loc))
+        ## paste('31-12-',rep(it.rng[2],length(station.meta$loc)),sep='')
     }
-    station.meta <- station.meta[id,]
-  }
 
   ## Search by minimum number of years
   if (!is.null(nmin)) { 
@@ -134,10 +140,10 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = 
     id <- (ny >= nmin)
     station.meta <- station.meta[id,]
   } 
-  ## browser()
+  ##
   ## Search by esd element
   if (!is.null(ele)) {
-    ##browser()
+    ##
     id <- is.element(station.meta$element,ele)
     station.meta <- station.meta[id,]
     ##if ((ele == 101) & (sum(id0)==0)) { # select station recording min and max temp instead of mean t2m
