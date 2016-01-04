@@ -105,7 +105,7 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
                             path.ghcnd=NULL,url.ghcnd=NULL,
                             path.metnom=NULL,url.metnom=NULL,
                             path.metnod=NULL,url.metnod=NULL) {
-    ## 
+    ##
     ## check wether x is a 'location' or a 'stationmeta' object
     
     if (inherits(loc,"stationmeta")) {
@@ -121,7 +121,6 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
     SRC <- src
     PATH <- path
     URL <- url
-    
     ## 
     ## Select one or a set of stations based on the metadata
     if (is.null(ss)) { 
@@ -539,12 +538,12 @@ narp.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     ##data("station.meta",envir=environment())
     ##load("esd/data/station.meta.rda")
     ## if (is.null(stid)) return(NULL) 
-    ## browser()
+    ## 
     ## load the original data
     data(NARP,envir=environment())
     ## Get esd ele from param argument.
     ele <- esd2ele(param=param)
-    browser()
+    ## 
     x.name <- as.character(ele2param(ele=ele,src="NARP")[2])
     unit <-  as.character(ele2param(ele=ele,src="NARP")[4])
 
@@ -749,7 +748,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
                           url = "http://klapp/metnopub/production/") {
     
     if (verbose) print("http://eklima.met.no")
-    
+    ## 
     ## if (!is.na(end)) end1 <- format(Sys.time(),'%d.%m.%Y')
     if (!is.na(end)) end1 <-format(as.Date(paste("31.12.",as.character(end),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
     if (!is.na(start)) start1 <- format(as.Date(paste("01.01.",as.character(start),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
