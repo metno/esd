@@ -111,7 +111,9 @@ if (!file.exists(fioesm))
     download.file(url=file.path(url,fioesm), destfile=fioesm,
                   method = "auto", quiet = FALSE, mode = "w",cacheOK = TRUE)
 ## Downscale 2m temperature             
-rcp4.5 <- DSensemble.t2m(Oslo,path='~',rcp='',pattern = "tas_Amon_",biascorrect=TRUE, area.mean.expl=TRUE, predictor = "~/air.2m.mon.mean.nc",plot=TRUE)
+rcp4.5 <- DSensemble.t2m(Oslo,path='~',rcp='', pattern="tas_Amon_",
+biascorrect=TRUE, area.mean.expl=TRUE, predictor
+="~/air.2m.mon.mean.nc", plot=TRUE)
 
 # Evaluation: (1) combare the past trend with downscaled trends for same
 # interval by ranking and by fitting a Gaussian to the model ensemble;
