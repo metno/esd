@@ -1137,8 +1137,8 @@ plot.xval <- function(x,...) {
   grid()
 }
 
-plot.dsensemble.pca <- function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
-                               envcol=rgb(1,0,0,0.2),legend=TRUE,verbose=FALSE,...) {
+plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
+                               envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,...) {
   if (verbose) print("plot.dsensemble.pca")
   stopifnot(inherits(x,'dsensemble') & inherits(x,'pca'))
   d <- index(x[[3]])
@@ -1157,9 +1157,9 @@ plot.dsensemble.pca <- function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   plot(pc[[1]])
 }
 
-plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
-                             envcol=rgb(1,0,0,0.2),legend=TRUE,
-                             map.show=FALSE,map.type="points",new=TRUE,
+plot.dsensemble <-  function(x,pts=FALSE,it=0,
+                             envcol=rgb(1,0,0,0.2),legend.show=TRUE,
+                             target.show=TRUE,map.show=TRUE,map.type="points",new=TRUE,
                              xrange=NULL,yrange=NULL,verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble")
   stopifnot(inherits(x,'dsensemble'))
@@ -1177,7 +1177,8 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   
   y <- attr(z,'station')
   attr(y,'standard.error') <- NULL
-  
+  if (verbose) print(paste('lon=',lon(y),'lat=',lat(y))) 
+    
   d <- dim(z)
   #str(z); str(y); print(class(z)); print(year(z))
   #browser()
@@ -1196,7 +1197,7 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
                       ylim <- args[[iyl]]  
   #print("...")
   if(new) dev.new()
-  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='')
+  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='',map.show=FALSE)
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)
@@ -1225,26 +1226,6 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   #browser()
   lines(y,type="b",pch=19)
 
-  # statistics: past trends 
-#  i1 <- is.element(year(y),year(z))
-#  i2 <- is.element(year(z),year(y))
-#  obs <- data.frame(y=y[i1],t=year(y)[i1])
-#  #print(summary(gcm))
-#  deltaobs <- lm(y ~ t,data=obs)$coefficients[2]*10  # deg C/decade
-#  deltagcm <- rep(NA,d[2])
-#  for (j in 1:d[2]) {
-#    gcm <- data.frame(y=z[i2,j],t=year(z)[i2])
-#    deltagcm[j] <- lm(y ~ t,data=gcm)$coefficients[2]*10  # deg C/decade
-#  }
-#  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
-  #print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])
-#
-#  # number of points outside conf. int. (binom)
-#  above <- y[i1] > q95[i2]
-#  below <- y[i1] < q05[i2]
-#  outside <- sum(above) + sum(below)
-#  #print(outside); print(pbinom(outside,size=sum(i1),prob=0.1))
-  
   #str(diag$y); browser()
   index(diag$y) <- year(diag$y)
   #points(diag$y,cex=0.5,col="green")
@@ -1252,54 +1233,23 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
   outside <- diag$above | diag$below
   points(zoo(coredata(diag$y)[which(outside)],
              order.by=year(diag$y)[which(outside)]),col="grey")
-  #browser()
-  
-#  if (FALSE) {
-#  if (showci) {
-#    par(fig=c(0.15,0.4,0.7,0.8),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",
-#        cex.main=0.75,xpd=NA,col.main="grey")
-#    par(fig=c(0.05,0.25,0.85,0.95),new=TRUE, mar=c(0,0,0,0),
-#        xaxt="n",yaxt="n",bty="n",
-#        cex.main=0.75,xpd=NA,col.main="grey")
-#    plot(0:(diag$N/2),dbinom(x=0:(diag$N/2), size=diag$N, prob=0.1),
-#         type="l",col="grey20",
-#         main="Obs. outside simulated 90%",xlab="",ylab="",lwd=6,
-#         ylim=c(0,1.25*max(dbinom(x=0:(diag$N/2), size=diag$N, prob=0.1))))
-#    lines(0:(diag$N/2),dbinom(x=0:(diag$N/2), size=diag$N, prob=0.1),
-#          col="grey70",lwd=5)
-#    points(diag$outside,dbinom(x=diag$outside, size=diag$N, prob=0.1),pch=19)
-#  }
 
-  if (showtrend) {
+  if (target.show) {
+    if (verbose) print('add target diagnostic')
 #    par(fig=c(0.6,0.9,0.25,0.4),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
 #        cex.main=0.75,xpd=NA,col.main="grey30")
     par(fig=c(0.23,0.45,0.78,0.98),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
-#    h <- hist(diag$deltagcm,plot=FALSE)
-#    hist(diag$deltagcm,freq=FALSE,col="grey80",lwd=2,border="grey",
-#         ,main="Obs. and simulated trends",
-#        xlab="",ylab="",ylim=c(0,1.2*max(h$density)))
-#    lines(seq(min(diag$deltagcm),max(diag$deltagcm),length=300),
-#         dnorm(seq(min(diag$deltagcm),max(diag$deltagcm),length=300),
-#               mean=mean(diag$deltagcm),sd=sd(diag$deltagcm)),
-#         col="grey20",lwd=7)
-#    lines(seq(min(diag$deltagcm),max(diag$deltagcm),length=300),
-#         dnorm(seq(min(diag$deltagcm),max(diag$deltagcm),length=300),
-#               mean=mean(diag$deltagcm),sd=sd(diag$deltagcm)),
-#         col="pink",lwd=5)
-#  #lines(h$mids,h$density)
-#    points(diag$deltaobs,dnorm(diag$deltaobs,mean=mean(diag$deltagcm),
-#    sd=sd(diag$deltagcm)),pch=19)
-    plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
+    plot(diag,map.sho=FALSE,new=FALSE,cex=0.75)
   } 
   
   if (map.show) {
     if(verbose) print("add map") 
-    if(is.null(xrange) & !is.null(attr(z,"lon"))) {
-      xrange <- range(attr(z,"lon")) + c(-15,15)
+    if(is.null(xrange) & !is.null(lon(y))) {
+      xrange <- range(lon(y)) + c(-15,15)
     }
-    if(is.null(yrange) & !is.null(attr(z,"lat"))) {
-      yrange <- range(attr(z,"lat")) + c(-10,10)
+    if(is.null(yrange) & !is.null(lat(y))) {
+      yrange <- range(lat(y)) + c(-10,10)
     }
     if (!is.null(xrange) & !is.null(xrange)) {
       data(geoborders)
@@ -1319,17 +1269,16 @@ plot.dsensemble <-  function(x,pts=FALSE,showci=TRUE,showtrend=TRUE,it=0,
       axis(2,mgp=c(2,.5,0))
       lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
       if("points" %in% map.type) {
-        points(attr(z,"lon"),attr(z,"lat"),pch=21,cex=1,col='black',bg='red',lwd=1)
+        points(lon(y),lat(y),pch=21,cex=1,col='black',bg='red',lwd=1)
       }
       if("rectangle" %in% map.type) {
-        rect(min(attr(z,"lon")),min(attr(z,"lat")),max(attr(z,"lon")),
-             max(attr(z,"lat")),lwd=1,col=NA,border='red',lty=2)
+        rect(min(lon(y)),min(lat(y)),max(lon(y)),max(lat(y)),lwd=1,col=NA,border='red',lty=2)
       }
-    } 
+    } else if (verbose) print(paste('lon=',lon(y),'lat=',lat(y))) 
   }  
   # finished plotting
 
-  if (legend) {
+  if (legend.show) {
     par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
