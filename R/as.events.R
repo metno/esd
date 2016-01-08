@@ -403,12 +403,15 @@ count.events <- function(x,by.trajectory=TRUE,verbose=TRUE,...) {
   invisible(N)
 }
 
-param.events <- function(x,param="count",FUN="mean",verbose=TRUE,...) {
+param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
+                         longname=NULL,unit=NULL,...) {
   if (verbose) print("param.events")
   dates <- as.Date(strptime(paste(x$date,x$time),format="%Y%m%d %H"))
   fn <- function(x) as.Date(as.yearmon(x))
   if (param=="count") {
     N <- count.events(x,...)
+    longname <- paste(attr(x,"variable"),param)
+    unit <- "events/months"
   } else if (param %in% names(x)) {
     y <- zoo(x[,param],order.by=dates)
     N <- aggregate(y,by=fn,FUN=FUN)
@@ -426,107 +429,77 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,...) {
     N <- subset(N,it=month.abb[mn])
     class(N) <- c("station",class(x)[2],"zoo")
   }
+  if (is.null(longname)) {
+    longname <- paste(FUN," ",param," (",attr(x,"variable"),")",sep="")
+  }
+  if (is.null(unit)) {
+    if (length(names(x))==length(attr(x,"unit"))) {
+      unit <- attr(x,"unit")[names(x)==param]
+    } else {
+      unit <- NA
+    }
+  }
+  attr(N,"variable") <- param
+  attr(N,"longname") <- longname
+  attr(N,"unit") <- unit
   attr(N,"lat") <- attr(x,"lat")
   attr(N,"lon") <- attr(x,"lon")
   invisible(N)
 }
 
-## trajectory2events <- function(x,verbose=FALSE) {
-##   stopifnot(inherits(x,"trajectory"))
+
+trajectory2events <- function(x,verbose=FALSE) {
+  stopifnot(inherits(x,"trajectory"))
   
-##   if (verbose) print("trajectory")
-##   if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
-##   if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
-##   names(x) <- tolower(names(x))
-##   names(x)[grep("latitude",names(x))] <- "lat"
-##   names(x)[grep("longitude",names(x))] <- "lon"
-##   names(x)[grep("step",names(x))] <- "timestep"
+  if (verbose) print("trajectory2events")
+  if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
+  if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
+  cnames <- unique(colnames(x))
+  params <- cnames[!cnames %in% c("trajectory","lat","lon","start","end","n")]
+  cnames <- c("trajectory","lon","lat","time","n",params)
 
-##   if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
-##   if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
-##   if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
-##   if(is.na(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
-##   if(is.na(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
-##   if(is.na(url) & !is.null(attr(x,"URL"))) url <- attr(x,"URL")
-##   if(is.na(reference) & !is.null(attr(x,"reference"))) reference <- attr(x,"reference")
-##   if(is.na(info) & !is.null(attr(x,"info"))) info <- attr(x,"info")
-##   if(is.na(method) & !is.null(attr(x,"method"))) method <- attr(x,"method")
-  
-##   # transform data in data.frame x to numeric values
-##   if(verbose) print('data.frame to numeric values')
-##   x <- data.frame(x)
-##   fn <- function(x) {
-##     if(!is.null(levels(x))) {suppressWarnings(as.numeric(levels(x))[x])
-##     } else as.numeric(as.character(x))
-##   }
-##   nlist1 <- c('trajectory','lat','lon','year','month','day','time')
-##   if (sum(nlist1 %in% names(x))==length(nlist1)) {
-##     x$trajectory <- fn(x$trajectory)
-##     x$lat <- fn(x$lat)
-##     x$lon <- fn(x$lon)
-##     x$year <- fn(x$year)
-##     x$month <- fn(x$month)
-##     x$day <- fn(x$day)
-##     x$time <- fn(x$time)
-##     x$date <- x$year*1E6+x$month*1E4+x$day*1E2+x$time
-##   } else {
-##     print(paste(paste(nlist1[!(nlist1 %in% names(x))],collapse=' '),'missing'))
-##   }
-##   nlist2 <- names(x)[!(names(x) %in% c('code99','date',nlist1))]
-##   for (name in nlist2) {
-##     eval(parse(text=paste("x$",name,"<-fn(x$",name,")",sep="")))
-##   }
-
-##   # interpolate all trajectories to same length n
-##   if(verbose) print('interpolate trajectories')
-##   aggregate(x$date, list(x$trajectory), function(x) x[1])$x -> t1
-##   aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> t2
-##   aggregate(x$date, list(x$trajectory), length)$x -> len
-##   aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat
-##   #for(i in seq(11000,12000)) loni<-approxlon(x$lon[x$trajectory==i]);print(i)
-##   aggregate(x$lon,list(x$trajectory),function(x) approxlon(x,n=n)$y)$x -> lon
-##   colnames(lon) <- rep('lon',n)
-##   colnames(lat) <- rep('lat',n)
-##   if(verbose) print(n[1:n])
-##   nlist1 <- c('trajectory','lat','lon','year','month','day','time',
-##              'date','code99','timestep')
-##   nlist2 <- names(x)[!(names(x) %in% nlist1)]
-##   if(is.null(nlist2)) {
-##     X <- cbind(lon=lon,lat=lat,start=t1,end=t2,n=len)
-##   } else {
-##     for(name in nlist2) {
-##       if(verbose) print(name)
-##       eval(parse(text=paste("aggregate(x$",name,
-##        ",list(x$trajectory),function(x) approx(x,n=",
-##                    n,")$y)$x ->",name,sep="")))
-##       eval(parse(text=paste("colnames(",name,
-##                    ")<-rep('",name,"',",n,")",sep="")))
-##     }
-##     X <- eval(parse(text=paste("cbind(lon=lon,lat=lat",
-##         paste(nlist2,"=",nlist2,sep="",collapse=","),
-##         "start=t1,end=t2,n=len)",sep=",")))
-##   }
-
-##   # add attributes to trajectory matrix X
-##   attr(X, "location")= loc
-##   attr(X, "variable")= param
-##   attr(X, "longname")= longname
-##   attr(X, "quality")= quality
-##   attr(X, "calendar")= "gregorian"
-##   attr(X, "source")= src
-##   attr(X, "URL")= url
-##   attr(X, "type")= "analysis"
-##   attr(X, "aspect")= "interpolated"
-##   attr(X, "reference")= reference
-##   attr(X, "info")= info
-##   attr(X, "method")= method
-##   attr(x,"lon") <- NA
-##   attr(x,"lat") <- NA
-##   attr(x,"alt") <- NA
-##   attr(x,"cntr") <- NA
-##   attr(x,"stid") <- NA
-##   attr(X, "history")= history.stamp()
-##   class(X) <- 'trajectory'
-##   invisible(X)
-## }
+  # interpolate trajectories to original length
+  if(verbose) print('interpolate trajectories to original length')
+  y <- data.frame(matrix(rep(NA,sum(x[,"n"])*length(cnames)),
+                         nrow=sum(x[,"n"]),ncol=length(cnames)))
+  names(y) <- cnames
+  i.n <- colnames(x)=="n"
+  i.t <- colnames(x)=="trajectory"
+  i.lat <- colnames(x)=="lat"
+  i.lon <- colnames(x)=="lon"
+  y$trajectory <- unlist(apply(x,1,function(z) rep(z[i.t],z[i.n])))
+  y$n <- unlist(apply(x,1,function(z) rep(z[i.n],z[i.n])))
+  if(verbose) print('interpolate time')
+  i.start <- colnames(x)=="start"
+  i.end <- colnames(x)=="end"
+  y$time <- unlist(apply( x, 1, function(z) strftime(
+        seq(strptime(z[i.start],format="%Y%m%d%H"),
+        strptime(z[i.end],format="%Y%m%d%H"),
+        length.out=z[i.n]),
+        format="%Y%m%d%H") ))
+  if(verbose) print('interpolate lon and lat')
+  a <- 6.378e06
+  xx <- a * cos( x[,i.lat]*pi/180 ) * cos( x[,i.lon]*pi/180 )
+  yy <- a * cos( x[,i.lat]*pi/180 ) * sin( x[,i.lon]*pi/180 )
+  zz <- a * sin( x[,i.lat]*pi/180 )
+  xa <- unlist(apply(cbind(xx,x[,i.n]),1,
+               function(z) approx(z[1:(length(z)-1)],n=z[length(z)])$y))
+  ya <- unlist(apply(cbind(yy,x[,i.n]),1,
+               function(z) approx(z[1:(length(z)-1)],n=z[length(z)])$y))
+  za <- unlist(apply(cbind(zz,x[,i.n]),1,
+               function(z) approx(z[1:(length(z)-1)],n=z[length(z)])$y))
+  y$lon <- atan2( ya, xa )*180/pi
+  y$lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
+  if (length(params)>0) {
+    for (p in params) {
+      if(verbose) print(paste('interpolate',p))
+      i.p <- colnames(x)==p
+      y[p] <- unlist(apply(x,1,function(z) approx(z[i.p],n=z[i.n])$y))
+    }
+  }
+  # add attributes to events data.frame y
+  y <- attrcp(x,y)
+  class(y) <- c("events","data.frame")
+  return(y)
+}
 
