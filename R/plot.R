@@ -115,7 +115,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
-   if(map.show) vis.map(x,col,map.type)
+   if(map.show) { vis.map(x,col,map.type)}
    par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=TRUE)
    plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
             xlim=xlim,ylim=ylim,new=FALSE)
@@ -138,7 +138,9 @@ vis.map <- function(x,col='red',map.type='points') {
        par(fig=c(0.76,0.97,0.76,0.97),new=TRUE, mar=c(0,0,0,0),
            xpd=NA,col.main="grey",bty="n")
        plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
-            xlab=NA,ylab=NA,axes=FALSE)
+            xlab=NA,ylab=NA,axes=FALSE,
+            xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
+            ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
        axis(1,mgp=c(3,.5,0),cex.axis=0.75)
        axis(2,mgp=c(2,.5,0),cex.axis=0.75)
        lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
