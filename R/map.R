@@ -534,11 +534,12 @@ map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
-                    colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                        pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                    colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
+                               cex=2,show=TRUE,h=0.6, v=1,pos=0.05), colbar2= NULL,
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,...) {
     if (verbose) print('map.cca')
+    if (is.null(colbar2)) colbar2 <- colbar1
     ##x <- subset(x,it=it,is=is)
     ## browser()
     ## For plotting, keep the same kind of object, but replace the patterns in
@@ -591,7 +592,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     map(Y,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
         projection=projection,lonR=lonR,latR=latR,axiR=axiR,
         gridlines=gridlines,FUN='mean',verbose=verbose,
-        colbar=colbar,showall=FALSE,new=FALSE)
+        colbar=colbar1,showall=FALSE,new=FALSE)
     
     if (sum(is.element(type,'ts'))>0) {
       par(fig=c(0,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
@@ -601,7 +602,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     map(X,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
         projection=projection,lonR=lonR,latR=latR,axiR=axiR,
         gridlines=gridlines,FUN='mean',verbose=verbose,
-        colbar=colbar,showall=FALSE,new=FALSE)
+        colbar=colbar2,showall=FALSE,new=FALSE)
     
     invisible(list(U=U,V=V))
 }

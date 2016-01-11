@@ -110,11 +110,12 @@ map.mvr(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
           type=c("fill", "contour"),gridlines = FALSE, verbose = FALSE, ...)
 
 
-map.cca(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
-          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-          colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                      type="p",cex = 2,h=0.6,v=1),
-          type = c("fill","contour"),gridlines = FALSE,verbose=FALSE,...)
+map.cca(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+                    colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
+                               cex=2,show=TRUE,h=0.6, v=1,pos=0.05), colbar2= NULL,
+                    type=c("fill","contour"),gridlines=FALSE,
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,...)
 
 lonlatprojection(x,it=NULL,is=NULL,new=FALSE,projection="lonlat", 
                    xlim=NULL,ylim=NULL,zlim=NULL,n =15,
