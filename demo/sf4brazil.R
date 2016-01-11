@@ -14,7 +14,7 @@ library(esd)
 library(ncdf4)
 
 ## Copy the latest files from operational folder into storage
-system(paste('cp /opdata/sesong/globses/fcmean.mmsa.',format(Sys.time(),'%Y-%m'),
+system(paste('cp sesong/globses/fcmean.mmsa.',format(Sys.time(),'%Y-%m'),
              '*.nc sesong/.',sep=''))
 
 ## Set the region:
