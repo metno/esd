@@ -348,11 +348,11 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
   if (inherits(x,'pca')) {
-    plot.ds.pca(x,verbose=verbose)
+    plot.ds.pca(x,verbose=verbose,...)
     return()
   }
   if (inherits(x,'eof')) {
-    plot.ds.eof(x,verbose=verbose)
+    plot.ds.eof(x,verbose=verbose,...)
     return()
   }
   
