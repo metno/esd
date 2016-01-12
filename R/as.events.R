@@ -1,3 +1,121 @@
+as.events <- function(x,...) UseMethod("as.events")
+
+as.events.default <- function(x,...) {
+  X <- events(x,...)
+  invisible(X)
+}
+
+as.events.trajectory <- function(x,verbose=FALSE,...) {
+  if (verbose) print("as.events.trajectory")
+  stopifnot(inherits(x,"trajectory"))
+  y <- trajectory2events(x,verbose=verbose,...)
+  invisible(y)
+}
+
+events <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
+                     quality=NA,src=NA,url=NA,reference=NA,info=NA,
+                     method=NA) {
+  if (verbose) print("events")
+  if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
+  if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
+  if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
+  if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
+  if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longn  ame")
+  if(is.na(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
+  if(is.na(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
+  if(is.na(url) & !is.null(attr(x,"URL"))) url <- attr(x,"URL")
+  if(is.na(reference) & !is.null(attr(x,"reference"))) reference <- attr(x,"refe
+rence")
+  if(is.na(info) & !is.null(attr(x,"info"))) info <- attr(x,"info")
+  if(is.na(method) & !is.null(attr(x,"method"))) method <- attr(x,"method")
+  if (inherits(x,'trajectory')) {
+    y <- trajectory2events(x,verbose=verbose)
+  } else {
+    y <- x
+  }
+  if (inherits(y,"matrix")) {
+    cnames <- colnames(y)
+    y <- data.frame(y)
+    names(y) <- cnames
+  }
+  names(y) <- tolower(names(y))
+  names(y)[grep("latitude",names(y))] <- "lat"
+  names(y)[grep("longitude",names(y))] <- "lon"
+  names(y)[grep("step",names(y))] <- "timestep"
+  attr(y, "location") <- loc
+  attr(y, "variable") <- param
+  attr(y, "longname") <- longname
+  attr(y, "quality") <- quality
+  attr(y, "calendar") <- "gregorian"
+  attr(y, "source") <- src
+  attr(y, "URL") <- url
+  attr(y, "type") <- "analysis"
+  attr(y, "aspect") <- "interpolated"
+  attr(y, "reference") <- reference
+  attr(y, "info") <-info
+  attr(y, "method") <- method
+  attr(y,"lon") <- NA
+  attr(y,"lat") <- NA
+  attr(y,"alt") <- NA
+  attr(y,"cntr") <- NA
+  attr(y,"stid") <- NA
+  attr(y, "history") <- history.stamp()
+  class(y) <- c("events","data.frame")
+  invisible(y) 
+}
+
+trajectory2events <- function(x,verbose=FALSE) {
+  stopifnot(inherits(x,"trajectory"))
+  
+  if (verbose) print("trajectory2events")
+  if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
+  if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
+  cnames <- unique(colnames(x))
+  params <- cnames[!cnames %in% c("trajectory","lat","lon","start","end","n")]
+  cnames <- c("trajectory","lon","lat","time","n",params)
+  if(verbose) print('interpolate trajectories to original length')
+  y <- data.frame(matrix(rep(NA,sum(x[,"n"])*length(cnames)),
+                         nrow=sum(x[,"n"]),ncol=length(cnames)))
+  names(y) <- cnames
+  i.n <- colnames(x)=="n"
+  i.t <- colnames(x)=="trajectory"
+  i.lat <- colnames(x)=="lat"
+  i.lon <- colnames(x)=="lon"
+  y$trajectory <- unlist(apply(x,1,function(z) rep(z[i.t],z[i.n])))
+  y$n <- unlist(apply(x,1,function(z) rep(z[i.n],z[i.n])))
+  if(verbose) print('interpolate time')
+  i.start <- colnames(x)=="start"
+  i.end <- colnames(x)=="end"
+  y$time <- unlist(apply( x, 1, function(z) strftime(
+        seq(strptime(z[i.start],format="%Y%m%d%H"),
+        strptime(z[i.end],format="%Y%m%d%H"),
+        length.out=z[i.n]),
+        format="%Y%m%d%H") ))
+  if(verbose) print('interpolate lon and lat')
+  a <- 6.378e06
+  xx <- a * cos( x[,i.lat]*pi/180 ) * cos( x[,i.lon]*pi/180 )
+  yy <- a * cos( x[,i.lat]*pi/180 ) * sin( x[,i.lon]*pi/180 )
+  zz <- a * sin( x[,i.lat]*pi/180 )
+  xa <- unlist(apply(cbind(xx,x[,i.n]),1,
+               function(z) approx(z[1:(length(z)-1)],n=z[length(z)])$y))
+  ya <- unlist(apply(cbind(yy,x[,i.n]),1,
+               function(z) approx(z[1:(length(z)-1)],n=z[length(z)])$y))
+  za <- unlist(apply(cbind(zz,x[,i.n]),1,
+               function(z) approx(z[1:(length(z)-1)],n=z[length(z)])$y))
+  y$lon <- atan2( ya, xa )*180/pi
+  y$lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
+  if (length(params)>0) {
+    for (p in params) {
+      if(verbose) print(paste('interpolate',p))
+      i.p <- colnames(x)==p
+      y[p] <- unlist(apply(x,1,function(z) approx(z[i.p],n=z[i.n])$y))
+    }
+  }
+  y <- attrcp(x,y)
+  class(y) <- c("events","data.frame")
+  return(y)
+}
+
 
 map.events <- function(x,it=NULL,is=NULL,
                projection="sphere",verbose=TRUE,...) {
@@ -94,8 +212,6 @@ lonlatdensity <- function(lons,lats,dx=NULL,dy=NULL,verbose=FALSE,R=6371,...) {
 
 subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if(verbose) print("subset.events")
-
-  ## Sometimes 'it' = 'integer(0)' - reset to NULL!
   if (length(it)==0) it <- NULL
   if (length(is)==0) is <- NULL
   ## date vector
@@ -252,11 +368,6 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 }
  
 
-as.events.trajectory <- function(x,...) {
-  X <- trajectory2events(x,...)
-  invisible(X)
-}
-
 
 events2trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
@@ -313,7 +424,6 @@ rence")
     eval(parse(text=paste("y$",name,"<-fn(y$",name,")",sep="")))
   }
 
-  # interpolate all trajectories to same length n
   if(verbose) print('interpolate trajectories')
   len <- aggregate(y$datetime, list(y$trajectory), length)$x
   t1 <- aggregate(y$datetime, list(y$trajectory), function(x) x[1])$x
@@ -327,8 +437,6 @@ rence")
   za <- aggregate(zz, list(y$trajectory), function(x) approx(x,n=n)$y)$x
   lon <- atan2( ya, xa )*180/pi
   lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
-  #aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat
-  #aggregate(x$lon,list(x$trajectory),function(x) approxlon(x,n=n)$y)$x -> lon
   colnames(lon) <- rep('lon',n)
   colnames(lat) <- rep('lat',n)
   if(verbose) print(n[1:n])
@@ -350,7 +458,6 @@ rence")
         paste(nlist2,"=",nlist2,sep="",collapse=","),
         "start=t1,end=t2,n=len)",sep=",")))
   }
-  # add attributes to trajectory matrix X
   attr(X, "location")= loc
   attr(X, "variable")= param
   attr(X, "longname")= longname
@@ -391,8 +498,7 @@ count.events <- function(x,by.trajectory=TRUE,verbose=TRUE,...) {
     y <- zoo(x$date,order.by=dates)
     N <- aggregate(y,by=fn,FUN=length)
   }
-  # fill in missing months by merging with an empty series containing
-  # a complete set of 1st of the months
+  # fill in missing months by merging with an empty time series
   nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,
                 format="%Y%m%d"))
   N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
@@ -445,61 +551,5 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
   attr(N,"lat") <- attr(x,"lat")
   attr(N,"lon") <- attr(x,"lon")
   invisible(N)
-}
-
-
-trajectory2events <- function(x,verbose=FALSE) {
-  stopifnot(inherits(x,"trajectory"))
-  
-  if (verbose) print("trajectory2events")
-  if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
-  if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
-  cnames <- unique(colnames(x))
-  params <- cnames[!cnames %in% c("trajectory","lat","lon","start","end","n")]
-  cnames <- c("trajectory","lon","lat","time","n",params)
-
-  # interpolate trajectories to original length
-  if(verbose) print('interpolate trajectories to original length')
-  y <- data.frame(matrix(rep(NA,sum(x[,"n"])*length(cnames)),
-                         nrow=sum(x[,"n"]),ncol=length(cnames)))
-  names(y) <- cnames
-  i.n <- colnames(x)=="n"
-  i.t <- colnames(x)=="trajectory"
-  i.lat <- colnames(x)=="lat"
-  i.lon <- colnames(x)=="lon"
-  y$trajectory <- unlist(apply(x,1,function(z) rep(z[i.t],z[i.n])))
-  y$n <- unlist(apply(x,1,function(z) rep(z[i.n],z[i.n])))
-  if(verbose) print('interpolate time')
-  i.start <- colnames(x)=="start"
-  i.end <- colnames(x)=="end"
-  y$time <- unlist(apply( x, 1, function(z) strftime(
-        seq(strptime(z[i.start],format="%Y%m%d%H"),
-        strptime(z[i.end],format="%Y%m%d%H"),
-        length.out=z[i.n]),
-        format="%Y%m%d%H") ))
-  if(verbose) print('interpolate lon and lat')
-  a <- 6.378e06
-  xx <- a * cos( x[,i.lat]*pi/180 ) * cos( x[,i.lon]*pi/180 )
-  yy <- a * cos( x[,i.lat]*pi/180 ) * sin( x[,i.lon]*pi/180 )
-  zz <- a * sin( x[,i.lat]*pi/180 )
-  xa <- unlist(apply(cbind(xx,x[,i.n]),1,
-               function(z) approx(z[1:(length(z)-1)],n=z[length(z)])$y))
-  ya <- unlist(apply(cbind(yy,x[,i.n]),1,
-               function(z) approx(z[1:(length(z)-1)],n=z[length(z)])$y))
-  za <- unlist(apply(cbind(zz,x[,i.n]),1,
-               function(z) approx(z[1:(length(z)-1)],n=z[length(z)])$y))
-  y$lon <- atan2( ya, xa )*180/pi
-  y$lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
-  if (length(params)>0) {
-    for (p in params) {
-      if(verbose) print(paste('interpolate',p))
-      i.p <- colnames(x)==p
-      y[p] <- unlist(apply(x,1,function(z) approx(z[i.p],n=z[i.n])$y))
-    }
-  }
-  # add attributes to events data.frame y
-  y <- attrcp(x,y)
-  class(y) <- c("events","data.frame")
-  return(y)
 }
 
