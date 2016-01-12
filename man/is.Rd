@@ -11,6 +11,7 @@
 \alias{is.monthly}
 \alias{is.seasonal}
 \alias{is.annual}
+\alias{is.model}
 \title{Test for .}
 \description{Computes different formulas
 }
@@ -28,6 +29,7 @@ is.daily(x)
 is.monthly(x) 
 is.seasonal(x)
 is.annual(x)
+is.model(model,verbose=FALSE)
 }
 
 \arguments{
