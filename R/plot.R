@@ -673,16 +673,19 @@ plot.pca <- function(y,verbose=FALSE,...) {
   plot.eof.field(y,verbose=verbose,new=TRUE,...)
 }
 
-plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
+plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
+                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
   if (verbose) print('plot.ds.pca')
+  if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
   #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
-  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,...)
+  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,...)
   title(paste("PCA Pattern # ",pattern,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
-      colbar=colbar,verbose=verbose,
+      colbar=colbar2,verbose=verbose,
       main=paste("EOF Pattern # ",pattern,sep=""))
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
@@ -712,15 +715,18 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   }
 }
 
-plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=list(show=FALSE),...) {
+plot.ds.eof <- function(y,pattern=1,
+                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
   if (verbose) print('plot.ds.eof')
+  if (is.null(colbar2)) colbar2 <- colbar1 
   attr(y,'longname') <- attr(y,'longname')[1]
   par(fig=c(0,0.5,0.5,1),mar=c(3,5,4.2,1),mgp=c(3,0.5,0.5))
-  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar,
+  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,
           main=paste("Predictand EOF pattern # ",pattern,sep=""),...)
   par(fig=c(0.5,1,0.5,1),mar=c(3,4,4.2,1),new=TRUE)
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
-      colbar=colbar,verbose=verbose,
+      colbar=colbar2,verbose=verbose,
       main=paste("Predictor EOF pattern # ",pattern,sep=""))
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
