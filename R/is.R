@@ -31,3 +31,8 @@ is.dates <- function(x) all(!is.months(x) &
                             (is.numeric(x) & levels(factor(nchar(x)))==8))
 is.years <- function(x) all(!is.months(x) & 
                             is.numeric(x) & levels(factor(nchar(x)))==4)
+
+is.model <- function(model,verbose=FALSE) {
+  if (verbose) str(model)
+  return(inherits(model,c('lm','glm','mlm')))
+}

@@ -66,7 +66,7 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     newdata <- data.frame(X=coredata(X))
     src <- attr(X,'source')
     idx <- index(X)
-} else {
+  } else {
       if (verbose) print('Use new data')
       idx <- index(newdata)
       src <- attr(newdata,'source')
@@ -82,15 +82,15 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   ## KMP 19-11-2015 the if (!is.list(model)) solution
   ##                does not work when there is only one model
   ##                which is a list of coefficients, residuals, ...
-  #if (!is.list(model)) {
-  if (names(model)[1]=="coefficients") {
-    y <- predict(model,newdata) + attr(x,'mean')
+  if (is.model(model,verbose=verbose)) {
+# if (names(model)[1]=="coefficients") {  ## REB 2016-01-12: changed to the line above.
+    y <- predict(model,newdata=newdata) + attr(x,'mean')
   } else {
-    if (!is.null(newdata)) {
+#    if (!is.null(newdata)) {
         y <- lapply(model,predict,newdata)
-    } else {
-        y <- lapply(model,predict)
-    }
+#    } else {
+#        y <- lapply(model,predict)
+#    }
     y <- matrix(unlist(y),nrow=length(idx),ncol=length(model))
   }
   ##  predict - phase scramble of residual
