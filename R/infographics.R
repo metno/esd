@@ -1003,16 +1003,50 @@ balls <- function(x) {
 
 graph <- function(x,...) UseMethod("graph")
 
-graph.default <- function(x,col='black',lwd=5,xlim=NULL,ylim=NULL,img=NULL) {
+graph.default <- function(x,img=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,xlim=NULL,ylim=NULL) {
+    print('graph.default')
     ## Produce the graphics:
     dev.new()
-    plot(x)
     if (!is.null(img)) {
-        par(mar=rep(0,4))
-        plot(c(0,1),c(0,1),type='n')
-        rasterImage(img, -0.05, -0.05, 1.05, 1.05)
-        par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n')
+      par0 <- par()
+      par(mar=rep(0,4))
+      plot(c(0,1),c(0,1),type='n')
+      rasterImage(img, -0.05, -0.05, 1.05, 1.05)
+      par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n',
+          mar=par0$mar,bty='n',col.sub='white')
     }
-    plot(x,lwd=lwd,col=col,ylim=ylim,xlim=xlim)
+    plot.zoo(x,lwd=lwd,col=col,ylim=ylim,xlim=xlim,
+             ylab=ylab(x),sub=loc(x))
+    balls(x)
+    par(xaxt='s',yaxt='s')
+    axis(1,col='white')
+    axis(2,col='white')
+}
+
+graph.dsensemble <- function(x,img=NULL,col=rgb(1,0.7,0.7,0.1),lwd=5,xlim=NULL,ylim=NULL) {
+    print('graph.dsensemble')
+    ## Produce the graphics:
+    dev.new()
+    if (!is.null(img)) {
+      par0 <- par()
+      par(mar=rep(0,4))
+      plot(c(0,1),c(0,1),type='n')
+      rasterImage(img, -0.05, -0.05, 1.05, 1.05)
+      par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n',
+          mar=par0$mar,bty='n',col.sub='white')
+    }
+
+    index(x) <- year(x)
+    index(attr(x,'station')) <- year(attr(x,'station'))
+    if (is.null(xlim)) xlim <- range(index(x))
+    if (is.null(ylim)) ylim <- range(coredata(x),na.rm=TRUE)
+    plot.zoo(attr(x,'station'),lwd=lwd,col=rgb(0.5,0.5,0.5,0.5),ylim=ylim,xlim=xlim,
+             ylab=ylab(attr(x,'station')),sub=loc(x),plot.type='single')
+    for (i in 1:dim(x)[2]) lines(x[,i],lwd=7,col=col)
+
+    balls(attr(x,'station'))
+    par(xaxt='s',yaxt='s')
+    axis(1,col='white')
+    axis(2,col='white')
 }
 
