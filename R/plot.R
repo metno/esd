@@ -746,7 +746,7 @@ plot.ds.eof <- function(y,pattern=1,
          pos=4,cex=0.9)
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     plot(attr(y,'original_data')[,pattern],
-         main="PC1",ylab="",
+         main=paste("PC",pattern),ylab="",
          ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
          lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
