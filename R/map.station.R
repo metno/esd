@@ -4,7 +4,7 @@
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
 
-map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
+map.station <- function (x=NULL,FUN=NULL,it=NULL,is=NULL,new=FALSE,
                          projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                          col='darkred',bg='orange',
@@ -31,13 +31,12 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     attr(x,'unit') <- as.character(unit(x))
     
     attr(x,'variable') <- as.character(varid(x))
-
+    
     if (inherits(x,"stationmeta")) {
       x$years <- as.numeric(x$end) - as.numeric(x$start) + 1
       if (!is.null(FUN)) if (FUN=='alt') FUN <- 'altitude'
       if (verbose) print(names(x))
     }
-
     if (!is.null(FUN)) 
         if (is.character(FUN)) if (FUN=="NULL") FUN <- NULL else
     if (sum(is.element(names(attributes(x)),FUN))>0){
@@ -80,16 +79,16 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (verbose) print(projection)
     
     if (projection=="sphere")
-        sphere(x,lonR=lonR,latR=latR,axiR=axiR,
+        sphere(x,lonR=lonR,latR=latR,axiR=axiR,cex=cex,pch=pch,
                    gridlines=gridlines,xlim=xlim,ylim=ylim,
-                   col=colbar$col,new=new,FUN=FUN,cex=cex,...)
+                   col=colbar$col,new=new,FUN=FUN,...)
     else if (projection=="np")
-        sphere(x,lonR=lonR,latR=90,axiR=axiR,
+        sphere(x,lonR=lonR,latR=90,axiR=axiR,cex=cex,pch=pch,
                    gridlines=gridlines,xlim=xlim,ylim=ylim,
                    col=colbar$col,new=new,FUN=FUN,...) else
     if (projection=="sp")
-        sphere(x,lonR=lonR,latR=-90,axiR=axiR,
-                   ,gridlines=gridlines,xlim=xlim,ylim=ylim,
+        sphere(x,lonR=lonR,latR=-90,axiR=axiR,cex=cex,pch=pch,
+                   gridlines=gridlines,xlim=xlim,ylim=ylim,
                    col=colbar$col,new=new,FUN=FUN,...)
     ## else if (projection=="lonlat")
     ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
@@ -473,7 +472,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 
 
 sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
-                         gridlines=TRUE,col="green",bg="darkgreen",cex=0.2,pch=".",new=TRUE) {
+                   gridlines=TRUE,col="green",bg="darkgreen",cex=2,pch=".",new=TRUE) {
   x0 <- x
   ## Data to be plotted:
   if (inherits(x,"stationmeta")) {
@@ -485,18 +484,23 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   else if (inherits(x,"station")) {
       lon <- attr(x,'longitude')
       lat <- attr(x,'latitude')
-      param <- as.character(levels(factor(attr(x,'parameter'))))
+      param <- as.character(levels(factor(attr(x,'variable'))))
+      unit <- as.character(levels(factor(attr(x,'unit'))))
   }
+  
   ## To deal with grid-conventions going from north-to-south or east-to-west:
   ##srtx <- order(attr(x,'longitude')); lon <- lon[srtx]
   ##srty <- order(attr(x,'latitude')); lat <- lat[srty]
- 
-  if (!is.null(FUN))
-      map <- apply(as.matrix(x),2,FUN,na.rm=TRUE) ##map <- x[srtx,srty]
-  else
-      map <- x
-  
-  
+  if (!is.null(FUN)) {
+    map <- apply(as.matrix(x),2,FUN,na.rm=TRUE) ##map <- x[srtx,srty]
+  } else if (length(x)==length(lon)) {
+    map <- x
+  } else {
+    ## KMP 2016-01-13 if FUN==NULL and x have more than one value,
+    ## use same color for all stations 
+    map <- rep(1,length(lon))
+  }
+      
   # Rotatio:
   if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
   if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
@@ -512,9 +516,6 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   theta <- pi*gx[ok]/180
   phi <- pi*gy[ok]/180
-
-  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
   x <- sin(theta)*cos(phi)
   y <- cos(theta)*cos(phi)
   z <- sin(phi)
@@ -537,8 +538,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   ##Lat <- rbind(latxy - 0.5*dlat,latxy - 0.5*dlat,
   ##             latxy + 0.5*dlat,latxy + 0.5*dlat)
   Theta <- pi*lon/180; Phi <- pi*lat/180
-
-# Transform -> (X,Y,Z):
+  ## Transform -> (X,Y,Z):
   X <- sin(Theta)*cos(Phi)
   Y <- cos(Theta)*cos(Phi)
   Z <- sin(Phi)
@@ -554,7 +554,8 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
       nc <- length(col)
       index <- round( nc*( map - min(map) )/
                      ( max(map) - min(map) ) )
-  } 
+  }
+  
 # Rotate coastlines:
   a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
   a <- rotM(x=latR,y=0,z=0) %*% a
@@ -571,11 +572,11 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   #dim(X) <- d; dim(Y) <- d; dim(Z) <- d
   #print(dim(rbind(X,Z)))
   
-# Plot the results:  
+# Plot the results:
   dev.new()
   par(bty="n",xaxt="n",yaxt="n",new=TRUE)
   plot(x,z,pch=".",col="white",xlab="",ylab="")
- 
+  
 # plot the grid boxes, but only the gridboxes facing the view point:
   ##Visible <- Y > 0 ##colMeans(Y) > 0
   ##X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
@@ -591,18 +592,17 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   ##    bg <- col
   ##    nc <- length(colb)
   ##}
-
+  
   ## Initialise colbar
-  colbar <- colbar.ini(x,FUN=FUN)
+  colbar <- colbar.ini(map,FUN=FUN)
   breaks <- colbar$breaks
-  colb <- colbar$col 
-  col <- colb[findInterval(map,breaks)]
+  col <- colbar$col
+  nc <- length(col)
+  if (length(col)>1) col <- col[findInterval(map,breaks)]
   bg <- col
-  nc <- length(colb)
-
+  
   visible <- Y > 0
   points(X[visible],Z[visible],cex=cex,pch=pch,col=col,bg=bg)
-  
   ## Add contour lines?
   ## Plot the coast lines  
   visible <- y > 0
@@ -610,23 +610,22 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   #plot(x[visible],y[visible],type="l",xlab="",ylab="")
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
   
-      ## Add grid ?
-
+  ## Add grid ?
+  ## KMP 2016-01-13: error in colorbar?
   if (!is.null(FUN)) {    
-      ## Colourbar:  
-      par(fig = c(0.3, 0.7, 0.05, 0.10),mar=rep(0,4),cex=0.8,
-          new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
-                                        #print("colourbar")
-      ##breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/                 ( max(map) - min(map) ) )
-      bar <- cbind(breaks,breaks)
-      image(seq(breaks[1],breaks[length(breaks)],length=nc),c(1,2),bar,col=col)
-      
-      par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-          fig=c(0,1,0,1),new=TRUE)
-      plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-      text(0.1,0.95,param,cex=1.5,pos=4)
-      text(0.72,0.002,unit,pos=4)  
+    ## Colourbar:  
+    par(fig = c(0.3, 0.7, 0.05, 0.10),mar=rep(0,4),cex=0.8,
+        new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
+    #breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/ ( max(map) - min(map) ) )
+    bar <- cbind(breaks,breaks)
+    image(seq(breaks[1],breaks[length(breaks)],length=nc),c(1,2),bar,col=col)
   }
+  
+  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+      fig=c(0,1,0,1),new=TRUE)
+  plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+  text(0.1,0.95,param,cex=1.5,pos=4)
+  text(0.72,0.002,unit,pos=4)  
   
   ##result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   if (inherits(x0,"stationmeta"))
