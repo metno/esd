@@ -30,18 +30,11 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     xlim <- range(index(x))
   if (is.null(ylim))
     ylim <- pretty(as.numeric(x))
-  
-  unit <- attr(x,'unit')[1]
-  for (i in 1:length(unit)) {
-    if ( (is.na(unit[i]) | is.null(unit[i])) ) unit[i] <- " "
-    if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))
-         unit[i] <- 'degree*C'
-  }
+
   
   if (plot.type=="single") {
       if (is.null(ylab))
-          ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
-                                     "*phantom(0)*(",unit,"))"))),silent=TRUE)
+          ylab <- ylab(x)
       if (inherits(ylab,"try-error")) ylab <- unit(x)
   }
   else if (is.null(ylab) & (length(levels(factor(stid(x))))>1))
@@ -364,9 +357,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   }
   
   if (is.null(ylab))
-   ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
-                               "*phantom(0)*(",unit,"))"))),silent=TRUE)
-  if (inherits(ylab,"try-error")) ylab <- unit(x)
+   ylab <- ylab(x)
   
   if (verbose)  print(ylab)
   if (is.null(main)) main <- attr(x,'longname')[1]               
