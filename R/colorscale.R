@@ -49,10 +49,10 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
 
   ## Number of digits when rounding off - to get a prettier scale
 
-    ## browser()
+    ## 
     if (verbose) {print('colbar.ini'); print(colbar)}
     if (length(x)==0) stop('colbar.ini: x is empty!')
-    if (is.null(colbar)) colbar <- list(show=FALSE,n=14,rev=TRUE,alpha=NULL)
+    if (is.null(colbar)) colbar <- list(show=FALSE,n=14,rev=FALSE,alpha=NULL)
     if (is.logical(colbar)) colbar <- list(show=colbar)
     ##if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
@@ -89,6 +89,20 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     #    else
     #        colbar$n <- 10
 
+    if (is.null(colbar$type)) colbar$type <- 'p'
+
+    if (is.null(colbar$cex)) colbar$cex <- 2
+
+    if (is.null(colbar$h)) colbar$h <- 0.6
+
+    if (is.null(colbar$v)) colbar$v <- 1
+
+    if (is.null(colbar$pos)) colbar$pos <- 0.05
+
+    if (is.null(colbar$show)) colbar$show <-TRUE
+
+    if (is.null(colbar$rev)) colbar$rev <- FALSE
+    
     ## very easy case if colbar$col and breaks are provided
     if (!is.null(colbar$col)) {
         pal <- NA ## disactivate pal
@@ -105,32 +119,21 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     #    if (!is.null(colbar$breaks))
     #      colbar$n <- length(colbar$breaks) -1 else
     #      if (!is.null(colbar$n)) colbar$n <- 15
-        colbar$col <- colscal(colbar$n,colbar$pal)
+        colbar$col <- colscal(colbar$n,colbar$pal,rev=colbar$rev,
+                              verbose=verbose)
     }
 
-    if (is.null(colbar$type)) colbar$type <- 'p'
-
-    if (is.null(colbar$cex)) colbar$cex <- 2
-
-    if (is.null(colbar$h)) colbar$h <- 0.6
-
-    if (is.null(colbar$v)) colbar$v <- 1
-
-    if (is.null(colbar$pos)) colbar$pos <- 0.05
-
-    if (is.null(colbar$show)) colbar$show <-TRUE
-
-    if (is.null(colbar$rev)) colbar$rev <- FALSE
+    
     
     ## activate pallette (pal)
     if (is.null(colbar$pal)) {
       colbar$pal <- varid(x)[1]
       if (!is.precip(x)) {
         colbar$pal <- 't2m'
-        if (is.null(colbar$rev)) colbar$rev <- FALSE
+        if (is.null(colbar$rev)) colbar$rev <- TRUE ## FALSE
       } else  {
         colbar$pal <- 'precip'
-        if (is.null(colbar$rev)) colbar$rev <- TRUE
+        if (is.null(colbar$rev)) colbar$rev <- FALSE ## TRUE
       } 
     }
 # REB 2015-12-02: I do not understand these two lines    
