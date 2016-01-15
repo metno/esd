@@ -8,7 +8,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                          col='darkred',bg='orange',
-                         colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
+                         colbar= list(pal='t2m',col=NULL,rev=TRUE,n=10,
                              breaks=NULL,type="p",cex=2,h=0.6, v=1,
                              pos=0.1,show=TRUE),
                                         # col=NULL replaced by palette
