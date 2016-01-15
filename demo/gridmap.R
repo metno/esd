@@ -4,7 +4,10 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
 
   if (is.null(xlim)) xlim <- range(lon(Y))
   if (is.null(ylim)) ylim <- range(lat(Y))
-  y <- apply(Y,2,FUN,na.rm=TRUE)
+  if (!is.nulldim(y))
+      y <- apply(Y,2,FUN,na.rm=TRUE)
+  else
+     y <- Y  ## single specific date
 
   ## Get data on the topography on the 5-minute resolution
   data(etopo5)
