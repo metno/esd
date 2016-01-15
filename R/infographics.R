@@ -1003,9 +1003,10 @@ balls <- function(x) {
 
 graph <- function(x,...) UseMethod("graph")
 
-graph.default <- function(x,img=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,xlim=NULL,ylim=NULL) {
+graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,xlim=NULL,ylim=NULL) {
     print('graph.default')
     ## Produce the graphics:
+    
     dev.new()
     if (!is.null(img)) {
       par0 <- par()
@@ -1015,15 +1016,16 @@ graph.default <- function(x,img=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,xlim=NULL,yl
       par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n',
           mar=par0$mar,bty='n',col.sub='white')
     }
-    plot.zoo(x,lwd=lwd,col=col,ylim=ylim,xlim=xlim,
-             ylab=ylab(x),sub=loc(x))
-    balls(x)
+    if (!is.null(it)) y <- subset(x,it=it) else y <- x
+    plot.zoo(y,lwd=lwd,col=col,ylim=ylim,xlim=xlim,
+             ylab=ylab(y),sub=loc(y))
+    balls(y)
     par(xaxt='s',yaxt='s')
     axis(1,col='white')
     axis(2,col='white')
 }
 
-graph.dsensemble <- function(x,img=NULL,col=rgb(1,0.7,0.7,0.1),lwd=5,xlim=NULL,ylim=NULL) {
+graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),lwd=5,xlim=NULL,ylim=NULL) {
     print('graph.dsensemble')
     ## Produce the graphics:
     dev.new()
@@ -1035,18 +1037,31 @@ graph.dsensemble <- function(x,img=NULL,col=rgb(1,0.7,0.7,0.1),lwd=5,xlim=NULL,y
       par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n',
           mar=par0$mar,bty='n',col.sub='white')
     }
+    if (!is.null(it)) y <- subset(x,it=it) else y <- x
+    index(y) <- year(y)
+    index(attr(y,'station')) <- year(attr(y,'station'))
+    if (is.null(xlim)) xlim <- range(index(y))
+    if (is.null(ylim)) ylim <- range(coredata(y),na.rm=TRUE)
+    
+    plot.zoo(attr(y,'station'),lwd=lwd,col=rgb(0.5,0.5,0.5,0.5),ylim=ylim,xlim=xlim,
+             ylab=ylab(attr(y,'station')),sub=loc(x),plot.type='single',xlab='')
+    for (i in 1:dim(x)[2]) lines(y[,i],lwd=7,col=col)
 
-    index(x) <- year(x)
-    index(attr(x,'station')) <- year(attr(x,'station'))
-    if (is.null(xlim)) xlim <- range(index(x))
-    if (is.null(ylim)) ylim <- range(coredata(x),na.rm=TRUE)
-    plot.zoo(attr(x,'station'),lwd=lwd,col=rgb(0.5,0.5,0.5,0.5),ylim=ylim,xlim=xlim,
-             ylab=ylab(attr(x,'station')),sub=loc(x),plot.type='single')
-    for (i in 1:dim(x)[2]) lines(x[,i],lwd=7,col=col)
-
-    balls(attr(x,'station'))
+    balls(attr(y,'station'))
     par(xaxt='s',yaxt='s')
     axis(1,col='white')
     axis(2,col='white')
 }
 
+graph.list <- function(x,img=NULL,it=0,
+                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
+                       lwd=5,xlim=NULL,ylim=NULL) {
+  if (!is.null(it)) y <- subset(x[[1]],it=it) else y <- x[[1]]
+  graph(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim)
+  for (j in c(2:length(x),1)) {
+    if (!is.null(it)) y <- subset(x[[j]],it=it) else y <- x[[j]]
+    for (i in 1:dim(y)[2]) lines(y[,i],lwd=7,col=col[j])
+    lines(attr(y,'station'),lwd=3,col=rgb(0.5,0.5,0.5,0.25))
+    balls(attr(y,'station'))
+  }
+}

@@ -1,5 +1,17 @@
 ##plot <- function(x,y, ...)  UseMethod("plot")
-     
+
+plot.list <- function(x,is=NULL,
+                      col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
+                      lwd=3,xlim=NULL,ylim=NULL,...) {
+  if (!is.null(is)) y <- subset(x,it=is) else y <- x[[1]]
+  plot(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim)
+  for (j in c(2:length(x),1)) {
+    if (!is.null(it)) y <- subset(x[[j]],it=it) else y <- x[[j]]
+    for (i in 1:dim(y)[2]) lines(y[,i],lwd=7,col=col[j])
+    lines(attr(y,'station'),lwd=3,col=rgb(0.5,0.5,0.5,0.25))
+  }
+}
+
 plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
