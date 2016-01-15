@@ -41,3 +41,17 @@ pattern <- function(x) return(attr(x,"pattern"))
 ele <- element <- function(x) return(attr(x,"element"))
 
 err <- function(x) return(attr(x,"standard.error"))
+
+ylab <- function(x) {
+  unit <- unit(x)[1]
+  varnm <- varid(x)[1]
+  if ( (is.na(unit) | is.null(unit)) ) unit <- " "
+    if ((unit=='degree Celsius') | (unit=='deg C') | (unit=='degC'))
+         unit <- 'degree*C'
+  if (unit=='%') unit <- "'%'"
+  if (varnm=='t2m') varnm <- 'T[2*m]'
+  line <- paste("y <- expression(",varnm,"*phantom(0)*(",unit,"))")
+  try(eval(parse(text=line)),silent=TRUE)
+  if (inherits(y,"try-error")) y <- unit(x)
+  return(y)
+}

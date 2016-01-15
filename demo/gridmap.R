@@ -1,5 +1,5 @@
 gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NULL,verbose=FALSE) {
-  if (verbose) print(paste(gridmap,FUN))
+  if (verbose) print(paste('gridmap',FUN))
   require(LatticeKrig)
 
   if (is.null(xlim)) xlim <- range(lon(Y))

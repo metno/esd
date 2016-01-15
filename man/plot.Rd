@@ -9,6 +9,8 @@
 \alias{plot.spell}
 \alias{plot.cca}
 \alias{plot.ds}
+\alias{plot.ds.pca}
+\alias{plot.ds.eof}
 \alias{plot.dsx}
 \alias{plot.dsensemble}
 \alias{plot.diagnose}
@@ -37,7 +39,14 @@ plot.eof.var(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=20,...)
 plot.ds(x,plot.type="single",what=c("map","ts"),new=TRUE,
         lwd=3,type='b',pch=0,main=NULL,col=NULL,
         xlim=NULL,ylim=NULL,xlab="",ylab=NULL,...)
-plot.CCA(x,icca=1) 
+plot.ds.pca(y,pattern=1,verbose=FALSE,
+                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,...)
+plot.ds.eof(y,pattern=1,
+                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...)
+plot.cca(x,icca=1,colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) 
 plot.field(x,is=NULL,it=NULL,FUN="mean",...)
 plot.spell(x)
 plot.diagnose(x,...) 

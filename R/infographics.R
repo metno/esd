@@ -1003,16 +1003,65 @@ balls <- function(x) {
 
 graph <- function(x,...) UseMethod("graph")
 
-graph.default <- function(x,col='black',lwd=5,xlim=NULL,ylim=NULL,img=NULL) {
+graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,xlim=NULL,ylim=NULL) {
+    print('graph.default')
     ## Produce the graphics:
+    
     dev.new()
-    plot(x)
     if (!is.null(img)) {
-        par(mar=rep(0,4))
-        plot(c(0,1),c(0,1),type='n')
-        rasterImage(img, -0.05, -0.05, 1.05, 1.05)
-        par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n')
+      par0 <- par()
+      par(mar=rep(0,4))
+      plot(c(0,1),c(0,1),type='n')
+      rasterImage(img, -0.05, -0.05, 1.05, 1.05)
+      par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n',
+          mar=par0$mar,bty='n',col.sub='white')
     }
-    plot(x,lwd=lwd,col=col,ylim=ylim,xlim=xlim)
+    if (!is.null(it)) y <- subset(x,it=it) else y <- x
+    plot.zoo(y,lwd=lwd,col=col,ylim=ylim,xlim=xlim,
+             ylab=ylab(y),sub=loc(y))
+    balls(y)
+    par(xaxt='s',yaxt='s')
+    axis(1,col='white')
+    axis(2,col='white')
 }
 
+graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),lwd=5,xlim=NULL,ylim=NULL) {
+    print('graph.dsensemble')
+    ## Produce the graphics:
+    dev.new()
+    if (!is.null(img)) {
+      par0 <- par()
+      par(mar=rep(0,4))
+      plot(c(0,1),c(0,1),type='n')
+      rasterImage(img, -0.05, -0.05, 1.05, 1.05)
+      par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n',
+          mar=par0$mar,bty='n',col.sub='white')
+    }
+    if (!is.null(it)) y <- subset(x,it=it) else y <- x
+    index(y) <- year(y)
+    index(attr(y,'station')) <- year(attr(y,'station'))
+    if (is.null(xlim)) xlim <- range(index(y))
+    if (is.null(ylim)) ylim <- range(coredata(y),na.rm=TRUE)
+    
+    plot.zoo(attr(y,'station'),lwd=lwd,col=rgb(0.5,0.5,0.5,0.5),ylim=ylim,xlim=xlim,
+             ylab=ylab(attr(y,'station')),sub=loc(x),plot.type='single',xlab='')
+    for (i in 1:dim(x)[2]) lines(y[,i],lwd=7,col=col)
+
+    balls(attr(y,'station'))
+    par(xaxt='s',yaxt='s')
+    axis(1,col='white')
+    axis(2,col='white')
+}
+
+graph.list <- function(x,img=NULL,it=0,
+                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
+                       lwd=5,xlim=NULL,ylim=NULL) {
+  if (!is.null(it)) y <- subset(x[[1]],it=it) else y <- x[[1]]
+  graph(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim)
+  for (j in c(2:length(x),1)) {
+    if (!is.null(it)) y <- subset(x[[j]],it=it) else y <- x[[j]]
+    for (i in 1:dim(y)[2]) lines(y[,i],lwd=7,col=col[j])
+    lines(attr(y,'station'),lwd=3,col=rgb(0.5,0.5,0.5,0.25))
+    balls(attr(y,'station'))
+  }
+}

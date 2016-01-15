@@ -512,9 +512,8 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   theta <- pi*gx[ok]/180
   phi <- pi*gy[ok]/180
-
-  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
+  #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
+  #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
   x <- sin(theta)*cos(phi)
   y <- cos(theta)*cos(phi)
   z <- sin(phi)
@@ -593,13 +592,13 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   ##}
 
   ## Initialise colbar
-  colbar <- colbar.ini(x,FUN=FUN)
+  colbar <- colbar.ini(map,FUN=FUN)
   breaks <- colbar$breaks
   colb <- colbar$col 
   col <- colb[findInterval(map,breaks)]
   bg <- col
   nc <- length(colb)
-
+  
   visible <- Y > 0
   points(X[visible],Z[visible],cex=cex,pch=pch,col=col,bg=bg)
   

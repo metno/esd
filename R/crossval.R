@@ -28,7 +28,8 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
     if (verbose) print(paste('predefined set-up:',m))
     segments <- switch(tolower(m),
                        'cordex-esd-exp1'= c(1979,1984,1989,1994,1999),
-                       'value-exp1'=c(1979,1985,1991,1997,2003))
+                       'value-exp1'=c(1979,1985,1991,1997,2003),
+                       'loo'=year(x))
     ## For winter season Dec-Feb, use the year corresponding to Jan-Dec.
     if (season(x)[1]=='djf') segments <- segments + 1
     yr <-  segments
@@ -39,7 +40,8 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
     }
     m <- switch(tolower(m),
                  'cordex-esd-exp1'=c(5,5,5,5,5),
-                 'value-exp1'=c(6,6,6,6,6))
+                 'value-exp1'=c(6,6,6,6,6),
+                 'loo'=rep(1,length(x)))
   } else if (is.numeric(m) | is.integer(m)) {
      ii <- seq(1,nt,by=m)
      m <- rep(m,length(ii))

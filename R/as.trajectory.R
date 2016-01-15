@@ -114,11 +114,11 @@ rence")
   attr(X, "reference")= reference
   attr(X, "info")= info
   attr(X, "method")= method
-  attr(x,"lon") <- NA
-  attr(x,"lat") <- NA
-  attr(x,"alt") <- NA
-  attr(x,"cntr") <- NA
-  attr(x,"stid") <- NA
+  attr(X,"lon") <- NA
+  attr(X,"lat") <- NA
+  attr(X,"alt") <- NA
+  attr(X,"cntr") <- NA
+  attr(X,"stid") <- NA
   attr(X, "history")= history.stamp()
   class(X) <- c('trajectory','matrix')
   invisible(X)

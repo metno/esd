@@ -1,4 +1,4 @@
-### Empirical downscaling using EOFs of monthly values from eof.R
+## Empirical downscaling using EOFs of monthly values from eof.R
 ## Predictand is a time series of monthly values from NACD or climate station.
 ###
 ### Reference: R.E. Benestad et al. (2002),
@@ -836,10 +836,13 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             if (verbose) print('Calculate predictor pattern:')
             ## Only if one type of predictor - case with mixed predictors a
             ## bit more complicated -> return NAs.
+            ## KMP 2016-01-13 else if only two coefficients
             if ( (dp[3] >= length(attr(z,'model')$coefficients)-1) &
-                 (length(attr(z,'model')$coefficients) > 2) )
-              predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] %*%
-                attr(z,'model')$coefficients[-1]
+                 (length(attr(z,'model')$coefficients) > 2) ) {
+              predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] %*% attr(z,'model')$coefficients[-1]
+            } else if (length(attr(z,'model')$coefficients)==2) {
+              predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] * attr(z,'model')$coefficients[-1]
+            }
         }
 
         if (verbose) print(paste('Transform back into a PCA-object of dim',

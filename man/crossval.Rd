@@ -19,8 +19,9 @@ crossval.list(x, m=5, ...)
 \arguments{
     \item{x}{The results from \code{\link{DS}}.}
     \item{m}{window with - leave m-out for each iteration. There are
-      also some pre-set options: 'cordex-esd-exp1' and 'value-exp1' for
-      experiments defined at CORDEX-ESD and COST-VALUE.}
+      also some pre-set options: 'cordex-esd-exp1', 'value-exp1', and 'loo' for
+      experiments defined at CORDEX-ESD, COST-VALUE, and leave-one-out
+      ('loo') cross-validation.}
  }
 \value{Cross-validation object.}
 \author{R.E. Benestad}

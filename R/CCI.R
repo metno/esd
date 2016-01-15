@@ -7,7 +7,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
-
+ 
   ## Rearrange time index
   t <- as.numeric(strftime(index(Z),format="%Y%m%d%H%M"))
     

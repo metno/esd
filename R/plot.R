@@ -1,5 +1,17 @@
 ##plot <- function(x,y, ...)  UseMethod("plot")
-     
+
+plot.list <- function(x,is=NULL,
+                      col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
+                      lwd=3,xlim=NULL,ylim=NULL,...) {
+  if (!is.null(is)) y <- subset(x,it=is) else y <- x[[1]]
+  plot(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim)
+  for (j in c(2:length(x),1)) {
+    if (!is.null(it)) y <- subset(x[[j]],it=it) else y <- x[[j]]
+    for (i in 1:dim(y)[2]) lines(y[,i],lwd=7,col=col[j])
+    lines(attr(y,'station'),lwd=3,col=rgb(0.5,0.5,0.5,0.25))
+  }
+}
+
 plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
@@ -30,18 +42,11 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     xlim <- range(index(x))
   if (is.null(ylim))
     ylim <- pretty(as.numeric(x))
-  
-  unit <- attr(x,'unit')[1]
-  for (i in 1:length(unit)) {
-    if ( (is.na(unit[i]) | is.null(unit[i])) ) unit[i] <- " "
-    if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))
-         unit[i] <- 'degree*C'
-  }
+
   
   if (plot.type=="single") {
       if (is.null(ylab))
-          ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
-                                     "*phantom(0)*(",unit,"))"))),silent=TRUE)
+          ylab <- ylab(x)
       if (inherits(ylab,"try-error")) ylab <- unit(x)
   }
   else if (is.null(ylab) & (length(levels(factor(stid(x))))>1))
@@ -115,7 +120,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
-   if(map.show) vis.map(x,col,map.type)
+   if(map.show) { vis.map(x,col,map.type)}
    par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=TRUE)
    plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
             xlim=xlim,ylim=ylim,new=FALSE)
@@ -138,7 +143,9 @@ vis.map <- function(x,col='red',map.type='points') {
        par(fig=c(0.76,0.97,0.76,0.97),new=TRUE, mar=c(0,0,0,0),
            xpd=NA,col.main="grey",bty="n")
        plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
-            xlab=NA,ylab=NA,axes=FALSE)
+            xlab=NA,ylab=NA,axes=FALSE,
+            xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
+            ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
        axis(1,mgp=c(3,.5,0),cex.axis=0.75)
        axis(2,mgp=c(2,.5,0),cex.axis=0.75)
        lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
@@ -346,11 +353,11 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
   if (inherits(x,'pca')) {
-    plot.ds.pca(x,verbose=verbose)
+    plot.ds.pca(x,verbose=verbose,...)
     return()
   }
   if (inherits(x,'eof')) {
-    plot.ds.eof(x,verbose=verbose)
+    plot.ds.eof(x,verbose=verbose,...)
     return()
   }
   
@@ -362,9 +369,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   }
   
   if (is.null(ylab))
-   ylab <- try(eval(parse(text=paste("ylab <- expression(",varid(x),
-                               "*phantom(0)*(",unit,"))"))),silent=TRUE)
-  if (inherits(ylab,"try-error")) ylab <- unit(x)
+   ylab <- ylab(x)
   
   if (verbose)  print(ylab)
   if (is.null(main)) main <- attr(x,'longname')[1]               
@@ -671,16 +676,19 @@ plot.pca <- function(y,verbose=FALSE,...) {
   plot.eof.field(y,verbose=verbose,new=TRUE,...)
 }
 
-plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
+plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
+                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
   if (verbose) print('plot.ds.pca')
+  if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
   #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
-  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=FALSE,...)
+  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,...)
   title(paste("PCA Pattern # ",pattern,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
-      colbar=colbar,verbose=verbose,
+      colbar=colbar2,verbose=verbose,
       main=paste("EOF Pattern # ",pattern,sep=""))
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
@@ -710,15 +718,18 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,colbar=NULL,...) {
   }
 }
 
-plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=list(show=FALSE),...) {
+plot.ds.eof <- function(y,pattern=1,
+                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
   if (verbose) print('plot.ds.eof')
+  if (is.null(colbar2)) colbar2 <- colbar1 
   attr(y,'longname') <- attr(y,'longname')[1]
   par(fig=c(0,0.5,0.5,1),mar=c(3,5,4.2,1),mgp=c(3,0.5,0.5))
-  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar,
+  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,
           main=paste("Predictand EOF pattern # ",pattern,sep=""),...)
   par(fig=c(0.5,1,0.5,1),mar=c(3,4,4.2,1),new=TRUE)
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
-      colbar=colbar,verbose=verbose,
+      colbar=colbar2,verbose=verbose,
       main=paste("Predictor EOF pattern # ",pattern,sep=""))
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
@@ -738,7 +749,7 @@ plot.ds.eof <- function(y,pattern=1,verbose=FALSE,colbar=list(show=FALSE),...) {
          pos=4,cex=0.9)
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     plot(attr(y,'original_data')[,pattern],
-         main="PC1",ylab="",
+         main=paste("PC",pattern),ylab="",
          ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
          lwd=2,type='b',pch=19)
     lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
@@ -869,13 +880,14 @@ plot.mvr <- function(x) {
 }
 
 
-plot.cca <- function(x,icca=1,colbar=list(pal=NULL,rev=FALSE,n=10,
-                        breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),verbose=FALSE,...) {
+plot.cca <- function(x,icca=1,
+                     colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
   if (verbose) print("plot.cca")
   dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
-  map.cca(x,icca=icca,colbar=colbar,verbose=verbose,...)
+  if (is.null(colbar2)) colbar2 <- colbar1
+  map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,verbose=verbose,...)
 
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
              sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
