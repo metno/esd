@@ -151,7 +151,9 @@ vis.map <- function(x,col='red',map.type='points') {
        lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
        if (map.type=="points") {
          points(lon(x),lat(x),pch=21,cex=1,col=col,bg=col,lwd=1)
-       } else if (map.type=="rectangle") {
+         print(loc(x))
+         text(lon(x),lat(x),labels=loc(x),col=col) 
+     } else if (map.type=="rectangle") {
          rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
               border="black",lwd=1,lty=2)
        }
@@ -1246,6 +1248,8 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
   points(zoo(coredata(diag$y)[which(outside)],
              order.by=year(diag$y)[which(outside)]),col="grey")
 
+  title(main=toupper(loc(x)),cex.main=1)
+  
   if (target.show) {
     if (verbose) print('add target diagnostic')
 #    par(fig=c(0.6,0.9,0.25,0.4),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
@@ -1282,7 +1286,8 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
       lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
       if("points" %in% map.type) {
         points(lon(y),lat(y),pch=21,cex=1,col='black',bg='red',lwd=1)
-      }
+        ##text(lon(y),lat(y),labels=loc(y),col='red',adj=1)
+    }
       if("rectangle" %in% map.type) {
         rect(min(lon(y)),min(lat(y)),max(lon(y)),max(lat(y)),lwd=1,col=NA,border='red',lty=2)
       }
