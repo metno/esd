@@ -89,7 +89,7 @@
 as.4seasons(x,FUN='mean',...)
 as.4seasons.default(x,FUN='mean',...)
 as.4seasons.station(x,FUN='mean',...)
-as.4seasons.day(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,...)
+as.4seasons.day(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,...)
 as.4seasons.field(x,FUN='mean',...)
 as.4seasons.spell(x,FUN="mean",...)
 as.seasons(x,start='01-01',end='12-31',FUN='mean', ...)
@@ -200,6 +200,9 @@ as.pca.station(x)
   \item{method}{define method attribute \code{attr(x,'method')}}
   \item{FUN}{function}
   \item{na.rm}{TRUE: ignore NA values}
+  \item{nmin}{Minimum number of valid data points. Default value is set 
+              to nmin=85 for daily values, nmin=3 for monthly values, and 
+              nmin=300 for annual values.}
   \item{dateindex}{}
   \item{monthly}{}
   \item{aspect}{}
