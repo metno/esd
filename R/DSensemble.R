@@ -1477,14 +1477,15 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
 
 DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
-                          rcp="rcp45",biascorrect=FALSE,
-                          predictor="ERA40_t2m_mon.nc",
-                          non.stationarity.check=FALSE,
-                          eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
-                          select=NULL,FUN="mean",rmtrend=TRUE,
-                          FUNX="mean",threshold=1,type='ncdf',
-                          pattern="tas_Amon_ens_",verbose=FALSE,
-                          file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_t2m_mon.nc",
+                           non.stationarity.check=FALSE,
+                           eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,
+                           rel.cord=TRUE,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",threshold=1,type='ncdf',
+                           pattern="tas_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
 
   if (verbose) print('DSensemble.pca')
   cls <- class(y)
@@ -1519,7 +1520,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
         z <- DSensemble.pca(subset(y,it=season),plot=plot,path=path,
                             rcp=rcp,biascorrect=biascorrect,predictor=T2M,
                             non.stationarity.check=non.stationarity.check,
-                            eofs=eofs,lon=lon,lat=lat,
+                            eofs=eofs,lon=lon,lat=lat,rel.cord=FALSE,
                             select=select,FUN=FUN,rmtrend=rmtrend,
                             FUNX=FUNX,threshold=threshold,
                             pattern=pattern,verbose=verbose,nmin=nmin)
