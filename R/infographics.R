@@ -1026,7 +1026,7 @@ graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,xlim
 }
 
 graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
-                             lwd=5,xlim=NULL,ylim=NULL,add=FALSE) {
+                             lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE) {
     print('graph.dsensemble')
     ## Produce the graphics:
     if (!add) dev.new()
@@ -1058,9 +1058,9 @@ graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
 
 graph.list <- function(x,img=NULL,it=0,
                        col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
-                       lwd=5,xlim=NULL,ylim=NULL) {
+                       lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE) {
   if (!is.null(it)) y <- subset(x[[1]],it=it) else y <- x[[1]]
-  graph(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim)
+  graph(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim,add=add,new=new)
   for (j in c(2:length(x),1)) {
     if (!is.null(it)) y <- subset(x[[j]],it=it) else y <- x[[j]]
     for (i in 1:dim(y)[2]) lines(y[,i],lwd=7,col=col[j])
@@ -1071,10 +1071,10 @@ graph.list <- function(x,img=NULL,it=0,
 
 
 graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
-                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE) {
+                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE) {
   print('graph.zoo')
     ## Produce the graphics:
-    if (!add) dev.new()
+    if ((!add) & (!new)) dev.new()
     if (!is.null(img)) {
       par0 <- par()
       par(mar=rep(0,4))

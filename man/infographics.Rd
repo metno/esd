@@ -16,6 +16,9 @@
 \alias{prob}
 \alias{balls}
 \alias{graph}
+\alias{graph.dsensemble}
+\alias{graph.zoo}
+\alias{graph.list}
 \description{
   Wheel
 
@@ -53,7 +56,13 @@ prob.default(x,...)
 prob.station(x,y=NULL,is=1,...)
 prob.station.precip(x,y=NULL,is=1,threshold=1,...)
 graph(x,...)
-graph.default(x,col='black',lwd=5,xlim=NULL,ylim=NULL,img=NULL)
+graph.dsensemble(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
+                 lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE)
+graph.list(x,img=NULL,it=0,
+           col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
+           lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE)
+graph.zoo(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
+          lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE)
 }
 \arguments{
  \item{x}{a data object}
