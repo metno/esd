@@ -1029,7 +1029,7 @@ graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
                              lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE) {
     print('graph.dsensemble')
     ## Produce the graphics:
-    if (!add) dev.new()
+    if ((!add) & (new)) dev.new()
     if (!is.null(img)) {
       par0 <- par()
       par(mar=rep(0,4))
@@ -1074,7 +1074,7 @@ graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
                       lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE) {
   print('graph.zoo')
     ## Produce the graphics:
-    if ((!add) & (!new)) dev.new()
+    if ((!add) & (new)) dev.new()
     if (!is.null(img)) {
       par0 <- par()
       par(mar=rep(0,4))
