@@ -46,12 +46,13 @@ ylab <- function(x) {
   unit <- unit(x)[1]
   varnm <- varid(x)[1]
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
-    if ((unit=='degree Celsius') | (unit=='deg C') | (unit=='degC'))
+    if ( (substr(unit,1,8)=='degree C') | (substr(unit,1,9)=='degrees C') |
+         (unit=='deg C') | (unit=='degC') )
          unit <- 'degree*C'
   if (unit=='%') unit <- "'%'"
   if (varnm=='t2m') varnm <- 'T[2*m]'
   line <- paste("y <- expression(",varnm,"*phantom(0)*(",unit,"))")
-  try(eval(parse(text=line)),silent=TRUE)
-  if (inherits(y,"try-error")) y <- unit(x)
+  z <- try(eval(parse(text=line)),silent=TRUE)
+  if (inherits(z,"try-error")) y <- unit(x)[1]
   return(y)
 }
