@@ -150,7 +150,7 @@ CCA.field <- function(Y,X,i.eofs=1:8) {
   S.xx <- cov(x,y)
 
 # After Wilks, 1995, p. 401
-    sub <- paste(sub,"(BP CCA - after Wilks (1995))")
+    ## sub <- paste(sub,"(BP CCA - after Wilks (1995))")
     M.y <- solve(S.yy) %*% S.yx %*% solve(S.xx) %*% S.yx
     M.x <- solve(S.xx) %*% S.yx %*% solve(S.yy) %*% S.yx
     a.m <- eigen(M.y)
