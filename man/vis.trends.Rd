@@ -28,7 +28,7 @@ FALSE)
 \examples{
 
 t <- seq(as.Date("1955-01-01"),as.Date("2004-12-31"),by=1)
-x <- zoo(sample(seq(-30,30,1e-1),length(t),rep=T),order.by=t)
+x <- zoo(sample(seq(-30,30,1e-1),length(t),rep=TRUE),order.by=t)
 vis.trends(x,show.significance=FALSE)
 
 data(Oslo)
