@@ -62,9 +62,10 @@ vis.ds <- function(x,...) {
 }
 
 vis.trends <- function(x,unitlabel="unit",varlabel="",
- pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE) {
-
-  T <- calculate.trends(x,minlen=minlen)
+                       pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE,
+                       show.significance=TRUE,verbose=FALSE) {
+  if(verbose) print("vis.trends")
+  T <- calculate.trends(x,minlen=minlen,verbose=verbose)
   trends <- T$trends*10
   p <- T$p
   cols <- as.numeric(colnames(trends))
@@ -106,19 +107,22 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   image(cols,rows,trends.minus,col=cstep[1],add=TRUE)
 
   # Mark significant trends with dark borders
-  i <- which((is.finite(t(p)) & t(p)<pmax))
-  x <- array(sapply(cols,function(x) rep(x,nrow(p))),length(p))[i]
-  y <- rep(rows,nrow(p))[i]
-  matlines(rbind(x-1/2,x+1/2),rbind(y-1/2,y-1/2),col='black',lwd=lwd,lty=1)
-  matlines(rbind(x-1/2,x+1/2),rbind(y+1/2,y+1/2),col='black',lwd=lwd,lty=1)
-  matlines(rbind(x-1/2,x-1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
-  matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
-
+  if(show.significance) {
+    if(verbose) print(paste("mark significant trends (p<",pmax,")",sep=""))
+    i <- which((is.finite(t(p)) & t(p)<pmax))
+    x <- array(sapply(cols,function(x) rep(x,nrow(p))),length(p))[i]
+    y <- rep(rows,nrow(p))[i]
+    matlines(rbind(x-1/2,x+1/2),rbind(y-1/2,y-1/2),col='black',lwd=lwd,lty=1)
+    matlines(rbind(x-1/2,x+1/2),rbind(y+1/2,y+1/2),col='black',lwd=lwd,lty=1)
+    matlines(rbind(x-1/2,x-1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
+    matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
+  }
   colbar(cticks,cstep,fig=c(0.85,0.9,0.65,0.85))
 }
  
-calculate.trends <- function(x,minlen=10){
+calculate.trends <- function(x,minlen=15,verbose=FALSE){
   # Calculate trends of time series x
+  if(verbose) print("calculate.trends - calculate trends for all subperiods")
   stopifnot(inherits(x,'zoo'))
   xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean")
   xy <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="mean")
