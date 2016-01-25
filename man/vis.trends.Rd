@@ -21,6 +21,7 @@ FALSE)
   \item{vmax}{upper limit of trend scale.}
   \item{show.significance}{TRUE to mark statistically significant trends.}
   \item{pmax}{maximum p-value of trends marked as significant.}
+  \item{verbose}{TRUE or FALSE.}
 }
 
 \author{Kajsa Parding}
