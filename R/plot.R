@@ -1043,7 +1043,7 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
   if (!is.null(cex)) par(cex=cex)
   plot(c(-100,100),c(-100,100),type="n",axes=FALSE,mgp=mgp,ylab="",xlab="")
   mtext("trend",side=1,line=1.5,cex=par("cex"))
-  mtext("magnitude",side=2,line=2,cex=par("cex"))
+  mtext("standard deviation",side=2,line=2,cex=par("cex"))
   u <- par("usr")
   dx <- (u[2]-u[1])/20
   dy <- (u[4]-u[3])/20

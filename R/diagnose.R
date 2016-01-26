@@ -346,7 +346,7 @@ diagnose.ds.pca <- function(x,plot=FALSE,verbose=FALSE) {
 ##     #print(c(x,y))
     
 ##     par(bty="n",xaxt="n",yaxt="n")
-##     plot(c(-100,100),c(-100,100),type="n",ylab="magnitude",xlab="trend")
+##     plot(c(-100,100),c(-100,100),type="n",ylab="standard deviation",xlab="trend")
     
 ##     bcol=c("grey95","grey40")
 ##     for (i in 1:10) {
@@ -501,7 +501,7 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
   if (inherits(X,"pca")) X <- as.station(X,verbose=verbose)
   gcms <- attr(X[[1]],"model_id")
-  if (verbose) print("Compare magnitudes and trends")
+  if (verbose) print("Compare variance and trends")
   outside <- matrix(NA,length(X))
   deltagcm <- matrix(NA,length(X),length(gcms))
   deltaobs <- matrix(NA,length(X))
@@ -523,7 +523,7 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
     plot(c(-100,100),c(-100,100),type="n",
          axes=FALSE,ylab="",xlab="")
     mtext("trend",side=1,line=1.5,cex=par("cex"))
-    mtext("magnitude",side=2,line=2,cex=par("cex"))
+    mtext("standard deviation",side=2,line=2,cex=par("cex"))
     u <- par("usr")
     dx <- (u[2]-u[1])/20
     dy <- (u[4]-u[3])/20
