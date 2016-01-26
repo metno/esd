@@ -88,6 +88,8 @@ polyfit <- function(x,y=NULL) {
 count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   y <- subset(x,it=it,is=is)
   t <- as.Date(strptime(y[,colnames(y)=="start"],format="%Y%m%d%H"))
+  nrt <- as.Date(strptime(range(year(t))*1E4+range(month(t))*1E2+1,
+                format="%Y%m%d"))
   if (by=='year') {
     fmt <- "%Y"
     if (inherits(y,'season')) {
@@ -97,27 +99,36 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
       cls <- 'annual'
       unit <- 'events/year'
     }
+    n0 <- zoo(,seq(from = year(nrt[1]), to = year(nrt[2])))
   } else if (by %in% c('month','4seasons')) {
     fmt <- "%Y%m%d"
     t <- as.yearmon(t)
     cls <- 'month'
     unit <- 'events/month'
+    n0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
   } else if (by=='day') {
     fmt <- "%Y%m%d"
     cls <- 'day'
     unit <- 'events/day'
+    n0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "day"))
   }
   d <- strftime(t,format=fmt)
   n <- table(d)
   if (by=='year') {dn <- dimnames(n)$d
   } else dn <- as.Date(strptime(dimnames(n)$d,format=fmt))
   nz <- zoo(n,order.by=dn)
-  class(nz) <- c(cls,"zoo")
-  if (by=='4seasons') nz <- as.4seasons(nz,FUN=sum)
-  attrcp(y,nz)
-  attr(nz,'longname') <- paste(attr(x,'longname'),'event count',sep=', ')
-  attr(nz,'unit') <- unit
-  invisible(nz)
+  n <- merge(nz, n0)
+  n[is.na(n)] <- 0
+  n <- attrcp(y,n)
+  n <- as.station(n,param='trajectory count',unit=unit,
+       longname=paste(attr(x,'longname'),'event count',sep=', '))
+  if (inherits(y,"season")) {
+    ok <- sapply(month(index(n0)),function(x) x %in% unique(month(t)))
+    n <- subset(n,it=ok)
+  }
+  if (by=='4seasons') n <- as.4seasons(n,FUN=sum)
+  n <- attrcp(y,n)
+  invisible(n)
 }
 
 lon2dateline <- function(lon) {

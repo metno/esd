@@ -62,9 +62,10 @@ vis.ds <- function(x,...) {
 }
 
 vis.trends <- function(x,unitlabel="unit",varlabel="",
- pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE) {
-
-  T <- calculate.trends(x,minlen=minlen)
+                       pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE,
+                       show.significance=TRUE,verbose=FALSE) {
+  if(verbose) print("vis.trends")
+  T <- calculate.trends(x,minlen=minlen,verbose=verbose)
   trends <- T$trends*10
   p <- T$p
   cols <- as.numeric(colnames(trends))
@@ -94,31 +95,34 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   
   # Plot trend as color
   if (new) dev.new()
-  image(rows,cols,t(trends),breaks=vstep,col=cstep,
-        xlab='end year',ylab="start year",
+  image(cols,rows,t(trends),breaks=vstep,col=cstep,
+        xlab='start year',ylab='length of period (years)',
         main=paste(c(varlabel," trend (",unitlabel,"/decade)"),collapse=""))
 
   trends.plus <- t(trends)
   trends.plus[trends.plus<max(vstep)] <- NA
-  image(rows,cols,trends.plus,col=cstep[length(cstep)],add=TRUE)
+  image(cols,rows,trends.plus,col=cstep[length(cstep)],add=TRUE)
   trends.minus <- t(trends)
   trends.minus[trends.minus>min(vstep)] <- NA
-  image(rows,cols,trends.minus,col=cstep[1],add=TRUE)
+  image(cols,rows,trends.minus,col=cstep[1],add=TRUE)
 
   # Mark significant trends with dark borders
-  i <- which((is.finite(t(p)) & t(p)<pmax))
-  x <- rep(rows,nrow(p))[i]
-  y <- array(sapply(cols,function(x) rep(x,nrow(p))),length(p))[i]
-  matlines(rbind(x-1/2,x+1/2),rbind(y-1/2,y-1/2),col='black',lwd=lwd,lty=1)
-  matlines(rbind(x-1/2,x+1/2),rbind(y+1/2,y+1/2),col='black',lwd=lwd,lty=1)
-  matlines(rbind(x-1/2,x-1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
-  matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
-
-  colbar(cticks,cstep,fig=c(0.2,0.25,0.65,0.85))
+  if(show.significance) {
+    if(verbose) print(paste("mark significant trends (p<",pmax,")",sep=""))
+    i <- which((is.finite(t(p)) & t(p)<pmax))
+    x <- array(sapply(cols,function(x) rep(x,nrow(p))),length(p))[i]
+    y <- rep(rows,nrow(p))[i]
+    matlines(rbind(x-1/2,x+1/2),rbind(y-1/2,y-1/2),col='black',lwd=lwd,lty=1)
+    matlines(rbind(x-1/2,x+1/2),rbind(y+1/2,y+1/2),col='black',lwd=lwd,lty=1)
+    matlines(rbind(x-1/2,x-1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
+    matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
+  }
+  colbar(cticks,cstep,fig=c(0.85,0.9,0.65,0.85))
 }
  
-calculate.trends <- function(x,minlen=10){
+calculate.trends <- function(x,minlen=15,verbose=FALSE){
   # Calculate trends of time series x
+  if(verbose) print("calculate.trends - calculate trends for all subperiods")
   stopifnot(inherits(x,'zoo'))
   xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean")
   xy <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="mean")
@@ -126,21 +130,22 @@ calculate.trends <- function(x,minlen=10){
   xy <- xy[ny==max(ny)] # exclude years with missing months 
   year <- as.numeric(index(xy))
   firstyear <- min(year):(max(year)-minlen+1)
-  lastyear <- firstyear+minlen-1
+  trendlen <- minlen:(diff(range(year))+1)
+  #lastyear <- firstyear+minlen-1
   n <- length(firstyear)
   trends <- matrix(NA,n,n)
-  colnames(trends) <- lastyear
-  rownames(trends) <- firstyear
+  rownames(trends) <- trendlen#firstyear
+  colnames(trends) <- firstyear#lastyear
   p <- trends
   # speed up with apply?
   for (i in firstyear) {
-    jvec <- (i+minlen-1):(max(year)+1)
+    jvec <- i+trendlen[trendlen<=(max(year)-i+1)]-1#(i+minlen-1):(max(year)+1)
     for (j in jvec) {
       ij <- which(year %in% i:j)
       ij.model <- lm(xy[ij]~year[ij])
       #ij.kendall <- Kendall(x[ij],year[ij])
-      iout <- as.numeric(colnames(trends))==j
-      jout <- as.numeric(rownames(trends))==i
+      iout <- firstyear==i#as.numeric(colnames(trends))==j
+      jout <- trendlen==(j-i+1)#as.numeric(rownames(trends))==i
       trends[jout,iout] <- ij.model$coefficients[2]
       p[jout,iout] <- anova(ij.model)$Pr[1]#ij.kendall$sl[1]
     }

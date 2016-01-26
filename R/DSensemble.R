@@ -620,7 +620,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   
   if (!abscoords) {
     ## If relative coordinates:
-    if (!is.na(attr(y,'longitude')) & rel-cord)
+    if (!is.na(attr(y,'longitude')) & rel.cord)
       lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
     if (!is.na(attr(y,'latitude')) & rel.cord)
       lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )

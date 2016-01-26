@@ -36,7 +36,7 @@ subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                               (is.numeric(x) & levels(factor(nchar(x)))==8))
       is.years <- function(x) all(!is.months(x) & 
                               is.numeric(x) & levels(factor(nchar(x)))==4)
-      
+
       if (is.months(it)) {
         if (verbose) print('Monthly selected')
         ii <- is.element(mo,(1:12)[is.element(tolower(month.abb),
