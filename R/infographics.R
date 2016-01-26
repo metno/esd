@@ -484,7 +484,7 @@ diagram.station <- function(x,it=NULL,new=TRUE,...) {
   plot(c(0,365),1.25*range(z,na.rm=TRUE),
        type="n",xlab="",
        main=main,
-       sub=attr(x,'location'),ylab=unit)
+       sub=attr(x,'location'),ylab=ylab(x))
   grid()
   for (i in 1:ny) {
     y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
@@ -597,7 +597,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
   
   plot(c(0,365),ylim,
        type="n",xlab="",
-       main=main,sub=attr(x,'location'),ylab=unit,...)
+       main=main,sub=attr(x,'location'),ylab=ylab(x),...)
   grid()
 
   cm <- rep(NA,ny)
@@ -703,7 +703,7 @@ climvar <- function(x,FUN='sd',plot=TRUE,...) {
     plot(c(0,365),range(z,na.rm=TRUE),
          type="n",xlab="",
          main=main,
-        sub=attr(x,'location'),ylab=unit)
+        sub=attr(x,'location'),ylab=ylab(x))
     grid()
     lines(z,lwd=5)
     lines(z,lwd=3,col="grey")
@@ -989,7 +989,7 @@ vis.default <- function(X,it=NULL,img=NULL,verbose=FALSE,
   }
   par(bty='n')
   plot(zoo(y),lwd=5,col='black',ylim=range(y,na.rm=TRUE)+ c(-1,5),xlim=range(index(X)),
-       ylab=expression(T[2*m]*~(degree*C)),xlab='Time')
+       ylab=ylab(y),xlab='Time')
   for (i in 1:dim(X)[2]) lines(X[,i],lwd=7,col=rgb(1,0.7,0.7,0.1))
   
   lines(y,lty=2,lwd=3)
