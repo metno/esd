@@ -63,7 +63,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                length(lat(x))==dim(x)[2]) {
       nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
       ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
-      col <- rgb(1-ny,nx,ny,alpha)
+      if (is.finite(nx) & is.finite(ny) ) col <- rgb(1-ny,nx,ny,alpha) else
+                                          col <- rainbow(dim(x)[2])
     } else {
       col <- adjustcolor(rainbow(length(x[1,])),alpha=alpha)
     }
