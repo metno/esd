@@ -112,7 +112,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
 
-    legend(0.01,0.99,loc(x),bty='n')
+    legend(0.01,0.75,loc(x),bty='n',ncol=9,text.col=col,cex=0.75)
     #title(main=loc(x),cex=1)
     
     if(legend.show) {
