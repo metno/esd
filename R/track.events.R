@@ -147,7 +147,11 @@ NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,lplot=FALSE,
                              verbose=FALSE) {
   if (verbose) print("NearestNeighbour")
   distance <- mapply(function(x,y) distAB(x,y,lon1,lat1),lon2,lat2)
-  num <- as.numeric(apply(distance,2,function(x) which(rank(x)==1)))
+  if (length(lon1)==1) {
+    num <- as.numeric(which(rank(distance)==1))
+  } else {
+    num <- as.numeric(apply(distance,2,function(x) which(rank(x)==1)))
+  }
   for (i in which(is.na(num))) {
     num.i <- which(rank(distance[,i])==min(rank(distance[,i])))
     if(!all(num.i %in% num[-i]) & !all(!num.i %in% num[-i])) {
@@ -156,7 +160,11 @@ NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,lplot=FALSE,
       num[i] <- num.i[1]
     }
   }
-  d.num <- sapply(1:length(num),function(x) distance[num[x],x])
+  if(length(num)==1) {
+    d.num <- distance[num]
+  } else {
+    d.num <- sapply(1:length(num),function(x) distance[num[x],x])
+  }
   if (any(d.num>dmax)) {
     num[d.num>dmax] <- NA
   }
