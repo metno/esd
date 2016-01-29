@@ -76,45 +76,48 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
   }
   
   if (sum(ii)==0) { print('station.midas: could not find any station'); return(NULL) }
-  ##
+  ## Get the station values
 
   if (verbose) print(paste('read the data:',sum(ii),'stations'))
   data.files <- list.files(path=path,pattern=pattern,full.names=TRUE)
-  Y <- list()
+  Y <- list() ## Set up a list object for storing the results temporarily
   for (i in 1:length(data.files)) {
     if (verbose) print(paste(i,length(data.files),data.files[i]))
-    x <- try(read.table(data.files[i],sep=','))
+    x <- try(read.table(data.files[i],sep=',')) # Use try - some files contain inconsistencies leading to errors
     if (inherits(x,"try-error")) print('failed') else {
-      im <- is.element(x$V1,stids)
-      i0 <- is.element(stids,x$V1)
-      s <- as.integer(rownames(table(x$V1[im]))); ns <- length(s)
-      t <- as.Date(x$V3[im])
-      X <- x$V10[im]
-      time <- t[!duplicated(t)]; nt <- length(time)
+      im <- is.element(x$V1,stids)              # select the stations according to given criterea
+                                                # im gives both stations and different times
+      i0 <- is.element(stids,x$V1)              # double check to pick only metadata for the selected stations
+      s <- as.integer(rownames(table(x$V1[im]))); ns <- length(s) ## lsit of stations selected
+      t <- as.Date(x$V3[im])                    # time index for the selected stations
+      X <- x$V10[im]                            # X contains all the selected stations for all available times
+      time <- t[!duplicated(t)]; nt <- length(time)  ## common time index for all selected stations in this file
       if (verbose) {print(range(time)); print(length(time))}
-      y <- matrix(rep(NA,ns*nt),ns,nt)
-      for (i in 1:ns) {
+      y <- matrix(rep(NA,ns*nt),ns,nt)          # Set up a matrix for a zoo object for the stations data
+      for (i in 1:ns) {                         # Loop over all the single stations
         if (verbose) print(paste('station ID',s[i],' location=',locs[i0][i]))
         if (plot) points(lons[i0][i],lats[i0][i])
-        iii <- is.element(x$V1[im],s[i])
-        precip <- X[iii]
-        i1 <- is.element(time,t[iii])
+        iii <- is.element(x$V1[im],s[i])        # Point to all the times for one respective station
+        precip <- X[iii]                        # Extract precipitation for single station
+        t1 <- t[iii]                            # Time index for single station
+        i1 <- is.element(time,t1)               # Synchonise the times for the single station with that of the station group
         if (verbose) print(c(sum(i1),sum(iii)))
       ## Quality check!
         ok <- TRUE
-        if ( (sum(duplicated(t[iii]))>0) | (sum(iii) != sum(i1)) ) {
+        if ( (sum(duplicated(t1))>0) | (sum(iii) != sum(i1)) ) { # Check for duplicated times for single station
           print('------- Some errors were detected ---------')
-          if (sum(duplicated(t[iii]))>0) {
-            idup <- is.element(t[iii],t[iii][duplicated(t[iii])])
-            print('duplicated dates'); print(t[iii][idup])
+          if (sum(duplicated(t1))>0) {                           # See if it looks OK the duplicated data are removed
+            idup <- is.element(t1,t1[duplicated(t1)])
+            print('duplicated dates'); print(t1[idup])
             print('duplicated precipitation'); print(precip[idup])
-            precip <- precip[!duplicated(t[iii])]
-            tnd <- t[iii][!duplicated(t[iii])]
+            precip <- precip[!duplicated(t1)]
+            tnd <- t1[!duplicated(t1)]
             i1 <- is.element(time,tnd)
           }
           if (sum(iii) != sum(i1)) {
             print(paste('Still, not matching number of elements!',sum(iii),sum(i1)))
-          ok <- FALSE
+            ok <- FALSE
+            browser()
           }
         }
         if (ok) y[i,i1] <- precip
