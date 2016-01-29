@@ -11,6 +11,9 @@
 \alias{station.ghcnd}
 \alias{station.ghcnm}
 \alias{station.ghcnm}
+\alias{station.sonel}
+\alias{station.gloss}
+\alias{station.newlyn}
 \alias{clean.station}
 \alias{allgood}
 \title{Retrieve meta data and data from observational weather stations.}
@@ -21,6 +24,10 @@
 extracting stations with good data (discarding missing
 values). \code{allgood} will not leave any NA's whereas
 \code{clean.station} provides a more 'gentle' filtering.
+
+\code{station.sonel}, \code{station.gloss}, and \code{station.newlyn}
+read sea level from tidal gauges in France (SONEL), on a global scale
+(GLOSS) and for a single station (sub-daily data)in the UK (Newlyn).
 }
 \usage{
 
@@ -48,6 +55,25 @@ station.metnom(...)
 station.ecad(..., path="~/data.ECAD")
 station.ghcnd(..., path="~/data.GHCND")
 station.metnod(...)
+station.sonel(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dRSCOF.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dLCONQ.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dBREST.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dHAVRE.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dDIEPP.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dBOULO.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dCALAI.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dDUNKE.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dCONCA.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dPTUDY.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dSNAZA.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dBOUCA.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dSJLUZ.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dPBLOC.slv',
+                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dLROCH.slv'),
+                      verbose=FALSE)
+station.gloss(url='http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data')
+station.newlyn(path='data/gloss-241_Newlyn',verbose=TRUE) 
 allgood(x,miss=.1,verbose=TRUE)
 clean.station(x,miss=.1,verbose=TRUE)
 }
