@@ -42,7 +42,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     xlim <- range(index(x))
   if (is.null(ylim))
     ylim <- pretty(as.numeric(x))
-
+  if (verbose) {print(xlim); print(ylim)}
   
   if (plot.type=="single") {
       if (is.null(ylab))
@@ -63,7 +63,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                length(lat(x))==dim(x)[2]) {
       nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
       ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
-      col <- rgb(1-ny,nx,ny,alpha)
+      if (is.finite(nx) & is.finite(ny) ) col <- rgb(1-ny,nx,ny,alpha) else
+                                          col <- rainbow(dim(x)[2])
     } else {
       col <- adjustcolor(rainbow(length(x[1,])),alpha=alpha)
     }
@@ -111,7 +112,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
 
-    title(main=loc(x),cex=1)
+    legend(0.01,0.75,loc(x),bty='n',ncol=9,text.col=col,cex=0.75)
+    #title(main=loc(x),cex=1)
     
     if(legend.show) {
       legend(0.01,0.95,paste(attr(x,'location'),": ",
@@ -122,14 +124,14 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
-   if(map.show) { vis.map(x,col,map.type)}
+   if(map.show) { vis.map(x,col,map.type,add.text=FALSE)}
    par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=TRUE)
    plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
             xlim=xlim,ylim=ylim,new=FALSE)
   }
 }
 
-vis.map <- function(x,col='red',map.type='points') {
+vis.map <- function(x,col='red',map.type='points',add.text=FALSE) {
 #  print('vis.map')
        xrange <- range(lon(x)) + c(-10,10)
        yrange <- range(lat(x)) + c(-5,5)
@@ -154,7 +156,7 @@ vis.map <- function(x,col='red',map.type='points') {
        if (map.type=="points") {
          points(lon(x),lat(x),pch=21,cex=1,col=col,bg=col,lwd=1)
          print(loc(x))
-         text(lon(x),lat(x),labels=loc(x),col=col) 
+         if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
      } else if (map.type=="rectangle") {
          rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
               border="black",lwd=1,lty=2)

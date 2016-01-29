@@ -45,6 +45,7 @@
 \alias{HadCRUT4}
 \alias{NASAgiss}
 \alias{dse.Oslo}
+\alias{glossstations}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -68,6 +69,9 @@
   The object \code{geoborders} contains data on coastlines and borders, used in
   the methods \code{\link{map}}.
 
+  \code{glossstations} contains META-data for GLOSS stations taken from
+  the table in \url{http://www.gloss-sealevel.org/station_handbook/stations/#.Vqtc6kL4phg}
+  
   Some data sets, such as NINO3.4 and NAOI come with a 'frozen' version
   in the package, but there are also functions that read the most recent
   version of these indeces from the Internet. GSL reads the global mean sea level.
