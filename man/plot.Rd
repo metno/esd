@@ -57,7 +57,7 @@ plot.xval(x,...)
 plot.dsensemble(x,pts=FALSE,showci=TRUE,showtrend=TRUE,legend=TRUE,it=0,
                 envcol=c(1,0,0,0.2),...)
 plot.nevents(x,verbose=FALSE,...)
-vis.map(x,col='red',map.type='points')
+vis.map(x,col='red',map.type='points',add.text=FALSE)
 }
 \arguments{
   \item{x}{the object to be plotted}

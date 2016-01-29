@@ -53,7 +53,8 @@ station.sonel <- function(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/d
 ## Monthly means
 station.gloss <- function(url='http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data') {
   lonlat <- read.table(paste(url,'glosspos.dat',sep='/'))
-  glossstations <- read.table('glossstations.txt',sep='\t')
+  data(glossstations)
+  #glossstations <- read.table('glossstations.txt',sep='\t')
   SL <- read.fwf(paste(url,'psmsl.dat',sep='/'),skip=2,
                  widths=c(3,4,4,32,rep(5,14)),
                  col.names=c('XRE','CCO','SCO','location','year',month.abb,'annual'))
@@ -96,26 +97,33 @@ station.newlyn <- function(path='data/gloss-241_Newlyn',verbose=TRUE) {
   for (i in 1:length(files)) {
     if (verbose) print(files[i])
     testline <- readLines(files[i],n=1)
-    if (substr(testline,1,4)=='BODC') xin <- read.table(files[i],skip=13) else {
+    if (substr(testline,1,4)=='BODC') xin <- try(read.table(files[i],skip=13)) else {
       xxin <- readLines(files[i])
       keeplines <- grep('/',xxin)
       xxin <- xxin[keeplines]
       keeplines <- grep(')',xxin)
       writeLines(con='newlyn.txt',xxin[keeplines])
-      xin <- read.table('newlyn.txt')
+      xin <- try(read.table('newlyn.txt'))
     }
-    yymmdd <- gsub('/','-',as.character(xin$V2))
-    if (verbose) print(c(yymmdd[1],yymmdd[length(yymmdd)]))
-    hr <- gsub('.',':',as.character(xin$V3),fixed=TRUE)
-    if (i==1) z <- zoo(xin$V4*1000,order.by=as.POSIXlt(paste(yymmdd,hr))) else {
-                zz <- zoo(xin$V4*1000,order.by=as.POSIXlt(paste(yymmdd,hr)))
-                it1 <- !is.element(index(z),index(zz))
-                t <- c(index(z)[it1],index(zz))
-                z <- zoo(c(coredata(z),coredata(zz)),order.by=t)
-              }
+    if (inherits(xin,"try-error")) print('failed') else {
+      yymmdd <- gsub('/','-',as.character(xin$V2))
+      if (verbose) print(c(yymmdd[1],yymmdd[length(yymmdd)]))
+      hr <- gsub('.',':',as.character(xin$V3),fixed=TRUE)
+      if (i==1) z <- zoo(xin$V4*1000,order.by=as.POSIXlt(paste(yymmdd,hr))) else {
+        zz <- zoo(xin$V4*1000,order.by=as.POSIXlt(paste(yymmdd,hr)))
+        it1 <- !is.element(index(z),index(zz))
+        t <- c(index(z)[it1],index(zz))
+        z <- zoo(c(coredata(z),coredata(zz)),order.by=t)
+      }
+    }
   }
+  
   z <- as.station(z,loc=metadata$V1,lon=metadata$V4,lat=metadata$V3,alt=0,src='GLOSS',
                   cntr='UK',param='sea-level',unit='mm',
                   url='http://www.gloss-sealevel.org/station_handbook/stations/241/#.VqnZSkL4phh')
+
+  class(z) <- c('station','hour','zoo')
   return(z)
+
+ 
 }
