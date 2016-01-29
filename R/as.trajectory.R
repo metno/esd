@@ -16,7 +16,7 @@ as.trajectory.events <- function(x,verbose=FALSE,...) {
 
 trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
-                          method=NA,nmin=5,n=10) {
+                          method=NA,unit=NA,nmin=5,n=10) {
   if (verbose) print("trajectory")
   if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
   if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
@@ -29,6 +29,7 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
   if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
   if(is.na(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
+  if(is.na(unit) & !is.null(attr(x,"unit"))) unit <- attr(x,"unit")
   if(is.na(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
   if(is.na(url) & !is.null(attr(x,"URL"))) url <- attr(x,"URL")
   if(is.na(reference) & !is.null(attr(x,"reference"))) reference <- attr(x,"refe
@@ -109,6 +110,7 @@ rence")
   attr(X, "calendar")= "gregorian"
   attr(X, "source")= src
   attr(X, "URL")= url
+  attr(X, "unit")= unit
   attr(X, "type")= "analysis"
   attr(X, "aspect")= "interpolated"
   attr(X, "reference")= reference

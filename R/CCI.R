@@ -7,7 +7,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
- 
+
   ## Rearrange time index
   t <- as.numeric(strftime(index(Z),format="%Y%m%d%H%M"))
     
@@ -15,7 +15,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   if(verbose) print("Calculate first and second derivative")
   resx <- dX(Z,m=m,accuracy=accuracy,verbose=verbose)
   resy <- dY(Z,m=m,accuracy=accuracy,verbose=verbose)
-
+  
   ## Spatial resolution
   dx <- abs(diff(resx$lon))[1]
   dy <- abs(diff(resx$lat))[1]
@@ -41,6 +41,13 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
 
   ## Clear temporary objects from working memory
   rm("Zx","Zy","resx","resy"); gc(reset=TRUE)
+
+  ## Check units
+  if (attr(Z,"unit")=='Pa') {
+    if (verbose) print("transform pressure units: Pa -> hPa")
+    px <- px*1E-2
+    py <- py*1E-2
+  }
    
   ## Search for zero crossing in y-direction
   if(verbose) print("Find zero crossing of first derivative in y-direction")
@@ -130,6 +137,8 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
     ok2 <- pcent2 > pmax
     if(!cyclones) ok2 <- pcent2 > pmax
     del2[!ok2] <- FALSE
+    ## Clear temporary objects from working memory
+    rm("ok1","ok2"); gc(reset=TRUE)
   }
   lows1[lows1] <- del1
   lon1 <- lon1[del1]; lat1 <- lat1[del1]; date1 <- date1[del1]
@@ -139,7 +148,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   pcent2 <- pcent2[del2]; strength2 <- strength2[del2]
 
   ## Clear temporary objects from working memory
-  rm("ok1","ok2","del1","del2"); gc(reset=TRUE)
+  rm("del1","del2"); gc(reset=TRUE)
   
   ## Remove secondary cyclones near a deeper one (same cyclonic system):
   if(verbose) print("Remove secondary cyclones")
@@ -220,7 +229,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   rm("lows1","lows2","lon1","lon2","lat1","lat2",
      "date1","date2","strength1","strength2",
      "pcent1","pcent2","del1","del2"); gc(reset=TRUE)
-
+  
   ## Put cyclones in order of date
   i <- order(date)
   lon <- lon[i]
@@ -245,8 +254,11 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   if(verbose) print("Pressure gradient")
   rho <- 1.2922
   dpsl <- sqrt(DX^2+DY^2)
-  if (attr(Z,"unit")=="hPa") dpsl <- dpsl*100
+  if (attr(Z,"unit") %in% c("hPa","mbar")) dpsl <- dpsl*100
 
+  ## Average pressure
+  pxy <- 0.5*(px+py)
+ 
   # Find points of inflexion (2nd derivative==0) to estimate
   # the storm radius and maximum speed and pressure gradient
   if(verbose) print("Find points of inflexion")
@@ -261,6 +273,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   max.speed <- rep(NA,length(date))
   max.vg <- rep(NA,length(date))
   closed <- rep(0,length(date))
+  ok <- rep(TRUE,length(date))
   for (i in seq(1,length(date))) {
     inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
@@ -270,47 +283,48 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
     lat.infl <- latXY[1,infly<0]
     dlon <- lon.infl-lon[i]
     dlat <- lat.infl-lat[i]
-    ilon <- c()
-    ilat <- c()
+    ilon <- rep(NA,4)
+    ilat <- rep(NA,4)
     if (any(dlat>0)) {
-      ilon <- c(ilon,which(lonXY[,1]==lon[i]))
-      ilat <- c(ilat,which(latXY[1,]==lat.infl[dlat==min(dlat[dlat>0])]))
+      ilon[1] <- which(lonXY[,1]==lon[i])
+      ilat[1] <- which(latXY[1,]==lat.infl[dlat==min(dlat[dlat>0])])
     }
     if (any(dlat<0)) {
-      ilon <- c(ilon,which(lonXY[,1]==lon[i]))
-      ilat <- c(ilat,which(latXY[1,]==lat.infl[dlat==max(dlat[dlat<0])]))
+      ilon[2] <- which(lonXY[,1]==lon[i])
+      ilat[2] <- which(latXY[1,]==lat.infl[dlat==max(dlat[dlat<0])])
     }
     if (any(dlon>0)) {
-      ilon <- c(ilon,which(lonXY[,1]==lon.infl[dlon==min(dlon[dlon>0])]))
-      ilat <- c(ilat,which(latXY[1,]==lat[i]))
+      ilon[3] <- which(lonXY[,1]==lon.infl[dlon==min(dlon[dlon>0])])
+      ilat[3] <- which(latXY[1,]==lat[i])
     }
     if (any(dlon<0)) {
-      ilon <- c(ilon,which(lonXY[,1]==lon.infl[dlon==max(dlon[dlon<0])]))
-      ilat <- c(ilat,which(latXY[1,]==lat[i]))
+      ilon[4] <- which(lonXY[,1]==lon.infl[dlon==max(dlon[dlon<0])])
+      ilat[4] <- which(latXY[1,]==lat[i])
     }
-    dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-    ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
-    fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
-    vg <- dpi/(fi*rho)
-    v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
-    radius[i] <- mean(ri)
-    max.dslp[i] <- mean(dpi)
-    max.speed[i] <- mean(v.grad)
-    max.vg[i] <- mean(vg)
-    closed[i] <- floor(length(ilon)/4)
+    ilon <- ilon[!is.na(ilon)]
+    ilat <- ilat[!is.na(ilat)]
+    dpi <- mapply(function(i1,i2) pxy[t==date[i],i1,i2],ilon,ilat)-pcent[i]
+    if (!all(dpi>0.25)) {
+      ok[i] <- FALSE
+    } else {
+      dpsli <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
+      ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
+      fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
+      vg <- dpsli/(fi*rho)
+      v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
+      radius[i] <- mean(ri)
+      max.dslp[i] <- mean(dpsli)
+      max.speed[i] <- mean(v.grad)
+      max.vg[i] <- mean(vg)
+      closed[i] <- floor(length(ilon)/4)
+    }
   }
 
-  ## Check units
-  if (attr(Z,"unit")=='Pa') {
-      if (verbose) print("transform pressure units: Pa -> hPa")
-      pcent <- pcent*1E-2
-  }
   if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
   max.dslp <- max.dslp*1E-2*1E3
-
-  ## Keep only cyclones with radius within the range (rmin,rmax)
-  ## and pressure gradient stronger than dpmin
-  ok <- rep(TRUE,length(date))
+  if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
+  
+  #ok <- rep(TRUE,length(date))
   if(!is.null(rmin)) ok <- ok & radius>=rmin
   if(!is.null(rmax)) ok <- ok & radius<=rmax
   if(!is.null(dpmin)) ok <- ok & max.dslp>=dpmin
@@ -381,24 +395,24 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   date <- strptime(date,"%Y%m%d%H%M")
   dd <- as.numeric(strftime(date,"%Y%m%d"))
   hh <- as.numeric(strftime(date,"%H"))
-  units <- c("date","hour CET","degrees","degrees","hPa","hPa/km",
+  unit <- c("date","hour CET","degrees","degrees","hPa","hPa/km",
              "m/s","km","TRUE/FALSE","grid points")
   if (cyclones) {
     longname <- "low pressure systems identified with CCI method"
-    variable <- "cyclones"
+    param <- "cyclones"
   } else {
     longname <- "high-pressure systems identified with CCI method"
-    variable <- "anti-cyclones"
+    param <- "anti-cyclones"
   }
   X <- data.frame(date=dd,time=hh,lon=lon,lat=lat,pcent=pcent,
          max.dslp=max.dslp,max.speed=max.speed,
          radius=radius,closed=closed,accuracy=qf)
-  X <- as.events(X,label=label,dx=dx,dy=dy,units=units,longname=longname,
-         variable=variable,src=attr(Z,"source"),file=attr(Z,"file"),
+  X <- as.events(X,unit=unit,longname=longname,
+         param=param,src=attr(Z,"source"),file=attr(Z,"file"),
          method="calculus based cylone identification, CCI",
          version="CCI in esd v1.0 (after October 6, 2015)",
          reference="Benestad & Chen, 2006, The use of a calculus-based cyclone identification method for generating storm statistics, Tellus A 58(4), 473-486.",
-          url="http://onlinelibrary.wiley.com/doi/10.1111/j.1600-0870.2006.00191.x/abstract")
+         url="http://onlinelibrary.wiley.com/doi/10.1111/j.1600-0870.2006.00191.x/abstract")
   if(!is.null(fname)) save(file=fname,X)
   invisible(X)
 }

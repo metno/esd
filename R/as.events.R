@@ -12,22 +12,24 @@ as.events.trajectory <- function(x,verbose=FALSE,...) {
   invisible(y)
 }
 
-events <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
-                     quality=NA,src=NA,url=NA,reference=NA,info=NA,
-                     method=NA) {
+events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
+                   quality=NULL,src=NULL,url=NULL,reference=NULL,
+                   info=NULL,method=NULL,unit=NULL,file=NULL,version=NULL) {
   if (verbose) print("events")
   if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
   if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
-  if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
-  if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
-  if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longn  ame")
-  if(is.na(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
-  if(is.na(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
-  if(is.na(url) & !is.null(attr(x,"URL"))) url <- attr(x,"URL")
-  if(is.na(reference) & !is.null(attr(x,"reference"))) reference <- attr(x,"refe
-rence")
-  if(is.na(info) & !is.null(attr(x,"info"))) info <- attr(x,"info")
-  if(is.na(method) & !is.null(attr(x,"method"))) method <- attr(x,"method")
+  if(is.null(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
+  if(is.null(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
+  if(all(is.null(unit)) & !is.null(attr(x,"unit"))) unit <- attr(x,"unit")
+  if(is.null(version) & !is.null(attr(x,"version"))) version <- attr(x,"version")
+  if(is.null(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
+  if(is.null(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
+  if(is.null(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
+  if(is.null(file) & !is.null(attr(x,"file"))) src <- attr(x,"file")
+  if(is.null(url) & !is.null(attr(x,"URL"))) url <- attr(x,"URL")
+  if(is.null(reference) & !is.null(ref(x))) reference <- ref(x)
+  if(is.null(info) & !is.null(attr(x,"info"))) info <- attr(x,"info")
+  if(is.null(method) & !is.null(attr(x,"method"))) method <- attr(x,"method")
   if (inherits(x,'trajectory')) {
     y <- trajectory2events(x,verbose=verbose)
   } else {
