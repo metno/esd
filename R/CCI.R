@@ -2,7 +2,7 @@
 
 CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
                 label=NULL,fname="cyclones.rda",mindistance=1E6,
-                accuracy=NULL,pmax=NULL,rmin=1E4,rmax=2E6,dpmin=0.2*1E-2,
+                accuracy=NULL,pmax=NULL,rmin=1E4,rmax=2E6,dpmin=0.25,
                 lplot=FALSE,verbose=FALSE) {
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
@@ -96,7 +96,6 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   if(verbose) print("Find extra cyclones using widened masks")
   ## Mask the cylcones already selected
   P.lowx2 <- P.lowx; P.lowy2 <- P.lowy
-  P.lowx2[lows1] <- 0; P.lowy2[lows1] <- 0
   ## Widen mask in x-direction
   P.lowx2[,2:(nx-1),] <- P.lowx2[,1:(nx-2),] | P.lowx2[,2:(nx-1),]
   P.lowx2[,1:(nx-2),] <- P.lowx2[,1:(nx-2),] | P.lowx2[,2:(nx-1),]
@@ -104,9 +103,13 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   P.lowy2[,,2:(ny-1)] <- P.lowy2[,,1:(ny-2)] | P.lowy2[,,2:(ny-1)]
   P.lowy2[,,1:(ny-2)] <- P.lowy2[,,1:(ny-2)] | P.lowy2[,,2:(ny-1)]
   ## Find new zero crossings
+  P.lowx2[lows1] <- 0; P.lowy2[lows1] <- 0
   lows2 <- (P.lowy2 & P.lowx2)
   qf[lows2] <- 2
- 
+
+  ## Clear temporary objects from working memory
+  rm("P.lowx2","P.lowy2"); gc(reset=TRUE)
+  
   ## Lat, lon, and dates of cyclones
   lon<-rep(lonXY,nt); dim(lon)<-c(nx-1,ny-1,nt); lon<-aperm(lon,c(3,1,2)) 
   lat<-rep(latXY,nt); dim(lat)<-c(nx-1,ny-1,nt); lat<-aperm(lat,c(3,1,2))
@@ -155,7 +158,7 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   del1 <- rep(TRUE,length(date1))
   del2 <- rep(TRUE,length(date2))
   for (d in t) {
-    if (inherits(index(Z),'Date')) d <- as.Date(d)
+    #if (inherits(index(Z),'Date')) d <- as.Date(d)
     ## Remove secondary cyclones identified with the standard method,
     ## located close (<1000km) to other stronger cyclones
     i1 <- which(date1==d)
@@ -187,7 +190,11 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
     if(any(i2) & any(i1)) {
       distance <- apply(cbind(lon2[i2],lat2[i2]),1,
        function(x) suppressWarnings(distAB(x[1],x[2],lon1[i1],lat1[i1])))
-      del.i2 <- unique(which(distance<mindistance,arr.ind=TRUE)[,2])
+      if(length(i1)>1) {
+        del.i2 <- unique(which(distance<mindistance,arr.ind=TRUE)[,2])
+      } else {
+        del.i2 <- unique(which(distance<mindistance,arr.ind=TRUE))
+      }
       del2[i2[del.i2]] <- FALSE
       i2 <- i2[!1:length(i2) %in% del.i2]
     }
@@ -219,184 +226,192 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
   ## Add the two groups of cyclones together,
   ## keep track of which is which with the quality flag qf
   lows <- lows1 | lows2
-  lon <- lon[lows]
-  lat <- lat[lows]
-  date <- date[lows]
-  pcent <- 0.5*(px[lows]+py[lows])
-  qf <- qf[lows]
 
-  ## Clear temporary objects from working memory
-  rm("lows1","lows2","lon1","lon2","lat1","lat2",
+  if(sum(lows)==0) {
+    print("No cyclones identified!")
+    X <- data.frame(date=NA,time=NA,lon=NA,lat=NA,pcent=NA,
+         max.dslp=NA,max.speed=NA,radius=NA,closed=NA,accuracy=NA)
+  } else {
+    ## Clear temporary objects from working memory
+    lon <- lon[lows]
+    lat <- lat[lows]
+    date <- date[lows]
+    pcent <- 0.5*(px[lows]+py[lows])
+    qf <- qf[lows]
+    rm("lows","lows1","lows2","lon1","lon2","lat1","lat2",
      "date1","date2","strength1","strength2",
      "pcent1","pcent2","del1","del2"); gc(reset=TRUE)
   
-  ## Put cyclones in order of date
-  i <- order(date)
-  lon <- lon[i]
-  lat <- lat[i]
-  date <- date[i]
-  pcent <- pcent[i]
-  qf <- qf[i]
-  strength <- rank(pcent)
-  if (!cyclones) strength <- rank(-pcent)
- 
-  ## Keep only the nsim strongest cyclones each time step
-  if(!is.null(nsim)) {
-    s <- sapply(date,function(d) rank(strength[date==d]))
-    lon <- lon[s<nsim]
-    lat <- lat[s<nsim]
-    date <- date[s<nsim]
-    pcent <- pcent[s<nsim]
-    qf <- qf[s<nsim]
-  }
+    ## Put cyclones in order of date
+    i <- order(date)
+    lon <- lon[i]
+    lat <- lat[i]
+    date <- date[i]
+    pcent <- pcent[i]
+    qf <- qf[i]
+    strength <- rank(pcent)
+    if (!cyclones) strength <- rank(-pcent)
 
-  ## Pressure gradient
-  if(verbose) print("Pressure gradient")
-  rho <- 1.2922
-  dpsl <- sqrt(DX^2+DY^2)
-  if (attr(Z,"unit") %in% c("hPa","mbar")) dpsl <- dpsl*100
+    ## Keep only the nsim strongest cyclones each time step
+    if(!is.null(nsim)) {
+      s <- sapply(date,function(d) rank(strength[date==d]))
+      lon <- lon[s<nsim]
+      lat <- lat[s<nsim]
+      date <- date[s<nsim]
+      pcent <- pcent[s<nsim]
+      qf <- qf[s<nsim]
+    }
 
-  ## Average pressure
-  pxy <- 0.5*(px+py)
- 
-  # Find points of inflexion (2nd derivative==0) to estimate
-  # the storm radius and maximum speed and pressure gradient
-  if(verbose) print("Find points of inflexion")
-  NX <- dim(lonXY)[1]; NY <- dim(latXY)[2]
-  lonXX <- rep(0.5*(lonXY[2:NX,2:NY]+lonXY[1:(NX-1),2:NY]),nt)
-  dim(lonXX) <- c(NX-1,NY-1,nt); lonXX <- aperm(lonXX,c(3,1,2))
-  latXX <- rep(0.5*(latXY[2:NX,2:NY]+latXY[2:NX,1:(NY-1)]),nt)
-  dim(latXX) <- c(NX-1,NY-1,nt); latXX <- aperm(latXX,c(3,1,2))
-  dateXX <- rep(t,(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
-  radius <- rep(NA,length(date))
-  max.dslp <- rep(NA,length(date))
-  max.speed <- rep(NA,length(date))
-  max.vg <- rep(NA,length(date))
-  closed <- rep(0,length(date))
-  ok <- rep(TRUE,length(date))
-  for (i in seq(1,length(date))) {
-    inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
+    ## Pressure gradient
+    if(verbose) print("Pressure gradient")
+    rho <- 1.2922
+    dpsl <- sqrt(DX^2+DY^2)
+    if (attr(Z,"unit") %in% c("hPa","mbar")) dpsl <- dpsl*100
+
+    ## Remove temporary variables and release the memory:
+    rm('DX','DY'); gc(reset=TRUE)
+
+    # Find points of inflexion (2nd derivative==0) to estimate
+    # the storm radius and maximum speed and pressure gradient
+    if(verbose) print("Find points of inflexion")
+    NX <- dim(lonXY)[1]; NY <- dim(latXY)[2]
+    lonXX <- rep(0.5*(lonXY[2:NX,2:NY]+lonXY[1:(NX-1),2:NY]),nt)
+    dim(lonXX) <- c(NX-1,NY-1,nt); lonXX <- aperm(lonXX,c(3,1,2))
+    latXX <- rep(0.5*(latXY[2:NX,2:NY]+latXY[2:NX,1:(NY-1)]),nt)
+    dim(latXX) <- c(NX-1,NY-1,nt); latXX <- aperm(latXX,c(3,1,2))
+    #dateXX <- rep(t,(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
+    radius <- rep(NA,length(date))
+    max.dslp <- rep(NA,length(date))
+    max.speed <- rep(NA,length(date))
+    max.vg <- rep(NA,length(date))
+    closed <- rep(0,length(date))
+    ok <- rep(TRUE,length(date))
+    for (i in seq(1,length(date))) {
+      inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
-    infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
+      infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
         DY2[date[i]==t,lonXY[,1]==lon[i],1:(NY-1)]
-    lon.infl <- lonXY[inflx<0,1]
-    lat.infl <- latXY[1,infly<0]
-    dlon <- lon.infl-lon[i]
-    dlat <- lat.infl-lat[i]
-    ilon <- rep(NA,4)
-    ilat <- rep(NA,4)
-    if (any(dlat>0)) {
-      ilon[1] <- which(lonXY[,1]==lon[i])
-      ilat[1] <- which(latXY[1,]==lat.infl[dlat==min(dlat[dlat>0])])
+      lon.infl <- lonXY[inflx<0,1]
+      lat.infl <- latXY[1,infly<0]
+      dlon <- lon.infl-lon[i]
+      dlat <- lat.infl-lat[i]
+      ilon <- rep(NA,4)
+      ilat <- rep(NA,4)
+      if (any(dlat>0)) {
+        ilon[1] <- which(lonXY[,1]==lon[i])
+        ilat[1] <- which(latXY[1,]==lat.infl[dlat==min(dlat[dlat>0])])
+      }
+      if (any(dlat<0)) {
+        ilon[2] <- which(lonXY[,1]==lon[i])
+        ilat[2] <- which(latXY[1,]==lat.infl[dlat==max(dlat[dlat<0])])
+      }
+      if (any(dlon>0)) {
+        ilon[3] <- which(lonXY[,1]==lon.infl[dlon==min(dlon[dlon>0])])
+        ilat[3] <- which(latXY[1,]==lat[i])
+      }
+      if (any(dlon<0)) {
+        ilon[4] <- which(lonXY[,1]==lon.infl[dlon==max(dlon[dlon<0])])
+        ilat[4] <- which(latXY[1,]==lat[i])
+      }
+      ilon <- ilon[!is.na(ilon)]
+      ilat <- ilat[!is.na(ilat)]
+      dpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
+      if (!all(dpi>dpmin)) {
+        ok[i] <- FALSE
+      } else {
+        dpsli <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
+        ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
+        fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
+        vg <- dpsli/(fi*rho)
+        v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
+        radius[i] <- mean(ri)
+        max.dslp[i] <- mean(dpsli)
+        max.speed[i] <- mean(v.grad)
+        max.vg[i] <- mean(vg)
+        closed[i] <- floor(length(ilon)/4)
+      }
     }
-    if (any(dlat<0)) {
-      ilon[2] <- which(lonXY[,1]==lon[i])
-      ilat[2] <- which(latXY[1,]==lat.infl[dlat==max(dlat[dlat<0])])
-    }
-    if (any(dlon>0)) {
-      ilon[3] <- which(lonXY[,1]==lon.infl[dlon==min(dlon[dlon>0])])
-      ilat[3] <- which(latXY[1,]==lat[i])
-    }
-    if (any(dlon<0)) {
-      ilon[4] <- which(lonXY[,1]==lon.infl[dlon==max(dlon[dlon<0])])
-      ilat[4] <- which(latXY[1,]==lat[i])
-    }
-    ilon <- ilon[!is.na(ilon)]
-    ilat <- ilat[!is.na(ilat)]
-    dpi <- mapply(function(i1,i2) pxy[t==date[i],i1,i2],ilon,ilat)-pcent[i]
-    if (!all(dpi>0.25)) {
-      ok[i] <- FALSE
-    } else {
-      dpsli <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-      ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
-      fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
-      vg <- dpsli/(fi*rho)
-      v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
-      radius[i] <- mean(ri)
-      max.dslp[i] <- mean(dpsli)
-      max.speed[i] <- mean(v.grad)
-      max.vg[i] <- mean(vg)
-      closed[i] <- floor(length(ilon)/4)
-    }
-  }
 
-  if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
-  max.dslp <- max.dslp*1E-2*1E3
-  if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
+    if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
+    max.dslp <- max.dslp*1E-2*1E3
+    if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
   
-  #ok <- rep(TRUE,length(date))
-  if(!is.null(rmin)) ok <- ok & radius>=rmin
-  if(!is.null(rmax)) ok <- ok & radius<=rmax
-  if(!is.null(dpmin)) ok <- ok & max.dslp>=dpmin
-  lon <- lon[ok]
-  lat <- lat[ok]
-  date <- date[ok]
-  pcent <- pcent[ok]
-  qf <- qf[ok]
-  closed <- closed[ok]
-  max.dslp <- max.dslp[ok]
-  max.speed <- max.speed[ok]
-  radius <- radius[ok]
-  strength <- rank(pcent)
-  if (!cyclones) strength <- rank(-pcent)
+    #ok <- rep(TRUE,length(date))
+    if(!is.null(rmin)) ok <- ok & radius>=rmin
+    if(!is.null(rmax)) ok <- ok & radius<=rmax
+    lon <- lon[ok]
+    lat <- lat[ok]
+    date <- date[ok]
+    pcent <- pcent[ok]
+    qf <- qf[ok]
+    closed <- closed[ok]
+    max.dslp <- max.dslp[ok]
+    max.speed <- max.speed[ok]
+    radius <- radius[ok]
+    strength <- rank(pcent)
+    if (!cyclones) strength <- rank(-pcent)
 
-  if (lplot) {
-    if(verbose) print("plot example of cyclone identification")
-    data(geoborders,envir=environment())
-    i <- length(date)/2
-    inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
+    if (lplot) {
+      if(verbose) print("plot example of cyclone identification")
+      data(geoborders,envir=environment())
+      i <- length(date)/2
+      inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
-    infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
+      infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
         DY2[date[i]==t,lonXY[,1]==lon[i],1:(NY-1)]
-    pxi <- px[date[i]==t,,];  pyi <- py[date[i]==t,,]
-    xi <- lonXY[,1]; yi <- latXY[1,]; zi <- pxi
-    if (!(all(diff(xi)>0))) {xi <- rev(xi); zi <- apply(zi,2,rev)}
-    if (!(all(diff(yi)>0))) {yi <- rev(yi); zi <- t(apply(t(zi),2,rev))}
-    dev.new()
-    plot(lonXY[,1],pxi[,latXY[1,]==lat[i]],lty=1,type="l",main=date[i],
+      pxi <- px[date[i]==t,,];  pyi <- py[date[i]==t,,]
+      xi <- lonXY[,1]; yi <- latXY[1,]; zi <- pxi
+      if (!(all(diff(xi)>0))) {xi <- rev(xi); zi <- apply(zi,2,rev)}
+      if (!(all(diff(yi)>0))) {yi <- rev(yi); zi <- t(apply(t(zi),2,rev))}
+      dev.new()
+      plot(lonXY[,1],pxi[,latXY[1,]==lat[i]],lty=1,type="l",main=date[i],
          xlab="lon",ylab="slp (hPa)")
-    points(lon[i],pxi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
-    points(lonXY[inflx<0,1],pxi[inflx<0,latXY[1,]==lat[i]],col="red",pch=1)
-    dev.copy2eps(file="cyclones.lon.eps", paper="letter")#; dev.off()
-    dev.new()
-    plot(latXY[1,],pyi[lonXY[,1]==lon[i],],lty=1,type="l",main=date[i],
+      points(lon[i],pxi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
+      points(lonXY[inflx<0,1],pxi[inflx<0,latXY[1,]==lat[i]],col="red",pch=1)
+      dev.copy2eps(file="cyclones.lon.eps", paper="letter")#; dev.off()
+      dev.new()
+      plot(latXY[1,],pyi[lonXY[,1]==lon[i],],lty=1,type="l",main=date[i],
          xlab="lat",ylab="slp (hPa)")
-    points(lat[i],pyi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
-    points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
-    dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
-    dev.new()
-    image(xi,yi,zi,main=date[i],col=colscal(col="t2m",n=12,rev=FALSE),
+      points(lat[i],pyi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
+      points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
+      dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
+      dev.new()
+      image(xi,yi,zi,main=date[i],col=colscal(col="t2m",n=12,rev=FALSE),
           xlab="lon",ylab="lat",breaks=seq(940,1060,10))
-    contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(940,1010),nlevels=6)
-    contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1060),nlevels=5)
-    lines(geoborders,col="grey10")
-    a <- which(P.lowx[t==date[i],,]==1,arr.ind=TRUE)
-    b <- which(P.lowy[t==date[i],,]==1,arr.ind=TRUE)
-    lon.a <- mapply(function(i1,i2) lonXY[i1,i2],a[,1],a[,2])
-    lat.a <- mapply(function(i1,i2) latXY[i1,i2],a[,1],a[,2])
-    lon.b <- mapply(function(i1,i2) lonXY[i1,i2],b[,1],b[,2])
-    lat.b <- mapply(function(i1,i2) latXY[i1,i2],b[,1],b[,2])
-    points(lon.a,lat.a,col="black",pch=1,cex=0.5,lwd=0.5)
-    points(lon.b,lat.b,col="black",pch="|",cex=0.5,lwd=0.5)
-    j <- date==date[i]
-    col <- rep("black",sum(j,na.rm=TRUE))
-    sz <- rep(2,sum(j,na.rm=TRUE))
-    col[closed[j]==0] <- "grey50"
-    sz[qf[j]==2] <- 1
-    points(lon[j],lat[j],pch=21,lwd=2,bg="white",col=col,cex=sz)
-    points(lon[i],lat[i],pch=4,lwd=2,col="black",cex=1)
-    dev.copy2eps(file="cyclones.map.eps", paper="letter")#; dev.off()
-  }
+      contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(940,1010),nlevels=6)
+      contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1060),nlevels=5)
+      lines(geoborders,col="grey10")
+      a <- which(P.lowx[t==date[i],,]==1,arr.ind=TRUE)
+      b <- which(P.lowy[t==date[i],,]==1,arr.ind=TRUE)
+      lon.a <- mapply(function(i1,i2) lonXY[i1,i2],a[,1],a[,2])
+      lat.a <- mapply(function(i1,i2) latXY[i1,i2],a[,1],a[,2])
+      lon.b <- mapply(function(i1,i2) lonXY[i1,i2],b[,1],b[,2])
+      lat.b <- mapply(function(i1,i2) latXY[i1,i2],b[,1],b[,2])
+      points(lon.a,lat.a,col="black",pch=1,cex=0.5,lwd=0.5)
+      points(lon.b,lat.b,col="black",pch="|",cex=0.5,lwd=0.5)
+      j <- date==date[i]
+      col <- rep("black",sum(j,na.rm=TRUE))
+      sz <- rep(2,sum(j,na.rm=TRUE))
+      col[closed[j]==0] <- "grey50"
+      sz[qf[j]==2] <- 1
+      points(lon[j],lat[j],pch=21,lwd=2,bg="white",col=col,cex=sz)
+      points(lon[i],lat[i],pch=4,lwd=2,col="black",cex=1)
+      dev.copy2eps(file="cyclones.map.eps", paper="letter")#; dev.off()
+    }
 
-  ## Remove temporary variables and release the memory:
-  rm('dateXX','lonXY','latXY','inflx','infly'); gc(reset=TRUE)
+    ## Remove temporary variables and release the memory:
+    rm('lonXY','latXY','inflx','infly','DX2','DY2','px','py'); gc(reset=TRUE)
   
-  ## Arrange results
-  date <- strptime(date,"%Y%m%d%H%M")
-  dd <- as.numeric(strftime(date,"%Y%m%d"))
-  hh <- as.numeric(strftime(date,"%H"))
+    ## Arrange results
+    date <- strptime(date,"%Y%m%d%H%M")
+    dd <- as.numeric(strftime(date,"%Y%m%d"))
+    hh <- as.numeric(strftime(date,"%H"))
+    X <- data.frame(date=dd,time=hh,lon=lon,lat=lat,pcent=pcent,
+         max.dslp=max.dslp,max.speed=max.speed,
+         radius=radius*1E-3,closed=closed,accuracy=qf)
+  }
   unit <- c("date","hour CET","degrees","degrees","hPa","hPa/km",
-             "m/s","km","TRUE/FALSE","grid points")
+            "m/s","km","TRUE/FALSE","grid points")
   if (cyclones) {
     longname <- "low pressure systems identified with CCI method"
     param <- "cyclones"
@@ -404,9 +419,6 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
     longname <- "high-pressure systems identified with CCI method"
     param <- "anti-cyclones"
   }
-  X <- data.frame(date=dd,time=hh,lon=lon,lat=lat,pcent=pcent,
-         max.dslp=max.dslp,max.speed=max.speed,
-         radius=radius,closed=closed,accuracy=qf)
   X <- as.events(X,unit=unit,longname=longname,
          param=param,src=attr(Z,"source"),file=attr(Z,"file"),
          method="calculus based cylone identification, CCI",

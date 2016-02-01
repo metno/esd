@@ -47,6 +47,7 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   attr(y, "location") <- loc
   attr(y, "variable") <- param
   attr(y, "longname") <- longname
+  attr(y, "unit") <- unit
   attr(y, "quality") <- quality
   attr(y, "calendar") <- "gregorian"
   attr(y, "source") <- src

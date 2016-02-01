@@ -70,11 +70,16 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   for ( it in 1:nt ) {
     setTxtProgressBar(pb,it/nt) 
     ## Create a matrix containing m harmonic fits for ny latitudes:
-    beta <- apply(z[,,it],2,regfit,cal.dat=cal.dat,terms=terms)
+    #beta <- apply(z[,,it],2,regfit,cal.dat=cal.dat,terms=terms) ## KMP 2016-02-01
+    beta <- apply(z[,,it],2,function(x) {
+        y <- regfit(x,cal.dat=cal.dat,terms=terms)
+        invisible(y[,"Estimate"])})
     ## The constant
     z0[,it] <- beta[1,]
-    a[,,it] <- beta[seq(2,2*m+1,by=2),]
-    b[,,it] <- beta[seq(3,2*m+1,by=2),]
+    a[1:floor(dim(beta)[1]/2),,it] <- beta[seq(2,dim(beta)[1],by=2),] ## KMP 2016-02-01
+    b[1:floor(dim(beta)[1]/2),,it] <- beta[seq(3,dim(beta)[1],by=2),] ## KMP 2016-02-01
+    #a[,,it] <- beta[seq(2,2*m+1,by=2),] ## KMP 2016-02-01
+    #b[,,it] <- beta[seq(3,2*m+1,by=2),] ## KMP 2016-02-01
   }
   t2 <- Sys.time()
   if (verbose) print(paste('Taking dX of the field took',

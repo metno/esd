@@ -54,24 +54,26 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   a <- rep(0,nx*m*nt)
   dim(a) <- c(m,nx,nt)
   b <- a; 
-  z0 <- matrix(rep(NA,nt*nx),nx,nt)
-
+  z0 <- matrix(rep(NA,nt*nx),nx,nt)# NA,nt*nx),nx,nt) ## KMP 2016-02-01
+  
   ## Loop over time steps and apply the harmonic fit to each latitude:
   t1 <- Sys.time()
   pb <- txtProgressBar(style=3)
   for ( it in 1:nt ) {
     setTxtProgressBar(pb,it/nt) 
     ## Create a matrix containing m harmonic fits for ny latitudes:
-    beta <- apply(z[,,it],1,regfit,cal.dat=cal.dat,terms=terms)
+    ## KMP 2016-02-01
+    beta <- apply(z[,,it],1,function(x) {
+        y <- regfit(x,cal.dat=cal.dat,terms=terms)
+        invisible(y[,"Estimate"])})
     ## The constant
     z0[,it] <- beta[1,]
-    a[,,it] <- beta[seq(2,2*m+1,by=2),]
-    b[,,it] <- beta[seq(3,2*m+1,by=2),]
+    a[1:floor(dim(beta)[1]/2),,it] <- beta[seq(2,dim(beta)[1],by=2),] ## KMP 2016-02-01
+    b[1:floor(dim(beta)[1]/2),,it] <- beta[seq(3,dim(beta)[1],by=2),] ## KMP 2016-02-01
   }
   t2 <- Sys.time()
   if (verbose) print(paste('Taking dY of the field took',
                 round(as.numeric(t2-t1,units="secs")),'s'))
-
   ## Reorganise the data and take the inner product:
   a2d <- a;  dim(a2d) <- c(m,nt*nx)
   b2d <- b;  dim(b2d) <- c(m,nt*nx)
