@@ -10,6 +10,26 @@
 
 require(esd)
 
+dealwithduplicates <- function(precip,t1,action="remove") {
+  print('dealwithduplicates')
+  idup <- is.element(t1,t1[duplicated(t1)])
+  print('duplicated dates'); print(t1[idup])
+  print('duplicated precipitation'); print(precip[idup])
+  if (action=="remove") x <- precip[!duplicated(t1)]
+  if (action=="NA") {
+    precip[idup] <- NA
+    x <- precip[!duplicated(t1)]
+  }
+  if (action=="sum") {
+    for (it in t1[duplicated(t1)]) {
+      iii <- is.element(t1,it)
+      precip[iii] <- sum(precip[iii])
+    }
+    x <- precip[!duplicated(t1)]
+  }  
+  return(x)
+}
+
 station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,county=NULL,cntr=NULL,it=NULL,nmin=30,
                           path='data/midas/',pattern='midas_raindrnl',metaid='CPAS.DATA',verbose=TRUE,plot=TRUE) {
   metacolnames <- c('SRC_ID','SRC_NAME','ID_TYPE','ID','MET_DOMAIN_NAME','SRC_CAP_BGN_DATE','SRC_CAP_END_DATE',
@@ -88,8 +108,8 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
       im <- is.element(x$V1,stids)              # select the stations according to given criterea
                                                 # im gives both stations and different times
       i0 <- is.element(stids,x$V1)              # double check to pick only metadata for the selected stations
-      s <- as.integer(rownames(table(x$V1[im]))); ns <- length(s) ## lsit of stations selected
-      t <- as.Date(x$V3[im])                    # time index for the selected stations
+      s <- as.integer(rownames(table(x$V1[im]))); ns <- length(s) ## list of stations selected
+      t <- as.POSIXlt(as.character(x$V3[im]))                    # time index for the selected stations
       X <- x$V10[im]                            # X contains all the selected stations for all available times
       time <- t[!duplicated(t)]; nt <- length(time)  ## common time index for all selected stations in this file
       if (verbose) {print(range(time)); print(length(time))}
@@ -107,12 +127,9 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
         if ( (sum(duplicated(t1))>0) | (sum(iii) != sum(i1)) ) { # Check for duplicated times for single station
           print('------- Some errors were detected ---------')
           if (sum(duplicated(t1))>0) {                           # See if it looks OK the duplicated data are removed
-            idup <- is.element(t1,t1[duplicated(t1)])
-            print('duplicated dates'); print(t1[idup])
-            print('duplicated precipitation'); print(precip[idup])
-            precip <- precip[!duplicated(t1)]
+            precip <- dealwithduplicates(precip,t1,action="sum")
             tnd <- t1[!duplicated(t1)]
-            i1 <- is.element(time,tnd)
+            i1 <- is.element(time,tnd); iii <- is.finite(precip)
           }
           if (sum(iii) != sum(i1)) {
             print(paste('Still, not matching number of elements!',sum(iii),sum(i1)))
