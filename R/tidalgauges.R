@@ -61,24 +61,28 @@ station.gloss <- function(url='http://browse.ceda.ac.uk/browse/badc/CDs/gloss/da
   Xt <- table(SL$location)
   n <- length(names(Xt))
   yearmon <- seq(min(SL$year,na.rm=TRUE),max(SL$year,na.rm=TRUE)+11/12,by=1/12)
-  X <- matrix(rep(NA,n*length(yearmon)),n,length(yearmon))
+  X <- matrix(rep(NA,n*length(yearmon)),n,length(yearmon));
+  loc <- names(Xt)
+  loc <- gsub('  ','',loc)
+  loc <- substr(loc,2,nchar(loc)-1)
+  lon <- rep(NA,n); lat <- rep(NA,n); cntr <- rep('NA',n)
   for (i in 1:n) {
-    ii <- is.element(SL$location,names(Xt)[i])
+    ii <- is.element(as.character(SL$location),names(Xt)[i])
     yrmn <- seq(min(SL$year[ii],na.rm=TRUE),max(SL$year[ii],na.rm=TRUE)+11/12,by=1/12)
     yrmn <- yrmn[is.element(trunc(yrmn),SL$year[ii])]
     i1 <- is.element(yearmon,yrmn)
     i2 <- is.element(yrmn,yearmon)
     x <- c(t(SL[ii,6:17]))
     X[i,i1] <- as.numeric(x)[i2]
+    iii <- is.element(substr(toupper(glossstations$V1),1,nchar(loc[i])),toupper(loc[i]))
+    if (sum(iii)>0) {
+      lon[i] <- glossstations$V5[iii]
+      lat[i] <- glossstations$V4[iii]
+      cntr[i] <- glossstations$V2[iii]
+    }
   }
   Y <- zoo(t(X),order.by=as.Date(paste(trunc(yearmon),
                   round(12*(yearmon-trunc(yearmon)))+1,'01',sep='-')))
-  loc <- names(Xt)
-  loc <- gsub('  ','',loc)
-  loc <- substr(loc,2,nchar(loc)-1)
-  lon <- glossstations$V5[is.element(toupper(loc),toupper(glossstations$V1))]
-  lat <- glossstations$V4[is.element(toupper(loc),toupper(glossstations$V1))]
-  cntr <- glossstations$V2[is.element(toupper(loc),toupper(glossstations$V1))]
   Y <- as.station(Y,loc=loc,param='sea-level',unit='mm',info='http://www.gloss-sealevel.org/',
                   lon=lon,lat=lat,alt=rep(0,n),cntr=cntr,url=url,src='GLOSS')
   return(Y)
