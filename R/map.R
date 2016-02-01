@@ -872,25 +872,43 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     invisible(result)
 }
 
-map.events <- function(x,it=NULL,is=NULL,dx=2,dy=2,dt="year",
-               colbar=list(pal="precip",rev=FALSE,n=10,
-               breaks=NULL,pos=0.05,show=TRUE,type="p",
-               cex=2,h=0.6,v=1),FUN="mean",projection="sphere",
-               verbose=FALSE,...) {
-  if (verbose) print("map.events")
+
+map.events <- function(x,it=NULL,is=NULL,param=NA,alpha=0.5,col="blue",pch=19,
+                       new=TRUE,verbose=TRUE,...) {
+  if(verbose) print("map.events")
   y <- subset(x,it=it,is=is,verbose=verbose)
-  Y <- as.field(y,dx=dx,dy=dy,dt=dt,verbose=verbose)
-  if (projection!="lonlat") xlim=NULL; ylim=NULL
-  #if (is.null(colbar$breaks)) {
-  #  Yc <- coredata(Y)
-  #  vals <- Yc[Yc>0 & !is.infinite(Yc)]
-  #  breaks <- pretty(seq(0,q95(vals),q95(vals)/(colbar$n-1)))
-  #  colbar$breaks <- c(breaks,max(vals))
-  #  colbar$n <- NULL
-  #}
-  map(Y,colbar=colbar,FUN=FUN,verbose=verbose,
-      projection=projection,...)  
+  lon <- y[,"lon"]
+  lat <- y[,"lat"]
+  data(Oslo)
+  map(Oslo,type="n",xlim=range(lon)+c(-5,5),ylim=range(lat)+c(-2,2),new=new)
+  if(param %in% colnames(x)) {
+    if(verbose) print(paste("size proportional to",param))
+    cex <- 1+(y[,param]-min(y[,param],na.rm=TRUE))/diff(range(y[,param],na.rm=TRUE))*2
+  }
+  mn <- month(strptime(x[,"date"],format="%Y%m%d"))
+  cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
+  points(lon,lat,col=cols,cex=cex,pch=pch)
 }
+
+## map.events <- function(x,it=NULL,is=NULL,dx=2,dy=2,dt="year",
+##                colbar=list(pal="precip",rev=FALSE,n=10,
+##                breaks=NULL,pos=0.05,show=TRUE,type="p",
+##                cex=2,h=0.6,v=1),FUN="mean",projection="sphere",
+##                verbose=FALSE,...) {
+##   if (verbose) print("map.events")
+##   y <- subset(x,it=it,is=is,verbose=verbose)
+##   Y <- as.field(y,dx=dx,dy=dy,dt=dt,verbose=verbose)
+##   if (projection!="lonlat") xlim=NULL; ylim=NULL
+##   #if (is.null(colbar$breaks)) {
+##   #  Yc <- coredata(Y)
+##   #  vals <- Yc[Yc>0 & !is.infinite(Yc)]
+##   #  breaks <- pretty(seq(0,q95(vals),q95(vals)/(colbar$n-1)))
+##   #  colbar$breaks <- c(breaks,max(vals))
+##   #  colbar$n <- NULL
+##   #}
+##   map(Y,colbar=colbar,FUN=FUN,verbose=verbose,
+##       projection=projection,...)  
+## }
 
 ## Function that masks either ocean or land
 mask <- function(x,land=FALSE) {
