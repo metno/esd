@@ -1,9 +1,9 @@
 # K Parding, 29.05.2015
 
-CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
-                label=NULL,fname="cyclones.rda",mindistance=1E6,
-                accuracy=NULL,pmax=NULL,rmin=1E4,rmax=2E6,dpmin=0.25,
-                lplot=FALSE,verbose=FALSE) {
+CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
+                label=NULL,mindistance=1E6,dpmin=1E-3,
+                pmax=NULL,rmin=1E4,rmax=2E6,nsim=NULL,
+                fname="cyclones.rda",lplot=FALSE,accuracy=NULL,verbose=FALSE) {
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
@@ -315,17 +315,17 @@ CCI <- function(Z,m=14,nsim=NULL,it=NULL,is=NULL,cyclones=TRUE,
       }
       ilon <- ilon[!is.na(ilon)]
       ilat <- ilat[!is.na(ilat)]
-      dpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
+      #dpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
+      dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
       if (!all(dpi>dpmin)) {
         ok[i] <- FALSE
       } else {
-        dpsli <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
         fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
-        vg <- dpsli/(fi*rho)
+        vg <- dpi/(fi*rho)
         v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
         radius[i] <- mean(ri)
-        max.dslp[i] <- mean(dpsli)
+        max.dslp[i] <- mean(dpi)
         max.speed[i] <- mean(v.grad)
         max.vg[i] <- mean(vg)
         closed[i] <- floor(length(ilon)/4)

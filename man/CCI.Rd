@@ -29,21 +29,27 @@ Reference: Benestad \& Chen (2006) 'The use of a Calculus-based Cyclone Identifi
            Benestad (2005) 
 } 
 \usage{
-CCI(Z,m=14,nsim=20,it=NULL,is=NULL,cyclones=TRUE,
-                accuracy=NULL,label=NULL,fname="cyclones.rda",
-                lplot=FALSE,verbose=FALSE)
+CCI(Z,m=14,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
+                mindistance=1E6,dpmin=1E-3,pmax=NULL,rmin=1E4,rmax=2E6,
+                accuracy=NULL,nsim=20,
+                fname="cyclones.rda",lplot=FALSE,verbose=FALSE)
 }
 \arguments{
-    \item{Z}{A field object (input).}
-    \item{m}{number of harmonics used for fit to profile (Fourier truncation)}
-    \item{lplot}{TRUE: produce plots.}
-    \item{it}{A list providing time index, e.g. month}
-    \item{it}{A list providing space index, lon and/or lat}
+    \item{Z}{A field object.}
+    \item{m}{Number of harmonics used for fit to profile (Fourier truncation).}
+     \item{it}{A list providing time index, e.g. month.}
+    \item{is}{A list providing space index, lon and/or lat.}
+    \item{label}{Label for ID-purposes.}
+    \item{cyclones}{TRUE: identifies cyclones, FALSE: anticyclones.}
+    \item{mindistance}{Min distance between cyclones. Unit: m.}
+    \item{dpmin}{Min pressure gradient at points of inflection around
+           cyclone. Unit: Pa/m (10hPa/km).}
+    \item{pmax}{Max pressure in center of cyclone. Unit: hPa.}
+    \item{rmin}{Min radius of cyclone. Unit: m.}
+    \item{rmax}{Max radius of cyclone. Unit: m.}
     \item{nsim}{Number of simultaneous cyclones identified and saved ordered according to depth/strength.}
     \item{fname}{Name of output file.}
-    \item{cyclones}{TRUE: identifies cyclones, FALSE anticyclones.}
-    \item{rmax}{Max radius of cyclone. Not yet finished!}
-    \item{label}{Label for ID-purposes.}
+    \item{lplot}{TRUE: produce plots.}
     \item{verbose}{Print out diagnostics.}
     \item{accuracy}{Not yet finished.}
   }
