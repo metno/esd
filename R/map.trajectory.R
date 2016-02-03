@@ -33,7 +33,8 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
   par(bty="n")
   lons <- x[,colnames(x)=='lon']
   lats <- x[,colnames(x)=='lat']
-  plot(lons,lats,type='n',main=main,xlim=xlim,ylim=ylim)
+  plot(lons,lats,type='.',cex=1,col=adjustcolor(col,alpha.f=alpha),
+       main=main,xlim=xlim,ylim=ylim)
   matlines(t(lons),t(lats),lty=lty,lwd=lwd,
          col=adjustcolor(col,alpha.f=alpha))
 }
@@ -63,8 +64,11 @@ lonlat.trajectory <- function(x,
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
                           sum(!OK),'crossing dateline'))
+  
   matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
+  points(lons[OK,],lats[OK,],pch='.',cex=1,col=adjustcolor(col,min(1,alpha+0.2)))
+  points(lons[OK,1],lats[OK,1],pch=19,cex=0.5,col=adjustcolor(col,alpha.f=alpha))
 
   # trajectories crossing the dateline plotted in two parts
   if (sum(!OK)>0) {
@@ -166,9 +170,11 @@ sphere.trajectory <- function(x,
   if (new) dev.new()
   par(bty="n",xaxt="n",yaxt="n")
   plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
-
-  matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
   
+  matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
+  points(X,Z,pch='.',cex=1,col=adjustcolor(col,alpha.f=min(1,alpha+0.2)))
+  points(X,Z,pch=19,cex=0.5,col=adjustcolor(col,alpha.f=alpha))
+    
   points(x[y>0],z[y>0],pch=".",col='grey30')
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 
