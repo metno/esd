@@ -147,6 +147,9 @@ NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,lplot=FALSE,
                              verbose=FALSE) {
   if (verbose) print("NearestNeighbour")
   distance <- mapply(function(x,y) distAB(x,y,lon1,lat1),lon2,lat2)
+  n <- length(lon1)
+  #angle <- atan2(lat[2:n]-lat[1:(n-1)],lon[2:n]-lon[1:(n-1)])*180/pi+90
+  #browser()
   if (length(lon1)==1) {
     num <- as.numeric(which(rank(distance)==1))
   } else {
