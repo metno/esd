@@ -9,6 +9,8 @@
 \alias{map.field}
 \alias{map.corfield}
 \alias{map.cca}
+\alias{map.events}
+\alias{map.trajectory}
 \alias{map.mvr}
 \alias{map.pca}
 \alias{map.trend}
@@ -116,6 +118,16 @@ map.cca(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                cex=2,show=TRUE,h=0.6, v=1,pos=0.05), colbar2= NULL,
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,...)
+
+map.trajectory(x,it=NULL,is=NULL,type="paths",
+               projection="sphere",verbose=TRUE,...)
+
+map.events(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
+           param=NA,alpha=0.5,col="black",pch=13,lwd=4,cex=2,
+           colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
+           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+           projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
+           verbose=FALSE,...)
 
 lonlatprojection(x,it=NULL,is=NULL,new=FALSE,projection="lonlat", 
                    xlim=NULL,ylim=NULL,zlim=NULL,n =15,

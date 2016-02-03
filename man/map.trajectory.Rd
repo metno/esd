@@ -1,7 +1,5 @@
 \name{map.trajectory}
 \alias{map.trajectory}
-\alias{map.hexbin.trajectory}
-\alias{map.sunflower.trajectory}
 \alias{sphere.trajectory}
 \alias{lonlat.trajectory}
 
@@ -12,26 +10,25 @@ are mapped with map.trajectory. The number density can be visualised
   \code{\link{scatter.hexbin}} and \code{\link{scatter.sunflower}}
   adapted to show trajectory density.}
 \usage{
-map.trajectory(x,it=NULL,is=NULL,projection="sphere",lonR=10,latR=90,
+map.trajectory(x,it=NULL,is=NULL,type="paths",projection="sphere",
+                  lonR=10,latR=90,
                   col='red',colmap='rainbow',alpha=0.3,pfit=FALSE,
                   main=NULL,xlim=NULL,ylim=NULL,new=TRUE)
 lonlat.trajectory <- function(x,xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
                   lty=1,lwd=1,main=NULL,new=TRUE)
 sphere.trajectory <- function(x,xlim=NULL,ylim=NULL,col='blue',alpha=0.1,
                   lty=1,lwd=1,lonR=0,latR=90,main=NULL,new=TRUE)
-map.hexbin.trajectory <- function(x,dx=6,dy=2,Nmax=NULL,
-                  xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
-                  xlim=NULL,ylim=NULL,col='red',border='firebrick4',
-                  colmap='heat.colors',scale.col=TRUE,scale.size=TRUE,
-                  main=NULL,new=TRUE)
-map.sunflower.trajectory <- function(x,dx=6,dy=2,petalsize=7,
-                  xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
-                  xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6,
-                  main=NULL,new=TRUE)
+map.density.trajectory(x,dx=4,dy=2,it=NULL,is=NULL,
+      colbar=list(pal='precip',rev=TRUE,breaks=NULL,cex=2,h=0.6,v=1),
+      projection='sphere',latR=90,lonR=10,gridlines=FALSE,...)
 }
 \arguments{
   \item{x}{the trajectory object to be plotted.}
-  \item{x}{col}
+  \item{it}{A list or data.frame providing time index, e.g. month}
+  \item{is}{A list or data.frame providing space index, e.g. station record}
+  \item{type}{type of map: 'paths' shows trajectories; 'density' shows
+    the spatial density of the trajectories)}
+  \item{col}{color of trajectories}
   \item{colmap}{Colour scales, either as an output from \code{\link{rbg}}
     or a single character string 'bwr' (blue-white-red) or 'rwb'
     ('red-white-blue')}
@@ -48,7 +45,7 @@ map.sunflower.trajectory <- function(x,dx=6,dy=2,petalsize=7,
   \item{alpha}{factor modifying the opacity alpha; typically in [0,1]}
 }
 \seealso{
-  \code{\link{map}},\code{\link{scatter.hexbin}},\code{\link{scatter.sunflower}}
+  \code{\link{map} \link{map.events}}
 }
 
 \author{K. Parding}

@@ -4,6 +4,8 @@
 \alias{subset.eof}
 \alias{subset.pca}
 \alias{subset.cca}
+\alias{subset.events}
+\alias{subset.trajectory}
 \alias{subset.trend}
 \alias{subset.corfield}
 \alias{subset.ds}
@@ -28,7 +30,9 @@ subset.mvr(x,it=NULL,is=NULL)
 subset.pca(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE)
 subset.trend(x,it=NULL,is=NULL)
 subset.corfield(x,it=NULL,is=NULL)
-subset.comb(x,it=NULL,is=NULL) 
+subset.comb(x,it=NULL,is=NULL)
+subset.events(x,it=NULL,is=NULL) 
+subset.trajectory(x,it=NULL,is=NULL) 
 subset.field(x,it=NULL,is=NULL)
 subset.spell(x,is=NULL,it=NULL) 
 subset.ds(x,it=NULL,is=NULL)
