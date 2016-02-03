@@ -874,17 +874,17 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.5,col="black",pch=4,lwd=3,
+                       param=NA,alpha=0.5,col="black",pch=4,lwd=3,cex=2,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       projection="lonlat",new=TRUE,verbose=TRUE,...) {
+                       projection="lonlat",new=TRUE,verbose=FALSE,...) {
   if(verbose) print("map.events")
   x <- subset(x,it=it,is=is,verbose=verbose)
-
+  
   if (is.null(is$lon) & !is.null(xlim)) {
     is$lon <- xlim
   } else if (is.null(is$lon) & is.null(xlim)) {
-    if(dim(x)[1]>0) is$lat <- range(x[,"lon"])+c(-5,5)
+    if(dim(x)[1]>0) is$lon <- range(x[,"lon"])+c(-5,5)
   }
   if (is.null(xlim)) xlim <- is$lon
 
@@ -894,7 +894,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(dim(x)[1]>0) is$lat <- range(x[,"lat"])+c(-2,2)
   }
   if (is.null(ylim)) ylim <- is$lat
-
+  
   if (!is.null(Y)) {
     Y <- subset(Y,is=is)
   } else {
@@ -926,25 +926,26 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   } else {
     map(Y,colbar=colbar,new=new,projection=projection)
   }
-  if(param %in% colnames(x)) {
+  if(param %in% colnames(x) & dim(x)[1]>0) {
     if(verbose) print(paste("size proportional to",param))
     cex <- 1+(x[,param]-min(x[,param],na.rm=TRUE))/
-        diff(range(x[,param],na.rm=TRUE))*2
+        diff(range(x[,param],na.rm=TRUE))*cex
   }
-  #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
-  #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
   
-  if(length(x)>0)
-  cols <- adjustcolor(col,alpha=alpha)
-  if(projection=="lonlat") {
-    points(x[,"lon"],x[,"lat"],col=cols,cex=cex,pch=pch,lwd=lwd)
-  } else {
-    theta <- pi*x[,"lon"]/180
-    phi <- pi*x[,"lat"]/180
-    x <- sin(theta)*cos(phi)
-    y <- cos(theta)*cos(phi)
-    z <- sin(phi)
-    points(x[y>0],z[y>0],col=cols,cex=cex,pch=pch,lwd=lwd)
+  if(dim(x)[1]>0) {
+    #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
+    #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
+    cols <- adjustcolor(col,alpha=alpha)
+    if(projection=="lonlat") {
+      points(x[,"lon"],x[,"lat"],col=cols,cex=cex,pch=pch,lwd=lwd)
+    } else {
+      theta <- pi*x[,"lon"]/180
+      phi <- pi*x[,"lat"]/180
+      x <- sin(theta)*cos(phi)
+      y <- cos(theta)*cos(phi)
+      z <- sin(phi)
+      points(x[y>0],z[y>0],col=cols,cex=cex,pch=pch,lwd=lwd)
+    }
   }
 }
 
