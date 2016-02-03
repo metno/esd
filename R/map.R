@@ -874,10 +874,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.5,col="black",pch=4,lwd=3,cex=2,
+                       param=NA,alpha=0.5,col="black",pch=13,lwd=4,cex=2,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       projection="lonlat",new=TRUE,verbose=FALSE,...) {
+                       projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
+                       verbose=FALSE,...) {
   if(verbose) print("map.events")
   x <- subset(x,it=it,is=is,verbose=verbose)
   
@@ -894,11 +895,9 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(dim(x)[1]>0) is$lat <- range(x[,"lat"])+c(-2,2)
   }
   if (is.null(ylim)) ylim <- is$lat
-  
+
   if (!is.null(Y)) {
     Y <- subset(Y,is=is)
-  } else {
-    Y <- slp.ERAINT(lon=is$lon,lat=is$lat)
   }
   if(length(Y)>0) {
     if(dim(x)[1]==0) {
@@ -922,9 +921,13 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
 
   if(length(Y)==0) {
     data(Oslo)
-    map(Y,type="n",xlim=is$lon,ylim=is$lat,new=new,projection=projection)
+    map(Y,type="n",xlim=is$lon,ylim=is$lat,new=new,projection=projection,
+        xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
   } else {
-    map(Y,colbar=colbar,new=new,projection=projection)
+    if (is.null(lonR)) lonR <- mean(lon(Y))
+    if (is.null(latR)) latR <- mean(lat(Y))
+    map(Y,colbar=colbar,new=new,projection=projection,xlim=xlim,ylim=ylim,
+        latR=latR,lonR=lonR)
   }
   if(param %in% colnames(x) & dim(x)[1]>0) {
     if(verbose) print(paste("size proportional to",param))
@@ -939,11 +942,16 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(projection=="lonlat") {
       points(x[,"lon"],x[,"lat"],col=cols,cex=cex,pch=pch,lwd=lwd)
     } else {
+      if (is.null(lonR)) lonR <- mean(x[,"lon"])
+      if (is.null(latR)) latR <- mean(x[,"lat"])
       theta <- pi*x[,"lon"]/180
       phi <- pi*x[,"lat"]/180
       x <- sin(theta)*cos(phi)
       y <- cos(theta)*cos(phi)
       z <- sin(phi)
+      a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
+      a <- rotM(x=latR,y=0,z=0) %*% a
+      x <- a[1,]; y <- a[2,]; z <- a[3,]
       points(x[y>0],z[y>0],col=cols,cex=cex,pch=pch,lwd=lwd)
     }
   }
