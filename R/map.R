@@ -873,21 +873,79 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 
-map.events <- function(x,it=NULL,is=NULL,param=NA,alpha=0.5,col="blue",pch=19,
-                       new=TRUE,verbose=TRUE,...) {
+map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
+                       param=NA,alpha=0.5,col="black",pch=4,lwd=3,
+                       colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
+                        pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                       projection="lonlat",new=TRUE,verbose=TRUE,...) {
   if(verbose) print("map.events")
-  y <- subset(x,it=it,is=is,verbose=verbose)
-  lon <- y[,"lon"]
-  lat <- y[,"lat"]
-  data(Oslo)
-  map(Oslo,type="n",xlim=range(lon)+c(-5,5),ylim=range(lat)+c(-2,2),new=new)
+  x <- subset(x,it=it,is=is,verbose=verbose)
+
+  if (is.null(is$lon) & !is.null(xlim)) {
+    is$lon <- xlim
+  } else if (is.null(is$lon) & is.null(xlim)) {
+    if(dim(x)[1]>0) is$lat <- range(x[,"lon"])+c(-5,5)
+  }
+  if (is.null(xlim)) xlim <- is$lon
+
+  if (is.null(is$lat) & !is.null(ylim)) {
+    is$lat <- ylim
+  } else if (is.null(is$lat) & is.null(ylim)) {
+    if(dim(x)[1]>0) is$lat <- range(x[,"lat"])+c(-2,2)
+  }
+  if (is.null(ylim)) ylim <- is$lat
+
+  if (!is.null(Y)) {
+    Y <- subset(Y,is=is)
+  } else {
+    Y <- slp.ERAINT(lon=is$lon,lat=is$lat)
+  }
+  if(length(Y)>0) {
+    if(dim(x)[1]==0) {
+      Y <- subset(Y,it=it)
+    } else {
+      ty <- index(Y)
+      if (inherits(Y,"month")) {
+        tx <- round(x[,"date"]*1E-2)*1E2+1
+        ty <- as.numeric(strftime(ty,"%Y%m%d"))
+      } else if (inherits(ty,"Date")) {
+        tx <- x[,"date"]
+        ty <- as.numeric(strftime(ty,"%Y%m%d"))
+      } else if (inherits(ty,"POSIXt")) {
+        tx <- paste(x[,"date"],x[,"time"],sep="")
+        ty <- as.numeric(strftime(ty,"%Y%m%d%H"))
+      }
+      ii <- is.element(ty,tx)
+      Y <- subset(Y,it=ii)
+    }
+  }
+
+  if(length(Y)==0) {
+    data(Oslo)
+    map(Y,type="n",xlim=is$lon,ylim=is$lat,new=new,projection=projection)
+  } else {
+    map(Y,colbar=colbar,new=new,projection=projection)
+  }
   if(param %in% colnames(x)) {
     if(verbose) print(paste("size proportional to",param))
-    cex <- 1+(y[,param]-min(y[,param],na.rm=TRUE))/diff(range(y[,param],na.rm=TRUE))*2
+    cex <- 1+(x[,param]-min(x[,param],na.rm=TRUE))/
+        diff(range(x[,param],na.rm=TRUE))*2
   }
-  mn <- month(strptime(x[,"date"],format="%Y%m%d"))
-  cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
-  points(lon,lat,col=cols,cex=cex,pch=pch)
+  #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
+  #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
+  
+  if(length(x)>0)
+  cols <- adjustcolor(col,alpha=alpha)
+  if(projection=="lonlat") {
+    points(x[,"lon"],x[,"lat"],col=cols,cex=cex,pch=pch,lwd=lwd)
+  } else {
+    theta <- pi*x[,"lon"]/180
+    phi <- pi*x[,"lat"]/180
+    x <- sin(theta)*cos(phi)
+    y <- cos(theta)*cos(phi)
+    z <- sin(phi)
+    points(x[y>0],z[y>0],col=cols,cex=cex,pch=pch,lwd=lwd)
+  }
 }
 
 ## map.events <- function(x,it=NULL,is=NULL,dx=2,dy=2,dt="year",
