@@ -9,7 +9,7 @@ url2='http://www.cpc.ncep.noaa.gov/data/indices/sstoi.indices') {
   if (!is.null(url2)) {
     y <- read.table(url2,header=TRUE)
     y <- zoo(y$ANOM.3,order.by=as.Date(paste(y$YR,y$MON,'01',sep='-')))
-    y <- as.station(y,loc='Nino3.4',param='Nino3.4',
+    y <- as.station(y,loc='Nino3.4',param='Nino3.4',lon=c(-170,-120),lat=c(-5,5),
                     unit='dimensionless')
     nino3.4 <- combine(nino3.4,y)                
   }
