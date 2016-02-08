@@ -137,7 +137,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     ok1 <- pcent1 < pmax
     if(!cyclones) ok1 <- pcent1 > pmax
     del1[!ok1] <- FALSE
-    ok2 <- pcent2 > pmax
+    ok2 <- pcent2 < pmax
     if(!cyclones) ok2 <- pcent2 > pmax
     del2[!ok2] <- FALSE
     ## Clear temporary objects from working memory
@@ -287,6 +287,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     closed <- rep(0,length(date))
     ok <- rep(TRUE,length(date))
     for (i in seq(1,length(date))) {
+      ##print(as.character(date[i]))
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
       infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
@@ -315,11 +316,13 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       }
       ilon <- ilon[!is.na(ilon)]
       ilat <- ilat[!is.na(ilat)]
-      #dpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
+      #dslpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
       dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-      if (!all(dpi>dpmin)) {
-        ok[i] <- FALSE
-      } else {
+      ##browser()
+      if ( (cyclones & all(dpi>dpmin) &
+            pcent[i] < mean((0.5*(px+py)[t==date[i],,])) ) |
+           (!cyclones & all(dpi < -dpmin) &
+            pcent[i] > mean((0.5*(px+py)[t==date[i],,])) )) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
         fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
         vg <- dpi/(fi*rho)
@@ -329,6 +332,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
         max.speed[i] <- mean(v.grad)
         max.vg[i] <- mean(vg)
         closed[i] <- floor(length(ilon)/4)
+      } else {
+        ok[i] <- FALSE
       }
     }
 
