@@ -973,7 +973,6 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 
   if (length(it)==0) it <- NULL
   if (length(is)==0) is <- NULL
-  browser()
   ii <- rep(TRUE,dim(x)[1])
   if(!is.null(it)) {
     dt <- x[,"date"]*1E2 + x[,"time"]
