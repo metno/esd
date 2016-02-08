@@ -8,7 +8,8 @@ Track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,nmax=31*24,
   x <- subset(x,it=it,is=is)
   yrmn <- as.yearmon(strptime(x["date"][[1]],"%Y%m%d"))
   d <- sort(unique(strptime(paste(x["date"][[1]],x["time"][[1]]),"%Y%m%d %H")))
-  dh <- mean(as.numeric(diff(d,units="hours")))
+  dh <- mean(as.numeric(difftime(d[2:length(d)],
+                                 d[1:(length(d)-1)],units="hours")))
   if (length(unique(yrmn))>1) {
     x.tracked <- NULL
     if (progress) pb <- txtProgressBar(style=3)
@@ -60,24 +61,38 @@ Track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,nmax=31*24,
       }
       t1 <- Sys.time()
       if (progress) pb <- txtProgressBar(style=3)
-      for (i in 1:(length(d)-1)) {
-        #if (verbose) print(i)
+      nnmax <- 0
+      for (i in 2:(length(d)-1)) {
+        if (verbose) print(i)
         if (progress) setTxtProgressBar(pb,i/(length(d)-1))
-        nn <- NearestNeighbour(lons[datetime==d[i]],lats[datetime==d[i]],
-                 lons[datetime==d[i+1]],lats[datetime==d[i+1]],dmax=dmax*dh)
-        num.i <- num[datetime==d[i]][nn[,1]]
-        num.i[is.na(num.i)] <- 1:sum(is.na(num.i)) + max(num,na.rm=TRUE)
-        num[datetime==d[i+1]] <- num.i
-        dx[datetime==d[i+1]] <- nn[,2]
+        nn <- NearestNeighbour(
+            step1=list(lon=lons[datetime==d[i-1]],lat=lats[datetime==d[i-1]],
+                       num=num[datetime==d[i-1]],dx=dx[datetime==d[i-1]]),
+            step2=list(lon=lons[datetime==d[i]],lat=lats[datetime==d[i]],
+                       num=num[datetime==d[i]],dx=dx[datetime==d[i]]),
+            step3=list(lon=lons[datetime==d[i+1]],lat=lats[datetime==d[i+1]],
+                       num=num[datetime==d[i+1]],dx=dx[datetime==d[i+1]]),
+                 dmax=dmax*dh,nnmax=nnmax)
+        num[datetime==d[i-1]] <- nn$step1$num
+        num[datetime==d[i]] <- nn$step2$num
+        num[datetime==d[i+1]] <- nn$step3$num
+        dx[datetime==d[i]] <- nn$step2$dx
+        dx[datetime==d[i+1]] <- nn$step3$dx
+        nnmax <- max(c(nnmax,nn$nnmax),na.rm=TRUE)
       }
       t2 <- Sys.time()
       if (verbose) print(paste('Nearest neighbour tracking took',
                 round(as.numeric(t2-t1,units="secs")),'s'))
     } else {
       num <- x["trajectory"][[1]]
-      dx <- x["distance"][[1]]
+      if("distance" %in% colnames(x)) {
+        dx <- x["distance"][[1]]
+      } else {
+        dx <- rep(NA,length(x["trajectory"][[1]]))
+      }
       i.start <- 1
     }
+    browser()
     tracklen <- data.frame(table(num))
     if (!is.null(nmax)) {
       while (any(tracklen$Freq>nmax/dh)) {
@@ -143,17 +158,99 @@ Track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,nmax=31*24,
   }
 }
 
-NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,lplot=FALSE,
-                             verbose=FALSE) {
+angle <- function(lon1,lat1,lon2,lat2) {
+  a <- 360 - (atan2(lat2-lat1,lon2-lon1)*(180/pi) + 360) %% 360
+  a[a>180] <- 360-a[a>180]
+  return(a)
+  #return(atan2(lat2-lat1,lon2-lon1)*180/pi+90)
+}
+
+## adjust maximum distance based on angle of direction: max eastward, min westward 
+adjustdmax <- function(dmax,a) {
+  a[a>180] <- 360-a
+  a <- abs(a)
+  return(dmax*(1.3-0.2*(a/180)-0.8*(a/180)**2))
+}
+
+NearestNeighbour <- function(step1,step2,step3,nnmax=0,damax=90,dmax=1E6,lplot=FALSE,verbose=FALSE) {
   if (verbose) print("NearestNeighbour")
-  distance <- mapply(function(x,y) distAB(x,y,lon1,lat1),lon2,lat2)
+  if (is.na(nnmax) & !all(is.na(step1$num))) {
+    nnmax <- max(step1$num,na.rm=TRUE)
+  } else if (is.na(nnmax) & all(is.na(step1$num))) {
+    nnmax <- 0
+  }
+  if (any(is.na(step1$num))) {
+    step1$num[is.na(step1$num)] <- seq(sum(is.na(step1$num))) + nnmax
+  }
+  n1 <- length(step1$lon)
+  n2 <- length(step2$lon)
+  n3 <- length(step3$lon)
+  d23 <- mapply(function(x,y) distAB(x,y,step3$lon,step3$lat),step2$lon,step2$lat)
+  a23 <- mapply(function(x,y) angle(x,y,step3$lon,step3$lat),step2$lon,step2$lat)
+  dmax23 <- adjustdmax(dmax,a23)
+  a23[d23>dmax23] <- NA
+  d12 <- mapply(function(x,y) distAB(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
+  a12 <- mapply(function(x,y) angle(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
+  dmax12 <- adjustdmax(dmax,a12)
+  a12[d12>dmax12] <- NA
+  if(!all(is.na(a12)) & !all(is.na(a23))) {
+    da <- sapply(a12,function(x) abs(x-a23))
+    da[da > damax & !is.na(da)] <- NA
+    j1 <- ceiling(seq(dim(da)[2])/n2)
+    j2 <- rep(seq(n2),n1)
+    i3 <- rep(seq(n3),n2)
+    if(any(!is.na(step2$num))) {
+      for(k in unique(c(step1$num,step2$num))) {
+        if(k %in% step1$num  & k %in% step2$num) {
+          nok <- (j1==which(step1$num==k) & !j2==which(step2$num==k)) |
+               (j1!=which(step1$num==k) & j2==which(step2$num==k))
+        } else if (k %in% step1$num) {
+          nok <- j1==which(step1$num==k)
+        } else {
+          nok <- j2==which(step2$num==k)
+        }
+        da[,nok] <- NA
+      }
+    }
+    rank.j1 <- matrix(rep(NA,length(da)),dim(da))
+    rank.j2 <- matrix(rep(NA,length(da)),dim(da))
+    rank.i3 <- matrix(rep(NA,length(da)),dim(da))
+    for(j in unique(j1)) rank.j1[,j1==j] <- rank(da[,j1==j])
+    for(j in unique(j2)) rank.j2[,j2==j] <- rank(da[,j2==j])
+    for(i in unique(i3)) rank.i3[i3==i,] <- rank(da[i3==i,])
+    rank.j1[is.na(da)] <- NA
+    rank.j2[is.na(da)] <- NA
+    rank.i3[is.na(da)] <- NA
+    rank.all <- rank.j1 + rank.j2 + rank.i3
+    while(any(!is.na(rank.all))) {
+      ij <- which(rank.all==min(rank.all,na.rm=TRUE),arr.ind=TRUE)
+      step2$num[j2[ij[2]]] <- step1$num[j1[ij[2]]]
+      step3$num[i3[ij[1]]] <- step1$num[j1[ij[2]]]
+      step2$dx[j2[ij[2]]] <- d12[j2[ij[2]],j1[ij[2]]]
+      step3$dx[i3[ij[1]]] <- d23[i3[ij[1]],j2[ij[2]]]
+      rank.all[,j1==j1[ij[2]]] <- NA
+      rank.all[,j2==j2[ij[2]]] <- NA
+      rank.all[i3==i3[ij[1]],] <- NA
+    }
+  }
+  if(all(is.na(step2$num))) {
+    step2$num[is.na(step2$num)] <- seq(sum(is.na(step2$num))) + max(step1$num,na.rm=TRUE)
+  } else if (any(is.na(step2$num))) {
+    step2$num[is.na(step2$num)] <- seq(sum(is.na(step2$num))) + max(step2$num,na.rm=TRUE)    
+  }
+  return(list(step1=step1,step2=step2,step3=step3,
+              nnmax=max(c(step1$num,step2$num,step3$num),na.rm=TRUE)))
+}
+
+NearestNeighbour_org <- function(lon1,lat1,lon2,lat2,dmax=1E6,
+                             lplot=FALSE,verbose=FALSE) {
+  if (verbose) print("NearestNeighbour")
+  distance <- mapply(function(x,y) distAB(x,y,lon2,lat2),lon1,lat1)
   n <- length(lon1)
-  #angle <- atan2(lat[2:n]-lat[1:(n-1)],lon[2:n]-lon[1:(n-1)])*180/pi+90
-  #browser()
-  if (length(lon1)==1) {
+  if (n==1) {
     num <- as.numeric(which(rank(distance)==1))
   } else {
-    num <- as.numeric(apply(distance,2,function(x) which(rank(x)==1)))
+    num <- as.numeric(apply(distance,1,function(x) which(rank(x)==1)))
   }
   for (i in which(is.na(num))) {
     num.i <- which(rank(distance[,i])==min(rank(distance[,i])))
@@ -166,7 +263,7 @@ NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,lplot=FALSE,
   if(length(num)==1) {
     d.num <- distance[num]
   } else {
-    d.num <- sapply(1:length(num),function(x) distance[num[x],x])
+    d.num <- sapply(1:length(num),function(x) distance[x,num[x]])
   }
   if (any(d.num>dmax)) {
     num[d.num>dmax] <- NA
