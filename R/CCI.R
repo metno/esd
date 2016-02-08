@@ -124,7 +124,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   pcent2 <- 0.5*(px[lows2]+py[lows2])
   strength2 <- rank(pcent2)
   if (!cyclones) strength2 <- rank(-pcent2)
-
+  
   ## Keep only cyclones that are deeper than pmax
   del1 <- rep(TRUE,length(date1))
   del2 <- rep(TRUE,length(date2))
@@ -226,7 +226,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   ## Add the two groups of cyclones together,
   ## keep track of which is which with the quality flag qf
   lows <- lows1 | lows2
-
   if(sum(lows)==0) {
     print("No cyclones identified!")
     X <- data.frame(date=NA,time=NA,lon=NA,lat=NA,pcent=NA,
@@ -318,11 +317,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       ilat <- ilat[!is.na(ilat)]
       #dslpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
       dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-      ##browser()
-      if ( (cyclones & all(dpi>dpmin) &
-            pcent[i] < mean((0.5*(px+py)[t==date[i],,])) ) |
-           (!cyclones & all(dpi < -dpmin) &
-            pcent[i] > mean((0.5*(px+py)[t==date[i],,])) )) {
+      if (all(dpi>dpmin) &
+         ((cyclones & pcent[i]<mean((0.5*(px+py)[t==date[i],,]))) |
+         (!cyclones & pcent[i]>mean((0.5*(px+py)[t==date[i],,]))))) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
         fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
         vg <- dpi/(fi*rho)
@@ -340,7 +337,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
     max.dslp <- max.dslp*1E-2*1E3
     if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
-  
+    
     #ok <- rep(TRUE,length(date))
     if(!is.null(rmin)) ok <- ok & radius>=rmin
     if(!is.null(rmax)) ok <- ok & radius<=rmax
@@ -381,7 +378,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
       dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
       dev.new()
-      image(xi,yi,zi,main=date[i],col=colscal(col="t2m",n=12,rev=FALSE),
+      image(xi,yi,zi,main=date[i],col=colscal(col="bwr",n=12,rev=FALSE),
           xlab="lon",ylab="lat",breaks=seq(940,1060,10))
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(940,1010),nlevels=6)
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1060),nlevels=5)
