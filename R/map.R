@@ -880,6 +880,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
   if(verbose) print("map.events")
+  #browser()
   x <- subset(x,it=it,is=is,verbose=verbose)
   
   if (is.null(is$lon) & !is.null(xlim)) {

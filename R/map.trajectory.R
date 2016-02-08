@@ -211,12 +211,12 @@ sphere.trajectory <- function(x,
 
 
 map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
-      n=150,colbar=list(pal='precip',rev=TRUE,breaks=NULL,cex=2,h=0.6,v=1),
+      colbar=list(pal='precip',rev=TRUE,breaks=NULL,cex=2,h=0.6,v=1),
       projection='sphere',latR=90,lonR=10,gridlines=FALSE,...) {
   stopifnot(inherits(x,c("trajectory","field")))
   x <- subset(x,it=it,is=is)
   if (!inherits(x,"field")) {
-    X <- trajectory2field(x,dt='year',dx=dx,dy=dy,n=n)
+    X <- trajectory2field(x,dt='year',dx=dx,dy=dy)
   } else X <- x
   map(X,colbar=colbar,projection=projection,latR=latR,
       lonR=lonR,gridlines=gridlines,...)
