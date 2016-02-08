@@ -973,7 +973,7 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 
   if (length(it)==0) it <- NULL
   if (length(is)==0) is <- NULL
-  
+  browser()
   ii <- rep(TRUE,dim(x)[1])
   if(!is.null(it)) {
     dt <- x[,"date"]*1E2 + x[,"time"]
@@ -981,15 +981,17 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     if(verbose) print(paste('length of t',length(t)))
     
     is.datetime <- function(x) all(!is.months(x) &
-                            (is.character(x) & !grepl("-",x) &
-                             levels(factor(nchar(x)))==10) |
-                            (is.numeric(x) & levels(factor(nchar(x)))==10) |
+                            (is.character(x) &
+                             !grepl("-",x) &
+                             all(levels(factor(nchar(x)))==10)) |
+                            (is.numeric(x) &
+                             all(levels(factor(nchar(x)))==10)) |
                             inherits(x,c("POSIXt")))
     is.dates <- function(x) all(!is.months(x) & !is.datetime(x) & 
                             (is.character(x) &
-                            (levels(factor(nchar(x)))==10) |
-                            levels(factor(nchar(x)))==8) |
-                            (is.numeric(x) & levels(factor(nchar(x)))==8) |
+                            all(levels(factor(nchar(x)))==10) |
+                            all(levels(factor(nchar(x)))==8)) |
+                            (is.numeric(x) & all(levels(factor(nchar(x)))==8)) |
                             inherits(x,"Date"))
     is.years <- function(x) all(!is.months(x) & 
                             is.numeric(x) & levels(factor(nchar(x)))==4)
