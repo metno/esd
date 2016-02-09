@@ -178,3 +178,38 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
 
 #y <- station.midas(lon=c(-6,-2),lat=c(50,51.5))
 y <- station.midas(lon=c(-5,-3),lat=c(50,51))
+
+## Combine all the list elements representing individual years into one zoo-object
+## prepare the metadata
+locations <- as.character(unlist(lapply(y,loc)))
+lons <- as.numeric(unlist(lapply(y,lon)))
+lats <- as.numeric(unlist(lapply(y,lat)))
+alts <- as.numeric(unlist(lapply(y,alt)))
+stationIDs <- as.integer(unlist(lapply(y,stid)))
+locations <- locations[!duplicated(locations)]
+lons <- lons[!duplicated(lons)]
+lats <- lats[!duplicated(lats)]
+alts <- alts[!duplicated(alts)]
+stationIDs <- stationIDs[!duplicated(stationIDs)]
+stations <- table(unlist(lapply(y,stid)))
+n <- as.numeric(stations)
+stids <- rownames(stations)[n > 40]
+
+for (i in 1:length(y)) {
+  z <- y[[i]]
+  im <- is.element(stid(z),stids)
+  mi <- !is.element(stids,stid(z))
+  iM <- is.element(stationIDs,stids[mi])
+  nm <- length(stids) - sum(im)
+  ## Extract the stations with valid data: 
+  x <- subset(z,is=im)
+  ## make a station objects with the remaining data containng NAs.
+  if (nm > 0) {
+    xm <- zoo(matrix(rep(NA,dim(x)[1]*nm),dim(x)[1],nm),order.by=index(x))
+    xm <- as.station(xm,param='precip',unit='mm/day',stid=stationIDs[iM],
+                     loc=locations[iM],lon=lons[iM],lat=lats[iM],alt=alts[iM])
+    x <- combine.stations(x,xm)
+  }
+  
+  if (i==1) X <- x else X <- combine(X,x)
+}

@@ -77,7 +77,7 @@ combine.station <- function(...,all=TRUE) {
         Z <- args[[i]]
                                         #print(class(Z))
         if (inherits(Z,'station'))
-            stid[i] <- attr(Z,'station_id')
+            stid[i] <- attr(Z,'station_id')[i]
         else allstations <- FALSE
     }
                                         #print(allstations)
