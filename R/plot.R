@@ -1468,17 +1468,22 @@ plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
     }
   }
 
-plot.nevents <- function(x,verbose=FALSE,...) {
+plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,...) {
   # Plot the results from 
   if (verbose) print('plot.nevents')
   par(bty='n')
-  if (is.T(attr(x,'observation')))
-    col <- c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
-         rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)) else
-    col <- c(rgb(0.3,0.3,0.6,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.5,0.5,0.7,0.5),
-         rgb(0.6,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.8,0.5,0.8,0.5))
-  plot.zoo(x,plot.type='single',lwd=5,main=loc(x),
-       xlab="",ylab=attr(x,'info'),col=col,...)
+  if (is.null(main)) main <- loc(x)
+  if (is.null(xlab)) xlab <- ""
+  if (is.null(ylab)) ylab <- attr(x,'info')
+  if (is.null(col)) {
+    if (is.T(attr(x,'observation')))
+      col <- c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
+               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)) else
+      col <- c(rgb(0.3,0.3,0.6,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.5,0.5,0.7,0.5),
+               rgb(0.6,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.8,0.5,0.8,0.5))
+  }
+  plot.zoo(x,plot.type='single',lwd=5,main=main,
+       xlab=xlab,ylab=ylab,col=col,...)
   grid()
   points(attr(x,'observation'),pch=19)
   lines(attr(x,'nwd.pre'),col=rgb(0.5,0.5,0.5,0.5))
