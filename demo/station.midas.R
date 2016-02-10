@@ -242,6 +242,7 @@ for (i in 1:length(y)) {
                      cntr=rep(cntr(x)[1],sum(iM)))
     x <- combine.stations(x,xm)
   }
+  x <- sort(x)
   print(paste(i,'sum(im)=',sum(im),'nm=',nm,'nm+sum(im)',nm+sum(im)))
   print(loc(x))
   

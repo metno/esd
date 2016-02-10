@@ -42,7 +42,7 @@ subset.dsensemble(x,it=NULL,is=NULL)
 subset.zoo(x,it=NULL)
 subset.trajectory(x,it=NULL,is=NULL)
 matchdate(x,it)
-sort.station(x,is)
+sort.station(x,is=NULL,decreasing=TRUE)
 }
 \arguments{
 \item{x}{Data object from which the subset is taken}

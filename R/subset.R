@@ -1087,7 +1087,8 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 }
 
 ## Routine for sorting the order of station series.
-sort.station <- function(x,is) {
+sort.station <- function(x,is=NULL,decreasing=TRUE) {
+  if (is.null(is)) is <- order(stid(x),decreasing=decreasing)
   y <- zoo(x)[,is]
   y <- attrcp(x,y)
   attr(y,'station_id') <- stid(x)[is]
