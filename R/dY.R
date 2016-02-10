@@ -11,7 +11,7 @@
 #slp.dx <- dX(slp,verbose=TRUE)
 
 dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
-               chk.conf=1,accuracy=NULL,verbose=FALSE) {
+               chk.conf=1,accuracy=NULL,progress=TRUE,verbose=FALSE) {
 
   ## Convert the field object into 3D objects with lon-lat dimensions
   ## seperated.
@@ -58,9 +58,9 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   
   ## Loop over time steps and apply the harmonic fit to each latitude:
   t1 <- Sys.time()
-  pb <- txtProgressBar(style=3)
+  if(progress) pb <- txtProgressBar(style=3)
   for ( it in 1:nt ) {
-    setTxtProgressBar(pb,it/nt) 
+    if(progress) setTxtProgressBar(pb,it/nt) 
     ## Create a matrix containing m harmonic fits for ny latitudes:
     ## KMP 2016-02-01
     beta <- apply(z[,,it],1,function(x) {
