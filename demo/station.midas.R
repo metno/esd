@@ -74,8 +74,10 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
   if (!is.null(nmin)) i7 <-(nmin >= nyrs) else i7 <- ii
   if (!is.null(it)) i8 <- ( (year(t1) <= min(it)) & (year(t2) >= max(it)) ) else i8 <- ii
 
-  if (verbose) print(paste('#maching ID=',sum(i1),' #maching loc=',sum(i2),' #matching alt=',sum(i3),' #machning lat=',sum(i4),
-                           ' #matchin lon=',sum(i5),' #matching coyntry=',sum(i6),' #matching length=',sum(i7),' #matching interval=',sum(i8)))
+  if (verbose) print(paste('#maching ID=',sum(i1),' #maching loc=',sum(i2),
+                           ' #matching alt=',sum(i3),' #machning lat=',sum(i4),
+                           ' #matchin lon=',sum(i5),' #matching coyntry=',sum(i6),
+                           ' #matching length=',sum(i7),' #matching interval=',sum(i8)))
   ii <- i1 & i2 & i3 & i4 & i5 & i6 & i7 & i8
   stids <- stids[ii]
   locs <- locs[ii]
@@ -86,6 +88,14 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
   t1 <- t1[ii]
   t2 <- t2[ii]
   nyrs <- nyrs[ii]
+
+  ## Remove duplicated stations
+  ind <- !duplicated(stids)
+  stids <- stids[ind]; locs <- locs[ind]
+  lats <- lats[ind]; lons <- lons[ind]
+  alts <- alts[ind]; cntrs <- cntrs[ind]
+  t1 <- t1[ind]; t2 <- t2[ind]; nyrs=nyrs[ind]
+  
   if ( (plot) & (sum(ii)>0) ) {
     nt <- nyrs; nt[nt > 50] <- 50
     z <- abs(alts/max(alts,na.rm=TRUE))
@@ -165,6 +175,11 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
 
     ## Create a time seies object
     y <- zoo(t(y),order.by=as.Date(time))
+    if (sum(i0)!=dim(y)[2]) {
+      print(paste('Something wrong? sum(i0)=',sum(i0),'!= dim(y)[2]=',dim(y)[2]))
+      browser()
+    }
+    
     y <- as.station(y,param='precip',unit='mm/day',
                   loc=locs[i0],lon=lons[i0],lat=lats[i0],alt=alts[i0],stid=stids[i0],
                   src='MIDAS (UK MetOffice)',ref=ref,info=info,
@@ -193,7 +208,10 @@ alts <- alts[!duplicated(alts)]
 stationIDs <- stationIDs[!duplicated(stationIDs)]
 stations <- table(unlist(lapply(y,stid)))
 n <- as.numeric(stations)
-stids <- rownames(stations)[n > 40]
+stids <- as.integer(rownames(stations)[n > 40])
+iii <- is.element(stationIDs,stids)
+lons <- lons[iii]; lats <- lats[iii]; alts=alts[iii]
+locations <- locations[iii]; stationIDs <- stationIDs[iii]
 
 for (i in 1:length(y)) {
   z <- y[[i]]
@@ -201,6 +219,11 @@ for (i in 1:length(y)) {
   mi <- !is.element(stids,stid(z))
   iM <- is.element(stationIDs,stids[mi])
   nm <- length(stids) - sum(im)
+  ## Quality check:
+  if (sum(iM)!=nm) {
+    print(paste('Something wrong? sum(iM)=',sum(iM),'!= nm=',nm))
+    browser()
+  }
   ## Extract the stations with valid data: 
   x <- subset(z,is=im)
   ## make a station objects with the remaining data containng NAs.
@@ -210,6 +233,15 @@ for (i in 1:length(y)) {
                      loc=locations[iM],lon=lons[iM],lat=lats[iM],alt=alts[iM])
     x <- combine.stations(x,xm)
   }
+
+  if (dim(x)[2]!=length(stids)) {
+    print(paste('Something wrong? dim(x)[2]=',dim(x)[2],'!= length(stids)=',length(stids)))
+    browser()
+  }
   
-  if (i==1) X <- x else X <- combine(X,x)
+  if (i==1) X <- x else {
+    X <- combine(X,x)
+  }
 }
+
+save(file='eu-circle-torbay.rda',X)

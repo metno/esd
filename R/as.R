@@ -9,15 +9,15 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   y <- zoo(x,order.by=index(x))
 
   if (is.null(loc)) loc <- NA
-  if ((is.na(loc)) & !is.null(attr(x,'location')))
+  if ((is.na(loc[1])) & !is.null(attr(x,'location')))
     loc <- attr(x,'location')
   attr(y,'location') <- loc
   if (is.null(param)) param <- NA
-  if ((is.na(param)) & !is.null(attr(x,'variable')))
+  if ((is.na(param[1])) & !is.null(attr(x,'variable')))
     param <- attr(x,'variable')
   attr(y,'variable') <- param
   if (is.null(unit)) unit <- NA
-  if ((is.na(unit)) & !is.null(attr(x,'unit')))
+  if ((is.na(unit[1])) & !is.null(attr(x,'unit')))
     unit <- attr(x,'unit')
   attr(y,'unit') <- unit
   if (is.null(lon)) lon <- NA
@@ -29,19 +29,19 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
     lat <- attr(x,'latitude')    
   attr(y,'latitude') <- lat
   if (is.null(alt)) alt <- NA
-  if ((is.na(alt)) & !is.null(attr(x,'altitude')))
+  if ((is.na(alt[1])) & !is.null(attr(x,'altitude')))
     alt <- attr(x,'altitude')    
   attr(y,'altitude') <- alt
   if (is.null(cntr)) cntr <- NA
-  if ((is.na(cntr)) & !is.null(attr(x,'country')))
+  if ((is.na(cntr[1])) & !is.null(attr(x,'country')))
     cntr <- attr(x,'country')      
   attr(y,'country') <- cntr
   if (is.null(longname)) longname <- NA
-  if ((is.na(longname)) & !is.null(attr(x,'longname')))
+  if ((is.na(longname[1])) & !is.null(attr(x,'longname')))
     longname <- attr(x,'longname')    
   attr(y,'longname') <- longname
   if (is.null(stid)) stid <- NA
-  if ((is.na(stid)) & !is.null(attr(x,'station_id')))
+  if ((is.na(stid[1])) & !is.null(attr(x,'station_id')))
     stid <- attr(x,'station_id')    
   attr(y,'station_id') <- stid
   if (is.null(quality)) quality <- NA
@@ -50,11 +50,11 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'quality') <- quality
   attr(y,'calendar') <- 'gregorian'
   if (is.null(src)) src <- NA 
-  if ((is.na(src)) & !is.null(attr(x,'source')))
+  if ((is.na(src[1])) & !is.null(attr(x,'source')))
     src <- attr(x,'source')    
   attr(y,'source') <- src
   if (is.null(url)) url <- NA 
-  if ((is.na(url)) & !is.null(attr(x,'URL')))
+  if ((is.na(url[1])) & !is.null(attr(x,'URL')))
     url <- attr(x,'URL')    
   attr(y,'URL') <- url
   #attr(y,'history') <- 'as.station.data.frame'
@@ -64,19 +64,19 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
     type <- attr(x,'type')    
   attr(y,'type') <- type
   if (is.null(aspect)) aspect <- NA 
-  if ((is.na(aspect)) & !is.null(attr(x,'aspect')))
+  if ((is.na(aspect[1])) & !is.null(attr(x,'aspect')))
     aspect <- attr(x,'aspect')    
   attr(y,'aspect') <- aspect
   if (is.null(reference)) reference <- NA 
-  if ((is.na(reference)) & !is.null(attr(x,'reference')))
+  if ((is.na(reference[1])) & !is.null(attr(x,'reference')))
     reference <- attr(x,'reference')    
   attr(y,'reference') <- reference
   if (is.null(info)) info <- NA 
-  if ((is.na(info)) & !is.null(attr(x,'info')))
+  if ((is.na(info[1])) & !is.null(attr(x,'info')))
     info <- attr(x,'info')    
   attr(y,'info') <- info
   if (is.null(method)) method <- NA
-  if ((is.na(method)) & !is.null(attr(x,'method')))
+  if ((is.na(method[1])) & !is.null(attr(x,'method')))
     method <- attr(x,'method')    
   attr(y,'method') <- method
   #attr(y,'call') <- match.call()
