@@ -77,7 +77,7 @@ combine.station <- function(...,all=TRUE) {
         Z <- args[[i]]
                                         #print(class(Z))
         if (inherits(Z,'station'))
-            stid[i] <- attr(Z,'station_id')
+            stid[i] <- attr(Z,'station_id')[i]
         else allstations <- FALSE
     }
                                         #print(allstations)
@@ -172,7 +172,7 @@ combine.stations <- function(...,all=TRUE) {
         asp <- c(asp,attr(Z,'aspect'))
     }
 
-    colnames(X) <- loc
+    if (dim(X)[2]==length(loc)) colnames(X) <- loc
     attr(X,'location') <- loc
     attr(X,'country') <- cn
     attr(X,'station_id') <- ID

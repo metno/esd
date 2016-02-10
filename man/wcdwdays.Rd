@@ -16,20 +16,23 @@ station data. \code{nwetdays} estimates the number of days per year with
 precipitation amount exceeding a threshold values.
 }
 \usage{
-coldwinterdays(x,dse=NULL,it='djf',threshold=0,
+coldwinterdays(x,y=NULL,dse=NULL,it='djf',threshold=0,
                verbose=FALSE,plot=TRUE,nmin=90,...)
-coldspells(x,dse=NULL,it='jja',threshold=0,
+coldspells(x,y=NULL,dse=NULL,it='jja',threshold=0,
                verbose=FALSE,plot=TRUE,nmin=90,...)
-hotsummerdays(x, dse = NULL, it = "jja", threshold = 30,
+hotsummerdays(x, y=NULL,dse = NULL, it = "jja", threshold = 30,
                verbose = FALSE, plot = TRUE)
-heatwavespells(x,dse=NULL,it='jja',threshold=30,
+heatwavespells(x,y=NULL,dse=NULL,it='jja',threshold=30,
                verbose=FALSE,plot=TRUE,...)
-nwetdays(x,dse=NULL,threshold=10,
+nwetdays(x,y=NULL,dse=NULL,threshold=10,
          FUN='mu',verbose=FALSE,plot=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{station object}
+  \item{x}{station object, e.g. the temperature. Matches the element
+    used in the dsensemble object 'dse'}
+  \item{y}{station object which may be some statistics with dependency
+    to x, e.g. snow depth.}
 %%     ~~Describe \code{x} here~~
   \item{dse}{a dsensembel object. If NULL, then run DSensemble}
 %%     ~~Describe \code{dse} here~~

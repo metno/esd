@@ -72,7 +72,7 @@ DS.default <- function(y,X,mon=NULL,
     if (verbose)  {print('index(y) before removing missing values:'); print(index(y))}
     y <- subset(y,it=is.finite(coredata(y)))
     W <- attr(X,'eigenvalues')
-    cls <- class(X)
+    cls <- c(class(y)[1],class(X))
  
     if (verbose) print('Ensure matching time scale')
     if (verbose) {print('index(y) before sametimescale:'); print(index(y))}
@@ -224,7 +224,7 @@ DS.default <- function(y,X,mon=NULL,
     attr(ds,'history.predictand') <- attr(y0,'history')
     attr(ds,'history') <- history.stamp(X0)
                                         #print("HERE"); print(cls)
-    class(ds) <- c("ds",cls[-1])
+    class(ds) <- c("ds",cls[-2])
     rm("y0","X0")
                                         #print("Completed")
                                         #lines(ds,col="darkred",lwd=2,lty=2)

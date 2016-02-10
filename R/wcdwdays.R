@@ -1,14 +1,17 @@
 # number of wet, cold, dry, or wet days
-coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
+coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
                            verbose=FALSE,plot=TRUE,nmin=90,...) {
-  # Estimate number of days with low temperatures
+  # Estimate number of days with low temperatures or number of days with y < threshold
   if (verbose) print('mildwinterdays')
   stopifnot(inherits(x,'station'))
+  if (is.null(y)) y <- x
   djf <- subset(x,it=it)     # Winter
+  djfy <- subset(y,it=it)     # Winter
   mam <- subset(x,it='mam')  # Spring/autumn
-  nwd1 <- annual(-djf,FUN='count',threshold=threshold,nmin=nmin)
+  mamy <- subset(y,it='mam')  # Spring/autumn
+  nwd1 <- annual(-djfy,FUN='count',threshold=threshold,nmin=nmin)
   mwd1 <- annual(djf,FUN='mean',nmin=nmin)
-  nwd2 <- annual(-mam,FUN='count',threshold=threshold,nmin=nmin)
+  nwd2 <- annual(-mamy,FUN='count',threshold=threshold,nmin=nmin)
   mwd2 <- annual(mam,FUN='mean',nmin=nmin)
 
   cal <- data.frame(x=c(coredata(mwd1),coredata(mwd2)),
@@ -17,7 +20,7 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
   ## analysis involves a interpolation more than an extrapolation
   ## since winter is expected to become more similar to spring/autumn
   dfit <- glm(y ~ x + I(x^2) + I(x^3),family='poisson',data=cal)
-
+  
   if (plot) {
     dev.new()
     par(bty='n')
@@ -92,13 +95,15 @@ coldwinterdays <- function(x,dse=NULL,it='djf',threshold=0,
 }
 
 
-hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
+hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
                           verbose=FALSE,plot=TRUE,nmin=90,...) {
     # Estimate number of days with low temperatures
   if (verbose) print('mildwinterdays')
   stopifnot(inherits(x,'station'))
+  if (is.null(y)) y <- x
   djf <- subset(x,it=it)     # summer
-  nwd1 <- annual(djf,FUN='count',threshold=threshold,nmin=nmin)
+  djf <- subset(y,it=it)     # summer
+  nwd1 <- annual(djfy,FUN='count',threshold=threshold,nmin=nmin)
   mwd1 <- annual(djf,FUN='mean',nmin=nmin)
 
   cal <- data.frame(x=c(coredata(mwd1)),
@@ -187,7 +192,7 @@ hotsummerdays <- function(x,dse=NULL,it='jja',threshold=30,
   invisible(Nwd)
 }
 
-heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
+heatwavespells <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
                            verbose=FALSE,plot=TRUE,ylab=NULL,is=1,...) {
   ## Use the downscaled temperatures from ensembles to estimate the
   ## mean length og heatwaves
@@ -196,8 +201,9 @@ heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
   
   if (verbose) print('heatwaves')
   stopifnot(inherits(x,'station'))
+  if (is.null(y)) y <- x
   ## Annual number of consequtive warm days
-  ncwd <- aggregate(subset(spell(x,threshold=threshold),is=is),
+  ncwd <- aggregate(subset(spell(y,threshold=threshold),is=is),
                     year,FUN='mean')
   
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
@@ -270,21 +276,22 @@ heatwavespells <- function(x,dse=NULL,it='jja',threshold=30,
   return(Nwd)
 }
 
-coldspells <- function(x,dse=NULL,it='djf',threshold=0,
+coldspells <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
                        verbose=FALSE,plot=TRUE,...) {
 
   ylab <- paste('mean spell duration in days: ',varid(x),
                             '< ',threshold,unit(x))
-  y <- heatwavespells(x,dse=dse,it=it,threshold=threshold,
+  y <- heatwavespells(x,y=y,dse=dse,it=it,threshold=threshold,
                       verbose=verbose,plot=plot,ylab=ylab,is=2,...)
 
   invisible(y)
 }
 
 
-nwetdays <- function(x,dse=NULL,threshold=10,
+nwetdays <- function(x,y=NULL,dse=NULL,threshold=10,
                      verbose=FALSE,plot=TRUE) {
-  nw <- annual(x,FUN='count',threshold = threshold)
+  if (is.null(y)) y <- x
+  nw <- annual(y,FUN='count',threshold = threshold)
   mu <- annual(x,FUN='wetmean')
   cal <- data.frame(x=mu,y=nw)
   dfit <- glm(y ~ x,family='poisson',data=cal)

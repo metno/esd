@@ -34,7 +34,7 @@ subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 }
 
 subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
-                                        #print("subset.eof")
+    if (verbose) print("subset.eof")
     ## browser()
     if (is.null(is) & is.null(it) & is.null(pattern)) return(x)                                    
     if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(pattern)) return(x) 
@@ -43,6 +43,7 @@ subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
     
     # Pattern extracts certain modes/patterns
     if (!is.null(pattern)) {
+      if (verbose) print(paste('Chose pattern',pattern))
       y <- x[,pattern]
       y <- attrcp(x,y)
       class(y) <- class(x)
@@ -58,6 +59,7 @@ subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (is.null(is)) is <- 1:d[length(d)] else
 
     if (is.list(is)) {
+      if (verbose) {print('Select space'); print(is)}
         if (length(is)==1) is[[2]] <- NULL
         if ( (is.null(is[[1]])) | (sum(is.finite(is[[1]])) < 2) ) is[[1]] <- c(-180,360)
         if ( (is.null(is[[2]])) | (sum(is.finite(is[[2]])) < 2) ) is[[2]] <- c(-90,90)
@@ -84,6 +86,7 @@ subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
                 stop('Check the coordinates')
             }
             X <- X[keepx,keepy,]
+            if (verbose) print(paste('New dimensions',sum(keepx),sum(keepy)))
             attr(x, "pattern") <- X
             lons[keepx] -> attr(x,'longitude')
             lats[keepy] -> attr(x,'latitude')
@@ -94,6 +97,7 @@ subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
     } 
                                         #print(it)
     if (is.null(it)) {
+      if (verbose) {print('Select time'); print(it)}
         it <- 1:d[1] 
         dates <- index(x)
         keep <- 1 : d[1]
@@ -1081,4 +1085,22 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (!is.null(is$lon)) attr(y,"lon") <- is$lon
   class(y) <- cls
   invisible(y)
+}
+
+## Routine for sorting the order of station series.
+sort.station <- function(x,is=NULL,decreasing=TRUE) {
+  if (is.null(is)) is <- order(stid(x),decreasing=decreasing)
+  y <- zoo(x)[,is]
+  y <- attrcp(x,y)
+  attr(y,'station_id') <- stid(x)[is]
+  attr(y,'location') <- loc(x)[is]
+  attr(y,'variable') <- varid(x)[is]
+  attr(y,'unit') <- unit(x)[is]
+  attr(y,'longitude') <- lon(x)[is]
+  attr(y,'latitude') <- lat(x)[is]
+  attr(y,'altitude') <- alt(x)[is]
+  attr(y,'cntr') <- cntr(x)[is]
+  attr(y,'longname') <- attr(x,'longname')[is]
+  attr(y,'history') <- history.stamp(x)
+  return(y)
 }

@@ -18,9 +18,11 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
                            n=n,verbose=verbose)
     }
   } else if (inherits(x,'field')) {
-    if (verbose) print("predictand is a field object") 
-#    y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,
-#                        n=n,verbose=verbose)
+    if (verbose) print("predictand is a field object")
+
+    if (inherits(x,'station')) 
+    y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,
+                        n=n,verbose=verbose) else 
     y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,
                         n=n,verbose=verbose)
   } else if (inherits(x,'eof')) {

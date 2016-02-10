@@ -17,6 +17,7 @@
 \alias{subset.trajectory}
 \alias{station.subset}
 \alias{matchdate}
+\alias{sort.station}
 \title{Subsetting esd objects}
 \description{
 The subset method tries to be 'intelligent', and if the list has no names, then the list contains two vectors of length 2, then this is interpreted as a region, e.g. argument \code{is = list( c(lon.min,lon.max),c(lat.min,lat.max) )}. If, on the other hand, \code{is = list( lon=1:50,lat=55:65 )}, then the function picks the longitudes and latitudes which match these. This makes it flexible so that one can pick any irregular sequence.
@@ -41,6 +42,7 @@ subset.dsensemble(x,it=NULL,is=NULL)
 subset.zoo(x,it=NULL)
 subset.trajectory(x,it=NULL,is=NULL)
 matchdate(x,it)
+sort.station(x,is=NULL,decreasing=TRUE)
 }
 \arguments{
 \item{x}{Data object from which the subset is taken}

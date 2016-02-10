@@ -364,7 +364,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
 
 
 eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE) {
-  if (verbose) {print("eof2field"); print(lon); print(lat)}
+  if (verbose) {print("eof2field"); if (!is.null(is)) print(is)}
   greenwich <- attr(x,'greenwich')
 #  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
 #  if (!is.null(lat)) lat.rng <- range(lat) else lat.rng <- NULL
@@ -374,14 +374,20 @@ eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE) {
 #    eof <- subset(x,is=is) else
     eof <- x
 #  print(c(greenwich,attr(eof,'greenwich')))
-                                        # REB 04.12.13 comment below 
+                                        # REB 04.12.13 comment below
+
   U <- attr(eof,'pattern')
-  d <- dim(U); dim(U) <- c(d[1]*d[2],d[3])
+  d <- dim(U) 
+  if (verbose) {str(U); print(d)}
+  dim(U) <- c(d[1]*d[2],d[3])
   W <- attr(eof,'eigenvalues')
   V <- coredata(eof)
   y <-U %*% diag(W) %*% t(V)
 
-  if (!anomaly) y <- y + c(attr(eof,'mean'))
+  if (!anomaly) {
+    if (verbose) print('Anomalies')
+    y <- y + c(attr(eof,'mean'))
+  }
   y <- t(y)
   y <- as.field.default(y,index(eof),
                         lon=attr(eof,'longitude'),lat=attr(eof,'latitude'),
