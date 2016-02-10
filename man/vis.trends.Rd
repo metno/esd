@@ -9,6 +9,7 @@
 vis.trends(x, unitlabel = "unit", varlabel = "", pmax = 0.01, minlen =
 15, lwd = NA, vmax = NA, new = TRUE, show.significance = TRUE, verbose =
 FALSE)
+
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
