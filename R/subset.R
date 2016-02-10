@@ -970,7 +970,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if(verbose) print("subset.events")
   cls <- class(x)
-
+  
   if (length(it)==0) it <- NULL
   if (length(is)==0) is <- NULL
   ii <- rep(TRUE,dim(x)[1])

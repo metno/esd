@@ -40,7 +40,7 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
 }
   
 lonlat.trajectory <- function(x,
-    xlim=NULL,ylim=NULL,col='blue',alpha=0.05,
+    xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
     lty=1,lwd=2,main=NULL,new=TRUE,verbose=FALSE) {
   if (verbose) print("lonlat.trajectory")
   x0 <- x
@@ -67,8 +67,8 @@ lonlat.trajectory <- function(x,
   
   matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
-  points(lons[OK,],lats[OK,],pch='.',cex=1,col=adjustcolor(col,min(1,alpha+0.2)))
-  points(lons[OK,1],lats[OK,1],pch=19,cex=0.5,col=adjustcolor(col,alpha.f=alpha))
+  points(lons[OK,],lats[OK,],pch='.',cex=0.5,col=adjustcolor(col,min(1,alpha+0.1)))
+  points(lons[OK,1],lats[OK,1],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
 
   # trajectories crossing the dateline plotted in two parts
   if (sum(!OK)>0) {
@@ -133,7 +133,7 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 
 
 sphere.trajectory <- function(x,
-    xlim=NULL,ylim=NULL,col='blue',alpha=0.05,
+    xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
     lty=1,lwd=2,lonR=0,latR=90,main=NULL,
     verbose=FALSE,new=TRUE) {
   
@@ -172,8 +172,8 @@ sphere.trajectory <- function(x,
   plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
   
   matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
-  points(X,Z,pch='.',cex=1,col=adjustcolor(col,alpha.f=min(1,alpha+0.2)))
-  points(X,Z,pch=19,cex=0.5,col=adjustcolor(col,alpha.f=alpha))
+  points(X,Z,pch='.',cex=0.8,col=adjustcolor(col,alpha.f=min(1,alpha+0.2)))
+  points(X[1,],Z[1,],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
     
   points(x[y>0],z[y>0],pch=".",col='grey30')
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
