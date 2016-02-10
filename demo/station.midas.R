@@ -214,6 +214,7 @@ lons <- lons[iii]; lats <- lats[iii]; alts=alts[iii]
 locations <- locations[iii]; stationIDs <- stationIDs[iii]
 
 for (i in 1:length(y)) {
+  print(names(y)[i])
   z <- y[[i]]
   im <- is.element(stid(z),stids)
   mi <- !is.element(stids,stid(z))
@@ -226,22 +227,39 @@ for (i in 1:length(y)) {
   }
   ## Extract the stations with valid data: 
   x <- subset(z,is=im)
+  attr(x,'variable') <- rep('precip',dim(x)[2])
+  attr(x,'unit') <- rep('mm/day',dim(x)[2])
+  attr(x,'country') <- rep('England',dim(x)[2])
+  attr(x,'longname') <- rep('24hr_precipitation',dim(x)[2])
+  
   ## make a station objects with the remaining data containng NAs.
   if (nm > 0) {
     xm <- zoo(matrix(rep(NA,dim(x)[1]*nm),dim(x)[1],nm),order.by=index(x))
-    xm <- as.station(xm,param='precip',unit='mm/day',stid=stationIDs[iM],
-                     loc=locations[iM],lon=lons[iM],lat=lats[iM],alt=alts[iM])
+    xm <- as.station(xm,rep(param='precip',sum(iM)),unit=rep('mm/day',sum(iM)),
+                     stid=stationIDs[iM],
+                     loc=locations[iM],lon=lons[iM],lat=lats[iM],alt=alts[iM],
+                     longname=rep(attr(x,'longname')[1],sum(iM)),
+                     cntr=rep(cntr(x)[1],sum(iM)))
     x <- combine.stations(x,xm)
   }
-
+  print(paste(i,'sum(im)=',sum(im),'nm=',nm,'nm+sum(im)',nm+sum(im)))
+  print(loc(x))
+  
   if (dim(x)[2]!=length(stids)) {
     print(paste('Something wrong? dim(x)[2]=',dim(x)[2],'!= length(stids)=',length(stids)))
     browser()
   }
   
   if (i==1) X <- x else {
-    X <- combine(X,x)
+    Xx <- c(zoo(X),zoo(x))
+    X <- as.station(Xx)
+    X <- attrcp(x,X)
+    #browser()
   }
+  if (dim(X)[2]!=length(stids)) {
+    print(paste('Something wrong? dim(X)[2]=',dim(X)[2],'!= length(stids)=',length(stids)))
+    browser()
+  }  
 }
 
 save(file='eu-circle-torbay.rda',X)

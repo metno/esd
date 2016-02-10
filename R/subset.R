@@ -1085,3 +1085,20 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   class(y) <- cls
   invisible(y)
 }
+
+## Routine for sorting the order of station series.
+sort.station <- function(x,is) {
+  y <- zoo(x)[,is]
+  y <- attrcp(x,y)
+  attr(y,'station_id') <- stid(x)[is]
+  attr(y,'location') <- loc(x)[is]
+  attr(y,'variable') <- varid(x)[is]
+  attr(y,'unit') <- unit(x)[is]
+  attr(y,'longitude') <- lon(x)[is]
+  attr(y,'latitude') <- lat(x)[is]
+  attr(y,'altitude') <- alt(x)[is]
+  attr(y,'cntr') <- cntr(x)[is]
+  attr(y,'longname') <- attr(x,'longname')[is]
+  attr(y,'history') <- history.stamp(x)
+  return(y)
+}
