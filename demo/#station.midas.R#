@@ -291,4 +291,8 @@ mu <- subset(mu,is=(nok> 45))
 fw<- subset(fw,is=(nok> 45))
 
 diagnose(mu)
-pcafill(mu) -> zmu
+#pcafill(mu) -> zmu
+
+plot(mu); grid()
+
+plot(fw); grid()
