@@ -880,9 +880,9 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
   if(verbose) print("map.events")
-  #browser()
   x <- subset(x,it=it,is=is,verbose=verbose)
-  
+  if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
+      
   if (is.null(is$lon) & !is.null(xlim)) {
     is$lon <- xlim
   } else if (is.null(is$lon) & is.null(xlim)) {
@@ -920,21 +920,26 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     }
   }
 
-  if(length(Y)==0) {
-    data(Oslo)
-    map(Y,type="n",xlim=is$lon,ylim=is$lat,new=new,projection=projection,
-        xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
-  } else {
+  if(length(Y)!=0) {
     if (is.null(lonR)) lonR <- mean(lon(Y))
     if (is.null(latR)) latR <- mean(lat(Y))
-    map(Y,colbar=colbar,new=new,projection=projection,xlim=xlim,ylim=ylim,
-        latR=latR,lonR=lonR)
+    map(Y,colbar=colbar,new=new,projection=projection,
+        xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
+  } else {
+    if (is.null(lonR) & dim(x)[1]>0) lonR <- mean(x[,"lon"])
+    if (is.null(latR) & dim(x)[1]>0) latR <- mean(x[,"lat"])
+    data(Oslo)
+    map(Oslo,type="n",new=new,projection=projection,
+        xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
   }
+  
   if(param %in% colnames(x) & dim(x)[1]>0) {
     if(verbose) print(paste("size proportional to",param))
     cex <- 1+(x[,param]-min(x[,param],na.rm=TRUE))/
         diff(range(x[,param],na.rm=TRUE))*cex
   }
+
+  period <- it
   
   if(dim(x)[1]>0) {
     #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
@@ -943,8 +948,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(projection=="lonlat") {
       points(x[,"lon"],x[,"lat"],col=cols,cex=cex,pch=pch,lwd=lwd)
     } else {
-      if (is.null(lonR)) lonR <- mean(x[,"lon"])
-      if (is.null(latR)) latR <- mean(x[,"lat"])
       theta <- pi*x[,"lon"]/180
       phi <- pi*x[,"lat"]/180
       x <- sin(theta)*cos(phi)
@@ -954,8 +957,15 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
       a <- rotM(x=latR,y=0,z=0) %*% a
       x <- a[1,]; y <- a[2,]; z <- a[3,]
       points(x[y>0],z[y>0],col=cols,cex=cex,pch=pch,lwd=lwd)
-    }
+   }
   }
+
+  if (!is.null(period)) {
+    text(par("usr")[2] - 0.2*diff(range(par("usr")[3:4])),
+        par("usr")[4] - 0.1*diff(range(par("usr")[3:4])),
+        paste(period,collapse="-"),pos=2,cex=0.7,col="grey30")
+  }
+  
 }
 
 ## map.events <- function(x,it=NULL,is=NULL,dx=2,dy=2,dt="year",

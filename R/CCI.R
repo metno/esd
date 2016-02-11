@@ -2,19 +2,49 @@
 
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
                 label=NULL,mindistance=1E6,dpmin=1E-3,
-                pmax=NULL,rmin=1E4,rmax=2E6,nsim=NULL,
+                pmax=NULL,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,verbose=FALSE) {
+  if(verbose) print("CCI - calculus based cyclone identification")
+
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
+
+  yrmn <- as.yearqtr(strftime(index(Z),"%Y-%m-%d"))#as.yearmon(index(Z))#
+  if (length(unique(yrmn))>1) {
+    t1 <- Sys.time()  
+    if (progress) pb <- txtProgressBar(style=3)
+    X <- NULL
+    if (progress) setTxtProgressBar(pb,0/(length(unique(yrmn))))
+    for (i in 1:length(unique(yrmn))) {
+      if(verbose) print(unique(yrmn)[i])
+      Z.y <- subset(Z,it=(yrmn==unique(yrmn)[i]))
+      X.y <- CCI(Z.y,m=m,cyclones=cyclones,
+                label=label,mindistance=mindistance,dpmin=dpmin,
+                pmax=pmax,rmin=rmin,rmax=rmax,nsim=nsim,progress=FALSE,
+                fname=NULL,lplot=lplot,accuracy=accuracy,verbose=verbose)
+      if (progress) setTxtProgressBar(pb,i/(length(unique(yrmn))))
+      if(is.null(X)) {
+        X <- X.y
+      } else {
+        X <- merge(X,X.y,all=TRUE)
+        X <- attrcp(X.y,X)
+        class(X) <- class(X.y)
+      }
+    }
+    t2 <- Sys.time()
+    if (verbose) print(paste('CCI took',round(as.numeric(t2-t1,units="secs")),'s'))
+    if(!is.null(fname)) save(file=fname,X)
+    invisible(X)
+  } else {
 
   ## Rearrange time index
   t <- as.numeric(strftime(index(Z),format="%Y%m%d%H%M"))
     
   ## Calculate first and second derivative
   if(verbose) print("Calculate first and second derivative")
-  resx <- dX(Z,m=m,accuracy=accuracy,verbose=verbose)
-  resy <- dY(Z,m=m,accuracy=accuracy,verbose=verbose)
+  resx <- dX(Z,m=m,accuracy=accuracy,verbose=verbose,progress=progress)
+  resy <- dY(Z,m=m,accuracy=accuracy,verbose=verbose,progress=progress)
   
   ## Spatial resolution
   dx <- abs(diff(resx$lon))[1]
@@ -38,7 +68,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
               Zx[,1:(nx-1),1:(ny-1)] + Zx[,2:nx,1:(ny-1)])
   py <- 0.25*(Zy[,1:(nx-1),2:ny] + Zy[,2:nx,2:ny] +
               Zy[,1:(nx-1),1:(ny-1)] + Zy[,2:nx,1:(ny-1)])
-
+  dim(px) <- c(nt,nx-1,ny-1)
+  dim(py) <- c(nt,nx-1,ny-1)
+      
   ## Clear temporary objects from working memory
   rm("Zx","Zy","resx","resy"); gc(reset=TRUE)
 
@@ -80,7 +112,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   P.lowx[i.low] <- 1
   DX <- 0.5*(dx11+dx12)
   DX2 <- 0.5*(dx21+dx22)
-
+  
   ## Clear temporary objects from working memory
   rm("dx11","dx12","dx21","dx22","dy11","dy12","dy21","dy22",
      "dslpdx","dslpdx2","dslpdy","dslpdy2","i.low"); gc(reset=TRUE)
@@ -272,6 +304,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
 
     # Find points of inflexion (2nd derivative==0) to estimate
     # the storm radius and maximum speed and pressure gradient
+    t1 <- Sys.time()
     if(verbose) print("Find points of inflexion")
     NX <- dim(lonXY)[1]; NY <- dim(latXY)[2]
     lonXX <- rep(0.5*(lonXY[2:NX,2:NY]+lonXY[1:(NX-1),2:NY]),nt)
@@ -286,7 +319,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     closed <- rep(0,length(date))
     ok <- rep(TRUE,length(date))
     for (i in seq(1,length(date))) {
-      ##print(as.character(date[i]))
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
       infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
@@ -315,7 +347,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       }
       ilon <- ilon[!is.na(ilon)]
       ilat <- ilat[!is.na(ilat)]
-      #dslpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
+      ##dslpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
       dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
       if (all(dpi>dpmin) &
          ((cyclones & pcent[i]<mean((0.5*(px+py)[t==date[i],,]))) |
@@ -333,6 +365,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
         ok[i] <- FALSE
       }
     }
+    t2 <- Sys.time()
+    if (verbose) print(paste('finding points of inflexion took',
+                             round(as.numeric(t2-t1,units="secs")),'s'))
 
     if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
     max.dslp <- max.dslp*1E-2*1E3
@@ -429,6 +464,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
          url="http://onlinelibrary.wiley.com/doi/10.1111/j.1600-0870.2006.00191.x/abstract")
   if(!is.null(fname)) save(file=fname,X)
   invisible(X)
+
+  }
 }
 
 
