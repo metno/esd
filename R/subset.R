@@ -959,9 +959,9 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     } else {
       attr(y,'longitude') <- attr(x,'longitude')[selx]
       attr(y,'latitude') <- attr(x,'latitude')[sely]
-      c(sum(selx),sum(sely),sum(ii)) -> attr(y,'dimensions')
+      c(sum(selx),sum(sely),sum(ii,na.rm=TRUE)) -> attr(y,'dimensions')
     }
-    
+
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)   
