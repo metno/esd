@@ -79,7 +79,7 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   #print(summary(newdata))
   names(newdata) <- Xnames 
   model <- attr(x,'model')
-  if (verbose) print(summary(model))
+  if (verbose) {print('names(newdata):'); print(Xnames)}
   ## AM 04-04-2015 model is always a list object - Quick fix here ...
   ## KMP 19-11-2015 the if (!is.list(model)) solution
   ##                does not work when there is only one model
@@ -196,7 +196,7 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   for (i in 1:n.app) {
       if (is.null(newdata))
           newdata <- attr(X,paste('appendix.',i,sep="")) 
-      names(newdata) <- Xnames 
+      names(newdata) <- Xnames
       y <- predict.ds.eof(x=x,newdata=newdata,addnoise=FALSE,n=100)
       
     #print(dim(X))
@@ -251,6 +251,7 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   # For some reason, the column names of newdata is muddled here,
   # and hence Xnames is used to enforce names 'X.1', 'X.2', 'X.3', ...
   Xnames <- paste("X.",1:neofs,sep="")
+  if (verbose) print(Xnames)
   if (is.null(newdata)) {
       ## newdata <- data.frame(X=coredata(X))
       n.app <- attr(x,'n.apps') 
@@ -263,9 +264,7 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   
   #print(names(attributes(x)))
   model <- attr(x,'model')
-  
-  #print(summary(model))
-  #print("Data for obs:"); print(summary(newdata))
+  if (verbose) {print(summary(model)); print(n.app)}
   ## Y <- zoo(predict(model,newdata=newdata)+attr(x,'mean'),order.by=index(X))
   #print("Y:"); print(summary(coredata(Y)))
 
@@ -275,17 +274,18 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   for (i in 1:n.app) {
       if (is.null(newdata))
           newdata <- attr(X,paste('appendix.',i,sep="")) 
-      names(newdata) <- Xnames 
-      y <- predict.ds.eof(x=x,newdata=newdata,addnoise=FALSE,n=100)
+      if (verbose) {print("Data for obs:"); print(summary(newdata))}
+      names(newdata) <- Xnames      
+      newdata <- attrcp(X,newdata)
+      y <- predict.ds.eof(x=x,newdata=newdata,addnoise=FALSE,n=100,verbose=verbose)
       
     #print(dim(X))
     #print(names(attributes(X)))
     ## rownm[i+1] <- attr(Z,'source')
     ## newdata <- data.frame(X=coredata(Z))
-    #print(summary(newdata))
     names(newdata) <- Xnames
-    #print("Data for GCM:"); print(summary(newdata))
-    #print("DS values:"); print(summary(predict(model,newdata=newdata)))
+    if (verbose) {print("Data for GCM:"); print(summary(newdata))}
+    if (verbose) {print("DS values:"); print(summary(predict(model,newdata=newdata)))}
     ## y <- zoo(predict(model,newdata=newdata)+ attr(x,'mean'),order.by=index(Z))
       if (i==1) 
           Y <- y
@@ -308,7 +308,6 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   attr(Y,'source') <- attr(X,'source')
   attr(Y,'residual.mean') <- mean(residual,na.rm=TRUE)
   attr(Y,'residual.sd') <- sd(residual,na.rm=TRUE)
-  #print("HERE")
     Y <- attrcp(x,Y)
     attr(Y,'aspect') <- 'projected'
     Y <- as.station(Y)

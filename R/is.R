@@ -33,6 +33,6 @@ is.years <- function(x) all(!is.months(x) &
                             is.numeric(x) & levels(factor(nchar(x)))==4)
 
 is.model <- function(model,verbose=FALSE) {
-  if (verbose) str(model)
+  if (verbose) print(summary(model))
   return(inherits(model,c('lm','glm','mlm')))
 }
