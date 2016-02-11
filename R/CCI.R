@@ -10,7 +10,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
 
-  yrmn <- as.yearqtr(strftime(index(Z),"%Y-%m-%d"))#as.yearmon(index(Z))#
+  yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
   if (length(unique(yrmn))>1) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
@@ -19,17 +19,19 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     for (i in 1:length(unique(yrmn))) {
       if(verbose) print(unique(yrmn)[i])
       Z.y <- subset(Z,it=(yrmn==unique(yrmn)[i]))
-      X.y <- CCI(Z.y,m=m,cyclones=cyclones,
+      if(dim(Z.y)[1]>0) {
+        X.y <- CCI(Z.y,m=m,cyclones=cyclones,
                 label=label,mindistance=mindistance,dpmin=dpmin,
                 pmax=pmax,rmin=rmin,rmax=rmax,nsim=nsim,progress=FALSE,
                 fname=NULL,lplot=lplot,accuracy=accuracy,verbose=verbose)
-      if (progress) setTxtProgressBar(pb,i/(length(unique(yrmn))))
-      if(is.null(X)) {
-        X <- X.y
-      } else {
-        X <- merge(X,X.y,all=TRUE)
-        X <- attrcp(X.y,X)
-        class(X) <- class(X.y)
+        if(progress) setTxtProgressBar(pb,i/(length(unique(yrmn))))
+        if(is.null(X)) {
+          X <- X.y
+        } else {
+          X <- merge(X,X.y,all=TRUE)
+          X <- attrcp(X.y,X)
+          class(X) <- class(X.y)
+        }
       }
     }
     t2 <- Sys.time()
