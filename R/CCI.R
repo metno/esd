@@ -10,7 +10,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
 
-  yrmn <- as.yearqtr(index(Z))#as.yearmon(index(Z))#
+  yrmn <- as.yearqtr(strftime(index(Z),"%Y-%m-%d"))#as.yearmon(index(Z))#
   if (length(unique(yrmn))>1) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
@@ -22,7 +22,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       X.y <- CCI(Z.y,m=m,cyclones=cyclones,
                 label=label,mindistance=mindistance,dpmin=dpmin,
                 pmax=pmax,rmin=rmin,rmax=rmax,nsim=nsim,progress=FALSE,
-                fname="tmp.rda",lplot=lplot,accuracy=accuracy,verbose=verbose)
+                fname=NULL,lplot=lplot,accuracy=accuracy,verbose=verbose)
       if (progress) setTxtProgressBar(pb,i/(length(unique(yrmn))))
       if(is.null(X)) {
         X <- X.y
@@ -34,6 +34,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     }
     t2 <- Sys.time()
     if (verbose) print(paste('CCI took',round(as.numeric(t2-t1,units="secs")),'s'))
+    if(!is.null(fname)) save(file=fname,X)
     invisible(X)
   } else {
 
@@ -67,7 +68,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
               Zx[,1:(nx-1),1:(ny-1)] + Zx[,2:nx,1:(ny-1)])
   py <- 0.25*(Zy[,1:(nx-1),2:ny] + Zy[,2:nx,2:ny] +
               Zy[,1:(nx-1),1:(ny-1)] + Zy[,2:nx,1:(ny-1)])
-
+  dim(px) <- c(nt,nx-1,ny-1)
+  dim(py) <- c(nt,nx-1,ny-1)
+      
   ## Clear temporary objects from working memory
   rm("Zx","Zy","resx","resy"); gc(reset=TRUE)
 
@@ -109,7 +112,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   P.lowx[i.low] <- 1
   DX <- 0.5*(dx11+dx12)
   DX2 <- 0.5*(dx21+dx22)
-
+  
   ## Clear temporary objects from working memory
   rm("dx11","dx12","dx21","dx22","dy11","dy12","dy21","dy22",
      "dslpdx","dslpdx2","dslpdy","dslpdy2","i.low"); gc(reset=TRUE)
