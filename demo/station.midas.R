@@ -31,6 +31,18 @@ dealwithduplicates <- function(precip,t1,action="remove",verbose=FALSE) {
   return(x)
 }
 
+## Function that removes some extra commas in files with different number of commas
+fixfile <- function(fname) {
+  x <- readLines(con=fname)
+  gregexpr(',',x) -> z
+  nc <- unlist(lapply(z,length))
+  print(table(nc))
+  icrm <- nc == max(nc)
+  x[icrm] <- substr(x[icrm],1,unlist(lapply(z,max))-1)
+  writeLines(x,con=fname)
+}
+
+
 station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,county=NULL,
                           cntr=NULL,it=NULL,nmin=30,
                           path='data/midas/',pattern='midas_raindrnl',metaid='CPAS.DATA',verbose=TRUE,plot=TRUE) {
@@ -116,10 +128,12 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
   
   if (verbose) print(paste('read the data:',sum(ii),'stations'))
   data.files <- list.files(path=path,pattern=pattern,full.names=TRUE)
+#  data.files <- data.files[(length(data.files)-1):length(data.files)] # test
   data.files <- data.files[1:(length(data.files)-2)] # fudge
   Y <- list() ## Set up a list object for storing the results temporarily
   for (i in 1:length(data.files)) {
     if (verbose) print(paste(i,length(data.files),data.files[i]))
+
     x <- try(read.table(data.files[i],sep=',',
              col.names=colnames)) # Use try - some files contain inconsistencies leading to errors
     if (inherits(x,"try-error")) print('failed') else {
@@ -208,7 +222,7 @@ alts <- alts[!duplicated(alts)]
 stationIDs <- stationIDs[!duplicated(stationIDs)]
 stations <- table(unlist(lapply(y,stid)))
 n <- as.numeric(stations)
-stids <- as.integer(rownames(stations)[n > 40])
+stids <- as.integer(rownames(stations)[n > 30])
 iii <- is.element(stationIDs,stids)
 lons <- lons[iii]; lats <- lats[iii]; alts=alts[iii]
 locations <- locations[iii]; stationIDs <- stationIDs[iii]

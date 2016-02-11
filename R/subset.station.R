@@ -81,8 +81,10 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## get time in t
     t <- index(x)
     ii <- is.finite(t)
-    if (verbose) print(it)                            
 
+    if (verbose) print('it - temporal indexing')
+    if (verbose) print(it)
+    
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
        if (verbose) print('years ++')
@@ -97,7 +99,8 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         yr <- t
         mo <- dy <- rep(1,length(t))
     } else print("Index of x should be a Date, yearmon, or numeric object")
-    
+
+
     ## Generate sequence of days, months or years if range of it value is given
     if (is.character(it)) {
         if (verbose) print('it is character')
@@ -219,6 +222,8 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
     ## update the class of x
     class(x) <- "zoo"
 
+    if (verbose) print('is - spatial indexing')
+    
     ## REB 11.04.2014: is can be a list to select region or according to other criterion
     if (inherits(is,'list')) {
       if (verbose) print('is is a list object')
@@ -280,15 +285,20 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
     
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))
+    if (verbose) print(paste('Before subsetting',loc(y),varid(y),unit(y),lon(y),lat(y)))
+    if (verbose) print(is)
+    
     attr(y,'longitude') <- attr(x,'longitude')[is]
     attr(y,'latitude') <- attr(x,'latitude')[is]
-    
+
     if (!is.null(attr(y,'altitude')))
         attr(y,'altitude') <- attr(x,'altitude')[is]
     if (!is.null(attr(y,'country')))
-        attr(y,'country') <- attr(x,'country')[is]
+        if (length(cntr(x))>1) attr(y,'country') <- cntr(x)[is] else
+                               attr(y,'country') <- cntr(x)
     if (!is.null(attr(y,'source')))
-        attr(y,'source') <- attr(x,'source')[is]
+        if (length(src(x))>1) attr(y,'source') <- src(x)[is] else
+                              attr(y,'source') <- src(x)
     if (!is.null(attr(y,'station_id')))
         attr(y,'station_id') <- attr(x,'station_id')[is]
     if (!is.null(attr(y,'location')))
@@ -297,26 +307,38 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
         attr(y,'quality') <- attr(x,'quality')[is]
     ## attr(y,'history') <- attr(x,'history')[is]
     if (!is.null(attr(y,'variable')))
-        attr(y,'variable') <- attr(x,'variable')[is]
+        if (length(varid(x))>1) attr(y,'variable') <- varid(x)[is] else
+                                attr(y,'variable') <- varid(x)
     ## attr(y,'element') <- attr(x,'element')[is]
     if (!is.null(attr(y,'aspect')))
-        attr(y,'aspect') <- attr(x,'aspect')[is]
+         if (length(attr(y,'aspect'))>1) attr(y,'aspect') <- attr(x,'aspect')[is] else
+                                         attr(y,'aspect') <- attr(x,'aspect')
     if (!is.null(attr(y,'unit')))
-        attr(y,'unit') <- attr(x,'unit')[is]
+        if (length(unit(x))>1) attr(y,'unit') <- unit(x)[is] else
+                               attr(y,'unit') <- unit(x)
     if (!is.null(attr(y,'longname')))
-        attr(y,'longname') <- attr(x,'longname')[is]
+        if (length(attr(y,'longname'))>1) attr(y,'longname') <- attr(x,'longname')[is] else
+                                           attr(y,'longname') <- attr(x,'longname')
     if (!is.null(attr(y,'reference')))
-        attr(y,'reference') <- attr(x,'reference')[is]
+        if (length(attr(y,'reference'))>1) attr(y,'reference') <- attr(x,'reference')[is] else
+                                             attr(y,'reference') <- attr(x,'reference')
     if (!is.null(attr(y,'info')))
-        attr(y,'info') <- attr(x,'info')[is]
+        if (length(attr(y,'info'))>1) attr(y,'info') <- attr(x,'info')[is] else
+                                       attr(y,'info') <- attr(x,'info')
     if (!is.null(attr(y,'method')))
-        attr(y,'method') <- attr(x,'method')[is]
+        if (length(attr(y,'method'))>1) attr(y,'method') <- attr(x,'method')[is] else
+                                         attr(y,'method') <- attr(x,'method')
     if (!is.null(attr(y,'type')))
-        attr(y,'type') <- attr(x,'type')[is]
+        if (length(attr(y,'type'))>1) attr(y,'type') <- attr(x,'type')[is] else
+                                       attr(y,'type') <- attr(x,'type')
     if (!is.null(attr(y,'URL')))
-        attr(y,'URL') <- attr(x,'URL')[is]
+        if (length(attr(y,'URL'))>1) attr(y,'URL') <- attr(x,'URL')[is] else
+                                      attr(y,'URL') <- attr(x,'URL')
     if (!is.null(attr(y,'na')))
-        attr(y,'na') <- attr(x,'na')[is]
+        if (length(attr(y,'na'))>1) attr(y,'na') <- attr(x,'na')[is] else
+                                     attr(y,'na') <- attr(x,'na')
+
+    if (verbose) print(paste('Final: ',loc(y),varid(y),unit(y),lon(y),lat(y)))
     
     if (!is.null(err(y)))
         attr(y,'standard.error') <- err(x)[ii,is]

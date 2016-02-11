@@ -9,7 +9,8 @@ corfield.default <- function(x,y,...) {
   cor(x,y)
 }
 
-corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,colbar=list(rev=TRUE)) {
+corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
+                         colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
   if (verbose) { print("corfield.zoo:"); print('station against field') }
 
   # Keep track of which is an eof object and which is a station record:
@@ -50,7 +51,7 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE
   class(r) <- 'corfield'
 
   #print("map")
-  if (plot) map(r,colbar=list(rev=TRUE))
+  if (plot) map(r,colbar=colbar)
   return(r)
 }
 
