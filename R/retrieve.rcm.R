@@ -1,6 +1,6 @@
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
 retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
-
+    ## browser()
     if (!is.null(path)) ncfile <- file.path(path,ncfile)
     if (verbose) print(paste('retrieve.rcm',ncfile))
     ncold <- nc_open(ncfile)
@@ -11,7 +11,8 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
   itunit <- (1:length(names(tatt)))[is.element(substr(names(tatt),1,4),'unit')]
   tunit <- tatt[[itunit]]
   a <- regexpr("since",tunit)
-  torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
+  ## torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
+  torig <- paste(unlist(strsplit(tunit," "))[3:4],collapse=" ")
   tunit <- tolower(substr(tunit,1,a-2))
   #browser()
   
@@ -29,15 +30,17 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
   }
   # Extract the spatial coordinates:
   vnames <- names(ncold$var)
-  latid <- vnames[is.element(tolower(substr(vnames,1,3)),'lat')]
-  lonid <- vnames[is.element(tolower(substr(vnames,1,3)),'lon')]
-  lat <- ncvar_get(ncold,varid=latid)
+  ##latid <- vnames[is.element(tolower(substr(vnames,1,3)),'lat')]
+  ##lonid <- vnames[is.element(tolower(substr(vnames,1,3)),'lon')]
+  latid <- vnames[grep('lat',tolower(vnames))]
+  lonid <- vnames[grep('lon',tolower(vnames))]
+    lat <- ncvar_get(ncold,varid=latid)
   lon <- ncvar_get(ncold,varid=lonid)
   time <- ncvar_get(ncold,varid='time')
   d <- c(dim(lat),length(time))
   
   #str(lat); str(lon)
-  if (verbose) print(paste('region: ',min(lon),'-',max(lon),'E /',min(lat),'-',max(lat)))
+  if (verbose) print(paste('region: ',round(min(lon),digits=2),'-',round(max(lon,digits=2)),'E /',round(min(lat),digits=2),'-',round(max(lat),digits=2),'N'))
   
   # Extract only the region of interest: only read the needed data
  
@@ -119,7 +122,8 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
   # Extract only the time of interest: assume only an interval
   #print(tunit); browser()
   time <- switch(substr(tunit,1,3),'day'=as.Date(time+julian(as.Date(torg))),
-       'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))))
+       'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))),'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600)
+    
   if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
     if (inherits(it,c('field','station'))) {
