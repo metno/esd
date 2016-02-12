@@ -1,7 +1,9 @@
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
-retrieve.rcm <- function(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
+retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   if (verbose) print(paste('retrieve.rcm',ncfile))
   ncold <- nc_open(ncfile)
+
+  if (!is.null(path)) ncfile <- file.path(path,ncfile)
   
   # Extract the time information: unit and time origin
   tatt <- ncatt_get( ncold, varid='time' )
