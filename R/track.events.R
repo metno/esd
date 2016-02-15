@@ -126,7 +126,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
         i <- which(num==n)
         dn <- mapply(distAB,lons[i][2:length(i)],lats[i][2:length(i)],
                    lons[i][1:(length(i)-1)],lats[i][1:(length(i)-1)])
-        num[num>as.numeric(n)] <- num[num>as.numeric(n)] + 1
+        num[!is.na(num) & num>as.numeric(n)] <- num[!is.na(num) & num>as.numeric(n)] + 1
         num[i[which(dn==max(dn))+1:length(i)]] <- as.numeric(n) + 1
         dx[i[which(dn==max(dn))+1]]<- 0
       }

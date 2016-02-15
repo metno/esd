@@ -9,8 +9,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
-
-  yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  
+  yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
   if (length(unique(yrmn))>1) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
@@ -321,6 +322,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     closed <- rep(0,length(date))
     ok <- rep(TRUE,length(date))
     for (i in seq(1,length(date))) {
+      ##print(paste(i,date[i]))
+      ##browser()
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
       infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
@@ -350,10 +353,14 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       ilon <- ilon[!is.na(ilon)]
       ilat <- ilat[!is.na(ilat)]
       ##dslpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
-      dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-      if (all(dpi>dpmin) &
-         ((cyclones & pcent[i]<mean((0.5*(px+py)[t==date[i],,]))) |
-         (!cyclones & pcent[i]>mean((0.5*(px+py)[t==date[i],,]))))) {
+      ok <- sum(!is.na(ilon))>=3
+      if(ok) {
+       dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
+       ok <- sum(dpi>dpmin & !is.na(dpi))>=3 & mean(dpi,na.rm=TRUE)>dpmin &
+         ( (cyclones & pcent[i]<mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
+           (!cyclones & pcent[i]>mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) )
+      }
+      if (ok) {          
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
         fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
         vg <- dpi/(fi*rho)
