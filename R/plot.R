@@ -1033,7 +1033,7 @@ plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
 
 
 plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=TRUE,
-                                     map.type="points",verbose=FALSE,...) {
+                                     map.type="points",verbose=FALSE,main=NULL,...) {
   if (verbose) print('plot.diagnose.dsensemble')
   Y <- -round(200*(0.5-pbinom(x$outside,size=x$N,prob=0.1)),2)
   X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),
@@ -1043,7 +1043,8 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
     par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=mgp)
   }
   if (!is.null(cex)) par(cex=cex)
-  plot(c(-100,100),c(-100,100),type="n",axes=FALSE,mgp=mgp,ylab="",xlab="")
+  plot(c(-100,100),c(-100,100),type="n",axes=FALSE,mgp=mgp,
+       ylab="",xlab="",main=main)
   mtext("trend",side=1,line=1.5,cex=par("cex"))
   mtext("standard deviation",side=2,line=2,cex=par("cex"))
   u <- par("usr")
@@ -1155,14 +1156,14 @@ plot.xval <- function(x,...) {
   grid()
 }
 
-plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
+plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,pattern=1,
                                envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,...) {
   if (verbose) print("plot.dsensemble.pca")
   stopifnot(inherits(x,'dsensemble') & inherits(x,'pca'))
   d <- index(x[[3]])
   pc <- x[3:length(x)]
   pc <- array(unlist(pc), dim = c(dim(pc[[1]]), length(pc)))
-  pc <- lapply(split(pc, arrayInd(seq_along(pc),dim(pc))[,2]),array,dim=dim(pc)[-2])
+  pc <- lapply(seq(dim(pc)[2]), function(x) pc[ , x, ])
   fn <- function(x) {
     x <- zoo(x,order.by=d)
     class(x) <- c("dsensemble","station","zoo")
@@ -1170,13 +1171,14 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
   }
   pc <- lapply(pc,fn)
   for (i in 1:length(pc)) {
-    attr(pc[[i]],"station") <- x[[2]][,i]
+    attr(pc[[i]],"station") <- as.station(x[[2]][,i],param=attr(x,"variable"),
+                              longname=attr(x,"longname"),unit=attr(x,"unit"))
   }
-  plot(pc[[1]])
+  plot(pc[[pattern]],ylab=paste("PC",pattern,sep=""))
 }
 
 plot.dsensemble <-  function(x,pts=FALSE,it=0,
-                             envcol=rgb(1,0,0,0.2),legend.show=TRUE,
+                             envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
                              target.show=TRUE,map.show=TRUE,map.type="points",new=TRUE,
                              xrange=NULL,yrange=NULL,verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble")
@@ -1190,8 +1192,7 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
   if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
     z <- x
   #print("diagnose")
-  ##browser()
-  diag <- diagnose(z,plot=FALSE)
+  diag <- diagnose(z,plot=FALSE,verbose=verbose)
   
   y <- attr(z,'station')
   attr(y,'standard.error') <- NULL
@@ -1215,7 +1216,8 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
                       ylim <- args[[iyl]]  
   #print("...")
   if(new) dev.new()
-  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='',map.show=FALSE)
+  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='',
+       ylab=ylab,map.show=FALSE)
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)

@@ -434,7 +434,7 @@ diagnose.distr <- function(x,main=NULL,
 
 
 
-diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NULL,
+diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NULL,main=NULL,
                                 map.show=TRUE,map.type="points",verbose=FALSE,...) {
   if (verbose) print('diagnose.dsensemble')
   # Trend-evaluation: rank
@@ -442,7 +442,8 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NUL
   stopifnot(!missing(x),inherits(x,"dsensemble"))
   
   if (inherits(x,"pca") | inherits(x,"list")) {
-    diag <- diagnose.dsensemble.list(x,plot=plot,...)
+    diag <- diagnose.dsensemble.list(x,plot=plot,map.show=map.show,
+                                     verbose=verbose,...)
     invisible(diag)
   } else {
  
@@ -480,6 +481,9 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NUL
   outside <- sum(above,na.rm=TRUE) + sum(below,na.rm=TRUE)
   N <- sum(i1,na.rm=TRUE)
 
+  # add plot title
+  if(is.null(main)) main <- attr(x,"variable")
+
   if (verbose) print('make list object')
   diag <- list(z=z,robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
                outside=outside,above=above,below=below,
@@ -490,13 +494,14 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NUL
                q95=zoo(q95,order.by=index(x)))
   attr(diag,'history') <- history.stamp(x)
   class(diag) <- c('diagnose','dsensembles','list')
-  if (plot) plot(diag,map.show=map.show,map.type=map.type,verbose=verbose)
+  if (plot) plot(diag,map.show=map.show,map.type=map.type,
+                 main=main,verbose=verbose)
   invisible(diag)
   }
 }
 
 diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
-                                    map.show=TRUE,xrange=NULL,yrange=NULL,...) {
+                 map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,...) {
   if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
   if (inherits(X,"pca")) X <- as.station(X,verbose=verbose)
@@ -516,12 +521,13 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
   }
   d <- list(outside=outside,deltaobs=deltaobs,deltagcm=deltagcm,
             N=di$N,location=names(X))
+ 
   if(plot) {
     if(verbose) print("target plot") 
     dev.new()
     par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=c(2,1,.5),xpd=TRUE)
     plot(c(-100,100),c(-100,100),type="n",
-         axes=FALSE,ylab="",xlab="")
+         axes=FALSE,ylab="",xlab="",main=attr(X,"variable"))
     mtext("trend",side=1,line=1.5,cex=par("cex"))
     mtext("standard deviation",side=2,line=2,cex=par("cex"))
     u <- par("usr")
@@ -545,13 +551,23 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
       polygon(ri*cos(pi*seq(0,2,length=360)),
               ri*sin(pi*seq(0,2,length=360)),
               col=bcol[i %% 2 + 1],border="grey15")
-    }    
-    col <- colscal(col="rainbow",n=length(d$outside),alpha=0.6)
+    }
     xlon <- sapply(X,lon)
     xlat <- sapply(X,lat)
+    nx <- (xlon-min(xlon))/diff(range(xlon))
+    ny <- (xlat-min(xlat))/diff(range(xlat))
+    if(all(is.finite(nx)) & all(is.finite(ny))) {
+      col <- rgb(1-ny,nx,ny,alpha)
+    } else {
+      col <- adjustcolor(col="blue",alpha.f=alpha)
+    }
     if(is.null(xrange)) xrange <- c(min(xlon)-1,max(xlon)+1)
     if(is.null(yrange)) yrange <- c(min(xlat)-1,max(xlat)+1)
-    if (map.show & !is.null(xlon) & !is.null(xlat)) {
+    x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
+                               sd=sd(deltagcm))),2)
+    y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
+    points(x,y,pch=21,cex=2*par("cex"),col='black',bg=col)
+    if(map.show) {
       data(geoborders)
       lon <- geoborders$x
       lat <- geoborders$y
@@ -561,11 +577,6 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
       lat2 <- attr(geoborders,"borders")$y
       ok2 <- lon2>min(xrange) & lon2<max(xrange) &
            lat2>min(yrange) & lat2<max(yrange)
-      x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
-                               sd=sd(deltagcm))),2)
-      y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
-      i <- order(xlat)
-      points(x[i],y[i],pch=21,cex=2*par("cex"),col='black',bg=col)
       par(fig=c(0.8,0.97,0.8,0.97),new=TRUE, mar=c(0,0,0,0),
         cex.axis=0.75*par("cex"),xpd=NA,col.main="grey",bty="n")
       plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
@@ -573,9 +584,9 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
       axis(1,mgp=c(3,.5,0))
       axis(2,mgp=c(2,.5,0))
       lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
-      points(xlon[i],xlat[i],pch=21,cex=1,col='Grey',bg=col,lwd=0.5)
+      points(xlon,xlat,pch=21,cex=1,col='Grey',bg=col,lwd=0.5)
     }
-  }  
+  }
   invisible(d)
 }
 
