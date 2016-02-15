@@ -9,7 +9,8 @@ corfield.default <- function(x,y,...) {
   cor(x,y)
 }
 
-corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,colbar=list(rev=TRUE)) {
+corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
+                         colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
   if (verbose) { print("corfield.zoo:"); print('station against field') }
 
   # Keep track of which is an eof object and which is a station record:
@@ -50,11 +51,12 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE
   class(r) <- 'corfield'
 
   #print("map")
-  if (plot) map(r,colbar=list(rev=TRUE))
+  if (plot) map(r,colbar=colbar)
   return(r)
 }
 
-corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,colbar=list(rev=TRUE),...) {
+corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
+                           colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...) {
  
   if (verbose) {print('corfield.field'); print('field against field')}
   cor2s <- function(x,use,...) {
@@ -69,7 +71,7 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
   #print(dim(y)); print(attr(y,"dimensions"))
  
   if (inherits(y,'station')) {
-    r <- corfield.field.station(y,x,use=use,verbose=verbose,...)
+    r <- corfield.field.station(y,x,use=use,verbose=verbose,colbar=colbar,...)
     return(r)
   }
   #print("synchonise")
@@ -135,21 +137,22 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
     attr(r,'unit') <- attr(x,'unit')[1] else
     attr(r,'unit') <- c(attr(x,'unit')[1],attr(y,'unit')[1])   
   class(r) <- 'corfield'
-  if (plot) map(r,colbar=list(rev=TRUE))
+  if (plot) map(r,colbar=colbar)
   return(r)
 }
 
 
 corfield.field.station <- function(x,y,plot=TRUE,verbose=FALSE,
+                                   colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                                    use='pairwise.complete.obs',...) {
-  r <- corfield.station(y,x,plot=plot,verbose=verbose,use=use,...)
+  r <- corfield.station(y,x,plot=plot,verbose=verbose,use=use,colbar=colbar,...)
   return(r)
 }
 
 
 corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,
                              use='pairwise.complete.obs',
-                             na.action='na.omit',colbar=list(rev=TRUE),...) {
+                             na.action='na.omit',colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...) {
   if (verbose) print("corfield.station:")
   
   # Keep track of which is an eof object and which is a station record:
@@ -233,15 +236,16 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,
   class(r) <- 'corfield'
 
   #print("map")
-  if (plot) map(r,verbose=verbose,colbar=list(rev=TRUE),...)
+  if (plot) map(r,verbose=verbose,colbar=colbar,...)
   invisible(r)
 }
 
 corfield.eof <- function(x,y,pattern=1,plot=TRUE,
+                         colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                          use='pairwise.complete.obs',na.action='na.omit',...) {
   stopifnot(inherits(x,'eof'),inherits(y,'field'))
   z <- as.station(x[,pattern],loc=paste('eof',pattern),param='PC',unit='dimensionless')
-  r <- corfield(z,y,plot=plot,use=use,na.action=na.action)
+  r <- corfield(z,y,plot=plot,use=use,na.action=na.action,colbar=colbar)
   invisible(r)
 }
 
@@ -250,6 +254,7 @@ corfield.eof <- function(x,y,pattern=1,plot=TRUE,
 corfield.trajectory <- function(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
                                 unit=NULL,longname=NULL,loc=NULL,
                                 use="pairwise.complete.obs",
+                                colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                                 method="pearson") {
 
   swapped <- FALSE
@@ -272,6 +277,6 @@ corfield.trajectory <- function(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
     xs <- as.monthly(xs)
   }
   xs <- subset(xs,it=y)
-  r <- corfield(xs,y,use=use,method=method)
+  r <- corfield(xs,y,use=use,method=method,colbar=colbar)
   invisible(r)
 }

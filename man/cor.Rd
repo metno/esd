@@ -6,19 +6,31 @@
 \alias{corfield.field.station}
 \alias{corfield.station}
 \alias{corfield.eof}
+\alias{corfield.trajectory}
 \title{Correlation}
 \description{
 Compute the correlation between field objects and station/field.
 }
 \usage{
-corfield(x,y, use='pairwise.complete.obs',...)
-corfield.default(x,y,...)
-corfield.zoo(x,y,plot=TRUE,use='pairwise.complete.obs',...) 
-corfield.field(x,y,plot=TRUE,use='pairwise.complete.obs',...)
-corfield.field.station(x,y,plot=TRUE, use='pairwise.complete.obs',...)
-corfield.station(x,y,plot=TRUE, use='pairwise.complete.obs',...)
+corfield(x,y,...)
+corfield.zoo(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
+             colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE))
+corfield.field(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
+               colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...)
+corfield.field.station(x,y,plot=TRUE,verbose=FALSE,
+                       colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
+                       use='pairwise.complete.obs',...)
+corfield.station(x,y,plot=TRUE,verbose=FALSE,
+                 use='pairwise.complete.obs',na.action='na.omit',
+                 colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...)
 corfield.eof(x,y,pattern=1,plot=TRUE,
+             colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
              use='pairwise.complete.obs',na.action='na.omit',...)
+corfield.trajectory(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
+                    unit=NULL,longname=NULL,loc=NULL,
+                    use="pairwise.complete.obs",
+                    colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
+                    method="pearson")
 }
 \arguments{
     \item{x}{data object}

@@ -155,7 +155,7 @@ vis.map <- function(x,col='red',map.type='points',add.text=FALSE) {
        lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
        if (map.type=="points") {
          points(lon(x),lat(x),pch=21,cex=1,col=col,bg=col,lwd=1)
-         print(loc(x))
+         #print(loc(x))
          if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
      } else if (map.type=="rectangle") {
          rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
