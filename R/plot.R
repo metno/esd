@@ -1204,7 +1204,12 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
   index(y) <- year(y)
   #print("---")
 
-  pscl <- c(0.9,1.1)
+  if(map.show | target.show) {
+    pscl <- c(0.9,1.3)
+  } else {
+    pscl <- c(0.9,1.1)
+  }
+    
   if (max(coredata(z),na.rm=TRUE) < 0) pscl <- rev(pscl)
   args <- list(...)
   #print(names(args))
