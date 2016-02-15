@@ -11,7 +11,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
   itunit <- (1:length(names(tatt)))[is.element(substr(names(tatt),1,4),'unit')]
   tunit <- tatt[[itunit]]
   a <- regexpr("since",tunit)
-  ## torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
+  torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
   torig <- paste(unlist(strsplit(tunit," "))[3:4],collapse=" ")
   tunit <- tolower(substr(tunit,1,a-2))
   #browser()
