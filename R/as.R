@@ -358,7 +358,9 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
        attr(yi,"altitude") <- alts[i]
        attr(yi,"station_id") <- stid[i]
        attr(yi,"location") <- locs[i]
-       attr(yi,"unit") <- attr(Y,"unit")
+       attr(yi,"unit") <- attr(X,"unit")
+       attr(yi,"variable") <- attr(X,"variable")
+       attr(yi,"longname") <- attr(X,"longname")
        attr(S[[i]],"station") <- yi
        attr(S[[i]],'aspect') <- 'original'
        attr(S[[i]],"longitude") <- lons[i]
@@ -370,6 +372,9 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
        class(S[[i]]) <- c('dsensemble','zoo')
     }
     class(S) <- c("dsensemble","station","list")
+    attr(S,"unit") <- attr(X,"unit")
+    attr(S,"variable") <- attr(X,"variable")
+    attr(S,"longname") <- attr(X,"longname")
     attr(S,"aspect") <- "dsensemble.pca transformed to stations"
     attr(S,"history") <- history.stamp()
     invisible(S)
