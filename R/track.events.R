@@ -245,8 +245,9 @@ Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1E6,
     dim(da) <- c(n2*n3,n1*n2)
     dim(d12) <- c(n2,n1)
     dim(d23) <- c(n3,n2)
-    j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))#ceiling(rep(n1,n2))
+    j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))
     j2 <- rep(seq(n2),n1)
+    i2 <- as.vector(sapply(seq(n2),function(x) rep(x,n3)))
     i3 <- rep(seq(n3),n2)
     if(any(!is.na(step2$num))) {
       kvec <- unique(c(step1$num,step2$num))
@@ -271,24 +272,33 @@ Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1E6,
         }
       }
     }
+    for(i in unique(i2)) da[i==i2,i!=j2] <- NA
     rank.j1 <- matrix(rep(NA,n1*n2*n2*n3),c(n2*n3,n1*n2))
     rank.j2 <- matrix(rep(NA,n1*n2*n2*n3),c(n2*n3,n1*n2))
+    rank.i2 <- matrix(rep(NA,n1*n2*n2*n3),c(n2*n3,n1*n2))
     rank.i3 <- matrix(rep(NA,n1*n2*n2*n3),c(n2*n3,n1*n2))
-    for(j in unique(j1)) rank.j1[,which(j1==j)] <- rank(da[,which(j1==j)])
-    for(j in unique(j2)) rank.j2[,which(j2==j)] <- rank(da[,which(j2==j)])
-    for(i in unique(i3)) rank.i3[which(i3==i),] <- rank(da[which(i3==i),])
+    for(j in seq(n1)) rank.j1[,which(j1==j)] <- rank(da[,which(j1==j)])
+    for(j in seq(n2)) rank.j2[,which(j2==j)] <- rank(da[,which(j2==j)])
+    for(i in seq(n2)) rank.i2[which(i2==i),] <- rank(da[which(i2==i),])
+    for(i in seq(n3)) rank.i3[which(i3==i),] <- rank(da[which(i3==i),])
     rank.j1[is.na(da)] <- NA
     rank.j2[is.na(da)] <- NA
+    rank.i2[is.na(da)] <- NA
     rank.i3[is.na(da)] <- NA
-    rank.all <- rank.j1 + rank.j2 + rank.i3
+    rank.all <- rank.j1 + rank.j2 + rank.i2 + rank.i3
     while(any(!is.na(rank.all))) {
       ij <- which(rank.all==min(rank.all,na.rm=TRUE),arr.ind=TRUE)
+      if(dim(ij)[1]>1) {
+        k <- which.min(apply(ij,1,function(x) da[x[1],x[2]]))
+        ij <- ij[k,]
+      }
       step2$num[j2[ij[2]]] <- step1$num[j1[ij[2]]]
       step3$num[i3[ij[1]]] <- step1$num[j1[ij[2]]]
       step2$dx[j2[ij[2]]] <- d12[j2[ij[2]],j1[ij[2]]]
       step3$dx[i3[ij[1]]] <- d23[i3[ij[1]],j2[ij[2]]]
       rank.all[,j1==j1[ij[2]]] <- NA
       rank.all[,j2==j2[ij[2]]] <- NA
+      rank.all[i2==i2[ij[1]],] <- NA
       rank.all[i3==i3[ij[1]],] <- NA
     }
   }
