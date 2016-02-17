@@ -72,7 +72,7 @@ subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       } else if (is.logical(it) & length(it)==length(t)) {
         if (verbose) print('it is a logical array')
         ii <- it
-      } else if (is.integer(it) & max(it)<=length(t)) {
+      } else if (is.numeric(it) & max(it)<=length(t)) {
         if (verbose) print('it is an index array')
         ii <- rep(FALSE,length(t))
         ii[it] <- TRUE

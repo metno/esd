@@ -16,7 +16,7 @@ as.trajectory.events <- function(x,verbose=FALSE,...) {
 
 trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
-                          method=NA,unit=NA,nmin=5,n=10) {
+                          method=NA,unit=NA,nmin=5,n=15) {
   if (verbose) print("trajectory")
   if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
   if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
