@@ -1,6 +1,6 @@
 # K Parding, 15.10.2015
 
-tracking.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
+track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
                          nmax=31*24,nmin=5,dmin=5E5,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
 
@@ -34,7 +34,7 @@ tracking.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
     x.tracked <- Track(x,x0=NULL,lplot=lplot,
                        amax=amax,dmax=dmax,nmax=nmax,nmin=nmin,
                        progress=progress,verbose=verbose)
-    y <- x.t$y
+    y <- x.tracked$y
   }
   y <- attrcp(x,y)
   class(y) <- class(x)
