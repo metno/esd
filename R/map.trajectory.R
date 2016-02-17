@@ -44,8 +44,16 @@ lonlat.trajectory <- function(x,
     lty=1,lwd=2,main=NULL,new=TRUE,verbose=FALSE) {
   if (verbose) print("lonlat.trajectory")
   x0 <- x
+  if(is.null(dim(x0))) {
+    dim(x) <- c(1,length(x0))
+    colnames(x) <- names(x0)
+  }
   lons <- x[,colnames(x)=='lon']
   lats <- x[,colnames(x)=='lat']
+  if(is.null(dim(x0))) {
+    dim(lons) <- c(1,length(lons))
+    dim(lats) <- c(1,length(lats))
+  }
   if (is.null(xlim)) xlim <- range(lons)
   if (is.null(ylim)) ylim <- range(lats)
   if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
@@ -60,15 +68,22 @@ lonlat.trajectory <- function(x,
   par(bty="n")
   plot(mlon,mlat,pch=".",col="white",main=main,
     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
-
+  
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
                           sum(!OK),'crossing dateline'))
-  
-  matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
+
+  if(sum(OK)>1) {
+    matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
-  points(lons[OK,],lats[OK,],pch='.',cex=0.5,col=adjustcolor(col,min(1,alpha+0.1)))
-  points(lons[OK,1],lats[OK,1],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
+  } else if(sum(OK)==1) {
+    lines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
+           col=adjustcolor(col,alpha.f=alpha))
+  }
+  points(lons[OK,],lats[OK,],pch='.',cex=0.5,
+         col=adjustcolor(col,min(1,alpha+0.1)))
+  points(lons[OK,1],lats[OK,1],pch=19,cex=cex,
+         col=adjustcolor(col,alpha.f=alpha))
 
   # trajectories crossing the dateline plotted in two parts
   if (sum(!OK)>0) {
@@ -138,6 +153,11 @@ sphere.trajectory <- function(x,
     verbose=FALSE,new=TRUE) {
   
   x0 <- x
+  if(is.null(dim(x0))) {
+    dim(x) <- c(1,length(x0))
+    colnames(x) <- names(x0)
+  }
+
   ## KMP 2015-12-07: apply xlim and ylim
   is <- NULL
   if (!is.null(xlim)) is$lon <- xlim
@@ -170,11 +190,14 @@ sphere.trajectory <- function(x,
   if (new) dev.new()
   par(bty="n",xaxt="n",yaxt="n")
   plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
-  
+
   matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
   points(X,Z,pch='.',cex=0.8,col=adjustcolor(col,alpha.f=min(1,alpha+0.2)))
-  points(X[1,],Z[1,],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
-    
+  if(is.null(dim(x0))) {
+    points(X[1],Z[1],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
+  } else {
+    points(X[1,],Z[1,],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
+  }
   points(x[y>0],z[y>0],pch=".",col='grey30')
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 
