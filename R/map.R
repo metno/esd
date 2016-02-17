@@ -874,7 +874,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.5,col="black",pch=13,lwd=4,cex=2,
+                       param=NA,alpha=0.5,col="black",pch=20,lwd=2,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
@@ -929,7 +929,9 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if (is.null(lonR) & dim(x)[1]>0) lonR <- mean(x[,"lon"])
     if (is.null(latR) & dim(x)[1]>0) latR <- mean(x[,"lat"])
     data(Oslo)
-    map(Oslo,type="n",new=new,projection=projection,
+    map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),,
+        bg=adjustcolor(col,alpha.f=0),new=new,
+        projection=projection,
         xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
   }
   
@@ -961,9 +963,9 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   }
 
   if (!is.null(period)) {
-    text(par("usr")[2] - 0.2*diff(range(par("usr")[3:4])),
-        par("usr")[4] - 0.1*diff(range(par("usr")[3:4])),
-        paste(period,collapse="-"),pos=2,cex=0.7,col="grey30")
+    text(par("usr")[2] - 0.15*diff(range(par("usr")[3:4])),
+        par("usr")[4] - 0.04*diff(range(par("usr")[3:4])),
+        paste(period,collapse=" - "),pos=2,cex=0.7,col="grey30")
   }
   
 }
