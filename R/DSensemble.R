@@ -48,7 +48,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            path.ds=NULL,file.ds="DSensemble.rda",
                            nmin=NULL,verbose=FALSE) {
 
-  
+
   #print("predictand")
   #if ( (deparse(substitute(FUN))=='sd') | (deparse(substitute(FUN))=='ar1') )
   if(verbose) print("DSensemble.t2m")
@@ -154,7 +154,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   #load('control.ds.1.rda'); T2M.ctl -> T2M
   flog <- file("DSensemble.t2m-log.txt","at")
   
-  if (verbose) print("loop...") 
+  if (verbose) print("loop...")
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
@@ -172,7 +172,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     X.MAM <- combine(MAM,MAMGCM)
     X.JJA <- combine(JJA,JJAGCM)
     X.SON <- combine(SON,SONGCM)
-
     if (verbose) print("- - - > EOFs")
     
     Z1 <- try(EOF(X.DJF))
@@ -1522,7 +1521,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                             non.stationarity.check=non.stationarity.check,
                             eofs=eofs,lon=lon,lat=lat,rel.cord=FALSE,
                             select=select,FUN=FUN,rmtrend=rmtrend,
-                            FUNX=FUNX,threshold=threshold,
+                            FUNX=FUNX,threshold=threshold,type=type,
                             pattern=pattern,verbose=verbose,nmin=nmin)
         eval(parse(text=paste('Z$',season,' <- z',sep='')))
       }
@@ -1609,7 +1608,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM))
-   
+    
     ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
       testGCM <- subset(GCM,it=range(year(T2M))) # REB 29.04.2014

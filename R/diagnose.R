@@ -434,8 +434,9 @@ diagnose.distr <- function(x,main=NULL,
 
 
 
-diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NULL,main=NULL,
-                                map.show=TRUE,map.type="points",verbose=FALSE,...) {
+diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
+                                yrange=NULL,main=NULL,map.show=TRUE,
+                                map.type="points",verbose=FALSE,...) {
   if (verbose) print('diagnose.dsensemble')
   # Trend-evaluation: rank
   # Counts outside 90% confidence: binomial distrib. & prob.
@@ -443,6 +444,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NUL
   
   if (inherits(x,"pca") | inherits(x,"list")) {
     diag <- diagnose.dsensemble.list(x,plot=plot,map.show=map.show,
+                                     main=main,xrange=xrange,yrange=yrange,
                                      verbose=verbose,...)
     invisible(diag)
   } else {
