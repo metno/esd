@@ -264,7 +264,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
         year <- as.numeric(format(ttt,'%Y')) 
         month <- format(ttt,'%m')
     } else 
-    if (inherits(ttt,'numeric')) {
+    if (inherits(ttt,c('numeric','integer'))) {
         year <- ttt
         month <- rep(1,length(year))
     }
