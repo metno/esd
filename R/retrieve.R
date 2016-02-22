@@ -13,7 +13,7 @@
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 
 ## Default function
-retrieve.default <- function(ncfile,param="auto",type="ncdf",
+retrieve.default <- function(ncfile,param="auto",type="ncdf4",
                              path=NULL,verbose=FALSE,...) {
     if (verbose) print('retrieve.default')
     ##
@@ -39,7 +39,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf",
     }
     
     test <- NULL
-    
+   
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
         nc <- open.ncdf(file.path(path,ncfile))
         dimnames <- names(nc$dim)
@@ -130,7 +130,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
         dimnames[i] <- tolower(v1$dim[[i]]$name)
     ## Get lon, lat, lev, time attr and values and update values if necessary
     ## Longitudes
-    ilon <- grep("lon|x", dimnames)
+    ilon <- grep("lon|x|ncells", dimnames)
     if (length(ilon) ==0)
         ilon <- NULL
     else if (length(ilon)>1)
