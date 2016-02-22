@@ -434,8 +434,9 @@ diagnose.distr <- function(x,main=NULL,
 
 
 
-diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NULL,main=NULL,
-                                map.show=TRUE,map.type="points",verbose=FALSE,...) {
+diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
+                                yrange=NULL,main=NULL,map.show=TRUE,
+                                map.type="points",verbose=FALSE,...) {
   if (verbose) print('diagnose.dsensemble')
   # Trend-evaluation: rank
   # Counts outside 90% confidence: binomial distrib. & prob.
@@ -443,6 +444,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NUL
   
   if (inherits(x,"pca") | inherits(x,"list")) {
     diag <- diagnose.dsensemble.list(x,plot=plot,map.show=map.show,
+                                     main=main,xrange=xrange,yrange=yrange,
                                      verbose=verbose,...)
     invisible(diag)
   } else {
@@ -500,8 +502,9 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,yrange=NUL
   }
 }
 
-diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
-                 map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,...) {
+diagnose.dsensemble.list <- function(X,plot=FALSE,is=NULL,
+                 map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
+                 main=NULL,verbose=FALSE,...) {
   if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
   if (inherits(X,"pca")) X <- as.station(X,verbose=verbose)
@@ -521,13 +524,14 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,verbose=FALSE,is=NULL,
   }
   d <- list(outside=outside,deltaobs=deltaobs,deltagcm=deltagcm,
             N=di$N,location=names(X))
- 
+
+  if(is.null(main)) main <- attr(X,"variable")
   if(plot) {
     if(verbose) print("target plot") 
     dev.new()
     par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=c(2,1,.5),xpd=TRUE)
     plot(c(-100,100),c(-100,100),type="n",
-         axes=FALSE,ylab="",xlab="",main=attr(X,"variable"))
+         axes=FALSE,ylab="",xlab="",main=main)
     mtext("trend",side=1,line=1.5,cex=par("cex"))
     mtext("standard deviation",side=2,line=2,cex=par("cex"))
     u <- par("usr")

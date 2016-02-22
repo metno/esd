@@ -43,7 +43,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
 
   ## Rearrange time index
   t <- as.numeric(strftime(index(Z),format="%Y%m%d%H%M"))
-    
+  
   ## Calculate first and second derivative
   if(verbose) print("Calculate first and second derivative")
   resx <- dX(Z,m=m,accuracy=accuracy,verbose=verbose,progress=progress)
@@ -323,7 +323,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     ok <- rep(TRUE,length(date))
     for (i in seq(1,length(date))) {
       ##print(paste(i,date[i]))
-      ##browser()
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
       infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
@@ -353,23 +352,23 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       ilon <- ilon[!is.na(ilon)]
       ilat <- ilat[!is.na(ilat)]
       ##dslpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
-      ok <- sum(!is.na(ilon))>=3
-      if(ok) {
+      oki <- sum(!is.na(ilon))>=3
+      if(oki) {
        dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-       ok <- sum(dpi>dpmin & !is.na(dpi))>=3 & mean(dpi,na.rm=TRUE)>dpmin &
+       oki <- sum(dpi>dpmin & !is.na(dpi))>=3 & mean(dpi,na.rm=TRUE)>dpmin &
          ( (cyclones & pcent[i]<mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
            (!cyclones & pcent[i]>mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) )
       }
-      if (ok) {          
+      if (oki) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
         fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
         vg <- dpi/(fi*rho)
         v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
-        radius[i] <- mean(ri)
-        max.dslp[i] <- mean(dpi)
-        max.speed[i] <- mean(v.grad)
-        max.vg[i] <- mean(vg)
-        closed[i] <- floor(length(ilon)/4)
+        radius[i] <- mean(ri,na.rm=TRUE)
+        max.dslp[i] <- mean(dpi,na.rm=TRUE)
+        max.speed[i] <- mean(v.grad,na.rm=TRUE)
+        max.vg[i] <- mean(vg,na.rm=TRUE)
+        closed[i] <- floor(length(dpi>dpmin & !is.na(dpi))/4)
       } else {
         ok[i] <- FALSE
       }
@@ -377,12 +376,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     t2 <- Sys.time()
     if (verbose) print(paste('finding points of inflexion took',
                              round(as.numeric(t2-t1,units="secs")),'s'))
-
     if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
     max.dslp <- max.dslp*1E-2*1E3
     if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
-    
-    #ok <- rep(TRUE,length(date))
+
     if(!is.null(rmin)) ok <- ok & radius>=rmin
     if(!is.null(rmax)) ok <- ok & radius<=rmax
     lon <- lon[ok]

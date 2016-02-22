@@ -1204,7 +1204,12 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
   index(y) <- year(y)
   #print("---")
 
-  pscl <- c(0.9,1.1)
+  if(map.show | target.show) {
+    pscl <- c(0.9,1.3)
+  } else {
+    pscl <- c(0.9,1.1)
+  }
+  
   if (max(coredata(z),na.rm=TRUE) < 0) pscl <- rev(pscl)
   args <- list(...)
   #print(names(args))
@@ -1229,12 +1234,16 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
   nt <- length(index(z))
   t2 <- c(year(t),rev(year(t)))
   col <- rgb(rep(1,49),seq(0.95,0.1,length=49),seq(0.95,0.1,length=49))
-  
+
+  #for(ii in (1:10)) {
+  #  xi <- subset(x,is=ii)
+  #  index(xi) <- year(xi)
+  #  lines(xi,col=adjustcolor("red",alpha.f=0.5),lwd=2,lty=1)
+  #}
   for (ii in 1:49) {
     qp1 <- qnorm(1-ii/50,mean=coredata(diag$mu),sd=coredata(diag$si))
     qp2 <- qnorm(ii/50,mean=coredata(diag$mu),sd=coredata(diag$si))
     ci <- c(qp1,rev(qp2))
-    #print(c(length(ci),length(t2)))
     polygon(t2,ci, col= envcol, ,border=NA)
                                         # transparency not good for hard copies
     #polygon(t2,ci,col=col[ii],border=NA)

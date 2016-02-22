@@ -830,10 +830,10 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
   d <- dim(Y[[1]])
   Z <- sapply(Y,function(x) {
               y <- apply(x,2,FUN=FUN)
-              invisible( rbind(q5(y),mean(y),q95(y)) )} )
-  z.q5 <- Z[,1]
-  z <- Z[,2]
-  z.q95 <- Z[,3]
+              invisible( rbind(q5(y),median(y),q95(y)) )} )
+  z.q5 <- Z[1,]
+  z <- Z[2,]
+  z.q95 <- Z[3,]
   
   if (!is.null(FUN2)) {
     if(verbose) print(paste("calculate significance"))
@@ -945,9 +945,9 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
          col="grey70",bg="grey80",cex=7,lwd=7)
   points(min(xrange)+dlon/3,max(yrange)-dlat/3,pch=21,col="grey95",
          bg="grey95",cex=2,lwd=0.5)
-  text(min(xrange)+dlon/3,max(yrange)-dlat/3,"q5",cex=0.7)
-  text(min(xrange)+dlon/3,max(yrange)-dlat*0.2,"mean",cex=0.7)
-  text(min(xrange)+dlon/3,max(yrange)-dlat*0.05,"q95",cex=0.7)
+  text(min(xrange)+dlon/3,max(yrange)-dlat/3,"Low",cex=0.7)#"q5",cex=0.7)
+  text(min(xrange)+dlon/3,max(yrange)-dlat*0.2,"Median",cex=0.7)#"mean",cex=0.7)
+  text(min(xrange)+dlon/3,max(yrange)-dlat*0.05,"High",cex=0.7)#"q95",cex=0.7)
   ## size
   points(min(xrange)+2.0*dlon,max(yrange)-0.3*dlat,pch=21,
          bg="grey70",col="grey70",cex=3)
@@ -965,8 +965,8 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
   text(min(xrange)+1.3*dlon,max(yrange),"not sign.\n trend",cex=0.7)
   text(min(xrange)+2.3*dlon,max(yrange)-0.3*dlat,
        "quality of esd:\nexcellent",pos=4,cex=0.7)
-  text(min(xrange)+2.3*dlon,max(yrange)-0.55*dlat,"ok",pos=4,cex=0.7)
-  text(min(xrange)+2.3*dlon,max(yrange)-0.75*dlat,"bad",pos=4,cex=0.7)
+  text(min(xrange)+2.3*dlon,max(yrange)-0.55*dlat,pos=4,cex=0.7,"satisfactory")#"ok")
+  text(min(xrange)+2.3*dlon,max(yrange)-0.75*dlat,pos=4,cex=0.7,"not good")#"bad")
 
   if(verbose) print("finished!")
   invisible(d)
