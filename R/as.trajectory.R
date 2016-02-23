@@ -47,61 +47,66 @@ rence")
   for (name in names(x)) {
     eval(parse(text=paste("x$",name,"<-fn(x$",name,")",sep="")))
   }
-
+  
   if(verbose) print("remove short trajectories")
   #if (!("trackcount" %in% names(x))) {
   x <- Trackstats(x,verbose=verbose)
   #}
-  x <- subset.events(x,it=x$trackcount>nmin)
-  x["trajectory"] <- Enumerate(x)
-  
-  # interpolate all trajectories to same length n
-  if(verbose) print('interpolate trajectories')
-  aggregate(x$date, list(x$trajectory), function(x) x[1])$x -> d1
-  aggregate(x$time, list(x$trajectory), function(x) x[1])$x -> t1
-  aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> d2
-  aggregate(x$time, list(x$trajectory), function(x) x[length(x)])$x -> t2
-  dt1 <- as.numeric(strftime(strptime(paste(d1,t1),format="%Y%m%d %H"),format="%Y%m%d%H"))
-  dt2 <- as.numeric(strftime(strptime(paste(d2,t2),format="%Y%m%d %H"),format="%Y%m%d%H"))
-  #aggregate(x$date, list(x$trajectory), length)$x -> len
-  aggregate(x$trackcount, list(x$trajectory), function(x) x[1])$x -> len
-  aggregate(x$tracklength, list(x$trajectory), function(x) x[1])$x -> distance
-  a <- 6.378e06
-  xx <- a * cos( x$lat*pi/180 ) * cos( x$lon*pi/180 )
-  yy <- a * cos( x$lat*pi/180 ) * sin( x$lon*pi/180 )
-  zz <- a * sin( x$lat*pi/180 )
-  xa <- aggregate(xx, list(x$trajectory), function(x) approx(x,n=n)$y)$x
-  ya <- aggregate(yy, list(x$trajectory), function(x) approx(x,n=n)$y)$x
-  za <- aggregate(zz, list(x$trajectory), function(x) approx(x,n=n)$y)$x
-  lon <- atan2( ya, xa )*180/pi 
-  lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
-  #aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat
-  #aggregate(x$lon,list(x$trajectory),function(x) approxlon(x,n=n)$y)$x -> lon
-  colnames(lon) <- rep('lon',n)
-  colnames(lat) <- rep('lat',n)
-  #if(verbose) print(n[1:n])
-  #nlist1 <- c('trajectory','lat','lon','year','month','day','time',
-  #           'date','code99','timestep')
-  #nlist2 <- names(x)[!(names(x) %in% nlist1)]
   nlist1 <- c("trajectory","code99","date","time","trackcount",
               "tracklength","timestep","lon","lat")
   nlist1 <- nlist1[nlist1 %in% names(x)]
   nlist2 <- names(x)[!(names(x) %in% nlist1)]
-  if(is.null(nlist2)) {
-    X <- cbind(trajectory=unique(x$trajectory),lon=lon,lat=lat,
-               start=dt1,end=dt2,n=len,d=distance)
+
+  x <- subset.events(x,it=x$trackcount>=nmin)
+  X <- matrix(,nrow=length(unique(x$trajectory)),ncol=5+2*n+length(nlist2)*n)
+  cnames <- c("trajectory","start","end","n","d",rep("lon",n),rep("lat",n))
+  if(!is.null(nlist2)) cnames <- c(cnames,as.vector(sapply(nlist2,function(x) rep(x,n))))
+  colnames(X) <- cnames
+  
+  if(dim(X)[1]==0) {
+    if(verbose) print(paste("No trajectories >",nmin-1,"time steps"))
   } else {
+    x["trajectory"] <- Enumerate(x)
+    # interpolate all trajectories to same length n
+    if(verbose) print('interpolate trajectories')
+    aggregate(x$date, list(x$trajectory), function(x) x[1])$x -> d1
+    aggregate(x$time, list(x$trajectory), function(x) x[1])$x -> t1
+    aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> d2
+    aggregate(x$time, list(x$trajectory), function(x) x[length(x)])$x -> t2
+    dt1 <- as.numeric(strftime(strptime(paste(d1,t1),format="%Y%m%d %H"),format="%Y%m%d%H"))
+    dt2 <- as.numeric(strftime(strptime(paste(d2,t2),format="%Y%m%d %H"),format="%Y%m%d%H"))
+    #aggregate(x$date, list(x$trajectory), length)$x -> len
+    aggregate(x$trackcount, list(x$trajectory), function(x) x[1])$x -> nlen
+    aggregate(x$tracklength, list(x$trajectory), function(x) x[1])$x -> dlen
+    a <- 6.378e06
+    xx <- a * cos( x$lat*pi/180 ) * cos( x$lon*pi/180 )
+    yy <- a * cos( x$lat*pi/180 ) * sin( x$lon*pi/180 )
+    zz <- a * sin( x$lat*pi/180 )
+    xa <- aggregate(xx, list(x$trajectory), function(x) approx(x,n=n)$y)$x
+    ya <- aggregate(yy, list(x$trajectory), function(x) approx(x,n=n)$y)$x
+    za <- aggregate(zz, list(x$trajectory), function(x) approx(x,n=n)$y)$x
+    lon <- atan2( ya, xa )*180/pi 
+    lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
+    #aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat
+    #aggregate(x$lon,list(x$trajectory),function(x) approxlon(x,n=n)$y)$x -> lon
+    colnames(lon) <- rep('lon',n)
+    colnames(lat) <- rep('lat',n)
+    X[,"trajectory"] <- unique(x$trajectory)
+    X[,"start"] <- dt1
+    X[,"end"] <- dt2
+    X[,"n"] <- nlen
+    X[,"d"] <- dlen
+    X[,colnames(X)=="lon"] <- lon
+    X[,colnames(X)=="lat"] <- lat
     for(name in nlist2) {
       if(verbose) print(name)
       eval(parse(text=paste("aggregate(x$",name,
-           ",list(x$trajectory),function(x) approx(x,n=",
-           n,")$y)$x ->",name,sep="")))
+        ",list(x$trajectory),function(x) approx(x,n=",
+        n,")$y)$x ->",name,sep="")))
       eval(parse(text=paste("colnames(",name,
-           ")<-rep('",name,"',",n,")",sep="")))
+        ")<-rep('",name,"',",n,")",sep="")))
+      eval(parse(text=paste("X[,colnames(X)=='",name,"'] <- ",name,sep="")))
     }
-    X <- eval(parse(text=paste("cbind(trajectory=unique(x$trajectory),lon=lon,lat=lat",
-        paste(nlist2,"=",nlist2,sep="",collapse=","),
-        "start=dt1,end=dt2,n=len,d=distance)",sep=",")))
   }
   # add attributes to trajectory matrix X
   attr(X, "location")= loc
