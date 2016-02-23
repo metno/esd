@@ -730,7 +730,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         dy <- day(t)
         hr <- as.numeric(format(t,"%H"))
         mn <- as.numeric(format(t,"%M"))
-        t <-  as.Date(format(t,"%Y-%m-%d"))
+        if (!inherits(it,"POSIXt")) t <-  as.Date(format(t,"%Y-%m-%d"))
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
     ## Generate sequence of days, months or years if range of it value is given
@@ -821,16 +821,20 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
                   warning("default.subset: did not reckognise the selection citerion for 'it'")
                 }
         }
-      } else if (inherits(it,c("Date","yearmon"))) {       
+    } else if (inherits(it,c("Date","yearmon"))) {       
         ##        ii <- is.element(t,it)
         if (verbose) print('it is a date object')
         ii <- (t >= min(it)) & (t <= max(it))
-      } else if (inherits(it,"logical") & length(it)==length(yr)) {
+    } else if (inherits(it,"logical") & length(it)==length(yr)) {
         ii <- it
-      } else if (!is.null(it)) {
+    } else if (inherits(it,"POSIXt")) {
+        if (verbose) print('it is a POSIXt date & time object')
+        if (!inherits(t,"POSIXt")) it <- as.Date(it)
+        ii <- is.element(t,it)
+    } else if (!is.null(it)) {
         ii <- rep(FALSE,length(t))
         warning("default.subset: did not reckognise the selection citerion for 'it'")
-      } 
+    } 
     
     ## it <- (1:length(t))[ii]
     ## 
@@ -979,6 +983,7 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (length(it)==0) it <- NULL
   if (length(is)==0) is <- NULL
   ii <- rep(TRUE,dim(x)[1])
+  
   if(!is.null(it)) {
     dt <- x[,"date"]*1E2 + x[,"time"]
     t <- as.Date(strptime(x[,"date"],format="%Y%m%d"))
@@ -1020,14 +1025,14 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
       if (is.character(it)) it <- as.numeric(it)
       ii <- is.element(dt,it)
     } else if (is.dates(it)) {
-      if (is.character(it) & grepl("-",it)) {
+      if (is.character(it) & all(grepl("-",it))) {
         it <- as.Date(it)
       } else if (!inherits(it,"Date")) {
         it <- as.Date(strptime(it,format="%Y%m%d"))
       }
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
-        if (verbose) print(it)          
+        if (verbose) print(it)
         it <- strftime(seq(it[1],it[2],by='day'),format="%Y%m%d")
         t <- strftime(t,format="%Y%m%d")
         ii <- is.element(t,it)
@@ -1078,7 +1083,7 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     jj <- rep(FALSE,dim(x)[1])
     warning("default.subset: did not reckognise the selection citerion for 'is'")
   }
-
+  
   ij <- ii & jj
   y <- x[ij,]
   attr(y,"aspect") <- "subset"

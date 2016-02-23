@@ -881,6 +881,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
                        verbose=FALSE,...) {
   if(verbose) print("map.events")
   x <- subset(x,it=it,is=is,verbose=verbose)
+  
   if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
       
   if (is.null(is$lon) & !is.null(xlim)) {
@@ -896,7 +897,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(dim(x)[1]>0) is$lat <- range(x[,"lat"])+c(-2,2)
   }
   if (is.null(ylim)) ylim <- is$lat
-
+  
   if (!is.null(Y)) {
     Y <- subset(Y,is=is)
   }
@@ -912,7 +913,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         tx <- x[,"date"]
         ty <- as.numeric(strftime(ty,"%Y%m%d"))
       } else if (inherits(ty,"POSIXt")) {
-        tx <- paste(x[,"date"],x[,"time"],sep="")
+        tx <- x[,"date"]*1E2 + x[,"time"]
         ty <- as.numeric(strftime(ty,"%Y%m%d%H"))
       }
       ii <- is.element(ty,tx)
