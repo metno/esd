@@ -50,7 +50,7 @@ rence")
 
   if(verbose) print("remove short trajectories")
   #if (!("trackcount" %in% names(x))) {
-  x <- Trackstats(x)
+  x <- Trackstats(x,verbose=verbose)
   #}
   x <- subset.events(x,it=x$trackcount>nmin)
   x["trajectory"] <- Enumerate(x)

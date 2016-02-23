@@ -13,8 +13,8 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
       if (projection=="sp") latR <- -90
       sphere.trajectory(y,...)
     } else if (projection=="latlon" | projection=="lonlat") {
-      lonlat.trajectory(y,...)                
-    } 
+      lonlat.trajectory(y,...)
+    }
   } else if (type=='density') {
     map.density.trajectory(y,projection=projection,...)
   } else if (type=='shapes') {
@@ -23,7 +23,7 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
 }
 
 map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
- main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1,verbose=FALSE,new=TRUE) {
+  main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1,verbose=FALSE,new=TRUE) {
   if (verbose) print('map.anomaly.trajectory')
   stopifnot(is.trajectory(x))
   if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly(x)
@@ -38,7 +38,123 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
   matlines(t(lons),t(lats),lty=lty,lwd=lwd,
          col=adjustcolor(col,alpha.f=alpha))
 }
+
+segments.trajectory <- function(x,param="pcent",
+      xlim=NULL,ylim=NULL,colbar=list(pal='budrd',rev=FALSE,n=10,
+      breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
+      show.start=TRUE,show.end=TRUE,
+      alpha=0.4,cex=0.5,lty=1,lwd=2,main=NULL,new=TRUE,projection="lonlat",
+      verbose=FALSE,...) {
+  if(verbose) print("segments.trajectory")
+  x0 <- x
+  if(is.null(dim(x0))) {
+    dim(x) <- c(1,length(x0))
+    colnames(x) <- names(x0)
+  }
+  lons <- x[,colnames(x)=='lon']
+  lats <- x[,colnames(x)=='lat']
+  if(is.null(dim(x0))) {
+    dim(lons) <- c(1,length(lons))
+    dim(lats) <- c(1,length(lons))
+  }
+  if (is.null(xlim)) xlim <- range(lons)
+  if (is.null(ylim)) ylim <- range(lats)
+  if(verbose) print(paste('xlim:',paste(round(xlim),collapse=" - "),
+                          ', ylim:',paste(round(ylim),collapse=" - ")))
+
+  if(param %in% colnames(x)) {
+    if(sum(colnames(x)==param)==1) {
+      p <- matrix(rep(x[,colnames(x)==param],sum(colnames(x)=='lon')),dim(lons))
+    } else {
+      p <- x[,colnames(x)==param]
+    }
+  } else if (param %in% c("date","year","month")) {
+    n <- sum(colnames(x)=="lon")
+    p <- t(apply(x,1,function(y) strftime(seq(strptime(y[colnames(x)=="start"],"%Y%m%d%H"),
+                                   strptime(y[colnames(x)=="end"],"%Y%m%d%H"),
+                                   length.out=n),"%Y%m%d%H") ))
+    p <- matrix(as.numeric(p),dim(p))
+    if(param=="date") {
+      p <- matrix(round(p*1E-2),dim(p))
+    } else if(param=="year") {
+      p <- matrix(year(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
+    } else if(param=="month") {
+      p <- matrix(month(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
+    } 
+  } else {
+    print(paste("unknown input param =",param))
+    print(paste("possible choices:"))
+    print(paste(unique(colnames(x),collapse=",")))
+    print("year, month, yearmon, season")
+  }
+
+  lon0 <- lons[,1:(dim(lons)[2]-1)]
+  lon1 <- lons[,2:dim(lons)[2]]
+  lat0 <- lats[,1:(dim(lats)[2]-1)]
+  lat1 <- lats[,2:dim(lats)[2]]
+  pcol <- 0.5*(p[,1:(dim(p)[2]-1)] + p[,2:dim(p)[2]])
   
+  colbar <- colbar.ini(p,FUN=NULL,colbar=colbar,verbose=verbose)
+  #colbar$col <- adjustcolor(colbar$col,alpha.f=alpha)
+  icol <- apply(pcol,2,findInterval,colbar$breaks)
+  col <- matrix(colbar$col[icol],dim(pcol))
+
+  data("geoborders",envir=environment())
+  #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
+  #if(!is.null(xlim)) ok <- ok & geoborders$x >= min(xlim) & geoborders$x <= max(xlim)
+  mlon <- geoborders$x#[ok]
+  mlat <- geoborders$y#[ok]
+
+  if (new) dev.new(width=8,height=7)
+  par0 <- par()
+  par(bty="n",fig=c(0,1,0.1,1))
+  plot(mlon,mlat,pch=".",col="white",main=main,
+    xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
+
+  OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
+  if(verbose) print(paste(dim(lons)[1],'trajectories,',
+                          sum(!OK),'crossing dateline'))
+  
+  if(sum(OK)>0) {
+    segments(lon0[OK,],lat0[OK,],lon1[OK,],lat1[OK,],
+             col=adjustcolor(col[OK,],alpha.f=alpha),lty=lty,lwd=lwd)
+  }
+  if(show.start) {
+    points(lon0[OK,1],lat0[OK,1],pch=19,cex=cex,col=adjustcolor(col[OK,1],alpha.f=alpha*0.75))
+  }
+
+  # draw coastlines
+  #points(mlon,mlat,pch=".",col='grey20',cex=1.4)
+  lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
+  
+  par(fig=par0$fig,new=TRUE)
+  image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+             legend.only = T, zlim = range(colbar$breaks),
+             col = adjustcolor(colbar$col,alpha.f=min(alpha+0.2,1)), legend.width = 1,
+             axis.args = list(cex.axis = 0.8,
+              xaxp=c(range(colbar$breaks),n=colbar$n)),
+             border = FALSE)
+
+  # trajectories crossing the dateline plotted in two parts
+  ## if (sum(!OK)>0) {
+  ##   fn <- function(lon,lat) {
+  ##     lon[lon<0] <- lon[lon<0]+360
+  ##     xy <- approx(lon,lat,sort(c(lon,180)))
+  ##     lon <- xy$x; lat <- xy$y
+  ##     lines(lon[lon<=180],lat[lon<=180],
+  ##         lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
+  ##     lines(lon[lon>=180]-360,lat[lon>=180],
+  ##         lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
+  ##   }
+  ##   if (sum(!OK)==1) {
+  ##     fn(lons[!OK,],lats[!OK,])
+  ##   } else {
+  ##     for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
+  ##   }
+  ## }
+  
+}
+
 lonlat.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
     lty=1,lwd=2,main=NULL,new=TRUE,verbose=FALSE) {
