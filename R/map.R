@@ -874,10 +874,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.5,col="black",pch=20,lwd=2,cex=1,
+                       param=NA,alpha=0.7,lwd=3,col="black",pch=20,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       show.trajectory=TRUE,
+                       show.trajectory=TRUE,lty=2,
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
   if(verbose) print("map.events")
@@ -944,12 +944,18 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         diff(range(x[,param],na.rm=TRUE))*cex
   }
 
-  period <- it
+  period <- unique(c(min(it),max(it)))
   
   if(dim(x)[1]>0) {
     #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
     #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
     cols <- adjustcolor(col,alpha=alpha)
+
+    if(show.trajectory & "trajectory" %in% colnames(x0)) {
+      xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)))
+      map(xall,lty=lty,lwd=lwd,col="steelblue3",alpha=alpha,new=FALSE,add=TRUE,
+          lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
+    }
 
     if(projection=="lonlat") {
       points(x[,"lon"],x[,"lat"],col=cols,cex=cex,pch=pch,lwd=lwd)
@@ -965,11 +971,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
       points(ax[ay>0],az[ay>0],col=cols,cex=cex,pch=pch,lwd=lwd)    
     }
    
-    if(show.trajectory & "trajectory" %in% colnames(x0)) {
-      xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)))
-      map(xall,lty=1,lwd=2,col="black",alpha=0.5,new=FALSE,add=TRUE,
-          lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
-    }
   }
 
   if (!is.null(period)) {

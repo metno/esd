@@ -157,7 +157,7 @@ segments.trajectory <- function(x,param="pcent",
 
 lonlat.trajectory <- function(x,show.start=TRUE,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
-    lty=1,lwd=2,main=NULL,new=TRUE,verbose=FALSE,add=FALSE) {
+    lty=1,lwd=2,main=NULL,add=FALSE,new=TRUE,verbose=FALSE,...) {
   if (verbose) print("lonlat.trajectory")
   x0 <- x
   if(is.null(dim(x0))) {
@@ -166,7 +166,7 @@ lonlat.trajectory <- function(x,show.start=TRUE,
   }
   lons <- x[,colnames(x)=='lon']
   lats <- x[,colnames(x)=='lat']
-  if(is.null(dim(x0))) {
+  if(dim(x)[1]==1) {
     dim(lons) <- c(1,length(lons))
     dim(lats) <- c(1,length(lats))
   }
@@ -174,7 +174,7 @@ lonlat.trajectory <- function(x,show.start=TRUE,
   if (is.null(ylim)) ylim <- range(lats)
   if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
                           ', ylim',paste(ylim,collapse="-")))
-
+  
   data("geoborders",envir=environment())
   #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   mlon <- geoborders$x#[ok]
@@ -269,7 +269,7 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 sphere.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=0.5,
     lty=1,lwd=2,lonR=0,latR=90,main=NULL,add=FALSE,
-    show.start=TRUE,verbose=FALSE,new=TRUE) {
+    show.start=TRUE,verbose=FALSE,new=TRUE,...) {
   
   x0 <- x
   if(is.null(dim(x0))) {
