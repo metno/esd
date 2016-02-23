@@ -45,7 +45,7 @@ track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
   invisible(y)
 }
 
-Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=map90,
+Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
                          nmax=31*24,nmin=5,dmin=5E5,
                          x0cleanup=TRUE,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
@@ -244,12 +244,14 @@ Track123 <- function(step1,step2,step3,n0=0,amax=90,dmin=0,dmax=1E6,
   d23[is.na(d23)] <- 0
   a23 <- mapply(function(x,y) angle(x,y,step3$lon,step3$lat),step2$lon,step2$lat)
   dmax23 <- adjustdmax(dmax,a23)
+  a23[a23>180] <- 360-a23[a23>180]
   a23[d23>dmax23] <- NA
   a23[d23<dmin] <- NA
   d12 <- mapply(function(x,y) distAB(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
   d12[is.na(d12)] <- 0
   a12 <- mapply(function(x,y) angle(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
   dmax12 <- adjustdmax(dmax,a12)
+  a12[a12>180] <- 360-a12[a12>180]
   a12[d12>dmax12] <- NA
   a12[d12<dmin] <- NA
   if(!all(is.na(a12)) & !all(is.na(a23))) {
@@ -328,16 +330,46 @@ Track123 <- function(step1,step2,step3,n0=0,amax=90,dmin=0,dmax=1E6,
 
 angle <- function(lon1,lat1,lon2,lat2) {
   a <- 360 - (atan2(lat2-lat1,lon2-lon1)*(180/pi) + 360) %% 360
-  a[a>180] <- 360-a[a>180]
+  #a[a>180] <- 360-a[a>180]
   return(a)
   #return(atan2(lat2-lat1,lon2-lon1)*180/pi+90)
 }
 
 ## adjust maximum distance based on angle of direction: max eastward, min westward 
-adjustdmax <- function(dmax,a) {
-  a[a>180] <- 360-a
-  a <- abs(a)
-  return(dmax*(1.3-0.2*(a/180)-0.8*(a/180)**2))
+adjustdmax <- function(dmax,a,n=1,s=1,w=1,e=1,lplot=FALSE) {
+  #a[a>180] <- 360-a
+  #a <- abs(a)
+  #return(dmax*(1.3-0.2*(a/180)-0.8*(a/180)**2))
+  rad <- a*pi/180
+  east <- rad > -pi/2 & rad < pi/2
+  north <- rad < pi & rad > 0
+  x.sw <- w*s/sqrt(s^2 + w^2*(tan(rad)^2))           
+  x.se <- e*s/sqrt(s^2 + w^2*(tan(rad)^2))
+  x.nw <- w*n/sqrt(n^2 + w^2*(tan(rad)^2))           
+  x.ne <- e*n/sqrt(n^2 + w^2*(tan(rad)^2))
+  x.sw[!east] <- -x.sw[!east]
+  x.nw[!east] <- -x.nw[!east]
+  y.sw <- s*sqrt(1-(x.sw/w)^2)
+  y.se <- s*sqrt(1-(x.se/e)^2)
+  y.nw <- n*sqrt(1-(x.nw/w)^2)
+  y.ne <- n*sqrt(1-(x.ne/e)^2)
+  y.sw[!north] <- -y.sw[!north]
+  y.se[!north] <- -y.se[!north]
+  x <- x.se
+  x[east & north] <- x.ne[east & north]
+  x[!east & north] <- x.nw[!east & north]
+  x[!east & !north] <- x.sw[!east & !north]
+  y <- y.se
+  y[east & north] <- y.ne[east & north]
+  y[!east & north] <- y.nw[!east & north]
+  y[!east & !north] <- y.sw[!east & !north]
+  d <- dmax*sqrt(x^2 + y^2)
+  if(lplot) {
+    plot(dmax*x*1E-3,dmax*y*1E-3,type="p",pch=19,cex=1,
+         xlim=c(-1.5,1.5)*dmax*1E-3,ylim=c(-1.5,1.5)*dmax*1E-3,
+         xlab="dmax (km)",ylab="dmax (km)",main="maximum displacement radius")
+  }
+  return(d)
 }
 
 Trackstats <- function(x,verbose=FALSE) {
