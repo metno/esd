@@ -704,6 +704,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ##print("HERE")
     ## get time in t
     t <- index(x)
+    
     ## KMP 2016-02-03: to solve problem with subset.events 
     if(inherits(t,"Date")) t <- as.Date(round(as.numeric(t)))
     if(!inherits(t,"POSIXt")) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
@@ -729,7 +730,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         dy <- day(t)
         hr <- as.numeric(format(t,"%H"))
         mn <- as.numeric(format(t,"%M"))
-        t <- format(t,"%Y-%m-%d")
+        t <-  as.Date(format(t,"%Y-%m-%d"))
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
     ## Generate sequence of days, months or years if range of it value is given
