@@ -155,9 +155,9 @@ segments.trajectory <- function(x,param="pcent",
   
 }
 
-lonlat.trajectory <- function(x,
+lonlat.trajectory <- function(x,show.start=TRUE,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
-    lty=1,lwd=2,main=NULL,new=TRUE,verbose=FALSE) {
+    lty=1,lwd=2,main=NULL,new=TRUE,verbose=FALSE,add=FALSE) {
   if (verbose) print("lonlat.trajectory")
   x0 <- x
   if(is.null(dim(x0))) {
@@ -180,10 +180,13 @@ lonlat.trajectory <- function(x,
   mlon <- geoborders$x#[ok]
   mlat <- geoborders$y#[ok]
 
-  if (new) dev.new(width=8,height=7)
+  if(is.null(dev.list())) add <- FALSE
+  if(add) new <- FALSE
+  
+  if(new) dev.new(width=8,height=7)
   par(bty="n")
-  plot(mlon,mlat,pch=".",col="white",main=main,
-    xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
+  if(!add) plot(mlon,mlat,pch=".",col="white",main=main,
+                xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
   
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
@@ -196,10 +199,10 @@ lonlat.trajectory <- function(x,
     lines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
   }
-  points(lons[OK,],lats[OK,],pch='.',cex=0.5,
-         col=adjustcolor(col,min(1,alpha+0.1)))
-  points(lons[OK,1],lats[OK,1],pch=19,cex=cex,
-         col=adjustcolor(col,alpha.f=alpha))
+  #points(lons[OK,],lats[OK,],pch='.',cex=0.5,
+  #       col=adjustcolor(col,min(1,alpha+0.1)))
+  if(show.start) points(lons[OK,1],lats[OK,1],pch=19,cex=cex,
+                        col=adjustcolor(col,alpha.f=alpha))
 
   # trajectories crossing the dateline plotted in two parts
   if (sum(!OK)>0) {
@@ -264,9 +267,9 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 
 
 sphere.trajectory <- function(x,
-    xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
-    lty=1,lwd=2,lonR=0,latR=90,main=NULL,
-    verbose=FALSE,new=TRUE) {
+    xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=0.5,
+    lty=1,lwd=2,lonR=0,latR=90,main=NULL,add=FALSE,
+    show.start=TRUE,verbose=FALSE,new=TRUE) {
   
   x0 <- x
   if(is.null(dim(x0))) {
@@ -302,17 +305,22 @@ sphere.trajectory <- function(x,
   if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   a <- sphere.rotate(gx[ok],gy[ok],lonR=lonR,latR=latR)
   x <- a[1,]; y <- a[2,]; z <- a[3,]
-    
-  if (new) dev.new()
+
+  if(is.null(dev.list())) add <- FALSE
+  if(add) new <- FALSE
+      
+  if(new) dev.new()
   par(bty="n",xaxt="n",yaxt="n")
-  plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
+  if(!add) plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
 
   matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
-  points(X,Z,pch='.',cex=0.8,col=adjustcolor(col,alpha.f=min(1,alpha+0.2)))
-  if(is.null(dim(x0))) {
-    points(X[1],Z[1],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
-  } else {
-    points(X[1,],Z[1,],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
+  #points(X,Z,pch='.',cex=0.8,col=adjustcolor(col,alpha.f=min(1,alpha+0.2)))
+  if(show.start) {
+    if(is.null(dim(x0))) {
+      points(X[1],Z[1],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
+    } else {
+      points(X[1,],Z[1,],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
+    }
   }
   points(x[y>0],z[y>0],pch=".",col='grey30')
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
