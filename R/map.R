@@ -877,9 +877,11 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
                        param=NA,alpha=0.5,col="black",pch=20,lwd=2,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                       show.trajectory=TRUE,
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
   if(verbose) print("map.events")
+  x0 <- x
   x <- subset(x,it=it,is=is,verbose=verbose)
   
   if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
@@ -948,19 +950,26 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
     #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
     cols <- adjustcolor(col,alpha=alpha)
+
     if(projection=="lonlat") {
       points(x[,"lon"],x[,"lat"],col=cols,cex=cex,pch=pch,lwd=lwd)
     } else {
       theta <- pi*x[,"lon"]/180
       phi <- pi*x[,"lat"]/180
-      x <- sin(theta)*cos(phi)
-      y <- cos(theta)*cos(phi)
-      z <- sin(phi)
-      a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
+      ax <- sin(theta)*cos(phi)
+      ay <- cos(theta)*cos(phi)
+      az <- sin(phi)
+      a <- rotM(x=0,y=0,z=lonR) %*% rbind(ax,ay,az)
       a <- rotM(x=latR,y=0,z=0) %*% a
-      x <- a[1,]; y <- a[2,]; z <- a[3,]
-      points(x[y>0],z[y>0],col=cols,cex=cex,pch=pch,lwd=lwd)
-   }
+      ax <- a[1,]; ay <- a[2,]; az <- a[3,]
+      points(ax[ay>0],az[ay>0],col=cols,cex=cex,pch=pch,lwd=lwd)    
+    }
+   
+    if(show.trajectory & "trajectory" %in% colnames(x0)) {
+      xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)))
+      map(xall,lty=1,lwd=2,col="black",alpha=0.5,new=FALSE,add=TRUE,
+          lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
+    }
   }
 
   if (!is.null(period)) {
