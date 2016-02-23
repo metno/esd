@@ -23,7 +23,8 @@ DSensemble<-function(y,...) UseMethod("DSensemble")
 
 DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
 
-  stopifnot(!missing(y),inherits(y,"station"),file.exists(paste(path,rcp,sep="")))
+  stopifnot(!missing(y),inherits(y,"station"),
+            file.exists(paste(file.path(path,rcp,fsep = .Platform$file.sep))))
   
   if (is.null(attr(y,'aspect'))) attr(y,'aspect') <- "original"
   
@@ -41,7 +42,7 @@ DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
 DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            predictor="ERA40_t2m_mon.nc",
                            rcp="rcp45",biascorrect=FALSE,
-                           non.stationarity.check=FALSE,type='ncdf',
+                           non.stationarity.check=FALSE,type='ncdf4',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",
                            pattern="tas_Amon_ens_",
@@ -367,7 +368,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_pr_mon.nc",
                               non.stationarity.check=FALSE,
-                              type='ncdf',
+                              type='ncdf4',
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
                               FUNX="sum",threshold=1,
@@ -606,7 +607,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
 DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_t2m_mon.nc",
-                              non.stationarity.check=FALSE,type='ncdf',
+                              non.stationarity.check=FALSE,type='ncdf4',
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
                               FUNX="mean",threshold=1,
@@ -819,7 +820,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
 DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,
-                           non.stationarity.check=FALSE,type='ncdf',
+                           non.stationarity.check=FALSE,type='ncdf4',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",
                            pattern="psl_Amon_ens_",
@@ -1084,7 +1085,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           predictor=list(t2m="data/ncep/air.mon.mean.nc",
                                          olr="data/ncep/OLR.mon.mean.nc",
                                          slp="data/ncep/slp.mon.mean.nc"),
-                          non.stationarity.check=FALSE,type='ncdf',
+                          non.stationarity.check=FALSE,type='ncdf4',
                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="wetmean",threshold=1,
                           pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365) {
@@ -1353,7 +1354,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                     predictor="ERA40_t2m_mon.nc",
                                     rcp="rcp45",biascorrect=FALSE,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
-                                    select=NULL,FUN="wetmean",type='ncdf',
+                                    select=NULL,FUN="wetmean",type='ncdf4',
                                     pattern="tas_Amon_ens_",verbose=FALSE) {
   if (verbose) print('DSensemble.mu.worstcase')
 
