@@ -23,7 +23,8 @@ DSensemble<-function(y,...) UseMethod("DSensemble")
 
 DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
 
-  stopifnot(!missing(y),inherits(y,"station"),file.exists(paste(path,rcp,sep="")))
+  stopifnot(!missing(y),inherits(y,"station"),
+            file.exists(paste(file.path(path,rcp,fsep = .Platform$file.sep))))
   
   if (is.null(attr(y,'aspect'))) attr(y,'aspect') <- "original"
   
