@@ -1,6 +1,6 @@
 # K Parding, 15.10.2015
 
-track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
+track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=2E5,amax=90,
                          nmax=31*24,nmin=5,dmin=5E5,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
 
@@ -31,7 +31,7 @@ track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
     y <- x.tracked
   } else {
     x.tracked <- Track(x,x0=NULL,lplot=lplot,
-                       amax=amax,dmax=dmax,nmax=nmax,nmin=nmin,
+                       amax=amax,dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
                        progress=progress,verbose=verbose)
     y <- x.tracked$y
   }
@@ -45,8 +45,8 @@ track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
   invisible(y)
 }
 
-Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
-                         nmax=31*24,nmin=5,dmin=5E5,
+Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=2E5,amax=90,
+                         nmax=31*24,nmin=5,dmin=6E5,
                          x0cleanup=TRUE,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
@@ -117,15 +117,6 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
   t2 <- Sys.time()
   if (verbose) print(paste('Three step tracking took',
             round(as.numeric(t2-t1,units="secs")),'s'))
-  #} else {
-  #  num <- x["trajectory"][[1]]
-  #  if("distance" %in% colnames(x)) {
-  #    dx <- x["distance"][[1]]
-  #  } else {
-  #    dx <- rep(NA,length(x["trajectory"][[1]]))
-  #  }
-  #  i.start <- 1
-  #}
 
   tracklen <- data.frame(table(num))
   if (!is.null(nmax)) {
@@ -225,7 +216,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E4,amax=90,
   invisible(list(y=y,y0=y0))
 }
 
-Track123 <- function(step1,step2,step3,n0=0,amax=90,dmin=0,dmax=1E6,
+Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1E6,
                              nend=NA,lplot=FALSE,verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
   if (is.na(n0) & !all(is.na(step1$num))) {
@@ -244,63 +235,53 @@ Track123 <- function(step1,step2,step3,n0=0,amax=90,dmin=0,dmax=1E6,
   d23[is.na(d23)] <- 0
   a23 <- mapply(function(x,y) angle(x,y,step3$lon,step3$lat),step2$lon,step2$lat)
   dmax23 <- adjustdmax(dmax,a23)
-  a23[a23>180] <- 360-a23[a23>180]
-  a23[d23>dmax23] <- NA
-  a23[d23<dmin] <- NA
   d12 <- mapply(function(x,y) distAB(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
   d12[is.na(d12)] <- 0
   a12 <- mapply(function(x,y) angle(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
   dmax12 <- adjustdmax(dmax,a12)
-  a12[a12>180] <- 360-a12[a12>180]
-  a12[d12>dmax12] <- NA
-  a12[d12<dmin] <- NA
-  if(!all(is.na(a12)) & !all(is.na(a23))) {
-    da <- sapply(a12,function(x) abs(x-a23))
-    da[da > amax & !is.na(da)] <- NA
+  da <- sapply(a12,function(x) abs(x-a23))
+  da[da>180 & !is.na(da)] <- abs(da[da>180 & !is.na(da)]-360)
+  dd <- sapply(d12,function(x) abs(x-d23))
+  d123 <- sapply(d12,function(x) x+d23)
+  ok.d <- sapply(d12<dmax12,function(x) sapply(d23<dmax23,function(y) y & x ))
+  ok.d2 <- sapply(d12<dmax/2,function(x) sapply(d23<dmax/2,function(y) y & x ))
+  ok.dd <- (dd/d123 < 0.5 | ok.d2) & dd < dmax/2
+  ok <- ok.d & (da <= amax | ok.d2) & ok.dd
+  j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))
+  j2 <- rep(seq(n2),n1)
+  i2 <- as.vector(sapply(seq(n2),function(x) rep(x,n3)))
+  i3 <- rep(seq(n3),n2)
+  for(i in unique(i2)) ok[i==i2,i!=j2] <- FALSE
+  if(any(ok)) {
+    da[!ok] <- NA
     dim(da) <- c(n2*n3,n1*n2)
     dim(d12) <- c(n2,n1)
     dim(d23) <- c(n3,n2)
-    j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))
-    j2 <- rep(seq(n2),n1)
-    i2 <- as.vector(sapply(seq(n2),function(x) rep(x,n3)))
-    i3 <- rep(seq(n3),n2)
+    nok <- matrix(rep(FALSE,length(da)),dim(da))
     if(any(!is.na(step2$num))) {
-      kvec <- unique(c(step1$num,step2$num))
-      kvec <- kvec[!is.na(kvec)]
-      for(k in kvec) {
-        if(k %in% step1$num  & k %in% step2$num) {
-          nok <- (j1==which(step1$num==k) & !j2==which(step2$num==k)) |
-                 (j1!=which(step1$num==k) & j2==which(step2$num==k))
-        } else if (k %in% step1$num) {
-          nok <- j1==which(step1$num==k)
-        } else {
-          nok <- j2==which(step2$num==k)
-        }
-        da[,nok] <- NA
+      for(k in unique(step2$num[!is.na(step2$num)])) {
+        nok[,(j1==which(step1$num==k) & j2!=which(step2$num==k))] <- TRUE
+        nok[,(j1!=which(step1$num==k) & j2==which(step2$num==k))] <- TRUE
+        nok[(i2==which(step2$num==k)),j1!=which(step1$num==k)] <- TRUE    
       }
     }
-    if(!is.na(nend)) {
-      for(k in nend) {
-        if (k %in% c(step1$num,step2$num)) {
-          nok <- j1==which(step1$num==k | step2$num==k)
-          da[,nok] <- NA
-        }
+    if(any(!is.na(nend))) {
+      for(k in nend[!is.na(nend) & nend %in% step1$num]) {
+        nok[,(j1==which(step1$num==k))] <- TRUE
+      }
+      for(k in nend[!is.na(nend) & nend %in% step2$num]) {
+        nok[,(j2==which(step2$num==k))] <- TRUE
+        nok[(i2==which(step2$num==k)),] <- TRUE
       }
     }
-    for(i in unique(i2)) da[i==i2,i!=j2] <- NA
-    rank.j1 <- matrix(rep(NA,n1*n2*n2*n3),c(n2*n3,n1*n2))
-    rank.j2 <- matrix(rep(NA,n1*n2*n2*n3),c(n2*n3,n1*n2))
-    rank.i2 <- matrix(rep(NA,n1*n2*n2*n3),c(n2*n3,n1*n2))
-    rank.i3 <- matrix(rep(NA,n1*n2*n2*n3),c(n2*n3,n1*n2))
-    for(j in seq(n1)) rank.j1[,which(j1==j)] <- rank(da[,which(j1==j)])
-    for(j in seq(n2)) rank.j2[,which(j2==j)] <- rank(da[,which(j2==j)])
-    for(i in seq(n2)) rank.i2[which(i2==i),] <- rank(da[which(i2==i),])
-    for(i in seq(n3)) rank.i3[which(i3==i),] <- rank(da[which(i3==i),])
-    rank.j1[is.na(da)] <- NA
-    rank.j2[is.na(da)] <- NA
-    rank.i2[is.na(da)] <- NA
-    rank.i3[is.na(da)] <- NA
-    rank.all <- rank.j1 + rank.j2 + rank.i2 + rank.i3
+    da[nok] <- NA
+    dd[is.na(da)] <- NA
+    d123[is.na(da)] <- NA
+    rank.da <- matrix(rank(da),dim(da))
+    rank.dd <- matrix(rank(dd),dim(dd))
+    rank.d123 <- matrix(rank(d123),dim(d123))
+    rank.all <- rank.da + rank.dd + rank.d123
+    rank.all[is.na(da)] <- NA
     while(any(!is.na(rank.all))) {
       ij <- which(rank.all==min(rank.all,na.rm=TRUE),arr.ind=TRUE)
       if(dim(ij)[1]>1) {
@@ -336,7 +317,7 @@ angle <- function(lon1,lat1,lon2,lat2) {
 }
 
 ## adjust maximum distance based on angle of direction: max eastward, min westward 
-adjustdmax <- function(dmax,a,n=1,s=1,w=1,e=1,lplot=FALSE) {
+adjustdmax <- function(dmax,a,n=1,s=1,w=0.8,e=1.2,lplot=FALSE) {
   #a[a>180] <- 360-a
   #a <- abs(a)
   #return(dmax*(1.3-0.2*(a/180)-0.8*(a/180)**2))
