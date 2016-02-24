@@ -255,16 +255,26 @@ as.station.list <- function(x) {
   return(y)
 }
 
-as.station.field <- function(x,is=NULL) {
+as.station.field <- function(x,is=NULL,verbose=FALSE) {
   index <- index(x)
   stopifnot(!missing(x),
            !zeros(inherits(x,c("field","zoo"),which=TRUE) ))
-  if (!is.null(is)) y <- regrid.field(x,is=is) else
-                    y <- x
-  y <- as.station.zoo(y,loc=NA,param=varid(y),unit=unit(y),
-                      lon=lon(y),lat=lat(y),alt=NA,
-                      cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,
-                      url=NA,reference=NA,info=NA, method="field",
+  if (!is.null(is)) y <- regrid.field(x,is=is,verbose=verbose) else y <- x
+
+  ## Expand the grid ...
+  lon <- expand.grid(lon(y),lat(y))$Var1
+  lat <- expand.grid(lon(y),lat(y))$Var2
+  ns <- length(lon) 
+
+  y <- as.station.zoo(y,loc=NA,param=rep(varid(y),ns),unit=rep(unit(y),ns),
+                      lon=lon,lat=lat,
+                      alt=rep(NA,ns),cntr=rep(NA,ns),
+                      longname=rep(attr(y,'longname'),ns),
+                      stid=rep(NA,ns),quality=rep(NA,ns),
+                      src=rep(src(y),ns),
+                      url=rep(attr(y,'URLs'),ns),
+                      reference=rep(attr(y,'reference'),ns),
+                      info=rep(attr(y,'info'),ns), method="field",
                       type=NA,aspect=NA)
   index(y) <- index
   attr(y,'history') <- history.stamp(x)
