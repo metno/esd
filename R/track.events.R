@@ -244,8 +244,8 @@ Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1E6,
   dd <- sapply(d12,function(x) abs(x-d23))
   d123 <- sapply(d12,function(x) x+d23)
   ok.d <- sapply(d12<dmax12,function(x) sapply(d23<dmax23,function(y) y & x ))
-  ok.d2 <- sapply(d12<dmax/2,function(x) sapply(d23<dmax/2,function(y) y & x ))
-  ok.dd <- (dd/d123 < 0.5 | ok.d2) & dd < dmax/2
+  ok.d2 <- sapply(d12<dmax/3,function(x) sapply(d23<dmax/3,function(y) y & x ))
+  ok.dd <- (dd/d123 < 0.5 | ok.d2) & dd < dmax/3
   ok <- ok.d & (da <= amax | ok.d2) & ok.dd
   j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))
   j2 <- rep(seq(n2),n1)
