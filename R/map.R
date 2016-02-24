@@ -874,13 +874,16 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.5,col="black",pch=20,lwd=2,cex=1,
+                       param=NA,alpha=0.7,lwd=3,col="black",pch=20,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                       show.trajectory=TRUE,lty=2,
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
   if(verbose) print("map.events")
+  x0 <- x
   x <- subset(x,it=it,is=is,verbose=verbose)
+  
   if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
       
   if (is.null(is$lon) & !is.null(xlim)) {
@@ -896,7 +899,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(dim(x)[1]>0) is$lat <- range(x[,"lat"])+c(-2,2)
   }
   if (is.null(ylim)) ylim <- is$lat
-
+  
   if (!is.null(Y)) {
     Y <- subset(Y,is=is)
   }
@@ -912,7 +915,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         tx <- x[,"date"]
         ty <- as.numeric(strftime(ty,"%Y%m%d"))
       } else if (inherits(ty,"POSIXt")) {
-        tx <- paste(x[,"date"],x[,"time"],sep="")
+        tx <- x[,"date"]*1E2 + x[,"time"]
         ty <- as.numeric(strftime(ty,"%Y%m%d%H"))
       }
       ii <- is.element(ty,tx)
@@ -941,25 +944,33 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         diff(range(x[,param],na.rm=TRUE))*cex
   }
 
-  period <- it
+  period <- unique(c(min(it),max(it)))
   
   if(dim(x)[1]>0) {
     #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
     #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
     cols <- adjustcolor(col,alpha=alpha)
+
+    if(show.trajectory & "trajectory" %in% colnames(x0)) {
+      xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)))
+      map(xall,lty=lty,lwd=lwd,col="steelblue3",alpha=alpha,new=FALSE,add=TRUE,
+          lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
+    }
+
     if(projection=="lonlat") {
       points(x[,"lon"],x[,"lat"],col=cols,cex=cex,pch=pch,lwd=lwd)
     } else {
       theta <- pi*x[,"lon"]/180
       phi <- pi*x[,"lat"]/180
-      x <- sin(theta)*cos(phi)
-      y <- cos(theta)*cos(phi)
-      z <- sin(phi)
-      a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
+      ax <- sin(theta)*cos(phi)
+      ay <- cos(theta)*cos(phi)
+      az <- sin(phi)
+      a <- rotM(x=0,y=0,z=lonR) %*% rbind(ax,ay,az)
       a <- rotM(x=latR,y=0,z=0) %*% a
-      x <- a[1,]; y <- a[2,]; z <- a[3,]
-      points(x[y>0],z[y>0],col=cols,cex=cex,pch=pch,lwd=lwd)
-   }
+      ax <- a[1,]; ay <- a[2,]; az <- a[3,]
+      points(ax[ay>0],az[ay>0],col=cols,cex=cex,pch=pch,lwd=lwd)    
+    }
+   
   }
 
   if (!is.null(period)) {

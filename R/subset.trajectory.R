@@ -12,11 +12,13 @@ subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     l <- dim(x)[1]
     if (is.null(it)) ii <- rep(TRUE,l)
     if (is.null(is)) ij <- rep(TRUE,l)
-
+ 
     # Generate sequence of days, months or years if range of it value is given
     if (!is.null(it)) {
       if(verbose) print('Generate sequence of time if it value is given')
-      t <- strftime(strptime(x[,colnames(x)=="start"],format="%Y%m%d%H"),
+      tstart <- strftime(strptime(x[,colnames(x)=="start"],format="%Y%m%d%H"),
+                    format="%Y-%m-%d")
+      tend <- strftime(strptime(x[,colnames(x)=="end"],format="%Y%m%d%H"),
                     format="%Y-%m-%d")
       yr <- year(x)
       mo <- month(x)
@@ -47,17 +49,20 @@ subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
         ii <- is.element(mo,eval(parse(text=paste('season.abb()$',it,sep=''))))
       } else if (is.dates(it)) {
-        it <- as.Date(it)
-        t <- as.Date(t)
+        it <- strftime(as.Date(it),format="%Y%m%d")
+        t1 <- strftime(as.Date(tstart),format="%Y%m%d")
+        t2 <- strftime(as.Date(tend),format="%Y%m%d")
         if ( length(it) == 2 ) {
           if (verbose) print('Between two dates')
-          if (verbose) print(it)          
-          it <- strftime(seq(it[1],it[2],by='day'),format="%Y%m%d")
-          t <- strftime(t,format="%Y%m%d")
-          ii <- is.element(t,it)
+          if (verbose) print(it)
+          ii <- t1>min(it) & t1<max(it) | t2>min(it) & t2<max(it)
+          #it <- strftime(seq(it[1],it[2],by='day'),format="%Y%m%d")
+          #t <- strftime(t,format="%Y%m%d")       
+          #ii <- is.element(t,it)
         } else { 
           if (verbose) print('it is a string of dates')
-          ii <- is.element(t,it)
+          ii <- it<t2 & it>t1
+          #ii <- is.element(t,it)
         }
      } else if (is.years(it)) {
         it <- as.integer(it)
