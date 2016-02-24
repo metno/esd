@@ -952,7 +952,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     cols <- adjustcolor(col,alpha=alpha)
 
     if(show.trajectory & "trajectory" %in% colnames(x0)) {
-      xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)))
+      xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)),nmin=3)
       map(xall,lty=lty,lwd=lwd,col="steelblue3",alpha=alpha,new=FALSE,add=TRUE,
           lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
     }
