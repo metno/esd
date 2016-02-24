@@ -4,7 +4,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
 
   if (is.null(xlim)) xlim <- range(lon(Y))
   if (is.null(ylim)) ylim <- range(lat(Y))
-  if (!is.nulldim(y))
+  if (!is.null(dim(y)))
       y <- apply(Y,2,FUN,na.rm=TRUE)
   else
      y <- Y  ## single specific date
