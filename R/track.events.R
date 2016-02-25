@@ -1,6 +1,6 @@
 # K Parding, 15.10.2015
 
-track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=2E5,amax=90,
+track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
                          nmax=31*24,nmin=5,dmin=5E5,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
 
@@ -45,7 +45,7 @@ track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=2E5,amax=90,
   invisible(y)
 }
 
-Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=2E5,amax=90,
+Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
                          nmax=31*24,nmin=5,dmin=6E5,
                          x0cleanup=TRUE,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
@@ -105,7 +105,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=2E5,amax=90,
                    num=num[datetime==d[i]],dx=dx[datetime==d[i]]),
         step3=list(lon=lons[datetime==d[i+1]],lat=lats[datetime==d[i+1]],
                    num=num[datetime==d[i+1]],dx=dx[datetime==d[i+1]]),
-             dmax=dmax*dh,n0=n0,amax=amax,nend=nend)
+             dmax=dmax,n0=n0,amax=amax,nend=nend)
     num[datetime==d[i-1]] <- nn$step1$num
     num[datetime==d[i]] <- nn$step2$num
     num[datetime==d[i+1]] <- nn$step3$num
@@ -317,38 +317,22 @@ angle <- function(lon1,lat1,lon2,lat2) {
 }
 
 ## adjust maximum distance based on angle of direction: max eastward, min westward 
-adjustdmax <- function(dmax,a,n=1,s=1,w=0.8,e=1.2,lplot=FALSE) {
-  #a[a>180] <- 360-a
-  #a <- abs(a)
-  #return(dmax*(1.3-0.2*(a/180)-0.8*(a/180)**2))
+adjustdmax <- function(dmax,a,dx=0.3,dy=0.2,width=1,height=1,lplot=FALSE) {
   rad <- a*pi/180
   east <- rad > -pi/2 & rad < pi/2
   north <- rad < pi & rad > 0
-  x.sw <- w*s/sqrt(s^2 + w^2*(tan(rad)^2))           
-  x.se <- e*s/sqrt(s^2 + w^2*(tan(rad)^2))
-  x.nw <- w*n/sqrt(n^2 + w^2*(tan(rad)^2))           
-  x.ne <- e*n/sqrt(n^2 + w^2*(tan(rad)^2))
-  x.sw[!east] <- -x.sw[!east]
-  x.nw[!east] <- -x.nw[!east]
-  y.sw <- s*sqrt(1-(x.sw/w)^2)
-  y.se <- s*sqrt(1-(x.se/e)^2)
-  y.nw <- n*sqrt(1-(x.nw/w)^2)
-  y.ne <- n*sqrt(1-(x.ne/e)^2)
-  y.sw[!north] <- -y.sw[!north]
-  y.se[!north] <- -y.se[!north]
-  x <- x.se
-  x[east & north] <- x.ne[east & north]
-  x[!east & north] <- x.nw[!east & north]
-  x[!east & !north] <- x.sw[!east & !north]
-  y <- y.se
-  y[east & north] <- y.ne[east & north]
-  y[!east & north] <- y.nw[!east & north]
-  y[!east & !north] <- y.sw[!east & !north]
+  x <- width*height/sqrt(height^2 + width^2*(tan(rad)^2))
+  x[!east] <- -x[!east]
+  y <- height*sqrt(1-(x/width)^2)
+  y[!north] <- -y[!north]
+  x <- (x + dx)/sqrt((cos(atan(dy/dx)) + dx)^2 + (sin(atan(dy/dx)) + dy)^2)
+  y <- (y + dy)/sqrt((cos(atan(dy/dx)) + dx)^2 + (sin(atan(dy/dx)) + dy)^2)
   d <- dmax*sqrt(x^2 + y^2)
   if(lplot) {
     plot(dmax*x*1E-3,dmax*y*1E-3,type="p",pch=19,cex=1,
          xlim=c(-1.5,1.5)*dmax*1E-3,ylim=c(-1.5,1.5)*dmax*1E-3,
          xlab="dmax (km)",ylab="dmax (km)",main="maximum displacement radius")
+    grid()
   }
   return(d)
 }
