@@ -2,19 +2,22 @@
 
 track <- function(x,...) UseMethod("track")
 
-track.events <- function(x,...) track.default(x,...)
+track.events <- function(x,verbose=FALSE,...) {
+  if(verbose) print("track.events")
+  track.default(x,...)
+}
 
-track.trajectory <- function(x,...) {
-  y <- as.events(x)
-  y <- track(y)
+track.trajectory <- function(x,verbose=FALSE,...) {
+  if(verbose) print("track.trajectory")
+  y <- as.events(x,verbose=verbose)
+  y <- track(y,verbose=verbose)
   invisible(y)
 }
 
 track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
                          nmax=31*24,nmin=5,dmin=5E5,dE=0.3,dN=0.2,
                          lplot=FALSE,progress=TRUE,verbose=FALSE) {
-
-  if(verbose) print("tracking.events")
+  if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
   yrmn <- as.yearmon(strptime(x["date"][[1]],"%Y%m%d"))
