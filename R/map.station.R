@@ -481,7 +481,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 
 
 sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
-                         gridlines=TRUE,col="green",bg="darkgreen",cex=0.2,pch=".",new=TRUE) {
+                   gridlines=TRUE,col="green",bg="darkgreen",cex=0.2,
+                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",new=TRUE) {
   x0 <- x
   ## Data to be plotted:
   if (inherits(x,"stationmeta")) {
@@ -581,7 +582,8 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
 # Plot the results:  
   dev.new()
   par(bty="n",xaxt="n",yaxt="n",new=TRUE)
-  plot(x,z,pch=".",col="white",xlab="",ylab="")
+  plot(x,z,pch=".",col="white",xlab="",ylab="",
+       cex.axis=cex.axis,cex.lab=cex.lab)
  
 # plot the grid boxes, but only the gridboxes facing the view point:
   ##Visible <- Y > 0 ##colMeans(Y) > 0
@@ -626,12 +628,13 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
                                         #print("colourbar")
       ##breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/                 ( max(map) - min(map) ) )
       bar <- cbind(breaks,breaks)
-      image(seq(breaks[1],breaks[length(breaks)],length=nc),c(1,2),bar,col=col)
+      image(seq(breaks[1],breaks[length(breaks)],length=nc),
+            c(1,2),bar,col=col,cex.axis=cex.axis)
       
       par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
           fig=c(0,1,0,1),new=TRUE)
       plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-      text(0.1,0.95,param,cex=1.5,pos=4)
+      text(0.1,0.95,param,cex=cex.main,pos=4)
       text(0.72,0.002,unit,pos=4)  
   }
   
