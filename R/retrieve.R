@@ -73,9 +73,10 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
 }
 
 ## Set retrieve for ncdf4 object
-retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
+retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
                             lon = NULL, lat = NULL, lev = NULL, it = NULL,
-                            miss2na = TRUE, greenwich = FALSE , ##ncdf4.check = TRUE ,
+                            miss2na = TRUE, greenwich = FALSE ,
+                            ##ncdf4.check = TRUE ,
                             plot = FALSE , verbose = FALSE , ...) 
     
 { # Begin of function
@@ -576,7 +577,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = path , param = "auto",
 
 
 ## Set retrieve for ncdf4 object
-retrieve.ncdf <- function (ncfile = ncfile, path = path , param = "auto",
+retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                            lon = NULL, lat = NULL, lev = NULL, it = NULL,
                            miss2na = TRUE, greenwich = FALSE , ##ncdf.check = TRUE ,
                            plot = FALSE , verbose = FALSE , ...) 
