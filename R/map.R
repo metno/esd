@@ -923,7 +923,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
       Y <- subset(Y,it=ii)
     }
   }
-
+  
   if(length(Y)!=0) {
     if (is.null(lonR)) lonR <- mean(lon(Y))
     if (is.null(latR)) latR <- mean(lat(Y))
@@ -933,7 +933,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if (is.null(lonR) & dim(x)[1]>0) lonR <- mean(x[,"lon"])
     if (is.null(latR) & dim(x)[1]>0) latR <- mean(x[,"lat"])
     data(Oslo)
-    map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),,
+    map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
         bg=adjustcolor(col,alpha.f=0),new=new,
         projection=projection,
         xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
@@ -951,7 +951,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
     #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
     cols <- adjustcolor(col,alpha=alpha)
-
+    
     if(show.trajectory & "trajectory" %in% colnames(x0)) {
       xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)),nmin=3)
       map(xall,lty=lty,lwd=lwd,col="steelblue3",alpha=alpha,new=FALSE,add=TRUE,
