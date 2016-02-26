@@ -22,7 +22,7 @@ ltp <- function(x,type='exponential',...) {
 DSensemble<-function(y,...) UseMethod("DSensemble")
 
 DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
-
+   ## 
   stopifnot(!missing(y),inherits(y,"station"),
             file.exists(paste(file.path(path,rcp,fsep = .Platform$file.sep))))
   
@@ -1454,7 +1454,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       X[i,i2] <- predict(wc.model, newdata=prex) +
         rnorm(n=sum(i1),sd=sd.noise)
       print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
-      #if (sum(i2) != length(years)) browser()
+      #if (sum(i2) != length(years)) 
      if (plot) lines(years[i2],X[i,i2],col=rgb(0,0.3,0.6,0.2))
      }
   if (plot) lines(aggregate(y,by=year,FUN='wetmean'),col='red',lwd=3)
