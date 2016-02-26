@@ -16,9 +16,10 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
-                         map.show=TRUE,map.type="points",
+                         map.show=TRUE,map.type="points",map.insert=TRUE,
+                         cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
                          mar=c(4.5,4.5,0.75,0.5),
-                         alpha=0.3,verbose=FALSE,...) {
+                         alpha=0.5,alpha.map=0.7,verbose=FALSE,...) {
 
   if (verbose) print('plot.station')
 
@@ -29,9 +30,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   }
   
   fig <- c(0,1,0,0.95)
-  if (map.show) fig[4] <- 0.8
+  if (map.show & map.insert) fig[4] <- 0.8
   if (legend.show) fig[3] <- 0.05  
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,fig=fig,mar=mar)
   ## browser()
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
@@ -43,7 +43,6 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if (is.null(ylim))
     ylim <- pretty(as.numeric(x))
   if (verbose) {print(xlim); print(ylim)}
-  
   if (plot.type=="single") {
       if (is.null(ylab))
           ylab <- ylab(x)
@@ -63,15 +62,19 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                length(lat(x))==dim(x)[2]) {
       nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
       ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
-      if (is.finite(nx) & is.finite(ny) ) col <- rgb(1-ny,nx,ny,alpha) else
-                                          col <- rainbow(dim(x)[2])
+      if (is.finite(nx) & is.finite(ny) ) {
+        col <- rgb(1-ny,nx,ny,1)
+      } else {
+        col <- rainbow(dim(x)[2])
+      }
     } else {
-      col <- adjustcolor(rainbow(length(x[1,])),alpha=alpha)
+      col <- rainbow(length(x[1,]))  
     }
-  } else {
-    col <- adjustcolor(col,alpha.f=alpha)
   }
-  
+  if(is.null(alpha.map)) alpha.map <- alpha
+  col.map <- adjustcolor(col,alpha.f=alpha.map)
+  col <- adjustcolor(col,alpha.f=alpha)
+
   ns <- length(stid(x))
 #  if ( (ns > 1) & (plot.type=="multiple") ) {
 #    for (i in 1:ns) {
@@ -80,14 +83,28 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 #        if (inherits(z,"try-error")) ylab[i] <- unit[i]
 #      }
 #  }
-
+ 
   errorbar <- errorbar & !is.null(err(x))
   
+  if(map.show & !map.insert) {
+    vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
+            cex.axis=cex.axis,cex=1.8)
+    new <- TRUE
+  }
+
   #print(ylab)
+  cls <- class(x)
+  if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
   class(x) <- "zoo"
+  if(new) dev.new()
+  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,fig=fig,mar=mar)
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
-           col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,...)
-  mtext(main,side=3,line=1,adj=0,cex=1.1)
+           col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
+           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,...)
+  mtext(main,side=3,line=1,adj=0,cex=cex.main)
+  if("seasonalcycle" %in% cls) {
+    axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
+  }
   par0 <- par()
   
   if (plot.type=="single") {
@@ -111,8 +128,9 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-
-    legend(0.01,0.75,loc(x),bty='n',ncol=4,text.col=col,cex=0.75)
+ 
+    if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
+                           text.col=col,cex=0.75)
     #title(main=loc(x),cex=1)
     
     if(legend.show) {
@@ -124,48 +142,60 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
-   if(map.show) { vis.map(x,col,map.type,add.text=FALSE)}
-   par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=TRUE)
-   plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
-            xlim=xlim,ylim=ylim,new=FALSE)
+
+    if(map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
+                                      cex.axis=cex.axis*0.75,
+                                      add.text=FALSE,map.insert=map.insert)
+    par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",
+        xpd=FALSE,new=TRUE)
+    plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
+             xlim=xlim,ylim=ylim,new=FALSE)
+   
   }
 }
 
-vis.map <- function(x,col='red',map.type='points',add.text=FALSE) {
-#  print('vis.map')
-       xrange <- range(lon(x)) + c(-10,10)
-       yrange <- range(lat(x)) + c(-5,5)
-       data(geoborders)
-       lon <- geoborders$x
-       lat <- geoborders$y
-       ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
-             lat>(min(yrange)-1) & lat<(max(yrange)+1)
-       lon2 <- attr(geoborders,"borders")$x
-       lat2 <- attr(geoborders,"borders")$y
-       ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
-              lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
-       par(fig=c(0.76,0.97,0.76,0.97),new=TRUE, mar=c(0,0,0,0),
-           xpd=NA,col.main="grey",bty="n")
-       plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
-            xlab=NA,ylab=NA,axes=FALSE,
-            xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
-            ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
-       axis(1,mgp=c(3,.5,0),cex.axis=0.75)
-       axis(2,mgp=c(2,.5,0),cex.axis=0.75)
-       lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
-       if (map.type=="points") {
-         points(lon(x),lat(x),pch=21,cex=1,col=col,bg=col,lwd=1)
-         #print(loc(x))
-         if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
-     } else if (map.type=="rectangle") {
-         rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
-              border="black",lwd=1,lty=2)
-       }
+
+vis.map <- function(x,col='red',map.type='points',
+                    xrange=NULL,yrange=NULL,cex=1,
+                    cex.axis=0.8,add.text=FALSE,
+                    map.insert=TRUE,verbose=FALSE) {
+  if(verbose) print('vis.map')
+  if(is.null(xrange)) xrange <- range(lon(x)) + c(-5,5)
+  if(is.null(yrange)) yrange <- range(lat(x)) + c(-2,2)
+  if(!map.insert) new <- TRUE else new <- FALSE
+  data(geoborders)
+  lon <- geoborders$x
+  lat <- geoborders$y
+  ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
+        lat>(min(yrange)-1) & lat<(max(yrange)+1)
+  lon2 <- attr(geoborders,"borders")$x
+  lat2 <- attr(geoborders,"borders")$y
+  ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
+        lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
+  if(map.insert) {
+    par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
+        mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
+  } else dev.new()
+  plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
+       xlab=NA,ylab=NA,axes=FALSE,new=new,
+       xlim=xrange,ylim=yrange)
+       #xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
+       #ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
+  axis(1,mgp=c(3,.5,0),cex.axis=cex.axis)
+  axis(2,mgp=c(2,.5,0),cex.axis=cex.axis)
+  lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+  if (map.type=="points") {
+    points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
+    if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
+  } else if (map.type=="rectangle") {
+    rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
+         border="black",lwd=1,lty=2)
+  }
 }
 
 plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
                      pattern=1,what=c("pc","eof","var"),
-                     colbar=list(pal=NULL,rev=FALSE,n=10,
+                     colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
                          breaks=NULL,type="p",cex=2,show=TRUE,
                          h=0.6,v=1,pos=0.05),
                      verbose=FALSE,...) {
@@ -184,6 +214,7 @@ plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 
 plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
                            what=c("pc","eof","var"),## colbar=NULL,
+                           cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
                            verbose=FALSE,...) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   n <- pattern
@@ -202,20 +233,24 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   if (new) dev.new()
   ## par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
-
   if (length(grep('eof',what))>0) {
       if (verbose) {print('Show map'); print(class(x))}
       if (inherits(x,'eof')) {## inherits(x,'pca') |
           par(fig=c(0,0.5,0.5,1))
           ## par(fig=c(0.025,0.5,0.5,0.975)) ## c(0,0.45,0.5,0.975) c(0.05,0.5,0.55,0.95)
-          map(x,pattern=pattern,verbose=verbose,...) ## AM formely new=FALSE colbar=colbar,
+          map(x,pattern=pattern,verbose=verbose,
+              cex.main=cex.main,cex.axis=cex.axis,
+              cex.lab=cex.lab,...) ## AM formely new=FALSE colbar=colbar,
       } else if (inherits(x,'pca')) {
           par(fig=c(0,0.5,0.5,1))
           main1 <- paste('Leading EOF#',pattern, ' (',
                          round(var.eof[pattern],digits=2),"%)",sep='')
-          map(x,pattern=pattern,verbose=verbose,...) ## colbar=colbar,
-          title(main=src(x)[1],cex.main=0.6,col.main="grey40",adj=0,line=0)
-          title(main=main1,cex.main=0.8)
+          map(x,pattern=pattern,verbose=verbose,
+              cex.main=cex.main,cex.axis=cex.axis,
+              cex.lab=cex.lab,...) ## colbar=colbar,
+          title(main=src(x)[1],cex.main=cex.main*0.8,
+                col.main="grey40",adj=0,line=0)
+          title(main=main1,cex.main=cex.main)
       }
   }
   ##  if (length(grep('pc',what))>0) result <- as.station(x) else
@@ -227,7 +262,8 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   ## browser()
   if (length(grep('var',what))>0) {
     par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
+    plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=cex.main,
+                 cex.axis=cex.axis,bty="n")
   }
   
   #print(main)
@@ -238,9 +274,13 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
       main <- paste('Leading PC#',pattern,' of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[pattern],digits=2),
                     "%",sep='')
-      
+
+      if(inherits(x,"seasonalcycle")) xaxt <- "n" else  xaxt <- NULL
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
-               cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1)
+               cex.main=cex.main,bty="n",cex.axis=cex.axis,
+               cex.lab=cex.lab,xaxt=xaxt)
+      if(inherits(x,"seasonalcycle")) axis(1,at=seq(1,12),labels=month.abb,
+                                           cex.axis=cex.axis,las=2)
       #axis(1,at=pretty(index(x),n=10),labels=,cex.axis=0.9)
       grid()
   }
