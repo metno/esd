@@ -52,7 +52,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     ## 
     if (verbose) {print('colbar.ini'); print(colbar)}
     if (length(x)==0) stop('colbar.ini: x is empty!')
-    if (is.null(colbar)) colbar <- list(show=FALSE,n=14,rev=FALSE,alpha=NULL)
+    if (is.null(colbar)) colbar <- list(show=FALSE,n=14,rev=NULL,alpha=NULL)
     if (is.logical(colbar)) colbar <- list(show=colbar)
     ##if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
@@ -72,13 +72,13 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
       colbar$n <- length(colbar$col)
     }
 
-    ## if breaks are null then use pretty
+    ## if breaks are null then use pretty 
     if (is.null(colbar$breaks)) { 
         if (verbose) print("pretty is used here to set break values ...")
         if (!is.null(colbar$n))
             colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n+1))
         else 
-            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2]))
+            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10))
         colbar$n <- length(colbar$breaks)-1      
       }
     if (is.null(colbar$n)) colbar$n <- length(colbar$breaks)-1 
@@ -100,9 +100,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     if (is.null(colbar$pos)) colbar$pos <- 0.05
 
     if (is.null(colbar$show)) colbar$show <-TRUE
-
-    if (is.null(colbar$rev)) colbar$rev <- FALSE
-    
+   
     ## very easy case if colbar$col and breaks are provided
     if (!is.null(colbar$col)) {
         pal <- NA ## disactivate pal
@@ -115,27 +113,27 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
           colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),nd)
         ## if only colbar$col is provided, then the breaks are set using seq   
     } else {
-        if (is.null(colbar$pal)) colbar$pal <- varid(x)
-    #    if (!is.null(colbar$breaks))
-    #      colbar$n <- length(colbar$breaks) -1 else
-    #      if (!is.null(colbar$n)) colbar$n <- 15
-        colbar$col <- colscal(colbar$n,colbar$pal,rev=colbar$rev,
+      if (is.null(colbar$pal)) {
+        if (is.precip(x)) {
+          colbar$pal <- 'precip'
+        } else {
+          colbar$pal <- 't2m'
+        }
+        colbar$col <- colscal(colbar$n,colbar$pal,rev=colbar$rev,alpha=colbar$alpha,
                               verbose=verbose)
+      }
     }
-
-    
     
     ## activate pallette (pal)
     if (is.null(colbar$pal)) {
-      colbar$pal <- varid(x)[1]
-      if (!is.precip(x)) {
-        colbar$pal <- 't2m'
-        if (is.null(colbar$rev)) colbar$rev <- TRUE ## FALSE
-      } else  {
+      if (is.precip(x)) {
         colbar$pal <- 'precip'
-        if (is.null(colbar$rev)) colbar$rev <- FALSE ## TRUE
+      } else {
+        colbar$pal <- 't2m'
       } 
     }
+
+    if (is.null(colbar$rev)) colbar$rev <- FALSE
 # REB 2015-12-02: I do not understand these two lines    
 #    if (!is.null(FUN)) {
 #        if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
@@ -168,7 +166,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
 
         ## colscal is used as default to set the colors
       if (verbose) print(paste('colbar$n',colbar$n))
-        colbar$col <- colscal(n=colbar$n,col=colbar$pal,
+        colbar$col <- colscal(n=colbar$n,col=colbar$pal,alpha=colbar$alpha,
                               rev=colbar$rev,verbose=verbose)
       }
     if (verbose) print(colbar)
@@ -188,9 +186,9 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     invisible(colbar)
 }
 
-colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
+colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
                     test=FALSE,verbose=FALSE) {
-
+  
   test.col <- function(r,g,b) {
     dev.new()
     par(bty="n")
@@ -203,7 +201,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
   if (is.null(col)) col <- 't2m'
   if (is.null(alpha)) alpha <- 1
   # Set up colour-palette
-  col <- tolower(col)
+  col <- tolower(gsub("[[:punct:][:space:]]", "", col))
   x <- 1:n
   r0 <- round(n*0.55)
   g0 <- round(n*0.5)
@@ -213,30 +211,30 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
   n1 <- g0; n2 <- n-n1
   
 #R	G	B
-  seNorgeT <- c(204,  0,    0,	
-               255, 25,    0,	
-               255, 102,   0,	
-               255, 179,   0,	
-               255, 230,  77,	
-               255, 255,  64,	
-               255, 255, 190,	
-               217, 255, 255,	
-               179, 255, 255,	
-               128, 235, 255,	
-               64, 204, 255,	
-               0, 153, 255,	
-               0,  25, 255,	
-               0,   0, 153)	
-  dim(seNorgeT) <- c(3,14)
-
-  seNorgeP <- c(0, 0, 153,
-                0, 25, 255,
+  seNorgeT <- c(0,   0, 153,
+                0,  25, 255,
                 0, 153, 255,
                 64, 204, 255,
                 128, 235, 255,
                 179, 255, 255,
                 217, 255, 255,
-                229, 229, 229)
+                255, 255, 190,
+                255, 255,  64,
+                255, 230,  77,
+                255, 179,   0,
+                255, 102,   0,
+                255, 25,    0,	
+                204,  0,    0)	
+  dim(seNorgeT) <- c(3,14)
+
+  seNorgeP <- c(229, 229, 229,
+                217, 255, 255,
+                179, 255, 255,
+                128, 235, 255,
+                64, 204, 255,
+                0, 153, 255,
+                0, 25, 255,
+                0, 0, 153)
   dim(seNorgeP) <- c(3,8)
 
   if (!is.null(alpha)) alpha <- rep(alpha[1],n)
@@ -368,7 +366,7 @@ colscal <- function(n=14,col="t2m",rev=TRUE,alpha=NULL,
     g <- approx(seNorgeT[2,],n=n)$y/255
     b <- approx(seNorgeT[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
-  } 
+  }
   
   if (test) { #& !exists("r")) {
     RGB <- col2rgb(col)/255
@@ -391,7 +389,7 @@ colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE) {
 }
 
 col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
-                    type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
+                    cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
     par0 <- par()
     xleft <- par()$usr[1] 
     xright <- par()$usr[2]
@@ -407,7 +405,6 @@ col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
     if (verbose) print(nsteps)
     
     ## if (max(abs(breaks))<=1) breaks <- round(breaks,digits=2)
-    
     k <- 1/2
     for (i in 1 :(nsteps-2)) {  
         if (!is.null(v)) 
