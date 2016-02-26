@@ -56,7 +56,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
 }
 
 Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
-                         nmax=31*24,nmin=5,dmin=6E5,dE=0.3,dN=0.2
+                         nmax=31*24,nmin=5,dmin=6E5,dE=0.3,dN=0.2,
                          x0cleanup=TRUE,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
