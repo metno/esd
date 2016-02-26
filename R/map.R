@@ -483,6 +483,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                    #cex.axis=1,cex.main=1,cex.lab=1,
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     ##
@@ -511,12 +512,12 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
     ##}
     if (verbose) str(X)
     if (is.element(FUN,args)) 
-        map.station(X,new=new,
-                    colbar=colbar,
+        map.station(X,new=new,colbar=colbar,
                     xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
     else
         map.station(X,new=new,colbar=colbar,FUN=FUN,
-                    xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
+                    xlim=xlim,ylim=ylim,zlim=zlim,
+                    verbose=verbose,...)
 }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
