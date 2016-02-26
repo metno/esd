@@ -100,7 +100,9 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
     if (is.null(colbar$pos)) colbar$pos <- 0.05
 
     if (is.null(colbar$show)) colbar$show <-TRUE
-   
+
+    if (is.null(colbar$rev)) colbar$rev <- FALSE
+    
     ## very easy case if colbar$col and breaks are provided
     if (!is.null(colbar$col)) {
         pal <- NA ## disactivate pal
@@ -133,7 +135,6 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
       } 
     }
 
-    if (is.null(colbar$rev)) colbar$rev <- FALSE
 # REB 2015-12-02: I do not understand these two lines    
 #    if (!is.null(FUN)) {
 #        if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
