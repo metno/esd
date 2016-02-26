@@ -13,7 +13,6 @@ track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
     if (progress) pb <- txtProgressBar(style=3)
     for (i in 1:length(unique(yrmn))) {
       if(verbose) print(unique(yrmn)[i])
-      if (progress) setTxtProgressBar(pb,i/(length(unique(yrmn))))
       x.y <- subset(x,it=(yrmn==unique(yrmn)[i]))
       if (is.null(x.tracked)) {
         x.t <- Track(x.y,x0=x0,lplot=lplot,x0cleanup=FALSE,
@@ -27,6 +26,7 @@ track.events <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
         x.tracked <- x.t$y0
         x.tracked <- merge(x.tracked,x.t$y,all=TRUE)
       }
+      if (progress) setTxtProgressBar(pb,i/(length(unique(yrmn))))
     }
     y <- x.tracked
   } else {
@@ -125,6 +125,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
         i <- which(num==n)
         dn <- mapply(distAB,lons[i][2:length(i)],lats[i][2:length(i)],
                    lons[i][1:(length(i)-1)],lats[i][1:(length(i)-1)])
+        dn[is.na(dn)] <- 0
         num[!is.na(num) & num>as.numeric(n)] <- num[!is.na(num) & num>as.numeric(n)] + 1
         num[i[which(dn==max(dn))+1:length(i)]] <- as.numeric(n) + 1
         dx[i[which(dn==max(dn))+1]]<- 0
