@@ -22,7 +22,7 @@ softattr <- function (x, ignore = NULL)
     if (sum(is.element(nattr, "index")) > 0) 
         nattr <- nattr[-grep("index", nattr)]
     if (sum(is.element(nattr, "dim")) > 0) 
-        nattr <- nattr[-grep("dim", nattr)]
+        nattr <- nattr[-is.element(nattr, "dim")]
     if (!is.null(ignore)) {
         for (i in 1:length(ignore)) {
             if (sum(is.element(nattr, ignore[i])) > 0) 
