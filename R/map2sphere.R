@@ -65,7 +65,8 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        colbar= list(pal='t2m',rev=FALSE,n=10,
-                           breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.05),
+                           breaks=NULL,type="p",cex=2, cex.axis=0.9,
+                           cex.lab = 0.9, h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
                        type=c("fill","contour"),                      
                        gridlines=TRUE,fancy=FALSE,
@@ -101,8 +102,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   #}
   ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
   ## if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
-  if (!is.null(it) | !is.null(is))
-    x <- subset(x,it=it,is=is,verbose=verbose)
+  if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
 
   ## KMP 10-11-2015: apply xlim and ylim
   is <- NULL
@@ -119,7 +119,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   map <- x[srtx,srty]
   param <- attr(x,'variable')
   unit <- attr(x,'unit')[1]
-  if (!is.null(unit)) if (unit =='%') unit <- "'%'"
+  if (!is.null(unit) & !is.expression(unit)) if (unit =='%') unit <- "'%'"
   
   ## KMP 10-11-2015: prepare unit and parameter labels
   if(!is.null(param) & !inherits(param,'expression'))
@@ -279,11 +279,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 #        xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
 #
     # Adopt from map.station
-    par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.7)
+    par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.9)
     if (fancy & !is.null(colbar)) {
       if (verbose) print("fancy colbar")
       col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
-              col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
+              col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
+              cex.axis=colbar$cex.axis,
               type=type,verbose=FALSE,vl=1,border=FALSE)
     } else if (!is.null(colbar)) {
       if (verbose) print("regular colbar")
@@ -292,7 +293,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                  horizontal = TRUE,legend.only = T,
                  zlim = range(colbar$breaks),
                  col = colbar$col, legend.width = 1,
-                 axis.args = list(cex.axis = 0.8),border=FALSE,...)
+                 axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,...)
                  #xaxp=c(range(colbar$breaks),colbar$n)),
                  #border = FALSE,...)
       ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
@@ -309,7 +310,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
     param <- as.character(param); unit <- as.character(unit)
     if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
       if(!is.null(unit)) txt <- param
-    text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4) 
+    #text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4)
+    text(min(x),min(z),eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4)
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   result <- NULL # For now...

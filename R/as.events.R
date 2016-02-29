@@ -67,7 +67,7 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   invisible(y) 
 }
 
-trajectory2events <- function(x,verbose=FALSE) {
+trajectory2events <- function(x,minlen=3,verbose=FALSE) {
   stopifnot(inherits(x,"trajectory"))
   
   if (verbose) print("trajectory2events")
@@ -76,6 +76,7 @@ trajectory2events <- function(x,verbose=FALSE) {
   cnames <- unique(colnames(x))
   params <- cnames[!cnames %in% c("trajectory","lat","lon","start","end","n")]
   cnames <- c("trajectory","lon","lat","time","n",params)
+  if(verbose) print(paste('remove trajectories shorter than',minlen))
   if(verbose) print('interpolate trajectories to original length')
   y <- data.frame(matrix(rep(NA,sum(x[,"n"])*length(cnames)),
                          nrow=sum(x[,"n"]),ncol=length(cnames)))
@@ -89,11 +90,12 @@ trajectory2events <- function(x,verbose=FALSE) {
   if(verbose) print('interpolate time')
   i.start <- colnames(x)=="start"
   i.end <- colnames(x)=="end"
-  y$time <- unlist(apply( x, 1, function(z) strftime(
+  datetime <- unlist(apply( x, 1, function(z) strftime(
         seq(strptime(z[i.start],format="%Y%m%d%H"),
         strptime(z[i.end],format="%Y%m%d%H"),
-        length.out=z[i.n]),
-        format="%Y%m%d%H") ))
+        length.out=z[i.n]),format="%Y%m%d%H")))
+  y$date <- as.numeric(strftime(strptime(datetime,"%Y%m%d%H"),"%Y%m%d"))
+  y$time <- as.numeric(strftime(strptime(datetime,"%Y%m%d%H"),"%H"))
   if(verbose) print('interpolate lon and lat')
   a <- 6.378e06
   xx <- a * cos( x[,i.lat]*pi/180 ) * cos( x[,i.lon]*pi/180 )
@@ -111,7 +113,11 @@ trajectory2events <- function(x,verbose=FALSE) {
     for (p in params) {
       if(verbose) print(paste('interpolate',p))
       i.p <- colnames(x)==p
-      y[p] <- unlist(apply(x,1,function(z) approx(z[i.p],n=z[i.n])$y))
+      if(sum(i.p)==1) {
+        y[p] <- unlist(apply(x,1,function(z) rep(z[i.p],z[i.n])))
+      } else {
+        y[p] <- unlist(apply(x,1,function(z) approx(z[i.p],n=z[i.n])$y))
+      }
     }
   }
   y <- attrcp(x,y)

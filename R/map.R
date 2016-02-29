@@ -483,6 +483,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                    #cex.axis=1,cex.main=1,cex.lab=1,
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
     ##
@@ -511,12 +512,12 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
     ##}
     if (verbose) str(X)
     if (is.element(FUN,args)) 
-        map.station(X,new=new,
-                    colbar=colbar,
+        map.station(X,new=new,colbar=colbar,
                     xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
     else
         map.station(X,new=new,colbar=colbar,FUN=FUN,
-                    xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
+                    xlim=xlim,ylim=ylim,zlim=zlim,
+                    verbose=verbose,...)
 }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
@@ -922,7 +923,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
       Y <- subset(Y,it=ii)
     }
   }
-
+  
   if(length(Y)!=0) {
     if (is.null(lonR)) lonR <- mean(lon(Y))
     if (is.null(latR)) latR <- mean(lat(Y))
@@ -932,7 +933,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if (is.null(lonR) & dim(x)[1]>0) lonR <- mean(x[,"lon"])
     if (is.null(latR) & dim(x)[1]>0) latR <- mean(x[,"lat"])
     data(Oslo)
-    map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),,
+    map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
         bg=adjustcolor(col,alpha.f=0),new=new,
         projection=projection,
         xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
@@ -950,7 +951,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
     #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
     cols <- adjustcolor(col,alpha=alpha)
-
+    
     if(show.trajectory & "trajectory" %in% colnames(x0)) {
       xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)),nmin=3)
       map(xall,lty=lty,lwd=lwd,col="steelblue3",alpha=alpha,new=FALSE,add=TRUE,
