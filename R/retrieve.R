@@ -77,7 +77,8 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
             X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
     }
-    else print("No suitable ncdf or ncdf4 libraries found to read your file or data")
+    else
+        print("No suitable ncdf or ncdf4 libraries found to read your file or data")
     
 }
 
@@ -207,14 +208,12 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     else
         time <- NULL
     ## Check & update meta data from the data itself 
-    ## 
-    ##if (ncdf.check) { 
+     
     ncid2 <- check.ncdf4(ncid,param=param,verbose=verbose) 
     if (length(grep("model",ls())) > 0) model <- ncid2$model 
     if (!is.null(itime)) time <- ncid2$time
     rm(ncid2)
-    ##}
-    ## ()
+
     if (verbose) print(model$frequency)
     ## Subselect a spatial and a temporal domain
     ##
@@ -594,6 +593,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
     
     { # Begin of function
         ## Update argument names for internal function use only
+        require(ncdf)
         if (verbose) print('retrieve.ncdf')
         lon.rng  <- lon
         lat.rng  <- lat
@@ -1165,17 +1165,23 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ## Update CMIP3 attributes to match those of CMIP5 
     mnames <- names(model)
     history <- ncatt_get(ncid,0,"history")
-    ## 
+    
     if (ncatt_get(ncid,0,"project_id")$hasatt) {
         if (model$project_id=="IPCC Fourth Assessment") {
             model$project_id <- "CMIP3"
             if (verbose) print("project_id IPCC Fourth Assessment set to CMIP3")
         }
-    } else if (length(grep("sres",tolower(history$value)))>0) model$project_id <- "CMIP3"
-    else if (length(grep("rcp",tolower(history$value)))>0) model$project_id <- "CMIP5"
-    else {if (verbose) print("project_id is missing from file attributes")}
+    } else if (length(grep("sres",tolower(history$value)))>0)
+        model$project_id <- "CMIP3"
+    else if (length(grep("rcp",tolower(history$value)))>0)
+        model$project_id <- "CMIP5"
+    else {
+        if (verbose) print("project_id is missing from file attributes")
+        model$project_id <- NULL
+    }
     
-    if (!ncatt_get(ncid,0,"model_id")$hasatt & ncatt_get(ncid,0,"project_id")$hasatt) {   
+    if (!ncatt_get(ncid,0,"model_id")$hasatt &
+        (ncatt_get(ncid,0,"project_id")$hasatt | !is.null(model$project_id))) {   
         hist2 <- unlist(strsplit(history$value,split=c(" ")))
         ih <- grep("tas",hist2)
         if (model$project_id=="CMIP3") {
@@ -1188,7 +1194,8 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         }
     }
     ## print(ncatt_get(ncid,0,"project_id")$hasatt)
-    if (ncatt_get(ncid,0,"experiment_id")$hasatt & ncatt_get(ncid,0,"project_id")$hasatt) {
+    if (ncatt_get(ncid,0,"experiment_id")$hasatt &
+        (ncatt_get(ncid,0,"project_id")$hasatt | !is.null(model$project_id))) {
         if (tolower(model$project_id)=="cmip3") {
             txt <- unlist(strsplit(tolower(ncatt_get(ncid,0,"history")$value),split="/"))
             model$experiment_id <- paste(txt[grep("20c3m",txt)],txt[grep("sres",txt)],sep="-")
@@ -1198,9 +1205,15 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     if (ncatt_get(ncid,0,"title")$hasatt) {
         title <- ncatt_get(ncid,0,"title")$value
         modelid <- unlist(strsplit(title,split=c(" ")))
-        model$project_id <-modelid[1]
-        model$experiment_id <-modelid[3]
-        model$type <- modelid[2] 
+        if (length(grep('-',tolower(modelid))>0) & is.null(model$model_id))
+            model$model_id <- modelid[grep('-',modelid)]
+        if (length(grep('cmip',tolower(modelid))>0) & is.null(model$project_id))
+            model$project_id <- modelid[grep('cmip',tolower(modelid))]
+        ## model$model_id <-modelid[1]
+        if (length(grep('rcp',tolower(modelid))>0) & is.null(model$experiment_id))
+            model$experiment_id <- modelid[grep('rcp',tolower(modelid))]
+        ## model$experiment_id <-modelid[2:3]
+        model$type <- modelid[grep('-',modelid)+1] 
     }
     
     ## END CMIP3 MODEL NAMES UPDATE
@@ -1314,7 +1327,10 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ## Checking frequency from data
     frequency <- freq.data <- NULL
     freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
-    if (!is.null(freq.data)) {if (verbose) print("Checking Frequency from the data --> [ok]")} else if (verbose) print("Checking Frequency from the data --> [fail]")
+    if (!is.null(freq.data)) {
+        if (verbose)
+            print("Checking Frequency from the data --> [ok]")
+    } else if (verbose) print("Checking Frequency from the data --> [fail]")
     ## Checking Calendar attribute if any, otherwise set to "ordinary"  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day"
     ical <- grep(c("calend"),tatt)
     ## 
@@ -1334,22 +1350,38 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         dorigin <- as.numeric(format.Date(torigin,format="%d"))
     }
     ## Get calendar from attribute if any and create vector of dates vdate
-    ## 
+    ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
+    browser()
     if (!is.null(calendar.att)) {
         if (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) {
-            if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
-            if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
-            if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
-            if (grepl("day",tunit)) {
-                time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
-            }
+            ## if (grepl("sec",tunit))
+            ##     time$vdate <- as.Date((time$vals/(24*60*60)),
+            ##                           origin=as.Date(torigin))
+            ## if (grepl("min",tunit))
+            ##     time$vdate <- as.Date((time$vals/(24*60)),
+            ##                           origin=as.Date(torigin))
+            ## if (grepl("hou",tunit))
+            ##     time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
+            ## if (grepl("day",tunit)) {
+            ##     time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
+            ## }
             if (grepl("mon",tunit)) {
-                if (sum(round(diff(time$vals)) > 1) < 1) {
-                    year1 <- time$vals[1]%/%12 + yorigin
-                    month1 <- morigin
-                    time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=length(time$vals))
-                } else print("Warning : Monthly data are Mangeled") 
+                 if (sum(round(diff(time$vals)) > 1) < 1) {
+                     year1 <- time$vals[1]%/%12 + yorigin
+                     month1 <- morigin
+                     torigin1 <- paste(as.character(year1),month1,"01",sep="-")
+            ##         time$vdate <- seq(as.Date(torigin1), by = "month",length.out=length(time$vals))
+                    
+            ##     } else print("Warning : Monthly data are Mangeled") 
             } 
+            
+            time$vdate <- switch(tunit,'seconds'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
+                                 'minutes'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
+                                 'hours'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*3600 *24,
+                                 'days'= as.Date(torigin) + time$vals,
+                                 'months'= seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
+                                 'years'= year(as.Date(torigin)) + time$vals)
+            
         } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap",calendar.att)) {
             if (verbose) print(paste(substr(calendar.att,1, 3), "-days' model year found in calendar attribute"))
             if (grepl("noleap",calendar.att))
@@ -1540,7 +1572,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     ##
     ## Get project id 
     project.id <- model$project_id ##att.get.ncdf(ncid,0,"project_id")
-    if (is.null(project.id) & (grepl(project.id,"CMIP3"))) {
+    if ((is.null(project.id) | project.id==0) & (grepl(project.id,"CMIP3"))) {
         ##if (!is.null(model)) model$project_id <- project.id$value
         if (project.id=="IPCC Fourth Assessment") {
             model$project_id <- "CMIP3"
@@ -1553,18 +1585,19 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         model$project_id <- "CMIP5"
 
     if (verbose)
-        print(paste("project_id : ",project.id))
-
+        print(paste("project_id : ",model$project_id))
+    
     ## Get model ID
     model.id <- model$model_id ##att.get.ncdf(ncid,0,"model_id")
-    if (is.null(model.id) & !is.null(project.id)) {   
-        hist2 <- unlist(strsplit(history$value,split=c(" ")))
+    if ((is.null(model.id) | model.id==0) & !is.null(project.id)) {   
+        ##hist2 <- unlist(strsplit(history$value,split=c(" ")))
+        hist2 <- unlist(strsplit(history,split=c(" ")))
         ih <- grep("tas",hist2)
-        if (project.id=="CMIP3") {
+        if (model$project_id=="CMIP3") {
             txt <- hist2[ih[1]] 
             model$model_id <- cmip3.model_id(txt)
         }
-        else if (project.id=="CMIP5") {
+        else if (model$project_id=="CMIP5") {
             txt <- hist2[ih[2]]
             model$model_id <- cmip5.model_id(txt)
         }
@@ -1576,10 +1609,10 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     ## Get Experiment ID
     ##experiment.id <- att.get.ncdf(ncid,0,"experiment_id")
     experiment.id <- model$experiment_id
-    if (is.null(experiment.id) & !is.null(project.id)) {
+    if ((is.null(experiment.id) | experiment.id==0) & !is.null(model$project_id)) {
         model$experiment_id <- experiment.id
         if (tolower(model$project_id)=="cmip3") {
-            txt <- unlist(strsplit(tolower(history$value),split="/"))
+            txt <- unlist(strsplit(tolower(history),split="/"))
             model$experiment_id <- paste(txt[grep("20c3m",txt)],txt[grep("sres",txt)],sep="-")
         }
     }
@@ -1588,17 +1621,24 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     ## 
 
     ## Get title 
-
-    experiment.title <- model$title ## att.get.ncdf(ncid,0,"title")$hasatt
-    if (is.null(experiment.title)) {
-        ##title <- att.get.ncdf(ncid,0,"title")$value
-        modelid <- unlist(strsplit(title,split=c(" ")))
-        model$project_id <-modelid[1]
-        model$experiment_id <-modelid[3]
-        model$type <- modelid[2] 
+    ##experiment.title <- model$title ## att.get.ncdf(ncid,0,"title")$hasatt
+    ## 
+    if (att.get.ncdf(ncid,0,"title")$hasatt) {
+        exp.title <- att.get.ncdf(ncid,0,"title")$value
+        modelid <- unlist(strsplit(exp.title,split=c(" ")))
+        if (length(grep('-',tolower(modelid))>0) & 
+            (is.null(model$model_id) | model$model_id==0))
+            model$model_id <- modelid[grep('-',modelid)]
+        if (length(grep('cmip',tolower(modelid))>0) &
+            (is.null(model$project_id) | model$project_id==0))
+            model$project_id <- modelid[grep('cmip',tolower(modelid))]
+        if ( length(grep('rcp',tolower(modelid))>0) &
+             (is.null(model$experiment_id)| model$experiment_id==0))
+            model$experiment_id <- modelid[grep('rcp',tolower(modelid))]
+        model$type <- modelid[grep('-',modelid)+1]
     }
     if (verbose)
-        print(paste("experiment_title : ",experiment.title))
+        print(paste("experiment_title : ",exp.title))
     ## END CMIP3 MODEL NAMES UPDATE
     ##
     ## Checking : Time unit and origin
