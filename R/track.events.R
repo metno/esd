@@ -7,13 +7,6 @@ track.events <- function(x,verbose=FALSE,...) {
   track.default(x,...)
 }
 
-track.trajectory <- function(x,verbose=FALSE,...) {
-  if(verbose) print("track.trajectory")
-  y <- as.events(x,verbose=verbose)
-  y <- track(y,verbose=verbose)
-  invisible(y)
-}
-
 track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
                          nmax=31*24,nmin=5,dmin=5E5,dE=0.3,dN=0.2,
                          lplot=FALSE,progress=TRUE,verbose=FALSE) {
