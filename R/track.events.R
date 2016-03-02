@@ -8,7 +8,7 @@ track.events <- function(x,verbose=FALSE,...) {
 }
 
 track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
-                         nmax=31*24,nmin=5,dmin=5E5,dE=0.3,dN=0.2,
+                         nmax=31*24,nmin=5,dmin=5E5,dE=0.3,dN=0,
                          lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
@@ -251,7 +251,7 @@ Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1E6,dE=0.3,dN=0.2,
   dd <- sapply(d12,function(x) abs(x-d23))
   d123 <- sapply(d12,function(x) x+d23)
   ok.d <- sapply(d12<dmax12,function(x) sapply(d23<dmax23,function(y) y & x ))
-  ok.d2 <- sapply(d12<dmax/3,function(x) sapply(d23<dmax/3,function(y) y & x ))
+  ok.d2 <- sapply(d12<dmax/5,function(x) sapply(d23<dmax/5,function(y) y & x ))
   ok.dd <- (dd/d123 < 0.5 | ok.d2) & dd < dmax/3
   ok <- ok.d & (da <= amax | ok.d2) & ok.dd
   j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))
@@ -333,8 +333,8 @@ adjustdmax <- function(dmax,a,dE=0.3,dN=0.2,
   x[!east] <- -x[!east]
   y <- height*sqrt(1-(x/width)^2)
   y[!north] <- -y[!north]
-  x <- (x + dE)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
-  y <- (y + dN)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
+  #x <- (x + dE)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
+  #y <- (y + dN)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
   d <- dmax*sqrt(x^2 + y^2)
   if(lplot) {
     plot(dmax*x*1E-3,dmax*y*1E-3,type="p",pch=19,cex=1,
