@@ -76,10 +76,9 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
             if (verbose) print('Irregular grid field found')
             X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
+    } else {
+      print("No suitable ncdf or ncdf4 libraries found to read your file or data")
     }
-    else
-        print("No suitable ncdf or ncdf4 libraries found to read your file or data")
-    
 }
 
 ## Set retrieve for ncdf4 object
@@ -589,9 +588,8 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
 retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                            lon = NULL, lat = NULL, lev = NULL, it = NULL,
                            miss2na = TRUE, greenwich = FALSE , ##ncdf.check = TRUE ,
-                           plot = FALSE , verbose = FALSE , ...) 
+                           plot = FALSE , verbose = FALSE , ...) {
     
-    { # Begin of function
         ## Update argument names for internal function use only
         require(ncdf)
         if (verbose) print('retrieve.ncdf')
@@ -615,11 +613,12 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                            "' does not exist or the path has not been set correctly !",sep =""))
             }
             ncid <- open.ncdf(ncfile)     
-        } else if (class(ncfile) == "ncdf")
+        } else if (class(ncfile) == "ncdf") {
             ncid <- ncfile
-        else
+        } else {
             stop("ncfile format should be a valid netcdf filename or a netcdf id of class 'ncdf'")  
-
+        }
+        
         ## Read and put attributes in model
         ## model <- att.get.ncdf(ncid,0,"global")
         globalatt <- list('CDI','history','institution','Conventions','references',
@@ -634,7 +633,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         model <- lapply(as.matrix(globalatt),get.att.val,nc=ncid)
         names(model) <- globalatt
         ##
-
+    
         ## Get variable attributes in v1
         namevars <- names(ncid$var)
         if (tolower(param) == "auto") {
@@ -651,36 +650,38 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
             v1 <- NULL
             i <- grep(param, names(ncid$var))
             v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
-            if (is.null(v1))
-                stop(paste("Variable ",param," could not be found !",sep=""))
+            if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
         }
 
         ## Get dimensions
         ## Get dimension names
         dimnames <- rep(NA,v1$ndims)
-        for (i in 1:v1$ndim)
+        for (i in 1:v1$ndim) {
             dimnames[i] <- tolower(v1$dim[[i]]$name)
+        }
         ## Get lon, lat, lev, time attr and values and update values if necessary
         ## Longitudes
         ilon <- grep("lon|x", dimnames)
-        if (length(ilon) ==0)
+        if (length(ilon) ==0) {
             ilon <- NULL
-        else if (length(ilon)>1)
+        } else if (length(ilon)>1) {
             stop("Error in dim lon")
+        }
 
-        if (!is.null(ilon))
+        if (!is.null(ilon)) {
             lon <- eval(parse(text=paste("v1$dim[[",as.character(ilon),"]]",sep="")))
-        else
+        } else {
             lon <- NULL
-
+        }
+        
         if (!is.null(ilon)) {
             ilonunit <- grep("unit",names(lon))
             if (length(ilonunit>1)) {
-                if (verbose)
-                    print(paste("Longitude unit is :",lon$unit,sep=" "))
+                if (verbose) print(paste("Longitude unit is :",lon$unit,sep=" "))
                 lonunit <- eval(parse(text = paste("lon$",names(lon)[ilonunit],sep="")))
-                if (length(grep("degrees_east",lonunit)) < 1)
+                if (length(grep("degrees_east",lonunit)) < 1) {
                     stop("'retrieve.ncdf4' is not suited to extract longitude units different from 'degrees_east'")
+                }
             }
         }
         ## 
@@ -701,35 +702,40 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         
         ## Latitudes
         ilat <- grep("lat|y", dimnames)
-        if (length(ilat) ==0)
+        if (length(ilat) ==0) {
             ilat <- NULL
-        else if (length(ilat) > 1)
+        } else if (length(ilat) > 1) {
             stop("Error in dim lat")
-        if (!is.null(ilat))
+        }
+        if (!is.null(ilat)) {
             lat <- eval(parse(text=paste("v1$dim[[",as.character(ilat),"]]",sep="")))
-        else
+        } else {
             lat <- NULL
+        }
         ##
         ## Pressure Level if pressure variable / not used for surface variables
         ilev <- grep("lev", dimnames)
-        if (length(ilev) ==0)
+        if (length(ilev) ==0) {
             ilev <- NULL
-        else if (length(ilev)>1)
+        } else if (length(ilev)>1) {
             stop("Error in dim lev")
-        if (!is.null(ilev))
+        }
+        if (!is.null(ilev)) {
             lev <- eval(parse(text=paste("v1$dim[[",as.character(ilev),"]]",sep="")))
-        else
+        } else {
             lev <- NULL
+        }
         ## 
         ## Time 
         itime <- grep("tim", dimnames)
-        if (length(itime) ==0)
+        if (length(itime) ==0) {
             itime <- NULL
-        else if (length(itime)>1)
+        } else if (length(itime)>1) {
             stop("Error in dim time")
-        if (!is.null(itime))
+        }
+        if (!is.null(itime)) {
             time <- eval(parse(text=paste("v1$dim[[",as.character(itime),"]]",sep="")))
-        else time <- NULL
+        } else time <- NULL
         ## Check and update info 
         ##  
         ##if (ncdf.check) { 
@@ -747,17 +753,14 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                 if (length(lon.rng) > 2) stop("lon.rng should be in the form of c(x1,x2)")
                 else if (length(lon.rng) == 1) {
                     lon.w <- which((lon$vals-lon.rng) == min(abs(lon$vals-lon.rng))) 
-                    if (verbose)
-                        print(paste("Single lon extraction / Selected nearest grid cell to lon :",
-                                    as.character(lon$vals[lon.w]),lon$unit,sep=" "))
-                }
-                else if (length(lon.rng) == 2)  {
+                    if (verbose) print(paste("Single lon extraction / Selected nearest grid cell to lon :",
+                                       as.character(lon$vals[lon.w]),lon$unit,sep=" "))
+                } else if (length(lon.rng) == 2) {
                     lon.w <- which((lon$vals >= lon.rng[1]) &
                                    (lon$vals <= lon.rng[length(lon.rng)]))
-                    if (verbose)
-                        print(paste("Selected longitudes:",
-                                    paste(as.character(sort(lon$vals[lon.w])),
-                                          collapse="/"),lon$units,sep=" "))
+                    if (verbose) print(paste("Selected longitudes:",
+                                       paste(as.character(sort(lon$vals[lon.w])),
+                                       collapse="/"),lon$units,sep=" "))
                 }
             } else lon.w <- seq(1,length(lon$vals),1)
             ## lon$vals <- as.vector(lon$vals[lon.w])
@@ -1171,11 +1174,11 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             model$project_id <- "CMIP3"
             if (verbose) print("project_id IPCC Fourth Assessment set to CMIP3")
         }
-    } else if (length(grep("sres",tolower(history$value)))>0)
+    } else if (length(grep("sres",tolower(history$value)))>0) {
         model$project_id <- "CMIP3"
-    else if (length(grep("rcp",tolower(history$value)))>0)
+    } else if (length(grep("rcp",tolower(history$value)))>0) {
         model$project_id <- "CMIP5"
-    else {
+    } else {
         if (verbose) print("project_id is missing from file attributes")
         model$project_id <- NULL
     }
@@ -1187,8 +1190,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         if (model$project_id=="CMIP3") {
             txt <- hist2[ih[1]] 
             model$model_id <- cmip3.model_id(txt)
-        }
-        else if (model$project_id=="CMIP5") {
+        } else if (model$project_id=="CMIP5") {
             txt <- hist2[ih[2]]
             model$model_id <- cmip5.model_id(txt)
         }
@@ -1205,13 +1207,16 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     if (ncatt_get(ncid,0,"title")$hasatt) {
         title <- ncatt_get(ncid,0,"title")$value
         modelid <- unlist(strsplit(title,split=c(" ")))
-        if (length(grep('-',tolower(modelid))>0) & is.null(model$model_id))
+        if (length(grep('-',tolower(modelid))>0) & is.null(model$model_id)) {
             model$model_id <- modelid[grep('-',modelid)]
-        if (length(grep('cmip',tolower(modelid))>0) & is.null(model$project_id))
+        }
+        if (length(grep('cmip',tolower(modelid))>0) & is.null(model$project_id)) {
             model$project_id <- modelid[grep('cmip',tolower(modelid))]
+        }
         ## model$model_id <-modelid[1]
-        if (length(grep('rcp',tolower(modelid))>0) & is.null(model$experiment_id))
+        if (length(grep('rcp',tolower(modelid))>0) & is.null(model$experiment_id)) {
             model$experiment_id <- modelid[grep('rcp',tolower(modelid))]
+        }
         ## model$experiment_id <-modelid[2:3]
         model$type <- modelid[grep('-',modelid)+1] 
     }
@@ -1223,11 +1228,14 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     a <- Sys.info()
     ## Get time dimension / val + attributes
     itime <- grep("tim", dimnames)
-    if (length(itime) == 0)
-        itime <- NULL
-    else if (length(itime) > 1) stop("Error in time dim")
-    else if (length(itime)==1) time <- eval(parse(text=paste("v1$dim[[",as.character(itime),"]]",sep="")))
-    
+    if (length(itime) == 0) {
+      itime <- NULL
+    } else if (length(itime) > 1) {
+      stop("Error in time dim")
+    } else if (length(itime)==1) {
+      time <- eval(parse(text=paste("v1$dim[[",as.character(itime),"]]",sep="")))
+    }
+
     ## Get time unit and origin
     tatt <- tolower(names(time))
     itunit <- grep(c("unit"),tatt)
@@ -1351,7 +1359,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     }
     ## Get calendar from attribute if any and create vector of dates vdate
     ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
-    browser()
+    #browser()
     if (!is.null(calendar.att)) {
         if (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) {
             ## if (grepl("sec",tunit))
@@ -1372,7 +1380,8 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                      torigin1 <- paste(as.character(year1),month1,"01",sep="-")
             ##         time$vdate <- seq(as.Date(torigin1), by = "month",length.out=length(time$vals))
                     
-            ##     } else print("Warning : Monthly data are Mangeled") 
+            ##     } else print("Warning : Monthly data are Mangeled")
+                 }
             } 
             
             time$vdate <- switch(tunit,'seconds'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
@@ -1518,6 +1527,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ##ac.gcm <- data.frame(y = y.test, x1 = as.vector(cos(2 * pi * tim/daysayear)), x2 = as.vector(sin(2 * pi * tim/daysayear)))
     result <- list(model=model,time=time)
     invisible(result)
+    
 }
 
 
