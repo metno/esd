@@ -59,6 +59,7 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
                            colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...) {
  
   if (verbose) {print('corfield.field'); print('field against field')}
+  if (class(index(x))!=class(index(y))) warning('corfield.field: Different time index classes!')
   cor2s <- function(x,use,...) {
     n <- length(x);
     #print(n); print(length(x[1:(n/2)])); print(length(x[(n/2+1):n]))
@@ -66,34 +67,31 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
     return(r)
   }
 
-  #print("corfield.field")
-  #print(dim(x)); print(attr(x,"dimensions"))
-  #print(dim(y)); print(attr(y,"dimensions"))
+  if (verbose) {print(dim(x)); print(attr(x,"dimensions"))
+                print(dim(y)); print(attr(y,"dimensions"))}
  
   if (inherits(y,'station')) {
     r <- corfield.field.station(y,x,use=use,verbose=verbose,colbar=colbar,...)
     return(r)
   }
-  #print("synchonise")
-  yx <- combine(x,y,dimension="space",all=FALSE)
-  #str(yx)
-  #print("..."); print(summary(yx))
+  if (verbose) print("synchonise")
+  yx <- combine(x,y,dimension="space",all=FALSE,verbose=verbose)
   y <- yx$y; x <- yx$X
-  #print(dim(x)); print(dim(y))
-  #print(names(attributes(yx$X)))
-  #print(names(attributes(yx$y)))
-  #print("After combine")
-  #print(dim(x)); print(attr(x,"dimensions"))
-  #print(dim(y)); print(attr(y,"dimensions"))
-  #map(y)
+  if (verbose) {
+    print(names(attributes(yx$X)))
+    print(names(attributes(yx$y)))
+    print("After combine")
+    print(dim(x)); print(attr(x,"dimensions"))
+    print(dim(y)); print(attr(y,"dimensions"))
+  }
   
   if (sum(is.na(c( MATCH(attr(x,'longitude'), attr(y,'longitude')),
                    MATCH(attr(x,'latitude'), attr(y,'latitude')) )) ) > 0) {
-    #print("regrid y:")
-    #print(class(x)); print(class(y))
-    #print(attr(x,'dimensions')); print(attr(y,'dimensions'))
-    #print(dim(x)); print(dim(y))
-    #map(x); map(y)
+    if (verbose) {print("regrid y:")
+                  print(class(x)); print(class(y))
+                  print(attr(x,'dimensions')); print(attr(y,'dimensions'))
+                  print(dim(x)); print(dim(y))
+                }
 
     #greenwich <- (max()*min() < 0) | (max()*min() < 0)
     x <- g2dl(x,greenwich=FALSE); y <- g2dl(y,greenwich=FALSE)
@@ -107,21 +105,13 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
     #print("Region:"); print(c(lon.rng,lat.rng))
     x <- subset(x,is=list(lon.rng,lat.rng))
     y <- subset(y,is=list(lon.rng,lat.rng))
-    #print(dim(x)); print(dim(y))
-    #print("HERE")
     y <- regrid(y,is=x)
-    #print("HERE")
   } else y <- regrid(y,is=x)
-  #map(y)
   
   #print(dim(y)); print(dim(x)); print(dim(rbind(coredata(x),coredata(y))))
   r <- apply(rbind(coredata(x),coredata(y)),2,cor2s,use=use,...)
-  #print(length(r))
 
-  #print(names(attributes(x)))
-  #nattr <- softattr(x)
-  #for (i in 1:length(nattr))
-  #  attr(r,nattr[i]) <- attr(x,nattr[i])
+  if (verbose) print(names(attributes(x)))
   r <- attrcp(x,r)
   
   attr(r,'dimensions') <- attr(x,'dimensions')[1:2]

@@ -42,7 +42,7 @@ ndig(x)
 filt(x,...)
 filt.default(x,n,type='ma',lowpass=TRUE)
 figlab(x,xpos=0.001,ypos=0.001)
-attrcp(x, y, ignore = c("name", "model", "n.apps", "appendix"))
+attrcp(x, y, ignore = c("name", "model", "n.apps", "appendix","dimnames"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

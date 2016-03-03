@@ -189,6 +189,7 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     #attr(y,'date-stamp') <- date()
     #attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)
+    attr(y,'dimnames') <- NULL
     return(y)
   } else {
     #print("there")
@@ -234,6 +235,7 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     #attr(y,'date-stamp') <- date()
     #attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)
+    attr(y,'dimnames') <- NULL
     class(y) <- cls
     return(y)
     }
