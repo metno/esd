@@ -350,7 +350,10 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   }
 
   if (length(grep('pc',what))>0) {
-    if (verbose) {print('time series');print(class(index(x))); print(class(index(attr(x,'appendix.1'))))}
+    if (verbose) {print('time series');print(index(x)); print(index(attr(x,'appendix.1')))}
+    if ( (sd(coredata(x)[,n])/sd(coredata(attr(x,'appendix.1'))[,n]) > 100) |
+         (sd(coredata(attr(x,'appendix.1'))[,n])/sd(coredata(x)[,n]) > 100) )
+       warning('plot.comb.eof: PCs have very different scales')
 #    par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
 #      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
 #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),

@@ -655,12 +655,14 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
     clsx <- class(x); clsy <- class(y)
     hst <- c(attr(x,'history'),attr(y,'history'))
     if ( (unit(x)=="hPa") & (unit(y)=="Pa")) {
+        if (verbose) print('Resetting unit of x: hPa -> Pa')
         coredata(x) <- 100*coredata(x)
         attr(x,'unit') <- 'Pa'
     }
     if (unit(x)=='deg C') attr(x,'unit') <- 'degC'
     if (unit(y)=='deg C') attr(y,'unit') <- 'degC'
     if ( (unit(y)=="hPa") & (unit(x)=="Pa")) {
+        if (verbose) print('Resetting unit of y: hPa -> Pa')
         coredata(y) <- 100*coredata(y)
         attr(y,'unit') <- 'Pa'
     }
