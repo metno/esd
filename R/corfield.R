@@ -52,7 +52,7 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE
 
   #print("map")
   if (plot) map(r,colbar=colbar)
-  return(r)
+  invisible(r)
 }
 
 corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
@@ -64,7 +64,7 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
     n <- length(x);
     #print(n); print(length(x[1:(n/2)])); print(length(x[(n/2+1):n]))
     r <- cor(x[1:(n/2)],x[(n/2+1):n],use,...)
-    return(r)
+    invisible(r)
   }
 
   if (verbose) {print(dim(x)); print(attr(x,"dimensions"))
@@ -72,7 +72,7 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
  
   if (inherits(y,'station')) {
     r <- corfield.field.station(y,x,use=use,verbose=verbose,colbar=colbar,...)
-    return(r)
+    invisible(r)
   }
   if (verbose) print("synchonise")
   yx <- combine(x,y,dimension="space",all=FALSE,verbose=verbose)
@@ -128,7 +128,7 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
     attr(r,'unit') <- c(attr(x,'unit')[1],attr(y,'unit')[1])   
   class(r) <- 'corfield'
   if (plot) map(r,colbar=colbar)
-  return(r)
+  invisible(r)
 }
 
 
@@ -136,7 +136,7 @@ corfield.field.station <- function(x,y,plot=TRUE,verbose=FALSE,
                                    colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                                    use='pairwise.complete.obs',...) {
   r <- corfield.station(y,x,plot=plot,verbose=verbose,use=use,colbar=colbar,...)
-  return(r)
+  invisible(r)
 }
 
 

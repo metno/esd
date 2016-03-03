@@ -701,7 +701,7 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
 
                                         # Only use the same region as the previous:
                                         # y <- subset(y,is=list(range(x1),range(y1)))
-      if (verbose) print("combine.field after subset:");print(x1); print(y1);print("---")
+      if (verbose) print("combine.field after subset:")
                                         #Z <- regrid(y,is=list(x1,y1))
         Z <- regrid(y,is=x)
         maskna <- !is.finite(colMeans(coredata(x))) # REB 2016-02-18 mask out same missing
