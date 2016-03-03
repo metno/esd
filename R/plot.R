@@ -350,6 +350,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   }
 
   if (length(grep('pc',what))>0) {
+    if (verbose) {print('time series');print(class(index(x))); print(class(index(attr(x,'appendix.1'))))}
 #    par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
 #      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
 #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
@@ -361,9 +362,12 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
       
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
                cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
-      axis(1,at=pretty(index(x[,n]),n=10),cex.axis=0.9)    
+      taxis <- pretty(index(x[,n]),n=10)              # REB 2016-03-03
+      if (min(diff(taxis))> 360) taxisl <- year(taxis)  else
+                                 taxisl <- taxis      # REB 2016-03-03
+      if (verbose) print(taxisl)
+      axis(1,at=taxis,labels=taxisl,cex.axis=0.9)      # REB 2016-03-03
       grid()
-#    par0 <- par()
 
       ## Plot the common PCs
       for (i in 1:n.app) {
