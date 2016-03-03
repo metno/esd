@@ -36,6 +36,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   SF <- function(x) {sum(is.finite(x))}
 
   if (verbose) print("EOF.field")
+  attr(X,'dimnames') <- NULL
   stopifnot(!missing(X), is.matrix(X),
             inherits(X,c("field","zoo")))
   

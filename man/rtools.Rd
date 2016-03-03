@@ -12,7 +12,7 @@
 \alias{exit}
 \alias{figlab}
 \alias{ndig}
-
+\alias{attrcp}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -20,6 +20,8 @@ Simple and handy functions.
 
 \code{lag.station} and \code{lag.station} are wrap-around functions for
 \code{\link[zoo]{lag.zoo}} that maintains all the attributes.
+\code{attrcp(x,y)} passes on attributes from \code{x} to \code{y} and
+returns the \code{y} with new attributes.
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
@@ -40,6 +42,7 @@ ndig(x)
 filt(x,...)
 filt.default(x,n,type='ma',lowpass=TRUE)
 figlab(x,xpos=0.001,ypos=0.001)
+attrcp(x, y, ignore = c("name", "model", "n.apps", "appendix"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
