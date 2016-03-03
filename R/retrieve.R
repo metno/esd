@@ -1506,7 +1506,14 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                 } else print("Warning : Frequency found in the attribute does not match the frequency detected in data")
             } 
         } else if (!is.null(freq.data)) model$frequency <- freq.data
-        else stop("Frequency could not be found, neither detected, the data might be corrupted !")
+        else if (sum(is.element(tolower(substr(tunit,1,3)), # REB 2016-03-03
+                                c('sec','hou','day','mon','yea')))>0) {
+          ## If the frequency is not provided, try to derive it from the time
+          ## information - Time difference
+          warning(paste('Need to guess the frequency, based on reckognised time units',tunit))
+          model$frequency <- 1
+        } else
+          stop("Frequency could not be found, neither detected, the data might be corrupted !")
         
         if (!is.null(model$frequency)) {
             if (verbose) print(paste("Frequency set to ",model$frequency,sep=""))
@@ -1891,7 +1898,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     
     if (!is.null(time$vdate)) {
         if (verbose) print("Vector of date is in the form :")
-        if (verbose) print(str(time$vdate))
+        if (verbose) str(time$vdate)
         if (verbose)
             print(paste("Time difference dt : ",paste(dt,collapse="/"))) ## diff(time$vdate))
     }
