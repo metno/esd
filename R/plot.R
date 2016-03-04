@@ -25,7 +25,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
-  } else if (length(lon(x))!=length(lat(x))) {
+  } else if (length(lon(x))!=length(lat(x)) | inherits(x,'field')) {
     map.type <- "rectangle"
   }
   
@@ -350,6 +350,10 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   }
 
   if (length(grep('pc',what))>0) {
+    if (verbose) {print('time series');print(index(x)); print(index(attr(x,'appendix.1')))}
+    if ( (sd(coredata(x)[,n])/sd(coredata(attr(x,'appendix.1'))[,n]) > 100) |
+         (sd(coredata(attr(x,'appendix.1'))[,n])/sd(coredata(x)[,n]) > 100) )
+       warning('plot.comb.eof: PCs have very different scales')
 #    par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
 #      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
 #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
@@ -361,9 +365,12 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
       
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
                cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
-      axis(1,at=pretty(index(x[,n]),n=10),cex.axis=0.9)    
+      taxis <- pretty(index(x[,n]),n=10)              # REB 2016-03-03
+      if (min(diff(taxis))> 360) taxisl <- year(taxis)  else
+                                 taxisl <- taxis      # REB 2016-03-03
+      if (verbose) print(taxisl)
+      axis(1,at=taxis,labels=taxisl,cex.axis=0.9)      # REB 2016-03-03
       grid()
-#    par0 <- par()
 
       ## Plot the common PCs
       for (i in 1:n.app) {
@@ -608,13 +615,14 @@ plot.eof.var <- function(x,pattern=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
 
 
 
-plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
-  #print("plot.field")
+plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose=FALSE,...) {
+  if (verbose) print("plot.field")
   stopifnot(!missing(x),inherits(x,'field'))
 
   d <- dim(x)
   if (d[2]==1) {
-    plot.station(x,...)
+    if (verbose) print('one grid point')
+    plot.station(x,verbose=verbose,...)
     return()
   }
 
@@ -709,7 +717,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
     class(z) <- c('station',class(x)[-1])
   }
   #print("plot")
-  plot(z,...)
+  plot(z,map.type=map.type,...)
   z <- attrcp(x,z,ignore=c("longitude","latitude"))
   attr(z,'history') <- history.stamp(x)
   if (inherits(x,'station')) lines(y,col="red",lwd=2)

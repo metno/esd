@@ -36,6 +36,7 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
     if (!is.null(d)) dim(ycd) <- d
     coredata(y) <- ycd
   }
+  attr(y,'dimnames') <- NULL
   invisible(y)
 }
 
@@ -465,6 +466,7 @@ pentad <- function(x,l=5,...) {
   index(x) <- yrl
   
   xl <- aggregate(x,yrl,...)
+  attr(xl,'dimnames') <- NULL
   xl
 }
 

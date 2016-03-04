@@ -554,15 +554,15 @@ combine.station.field <- function(x,y,all=FALSE,orig.format=TRUE) {
 
 
 combine.field.station <- function(x,y,all=FALSE,
-                                  orig.format=TRUE) {
-                                        #print("combine.field.station")
+                                  orig.format=TRUE,verbose=FALSE) {
+  if (verbose) print("combine.field.station")
     
                                         # If either of the arguments is NULL, then return the x -
                                         # useful for looping
     
     if (is.null(x)) return(y)
     if (is.null(y)) return(x)
-
+    attr(x,'dimnames') <- NULL
                                         # Keep track of which is an eof object and which is a station record:
     swapped <- FALSE
     if ( inherits(x,c("station")) & inherits(y,c("field"))) {
@@ -575,7 +575,7 @@ combine.field.station <- function(x,y,all=FALSE,
     clsx <- class(x)
     clsy <- class(y)
     index(y) <- as.Date(index(y))
-                                        #print(class(X))
+  if (verbose) print(class(X))
     index(x) <- as.Date(index(x))
                                         #print("HERE...")
                                         # REB 20.08.2013: added colnames to x & y before merge to keep track of
@@ -585,7 +585,7 @@ combine.field.station <- function(x,y,all=FALSE,
     if (length(dim(x))==2)
         colnames(x) <- paste("x",1:dim(x)[2],sep=".")
     comb <- merge(x,y,all=all) # AM 2014-12-02 An extra column is added here and the attribute dimensions could not be used anymore !!! so map will not work here ...
-                                        #print(summary(comb))
+                                        if (verbose) print(summary(comb))
 
     if (orig.format) {
         vars <- names(comb)
@@ -593,7 +593,7 @@ combine.field.station <- function(x,y,all=FALSE,
         Xs <- vars[grep('x',vars)]
         ix <- is.element(vars,Xs)
         iy <- is.element(vars,ys)
-                                        #print(c(sum(ix),sum(iy)))
+                                        if (verbose) print(c(sum(ix),sum(iy)))
         
         XX <- zoo(coredata(comb[,ix]),order.by=index(comb))
         yy <- zoo(coredata(comb[,iy]),order.by=index(comb))
@@ -641,9 +641,11 @@ combine.field.station <- function(x,y,all=FALSE,
 
 
 combine.field <- function(x,y,all=FALSE,dimension="time",
-                          approach="field",orig.format=TRUE) {
+                          approach="field",orig.format=TRUE,verbose=FALSE) {
  
-                                        #print("combine.field")
+  if (verbose) print(paste("combine.field",approach))
+  attr(x,'dimnames') <- NULL
+  attr(y,'dimnames') <- NULL
     if (inherits(y,'station')) {
         xy <- combine.field.station(x=x,y=y,orig.format=orig.format)
         return(xy)
@@ -653,12 +655,14 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
     clsx <- class(x); clsy <- class(y)
     hst <- c(attr(x,'history'),attr(y,'history'))
     if ( (unit(x)=="hPa") & (unit(y)=="Pa")) {
+        if (verbose) print('Resetting unit of x: hPa -> Pa')
         coredata(x) <- 100*coredata(x)
         attr(x,'unit') <- 'Pa'
     }
     if (unit(x)=='deg C') attr(x,'unit') <- 'degC'
     if (unit(y)=='deg C') attr(y,'unit') <- 'degC'
     if ( (unit(y)=="hPa") & (unit(x)=="Pa")) {
+        if (verbose) print('Resetting unit of y: hPa -> Pa')
         coredata(y) <- 100*coredata(y)
         attr(y,'unit') <- 'Pa'
     }
@@ -699,7 +703,7 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
 
                                         # Only use the same region as the previous:
                                         # y <- subset(y,is=list(range(x1),range(y1)))
-                                        #print("combine.field after subset:");print(x1); print(y1);print("---")
+      if (verbose) print("combine.field after subset:")
                                         #Z <- regrid(y,is=list(x1,y1))
         Z <- regrid(y,is=x)
         maskna <- !is.finite(colMeans(coredata(x))) # REB 2016-02-18 mask out same missing
@@ -717,7 +721,7 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
         n.app <- attr(x,'n.apps') + 1
         attr(x,paste('appendix.',n.app,sep='')) <- Z
         attr(x,'n.apps') <- n.app
-                                        #print("HERE")
+
         X <- x
         if (sum(is.element(clsx,"comb"))==0)
             class(X) <- c("comb",clsx) else
@@ -738,37 +742,39 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
         colnames(x) <- paste("x",1:dim(x)[2],sep=".")
         comb <- merge(x,y,all=all)
         nt <- length(index(comb))
-                                        #str(comb)
+        if (verbose) str(comb)
         if (orig.format) {
             vars <- names(comb)
-                                        #print("After merge - original format")
-                                        #print(vars[1:10]); print(vars[(length(vars)-9):length(vars)])
-                                        #print(table(substr(vars,nchar(vars),nchar(vars))))
+            if (verbose) print("After merge - original format")
+            
             ys <- vars[grep('y',vars)]
             Xs <- vars[grep('x',vars)]
             ix <- is.element(vars,Xs)
             iy <- is.element(vars,ys)
-                                        #print(paste(sum(ix),"xes and",sum(iy),"yes"))
-            
-                                        #print(dim(comb))
+            if (verbose) {print(paste(sum(ix),"xs and",sum(iy),"ys"))
+                          print(dim(comb))}
             XX <- zoo(coredata(comb[,ix]),order.by=index(comb))
             yy <- zoo(coredata(comb[,iy]),order.by=index(comb))
             names(yy) <- ys
             names(XX) <- Xs
 
-                                        #print("sett class")
+            if (verbose) print("set class")
                                         #print(clsx); print(clsy)
             clsx -> class(XX)
             clsy -> class(yy)
 
-                                        #print("add attributes")
-                                        #print(names(attributes(y)))
+            if (verbose) {print("add attributes")
+                          print(names(attributes(y)))}
                                         #nattr1 <- softattr(y)
+            attr(y,'dimnames') <- NULL
+            attr(x,'dimnames') <- NULL
+            attr(yy,'dimnames') <- NULL
+            attr(XX,'dimnames') <- NULL
                                         #for (i in 1:length(nattr1))
                                         #  attr(yy,nattr1[i]) <- attr(y,nattr1[i])
             yy <- attrcp(y,yy,ignore='names')
             attr(yy,'dimensions') <- c(attr(y,'dimensions')[1:2],nt)
-                                        #print(names(attributes(x)))
+            if (verbose) print(names(attributes(x)))
                                         #nattr2 <- softattr(x)
                                         #for (i in 1:length(nattr2))
                                         #  attr(XX,nattr2[i]) <- attr(x,nattr2[i])
@@ -777,7 +783,7 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
 
                                         #print("into list")
             X <- list(y=yy,X=XX)
-                                        #print(names(attributes(combined$y)))
+            if (verbose) {print(names(attributes(X$y))); print(names(attributes(X$X)))}
         } else X <- comb
         class(X) <- c("comb","list")
 

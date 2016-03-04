@@ -23,7 +23,8 @@ EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   if ( !zeros(inherits(X,c("field","zoo"),which=TRUE)) )
          eof <- EOF.field(X,it=it,is=is,n=n,
                        area.mean.expl=area.mean.expl,
-                          verbose=verbose) 
+                          verbose=verbose)
+  attr(eof,'dimnames') <- NULL   # REB 2016-03-04
   return(eof)
 }
 
@@ -36,6 +37,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   SF <- function(x) {sum(is.finite(x))}
 
   if (verbose) print("EOF.field")
+  attr(X,'dimnames') <- NULL
   stopifnot(!missing(X), is.matrix(X),
             inherits(X,c("field","zoo")))
   
@@ -194,6 +196,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   attr(eof,'tot.var') <- sum(SVD$d^2)
   attr(eof,'history') <- history.stamp(X)
   attr(eof,'aspect') <- 'anomaly'
+  attr(eof,'dimnames') <- NULL   # REB 2016-03-04
   if (area.mean.expl) attr(eof,'area.mean.expl') <- TRUE else
                       attr(eof,'area.mean.expl') <- FALSE
   class(eof) <- c("eof",cls)
@@ -357,6 +360,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   attr(ceof,'n.apps') <- n.app
   attr(ceof,'history') <- history.stamp(X)
   attr(ceof,'aspect') <- 'anomaly'
+  attr(ceof,'dimnames') <- NULL   # REB 2016-03-04
   class(ceof) <- c("eof",class(X))
   invisible(ceof)
 }

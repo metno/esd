@@ -1,7 +1,7 @@
 # For copying non-standard (soft) attributes such as meta data:
 
 # Copy the attributes of x to y
-attrcp <- function(x,y,ignore=c("name","model","n.apps","appendix")) {
+attrcp <- function(x,y,ignore=c("name","model","n.apps","appendix","dimnames")) {
     ## browser()
                                         #print("attrcp")
     nattr <- softattr(x,ignore=ignore)
