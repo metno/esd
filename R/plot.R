@@ -25,7 +25,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
-  } else if (length(lon(x))!=length(lat(x))) {
+  } else if (length(lon(x))!=length(lat(x)) | inherits(x,'field')) {
     map.type <- "rectangle"
   }
   
@@ -615,13 +615,14 @@ plot.eof.var <- function(x,pattern=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
 
 
 
-plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
-  #print("plot.field")
+plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose=FALSE,...) {
+  if (verbose) print("plot.field")
   stopifnot(!missing(x),inherits(x,'field'))
 
   d <- dim(x)
   if (d[2]==1) {
-    plot.station(x,...)
+    if (verbose) print('one grid point')
+    plot.station(x,verbose=verbose,...)
     return()
   }
 
@@ -716,7 +717,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",...) {
     class(z) <- c('station',class(x)[-1])
   }
   #print("plot")
-  plot(z,...)
+  plot(z,map.type=map.type,...)
   z <- attrcp(x,z,ignore=c("longitude","latitude"))
   attr(z,'history') <- history.stamp(x)
   if (inherits(x,'station')) lines(y,col="red",lwd=2)
