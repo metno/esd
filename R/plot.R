@@ -377,7 +377,8 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
         z <- attr(x,paste('appendix.',i,sep=""))
         lines(z[,n],col=col[i],lwd=2)
         if (verbose) print(attr(z,'source'))
-        src[i+1] <- attr(z,'source')
+        if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
+                                        src[i+1] <- paste('x',i,sep='.')
       }
     }
 #    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
