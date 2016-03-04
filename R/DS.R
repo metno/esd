@@ -192,8 +192,13 @@ DS.default <- function(y,X,mon=NULL,
                                         #  attr(ds,nattry[i]) <- attr(y0,nattry[i])
                                         #for (i in 1:length(nattrX))
                                         #  attr(pattern,nattrX[i]) <- attr(X0,nattrX[i])
+    if (verbose) {
+      print('set attibutes')
+      print(names(attributes(y0)))
+      print(names(attributes(X0)))
+    }
     ds <- attrcp(y0,ds,ignore='names')
-    pattern <- attrcp(X0,pattern,ignore=c('longitude','latitude','names'))
+    pattern <- attrcp(X0,pattern,ignore=c('longitude','latitude','names','dimnames'))
     caldat <- zoo(as.matrix(caldat),order.by=index(X))
     if (verbose) print('Set attributes')
     attr(caldat,'calibration_expression') <- calstr
