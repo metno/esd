@@ -419,11 +419,11 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
       dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
       dev.new()
-      image(xi,yi,zi,main=date[i],col=colscal(col="bwr",n=12,rev=FALSE),
-          xlab="lon",ylab="lat",breaks=seq(940,1060,10))
+      image(xi,yi,zi,main=date[i],col=colscal(col="budrd",n=14,rev=FALSE),
+          xlab="lon",ylab="lat",breaks=seq(940,1080,10))
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(940,1010),nlevels=6)
-      contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1060),nlevels=5)
-      lines(geoborders,col="grey10")
+      contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1080),nlevels=5)
+      lines(geoborders,col="grey40")
       a <- which(P.lowx[t==date[i],,]==1,arr.ind=TRUE)
       b <- which(P.lowy[t==date[i],,]==1,arr.ind=TRUE)
       lon.a <- mapply(function(i1,i2) lonXY[i1,i2],a[,1],a[,2])

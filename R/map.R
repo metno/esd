@@ -875,7 +875,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.7,lwd=3,col="black",pch=20,cex=1,
+                       param=NA,alpha=0.5,lwd=3,col="black",pch=20,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        show.trajectory=TRUE,lty=2,
@@ -884,7 +884,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if(verbose) print("map.events")
   x0 <- x
   x <- subset(x,it=it,is=is,verbose=verbose)
-  
+ 
   if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
       
   if (is.null(is$lon) & !is.null(xlim)) {
@@ -944,7 +944,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     cex <- 1+(x[,param]-min(x[,param],na.rm=TRUE))/
         diff(range(x[,param],na.rm=TRUE))*cex
   }
-
+  
   period <- unique(c(min(it),max(it)))
   
   if(dim(x)[1]>0) {
@@ -954,7 +954,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     
     if(show.trajectory & "trajectory" %in% colnames(x0)) {
       xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)),nmin=3)
-      map(xall,lty=lty,lwd=lwd,col="steelblue3",alpha=alpha,new=FALSE,add=TRUE,
+      map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,add=TRUE,col="black",#"steelblue3",
           lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
     }
 
@@ -974,7 +974,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
    
   }
 
-  if (!is.null(period)) {
+  if (!is.null(period) & length(Y)==0) {
     text(par("usr")[2] - 0.15*diff(range(par("usr")[3:4])),
         par("usr")[4] - 0.04*diff(range(par("usr")[3:4])),
         paste(period,collapse=" - "),pos=2,cex=0.7,col="grey30")
