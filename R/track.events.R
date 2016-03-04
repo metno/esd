@@ -7,8 +7,8 @@ track.events <- function(x,verbose=FALSE,...) {
   track.default(x,...)
 }
 
-track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
-                         nmax=31*24,nmin=5,dmin=5E5,dE=0.3,dN=0,
+track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,amax=90,
+                         nmax=124,nmin=5,ddmax=0.5,dE=0.3,dN=0,dmin=0,#5E5,
                          lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
@@ -22,12 +22,12 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
       x.y <- subset(x,it=(yrmn==unique(yrmn)[i]))
       if (is.null(x.tracked)) {
         x.t <- Track(x.y,x0=x0,lplot=lplot,x0cleanup=FALSE,dE=dE,dN=dN,
-                     amax=amax,dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
+                     amax=amax,dmax=dmax,ddmax=ddmax,dmin=dmin,nmax=nmax,nmin=nmin,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y
       } else {
         x.t <- Track(x.y,x0=x.tracked,lplot=lplot,dE=dE,dN=dN,
-                     amax=amax,dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
+                     amax=amax,dmax=dmax,dmin=dmin,ddmax=ddmax,nmax=nmax,nmin=nmin,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y0
         x.tracked <- merge(x.tracked,x.t$y,all=TRUE)
@@ -37,22 +37,21 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
     y <- x.tracked
   } else {
     x.tracked <- Track(x,x0=NULL,lplot=lplot,dE=dE,dN=dN,
-                       amax=amax,dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
+                       amax=amax,dmax=dmax,ddmax=ddmax,dmin=dmin,nmax=nmax,nmin=nmin,
                        progress=progress,verbose=verbose)
     y <- x.tracked$y
   }
   y <- attrcp(x,y)
   class(y) <- class(x)
   if(any(is.na(y$trajectory))) {
-    nmax <- max(y$trajectory,na.rm=TRUE)
     nok <- is.na(y$trajectory)
-    y$trajectory[nok] <- seq(sum(nok)) + nmax
+    y$trajectory[nok] <- seq(sum(nok)) + max(y$trajectory,na.rm=TRUE)
   }
   invisible(y)
 }
 
-Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
-                         nmax=31*24,nmin=5,dmin=6E5,dE=0.3,dN=0.2,
+Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
+                         nmax=124,nmin=5,dE=0.3,dN=0.2,dmin=0,#6E5,
                          x0cleanup=TRUE,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
@@ -111,7 +110,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
                    num=num[datetime==d[i]],dx=dx[datetime==d[i]]),
         step3=list(lon=lons[datetime==d[i+1]],lat=lats[datetime==d[i+1]],
                    num=num[datetime==d[i+1]],dx=dx[datetime==d[i+1]]),
-             dmax=dmax,n0=n0,amax=amax,nend=nend,dE=dE,dN=dN)
+             dmax=dmax,ddmax=ddmax,n0=n0,amax=amax,nend=nend,dE=dE,dN=dN)
     num[datetime==d[i-1]] <- nn$step1$num
     num[datetime==d[i]] <- nn$step2$num
     num[datetime==d[i+1]] <- nn$step3$num
@@ -126,8 +125,8 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
 
   tracklen <- data.frame(table(num))
   if (!is.null(nmax)) {
-    while (any(tracklen$Freq>nmax/dh)) {
-      for (n in tracklen[tracklen$Freq>nmax/dh,]$num) {
+    while (any(tracklen$Freq>nmax)) {
+      for (n in tracklen[tracklen$Freq>nmax,]$num) {
         i <- which(num==n)
         dn <- mapply(distAB,lons[i][2:length(i)],lats[i][2:length(i)],
                    lons[i][1:(length(i)-1)],lats[i][1:(length(i)-1)])
@@ -223,8 +222,9 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
   invisible(list(y=y,y0=y0))
 }
 
-Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1E6,dE=0.3,dN=0.2,
-                             nend=NA,lplot=FALSE,verbose=FALSE) {
+Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1.2E6,ddmax=0.5,
+                     dE=0.3,dN=0.2,dmax.s=2E5,nend=NA,lplot=FALSE,
+                     verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
   if (is.na(n0) & !all(is.na(step1$num))) {
     n0 <- max(step1$num,na.rm=TRUE)
@@ -241,18 +241,18 @@ Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1E6,dE=0.3,dN=0.2,
   d23 <- mapply(function(x,y) distAB(x,y,step3$lon,step3$lat),step2$lon,step2$lat)
   d23[is.na(d23)] <- 0
   a23 <- mapply(function(x,y) angle(x,y,step3$lon,step3$lat),step2$lon,step2$lat)
-  dmax23 <- adjustdmax(dmax,a23,dE=dE,dN=dN)
+  dmax23 <- adjustdmax(a23,dmax=dmax,dE=dE,dN=dN)
   d12 <- mapply(function(x,y) distAB(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
   d12[is.na(d12)] <- 0
   a12 <- mapply(function(x,y) angle(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
-  dmax12 <- adjustdmax(dmax,a12,dE=dE,dN=dN)
+  dmax12 <- adjustdmax(a12,dmax=dmax,dE=dE,dN=dN)
   da <- sapply(a12,function(x) abs(x-a23))
   da[da>180 & !is.na(da)] <- abs(da[da>180 & !is.na(da)]-360)
   dd <- sapply(d12,function(x) abs(x-d23))
   d123 <- sapply(d12,function(x) x+d23)
   ok.d <- sapply(d12<dmax12,function(x) sapply(d23<dmax23,function(y) y & x ))
-  ok.d2 <- sapply(d12<dmax/5,function(x) sapply(d23<dmax/5,function(y) y & x ))
-  ok.dd <- (dd/d123 < 0.5 | ok.d2) & dd < dmax/3
+  ok.d2 <- sapply(d12<dmax.s,function(x) sapply(d23<dmax.s,function(y) y & x ))
+  ok.dd <- (dd/d123 < ddmax | ok.d2) & dd < dmax/2
   ok <- ok.d & (da <= amax | ok.d2) & ok.dd
   j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))
   j2 <- rep(seq(n2),n1)
@@ -324,8 +324,7 @@ angle <- function(lon1,lat1,lon2,lat2) {
 }
 
 ## adjust maximum distance based on angle of direction: max eastward, min westward 
-adjustdmax <- function(dmax,a,dE=0.3,dN=0.2,
-                       width=1,height=1,lplot=FALSE) {
+adjustdmax <- function(a,dmax=1.2E6,dE=0.3,dN=0,width=1,height=1,lplot=FALSE) {
   rad <- a*pi/180
   east <- rad > -pi/2 & rad < pi/2
   north <- rad < pi & rad > 0
@@ -333,13 +332,14 @@ adjustdmax <- function(dmax,a,dE=0.3,dN=0.2,
   x[!east] <- -x[!east]
   y <- height*sqrt(1-(x/width)^2)
   y[!north] <- -y[!north]
-  #x <- (x + dE)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
-  #y <- (y + dN)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
+  x <- (x + dE)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
+  y <- (y + dN)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
   d <- dmax*sqrt(x^2 + y^2)
   if(lplot) {
-    plot(dmax*x*1E-3,dmax*y*1E-3,type="p",pch=19,cex=1,
+    plot(0,0,cex=2,pch=3,col="black",
          xlim=c(-1.5,1.5)*dmax*1E-3,ylim=c(-1.5,1.5)*dmax*1E-3,
          xlab="dmax (km)",ylab="dmax (km)",main="maximum displacement radius")
+    points(dmax*x*1E-3,dmax*y*1E-3,pch=19,cex=0.5)
     grid()
   }
   return(d)

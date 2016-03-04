@@ -28,7 +28,7 @@ regions or 'events' of different types, e.g., anti-cyclones.
 }
 \usage{
 track(X,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
-             nmax=31*24,nmin=5,dmin=5E5,dE=0.3,dN=0.2,
+             nmax=124,nmin=5,dmin=5E5,dE=0.3,dN=0.2,
              lplot=FALSE,progress=TRUE,verbose=FALSE)
 track.events(X,...) 
 
@@ -41,8 +41,8 @@ track.events(X,...)
     \item{is}{A list providing space index, lon and/or lat.}
     \item{dmax}{Maximum displacement of events between two time steps in a trajectory. Unit: m.}
     \item{amax}{Maximum change in the angle of direction. Unit: degrees.}
-    \item{nmax}{Maximum lifetime of a trajectory. Unit: hours.}
-    \item{nmin}{Minimum lifetime of a trajectory. Unit: hours.}
+    \item{nmax}{Maximum lifetime of a trajectory. Unit: number of time steps.}
+    \item{nmin}{Minimum lifetime of a trajectory. Unit: number of time steps.}
     \item{dmin}{Minimum displacement between the start and end point of a trajectory. Unit: m.}
     \item{dE}{Shift of the maximum displacement in the eastward direction.}
     \item{dN}{Shift of the maximum displacement in the northward direction.}
