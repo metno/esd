@@ -1006,10 +1006,16 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
     lines(c(0,10),rep(0,2))
     lines(rep(0,2),c(0,10))
     grid()
-    legend(xlim[1],ylim[2],c("same sign","different sign"),
+    xpos <- xlim[2] - 0.2*diff(xlim)
+    ypos <- ylim[1] + 0.1*diff(ylim)
+#    legend(xlim[1],ylim[2],c("same sign","different sign"),
+#           pch=c(19,21),bty="n",col="grey")
+    legend(xpos,ypos,c("same sign","different sign"),
            pch=c(19,21),bty="n",col="grey")
     par(xpd=TRUE)
-    text(xlim[1],ylim[2],'AR(1) - symbol size',col='grey40',pos=3)
+#    text(xlim[1],ylim[2],'AR(1) - symbol size',col='grey40',pos=3)
+    text(xlim[2]-0.05*diff(xlim),ypos+0.025*diff(ylim),
+         'AR(1) - symbol size',col='grey40',pos=3,cex=0.8)
     text(xlim[2],ylim[2],'EOF #',col='grey40',cex=0.8,pos=3)
 
     par(new=TRUE,fig=c(0.85,0.95,0.70,0.85),mar=c(0,3,0,0),
