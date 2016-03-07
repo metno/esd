@@ -10,8 +10,8 @@ attrcp <- function(x,y,ignore=c("name","model","n.apps","appendix","dimnames")) 
             attr(y,nattr[i]) <- attr(x,nattr[i])
 #    if (!is.null((attr(x,"dimensions"))) & !is.element("dimensions",ignore)) attr(y,"dimensions") <- attr(x,"dimensions")
     if (inherits(x,'field')) {
-      print(c(dim(x),dim(y)))
-      print(attr(x,'dimensions'))
+      #print(c(dim(x),dim(y)))
+      #print(attr(x,'dimensions'))
       if (!is.null(dim(x)) & !is.null(dim(y)) & (length(index(y))>0)) 
          if (dim(y)[2]==dim(x)[2]) attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],length(index(y)))
     }
