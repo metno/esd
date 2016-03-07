@@ -8,7 +8,7 @@ track.events <- function(x,verbose=FALSE,...) {
 }
 
 track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.5E6,amax=90,
-                         nmax=124,nmin=3,dE=0.3,dN=0,dmin=0,
+                         nmax=124,nmin=3,dE=0.3,dN=0,dmin=5E5,
                          lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
@@ -51,7 +51,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.5E6,amax=90,
 }
 
 Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.5E6,amax=90,
-                         nmax=124,nmin=3,dE=0.3,dN=0.2,dmin=0,#6E5,
+                         nmax=124,nmin=3,dE=0.3,dN=0.2,dmin=1E5,
                          x0cleanup=TRUE,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
@@ -353,9 +353,16 @@ Trackstats <- function(x,verbose=FALSE) {
   class(y) <- class(x)
   lons <- y["lon"][[1]]
   lats <- y["lat"][[1]]
+  if(verbose) print("Enumerate")
   rnum <- Enumerate(y)
   nummax <- max(rnum,na.rm=TRUE)
   rnum[is.na(rnum)] <- nummax+1
+  if(verbose) print("displacement")
+  dy <- Displacement(y)
+  y$distance <- dy
+  if(!"distance" %in% colnames(x)) {
+    attr(y,"unit") <- c(attr(y,"unit"),"km")
+  }
   if(verbose) print("trackcount")
   trackcount <- data.frame(table(rnum))
   if(verbose) print("timestep")
@@ -363,12 +370,7 @@ Trackstats <- function(x,verbose=FALSE) {
   timestep <- rep(NA,length(ts))
   timestep[order(rnum)] <- ts
   if(verbose) print("tracklength")
-  lon1 <- as.numeric(by(y$lon,rnum,function(x) x[1]))
-  lat1 <- as.numeric(by(y$lat,rnum,function(x) x[1]))
-  lon2 <- as.numeric(by(y$lon,rnum,function(x) x[length(x)]))
-  lat2 <- as.numeric(by(y$lat,rnum,function(x) x[length(x)]))
-  tracklength <- round(mapply(distAB,lon1,lat1,lon2,lat2)*1E-3)
-  tracklength[lat1==lat2 & lon1==lon2] <- 0
+  tracklength <- as.numeric(by(y$distance,rnum,function(x) sum(x,na.rm=TRUE)))
   if (any(rnum>nummax)) {
     trackcount$Freq[nummax+1] <- 1
     timestep[rnum==(nummax+1)] <- 1
@@ -379,12 +381,6 @@ Trackstats <- function(x,verbose=FALSE) {
   y$tracklength <- tracklength[rnum]
   if (length(attr(y,"unit"))<dim(y)[2]) {
     attr(y,"unit") <- c(attr(y,"unit"),c("count","numeration","km"))
-  }
-  if(verbose) print("displacement")
-  dy <- Displacement(y)
-  y$distance <- dy
-  if(!"distance" %in% colnames(x)) {
-    attr(y,"unit") <- c(attr(y,"unit"),"km")
   }
   invisible(y)
 }
