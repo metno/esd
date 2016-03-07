@@ -7,14 +7,14 @@ track.events <- function(x,verbose=FALSE,...) {
   track.default(x,...)
 }
 
-track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,amax=90,
-                         nmax=124,nmin=5,ddmax=0.5,dE=0.3,dN=0,dmin=0,#5E5,
+track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.5E6,amax=90,
+                         nmax=124,nmin=3,dE=0.3,dN=0,dmin=0,
                          lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
   yrmn <- as.yearmon(strptime(x["date"][[1]],"%Y%m%d"))
-  if (length(unique(yrmn))>1) {
+  if (length(unique(yrmn))>1 & length(yrmn)>1000) {
     x.tracked <- NULL
     if (progress) pb <- txtProgressBar(style=3)
     for (i in 1:length(unique(yrmn))) {
@@ -22,12 +22,12 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,amax=90,
       x.y <- subset(x,it=(yrmn==unique(yrmn)[i]))
       if (is.null(x.tracked)) {
         x.t <- Track(x.y,x0=x0,lplot=lplot,x0cleanup=FALSE,dE=dE,dN=dN,
-                     amax=amax,dmax=dmax,ddmax=ddmax,dmin=dmin,nmax=nmax,nmin=nmin,
+                     amax=amax,dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y
       } else {
         x.t <- Track(x.y,x0=x.tracked,lplot=lplot,dE=dE,dN=dN,
-                     amax=amax,dmax=dmax,dmin=dmin,ddmax=ddmax,nmax=nmax,nmin=nmin,
+                     amax=amax,dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y0
         x.tracked <- merge(x.tracked,x.t$y,all=TRUE)
@@ -37,7 +37,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,amax=90,
     y <- x.tracked
   } else {
     x.tracked <- Track(x,x0=NULL,lplot=lplot,dE=dE,dN=dN,
-                       amax=amax,dmax=dmax,ddmax=ddmax,dmin=dmin,nmax=nmax,nmin=nmin,
+                       amax=amax,dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
                        progress=progress,verbose=verbose)
     y <- x.tracked$y
   }
@@ -50,8 +50,8 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,amax=90,
   invisible(y)
 }
 
-Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
-                         nmax=124,nmin=5,dE=0.3,dN=0.2,dmin=0,#6E5,
+Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.5E6,amax=90,
+                         nmax=124,nmin=3,dE=0.3,dN=0.2,dmin=0,#6E5,
                          x0cleanup=TRUE,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
@@ -110,7 +110,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
                    num=num[datetime==d[i]],dx=dx[datetime==d[i]]),
         step3=list(lon=lons[datetime==d[i+1]],lat=lats[datetime==d[i+1]],
                    num=num[datetime==d[i+1]],dx=dx[datetime==d[i+1]]),
-             dmax=dmax,ddmax=ddmax,n0=n0,amax=amax,nend=nend,dE=dE,dN=dN)
+             dmax=dmax,n0=n0,amax=amax,nend=nend,dE=dE,dN=dN)
     num[datetime==d[i-1]] <- nn$step1$num
     num[datetime==d[i]] <- nn$step2$num
     num[datetime==d[i+1]] <- nn$step3$num
@@ -222,7 +222,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
   invisible(list(y=y,y0=y0))
 }
 
-Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1.2E6,ddmax=0.5,
+Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1.5E6,
                      dE=0.3,dN=0.2,dmax.s=2E5,nend=NA,lplot=FALSE,
                      verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
@@ -252,7 +252,7 @@ Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1.2E6,ddmax=0.5,
   d123 <- sapply(d12,function(x) x+d23)
   ok.d <- sapply(d12<dmax12,function(x) sapply(d23<dmax23,function(y) y & x ))
   ok.d2 <- sapply(d12<dmax.s,function(x) sapply(d23<dmax.s,function(y) y & x ))
-  ok.dd <- (dd/d123 < ddmax | ok.d2) & dd < dmax/2
+  ok.dd <- (dd/d123 < 0.5 | ok.d2)
   ok <- ok.d & (da <= amax | ok.d2) & ok.dd
   j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))
   j2 <- rep(seq(n2),n1)
