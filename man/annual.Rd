@@ -31,7 +31,7 @@ month(x, ...)
 day(x, ...)
 season(x,format="character")
 season.name()
-pentad(x,l=5,...)
+pentad(x,l=5,it0=NULL,...)
 }
 \arguments{
   \item{x}{a station, field object, or a date}
@@ -41,6 +41,8 @@ pentad(x,l=5,...)
   \item{format}{'numeric' or 'character'}
   \item{na.rm}{TRUE: ignore NA - see see \code{\link{mean}}}
   \item{l}{length of window}
+  \item{it0}{Value of specific year to include in the aggregated series
+    (it0=1970 and l=1 will give year 1970, 1975, 1980, ...)}
  }
 \value{Same as x, or a numeric for \code{year}, \code{month},
   \code{day}, or \code{pentad}.
