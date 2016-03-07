@@ -24,7 +24,7 @@ in the northern hemisphere and may not work as well for other
 regions or 'events' of different types, e.g., anti-cyclones. 
 }
 \usage{
-track(X,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=90,
+track(X,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,amax=90,
              nmax=124,nmin=5,dmin=5E5,dE=0.3,dN=0.2,
              lplot=FALSE,progress=TRUE,verbose=FALSE)
 track.events(X,...) 
