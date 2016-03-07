@@ -22,15 +22,15 @@ been adapted for 'esd'.
 %% \code{stopCCI} signals the CCI process to stop in a safe manner by
 %% removing the file '.CCI.run' in the run directory.
 
-\code{gradient.wind} estimated the gradient wind of the data produced by
-CCI after Fleagle and Businger (1980) p. 163. (eq 4.27). 
+The maximum gradient wind (max.speed) is estimated as described in
+Fleagle and Businger (1980) p. 163. (eq 4.27). 
 
 Reference: Benestad \& Chen (2006) 'The use of a Calculus-based Cyclone Identification method for generating storm statistics', Tellus A, in press.
            Benestad (2005) 
 } 
 \usage{
 CCI(Z,m=14,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
-                mindistance=1E6,dpmin=1E-3,pmax=NULL,rmin=1E4,rmax=2E6,
+                mindistance=1E6,dpmin=5E-4,pmax=NULL,rmin=1E4,rmax=2E6,
                 accuracy=NULL,nsim=NULL,fname="cyclones.rda",
                 lplot=FALSE,verbose=FALSE)
 }
@@ -43,11 +43,12 @@ CCI(Z,m=14,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
     \item{cyclones}{TRUE: identifies cyclones, FALSE: anticyclones.}
     \item{mindistance}{Min distance between cyclones. Unit: m.}
     \item{dpmin}{Min pressure gradient at points of inflection around
-           cyclone. Unit: Pa/m (10hPa/km).}
+      cyclone. Unit: Pa/m (10hPa/km).}
     \item{pmax}{Max pressure in center of cyclone. Unit: hPa.}
-    \item{rmin}{Min radius of cyclone. Unit: m.}
-    \item{rmax}{Max radius of cyclone. Unit: m.}
-    \item{nsim}{Number of simultaneous cyclones identified and saved ordered according to depth/strength.}
+    \item{rmin}{Min average radius of cyclone. Unit: m.}
+    \item{rmax}{Max average radius of cyclone. Unit: m.}
+    \item{nsim}{Number of simultaneous cyclones identified and saved
+      ordered according to depth/strength.}
     \item{fname}{Name of output file.}
     \item{lplot}{TRUE: produce plots.}
     \item{verbose}{Print out diagnostics.}
