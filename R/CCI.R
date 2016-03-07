@@ -1,7 +1,7 @@
 # K Parding, 29.05.2015
 
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
-                label=NULL,mindistance=1E6,dpmin=1E-3,
+                label=NULL,mindistance=5E5,dpmin=1E-3,
                 pmax=NULL,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,verbose=FALSE) {
   if(verbose) print("CCI - calculus based cyclone identification")
@@ -12,7 +12,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   
   yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
   #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
-  if (length(unique(yrmn))>1) {
+  if (length(unique(yrmn))>2) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
     X <- NULL
@@ -187,41 +187,18 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
 
   ## Clear temporary objects from working memory
   rm("del1","del2"); gc(reset=TRUE)
-  
+
   ## Remove secondary cyclones near a deeper one (same cyclonic system):
   if(verbose) print("Remove secondary cyclones")
   del1 <- rep(TRUE,length(date1))
   del2 <- rep(TRUE,length(date2))
   for (d in t) {
-    #if (inherits(index(Z),'Date')) d <- as.Date(d)
-    ## Remove secondary cyclones identified with the standard method,
-    ## located close (<1000km) to other stronger cyclones
+    
     i1 <- which(date1==d)
-    if (length(i1)>1) {
-      distance <- apply(cbind(lon1[i1],lat1[i1]),1,
-       function(x) suppressWarnings(distAB(x[1],x[2],lon1[i1],lat1[i1])))
-      diag(distance) <- NA; distance[lower.tri(distance)] <- NA
-      del.i1 <- which(distance<mindistance,arr.ind=TRUE)
-      if(any(del.i1)) {
-        col.del <- rep(1,length(del.i1)/2)
-        if (is.null(dim(del.i1))) {
-           s1 <- strength1[i1][,del.i1[1]]
-           s2 <- strength1[i1][,del.i1[2]]
-           col.del[s1<=s2] <- 2
-           del.i1 <- unique(del.i1[col.del])
-        } else {
-           s1 <- strength1[i1][del.i1[,1]]
-           s2 <- strength1[i1][del.i1[,2]]
-           col.del[s1<=s2] <- 2
-           del.i1 <- unique(del.i1[cbind(seq(1,dim(del.i1)[1]),col.del)])
-        }
-        del1[i1[del.i1]] <- FALSE
-      }
-      i1 <- i1[!1:length(i1) %in% del.i1]
-    }
+    i2 <- which(date2==d)
+
     ## Remove secondary cyclones identified with the widened masks,
     ## requiring 1000 km distance to nearest neighbouring cyclone
-    i2 <- which(date2==d)
     if(any(i2) & any(i1)) {
       distance <- apply(cbind(lon2[i2],lat2[i2]),1,
        function(x) suppressWarnings(distAB(x[1],x[2],lon1[i1],lat1[i1])))
@@ -254,10 +231,35 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
         del2[i2[del.i2]] <- FALSE
       }
     }
+
+    ## Remove secondary cyclones identified with the standard method,
+    ## located close (<1000km) to other stronger cyclones
+    if (length(i1)>1) {
+      distance <- apply(cbind(lon1[i1],lat1[i1]),1,
+       function(x) suppressWarnings(distAB(x[1],x[2],lon1[i1],lat1[i1])))
+      diag(distance) <- NA; distance[lower.tri(distance)] <- NA
+      del.i1 <- which(distance<mindistance,arr.ind=TRUE)
+      if(any(del.i1)) {
+        col.del <- rep(1,length(del.i1)/2)
+        if (is.null(dim(del.i1))) {
+           s1 <- strength1[i1][,del.i1[1]]
+           s2 <- strength1[i1][,del.i1[2]]
+           col.del[s1<=s2] <- 2
+           del.i1 <- unique(del.i1[col.del])
+        } else {
+           s1 <- strength1[i1][del.i1[,1]]
+           s2 <- strength1[i1][del.i1[,2]]
+           col.del[s1<=s2] <- 2
+           del.i1 <- unique(del.i1[cbind(seq(1,dim(del.i1)[1]),col.del)])
+        }
+        del1[i1[del.i1]] <- FALSE
+      }
+      i1 <- i1[!1:length(i1) %in% del.i1]
+    }
   }
   lows1[lows1] <- del1
   lows2[lows2] <- del2
- 
+    
   ## Add the two groups of cyclones together,
   ## keep track of which is which with the quality flag qf
   lows <- lows1 | lows2
@@ -355,7 +357,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       oki <- sum(!is.na(ilon))>=3
       if(oki) {
        dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-       oki <- sum(dpi>dpmin & !is.na(dpi))>=3 & mean(dpi,na.rm=TRUE)>dpmin &
+       oki <- sum(dpi>dpmin & !is.na(dpi))>=3 &
          ( (cyclones & pcent[i]<mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
            (!cyclones & pcent[i]>mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) )
       }
