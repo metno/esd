@@ -502,12 +502,12 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   }
 }
 
-diagnose.dsensemble.list <- function(X,plot=FALSE,is=NULL,
+diagnose.dsensemble.list <- function(X,plot=FALSE,is=NULL,eofs=NULL,
                  map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
                  main=NULL,verbose=FALSE,...) {
   if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
-  if (inherits(X,"pca")) X <- as.station(X,verbose=verbose)
+  if (inherits(X,"pca")) X <- as.station(X,is=is,eofs=eofs,verbose=verbose)
   gcms <- attr(X[[1]],"model_id")
   if (verbose) print("Compare variance and trends")
   outside <- matrix(NA,length(X))

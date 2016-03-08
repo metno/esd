@@ -10,6 +10,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
      y <- Y  ## single specific date
 
   ## Get data on the topography on the 5-minute resolution
+  if (verbose) print('Use etopo5 elevation data')
   data(etopo5)
   etopo5 <- subset(etopo5,
                    is=list(lon=range(lon(Y))+c(-1,1),
@@ -18,16 +19,21 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
   etopo5[etopo5<=-1] <- NA
 
   ## Set the grid to be the same as that of etopo5:
+  if (verbose) print('Use same structure as etopo5')
   grid <- structure(list(x=lon(etopo5),y=lat(etopo5)),class='gridList')
 
   ## Flag dubplicated stations:
+  if (verbose) print('Check for duplicates')
   ok <- !(duplicated(lon(Y)) & duplicated(lat(Y)))
 
-  ## Spread in the  90-percente interval changing
+  ## Kriging
+  if (verbose) print('Apply kriging')
+  browser()
   obj <- LatticeKrig( x=cbind(lon(Y)[ok],lat(Y)[ok]),
                       y=y[ok],Z=alt(Y)[ok])
 
   ##  obj <- LatticeKrig( x=cbind(lon[ok],lat[ok]), y=z[2,ok],Z=alt[ok])
+  if (verbose) print('Predict surface')
   w <- predictSurface(obj, grid.list = grid,Z=etopo5)
   w$z[is.na(etopo5)] <- NA
 

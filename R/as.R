@@ -318,20 +318,27 @@ as.station.eof <- function(x,pattern=1:10) {
   invisible(y)
 }
 
-as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
+as.station.dsensemble.pca <- function(X,is=NULL,eofs=NULL,verbose=FALSE,...) {
   if (verbose) print('as.station.dsensemble.pca')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
   if (inherits(X,"station")) {
       invisible(X)
   } else {
-    if (is.null(is)) is <- 1:length(loc(X$pca)) 
+    #if (is.null(is)) is <- 1:length(loc(X$pca)) 
     if (verbose) print('Extract the results model-wise')
     d <- apply(sapply(X[3:length(X)],dim),1,min)
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
-    U <- attr(X$pca,'pattern')
+    if (is.null(eofs)) {
+      U <- attr(X$pca,'pattern')
+      W <- attr(X$pca,'eigenvalues')
+    } else {
+    ## If eofs is specified, use a sub set of the PCA modes.
+      U <- attr(X$pca,'pattern')[,eofs]
+      W <- attr(X$pca,'eigenvalues')[eofs]
+      V <- V[,eofs,]
+    }    
     d <- dim(U)
-    W <- attr(X$pca,'eigenvalues')
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], length(X)-2)
     for (i in seq(1:dim(S)[1])) {
@@ -381,6 +388,7 @@ as.station.dsensemble.pca <- function(X,is=NULL,verbose=FALSE,...) {
        attr(S[[i]],'model_id') <- gcms
        class(S[[i]]) <- c('dsensemble','zoo')
     }
+    if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     class(S) <- c("dsensemble","station","list")
     attr(S,"unit") <- attr(X,"unit")
     attr(S,"variable") <- attr(X,"variable")
