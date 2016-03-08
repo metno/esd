@@ -207,7 +207,6 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     else
         time <- NULL
     ## Check & update meta data from the data itself 
-     
     ncid2 <- check.ncdf4(ncid,param=param,verbose=verbose) 
     if (length(grep("model",ls())) > 0) model <- ncid2$model 
     if (!is.null(itime)) time <- ncid2$time
@@ -1149,7 +1148,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         i <- grep(param, names(ncid$var))
         v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
         if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
-    }
+    } 
     ## Checking : Variable dimensions ...
     ndims <- eval(parse(text=paste("ncid$var[[",i,"]]$ndims",sep="")))
     dimnames <- rep(NA,ndims)
@@ -1220,7 +1219,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         ## model$experiment_id <-modelid[2:3]
         model$type <- modelid[grep('-',modelid)+1] 
     }
-    
+
     ## END CMIP3 MODEL NAMES UPDATE
     ## 
     ## Checking : Time unit and origin
@@ -1311,9 +1310,9 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         torigin1 <- paste(yorigin,morigin,dorigin,sep="-")
         torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ") 
     }
-
+    
     if (!is.null(torigin)) {if (verbose) print("Checking Time Origin --> [ok]")} else if (verbose) print("Checking Time Origin --> [fail]")
-    ##
+    
     ## Checking : Frequency
     type <- c("year","season","months","Days","hours","minutes","seconds")
     type.abb <- substr(tolower(type),1,3)
@@ -1359,7 +1358,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     }
     ## Get calendar from attribute if any and create vector of dates vdate
     ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
-    #browser()
+    #
     if (!is.null(calendar.att)) {
         if (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) {
             ## if (grepl("sec",tunit))
@@ -1492,8 +1491,12 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             if (verbose) print(paste("Warning : Irregular frequencies have been detected - The data might be corrupted and needs extra Checking !"))   
             if (verbose) print(paste(as.character(dt),tunit,sep=" "))
         }
+        if (median(as.numeric(row.names(table(diff(nc$dim$time$vals))))) > 100) {
+            if (verbose) print("Looks like the data contains annaul values")
+            freq.data <- 'year'
+        }
     }
-    ##
+   
     ## End check 1
     ## Begin check 2 if freq.att matches freq.data
     if (length(time$vals)>1) {
@@ -1512,9 +1515,9 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
           ## information - Time difference
           warning(paste('Need to guess the frequency, based on reckognised time units',tunit))
           model$frequency <- 1
-        } else
-          stop("Frequency could not be found, neither detected, the data might be corrupted !")
-        
+        } else {
+            stop("Frequency could not be found, neither detected, the data might be corrupted !")
+        }
         if (!is.null(model$frequency)) {
             if (verbose) print(paste("Frequency set to ",model$frequency,sep=""))
             if (model$frequency=="month") {
@@ -1948,6 +1951,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
                 print(paste(as.character(dt),tunit,sep=" "))
         }
         if (sum((dt >= 28) & (dt<=31))>0) freq.data <- "month"
+        if (sum((dt >= 350) & (dt<=31))>0) freq.data <- "month"
     }
 
     ## set calendar automatically
