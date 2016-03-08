@@ -1455,17 +1455,25 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ## Checking the data / Extra checks / Automatic calendar detection / etc.
     ## Check 1 # Regular frequency
     ## 
-    if (!is.null(time$vdate)) dt <- as.numeric(rownames(table(diff(time$vdate)))) else dt <- NULL
+    if (!is.null(time$vdate))
+        dt <- as.numeric(rownames(table(diff(time$vdate))))
+    else
+        dt <- NULL
     if (!is.null(time$vdate)) {
         if (verbose) print("Vector of date is in the form :")
         if (verbose) print(str(time$vdate))
         if (verbose) print(diff(time$vdate))
     } else {
-        if (grepl("sec",tunit)) dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60*60)))))
-        if (grepl("min",tunit)) dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60)))))
-        if (grepl("day",tunit)) dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
-        if (grepl("hou",tunit)) dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/24))))
-        if (grepl("mon",tunit)) dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
+        if (grepl("sec",tunit))
+            dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60*60)))))
+        if (grepl("min",tunit))
+            dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60)))))
+        if (grepl("day",tunit))
+            dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
+        if (grepl("hou",tunit))
+            dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/24))))
+        if (grepl("mon",tunit))
+            dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
         if (length(dt)==1) {
             if (verbose) print("Regular frequency has been detected from the data")
         } else if (verbose) print("Irregular frequency has been detected from the data")
@@ -1491,12 +1499,13 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             if (verbose) print(paste("Warning : Irregular frequencies have been detected - The data might be corrupted and needs extra Checking !"))   
             if (verbose) print(paste(as.character(dt),tunit,sep=" "))
         }
-        if (median(as.numeric(row.names(table(diff(nc$dim$time$vals))))) > 100) {
-            if (verbose) print("Looks like the data contains annaul values")
-            freq.data <- 'year'
-        }
+        
     }
-   
+    if (median(as.numeric(row.names(table(diff(ncid$dim$time$vals))))) > 100) {
+        if (verbose) print("Looks like the data contains annual values")
+        freq.data <- 'annual'
+    }
+    ## 
     ## End check 1
     ## Begin check 2 if freq.att matches freq.data
     if (length(time$vals)>1) {
@@ -1755,7 +1764,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         print("Checking Time Origin --> [fail]")
     ##
     ## Checking : Frequency
-    type <- c("year","season","months","Days","hours","minutes","seconds")
+    type <- c("annual","season","month","day","hour","minute","second")
     type.abb <- substr(tolower(type),1,3)
     ## Initialize
     freq.att <- NULL
@@ -1908,7 +1917,8 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     ## 
     if (!is.null(time$vdate)) {
         if (grepl("sec",tunit))
-            dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60*60)))))
+            dt <- as.numeric(rownames(
+                table(diff(ncid$dim$time$vals/(24*60*60)))))
         if (grepl("min",tunit))
             dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60)))))
         if (grepl("day",tunit))
@@ -1951,7 +1961,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
                 print(paste(as.character(dt),tunit,sep=" "))
         }
         if (sum((dt >= 28) & (dt<=31))>0) freq.data <- "month"
-        if (sum((dt >= 350) & (dt<=31))>0) freq.data <- "month"
+        if (sum((dt >= 350) & (dt<=31))>0) freq.data <- "year"
     }
 
     ## set calendar automatically
