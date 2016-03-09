@@ -229,6 +229,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
           del.i2 <- unique(del.i2[cbind(seq(1,dim(del.i2)[1]),col.del)])
         }
         del2[i2[del.i2]] <- FALSE
+        i2 <- i2[!1:length(i2) %in% del.i2]
       }
     }
 
@@ -353,7 +354,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       }
       ilon <- ilon[!is.na(ilon)]
       ilat <- ilat[!is.na(ilat)]
-      ##dslpi <- mapply(function(i1,i2) 0.5*(px+py)[t==date[i],i1,i2],ilon,ilat)-pcent[i]
       oki <- sum(!is.na(ilon))>=3
       if(oki) {
        dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
