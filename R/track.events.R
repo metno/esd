@@ -223,7 +223,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,amax=90,
 }
 
 Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1.2E6,
-                     dE=0.3,dN=0.2,dmax.s=2E5,nend=NA,lplot=FALSE,
+                     dE=0.3,dN=0.2,dmax.s=5E5,nend=NA,lplot=FALSE,
                      verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
   if (is.na(n0) & !all(is.na(step1$num))) {
