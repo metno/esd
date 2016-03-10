@@ -121,7 +121,7 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
     SRC <- src
     PATH <- path
     URL <- url
-    ## 
+     
     ## Select one or a set of stations based on the metadata
     if (is.null(ss)) { 
         ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param=param,src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
@@ -240,8 +240,7 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
                 print("Warning : No values found in the time series -> This station will be ignored")
                 x <- NULL
             }
-            else if (!is.null(x))
-                X <- combine.stations(X,x)  
+            ## else if (!is.null(x)) X <- combine.stations(X,x)  
         } else if (src[i]=="NORDKLIM") {
             ##
             x <- nordklim.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose)
@@ -303,6 +302,7 @@ station.default <- function(loc=NULL, param="t2m",src = NULL, path=NULL, qual=NU
                 ## if (!is.null(x)) X <- combine.stations(X,x)
             }
         }
+        
         if (!is.null(x)) {
             if (i==1)
                 X <- x 
@@ -546,11 +546,13 @@ narp.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     ## 
     x.name <- as.character(ele2param(ele=ele,src="NARP")[2])
     unit <-  as.character(ele2param(ele=ele,src="NARP")[4])
-
+    scale <- as.numeric(ele2param(ele=ele,src="NARP")[3])
     iii <- is.element(NARP[,1],stid) & is.element(NARP[,2],as.numeric(ele))
     ## 
-    if (sum(iii) ==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
-    x <- NARP[iii,4:15]/10
+    if (sum(iii) ==0) {
+        print("Warning : No recorded values are found for this station -> Ignored")
+        return(NULL)}
+    x <- NARP[iii,4:15]*scale
     x[x <= -99] <- NA
     ny <- length(NARP[iii,3])
     year <- sort(rep(NARP[iii,3],12))
@@ -561,9 +563,13 @@ narp.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     NARP <- zoo(c(t(x)), order.by = as.Date(paste(year, month, day, sep = "-"), by='month', length.out = L))
     
     ## Format as station object
-    NARP <- as.station(NARP, stid=stid, loc=loc, lon=lon, lat=lat, alt=alt, ## frequency=1, calendar='gregorian',
-                       cntr=cntr, quality=NA, src='NARP', url=NA, param=param, unit=unit, longname=x.name,
-                       aspect="original", reference="Nordic Arctic Research Programme", info="narp2esd.R")
+    NARP <- as.station(NARP, stid=stid, loc=loc, lon=lon, lat=lat, alt=alt,
+                       ## frequency=1, calendar='gregorian',
+                       cntr=cntr, quality=NA, src='NARP', url=NA, param=param,
+                       unit=unit, longname=x.name,
+                       aspect="original",
+                       reference="Nordic Arctic Research Programme",
+                       info="narp2esd.R")
     ## Additional attributes
     attr(NARP,'history') <- c(match.call(),date())
     attr(NARP,'history') <- history.stamp(NARP)
