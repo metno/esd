@@ -1147,15 +1147,21 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         v1 <- NULL
         i <- grep(param, names(ncid$var))
         v1 <- eval(parse(text=paste("ncid$var[[",i,"]]",sep="")))
-        if (is.null(v1)) stop(paste("Variable ",param," could not be found !",sep=""))
+        if (is.null(v1))
+            stop(paste("Variable ",param," could not be found !",sep=""))
     } 
     ## Checking : Variable dimensions ...
     ndims <- eval(parse(text=paste("ncid$var[[",i,"]]$ndims",sep="")))
     dimnames <- rep(NA,ndims)
     if (ndims>0) {
-        for (j in 1:ndims) dimnames[j] <- eval(parse(text=paste("ncid$var[[",i,"]]$dim[[",j,"]]$name",sep="")))
-        if (verbose) print("Checking Dimensions --> [ok]")
-        if (verbose) print(paste(as.character(ndims), " dimension(s) has(have) been found :"))
+        for (j in 1:ndims)
+            dimnames[j] <- eval(parse(text=paste("ncid$var[[",i,"]]$dim[[",
+                                          j,"]]$name",sep="")))
+        if (verbose)
+            print("Checking Dimensions --> [ok]")
+        if (verbose)
+            print(paste(as.character(ndims),
+                        " dimension(s) has(have) been found :"))
         if (verbose) print(dimnames)
     } else {
         stop("Checking Dimensions --> [fail]")
@@ -1209,11 +1215,13 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         if (length(grep('-',tolower(modelid))>0) & is.null(model$model_id)) {
             model$model_id <- modelid[grep('-',modelid)]
         }
-        if (length(grep('cmip',tolower(modelid))>0) & is.null(model$project_id)) {
+        if (length(grep('cmip',tolower(modelid))>0) &
+            is.null(model$project_id)) {
             model$project_id <- modelid[grep('cmip',tolower(modelid))]
         }
         ## model$model_id <-modelid[1]
-        if (length(grep('rcp',tolower(modelid))>0) & is.null(model$experiment_id)) {
+        if (length(grep('rcp',tolower(modelid))>0) &
+            is.null(model$experiment_id)) {
             model$experiment_id <- modelid[grep('rcp',tolower(modelid))]
         }
         ## model$experiment_id <-modelid[2:3]
@@ -1311,7 +1319,10 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ") 
     }
     
-    if (!is.null(torigin)) {if (verbose) print("Checking Time Origin --> [ok]")} else if (verbose) print("Checking Time Origin --> [fail]")
+    if (!is.null(torigin)) {
+        if (verbose) print("Checking Time Origin --> [ok]")
+    } else if (verbose)
+        print("Checking Time Origin --> [fail]")
     
     ## Checking : Frequency
     type <- c("year","season","months","Days","hours","minutes","seconds")
@@ -1356,6 +1367,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         morigin <- as.numeric(format.Date(torigin,format="%m"))
         dorigin <- as.numeric(format.Date(torigin,format="%d"))
     }
+   
     ## Get calendar from attribute if any and create vector of dates vdate
     ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
     #
@@ -1382,7 +1394,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             ##     } else print("Warning : Monthly data are Mangeled")
                  }
             } 
-            
+             
             time$vdate <- switch(tunit,'seconds'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
                                  'minutes'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
                                  'hours'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*3600 *24,
@@ -1428,9 +1440,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                     time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=time$len)
                 } else time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)                  
             }  
-        } else  
-
-
+        } else   
             if (verbose) {
                 print(time$vdate[1])
                 print(paste("Starting date : ",time$vdate[1],"Ending date : ",time$vdate[length(time$vdate)], sep = " "))
@@ -1501,11 +1511,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         }
         
     }
-    if (median(as.numeric(row.names(table(diff(ncid$dim$time$vals))))) > 100) {
-        if (verbose) print("Looks like the data contains annual values")
-        freq.data <- 'annual'
-    }
-    ## 
+   
     ## End check 1
     ## Begin check 2 if freq.att matches freq.data
     if (length(time$vals)>1) {
@@ -1537,6 +1543,9 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             }
         }
     }
+
+
+
     ## End check 2
     if (verbose) print("Checking --> [Done!]")
     ## use zoo library to format the data
@@ -2008,7 +2017,11 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         time$vdate <- seq(as.Date(as.character(paste(year1,month1,"01",sep="-"))), by = freq.data,length.out=length(time$vals))
         print("Trusting first date and frequency to generate a new sequence of dates")
     }
-
+    if (median(as.numeric(row.names(table(diff(ncid$dim$time$vals))))) > 100
+        & grepl('day',tunit)) {
+        if (verbose) print("Looks like the data contains annual values")
+        freq.data <- 'annual'
+    }
     
     ## End check 2
     if (verbose) print("Checking --> [Done!]")
