@@ -571,6 +571,10 @@ export(Track)
 export(Track123)
 export(Trackstats)
 
+export(trackfilter)
+export(trackfilter.events)
+export(trackfilter.trajectory)
+
 export(density.trajectory)
 export(density.events)
 export(trackdensity)
