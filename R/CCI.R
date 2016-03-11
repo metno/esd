@@ -1,7 +1,7 @@
 # K Parding, 29.05.2015
 
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
-                label=NULL,mindistance=5E5,dpmin=5E-4,
+                label=NULL,mindistance=5E5,dpmin=1E-3,
                 pmax=NULL,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,verbose=FALSE) {
   if(verbose) print("CCI - calculus based cyclone identification")
