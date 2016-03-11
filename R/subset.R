@@ -1016,6 +1016,7 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
                                tolower(substr(it,1,3)))])
     } else if (is.seasons(it)) {
       if (verbose) print("Seasonally selected")
+      mo <- month(t)
       if (verbose) print(table(mo))
       if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
       ii <- is.element(mo,eval(parse(text=paste('season.abb()$',it,sep=''))))
