@@ -455,7 +455,6 @@ Enumerate <- function(x,param="trajectory",verbose=FALSE) {
 }
 
 
-
 ## NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,
 ##                              lplot=FALSE,verbose=FALSE) {
 ##   if (verbose) print("NearestNeighbour")
