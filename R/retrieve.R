@@ -197,7 +197,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     else
         lev <- NULL
     ## 
-    ## Time 
+    ## Time
     itime <- grep("tim", dimnames)
     if (length(itime) ==0) itime <- NULL
     else if (length(itime)>1)
@@ -1295,7 +1295,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             else stop("Could not determine the time origin. The processing has been stopped !")
         }
     }
-
+    
     if (!is.null(torigin)) {
         yorigin <- format.Date(as.Date(torigin),format="%Y")
         morigin <- format.Date(as.Date(torigin),format="%m")
@@ -1310,7 +1310,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             dorigin <- 1
             if (verbose) warning("Warning : Day origin has been set to:",dorigin)
         }  
-        if (is.na(dorigin)) {
+        if (is.na(morigin)) {
             if (verbose) warning("Warning : Month origin is missing !")
             morigin <- 1
             if (verbose) warning("Warning : Month origin has been set to:",morigin)
@@ -1330,6 +1330,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ## Initialize
     freq.att <- NULL
     ifreq <- grep("freq",names(model))
+ 
     if (length(ifreq)>0) {  
         itype <- grep(tolower(eval(parse(text=paste("model$",names(model)[ifreq],sep="")))),tolower(type))
         if (length(itype>0)) {
@@ -1394,10 +1395,10 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             ##     } else print("Warning : Monthly data are Mangeled")
                  }
             } 
-             
+
             time$vdate <- switch(tunit,'seconds'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
                                  'minutes'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
-                                 'hours'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*3600 *24,
+                                 'hours'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*3600,
                                  'days'= as.Date(torigin) + time$vals,
                                  'months'= seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
                                  'years'= year(as.Date(torigin)) + time$vals)
