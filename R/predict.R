@@ -126,6 +126,7 @@ predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     newdata <- data.frame(coredata(as.eof(x)))
     t <- index(as.eof(x))
   } else {
+    if (is.null(names(newdata))) names(newdata) <- paste('X',1:dim(newdata)[2],sep='.')
     t <- index(as.eof(newdata))
     newdata <- data.frame(coredata(as.eof(newdata)))
   }

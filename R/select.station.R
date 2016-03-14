@@ -5,10 +5,12 @@
 ## required    : "station.meta.rda"
 ## *           : main script
 
-select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = NULL ,lon = NULL, lat = NULL, 
-                            alt = NULL, cntr = NULL, src = NULL , it = NULL , nmin = NULL , verbose=FALSE) 
+select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
+                            stid = NULL ,lon = NULL, lat = NULL, 
+                            alt = NULL, cntr = NULL, src = NULL ,
+                            it = NULL , nmin = NULL , verbose=FALSE,...) 
 {
-    ##
+    ## 
     if (is.null(x)) {
     data("station.meta",envir=environment())
     ## load("station.meta.rda")
@@ -110,11 +112,13 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL, stid = 
     id <- is.element(tolower(station.meta$source),tolower(src))
     station.meta <- station.meta[id,]
   }
-    ##
+    ## 
     ## Search by location
   if (!is.null(loc)) {
-    id <- is.element(tolower(station.meta$location),tolower(loc))
-    station.meta <- station.meta[id,]
+    ## id <- is.element(tolower(station.meta$location),tolower(loc))
+      pattern <- paste(loc,collapse='|')
+      id <- grep(pattern=pattern,station.meta$location,ignore.case=TRUE,...)
+      station.meta <- station.meta[id,]
   }
     ##
     ## Search by starting and ending years
