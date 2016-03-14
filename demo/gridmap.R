@@ -1,7 +1,7 @@
 gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NULL,verbose=FALSE) {
   if (verbose) print(paste('gridmap',FUN))
   require(LatticeKrig)
-  browser()
+  
   if (is.null(xlim)) xlim <- range(lon(Y))
   if (is.null(ylim)) ylim <- range(lat(Y))
   if (!is.null(dim(Y)))
@@ -28,7 +28,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
 
   ## Kriging
   if (verbose) print('Apply kriging')
-  browser()
+  
   obj <- LatticeKrig( x=cbind(lon(Y)[ok],lat(Y)[ok]),
                       y=y[ok],Z=alt(Y)[ok])
 
