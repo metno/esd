@@ -884,7 +884,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if(verbose) print("map.events")
   x0 <- x
   x <- subset(x,it=it,is=is,verbose=verbose)
- 
+  
   if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
       
   if (is.null(is$lon) & !is.null(xlim)) {
@@ -926,7 +926,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   
   if(length(Y)!=0) {
     if (is.null(lonR)) lonR <- mean(lon(Y))
-    if (is.null(latR)) latR <- mean(lat(Y))
+    if (is.null(latR)) latR <- max(lat(Y))
     map(Y,colbar=colbar,new=new,projection=projection,
         xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
   } else {
@@ -946,7 +946,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   }
   
   period <- unique(c(min(it),max(it)))
-  
+ 
   if(dim(x)[1]>0) {
     #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
     #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
@@ -973,7 +973,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     }
    
   }
-
+  
   if (!is.null(period) & length(Y)==0) {
     text(par("usr")[2] - 0.15*diff(range(par("usr")[3:4])),
         par("usr")[4] - 0.04*diff(range(par("usr")[3:4])),
