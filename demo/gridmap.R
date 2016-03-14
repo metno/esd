@@ -1,14 +1,14 @@
 gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NULL,verbose=FALSE) {
   if (verbose) print(paste('gridmap',FUN))
   require(LatticeKrig)
-
+  browser()
   if (is.null(xlim)) xlim <- range(lon(Y))
   if (is.null(ylim)) ylim <- range(lat(Y))
-  if (!is.null(dim(y)))
+  if (!is.null(dim(Y)))
       y <- apply(Y,2,FUN,na.rm=TRUE)
   else
      y <- Y  ## single specific date
-
+  
   ## Get data on the topography on the 5-minute resolution
   if (verbose) print('Use etopo5 elevation data')
   data(etopo5)
