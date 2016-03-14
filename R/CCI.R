@@ -2,7 +2,7 @@
 
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
                 label=NULL,mindistance=5E5,dpmin=1E-3,
-                pmax=NULL,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
+                pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,verbose=FALSE) {
   if(verbose) print("CCI - calculus based cyclone identification")
 
@@ -178,15 +178,16 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     rm("ok1","ok2"); gc(reset=TRUE)
   }
   lows1[lows1] <- del1
-  lon1 <- lon1[del1]; lat1 <- lat1[del1]; date1 <- date1[del1]
-  pcent1 <- pcent1[del1]; strength1 <- strength1[del1]
   lows2[lows2] <- del2
-  lon2 <- lon2[del2]; lat2 <- lat2[del2]; date2 <- date2[del2]
-  pcent2 <- pcent2[del2]; strength2 <- strength2[del2]
-
-  ## Clear temporary objects from working memory
-  rm("del1","del2"); gc(reset=TRUE)
-
+  lon1 <- lon[lows1]; lat1 <- lat[lows1]; date1 <- date[lows1]
+  pcent1 <- 0.5*(px[lows1] + py[lows1])
+  strength1 <- rank(pcent1)
+  if (!cyclones) strength1 <- rank(-pcent1)
+  lon2 <- lon[lows2]; lat2 <- lat[lows2]; date2 <- date[lows2]
+  pcent2 <- 0.5*(px[lows2] + py[lows2])
+  strength2 <- rank(pcent2)
+  if (!cyclones) strength2 <- rank(-pcent2)
+ 
   ## Remove secondary cyclones near a deeper one (same cyclonic system):
   if(verbose) print("Remove secondary cyclones")
   del1 <- rep(TRUE,length(date1))
@@ -259,7 +260,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   }
   lows1[lows1] <- del1
   lows2[lows2] <- del2
-    
+  
   ## Add the two groups of cyclones together,
   ## keep track of which is which with the quality flag qf
   lows <- lows1 | lows2
