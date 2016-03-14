@@ -175,7 +175,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     ok2 <- pcent2 < pmax
     if(!cyclones) ok2 <- pcent2 > pmax
     del2[!ok2] <- FALSE
-    ## Clear temporary objects from working memory
     rm("ok1","ok2"); gc(reset=TRUE)
   }
   lows1[lows1] <- del1

@@ -12,7 +12,7 @@ subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     l <- dim(x)[1]
     if (is.null(it)) ii <- rep(TRUE,l)
     if (is.null(is)) ij <- rep(TRUE,l)
- 
+
     # Generate sequence of days, months or years if range of it value is given
     if (!is.null(it)) {
       if(verbose) print('Generate sequence of time if it value is given')
@@ -74,16 +74,16 @@ subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           if (verbose) print('it is a string of years')
           ii <- is.element(yr,it)
         }
-      } else if (is.logical(it) & length(it)==length(t)) {
+      } else if (is.logical(it) & length(it)==length(yr)) {
         if (verbose) print('it is a logical array')
         ii <- it
-      } else if (is.numeric(it) & max(it)<=length(t)) {
+      } else if (is.numeric(it) & max(it)<=length(yr)) {
         if (verbose) print('it is an index array')
-        ii <- rep(FALSE,length(t))
+        ii <- rep(FALSE,length(yr))
         ii[it] <- TRUE
       } else {
-        ii <- rep(FALSE,length(t))
-        warning("subset.station: did not recognise the selection citerion for 'it'")
+        ii <- rep(FALSE,length(yr))
+        warning("subset.trajectory: did not recognise the selection citerion for 'it'")
       }
     }
         

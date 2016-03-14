@@ -875,10 +875,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.5,lwd=3,col="black",pch=20,cex=1,
+                       param=NA,alpha=0.05,lwd=3,col="black",pch=20,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       show.trajectory=TRUE,lty=2,
+                       show.trajectory=FALSE,lty=2,
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
   if(verbose) print("map.events")
@@ -931,7 +931,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
   } else {
     if (is.null(lonR) & dim(x)[1]>0) lonR <- mean(x[,"lon"])
-    if (is.null(latR) & dim(x)[1]>0) latR <- mean(x[,"lat"])
+    if (is.null(latR) & dim(x)[1]>0) latR <- max(x[,"lat"])
     data(Oslo)
     map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
         bg=adjustcolor(col,alpha.f=0),new=new,

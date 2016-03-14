@@ -42,8 +42,8 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
 segments.trajectory <- function(x,param="pcent",
       xlim=NULL,ylim=NULL,colbar=list(pal='budrd',rev=FALSE,n=10,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
-      show.start=TRUE,show.end=TRUE,
-      alpha=0.4,cex=0.5,lty=1,lwd=2,main=NULL,new=TRUE,projection="lonlat",
+      show.start=FALSE,show.end=FALSE,show.segment=TRUE,
+      alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,projection="lonlat",
       verbose=FALSE,...) {
   if(verbose) print("segments.trajectory")
   x0 <- x
@@ -61,14 +61,14 @@ segments.trajectory <- function(x,param="pcent",
   if (is.null(ylim)) ylim <- range(lats)
   if(verbose) print(paste('xlim:',paste(round(xlim),collapse=" - "),
                           ', ylim:',paste(round(ylim),collapse=" - ")))
-
+  lab.breaks <- NULL
   if(param %in% colnames(x)) {
     if(sum(colnames(x)==param)==1) {
       p <- matrix(rep(x[,colnames(x)==param],sum(colnames(x)=='lon')),dim(lons))
     } else {
       p <- x[,colnames(x)==param]
     }
-  } else if (param %in% c("date","year","month")) {
+  } else if (param %in% c("date","year","month","season")) {
     n <- sum(colnames(x)=="lon")
     p <- t(apply(x,1,function(y) strftime(seq(strptime(y[colnames(x)=="start"],"%Y%m%d%H"),
                                    strptime(y[colnames(x)=="end"],"%Y%m%d%H"),
@@ -80,7 +80,18 @@ segments.trajectory <- function(x,param="pcent",
       p <- matrix(year(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
     } else if(param=="month") {
       p <- matrix(month(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
-    } 
+      colbar$breaks <- seq(1,13)
+      lab.breaks <- c(month.abb,"")
+    } else if(param=="season") {
+      fn <- function(x) as.numeric(switch(x, "12"="1", "1"="1", "2"="1",
+                               "3"="2", "4"="2", "5"="2",
+                               "6"="3", "7"="3", "8"="3",
+                               "9"="4", "10"="4", "11"="4"))
+      p <- matrix(month(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
+      p <- apply(p, c(1,2), fn)
+      colbar$breaks <- seq(1,5)
+      lab.breaks <- c("djf","mam","jja","son","")
+    }
   } else {
     print(paste("unknown input param =",param))
     print(paste("possible choices:"))
@@ -115,20 +126,26 @@ segments.trajectory <- function(x,param="pcent",
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
                           sum(!OK),'crossing dateline'))
   
-  if(sum(OK)>0) {
+  if(show.segment & sum(OK)>0) {
     segments(lon0[OK,],lat0[OK,],lon1[OK,],lat1[OK,],
              col=adjustcolor(col[OK,],alpha.f=alpha),lty=lty,lwd=lwd)
   }
   if(show.start) {
-    points(lon0[OK,1],lat0[OK,1],pch=19,cex=cex,col=adjustcolor(col[OK,1],alpha.f=alpha*0.75))
+    points(lon0[OK,1],lat0[OK,1],pch=19,cex=cex,col=adjustcolor(col[OK,1],
+           alpha.f=alpha))
   }
 
+  if(show.end) {
+    points(lon0[OK,dim(lon0)[2]],lat0[OK,dim(lon0)[2]],pch=18,cex=cex,
+           col=adjustcolor(col[OK,dim(lon0)[2]],alpha.f=alpha))
+  }
+  
   # draw coastlines
   #points(mlon,mlat,pch=".",col='grey20',cex=1.4)
   lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
   
   par(fig=par0$fig,new=TRUE)
-  image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+  image.plot(breaks=colbar$breaks,lab.breaks=lab.breaks,horizontal = TRUE,
              legend.only = T, zlim = range(colbar$breaks),
              col = adjustcolor(colbar$col,alpha.f=min(alpha+0.2,1)), legend.width = 1,
              axis.args = list(cex.axis = 0.8,
