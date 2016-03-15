@@ -625,59 +625,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) {print('lonlatprojection'); str(x)}
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
-    #print(formals(...))
-    ## If only a few items are provided in colbar - hen set the rest to the default
-    ## browser()
-    #if (!is.null(colbar)) {
+
         colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
-    #} else {
-    #    if (verbose) print('colbar=NULL - no colour bar')    
-# REB 2015-12-02        
-#        colbar$n <- 25
-#        colbar$breaks <- pretty(c(x),n=colbar$n)
-#        if (verbose) print(colbar$breaks)
-#        if (verbose) print(varid(x))
-#        colbar$col <- colscal(n=length(colbar$breaks)-1,col=colid)
-#        ##  if ( (tolower(variable)=='precip') | (tolower(variable)=='tp') )
-#        if (colid=='precip') colbar$col <- rev(colbar$col)
-#        colbar$show <- TRUE
-#        colbar$pos <- 0.05
-#    }
-    ##    par0 <- par()                             # REB 2015-06-25 these lines open an
-    ##    fig0 <- par()$fig                         # unused window.
+    
+
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
     
-    ##    if (!is.null(colbar$pal) & (!is.null(colbar$n) | !is.null(colbar$breaks))) {
-    ##        ##colbar$breaks <- pretty(y,n=length(colbar$col))
-    ##        ##colbar$n <- length(colbar$breaks) + 1
-    ##        if (is.null(colbar$breaks) & !is.null(colbar$n)) {
-    ##            colbar$breaks <- pretty(x,n=colbar$n)
-    ##            colbar$n <- length(colbar$breaks)-1
-    ##        } else if (!is.null(colbar$breaks) & is.null(colbar$n))
-    ##            colbar$n <- length(colbar$breaks)-1
-    ##        else if (n != (length(colbar$breaks) -1))
-    ##            stop('The length of breaks must equal (n-1)')# default
-    ##        ##
-    ##        if (verbose) print(paste("n=",colbar$n))
-    ##        if (verbose) print(paste("breaks",colbar$breaks))
-    ##        if (verbose) print(paste("length(breaks) =",length(colbar$breaks)))
-    ##        colbar$col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev)
-    ##        if (verbose) print(paste("length(col) =",length(colbar$col)))
-    ##    }
-    ##
-    ##    if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
-    ##    if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
-    ##   
-    #browser()
-# This causes a crash    
-#    if (is.null(colbar$show)) colbar$show <-TRUE #3 Quick fix REB 2015-12-02
-#    if (colbar$show) { ## AM 14-07-2015
-#        ##        fig0[3] <- par0$fig[3] + (par0$fig[4]-par0$fig[3])/200##0.05
-#        fig0[3] <- fig0[3] + colbar$pos ## (fig0[4]-fig0[3])/200##0.05   # REB 2015-06-25
-#    } else 
-#        fig0 <- fig0                                       # REB 2015-06-25
-    ##        fig0 <- par0$fig
-    ##     par(fig=fig0)                                        ## REB 2015-06-25 opens extra window
+
     data("geoborders",envir=environment())
     if(sum(is.finite(x))==0) stop('No valid data')
     ## To deal with grid-conventions going from north-to-south or east-to-west:
@@ -694,7 +648,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         variable <- "T[2*m]"
     varlabel=eval(parse(text=paste('expression(',
                 variable," *(",unit,"))",sep="")))
-    sub <- attr(x,'source')
+    if (!is.null(attr(x,'source'))) sub <- attr(x,'source') else
+                                    sub <- NULL
     if (sum(is.element(type,'fill'))==0) colbar <- NULL
     
     if (verbose) print('time')
@@ -736,46 +691,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         x[,outside] <- NA
     } else ylim=range(lat)
     
-    ## KMP 2015-10-14: extra colors if higher/lower values occur 
-# REB 2015-12-02: changing colbar$breaks gives strange looking scale with non-pretty numbers     
-#    nc <- length(colbar$col)
-#    crgb <- col2rgb(colbar$col)
-#    if(any(x>max(colbar$breaks),na.rm=TRUE)) {
-#      if (verbose) print('any(x>max(colbar$breaks)')
-#      cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
-#      crgb <- cbind(crgb,cmax)
-#      colbar$breaks <- c(colbar$breaks,max(x))
-#    }
-#
-#    if (any(x<min(colbar$breaks),na.rm=TRUE)) {
-#      if (verbose) print('any(x<min(colbar$breaks)')
-#      cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
-#      crgb <- cbind(cmin,crgb)
-#      colbar$breaks <- c(min(x),colbar$breaks)
-#    }
-#    crgb[crgb>255] <- 255
-#    crgb[crgb<0] <- 0
-# REB 2015-12-02: The colours should not be changed if colbar$col is specified    
-#    colbar$col <- rgb(t(crgb),maxColorValue=255)
-#    colbar$n <- length(colbar$col)-1
-
-    ##print(c(length(breaks),length(col)))
-    ##if (is.Date(type))
-    
-    ##if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) ) new <- FALSE
-    ## browser()
-    
     if (new) {
         par(fig=fig0) 
         dev.new()
         par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
-        ## fig=fig0,mar=c(2,1,1,1)) # c(0.05,0.95,0.13,0.95),mar=rep(1,4)
-        ##    par(fig=fig0,mar=c(2.5,2,2,2),bty="n") # c(0.05,0.95,0.13,0.95),mar=rep(1,4)
-        ##    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-        ##        fig=c(0.05,0.95,0.12,0.95))
     } else {
         par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
-        ## par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
     }
     
     plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
@@ -797,9 +718,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (gridlines) grid()
     par(xpd=FALSE)
     dlat <- diff(range(lat))/60
-                                        #print(dlat)
+    if (verbose) {print(dlat); print(sub)}
     text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2)
-    text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
+    if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
 
     if (!is.null(period))
         text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
@@ -809,30 +730,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (!is.null(colbar)) {
         if (verbose) print('Add colourbar')
 
-        ## =======
-        ##  if (!is.null(colbar)) {
-        ##    if (verbose) print('Add colourbar')
-        ##    par(xaxt="s",yaxt="s")
-        ## 1072ef5b4e555d6484178b0115e5d62be3dbd386
-        
-        ## Old    
-        ##    par(xaxt="s",fig=c(0.05,0.95,0.01,1))
-        ##    breaks <- round(seq(min(x,na.rm=TRUE),max(x,na.rm=TRUE),length=length(col)),1)
-        ##    image.plot(horizontal=TRUE,legend.only=TRUE,zlim=range(x,na.rm=TRUE),
-        ##               lab.breaks=breaks,col=col,axis.args=list(cex.axis=0.8),
-        ##               border=FALSE)
-        ##
-        ##    par(fig=par0$fig,mar=par0$mar,new=TRUE,xaxt="n")
-        ##    plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
-        ##         xlim=xlim,ylim=ylim)                # to sumerimpose.
-        ##
-        ## Adopt from map.station
-        ##
-        ##if (is.null(colbar$col)) colbar$col <- colscal(n=n,varid)
-        ##if (is.null(colbar$breaks)) colbar$breaks <- pretty(x,n=length(colbar$col))
-        
-        ##if (isprecip) colbar$col <- rev(colbar$col)
-        ##browser()
         par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
             cex.lab=0.7,cex.axis=0.7)
         axis(2,at=pretty(lat(x)),col='grey')
@@ -855,12 +752,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                               legend.only = T, zlim = range(colbar$breaks),
                               col = colbar$col, legend.width = 1,
                               axis.args = list(cex.axis = 0.8), border = FALSE)
-                   #image.plot(breaks=colbar$breaks,
-                   # lab.breaks=signif(colbar$breaks,digits=2),
-                   # horizontal = TRUE,legend.only = T,
-                   # zlim = range(colbar$breaks),
-                   # col = colbar$col, legend.width = 1,
-                   # axis.args = list(cex.axis = 0.8),border=FALSE,...)
                 }
     }
 
