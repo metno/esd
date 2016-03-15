@@ -275,7 +275,8 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
     }
 
      if (verbose) print(paste('Subset of',sum(ii),'data points between',
-                                             min(yr),'-',max(yr),'total:',length(yr)))
+                               min(yr),'-',max(yr),'total:',length(yr),
+                              'from',length(is),'locations'))
     
     y <- x[ii,is]
     #if (is.logical(is))
