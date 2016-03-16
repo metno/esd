@@ -552,6 +552,9 @@ export(subset.trajectory)
 export(corfield.trajectory)
 export(DS.trajectory)
 
+export(calculate.cyclonebudget)
+export(plot.cyclonebudget)
+
 export(as.events)
 export(as.events.default)
 export(as.events.trajectory)
