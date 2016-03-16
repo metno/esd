@@ -310,7 +310,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   #plot(rowMeans(YY,na.rm=TRUE),type="l")
 
   # Discard time slices with no valid data, e.g. DJF in the beginning of the record
-  ngood <- apply(coredata(Y),1,iv)
+  ngood <- apply(coredata(Y),2,iv)
   realdates <- realdates[ngood>0]
   fakedates <- fakedates[ngood>0]
   id.t <- id.t[ngood>0]
