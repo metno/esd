@@ -1556,3 +1556,17 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
   lines(attr(x,'nwd.pre'),col=rgb(0.5,0.5,0.5,0.5))
 }
 
+barplot.station <- function(x,threshold=0,...) {
+    stopifnot(inherits(x,'station'))
+    browser()
+    x.above <- x.below <- x
+    x.above[x < threshold] <- NA
+    x.below[x > threshold] <- NA
+    ylim <- range(pretty(coredata(x)),na.rm=TRUE)
+    barplot(as.numeric(x),col='white',ylim=ylim,border=NA)
+    barplot(as.numeric(x.above),col='red',names.arg=year(x),
+            ylab=paste(varid(x),'[',unit(x),']'),axes=FALSE,
+            border=NA,add=TRUE)
+    barplot(as.numeric(x.below),col='blue',axes=FALSE,border=NA,add=TRUE)
+    title(toupper(loc(x)))
+}
