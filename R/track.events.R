@@ -57,7 +57,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
   options(digits=12)
   d <- sort(unique(strptime(paste(x$date,x$time),"%Y%m%d %H")))
-  dh <- mean(as.numeric(difftime(d[2:length(d)],
+  dh <- min(as.numeric(difftime(d[2:length(d)],
                                  d[1:(length(d)-1)],units="hours")))
   #if (!("trajectory" %in% names(x))) {
   if(verbose) print("calculate trajectories")
@@ -110,7 +110,9 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
   n0 <- n00
   for (i in 2:(length(d)-1)) {
     if (progress) setTxtProgressBar(pb,i/(length(d)-1))
-    nn <- Track123(
+    dhi <- as.numeric(difftime(d[i:(i+1)],d[(i-1):i],units="hours"))
+    if(all(dhi<dh*2)) {
+      nn <- Track123(
         step1=list(lon=lons[datetime==d[i-1]],lat=lats[datetime==d[i-1]],
                    num=num[datetime==d[i-1]],dx=dx[datetime==d[i-1]]),
         step2=list(lon=lons[datetime==d[i]],lat=lats[datetime==d[i]],
@@ -118,13 +120,33 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
         step3=list(lon=lons[datetime==d[i+1]],lat=lats[datetime==d[i+1]],
                    num=num[datetime==d[i+1]],dx=dx[datetime==d[i+1]]),
              dmax=dmax,ddmax=ddmax,n0=n0,amax=amax,nend=nend,dE=dE,dN=dN)
-    num[datetime==d[i-1]] <- nn$step1$num
-    num[datetime==d[i]] <- nn$step2$num
-    num[datetime==d[i+1]] <- nn$step3$num
-    dx[datetime==d[i]] <- nn$step2$dx
-    dx[datetime==d[i+1]] <- nn$step3$dx
-    n0 <- max(nn$n0,n0,na.rm=TRUE)
-    nend <- nn$nend
+      num[datetime==d[i-1]] <- nn$step1$num
+      num[datetime==d[i]] <- nn$step2$num
+      num[datetime==d[i+1]] <- nn$step3$num
+      dx[datetime==d[i]] <- nn$step2$dx
+      dx[datetime==d[i+1]] <- nn$step3$dx
+      n0 <- max(nn$n0,n0,na.rm=TRUE)
+      nend <- nn$nend
+    } else {
+      if(any(is.na(num[datetime==d[i-1]]))) {
+        num[datetime==d[i-1] & is.na(num)] <- seq(sum(is.na(num[datetime==d[i-1]]))) +
+            max(num[datetime %in% d[(i-1):(i+1)]],n0,na.rm=TRUE)
+        dx[datetime==d[i-1] & is.na(num)] <- 0
+        nend <- c(nend,num[datetime==d[i-1] & is.na(num)])
+      }
+      if(any(is.na(num[datetime==d[i]]))) {
+        num[datetime==d[i] & is.na(num)] <- seq(sum(is.na(num[datetime==d[i]]))) +
+            max(num[datetime %in% d[(i-1):(i+1)]],n0,na.rm=TRUE)
+        dx[datetime==d[i] & is.na(num)] <- 0
+        nend <- c(nend,num[datetime==d[i] & is.na(num)])
+      }
+      if(any(is.na(num[datetime==d[i+1]]))) {
+        num[datetime==d[i+1] & is.na(num)] <- seq(sum(is.na(num[datetime==d[i+1]]))) +
+            max(num[datetime %in% d[(i-1):(i+1)]],n0,na.rm=TRUE)
+        dx[datetime==d[i+1] & is.na(num)] <- 0
+      }
+      n0 <- max(num[datetime %in% d[(i-1):(i+1)]],n0,na.rm=TRUE)
+    }
   }
   t2 <- Sys.time()
   if (verbose) print(paste('Three step tracking took',

@@ -708,7 +708,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     model.id <- attr(gcm,'model_id')
 
     if (verbose) print("combine")
-    
+
     PREGCM <- combine(PRE,GCM)
     if (verbose) print("EOF")
     Z <- EOF(PREGCM)
@@ -735,6 +735,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (biascorrect) Z <- biasfix(Z)
     if (verbose) print("- - - > DS")
     ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
+    
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds[[1]],con=flog)

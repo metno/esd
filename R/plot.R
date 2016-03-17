@@ -62,7 +62,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                length(lat(x))==dim(x)[2]) {
       nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
       ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
-      if (is.finite(nx) & is.finite(ny) ) {
+      if ( all(is.finite(nx) & is.finite(ny)) ) {
         col <- rgb(1-ny,nx,ny,1)
       } else {
         col <- rainbow(dim(x)[2])
@@ -176,13 +176,14 @@ vis.map <- function(x,col='red',map.type='points',
     par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
         mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
   } else dev.new()
-  plot(lon[ok],lat[ok],lwd=1,col="black",type='l',
+  plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=1.2,
+                                        #type='l', KMP 2016-03-16 problem with lines in map
        xlab=NA,ylab=NA,axes=FALSE,new=new,
        xlim=xrange,ylim=yrange)
        #xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
        #ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
-  axis(1,mgp=c(3,.5,0),cex.axis=cex.axis)
-  axis(2,mgp=c(2,.5,0),cex.axis=cex.axis)
+  axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
+  axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
   lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
   if (map.type=="points") {
     points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
@@ -1560,3 +1561,17 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
   lines(attr(x,'nwd.pre'),col=rgb(0.5,0.5,0.5,0.5))
 }
 
+barplot.station <- function(x,threshold=0,...) {
+    stopifnot(inherits(x,'station'))
+    browser()
+    x.above <- x.below <- x
+    x.above[x < threshold] <- NA
+    x.below[x > threshold] <- NA
+    ylim <- range(pretty(coredata(x)),na.rm=TRUE)
+    barplot(as.numeric(x),col='white',ylim=ylim,border=NA)
+    barplot(as.numeric(x.above),col='red',names.arg=year(x),
+            ylab=paste(varid(x),'[',unit(x),']'),axes=FALSE,
+            border=NA,add=TRUE)
+    barplot(as.numeric(x.below),col='blue',axes=FALSE,border=NA,add=TRUE)
+    title(toupper(loc(x)))
+}

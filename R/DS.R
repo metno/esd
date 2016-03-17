@@ -124,7 +124,7 @@ DS.default <- function(y,X,mon=NULL,
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
                          weights=weights)
     predat <- data.frame(X=as.matrix(coredata(X0)))
-    colnames(predat) <- paste("X",1:length(colnames(predat)),sep=".")
+    colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
 
     if (is.null(names(X))) names(X) <- 1:dim(X)[2]
     Xnames <- paste("X.",1:length(names(X)),sep="")
@@ -251,7 +251,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     if (verbose) print("--- DS.station ---")
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
-
+    
     ## Used for extracting a subset of calendar months
     if (!is.null(mon)) {
       if (verbose) print(paste('mon=',mon))
@@ -423,7 +423,7 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
         Z <- eval(parse(text=paste("attr(X0,'appendix.",i,"')",sep="")))
                                         #
         newdata <- data.frame(X=Z)
-        colnames(newdata) <- paste("X",1:length(colnames(X)),sep=".")
+        colnames(newdata) <- paste("X",1:ncol(X),sep=".") 
                                         #print(summary(newdata))
         z <- predict(model,newdata=newdata) + attr(ds,'mean')
         Y <- zoo(z,order.by=index(Z))

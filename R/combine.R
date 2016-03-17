@@ -676,7 +676,6 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
     approach <- tolower(approach)
     x <- sp2np(x)
     y <- sp2np(y)
-
                                         # Make sure that the longitude conventions are the same:
     if ( ( as.logical(attr(x,'greenwich')) &
           !as.logical(attr(y,'greenwich')) ) |
@@ -706,7 +705,13 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
       if (verbose) print("combine.field after subset:")
                                         #Z <- regrid(y,is=list(x1,y1))
         Z <- regrid(y,is=x)
-        maskna <- !is.finite(colMeans(coredata(x))) # REB 2016-02-18 mask out same missing
+        
+        ## KMP 2016-03-16 Issues with DSensemble because appendix.1 is empty.
+        ## The problem originates here. Let's try changing maskna.
+        iv <- function(x) return(sum(is.finite(x))) # KMP 2016-03-16
+        ngood <- apply(coredata(x),2,iv) # KMP 2016-03-16
+        maskna <- ngood==0 # KMP 2016-03-16
+        #maskna <- !is.finite(colMeans(coredata(x))) # REB 2016-02-18 mask out same missing
         if (sum(maskna)>0) {                                  # data as in the first field
           z <- coredata(Z)
           z[,maskna] <- NA
