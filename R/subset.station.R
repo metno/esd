@@ -122,6 +122,16 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             if (verbose) print('it is a string')
             if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
                 if (verbose) print('Monthly selected')
+                if (is.seasonal(x)) {
+                  it <- gsub('Dec', 'Jan', it, ignore.case=TRUE)
+                  it <- gsub('Feb', 'Jan', it, ignore.case=TRUE)
+                  it <- gsub('Mar', 'Apr', it, ignore.case=TRUE)
+                  it <- gsub('May', 'Apr', it, ignore.case=TRUE)
+                  it <- gsub('Jun', 'Jul', it, ignore.case=TRUE)
+                  it <- gsub('Aug', 'Jul', it, ignore.case=TRUE)
+                  it <- gsub('Sep', 'Oct', it, ignore.case=TRUE)
+                  it <- gsub('Nov', 'Oct', it, ignore.case=TRUE)
+                }
                 ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
                                         #y <- x[ii,is] #  REB Not here
             } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
