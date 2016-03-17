@@ -157,14 +157,14 @@ figlab <- function(x,xpos=0.001,ypos=0.001) {
 }
 
 ensemblemean <- function(x,FUN='rowMeans') {
-  if (inherits(x,'pca') z <- as.station(x) else z <- x
-      ## Estimate the ensemble mean
-      zz <- unlist(lapply(coredata(z),FUN=FUN))
-      zm <- matrix(zz,length(index(z[[1]])),length(z))
-      zm <- zoo(zm,order.by=index(z[[1]]))
-      zm <- as.station(zm,param=varid(z),unit=unit(z),
-                       loc=unlist(lapply(z,loc)),lon=unlist(lapply(z,lon)),
-                       lat=unlist(lapply(z,lat)),alt=unlist(lapply(z,alt)),
-                       info='Ensemble mean ESD')
-      invisible(zm)
+  if (inherits(x,'pca')) z <- as.station(x) else z <- x
+  ## Estimate the ensemble mean
+  zz <- unlist(lapply(coredata(z),FUN=FUN))
+  zm <- matrix(zz,length(index(z[[1]])),length(z))
+  zm <- zoo(zm,order.by=index(z[[1]]))
+  zm <- as.station(zm,param=varid(z),unit=unit(z),
+                   loc=unlist(lapply(z,loc)),lon=unlist(lapply(z,lon)),
+                   lat=unlist(lapply(z,lat)),alt=unlist(lapply(z,alt)),
+                   info='Ensemble mean ESD')
+  invisible(zm)
 }
