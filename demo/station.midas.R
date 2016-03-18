@@ -277,8 +277,10 @@ for (i in 1:length(y)) {
   }  
 }
 
+## Save the Midas data as rda-file. 
 attr(X,'variable')[] <- 'precip'
-save(file='eu-circle-torbay.rda',X)
+pr <- X
+save(file='pr.eu-circle-torbay.rda',pr)
 
 nok <- apply(coredata(X),2,'nv')
 x <- subset(X,is=(nok> 15000))
