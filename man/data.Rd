@@ -46,6 +46,7 @@
 \alias{NASAgiss}
 \alias{dse.Oslo}
 \alias{glossstations}
+\alias{IPCC.AR5.Table.9.A.1}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -100,6 +101,7 @@ data(eof.t2m.DNMI)
 data(eof.sst.DNMI)
 data(eof.slp.DNMI)
 data(geoborders)
+data(IPCC.AR5.Table.9.A.1)
 slp.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.NCEP(lon=NULL,lat=NULL,anomaly=FALSE)
