@@ -47,6 +47,7 @@
 \alias{dse.Oslo}
 \alias{glossstations}
 \alias{IPCC.AR5.Table.9.A.1}
+\alias{global.t2m.gcm}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -124,7 +125,9 @@ SOI(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',heade
 data(dse.Oslo)
 HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt",plot=FALSE)
 NASAgiss(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt')
-GSL <- function(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv') 
+GSL <-
+function(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv')
+data(global.t2m.gcm)
 }
 
 \arguments{
