@@ -226,7 +226,7 @@ annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
   clss <- class(attr(x,'station'))
   if (!inherits(x,c('day','month','annual','season')))
       class(x) <- c(clsx[1],clss[2],clsx[2])
-  if (inherits(cls,'season'))
+  if (inherits(x,'season'))
       y <- subset(x,it=0,verbose=verbose)
   else
       y <- annual.default(x,FUN=FUN,verbose=verbose,...)

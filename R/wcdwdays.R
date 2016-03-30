@@ -102,7 +102,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
   stopifnot(inherits(x,'station'))
   if (is.null(y)) y <- x
   djf <- subset(x,it=it)     # summer
-  djf <- subset(y,it=it)     # summer
+  djfy <- subset(y,it=it)     # summer
   nwd1 <- annual(djfy,FUN='count',threshold=threshold,nmin=nmin)
   mwd1 <- annual(djf,FUN='mean',nmin=nmin)
 
