@@ -13,7 +13,7 @@ is not expected to be useful when there are many large data gaps.
 }
 \usage{
 pcafill(X, insertmiss = 0, eofs = 1:4, test = FALSE, verbose = FALSE)
-pcafill.test(X,N=100,max.miss=100, eofs = 1:4, verbose=FALSE)
+pcafill.test(X,N=100,max.miss=100, eofs = 1:4, mnv=0,complete=TRUE,test=FALSE,verbose=FALSE)
 fitpc(y,x,eofs=4)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -23,6 +23,11 @@ fitpc(y,x,eofs=4)
     introduced to test the predictive capability}
   \item{eofs}{Number of EOFs/PCAs to include in filling in. In many
     cases, it may be useful to keep this to a small set of values.}
+  \item{mnv}{Minimum number of valid data points for any given time. Can
+  be used to get around the problem with too many missing data}
+  \item{complete}{Use pattern projection between PCA pattern and
+    original data to get a complete record - otherwise a subset of times
+    with sufficient data.}
   \item{test}{Extra test - debugging}
   \item{verbose}{Print diagnostics - debugging}
   \item{N}{Number of runs in Monte-Carlo simulation}

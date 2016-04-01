@@ -14,14 +14,28 @@ fitpc <- function(y,x,eofs=1:4) {
   invisible(z)
 }
 
+eoffit <- function(X,U,eofs) {
+  ## Use regression to project the pattern of observations onto the PCA pattern and estimate
+  ## the PCs.
+  caldat <- data.frame(X=X,U=U)
+  names(caldat) <- c('X',paste('U.',eofs,sep=''))
+  #print(names(caldat))
+  calexpr <- paste('X ~ ',paste('U.',eofs,sep='',collapse=' + '))
+  eval(parse(text=paste('projection <- lm(',calexpr,',data=caldat)')))
+  V <- projection$coefficients
+  invisible(V[-1])
+}
+
 # Redundant:
 #fillmiss <- function(y,x,neofs=7) {
 #  z <- apply(coredata(y),2,fitpc,coredata(x),neofs=neofs)
 #  invisible(z)
 #}
 
-pcafill <- function(X,insertmiss=0,eofs=1:4,test=FALSE,verbose=FALSE) {
+pcafill <- function(X,insertmiss=0,eofs=1:4,mnv=0,complete=FALSE,test=FALSE,verbose=FALSE) {
+  if (verbose) print('pcafill')
   X0 <- X ## For debugging
+  if (verbose) print(dim(X0))
   if (insertmiss>0) {
     ## Test by inserting false missing values in the data
     if (verbose) print(paste('Test: insert',insertmiss,'NAs'))
@@ -43,11 +57,12 @@ pcafill <- function(X,insertmiss=0,eofs=1:4,test=FALSE,verbose=FALSE) {
     if (verbose) print('---')
   }
   nok <- apply(X,1,nv)
-  ## Remove the years with no data
-  X <- subset(X,it=nok > 0)
+  ## Remove the years with no (of little) data
+  X <- subset(X,it=nok > mnv)
+  if (verbose) print(dim(X))
   mok <- apply(X,2,nv)
 
-  if (verbose) print(paste(sum(nok>0),'stations with',
+  if (verbose) print(paste(sum(nok>mnv),'stations with',
                            sum(mok>0),'data points'))
   if (sum(mok==length(index(X))) <= 1)
     stop('pcafill: Too many missing data or too small set of stations')
@@ -60,7 +75,28 @@ pcafill <- function(X,insertmiss=0,eofs=1:4,test=FALSE,verbose=FALSE) {
   ## Replace the data in Y with predicted based on the PCA
   #  coredata(Y) <- fillmiss(X,pca,neofs=neofs)
   coredata(Y) <- apply(coredata(X),2,fitpc,coredata(pca),eofs=eofs)
-    
+
+  if (complete) {
+    print("UNFINISHED")
+    if (verbose) print('Projection to provide complete dataset')
+    if (verbose) print(dim(Y))
+    ## Projection of patterns onto the original data to get a more complete data set
+    ## X0 = U W t(V) -> estimate new t(V) based on U & W from Y
+    ## 1/W t(U) X0 = t(V) -> V = t(X0) U /W
+    pcax <- PCA(Y); pcax <- subset(pcax,pattern=eofs)
+    U <- attr(pcax,'pattern'); W <- attr(pcax,'eigenvalues')
+    U <-  U %*% diag(W)
+    XX <- X0
+    XX <- t(t(XX) - rowMeans(XX,na.rm=TRUE))
+    ## Estimate the PCs for the entire data set through projection:
+    Vx <- zoo(t(apply(t(coredata(XX)),2,eoffit,U=U,eofs=eofs)),order.by=index(X0))
+    ## assign the attributes from the PCA
+    Vx <- attrcp(pcax,Vx); class(Vx) <- class(pcax) 
+    plot.zoo(pca[,1]); lines(Vx[,1],col='red'); browser()
+    ## Reconstruct the data:
+    Y <- pca2station(Vx,verbose=verbose)
+  }
+  
   if (insertmiss>0) {
     if (verbose) print('Assess the test results')
     ## For testing, extract the data points replaced by NAs

@@ -127,7 +127,7 @@ use absolute range}
 selects the three first GCMs)}
     \item{FUN}{Function for aggregating the predictand (daily),
 e.g. 'mean', 'wetmean'}
-    \item{treshold}{Used together with FUN for some functions ('wetmean').}
+    \item{threshold}{Used together with FUN for some functions ('wetmean').}
     \item{nmin}{Minimum number of day used in \code{\link{annual}} used
 for aggregating the predictand/predictor}
     \item{FUNX}{Function for transforming the predictor, e.g. '\code{\link{C.C.eq}}'
@@ -136,8 +136,8 @@ to estimate the saturation water vapout}
 reading GCM data.}
     \item{pattern}{File name pattern for GCM data.}
     \item{verbose}{TRUE for checking and debugging the functions.}
-    \item{file.ds}{Name of file savming the results.}
-    \item{path.ds}{Path of file savming the results.}
+    \item{file.ds}{Name of file saving the results.}
+    \item{path.ds}{Path of file saving the results.}
  }
 \value{A 'dsensembele' object - a list object holding DS-results.}
 \author{R.E. Benestad and A. Mezghani}

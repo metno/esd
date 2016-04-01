@@ -167,6 +167,7 @@ subset.mvr <- function(x,it=NULL,is=NULL) {
 }
 
 subset.pattern <- function(x,is,verbose=FALSE) {
+  ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) print('subset.pattern')
     if (is.list(is)) {
         y <- attr(x,'pattern')
@@ -242,12 +243,30 @@ subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     x
 }
 
-subset.ds <- function(x,it=NULL,is=NULL) {
+subset.ds <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
+    if (verbose) print('subset.ds')
     y <- x
     if (!is.null(it)) {
+      if (verbose) print(paste('it=',it))
+    }
+    if (!is.null(pattern)) {
+      if (verbose) print(paste('pattern=',pattern))
+      if (inherits(x,'pca')) {
+        y <- subset.pca(x,pattern=pattern,verbose=verbose)
+        attr(y,'eof') <- subset.eof(attr(x,'eof'),pattern=pattern,verbose=verbose)
+        attr(y,'evaluation') <- attr(x,'evaluation')[,c(2*(pattern-1)+1,2*(pattern-1)+2)]
+        if (!is.null(attr(x,'n.apps'))) {
+          natt <- attr(x,'n.apps')
+          for (i in 1:natt)
+            attr(y,paste('appendix.',i,sep='')) <-
+              attr(y,paste('appendix.',i,sep=''))[,pattern]
+        }
+        x <- y
+      }
     }
     if (!is.null(is))  {
-        x <- subset.pattern(x)
+      if (verbose) print(paste('is=',is))
+        x <- subset.pattern(x,is,verbose=verbose)
     }
     x
 }

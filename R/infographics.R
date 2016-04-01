@@ -1032,7 +1032,7 @@ graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,xlim
 
 graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
                              lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE) {
-    print('graph.dsensemble')
+    #print('graph.dsensemble')
     ## Produce the graphics:
     if ((!add) & (new)) dev.new()
     if (!is.null(img)) {
@@ -1054,7 +1054,7 @@ graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
                        sub=loc(x),plot.type='single',xlab='')
     for (i in 1:dim(x)[2]) lines(y[,i],lwd=7,col=col)
 
-    balls(attr(y,'station'))
+    #balls(attr(y,'station'))
     par(xaxt='s',yaxt='s')
     if (!is.null(img)) col.axis <- 'white' else col.axis <- 'black'
     axis(1,col=col.axis)
@@ -1062,22 +1062,27 @@ graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
 }
 
 graph.list <- function(x,img=NULL,it=0,
-                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
+                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05),
+                             rgb(0.5,0.5,0.5,0.05) ),
                        lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE) {
-  if (!is.null(it)) y <- subset(x[[1]],it=it) else y <- x[[1]]
+  if ((!is.null(it)) & (inherits(x[[1]],'dsensemble')))
+    y <- subset(x[[1]],it=it) else y <- x[[1]]
   graph(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim,add=add,new=new)
+  if (!is.null(attr(x,'obs')) & is.null(attr(y,'dsensemble'))) obs <- attr(x,'obs') else
+                                                               obs <- attr(y,'station')
   for (j in c(2:length(x),1)) {
-    if (!is.null(it)) y <- subset(x[[j]],it=it) else y <- x[[j]]
+    if ((!is.null(it)) & (inherits(x[[j]],'dsensemble')))
+         y <- subset(x[[j]],it=it) else y <- x[[j]]
     for (i in 1:dim(y)[2]) lines(y[,i],lwd=7,col=col[j])
-    lines(attr(y,'station'),lwd=3,col=rgb(0.5,0.5,0.5,0.25))
-    balls(attr(y,'station'))
   }
+  lines(obs,lwd=3,col=rgb(0.5,0.5,0.5,0.25))
+  balls(obs)
 }
 
 
 graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
                       lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE) {
-  print('graph.zoo')
+  #print('graph.zoo')
     ## Produce the graphics:
     if ((!add) & (new)) dev.new()
     if (!is.null(img)) {

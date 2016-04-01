@@ -450,6 +450,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ){
     #if (is.null(attr(x,'evaluation'))) attr(x,'evaluation') <- crossval(x)
      par(new=TRUE,fig=c(0.5,1,0.5,1)) ##par(bty="n",fig=c(0.55,0.95,0.55,0.95),mar=c(4,3,1,1),new=TRUE, xaxt='s',yaxt='s',cex.sub=0.7)
+     
     plot(attr(x,'evaluation')[,1],attr(x,'evaluation')[,2],
          main='Cross-validation',xlab='original data',
          ylab='prediction',pch=19,col="grey")
@@ -749,9 +750,13 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
-    plot(attr(y,'evaluation')[,1],attr(y,'evaluation')[,2],
-         main='Cross-validation',xlab='original data',
-         ylab='prediction',pch=19,col="grey")
+    ## Get the right pattern
+    xvp <- (pattern-1)*2 +1
+    xok <- is.finite(attr(y,'evaluation')[,xvp]) & is.finite(attr(y,'evaluation')[,xvp+1])
+    xcor <- cor(attr(y,'evaluation')[xok,xvp],attr(y,'evaluation')[xok,xvp+1])
+    plot(attr(y,'evaluation')[,xvp],attr(y,'evaluation')[,xvp+1],
+         main=paste('Cross-validation: r=',round(xcor,2)),
+         xlab='original data',ylab='prediction',pch=19,col="grey")
     lines(range(c(attr(y,'evaluation')),na.rm=TRUE),
           range(c(attr(y,'evaluation')),na.rm=TRUE),lty=2)
     cal <- data.frame(y=coredata(attr(y,'evaluation')[,1]),

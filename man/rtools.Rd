@@ -13,17 +13,20 @@
 \alias{figlab}
 \alias{ndig}
 \alias{attrcp}
+\alias{ensemblemean}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
 Simple and handy functions.
-
+}
+\description{
 \code{lag.station} and \code{lag.station} are wrap-around functions for
 \code{\link[zoo]{lag.zoo}} that maintains all the attributes.
 \code{attrcp(x,y)} passes on attributes from \code{x} to \code{y} and
 returns the \code{y} with new attributes.
-}
-\description{
+\code{ensemblemean} returns the ensemble mean for dsensemble
+objects. The argument \code{FUN} can also be used to estiamte other
+statistics, e.g \code{FUN='q95'} where \code{q95=function(x) apply(x,1,quantile,probs=0.95)}
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
@@ -42,7 +45,9 @@ ndig(x)
 filt(x,...)
 filt.default(x,n,type='ma',lowpass=TRUE)
 figlab(x,xpos=0.001,ypos=0.001)
-attrcp(x, y, ignore = c("name", "model", "n.apps", "appendix","dimnames"))
+attrcp(x, y, ignore = c("name", "model", "n.apps",
+"appendix","dimnames"))
+ensemblemean(x,FUN='rowMeans')
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
