@@ -790,8 +790,8 @@ plot.ds.eof <- function(y,pattern=1,
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0,0.5,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
-    pc.obs <- attr(y,'evaluation')[,1*pattern]
-    pc.ds <- attr(y,'evaluation')[,1*pattern+1]
+    pc.obs <- attr(y,'evaluation')[,1+2*(pattern-1)]
+    pc.ds <- attr(y,'evaluation')[,2+2*(pattern-1)]
     plot(pc.obs,pc.ds,main='Cross-validation',xlab='original data',
          ylab='prediction',pch=19,col="grey",
          xlim=range(pc.obs,pc.ds),ylim=range(pc.obs,pc.ds))
@@ -799,9 +799,10 @@ plot.ds.eof <- function(y,pattern=1,
           range(c(attr(y,'evaluation')),na.rm=TRUE),lty=2)
     cal <- data.frame(y=coredata(pc.obs),x=coredata(pc.ds))
     xvalfit <- lm(y ~ x, data = cal)
+    r.xval <- round(cor(pc.obs,pc.ds),2)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
     text(min(pc.obs)+diff(range(pc.obs))/12,max(pc.ds),
-         paste("r =",round(xvalfit$coefficients[2],digits=2)),
+         paste("r =",r.xval),#round(xvalfit$coefficients[2],digits=2)),
          pos=4,cex=0.9)
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     plot(attr(y,'original_data')[,pattern],
