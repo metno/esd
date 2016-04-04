@@ -415,11 +415,11 @@ count.events <- function(x,by.trajectory=TRUE,verbose=TRUE,...) {
   fn <- function(x) as.Date(as.yearmon(x))
   if (by.trajectory) {
     if (!"trajectory" %in% names(x)) x <- Track.events(x)
-    y <- zoo(x$trajectory,order.by=dates)
-    N <- aggregate(y,by=fn,FUN=function(x) length(unique(x,na.rm=TRUE)))
+    z <- zoo(x$trajectory,order.by=dates)
+    N <- aggregate(z,by=fn,FUN=function(x) length(unique(x,na.rm=TRUE)))
   } else {
-    y <- zoo(x$date,order.by=dates)
-    N <- aggregate(y,by=fn,FUN=length)
+    z <- zoo(x$date,order.by=dates)
+    N <- aggregate(z,by=fn,FUN=length)
   }
   # fill in missing months by merging with an empty time series
   nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,

@@ -582,6 +582,7 @@ export(trackfilter.trajectory)
 export(density.trajectory)
 export(density.events)
 export(trackdensity)
+export(density2count)
 
 export(CCI)
 export(dX)
