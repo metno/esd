@@ -44,7 +44,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf4',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
-                           select=NULL,FUN="mean",FUNX="mean",
+                           select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="tas_Amon_ens_",
                            path.ds=NULL,file.ds="DSensemble.rda",
                            nmin=NULL,verbose=FALSE) {
@@ -107,11 +107,11 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
   if(verbose) print("Aggregate seasonal values")
-  T2M <- as.4seasons(t2m,FUN=FUNX)
-  DJF <- subset(as.4seasons(t2m,FUN=FUNX),it='djf')
-  MAM <- subset(as.4seasons(t2m,FUN=FUNX),it='mam')
-  JJA <- subset(as.4seasons(t2m,FUN=FUNX),it='jja')
-  SON <- subset(as.4seasons(t2m,FUN=FUNX),it='son')
+  T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
+  DJF <- subset(as.4seasons(t2m,FUN=FUNX,nmin=nmin),it='djf')
+  MAM <- subset(as.4seasons(t2m,FUN=FUNX,nmin=nmin),it='mam')
+  JJA <- subset(as.4seasons(t2m,FUN=FUNX,nmin=nmin),it='jja')
+  SON <- subset(as.4seasons(t2m,FUN=FUNX,nmin=nmin),it='son')
 
   ok1 <- is.finite(rowSums(DJF))
   DJF <- subset(DJF,it=range(year(DJF)[ok1]))
@@ -164,10 +164,10 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     # REB: 30.04.2014 - new lines...
-    DJFGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='djf')
-    MAMGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='mam')
-    JJAGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='jja')
-    SONGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='son')
+    DJFGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
+    MAMGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='mam')
+    JJAGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='jja')
+    SONGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='son')
     rm("gcm"); gc(reset=TRUE)
     X.DJF <- combine(DJF,DJFGCM)
     X.MAM <- combine(MAM,MAMGCM)
@@ -371,7 +371,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               type='ncdf4',
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
-                              FUNX="sum",threshold=1,
+                              FUNX="sum",xfuns='C.C.eq',threshold=1,
                               pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
 
@@ -413,9 +413,9 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   # Use proportional variaions
   if (verbose) print("Annual mean")
   if (!is.annual(pre)) {
-    if (FUNX!='C.C.eq')  
-      PREX <- annual(pre,FUN=FUNX) else
-      PREX <- annual(C.C.eq(pre),FUN='mean')
+    if (sum(is.element(tolower(FUNX),xfuns))==0)  
+      PREX <- annual(pre,FUN=FUNX,nmin=nmin) else
+      eval(parse(text=paste('PREX <- annual(',FUNX,'(pre),FUN="mean",nmin=nmin)',sep="")))
   }
   #print("estimate %-changes")
   PRE.ref <- subset(PREX,it=1961:1990)
@@ -480,10 +480,9 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
     
-    if (FUNX!='C.C.eq')
-      GCMX <- annual(gcm,FUN=FUNX) else
-      GCMX <- annual(C.C.eq(gcm),FUN='mean')
-#    GCM <- zoo(100*coredata(GCMX)/colMeans(coredata(subset(GCMX,it=1961:1990))),order.by=year(GCMX))
+    if (sum(is.element(tolower(FUNX),xfuns))==0)
+      GCMX <- annual(gcm,FUN=FUNX,nmin=nmin) else
+      eval(parse(text=paste('GCMX <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
     if (is.precip(GCMX)) {
           GCM <- zoo(100*coredata(GCMX)/mean(c(coredata(subset(GCMX,it=1961:1990)))),
                      order.by=year(GCMX))
@@ -610,7 +609,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               non.stationarity.check=FALSE,type='ncdf4',
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
-                              FUNX="mean",threshold=1,
+                              FUNX="mean",xfuns='C.C.eq',threshold=1,
                               pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
 
@@ -651,8 +650,8 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   # Use proportional variaions
   if (verbose) print("Annual mean")
-  PRE <- annual(pre,FUN=FUNX,nmin=nmin) 
-
+  if (sum(is.element(tolower(FUNX),xfuns))==0) PRE <- annual(pre,FUN=FUNX,nmin=nmin) else
+  eval(parse(text=paste('PRE <- annual(',FUNX,'(pre),FUN="mean",nmin=nmin)',sep="")))
   if (verbose) print("graphics")
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
   unit <- attr(y,'unit')
@@ -703,7 +702,8 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
       gcm <- subset(gcm,it=it)
     }
     
-    GCM <- annual(gcm,FUN=FUNX,nmin=nmin)
+    if (sum(is.element(tolower(FUNX),xfuns))==0) GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+    eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
 
     model.id <- attr(gcm,'model_id')
 
@@ -823,7 +823,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf4',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
-                           select=NULL,FUN="mean",FUNX="mean",
+                           select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="psl_Amon_ens_",
                            path.ds=NULL,file.ds=NULL,
                            nmin=NULL,verbose=FALSE) {
@@ -894,7 +894,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
     slp <- subset(predictor,is=list(lon=lon,lat=lat))
 
   if(verbose) print("Aggregate seasonal values")
-  SLP <- subset(as.4seasons(slp,FUN=FUNX),it=season)
+  SLP <- subset(as.4seasons(slp,FUN=FUNX,nmin=nmin),it=season)
   ok <- is.finite(rowSums(SLP))
   SLP <- subset(SLP,it=range(year(SLP)[ok]))
   rm("slp"); gc(reset=TRUE)
@@ -933,7 +933,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                           lon=range(lon(SLP))+c(-2,2),
                           lat=range(lat(SLP))+c(-2,2),verbose=verbose)
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realisation'),sep="-")
-    GCM <- subset(as.4seasons(gcm,FUN=FUNX),it='djf')
+    GCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
     rm("gcm"); gc(reset=TRUE)
     SLPGCM <- combine(SLP,GCM)
     if (verbose) print("- - - > EOFs")
@@ -1484,7 +1484,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,
                            rel.cord=TRUE,
                            select=NULL,FUN="mean",rmtrend=TRUE,
-                           FUNX="mean",threshold=1,type='ncdf',
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf',
                            pattern="tas_Amon_ens_",verbose=FALSE,
                            file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
 
@@ -1509,7 +1509,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data')
-    T2M <- as.4seasons(t2m,FUN=FUNX)
+    T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
 
     # Recursive: do each season seperately if there are more than one season
@@ -1523,7 +1523,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                             non.stationarity.check=non.stationarity.check,
                             eofs=eofs,lon=lon,lat=lat,rel.cord=FALSE,
                             select=select,FUN=FUN,rmtrend=rmtrend,
-                            FUNX=FUNX,threshold=threshold,type=type,
+                            FUNX=FUNX,xfuns=xfuns,threshold=threshold,type=type,
                             pattern=pattern,verbose=verbose,nmin=nmin)
         eval(parse(text=paste('Z$',season,' <- z',sep='')))
       }
@@ -1534,7 +1534,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   } else if (inherits(y,'annual')) {
     if (verbose) print('annual data')
     if (!is.null(it)) {
-      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print('Extract some months or a time period')
       if (verbose) print(it)
       t2m <- subset(t2m,it=it)
       ## if it is character, then then extraction of months reduces number of
@@ -1542,9 +1542,10 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
     }
     if (!is.annual(t2m)) {
-      if (FUNX!='C.C.eq')
+      if (verbose) print(paste('Annualy aggregated',FUNX,'for calibration'))
+      if (sum(is.element(tolower(FUNX),xfuns))==0)
         T2M <- annual(t2m,FUN=FUNX,nmin=nmin) else
-        T2M <- annual(C.C.eq(t2m),FUN='mean',nmin=nmin)
+        eval(parse(text=paste('T2M <- annual(',FUNX,'(t2m),FUN="mean",nmin=nmin)',sep="")))
   } else T2M <- t2m
     T2M <- matchdate(T2M,y)
   } else if (inherits(y,'month')) {
@@ -1596,11 +1597,12 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
     if (inherits(y,'season')) {
-      GCM <- as.4seasons(gcm,FUN=FUNX)
+      GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
       GCM <- subset(GCM,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
-      if (FUNX!='C.C.eq') GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
-                          GCM <- annual(C.C.eq(gcm),FUN='mean',nmin=nmin)
+      if (verbose) print(paste('Annualy aggregated',FUNX,'for GCM'))
+      if (sum(is.element(tolower(FUNX),xfuns))==0) GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+          eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
     } else if (inherits(y,'month')) {
       if (length(table(month(y)))==1)
         GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
