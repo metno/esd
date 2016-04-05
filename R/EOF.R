@@ -208,8 +208,6 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
 EOF.comb <- function(X,it=NULL,is=NULL,n=20,
                      area.mean.expl=FALSE,verbose=FALSE) {
 
-  iv <- function(x) return(sum(is.finite(x)))
-  
   n.app <- attr(X,'n.apps')
   if (verbose) print(paste("EOF.comb: ",n.app,"additional field(s)"))
 
@@ -310,18 +308,22 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   #plot(rowMeans(YY,na.rm=TRUE),type="l")
 
   # Discard time slices with no valid data, e.g. DJF in the beginning of the record
-  ngood <- apply(coredata(Y),2,iv)
+  ngood <- apply(coredata(Y),1,nv)
+  if (verbose) print(summary(ngood))
+  if (verbose) {print("Check:"); print(table(id.t)); print(dim(Y))}
+  
+  if (verbose) print(paste('Remove missing data gaps: ngood <- apply(coredata(Y),2,nv):',ngood))
   realdates <- realdates[ngood>0]
   fakedates <- fakedates[ngood>0]
   id.t <- id.t[ngood>0]
   Y <- Y[ngood>0,]
   Y <- attrcp(X,Y)
   class(Y) <- class(X)[-1]
-  #print(class(Y)); print(index(Y)[1:24])
   
   attr(Y,'dimensions') <- c(d[1,1],d[1,2],sum(ngood>0))
-  #print(dim(Y)); print(attr(Y,'dimensions'))
+  if (verbose) {print(dim(Y)); print(attr(Y,'dimensions'))}
 
+  if (verbose) print('Ordinary EOF')
   eof <- EOF.field(Y,it=it,is=is,n=n,
                    area.mean.expl=area.mean.expl,verbose=verbose)
 
@@ -344,17 +346,9 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   for (i in 1:n.app) {
     jj <- is.element(id.t,ID.t[i+1])
     if (verbose) print(paste(ID.t[i+1],' -> appendix.',i,' data points=',sum(jj),sep=''))
-    #cline <- paste("Z <- attr(X,'appendix.",i,"')",sep="")
-    #print(cline)
-    #eval(parse(text=cline))
-    #print("Z:"); print(names(attributes(Z)))
     z <- zoo(eof[jj,],order.by=as.Date(realdates[jj]))
-#    eval(parse(text=paste("XXX <- attr(X,'appendix.",i,"')",sep="")))
-#    z <- zoo(eof[jj,],order.by=index(XXX))
-#    rownames(z) <- as.Date(realdates[jj])
     eval(parse(text=paste("yyy <- attr(X,'appendix.",i,"')",sep="")))
     z <- attrcp(yyy,z)
-    # attr(z,'clim') <-  eval(parse(text=paste('clim.',i,sep=""))) # REB attr 'mean'
     attr(ceof,paste('appendix.',i,sep="")) <- z
   }
   attr(ceof,'n.apps') <- n.app

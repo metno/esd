@@ -413,7 +413,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   # Use proportional variaions
   if (verbose) print("Annual mean")
   if (!is.annual(pre)) {
-    if (sum(is.element(tolower(FUNX),xfuns))==0)  
+    if (sum(is.element(FUNX,xfuns))==0)  
       PREX <- annual(pre,FUN=FUNX,nmin=nmin) else
       eval(parse(text=paste('PREX <- annual(',FUNX,'(pre),FUN="mean",nmin=nmin)',sep="")))
   }
@@ -480,7 +480,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
     
-    if (sum(is.element(tolower(FUNX),xfuns))==0)
+    if (sum(is.element(FUNX,xfuns))==0)
       GCMX <- annual(gcm,FUN=FUNX,nmin=nmin) else
       eval(parse(text=paste('GCMX <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
     if (is.precip(GCMX)) {
@@ -650,7 +650,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   # Use proportional variaions
   if (verbose) print("Annual mean")
-  if (sum(is.element(tolower(FUNX),xfuns))==0) PRE <- annual(pre,FUN=FUNX,nmin=nmin) else
+  if (sum(is.element(FUNX,xfuns))==0) PRE <- annual(pre,FUN=FUNX,nmin=nmin) else
   eval(parse(text=paste('PRE <- annual(',FUNX,'(pre),FUN="mean",nmin=nmin)',sep="")))
   if (verbose) print("graphics")
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
@@ -702,7 +702,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
       gcm <- subset(gcm,it=it)
     }
     
-    if (sum(is.element(tolower(FUNX),xfuns))==0) GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+    if (sum(is.element(FUNX,xfuns))==0) GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
     eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
 
     model.id <- attr(gcm,'model_id')
@@ -1511,13 +1511,16 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
         t2m <- subset(t2m,it=it,verbose=verbose)
         ## if it is character, then then extraction of months reduces number of
         ## days per year.
-        if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
       }
   } else if (inherits(predictor,'field')) {
     t2m <- predictor
     lon <- range(lon(t2m))
     lat <- range(lat(t2m))
   }
+  ## If some months are selected, make sure that the minimum number of months
+  ## requiired in the annual aggregation is updated
+  if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data')
     T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
@@ -1544,15 +1547,16 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   } else if (inherits(y,'annual')) {
     if (verbose) print('annual data')
-
-    if (!is.annual(t2m)) {
-      if (verbose) print(paste('Annualy aggregated',FUNX,'for calibration'))
-      if (sum(is.element(tolower(FUNX),xfuns))==0)
-        T2M <- annual(t2m,FUN=FUNX,nmin=nmin) else
-        eval(parse(text=paste('T2M <- annual(',FUNX,'(t2m),FUN="mean",nmin=nmin)',sep="")))
-  } else T2M <- t2m
+    if  (!inherits(predictor,'field')) T2M <- t2m else if (!is.annual(t2m)) {
+      if (verbose) print(paste('Aggregate annually',FUNX,'for calibration'))
+        if (sum(is.element(FUNX,xfuns))==0)
+          T2M <- annual(t2m,FUN=FUNX,nmin=nmin) else
+          eval(parse(text=paste('T2M <- annual(',FUNX,'(t2m),FUN="mean",nmin=nmin)',sep="")))
+      } else T2M <- t2m
+    ## Match the date
     T2M <- matchdate(T2M,y)
   } else if (inherits(y,'month')) {
+    if (verbose) print('monthly data')
     T2M <- matchdate(t2m,y)
   }
   if (inherits(T2M,"eof")) T2M <- as.field(T2M)
@@ -1605,24 +1609,25 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print(it)
       gcm <- subset(gcm,it=it,verbose=verbose)
     }
-    #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
     if (inherits(y,'season')) {
       GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
       GCM <- subset(GCM,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
       if (verbose) print(paste('Annualy aggregated',FUNX,'for GCM'))
-      if (sum(is.element(tolower(FUNX),xfuns))==0) GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+      if (sum(is.element(FUNX,xfuns))==0)
+          GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
           eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
     } else if (inherits(y,'month')) {
       if (length(table(month(y)))==1)
         GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
         GCM <- gcm
     }
+    if (is.null(src(T2M))) attr(T2M,'source') <- 'reanalysis'
     T2MGCM <- combine(T2M,GCM)
     
     if (verbose) print("- - - > EOFs")
-    Z <- try(EOF(T2MGCM))
+    Z <- try(EOF(T2MGCM,verbose=verbose))
     
     ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
