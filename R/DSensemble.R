@@ -1485,7 +1485,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,
                            rel.cord=TRUE,
                            select=NULL,FUN="mean",rmtrend=TRUE,
-                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf',
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="tas_Amon_ens_",verbose=FALSE,
                            file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
 
@@ -1502,12 +1502,22 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (sum(!is.finite(lat))>0) 
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
     
-  if (is.character(predictor))
+  if (is.character(predictor)) {
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,
-                    type=type,verbose=verbose) else
-  if (inherits(predictor,'field'))
-    t2m <- subset(predictor,is=list(lon=lon,lat=lat))
-
+                    type=type,verbose=verbose)
+      if (!is.null(it)) {
+        if (verbose) print('Extract some months or a time period')
+        if (verbose) print(it)
+        t2m <- subset(t2m,it=it,verbose=verbose)
+        ## if it is character, then then extraction of months reduces number of
+        ## days per year.
+        if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+      }
+  } else if (inherits(predictor,'field')) {
+    t2m <- predictor
+    lon <- range(lon(t2m))
+    lat <- range(lat(t2m))
+  }
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data')
     T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
@@ -1534,14 +1544,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   } else if (inherits(y,'annual')) {
     if (verbose) print('annual data')
-    if (!is.null(it)) {
-      if (verbose) print('Extract some months or a time period')
-      if (verbose) print(it)
-      t2m <- subset(t2m,it=it)
-      ## if it is character, then then extraction of months reduces number of
-      ## days per year.
-      if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
-    }
+
     if (!is.annual(t2m)) {
       if (verbose) print(paste('Annualy aggregated',FUNX,'for calibration'))
       if (sum(is.element(tolower(FUNX),xfuns))==0)
@@ -1597,6 +1600,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
     if (!is.null(it)) {
       if (verbose) print('Extract some months or a time period')
+      if (is.null(nmin)) warning(paste("The argument 'it' is set but not 'nmin'; it=",
+                                       paste(it,collapse="-")))
       if (verbose) print(it)
       gcm <- subset(gcm,it=it,verbose=verbose)
     }
