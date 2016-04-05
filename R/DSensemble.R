@@ -1589,6 +1589,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (plot) {
     par(bty='n')
+    if (is.annual(y)) index(y) <- year(y)
     plot.zoo(y[,1],lwd=3,main='PC1',ylab='',xlab='',xlim=range(years))
   }
   
@@ -1743,6 +1744,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                   round(quality)))
 
       if (plot) {
+         if (is.annual(y)) index(z) <- year(z)
         lines(z[,1],lwd=2,col=cols[qcol])
         lines(y[,1],lwd=3,main='PC1')
       }
