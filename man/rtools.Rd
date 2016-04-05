@@ -14,6 +14,7 @@
 \alias{ndig}
 \alias{attrcp}
 \alias{ensemblemean}
+\alias{propchange}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -48,6 +49,7 @@ figlab(x,xpos=0.001,ypos=0.001)
 attrcp(x, y, ignore = c("name", "model", "n.apps",
 "appendix","dimnames"))
 ensemblemean(x,FUN='rowMeans')
+propchange(x,it0=c(1979,2013))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

@@ -168,3 +168,14 @@ ensemblemean <- function(x,FUN='rowMeans') {
                    info='Ensemble mean ESD')
   invisible(zm)
 }
+
+
+propchange <- function(x,it0=c(1979,2013)) {
+  z <- coredata(x)
+  if (is.null(dim(z)))
+      z <- 100*(z/mean(coredata(subset(x,it=it0)),na.rm=TRUE)) else
+      z <- 100*t(t(z)/apply(coredata(subset(x,it=it0)),2,'mean',na.rm=TRUE))
+  attributes(z) <- NULL
+  z -> coredata(x)  
+  x
+}

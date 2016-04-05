@@ -1282,9 +1282,9 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
                       ylim <- args[[iyl]]  
   #print("...")
-  if(new) dev.new()
+  #if(new) dev.new()
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='',
-       ylab=ylab,map.show=FALSE)
+       ylab=ylab,map.show=FALSE,new=new)
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)

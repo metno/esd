@@ -53,7 +53,7 @@ DSensemble.t2m(y,plot=TRUE,path="CMIP5.monthly/",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
-                           select=NULL,FUN="mean",FUNX="mean",
+                           select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="tas_Amon_ens_",
                            path.ds=NULL,file.ds="DSensemble.rda",
                            nmin=NULL,verbose=FALSE)
@@ -64,7 +64,7 @@ DSensemble.precip((y,plot=TRUE,path="CMIP5.monthly/",
                               type='ncdf',
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
-                              FUNX="sum",threshold=1,
+                              FUNX="sum",xfuns='C.C.eq',threshold=1,
                               pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL)
 DSensemble.annual(y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
@@ -72,14 +72,14 @@ DSensemble.annual(y,plot=TRUE,path="CMIP5.monthly/",
                               non.stationarity.check=FALSE,type='ncdf',
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
-                              FUNX="mean",threshold=1,
+                              FUNX="mean",xfuns='C.C.eq',threshold=1,
                               pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL)
 DSensemble.season(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
-                           select=NULL,FUN="mean",FUNX="mean",
+                           select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="psl_Amon_ens_",
                            path.ds=NULL,file.ds=NULL,
                            nmin=NULL,verbose=FALSE)
@@ -97,14 +97,14 @@ DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
                                     rcp="rcp45",biascorrect=FALSE,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf',
-                                    pattern="tas_Amon_ens_",verbose=FALSE)
+                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE)
 DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
                           predictor="ERA40_t2m_mon.nc",
                           non.stationarity.check=FALSE,
                           eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="mean",rmtrend=TRUE,
-                          FUNX="mean",threshold=1,type='ncdf',
+                          FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf',
                           pattern="tas_Amon_ens_",verbose=FALSE,
                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL)
 }
@@ -138,6 +138,10 @@ reading GCM data.}
     \item{verbose}{TRUE for checking and debugging the functions.}
     \item{file.ds}{Name of file saving the results.}
     \item{path.ds}{Path of file saving the results.}
+    \item{xfuns}{Names of functions which do not work in
+\code{annual(x,FUN=f)}. These functions are used using the following
+code \code{annual(f(x),FUN="mean")}}
+    \item{mask}{TRUE mask out land}
  }
 \value{A 'dsensembele' object - a list object holding DS-results.}
 \author{R.E. Benestad and A. Mezghani}
