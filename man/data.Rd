@@ -38,6 +38,7 @@
 \alias{NINO3.4}
 \alias{SOI}
 \alias{GSL}
+\alias{AMO}
 \alias{bjornholt}
 \alias{vardo}
 \alias{ferder}
@@ -125,9 +126,9 @@ SOI(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',heade
 data(dse.Oslo)
 HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt",plot=FALSE)
 NASAgiss(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt')
-GSL <-
-function(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv')
+GSL(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv')
 data(global.t2m.gcm)
+AMO(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data')
 }
 
 \arguments{

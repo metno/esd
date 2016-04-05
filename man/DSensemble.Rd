@@ -97,7 +97,7 @@ DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
                                     rcp="rcp45",biascorrect=FALSE,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf',
-                                    pattern="tas_Amon_ens_",verbose=FALSE)
+                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE)
 DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
                           predictor="ERA40_t2m_mon.nc",
@@ -141,6 +141,7 @@ reading GCM data.}
     \item{xfuns}{Names of functions which do not work in
 \code{annual(x,FUN=f)}. These functions are used using the following
 code \code{annual(f(x),FUN="mean")}}
+    \item{mask}{TRUE mask out land}
  }
 \value{A 'dsensembele' object - a list object holding DS-results.}
 \author{R.E. Benestad and A. Mezghani}

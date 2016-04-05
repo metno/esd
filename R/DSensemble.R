@@ -640,7 +640,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(pre,"source") <- "ERA40"
 
   if (!is.null(it)) {
-    if (verbose) print('Extract some months ot a time period')
+    if (verbose) print('Extract some months or a time period')
     if (verbose) print(it)
     pre <- subset(pre,it=it)
       ## if it is character, then then extraction of months reduces number of
@@ -697,7 +697,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (verbose) print(varid(gcm))
 
     if (!is.null(it)) {
-      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print('Extract some months or a time period')
       if (verbose) print(it)
       gcm <- subset(gcm,it=it)
     }
@@ -1356,14 +1356,14 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                     rcp="rcp45",biascorrect=FALSE,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf4',
-                                    pattern="tas_Amon_ens_",verbose=FALSE) {
+                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE) {
   if (verbose) print('DSensemble.mu.worstcase')
 
   ## The predictor is based on the seasonal variations and assumes that the seasnoal cycle in the
   ## wet-day mean mu is follows a systematic dependency to the seasonal variations in the temperature
   ## - the calibration uses the Clausius Clapeiron equation to estimate the saturation water vapour
   ## rather than using the temeprature directly.
-  if (verbose) print(paste('The predictor: seasonal',FUN))
+  if (verbose) print(paste('The predictand: seasonal',FUN))
   ys <- aggregate(y,by=month,FUN=FUN)
   ya <- aggregate(y,by=year,FUN=FUN)
   
@@ -1378,10 +1378,10 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
   if (verbose) print("predictor")
-  if (is.character(predictor))
+  if (is.character(predictor)) 
     pre <- spatial.avg.field(C.C.eq(retrieve(ncfile=predictor,lon=lon,lat=lat,
                                              type=type,verbose=verbose))) else
-  if (inherits(predictor,'field')) pre <- predictor
+  if (inherits(predictor,'field')) pre <- spatial.avg.field(predictor)
   rm("predictor"); gc(reset=TRUE)
   normal61.90 <- mean(coredata(subset(pre,it=c(1961,1990))))
   x <- aggregate(pre,by=month,FUN="mean")
@@ -1445,6 +1445,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,
                       type=type,verbose=verbose)
+      if (mask) gcm <- mask(gcm,land=TRUE)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
       GCM <- spatial.avg.field(C.C.eq(gcm))
       z <- annual(GCM,FUN="max")
@@ -1579,6 +1580,11 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
 
+  if (plot) {
+    par(bty='n')
+    plot.zoo(y[,1],lwd=3,main='PC1',ylab='',xlab='',xlim=range(years))
+  }
+  
   flog <- file("DSensemble.pca-log.txt","at")
   
   ## Set up a list environment to keep all the results
@@ -1590,9 +1596,9 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
     if (!is.null(it)) {
-      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print('Extract some months or a time period')
       if (verbose) print(it)
-      gcm <- subset(gcm,it=it)
+      gcm <- subset(gcm,it=it,verbose=verbose)
     }
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
@@ -1717,12 +1723,19 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print('scorestats')
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
+      qcol <- quality
+      qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
                   ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
                   round(quality)))
+
+      if (plot) {
+        lines(z[,1],lwd=2,col=cols[qcol])
+        lines(y[,1],lwd=3,main='PC1')
+      }
    }
   
     if (verbose) print('Downscaling finished')
