@@ -10,7 +10,7 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                           show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,cex=2,
-                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
     
     ## default with no arguments will produce a map showing available station
     ## data in the esd package.
@@ -43,20 +43,17 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(X,'variable') <- varid(x)
     if (inherits(X,'zoo')) attr(X,'time') <- range(index(x)) else
     if (!is.null(attr(x,'time'))) attr(X,'time') <- attr(x,'time')
-    if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,
-            colbar=colbar,verbose=verbose,
-            type=type,new=new,
+    if (plot) {
+      if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,
+            colbar=colbar,verbose=verbose,type=type,new=new,
             gridlines=gridlines,...) else
-    if (projection=="sphere") map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
-            type=type,gridlines=gridlines,
-            colbar=colbar,new=new,...) else
-    if (projection=="np") map2sphere(X,lonR=lonR,latR=latR,axiR=axiR,
-            type=type,gridlines=gridlines,
-            colbar=colbar,new=new,...) else
-    if (projection=="sp") map2sphere(X,lonR=lonR,latR=latR,axiR=axiR,new=new,
-            type=type,gridlines=gridlines,
-            colbar=colbar,...)
-    
+      if (projection=="sphere") map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
+            type=type,gridlines=gridlines,colbar=colbar,new=new,...) else
+      if (projection=="np") map2sphere(X,lonR=lonR,latR=latR,axiR=axiR,
+            type=type,gridlines=gridlines,colbar=colbar,new=new,...) else
+      if (projection=="sp") map2sphere(X,lonR=lonR,latR=latR,axiR=axiR,new=new,
+            type=type,gridlines=gridlines,colbar=colbar,...)
+  }
     invisible(X)
 }
 
@@ -66,7 +63,7 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        type=c("fill","contour"),gridlines=FALSE,
                        lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                       pattern=1,...) {
+                       pattern=1,plot=TRUE,...) {
     
                                         # If x is provided, map only x...
 
@@ -77,14 +74,19 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
     if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
     if (verbose) str(x)
-    if (projection=="lonlat") lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
-                                               type=type,gridlines=gridlines,verbose=verbose,...)  else
-    if (projection=="sphere")
-      map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
-                 lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...) else
-    if (projection=="np") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,verbose=verbose,...) else
-    if (projection=="sp") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,verbose=verbose,...)
-    
+    if (plot) {
+      if (projection=="lonlat") lonlatprojection(x=x,new=new,xlim=xlim,
+            ylim=ylim,zlim=zlim,colbar=colbar,
+            type=type,gridlines=gridlines,verbose=verbose,...)  else
+      if (projection=="sphere")
+        map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+                   lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...) else
+      if (projection=="np") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,
+            colbar=colbar,verbose=verbose,...) else
+      if (projection=="sp") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,
+            colbar=colbar,verbose=verbose,...)
+    }
+    invisible(x)
                                         #map.station(NULL,...)
 }
 
@@ -94,7 +96,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       colbar=list(col=NULL,rev=FALSE,breaks=NULL,pos=0.05,
                           show=TRUE,type="r",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
-                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
     if (verbose) print('map.array')
     if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
     if (is.null(it)) {
@@ -120,9 +122,10 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(z,'variable') <- varid(x)
     attr(z,'unit') <- unit(x)[1]
 
-    map(z,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
-        lonR=lonR,latR=latR,axiR=axiR,
-        type=type,gridlines=gridlines,projection=projection,verbose=verbose,...)
+    if (plot) map(z,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+                  lonR=lonR,latR=latR,axiR=axiR,
+                  type=type,gridlines=gridlines,projection=projection,verbose=verbose,...)
+    invisible(z)
 }
 
 
@@ -132,7 +135,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                          pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                     pattern=1,...) {
+                     pattern=1,plot=TRUE,...) {
     if (verbose) print('map.comb')
     stopifnot(inherits(x,'eof'))
     x <- subset(x,it=it,is=is)
@@ -148,7 +151,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     map.eof(x=x,xlim=xlim,ylim=ylim,zlim=zlim,pattern=pattern,
             n=n,projection=projection,colbar=colbar,new=new,
             lonR=lonR,latR=latR,axiR=axiR,type=type,
-            gridlines=gridlines,verbose=verbose,...) -> result
+            gridlines=gridlines,verbose=verbose,plot=plot...) -> result
     invisible(result)
 }
 
@@ -158,7 +161,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=0,axiR=NULL,verbose=FALSE,
-                    pattern=1,cex=1,...) {
+                    pattern=1,cex=1,plot=TRUE,...) {
 
     ## browser()
     if (verbose) print('map.eof')
@@ -189,31 +192,33 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if ( (pattern==1) & !is.null(attr(x, "area.mean.expl")) )
         if (attr(x, "area.mean.expl"))
             type <- "fill"
-    if (projection=="lonlat")
+    if (plot) {
+      if (projection=="lonlat")
         lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
                          n=n,colbar=colbar,new=new,type=type,
                          gridlines=gridlines,verbose=verbose,...)
-    else if (projection=="sphere")
+      else if (projection=="sphere")
         map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
                    type=type,gridlines=gridlines,
                    colbar=colbar,new=new,verbose=verbose,...)
-    else if (projection=="np")
+      else if (projection=="np")
         map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,
                    type=type,gridlines=gridlines,
                    colbar=colbar,new=new,verbose=verbose,...)
-    else if (projection=="sp")
+      else if (projection=="sp")
         map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,
                    type=type,gridlines=gridlines,
                    colbar=colbar,new=new,verbose=verbose,...)
+    }
     invisible(X)
-}
+  }
 
 map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                        pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                    type=c("fill","contour"),gridlines=FALSE,
-                   lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
+                   lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
     if (verbose) print('map.ds')
     stopifnot(inherits(x,'ds'))
     x <- subset(x,is=is)
@@ -259,34 +264,34 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     
     attr(X,'unit') <- unit
     attr(X,'source') <- attr(x,'source')
-                                        #dim(X) <- attr(x,'dimensions')[1:2]
-                                        #print(c(dim(X),length(attr(X,'longitude')),length(attr(X,'longitude'))))
-    ##browser()
-    if (projection=="lonlat") {
+
+    if (plot) {
+      if (projection=="lonlat") {
         lonlatprojection(x=X,n=n,colbar=colbar,verbose=verbose,
                          type='fill',gridlines=gridlines,new=new,...)
         if (is.list(attr(x,'pattern'))) {
-            Xa <- attr(x,'pattern')
-            nms <- names(Xa)
-            col <- c('black','darkgreen','grey','yellow','magenta','cyan',
+          Xa <- attr(x,'pattern')
+          nms <- names(Xa)
+          col <- c('black','darkgreen','grey','yellow','magenta','cyan',
                      'brown','white','green')
                                         #browser()
-            for (i in (2:length(nms))) 
-                contour(lon(Xa[[i]]),lat(Xa[[i]]),Xa[[i]],add=TRUE,col=col[i])
+          for (i in (2:length(nms))) 
+            contour(lon(Xa[[i]]),lat(Xa[[i]]),Xa[[i]],add=TRUE,col=col[i])
         } else if (sum(is.element(type,'contour'))>0)
-            contour(lon(X),lat(X),X,add=TRUE,col="grey50")
-    } else if (projection=="sphere")
+          contour(lon(X),lat(X),X,add=TRUE,col="grey50")
+      } else if (projection=="sphere")
         map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
                    type=type,gridlines=gridlines,verbose=verbose,
                    colbar=colbar,new=new,...)
-    else if (projection=="np")
+      else if (projection=="np")
         map2sphere(X,lonR=lonR,latR=90,axiR=axiR,
                    type=type,gridlines=gridlines,
                    colbar=colbar,new=new,verbose=verbose,...)
-    else if (projection=="sp")
+      else if (projection=="sp")
         map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,
                    type=type,gridlines=gridlines,
                    colbar=colbar,new=new,verbose=verbose,...)
+    }
     invisible(X)
 }
 
@@ -298,7 +303,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                      na.rm=TRUE,...) {
+                      na.rm=TRUE,plot=TRUE,...) {
     
     stopifnot(inherits(x,'field'))
     if (verbose) print('map.field')
@@ -358,22 +363,23 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     dim(X) <- attr(x,'dimensions')[1:2]
                                         #class(X) <- class(x)
                                         #str(X)
-    
-    if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+    if (plot) {
+      if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             colbar=colbar,type=type,new=new,
             gridlines=gridlines,verbose=verbose,...) else
     if (projection=="sphere") map2sphere(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-            lonR=lonR,latR=latR,axiR=axiR,
-            type=type,gridlines=gridlines,
-            colbar=colbar,new=new,verbose=verbose,...) else
-    if (projection=="np") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+          lonR=lonR,latR=latR,axiR=axiR,
+          type=type,gridlines=gridlines,
+          colbar=colbar,new=new,verbose=verbose,...) else
+      if (projection=="np") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             lonR=lonR,latR=90,axiR=axiR,
             type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...) else
-    if (projection=="sp") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+      if (projection=="sp") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             lonR=lonR,latR=-90,axiR=axiR,
             type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...)
+    }
     invisible(X)
 }
 
@@ -384,7 +390,7 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              breaks=seq(-1,1,by=0.05),pos=0.05,show=TRUE,
                              type="p",cex=2,h=0.6,v=1),
                          type=c("fill","contour"),gridlines=FALSE,
-                         lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
+                         lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
     
     if (verbose) print("map.corfield")
     stopifnot(inherits(x,'corfield'))
@@ -408,19 +414,20 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     }
 
     if (verbose) {print(projection); print(dim(x))}
-    
-    if (projection=="lonlat") lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+
+    if (plot) {
+      if (projection=="lonlat") lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             colbar=colbar,type=type,new=new,verbose=verbose,gridlines=gridlines,...) else
-    if (projection=="sphere") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+      if (projection=="sphere") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             lonR=lonR,latR=latR,axiR=axiR,type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...) else
     if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             lonR=lonR,latR=90,axiR=axiR,type=type,gridlines=gridlines,
-            colbar=colbar,new=new,verbose=verbose,...) else
-    if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+          colbar=colbar,new=new,verbose=verbose,...) else
+      if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             lonR=lonR,latR=-90,axiR=axiR,type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...)
-
+    }
     if (!is.null(attr(x,'x.longitude')) & !is.null(attr(x,'x.latitude')))
         points(attr(x,'x.longitude'),attr(x,'x.latitude'),lwd=2,cex=1.2)
     invisible(x)
@@ -432,7 +439,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
-                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
     if (verbose) print('map.trend')
     stopifnot(inherits(x,'field'),inherits(x,'trend'))
     x <- subset(x,it=it,is=is)
@@ -455,23 +462,24 @@ map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     attr(X,'source') <- attr(x,'source')
     dim(X) <- attr(x,'dimension')[1:2]
                                         #str(X)
-
-    if (projection=="lonlat") lonlatprojection(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+    if (plot) {
+      if (projection=="lonlat") lonlatprojection(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             colbar=colbar,type=type,new=new,
             verbose=verbose,
             gridlines=gridlines,...) else
-    if (projection=="sphere") map2sphere(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+      if (projection=="sphere") map2sphere(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             lonR=lonR,latR=latR,axiR=axiR,
             type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...) else
-    if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+      if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             lonR=lonR,latR=90,axiR=axiR,
             type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...) else
-    if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+      if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
             lonR=lonR,latR=-90,axiR=axiR,
             type=type,gridlines=gridlines,
             colbar=colbar,new=new,verbose=verbose,...)
+    }
     invisible(X)
 }
 
@@ -485,7 +493,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     #cex.axis=1,cex.main=1,cex.lab=1,
                     type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,...) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
     ##
     if (verbose) print(paste('map.pca',FUN))
     args <- list(...)
@@ -513,11 +521,11 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
     if (verbose) str(X)
     if (is.element(FUN,args)) 
         map.station(X,new=new,colbar=colbar,
-                    xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,...)
+                    xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=TRUE,...)
     else
         map.station(X,new=new,colbar=colbar,FUN=FUN,
                     xlim=xlim,ylim=ylim,zlim=zlim,
-                    verbose=verbose,...)
+                    verbose=verbose,plot=TRUE,...)
 }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
@@ -525,11 +533,11 @@ map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    verbose=FALSE,...) {
+                    verbose=FALSE,plot=TRUE,...) {
     x <- subset(x,it=it,is=is)
     map.field(x,new=new,FUN="mean",
               colbar=colbar,
-              cex=cex,xlim=xlim,ylim=ylim,verbose=verbose,...)
+              cex=cex,xlim=xlim,ylim=ylim,verbose=verbose,plot=TRUE,...)
     
 }
 
@@ -538,7 +546,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
                                cex=2,show=TRUE,h=0.6, v=1,pos=0.05), colbar2= NULL,
                     type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,...) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE,...) {
     if (verbose) print('map.cca')
     if (is.null(colbar2)) colbar2 <- colbar1
     ##x <- subset(x,it=it,is=is)
@@ -603,7 +611,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     map(X,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
         projection=projection,lonR=lonR,latR=latR,axiR=axiR,
         gridlines=gridlines,FUN='mean',verbose=verbose,
-        colbar=colbar2,showall=FALSE,new=FALSE)
+        colbar=colbar2,showall=FALSE,new=FALSE,plot=TRUE)
     
     invisible(list(U=U,V=V))
 }
