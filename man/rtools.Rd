@@ -16,7 +16,8 @@
 \alias{ensemblemean}
 \alias{propchange}
 \alias{TGW}
-\alias{wind}
+\alias{geostrophicwind.station}
+\alias{geostrophicwind.field}
 \alias{stand}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
@@ -58,6 +59,8 @@ attrcp(x, y, ignore = c("name", "model", "n.apps",
 ensemblemean(x,FUN='rowMeans')
 propchange(x,it0=c(1979,2013))
 TGW(triangle,f=1.25e-4,rho=1.25,verbose=FALSE)
+geostrophicwind.station(x,f=1.25e-4,rho=1.25,verbose=FALSE)
+geostrophicwind.field(x,f=1.25e-4,rho=1.25,verbose=FALSE)
 stand(x)
 }
 %- maybe also 'usage' for other objects documented here.

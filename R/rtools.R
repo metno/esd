@@ -230,6 +230,40 @@ TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
                      longname=c('zonal geostrophic wind','meridional geostrophic wind'),
                      info="Derived from triangular geostropic method",
                      ref="Alexandersson et al. (1998), Glob. Atm. and Oce. Sys., vol 6, pp. 97-120")
+  attr(wind,'history') <- history.stamp(triangle)
   invisible(wind)
 }
 
+geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
+}
+
+geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
+  if (verbose) print('geostrophicwind')
+  stopifnot(is.field(x))
+  if (sum(is.element(varid(x),c('slp','psl'))==0))
+    warning(paste('geostrophicwind: param=',varid(x)))
+  if (sum(is.element(unit(slp),'millibars','hPa')>0) {
+    x <- 100*x
+    attr(x,'unit') <- 'Pa'
+  dpdx <- dX(x,verbose=verbose)
+  dpdy <- dY(x,verbose=verbose)
+  v <- 1/(f*rho)*dpdx$dZ
+  u <- -1/(f*rho)*dpdy$dZ
+  ws <- sqrt(u^2+v^2)
+  class(ws) <- class(v)
+  ws <- attrcp(v,ws)
+  attr(u,'variable') <- 'u'
+  attr(u,'unit') <- 'm/s'
+  attr(u,'longname') <- 'zonal geostrophic wind'
+  attr(v,'variable') <- 'u'
+  attr(v,'unit') <- 'm/s'
+  attr(v,'longname') <- 'meridional geostrophic wind'
+  attr(ws,'variable') <- 'windspeed'
+  attr(ws,'unit') <- 'm/s'
+  attr(u,'longname') <- 'geostrophic wind speed'
+  attr(u,'history') <- history.stamp(x)
+  attr(v,'history') <- history.stamp(x)
+  attr(ws,'history') <- history.stamp(x)
+      
+  invisible(list(u=u,v=v,ws=ws))
+}
