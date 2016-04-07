@@ -43,7 +43,7 @@ fixfile <- function(fname) {
 }
 
 
-station.midas <- function(stid=NULL,loc=NULL,lon=c(-7,5),lat=c(48,62),alt=NULL,county=NULL,
+station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,county=NULL,
                           cntr=NULL,it=NULL,nmin=30,
                           path='data/midas/',pattern='midas_raindrnl',metaid='CPAS.DATA',verbose=TRUE,plot=TRUE) {
   metacolnames <- c('SRC_ID','SRC_NAME','ID_TYPE','ID','MET_DOMAIN_NAME','SRC_CAP_BGN_DATE','SRC_CAP_END_DATE',
@@ -206,7 +206,7 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-7,5),lat=c(48,62),alt=NULL,c
 }
 
 #y <- station.midas(lon=c(-6,-2),lat=c(50,51.5))
-y <- station.midas(lon=c(-7,0),lat=c(49,52))
+y <- station.midas(lon=c(-5,-3),lat=c(50,51))
 
 ## Combine all the list elements representing individual years into one zoo-object
 ## prepare the metadata
@@ -241,16 +241,10 @@ for (i in 1:length(y)) {
   }
   ## Extract the stations with valid data: 
   x <- subset(z,is=im)
-  if (is.null(dim(x))) {
-    str(x)
-    print(paste("Problem with data: sum(im)",sum(im)))
-    browser()
-  } else {
-    attr(x,'variable') <- rep('precip',dim(x)[2])
-    attr(x,'unit') <- rep('mm/day',dim(x)[2])
-    attr(x,'country') <- rep('England',dim(x)[2])
-    attr(x,'longname') <- rep('24hr_precipitation',dim(x)[2])
-  }
+  attr(x,'variable') <- rep('precip',dim(x)[2])
+  attr(x,'unit') <- rep('mm/day',dim(x)[2])
+  attr(x,'country') <- rep('England',dim(x)[2])
+  attr(x,'longname') <- rep('24hr_precipitation',dim(x)[2])
   
   ## make a station objects with the remaining data containng NAs.
   if (nm > 0) {

@@ -121,6 +121,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
         } else {
           colbar$pal <- 't2m'
         }
+        if (is.null(colbar$n)) colbar$n=10
         colbar$col <- colscal(colbar$n,colbar$pal,rev=colbar$rev,alpha=colbar$alpha,
                               verbose=verbose)
       }
