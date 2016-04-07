@@ -196,20 +196,21 @@ return(y)
 metno.ele <- function() { ## must be updated - AM 2014-02-21
   ## Selected elements from GHCND database
     
-    if (!file.exists('metno_element.txt'))
+    if (!file.exists('metno_element.txt')) {
       x <- rbind(c("601" , "Precipitation"		 	, "1"	  		, "mm"	, "RR"),
                  c("999" , "Snowfall"			, "1" 	  		, "mm" 	, "SNOW"),
                  c("901" , "Snow depth"			, "1" 	  		, "mm" 	, "SNWD"),
                  c("101" , "Mean temperature"	        , "1" 		        , "degree*C"  , "TAM"),
                  c("111" , "Maximum temperature" 	 	, "1"   		, "degree*C"	, "TAX"),
                  c("121" , "Minimum temperature" 	 	, "1"	  		, "degree*C" 	, "TAN"))
-    else
+      y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO",stringsAsFactors=FALSE)
+      
+      } else {
         x <- read.csv('metno_element.txt')
 
-    y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = 1 , unit = x[,5] , param = x[,1] , source = "METNO",stringsAsFactors=FALSE)
+        y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = 1 , unit = x[,5] , param = x[,1] , source = "METNO",stringsAsFactors=FALSE)
+      }
   return(y)
-
-
 }
 
 wmo.ele.code <- function(pattern='^wind.*.speed.*.10') {
