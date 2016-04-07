@@ -126,6 +126,17 @@ plot(wind)
 ws <- sqrt(wind[,1]^2 + wind[,2]^2)
 plot(ws)
 hist(ws)
+
+## Estimate wind for a larger group of stations
+wind <- geostrophicwind(pp,nmax=10)
+u <- subset(wind,param='u')
+v <- subset(wind,param='u')
+ws <- sqrt(u^2+v^2)
+ws <- attrcp(v,ws)
+class(ws) <- class(v)
+attr(ws,'variable')='windspeed'
+attr(ws,'longname')='geostrophic wind speed'
+map(ws,FUN='quantile',probs=0.98)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
