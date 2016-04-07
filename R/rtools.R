@@ -235,9 +235,22 @@ TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
 }
 
 geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
+  ## Estimates the geostrophic wind from mean sea-level pressure from stations
+  n <- length(loc(x))
+  ## Estimate the different combinations of 3 that is possible from the provided group of
+  ## stations
+  cn <- combn(1:n,3)
+  d <- dim(cn)
+  print(n,'stations gives ',paste(d[2],'of three')
+  for (i in 1:d[2]) {
+    wind <- TGW(subset(x,is=cn[,i]))
+    if (i==1) Wind <- wind else Wind <- combine(Wind,wind)
+  }   
+  invisible(Wind)      
 }
 
 geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
+  ## Estimates the geostrophic wind from mean sea-level pressure field
   if (verbose) print('geostrophicwind')
   stopifnot(is.field(x))
   if (sum(is.element(varid(x),c('slp','psl'))==0))
