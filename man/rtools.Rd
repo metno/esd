@@ -17,6 +17,7 @@
 \alias{propchange}
 \alias{TGW}
 \alias{wind}
+\alias{stand}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -32,7 +33,9 @@ objects. The argument \code{FUN} can also be used to estiamte other
 statistics, e.g \code{FUN='q95'} where \code{q95=function(x) apply(x,1,quantile,probs=0.95)}
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 \code{TGW} uses triangulation of pressure measurements to estimate
-geostrophic wind based on Alexandersson et al. (1998), Glob. Atm. and Oce. Sys..
+geostrophic wind based on Alexandersson et al. (1998), Glob. Atm. and
+Oce. Sys.
+\code{stand} gives a standardised time series.
 }
 \usage{
 as.decimal(x = NULL)
@@ -55,6 +58,7 @@ attrcp(x, y, ignore = c("name", "model", "n.apps",
 ensemblemean(x,FUN='rowMeans')
 propchange(x,it0=c(1979,2013))
 TGW(triangle,f=1.25e-4,rho=1.25,verbose=FALSE)
+stand(x)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

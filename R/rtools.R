@@ -36,6 +36,8 @@ nv <- function(x,...) sum(is.finite(x))
 ## Compute the coefficient of variation of x
 cv <- function(x,na.rm=TRUE) {sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)}
 
+stand <- function(x) (x - mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)
+
 
 ## Compute the linear trend
 trend.coef <- function(x,...) {
