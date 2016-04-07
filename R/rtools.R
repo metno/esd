@@ -234,6 +234,8 @@ TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
   invisible(wind)
 }
 
+geostrophicwind<-function(x,...) UseMethod("geostrophicwind")
+
 geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
   ## Estimates the geostrophic wind from mean sea-level pressure from stations
   n <- length(loc(x))
@@ -241,7 +243,7 @@ geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
   ## stations
   cn <- combn(1:n,3)
   d <- dim(cn)
-  print(n,'stations gives ',paste(d[2],'of three')
+  print(paste(n,'stations gives ',d[2],'of three'))
   for (i in 1:d[2]) {
     wind <- TGW(subset(x,is=cn[,i]))
     if (i==1) Wind <- wind else Wind <- combine(Wind,wind)
@@ -255,9 +257,10 @@ geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
   stopifnot(is.field(x))
   if (sum(is.element(varid(x),c('slp','psl'))==0))
     warning(paste('geostrophicwind: param=',varid(x)))
-  if (sum(is.element(unit(slp),'millibars','hPa')>0) {
+  if (sum(is.element(unit(slp),'millibars','hPa'))>0) {
     x <- 100*x
     attr(x,'unit') <- 'Pa'
+  }
   dpdx <- dX(x,verbose=verbose)
   dpdy <- dY(x,verbose=verbose)
   v <- 1/(f*rho)*dpdx$dZ
@@ -279,4 +282,4 @@ geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
   attr(ws,'history') <- history.stamp(x)
       
   invisible(list(u=u,v=v,ws=ws))
-}
+  }

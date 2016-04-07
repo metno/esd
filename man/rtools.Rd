@@ -16,6 +16,7 @@
 \alias{ensemblemean}
 \alias{propchange}
 \alias{TGW}
+\alias{geostrophicwind}
 \alias{geostrophicwind.station}
 \alias{geostrophicwind.field}
 \alias{stand}
