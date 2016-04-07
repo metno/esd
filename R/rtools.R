@@ -236,16 +236,28 @@ TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
 
 geostrophicwind<-function(x,...) UseMethod("geostrophicwind")
 
-geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
+geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000) {
   ## Estimates the geostrophic wind from mean sea-level pressure from stations
   n <- length(loc(x))
   ## Estimate the different combinations of 3 that is possible from the provided group of
   ## stations
   cn <- combn(1:n,3)
   d <- dim(cn)
-  print(paste(n,'stations gives ',d[2],'of three'))
+  print(paste(n,'stations gives ',d[2],'combinations of three.'))
+  if (!is.null(nmax)) {
+    ## For very many combination, take a random sample by default.
+    ## Turn this feature off by setting nmax to NULL.
+    if (nmax < d[2]) {
+      print(paste('Taking a random subsample of',nmax,'combinations.',
+                  'If all are wnted, set argument nmax =NULL'))
+      ii <- sample(1:d[2],nmax)
+      cn <- cn[,ii]; d <- dim(cn)
+    }
+  }
+  pb <- txtProgressBar(style=3)
   for (i in 1:d[2]) {
     wind <- TGW(subset(x,is=cn[,i]))
+    setTxtProgressBar(pb,i/d[2]) 
     if (i==1) Wind <- wind else Wind <- combine(Wind,wind)
   }   
   invisible(Wind)      
