@@ -16,9 +16,11 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
       lonlat.trajectory(y,...)
     }
   } else if (type=='density') {
-    map.density.trajectory(y,projection=projection,...)
+    map.density.trajectory(y,projection=projection,verbose=verbose,...)
   } else if (type=='shapes') {
-    map.anomaly.trajectory(y,projection=projection,...)
+    map.anomaly.trajectory(y,projection=projection,verbose=verbose,...)
+  } else if (type=='colors') {
+    segments.trajectory(y,verbose=verbose,...)
   } else print("unkown map type")
 }
 
