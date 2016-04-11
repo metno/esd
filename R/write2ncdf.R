@@ -7,7 +7,7 @@ write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 write2ncdf4.default <- function(x,...) {
 }
 
-write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) {
+write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,torg="1970-01-01",missval=-999) {
   print('write2ncdf4.field')
   dimlon <- ncdim_def( "longitude", "degree_east", lon(x) )
   dimlat <- ncdim_def( "latitude", "degree_north", lat(x) )
@@ -25,12 +25,12 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=10,offset=NU
   y <- coredata(x); attributes(y) <- NULL
   y[!is.finite(y)] <- missval
   if (is.null(offset)) offset <- mean(y,na.rm=TRUE)
-  y <- round(scale*(y-offset))
+  y <- round((y-offset)/scale)
   # Write some values to this variable on disk.
   ncvar_put( ncnew, x4nc, round(y) )
   ncvar_put( ncnew, x4nc, round(y) )
-  ncatt_put( ncnew, x4nc, "add_offset", meany, prec="float" )
-  ncatt_put( ncnew, x4nc, "scale_factor", 0.01, prec="float" ) 
+  ncatt_put( ncnew, x4nc, "add_offset", offset, prec="float" )
+  ncatt_put( ncnew, x4nc, "scale_factor", scale, prec="float" ) 
   ncatt_put( ncnew, x4nc, "_FillValue", -99, prec="float" ) 
   ncatt_put( ncnew, x4nc, "missing_value", -99, prec="float" ) 
   ncatt_put( ncnew, 0, "description", 
@@ -73,24 +73,11 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   atts <- names(attributes(x))
  
   if (verbose) print(atts)
-  ## attr2attr <- is.element(atts,c('dim','dimnames','index',
-  ##                                 'station_id','variable','unit',
-  ##                                'longname','history','location','country'))
   attr2attr <- is.element(atts,c('station_id','variable','unit','longname','location','country'))
   ##atts <- atts[iattr2ncdf]
   attr2var <- is.element(atts,c('longitude','latitude','altitude'))
   na <- length(atts); la <- rep(0,na)
   attrprec <- rep('character',na)
-  ## for (i in 1:na) {
-  ##  #if (verbose) print(atts[i])
-  ##  la[i] <- length(attr(x,atts[i]))
-  ##  attrprec[i] <- switch(tolower(atts[i]),
-  ##                     'longitude'='float','latitude'='float','altitude'='float',
-  ##                     'wmo_id'='integer','class'='character','location'='character',
-  ##                     'country'='character','aspect'='character','source'='character',
-  ##                     'quality'='character','url'='character','reference'='character',
-  ##                     'info'='character')
-  ##}
   attr(x,'quality') <- as.character(attr(x,'quality'))
   if (verbose) print(paste('attributes:', paste(atts, collapse=', '),
                            '; types:',paste(attrprec, collapse=', ')))
