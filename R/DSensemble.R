@@ -803,6 +803,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(X,'station') <- y
   attr(X,"lon") <- attr(y,"lon")
   attr(X,"lat") <- attr(y,"lat")
+  attr(X,"longname") <- attr(y,"longname")
   attr(X,'predictor') <- attr(PRE,'source')
   attr(X,'domain') <- list(lon=lon,lat=lat)
   attr(X,'scorestats') <- scorestats
@@ -1057,6 +1058,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   attr(X,"model_id") <- gcmnm
   #X <- attrcp(ys,X)
   attr(X,"season") <- season
+  attr(X,"longname") <- attr(y,"longname")
   attr(X,'station') <- ys
   attr(X,'predictor') <- attr(T2M,'source')
   attr(X,'domain') <- list(lon=lon,lat=lat)
@@ -1760,6 +1762,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
   attr(dse.pca,'predictor') <- attr(T2M,'source')
+  attr(dse.pca,"longname") <- attr(y,"longname")
   attr(dse.pca,'domain') <- list(lon=lon,lat=lat)
   attr(dse.pca,'scorestats') <- scorestats
   attr(dse.pca,'path') <- path

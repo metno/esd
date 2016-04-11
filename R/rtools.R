@@ -168,6 +168,7 @@ ensemblemean <- function(x,FUN='rowMeans') {
   zm <- as.station(zm,param=varid(z),unit=unit(z),
                    loc=unlist(lapply(z,loc)),lon=unlist(lapply(z,lon)),
                    lat=unlist(lapply(z,lat)),alt=unlist(lapply(z,alt)),
+                   longname=attr(x,'longname'),aspect=attr(x,'aspect'),
                    info='Ensemble mean ESD')
   invisible(zm)
 }
