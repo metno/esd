@@ -206,7 +206,8 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-7,5),lat=c(48,62),alt=NULL,c
 }
 
 #y <- station.midas(lon=c(-6,-2),lat=c(50,51.5))
-y <- station.midas(lon=c(-7,0),lat=c(49,52))
+#y <- station.midas(lon=c(-7,0),lat=c(49,52))
+y <- station.midas(lon=c(-7,-1),lat=c(49,51.75))
 
 ## Combine all the list elements representing individual years into one zoo-object
 ## prepare the metadata
@@ -250,32 +251,30 @@ for (i in 1:length(y)) {
     attr(x,'unit') <- rep('mm/day',dim(x)[2])
     attr(x,'country') <- rep('England',dim(x)[2])
     attr(x,'longname') <- rep('24hr_precipitation',dim(x)[2])
-  }
   
   ## make a station objects with the remaining data containng NAs.
-  if (nm > 0) {
-    xm <- zoo(matrix(rep(NA,dim(x)[1]*nm),dim(x)[1],nm),order.by=index(x))
-    xm <- as.station(xm,rep(param='precip',sum(iM)),unit=rep('mm/day',sum(iM)),
-                     stid=stationIDs[iM],
-                     loc=locations[iM],lon=lons[iM],lat=lats[iM],alt=alts[iM],
-                     longname=rep(attr(x,'longname')[1],sum(iM)),
-                     cntr=rep(cntr(x)[1],sum(iM)))
-    x <- combine.stations(x,xm)
-  }
-  x <- sort(x)
-  print(paste(i,'sum(im)=',sum(im),'nm=',nm,'nm+sum(im)',nm+sum(im)))
-  print(loc(x))
+    if (nm > 0) {
+      xm <- zoo(matrix(rep(NA,dim(x)[1]*nm),dim(x)[1],nm),order.by=index(x))
+      xm <- as.station(xm,rep(param='precip',sum(iM)),unit=rep('mm/day',sum(iM)),
+                       stid=stationIDs[iM],
+                       loc=locations[iM],lon=lons[iM],lat=lats[iM],alt=alts[iM],
+                       longname=rep(attr(x,'longname')[1],sum(iM)),
+                       cntr=rep(cntr(x)[1],sum(iM)))
+      x <- combine.stations(x,xm)
+    }
+    x <- sort(x)
+    print(paste(i,'sum(im)=',sum(im),'nm=',nm,'nm+sum(im)',nm+sum(im)))
+    print(loc(x))
   
-  if (dim(x)[2]!=length(stids)) {
-    print(paste('Something wrong? dim(x)[2]=',dim(x)[2],'!= length(stids)=',length(stids)))
-    browser()
+    if (dim(x)[2]!=length(stids)) {
+      print(paste('Something wrong? dim(x)[2]=',dim(x)[2],'!= length(stids)=',length(stids)))
+      browser()
+    }
   }
-  
   if (i==1) X <- x else {
     Xx <- c(zoo(X),zoo(x))
     X <- as.station(Xx)
     X <- attrcp(x,X)
-    #browser()
   }
   if (dim(X)[2]!=length(stids)) {
     print(paste('Something wrong? dim(X)[2]=',dim(X)[2],'!= length(stids)=',length(stids)))

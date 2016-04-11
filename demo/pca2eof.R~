@@ -50,7 +50,7 @@ gridstation <- function(Y,i=1,verbose=FALSE,xlim=NULL,ylim=NULL) {
 ## map making use of elevation.
 pca2eof <- function(x,verbose=FALSE,xlim=NULL,ylim=NULL) {
   if (verbose) print('pca2eof')
-  stopifnot(!inherits(x,'pca'))
+  stopifnot(inherits(x,'pca'))
   y <- x
   z <- attr(x,'pattern')
   attr(z,'longitude') <- lon(x)
@@ -76,7 +76,7 @@ pca2eof <- function(x,verbose=FALSE,xlim=NULL,ylim=NULL) {
 
 station2field <- function(x,verbose=FALSE,xlim=NULL,ylim=NULL) {
     if (verbose) print('station2field')
-    stopifnot(!inherits(x,'station'))
+    stopifnot(inherits(x,'station'))
     x <- pcafill(x,verbose=verbose)
     pca <- PCA(x)
     eof <- pca2eof(pca,verbose=verbose)
