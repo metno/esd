@@ -7,8 +7,19 @@ write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 write2ncdf4.default <- function(x,...) {
 }
 
-write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,torg="1970-01-01",missval=-999) {
-  print('write2ncdf4.field')
+write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
+                              torg="1970-01-01",missval=-999,verbose=FALSE) {
+  if (verbose) print('write2ncdf4.field')
+
+  y <- coredata(x)
+  if (is.null(offset)) offset <- mean(y,na.rm=TRUE)
+  if (is.null(scale)) scale <- 1
+  y <- t(y)
+  y[!is.finite(y)] <- missval
+  y <- round((y-offset)/scale)
+  if (verbose) print(attr(y,'dimensions'))
+  dim(y) <- attr(x,'dimensions')
+
   dimlon <- ncdim_def( "longitude", "degree_east", lon(x) )
   dimlat <- ncdim_def( "latitude", "degree_north", lat(x) )
   if (inherits(index(x),c('numeric','integer')))
@@ -22,17 +33,13 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=N
      # Create a netCDF file with this variable
   ncnew <- nc_create( fname, x4nc )
 
-  y <- coredata(x); attributes(y) <- NULL
-  y[!is.finite(y)] <- missval
-  if (is.null(offset)) offset <- mean(y,na.rm=TRUE)
-  y <- round((y-offset)/scale)
   # Write some values to this variable on disk.
   ncvar_put( ncnew, x4nc, round(y) )
   ncvar_put( ncnew, x4nc, round(y) )
   ncatt_put( ncnew, x4nc, "add_offset", offset, prec="float" )
   ncatt_put( ncnew, x4nc, "scale_factor", scale, prec="float" ) 
-  ncatt_put( ncnew, x4nc, "_FillValue", -99, prec="float" ) 
-  ncatt_put( ncnew, x4nc, "missing_value", -99, prec="float" ) 
+  ncatt_put( ncnew, x4nc, "_FillValue", missval, prec="float" ) 
+  ncatt_put( ncnew, x4nc, "missing_value", missval, prec="float" ) 
   ncatt_put( ncnew, 0, "description", 
              "Saved from esd using write2ncdf4")
   nc_close(ncnew)
@@ -83,9 +90,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
                            '; types:',paste(attrprec, collapse=', ')))
   
   y <- t(coredata(x))
-  attributes(y) <- NULL
   y[!is.finite(y)] <- missval
-    
   y <- round((y - offset)/scale)
   dim(y) <- c(ns,nt)
   
@@ -105,31 +110,17 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   
 # Define the dimensions
   if (verbose) print('Define dimensions')
-  ##browser()
   if (verbose) print(stid(x))
   dimS <- ncdim_def( name="stid", units="number",vals=c(1:ns))
   dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar)
   
   if (verbose) print('Define variable')
 
-### identify main variables in case of several variables in rda like tmin, tmax - must be implemented
-  ## varname <- as.character(levels(factor(varid(x))))
-  ## split variables
-  ## for (i in 1:length(varname))
-  ##    eval(parse(text=paste('var',i,'<-')))
-
   lon <- lon(x)
   lat <- lat(x)
   alt <- alt(x)
   
-  ## Define variables 
-  ##vars <- NA
-  ##for (i in 1:na) {
-  ##    if (la[i]==ns) 
-  ##        eval(parse(text=paste("var",as.character(i)," <- ncvar_def(atts[",as.character(i),"],units=attrprec[",as.character(i),"],list(dimS),longname=atts[",as.character(i),"])",sep="")))
-  ##}
   if (verbose) print(paste('create netCDF-file',fname))
-  ## browser()
      
   if (verbose) {str(y); print(summary(c(y)))}
   latid <- ncvar_def(name="lat",dim=list(dimS), units="degrees_north", missval=missval,longname="latitude", prec=prec,verbose=verbose)
@@ -141,8 +132,6 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   
   ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),longname=attr(x,'longname')[1], prec="float",compression=9,verbose=verbose)
 
-  ## eval(parse(text= paste("vars <- list(ncvar,",paste(paste('var',c(1:na)[la==ns],sep=""),collapse=","),")",collapse="")))
-  
   ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid)) ## vars)
   ncvar_put( ncid, ncvar, y)
   ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
@@ -154,28 +143,6 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   ncvar_put( ncid, latid, attr(x,"latitude"))
   ncvar_put( ncid, altid, attr(x,"altitude"))
   ncvar_put( ncid, locid, as.array(attr(x,"location")))
-  
-  ## for (i in 1:na) {
-  ##    if (la[i]==ns)
-  ##        eval(parse(text=paste("ncvar_put(ncid,var",as.character(i),",vals=attr(x,atts[",as.character(i),"]))",sep="")))
-  ##    }
-  
-  ## if (verbose) print('save attributes')
-  ## for (i in 1:na) {
-  ##   if ( (la[i]==ns) & !is.na(attr(x,atts[i])[1]) ){
-  ##    if (verbose) print(paste(atts[i],attrprec[i],sep=': '))
-  ##     ncatt_put( ncid, ncvar, atts[i], attr(x,atts[i]), prec=attrprec[i] )
-  ##   }
-  ##}
- 
-  ##if (verbose) print('save global attributes')
-  ##for (i in 1:na) {
-  ##  if (la[i]!=ns) {
-  ##    if (verbose) print(paste(atts[i],attrprec[i],sep=': '))
-  ##    ncatt_put( ncid, 0, atts[i], attr(x,atts[i]), prec=attrprec[i] )
-  ##  }
-  ##}
-
   
   ## global attributes
   ncatt_put( ncid, 0, 'title', paste(levels(factor(attr(x,"info"))),collapse="/"))
