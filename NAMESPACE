@@ -577,6 +577,7 @@ export(track.events)
 export(Track)
 export(Track123)
 export(Trackstats)
+export(Enumerate)
 
 export(trackfilter)
 export(trackfilter.events)

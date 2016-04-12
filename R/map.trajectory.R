@@ -16,9 +16,11 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
       lonlat.trajectory(y,...)
     }
   } else if (type=='density') {
-    map.density.trajectory(y,projection=projection,...)
+    map.density.trajectory(y,projection=projection,verbose=verbose,...)
   } else if (type=='shapes') {
-    map.anomaly.trajectory(y,projection=projection,...)
+    map.anomaly.trajectory(y,projection=projection,verbose=verbose,...)
+  } else if (type=='colors') {
+    segments.trajectory(y,verbose=verbose,...)
   } else print("unkown map type")
 }
 
@@ -39,8 +41,8 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
          col=adjustcolor(col,alpha.f=alpha))
 }
 
-segments.trajectory <- function(x,param="pcent",
-      xlim=NULL,ylim=NULL,colbar=list(pal='budrd',rev=FALSE,n=10,
+segments.trajectory <- function(x,param="month",
+      xlim=NULL,ylim=NULL,colbar=list(pal='rainbow',rev=FALSE,n=10,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
       show.start=FALSE,show.end=FALSE,show.segment=TRUE,
       alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,projection="lonlat",
@@ -147,7 +149,7 @@ segments.trajectory <- function(x,param="pcent",
   par(fig=par0$fig,new=TRUE)
   image.plot(breaks=colbar$breaks,lab.breaks=lab.breaks,horizontal = TRUE,
              legend.only = T, zlim = range(colbar$breaks),
-             col = adjustcolor(colbar$col,alpha.f=min(alpha+0.2,1)), legend.width = 1,
+             col = adjustcolor(colbar$col,alpha.f=0.8), legend.width = 1,
              axis.args = list(cex.axis = 0.8,
               xaxp=c(range(colbar$breaks),n=colbar$n)),
              border = FALSE)
