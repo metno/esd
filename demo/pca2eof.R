@@ -75,6 +75,9 @@ pca2eof <- function(x,verbose=FALSE,xlim=NULL,ylim=NULL) {
   clim  -> attr(y,'mean')
   attr(y,'longitude') <- lon(Z[[1]])
   attr(y,'latitude') <- lat(Z[[1]])
+  attr(y,'old_longitude') <- lon(zc)
+  attr(y,'old_latitude') <- lat(zc)
+  attr(y,'old_altitude') <- alt(zc)
   attr(y,'dimensions') <- c(dim(Z[[1]]),d[2])
   attr(y,'variable') <- varid(x)[1]
   attr(y,'unit') <- unit(x)[1]
@@ -82,6 +85,22 @@ pca2eof <- function(x,verbose=FALSE,xlim=NULL,ylim=NULL) {
   class(y) <- c('eof','field',class(x)[-c(1,2)])
   return(y)
 }
+
+## A function that converts PCA-based DSensemble objects to EOF-based results (gridded)
+as.eof.dsensemble.pca <- function(X,is=NULL,it=NULL,eofs=NULL,verbose=FALSE,...) {
+  if (verbose) print('as.eof.dsensemble.pca')
+  stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
+  if (inherits(X,"eof")) {
+      invisible(X)
+  } else {
+    eof <- pca2eof(X$pca)
+    eof <- subset(eof,pattern=eofs)
+    if (!is.null(is)) eof <- subset(eof,is=is,it=it,verbose=verbose)
+    attr(X,'eof') <- eof    
+    invisible(X)
+  }
+}
+
 
 ## Function for convertin station data to field data vie the computation of PCAs
 ## grididng to EOFs and then transforming the EOFs to field object.

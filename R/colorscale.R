@@ -380,13 +380,14 @@ colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
   return(col)
 }
 
-colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE) {
+colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
+                   mar=c(1,0,0,0),new=TRUE,las=1,cex.axis=0.6,...) {
   if (horiz) {
-    par(xaxt="s",yaxt="n",fig=fig,mar=c(1,0,0,0),new=TRUE,las=1,cex.axis=0.6)
-    image(breaks,1:2,cbind(breaks,breaks),col=col)
+    par(xaxt="s",yaxt="n",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
+    image(breaks,1:2,cbind(breaks,breaks),col=col,cex.axis=cex.axis)
   } else {
-    par(xaxt="n",yaxt="s",fig=fig,mar=c(0,1,0,0),new=TRUE,las=1,cex.axis=0.6)
-    image(1:2,breaks,rbind(breaks,breaks),col=col)
+    par(xaxt="n",yaxt="s",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
+    image(1:2,breaks,rbind(breaks,breaks),col=col,cex.axis=cex.axis)
   }
 }
 
