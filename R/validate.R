@@ -31,7 +31,7 @@ validate.cca <- function(x, ...) {
 }
 
 ## Use rank test to validate the DS.ensemble objects
-validate.dsensemble <- function(x, conf.int=c(0.05,0.95),
+validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
                                 colbar=list(breaks=seq(0,1,by=0.1),cex=1.5,
                                 col=colscal(11,col="t2m",alpha=0.5)),plot=TRUE,verbose=FALSE,...) {
   ranktest <- function(x) {
@@ -56,7 +56,9 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),
   attr(ro,'longname') <- 'Wilcox-test of how observation ranks amongst model results'
   attr(ro,'history') <- history.stamp(x)
   if (is.null(colbar)) colbar <- colbar.ini(ro,verbose=verbose)
-  cols <- colbar$col[round(ro*length(colbar$col))]
+  ic <- round(as.numeric(ro)*length(colbar$col))
+  ic[ic < 1] <- 1; ic[ic > length(colbar$col)] <- length(colbar$col)
+  cols <- colbar$col[ic]
   ## Plot the results
   if(plot) {
     par0 <- par()
@@ -69,7 +71,8 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),
     points(lon(ro),lat(ro),cex=colbar$cex,col='grey')
     good <- (ro > conf.int[1]) & (ro < conf.int[2])
     points(lon(ro)[good],lat(ro)[good],cex=colbar$cex,lwd=2)
-    #text(lon(ro),lat(ro),as.numeric(round(100*ro)),col='grey',cex=0.75)
+#    if (text) text(lon(ro),lat(ro),ic,col='grey',cex=0.75,pos=1)
+    if (text) text(lon(ro),lat(ro),as.numeric(round(ro*100)),col='grey',cex=0.75,pos=1)
     colbar(colbar$breaks,colbar$col,fig=c(0.12,0.15,0.75,0.90))
     par(bty='n',fig=c(0.7,1,0.8,0.95),new=TRUE,xaxt='n')
     hist(ro,breaks=colbar$breaks,col=colbar$col,main='')

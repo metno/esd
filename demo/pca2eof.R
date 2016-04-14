@@ -96,7 +96,7 @@ as.eof.dsensemble.pca <- function(X,is=NULL,it=NULL,eofs=NULL,verbose=FALSE,...)
     eof <- pca2eof(X$pca)
     eof <- subset(eof,pattern=eofs)
     if (!is.null(is)) eof <- subset(eof,is=is,it=it,verbose=verbose)
-    attr(X,'eof') <- eof    
+    X$eof <- eof    
     invisible(X)
   }
 }
