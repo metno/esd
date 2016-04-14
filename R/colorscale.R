@@ -71,14 +71,14 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
         colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1),nd)
       colbar$n <- length(colbar$col)
     }
-
+    
     ## if breaks are null then use pretty 
     if (is.null(colbar$breaks)) { 
         if (verbose) print("pretty is used here to set break values ...")
         if (!is.null(colbar$n))
-            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n+1))
+            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),n=colbar$n+1)
         else 
-            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10))
+            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10),n=10)
         colbar$n <- length(colbar$breaks)-1      
       }
     if (is.null(colbar$n)) colbar$n <- length(colbar$breaks)-1 
