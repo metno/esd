@@ -71,6 +71,7 @@ segments.trajectory <- function(x,param="month",
       param <- AMO()
     } else if (tolower(param)=="t2m") {
       param <- HadCRUT4()
+      index(param) <- as.Date(paste(strftime(index(param),format="%Y-%m"),"-01",sep=""))
     } else if (param %in% colnames(x)) {
       if(sum(colnames(x)==param)==1) {
         p <- matrix(rep(x[,colnames(x)==param],sum(colnames(x)=='lon')),dim(lons))
