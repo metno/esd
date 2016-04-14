@@ -2,7 +2,7 @@
 \alias{validate.dsensemble}
 \alias{validate.eof.comb}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
+\title{Validate
 %%  ~~function to do ... ~~
 }
 \description{
