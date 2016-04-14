@@ -71,7 +71,6 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
     points(lon(ro),lat(ro),cex=colbar$cex,col='grey')
     good <- (ro > conf.int[1]) & (ro < conf.int[2])
     points(lon(ro)[good],lat(ro)[good],cex=colbar$cex,lwd=2)
-#    if (text) text(lon(ro),lat(ro),ic,col='grey',cex=0.75,pos=1)
     if (text) text(lon(ro),lat(ro),as.numeric(round(ro*100)),col='grey',cex=0.75,pos=1)
     colbar(colbar$breaks,colbar$col,fig=c(0.12,0.15,0.75,0.90))
     par(bty='n',fig=c(0.7,1,0.8,0.95),new=TRUE,xaxt='n')
@@ -82,6 +81,7 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
                  expression(p %in% ci),
                  expression(p %notin% ci)),pch=21,lty=0,
            lwd=c(1,2,1),col=c('white','black','grey'),bty='n')
+    par0$cin<-NULL; par0$cra<-NULL; par0$csi<-NULL; par0$cxy<-NULL; par0$din<-NULL; par0$page<-NULL
     par(par0)
   }
   ## return the results
