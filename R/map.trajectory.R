@@ -71,7 +71,6 @@ segments.trajectory <- function(x,param="month",
       param <- AMO()
     } else if (tolower(param)=="t2m") {
       param <- HadCRUT4()
-      index(param) <- as.Date(paste(strftime(index(param),format="%Y-%m"),"-01",sep=""))
     } else if (param %in% colnames(x)) {
       if(sum(colnames(x)==param)==1) {
         p <- matrix(rep(x[,colnames(x)==param],sum(colnames(x)=='lon')),dim(lons))
@@ -109,13 +108,16 @@ segments.trajectory <- function(x,param="month",
     d <- t(apply(x,1,function(y) as.numeric(strftime(seq(strptime(y[colnames(x)=="start"],"%Y%m%d%H"),
                                  strptime(y[colnames(x)=="end"],"%Y%m%d%H"),
                                  length.out=n),"%Y%m%d")) ))
-    param <- subset(param,it=as.Date(strptime(c(min(d),max(d)),format="%Y%m%d")))
-    tp <- as.numeric(strftime(index(param),format="%Y%m%d"))
+    param <- subset(param,it=as.Date(strptime(c(min(d),max(d)),format="%Y%m%d")))    
     if(inherits(param,"month")) {
+      index(param) <- as.Date(paste(strftime(index(param),format="%Y-%m"),"-01",sep=""))
+      tp <- as.numeric(strftime(index(param),format="%Y%m%d"))
       d <- round(d*1E-2)*1E2+1
     } else if(inherits(param,"annual")) {
       d <- round(d*1E-4)
       tp <- as.numeric(index(param))
+    } else {
+      tp <- as.numeric(strftime(index(param),format="%Y%m%d"))
     }
     p <- matrix(rep(NA,length(d)),dim(d))
     for (i in seq(length(tp))) p[d==tp[i]] <- param[tp==tp[i]]
