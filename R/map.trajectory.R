@@ -42,7 +42,7 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
 }
 
 segments.trajectory <- function(x,param="month",
-      xlim=NULL,ylim=NULL,colbar=list(pal='rainbow',rev=FALSE,n=10,
+      xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,n=10,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
       show.start=FALSE,show.end=FALSE,show.segment=TRUE,
       alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,projection="lonlat",
