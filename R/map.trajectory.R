@@ -64,52 +64,79 @@ segments.trajectory <- function(x,param="month",
   if(verbose) print(paste('xlim:',paste(round(xlim),collapse=" - "),
                           ', ylim:',paste(round(ylim),collapse=" - ")))
   lab.breaks <- NULL
-  if(param %in% colnames(x)) {
-    if(sum(colnames(x)==param)==1) {
-      p <- matrix(rep(x[,colnames(x)==param],sum(colnames(x)=='lon')),dim(lons))
-    } else {
-      p <- x[,colnames(x)==param]
-    }
-  } else if (param %in% c("date","year","month","season")) {
-    n <- sum(colnames(x)=="lon")
-    p <- t(apply(x,1,function(y) strftime(seq(strptime(y[colnames(x)=="start"],"%Y%m%d%H"),
+  if(is.character(param)) {
+    if (tolower(param)=="nao") {
+      param <- NAO()
+    } else if (tolower(param)=="amo") {
+      param <- AMO()
+    } else if (tolower(param)=="t2m") {
+      param <- HadCRUT4()
+    } else if (param %in% colnames(x)) {
+      if(sum(colnames(x)==param)==1) {
+        p <- matrix(rep(x[,colnames(x)==param],sum(colnames(x)=='lon')),dim(lons))
+      } else {
+        p <- x[,colnames(x)==param]
+      }
+    } else if (param %in% c("date","year","month","season")) {
+      n <- sum(colnames(x)=="lon")
+      p <- t(apply(x,1,function(y) strftime(seq(strptime(y[colnames(x)=="start"],"%Y%m%d%H"),
                                    strptime(y[colnames(x)=="end"],"%Y%m%d%H"),
                                    length.out=n),"%Y%m%d%H") ))
-    p <- matrix(as.numeric(p),dim(p))
-    if(param=="date") {
-      p <- matrix(round(p*1E-2),dim(p))
-    } else if(param=="year") {
-      p <- matrix(year(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
-    } else if(param=="month") {
-      p <- matrix(month(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
-      colbar$breaks <- seq(1,13)
-      lab.breaks <- c(month.abb,"")
-    } else if(param=="season") {
-      fn <- function(x) as.numeric(switch(x, "12"="1", "1"="1", "2"="1",
+      p <- matrix(as.numeric(p),dim(p))
+      if(param=="date") {
+        p <- matrix(round(p*1E-2),dim(p))
+      } else if(param=="year") {
+        p <- matrix(year(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
+      } else if(param=="month") {
+        p <- matrix(month(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
+        colbar$breaks <- seq(1,13)
+        lab.breaks <- c(month.abb,"")
+      } else if(param=="season") {
+        fn <- function(x) as.numeric(switch(x, "12"="1", "1"="1", "2"="1",
                                "3"="2", "4"="2", "5"="2",
                                "6"="3", "7"="3", "8"="3",
                                "9"="4", "10"="4", "11"="4"))
-      p <- matrix(month(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
-      p <- apply(p, c(1,2), fn)
-      colbar$breaks <- seq(1,5)
-      lab.breaks <- c("djf","mam","jja","son","")
+        p <- matrix(month(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
+        p <- apply(p, c(1,2), fn)
+        colbar$breaks <- seq(1,5)
+        lab.breaks <- c("djf","mam","jja","son","")
+      }
     }
-  } else {
-    print(paste("unknown input param =",param))
-    print(paste("possible choices:"))
-    print(paste(unique(colnames(x),collapse=",")))
-    print("year, month, yearmon, season")
   }
-
+  if(inherits(param,c("zoo","station"))) {
+    n <- sum(colnames(x)=="lon")
+    d <- t(apply(x,1,function(y) as.numeric(strftime(seq(strptime(y[colnames(x)=="start"],"%Y%m%d%H"),
+                                 strptime(y[colnames(x)=="end"],"%Y%m%d%H"),
+                                 length.out=n),"%Y%m%d")) ))
+    param <- subset(param,it=as.Date(strptime(c(min(d),max(d)),format="%Y%m%d")))
+    tp <- as.numeric(strftime(index(param),format="%Y%m%d"))
+    if(inherits(param,"month")) {
+      d <- round(d*1E-2)*1E2+1
+    } else if(inherits(param,"annual")) {
+      d <- round(d*1E-4)
+      tp <- as.numeric(index(param))
+    }
+    p <- matrix(rep(NA,length(d)),dim(d))
+    for (i in seq(length(tp))) p[d==tp[i]] <- param[tp==tp[i]]
+  }
+  #if() {
+  #  print(paste("unknown input param =",param))
+  #  print(paste("possible choices:"))
+  #  print(paste(unique(colnames(x),collapse=",")))
+  #  print("year, month, yearmon, season")
+  #}
+   
   lon0 <- lons[,1:(dim(lons)[2]-1)]
   lon1 <- lons[,2:dim(lons)[2]]
   lat0 <- lats[,1:(dim(lats)[2]-1)]
   lat1 <- lats[,2:dim(lats)[2]]
   pcol <- 0.5*(p[,1:(dim(p)[2]-1)] + p[,2:dim(p)[2]])
-  
+
   colbar <- colbar.ini(p,FUN=NULL,colbar=colbar,verbose=verbose)
   #colbar$col <- adjustcolor(colbar$col,alpha.f=alpha)
   icol <- apply(pcol,2,findInterval,colbar$breaks)
+  icol[icol==0] <- 1
+  icol[icol>colbar$n] <- colbar$n
   col <- matrix(colbar$col[icol],dim(pcol))
 
   data("geoborders",envir=environment())
