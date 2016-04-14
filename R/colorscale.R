@@ -45,7 +45,7 @@ ndig <- function(x) {
   return(y)
 }
 
-colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
+colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
 
   ## Number of digits when rounding off - to get a prettier scale
 

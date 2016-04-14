@@ -97,8 +97,8 @@ if (TRUE) {
   obs <- anomaly(reanalysis,ref=1961:1990)
   index(obs) <- year(obs)
   
-  data(global.t2m.cmip3)
-  global.t2m.cmip3 <- global.t2m.cmip3 - mean(window(global.t2m.cmip3,start=1961,end=1990))
+#  data(global.t2m.cmip3)
+#  global.t2m.cmip3 <- global.t2m.cmip3 - mean(window(global.t2m.cmip3,start=1961,end=1990))
 
   global.t2m.gcm <- list(global.t2m.cmip5.rcp45=global.t2m.cmip5.rcp45,
                          global.t2m.cmip5.rcp85=global.t2m.cmip5.rcp85,
