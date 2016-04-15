@@ -7,7 +7,8 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
   if (verbose) print("map.trajectory")
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
-  if (type=='paths' | is.null(type)) {
+  if(is.null(type)) type <- "paths"
+  if (type=='paths') {
     if (projection=="sphere" | projection=="np" | projection=="sp") {
       if (projection=="np") latR <- 90
       if (projection=="sp") latR <- -90
@@ -48,6 +49,11 @@ segments.trajectory <- function(x,param="month",
       alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,projection="lonlat",
       verbose=FALSE,...) {
   if(verbose) print("segments.trajectory")
+  if(is.null(param)) {
+    map.trajectory(x,type=NULL,xlim=xlim,ylim=ylim,show.start=show.start,
+                   alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,
+                   projection=projection,new=new,verbose=verbose,...)            
+  } else {
   x0 <- x
   if(is.null(dim(x0))) {
     dim(x) <- c(1,length(x0))
@@ -64,7 +70,7 @@ segments.trajectory <- function(x,param="month",
   if(verbose) print(paste('xlim:',paste(round(xlim),collapse=" - "),
                           ', ylim:',paste(round(ylim),collapse=" - ")))
   lab.breaks <- NULL
-  if(is.character(param)) {
+  if (is.character(param)) {
     if (tolower(param)=="nao") {
       param <- NAO()
     } else if (tolower(param)=="amo") {
@@ -201,7 +207,7 @@ segments.trajectory <- function(x,param="month",
   ##     for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
   ##   }
   ## }
-  
+  }
 }
 
 lonlat.trajectory <- function(x,show.start=TRUE,
@@ -271,35 +277,36 @@ lonlat.trajectory <- function(x,show.start=TRUE,
     }
   }
 
-  # draw coastlines
-  #points(mlon,mlat,pch=".",col='grey20',cex=1.4)
-  lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
-  
-  # box marking the spatial subset
-  slon <- attr(x0,'longitude')
-  slat <- attr(x0,'latitude')
+  if(!add) {
+    # draw coastlines
+    #points(mlon,mlat,pch=".",col='grey20',cex=1.4)
+    lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
+    # box marking the spatial subset
+    slon <- attr(x0,'longitude')
+    slat <- attr(x0,'latitude')
     
-  if(verbose & !is.null(slon)) print(paste('subset','lon',paste(slon,collapse="-"),
+    if(verbose & !is.null(slon)) print(paste('subset','lon',paste(slon,collapse="-"),
                           'lat',paste(slat,collapse="-")))
-  if (any(!is.null(c(slat,slon)))) {
-    if(verbose) print('draw subset box')
-    if (sum(is.na(attr(x0,'longitude')))==0) {
-      xlim <- attr(x0,'longitude')
-    } else {
-      xlim <- c(min(x0[,colnames(x0)=='lon']),
+    if (any(!is.null(c(slat,slon)))) {
+      if(verbose) print('draw subset box')
+      if (sum(is.na(attr(x0,'longitude')))==0) {
+        xlim <- attr(x0,'longitude')
+      } else {
+        xlim <- c(min(x0[,colnames(x0)=='lon']),
                 max(x0[,colnames(x0)=='lon']))
-    }
-    if (sum(is.na(attr(x0,'latitude')))==0) {
-      ylim <- attr(x0,'latitude')
-    } else {
-      ylim <- c(min(x0[,colnames(x0)=='lat']),
+      }
+      if (sum(is.na(attr(x0,'latitude')))==0) {
+        ylim <- attr(x0,'latitude')
+      } else {
+        ylim <- c(min(x0[,colnames(x0)=='lat']),
                 max(x0[,colnames(x0)=='lat']))
-    }
-    if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
+      }
+      if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
                             'ylim',paste(ylim,collapse="-")))
-    xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
-    ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
-    lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
+      xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
+      ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
+      lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
+    }
   }
 }
  
