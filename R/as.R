@@ -170,10 +170,15 @@ as.station.pca <- function(x,...) {
     y <- as.station.dsensemble.pca(x,...)
   } else {
     y <- pca2station(x,...)
+    if (!is.null(attr(x,"pca"))) {
+      fit <- attr(x,'pca')
+      coredata(fit) <- coredata(attr(x,'fitted_values'))
+      attr(y,'fitted_values') <- fit
+      attr(y,'original_data') <- attr(x,'original_data')
+    }
   }
   return(y)
 }
-
 
 
 as.station.list <- function(x) {
@@ -563,6 +568,10 @@ as.field.ds <- function(x,iapp=NULL,...) {
   if (inherits(x,'eof')) {
     class(x) <- class(x)[-1]
     y <- as.field.eof(x,iapp,...)
+    ## The residuals
+    fit <- attr(x,'eof')
+    coredata(fit) <- coredata(attr(x,'fitted_values'))
+    attr(y,'fitted_values') <- fit
   } else y <- NULL
   return(y)
 }
@@ -1024,6 +1033,8 @@ as.residual.ds <- function(x){
   attr(y,'aspect') <- 'residual'
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(attr(x,'calibration_data'))
+  ## If the results are a field object, then the residuals are stored as EOFs.
+  if (is.field(x)) y <- as.field(y)
   invisible(y)
 }
 
