@@ -1780,3 +1780,28 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (verbose) print("---")
   invisible(dse.pca)
 }
+
+
+DSensemble.field <- function(y,plot=TRUE,path="CMIP5.monthly/",
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_t2m_mon.nc",
+                           non.stationarity.check=FALSE,
+                           eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,
+                           rel.cord=TRUE,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
+                           pattern="tas_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
+}
+
+DSensemble.station <- function(y,plot=TRUE,path="CMIP5.monthly/",
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_t2m_mon.nc",
+                           non.stationarity.check=FALSE,
+                           eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,
+                           rel.cord=TRUE,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
+                           pattern="tas_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
+}
