@@ -62,7 +62,7 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
   ## Plot the results
   if(plot) {
     par0 <- par()
-    par(bty='n',fig=c(0,1,0,0.85))
+    par(bty='n',fig=c(0,1,0,0.82))
     plot(lon(ro),lat(ro),pch=19,col=cols,cex=colbar$cex,
          xlab='',ylab='',main='Validation of downscaled ensemble',
          sub='p-values from a Wilcox-test: how observation ranks amongst model results')
