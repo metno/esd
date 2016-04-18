@@ -353,12 +353,12 @@ colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
      b=c(0.5,0,0.6,0.2,0.55,0,1,1,1,1,0.75,0.2))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
-  } else if (col[1]=="warm") {
+  } else if (col[1]=="cold") {
     r <- approx(seNorgeT[1,1:7],n=n)$y/255
     g <- approx(seNorgeT[2,1:7],n=n)$y/255
     b <- approx(seNorgeT[3,1:7],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
-  }  else if (col[1]=="cold") {
+  }  else if (col[1]=="warm") {
     r <- approx(seNorgeT[1,8:14],n=n)$y/255
     g <- approx(seNorgeT[2,8:14],n=n)$y/255
     b <- approx(seNorgeT[3,8:14],n=n)$y/255
