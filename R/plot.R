@@ -734,7 +734,7 @@ plot.pca <- function(y,verbose=FALSE,...) {
 }
 
 plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
-                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=1,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
