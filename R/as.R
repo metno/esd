@@ -1043,6 +1043,9 @@ as.residual.ds <- function(x){
     if (is.eof(x) | is.pca(x)) {
       y <- attrcp(attr(x,'original_data'),y)
       class(y) <- class(attr(x,'original_data'))
+      ## Need to reconstruct the data matrix and re-calculate the EOFs/PCAs 
+      if (is.eof(x)) {z <- as.field(y); y <- EOF(z)} else
+      if (is.pca(x)) {z <- as.station(y); y <- PCA(z)}
     }
    } else
   ## If the results are a field object, then the residuals are stored as EOFs.
