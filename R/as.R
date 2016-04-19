@@ -573,8 +573,8 @@ as.field.ds <- function(x,iapp=NULL,...) {
     fit <- attrcp(attr(x,'eof'),fit)
     class(fit) <- class(attr(x,'eof'))
     attr(y,'fitted_values') <- fit
-    attr(y,'original_data') <- attr(y,'original_data')
-    attr(y,'calibration_data') <- attr(y,'calibration_data')
+    attr(y,'original_data') <- attr(x,'original_data')
+    attr(y,'calibration_data') <- attr(x,'calibration_data')
   } else y <- NULL
   return(y)
 }
