@@ -1031,13 +1031,26 @@ as.climatology <- function(x,...) {
 as.residual <- function(x) UseMethod("as.residual")
 
 as.residual.ds <- function(x){
-  y <- attr(x,'original_data') - attr(x,'fitted_values')
+  x0 <- attr(x,'original_data')
+  y <- x0 - attr(x,'fitted_values')
   y <- attrcp(x,y)
   attr(y,'aspect') <- 'residual'
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(attr(x,'calibration_data'))
   ## If the results are a field object, then the residuals are stored as EOFs.
-  if (is.field(x)) y <- as.field(y)
+  if (is.field(x)) y <- as.field(y,lon=lon(x0),lat=lat(x0),
+                                 unit=unit(x0),param=varid(x0),src=src(x0),
+                                 greenwich=attr(x0,'greenwich'),
+                                 longname=attr(x0,'longname'),
+                                 calendar=attr(x0,'calendar'),
+                                 method=attr(x0,'method'),
+                                 info=attr(x0,'info'),
+                                 url=attr(x0,'url'),
+                                 reference=attr(x0,'reference'),
+                                 quality=attr(x0,'quality'),
+                                 type=attr(x0,'type'),
+                                 aspect='residual')
+  y <- history.stamp(x)
   invisible(y)
 }
 
