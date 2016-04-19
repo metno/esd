@@ -5,7 +5,8 @@ globalmean <- function(path='CMIP5.monthly/rcp45',
                      pattern='tas_',select=NULL,lon=NULL,lat=NULL) {
 
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
-  if (!is.null(select)) fnames <- fnames[select]
+  fnms <- list.files(path=path,pattern=pattern)
+  if (!is.null(select)) {fnames <- fnames[select]; fnms <- fnms[select]}
   n <- length(fnames)
   X <- matrix(rep(NA,n*240),n,240)
   yr <- 1861:2100
@@ -24,7 +25,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',
     if (i==1) plot(ya) else lines(ya)
     X[i,i1] <- coredata(ya)[i2]
     gcmnm <- gsub('-','.',gcmnm)
-    cline <- paste('meta$',gcmnm,'.',run,
+    cline <- paste('meta$',fnms[i],
              ' <- list(GCM=attr(gcm,"model_id"),run=run,d=d,calendar=cal,',
              'mean=attr(ya,"climatology"))',sep='')
     eval(parse(text=cline))
@@ -84,7 +85,9 @@ if (FALSE) {
   ceof <- EOF(annual.cycle.cmip5)
   plot(ceof)
   save(file='annual.cycle.cmip5.rda',annual.cycle.cmip5)
+}
 
+if (TRUE) {
   global.t2m.cmip5.rcp45 <- globalmean(path='CMIP5.monthly/rcp45')
   global.t2m.cmip5.rcp85 <- globalmean(path='CMIP5.monthly/rcp85')
   global.t2m.cmip5.rcp26 <- globalmean(path='CMIP5.monthly/rcp26')
@@ -94,8 +97,8 @@ if (FALSE) {
   obs <- anomaly(reanalysis,ref=1961:1990)
   index(obs) <- year(obs)
   
-  data(global.t2m.cmip3)
-  global.t2m.cmip3 <- global.t2m.cmip3 - mean(window(global.t2m.cmip3,start=1961,end=1990))
+#  data(global.t2m.cmip3)
+#  global.t2m.cmip3 <- global.t2m.cmip3 - mean(window(global.t2m.cmip3,start=1961,end=1990))
 
   global.t2m.gcm <- list(global.t2m.cmip5.rcp45=global.t2m.cmip5.rcp45,
                          global.t2m.cmip5.rcp85=global.t2m.cmip5.rcp85,

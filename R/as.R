@@ -170,10 +170,15 @@ as.station.pca <- function(x,...) {
     y <- as.station.dsensemble.pca(x,...)
   } else {
     y <- pca2station(x,...)
+    if (!is.null(attr(x,"pca"))) {
+      fit <- attr(x,'pca')
+      coredata(fit) <- coredata(attr(x,'fitted_values'))
+      attr(y,'fitted_values') <- fit
+      attr(y,'original_data') <- attr(x,'original_data')
+    }
   }
   return(y)
 }
-
 
 
 as.station.list <- function(x) {
@@ -563,6 +568,13 @@ as.field.ds <- function(x,iapp=NULL,...) {
   if (inherits(x,'eof')) {
     class(x) <- class(x)[-1]
     y <- as.field.eof(x,iapp,...)
+    ## The residuals
+    fit <- attr(x,'fitted_values')
+    fit <- attrcp(attr(x,'eof'),fit)
+    class(fit) <- class(attr(x,'eof'))
+    attr(y,'fitted_values') <- fit
+    attr(y,'original_data') <- attr(x,'original_data')
+    attr(y,'calibration_data') <- attr(x,'calibration_data')
   } else y <- NULL
   return(y)
 }
@@ -1019,15 +1031,36 @@ as.climatology <- function(x,...) {
 as.residual <- function(x) UseMethod("as.residual")
 
 as.residual.ds <- function(x){
-  y <- attr(x,'original_data') - attr(x,'fitted_values')
+  x0 <- attr(x,'original_data')
+  y <- x0 - attr(x,'fitted_values')
   y <- attrcp(x,y)
   attr(y,'aspect') <- 'residual'
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(attr(x,'calibration_data'))
+  ## If the results are a field object, then the residuals are stored as EOFs.
+  if (is.field(x)) y <- as.field(y,lon=lon(x0),lat=lat(x0),
+                                 unit=unit(x0),param=varid(x0),src=src(x0),
+                                 greenwich=attr(x0,'greenwich'),
+                                 longname=attr(x0,'longname'),
+                                 calendar=attr(x0,'calendar'),
+                                 method=attr(x0,'method'),
+                                 info=attr(x0,'info'),
+                                 url=attr(x0,'url'),
+                                 reference=attr(x0,'reference'),
+                                 quality=attr(x0,'quality'),
+                                 type=attr(x0,'type'),
+                                 aspect='residual')
+  y <- history.stamp(x)
   invisible(y)
 }
 
 as.residual.station <- function(x){
+  if (!is.null(attr(x,'calibration_data')))
+    y <- as.residual.ds(x) else y <- NULL
+  invisible(y)
+}
+
+as.residual.field <- function(x){
   if (!is.null(attr(x,'calibration_data')))
     y <- as.residual.ds(x) else y <- NULL
   invisible(y)

@@ -121,13 +121,13 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   n[is.na(n)] <- 0
   n <- attrcp(y,n)
   n <- as.station(n,param='trajectory count',unit=unit,
-       longname=paste(attr(x,'longname'),'event count',sep=', '))
+       longname='trajectory count')
   if (inherits(y,"season")) {
     ok <- sapply(month(index(n0)),function(x) x %in% unique(month(t)))
     n <- subset(n,it=ok)
   }
   if (by=='4seasons') n <- as.4seasons(n,FUN=sum)
-  n <- attrcp(y,n)
+  n <- subset(n,it=as.Date(c(min(t),max(t))))
   invisible(n)
 }
 

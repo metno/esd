@@ -1,0 +1,118 @@
+pieslice <- function(theta1,theta2,r=1,
+                      col="grey",density=NULL,lwd=1,border=NULL) {
+  s <- seq(theta1,theta2,by=1)
+  if (is.null(border)) border <- col
+  x <- c(0,cos(0.5*pi - pi*s/180),0); y <- c(0,sin(0.5*pi - pi*s/180),0)
+  polygon(r*x,r*y,col=col,density=density,border=border)
+}
+
+
+
+windrose <- function(x,type="plain",thrshld=0,saw=10,max.scale=NULL,
+            cols=c("grey90","yellow","green","red","blue","darkgreen",
+                   "darkred","magenta","black"),param=c("u","v"),
+                    print=FALSE,month=NULL,fy=1950,ty=NULL,simple=TRUE) {
+  u <- subset(x,param=param[1])
+  v <- subset(x,param=param[2])
+  ff <- sqrt(u^2 + v^2)
+  dd <- arctan(u,v)
+  
+  if (sum(nv(ff))<100) {
+    valid.stations <- stnr(param=param)
+    print(paste("Too little (",sum(ii),") valid data was available"))
+  }
+  
+  ff <- round(ff[ii]/5)*5; dd <- round(dd[ii]/saw)*saw
+  if (sum(is.element(dd,360)>0) & sum(is.element(dd,0)>0)) {
+    dd[is.element(dd,360)] <- 0
+   }
+  par(col.axis="white")
+  plot(c(-1,1),c(-1,1),type="n",
+       main=paste(obs$Location,obs$Stnr[1],type,"wind rose; N=",sum(ii)),
+       sub=paste("Lon=",obs$lon,"E, lat=",obs$lat," N, alt=",
+                 obs$alt,"m.a.s.l.; elements=",param[1],
+                 " & ",param[2],sep=""),xlab="S",ylab="W")
+
+  for (ix in seq(-15,345,by=60)) {
+    pieslice(ix,ix+30)
+  }
+
+  sectors <- as.numeric(rownames(table(dd)))
+  speeds <-  as.numeric(rownames(table(ff)))
+  N <- length(sectors); M <- length(speeds)
+  categories <- matrix(rep(0,M*N),N,M)
+  
+  for (i in 1:N) {
+    iv <- is.element(dd,sectors[i])
+    tab <- table(ff[iv])
+    rn <- as.numeric(rownames(tab))
+    categories[i,is.element(speeds,rn)] <- as.numeric(tab)
+  }
+
+  if (is.null(max.scale)) maxr <- max(rowSums(categories)) else
+                          maxr <- max.scale*sum(c(categories))/100
+  #print(maxr); print(rowSums(categories))
+  nn <- min( round(100*maxr/(sum(c(categories)*5))*5),7 )
+
+  #print(nn)    
+  #print(dd)
+  #print(dim(categories))
+  
+  ii <- 1
+  for (ix in sectors) {
+    for (il in seq(M,1,by=-1)) {
+      r <- sum(categories[ii,1:il])/maxr
+#      print(c(ix,r,categories[ii,il],sum(categories[ii,1:il])))
+      if (sum(categories[ii,il])>0) pie.slice(ix,ix+saw,col=cols[il],r=r)
+    }
+    ii <- ii+1
+  }
+
+  s <- seq(-2*pi,2*pi,length=360)
+  lines(cos(s),sin(s))
+
+  for (i in 1:nn) {
+    iy <- i/nn
+    lines(iy*cos(s),iy*sin(s),lty=3)
+    portion <- maxr/sum(c(categories))*iy
+    text(0,0-iy,round(portion*100),cex=0.5)
+  }
+  mtext("E",4); mtext("N",3)
+
+  legend(-1,-0.6,paste(rownames(table(ff)),"m/s"),
+         col=cols,lty=1,lwd=3,cex=0.75,bg="grey95")
+
+  if (print) print(table(ff,dd))
+  par(col.axis="black")
+
+  if (!is.null(month)) {
+    months <- "Months:"
+    for (i in 1:length(month)) months <- paste(months,month[i])
+    mtext(months,4,adj=1)
+  }
+
+  ivaldata <- is.finite(ff) & is.finite(dd)
+  dates <- paste(obs$Day[ivaldata],obs$Month[ivaldata],
+                 obs$Year[ivaldata],sep=".")
+  fom <- dates[1]; tom <- dates[length(dates)]
+  mtext(paste(fom,tom,sep="-"),1,adj=1,col="grey")
+    
+  invisible(list(ff=ff,dd=dd,categories=categories,
+                 sectors=sectors,obs=obs))
+
+  if (!simple) {
+    par0 <- par()
+    par(fig=c(0.75,0.95,0.75,0.87),new=TRUE,mar=rep(0.5,4),
+        xaxt="n",yaxt="n",cex.axis=0.5,cex.main=0.5)
+    breaks <- seq(0,ceiling(max(ff,na.rm=TRUE))+5,by=5)
+    ff[ff<0]<-0
+    h <- hist(ff,breaks=breaks)
+    #lines(h$mids,h$density,lwd=2,main="wind speed")
+    par(fig=c(0.1,0.3,0.75,0.87),new=TRUE,mar=rep(0.5,4),
+        xaxt="n",yaxt="n",cex.axis=0.5,cex.main=0.5)
+    h <- hist(dd)
+    #lines(h$mids,h$density,lwd=2,main="wind direction")
+    par(par0)
+  }
+}
+

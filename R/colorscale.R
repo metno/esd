@@ -45,7 +45,7 @@ ndig <- function(x) {
   return(y)
 }
 
-colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
+colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
 
   ## Number of digits when rounding off - to get a prettier scale
 
@@ -71,14 +71,14 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=TRUE) {
         colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1),nd)
       colbar$n <- length(colbar$col)
     }
-
+    
     ## if breaks are null then use pretty 
     if (is.null(colbar$breaks)) { 
         if (verbose) print("pretty is used here to set break values ...")
         if (!is.null(colbar$n))
-            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n+1))
+            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),n=colbar$n+1)
         else 
-            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10))
+            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10),n=10)
         colbar$n <- length(colbar$breaks)-1      
       }
     if (is.null(colbar$n)) colbar$n <- length(colbar$breaks)-1 
@@ -353,12 +353,12 @@ colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
      b=c(0.5,0,0.6,0.2,0.55,0,1,1,1,1,0.75,0.2))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
-  } else if (col[1]=="warm") {
+  } else if (col[1]=="cold") {
     r <- approx(seNorgeT[1,1:7],n=n)$y/255
     g <- approx(seNorgeT[2,1:7],n=n)$y/255
     b <- approx(seNorgeT[3,1:7],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
-  }  else if (col[1]=="cold") {
+  }  else if (col[1]=="warm") {
     r <- approx(seNorgeT[1,8:14],n=n)$y/255
     g <- approx(seNorgeT[2,8:14],n=n)$y/255
     b <- approx(seNorgeT[3,8:14],n=n)$y/255
@@ -380,13 +380,14 @@ colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
   return(col)
 }
 
-colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE) {
+colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
+                   mar=c(1,0,0,0),new=TRUE,las=1,cex.axis=0.6,...) {
   if (horiz) {
-    par(xaxt="s",yaxt="n",fig=fig,mar=c(1,0,0,0),new=TRUE,las=1,cex.axis=0.6)
-    image(breaks,1:2,cbind(breaks,breaks),col=col)
+    par(xaxt="s",yaxt="n",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
+    image(breaks,1:2,cbind(breaks,breaks),col=col,cex.axis=cex.axis)
   } else {
-    par(xaxt="n",yaxt="s",fig=fig,mar=c(0,1,0,0),new=TRUE,las=1,cex.axis=0.6)
-    image(1:2,breaks,rbind(breaks,breaks),col=col)
+    par(xaxt="n",yaxt="s",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
+    image(1:2,breaks,rbind(breaks,breaks),col=col,cex.axis=cex.axis)
   }
 }
 

@@ -1594,7 +1594,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   if (plot) {
     par(bty='n')
-    if (is.annual(y)) index(y) <- year(y)
+    index(y) <- year(y)
     plot.zoo(y[,1],lwd=3,main='PC1',ylab='',xlab='',xlim=range(years))
   }
   
@@ -1754,7 +1754,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                   round(quality)))
 
       if (plot) {
-         if (is.annual(y)) index(z) <- year(z)
+        index(y) <- year(y); index(z) <- year(z)
         lines(z[,1],lwd=2,col=cols[qcol])
         lines(y[,1],lwd=3,main='PC1')
       }
@@ -1787,4 +1787,34 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   save(file=file.ds,dse.pca)
   if (verbose) print("---")
   invisible(dse.pca)
+}
+
+
+DSensemble.field <- function(y,plot=TRUE,path="CMIP5.monthly/",
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_t2m_mon.nc",
+                           non.stationarity.check=FALSE,
+                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
+                           it=c('djf','mam','jja','son'),
+                           rel.cord=TRUE,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
+                           pattern="tas_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
+  ## For downscaling gridded predictand. This is a wrap-around which extracts the season or aggregates
+  ## to annual values and then calls the other types for the downscaling.
+  
+}
+
+DSensemble.station <- function(y,plot=TRUE,path="CMIP5.monthly/",
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_t2m_mon.nc",
+                           non.stationarity.check=FALSE,
+                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
+                           it=c('djf','mam','jja','son'),
+                           rel.cord=TRUE,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
+                           pattern="tas_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
 }

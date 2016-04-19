@@ -917,6 +917,7 @@ DS.eof <- function(y,X,mon=NULL,
                  rmtrend=rmtrend,eofs=eofs,
                  area.mean.expl=area.mean.expl,
                  verbose=verbose,...)
+    class(attr(ds,'original_data')) <- class(y)
     invisible(ds)
 }
 
