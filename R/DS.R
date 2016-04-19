@@ -918,6 +918,7 @@ DS.eof <- function(y,X,mon=NULL,
                  area.mean.expl=area.mean.expl,
                  verbose=verbose,...)
     class(attr(ds,'original_data')) <- class(y)
+    class(attr(ds,'fitted_values')) <- class(y)
     invisible(ds)
 }
 

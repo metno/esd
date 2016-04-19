@@ -1037,19 +1037,21 @@ as.residual.ds <- function(x){
   attr(y,'aspect') <- 'residual'
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(attr(x,'calibration_data'))
+  if (is.ds(x)) {
+    ## If the predictand was originally an EOF or PCA product, then
+    ## the residual needs to inherits their attributes
+    if (is.eof(x) | is.pca(x)) {
+      y <- attrcp(attr(x,'original_data'),y)
+      class(y) <- class(attr(x,'original_data'))
+    }
+   } else
   ## If the results are a field object, then the residuals are stored as EOFs.
-  if (is.field(x)) y <- as.field(y,lon=lon(x0),lat=lat(x0),
-                                 unit=unit(x0),param=varid(x0),src=src(x0),
-                                 greenwich=attr(x0,'greenwich'),
-                                 longname=attr(x0,'longname'),
-                                 calendar=attr(x0,'calendar'),
-                                 method=attr(x0,'method'),
-                                 info=attr(x0,'info'),
-                                 url=attr(x0,'url'),
-                                 reference=attr(x0,'reference'),
-                                 quality=attr(x0,'quality'),
-                                 type=attr(x0,'type'),
-                                 aspect='residual')
+  if (is.field(x)) {
+    y <- attrcp(attr(x,'original_data'),y)
+    class(y) <- class(attr(x,'original_data'))
+    y <- as.field(y)
+    attr(y,'aspect') <- 'residual'
+  }
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
