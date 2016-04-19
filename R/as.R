@@ -569,8 +569,9 @@ as.field.ds <- function(x,iapp=NULL,...) {
     class(x) <- class(x)[-1]
     y <- as.field.eof(x,iapp,...)
     ## The residuals
-    fit <- attr(x,'eof')
-    coredata(fit) <- coredata(attr(x,'fitted_values'))
+    fit <- attr(x,'fitted_values')
+    fit <- attrcp(attr(x,'eof'),fit)
+    class(fit) <- class(attr(x,'eof'))
     attr(y,'fitted_values') <- fit
     attr(y,'original_data') <- attr(y,'original_data')
     attr(y,'calibration_data') <- attr(y,'calibration_data')
