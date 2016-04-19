@@ -572,6 +572,8 @@ as.field.ds <- function(x,iapp=NULL,...) {
     fit <- attr(x,'eof')
     coredata(fit) <- coredata(attr(x,'fitted_values'))
     attr(y,'fitted_values') <- fit
+    attr(y,'original_data') <- attr(y,'original_data')
+    attr(y,'calibration_data') <- attr(y,'calibration_data')
   } else y <- NULL
   return(y)
 }
@@ -1039,6 +1041,12 @@ as.residual.ds <- function(x){
 }
 
 as.residual.station <- function(x){
+  if (!is.null(attr(x,'calibration_data')))
+    y <- as.residual.ds(x) else y <- NULL
+  invisible(y)
+}
+
+as.residual.field <- function(x){
   if (!is.null(attr(x,'calibration_data')))
     y <- as.residual.ds(x) else y <- NULL
   invisible(y)
