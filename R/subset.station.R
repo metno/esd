@@ -287,7 +287,7 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
      if (verbose) print(paste('Subset of',sum(ii),'data points between',
                                min(yr),'-',max(yr),'total:',length(yr),
                               'from',length(is),'locations'))
-    
+    is[is.na(is)] <- FALSE
     y <- x[ii,is]
     #if (is.logical(is))
     #    is <- (1:length(is))[is]
