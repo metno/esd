@@ -1042,8 +1042,8 @@ as.residual.ds <- function(x,verbose=TRUE){
     print(summary(c(coredata(attr(x,'fitted_values')))))
     print('differences')
     print(summary(c(coredata(y))))
-#    plot(merge(x0[,1],attr(x,'fitted_values')[,1],y[,1]),plot.type='single',
-#         col=c('black','red','blue')); grid()
+    plot(merge(x0[,1],attr(x,'fitted_values')[,1],y[,1]),plot.type='single',
+         col=c('black','red','blue')); grid()
   }
   y <- attrcp(x,y)
   class(y) <- class(attr(x,'calibration_data'))
@@ -1057,7 +1057,7 @@ as.residual.ds <- function(x,verbose=TRUE){
       ## Need to reconstruct the data matrix and re-calculate the EOFs/PCAs 
       if (is.eof(x)) {
         z <- as.field(y); y <- EOF(z,verbose=verbose)
-        #plot(y); browser()
+        browser()
       } else
       if (is.pca(x)) {
         z <- as.station(y); y <- PCA(z,verbose=verbose)
