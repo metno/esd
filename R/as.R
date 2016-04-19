@@ -1030,43 +1030,40 @@ as.climatology <- function(x,...) {
 
 as.residual <- function(x,...) UseMethod("as.residual")
 
-as.residual.ds <- function(x,verbose=TRUE){
+as.residual.ds <- function(x,verbose=FALSE){
   if (verbose) print('as.residual.ds')
-  x0 <- attr(x,'original_data')
-  y <- x0 - attr(x,'fitted_values')
-  if (verbose) {
-    print(class(x0))
-    print('original data')
-    print(summary(c(coredata(x0))))
-    print('fitted values')
-    print(summary(c(coredata(attr(x,'fitted_values')))))
-    print('differences')
-    print(summary(c(coredata(y))))
-    plot(merge(x0[,1],attr(x,'fitted_values')[,1],y[,1]),plot.type='single',
-         col=c('black','red','blue')); grid()
-  }
-  y <- attrcp(x,y)
-  class(y) <- class(attr(x,'calibration_data'))
   if (is.ds(x)) {
     ## If the predictand was originally an EOF or PCA product, then
     ## the residual needs to inherits their attributes
-    if (is.eof(x) | is.pca(x)) {
       if (verbose) print('Re-construct and re-compute')
-      y <- attrcp(attr(x,'original_data'),y)
-      class(y) <- class(attr(x,'original_data'))
       ## Need to reconstruct the data matrix and re-calculate the EOFs/PCAs 
       if (is.eof(x)) {
-        z <- as.field(y); y <- EOF(z,verbose=verbose)
-        browser()
+        if (verbose) print('eof/field')
+        z0 <- as.field(attr(x,'original_data'))
+        z1 <- as.field(x)
+        y <- z1 - z0
+        y <- attrcp(z0,y); class(y) <- class(z0)
       } else
       if (is.pca(x)) {
-        z <- as.station(y); y <- PCA(z,verbose=verbose)
-      }
-    }
+        if (verbose) print('eof/field')
+        z0 <- as.station(attr(x,'original_data'))
+        z1 <- as.station(x)
+        y <- z1 - z0
+        y <- attrcp(z0,y); class(y) <- class(z0)
+      } else
+      if (is.station(x)) {
+        if (verbose) print('station')
+        z0 <- attr(x,'original_data')
+        z1 <- x
+        y <- z1 - z0
+        y <- attrcp(z0,y); class(y) <- class(z0)
+      }      
    } else
   ## If the results are a field object, then the residuals are stored as EOFs.
   if (is.field(x)) {
     if (verbose) {print('x is a field object'); print(class(x))}
+    y <- as.field(attr(x,'original_data')) -
+         as.field(attr(x,'fitted_values'))
     y <- attrcp(attr(x,'original_data'),y)
     class(y) <- class(attr(x,'original_data'))
     y <- as.field(y)
