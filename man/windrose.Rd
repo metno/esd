@@ -1,10 +1,12 @@
 \name{windrose}
 \alias{windrose}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
+\title{Windrose
 %%  ~~function to do ... ~~
 }
-\description{
+\description{A function that plots windroses from station objects which
+  contain both the zonal and meridional components. These are stored
+  seperately as if they were two different station records. 
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
@@ -63,7 +65,7 @@ windrose(x, saw = 10, max.scale = NULL, cols = c("grey90", "yellow", "green", "r
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-\donrtun{
+\dontrun{
 slp <- station(param='slp',cntr='Denmark',src='ecad')
 uv <- geostrophicwind(subset(slp,is=c(1,3,11)))
 windrose(uv)
