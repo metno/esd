@@ -346,6 +346,13 @@ colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
      b=c(1,1,1,1,1,1,1,1,1,1))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]=="rd") {
+    cols <- list(
+     r=c(1,1,1,1,1,1,1,1,1,1),
+     g=c(1,0.983,0.95,0.9,0.833,0.75,0.65,0.533,0.4,0.250),
+     b=c(0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
   } else if (col[1]=="cat") {
     cols <- list(
      r=c(1,1,1,1,0.7,0.2,0.65,0.1,0.8,0.4,1,0.9),
