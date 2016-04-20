@@ -14,8 +14,9 @@ require(esd)
 dealwithduplicates <- function(precip,t1,action="remove",verbose=FALSE) {
   print('dealwithduplicates')
   idup <- is.element(t1,t1[duplicated(t1)])
-  if (verbose) {print('duplicated dates'); print(t1[idup])}
-  if (verbose) {print('duplicated precipitation'); print(precip[idup])}
+  if (verbose) {str(precip); str(t1); str(idup)
+                print('duplicated dates'); print(t1[idup])
+                print('duplicated precipitation'); print(precip[idup])}
   if (action=="remove") x <- precip[!duplicated(t1)]
   if (action=="NA") {
     precip[idup] <- NA
@@ -160,7 +161,14 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-7,5),lat=c(48,62),alt=NULL,c
         t1 <- t[iii]                            # Time index for single station
         i1 <- is.element(time,t1)               # Synchonise the times for the single station with that of the station group
         i2 <- is.element(t1,time)  
-        if (verbose) print(c(sum(i1),sum(iii)))
+        if (verbose) print(c(sum(i1),sum(iii),length(t1),length(precip)))
+
+        ## Check consistency in the data: data matched with time stamps?
+        if (length(precip)!=length(t1)) {
+          print('------- Some irregularities were detected ---------')
+          print(paste('length(precip)=',length(precip),'!=','length(t1)',length(t1)))
+          browser()
+        }
       ## Quality check!
         ok <- TRUE
         if ( (sum(duplicated(t1))>0) | (sum(iii) != sum(i1)) ) { # Check for duplicated times for single station
@@ -168,10 +176,12 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-7,5),lat=c(48,62),alt=NULL,c
           if (sum(duplicated(t1))>0) {                           # See if it looks OK the duplicated data are removed
             print('Duplicated times!')
             #browser()
-            precip <- dealwithduplicates(precip,t1,action="remove")
+            precip <- dealwithduplicates(precip,t1,action="remove",verbose=TRUE)
             tnd <- t1[!duplicated(t1)]
+            str(precip)
             i1 <- is.element(time,tnd); iii <- is.finite(precip)
             i2 <- is.element(tnd,time)
+            print(paste(sum(iii),'valid rain gauge data points'))
           }
           if (sum(iii) != sum(i1)) {
             print(paste('Still, not matching number of elements!',sum(iii),sum(i1)))
@@ -184,6 +194,7 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-7,5),lat=c(48,62),alt=NULL,c
           print(paste('Something went wrong! sum(i1)=',sum(i1),'sum(i2)=',sum(i2)))
           #browser()
         }
+        print(paste(year(time)[1],sum(i1),'stations'))
       }
     }
 
