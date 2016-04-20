@@ -46,8 +46,8 @@ segments.trajectory <- function(x,param="month",
       xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,n=10,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
       show.start=FALSE,show.end=FALSE,show.segment=TRUE,
-      alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,projection="lonlat",
-      verbose=FALSE,...) {
+      alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,add=FALSE,
+      projection="lonlat",verbose=FALSE,...) {
   if(verbose) print("segments.trajectory")
   
   if(is.null(param)) {
@@ -149,15 +149,16 @@ segments.trajectory <- function(x,param="month",
   mlon <- geoborders$x[ok]
   mlat <- geoborders$y[ok]
 
-  if (new) dev.new(width=8,height=7)
+  if (new & !add) dev.new(width=8,height=7)
   par0 <- par()
-  par(bty="n",fig=c(0,1,0.1,1))
-  plot(mlon,mlat,pch=".",col="grey",main=main,
-    xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
-    xaxt="n",yaxt="n")
-  axis(side=1,at=pretty(xlim,n=12),labels=pretty(xlim,n=12))
-  axis(side=2,at=pretty(ylim,n=12),labels=pretty(ylim,n=12))
-
+  if(!add) {
+    par(bty="n",fig=c(0,1,0.1,1))
+    plot(mlon,mlat,pch=".",col="grey",main=main,
+     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
+     xaxt="n",yaxt="n")
+    axis(side=1,at=pretty(xlim,n=12),labels=pretty(xlim,n=12))
+    axis(side=2,at=pretty(ylim,n=12),labels=pretty(ylim,n=12))
+  }
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
                           sum(!OK),'crossing dateline'))
@@ -177,7 +178,7 @@ segments.trajectory <- function(x,param="month",
   }
   
   # draw coastlines
-  points(mlon,mlat,pch=".",col='grey60',cex=1.4)
+  if(!add) points(mlon,mlat,pch=".",col='grey60',cex=1.4)
   #lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
   
   par(fig=par0$fig,new=TRUE)
