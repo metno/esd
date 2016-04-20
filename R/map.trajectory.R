@@ -150,8 +150,8 @@ segments.trajectory <- function(x,param="month",
   mlat <- geoborders$y[ok]
 
   if (new & !add) dev.new(width=8,height=7)
-  par0 <- par()
   if(!add) {
+    par0 <- par()
     par(bty="n",fig=c(0,1,0.1,1))
     plot(mlon,mlat,pch=".",col="grey",main=main,
      xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
@@ -181,7 +181,7 @@ segments.trajectory <- function(x,param="month",
   if(!add) points(mlon,mlat,pch=".",col='grey60',cex=1.4)
   #lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
   
-  par(fig=par0$fig,new=TRUE)
+  if(!add) par(fig=par0$fig,new=TRUE)
   image.plot(breaks=colbar$breaks,lab.breaks=lab.breaks,horizontal = TRUE,
              legend.only = T, zlim = range(colbar$breaks),
              col = adjustcolor(colbar$col,alpha.f=0.8), legend.width = 1,
@@ -189,7 +189,7 @@ segments.trajectory <- function(x,param="month",
               xaxp=c(range(colbar$breaks),n=colbar$n)),
              border = FALSE)
   
-  par(bty="n",fig=c(0,1,0.1,1),new=TRUE)
+  if(!add) par(bty="n",fig=c(0,1,0.1,1),new=TRUE)
   ## TEST IF MAP IS AT THE SAME PLACE:
   #plot(mlon,mlat,pch=".",col="grey",main=main,
   #     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
