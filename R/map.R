@@ -742,7 +742,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
             cex.lab=0.7,cex.axis=0.7)
         axis(2,at=pretty(lat(x)),col='grey')
         axis(3,at=pretty(lon(x)),col='grey')
-        grid()
+        if(gridlines) grid()
 
         par(col.axis='black',col.lab='black',
             cex.lab=0.5,cex.axis=0.5)

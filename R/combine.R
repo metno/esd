@@ -952,3 +952,20 @@ sp2np <- function(x,SP2NP=TRUE) {
     attr(y,'history') <- history.stamp(x)
     invisible(y)
 }
+
+
+combine.events <- function(x,y) {
+  z <- merge(x,y,all=TRUE)
+  z <- z[!duplicated(z),]
+  z <- attrcp(x,z)
+  class(z) <- class(x)
+  return(z)
+}
+
+combine.trajectory <- function(x,y) {
+  z <- rbind(x,y,all=TRUE)
+  z <- z[!duplicated(z),]
+  z <- attrcp(x,z)
+  class(z) <- class(x)
+  return(z)
+}
