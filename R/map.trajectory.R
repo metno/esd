@@ -52,7 +52,7 @@ segments.trajectory <- function(x,param="month",
   
   if(is.null(param)) {
     map.trajectory(x,type=NULL,xlim=xlim,ylim=ylim,show.start=show.start,
-                   alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,
+                   alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,add=add,
                    projection=projection,new=new,verbose=verbose,...)            
   } else {
   x0 <- x
@@ -244,9 +244,11 @@ lonlat.trajectory <- function(x,show.start=TRUE,show.subset=TRUE,
   if(add) new <- FALSE
   
   if(new) dev.new(width=8,height=7)
-  par(bty="n")
-  if(!add) plot(mlon,mlat,pch=".",col="white",main=main,
-                xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
+  if(!add) {
+    par(bty="n")
+    plot(mlon,mlat,pch=".",col="white",main=main,
+        xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
+  }
   
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
