@@ -15,8 +15,16 @@ windrose <- function(x,saw=10,max.scale=NULL,
   if (verbose) print('windrose')
   ## Extract the zonal and merional components, stored as if they were different stations
   ## Make sure to extract matching records.
-  u <- subset(x,is=is.element(varid(x),param[1]))
-  v <- subset(x,is=is.element(varid(x),param[2]))
+  isu <- is.element(varid(x),param[1])
+  isv <- is.element(varid(x),param[2])
+  if (sum(isu)==0 | sum(isv)==0) {
+    print(paste('windrose: no variables matching',paste(param,collapse=' & ')))
+    print(varid(x))
+    return()
+  }
+  u <- subset(x,is=isu)
+  v <- subset(x,is=isv)
+  
   ulonlat <- paste(lon(u),lat(u))
   vlonlat <- paste(lon(v),lat(v))
   i1 <- is.element(ulonlat,vlonlat)
@@ -39,9 +47,14 @@ windrose <- function(x,saw=10,max.scale=NULL,
     print(paste('Number of locations is ',length(loc(u))))
     print(loc(u))
   }
-  
-  ff <- sqrt(u^2 + v^2)
-  dd <- 180/pi*atan2(u,v)
+
+  if (!is.direction(x)) {
+    ff <- sqrt(u^2 + v^2)
+    dd <- 180/pi*atan2(u,v)
+  } else {
+    ## The function also works if the speed and direction is provided
+    ff <- u; dd <- v
+  }
   ii <- is.finite(ff) & is.finite(dd)
   
   if (sum(ii)<100) {
