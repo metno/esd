@@ -1,7 +1,11 @@
 \name{windrose}
 \alias{windrose}
+\alias{TGW}
+\alias{geostrophicwind}
+\alias{geostrophicwind.station}
+\alias{geostrophicwind.field}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Windrose
+\title{Wind analysis
 %%  ~~function to do ... ~~
 }
 \description{A function that plots windroses from station objects which
@@ -10,6 +14,9 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
+TGW(triangle,f=1.25e-4,rho=1.25,verbose=FALSE)
+geostrophicwind.station(x,f=1.25e-4,rho=1.25,verbose=FALSE)
+geostrophicwind.field(x,f=1.25e-4,rho=1.25,verbose=FALSE)
 windrose(x, saw = 10, max.scale = NULL, cols = c("grey90", "yellow", "green", "red", "blue", "darkgreen", "darkred", "magenta", "black"), param = c("u", "v"), simple = TRUE, verbose = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -67,8 +74,10 @@ windrose(x, saw = 10, max.scale = NULL, cols = c("grey90", "yellow", "green", "r
 \examples{
 \dontrun{
 slp <- station(param='slp',cntr='Denmark',src='ecad')
-uv <- geostrophicwind(subset(slp,is=c(1,3,11)))
+uv <- TGW(subset(slp,is=c(1,3,11)))
+UV <- geostrophicwind(slp)
 windrose(uv)
+map(UV,FUN='q95')
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
