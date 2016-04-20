@@ -223,7 +223,7 @@ geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
   stopifnot(is.field(x))
   if (sum(is.element(varid(x),c('slp','psl'))==0))
     warning(paste('geostrophicwind: param=',varid(x)))
-  if (sum(is.element(unit(slp),'millibars','hPa'))>0) {
+  if (sum(is.element(unit(slp),c('millibars','hPa')))>0) {
     x <- 100*x
     attr(x,'unit') <- 'Pa'
   }

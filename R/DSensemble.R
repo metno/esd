@@ -1380,9 +1380,11 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
   if (verbose) print("predictor")
-  if (is.character(predictor)) 
-    pre <- spatial.avg.field(C.C.eq(retrieve(ncfile=predictor,lon=lon,lat=lat,
-                                             type=type,verbose=verbose))) else
+  if (is.character(predictor)) {
+    pre <- retrieve(ncfile=predictor,lon=lon,lat=lat,type=type,verbose=verbose)
+    if (mask) pre=mask(pre,land=TRUE)
+    pre <- spatial.avg.field(C.C.eq(pre))
+  } else
   if (inherits(predictor,'field')) pre <- spatial.avg.field(predictor)
   rm("predictor"); gc(reset=TRUE)
   normal61.90 <- mean(coredata(subset(pre,it=c(1961,1990))))
