@@ -70,6 +70,7 @@ segments.trajectory <- function(x,param="month",
   if (is.null(ylim)) ylim <- range(lats)
   if(verbose) print(paste('xlim:',paste(round(xlim),collapse=" - "),
                           ', ylim:',paste(round(ylim),collapse=" - ")))
+  #browser()
   lab.breaks <- NULL
   if (is.character(param)) {
     if (tolower(param)=="nao") {
@@ -110,12 +111,13 @@ segments.trajectory <- function(x,param="month",
       }
     }
   }
+
   if(inherits(param,c("zoo","station"))) {
     n <- sum(colnames(x)=="lon")
     d <- t(apply(x,1,function(y) as.numeric(strftime(seq(strptime(y[colnames(x)=="start"],"%Y%m%d%H"),
                                  strptime(y[colnames(x)=="end"],"%Y%m%d%H"),
                                  length.out=n),"%Y%m%d")) ))
-    param <- subset(param,it=as.Date(strptime(c(min(d),max(d)),format="%Y%m%d")))    
+    param <- subset(param,it=year(as.Date(strptime(c(min(d),max(d)),format="%Y%m%d"))))
     if(inherits(param,"month")) {
       index(param) <- as.Date(paste(strftime(index(param),format="%Y-%m"),"-01",sep=""))
       tp <- as.numeric(strftime(index(param),format="%Y%m%d"))
