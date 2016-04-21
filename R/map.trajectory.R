@@ -43,7 +43,7 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
 }
 
 segments.trajectory <- function(x,param="month",
-      xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,n=10,
+      xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
       show.start=FALSE,show.end=FALSE,show.segment=TRUE,
       alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,add=FALSE,
@@ -70,7 +70,7 @@ segments.trajectory <- function(x,param="month",
   if (is.null(ylim)) ylim <- range(lats)
   if(verbose) print(paste('xlim:',paste(round(xlim),collapse=" - "),
                           ', ylim:',paste(round(ylim),collapse=" - ")))
-  #browser()
+  
   lab.breaks <- NULL
   if (is.character(param)) {
     if (tolower(param)=="nao") {
@@ -95,6 +95,14 @@ segments.trajectory <- function(x,param="month",
         p <- matrix(round(p*1E-2),dim(p))
       } else if(param=="year") {
         p <- matrix(year(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
+        yr <- unique(as.vector(p))
+        if(length(yr)<11) {
+          colbar$breaks <- c(yr,max(yr)+1)
+          lab.breaks <- c(yr," ")
+        } else {
+          colbar$breaks <- pretty(yr,n=10)
+          lab.breaks <- colbar$breaks
+        }
       } else if(param=="month") {
         p <- matrix(month(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
         colbar$breaks <- seq(1,13)
@@ -111,7 +119,7 @@ segments.trajectory <- function(x,param="month",
       }
     }
   }
-
+  
   if(inherits(param,c("zoo","station"))) {
     n <- sum(colnames(x)=="lon")
     d <- t(apply(x,1,function(y) as.numeric(strftime(seq(strptime(y[colnames(x)=="start"],"%Y%m%d%H"),
