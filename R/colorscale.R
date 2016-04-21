@@ -108,8 +108,16 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
         pal <- NA ## disactivate pal
         if (!is.null(colbar$breaks)) {  
             if (length(colbar$col) != length(colbar$breaks) - 1) {
-                str(colbar)
-                stop('colbar.ini: This should never happen!')   
+                #str(colbar)
+                #stop('colbar.ini: This should never happen!')   
+                ## This can happen if both col and breaks are specified
+                ## but not consistent with each other. Instead of stopping, 
+                ## col can be interpolated to the right length:
+                col.rgb <- col2rgb(colbar$col)
+                col.rgb <- apply(col.rgb,1,function(x) approx(x,
+                                    n=length(colbar$breaks)-1)$y)
+                if(is.null(dim(col.rgb))) dim(col.rgb) <- c(1,length(col.rgb))
+                colbar$col <- rgb(col.rgb,maxColorValue=255)
             }
         } else if (is.null(colbar$breaks))
           colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),nd)
