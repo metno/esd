@@ -1417,10 +1417,11 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   ## set up results matrix and tables of diagnostics:
   years <- sort(1900:2100)
   m <- length(years)
-  X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
   
   for (is in 1:n) {
+    X <- matrix(rep(NA,N*m),N,m)
+    if (verbose) print(paste('is=',is,'n=',n))
     if (n==1) cal <- data.frame(y=coredata(ys),x=coredata(x)) else
               cal <- data.frame(y=coredata(ys)[,is],x=coredata(x))
     attributes(cal$y) <- NULL
@@ -1468,20 +1469,30 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   
     sd.noise <- max(attr(ys,'standard.error'),sd(wc.model$residuals))
     for (i in 1:N) {
-    #
+      if (verbose) print(ncfiles[select[i]])
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,
-                      type=type,verbose=verbose)
+                      type=type,verbose=FALSE)
+      if (verbose) print(paste('mask=',mask))
       if (mask) gcm <- mask(gcm,land=TRUE)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+      if (verbose) print('spatial average')
       GCM <- spatial.avg.field(C.C.eq(gcm))
       z <- annual(GCM,FUN="max")
       z <- z - mean(coredata(subset(z,it=c(1961,1990)))) + normal61.90
       i1 <- is.element(year(z),years)
       i2 <- is.element(years,year(z))
+      if (verbose) print(c(i,sum(i1),sum(i2)))
       prex <- data.frame(x=coredata(z[i1]))
-      X[i,i2] <- predict(wc.model, newdata=prex) +
-        rnorm(n=sum(i1),sd=sd.noise)
-      print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
+      if (verbose) print(summary(prex))
+      if (verbose) print('prediction')
+      z.predict <- predict(wc.model, newdata=prex) +
+                         rnorm(n=sum(i1),sd=sd.noise)
+      if (length(z.predict) != sum(i2)) {
+        print('problem discovered')
+        browser()
+      }
+      X[i,i2] <- z.predict
+      if (verbose) print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
       #if (sum(i2) != length(years)) 
       if (plot) lines(years[i2],X[i,i2],col=rgb(0,0.3,0.6,0.2))
     }
@@ -1501,10 +1512,12 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     attr(X,'history') <- history.stamp(y)
     class(X) <- c("dsensemble","zoo")
     save(file="DSensemble.rda",X)
-    print("---")
+    if (verbose) print("--- end of iteration")
     if (n>1) eval(parse(text=paste('results$pca.',is,' <- X',sep='')))
   }
   if (n>1) X <- results
+  if (verbose) print(names(X))
+  if (verbose) print("--- Exit DSensemble.mu.worstcase")
   invisible(X)   
 }
 
