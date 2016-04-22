@@ -1,0 +1,6 @@
+retrieve.dsensemble <- function(ncfile,param="auto",type="ncdf4",
+                             path=NULL,verbose=FALSE,...) {
+}
+
+write2ncdf4.dsensemble <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
+                              torg="1970-01-01",missval=-999,verbose=FALSE)

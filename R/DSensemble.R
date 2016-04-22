@@ -1455,7 +1455,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       plot((cal$x - mean(cal$x))/sd(cal$x),type='l',lwd=2,ylab='',xlab='',col=rgb(0.6,0.3,0))
       axis(1,col='grey')
       lines((cal$y - mean(cal$y))/sd(cal$y),type='l',lwd=2,col=rgb(0,0.3,0.6))
-      dev.copy2eps(file='DSensemble.mu.worstcase.cal.eps')
+      #dev.copy2eps(file='DSensemble.mu.worstcase.cal.eps')
     }
 
     if (plot) {

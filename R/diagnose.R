@@ -457,31 +457,43 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   d <- dim(z)
   t <- index(z)
   y <- attr(x,'station')
+  if (is.numeric(index(y))) index(z) <- year(z)
+  if (is.numeric(index(z))) index(y) <- year(y)
+
+  ## Use the same dates
+  yz <- merge( zoo(y), zoo(z),all=FALSE )
+  #plot(yz)
   
   # statistics: past trends
-  i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
-  i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
-  obs <- data.frame(y=y[i1],t=year(y)[i1])
-  #print(summary(obs)); print(sum(i1)); print(sum(i2)); browser()
-  deltaobs <- lm(y ~ t,data=obs)$coefficients[2]*10  # deg C/decade
+#  i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
+#  i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
+#  obs <- data.frame(y=y[i1],t=year(y)[i1])
+  obs <- data.frame(y=c(yz[,1]),t=year(yz))
+  if (verbose) print(summary(obs))
+  if (sum(is.finite(obs$y))==0) {
+    print('diagnose.dsensemble: problem detected'); print(match.call())
+    browser()
+  }
+  deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,2)  # deg C/decade
   deltagcm <- rep(NA,d[2])
+  if (verbose) print(dim(deltagcm))
   for (j in 1:d[2]) {
-    gcm <- data.frame(y=z[i2,j],t=year(z)[i2])
-    deltagcm[j] <- lm(y ~ t,data=gcm)$coefficients[2]*10  # deg C/decade
+    gcm <- data.frame(y=c(yz[,j+1]),t=year(yz))
+    deltagcm[j] <- round(lm(y ~ t,data=gcm)$coefficients[2]*10,2)  # deg C/decade
   }
   robs <- round(100*sum(deltaobs < deltagcm)/d[2])
-  #print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])
-
+  if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
+  
   # apply to extract mean and sd from the selected objects:
-  mu <- apply(coredata(z),1,mean,na.rm=TRUE)
-  si <- apply(coredata(z),1,sd,na.rm=TRUE)
+  mu <- apply(coredata(yz[-1]),1,mean,na.rm=TRUE)
+  si <- apply(coredata(yz[-1]),1,sd,na.rm=TRUE)
   q05 <- qnorm(0.05,mean=mu,sd=si)
   q95 <- qnorm(0.95,mean=mu,sd=si)
   # number of points outside conf. int. (binom)
-  above <- y[i1] > q95[i2]
-  below <- y[i1] < q05[i2]
+  above <- yz[,1] > q95
+  below <- yz[,1] < q05
   outside <- sum(above,na.rm=TRUE) + sum(below,na.rm=TRUE)
-  N <- sum(i1,na.rm=TRUE)
+  N <- sum(is.finite(yz[,1]),na.rm=TRUE)
 
   # add plot title
   if(is.null(main)) main <- attr(x,"variable")
@@ -489,7 +501,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   if (verbose) print('make list object')
   diag <- list(z=z,robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
                outside=outside,above=above,below=below,
-               y=y[i1],N=N,i1=i1,xrange=xrange,yrange=yrange,
+               y=yz[,1],N=N,xrange=xrange,yrange=yrange,
                mu=zoo(mu,order.by=index(x)),
                si=zoo(si,order.by=index(x)),
                q05=zoo(q05,order.by=index(x)),
@@ -498,6 +510,8 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   class(diag) <- c('diagnose','dsensembles','list')
   if (plot) plot(diag,map.show=map.show,map.type=map.type,
                  main=main,verbose=verbose)
+  if (verbose) print(paste('exit diagnose.dsensemble: N=',N,'obs.change=',deltaobs,
+                           'simulated change in [',min(deltagcm),',',max(deltagcm),']'))
   invisible(diag)
   }
 }
