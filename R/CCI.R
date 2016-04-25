@@ -357,7 +357,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       oki <- sum(!is.na(ilon))>=3
       if(oki) {
        dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-      # oki <- sum(dpi>dpmin & !is.na(dpi))>=3 &
+       oki <- sum(dpi>dpmin & !is.na(dpi))>=3 #&
       #   ( mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
       #   (!cyclones & mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) ) 
       }
