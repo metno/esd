@@ -1,7 +1,7 @@
 # K Parding, 29.05.2015
 
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
-                label=NULL,mindistance=5E5,dpmin=1E-3,
+                label=NULL,mindistance=5E5,dpmin=1E-3,pmin=1010,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,verbose=FALSE) {
   if(verbose) print("CCI - calculus based cyclone identification")
@@ -10,8 +10,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
   
-  yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
-  #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  #yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
   if (length(unique(yrmn))>2) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
@@ -358,8 +358,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       if(oki) {
        dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
        oki <- sum(dpi>dpmin & !is.na(dpi))>=3 &
-         ( (cyclones & pcent[i]<mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
-           (!cyclones & pcent[i]>mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) )
+         ( (cyclones & pcent[i]< pmin) | 
+          (!cyclones & pcent[i]> pmin) )
+         #( mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
+         # (!cyclones & mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) ) 
       }
       if (oki) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
