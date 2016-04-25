@@ -21,7 +21,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90
       if(verbose) print(unique(yrmn)[i])
       x.y <- subset(x,it=(yrmn==unique(yrmn)[i]))
       if (is.null(x.tracked)) {
-        x.t <- Track(x.y,x0=x0,lplot=lplot,x0cleanup=FALSE,dE=dE,dN=dN,
+        x.t <- Track(x.y,x0=x0,lplot=lplot,x0,cleanup=FALSE,dE=dE,dN=dN,
                      amax=amax,dmax=dmax,ddmax=ddmax,dmin=dmin,nmax=nmax,nmin=nmin,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y
@@ -197,7 +197,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
     ends <- dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
               (nmin-1)*dh*3600,"%Y%m%d%H") )
     ok <- x01$trackcount>=nmin | ends | starts
-    ok <- ok & (x01$tracklength>=(dmin*1E-3) | ends | starts)
+    ok <- ok & (x01$totaldistance>=(dmin*1E-3) | ends | starts)
     if(!x0cleanup) ok[dnum<min(x$date*1E2 + x$time)]
     y01 <- subset(x01,it=ok)
     rnum <- y01$trajectory
@@ -218,7 +218,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
             dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
                    (nmin-1)*dh*3600,"%Y%m%d%H") )
     ok <- x$trackcount>=nmin | ends
-    ok <- ok & (x$tracklength>=(dmin*1E-3) | ends)
+    ok <- ok & (x$totaldistance>=(dmin*1E-3) | ends)
     y <- subset(x,it=ok,verbose=verbose)
     rnum <- Enumerate(y,verbose=verbose)
     rnum[y$trajectory<=n00 & !is.na(rnum)] <- y$trajectory[y$trajectory<=n00 & !is.na(rnum)]
@@ -417,16 +417,27 @@ Trackstats <- function(x,verbose=FALSE) {
   timestep[order(rnum)] <- ts
   if(verbose) print("tracklength")
   tracklength <- as.numeric(by(y$distance,rnum,function(x) sum(x,na.rm=TRUE)))
+  fn <- function(x) {
+    if(dim(x)[1]==1) {
+      dx <- 0 
+    } else {
+      dx <- distAB(x[1,1],x[1,2],x[dim(x)[1],1],x[dim(x)[1],2])
+    } 
+    return(dx)
+  } 
+  totaldistance <- as.numeric(by(cbind(lons,lats),rnum,fn))*1E-3
   if (any(rnum>nummax)) {
     trackcount$Freq[nummax+1] <- 1
     timestep[rnum==(nummax+1)] <- 1
     tracklength[nummax+1] <- 0
+    totaldistance[nummax+1] <- 0
   }
   y$trackcount <- trackcount$Freq[rnum]
   y$timestep <- timestep
   y$tracklength <- tracklength[rnum]
+  y$totaldistance <- totaldistance[rnum]
   if (length(attr(y,"unit"))<dim(y)[2]) {
-    attr(y,"unit") <- c(attr(y,"unit"),c("count","numeration","km"))
+    attr(y,"unit") <- c(attr(y,"unit"),c("count","numeration","km","km"))
   }
   invisible(y)
 }
