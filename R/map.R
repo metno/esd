@@ -490,7 +490,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                        pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                        pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
                     #cex.axis=1,cex.main=1,cex.lab=1,
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
@@ -852,9 +852,12 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     cols <- adjustcolor(col,alpha=alpha)
     
     if(show.trajectory & "trajectory" %in% colnames(x0)) {
-      xall <- as.trajectory(subset(x0,it=(x0$trajectory %in% x$trajectory)),nmin=3)
-      map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,add=TRUE,col="black",#"steelblue3",
+      xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
+      if(dim(xt)[1]>1) {
+        xall <- as.trajectory(xt,nmin=2)
+        map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,add=TRUE,col="black",#"steelblue3",
           lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
+      }
     }
 
     if(projection=="lonlat") {
