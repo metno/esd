@@ -727,15 +727,16 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose
   invisible(z)
 }
 
-plot.pca <- function(y,verbose=FALSE,...) {
+plot.pca <- function(x,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.pca')
-  attr(y,'longname') <- attr(y,'longname')[1]
-  plot.eof.field(y,verbose=verbose,new=TRUE,...)
+  attr(x,'longname') <- attr(x,'longname')[1]
+  plot.eof.field(x,verbose=verbose,new=new,...)
 }
 
-plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
+plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
+  y <- x # quick fix
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
@@ -779,9 +780,10 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
   }
 }
 
-plot.ds.eof <- function(y,pattern=1,
+plot.ds.eof <- function(x,pattern=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
+  y <- x # quick fix
   if (verbose) print('plot.ds.eof')
   if (is.null(colbar2)) colbar2 <- colbar1 
   attr(y,'longname') <- attr(y,'longname')[1]
@@ -836,8 +838,9 @@ plot.ds.eof <- function(y,pattern=1,
   }  
 }
 
-vis.pca <- function(y,cex=1.5,new=TRUE) {
+vis.pca <- function(x,cex=1.5,new=TRUE) {
 
+  y <- x # quick fix
   col <- colscal(col=varid(y)); nc <- length(col)
   #if (is.precip(y)) col <- rev(col)
   lon <- attr(y,'longitude') 

@@ -1,5 +1,6 @@
 \name{plot}
 \alias{plot.station}
+\alias{plot.pca}
 \alias{vis.map}
 \alias{plot.eof}
 \alias{plot.eof.field}
@@ -30,7 +31,8 @@ plot.station(x, plot.type = "single", new = TRUE, lwd = 3, type = "l",
     pch = 0, main = NULL, col = NULL, xlim = NULL, ylim = NULL, 
     xlab = "", ylab = NULL, errorbar = TRUE, legend.show = FALSE, 
     map.show = TRUE, map.type = "points", mar = c(4.5, 4.5, 0.75, 
-        0.5), alpha = 0.3, verbose = FALSE, ...) 
+        0.5), alpha = 0.3, verbose = FALSE, ...)
+plot.pca(x,verbose=FALSE,new=TRUE,...)
 plot.eof(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,what=c("pc","eof","var"),...)
 plot.eof.field(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,what=c("pc","eof","var"),...)
 plot.eof.comb(x,new=TRUE,xlim=NULL,ylim=NULL,
@@ -39,10 +41,10 @@ plot.eof.var(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=20,...)
 plot.ds(x,plot.type="single",what=c("map","ts"),new=TRUE,
         lwd=3,type='b',pch=0,main=NULL,col=NULL,
         xlim=NULL,ylim=NULL,xlab="",ylab=NULL,...)
-plot.ds.pca(y,pattern=1,verbose=FALSE,
+plot.ds.pca(x,pattern=1,verbose=FALSE,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,...)
-plot.ds.eof(y,pattern=1,
+plot.ds.eof(x,pattern=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...)
 plot.cca(x,icca=1,colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
