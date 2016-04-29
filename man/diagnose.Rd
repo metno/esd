@@ -18,12 +18,16 @@
   The method \code{diagnose.comb.eof} which estimates the difference in
   the mean for the PCs of the calibration data and GCMs over a common
   period in addition to the ratio of standard deviations and lag-one
-  autocorrelation. This 'bias correction' is described in Imbert and
-  Benestad (2005), \emph{Theor. Appl. Clim.}
-  \url{http://dx.doi.org/10.1007/s00704-005-0133-4}.
+  autocorrelation. The x-axis shows the difference in the mean of the
+  segments in the PCs representing the different data souces, the y-axis
+  shows difference in standard deviation and the size of the symbols the
+  difference in the autocorrelation (open symbols if the autocorrelation
+  have different signs).
 
   \code{climvar} estimates the climatological variance, e.g. how the
   inter-annual variance varies with seasons.
+
+ 
 }
 \usage{
 diagnose(x,...)

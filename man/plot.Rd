@@ -50,10 +50,10 @@ plot.cca(x,icca=1,colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=
 plot.field(x,is=NULL,it=NULL,FUN="mean",...)
 plot.spell(x)
 plot.diagnose(x,...) 
-plot.diagnose.comb.eof(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,...)
-plot.diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,...)
+plot.diagnose.comb.eof(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,new=TRUE,...)
+plot.diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,...)
 plot.diagnose.dsensemble(x,map=TRUE,verbose=FALSE,new=TRUE,cex=NULL)
-plot.xval(x,...)
+plot.xval(x,new=TRUE,...)
 plot.dsensemble(x,pts=FALSE,showci=TRUE,showtrend=TRUE,legend=TRUE,it=0,
                 envcol=c(1,0,0,0.2),...)
 plot.nevents(x,verbose=FALSE,...)

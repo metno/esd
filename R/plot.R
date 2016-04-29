@@ -988,7 +988,7 @@ plot.diagnose <- function(x,...) {
   if (inherits(x,"dsensembles")) plot.diagnose.dsensemble(x,...)
 }
 
-plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,...) {
+plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,new=TRUE,...) {
   if (verbose) print('plot.diagnose.comb.eof')
   stopifnot(!missing(x), inherits(x,"diagnose"),
             inherits(x,"eof"),inherits(x,"comb"))
@@ -1001,12 +1001,12 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
   if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
   
   if (!add) {
-    dev.new()
+    if (new) dev.new()
     par(bty="n")
     par0 <- par()
     wt <- 0:360
     plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
-         xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
+         xlab="mean difference",ylab=expression(paste("|",sigma[pre] - sigma[ref],"|/",sigma[pre])),
          main=paste("Diagnostics: common EOFs",attr(x,'variable')),
          xlim=xlim,ylim=ylim,col="grey",
          sub=paste(x$calibrationdata," - ",rownames(x$mean.diff),collapse = "/"))
@@ -1046,18 +1046,18 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
      #points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
   }
   
-  points(abs(x$mean.diff),1-x$sd.ratio,pch=pch,col=col,cex=cex)
+  points(abs(x$mean.diff),x$sd.ratio,pch=pch,col=col,cex=cex)
 
 }
 
-plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.diagnose.matrix')
   x <- as.data.frame(x)
   par(bty="n")
   if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
   if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
   wt <- 0:360
-  dev.new()
+  if (new) dev.new()
   plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
        xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
        main=paste("Diagnostics: common EOFs",attr(x,'variable')),
@@ -1183,8 +1183,8 @@ nam2expr <- function(x) {
 }
 
  
-plot.xval <- function(x,...) {
-  dev.new()
+plot.xval <- function(x,new=TRUE,...) {
+  if (new) dev.new()
   par(bty="n")
   unit <- attr(x,'unit')
   cols <- rgb(seq(0,1,length=20),rep(0,20),rep(0,20))
