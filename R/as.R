@@ -324,7 +324,7 @@ as.station.eof <- function(x,pattern=1:10) {
 }
 
 as.station.dsensemble.pca <- function(x,is=NULL,eofs=NULL,verbose=FALSE,...) {
-  x <- X ## quick fix
+  X <- x ## quick fix
   if (verbose) print('as.station.dsensemble.pca')
   if (inherits(X,"station")) return(X)
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
