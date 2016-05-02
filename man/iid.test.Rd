@@ -5,7 +5,7 @@
 \alias{iid.test.default}
 \alias{n.records}
 \alias{recods}
-\alies{test.records}
+\alias{test.records}
 \title{iid test}
 \description{
 Test for whether a variable is independent and identically distributed (iid). Used in \code{\link{daily.station.records}}.
