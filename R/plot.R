@@ -947,9 +947,9 @@ plot.mvr <- function(x) {
 
 plot.cca <- function(x,icca=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE,...) {
   if (verbose) print("plot.cca")
-  dev.new()
+  if (new) dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
   if (is.null(colbar2)) colbar2 <- colbar1
   map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,verbose=verbose,...)
@@ -963,8 +963,7 @@ plot.cca <- function(x,icca=1,
       fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.8,cex.lab=0.8)
   plot(w.m,col="blue",lwd=2,
        main=paste("CCA pattern ",icca," for ",varid(x),
-         "; r= ",round(r,2),sep=""),
-       xlab="",ylab="")
+         "; r= ",round(r,2),sep=""),xlab="",ylab="")
   lines(v.m,col="red",lwd=2)
 
   par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n",
