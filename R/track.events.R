@@ -21,7 +21,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90
       if(verbose) print(unique(yrmn)[i])
       x.y <- subset(x,it=(yrmn==unique(yrmn)[i]))
       if (is.null(x.tracked)) {
-        x.t <- Track(x.y,x0=x0,lplot=lplot,x0,cleanup=FALSE,dE=dE,dN=dN,
+        x.t <- Track(x.y,x0=x0,lplot=lplot,cleanup.x0=FALSE,dE=dE,dN=dN,
                      amax=amax,dmax=dmax,ddmax=ddmax,dmin=dmin,nmax=nmax,nmin=nmin,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y
@@ -52,14 +52,15 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90
 
 Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
                          nmax=124,nmin=3,dE=0.3,dN=0.2,dmin=1E5,
-                         x0cleanup=TRUE,lplot=FALSE,
+                         cleanup.x0=TRUE,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
   options(digits=12)
   d <- sort(unique(strptime(paste(x$date,x$time),"%Y%m%d %H")))
   dh <- min(as.numeric(difftime(d[2:length(d)],
                                  d[1:(length(d)-1)],units="hours")))
-  #if (!("trajectory" %in% names(x))) {
+  x <- x[!is.na(x[,1]),]
+  if(!is.null(x0)) x0 <- x0[!is.na(x0[,1]),]
   if(verbose) print("calculate trajectories")
   dates <- x$date
   times <- x$time
@@ -97,6 +98,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
     }
     datetime <- strptime(paste(dates,times),"%Y%m%d %H")
     d <- unique(c(datetime[i.start:length(datetime)],d))
+    d <- d[!is.na(d)]
   } else {
     x00 <- NULL
     num[datetime==d[1]] <- 1:sum(datetime==d[1])
@@ -151,7 +153,6 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
   t2 <- Sys.time()
   if (verbose) print(paste('Three step tracking took',
             round(as.numeric(t2-t1,units="secs")),'s'))
-
   tracklen <- data.frame(table(num))
   if (!is.null(nmax)) {
     while (any(tracklen$Freq>nmax)) {
@@ -198,11 +199,14 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
               (nmin-1)*dh*3600,"%Y%m%d%H") )
     ok <- x01$trackcount>=nmin | ends | starts
     ok <- ok & (x01$totaldistance>=(dmin*1E-3) | ends | starts)
-    if(!x0cleanup) ok[dnum<min(x$date*1E2 + x$time)]
+    if(!cleanup.x0) ok[dnum<min(x$date*1E2 + x$time)]
     y01 <- subset(x01,it=ok)
     rnum <- y01$trajectory
-    for(k in unique(x01$trajectory[!ok & !is.na(x01$trajectory)])) {
-      rnum[y01$trajectory>k & !is.na(rnum)] <- rnum[y01$trajectory>k & !is.na(rnum)]-1
+    kvec <- unique(x01$trajectory[!ok])
+    kvec <- kvec[!is.na(kvec)]
+    for(k in kvec) {
+      ik <- y01$trajectory>k & !is.na(rnum)
+      if(any(ik)) rnum[ik] <- rnum[ik] - 1
     }
     dy <- Displacement(y01)
     y01$distance <- dy
@@ -420,6 +424,8 @@ Trackstats <- function(x,verbose=FALSE) {
   fn <- function(x) {
     if(dim(x)[1]==1) {
       dx <- 0 
+    } else if (x[1,1]==x[dim(x)[1],1] & x[1,2]==x[dim(x)[1],2]) {
+      dx <- 0
     } else {
       dx <- distAB(x[1,1],x[1,2],x[dim(x)[1],1],x[dim(x)[1],2])
     } 
@@ -453,9 +459,11 @@ Displacement <- function(x,verbose=FALSE) {
   } else {
     dx <- rep(0,dim(x)[1])
   }
-  for(k in unique(x$trajectory[x$trackcount>1 & x$timestep>1 & dx==0])) {
+  kvec <- unique(x$trajectory[x$trackcount>1 & x$timestep>1 & dx==0])
+  kvec <- kvec[!is.na(kvec)]
+  for(k in kvec) {
     ik <- x$trajectory==k & !is.na(x$trajectory)
-    if(sum(ik)>1) {
+    if(any(ik)) {
       dk <- mapply(distAB,x$lon[ik][1:(sum(ik)-1)],x$lat[ik][1:(sum(ik)-1)],
                           x$lon[ik][2:sum(ik)],x$lat[ik][2:sum(ik)])
       dk[is.na(dk)] <- 0
