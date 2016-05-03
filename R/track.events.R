@@ -463,13 +463,19 @@ Displacement <- function(x,verbose=FALSE) {
   kvec <- kvec[!is.na(kvec)]
   for(k in kvec) {
     ik <- x$trajectory==k & !is.na(x$trajectory)
-    if(any(ik)) {
+    if(sum(ik)>1) {
       dk <- mapply(distAB,x$lon[ik][1:(sum(ik)-1)],x$lat[ik][1:(sum(ik)-1)],
                           x$lon[ik][2:sum(ik)],x$lat[ik][2:sum(ik)])
       dk[is.na(dk)] <- 0
       if(length(dk)<sum(ik)) dk <- c(0,dk)
-      dx[ik] <- dk*1E-3
-    }
+      dkk <- try(dk*1E-3)
+      if (!inherits(dkk,"try-error")) {
+        dx[ik] <- dk*1E-3
+      } else {
+        print("oops, something went wrong!")
+        browser()
+      }
+    } else if (sum(ik)==1) dx[ik] <- 0
   }
   invisible(dx)
 }
