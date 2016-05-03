@@ -299,7 +299,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
 
 
 plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
-                          pattern=1,col=c("red"),
+                          pattern=1,col=c("red"),alpha=1,
                           what=c("pc","eof","var"),colbar=NULL,verbose=FALSE,...) {
   if (verbose) print("plot.eof.comb")
   n <- pattern
@@ -376,11 +376,14 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
       ## Plot the common PCs
       for (i in 1:n.app) {
         z <- attr(x,paste('appendix.',i,sep=""))
-        lines(z[,n],col=col[i],lwd=2)
+        lines(z[,n],col=adjustcolor(col[i],alpha=alpha),lwd=2)
         if (verbose) print(attr(z,'source'))
         if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
                                         src[i+1] <- paste('x',i,sep='.')
       }
+
+      lines(x[,n],lwd=2,col="black")
+
     }
 #    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
 #        mar=rep(0,4),new=TRUE)
