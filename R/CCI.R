@@ -10,8 +10,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
   
-  #yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
-  yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  #yrmn <- year(as.Date(strftime(index(Z),"%Y-%m-%d")))
   if (length(unique(yrmn))>2) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
