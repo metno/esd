@@ -39,7 +39,7 @@ trend.one.station <- function(x,result="trend",model="y ~ t",...) {
 #  print(nattr)
 #  for (i in 1:length(nattr))
 #    attr(y,nattr[i]) <- attr(x,nattr[i])
-  attr(y,'coefficients') <- xt$coefficients
+  attr(y,'coefficients') <- summary(xt)$coefficients
   attr(y,'original data') <-  x
   attr(y,'aspect') <- result
   attr(y,'lm') <- xt

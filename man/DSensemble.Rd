@@ -43,7 +43,10 @@ small scales in the model world is non-stationary.
 Other chekch include cross-validation (\code{\link{crossval}}) and
 diagnostics comparing the sample of ensemble results with the
 observations: number of observations outside the predicted 90-percent
-conf. int and comparing trends for the past. 
+conf. int and comparing trends for the past.
+
+The 'bias correction' is described in Imbert and Benestad (2005), \emph{Theor. Appl. Clim.}
+  \url{http://dx.doi.org/10.1007/s00704-005-0133-4}.
 }
 \usage{
 DSensemble(y,...)

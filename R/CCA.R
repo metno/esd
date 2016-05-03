@@ -12,9 +12,9 @@ CCA.default <- function(Y,X,...) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
 }
 
-CCA.eof <- function(Y,X,i.eofs=1:8) {
+CCA.eof <- function(Y,X,i.eofs=1:8,verbose=FALSE) {
 
-  print("CCA.eof")
+  if (verbose) print("CCA.eof")
   history <- attr(X,'history')
   Z <- Y
   cls <- class(Y)
@@ -51,7 +51,7 @@ CCA.eof <- function(Y,X,i.eofs=1:8) {
   yy <- y[,i.eofs]*attr(Y,'eigenvalues')[i.eofs]
   xx <- x[,i.eofs]*attr(X,'eigenvalues')[i.eofs]
   #print(dim(X1)); print(dim(X2))
-  print("Barnett-Preisendorfer CCA")
+  if (verbose) print("Barnett-Preisendorfer CCA")
   S.yx <- cov(yy,xx)
   #print(round(S.yx,4))
   S.yy <- cov(yy,yy)
@@ -114,15 +114,15 @@ CCA.eof <- function(Y,X,i.eofs=1:8) {
 }
 
 
-CCA.pca <- function(Y,X,i.eofs=1:8) {
-  print("CCA.pca")
+CCA.pca <- function(Y,X,i.eofs=1:8,verbose=FALSE) {
+  if (verbose) print("CCA.pca")
   cca <- CCA.eof(Y,X,i.eofs)
   invisible(cca)
 }
 
-CCA.field <- function(Y,X,i.eofs=1:8) {
+CCA.field <- function(Y,X,i.eofs=1:8,verbose=FALSE) {
   
-  print("CCA.field")
+  if (verbose) print("CCA.field")
   history <- attr(X,'history')
   Z <- Y
   cls <- class(Y)
@@ -156,7 +156,7 @@ CCA.field <- function(Y,X,i.eofs=1:8) {
     a.m <- eigen(M.y)
     b.m <- eigen(M.x)
     # Dimensions of X & Y are ordered as [time,space]
-    print(dim(a.m)); print(dim(b.m))
+    if (verbose) {print(dim(a.m)); print(dim(b.m))}
     w.m <- t(a.m) %*% t(coredata(X))
     v.m <- t(b.m) %*% t(coredata(Y))
     R <- sqrt(Re(x.m$values))

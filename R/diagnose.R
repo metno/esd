@@ -55,8 +55,10 @@ diagnose.comb.eof <- function(x,verbose=FALSE) {
     dm[i,] <- Ym[1:m] - Ym[(m+1):(2*m)]
     # ratio: GCM/original
     # The problem is when the denominator is close to zero...
-    sr[i,] <- (0.01 + Ys[(m+1):(2*m)])/(0.01 + Ys[1:m])
-    ar[i,] <- (0.01 + AR[(m+1):(2*m)])/(0.01 + AR[1:m])*sign(AR[(m+1):(2*m)],AR[1:m])
+    sr.test <- abs((Ys[(m+1):(2*m)] - Ys[1:m])/Ys[(m+1):(2*m)] )
+    sr.test[!is.finite(sr.test)] <- 0
+    sr[i,] <- sr.test
+    ar[i,] <- 0.5*( 2- abs(AR[(m+1):(2*m)] - AR[1:m]) )*sign(AR[(m+1):(2*m)],AR[1:m])
     if (!is.null(attr(z,'source'))) rowname[i] <- attr(z,'source') else
     if (!is.null(attr(z,'model_id'))) rowname[i] <- attr(z,'model_id') 
   }

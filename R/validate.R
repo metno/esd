@@ -34,10 +34,14 @@ validate.cca <- function(x, ...) {
 validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
                                 colbar=list(breaks=seq(0,1,by=0.1),cex=1.5,
                                 col=colscal(11,col="t2m",alpha=0.5)),plot=TRUE,verbose=FALSE,...) {
+  if (verbose) print('validate.dsensemble')
   ranktest <- function(x) {
     ## Convert to zoo objects and extract data for common times
     obs <- zoo(attr(x,'station'))
     res <- zoo(x)
+    ## Make sure both station and results have same date stamp type
+    if (is.numeric(index(res))) index(obs) <- year(obs)
+    if (is.numeric(index(obs))) index(res) <- year(res)
     comb <- coredata(merge(obs,res,all=FALSE))
     ## Find the rank order of the observation amongst the model results for each time step
     rs <- apply(comb,1,function(x) order(x)[1])
@@ -46,15 +50,18 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
     return(p.val)
   }
   
-  if (verbose) print('validate.dsensemble')
+  if (verbose) print('as.station')
   if (inherits(x,'pca')) x <- as.station(x)
+  if (verbose) print('ranktest')
   ro <- unlist(lapply(x,ranktest))
+  if (verbose) print('attributes')
   attr(ro,'longitude') <- unlist(lapply(x,function(x) lon(attr(x,'station'))))
   attr(ro,'latitude') <- unlist(lapply(x,function(x) lat(attr(x,'station'))))
   attr(ro,'variable') <- 'Wilcox-test score'
   attr(ro,'unit') <- 'probability'
   attr(ro,'longname') <- 'Wilcox-test of how observation ranks amongst model results'
   attr(ro,'history') <- history.stamp(x)
+  if (verbose) print('visualisation')
   if (is.null(colbar)) colbar <- colbar.ini(ro,verbose=verbose)
   ic <- round(as.numeric(ro)*length(colbar$col))
   ic[ic < 1] <- 1; ic[ic > length(colbar$col)] <- length(colbar$col)

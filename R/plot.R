@@ -730,15 +730,16 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose
   invisible(z)
 }
 
-plot.pca <- function(y,verbose=FALSE,...) {
+plot.pca <- function(x,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.pca')
-  attr(y,'longname') <- attr(y,'longname')[1]
-  plot.eof.field(y,verbose=verbose,new=TRUE,...)
+  attr(x,'longname') <- attr(x,'longname')[1]
+  plot.eof.field(x,verbose=verbose,new=new,...)
 }
 
-plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
+plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
+  y <- x # quick fix
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
@@ -782,9 +783,10 @@ plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
   }
 }
 
-plot.ds.eof <- function(y,pattern=1,
+plot.ds.eof <- function(x,pattern=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
+  y <- x # quick fix
   if (verbose) print('plot.ds.eof')
   if (is.null(colbar2)) colbar2 <- colbar1 
   attr(y,'longname') <- attr(y,'longname')[1]
@@ -839,8 +841,9 @@ plot.ds.eof <- function(y,pattern=1,
   }  
 }
 
-vis.pca <- function(y,cex=1.5,new=TRUE) {
+vis.pca <- function(x,cex=1.5,new=TRUE) {
 
+  y <- x # quick fix
   col <- colscal(col=varid(y)); nc <- length(col)
   #if (is.precip(y)) col <- rev(col)
   lon <- attr(y,'longitude') 
@@ -947,9 +950,9 @@ plot.mvr <- function(x) {
 
 plot.cca <- function(x,icca=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE,...) {
   if (verbose) print("plot.cca")
-  dev.new()
+  if (new) dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
   if (is.null(colbar2)) colbar2 <- colbar1
   map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,verbose=verbose,...)
@@ -963,8 +966,7 @@ plot.cca <- function(x,icca=1,
       fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.8,cex.lab=0.8)
   plot(w.m,col="blue",lwd=2,
        main=paste("CCA pattern ",icca," for ",varid(x),
-         "; r= ",round(r,2),sep=""),
-       xlab="",ylab="")
+         "; r= ",round(r,2),sep=""),xlab="",ylab="")
   lines(v.m,col="red",lwd=2)
 
   par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n",
@@ -991,7 +993,7 @@ plot.diagnose <- function(x,...) {
   if (inherits(x,"dsensembles")) plot.diagnose.dsensemble(x,...)
 }
 
-plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,...) {
+plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,new=TRUE,...) {
   if (verbose) print('plot.diagnose.comb.eof')
   stopifnot(!missing(x), inherits(x,"diagnose"),
             inherits(x,"eof"),inherits(x,"comb"))
@@ -1004,12 +1006,12 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
   if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
   
   if (!add) {
-    dev.new()
+    if (new) dev.new()
     par(bty="n")
     par0 <- par()
     wt <- 0:360
     plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
-         xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
+         xlab="mean difference",ylab=expression(paste("|",sigma[pre] - sigma[ref],"|/",sigma[pre])),
          main=paste("Diagnostics: common EOFs",attr(x,'variable')),
          xlim=xlim,ylim=ylim,col="grey",
          sub=paste(x$calibrationdata," - ",rownames(x$mean.diff),collapse = "/"))
@@ -1049,18 +1051,18 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
      #points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
   }
   
-  points(abs(x$mean.diff),1-x$sd.ratio,pch=pch,col=col,cex=cex)
+  points(abs(x$mean.diff),x$sd.ratio,pch=pch,col=col,cex=cex)
 
 }
 
-plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.diagnose.matrix')
   x <- as.data.frame(x)
   par(bty="n")
   if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
   if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
   wt <- 0:360
-  dev.new()
+  if (new) dev.new()
   plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
        xlab="mean difference",ylab=expression(1- sigma[p*r*e]/sigma[r*e*f]),
        main=paste("Diagnostics: common EOFs",attr(x,'variable')),
@@ -1186,8 +1188,8 @@ nam2expr <- function(x) {
 }
 
  
-plot.xval <- function(x,...) {
-  dev.new()
+plot.xval <- function(x,new=TRUE,...) {
+  if (new) dev.new()
   par(bty="n")
   unit <- attr(x,'unit')
   cols <- rgb(seq(0,1,length=20),rep(0,20),rep(0,20))
