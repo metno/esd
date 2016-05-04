@@ -1890,14 +1890,15 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         if (verbose) print("warnings : Automatic detection of the calendar")
         calendar.detect <- "auto"
         ##                                     # NOT COMPLETE ...
-        if (grepl("sec",tunit))
-            time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
-        if (grepl("min",tunit))
-            time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
-        if (grepl("hou",tunit))
-            time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
-        if (grepl("day",tunit))
-            time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
+        ##======= KMP 2016-05-04: as.Date does not work for sec, min, hour ========== 
+        #if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
+        #if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
+        #if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
+        if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals
+        if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60
+        if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60*60
+        ##===========================================================================
+        if (grepl("day",tunit)) time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
         if (grepl("mon",tunit)) {
             if (sum(diff(time$vals>1)) < 1) {
                 year1 <- time$vals[1]%/%12 + yorigin
