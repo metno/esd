@@ -1,5 +1,13 @@
 # K Parding, 29.05.2015
 
+data(etopo5)
+altitude <- function(lon=0,lat=60) {
+  i.lon <- which.min(abs(longitude(etopo5)-lon))
+  i.lat <- which.min(abs(latitude(etopo5)-lat))
+  h <- etopo5[i.lon,i.lat]
+  return(mean(h))
+}
+
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
                 label=NULL,mindistance=5E5,dpmin=1E-3,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
@@ -143,7 +151,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   ## Clear temporary objects from working memory
   rm("P.lowx2","P.lowy2"); gc(reset=TRUE)
   
-  ## !!!!TEST!!!!
   ## Cyclones should be deeper than the zonal average slp
   dP <- 0.5*(px+py)
   P.zonal <- apply(dP,c(1,3),FUN="mean",na.rm=TRUE)
@@ -156,8 +163,15 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     lows2[dP<0] <- FALSE
   }
   rm("dP","P.zonal"); gc(reset=TRUE)
-  ## !!!!TEST!!!!
  
+  ## Exclude identified depressions in high altitude regions
+  h <- mapply(altitude,lonXY,latXY)
+  ok <- rep(h<2000,nt)
+  dim(ok) <- c(nx-1,ny-1,nt)
+  ok <-aperm(ok,c(3,1,2))
+  lows1[!ok] <- FALSE
+  lows2[!ok] <- FALSE
+  
   ## Quality flag to keep track of cyclones found with widened mask
   qf <- matrix(rep(0,length(lows1)),dim(lows1))
   qf[lows1] <- 1
@@ -177,6 +191,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   pcent2 <- 0.5*(px[lows2]+py[lows2])
   strength2 <- rank(pcent2)
   if (!cyclones) strength2 <- rank(-pcent2)
+
+  
 
   ## Keep only cyclones that are deeper than pmax
   del1 <- rep(TRUE,length(date1))

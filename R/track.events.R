@@ -7,7 +7,7 @@ track.events <- function(x,verbose=FALSE,...) {
   track.default(x,...)
 }
 
-track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
+track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,ddmax=0.5,amax=90,
                          nmax=124,nmin=3,dE=0.3,dN=0,dmin=5E5,
                          lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
@@ -50,7 +50,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90
   invisible(y)
 }
 
-Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
+Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,ddmax=0.5,amax=90,
                          nmax=124,nmin=3,dE=0.3,dN=0.2,dmin=1E5,
                          cleanup.x0=TRUE,lplot=FALSE,
                          progress=TRUE,verbose=FALSE) {
@@ -259,7 +259,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,ddmax=0.5,amax=90,
   invisible(list(y=y,y0=y0))
 }
 
-Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1.2E6,ddmax=0.5,
+Track123 <- function(step1,step2,step3,n0=0,amax=90,dmax=1E6,ddmax=0.5,
                      dE=0.3,dN=0.2,dmax.s=5E5,nend=NA,lplot=FALSE,
                      verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
