@@ -569,37 +569,46 @@ subset.zoo <- function(x,it=NULL) subset.station(x,it=it)
 ## Modified by A. Mezghani
 ## Last update 06.01.2014 ; 24-02-2014
 
-subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
-                           stid = NULL ,lon = NULL, lat = NULL, 
-                           alt = NULL, cntr = NULL, src = NULL , nmin = NULL,
-                           verbose=FALSE) {
+## subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
+##                            stid = NULL ,lon = NULL, lat = NULL, 
+##                            alt = NULL, cntr = NULL, src = NULL , nmin = NULL,
+##                            verbose=FALSE) {
     
-    ## 
-    if (inherits(it,c('field','station','zoo'))) {
-        ## Match the times of another esd-data object
-        if (verbose) print('field/station')
-        x2 <- matchdate(x,it)
-        return(x2)
-    }
-    ##print("subset.station")
-    if (is.null(dim(x))) {
-        x2 <- default.subset(x,it=it,is=1,verbose=verbose)
-    } else {
-        ##print("here")
-        x2 <- default.subset(x,it=it,is=is,verbose=verbose)
-        ## 
-        ## extra selection based on meta data
-        ## ss <- select.station(x=x2,loc = loc , param = param,  stid = stid ,lon = lon, lat = lat, alt = alt, cntr = cntr, src = src , nmin = nmin)
-        ## 
-        ## if (!is.null(ss)) {
-        ##    id <- is.element(attr(x2,'station_id'),ss$station_id)
-        ## Keep selected stations only
-        ##    x2 <- station.subset(x2,it=it,is=which(id),verbose=verbose)
-        ##}
-        ##if (!is.null(is)) x2 <- station.subset(x2,it=it,is=is,verbose=verbose)
-    }
-    return(x2)
-}
+##     ##
+##     if (inherits(it,c('field','station','zoo'))) {
+##         ## Match the times of another esd-data object
+##         if (verbose) print('it: field/station')
+##         x2 <- matchdate(x,it)
+##         return(x2)
+##     }
+
+##     if (inherits(is,c('field','station','zoo'))) {
+##         ## Match the times of another esd-data object
+##         if (verbose) print('is: field/station')
+##         browser()
+##         x2 <- subset(x,loc=loc(is))
+##         return(x2)
+##     }
+    
+##     ##print("subset.station")
+##     if (is.null(dim(x))) {
+##         x2 <- default.subset(x,it=it,is=1,verbose=verbose)
+##     } else {
+##         ##print("here")
+##         x2 <- default.subset(x,it=it,is=is,verbose=verbose)
+##         ## 
+##         ## extra selection based on meta data
+##         ## ss <- select.station(x=x2,loc = loc , param = param,  stid = stid ,lon = lon, lat = lat, alt = alt, cntr = cntr, src = src , nmin = nmin)
+##         ## 
+##         ## if (!is.null(ss)) {
+##         ##    id <- is.element(attr(x2,'station_id'),ss$station_id)
+##         ## Keep selected stations only
+##         ##    x2 <- station.subset(x2,it=it,is=which(id),verbose=verbose)
+##         ##}
+##         ##if (!is.null(is)) x2 <- station.subset(x2,it=it,is=is,verbose=verbose)
+##     }
+##     return(x2)
+## }
 
 
 default.subregion <- function(x,is=NULL,verbose=FALSE) {
