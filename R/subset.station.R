@@ -16,6 +16,13 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
         x2 <- matchdate(x,it)
         return(x2)
     }
+   
+    if (inherits(is,c('field','station','zoo'))) {
+        ## Match the times of another esd-data object
+        if (verbose) print('is: field/station')
+        x2 <- subset(x,loc=loc(is))
+        return(x2)
+    }
     if (is.character(is)) {
       if (verbose) print('search on location names')
       ## search on location name
