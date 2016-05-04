@@ -8,7 +8,6 @@ frequency.name <- c("year","season","month","day","hours","minutes","seconds")
 frequency.abb  <-  substr(tolower(frequency.name),1,3) 
 
 frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
-## browser()
   if (is.null(data) | is.null(unit)) stop("Both data and unit are mandatory inputs !")
  # Initialize
  freq <- NULL
@@ -26,6 +25,8 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
        freq <- "2weeks"
     if (((dt==1) & grepl("hou",unit)) | ((dt==3600) & grepl("hou",unit)))
        freq <- "hour"
+    if ((dt==6) & grepl("hou",unit))
+       freq <- "6hour"
     if ((dt==12) & grepl("hou",unit))
        freq <- "12hour"
     if ((dt==12) & grepl("mon",unit))
