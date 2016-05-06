@@ -13,11 +13,11 @@ validate.eof.field <- function(x, ...) {
 }
 
 
-validate.eof.comb <- function(x, ...) {
-  plot(x)
+validate.eof.comb <- function(x, new=TRUE,...) {
+  #plot(x)
   zz <- attr(x,'appendix.1')
   
-  dev.new()
+  if (new) dev.new()
   plot(attr(x,'clim'),type="l",main="Mean values")
   lines(attr(zz,'clim'),col="red")
 }

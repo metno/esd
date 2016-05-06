@@ -123,7 +123,7 @@ diagnose.cca <- function(x) {
 }
 
 # Display cross-validation and statistics on the residual
-diagnose.ds <- function(x,plot=FALSE,verbose=FALSE) {
+diagnose.ds <- function(x,plot=FALSE,verbose=FALSE,new=TRUE) {
   
   ## the attribute 'evaluation' contains cross-validation
   if (verbose) print("diagnose.ds")
@@ -153,7 +153,7 @@ diagnose.ds <- function(x,plot=FALSE,verbose=FALSE) {
   
   if (plot) {
     ## Timer series of the residual
-    dev.new()
+    if (new) dev.new()
     par(bty="n",mfcol=c(3,2))
     plot(xval,plot.type='single',col=c("blue","red"),
          main='cross-validation',
@@ -186,7 +186,7 @@ diagnose.ds <- function(x,plot=FALSE,verbose=FALSE) {
 }
 
 # Display cross-validation and statistics on the residual
-diagnose.ds.pca <- function(x,plot=FALSE,verbose=FALSE) {
+diagnose.ds.pca <- function(x,plot=FALSE,verbose=FALSE,new=TRUE) {
 
   ## the attribute 'evaluation' contains cross-validation
   if (verbose) print("diagnose.ds.pca")
@@ -214,31 +214,31 @@ diagnose.ds.pca <- function(x,plot=FALSE,verbose=FALSE) {
   
   if (plot) {
     ## Timer series of the residual
-    dev.new()
+    if (new) dev.new()
     #par(bty="n",mfcol=c(3,2))
     plot(xval,plot.type='single',col=c("blue","red"),
          main='cross-validation',
          sub=paste('correlation=',round(cor(xval)[2,1],2)))
 
-    dev.new()
+    if (new) dev.new()
     matplot(y,type="p",pch=1,main='contains a trend?')
     matplot(trend(y),type="l",add=TRUE)
     
     ## Auto-correlation of the residual
-    dev.new()
+    if (new) dev.new()
     ar <- acf(w,plot=FALSE)
     matplot(ar$lag,ar$acf,type='b',main='Residual ACF?')
 
     ## Residual correlated with original data?
-    dev.new()
+    if (new) dev.new()
     matplot(coredata(z),coredata(y),main='Residual correlated with original data?')
 
     #sp <- spectrum(y,plot=FALSE)
-    dev.new()
+    if (new) dev.new()
     matplot(s$freq,s$spec,type='l',main='Residual power-spectrum',log='xy')
 
     ## Residual normally distributed?
-    dev.new()
+    if (new) dev.new()
     qqnorm(w,main='Residual normally distributed?')
     qqline(w)
 
@@ -518,9 +518,10 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   }
 }
 
-diagnose.dsensemble.list <- function(X,plot=FALSE,is=NULL,eofs=NULL,
+diagnose.dsensemble.list <- function(x,plot=FALSE,is=NULL,eofs=NULL,
                  map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
-                 main=NULL,verbose=FALSE,...) {
+                 main=NULL,verbose=FALSE,new=TRUE,...) {
+  X <- x
   if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
   if (inherits(X,"pca")) X <- as.station(X,is=is,eofs=eofs,verbose=verbose)
@@ -544,7 +545,7 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,is=NULL,eofs=NULL,
   if(is.null(main)) main <- attr(X,"variable")
   if(plot) {
     if(verbose) print("target plot") 
-    dev.new()
+    if (new) dev.new()
     par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=c(2,1,.5),xpd=TRUE)
     plot(c(-100,100),c(-100,100),type="n",
          axes=FALSE,ylab="",xlab="",main=main)
@@ -610,7 +611,7 @@ diagnose.dsensemble.list <- function(X,plot=FALSE,is=NULL,eofs=NULL,
   invisible(d)
 }
 
-diagnose.matrix <- function(X,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print('diagnose.matrix')
-  plot.diagnose.matrix(X,xlim=xlim,ylim=ylim,verbose=verbose)
+  plot.diagnose.matrix(x,xlim=xlim,ylim=ylim,verbose=verbose)
 }
