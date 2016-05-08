@@ -15,8 +15,16 @@ windrose <- function(x,saw=10,max.scale=NULL,
   if (verbose) print('windrose')
   ## Extract the zonal and merional components, stored as if they were different stations
   ## Make sure to extract matching records.
-  u <- subset(x,is=is.element(varid(x),param[1]))
-  v <- subset(x,is=is.element(varid(x),param[2]))
+  isu <- is.element(varid(x),param[1])
+  isv <- is.element(varid(x),param[2])
+  if (sum(isu)==0 | sum(isv)==0) {
+    print(paste('windrose: no variables matching',paste(param,collapse=' & ')))
+    print(varid(x))
+    return()
+  }
+  u <- subset(x,is=isu)
+  v <- subset(x,is=isv)
+  
   ulonlat <- paste(lon(u),lat(u))
   vlonlat <- paste(lon(v),lat(v))
   i1 <- is.element(ulonlat,vlonlat)
@@ -39,9 +47,14 @@ windrose <- function(x,saw=10,max.scale=NULL,
     print(paste('Number of locations is ',length(loc(u))))
     print(loc(u))
   }
-  
-  ff <- sqrt(u^2 + v^2)
-  dd <- 180/pi*atan2(u,v)
+
+  if (!is.direction(x)) {
+    ff <- sqrt(u^2 + v^2)
+    dd <- 180/pi*atan2(u,v)
+  } else {
+    ## The function also works if the speed and direction is provided
+    ff <- u; dd <- v
+  }
   ii <- is.finite(ff) & is.finite(dd)
   
   if (sum(ii)<100) {
@@ -125,3 +138,127 @@ windrose <- function(x,saw=10,max.scale=NULL,
 
 }
 
+## Triangulation of pressure measurements to estimate wind
+TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
+  if (verbose) print("Get stations")
+  stopifnot(is.station(triangle))
+  if (verbose) print(loc(triangle))
+    
+  if (verbose) print(paste("Length of overlapping interval is ",length(index(triangle)),
+                           " from",min(year(triangle)),"to",max(year(triangle))))
+  lons <- lon(triangle); lats <- lat(triangle)
+  scal <- rep(1,3)
+  ## If the units are 'hPa', then need to convert to 'Pa'
+  if (length(unit(triangle))==1) attr(triangle,'unit') <- rep(unit(triangle),3)
+  scal[is.element(unit(triangle),'hPa')] <- 100
+  if (verbose) print(rbind(lons,lats))
+
+  p1 <- scal[1]*coredata(triangle[,1]); p2 <- scal[2]*coredata(triangle[,2]);
+  p3 <- scal[3]*coredata(triangle[,3])
+  
+  ## quality check: only accept values between between 800hPa and 1200hPa
+  if (verbose) {
+    print('Only accept pressures in the range 80000-120000Pa')
+    print(paste('Set',sum(p1 < 80000 | p1 > 120000),
+                sum(p2 < 80000 | p2 > 120000), sum(p3 < 80000 | p3 > 120000),
+                ' outside this range to NA'))
+  }
+  p1[p1 < 80000] <- NA; p1[p1 > 120000] <- NA; 
+  p2[p2 < 80000] <- NA; p2[p2 > 120000] <- NA; 
+  p3[p3 < 80000] <- NA; p3[p3 > 120000] <- NA; 
+  x2 <- distAB(lons[2],lats[1],lons[1],lats[1])
+  y2 <- distAB(lons[1],lats[2],lons[1],lats[1])
+  x3 <- distAB(lons[3],lats[1],lons[1],lats[1])
+  y3 <- distAB(lons[1],lats[3],lons[1],lats[1])
+  if (verbose) print(paste("x2,y2,x3,y3=",x2,y2,x3,y3))
+  
+  a <- ( (p3 - p1) - y3*(p2 - p1)/y2 ) / (x3 - x2 * y3/y2)
+  b <- (p2 - p1 - a*x2)/y2
+  c <- p1
+  if (verbose) {
+    print(c(length(p1),length(p2),length(p3),length(a),length(b),length(c)))
+    print(summary(a)); print(summary(b)); print(summary(c)) 
+  }
+  ug <- -b/(f*rho); attr(ug,"unit") <- "m/s"
+  vg <- a/(f*rho); attr(vg,"unit") <- "m/s"
+
+  ## Also flag values exceeding 50m/s (180km/h) as bad.
+  if (verbose) print(paste('Set to NA:',sum(abs(ug) > 50),'for u;',sum(abs(vg) > 50),'for v'))
+  ug[abs(ug) > 50] <- NA
+  vg[abs(vg) > 50] <- NA
+  
+  if (verbose) print('station object')
+  wind <- zoo(cbind(ug,vg),order.by=index(triangle))
+  wind <- as.station(wind,loc=rep(paste(loc(triangle),collapse='-'),2),
+                     lon=rep(mean(lons),2),lat=rep(mean(lats),2),
+                     param=c('u','v'),unit=rep('m/s',2),
+                     longname=c('zonal geostrophic wind','meridional geostrophic wind'),
+                     info="Derived from triangular geostropic method",
+                     ref="Alexandersson et al. (1998), Glob. Atm. and Oce. Sys., vol 6, pp. 97-120")
+  attr(wind,'history') <- history.stamp(triangle)
+  invisible(wind)
+}
+
+
+
+geostrophicwind<-function(x,...) UseMethod("geostrophicwind")
+
+geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000) {
+  ## Estimates the geostrophic wind from mean sea-level pressure from stations
+  n <- length(loc(x))
+  ## Estimate the different combinations of 3 that is possible from the provided group of
+  ## stations
+  cn <- combn(1:n,3)
+  d <- dim(cn)
+  print(paste(n,'stations gives ',d[2],'combinations of three.'))
+  if (!is.null(nmax)) {
+    ## For very many combination, take a random sample by default.
+    ## Turn this feature off by setting nmax to NULL.
+    if (nmax < d[2]) {
+      print(paste('Taking a random subsample of',nmax,'combinations.',
+                  'If all are wnted, set argument nmax =NULL'))
+      ii <- sample(1:d[2],nmax)
+      cn <- cn[,ii]; d <- dim(cn)
+    }
+  }
+  pb <- txtProgressBar(style=3)
+  for (i in 1:d[2]) {
+    wind <- TGW(subset(x,is=cn[,i]))
+    setTxtProgressBar(pb,i/d[2]) 
+    if (i==1) Wind <- wind else Wind <- combine(Wind,wind)
+  }   
+  invisible(Wind)      
+}
+
+geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
+  ## Estimates the geostrophic wind from mean sea-level pressure field
+  if (verbose) print('geostrophicwind')
+  stopifnot(is.field(x))
+  if (sum(is.element(varid(x),c('slp','psl'))==0))
+    warning(paste('geostrophicwind: param=',varid(x)))
+  if (sum(is.element(unit(x),c('millibars','hPa')))>0) {
+    x <- 100*x
+    attr(x,'unit') <- 'Pa'
+  }
+  dpdx <- dX(x,verbose=verbose)
+  dpdy <- dY(x,verbose=verbose)
+  v <- 1/(f*rho)*dpdx$dZ
+  u <- -1/(f*rho)*dpdy$dZ
+  ws <- sqrt(u^2+v^2)
+  class(ws) <- class(v)
+  ws <- attrcp(v,ws)
+  attr(u,'variable') <- 'u'
+  attr(u,'unit') <- 'm/s'
+  attr(u,'longname') <- 'zonal geostrophic wind'
+  attr(v,'variable') <- 'u'
+  attr(v,'unit') <- 'm/s'
+  attr(v,'longname') <- 'meridional geostrophic wind'
+  attr(ws,'variable') <- 'windspeed'
+  attr(ws,'unit') <- 'm/s'
+  attr(u,'longname') <- 'geostrophic wind speed'
+  attr(u,'history') <- history.stamp(x)
+  attr(v,'history') <- history.stamp(x)
+  attr(ws,'history') <- history.stamp(x)
+      
+  invisible(list(u=u,v=v,ws=ws))
+  }

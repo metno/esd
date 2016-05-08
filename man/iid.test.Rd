@@ -4,6 +4,8 @@
 \alias{iid.test.field}
 \alias{iid.test.default}
 \alias{n.records}
+\alias{recods}
+\alias{test.records}
 \title{iid test}
 \description{
 Test for whether a variable is independent and identically distributed (iid). Used in \code{\link{daily.station.records}}.
@@ -23,6 +25,8 @@ Version 0.7: Added a test checking for dependencies based on an expected number 
 \usage{
 iid.test(x,plot=TRUE,Monte.Carlo=TRUE,N.test=200,reverse.plot.reverse=TRUE)
 n.records(x)
+records(x,verbose=FALSE,diff=FALSE)
+test.records(N=1000)
 }
 \arguments{
     \item{x}{A data matrix or a vector.}

@@ -11,6 +11,7 @@
 \alias{diagnose.distr}
 \alias{diagnose.matrix}
 \alias{diagnose.dsensemble}
+\alias{diagnose.ds.pca}
 \title{Diagnose}
 \description{Diagnose and examine combined fields, MVR, and CCA
   results. applies some tests to check for consistency.
@@ -18,12 +19,16 @@
   The method \code{diagnose.comb.eof} which estimates the difference in
   the mean for the PCs of the calibration data and GCMs over a common
   period in addition to the ratio of standard deviations and lag-one
-  autocorrelation. This 'bias correction' is described in Imbert and
-  Benestad (2005), \emph{Theor. Appl. Clim.}
-  \url{http://dx.doi.org/10.1007/s00704-005-0133-4}.
+  autocorrelation. The x-axis shows the difference in the mean of the
+  segments in the PCs representing the different data souces, the y-axis
+  shows difference in standard deviation and the size of the symbols the
+  difference in the autocorrelation (open symbols if the autocorrelation
+  have different signs).
 
   \code{climvar} estimates the climatological variance, e.g. how the
   inter-annual variance varies with seasons.
+
+ 
 }
 \usage{
 diagnose(x,...)
@@ -33,10 +38,14 @@ diagnose.eof(x)
 diagnose.comb.eof(x)
 diagnose.mvr(x)
 diagnose.cca(x)
-diagnose.ds(x,plot=FALSE)
+diagnose.ds(x,plot=FALSE,verbose=FALSE,new=TRUE)
+diagnose.ds.pca(x,plot=FALSE,verbose=FALSE,new=TRUE)
 diagnose.station(x,it=NULL,...)
-diagnose.matrix(X,xlim=NULL,ylim=NULL,verbose=FALSE,...)
+diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,...)
 diagnose.dsensemble(x,plot=TRUE,map=TRUE,plot.type='target',...)
+diagnose.dsensemble.list(x,plot=FALSE,is=NULL,eofs=NULL,
+                 map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
+                 main=NULL,verbose=FALSE,new=TRUE,...)
 diagnose.distr(x,main='Mean - quantile',
                xlab='mean',ylab=expression(q[p]),
                sub=src(x),probs=0.95)

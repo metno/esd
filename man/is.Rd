@@ -12,6 +12,9 @@
 \alias{is.seasonal}
 \alias{is.annual}
 \alias{is.model}
+\alias{is.wind}
+\alias{is.direction}
+\alias{is.pressure}
 \title{Test for .}
 \description{Computes different formulas
 }
@@ -30,8 +33,10 @@ is.monthly(x)
 is.seasonal(x)
 is.annual(x)
 is.model(model,verbose=FALSE)
+is.wind(x)
+is.direction(x)
+is.pressure(x)
 }
-
 \arguments{
   \item{x}{a data object}
 }

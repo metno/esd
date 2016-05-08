@@ -11,9 +11,31 @@ is.precip <- function(x) {
                           c('mm/day','mm/month','mm/year','mm/season','mm')))))
 }
 
+is.wind <- function(x) {
+  return( (sum(is.element(tolower(varid(x)),
+                        c('u','v','ug','vg','ff')))>0) |
+          (sum(is.element(tolower(unit(x)),
+                          c('m/s','km/k','knots')))))
+}
+
+is.direction <- function(x) {
+  return( (sum(is.element(tolower(varid(x)),c('dd','direction','heading')))>0) |
+          (sum(is.element(tolower(unit(x)),c('degrees','radians')))))
+}
+
+is.pressure <- function(x) {
+  return( (sum(is.element(tolower(varid(x)),
+                        c('p','slp','psl','pressure')))>0) |
+          (sum(is.element(tolower(unit(x)),
+                          c('hPa','Pa','millibar','bar','N/m^2')))))
+}
+
+
 is.field <- function(x) (sum(inherits(x,'field')) > 0)
+is.ds <- function(x) (sum(inherits(x,'ds')) > 0)
+is.dsensemble <- function(x) (sum(inherits(x,'dsensemble')) > 0)
 is.station <- function(x) (sum(inherits(x,'station')) > 0)
-is.eof <- function(x) (sum(inherits(x,'EOF')) > 0)
+is.eof <- function(x) (sum(inherits(x,'eof')) > 0)
 is.pca <- function(x) (sum(inherits(x,'pca')) > 0)
 is.cca <- function(x) (sum(inherits(x,'cca')) > 0)
 is.trajectory <- function(x) (sum(inherits(x,'trajectory')) > 0)

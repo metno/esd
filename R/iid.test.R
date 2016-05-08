@@ -1,7 +1,5 @@
 
 
-
-
 iid.test <- function(x,...) UseMethod("iid.test")
 
 iid.test.station <- function(x,verbose=TRUE,...) {
@@ -286,7 +284,7 @@ daily.station.records <- function(obs,element="precip",subsample=5,tolerance=2,r
   iid.test(dat,rev.plot.rev=rev.plot.rev)
 }
 
-n.records <- function(x) {
+n.records <- function(x,method='records') {
   y <- x
   m <- length(y)
   y[!is.finite(y)] <- min(y,na.rm=TRUE)
@@ -301,6 +299,9 @@ n.records <- function(x) {
   N <- 1; N.rev <- N
   t <- rep(1,m); t.rev <- rep(m,m)
   events <- rep(FALSE,m); events.rev <- events
+  
+  if (method=='foor-loop') {
+  
   events[1] <- TRUE; events.rev[m] <- TRUE
   for (i in 2:m) {
     if (y[i] > max(y[1:(i-1)],na.rm=TRUE)) {
@@ -314,6 +315,7 @@ n.records <- function(x) {
 #      events.rev[length(y)-i] <- TRUE
 #    }
 # Changed 18.08.2006: REB - a more readable code... shouldn't make any difference.
+
     if (y.rev[i] > max(y.rev[1:(i-1)],na.rm=TRUE)) {
       N.rev <- N.rev + 1
       t.rev[N.rev] <- length(y)-i+1
@@ -321,7 +323,47 @@ n.records <- function(x) {
     }
   }
   t <- t[1:N]; t.rev <- t.rev[1:N.rev]
+  } else {
+    events <- records(y)
+    N <- sum(is.finite(events))
+    t <- attr(events,'t')
+    events.rev <- records(y.rev)
+    N.rev <- sum(is.finite(events))
+    t.rev <- attr(events.rev,'t')
+  }
+  
   records <- list(N=N,t=t,events=events,N.rev=N.rev, 
                   t.rev=t.rev, events.rev=events.rev)
   invisible(records)
 } 
+
+## This algorithm is faster than the older code that used for-loop
+
+records <- function(x,verbose=FALSE,diff=FALSE) {
+  n <- length(x)
+  r <- rep(NA,length(x)); t <- rep(NA,length(x))
+  ii <- 1; i <- length(x)
+  while(length(x) >= 1 & i > 1) {
+    z <- max(x,na.rm=TRUE)
+    r[ii] <- z
+    i <- (1:n)[is.element(x,z)][1]
+    t[ii] <- i; ii <- ii  + 1
+    x <- x[1:(i-1)]
+    if (verbose) print(c(z,ii,i,length(x)))
+  }
+
+  t <- t[is.finite(r)]
+  r <- r[is.finite(r)]
+  r <- rev(r)
+  if (diff) r <- c(min(r),diff(r))
+  attr(r,'t') <- rev(t)
+  return(r)
+}
+
+test.records <- function(N=1000) {
+  y <- rnorm(N) + seq(0,1,length=N)
+  rbv <- records(y)
+  plot(y,type='l')
+  points(attr(rbv,'t'),rbv,col='red')
+}
+

@@ -1355,7 +1355,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
 DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                     predictor="ERA40_t2m_mon.nc",
-                                    rcp="rcp45",biascorrect=FALSE,
+                                    rcp="rcp45",biascorrect=FALSE,n=6,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf4',
                                     pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE) {
@@ -1366,8 +1366,18 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
   ## - the calibration uses the Clausius Clapeiron equation to estimate the saturation water vapour
   ## rather than using the temeprature directly.
   if (verbose) print(paste('The predictand: seasonal',FUN))
+
   ys <- aggregate(y,by=month,FUN=FUN)
   ya <- aggregate(y,by=year,FUN=FUN)
+  ns <- 1
+  
+  ## A group of stations - use PCA
+  if (!is.null(dim(ys))) {
+    if (verbose) print('Use PCA for multiple stations')
+    pca.ys <- PCA(ys,n=n)
+    pca.ya <- PCA(ya)
+    ns <- n
+  }
   
   if (!is.na(attr(y,'longitude')) & rel.cord)
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
@@ -1380,102 +1390,134 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
   if (verbose) print("predictor")
-  if (is.character(predictor)) 
-    pre <- spatial.avg.field(C.C.eq(retrieve(ncfile=predictor,lon=lon,lat=lat,
-                                             type=type,verbose=verbose))) else
-  if (inherits(predictor,'field')) pre <- spatial.avg.field(predictor)
+  if (is.character(predictor)) {
+    pre <- retrieve(ncfile=predictor,lon=lon,lat=lat,type=type,verbose=verbose)
+    if (mask) pre=mask(pre,land=TRUE)
+    pre <- spatial.avg.field(C.C.eq(pre))
+  } else if (inherits(predictor,'field')) pre <- spatial.avg.field(predictor)
   rm("predictor"); gc(reset=TRUE)
+  ## Estimate the reference level
   normal61.90 <- mean(coredata(subset(pre,it=c(1961,1990))))
   x <- aggregate(pre,by=month,FUN="mean")
-  cal <- data.frame(y=coredata(ys),x=coredata(x))
-  stats <- cor.test(cal$y,cal$x)
-  wc.model <- lm(y ~ x, data=cal)
-  if (plot) {
-    par(bty='n',cex.sub=0.7,col.sub='grey40')
-    ylim <- range(cal$y,na.rm=TRUE); xlim=range(cal$x,na.rm=TRUE); dy <- diff(ylim)/25
-    plot(cal$x,cal$y,pch=19,cex=1.5,col='grey',
-         ylab=expression(paste(mu,' (mm/day)')),
-         xlab=expression(paste(e[s],' (Pa)')),
-         ylim=ylim,xlim=xlim,
-         main='Worst-case based on seasonal variations',
-         sub=paste(loc(y),' (',round(lon(y),2),'E/',round(lat(y),2),'N; ',alt(y),'m.a.s.l.)',sep=''))
-    segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y+2*attr(ys,'standard.error'),col='grey')
-    segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y-2*attr(ys,'standard.error'),col='grey')
-    segments(x0=cal$x,y0=cal$y,x1=cal$x+2*attr(x,'standard.error'),y1=cal$y,col='grey')
-    segments(x0=cal$x,y0=cal$y,x1=cal$x-2*attr(x,'standard.error'),y1=cal$y,col='grey')
-    points(cal$x,cal$y,pch=19,cex=1.5,col='grey')
-    grid()
-    abline(wc.model)
-    text(xlim[1],ylim[2],paste('Correlation=',round(stats$estimate,2),
-                               '(','p-value=',100*round(stats$p.value,4),'%)'),
-         pos=4,cex=0.7,col='grey')
-    text(xlim[1],ylim[2]-dy,paste('Regression: y=',round(wc.model$coeff[1],4), '+',
-                                  round(wc.model$coeff[2],4), 'x (R2=',
-                                  round(summary(wc.model)$r.squared,2),')'),
-         pos=4,cex=0.7,col='grey')
-    par(new=TRUE,fig=c(0.5,0.97,0.1,0.5),yaxt='n',xpd=TRUE,cex.axis=0.7,col.axis='grey')
-    plot((cal$x - mean(cal$x))/sd(cal$x),type='l',lwd=2,ylab='',xlab='',col=rgb(0.6,0.3,0))
-    axis(1,col='grey')
-    lines((cal$y - mean(cal$y))/sd(cal$y),type='l',lwd=2,col=rgb(0,0.3,0.6))
-    dev.copy2eps(file='DSensemble.mu.worstcase.cal.eps')
-  }  
-  # Ensemble GCMs
+
+  if (verbose) print('Prepare the calibration data')
+  ## Loop over PCAs if multipple stations
+
+  if (n>1) results <- list()
+
+  ## Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
   ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else
-                       N <- length(select)
+                                 N <- length(select)
   if (verbose) print(ncfiles[select])
 
-  # set up results matrix and tables of diagnostics:
+  ## set up results matrix and tables of diagnostics:
   years <- sort(1900:2100)
   m <- length(years)
-  X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
-
-  if (plot) {
-    dev.new()
-    plot(ya,xlim=c(1900,2100),
-         ylim=range(aggregate(y,by=year,FUN='wetmean'),na.rm=TRUE)*c(0.75,1.5))
-    grid()
-    
-  }
   
-  sd.noise <- max(attr(ys,'standard.error'),sd(wc.model$residuals))
-  for (i in 1:N) {
-    #
+  for (is in 1:n) {
+    X <- matrix(rep(NA,N*m),N,m)
+    if (verbose) print(paste('is=',is,'n=',n))
+    if (n==1) cal <- data.frame(y=coredata(ys),x=coredata(x)) else
+              cal <- data.frame(y=coredata(ys)[,is],x=coredata(x))
+    attributes(cal$y) <- NULL
+                        
+    if (is.null(dim(ys))) stats <- cor.test(cal$y,cal$x) else
+    stats <- cor.test(as.matrix(cal)[,1],cal$x)
+    wc.model <- lm(y ~ x, data=cal)
+    if (plot) {
+      par(bty='n',cex.sub=0.7,col.sub='grey40')
+      ylim <- range(cal$y,na.rm=TRUE); xlim=range(cal$x,na.rm=TRUE); dy <- diff(ylim)/25
+      plot(cal$x,cal$y,pch=19,cex=1.5,col='grey',
+           ylab=expression(paste(mu,' (mm/day)')),
+           xlab=expression(paste(e[s],' (Pa)')),
+           ylim=ylim,xlim=xlim,
+           main='Worst-case based on seasonal variations',
+           sub=paste(loc(y),' (',round(lon(y),2),'E/',round(lat(y),2),'N; ',alt(y),'m.a.s.l.)',sep=''))
+      segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y+2*attr(ys,'standard.error'),col='grey')
+      segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y-2*attr(ys,'standard.error'),col='grey')
+      segments(x0=cal$x,y0=cal$y,x1=cal$x+2*attr(x,'standard.error'),y1=cal$y,col='grey')
+      segments(x0=cal$x,y0=cal$y,x1=cal$x-2*attr(x,'standard.error'),y1=cal$y,col='grey')
+      points(cal$x,cal$y,pch=19,cex=1.5,col='grey')
+      grid()
+      abline(wc.model)
+      text(xlim[1],ylim[2],paste('Correlation=',round(stats$estimate,2),
+                                 '(','p-value=',100*round(stats$p.value,4),'%)'),
+           pos=4,cex=0.7,col='grey')
+      text(xlim[1],ylim[2]-dy,paste('Regression: y=',round(wc.model$coeff[1],4), '+',
+                                    round(wc.model$coeff[2],4), 'x (R2=',
+                                    round(summary(wc.model)$r.squared,2),')'),
+           pos=4,cex=0.7,col='grey')
+      par(new=TRUE,fig=c(0.5,0.97,0.1,0.5),yaxt='n',xpd=TRUE,cex.axis=0.7,col.axis='grey')
+      plot((cal$x - mean(cal$x))/sd(cal$x),type='l',lwd=2,ylab='',xlab='',col=rgb(0.6,0.3,0))
+      axis(1,col='grey')
+      lines((cal$y - mean(cal$y))/sd(cal$y),type='l',lwd=2,col=rgb(0,0.3,0.6))
+      #dev.copy2eps(file='DSensemble.mu.worstcase.cal.eps')
+    }
+
+    if (plot) {
+      dev.new()
+      if (n>1) ya <- pca.ya[,is]
+      plot(ya,xlim=c(1900,2100),
+           ylim=range(aggregate(y,by=year,FUN='wetmean'),na.rm=TRUE)*c(0.75,1.5))
+      grid()
+    }
+  
+    sd.noise <- max(attr(ys,'standard.error'),sd(wc.model$residuals))
+    for (i in 1:N) {
+      if (verbose) print(ncfiles[select[i]])
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,
-                      type=type,verbose=verbose)
+                      type=type,verbose=FALSE)
+      if (verbose) print(paste('mask=',mask))
       if (mask) gcm <- mask(gcm,land=TRUE)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+      if (verbose) print('spatial average')
       GCM <- spatial.avg.field(C.C.eq(gcm))
       z <- annual(GCM,FUN="max")
       z <- z - mean(coredata(subset(z,it=c(1961,1990)))) + normal61.90
       i1 <- is.element(year(z),years)
       i2 <- is.element(years,year(z))
+      if (verbose) print(c(i,sum(i1),sum(i2)))
       prex <- data.frame(x=coredata(z[i1]))
-      X[i,i2] <- predict(wc.model, newdata=prex) +
-        rnorm(n=sum(i1),sd=sd.noise)
-      print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
+      if (verbose) print(summary(prex))
+      if (verbose) print('prediction')
+      z.predict <- predict(wc.model, newdata=prex) +
+                         rnorm(n=sum(i1),sd=sd.noise)
+      if (length(z.predict) != sum(i2)) {
+        print('problem discovered')
+        browser()
+      }
+      X[i,i2] <- z.predict
+      if (verbose) print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
       #if (sum(i2) != length(years)) 
-     if (plot) lines(years[i2],X[i,i2],col=rgb(0,0.3,0.6,0.2))
-     }
-  if (plot) lines(aggregate(y,by=year,FUN='wetmean'),col='red',lwd=3)
+      if (plot) lines(years[i2],X[i,i2],col=rgb(0,0.3,0.6,0.2))
+    }
+    if (plot) {
+      if (n==1) lines(aggregate(y,by=year,FUN='wetmean'),col='red',lwd=3) else
+                lines(PCA(aggregate(y,by=year,FUN='wetmean'))[,is],col='red',lwd=3)
+    }
   
-  X <- zoo(t(X),order.by=years)
-  colnames(X) <- gcmnm
-  attr(X,"model_id") <- gcmnm
-  #X <- attrcp(y,X)
-  attr(X,'station') <- aggregate(y,by=year,FUN='wetmean')
-  attr(X,'predictor') <- attr(pre,'source')
-  attr(X,'domain') <- list(lon=lon,lat=lat)
-  attr(X,'path') <- path
-  attr(X,'scenario') <- rcp
-  attr(X,'history') <- history.stamp(y)
-  class(X) <- c("dsensemble","zoo")
-  save(file="DSensemble.rda",X)
-  print("---")
+    X <- zoo(t(X),order.by=years)
+    colnames(X) <- gcmnm
+    attr(X,"model_id") <- gcmnm
+    attr(X,'station') <- aggregate(y,by=year,FUN='wetmean')
+    attr(X,'predictor') <- attr(pre,'source')
+    attr(X,'domain') <- list(lon=lon,lat=lat)
+    attr(X,'path') <- path
+    attr(X,'scenario') <- rcp
+    attr(X,'history') <- history.stamp(y)
+    class(X) <- c("dsensemble","zoo")
+    save(file="DSensemble.rda",X)
+    if (verbose) print("--- end of iteration")
+    if (n>1) eval(parse(text=paste('results$pca.',is,' <- X',sep='')))
+  }
+  if (n>1) X <- results
+  if (verbose) print(names(X))
+  if (verbose) print("--- Exit DSensemble.mu.worstcase")
   invisible(X)   
 }
 

@@ -323,10 +323,8 @@ as.station.eof <- function(x,pattern=1:10) {
   invisible(y)
 }
 
-as.station.dsensemble.pca <- function(x,is=NULL,eofs=NULL,verbose=FALSE,...) {
-  X <- x ## quick fix
+as.station.dsensemble.pca <- function(X,is=NULL,eofs=NULL,verbose=FALSE,...) {
   if (verbose) print('as.station.dsensemble.pca')
-  if (inherits(X,"station")) return(X)
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
   if (inherits(X,"station")) {
       invisible(X)
@@ -1030,48 +1028,28 @@ as.climatology <- function(x,...) {
     invisible(y)
 }
 
-as.residual <- function(x,...) UseMethod("as.residual")
+as.residual <- function(x) UseMethod("as.residual")
 
-as.residual.ds <- function(x,verbose=FALSE){
-  if (verbose) print('as.residual.ds')
-  if (is.ds(x)) {
-    ## If the predictand was originally an EOF or PCA product, then
-    ## the residual needs to inherits their attributes
-      if (verbose) print('Re-construct and re-compute')
-      ## Need to reconstruct the data matrix and re-calculate the EOFs/PCAs 
-      if (is.eof(x)) {
-        if (verbose) print('eof/field')
-        z0 <- as.field(attr(x,'original_data'))
-        z1 <- as.field(x)
-        y <- z1 - z0
-        y <- attrcp(z0,y); class(y) <- class(z0)
-      } else
-      if (is.pca(x)) {
-        if (verbose) print('eof/field')
-        z0 <- as.station(attr(x,'original_data'))
-        z1 <- as.station(x)
-        y <- z1 - z0
-        y <- attrcp(z0,y); class(y) <- class(z0)
-      } else
-      if (is.station(x)) {
-        if (verbose) print('station')
-        z0 <- attr(x,'original_data')
-        z1 <- x
-        y <- z1 - z0
-        y <- attrcp(z0,y); class(y) <- class(z0)
-      }      
-   } else
-  ## If the results are a field object, then the residuals are stored as EOFs.
-  if (is.field(x)) {
-    if (verbose) {print('x is a field object'); print(class(x))}
-    y <- as.field(attr(x,'original_data')) -
-         as.field(attr(x,'fitted_values'))
-    y <- attrcp(attr(x,'original_data'),y)
-    class(y) <- class(attr(x,'original_data'))
-    y <- as.field(y)
-    attr(y,'aspect') <- 'residual'
-  }
+as.residual.ds <- function(x){
+  x0 <- attr(x,'original_data')
+  y <- x0 - attr(x,'fitted_values')
+  y <- attrcp(x,y)
   attr(y,'aspect') <- 'residual'
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- class(attr(x,'calibration_data'))
+  ## If the results are a field object, then the residuals are stored as EOFs.
+  if (is.field(x)) y <- as.field(y,lon=lon(x0),lat=lat(x0),
+                                 unit=unit(x0),param=varid(x0),src=src(x0),
+                                 greenwich=attr(x0,'greenwich'),
+                                 longname=attr(x0,'longname'),
+                                 calendar=attr(x0,'calendar'),
+                                 method=attr(x0,'method'),
+                                 info=attr(x0,'info'),
+                                 url=attr(x0,'url'),
+                                 reference=attr(x0,'reference'),
+                                 quality=attr(x0,'quality'),
+                                 type=attr(x0,'type'),
+                                 aspect='residual')
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }

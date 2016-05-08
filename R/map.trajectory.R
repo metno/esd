@@ -43,16 +43,16 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
 }
 
 segments.trajectory <- function(x,param="month",
-      xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,n=10,
+      xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
       show.start=FALSE,show.end=FALSE,show.segment=TRUE,
-      alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,projection="lonlat",
-      verbose=FALSE,...) {
+      alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,add=FALSE,
+      projection="lonlat",verbose=FALSE,...) {
   if(verbose) print("segments.trajectory")
   
   if(is.null(param)) {
     map.trajectory(x,type=NULL,xlim=xlim,ylim=ylim,show.start=show.start,
-                   alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,
+                   alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,add=add,
                    projection=projection,new=new,verbose=verbose,...)            
   } else {
   x0 <- x
@@ -70,6 +70,7 @@ segments.trajectory <- function(x,param="month",
   if (is.null(ylim)) ylim <- range(lats)
   if(verbose) print(paste('xlim:',paste(round(xlim),collapse=" - "),
                           ', ylim:',paste(round(ylim),collapse=" - ")))
+  
   lab.breaks <- NULL
   if (is.character(param)) {
     if (tolower(param)=="nao") {
@@ -94,6 +95,14 @@ segments.trajectory <- function(x,param="month",
         p <- matrix(round(p*1E-2),dim(p))
       } else if(param=="year") {
         p <- matrix(year(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
+        yr <- unique(as.vector(p))
+        if(length(yr)<11) {
+          colbar$breaks <- c(yr,max(yr)+1)
+          lab.breaks <- c(yr," ")
+        } else {
+          colbar$breaks <- pretty(yr,n=10)
+          lab.breaks <- colbar$breaks
+        }
       } else if(param=="month") {
         p <- matrix(month(as.Date(strptime(p,"%Y%m%d%H"))),dim(p))
         colbar$breaks <- seq(1,13)
@@ -110,12 +119,13 @@ segments.trajectory <- function(x,param="month",
       }
     }
   }
+  
   if(inherits(param,c("zoo","station"))) {
     n <- sum(colnames(x)=="lon")
     d <- t(apply(x,1,function(y) as.numeric(strftime(seq(strptime(y[colnames(x)=="start"],"%Y%m%d%H"),
                                  strptime(y[colnames(x)=="end"],"%Y%m%d%H"),
                                  length.out=n),"%Y%m%d")) ))
-    param <- subset(param,it=as.Date(strptime(c(min(d),max(d)),format="%Y%m%d")))    
+    param <- subset(param,it=year(as.Date(strptime(c(min(d),max(d)),format="%Y%m%d"))))
     if(inherits(param,"month")) {
       index(param) <- as.Date(paste(strftime(index(param),format="%Y-%m"),"-01",sep=""))
       tp <- as.numeric(strftime(index(param),format="%Y%m%d"))
@@ -149,15 +159,16 @@ segments.trajectory <- function(x,param="month",
   mlon <- geoborders$x[ok]
   mlat <- geoborders$y[ok]
 
-  if (new) dev.new(width=8,height=7)
-  par0 <- par()
-  par(bty="n",fig=c(0,1,0.1,1))
-  plot(mlon,mlat,pch=".",col="grey",main=main,
-    xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
-    xaxt="n",yaxt="n")
-  axis(side=1,at=pretty(xlim,n=12),labels=pretty(xlim,n=12))
-  axis(side=2,at=pretty(ylim,n=12),labels=pretty(ylim,n=12))
-
+  if (new & !add) dev.new(width=8,height=7)
+  if(!add) {
+    par0 <- par()
+    par(bty="n",fig=c(0,1,0.1,1))
+    plot(mlon,mlat,pch=".",col="grey",main=main,
+     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
+     xaxt="n",yaxt="n")
+    axis(side=1,at=pretty(xlim,n=12),labels=pretty(xlim,n=12))
+    axis(side=2,at=pretty(ylim,n=12),labels=pretty(ylim,n=12))
+  }
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
                           sum(!OK),'crossing dateline'))
@@ -177,10 +188,10 @@ segments.trajectory <- function(x,param="month",
   }
   
   # draw coastlines
-  points(mlon,mlat,pch=".",col='grey60',cex=1.4)
+  if(!add) points(mlon,mlat,pch=".",col='grey60',cex=1.4)
   #lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
   
-  par(fig=par0$fig,new=TRUE)
+  if(!add) par(fig=par0$fig,new=TRUE)
   image.plot(breaks=colbar$breaks,lab.breaks=lab.breaks,horizontal = TRUE,
              legend.only = T, zlim = range(colbar$breaks),
              col = adjustcolor(colbar$col,alpha.f=0.8), legend.width = 1,
@@ -188,7 +199,7 @@ segments.trajectory <- function(x,param="month",
               xaxp=c(range(colbar$breaks),n=colbar$n)),
              border = FALSE)
   
-  par(bty="n",fig=c(0,1,0.1,1),new=TRUE)
+  if(!add) par(bty="n",fig=c(0,1,0.1,1),new=TRUE)
   ## TEST IF MAP IS AT THE SAME PLACE:
   #plot(mlon,mlat,pch=".",col="grey",main=main,
   #     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
@@ -243,9 +254,11 @@ lonlat.trajectory <- function(x,show.start=TRUE,show.subset=TRUE,
   if(add) new <- FALSE
   
   if(new) dev.new(width=8,height=7)
-  par(bty="n")
-  if(!add) plot(mlon,mlat,pch=".",col="white",main=main,
-                xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
+  if(!add) {
+    par(bty="n")
+    plot(mlon,mlat,pch=".",col="white",main=main,
+        xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
+  }
   
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   if(verbose) print(paste(dim(lons)[1],'trajectories,',

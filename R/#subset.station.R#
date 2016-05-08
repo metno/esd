@@ -20,7 +20,7 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
     if (inherits(is,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
         if (verbose) print('is: field/station')
-        x2 <- subset.station(x,is=loc(is))
+        x2 <- subset(x,loc=loc(is))
         return(x2)
     }
     if (is.character(is)) {

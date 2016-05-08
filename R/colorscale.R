@@ -108,8 +108,16 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
         pal <- NA ## disactivate pal
         if (!is.null(colbar$breaks)) {  
             if (length(colbar$col) != length(colbar$breaks) - 1) {
-                str(colbar)
-                stop('colbar.ini: This should never happen!')   
+                #str(colbar)
+                #stop('colbar.ini: This should never happen!')   
+                ## This can happen if both col and breaks are specified
+                ## but not consistent with each other. Instead of stopping, 
+                ## col can be interpolated to the right length:
+                col.rgb <- col2rgb(colbar$col)
+                col.rgb <- apply(col.rgb,1,function(x) approx(x,
+                                    n=length(colbar$breaks)-1)$y)
+                if(is.null(dim(col.rgb))) dim(col.rgb) <- c(1,length(col.rgb))
+                colbar$col <- rgb(col.rgb,maxColorValue=255)
             }
         } else if (is.null(colbar$breaks))
           colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),nd)
@@ -344,6 +352,13 @@ colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
      r=c(0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0),
      g=c(1,0.983,0.95,0.9,0.833,0.75,0.65,0.533,0.4,0.250),
      b=c(1,1,1,1,1,1,1,1,1,1))
+     cols <- lapply(cols,function(x) approx(x,n=n)$y)
+     col <- rgb(cols$r,cols$g,cols$b,alpha)
+  } else if (col[1]=="rd") {
+    cols <- list(
+     r=c(1,1,1,1,1,1,1,1,1,1),
+     g=c(1,0.983,0.95,0.9,0.833,0.75,0.65,0.533,0.4,0.250),
+     b=c(0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0))
      cols <- lapply(cols,function(x) approx(x,n=n)$y)
      col <- rgb(cols$r,cols$g,cols$b,alpha)
   } else if (col[1]=="cat") {

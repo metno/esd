@@ -1,5 +1,13 @@
 # K Parding, 29.05.2015
 
+data(etopo5)
+altitude <- function(lon=0,lat=60) {
+  i.lon <- which.min(abs(longitude(etopo5)-lon))
+  i.lat <- which.min(abs(latitude(etopo5)-lat))
+  h <- etopo5[i.lon,i.lat]
+  return(mean(h))
+}
+
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
                 label=NULL,mindistance=5E5,dpmin=1E-3,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
@@ -12,6 +20,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   
   yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
   #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  #yrmn <- year(as.Date(strftime(index(Z),"%Y-%m-%d")))
   if (length(unique(yrmn))>2) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
@@ -123,8 +132,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   ## Find zero crossings in both directions
   ## Plowx & P.lowy are matrices with 0's and 1's.
   lows1 <- (P.lowy & P.lowx)
-  qf <- matrix(rep(0,length(P.lowx)),dim(P.lowx))
-  qf[lows1] <- 1
   
   ## Find cyclones that were missed in the first search
   ## using widened masks of zero crossings
@@ -140,17 +147,42 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   ## Find new zero crossings
   P.lowx2[lows1] <- 0; P.lowy2[lows1] <- 0
   lows2 <- (P.lowy2 & P.lowx2)
-  qf[lows2] <- 2
 
   ## Clear temporary objects from working memory
   rm("P.lowx2","P.lowy2"); gc(reset=TRUE)
   
+  ## Cyclones should be deeper than the zonal average slp
+  dP <- 0.5*(px+py)
+  P.zonal <- apply(dP,c(1,3),FUN="mean",na.rm=TRUE)
+  for(i in seq(dim(dP)[2])) dP[,i,] <- dP[,i,] - P.zonal
+  if(cyclones) {
+    lows1[dP>0] <- FALSE
+    lows2[dP>0] <- FALSE
+  } else {
+    lows1[dP<0] <- FALSE
+    lows2[dP<0] <- FALSE
+  }
+  rm("dP","P.zonal"); gc(reset=TRUE)
+ 
+  ## Exclude identified depressions in high altitude regions
+  h <- mapply(altitude,lonXY,latXY)
+  ok <- rep(h<2000,nt)
+  dim(ok) <- c(nx-1,ny-1,nt)
+  ok <-aperm(ok,c(3,1,2))
+  lows1[!ok] <- FALSE
+  lows2[!ok] <- FALSE
+  
+  ## Quality flag to keep track of cyclones found with widened mask
+  qf <- matrix(rep(0,length(lows1)),dim(lows1))
+  qf[lows1] <- 1
+  qf[lows2] <- 2
+
   ## Lat, lon, and dates of cyclones
   lon<-rep(lonXY,nt); dim(lon)<-c(nx-1,ny-1,nt); lon<-aperm(lon,c(3,1,2)) 
   lat<-rep(latXY,nt); dim(lat)<-c(nx-1,ny-1,nt); lat<-aperm(lat,c(3,1,2))
   date<-rep(t,(nx-1)*(ny-1)); dim(date)<-c(nt,nx-1,ny-1)
   ## Cyclones found with ordinary method
-  lon1 <- lon[lows1]; lat1<-lat[lows1]; date1 <- date[lows1]
+  lon1 <- lon[lows1]; lat1 <- lat[lows1]; date1 <- date[lows1]
   pcent1 <- 0.5*(px[lows1]+py[lows1])
   strength1 <- rank(pcent1)
   if (!cyclones) strength1 <- rank(-pcent1)
@@ -159,7 +191,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   pcent2 <- 0.5*(px[lows2]+py[lows2])
   strength2 <- rank(pcent2)
   if (!cyclones) strength2 <- rank(-pcent2)
+
   
+
   ## Keep only cyclones that are deeper than pmax
   del1 <- rep(TRUE,length(date1))
   del2 <- rep(TRUE,length(date2))
@@ -357,9 +391,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       oki <- sum(!is.na(ilon))>=3
       if(oki) {
        dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-       oki <- sum(dpi>dpmin & !is.na(dpi))>=3 &
-         ( (cyclones & pcent[i]<mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
-           (!cyclones & pcent[i]>mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) )
+       oki <- sum(dpi>dpmin & !is.na(dpi))>=3 #&
+      #   ( mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
+      #   (!cyclones & mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) ) 
       }
       if (oki) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
