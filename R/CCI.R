@@ -171,7 +171,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   ok <-aperm(ok,c(3,1,2))
   lows1[!ok] <- FALSE
   lows2[!ok] <- FALSE
-  
+ 
   ## Quality flag to keep track of cyclones found with widened mask
   qf <- matrix(rep(0,length(lows1)),dim(lows1))
   qf[lows1] <- 1
