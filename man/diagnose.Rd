@@ -11,6 +11,7 @@
 \alias{diagnose.distr}
 \alias{diagnose.matrix}
 \alias{diagnose.dsensemble}
+\alias{diagnose.ds.pca}
 \title{Diagnose}
 \description{Diagnose and examine combined fields, MVR, and CCA
   results. applies some tests to check for consistency.
@@ -37,10 +38,14 @@ diagnose.eof(x)
 diagnose.comb.eof(x)
 diagnose.mvr(x)
 diagnose.cca(x)
-diagnose.ds(x,plot=FALSE)
+diagnose.ds(x,plot=FALSE,verbose=FALSE,new=TRUE)
+diagnose.ds.pca(x,plot=FALSE,verbose=FALSE,new=TRUE)
 diagnose.station(x,it=NULL,...)
-diagnose.matrix(X,xlim=NULL,ylim=NULL,verbose=FALSE,...)
+diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,...)
 diagnose.dsensemble(x,plot=TRUE,map=TRUE,plot.type='target',...)
+diagnose.dsensemble.list(x,plot=FALSE,is=NULL,eofs=NULL,
+                 map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
+                 main=NULL,verbose=FALSE,new=TRUE,...)
 diagnose.distr(x,main='Mean - quantile',
                xlab='mean',ylab=expression(q[p]),
                sub=src(x),probs=0.95)

@@ -293,8 +293,8 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-      fig=c(0,1,0.1,1),new=TRUE)
-  par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))  
+      fig=c(0,1,0.1,1),new=FALSE)
+  #par(fig=c(0,1,0,0.1),new=NEW, mar=c(0,0,0,0))  
 }
 
 
