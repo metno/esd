@@ -1055,12 +1055,13 @@ biasfix <- function(x) {
     n <- attr(x,'n.apps')
     for ( i in 1:n ) {
         eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
-        Z <- coredata(z)
+        Z <- coredata(subset(z,it=range(year(x))))
+        sd.x <- apply(Z,2,sd,na.rm=TRUE)
 
         ## diagnose: (1 + sd(z))/(1 + sd(x))
         ## x is reanalysis; z is gcm:
         for (j in 1:length(Z[1,]))
-            Z[,j] <- Z[,j]/diag$sd.ratio[i,j] + diag$mean.diff[i,j]
+            Z[,j] <- diag$sd0[j]*Z[,j]/sd.x + diag$mean.diff[i,j]
         y <- zoo(Z,order.by=index(z))
         y <- attrcp(z,y)
         eval(parse(text=paste("y -> attr(x,'appendix.",i,"')",sep="")))

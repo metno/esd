@@ -49,8 +49,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            path.ds=NULL,file.ds="DSensemble.rda",
                            nmin=NULL,verbose=FALSE) {
 
-
-  #print("predictand")
+  if (!inherits(y,'day')) warning('station is not daily data')
+  if (verbose) print("predictand")
   #if ( (deparse(substitute(FUN))=='sd') | (deparse(substitute(FUN))=='ar1') )
   if(verbose) print("DSensemble.t2m")
   if ((FUN=='sd') | (FUN =='ar1')) {
@@ -174,7 +174,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     X.JJA <- combine(JJA,JJAGCM)
     X.SON <- combine(SON,SONGCM)
     if (verbose) print("- - - > EOFs")
-    
     Z1 <- try(EOF(X.DJF))
     if (inherits(Z1,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
@@ -197,7 +196,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
     #save(file='inside.dsens.rda',T2M,GCM)
     #rm("GCM"); gc(reset=TRUE)
-
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
       testGCM <- subset(GCM,it=range(year(T2M))) # REB 29.04.2014
