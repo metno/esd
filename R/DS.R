@@ -1058,11 +1058,11 @@ biasfix <- function(x) {
         Z <- coredata(z)
         ## Use overlapping years
         year.ox <- range(year(z)[is.element(year(z),year(x))])
-        sd.o <- apply(subset(x,it=range(year.ox)),2,sd,na.rm=TRUE)
-        sd.x <- apply(subset(Z,it=range(year.ox)),2,sd,na.rm=TRUE)
+        sd.o <- apply(coredata(subset(x,it=range(year.ox))),2,sd,na.rm=TRUE)
+        sd.x <- apply(coredata(subset(Z,it=range(year.ox))),2,sd,na.rm=TRUE)
         scalfac <- sd.o/sd.x
-        me.o <- apply(subset(x,it=range(year.ox)),2,mean,na.rm=TRUE)
-        me.x <- apply(subset(Z,it=range(year.ox)),2,mean,na.rm=TRUE)
+        me.o <- apply(coredata(subset(x,it=range(year.ox))),2,mean,na.rm=TRUE)
+        me.x <- apply(coredata(subset(Z,it=range(year.ox))),2,mean,na.rm=TRUE)
         mean.diff <- me.o - me.x
           
         ## diagnose: (1 + sd(z))/(1 + sd(x))
