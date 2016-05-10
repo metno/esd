@@ -91,7 +91,7 @@ if (TRUE) {
   global.t2m.cmip5.rcp45 <- globalmean(path='CMIP5.monthly/rcp45')
   global.t2m.cmip5.rcp85 <- globalmean(path='CMIP5.monthly/rcp85')
   global.t2m.cmip5.rcp26 <- globalmean(path='CMIP5.monthly/rcp26')
-  ##global.t2m.cmip3.sresa1b <- globmean(path='CMIP3.monthly/SRESA1b')
+  ##global.t2m.cmip3.sresa1b <- globalmean(path='CMIP3.monthly/SRESA1b')
 
   reanalysis <- aggregate.area(annual(retrieve('air.mon.mean.nc')),FUN='mean')
   obs <- anomaly(reanalysis,ref=1961:1990)
