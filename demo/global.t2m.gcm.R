@@ -7,7 +7,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
   fnms <- list.files(path=path,pattern=pattern)
   if (!is.null(select)) {fnames <- fnames[select];fnms <- fnms[select]}
-  if (!usefnemes) fnms <- paste('gcm',1:length(fnames),sep='.')
+  if (!usefnames) fnms <- paste('gcm',1:length(fnames),sep='.')
   n <- length(fnames)
   X <- matrix(rep(NA,n*240),n,240)
   yr <- 1861:2100
