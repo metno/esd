@@ -1,7 +1,7 @@
 ## Re-compute the global mean
 library(esd)
 
-globalmean <- function(path='CMIP5.monthly/rcp45',
+globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,
                      pattern='tas_',select=NULL,lon=NULL,lat=NULL) {
 
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
@@ -17,11 +17,11 @@ globalmean <- function(path='CMIP5.monthly/rcp45',
     run <- attr(gcm,'realization')
     d <- attr(gcm,'dimensions')
     cal <- attr(gcm,'calendar')
-    print(paste(i,n,gcmnm,run,paste(d,collapse='-')))
+    print(paste(i,n,gcmnm,run,paste(d,collapse='-'),min(year(gcm)),max(year(gcm))))
     y <- aggregate.area(annual(gcm),FUN='mean')
     i1 <- is.element(yr,year(y))
     i2 <- is.element(year(y),yr)
-    ya <- anomaly(y,ref=1961:1990)
+    ya <- anomaly(y,ref=ref)
     if (i==1) plot(ya) else lines(ya)
     X[i,i1] <- coredata(ya)[i2]
     gcmnm <- gsub('-','.',gcmnm)
