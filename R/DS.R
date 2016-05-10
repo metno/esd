@@ -1055,19 +1055,27 @@ biasfix <- function(x) {
     n <- attr(x,'n.apps')
     for ( i in 1:n ) {
         eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
-        Z <- coredata(subset(z,it=range(year(x))))
-        sd.x <- apply(Z,2,sd,na.rm=TRUE)
-
+        Z <- coredata(z)
+        ## Use overlapping years
+        year.ox <- range(year(z)[is.element(year(z),year(x))])
+        sd.o <- apply(subset(x,it=range(year.ox)),2,sd,na.rm=TRUE)
+        sd.x <- apply(subset(Z,it=range(year.ox)),2,sd,na.rm=TRUE)
+        scalfac <- sd.o/sd.x
+        me.o <- apply(subset(x,it=range(year.ox)),2,mean,na.rm=TRUE)
+        me.x <- apply(subset(Z,it=range(year.ox)),2,mean,na.rm=TRUE)
+        mean.diff <- me.o - me.x
+          
         ## diagnose: (1 + sd(z))/(1 + sd(x))
         ## x is reanalysis; z is gcm:
         for (j in 1:length(Z[1,]))
-            Z[,j] <- diag$sd0[j]*Z[,j]/sd.x + diag$mean.diff[i,j]
+            Z[,j] <- scalfac[j]*Z[,j] + mean.diff[j]
         y <- zoo(Z,order.by=index(z))
         y <- attrcp(z,y)
         eval(parse(text=paste("y -> attr(x,'appendix.",i,"')",sep="")))
     }
     attr(x,'history') <- history.stamp(x)
     attr(x,'quality') <- "'bias' corrected -  ref (Imbert & Benestad (2005); Theor. Appl. Clim.; DOI: 10.1007/s00704-005-0133-4"
+    attr(x,'baseline') <- year.ox
     attr(x,'diagnose') <- diag
     invisible(x)
 }
