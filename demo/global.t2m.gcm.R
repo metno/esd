@@ -112,7 +112,9 @@ if (FALSE) {
 
 if (FALSE) {
   ## Regional area mean temperature
-  t2m.cmip3.sresa1b <- globalmean(path='CMIP3.monthly/SRESA1b',lon=c(-30,30),lat=c(50,70),ref=c(2000,2015),select=-c(7:10),usefnames=FALSE)
+  t2m.cmip3.sresa1b <- globalmean(path='CMIP3.monthly/SRESA1b',lon=c(-30,30),lat=c(50,70),ref=c(2000,2015),
+                                  select=-c(7:10,42:50),usefnames=FALSE)
+  ## Some of the CMIP3 runs do not follow standard format and make the code crash - exclude those.
   t2m.cmip5.rcp45 <- globalmean(path='CMIP5.monthly/rcp45',lon=c(-30,30),lat=c(50,70),ref=c(2000,2015))
   t2m.cmip5.rcp85 <- globalmean(path='CMIP5.monthly/rcp85',lon=c(-30,30),lat=c(50,70),ref=c(2000,2015))
   t2m.cmip5.rcp26 <- globalmean(path='CMIP5.monthly/rcp26',lon=c(-30,30),lat=c(50,70),ref=c(2000,2015))
