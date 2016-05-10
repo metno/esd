@@ -1,12 +1,13 @@
 ## Re-compute the global mean
 library(esd)
 
-globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,
+globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
                      pattern='tas_',select=NULL,lon=NULL,lat=NULL) {
 
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
   fnms <- list.files(path=path,pattern=pattern)
-  if (!is.null(select)) {fnames <- fnames[select]; fnms <- fnms[select]}
+  if (!is.null(select)) {fnames <- fnames[select];fnms <- fnms[select]}
+  if (!usefnemes) fnms <- paste('gcm',1:length(fnames),sep='.')
   n <- length(fnames)
   X <- matrix(rep(NA,n*240),n,240)
   yr <- 1861:2100
@@ -17,7 +18,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,
     run <- attr(gcm,'realization')
     d <- attr(gcm,'dimensions')
     cal <- attr(gcm,'calendar')
-    print(paste(i,n,gcmnm,run,paste(d,collapse='-'),min(year(gcm)),max(year(gcm))))
+    print(paste(i,n,gcmnm,run,paste(d,collapse='-'),min(year(gcm)),max(year(gcm)),fnames[i]))
     y <- aggregate.area(annual(gcm),FUN='mean')
     i1 <- is.element(yr,year(y))
     i2 <- is.element(year(y),yr)
@@ -26,7 +27,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,
     X[i,i1] <- coredata(ya)[i2]
     gcmnm <- gsub('-','.',gcmnm)
     cline <- paste('meta$',fnms[i],
-             ' <- list(GCM=attr(gcm,"model_id"),run=run,d=d,calendar=cal,',
+             ' <- list(GCM=gcmnm,run=run,d=d,calendar=cal,',
              'mean=attr(ya,"climatology"))',sep='')
     eval(parse(text=cline))
   }
@@ -87,7 +88,7 @@ if (FALSE) {
   save(file='annual.cycle.cmip5.rda',annual.cycle.cmip5)
 }
 
-if (TRUE) {
+if (FALSE) {
   global.t2m.cmip5.rcp45 <- globalmean(path='CMIP5.monthly/rcp45')
   global.t2m.cmip5.rcp85 <- globalmean(path='CMIP5.monthly/rcp85')
   global.t2m.cmip5.rcp26 <- globalmean(path='CMIP5.monthly/rcp26')
@@ -107,4 +108,9 @@ if (TRUE) {
   attr(global.t2m.gcm,'obs') <- obs
 
   save(file='global.t2m.gcm.rda',global.t2m.gcm)
+}
+
+if (FALSE) {
+  ## Regional area mean temperature
+  
 }
