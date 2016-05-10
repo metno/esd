@@ -112,5 +112,18 @@ if (FALSE) {
 
 if (FALSE) {
   ## Regional area mean temperature
-  
+  t2m.cmip3.sresa1b <- globalmean(path='CMIP3.monthly/SRESA1b',lon=c(-30,30),lat=c(50,70),ref=c(2000,2015),select=-c(7:10),usefnames=FALSE)
+  t2m.cmip5.rcp45 <- globalmean(path='CMIP5.monthly/rcp45',lon=c(-30,30),lat=c(50,70),ref=c(2000,2015))
+  t2m.cmip5.rcp85 <- globalmean(path='CMIP5.monthly/rcp85',lon=c(-30,30),lat=c(50,70),ref=c(2000,2015))
+  t2m.cmip5.rcp26 <- globalmean(path='CMIP5.monthly/rcp26',lon=c(-30,30),lat=c(50,70),ref=c(2000,2015))
+  reanalysis <- aggregate.area(annual(retrieve('air.mon.mean.nc',lon=c(-30,30),lat=c(50,70))),FUN='mean')
+  obs <- anomaly(reanalysis,ref=2000:2015)
+  index(obs) <- year(obs)
+  t2m.gcm <- list(t2m.cmip5.rcp45=t2m.cmip5.rcp45,
+                  t2m.cmip5.rcp85=t2m.cmip5.rcp85,
+                  t2m.cmip5.rcp26=t2m.cmip5.rcp26,
+                  t2m.cmip3.sresa1b=t2m.cmip3.sresa1b)
+  attr(t2m.gcm,'obs') <- obs
+                  
+  save(file='t2m.gcm.rda',t2m.gcm)
 }
