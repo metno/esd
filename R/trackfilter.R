@@ -34,7 +34,7 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
 trackfilter.trajectory <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"trajectory"))
-  if(!"trajectory" %in% names(x)) x <- track(x)
+  if(!"trajectory" %in% colnames(x)) x <- track(x)
   if(!is.null(param) & (!is.null(pmin) | !is.null(pmax))) {
     if(!param %in% colnames(x)) {
       if(verbose) print(paste("Unkown input param =",param))

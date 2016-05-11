@@ -2,8 +2,8 @@
 
 library(esd)
 
-source('gridmap.R')
-source('pca2eof.R')
+demo('gridmap',ask=FALSE)
+demo('pca2eof',ask=FALSE)
 
 ## Temperature
 if (!file.exists('data/t2m.nordic.rda')) {

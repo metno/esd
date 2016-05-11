@@ -193,7 +193,12 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   ## The coordinates which to grid: lon.new & lat.new
   if ( (is.data.frame(is)) | (is.list(is)) ) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
   if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof'))| (inherits(is,'pca')) ) {
-    lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
+    if (verbose) print(paste('Use the coordinates from a',class(is)[1],'object'))
+    lon.new <- sort(lon(is)); lat.new <- sort(lat((is)))
+    if (verbose) print(paste(sum(duplicated(lon.new)),'duplicated longitudes'))
+    lon.new <- lon.new[!duplicated(lon.new)]
+    if (verbose) print(paste(sum(duplicated(lat.new)),'duplicated latitudes'))
+    lat.new <- lat.new[!duplicated(lat.new)]
   }
   
   greenwich <- attr(x,'greenwich')
@@ -288,11 +293,18 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
     dim(M) <- c(D[1] * D[2],4)
     y[, i] <- rowSums(as.matrix(beta) * M)      
   }
-  #print("set attributes:")
+  if (verbose) print("set attributes:")
   y <- zoo(t(y),order.by=index(x))
   if (inherits(is,'station')) {
-    if (verbose) print('select the station coordinates and not a regular grid')
-    y <- y[,seq(1,D[1] * D[2],by=D[2])]
+    if (verbose) print('select the station coordinates which is *not* a regular grid')
+    xlons <- lon(is); dim(xlons) <- c(length(xlons),1)
+    ix <- unlist(apply(xlons,1,function(x) (1:D[1])[is.element(lon.new,x)][1]))
+    xlats <- lat(is); dim(xlats) <- c(length(xlats),1)
+    iy <- unlist(apply(xlats,1,function(x) (1:D[2])[is.element(lat.new,x)][1]))
+    y <- y[,ix + (iy-1)*D[1]]
+    #plot.zoo(y[,1]); lines(as.monthly(is)[,1],col='red')
+    lon.new <- lon(is)
+    lat.new <- lat(is)
     attr(y,'altitude') <- alt(is)
     attr(y,'location') <- loc(is)
     if (verbose) {
@@ -301,6 +313,7 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
   }
 
   if ( (is.station(is)) | (is.field(is)) ) {
+    if (verbose) print(paste('Set appropriate class:',class(is)[1]))
     class(y) <- class(is)
     class(y)[2] <- class(x)[2]
   }  else class(y) <- class(x)

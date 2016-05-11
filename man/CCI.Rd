@@ -55,16 +55,18 @@ CCI(Z,m=14,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
     \item{accuracy}{Not yet finished.}
   }
 \value{
-  An 'events' object: \code{
-    as.events(X=data.frame(date,time,lon,lat,pcent,max.dspl,
-      max.speed,radius,qf),label=label,...}. The subobjects
-\code{lon} (longitude: units degrees), \code{lat} (latitude: units:
-degrees), \code{pcent} (local minimum pressure: units hPa),
-\code{max.dpsl} (pressure gradient: units hPa/m), \code{max.speed} 
-(windspeed: units m/s), and \code{radius} (radius of the storm: units
-km), \code{qf} (quality flag, 1 = OK, 2 = less spatially precise,
-identified after widening the pressure gradient zero-crossings) are 
-\code{[1:nt]}-vectors.
+  The CCI function returns an 'events' object (a data frame with spatio-temporal 
+information) that is organized as follows: 
+\code{as.events(X=data.frame(date,time,lon,lat,pcent,max.dspl,
+      max.speed,radius,qf),label=label,...}, 
+where \code{date} and \code{time} are vectors containing the date and time of each cyclone, 
+\code{lon} and \code{lat} are the longitude and latitude of the cyclone centers (unit: degrees), 
+\code{pcent} is the pressure at the center of each cyclone (unit: hPa),
+\code{max.dpsl} is the maximum pressure gradient associated with each cyclone (unit: hPa/m), 
+\code{max.speed} is the estimated maximum windspeed (unit: m/s), 
+\code{radius} is the cyclone radius (unit: km), 
+and \code{qf} is a kind of quality flag (1 = OK, 2 = less spatially precise,
+identified after widening the pressure gradient zero-crossings).
 }
 \author{K.M. Parding & R.E. Benestad}
 %% \examples{

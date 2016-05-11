@@ -742,7 +742,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
             cex.lab=0.7,cex.axis=0.7)
         axis(2,at=pretty(lat(x)),col='grey')
         axis(3,at=pretty(lon(x)),col='grey')
-        grid()
+        if(gridlines) grid()
 
         par(col.axis='black',col.lab='black',
             cex.lab=0.5,cex.axis=0.5)
@@ -854,9 +854,10 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(show.trajectory & "trajectory" %in% colnames(x0)) {
       xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
       if(dim(xt)[1]>1) {
-        xall <- as.trajectory(xt,nmin=2)
-        map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,add=TRUE,col="black",#"steelblue3",
-          lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
+          xall <- as.trajectory(xt,nmin=2)
+          map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
+              add=TRUE,col="black",#"steelblue3",
+              lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
       }
     }
 
