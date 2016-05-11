@@ -49,8 +49,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            path.ds=NULL,file.ds="DSensemble.rda",
                            nmin=NULL,verbose=FALSE) {
 
-
-  #print("predictand")
+  if (!inherits(y,'day')) warning('station is not daily data')
+  if (verbose) print("predictand")
   #if ( (deparse(substitute(FUN))=='sd') | (deparse(substitute(FUN))=='ar1') )
   if(verbose) print("DSensemble.t2m")
   if ((FUN=='sd') | (FUN =='ar1')) {
@@ -174,7 +174,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     X.JJA <- combine(JJA,JJAGCM)
     X.SON <- combine(SON,SONGCM)
     if (verbose) print("- - - > EOFs")
-    
     Z1 <- try(EOF(X.DJF))
     if (inherits(Z1,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
@@ -197,7 +196,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
     #save(file='inside.dsens.rda',T2M,GCM)
     #rm("GCM"); gc(reset=TRUE)
-
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
       testGCM <- subset(GCM,it=range(year(T2M))) # REB 29.04.2014
@@ -1602,6 +1600,9 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   } else if (inherits(y,'month')) {
     if (verbose) print('monthly data')
     T2M <- matchdate(t2m,y)
+    ## browser()
+    ##if (FUNX=='C.C.eq') 
+    ##  T2M <- mask(T2M,land=TRUE)
   }
   if (inherits(T2M,"eof")) T2M <- as.field(T2M)
   rm("predictor","t2m"); gc(reset=TRUE)
@@ -1664,10 +1665,15 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
           GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
           eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
     } else if (inherits(y,'month')) {
-      if (length(table(month(y)))==1)
-        GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
+      if (length(table(month(y)))==1) 
+        GCM <- subset(gcm,it=month.abb[month(y)[1]]) 
+      else
         GCM <- gcm
+      if (!is.null(FUNX)) {
+        GCM <- do.call(FUNX,list(GCM))
+      }
     }
+    	
     if (is.null(src(T2M))) attr(T2M,'source') <- 'reanalysis'
     T2MGCM <- combine(T2M,GCM)
     

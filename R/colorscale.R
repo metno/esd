@@ -206,12 +206,12 @@ colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
     points(b,col="blue")
     points(g,col="green")
   }
-
+  
   if (verbose) print(paste('colscal:',col,'rev=',rev,'n=',n,'alpha=',alpha))
   if (is.null(col)) col <- 't2m'
   if (is.null(alpha)) alpha <- 1
   # Set up colour-palette
-  col <- tolower(gsub("[[:punct:][:space:]]", "", col))
+  col <- tolower(gsub("[[:space:]]", "", col))#[[:punct:][:space:]]", "", col))
   x <- 1:n
   r0 <- round(n*0.55)
   g0 <- round(n*0.5)
@@ -278,17 +278,17 @@ colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
     b <- approx(seNorgeP[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   } else if (col[1]=="rainbow") {
-    col <- rainbow(n,start=0,end=4/6,alpha=alpha)
+    col <- rainbow(n,start=0,end=4/6,alpha=alpha[1])
   } else if (col[1]=="gray.colors") {
-    col <- gray.colors(n,alpha=alpha)
+    col <- gray.colors(n,alpha=alpha[1])
   } else if (col[1]=="heat.colors") {
-    col <- heat.colors(n,alpha=alpha)
+    col <- heat.colors(n,alpha=alpha[1])
   } else if (col[1]=="terrain.colors") {
-    col <- terrain.colors(n,alpha=alpha)
+    col <- terrain.colors(n,alpha=alpha[1])
   } else if (col[1]=="topo.colors") {
-    col <- topo.colors(n,alpha=alpha)
+    col <- topo.colors(n,alpha=alpha[1])
   } else if (col[1]=="cm.colors") {
-    col <- cm.colors(n,alpha=alpha)
+    col <- cm.colors(n,alpha=alpha[1])
   } else if (col[1]==tolower("grmg")) {
     cols <- list(
      r=c(0,0,0,0,0.316,0.526,0.737,1,1,1,1,1,0.947,0.737,0.526,0.316),

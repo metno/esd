@@ -9,7 +9,7 @@ corfield.default <- function(x,y,...) {
   cor(x,y)
 }
 
-corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
+corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
   if (verbose) { print("corfield.zoo:"); print('station against field') }
 
@@ -51,11 +51,11 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE
   class(r) <- 'corfield'
 
   #print("map")
-  if (plot) map(r,colbar=colbar)
+  if (plot) map(r,colbar=colbar,new=new)
   invisible(r)
 }
 
-corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
+corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                            colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...) {
  
   if (verbose) {print('corfield.field'); print('field against field')}
@@ -127,20 +127,20 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
     attr(r,'unit') <- attr(x,'unit')[1] else
     attr(r,'unit') <- c(attr(x,'unit')[1],attr(y,'unit')[1])   
   class(r) <- 'corfield'
-  if (plot) map(r,colbar=colbar)
+  if (plot) map(r,colbar=colbar,new=new)
   invisible(r)
 }
 
 
-corfield.field.station <- function(x,y,plot=TRUE,verbose=FALSE,
+corfield.field.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
                                    colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                                    use='pairwise.complete.obs',...) {
-  r <- corfield.station(y,x,plot=plot,verbose=verbose,use=use,colbar=colbar,...)
+  r <- corfield.station(y,x,plot=plot,verbose=verbose,use=use,colbar=colbar,new=new,...)
   invisible(r)
 }
 
 
-corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,
+corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
                              use='pairwise.complete.obs',
                              na.action='na.omit',colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...) {
   if (verbose) print("corfield.station:")
@@ -226,16 +226,16 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,
   class(r) <- 'corfield'
 
   #print("map")
-  if (plot) map(r,verbose=verbose,colbar=colbar,...)
+  if (plot) map(r,verbose=verbose,colbar=colbar,new=new,...)
   invisible(r)
 }
 
-corfield.eof <- function(x,y,pattern=1,plot=TRUE,
+corfield.eof <- function(x,y,pattern=1,plot=TRUE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                          use='pairwise.complete.obs',na.action='na.omit',...) {
   stopifnot(inherits(x,'eof'),inherits(y,'field'))
   z <- as.station(x[,pattern],loc=paste('eof',pattern),param='PC',unit='dimensionless')
-  r <- corfield(z,y,plot=plot,use=use,na.action=na.action,colbar=colbar)
+  r <- corfield(z,y,plot=plot,use=use,na.action=na.action,colbar=colbar,new=new)
   invisible(r)
 }
 

@@ -303,7 +303,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                      na.rm=TRUE,plot=TRUE,...) {
+                      na.rm=TRUE,plot=TRUE,add=TRUE,...) {
     
     stopifnot(inherits(x,'field'))
     if (verbose) print('map.field')
@@ -774,10 +774,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.05,lwd=3,col="black",pch=20,cex=1,
+                       param=NA,alpha=0.05,lwd=3,col="black",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
-                        pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       show.trajectory=FALSE,lty=2,
+                       pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                       show.trajectory=FALSE,lty=2,type=c("fill","contour"),
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
   if(verbose) print("map.events")
@@ -826,7 +826,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   if(length(Y)!=0) {
     if (is.null(lonR)) lonR <- mean(lon(Y))
     if (is.null(latR)) latR <- max(lat(Y))
-    map(Y,colbar=colbar,new=new,projection=projection,
+    map(Y,colbar=colbar,new=new,projection=projection,type=type,
         xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
   } else {
     if (is.null(lonR) & dim(x)[1]>0) lonR <- mean(x[,"lon"])
@@ -854,15 +854,22 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(show.trajectory & "trajectory" %in% colnames(x0)) {
       xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
       if(dim(xt)[1]>1) {
+<<<<<<< HEAD
           xall <- as.trajectory(xt,nmin=2)
           map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
               add=TRUE,col="black",#"steelblue3",
               lonR=lonR,latR=latR,projection=projection,show.start=FALSE)
+=======
+        xall <- as.trajectory(xt,nmin=2)
+        map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
+          add=TRUE,col="black",lonR=lonR,latR=latR,
+          projection=projection,show.start=FALSE)
+>>>>>>> af914cfd2f81c188f9e625ac54378acd1552c7b5
       }
     }
 
     if(projection=="lonlat") {
-      points(x[,"lon"],x[,"lat"],col=cols,cex=cex,pch=pch,lwd=lwd)
+      points(x[,"lon"],x[,"lat"],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)
     } else {
       theta <- pi*x[,"lon"]/180
       phi <- pi*x[,"lat"]/180
@@ -872,7 +879,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
       a <- rotM(x=0,y=0,z=lonR) %*% rbind(ax,ay,az)
       a <- rotM(x=latR,y=0,z=0) %*% a
       ax <- a[1,]; ay <- a[2,]; az <- a[3,]
-      points(ax[ay>0],az[ay>0],col=cols,cex=cex,pch=pch,lwd=lwd)    
+      points(ax[ay>0],az[ay>0],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)    
     }
    
   }
