@@ -727,10 +727,10 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose
   invisible(z)
 }
 
-plot.pca <- function(y,cex=1,verbose=FALSE,...) {
+plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.pca')
   attr(y,'longname') <- attr(y,'longname')[1]
-  plot.eof.field(y,verbose=verbose,new=TRUE,cex=cex,...)
+  plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
 }
 
 plot.ds.pca <- function(y,pattern=1,verbose=FALSE,

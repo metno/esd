@@ -46,7 +46,7 @@ frame.metno <- function(z=z,select = NULL, col="gray50", col.select = NULL,add.c
 }
 
                                         # Function to generate figures of type fig0 # we should give names later
-fig0.zoo <- function(z=z,select = c(1,2), col="gray90", col.select = NULL,add.clim=TRUE,text=FALSE) {
+fig0.zoo <- function(z=z,select = c(1,2), col="gray90", col.select = NULL,add.clim=TRUE,text=FALSE,...) {
 
                                         # Get data in x
     x  <- as.matrix(coredata(z)) 
@@ -58,7 +58,7 @@ fig0.zoo <- function(z=z,select = c(1,2), col="gray90", col.select = NULL,add.cl
     ylim2 <- round(range(x,na.rm=TRUE)[2]) # round(max(x,na.rm=TRUE)) 
 
                                         # default plot 
-    plot(yr,x[,1],type="l",col="white",frame.plot=FALSE,axes=FALSE,xlab="YEARS",ylab ="TAS [Deg C]" , ylim=c(ylim1,ylim2)) #,label.pos=
+    plot(yr,x[,1],type="l",col="white",frame.plot=FALSE,axes=FALSE,xlab="YEARS",...) ## ,ylab ="TAS [Deg C]" , ylim=c(ylim1,ylim2)) #,label.pos=
 
     if (text & !is.null(attr(z,"country")))
         title(main=paste("REGION : ", toupper(attr(z,"country")),"(Coord.)"),line=3,cex.main=.9)
@@ -123,7 +123,7 @@ fig0.zoo <- function(z=z,select = c(1,2), col="gray90", col.select = NULL,add.cl
 } # End of function plot.fig0.0
 
                                         # Function to generate figures of type fig1
-fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline = FALSE, col="grey",envelope=TRUE,col.envelope=NULL,add.clim=FALSE,add.2C=FALSE,error=-1,text=FALSE,main=NULL) {
+fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline = FALSE, col="grey",envelope=TRUE,col.envelope=NULL,add.clim=FALSE,add.2C=FALSE,error=-1,text=FALSE,main=NULL,...) {
 
     Z <- z[!is.na(z)]
     Z <- attrcp(z,Z)
@@ -141,11 +141,11 @@ fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline =
     }
     ## browser()
                                         # Set Y axis limits
-    ylim1 <- round(range(x,na.rm=TRUE)[1]) # round(min(x,na.rm=TRUE))
-    ylim2 <- round(range(x,na.rm=TRUE)[2]) # round(max(x,na.rm=TRUE)) 
+    #ylim1 <- round(range(x,na.rm=TRUE)[1]) # round(min(x,na.rm=TRUE))
+    #ylim2 <- round(range(x,na.rm=TRUE)[2]) # round(max(x,na.rm=TRUE)) 
 
                                         # Create the plot and define axis variables
-    plot(yr,x[,1],type="l",col="white",frame.plot=FALSE,axes=FALSE,xlab="YEARS",ylab ="TAS [Deg C]",ylim=c(ylim1,ylim2))
+    plot(yr,x[,1],type="l",col="white",frame.plot=FALSE,axes=FALSE,xlab="YEARS",...)## ,ylim=c(ylim1,ylim2))
 
     if (is.null(main))
         main <- paste("REGION : ", toupper(loc(z)),"(Coord.)")
@@ -168,10 +168,10 @@ fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline =
     ## mtext("Anomaly values relative to 1986-2005",side=2,line=2,cex=0.8,las=3) 
                                         # display axis
     aty <- pretty(yr)
-    axis(1,at=aty,col ="black",cex=.7) # lwd.ticks=2
-    axis(2,at=pretty(x),col ="black",cex=.7) # ,lwd.ticks=2
-    axis(3,at=aty,col ="black",cex=.7)
-    axis(4,at=pretty(x),col ="black",cex=.7) ## seq(ylim1,ylim2,0.5)
+    axis(1,at=aty,col ="black",cex.axis=1.5) # lwd.ticks=2
+    axis(2,at=pretty(x),col ="black",cex.axis=1.5) # ,lwd.ticks=2
+    axis(3,at=aty,col ="black",cex.axis=1.5)
+    axis(4,at=pretty(x),col ="black",cex.axis=1.5) ## seq(ylim1,ylim2,0.5)
 
     col.axis <- c("grey50","black","grey50")
 
@@ -201,17 +201,17 @@ fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline =
             x  <- as.matrix(coredata(z))
             yr <- as.numeric(year(index(z)))
         } 
-                                        # Compute the number of years
+        ##browser()                                # Compute the number of years
         ny <- length(yr)
         if (envelope) { # produce envelope plot
             if (!is.null(col.envelope)) { 
                 i1 <- round(col2rgb(col.envelope)[1]/255)
                 i2 <- round(col2rgb(col.envelope)[2]/255)
                 i3 <- round(col2rgb(col.envelope)[3]/255)
-            } else {# Randomly select an rgb colors 
-                i1 <- round(runif(1,0,1))
-                i2 <- round(runif(1,0,1))
-                i3 <- round(runif(1,0,1))
+            } else {
+              # Randomly select an rgb colors 
+               if (k == 1) {i1 <- 1       ; i2 <- 178/255  ; i3 <- 102/255 }
+               if (k == 2) {i1 <- 102/255 ; i2 <- 178/255  ; i3 <- 1}
             } 
             probs <- seq(0, 1, 0.25)
             q <- matrix(NA,length(yr),length(probs))
@@ -225,16 +225,17 @@ fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline =
                 z3 <- c(q[1:ny,3]-error*std[1:ny],rev(q[1:ny,3]+error*std[1:ny]))
             } else z3 <- c(q[1:ny,1],rev(q[1:ny,length(probs)]))
             t3 <- c(yr[1:ny],rev(yr[1:ny]))
-            polygon(t3,z3, col=rgb(i1,i2,i3,.2),lty=2,border=NA)
+            polygon(t3,z3, col=rgb(i1,i2,i3,0.2),lty=2,border=NA)
+            #for (j in 1:dim(x)[2]) lines(yr,x[,j],col=rgb(i1,i2,i3,0.4),lwd=1)
             lines(yr,q[,3],type="l",col=rgb(i1,i2,i3,1),lwd=2)
-        } else # end envelope plot
-            for (i in 1:dim(x)[2]) lines(yr,x[,i],type="l",col=col,lwd=1)
+            } else # end envelope plot
+            for (i in 1:dim(x)[2]) lines(yr,x[,i],type="l",col=col,lwd=)
 
         if (nx>1) {
-            if (k == 1) {i11 <- i1 ; i21 <- i2 ; i31 <- i3}
-            if (k == 2) {i12 <- i1 ; i22 <- i2 ; i32 <- i3}
+            if (k == 1) {i11 <- 1; i21 <- 178/255  ; i31 <- 102/255}
+            if (k == 2) {i12 <- 102/255 ; i22 <- 178/255 ; i32 <- 1}
             if (k == nx) 
-                legend(x="topleft",legend=c("CMIP3","CMIP5"),col=c(rgb(i11,i21,i31,1),rgb(i12,i22,i32,1)),lty=1,bty="n",cex=0.8)
+                legend(x="topleft",legend=c("ESD","BC"),col=c(rgb(i11,i21,i31,1),rgb(i12,i22,i32,1)),lwd=2,lty=1,bty="n",cex=0.8)
         }
     }
     if (!is.null(attr(z,"model_id")))
