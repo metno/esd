@@ -128,4 +128,12 @@ if (FALSE) {
   attr(t2m.gcm,'obs') <- obs
                   
   save(file='t2m.gcm.rda',t2m.gcm)
+  graph(t2m.gcm)
+summary(t2m)
+summary(t2m.gcm)
+lines(index(t2m.gcm[[1]]),apply(coredata(t2m.gcm[[1]]),1,'mean'),lwd=3,col='wheat')
+lines(index(t2m.gcm[[2]]),apply(coredata(t2m.gcm[[2]]),1,'mean'),lwd=3,col='red')
+lines(index(t2m.gcm[[3]]),apply(coredata(t2m.gcm[[3]]),1,'mean'),lwd=3,col='green')
+lines(index(t2m.gcm[[4]]),apply(coredata(t2m.gcm[[4]]),1,'mean',na.rm=TRUE),lwd=3,col='grey')
+legend(1850,4.5,c('RCP4.5','RCP8.5','RCP2.6','SRESA1b'),col=c('wheat','red','green','grey'),lty=1,lwd=3,bty='n')
 }
