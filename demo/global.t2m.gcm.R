@@ -2,7 +2,7 @@
 library(esd)
 
 globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
-                     pattern='tas_',select=NULL,lon=NULL,lat=NULL) {
+                     pattern='tas_',param='tas',select=NULL,lon=NULL,lat=NULL) {
 
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
   fnms <- list.files(path=path,pattern=pattern)
@@ -13,7 +13,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
   yr <- 1861:2100
   meta <- list()
   for (i in 1:n) {
-    gcm <- retrieve(fnames[i],param='tas',lon=lon,lat=lat)
+    gcm <- retrieve(fnames[i],param=param,lon=lon,lat=lat)
     gcmnm <- attr(gcm,'model_id')
     run <- attr(gcm,'realization')
     d <- attr(gcm,'dimensions')

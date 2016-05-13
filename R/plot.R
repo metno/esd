@@ -736,9 +736,10 @@ plot.pca <- function(x,verbose=FALSE,new=TRUE,...) {
   plot.eof.field(x,verbose=verbose,new=new,...)
 }
 
-plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
-                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
+plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
+                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                            type="p",cex=1,show=TRUE,
+                            h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
   y <- x # quick fix
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
