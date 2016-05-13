@@ -590,9 +590,62 @@ as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,...) {
   return(y)  
 }
 
+as.field.dsensemble.eof <- function(X,is=NULL,eofs=NULL,verbose=FALSE,...) {
+  if (verbose) print('as.field.dsensemble.eof')
+  stopifnot(inherits(X,"dsensemble") & inherits(X,"eof"))
+  if (inherits(X,"field")) {
+      invisible(X)
+  } else {
+    #if (is.null(is)) is <- 1:length(loc(X$pca)) 
+    if (verbose) print('Extract the results model-wise')
+    d <- apply(sapply(X[3:length(X)],dim),1,min)
+    V <- array(unlist(lapply( X[3:length(X)],
+      function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    if (is.null(eofs)) {
+      U <- attr(X$eof,'pattern')
+      W <- attr(X$eof,'eigenvalues')
+    } else {
+    ## If eofs is specified, use a sub set of the PCA modes.
+      U <- attr(X$pca,'pattern')[,eofs]
+      W <- attr(X$pca,'eigenvalues')[eofs]
+      V <- V[,eofs,]
+    }    
+    d <- dim(U)
+    dim(U) <- c(d[1]*d[2],d[3])
+    S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
+    dim(S) <- c(dim(U)[1], dim(V)[1], dim(V)[3])
+    for (i in seq(1:dim(S)[1])) {
+      S[i,,] <- S[i,,] + c(attr(X$eof,'mean'))[i]
+    }
 
-
-
+    S <- aperm(S,c(3,2,1))
+    S <- lapply(split(S, arrayInd(seq_along(S),dim(S))[,1]),
+                array,dim=dim(S)[2:3])
+    
+    if (verbose) print('Set attributes')
+    Y <- as.field(X$eof)
+    gcms <- sub(".*_","",names(X)[3:length(X)])
+    S <- setNames(S,gcms)
+    for (i in 1:length(S)) {
+      S[[i]] <- as.field(S[[i]],index=index(X[[i+2]]),
+                 lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
+                 param=varid(Y),unit=unit(Y),
+                 longname=paste('fitted',attr(Y,'longname')),
+                 greenwich=attr(Y,'greenwich'),aspect='fitted')
+      attr(S[[i]],'unitarea') <- attr(X,"unitarea")
+    }
+    if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
+    class(S) <- c("dsensemble","field","list")
+    attr(S,"unit") <- attr(X,"unit")
+    attr(S,'unitarea') <- attr(X,"unitarea")
+    attr(S,"variable") <- attr(X,"variable")
+    attr(S,"scenario") <- attr(X,"scenario")
+    attr(S,"longname") <- attr(X,"longname")
+    attr(S,"aspect") <- "dsensemble.eof transformed to field"
+    attr(S,"history") <- history.stamp()
+    invisible(S)
+  }
+}
 
 
 #as.annual <- function(x) {
