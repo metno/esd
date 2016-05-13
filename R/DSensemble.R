@@ -1685,7 +1685,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
 
-    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
+    ds <- try(DS(y,Z,eofs=eofs,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
     } else {
