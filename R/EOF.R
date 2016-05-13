@@ -548,6 +548,22 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
                  attr(x.cval,'aspect') <- 'original'
     attr(x,'evaluation') <- zoo(t(x.cval),order.by=index(cval)) 
   }
+
+  ## REB 2016-05-09: if the object is DS-results, then look for
+  ## common EOFs
+  if (!is.null(attr(pca,'n.apps'))) {
+    for (i.app in 1:attr(pca,'n.apps')) {
+      cval <- attr(pca,paste('appendix.',i.app,sep=''))
+      d.cval <- dim(cval)
+      V.x <- coredata(cval)
+      x.cval <-U %*% diag(W) %*% t(V.x)
+      mpca <- c(attr(pca,'mean'))
+      if (!anomaly) x.cval <- x.cval + mpca
+      if (anomaly) attr(x.cval,'aspect') <- 'anomaly' else
+      attr(x.cval,'aspect') <- 'original'
+      attr(x,paste('appendix.',i.app,sep='')) <- zoo(t(x.cval),order.by=index(cval))
+    }
+  }
   
   #nattr <- softattr(pca)
   #for (i in 1:length(nattr))
