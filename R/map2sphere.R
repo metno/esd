@@ -70,7 +70,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        lonR=NULL,latR=NULL,axiR=0,
                        type=c("fill","contour"),                      
                        gridlines=TRUE,fancy=FALSE,
-                       xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+                       main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
 
   
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
@@ -245,7 +245,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 # Plot the results:
   if (new) dev.new()
   par(bty="n") ## ,xaxt="n",yaxt="n")
-  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="")
+  par(fig=c(0,1,0.1,1), mgp=c(2,0.5,0), mar=c(4,1,2,1))
+  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",main=main)
   
 # plot the grid boxes, but only the gridboxes facing the view point:
   Visible <- colMeans(Y) > 0
@@ -279,7 +280,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 #        xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
 #
     # Adopt from map.station
+    if(is.null(colbar$show)) colbar$show <- TRUE
     par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.9)
+    if(colbar$show) {
     if (fancy & !is.null(colbar)) {
       if (verbose) print("fancy colbar")
       col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
@@ -301,6 +304,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
       ##             col = colbar$col, legend.width = 1,
       ##             axis.args = list(cex.axis = 0.8), border = FALSE)
     }
+    }  
   }
 
   ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",
@@ -310,8 +314,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
     param <- as.character(param); unit <- as.character(unit)
     if(!is.null(unit) & (unit!='')) txt <- paste(param,'~(',unit,')') else
       if(!is.null(unit)) txt <- param
-    #text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4)
-    text(min(x),min(z),eval(parse(text=paste('expression(',txt,')'))),cex=1.5,pos=4)
+    text(min(x),max(z),eval(parse(text=paste('expression(',txt,')'))),
+         cex=1.5,pos=4)
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   result <- NULL # For now...
