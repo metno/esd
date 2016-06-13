@@ -18,7 +18,7 @@ C.C.eq <- function(x) {
     units[i] <- 'deg K'
   }
 
-  # From An Introduction to 'Atmospheric Physics' by RG. Fleagle, JA. Businger
+  # From 'An Introduction to Atmospheric Physics' by RG. Fleagle, JA. Businger
   # Academic Press, 9. jan. 1981, eq. 2.89, p. 72. https://goo.gl/7O2Ooo
   z <- (11.40 - 2353/x)
   e.s <- 10^z
