@@ -183,8 +183,9 @@ segments.trajectory <- function(x,param="month",
   }
 
   if(show.end) {
-    points(lon0[OK,dim(lon0)[2]],lat0[OK,dim(lon0)[2]],pch=18,cex=cex,
-           col=adjustcolor(col[OK,dim(lon0)[2]],alpha.f=alpha))
+    arrows(lon0[OK,ncol(lon0)-1],lat0[OK,ncol(lon0)-1],
+           lon0[OK,ncol(lon0)],lon0[OK,ncol(lon0)],lwd=lwd,length=0.1,
+           col=adjustcolor(col[OK,ncol(lon0)],alpha.f=alpha))
   }
   
   # draw coastlines
@@ -225,7 +226,8 @@ segments.trajectory <- function(x,param="month",
   }
 }
 
-lonlat.trajectory <- function(x,show.start=TRUE,show.subset=TRUE,
+lonlat.trajectory <- function(x,
+    show.start=TRUE,show.subset=TRUE,show.end=FALSE,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
     lty=1,lwd=2,main=NULL,add=FALSE,new=TRUE,verbose=FALSE,...) {
   if (verbose) print("lonlat.trajectory")
@@ -275,6 +277,13 @@ lonlat.trajectory <- function(x,show.start=TRUE,show.subset=TRUE,
   #       col=adjustcolor(col,min(1,alpha+0.1)))
   if(show.start) points(lons[OK,1],lats[OK,1],pch=19,cex=cex,
                         col=adjustcolor(col,alpha.f=alpha))
+  
+  ## plot arrow at end of trajectory
+  if(show.end) arrows(lons[OK,ncol(lons)-1],
+                      lats[OK,ncol(lons)-1],
+                      lons[OK,ncol(lons)],lats[OK,ncol(lons)],
+                      col=adjustcolor(col,alpha.f=alpha),lwd=lwd,length=0.1)
+  ## should do same for dateline trajectories!
 
   # trajectories crossing the dateline plotted in two parts
   if (sum(!OK)>0) {
@@ -340,11 +349,10 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
   invisible(a)
 }
 
-
 sphere.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=0.5,
     lty=1,lwd=2,lonR=0,latR=90,main=NULL,add=FALSE,
-    show.start=TRUE,verbose=FALSE,new=TRUE,...) {
+    show.start=TRUE,show.end=FALSE,verbose=FALSE,new=TRUE,...) {
   
   x0 <- x
   if(is.null(dim(x0))) {
@@ -397,6 +405,14 @@ sphere.trajectory <- function(x,
       points(X[1,],Z[1,],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
     }
   }
+
+  if(show.end & !is.null(dim(x0))) {
+    arrows(X[nrow(X)-1,],Z[nrow(X)-1,],
+           X[nrow(X),],Z[nrow(X),],
+           col=adjustcolor(col,alpha.f=alpha),
+           lwd=lwd,length=0.1)
+  }
+  
   points(x[y>0],z[y>0],pch=".",col='grey30')
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 
@@ -643,3 +659,7 @@ map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
 
 
 
+angle <- function(lon1,lat1,lon2,lat2) {
+  a <- 360 - (atan2(lat2-lat1,lon2-lon1)*(180/pi) + 360) %% 360
+  return(a)
+}
