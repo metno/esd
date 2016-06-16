@@ -28,6 +28,9 @@ stand <- function(x,m,s) (x - m)/s
 
 print("The Tropical North Atlantic:")
 
+if (!file.exists(fname)) {
+  download.file('ftp://ftp.cdc.noaa.gov/Datasets/noaa.ersst/sst.mnmean.v4.nc',fname)
+}
 sst <- retrieve(fname,lon=natl.lon,lat=natl.lat)
 
 ## Area of boxes used to estimate area of warm surface
