@@ -17,7 +17,7 @@ T.crit <- 26.5
 last.year <-2010
 natl.lon <- c(-80,10); natl.lat <- c(0,40)
 car.lon <- c(-100,-80); car.lat <- c(15,30)
-fname <- '/disk1/sst.mnmean.v4.nc'
+fname <- 'sst.mnmean.v4.nc'
 
 # Empirical ranking method:
 #
