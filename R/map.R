@@ -851,17 +851,19 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     cols <- adjustcolor(col,alpha=alpha)
     
     if("trajectory" %in% colnames(x0) & (show.trajectory | show.start | show.end)) {
+      if(verbose) print("plot trajectories")
       xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
       if(dim(xt)[1]>1) {
         xall <- as.trajectory(xt,nmin=2)
         map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
           add=TRUE,col=col,lonR=lonR,latR=latR,
           projection=projection,show.trajectory=show.trajectory,
-          show.start=show.start,show.end=show.end)
+          show.start=show.start,show.end=show.end,verbose=verbose)
       }
     }
 
     if(show.points) {
+      if(verbose) print("plot points")
       if(projection=="lonlat") {
         points(x[,"lon"],x[,"lat"],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)
       } else {
@@ -886,25 +888,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   
 }
 
-## map.events <- function(x,it=NULL,is=NULL,dx=2,dy=2,dt="year",
-##                colbar=list(pal="precip",rev=FALSE,n=10,
-##                breaks=NULL,pos=0.05,show=TRUE,type="p",
-##                cex=2,h=0.6,v=1),FUN="mean",projection="sphere",
-##                verbose=FALSE,...) {
-##   if (verbose) print("map.events")
-##   y <- subset(x,it=it,is=is,verbose=verbose)
-##   Y <- as.field(y,dx=dx,dy=dy,dt=dt,verbose=verbose)
-##   if (projection!="lonlat") xlim=NULL; ylim=NULL
-##   #if (is.null(colbar$breaks)) {
-##   #  Yc <- coredata(Y)
-##   #  vals <- Yc[Yc>0 & !is.infinite(Yc)]
-##   #  breaks <- pretty(seq(0,q95(vals),q95(vals)/(colbar$n-1)))
-##   #  colbar$breaks <- c(breaks,max(vals))
-##   #  colbar$n <- NULL
-##   #}
-##   map(Y,colbar=colbar,FUN=FUN,verbose=verbose,
-##       projection=projection,...)  
-## }
 
 ## Function that masks either ocean or land
 mask <- function(x,land=FALSE) {

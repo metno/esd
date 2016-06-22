@@ -3,7 +3,7 @@
 ## Require 	 geoborders.rda
 
 map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
-                           projection="sphere",verbose=TRUE,...) {
+                           projection="sphere",verbose=FALSE,...) {
   if (verbose) print("map.trajectory")
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
