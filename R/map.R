@@ -774,10 +774,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.05,lwd=3,col="black",bg="white",pch=21,cex=1,
+                       param=NA,alpha=0.25,lwd=3,col="blue",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                        pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       show.trajectory=FALSE,lty=2,type=c("fill","contour"),
+                       show.points=TRUE,show.trajectory=FALSE,show.start=FALSE,show.end=FALSE,
+                       lty=2,type=c("fill","contour"),
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
   if(verbose) print("map.events")
@@ -822,7 +823,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
       Y <- subset(Y,it=ii)
     }
   }
-  
   if(length(Y)!=0) {
     if (is.null(lonR)) lonR <- mean(lon(Y))
     if (is.null(latR)) latR <- max(lat(Y))
@@ -845,36 +845,37 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
   }
   
   period <- unique(c(min(it),max(it)))
- 
   if(dim(x)[1]>0) {
     #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
     #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
     cols <- adjustcolor(col,alpha=alpha)
     
-    if(show.trajectory & "trajectory" %in% colnames(x0)) {
+    if("trajectory" %in% colnames(x0) & (show.trajectory | show.start | show.end)) {
       xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
       if(dim(xt)[1]>1) {
         xall <- as.trajectory(xt,nmin=2)
         map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
-          add=TRUE,col="black",lonR=lonR,latR=latR,
-          projection=projection,show.start=FALSE)
+          add=TRUE,col=col,lonR=lonR,latR=latR,
+          projection=projection,show.trajectory=show.trajectory,
+          show.start=show.start,show.end=show.end)
       }
     }
 
-    if(projection=="lonlat") {
-      points(x[,"lon"],x[,"lat"],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)
-    } else {
-      theta <- pi*x[,"lon"]/180
-      phi <- pi*x[,"lat"]/180
-      ax <- sin(theta)*cos(phi)
-      ay <- cos(theta)*cos(phi)
-      az <- sin(phi)
-      a <- rotM(x=0,y=0,z=lonR) %*% rbind(ax,ay,az)
-      a <- rotM(x=latR,y=0,z=0) %*% a
-      ax <- a[1,]; ay <- a[2,]; az <- a[3,]
-      points(ax[ay>0],az[ay>0],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)    
+    if(show.points) {
+      if(projection=="lonlat") {
+        points(x[,"lon"],x[,"lat"],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)
+      } else {
+        theta <- pi*x[,"lon"]/180
+        phi <- pi*x[,"lat"]/180
+        ax <- sin(theta)*cos(phi)
+        ay <- cos(theta)*cos(phi)
+        az <- sin(phi)
+        a <- rotM(x=0,y=0,z=lonR) %*% rbind(ax,ay,az)
+        a <- rotM(x=latR,y=0,z=0) %*% a
+        ax <- a[1,]; ay <- a[2,]; az <- a[3,]
+        points(ax[ay>0],az[ay>0],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)    
+      }
     }
-   
   }
   
   if (!is.null(period) & length(Y)==0) {
