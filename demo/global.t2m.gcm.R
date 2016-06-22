@@ -148,9 +148,12 @@ if (FALSE) {
   legend(1850,4.5,c('RCP4.5','RCP8.5','RCP2.6','SRESA1b'),col=c('wheat','red','green','grey'),lty=1,lwd=3,bty='n')
 }
 
-arcticwarming <- function(presaved=TRUE) {
-  if 
-  t2m.70to90N.rcp85 <- globalmean(path='CMIP5.monthly/rcp85',lat=c(70,90),annual=FALSE)
+arcticwarming <- function(presaved=TRUE,arcticrcp85data='t2m.70to90N.rcp85.rda') {
+  if (presaved) {
+    if (!file.exists(arcticrcp85data))
+       download.file('https://ndownloader.figshare.com/files/5431400',arcticrcp85data)
+    load(arcticrcp85data)
+  } else t2m.70to90N.rcp85 <- globalmean(path='CMIP5.monthly/rcp85',lat=c(70,90),annual=FALSE)
   djf <- aggregate(subset(t2m.70to90N.rcp85,it='djf'),year,FUN='mean')
   plot(djf,plot.type='single')
 }
