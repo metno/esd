@@ -155,7 +155,7 @@ arcticwarming <- function(presaved=TRUE,arcticrcp85data='t2m.70to90N.rcp85.rda')
     load(arcticrcp85data)
   } else t2m.70to90N.rcp85 <- globalmean(path='CMIP5.monthly/rcp85',lat=c(70,90),annual=FALSE)
   djf <- aggregate(subset(t2m.70to90N.rcp85,it='djf'),year,FUN='mean')
-  plot(djf,plot.type='single',main='RCP8.5 mean wintertemperature 70N-90N'
+  plot(djf,plot.type='single',main='RCP8.5 mean wintertemperature 70N-90N',
        xlab='Year',ylab=expression(degree*C))
   grid()
 }
