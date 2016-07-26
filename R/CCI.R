@@ -1,13 +1,5 @@
 # K Parding, 29.05.2015
 
-data(etopo5)
-altitude <- function(lon=0,lat=60) {
-  i.lon <- which.min(abs(longitude(etopo5)-lon))
-  i.lat <- which.min(abs(latitude(etopo5)-lat))
-  h <- etopo5[i.lon,i.lat]
-  return(mean(h))
-}
-
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
                 label=NULL,mindistance=5E5,dpmin=1E-3,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
@@ -147,7 +139,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   ## Find new zero crossings
   P.lowx2[lows1] <- 0; P.lowy2[lows1] <- 0
   lows2 <- (P.lowy2 & P.lowx2)
-
   ## Clear temporary objects from working memory
   rm("P.lowx2","P.lowy2"); gc(reset=TRUE)
   
@@ -163,9 +154,16 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     lows2[dP<0] <- FALSE
   }
   rm("dP","P.zonal"); gc(reset=TRUE)
- 
+
   ## Exclude identified depressions in high altitude regions
-  h <- mapply(altitude,lonXY,latXY)
+  data(etopo5)
+  fn <- function(lon=0,lat=60) {
+    i.lon <- which.min(abs(longitude(etopo5)-lon))
+    i.lat <- which.min(abs(latitude(etopo5)-lat))
+    h <- etopo5[i.lon,i.lat]
+    return(mean(h))
+  }    
+  h <- mapply(fn,lonXY,latXY)
   ok <- rep(h<2000,nt)
   dim(ok) <- c(nx-1,ny-1,nt)
   ok <-aperm(ok,c(3,1,2))
@@ -191,8 +189,6 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   pcent2 <- 0.5*(px[lows2]+py[lows2])
   strength2 <- rank(pcent2)
   if (!cyclones) strength2 <- rank(-pcent2)
-
-  
 
   ## Keep only cyclones that are deeper than pmax
   del1 <- rep(TRUE,length(date1))
@@ -294,7 +290,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   }
   lows1[lows1] <- del1
   lows2[lows2] <- del2
-  
+ 
   ## Add the two groups of cyclones together,
   ## keep track of which is which with the quality flag qf
   lows <- lows1 | lows2
@@ -341,7 +337,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
 
     ## Remove temporary variables and release the memory:
     rm('DX','DY'); gc(reset=TRUE)
-
+ 
     # Find points of inflexion (2nd derivative==0) to estimate
     # the storm radius and maximum speed and pressure gradient
     t1 <- Sys.time()
@@ -415,7 +411,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
     max.dslp <- max.dslp*1E-2*1E3
     if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
-
+ 
     if(!is.null(rmin)) ok <- ok & radius>=rmin
     if(!is.null(rmax)) ok <- ok & radius<=rmax
     lon <- lon[ok]
@@ -431,7 +427,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     if (!cyclones) strength <- rank(-pcent)
 
     if (lplot) {
-      if(verbose) print("plot example of cyclone identification")
+     if(verbose) print("plot example of cyclone identification")
       data(geoborders,envir=environment())
       i <- length(date)/2
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
