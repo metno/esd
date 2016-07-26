@@ -19,7 +19,7 @@ ele2param(ele="601",src="GHCNM")
 esd2ele <- function(param = NULL) {
   if (!is.null(param)) ele <- switch(tolower(param),
                                      't2m' = "101",
-                                     'tg' = "101",
+                                     'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
                                      'rr' = "601",
                                      'slp' = "401",
                                      'cloud' = "801",
@@ -29,8 +29,8 @@ esd2ele <- function(param = NULL) {
                                      `401` = "slp",
                                      `601` = "precip",
                                      `801` = "801",
-                                     'tmin'="121",
-                                     'tmax'="111",
+                                     'tmin'="121",'tx'="121",                             #REB 2016-07-25                 
+                                     'tmax'="111",'tn'="111",                             #REB 2016-07-25
                                      '121' ="tmin",
                                      '111' = "tmax",
                                      '901'  = "sd",

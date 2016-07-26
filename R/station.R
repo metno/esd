@@ -214,10 +214,12 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ## 
       if (is.null(path.ecad)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.ecad ## default path
       if (is.null(url.ecad)) url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_blend" else url <- url.ecad ## default url
-      x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path=path, url=url)
+      x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path=path, url=urlpath)
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
-        print("Warning : No values found in the time series -> This station will be ignored")
+        print("Warning : No values found in the time series for-> This station will be ignored")
+        print(paste('stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],'loc=',loc[i],'cntr=',
+                    cntr[i],'param=',param[i],'path=',path,'url=',url)) # REB 2016-07-26
         x <- NULL
       }
       ## else if (!is.null(x)) X <- combine.stations(X,x)
