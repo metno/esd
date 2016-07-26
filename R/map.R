@@ -654,6 +654,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") |
         (tolower(variable)=="2t") )
         variable <- "T[2*m]"
+    if (verbose) print(paste(variable,unit,isprecip,' -> varlabel'))
     varlabel=eval(parse(text=paste('expression(',
                 variable," *(",unit,"))",sep="")))
     if (!is.null(attr(x,'source'))) sub <- attr(x,'source') else
@@ -686,6 +687,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     }
 
     x <- x[srtx,srty]
+    
     if (verbose) {print(xlim); str(x)}
     if (!is.null(xlim)) {
         outside <- (lon < min(xlim)) | (lon > max(xlim))
@@ -706,7 +708,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else {
         par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
     }
-    
+
+    if (verbose) print('Set up the figure')
     plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
          xlim=xlim,ylim=ylim,main=main, # to sumerimpose.
          xaxt="n",yaxt="n") # AM 17.06.2015
@@ -727,6 +730,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(xpd=FALSE)
     dlat <- diff(range(lat))/60
     if (verbose) {print(dlat); print(sub)}
+
     text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2)
     if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
 
