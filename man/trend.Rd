@@ -45,7 +45,12 @@ trend.pval(x,...)
 \author{R.E. Benestad}
 \examples{
 data(ferder)
+
+plot(annual(ferder,'max'))
 tr <- trend(annual(ferder,'max'))
-attr(tr,'coefficients')
+lines(tr)
+grid()
+print(attr(tr,'coefficients'))
+print(trend(ferder,results='pval'))
 }
 \keyword{utilities}

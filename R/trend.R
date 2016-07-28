@@ -43,13 +43,20 @@ trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) 
                       "pval"=trend.pval(coredata(x)))
   if (verbose) str(y)
   attr(y,'coefficients') <- summary(xt)$coefficients
-  attr(y,'original data') <-  x
+  #attr(y,'original data') <-  x
   attr(y,'aspect') <- result
   attr(y,'lm') <- xt
   #attr(y,'call') <- match.call()
-  y <- attrcp(x,y,ignore='aspect')
+ if (result %in% c("trend","residual")) y <- attrcp(x,y,ignore='aspect') else {
+        attr(y,'location') <- loc(x)
+        attr(y,'longitude') <- lon(x)
+        attr(y,'latitude') <- lat(x)
+        attr(y,'altitude') <- alt(x)
+        attr(y,'cntr') <- cntr(x)
+        attr(y,'stid') <- stid(x)
+        attr(y,'history') <- attr(x,'history')
+      }
   attr(y,'history') <- history.stamp(x)
-  #print(".")
   return(y)
 }
 
