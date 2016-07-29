@@ -396,7 +396,9 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   } 
   ## if folder does not exist, then download and unzip
   if (!file.exists(destfile2)) {
-    if(!file.exists(path)) dir.create(path) ## KMP 2016-07-28 download.file doesn't work if the directory doesn't exist
+    ## KMP 2016-07-28 download.file doesn't work if the directory doesn't exist
+    ## KMP 2016-07-29 added recursive argument
+    if(!file.exists(path)) dir.create(path, recursive = TRUE)
     download.file(fdata,destfile,method = "wget", quiet = FALSE, mode = "w",
                   cacheOK = TRUE, extra = getOption("download.file.extra"))
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
