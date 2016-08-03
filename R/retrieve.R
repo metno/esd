@@ -155,7 +155,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
         if (length(ilonunit>1)) {
             if (verbose) print(paste("Longitude unit is :",lon$unit,sep=" "))
             lonunit <- eval(parse(text = paste("lon$",names(lon)[ilonunit],sep="")))
-            if (length(grep("degrees_east",lonunit))<1)
+            if (length(grep("degree.*.east",lonunit))<1)
                 stop("'retrieve.ncdf4' is not suited to extract longitude units different from 'degrees_east'")
         }
     }
@@ -678,7 +678,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
             if (length(ilonunit>1)) {
                 if (verbose) print(paste("Longitude unit is :",lon$unit,sep=" "))
                 lonunit <- eval(parse(text = paste("lon$",names(lon)[ilonunit],sep="")))
-                if (length(grep("degrees_east",lonunit)) < 1) {
+                if (length(grep("degree.*.east",lonunit)) < 1) {
                     stop("'retrieve.ncdf4' is not suited to extract longitude units different from 'degrees_east'")
                 }
             }
