@@ -407,7 +407,6 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   for (i in 1:length(stid)) 
     while(nchar(stid[i]) < 6) stid[i] <- paste('0',stid[i],sep="")
   
-  
   fnames <- paste(toupper(param1),'_STAID',stid,'.txt',sep="")
   fnames <- file.path(newpath,fnames,fsep = .Platform$file.sep)
   ##print(fnames)

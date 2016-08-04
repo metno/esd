@@ -216,7 +216,7 @@ plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
                            what=c("pc","eof","var"),## colbar=NULL,
                            cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
-                           verbose=FALSE,...) {
+                           verbose=FALSE,cex=1,...) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   n <- pattern
   what <- tolower(what)
@@ -241,14 +241,14 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
           ## par(fig=c(0.025,0.5,0.5,0.975)) ## c(0,0.45,0.5,0.975) c(0.05,0.5,0.55,0.95)
           map(x,pattern=pattern,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
-              cex.lab=cex.lab,...) ## AM formely new=FALSE colbar=colbar,
+              cex.lab=cex.lab,cex=cex,...) ## AM formely new=FALSE colbar=colbar,
       } else if (inherits(x,'pca')) {
           par(fig=c(0,0.5,0.5,1))
           main1 <- paste('Leading EOF#',pattern, ' (',
                          round(var.eof[pattern],digits=2),"%)",sep='')
           map(x,pattern=pattern,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
-              cex.lab=cex.lab,...) ## colbar=colbar,
+              cex.lab=cex.lab,cex=cex,...) ## colbar=colbar,
           title(main=src(x)[1],cex.main=cex.main*0.8,
                 col.main="grey40",adj=0,line=0)
           title(main=main1,cex.main=cex.main)
@@ -264,7 +264,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   if (length(grep('var',what))>0) {
     par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
     plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=cex.main,
-                 cex.axis=cex.axis,bty="n")
+                 cex.axis=cex.axis,bty="n",cex=cex)
   }
   
   #print(main)
@@ -730,24 +730,28 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose
   invisible(z)
 }
 
-plot.pca <- function(x,verbose=FALSE,new=TRUE,...) {
+plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.pca')
-  attr(x,'longname') <- attr(x,'longname')[1]
-  plot.eof.field(x,verbose=verbose,new=new,...)
+  attr(y,'longname') <- attr(y,'longname')[1]
+  plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
 }
+
 
 plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                             type="p",cex=1,show=TRUE,
                             h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
   y <- x # quick fix
+
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
   #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
+
   if (verbose) print('PCA pattern')
   map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,...)
+
   title(paste("PCA Pattern # ",pattern,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
   if (verbose) print('Predictor pattern')

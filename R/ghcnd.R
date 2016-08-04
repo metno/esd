@@ -145,6 +145,7 @@ ghcnd.data <- function(param = "PRCP", stid = "ACW00011604" , src = "ghcnd" , ad
     ## fdata <- paste(stid,"dly",sep=".")  	
     ##fdata <- "ghcnd.tavg.v3.2.0.20130120.qca.dat"   
     if (!is.null(stid)) datatext = readLines(destfile) ##readLines(fdata)    
+   
     ghcnd.data <- read.fwf(destfile,widths=c(3,8,4,2,4,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3),col.names=c("COUNTRY.CODE","ID","YEAR","MONTH","ELEMENT","DAY1","MQSFLAG1","DAY2","MQSFLAG2","DAY3","MQSFLAG3","DAY4","MQSFLAG4","DAY5","MQSFLAG5","DAY6","MQSFLAG6","DAY7","MQSFLAG7","DAY8","MQSFLAG8","DAY9","MQSFLAG9","DAY10","MQSFLAG10","DAY11","MQSFLAG11","DAY12","MQSFLAG12","DAY13","MQSFLAG13","DAY14","MQSFLAG14","DAY15","MQSFLAG15","DAY16","MQSFLAG16","DAY17","MQSFLAG17","DAY18","MQSFLAG18","DAY19","MQSFLAG19","DAY20","MQSFLAG20","DAY21","MQSFLAG21","DAY22","MQSFLAG22","DAY23","MQSFLAG23","DAY24","MQSFLAG24","DAY25","MQSFLAG25","DAY26","MQSFLAG26","DAY27","MQSFLAG27","DAY28","MQSFLAG28","DAY29","MQSFLAG29","DAY30","MQSFLAG30","DAY31","MQSFLAG31"),sep = "\t",as.is=TRUE)   
 
     if (dim(ghcnd.data)[1]==0) {
@@ -158,7 +159,7 @@ ghcnd.data <- function(param = "PRCP", stid = "ACW00011604" , src = "ghcnd" , ad
     ghcnd.data <- subset(ghcnd.data,select = seq(-7,-dim(ghcnd.data)[2],-2))
     
     ## Replacement of missing value -9999 by "NA"
-    if (miss2na) ghcnd.data[ghcnd.data < -99] = NA	
+    if (miss2na) ghcnd.data[ghcnd.data == -9999] = NA	
     
     ## Scale the values 
     ## ghcnd.data[,5:16] = ghcnd.data[,5:16] / 100 
