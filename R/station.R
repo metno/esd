@@ -211,13 +211,16 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       }
       ##if (!is.null(x)) X <- combine.stations(X,x)
     } else if (src[i]=="ECAD") { #AM-29.07.2013 added "|(src[i]=="ECAD")"
-      ## 
+      ##
+      if (toupper(param[i])=='TMAX') param[] <- 'tx' #REB 2016-07-26: dirty bug-rectification
       if (is.null(path.ecad)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.ecad ## default path
       if (is.null(url.ecad)) url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_blend" else url <- url.ecad ## default url
       x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path=path, url=url)
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
-        print("Warning : No values found in the time series -> This station will be ignored")
+        print("Warning : No values found in the time series for-> This station will be ignored")
+        print(paste('stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],'loc=',loc[i],'cntr=',
+                    cntr[i],'param=',param[i],'path=',path,'url=',url)) # REB 2016-07-26
         x <- NULL
       }
       ## else if (!is.null(x)) X <- combine.stations(X,x)
@@ -392,7 +395,8 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   } 
   ## if folder does not exist, then download and unzip
-  if (!file.exists(destfile2)) { 
+  if (!file.exists(destfile2)) {
+    if(!file.exists(path)) dir.create(path,recursive=TRUE) ## KMP 2016-07-28 download.file doesn't work if the directory doesn't exist
     download.file(fdata,destfile,method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   }

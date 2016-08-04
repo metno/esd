@@ -736,23 +736,31 @@ plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
   plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
 }
 
-plot.ds.pca <- function(y,pattern=1,verbose=FALSE,
-                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=1,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,cex=1,...) {
+
+plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
+                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                            type="p",cex=1,show=TRUE,
+                            h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
+  y <- x # quick fix
 
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
   #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
-  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,cex=cex,...)
+
+  if (verbose) print('PCA pattern')
+  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,...)
+
   title(paste("PCA Pattern # ",pattern,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
+  if (verbose) print('Predictor pattern')
   map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
       colbar=colbar2,verbose=verbose,
       main=paste("EOF Pattern # ",pattern,sep=""))
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
+    if (verbose) print('Evaluation results')
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     ## Get the right pattern
     xvp <- (pattern-1)*2 +1

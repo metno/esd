@@ -3,7 +3,7 @@
 ## Require 	 geoborders.rda
 
 map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
-                           projection="sphere",verbose=TRUE,...) {
+                           projection="sphere",verbose=FALSE,...) {
   if (verbose) print("map.trajectory")
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
@@ -12,9 +12,9 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
     if (projection=="sphere" | projection=="np" | projection=="sp") {
       if (projection=="np") latR <- 90
       if (projection=="sp") latR <- -90
-      sphere.trajectory(y,...)
+      sphere.trajectory(y,verbose=verbose,...)
     } else if (projection=="latlon" | projection=="lonlat") {
-      lonlat.trajectory(y,...)
+      lonlat.trajectory(y,verbose=verbose,...)
     }
   } else if (type=='density') {
     map.density.trajectory(y,projection=projection,verbose=verbose,...)
@@ -183,8 +183,9 @@ segments.trajectory <- function(x,param="month",
   }
 
   if(show.end) {
-    points(lon0[OK,dim(lon0)[2]],lat0[OK,dim(lon0)[2]],pch=18,cex=cex,
-           col=adjustcolor(col[OK,dim(lon0)[2]],alpha.f=alpha))
+    arrows(lon0[OK,ncol(lon0)-1],lat0[OK,ncol(lon0)-1],
+           lon0[OK,ncol(lon0)],lon0[OK,ncol(lon0)],lwd=lwd,length=0.1,
+           col=adjustcolor(col[OK,ncol(lon0)],alpha.f=alpha))
   }
   
   # draw coastlines
@@ -225,7 +226,8 @@ segments.trajectory <- function(x,param="month",
   }
 }
 
-lonlat.trajectory <- function(x,show.start=TRUE,show.subset=TRUE,
+lonlat.trajectory <- function(x,
+    show.trajectory=TRUE,show.start=TRUE,show.subset=TRUE,show.end=FALSE,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
     lty=1,lwd=2,main=NULL,add=FALSE,new=TRUE,verbose=FALSE,...) {
   if (verbose) print("lonlat.trajectory")
@@ -264,20 +266,28 @@ lonlat.trajectory <- function(x,show.start=TRUE,show.subset=TRUE,
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
                           sum(!OK),'crossing dateline'))
 
-  if(sum(OK)>1) {
-    matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
+  if(show.trajectory) {
+    if(sum(OK)>1) {
+      matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
-  } else if(sum(OK)==1) {
-    lines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
+    } else if(sum(OK)==1) {
+      lines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
+    }
   }
-  #points(lons[OK,],lats[OK,],pch='.',cex=0.5,
-  #       col=adjustcolor(col,min(1,alpha+0.1)))
+
   if(show.start) points(lons[OK,1],lats[OK,1],pch=19,cex=cex,
                         col=adjustcolor(col,alpha.f=alpha))
+  
+  ## plot arrow at end of trajectory
+  if(show.end) arrows(lons[OK,ncol(lons)-1],
+                      lats[OK,ncol(lons)-1],
+                      lons[OK,ncol(lons)],lats[OK,ncol(lons)],
+                      col=adjustcolor(col,alpha.f=alpha),lwd=lwd,length=0.1)
+  ## should do same for dateline trajectories!
 
   # trajectories crossing the dateline plotted in two parts
-  if (sum(!OK)>0) {
+  if (sum(!OK)>0 & show.trajectory) {
     fn <- function(lon,lat) {
       lon[lon<0] <- lon[lon<0]+360
       xy <- approx(lon,lat,sort(c(lon,180)))
@@ -340,12 +350,13 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
   invisible(a)
 }
 
-
 sphere.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=0.5,
     lty=1,lwd=2,lonR=0,latR=90,main=NULL,add=FALSE,
-    show.start=TRUE,verbose=FALSE,new=TRUE,...) {
-  
+    show.trajectory=TRUE,show.start=TRUE,show.end=FALSE,show.subset=TRUE,
+    new=TRUE,verbose=FALSE,...) {
+
+  if(verbose) print("sphere.trajectory")
   x0 <- x
   if(is.null(dim(x0))) {
     dim(x) <- c(1,length(x0))
@@ -388,8 +399,9 @@ sphere.trajectory <- function(x,
   par(bty="n",xaxt="n",yaxt="n")
   if(!add) plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
 
-  matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
-  #points(X,Z,pch='.',cex=0.8,col=adjustcolor(col,alpha.f=min(1,alpha+0.2)))
+  if(show.trajectory) {
+    matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
+  }
   if(show.start) {
     if(is.null(dim(x0))) {
       points(X[1],Z[1],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
@@ -397,37 +409,47 @@ sphere.trajectory <- function(x,
       points(X[1,],Z[1,],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
     }
   }
+
+  if(show.end & !is.null(dim(x0))) {
+    arrows(X[nrow(X)-1,],Z[nrow(X)-1,],
+           X[nrow(X),],Z[nrow(X),],
+           col=adjustcolor(col,alpha.f=alpha),
+           lwd=lwd,length=0.1)
+  }
+  
   points(x[y>0],z[y>0],pch=".",col='grey30')
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 
   # box marking the spatial subset
-  slon <- attr(x0,'longitude')
-  slat <- attr(x0,'latitude')
-  if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
+  if(show.subset) {
+    slon <- attr(x0,'longitude')
+    slat <- attr(x0,'latitude')
+    if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
                           'lat',paste(slat,collapse="-")))
-  if (any(!is.null(c(slat,slon)))) {
-    if(verbose) print('draw subset box')
-    if (sum(is.na(attr(x0,'longitude')))==0) {
-      xlim <- attr(x0,'longitude')
-    } else {
-      xlim <- c(min(x0[,colnames(x0)=='lon']),
-                max(x0[,colnames(x0)=='lon']))
+    if (any(!is.null(c(slat,slon)))) {
+      if(verbose) print('draw subset box')
+      if (sum(is.na(attr(x0,'longitude')))==0) {
+        xlim <- attr(x0,'longitude')
+      } else {
+        xlim <- c(min(x0[,colnames(x0)=='lon']),
+                  max(x0[,colnames(x0)=='lon']))
+      }
+      if (sum(is.na(attr(x0,'latitude')))==0) {
+        ylim <- attr(x0,'latitude')
+      } else {
+        ylim <- c(min(x0[,colnames(x0)=='lat']),
+                  max(x0[,colnames(x0)=='lat']))
+      }
+      if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
+                              'ylim',paste(ylim,collapse="-")))
+      xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
+      ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
+      xbox <- approx(xbox,n=200)$y
+      ybox <- approx(ybox,n=200)$y
+      a <- sphere.rotate(xbox,ybox,lonR=lonR,latR=latR)
+      x <- a[1,]; y <- a[2,]; z <- a[3,]
+      lines(x,z,lty=1,col='grey20',lwd=1.0)
     }
-    if (sum(is.na(attr(x0,'latitude')))==0) {
-      ylim <- attr(x0,'latitude')
-    } else {
-      ylim <- c(min(x0[,colnames(x0)=='lat']),
-                max(x0[,colnames(x0)=='lat']))
-    }
-    if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
-                            'ylim',paste(ylim,collapse="-")))
-    xbox <- c(xlim[1],xlim[2],xlim[2],xlim[1],xlim[1])
-    ybox <- c(ylim[1],ylim[1],ylim[2],ylim[2],ylim[1])
-    xbox <- approx(xbox,n=200)$y
-    ybox <- approx(ybox,n=200)$y
-    a <- sphere.rotate(xbox,ybox,lonR=lonR,latR=latR)
-    x <- a[1,]; y <- a[2,]; z <- a[3,]
-    lines(x,z,lty=1,col='grey20',lwd=1.0)
   }
 }
 
@@ -643,3 +665,7 @@ map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
 
 
 
+angle <- function(lon1,lat1,lon2,lat2) {
+  a <- 360 - (atan2(lat2-lat1,lon2-lon1)*(180/pi) + 360) %% 360
+  return(a)
+}
