@@ -159,7 +159,7 @@ ghcnd.data <- function(param = "PRCP", stid = "ACW00011604" , src = "ghcnd" , ad
     ghcnd.data <- subset(ghcnd.data,select = seq(-7,-dim(ghcnd.data)[2],-2))
     
     ## Replacement of missing value -9999 by "NA"
-    if (miss2na) ghcnd.data[ghcnd.data < -999] = NA	
+    if (miss2na) ghcnd.data[ghcnd.data == -9999] = NA	
     
     ## Scale the values 
     ## ghcnd.data[,5:16] = ghcnd.data[,5:16] / 100 
