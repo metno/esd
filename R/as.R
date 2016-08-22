@@ -1100,7 +1100,7 @@ as.residual.ds <- function(x,verbose=FALSE){
         y <- attrcp(z0,y); class(y) <- class(z0)
       } else
       if (is.pca(x)) {
-        if (verbose) print('eof/field')
+        if (verbose) print('pca/station')
         z0 <- as.station(attr(x,'original_data'))
         z1 <- as.station(x)
         y <- z1 - z0

@@ -10,35 +10,23 @@
 
 aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
                               regular = NULL, frequency = NULL) {
-  #if (verbose) print('aggregate.station')
+
+  args <- list(...)
+  ix0 <- grep('threshold',names(args))
+  iv0 <- grep('verbose',names(args))
+  if (length(ix0)>0) threshold <- args[[ix0]] else threshold <- 1
+  if (length(iv0)>0) verbose <- args[[iv0]] else verbose <- FALSE
+
+  if (verbose) {print('aggregate.station'); print(names(args)); print(threshold)}
   class(x) -> cls
   #print(deparse(substitute(by)))
   class(x) <- "zoo"
-  #print("-------"); str(x)
-#  fun4exc <- as.character(match.call())
-#  if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
-#  print(fun4exc)
-  # This is a less elegant solution to ensure right units...
-#  if (length(grep("exceedance",fun4exc))==1) {
-#    if (length(grep("counts",fun4exc))==1) fun <- "counts" else
-#    if (length(grep("freq",fun4exc))==1) fun <- "freq" else
-#    if (length(grep("wetfreq",fun4exc))==1) fun <- "wetfreq" else
-#    if (length(grep("wetmean",fun4exc))==1) fun <- "wetmean" else
-#                                            fun <- "mean"
-#  } else fun <- "mean"
-
-  #print(names(list(...))); print(names(formals(FUN)))
   
- # if (length(grep("threshold",fun4exc))==0) threshold <- 1
-#  y <- aggregate(x, by, match.fun(FUN),na.rm=TRUE, ...,
-#                 regular = regular, frequency = frequency)
-  #browser()
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) )
     y <- aggregate(x, by, FUN, na.rm=TRUE, ...,
                    regular = regular, frequency = frequency) else
     y <- aggregate(x, by, FUN, ..., regular = regular, frequency = frequency)
-  #str(y); print("-------")
 
   if (class(index(y))=="Date") {
   dy <- day(y); mo <- month(y); yr <- year(y)
@@ -56,11 +44,7 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   class(y) <- cls
   y <- attrcp(x,y)
 
-  args <- list(...)
-  #print(names(args))
-  ix0 <- grep('threshold',names(args))
-  if (length(ix0)>0) threshold <- args[[ix0]] else threshold <- 1
-  #print(threshold)
+
  
    #print(FUN)
   if (FUN=="counts")  {
