@@ -579,7 +579,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   #dim(X) <- d; dim(Y) <- d; dim(Z) <- d
   #print(dim(rbind(X,Z)))
   
-# Plot the results:  
+# Plot the results:
   dev.new()
   par(bty="n",xaxt="n",yaxt="n",new=TRUE)
   plot(x,z,pch=".",col="white",xlab="",ylab="",
@@ -608,7 +608,6 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   col <- colb[findInterval(map,breaks)]
   bg <- col
   nc <- length(colb)
-  
   visible <- Y > 0
   points(X[visible],Z[visible],cex=cex,pch=pch,col=col,bg=bg)
   
@@ -637,7 +636,6 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
       text(0.1,0.95,param,cex=cex.main,pos=4)
       text(0.72,0.002,unit,pos=4)  
   }
-  
   ##result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
   if (inherits(x0,"stationmeta"))
       result <- data.frame(x=Y,y=Z)
