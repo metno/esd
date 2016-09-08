@@ -748,6 +748,7 @@ metnom.station <-  function(re=15,stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,
                             start=NULL,end=NULL,param=NULL,verbose=FALSE, h = NULL, nmt = 0,
                             path = NULL, dup = "A", url = "http://klapp/metnopub/production/") {
   
+  url <- "ftp://ftp.met.no/projects/chasepl/test"
   y <- metno.station(re=re,stid=stid,lon=lon,lat=lat,loc=loc,alt=alt,cntr=cntr,qual=qual,
                      start=start,end=end,param=param,verbose=verbose,h = h, nmt = nmt,
                      path = path, dup = dup, url = url)
@@ -755,17 +756,18 @@ metnom.station <-  function(re=15,stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,
     attr(y,"source") <- "METNOM"
   invisible(y)
 }
-metnod.station <-  function(re=14, ...) {
-  ## 
-  y <- metno.station(re=re,...)
+metnod.station <-  function(re=14, url,...) {
+  brwoser() 
+  url <- "ftp://ftp.met.no/projects/chasepl/test"
+  y <- metno.station(re=re,url=url,...)
   if (!is.null(y))
     attr(y,"source") <- "METNOD"
   invisible(y)
 }
-metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
+metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
                           qual=NULL,start=NULL,end=NULL,param=NULL,verbose=FALSE,
                           re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",
-                          url = "http://klapp/metnopub/production/") {
+                          url = "http://klapp/metnopub/production/",save2file=TRUE) {
   
   if (verbose) print("http://eklima.met.no")
   ## 
@@ -788,16 +790,29 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   } else stop("The url must be specified")
   
   if (verbose) print(Filnavn)
-  
+  ## browser()
   firstline <- readLines(Filnavn, n = 1, encoding = "latin1")
   if (substr(firstline, 1, 3) == "***") {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
   ## 
   Datasett <- as.list(read.table(Filnavn,dec = ".", header = TRUE, as.is = TRUE, fileEncoding = "latin1"))
-  Datasett$RR[Datasett$RR == "."] <- "0"
+  if (param1=='RR') 
+    Datasett$RR[Datasett$RR == "."] <- "0"
+  
+  ext <- switch(as.character(re), '14' = 'dly', '17' = 'obs', '15' = 'mon')
+  
+  if (save2file) {
+    if (is.null(path)) 
+      path <- 'data.METNO'
+    dir.create(path,recursive = TRUE)
+    #if (nchar(stid)<=5) 
+    stid <- sprintf("%05d", as.numeric(stid))
+    write.table(Datasett,file=file.path(path,paste(param1,'_',stid,'.',ext,sep='')),row.names = FALSE,col.names = names(Datasett))
+  }
+  
   eval(parse(text = paste("y <- as.numeric(Datasett$", param1, ")",sep = "")))
   if (sum(y,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
   
-  type <- switch(re, `14` = "daily values", `17` = "observations", '15' = "Monthly means")
+  type <- switch(re, '14' = "daily values", '17' = "observations", '15' = "Monthly means")
   ## 
   if (is.na(end)) end <- format(Sys.time(),'%Y')
   year <- Datasett$Year ## sort(rep(c(start:end),12))
@@ -967,5 +982,77 @@ replace.char <- function (c, s, ny.c)  {
     is <- is + 1
   }
   s
+}
+
+metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
+                          qual=NULL,start=NA,end=NA,param=NULL,verbose=FALSE,
+                          re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",
+                          url = "ftp://ftp.met.no/projects/chasepl/test",save2file=FALSE) {
+  
+  if (verbose) print("ftp.met.no")
+  ## 
+  ## if (!is.na(end)) end1 <- format(Sys.time(),'%d.%m.%Y')
+  #if (!is.na(end)) end1 <-format(as.Date(paste("31.12.",as.character(end),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
+  #if (!is.na(start)) start1 <- format(as.Date(paste("01.01.",as.character(start),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
+  param1 <- ele2param(ele=esd2ele(param),src="metno")$param ## switch(param,"t2m"="TAM","precip"="RR")
+  ext <- switch(as.character(re), '14' = 'dly', '17' = 'obs', '15' = 'mon')
+  if (ext=='dly')
+    path <- 'data.METNOD'
+  else if (ext=='mon')
+    path <- 'data.METNOM'
+  ##browser()
+  if (!is.null(url)) {
+    Filnavn <- file.path(url, path, paste(param1,'_',sprintf('%05d',as.numeric(stid)),'.',ext, sep = ""))
+  } else stop("The url must be specified")
+  
+  if (verbose) print(Filnavn)
+  ## browser()
+  Datasett <- as.list(read.table(Filnavn,dec = ".", header = TRUE, as.is = TRUE, fileEncoding = "latin1"))
+  if (param1=='RR') 
+    Datasett$RR[Datasett$RR == "."] <- "0"
+  
+  if (save2file) {
+    if (is.null(path)) 
+      path <- 'data.METNO'
+    dir.create(path,recursive = TRUE)
+    #if (nchar(stid)<=5) 
+    stid <- sprintf("%05d", as.numeric(stid))
+    write.table(Datasett,file=file.path(path,paste(param1,'_',stid,'.',ext,sep='')),row.names = FALSE,col.names = names(Datasett))
+  }
+  
+  eval(parse(text = paste("y <- as.numeric(Datasett$", param1, ")",sep = "")))
+  if (sum(y,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
+  
+  type <- switch(re, '14' = "daily values", '17' = "observations", '15' = "Monthly means")
+  ## 
+  if (is.na(end)) end <- format(Sys.time(),'%Y')
+  year <- Datasett$Year ## sort(rep(c(start:end),12))
+  ny <- length(year)
+  month <- Datasett$Month ## rep(1:12,length(c(start:end)))
+  if (re==14) day <- Datasett$Day else day <- "01" ## rep(1,length(year))
+  
+  METNO <- zoo(y,order.by = as.Date(paste(year, month, day, sep = "-")))                                  
+  
+  if (sum(METNO,na.rm=TRUE)==0) {
+    print("Warning : No recorded values are found for this station -> Ignored")
+    return(NULL)
+  } 
+  ##print("attributes")
+  
+  ## Add meta data as attributes:
+  METNO <- as.station(METNO,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,
+                      ##frequency=1,calendar='gregorian',
+                      cntr=cntr,loc=loc,src='METNO', url=Filnavn,
+                      longname=as.character(ele2param(ele=esd2ele(param),src="METNO")[2]),
+                      unit=as.character(ele2param(ele=esd2ele(param),src="METNO")[4]),
+                      param=param, aspect="original",
+                      reference="Klimadata Vare Huset archive (http://eklima.met.no)",
+                      info="Klima Data Vare Huset archive (http://eklima.met.no)")
+  
+  attr(METNO,'history') <- c(match.call(),date())
+  attr(METNO,'history') <- history.stamp(METNO)
+  if (re==14) class(METNO) <- c("station","day","zoo") else if (re==15) class(METNO) <- c("station","month","zoo")
+  close(Filenavn)
+  invisible(METNO)
 }
 
