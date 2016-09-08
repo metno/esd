@@ -8,7 +8,7 @@ track.events <- function(x,verbose=FALSE,...) {
 }
 
 track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,
-                          dE=0.3,dN=0,dmin=1E5,amax=NULL,ddmax=NULL,dpmax=NULL,
+                          dE=0.3,dN=0,dmin=1E5,amax=90,ddmax=0.5,dpmax=NULL,
                           lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
@@ -364,7 +364,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,dE=0.3,dN=0.2,
     rank.da <- matrix(rank(da),dim(da))
     rank.dd <- matrix(rank(dd),dim(dd))
     rank.d123 <- matrix(rank(d123),dim(d123))
-    rank.all <- rank.da + rank.d123# + rank.dd
+    rank.all <- rank.da + rank.d123 + rank.dd
     if(!is.null(dp)) {
       p[is.na(da)] <- NA
       dp[is.na(dp)] <- NA
