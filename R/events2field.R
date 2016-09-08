@@ -4,7 +4,7 @@ events2field <- function(x,verbose=FALSE,...) {
   invisible(y)  
 }
 
-density.events <- function(x,dt="month",dx=1,dy=1,lplot=TRUE,
+density.events <- function(x,dt="month",dx=1,dy=1,lplot=FALSE,
                          lons=NULL,lats=NULL,it=NULL,is=NULL,
                          radius=7e5,unitarea=NULL,type="track",
                          verbose=FALSE,...) {
