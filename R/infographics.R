@@ -1001,18 +1001,29 @@ vis.default <- function(X,it=NULL,img=NULL,verbose=FALSE,
   balls(y) 
 }
 
-balls <- function(x) {
-  for (i in 1:20) points(x,cex=seq(2,0.1,length=20)[i],
-  col=rgb(i/20,i/20,i/20))
+balls <- function(x,y=NULL,col=NULL,cex.max=2,n=20) {
+  for (i in 1:n) {
+    if (is.null(col)) cols <- rgb(i/n,i/n,i/n) else
+    if (is.vector(col)) {
+      cols <- col/i
+      cols[cols==0] <- i/n
+      cols <- rgb(cols[1],cols[2],cols[3])
+    } else 
+    if (is.vector(character)) cols <- col[i]    
+    
+    points(x,y,cex=seq(cex.max,0.1,length=n)[i],
+                         col=cols)
+  }
 }
 
 graph <- function(x,...) UseMethod("graph")
 
-graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,xlim=NULL,ylim=NULL) {
+graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
+                          xlim=NULL,ylim=NULL,new=TRUE,...) {
     print('graph.default')
     ## Produce the graphics:
     
-    dev.new()
+    if (new) dev.new()
     if (!is.null(img)) {
       par0 <- par()
       par(mar=rep(0,4))
@@ -1031,7 +1042,7 @@ graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,xlim
 }
 
 graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
-                             lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE) {
+                             lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE) {
     #print('graph.dsensemble')
     ## Produce the graphics:
     if ((!add) & (new)) dev.new()
@@ -1053,6 +1064,8 @@ graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
                        ylim=ylim,xlim=xlim,ylab=ylab(attr(y,'station')),
                        sub=loc(x),plot.type='single',xlab='')
     for (i in 1:dim(x)[2]) lines(y[,i],lwd=7,col=col)
+    if (ensmean) lines(index(x),apply(coredata(x),1,'mean',na.rm=TRUE),
+                                 lwd=3,col='red')
 
     #balls(attr(y,'station'))
     par(xaxt='s',yaxt='s')
@@ -1064,7 +1077,7 @@ graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
 graph.list <- function(x,img=NULL,it=0,
                        col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05),
                              rgb(0.5,0.5,0.5,0.05) ),
-                       lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE) {
+                       lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE) {
   if ((!is.null(it)) & (inherits(x[[1]],'dsensemble')))
     y <- subset(x[[1]],it=it) else y <- x[[1]]
   graph(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim,add=add,new=new)
@@ -1076,12 +1089,19 @@ graph.list <- function(x,img=NULL,it=0,
     for (i in 1:dim(y)[2]) lines(y[,i],lwd=7,col=col[j])
   }
   lines(obs,lwd=3,col=rgb(0.5,0.5,0.5,0.25))
+
+  if (ensmean) {
+    emcol <- c('wheat','red','green','grey')    
+    for (i in 1:length(x)) lines(index(x[[i]]),apply(coredata(x[[i]]),1,'mean',na.rm=TRUE),
+                                 lwd=3,col=emcol[i])
+    legend(index(y)[1],max(coredata(y)),names(x),col=emcol,lty=1,lwd=3,bty='n')
+  }
   balls(obs)
 }
 
 
 graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
-                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE) {
+                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE) {
   #print('graph.zoo')
     ## Produce the graphics:
     if ((!add) & (new)) dev.new()

@@ -175,7 +175,7 @@ plot.cyclonebudget = function(bud,new=FALSE,
   if(new) dev.new()
   par(mfrow=c(3,4))
 
-  #browser()
+  browser()
   #x <- unlist(bud[1:(length(bud)-2)])
   #colbar$breaks <- pretty(seq(0,q95(x[x>0], n=colbar$n)
   #colbar <- colbar.ini(bud,colbar=colbar)

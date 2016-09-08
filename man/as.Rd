@@ -172,6 +172,7 @@ as.trajectory(x,n=10,loc=NA,param=NA,unit=NA,lon=NA,
                           lat=NA,alt=NA,cntr=NA,longname=NA,stid=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
                           method= NA,verbose=FALSE)
+as.station.dsensemble.pca(x,is=NULL,eofs=NULL,verbose=FALSE,...)
 as.station.list(x)
 as.station.ds(x)
 as.station.pca(x)

@@ -14,8 +14,9 @@ require(esd)
 dealwithduplicates <- function(precip,t1,action="remove",verbose=FALSE) {
   print('dealwithduplicates')
   idup <- is.element(t1,t1[duplicated(t1)])
-  if (verbose) {print('duplicated dates'); print(t1[idup])}
-  if (verbose) {print('duplicated precipitation'); print(precip[idup])}
+  if (verbose) {str(precip); str(t1); str(idup)
+                print('duplicated dates'); print(t1[idup])
+                print('duplicated precipitation'); print(precip[idup])}
   if (action=="remove") x <- precip[!duplicated(t1)]
   if (action=="NA") {
     precip[idup] <- NA
@@ -43,7 +44,7 @@ fixfile <- function(fname) {
 }
 
 
-station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,county=NULL,
+station.midas <- function(stid=NULL,loc=NULL,lon=c(-7,5),lat=c(48,62),alt=NULL,county=NULL,
                           cntr=NULL,it=NULL,nmin=30,
                           path='data/midas/',pattern='midas_raindrnl',metaid='CPAS.DATA',verbose=TRUE,plot=TRUE) {
   metacolnames <- c('SRC_ID','SRC_NAME','ID_TYPE','ID','MET_DOMAIN_NAME','SRC_CAP_BGN_DATE','SRC_CAP_END_DATE',
@@ -160,7 +161,14 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
         t1 <- t[iii]                            # Time index for single station
         i1 <- is.element(time,t1)               # Synchonise the times for the single station with that of the station group
         i2 <- is.element(t1,time)  
-        if (verbose) print(c(sum(i1),sum(iii)))
+        if (verbose) print(c(sum(i1),sum(iii),length(t1),length(precip)))
+
+        ## Check consistency in the data: data matched with time stamps?
+        if (length(precip)!=length(t1)) {
+          print('------- Some irregularities were detected ---------')
+          print(paste('length(precip)=',length(precip),'!=','length(t1)',length(t1)))
+          browser()
+        }
       ## Quality check!
         ok <- TRUE
         if ( (sum(duplicated(t1))>0) | (sum(iii) != sum(i1)) ) { # Check for duplicated times for single station
@@ -168,10 +176,12 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
           if (sum(duplicated(t1))>0) {                           # See if it looks OK the duplicated data are removed
             print('Duplicated times!')
             #browser()
-            precip <- dealwithduplicates(precip,t1,action="remove")
+            precip <- dealwithduplicates(precip,t1,action="remove",verbose=TRUE)
             tnd <- t1[!duplicated(t1)]
+            str(precip)
             i1 <- is.element(time,tnd); iii <- is.finite(precip)
             i2 <- is.element(tnd,time)
+            print(paste(sum(iii),'valid rain gauge data points'))
           }
           if (sum(iii) != sum(i1)) {
             print(paste('Still, not matching number of elements!',sum(iii),sum(i1)))
@@ -184,6 +194,7 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
           print(paste('Something went wrong! sum(i1)=',sum(i1),'sum(i2)=',sum(i2)))
           #browser()
         }
+        print(paste(year(time)[1],sum(i1),'stations'))
       }
     }
 
@@ -206,7 +217,8 @@ station.midas <- function(stid=NULL,loc=NULL,lon=c(-10,4),lat=c(50,60),alt=NULL,
 }
 
 #y <- station.midas(lon=c(-6,-2),lat=c(50,51.5))
-y <- station.midas(lon=c(-5,-3),lat=c(50,51))
+#y <- station.midas(lon=c(-7,0),lat=c(49,52))
+y <- station.midas(lon=c(-7,-1),lat=c(49,51.75))
 
 ## Combine all the list elements representing individual years into one zoo-object
 ## prepare the metadata
@@ -241,35 +253,39 @@ for (i in 1:length(y)) {
   }
   ## Extract the stations with valid data: 
   x <- subset(z,is=im)
-  attr(x,'variable') <- rep('precip',dim(x)[2])
-  attr(x,'unit') <- rep('mm/day',dim(x)[2])
-  attr(x,'country') <- rep('England',dim(x)[2])
-  attr(x,'longname') <- rep('24hr_precipitation',dim(x)[2])
+  if (is.null(dim(x))) {
+    str(x)
+    print(paste("Problem with data: sum(im)",sum(im)))
+    browser()
+  } else {
+    attr(x,'variable') <- rep('precip',dim(x)[2])
+    attr(x,'unit') <- rep('mm/day',dim(x)[2])
+    attr(x,'country') <- rep('England',dim(x)[2])
+    attr(x,'longname') <- rep('24hr_precipitation',dim(x)[2])
   
   ## make a station objects with the remaining data containng NAs.
-  if (nm > 0) {
-    xm <- zoo(matrix(rep(NA,dim(x)[1]*nm),dim(x)[1],nm),order.by=index(x))
-    xm <- as.station(xm,rep(param='precip',sum(iM)),unit=rep('mm/day',sum(iM)),
-                     stid=stationIDs[iM],
-                     loc=locations[iM],lon=lons[iM],lat=lats[iM],alt=alts[iM],
-                     longname=rep(attr(x,'longname')[1],sum(iM)),
-                     cntr=rep(cntr(x)[1],sum(iM)))
-    x <- combine.stations(x,xm)
-  }
-  x <- sort(x)
-  print(paste(i,'sum(im)=',sum(im),'nm=',nm,'nm+sum(im)',nm+sum(im)))
-  print(loc(x))
+    if (nm > 0) {
+      xm <- zoo(matrix(rep(NA,dim(x)[1]*nm),dim(x)[1],nm),order.by=index(x))
+      xm <- as.station(xm,rep(param='precip',sum(iM)),unit=rep('mm/day',sum(iM)),
+                       stid=stationIDs[iM],
+                       loc=locations[iM],lon=lons[iM],lat=lats[iM],alt=alts[iM],
+                       longname=rep(attr(x,'longname')[1],sum(iM)),
+                       cntr=rep(cntr(x)[1],sum(iM)))
+      x <- combine.stations(x,xm)
+    }
+    x <- sort(x)
+    print(paste(i,'sum(im)=',sum(im),'nm=',nm,'nm+sum(im)',nm+sum(im)))
+    print(loc(x))
   
-  if (dim(x)[2]!=length(stids)) {
-    print(paste('Something wrong? dim(x)[2]=',dim(x)[2],'!= length(stids)=',length(stids)))
-    browser()
+    if (dim(x)[2]!=length(stids)) {
+      print(paste('Something wrong? dim(x)[2]=',dim(x)[2],'!= length(stids)=',length(stids)))
+      browser()
+    }
   }
-  
   if (i==1) X <- x else {
     Xx <- c(zoo(X),zoo(x))
     X <- as.station(Xx)
     X <- attrcp(x,X)
-    #browser()
   }
   if (dim(X)[2]!=length(stids)) {
     print(paste('Something wrong? dim(X)[2]=',dim(X)[2],'!= length(stids)=',length(stids)))

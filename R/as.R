@@ -170,10 +170,15 @@ as.station.pca <- function(x,...) {
     y <- as.station.dsensemble.pca(x,...)
   } else {
     y <- pca2station(x,...)
+    if (!is.null(attr(x,"pca"))) {
+      fit <- attr(x,'pca')
+      coredata(fit) <- coredata(attr(x,'fitted_values'))
+      attr(y,'fitted_values') <- fit
+      attr(y,'original_data') <- attr(x,'original_data')
+    }
   }
   return(y)
 }
-
 
 
 as.station.list <- function(x) {
@@ -318,8 +323,10 @@ as.station.eof <- function(x,pattern=1:10) {
   invisible(y)
 }
 
-as.station.dsensemble.pca <- function(X,is=NULL,eofs=NULL,verbose=FALSE,...) {
+as.station.dsensemble.pca <- function(x,is=NULL,eofs=NULL,verbose=FALSE,...) {
+  X <- x ## quick fix
   if (verbose) print('as.station.dsensemble.pca')
+  if (inherits(X,"station")) return(X)
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
   if (inherits(X,"station")) {
       invisible(X)
@@ -531,7 +538,8 @@ as.field.field <- function(x,...) {
   return(x)
 }
 
-as.field.comb <- function(x,iapp=NULL,...) {
+as.field.comb <- function(x,iapp=NULL,verbose=FALSE,...) {
+  if(verbose) print("as.field.comb")
   if (is.null(iapp)) {
     # Drop the appendend fields:
     n <- attr(x,'n.apps')
@@ -548,27 +556,38 @@ as.field.comb <- function(x,iapp=NULL,...) {
   return(y)  
 }
 
-as.field.eof <- function(x,iapp=NULL,...) {
-  #print("as.field.eof")
-  if (!inherits(x,'comb')) y <- eof2field(x) else {
-   y <- as.eof(x,iapp)
-   y <- eof2field(y)
- }
+as.field.eof <- function(x,iapp=NULL,verbose=FALSE,...) {
+  if(verbose) print("as.field.eof")
+  if (!inherits(x,'comb')) {
+    y <- eof2field(x,verbose=verbose)
+  } else {
+    y <- as.eof(x,iapp,verbose=verbose)
+    y <- eof2field(y,verbose=verbose)
+  }
   return(y)
 }
 
 
-as.field.ds <- function(x,iapp=NULL,...) {
-  ##print(class(x))
+as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
+  if(verbose) print("as.field.ds")
   if (inherits(x,'eof')) {
     class(x) <- class(x)[-1]
     y <- as.field.eof(x,iapp,...)
+    ## The residuals
+    fit <- attr(x,'fitted_values')
+    fit <- attrcp(attr(x,'eof'),fit)
+    class(fit) <- class(attr(x,'eof'))
+    attr(y,'fitted_values') <- fit
+    attr(y,'original_data') <- attr(x,'original_data')
+    attr(y,'calibration_data') <- attr(x,'calibration_data')
   } else y <- NULL
   return(y)
 }
 
 
-as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,...) {
+as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
+                             verbose=FALSE,...) {
+  if(verbose) print("as.field.station")
   if (is.null(lon)) lon <- seq(min(lon(x)),max(lon(x)),length=nx)
   if (is.null(lat)) lat <- seq(min(lat(x)),max(lat(x)),length=ny)
   y <- regrid(x,is=list(lon=lon,lat=lat))
@@ -576,9 +595,62 @@ as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,...) {
   return(y)  
 }
 
+as.field.dsensemble.eof <- function(X,is=NULL,eofs=NULL,verbose=FALSE,...) {
+  if (verbose) print('as.field.dsensemble.eof')
+  stopifnot(inherits(X,"dsensemble") & inherits(X,"eof"))
+  if (inherits(X,"field")) {
+      invisible(X)
+  } else {
+    #if (is.null(is)) is <- 1:length(loc(X$pca)) 
+    if (verbose) print('Extract the results model-wise')
+    d <- apply(sapply(X[3:length(X)],dim),1,min)
+    V <- array(unlist(lapply( X[3:length(X)],
+      function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    if (is.null(eofs)) {
+      U <- attr(X$eof,'pattern')
+      W <- attr(X$eof,'eigenvalues')
+    } else {
+    ## If eofs is specified, use a sub set of the PCA modes.
+      U <- attr(X$pca,'pattern')[,eofs]
+      W <- attr(X$pca,'eigenvalues')[eofs]
+      V <- V[,eofs,]
+    }    
+    d <- dim(U)
+    dim(U) <- c(d[1]*d[2],d[3])
+    S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
+    dim(S) <- c(dim(U)[1], dim(V)[1], dim(V)[3])
+    for (i in seq(1:dim(S)[1])) {
+      S[i,,] <- S[i,,] + c(attr(X$eof,'mean'))[i]
+    }
 
-
-
+    S <- aperm(S,c(3,2,1))
+    S <- lapply(split(S, arrayInd(seq_along(S),dim(S))[,1]),
+                array,dim=dim(S)[2:3])
+    
+    if (verbose) print('Set attributes')
+    Y <- as.field(X$eof)
+    gcms <- sub(".*_","",names(X)[3:length(X)])
+    S <- setNames(S,gcms)
+    for (i in 1:length(S)) {
+      S[[i]] <- as.field(S[[i]],index=index(X[[i+2]]),
+                 lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
+                 param=varid(Y),unit=unit(Y),
+                 longname=paste('fitted',attr(Y,'longname')),
+                 greenwich=attr(Y,'greenwich'),aspect='fitted')
+      attr(S[[i]],'unitarea') <- attr(X,"unitarea")
+    }
+    if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
+    class(S) <- c("dsensemble","field","list")
+    attr(S,"unit") <- attr(X,"unit")
+    attr(S,'unitarea') <- attr(X,"unitarea")
+    attr(S,"variable") <- attr(X,"variable")
+    attr(S,"scenario") <- attr(X,"scenario")
+    attr(S,"longname") <- attr(X,"longname")
+    attr(S,"aspect") <- "dsensemble.eof transformed to field"
+    attr(S,"history") <- history.stamp()
+    invisible(S)
+  }
+}
 
 
 #as.annual <- function(x) {
@@ -1016,18 +1088,59 @@ as.climatology <- function(x,...) {
     invisible(y)
 }
 
-as.residual <- function(x) UseMethod("as.residual")
+as.residual <- function(x,...) UseMethod("as.residual")
 
-as.residual.ds <- function(x){
-  y <- attr(x,'original_data') - attr(x,'fitted_values')
-  y <- attrcp(x,y)
+as.residual.ds <- function(x,verbose=FALSE){
+  if (verbose) print('as.residual.ds')
+  if (is.ds(x)) {
+    ## If the predictand was originally an EOF or PCA product, then
+    ## the residual needs to inherits their attributes
+      if (verbose) print('Re-construct and re-compute')
+      ## Need to reconstruct the data matrix and re-calculate the EOFs/PCAs 
+      if (is.eof(x)) {
+        if (verbose) print('eof/field')
+        z0 <- as.field(attr(x,'original_data'))
+        z1 <- as.field(x)
+        y <- z1 - z0
+        y <- attrcp(z0,y); class(y) <- class(z0)
+      } else
+      if (is.pca(x)) {
+        if (verbose) print('pca/station')
+        z0 <- as.station(attr(x,'original_data'))
+        z1 <- as.station(x)
+        y <- z1 - z0
+        y <- attrcp(z0,y); class(y) <- class(z0)
+      } else
+      if (is.station(x)) {
+        if (verbose) print('station')
+        z0 <- attr(x,'original_data')
+        z1 <- x
+        y <- z1 - z0
+        y <- attrcp(z0,y); class(y) <- class(z0)
+      }      
+   } else
+  ## If the results are a field object, then the residuals are stored as EOFs.
+  if (is.field(x)) {
+    if (verbose) {print('x is a field object'); print(class(x))}
+    y <- as.field(attr(x,'original_data')) -
+         as.field(attr(x,'fitted_values'))
+    y <- attrcp(attr(x,'original_data'),y)
+    class(y) <- class(attr(x,'original_data'))
+    y <- as.field(y)
+    attr(y,'aspect') <- 'residual'
+  }
   attr(y,'aspect') <- 'residual'
   attr(y,'history') <- history.stamp(x)
-  class(y) <- class(attr(x,'calibration_data'))
   invisible(y)
 }
 
 as.residual.station <- function(x){
+  if (!is.null(attr(x,'calibration_data')))
+    y <- as.residual.ds(x) else y <- NULL
+  invisible(y)
+}
+
+as.residual.field <- function(x){
   if (!is.null(attr(x,'calibration_data')))
     y <- as.residual.ds(x) else y <- NULL
   invisible(y)

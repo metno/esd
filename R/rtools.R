@@ -36,33 +36,9 @@ nv <- function(x,...) sum(is.finite(x))
 ## Compute the coefficient of variation of x
 cv <- function(x,na.rm=TRUE) {sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)}
 
-## Compute the linear trend
-trend.coef <- function(x,...) {
-  t <- 1:length(x)
-  model <- lm(x ~ t)
-  y <- c(model$coefficients[2]*10)
-  names(y) <- c("trend.coefficients")
-  return(y)
-}
-
-## Compute the linear trend
-trend.err <- function(x,...) {
-  t <- 1:length(x)
-  model <- lm(x ~ t)
-  y <- c(summary(model)$coefficients[4]*10)
-  names(y) <- c("trend.standard.error")
-  return(y)
-}
+stand <- function(x) (x - mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)
 
 
-## Compute the p-value of the linear trend 
-trend.pval <- function(x,...) {
-    t <- 1:length(x)
-    model <- lm(x ~ t)
-    y <- anova(model)$Pr[1]
-    names(y) <- c("trend.pvalue")
-    return(y)
-}
 
 # Wrap-around for lag.zoo to work on station and field objects:
 lag.station <- function(x,...) {
@@ -165,6 +141,19 @@ ensemblemean <- function(x,FUN='rowMeans') {
   zm <- as.station(zm,param=varid(z),unit=unit(z),
                    loc=unlist(lapply(z,loc)),lon=unlist(lapply(z,lon)),
                    lat=unlist(lapply(z,lat)),alt=unlist(lapply(z,alt)),
+                   longname=attr(x,'longname'),aspect=attr(x,'aspect'),
                    info='Ensemble mean ESD')
   invisible(zm)
 }
+
+
+propchange <- function(x,it0=c(1979,2013)) {
+  z <- coredata(x)
+  if (is.null(dim(z)))
+      z <- 100*(z/mean(coredata(subset(x,it=it0)),na.rm=TRUE)) else
+      z <- 100*t(t(z)/apply(coredata(subset(x,it=it0)),2,'mean',na.rm=TRUE))
+  attributes(z) <- NULL
+  z -> coredata(x)  
+  x
+}
+

@@ -155,7 +155,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
         if (length(ilonunit>1)) {
             if (verbose) print(paste("Longitude unit is :",lon$unit,sep=" "))
             lonunit <- eval(parse(text = paste("lon$",names(lon)[ilonunit],sep="")))
-            if (length(grep("degrees_east",lonunit))<1)
+            if (length(grep("degree.*.east",lonunit))<1)
                 stop("'retrieve.ncdf4' is not suited to extract longitude units different from 'degrees_east'")
         }
     }
@@ -678,7 +678,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
             if (length(ilonunit>1)) {
                 if (verbose) print(paste("Longitude unit is :",lon$unit,sep=" "))
                 lonunit <- eval(parse(text = paste("lon$",names(lon)[ilonunit],sep="")))
-                if (length(grep("degrees_east",lonunit)) < 1) {
+                if (length(grep("degree.*.east",lonunit)) < 1) {
                     stop("'retrieve.ncdf4' is not suited to extract longitude units different from 'degrees_east'")
                 }
             }
@@ -1330,7 +1330,6 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ## Initialize
     freq.att <- NULL
     ifreq <- grep("freq",names(model))
- 
     if (length(ifreq)>0) {  
         itype <- grep(tolower(eval(parse(text=paste("model$",names(model)[ifreq],sep="")))),tolower(type))
         if (length(itype>0)) {
@@ -1367,8 +1366,9 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         yorigin <- as.numeric(format.Date(torigin,format="%Y"))
         morigin <- as.numeric(format.Date(torigin,format="%m"))
         dorigin <- as.numeric(format.Date(torigin,format="%d"))
+        horigin <- as.numeric(format.Date(torigin,format="%H"))
     }
-   
+    
     ## Get calendar from attribute if any and create vector of dates vdate
     ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
     #
@@ -1450,9 +1450,14 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         if (verbose) print("warnings : Automatic detection of the calendar")
         calendar.detect <- "auto"
         ##                                     # NOT COMPLETE ...
-        if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
-        if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
-        if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
+        ##======= KMP 2016-05-04: as.Date does not work for sec, min, hour ========== 
+        #if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
+        #if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
+        #if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
+        if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals
+        if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60
+        if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60*60
+        ##===========================================================================
         if (grepl("day",tunit)) time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
         if (grepl("mon",tunit)) {
             if (sum(diff(time$vals>1)) < 1) {
@@ -1515,6 +1520,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
    
     ## End check 1
     ## Begin check 2 if freq.att matches freq.data
+
     if (length(time$vals)>1) {
         if (!is.null(freq.att)) {
             model$frequency <- freq.att 
@@ -1884,14 +1890,15 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         if (verbose) print("warnings : Automatic detection of the calendar")
         calendar.detect <- "auto"
         ##                                     # NOT COMPLETE ...
-        if (grepl("sec",tunit))
-            time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
-        if (grepl("min",tunit))
-            time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
-        if (grepl("hou",tunit))
-            time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
-        if (grepl("day",tunit))
-            time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
+        ##======= KMP 2016-05-04: as.Date does not work for sec, min, hour ========== 
+        #if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
+        #if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
+        #if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
+        if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals
+        if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60
+        if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60*60
+        ##===========================================================================
+        if (grepl("day",tunit)) time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
         if (grepl("mon",tunit)) {
             if (sum(diff(time$vals>1)) < 1) {
                 year1 <- time$vals[1]%/%12 + yorigin

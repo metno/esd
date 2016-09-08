@@ -5,73 +5,93 @@
 
 trend<-function(x,result="trend",model="y ~ t",...) UseMethod("trend")
 
-trend.default <- function(x,result="trend",model="y ~ t",...) {
+trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
+  if (verbose) print("trend.default")
   trendx <- data.frame(t=1:length(index(x)),y=x)
   eval(parse(text=paste("xt <- lm(",model,",data=trendx)")))
   y <- switch(result,"trend"=zoo(predict(xt,newdata=trendx),order.by=index(x)),
-                     "residual"=zoo(xt$residuals,order.by=index(x)))
+                     "residual"=zoo(xt$residuals,order.by=index(x)),
+                      "coef"=trend.coef(coredata(x)), # REB 2016-07-28
+                      "err"=trend.err(coredata(x)),
+                      "pval"=trend.pval(coredata(x)))
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
 
-trend.one.station <- function(x,result="trend",model="y ~ t",...) {
-  #print("trend.station")
+trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
+  if (verbose) print(paste("trend.one.station",result))
   #print(class(index(x)))
   if (class(index(x))=="Date") {
-    #print("HERE")
+    if (verbose) print("Date index")
     year <- as.numeric( format(index(x), '%Y') ) 
     month <- as.numeric( format(index(x), '%m') )
     day <- as.numeric( format(index(x), '%d') )
     trendx <- data.frame(t=year + (month - 0.5)/12 + (day - 1)/365.25,
                          y=coredata(x))
   } else if ( (class(index(x))=="numeric") |
-              (class(index(x))=="integer") )
-                trendx <- data.frame(t=index(x),y=coredata(x))
-  #print(summary(trendx))
+              (class(index(x))=="integer") ) {
+    if (verbose) print("Integer index")
+    trendx <- data.frame(t=index(x),y=coredata(x))
+              }
   eval(parse(text=paste("xt <- lm(",model,",data=trendx)")))
-  #print(summary(summary(xt)))
-  #print(result)
+  if (verbose) str(xt)
+
   y <- switch(result,"trend"=zoo(predict(xt,newdata=trendx),order.by=index(x)),
-                     "residual"=zoo(xt$residuals,order.by=index(x)))
-  #str(y)
-  #mostattributes(y) <- attributes(x)
-#  nattr <- softattr(x)
-#  print(nattr)
-#  for (i in 1:length(nattr))
-#    attr(y,nattr[i]) <- attr(x,nattr[i])
-  attr(y,'coefficients') <- xt$coefficients
-  attr(y,'original data') <-  x
+                     "residual"=zoo(xt$residuals,order.by=index(x)),
+                      "coef"=trend.coef(coredata(x)), # REB 2016-07-28
+                      "err"=trend.err(coredata(x)),
+                      "pval"=trend.pval(coredata(x)))
+  if (verbose) str(y)
+  attr(y,'coefficients') <- summary(xt)$coefficients
+  #attr(y,'original data') <-  x
   attr(y,'aspect') <- result
   attr(y,'lm') <- xt
   #attr(y,'call') <- match.call()
-  y <- attrcp(x,y,ignore='aspect')
+ if (result %in% c("trend","residual")) y <- attrcp(x,y,ignore='aspect') else {
+        attr(y,'location') <- loc(x)
+        attr(y,'longitude') <- lon(x)
+        attr(y,'latitude') <- lat(x)
+        attr(y,'altitude') <- alt(x)
+        attr(y,'cntr') <- cntr(x)
+        attr(y,'stid') <- stid(x)
+        attr(y,'history') <- attr(x,'history')
+      }
   attr(y,'history') <- history.stamp(x)
-  #print(".")
   return(y)
 }
 
-trend.station <- function(x,result="trend",model="y ~ t",...) {
+trend.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
+  if (verbose) print(paste("trend.station",result))
   # Allow for a set of stations.
   d <- dim(x)
-  if (is.null(d)) y <- trend.one.station(x,result=result,model=model) else {
-      Y <- x*NA
+  if (is.null(d)) y <- trend.one.station(x,result=result,model=model,verbose=verbose) else {
+      if (result %in% c("trend","residual")) Y <- x*NA else Y <- rep(NA,d[2])
       for (i in 1:d[2]) {
-        y <- trend.one.station(x[,i],result=result,model=model)
-        Y[,i] <- y
+        y <- trend.one.station(x[,i],result=result,model=model,verbose=verbose)
+        if (result %in% c("trend","residual"))Y[,i] <- y else Y[i] <- y
       }
       y <- Y
       #nattr <- softattr(x)
       #print("+")
       #for (i in 1:length(nattr))
       #  attr(y,nattr[i]) <- attr(x,nattr[i])
-      y <- attrcp(x,y)
+      if (result %in% c("trend","residual")) y <- attrcp(x,y) else {
+        attr(y,'location') <- loc(x)
+        attr(y,'longitude') <- lon(x)
+        attr(y,'latitude') <- lat(x)
+        attr(y,'altitude') <- alt(x)
+        attr(y,'cntr') <- cntr(x)
+        attr(y,'stid') <- stid(x)
+        attr(y,'history') <- attr(x,'history')
+      }
     }
   #attr(y,'call') <- match.call()
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
 
-trend.eof <- function(x,result="trend",model="y ~ t",...) {
+trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
+  if (verbose) print(paste("trend.eof",result))
   class(x) -> cls
   if (class(index(x))=="Date") {
     year <- as.numeric( format(index(x), '%Y') ) 
@@ -115,7 +135,7 @@ trend.eof <- function(x,result="trend",model="y ~ t",...) {
   return(Y)
 }
 
-trend.field <- function(x,result="trend",model="y ~ t",...) {
+trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
   gettrend <- function(x,model="y ~ t") {
     #browser()
@@ -126,7 +146,8 @@ trend.field <- function(x,result="trend",model="y ~ t",...) {
     trend <- predict(trendfit,newdata=trendx)
     return(trend)
   }
-  
+
+  if (verbose) print(paste("trend.field",result))
   class(x) -> cls
   
   print("detrend.field")
@@ -177,7 +198,8 @@ trend.field <- function(x,result="trend",model="y ~ t",...) {
   return(Y)
 }
 
-trend.zoo <- function(x,result="trend",model="y ~ t",...) {
+trend.zoo <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
+  if (verbose) print("trend.zoo")
   if (length(dim(x))==2) {
     y <- trend.zoo.multi(x,result=result,model=model,...)
     return(y)
@@ -195,8 +217,37 @@ trend.zoo <- function(x,result="trend",model="y ~ t",...) {
   invisible(y)
 }
 
-trend.zoo.multi <- function(x,result="trend",model="y ~ t",...) {
+trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
+  if (verbose) print(paste("trend.station.multi",result))
   y <- apply(coredata(x),2,trend,result=result,model=model)
   y <- zoo(y,order.by=index(x))
   return(y)
+}
+
+## Compute the linear trend
+trend.coef <- function(x,...) {
+  t <- 1:length(x)
+  model <- lm(x ~ t)
+  y <- c(model$coefficients[2]*10)
+  names(y) <- c("trend.coefficients")
+  return(y)
+}
+
+## Compute the linear trend
+trend.err <- function(x,...) {
+  t <- 1:length(x)
+  model <- lm(x ~ t)
+  y <- c(summary(model)$coefficients[4]*10)
+  names(y) <- c("trend.standard.error")
+  return(y)
+}
+
+
+## Compute the p-value of the linear trend 
+trend.pval <- function(x,...) {
+    t <- 1:length(x)
+    model <- lm(x ~ t)
+    y <- anova(model)$Pr[1]
+    names(y) <- c("trend.pvalue")
+    return(y)
 }

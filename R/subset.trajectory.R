@@ -135,7 +135,7 @@ subset.trajectory <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (length(slon)==2) attr(y,'longitude') <- slon
       if (length(slat)==2) attr(y,'latitude') <- slat
     }
-    if (is.seasons(it)) class(y) <- c(class(y),'season')
+    if (is.seasons(it) | is.months(it)) class(y) <- c(class(y),'season')
     attr(y,'history') <- history.stamp(x)
     invisible(y)
 }

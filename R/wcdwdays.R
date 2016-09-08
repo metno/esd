@@ -1,6 +1,6 @@
 # number of wet, cold, dry, or wet days
 coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
-                           verbose=FALSE,plot=TRUE,nmin=90,...) {
+                           verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
   # Estimate number of days with low temperatures or number of days with y < threshold
   if (verbose) print('mildwinterdays')
   stopifnot(inherits(x,'station'))
@@ -22,7 +22,7 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   dfit <- glm(y ~ x + I(x^2) + I(x^3),family='poisson',data=cal)
   
   if (plot) {
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(cal,ylim=c(0,90),xlim=c(-10,10),pch=19,
          xlab=expression(paste('mean temperature ',(degree*C))),
@@ -30,7 +30,7 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
     pre <- data.frame(x=-10:10)
     lines(pre$x,exp(predict(dfit,newdata=pre)),col=rgb(1,0,0,0.3),lwd=3)
 
-    dev.new()
+    if (new) dev.new()
     ## Use the distribution about the mean
     djf.sd <- sd(coredata(djf),na.rm=TRUE)
     ## Check it it is normally distributed
@@ -63,7 +63,7 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mwd1))
 
   if (plot) {
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(zoo(djf.dse,order.by=year(djf.dse)),
          plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
@@ -72,7 +72,7 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
     points(mwd1,pch=19)
     grid()
     
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(Nwd,plot.type='single',lwd=5,main=loc(x),ylim=c(0,100),
          xlab="",ylab=paste('number of cold days: T(2m) < ',threshold,unit(x)),
@@ -96,13 +96,13 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
 
 
 hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
-                          verbose=FALSE,plot=TRUE,nmin=90,...) {
+                          verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
     # Estimate number of days with low temperatures
   if (verbose) print('mildwinterdays')
   stopifnot(inherits(x,'station'))
   if (is.null(y)) y <- x
-  djf <- subset(x,it=it)     # summer
-  djfy <- subset(y,it=it)     # summer
+  djf <- subset(x,it=it)      # default: summer
+  djfy <- subset(y,it=it)     # default: summer
   nwd1 <- annual(djfy,FUN='count',threshold=threshold,nmin=nmin)
   mwd1 <- annual(djf,FUN='mean',nmin=nmin)
 
@@ -113,7 +113,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
   dfit <- glm(y ~ x,family='poisson',data=cal)
 
   if (plot) {
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(cal,pch=19,ylim=c(0,90),
          xlab=expression(paste('mean temperature ',(degree*C))),
@@ -122,7 +122,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
                             max(cal$x,na.rm=TRUE)+5,by=0.1))
     lines(pre$x,exp(predict(dfit,newdata=pre)),col=rgb(1,0,0,0.3),lwd=3)
 
-    dev.new()
+    if (new) dev.new()
     ## Use the distribution about the mean
     djf.sd <- sd(coredata(djf),na.rm=TRUE)
     ## Check it it is normally distributed
@@ -161,7 +161,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
   nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mwd1))
 
   if (plot) {
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(zoo(djf.dse,order.by=year(djf.dse)),
          plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
@@ -170,7 +170,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
     points(mwd1,pch=19)
     grid()
     
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(Nwd,plot.type='single',lwd=5,main=loc(x),ylim=c(0,90),
          xlab="",ylab=paste('number of hot days: T(2m) > ',threshold,unit(x)),
@@ -193,7 +193,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
 }
 
 heatwavespells <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
-                           verbose=FALSE,plot=TRUE,ylab=NULL,is=1,...) {
+                           verbose=FALSE,plot=TRUE,ylab=NULL,is=1,new=TRUE,...) {
   ## Use the downscaled temperatures from ensembles to estimate the
   ## mean length og heatwaves
   ## Or use Warm Spell Duration Index (WSDI)?
@@ -242,7 +242,7 @@ heatwavespells <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
   if (is.null(ylab)) ylab <- paste('mean spell duration in days: ',varid(x),
                                    '> ',threshold,unit(x))
   if (plot) {
-    dev.new()
+    if (new) dev.new()
     qqnorm(ncwd); qqline(ncwd)
     
     dev.new()
@@ -254,7 +254,7 @@ heatwavespells <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
     points(xws,pch=19)
     grid()
     
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(Nwd,plot.type='single',lwd=5,main=loc(x),
          xlab="",ylab=ylab,
@@ -277,19 +277,19 @@ heatwavespells <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
 }
 
 coldspells <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
-                       verbose=FALSE,plot=TRUE,...) {
+                       verbose=FALSE,plot=TRUE,new=TRUE,...) {
 
   ylab <- paste('mean spell duration in days: ',varid(x),
                             '< ',threshold,unit(x))
   y <- heatwavespells(x,y=y,dse=dse,it=it,threshold=threshold,
-                      verbose=verbose,plot=plot,ylab=ylab,is=2,...)
+                      verbose=verbose,plot=plot,ylab=ylab,is=2,new=new,...)
 
   invisible(y)
 }
 
 
 nwetdays <- function(x,y=NULL,dse=NULL,threshold=10,
-                     verbose=FALSE,plot=TRUE) {
+                     verbose=FALSE,plot=TRUE,new=TRUE) {
   if (is.null(y)) y <- x
   nw <- annual(y,FUN='count',threshold = threshold)
   mu <- annual(x,FUN='wetmean')
@@ -297,7 +297,7 @@ nwetdays <- function(x,y=NULL,dse=NULL,threshold=10,
   dfit <- glm(y ~ x,family='poisson',data=cal)
 
   if (plot) {
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(cal,pch=19,
          xlab=paste(varid(mu),unit(mu)),
@@ -340,7 +340,7 @@ nwetdays <- function(x,y=NULL,dse=NULL,threshold=10,
   nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mu))
 
   if (plot) {
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(zoo(dse,order.by=year(dse)),
          plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
@@ -349,7 +349,7 @@ nwetdays <- function(x,y=NULL,dse=NULL,threshold=10,
     points(mu,pch=19)
     grid()
     
-    dev.new()
+    if (new) dev.new()
     par(bty='n')
     plot(Nwd,plot.type='single',lwd=5,main=loc(x),
          xlab="",ylab=paste('number of days per year with P > ',

@@ -44,13 +44,13 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf4',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
-                           select=NULL,FUN="mean",FUNX="mean",
+                           select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="tas_Amon_ens_",
                            path.ds=NULL,file.ds="DSensemble.rda",
                            nmin=NULL,verbose=FALSE) {
 
-
-  #print("predictand")
+  if (!inherits(y,'day')) warning('station is not daily data')
+  if (verbose) print("predictand")
   #if ( (deparse(substitute(FUN))=='sd') | (deparse(substitute(FUN))=='ar1') )
   if(verbose) print("DSensemble.t2m")
   if ((FUN=='sd') | (FUN =='ar1')) {
@@ -107,11 +107,11 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
   if(verbose) print("Aggregate seasonal values")
-  T2M <- as.4seasons(t2m,FUN=FUNX)
-  DJF <- subset(as.4seasons(t2m,FUN=FUNX),it='djf')
-  MAM <- subset(as.4seasons(t2m,FUN=FUNX),it='mam')
-  JJA <- subset(as.4seasons(t2m,FUN=FUNX),it='jja')
-  SON <- subset(as.4seasons(t2m,FUN=FUNX),it='son')
+  T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
+  DJF <- subset(as.4seasons(t2m,FUN=FUNX,nmin=nmin),it='djf')
+  MAM <- subset(as.4seasons(t2m,FUN=FUNX,nmin=nmin),it='mam')
+  JJA <- subset(as.4seasons(t2m,FUN=FUNX,nmin=nmin),it='jja')
+  SON <- subset(as.4seasons(t2m,FUN=FUNX,nmin=nmin),it='son')
 
   ok1 <- is.finite(rowSums(DJF))
   DJF <- subset(DJF,it=range(year(DJF)[ok1]))
@@ -164,17 +164,16 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     # REB: 30.04.2014 - new lines...
-    DJFGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='djf')
-    MAMGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='mam')
-    JJAGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='jja')
-    SONGCM <- subset(as.4seasons(gcm,FUN=FUNX),it='son')
+    DJFGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
+    MAMGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='mam')
+    JJAGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='jja')
+    SONGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='son')
     rm("gcm"); gc(reset=TRUE)
     X.DJF <- combine(DJF,DJFGCM)
     X.MAM <- combine(MAM,MAMGCM)
     X.JJA <- combine(JJA,JJAGCM)
     X.SON <- combine(SON,SONGCM)
     if (verbose) print("- - - > EOFs")
-    
     Z1 <- try(EOF(X.DJF))
     if (inherits(Z1,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
@@ -197,7 +196,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
     #save(file='inside.dsens.rda',T2M,GCM)
     #rm("GCM"); gc(reset=TRUE)
-
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
       testGCM <- subset(GCM,it=range(year(T2M))) # REB 29.04.2014
@@ -371,7 +369,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               type='ncdf4',
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
-                              FUNX="sum",threshold=1,
+                              FUNX="sum",xfuns='C.C.eq',threshold=1,
                               pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
 
@@ -413,9 +411,9 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   # Use proportional variaions
   if (verbose) print("Annual mean")
   if (!is.annual(pre)) {
-    if (FUNX!='C.C.eq')  
-      PREX <- annual(pre,FUN=FUNX) else
-      PREX <- annual(C.C.eq(pre),FUN='mean')
+    if (sum(is.element(FUNX,xfuns))==0)  
+      PREX <- annual(pre,FUN=FUNX,nmin=nmin) else
+      eval(parse(text=paste('PREX <- annual(',FUNX,'(pre),FUN="mean",nmin=nmin)',sep="")))
   }
   #print("estimate %-changes")
   PRE.ref <- subset(PREX,it=1961:1990)
@@ -480,10 +478,9 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
     
-    if (FUNX!='C.C.eq')
-      GCMX <- annual(gcm,FUN=FUNX) else
-      GCMX <- annual(C.C.eq(gcm),FUN='mean')
-#    GCM <- zoo(100*coredata(GCMX)/colMeans(coredata(subset(GCMX,it=1961:1990))),order.by=year(GCMX))
+    if (sum(is.element(FUNX,xfuns))==0)
+      GCMX <- annual(gcm,FUN=FUNX,nmin=nmin) else
+      eval(parse(text=paste('GCMX <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
     if (is.precip(GCMX)) {
           GCM <- zoo(100*coredata(GCMX)/mean(c(coredata(subset(GCMX,it=1961:1990)))),
                      order.by=year(GCMX))
@@ -610,7 +607,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               non.stationarity.check=FALSE,type='ncdf4',
                               eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
-                              FUNX="mean",threshold=1,
+                              FUNX="mean",xfuns='C.C.eq',threshold=1,
                               pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
 
@@ -641,7 +638,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(pre,"source") <- "ERA40"
 
   if (!is.null(it)) {
-    if (verbose) print('Extract some months ot a time period')
+    if (verbose) print('Extract some months or a time period')
     if (verbose) print(it)
     pre <- subset(pre,it=it)
       ## if it is character, then then extraction of months reduces number of
@@ -651,8 +648,8 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   # Use proportional variaions
   if (verbose) print("Annual mean")
-  PRE <- annual(pre,FUN=FUNX,nmin=nmin) 
-
+  if (sum(is.element(FUNX,xfuns))==0) PRE <- annual(pre,FUN=FUNX,nmin=nmin) else
+  eval(parse(text=paste('PRE <- annual(',FUNX,'(pre),FUN="mean",nmin=nmin)',sep="")))
   if (verbose) print("graphics")
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
   unit <- attr(y,'unit')
@@ -698,12 +695,13 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (verbose) print(varid(gcm))
 
     if (!is.null(it)) {
-      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print('Extract some months or a time period')
       if (verbose) print(it)
       gcm <- subset(gcm,it=it)
     }
     
-    GCM <- annual(gcm,FUN=FUNX,nmin=nmin)
+    if (sum(is.element(FUNX,xfuns))==0) GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+    eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
 
     model.id <- attr(gcm,'model_id')
 
@@ -803,6 +801,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(X,'station') <- y
   attr(X,"lon") <- attr(y,"lon")
   attr(X,"lat") <- attr(y,"lat")
+  attr(X,"longname") <- attr(y,"longname")
   attr(X,'predictor') <- attr(PRE,'source')
   attr(X,'domain') <- list(lon=lon,lat=lat)
   attr(X,'scorestats') <- scorestats
@@ -823,7 +822,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf4',
                            eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
-                           select=NULL,FUN="mean",FUNX="mean",
+                           select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="psl_Amon_ens_",
                            path.ds=NULL,file.ds=NULL,
                            nmin=NULL,verbose=FALSE) {
@@ -894,7 +893,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
     slp <- subset(predictor,is=list(lon=lon,lat=lat))
 
   if(verbose) print("Aggregate seasonal values")
-  SLP <- subset(as.4seasons(slp,FUN=FUNX),it=season)
+  SLP <- subset(as.4seasons(slp,FUN=FUNX,nmin=nmin),it=season)
   ok <- is.finite(rowSums(SLP))
   SLP <- subset(SLP,it=range(year(SLP)[ok]))
   rm("slp"); gc(reset=TRUE)
@@ -933,7 +932,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                           lon=range(lon(SLP))+c(-2,2),
                           lat=range(lat(SLP))+c(-2,2),verbose=verbose)
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realisation'),sep="-")
-    GCM <- subset(as.4seasons(gcm,FUN=FUNX),it='djf')
+    GCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
     rm("gcm"); gc(reset=TRUE)
     SLPGCM <- combine(SLP,GCM)
     if (verbose) print("- - - > EOFs")
@@ -1057,6 +1056,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   attr(X,"model_id") <- gcmnm
   #X <- attrcp(ys,X)
   attr(X,"season") <- season
+  attr(X,"longname") <- attr(y,"longname")
   attr(X,'station') <- ys
   attr(X,'predictor') <- attr(T2M,'source')
   attr(X,'domain') <- list(lon=lon,lat=lat)
@@ -1353,19 +1353,29 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
 DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                     predictor="ERA40_t2m_mon.nc",
-                                    rcp="rcp45",biascorrect=FALSE,
+                                    rcp="rcp45",biascorrect=FALSE,n=6,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf4',
-                                    pattern="tas_Amon_ens_",verbose=FALSE) {
+                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE) {
   if (verbose) print('DSensemble.mu.worstcase')
 
   ## The predictor is based on the seasonal variations and assumes that the seasnoal cycle in the
   ## wet-day mean mu is follows a systematic dependency to the seasonal variations in the temperature
   ## - the calibration uses the Clausius Clapeiron equation to estimate the saturation water vapour
   ## rather than using the temeprature directly.
-  if (verbose) print(paste('The predictor: seasonal',FUN))
+  if (verbose) print(paste('The predictand: seasonal',FUN))
+
   ys <- aggregate(y,by=month,FUN=FUN)
   ya <- aggregate(y,by=year,FUN=FUN)
+  ns <- 1
+  
+  ## A group of stations - use PCA
+  if (!is.null(dim(ys))) {
+    if (verbose) print('Use PCA for multiple stations')
+    pca.ys <- PCA(ys,n=n)
+    pca.ya <- PCA(ya)
+    ns <- n
+  }
   
   if (!is.na(attr(y,'longitude')) & rel.cord)
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
@@ -1378,101 +1388,134 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
   if (verbose) print("predictor")
-  if (is.character(predictor))
-    pre <- spatial.avg.field(C.C.eq(retrieve(ncfile=predictor,lon=lon,lat=lat,
-                                             type=type,verbose=verbose))) else
-  if (inherits(predictor,'field')) pre <- predictor
+  if (is.character(predictor)) {
+    pre <- retrieve(ncfile=predictor,lon=lon,lat=lat,type=type,verbose=verbose)
+    if (mask) pre=mask(pre,land=TRUE)
+    pre <- spatial.avg.field(C.C.eq(pre))
+  } else if (inherits(predictor,'field')) pre <- spatial.avg.field(predictor)
   rm("predictor"); gc(reset=TRUE)
+  ## Estimate the reference level
   normal61.90 <- mean(coredata(subset(pre,it=c(1961,1990))))
   x <- aggregate(pre,by=month,FUN="mean")
-  cal <- data.frame(y=coredata(ys),x=coredata(x))
-  stats <- cor.test(cal$y,cal$x)
-  wc.model <- lm(y ~ x, data=cal)
-  if (plot) {
-    par(bty='n',cex.sub=0.7,col.sub='grey40')
-    ylim <- range(cal$y,na.rm=TRUE); xlim=range(cal$x,na.rm=TRUE); dy <- diff(ylim)/25
-    plot(cal$x,cal$y,pch=19,cex=1.5,col='grey',
-         ylab=expression(paste(mu,' (mm/day)')),
-         xlab=expression(paste(e[s],' (Pa)')),
-         ylim=ylim,xlim=xlim,
-         main='Worst-case based on seasonal variations',
-         sub=paste(loc(y),' (',round(lon(y),2),'E/',round(lat(y),2),'N; ',alt(y),'m.a.s.l.)',sep=''))
-    segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y+2*attr(ys,'standard.error'),col='grey')
-    segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y-2*attr(ys,'standard.error'),col='grey')
-    segments(x0=cal$x,y0=cal$y,x1=cal$x+2*attr(x,'standard.error'),y1=cal$y,col='grey')
-    segments(x0=cal$x,y0=cal$y,x1=cal$x-2*attr(x,'standard.error'),y1=cal$y,col='grey')
-    points(cal$x,cal$y,pch=19,cex=1.5,col='grey')
-    grid()
-    abline(wc.model)
-    text(xlim[1],ylim[2],paste('Correlation=',round(stats$estimate,2),
-                               '(','p-value=',100*round(stats$p.value,4),'%)'),
-         pos=4,cex=0.7,col='grey')
-    text(xlim[1],ylim[2]-dy,paste('Regression: y=',round(wc.model$coeff[1],4), '+',
-                                  round(wc.model$coeff[2],4), 'x (R2=',
-                                  round(summary(wc.model)$r.squared,2),')'),
-         pos=4,cex=0.7,col='grey')
-    par(new=TRUE,fig=c(0.5,0.97,0.1,0.5),yaxt='n',xpd=TRUE,cex.axis=0.7,col.axis='grey')
-    plot((cal$x - mean(cal$x))/sd(cal$x),type='l',lwd=2,ylab='',xlab='',col=rgb(0.6,0.3,0))
-    axis(1,col='grey')
-    lines((cal$y - mean(cal$y))/sd(cal$y),type='l',lwd=2,col=rgb(0,0.3,0.6))
-    dev.copy2eps(file='DSensemble.mu.worstcase.cal.eps')
-  }  
-  # Ensemble GCMs
+
+  if (verbose) print('Prepare the calibration data')
+  ## Loop over PCAs if multipple stations
+
+  if (n>1) results <- list()
+
+  ## Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
   ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else
-                       N <- length(select)
+                                 N <- length(select)
   if (verbose) print(ncfiles[select])
 
-  # set up results matrix and tables of diagnostics:
+  ## set up results matrix and tables of diagnostics:
   years <- sort(1900:2100)
   m <- length(years)
-  X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
-
-  if (plot) {
-    dev.new()
-    plot(ya,xlim=c(1900,2100),
-         ylim=range(aggregate(y,by=year,FUN='wetmean'),na.rm=TRUE)*c(0.75,1.5))
-    grid()
-    
-  }
   
-  sd.noise <- max(attr(ys,'standard.error'),sd(wc.model$residuals))
-  for (i in 1:N) {
-    #
+  for (is in 1:n) {
+    X <- matrix(rep(NA,N*m),N,m)
+    if (verbose) print(paste('is=',is,'n=',n))
+    if (n==1) cal <- data.frame(y=coredata(ys),x=coredata(x)) else
+              cal <- data.frame(y=coredata(ys)[,is],x=coredata(x))
+    attributes(cal$y) <- NULL
+                        
+    if (is.null(dim(ys))) stats <- cor.test(cal$y,cal$x) else
+    stats <- cor.test(as.matrix(cal)[,1],cal$x)
+    wc.model <- lm(y ~ x, data=cal)
+    if (plot) {
+      par(bty='n',cex.sub=0.7,col.sub='grey40')
+      ylim <- range(cal$y,na.rm=TRUE); xlim=range(cal$x,na.rm=TRUE); dy <- diff(ylim)/25
+      plot(cal$x,cal$y,pch=19,cex=1.5,col='grey',
+           ylab=expression(paste(mu,' (mm/day)')),
+           xlab=expression(paste(e[s],' (Pa)')),
+           ylim=ylim,xlim=xlim,
+           main='Worst-case based on seasonal variations',
+           sub=paste(loc(y),' (',round(lon(y),2),'E/',round(lat(y),2),'N; ',alt(y),'m.a.s.l.)',sep=''))
+      segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y+2*attr(ys,'standard.error'),col='grey')
+      segments(x0=cal$x,y0=cal$y,x1=cal$x,y1=cal$y-2*attr(ys,'standard.error'),col='grey')
+      segments(x0=cal$x,y0=cal$y,x1=cal$x+2*attr(x,'standard.error'),y1=cal$y,col='grey')
+      segments(x0=cal$x,y0=cal$y,x1=cal$x-2*attr(x,'standard.error'),y1=cal$y,col='grey')
+      points(cal$x,cal$y,pch=19,cex=1.5,col='grey')
+      grid()
+      abline(wc.model)
+      text(xlim[1],ylim[2],paste('Correlation=',round(stats$estimate,2),
+                                 '(','p-value=',100*round(stats$p.value,4),'%)'),
+           pos=4,cex=0.7,col='grey')
+      text(xlim[1],ylim[2]-dy,paste('Regression: y=',round(wc.model$coeff[1],4), '+',
+                                    round(wc.model$coeff[2],4), 'x (R2=',
+                                    round(summary(wc.model)$r.squared,2),')'),
+           pos=4,cex=0.7,col='grey')
+      par(new=TRUE,fig=c(0.5,0.97,0.1,0.5),yaxt='n',xpd=TRUE,cex.axis=0.7,col.axis='grey')
+      plot((cal$x - mean(cal$x))/sd(cal$x),type='l',lwd=2,ylab='',xlab='',col=rgb(0.6,0.3,0))
+      axis(1,col='grey')
+      lines((cal$y - mean(cal$y))/sd(cal$y),type='l',lwd=2,col=rgb(0,0.3,0.6))
+      #dev.copy2eps(file='DSensemble.mu.worstcase.cal.eps')
+    }
+
+    if (plot) {
+      dev.new()
+      if (n>1) ya <- pca.ya[,is]
+      plot(ya,xlim=c(1900,2100),
+           ylim=range(aggregate(y,by=year,FUN='wetmean'),na.rm=TRUE)*c(0.75,1.5))
+      grid()
+    }
+  
+    sd.noise <- max(attr(ys,'standard.error'),sd(wc.model$residuals))
+    for (i in 1:N) {
+      if (verbose) print(ncfiles[select[i]])
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,
-                      type=type,verbose=verbose)
+                      type=type,verbose=FALSE)
+      if (verbose) print(paste('mask=',mask))
+      if (mask) gcm <- mask(gcm,land=TRUE)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+      if (verbose) print('spatial average')
       GCM <- spatial.avg.field(C.C.eq(gcm))
       z <- annual(GCM,FUN="max")
       z <- z - mean(coredata(subset(z,it=c(1961,1990)))) + normal61.90
       i1 <- is.element(year(z),years)
       i2 <- is.element(years,year(z))
+      if (verbose) print(c(i,sum(i1),sum(i2)))
       prex <- data.frame(x=coredata(z[i1]))
-      X[i,i2] <- predict(wc.model, newdata=prex) +
-        rnorm(n=sum(i1),sd=sd.noise)
-      print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
+      if (verbose) print(summary(prex))
+      if (verbose) print('prediction')
+      z.predict <- predict(wc.model, newdata=prex) +
+                         rnorm(n=sum(i1),sd=sd.noise)
+      if (length(z.predict) != sum(i2)) {
+        print('problem discovered')
+        browser()
+      }
+      X[i,i2] <- z.predict
+      if (verbose) print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
       #if (sum(i2) != length(years)) 
-     if (plot) lines(years[i2],X[i,i2],col=rgb(0,0.3,0.6,0.2))
-     }
-  if (plot) lines(aggregate(y,by=year,FUN='wetmean'),col='red',lwd=3)
+      if (plot) lines(years[i2],X[i,i2],col=rgb(0,0.3,0.6,0.2))
+    }
+    if (plot) {
+      if (n==1) lines(aggregate(y,by=year,FUN='wetmean'),col='red',lwd=3) else
+                lines(PCA(aggregate(y,by=year,FUN='wetmean'))[,is],col='red',lwd=3)
+    }
   
-  X <- zoo(t(X),order.by=years)
-  colnames(X) <- gcmnm
-  attr(X,"model_id") <- gcmnm
-  #X <- attrcp(y,X)
-  attr(X,'station') <- aggregate(y,by=year,FUN='wetmean')
-  attr(X,'predictor') <- attr(pre,'source')
-  attr(X,'domain') <- list(lon=lon,lat=lat)
-  attr(X,'path') <- path
-  attr(X,'scenario') <- rcp
-  attr(X,'history') <- history.stamp(y)
-  class(X) <- c("dsensemble","zoo")
-  save(file="DSensemble.rda",X)
-  print("---")
+    X <- zoo(t(X),order.by=years)
+    colnames(X) <- gcmnm
+    attr(X,"model_id") <- gcmnm
+    attr(X,'station') <- aggregate(y,by=year,FUN='wetmean')
+    attr(X,'predictor') <- attr(pre,'source')
+    attr(X,'domain') <- list(lon=lon,lat=lat)
+    attr(X,'path') <- path
+    attr(X,'scenario') <- rcp
+    attr(X,'history') <- history.stamp(y)
+    class(X) <- c("dsensemble","zoo")
+    save(file="DSensemble.rda",X)
+    if (verbose) print("--- end of iteration")
+    if (n>1) eval(parse(text=paste('results$pca.',is,' <- X',sep='')))
+  }
+  if (n>1) X <- results
+  if (verbose) print(names(X))
+  if (verbose) print("--- Exit DSensemble.mu.worstcase")
   invisible(X)   
 }
 
@@ -1484,7 +1527,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,
                            rel.cord=TRUE,
                            select=NULL,FUN="mean",rmtrend=TRUE,
-                           FUNX="mean",threshold=1,type='ncdf',
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="tas_Amon_ens_",verbose=FALSE,
                            file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
 
@@ -1501,15 +1544,28 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (sum(!is.finite(lat))>0) 
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
     
-  if (is.character(predictor))
+  if (is.character(predictor)) {
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,
-                    type=type,verbose=verbose) else
-  if (inherits(predictor,'field'))
-    t2m <- subset(predictor,is=list(lon=lon,lat=lat))
+                    type=type,verbose=verbose)
+      if (!is.null(it)) {
+        if (verbose) print('Extract some months or a time period')
+        if (verbose) print(it)
+        t2m <- subset(t2m,it=it,verbose=verbose)
+        ## if it is character, then then extraction of months reduces number of
+        ## days per year.
+      }
+  } else if (inherits(predictor,'field')) {
+    t2m <- predictor
+    lon <- range(lon(t2m))
+    lat <- range(lat(t2m))
+  }
+  ## If some months are selected, make sure that the minimum number of months
+  ## requiired in the annual aggregation is updated
+  if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
 
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data')
-    T2M <- as.4seasons(t2m,FUN=FUNX)
+    T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
     T2M <- matchdate(T2M,y)
 
     # Recursive: do each season seperately if there are more than one season
@@ -1523,7 +1579,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                             non.stationarity.check=non.stationarity.check,
                             eofs=eofs,lon=lon,lat=lat,rel.cord=FALSE,
                             select=select,FUN=FUN,rmtrend=rmtrend,
-                            FUNX=FUNX,threshold=threshold,type=type,
+                            FUNX=FUNX,xfuns=xfuns,threshold=threshold,type=type,
                             pattern=pattern,verbose=verbose,nmin=nmin)
         eval(parse(text=paste('Z$',season,' <- z',sep='')))
       }
@@ -1533,22 +1589,20 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   } else if (inherits(y,'annual')) {
     if (verbose) print('annual data')
-    if (!is.null(it)) {
-      if (verbose) print('Extract some months ot a time period')
-      if (verbose) print(it)
-      t2m <- subset(t2m,it=it)
-      ## if it is character, then then extraction of months reduces number of
-      ## days per year.
-      if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
-    }
-    if (!is.annual(t2m)) {
-      if (FUNX!='C.C.eq')
-        T2M <- annual(t2m,FUN=FUNX,nmin=nmin) else
-        T2M <- annual(C.C.eq(t2m),FUN='mean',nmin=nmin)
-  } else T2M <- t2m
+    if  (!inherits(predictor,'field')) T2M <- t2m else if (!is.annual(t2m)) {
+      if (verbose) print(paste('Aggregate annually',FUNX,'for calibration'))
+        if (sum(is.element(FUNX,xfuns))==0)
+          T2M <- annual(t2m,FUN=FUNX,nmin=nmin) else
+          eval(parse(text=paste('T2M <- annual(',FUNX,'(t2m),FUN="mean",nmin=nmin)',sep="")))
+      } else T2M <- t2m
+    ## Match the date
     T2M <- matchdate(T2M,y)
   } else if (inherits(y,'month')) {
+    if (verbose) print('monthly data')
     T2M <- matchdate(t2m,y)
+    ## browser()
+    ##if (FUNX=='C.C.eq') 
+    ##  T2M <- mask(T2M,land=TRUE)
   }
   if (inherits(T2M,"eof")) T2M <- as.field(T2M)
   rm("predictor","t2m"); gc(reset=TRUE)
@@ -1578,6 +1632,12 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
 
+  if (plot) {
+    par(bty='n')
+    index(y) <- year(y)
+    plot.zoo(y[,1],lwd=3,main='PC1',ylab='',xlab='',xlim=range(years))
+  }
+  
   flog <- file("DSensemble.pca-log.txt","at")
   
   ## Set up a list environment to keep all the results
@@ -1589,27 +1649,36 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
     if (!is.null(it)) {
-      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print('Extract some months or a time period')
+      if (is.null(nmin)) warning(paste("The argument 'it' is set but not 'nmin'; it=",
+                                       paste(it,collapse="-")))
       if (verbose) print(it)
-      gcm <- subset(gcm,it=it)
+      gcm <- subset(gcm,it=it,verbose=verbose)
     }
-    #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
     if (inherits(y,'season')) {
-      GCM <- as.4seasons(gcm,FUN=FUNX)
+      GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
       GCM <- subset(GCM,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
-      if (FUNX!='C.C.eq') GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
-                          GCM <- annual(C.C.eq(gcm),FUN='mean',nmin=nmin)
+      if (verbose) print(paste('Annualy aggregated',FUNX,'for GCM'))
+      if (sum(is.element(FUNX,xfuns))==0)
+          GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+          eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
     } else if (inherits(y,'month')) {
-      if (length(table(month(y)))==1)
-        GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
+      if (length(table(month(y)))==1) 
+        GCM <- subset(gcm,it=month.abb[month(y)[1]]) 
+      else
         GCM <- gcm
+      if (!is.null(FUNX)) {
+        GCM <- do.call(FUNX,list(GCM))
+      }
     }
+    	
+    if (is.null(src(T2M))) attr(T2M,'source') <- 'reanalysis'
     T2MGCM <- combine(T2M,GCM)
     
     if (verbose) print("- - - > EOFs")
-    Z <- try(EOF(T2MGCM))
+    Z <- try(EOF(T2MGCM,verbose=verbose))
     
     ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
@@ -1624,7 +1693,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
 
-    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
+    ds <- try(DS(y,Z,eofs=eofs,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
     } else {
@@ -1715,12 +1784,20 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print('scorestats')
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
+      qcol <- quality
+      qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
                   ' sd1/sd2=',round(srati,3),
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
                   round(quality)))
+
+      if (plot) {
+        index(y) <- year(y); index(z) <- year(z)
+        lines(z[,1],lwd=2,col=cols[qcol])
+        lines(y[,1],lwd=3,main='PC1')
+      }
    }
   
     if (verbose) print('Downscaling finished')
@@ -1733,6 +1810,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
   attr(dse.pca,'predictor') <- attr(T2M,'source')
+  attr(dse.pca,"longname") <- attr(y,"longname")
   attr(dse.pca,'domain') <- list(lon=lon,lat=lat)
   attr(dse.pca,'scorestats') <- scorestats
   attr(dse.pca,'path') <- path
@@ -1749,4 +1827,315 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   save(file=file.ds,dse.pca)
   if (verbose) print("---")
   invisible(dse.pca)
+}
+
+
+DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_slp_mon.nc",
+                           non.stationarity.check=FALSE,
+                           eofs=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,
+                           rel.cord=TRUE,nmin=NULL,lev=NULL,levgcm=NULL,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",threshold=1,type='ncdf4',
+                           pattern="psl_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.eof.rda",path.ds=NULL) {
+
+  if(verbose) print("DSensemble.eof")
+  stopifnot(inherits(y,c("EOF","field")))
+  cls <- class(y)
+
+  if (!is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) & rel.cord)
+    lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
+  if (!is.na(attr(y,'latitude'))[1] & (any(lat>0) & any(lat<0)) & rel.cord)
+    lat <- round( range(attr(y,'latitude'),na.rm=TRUE) + lat )
+
+  if (sum(!is.finite(lon))>0) 
+    warning(paste('Bad longitude range provided: ',paste(lon,collapse='-')))
+  if (sum(!is.finite(lat))>0) 
+    warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
+
+  if (is.character(predictor))
+    slp <- retrieve(ncfile=predictor,lon=lon,lat=lat,lev=lev,
+                    type=type,verbose=verbose) else
+  if (inherits(predictor,'field'))
+    slp <- subset(predictor,is=list(lon=lon,lat=lat))
+
+  if (inherits(y,'season')) {
+    if (verbose) print('seasonal data')
+    SLP <- as.4seasons(slp,FUN=FUNX)
+    SLP <- matchdate(SLP,y)
+
+    if (length(table(season(y)))>1) {
+      if (verbose) print('--- Apply DS to seasons seperately ---')
+      Z <- list(info='DSensemble.eof for different seasons')
+      for (season in names(table(season(y)))) {
+        if (verbose) print(paste('Select',season))
+        z <- DSensemble.eof(subset(y,it=season),lplot=lplot,path=path,
+                            rcp=rcp,biascorrect=biascorrect,predictor=SLP,
+                            non.stationarity.check=non.stationarity.check,
+                            eofs=eofs,lon=lon,lat=lat,rel.cord=FALSE,
+                            select=select,FUN=FUN,rmtrend=rmtrend,
+                            FUNX=FUNX,threshold=threshold,type=type,
+                            pattern=pattern,verbose=verbose,nmin=nmin)
+        eval(parse(text=paste('Z$',season,' <- z',sep='')))
+      }
+      if (verbose) print('--- Results returned as a list ---')
+      return(Z)
+    }
+
+  } else if (inherits(y,'annual')) {
+    if (verbose) print('annual data')
+    if (!is.null(it)) {
+      if (verbose) print('Extract some months of a time period')
+      if (verbose) print(it)
+      slp <- subset(slp,it=it)
+      if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+    }
+    if (!is.annual(slp)) {
+      if (FUNX!='C.C.eq')
+        SLP <- annual(slp,FUN=FUNX,nmin=nmin) else
+        SLP <- annual(C.C.eq(slp),FUN='mean',nmin=nmin)
+  } else SLP <- slp
+    SLP <- matchdate(SLP,y)
+  } else if (inherits(y,'month')) {
+    SLP <- matchdate(slp,y)
+  }
+  if (inherits(SLP,"eof")) SLP <- as.field(SLP)
+  rm("predictor","slp"); gc(reset=TRUE)
+
+  if(!inherits(y,"eof")) y <- EOF(y)
+      
+  # Ensemble GCMs
+  path <- file.path(path,rcp,fsep = .Platform$file.sep)
+  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  N <- length(ncfiles)
+
+  if (is.null(select)) select <- 1:N else
+                       N <- length(select)
+  if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
+
+  d.y <- dim(y)
+  years <- 1900:2100
+  m <- length(years)
+  months <- rep(month(y)[1],m)
+  X <- matrix(rep(NA,N*m*d.y[2]),N,m*d.y[2])
+  dim(X) <- c(d.y[2],N,m)
+  gcmnm <- rep("",N)
+  scorestats <- matrix(rep(NA,N*9),N,9)
+  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.diff",
+                            "res.trend","res.K-S","res.ar1",'amplitude.ratio',
+                            "1-R2")
+
+  t <- as.Date(paste(years,months,'01',sep='-'))
+
+  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
+
+  flog <- file("DSensemble.eof-log.txt","at")
+
+  ## Set up a list environment to keep all the results
+  dse.eof <- list(info='DSensemble.eof',eof=y) 
+  if (verbose) print("loop...") 
+  for (i in 1:N) {
+    if (verbose) print(ncfiles[select[i]])
+    gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
+                          lon=range(lon(SLP))+c(-2,2),
+                          lat=range(lat(SLP))+c(-2,2),
+                          lev=levgcm,verbose=verbose)
+    ## KMP 2016-08-09 added separate level input for slp and gcm
+    ##                because they can have levels of different units
+    if(is.null(levgcm) & !is.null(attr(gcm,"level")))
+      levgcm <- attr(gcm,"level")
+    if (!is.null(it)) {
+      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print(it)
+      gcm <- subset(gcm,it=it)
+    }
+    #gcmnm[i] <- attr(gcm,'model_id')
+    gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
+    if (inherits(y,'season')) {
+      GCM <- as.4seasons(gcm,FUN=FUNX)
+      GCM <- subset(GCM,it=season(SLP)[1])
+    } else if (inherits(y,'annual')) {
+      if (FUNX!='C.C.eq') GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+                          GCM <- annual(C.C.eq(gcm),FUN='mean',nmin=nmin)
+    } else if (inherits(y,'month')) {
+      if (length(table(month(y)))==1)
+        GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
+        GCM <- gcm
+    }
+    SLPGCM <- combine(SLP,GCM)
+    
+    if (verbose) print("- - - > EOFs")
+    Z <- try(EOF(SLPGCM))
+    
+    ## The test lines are included to assess for non-stationarity
+    if (non.stationarity.check) {
+      testGCM <- subset(GCM,it=range(year(SLP)))      
+      testy <- regrid(testGCM,is=as.field(y)) 
+      attr(testGCM,'source') <- 'testGCM'
+      testZ <- combine(testGCM,GCM)            
+      rm("testGCM"); gc(reset=TRUE)
+    }
+    rm("gcm","GCM"); gc(reset=TRUE)
+
+    if (verbose) print("- - - > DS")
+    if (biascorrect) Z <- biasfix(Z)
+    
+    diag <- diagnose(Z)
+    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
+    if(inherits(ds,"try-error")) {
+      print(paste("esd failed for",gcmnm.i))
+    } else {
+      if (verbose) print("post-processing")
+      gcmnm[i] <- gcmnm.i
+   
+      ## Keep the results for the projections:
+      if (verbose) print('Extract the downscaled projection')
+      z <- attr(ds,'appendix.1') ## KMP 09.08.2015
+      ##attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
+      ## model takes up too much space! can it be stored more efficiently?
+      attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
+      attr(z,'evaluation') <- attr(ds,'evaluation')
+    
+      cl <- paste('dse.eof$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
+      eval(parse(text=cl))
+      if (verbose) {
+        print('Test to see if as.field has all information needed')
+        test.field.ds <- as.field(ds)
+        a <- attrcp(y,z);  class(a) <- class(y)
+        test.field.z <- as.field(a)
+      }
+       
+      # Diagnose the residual: ACF, pdf, trend. These will together with the
+      # cross-validation and the common EOF diagnostics provide a set of
+      # quality indicators.
+      cal <- coredata(attr(ds,"original_data"))
+      fit <- coredata(attr(ds,"fitted_values"))
+      if (verbose) print('examine residuals...')
+      res <- as.residual(ds)
+      res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
+      ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
+      ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1]),
+                         plot=FALSE)[[1]][2])
+      if (verbose) print(paste("Residual trend=",
+                             round(res.trend,3),'D/decade; K.S. p-val',
+                             round(ks,2),'; AR(1)=',round(ar,2)))
+
+      # Evaluation: here are lots of different aspects...
+      # Get the diagnostics: this is based on the analysis of common EOFs...
+
+      xval <- attr(ds,'evaluation')
+      r.xval <- round(sapply(seq(1,2*ncol(ds),2),function(i) cor(xval[,i],xval[,i+1])),3)
+                                        #round(cor(xval[,1],xval[,2]),3)
+      if (verbose) print(paste("x-validation r=",paste(r.xval,collapse=", ")))
+      ds.ratio <- round(sapply(seq(1,ncol(ds)),function(i) sd(ds[,i],na.rm=TRUE)/sd(y[,i],na.rm=TRUE)),3)
+                                        #round(sd(ds[,1],na.rm=TRUE)/sd(y[,1],na.rm=TRUE),4)
+      
+      if (verbose) print(paste("sd ratio=",paste(ds.ratio,collapse=", ")))
+      if (verbose) print(names(attributes(ds)))
+      if (biascorrect) {
+        if (verbose) print('biascorrect')
+        diag <- attr(ds,'diagnose')
+        if ( (verbose) & !is.null(diag)) str(diag)
+      } else diag <- NULL
+      
+      # diagnose for ds-objects
+      if (verbose) print('...')
+      #
+      if (is.null(diag)) {
+        if (verbose) print('no diag')
+        mdiff <- (mean(subset(y,it=range(year(y))),na.rm=TRUE)-
+                  mean(subset(ds,it=range(year(ds))),na.rm=TRUE))/
+                    sd(y,na.rm=TRUE)
+        srati <- 1 - sd(subset(ds,it=range(year(ds))),na.rm=TRUE)/
+                    sd(subset(y,it=range(year(y))),na.rm=TRUE)
+        adiff <- as.numeric(acf(coredata(y)[,1],plot=FALSE,na.action=na.pass)[[1]][2])-
+                 as.numeric(acf(coredata(ds)[,1],plot=FALSE,na.action=na.pass)[[1]][2])
+       } else {
+        if (verbose) print('diag ok')
+     # Extract the mean score for leading EOF from the 4 seasons:
+        mdiff <- mean(c(diag$s.1$mean.diff[1]/diag$s.1$sd0[1],
+                        diag$s.2$mean.diff[1]/diag$s.2$sd0[1],
+                        diag$s.3$mean.diff[1]/diag$s.3$sd0[1],
+                        diag$s.4$mean.diff[1]/diag$s.4$sd0[1]))
+        srati <- mean(1 - c(diag$s.1$sd.ratio[1],diag$s.2$sd.ratio[1],
+                            diag$s.3$sd.ratio[1],diag$s.4$sd.ratio[1]))
+        adiff <- mean(1 - c(diag$s.1$autocorr.ratio[1],
+                            diag$s.2$autocorr.ratio[1],
+                            diag$s.3$autocorr.ratio[1],
+                            diag$s.4$autocorr.ratio[1]))
+        
+      }
+      scorestats[i,] <- c(1-r.xval[1],mdiff,srati,adiff,res.trend,ks,ar,1-ds.ratio[1],
+                          1-round(var(xval[,2])/var(xval[,1]),2))
+      if (verbose) print('scorestats')
+      if (verbose) print(scorestats[i,])
+      quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
+      R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
+      print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval[1],2),
+                  "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
+                  ' sd1/sd2=',round(srati,3),
+                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
+                  round(quality)))
+    }
+   
+    if (verbose) print('Downscaling finished')
+  
+  }
+  
+  ## Unpacking the information tangled up in GCMs, PCs and stations:
+  ## Save GCM-wise in the form of PCAs
+  gcmnm <- gsub('-','.',gcmnm)
+
+  #Z <- attrcp(y,Z)
+  if (verbose) print('Set attributes')
+  attr(dse.eof,'predictor') <- attr(SLP,'source')
+  attr(dse.eof,'domain') <- list(lon=lon,lat=lat)
+  attr(dse.eof,'scorestats') <- scorestats
+  attr(dse.eof,'path') <- path
+  attr(dse.eof,'scenario') <- rcp
+  attr(dse.eof,'variable') <- attr(y,"variable")[1]
+  attr(dse.eof,'unit') <- attr(y,"unit")[1]
+  attr(dse.eof,'unitarea') <- attr(y,"unitarea")
+  attr(dse.eof,'history') <- history.stamp(y)
+  if (non.stationarity.check)
+    attr(dse.eof,'on.stationarity.check') <- difference.z else
+    attr(dse.eof,'on.stationarity.check') <- NULL
+  class(dse.eof) <- c("dsensemble","eof","list")
+
+  if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
+  save(file=file.ds,dse.eof)
+  if (verbose) print("---")
+  invisible(dse.eof)
+}
+
+
+DSensemble.field <- function(y,plot=TRUE,path="CMIP5.monthly/",
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_t2m_mon.nc",
+                           non.stationarity.check=FALSE,
+                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
+                           it=c('djf','mam','jja','son'),
+                           rel.cord=TRUE,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
+                           pattern="tas_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
+  ## For downscaling gridded predictand. This is a wrap-around which extracts the season or aggregates
+  ## to annual values and then calls the other types for the downscaling.
+  
+}
+
+DSensemble.station <- function(y,plot=TRUE,path="CMIP5.monthly/",
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_t2m_mon.nc",
+                           non.stationarity.check=FALSE,
+                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
+                           it=c('djf','mam','jja','son'),
+                           rel.cord=TRUE,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
+                           pattern="tas_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
 }

@@ -19,7 +19,7 @@ ele2param(ele="601",src="GHCNM")
 esd2ele <- function(param = NULL) {
   if (!is.null(param)) ele <- switch(tolower(param),
                                      't2m' = "101",
-                                     'tg' = "101",
+                                     'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
                                      'rr' = "601",
                                      'slp' = "401",
                                      'cloud' = "801",
@@ -29,12 +29,22 @@ esd2ele <- function(param = NULL) {
                                      `401` = "slp",
                                      `601` = "precip",
                                      `801` = "801",
-                                     'tmin'="121",
-                                     'tmax'="111",
+                                     'tmin'="121",'tx'="121",                             #REB 2016-07-25                 
+                                     'tmax'="111",'tn'="111",                             #REB 2016-07-25
                                      '121' ="tmin",
                                      '111' = "tmax",
                                      '901'  = "sd",
-                                     'sd' = '901')
+                                     'sd' = '901',
+                                     'dd' = '502',
+                                     '502' = 'dd',
+                                     'fg' = '501', # Wind speed
+                                     '501' = 'fg',
+                                     'fx' = '503',
+                                     '503' = 'fx',
+                                     '201' = 'HU',
+                                     'HU' = '201',
+                                     '301' = 'ss',
+                                     'ss' = '201')
  else ele <- NULL
 return(ele)
 }
@@ -133,15 +143,37 @@ y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit =
 return(y)
 }
 # Selected elements from ECAD database
-ecad.ele <- function() {
-x <- rbind(c("601" , "Precipitation amount"		, "0.1"	  		, "mm"	, "RR"),
-	   c("401" , "Sea level pressure" 		, "0.1"	  		, "hPa"	, "PP"),
-	   c("901" , "Snow depth" 			, "1"	  		, "cm" 	, "SD"),
-	   c("111" , "Maximum temperature" 	 	, "0.1"   		, "degree*C" 	, "TX"),
-	   c("121" , "Minimum temperature" 		, "0.1"	  		, "degree*C" 	, "TN"),
-	   c("101" , "Mean temperature" 		, "0.1"   		, "degree*C" 	, "TG"))
-y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "ECAD",stringsAsFactors=FALSE)
-return(y)
+ecad.ele <- function(file='~/ecad_element.csv') {
+    ## browser()
+    ## if (file.exists(file)) {
+    ##     x <- read.csv('~/ecad_element.csv',sep=',',stringsAsFactor=FALSE)
+    ##     strsp <- strsplit(x$X.2,split=' ')
+    ##     scale <- as.numeric(apply(as.matrix(x$X.2),1, function(x) strsplit(x,split=' ')[[1]][1]))
+    ##     scale[is.na(scale)] <- 1
+    ##     unit <- gsub("[[:digit:]]|\\.", "", x$X.2)
+    ##     unit <- gsub(" ","",unit)
+    ##     ## clean unit and scale
+    ##     ok <- !(unit=="")
+    ##     y <- data.frame(element=x$X[ok] , longname = x$X.1[ok] ,
+    ##                     scale_factor = scale[ok],
+    ##                     unit = unit[ok] ,
+    ##                     param = x$X[ok] , source = "ECAD",stringsAsFactors=FALSE)
+    ## } else {
+        x <- rbind(c("601" , "Precipitation amount"		, "0.1"	  		, "mm"	        , "RR"),
+                   c("401" , "Sea level pressure" 		, "0.1"	  		, "hPa"	        , "PP"),
+                   c("901" , "Snow depth" 			, "1"	  		, "cm" 	        , "SD"),
+                   c("111" , "Maximum temperature" 	 	, "0.1"   		, "degree*C" 	, "TX"),
+                   c("121" , "Minimum temperature" 		, "0.1"	  		, "degree*C" 	, "TN"),
+                   c("101" , "Mean temperature" 		, "0.1"   		, "degree*C" 	, "TG"),
+                   c("501" , "Wind speed" 		        , "0.1"   		, "m/s" 	, "FG"),
+                   c("502" , "Wind direction"         		, "1"   		, "degrees" 	, "DD"),
+                   c("503" , "Wind Gust" 		        , "0.1"   		, "m/s" 	, "FX"),
+                   c("201" , "Relative humidity" 		, "1"   		, "%   " 	, "HU"),
+                   c("801" , "Cloud cover"      		, "1"   		, "oktas" 	, "CC"),
+                   c("301" , "Sunshine"         		, "0.1"   		, "Hours" 	, "SS"))
+        y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "ECAD",stringsAsFactors=FALSE)
+    ## }
+    return(y)   
 }
 # Selected elements from GHCNM database
 ghcnm.ele <- function() {
@@ -163,12 +195,31 @@ return(y)
 }
 metno.ele <- function() { ## must be updated - AM 2014-02-21
   ## Selected elements from GHCND database
-  x <- rbind(c("601" , "Precipitation"		 	, "1"	  		, "mm"	, "RR"),
-             c("999" , "Snowfall"			, "1" 	  		, "mm" 	, "SNOW"),
-             c("901" , "Snow depth"			, "1" 	  		, "mm" 	, "SNWD"),
-             c("101" , "Mean temperature"	        , "1" 		        , "degree*C"  , "TAM"),
-             c("111" , "Maximum temperature" 	 	, "1"   		, "degree*C"	, "TAX"),
-             c("121" , "Minimum temperature" 	 	, "1"	  		, "degree*C" 	, "TAN"))
-  y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO",stringsAsFactors=FALSE)
+    
+    if (!file.exists('metno_element.txt')) {
+      x <- rbind(c("601" , "Precipitation"		 	, "1"	  		, "mm"	, "RR"),
+                 c("999" , "Snowfall"			, "1" 	  		, "mm" 	, "SNOW"),
+                 c("901" , "Snow depth"			, "1" 	  		, "mm" 	, "SNWD"),
+                 c("101" , "Mean temperature"	        , "1" 		        , "degree*C"  , "TAM"),
+                 c("111" , "Maximum temperature" 	 	, "1"   		, "degree*C"	, "TAX"),
+                 c("121" , "Minimum temperature" 	 	, "1"	  		, "degree*C" 	, "TAN"))
+      y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO",stringsAsFactors=FALSE)
+      
+      } else {
+        x <- read.csv('metno_element.txt')
+
+        y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = 1 , unit = x[,5] , param = x[,1] , source = "METNO",stringsAsFactors=FALSE)
+      }
   return(y)
+}
+
+wmo.ele.code <- function(pattern='^wind.*.speed.*.10') {
+    x <- read.csv('/disk1/downloads/fnmoc.B2L-058-001-B.txt',sep='\t',stringsAsFactor=FALSE,skip=5,header=TRUE)
+    ele.sel <- subset(x,subset= grepl(pattern,Element.Name,ignore.case=TRUE))
+    ele <- as.numeric(paste(ele.sel$X,ele.sel$Y,sep=''))
+    if (dim(ele.sel)[1] >1) {
+        print(ele.sel)
+        print('please refine your selection')
+    }
+    invisible(ele.sel)
 }

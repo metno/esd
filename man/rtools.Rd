@@ -14,6 +14,8 @@
 \alias{ndig}
 \alias{attrcp}
 \alias{ensemblemean}
+\alias{propchange}
+\alias{stand}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -28,6 +30,10 @@ returns the \code{y} with new attributes.
 objects. The argument \code{FUN} can also be used to estiamte other
 statistics, e.g \code{FUN='q95'} where \code{q95=function(x) apply(x,1,quantile,probs=0.95)}
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
+\code{TGW} uses triangulation of pressure measurements to estimate
+geostrophic wind based on Alexandersson et al. (1998), Glob. Atm. and
+Oce. Sys.
+\code{stand} gives a standardised time series.
 }
 \usage{
 as.decimal(x = NULL)
@@ -48,6 +54,8 @@ figlab(x,xpos=0.001,ypos=0.001)
 attrcp(x, y, ignore = c("name", "model", "n.apps",
 "appendix","dimnames"))
 ensemblemean(x,FUN='rowMeans')
+propchange(x,it0=c(1979,2013))
+stand(x)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -56,7 +64,10 @@ ensemblemean(x,FUN='rowMeans')
    \item{type}{'ma' for moving average (box-car), 'gauss' for Gaussian,
      'binom' for binomial filter,' parzen' for Parzen filter, 'hanning'
      for Hanning filter, or 'welch' for Welch filter.}
-   \item{lowpass}{True for smoothing, otherwise the highpass results is returned}
+   \item{lowpass}{True for smoothing, otherwise the highpass results is
+     returned}
+   \item{triangle}{a group of three stations with sea-level
+     pressure', e.g. from ECA\&D.}
 }
 \details{
   'as.decimal' converts between degree-minute-second into decimal value.
@@ -101,6 +112,25 @@ data(Oslo)
 ## Compute the linear trend and the p-value on annual aggregated values 
 tr <- trend.coef(coredata(annual(Oslo)))
 pval <- trend.pval(coredata(annual(Oslo)))
+\dontrun{
+pp <- station(param='slp',cntr='Denmark',src='ecad')
+wind <- TGW(subset(pp,is=c(1,3,10))
+plot(wind)
+ws <- sqrt(wind[,1]^2 + wind[,2]^2)
+plot(ws)
+hist(ws)
+
+## Estimate wind for a larger group of stations
+wind <- geostrophicwind(pp,nmax=10)
+u <- subset(wind,param='u')
+v <- subset(wind,param='u')
+ws <- sqrt(u^2+v^2)
+ws <- attrcp(v,ws)
+class(ws) <- class(v)
+attr(ws,'variable')='windspeed'
+attr(ws,'longname')='geostrophic wind speed'
+map(ws,FUN='quantile',probs=0.98)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

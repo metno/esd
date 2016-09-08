@@ -13,17 +13,17 @@ Compute the correlation between field objects and station/field.
 }
 \usage{
 corfield(x,y,...)
-corfield.zoo(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
+corfield.zoo(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
              colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE))
-corfield.field(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,
+corfield.field(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...)
-corfield.field.station(x,y,plot=TRUE,verbose=FALSE,
+corfield.field.station(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
                        colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                        use='pairwise.complete.obs',...)
 corfield.station(x,y,plot=TRUE,verbose=FALSE,
-                 use='pairwise.complete.obs',na.action='na.omit',
+                 use='pairwise.complete.obs',na.action='new=TRUE,na.omit',
                  colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...)
-corfield.eof(x,y,pattern=1,plot=TRUE,
+corfield.eof(x,y,pattern=1,plot=TRUE,new=TRUE,
              colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
              use='pairwise.complete.obs',na.action='na.omit',...)
 corfield.trajectory(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
@@ -37,6 +37,7 @@ corfield.trajectory(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
     \item{y}{data object}
     \item{plot}{TRUE: plot the results}
     \item{use}{see \code{\link{cor}}}.
+    \item{new}{see \code{link{map}}}.
  }
 \value{Map of correlation}
 \author{R.E. Benestad and A. Mezghani}
