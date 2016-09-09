@@ -757,7 +757,7 @@ metnom.station <-  function(re=15,stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,
   invisible(y)
 }
 metnod.station <-  function(re=14, url,...) {
-  brwoser() 
+  ## 
   url <- "ftp://ftp.met.no/projects/chasepl/test"
   y <- metno.station(re=re,url=url,...)
   if (!is.null(y))
