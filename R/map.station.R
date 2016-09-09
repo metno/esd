@@ -331,7 +331,24 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       points(ss.all$longitude,ss.all$latitude,pch=".",col="grey50",
              bg="grey",cex=cex/2)
     }
-    
+
+    if (!is.null(highlight))
+      points(highlight$longitude, highlight$latitude, pch = pch, col = col,
+           bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
+           xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE,
+           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
+    else if (!is.null(ss) & !is.null(FUN))
+      points(ss$longitude, ss$latitude, pch = pch, col = "white",
+           bg = "white", cex = cex*scale, xlab = "", ylab = "",
+           xlim = xlim, ylim = ylim , axes = FALSE ,
+           frame.plot = FALSE,
+           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
+    else
+      points(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg,
+           cex = cex*scale, xlab = "", ylab = "", xlim = xlim,
+           ylim = ylim , axes = FALSE , frame.plot = FALSE,
+           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
+      
     ## par(fig=par0$fig)
     ## print(par()$fig)
     ## add search info to plot
