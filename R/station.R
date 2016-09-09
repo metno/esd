@@ -988,7 +988,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
                           qual=NULL,start=NA,end=NA,param=NULL,verbose=FALSE,
                           re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",
                           url = "ftp://ftp.met.no/projects/chasepl/test",save2file=FALSE) {
-  
+  ##browser()
   if (verbose) print("ftp.met.no")
   ## 
   ## if (!is.na(end)) end1 <- format(Sys.time(),'%d.%m.%Y')
@@ -1052,7 +1052,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   attr(METNO,'history') <- c(match.call(),date())
   attr(METNO,'history') <- history.stamp(METNO)
   if (re==14) class(METNO) <- c("station","day","zoo") else if (re==15) class(METNO) <- c("station","month","zoo")
-  close(Filenavn)
+  #close(Filenavn)
   invisible(METNO)
 }
 
