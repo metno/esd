@@ -1018,7 +1018,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   if (!is.null(url)) {
     Filnavn <- file.path(url, path, paste(param1,'_',sprintf('%05d',as.numeric(stid)),'.',ext, sep = ""))
   } else stop("The url must be specified")
-  browser()
+  #browser()
   if (verbose) print(Filnavn)
   ## browser()
   Datasett <- as.list(read.table(Filnavn,dec = ".", header = TRUE, as.is = TRUE, fileEncoding = "latin1"))
