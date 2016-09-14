@@ -105,7 +105,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
                             path.ghcnd=NULL,url.ghcnd=NULL,
                             path.metnom=NULL,url.metnom=NULL,
                             path.metnod=NULL,url.metnod=NULL,
-                            user='metno') {
+                            user='external') { # user='metno'
   ##
   ## check wether x is a 'location' or a 'stationmeta' object
   
