@@ -192,7 +192,10 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
     if (src[i]=="METNOD") { #AM-29.08.2013 added for metno data
       ## 
       if (is.null(path.metnod)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnod ## default path
-      if (is.null(url.metnod)) url="http://klapp/metnopub/production/" else url <- url.metnod ## default url
+      if (is.null(url.metnod)) 
+          if (user == 'metno') url="http://klapp/metnopub/production/"
+          else url= 'ftp://ftp.met.no/projects/chasepl/test'
+      else url <- url.metnod ## default url
       x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
