@@ -686,7 +686,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         variable <- "T[2*m]"
     if (verbose) print(paste(variable,unit,isprecip,' -> varlabel'))
     varlabel=eval(parse(text=paste('expression(',
-                                   variable," *(",unit,"))",sep="")))
+             gsub(" ","~",variable)," *~(",gsub(" ","~",unit),"))",sep="")))
     if (!is.null(attr(x,'source'))) sub <- attr(x,'source') else
                                                                 sub <- NULL
     if (sum(is.element(type,'fill'))==0) colbar <- NULL
@@ -811,7 +811,8 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
                        param=NA,alpha=0.3,lwd=3,col="blue",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       show.points=TRUE,show.trajectory=FALSE,show.start=FALSE,                       show.end=FALSE,
+                       show.points=TRUE,show.trajectory=FALSE,show.start=FALSE,
+                       show.end=FALSE,
                        lty=2,type=c("fill","contour"),
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
