@@ -105,7 +105,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
                             path.ghcnd=NULL,url.ghcnd=NULL,
                             path.metnom=NULL,url.metnom=NULL,
                             path.metnod=NULL,url.metnod=NULL,
-                            user='metno') {
+                            user='external') { # user='metno'
   ##
   ## check wether x is a 'location' or a 'stationmeta' object
   
@@ -192,8 +192,11 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
     if (src[i]=="METNOD") { #AM-29.08.2013 added for metno data
       ## 
       if (is.null(path.metnod)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnod ## default path
-      if (is.null(url.metnod)) url="http://klapp/metnopub/production/" else url <- url.metnod ## default url
-      x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user='metno') ## ,path=path, url=url
+      if (is.null(url.metnod)) 
+          if (user == 'metno') url="http://klapp/metnopub/production/"
+          else url= 'ftp://ftp.met.no/projects/chasepl/test'
+      else url <- url.metnod ## default url
+      x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
         print("Warning : No values found in the time series -> This station will be ignored")
@@ -204,7 +207,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ## ment
       if (is.null(path.metnom)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnom ## default path
       if (is.null(url.metnom)) url="http://klapp/metnopub/production/" else url <- url.metnom ## default url
-      x <- metnom.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user='metno') ## ,path=path, url=url
+      x <- metnom.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
         print("Warning : No values found in the time series -> This station will be ignored")
@@ -1018,7 +1021,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   if (!is.null(url)) {
     Filnavn <- file.path(url, path, paste(param1,'_',sprintf('%05d',as.numeric(stid)),'.',ext, sep = ""))
   } else stop("The url must be specified")
-  browser()
+  #browser()
   if (verbose) print(Filnavn)
   ## browser()
   Datasett <- as.list(read.table(Filnavn,dec = ".", header = TRUE, as.is = TRUE, fileEncoding = "latin1"))
