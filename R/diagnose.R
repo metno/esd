@@ -46,7 +46,6 @@ diagnose.comb.eof <- function(x,verbose=FALSE) {
 
     # Extract a common period:
     X <- merge(Y,y,all=FALSE)
-    browser()
     Ym <- apply(coredata(X),2,mean,na.rm=TRUE)
     #print(Ym)
     #plot(Ym)
