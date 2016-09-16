@@ -539,12 +539,12 @@ nacd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   NACD <- as.station(NACD, stid=stid, loc=loc, cntr=cntr,
                      lon=round(lon,digits = 2),
                      lat=round(lat,digits = 2), alt=alt,
-                     ##freq=1, calendar='gregorian',
-                     quality=qual, src='NACD', url=NA, param=param,
+                     #calendar='gregorian',
+                     quality=qual, src='NACD', url=NA, param=esd2ele(ele),
                      aspect="original", unit=unit, longname=x.name,
                      reference="Frich et al. (1996), DMI scientific report 96-1",
                      info="Data and metadata adopted from clim.pact")
-  
+
   ## Additional attributes
   attr(NACD,'history') <- c(match.call(),date())
   attr(NACD,'history') <- history.stamp(NACD)
