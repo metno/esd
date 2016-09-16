@@ -218,7 +218,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ##
       if (toupper(param[i])=='TMAX') param[] <- 'tx' #REB 2016-07-26: dirty bug-rectification
       if (is.null(path.ecad)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.ecad ## default path
-      if (is.null(url.ecad)) url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_blend" else url <- url.ecad ## default url
+      if (is.null(url.ecad)) url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend" else url <- url.ecad ## default url
       x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path=path, url=url)
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
@@ -353,7 +353,7 @@ t2m.ghcnd.avg <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   invisible(ghcnd)
 }
 
-ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,param=NULL,qual=NULL,path="data.ECAD",url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_blend",verbose=FALSE) {  ## it=it,nmin=nmin
+ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,param=NULL,qual=NULL,path="data.ECAD",url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",verbose=FALSE) {  ## it=it,nmin=nmin
   ## ECAD basic function to retrieve data for one station
   ## http://eca.knmi.nl/
   ## ECA&D was initiated by the ECSN in 1998 
@@ -391,7 +391,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   text  <- unlist(strsplit(fdata,split="/"))
   text2 <- text[length(text)]
   destfile <- file.path(path,text2,fsep= .Platform$file.sep)
-  text3 <- paste('ECA','blend',tolower(param1),sep='_')
+  text3 <- paste('ECA','nonblend',tolower(param1),sep='_')
   destfile2 <- file.path(path,text3,fsep= .Platform$file.sep)
   ## 
   ## If zip file exist and not the data folder, then unzip
@@ -411,7 +411,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   for (i in 1:length(stid)) 
     while(nchar(stid[i]) < 6) stid[i] <- paste('0',stid[i],sep="")
   
-  fnames <- paste(toupper(param1),'_STAID',stid,'.txt',sep="")
+  fnames <- paste(toupper(param1),'_SOUID',stid,'.txt',sep="")
   fnames <- file.path(newpath,fnames,fsep = .Platform$file.sep)
   ##print(fnames)
   ipick <- file.exists(fnames)
@@ -423,14 +423,14 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   fname <- fnames[ipick]
   if (verbose) print(fname)
   
-  x <- read.table(fname,header=TRUE,skip=20,sep=",")
+  x <- read.table(fname,header=TRUE,skip=18,sep=",")
   ##
   eval(parse(text=paste("ecad <- scale * x$",param1,sep="")))
   year <- substr(as.character(x$DATE),1,4);L <- length(year)
   month <- substr(as.character(x$DATE),5,6)
   day <- substr(as.character(x$DATE),7,8)
   
-  ecad[ecad < -99] <- NA
+  ecad[ecad < 0] <- NA
   
   if (verbose) {
     print(c(year[1],month[1],day[1]))
@@ -448,7 +448,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   ECAD <- as.station(ECAD, stid=stid, lon=lon, lat=lat, alt=alt,
                      ## ele=esd2ele(param), freq=1,calendar='gregorian',
                      quality=qual, cntr=cntr, loc=loc, src='ECAD',
-                     url="http://eca.knmi.nl/utils/downloadfile.php?file=download/ECA_blend_all.zip", param=param, aspect="original",
+                     url=paste("http://eca.knmi.nl/utils/downloadfile.php?file=download/ECA_nonblend_",as.character(param),".zip",sep=''), param=param, aspect="original",
                      unit=switch(param1,'TG'='degree Celsius','TX'='deg C','TN'='deg C', 'CC'='oktas','DD'='degrees','FG'='m/s', 'FX'='m/s','HU'='%','PP'='hPa', 'SS'='hours','RR'='mm/day'),
                      longname=as.character(ele2param(ele=ele,src="ECAD")[2]),
                      reference="Klein Tank, A.M.G. and Coauthors, 2002. Daily dataset of 20th-century surface air temperature and precipitation series for the European Climate Assessment. Int. J. of Climatol., 22, 1441-1453.",
