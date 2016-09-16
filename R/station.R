@@ -259,7 +259,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ## if (!is.null(x)) X <- combine.stations(X,x)  
       #AM-29.07.2013 added begin
     } else if (src[i]=="GHCNM") {
-      ## 
+      ##
       if (is.null(path.ghcnm)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.ghcnm ## default path
       if (is.null(url.ghcnm)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn" else url <- url.ghcnm ## default url
       x <- ghcnm.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path = path,url=url)
@@ -665,7 +665,7 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   scale <-as.numeric(ele2param(ele=ele,src="GHCNM")[3])
   
   if (verbose) print("station.GHCNM")
-  
+
   ghcnm <- ghcnm.data(ele=ele,stid = stid, src = "ghcnm", ver = ver , adj = adj, path = path, url=url,force = force, flag = flag, verbose = verbose)
   x <- c(t(ghcnm[,5:16]))*scale
   ## 
