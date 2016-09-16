@@ -17,15 +17,15 @@ precipitation amount exceeding a threshold values.
 }
 \usage{
 coldwinterdays(x,y=NULL,dse=NULL,it='djf',threshold=0,
-               verbose=FALSE,plot=TRUE,nmin=90,...)
+               verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...)
 coldspells(x,y=NULL,dse=NULL,it='jja',threshold=0,
-               verbose=FALSE,plot=TRUE,nmin=90,...)
+               verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...)
 hotsummerdays(x, y=NULL,dse = NULL, it = "jja", threshold = 30,
                verbose = FALSE, plot = TRUE)
 heatwavespells(x,y=NULL,dse=NULL,it='jja',threshold=30,
-               verbose=FALSE,plot=TRUE,...)
+               verbose=FALSE,plot=TRUE,new=TRUE,...)
 nwetdays(x,y=NULL,dse=NULL,threshold=10,
-         FUN='mu',verbose=FALSE,plot=TRUE,...)
+         FUN='mu',verbose=FALSE,plot=TRUE,new=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

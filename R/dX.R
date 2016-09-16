@@ -14,7 +14,12 @@ regfit <- function(z,cal.dat,terms) {
   ## Generate model for fitting profile
   cal.dat$Z <- z
   model <- eval(parse(text=paste('lm(Z ~ ',terms,',data=cal.dat)')))
-  modelcoefs <- summary(model)$coefficients
+  ln <- length(unlist(strsplit(terms,split='\\+')))
+  modelcoefs <- matrix(rep(0,(ln+1)*4),ln+1,4)
+  cf <- summary(model)$coefficients
+  colnames(modelcoefs) <- colnames(cf)
+  modelcoefs[seq(nrow(cf)),] <- cf
+  #modelcoefs <- summary(model)$coefficients
   return(modelcoefs)
 }
 
@@ -73,7 +78,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
     #beta <- apply(z[,,it],2,regfit,cal.dat=cal.dat,terms=terms) ## KMP 2016-02-01
     beta <- apply(z[,,it],2,function(x) {
         y <- regfit(x,cal.dat=cal.dat,terms=terms)
-        invisible(y[,"Estimate"])})
+        invisible(y[,"Estimate"]) })
     ## The constant
     z0[,it] <- beta[1,]
     a[1:floor(dim(beta)[1]/2),,it] <- beta[seq(2,dim(beta)[1],by=2),] ## KMP 2016-02-01

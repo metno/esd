@@ -24,9 +24,8 @@ in the northern hemisphere and may not work as well for other
 regions or 'events' of different types, e.g., anti-cyclones. 
 }
 \usage{
-track(X,x0=NULL,it=NULL,is=NULL,dmax=1.2E6,amax=90,
-             nmax=124,nmin=5,dmin=5E5,dE=0.3,dN=0.2,
-             lplot=FALSE,progress=TRUE,verbose=FALSE)
+track(X,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=NULL,ddmax=NULL,dpmax=NULL,
+      nmax=124,nmin=5,dmin=1E5,dE=0.3,dN=0.2,lplot=FALSE,progress=TRUE,verbose=FALSE)
 track.events(X,...) 
 
 }
@@ -36,13 +35,16 @@ track.events(X,...)
               of X so that trajectories can continue from x0 to X.}
      \item{it}{A list providing time index, e.g. month.}
     \item{is}{A list providing space index, lon and/or lat.}
-    \item{dmax}{Maximum displacement of events between two time steps in a trajectory. Unit: m.}
-    \item{amax}{Maximum change in the angle of direction. Unit: degrees.}
-    \item{nmax}{Maximum lifetime of a trajectory. Unit: number of time steps.}
-    \item{nmin}{Minimum lifetime of a trajectory. Unit: number of time steps.}
-    \item{dmin}{Minimum length of a trajectory. Unit: m.}
+    \item{dmax}{Maximum displacement of events between two time steps. Unit: m.}
+    \item{amax}{Maximum change in the angle of direction from the first to second and the second to third time step. Unit: degrees.}
+    \item{ddmax}{Maxmimum change in the displacement from the first to second and the second to third time step. Unit: m}
+    \item{dpmax}{Maximum change in the sea level pressure at the center of the cyclones. Unit: degrees.}
+    \item{nmax}{Maximum total lifetime of a trajectory. Unit: number of time steps.}
+    \item{nmin}{Minimum total lifetime of a trajectory. Unit: number of time steps.}
+    \item{dmin}{Minimum total length of a trajectory. Unit: m.}
     \item{dE}{Shift of the maximum displacement in the eastward direction.}
-    \item{dN}{Shift of the maximum displacement in the northward direction.}
+    \item{dN}{Shift of the maximum displacement in the northward
+      direction.}
     \item{lplot}{TRUE: Produce plots of trajectories for selected time steps.}
     \item{progress}{TRUE: Show progress bar.}
     \item{verbose}{TRUE: Print out diagnosics.}  

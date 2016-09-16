@@ -19,18 +19,18 @@ ele2param(ele="601",src="GHCNM")
 esd2ele <- function(param = NULL) {
   if (!is.null(param)) ele <- switch(tolower(param),
                                      't2m' = "101",
-                                     'tg' = "101",
+                                     'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
                                      'rr' = "601",
                                      'slp' = "401",
-                                     'cloud' = "801",
+                                     'cc' = "801",
                                      't2' = "101",
                                      'precip' = "601",
-                                     `101` = "t2m",
-                                     `401` = "slp",
-                                     `601` = "precip",
-                                     `801` = "801",
-                                     'tmin'="121",
-                                     'tmax'="111",
+                                     '101' = "t2m",
+                                     '401' = "slp",
+                                     '601' = "precip",
+                                     '801' = "cc",
+                                     'tmin'="121",'tn'="121",                             #REB 2016-07-25                 
+                                     'tmax'="111",'tx'="111",                             #REB 2016-07-25
                                      '121' ="tmin",
                                      '111' = "tmax",
                                      '901'  = "sd",
@@ -44,8 +44,22 @@ esd2ele <- function(param = NULL) {
                                      '201' = 'HU',
                                      'HU' = '201',
                                      '301' = 'ss',
-                                     'ss' = '201')
- else ele <- NULL
+                                     'ss' = '301',
+                                     'sd'='901',
+                                     '999'='sf',
+                                     '122'='Tl',
+                                     '123'='Tld',
+                                     'Tl'='122',
+                                     'Tld'='123',
+                                     'dsc'='701',
+                                     '701'='dsc',
+                                     'Th'='112',
+                                     '112'='Th',
+                                     '113'='Thd',
+                                     'Thd'='113',
+                                     '602'='Rx',
+                                     'Rx'='602')
+ else ele <- 'NA'
 return(ele)
 }
 
@@ -117,11 +131,11 @@ x <- rbind(c("101" , "Mean temperature"			, "0.1"   		, "degree*C" 	, "T"),
 	   c("121" , "Mean minimum temperature" 	, "0.1"   		, "degree*C" 	, "Tn"),
 	   c("122" , "Lowest minimum temperature" 	, "0.1"   		, "degree*C"	, "Tl"),
 	   c("123" , "Day of Tl"			, "1"	  		, "date", "Tld"),
-	   c("401" , "Mean Pressure" 		 	, "0.1"   		, "hPa" , "P"),
+	   c("401" , "Mean Pressure" 		 	, "0.1"   		, "hPa" , "slp"),
 	   c("601" , "Precipitation Sum"		, "0.1"   		, "mm"	, "R"),
 	   c("602" , "Maximum 1-day precipitation"	, "0.1"	  		, "mm"	, "Rx"),
 	   c("701" , "Number of days with snow cover (> 50% covered)" , "1"	, "days", "dsc"),
-	   c("801" , "Mean cloud cover"		, "1" 			, "%"	, "N")) 
+	   c("801" , "Mean cloud cover"		, "1" 			, "%"	, "Cloud")) 
 y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "NACD",stringsAsFactors=FALSE)
 return(y)
 }
