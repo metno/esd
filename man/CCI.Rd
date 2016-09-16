@@ -31,7 +31,7 @@ Reference: Benestad \& Chen (2006) 'The use of a Calculus-based Cyclone Identifi
 \usage{
 CCI(Z,m=14,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
                 mindistance=1E6,dpmin=1E-3,pmax=NULL,rmin=1E4,rmax=2E6,
-                accuracy=NULL,nsim=NULL,fname="cyclones.rda",
+                accuracy=NULL,nsim=NULL,do.track=TRUE,fname="cyclones.rda",
                 lplot=FALSE,verbose=FALSE)
 }
 \arguments{
@@ -49,6 +49,8 @@ CCI(Z,m=14,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
     \item{rmax}{Max average radius of cyclone. Unit: m.}
     \item{nsim}{Number of simultaneous cyclones identified and saved
       ordered according to depth/strength.}
+    \item{do.track}{TRUE: tracks the cyclones with the 'track' function,
+           FALSE: no tracking is applied.}
     \item{fname}{Name of output file.}
     \item{lplot}{TRUE: produce plots.}
     \item{verbose}{Print out diagnostics.}

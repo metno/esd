@@ -538,7 +538,8 @@ as.field.field <- function(x,...) {
   return(x)
 }
 
-as.field.comb <- function(x,iapp=NULL,...) {
+as.field.comb <- function(x,iapp=NULL,verbose=FALSE,...) {
+  if(verbose) print("as.field.comb")
   if (is.null(iapp)) {
     # Drop the appendend fields:
     n <- attr(x,'n.apps')
@@ -555,18 +556,20 @@ as.field.comb <- function(x,iapp=NULL,...) {
   return(y)  
 }
 
-as.field.eof <- function(x,iapp=NULL,...) {
-  #print("as.field.eof")
-  if (!inherits(x,'comb')) y <- eof2field(x) else {
-   y <- as.eof(x,iapp)
-   y <- eof2field(y)
- }
+as.field.eof <- function(x,iapp=NULL,verbose=FALSE,...) {
+  if(verbose) print("as.field.eof")
+  if (!inherits(x,'comb')) {
+    y <- eof2field(x,verbose=verbose)
+  } else {
+    y <- as.eof(x,iapp,verbose=verbose)
+    y <- eof2field(y,verbose=verbose)
+  }
   return(y)
 }
 
 
-as.field.ds <- function(x,iapp=NULL,...) {
-  ##print(class(x))
+as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
+  if(verbose) print("as.field.ds")
   if (inherits(x,'eof')) {
     class(x) <- class(x)[-1]
     y <- as.field.eof(x,iapp,...)
@@ -582,7 +585,9 @@ as.field.ds <- function(x,iapp=NULL,...) {
 }
 
 
-as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,...) {
+as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
+                             verbose=FALSE,...) {
+  if(verbose) print("as.field.station")
   if (is.null(lon)) lon <- seq(min(lon(x)),max(lon(x)),length=nx)
   if (is.null(lat)) lat <- seq(min(lat(x)),max(lat(x)),length=ny)
   y <- regrid(x,is=list(lon=lon,lat=lat))
@@ -1100,7 +1105,7 @@ as.residual.ds <- function(x,verbose=FALSE){
         y <- attrcp(z0,y); class(y) <- class(z0)
       } else
       if (is.pca(x)) {
-        if (verbose) print('eof/field')
+        if (verbose) print('pca/station')
         z0 <- as.station(attr(x,'original_data'))
         z1 <- as.station(x)
         y <- z1 - z0

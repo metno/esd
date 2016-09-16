@@ -6,13 +6,14 @@ events2field <- function(x,verbose=FALSE,...) {
 
 density.events <- function(x,dt="month",dx=1,dy=1,lplot=TRUE,
                          lons=NULL,lats=NULL,it=NULL,is=NULL,
-                         radius=5e5,verbose=FALSE,...) {
+                         radius=7e5,unitarea=NULL,type="track",
+                         verbose=FALSE,...) {
   if (verbose) print("density.events")
   ok <- !is.na(x["time"][[1]]) & !is.na(x["lon"][[1]]) & !is.na(x["lat"][[1]])
   x <- subset(x,it=ok)
   y <- subset(x,it=it,is=is)
   dlon <- mean(diff(sort(unique(x$lon))))
-  if (!"trajectory" %in% colnames(y)) y <- Track.events(y)
+  if (!"trajectory" %in% colnames(y)) y <- track(y)
   if(is.null(lons)) lons <- y["lon"][[1]]
   if(is.null(lats)) lats <- y["lat"][[1]]
   if(is.null(dx)) dx <- min(diff(sort(unique(lons))))
@@ -62,7 +63,8 @@ density.events <- function(x,dt="month",dx=1,dy=1,lplot=TRUE,
     yi <- subset.events(y,it=(d==dvec[i]))
     if (!is.null(dim(yi)) & dim(yi)[1]>0) {
       di <- trackdensity(yi["lon"][[1]],yi["lat"][[1]],radius=radius,
-              yi["trajectory"][[1]],dx=dx,dy=dy,verbose=verbose)
+              yi["trajectory"][[1]],dx=dx,dy=dy,type=type,
+              verbose=verbose)
       for(j in 1:length(di$lat)) {
         X[dvec==dvec[i],lons==di$lon[j],lats==di$lat[j]] <- di$density[j]
       }
@@ -70,21 +72,30 @@ density.events <- function(x,dt="month",dx=1,dy=1,lplot=TRUE,
   }
   #Y <- X
   area <- pi*radius^2
-  unitarea <- 1E12#pi*radius^2
+  if(is.null(unitarea)) unitarea <- pi*radius^2
   Y <- X*unitarea/area
   t2 <- Sys.time()
   if (verbose) print(paste('Calculating the density took',
                 round(as.numeric(t2-t1,units="secs")),'s'))
   d <- dim(X)
   dim(Y) <- c(d[1],d[2]*d[3])
-  longname <- paste("track density",attr(x,'variable'),sep=', ')
+  if(type %in% c("track","trajectory")) {
+    param <- "track~density"
+    longname <- paste("track density",attr(x,'variable'),sep=', ')
+  } else if(type %in% c("genesis","start")) {
+    param <- "genesis~density"
+    longname <- paste("genesis density",attr(x,'variable'),sep=', ')      
+  } else if(type %in% c("lysis","end")) {
+    param <- "track~density"
+    longname <- paste("lysis density",attr(x,'variable'),sep=', ')
+  }
   Y <- as.field(Y,index=dvec,lon=lons,lat=lats,
-          unit=unit,longname=longname,param='track~density',
+          unit=unit,longname=longname,param=param,
           quality=attr(x,'quality'),src=attr(x,'source'),
           url=attr(x,'URL'),reference=attr(x,'reference'),
           info=attr(x,'info'),calendar=attr(x,'calendar'),
           method=attr(x,'method'),aspect=attr(x,'aspect'))
-  attr(Y,"unitarea") <- unitarea#pi*radius^2
+  attr(Y,"unitarea") <- unitarea
   if(lplot) {
     ## compare count and density:
     is <- list(lon=c(-20,20),lat=c(50,70))
@@ -104,20 +115,28 @@ factor2numeric <- function(f) {
 }
 
 
-trackdensity <- function(lons,lats,track=NULL,dx=NULL,dy=NULL,
-                         radius=5E5,verbose=FALSE) {
+trackdensity <- function(lons,lats,track,dx=NULL,dy=NULL,
+                         radius=5E5,type="track",verbose=FALSE) {
   if (is.null(dx)) dx <- min(diff(sort(unique(lons))))
   if (is.null(dy)) dy <- min(diff(sort(unique(lats))))
   fn <- function(A) {
     A <- unique(A)
     if(dim(A)[1]>1) {
-      B <- approx.lonlat(A$lon,A$lat,n=50)
-      lon <- B[,1]
-      lat <- B[,2]
-    } else {
+      if(type %in% c("track","trajectory")) {
+        B <- approx.lonlat(A$lon,A$lat,n=50)
+        lon <- B[,1]
+        lat <- B[,2]
+      } else if (type %in% c("genesis","start")) {
+        lon <- A[1,1]
+        lat <- A[1,2] 
+      } else if (type=="lysis") {
+        lon <- A[nrow(A),1]
+        lat <- A[nrow(A),2]          
+      } else stop(paste("invalid input type =",type))
+    } else { 
       lon <- A$lon
       lat <- A$lat
-    }
+    } 
     xvec <- seq(round(min(lon)/dx)*dx-round(5+20*max(lat)/90)*dx,
                 round(max(lon)/dx)*dx+round(5+20*max(lat)/90)*dx,dx)
     yvec <- seq(round(min(lat)/dy)*dy-ceiling(5/dy)*dy,
@@ -153,7 +172,7 @@ density2count <- function(y,it=NULL,is=NULL,verbose=TRUE) {
   stopifnot(inherits(y,"field"))
 
   if(!is.null(attr(y,"unitarea"))) { unitarea <- attr(y,"unitarea")
-  } else unitarea <- 1E12
+  } else unitarea <- pi*7E5**2
   if(verbose) print(paste("Unit area of cyclone density:",round(unitarea*1E-6),"km2"))
 
   y <- subset(y,is=is,it=it)
