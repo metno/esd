@@ -1,4 +1,4 @@
-gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NULL,verbose=FALSE) {
+gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NULL,verbose=FALSE,plot=FALSE) {
   if (verbose) print(paste('gridmap',FUN))
   require(LatticeKrig)
   
@@ -53,7 +53,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
   class(W) <- class(etopo5)
 
   ## Make a projection that zooms in on the Barents region
-
+if (plot)
   map(W,xlim=xlim,ylim=ylim,
       colbar=colbar,project=project)
   invisible(W)
