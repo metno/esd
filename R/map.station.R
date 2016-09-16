@@ -104,7 +104,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
     ## 
     if (!is.null(x)) { 
-      if (inherits(x,"stationmeta")) {      
+      if (inherits(x,"stationmeta")) {
         ss <- x
         ss$variable <-apply(as.matrix(ss$element),1,esd2ele)
       }
@@ -331,23 +331,19 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       points(ss.all$longitude,ss.all$latitude,pch=".",col="grey50",
              bg="grey",cex=cex/2)
     }
-
+    
     if (!is.null(highlight))
       points(highlight$longitude, highlight$latitude, pch = pch, col = col,
            bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
-           xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE,
-           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
+           xlim = xlim, ylim = ylim, cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
     else if (!is.null(ss) & !is.null(FUN))
       points(ss$longitude, ss$latitude, pch = pch, col = "white",
            bg = "white", cex = cex*scale, xlab = "", ylab = "",
-           xlim = xlim, ylim = ylim , axes = FALSE ,
-           frame.plot = FALSE,
-           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
+           xlim = xlim, ylim = ylim, cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
     else
       points(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg,
            cex = cex*scale, xlab = "", ylab = "", xlim = xlim,
-           ylim = ylim , axes = FALSE , frame.plot = FALSE,
-           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
+           ylim = ylim , cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
       
     ## par(fig=par0$fig)
     ## print(par()$fig)
@@ -693,8 +689,9 @@ map.stationmeta <- function(...)
 
 map.data.frame <- function(x,...) {
   
-  att <- c("station_id","location","country","longitude","latitude","altitude","element","start","end","source","wmo","quality") 
-  if (sum(is.element(names(ss),att))==12) {   
+  att <- c("station_id","location","country","longitude","latitude","altitude","element","start","end","source","wmo","quality")
+  
+  if (sum(is.element(names(x),att))==12) {   
     class(x) <- c("data.frame","stationmeta")
     map.station(x,...)
   }
