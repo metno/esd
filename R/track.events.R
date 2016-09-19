@@ -304,7 +304,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,dE=0.3,dN=0.2,
   dim(dd) <- c(n2*n3,n1*n2)
   dim(d123) <- c(n2*n3,n1*n2)
   ok.d <- sapply(d12<dmax12,function(x) sapply(d23<dmax23,function(y) y & x ))
-  ok.d2 <- sapply(d12<dmax/2,function(x) sapply(d23<dmax/2,function(y) y | x ))
+  ok.d2 <- sapply(d12<dmax/3,function(x) sapply(d23<dmax/3,function(y) y | x ))
   if(!is.null(ddmax)) ok.dd <- (dd/d123 < ddmax | ok.d2) else ok.dd <- ok.d
   if(!is.null(amax)) ok.da <- (da <= amax | ok.d2) else ok.da <- ok.d
   if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {

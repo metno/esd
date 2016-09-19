@@ -73,7 +73,7 @@ DS.default <- function(y,X,mon=NULL,
     y0 <- y
     X0 <- X
     eofs <- eofs[eofs <= length(attr(X,'eigenvalues'))]
-
+    
     if (verbose) {print(paste(sum(!is.finite(coredata(y))),'missing values in y'))}
     if (verbose)  {print('index(y) before removing missing values:'); print(index(y))}
     y <- subset(y,it=is.finite(coredata(y)))
@@ -389,7 +389,6 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,weighted=TRUE,...) {
-
     if (verbose) print("DS.comb")
     ##print('index(y)'); print(index(y))
     ##print('err(y)'); print(err(y))
@@ -408,7 +407,7 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
     ## For combined fields/common EOFs, do the DS-fitting once, and then
     ## use the model n times to predict the values associated with the
     ## appended fields:
-
+    
     if (class(index(y)) != (class(index(X)))) {
       warning(paste('DS.comb: different indices:', class(index(y)),class(index(X))))
       if (is.numeric(index(y))) index(X) <- year(X)
@@ -718,7 +717,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                   weighted=weighted,...)
       return(z)
     } else if (verbose) print('Predictor is OK - an EOF object')
-
+    
     ## Check the predictand
     if (inherits(y,"eof") & inherits(y,"field")) {
       if (verbose) print('Make the EOFs lool like PCAs before downscaling')
@@ -839,6 +838,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             class(ys) <- c('station',class(y)[-c(1:2)])
             
             if (verbose) {print(class(ys)); print(class(X))}
+            
             z <- DS(ys,X,biascorrect=biascorrect,m=m,
                     eofs=eofs,rmtrend=rmtrend,verbose=verbose,...)
             if (verbose) print('--- return to DS.pca ---')

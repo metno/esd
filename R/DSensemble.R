@@ -1692,7 +1692,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
-
     ds <- try(DS(y,Z,eofs=eofs,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
@@ -1965,7 +1964,6 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
         GCM <- gcm
     }
     SLPGCM <- combine(SLP,GCM)
-    
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(SLPGCM))
     
@@ -1983,6 +1981,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     if (biascorrect) Z <- biasfix(Z)
     
     diag <- diagnose(Z)
+    
     ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))

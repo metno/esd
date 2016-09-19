@@ -486,9 +486,10 @@ as.field.zoo <- function(x,lon,lat,param,unit,
   #dmo <- as.numeric(format(t[2],'%m')) - as.numeric(format(t[1],'%m')) 
   #dda <- as.numeric(format(t[2],'%d')) - as.numeric(format(t[1],'%d'))
   if (length(year(x))!=1) {
-      dyr <- diff(year(x))[1]
-      dmo <- diff(month(x))[1]
-      dda <- diff(day(x))[1]
+      ## KMP 2016-09-13 problem when a monthly time series starts in dec: diff(month(x))[1] = -11 
+      dyr <- median(diff(year(x)))#diff(year(x))[1]
+      dmo <- median(diff(month(x)))#diff(month(x))[1]
+      dda <- median(diff(day(x)))#diff(day(x))[1]
       timescale <- "annual"
       if (dmo>0)  timescale <- "month"
       if (dmo==3)  timescale <- "season"
@@ -747,15 +748,14 @@ as.4seasons <- function(x,...) UseMethod("as.4seasons")
 
 
 
-as.4seasons.default <- function(x,FUN='mean',slow=FALSE,...) {
-  #print('as.4seasons.default')
-    ##browser()
+as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,...) {
+  if(verbose) print('as.4seasons.default')
   if (inherits(x,'season')) return(x)
   attr(x,'names') <- NULL
   d <- dim(coredata(x))
   #print(d)
   if (is.null(d)) d <- c(length(x),1)
-  if (!slow) { 
+  if (!slow) {
     if (inherits(x,"month")) {
       if ( (is.null(d)) | (d[2]==1) )
         X <- c(NA,coredata(x)[1:length(x)-1]) # shift the coredata by 1 to start on December. This works only for monthly data !!!  
@@ -894,7 +894,8 @@ as.4seasons.spell <- function(x,FUN='mean',...) {
 }
 
 
-as.4seasons.field <- function(x,FUN='mean',...) {
+as.4seasons.field <- function(x,FUN='mean',verbose=FALSE,...) {
+  if(verbose) print("as.4seasons.field")
   d <- attr(x,"dimensions")
   y <- as.4seasons.default(x,FUN,...)
   y <- attrcp(x,y)

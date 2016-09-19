@@ -4,10 +4,10 @@ events2field <- function(x,verbose=FALSE,...) {
   invisible(y)  
 }
 
-density.events <- function(x,dt="month",dx=1,dy=1,lplot=TRUE,
-                         lons=NULL,lats=NULL,it=NULL,is=NULL,
-                         radius=7e5,unitarea=NULL,type="track",
-                         verbose=FALSE,...) {
+density.events <- function(x,dt="month",dx=1,dy=1,lplot=FALSE,
+                           lons=NULL,lats=NULL,it=NULL,is=NULL,
+                           radius=7e5,unitarea=NULL,type="track",
+                           param=NULL,longname=NULL,verbose=FALSE,...) {
   if (verbose) print("density.events")
   ok <- !is.na(x["time"][[1]]) & !is.na(x["lon"][[1]]) & !is.na(x["lat"][[1]])
   x <- subset(x,it=ok)
@@ -80,14 +80,14 @@ density.events <- function(x,dt="month",dx=1,dy=1,lplot=TRUE,
   d <- dim(X)
   dim(Y) <- c(d[1],d[2]*d[3])
   if(type %in% c("track","trajectory")) {
-    param <- "track~density"
-    longname <- paste("track density",attr(x,'variable'),sep=', ')
+    if(is.null(param)) param <- "track~density"
+    if(is.null(longname)) longname <- paste("track density",attr(x,'variable'),sep=', ')
   } else if(type %in% c("genesis","start")) {
-    param <- "genesis~density"
-    longname <- paste("genesis density",attr(x,'variable'),sep=', ')      
+    if(is.null(param)) param <- "genesis~density"
+    if(is.null(longname)) longname <- paste("genesis density",attr(x,'variable'),sep=', ')      
   } else if(type %in% c("lysis","end")) {
-    param <- "track~density"
-    longname <- paste("lysis density",attr(x,'variable'),sep=', ')
+    if(is.null(param)) param <- "track~density"
+    if(is.null(longname)) longname <- paste("lysis density",attr(x,'variable'),sep=', ')
   }
   Y <- as.field(Y,index=dvec,lon=lons,lat=lats,
           unit=unit,longname=longname,param=param,
