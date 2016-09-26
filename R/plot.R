@@ -1283,11 +1283,20 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
 
 plot.dsensemble <-  function(x,pts=FALSE,it=0,
                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
-                             target.show=TRUE,map.show=TRUE,map.type="points",new=TRUE,
+                             target.show=TRUE,map.show=TRUE,map.type=NULL,new=TRUE,
                              xrange=NULL,yrange=NULL,verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble")
   stopifnot(inherits(x,'dsensemble'))
-    
+
+  if (is.null(map.type)) {
+    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+        (length(lon(x))==2 & length(lat(x))==2) ) {
+      map.type <- "rectangle"
+    } else {
+      map.type <- "points"
+    }
+  }
+  
   if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
     z <- x
   if (verbose) print("diagnose")
