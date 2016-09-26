@@ -25,8 +25,18 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
-  } else if (length(lon(x))!=length(lat(x)) | inherits(x,'field')) {
-    map.type <- "rectangle"
+  }
+  
+  if(map.show) {
+    if (length(lon(x))!=length(lat(x)) | inherits(x,'field')) {
+      map.type <- "rectangle"
+    } 
+    if (is.null(map.type)) {
+      if(length(lon(x))==2 & length(lat(x))==2) {
+        map.type <- "rectangle"
+      } else {
+        map.type <- "points"
+    }
   }
   
   fig <- c(0,1,0,0.95)
@@ -761,6 +771,7 @@ plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
+    browser()
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     ## Get the right pattern
     xvp <- (pattern-1)*2 +1
