@@ -16,7 +16,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
-                         map.show=TRUE,map.type="points",map.insert=TRUE,
+                         map.show=TRUE,map.type=NULL,map.insert=TRUE,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
                          mar=c(4.5,4.5,0.75,0.5),
                          alpha=0.5,alpha.map=0.7,verbose=FALSE,...) {
@@ -26,16 +26,14 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
   }
-  
   if(map.show) {
-    if (length(lon(x))!=length(lat(x)) | inherits(x,'field')) {
-      map.type <- "rectangle"
-    } 
     if (is.null(map.type)) {
-      if(length(lon(x))==2 & length(lat(x))==2) {
+      if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+          (length(lon(x))==2 & length(lat(x))==2) ) {
         map.type <- "rectangle"
       } else {
         map.type <- "points"
+      }
     }
   }
   
@@ -165,7 +163,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 }
 
 
-vis.map <- function(x,col='red',map.type='points',
+vis.map <- function(x,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     cex.axis=0.8,add.text=FALSE,
                     map.insert=TRUE,verbose=FALSE) {
@@ -173,6 +171,16 @@ vis.map <- function(x,col='red',map.type='points',
   if(is.null(xrange)) xrange <- range(lon(x)) + c(-5,5)
   if(is.null(yrange)) yrange <- range(lat(x)) + c(-2,2)
   if(!map.insert) new <- TRUE else new <- FALSE
+  
+  if (is.null(map.type)) {
+    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+        (length(lon(x))==2 & length(lat(x))==2) ) {
+      map.type <- "rectangle"
+    } else {
+      map.type <- "points"
+    }
+  }
+  
   data(geoborders)
   lon <- geoborders$x
   lat <- geoborders$y
@@ -1119,8 +1127,18 @@ plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,..
 
 
 plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=TRUE,
-                                     map.type="points",verbose=FALSE,main=NULL,...) {
+                                     map.type=NULL,verbose=FALSE,main=NULL,...) {
   if (verbose) print('plot.diagnose.dsensemble')
+
+  if (is.null(map.type)) {
+    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+        (length(lon(x))==2 & length(lat(x))==2) ) {
+      map.type <- "rectangle"
+    } else {
+      map.type <- "points"
+    }
+  }
+  
   Y <- -round(200*(0.5-pbinom(x$outside,size=x$N,prob=0.1)),2)
   X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),
                              sd=sd(x$deltagcm))),2)
