@@ -61,11 +61,11 @@ vis.mvr <- function(x,...) {
 vis.ds <- function(x,...) {
 }
 
-vis.trends <- function(x,unitlabel="unit",varlabel="",
+vis.trends <- function(x,unitlabel="unit",varlabel="",is=1,
                        pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE,
                        show.significance=TRUE,verbose=FALSE) {
   if(verbose) print("vis.trends")
-  T <- calculate.trends(x,minlen=minlen,verbose=verbose)
+  T <- calculate.trends(x,minlen=minlen,is=is,verbose=verbose)
   trends <- T$trends*10
   p <- T$p
   cols <- as.numeric(colnames(trends))
@@ -120,14 +120,22 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",
   colbar(cticks,cstep,fig=c(0.85,0.9,0.65,0.85))
 }
  
-calculate.trends <- function(x,minlen=15,verbose=FALSE){
+calculate.trends <- function(x,minlen=15,is=1,verbose=FALSE){
   # Calculate trends of time series x
   if(verbose) print("calculate.trends - calculate trends for all subperiods")
   stopifnot(inherits(x,'zoo'))
-  xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean")
-  xy <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="mean")
-  ny <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="nv")
-  xy <- xy[ny==max(ny)] # exclude years with missing months 
+  if(!is.null(dim(x))) {
+    x <- subset(x,is=is)
+    if(!is.null(dim(x))) {
+      x <- apply(x,2,mean,na.rm=TRUE)
+    }
+  }
+  if(!inherits(x,c("annual","season"))) {
+    xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean")
+    xy <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="mean")
+    ny <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="nv")
+    xy <- xy[ny==max(ny)] # exclude years with missing months
+  } else xy <- x
   year <- as.numeric(index(xy))
   firstyear <- min(year):(max(year)-minlen+1)
   trendlen <- minlen:(diff(range(year))+1)
@@ -141,13 +149,16 @@ calculate.trends <- function(x,minlen=15,verbose=FALSE){
   for (i in firstyear) {
     jvec <- i+trendlen[trendlen<=(max(year)-i+1)]-1#(i+minlen-1):(max(year)+1)
     for (j in jvec) {
-      ij <- which(year %in% i:j)
-      ij.model <- lm(xy[ij]~year[ij])
-      #ij.kendall <- Kendall(x[ij],year[ij])
-      iout <- firstyear==i#as.numeric(colnames(trends))==j
-      jout <- trendlen==(j-i+1)#as.numeric(rownames(trends))==i
-      trends[jout,iout] <- ij.model$coefficients[2]
-      p[jout,iout] <- anova(ij.model)$Pr[1]#ij.kendall$sl[1]
+      if(!is.na(xy[year==i]) & !is.na(xy[year==j])) {
+        print(paste(i,j))
+        ij <- which(year %in% i:j & !is.na(xy))
+        ij.model <- lm(xy[ij]~year[ij])
+        #ij.kendall <- Kendall(x[ij],year[ij])
+        iout <- firstyear==i#as.numeric(colnames(trends))==j
+        jout <- trendlen==(j-i+1)#as.numeric(rownames(trends))==i
+        trends[jout,iout] <- ij.model$coefficients[2]
+        p[jout,iout] <- anova(ij.model)$Pr[1]#ij.kendall$sl[1]
+      }
     }
   }  
   return(list("trends"=trends,"p"=p))

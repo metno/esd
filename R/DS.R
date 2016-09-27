@@ -63,7 +63,8 @@ DS.default <- function(y,X,mon=NULL,
         swapped <- TRUE
     }
     stopifnot(!missing(y),!missing(X), is.matrix(X),
-              inherits(X,"eof"),inherits(y,"station"))
+              inherits(X,c("eof","field")),inherits(y,"station"))
+    if(!inherits(X,"eof")) X <- EOF(X)
     if (class(index(y)) != (class(index(X)))) {
       warning(paste('DS.default: different indices:', class(index(y)),class(index(X))))
       if (is.numeric(index(y))) index(X) <- year(X)
