@@ -16,7 +16,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
-                         map.show=TRUE,map.type="points",map.insert=TRUE,
+                         map.show=TRUE,map.type=NULL,map.insert=TRUE,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
                          mar=c(4.5,4.5,0.75,0.5),
                          alpha=0.5,alpha.map=0.7,verbose=FALSE,...) {
@@ -25,8 +25,16 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
-  } else if (length(lon(x))!=length(lat(x)) | inherits(x,'field')) {
-    map.type <- "rectangle"
+  }
+  if(map.show) {
+    if (is.null(map.type)) {
+      if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+          (length(lon(x))==2 & length(lat(x))==2) ) {
+        map.type <- "rectangle"
+      } else {
+        map.type <- "points"
+      }
+    }
   }
   
   fig <- c(0,1,0,0.95)
@@ -96,8 +104,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   cls <- class(x)
   if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
   class(x) <- "zoo"
-  if(new) dev.new()
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,fig=fig,mar=mar)
+  if(new) { dev.new(); par(cex.axis=1,fig=fig,mar=mar) }
+  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
            cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,...)
@@ -155,7 +163,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 }
 
 
-vis.map <- function(x,col='red',map.type='points',
+vis.map <- function(x,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     cex.axis=0.8,add.text=FALSE,
                     map.insert=TRUE,verbose=FALSE) {
@@ -163,6 +171,16 @@ vis.map <- function(x,col='red',map.type='points',
   if(is.null(xrange)) xrange <- range(lon(x)) + c(-5,5)
   if(is.null(yrange)) yrange <- range(lat(x)) + c(-2,2)
   if(!map.insert) new <- TRUE else new <- FALSE
+  
+  if (is.null(map.type)) {
+    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+        (length(lon(x))==2 & length(lat(x))==2) ) {
+      map.type <- "rectangle"
+    } else {
+      map.type <- "points"
+    }
+  }
+  
   data(geoborders)
   lon <- geoborders$x
   lat <- geoborders$y
@@ -761,6 +779,7 @@ plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
   #title(paste("EOF Pattern # ",pattern,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
+    browser()
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     ## Get the right pattern
     xvp <- (pattern-1)*2 +1
@@ -1108,8 +1127,18 @@ plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,..
 
 
 plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=TRUE,
-                                     map.type="points",verbose=FALSE,main=NULL,...) {
+                                     map.type=NULL,verbose=FALSE,main=NULL,...) {
   if (verbose) print('plot.diagnose.dsensemble')
+
+  if (is.null(map.type)) {
+    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+        (length(lon(x))==2 & length(lat(x))==2) ) {
+      map.type <- "rectangle"
+    } else {
+      map.type <- "points"
+    }
+  }
+  
   Y <- -round(200*(0.5-pbinom(x$outside,size=x$N,prob=0.1)),2)
   X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),
                              sd=sd(x$deltagcm))),2)
@@ -1254,11 +1283,20 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
 
 plot.dsensemble <-  function(x,pts=FALSE,it=0,
                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
-                             target.show=TRUE,map.show=TRUE,map.type="points",new=TRUE,
+                             target.show=TRUE,map.show=TRUE,map.type=NULL,new=TRUE,
                              xrange=NULL,yrange=NULL,verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble")
   stopifnot(inherits(x,'dsensemble'))
-    
+
+  if (is.null(map.type)) {
+    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+        (length(lon(x))==2 & length(lat(x))==2) ) {
+      map.type <- "rectangle"
+    } else {
+      map.type <- "points"
+    }
+  }
+  
   if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
     z <- x
   if (verbose) print("diagnose")

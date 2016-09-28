@@ -38,14 +38,13 @@ diagnose.comb.eof <- function(x,verbose=FALSE) {
   m <- length(attr(x,'eigenvalues'))
   dm <- rep(NA,n*m); dim(dm) <- c(n,m)
   sr <- dm; ar <- sr
-
   # The appended fields, e.g. GCM results
   rowname <- rep("GCM",n)
   for ( i in 1:n ) {
     eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
     y <- zoo(coredata(z),order.by=index(z))
 
-    # Extract a comon period:
+    # Extract a common period:
     X <- merge(Y,y,all=FALSE)
     Ym <- apply(coredata(X),2,mean,na.rm=TRUE)
     #print(Ym)

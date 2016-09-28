@@ -44,15 +44,19 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     if (inherits(X,'zoo')) attr(X,'time') <- range(index(x)) else
                                                                  if (!is.null(attr(x,'time'))) attr(X,'time') <- attr(x,'time')
     if (plot) {
-        if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,
-                                                   colbar=colbar,verbose=verbose,type=type,new=new,
-                                                   gridlines=gridlines,...) else
-                                                                                if (projection=="sphere") map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
-                                                                                                                     type=type,gridlines=gridlines,colbar=colbar,new=new,...) else
-                                                                                                                                                                                  if (projection=="np") map2sphere(X,lonR=lonR,latR=latR,axiR=axiR,
-                                                                                                                                                                                                                   type=type,gridlines=gridlines,colbar=colbar,new=new,...) else
-                                                                                                                                                                                                                                                                                if (projection=="sp") map2sphere(X,lonR=lonR,latR=latR,axiR=axiR,new=new,
-                                                                                                                                                                                                                                                                                                                 type=type,gridlines=gridlines,colbar=colbar,...)
+        if (projection=="lonlat") {
+            lonlatprojection(x=X,xlim=xlim,ylim=ylim,colbar=colbar,verbose=verbose,
+                             type=type,new=new,gridlines=gridlines,...)
+         } else if (projection=="sphere") {
+            map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,xlim=xlim,ylim=ylim,
+                       type=type,gridlines=gridlines,colbar=colbar,new=new,...)
+         } else if (projection=="np") {
+            map2sphere(X,lonR=lonR,latR=90,axiR=axiR,xlim=xlim,ylim=ylim,
+                       type=type,gridlines=gridlines,colbar=colbar,new=new,...)
+         } else if (projection=="sp") {
+            map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,new=new,xlim=xlim,ylim=ylim,
+                       type=type,gridlines=gridlines,colbar=colbar,...)
+         }
     }
     invisible(X)
 }
@@ -75,16 +79,19 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
     if (verbose) str(x)
     if (plot) {
-        if (projection=="lonlat") lonlatprojection(x=x,new=new,xlim=xlim,
-                                                   ylim=ylim,zlim=zlim,colbar=colbar,
-                                                   type=type,gridlines=gridlines,verbose=verbose,...)  else
-                                                                                                           if (projection=="sphere")
-                                                                                                               map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
-                                                                                                                          lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...) else
-                                                                                                                                                                                 if (projection=="np") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,
-                                                                                                                                                                                                                  colbar=colbar,verbose=verbose,...) else
-                                                                                                                                                                                                                                                         if (projection=="sp") map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,
-                                                                                                                                                                                                                                                                                          colbar=colbar,verbose=verbose,...)
+      if (projection=="lonlat") {
+        lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+                         type=type,gridlines=gridlines,verbose=verbose,...)
+      } else if (projection=="sphere") {
+        map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+                   lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...)
+      } else if (projection=="np") {
+        map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=90,
+                   colbar=colbar,verbose=verbose,...)
+      } else if (projection=="sp") {
+        map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=-90,
+                   colbar=colbar,verbose=verbose,...)
+      }
     }
     invisible(x)
                                         #map.station(NULL,...)
@@ -160,7 +167,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=0,axiR=NULL,verbose=FALSE,
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                     pattern=1,cex=1,plot=TRUE,...) {
 
     ## browser()
@@ -193,22 +200,23 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         if (attr(x, "area.mean.expl"))
             type <- "fill"
     if (plot) {
-        if (projection=="lonlat")
-            lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
-                             n=n,colbar=colbar,new=new,type=type,
-                             gridlines=gridlines,verbose=verbose,...)
-        else if (projection=="sphere")
-            map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
-                       type=type,gridlines=gridlines,
-                       colbar=colbar,new=new,verbose=verbose,...)
-        else if (projection=="np")
-            map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,
-                       type=type,gridlines=gridlines,
-                       colbar=colbar,new=new,verbose=verbose,...)
-        else if (projection=="sp")
-            map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,
-                       type=type,gridlines=gridlines,
-                       colbar=colbar,new=new,verbose=verbose,...)
+      if (projection=="lonlat") {
+        lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
+                         n=n,colbar=colbar,new=new,type=type,
+                         gridlines=gridlines,verbose=verbose,...)
+      } else if (projection=="sphere") {
+        map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
+                   xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      } else if (projection=="np") {
+        map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,
+                   xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      } else if (projection=="sp") {
+        map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,
+                   xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      }
     }
     invisible(X)
 }
@@ -267,7 +275,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
     if (plot) {
         if (projection=="lonlat") {
-            lonlatprojection(x=X,n=n,colbar=colbar,verbose=verbose,
+            lonlatprojection(x=X,n=n,colbar=colbar,verbose=verbose,xlim=xlim,ylim=ylim,
                              type='fill',gridlines=gridlines,new=new,...)
             if (is.list(attr(x,'pattern'))) {
                 Xa <- attr(x,'pattern')
@@ -279,18 +287,22 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     contour(lon(Xa[[i]]),lat(Xa[[i]]),Xa[[i]],add=TRUE,col=col[i])
             } else if (sum(is.element(type,'contour'))>0)
                 contour(lon(X),lat(X),X,add=TRUE,col="grey50")
-        } else if (projection=="sphere")
+        } else if (projection=="sphere") {
             map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,
-                       type=type,gridlines=gridlines,verbose=verbose,
-                       colbar=colbar,new=new,...)
-        else if (projection=="np")
+                       xlim=xlim,ylim=ylim,type=type,
+                       gridlines=gridlines,colbar=colbar,
+                       new=new,verbose=verbose,...)
+        } else if (projection=="np") {
             map2sphere(X,lonR=lonR,latR=90,axiR=axiR,
-                       type=type,gridlines=gridlines,
-                       colbar=colbar,new=new,verbose=verbose,...)
-        else if (projection=="sp")
+                       xlim=xlim,ylim=ylim,type=type,
+                       gridlines=gridlines,colbar=colbar,
+                       new=new,verbose=verbose,...)
+        } else if (projection=="sp") {
             map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,
-                       type=type,gridlines=gridlines,
-                       colbar=colbar,new=new,verbose=verbose,...)
+                       xlim=xlim,ylim=ylim,type=type,
+                       gridlines=gridlines,colbar=colbar,
+                       new=new,verbose=verbose,...)
+        }
     }
     invisible(X)
 }
@@ -309,26 +321,29 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     if (verbose) print('map.field')
 
     x <- subset(x,it=it,is=is)
-                                        #print(length(x)); print(attr(x,'dimensions')[1:2])
+      #print(length(x)); print(attr(x,'dimensions')[1:2])
     projection <- tolower(projection)
     if (FUN=='trend') FUN <- 'trend.coef'
 
     if (!is.null(xlim)) {
         if (xlim[1] < 0) x <- g2dl(x,greenwich=FALSE)
     }
-                                        #str(X)
+      #str(X)
     X <- coredata(x)
     
 
     ## If one time slice, then map this time slice
-    if (dim(X)[1]==1) X <- coredata(x[1,]) else
-                                               if (is.null(X)) X <- coredata(X) else if (inherits(X,"matrix")) {
-                                                                                    ## If several time slices, map the required statistics
-                                                                                    good <- apply(coredata(x),2,nv) > 1
-                                                                                    X <- rep(NA,length(good))
-                                                                                    xx <- coredata(x[,good])
-                                                                                    X[good] <- apply(xx,2,FUN=FUN,na.rm=na.rm)
-                                                                                }
+    if (dim(X)[1]==1) {
+      X <- coredata(x[1,])
+    } else if (is.null(X)) {
+      X <- coredata(X)
+    } else if (inherits(X,"matrix")) {
+      ## If several time slices, map the required statistics
+      good <- apply(coredata(x),2,nv) > 1
+      X <- rep(NA,length(good))
+      xx <- coredata(x[,good])
+      X[good] <- apply(xx,2,FUN=FUN,na.rm=na.rm)
+    }
 
     ## if zlim is specified, then mask data outside this range
     if (!is.null(zlim)) {
@@ -364,21 +379,26 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                                         #class(X) <- class(x)
                                         #str(X)
     if (plot) {
-        if (projection=="lonlat") lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                   colbar=colbar,type=type,new=new,
-                                                   gridlines=gridlines,verbose=verbose,...) else
-                                                                                                if (projection=="sphere") map2sphere(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                                                                                                     lonR=lonR,latR=latR,axiR=axiR,
-                                                                                                                                     type=type,gridlines=gridlines,
-                                                                                                                                     colbar=colbar,new=new,verbose=verbose,...) else
-                                                                                                                                                                                    if (projection=="np") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                                                                                                                                                                                     lonR=lonR,latR=90,axiR=axiR,
-                                                                                                                                                                                                                     type=type,gridlines=gridlines,
-                                                                                                                                                                                                                     colbar=colbar,new=new,verbose=verbose,...) else
-                                                                                                                                                                                                                                                                    if (projection=="sp") map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                                                                                                                                                                                                                                                                     lonR=lonR,latR=-90,axiR=axiR,
-                                                                                                                                                                                                                                                                                                     type=type,gridlines=gridlines,
-                                                                                                                                                                                                                                                                                                     colbar=colbar,new=new,verbose=verbose,...)
+      if (projection=="lonlat") {
+        lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                         colbar=colbar,type=type,new=new,
+                         gridlines=gridlines,verbose=verbose,...)
+      } else if (projection=="sphere") {
+        map2sphere(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                   lonR=lonR,latR=latR,axiR=axiR,
+                   type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      } else if (projection=="np") {
+        map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                   lonR=lonR,latR=90,axiR=axiR,
+                   type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      } else if (projection=="sp") {
+        map2sphere(X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                   lonR=lonR,latR=-90,axiR=axiR,
+                   type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      }
     }
     invisible(X)
 }
@@ -416,17 +436,23 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) {print(projection); print(dim(x))}
 
     if (plot) {
-        if (projection=="lonlat") lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                   colbar=colbar,type=type,new=new,verbose=verbose,gridlines=gridlines,...) else
-                                                                                                                                if (projection=="sphere") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                                                                                                                                     lonR=lonR,latR=latR,axiR=axiR,type=type,gridlines=gridlines,
-                                                                                                                                                                     colbar=colbar,new=new,verbose=verbose,...) else
-                                                                                                                                                                                                                    if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                                                                                                                                                                                                                     lonR=lonR,latR=90,axiR=axiR,type=type,gridlines=gridlines,
-                                                                                                                                                                                                                                                     colbar=colbar,new=new,verbose=verbose,...) else
-                                                                                                                                                                                                                                                                                                    if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                                                                                                                                                                                                                                                                                                     lonR=lonR,latR=-90,axiR=axiR,type=type,gridlines=gridlines,
-                                                                                                                                                                                                                                                                                                                                     colbar=colbar,new=new,verbose=verbose,...)
+      if (projection=="lonlat") {
+        lonlatprojection(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                         colbar=colbar,type=type,new=new,verbose=verbose,
+                         gridlines=gridlines,...)
+      } else if (projection=="sphere") {
+        map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                   lonR=lonR,latR=latR,axiR=axiR,type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      } else if (projection=="np") {
+        map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                   lonR=lonR,latR=90,axiR=axiR,type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...) 
+      } else if (projection=="sp") {
+        map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                   lonR=lonR,latR=-90,axiR=axiR,type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      }
     }
     if (!is.null(attr(x,'x.longitude')) & !is.null(attr(x,'x.latitude')))
         points(attr(x,'x.longitude'),attr(x,'x.latitude'),lwd=2,cex=1.2)
@@ -463,22 +489,26 @@ map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     dim(X) <- attr(x,'dimension')[1:2]
                                         #str(X)
     if (plot) {
-        if (projection=="lonlat") lonlatprojection(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                   colbar=colbar,type=type,new=new,
-                                                   verbose=verbose,
-                                                   gridlines=gridlines,...) else
-                                                                                if (projection=="sphere") map2sphere(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                                                                                     lonR=lonR,latR=latR,axiR=axiR,
-                                                                                                                     type=type,gridlines=gridlines,
-                                                                                                                     colbar=colbar,new=new,verbose=verbose,...) else
-                                                                                                                                                                    if (projection=="np") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                                                                                                                                                                     lonR=lonR,latR=90,axiR=axiR,
-                                                                                                                                                                                                     type=type,gridlines=gridlines,
-                                                                                                                                                                                                     colbar=colbar,new=new,verbose=verbose,...) else
-                                                                                                                                                                                                                                                    if (projection=="sp") map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
-                                                                                                                                                                                                                                                                                     lonR=lonR,latR=-90,axiR=axiR,
-                                                                                                                                                                                                                                                                                     type=type,gridlines=gridlines,
-                                                                                                                                                                                                                                                                                     colbar=colbar,new=new,verbose=verbose,...)
+      if (projection=="lonlat") {
+        lonlatprojection(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                         colbar=colbar,type=type,new=new,
+                         verbose=verbose,gridlines=gridlines,...)
+      } else if (projection=="sphere") {
+        map2sphere(x=x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                   lonR=lonR,latR=latR,axiR=axiR,
+                   type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      } else if (projection=="np") {
+        map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                   lonR=lonR,latR=90,axiR=axiR,
+                   type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      } else if (projection=="sp") {
+        map2sphere(x,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
+                   lonR=lonR,latR=-90,axiR=axiR,
+                   type=type,gridlines=gridlines,
+                   colbar=colbar,new=new,verbose=verbose,...)
+      }
     }
     invisible(X)
 }
@@ -656,7 +686,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         variable <- "T[2*m]"
     if (verbose) print(paste(variable,unit,isprecip,' -> varlabel'))
     varlabel=eval(parse(text=paste('expression(',
-                                   variable," *(",unit,"))",sep="")))
+             gsub(" ","~",variable)," *~(",gsub(" ","~",unit),"))",sep="")))
     if (!is.null(attr(x,'source'))) sub <- attr(x,'source') else
                                                                 sub <- NULL
     if (sum(is.element(type,'fill'))==0) colbar <- NULL
@@ -778,10 +808,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.25,lwd=3,col="blue",bg="white",pch=21,cex=1,
+                       param=NA,alpha=0.3,lwd=3,col="blue",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       show.points=TRUE,show.trajectory=FALSE,show.start=FALSE,show.end=FALSE,
+                       show.points=TRUE,show.trajectory=FALSE,show.start=FALSE,
+                       show.end=FALSE,
                        lty=2,type=c("fill","contour"),
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
@@ -850,37 +881,35 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     
     period <- unique(c(min(it),max(it)))
     if(dim(x)[1]>0) {
-                                        #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
-                                        #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
+        #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
+        #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
         cols <- adjustcolor(col,alpha=alpha)
-        
         if("trajectory" %in% colnames(x0) & (show.trajectory | show.start | show.end)) {
-            if(verbose) print("plot trajectories")
-            xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
-            if(dim(xt)[1]>1) {
-                xall <- as.trajectory(xt,nmin=2)
-                map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
-                    add=TRUE,col=col,lonR=lonR,latR=latR,
-                    projection=projection,show.trajectory=show.trajectory,
-                    show.start=show.start,show.end=show.end,verbose=verbose)
-            }
-
-            if(show.points) {
-                if(verbose) print("plot points")
-                if(projection=="lonlat") {
-                    points(x[,"lon"],x[,"lat"],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)
-                } else {
-                    theta <- pi*x[,"lon"]/180
-                    phi <- pi*x[,"lat"]/180
-                    ax <- sin(theta)*cos(phi)
-                    ay <- cos(theta)*cos(phi)
-                    az <- sin(phi)
-                    a <- rotM(x=0,y=0,z=lonR) %*% rbind(ax,ay,az)
-                    a <- rotM(x=latR,y=0,z=0) %*% a
-                    ax <- a[1,]; ay <- a[2,]; az <- a[3,]
-                    points(ax[ay>0],az[ay>0],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)    
-                }
-            }
+          if(verbose) print("plot trajectories")
+          xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
+          if(dim(xt)[1]>1) {
+              xall <- as.trajectory(xt,nmin=2)
+              map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
+                  add=TRUE,col=col,lonR=lonR,latR=latR,
+                  projection=projection,show.trajectory=show.trajectory,
+                  show.start=show.start,show.end=show.end,verbose=verbose)
+          }
+        }
+        if(show.points) {
+          if(verbose) print("plot points")
+          if(projection=="lonlat") {
+            points(x[,"lon"],x[,"lat"],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)
+          } else {
+            theta <- pi*x[,"lon"]/180
+            phi <- pi*x[,"lat"]/180
+            ax <- sin(theta)*cos(phi)
+            ay <- cos(theta)*cos(phi)
+            az <- sin(phi)
+            a <- rotM(x=0,y=0,z=lonR) %*% rbind(ax,ay,az)
+            a <- rotM(x=latR,y=0,z=0) %*% a
+            ax <- a[1,]; ay <- a[2,]; az <- a[3,]
+            points(ax[ay>0],az[ay>0],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)    
+          }
         }
         
         if (!is.null(period) & length(Y)==0) {
@@ -888,7 +917,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
                  par("usr")[4] - 0.04*diff(range(par("usr")[3:4])),
                  paste(period,collapse=" - "),pos=2,cex=0.7,col="grey30")
         }
-        
     }
 }
 

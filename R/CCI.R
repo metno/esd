@@ -1,18 +1,19 @@
 # K Parding, 29.05.2015
 
 CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
-                label=NULL,mindistance=5E5,dpmin=1E-3,
+                label=NULL,mindistance=5E5,dpmin=1E-3,hmax=1000,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
-                fname="cyclones.rda",lplot=FALSE,accuracy=NULL,verbose=FALSE) {
+                fname="cyclones.rda",lplot=FALSE,accuracy=NULL,
+                do.track=FALSE,verbose=FALSE,...) {
   if(verbose) print("CCI - calculus based cyclone identification")
 
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
   if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
   
-  yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  #yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
   #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
-  #yrmn <- year(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  yrmn <- year(as.Date(strftime(index(Z),"%Y-%m-%d")))
   if (length(unique(yrmn))>2) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
@@ -164,7 +165,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     return(mean(h))
   }    
   h <- mapply(fn,lonXY,latXY)
-  ok <- rep(h<2000,nt)
+  ok <- rep(h<hmax,nt)
   dim(ok) <- c(nx-1,ny-1,nt)
   ok <-aperm(ok,c(3,1,2))
   lows1[!ok] <- FALSE
@@ -291,13 +292,13 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
   lows1[lows1] <- del1
   lows2[lows2] <- del2
  
-  ## Add the two groups of cyclones together,
-  ## keep track of which is which with the quality flag qf
+  ## Add the primary and secondary cyclones together,
+  ## keep track of which is the two groups in the quality flag qf
   lows <- lows1 | lows2
   if(sum(lows)==0) {
     print("No cyclones identified!")
     X <- data.frame(date=NA,time=NA,lon=NA,lat=NA,pcent=NA,
-         max.dslp=NA,max.speed=NA,radius=NA,closed=NA,accuracy=NA)
+         dslp=NA,max.gradient=NA,max.speed=NA,radius=NA,closed=NA,accuracy=NA)
   } else {
     ## Clear temporary objects from working memory
     lon <- lon[lows]
@@ -349,13 +350,14 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     dim(latXX) <- c(NX-1,NY-1,nt); latXX <- aperm(latXX,c(3,1,2))
     #dateXX <- rep(t,(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
     radius <- rep(NA,length(date))
-    max.dslp <- rep(NA,length(date))
+    dslp <- rep(NA,length(date))
+    max.gradient <- rep(NA,length(date))
     max.speed <- rep(NA,length(date))
     max.vg <- rep(NA,length(date))
     closed <- rep(0,length(date))
     ok <- rep(TRUE,length(date))
     for (i in seq(1,length(date))) {
-      ##print(paste(i,date[i]))
+      #print(paste(i,date[i]))
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
       infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
@@ -387,7 +389,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       oki <- sum(!is.na(ilon))>=3
       if(oki) {
        dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-       oki <- sum(dpi>dpmin & !is.na(dpi))>=3 #&
+       oki <- sum(!is.na(dpi) & dpi>dpmin/2)>=3 &
+              mean(dpi,na.rm=TRUE)>dpmin
+      #   sum(dpi>dpmin & !is.na(dpi))>=3 #&
       #   ( mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
       #   (!cyclones & mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) ) 
       }
@@ -397,7 +401,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
         vg <- dpi/(fi*rho)
         v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
         radius[i] <- mean(ri,na.rm=TRUE)
-        max.dslp[i] <- mean(dpi,na.rm=TRUE)
+        dslp[i] <- mean(mapply(function(a,b) 0.5*(px+py)[t==date[i],a,b],ilon,ilat)-pcent[i])
+        max.gradient[i] <- mean(dpi,na.rm=TRUE)
         max.speed[i] <- mean(v.grad,na.rm=TRUE)
         max.vg[i] <- mean(vg,na.rm=TRUE)
         closed[i] <- floor(length(dpi>dpmin & !is.na(dpi))/4)
@@ -409,9 +414,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     if (verbose) print(paste('finding points of inflexion took',
                              round(as.numeric(t2-t1,units="secs")),'s'))
     if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
-    max.dslp <- max.dslp*1E-2*1E3
+    max.gradient <- max.gradient*1E-2*1E3
     if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
- 
+
+    ok <- ok & dslp>=0
     if(!is.null(rmin)) ok <- ok & radius>=rmin
     if(!is.null(rmax)) ok <- ok & radius<=rmax
     lon <- lon[ok]
@@ -420,7 +426,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     pcent <- pcent[ok]
     qf <- qf[ok]
     closed <- closed[ok]
-    max.dslp <- max.dslp[ok]
+    dslp <- dslp[ok]
+    max.gradient <- max.gradient[ok]
     max.speed <- max.speed[ok]
     radius <- radius[ok]
     strength <- rank(pcent)
@@ -482,11 +489,11 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     dd <- as.numeric(strftime(date,"%Y%m%d"))
     hh <- as.numeric(strftime(date,"%H"))
     X <- data.frame(date=dd,time=hh,lon=lon,lat=lat,pcent=pcent,
-         max.dslp=max.dslp,max.speed=max.speed,
+         dslp=dslp,max.gradient=max.gradient,max.speed=max.speed,
          radius=radius*1E-3,closed=closed,accuracy=qf)
   }
-  unit <- c("date","hour CET","degrees","degrees","hPa","hPa/km",
-            "m/s","km","TRUE/FALSE","grid points")
+  unit <- c("date","hour CET","degrees","degrees","hPa","hPa",
+            "hPa/km","m/s","km","TRUE/FALSE","grid points")
   if (cyclones) {
     longname <- "low pressure systems identified with CCI method"
     param <- "cyclones"
@@ -500,9 +507,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
          version="CCI in esd v1.0 (after October 6, 2015)",
          reference="Benestad & Chen, 2006, The use of a calculus-based cyclone identification method for generating storm statistics, Tellus A 58(4), 473-486.",
          url="http://onlinelibrary.wiley.com/doi/10.1111/j.1600-0870.2006.00191.x/abstract")
+  if(do.track) X <- track(X,verbose=verbose,...)
   if(!is.null(fname)) save(file=fname,X)
   invisible(X)
-
   }
 }
 

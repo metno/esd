@@ -1692,7 +1692,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
-
     ds <- try(DS(y,Z,eofs=eofs,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
@@ -1835,7 +1834,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
                            predictor="ERA40_slp_mon.nc",
                            non.stationarity.check=FALSE,
                            eofs=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,
-                           rel.cord=TRUE,nmin=NULL,
+                           rel.cord=TRUE,nmin=NULL,lev=NULL,levgcm=NULL,
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",threshold=1,type='ncdf4',
                            pattern="psl_Amon_ens_",verbose=FALSE,
@@ -1856,7 +1855,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
 
   if (is.character(predictor))
-    slp <- retrieve(ncfile=predictor,lon=lon,lat=lat,
+    slp <- retrieve(ncfile=predictor,lon=lon,lat=lat,lev=lev,
                     type=type,verbose=verbose) else
   if (inherits(predictor,'field'))
     slp <- subset(predictor,is=list(lon=lon,lat=lat))
@@ -1940,7 +1939,12 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     if (verbose) print(ncfiles[select[i]])
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                           lon=range(lon(SLP))+c(-2,2),
-                          lat=range(lat(SLP))+c(-2,2),verbose=verbose)
+                          lat=range(lat(SLP))+c(-2,2),
+                          lev=levgcm,verbose=verbose)
+    ## KMP 2016-08-09 added separate level input for slp and gcm
+    ##                because they can have levels of different units
+    if(is.null(levgcm) & !is.null(attr(gcm,"level")))
+      levgcm <- attr(gcm,"level")
     if (!is.null(it)) {
       if (verbose) print('Extract some months ot a time period')
       if (verbose) print(it)
@@ -1960,7 +1964,6 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
         GCM <- gcm
     }
     SLPGCM <- combine(SLP,GCM)
-    
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(SLPGCM))
     
@@ -1976,8 +1979,9 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
 
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
-
+    
     diag <- diagnose(Z)
+    
     ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
@@ -1998,7 +2002,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
       if (verbose) {
         print('Test to see if as.field has all information needed')
         test.field.ds <- as.field(ds)
-        a <- attrcp(y,z);  class(a) <- c("ds",class(y))
+        a <- attrcp(y,z);  class(a) <- class(y)
         test.field.z <- as.field(a)
       }
        

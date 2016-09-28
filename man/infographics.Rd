@@ -37,6 +37,8 @@
   prob
   
   graph
+  
+  \code{balls} draws 3D ball symbols.
 }
 \usage{
 vis(x,...)
@@ -65,6 +67,7 @@ graph.list(x,img=NULL,it=0,
            lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE)
 graph.zoo(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
           lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE)
+balls(x,y=NULL,col=NULL,cex.max=2,n=20)
 }
 \arguments{
  \item{x}{a data object}
