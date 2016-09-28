@@ -180,12 +180,9 @@ calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
 
 ######## simple, preliminary plotting
 
-plot.cyclonebudget = function(bud,new=TRUE,
+plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
     colbar=list(pal="precip",n=10,show=FALSE),
     xlim=NULL,ylim=NULL,projection="lonlat",verbose=FALSE,...){
-
-  if(new) dev.new(width=10,height=8)
-  par(mar=c(1.5,1.5,3,0.5),mgp=c(1.5,0.5,0))
 
   #x <- unlist(bud[1:(length(bud)-2)])
   #colbar$breaks <- pretty(seq(0,q95(x[x>0], n=colbar$n)
@@ -195,11 +192,18 @@ plot.cyclonebudget = function(bud,new=TRUE,
   #                   verbose=FALSE)
   #colbar$col <- col[1:(length(col)-1)]
   #colmax <- col[length(col)]
-    
-  budnames <- names(bud)[!(names(bud) %in% c("lons","lats"))]
-  nc <- floor(round(length(budnames)/3))
-  nr <- ceiling(length(budnames)/nc)
-    
+
+  if(is.null(budnames) | !any(budnames %in% names(bud))) {
+    budnames <- names(bud)[!(names(bud) %in% c("lons","lats"))]
+  } else {
+    budnames <- budnames[budnames %in% names(bud) & !(budnames %in% c("lons", "lats"))]
+  }
+  nr <- ceiling(length(budnames)/4)
+  nc <- ceiling(length(budnames)/nr)
+  
+  if(new) dev.new(width=nc*2.5,height=nr*2.6)
+  par(mar=c(1.5,1.5,3,0.5),mgp=c(1.5,0.5,0))
+  
   for(i in 1:length(budnames)){
     v <- budnames[i]
     cb <- colbar.ini(bud[[v]],colbar=colbar)
