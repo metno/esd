@@ -243,9 +243,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   #print(dim(rbind(X,Z)))
   
 # Plot the results:
-  if (new) dev.new()
+  if (new) {
+    dev.new()
+    par(fig=c(0,1,0.1,1), mgp=c(2,0.5,0), mar=c(4,1,2,1))
+  }
   par(bty="n") ## ,xaxt="n",yaxt="n")
-  par(fig=c(0,1,0.1,1), mgp=c(2,0.5,0), mar=c(4,1,2,1))
   plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",main=main)
   
 # plot the grid boxes, but only the gridboxes facing the view point:
