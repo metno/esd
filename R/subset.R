@@ -298,13 +298,17 @@ subset.trend <- function(x,it=NULL,is=NULL) {
     return(y)
 }
 
-subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     ## browser()
 
     if (verbose) print('subset.dsensemble')
 
-    if (inherits(x,'list') & inherits(x,'pca'))
-      x <- as.station(x)
+    if (inherits(x,'list') & inherits(x,'pca')) {
+      #x <- as.station(x)
+      ## Subset the PCA/EOF
+      x <- subset.dsensemble.multi(x,it=it,is=is,verbose=verbose,...)
+      return(x)
+    }
     if (inherits(x,'list') & !inherits(x,'zoo')) {
       if (verbose) print('list of elements')
       ## If x is a list of objects search through its elements
