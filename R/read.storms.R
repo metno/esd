@@ -1,7 +1,6 @@
 
 read.imilast <- function(fname,path=NULL,verbose=FALSE) {
-  if(is.null(path)) path <- getwd()
-  fname <- file.path(path,fname)
+  if(!is.null(path)) fname <- file.path(path,fname)
   # read and rearrange file header
   if(verbose) print(paste("reading file header:"))
   h <- tolower(readLines(fname,1))

@@ -181,11 +181,12 @@ calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
 ######## simple, preliminary plotting
 
 plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
-    colbar=list(pal="precip",n=10,show=FALSE),
-    xlim=NULL,ylim=NULL,projection="lonlat",verbose=FALSE,...){
+    colbar=list(pal="precip",n=10,show=TRUE),
+    xlim=NULL,ylim=NULL,projection="sphere",
+    lonR=0,latR=90,verbose=FALSE,...){
 
   #x <- unlist(bud[1:(length(bud)-2)])
-  #colbar$breaks <- pretty(seq(0,q95(x[x>0], n=colbar$n)
+  #colbar$breaks <- pretty(seq(0,q95(x[x>0], n=colbar$n)))
   #colbar <- colbar.ini(bud,colbar=colbar)
   #col <- colscal(n=length(colbar$breaks),col=colbar$pal,
   #                   rev=colbar$rev,alpha=colbar$alpha,
@@ -201,18 +202,19 @@ plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
   nr <- ceiling(length(budnames)/4)
   nc <- ceiling(length(budnames)/nr)
   
-  if(new) dev.new(width=nc*2.5,height=nr*2.6)
-  par(mar=c(1.5,1.5,3,0.5),mgp=c(1.5,0.5,0))
+  if(new) dev.new(width=nc*2.2,height=nr*2.3)
+  par(mar=c(1.8,1.5,4.0,0.5),mgp=c(0.5,0.5,0))
   
   for(i in 1:length(budnames)){
     v <- budnames[i]
     cb <- colbar.ini(bud[[v]],colbar=colbar)
     ir <- nr + 1 - ceiling(i/nc)
     ic <- i - nc*(nr - ir)
-    par(new=!(i==1),fig=c((ic-1)/nc,ic/nc,(ir-1)/nr,ir/nr))  
-    map(bud[[v]],colbar=cb,projection=projection,xlim=xlim,ylim=ylim,
-        new=FALSE)
-    title(v,line=2)
+    par(new=!(i==1),fig=c((ic-1)/nc,ic/nc,0.95*(ir-1)/nr+0.05,0.95*ir/nr+0.05))
+    x <- bud[[v]]
+    attr(x,"variable") <- NULL
+    map(x,colbar=cb,projection=projection,xlim=xlim,ylim=ylim,
+        new=FALSE,lonR=lonR,latR=latR,main=v,adj=1)
   }
 }
 
