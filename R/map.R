@@ -677,16 +677,19 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     srty <- order(lat(x)); lat <- lat(x)[srty]
     if (verbose) print('meta-stuff')
     unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
-    variable <- as.character(variable); unit <- as.character(unit)
+    if(!is.null(variable)) variable <- as.character(variable)
+    if(!is.null(unit)) unit <- as.character(unit)
     if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") | (unit=="degree Celsius"))
         unit <- "degree*C"
     if (unit=="%") unit <- "'%'"
-    if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") |
+    if(!is.null(variable)) {
+      if ( (tolower(variable)=="t(2m)") | (tolower(variable)=="t2m") |
          (tolower(variable)=="2t") )
         variable <- "T[2*m]"
+    }
     if (verbose) print(paste(variable,unit,isprecip,' -> varlabel'))
-    varlabel=eval(parse(text=paste('expression(',
-             gsub(" ","~",variable)," *~(",gsub(" ","~",unit),"))",sep="")))
+    if(!is.null(variable)) varlabel=eval(parse(text=paste('expression(',
+             gsub(" ","~",variable)," *~(",gsub(" ","~",unit),"))",sep=""))) else varlabel <- NULL
     if (!is.null(attr(x,'source'))) sub <- attr(x,'source') else
                                                                 sub <- NULL
     if (sum(is.element(type,'fill'))==0) colbar <- NULL

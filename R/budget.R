@@ -15,7 +15,7 @@
 
 calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
                                     resolution.lon=12,resolution.lat=6,
-                                    verbose=FALSE){
+                                    progress=TRUE,verbose=FALSE){
 
   if(verbose) print("calculate.cyclonebudget")
   stopifnot(inherits(traj,c("trajectory","events")))
@@ -60,7 +60,11 @@ calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
   ## (a list with 'lon' and 'lat' ranges) and time index it
   ## (can be a range of years, a season or month ('djf', 'jan'),
   ## or logical or numerical indexing
-  if(verbose) print("select subset"); print(it); print(is) 
+  if(verbose) {
+    print("select subset")
+    print(it)
+    print(is)
+  }
   traj <- subset(traj,is=is,it=it)
   
   # which columns have the longitude (and latitude) values?
@@ -103,12 +107,12 @@ calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
 
   # each storm is a row in traj
   if(verbose) print(paste("loop over",nrow(traj),"storms"))
+  if(progress) pb <- txtProgressBar(style=3)
+  if (progress) setTxtProgressBar(pb,0/nrow(traj))
   for(storm in 1:nrow(traj)){
     # some advanced counter here would be nice...
-    if(storm %% 100 == 0){
-      cat(storm,"/",nrow(traj),"\n")
-    }
-
+    X <- NULL
+    if(progress) setTxtProgressBar(pb,storm/nrow(traj))
     n <- sum(lon.cols)
     lon <- traj[storm,lon.cols]
     lat <- traj[storm,lat.cols]
@@ -162,6 +166,13 @@ calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
            inN=inN,inE=inE,inS=inS,inW=inW,
            outN=outN,outE=outE,outS=outS,outW=outW,lats=lats,lons=lons)
   # making this S3 class might useful, or not? What do you think?
+  for(v in names(bud)) {
+    x <- bud[[v]]
+    dim(x) <- c(1,length(x))
+    x <- as.field(zoo(x,order.by=1),lon=bud$lons,lat=bud$lats,
+                param=v,unit="cyclones")
+    bud[[v]] <- x
+  }
   class(bud) <- "cyclonebudget"
   return(bud)
 }
@@ -169,36 +180,41 @@ calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
 
 ######## simple, preliminary plotting
 
-plot.cyclonebudget = function(bud,new=FALSE,
-    colbar=list(pal="precip",n=10),verbose=FALSE,...){
+plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
+    colbar=list(pal="precip",n=10,show=TRUE),
+    xlim=NULL,ylim=NULL,projection="sphere",
+    lonR=0,latR=90,verbose=FALSE,...){
 
-  if(new) dev.new()
-  par(mfrow=c(3,4))
-
-  browser()
   #x <- unlist(bud[1:(length(bud)-2)])
-  #colbar$breaks <- pretty(seq(0,q95(x[x>0], n=colbar$n)
+  #colbar$breaks <- pretty(seq(0,q95(x[x>0], n=colbar$n)))
   #colbar <- colbar.ini(bud,colbar=colbar)
   #col <- colscal(n=length(colbar$breaks),col=colbar$pal,
   #                   rev=colbar$rev,alpha=colbar$alpha,
   #                   verbose=FALSE)
   #colbar$col <- col[1:(length(col)-1)]
   #colmax <- col[length(col)]
+
+  if(is.null(budnames) | !any(budnames %in% names(bud))) {
+    budnames <- names(bud)[!(names(bud) %in% c("lons","lats"))]
+  } else {
+    budnames <- budnames[budnames %in% names(bud) & !(budnames %in% c("lons", "lats"))]
+  }
+  nr <- ceiling(length(budnames)/4)
+  nc <- ceiling(length(budnames)/nr)
   
-  for(v in c("total","system",
-             "genesis","lysis",
-             "inN","inE","inS","inW",
-             "outN","outE","outS","outW")){
-
+  if(new) dev.new(width=nc*2.2,height=nr*2.3)
+  par(mar=c(1.8,1.5,4.0,0.5),mgp=c(0.5,0.5,0))
+  
+  for(i in 1:length(budnames)){
+    v <- budnames[i]
     cb <- colbar.ini(bud[[v]],colbar=colbar)
-    image(x = bud$lons ,  y = bud$lats ,  bud[[v]], useRaster = TRUE, 
-          main=v,xlab="longitude",ylab="latitude", cex.main=1.5,
-          col=cb$col, ...) #breaks=cb$breaks, ...)
-
-    #budmax <- bud[[v]]
-    #budmax[budmax<max(colbar$breaks)] <- NA
-    #image(x = bud$lons, y = bud$lats, budmax, useRaster = TRUE, col=colmax, add=TRUE)
-     
+    ir <- nr + 1 - ceiling(i/nc)
+    ic <- i - nc*(nr - ir)
+    par(new=!(i==1),fig=c((ic-1)/nc,ic/nc,0.95*(ir-1)/nr+0.05,0.95*ir/nr+0.05))
+    x <- bud[[v]]
+    attr(x,"variable") <- NULL
+    map(x,colbar=cb,projection=projection,xlim=xlim,ylim=ylim,
+        new=FALSE,lonR=lonR,latR=latR,main=v,adj=1)
   }
 }
 
