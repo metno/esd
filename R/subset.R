@@ -303,7 +303,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 
     if (verbose) print('subset.dsensemble')
 
-    if (inherits(x,'list') & inherits(x,'pca')) {
+    if (inherits(x,'list') & inherits(x,c('pca','eof'))) {
       #x <- as.station(x)
       ## Subset the PCA/EOF
       x <- subset.dsensemble.multi(x,it=it,is=is,verbose=verbose,...)
