@@ -2,51 +2,51 @@
 ## Map the result according to time (it), space (is) or member (im)
 ## Select a set of PCs and then use these in matrix product to reproduce
 ## physical elements.
-map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,pattern=NULL,colbar=NULL,
-                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE) {
-  ## PCA/EOF objects
 
-  if (verbose) print('map.dsensemble')
-  
-  if (inherits(x,c('pca','eof'))) {
-    ## Extract a subset of the data
-    x <- subset(x,is=is,im=im,pattern=pattern)
-    ## Gest the spatial weights
-    if (inherits(x,'pca')) UWD <- x$pca else UWD <- x$eof
-    if (verbose) print(names(attributes(UWD)))
-    D <- attr(UWD,'eigenvalues')
-    ## Create a matrix with only the GCM time series
-    if (verbose) print('PCA/EOF-based ensemble')
-    X <- x
-    X$info <- NULL; X$pca <- NULL; X$eof <- NULL
-    V <- lapply(X,FUN='subsetzoo',it=it)
+expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
+  ## Get the spatial weights
+  if (verbose) print('expandpca')
+  if (test) print('--TEST ON ONE GCM simulation--')
+  if (inherits(x,'pca')) UWD <- x$pca else UWD <- x$eof
+  if (verbose) print(names(attributes(UWD)))
+  D <- attr(UWD,'eigenvalues')
+  ## Create a matrix with only the GCM time series
+  if (verbose) print('PCA/EOF-based ensemble')
+  X <- x
+  X$info <- NULL; X$pca <- NULL; X$eof <- NULL
+  V <- lapply(X,FUN='subsetzoo',it=it)
+  if (!test) {
     n <- length(names(V))
     d <- dim(V[[1]])
-    #V.1 <- V[[1]] # Pick one member for testing
     V <- unlist(V)
-    if (verbose) print(c(n,d))
-    dim(V) <- c(n,d[1]*d[2])
-    ## Aggregate statistics over ensemble members
-    if (verbose) print('Aggregate ensemble statistics')
-    ## Apply FUNX to each of the PCs across all members
-    V <- apply(V,2,FUN=FUNX)
-    #V <- V.1
-    U <- attr(UWD,'pattern')
-    dim(V) <- d
-    if (verbose) {
-      print('Matrix multiplication')
-      str(U); str(D); str(V)
-    }
-    Y <- U %*% diag(D) %*% t(V)
-    ## Add mean and insert into zoo frame
-    if (anomaly) Y <- t(t(Y) + attr(UWD,'mean'))
-    Y <- zoo(Y,order.by=index(x))
-    Y <- attrcp(UWD,Y)
-    class(Y) <- class(UWD)[-1]
-    attr(Y,'mean') <- NULL
-    map(Y,FUN=FUN,colbar=colbar,verbose=verbose)
-    return(Y)
-  } else return(NULL)
+    dim(V) <- c(d[1]*d[2],n)
+    V <- apply(V,1,FUN=FUNX)
+  } else {
+    V <- V[[1]] # Pick one member for testing ## Testing
+    n <- 1
+    d <- dim(V)
+  }
+  if (verbose) print(c(n,d))
+  
+  ## Aggregate statistics over ensemble members
+  if (verbose) print('Aggregate ensemble statistics')
+  ## Apply FUNX to each of the PCs across all members
+  #
+  U <- attr(UWD,'pattern')
+  dim(V) <- d
+  if (verbose) {
+    print('Matrix multiplication')
+    str(U); str(D); str(V)
+  }
+  Y <- V %*% diag(D) %*% t(U)
+  ## Add mean and insert into zoo frame
+  if (!anomaly) Y <- t(t(Y) + attr(UWD,'mean'))
+  Y <- zoo(Y,order.by=index(V))
+  Y <- attrcp(UWD,Y)
+  class(Y) <- class(UWD)[-1]
+  attr(Y,'mean') <- NULL
+  if (verbose) print('expandpca done')
+  return(Y)
 }
 
 ## Function for extracting the subset from PCs stored as zoo
@@ -63,6 +63,24 @@ subsetzoo <- function(x,pattern=NULL,it=NULL,verbose=FALSE) {
     x <- x[,pattern]
   }
   return(x)
+}
+
+
+
+map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,pattern=NULL,colbar=NULL,
+                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
+  ## PCA/EOF objects
+
+  if (verbose) print('map.dsensemble')
+  
+  if (inherits(x,c('pca','eof'))) {
+    ## Extract a subset of the data
+    x <- subset(x,is=is,im=im,pattern=pattern)
+    Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
+    
+    map(Y,FUN=FUN,colbar=colbar,verbose=verbose)
+    invisible(Y)
+  } else return(NULL)
 }
 
 
@@ -104,4 +122,5 @@ subset.dsensemble.multi <- function(x,pattern=NULL,it=NULL,is=NULL,im=NULL,
   class(Y) <- cls
   return(Y)
 }
+
 

@@ -1281,7 +1281,26 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
   plot(pc[[pattern]],ylab=paste("PC",pattern,sep=""))
 }
 
-plot.dsensemble <-  function(x,pts=FALSE,it=0,
+plot.dsensemble <- function(x,...) {
+  if (inherits(x,c('pca','eof'))) y <- plot.dsensemble.multi(x,...) else
+  if (inherits(x,'zoo')) y <- plot.dsensemble.one(x,...)
+  invisible(y)
+}
+
+## Plot multiple stations/spatially aggregated field.
+plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
+                                  anomaly=FALSE,test=FALSE,...) {
+  if (verbose) print('plot.dsensemble.multi')
+  
+  if (inherits(x,c('pca','eof'))) {
+    Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
+    plot(Y,...)
+    invisible(Y)
+  } else return(NULL)
+}
+
+## Plots one time series
+plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
                              target.show=TRUE,map.show=TRUE,map.type=NULL,new=TRUE,
                              xrange=NULL,yrange=NULL,verbose=FALSE,...) {
