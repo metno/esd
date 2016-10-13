@@ -32,7 +32,10 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   if (verbose) print('Aggregate ensemble statistics')
   ## Apply FUNX to each of the PCs across all members
   #
-  U <- attr(UWD,'pattern')
+  U <- attr(UWD,'pattern'); dU <- dim(U)
+  if (length(dU==3)) {
+    dim(U) <- c(dU[1]*dU[2],dU[3])
+  }
   dim(V) <- d
   if (verbose) {
     print('Matrix multiplication')
@@ -40,7 +43,7 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   }
   Y <- V %*% diag(D) %*% t(U)
   ## Add mean and insert into zoo frame
-  if (!anomaly) Y <- t(t(Y) + attr(UWD,'mean'))
+  if (!anomaly) Y <- t(t(Y) + c(attr(UWD,'mean')))
   Y <- zoo(Y,order.by=index(V))
   Y <- attrcp(UWD,Y)
   class(Y) <- class(UWD)[-1]
@@ -75,7 +78,8 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,pattern=NULL,colbar
   
   if (inherits(x,c('pca','eof'))) {
     ## Extract a subset of the data
-    x <- subset(x,is=is,im=im,pattern=pattern)
+    if (verbose) print(names(x)[2])
+    x <- subset(x,is=is,im=im,pattern=pattern,verbose=verbose)
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     
     map(Y,FUN=FUN,colbar=colbar,verbose=verbose)
@@ -90,7 +94,7 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,pattern=NULL,colbar
 subset.dsensemble.multi <- function(x,pattern=NULL,it=NULL,is=NULL,im=NULL,
                               verbose=FALSE,...) {
  
-  if (verbose) print('subset.dsensemble')
+  if (verbose) print('subset.dsensemble.multi')
   cls <- class(x)
   
   Y <- list()
