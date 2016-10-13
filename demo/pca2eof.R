@@ -1,4 +1,16 @@
 ## Function for gridding station data Y.
+
+## Check if you need to get the esd-package:
+install.LK <- ("LatticeKrig" %in% rownames(installed.packages()) == FALSE)
+
+if (install.LK) {
+  print('Need to install the LatticeKrig package')
+  ## Need online access.
+  install.packages('LatticeKrig')
+  print('The latest version of LatticeKrig has been installed from CRAN')
+}
+
+
 gridstation <- function(Y,i=1,verbose=FALSE,xlim=NULL,ylim=NULL) {
   if (verbose) print(paste('gridstation'))
   require(LatticeKrig)

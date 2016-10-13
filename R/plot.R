@@ -27,6 +27,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     map.show <- FALSE
   }
   if(map.show) {
+    if (verbose) print('show map')
     if (is.null(map.type)) {
       if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
           (length(lon(x))==2 & length(lat(x))==2) ) {
@@ -35,6 +36,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
         map.type <- "points"
       }
     }
+    if (verbose) print(map.type)
   }
   
   fig <- c(0,1,0,0.95)
@@ -166,7 +168,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 vis.map <- function(x,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     cex.axis=0.8,add.text=FALSE,
-                    map.insert=TRUE,verbose=FALSE) {
+                    map.insert=TRUE,verbose=FALSE,usegooglemap=TRUE) {
   if(verbose) print('vis.map')
   if(is.null(xrange)) xrange <- range(lon(x)) + c(-5,5)
   if(is.null(yrange)) yrange <- range(lat(x)) + c(-2,2)
@@ -180,36 +182,54 @@ vis.map <- function(x,col='red',map.type=NULL,
       map.type <- "points"
     }
   }
-  
-  data(geoborders)
-  lon <- geoborders$x
-  lat <- geoborders$y
-  ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
-        lat>(min(yrange)-1) & lat<(max(yrange)+1)
-  lon2 <- attr(geoborders,"borders")$x
-  lat2 <- attr(geoborders,"borders")$y
-  ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
-        lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
-  if(map.insert) {
-    par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
-        mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
-  } else dev.new()
-  plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=1.2,
+
+   ## REB: 2016-10-12 - add the possibility to use google maps
+  if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
+         usegooglemap ) {
+      require(RgoogleMaps)
+      mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
+      if (!is.finite(mxdst) | mxdst==0) zoom <- 8 else
+                             zoom <- 3 - round(log(mxdst))
+      if (verbose) print(zoom)
+      bgmap <- GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
+                    destfile = "map.station.esd.png",
+                    maptype = "mobile", zoom=zoom)
+      if(map.insert) {
+       par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
+           mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
+     }
+      plotmap(lat(x), lon(x), bgmap)
+   } else {
+     data(geoborders)
+     lon <- geoborders$x
+     lat <- geoborders$y
+     ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
+           lat>(min(yrange)-1) & lat<(max(yrange)+1)
+     lon2 <- attr(geoborders,"borders")$x
+     lat2 <- attr(geoborders,"borders")$y
+     ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
+            lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
+     if(map.insert) {
+       par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
+           mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
+     } else dev.new()
+     plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=1.2,
                                         #type='l', KMP 2016-03-16 problem with lines in map
-       xlab=NA,ylab=NA,axes=FALSE,new=new,
-       xlim=xrange,ylim=yrange)
+          xlab=NA,ylab=NA,axes=FALSE,new=new,
+          xlim=xrange,ylim=yrange)
        #xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
        #ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
-  axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
-  axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
-  lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
-  if (map.type=="points") {
-    points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
-    if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
-  } else if (map.type=="rectangle") {
-    rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
-         border="black",lwd=1,lty=2)
-  }
+     axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
+     axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
+     lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+     if (map.type=="points") {
+       points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
+       if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
+     } else if (map.type=="rectangle") {
+       rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
+            border="black",lwd=1,lty=2)
+     }
+   }
 }
 
 plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
