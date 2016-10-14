@@ -308,10 +308,10 @@ as.station.spell <- function(x) {
 }
 
 
-as.station.eof <- function(x,pattern=1:10) {
+as.station.eof <- function(x,ip=1:10) {
   stopifnot(!missing(x),inherits(x,'eof'))
-  z <- zoo(x[,pattern],order.by=index(x))
-  y <- as.station.zoo(z,loc=paste('PC[',pattern,']',sep=''),
+  z <- zoo(x[,ip],order.by=index(x))
+  y <- as.station.zoo(z,loc=paste('PC[',ip,']',sep=''),
                       param=varid(x),unit=unit(x),
                       lon=lon(x),lat=lat(x),alt=NA,
                       cntr=NA,longname='principal component',stid=NA,quality=NA,
@@ -323,7 +323,7 @@ as.station.eof <- function(x,pattern=1:10) {
   invisible(y)
 }
 
-as.station.dsensemble.pca <- function(x,is=NULL,eofs=NULL,verbose=FALSE,...) {
+as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   X <- x ## quick fix
   if (verbose) print('as.station.dsensemble.pca')
   if (inherits(X,"station")) return(X)
@@ -336,14 +336,14 @@ as.station.dsensemble.pca <- function(x,is=NULL,eofs=NULL,verbose=FALSE,...) {
     d <- apply(sapply(X[3:length(X)],dim),1,min)
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
-    if (is.null(eofs)) {
+    if (is.null(ip)) {
       U <- attr(X$pca,'pattern')
       W <- attr(X$pca,'eigenvalues')
     } else {
-    ## If eofs is specified, use a sub set of the PCA modes.
-      U <- attr(X$pca,'pattern')[,eofs]
-      W <- attr(X$pca,'eigenvalues')[eofs]
-      V <- V[,eofs,]
+    ## If ip is specified, use a sub set of the PCA modes.
+      U <- attr(X$pca,'pattern')[,ip]
+      W <- attr(X$pca,'eigenvalues')[ip]
+      V <- V[,ip,]
     }    
     d <- dim(U)
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
@@ -596,7 +596,7 @@ as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
   return(y)  
 }
 
-as.field.dsensemble.eof <- function(X,is=NULL,eofs=NULL,verbose=FALSE,...) {
+as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,verbose=FALSE,...) {
   if (verbose) print('as.field.dsensemble.eof')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"eof"))
   if (inherits(X,"field")) {
@@ -607,14 +607,14 @@ as.field.dsensemble.eof <- function(X,is=NULL,eofs=NULL,verbose=FALSE,...) {
     d <- apply(sapply(X[3:length(X)],dim),1,min)
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
-    if (is.null(eofs)) {
+    if (is.null(ip)) {
       U <- attr(X$eof,'pattern')
       W <- attr(X$eof,'eigenvalues')
     } else {
-    ## If eofs is specified, use a sub set of the PCA modes.
-      U <- attr(X$pca,'pattern')[,eofs]
-      W <- attr(X$pca,'eigenvalues')[eofs]
-      V <- V[,eofs,]
+    ## If ip is specified, use a sub set of the PCA modes.
+      U <- attr(X$pca,'pattern')[,ip]
+      W <- attr(X$pca,'eigenvalues')[ip]
+      V <- V[,ip,]
     }    
     d <- dim(U)
     dim(U) <- c(d[1]*d[2],d[3])

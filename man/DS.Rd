@@ -74,47 +74,47 @@
 \usage{
 DS(y,X,verbose=TRUE,plot=FALSE,...)
 DS.default(y, X, mon = NULL, method = "lm", swsm = "step", m = 5,
-  rmtrend = TRUE, eofs = 1:7, 
+  rmtrend = TRUE, ip = 1:7, 
   area.mean.expl = FALSE, verbose = FALSE, weighted = TRUE, ...)
 DS.station(y,X,biascorrect=FALSE,mon=NULL,
-           method="lm",swsm="step",m = 5,
-           rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
-           verbose=FALSE,pca=TRUE,neofs=20,...)
+                       method="lm",swsm="step",m=5,
+                       rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
+                       verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...)
 DS.eof(X,y,mon=NULL,
        method="lm",swsm="step",m=5,
-       rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+       rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
        verbose=FALSE,pca=TRUE,npca=20,...)
 DS.comb(X,y,biascorrect=FALSE,mon=NULL,
         method="lm",swsm="step",m=5,
-        rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+        rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
         verbose=FALSE,...) 
 DS.field(X,y,biascorrect=FALSE,mon=NULL,
          method="lm",swsm="step",m=5,
-         rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+         rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
          verbose=FALSE,...) 
 DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
                    method="lm",swsm="step",
-                   rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                   rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,station=TRUE)
 DS.t2m.season.field(y,X,biascorrect=FALSE,
                     method="lm",swsm="step",m=5,
-                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                    rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,station=TRUE)
 DS.precip.season.field(y,X,biascorrect=FALSE,
                       method="lm",swsm="step",
-                      rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                      rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                       verbose=FALSE,...)
 DS.freq(y,X,threshold=1,biascorrect=FALSE,method="glm",
 family="gaussian",swsm="step",
-        rmtrend=TRUE,eofs=1:7,verbose=FALSE,...)
+        rmtrend=TRUE,ip=1:7,verbose=FALSE,...)
 DS.spell(y,X,threshold=1,biascorrect=FALSE,method="glm",
 family="gaussian",swsm="step",
-         rmtrend=TRUE,eofs=1:7,verbose=FALSE,...)
+         rmtrend=TRUE,ip=1:7,verbose=FALSE,...)
 DS.pca(y,X,biascorrect=FALSE,mon=NULL,
        method="MVR",swsm=NULL,rmtrend=TRUE,...)
 DS.seasonalcycle(y,X,mon=NULL,FUN='wetmean',fun='mean',
                             method="lm",swsm="step",m=1,
-                            eofs=1:7,area.mean.expl=FALSE,
+                            ip=1:7,area.mean.expl=FALSE,
                             verbose=FALSE,weighted=TRUE,...)
 predict.ds.mon(x,...) 
 sametimescale(y,X,FUN='mean')
@@ -130,7 +130,7 @@ biasfix(x)
 \item{swsm}{Stepwise screening, e.g. \code{\link{step}}. NULL skips stepwise screening}
 \item{rmtrend}{TRUE for detrending the predicant and predictors (in the
   PCs) before calibrating the model}
-\item{eofs}{Which EOF modes to include in the model training.}
+\item{ip}{Which EOF modes to include in the model training.}
 \item{plot}{TRUE: plot the results}
 \item{verbose}{TRUE: suppress output to the terminal.}
 \item{station}{TRUE: convert monthly data to station class using

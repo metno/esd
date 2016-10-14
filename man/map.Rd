@@ -43,7 +43,7 @@ map.matrix(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        type=c("fill","contour"),gridlines=FALSE,
                        lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                       pattern=1,plot=TRUE,...)
+                       ip=1,plot=TRUE,...)
 
 map.station(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
               xlim = NULL, ylim = NULL, zlim = NULL,
@@ -67,14 +67,14 @@ map.comb(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                        type="p",cex=2,h=0.6,v=1),
            type=c("fill", "contour"),gridlines=FALSE,
-           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,pattern=1,plot=TRUE,...)
+           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,ip=1,plot=TRUE,...)
 
 map.eof(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
            xlim= NULL,ylim=NULL,zlim=NULL,n=15,
            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                        type="p",cex=2,h=0.6,v=1),
            type=c("fill","contour"),gridlines=FALSE,
-           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,pattern=1,plot=TRUE,...)
+           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,ip=1,plot=TRUE,...)
 
 map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
@@ -83,7 +83,7 @@ map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
          type= c("fill", "contour"),gridlines=FALSE,
          lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE,plot=TRUE,...)
 
-map.dsensemble(x,it=c(2000,2099),is=NULL,im=NULL,pattern=NULL,colbar=NULL,
+map.dsensemble(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,colbar=NULL,
                FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE)
 
 map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
@@ -108,7 +108,7 @@ map.trend(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
             type=c("fill", "contour"),gridlines=FALSE,
             lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...)
 
-map.pca(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat", 
+map.pca(x,it=NULL,is=NULL,ip=1,new=TRUE,projection="lonlat", 
           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                       type="p",cex=2,h=0.6,v=1),
@@ -168,7 +168,6 @@ mask(x,land=FALSE)
   \item{x}{the object to be plotted; in \code{rotM}, x holds a vector
     of x-coordinates.}
   \item{FUN}{The function to be applied on x before mapping (e.g. \code{mean})}
-  \item{pattern}{Which EOF pattern (mode) to plot}
   \item{colbar}{The colour scales defined through \code{colscal}. Users can
                 specify the colour `pal'*ette (`pal'), the number of
                 breaks (`n'), values of `breaks', and the position of
@@ -194,7 +193,7 @@ mask(x,land=FALSE)
   \item{density}{}
   \item{y}{a vector of y coordinates}
   \item{z}{a vector of z coordinates}
-  \item{pattern}{Selects which pattern (see \code{\link{EOF}},  \code{\link{CCA}}) to plot}
+  \item{ip}{Selects which pattern (see \code{\link{EOF}},  \code{\link{CCA}}) to plot}
   \item{geography}{TRUE: plot geographical features}
   \item{angle}{for hatching}
   \item{a}{used in \code{\link{vec}} to scale the length of the arrows}

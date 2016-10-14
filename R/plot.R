@@ -240,7 +240,7 @@ vis.map <- function(x,col='red',map.type=NULL,
 }
 
 plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
-                     pattern=1,what=c("pc","eof","var"),
+                     ip=1,what=c("pc","eof","var"),
                      colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
                          breaks=NULL,type="p",cex=2,show=TRUE,
                          h=0.6,v=1,pos=0.05),
@@ -248,24 +248,24 @@ plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   if (verbose) print(paste('plot.eof',paste(what,collapse=',')))
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
-                  pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
+                  ip=ip,what=what,colbar=colbar,verbose=verbose,...) else
   if (inherits(x,"field"))
     plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
-                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
+                   ip=ip,what=what,colbar=colbar,verbose=verbose,...) else
     print("x does not have 'comb' or 'field' aspects...")
 }
 
 
 
 
-plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
+plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                            what=c("pc","eof","var"),## colbar=NULL,
                            cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
                            verbose=FALSE,cex=1,...) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
-  n <- pattern
+  n <- ip
   what <- tolower(what)
-  #str(pattern); stop("HERE")
+  #str(ip); stop("HERE")
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
@@ -284,14 +284,14 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
       if (inherits(x,'eof')) {## inherits(x,'pca') |
           par(fig=c(0,0.5,0.5,1))
           ## par(fig=c(0.025,0.5,0.5,0.975)) ## c(0,0.45,0.5,0.975) c(0.05,0.5,0.55,0.95)
-          map(x,pattern=pattern,verbose=verbose,
+          map(x,ip=ip,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
               cex.lab=cex.lab,cex=cex,...) ## AM formely new=FALSE colbar=colbar,
       } else if (inherits(x,'pca')) {
           par(fig=c(0,0.5,0.5,1))
-          main1 <- paste('Leading EOF#',pattern, ' (',
-                         round(var.eof[pattern],digits=2),"%)",sep='')
-          map(x,pattern=pattern,verbose=verbose,
+          main1 <- paste('Leading EOF#',ip, ' (',
+                         round(var.eof[ip],digits=2),"%)",sep='')
+          map(x,ip=ip,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
               cex.lab=cex.lab,cex=cex,...) ## colbar=colbar,
           title(main=src(x)[1],cex.main=cex.main*0.8,
@@ -308,7 +308,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   ## browser()
   if (length(grep('var',what))>0) {
     par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=cex.main,
+    plot.eof.var(x,ip=ip,new=FALSE,cex.main=cex.main,
                  cex.axis=cex.axis,bty="n",cex=cex)
   }
   
@@ -317,8 +317,8 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
       par(fig=c(0.05,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-      main <- paste('Leading PC#',pattern,' of ',attr(x,'longname'),
-                 " - Explained variance = ",round(var.eof[pattern],digits=2),
+      main <- paste('Leading PC#',ip,' of ',attr(x,'longname'),
+                 " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
 
       if(inherits(x,"seasonalcycle")) xaxt <- "n" else  xaxt <- NULL
@@ -344,10 +344,10 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
 
 
 plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
-                          pattern=1,col=c("red"),alpha=1,
+                          ip=1,col=c("red"),alpha=1,
                           what=c("pc","eof","var"),colbar=NULL,verbose=FALSE,...) {
   if (verbose) print("plot.eof.comb")
-  n <- pattern
+  n <- ip
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
@@ -361,7 +361,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 
   if (length(grep('eof',what))>0) {
     par(fig=c(0,0.5,0.5,1))
-    map(x,pattern=pattern,verbose=verbose,colbar=colbar,...)
+    map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
 
   n.app <- attr(x,'n.apps')
@@ -376,7 +376,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 #    par(xaxt="s",yaxt="s")
 #    plot.eof.var(x,new=FALSE,cex.main=0.7)
     par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
+    plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
 
   if (is.null(ylim)) {
@@ -405,8 +405,8 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
 #                                          xlim=xlim,ylim=ylim)
       par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-      main <- paste('Leading PC#',pattern,'of ',attr(x,'longname'),
-                 " - Explained variance = ",round(var.eof[pattern],digits=2),
+      main <- paste('Leading PC#',ip,'of ',attr(x,'longname'),
+                 " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
       
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
@@ -626,7 +626,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 
 
 
-plot.eof.var <- function(x,pattern=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
+plot.eof.var <- function(x,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
   n <- min(c(n,length(attr(x,'eigenvalues'))))
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
@@ -659,7 +659,7 @@ plot.eof.var <- function(x,pattern=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
   }
   points(var.eof,cex=1.5)
   points(var.eof,pch=20,cex=1.2,col="darkgrey")
-  points(pattern,var.eof[pattern],pch=20,col="red",cex=1.2)
+  points(ip,var.eof[ip],pch=20,col="red",cex=1.2)
   attr(var.eof,'errorbar') <- cbind(100*(D-dD)^2/tot.var,100*(D+dD)^2/tot.var)
   invisible(var.eof)
 }
@@ -782,7 +782,7 @@ plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
 }
 
 
-plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
+plot.ds.pca <- function(x,ip=1,verbose=FALSE,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                             type="p",cex=1,show=TRUE,
                             h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
@@ -794,22 +794,22 @@ plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
   #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
 
-  if (verbose) print('PCA pattern')
-  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,...)
+  if (verbose) print('PCA ip')
+  map.pca(y,ip=ip,verbose=verbose,new=FALSE,colbar=colbar1,...)
 
-  title(paste("PCA Pattern # ",pattern,sep=""))
+  title(paste("PCA Pattern # ",ip,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
   if (verbose) print('Predictor pattern')
-  map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
+  map(attr(y,'predictor.pattern'),ip=ip,new=FALSE,
       colbar=colbar2,verbose=verbose,
-      main=paste("EOF Pattern # ",pattern,sep=""))
-  #title(paste("EOF Pattern # ",pattern,sep=""))
+      main=paste("EOF Pattern # ",ip,sep=""))
+  #title(paste("EOF Ip # ",ip,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
     browser()
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     ## Get the right pattern
-    xvp <- (pattern-1)*2 +1
+    xvp <- (ip-1)*2 +1
     xok <- is.finite(attr(y,'evaluation')[,xvp]) & is.finite(attr(y,'evaluation')[,xvp+1])
     xcor <- cor(attr(y,'evaluation')[xok,xvp],attr(y,'evaluation')[xok,xvp+1])
     plot(attr(y,'evaluation')[,xvp],attr(y,'evaluation')[,xvp+1],
@@ -822,22 +822,22 @@ plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
     par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
-    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
-    legend(x=index(attr(y,'original_data')[,pattern])[1],
-           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,pattern]))/10,
+    plot(attr(y,'original_data')[,ip],lwd=2,type='b',pch=19)
+    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,ip])[1],
+           y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,ip]))/10,
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
   } else {
     par(fig=c(0.05,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
-    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
+    plot(attr(y,'original_data')[,ip],lwd=2,type='b',pch=19)
+    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
     xvalfit <- NULL
   }
 }
 
-plot.ds.eof <- function(x,pattern=1,
+plot.ds.eof <- function(x,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
   y <- x # quick fix
@@ -845,17 +845,17 @@ plot.ds.eof <- function(x,pattern=1,
   if (is.null(colbar2)) colbar2 <- colbar1 
   attr(y,'longname') <- attr(y,'longname')[1]
   par(fig=c(0,0.5,0.5,1),mar=c(3,5,4.2,1),mgp=c(3,0.5,0.5))
-  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,
-          main=paste("Predictand EOF pattern # ",pattern,sep=""),...)
+  map.eof(y,ip=ip,verbose=verbose,new=FALSE,colbar=colbar1,
+          main=paste("Predictand EOF pattern # ",ip,sep=""),...)
   par(fig=c(0.5,1,0.5,1),mar=c(3,4,4.2,1),new=TRUE)
-  map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
+  map(attr(y,'predictor.pattern'),ip=ip,new=FALSE,
       colbar=colbar2,verbose=verbose,
-      main=paste("Predictor EOF pattern # ",pattern,sep=""))
-  #title(paste("EOF Pattern # ",pattern,sep=""))
+      main=paste("Predictor EOF pattern # ",ip,sep=""))
+  #title(paste("EOF Pattern # ",ip,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0,0.5,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
-    pc.obs <- attr(y,'evaluation')[,1+2*(pattern-1)]
-    pc.ds <- attr(y,'evaluation')[,2+2*(pattern-1)]
+    pc.obs <- attr(y,'evaluation')[,1+2*(ip-1)]
+    pc.ds <- attr(y,'evaluation')[,2+2*(ip-1)]
     plot(pc.obs,pc.ds,main='Cross-validation',xlab='original data',
          ylab='prediction',pch=19,col="grey",
          xlim=range(pc.obs,pc.ds),ylim=range(pc.obs,pc.ds))
@@ -869,26 +869,26 @@ plot.ds.eof <- function(x,pattern=1,
          paste("r =",r.xval),#round(xvalfit$coefficients[2],digits=2)),
          pos=4,cex=0.9)
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],
-         main=paste("PC",pattern),ylab="",
-         ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
+    plot(attr(y,'original_data')[,ip],
+         main=paste("PC",ip),ylab="",
+         ylim=range(attr(y,'original_data')[,ip])*c(1.6,1.6),
          lwd=2,type='b',pch=19)
-    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
-    legend(x=index(attr(y,'original_data')[,pattern])[1],
-           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,pattern]))/3,
+    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,ip])[1],
+           y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,ip]))/3,
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
   } else {
     par(fig=c(0,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],
+    plot(attr(y,'original_data')[,ip],
          main="PC1",ylab="",
-         ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
+         ylim=range(attr(y,'original_data')[,ip])*c(1.6,1.6),
          lwd=2,type='b',pch=19)
-    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
-    legend(x=index(attr(y,'original_data')[,pattern])[1],
-           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,pattern]))/3,
+    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,ip])[1],
+           y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,ip]))/3,
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
     xvalfit <- NULL
@@ -1287,7 +1287,7 @@ plot.xval <- function(x,new=TRUE,...) {
   grid()
 }
 
-plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,pattern=1,
+plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,ip=1,
                                envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,...) {
   if (verbose) print("plot.dsensemble.pca")
   stopifnot(inherits(x,'dsensemble') & inherits(x,'pca'))
@@ -1305,7 +1305,7 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
     attr(pc[[i]],"station") <- as.station(x[[2]][,i],param=attr(x,"variable"),
                               longname=attr(x,"longname"),unit=attr(x,"unit"))
   }
-  plot(pc[[pattern]],ylab=paste("PC",pattern,sep=""))
+  plot(pc[[ip]],ylab=paste("PC",ip,sep=""))
 }
 
 plot.dsensemble <- function(x,...) {

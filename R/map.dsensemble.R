@@ -53,7 +53,7 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
 }
 
 ## Function for extracting the subset from PCs stored as zoo
-subsetzoo <- function(x,pattern=NULL,it=NULL,verbose=FALSE) {
+subsetzoo <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
   if (verbose) print('subsetzoo')
   if (!is.null(it)) {
     if (verbose) print('subset it')
@@ -61,16 +61,16 @@ subsetzoo <- function(x,pattern=NULL,it=NULL,verbose=FALSE) {
       it <- as.Date(paste(it,'01-01',sep='-'))
     x <- window(x,start=min(it),end=max(it))
   }
-  if (!is.null(pattern)) {
+  if (!is.null(ip)) {
     if (verbose) print('subset pattern')
-    x <- x[,pattern]
+    x <- x[,ip]
   }
   return(x)
 }
 
 
 
-map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,pattern=NULL,colbar=NULL,
+map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,colbar=NULL,
                            FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
   ## PCA/EOF objects
 
@@ -79,7 +79,7 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,pattern=NULL,colbar
   if (inherits(x,c('pca','eof'))) {
     ## Extract a subset of the data
     if (verbose) print(names(x)[2])
-    x <- subset(x,is=is,im=im,pattern=pattern,verbose=verbose)
+    x <- subset(x,is=is,im=im,ip=ip,verbose=verbose)
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     
     map(Y,FUN=FUN,colbar=colbar,verbose=verbose)
@@ -91,7 +91,7 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,pattern=NULL,colbar
 
 ## Tools to subset or reduce the size of a dsensemble, e.g. removing the
 ## high-order modes of PCA/EOF that represent noise.
-subset.dsensemble.multi <- function(x,pattern=NULL,it=NULL,is=NULL,im=NULL,
+subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                               verbose=FALSE,...) {
  
   if (verbose) print('subset.dsensemble.multi')
@@ -101,18 +101,18 @@ subset.dsensemble.multi <- function(x,pattern=NULL,it=NULL,is=NULL,im=NULL,
   Y$info <- x$info
   if (inherits(x,'pca')) {
     if (verbose) print('subset pca')
-    Y$pca <- subset(x$pca,it=it,is=is,pattern=pattern,verbose=verbose)
+    Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
   }
   if (inherits(x,'eof')) {
     if (verbose) print('subset eof')
-    Y$eof <- subset(x$eof,it=it,is=is,pattern=pattern,verbose=verbose)
+    Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
   }
   X <- x
 
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
-  y <- lapply(X,FUN='subsetzoo',pattern=pattern,it=it)
+  y <- lapply(X,FUN='subsetzoo',ip=ip,it=it)
   if (verbose) print(dim(y[[1]]))
 
   if (!is.null(im)) {

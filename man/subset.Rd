@@ -28,7 +28,7 @@ subset.station(x,it = NULL,is = NULL,verbose=FALSE)
 subset.eof(x,it=NULL,is=NULL,verbose=FALSE)
 subset.cca(x,it=NULL,is=NULL)
 subset.mvr(x,it=NULL,is=NULL)
-subset.pca(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE)
+subset.pca(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE)
 subset.trend(x,it=NULL,is=NULL)
 subset.corfield(x,it=NULL,is=NULL)
 subset.comb(x,it=NULL,is=NULL)
@@ -39,7 +39,7 @@ subset.spell(x,is=NULL,it=NULL)
 subset.ds(x,it=NULL,is=NULL)
 subset.trend(x,it=NULL,is=NULL)
 subset.dsensemble(x,it=NULL,is=NULL,verbose=FALSE,...)
-subset.dsensemble.multi(x,pattern=NULL,it=NULL,is=NULL,im=NULL,
+subset.dsensemble.multi(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                         verbose=FALSE,...)
 subset.zoo(x,it=NULL)
 subset.trajectory(x,it=NULL,is=NULL)
@@ -50,7 +50,7 @@ sort.station(x,is=NULL,decreasing=TRUE)
 \item{x}{Data object from which the subset is taken}
 \item{it}{A list or data.frame providing time index, e.g. month}
 \item{is}{A list or data.frame providing space index, e.g. station record}
-\item{pattern}{selection of patterns in PCA or EOF (used for e.g. filtreing
+\item{ip}{selection of patterns in PCA or EOF (used for e.g. filtreing
   the data)}
 \item{verbose}{Dump diagnostics to the screen}
  }

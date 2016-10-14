@@ -23,7 +23,7 @@ corfield.field.station(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
 corfield.station(x,y,plot=TRUE,verbose=FALSE,
                  use='pairwise.complete.obs',na.action='new=TRUE,na.omit',
                  colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...)
-corfield.eof(x,y,pattern=1,plot=TRUE,new=TRUE,
+corfield.eof(x,y,ip=1,plot=TRUE,new=TRUE,
              colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
              use='pairwise.complete.obs',na.action='na.omit',...)
 corfield.trajectory(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
@@ -38,6 +38,7 @@ corfield.trajectory(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
     \item{plot}{TRUE: plot the results}
     \item{use}{see \code{\link{cor}}}.
     \item{new}{see \code{link{map}}}.
+    \item{ip}{index EOF pattern}
  }
 \value{Map of correlation}
 \author{R.E. Benestad and A. Mezghani}
