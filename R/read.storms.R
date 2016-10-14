@@ -160,12 +160,12 @@ read.otto <- function(fname,path=NULL,progress=TRUE,verbose=FALSE) {
   y <- cbind(tracks,x)
   colnames(y) <- c("trajectory",header)
   if(verbose) print("organize date and time")
-  da <- y[,"da"]
-  da[y[,"da"]<2E5] <- da[y[,"da"]<2E5] + 2E7
-  da[y[,"da"]>=2E5] <- da[y[,"da"]>=2E5] + 1.9E7
-  hr <- y[,"hr"]*1E-2
-  y[,"da"] <- da
-  y[,"hr"] <- hr
+  da <- y[,"date"]
+  da[y[,"date"]<2E5] <- da[y[,"date"]<2E5] + 2E7
+  da[y[,"date"]>=2E5] <- da[y[,"date"]>=2E5] + 1.9E7
+  hr <- y[,"time"]*1E-2
+  y[,"date"] <- da
+  y[,"time"] <- hr
   z <- as.events(y,longname="sub-tropical cyclones",
                  param="storm tracks",method="Otto...",
                  src="FMI",
