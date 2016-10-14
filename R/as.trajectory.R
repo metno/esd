@@ -53,10 +53,10 @@ rence")
   x <- Trackstats(x,verbose=verbose)
   #}
   nlist1 <- c("trajectory","code99","date","time","trackcount",
-              "tracklength","timestep","lon","lat")
+              "distance","tracklength","timestep","lon","lat")
   nlist1 <- nlist1[nlist1 %in% names(x)]
   nlist2 <- names(x)[!(names(x) %in% nlist1)]
-
+  
   x <- subset.events(x,it=x$trackcount>=nmin)
   X <- matrix(,nrow=length(unique(x$trajectory)),ncol=5+2*n+length(nlist2)*n)
   cnames <- c("trajectory","start","end","n","d",rep("lon",n),rep("lat",n))
@@ -85,6 +85,7 @@ rence")
     xa <- aggregate(xx, list(x$trajectory), function(x) approx(x,n=n)$y)$x
     ya <- aggregate(yy, list(x$trajectory), function(x) approx(x,n=n)$y)$x
     za <- aggregate(zz, list(x$trajectory), function(x) approx(x,n=n)$y)$x
+    browser()
     lon <- atan2( ya, xa )*180/pi 
     lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
     #aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat
