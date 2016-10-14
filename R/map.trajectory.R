@@ -2,25 +2,25 @@
 ## Last update   16.02.2015
 ## Require 	 geoborders.rda
 
-map.trajectory <- function(x,it=NULL,is=NULL,type="paths",
+map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
                            projection="sphere",verbose=FALSE,...) {
   if (verbose) print("map.trajectory")
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
-  if(is.null(type)) type <- "paths"
-  if (type=='paths') {
+  if(is.null(type)) type <- "trajectory"
+  if (any(c('trajectory','points','start','end') %in% type)) {
     if (projection=="sphere" | projection=="np" | projection=="sp") {
       if (projection=="np") latR <- 90
       if (projection=="sp") latR <- -90
-      sphere.trajectory(y,verbose=verbose,...)
+      sphere.trajectory(y,type=type,verbose=verbose,...)
     } else if (projection=="latlon" | projection=="lonlat") {
-      lonlat.trajectory(y,verbose=verbose,...)
+      lonlat.trajectory(y,type=type,verbose=verbose,...)
     }
-  } else if (type=='density') {
+  } else if ('density' %in% type) {
     map.density.trajectory(y,projection=projection,verbose=verbose,...)
-  } else if (type=='shapes') {
+  } else if (any(c('shapes','anomaly') %in% type)) {
     map.anomaly.trajectory(y,projection=projection,verbose=verbose,...)
-  } else if (type=='colors') {
+  } else if ('colors' %in% type) {
     segments.trajectory(y,verbose=verbose,...)
   } else print("unkown map type")
 }
@@ -45,13 +45,14 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
 segments.trajectory <- function(x,param="month",
       xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
-      show.start=FALSE,show.end=FALSE,show.segment=TRUE,
+      type=c("trajectory","start","end"),
+      #show.start=FALSE,show.end=FALSE,show.segment=TRUE,
       alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,add=FALSE,
       projection="lonlat",verbose=FALSE,...) {
   if(verbose) print("segments.trajectory")
   
   if(is.null(param)) {
-    map.trajectory(x,type=NULL,xlim=xlim,ylim=ylim,show.start=show.start,
+    map.trajectory(x,type=NULL,xlim=xlim,ylim=ylim,type=type,#show.start=show.start,
                    alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,add=add,
                    projection=projection,new=new,verbose=verbose,...)            
   } else {
@@ -173,16 +174,16 @@ segments.trajectory <- function(x,param="month",
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
                           sum(!OK),'crossing dateline'))
   
-  if(show.segment & sum(OK)>0) {
+  if("trajectory" %in% type & sum(OK)>0) {
     segments(lon0[OK,],lat0[OK,],lon1[OK,],lat1[OK,],
              col=adjustcolor(col[OK,],alpha.f=alpha),lty=lty,lwd=lwd)
   }
-  if(show.start) {
+  if("start" %in% type) {
     points(lon0[OK,1],lat0[OK,1],pch=19,cex=cex,col=adjustcolor(col[OK,1],
            alpha.f=alpha))
   }
 
-  if(show.end) {
+  if("end" %in% type) {
     arrows(lon0[OK,ncol(lon0)-1],lat0[OK,ncol(lon0)-1],
            lon0[OK,ncol(lon0)],lon0[OK,ncol(lon0)],lwd=lwd,length=0.1,
            col=adjustcolor(col[OK,ncol(lon0)],alpha.f=alpha))
@@ -226,8 +227,8 @@ segments.trajectory <- function(x,param="month",
   }
 }
 
-lonlat.trajectory <- function(x,
-    show.trajectory=TRUE,show.start=TRUE,show.subset=TRUE,show.end=FALSE,
+lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
+    #show.trajectory=TRUE,show.start=TRUE,show.subset=TRUE,show.end=FALSE,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
     lty=1,lwd=2,main=NULL,add=FALSE,new=TRUE,verbose=FALSE,...) {
   if (verbose) print("lonlat.trajectory")
@@ -261,12 +262,21 @@ lonlat.trajectory <- function(x,
     plot(mlon,mlat,pch=".",col="white",main=main,
         xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
   }
+
+  if(is.null(attr(x,"greenwich"))) {
+    if(!max(x[,colnames(x)=="lon"])>180 | min(x[,colnames(x)=="lon"])<0)
+      attr(x,"greenwich") <- FALSE
+    } else {
+      attr(x,"greenwich") <- TRUE
+    }
+  }
   
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
                           sum(!OK),'crossing dateline'))
 
-  if(show.trajectory) {
+  if("trajectory" %in% type) {
+    
     if(sum(OK)>1) {
       matlines(t(lons[OK,]),t(lats[OK,]),lty=lty,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
@@ -276,39 +286,48 @@ lonlat.trajectory <- function(x,
     }
   }
 
-  if(show.start) points(lons[OK,1],lats[OK,1],pch=19,cex=cex,
+  if("start" %in% type) points(lons[OK,1],lats[OK,1],pch=19,cex=cex,
                         col=adjustcolor(col,alpha.f=alpha))
   
   ## plot arrow at end of trajectory
-  if(show.end) arrows(lons[OK,ncol(lons)-1],
+  if("end" %in% type) arrows(lons[OK,ncol(lons)-1],
                       lats[OK,ncol(lons)-1],
                       lons[OK,ncol(lons)],lats[OK,ncol(lons)],
                       col=adjustcolor(col,alpha.f=alpha),lwd=lwd,length=0.1)
   ## should do same for dateline trajectories!
 
   # trajectories crossing the dateline plotted in two parts
-  if (sum(!OK)>0 & show.trajectory) {
-    fn <- function(lon,lat) {
-      lon[lon<0] <- lon[lon<0]+360
-      xy <- approx(lon,lat,sort(c(lon,180)))
-      lon <- xy$x; lat <- xy$y
-      lines(lon[lon<=180],lat[lon<=180],
-          lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
-      lines(lon[lon>=180]-360,lat[lon>=180],
-          lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
-    }
-    if (sum(!OK)==1) {
-      fn(lons[!OK,],lats[!OK,])
+  if (sum(!OK)>0 & "trajectory" %in% type) {
+    lons.dl <- lons[!OK,]
+    lons.e <- lons.dl
+    lons.w <- lons.e
+    if(!attr(x,"greenwich")) {
+      lons.e[lons.e<0] <- lons.e[lons.e<0]+360
+      lons.w[lons.w>0] <- lons.w[lons.w>0]-360
     } else {
-      for (i in 1:sum(!OK)) fn(lons[!OK,][i,],lats[!OK,][i,])
+      lons.e[lons.e>180] <- lons.e[lons.e>180]-360
+      lons.w[lons.w<180] <- lons.w[lons.w<180]+360
     }
+    if(sum(!OK)>1) {
+      matlines(t(lons.w),t(lats[!OK,]),lty=lty+1,lwd=lwd,
+           col=adjustcolor(col,alpha.f=alpha))
+      matlines(t(lons.e),t(lats[!OK,]),lty=lty+1,lwd=lwd,
+           col=adjustcolor(col,alpha.f=alpha))
+      
+    } else if(sum(!OK)==1) {
+      lines(t(lons.w,t(lats[!OK,]),lty=lty+1,lwd=lwd,
+           col=adjustcolor(col,alpha.f=alpha))
+      lines(t(lons.e),t(lats[!OK,]),lty=lty+1,lwd=lwd,
+           col=adjustcolor(col,alpha.f=alpha))
+    } 
+    
   }
 
   if(!add) {
     # draw coastlines
     #points(mlon,mlat,pch=".",col='grey20',cex=1.4)
     lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
-    if(show.subset) {
+    if("subset" %in% type) {
       # box marking the spatial subset
       slon <- attr(x0,'longitude')
       slat <- attr(x0,'latitude')
@@ -353,7 +372,8 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
 sphere.trajectory <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=0.5,
     lty=1,lwd=2,lonR=0,latR=90,main=NULL,add=FALSE,
-    show.trajectory=TRUE,show.start=TRUE,show.end=FALSE,show.subset=TRUE,
+    type=c("trajectory","start","end","subset"),
+    #show.trajectory=TRUE,show.start=TRUE,show.end=FALSE,show.subset=TRUE,
     new=TRUE,verbose=FALSE,...) {
 
   if(verbose) print("sphere.trajectory")
@@ -399,10 +419,10 @@ sphere.trajectory <- function(x,
   par(bty="n",xaxt="n",yaxt="n")
   if(!add) plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
 
-  if(show.trajectory) {
+  if("trajectory" %in% type) {
     matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
   }
-  if(show.start) {
+  if("start" %in% type) {
     if(is.null(dim(x0))) {
       points(X[1],Z[1],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
     } else {
@@ -410,7 +430,7 @@ sphere.trajectory <- function(x,
     }
   }
 
-  if(show.end & !is.null(dim(x0))) {
+  if("end" %in% type & !is.null(dim(x0))) {
     arrows(X[nrow(X)-1,],Z[nrow(X)-1,],
            X[nrow(X),],Z[nrow(X),],
            col=adjustcolor(col,alpha.f=alpha),
@@ -421,7 +441,7 @@ sphere.trajectory <- function(x,
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 
   # box marking the spatial subset
-  if(show.subset) {
+  if("subset" %in% type) {
     slon <- attr(x0,'longitude')
     slat <- attr(x0,'latitude')
     if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
