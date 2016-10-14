@@ -98,7 +98,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   
   if(map.show & !map.insert) {
     vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.8)
+            cex.axis=cex.axis,cex=1.8,...)
     new <- TRUE
   }
 
@@ -155,7 +155,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
     if(map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
                                       cex.axis=cex.axis*0.75,
-                                      add.text=FALSE,map.insert=map.insert)
+                                      add.text=FALSE,map.insert=map.insert,...)
     par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",
         xpd=FALSE,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
