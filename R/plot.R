@@ -168,7 +168,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 vis.map <- function(x,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     cex.axis=0.8,add.text=FALSE,
-                    map.insert=TRUE,verbose=FALSE,usegooglemap=TRUE) {
+                    map.insert=TRUE,verbose=FALSE,usegooglemap=TRUE,zoom=NULL) {
   if(verbose) print('vis.map')
   if(is.null(xrange)) xrange <- range(lon(x)) + c(-5,5)
   if(is.null(yrange)) yrange <- range(lat(x)) + c(-2,2)
@@ -187,9 +187,15 @@ vis.map <- function(x,col='red',map.type=NULL,
   if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
          usegooglemap ) {
       require(RgoogleMaps)
-      mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
-      if (!is.finite(mxdst) | mxdst==0) zoom <- 8 else
-                             zoom <- 3 - round(log(mxdst))
+      
+      if (is.null(zoom)) {
+        if (length(lon(x))==1) zoom <- 8 else {
+          ## zoom = 12 is very local, zoom = 1 is the world
+          mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
+          zoom <- 12 + floor(log(mxdst/360))
+        }
+                             
+      }
       if (verbose) print(zoom)
       bgmap <- GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
                     destfile = "map.station.esd.png",
@@ -198,7 +204,8 @@ vis.map <- function(x,col='red',map.type=NULL,
        par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
            mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
      }
-      plotmap(lat(x), lon(x), bgmap)
+      plotmap(lat(x), lon(x), bgmap, pch=19, col=col)
+      
    } else {
      data(geoborders)
      lon <- geoborders$x
