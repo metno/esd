@@ -264,7 +264,8 @@ lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
   }
 
   if(is.null(attr(x,"greenwich"))) {
-    if(!max(x[,colnames(x)=="lon"])>180 | min(x[,colnames(x)=="lon"])<0)
+    if(!max(x[,colnames(x)=="lon"])>180 |
+       min(x[,colnames(x)=="lon"])<0) {
       attr(x,"greenwich") <- FALSE
     } else {
       attr(x,"greenwich") <- TRUE
@@ -313,14 +314,12 @@ lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
            col=adjustcolor(col,alpha.f=alpha))
       matlines(t(lons.e),t(lats[!OK,]),lty=lty+1,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
-      
     } else if(sum(!OK)==1) {
-      lines(t(lons.w,t(lats[!OK,]),lty=lty+1,lwd=lwd,
+      lines(t(lons.w),t(lats[!OK,]),lty=lty+1,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
       lines(t(lons.e),t(lats[!OK,]),lty=lty+1,lwd=lwd,
            col=adjustcolor(col,alpha.f=alpha))
-    } 
-    
+    }   
   }
 
   if(!add) {
