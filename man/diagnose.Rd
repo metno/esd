@@ -43,7 +43,7 @@ diagnose.ds.pca(x,plot=FALSE,verbose=FALSE,new=TRUE)
 diagnose.station(x,it=NULL,...)
 diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,...)
 diagnose.dsensemble(x,plot=TRUE,map=TRUE,plot.type='target',...)
-diagnose.dsensemble.list(x,plot=FALSE,is=NULL,eofs=NULL,
+diagnose.dsensemble.list(x,plot=FALSE,is=NULL,ip=NULL,
                  map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
                  main=NULL,verbose=FALSE,new=TRUE,...)
 diagnose.distr(x,main='Mean - quantile',

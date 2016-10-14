@@ -67,13 +67,12 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                     pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        type=c("fill","contour"),gridlines=FALSE,
                        lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                       pattern=1,plot=TRUE,...) {
+                       ip=1,plot=TRUE,...) {
     
-                                        # If x is provided, map only x...
-
-                                        # default with no arguments will produce a map showing the station data in the esd package.
-
-                                        #  image(lon(x),lat(x),x)
+    ## If x is provided, map only x...
+    ## default with no arguments will produce a map showing the station data in the esd package.
+    ##  image(lon(x),lat(x),x)
+  
     if (verbose) print('map.matrix')
     if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
     if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
@@ -97,7 +96,7 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                         #map.station(NULL,...)
 }
 
-map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
+map.array <- function(x,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       projection="lonlat",na.rm=TRUE,
                       xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                       colbar=list(col=NULL,rev=FALSE,breaks=NULL,pos=0.05,
@@ -106,7 +105,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
     if (verbose) print('map.array')
     if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
-    if (is.null(it)) {
+    if (is.null(ip)) {
         ## If it is NULL, then aggregate all of 3rd dimension
         D <- dim(x)
         x2d <- x
@@ -115,7 +114,7 @@ map.array <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
         z <- as.matrix(z)
         dim(z) <- c(D[1],D[2])
         str(z)
-    } else  z <- x[,,it]
+    } else  z <- x[,,ip]
     d <- dim(z)
 
     ## if it is a vector of indices aggregate the selected indices
@@ -142,7 +141,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                  pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                     pattern=1,plot=TRUE,...) {
+                     ip=1,plot=TRUE,...) {
     if (verbose) print('map.comb')
     stopifnot(inherits(x,'eof'))
     x <- subset(x,it=it,is=is)
@@ -155,7 +154,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (is.null(varid(x))) attr(x,'variable') <- 'NA'
     ## if (tolower(varid(x))=='precip') col <- rev(col) 
     
-    map.eof(x=x,xlim=xlim,ylim=ylim,zlim=zlim,pattern=pattern,
+    map.eof(x=x,xlim=xlim,ylim=ylim,zlim=zlim,ip=ip,
             n=n,projection=projection,colbar=colbar,new=new,
             lonR=lonR,latR=latR,axiR=axiR,type=type,
             gridlines=gridlines,verbose=verbose,plot=plot...) -> result
@@ -168,7 +167,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                 pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                    pattern=1,cex=1,plot=TRUE,...) {
+                    ip=1,cex=1,plot=TRUE,...) {
 
     ## browser()
     if (verbose) print('map.eof')
@@ -178,7 +177,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     tot.var <- attr(x,'tot.var')
     D <- attr(x,'eigenvalues')
     var.eof <- 100* D^2/tot.var
-    X <- attr(x,'pattern')[,,pattern]
+    X <- attr(x,'pattern')[,,ip]
 
     ## if zlim is specified, then mask data outside this range
     if (!is.null(zlim)) {
@@ -196,7 +195,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
     attr(X,'source') <- attr(x,'source')
     attr(X,'time') <- range(index(x))
-    if ( (pattern==1) & !is.null(attr(x, "area.mean.expl")) )
+    if ( (ip==1) & !is.null(attr(x, "area.mean.expl")) )
         if (attr(x, "area.mean.expl"))
             type <- "fill"
     if (plot) {
@@ -517,7 +516,7 @@ map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 
-map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
+map.pca <- function(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
@@ -528,7 +527,7 @@ map.pca <- function(x,it=NULL,is=NULL,pattern=1,new=FALSE,projection="lonlat",
     if (verbose) print(paste('map.pca',FUN))
     args <- list(...)
                                         #print(args)
-    X <- rbind(attr(x,'pattern')[,pattern],attr(x,'pattern')[,pattern])
+    X <- rbind(attr(x,'pattern')[,ip],attr(x,'pattern')[,ip])
                                         #print(dim(X))
                                         #str(x)
     X <- attrcp(x,X)
@@ -588,18 +587,18 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ##attr(Y,'pattern') <- U
     U <- x$B.m
     dim(U) <- c(dim(attr(Y,'pattern'))[-length(dim(attr(Y,'pattern')))],
-                length(x$i.eofs))
+                length(x$ip))
     attr(Y,'pattern') <- U
-    attr(Y,'eigenvalues') <- rep(1,length(x$i.eofs))
+    attr(Y,'eigenvalues') <- rep(1,length(x$ip))
     attr(Y,'time') <- range(index(x))
     X <- x$X
     ##print(dim(attr(X,'pattern'))); print(dim(V))
     ##attr(X,'pattern') <- V
     V <- x$A.m
     dim(V) <- c(dim(attr(X,'pattern'))[-length(dim(attr(X,'pattern')))],
-                length(x$i.eofs))
+                length(x$ip))
     attr(X,'pattern') <- V
-    attr(X,'eigenvalues') <- rep(1,length(x$i.eofs))
+    attr(X,'eigenvalues') <- rep(1,length(x$ip))
     attr(X,'time') <- range(index(x))
 
     ## REB removed '...' in the two following map calls.
@@ -628,7 +627,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
     }
     ##colbar <- list(col=NULL, breaks=NULL, type="r",cex=2, h=0.6, v=1)
-    map(Y,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
+    map(Y,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
         projection=projection,lonR=lonR,latR=latR,axiR=axiR,
         gridlines=gridlines,FUN='mean',verbose=verbose,
         colbar=colbar1,showall=FALSE,new=FALSE)
@@ -638,7 +637,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else {
         par(fig=c(0.5,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
     }
-    map(X,pattern=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
+    map(X,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
         projection=projection,lonR=lonR,latR=latR,axiR=axiR,
         gridlines=gridlines,FUN='mean',verbose=verbose,
         colbar=colbar2,showall=FALSE,new=FALSE,plot=TRUE)

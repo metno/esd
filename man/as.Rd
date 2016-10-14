@@ -170,18 +170,18 @@ as.station.zoo(x,location=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                       cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,url=NA,
                       reference=NA,info=NA, method=
   NA,type=NA,aspect=NA)
-as.station.dsensemble.pca(x, is = NULL, eofs = NULL, verbose = FALSE, ...) 
+as.station.dsensemble.pca(x, is = NULL, ip = NULL, verbose = FALSE, ...) 
 as.trajectory(x,n=10,loc=NA,param=NA,unit=NA,lon=NA,
                           lat=NA,alt=NA,cntr=NA,longname=NA,stid=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
                           method= NA,verbose=FALSE)
-as.station.dsensemble.pca(x,is=NULL,eofs=NULL,verbose=FALSE,...)
+as.station.dsensemble.pca(x,is=NULL,ip=NULL,verbose=FALSE,...)
 as.station.list(x)
 as.station.ds(x)
 as.station.pca(x)
 as.station.field(x)
 as.station.spell(x)
-as.station.eof(x,pattern=1:10)
+as.station.eof(x,ip=1:10)
 as.pca.ds(x)
 as.pca.station(x)
 }
@@ -213,7 +213,7 @@ as.pca.station(x)
   \item{iapp}{For values greater than 1, select the corresponding
     appended field in 'comb' objects (e.g. 1 gives
     \code{attr(x,'appendix.1')})}
-  \item{pattern}{Which EOF pattern (mode) to extract as a series for PC}
+  \item{ip}{Which EOF pattern (mode) to extract as a series for PC}
  }
  \details{
   `field' object must be a two dimensional object
@@ -301,7 +301,7 @@ y <- as.station(pca.t2m)
 
 ## Quick example of downscaling PCA and then extract the single station series
 predictor <- annual(t2m.NCEP(lon=c(-20,30),lat=c(50,80)))
-pca.t2m <- subset(pca.t2m,pattern = 1:3)
+pca.t2m <- subset(pca.t2m,ip = 1:3)
 z.pca <- DSensemble.pca(pca.t2m,predictor=predictor,select=1:4)
 z <- as.station.dsensemble.pca(z.pca)
 plot(z[[1]])

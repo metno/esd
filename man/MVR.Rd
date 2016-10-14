@@ -26,7 +26,6 @@ predict.MVR(object, newdata=NULL, ...)
     \item{Y}{An object with climate data: field, eof, or pca.}
     \item{X}{Same as Y or any zoo object.}
     \item{SVD}{Use a singular value decomposition as a basis for the PCA.}
-    \item{i.eofs}{Which EOFs to include in the CCA.}
     \item{LINPACK}{an option for \code{\link{svd}}.}
     \item{object}{The result from CCA.}
     \item{newdata}{The same as X.}
