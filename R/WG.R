@@ -68,7 +68,7 @@ WG.station <- function(x,option='default',...) {
   return(y)
 }
 
-WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
+WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,ip=1:4,
                           select=NULL,lon=c(-20,20),lat=c(-20,20),
                           plot=FALSE,biascorrect=TRUE,verbose=TRUE) {
   if (verbose) print('WG.FT.day.t2m')
@@ -91,7 +91,7 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
     T2M <- retrieve('~/data/ERAINT/ERAINT_t2m_mon.nc',
                     lon=lon(x) + lon,lat=lat(x) + lat)
     ztm <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
-                          plot=plot,lon=lon,lat=lat,eofs=eofs,
+                          plot=plot,lon=lon,lat=lat,ip=ip,
                           select=select,verbose=verbose)
     amean <- zoo(rowMeans(ztm,na.rm=TRUE) - mean(ztm,na.rm=TRUE),
                  order.by=index(ztm))
@@ -110,11 +110,11 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
     coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
     if (plot) dev.new()
 #    zts <- DSensemble.t2m(x,predictor=SLP,biascorrect=biascorrect,
-#                          FUN='sd',plot=plot,lon=lon,lat=lat,eofs=eofs,
+#                          FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
 #                          path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
 #                          select=select,verbose=verbose)
     zts <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
-                          FUN='sd',plot=plot,lon=lon,lat=lat,eofs=eofs,
+                          FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
                           FUNx='sd',       
                           select=select,verbose=verbose)
     asd <- zoo(rowMeans(zts,na.rm=TRUE) - mean(zts,na.rm=TRUE),
@@ -247,7 +247,7 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
     PRE <- retrieve('~/data/ERAINT/ERAINT_precip_mon.nc',
                     lon=lon(x) + lon,lat=lat(x) + lat)
     zmu <- DSensemble.precip(x,predictor=PRE,biascorrect=biascorrect,
-                          plot=plot,lon=lon,lat=lat,eofs=eofs,
+                          plot=plot,lon=lon,lat=lat,ip=ip,
                           select=select,verbose=verbose,treshold=threshold)
     mu <- rowMeans(zmu,na.rm=TRUE) - mean(zmu,na.rm=TRUE)
   } else if (inherits(mu,'dsensemble'))
@@ -264,7 +264,7 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
     if (plot) dev.new()
     zfw <- DSensemble.precip(x,predictor=SLP,biascorrect=biascorrect,
                              FUN='wetfreq',threshold=threshold,
-                             plot=plot,lon=lon,lat=lat,eofs=eofs,
+                             plot=plot,lon=lon,lat=lat,ip=ip,
                              path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
                              select=select,verbose=verbose)
     fw <- rowMeans(zfw,na.rm=TRUE) - mean(zfw,na.rm=TRUE)
@@ -290,7 +290,7 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
     if (plot) dev.new()
     y.ncwd <- annual(subset(spell(x,threshold=threshold),is=1))
     znd <- DSensemble.precip(y.ncwd,predictor=SLP,biascorrect=biascorrect,
-                             plot=plot,lon=lon,lat=lat,eofs=eofs,
+                             plot=plot,lon=lon,lat=lat,ip=ip,
                              path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
                              select=select,verbose=verbose)
     ncwd <- rowMeans(znd,na.rm=TRUE) - mean(znd,na.rm=TRUE)

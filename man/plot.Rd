@@ -33,21 +33,21 @@ plot.station(x, plot.type = "single", new = TRUE, lwd = 3, type = "l",
     map.show = TRUE, map.type = "points", mar = c(4.5, 4.5, 0.75, 
         0.5), alpha = 0.3, verbose = FALSE, ...)
 plot.pca(x,verbose=FALSE,new=TRUE,...)
-plot.eof(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,what=c("pc","eof","var"),...)
-plot.eof.field(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=1,what=c("pc","eof","var"),...)
+plot.eof(x,new=TRUE,xlim=NULL,ylim=NULL,ip=1,what=c("pc","eof","var"),...)
+plot.eof.field(x,new=TRUE,xlim=NULL,ylim=NULL,ip=1,what=c("pc","eof","var"),...)
 plot.eof.comb(x,new=TRUE,xlim=NULL,ylim=NULL,
-                          pattern=1,col=c("red"),what=c("pc","eof","var"),...)
-plot.eof.var(x,new=TRUE,xlim=NULL,ylim=NULL,pattern=20,...)
+                          ip=1,col=c("red"),what=c("pc","eof","var"),...)
+plot.eof.var(x,new=TRUE,xlim=NULL,ylim=NULL,ip=20,...)
 plot.ds(x,plot.type="single",what=c("map","ts"),new=TRUE,
         lwd=3,type='b',pch=0,main=NULL,col=NULL,
         xlim=NULL,ylim=NULL,xlab="",ylab=NULL,...)
-plot.ds.pca(x,pattern=1,verbose=FALSE,
+plot.ds.pca(x,ip=1,verbose=FALSE,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,...)
-plot.ds.eof(x,pattern=1,
+plot.ds.eof(x,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...)
-plot.cca(x,icca=1,colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
+plot.cca(x,ip=1,colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE,...)
 plot.field(x,is=NULL,it=NULL,FUN="mean",...)
 plot.spell(x)
@@ -63,9 +63,8 @@ vis.map(x,col='red',map.type='points',add.text=FALSE)
 }
 \arguments{
   \item{x}{the object to be plotted}
-  \item{pattern}{Which EOF pattern (mode) to plot}
+  \item{ip}{Which EOF/CCA pattern (mode) to plot}
   \item{col}{Colour}
-  \item{icca}{Which CCA pattern to plot}
   \item{is}{For subsetting in space - See \code{link{subset}}, but can
     also be a station value and 
     if provided, the plotting will involve an interploation to the same

@@ -43,7 +43,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            predictor="ERA40_t2m_mon.nc",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf4',
-                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                           ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="tas_Amon_ens_",
                            path.ds=NULL,file.ds="DSensemble.rda",
@@ -208,25 +208,25 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     # REB: 30.04.2014 - new lines...
     if (verbose) print("- - - > DS")
     if (biascorrect) try(Z1 <- biasfix(Z1))
-    ds1 <- try(DS(subset(y,it='djf'),Z1,eofs=eofs))
+    ds1 <- try(DS(subset(y,it='djf'),Z1,ip=ip))
     if (inherits(ds1,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds1[[1]],con=flog)
     }
     if (biascorrect) try(Z2 <- biasfix(Z2))
-    ds2 <- try(DS(subset(y,it='mam'),Z2,eofs=eofs))
+    ds2 <- try(DS(subset(y,it='mam'),Z2,ip=ip))
     if (inherits(ds2,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds2[[1]],con=flog)
     }
     if (biascorrect) try(Z3 <- biasfix(Z3))
-    ds3 <- try(DS(subset(y,it='jja'),Z3,eofs=eofs))
+    ds3 <- try(DS(subset(y,it='jja'),Z3,ip=ip))
     if (inherits(ds3,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds3[[1]],con=flog)
     }
     if (biascorrect) try(Z4 <- biasfix(Z4))
-    ds4 <- try(DS(subset(y,it='son'),Z4,eofs=eofs))
+    ds4 <- try(DS(subset(y,it='son'),Z4,ip=ip))
     if (inherits(ds4,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds4[[1]],con=flog)
@@ -247,7 +247,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #save(file='inside.dsens.1.rda',ds,y,Z)
 
       if (non.stationarity.check) {
-        testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)   # REB 29.04.2014
+        testds <- DS(testy,testZ,biascorrect=biascorrect,ip=ip)   # REB 29.04.2014
         testz <- attr(testds,'appendix.1')                      # REB 29.04.2014
         difference.z <- testy - testz                           # REB 29.04.2014
       }
@@ -367,7 +367,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               predictor="ERA40_pr_mon.nc",
                               non.stationarity.check=FALSE,
                               type='ncdf4',
-                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                              ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
                               FUNX="sum",xfuns='C.C.eq',threshold=1,
                               pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL) {
@@ -512,7 +512,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
      
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
-      testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)  # REB 29.04.2014
+      testds <- DS(testy,testZ,biascorrect=biascorrect,ip=ip)  # REB 29.04.2014
       testz <- attr(testds,'appendix.1')                     # REB 29.04.2014
       difference.z <- testy - testz                          # REB 29.04.2014
     }
@@ -521,7 +521,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     diag <- diagnose(Z)
     if (biascorrect) Z <- biasfix(Z)
     if (verbose) print("- - - > DS")
-    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
+    ds <- try(DS(y,Z,ip=ip,verbose=verbose))
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds[[1]],con=flog)
@@ -605,7 +605,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_t2m_mon.nc",
                               non.stationarity.check=FALSE,type='ncdf4',
-                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                              ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
                               FUNX="mean",xfuns='C.C.eq',threshold=1,
                               pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL) {
@@ -723,7 +723,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
      
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
-      testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)  # REB 29.04.2014
+      testds <- DS(testy,testZ,biascorrect=biascorrect,ip=ip)  # REB 29.04.2014
       testz <- attr(testds,'appendix.1')                     # REB 29.04.2014
       difference.z <- testy - testz                          # REB 29.04.2014
     }
@@ -732,7 +732,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     diag <- diagnose(Z)
     if (biascorrect) Z <- biasfix(Z)
     if (verbose) print("- - - > DS")
-    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
+    ds <- try(DS(y,Z,ip=ip,verbose=verbose))
     
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
@@ -821,7 +821,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf4',
-                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                           ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="psl_Amon_ens_",
                            path.ds=NULL,file.ds=NULL,
@@ -949,7 +949,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
 
     if (verbose) print("- - - > DS")
     if (biascorrect) try(Z <- biasfix(Z))
-    ds <- try(DS(ys,Z,eofs=eofs))
+    ds <- try(DS(ys,Z,ip=ip))
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds[[1]],con=flog)
@@ -958,7 +958,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print("post-processing")
       z <- attr(ds,'appendix.1')
       if (non.stationarity.check) {
-        testds <- DS(testy,testZ,biascorrect=biascorrect,eofs=eofs)   # REB 29.04.2014
+        testds <- DS(testy,testZ,biascorrect=biascorrect,ip=ip)   # REB 29.04.2014
         testz <- attr(testds,'appendix.1')                      # REB 29.04.2014
         difference.z <- testy - testz                           # REB 29.04.2014
       }
@@ -1087,7 +1087,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                          olr="data/ncep/OLR.mon.mean.nc",
                                          slp="data/ncep/slp.mon.mean.nc"),
                           non.stationarity.check=FALSE,type='ncdf4',
-                          eofs=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
+                          ip=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="wetmean",threshold=1,
                           pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365) {
 
@@ -1274,7 +1274,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
     ## Downscale the results:
     if (verbose) print("- - - > DS")
-    ds <- try(DS(y,eof,eofs=eofs,verbose=verbose))
+    ds <- try(DS(y,eof,ip=ip,verbose=verbose))
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
       writeLines(ds[[1]],con=flog)
@@ -1524,7 +1524,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",
                            non.stationarity.check=FALSE,
-                           eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,
+                           ip=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,
                            rel.cord=TRUE,
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
@@ -1577,7 +1577,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
         z <- DSensemble.pca(subset(y,it=season),plot=plot,path=path,
                             rcp=rcp,biascorrect=biascorrect,predictor=T2M,
                             non.stationarity.check=non.stationarity.check,
-                            eofs=eofs,lon=lon,lat=lat,rel.cord=FALSE,
+                            ip=ip,lon=lon,lat=lat,rel.cord=FALSE,
                             select=select,FUN=FUN,rmtrend=rmtrend,
                             FUNX=FUNX,xfuns=xfuns,threshold=threshold,type=type,
                             pattern=pattern,verbose=verbose,nmin=nmin)
@@ -1692,7 +1692,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
     if (verbose) print("- - - > DS")
     if (biascorrect) Z <- biasfix(Z)
-    ds <- try(DS(y,Z,eofs=eofs,rmtrend=rmtrend,verbose=verbose))
+    ds <- try(DS(y,Z,ip=ip,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
     } else {
@@ -1833,7 +1833,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
                            rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_slp_mon.nc",
                            non.stationarity.check=FALSE,
-                           eofs=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,
+                           ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,
                            rel.cord=TRUE,nmin=NULL,lev=NULL,levgcm=NULL,
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",threshold=1,type='ncdf4',
@@ -1873,7 +1873,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
         z <- DSensemble.eof(subset(y,it=season),lplot=lplot,path=path,
                             rcp=rcp,biascorrect=biascorrect,predictor=SLP,
                             non.stationarity.check=non.stationarity.check,
-                            eofs=eofs,lon=lon,lat=lat,rel.cord=FALSE,
+                            ip=ip,lon=lon,lat=lat,rel.cord=FALSE,
                             select=select,FUN=FUN,rmtrend=rmtrend,
                             FUNX=FUNX,threshold=threshold,type=type,
                             pattern=pattern,verbose=verbose,nmin=nmin)
@@ -1982,7 +1982,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     
     diag <- diagnose(Z)
     
-    ds <- try(DS(y,Z,eofs=eofs,verbose=verbose))
+    ds <- try(DS(y,Z,ip=ip,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
     } else {
@@ -2114,7 +2114,7 @@ DSensemble.field <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",
                            non.stationarity.check=FALSE,
-                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
+                           ip=1:16,lon=c(-30,20),lat=c(-20,10),
                            it=c('djf','mam','jja','son'),
                            rel.cord=TRUE,
                            select=NULL,FUN="mean",rmtrend=TRUE,
@@ -2130,7 +2130,7 @@ DSensemble.station <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",
                            non.stationarity.check=FALSE,
-                           eofs=1:16,lon=c(-30,20),lat=c(-20,10),
+                           ip=1:16,lon=c(-30,20),lat=c(-20,10),
                            it=c('djf','mam','jja','son'),
                            rel.cord=TRUE,
                            select=NULL,FUN="mean",rmtrend=TRUE,

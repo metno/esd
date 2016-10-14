@@ -4,7 +4,7 @@
 
 DS.seasonalcycle <- function(y,X,mon=NULL,FUN='wetmean',fun='mean',
                              method="lm",swsm="step",m=1,
-                             eofs=1:7,area.mean.expl=FALSE,
+                             ip=1:7,area.mean.expl=FALSE,
                              verbose=FALSE,weighted=TRUE,...) {
   if (verbose) print('DS.seasonalcycle')
   stopifnot(inherits(y,'station'),!inherits(y,'annual'),
@@ -59,7 +59,7 @@ DS.seasonalcycle <- function(y,X,mon=NULL,FUN='wetmean',fun='mean',
   if (verbose) print(Xnames)
   colnames(caldat) <- c("y",Xnames,'weights')
   colnames(predat) <- Xnames
-  Xnames <- Xnames[eofs]
+  Xnames <- Xnames[ip]
   if (weighted)
     calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                     ", weights=weights, data=caldat, ...)",sep="") else
@@ -102,10 +102,10 @@ DS.seasonalcycle <- function(y,X,mon=NULL,FUN='wetmean',fun='mean',
   #browser()
   if ( (!is.null(du)) & (!area.mean.expl) ) {
     pattern <- t(COEFS[2:dc[1],1]) %*%
-      diag(attr(eof,'eigenvalues')[eofs]) %*% t(U[,eofs])
+      diag(attr(eof,'eigenvalues')[ip]) %*% t(U[,ip])
     dim(pattern) <- c(du[1],du[2])
   } else if (!area.mean.expl)
-             pattern <- c(COEFS[2:dc[1],1]) * attr(eof,'eigenvalues')[eofs]
+             pattern <- c(COEFS[2:dc[1],1]) * attr(eof,'eigenvalues')[ip]
   if (verbose) print('predict')
   #browser()
   z <- zoo(predict(model,newdata=predat),order.by=index(Xam))

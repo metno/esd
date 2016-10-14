@@ -12,16 +12,16 @@ of the variability is accounted for by a few leading modes. This method
 is not expected to be useful when there are many large data gaps.
 }
 \usage{
-pcafill(X, insertmiss = 0, eofs = 1:4, test = FALSE, verbose = FALSE)
-pcafill.test(X,N=100,max.miss=100, eofs = 1:4, mnv=0,complete=TRUE,test=FALSE,verbose=FALSE)
-fitpc(y,x,eofs=4)
+pcafill(X, insertmiss = 0, ip = 1:4, test = FALSE, verbose = FALSE)
+pcafill.test(X,N=100,max.miss=100, ip = 1:4, mnv=0,complete=TRUE,test=FALSE,verbose=FALSE)
+fitpc(y,x,ip=4)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{X}{station data (group of stations)}
   \item{insertmiss}{Used for testing and evaluating. Missing data are
     introduced to test the predictive capability}
-  \item{eofs}{Number of EOFs/PCAs to include in filling in. In many
+  \item{ip}{Number of EOFs/PCAs to include in filling in. In many
     cases, it may be useful to keep this to a small set of values.}
   \item{mnv}{Minimum number of valid data points for any given time. Can
   be used to get around the problem with too many missing data}
@@ -61,7 +61,7 @@ plot(PCA(Y))
 plot(c(coredata(Y)),c(coredata(X)))
 
 ## Monte-Carlo test with random selection of data points set to NA:
-Y.test <- pcafill.test(X,max.miss=10,eofs=1:3)
+Y.test <- pcafill.test(X,max.miss=10,ip=1:3)
 cor(Y.test)
 
 }

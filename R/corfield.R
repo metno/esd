@@ -230,11 +230,11 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
   invisible(r)
 }
 
-corfield.eof <- function(x,y,pattern=1,plot=TRUE,new=TRUE,
+corfield.eof <- function(x,y,ip=1,plot=TRUE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                          use='pairwise.complete.obs',na.action='na.omit',...) {
   stopifnot(inherits(x,'eof'),inherits(y,'field'))
-  z <- as.station(x[,pattern],loc=paste('eof',pattern),param='PC',unit='dimensionless')
+  z <- as.station(x[,ip],loc=paste('eof',ip),param='PC',unit='dimensionless')
   r <- corfield(z,y,plot=plot,use=use,na.action=na.action,colbar=colbar,new=new)
   invisible(r)
 }

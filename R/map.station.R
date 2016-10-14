@@ -23,7 +23,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          border=FALSE,full.names=FALSE,
                          full.names.subset=FALSE, 
                          text=FALSE, fancy=FALSE, 
-                         na.rm=TRUE,show.val=FALSE,
+                         na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
                          ##colorbar=TRUE,
                          legend.shrink=1,...) { 
   ##
@@ -303,6 +303,22 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       fig0 <- par0$fig
     ## 
     par(fig=fig0)
+
+    ## REB: 2016-10-12 - add the possibility to use google maps
+    if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
+         (projection=="lonlat") & usegooglemap ){
+      require(RgoogleMaps)
+      mxdst <- max(diff(range(ss$latitude)),diff(range(ss$longitude)))
+      if (!is.finite(mxdst) | mxdst==0) zoom <- 3 else
+                                        zoom <- 7 - round(log(mxdst))
+      bgmap <- GetMap(center=c(lat=mean(ss$latitude),lon=mean(ss$longitude)),
+                    destfile = "map.station.esd.png",
+                    maptype = "mobile", zoom=zoom)
+      plotmap(ss$latitude, ss$longitude, bgmap)
+
+      print('Unfinished')
+      return()
+    }
     
     if (!is.null(highlight))
       plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
@@ -321,7 +337,9 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            ylim = ylim , axes = FALSE , frame.plot = FALSE,
            cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
     
-    ## Add geoborders
+    par(new=FALSE) ## REB: 2016-10-12 - add the possibility to use google maps
+    
+    ## Add geoborders 
     lines(geoborders$x, geoborders$y, col = "black")
     lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y,
           col = "pink")##"grey90"
@@ -385,7 +403,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (text)
       mtext(paste(("ESD package - map.station() - MET Norway 2014"),
                   "(www.met.no)",sep=" "),side=1,line=4,cex=0.6)
-    
+      
     par1 <- par()    
     if (!is.null(FUN)) {
       ##if (is.null(col)) colbar$col <- rep(col,length(colbar$col[icol]))

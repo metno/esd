@@ -33,22 +33,22 @@ subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     invisible(y)
 }
 
-subset.eof <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
+subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print("subset.eof")
     ## browser()
-    if (is.null(is) & is.null(it) & is.null(pattern)) return(x)                                    
-    if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(pattern)) return(x) 
+    if (is.null(is) & is.null(it) & is.null(ip)) return(x)                                    
+    if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(ip)) return(x) 
     d <- dim(x); greenwich <- TRUE
     clim <- attr(x,'mean')
     
     # Pattern extracts certain modes/patterns
-    if (!is.null(pattern)) {
-      if (verbose) print(paste('Chose pattern',pattern))
-      y <- x[,pattern]
+    if (!is.null(ip)) {
+      if (verbose) print(paste('Chose pattern',ip))
+      y <- x[,ip]
       y <- attrcp(x,y)
       class(y) <- class(x)
-      attr(y,'eigenvalues') <- attr(y,'eigenvalues')[pattern]
-      attr(y,'pattern') <- attr(y,'pattern')[,,pattern]
+      attr(y,'eigenvalues') <- attr(y,'eigenvalues')[ip]
+      attr(y,'pattern') <- attr(y,'pattern')[,,ip]
       if (!is.null(attr(x,'n.apps'))) {
         attr(y,'n.apps') <- attr(x,'n.apps')
         attr(y,'appendix.1') <- attr(x,'appendix.1')
@@ -211,14 +211,14 @@ subset.matrix <- function(x,is,verbose=FALSE)
   subset.pattern(x,is,verbose=verbose)
   
 
-subset.pca <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
+subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print('subset.pca')
-  if (!is.null(pattern)) {
-    y <- x[,pattern]
+  if (!is.null(ip)) {
+    y <- x[,ip]
     y <- attrcp(x,y)
     class(y) <- class(x)
-    attr(y,'eigenvalues') <- attr(y,'eigenvalues')[pattern]
-    attr(y,'pattern') <- attr(y,'pattern')[,pattern]
+    attr(y,'eigenvalues') <- attr(y,'eigenvalues')[ip]
+    attr(y,'pattern') <- attr(y,'pattern')[,ip]
     if (!is.null(attr(x,'n.apps'))) {
       attr(y,'n.apps') <- attr(x,'n.apps')
       attr(y,'appendix.1') <- attr(x,'appendix.1')
@@ -243,23 +243,23 @@ subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     x
 }
 
-subset.ds <- function(x,pattern=NULL,it=NULL,is=NULL,verbose=FALSE) {
+subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('subset.ds')
     y <- x
     if (!is.null(it)) {
       if (verbose) print(paste('it=',it))
     }
-    if (!is.null(pattern)) {
-      if (verbose) print(paste('pattern=',pattern))
+    if (!is.null(ip)) {
+      if (verbose) print(paste('pattern=',ip))
       if (inherits(x,'pca')) {
-        y <- subset.pca(x,pattern=pattern,verbose=verbose)
-        attr(y,'eof') <- subset.eof(attr(x,'eof'),pattern=pattern,verbose=verbose)
-        attr(y,'evaluation') <- attr(x,'evaluation')[,c(2*(pattern-1)+1,2*(pattern-1)+2)]
+        y <- subset.pca(x,ip=ip,verbose=verbose)
+        attr(y,'eof') <- subset.eof(attr(x,'eof'),ip=ip,verbose=verbose)
+        attr(y,'evaluation') <- attr(x,'evaluation')[,c(2*(ip-1)+1,2*(ip-1)+2)]
         if (!is.null(attr(x,'n.apps'))) {
           natt <- attr(x,'n.apps')
           for (i in 1:natt)
             attr(y,paste('appendix.',i,sep='')) <-
-              attr(y,paste('appendix.',i,sep=''))[,pattern]
+              attr(y,paste('appendix.',i,sep=''))[,ip]
         }
         x <- y
       }
@@ -303,7 +303,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 
     if (verbose) print('subset.dsensemble')
 
-    if (inherits(x,'list') & inherits(x,'pca')) {
+    if (inherits(x,'list') & inherits(x,c('pca','eof'))) {
       #x <- as.station(x)
       ## Subset the PCA/EOF
       x <- subset.dsensemble.multi(x,it=it,is=is,verbose=verbose,...)
