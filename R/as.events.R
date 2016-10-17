@@ -13,7 +13,7 @@ as.events.trajectory <- function(x,verbose=FALSE,...) {
 }
 
 events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
-                   quality=NULL,src=NULL,url=NULL,reference=NULL,
+                   quality=NULL,src=NULL,url=NULL,reference=NULL,greenwich=NULL,
                    info=NULL,method=NULL,unit=NULL,file=NULL,version=NULL) {
   if (verbose) print("events")
   if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
@@ -30,11 +30,19 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   if(is.null(reference) & !is.null(ref(x))) reference <- ref(x)
   if(is.null(info) & !is.null(attr(x,"info"))) info <- attr(x,"info")
   if(is.null(method) & !is.null(attr(x,"method"))) method <- attr(x,"method")
+  if(is.null(greenwich)) {
+    if(!is.null(attr(x,"greenwich"))) {
+      greenwich <- attr(x,"greenwich")
+    } else {
+      greenwich <- !(min(x$lon)<0 | max(x$lon)<=180)
+    }
+  }
   if (inherits(x,'trajectory')) {
     y <- trajectory2events(x,verbose=verbose)
   } else {
     y <- x
   }
+  y <- g2dl(x,greenwich=greenwich)
   if (inherits(y,"matrix")) {
     cnames <- colnames(y)
     y <- data.frame(y)
