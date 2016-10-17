@@ -1,7 +1,7 @@
 # K Parding, 29.05.2015
 # Last updated 10.10.2016
 
-CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
+CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
                 label=NULL,mindistance=5E5,dpmin=1E-3,hmax=1000,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,
@@ -10,7 +10,12 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
 
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
-  #if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
+  if(is.null(greenwich) & !is.null(attr(Z,"greenwich"))) {
+    greenwich <- attr(Z,"greenwich")
+  } else if (is.null(greenwich) & is.null(attr(Z,"greenwich"))) {
+    greenwich <- !(any(lon(Z)<0) | !any(lon(Z)>180))
+  }  
+  Z <- g2dl(Z,greenwich=greenwich)
   
   #yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
   #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
@@ -541,7 +546,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     longname <- "high-pressure systems identified with CCI method"
     param <- "anti-cyclones"
   }
-  X <- as.events(X,unit=unit,longname=longname,
+  X <- as.events(X,unit=unit,longname=longname,greenwich=greenwich,
          param=param,src=attr(Z,"source"),file=attr(Z,"file"),
          method="calculus based cylone identification, CCI",
          version="CCI in esd v1.0 (after October 6, 2015)",
