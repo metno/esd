@@ -99,14 +99,14 @@ pca2eof <- function(x,verbose=FALSE,xlim=NULL,ylim=NULL) {
 }
 
 ## A function that converts PCA-based DSensemble objects to EOF-based results (gridded)
-as.eof.dsensemble.pca <- function(X,is=NULL,it=NULL,eofs=NULL,verbose=FALSE,...) {
+as.eof.dsensemble.pca <- function(X,is=NULL,it=NULL,ip=NULL,verbose=FALSE,...) {
   if (verbose) print('as.eof.dsensemble.pca')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
   if (inherits(X,"eof")) {
       invisible(X)
   } else {
     eof <- pca2eof(X$pca)
-    eof <- subset(eof,pattern=eofs)
+    eof <- subset(eof,ip=ip)
     if (!is.null(is)) eof <- subset(eof,is=is,it=it,verbose=verbose)
     X$eof <- eof 
     class(X) <- c("dsensemble", "eof", "list")
