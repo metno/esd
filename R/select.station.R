@@ -54,7 +54,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
   ##
   if (!is.null(param) & is.null(ele)) {
     print("No variable found for your selection or the param identifier has not been set correctly.")
-    print("Please refrech your selection based on the list below")
+    print("Please refresh your selection based on the list below")
     print(as.matrix(ele2param(src=src))[,c(2,5,6)])
   }  
   ## get the lenght of the data base
