@@ -168,7 +168,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 vis.map <- function(x,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     cex.axis=0.8,add.text=FALSE,
-                    map.insert=TRUE,verbose=FALSE,usegooglemap=TRUE,zoom=NULL) {
+                    map.insert=TRUE,verbose=FALSE,
+                    usegooglemap=TRUE,zoom=NULL,...) {
   if(verbose) print('vis.map')
   if(is.null(xrange)) xrange <- range(lon(x)) + c(-5,5)
   if(is.null(yrange)) yrange <- range(lat(x)) + c(-2,2)
