@@ -383,7 +383,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   
   if (!is.null(param) & (!is.null(dim(param1)[1])))
     if (dim(param1)==0) 
-      stop('Please refrech your selection, element not found in meta data')
+      stop('Please refresh your selection, element not found in meta data')
   
   scale <-as.numeric(ele2param(ele=ele,src="ECAD")[3])
   ##param.gp <- substr(param1,1,nchar(param1)-1)
