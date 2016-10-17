@@ -913,6 +913,42 @@ g2dl.corfield <- function(x,greenwich=TRUE) {
     invisible(y)
 }
 
+g2dl.events <- function(x,greenwich=TRUE,verbose=FALSE) {
+  if(verbose) print("g2dl.events")
+  lon <- x$lon                          
+  if (greenwich) {
+    wh <- lon < 0
+    lon[wh] <- lon[wh] + 360
+  } else {
+    wh <- lon > 180
+    lon[wh] <- lon[wh] - 360
+  }
+  y <- x
+  y$lon <- lon
+  attr(y,'greenwich') <- as.logical(greenwich)
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- class(x)
+  invisible(y)
+}
+
+g2dl.trajectory <- function(x,greenwich=TRUE,verbose=FALSE) {
+  if(verbose) print("g2dl.trajectory")
+  lon <- x[,colnames(x)=="lon"]                         
+  if (greenwich) {
+    wh <- lon < 0
+    lon[wh] <- lon[wh] + 360
+  } else {
+    wh <- lon > 180
+    lon[wh] <- lon[wh] - 360
+  }
+  y <- x
+  y[,colnames(y)=="lon"] <- lon
+  attr(y,'greenwich') <- as.logical(greenwich)
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- class(x)
+  invisible(y)
+}
+
 sp2np <- function(x,SP2NP=TRUE) {
                                         # Take care of different latitude orientations: N-> S & S -> N
     ysrt <- order(attr(x,'latitude'))
