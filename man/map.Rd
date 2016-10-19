@@ -69,12 +69,13 @@ map.comb(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
            type=c("fill", "contour"),gridlines=FALSE,
            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,ip=1,plot=TRUE,...)
 
-map.eof(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
-           xlim= NULL,ylim=NULL,zlim=NULL,n=15,
-           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                       type="p",cex=2,h=0.6,v=1),
-           type=c("fill","contour"),gridlines=FALSE,
-           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,ip=1,plot=TRUE,...)
+map.eof(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
+                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                                pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                    type=c("fill","contour"),gridlines=FALSE,
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
+                    ip=1,cex=1,plot=TRUE,...)
 
 map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
@@ -219,6 +220,8 @@ mask(x,land=FALSE)
     (values between 0 and 1)}
   \item{...}{further arguments passed to or from other methods.}
   \item{land}{if TRUE mask land, else mask ocean}
+  \item{what}{What to map: ['eof','field] for EOF pattern or the field
+  recovered from the EOFs.}
 }
 \value{A field object}
 
