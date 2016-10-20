@@ -944,6 +944,7 @@ DS.eof <- function(y,X,mon=NULL,
                  rmtrend=rmtrend,ip=ip,
                  area.mean.expl=area.mean.expl,
                  verbose=verbose,...)
+    attr(ds,'original_data') <- y
     class(attr(ds,'original_data')) <- class(y)
     class(attr(ds,'fitted_values')) <- class(y)
     invisible(ds)
