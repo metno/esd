@@ -1719,10 +1719,13 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       # Diagnose the residual: ACF, pdf, trend. These will together with the
       # cross-validation and the common EOF diagnostics provide a set of
       # quality indicators.
-      cal <- coredata(attr(ds,"original_data"))
-      fit <- coredata(attr(ds,"fitted_values"))
+
+      ## REB 2016-10-20 revised code
       if (verbose) print('examine residuals...')
-      res <- as.residual(ds)
+      cal <- attr(ds,"original_data")
+      fit <- attr(ds,"fitted_values")
+      res <- cal - fit 
+      #REBres <- as.residual(ds)
       res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
       ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
 #      ar <- as.numeric(acf(trend(cal-fit,result="residual"),
@@ -1946,7 +1949,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     if(is.null(levgcm) & !is.null(attr(gcm,"level")))
       levgcm <- attr(gcm,"level")
     if (!is.null(it)) {
-      if (verbose) print('Extract some months ot a time period')
+      if (verbose) print('Extract some months or a time period')
       if (verbose) print(it)
       gcm <- subset(gcm,it=it)
     }
@@ -2009,14 +2012,17 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
       # Diagnose the residual: ACF, pdf, trend. These will together with the
       # cross-validation and the common EOF diagnostics provide a set of
       # quality indicators.
-      cal <- coredata(attr(ds,"original_data"))
-      fit <- coredata(attr(ds,"fitted_values"))
+      ## REB 2016-10-20
+      cal <- attr(ds,"original_data")
+      fit <- attr(ds,"fitted_values")
       if (verbose) print('examine residuals...')
-      res <- as.residual(ds)
+      res <- cal - fit ## REB 2016-10-20 test PCs
       res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
       ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
-      ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1]),
-                         plot=FALSE)[[1]][2])
+      ar <- as.numeric(acf(coredata(trend(res,result="residual")[,1],
+                         plot=FALSE))[[1]][2])
+      ## REB 2016-10-20 - end of revised code
+
       if (verbose) print(paste("Residual trend=",
                              round(res.trend,3),'D/decade; K.S. p-val',
                              round(ks,2),'; AR(1)=',round(ar,2)))
@@ -2028,7 +2034,8 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
       r.xval <- round(sapply(seq(1,2*ncol(ds),2),function(i) cor(xval[,i],xval[,i+1])),3)
                                         #round(cor(xval[,1],xval[,2]),3)
       if (verbose) print(paste("x-validation r=",paste(r.xval,collapse=", ")))
-      ds.ratio <- round(sapply(seq(1,ncol(ds)),function(i) sd(ds[,i],na.rm=TRUE)/sd(y[,i],na.rm=TRUE)),3)
+      ds.ratio <- round(sapply(seq(1,ncol(ds)),
+                               function(i) sd(ds[,i],na.rm=TRUE)/sd(y[,i],na.rm=TRUE)),3)
                                         #round(sd(ds[,1],na.rm=TRUE)/sd(y[,1],na.rm=TRUE),4)
       
       if (verbose) print(paste("sd ratio=",paste(ds.ratio,collapse=", ")))
