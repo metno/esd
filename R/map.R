@@ -891,7 +891,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
            any(c("trajectory","start","end") %in% type)) {
           if(verbose) print("plot trajectories")
           xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
-          browser()
+          #browser()
           if(dim(xt)[1]>1) {
               xall <- as.trajectory(xt,nmin=2)
               map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
