@@ -250,15 +250,24 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dE=0.3,dN=0
                     length(unique(times[dates==dplot])))]
     nvec <- unique(num[dates==dplot & times==tplot])
     cols <- rainbow(length(nvec))
+    if(max(lats)>0) ylim <- c(0,90) else ylim <- c(-90,0)
+    if(attr(x,"greenwich")) xlim <- c(0,360) else xlim <- c(-180,180)
     data(geoborders,envir=environment())
-    if(attr(x,"greenwich")) {
-      glon <- geoborders[,1]
-      glon[glon<0] <- glon[glon<0]+360
-      geoborders[,1] <- glon
+    if(!attr(x,"greenwich")) {
+      plot(geoborders,type="l",col="grey20",lwd=0.5,
+           xlim=xlim,ylim=ylim,main=paste(dplot,tplot))
+    } else {
+      lon.gb <- geoborders[,1] 
+      lon.gb[lon.gb<0 & !is.na(lon.gb)] <-
+          lon.gb[lon.gb<0 & !is.na(lon.gb)] + 360
+      lon.w <- lon.gb
+      lon.e <- lon.gb
+      lon.w[lon.w>=180] <- NA
+      lon.e[lon.e<180] <- NA
+      plot(lon.w,geoborders[,2],type="l",col="grey20",lwd=0.5,
+           xlim=xlim,ylim=ylim,main=paste(dplot,tplot))
+      lines(lon.e,geoborders[,2],col="grey20",lwd=0.5) 
     }
-    plot(geoborders,type="l",col="grey20",lwd=0.5,
-         xlim=c(-180,180),ylim=c(0,90),
-         main=paste(dplot,tplot))
     for (i in seq_along(nvec)) {
       points(lons[num==nvec[i]],lats[num==nvec[i]],col=cols[i],pch=1,cex=1.5)
       points(lons[num==nvec[i]][1],lats[num==nvec[i]][1],
@@ -528,7 +537,7 @@ Trackstats <- function(x,verbose=FALSE) {
   rnum[is.na(rnum)] <- nummax+1
   if(verbose) print("trackcount")
   trackcount <- data.frame(table(rnum))
-  if (any(rnum>nummax)) trackcount$Freq[nummax+1] <- 1
+  #if (any(rnum>nummax)) trackcount$Freq[nummax+1] <- 1
 
   if(verbose) print("timestep")
   ts <- unlist(sapply(unique(rnum),function(i) 1:trackcount$Freq[i]))

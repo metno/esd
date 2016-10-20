@@ -1,8 +1,8 @@
 # K Parding, 29.05.2015
 # Last updated 10.10.2016
 
-CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
-                label=NULL,mindistance=5E5,dpmin=1E-3,hmax=1000,
+CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
+                label=NULL,mindistance=5E5,dpmin=1E-3,hmax=4000,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,
                 do.track=FALSE,verbose=FALSE,...) {
@@ -180,10 +180,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
   ## Penalty for topography
   h <- mapply(fn,lonXY,latXY)
-  pf.h <- (4000-h[1,])/4000
-  #pf.h[] <- 1
-  pf.h[h[1,]<=300] <- 1
-  pf.h[pf.h>4000] <- 0
+  pf.h <- 1 - 0.25*h[1,]/2000
+  pf.h[pf.h>2000] <- 0
   pf.h <- rep(pf.h,nt)
   dim(pf.h) <- c(nx-1,ny-1,nt)
   pf.h <- aperm(pf.h,c(3,1,2))  
@@ -195,10 +193,10 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   #lows2[!ok] <- FALSE
 
   ## Penalty factor for topography gradient
-  dh <- apply(h[2:3,],2,max)
-  pf.dh <- (500-dh)/500
+  dh <- apply(h[2:3,],2,max)  
+  pf.dh <- 1 - 0.25*dh/200
   pf.dh[h[1,]<=0] <- 1
-  pf.dh[dh>500] <- 0
+  pf.dh[dh>200] <- 0
   pf.dh <- rep(pf.dh,nt)
   dim(pf.dh) <- c(nx-1,ny-1,nt)
   pf.dh <- aperm(pf.dh,c(3,1,2))  
@@ -430,9 +428,12 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
         dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
         pf.dhi <- pf.dh[i]
         pf.hi <- pf.h[i]
-        pf.dpi <- 0.5 + 0.5/(0.03-dpmin)*dpi
+        pf.dpi <- 1-10^(-0.31*dpi/dpmin)
         pf.i <- (pf.hi+pf.dhi)/2*pf.dpi
-        oki <- sum(!is.na(dpi) & pf.i>0.5)>=3
+        print(pf.dpi)
+        print(pf.i)
+        #browser()
+        oki <- sum(!is.na(dpi) & pf.i>=0.5)>=3
         #oki <- sum(!is.na(dpi) & dpi>dpmin/2)>=3 &
         #       mean(dpi,na.rm=TRUE)>dpmin
         #   sum(dpi>dpmin & !is.na(dpi))>=3 #&
@@ -461,7 +462,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
     max.gradient <- max.gradient*1E-2*1E3
     if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
-
+    
     ok <- ok & dslp>=0
     if(!is.null(rmin)) ok <- ok & radius>=rmin
     if(!is.null(rmax)) ok <- ok & radius<=rmax
@@ -479,8 +480,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     if (!cyclones) strength <- rank(-pcent)
 
     if (lplot) {
-     if(verbose) print("plot example of cyclone identification")
+      if(verbose) print("plot example of cyclone identification")
       data(geoborders,envir=environment())
+      browser()
       i <- length(date)/2
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
@@ -507,7 +509,23 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
           xlab="lon",ylab="lat",breaks=seq(940,1080,10))
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(940,1010),nlevels=6)
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1080),nlevels=5)
-      lines(geoborders,col="grey40")
+      if(!greenwich) {
+        lines(geoborders,col="grey40")
+      } else {
+        gb.w <- geoborders
+        gb.e <- geoborders
+        lon.gb <- gb.w[,1]
+        lon.gb[!is.na(lon.gb) & lon.gb<0] <-
+          lon.gb[!is.na(lon.gb) & lon.gb<0] + 360
+        lon.w <- lon.gb
+        lon.e <- lon.gb
+        lon.w[!is.na(lon.w) & lon.w>=180] <- NA
+        lon.e[!is.na(lon.e) & lon.e<180] <- NA
+        gb.w[,1] <- lon.w
+        gb.e[,1] <- lon.e
+        lines(gb.w,col="grey40")
+        lines(gb.e,col="grey40")
+      }
       a <- which(P.lowx[t==date[i],,]==1,arr.ind=TRUE)
       b <- which(P.lowy[t==date[i],,]==1,arr.ind=TRUE)
       lon.a <- mapply(function(i1,i2) lonXY[i1,i2],a[,1],a[,2])

@@ -85,7 +85,6 @@ rence")
     xa <- aggregate(xx, list(x$trajectory), function(x) approx(x,n=n)$y)$x
     ya <- aggregate(yy, list(x$trajectory), function(x) approx(x,n=n)$y)$x
     za <- aggregate(zz, list(x$trajectory), function(x) approx(x,n=n)$y)$x
-    browser()
     lon <- atan2( ya, xa )*180/pi 
     lat <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
     #aggregate(x$lat, list(x$trajectory),function(x) approx(x,n=n)$y)$x -> lat

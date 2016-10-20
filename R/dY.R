@@ -20,7 +20,7 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   z <- as.pattern(Z)
   lon <- lon(Z)
   lat <- lat(Z)
-  
+  print(m)
   if (is.null(accuracy)) accuracy <-  max(diff(lon))
   LON <- seq(min(lon),max(lon),by=accuracy)
   NX <- length(LON)

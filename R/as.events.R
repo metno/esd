@@ -42,7 +42,6 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   } else {
     y <- x
   }
-  y <- g2dl(x,greenwich=greenwich)
   if (inherits(y,"matrix")) {
     cnames <- colnames(y)
     y <- data.frame(y)
@@ -52,6 +51,7 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   names(y)[grep("latitude",names(y))] <- "lat"
   names(y)[grep("longitude",names(y))] <- "lon"
   names(y)[grep("step",names(y))] <- "timestep"
+  names(y)[grep("^p$",names(y)) | grep("^slp$",names(y))] <- "pcent"
   attr(y, "location") <- loc
   attr(y, "variable") <- param
   attr(y, "longname") <- longname
@@ -72,6 +72,7 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   attr(y,"stid") <- NA
   attr(y, "history") <- history.stamp()
   class(y) <- c("events","data.frame")
+  y <- g2dl(y,greenwich=greenwich)
   invisible(y) 
 }
 
