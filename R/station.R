@@ -452,7 +452,13 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     print(stid)
   }
   
-  ECAD <- zoo(ecad, order.by = as.Date(paste(year, month, day, sep = "-"), by='day', length.out = L))
+  ## REB 2016-10-20 
+  if (!check.bad.dates(year,month,day))  
+             ECAD <- zoo(ecad, order.by = as.Date(paste(year, month, day, sep = "-"), 
+                                                  by='day', length.out = L)) else {
+             print("Warning : Bad dates were found for this station -> Ignored")
+             return(NULL)                                          
+  }
   
   if (sum(ECAD,na.rm=TRUE)==0)
     {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
