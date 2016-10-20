@@ -20,7 +20,7 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     if (is.logical(colbar)) colbar <- NULL
     ## If only a few items are provided in colbar - then set the rest to the default
     if (!is.null(colbar)) {
-        colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=verbose)
+        colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=FALSE)
     } else col <- 'black'
     
     x <- subset(x,it=it,is=is)
@@ -679,12 +679,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
 
-    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
+    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=FALSE)
     
-
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
     
-
     data("geoborders",envir=environment())
     if(sum(is.finite(x))==0) stop('No valid data')
     ## To deal with grid-conventions going from north-to-south or east-to-west:

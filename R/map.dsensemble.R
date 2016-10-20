@@ -14,7 +14,7 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   if (verbose) print('PCA/EOF-based ensemble')
   X <- x
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
-  V <- lapply(X,FUN='subsetzoo',it=it)
+  V <- lapply(X,FUN='subset.pc',it=it)
   if (!test) {
     n <- length(names(V))
     d <- dim(V[[1]])
@@ -47,31 +47,36 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   Y <- zoo(Y,order.by=index(V))
   Y <- attrcp(UWD,Y)
   class(Y) <- class(UWD)[-1]
+  if (inherits(x,'eof')) attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
   attr(Y,'mean') <- NULL
-  if (verbose) print('expandpca done')
+  if (verbose) {print('expandpca done'); print(dim(Y))}
   return(Y)
 }
 
 ## Function for extracting the subset from PCs stored as zoo
-subsetzoo <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
-  if (verbose) print('subsetzoo')
+subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
+  if (verbose) print('subset.pc')
+  d <- dim(x)
   if (!is.null(it)) {
     if (verbose) print('subset it')
     if (is.numeric(it) | is.integer(it)) 
-      it <- as.Date(paste(it,'01-01',sep='-'))
+      it <- c(as.Date(paste(it,'01-01',sep='-')),
+              as.Date(paste(it,'12-31',sep='-')))
     x <- window(x,start=min(it),end=max(it))
   }
   if (!is.null(ip)) {
     if (verbose) print('subset pattern')
     x <- x[,ip]
   }
+  dim(x) <- c(length(index(x)),d[2])
+  if (verbose) print(dim(x))
   return(x)
 }
 
 
 
 map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,colbar=NULL,
-                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
+                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,...) {
   ## PCA/EOF objects
 
   if (verbose) print('map.dsensemble')
@@ -81,8 +86,8 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,colbar=NULL
     if (verbose) print(names(x)[2])
     x <- subset(x,is=is,im=im,ip=ip,verbose=verbose)
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
-    
-    map(Y,FUN=FUN,colbar=colbar,verbose=verbose)
+    if (verbose) {str(x[[2]]); str(Y)}
+    map(Y,FUN=FUN,colbar=colbar,verbose=verbose,...)
     invisible(Y)
   } else return(NULL)
 }
@@ -112,7 +117,7 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
-  y <- lapply(X,FUN='subsetzoo',ip=ip,it=it)
+  y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
   if (verbose) print(dim(y[[1]]))
 
   if (!is.null(im)) {
