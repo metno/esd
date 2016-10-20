@@ -12,6 +12,9 @@ Author: Rasmus E. Benestad, Abdelkader Mezghani, and Kajsa M. Parding
 Maintainer: Rasmus E. Benestad (rasmus.benestad-at-met.no) and Abdelkader Mezghani (abdelkader.mezghani-at-met.no) and Kajsa M. Parding (kajsa.parding-at-met.no)
 
 Depends: ncdf4, zoo, R (>= 2.10.0)
+
+Recommends: LatticeKrig, RgoogleMaps
+
 Description: The package contains R functions for retrieving data, making climate analysis and downscaling of monthly mean and daily mean global climate scenarios.
 
 License: GPL (>= 2)

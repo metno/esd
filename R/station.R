@@ -216,10 +216,11 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ##if (!is.null(x)) X <- combine.stations(X,x)
     } else if (src[i]=="ECAD") { #AM-29.07.2013 added "|(src[i]=="ECAD")"
       ##
-      if (toupper(param[i])=='TMAX') param[] <- 'tx' #REB 2016-07-26: dirty bug-rectification
+      #if (toupper(param[i])=='TMAX') param[] <- 'tx' #REB 2016-07-26: dirty bug-rectification
       if (is.null(path.ecad)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.ecad ## default path
       if (is.null(url.ecad)) url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend" else url <- url.ecad ## default url
-      x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path=path, url=url)
+      x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],
+                        qual=qual[i],param=param[i],verbose=verbose,path=path, url=url)
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
         print("Warning : No values found in the time series for-> This station will be ignored")
@@ -353,7 +354,9 @@ t2m.ghcnd.avg <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   invisible(ghcnd)
 }
 
-ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,param=NULL,qual=NULL,path="data.ECAD",url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",verbose=FALSE) {  ## it=it,nmin=nmin
+ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
+                         param=NULL,qual=NULL,path="data.ECAD",remove.suspect=FALSE,
+                         url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",verbose=FALSE) {  ## it=it,nmin=nmin
   ## ECAD basic function to retrieve data for one station
   ## http://eca.knmi.nl/
   ## ECA&D was initiated by the ECSN in 1998 
@@ -383,9 +386,10 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   
   if (!is.null(param) & (!is.null(dim(param1)[1])))
     if (dim(param1)==0) 
-      stop('Please refrech your selection, element not found in meta data')
+      stop('Please refresh your selection, element not found in meta data')
   
   scale <-as.numeric(ele2param(ele=ele,src="ECAD")[3])
+  if (verbose) print(paste('scale=',scale))                         ## REB 2016-10-18
   ##param.gp <- substr(param1,1,nchar(param1)-1)
   fdata <- paste(url,"_",tolower(param1),".zip",sep="") 
   text  <- unlist(strsplit(fdata,split="/"))
@@ -401,7 +405,8 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   ## if folder does not exist, then download and unzip
   if (!file.exists(destfile2)) {
     if(!file.exists(path)) dir.create(path,showWarnings = FALSE,recursive=TRUE) ## KMP 2016-07-28 download.file doesn't work if the directory doesn't exist
-    download.file(fdata,destfile,method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))
+    download.file(fdata,destfile,method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE,
+                  extra = getOption("download.file.extra"))
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   }
   
@@ -429,8 +434,15 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   year <- substr(as.character(x$DATE),1,4);L <- length(year)
   month <- substr(as.character(x$DATE),5,6)
   day <- substr(as.character(x$DATE),7,8)
+  ## Use the quality flags in the ECA&D data files if they are present  ## REB 2016-10-18
+  if (verbose) {print('Make use of the quality flags'); str(x)}         ## REB 2016-10-18
+  if (dim(x)[2]==5) dataQ <- x[[5]] else dataQ <- ecad*0                ## REB 2016-10-17 
   
-  ecad[ecad < 0] <- NA
+  #ecad[ecad <0] <- NA                          ## REB 2016-10-18 This bug sets all temperatures below zero to NA
+  ecad[ecad <=-999] <- NA                       ## REB 2016-10-18
+  ## Also set suspect values to NA              ## REB 2016-10-18
+  if (remove.suspect) ecad[dataQ == 1] <- NA    ## REB 2016-10-18
+  ecad[dataQ == 9] <- NA                        ## REB 2016-10-18
   
   if (verbose) {
     print(c(year[1],month[1],day[1]))
@@ -440,9 +452,16 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     print(stid)
   }
   
-  ECAD <- zoo(ecad, order.by = as.Date(paste(year, month, day, sep = "-"), by='day', length.out = L))
+  ## REB 2016-10-20 
+  if (!check.bad.dates(year,month,day))  
+             ECAD <- zoo(ecad, order.by = as.Date(paste(year, month, day, sep = "-"), 
+                                                  by='day', length.out = L)) else {
+             print("Warning : Bad dates were found for this station -> Ignored")
+             return(NULL)                                          
+  }
   
-  if (sum(ECAD,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
+  if (sum(ECAD,na.rm=TRUE)==0)
+    {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
   
   ## create a station object
   ECAD <- as.station(ECAD, stid=stid, lon=lon, lat=lat, alt=alt,

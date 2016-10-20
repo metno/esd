@@ -565,7 +565,7 @@ subset.spell <- function(x,is=NULL,it=NULL) {
     invisible(y)
 }
 
-subset.zoo <- function(x,it=NULL) subset.station(x,it=it)
+subset.zoo <- function(x,it=NULL,is=NULL) subset.station(x,it=it,is=is)
 
 
 

@@ -20,7 +20,7 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     if (is.logical(colbar)) colbar <- NULL
     ## If only a few items are provided in colbar - then set the rest to the default
     if (!is.null(colbar)) {
-        colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=verbose)
+        colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=FALSE)
     } else col <- 'black'
     
     x <- subset(x,it=it,is=is)
@@ -161,7 +161,7 @@ map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     invisible(result)
 }
 
-map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
@@ -174,50 +174,66 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     stopifnot(inherits(x,'eof'))
     ##x <- subset(x,it=it,is=is)
     projection <- tolower(projection)
-    tot.var <- attr(x,'tot.var')
-    D <- attr(x,'eigenvalues')
-    var.eof <- 100* D^2/tot.var
-    X <- attr(x,'pattern')[,,ip]
 
-    ## if zlim is specified, then mask data outside this range
-    if (!is.null(zlim)) {
+    ## REB 2016-10-19: one option is to recover the field and then maps the field
+
+    if (what=="field") {
+      if (verbose) print('what=field: recover the field before mapping')
+      x <- subset(x,it=it,is=is)
+      if (verbose) {print(dim(x)); range(index(x)); range(lon(x)); range(lat(x))}
+      y <- as.field(x)
+      z <- map(y,new=new,projection=projection,xlim=xlim,ylim=ylim,
+               zlim=zlim,colbar=colbar,type=type,gridlines=gridlines,
+               lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,cex=cex,plot=plot)
+      invisible(z)
+    } else {
+    
+      tot.var <- attr(x,'tot.var')
+      D <- attr(x,'eigenvalues')
+      var.eof <- 100* D^2/tot.var
+      X <- attr(x,'pattern')[,,ip]
+
+      ## if zlim is specified, then mask data outside this range
+      if (!is.null(zlim)) {
         d <- dim(X)
         mask <- (X < min(zlim)) | (X > max(zlim))
         X[mask] <- NA
         dim(X) <- d
         if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
-    }
-    ##str(x)
-    attr(X,'longitude') <- attr(x,'longitude')
-    attr(X,'latitude') <- attr(x,'latitude')
-    attr(X,'variable') <- attr(x,'variable')
-    attr(X,'unit') <- attr(x,'unit')[1]
-    if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
-    attr(X,'source') <- attr(x,'source')
-    attr(X,'time') <- range(index(x))
-    if ( (ip==1) & !is.null(attr(x, "area.mean.expl")) )
+      }
+      ##str(x)
+      attr(X,'longitude') <- attr(x,'longitude')
+      attr(X,'latitude') <- attr(x,'latitude')
+      attr(X,'variable') <- attr(x,'variable')
+      attr(X,'unit') <- attr(x,'unit')[1]
+      if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
+      attr(X,'source') <- attr(x,'source')
+      attr(X,'time') <- range(index(x))
+      if ( (ip==1) & !is.null(attr(x, "area.mean.expl")) )
         if (attr(x, "area.mean.expl"))
             type <- "fill"
-    if (plot) {
-      if (projection=="lonlat") {
-        lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
-                         n=n,colbar=colbar,new=new,type=type,
-                         gridlines=gridlines,verbose=verbose,...)
-      } else if (projection=="sphere") {
-        map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
-                   xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
-                   colbar=colbar,new=new,verbose=verbose,...)
-      } else if (projection=="np") {
-        map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,
-                   xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
-                   colbar=colbar,new=new,verbose=verbose,...)
-      } else if (projection=="sp") {
-        map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,
-                   xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
-                   colbar=colbar,new=new,verbose=verbose,...)
+      if (plot) {
+        if (projection=="lonlat") {
+          lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
+                           n=n,colbar=colbar,new=new,type=type,
+                           gridlines=gridlines,verbose=verbose,...)
+        } else if (projection=="sphere") {
+          map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
+                     xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
+                     colbar=colbar,new=new,verbose=verbose,...)
+        } else if (projection=="np") {
+          map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,
+                     xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
+                     colbar=colbar,new=new,verbose=verbose,...)
+        } else if (projection=="sp") {
+          map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,
+                     xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
+                     colbar=colbar,new=new,verbose=verbose,...)
+        }
       }
+      z <- X
     }
-    invisible(X)
+    invisible(z)
 }
 
 map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
@@ -663,12 +679,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
 
-    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
+    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=FALSE)
     
-
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
     
-
     data("geoborders",envir=environment())
     if(sum(is.finite(x))==0) stop('No valid data')
     ## To deal with grid-conventions going from north-to-south or east-to-west:
