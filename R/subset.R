@@ -237,10 +237,25 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   return(x)
 }
 
-
 subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-    if (verbose) print('nsubset.corfield - not finished - return original data')
-    x
+    if (verbose) print('subset.corfield')
+    stopifnot(inherits(x,"corfield"))
+    y <- x
+    dim(y) <- c(1,length(x))
+    y <- zoo(y,order.by=1)
+    attr(y,"dimensions") <- c(length(attr(x,"longitude")),
+                              length(attr(x,"latitude")),1)
+    y <- attrcp(x,y)
+    y <- as.field(y,param=attr(x,"variable"),unit=attr(x,"unit"),
+                    lon=attr(x,"longitude"),lat=attr(x,"latitude"),
+                    longname=attr(x,"longname"),src=attr(x,"source"),
+                    url=attr(x,"url"))
+    y <- subset(y,is=is,verbose=verbose)
+    dim(y) <- length(y)
+    attr(y,"dimensions") <- c(length(attr(y,"longitude")),
+                              length(attr(y,"latitude")))
+    class(y) <- "corfield"
+    return(y)
 }
 
 subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
@@ -1006,7 +1021,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
       attr(y,"greenwich") <- TRUE
     } else {
-      attr(y,"grenwich") <- FALSE
+      attr(y,"greenwich") <- FALSE
     }
     
     ##attr(y,'date-stamp') <- date()
