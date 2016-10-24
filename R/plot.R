@@ -245,14 +245,15 @@ plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
                      colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
                          breaks=NULL,type="p",cex=2,show=TRUE,
                          h=0.6,v=1,pos=0.05),
-                     verbose=FALSE,...) {
+                     verbose=FALSE,is=NULL,it=NULL,...) {
   if (verbose) print(paste('plot.eof',paste(what,collapse=',')))
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
                   ip=ip,what=what,colbar=colbar,verbose=verbose,...) else
   if (inherits(x,"field"))
     plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
-                   ip=ip,what=what,colbar=colbar,verbose=verbose,...) else
+                   ip=ip,what=what,colbar=colbar,verbose=verbose,
+                   it=it,is=is,...) else
     print("x does not have 'comb' or 'field' aspects...")
 }
 
@@ -262,10 +263,18 @@ plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                            what=c("pc","eof","var"),## colbar=NULL,
                            cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
-                           verbose=FALSE,cex=1,...) {
+                           verbose=FALSE,it=NULL,is=NULL,cex=1,...) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   n <- ip
   what <- tolower(what)
+  if ('field' %in% what) {
+      ## Expand EOF to original field before plotting
+      if (verbose) print('Transform eof to field before plot')
+      x <- subset(x,it=it,is=is)
+      y <- as.field(x)
+      z <- plot(y,xlim=xlim,ylim=ylim,new=new,...)
+      invisible(z)
+  }
   #str(ip); stop("HERE")
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
@@ -807,7 +816,7 @@ plot.ds.pca <- function(x,ip=1,verbose=FALSE,
   #title(paste("EOF Ip # ",ip,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
-    browser()
+    #browser()
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     ## Get the right pattern
     xvp <- (ip-1)*2 +1
@@ -1640,7 +1649,7 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
 
 barplot.station <- function(x,threshold=0,...) {
     stopifnot(inherits(x,'station'))
-    browser()
+    #browser()
     x.above <- x.below <- x
     x.above[x < threshold] <- NA
     x.below[x > threshold] <- NA
