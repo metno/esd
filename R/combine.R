@@ -815,7 +815,9 @@ combine.events <- function(x,y,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbos
   if(attr(x,"greenwich")!=attr(y,"greenwich")) {
     y <- g2dl.events(y,greenwich=attr(x,"greenwich"))
   }
-      
+
+  if(!any(x$date %in% y$date)) remove.close <- FALSE
+  
   ## Remove events located close to other stronger events
   if(remove.close) {
     t <- z$date*1E2 + z$time
