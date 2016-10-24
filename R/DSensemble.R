@@ -646,7 +646,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
   }
 
-  # Use proportional variaions
+  # Use proportional variations
   if (verbose) print("Annual mean")
   if (sum(is.element(FUNX,xfuns))==0) PRE <- annual(pre,FUN=FUNX,nmin=nmin) else
   eval(parse(text=paste('PRE <- annual(',FUNX,'(pre),FUN="mean",nmin=nmin)',sep="")))
@@ -1852,7 +1852,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
                            ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,
                            rel.cord=TRUE,nmin=NULL,lev=NULL,levgcm=NULL,
                            select=NULL,FUN="mean",rmtrend=TRUE,
-                           FUNX="mean",threshold=1,type='ncdf4',
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="psl_Amon_ens_",verbose=FALSE,
                            file.ds="DSensemble.eof.rda",path.ds=NULL) {
 
@@ -1962,23 +1962,57 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     if(is.null(levgcm) & !is.null(attr(gcm,"level")))
       levgcm <- attr(gcm,"level")
     if (!is.null(it)) {
+      if ((nmin==0) & is.character(it)) nmin <- length(it) 
       if (verbose) print('Extract some months or a time period')
-      if (verbose) print(it)
+      if (verbose) {print(it); print(nmin)}
       gcm <- subset(gcm,it=it)
     }
     #gcmnm[i] <- attr(gcm,'model_id')
     gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
+    if (verbose) print(class(y))
+
+    ## REB 2016-10-25
     if (inherits(y,'season')) {
-      GCM <- as.4seasons(gcm,FUN=FUNX)
+      if (verbose) print(paste('Seasonally aggregated',FUNX,'for GCM'))
+      if (sum(is.element(FUNX,xfuns))==0) {
+          if (verbose) print('No special transformation') 
+          GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
+       } else {
+           if (verbose) print('Need to aggregate FUNX(gcm)')
+           eval(parse(text=paste('GCM <- as.4seasons(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
+       }
+      if (verbose) {print(season(SLP)[1]); print(dim(GCM))}
       GCM <- subset(GCM,it=season(SLP)[1])
     } else if (inherits(y,'annual')) {
-      if (FUNX!='C.C.eq') GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
-                          GCM <- annual(C.C.eq(gcm),FUN='mean',nmin=nmin)
+      if (verbose) print(paste('Annualy aggregated',FUNX,'for GCM'))
+      if (sum(is.element(FUNX,xfuns))==0)
+          GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+          eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
     } else if (inherits(y,'month')) {
-      if (length(table(month(y)))==1)
-        GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
+      if (length(table(month(y)))==1) 
+        GCM <- subset(gcm,it=month.abb[month(y)[1]]) 
+      else
         GCM <- gcm
+      if (!is.null(FUNX)) {
+        GCM <- do.call(FUNX,list(GCM))
+      }
     }
+
+    ## REB 2016-10-25
+    #if (inherits(y,'season')) {
+    #  if (FUNX!='C.C.eq') GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin) else
+    #                      GCM <- as.4seasons(C.C.eq(gcm),FUN='mean',nmin=nmin)
+    #  GCM <- subset(GCM,it=season(SLP)[1])
+    #} else if (inherits(y,'annual')) {
+    #  if (FUNX!='C.C.eq') GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
+    #                      GCM <- annual(C.C.eq(gcm),FUN='mean',nmin=nmin)
+    #} else if (inherits(y,'month')) {
+    #  if (length(table(month(y)))==1)
+    #    GCM <- subset(gcm,it=month.abb[month(y)[1]]) else
+    #    GCM <- gcm
+    #}
+    
+    if (verbose) {str(SLP); str(GCM)}
     SLPGCM <- combine(SLP,GCM)
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(SLPGCM))
