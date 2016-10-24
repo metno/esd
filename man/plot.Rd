@@ -33,8 +33,16 @@ plot.station(x, plot.type = "single", new = TRUE, lwd = 3, type = "l",
     map.show = TRUE, map.type = "points", mar = c(4.5, 4.5, 0.75, 
         0.5), alpha = 0.3, verbose = FALSE, ...)
 plot.pca(x,verbose=FALSE,new=TRUE,...)
-plot.eof(x,new=TRUE,xlim=NULL,ylim=NULL,ip=1,what=c("pc","eof","var"),...)
-plot.eof.field(x,new=TRUE,xlim=NULL,ylim=NULL,ip=1,what=c("pc","eof","var"),...)
+plot.eof(x,new=FALSE,xlim=NULL,ylim=NULL,
+                     ip=1,what=c("pc","eof","var"),
+                     colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
+                         breaks=NULL,type="p",cex=2,show=TRUE,
+                         h=0.6,v=1,pos=0.05),
+                     verbose=FALSE,is=NULL,it=NULL,...)
+plot.eof.field(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
+                           what=c("pc","eof","var"),## colbar=NULL,
+                           cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
+                           verbose=FALSE,it=NULL,is=NULL,cex=1,...)
 plot.eof.comb(x,new=TRUE,xlim=NULL,ylim=NULL,
                           ip=1,col=c("red"),what=c("pc","eof","var"),...)
 plot.eof.var(x,new=TRUE,xlim=NULL,ylim=NULL,ip=20,...)
@@ -74,6 +82,8 @@ vis.map(x,col='red',map.type='points',add.text=FALSE)
   \item{FUN}{function}
   \item{map.show}{Show a small map of the location}
   \item{map.type}{}
+  \item{what}{Indicate what to plot. 'field' expands eof to field before
+  plotting}
  }
 \value{A field object}
 

@@ -748,7 +748,7 @@ as.4seasons <- function(x,...) UseMethod("as.4seasons")
 
 
 
-as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,...) {
+as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,...) {
   if(verbose) print('as.4seasons.default')
   if (inherits(x,'season')) return(x)
   attr(x,'names') <- NULL
@@ -771,7 +771,7 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,...) {
      y <- aggregate(x=as.zoo(X),by= as.yearqtr,FUN=match.fun(FUN),...)
     # convert yearqtr to yearmon
       y <- zoo(x=y,order.by=as.Date(as.yearmon(index(y))))
-    } else y <- as.4seasons.day(x,FUN=FUN,...)
+    } else y <- as.4seasons.day(x,FUN=FUN,nmin=nmin,...)
     #y <- as.4seasons.day(x,FUN=match.fun(FUN),...)
     
     #print(dim(y))
@@ -897,7 +897,7 @@ as.4seasons.spell <- function(x,FUN='mean',...) {
 as.4seasons.field <- function(x,FUN='mean',verbose=FALSE,...) {
   if(verbose) print("as.4seasons.field")
   d <- attr(x,"dimensions")
-  y <- as.4seasons.default(x,FUN,...)
+  y <- as.4seasons.default(x,FUN,verbose=verbose,...)
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   ## Update dimensions

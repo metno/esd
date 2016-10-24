@@ -32,8 +32,11 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   if (verbose) print('Aggregate ensemble statistics')
   ## Apply FUNX to each of the PCs across all members
   #
+  
   U <- attr(UWD,'pattern'); dU <- dim(U)
-  if (length(dU==3)) {
+
+  if (inherits(x,'eof')) {
+    if (verbose) {print('eof'); print(du)}
     dim(U) <- c(dU[1]*dU[2],dU[3])
   }
   dim(V) <- d

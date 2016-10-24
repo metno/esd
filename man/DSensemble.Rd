@@ -8,6 +8,7 @@
 \alias{DSensemble.mu}
 \alias{DSensemble.mu.worstcase}
 \alias{DSensemble.pca}
+\alias{DSensemble.eof}
 \title{Downscale ensemble runs}
 \description{
 Downscales an ensemble of climate model runs, e.g. CMIP5, taking the
@@ -110,6 +111,16 @@ DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf',
                           pattern="tas_Amon_ens_",verbose=FALSE,
                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL)
+DSensemble.eof(y,lplot=TRUE,path="CMIP5.monthly",
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_slp_mon.nc",
+                           non.stationarity.check=FALSE,
+                           ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,
+                           rel.cord=TRUE,nmin=NULL,lev=NULL,levgcm=NULL,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
+                           pattern="psl_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.eof.rda",path.ds=NULL)
 }
 \arguments{
     \item{y}{A station object.}
