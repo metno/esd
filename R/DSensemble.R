@@ -1656,8 +1656,20 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       gcm <- subset(gcm,it=it,verbose=verbose)
     }
     gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
+
+    if (verbose) {
+        print(paste('Extract month/season/annual data nmin=',nmin))
+        print(class(y))
+        print(FUNX)
+    }
     if (inherits(y,'season')) {
-      GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
+      if (sum(is.element(FUNX,xfuns))==0) {
+          if (verbose) print('No special transformation') 
+          GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
+       } else {
+           if (verbose) print('Need to aggregate FUNX(gcm)')
+           eval(parse(text=paste('GCM <- as.4seasons(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
+       }
       GCM <- subset(GCM,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
       if (verbose) print(paste('Annualy aggregated',FUNX,'for GCM'))
@@ -1673,7 +1685,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
         GCM <- do.call(FUNX,list(GCM))
       }
     }
-    	
+    
+    if (verbose) print('Estimate commne EOFs - combine fields')	
     if (is.null(src(T2M))) attr(T2M,'source') <- 'reanalysis'
     T2MGCM <- combine(T2M,GCM)
     
