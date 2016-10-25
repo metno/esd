@@ -38,7 +38,8 @@ subset.field(x,it=NULL,is=NULL)
 subset.spell(x,is=NULL,it=NULL) 
 subset.ds(x,it=NULL,is=NULL)
 subset.trend(x,it=NULL,is=NULL)
-subset.dsensemble(x,it=NULL,is=NULL,verbose=FALSE,...)
+subset.dsensemble(x,it=NULL,is=NULL,
+                  ensemble.aggregate=TRUE,verbose=FALSE,...)
 subset.dsensemble.multi(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                         verbose=FALSE,...)
 subset.zoo(x,it=NULL)
@@ -53,6 +54,8 @@ sort.station(x,is=NULL,decreasing=TRUE)
 \item{ip}{selection of patterns in PCA or EOF (used for e.g. filtreing
   the data)}
 \item{verbose}{Dump diagnostics to the screen}
+\item{ensemble.aggregate}{If TRUE, call \code{subset.dsensemble.multi}
+  if appropriate.}
  }
 \value{A field object}
 

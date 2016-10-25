@@ -298,17 +298,22 @@ subset.trend <- function(x,it=NULL,is=NULL) {
     return(y)
 }
 
-subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.dsensemble <- function(x,it=NULL,is=NULL,
+                              ensemble.aggregate=TRUE,verbose=FALSE,...) {
     ## browser()
 
     if (verbose) print('subset.dsensemble')
 
-    if (inherits(x,'list') & inherits(x,c('pca','eof'))) {
+    if (inherits(x,'list') & inherits(x,c('pca','eof')) &
+       (is.null(is)) & ensemble.aggregate) {
       #x <- as.station(x)
       ## Subset the PCA/EOF
       x <- subset.dsensemble.multi(x,it=it,is=is,verbose=verbose,...)
       return(x)
     }
+
+    if (!is.null(is)) x <- as.station(x)
+    
     if (inherits(x,'list') & !inherits(x,'zoo')) {
       if (verbose) print('list of elements')
       ## If x is a list of objects search through its elements
@@ -321,6 +326,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
       ## search on location name
         Locs <- tolower(Locs)
         locs <- substr(Locs,1,min(nchar(is)))
+        if (verbose) {print(is); print(locs)}
         is <- substr(is,1,min(nchar(is)))
         illoc <- (1:length(x))[is.element(locs,tolower(is))]
         if (length(illoc)==1) {
