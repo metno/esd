@@ -49,6 +49,7 @@
 \alias{glossstations}
 \alias{IPCC.AR5.Table.9.A.1}
 \alias{global.t2m.gcm}
+\alias{QBO}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -129,6 +130,7 @@ NASAgiss(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt')
 GSL(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv')
 data(global.t2m.gcm)
 AMO(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data')
+QBO(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data')
 }
 
 \arguments{
