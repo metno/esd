@@ -69,10 +69,27 @@ AMO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.
   amo[amo <= -99] <- NA
   amo <- zoo(c(t(as.matrix(amo[3:13]))),
              order.by=as.Date(paste(sort(rep(amo$V1,12)),rep(1:12,length(amo$V1)),'01',sep='-')))
-  amo <- as.station(amo,loc=NA,param='index',unit='dimensionless',
+  amo <- as.station(amo,loc=NA,param='AMO',unit='dimensionless',
                      lon=NA,lat=NA,alt=NA,
-                     cntr=NA,longname='AMO unsmoothed from the Kaplan SST V2',
+                     cntr=NA,longname='Atlantic Multi-decadal Oscillation unsmoothed from the Kaplan SST V2',
                      stid=NA,quality=NA,src='Calculated at NOAA/ESRL/PSD1',url=url,
                      reference=NA,info=NA, method= NA)
   return(amo)
+}
+
+QBO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data') {
+  qbo.test <- readLines(url)
+  nrows <- length(qbo.test) - 6
+  qbo <- read.table(url,skip=1,nrows=nrows)
+  qbo[qbo <= -999] <- NA
+  qbo <- zoo(c(t(as.matrix(qbo[2:13]))),
+             order.by=as.Date(paste(sort(rep(qbo$V1,12)),
+                               rep(1:12,length(qbo$V1)),'01',sep='-')))
+  amo <- as.station(qbo,loc=NA,param='QBO',unit='dimensionless',
+                     lon=NA,lat=NA,alt=NA,
+                     cntr=NA,longname='Quasi-biennial oscillation',
+                     stid=NA,quality=NA,src='Calculated at NOAA/ESRL PSD',
+                     url=url,reference=NA, method= NA,
+               info='http://www.esrl.noaa.gov/psd/data/climateindices/list/')
+  return(qbo)
 }
