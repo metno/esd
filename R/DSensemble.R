@@ -1884,6 +1884,10 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     if (length(table(season(y)))>1) {
       if (verbose) print('--- Apply DS to seasons seperately ---')
       Z <- list(info='DSensemble.eof for different seasons')
+      ## KMP 2016-10-25: Looping over seasons will not work if y is an eof object.
+      ##   I added a temporary fix, turning the multi-season eof object into a field
+      ##   before selecting a season. This could result in a serious loss of information.
+      if(inherits(y,"eof")) y <- as.field(y)
       for (season in names(table(season(y)))) {
         if (verbose) print(paste('Select',season))
         z <- DSensemble.eof(subset(y,it=season),lplot=lplot,path=path,
@@ -2177,7 +2181,15 @@ DSensemble.field <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
   ## For downscaling gridded predictand. This is a wrap-around which extracts the season or aggregates
   ## to annual values and then calls the other types for the downscaling.
-  
+  ## KMP 2016-10-25: Redirect to DSensemble.eof
+  if(verbose) print("DSensemble.field")
+  dse.eof <- DSensemble.eof(y,plot=plot,path=path,rcp=rcp,biascorrect=biascorrect,
+                           predictor=predictor,non.stationarity.check=non.stationarity.check,
+                           ip=ip,lon=lon,lat=lat,it=it,rel.cord=rel.cord,select=select,
+                           FUN=FUN,rmtrend=rmtrend,FUNX=FUNX,xfuns=xfuns,threshold=threshold,
+                           type=type,pattern=pattern,verbose=verbose,
+                           file.ds=file.ds,path.ds=path.ds,nmin=nmin)
+  invisible(dse.eof)
 }
 
 DSensemble.station <- function(y,plot=TRUE,path="CMIP5.monthly/",
