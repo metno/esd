@@ -8,6 +8,7 @@
 \alias{seasevol}
 \alias{seasevol.station}
 \alias{vis}
+\alias{vis.station}
 \alias{diagram}
 \alias{cumugram}
 \alias{climvar}
@@ -19,6 +20,7 @@
 \alias{graph.dsensemble}
 \alias{graph.zoo}
 \alias{graph.list}
+\alias{qq.test}
 \description{
   Wheel
 
@@ -42,6 +44,7 @@
 }
 \usage{
 vis(x,...)
+vis.station(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,...)
 diagram(x,...)
 diagram.dsensemble(x,it=0,...)
 diagram.station(x,...)
@@ -68,6 +71,8 @@ graph.list(x,img=NULL,it=0,
 graph.zoo(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
           lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE)
 balls(x,y=NULL,col=NULL,cex.max=2,n=20)
+qq.test(x,...)
+qp.test.station(x,...)
 }
 \arguments{
  \item{x}{a data object}
