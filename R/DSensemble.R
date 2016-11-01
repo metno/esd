@@ -47,7 +47,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="tas_Amon_ens_",
                            path.ds=NULL,file.ds="DSensemble.rda",
-                           nmin=NULL,verbose=FALSE) {
+                           nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE) {
 
   if (!inherits(y,'day')) warning('station is not daily data')
   if (verbose) print("predictand")
@@ -161,7 +161,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
-    #gcmnm[i] <- attr(gcm,'model_id')
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
+    #gcmnm[i] <- attr(gcm,'model_id'))
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     # REB: 30.04.2014 - new lines...
     DJFGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
@@ -370,7 +371,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
                               FUNX="sum",xfuns='C.C.eq',threshold=1,
-                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL) {
+                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
   # FUN: exceedance, wetfreq, wet, dry
 
   if (verbose) print('DSensemble.precip')
@@ -474,6 +475,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                     lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2),verbose=verbose)
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
@@ -608,7 +610,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
                               FUNX="mean",xfuns='C.C.eq',threshold=1,
-                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL) {
+                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
   # FUN: exceedance, wetfreq, wet, dry
 
   if (verbose) print('DSensemble.annual')
@@ -690,6 +692,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                     lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2),verbose=verbose)
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realisation'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
@@ -825,7 +828,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="psl_Amon_ens_",
                            path.ds=NULL,file.ds=NULL,
-                           nmin=NULL,verbose=FALSE) {
+                           nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE) {
 
   if(verbose) print("DSensemble.season")
   if ((FUN=='sd') | (FUN =='ar1')) {
@@ -931,6 +934,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                           lon=range(lon(SLP))+c(-2,2),
                           lat=range(lat(SLP))+c(-2,2),verbose=verbose)
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realisation'),sep="-")
     GCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
     rm("gcm"); gc(reset=TRUE)
@@ -1089,7 +1093,8 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           non.stationarity.check=FALSE,type='ncdf4',
                           ip=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="wetmean",threshold=1,
-                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365) {
+                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),
+                          verbose=FALSE,nmin=365,ds.1900.2099=TRUE) {
 
 # This function is for downscaling wet-day mean using a combination of predictors
 
@@ -1132,7 +1137,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                                      type=type,
                                                      lon=lon,lat=lat,
                                                      verbose=verbose)
-
+  
   # Combine the predictors
   if (verbose) print("Annual mean - predictors")
   PREX1 <- annual(C.C.eq(pre1),FUN='mean') # Clausius-Claperyron eq. -> sat. vapour pressure
@@ -1192,10 +1197,13 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
     print(paste(i,N,ncfiles1[select[i]],ncfiles2[select[i]],ncfiles3[select[i]]))
     gcm1 <- retrieve(ncfile = ncfiles1[select[i]],type=type,
                     lon=range(lon(PRE1))+c(-2,2),lat=range(lat(PRE1))+c(-2,2),verbose=verbose)
+    if (ds.1900.2099) gcm1 <- subset(gcm1,it=c(1900,2099))
     gcm2 <- retrieve(ncfile = ncfiles2[select[i]],type=type,
                     lon=range(lon(PRE2))+c(-2,2),lat=range(lat(PRE2))+c(-2,2),verbose=verbose)
+    if (ds.1900.2099) gcm2 <- subset(gcm2,it=c(1900,2099))
     gcm3 <- retrieve(ncfile = ncfiles3[select[i]],type=type,
                     lon=range(lon(PRE3))+c(-2,2),lat=range(lat(PRE3))+c(-2,2),verbose=verbose)
+    if (ds.1900.2099) gcm3 <- subset(gcm3,it=c(1900,2099))
     gcmnm[i] <- paste(attr(gcm1,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm1))
@@ -1356,7 +1364,8 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
                                     rcp="rcp45",biascorrect=FALSE,n=6,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf4',
-                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE) {
+                                    pattern="tas_Amon_ens_",mask=FALSE,
+                                    verbose=FALSE,ds.1900.2099=TRUE) {
   if (verbose) print('DSensemble.mu.worstcase')
 
   ## The predictor is based on the seasonal variations and assumes that the seasnoal cycle in the
@@ -1470,6 +1479,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print(ncfiles[select[i]])
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,
                       type=type,verbose=FALSE)
+      if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
       if (verbose) print(paste('mask=',mask))
       if (mask) gcm <- mask(gcm,land=TRUE)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -1529,7 +1539,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="tas_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
 
   if (verbose) print('DSensemble.pca')
   cls <- class(y)
@@ -1648,6 +1658,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
     if (!is.null(it)) {
       if (verbose) print('Extract some months or a time period')
       if (is.null(nmin)) warning(paste("The argument 'it' is set but not 'nmin'; it=",
@@ -1854,7 +1865,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="psl_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.eof.rda",path.ds=NULL) {
+                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE) {
 
   if(verbose) print("DSensemble.eof")
   stopifnot(inherits(y,c("EOF","field")))
@@ -1957,6 +1968,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
                           lon=range(lon(SLP))+c(-2,2),
                           lat=range(lat(SLP))+c(-2,2),
                           lev=levgcm,verbose=verbose)
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
     ## KMP 2016-08-09 added separate level input for slp and gcm
     ##                because they can have levels of different units
     if(is.null(levgcm) & !is.null(attr(gcm,"level")))
@@ -2174,7 +2186,7 @@ DSensemble.field <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="tas_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
   ## For downscaling gridded predictand. This is a wrap-around which extracts the season or aggregates
   ## to annual values and then calls the other types for the downscaling.
   
@@ -2190,5 +2202,5 @@ DSensemble.station <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="tas_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL) {
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
 }
