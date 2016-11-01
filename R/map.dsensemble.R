@@ -47,7 +47,7 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   Y <- V %*% diag(D) %*% t(U)
   ## Add mean and insert into zoo frame
   if (!anomaly) Y <- t(t(Y) + c(attr(UWD,'mean')))
-  Y <- zoo(Y,order.by=index(V))
+  Y <- zoo(Y,order.by=index(subset(X[[1]],it=it)))
   Y <- attrcp(UWD,Y)
   class(Y) <- class(UWD)[-1]
   if (inherits(x,'eof')) attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
@@ -78,7 +78,9 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
 
 
 
-map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,colbar=NULL,
+map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
+                           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                                   show=TRUE,type="p",cex=2,h=0.6,v=1),
                            FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,...) {
   ## PCA/EOF objects
 

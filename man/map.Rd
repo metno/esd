@@ -84,8 +84,10 @@ map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
          type= c("fill", "contour"),gridlines=FALSE,
          lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE,plot=TRUE,...)
 
-map.dsensemble(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,colbar=NULL,
-               FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE)
+map.dsensemble(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
+                           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                                   show=TRUE,type="p",cex=2,h=0.6,v=1),
+                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,...)
 
 map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
             xlim=NULL,ylim=NULL,zlim=NULL, 
