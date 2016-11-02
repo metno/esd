@@ -1057,17 +1057,20 @@ plot.diagnose <- function(x,...) {
   if (inherits(x,"dsensembles")) plot.diagnose.dsensemble(x,...)
 }
 
-plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,new=TRUE,...) {
+plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,
+                                   alpha=0.5,lwd=2,verbose=FALSE,...) {
   if (verbose) print('plot.diagnose.comb.eof')
   stopifnot(!missing(x), inherits(x,"diagnose"),
             inherits(x,"eof"),inherits(x,"comb"))
 
   n <- length(x$mean.diff)
   j <- 1:n
-  col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n),0.3)
+  col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n),alpha)
 
-  if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
-  if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
+  ## KMP 2016-11-02 xlim changed because of changes in diagnose.comb.eof
+  #if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
+  if (is.null(xlim)) xlim <- range(c(-1,1,x$mean.diff),na.rm=TRUE)
+  if (is.null(ylim)) ylim <- range(c(-1,1,x$sd.ratio),na.rm=TRUE)
   
   if (!add) {
     if (new) dev.new()
@@ -1075,12 +1078,17 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
     par0 <- par()
     wt <- 0:360
     plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
-         xlab="mean difference",ylab=expression(paste("|",sigma[pre] - sigma[ref],"|/",sigma[pre])),
+         ## KMP 2016-11-02 changed definition of the sd ratio and diff (see diagnose.comb.eof)
+         #xlab="mean difference",
+         #ylab=expression(paste("|",sigma[pre] - sigma[ref],"|/",sigma[pre])),
+         #xlab=expression(paste("(mean difference)/",sigma[ref])),
+         xlab=expression(paste("(",mean[ref] - mean[pre],")/",sigma[ref])),
+         ylab=expression(paste("(",sigma[ref] - sigma[pre],")/",sigma[ref])),
          main=paste("Diagnostics: common EOFs",attr(x,'variable')),
          xlim=xlim,ylim=ylim,col="grey",
          sub=paste(x$calibrationdata," - ",rownames(x$mean.diff),collapse = "/"))
-    lines(c(0,10),rep(0,2))
-    lines(rep(0,2),c(0,10))
+    lines(c(-10,10),rep(0,2))
+    lines(rep(0,2),c(-10,10))
     grid()
     xpos <- xlim[2] - 0.2*diff(xlim)
     ypos <- ylim[1] + 0.1*diff(ylim)
@@ -1104,18 +1112,17 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
          xlab='',ylab='',main='',sub='')
     par(par0$new)
   }
-  cex <- x$autocorr.ratio;
+  cex <- x$autocorr.ratio*1.5;
   pch <- rep(19,n); pch[cex < 0] <- 21
-  cex <- abs(cex); cex[cex > 2] <- 2
+  cex <- abs(cex); cex[cex > 2.5] <- 2.5
   if (verbose) {
      print('Mean difference:');print(x$mean.diff)
      print('Ration of standard deviation');print(x$sd.ratio)
      print('Size');print(cex)
      print('col');print(col)
-     #points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
   }
   
-  points(abs(x$mean.diff),x$sd.ratio,pch=pch,col=col,cex=cex)
+  points(x$mean.diff,x$sd.ratio,pch=pch,col=col,lwd=lwd,cex=cex)
 
 }
 

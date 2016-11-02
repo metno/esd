@@ -51,10 +51,14 @@ diagnose.comb.eof <- function(x,verbose=FALSE) {
     #plot(Ym)
     Ys <- apply(coredata(X),2,sd,na.rm=TRUE)
     AR <- apply(coredata(X),2,ACF)
-    dm[i,] <- Ym[1:m] - Ym[(m+1):(2*m)]
+    ## KMP 2016-11-02 normalise the difference with the standard deviation
+    #dm[i,] <- (Ym[1:m] - Ym[(m+1):(2*m)])
+    dm[i,] <- (Ym[1:m] - Ym[(m+1):(2*m)])/Ys[1:m]
     # ratio: GCM/original
     # The problem is when the denominator is close to zero...
-    sr.test <- abs((Ys[(m+1):(2*m)] - Ys[1:m])/Ys[(m+1):(2*m)] )
+    #sr.test <- abs((Ys[(m+1):(2*m)] - Ys[1:m])/Ys[(m+1):(2*m)] )
+    ## KMP 2016-11-02 removed abs and made the reference data the denominator
+    sr.test <- (Ys[1:m] - Ys[(m+1):(2*m)] )/Ys[1:m]
     sr.test[!is.finite(sr.test)] <- 0
     sr[i,] <- sr.test
     ar[i,] <- 0.5*( 2- abs(AR[(m+1):(2*m)] - AR[1:m]) )*sign(AR[(m+1):(2*m)],AR[1:m])
@@ -65,7 +69,7 @@ diagnose.comb.eof <- function(x,verbose=FALSE) {
   rownames(sr) <- rowname
   rownames(ar) <- rowname
   ## KMP 19-11-2015: added abs(dm) because the sign is arbitrary
-  diag <- list(mean.diff=abs(dm),sd.ratio=sr,autocorr.ratio=ar,
+  diag <- list(mean.diff=dm,sd.ratio=sr,autocorr.ratio=ar,
                common.period=range(index(Y)),sd0=Ys,
                calibrationdata=attr(x,'source'))
   attr(diag,'variable') <- attr(x,'variable')
