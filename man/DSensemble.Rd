@@ -60,7 +60,7 @@ DSensemble.t2m(y,plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="tas_Amon_ens_",
                            path.ds=NULL,file.ds="DSensemble.rda",
-                           nmin=NULL,verbose=FALSE)
+                           nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE)
 DSensemble.precip((y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_pr_mon.nc",
@@ -69,7 +69,7 @@ DSensemble.precip((y,plot=TRUE,path="CMIP5.monthly/",
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
                               FUNX="sum",xfuns='C.C.eq',threshold=1,
-                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL)
+                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE)
 DSensemble.annual(y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_t2m_mon.nc",
@@ -77,7 +77,7 @@ DSensemble.annual(y,plot=TRUE,path="CMIP5.monthly/",
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
                               FUNX="mean",xfuns='C.C.eq',threshold=1,
-                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL)
+                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE)
 DSensemble.season(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,
@@ -86,7 +86,7 @@ DSensemble.season(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="psl_Amon_ens_",
                            path.ds=NULL,file.ds=NULL,
-                           nmin=NULL,verbose=FALSE)
+                           nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE)
 DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
                           predictor=list(t2m="data/ncep/air.mon.mean.nc",
@@ -101,7 +101,7 @@ DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
                                     rcp="rcp45",biascorrect=FALSE,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf',
-                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE)
+                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE,ds.1900.2099=TRUE)
 DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
                           predictor="ERA40_t2m_mon.nc",
@@ -110,7 +110,7 @@ DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
                           select=NULL,FUN="mean",rmtrend=TRUE,
                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf',
                           pattern="tas_Amon_ens_",verbose=FALSE,
-                          file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL)
+                          file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE)
 DSensemble.eof(y,lplot=TRUE,path="CMIP5.monthly",
                            rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_slp_mon.nc",
@@ -120,7 +120,7 @@ DSensemble.eof(y,lplot=TRUE,path="CMIP5.monthly",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="psl_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.eof.rda",path.ds=NULL)
+                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE)
 }
 \arguments{
     \item{y}{A station object.}
@@ -156,6 +156,7 @@ reading GCM data.}
 \code{annual(x,FUN=f)}. These functions are used using the following
 code \code{annual(f(x),FUN="mean")}}
     \item{mask}{TRUE mask out land}
+    \item{ds.1900.2099}{Default, only downscale for the period 1900-2099}
  }
 \value{A 'dsensembele' object - a list object holding DS-results.}
 \author{R.E. Benestad and A. Mezghani}

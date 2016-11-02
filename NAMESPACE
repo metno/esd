@@ -432,6 +432,8 @@ export(pentad)
 export(biasfix)
 
 export(vec)
+export(qp.test)
+export(qp.test.station)
 export(vis)
 export(vis.station)
 export(vis.field)
