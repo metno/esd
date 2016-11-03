@@ -36,7 +36,7 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   U <- attr(UWD,'pattern'); dU <- dim(U)
 
   if (inherits(x,'eof')) {
-    if (verbose) {print('eof'); print(du)}
+    if (verbose) {print('eof'); print(dU)}
     dim(U) <- c(dU[1]*dU[2],dU[3])
   }
   dim(V) <- d
@@ -52,7 +52,7 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   class(Y) <- class(UWD)[-1]
   if (inherits(x,'eof')) attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
   attr(Y,'mean') <- NULL
-  if (verbose) {print('expandpca done'); print(dim(Y))}
+  if (verbose) {print('exit expandpca'); print(dim(Y))}
   return(Y)
 }
 
@@ -134,6 +134,7 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   }
   Y <- c(Y,y)
   class(Y) <- cls
+  if (verbose) print('exit subset.dsensemble.multi')
   return(Y)
 }
 

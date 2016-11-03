@@ -94,6 +94,7 @@ pca2eof <- function(x,verbose=FALSE,xlim=NULL,ylim=NULL) {
   attr(y,'variable') <- varid(x)[1]
   attr(y,'unit') <- unit(x)[1]
   attr(y,'longname') <- attr(x,'longname')[1]
+  attr(y,'greenwich') <- TRUE
   class(y) <- c('eof','field',class(x)[-c(1,2)])
   return(y)
 }

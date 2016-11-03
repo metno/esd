@@ -98,7 +98,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   
   if(map.show & !map.insert) {
     vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.8,...)
+            cex.axis=cex.axis,cex=1.8,verbose=verbose,...)
     new <- TRUE
   }
 
@@ -153,9 +153,9 @@ plot.station <- function(x,plot.type="single",new=TRUE,
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
 
-    if(map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
-                                      cex.axis=cex.axis*0.75,
-                                      add.text=FALSE,map.insert=map.insert,...)
+    if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
+                                       cex.axis=cex.axis*0.75,add.text=FALSE,
+                                       map.insert=map.insert,verbose=verbose,...)
     par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",
         xpd=FALSE,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
@@ -193,7 +193,7 @@ vis.map <- function(x,col='red',map.type=NULL,
         if (length(lon(x))==1) zoom <- 8 else {
           ## zoom = 12 is very local, zoom = 1 is the world
           mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
-          zoom <- 12 + floor(log(mxdst/360))
+          zoom <- 1 - floor(0.75*log(mxdst/360))
         }
                              
       }
@@ -1331,7 +1331,7 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
   
   if (inherits(x,c('pca','eof'))) {
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
-    plot(Y,...)
+    plot(Y,verbose=verbose,...)
     invisible(Y)
   } else return(NULL)
 }

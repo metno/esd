@@ -65,8 +65,12 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
         if ( (is.null(is[[2]])) | (sum(is.finite(is[[2]])) < 2) ) is[[2]] <- c(-90,90)
         
                                         # Select a subregion from the EOFs:
-        lons <- attr(x,'longitude'); lon.rng <- range(lons)
-        lats <- attr(x,'latitude'); lat.rng <- range(lats)
+        if (verbose) print(names(attributes(x)))
+        lons <- lon(x); lon.rng <- range(lon(x))
+        lats <- lat(x); lat.rng <- range(lat(x))
+        if (verbose) {print(lon.rng); print(lat.rng)}
+        ## REB 2016-11-03: pca2eof forgot the greenwich attribute.
+        if (is.null(attr(x,'greenwich'))) attr(x,'greenwich') <- TRUE
         X <- attr(x, "pattern")
         if ( (length(is[[1]])==2) & (length(is[[2]])==2) ) {
             lon.rng <- range(is[[1]]); lat.rng <- range(is[[2]])
@@ -152,6 +156,7 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
                                         #attr(y,'call') <- match.call()
     attr(y, "dimensions") <- dim(attr(x,"pattern"))
     attr(y,'history') <- history.stamp(x)
+    if (verbose) print('exit subset.eof')
     return(y)
 }
 
@@ -302,16 +307,19 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE,...) {
     ## browser()
 
-    if (verbose) print('subset.dsensemble')
+    if (verbose) paste('subset.dsensemble')
 
     if (inherits(x,'list') & inherits(x,c('pca','eof')) &
-       (is.null(is)) & ensemble.aggregate) {
+       (inherits(x,'dsensemble')) & ensemble.aggregate) {
+      if (verbose) print('list + pca/eof detected')
       #x <- as.station(x)
       ## Subset the PCA/EOF
       x <- subset.dsensemble.multi(x,it=it,is=is,verbose=verbose,...)
+      if (verbose) print('exit subset.dsensemble')
       return(x)
     }
-
+    if (verbose) {print('list + pca/eof NOT detected');print(ensemble.aggregate)}
+    
     if (!is.null(is)) x <- as.station(x)
     
     if (inherits(x,'list') & !inherits(x,'zoo')) {
@@ -342,6 +350,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,
           } 
         } else if (length(illoc)==0) return(NULL)
         if (verbose) {print(is); print(loc(x2))}
+        if (verbose) print('exit subset.dsensemble')
         return(x2)
       }
     }
