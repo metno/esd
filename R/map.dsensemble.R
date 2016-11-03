@@ -33,8 +33,12 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   ## Apply FUNX to each of the PCs across all members
   #
   
-  U <- attr(UWD,'pattern'); dU <- dim(U)
-
+  U <- attr(UWD,'pattern')
+  if (!is.null(dim(U))) dU <- dim(U) else {
+                        dU <- c(1,length(U)) # If there is only one single station
+                        dim(U) <- dU
+                      }
+  if (verbose) {print(d); print(dU)}
   if (inherits(x,'eof')) {
     if (verbose) {print('eof'); print(dU)}
     dim(U) <- c(dU[1]*dU[2],dU[3])

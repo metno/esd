@@ -333,9 +333,17 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   } else {
     #if (is.null(is)) is <- 1:length(loc(X$pca)) 
     if (verbose) print('Extract the results model-wise')
+    ## Find the size of the PC matrices representing model projections
     d <- apply(sapply(X[3:length(X)],dim),1,min)
+    ## The PCs from the list are extracted into the matrix V 
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    ## Select number of patterns
+
+    ## REB 2016-11-03
+    ## If there is only one single station, avoid collapse of dimension
+    if (is.null(dim(attr(X$pca,'pattern'))))
+      dim(attr(X$pca,'pattern')) <- c(1,length(attr(X$pca,'pattern')))
     if (is.null(ip)) {
       U <- attr(X$pca,'pattern')
       W <- attr(X$pca,'eigenvalues')
@@ -345,9 +353,13 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
       W <- attr(X$pca,'eigenvalues')[ip]
       V <- V[,ip,]
     }    
+      
+    ## Multi-station case (REB 2016-11-03)
+    if (verbose) print('multiple stations')
     d <- dim(U)
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], length(X)-2)
+    
     for (i in seq(1:dim(S)[1])) {
       S[i,,] <- S[i,,] + c(attr(X$pca,'mean'))[i]
     }
@@ -361,7 +373,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     ##  lines(S[[1]][,i],col=adjustcolor("blue",alpha=0.3))
     #}
     if (verbose) print('Set attributes')
-    Y <- as.station(X$pca)
+    Y <- as.station(X$pca,verbose=verbose)
     locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(Y,"location")))
     locations <- gsub("__","_",locations)
     ##locations <- paste(paste("i",attr(X$pca,"station_id"),sep=""),

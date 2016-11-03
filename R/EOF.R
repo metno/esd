@@ -393,7 +393,7 @@ eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE) {
                 longname=attr(eof,'longname'),src=attr(eof,'source'),
                 url=attr(eof,'url'),reference=attr(eof,'reference'),
                 info=attr(eof,'info'),calendar=attr(eof,'calendar'),
-                greenwich=attr(eof,'greenwich'))
+                greenwich=attr(eof,'greenwich'),verbose=verbose)
   if (!is.null(lon) | !is.null(lat)) {
     if (is.null(lon)) lon <- c(-180,180)
     if (is.null(lat)) lat <- c(-90,90)
@@ -485,13 +485,19 @@ PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL) {
 }
 
 # Transfer PCA back to station data
-pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE) {
+pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
+                        what='pca',verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if (inherits(X,'ds')) class(X) <- class(X)[-1]
   if (verbose) print('pca2station')
   
   pca <- X
   cls <- class(pca)
+
+  ## REB 2016-11-03
+    ## If there is only one single station, avoid collapse of dimension
+  if (is.null(dim(attr(pca,'pattern'))))
+    dim(attr(pca,'pattern')) <- c(1,length(attr(pca,'pattern')))
   U <- attr(pca,'pattern')
   d <- dim(U)
   W <- attr(pca,'eigenvalues')
@@ -503,10 +509,11 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
     V <- coredata(attr(X,'evaluation')[,seq(1,dim(attr(X,'evaluation'))[2]-1,by=2)])
   }
   V[!is.finite(V)] <- 0
-  #str(U); str(W); str(V)
+  if (verbose) {str(U); str(W); str(V)}
   x <-U %*% diag(W) %*% t(V)
-  #str(x)
-  
+  if (verbose) str(x)
+
+  if (verbose) print(paste('anomaly=',anomaly))
   if (!anomaly)
     x <- x + c(attr(pca,'mean'))
   x <- zoo(t(x),order.by=index(pca))
@@ -516,6 +523,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
 #  attr(x,'call') <- match.call()
 #  class(x) <- class(pca)[-1]
 
+  if (verbose) print(attr(pca,'location'))
   names(x) <- attr(pca,'location') # AM 30.07.2013 added
 
   x <- attrcp(pca,x)
@@ -523,6 +531,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
   # REB 2014-10-27: if the object is DS-results, then look for
   # cross-validation
   if (!is.null(attr(pca,'evaluation'))) {
+    if (verbose) print('include evaluation')
     cval <- attr(pca,'evaluation')
     d.cval <- dim(cval)
     V.x <- coredata(cval)
@@ -552,6 +561,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
   ## REB 2016-05-09: if the object is DS-results, then look for
   ## common EOFs
   if (!is.null(attr(pca,'n.apps'))) {
+    if (verbose) print(paste('include',attr(pca,'n.apps')))
     for (i.app in 1:attr(pca,'n.apps')) {
       cval <- attr(pca,paste('appendix.',i.app,sep=''))
       d.cval <- dim(cval)
@@ -573,6 +583,6 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
   attr(x,'latitude') <- attr(pca,'latitude')
   attr(x,'history') <- history.stamp(pca)
   class(x) <- cls[-1]
-  #print("HERE")
+  if (verbose) print("exit pca2station")
   invisible(x)
 }

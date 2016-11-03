@@ -209,6 +209,7 @@ subset.pattern <- function(x,is,verbose=FALSE) {
           x <- y
         }
     } 
+    attr(x,'history') <- history.stamp(x)  
     return(x)
 }
 
@@ -218,8 +219,10 @@ subset.matrix <- function(x,is,verbose=FALSE)
 
 subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print('subset.pca')
+  y <- x
   if (!is.null(ip)) {
-    y <- x[,ip]
+    if (verbose) {print('subset in pattern'); print(ip)}
+    y <- y[,ip]
     y <- attrcp(x,y)
     class(y) <- class(x)
     attr(y,'eigenvalues') <- attr(y,'eigenvalues')[ip]
@@ -228,18 +231,55 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
       attr(y,'n.apps') <- attr(x,'n.apps')
       attr(y,'appendix.1') <- attr(x,'appendix.1')
     }
-    x <- y
   }
   if (!is.null(it)) {
-    y <- subset.station(x,it=it,verbose=verbose)
-    y <- attrcp(x,y)
+    if (verbose) {print('subset in time'); print(it)}
+    y0 <- y
+    y <- subset.station(y,it=it,verbose=verbose)
+    y <- attrcp(y0,y)
+    rm('y0'); gc(reset=TRUE)
     class(y) <- class(x)
-    x <- y
   }
-
+  if (!is.null(is)) {
+    if (verbose) {print('subset in space'); print(is)}
+    if (is.list(is)) {
+      keep <- (lon(x) <= max(is$lon)) & (lon(x) >= min(is$lon)) & 
+              (lat(x) <= max(is$lat)) & (lat(x) >= min(is$lat))
+      attr(y,'pattern') <- attr(y,'pattern')[keep,]
+      attr(y,'location') <- loc(y)[keep]
+      attr(y,'longitude') <- lon(y)[keep]
+      attr(y,'latitude') <- lat(y)[keep]
+      attr(y,'altitude') <- alt(y)[keep]
+      attr(y,'variable') <- varid(y)[keep]
+      attr(y,'unit') <- unit(y)[keep]
+      attr(y,'longname') <- attr(y,'longname')[keep]
+      attr(y,'country') <- cntr(y)[keep]
+      attr(y,'station_id') <- stid(y)[keep]
+      attr(y,'source') <- src(y)[keep]
+      attr(y,'quality') <- attr(y,'quality')[keep]
+      attr(y,'url') <- attr(y,'url')[keep]
+      attr(y,'mean') <- attr(y,'mean')[keep]
+      
+    } else if ((is.numeric(is)) | is.logical(is)) {
+      attr(y,'pattern') <- attr(y,'pattern')[is,]
+      attr(y,'location') <- loc(y)[is]
+      attr(y,'longitude') <- lon(y)[is]
+      attr(y,'latitude') <- lat(y)[is]
+      attr(y,'altitude') <- alt(y)[is]
+      attr(y,'variable') <- varid(y)[is]
+      attr(y,'unit') <- unit(y)[is]
+      attr(y,'longname') <- attr(y,'longname')[is]
+      attr(y,'country') <- cntr(y)[is]
+      attr(y,'station_id') <- stid(y)[is]
+      attr(y,'source') <- src(y)[is]
+      attr(y,'quality') <- attr(y,'quality')[is]
+      attr(y,'url') <- attr(y,'url')[is]
+      attr(y,'mean') <- attr(y,'mean')[is]
+    }
+  }
   #browser()
-  
-  return(x)
+  attr(y,'history') <- history.stamp(x)  
+  return(y)
 }
 
 subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
@@ -260,6 +300,7 @@ subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     attr(y,"dimensions") <- c(length(attr(y,"longitude")),
                               length(attr(y,"latitude")))
     class(y) <- "corfield"
+    attr(y,'history') <- history.stamp(x)  
     return(y)
 }
 
@@ -288,6 +329,7 @@ subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
       if (verbose) print(paste('is=',is))
         x <- subset.pattern(x,is,verbose=verbose)
     }
+    attr(x,'history') <- history.stamp(x)  
     x
 }
 
@@ -315,10 +357,11 @@ subset.trend <- function(x,it=NULL,is=NULL) {
         }
         attr(y, "pattern") <- pattern
     }
+    attr(y,'history') <- history.stamp(x)  
     return(y)
 }
 
-subset.dsensemble <- function(x,it=NULL,is=NULL,
+subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE,...) {
     ## browser()
 
@@ -329,7 +372,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,
       if (verbose) print('list + pca/eof detected')
       #x <- as.station(x)
       ## Subset the PCA/EOF
-      x <- subset.dsensemble.multi(x,it=it,is=is,verbose=verbose,...)
+      x <- subset.dsensemble.multi(x,it=it,is=is,ip=ip,verbose=verbose,...)
       if (verbose) print('exit subset.dsensemble')
       return(x)
     }
@@ -564,9 +607,9 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,
         attr(y, "model_id") <- attr(x, "model_id")[is]
         attr(y, "scorestats") <- attr(x, "scorestats")[is]
                                         #browser()
-        attr(y,"history") <- history.stamp(x)
         if (length(is)==1) class(y) <- c("ds","zoo") else class(y) <- class(x)
     }
+    attr(y,'history') <- history.stamp(x)  
     if (verbose) print("exit subset.dsensemble")
     invisible(y)  
 }
@@ -723,6 +766,7 @@ default.subregion <- function(x,is=NULL,verbose=FALSE) {
       attr(y,'ixy') <- ixy
     }
   }
+  attr(y,'history') <- history.stamp(x)  
   return(y)
 } 
     
@@ -1160,6 +1204,7 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   ij <- ii & jj
   y <- x[ij,]
   attr(y,"aspect") <- "subset"
+  attr(y,'history') <- history.stamp(x)  
   if (!is.null(is$lat)) attr(y,"lat") <- is$lat
   if (!is.null(is$lon)) attr(y,"lon") <- is$lon
   class(y) <- cls
