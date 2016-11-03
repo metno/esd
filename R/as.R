@@ -382,9 +382,9 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
        attr(yi,"altitude") <- alts[i]
        attr(yi,"station_id") <- stid[i]
        attr(yi,"location") <- locs[i]
-       attr(yi,"unit") <- attr(X,"unit")
-       attr(yi,"variable") <- attr(X,"variable")
-       attr(yi,"longname") <- attr(X,"longname")
+       attr(yi,"unit") <- attr(X$pca,"unit")
+       attr(yi,"variable") <- attr(X$pca,"variable")
+       attr(yi,"longname") <- attr(X$pca,"longname")
        attr(S[[i]],"station") <- yi
        attr(S[[i]],'aspect') <- 'original'
        attr(S[[i]],"longitude") <- lons[i]
@@ -397,9 +397,9 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     class(S) <- c("dsensemble","station","list")
-    attr(S,"unit") <- attr(X,"unit")
-    attr(S,"variable") <- attr(X,"variable")
-    attr(S,"longname") <- attr(X,"longname")
+    attr(S,"unit") <- attr(X$pca,"unit")
+    attr(S,"variable") <- attr(X$pca,"variable")
+    attr(S,"longname") <- attr(X$pca,"longname")
     attr(S,"aspect") <- "dsensemble.pca transformed to stations"
     attr(S,"history") <- history.stamp()
     invisible(S)
