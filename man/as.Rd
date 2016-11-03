@@ -18,6 +18,7 @@
 \alias{as.field.ds}
 \alias{as.field.field}
 \alias{as.field.station}
+\alias{as.field.dsensemble.eof}
 \alias{as.anomaly}
 \alias{as.anomaly.default}
 \alias{as.anomaly.zoo}
@@ -137,6 +138,7 @@ as.field.eof(x,...)
 as.field.comb(x,iapp=NULL,...)
 as.field.ds(x,iapp=NULL,...)
 as.field.station(x,...)
+as.field.dsensemble.eof(x,is=NULL,ip=NULL,verbose=FALSE,...)
 as.fitted.values(x)
 as.fitted.values.ds(x)
 as.fitted.values.station(x)

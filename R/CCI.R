@@ -1,7 +1,8 @@
 # K Parding, 29.05.2015
+# Last updated 10.10.2016
 
-CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
-                label=NULL,mindistance=5E5,dpmin=1E-3,hmax=1000,
+CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
+                label=NULL,mindistance=5E5,dpmin=1E-3,hmax=4000,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,
                 do.track=FALSE,verbose=FALSE,...) {
@@ -9,7 +10,12 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
 
   stopifnot(inherits(Z,'field'))
   Z <- subset(Z,it=it,is=is)
-  if (any(longitude(Z)>180)) Z <- g2dl(Z,greenwich=FALSE)
+  if(is.null(greenwich) & !is.null(attr(Z,"greenwich"))) {
+    greenwich <- attr(Z,"greenwich")
+  } else if (is.null(greenwich) & is.null(attr(Z,"greenwich"))) {
+    greenwich <- !(any(lon(Z)<0) | !any(lon(Z)>180))
+  }  
+  Z <- g2dl(Z,greenwich=greenwich)
   
   #yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
   #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
@@ -162,15 +168,39 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     i.lon <- which.min(abs(longitude(etopo5)-lon))
     i.lat <- which.min(abs(latitude(etopo5)-lat))
     h <- etopo5[i.lon,i.lat]
-    return(mean(h))
-  }    
+    h[h<0] <- 0
+    nlon <- max(longitude(etopo5))
+    nlat <- max(latitude(etopo5))
+    dhdx <- abs(etopo5[min(i.lon+1,nlon),i.lat]-etopo5[max(i.lon-1,1),i.lat])/
+            (distAB(lon+dx,lat,lon-dx,lat)*1E-3)
+    dhdy <- abs(etopo5[i.lon,min(i.lat+1,nlat)]-etopo5[i.lon,max(i.lat-1,1)])/
+            (distAB(lon,lat+dx,lon,lat-dx)*1E-3)
+    return(c(mean(h),mean(dhdx),mean(dhdy)))
+  }
+
+  ## Penalty for topography
   h <- mapply(fn,lonXY,latXY)
-  ok <- rep(h<hmax,nt)
-  dim(ok) <- c(nx-1,ny-1,nt)
-  ok <-aperm(ok,c(3,1,2))
-  lows1[!ok] <- FALSE
-  lows2[!ok] <- FALSE
- 
+  pf.h <- 1 - 0.25*h[1,]/2000
+  pf.h[pf.h>2000] <- 0
+  pf.h <- rep(pf.h,nt)
+  dim(pf.h) <- c(nx-1,ny-1,nt)
+  pf.h <- aperm(pf.h,c(3,1,2))  
+  
+  #ok <- rep(h[1,]>=hmax,nt)
+  #dim(ok) <- c(nx-1,ny-1,nt)
+  #ok <-aperm(ok,c(3,1,2))
+  #lows1[!ok] <- FALSE
+  #lows2[!ok] <- FALSE
+
+  ## Penalty factor for topography gradient
+  dh <- apply(h[2:3,],2,max)  
+  pf.dh <- 1 - 0.25*dh/200
+  pf.dh[h[1,]<=0] <- 1
+  pf.dh[dh>200] <- 0
+  pf.dh <- rep(pf.dh,nt)
+  dim(pf.dh) <- c(nx-1,ny-1,nt)
+  pf.dh <- aperm(pf.dh,c(3,1,2))  
+  
   ## Quality flag to keep track of cyclones found with widened mask
   qf <- matrix(rep(0,length(lows1)),dim(lows1))
   qf[lows1] <- 1
@@ -306,6 +336,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     date <- date[lows]
     pcent <- 0.5*(px[lows]+py[lows])
     qf <- qf[lows]
+    pf.h <- pf.h[lows]
+    pf.dh <- pf.dh[lows]
+   
     rm("lows","lows1","lows2","lon1","lon2","lat1","lat2",
      "date1","date2","strength1","strength2",
      "pcent1","pcent2","del1","del2"); gc(reset=TRUE)
@@ -317,6 +350,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     date <- date[i]
     pcent <- pcent[i]
     qf <- qf[i]
+    pf.h <- pf.h[i]
+    pf.dh <- pf.dh[i]
     strength <- rank(pcent)
     if (!cyclones) strength <- rank(-pcent)
 
@@ -328,6 +363,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       date <- date[s<nsim]
       pcent <- pcent[s<nsim]
       qf <- qf[s<nsim]
+      pf.h <- pf.h[s<nsim]
+      pf.dh <- pf.dh[s<nsim]
     }
 
     ## Pressure gradient
@@ -388,12 +425,20 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
       ilat <- ilat[!is.na(ilat)]
       oki <- sum(!is.na(ilon))>=3
       if(oki) {
-       dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-       oki <- sum(!is.na(dpi) & dpi>dpmin/2)>=3 &
-              mean(dpi,na.rm=TRUE)>dpmin
-      #   sum(dpi>dpmin & !is.na(dpi))>=3 #&
-      #   ( mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
-      #   (!cyclones & mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) ) 
+        dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
+        pf.dhi <- pf.dh[i]
+        pf.hi <- pf.h[i]
+        pf.dpi <- 1-10^(-0.31*dpi/dpmin)
+        pf.i <- (pf.hi+pf.dhi)/2*pf.dpi
+        print(pf.dpi)
+        print(pf.i)
+        #browser()
+        oki <- sum(!is.na(dpi) & pf.i>=0.5)>=3
+        #oki <- sum(!is.na(dpi) & dpi>dpmin/2)>=3 &
+        #       mean(dpi,na.rm=TRUE)>dpmin
+        #   sum(dpi>dpmin & !is.na(dpi))>=3 #&
+        #   ( mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
+        #   (!cyclones & mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) ) 
       }
       if (oki) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
@@ -401,7 +446,8 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
         vg <- dpi/(fi*rho)
         v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
         radius[i] <- mean(ri,na.rm=TRUE)
-        dslp[i] <- mean(mapply(function(a,b) 0.5*(px+py)[t==date[i],a,b],ilon,ilat)-pcent[i])
+        dslp[i] <- mean(mapply(function(a,b) 0.5*(px+py)[t==date[i],a,b],
+                               ilon,ilat)-pcent[i])
         max.gradient[i] <- mean(dpi,na.rm=TRUE)
         max.speed[i] <- mean(v.grad,na.rm=TRUE)
         max.vg[i] <- mean(vg,na.rm=TRUE)
@@ -416,7 +462,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     if (verbose) print("transform pressure gradient units: Pa/m -> hPa/km")
     max.gradient <- max.gradient*1E-2*1E3
     if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
-
+    
     ok <- ok & dslp>=0
     if(!is.null(rmin)) ok <- ok & radius>=rmin
     if(!is.null(rmax)) ok <- ok & radius<=rmax
@@ -434,8 +480,9 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     if (!cyclones) strength <- rank(-pcent)
 
     if (lplot) {
-     if(verbose) print("plot example of cyclone identification")
+      if(verbose) print("plot example of cyclone identification")
       data(geoborders,envir=environment())
+      browser()
       i <- length(date)/2
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
@@ -462,7 +509,23 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
           xlab="lon",ylab="lat",breaks=seq(940,1080,10))
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(940,1010),nlevels=6)
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1080),nlevels=5)
-      lines(geoborders,col="grey40")
+      if(!greenwich) {
+        lines(geoborders,col="grey40")
+      } else {
+        gb.w <- geoborders
+        gb.e <- geoborders
+        lon.gb <- gb.w[,1]
+        lon.gb[!is.na(lon.gb) & lon.gb<0] <-
+          lon.gb[!is.na(lon.gb) & lon.gb<0] + 360
+        lon.w <- lon.gb
+        lon.e <- lon.gb
+        lon.w[!is.na(lon.w) & lon.w>=180] <- NA
+        lon.e[!is.na(lon.e) & lon.e<180] <- NA
+        gb.w[,1] <- lon.w
+        gb.e[,1] <- lon.e
+        lines(gb.w,col="grey40")
+        lines(gb.e,col="grey40")
+      }
       a <- which(P.lowx[t==date[i],,]==1,arr.ind=TRUE)
       b <- which(P.lowy[t==date[i],,]==1,arr.ind=TRUE)
       lon.a <- mapply(function(i1,i2) lonXY[i1,i2],a[,1],a[,2])
@@ -501,7 +564,7 @@ CCI <- function(Z,m=14,it=NULL,is=NULL,cyclones=TRUE,
     longname <- "high-pressure systems identified with CCI method"
     param <- "anti-cyclones"
   }
-  X <- as.events(X,unit=unit,longname=longname,
+  X <- as.events(X,unit=unit,longname=longname,greenwich=greenwich,
          param=param,src=attr(Z,"source"),file=attr(Z,"file"),
          method="calculus based cylone identification, CCI",
          version="CCI in esd v1.0 (after October 6, 2015)",

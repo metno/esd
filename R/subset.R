@@ -242,10 +242,25 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   return(x)
 }
 
-
 subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-    if (verbose) print('nsubset.corfield - not finished - return original data')
-    x
+    if (verbose) print('subset.corfield')
+    stopifnot(inherits(x,"corfield"))
+    y <- x
+    dim(y) <- c(1,length(x))
+    y <- zoo(y,order.by=1)
+    attr(y,"dimensions") <- c(length(attr(x,"longitude")),
+                              length(attr(x,"latitude")),1)
+    y <- attrcp(x,y)
+    y <- as.field(y,param=attr(x,"variable"),unit=attr(x,"unit"),
+                    lon=attr(x,"longitude"),lat=attr(x,"latitude"),
+                    longname=attr(x,"longname"),src=attr(x,"source"),
+                    url=attr(x,"url"))
+    y <- subset(y,is=is,verbose=verbose)
+    dim(y) <- length(y)
+    attr(y,"dimensions") <- c(length(attr(y,"longitude")),
+                              length(attr(y,"latitude")))
+    class(y) <- "corfield"
+    return(y)
 }
 
 subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
@@ -632,6 +647,7 @@ subset.zoo <- function(x,it=NULL,is=NULL) subset.station(x,it=it,is=is)
 
 default.subregion <- function(x,is=NULL,verbose=FALSE) {
   if (verbose) {print("Sub-region"); print(is)}
+  
   if ( (is.list(is)) | (is.data.frame(is)) ) {
     if ( (is.null(is[[1]])) | (sum(is.finite(is[[1]])) < 2) ) is[[1]] <- c(-180,360)
     if ( (is.null(is[[2]])) | (sum(is.finite(is[[2]])) < 2) ) is[[2]] <- c(-90,90)
@@ -948,11 +964,10 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ## Need to make sure both it and is are same type: here integers for index rather than logical
         ## otherwise the subindexing results in an empty object
     } else if ( inherits(is,'list') & inherits(x,'field') ) {
+      ## KMP 2016-10-20 Can we subset across the dateline and greenwich now?
       y <- default.subregion(x,is=is,verbose=verbose)
-      ## KMP 2016-03-16
-      ## It doesn't work to subset across the date line
-      ## The following line appeared to do the trick but then map didn't work. 
-      #if(any(attr(y,"longitude")>180)) x <- g2dl.field(x,greenwich=TRUE)
+      if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
+        x <- g2dl.field(x,greenwich=TRUE) }
       is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
     } else
     if ( is.null(is) ) is <- rep(TRUE,d[2]) else
@@ -1018,6 +1033,12 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       c(sum(selx),sum(sely),sum(ii,na.rm=TRUE)) -> attr(y,'dimensions')
     }
 
+    if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
+      attr(y,"greenwich") <- TRUE
+    } else {
+      attr(y,"greenwich") <- FALSE
+    }
+    
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
     attr(y,'history') <- history.stamp(x)   

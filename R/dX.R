@@ -44,6 +44,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   
   if (is.null(m)) m <- nx
   m <- min(nx,m)
+  if(verbose) print(paste("Number of harmonics:",m))
   theta <- pi*lon/180
   phi <- pi*lat/180
   mask <- !is.finite(z)

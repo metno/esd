@@ -802,6 +802,78 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
     invisible(X)
 }
 
+combine.events <- function(x,y,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbose=FALSE) {
+  if(verbose) print("combine.events")
+  stopifnot(inherits(x,"events") & inherits(y,"events"))
+
+  ## Combine events in x and y
+  cn <- colnames(x)[colnames(x) %in% colnames(y)]
+  z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+
+  if(is.null(attr(x,"greenwich"))) attr(x,"greenwich") <- !(any(x$lon<0) & !any(x$lon>180))
+  if(is.null(attr(y,"greenwich"))) attr(y,"greenwich") <- !(any(y$lon<0) & !any(y$lon>180))
+  if(attr(x,"greenwich")!=attr(y,"greenwich")) {
+    y <- g2dl.events(y,greenwich=attr(x,"greenwich"))
+  }
+
+  if(!any(x$date %in% y$date)) remove.close <- FALSE
+  
+  ## Remove events located close to other stronger events
+  if(remove.close) {
+    t <- z$date*1E2 + z$time
+    lon <- z$lon
+    lat <- z$lat
+    ## Define measure of strength.
+    ## Decides the which one is thrown out if two events are close together. 
+    if(is.null(FUN)) {
+      if(attr(x,"variable")=="cyclones") {
+        strength <- 1/z$pcent
+      } else if (attr(x,"variable")=="anti-cyclones") {
+        strength <- z$pcent
+      } else {
+        strength <- rep(1,nrow(z))
+        print(paste("Warning: No measure of strength was provided.",
+         "If two closely located events are detected one will be randomly removed.",
+         "You can turn off the removing of neighbouring events (remove.close=FALSE)",
+         "or provide a function (FUN) that describes the rank/strength of the events."))
+      }
+    } else {
+      strength <- FUN(z)
+    }
+    if(verbose) print("Remove duplicate cyclones")
+    del.z <- rep(TRUE,nrow(z))
+    for (d in unique(t)) {
+      i <- which(t==d)
+      if (length(i)>1) {
+        distance <- apply(cbind(lon[i],lat[i]),1,
+         function(x) suppressWarnings(distAB(x[1],x[2],lon[i],lat[i])))
+        diag(distance) <- NA; distance[lower.tri(distance)] <- NA
+        del.i <- which(distance<mindistance,arr.ind=TRUE)
+        if(any(del.i)) {
+          col.del <- rep(1,length(del.i)/2)
+          if (is.null(dim(del.i))) {
+            s1 <- strength[i][,del.i[1]]
+            s2 <- strength[i][,del.i[2]]
+            col.del[s1<=s2] <- 2
+            del.i <- unique(del.i[col.del])
+          } else {
+            s1 <- strength[i][del.i[,1]]
+            s2 <- strength[i][del.i[,2]]
+            col.del[s1<=s2] <- 2
+            del.i <- unique(del.i[cbind(seq(1,dim(del.i)[1]),col.del)])
+          }
+          del.z[i[del.i]] <- FALSE
+        }
+        i <- i[!1:length(i) %in% del.i]
+      }
+    }
+    z <- z[del.z,]
+  }
+  z <- attrcp(x,z)
+  class(z) <- class(x)
+  return(z)
+}
+
 g2dl <- function(x,greenwich=TRUE,...)
     UseMethod("g2dl")
 
@@ -911,6 +983,42 @@ g2dl.corfield <- function(x,greenwich=TRUE) {
     attr(y,'greenwich') <- as.logical(greenwich)
     class(y) <- class(x)
     invisible(y)
+}
+
+g2dl.events <- function(x,greenwich=TRUE,verbose=FALSE) {
+  if(verbose) print("g2dl.events")
+  lon <- x$lon                          
+  if (greenwich) {
+    wh <- lon < 0
+    lon[wh] <- lon[wh] + 360
+  } else {
+    wh <- lon > 180
+    lon[wh] <- lon[wh] - 360
+  }
+  y <- x
+  y$lon <- lon
+  attr(y,'greenwich') <- as.logical(greenwich)
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- class(x)
+  invisible(y)
+}
+
+g2dl.trajectory <- function(x,greenwich=TRUE,verbose=FALSE) {
+  if(verbose) print("g2dl.trajectory")
+  lon <- x[,colnames(x)=="lon"]                         
+  if (greenwich) {
+    wh <- lon < 0
+    lon[wh] <- lon[wh] + 360
+  } else {
+    wh <- lon > 180
+    lon[wh] <- lon[wh] - 360
+  }
+  y <- x
+  y[,colnames(y)=="lon"] <- lon
+  attr(y,'greenwich') <- as.logical(greenwich)
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- class(x)
+  invisible(y)
 }
 
 sp2np <- function(x,SP2NP=TRUE) {

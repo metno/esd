@@ -13,7 +13,7 @@ as.events.trajectory <- function(x,verbose=FALSE,...) {
 }
 
 events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
-                   quality=NULL,src=NULL,url=NULL,reference=NULL,
+                   quality=NULL,src=NULL,url=NULL,reference=NULL,greenwich=NULL,
                    info=NULL,method=NULL,unit=NULL,file=NULL,version=NULL) {
   if (verbose) print("events")
   if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
@@ -30,6 +30,13 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   if(is.null(reference) & !is.null(ref(x))) reference <- ref(x)
   if(is.null(info) & !is.null(attr(x,"info"))) info <- attr(x,"info")
   if(is.null(method) & !is.null(attr(x,"method"))) method <- attr(x,"method")
+  if(is.null(greenwich)) {
+    if(!is.null(attr(x,"greenwich"))) {
+      greenwich <- attr(x,"greenwich")
+    } else {
+      greenwich <- !(min(x$lon)<0 | max(x$lon)<=180)
+    }
+  }
   if (inherits(x,'trajectory')) {
     y <- trajectory2events(x,verbose=verbose)
   } else {
@@ -44,6 +51,7 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   names(y)[grep("latitude",names(y))] <- "lat"
   names(y)[grep("longitude",names(y))] <- "lon"
   names(y)[grep("step",names(y))] <- "timestep"
+  names(y)[grep("^p$",names(y)) | grep("^slp$",names(y))] <- "pcent"
   attr(y, "location") <- loc
   attr(y, "variable") <- param
   attr(y, "longname") <- longname
@@ -64,6 +72,7 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   attr(y,"stid") <- NA
   attr(y, "history") <- history.stamp()
   class(y) <- c("events","data.frame")
+  y <- g2dl(y,greenwich=greenwich)
   invisible(y) 
 }
 

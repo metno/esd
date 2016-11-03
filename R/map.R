@@ -827,9 +827,8 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
                        param=NA,alpha=0.3,lwd=3,col="blue",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       show.points=TRUE,show.trajectory=FALSE,show.start=FALSE,
-                       show.end=FALSE,
-                       lty=2,type=c("fill","contour"),
+                       #show.points=TRUE,show.trajectory=FALSE,show.start=FALSE,show.end=FALSE,
+                       lty=1,type=c("points","trajectory","start","end"),
                        projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE,...) {
     if(verbose) print("map.events")
@@ -841,16 +840,18 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if (is.null(is$lon) & !is.null(xlim)) {
         is$lon <- xlim
     } else if (is.null(is$lon) & is.null(xlim)) {
-        if(dim(x)[1]>0) is$lon <- range(x[,"lon"])+c(-5,5)
+        if(dim(x)[1]>0) {
+          is$lon <- range(x[,"lon"])+c(-5,5)
+        }
     }
-    if (is.null(xlim)) xlim <- is$lon
+    if (is.null(xlim) & projection=="lonlat") xlim <- is$lon
 
     if (is.null(is$lat) & !is.null(ylim)) {
         is$lat <- ylim
     } else if (is.null(is$lat) & is.null(ylim)) {
         if(dim(x)[1]>0) is$lat <- range(x[,"lat"])+c(-2,2)
     }
-    if (is.null(ylim)) ylim <- is$lat
+    if (is.null(ylim) & projection=="lonlat") ylim <- is$lat
     
     if (!is.null(Y)) {
         Y <- subset(Y,is=is)
@@ -877,7 +878,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(length(Y)!=0) {
         if (is.null(lonR)) lonR <- mean(lon(Y))
         if (is.null(latR)) latR <- max(lat(Y))
-        map(Y,colbar=colbar,new=new,projection=projection,type=type,
+        map(Y,colbar=colbar,new=new,projection=projection,
             xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
     } else {
         if (is.null(lonR) & dim(x)[1]>0) lonR <- mean(x[,"lon"])
@@ -900,18 +901,21 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
         #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
         cols <- adjustcolor(col,alpha=alpha)
-        if("trajectory" %in% colnames(x0) & (show.trajectory | show.start | show.end)) {
+        if("trajectory" %in% colnames(x0) &
+           any(c("trajectory","start","end") %in% type)) {
           if(verbose) print("plot trajectories")
           xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
+          #browser()
           if(dim(xt)[1]>1) {
               xall <- as.trajectory(xt,nmin=2)
               map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
                   add=TRUE,col=col,lonR=lonR,latR=latR,
-                  projection=projection,show.trajectory=show.trajectory,
-                  show.start=show.start,show.end=show.end,verbose=verbose)
+                  projection=projection,type=type,
+                  #show.trajectory=show.trajectory,show.start=show.start,show.end=show.end,
+                  verbose=verbose)
           }
         }
-        if(show.points) {
+        if("points" %in% type) {
           if(verbose) print("plot points")
           if(projection=="lonlat") {
             points(x[,"lon"],x[,"lat"],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)
