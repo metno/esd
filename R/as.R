@@ -408,7 +408,8 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
        class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
-    class(S) <- c("dsensemble","station","list")
+    if (length(S)>1) class(S) <- c("dsensemble","station","list") else
+                     S <-  S[[1]]
     attr(S,"unit") <- attr(X$pca,"unit")
     attr(S,"variable") <- attr(X$pca,"variable")
     attr(S,"longname") <- attr(X$pca,"longname")
