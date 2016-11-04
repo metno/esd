@@ -323,6 +323,15 @@ as.station.eof <- function(x,ip=1:10) {
   invisible(y)
 }
 
+as.station.dsensemble <- function(x,...) {
+  if (inherits(x,"pca")) {
+    y <- as.station.dsensemble.pca(x,...)
+  } else if (inherits(x,"station")) {
+    y <- as.station.dsensemble.station(x,...)
+  } else print(paste('unknown class - do not know how to handle',class(x)))
+  return(y)
+}
+
 as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   X <- x ## quick fix
   if (verbose) print('as.station.dsensemble.pca')
@@ -408,7 +417,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
        class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
-    if (length(S)>1) class(S) <- c("dsensemble","station","list") else
+    if (length(S)>1) class(S) <- c("dsensemble",class(X$pca)[2:3],"list") else
                      S <-  S[[1]]
     attr(S,"unit") <- attr(X$pca,"unit")
     attr(S,"variable") <- attr(X$pca,"variable")
@@ -417,6 +426,28 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     attr(S,"history") <- history.stamp()
     invisible(S)
   }
+}
+
+as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=FALSE) {
+
+    if (verbose) print('as.station.dsensemble.station')
+    ns <- length(x)
+    ## Find the size of the PC matrices representing model projections
+    d <- apply(sapply(x,dim),1,min); nt <- d[1]
+    ## The PCs from the list are extracted into the matrix V 
+    #V <- array(unlist(lapply( X[3:length(X)],
+    #  function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    V <- unlist(lapply(x,FUN=
+             function(x,FUN) apply(coredata(x),1,FUN=FUN),FUN))
+    dim(V) <- c(nt,ns)
+    if (verbose) str(V)
+    loc <- unlist(lapply(x,loc)); lon <- unlist(lapply(x,lon)); lat <- unlist(lapply(x,lat))
+    alt <- unlist(lapply(x,alt)); param <- unlist(lapply(x,varid)); unit <- unlist(lapply(x,unit))
+    stid <- unlist(lapply(x,stid)); longname <- unlist(lapply(x,function(x) attr(x,'longname')))
+    y <- as.station(zoo(V,order.by=index(x[[1]])),loc=loc, param=param,unit=unit,
+                    lon=lon,lat=lat,alt=alt,stid=stid,longname=longname)
+    attr(y,"history") <- history.stamp()
+    return(y)
 }
 
 as.pca <- function(x) UseMethod("as.pca")
@@ -481,6 +512,7 @@ as.comb.eof <- function(x,...) {
   attr(y,'quality') <- c(attr(x,'quality'),'EOF-filtered')
   return(y)
 }
+
 
 
 as.field <- function(x,...) UseMethod("as.field")
@@ -1069,6 +1101,12 @@ as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE) anomaly.default(x)
 
 as.anomaly.zoo <- function(x,ref=NULL,na.rm=TRUE,...) {
   y <- as.anomaly.station(x,ref=ref,na.rm=na.rm,...)
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+as.anomaly.list <- function(x,ref=NULL,na.rm=TRUE,...) {
+  y <- lapply(x,anomaly(x))
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }

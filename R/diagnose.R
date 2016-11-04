@@ -477,7 +477,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   if (verbose) print(summary(obs))
   if (sum(is.finite(obs$y))==0) {
     print('diagnose.dsensemble: problem detected'); print(match.call())
-    browser()
+    return(NULL)
   }
   deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,2)  # deg C/decade
   deltagcm <- rep(NA,d[2])

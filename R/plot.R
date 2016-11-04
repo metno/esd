@@ -1326,8 +1326,15 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
 }
 
 plot.dsensemble <- function(x,...) {
-  if (inherits(x,c('pca','eof'))) y <- plot.dsensemble.multi(x,...) else
-  if (inherits(x,'zoo')) y <- plot.dsensemble.one(x,...)
+  if (inherits(x,c('pca','eof')))
+    y <- plot.dsensemble.multi(x,...) else
+  if (inherits(x,'zoo'))
+    y <- plot.dsensemble.one(x,...) else
+  if (inherits(x,'station')) {
+    x <- as.station(x) 
+    y <- plot(x,...)
+  } else
+  print(paste('Unknown class - do not know how to plot',class(x)))
   invisible(y)
 }
 
@@ -1422,14 +1429,16 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   lines(zoo(q95,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)
   lines(y,type="b",pch=19)
 
-  index(diag$y) <- year(diag$y)
-  outside <- diag$above | diag$below
-  points(zoo(coredata(diag$y)[which(outside)],
+  if (!is.null(diag)) {
+    index(diag$y) <- year(diag$y)
+    outside <- diag$above | diag$below
+    points(zoo(coredata(diag$y)[which(outside)],
              order.by=year(diag$y)[which(outside)]),col="grey")
+  }
 
   title(main=toupper(loc(x)),cex.main=1)
   
-  if (target.show) {
+  if ((target.show) & (!is.null(diag))) {
     if (verbose) print('add target diagnostic')
     par(fig=c(0.23,0.45,0.78,0.98),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
