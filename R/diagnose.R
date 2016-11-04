@@ -447,13 +447,14 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   # Counts outside 90% confidence: binomial distrib. & prob.
   stopifnot(!missing(x),inherits(x,"dsensemble"))
   
+  
   if (inherits(x,"pca") | inherits(x,"list")) {
     diag <- diagnose.dsensemble.list(x,plot=plot,map.show=map.show,
                                      main=main,xrange=xrange,yrange=yrange,
                                      verbose=verbose,...)
     invisible(diag)
   } else {
- 
+  if (is.null(attr(x,'station'))) return()
   z <- x
   # Remove the results with no valid data:
   n <- apply(z,2,FUN=nv)
@@ -462,8 +463,8 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   d <- dim(z)
   t <- index(z)
   y <- attr(x,'station')
-  if (is.numeric(index(y))) index(z) <- year(z)
-  if (is.numeric(index(z))) index(y) <- year(y)
+  index(z) <- year(z)
+  index(y) <- year(y)
 
   ## Use the same dates
   yz <- merge( zoo(y), zoo(z),all=FALSE )
