@@ -74,6 +74,7 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
   if (!is.null(ip)) {
     if (verbose) print('subset pattern')
     x <- x[,ip]
+    d <- dim(x)
   }
   dim(x) <- c(length(index(x)),d[2])
   if (verbose) print(dim(x))
