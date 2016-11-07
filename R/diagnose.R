@@ -454,18 +454,23 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
                                      verbose=verbose,...)
     invisible(diag)
   } else {
-  if (is.null(attr(x,'station'))) return()
+  if (is.null(attr(x,'station'))) {
+    if (verbose) print('Found no station data - premature exit')
+    return()
+  }
+ 
   z <- x
-  # Remove the results with no valid data:
-  n <- apply(z,2,FUN=nv)
-  z <- subset(z,is=(1:length(n))[n > 0])
   
   d <- dim(z)
   t <- index(z)
   y <- attr(x,'station')
-  index(z) <- year(z)
-  index(y) <- year(y)
-
+  
+  ## REB 2017-11-07 Set the index to the year if the data is annual or only one per year
+  if ( inherits(y,'annual') | (length(rownames(table(month(x))))==1) ){
+    if (verbose) print('set the time index to years')
+    index(z) <- year(z)
+    index(y) <- year(y)
+  }
   ## Use the same dates
   yz <- merge( zoo(y), zoo(z),all=FALSE )
   #plot(yz)
@@ -477,7 +482,7 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   obs <- data.frame(y=c(yz[,1]),t=year(yz))
   if (verbose) print(summary(obs))
   if (sum(is.finite(obs$y))==0) {
-    print('diagnose.dsensemble: problem detected'); print(match.call())
+    print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
     return(NULL)
   }
   deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,2)  # deg C/decade

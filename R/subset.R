@@ -366,7 +366,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE,...) {
     ## browser()
 
-    if (verbose) paste('subset.dsensemble')
+    if (verbose) print('subset.dsensemble')
 
     if (inherits(x,'list') & inherits(x,c('pca','eof')) &
        (inherits(x,'dsensemble')) & ensemble.aggregate) {
@@ -416,7 +416,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
     class(x) <- c(class(x)[1],class(attr(x,'station'))[2],"zoo")
 
     if (is.null(it) & is.null(is) & length(table(month(x)))==1) return(x)
-    if (verbose) {print("subset.dsensemble"); print(it)}
+    if (verbose) print(paste("it=",it))
     x0 <- x
     d <- dim(x)
     if (verbose) print(d)
@@ -435,10 +435,15 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
         } else if (it[1]==0) {
             if (verbose) print("Annual means")
             if (inherits(x,'season')) {
-                djf <- subset(x,it='djf',is=is)
-                mam <- subset(x,it='mam',is=is)
-                jja <- subset(x,it='jja',is=is)
-                son <- subset(x,it='son',is=is)
+                if (verbose) print('from seasons')
+                #djf <- subset(x,it='djf',is=is)
+                #mam <- subset(x,it='mam',is=is)
+                #jja <- subset(x,it='jja',is=is)
+                #son <- subset(x,it='son',is=is)
+                djf <- subset(x,it='djf')  # REB 2016-11-07: is is dealt with below
+                mam <- subset(x,it='mam')  # REB 2016-11-07: is is dealt with below
+                jja <- subset(x,it='jja')  # REB 2016-11-07: is is dealt with below
+                son <- subset(x,it='son')  # REB 2016-11-07: is is dealt with below
                 yr1 <- year(djf)
                 yr2 <- year(mam)
                 yr3 <- year(jja)
@@ -459,20 +464,23 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
 #                         order.by=as.Date(paste(yr,'01-01',sep='-')))
                 y <- attrcp(x0,y)
                 class(y) <- class(x0)
-            } else if (inherits(x,'month')) {     
+                if (verbose) print('...')
+            } else if (inherits(x,'month')) {
+                if (verbose) print('from months')
                 ## browser()
-                jan <- subset(x,it='jan',is=is)
-                feb <- subset(x,it='feb',is=is)
-                mar <- subset(x,it='mar',is=is)
-                apr <- subset(x,it='apr',is=is)
-                may <- subset(x,it='may',is=is)
-                jun <- subset(x,it='jun',is=is)
-                jul <- subset(x,it='jul',is=is)
-                aug <- subset(x,it='aug',is=is)         
-                sep <- subset(x,it='sep',is=is)
-                oct <- subset(x,it='oct',is=is)
-                nov <- subset(x,it='nov',is=is)
-                dec <- subset(x,it='dec',is=is)
+              # REB 2016-11-07: is is dealt with below - set to NULL
+                jan <- subset(x,it='jan',is=NULL)
+                feb <- subset(x,it='feb',is=NULL)
+                mar <- subset(x,it='mar',is=NULL)
+                apr <- subset(x,it='apr',is=NULL)
+                may <- subset(x,it='may',is=NULL)
+                jun <- subset(x,it='jun',is=NULL)
+                jul <- subset(x,it='jul',is=NULL)
+                aug <- subset(x,it='aug',is=NULL)         
+                sep <- subset(x,it='sep',is=NULL)
+                oct <- subset(x,it='oct',is=NULL)
+                nov <- subset(x,it='nov',is=NULL)
+                dec <- subset(x,it='dec',is=NULL)
 
                 yr1 <- year(jan)
                 yr2 <- year(feb)
@@ -530,7 +538,8 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
                                coredata(dec[i12,])),
                          order.by=as.Date(paste(yr,'01-01',sep='-')))
                 y <- attrcp(x0,y)
-                class(y) <- class(x0)  
+                class(y) <- class(x0)
+                if (verbose) print('...')
             }
         } else if (is.character(it)) {
             ## browser()

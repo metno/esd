@@ -326,9 +326,9 @@ as.station.eof <- function(x,ip=1:10) {
 as.station.dsensemble <- function(x,...) {
   if (inherits(x,"pca")) {
     y <- as.station.dsensemble.pca(x,...)
-  } else if (inherits(x,"station")) {
+  } else if (inherits(x,c("station","zoo"))) {
     y <- as.station.dsensemble.station(x,...)
-  } else print(paste('unknown class - do not know how to handle',class(x)))
+  } else print(paste('unknown class - do not know how to handle:',class(x)))
   return(y)
 }
 

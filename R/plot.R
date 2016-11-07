@@ -1370,9 +1370,9 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
 
   if (verbose) {print(map.type); print(attr(x,'station'))}
   if (!is.null(attr(x,'station')) &
-      !inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
+      !inherits(attr(x,'station'),'annual')) z <- subset(x,it=it,verbose=verbose) else
                                              z <- x
-  if (verbose) print("diagnose")
+  if (verbose) {print("diagnose"); class(z)}
   diag <- diagnose(z,plot=FALSE,verbose=verbose)
   
   y <- attr(z,'station')
