@@ -86,7 +86,7 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
 map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
                            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                                    show=TRUE,type="p",cex=2,h=0.6,v=1),
-                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,...) {
+                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,plot=TRUE,...) {
   ## PCA/EOF objects
 
   if (verbose) print('map.dsensemble')
@@ -97,7 +97,7 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
     x <- subset(x,is=is,im=im,ip=ip,verbose=verbose)
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     if (verbose) {str(x[[2]]); str(Y)}
-    map(Y,FUN=FUN,colbar=colbar,verbose=verbose,...)
+    if (plot) map(Y,FUN=FUN,colbar=colbar,verbose=verbose,...)
     invisible(Y)
   } else return(NULL)
 }

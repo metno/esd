@@ -460,7 +460,6 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   }
  
   z <- x
-  
   d <- dim(z)
   t <- index(z)
   y <- attr(x,'station')
@@ -486,12 +485,14 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
     return(NULL)
   }
   deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,2)  # deg C/decade
-  deltagcm <- rep(NA,d[2])
-  if (verbose) print(dim(deltagcm))
-  for (j in 1:d[2]) {
-    gcm <- data.frame(y=c(yz[,j+1]),t=year(yz))
-    deltagcm[j] <- round(lm(y ~ t,data=gcm)$coefficients[2]*10,2)  # deg C/decade
-  }
+#  deltagcm <- rep(NA,d[2])
+#  if (verbose) print(dim(deltagcm))
+#  for (j in 1:d[2]) {
+#    gcm <- data.frame(y=c(yz[,j+1]),t=year(yz))
+#    deltagcm[j] <- round(lm(y ~ t,data=gcm)$coefficients[2]*10,2)  # deg C/decade
+#  }
+  ## REB 2016-11-07: faster and more efficient code than for-loop.
+  deltagcm <- c(apply(coredata(yz)[,-1],2,FUN='trend.coef'))
   robs <- round(100*sum(deltaobs < deltagcm)/d[2])
   if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
   
