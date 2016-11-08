@@ -447,24 +447,29 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   # Counts outside 90% confidence: binomial distrib. & prob.
   stopifnot(!missing(x),inherits(x,"dsensemble"))
   
+  
   if (inherits(x,"pca") | inherits(x,"list")) {
     diag <- diagnose.dsensemble.list(x,plot=plot,map.show=map.show,
                                      main=main,xrange=xrange,yrange=yrange,
                                      verbose=verbose,...)
     invisible(diag)
   } else {
+  if (is.null(attr(x,'station'))) {
+    if (verbose) print('Found no station data - premature exit')
+    return()
+  }
  
   z <- x
-  # Remove the results with no valid data:
-  n <- apply(z,2,FUN=nv)
-  z <- subset(z,is=(1:length(n))[n > 0])
-  
   d <- dim(z)
   t <- index(z)
   y <- attr(x,'station')
-  if (is.numeric(index(y))) index(z) <- year(z)
-  if (is.numeric(index(z))) index(y) <- year(y)
-
+  
+  ## REB 2017-11-07 Set the index to the year if the data is annual or only one per year
+  if ( inherits(y,'annual') | (length(rownames(table(month(x))))==1) ){
+    if (verbose) print('set the time index to years')
+    index(z) <- year(z)
+    index(y) <- year(y)
+  }
   ## Use the same dates
   yz <- merge( zoo(y), zoo(z),all=FALSE )
   #plot(yz)
@@ -476,16 +481,18 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   obs <- data.frame(y=c(yz[,1]),t=year(yz))
   if (verbose) print(summary(obs))
   if (sum(is.finite(obs$y))==0) {
-    print('diagnose.dsensemble: problem detected'); print(match.call())
-    browser()
+    print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
+    return(NULL)
   }
   deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,2)  # deg C/decade
-  deltagcm <- rep(NA,d[2])
-  if (verbose) print(dim(deltagcm))
-  for (j in 1:d[2]) {
-    gcm <- data.frame(y=c(yz[,j+1]),t=year(yz))
-    deltagcm[j] <- round(lm(y ~ t,data=gcm)$coefficients[2]*10,2)  # deg C/decade
-  }
+#  deltagcm <- rep(NA,d[2])
+#  if (verbose) print(dim(deltagcm))
+#  for (j in 1:d[2]) {
+#    gcm <- data.frame(y=c(yz[,j+1]),t=year(yz))
+#    deltagcm[j] <- round(lm(y ~ t,data=gcm)$coefficients[2]*10,2)  # deg C/decade
+#  }
+  ## REB 2016-11-07: faster and more efficient code than for-loop.
+  deltagcm <- c(apply(coredata(yz)[,-1],2,FUN='trend.coef'))
   robs <- round(100*sum(deltaobs < deltagcm)/d[2])
   if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
   

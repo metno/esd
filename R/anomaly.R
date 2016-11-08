@@ -9,8 +9,15 @@ anomaly.default <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
     if (inherits(x,'annual')) y <- anomaly.annual(x,ref=ref,na.rm=na.rm,verbose=verbose,...) else
     if (inherits(x,'month')) y <- anomaly.month(x,ref=ref,na.rm=na.rm,verbose=verbose,...) else
     if (inherits(x,'day')) y <- anomaly.day(x,ref=ref,na.rm=na.rm,verbose=verbose,...) else
-    if (inherits(x,'season')) y <- anomaly.season(x,ref=ref,na.rm=na.rm,verbose=verbose,...) else
-    y <- as.annual(x,...)
+    if (inherits(x,'season')) y <- anomaly.season(x,ref=ref,na.rm=na.rm,verbose=verbose,...) else {
+      if (is.null(dim(x))) y <- x - mean(x,na.rm=TRUE) else 
+                           y <- zoo(apply(x,2,function(x) x - mean(x,na.rm=TRUE)),order.by=index(x))
+      y <- attrcp(x,y)
+      class(y) <- class(x)
+      if (!is.null(attr(y,'station'))) attr(y,'station') <- anomaly(attr(y,'station'))
+      attr(y,'aspect') <- 'anomaly' 
+      attr(y,'history') <- history.stamp(x)
+    }
     return(y)
 }
 

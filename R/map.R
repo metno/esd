@@ -543,6 +543,10 @@ map.pca <- function(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
     if (verbose) print(paste('map.pca',FUN))
     args <- list(...)
                                         #print(args)
+    ## REB 2016-11-02 fix
+    if (is.null(dim(attr(x,'pattern'))))
+      dim(attr(x,'pattern')) <- c(1,length(attr(x,'pattern')))
+    
     X <- rbind(attr(x,'pattern')[,ip],attr(x,'pattern')[,ip])
                                         #print(dim(X))
                                         #str(x)

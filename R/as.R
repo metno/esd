@@ -323,6 +323,15 @@ as.station.eof <- function(x,ip=1:10) {
   invisible(y)
 }
 
+as.station.dsensemble <- function(x,...) {
+  if (inherits(x,"pca")) {
+    y <- as.station.dsensemble.pca(x,...)
+  } else if (inherits(x,c("station","zoo"))) {
+    y <- as.station.dsensemble.station(x,...)
+  } else print(paste('unknown class - do not know how to handle:',class(x)))
+  return(y)
+}
+
 as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   X <- x ## quick fix
   if (verbose) print('as.station.dsensemble.pca')
@@ -333,9 +342,17 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   } else {
     #if (is.null(is)) is <- 1:length(loc(X$pca)) 
     if (verbose) print('Extract the results model-wise')
+    ## Find the size of the PC matrices representing model projections
     d <- apply(sapply(X[3:length(X)],dim),1,min)
+    ## The PCs from the list are extracted into the matrix V 
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    ## Select number of patterns
+
+    ## REB 2016-11-03
+    ## If there is only one single station, avoid collapse of dimension
+    if (is.null(dim(attr(X$pca,'pattern'))))
+      dim(attr(X$pca,'pattern')) <- c(1,length(attr(X$pca,'pattern')))
     if (is.null(ip)) {
       U <- attr(X$pca,'pattern')
       W <- attr(X$pca,'eigenvalues')
@@ -345,9 +362,13 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
       W <- attr(X$pca,'eigenvalues')[ip]
       V <- V[,ip,]
     }    
+      
+    ## Multi-station case (REB 2016-11-03)
+    if (verbose) print('multiple stations')
     d <- dim(U)
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], length(X)-2)
+    
     for (i in seq(1:dim(S)[1])) {
       S[i,,] <- S[i,,] + c(attr(X$pca,'mean'))[i]
     }
@@ -361,7 +382,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     ##  lines(S[[1]][,i],col=adjustcolor("blue",alpha=0.3))
     #}
     if (verbose) print('Set attributes')
-    Y <- as.station(X$pca)
+    Y <- as.station(X$pca,verbose=verbose)
     locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(Y,"location")))
     locations <- gsub("__","_",locations)
     ##locations <- paste(paste("i",attr(X$pca,"station_id"),sep=""),
@@ -382,9 +403,9 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
        attr(yi,"altitude") <- alts[i]
        attr(yi,"station_id") <- stid[i]
        attr(yi,"location") <- locs[i]
-       attr(yi,"unit") <- attr(X,"unit")
-       attr(yi,"variable") <- attr(X,"variable")
-       attr(yi,"longname") <- attr(X,"longname")
+       attr(yi,"unit") <- attr(X$pca,"unit")
+       attr(yi,"variable") <- attr(X$pca,"variable")
+       attr(yi,"longname") <- attr(X$pca,"longname")
        attr(S[[i]],"station") <- yi
        attr(S[[i]],'aspect') <- 'original'
        attr(S[[i]],"longitude") <- lons[i]
@@ -396,14 +417,37 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
        class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
-    class(S) <- c("dsensemble","station","list")
-    attr(S,"unit") <- attr(X,"unit")
-    attr(S,"variable") <- attr(X,"variable")
-    attr(S,"longname") <- attr(X,"longname")
+    if (length(S)>1) class(S) <- c("dsensemble",class(X$pca)[2:3],"list") else
+                     S <-  S[[1]]
+    attr(S,"unit") <- attr(X$pca,"unit")
+    attr(S,"variable") <- attr(X$pca,"variable")
+    attr(S,"longname") <- attr(X$pca,"longname")
     attr(S,"aspect") <- "dsensemble.pca transformed to stations"
     attr(S,"history") <- history.stamp()
     invisible(S)
   }
+}
+
+as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=FALSE) {
+
+    if (verbose) print('as.station.dsensemble.station')
+    ns <- length(x)
+    ## Find the size of the PC matrices representing model projections
+    d <- apply(sapply(x,dim),1,min); nt <- d[1]
+    ## The PCs from the list are extracted into the matrix V 
+    #V <- array(unlist(lapply( X[3:length(X)],
+    #  function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    V <- unlist(lapply(x,FUN=
+             function(x,FUN) apply(coredata(x),1,FUN=FUN),FUN))
+    dim(V) <- c(nt,ns)
+    if (verbose) str(V)
+    loc <- unlist(lapply(x,loc)); lon <- unlist(lapply(x,lon)); lat <- unlist(lapply(x,lat))
+    alt <- unlist(lapply(x,alt)); param <- unlist(lapply(x,varid)); unit <- unlist(lapply(x,unit))
+    stid <- unlist(lapply(x,stid)); longname <- unlist(lapply(x,function(x) attr(x,'longname')))
+    y <- as.station(zoo(V,order.by=index(x[[1]])),loc=loc, param=param,unit=unit,
+                    lon=lon,lat=lat,alt=alt,stid=stid,longname=longname)
+    attr(y,"history") <- history.stamp()
+    return(y)
 }
 
 as.pca <- function(x) UseMethod("as.pca")
@@ -468,6 +512,7 @@ as.comb.eof <- function(x,...) {
   attr(y,'quality') <- c(attr(x,'quality'),'EOF-filtered')
   return(y)
 }
+
 
 
 as.field <- function(x,...) UseMethod("as.field")
@@ -1056,6 +1101,12 @@ as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE) anomaly.default(x)
 
 as.anomaly.zoo <- function(x,ref=NULL,na.rm=TRUE,...) {
   y <- as.anomaly.station(x,ref=ref,na.rm=na.rm,...)
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+as.anomaly.list <- function(x,ref=NULL,na.rm=TRUE,...) {
+  y <- lapply(x,anomaly(x))
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }

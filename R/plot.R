@@ -98,7 +98,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   
   if(map.show & !map.insert) {
     vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.8,...)
+            cex.axis=cex.axis,cex=1.8,verbose=verbose,...)
     new <- TRUE
   }
 
@@ -153,9 +153,9 @@ plot.station <- function(x,plot.type="single",new=TRUE,
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
 
-    if(map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
-                                      cex.axis=cex.axis*0.75,
-                                      add.text=FALSE,map.insert=map.insert,...)
+    if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
+                                       cex.axis=cex.axis*0.75,add.text=FALSE,
+                                       map.insert=map.insert,verbose=verbose,...)
     par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",
         xpd=FALSE,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
@@ -193,7 +193,7 @@ vis.map <- function(x,col='red',map.type=NULL,
         if (length(lon(x))==1) zoom <- 8 else {
           ## zoom = 12 is very local, zoom = 1 is the world
           mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
-          zoom <- 12 + floor(log(mxdst/360))
+          zoom <- 1 - floor(0.75*log(mxdst/360))
         }
                              
       }
@@ -1326,8 +1326,15 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
 }
 
 plot.dsensemble <- function(x,...) {
-  if (inherits(x,c('pca','eof'))) y <- plot.dsensemble.multi(x,...) else
-  if (inherits(x,'zoo')) y <- plot.dsensemble.one(x,...)
+  if (inherits(x,c('pca','eof')))
+    y <- plot.dsensemble.multi(x,...) else
+  if (inherits(x,'zoo'))
+    y <- plot.dsensemble.one(x,...) else
+  if (inherits(x,'station')) {
+    x <- as.station(x) 
+    y <- plot(x,...)
+  } else
+  print(paste('Unknown class - do not know how to plot',class(x)))
   invisible(y)
 }
 
@@ -1338,7 +1345,7 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
   
   if (inherits(x,c('pca','eof'))) {
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
-    plot(Y,...)
+    plot(Y,verbose=verbose,...)
     invisible(Y)
   } else return(NULL)
 }
@@ -1348,10 +1355,11 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
                              target.show=TRUE,map.show=TRUE,map.type=NULL,new=TRUE,
                              xrange=NULL,yrange=NULL,verbose=FALSE,...) {
-  if(verbose) print("plot.dsensemble")
+  if(verbose) print("plot.dsensemble.one")
   stopifnot(inherits(x,'dsensemble'))
 
   if (is.null(map.type)) {
+    if (verbose) print(class(x))
     if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
         (length(lon(x))==2 & length(lat(x))==2) ) {
       map.type <- "rectangle"
@@ -1359,10 +1367,12 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
       map.type <- "points"
     }
   }
-  
-  if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
-    z <- x
-  if (verbose) print("diagnose")
+
+  if (verbose) {print(map.type); print(attr(x,'station'))}
+  if (!is.null(attr(x,'station')) &
+      !inherits(attr(x,'station'),'annual')) z <- subset(x,it=it,verbose=verbose) else
+                                             z <- x
+  if (verbose) {print("diagnose"); class(z)}
   diag <- diagnose(z,plot=FALSE,verbose=verbose)
   
   y <- attr(z,'station')
@@ -1419,14 +1429,16 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   lines(zoo(q95,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)
   lines(y,type="b",pch=19)
 
-  index(diag$y) <- year(diag$y)
-  outside <- diag$above | diag$below
-  points(zoo(coredata(diag$y)[which(outside)],
+  if (!is.null(diag)) {
+    index(diag$y) <- year(diag$y)
+    outside <- diag$above | diag$below
+    points(zoo(coredata(diag$y)[which(outside)],
              order.by=year(diag$y)[which(outside)]),col="grey")
+  }
 
   title(main=toupper(loc(x)),cex.main=1)
   
-  if (target.show) {
+  if ((target.show) & (!is.null(diag))) {
     if (verbose) print('add target diagnostic')
     par(fig=c(0.23,0.45,0.78,0.98),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")

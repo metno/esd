@@ -64,8 +64,14 @@ plot.diagnose.comb.eof(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,new=TRUE,..
 plot.diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,...)
 plot.diagnose.dsensemble(x,map=TRUE,verbose=FALSE,new=TRUE,cex=NULL)
 plot.xval(x,new=TRUE,...)
-plot.dsensemble(x,pts=FALSE,showci=TRUE,showtrend=TRUE,legend=TRUE,it=0,
-                envcol=c(1,0,0,0.2),...)
+plot.dsensemble.pca(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,ip=1,
+                               envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,...)
+plot.dsensemble.multi(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
+                                  anomaly=FALSE,test=FALSE,...)
+plot.dsensemble.one(x,pts=FALSE,it=0,
+                             envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
+                             target.show=TRUE,map.show=TRUE,map.type=NULL,new=TRUE,
+                             xrange=NULL,yrange=NULL,verbose=FALSE,...)
 plot.nevents(x,verbose=FALSE,...)
 vis.map(x,col='red',map.type='points',add.text=FALSE)
 }
