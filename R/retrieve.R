@@ -95,7 +95,6 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     lat.rng  <- lat
     lev.rng  <- lev
     time.rng <- it
-    
     ## set path
     if (!is.null(path)) {
         ## AM this line creates pbms for windows users.
@@ -206,7 +205,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
         time <- eval(parse(text=paste("v1$dim[[",as.character(itime),"]]",sep="")))
     else
         time <- NULL
-    ## Check & update meta data from the data itself 
+    ## Check & update meta data from the data itself
     ncid2 <- check.ncdf4(ncid,param=param,verbose=verbose) 
     if (length(grep("model",ls())) > 0) model <- ncid2$model 
     if (!is.null(itime)) time <- ncid2$time
@@ -1422,7 +1421,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                 year1 <- time$vals[1]%/%time$daysayear + yorigin
                 month1 <- morigin
                 
-                if (sum(diff(time$vals%/%time$daysayear) > 1) & (verbose))
+                if (sum(diff(time$vals)%/%time$daysayear) > 1 & (verbose))
                     print("Warning : Jumps of years has been found in the time series ")
                 if (time$vals[1]%%time$daysayear > 27) {
                     year1 <- year1 + 1
@@ -1432,8 +1431,10 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                                         # construct vdate
                 months <- ((time$vals%%time$daysayear)%/%round(mean(mndays))) + 1
                 years <- time$vals%/%time$daysayear + yorigin
-                                        #shifting mndays by month1 to start with different initial months than january (1)
-                mndays <- c(0,mndays[month1:length(mndays)-1],mndays[1:month1-1])
+                #shifting mndays by month1 to start with different initial months than january (1)
+                ## KMP 2016-11-08 this doesn't work. why add a 0?
+                #mndays <- c(0,mndays[month1:length(mndays)-1],mndays[1:month1-1])
+                mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
                 days <- time$vals%%time$daysayear - rep(cumsum(mndays),time$len/12)
                 if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
                     print("Warning : Jumps in data have been found !")
