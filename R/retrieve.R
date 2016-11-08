@@ -1865,9 +1865,11 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
                                         # construct vdate
                 months <- ((time$vals%%time$daysayear)%/%round(mean(mndays))) + 1
                 years <- time$vals%/%time$daysayear + yorigin
-                                        #shifting mndays by month1 to start with different initial months than january (1)
-                mndays <- c(0,mndays[month1:length(mndays)-1],
-                            mndays[1:month1-1])
+                #shifting mndays by month1 to start with different initial months than january (1)
+                ## KMP 2016-11-08 doesn't work
+                #mndays <- c(0,mndays[month1:length(mndays)-1],
+                #            mndays[1:month1-1])
+                mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
                 days <- time$vals%%time$daysayear - rep(cumsum(mndays),
                                                         time$len/12)
                 if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
