@@ -1417,6 +1417,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                 mndays <- rep(30,12) # Number of days in each month
             ##else if
             ##mndays <- c(29.5,29.5,30.5,30.5,30.5,30.5,31.0,30.5,30.5,30.5,30.5,31.0)
+            
             if (!is.null(time$daysayear) & !is.null(mndays)) {
                 year1 <- time$vals[1]%/%time$daysayear + yorigin
                 month1 <- morigin
@@ -1434,7 +1435,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                 #shifting mndays by month1 to start with different initial months than january (1)
                 ## KMP 2016-11-08 this doesn't work. why add a 0?
                 #mndays <- c(0,mndays[month1:length(mndays)-1],mndays[1:month1-1])
-                mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
+                if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
                 days <- time$vals%%time$daysayear - rep(cumsum(mndays),time$len/12)
                 if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
                     print("Warning : Jumps in data have been found !")
@@ -1869,7 +1870,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
                 ## KMP 2016-11-08 doesn't work
                 #mndays <- c(0,mndays[month1:length(mndays)-1],
                 #            mndays[1:month1-1])
-                mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
+                if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
                 days <- time$vals%%time$daysayear - rep(cumsum(mndays),
                                                         time$len/12)
                 if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {

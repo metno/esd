@@ -907,7 +907,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
           eof <- eof[[1]]
           if (verbose) print('Check suggests that eof is stored as list -> eof')
         }
-                                        #print(class(model)); str(model)
+                           #print(class(model)); str(model)
     attr(ds,'calibration_data') <- attr(z,'calibration_data')
     attr(ds,'fitted_values') <- zoo(fit.val,order.by=index(attr(z,'fitted_values')))
     class(attr(ds,'fitted_values')) <- class(y0)
@@ -944,6 +944,7 @@ DS.eof <- function(y,X,mon=NULL,
                  rmtrend=rmtrend,ip=ip,
                  area.mean.expl=area.mean.expl,
                  verbose=verbose,...)
+    if(verbose) print("---return to DS.eof---")
     attr(ds,'original_data') <- y
     class(attr(ds,'original_data')) <- class(y)
     class(attr(ds,'fitted_values')) <- class(y)
