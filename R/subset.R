@@ -104,26 +104,26 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
       if (verbose) {print('Select time'); print(it)}
         it <- 1:d[1] 
         dates <- index(x)
-        keep <- 1 : d[1]
+        keept <- 1 : d[1]
     } else {
         if (is.numeric(it)) {
                                         #print("numeric it")
             if (max(nchar(as.character(it)))<=2)
-                keep <- is.element(as.numeric(format(index(x),"%m")),it)
+                keept <- is.element(as.numeric(format(index(x),"%m")),it)
             else if (sum(nchar(as.character(it))==4) == length(it)) {
                 if (length(it)==2)
                     if (diff(it)>1)
                         it <- seq(it[1],it[2],1)
                 if (is.character(index(x)) | inherits(index(x),'Date'))
-                    keep <- is.element(as.numeric(format(index(x),"%Y")),it)
+                    keept <- is.element(as.numeric(format(index(x),"%Y")),it)
                 else
-                    keep <- is.element(index(x),it)
+                    keept <- is.element(index(x),it)
             }
         }
         else if (is.character(it))
-            keep <- is.element(index(x),as.Date(it))
-                                        #print(c(sum(keep),length(keep)))
-        dates <- index(x)[keep]
+            keept <- is.element(index(x),as.Date(it))
+                                        #print(c(sum(keept),length(keept)))
+        if (!is.null(keept)) dates <- index(x)[keept]
     }
 
     ## grep for appendices
@@ -134,7 +134,7 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
         for (i in 1:length(nm)) {
             eval(parse(text=paste("a <- attr(x,'",nm,"')",sep="")))
             cls <- class(a)
-            ais <- zoo(coredata(a)[keep,is],order.by=dates)
+            ais <- zoo(coredata(a)[keept,is],order.by=dates)
             ais <- attrcp(a,ais)
             eval(parse(text=paste("attr(x,'",nm,"') <- ais",sep="")))
             rm(a,ais,cls)
@@ -142,8 +142,8 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     }
     
     class(x) -> cls
-    ##keep <- is.element(index(x),it)
-    y <- x[keep,]
+    ##keept <- is.element(index(x),it)
+    if (!is.null(keept)) y <- x[keept,]
     
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c('greenwich','mean'))
