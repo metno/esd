@@ -520,8 +520,9 @@ as.field <- function(x,...) UseMethod("as.field")
 as.field.zoo <- function(x,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,
                          reference=NA,info=NA,calendar='gregorian',
-                         greenwich=TRUE, method= NA,type=NA,aspect=NA) {
-  #print("as.field.zoo")
+                         greenwich=TRUE, method= NA,type=NA,aspect=NA,
+                         verbose=FALSE) {
+  if(verbose) print("as.field.zoo")
   #print("lon"); print(lon); print("lat"); print(lat); print(param); print(unit)
   #print(c(length(lon),length(lat),length(index)))
 
@@ -566,9 +567,10 @@ as.field.zoo <- function(x,lon,lat,param,unit,
 as.field.default <- function(x,index,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,
                          reference=NA,info=NA,calendar='gregorian',
-                         greenwich=TRUE, method= NA,type=NA,aspect=NA) {
+                         greenwich=TRUE, method= NA,type=NA,aspect=NA,
+                         verbose=FALSE) {
 
-#print("as.field.default")
+if(verbose) print("as.field.default")
 #create a zoo object z
   z <- zoo(x=x,order.by=index)
   x <- as.field.zoo(z,lon=lon,lat=lat,param=param,unit=unit,
