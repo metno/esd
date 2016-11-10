@@ -230,7 +230,7 @@ geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000
   invisible(Wind)      
 }
 
-geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
+geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,...) {
   ## Estimates the geostrophic wind from mean sea-level pressure field
   if (verbose) print('geostrophicwind')
   stopifnot(is.field(x))

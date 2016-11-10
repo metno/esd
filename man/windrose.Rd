@@ -16,7 +16,7 @@
 \usage{
 TGW(triangle,f=1.25e-4,rho=1.25,verbose=FALSE)
 geostrophicwind.station(x,f=1.25e-4,rho=1.25,verbose=FALSE,progressbar=TRUE)
-geostrophicwind.field(x,f=1.25e-4,rho=1.25,verbose=FALSE)
+geostrophicwind.field(x,f=1.25e-4,rho=1.25,verbose=FALSE,...)
 windrose(x, saw = 10, max.scale = NULL, cols = c("grey90", "yellow", "green", "red", "blue", "darkgreen", "darkred", "magenta", "black"), param = c("u", "v"), simple = TRUE, verbose = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
