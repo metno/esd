@@ -367,3 +367,38 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
     return(y)
 }
     
+
+subset.stationmeta <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+  if(verbose) print('subset.stationmeta')
+  if (is.null(is)) is <- rep(TRUE,dim(x)[1])
+  if (is.list(is)) {
+    i <- rep(TRUE,length(x[[1]]))
+    listnames <- names(is)
+    if ('lon' %in% listnames) 
+      i <- (lon(x) >= min(is$lon)) & (lon(x) <= max(is$lon)) 
+    if ('lat' %in% listnames) 
+      i <- i & (lat(x) >= min(is$lat)) & (lat(x) <= max(is$lat)) 
+    if ('alt' %in% listnames) 
+      i <- i & (alt(x) >= min(is$alt)) & (alt(x) <= max(is$alt))
+    if ('cntr' %in% listnames) 
+      i <- i & (is.element(x$cntr,is$cntr))
+    if ('param' %in% listnames) 
+      i <- i & (is.element(x$param,is$param))
+    if ('src' %in% listnames) 
+      i <- i & (is.element(x$src,is$src))
+    is <- i
+  } else if (is.numeric(is) | is.integer(is)) 
+    is <- is.element(1:dim(x)[1],is)
+  if (!is.null(it)) {
+    is <- is & (x$start >= min(it)) & (x$end <= max(it))
+  }
+  if (verbose) print(paste('sub set of',sum(is),'elements'))
+  is <- (1:dim(x)[1])[is]
+  if (verbose) {print(dim(x)); print(is)}
+  y <- x[is,]  
+  if (verbose) print(dim(y))
+  class(y) <- class(x)
+  attr(y,'history') <- history.stamp(x)  
+  if (verbose) str(y)
+  return(y)
+}
