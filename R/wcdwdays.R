@@ -66,7 +66,8 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   tr3 <- predict(lm(prem ~ t + I(t^2) + I(t^3)))
   Nwd <- zoo(cbind(preq1,preq2,prem,tr1,tr2,tr3),order.by=t)
   nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mwd1))
-
+  Nwd[Nwd > 90] <- 90
+  
   if (plot) {
     if (new) dev.new()
     par(bty='n')
@@ -164,6 +165,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
   tr3[!is.finite(prem)] <- NA
   Nwd <- zoo(cbind(preq1,preq2,prem,tr1,tr2,tr3),order.by=t)
   nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mwd1))
+  Nwd[Nwd > 90] <- 90
 
   if (plot) {
     if (new) dev.new()
