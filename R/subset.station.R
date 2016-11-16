@@ -381,14 +381,17 @@ subset.stationmeta <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if ('alt' %in% listnames) 
       i <- i & (alt(x) >= min(is$alt)) & (alt(x) <= max(is$alt))
     if ('cntr' %in% listnames) 
-      i <- i & (is.element(x$cntr,is$cntr))
+      i <- i & (is.element(tolower(substr(x$cntr,1,nchar(is$cntr))),tolower(is$cntr)))
     if ('param' %in% listnames) 
-      i <- i & (is.element(x$param,is$param))
+      i <- i & (is.element(tolower(substr(x$param,1,nchar(is$param))),tolower(is$param)))
     if ('src' %in% listnames) 
-      i <- i & (is.element(x$src,is$src))
+      i <- i & (is.element(tolower(substr(x$src,1,nchar(is$src))),tolower(is$src)))
+    if ('loc' %in% listnames) 
+      i <- i & (is.element(tolower(substr(x$loc,1,nchar(is$loc))),tolower(is$loc)))
     is <- i
   } else if (is.numeric(is) | is.integer(is)) 
-    is <- is.element(1:dim(x)[1],is)
+    is <- is.element(1:dim(x)[1],is) else if (is.character(is))
+    is <- is.element(tolower(substr(x$loc,1,nchar(is))),tolower(is))
   if (!is.null(it)) {
     is <- is & (x$start >= min(it)) & (x$end <= max(it))
   }
