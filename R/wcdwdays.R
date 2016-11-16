@@ -22,6 +22,7 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   dfit <- glm(y ~ x + I(x^2) + I(x^3),family='poisson',data=cal)
   
   if (plot) {
+    if (verbose) print('plot calibration results')
     if (new) dev.new()
     par(bty='n')
     plot(cal,ylim=c(0,90),xlim=c(-10,10),pch=19,
@@ -39,9 +40,11 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
     grid()
   }
 
+  if (verbose) print(class(dse))
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
-  djf.dse <- subset(dse,it='djf')
+  if (verbose) {print('Seasons/annual?'); print(table(month(dse))); print(class(dse))}
+  if (length(table(month(dse)))==4) djf.dse <- subset(dse,it='djf') else djf.dse <- dse
   index(djf.dse) <- year(djf.dse)
   ovl <- window(djf.dse,start=year(start(x)),end=year(end(x)))
   djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
@@ -51,8 +54,10 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   q2 <- data.frame(x=apply(coredata(djf.dse),1,quantile,probs=0.95,na.rm=TRUE))
   qm <- data.frame(x=apply(coredata(djf.dse),1,mean,na.rm=TRUE))
   obs <- data.frame(x=coredata(mwd1))
-
+  if (verbose) str(qm)
+  
   t <- year(index(djf.dse))
+  if (verbose) print('Fit trend cubic models')
   preq1 <- exp(predict(dfit,newdata=q1))
   tr1 <- predict(lm(preq1 ~ t + I(t^2) + I(t^3)))
   preq2 <- exp(predict(dfit,newdata=q2))
@@ -133,7 +138,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
 
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
-  djf.dse <- subset(dse,it='djf')
+  if (length(table(month(dse)))==4) djf.dse <- subset(dse,it='jja') else djf.dse <- dse
   index(djf.dse) <- year(djf.dse)
   ovl <- window(djf.dse,start=year(start(x)),end=year(end(x)))
   djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
