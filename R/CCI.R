@@ -5,7 +5,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
                 label=NULL,mindistance=5E5,dpmin=1E-3,hmax=4000,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,
-                do.track=FALSE,verbose=FALSE,...) {
+                allow.open=FALSE,do.track=FALSE,verbose=FALSE,...) {
   if(verbose) print("CCI - calculus based cyclone identification")
 
   stopifnot(inherits(Z,'field'))
@@ -180,8 +180,8 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
   ## Penalty for topography
   h <- mapply(fn,lonXY,latXY)
-  pf.h <- 1 - 0.25*h[1,]/2000
-  pf.h[pf.h>2000] <- 0
+  pf.h <- 1 - 0.25*h[1,]/1000
+  pf.h[pf.h>1000] <- 0
   pf.h <- rep(pf.h,nt)
   dim(pf.h) <- c(nx-1,ny-1,nt)
   pf.h <- aperm(pf.h,c(3,1,2))  
@@ -430,10 +430,15 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
         pf.hi <- pf.h[i]
         pf.dpi <- 1-10^(-0.31*dpi/dpmin)
         pf.i <- (pf.hi+pf.dhi)/2*pf.dpi
-        print(pf.dpi)
-        print(pf.i)
-        #browser()
-        oki <- sum(!is.na(dpi) & pf.i>=0.5)>=3
+        #print(pf.dpi)
+        #print(pf.i)
+        if(allow.open) {
+          oki <- sum(!is.na(dpi) & pf.i>=0.25)>=3 &
+                 mean(pf.i,na.rm=TRUE)>0.5
+        } else {
+          oki <- sum(!is.na(dpi) & pf.i>=0.25)>3 &
+                 mean(pf.i,na.rm=TRUE)>0.5
+        }
         #oki <- sum(!is.na(dpi) & dpi>dpmin/2)>=3 &
         #       mean(dpi,na.rm=TRUE)>dpmin
         #   sum(dpi>dpmin & !is.na(dpi))>=3 #&
@@ -482,7 +487,6 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     if (lplot) {
       if(verbose) print("plot example of cyclone identification")
       data(geoborders,envir=environment())
-      browser()
       i <- length(date)/2
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
