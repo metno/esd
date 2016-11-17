@@ -710,7 +710,7 @@ map.data.frame <- function(x,...) {
   att <- c("station_id","location","country","longitude","latitude","altitude","element","start","end","source","wmo","quality")
   
   if (sum(is.element(names(x),att))==12) {   
-    class(x) <- c("data.frame","stationmeta")
+    class(x) <- c("stationmeta","data.frame")
     map.station(x,...)
   }
   else print("x is not a stationmeta object")
