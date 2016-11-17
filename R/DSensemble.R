@@ -1968,10 +1968,13 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
-    gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
-                          lon=range(lon(SLP))+c(-2,2),
-                          lat=range(lat(SLP))+c(-2,2),
-                          lev=levgcm,verbose=verbose)
+    gcm <- try(retrieve(ncfile = ncfiles[select[i]],type=type,
+                        lon=range(lon(SLP))+c(-2,2),
+                        lat=range(lat(SLP))+c(-2,2),
+                        lev=levgcm,verbose=verbose))
+    if(inherits(gcm,"try-error")) {
+      print(paste("retrieve failed for",ncfiles[select[i]]))
+    } else {
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
     ## KMP 2016-08-09 added separate level input for slp and gcm
     ##                because they can have levels of different units
@@ -2148,9 +2151,10 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
                   round(quality)))
     }
-   
+    }
+    
     if (verbose) print('Downscaling finished')
-  
+
   }
   
   ## Unpacking the information tangled up in GCMs, PCs and stations:
