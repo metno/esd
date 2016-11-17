@@ -911,7 +911,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
           xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
           #browser()
           if(dim(xt)[1]>1) {
-              xall <- as.trajectory(xt,nmin=2)
+              xall <- as.trajectory(xt,nmin=2,n=45)
               map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
                   add=TRUE,col=col,lonR=lonR,latR=latR,
                   projection=projection,type=type,
