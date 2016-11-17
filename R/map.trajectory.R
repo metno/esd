@@ -8,7 +8,11 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
   if(is.null(type)) type <- "trajectory"
-  if (any(c('trajectory','points','start','end') %in% type)) {
+  if ('colors' %in% type) {
+    segments.trajectory(y,type=type,verbose=verbose,...)
+  } else if (any(c('shapes','anomaly') %in% type)) {
+    map.anomaly.trajectory(y,projection=projection,verbose=verbose,...)
+  } else if (any(c('trajectory','points','start','end') %in% type)) {
     if (projection=="sphere" | projection=="np" | projection=="sp") {
       if (projection=="np") latR <- 90
       if (projection=="sp") latR <- -90
@@ -18,10 +22,6 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
     }
   } else if ('density' %in% type) {
     map.density.trajectory(y,projection=projection,verbose=verbose,...)
-  } else if (any(c('shapes','anomaly') %in% type)) {
-    map.anomaly.trajectory(y,projection=projection,verbose=verbose,...)
-  } else if ('colors' %in% type) {
-    segments.trajectory(y,verbose=verbose,...)
   } else print("unkown map type")
 }
 
@@ -153,15 +153,14 @@ segments.trajectory <- function(x,param="month",
   icol[icol>colbar$n] <- colbar$n
   col <- matrix(colbar$col[icol],dim(pcol))
 
-  data("geoborders",envir=environment())
-  ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  if(!is.null(xlim)) ok <- ok & geoborders$x >= min(xlim) & geoborders$x <= max(xlim)
-  if(!is.null(ylim)) ok <- ok & geoborders$y >= min(ylim) & geoborders$y <= max(ylim)
-  mlon <- geoborders$x[ok]
-  mlat <- geoborders$y[ok]
-
   if (new & !add) dev.new(width=8,height=7)
   if(!add) {
+    data("geoborders",envir=environment())
+    ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
+    if(!is.null(xlim)) ok <- ok & geoborders$x >= min(xlim) & geoborders$x <= max(xlim)
+    if(!is.null(ylim)) ok <- ok & geoborders$y >= min(ylim) & geoborders$y <= max(ylim)
+    mlon <- geoborders$x[ok]
+    mlat <- geoborders$y[ok]
     par0 <- par()
     par(bty="n",fig=c(0,1,0.1,1))
     plot(mlon,mlat,pch=".",col="grey",main=main,
@@ -182,10 +181,10 @@ segments.trajectory <- function(x,param="month",
     points(lon0[OK,1],lat0[OK,1],pch=19,cex=cex,col=adjustcolor(col[OK,1],
            alpha.f=alpha))
   }
-
+  
   if("end" %in% type) {
     arrows(lon0[OK,ncol(lon0)-1],lat0[OK,ncol(lon0)-1],
-           lon0[OK,ncol(lon0)],lon0[OK,ncol(lon0)],lwd=lwd,length=0.1,
+           lon0[OK,ncol(lon0)],lat0[OK,ncol(lon0)],lwd=lwd,length=0.1,
            col=adjustcolor(col[OK,ncol(lon0)],alpha.f=alpha))
   }
   
