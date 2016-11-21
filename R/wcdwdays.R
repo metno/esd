@@ -65,6 +65,12 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   q2 <- data.frame(x=apply(coredata(djf.dse),1,quantile,probs=0.95,na.rm=TRUE))
   qm <- data.frame(x=apply(coredata(djf.dse),1,mean,na.rm=TRUE))
   obs <- data.frame(x=coredata(mwd1))
+  
+  ## If the values are far from zero, set to NA
+  q1$x[(q1$x < threshold - 15) | (q1$x > threshold + 20)] <- NA
+  q2$x[(q2$x < threshold - 15) | (q2$x > threshold + 20)] <- NA
+  qm$x[(qm$x < threshold - 15) | (qm$x > threshold + 20)] <- NA
+  
   if (verbose) str(qm)
   
   if (verbose) {print('Fit trend cubic models'); range(t)}
