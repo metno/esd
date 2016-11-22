@@ -14,6 +14,14 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   nwd2 <- annual(-mamy,FUN='count',threshold=threshold,nmin=nmin)
   mwd2 <- annual(mam,FUN='mean',nmin=nmin)
 
+  ## REB 2016-11-17: exclude temperatures far from the threshold:
+  xcld1 <- (mwd1 < threshold - 15) | (mwd1 > threshold + 20)
+  if (verbose) print(paste('Exclude',sum(xcld1),'outliers'))
+  mwd1[xcld1] <- NA
+  xcld2 <- (mwd2 < threshold - 15) | (mwd2 > threshold + 20)
+  if (verbose) print(paste('Exclude',sum(xcld2),'outliers'))
+  mwd1[xcld2] <- NA
+  
   cal <- data.frame(x=c(coredata(mwd1),coredata(mwd2)),
                     y=c(coredata(nwd1),coredata(nwd2)))
   ## Use polymomial as two different seasons are involved and the
@@ -57,6 +65,12 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   q2 <- data.frame(x=apply(coredata(djf.dse),1,quantile,probs=0.95,na.rm=TRUE))
   qm <- data.frame(x=apply(coredata(djf.dse),1,mean,na.rm=TRUE))
   obs <- data.frame(x=coredata(mwd1))
+  
+  ## If the values are far from zero, set to NA
+  #q1$x[(q1$x < threshold - 15) | (q1$x > threshold + 20)] <- NA
+  #q2$x[(q2$x < threshold - 15) | (q2$x > threshold + 20)] <- NA
+  #qm$x[(qm$x < threshold - 15) | (qm$x > threshold + 20)] <- NA
+  
   if (verbose) str(qm)
   
   if (verbose) {print('Fit trend cubic models'); range(t)}
@@ -125,7 +139,11 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
   djfy <- subset(y,it=it)     # default: summer
   nwd1 <- annual(djfy,FUN='count',threshold=threshold,nmin=nmin)
   mwd1 <- annual(djf,FUN='mean',nmin=nmin)
-
+  ## REB 2016-11-17: exclude temperatures far from the threshold:
+  xcld1 <- (mwd1 < threshold - 15) | (mwd1 > threshold + 20)
+  if (verbose) print(paste('Exclude',sum(xcld1),'outliers'))
+  mwd1[xcld1] <- NA
+  
   cal <- data.frame(x=c(coredata(mwd1)),
                     y=c(coredata(nwd1)))
   ## Use linear fit rather than polynomial as this analysis only
