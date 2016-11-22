@@ -236,39 +236,50 @@ lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
     dim(x) <- c(1,length(x0))
     colnames(x) <- names(x0)
   }
+
+  if (is.null(xlim) & !add) xlim <- range(x[,colnames(x)=='lon'])
+  if(add) xlim <- par("usr")[1:2]
+  if (is.null(ylim) & !add) ylim <- range(x[,colnames(x)=='lat'])
+  if(add) ylim <- par("usr")[3:4]
+
+  #if(is.null(attr(x,"greenwich"))) {
+  #  if(!max(x[,colnames(x)=="lon"])>180 |
+  #     min(x[,colnames(x)=="lon"])<0) {
+  #    attr(x,"greenwich") <- FALSE
+  #  } else {
+  #    attr(x,"greenwich") <- TRUE
+  #  }
+  #}
+  if(max(xlim)>180 & min(xlim)>=0) {
+    greenwich <- TRUE
+  } else {
+    greenwich <- FALSE
+  }
+  x <- g2dl(x,greenwich=greenwich)
+  
   lons <- x[,colnames(x)=='lon']
   lats <- x[,colnames(x)=='lat']
   if(dim(x)[1]==1) {
     dim(lons) <- c(1,length(lons))
     dim(lats) <- c(1,length(lats))
   }
-  if (is.null(xlim)) xlim <- range(lons)
-  if (is.null(ylim)) ylim <- range(lats)
+  
   if(verbose) print(paste('xlim',paste(xlim,collapse="-"),
                           ', ylim',paste(ylim,collapse="-")))
   
-  data("geoborders",envir=environment())
-  #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
-  mlon <- geoborders$x#[ok]
-  mlat <- geoborders$y#[ok]
 
   if(is.null(dev.list())) add <- FALSE
   if(add) new <- FALSE
   
   if(new) dev.new(width=8,height=7)
   if(!add) {
+    data("geoborders",envir=environment())
+    #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
+    mlon <- geoborders$x#[ok]
+    mlat <- geoborders$y#[ok]
     par(bty="n")
     plot(mlon,mlat,pch=".",col="white",main=main,
         xlab="lon",ylab="lat",xlim=xlim,ylim=ylim)
-  }
-
-  if(is.null(attr(x,"greenwich"))) {
-    if(!max(x[,colnames(x)=="lon"])>180 |
-       min(x[,colnames(x)=="lon"])<0) {
-      attr(x,"greenwich") <- FALSE
-    } else {
-      attr(x,"greenwich") <- TRUE
-    }
   }
   
   OK <- apply(lons,1,function(x) !((max(x)-min(x))>180))
@@ -295,18 +306,17 @@ lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
                       lons[OK,ncol(lons)],lats[OK,ncol(lons)],
                       col=adjustcolor(col,alpha.f=alpha),lwd=lwd,length=0.1)
   ## should do same for dateline trajectories!
-
   # trajectories crossing the dateline plotted in two parts
   if (sum(!OK)>0 & "trajectory" %in% type) {
     lons.dl <- lons[!OK,]
     lons.e <- lons.dl
     lons.w <- lons.e
-    if(!attr(x,"greenwich")) {
+    if(greenwich) {
+      lons.e[lons.e<180] <- lons.e[lons.e<180]+360
+      lons.w[lons.w>180] <- lons.w[lons.w>180]-360
+    } else {
       lons.e[lons.e<0] <- lons.e[lons.e<0]+360
       lons.w[lons.w>0] <- lons.w[lons.w>0]-360
-    } else {
-      lons.e[lons.e>180] <- lons.e[lons.e>180]-360
-      lons.w[lons.w<180] <- lons.w[lons.w<180]+360
     }
     if(sum(!OK)>1) {
       matlines(t(lons.w),t(lats[!OK,]),lty=lty+1,lwd=lwd,

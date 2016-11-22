@@ -893,7 +893,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
             projection=projection,
             xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
     }
-    
     if(param %in% colnames(x) & dim(x)[1]>0) {
         if(verbose) print(paste("size proportional to",param))
         cex <- 1+(x[,param]-min(x[,param],na.rm=TRUE))/
