@@ -2,10 +2,10 @@
 # Last updated 10.10.2016
 
 CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
-                label=NULL,mindistance=5E5,dpmin=1E-3,hmax=4000,
+                label=NULL,mindistance=5E5,dpmin=1E-3,hmax=1000,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,
-                allow.open=FALSE,do.track=FALSE,verbose=FALSE,...) {
+                allow.open=TRUE,do.track=FALSE,verbose=FALSE,...) {
   if(verbose) print("CCI - calculus based cyclone identification")
 
   stopifnot(inherits(Z,'field'))
@@ -150,6 +150,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   rm("P.lowx2","P.lowy2"); gc(reset=TRUE)
   
   ## Cyclones should be deeper than the zonal average slp
+  if(verbose) print("Compare slp to zonal average")
   dP <- 0.5*(px+py)
   P.zonal <- apply(dP,c(1,3),FUN="mean",na.rm=TRUE)
   for(i in seq(dim(dP)[2])) dP[,i,] <- dP[,i,] - P.zonal
@@ -163,6 +164,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   rm("dP","P.zonal"); gc(reset=TRUE)
 
   ## Exclude identified depressions in high altitude regions
+  if(verbose) print("Penalty factor for high altitude")
   data(etopo5)
   fn <- function(lon=0,lat=60) {
     i.lon <- which.min(abs(longitude(etopo5)-lon))
@@ -178,29 +180,16 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     return(c(mean(h),mean(dhdx),mean(dhdy)))
   }
 
-  ## Penalty for topography
+  ## Penalty factor for topography
   h <- mapply(fn,lonXY,latXY)
-  pf.h <- 1 - 0.25*h[1,]/1000
-  pf.h[pf.h>1000] <- 0
+  dh <- apply(h[2:3,],2,max)  
+  pf.h <- 1 - 0.25*h[1,]/hmax - 0.25*dh/300
+  pf.h[h[1,]<0] <- 1
+  pf.h[h[1,]>hmax] <- 0
   pf.h <- rep(pf.h,nt)
   dim(pf.h) <- c(nx-1,ny-1,nt)
   pf.h <- aperm(pf.h,c(3,1,2))  
-  
-  #ok <- rep(h[1,]>=hmax,nt)
-  #dim(ok) <- c(nx-1,ny-1,nt)
-  #ok <-aperm(ok,c(3,1,2))
-  #lows1[!ok] <- FALSE
-  #lows2[!ok] <- FALSE
-
-  ## Penalty factor for topography gradient
-  dh <- apply(h[2:3,],2,max)  
-  pf.dh <- 1 - 0.25*dh/200
-  pf.dh[h[1,]<=0] <- 1
-  pf.dh[dh>200] <- 0
-  pf.dh <- rep(pf.dh,nt)
-  dim(pf.dh) <- c(nx-1,ny-1,nt)
-  pf.dh <- aperm(pf.dh,c(3,1,2))  
-  
+    
   ## Quality flag to keep track of cyclones found with widened mask
   qf <- matrix(rep(0,length(lows1)),dim(lows1))
   qf[lows1] <- 1
@@ -222,6 +211,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   if (!cyclones) strength2 <- rank(-pcent2)
 
   ## Keep only cyclones that are deeper than pmax
+  if(verbose) print("Remove shallow cyclones")
   del1 <- rep(TRUE,length(date1))
   del2 <- rep(TRUE,length(date2))
   if(!is.null(pmax)) {
@@ -328,7 +318,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   if(sum(lows)==0) {
     print("No cyclones identified!")
     X <- data.frame(date=NA,time=NA,lon=NA,lat=NA,pcent=NA,
-         dslp=NA,max.gradient=NA,max.speed=NA,radius=NA,closed=NA,accuracy=NA)
+         max.gradient=NA,max.speed=NA,radius=NA,closed=NA,accuracy=NA)
   } else {
     ## Clear temporary objects from working memory
     lon <- lon[lows]
@@ -337,7 +327,6 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     pcent <- 0.5*(px[lows]+py[lows])
     qf <- qf[lows]
     pf.h <- pf.h[lows]
-    pf.dh <- pf.dh[lows]
    
     rm("lows","lows1","lows2","lon1","lon2","lat1","lat2",
      "date1","date2","strength1","strength2",
@@ -351,7 +340,6 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     pcent <- pcent[i]
     qf <- qf[i]
     pf.h <- pf.h[i]
-    pf.dh <- pf.dh[i]
     strength <- rank(pcent)
     if (!cyclones) strength <- rank(-pcent)
 
@@ -364,7 +352,6 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
       pcent <- pcent[s<nsim]
       qf <- qf[s<nsim]
       pf.h <- pf.h[s<nsim]
-      pf.dh <- pf.dh[s<nsim]
     }
 
     ## Pressure gradient
@@ -375,7 +362,9 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
     ## Remove temporary variables and release the memory:
     rm('DX','DY'); gc(reset=TRUE)
- 
+
+    if(allow.open) nmin <- 3 else nmin <- 4
+        
     # Find points of inflexion (2nd derivative==0) to estimate
     # the storm radius and maximum speed and pressure gradient
     t1 <- Sys.time()
@@ -385,9 +374,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     dim(lonXX) <- c(NX-1,NY-1,nt); lonXX <- aperm(lonXX,c(3,1,2))
     latXX <- rep(0.5*(latXY[2:NX,2:NY]+latXY[2:NX,1:(NY-1)]),nt)
     dim(latXX) <- c(NX-1,NY-1,nt); latXX <- aperm(latXX,c(3,1,2))
-    #dateXX <- rep(t,(NX-1)*(NY-1)); dim(dateXX) <- c(nt,NX-1,NY-1)
     radius <- rep(NA,length(date))
-    dslp <- rep(NA,length(date))
     max.gradient <- rep(NA,length(date))
     max.speed <- rep(NA,length(date))
     max.vg <- rep(NA,length(date))
@@ -403,47 +390,28 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
       lat.infl <- latXY[1,infly<0]
       dlon <- lon.infl-lon[i]
       dlat <- lat.infl-lat[i]
-      ilon <- rep(NA,4)
-      ilat <- rep(NA,4)
-      if (any(dlat>0)) {
-        ilon[1] <- which(lonXY[,1]==lon[i])
-        ilat[1] <- which(latXY[1,]==lat.infl[dlat==min(dlat[dlat>0])])
-      }
-      if (any(dlat<0)) {
-        ilon[2] <- which(lonXY[,1]==lon[i])
-        ilat[2] <- which(latXY[1,]==lat.infl[dlat==max(dlat[dlat<0])])
-      }
-      if (any(dlon>0)) {
-        ilon[3] <- which(lonXY[,1]==lon.infl[dlon==min(dlon[dlon>0])])
-        ilat[3] <- which(latXY[1,]==lat[i])
-      }
-      if (any(dlon<0)) {
-        ilon[4] <- which(lonXY[,1]==lon.infl[dlon==max(dlon[dlon<0])])
-        ilat[4] <- which(latXY[1,]==lat[i])
-      }
-      ilon <- ilon[!is.na(ilon)]
-      ilat <- ilat[!is.na(ilat)]
+      ilat <- which(latXY[1,] %in%
+        lat.infl[dlat %in% c(min(dlat[dlat>0]),max(dlat[dlat<0]))])
+      ilon <- which(lonXY[,1] %in%
+        lon.infl[dlon %in% c(min(dlon[dlon>0]),max(dlon[dlon<0]))])
+      nlon <- length(ilon)
+      nlat <- length(ilat)
+      ilon <- c(rep(which(lonXY[,1]==lon[i]),nlat),ilon)
+      ilat <- c(ilat,rep(which(latXY[1,]==lat[i]),nlon))
       oki <- sum(!is.na(ilon))>=3
       if(oki) {
         dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-        pf.dhi <- pf.dh[i]
-        pf.hi <- pf.h[i]
-        pf.dpi <- 1-10^(-0.31*dpi/dpmin)
-        pf.i <- (pf.hi+pf.dhi)/2*pf.dpi
+        oki <- sum(!is.na(dpi) & (pf.h[i]*dpi)>dpmin/2)>=3 &
+               (pf.h[i]*mean(dpi,na.rm=TRUE))>dpmin
+        #print(paste(lon[i],lat[i],sep=","))
+        #print(paste(fn(lon[i],lat[i]),collapse=","))
+        #print(pf.h[i])
+        #pf.dpi <- 1-10^(-0.31*dpi/dpmin)
+        #pf.i <- (pf.h[i]+pf.dh[i])/2*pf.dpi
         #print(pf.dpi)
         #print(pf.i)
-        if(allow.open) {
-          oki <- sum(!is.na(dpi) & pf.i>=0.25)>=3 &
-                 mean(pf.i,na.rm=TRUE)>0.5
-        } else {
-          oki <- sum(!is.na(dpi) & pf.i>=0.25)>3 &
-                 mean(pf.i,na.rm=TRUE)>0.5
-        }
-        #oki <- sum(!is.na(dpi) & dpi>dpmin/2)>=3 &
-        #       mean(dpi,na.rm=TRUE)>dpmin
-        #   sum(dpi>dpmin & !is.na(dpi))>=3 #&
-        #   ( mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) |
-        #   (!cyclones & mean((0.5*(px+py)[t==date[i],,]),na.rm=TRUE)) ) 
+        #oki <- sum(!is.na(dpi) & pf.i>=0.25)>=nmin &
+        #         mean(pf.i,na.rm=TRUE)>0.5
       }
       if (oki) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
@@ -451,8 +419,6 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
         vg <- dpi/(fi*rho)
         v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
         radius[i] <- mean(ri,na.rm=TRUE)
-        dslp[i] <- mean(mapply(function(a,b) 0.5*(px+py)[t==date[i],a,b],
-                               ilon,ilat)-pcent[i])
         max.gradient[i] <- mean(dpi,na.rm=TRUE)
         max.speed[i] <- mean(v.grad,na.rm=TRUE)
         max.vg[i] <- mean(vg,na.rm=TRUE)
@@ -468,7 +434,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     max.gradient <- max.gradient*1E-2*1E3
     if(verbose) print("remove cyclones according to rmin, rmax, dpmin")
     
-    ok <- ok & dslp>=0
+    ok <- ok
     if(!is.null(rmin)) ok <- ok & radius>=rmin
     if(!is.null(rmax)) ok <- ok & radius<=rmax
     lon <- lon[ok]
@@ -477,7 +443,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     pcent <- pcent[ok]
     qf <- qf[ok]
     closed <- closed[ok]
-    dslp <- dslp[ok]
+    #dslp <- dslp[ok]
     max.gradient <- max.gradient[ok]
     max.speed <- max.speed[ok]
     radius <- radius[ok]
@@ -556,7 +522,8 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     dd <- as.numeric(strftime(date,"%Y%m%d"))
     hh <- as.numeric(strftime(date,"%H"))
     X <- data.frame(date=dd,time=hh,lon=lon,lat=lat,pcent=pcent,
-         dslp=dslp,max.gradient=max.gradient,max.speed=max.speed,
+         #dslp=dslp,
+         max.gradient=max.gradient,max.speed=max.speed,
          radius=radius*1E-3,closed=closed,accuracy=qf)
   }
   unit <- c("date","hour CET","degrees","degrees","hPa","hPa",
