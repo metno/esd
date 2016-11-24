@@ -22,7 +22,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          alpha=0.5,alpha.map=0.7,verbose=FALSE,...) {
 
   if (verbose) print('plot.station')
-
+  par(las=1)
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
   }
