@@ -22,7 +22,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          alpha=0.5,alpha.map=0.7,verbose=FALSE,...) {
 
   if (verbose) print('plot.station')
-
+  par(las=1)
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
   }
@@ -170,7 +170,10 @@ vis.map <- function(x,col='red',map.type=NULL,
                     cex.axis=0.8,add.text=FALSE,
                     map.insert=TRUE,verbose=FALSE,
                     usegooglemap=TRUE,zoom=NULL,...) {
-  if(verbose) print('vis.map')
+  if(verbose) {print('vis.map'); print(cex.axis)}
+  ## REB 2016-11-25: for dsensemble object
+  if (is.null(lon(x))) attr(x,'longitude') <- lon(attr(x,'station'))
+  if (is.null(lat(x))) attr(x,'latitude') <- lat(attr(x,'station'))
   if(is.null(xrange)) xrange <- range(lon(x)) + c(-5,5)
   if(is.null(yrange)) yrange <- range(lat(x)) + c(-2,2)
   if(!map.insert) new <- TRUE else new <- FALSE
@@ -197,7 +200,7 @@ vis.map <- function(x,col='red',map.type=NULL,
         }
                              
       }
-      if (verbose) print(zoom)
+      if (verbose) print(paste('zoom=',zoom))
       bgmap <- GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
                     destfile = "map.station.esd.png",
                     maptype = "mobile", zoom=zoom)
@@ -205,32 +208,41 @@ vis.map <- function(x,col='red',map.type=NULL,
        par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
            mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
      }
-      plotmap(lat(x), lon(x), bgmap, pch=19, col=col)
+      plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
       
    } else {
+     if (verbose) {print('basic map'); print(cex.axis)}
      data(geoborders)
      lon <- geoborders$x
      lat <- geoborders$y
      ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
-           lat>(min(yrange)-1) & lat<(max(yrange)+1)
+           lat>(min(yrange)-1) & lat<(max(yrange)+1) &
+           is.finite(lon) & is.finite(lat)
      lon2 <- attr(geoborders,"borders")$x
      lat2 <- attr(geoborders,"borders")$y
      ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
-            lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
+            lat2>(min(yrange)-1) & lat2<(max(yrange)+1) &
+            is.finite(lon2) & is.finite(lat2)
+     if (verbose) {print(sum(ok)); print(range(lon[ok])); print(range(lat[ok]))}
      if(map.insert) {
        par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
            mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
      } else dev.new()
-     plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=1.2,
-                                        #type='l', KMP 2016-03-16 problem with lines in map
+     
+     plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=2,
+          #type='l', KMP 2016-03-16 problem with lines in map
           xlab=NA,ylab=NA,axes=FALSE,new=new,
           xlim=xrange,ylim=yrange)
        #xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
        #ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
+     par(xpd=FALSE)
+     lines(lon,lat) ## REB: 2016-11-25 need more solid lines.
      axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
      axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
      lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+     if (verbose) print(map.type)
      if (map.type=="points") {
+       if (verbose) {print(c(lon(x),lat(x),cex)); print(col)}
        points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
        if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
      } else if (map.type=="rectangle") {
@@ -1353,8 +1365,9 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
 ## Plots one time series
 plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
-                             target.show=TRUE,map.show=TRUE,map.type=NULL,new=TRUE,
-                             xrange=NULL,yrange=NULL,verbose=FALSE,...) {
+                             target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
+                             new=TRUE,xrange=NULL,yrange=NULL,alpha=0.5,alpha.map=0.7,
+                             verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble.one")
   stopifnot(inherits(x,'dsensemble'))
 
@@ -1412,8 +1425,14 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   # Produce a transparent envelope
   nt <- length(index(z))
   t2 <- c(year(t),rev(year(t)))
+  
   col <- rgb(rep(1,49),seq(0.95,0.1,length=49),seq(0.95,0.1,length=49),0.1)
-
+  ## REB 2016-11-25
+  if(is.null(alpha.map)) alpha.map <- alpha
+  col.map <- adjustcolor(col,alpha.f=alpha.map)
+  col <- adjustcolor(col,alpha.f=alpha)
+ 
+  
   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
   si <- apply(coredata(z),1,sd,na.rm=TRUE)
   for (ii in 1:49) {
@@ -1445,35 +1464,41 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
     plot(diag,map.sho=FALSE,new=FALSE,cex=0.75)
   } 
   
-  if (map.show) {
-    if(verbose) print("add map")
-    if(is.null(xrange) & !is.null(lon(y))) {
-      xrange <- range(lon(y)) + c(-15,15)
-    }
-    if(is.null(yrange) & !is.null(lat(y))) {
-      yrange <- range(lat(y)) + c(-10,10)
-    }
-    if (!is.null(xrange) & !is.null(xrange)) {
-      data(geoborders)
-      lon <- geoborders$x
-      lat <- geoborders$y
-      lon2 <- attr(geoborders,"borders")$x
-      lat2 <- attr(geoborders,"borders")$y
-      par(fig=c(0.7,0.95,0.78,0.98),new=TRUE, mar=c(0,0,0,0),
-        cex.main=0.75,xpd=FALSE,col.main="grey",bty="n")
-      plot(lon,lat,lwd=1,col="black",type='l',xlab=NA,ylab=NA,
-         axes=FALSE,xlim=xrange,ylim=yrange)
-      axis(1,mgp=c(3,.5,0))
-      axis(2,mgp=c(2,.5,0))
-      lines(lon2,lat2,col = "pink",lwd=1)
-      if("points" %in% map.type) {
-        points(lon(y),lat(y),pch=21,cex=1,col='black',bg='red',lwd=1)
-    }
-      if("rectangle" %in% map.type) {
-        rect(min(lon(y)),min(lat(y)),max(lon(y)),max(lat(y)),lwd=1,col=NA,border='red',lty=2)
-      }
-    } else if (verbose) print(paste('lon=',lon(y),'lat=',lat(y)))
-  }  
+  if(map.show & !map.insert) {
+    vis.map(x,"red",map.type,add.text=FALSE,map.insert=map.insert,
+            cex.axis=cex.axis,cex=1.5,verbose=verbose,...)
+    new <- TRUE
+  }
+  # REB 2016-11-25
+  #if (map.show) {
+  #  if(verbose) print("add map")
+  #  if(is.null(xrange) & !is.null(lon(y))) {
+  #    xrange <- range(lon(y)) + c(-15,15)
+  #  }
+  #  if(is.null(yrange) & !is.null(lat(y))) {
+  #    yrange <- range(lat(y)) + c(-10,10)
+  #  }
+  #  if (!is.null(xrange) & !is.null(xrange)) {
+  #    data(geoborders)
+  #    lon <- geoborders$x
+  #    lat <- geoborders$y
+  #    lon2 <- attr(geoborders,"borders")$x
+  #    lat2 <- attr(geoborders,"borders")$y
+  #    par(fig=c(0.7,0.95,0.78,0.98),new=TRUE, mar=c(0,0,0,0),
+  #      cex.main=0.75,xpd=FALSE,col.main="grey",bty="n")
+  #    plot(lon,lat,lwd=1,col="black",type='l',xlab=NA,ylab=NA,
+  #       axes=FALSE,xlim=xrange,ylim=yrange)
+  #    axis(1,mgp=c(3,.5,0))
+  #    axis(2,mgp=c(2,.5,0))
+  #    lines(lon2,lat2,col = "pink",lwd=1)
+  #    if("points" %in% map.type) {
+  #      points(lon(y),lat(y),pch=21,cex=1,col='black',bg='red',lwd=1)
+  #  }
+  #    if("rectangle" %in% map.type) {
+  #      rect(min(lon(y)),min(lat(y)),max(lon(y)),max(lat(y)),lwd=1,col=NA,border='red',lty=2)
+  #    }
+  #  } else if (verbose) print(paste('lon=',lon(y),'lat=',lat(y)))
+  #}  
   # finished plotting
 
   if (legend.show) {
@@ -1496,6 +1521,9 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                       paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
             bty="n",cex=0.7,text.col="grey40")    
   }
+  if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
+                                     cex.axis=0.5,add.text=FALSE,
+                                     map.insert=map.insert,verbose=verbose,...)
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
   par(fig=fig,new=TRUE, mar=mar)
