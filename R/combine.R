@@ -806,16 +806,14 @@ combine.events <- function(x,y,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbos
   if(verbose) print("combine.events")
   stopifnot(inherits(x,"events") & inherits(y,"events"))
 
+  if(is.null(attr(x,"greenwich"))) attr(x,"greenwich") <- !(any(x$lon<0) & !any(x$lon>180))
+  x <- g2dl.events(x,greenwich=attr(x,"greenwich"))
+  y <- g2dl.events(y,greenwich=attr(x,"greenwich"))
+
   ## Combine events in x and y
   cn <- colnames(x)[colnames(x) %in% colnames(y)]
   z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
-
-  if(is.null(attr(x,"greenwich"))) attr(x,"greenwich") <- !(any(x$lon<0) & !any(x$lon>180))
-  if(is.null(attr(y,"greenwich"))) attr(y,"greenwich") <- !(any(y$lon<0) & !any(y$lon>180))
-  if(attr(x,"greenwich")!=attr(y,"greenwich")) {
-    y <- g2dl.events(y,greenwich=attr(x,"greenwich"))
-  }
-
+  
   if(!any(x$date %in% y$date)) remove.close <- FALSE
   
   ## Remove events located close to other stronger events
