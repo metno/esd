@@ -1575,8 +1575,9 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data')
-    eval(parse(text=paste('T2M <- as.4seasons(',FUNX,'(t2m),FUN="mean",nmin=nmin)',sep="")))
-    #T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin) ## REB 2016-11-28: replaced with lione above.
+      if (FUNX !='C.C.eq') T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin) else
+                           eval(parse(text=paste('T2M <- as.4seasons(',FUNX,'(t2m),FUN="mean",nmin=nmin)',sep="")))
+                           ## REB 2016-11-28: replaced with lione above.
     T2M <- matchdate(T2M,y)
 
     # Recursive: do each season seperately if there are more than one season
@@ -1897,7 +1898,8 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
 
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data')
-    SLP <- as.4seasons(slp,FUN=FUNX)
+    if (FUNX!='C.C.eq') SLP <- as.4seasons(slp,FUN=FUNX) else
+                        eval(parse(text=paste('SLP <- as.4seasons(',FUNX,'(slp),FUN="mean",nmin=nmin)',sep="")))
     SLP <- matchdate(SLP,y)
 
     if (length(table(season(y)))>1) {
