@@ -32,7 +32,9 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   attr(x,'unit') <- as.character(unit(x))
     attr(x,'variable') <- as.character(varid(x))
   ## REB 2016-11-28: some objects contain the attribute 'mean' which gets in the way.
-  if ((FUN=='mean') & (!is.null(attr(x,'mean'))))  attr(x,'mean') <- NULL
+    if (!is.null(FUN))
+        if ((FUN=='mean') &
+            (!is.null(attr(x,'mean'))))  attr(x,'mean') <- NULL
   
   if (inherits(x,"stationmeta")) {
     x$years <- as.numeric(x$end) - as.numeric(x$start) + 1
