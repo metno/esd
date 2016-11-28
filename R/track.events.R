@@ -351,26 +351,24 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=6E5,dE=0.3,dN=0.2,
   ## ...based on the maximum displacement of cyclones
   pf.d <- 1-d/dmax
   pf.d[pf.d<0] <- 0
-  ## ...based on the change in displacement of cyclones
-  pf.dd <- 1-0.5*dd/d
-  pf.dd[pf.dd<0] <- 0
-  ## ...and change in direction
-  pf.da <- 1-0.5*da/amax
-  pf.da[is.na(da) | da<0] <- 0
-  ## ....combined
-  pf.change <- 0.5*(pf.da+pf.dd)
+  ## ...based on the change in displacement of cyclones and change in direction
+  pf.change <- 1-0.25*dd/d - 0.25*da/amax
+  pf.change[pf.change<0] <- 0
   ## ...based on the pressure at the center of the cyclones
   if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
-    pf.p <-  0.5*((max(p[!is.na(p)])-p)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
-                   (1-dp/max(dp[!is.na(dp)])))
-    pf.p[is.na(p)] <- 0
-  } else {
-    pf.p <- matrix(1,nrow(pf.d),ncol(pf.d))
-  }
+    f.depth <- (max(p[!is.na(p)])-p)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
+    f.dp <- dp/(max(p[!is.na(p)])-min(p[!is.na(p)]))#max(dp[!is.na(dp)])
+    pf.change <- pf.change - 0.25*f.dp + 0.25*f.depth
+    #pf.p <-  0.5*((max(p[!is.na(p)])-p)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
+    #               (1-dp/max(dp[!is.na(dp)])))
+    #pf.p[is.na(p)] <- 0
+  } #else {
+    #pf.p <- matrix(1,nrow(pf.d),ncol(pf.d))
+  #}
   pf.d[!ok.d] <- 0
-  pf.dd[!ok.d] <- 0
-  pf.da[!ok.d] <- 0
-  pf.p[!ok.d] <- 0
+  #pf.dd[!ok.d] <- 0
+  #pf.da[!ok.d] <- 0
+  #pf.p[!ok.d] <- 0
   pf.change[!ok.d] <- 0
   #pf.dp[!ok.d] <- 0
   # Probability factors for broken trajectories...
@@ -381,10 +379,16 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=6E5,dE=0.3,dN=0.2,
   pf.d23[pf.d23<0] <- 0
   # ...based on slp at cyclone center
   if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
-    pf.p12 <- 0.5*((max(p[!is.na(p)])-p12)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
-                   (1-dp12/max(dp[!is.na(dp)])))
-    pf.p23 <- 0.5*((max(p[!is.na(p)])-p23)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
-                   (1-dp23/max(dp[!is.na(dp)])))
+    f.depth12 <- (max(p[!is.na(p)])-p12)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
+    f.dp12 <- dp12/(max(p[!is.na(p)])-min(p[!is.na(p)]))
+    pf.p12 <- 0.5 - 0.25*f.dp12 + 0.25*f.depth12
+    f.depth23 <- (max(p[!is.na(p)])-p23)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
+    f.dp23 <- dp23/(max(p[!is.na(p)])-min(p[!is.na(p)]))
+    pf.p23 <- 1 - 0.25*f.dp23 + 0.25*f.depth23
+    #pf.p12 <- 0.5*((max(p[!is.na(p)])-p12)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
+    #               (1-dp12/max(dp[!is.na(dp)])))
+    #pf.p23 <- 0.5*((max(p[!is.na(p)])-p23)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
+    #               (1-dp23/max(dp[!is.na(dp)])))
     pf.p12[pf.p12<0] <- 0
     pf.p23[pf.p23<0] <- 0
   } else {
@@ -402,18 +406,18 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=6E5,dE=0.3,dN=0.2,
   i2.all <- rep(seq(n2),n3+1)
   i3.all <- c(i3,rep(NA,n2))
   ## Put probability factors for 3-step trajectories into matrix
-  pf.all[1:nrow(pf.da),1:ncol(pf.da)] <- pf.d*(pf.change+pf.p)/2#(pf.da+pf.dd+pf.p)/2
+  pf.all[1:nrow(pf.change),1:ncol(pf.change)] <- pf.d*pf.change#(pf.change+pf.p)/2#(pf.da+pf.dd+pf.p)/2
   #rm('pf.d','pf.dd','pf.da','pf.p','pf.dp'); gc(reset=TRUE)
   
   ## Put probability factors for broken trajectories into matrix
-  ## and add a penalty factor of 0.25 for breaking the trajectory
+  ## and add a penalty factor of 0.15 for breaking the trajectory
   for(k in unique(j2)) {
     j.k <- which(is.na(j1.all) & j2.all==k)
     i.k <- which(!is.na(i3.all) & i2.all==k)
-    pf.all[i.k,j.k] <- 0.25*pf.d23[k,]*pf.p23[k,]
+    pf.all[i.k,j.k] <- 0.15*pf.d23[k,]*pf.p23[k,]
     j.k <- which(!is.na(j1.all) & j2.all==k)
     i.k <- which(is.na(i3.all) & i2.all==k)
-    pf.all[i.k,j.k] <- 0.25*pf.d12[k,]*pf.p12[k,]
+    pf.all[i.k,j.k] <- 0.15*pf.d12[k,]*pf.p12[k,]
   }
   #rm('pf.d12','pf.d23','pf.p12','pf.p23'); gc(reset=TRUE)
   
