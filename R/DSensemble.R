@@ -1572,10 +1572,12 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   ## If some months are selected, make sure that the minimum number of months
   ## requiired in the annual aggregation is updated
   if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
-
+    
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data')
-    T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin)
+      if (FUNX !='C.C.eq') T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin) else
+                           eval(parse(text=paste('T2M <- as.4seasons(',FUNX,'(t2m),FUN="mean",nmin=nmin)',sep="")))
+                           ## REB 2016-11-28: replaced with lione above.
     T2M <- matchdate(T2M,y)
 
     # Recursive: do each season seperately if there are more than one season
@@ -1730,7 +1732,14 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       ## model takes up too much space! can it be stored more efficiently?
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       attr(z,'evaluation') <- attr(ds,'evaluation')
-    
+
+      ## REB 2016-11-28: adjust results to have same mean as observations in overlapping period:
+      if (verbose) print('adjust offset of predicted PCs for overlapping period')
+      zolp <- window(zoo(z),start=start(y),end=end(y))
+      coredata(z) <- t(t(coredata(z)) - mean(coredata(zolp)) + colMeans(coredata(y)))
+                                                                  ## y is a pca with no missing values; z has no NAs.
+      if (verbose) print(round(colMeans(y),2))             
+      
       cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
       eval(parse(text=cl))
       if (verbose) {
@@ -1889,7 +1898,8 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
 
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data')
-    SLP <- as.4seasons(slp,FUN=FUNX)
+    if (FUNX!='C.C.eq') SLP <- as.4seasons(slp,FUN=FUNX) else
+                        eval(parse(text=paste('SLP <- as.4seasons(',FUNX,'(slp),FUN="mean",nmin=nmin)',sep="")))
     SLP <- matchdate(SLP,y)
 
     if (length(table(season(y)))>1) {
