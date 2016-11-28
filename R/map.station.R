@@ -27,10 +27,12 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          ##colorbar=TRUE,
                          legend.shrink=1,...) { 
   ##
-  if (verbose) print(paste('map.station',FUN))
+  if (verbose) {print(paste('map.station',FUN)); print(class(x))}
   arg <- list(...)
   attr(x,'unit') <- as.character(unit(x))
-  attr(x,'variable') <- as.character(varid(x))
+    attr(x,'variable') <- as.character(varid(x))
+  ## REB 2016-11-28: some objects contain the attribute 'mean' which gets in the way.
+  if ((FUN=='mean') & (!is.null(attr(x,'mean'))))  attr(x,'mean') <- NULL
   
   if (inherits(x,"stationmeta")) {
     x$years <- as.numeric(x$end) - as.numeric(x$start) + 1
@@ -45,11 +47,12 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if (verbose) print('FUN refers to an attribute') 
         #FUN <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
         #FUN <- paste("function(x) attr(x,",FUN,")")
-        x <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
+        #x <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
+        x <- eval(parse(text=paste("attr(x,'",FUN,"')")))
         FUN <- NULL      
       } else if (sum(is.element(names(x),FUN))>0){
         ## REB 2015-12-17: Use FUN to colour the symbols according to some list element (stationmeta-objects):
-        if (verbose) print('FUN refers to an attribute')
+        if (verbose) print('FUN refers to a list element')
         FUN <- eval(parse(text=paste("function(x,...) x$",FUN,sep='')))
         #FUN <- paste("function(x) x$",FUN,sep='')
       }
@@ -77,7 +80,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   
   if ((!is.null(FUN)) & is.character(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
   
-  if (verbose) print(projection)
+  if (verbose) print(paste(projection,'projection'))
   
   if (projection=="sphere")
     sphere(x,lonR=lonR,latR=latR,axiR=axiR,
@@ -102,7 +105,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     data("geoborders", envir = environment())
     if (zexpr == "alt") 
       zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
-    ## 
+      ##
+    if (verbose & !is.null(x)) print(class(x)) else if (verbose) print('x is null')
     if (!is.null(x)) { 
       if (inherits(x,"stationmeta")) {
         ss <- x
@@ -123,7 +127,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                    source=attr(x,"source"))
       }
     } else
-      ss <- select.station()
+        ss <- select.station()
+    if (verbose) {print('The station metadata'); str(ss)}  
     
     if (is.null(attr(ss,"element")))
       ss$element <-apply(as.matrix(ss$variable),1,esd2ele)   
