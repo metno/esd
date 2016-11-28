@@ -53,7 +53,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=6E5,nmax=124,nmin=3,
   invisible(y)
 }
 
-Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dE=0.3,dN=0.2,
+Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=6E5,nmax=124,nmin=3,dE=0.3,dN=0.2,
                   dmin=1E5,amax=NULL,ddmax=NULL,dpmax=NULL,
                   cleanup.x0=TRUE,lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
@@ -280,7 +280,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dE=0.3,dN=0
   invisible(list(y=y,y0=y0))
 }
 
-Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,dE=0.3,dN=0.2,
+Track123 <- function(step1,step2,step3,n0=0,dmax=6E5,dE=0.3,dN=0.2,
                      amax=90,ddmax=NULL,dpmax=NULL,nend=NA,lplot=FALSE,
                      verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
