@@ -5,7 +5,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
                 label=NULL,mindistance=5E5,dpmin=1E-3,hmax=1000,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",lplot=FALSE,accuracy=NULL,
-                allow.open=TRUE,do.track=FALSE,verbose=FALSE,...) {
+                allow.open=FALSE,do.track=FALSE,verbose=FALSE,...) {
   if(verbose) print("CCI - calculus based cyclone identification")
 
   stopifnot(inherits(Z,'field'))
