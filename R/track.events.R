@@ -6,8 +6,8 @@ track.events <- function(x,verbose=FALSE,...) {
   track.default(x,verbose=verbose,...)
 }
 
-track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=6E5,nmax=124,nmin=3,
-                          dE=0.3,dN=0,dmin=1E5,amax=90,ddmax=0.5,dpmax=NULL,
+track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,
+                          dE=0.2,dN=0.1,dmin=1E5,amax=90,ddmax=0.5,dpmax=NULL,
                           greenwich=NULL,lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
@@ -53,7 +53,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=6E5,nmax=124,nmin=3,
   invisible(y)
 }
 
-Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=6E5,nmax=124,nmin=3,dE=0.3,dN=0.2,
+Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0.1,
                   dmin=1E5,amax=NULL,ddmax=NULL,dpmax=NULL,
                   cleanup.x0=TRUE,lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
@@ -129,7 +129,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=6E5,nmax=124,nmin=3,dE=0.3,dN=0
         step3=list(lon=lons[datetime==d[i+1]],lat=lats[datetime==d[i+1]],
                    num=num[datetime==d[i+1]],dx=dx[datetime==d[i+1]],
                    pcent=pcent[datetime==d[i+1]]),
-             dmax=dmax,ddmax=ddmax,n0=n0,amax=amax,dpmax=dpmax,nend=nend,dE=dE,dN=dN)
+             dmax=dmax,ddmax=ddmax,n0=n0,amax=amax,dpmax=dpmax,nend=nend,dE=dE,dN=dN)#,lplot=lplot)
       num[datetime==d[i-1]] <- nn$step1$num
       num[datetime==d[i]] <- nn$step2$num
       num[datetime==d[i+1]] <- nn$step3$num
@@ -280,7 +280,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=6E5,nmax=124,nmin=3,dE=0.3,dN=0
   invisible(list(y=y,y0=y0))
 }
 
-Track123 <- function(step1,step2,step3,n0=0,dmax=6E5,dE=0.3,dN=0.2,
+Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
                      amax=90,ddmax=NULL,dpmax=NULL,nend=NA,lplot=FALSE,
                      verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
@@ -352,13 +352,13 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=6E5,dE=0.3,dN=0.2,
   pf.d <- 1-d/dmax
   pf.d[pf.d<0] <- 0
   ## ...based on the change in displacement of cyclones and change in direction
-  pf.change <- 1-0.25*dd/d - 0.25*da/amax
+  pf.change <- 1-0.15*dd/d - 0.25*da/amax
   pf.change[pf.change<0] <- 0
   ## ...based on the pressure at the center of the cyclones
   if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
     f.depth <- (max(p[!is.na(p)])-p)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
     f.dp <- dp/(max(p[!is.na(p)])-min(p[!is.na(p)]))#max(dp[!is.na(dp)])
-    pf.change <- pf.change - 0.25*f.dp + 0.25*f.depth
+    pf.change <- pf.change - 0.2*f.dp + 0.2*f.depth
     #pf.p <-  0.5*((max(p[!is.na(p)])-p)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
     #               (1-dp/max(dp[!is.na(dp)])))
     #pf.p[is.na(p)] <- 0
@@ -410,14 +410,14 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=6E5,dE=0.3,dN=0.2,
   #rm('pf.d','pf.dd','pf.da','pf.p','pf.dp'); gc(reset=TRUE)
   
   ## Put probability factors for broken trajectories into matrix
-  ## and add a penalty factor of 0.15 for breaking the trajectory
+  ## and add a penalty factor of 0.2 for breaking the trajectory
   for(k in unique(j2)) {
     j.k <- which(is.na(j1.all) & j2.all==k)
     i.k <- which(!is.na(i3.all) & i2.all==k)
-    pf.all[i.k,j.k] <- 0.15*pf.d23[k,]*pf.p23[k,]
+    pf.all[i.k,j.k] <- 0.1*pf.d23[k,]*pf.p23[k,]
     j.k <- which(!is.na(j1.all) & j2.all==k)
     i.k <- which(is.na(i3.all) & i2.all==k)
-    pf.all[i.k,j.k] <- 0.15*pf.d12[k,]*pf.p12[k,]
+    pf.all[i.k,j.k] <- 0.1*pf.d12[k,]*pf.p12[k,]
   }
   #rm('pf.d12','pf.d23','pf.p12','pf.p23'); gc(reset=TRUE)
   
@@ -502,7 +502,7 @@ angle <- function(lon1,lat1,lon2,lat2) {
 }
 
 ## adjust maximum distance based on angle of direction: max eastward, min westward 
-adjustdmax <- function(a,dmax=1.2E6,dE=0.3,dN=0,width=1,height=1,lplot=FALSE) {
+adjustdmax <- function(a,dmax=1.2E6,dE=0,dN=0,width=1,height=1,lplot=FALSE) {
   rad <- a*pi/180
   east <- rad > -pi/2 & rad < pi/2
   north <- rad < pi & rad > 0
