@@ -1584,7 +1584,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     # Recursive: do each season seperately if there are more than one season
     if (length(table(season(y)))>1) {
       if (verbose) print('--- Apply DS to seasons seperately ---')
-      Z <- list(info='DSensemble.pca for different seasons')
+      Z <- list(info=paste('DSensemble.pca for different seasons: ',
+                           paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''))
       for (season in names(table(season(y)))) {
         if (verbose) print(paste('Select',season))
         z <- DSensemble.pca(subset(y,it=season),plot=plot,path=path,
@@ -1654,7 +1655,9 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   flog <- file("DSensemble.pca-log.txt","at")
   
   ## Set up a list environment to keep all the results
-  dse.pca <- list(info='DSensemble.pca',pca=y) ## KMP 06-08-2015
+  dse.pca <- list(info=paste('DSensemble.pca for different seasons: ',
+                             paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''),
+                  pca=y) ## KMP 06-08-2015
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
@@ -1930,7 +1933,8 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
 
     if (length(table(season(y)))>1) {
       if (verbose) print('--- Apply DS to seasons seperately ---')
-      Z <- list(info='DSensemble.eof for different seasons')
+      Z <- list(info=info=paste('DSensemble.pca for different seasons: ',
+                                paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''))
       ## KMP 2016-10-25: Looping over seasons will not work if y is an eof object.
       ##   I added a temporary fix, turning the multi-season eof object into a field
       ##   before selecting a season. This could result in a serious loss of information.
@@ -2000,7 +2004,8 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
   flog <- file("DSensemble.eof-log.txt","at")
 
   ## Set up a list environment to keep all the results
-  dse.eof <- list(info='DSensemble.eof',eof=y) 
+  dse.eof <- list(info=paste('DSensemble.pca for different seasons: ',
+                             paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''),eof=y) 
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
