@@ -1539,7 +1539,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="tas_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,
+                           ds.1900.2099=TRUE,test=FALSE) {
 
   if (verbose) print('DSensemble.pca')
   cls <- class(y)
@@ -1705,6 +1706,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM,verbose=verbose))
+    if (test) browser()
     
     ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
@@ -1717,6 +1719,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     rm("gcm","GCM"); gc(reset=TRUE)
 
     if (verbose) print("- - - > DS")
+    Z0 <- Z
     if (biascorrect) Z <- biasfix(Z)
     ds <- try(DS(y,Z,ip=ip,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
@@ -1728,8 +1731,31 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       ## Keep the results for the projections:
       if (verbose) print('Extract the downscaled projection')
       z <- attr(ds,'appendix.1') ## KMP 09.08.2015
-      ##attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
-      ## model takes up too much space! can it be stored more efficiently?
+      
+      ## REB: 2016-11-29
+      if (test) {
+        ## model takes up too much space! can it be stored more efficiently?
+        ## REB 2016-11-29: remove most of the contents and keep only a small part
+      if (verbose) print('Add reduced model information')
+        for (iii in 1:dim(ds)[2]) {
+          print(names(attr(ds,'model')[[iii]]))
+          attr(ds,'model')[[iii]]$residuals <- NULL
+          attr(ds,'model')[[iii]]$effects <- NULL
+          attr(ds,'model')[[iii]]$rank <- NULL
+          attr(ds,'model')[[iii]]$fitted.values <- NULL
+          attr(ds,'model')[[iii]]$assign <- NULL
+          attr(ds,'model')[[iii]]$qr <- NULL
+          attr(ds,'model')[[iii]]$df.residual <- NULL
+          attr(ds,'model')[[iii]]$xlevels <- NULL
+          attr(ds,'model')[[iii]]$model <- NULL
+          attr(ds,'model')[[iii]]$terms <- NULL
+          print(names(attr(ds,'model')[[iii]]))
+        }
+      attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
+      attr(z,'ceof0') <- Z0
+      attr(z,'ceof') <- Z
+      }
+      
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       attr(z,'evaluation') <- attr(ds,'evaluation')
 
@@ -1874,7 +1900,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="psl_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE) {
+                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE,test=FALSE) {
 
   if(verbose) print("DSensemble.eof")
   stopifnot(inherits(y,c("EOF","field")))
@@ -2073,6 +2099,31 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
       z <- attr(ds,'appendix.1') ## KMP 09.08.2015
       ##attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
       ## model takes up too much space! can it be stored more efficiently?
+      
+      ## REB: 2016-11-29
+      if (test) {
+        ## model takes up too much space! can it be stored more efficiently?
+        ## REB 2016-11-29: remove most of the contents and keep only a small part
+        if (verbose) print('Add reduced model information')
+        for (iii in 1:dim(ds)[2]) {
+          print(names(attr(ds,'model')[[iii]]))
+          attr(ds,'model')[[iii]]$residuals <- NULL
+          attr(ds,'model')[[iii]]$effects <- NULL
+          attr(ds,'model')[[iii]]$rank <- NULL
+          attr(ds,'model')[[iii]]$fitted.values <- NULL
+          attr(ds,'model')[[iii]]$assign <- NULL
+          attr(ds,'model')[[iii]]$qr <- NULL
+          attr(ds,'model')[[iii]]$df.residual <- NULL
+          attr(ds,'model')[[iii]]$xlevels <- NULL
+          attr(ds,'model')[[iii]]$model <- NULL
+          attr(ds,'model')[[iii]]$terms <- NULL
+          print(names(attr(ds,'model')[[iii]]))
+        }
+        attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
+        attr(z,'ceof0') <- Z0
+        attr(z,'ceof') <- Z
+      }
+      
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       attr(z,'evaluation') <- attr(ds,'evaluation')
     
