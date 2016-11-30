@@ -1933,7 +1933,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
 
     if (length(table(season(y)))>1) {
       if (verbose) print('--- Apply DS to seasons seperately ---')
-      Z <- list(info=info=paste('DSensemble.pca for different seasons: ',
+      Z <- list(info=paste('DSensemble.pca for different seasons: ',
                                 paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''))
       ## KMP 2016-10-25: Looping over seasons will not work if y is an eof object.
       ##   I added a temporary fix, turning the multi-season eof object into a field
