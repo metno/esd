@@ -1754,9 +1754,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
           attr(ds,'model')[[iii]]$terms <- NULL
           print(names(attr(ds,'model')[[iii]]))
         }
-      attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
-      attr(z,'ceof0') <- Z0
-      attr(z,'ceof') <- Z
       }
       
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
@@ -1873,6 +1870,11 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
+  if (test) {
+    attr(dse.pca,'model') <- attr(ds,'model') ## KMP 09-08-2015
+    attr(dse.pca,'ceof0') <- Z0
+    attr(dse.pca,'ceof') <- Z
+  }
   attr(dse.pca,'predictor') <- attr(T2M,'source')
   attr(dse.pca,"longname") <- attr(y,"longname")
   attr(dse.pca,'domain') <- list(lon=lon,lat=lat)
@@ -1880,7 +1882,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(dse.pca,'path') <- path
   attr(dse.pca,'scenario') <- rcp
   attr(dse.pca,'variable') <- attr(y,"variable")[1]
-   attr(dse.pca,'unit') <- attr(y,"unit")[1]
+  attr(dse.pca,'unit') <- attr(y,"unit")[1]
   attr(dse.pca,'history') <- history.stamp(y)
   if (non.stationarity.check)
     attr(dse.pca,'on.stationarity.check') <- difference.z else
@@ -1888,6 +1890,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   class(dse.pca) <- c("dsensemble","pca","list")
 
   if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
+  if (verbose) print(file.ds)
   save(file=file.ds,dse.pca)
   if (verbose) print("---")
   invisible(dse.pca)
@@ -2124,9 +2127,6 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
           attr(ds,'model')[[iii]]$terms <- NULL
           print(names(attr(ds,'model')[[iii]]))
         }
-        attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
-        attr(z,'ceof0') <- Z0
-        attr(z,'ceof') <- Z
       }
       
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
@@ -2229,6 +2229,11 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
 
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
+  if (test) {
+    attr(dse.eof,'model') <- attr(ds,'model') ## KMP 09-08-2015
+    attr(dse.eof,'ceof0') <- Z0
+    attr(dse.eof,'ceof') <- Z
+  }
   attr(dse.eof,'predictor') <- attr(SLP,'source')
   attr(dse.eof,'domain') <- list(lon=lon,lat=lat)
   attr(dse.eof,'scorestats') <- scorestats
