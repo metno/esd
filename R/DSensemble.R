@@ -1709,7 +1709,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM,verbose=verbose))
-    if (test) browser()
+    #if (test) browser()
     
     ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
