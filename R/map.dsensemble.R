@@ -3,7 +3,7 @@
 ## Select a set of PCs and then use these in matrix product to reproduce
 ## physical elements.
 
-expandpca <- function(x,it=NULL,FUN='NULL',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
+expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
   ## Get the spatial weights
   if (verbose) print('expandpca')
   if (test) print('--TEST ON ONE GCM simulation--')
