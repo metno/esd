@@ -82,28 +82,6 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   return(Y)
 }
 
-## Function for extracting the subset from PCs stored as zoo
-subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
-  if (verbose) print('subset.pc')
-  d <- dim(x)
-  if (!is.null(it)) {
-    if (verbose) print('subset it')
-    if (is.numeric(it) | is.integer(it)) 
-      it <- c(as.Date(paste(it,'01-01',sep='-')),
-              as.Date(paste(it,'12-31',sep='-')))
-    x <- window(x,start=min(it),end=max(it))
-  }
-  if (!is.null(ip)) {
-    if (verbose) print('subset pattern')
-    x <- x[,ip]
-    d <- dim(x)
-  }
-  dim(x) <- c(length(index(x)),d[2])
-  if (verbose) print(dim(x))
-  return(x)
-}
-
-
 
 map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
                            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
@@ -127,6 +105,26 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
   } else return(NULL)
 }
 
+## Function for extracting the subset from PCs stored as zoo
+subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
+  if (verbose) print('subset.pc')
+  d <- dim(x)
+  if (!is.null(it)) {
+    if (verbose) print('subset it')
+    if (is.numeric(it) | is.integer(it)) 
+      it <- c(as.Date(paste(it,'01-01',sep='-')),
+              as.Date(paste(it,'12-31',sep='-')))
+    x <- window(x,start=min(it),end=max(it))
+  }
+  if (!is.null(ip)) {
+    if (verbose) print('subset pattern')
+    x <- x[,ip]
+    d <- dim(x)
+  }
+  dim(x) <- c(length(index(x)),d[2])
+  if (verbose) print(dim(x))
+  return(x)
+}
 
 
 ## Tools to subset or reduce the size of a dsensemble, e.g. removing the
@@ -152,7 +150,7 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
-  y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
+    y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
   if (verbose) print(dim(y[[1]]))
 
   if (!is.null(im)) {

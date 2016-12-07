@@ -29,4 +29,5 @@ plot.trajectory <- function(x,it=NULL,is=NULL,
     legend("bottomleft",inset=c(0,-0.25),legend=leg,bty="n",cex=0.6,ncol=3,
          text.col="grey40",lty=1,col=col)
   }
+  invisible(n)
 }
