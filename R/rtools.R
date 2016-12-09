@@ -127,9 +127,9 @@ filt.default <- function(x,n,type='ma',lowpass=TRUE) {
 }
   
 figlab <- function(x,xpos=0.001,ypos=0.001) {
-  par(new=TRUE,pdx=NA,fig=c(0,1,0,1),xaxt='n',yaxt='n',bty='n',mar=rep(0,4))
+  par(new=TRUE,fig=c(0,1,0,1),xaxt='n',yaxt='n',bty='n',mar=rep(0,4))
   plot(c(0,1),c(0,1),type='n')
-  text(xpos,ypos,x,type=2,cex=1.2,pos=4,col='grey30')
+  text(xpos,ypos,x,cex=1.2,pos=4,col='grey30')
 }
 
 ensemblemean <- function(x,FUN='rowMeans') {
