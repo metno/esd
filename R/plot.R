@@ -1365,8 +1365,8 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
 ## Plots one time series
 plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
-                             target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                             new=TRUE,xrange=NULL,yrange=NULL,alpha=0.5,alpha.map=0.7,
+                             obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
+                             new=FALSE,xrange=NULL,yrange=NULL,alpha=0.5,alpha.map=0.7,
                              verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble.one")
   stopifnot(inherits(x,'dsensemble'))
@@ -1411,8 +1411,9 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
                       ylim <- args[[iyl]]  
   #print("...")
-  #if(new) dev.new()
+  if(new) dev.new()
   index(y) <- year(y)
+  par0 <- par()
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='',
        ylab=ylab,map.show=FALSE,new=new)
   grid()
@@ -1446,7 +1447,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   lines(zoo(mu,order.by=year(z)),col=rgb(1,0.7,0.7),lwd=3)
   lines(zoo(q05,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)  
   lines(zoo(q95,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)
-  lines(y,type="b",pch=19)
+  if (obs.show) lines(y,type="b",pch=19)
 
   if (!is.null(diag)) {
     index(diag$y) <- year(diag$y)
@@ -1531,7 +1532,9 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
        type="n",ylab="",xlab="",xlim=usr[1:2],ylim=usr[3:4])
 
   # target: perfect score is bull's eye
-  # from diagnostics?
+                                        # from diagnostics?
+  par(fig=par0$fig,new=TRUE, mar=par0$mar)
+  invisible(z)
 }
 
 plot.xsection <- function(x,...) {

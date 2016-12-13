@@ -70,8 +70,8 @@ plot.dsensemble.multi(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
                                   anomaly=FALSE,test=FALSE,...)
 plot.dsensemble.one(x,pts=FALSE,it=0,
                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
-                             target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                             new=TRUE,xrange=NULL,yrange=NULL,alpha=0.5,alpha.map=0.7,
+                             obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
+                             new=FALSE,xrange=NULL,yrange=NULL,alpha=0.5,alpha.map=0.7,
                              verbose=FALSE,...)
 plot.nevents(x,verbose=FALSE,...)
 vis.map(x,col='red',map.type='points',add.text=FALSE)
@@ -87,6 +87,8 @@ vis.map(x,col='red',map.type='points',add.text=FALSE)
   \item{it}{For subsetting in time - See \code{link{subset}}.'it=0'
     returns the annual means (mean of DJF + MAM + JJA + SON)}
   \item{FUN}{function}
+  \item{obs.show}{Show the observations}
+  \item{target.show}{Show a 'target plot' for quality}
   \item{map.show}{Show a small map of the location}
   \item{map.type}{}
   \item{what}{Indicate what to plot. 'field' expands eof to field before
