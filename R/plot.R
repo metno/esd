@@ -1414,7 +1414,8 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   if(new) dev.new()
   index(y) <- year(y)
   par0 <- par()
-  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='',
+  if (obs.show) obscol <- 'black' else obscol='white'
+  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
        ylab=ylab,map.show=FALSE,new=new)
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
