@@ -11,18 +11,21 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
       if(verbose) print(paste("Unkown input param =",param))
       y <- x
     } else {
+      if(param %in% c("trajectory","trackcount","distance","tracklength")) FUN <- NULL
       if(is.null(pmin)) pmin <- min(x[param],na.rm=TRUE)
       if(is.null(pmax)) pmax <- max(x[param],na.rm=TRUE)
       if(verbose) print(paste(param,"in range",pmin,"-",pmax))
       if(verbose) print(paste("FUN =",FUN))
-      if (FUN %in% c("any","all")) {
-        fn <- function(x) do.call(FUN,list(x>=pmin & x<=pmax))
-      } else {
-        fn <- function(x) do.call(FUN,list(x))>=pmin &  do.call(FUN,list(x))<=pmax
+      if(is.null(FUN)) {
+        ok <- as.vector(x[param]>=pmin & x[param]<=pmax)
+      } else if (FUN=="any") {
+        ok.ev <- as.vector(x[param]>=pmin & x[param]<=pmax)
+        ok <- x$trajectory %in% unique(x$trajectory[ok.ev])
+      } else if (FUN=="all") {
+        nok.ev <- as.vector(x[param]<pmin | x[param]>pmax)
+        ok <- !x$trajectory %in% unique(x$trajectory[nok.ev])
       }
-      ok <- as.vector(by(x[param],x$trajectory,fn))
-      num <- unique(x$trajectory)[ok]
-      y <- subset(x,it=x$trajectory %in% num)
+      y <- subset(x,it=ok)
     }
   } else {
     if(verbose) "No filter applied. Input 'param' or range ('pmin', 'pmax') not provided."

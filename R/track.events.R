@@ -7,7 +7,7 @@ track.events <- function(x,verbose=FALSE,...) {
 }
 
 track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,
-                          dE=0.2,dN=0.1,dmin=1E5,amax=90,ddmax=0.5,dpmax=NULL,
+                          dE=0.1,dN=0.1,dmin=1E5,amax=90,ddmax=0.5,dpmax=NULL,
                           greenwich=NULL,lplot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
