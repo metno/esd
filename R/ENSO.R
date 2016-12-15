@@ -50,7 +50,9 @@ SOI <- function(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext
   return(soi)
 }
 
-GSL <- function(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv') {
+# CSIRO
+# http://www.cmar.csiro.au/sealevel/GMSL_SG_2011_up.html
+GSL <- function(url='https://www.epa.gov/sites/production/files/2016-08/sea-level_fig-1.csv') {
 
     sl <- read.csv(url,skip=6,header=TRUE)
     zsl <- zoo(sl[[2]]*2.54,order.by=sl[[1]])

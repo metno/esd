@@ -1539,7 +1539,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="tas_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,
+                           ds.1900.2099=TRUE,test=FALSE) {
 
   if (verbose) print('DSensemble.pca')
   cls <- class(y)
@@ -1583,7 +1584,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     # Recursive: do each season seperately if there are more than one season
     if (length(table(season(y)))>1) {
       if (verbose) print('--- Apply DS to seasons seperately ---')
-      Z <- list(info='DSensemble.pca for different seasons')
+      Z <- list(info=paste('DSensemble.pca for different seasons: ',
+                           paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''))
       for (season in names(table(season(y)))) {
         if (verbose) print(paste('Select',season))
         z <- DSensemble.pca(subset(y,it=season),plot=plot,path=path,
@@ -1653,7 +1655,9 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   flog <- file("DSensemble.pca-log.txt","at")
   
   ## Set up a list environment to keep all the results
-  dse.pca <- list(info='DSensemble.pca',pca=y) ## KMP 06-08-2015
+  dse.pca <- list(info=paste('DSensemble.pca for different seasons: ',
+                             paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''),
+                  pca=y) ## KMP 06-08-2015
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
@@ -1705,6 +1709,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM,verbose=verbose))
+    #if (test) browser()
     
     ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
@@ -1717,6 +1722,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     rm("gcm","GCM"); gc(reset=TRUE)
 
     if (verbose) print("- - - > DS")
+    Z0 <- Z
     if (biascorrect) Z <- biasfix(Z)
     ds <- try(DS(y,Z,ip=ip,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
@@ -1728,8 +1734,28 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       ## Keep the results for the projections:
       if (verbose) print('Extract the downscaled projection')
       z <- attr(ds,'appendix.1') ## KMP 09.08.2015
-      ##attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
-      ## model takes up too much space! can it be stored more efficiently?
+      
+      ## REB: 2016-11-29
+      if (test) {
+        ## model takes up too much space! can it be stored more efficiently?
+        ## REB 2016-11-29: remove most of the contents and keep only a small part
+      if (verbose) print('Add reduced model information')
+        for (iii in 1:dim(ds)[2]) {
+          print(names(attr(ds,'model')[[iii]]))
+          attr(ds,'model')[[iii]]$residuals <- NULL
+          attr(ds,'model')[[iii]]$effects <- NULL
+          attr(ds,'model')[[iii]]$rank <- NULL
+          attr(ds,'model')[[iii]]$fitted.values <- NULL
+          attr(ds,'model')[[iii]]$assign <- NULL
+          attr(ds,'model')[[iii]]$qr <- NULL
+          attr(ds,'model')[[iii]]$df.residual <- NULL
+          attr(ds,'model')[[iii]]$xlevels <- NULL
+          attr(ds,'model')[[iii]]$model <- NULL
+          attr(ds,'model')[[iii]]$terms <- NULL
+          print(names(attr(ds,'model')[[iii]]))
+        }
+      }
+      
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       attr(z,'evaluation') <- attr(ds,'evaluation')
 
@@ -1844,6 +1870,11 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
+  if (test) {
+    attr(dse.pca,'model') <- attr(ds,'model') ## KMP 09-08-2015
+    attr(dse.pca,'ceof0') <- Z0
+    attr(dse.pca,'ceof') <- Z
+  }
   attr(dse.pca,'predictor') <- attr(T2M,'source')
   attr(dse.pca,"longname") <- attr(y,"longname")
   attr(dse.pca,'domain') <- list(lon=lon,lat=lat)
@@ -1851,7 +1882,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(dse.pca,'path') <- path
   attr(dse.pca,'scenario') <- rcp
   attr(dse.pca,'variable') <- attr(y,"variable")[1]
-   attr(dse.pca,'unit') <- attr(y,"unit")[1]
+  attr(dse.pca,'unit') <- attr(y,"unit")[1]
   attr(dse.pca,'history') <- history.stamp(y)
   if (non.stationarity.check)
     attr(dse.pca,'on.stationarity.check') <- difference.z else
@@ -1859,6 +1890,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   class(dse.pca) <- c("dsensemble","pca","list")
 
   if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
+  if (verbose) print(file.ds)
   save(file=file.ds,dse.pca)
   if (verbose) print("---")
   invisible(dse.pca)
@@ -1874,7 +1906,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="psl_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE) {
+                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE,test=FALSE) {
 
   if(verbose) print("DSensemble.eof")
   stopifnot(inherits(y,c("EOF","field")))
@@ -1904,7 +1936,8 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
 
     if (length(table(season(y)))>1) {
       if (verbose) print('--- Apply DS to seasons seperately ---')
-      Z <- list(info='DSensemble.eof for different seasons')
+      Z <- list(info=paste('DSensemble.pca for different seasons: ',
+                                paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''))
       ## KMP 2016-10-25: Looping over seasons will not work if y is an eof object.
       ##   I added a temporary fix, turning the multi-season eof object into a field
       ##   before selecting a season. This could result in a serious loss of information.
@@ -1974,7 +2007,8 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
   flog <- file("DSensemble.eof-log.txt","at")
 
   ## Set up a list environment to keep all the results
-  dse.eof <- list(info='DSensemble.eof',eof=y) 
+  dse.eof <- list(info=paste('DSensemble.pca for different seasons: ',
+                             paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''),eof=y) 
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
@@ -2073,6 +2107,28 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
       z <- attr(ds,'appendix.1') ## KMP 09.08.2015
       ##attr(z,'model') <- attr(ds,'model') ## KMP 09-08-2015
       ## model takes up too much space! can it be stored more efficiently?
+      
+      ## REB: 2016-11-29
+      if (test) {
+        ## model takes up too much space! can it be stored more efficiently?
+        ## REB 2016-11-29: remove most of the contents and keep only a small part
+        if (verbose) print('Add reduced model information')
+        for (iii in 1:dim(ds)[2]) {
+          print(names(attr(ds,'model')[[iii]]))
+          attr(ds,'model')[[iii]]$residuals <- NULL
+          attr(ds,'model')[[iii]]$effects <- NULL
+          attr(ds,'model')[[iii]]$rank <- NULL
+          attr(ds,'model')[[iii]]$fitted.values <- NULL
+          attr(ds,'model')[[iii]]$assign <- NULL
+          attr(ds,'model')[[iii]]$qr <- NULL
+          attr(ds,'model')[[iii]]$df.residual <- NULL
+          attr(ds,'model')[[iii]]$xlevels <- NULL
+          attr(ds,'model')[[iii]]$model <- NULL
+          attr(ds,'model')[[iii]]$terms <- NULL
+          print(names(attr(ds,'model')[[iii]]))
+        }
+      }
+      
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       attr(z,'evaluation') <- attr(ds,'evaluation')
     
@@ -2173,6 +2229,11 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
 
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
+  if (test) {
+    attr(dse.eof,'model') <- attr(ds,'model') ## KMP 09-08-2015
+    attr(dse.eof,'ceof0') <- Z0
+    attr(dse.eof,'ceof') <- Z
+  }
   attr(dse.eof,'predictor') <- attr(SLP,'source')
   attr(dse.eof,'domain') <- list(lon=lon,lat=lat)
   attr(dse.eof,'scorestats') <- scorestats

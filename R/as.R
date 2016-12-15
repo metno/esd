@@ -324,6 +324,8 @@ as.station.eof <- function(x,ip=1:10) {
 }
 
 as.station.dsensemble <- function(x,...) {
+  if (!is.null(x$pca) & !inherits(x,"pca") & inherits(x,"eof"))
+    class(x) <- gsub("eof","pca",class(x)) ## REB 2016-12-13: to also work on gridded versions.    
   if (inherits(x,"pca")) {
     y <- as.station.dsensemble.pca(x,...)
   } else if (inherits(x,c("station","zoo"))) {

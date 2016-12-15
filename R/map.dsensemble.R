@@ -3,11 +3,15 @@
 ## Select a set of PCs and then use these in matrix product to reproduce
 ## physical elements.
 
-expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
+expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
   ## Get the spatial weights
   if (verbose) print('expandpca')
   if (test) print('--TEST ON ONE GCM simulation--')
   if (inherits(x,'pca')) UWD <- x$pca else UWD <- x$eof
+  if (!is.null(FUN)) {
+    if (FUN != 'mean') anomaly <- TRUE; 
+    if (verbose) print(c(FUN,anomaly))
+    }
   if (verbose) print(names(attributes(UWD)))
   D <- attr(UWD,'eigenvalues')
   ## Create a matrix with only the GCM time series
@@ -27,7 +31,22 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
     d <- dim(V)
   }
   if (verbose) print(c(n,d))
+  dim(V) <- d
   
+  ## REB 2016-12-01: Can also aggregate in time to speed things up and create a vector  
+  if (!is.null(FUN)) {  
+      if (FUN=='trend') FUN <- 'trend.coef'
+      if (verbose) print(paste('FUN=',FUN,!is.null(dim(V))))
+      if (is.null(dim(V))) dim(V) <- c(1,length(V))
+      V <- apply(V,2,FUN=FUN)
+      
+      if (!is.null(dim(V))) d <- dim(V) else {
+                         d <- c(1,length(V)) # If there is only one single time point
+                         dim(V) <- d
+      }
+      if (verbose) print(V)
+  }
+    
   ## Aggregate statistics over ensemble members
   if (verbose) print('Aggregate ensemble statistics')
   ## Apply FUNX to each of the PCs across all members
@@ -50,7 +69,10 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   }
   Y <- V %*% diag(D) %*% t(U)
   ## Add mean and insert into zoo frame
-  if (!anomaly) Y <- t(t(Y) + c(attr(UWD,'mean')))
+  if (!anomaly) {
+    Y <- t(t(Y) + c(attr(UWD,'mean')))
+    if (verbose) print('add mean field')
+  }
   Y <- zoo(Y,order.by=index(subset(X[[1]],it=it)))
   Y <- attrcp(UWD,Y)
   class(Y) <- class(UWD)[-1]
@@ -58,6 +80,29 @@ expandpca <- function(x,it=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FAL
   attr(Y,'mean') <- NULL
   if (verbose) {print('exit expandpca'); print(dim(Y))}
   return(Y)
+}
+
+
+map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
+                           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                                   show=TRUE,type="p",cex=2,h=0.6,v=1),
+                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,plot=TRUE,...) {
+  ## PCA/EOF objects
+
+  if (verbose) print('map.dsensemble')
+  
+  if (inherits(x,c('pca','eof'))) {
+    ## Extract a subset of the data
+    if (verbose) print(names(x)[2])
+      x <- subset(x,is=is,im=im,ip=ip,verbose=verbose)
+    ## REB 2016-12-01: Do all the analysis on the PC weights to speed up. Linearity.  
+#    Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
+    Y <- expandpca(x,it=it,FUN=FUN,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
+    if (verbose) {str(x[[2]]); str(Y)}
+#    if (plot) map(Y,FUN=FUN,colbar=colbar,verbose=verbose,...)
+    if (plot) map(Y,FUN="mean",colbar=colbar,verbose=verbose,...)
+    invisible(Y)
+  } else return(NULL)
 }
 
 ## Function for extracting the subset from PCs stored as zoo
@@ -80,28 +125,6 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
   if (verbose) print(dim(x))
   return(x)
 }
-
-
-
-map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
-                           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                                   show=TRUE,type="p",cex=2,h=0.6,v=1),
-                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,plot=TRUE,...) {
-  ## PCA/EOF objects
-
-  if (verbose) print('map.dsensemble')
-  
-  if (inherits(x,c('pca','eof'))) {
-    ## Extract a subset of the data
-    if (verbose) print(names(x)[2])
-    x <- subset(x,is=is,im=im,ip=ip,verbose=verbose)
-    Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
-    if (verbose) {str(x[[2]]); str(Y)}
-    if (plot) map(Y,FUN=FUN,colbar=colbar,verbose=verbose,...)
-    invisible(Y)
-  } else return(NULL)
-}
-
 
 
 ## Tools to subset or reduce the size of a dsensemble, e.g. removing the
@@ -127,7 +150,7 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
-  y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
+    y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
   if (verbose) print(dim(y[[1]]))
 
   if (!is.null(im)) {
