@@ -23,8 +23,12 @@ Note, gaps of missing data (NA) can bias the results and produce an under-count.
 Version 0.7: Added a test checking for dependencies based on an expected number from a binomial distribution and given the probability p1(n) = 1/n. This test is applied to the parallel series for one respective time (realisation), and is then repeated for all observation times. The check uses \code{\link{qbinom}} to compute a theoretical 95\% confidence interval, and a number outside this range is marked with red in the 'ball diagram' (first plot). \code{\link{pbinom}} is used to estimate the p-value for the 
 }
 \usage{
-iid.test(x,plot=TRUE,Monte.Carlo=TRUE,N.test=200,reverse.plot.reverse=TRUE)
-n.records(x)
+iid.test(x,...)
+iid.test.station(x,verbose=TRUE,...)
+iid.test.field(x,verbose=TRUE,...)
+iid.test.default(x,plot=TRUE,Monte.Carlo=TRUE,N.test=200,rev.plot.rev=TRUE,verbose=TRUE)
+test.iid.test(distr="rnorm",d=c(70,50),plot=TRUE,Monte.Carlo=TRUE)
+n.records(x,verbose=FALSE)
 records(x,verbose=FALSE,diff=FALSE)
 test.records(N=1000)
 }

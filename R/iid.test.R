@@ -6,40 +6,41 @@ iid.test.station <- function(x,verbose=TRUE,...) {
   # Re-orders the station data into parallel time series for each calendar
   # month into new matrix X. Then apply the iid.test to this matrix.
 
-  ts2mon <- function(x,verbose=TRUE) {
-    if (verbose) print('ts2mon')
-    yrs <- year(x); n <- length(rownames(table(yrs)))
-    d <- dim(x)
-  # Test for multiple series:
-    if (is.null(d)) m <- 1 else  # single series
-                    m <- d[2]    # multiple
-    X <- matrix(rep(NA,m*n*12),n,m*12)
-    dim(X) <- c(n,m,12)
-    if (verbose) print(dim(X))
-  
-    for (i in 1:12) {
-      y <- subset(x,it=month.abb[i],verbose=verbose)
-      y <- aggregate(y,year,FUN='max',na.rm=TRUE) # one estimate for each month/year
-      if (verbose) print(dim(y))
-      if (verbose) print(paste(month.abb[i],(1 + n-length(index(y))),
-                               length((1 + n-length(index(y))):n)))
-      if (verbose) print(length(index(y)))
-      X[(1 + n-length(index(y))):n,1:m,i] <- coredata(y)
-    }
-    if (verbose) print('set dimensions')
-    dim(X) <- c(n,m*12)
-    attr(X,'description') <- 'data matrix re-orderd on month and location'
-    attr(X,'original_dimensions') <- c(n,m,12)
-    attr(X,'history') <- history.stamp(x)
-    return(X)
-  }
+#  ts2mon <- function(x,verbose=TRUE) {
+#    if (verbose) print('ts2mon')
+#    yrs <- year(x); n <- length(rownames(table(yrs)))
+#    d <- dim(x)
+#  # Test for multiple series:
+#    if (is.null(d)) m <- 1 else  # single series
+#                    m <- d[2]    # multiple
+#    X <- matrix(rep(NA,m*n*12),n,m*12)
+#    dim(X) <- c(n,m,12)
+#    if (verbose) print(dim(X))
+#  
+#    for (i in 1:12) {
+#      y <- subset(x,it=month.abb[i],verbose=verbose)
+#      y <- aggregate(y,year,FUN='max',na.rm=TRUE) # one estimate for each month/year
+#      if (verbose) print(dim(y))
+#      if (verbose) print(paste(month.abb[i],(1 + n-length(index(y))),
+#                               length((1 + n-length(index(y))):n)))
+#      if (verbose) print(length(index(y)))
+#      X[(1 + n-length(index(y))):n,1:m,i] <- coredata(y)
+#    }
+#    if (verbose) print('set dimensions')
+#    dim(X) <- c(n,m*12)
+#    attr(X,'description') <- 'data matrix re-orderd on month and location'
+#    attr(X,'original_dimensions') <- c(n,m,12)
+#    attr(X,'history') <- history.stamp(x)
+#    return(X)
+#  }
 
   
-  print('iid.test.station')
-  X <- ts2mon(x,verbose=verbose)
-  print('weed out bad data')
-  good <- is.finite(rowMeans(X))
-  iid <- iid.test.default(X[good,],verbose=verbose)
+  if (verbose) print('iid.test.station')
+  #X <- ts2mon(x,verbose=verbose)
+  #if (verbose) print('weed out bad data')
+  #good <- is.finite(rowMeans(X))
+  X <- as.monthly(x,FUN='max')
+  iid <- iid.test.default(X,verbose=verbose)
   invisible(iid)
 }
 
@@ -77,6 +78,7 @@ iid.test.field <- function(x,verbose=TRUE,...) {
 
 iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
                              N.test=200,rev.plot.rev=TRUE,verbose=TRUE) {
+  if (verbose) print('iid.test.default')
   Y <- as.matrix(x)
   Y[!is.finite(Y)] <- NA
   t.r <- dim(Y)
@@ -91,8 +93,9 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
   if (plot) {
     par(col.axis="white")
     plot(c(1,t.r[1]),c(1,2*t.r[2]),type="n",main="iid-test",
-         xlab="time",ylab="location")
-    par(col.axis="black"); axis(1)
+         xlab="record length",ylab="location")
+    par(col.axis="black")
+    axis(1)
     lines(c(-5,t.r[1]+6),rep(t.r[2],2)+0.5,lwd=3)
     par.0 <- par(); par(srt=90)
     text(0,round(t.r[2]/2),"Forward",cex=1,vfont=c("sans serif","italic"))
@@ -100,18 +103,20 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
     par(par.0)
   }
 
+  
   for (ir in 1:t.r[2]) {
-    record.stats <- n.records(Y[,ir])
+    #record.stats <- n.records(Y[,ir])
+    record.stats <- n.records(subset(x,is=ir))
+    if (verbose) str(record.stats)
     N.records[ir] <- record.stats$N
-    events[,ir] <- as.numeric(record.stats$events)
-    events.rev[,ir] <- as.numeric(record.stats$events.rev)
+    events[record.stats$t,ir] <- TRUE
+    events.rev[record.stats$t.rev,ir] <- TRUE
 
     if (plot) {
-
       # Timing index for record.
       t1 <- record.stats$t
       if (rev.plot.rev) t2 <- record.stats$t.rev  else 
-                                t2 <- t.r[1] - record.stats$t.rev + 1
+                        t2 <- t.r[1] - record.stats$t.rev + 1
 
       #lines(c(1,t.r[1]),rep(ir,2),col="grey70")            
       points(t1,rep(ir,record.stats$N)+0.025,pch=20,cex=1.50,col="grey30")
@@ -128,6 +133,7 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
              cex=0.50,col="grey70")
       points(t2+0.1,rep(ir,record.stats$N.rev)+0.100+t.r[2],pch=20,
              cex=0.30,col="white")
+      text(loc(x)[ir],0,ir,pos=3)
     }
   }
 
@@ -138,7 +144,7 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
       if ( (sum(events[it,]) < CI.95[it,1]) |
           (sum(events[it,]) > CI.95[it,2]) ) {
         i.cluster[it] <- TRUE
-        lines(rep(it,2),c(0,t.r[2]),lwd=2,lty=2,col="pink")
+        lines(rep(it,2),c(0,t.r[2]),lwd=1,lty=2,col=rgb(1,0.5,0.5,0.3))
       }
       CI.95.rev[it,] <- qbinom(p=c(0.025,0.975),size=t.r[2],prob=1/it)
       p.val.rev[it] <- pbinom(events[it,],size=t.r[2],prob=1/it)
@@ -146,9 +152,9 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
           (sum(events.rev[t.r[1]-it+1,]) > CI.95.rev[it,2]) ) {
         i.cluster.rev[it] <- TRUE
         if (rev.plot.rev)
-          lines(rep(t.r[1]-it+1,2),c(t.r[2]+1,2*t.r[2]),lwd=2,
-                lty=2,col="pink") else
-          lines(rep(it,2),c(t.r[2]+1,2*t.r[2]),lwd=2,lty=2,col="pink") 
+          lines(rep(t.r[1]-it+1,2),c(t.r[2]+1,2*t.r[2]),lwd=1,
+                lty=2,col=rgb(1,0.5,0.5,0.3)) else
+          lines(rep(it,2),c(t.r[2]+1,2*t.r[2]),lwd=1,lty=2,col=rgb(1,0.5,0.5,0.3)) 
       }    
     }
   }
@@ -241,50 +247,14 @@ test.iid.test <- function(distr="rnorm",d=c(70,50),plot=TRUE,
                           Monte.Carlo=TRUE) {
   rnd <- eval(parse(text=paste(distr,"(",d[1]*d[2],")",sep="")))
   dim(rnd) <- c(d[1],d[2])
-  test.results <- iid.test(rnd,plot=plot,Monte.Carlo=Monte.Carlo)
+  test.results <- iid.test(zoo(rnd,order.by=1:d[1]),
+                           plot=plot,Monte.Carlo=Monte.Carlo)
   invisible(test.results)
 }
 
-daily.station.records <- function(obs,element="precip",subsample=5,tolerance=2,remove.zeroes=FALSE,rev.plot.rev=FALSE) {
 
-  if (class(obs)[2] != "daily.station.record") 
-     stop("Need a 'daily.station.record' object!")
-  years <- as.numeric(rownames(table(obs$yy)))
-  ny <- length(years)
-  dat <- rep(NA,ny*366); dim(dat) <- c(ny,366)
-
-  for (i in 1:ny) {
-    iyear <- is.element(obs$yy,years[i])
-    ii <- julday(obs$mm[iyear],obs$dd[iyear],obs$yy[iyear]) -
-          julday(1,1,years[i])+1
-    data.thisyear <- eval(parse(text=paste("obs$",element,"[iyear]",sep="")))
-    print(c(years[i],sum(iyear),NA,range(ii),NA,length(data.thisyear)))
-  
-    if (sum(is.finite(data.thisyear)) > 2) plot(data.thisyear)
-    dat[i,ii] <- data.thisyear
-  }
-  
-  #plot(dat[1,],main=obs$location,ylab=element,xlab="Day in the year",
-  #     pch=20,cex=0.8,col="grey50")
-  #for (i in 1:ny) points(dat[i,],pch=20,cex=0.8,col="grey50")
-
-  print(paste("sub-sample every",subsample,"points"))
-
-  ykeep <- rep(TRUE,366)
-  for (i in 1:length(ykeep)) {
-    if (mod(i,subsample) != 1) ykeep[i] <- FALSE
-    if (sum(!is.finite(dat[,i])) > tolerance) ykeep[i] <- FALSE
-    if ( (remove.zeroes) & (sum(dat[,i]==0) > tolerance) ) ykeep[i] <- FALSE
-  }
-  dat <- dat[,ykeep] # extra days during leap year will bias the results 
-
-  #image(log(dat)); x11()
-
-  dev.new()
-  iid.test(dat,rev.plot.rev=rev.plot.rev)
-}
-
-n.records <- function(x,method='records') {
+n.records <- function(x,verbose=FALSE) {
+  if (verbose) print('n.records')
   y <- x
   m <- length(y)
   y[!is.finite(y)] <- min(y,na.rm=TRUE)
@@ -295,60 +265,57 @@ n.records <- function(x,method='records') {
     print("See Benestad (2004) 'Record-values, non-stationarity tests and extreme value distributions' Global and Planetary Change, 44, 11-26")
     print("http://www.sciencedirect.com/science?_ob=ArticleURL&_udi=B6VF0-4D6373Y-2&_coverDate=12%2F01%2F2004&_alid=228212815&_rdoc=1&_fmt=&_orig=search&_qd=1&_cdi=5996&_sort=d&view=c&_acct=C000056508&_version=1&_urlVersion=0&_userid=2181464&md5=632559476e84eb8c48287cf8038690d2")
   }
-  y.rev <- rev(y)
+  y.rev <- rev(y); index(y.rev) <- index(y) 
+  if (verbose) {str(y); str(y.rev)}
   N <- 1; N.rev <- N
   t <- rep(1,m); t.rev <- rep(m,m)
   events <- rep(FALSE,m); events.rev <- events
   
-  if (method=='foor-loop') {
-  
-  events[1] <- TRUE; events.rev[m] <- TRUE
-  for (i in 2:m) {
-    if (y[i] > max(y[1:(i-1)],na.rm=TRUE)) {
-      N <- N + 1
-      t[N] <- i
-      events[i] <- TRUE
-    }
-#    if (y[m-i+1] > max(y[(m-i+2):m],na.rm=TRUE)) {
-#      N.rev <- N.rev + 1
-#      t.rev[N.rev] <- length(y)-i
-#      events.rev[length(y)-i] <- TRUE
-#    }
-# Changed 18.08.2006: REB - a more readable code... shouldn't make any difference.
+  if (verbose) print('fast algorithm')
+  events <- records(y,verbose=verbose)
+  if (verbose) print('reverse series')
+  events.rev <- records(y.rev,verbose=verbose)
+    
+  if (is.numeric(events)) { 
+      if (verbose) print('single series')
+      N <- sum(is.finite(events)) 
+      t <- attr(events,'t')
+      N.rev <- sum(is.finite(events.rev))
+      t.rev <- attr(events.rev,'t')
+  } else if (is.list(events)) {
+    if (verbose) print('matrix')
+      N <- lapply(events,function(x) sum(is.finite(x)))
+      t <- lapply(events,function(x) attr(x,'t'))
+      N <- lapply(events.rev,function(x) sum(is.finite(x)))
+      t.rev <- lapply(events.rev,function(x) attr(x,'t'))
+  } else stop(paste('n.records - naot programmed to handle',class(events)))
 
-    if (y.rev[i] > max(y.rev[1:(i-1)],na.rm=TRUE)) {
-      N.rev <- N.rev + 1
-      t.rev[N.rev] <- length(y)-i+1
-      events.rev[length(y)-i+1] <- TRUE
-    }
-  }
-  t <- t[1:N]; t.rev <- t.rev[1:N.rev]
-  } else {
-    events <- records(y)
-    N <- sum(is.finite(events))
-    t <- attr(events,'t')
-    events.rev <- records(y.rev)
-    N.rev <- sum(is.finite(events))
-    t.rev <- attr(events.rev,'t')
-  }
-  
+  if (verbose) print('organise into list object')
   records <- list(N=N,t=t,events=events,N.rev=N.rev, 
                   t.rev=t.rev, events.rev=events.rev)
   invisible(records)
 } 
 
 ## This algorithm is faster than the older code that used for-loop
+## Search 'back-ward' statring with the highest value:
 
 records <- function(x,verbose=FALSE,diff=FALSE) {
+  if (verbose) print('records')
+  if (!is.null(dim(x))) {
+    if (verbose) print('matrix: apply recursive routine')
+    r <- apply(x,2,'records')
+    return(r)
+  }
   n <- length(x)
   r <- rep(NA,length(x)); t <- rep(NA,length(x))
   ii <- 1; i <- length(x)
+  if (verbose) print(n)
   while(length(x) >= 1 & i > 1) {
     z <- max(x,na.rm=TRUE)
     r[ii] <- z
     i <- (1:n)[is.element(x,z)][1]
     t[ii] <- i; ii <- ii  + 1
-    x <- x[1:(i-1)]
+    if (is.finite(i)) x <- x[1:(i-1)] else i <- 0
     if (verbose) print(c(z,ii,i,length(x)))
   }
 
