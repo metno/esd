@@ -909,16 +909,16 @@ g2dl.field <- function(x,greenwich=TRUE) {
         wh <- lon > 180
         lon[wh] <- lon[wh] - 360
     }
-
+    
     xsrt <- order(lon)
     X <- t(coredata(x))
     dim(X) <- d
     X <- X[xsrt,,]
-                                        #print(dim(X)); print(d)
+    browser()                                    #print(dim(X)); print(d)
     dim(X) <- c(d[1]*d[2],d[3])
     y <- zoo(t(X),index(x))
     lon <- sort(lon)
-
+    
     y <- attrcp(x,y,ignore='names')
                                         #nattr <- softattr(x,ignore=c('greenwich','longitude'))
                                         #for (i in 1:length(nattr))

@@ -764,7 +764,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
          xlim=xlim,ylim=ylim,main=main, # to sumerimpose.
          xaxt="n",yaxt="n") # AM 17.06.2015
     ##par0 <- par()
-
+    ##browser()
     if (sum(is.element(tolower(type),'fill'))>0)   
         image(lon,lat,x,xlab="",ylab="",add=TRUE,
               col=colbar$col,breaks=colbar$breaks,xlim=xlim,ylim=ylim,...)
