@@ -1092,3 +1092,20 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   invisible(METNO)
 }
 
+## Read data from NASA/GISS
+station.giss <- function(url) {
+  t2m <- read.table(url,skip=2,header=TRUE)
+  meta <- read.table(url,nrows=1,as.is=TRUE)
+  lat <- as.numeric(substr(meta$V3,2,nchar(meta$V3)-2))
+  lon <- as.numeric(sub(')','',meta$V4))
+  yr <- t2m$YEAR
+  t2m[t2m >= 999] <- NA
+  t2m <- zoo(c(t(as.matrix(t2m[2:13]))),
+             order.by=as.Date(paste(sort(rep(yr,12)),rep(1:12,length(yr)),'01',sep='-')))
+  t2m <- as.station(t2m,loc=meta$V1,param='t2m',unit='degC',
+                    lon=lon,lat=lat,alt=NA,
+                    cntr=meta$V2,longname='Surface temperature',
+                    stid=meta$V5,quality=meta$V10,src=paste(meta$V6,meta$V7),url=url,
+                    reference='Parker, et. al. (1992), Int. J. Clim.',info=NA, method= NA)
+  return(t2m)
+}

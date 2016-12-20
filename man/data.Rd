@@ -50,6 +50,7 @@
 \alias{IPCC.AR5.Table.9.A.1}
 \alias{global.t2m.gcm}
 \alias{QBO}
+\alias{CET}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -131,6 +132,7 @@ GSL(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_
 data(global.t2m.gcm)
 AMO(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data')
 QBO(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data')
+CET(url='http://hadobs.metoffice.com/hadcet/cetml1659on.dat')
 }
 
 \arguments{

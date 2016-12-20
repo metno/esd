@@ -69,7 +69,7 @@ AMO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.
   nrows <- sum(is.element(nchar(amo.test),max(nchar(amo.test))))
   amo <- read.table(url,skip=1,nrows=nrows)
   amo[amo <= -99] <- NA
-  amo <- zoo(c(t(as.matrix(amo[3:13]))),
+  amo <- zoo(c(t(as.matrix(amo[2:13]))),
              order.by=as.Date(paste(sort(rep(amo$V1,12)),rep(1:12,length(amo$V1)),'01',sep='-')))
   amo <- as.station(amo,loc=NA,param='AMO',unit='dimensionless',
                      lon=NA,lat=NA,alt=NA,
@@ -95,3 +95,19 @@ QBO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data') {
                info='http://www.esrl.noaa.gov/psd/data/climateindices/list/')
   return(qbo)
 }
+
+## Central England Temperature
+CET <- function(url='http://hadobs.metoffice.com/hadcet/cetml1659on.dat') {
+  cet <- read.table(url,skip=8)
+  cet[cet <= -99] <- NA
+  cet <- zoo(c(t(as.matrix(cet[2:13]))),
+             order.by=as.Date(paste(sort(rep(cet$V1,12)),rep(1:12,length(cet$V1)),'01',sep='-')))
+  cet <- as.station(cet,loc=NA,param='t2m',unit='degC',
+                    lon=NA,lat=NA,alt=NA,
+                    cntr=NA,longname='Central England Temperature',
+                    stid=NA,quality=NA,src=NA,url=url,
+                    reference='Parker, et. al. (1992), Int. J. Clim.',info=NA, method= NA)
+  return(cet)
+}
+
+
