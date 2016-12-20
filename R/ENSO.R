@@ -109,3 +109,5 @@ CET <- function(url='http://hadobs.metoffice.com/hadcet/cetml1659on.dat') {
                     reference='Parker, et. al. (1992), Int. J. Clim.',info=NA, method= NA)
   return(cet)
 }
+
+
