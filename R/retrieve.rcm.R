@@ -33,8 +33,11 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
     vnames <- names(ncold$var)
     ##latid <- vnames[is.element(tolower(substr(vnames,1,3)),'lat')]
     ##lonid <- vnames[is.element(tolower(substr(vnames,1,3)),'lon')]
-    latid <- vnames[grep('lat',tolower(vnames))]
-    lonid <- vnames[grep('lon',tolower(vnames))]
+    #latid <- vnames[grep('lat',tolower(vnames))]
+    #lonid <- vnames[grep('lon',tolower(vnames))]
+    ## KMP 2016-12-20: grep('lat',...) sometimes finds more than 1 match 
+    latid <- vnames[tolower(vnames) %in% c("lat","latitude")]
+    lonid <- vnames[tolower(vnames) %in% c("lon","longitude")]   
     lat <- ncvar_get(ncold,varid=latid)
     lon <- ncvar_get(ncold,varid=lonid)
     time <- ncvar_get(ncold,varid='time')
@@ -119,11 +122,13 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
         starty <- 1; county <- d[2];
         subx <- rep(TRUE,d[1]); suby <- rep(TRUE,d[2])
     }
-    
                                         # Extract only the time of interest: assume only an interval
                                         #print(tunit); browser()
-    time <- switch(substr(tunit,1,3),'day'=as.Date(time+julian(as.Date(torg))),
-                   'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))),'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600)
+    time <- switch(substr(tunit,1,3),
+                   'day'=as.Date(time+julian(as.Date(torg))),
+                   'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))),
+                   'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600,
+                   'sec'=strptime(torig,format="%Y-%m-%d %H") + time)
     
     if (verbose) print(paste(start(time),end(time),sep=' - '))
     if (!is.null(it)) {
@@ -133,6 +138,18 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
             it <- c(start(y),end(y))
             rm('y')
         }
+
+        if (is.character(it)) {
+          if ((levels(factor(nchar(it)))==10)) {
+            it <- as.Date(it,format="%Y-%m-%d")
+          } else if ((levels(factor(nchar(it)))==8)) {
+            it <- as.Date(it,format="%Y%m%d")
+          } else if (levels(factor(nchar(it)))==4) {
+            it <- as.Date(c(paste(it[1],'-01-01',sep=''),
+                            paste(it[2],'-12-31',sep='')))
+          } 
+        }
+          
         if (inherits(it,'Date')) {
             startt <- min( (1:length(time))[it >= time] )
             stoptt <- max( (1:length(time))[it <= time] )
@@ -144,7 +161,9 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
             countt <- max(it) - startt + 1
         } else if ( (max(it) <= length(time)) & min(it >= 1) ) {
             startt <- min(it); countt <- max(it) - startt + 1
-        } 
+        } else {
+            print(paste("unkown format of input it:",it))
+        }
     } else {startt <- 1; countt <- length(time); it <- NA}
     
                                         # This information is used when retrieve.rcm is used again to extract similar region
