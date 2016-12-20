@@ -142,14 +142,14 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
       CI.95[it,] <- qbinom(p=c(0.025,0.975),size=t.r[2],prob=1/it)
       p.val[it] <- pbinom(events[it,],size=t.r[2],prob=1/it)
       if ( (sum(events[it,]) < CI.95[it,1]) |
-          (sum(events[it,]) > CI.95[it,2]) ) {
+           (sum(events[it,]) > CI.95[it,2]) ) {
         i.cluster[it] <- TRUE
         lines(rep(it,2),c(0,t.r[2]),lwd=1,lty=2,col=rgb(1,0.5,0.5,0.3))
       }
       CI.95.rev[it,] <- qbinom(p=c(0.025,0.975),size=t.r[2],prob=1/it)
       p.val.rev[it] <- pbinom(events[it,],size=t.r[2],prob=1/it)
       if ( (sum(events.rev[t.r[1]-it+1,]) < CI.95.rev[it,1]) |
-          (sum(events.rev[t.r[1]-it+1,]) > CI.95.rev[it,2]) ) {
+           (sum(events.rev[t.r[1]-it+1,]) > CI.95.rev[it,2]) ) {
         i.cluster.rev[it] <- TRUE
         if (rev.plot.rev)
           lines(rep(t.r[1]-it+1,2),c(t.r[2]+1,2*t.r[2]),lwd=1,

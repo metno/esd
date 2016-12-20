@@ -408,7 +408,7 @@ export(wheel.station)
 export(wheel.spell)
 export(history.stamp)
 export(history.stamp.default)
-
+export(CET)
 export(lon)
 export(longitude)
 export(lat)
