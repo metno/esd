@@ -752,8 +752,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else ylim=range(lat)
     
     if (new) {
-        par(fig=fig0) 
         dev.new()
+        par(fig=fig0)
         par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
     } else {
         par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
@@ -828,7 +828,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-                       param=NA,alpha=0.3,lwd=3,col="blue",bg="white",pch=21,cex=1,
+                       param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        #show.points=TRUE,show.trajectory=FALSE,show.start=FALSE,show.end=FALSE,
@@ -885,15 +885,27 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         if (is.null(lonR)) lonR <- mean(lon(Y))
         if (is.null(latR)) latR <- max(lat(Y))
         map(Y,colbar=colbar,new=new,projection=projection,
-            xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
+            xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,verbose=verbose)
     } else {
-        if (is.null(lonR) & dim(x)[1]>0) lonR <- mean(x[,"lon"])
-        if (is.null(latR) & dim(x)[1]>0) latR <- max(x[,"lat"])
+        if (is.null(lonR)) {
+          if(!is.null(xlim)) lonR <- mean(xlim)
+          else if (dim(x)[1]>0) lonR <- mean(x[,"lon"])
+        }
+        if (is.null(latR)) {
+          if(!is.null(ylim)) {
+            latR <- mean(ylim)
+            #latR <- sign(ylim[ylim==max(abs(ylim))])*max(abs(ylim))
+          } else if (dim(x)[1]>0) {
+            latR <- mean(x[,"lat"])
+            #latR <- sign(x[,"lat"][x[,"lat"]==max(abs(x[,"lat"]))])*max(abs(x[,"lat"]))
+          }
+        }
         data(Oslo)
         map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
-            bg=adjustcolor(col,alpha.f=0),new=new,
+            bg=adjustcolor("black",alpha.f=0),new=new,
             projection=projection,
-            xlim=xlim,ylim=ylim,latR=latR,lonR=lonR)
+            xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
+            verbose=verbose)
     }
     if(param %in% colnames(x) & dim(x)[1]>0) {
         if(verbose) print(paste("size proportional to",param))
@@ -907,10 +919,8 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
         cols <- adjustcolor(col,alpha=alpha)
         if("trajectory" %in% colnames(x0) &
-           any(c("trajectory","start","end") %in% type)) {
-          if(verbose) print("plot trajectories")
+         any(c("trajectory","start","end") %in% type)) {
           xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
-          #browser()
           if(dim(xt)[1]>1) {
               xall <- as.trajectory(xt,nmin=2,n=45)
               map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,

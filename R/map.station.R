@@ -88,7 +88,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     sphere(x,lonR=lonR,latR=latR,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
            col=colbar$col,new=new,FUN=FUN,cex=cex,
-           cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,...)
+           cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
+           verbose=verbose,...)
   else if (projection=="np")
     sphere(x,lonR=lonR,latR=90,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
@@ -98,7 +99,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                sphere(x,lonR=lonR,latR=-90,axiR=axiR,
                       gridlines=gridlines,xlim=xlim,ylim=ylim,
                       col=colbar$col,new=new,FUN=FUN,
-                      cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,...)
+                      cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
+                      verbose=verbose,...)
   ## else if (projection=="lonlat")
   ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
   ##                     type=type,gridlines=gridlines,...)
@@ -346,7 +348,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     par(new=FALSE) ## REB: 2016-10-12 - add the possibility to use google maps
     
-    ## Add geoborders 
+    ## Add geoborders
+    browser()
     lines(geoborders$x, geoborders$y, col = "black")
     lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y,
           col = "pink")##"grey90"
@@ -519,20 +522,30 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 
 sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
                    gridlines=TRUE,col="green",bg="darkgreen",cex=0.2,
-                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",new=TRUE) {
+                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",new=TRUE,verbose=FALSE) {
+  if(verbose) print("sphere")
   x0 <- x
+
+  ## KMP 2016-12-21: To handle xlim in greenwich format, e.g., 180-360
+  if(!is.null(xlim)) {
+    greenwich <- (min(xlim)>0 & max(xlim)>180)
+    g2dl(x,greenwich=greenwich,verbose=verbose)
+  } else greenwich <- NULL
+  
   ## Data to be plotted:
   if (inherits(x,"stationmeta")) {
     lon <- x$longitude
     lat <- x$latitude
     param <- param2ele(x$ele)
-    unit <- " "
-  }
-  else if (inherits(x,"station")) {
+    unit <- " "  
+  } else if (inherits(x,"station")) {
     lon <- attr(x,'longitude')
     lat <- attr(x,'latitude')
     param <- as.character(levels(factor(attr(x,'parameter'))))
   }
+  ## KMP 2016-12-21: To handle xlim in greenwich format, e.g., 180-360
+  if(is.null(greenwich)) greenwich <- (min(lon)>0 & max(lon)>180)
+  
   ## To deal with grid-conventions going from north-to-south or east-to-west:
   ##srtx <- order(attr(x,'longitude')); lon <- lon[srtx]
   ##srty <- order(attr(x,'latitude')); lat <- lat[srty]
@@ -541,7 +554,6 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
     map <- apply(as.matrix(x),2,FUN,na.rm=TRUE) ##map <- x[srtx,srty]
   else
     map <- x
-  
   
   # Rotatio:
   if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
@@ -554,6 +566,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   gx <- geoborders$x
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
+  if(greenwich) gx[gx<0 & ok] <- gx[gx<0 & ok] + 360
   if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
   if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   theta <- pi*gx[ok]/180
