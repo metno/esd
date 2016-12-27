@@ -875,7 +875,8 @@ combine.events <- function(x,y,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbos
 g2dl <- function(x,greenwich=TRUE,...)
     UseMethod("g2dl")
 
-g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL) {
+g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL,verbose=FALSE) {
+    if(verbose) print("g2dl.default")
     if (is.null(lon)) lon <- attr(x,'longitude')
     if (is.null(lat)) lat <- attr(x,'latitude')
     if (is.null(d)) d <- attr(x,'dimensions')
@@ -886,22 +887,41 @@ g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL) {
         wh <- lon > 180
         lon[wh] <- lon[wh] - 360
     }
-    xsrt <- order(lon)
-    dim(x) <- d  
-    x <- x[xsrt,,]
-    dim(x) <- c(d[1]*d[2],d[3])
-    lon <- sort(lon)
+    if(length(lon)>1) {
+      xsrt <- order(lon)
+      dim(x) <- d  
+      x <- x[xsrt,,]
+      dim(x) <- c(d[1]*d[2],d[3])
+      lon <- sort(lon)
+    }
     if (!is.null(attr(x,'longitude'))) attr(x,'longitude') <- lon
     return(x)
 }
 
+g2dl.stationmeta <- function(x,greenwich=TRUE,verbose=FALSE) {
+  if(verbose) print("g2dl.stationmeta")
+  lon <- x$lon                          
+  if (greenwich) {
+    wh <- lon < 0
+    lon[wh] <- lon[wh] + 360
+  } else {
+    wh <- lon > 180
+    lon[wh] <- lon[wh] - 360
+  }
+  y <- x
+  y$lon <- lon
+  attr(y,'greenwich') <- as.logical(greenwich)
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- class(x)
+  invisible(y)
+}
 
-g2dl.field <- function(x,greenwich=TRUE) {
-                                        #print("g2dl.field")
+g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE) {
+    if(verbose) print("g2dl.field")
     attr(x,'longitude') -> lon
     attr(x,'latitude') -> lat
     d <- attr(x,'dimensions')
-                                        #print(d); print(dim(coredata(x)))
+    
     if (greenwich) {
         wh <- lon < 0
         lon[wh] <- lon[wh] + 360
@@ -914,7 +934,7 @@ g2dl.field <- function(x,greenwich=TRUE) {
     X <- t(coredata(x))
     dim(X) <- d
     X <- X[xsrt,,]
-    browser()                                    #print(dim(X)); print(d)
+    ##browser()                                    #print(dim(X)); print(d)
     dim(X) <- c(d[1]*d[2],d[3])
     y <- zoo(t(X),index(x))
     lon <- sort(lon)
@@ -931,7 +951,8 @@ g2dl.field <- function(x,greenwich=TRUE) {
     invisible(y)
 }
 
-g2dl.eof <- function(x,greenwich=TRUE) {
+g2dl.eof <- function(x,greenwich=TRUE,verbose=FALSE) {
+    if(verbose) print("g2dl.eof")
     attr(x,'longitude') -> lon
     attr(x,'latitude') -> lat
     d <- attr(x,'dimensions')
@@ -951,8 +972,8 @@ g2dl.eof <- function(x,greenwich=TRUE) {
     return(x)
 }
 
-g2dl.corfield <- function(x,greenwich=TRUE) {
-                                        #print("g2dl.corfield")
+g2dl.corfield <- function(x,greenwich=TRUE,verbose=FALSE) {
+    if(verbose) print("g2dl.corfield")
     attr(x,'longitude') -> lon
     attr(x,'latitude') -> lat
     d <- attr(x,'dimensions')
