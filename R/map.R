@@ -690,8 +690,17 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     data("geoborders",envir=environment())
     if(sum(is.finite(x))==0) stop('No valid data')
     ## To deal with grid-conventions going from north-to-south or east-to-west:
-    srtx <- order(lon(x)); lon <- lon(x)[srtx]
+    if(is.null(xlim)) xlim <- range(lon(x))
+    lon <- lon(x)
+    if(!any(xlim<0) & any(xlim>180)) {
+      lon[lon<0] <- lon[lon<0]+360
+    } else {
+      lon[lon>180] <- lon[lon>180]-360
+    }
+    srtx <- order(lon); lon <- lon[srtx]
     srty <- order(lat(x)); lat <- lat(x)[srty]
+    #srtx <- order(lon(x)); lon <- lon(x)[srtx]
+    #srty <- order(lat(x)); lat <- lat(x)[srty]
     if (verbose) print('meta-stuff')
     unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
     if(!is.null(variable)) variable <- as.character(variable)
@@ -764,7 +773,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
          xlim=xlim,ylim=ylim,main=main, # to sumerimpose.
          xaxt="n",yaxt="n") # AM 17.06.2015
     ##par0 <- par()
-    ##browser()
+    
     if (sum(is.element(tolower(type),'fill'))>0)   
         image(lon,lat,x,xlab="",ylab="",add=TRUE,
               col=colbar$col,breaks=colbar$breaks,xlim=xlim,ylim=ylim,...)
