@@ -349,7 +349,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     par(new=FALSE) ## REB: 2016-10-12 - add the possibility to use google maps
     
     ## Add geoborders
-    browser()
+    ##browser()
     lines(geoborders$x, geoborders$y, col = "black")
     lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y,
           col = "pink")##"grey90"
