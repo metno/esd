@@ -242,8 +242,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   if (datetype=="Date") {
     fakedates <- paste(format(t,'%Y-%m'),'-01',sep='')
     realdates <- paste(format(t,'%Y-%m'),'-01',sep='')
-  } else
-  if (datetype=="numeric") {
+  } else if (datetype=="numeric") {
     fakedates <- paste(t,'-01-01',sep='')
     realdates <- paste(t,'-01-01',sep='')
   }
