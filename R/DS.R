@@ -417,9 +417,8 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
     
     if (!inherits(X,"eof")) X <- EOF(X,mon=mon,area.mean.expl=area.mean.expl)
     
-    
     if (biascorrect) {
-        if (verbose) print("Bias correcion - bias-fix common EOF")
+        if (verbose) print("Bias correction - bias-fix common EOF")
         X <- biasfix(X)
     }
     
