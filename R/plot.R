@@ -393,7 +393,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   ylab <- paste("PC",n)
   main <- paste("EOF: ",n,"accounts for",
                 round(var.eof[n],1),"% of variance")
-
+  
   if (length(grep('var',what))>0)  {
 #    par(xaxt="s",yaxt="s")
 #    plot.eof.var(x,new=FALSE,cex.main=0.7)
@@ -414,8 +414,9 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
     for (i in 1:n.app) {
       z <- attr(x,paste('appendix.',i,sep=""))
       xlim <- range(xlim,index(z))
-    }  
+    }
   }
+  if(is.character(xlim)) xlim <- as.Date(xlim)
 
   if (length(grep('pc',what))>0) {
     if (verbose) {print('time series');print(index(x)); print(index(attr(x,'appendix.1')))}
@@ -450,7 +451,6 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
       }
 
       lines(x[,n],lwd=2,col="black")
-
     }
 #    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
 #        mar=rep(0,4),new=TRUE)

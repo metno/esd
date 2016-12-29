@@ -235,24 +235,29 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   YYt <- YYt - clim
   YY <- t(YYt)
   d <- attr(X,'dimensions')
-  
-  #print('time house keeping')
+
+  ## KMP 2016-12-28: time housekeeping in EOF.comb creates problems
+  ## for DS when applied to annual data. The predictand ends up with
+  ## years as time index but the EOF has dates (YYYY-01-01).
+  ## Do the realdates and fakedates need to be in date format?
+  if (verbose) print('time house keeping')
   t <- index(X)
   datetype <- class(t)
   if (datetype=="Date") {
     fakedates <- paste(format(t,'%Y-%m'),'-01',sep='')
     realdates <- paste(format(t,'%Y-%m'),'-01',sep='')
+    endsofar <- max(as.numeric(format(as.Date(fakedates),'%Y')))
   } else if (datetype=="numeric") {
-    fakedates <- paste(t,'-01-01',sep='')
-    realdates <- paste(t,'-01-01',sep='')
+    fakedates <- t#paste(t,'-01-01',sep='')#
+    realdates <- t#paste(t,'-01-01',sep='')#
+    endsofar <- max(t)#max(as.numeric(format(as.Date(fakedates),'%Y')))#
   }
   
   #print(realdates)
   # Keep track of the different fields:
   if (is.null(attr(X,'source'))) attr(X,'source') <- "0"
   id.t <- rep(attr(X,'source'),length(index(X)))
-  ID.t <- attr(X,'source') 
-  endsofar <- max(as.numeric(format(as.Date(fakedates),'%Y')))
+  ID.t <- attr(X,'source')
 
   for (i in 1:n.app) {
     if (verbose) print(paste("Additional field",i,endsofar))
@@ -261,14 +266,23 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     ttt <- index(YYY)
     ##print(class(ttt)); print(ttt[1:5])
     if (inherits(ttt,'Date')) {
-        year <- as.numeric(format(ttt,'%Y')) 
-        month <- format(ttt,'%m')
-    } else 
-    if (inherits(ttt,c('numeric','integer'))) {
-        year <- ttt
-        month <- rep(1,length(year))
+      year <- as.numeric(format(ttt,'%Y')) 
+      month <- format(ttt,'%m')
+    } else if (inherits(ttt,c('numeric','integer'))) {
+      year <- ttt
+      month <- rep(1,length(year))
     }
     yearf <- year - min(year) + endsofar + 10
+    if (inherits(ttt,'Date')) {
+      fakedates <- c(fakedates,paste(yearf,"-",month,'-01',sep=''))
+      realdates <- c(realdates,paste(year,"-",month,'-01',sep=''))
+      endsofar <- max(as.numeric(format(as.Date(fakedates),'%Y')))
+      #print(fakedates)
+    } else if (inherits(ttt,c('numeric','integer'))) {
+      fakedates <- c(fakedates,yearf)
+      realdates <- c(realdates,year)
+      endsofar <- max(as.numeric(fakedates))
+    }
     #print(year)
     #str(YYYt)
     d <- rbind(d,attr(YYY,'dimensions'))
@@ -283,27 +297,24 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     #print(dim(YY)); print(dim(t(Zt)))
     YY <- rbind(YY,t(Zt))
     #print(length(index(YYY)))
-
+    
     # Keep track of the different fields:
     if (is.null(attr(YYY,'source'))) attr(YYY,'source') <- as.character(i)
     src <- paste(attr(YYY,'source'),i,sep="+")
     id.t <- c(id.t,rep(src,length(index(YYY))))
     ID.t <- c(ID.t,src)
-    fakedates <- c(fakedates,paste(yearf,"-",month,'-01',sep=''))
-    #print(fakedates)
-    realdates <- c(realdates,paste(year,"-",month,'-01',sep=''))
-    endsofar <- max(as.numeric(format(as.Date(fakedates),'%Y')))
     #print('YY:'); print(dim(YY)); print("d:"); print(d)
   }
-  #print(fakedates)
-
-  #print(dates)
   
   # Synthetise a new object with combined data that looks like a
   # field object, and then call the ordinary EOF method:
 
   if (verbose) print("combine original and appended fields")
-  Y <- zoo(YY,order.by=as.Date(fakedates))
+  if(is.character(fakedates)){
+    Y <- zoo(YY,order.by=as.Date(fakedates))
+  } else {
+    Y <- zoo(YY,order.by=fakedates)#as.Date(fakedates))
+  }
   #plot(rowMeans(YY,na.rm=TRUE),type="l")
 
   # Discard time slices with no valid data, e.g. DJF in the beginning of the record
@@ -329,23 +340,29 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   if (verbose) print("Computed the eofs:")
   # After the EOF, the results must be reorganised to reflect the different
   # data sets.
-  #browser()
   ceof <- eof
   ii <- is.element(id.t,ID.t[1])
   if (verbose) {print("Check:"); print(sum(ii)); print(ID.t); print(table(id.t))
                 print(realdates[ii]); print(dim(eof))}
 
-  ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii]))
+  if(is.character(realdates)) {
+    ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii]))
+  } else {
+    ceof <- zoo(eof[ii,],order.by=realdates[ii])
+  }
   if (verbose) {print("Copy attributes"); print(names(attributes(eof)))}
   ceof <- attrcp(eof,ceof)
   dim(clim) <- attr(X,'dimensions')[1:2]
   attr(ceof,'mean') <- clim
   attr(ceof,'dimensions') <- attr(X,'dimensions')
-  
   for (i in 1:n.app) {
     jj <- is.element(id.t,ID.t[i+1])
     if (verbose) print(paste(ID.t[i+1],' -> appendix.',i,' data points=',sum(jj),sep=''))
-    z <- zoo(eof[jj,],order.by=as.Date(realdates[jj]))
+    if(is.character(realdates)) {
+      z <- zoo(eof[jj,],order.by=as.Date(realdates[jj]))
+    } else {
+      z <- zoo(eof[jj,],order.by=realdates[jj])
+    }
     eval(parse(text=paste("yyy <- attr(X,'appendix.",i,"')",sep="")))
     z <- attrcp(yyy,z)
     attr(ceof,paste('appendix.',i,sep="")) <- z
