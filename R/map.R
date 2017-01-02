@@ -701,7 +701,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       greenwich <- FALSE
     }
     x <- g2dl(x,d=c(length(lon(x)),length(lat(x)),1),
-              greenwich=TRUE,verbose=verbose)
+              greenwich=greenwich,verbose=verbose)
     dim(x) <- c(length(lon(x)),length(lat(x)))
     
     #lon <- lon(x)
