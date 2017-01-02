@@ -700,8 +700,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else {
       greenwich <- FALSE
     }
-    x <- g2dl(x,d=c(length(lon(x)),length(lat(x)),1),
-              greenwich=greenwich,verbose=verbose)
+    if(inherits(x,"matrix") & is.null(attr(x,"dimensions"))) {
+      x <- g2dl(x,d=c(length(lon(x)),length(lat(x)),1),
+                greenwich=greenwich,verbose=verbose)
+    } else {
+      x <- g2dl(x,greenwich=greenwich,verbose=verbose)
+    }
     dim(x) <- c(length(lon(x)),length(lat(x)))
     
     #lon <- lon(x)

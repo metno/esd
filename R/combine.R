@@ -879,7 +879,7 @@ g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL,verbose=FALSE
     if(verbose) print("g2dl.default")
     if (is.null(lon)) lon <- attr(x,'longitude')
     if (is.null(lat)) lat <- attr(x,'latitude')
-    if (is.null(d)) d <- attr(x,'dimensions')
+    if (is.null(d)) d <- attr(x,'dimensions') 
     if (greenwich) {
         wh <- lon < 0
         lon[wh] <- lon[wh] + 360
@@ -888,6 +888,7 @@ g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL,verbose=FALSE
         lon[wh] <- lon[wh] - 360
     }
     y <- x
+    
     if(length(lon)>1) {
       xsrt <- order(lon)
       xsrt <- xsrt[!xsrt %in% which(duplicated(lon))]
@@ -989,7 +990,7 @@ g2dl.corfield <- function(x,greenwich=TRUE,verbose=FALSE) {
         wh <- lon > 180
         lon[wh] <- lon[wh] - 360
     }
-
+    
     y <- x
     xsrt <- order(lon)
     dim(y) <- d
