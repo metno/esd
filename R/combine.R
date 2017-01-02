@@ -887,15 +887,19 @@ g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL,verbose=FALSE
         wh <- lon > 180
         lon[wh] <- lon[wh] - 360
     }
+    y <- x
     if(length(lon)>1) {
       xsrt <- order(lon)
-      dim(x) <- d  
-      x <- x[xsrt,,]
-      dim(x) <- c(d[1]*d[2],d[3])
-      lon <- sort(lon)
+      xsrt <- xsrt[!xsrt %in% which(duplicated(lon))]
+      dim(y) <- d
+      y <- y[xsrt,,]
+      lon <- lon[xsrt]
+      dim(y) <- c(length(lon)*length(lat),d[3])
     }
-    if (!is.null(attr(x,'longitude'))) attr(x,'longitude') <- lon
-    return(x)
+    y <- attrcp(x,y)
+    attr(y,'longitude') <- lon
+    class(y) <- class(x)
+    return(y)
 }
 
 g2dl.stationmeta <- function(x,greenwich=TRUE,verbose=FALSE) {
@@ -931,11 +935,11 @@ g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE) {
     }
     
     xsrt <- order(lon)
+    xsrt <- xsrt[!duplicated(lon)]
     X <- t(coredata(x))
     dim(X) <- d
     X <- X[xsrt,,]
-    ##browser()                                    #print(dim(X)); print(d)
-    dim(X) <- c(d[1]*d[2],d[3])
+    dim(X) <- c(length(lon)*d[2],d[3])
     y <- zoo(t(X),index(x))
     lon <- sort(lon)
     
