@@ -51,6 +51,7 @@
 \alias{global.t2m.gcm}
 \alias{QBO}
 \alias{CET}
+\alias{CO2}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -133,6 +134,7 @@ data(global.t2m.gcm)
 AMO(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data')
 QBO(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data')
 CET(url='http://hadobs.metoffice.com/hadcet/cetml1659on.dat')
+CO2(url='ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt')
 }
 
 \arguments{
