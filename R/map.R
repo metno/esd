@@ -5,7 +5,7 @@
 
 map <- function(x,it=NULL,is=NULL,new=FALSE,...) UseMethod("map")
 
-map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
+map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       projection="lonlat",xlim=NULL,ylim=NULL,zlim=NULL,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                                    show=TRUE,type="p",cex=2,h=0.6,v=1),
@@ -41,8 +41,11 @@ map.default<-function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
     attr(X,'source') <- attr(x,'source')
     attr(X,'variable') <- varid(x)
-    if (inherits(X,'zoo')) attr(X,'time') <- range(index(x)) else
-                                                                 if (!is.null(attr(x,'time'))) attr(X,'time') <- attr(x,'time')
+    if (inherits(X,'zoo')) {
+      attr(X,'time') <- range(index(x))
+    } else if (!is.null(attr(x,'time'))) {
+      attr(X,'time') <- attr(x,'time')
+    }
     if (plot) {
         if (projection=="lonlat") {
             lonlatprojection(x=X,xlim=xlim,ylim=ylim,colbar=colbar,verbose=verbose,
@@ -393,6 +396,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     dim(X) <- attr(x,'dimensions')[1:2]
                                         #class(X) <- class(x)
                                         #str(X)
+    
     if (plot) {
       if (projection=="lonlat") {
         lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
@@ -691,18 +695,27 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if(sum(is.finite(x))==0) stop('No valid data')
     ## To deal with grid-conventions going from north-to-south or east-to-west:
     if(is.null(xlim)) xlim <- range(lon(x))
-    lon <- lon(x)
     if(!any(xlim<0) & any(xlim>180)) {
-      lon[lon<0] <- lon[lon<0]+360
+      greenwich <- TRUE
     } else {
-      lon[lon>180] <- lon[lon>180]-360
+      greenwich <- FALSE
     }
-    srtx <- order(lon); lon <- lon[srtx]
+    x <- g2dl(x,d=c(length(lon(x)),length(lat(x)),1),
+              greenwich=TRUE,verbose=verbose)
+    dim(x) <- c(length(lon(x)),length(lat(x)))
+    
+    #lon <- lon(x)
+    #if(!any(xlim<0) & any(xlim>180)) {
+    #  lon[lon<0] <- lon[lon<0]+360
+    #} else {
+    #  lon[lon>180] <- lon[lon>180]-360
+    #}
+    
+    srtx <- order(lon(x)); lon <- lon(x)[srtx]
     srty <- order(lat(x)); lat <- lat(x)[srty]
-    #srtx <- order(lon(x)); lon <- lon(x)[srtx]
-    #srty <- order(lat(x)); lat <- lat(x)[srty]
     if (verbose) print('meta-stuff')
     unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
+
     if(!is.null(variable)) variable <- as.character(variable)
     if(!is.null(unit)) unit <- as.character(unit)
     if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") | (unit=="degree Celsius"))
@@ -741,10 +754,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     method <- attr(x,'method')
     if (verbose) {
         print(c(dim(x),length(srtx),length(srty)))
-        ## There is something strange happening with x - in some cases it is filled with NAs (REB)
+        # There is something strange happening with x - in some cases it is filled with NAs (REB)
         print(srtx); print(srty)
     }
-
     x <- x[srtx,srty]
     
     if (verbose) {print(xlim); str(x)}
