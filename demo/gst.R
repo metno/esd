@@ -12,7 +12,7 @@ data("global.t2m.cmip5")
 data("global.t2m.cmip3")
 par(bty='n')
 plot(gst,lwd=3,type='b',main='Global mean temperature',
-     sub='NCEP/NCAR reanalysis 1: baselin=1961-1990',
+     sub='NCEP/NCAR reanalysis 1: baseline=1961-1990',
      ylab=expression(T*phantom(0)*(degree*C)),
      xlab='year',ylim=c(-0.5,1))
 for (i in 1:dim(global.t2m.cmip5)[2]) 
