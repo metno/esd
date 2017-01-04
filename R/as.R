@@ -645,24 +645,31 @@ as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
   return(y)  
 }
 
-as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,verbose=FALSE,...) {
+as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,verbose=FALSE,...) {
   if (verbose) print('as.field.dsensemble.eof')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"eof"))
   if (inherits(X,"field")) {
       invisible(X)
   } else {
-    #if (is.null(is)) is <- 1:length(loc(X$pca)) 
+    #if (is.null(is)) is <- 1:length(loc(X$pca))
     if (verbose) print('Extract the results model-wise')
-    d <- apply(sapply(X[3:length(X)],dim),1,min)
-    V <- array(unlist(lapply( X[3:length(X)],
-      function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    ## KMP 2016-01-04: select model ensemble members with im
+    if(is.null(im)) {
+      ix <- 3:length(X)
+    } else {
+      ix <- im[im>0 & im<(length(X)-2)] + 2
+    }
+    #ix <- 3:length(X)
+    d <- apply(sapply(X[ix],dim),1,min)
+    V <- array(unlist(lapply( X[ix],
+      function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(ix)))
     if (is.null(ip)) {
       U <- attr(X$eof,'pattern')
       W <- attr(X$eof,'eigenvalues')
     } else {
-    ## If ip is specified, use a sub set of the PCA modes.
-      U <- attr(X$pca,'pattern')[,ip]
-      W <- attr(X$pca,'eigenvalues')[ip]
+    ## If ip is specified, use a subset of the PCA modes.
+      U <- attr(X$eof,'pattern')[,,ip]
+      W <- attr(X$eof,'eigenvalues')[ip]
       V <- V[,ip,]
     }    
     d <- dim(U)
