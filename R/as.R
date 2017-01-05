@@ -653,7 +653,7 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,verbose=FALSE,...)
   } else {
     #if (is.null(is)) is <- 1:length(loc(X$pca))
     if (verbose) print('Extract the results model-wise')
-    ## KMP 2016-01-04: select model ensemble members with im
+    ## KMP 2016-01-04: select ensemble members with im
     if(is.null(im)) {
       ix <- 3:length(X)
     } else {
@@ -686,10 +686,11 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,verbose=FALSE,...)
     
     if (verbose) print('Set attributes')
     Y <- as.field(X$eof)
-    gcms <- sub(".*_","",names(X)[3:length(X)])
+    gcms <- sub(".*_","",names(X)[ix])
     S <- setNames(S,gcms)
-    for (i in 1:length(S)) {
-      S[[i]] <- as.field(S[[i]],index=index(X[[i+2]]),
+    
+    for (i in seq_along(ix)) {
+      S[[i]] <- as.field(S[[i]],index=index(X[[ix[i]]]),
                  lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
                  param=varid(Y),unit=unit(Y),
                  longname=paste('fitted',attr(Y,'longname')),
