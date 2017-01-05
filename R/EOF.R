@@ -377,25 +377,31 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
 
 
 
-eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE) {
+eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   if (verbose) {print("eof2field"); if (!is.null(is)) print(is)}
   greenwich <- attr(x,'greenwich')
-#  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
-#  if (!is.null(lat)) lat.rng <- range(lat) else lat.rng <- NULL
-  if ( !is.null(it) | !is.null(is) ) 
-    eof <- subset(x,it=it,is=is,verbose=verbose) else
-#  if (!is.null(is))
-#    eof <- subset(x,is=is) else
+  if ( !is.null(it) | !is.null(is) ) {
+    eof <- subset(x,it=it,is=is,verbose=verbose)
+  } else {
     eof <- x
-#  print(c(greenwich,attr(eof,'greenwich')))
-                                        # REB 04.12.13 comment below
-
+  }
   U <- attr(eof,'pattern')
   d <- dim(U) 
   if (verbose) {str(U); print(d)}
   dim(U) <- c(d[1]*d[2],d[3])
   W <- attr(eof,'eigenvalues')
   V <- coredata(eof)
+  ## ==================================================
+  ## KMP 2016-01-15: added selection of patterns (ip)
+  if(is.null(ip)) {
+    ip <- seq(length(W))
+  } else if(any(ip %in% seq(length(W)))) {
+    ip <- ip[ip>0 & ip<length(W)]
+  } else {
+    stop(paste("Error in input ip =",paste(ip,collaps=", ")))
+  }
+  ## ==================================================
+  U <- U[,ip]; W <- W[ip]; V <- V[,ip]
   y <-U %*% diag(W) %*% t(V)
 
   if (!anomaly) {

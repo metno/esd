@@ -609,10 +609,10 @@ as.field.comb <- function(x,iapp=NULL,verbose=FALSE,...) {
 as.field.eof <- function(x,iapp=NULL,verbose=FALSE,...) {
   if(verbose) print("as.field.eof")
   if (!inherits(x,'comb')) {
-    y <- eof2field(x,verbose=verbose)
+    y <- eof2field(x,verbose=verbose,...)
   } else {
     y <- as.eof(x,iapp,verbose=verbose)
-    y <- eof2field(y,verbose=verbose)
+    y <- eof2field(y,verbose=verbose,...)
   }
   return(y)
 }
