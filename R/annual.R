@@ -75,7 +75,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     if (is.null(nmin)) nmin <- 12
   } else if (inherits(x,'season')) {
     if (is.null(nmin)) nmin <-  4
-  } 
+  } else nmin <- NA
   if (verbose) {print(paste('nmin=',nmin)); print(class(x))}
   
   ## Convert x to a zoo-object:
