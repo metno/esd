@@ -84,12 +84,16 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
         if (verbose) print("Downloading metadata from 'ftp.ncdc.noaa.gov'")    	
         download.file(fullurl, destfile, method = "wget", quiet = FALSE, mode = "w",cacheOK = TRUE, extra = getOption("download.file.extra"))
       }
+      
       files <- untar(destfile,list="TRUE")
       inv.file <- files[grep("inv",files)]
       dat.file <- files[grep("dat",files)]
       upd.ver <- substr(inv.file, nchar(inv.file)-22,nchar(inv.file)-8)
-      untar(destfile, files = c(inv.file,dat.file), list = FALSE,exdir =path)	
+      untar(destfile, files = c(inv.file,dat.file), list = FALSE, exdir=path)	
                                         # Cleaning the file from "#" character
+      # make sure filenames have correct path
+      inv.file <- file.path(path,sub('./','',inv.file))
+      dat.file <- file.path(path,sub('./','',dat.file))
       text <- readLines(inv.file,encoding="US-ASCII")
       text1 <- gsub("#",replacement="X",x=text)
       writeLines(text1,inv.file)							
@@ -101,7 +105,8 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
       #setwd(newpath)  	
                                         #finventory <- paste(newpath,invfile,sep="")
                                         # Reading meta data ...
-      meta <- read.fwf(inv.file,widths=c(11,9,10,8,30,38),col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
+      #meta <- read.fwf(inv.file,widths=c(11,9,10,8,30,38),col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
+      meta <- read.fwf(inv.file,widths=c(11,9,10,8,29,38),col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
       #attach(meta,warn.conflicts=FALSE)
                                         #if (!is.null(stid)) { 
                                         #ID <- paste(ghcnm.meta$COUNTRY.CODE,ghcnm.meta$STN,sep="")	  
@@ -111,6 +116,7 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
       cntr <- substr(meta$stid,1,3)
              				# Generate country full name
       cc <- as.integer(table(factor(cntr)))
+      ##browser()
       meta$country <- rep(ghcn.country.code()$name[is.element(ghcn.country.code()$code,levels(factor(cntr)))],cc)
                                         # remove consecutive blanks from location name
       meta$loc <- gsub(pattern="  ",x=meta$loc,replacement="")
