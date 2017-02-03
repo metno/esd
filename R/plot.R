@@ -19,7 +19,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          map.show=TRUE,map.type=NULL,map.insert=TRUE,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
                          mar=c(4.5,4.5,0.75,0.5),
-                         alpha=0.5,alpha.map=0.7,verbose=FALSE,...) {
+                         alpha=0.5,alpha.map=0.7,
+                         verbose=FALSE,...) {
 
   if (verbose) print('plot.station')
   par(las=1)
