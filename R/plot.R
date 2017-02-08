@@ -43,7 +43,6 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   fig <- c(0,1,0,0.95)
   if (map.show & map.insert) fig[4] <- 0.8
   if (legend.show) fig[3] <- 0.05  
-  ## browser()
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
   ##         ylim <- pretty(x)
@@ -188,7 +187,7 @@ vis.map <- function(x,col='red',map.type=NULL,
     }
   }
 
-   ## REB: 2016-10-12 - add the possibility to use google maps
+  ## REB: 2016-10-12 - add the possibility to use google maps
   if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
          usegooglemap ) {
       require(RgoogleMaps)
@@ -251,6 +250,7 @@ vis.map <- function(x,col='red',map.type=NULL,
             border="black",lwd=1,lty=2)
      }
    }
+  if(verbose) print("exit vis.map")
 }
 
 plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
@@ -328,7 +328,7 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   ylab <- paste("PC",n)
   main <- paste('First',n,"leading EOFs: ", ## attr(x,'longname')
                  round(sum(var.eof[1:n]),1),"% of variance")
-  ## browser()
+  
   if (length(grep('var',what))>0) {
     par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
     plot.eof.var(x,ip=ip,new=FALSE,cex.main=cex.main,
@@ -336,7 +336,6 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   }
   
   #print(main)
-  #browser()
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
       par(fig=c(0.05,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
@@ -503,7 +502,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   
   cols <- rep("blue",100)
   model <- attr(x,'model')
-  ## browser()
+  
   if (length(what)==2) mfrow <- c(2,1) else
   if (length(what)==1) mfrow <- c(1,1)
   
@@ -829,7 +828,6 @@ plot.ds.pca <- function(x,ip=1,verbose=FALSE,
   #title(paste("EOF Ip # ",ip,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
-    #browser()
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     ## Get the right pattern
     xvp <- (ip-1)*2 +1
@@ -1318,7 +1316,8 @@ plot.xval <- function(x,new=TRUE,...) {
 }
 
 plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,ip=1,
-                               envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,...) {
+                               envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,
+                               ...) {
   if (verbose) print("plot.dsensemble.pca")
   stopifnot(inherits(x,'dsensemble') & inherits(x,'pca'))
   d <- index(x[[3]])
@@ -1338,16 +1337,19 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
   plot(pc[[ip]],ylab=paste("PC",ip,sep=""))
 }
 
-plot.dsensemble <- function(x,...) {
-  if (inherits(x,c('pca','eof')))
-    y <- plot.dsensemble.multi(x,...) else
-  if (inherits(x,'zoo'))
-    y <- plot.dsensemble.one(x,...) else
-  if (inherits(x,'station')) {
-    x <- as.station(x) 
-    y <- plot(x,...)
-  } else
-  print(paste('Unknown class - do not know how to plot',class(x)))
+plot.dsensemble <- function(x,verbose=FALSE,...) {
+  if(verbose) print("plot.dsensemble")
+  if (inherits(x,c('pca','eof'))) {
+    y <- plot.dsensemble.multi(x,verbose=verbose,...) 
+  } else if (inherits(x,'zoo')) {
+    y <- plot.dsensemble.one(x,verbose=verbose,...) 
+  } else if (inherits(x,'station')) {
+    x <- as.station(x,verbose=verbose) 
+    y <- plot(x,verbose=verbose,...)
+  } else {
+    print(paste('Unknown class - do not know how to plot',class(x)))
+  }
+  if(verbose) print("exit plot.dsensemble")
   invisible(y)
 }
 
@@ -1359,19 +1361,25 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
   if (inherits(x,c('pca','eof'))) {
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     plot(Y,verbose=verbose,...)
-    invisible(Y)
-  } else return(NULL)
+    #invisible(Y)
+  } else {
+    #return(NULL)
+    Y <- NULL
+  }
+  if (verbose) print('exit plot.dsensemble.multi')
+  invisible(Y)
 }
 
 ## Plots one time series
 plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
                              obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                             new=FALSE,xrange=NULL,yrange=NULL,alpha=0.5,alpha.map=0.7,
+                             usegooglemap=TRUE,new=FALSE,xrange=NULL,yrange=NULL,
+                             alpha=0.5,alpha.map=0.7,
                              verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble.one")
   stopifnot(inherits(x,'dsensemble'))
-
+  
   if (is.null(map.type)) {
     if (verbose) print(class(x))
     if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
@@ -1459,17 +1467,17 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   }
 
   title(main=toupper(loc(x)),cex.main=1)
-  
   if ((target.show) & (!is.null(diag))) {
     if (verbose) print('add target diagnostic')
     par(fig=c(0.23,0.45,0.78,0.98),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
-    plot(diag,map.sho=FALSE,new=FALSE,cex=0.75)
+    plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
   } 
   
   if(map.show & !map.insert) {
     vis.map(x,"red",map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.5,verbose=verbose,...)
+            cex.axis=cex.axis,cex=1.5,usegooglemap=usegooglemap,
+            verbose=verbose,...)
     new <- TRUE
   }
   # REB 2016-11-25
@@ -1526,7 +1534,8 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   }
   if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
                                      cex.axis=0.5,add.text=FALSE,
-                                     map.insert=map.insert,verbose=verbose,...)
+                                     map.insert=map.insert,usegooglemap=usegooglemap,
+                                     verbose=verbose,...)
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
   par(fig=fig,new=TRUE, mar=mar)
@@ -1536,6 +1545,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   # target: perfect score is bull's eye
                                         # from diagnostics?
   par(fig=par0$fig,new=TRUE, mar=par0$mar)
+  if(verbose) print("exit plot.dsensemble.one")
   invisible(z)
 }
 
@@ -1701,7 +1711,6 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
 
 barplot.station <- function(x,threshold=0,...) {
     stopifnot(inherits(x,'station'))
-    #browser()
     x.above <- x.below <- x
     x.above[x < threshold] <- NA
     x.below[x > threshold] <- NA

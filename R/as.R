@@ -26,7 +26,7 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'longitude') <- lon
   if (is.null(lat)) lat <- NA
   if ((is.na(lat[1])) & !is.null(attr(x,'latitude')))
-    lat <- attr(x,'latitude')    
+    lat <- attr(x,'latitude')
   attr(y,'latitude') <- lat
   if (is.null(alt)) alt <- NA
   if ((is.na(alt[1])) & !is.null(attr(x,'altitude')))
@@ -370,11 +370,9 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     d <- dim(U)
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], length(X)-2)
-    
     for (i in seq(1:dim(S)[1])) {
       S[i,,] <- S[i,,] + c(attr(X$pca,'mean'))[i]
     }
-    
     S <- lapply(split(S, arrayInd(seq_along(S),dim(S))[,1]),
                 array,dim=dim(S)[-1])
     S <- lapply(S,function(x) zoo(x,order.by=index(X[[3]])))
@@ -397,26 +395,26 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     locs <- attr(X$pca,"location")
     gcms <- sub(".*_","",names(X)[3:length(X)])
     for (i in 1:length(S)) {
-       yi <- Y[,i]
-       class(yi) <- class(Y)
-       yi <- attrcp(Y,yi)
-       attr(yi,"longitude") <- lons[i]
-       attr(yi,"latitude") <- lats[i]
-       attr(yi,"altitude") <- alts[i]
-       attr(yi,"station_id") <- stid[i]
-       attr(yi,"location") <- locs[i]
-       attr(yi,"unit") <- attr(X$pca,"unit")
-       attr(yi,"variable") <- attr(X$pca,"variable")
-       attr(yi,"longname") <- attr(X$pca,"longname")
-       attr(S[[i]],"station") <- yi
-       attr(S[[i]],'aspect') <- 'original'
-       attr(S[[i]],"longitude") <- lons[i]
-       attr(S[[i]],"latitude") <- lats[i]
-       attr(S[[i]],"altitude") <- alts[i]
-       attr(S[[i]],"station_id") <- stid[i]
-       attr(S[[i]],"location") <- locs[i]
-       attr(S[[i]],'model_id') <- gcms
-       class(S[[i]]) <- c('dsensemble','zoo')
+      yi <- Y[,i]
+      class(yi) <- class(Y)
+      yi <- attrcp(Y,yi)
+      attr(yi,"longitude") <- lons[i]
+      attr(yi,"latitude") <- lats[i]
+      attr(yi,"altitude") <- alts[i]
+      attr(yi,"station_id") <- stid[i]
+      attr(yi,"location") <- locs[i]
+      attr(yi,"unit") <- attr(X$pca,"unit")
+      attr(yi,"variable") <- attr(X$pca,"variable")
+      attr(yi,"longname") <- attr(X$pca,"longname")
+      attr(S[[i]],"station") <- yi
+      attr(S[[i]],'aspect') <- 'original'
+      attr(S[[i]],"longitude") <- lons[i]
+      attr(S[[i]],"latitude") <- lats[i]
+      attr(S[[i]],"altitude") <- alts[i]
+      attr(S[[i]],"station_id") <- stid[i]
+      attr(S[[i]],"location") <- locs[i]
+      attr(S[[i]],'model_id') <- gcms
+      class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     if (length(S)>1) class(S) <- c("dsensemble",class(X$pca)[2:3],"list") else

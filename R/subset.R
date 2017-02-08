@@ -279,7 +279,7 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   }
   #browser()
   if (length(y)==1) y <- y[[1]]
-  attr(y,'history') <- history.stamp(x)  
+  attr(y,'history') <- history.stamp(x)
   return(y)
 }
 
