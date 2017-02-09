@@ -17,8 +17,9 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
                          map.show=TRUE,map.type=NULL,map.insert=TRUE,
+                         usegooglemap=TRUE,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
-                         mar=c(4.5,4.5,0.75,0.5),
+                         mar=c(4.5,4.5,0.75,0.5),fig=NULL,
                          alpha=0.5,alpha.map=0.7,
                          verbose=FALSE,...) {
 
@@ -40,8 +41,10 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     if (verbose) print(map.type)
   }
   
-  fig <- c(0,1,0,0.95)
-  if (map.show & map.insert) fig[4] <- 0.8
+  if(is.null(fig) & new) {
+    fig <- c(0,1,0,0.95)
+    if (map.show & map.insert) fig[4] <- 0.8
+  }
   if (legend.show) fig[3] <- 0.05  
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
@@ -98,7 +101,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   
   if(map.show & !map.insert) {
     vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.8,verbose=verbose,...)
+            cex.axis=cex.axis,cex=1.8,usegooglemap=usegooglemap,
+            verbose=verbose,...)
     new <- TRUE
   }
 
@@ -106,7 +110,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   cls <- class(x)
   if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
   class(x) <- "zoo"
-  if(new) { dev.new(); par(cex.axis=1,fig=fig,mar=mar) }
+  if(new) dev.new()
+  if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
@@ -155,7 +160,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
     if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
                                        cex.axis=cex.axis*0.75,add.text=FALSE,
-                                       map.insert=map.insert,verbose=verbose,...)
+                                       map.insert=map.insert,usegooglemap=usegooglemap,
+                                       verbose=verbose,...)
     par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",
         xpd=FALSE,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
@@ -1344,7 +1350,7 @@ plot.dsensemble <- function(x,verbose=FALSE,...) {
   } else if (inherits(x,'zoo')) {
     y <- plot.dsensemble.one(x,verbose=verbose,...) 
   } else if (inherits(x,'station')) {
-    x <- as.station(x,verbose=verbose) 
+    x <- as.station(x,verbose=verbose)
     y <- plot(x,verbose=verbose,...)
   } else {
     print(paste('Unknown class - do not know how to plot',class(x)))
