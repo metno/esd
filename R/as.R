@@ -442,8 +442,10 @@ as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=F
     dim(V) <- c(nt,ns)
     if (verbose) str(V)
     loc <- unlist(lapply(x,loc)); lon <- unlist(lapply(x,lon)); lat <- unlist(lapply(x,lat))
-    alt <- unlist(lapply(x,alt)); param <- unlist(lapply(x,varid)); unit <- unlist(lapply(x,unit))
-    stid <- unlist(lapply(x,stid)); longname <- unlist(lapply(x,function(x) attr(x,'longname')))
+    alt <- unlist(lapply(x,alt)); stid <- unlist(lapply(x,stid));
+    param <- attr(x,"variable")#unlist(lapply(x,varid))
+    unit <- attr(x,"unit")#unlist(lapply(x,unit))
+    longname <- attr(x,"longname")#unlist(lapply(x,function(x) attr(x,'longname')))
     y <- as.station(zoo(V,order.by=index(x[[1]])),loc=loc, param=param,unit=unit,
                     lon=lon,lat=lat,alt=alt,stid=stid,longname=longname)
     attr(y,"history") <- history.stamp()

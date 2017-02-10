@@ -1,4 +1,4 @@
-##plot <- function(x,y, ...)  UseMethod("plot")
+plot <- function(x,y, ...)  UseMethod("plot")
 
 plot.list <- function(x,is=NULL,
                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
@@ -1381,7 +1381,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
                              obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
                              usegooglemap=TRUE,new=FALSE,xrange=NULL,yrange=NULL,
-                             alpha=0.5,alpha.map=0.7,
+                             alpha=0.5,alpha.map=0.7,mar=c(5.1,4.5,4.1,2.1),
                              verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble.one")
   stopifnot(inherits(x,'dsensemble'))
@@ -1428,6 +1428,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   #print("...")
   if(new) dev.new()
   index(y) <- year(y)
+  if(!is.null(mar)) par(mar=mar)
   par0 <- par()
   if (obs.show) obscol <- 'black' else obscol='white'
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
