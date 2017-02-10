@@ -233,8 +233,9 @@ vis.map <- function(x,col='red',map.type=NULL,
      if(map.insert) {
        par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
            mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
-     } else dev.new()
-     
+     } else {
+       dev.new()
+     }
      plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=2,
           #type='l', KMP 2016-03-16 problem with lines in map
           xlab=NA,ylab=NA,axes=FALSE,new=new,
@@ -245,7 +246,8 @@ vis.map <- function(x,col='red',map.type=NULL,
      lines(lon,lat) ## REB: 2016-11-25 need more solid lines.
      axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
      axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
-     lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+     lines(lon2,lat2,col = "pink",lwd=1)
+     #lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
      if (verbose) print(map.type)
      if (map.type=="points") {
        if (verbose) {print(c(lon(x),lat(x),cex)); print(col)}
@@ -1484,6 +1486,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   if(map.show & !map.insert) {
     vis.map(x,"red",map.type,add.text=FALSE,map.insert=map.insert,
             cex.axis=cex.axis,cex=1.5,usegooglemap=usegooglemap,
+            xrange=xrange,yrange=yrange,
             verbose=verbose,...)
     new <- TRUE
   }
@@ -1542,6 +1545,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
                                      cex.axis=0.5,add.text=FALSE,
                                      map.insert=map.insert,usegooglemap=usegooglemap,
+                                     xrange=xrange,yrange=yrange,
                                      verbose=verbose,...)
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
