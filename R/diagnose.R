@@ -497,8 +497,8 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
   
   # apply to extract mean and sd from the selected objects:
-  mu <- apply(coredata(yz[-1]),1,mean,na.rm=TRUE)
-  si <- apply(coredata(yz[-1]),1,sd,na.rm=TRUE)
+  mu <- apply(coredata(yz[,-1]),1,mean,na.rm=TRUE)
+  si <- apply(coredata(yz[,-1]),1,sd,na.rm=TRUE)
   q05 <- qnorm(0.05,mean=mu,sd=si)
   q95 <- qnorm(0.95,mean=mu,sd=si)
   # number of points outside conf. int. (binom)
