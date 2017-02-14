@@ -12,7 +12,7 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
  # Initialize
  freq <- NULL
  # compute interval
- dt <- round(median(diff(data)))
+ dt <- round(median(diff(data),na.rm=TRUE))
  # Automatic detection 
  if (!is.null(unit)) {
     if ((((dt==31) | (dt==30)) & grepl("day",unit)) | ((dt==1) & grepl("mon",unit)) | (((dt==744) | (dt==728) | (dt==720)) & grepl("hou",unit) | (((dt==31) | (dt==1440) | (dt==44640)) & grepl("min",unit))))
