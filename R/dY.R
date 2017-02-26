@@ -18,7 +18,7 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
 
   if (verbose) print('dY')
   z <- as.pattern(Z)
-  if (is.matrix(z)) dim(z) <- c(dim(z),1)
+  if (is.matrix(z)) {dim(z) <- c(dim(z),1); index(Z) <- NULL}
   lon <- lon(Z)
   lat <- lat(Z)
   print(m)
