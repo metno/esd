@@ -18,6 +18,7 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
 
   if (verbose) print('dY')
   z <- as.pattern(Z)
+  if (is.matrix(z)) dim(z) <- c(dim(z),1)
   lon <- lon(Z)
   lat <- lat(Z)
   print(m)
@@ -27,7 +28,8 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
 
   ny <- length(lat)
   nx <- length(lon)
-  nt <- length(index(Z))
+  ##nt <- length(index(Z))
+  if (!is.null(index(Z))) nt <- length(index(Z)) else nt <- 1
   
   if (is.null(m)) m <- nx
   m <- min(nx,m)
