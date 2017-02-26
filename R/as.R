@@ -1292,6 +1292,8 @@ as.pattern.trend <- function(x) {
   invisible(y)  
 }
 
+as.pattern.matrix <- function(x) x 
+
 as.pattern.field <- function(x,FUN=NULL,...) {
   if (!is.null(FUN)) {
     y <- apply(x,2,FUN,...)
