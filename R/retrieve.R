@@ -52,8 +52,8 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
         nc <- open.ncdf(file.path(path,ncfile))
         dimnames <- names(nc$dim)
-        lon <- get.var.ncdf(nc,dimnames[grep("lon|x",tolower(dimnames))])
-        lat <- get.var.ncdf(nc,dimnames[grep("lat|y",tolower(dimnames))])
+        lon <- get.var.ncdf(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
+        lat <- get.var.ncdf(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
         close.ncdf(nc)
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) ) {
             if (verbose) print('Regular grid field found')
@@ -65,8 +65,8 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
         nc <- nc_open(file.path(path,ncfile))
         dimnames <- names(nc$dim)
-        lon <- ncvar_get(nc,dimnames[grep("lon|x",tolower(dimnames))])
-        lat <- ncvar_get(nc,dimnames[grep("lat|y",tolower(dimnames))])
+        lon <- ncvar_get(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
+        lat <- ncvar_get(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
         nc_close(nc)
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
             if (verbose) print('Regular grid field found')
@@ -140,7 +140,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
         dimnames[i] <- tolower(v1$dim[[i]]$name)
     ## Get lon, lat, lev, time attr and values and update values if necessary
     ## Longitudes
-    ilon <- grep("lon|x|ncells", dimnames)
+    ilon <- grep("lon|x|ncells|i", dimnames)
     if (length(ilon) ==0)
         ilon <- NULL
     else if (length(ilon)>1)
@@ -175,7 +175,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     }##else if (!(sum(id) > 0)) lon$vals <- lon$vals + 180
     
     ## Latitudes
-    ilat <- grep("lat|y", dimnames)
+    ilat <- grep("lat|y|i", dimnames)
     if (length(ilat) ==0)
         ilat <- NULL
     else if (length(ilat) > 1)
@@ -659,7 +659,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         }
         ## Get lon, lat, lev, time attr and values and update values if necessary
         ## Longitudes
-        ilon <- grep("lon|x", dimnames)
+        ilon <- grep("lon|x|i", dimnames)
         if (length(ilon) ==0) {
             ilon <- NULL
         } else if (length(ilon)>1) {
@@ -699,7 +699,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         }##else if (!(sum(id) > 0)) lon$vals <- lon$vals + 180
         
         ## Latitudes
-        ilat <- grep("lat|y", dimnames)
+        ilat <- grep("lat|y|j", dimnames)
         if (length(ilat) ==0) {
             ilat <- NULL
         } else if (length(ilat) > 1) {
@@ -737,7 +737,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         ## Check and update info 
         ##  
         ##if (ncdf.check) { 
-        ncid2 <- check.ncdf(ncid,param=param,verbose=verbose) 
+        ncid2 <- F(ncid,param=param,verbose=verbose) 
         if (length(grep("model",ls())) > 0) model <- ncid2$model 
         if (!is.null(itime)) time <- ncid2$time
         rm(ncid2)
