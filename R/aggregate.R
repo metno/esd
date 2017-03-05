@@ -227,7 +227,8 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
 
 
 aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
-                           na.rm=TRUE,smallx=FALSE,verbose=FALSE) {
+                           na.rm=TRUE,smallx=FALSE,verbose=FALSE,
+                           a= 6378, x0=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
   if (verbose) print("aggregate.area")
   x <- subset(x,is=is,it=it)
@@ -241,6 +242,36 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   aweights <- aweights/mean(aweights) 
 #  area <- cos(pi*lat/180); dim(area) <- d[1:2]
 #  area <- area/sum(area)
+  
+  ## REB: For sum, we also need to consider the area:
+  if (FUN %in% c('sum','area','exceedance','exceedence','lessthan')) {
+    dy <- a*diff(pi*lat(x)/180)[1]
+    dtheta <- diff(pi*lon(x)/180)[1]
+    nx <- length(lon(x)); ny <- length(lat(x))
+    area.reg <- matrix(rep(a*cos(pi*lat(x)/180)*dy*dtheta,nx),ny,nx)
+    aweights <- area.reg
+    if (FUN=='area') {
+      ## Estimate the area of the grid boxes
+      coredata(x) -> cx
+      if (is.null(x0)) cx[] <- 1 else {cx[cx < x0] <- 0; cx[cx >= x0] <- 1}
+      coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
+      FUN <- 'sum'
+    } else if ( (FUN %in% c('exceedance','exceedence')) & !is.null(x0) ) {
+      # Estimate the sum of grid boxes with higher value than x0
+      coredata(x) -> cx
+      cx[cx < x0] <- NA
+      coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
+      FUN <- 'sum'
+    } else if ( (FUN == 'lessthan') & !is.null(x0) ) {
+      # Estimate the sum of grid boxes with lower value than x0
+      coredata(x) -> cx
+      cx[cx >= x0] <- NA
+      coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
+      FUN <- 'sum'
+    } 
+    attr(x,'unit') <- paste(attr(x,'unit'),' * km^2')
+  }
+  
   if (smallx) {
     X <- coredata(x)%*%diag(aweights)
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
@@ -249,7 +280,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
     for (i in 1:d[3]) X[i,] <- X[i,]*aweights
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   }
-
+  
   Y <- as.station(y,loc=paste('area',FUN,'of',src(x)),
                   param=attr(x,'variable'),
                   unit=attr(x,'unit'),
