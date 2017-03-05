@@ -253,7 +253,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
     if (FUN=='area') {
       ## Estimate the area of the grid boxes
       coredata(x) -> cx
-      if (is.null(x0)) cx[] <- 1 else {cx[cx < x0] <- 0; cx[cx >= x0] <- 1}
+      if (is.null(x0)) cx[is.finite(cx)] <- 1 else {cx[cx < x0] <- 0; cx[cx >= x0] <- 1}
       coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
       FUN <- 'sum'
     } else if ( (FUN %in% c('exceedance','exceedence')) & !is.null(x0) ) {
