@@ -52,8 +52,15 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
         nc <- open.ncdf(file.path(path,ncfile))
         dimnames <- names(nc$dim)
-        lon <- get.var.ncdf(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
-        lat <- get.var.ncdf(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
+	ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
+        ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
+        lon <- ncvar_get(nc,dimnames[ilon])
+        lat <- ncvar_get(nc,dimnames[ilat])
+        ## KMP 2017-03-13: grep(lon|x|i) picks out everything containing the letters 
+	## lon, x or i (e.g., 'time') so you can easily end up selecting more than one 
+	## longitude dimension. See solution above.
+        #lon <- get.var.ncdf(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
+        #lat <- get.var.ncdf(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
         close.ncdf(nc)
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) ) {
             if (verbose) print('Regular grid field found')
@@ -65,8 +72,13 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
         nc <- nc_open(file.path(path,ncfile))
         dimnames <- names(nc$dim)
-        lon <- ncvar_get(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
-        lat <- ncvar_get(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
+	ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
+        ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
+        lon <- ncvar_get(nc,dimnames[ilon])
+        lat <- ncvar_get(nc,dimnames[ilat])
+        ## KMP 2017-03-13: grep(x|i) is too general - identifies any word with x and i.
+        #lon <- ncvar_get(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
+        #lat <- ncvar_get(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
         nc_close(nc)
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
             if (verbose) print('Regular grid field found')
@@ -140,7 +152,9 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
         dimnames[i] <- tolower(v1$dim[[i]]$name)
     ## Get lon, lat, lev, time attr and values and update values if necessary
     ## Longitudes
-    ilon <- grep("lon|x|ncells|i", dimnames)
+    ilon <- which(tolower(dimnames) %in% c("x","i") | grepl("lon|ncells",tolower(dimnames)))
+    ## KMP 2017-03-13: grep(x|i) is too general - identifies any word with x or i. 
+    #ilon <- grep("lon|x|ncells|i", dimnames)
     if (length(ilon) ==0)
         ilon <- NULL
     else if (length(ilon)>1)
@@ -175,7 +189,9 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     }##else if (!(sum(id) > 0)) lon$vals <- lon$vals + 180
     
     ## Latitudes
-    ilat <- grep("lat|y|i", dimnames)
+    ilat <- which(tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames)))
+    ## KMP 2017-03-13: grep(y|j) is too general - identifies any word with y or j. 
+    #ilat <- grep("lat|y|i", dimnames)
     if (length(ilat) ==0)
         ilat <- NULL
     else if (length(ilat) > 1)
@@ -659,7 +675,9 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         }
         ## Get lon, lat, lev, time attr and values and update values if necessary
         ## Longitudes
-        ilon <- grep("lon|x|i", dimnames)
+	ilon <- which(tolower(dimnames) %in% c("x","i") | grepl("lon|ncells",tolower(dimnames)))
+        ## KMP 2017-03-13: grep(x|i) is too general - identifies any word with x or i. 
+        #ilon <- grep("lon|x|i", dimnames)
         if (length(ilon) ==0) {
             ilon <- NULL
         } else if (length(ilon)>1) {
@@ -699,7 +717,9 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         }##else if (!(sum(id) > 0)) lon$vals <- lon$vals + 180
         
         ## Latitudes
-        ilat <- grep("lat|y|j", dimnames)
+	ilat <- which(tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames)))
+        ## KMP 2017-03-13: grep(y|j) is too general - will identify any word with an y or j. 
+        #ilat <- grep("lat|y|j", dimnames)
         if (length(ilat) ==0) {
             ilat <- NULL
         } else if (length(ilat) > 1) {
