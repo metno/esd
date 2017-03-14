@@ -48,6 +48,8 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
   attr(global.t2m.cmip5,'aspect') <- 'anomalies'
   attr(global.t2m.cmip5,'baseline') <- '1961-1990'
   attr(global.t2m.cmip5,'experiment_id') <-  attr(gcm,'experiment_id')
+  attr(global.t2m.cmip5,'variable') <- attr(gcm,'variable')
+  attr(global.t2m.cmip5,'unit') <- attr(gcm,'unit')
   attr(global.t2m.cmip5,'history') <- match.call()
   invisible(global.t2m.cmip5)
 }
