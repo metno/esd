@@ -214,7 +214,14 @@ vis.map <- function(x,col='red',map.type=NULL,
        par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
            mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
      }
-      plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+     if(map.type=="rectangle") {
+       xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
+       yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
+       plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
+       PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
+     } else {
+       plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+     }
       
    } else {
      if (verbose) {print('basic map'); print(cex.axis)}
@@ -1212,8 +1219,9 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
   if (!is.null(cex)) par(cex=cex)
   plot(c(-100,100),c(-100,100),type="n",axes=FALSE,mgp=mgp,
        ylab="",xlab="",main=main)
+  par(las=0)
   mtext("trend",side=1,line=1.5,cex=par("cex"))
-  mtext("standard deviation",side=2,line=2,cex=par("cex"))
+  mtext("standard deviation",side=2,line=2,srt=180,cex=par("cex"))
   u <- par("usr")
   dx <- (u[2]-u[1])/20
   dy <- (u[4]-u[3])/20
@@ -1225,10 +1233,10 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
   arrows(u[1],u[3]+dy,u[1],u[4]-dy,
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
-  mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.75)
-  mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.75)
-  mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.75)
-  mtext("ensemble < obs",side=2,line=0.5,adj=1,cex=par("cex")*0.75)  
+  mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.65)
+  mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.65)
+  mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.65)
+  mtext("ensemble < obs",side=2,line=0.5,adj=1,cex=par("cex")*0.65)  
   bcol=c("grey95","grey40")
   for (i in 1:10) {
     r <- (11-i)*10
