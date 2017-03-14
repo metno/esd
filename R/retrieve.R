@@ -570,6 +570,9 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     attr(z, "model_id")       <- model$model_id
     attr(z, "experiment_id")  <- model$experiment_id
     attr(z, "realization")    <- model$realization
+    attr(z, "initialization_method") <- model$initialization_method
+    attr(z, "physics_version") <- model$physics_version
+    attr(z, "parent_experiment_rip") <- model$parent_experiment_rip
     attr(z, 'timeunit')       <- model$frequency
     attr(z, 'frequency')      <- 1
     attr(z, 'type')           <- model$type
@@ -1109,6 +1112,9 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         attr(z,'model_id') <- model$model_id
         attr(z,'experiment_id') <- model$experiment_id
         attr(z,'realization') <- model$realization
+        attr(z, "initialization_method") <- model$initialization_method
+        attr(z, "physics_version") <- model$physics_version
+        attr(z, "parent_experiment_rip") <- model$parent_experiment_rip
         attr(z,'timeunit') <- model$frequency
         attr(z,'frequency') <- 1
         attr(z,'type') <- model$type
