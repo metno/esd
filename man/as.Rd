@@ -9,6 +9,7 @@
 \alias{as.station.spell}
 \alias{as.station.eof}
 \alias{as.station.dsensemble}
+\alias{as.station.dsensemble.pca}
 \alias{as.ds}
 \alias{as.field}
 \alias{as.field.default}
