@@ -331,7 +331,7 @@ as.station.dsensemble <- function(x,verbose=FALSE,...) {
   }
   if (inherits(x,"pca")) {
     y <- as.station.dsensemble.pca(x,verbose=verbose,...)
-  } else if (inherits(y,c("station","zoo"))) {
+  } else if (inherits(x,c("station","zoo"))) {
     y <- as.station.dsensemble.station(x,verbose=verbose,...)
   } else {
     print(paste('unexpected class - do not know how to handle:',class(x)))
