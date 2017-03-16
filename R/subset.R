@@ -365,7 +365,6 @@ subset.trend <- function(x,it=NULL,is=NULL) {
 subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE,...) {
     ## browser()
-
     if (verbose) print('subset.dsensemble')
 
     if (inherits(x,'list') & inherits(x,c('pca','eof')) &
@@ -379,7 +378,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
     }
     if (verbose) {print('list + pca/eof NOT detected');print(ensemble.aggregate)}
     
-    if (!is.null(is)) x <- as.station(x)
+    if (!is.null(is) & !inherits(x,"station")) x <- as.station(x,verbose=verbose)
     
     if (inherits(x,'list') & !inherits(x,'zoo')) {
       if (verbose) print('list of elements')
@@ -387,8 +386,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
       Locs <- unlist(lapply(x,function(x) loc(attr(x,'station'))))
       Locs <- gsub(' ','',Locs)
       Locs <- gsub('-','.',Locs)
-      if (is.character(is)) {
-        
+      if (is.character(is)) {      
         if (verbose) print('search on location names')
       ## search on location name
         Locs <- tolower(Locs)
@@ -396,22 +394,30 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
         if (verbose) {print(is); print(locs)}
         is <- substr(is,1,min(nchar(is)))
         illoc <- (1:length(x))[is.element(locs,tolower(is))]
-        if (length(illoc)==1) {
-          x2 <- x[[illoc]]
-          x2 <- subset(x2,it=it,verbose=verbose)
-        } else if (length(illoc)>1) {
-          x2 <- list()
-          for (i in 1:length(illoc)) {
-            xx2 <- x[[illoc[i]]]
-            xx2 <- subset(xx2,it=it,verbose=verbose)
-            eval(parse(text=paste('x2$',Locs[illoc[i]],' <- xx2',sep='')))
-            rm('xx2'); gc(reset=TRUE)
-          } 
-        } else if (length(illoc)==0) return(NULL)
-        if (verbose) {print(is); print(loc(x2))}
-        if (verbose) print('exit subset.dsensemble')
-        return(x2)
+      } else if(is.numeric(is)) {
+        if(verbose) print('is is numeric')
+	illoc <- is[is %in% (1:length(x))] 
+      } else {
+        if(verbose) print("is format not recognized - no spatial selection")
+	illoc <- (1:length(x))
       }
+      if (length(illoc)==1) {
+        x2 <- x[[illoc]]
+        x2 <- subset(x2,it=it,verbose=verbose)
+      } else if (length(illoc)>1) {
+        x2 <- list()
+        for (i in 1:length(illoc)) {
+          xx2 <- x[[illoc[i]]]
+          xx2 <- subset(xx2,it=it,verbose=verbose)
+          eval(parse(text=paste('x2$',Locs[illoc[i]],' <- xx2',sep='')))
+          rm('xx2'); gc(reset=TRUE)
+        } 
+      } else if (length(illoc)==0) {
+        return(NULL)
+      }
+      if (verbose) {print(is); print(loc(x2))}
+      if (verbose) print('exit subset.dsensemble')
+      return(x2)
     }
     class(x) <- c(class(x)[1],class(attr(x,'station'))[2],"zoo")
 
