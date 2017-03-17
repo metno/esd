@@ -1440,6 +1440,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   index(y) <- year(y)
   if(!is.null(mar)) par(mar=mar)
   par0 <- par()
+ 
   if (obs.show) obscol <- 'black' else obscol='white'
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
        ylab=ylab,map.show=FALSE,new=new)
