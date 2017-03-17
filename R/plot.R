@@ -211,7 +211,7 @@ vis.map <- function(x,col='red',map.type=NULL,
                     destfile = "map.station.esd.png",
                     maptype = "mobile", zoom=zoom)
       if(map.insert) {
-       par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
+       par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
            mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
      }
      if(map.type=="rectangle") {
@@ -1440,7 +1440,6 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   index(y) <- year(y)
   if(!is.null(mar)) par(mar=mar)
   par0 <- par()
- 
   if (obs.show) obscol <- 'black' else obscol='white'
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
        ylab=ylab,map.show=FALSE,new=new)
@@ -1487,7 +1486,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   title(main=toupper(loc(x)),cex.main=1)
   if ((target.show) & (!is.null(diag))) {
     if (verbose) print('add target diagnostic')
-    par(fig=c(0.23,0.45,0.78,0.98),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
+    par(fig=c(0.23,0.45,0.75,0.95),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
     plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
   } 
