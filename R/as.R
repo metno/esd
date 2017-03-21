@@ -323,14 +323,20 @@ as.station.eof <- function(x,ip=1:10) {
   invisible(y)
 }
 
-as.station.dsensemble <- function(x,...) {
-  if (!is.null(x$pca) & !inherits(x,"pca") & inherits(x,"eof"))
-    class(x) <- gsub("eof","pca",class(x)) ## REB 2016-12-13: to also work on gridded versions.    
+
+as.station.dsensemble <- function(x,verbose=FALSE,...) {
+  if(verbose) print("as.station.dsensemble")
+  if (!is.null(x$pca) & !inherits(x,"pca") & inherits(x,"eof")) {
+    class(x) <- gsub("eof","pca",class(x)) ## REB 2016-12-13: to also work on gridded versions.
+  }
   if (inherits(x,"pca")) {
-    y <- as.station.dsensemble.pca(x,...)
+    y <- as.station.dsensemble.pca(x,verbose=verbose,...)
   } else if (inherits(x,c("station","zoo"))) {
-    y <- as.station.dsensemble.station(x,...)
-  } else print(paste('unknown class - do not know how to handle:',class(x)))
+    y <- as.station.dsensemble.station(x,verbose=verbose,...)
+  } else {
+    print(paste('unexpected class - do not know how to handle:',class(x)))
+    y <- x
+  }
   return(y)
 }
 
@@ -428,7 +434,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   }
 }
 
-as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=FALSE) {
+as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=FALSE,...) {
 
     if (verbose) print('as.station.dsensemble.station')
     ns <- length(x)

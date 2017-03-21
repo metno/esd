@@ -362,266 +362,249 @@ subset.trend <- function(x,it=NULL,is=NULL) {
     return(y)
 }
 
-subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,
+subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE,...) {
-    ## browser()
+  ## browser()
+  if (verbose) print('subset.dsensemble')
+  if (inherits(x,'list') & inherits(x,c('pca','eof')) &
+     (inherits(x,'dsensemble')) & ensemble.aggregate) {
+    if (verbose) print('list + pca/eof detected')
+    #x <- as.station(x)
+    ## Subset the PCA/EOF
+    x <- subset.dsensemble.multi(x,it=it,is=is,ip=ip,verbose=verbose,...)
+    if (verbose) print('exit subset.dsensemble')
+    return(x)
+  }
+  if (verbose) {print('list + pca/eof NOT detected');print(ensemble.aggregate)}
+  
+  if (!is.null(is) & !inherits(x,"station")) x <- as.station(x,verbose=verbose)
+  
+  if (inherits(x,'list') & !inherits(x,'zoo')) {
+    if (verbose) print('list of elements')
+    ## If x is a list of objects search through its elements
+    Locs <- unlist(lapply(x,function(x) loc(attr(x,'station'))))
+    Locs <- gsub(' ','',Locs)
+    Locs <- gsub('-','.',Locs)
+    if (is.character(is)) {      
+      if (verbose) print('search on location names')
+    ## search on location name
+      Locs <- tolower(Locs)
+      locs <- substr(Locs,1,min(nchar(is)))
+      if (verbose) {print(is); print(locs)}
+      is <- substr(is,1,min(nchar(is)))
+    illoc <- (1:length(x))[is.element(locs,tolower(is))]
+    } else if(is.numeric(is)) {
+      if(verbose) print('is is numeric')
+      illoc <- is[is %in% (1:length(x))] 
+    } else {
+      if(verbose) print("is format not recognized - no spatial selection")
+      illoc <- (1:length(x))
+    }
+    if (length(illoc)==1) {
+      x2 <- x[[illoc]]
+      x2 <- subset(x2,it=it,verbose=verbose)
+    } else if (length(illoc)>1) {
+      x2 <- list()
+      for (i in 1:length(illoc)) {
+        xx2 <- x[[illoc[i]]]
+        xx2 <- subset(xx2,it=it,verbose=verbose)
+        eval(parse(text=paste('x2$',Locs[illoc[i]],' <- xx2',sep='')))
+        rm('xx2'); gc(reset=TRUE)
+      } 
+    } else if (length(illoc)==0) {
+      return(NULL)
+    }
+    if (verbose) {print(is); print(loc(x2))}
+    if (verbose) print('exit subset.dsensemble')
+    return(x2)
+  }
+  class(x) <- c(class(x)[1],class(attr(x,'station'))[2],"zoo")
 
-    if (verbose) print('subset.dsensemble')
+  if (is.null(it) & is.null(is) & length(table(month(x)))==1) return(x)
+  if (verbose) print(paste("it=",it))
 
-    if (inherits(x,'list') & inherits(x,c('pca','eof')) &
-       (inherits(x,'dsensemble')) & ensemble.aggregate) {
-      if (verbose) print('list + pca/eof detected')
-      #x <- as.station(x)
-      ## Subset the PCA/EOF
-      x <- subset.dsensemble.multi(x,it=it,is=is,ip=ip,verbose=verbose,...)
-      if (verbose) print('exit subset.dsensemble')
+  x0 <- x
+  d <- dim(x)
+  if (verbose) print(d)
+  if (is.null(is)) is <- 1:d[2]
+  if (!is.null(it)) {
+    if (is.character(it)) it <- tolower(it)
+    if (verbose) print(table(month(x)))
+    if ( (length(rownames(table(month(x))))==1) & (it[1]==0) ) {
+      if (verbose) print('Only one season is available')
       return(x)
     }
-    if (verbose) {print('list + pca/eof NOT detected');print(ensemble.aggregate)}
-    
-    if (!is.null(is)) x <- as.station(x)
-    
-    if (inherits(x,'list') & !inherits(x,'zoo')) {
-      if (verbose) print('list of elements')
-      ## If x is a list of objects search through its elements
-      Locs <- unlist(lapply(x,function(x) loc(attr(x,'station'))))
-      Locs <- gsub(' ','',Locs)
-      Locs <- gsub('-','.',Locs)
-      if (is.character(is)) {
-        
-        if (verbose) print('search on location names')
-      ## search on location name
-        Locs <- tolower(Locs)
-        locs <- substr(Locs,1,min(nchar(is)))
-        if (verbose) {print(is); print(locs)}
-        is <- substr(is,1,min(nchar(is)))
-        illoc <- (1:length(x))[is.element(locs,tolower(is))]
-        if (length(illoc)==1) {
-          x2 <- x[[illoc]]
-          x2 <- subset(x2,it=it,verbose=verbose)
-        } else if (length(illoc)>1) {
-          x2 <- list()
-          for (i in 1:length(illoc)) {
-            xx2 <- x[[illoc[i]]]
-            xx2 <- subset(xx2,it=it,verbose=verbose)
-            eval(parse(text=paste('x2$',Locs[illoc[i]],' <- xx2',sep='')))
-            rm('xx2'); gc(reset=TRUE)
-          } 
-        } else if (length(illoc)==0) return(NULL)
-        if (verbose) {print(is); print(loc(x2))}
-        if (verbose) print('exit subset.dsensemble')
-        return(x2)
-      }
-    }
-    class(x) <- c(class(x)[1],class(attr(x,'station'))[2],"zoo")
-
-    if (is.null(it) & is.null(is) & length(table(month(x)))==1) return(x)
-    if (verbose) print(paste("it=",it))
-    x0 <- x
-    d <- dim(x)
-    if (verbose) print(d)
-    if (is.null(is)) is <- 1:d[2]
-    if (!is.null(it)) {
-        if (is.character(it)) it <- tolower(it)
-        if (verbose) print(table(month(x)))
-        if ( (length(rownames(table(month(x))))==1) & (it==0) ) {
-          if (verbose) print('Only one season is available')
-          return(x)
-          }
-        ## Different ways of selecting along the time dimension
-        if ( inherits(it[1],"logical") & (length(it)==length(x)) ) {
-            if (verbose) print('subindexing with boolean index: y <- x[it,is]')
-            y <- x[it,is]
-        } else if (it[1]==0) {
-            if (verbose) print("Annual means")
-            if (inherits(x,'season')) {
-                if (verbose) print('from seasons')
-                #djf <- subset(x,it='djf',is=is)
-                #mam <- subset(x,it='mam',is=is)
-                #jja <- subset(x,it='jja',is=is)
-                #son <- subset(x,it='son',is=is)
-                djf <- subset(x,it='djf')  # REB 2016-11-07: is is dealt with below
-                mam <- subset(x,it='mam')  # REB 2016-11-07: is is dealt with below
-                jja <- subset(x,it='jja')  # REB 2016-11-07: is is dealt with below
-                son <- subset(x,it='son')  # REB 2016-11-07: is is dealt with below
-                yr1 <- year(djf)
-                yr2 <- year(mam)
-                yr3 <- year(jja)
-                yr4 <- year(son)
-                yr <- yr1[is.element(yr1,yr2)]
-                yr <- yr[is.element(yr,yr3)]
-                yr <- yr[is.element(yr,yr4)]
-                if (verbose) print(yr)
-                i1 <- is.element(yr1,yr)
-                i2 <- is.element(yr2,yr)
-                i3 <- is.element(yr3,yr)
-                i4 <- is.element(yr4,yr)
-                if (verbose) print(c(sum(i1),sum(i2),sum(i3),sum(i4)))
-                y <- zoo(0.25*(coredata(djf[i1,]) +
-                               coredata(mam[i2,]) +
-                               coredata(jja[i3,]) +
-                               coredata(son[i4,])),order.by=yr)
-#                         order.by=as.Date(paste(yr,'01-01',sep='-')))
-                y <- attrcp(x0,y)
-                class(y) <- class(x0)
-                if (verbose) print('...')
-            } else if (inherits(x,'month')) {
-                if (verbose) print('from months')
-                ## browser()
-              # REB 2016-11-07: is is dealt with below - set to NULL
-                jan <- subset(x,it='jan',is=NULL)
-                feb <- subset(x,it='feb',is=NULL)
-                mar <- subset(x,it='mar',is=NULL)
-                apr <- subset(x,it='apr',is=NULL)
-                may <- subset(x,it='may',is=NULL)
-                jun <- subset(x,it='jun',is=NULL)
-                jul <- subset(x,it='jul',is=NULL)
-                aug <- subset(x,it='aug',is=NULL)         
-                sep <- subset(x,it='sep',is=NULL)
-                oct <- subset(x,it='oct',is=NULL)
-                nov <- subset(x,it='nov',is=NULL)
-                dec <- subset(x,it='dec',is=NULL)
-
-                yr1 <- year(jan)
-                yr2 <- year(feb)
-                yr3 <- year(mar)
-                yr4 <- year(apr)
-                yr5 <- year(may)
-                yr6 <- year(jun)
-                yr7 <- year(jul)
-                yr8 <- year(aug)
-                yr9 <- year(sep)
-                yr10 <- year(oct)
-                yr11 <- year(nov)
-                yr12 <- year(dec)
-
-                yr <- yr1[is.element(yr1,yr2)]
-                yr <- yr[is.element(yr,yr3)]
-                yr <- yr[is.element(yr,yr4)]
-                yr <- yr1[is.element(yr,yr5)]
-                yr <- yr[is.element(yr,yr6)]
-                yr <- yr[is.element(yr,yr7)]
-                yr <- yr1[is.element(yr1,yr8)]
-                yr <- yr[is.element(yr,yr9)]
-                yr <- yr[is.element(yr,yr10)]
-                yr <- yr[is.element(yr,yr11)]
-                yr <- yr[is.element(yr,yr12)]
-                
-                if (verbose) print(yr)
-                i1 <- is.element(yr1,yr)
-                i2 <- is.element(yr2,yr)
-                i3 <- is.element(yr3,yr)
-                i4 <- is.element(yr4,yr)
-                i5 <- is.element(yr5,yr)
-                i6 <- is.element(yr6,yr)
-                i7 <- is.element(yr7,yr)
-                i8 <- is.element(yr8,yr)
-                i9 <- is.element(yr9,yr)
-                i10 <- is.element(yr10,yr)
-                i11 <- is.element(yr11,yr)
-                i12 <- is.element(yr12,yr) 
-                
-                if (verbose) print(c(sum(i1),sum(i2),sum(i3),sum(i4),
-                                     sum(i5),sum(i6),sum(i7),sum(i8),
-                                     sum(i9),sum(i10),sum(i11),sum(i12)))
-                y <- zoo(1/12*(coredata(jan[i1,])+
-                               coredata(feb[i2,])+
-                               coredata(mar[i3,])+
-                               coredata(apr[i4,])+
-                               coredata(may[i5,])+
-                               coredata(jun[i6,])+
-                               coredata(jul[i7,])+
-                               coredata(aug[i8,])+
-                               coredata(sep[i9,])+
-                               coredata(oct[i10,])+
-                               coredata(nov[i11,])+
-                               coredata(dec[i12,])),
-                         order.by=as.Date(paste(yr,'01-01',sep='-')))
-                y <- attrcp(x0,y)
-                class(y) <- class(x0)
-                if (verbose) print('...')
-            }
-        } else if (is.character(it)) {
-            ## browser()
-            if (verbose) print("it is character - select a season")
-            months <- month(x)
-            if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
-                ii <- is.element(months,(1:12)[is.element(tolower(month.abb),
-                                                          tolower(substr(it,1,3)))])
-                if (verbose) print(ii)
-                y <- x[ii,is]
-            } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
-                if (verbose) print("season")
-                sea <- eval(parse(text=paste('season.abb()$',it,sep='')))
-                if (verbose) print(sea)
-                ii <- is.element(months,sea)
-                if (verbose) print(ii)
-                y <- x[ii,is]
-                ##      }
-                ##    if ( (min(it) > 0) & (max(it) < 5) ) {
-                ##      # dsensemble is not for monthly data
-                ##      #print("Seasonal selection")
-                ##      ii <- is.element(month(x),c(1,4,7,10)[it])
-                ##      y <- x[ii,is]
-            } else if (sum(is.element(tolower(it),tolower(month.abb)))>0) {
-                ## browser()
-                if (verbose) print("month")
-                mon <- which(is.element(tolower(it),tolower(month.abb))>0)
-                if (verbose) print(mon)
-                ii <- is.element(months,mon)
-                if (verbose) print(ii)
-                y <- x[ii,is]
-            }
-        } else {
-            if (sum(is.element(it,1600:2200)) > 0) {
-                if (verbose) print("it contains year(s)")
-                ii <- is.element(year(x),it)
-                if (verbose) print(paste("Number of matches=",sum(ii)))
-                y <- x[ii,is]
-            } else if (is.character(it)) {
-                if (verbose) print("Dates")
-                x <- matchdate(x,it)
-            } else if (inherits(is,c('field','station'))) {
-                ## Match the times of another esd-data object
-                if (verbose) print("Match date with another object")
-                x <- matchdate(x,it)
-            }
-        }
-        if (verbose) print("housekeeping")
-        d[3] <- length(index(y))
+    ## Different ways of selecting along the time dimension
+    if ( inherits(it[1],"logical") & (length(it)==length(x)) ) {
+      if (verbose) print('subindexing with boolean index: y <- x[it,is]')
+      y <- x[it,is]
+    } else if (it[1]==0) {
+      if (verbose) print("Annual means")
+      if (inherits(x,'season')) {
+        if (verbose) print('from seasons')
+        djf <- subset(x,it='djf')  # REB 2016-11-07: is is dealt with below
+        mam <- subset(x,it='mam')  # REB 2016-11-07: is is dealt with below
+        jja <- subset(x,it='jja')  # REB 2016-11-07: is is dealt with below
+        son <- subset(x,it='son')  # REB 2016-11-07: is is dealt with below
+        yr1 <- year(djf)
+        yr2 <- year(mam)
+        yr3 <- year(jja)
+        yr4 <- year(son)
+        yr <- yr1[is.element(yr1,yr2)]
+        yr <- yr[is.element(yr,yr3)]
+        yr <- yr[is.element(yr,yr4)]
+        if (verbose) print(yr)
+        i1 <- is.element(yr1,yr)
+        i2 <- is.element(yr2,yr)
+        i3 <- is.element(yr3,yr)
+        i4 <- is.element(yr4,yr)
+        if (verbose) print(c(sum(i1),sum(i2),sum(i3),sum(i4)))
+        y <- zoo(0.25*(coredata(djf[i1,]) +
+                       coredata(mam[i2,]) +
+                       coredata(jja[i3,]) +
+                       coredata(son[i4,])), order.by=yr)
+        y <- attrcp(x0,y)
         class(y) <- class(x0)
-        d -> attr(y,'dimensions')
-        ##str(y)
-        y <- attrcp(x,y,ignore='station')
-        ##print("station"); str(attr(x,'station')); print(class(attr(x,'station')))
+        if (verbose) print('...') 
+      } else if (inherits(x,'month')) {
+        if (verbose) print('from months')
         ## browser()
-        ##plot(subset(attr(x,'station'),it=it))
-        ##browser()
-        ##        browser()
-### BUG       if ( (it!=0) & (!inherits(attr(x,'station'),'annual')) & (it <= max(year(attr(x,'station')))) ) {
-### Why '(it <= max(year(attr(x,'station'))))' - causes problems and it's not clear what the intention was     
-        if ( (it!=0) & (!inherits(attr(x,'station'),'annual')) ) {
-            if (verbose) print('Also extract the same data for the station')
-            attr(y,'station') <- subset(attr(x,'station'),
-                                        it=it,verbose=verbose) }
-        else
-            attr(y,'station') <- annual(attr(x,'station'))
-                                        #print("HERE")
-                                        #nattr <- softattr(x)
-                                        #for (i in 1:length(nattr))
-                                        #  attr(y,nattr[i]) <- attr(x,nattr[i])
+        # REB 2016-11-07: is is dealt with below - set to NULL
+        jan <- subset(x,it='jan',is=NULL)
+        feb <- subset(x,it='feb',is=NULL)
+        mar <- subset(x,it='mar',is=NULL)
+        apr <- subset(x,it='apr',is=NULL)
+        may <- subset(x,it='may',is=NULL)
+        jun <- subset(x,it='jun',is=NULL)
+        jul <- subset(x,it='jul',is=NULL)
+        aug <- subset(x,it='aug',is=NULL)         
+        sep <- subset(x,it='sep',is=NULL)
+        oct <- subset(x,it='oct',is=NULL)
+        nov <- subset(x,it='nov',is=NULL)
+        dec <- subset(x,it='dec',is=NULL)
+        
+        yr1 <- year(jan)
+        yr2 <- year(feb)
+        yr3 <- year(mar)
+        yr4 <- year(apr)
+        yr5 <- year(may)
+        yr6 <- year(jun)
+        yr7 <- year(jul)
+        yr8 <- year(aug)
+        yr9 <- year(sep)
+        yr10 <- year(oct)
+        yr11 <- year(nov)
+        yr12 <- year(dec)
+
+        yr <- yr1[is.element(yr1,yr2)]
+        yr <- yr[is.element(yr,yr3)]
+        yr <- yr[is.element(yr,yr4)]
+        yr <- yr1[is.element(yr,yr5)]
+        yr <- yr[is.element(yr,yr6)]
+        yr <- yr[is.element(yr,yr7)]
+        yr <- yr1[is.element(yr1,yr8)]
+        yr <- yr[is.element(yr,yr9)]
+        yr <- yr[is.element(yr,yr10)]
+        yr <- yr[is.element(yr,yr11)]
+        yr <- yr[is.element(yr,yr12)]
+                
+        if (verbose) print(yr)
+        i1 <- is.element(yr1,yr)
+        i2 <- is.element(yr2,yr)
+        i3 <- is.element(yr3,yr)
+        i4 <- is.element(yr4,yr)
+        i5 <- is.element(yr5,yr)
+        i6 <- is.element(yr6,yr)
+        i7 <- is.element(yr7,yr)
+        i8 <- is.element(yr8,yr)
+        i9 <- is.element(yr9,yr)
+        i10 <- is.element(yr10,yr)
+        i11 <- is.element(yr11,yr)
+        i12 <- is.element(yr12,yr) 
+               
+        if (verbose) print(c(sum(i1),sum(i2),sum(i3),sum(i4),
+                             sum(i5),sum(i6),sum(i7),sum(i8),
+                             sum(i9),sum(i10),sum(i11),sum(i12)))
+        y <- zoo(1/12*(coredata(jan[i1,])+
+                       coredata(feb[i2,])+
+                       coredata(mar[i3,])+
+                       coredata(apr[i4,])+
+                       coredata(may[i5,])+
+                       coredata(jun[i6,])+
+                       coredata(jul[i7,])+
+                       coredata(aug[i8,])+
+                       coredata(sep[i9,])+
+                       coredata(oct[i10,])+
+                       coredata(nov[i11,])+
+                       coredata(dec[i12,])),
+                 order.by=as.Date(paste(yr,'01-01',sep='-')))
+        y <- attrcp(x0,y)
+        class(y) <- class(x0)
+        if (verbose) print('...')
+      }
+    } else if (is.character(it)) {
+      if (verbose) print("it is character - select a season")
+      months <- month(x)
+      if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
+        ii <- is.element(months,(1:12)[is.element(tolower(month.abb),
+                                                  tolower(substr(it,1,3)))])
+        if (verbose) print(ii)
+        y <- x[ii,is]
+      } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
+        if (verbose) print("season")
+        sea <- eval(parse(text=paste('season.abb()$',it,sep='')))
+        if (verbose) print(sea)
+        ii <- is.element(months,sea)
+        if (verbose) print(ii)
+        y <- x[ii,is]
+      } else if (sum(is.element(tolower(it),tolower(month.abb)))>0) {
+        if (verbose) print("month")
+        mon <- which(is.element(tolower(it),tolower(month.abb))>0)
+        if (verbose) print(mon)
+        ii <- is.element(months,mon)
+        if (verbose) print(ii)
+        y <- x[ii,is]
+      }
     } else {
-        ## Bug-fix AM: 2014-09-22
-        y <- x[,is]
-        y <- attrcp(x,y)
-        attr(y, "model_id") <- attr(x, "model_id")[is]
-        attr(y, "scorestats") <- attr(x, "scorestats")[is]
-                                        #browser()
-        if (length(is)==1) class(y) <- c("ds","zoo") else class(y) <- class(x)
+      if (sum(is.element(it,1600:2200)) > 0) {
+        if (verbose) print("it contains year(s)")
+        if(length(it)==2) {
+          if(verbose) print("between two years")
+          it <- seq(min(it),max(it))
+        }
+        ii <- is.element(year(x),it)
+        if (verbose) print(paste("Number of matches=",sum(ii)))
+        y <- x[ii,is]
+      } else if (is.character(it)) {
+        if (verbose) print("Dates")
+        x <- matchdate(x,it)
+      } else if (inherits(is,c('field','station'))) {
+        ## Match the times of another esd-data object
+        if (verbose) print("Match date with another object")
+        x <- matchdate(x,it)
+      }    
+    } 
+    if (verbose) print("housekeeping")
+    d[3] <- length(index(y))
+    class(y) <- class(x0)
+    d -> attr(y,'dimensions')
+    y <- attrcp(x,y,ignore='station')
+    if ( (it[1]!=0) & (!inherits(attr(x,'station'),'annual')) ) {
+      if (verbose) print('Also extract the same data for the station')
+      attr(y,'station') <- subset(attr(x,'station'),it=it,verbose=verbose)
+    } else {
+      attr(y,'station') <- annual(attr(x,'station'))
     }
-    attr(y,'history') <- history.stamp(x)  
-    if (verbose) print("exit subset.dsensemble")
-    invisible(y)  
+  } else {
+    y <- x[,is]
+    y <- attrcp(x,y)
+    attr(y, "model_id") <- attr(x, "model_id")[is]
+    attr(y, "scorestats") <- attr(x, "scorestats")[is]
+    if (length(is)==1) class(y) <- c("ds","zoo") else class(y) <- class(x)
+  }
+  attr(y,'history') <- history.stamp(x)  
+  if (verbose) print("exit subset.dsensemble")
+  invisible(y)
 }
 
 subset.spell <- function(x,is=NULL,it=NULL) {

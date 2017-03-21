@@ -211,10 +211,17 @@ vis.map <- function(x,col='red',map.type=NULL,
                     destfile = "map.station.esd.png",
                     maptype = "mobile", zoom=zoom)
       if(map.insert) {
-       par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
+       par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
            mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
      }
-      plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+     if(map.type=="rectangle") {
+       xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
+       yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
+       plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
+       PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
+     } else {
+       plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+     }
       
    } else {
      if (verbose) {print('basic map'); print(cex.axis)}
@@ -1212,8 +1219,9 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
   if (!is.null(cex)) par(cex=cex)
   plot(c(-100,100),c(-100,100),type="n",axes=FALSE,mgp=mgp,
        ylab="",xlab="",main=main)
+  par(las=0)
   mtext("trend",side=1,line=1.5,cex=par("cex"))
-  mtext("standard deviation",side=2,line=2,cex=par("cex"))
+  mtext("standard deviation",side=2,line=2,srt=180,cex=par("cex"))
   u <- par("usr")
   dx <- (u[2]-u[1])/20
   dy <- (u[4]-u[3])/20
@@ -1225,10 +1233,10 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
   arrows(u[1],u[3]+dy,u[1],u[4]-dy,
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
-  mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.75)
-  mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.75)
-  mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.75)
-  mtext("ensemble < obs",side=2,line=0.5,adj=1,cex=par("cex")*0.75)  
+  mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.65)
+  mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.65)
+  mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.65)
+  mtext("ensemble < obs",side=2,line=0.5,adj=1,cex=par("cex")*0.65)  
   bcol=c("grey95","grey40")
   for (i in 1:10) {
     r <- (11-i)*10
@@ -1478,7 +1486,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   title(main=toupper(loc(x)),cex.main=1)
   if ((target.show) & (!is.null(diag))) {
     if (verbose) print('add target diagnostic')
-    par(fig=c(0.23,0.45,0.78,0.98),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
+    par(fig=c(0.23,0.45,0.75,0.95),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
     plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
   } 

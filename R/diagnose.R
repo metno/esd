@@ -552,7 +552,7 @@ diagnose.dsensemble.list <- function(x,plot=FALSE,is=NULL,ip=NULL,
   d <- list(outside=outside,deltaobs=deltaobs,deltagcm=deltagcm,
             N=di$N,location=names(X))
 
-  if(is.null(main)) main <- attr(X,"variable")
+  if(is.null(main)) main <- attr(X,"variable")[1]
   if(plot) {
     if(verbose) print("target plot") 
     if (new) dev.new()
