@@ -72,7 +72,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
         nc <- nc_open(file.path(path,ncfile))
         dimnames <- names(nc$dim)
-	ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
+	      ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
         ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
         lon <- ncvar_get(nc,dimnames[ilon])
         lat <- ncvar_get(nc,dimnames[ilat])
@@ -555,38 +555,41 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
         attr(z,"latitude") <- lat$vals
     }
     if (!is.null(ilev)) {
-        attr(z,"level")        <- lev$vals[lev.w]
-        attr(z,"levelUnit")    <- lev$units
+        attr(z,"level") <- lev$vals[lev.w]
+        attr(z,"levelUnit") <- lev$units
     }
     if (!is.null(itime)) {
         attr(z,"calendar") <- time$calendar
     }
     ## Add attributes
-    attr(z, "file")           <- model$filename
-    attr(z, "title")          <- model$title
-    
     ##attr(z, "project_id")     <- ifelse(!is.null(model$project_id), model$project_id, NA)
+    attr(z, "file") <- model$filename
     attr(z, "source")         <- model$project_id
-    attr(z, "model_id")       <- model$model_id
-    attr(z, "experiment_id")  <- model$experiment_id
-    attr(z, "realization")    <- model$realization
-    attr(z, "initialization_method") <- model$initialization_method
-    attr(z, "physics_version") <- model$physics_version
-    attr(z, "parent_experiment_rip") <- model$parent_experiment_rip
     attr(z, 'timeunit')       <- model$frequency
     attr(z, 'frequency')      <- 1
-    attr(z, 'type')           <- model$type
+    ## KMP 2017-03-22: There is a lot of information specific to files 
+    ##    from, e.g., CORDEX and CMIP5 that is not passed on to the object here.
+    mattr <- names(model)[!names(model) %in% c(names(attributes(z)),"project_id","filename")]
+    for(a in mattr) attr(z, a) <- model[[a]]
+    ## not needed with the mattr loop:
+    #attr(z, "title") <- model$title
+    #attr(z, "model_id")       <- model$model_id
+    #attr(z, "experiment_id")  <- model$experiment_id
+    #attr(z, "realization")    <- model$realization
+    #attr(z, "initialization_method") <- model$initialization_method
+    #attr(z, "physics_version") <- model$physics_version
+    #attr(z, "parent_experiment_rip") <- model$parent_experiment_rip
+    #attr(z, 'type')           <- model$type
     ## attr(z, "timestamp")      <- date()
     ## attr(z, "anomaly")        <- FALSE
     ## attr(z, "time:method")    <- NA
     ## attr(z, "spatial:method") <- NA
-    ##attr(z, "title")          <- model$title
     attr(z, "URL")            <- "http://climexp.knmi.nl/"
     attr(z, "call")           <- match.call()
     ## attr(z, "history")        <- NA
-    attr(z, "institution")    <- NA 
-    attr(z, "reference")      <- NA
-    attr(z, "history")        <- history.stamp(z)
+    if(is.null(attr(z,"institution"))) attr(z, "institution") <- NA 
+    if(is.null(attr(z,"reference"))) attr(z, "reference") <- NA
+    attr(z, "history")  <- history.stamp(z)
     if (one.cell) {
         class(z) <- c("station",model$frequency,"zoo")
         attr(z,'location') <- 'Grid cell'
@@ -1104,20 +1107,24 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
             attr(z,"calendar") <- model$calendar
         }
         ## Add attributes
-        attr(z, "file") <- model$filename
-        attr(z, "title") <- model$title
-        
         ##attr(z, "project_id")     <- ifelse(!is.null(model$project_id), model$project_id, NA)
+        attr(z, "file") <- model$filename
         attr(z,'source') <- model$project_id
-        attr(z,'model_id') <- model$model_id
-        attr(z,'experiment_id') <- model$experiment_id
-        attr(z,'realization') <- model$realization
-        attr(z, "initialization_method") <- model$initialization_method
-        attr(z, "physics_version") <- model$physics_version
-        attr(z, "parent_experiment_rip") <- model$parent_experiment_rip
         attr(z,'timeunit') <- model$frequency
         attr(z,'frequency') <- 1
-        attr(z,'type') <- model$type
+        ## KMP 2017-03-22: There is a lot of information specific to files 
+        ##    from, e.g., CORDEX and CMIP5 that is not passed on to the object here.
+        mattr <- names(model)[!names(model) %in% c(names(attributes(z)),"filename","project_id")]
+        for(a in mattr) attr(z, a) <- model[[a]]
+        ## not needed with the mattr loop:
+        #attr(z, "title") <- model$title
+        #attr(z,'model_id') <- model$model_id
+        #attr(z,'experiment_id') <- model$experiment_id
+        #attr(z,'realization') <- model$realization
+        #attr(z, "initialization_method") <- model$initialization_method
+        #attr(z, "physics_version") <- model$physics_version
+        #attr(z, "parent_experiment_rip") <- model$parent_experiment_rip
+        #attr(z,'type') <- model$type
         ## attr(z, "timestamp")      <- date()
         ## attr(z, "anomaly")        <- FALSE
         ## attr(z, "time:method")    <- NA
@@ -1126,8 +1133,8 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         attr(z, "URL")            <- "http://climexp.knmi.nl/"
         attr(z, "call")           <- match.call()
         ## attr(z, "history")        <- NA
-        attr(z, "institution")    <- NA 
-        attr(z, "reference")      <- NA
+        if(is.null(attr(z,"institution"))) attr(z, "institution") <- NA 
+        if(is.null(attr(z,"reference"))) attr(z, "reference") <- NA
         attr(z, "history")        <- history.stamp(z)
 
         if (one.cell) {
