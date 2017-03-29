@@ -706,8 +706,6 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
                                         #Z <- regrid(y,is=list(x1,y1))
         Z <- regrid(y,is=x)
         
-        ## KMP 2016-03-16 Issues with DSensemble because appendix.1 is empty.
-        ## The problem originates here. Let's try changing maskna.
         iv <- function(x) return(sum(is.finite(x))) # KMP 2016-03-16
         ngood <- apply(coredata(x),2,iv) # KMP 2016-03-16
         maskna <- ngood==0 # KMP 2016-03-16
