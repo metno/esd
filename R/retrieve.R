@@ -52,7 +52,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
         nc <- open.ncdf(file.path(path,ncfile))
         dimnames <- names(nc$dim)
-	ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
+        ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
         ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
         lon <- ncvar_get(nc,dimnames[ilon])
         lat <- ncvar_get(nc,dimnames[ilat])
@@ -74,12 +74,17 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
         dimnames <- names(nc$dim)
 	      ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
         ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
-        lon <- ncvar_get(nc,dimnames[ilon])
-        lat <- ncvar_get(nc,dimnames[ilat])
-        ## KMP 2017-03-13: grep(x|i) is too general - identifies any word with x and i.
-        #lon <- ncvar_get(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
-        #lat <- ncvar_get(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
-        nc_close(nc)
+        if(any(ilon) & any(ilat)) {
+          lon <- ncvar_get(nc,dimnames[ilon])
+          lat <- ncvar_get(nc,dimnames[ilat])
+          ## KMP 2017-03-13: grep(x|i) is too general - identifies any word with x and i.
+          #lon <- ncvar_get(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
+          #lat <- ncvar_get(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
+          nc_close(nc)
+        } else {
+          lon <- NULL
+          lat <- NULL
+        }
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
             if (verbose) print('Regular grid field found')
             X <- retrieve.ncdf4(ncfile,path=path,param=param,verbose=verbose,...)
