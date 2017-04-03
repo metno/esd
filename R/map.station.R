@@ -16,7 +16,7 @@ genfun <- function(x,FUN) {
   return(FUN)
 }}
 
-
+## Simplified function for mapping station objects.
 map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              projection="lonlat",
                              xlim = NULL, ylim = NULL,zlim=NULL,n=15,
@@ -61,12 +61,23 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     {
       par(fig=c(0,1,0.05,0.95),mar=rep(2,4),new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
           col.axis='grey',col.lab='grey',las=1)
-      if (!is.null(FUN)) 
-          if (is.character(FUN)) if (FUN=="NULL") FUN <- NULL else FUN <- genfun(x,FUN)
-      if (!is.function(FUN) & !is.null(FUN)) {x <- FUN; FUN <- NULL}
-          if (verbose) print(FUN)                   
-      colbar <- colbar.ini(x,FUN=FUN,colbar=colbar)
-      plot(lon(x),lat(x),col=colbar$col,pch=pch,cex=cex)
+      if (FUN=='trend') FUN <- 'trend.coef'
+      if (!is.null(FUN)) y <- apply(coredata(x),2,FUN) else y <- x    
+      colbar <- colbar.ini(y,FUN=FUN,colbar=colbar)
+      wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
+      wg <- round(strtoi(paste('0x',substr(colbar$col,4,5),sep=''))/255,2)
+      wb <- round(strtoi(paste('0x',substr(colbar$col,6,7),sep=''))/255,2)
+      col <- rep(colbar$col[1],length(y))
+      for (i in 1:length(y)) {
+        ii <- approx(0.5*(colbar$breaks[-1]+colbar$breaks[-length(colbar$breaks)]),1:length(colbar$col),
+                     xout=y[i])$y
+        if (ii < 1) ii <- 1
+        if (ii > length(colbar$col)) ii <- length(colbar$col)
+        col[i] <- rgb(wr[ii],wg[ii],wb[ii],0.3)
+      }
+     
+      
+      plot(lon(x),lat(x),col=col,pch=pch,cex=cex)
       data("geoborders")
       par(xaxt='s',yaxt='s')
       axis(3,seq(min(round(lon(x))),max(round(lon(x))),by=5),col='grey')
