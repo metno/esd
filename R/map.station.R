@@ -1,10 +1,85 @@
 ## Author 	 Rasmus E. Bnestad
 ## Updated 	 by Abdelkader Mezghani
+## Rasmus. E. Benestad - attempt to simpify by splitting up
 ## Last update   26.07.2013
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
 
+genfun <- function(x,FUN) {
+  if (sum(is.element(names(attributes(x)),FUN))>0){
+  ## REB 2015-12-17: Use FUN to colour the symbols according to some attribute:
+  FUN <- eval(parse(text=paste("attr(x,'",FUN,"')")))
+} else if (sum(is.element(names(x),FUN))>0){
+  ## REB 2015-12-17: Use FUN to colour the symbols according to some list element (stationmeta-objects):
+  if (verbose) print('FUN refers to a list element')
+  FUN <- eval(parse(text=paste("function(x,...) x$",FUN,sep='')))
+  return(FUN)
+}}
+
+
 map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
+                             projection="lonlat",
+                             xlim = NULL, ylim = NULL,zlim=NULL,n=15,
+                             col='darkred',bg='orange',
+                             colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
+                                          breaks=NULL,type="p",cex=2,h=0.6, v=1,
+                                          pos=0.1,show=TRUE),
+                             # col=NULL replaced by palette
+                             type=NULL,gridlines=TRUE,
+                             lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
+                             cex=2,zexpr="alt",cex.subset=1,
+                             add.text.subset=FALSE,showall=FALSE,
+                             add.text=FALSE,
+                             height=NULL,width=NULL,
+                             cex.main=1,cex.axis=1,cex.lab=0.6,
+                             pch=19, from=NULL,to=NULL,showaxis=FALSE,
+                             border=FALSE,full.names=FALSE,
+                             full.names.subset=FALSE, 
+                             text=FALSE, fancy=FALSE, 
+                             na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
+                             ##colorbar=TRUE,
+                             legend.shrink=1,...) { 
+  if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap )
+      map.station.old(x,FUN,it,is,new,
+                      projection,
+                      xlim, ylim,zlim,n,
+                      col,bg,
+                      colbar,
+                      type,gridlines,
+                      lonR,latR,axiR,verbose,
+                      cex,zexpr,cex.subset,
+                      add.text.subset,showall,
+                      add.text,
+                      height,width,
+                      cex.main,cex.axis,cex.lab,
+                      pch, from,to,showaxis,
+                      border,full.names,
+                      full.names.subset, 
+                      text, fancy, 
+                      na.rm,show.val,usegooglemap,
+                      legend.shrink,...) else 
+    {
+      par(fig=c(0,1,0.05,0.95),mar=rep(2,4),new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
+          col.axis='grey',col.lab='grey',las=1)
+      if (!is.null(FUN)) 
+          if (is.character(FUN)) if (FUN=="NULL") FUN <- NULL else FUN <- genfun(x,FUN)
+      if (!is.function(FUN) & !is.null(FUN)) {x <- FUN; FUN <- NULL}
+          if (verbose) print(FUN)                   
+      colbar <- colbar.ini(x,FUN=FUN,colbar=colbar)
+      plot(lon(x),lat(x),col=colbar$col,pch=pch,cex=cex)
+      data("geoborders")
+      par(xaxt='s',yaxt='s')
+      axis(3,seq(min(round(lon(x))),max(round(lon(x))),by=5),col='grey')
+      axis(4,seq(min(round(lat(x))),max(round(lat(x))),by=5),col='grey')
+      grid()
+      lines(geoborders$x,geoborders$y)
+      par(new=TRUE,fig=c(0.2,0.8,0,0.2),mar=rep(2,4),yaxt='n',cex.axis=0.7)
+      image(cbind(colbar$breaks,colbar$breaks),col=colbar$col)
+      par(new=TRUE,fig=c(0,1,0.1,1),mar=rep(0,4))
+   }
+}
+
+map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                          col='darkred',bg='orange',
@@ -43,31 +118,12 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   }
   
   if (!is.null(FUN)) 
-    if (is.character(FUN)) if (FUN=="NULL") FUN <- NULL else
-      if (sum(is.element(names(attributes(x)),FUN))>0){
-        ## REB 2015-12-17: Use FUN to colour the symbols according to some attribute:
-        if (verbose) print('FUN refers to an attribute') 
-        #FUN <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
-        #FUN <- paste("function(x) attr(x,",FUN,")")
-        #x <- eval(parse(text=paste("function(x,...) attr(x,'",FUN,"')")))
-        x <- eval(parse(text=paste("attr(x,'",FUN,"')")))
-        FUN <- NULL      
-      } else if (sum(is.element(names(x),FUN))>0){
-        ## REB 2015-12-17: Use FUN to colour the symbols according to some list element (stationmeta-objects):
-        if (verbose) print('FUN refers to a list element')
-        FUN <- eval(parse(text=paste("function(x,...) x$",FUN,sep='')))
-        #FUN <- paste("function(x) x$",FUN,sep='')
-      }
+    if (is.character(FUN)) if (FUN=="NULL") FUN <- NULL else FUN <- genfun(x,FUN)
+    if (!is.function(FUN) & !is.null(FUN)) {x <- FUN; FUN <- NULL}
   if (verbose) print(FUN)
-  
-  #    if (is.null(col) & ((inherits(x,"stationmeta") | is.null(FUN)))) {
-  #        col <- "darkred"
-  #        bg <- "orange"
-  #    }
-  
-  ##par(mar=c(4,1,1,1))
-  par0 <- par()
-  fig0 <- par()$fig
+
+  fig0 <- c(0,1,0,1); mar0 <- rep(2,4)
+  par0 <- par(fig=fig0,mar=mar0)
   if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) )
     new <- FALSE
   
@@ -226,7 +282,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       scale <- 1
     ##       
     ##print(par()$fig)
-    par(fig=par0$fig,mar=rep(2,4))
+    par(fig=par0$fig,mar=mar0)
     
     ## Transform x using FUN and insert color bar
     ##
@@ -346,7 +402,10 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            ylim = ylim , axes = FALSE , frame.plot = FALSE,
            cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
     
-    par(new=FALSE) ## REB: 2016-10-12 - add the possibility to use google maps
+    #if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) )
+    #     par(new=FALSE) else ## REB: 2016-10-12 - add the possibility to use google maps
+    #     par(new=TRUE)
+    par(new=FALSE)
     
     ## Add geoborders
     ##browser()
