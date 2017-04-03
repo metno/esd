@@ -62,20 +62,27 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       par(fig=c(0,1,0.05,0.95),mar=rep(2,4),new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
           col.axis='grey',col.lab='grey',las=1)
       if (!is.null(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
-      if (!is.null(FUN)) y <- apply(coredata(x),2,FUN) else y <- x    
-      colbar <- colbar.ini(y,FUN=FUN,colbar=colbar)
-      wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
-      wg <- round(strtoi(paste('0x',substr(colbar$col,4,5),sep=''))/255,2)
-      wb <- round(strtoi(paste('0x',substr(colbar$col,6,7),sep=''))/255,2)
-      col <- rep(colbar$col[1],length(y))
-      for (i in 1:length(y)) {
-        ii <- approx(0.5*(colbar$breaks[-1]+colbar$breaks[-length(colbar$breaks)]),1:length(colbar$col),
-                     xout=y[i])$y
-        if (ii < 1) ii <- 1
-        if (ii > length(colbar$col)) ii <- length(colbar$col)
-        col[i] <- rgb(wr[ii],wg[ii],wb[ii],0.3)
-      }
-     
+      if (!is.null(FUN)) {
+        if (!(FUN %in% names(attributes(x)))) y <- apply(coredata(x),2,FUN) else {
+          y <- attr(x,FUN); FUN <- NULL
+        }    
+        colbar$pal <- varid(x)[1]
+        colbar <- colbar.ini(y,colbar=colbar)
+        wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
+        wg <- round(strtoi(paste('0x',substr(colbar$col,4,5),sep=''))/255,2)
+        wb <- round(strtoi(paste('0x',substr(colbar$col,6,7),sep=''))/255,2)
+        col <- rep(colbar$col[1],length(y))
+        for (i in 1:length(y)) {
+          ii <- round(approx(0.5*(colbar$breaks[-1]+colbar$breaks[-length(colbar$breaks)]),1:length(colbar$col),
+                             xout=y[i])$y)
+          if (is.finite(ii)) {
+            if (ii < 1) ii <- 1
+            if (ii > length(colbar$col)) ii <- length(colbar$col)
+            col[i] <- rgb(wr[ii],wg[ii],wb[ii],0.3)
+          } else col[i] <- rgb(0.5,0.5,0.5,0.2)
+        }
+        show.colbar <- TRUE
+      } else show.colbar <- FALSE
       
       plot(lon(x),lat(x),col=col,pch=pch,cex=cex)
       data("geoborders")
@@ -84,9 +91,11 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       axis(4,seq(min(round(lat(x))),max(round(lat(x))),by=5),col='grey')
       grid()
       lines(geoborders$x,geoborders$y)
-      par(new=TRUE,fig=c(0.2,0.8,0,0.2),mar=rep(2,4),yaxt='n',cex.axis=0.7)
-      image(cbind(colbar$breaks,colbar$breaks),col=colbar$col)
-      par(new=TRUE,fig=c(0,1,0.1,1),mar=rep(0,4))
+      if (show.colbar) {
+        par(new=TRUE,fig=c(0.2,0.8,0,0.2),mar=rep(2,4),yaxt='n',cex.axis=0.7)
+        image(cbind(colbar$breaks,colbar$breaks),col=colbar$col)
+        par(new=TRUE,fig=c(0,1,0.1,1),mar=rep(0,4))
+      }
    }
 }
 
