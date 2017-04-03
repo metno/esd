@@ -61,7 +61,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     {
       par(fig=c(0,1,0.05,0.95),mar=rep(2,4),new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
           col.axis='grey',col.lab='grey',las=1)
-      if (FUN=='trend') FUN <- 'trend.coef'
+      if (!is.null(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
       if (!is.null(FUN)) y <- apply(coredata(x),2,FUN) else y <- x    
       colbar <- colbar.ini(y,FUN=FUN,colbar=colbar)
       wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
