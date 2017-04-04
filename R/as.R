@@ -26,7 +26,7 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'longitude') <- lon
   if (is.null(lat)) lat <- NA
   if ((is.na(lat[1])) & !is.null(attr(x,'latitude')))
-    lat <- attr(x,'latitude')    
+    lat <- attr(x,'latitude')
   attr(y,'latitude') <- lat
   if (is.null(alt)) alt <- NA
   if ((is.na(alt[1])) & !is.null(attr(x,'altitude')))
@@ -323,14 +323,20 @@ as.station.eof <- function(x,ip=1:10) {
   invisible(y)
 }
 
-as.station.dsensemble <- function(x,...) {
-  if (!is.null(x$pca) & !inherits(x,"pca") & inherits(x,"eof"))
-    class(x) <- gsub("eof","pca",class(x)) ## REB 2016-12-13: to also work on gridded versions.    
+
+as.station.dsensemble <- function(x,verbose=FALSE,...) {
+  if(verbose) print("as.station.dsensemble")
+  if (!is.null(x$pca) & !inherits(x,"pca") & inherits(x,"eof")) {
+    class(x) <- gsub("eof","pca",class(x)) ## REB 2016-12-13: to also work on gridded versions.
+  }
   if (inherits(x,"pca")) {
-    y <- as.station.dsensemble.pca(x,...)
+    y <- as.station.dsensemble.pca(x,verbose=verbose,...)
   } else if (inherits(x,c("station","zoo"))) {
-    y <- as.station.dsensemble.station(x,...)
-  } else print(paste('unknown class - do not know how to handle:',class(x)))
+    y <- as.station.dsensemble.station(x,verbose=verbose,...)
+  } else {
+    print(paste('unexpected class - do not know how to handle:',class(x)))
+    y <- x
+  }
   return(y)
 }
 
@@ -370,11 +376,9 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     d <- dim(U)
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], length(X)-2)
-    
     for (i in seq(1:dim(S)[1])) {
       S[i,,] <- S[i,,] + c(attr(X$pca,'mean'))[i]
     }
-    
     S <- lapply(split(S, arrayInd(seq_along(S),dim(S))[,1]),
                 array,dim=dim(S)[-1])
     S <- lapply(S,function(x) zoo(x,order.by=index(X[[3]])))
@@ -397,26 +401,26 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     locs <- attr(X$pca,"location")
     gcms <- sub(".*_","",names(X)[3:length(X)])
     for (i in 1:length(S)) {
-       yi <- Y[,i]
-       class(yi) <- class(Y)
-       yi <- attrcp(Y,yi)
-       attr(yi,"longitude") <- lons[i]
-       attr(yi,"latitude") <- lats[i]
-       attr(yi,"altitude") <- alts[i]
-       attr(yi,"station_id") <- stid[i]
-       attr(yi,"location") <- locs[i]
-       attr(yi,"unit") <- attr(X$pca,"unit")
-       attr(yi,"variable") <- attr(X$pca,"variable")
-       attr(yi,"longname") <- attr(X$pca,"longname")
-       attr(S[[i]],"station") <- yi
-       attr(S[[i]],'aspect') <- 'original'
-       attr(S[[i]],"longitude") <- lons[i]
-       attr(S[[i]],"latitude") <- lats[i]
-       attr(S[[i]],"altitude") <- alts[i]
-       attr(S[[i]],"station_id") <- stid[i]
-       attr(S[[i]],"location") <- locs[i]
-       attr(S[[i]],'model_id') <- gcms
-       class(S[[i]]) <- c('dsensemble','zoo')
+      yi <- Y[,i]
+      class(yi) <- class(Y)
+      yi <- attrcp(Y,yi)
+      attr(yi,"longitude") <- lons[i]
+      attr(yi,"latitude") <- lats[i]
+      attr(yi,"altitude") <- alts[i]
+      attr(yi,"station_id") <- stid[i]
+      attr(yi,"location") <- locs[i]
+      attr(yi,"unit") <- attr(X$pca,"unit")
+      attr(yi,"variable") <- attr(X$pca,"variable")
+      attr(yi,"longname") <- attr(X$pca,"longname")
+      attr(S[[i]],"station") <- yi
+      attr(S[[i]],'aspect') <- 'original'
+      attr(S[[i]],"longitude") <- lons[i]
+      attr(S[[i]],"latitude") <- lats[i]
+      attr(S[[i]],"altitude") <- alts[i]
+      attr(S[[i]],"station_id") <- stid[i]
+      attr(S[[i]],"location") <- locs[i]
+      attr(S[[i]],'model_id') <- gcms
+      class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     if (length(S)>1) class(S) <- c("dsensemble",class(X$pca)[2:3],"list") else
@@ -430,7 +434,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   }
 }
 
-as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=FALSE) {
+as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=FALSE,...) {
 
     if (verbose) print('as.station.dsensemble.station')
     ns <- length(x)
@@ -444,8 +448,10 @@ as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=F
     dim(V) <- c(nt,ns)
     if (verbose) str(V)
     loc <- unlist(lapply(x,loc)); lon <- unlist(lapply(x,lon)); lat <- unlist(lapply(x,lat))
-    alt <- unlist(lapply(x,alt)); param <- unlist(lapply(x,varid)); unit <- unlist(lapply(x,unit))
-    stid <- unlist(lapply(x,stid)); longname <- unlist(lapply(x,function(x) attr(x,'longname')))
+    alt <- unlist(lapply(x,alt)); stid <- unlist(lapply(x,stid));
+    param <- attr(x,"variable")#unlist(lapply(x,varid))
+    unit <- attr(x,"unit")#unlist(lapply(x,unit))
+    longname <- attr(x,"longname")#unlist(lapply(x,function(x) attr(x,'longname')))
     y <- as.station(zoo(V,order.by=index(x[[1]])),loc=loc, param=param,unit=unit,
                     lon=lon,lat=lat,alt=alt,stid=stid,longname=longname)
     attr(y,"history") <- history.stamp()
@@ -1291,6 +1297,10 @@ as.pattern.trend <- function(x) {
   attr(y,'history') <- history.stamp(x)
   invisible(y)  
 }
+
+as.pattern.matrix <- function(x) x 
+
+as.pattern.array <- function(x) x 
 
 as.pattern.field <- function(x,FUN=NULL,...) {
   if (!is.null(FUN)) {

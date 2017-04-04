@@ -13,16 +13,19 @@ aggregate.station(x,by,FUN = 'mean', ..., regular = NULL, frequency = NULL)
 aggregate.field(x,by,FUN = 'mean', ..., regular = NULL, frequency = NULL)
 aggregate.comb(x,by,FUN = 'mean', ...,
                regular = NULL, frequency = NULL)
-aggregate.area(x,is=NULL,it=NULL,FUN='sum',na.rm=TRUE,smallx=FALSE)
+aggregate.area(x,is=NULL,it=NULL,FUN='sum',na.rm=TRUE,smallx=FALSE,
+                           a== 6378, x0=NULL)
 }
 \arguments{
 \item{x}{A \code{\link{station}}, \code{\link{spell}} or a \code{\link{field}} object}
 \item{by}{see \code{\link{aggregate.zoo}}}
-\item{FUN}{see \code{\link{aggregate.zoo}}}
+\item{FUN}{see \code{\link{aggregate.zoo}}.  In addition, 'area','exceedance','lessthan'.}
 \item{regular}{see \code{\link{aggregate.zoo}}}
 \item{frequency}{see \code{\link{aggregate.zoo}}}
 \item{is}{spatial selection - see \code{\link{subset.field}}}
 \item{na.rm}{TRUE: ignore NA - see see \code{\link{mean}}}
+\item{a}{Earth's radius (km)}
+\item{x0}{threshold for FUN=c('exceedance','lessthan')}
 }
 \value{The call returns a station object}
 

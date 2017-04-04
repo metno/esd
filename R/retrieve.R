@@ -52,8 +52,15 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
         nc <- open.ncdf(file.path(path,ncfile))
         dimnames <- names(nc$dim)
-        lon <- get.var.ncdf(nc,dimnames[grep("lon|x",tolower(dimnames))])
-        lat <- get.var.ncdf(nc,dimnames[grep("lat|y",tolower(dimnames))])
+        ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
+        ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
+        lon <- ncvar_get(nc,dimnames[ilon])
+        lat <- ncvar_get(nc,dimnames[ilat])
+        ## KMP 2017-03-13: grep(lon|x|i) picks out everything containing the letters 
+	## lon, x or i (e.g., 'time') so you can easily end up selecting more than one 
+	## longitude dimension. See solution above.
+        #lon <- get.var.ncdf(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
+        #lat <- get.var.ncdf(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
         close.ncdf(nc)
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) ) {
             if (verbose) print('Regular grid field found')
@@ -65,9 +72,19 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
         nc <- nc_open(file.path(path,ncfile))
         dimnames <- names(nc$dim)
-        lon <- ncvar_get(nc,dimnames[grep("lon|x",tolower(dimnames))])
-        lat <- ncvar_get(nc,dimnames[grep("lat|y",tolower(dimnames))])
-        nc_close(nc)
+	      ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
+        ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
+        if(any(ilon) & any(ilat)) {
+          lon <- ncvar_get(nc,dimnames[ilon])
+          lat <- ncvar_get(nc,dimnames[ilat])
+          ## KMP 2017-03-13: grep(x|i) is too general - identifies any word with x and i.
+          #lon <- ncvar_get(nc,dimnames[grep("lon|x|i",tolower(dimnames))])
+          #lat <- ncvar_get(nc,dimnames[grep("lat|y|j",tolower(dimnames))])
+          nc_close(nc)
+        } else {
+          lon <- NULL
+          lat <- NULL
+        }
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
             if (verbose) print('Regular grid field found')
             X <- retrieve.ncdf4(ncfile,path=path,param=param,verbose=verbose,...)
@@ -140,7 +157,9 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
         dimnames[i] <- tolower(v1$dim[[i]]$name)
     ## Get lon, lat, lev, time attr and values and update values if necessary
     ## Longitudes
-    ilon <- grep("lon|x|ncells", dimnames)
+    ilon <- which(tolower(dimnames) %in% c("x","i") | grepl("lon|ncells",tolower(dimnames)))
+    ## KMP 2017-03-13: grep(x|i) is too general - identifies any word with x or i. 
+    #ilon <- grep("lon|x|ncells|i", dimnames)
     if (length(ilon) ==0)
         ilon <- NULL
     else if (length(ilon)>1)
@@ -175,7 +194,9 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     }##else if (!(sum(id) > 0)) lon$vals <- lon$vals + 180
     
     ## Latitudes
-    ilat <- grep("lat|y", dimnames)
+    ilat <- which(tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames)))
+    ## KMP 2017-03-13: grep(y|j) is too general - identifies any word with y or j. 
+    #ilat <- grep("lat|y|i", dimnames)
     if (length(ilat) ==0)
         ilat <- NULL
     else if (length(ilat) > 1)
@@ -539,35 +560,41 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
         attr(z,"latitude") <- lat$vals
     }
     if (!is.null(ilev)) {
-        attr(z,"level")        <- lev$vals[lev.w]
-        attr(z,"levelUnit")    <- lev$units
+        attr(z,"level") <- lev$vals[lev.w]
+        attr(z,"levelUnit") <- lev$units
     }
     if (!is.null(itime)) {
         attr(z,"calendar") <- time$calendar
     }
     ## Add attributes
-    attr(z, "file")           <- model$filename
-    attr(z, "title")          <- model$title
-    
     ##attr(z, "project_id")     <- ifelse(!is.null(model$project_id), model$project_id, NA)
+    attr(z, "file") <- model$filename
     attr(z, "source")         <- model$project_id
-    attr(z, "model_id")       <- model$model_id
-    attr(z, "experiment_id")  <- model$experiment_id
-    attr(z, "realization")    <- model$realization
     attr(z, 'timeunit')       <- model$frequency
     attr(z, 'frequency')      <- 1
-    attr(z, 'type')           <- model$type
+    ## KMP 2017-03-22: There is a lot of information specific to files 
+    ##    from, e.g., CORDEX and CMIP5 that is not passed on to the object here.
+    mattr <- names(model)[!names(model) %in% c(names(attributes(z)),"project_id","filename")]
+    for(a in mattr) attr(z, a) <- model[[a]]
+    ## not needed with the mattr loop:
+    #attr(z, "title") <- model$title
+    #attr(z, "model_id")       <- model$model_id
+    #attr(z, "experiment_id")  <- model$experiment_id
+    #attr(z, "realization")    <- model$realization
+    #attr(z, "initialization_method") <- model$initialization_method
+    #attr(z, "physics_version") <- model$physics_version
+    #attr(z, "parent_experiment_rip") <- model$parent_experiment_rip
+    #attr(z, 'type')           <- model$type
     ## attr(z, "timestamp")      <- date()
     ## attr(z, "anomaly")        <- FALSE
     ## attr(z, "time:method")    <- NA
     ## attr(z, "spatial:method") <- NA
-    ##attr(z, "title")          <- model$title
     attr(z, "URL")            <- "http://climexp.knmi.nl/"
     attr(z, "call")           <- match.call()
     ## attr(z, "history")        <- NA
-    attr(z, "institution")    <- NA 
-    attr(z, "reference")      <- NA
-    attr(z, "history")        <- history.stamp(z)
+    if(is.null(attr(z,"institution"))) attr(z, "institution") <- NA 
+    if(is.null(attr(z,"reference"))) attr(z, "reference") <- NA
+    attr(z, "history")  <- history.stamp(z)
     if (one.cell) {
         class(z) <- c("station",model$frequency,"zoo")
         attr(z,'location') <- 'Grid cell'
@@ -659,7 +686,9 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         }
         ## Get lon, lat, lev, time attr and values and update values if necessary
         ## Longitudes
-        ilon <- grep("lon|x", dimnames)
+	ilon <- which(tolower(dimnames) %in% c("x","i") | grepl("lon|ncells",tolower(dimnames)))
+        ## KMP 2017-03-13: grep(x|i) is too general - identifies any word with x or i. 
+        #ilon <- grep("lon|x|i", dimnames)
         if (length(ilon) ==0) {
             ilon <- NULL
         } else if (length(ilon)>1) {
@@ -699,7 +728,9 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         }##else if (!(sum(id) > 0)) lon$vals <- lon$vals + 180
         
         ## Latitudes
-        ilat <- grep("lat|y", dimnames)
+	ilat <- which(tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames)))
+        ## KMP 2017-03-13: grep(y|j) is too general - will identify any word with an y or j. 
+        #ilat <- grep("lat|y|j", dimnames)
         if (length(ilat) ==0) {
             ilat <- NULL
         } else if (length(ilat) > 1) {
@@ -737,7 +768,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         ## Check and update info 
         ##  
         ##if (ncdf.check) { 
-        ncid2 <- check.ncdf(ncid,param=param,verbose=verbose) 
+        ncid2 <- F(ncid,param=param,verbose=verbose) 
         if (length(grep("model",ls())) > 0) model <- ncid2$model 
         if (!is.null(itime)) time <- ncid2$time
         rm(ncid2)
@@ -1081,17 +1112,24 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
             attr(z,"calendar") <- model$calendar
         }
         ## Add attributes
-        attr(z, "file") <- model$filename
-        attr(z, "title") <- model$title
-        
         ##attr(z, "project_id")     <- ifelse(!is.null(model$project_id), model$project_id, NA)
+        attr(z, "file") <- model$filename
         attr(z,'source') <- model$project_id
-        attr(z,'model_id') <- model$model_id
-        attr(z,'experiment_id') <- model$experiment_id
-        attr(z,'realization') <- model$realization
         attr(z,'timeunit') <- model$frequency
         attr(z,'frequency') <- 1
-        attr(z,'type') <- model$type
+        ## KMP 2017-03-22: There is a lot of information specific to files 
+        ##    from, e.g., CORDEX and CMIP5 that is not passed on to the object here.
+        mattr <- names(model)[!names(model) %in% c(names(attributes(z)),"filename","project_id")]
+        for(a in mattr) attr(z, a) <- model[[a]]
+        ## not needed with the mattr loop:
+        #attr(z, "title") <- model$title
+        #attr(z,'model_id') <- model$model_id
+        #attr(z,'experiment_id') <- model$experiment_id
+        #attr(z,'realization') <- model$realization
+        #attr(z, "initialization_method") <- model$initialization_method
+        #attr(z, "physics_version") <- model$physics_version
+        #attr(z, "parent_experiment_rip") <- model$parent_experiment_rip
+        #attr(z,'type') <- model$type
         ## attr(z, "timestamp")      <- date()
         ## attr(z, "anomaly")        <- FALSE
         ## attr(z, "time:method")    <- NA
@@ -1100,8 +1138,8 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         attr(z, "URL")            <- "http://climexp.knmi.nl/"
         attr(z, "call")           <- match.call()
         ## attr(z, "history")        <- NA
-        attr(z, "institution")    <- NA 
-        attr(z, "reference")      <- NA
+        if(is.null(attr(z,"institution"))) attr(z, "institution") <- NA 
+        if(is.null(attr(z,"reference"))) attr(z, "reference") <- NA
         attr(z, "history")        <- history.stamp(z)
 
         if (one.cell) {

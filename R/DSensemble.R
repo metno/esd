@@ -163,7 +163,9 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
     #gcmnm[i] <- attr(gcm,'model_id'))
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+    #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+    # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
+    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
     # REB: 30.04.2014 - new lines...
     DJFGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
     MAMGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='mam')
@@ -476,7 +478,9 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                     lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+    # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
+    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+    #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
     
@@ -693,7 +697,9 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                     lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realisation'),sep="-")
+    # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
+    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+    #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
 
@@ -935,7 +941,9 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                           lon=range(lon(SLP))+c(-2,2),
                           lat=range(lat(SLP))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realisation'),sep="-")
+    # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
+    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+    #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     GCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
     rm("gcm"); gc(reset=TRUE)
     SLPGCM <- combine(SLP,GCM)
@@ -1204,7 +1212,9 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcm3 <- retrieve(ncfile = ncfiles3[select[i]],type=type,
                     lon=range(lon(PRE3))+c(-2,2),lat=range(lat(PRE3))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm3 <- subset(gcm3,it=c(1900,2099))
-    gcmnm[i] <- paste(attr(gcm1,'model_id'),attr(gcm,'realization'),sep="-")
+    # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
+    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+    #gcmnm[i] <- paste(attr(gcm1,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm1))
     
@@ -1482,7 +1492,9 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
       if (verbose) print(paste('mask=',mask))
       if (mask) gcm <- mask(gcm,land=TRUE)
-      gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
+      # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
+      gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+      #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
       if (verbose) print('spatial average')
       GCM <- spatial.avg.field(C.C.eq(gcm))
       z <- annual(GCM,FUN="max")
@@ -2031,7 +2043,9 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
       gcm <- subset(gcm,it=it)
     }
     #gcmnm[i] <- attr(gcm,'model_id')
-    gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
+    #gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
+    # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
+    gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")   
     if (verbose) print(class(y))
 
     ## REB 2016-10-25

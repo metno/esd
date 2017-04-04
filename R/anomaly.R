@@ -87,6 +87,7 @@ anomaly.station <- function(x,...) {
 
 anomaly.annual <- function(x,ref=1961:1990,na.rm=TRUE,verbose=FALSE,...) {
   if (verbose) print('anomaly.annual')
+  if(length(ref)==2) ref <- seq(min(ref),max(ref))
   X <- x;  x <- coredata(X)
   t <- index(X)
   datetype <- class(t)

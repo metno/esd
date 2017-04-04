@@ -48,6 +48,7 @@
 \alias{dse.Oslo}
 \alias{glossstations}
 \alias{IPCC.AR5.Table.9.A.1}
+\alias{cmipgcmresolution}
 \alias{global.t2m.gcm}
 \alias{QBO}
 \alias{CET}
@@ -107,6 +108,7 @@ data(eof.sst.DNMI)
 data(eof.slp.DNMI)
 data(geoborders)
 data(IPCC.AR5.Table.9.A.1)
+cmipgcmresolution(what='deg') 
 slp.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.NCEP(lon=NULL,lat=NULL,anomaly=FALSE)

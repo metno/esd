@@ -2,7 +2,7 @@
 library(esd)
 
 globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
-                       annual=TRUE,pattern='tas_',param='tas',
+                       annual=TRUE,pattern='tas_',param='tas',relative=FALSE,
                        select=NULL,lon=NULL,lat=NULL) {
 
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
@@ -19,6 +19,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
     gcm <- retrieve(fnames[i],param=param,lon=lon,lat=lat)
     gcmnm <- attr(gcm,'model_id')
     run <- attr(gcm,'realization')
+    rip <- attr(gcm,'parent_experiment_rip')
     d <- attr(gcm,'dimensions')
     cal <- attr(gcm,'calendar')
     print(paste(i,n,gcmnm,run,paste(d,collapse='-'),
@@ -33,21 +34,31 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
       i2 <- is.element(year(y) + round((month(y)-0.5)/12,2),yr)
     }
     ya <- anomaly(y,ref=ref)
+    if(relative) {
+      ya <- ya/attr(ya,"climatology")*100
+      attr(ya,"unit") <- "%"
+    }
     if (i==1) plot(ya) else lines(ya)
     X[i,i1] <- coredata(ya)[i2]
     gcmnm <- gsub('-','.',gcmnm)
     cline <- paste('meta$',fnms[i],
-             ' <- list(GCM=gcmnm,run=run,d=d,calendar=cal,',
+             ' <- list(GCM=gcmnm,run=run,rip=rip,d=d,calendar=cal,',
              'mean=attr(ya,"climatology"))',sep='')
     eval(parse(text=cline))
   }
-
   if (!annual) yr <- as.Date(paste(trunc(yr),round(12*(yr-trunc(yr))+0.5),'01',sep='-'))
   global.t2m.cmip5 <- zoo(t(X),order.by=yr)
   attr(global.t2m.cmip5,'metadata') <- meta
-  attr(global.t2m.cmip5,'aspect') <- 'anomalies'
+  if(relative) {
+    attr(global.t2m.cmip5,"unit") <- "%"
+    attr(global.t2m.cmip5,"aspect") <- "relative anomaly"
+  } else {
+    attr(global.t2m.cmip5,'unit') <- attr(gcm,'unit')
+    attr(global.t2m.cmip5,'aspect') <- 'anomalies'
+  }
   attr(global.t2m.cmip5,'baseline') <- '1961-1990'
   attr(global.t2m.cmip5,'experiment_id') <-  attr(gcm,'experiment_id')
+  attr(global.t2m.cmip5,'variable') <- attr(gcm,'variable')
   attr(global.t2m.cmip5,'history') <- match.call()
   invisible(global.t2m.cmip5)
 }
@@ -72,13 +83,14 @@ AC <- function(path='CMIP5.monthly/rcp45',
     gcm <- subset(gcm,it=range(year(rea)))
     gcmnm <- attr(gcm,'model_id')
     run <- attr(gcm,'realization')
+    rip <- attr(gcm,'parent_experiment_rip')
     cal <- attr(gcm,'calendar')
     print(paste(i,n,gcmnm,run,paste(d,collapse='-')))
     y <- aggregate(gcm,month,FUN='mean')
     Y <- combine(Y,y)
     gcmnm <- gsub('-','.',gcmnm)
     cline <- paste('meta$',gcmnm,'.',run,
-             ' <- list(GCM=attr(gcm,"model_id"),run=run,d=d,calendar=cal,dT=dT)',sep='')
+             ' <- list(GCM=attr(gcm,"model_id"),run=run,rip=rip,d=d,calendar=cal,dT=dT)',sep='')
     eval(parse(text=cline))
   }
 
@@ -86,6 +98,8 @@ AC <- function(path='CMIP5.monthly/rcp45',
   attr(Y,'aspect') <- 'mean-seasonal-cycle'
   attr(Y,'baseline') <- range(year(rea))
   attr(Y,'experiment_id') <-  attr(gcm,'experiment_id')
+  attr(Y,'variable') <- attr(gcm,'variable')
+  attr(Y,'unit') <- attr(gcm,'unit')
   attr(Y,'history') <- match.call()
   invisible(Y)
 }

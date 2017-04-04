@@ -985,7 +985,7 @@ mask <- function(x,land=FALSE) {
     data(etopo5)
     h <- regrid(etopo5,is=x)
     if (!land) h[h < -5] <- NA else
-                                   h[h > 5] <- NA
+               h[h > 5] <- NA
     X <- coredata(x)
     X[,is.na(h)] <- NA
     X -> coredata(x)
