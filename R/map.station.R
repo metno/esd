@@ -59,7 +59,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                       na.rm,show.val,usegooglemap,
                       legend.shrink,...) else 
     {
-      
+      if (new) dev.new()
       if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
       par(fig=c(0,1,0.05,0.95),mar=rep(2,4),new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
           col.axis='grey',col.lab='grey',las=1)
@@ -101,12 +101,17 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       lines(geoborders$x,geoborders$y)
       if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
       if (show.colbar) {
-        par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n',cex.axis=0.7)
-        image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col)
+        par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1,4),yaxt='n')
+        image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col,axes=FALSE)
+        par(mar=c(2,1,2,1),cex.axis=0.7,col.axis='grey')
+        axis(3,colbar$breaks)
         par(new=TRUE,fig=c(0,1,0.06,0.95),mar=rep(2,4),xaxt='n') ## REB: unexpected fix. 
+       
       }
    }
 }
+
+###
 
 map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          projection="lonlat",
