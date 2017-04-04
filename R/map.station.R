@@ -59,14 +59,18 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                       na.rm,show.val,usegooglemap,
                       legend.shrink,...) else 
     {
+      
+      if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
       par(fig=c(0,1,0.05,0.95),mar=rep(2,4),new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
           col.axis='grey',col.lab='grey',las=1)
-      if (!is.null(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
+      if (!is.null(FUN)) if (FUN=='trend') {
+        FUN <- 'trend.coef'; colbar$pal <- 't2m'
+        if (is.precip(x)) colbar$rev=TRUE
+      } else colbar$pal <- varid(x)[1]
       if (!is.null(FUN)) {
         if (!(FUN %in% names(attributes(x)))) y <- apply(coredata(x),2,FUN) else {
           y <- attr(x,FUN); FUN <- NULL
         }    
-        colbar$pal <- varid(x)[1]
         colbar <- colbar.ini(y,colbar=colbar)
         wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
         wg <- round(strtoi(paste('0x',substr(colbar$col,4,5),sep=''))/255,2)
@@ -74,7 +78,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         col <- rep(colbar$col[1],length(y))
         for (i in 1:length(y)) {
           ii <- round(approx(0.5*(colbar$breaks[-1]+colbar$breaks[-length(colbar$breaks)]),1:length(colbar$col),
-                             xout=y[i])$y)
+                             xout=y[i],rule=2)$y)
           if (is.finite(ii)) {
             if (ii < 1) ii <- 1
             if (ii > length(colbar$col)) ii <- length(colbar$col)
@@ -84,17 +88,22 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         show.colbar <- TRUE
       } else show.colbar <- FALSE
       
-      plot(lon(x),lat(x),col=col,pch=pch,cex=cex)
+      plot(lon(x),lat(x),col=col,pch=pch,cex=cex,xlim=xlim,ylim=ylim)
+      if (add.text) text(lon(x),lat(x),substr(loc(x),1,5),cex=0.7,col='grey')
+      
+      if (gridlines) {
+        par(xaxt='s',yaxt='s')
+        axis(3,seq(min(round(lon(x))),max(round(lon(x))),by=5),col='grey')
+        axis(4,seq(min(round(lat(x))),max(round(lat(x))),by=5),col='grey')
+        grid()
+      }
       data("geoborders")
-      par(xaxt='s',yaxt='s')
-      axis(3,seq(min(round(lon(x))),max(round(lon(x))),by=5),col='grey')
-      axis(4,seq(min(round(lat(x))),max(round(lat(x))),by=5),col='grey')
-      grid()
       lines(geoborders$x,geoborders$y)
+      if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
       if (show.colbar) {
-        par(new=TRUE,fig=c(0.2,0.8,0,0.2),mar=rep(2,4),yaxt='n',cex.axis=0.7)
-        image(cbind(colbar$breaks,colbar$breaks),col=colbar$col)
-        par(new=TRUE,fig=c(0,1,0.1,1),mar=rep(0,4))
+        par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n',cex.axis=0.7)
+        image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col)
+        par(new=TRUE,fig=c(0,1,0.06,0.95),mar=rep(2,4),xaxt='n') ## REB: unexpected fix. 
       }
    }
 }
