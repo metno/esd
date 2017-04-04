@@ -61,8 +61,6 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     {
       if (new) dev.new()
       if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
-      par(fig=c(0,1,0.05,0.95),mar=rep(2,4),new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
-          col.axis='grey',col.lab='grey',las=1)
       if (!is.null(FUN)) if (FUN=='trend') {
         FUN <- 'trend.coef'; colbar$pal <- 't2m'
         if (is.precip(x)) colbar$rev=TRUE
@@ -88,6 +86,9 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         show.colbar <- TRUE
       } else show.colbar <- FALSE
       
+      fig <- c(0,1,0.05,0.95); mar <- rep(2,4)
+      par(fig=fig,mar=mar,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
+          col.axis='grey',col.lab='grey',las=1)
       plot(lon(x),lat(x),col=col,pch=pch,cex=cex,xlim=xlim,ylim=ylim)
       if (add.text) text(lon(x),lat(x),substr(loc(x),1,5),cex=0.7,col='grey')
       
@@ -101,13 +102,13 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       lines(geoborders$x,geoborders$y)
       if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
       if (show.colbar) {
-        par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1,4),yaxt='n')
+        par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n')
         image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col,axes=FALSE)
         par(mar=c(2,1,2,1),cex.axis=0.7,col.axis='grey')
         axis(3,colbar$breaks)
-        par(new=TRUE,fig=c(0,1,0.06,0.95),mar=rep(2,4),xaxt='n') ## REB: unexpected fix. 
-       
-      }
+      } 
+      par(new=TRUE,fig=fig,mar=mar,xaxt='n') ## REB: unexpected fix.
+      plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim)
    }
 }
 
