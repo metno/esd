@@ -19,8 +19,13 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
     # Extract unit etc for the parameter
     vatt <- ncatt_get( ncold, varid=param )
     if (verbose) print(names(vatt))
-    ivunit <- (1:length(names(vatt)))[is.element(substr(names(vatt),1,4),'unit')]
-    vunit <- vatt[[ivunit]]
+    if(any(grepl('unit',vatt))) {
+      ivunit <- (1:length(names(vatt)))[is.element(substr(names(vatt),1,4),'unit')]
+      vunit <- vatt[[ivunit]]
+    } else {
+      if(verbose) print("Unkown unit")
+      vunit <- ""
+    }
     if (verbose) print(paste('unit: ',vunit,'; time unit: ',tunit,'; time origin: ',torg,sep=''))
     longname <- ncatt_get( ncold, varid=param, attname='long_name')
     if (is.null(longname)) {
