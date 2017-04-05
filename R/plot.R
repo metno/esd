@@ -326,12 +326,13 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
               cex.main=cex.main,cex.axis=cex.axis,
               cex.lab=cex.lab,cex=cex,...) ## AM formely new=FALSE colbar=colbar,
       } else if (inherits(x,'pca')) {
-          par(fig=c(0,0.5,0.5,1))
+          fig <- c(0,0.5,0.5,1)
+          par(fig=fig)
           main1 <- paste('Leading EOF#',ip, ' (',
                          round(var.eof[ip],digits=2),"%)",sep='')
           map(x,ip=ip,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
-              cex.lab=cex.lab,cex=cex,...) ## colbar=colbar,
+              cex.lab=cex.lab,cex=cex,fig=fig,...) ## colbar=colbar,
           title(main=src(x)[1],cex.main=cex.main*0.8,
                 col.main="grey40",adj=0,line=0)
           title(main=main1,cex.main=cex.main)

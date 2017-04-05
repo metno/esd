@@ -38,7 +38,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              text=FALSE, fancy=FALSE, 
                              na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
                              ##colorbar=TRUE,
-                             legend.shrink=1,...) { 
+                             legend.shrink=1,fig=c(0,1,0.05,0.95),...) { 
   if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap )
       map.station.old(x,FUN,it,is,new,
                       projection,
@@ -59,6 +59,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                       na.rm,show.val,usegooglemap,
                       legend.shrink,...) else 
     {
+      if (verbose) print('map.station - newversion')
       if (new) dev.new()
       if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
       if (!is.null(FUN)) if (FUN=='trend') {
@@ -69,6 +70,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if (!(FUN %in% names(attributes(x)))) y <- apply(coredata(x),2,FUN) else {
           y <- attr(x,FUN); FUN <- NULL
         }    
+        if (verbose) print(summary(y))
         colbar <- colbar.ini(y,colbar=colbar)
         wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
         wg <- round(strtoi(paste('0x',substr(colbar$col,4,5),sep=''))/255,2)
@@ -80,17 +82,30 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           if (is.finite(ii)) {
             if (ii < 1) ii <- 1
             if (ii > length(colbar$col)) ii <- length(colbar$col)
-            col[i] <- rgb(wr[ii],wg[ii],wb[ii],0.3)
+            col[i] <- rgb(wr[ii],wg[ii],wb[ii],0.7)
           } else col[i] <- rgb(0.5,0.5,0.5,0.2)
         }
         show.colbar <- TRUE
       } else show.colbar <- FALSE
       
-      fig <- c(0,1,0.05,0.95); mar <- rep(2,4)
+      mar <- rep(2,4)
       par(fig=fig,mar=mar,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
-          col.axis='grey',col.lab='grey',las=1)
-      plot(lon(x),lat(x),col=col,pch=pch,cex=cex,xlim=xlim,ylim=ylim)
-      if (add.text) text(lon(x),lat(x),substr(loc(x),1,5),cex=0.7,col='grey')
+                 col.axis='grey',col.lab='grey',las=1)
+      
+      ## Avoid errors when plotting the colorbar with small figure windows
+      ## fin collects information about the figure size (in inches)
+      fin <- par()$fin
+      
+      ## For checking & debugging
+      if (verbose) {
+        print(paste('window size=',fin,collapse=' '))
+        print(summary(lon(x)))
+        print(summary(lat(x)))
+        str(col)
+      }
+      
+      plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=2)
+      if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=0.6,col='grey',pos=1)
       
       if (gridlines) {
         par(xaxt='s',yaxt='s')
@@ -101,13 +116,16 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       data("geoborders")
       lines(geoborders$x,geoborders$y)
       if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
+      
       if (show.colbar) {
-        par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n')
+        if (fin[2] > 6) par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n') else
+                        par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n')
         image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col,axes=FALSE)
         par(mar=c(2,1,2,1),cex.axis=0.7,col.axis='grey')
         axis(3,colbar$breaks)
+        
       } 
-      par(new=TRUE,fig=fig,mar=mar,xaxt='n') ## REB: unexpected fix.
+      par(new=TRUE,fig=fig,mar=mar,yaxt='n',xaxt='n') 
       plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim)
    }
 }
