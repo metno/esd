@@ -1,5 +1,6 @@
 ## Author 	 Kajsa Parding
-## Last update   24.04.2015
+## Rasmus: small fix
+## Last update   24.04.2015, 05.04.2017
 
 plot.trajectory <- function(x,it=NULL,is=NULL,
       main=NULL,xlim=NULL,ylim=NULL,
