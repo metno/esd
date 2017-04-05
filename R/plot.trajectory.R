@@ -13,17 +13,15 @@ plot.trajectory <- function(x,it=NULL,is=NULL,
                lwd=lwd,pch=pch,xlab=xlab,ylab=ylab,
                legend.show=FALSE)
   if (is.null(col)) col <- rainbow(length(y[1,]))
-  if (sum(is.na(attr(y,'longitude')))==0 |
-      sum(is.na(attr(y,'latitude')))==0) {
+  if (sum(is.na(lon(y)))==0 |
+      sum(is.na(lat(y)))==0) {
     if(verbose) print("adding legend")
     par(xpd=TRUE)
     leg <- ''
-    if (!any(is.na(attr(y,'longitude')))) leg <- paste(leg,
-              round(attr(y,'longitude'),2)[1],'–',
-              round(attr(y,'longitude'),2)[2],"E/",sep="")
-    if (!any(is.na(attr(y,'latitude')))) leg <- paste(leg,
-           round(attr(y,'latitude'),2)[1],'–',
-           round(attr(y,'latitude'),2)[2],"N",sep="")
+    if (!any(is.na(lon(y))) & !is.null(lon(y))) 
+      leg <- paste(leg,round(lon(y),2)[1],'–',round(lon(y),2)[2],"E/",sep="")
+    if (!any(is.na(lat(y))) & !is.null(lat(y))) 
+      leg <- paste(leg,round(lat(y),2)[1],'–',round(lat(y),2)[2],"N",sep="")
     if (is.null(col)) col <- rainbow(1)
     if(verbose) print(paste('legend:',leg,', color:',col[1]))
     legend("bottomleft",inset=c(0,-0.25),legend=leg,bty="n",cex=0.6,ncol=3,
