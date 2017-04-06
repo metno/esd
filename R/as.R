@@ -614,7 +614,9 @@ as.field.comb <- function(x,iapp=NULL,verbose=FALSE,...) {
 
 as.field.eof <- function(x,iapp=NULL,verbose=FALSE,...) {
   if(verbose) print("as.field.eof")
-  if (!inherits(x,'comb')) {
+  if (inherits(x,'dsensemble')) {
+    y <- as.field.dsensemble.eof(x,verbose=verbose,...)
+  } else if (!inherits(x,'comb')) {
     y <- eof2field(x,verbose=verbose,...)
   } else {
     y <- as.eof(x,iapp,verbose=verbose)
@@ -622,7 +624,6 @@ as.field.eof <- function(x,iapp=NULL,verbose=FALSE,...) {
   }
   return(y)
 }
-
 
 as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
   if(verbose) print("as.field.ds")
@@ -639,7 +640,6 @@ as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
   } else y <- NULL
   return(y)
 }
-
 
 as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
                              verbose=FALSE,...) {
