@@ -24,7 +24,7 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) )
-    y <- aggregate(x, by, FUN, na.rm=TRUE, ...,
+    y <- aggregate(x, by, FUN, na.rm=na.rm, ...,
                    regular = regular, frequency = frequency) else
     y <- aggregate(x, by, FUN, ..., regular = regular, frequency = frequency)
 
@@ -44,8 +44,6 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   class(y) <- cls
   y <- attrcp(x,y)
 
-
- 
    #print(FUN)
   if (FUN=="counts")  {
     #print("Count")
@@ -66,16 +64,18 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
                    regular = regular, frequency = frequency)
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
     attributes(std.err) <- NULL
+    dim(std.err) <- dim(y)
     attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
   } else if (FUN=="mean") {
-    #print("Wet-day mean")
-    sigma <- aggregate(x, by, FUN='sd', ...,
+    #print("Mean")
+    sigma <- aggregate(x, by, FUN='sd', na.rm=na.rm, ...,
                        regular = regular, frequency = frequency)
-    n <- aggregate(x,by,FUN='nv', ...,
+    n <- aggregate(x, by, FUN='nv', na.rm=na.rm, ...,
                    regular = regular, frequency = frequency)
     #n <- count(x,threshold=threshold)
     std.err <- 2*coredata(sigma)/sqrt(coredata(n)-1)
     attributes(std.err) <- NULL
+    dim(std.err) <- dim(y)
     #Finite population correction factor
     #http://en.wikipedia.org/wiki/Standard_error#Standard_error_of_the_mean
     #N <- length(n)
@@ -92,7 +92,6 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
     attr(y,'variable') <- 'GDD'
     attr(y,'unit') <- 'degree-days'
   } else attr(y,'unit') <- attr(x,'unit')
-
 
   attr(y,'history') <- history.stamp(y)
   return(y)
