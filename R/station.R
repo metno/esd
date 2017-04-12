@@ -172,7 +172,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   print(paste("Retrieving data from",length(id),"records ..."))
   
   
-  ## start loap on available stations
+  ## start loop on available stations
   for (i in 1:length(id)) {
     ##
     ## For now param0 is only used for GHCND dataset
@@ -190,7 +190,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       print(paste(i,toupper(param[i]),stid[i],loc[i],cntr[i],src[i]))
     
     if (src[i]=="METNOD") { #AM-29.08.2013 added for metno data
-      ## 
+      ##browser()
       if (is.null(path.metnod)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnod ## default path
       if (is.null(url.metnod)) 
           if (user == 'metno') url="http://klapp/metnopub/production/"
@@ -1036,7 +1036,6 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
     path <- 'data.METNOD'
   else if (ext=='mon')
     path <- 'data.METNOM'
-  ##browser()
   if (!is.null(url)) {
     Filnavn <- file.path(url, path, paste(param1,'_',sprintf('%05d',as.numeric(stid)),'.',ext, sep = ""))
   } else stop("The url must be specified")

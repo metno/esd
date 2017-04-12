@@ -127,16 +127,16 @@ plot.station <- function(x,plot.type="single",new=TRUE,
       # REB 2014-10-03: add an errorbar to the plots.
       segments(index(x),x-err(x),index(x),x+err(x),
                lwd=3,col=rgb(0.5,0.5,0.5,0.25))
-#      d.err <- dim(std.err)
+#      d.err <- dim(err(x))
 #      dt <- 0.3*diff(index(x))[1]
-#      if (is.null(d.err)) d.err <- c(length(std.err),1)
+#      if (is.null(d.err)) d.err <- c(length(err(x),1)
 #      for (i in 1:d.err[2]) {
 #        for (j in 1:d.err[splot.dse1])
-#          lines(rep(index(x)[j],2),rep(x[j],2) + std.err[j]*c(-1,1),
+#          lines(rep(index(x)[j],2),rep(x[j],2) + err(x)[j]*c(-1,1),
 #                lwd=3,col=rgb(1,0.5,0.5,0.25))
-#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) + std.err[j],
+#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) + err(x)[j],
 #                lwd=1,col=rgb(1,0.5,0.5,0.25))
-#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) - std.err[j],
+#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) - err(x)[j],
 #                lwd=1,col=rgb(1,0.5,0.5,0.25))
 #       }
     }
@@ -144,7 +144,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
  
-    if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
+    #if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
                            text.col=col,cex=0.75)
     #title(main=loc(x),cex=1)
     
@@ -157,15 +157,14 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
-
+ 
     if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
                                        cex.axis=cex.axis*0.75,add.text=FALSE,
                                        map.insert=map.insert,usegooglemap=usegooglemap,
                                        verbose=verbose,...)
-    par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",
-        xpd=FALSE,new=TRUE)
+    par(fig=par0$fig,mar=par0$mar,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
-             xlim=xlim,ylim=ylim,new=FALSE)
+             xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
    
   }
 }
