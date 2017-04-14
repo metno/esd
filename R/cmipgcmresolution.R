@@ -66,6 +66,6 @@ cmipgcmresolution <- function(what='deg') {
     y[xs][i] <- as.numeric(substr(x[xs][i],1,regexpr(',',x[xs][i])-1))
     x[xs][i] <- NA
   }
-  #print(x)
+  ##print(x)
   return(y)
 }
