@@ -145,7 +145,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
  
     #if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
-                           text.col=col,cex=0.75)
+    #                       text.col=col,cex=0.75)
     #title(main=loc(x),cex=1)
     
     if(legend.show) {
