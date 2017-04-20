@@ -651,7 +651,7 @@ as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
   return(y)  
 }
 
-as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,verbose=FALSE,...) {
+as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,anomaly=FALSE,verbose=FALSE,...) {
   if (verbose) print('as.field.dsensemble.eof')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"eof"))
   if (inherits(X,"field")) {
@@ -682,8 +682,10 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,verbose=FALSE,...)
     dim(U) <- c(d[1]*d[2],d[3])
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], dim(V)[3])
-    for (i in seq(1:dim(S)[1])) {
-      S[i,,] <- S[i,,] + c(attr(X$eof,'mean'))[i]
+    if(!anomaly) {
+      for (i in seq(1:dim(S)[1])) {
+        S[i,,] <- S[i,,] + c(attr(X$eof,'mean'))[i]
+      }
     }
 
     S <- aperm(S,c(3,2,1))
@@ -705,12 +707,15 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,verbose=FALSE,...)
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     class(S) <- c("dsensemble","field","list")
-    attr(S,"unit") <- attr(X,"unit")
-    attr(S,'unitarea') <- attr(X,"unitarea")
-    attr(S,"variable") <- attr(X,"variable")
-    attr(S,"scenario") <- attr(X,"scenario")
-    attr(S,"longname") <- attr(X,"longname")
+    S <- attrcp(X,S)
+    attr(S,"unit") <- attr(Y,"unit")
+    attr(S,"variable") <- attr(Y,"variable")
+    attr(S,"longname") <- attr(Y,"longname")
     attr(S,"aspect") <- "dsensemble.eof transformed to field"
+    if(anomaly) {
+      attr(S,"aspect") <- c(attr(S,"aspect"), "anomaly")
+      attr(S,"mean") <- attr(X$eof,"mean")
+    }
     attr(S,"history") <- history.stamp()
     invisible(S)
   }
