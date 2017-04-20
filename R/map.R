@@ -16,7 +16,7 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     ## data in the esd package.
 
     if (verbose) print('map.default')
-    ## browser()
+    
     if (is.logical(colbar)) colbar <- NULL
     ## If only a few items are provided in colbar - then set the rest to the default
     if (!is.null(colbar)) {
@@ -172,7 +172,6 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                     ip=1,cex=1,plot=TRUE,...) {
 
-    ## browser()
     if (verbose) print('map.eof')
     stopifnot(inherits(x,'eof'))
     ##x <- subset(x,it=it,is=is)
@@ -248,7 +247,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) print('map.ds')
     stopifnot(inherits(x,'ds'))
     x <- subset(x,is=is)
-    ##browser()
+    
     ## REB 2015-03-26
     if (inherits(x,'pca')) {
         map.pca(x,it=it,verbose=verbose,new=new,
@@ -300,7 +299,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                 nms <- names(Xa)
                 col <- c('black','darkgreen','grey','yellow','magenta','cyan',
                          'brown','white','green')
-                                        #browser()
+                                       
                 for (i in (2:length(nms))) 
                     contour(lon(Xa[[i]]),lat(Xa[[i]]),Xa[[i]],add=TRUE,col=col[i])
             } else if (sum(is.element(type,'contour'))>0)
@@ -603,7 +602,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (verbose) print('map.cca')
     if (is.null(colbar2)) colbar2 <- colbar1
     ##x <- subset(x,it=it,is=is)
-    ## browser()
+    
     ## For plotting, keep the same kind of object, but replace the patterns in
     ## the eof/pca with the CCA patterns
     Y <- x$Y
@@ -806,7 +805,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     dlat <- diff(range(lat))/60
     if (verbose) {print(dlat); print(sub)}
 
-    text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2)
+    text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2, cex=0.85)
     if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
 
     if (!is.null(period))
