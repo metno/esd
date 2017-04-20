@@ -232,6 +232,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   X <- sp2np(X)
   YYt <- t(coredata(X));
   clim <- rowMeans(YYt,na.rm=TRUE)
+  clim.0 <- clim
   YYt <- YYt - clim
   YY <- t(YYt)
   d <- attr(X,'dimensions')
@@ -290,7 +291,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     clim <- rowMeans(Zt,na.rm=TRUE)
     #str(clim)
     eval(parse(text=paste('clim.',i,' <- clim',sep='')))
-    Zt <- Zt  - clim
+    Zt <- Zt - clim
     #print(paste("Temporal-spatial mean values:",
     #            round(mean(YY,na.rm=TRUE),3),
     #            round(mean(clim,na.rm=TRUE),3)))
@@ -352,6 +353,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   }
   if (verbose) {print("Copy attributes"); print(names(attributes(eof)))}
   ceof <- attrcp(eof,ceof)
+  clim <- clim.0
   dim(clim) <- attr(X,'dimensions')[1:2]
   attr(ceof,'mean') <- clim
   attr(ceof,'dimensions') <- attr(X,'dimensions')
@@ -365,6 +367,9 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     }
     eval(parse(text=paste("yyy <- attr(X,'appendix.",i,"')",sep="")))
     z <- attrcp(yyy,z)
+    eval(parse(text=paste("clim <- clim.",i,sep="")))
+    dim(clim) <- attr(X,'dimensions')[1:2]
+    attr(z,"mean") <- clim
     attr(ceof,paste('appendix.',i,sep="")) <- z
   }
   attr(ceof,'n.apps') <- n.app
