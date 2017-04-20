@@ -21,7 +21,6 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   V <- lapply(X,FUN='subset.pc',it=it)
   if (!test) {
     n <- length(names(V))
-    d <- dim(V[[1]])
     V <- unlist(V)
     dim(V) <- c(d[1]*d[2],n)
     V <- apply(V,1,FUN=FUNX)
@@ -32,7 +31,7 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   }
   if (verbose) print(c(n,d))
   dim(V) <- d
-  
+
   ## REB 2016-12-01: Can also aggregate in time to speed things up and create a vector  
   if (!is.null(FUN)) {  
       if (FUN=='trend') FUN <- 'trend.coef'
@@ -111,9 +110,10 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
   d <- dim(x)
   if (!is.null(it)) {
     if (verbose) print('subset it')
-    if (is.numeric(it) | is.integer(it)) 
-      it <- c(as.Date(paste(it,'01-01',sep='-')),
-              as.Date(paste(it,'12-31',sep='-')))
+    if ((is.numeric(it) | is.integer(it)) & is.dates(index(x))) {
+        it <- c(as.Date(paste(it,'01-01',sep='-')),
+                as.Date(paste(it,'12-31',sep='-')))
+    }
     x <- window(x,start=min(it),end=max(it))
   }
   if (!is.null(ip)) {
