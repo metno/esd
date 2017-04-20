@@ -159,7 +159,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     }
  
     if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
-                                       cex.axis=cex.axis*0.75,add.text=FALSE,
+                                       cex.axis=cex.axis*0.65,add.text=FALSE,
                                        map.insert=map.insert,usegooglemap=usegooglemap,
                                        verbose=verbose,...)
     par(fig=par0$fig,mar=par0$mar,new=TRUE)
@@ -172,7 +172,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
 vis.map <- function(x,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
-                    cex.axis=0.8,add.text=FALSE,
+                    cex.axis=0.7,add.text=FALSE,
                     map.insert=TRUE,verbose=FALSE,
                     usegooglemap=TRUE,zoom=NULL,...) {
   if(verbose) {print('vis.map'); print(cex.axis)}
@@ -191,7 +191,7 @@ vis.map <- function(x,col='red',map.type=NULL,
       map.type <- "points"
     }
   }
-
+  
   ## REB: 2016-10-12 - add the possibility to use google maps
   if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
          usegooglemap ) {
@@ -1363,7 +1363,9 @@ plot.dsensemble <- function(x,verbose=FALSE,...) {
     x <- as.station(x,verbose=verbose)
     y <- plot(x,verbose=verbose,...)
   } else {
-    print(paste('Unknown class - do not know how to plot',class(x)))
+    print(paste('Unknown class - do not know how to plot',
+                paste(class(x),collapse=", ")))
+    y <- x
   }
   if(verbose) print("exit plot.dsensemble")
   invisible(y)
@@ -1551,7 +1553,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
             bty="n",cex=0.7,text.col="grey40")    
   }
   if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
-                                     cex.axis=0.5,add.text=FALSE,
+                                     cex.axis=cex.axis*0.65,add.text=FALSE,
                                      map.insert=map.insert,usegooglemap=usegooglemap,
                                      xrange=xrange,yrange=yrange,
                                      verbose=verbose,...)
