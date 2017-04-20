@@ -654,18 +654,20 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
               inherits(x,'field'),inherits(y,'field'))
     clsx <- class(x); clsy <- class(y)
     hst <- c(attr(x,'history'),attr(y,'history'))
-    if ( (unit(x)=="hPa") & (unit(y)=="Pa")) {
+    if ( (unit(x) %in% c('hPa','mbar')) & (unit(y)=='Pa')) {
         if (verbose) print('Resetting unit of x: hPa -> Pa')
         coredata(x) <- 100*coredata(x)
         attr(x,'unit') <- 'Pa'
+    } 
+    if ( (unit(y) %in% c("hPa","mbar")) & (unit(x)=="Pa")) {
+      if (verbose) print('Resetting unit of y: hPa -> Pa')
+      coredata(y) <- 100*coredata(y)
+      attr(y,'unit') <- 'Pa'
     }
+    if (unit(x)=='mbar' & unit(y)=='hPa') attr(x,'unit') <- 'hPa'
+    if (unit(y)=='mbar' & unit(x)=='hPa') attr(y,'unit') <- 'hPa'
     if (unit(x)=='deg C') attr(x,'unit') <- 'degC'
     if (unit(y)=='deg C') attr(y,'unit') <- 'degC'
-    if ( (unit(y)=="hPa") & (unit(x)=="Pa")) {
-        if (verbose) print('Resetting unit of y: hPa -> Pa')
-        coredata(y) <- 100*coredata(y)
-        attr(y,'unit') <- 'Pa'
-    }
     if (unit(x) != unit(y))
         print(paste('Warning - different units:',unit(x),unit(y)))
 
