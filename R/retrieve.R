@@ -1566,9 +1566,11 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             model$frequency <- freq.att 
             if (!is.null(freq.data)) {
                 if (match(freq.att,freq.data,nomatch=FALSE)) {
-                    if (verbose) print("Frequency found in the attribute matches the frequency detected in data")
-                    model$frequency <- freq.data <- freq.att 
-                } else print("Warning : Frequency found in the attribute does not match the frequency detected in data")
+                  if (verbose) print("Frequency found in the attribute matches the frequency detected in data")
+                  model$frequency <- freq.data <- freq.att 
+                } else {
+                  print("Warning : Frequency found in the attribute does not match the frequency detected in data")
+                }
             } 
         } else if (!is.null(freq.data)) model$frequency <- freq.data
         else if (sum(is.element(tolower(substr(tunit,1,3)), # REB 2016-03-03
@@ -2034,11 +2036,11 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
             model$frequency <- freq.att 
             if (!is.null(freq.data)) {
                 if (match(freq.att,freq.data,nomatch=FALSE)) {
-                    if (verbose)
-                        print("Frequency found in the attribute matches the frequency detected in data")
-                    model$frequency <- freq.data <- freq.att 
-                } else
-                    print("Warning : Frequency found in the attribute does not match the frequency detected in data")
+                  if (verbose) print("Frequency found in the attribute matches the frequency detected in data")
+                  model$frequency <- freq.data <- freq.att 
+                } else {
+                  print("Warning : Frequency found in the attribute does not match the frequency detected in data")
+                }
             } 
         } else if (!is.null(freq.data))
             model$frequency <- freq.data
