@@ -1565,7 +1565,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         if (!is.null(freq.att)) {
             model$frequency <- freq.att 
             if (!is.null(freq.data)) {
-                if (match(freq.att,freq.data)) {
+                if (match(freq.att,freq.data,nomatch=FALSE)) {
                     if (verbose) print("Frequency found in the attribute matches the frequency detected in data")
                     model$frequency <- freq.data <- freq.att 
                 } else print("Warning : Frequency found in the attribute does not match the frequency detected in data")
@@ -2033,7 +2033,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         if (!is.null(freq.att)) {
             model$frequency <- freq.att 
             if (!is.null(freq.data)) {
-                if (match(freq.att,freq.data)) {
+                if (match(freq.att,freq.data,nomatch=FALSE)) {
                     if (verbose)
                         print("Frequency found in the attribute matches the frequency detected in data")
                     model$frequency <- freq.data <- freq.att 
