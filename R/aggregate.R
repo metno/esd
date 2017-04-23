@@ -238,7 +238,8 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   lon <- rep(attr(x,'longitude'),d[2])
   lat <- sort(rep(attr(x,'latitude'),d[1]))
   aweights <- cos(pi*lat/180)
-  aweights <- aweights/mean(aweights) 
+  gweights <- cos(pi*seq(-90,90,by=diff(lat(x))[1])/180)
+  aweights <- aweights/mean(gweights) 
 #  area <- cos(pi*lat/180); dim(area) <- d[1:2]
 #  area <- area/sum(area)
   
