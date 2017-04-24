@@ -118,8 +118,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
       
       if (show.colbar) {
-        if (fin[2] > 6) par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n') else
-                        par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n')
+        if (fin[2] >= 8) par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n') else
+                         par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n')
         image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col,axes=FALSE)
         par(mar=c(2,1,2,1),cex.axis=0.7,col.axis='grey')
         axis(3,colbar$breaks)
