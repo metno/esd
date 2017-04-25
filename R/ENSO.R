@@ -114,9 +114,9 @@ CO2 <- function(url='ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt
   X <- read.table(url)
   X[X <= -99] <- NA
   co2 <- zoo(X$V4,order.by=as.Date(paste(X$V1,X$V2,'01',sep='-')))
-  co2 <- as.station(co2,loc='Mauna Loa',param='CO2',unit='ppm',
+  co2 <- as.station(co2,loc='Mauna Loa',param=expression(C*O[2]),unit='ppm',
                      lon=-155.5763,lat=19.5362,alt=3397,
-                     cntr=NA,longname='Quasi-biennial oscillation',
+                     cntr=NA,longname='Carbon dioxide',
                      stid=NA,quality=NA,src='NOAA/ESRL',
                      url=url,reference='C.D. Keeling, R.B. Bacastow, A.E. Bainbridge, C.A. Ekdahl, P.R. Guenther, and L.S. Waterman, (1976), Atmospheric carbon dioxide variations at Mauna Loa Observatory, Hawaii, Tellus, vol. 28, 538-551', method= NA,
                info='Use of these data implies an agreement to reciprocate.')
