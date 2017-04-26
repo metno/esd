@@ -237,21 +237,19 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   #print(c(length(colSums(area)),length(attr(x,'latitude')),sum(colSums(area))))
   #lon <- rep(lon(x),d[2])
   srtlat <- order(rep(lat(x),d[1]))
-  dY <- pi*diff(lat(x))[1]/180
-  aweights <- rep(a*dY * 2*a*pi*cos(pi*lat(x)/180)/d[1],d[1])[srtlat]
-  if (FUN=='mean') aweights <- aweights/sum(aweights)
-  
+  dY <- a*diff(pi*lat(x)/180)[1]
+  dtheta <- diff(pi*lon(x)/180)[1]
+  aweights <- rep(dY * 2*a*pi*cos(pi*lat(x)/180)/d[1],d[1])[srtlat]
+  if (FUN=='mean') {
+    ok <- is.finite(colMeans(x))
+    aweights <- aweights/sum(aweights[ok])
+    FUN <- 'sum'
+  }
   if (verbose) print(paste('Sum of aweights should be area or 1:',round(sum(aweights))))
-#  area <- cos(pi*lat/180); dim(area) <- d[1:2]
-#  area <- area/sum(area)
+
   
   ## REB: For sum, we also need to consider the area:
   if (FUN %in% c('sum','area','exceedance','exceedence','lessthan')) {
-    #dy <- a*diff(pi*lat(x)/180)[1]
-    #dtheta <- diff(pi*lon(x)/180)[1]
-    #nx <- length(lon(x)); ny <- length(lat(x))
-    #area.reg <- matrix(rep(a*cos(pi*lat(x)/180)*dy*dtheta,nx),ny,nx)
-    #aweights <- area.reg
     if (FUN=='area') {
       ## Estimate the area of the grid boxes
       coredata(x) -> cx
@@ -282,6 +280,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
     for (i in 1:d[3]) X[i,] <- X[i,]*aweights
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   }
+  if (verbose) print(y)
   
   Y <- as.station(y,loc=paste('area',FUN,'of',src(x)),
                   param=attr(x,'variable'),
