@@ -18,6 +18,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     if (verbose) print('retrieve.default')
     ##
     X <- NULL
+    qf <- NULL
     ## 
     ## Setting the path
     if (is.null(path)) { 
@@ -531,7 +532,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
                 d <- d[-ilev]
             } else {
                 dim(val) <- c(d[ilon]*d[ilat]*d[ilev],d[itime])
-                print("Warning: 'esd-package' cannot handle more than one level (or heigth) - Please select one level to retrieve the data (e.g. lev=1000)")
+                print("Warning: 'esd-package' cannot handle more than one level (or height) - Please select one level to retrieve the data (e.g. lev=1000)")
             }   
         }
     }
@@ -1462,6 +1463,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                 
                 if (sum(diff(time$vals)%/%time$daysayear) > 1 & (verbose))
                     print("Warning : Jumps of years has been found in the time series ")
+                    qf <- c(qf,"jumps of years found in time series")
                 if (time$vals[1]%%time$daysayear > 27) {
                     year1 <- year1 + 1
                     month1 <- month1 + 1
@@ -1479,6 +1481,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                     print("Warning : Jumps in data have been found !")
                     print("Warning: Trust the first date and force a continuous vector of dates !")
                     time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=time$len)
+                    qf <- c(qf,"jumps in data found - continuous vector forced")
                 } else time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)                  
             }  
         } else   
@@ -1504,7 +1507,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                 year1 <- time$vals[1]%/%12 + yorigin
                 month1 <- morigin
                 time$vdate <- seq(as.Date(paste(as.character(year1),month1,"15",sep="-")), by = "month",length.out=length(time$vals))
-            } else print("Warning : Monthly data are Mangeled") 
+            } else print("Warning : Monthly data are mangeled") 
         } 
     }
     if ((length(time$vdate)>0) & (sum(diff(as.numeric(format.Date(time$vdate,"%m")))>1)) & (verbose)) stop("Vector date is mangeled ! Need extra check !")
@@ -1570,6 +1573,8 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                   model$frequency <- freq.data <- freq.att 
                 } else {
                   print("Warning : Frequency found in the attribute does not match the frequency detected in data")
+                  model$frequency <- freq.data
+                  qf <- c(qf,paste("attribute frequency (",freq.att,") does not match data frequency (",freq.data,")",sep=""))
                 }
             } 
         } else if (!is.null(freq.data)) model$frequency <- freq.data
@@ -1598,6 +1603,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ## End check 2
     if (verbose) print("Checking --> [Done!]")
     ## use zoo library to format the data
+    model$qf <- qf
     
     ## Extra Checking
     ##y.test <- data.e <- ncvar_get(ncid, v1$name, start = c(1,1,1), count = c(1,1,-1))
@@ -1919,6 +1925,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
                     time$vdate <- seq(as.Date(paste(as.character(year1),
                                                     month1,"01",sep="-")),
                                       by = "month",length.out=time$len)
+                    qf <- c(qf,"jumps in data found - continuous vector forced")
                 } else
                     time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)                  
             }  
@@ -2068,6 +2075,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         month1 <- month(time$vdate)[1]
         time$vdate <- seq(as.Date(as.character(paste(year1,month1,"01",sep="-"))), by = freq.data,length.out=length(time$vals))
         print("Trusting first date and frequency to generate a new sequence of dates")
+        qf <- c(qf,"jumps in data found - continuous vector forced")
     }
     if (median(as.numeric(row.names(table(diff(ncid$dim$time$vals))))) > 100
         & grepl('day',tunit)) {

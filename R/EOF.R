@@ -317,7 +317,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     Y <- zoo(YY,order.by=fakedates)#as.Date(fakedates))
   }
   #plot(rowMeans(YY,na.rm=TRUE),type="l")
-
+  
   # Discard time slices with no valid data, e.g. DJF in the beginning of the record
   ngood <- apply(coredata(Y),1,nv)
   if (verbose) print(summary(ngood))
@@ -578,7 +578,6 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
     x.cval <- rbind(x.cvalx,x.cvalz)[,ii]
     mpca <- c(attr(pca,'mean'))
     jj <- order(c(1:length(mpca),1:length(mpca)+0.5))
-    #browser()
     if (!anomaly) x.cval <- x.cval + rep(mpca,2)[jj]
     if (anomaly) attr(x.cval,'aspect') <- 'anomaly' else
                  attr(x.cval,'aspect') <- 'original'

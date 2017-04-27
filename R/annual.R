@@ -54,7 +54,6 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   ## This line to make the function more robust.
   if (length(grep('nmin',ls()))==0) nmin <- NULL
   
-  #browser()
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB110314
   attr(x,'names') <- NULL
   yr <- year(x)
@@ -67,7 +66,6 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   nyr <- as.numeric(table(yr))
 
   # Need to accomodate for the possibility of more than one station series.
-  
   if (inherits(x,'day')) {
     if (is.null(nmin)) nmin <- 30*nmo
   }  else
@@ -101,7 +99,6 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   else
       y <- aggregate(X,year,FUN=FUN,...) # REB
   y[!is.finite(y)] <- NA ## AM
-  ## browser()
 
   if (verbose) print('check for incomplete sampling')
   ## Flag the data with incomplete sampling as NA
@@ -155,13 +152,11 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
   } else if (FUN=="mean") {
     if (verbose) print("mean")
-    ##browser()
     sigma <- aggregate(X, year, FUN='sd', ...,
                        regular = regular, frequency = frequency)
 #    n <- count(x,threshold=threshold)
     n <- aggregate(X,year,FUN='count', threshold=threshold,...,
                    regular = regular, frequency = frequency)
-    #browser()
     bad <- coredata(n)==0
     coredata(n)[bad] <- 1
     std.err <- 2*coredata(sigma)/sqrt(coredata(n)-1)
@@ -221,7 +216,6 @@ annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
 
 annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
   if (verbose) print("annual.dsensemble")
-  ## browser()
   clsx <- class(x)
   clss <- class(attr(x,'station'))
   if (!inherits(x,c('day','month','annual','season')))

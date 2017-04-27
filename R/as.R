@@ -1365,7 +1365,7 @@ as.eof.comb <- function(x,iapp=NULL) {
   }
   class(x) <- class(x)[-grep('comb',class(x))]
   napps <- attr(x,'n.apps')
-  for (i in napps) {
+  for (i in seq(napps)) {
     eval(parse(text=paste("attr(x,'appendix.",i,"') <- NULL",sep="")))
   }
   attr(x,'n.apps') <- NULL
