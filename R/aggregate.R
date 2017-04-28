@@ -150,11 +150,11 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     #print(clsy2)
     if (deparse(substitute(by))[1]=="year") 
       by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
-    ## REB - what do the following lines do?
-    #if (deparse(substitute(by))[1]=="year") {
-    #  by <- month(x)
-    #  index(x) <- month(x)
-    #}
+    ## REB - 'what do the following lines do?'year' changed to 'month' in the if-statement
+    if (deparse(substitute(by))[1]=="month") {
+      by <- month(x)
+      index(x) <- month(x)
+    }
     ## BER
     #browser()
     #print(deparse(substitute(by)))
