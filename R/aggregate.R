@@ -139,6 +139,7 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
   if (!is.list(by)) {
   # Temporal aggregation:
     #print("HERE")
+    #print(deparse(substitute(by)))
     clsy2 <- switch(deparse(substitute(by)),
                          "as.yearmon"="month",
                          "as.yearqtr"="quarter",
@@ -147,12 +148,14 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
                          "by" = "by")
     if (is.null(clsy2)) clsy2 <- deparse(substitute(by))
     #print(clsy2)
-    if (deparse(substitute(by))=="year") 
+    if (deparse(substitute(by))[1]=="year") 
       by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
-    if (deparse(substitute(by))=="year") {
-      by <- month(x)
-      index(x) <- month(x)
-    }
+    ## REB - what do the following lines do?
+    #if (deparse(substitute(by))[1]=="year") {
+    #  by <- month(x)
+    #  index(x) <- month(x)
+    #}
+    ## BER
     #browser()
     #print(deparse(substitute(by)))
     #print(class(x))
