@@ -876,7 +876,7 @@ g2dl <- function(x,greenwich=TRUE,...)
     UseMethod("g2dl")
 
 g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL,verbose=FALSE) {
-    if(verbose) print("g2dl.default")
+    if(verbose) {print("g2dl.default"); str(x)}
     if (is.null(lon)) lon <- attr(x,'longitude')
     if (is.null(lat)) lat <- attr(x,'latitude')
     if (is.null(d)) d <- attr(x,'dimensions') 
@@ -893,9 +893,15 @@ g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL,verbose=FALSE
       xsrt <- order(lon)
       xsrt <- xsrt[!xsrt %in% which(duplicated(lon))]
       dim(y) <- d
-      y <- y[xsrt,,]
+      if (length(dim(y))==3) {
+        ## For a field object
+        y <- y[xsrt,,] 
+        dim(y) <- c(length(lon)*length(lat),d[3])
+      } else if (length(dim(y))==2) {
+        ## For a matrix
+          y <- y[xsrt,] 
+      } else stop(paste('Problem in gfdl.default - x has more than 3 or 3 dimensions',dim(x),collapse=' '))
       lon <- lon[xsrt]
-      dim(y) <- c(length(lon)*length(lat),d[3])
     }
     y <- attrcp(x,y)
     attr(y,'longitude') <- lon

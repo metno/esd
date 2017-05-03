@@ -876,6 +876,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     
     if(projection=="lonlat" & !any(xlim<0) & any(xlim>180)) x <- g2dl(x,greenwich=TRUE)
     
+    
     if (is.null(is$lat) & !is.null(ylim)) {
         is$lat <- ylim
     } else if (is.null(is$lat) & is.null(ylim)) {
