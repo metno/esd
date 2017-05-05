@@ -13,16 +13,22 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
     if (verbose) print(c(FUN,anomaly))
     }
   if (verbose) print(names(attributes(UWD)))
+  ## Eigenvalues
   D <- attr(UWD,'eigenvalues')
   ## Create a matrix with only the GCM time series
   if (verbose) print('PCA/EOF-based ensemble')
   X <- x
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
+  if (verbose) for (ii in 1:length(X)) print(dim(X[[ii]]))
+  ## Dimension of each downscaled GCM results
   V <- lapply(X,FUN='subset.pc',it=it)
+  d <- dim(V[[1]])
+  n <- length(names(V))
+  if (verbose) {print(names(V)); print(c(d,n,length(unlist(V))))}
   if (!test) {
-    n <- length(names(V))
     V <- unlist(V)
     dim(V) <- c(d[1]*d[2],n)
+    if (verbose) print(FUNX)
     V <- apply(V,1,FUN=FUNX)
   } else {
     V <- V[[1]] # Pick one member for testing ## Testing
