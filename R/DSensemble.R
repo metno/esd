@@ -1972,7 +1972,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
   } else if (inherits(y,'annual')) {
     if (verbose) print('annual data')
     if (!is.null(it)) {
-      if (verbose) print('Extract some months of a time period')
+      if (verbose) print('Extract some months or a time period')
       if (verbose) print(it)
       slp <- subset(slp,it=it)
       if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
@@ -1982,6 +1982,8 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
         SLP <- annual(slp,FUN=FUNX,nmin=nmin) else
         SLP <- annual(C.C.eq(slp),FUN='mean',nmin=nmin)
   } else SLP <- slp
+    ## Synchronise
+    if (verbose) {print(index(SLP)); print(index(y))}
     SLP <- matchdate(SLP,y)
   } else if (inherits(y,'month')) {
     SLP <- matchdate(slp,y)
@@ -2095,6 +2097,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     Z <- try(EOF(SLPGCM))
     
     ## The test lines are included to assess for non-stationarity
+    ## REB this does not work for 
     if (non.stationarity.check) {
       testGCM <- subset(GCM,it=range(year(SLP)))      
       testy <- regrid(testGCM,is=as.field(y)) 
@@ -2115,7 +2118,11 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     } else {
       if (verbose) print("post-processing")
       gcmnm[i] <- gcmnm.i
-   
+      ## Unpacking the information tangled up in GCMs, PCs and stations:
+      ## Save GCM-wise in the form of PCAs
+      gcmnm[i] <- gsub('-','.',gcmnm[i])
+      gcmnm[i] <- gsub('/','.',gcmnm[i])
+      
       ## Keep the results for the projections:
       if (verbose) print('Extract the downscaled projection')
       z <- attr(ds,'appendix.1') ## KMP 09.08.2015
@@ -2126,7 +2133,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
       if (test) {
         ## model takes up too much space! can it be stored more efficiently?
         ## REB 2016-11-29: remove most of the contents and keep only a small part
-        if (verbose) print('Add reduced model information')
+        if (verbose) print('Reduced model information')
         for (iii in 1:dim(ds)[2]) {
           print(names(attr(ds,'model')[[iii]]))
           attr(ds,'model')[[iii]]$residuals <- NULL
@@ -2146,7 +2153,8 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       attr(z,'evaluation') <- attr(ds,'evaluation')
     
-      cl <- paste('dse.eof$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
+      ## Store the results in a list element
+      cl <- paste('dse.eof$i',i,'_',gcmnm[i],' <- z',sep='')
       eval(parse(text=cl))
       if (verbose) {
         print('Test to see if as.field has all information needed')
@@ -2236,10 +2244,6 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
     if (verbose) print('Downscaling finished')
 
   }
-  
-  ## Unpacking the information tangled up in GCMs, PCs and stations:
-  ## Save GCM-wise in the form of PCAs
-  gcmnm <- gsub('-','.',gcmnm)
 
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')

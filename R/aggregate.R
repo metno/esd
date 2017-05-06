@@ -242,7 +242,9 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   srtlat <- order(rep(lat(x),d[1]))
   dY <- a*diff(pi*lat(x)/180)[1]
   dtheta <- diff(pi*lon(x)/180)[1]
-  aweights <- rep(dY * 2*a*pi*cos(pi*lat(x)/180)/d[1],d[1])[srtlat]
+  ## The first assumes a global field and the second is for a limited longitude range
+  #if (diff(range(lon(x)))> 350) aweights <- rep(dY * 2*pi/d[1] * a*cos(pi*lat(x)/180),d[1])[srtlat] else
+  aweights <- rep(dY * dtheta * a*cos(pi*lat(x)/180),d[1])[srtlat]
   if (FUN=='mean') {
     ok <- is.finite(colMeans(x))
     aweights <- aweights/sum(aweights[ok])

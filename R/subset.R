@@ -101,15 +101,18 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     } 
                                         #print(it)
     if (is.null(it)) {
-      if (verbose) {print('Select time'); print(it)}
+      if (verbose) print('Original time')
         it <- 1:d[1] 
         dates <- index(x)
         keept <- 1 : d[1]
     } else {
-        if (is.numeric(it)) {
-                                        #print("numeric it")
-            if (max(nchar(as.character(it)))<=2)
+        if (verbose) {print('Select time'); print(class(it))}
+        if (is.numeric(it) & !inherits(it,'zoo')) {
+          if (verbose) print('numeric object - convert to dates')
+            ## 00-99: assume 1-12 - months
+            if (max(nchar(as.character(it)))[1]<=2)
                 keept <- is.element(as.numeric(format(index(x),"%m")),it)
+            ## 0000-9999: assume 1900-2100 - years
             else if (sum(nchar(as.character(it))==4) == length(it)) {
                 if (length(it)==2)
                     if (diff(it)>1)
@@ -119,11 +122,16 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
                 else
                     keept <- is.element(index(x),it)
             }
-        }
-        else if (is.character(it))
-            keept <- is.element(index(x),as.Date(it))
-                                        #print(c(sum(keept),length(keept)))
+        } else if (is.character(it)) {
+          if (verbose) print('char object - convert to dates')
+          if (nchar(it[1])==10) keept <- is.element(index(x),as.Date(it)) #format: YYYY-MM-DD
+          } else if (inherits(it,'zoo')) {
+            if (verbose) print('zoo object - use its index')
+            keept <- is.element(index(x),index(it)) 
+            } else {print('it not found'); print(class(it))}
+              
         if (!is.null(keept)) dates <- index(x)[keept]
+        if (verbose) print(c(sum(keept),length(keept)))
     }
 
     ## grep for appendices
