@@ -59,7 +59,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                       na.rm,show.val,usegooglemap,
                       legend.shrink,...) else 
     {
-      if (verbose) print('map.station - newversion')
+      if (verbose) print('map.station - new version')
       if (new) dev.new()
       if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
       if (!is.null(FUN)) if (FUN=='trend') {
@@ -67,7 +67,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if (is.precip(x)) colbar$rev=TRUE
       } else colbar$pal <- varid(x)[1]
       if (!is.null(FUN)) {
-        if (!(FUN %in% names(attributes(x)))) y <- apply(coredata(x),2,FUN) else {
+        if (!(FUN %in% names(attributes(x)))) y <- apply(coredata(x),2,FUN,na.rm=na.rm) else {
           y <- attr(x,FUN); FUN <- NULL
         }    
         if (verbose) print(summary(y))
