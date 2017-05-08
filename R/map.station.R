@@ -39,7 +39,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
                              ##colorbar=TRUE,
                              legend.shrink=1,fig=c(0,1,0.05,0.95),...) { 
-  if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap )
+  if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap)
       map.station.old(x,FUN,it,is,new,
                       projection,
                       xlim, ylim,zlim,n,
