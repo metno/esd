@@ -134,10 +134,12 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     if (verbose) print("Wet-day frequency")
     attr(y,'variable') <- rep('f[w]',d[2])
     attr(y,'unit') <- rep('fraction',d[2])
+    attr(y,'longname')[] <- 'Wet-day frequency'
 #    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
   } else if (FUN=="wetmean") {
     if (verbose) print("Wet-day mean")
     attr(y,'variable') <- rep('mu',d[2])
+    attr(y,'longname')[] <- 'Wet-day mean precipitation'
     attr(y,'unit') <- rep('mm/day',d[2])
 #    n <- count(X,threshold=threshold) # REB
 #    n <- aggregate(X,year,FUN='count', threshold=threshold,...,
