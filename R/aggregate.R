@@ -148,8 +148,11 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
                          "by" = "by")
     if (is.null(clsy2)) clsy2 <- deparse(substitute(by))
     #print(clsy2)
-    if (deparse(substitute(by))[1]=="year") 
-      by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
+    if (deparse(substitute(by))[1]=="year")
+      ## KMP 2017-05-07: annual mean should have year as index, not date
+      #by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
+      by <- year(x)
+      index(x) <- year(x)
     ## REB - 'what do the following lines do?'year' changed to 'month' in the if-statement
     if (deparse(substitute(by))[1]=="month") {
       by <- month(x)
