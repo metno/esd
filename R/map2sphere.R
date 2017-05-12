@@ -64,7 +64,7 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 #}
 
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
-                       colbar= list(pal='t2m',rev=FALSE,n=10,
+                       colbar= list(col='t2m',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,

@@ -105,7 +105,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     
     ## very easy case if colbar$col and breaks are provided
     if (!is.null(colbar$col)) {
-        pal <- NA ## disactivate pal
+        if (is.null(pal)) pal <- NA ## disactivate pal  ## REB - need it for 'warm', 'cold'
         if (!is.null(colbar$breaks)) {  
             if (length(colbar$col) != length(colbar$breaks) - 1) {
                 #str(colbar)

@@ -28,10 +28,10 @@ cal <- data.frame(y=ac,x1=cos(2*pi*seq(0,1,length=365)),x2=sin(2*pi*seq(0,1,leng
 model <- lm(y ~x1 + x2 + x3 + x4, data=cal)
 lines(1:365,predict(model),lwd=4,col=rgb(1,0.5,0.5,0.5))
 lines(1:length(y),y,col=rgb(0,0,0,0.5),lwd=2)
-lines(seq(as.Date(paste(yrs[i],'-03-25',sep='')),end(x),by='1 day') - as.Date(paste(yrs[i],'-01-01',sep=''))+1,
-      coredata(window(x,start=as.Date(paste(yrs[i],'-03-25',sep='')),end=end(x))),lwd=2,col=rgb(0,0,0,0.5))
-lines(seq(as.Date(paste(yrs[i],'-03-25',sep='')),end(x),by='1 day') - as.Date(paste(yrs[i],'-01-01',sep=''))+1,
-      coredata(trend(window(x,start=as.Date(paste(yrs[i],'-03-25',sep='')),end=end(x)))),lwd=2,col='red')
+lines(seq(as.Date(paste(yrs[i],'-03-26',sep='')),end(x),by='1 day') - as.Date(paste(yrs[i],'-01-01',sep=''))+1,
+      coredata(window(x,start=as.Date(paste(yrs[i],'-03-26',sep='')),end=end(x))),lwd=2,col=rgb(0,0,0,0.5))
+lines(seq(as.Date(paste(yrs[i],'-03-26',sep='')),end(x),by='1 day') - as.Date(paste(yrs[i],'-01-01',sep=''))+1,
+      coredata(trend(window(x,start=as.Date(paste(yrs[i],'-03-26',sep='')),end=end(x)))),lwd=2,col='red')
 
 legend(150,-10,c('modell','observasjon'),col=c(rgb(1,0.5,0.5,0.5),'black'),
        lwd=c(4,1),bty='n')
