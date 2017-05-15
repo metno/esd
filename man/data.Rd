@@ -53,6 +53,8 @@
 \alias{QBO}
 \alias{CET}
 \alias{CO2}
+\alias{read.hurdat2}
+\alias{read.best.track}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -137,6 +139,9 @@ AMO(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data')
 QBO(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data')
 CET(url='http://hadobs.metoffice.com/hadcet/cetml1659on.dat')
 CO2(url='ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt')
+read.hurdat2(url='http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html',n=20,verbose=FALSE)
+read.best.track(url='http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/best_tracks/',domain='io',
+                start=1945,end=2014,n=20,verbose=TRUE)                         
 }
 
 \arguments{

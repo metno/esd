@@ -54,12 +54,14 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
     attr(y,'unit') <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
   } else if (FUN=="wetfreq") {
     #print("Wet-day frequency")
-    attr(y,'variable') <- 'f[w]'
-    attr(y,'unit') <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
+    attr(y,'variable')[] <- 'f[w]'
+    attr(y,'longname')[] <- 'Wet-day frequency'
+    attr(y,'unit')[] <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
   } else if (FUN=="wetmean") {
     #print("Wet-day mean")
-    attr(y,'variable') <- 'mu'
-    attr(y,'unit') <- 'mm/day'
+    attr(y,'variable')[] <- 'mu'
+    attr(y,'longname')[] <- 'Wet-day mean precipitation'
+    attr(y,'unit')[] <- 'mm/day'
     n <- aggregate(x,by,FUN='nv', ...,
                    regular = regular, frequency = frequency)
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)

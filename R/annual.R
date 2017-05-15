@@ -13,6 +13,12 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
   attr(x,'names') <- NULL
 #  yr <- year(x)  REB: 08.09.2014
   class(x) <- 'zoo'
+  ## Update the units for annual sums:
+  if (FUN=='sum') {
+    attr(x,'unit') <- sub('day','year',attr(x,'unit'))
+    attr(x,'unit') <- sub('month','year',attr(x,'unit'))
+    attr(x,'unit') <- sub('season','year',attr(x,'unit'))
+  }
   
 #  y <- aggregate(x,yr,FUN=match.fun(FUN),...,na.rm=na.rm)
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
@@ -50,7 +56,13 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
 
   ## If already annual, then return
   if (inherits(x,'annual')) return(x)
-
+  ## Update the units for annual sums:
+  if (FUN=='sum') {
+    attr(x,'unit') <- sub('day','year',attr(x,'unit'))
+    attr(x,'unit') <- sub('month','year',attr(x,'unit'))
+    attr(x,'unit') <- sub('season','year',attr(x,'unit'))
+  }
+  
   ## This line to make the function more robust.
   if (length(grep('nmin',ls()))==0) nmin <- NULL
   
@@ -134,10 +146,12 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     if (verbose) print("Wet-day frequency")
     attr(y,'variable') <- rep('f[w]',d[2])
     attr(y,'unit') <- rep('fraction',d[2])
+    attr(y,'longname')[] <- 'Wet-day frequency'
 #    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
   } else if (FUN=="wetmean") {
     if (verbose) print("Wet-day mean")
     attr(y,'variable') <- rep('mu',d[2])
+    attr(y,'longname')[] <- 'Wet-day mean precipitation'
     attr(y,'unit') <- rep('mm/day',d[2])
 #    n <- count(X,threshold=threshold) # REB
 #    n <- aggregate(X,year,FUN='count', threshold=threshold,...,

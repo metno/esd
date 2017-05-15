@@ -190,15 +190,15 @@ mask(x,land=FALSE)
   \item{new}{TRUE: create a new graphic device.}
   \item{projection}{Projections: c("lonlat","sphere","np","sp") - the
     latter gives stereographic views from the North and south poles.}
-  \item{xlim}{see  \code{\link{plot}} - only used for 'lonlat' projection.}
-  \item{ylim}{see  \code{\link{plot}} - only used for 'lonlat' projection.}
+  \item{xlim}{see  \code{\link{plot}} - only used for 'lonlat' and 'sphere' projections.}
+  \item{ylim}{see  \code{\link{plot}} - only used for 'lonlat' and 'sphere' projections.}
   \item{n}{The number of colour breaks in the color bar}
   \item{breaks}{graphics setting - see \code{\link{image}}}
   \item{type}{graphics setting - colour shading or contour}
   \item{gridlines}{Only for the lon-lat projection}
-  \item{lonR}{Only for the spherical projection - see \code{\link{map2sphere}}}
-  \item{latR}{Only for the spherical projection - see \code{\link{map2sphere}}}
-  \item{axiR}{Only for the spherical projection - see \code{\link{map2sphere}}}
+  \item{lonR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
+  \item{latR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
+  \item{axiR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
   \item{density}{}
   \item{y}{a vector of y coordinates}
   \item{z}{a vector of z coordinates}
