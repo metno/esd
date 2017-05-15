@@ -30,8 +30,9 @@ cbind.field <- function(...) {
 combine <- function(x,y,...)
     UseMethod("combine")
 
-combine.default <- function(x=NULL,y=NULL,all=FALSE,orig.format=TRUE) {
-                                        # If either of the arguments is NULL, then return the x - useful for looping
+combine.default <- function(x=NULL,y=NULL,all=FALSE,orig.format=TRUE,verbose=FALSE) {
+    if(verbose) print("combine.default")
+    # If either of the arguments is NULL, then return the x - useful for looping
     stopifnot(!missing(x))
                                         #print("combine.default")
     if (is.null(x)) return(y)
@@ -42,19 +43,18 @@ combine.default <- function(x=NULL,y=NULL,all=FALSE,orig.format=TRUE) {
     
     if ( !zeros(c(inherits(x,c("station","zoo"),which=TRUE),
                   inherits(y,c("station","zoo"),which=TRUE)) ) )
-        X <- combine.station(x,y) else
+        X <- combine.station(x,y,verbose=verbose) else
     if ( !zeros( c(inherits(x,c("station","zoo"),which=TRUE)
                    ,inherits(y,c("eof","zoo"),which=TRUE)) ) |
         !zeros( c(inherits(y,c("station","zoo"),which=TRUE),
                   inherits(x,c("eof","zoo"),which=TRUE)) ) )
         X <- combine.station.eof(x,y,all=all,
-                                 orig.format=orig.format) else
+                                 orig.format=orig.format,verbose=verbose) else
     if ( !zeros( c(inherits(x,c("station","zoo"),which=TRUE)
                    ,inherits(y,c("field","zoo"),which=TRUE)) ) |
         !zeros( c(inherits(y,c("station","zoo"),which=TRUE),
                   inherits(x,c("field","zoo"),which=TRUE)) ) )
-        X <- combine.station.field(x,y,all=all,
-                                   orig.format=orig.format) else { 
+        X <- combine.station.field(x,y,all=all,orig.format=orig.format,verbose=verbose) else { 
                                        print("combine.default - don't know what to do :-(")
                                        Z <- NULL
                                    }
@@ -65,61 +65,61 @@ combine.default <- function(x=NULL,y=NULL,all=FALSE,orig.format=TRUE) {
                                         # combine.station can be used to either combine a group of stations into
                                         # one data object or timerseries from one stations with different monthly
                                         # values into one time series with all months
-combine.station <- function(...,all=TRUE) {
-                                        #print("combine.station")
-    cl <- as.list(match.call())
-                                        #str(cl)
-    args <- list(...)
-    n <- length(args)
-    stid <- rep(NA,n)
-    allstations <- TRUE
-    for (i in 1:n) {
-        Z <- args[[i]]
-                                        #print(class(Z))
-        if (inherits(Z,'station'))
-            stid[i] <- attr(Z,'station_id')[i]
-        else allstations <- FALSE
-    }
-                                        #print(allstations)
-
-    if (allstations) {
-        ns <- length(table(stid))
-                                        # If only one site, then combine the months into one series, otherwise
-                                        # group the stations into one multivariate object
-        if (ns ==1) X <- combine.station.month(...) else
-        X <- combine.stations(...,all=all)
+combine.station <- function(...,all=TRUE,verbose=FALSE) {
+  if(verbose) print("combine.station")
+  cl <- as.list(match.call())
+  args <- list(...)
+  n <- length(args)
+  stid <- NULL
+  #stid <- rep(NA,n)
+  allstations <- TRUE
+  for (i in 1:n) {
+    Z <- args[[i]]
+    #print(class(Z))
+    if (inherits(Z,'station')) {
+      stid <- c(stid,attr(Z,'station_id'))
+      #stid[i] <- attr(Z,'station_id')#[i]
     } else {
-        X <- combine.default(...,all=all)
+      allstations <- FALSE
+      stid <- c(stid,NA)
     }
-    attr(X,'history') <- history.stamp(X)
-    class(X) <- class(Z)
-    invisible(X)
+  }
+  #print(allstations)
+  if (allstations) {
+    ns <- length(table(stid))
+    # If only one site, then combine the months into one series, otherwise
+    # group the stations into one multivariate object
+    if (ns ==1) X <- combine.station.month(...,verbose=verbose) else
+                X <- combine.stations(...,all=all,verbose=verbose)
+  } else {
+    X <- combine.default(...,all=all,verbose=verbose)
+  }
+  attr(X,'history') <- history.stamp(X)
+  class(X) <- class(Z)
+  invisible(X)
 }
 
-                                        # combine.station.month is used to
-                                        # This is causing the problem in combine.ds REB
-combine.station.month <- function(...) {
-                                        #print("combine.station.month")
-    cl <- as.list(match.call())
-                                        #str(cl)
-    args <- list(...)
-                                        #print(summary(args)); print(length(args))
-    z <- args[[1]]
-                                        #plot.zoo(z); dev.new()
-    Z <- merge.zoo(...,all=TRUE)
-                                        #plot(Z);str(Z)
-    X <- zoo(rowMeans(coredata(Z),na.rm=TRUE),order.by=as.Date(index(Z)))
-                                        #print(summary(X))
-                                        #print(names(attributes(z)))
-    X <- attrcp(z,X,ignore=c('mean','calibration_data','fitted_values',
-                        'original_data','aspect'))
-    class(X) <- class(z)
-    attr(X,'history') <- history.stamp(X)
-    invisible(X)
+combine.station.month <- function(...,verbose=FALSE) {
+  if(verbose) print("combine.station.month")
+  cl <- as.list(match.call())
+  args <- list(...)
+  #print(summary(args)); print(length(args))
+  z <- args[[1]]
+  #plot.zoo(z); dev.new()
+  Z <- merge.zoo(...,all=TRUE)
+  #plot(Z);str(Z)
+  X <- zoo(rowMeans(coredata(Z),na.rm=TRUE),order.by=as.Date(index(Z)))
+  #print(summary(X))
+  #print(names(attributes(z)))
+  X <- attrcp(z,X,ignore=c('mean','calibration_data','fitted_values',
+                           'original_data','aspect'))
+  class(X) <- class(z)
+  attr(X,'history') <- history.stamp(X)
+  invisible(X)
 }
 
-combine.zoo <- function(...) {
-                                        #print("combine.zoo")
+combine.zoo <- function(...,verbose=FALSE) {
+    if(verbose) print("combine.zoo")
     Z <- merge.zoo(...,all=TRUE)
                                         #plot(Z);str(Z)
     invisible(Z)
@@ -127,8 +127,8 @@ combine.zoo <- function(...) {
 
                                         # combine.stations is used to combine a group of stations into one object
 
-combine.stations <- function(...,all=TRUE) {
-                                        #print("combine.stations")
+combine.stations <- function(...,all=TRUE,verbose=FALSE) {
+    if(verbose) print("combine.stations")
                                         # If either of the arguments is NULL, then return the x -
                                         # useful for looping
 
@@ -138,12 +138,10 @@ combine.stations <- function(...,all=TRUE) {
                                         #str(cl)
     args <- list(...)
                                         #str(args)
-                                        
     X <- merge.zoo(...,all=all)
                                         #plot(X)
                                         #str(X)
                                         #print(length(args))
-    
     n <- length(args)
     cls <- class(args[[1]])
     
@@ -171,7 +169,7 @@ combine.stations <- function(...,all=TRUE) {
         ele <- c(ele,attr(Z,'element'))
         asp <- c(asp,attr(Z,'aspect'))
     }
-
+    
     if (dim(X)[2]==length(loc)) colnames(X) <- loc
     attr(X,'location') <- loc
     attr(X,'country') <- cn
@@ -195,8 +193,8 @@ combine.stations <- function(...,all=TRUE) {
     invisible(X)
 }
 
-combine.ds <- function(...,all=TRUE) {
-    ##print("combine.ds")
+combine.ds <- function(...,all=TRUE,verbose=FALSE) {
+    if(verbose) print("combine.ds")
     cl <- as.list(match.call())
     ##str(cl)
     args <- list(...)
@@ -326,8 +324,8 @@ combine.ds <- function(...,all=TRUE) {
     invisible(X)
 }
 
-combine.list <- function(...,all=TRUE) {
-                                        #print("combine.list")
+combine.list <- function(...,all=TRUE,verbose=FALSE) {
+    if(verbose) print("combine.list")
     args <- list(...)
     z <- args[[1]]
                                         #print(class(z[[1]]))
@@ -339,8 +337,8 @@ combine.list <- function(...,all=TRUE) {
     return(y)
 }
 
-combine.ds.comb <- function(...,all=TRUE) {
-                                        #print("combine.ds.comb")
+combine.ds.comb <- function(...,all=TRUE,verbose=FALSE) {
+    if(verbose) print("combine.ds.comb")
     cl <- as.list(match.call())
                                         #str(cl)
     args <- list(...)
@@ -402,8 +400,9 @@ combine.ds.comb <- function(...,all=TRUE) {
     invisible(X)
 }
 
-combine.ds.station <- function(...,all=TRUE) {
-                                        # Combine downscaled station records. Use combine.station for
+combine.ds.station <- function(...,all=TRUE,verbose=FALSE) {
+    if(verbose) print("combine.ds.station") 
+                                      # Combine downscaled station records. Use combine.station for
                                         # combining the station values: either as a group of stations
                                         # or combine different months for one station into one series
     
@@ -419,7 +418,8 @@ combine.ds.station <- function(...,all=TRUE) {
     invisible(X)
 }
 
-combine.ds.pca <- function(...,all=TRUE) {
+combine.ds.pca <- function(...,all=TRUE,verbose=FALSE) {
+    if(verbose) print("combine.ds.pca")  
                                         # Combine downscaled PCA: i.e. the different principal components
                                         # Assmue that the pattern is the same for all these
                                         #print("combine.ds.pca")
@@ -440,8 +440,8 @@ combine.ds.pca <- function(...,all=TRUE) {
 }
 
 
-combine.station.eof <- function(x,y,all=FALSE,orig.format=TRUE) {
-                                        #print("combine.station.eof")
+combine.station.eof <- function(x,y,all=FALSE,orig.format=TRUE,verbose=FALSE) {
+    if(verbose) print("combine.station.eof")
                                         # If either of the arguments is NULL, then return the x -
                                         # useful for looping
     
@@ -543,8 +543,8 @@ combine.station.eof <- function(x,y,all=FALSE,orig.format=TRUE) {
 }
 
 
-combine.station.field <- function(x,y,all=FALSE,orig.format=TRUE) {
-                                        #print("combine.station.field")
+combine.station.field <- function(x,y,all=FALSE,orig.format=TRUE,verbose=FALSE) {
+    if(verbose) print("combine.station.field")
                                         # If either of the arguments is NULL, then return the x -
                                         # useful for looping
     
@@ -876,7 +876,7 @@ g2dl <- function(x,greenwich=TRUE,...)
     UseMethod("g2dl")
 
 g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL,verbose=FALSE) {
-    if(verbose) print("g2dl.default")
+    if(verbose) {print("g2dl.default"); str(x)}
     if (is.null(lon)) lon <- attr(x,'longitude')
     if (is.null(lat)) lat <- attr(x,'latitude')
     if (is.null(d)) d <- attr(x,'dimensions') 
@@ -893,9 +893,15 @@ g2dl.default <- function(x,greenwich=TRUE,lon=NULL,lat=NULL,d=NULL,verbose=FALSE
       xsrt <- order(lon)
       xsrt <- xsrt[!xsrt %in% which(duplicated(lon))]
       dim(y) <- d
-      y <- y[xsrt,,]
+      if (length(dim(y))==3) {
+        ## For a field object
+        y <- y[xsrt,,] 
+        dim(y) <- c(length(lon)*length(lat),d[3])
+      } else if (length(dim(y))==2) {
+        ## For a matrix
+          y <- y[xsrt,] 
+      } else stop(paste('Problem in gfdl.default - x has more than 3 or 3 dimensions',dim(x),collapse=' '))
       lon <- lon[xsrt]
-      dim(y) <- c(length(lon)*length(lat),d[3])
     }
     y <- attrcp(x,y)
     attr(y,'longitude') <- lon
@@ -1045,7 +1051,8 @@ g2dl.trajectory <- function(x,greenwich=TRUE,verbose=FALSE) {
   invisible(y)
 }
 
-sp2np <- function(x,SP2NP=TRUE) {
+sp2np <- function(x,SP2NP=TRUE,verbose=FALSE) {
+    if(verbose) print("sp2np")
                                         # Take care of different latitude orientations: N-> S & S -> N
     ysrt <- order(attr(x,'latitude'))
     d <- attr(x,'dimensions')
@@ -1086,7 +1093,8 @@ sp2np <- function(x,SP2NP=TRUE) {
 }
 
 
-combine.trajectory <- function(x,y) {
+combine.trajectory <- function(x,y,verbose=FALSE) {
+  if(verbose) print("combine.trajectory")
   z <- rbind(x,y,all=TRUE)
   z <- z[!duplicated(z),]
   z <- attrcp(x,z)

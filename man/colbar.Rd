@@ -36,6 +36,7 @@ colbar(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,mar,new=new,las=las,cex.a
   \item{col}{\code{\link{par}}
 %%     ~~Describe \code{col} here~~
 }
+  \item{pal}{palette: c("bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold","warm")}
   \item{cex}{\code{\link{par}}
 %%     ~~Describe \code{cex} here~~
 }

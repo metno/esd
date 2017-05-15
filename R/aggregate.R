@@ -54,12 +54,14 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
     attr(y,'unit') <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
   } else if (FUN=="wetfreq") {
     #print("Wet-day frequency")
-    attr(y,'variable') <- 'f[w]'
-    attr(y,'unit') <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
+    attr(y,'variable')[] <- 'f[w]'
+    attr(y,'longname')[] <- 'Wet-day frequency'
+    attr(y,'unit')[] <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
   } else if (FUN=="wetmean") {
     #print("Wet-day mean")
-    attr(y,'variable') <- 'mu'
-    attr(y,'unit') <- 'mm/day'
+    attr(y,'variable')[] <- 'mu'
+    attr(y,'longname')[] <- 'Wet-day mean precipitation'
+    attr(y,'unit')[] <- 'mm/day'
     n <- aggregate(x,by,FUN='nv', ...,
                    regular = regular, frequency = frequency)
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
@@ -139,6 +141,7 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
   if (!is.list(by)) {
   # Temporal aggregation:
     #print("HERE")
+    #print(deparse(substitute(by)))
     clsy2 <- switch(deparse(substitute(by)),
                          "as.yearmon"="month",
                          "as.yearqtr"="quarter",
@@ -147,12 +150,14 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
                          "by" = "by")
     if (is.null(clsy2)) clsy2 <- deparse(substitute(by))
     #print(clsy2)
-    if (deparse(substitute(by))=="year") 
+    if (deparse(substitute(by))[1]=="year") 
       by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
-    if (deparse(substitute(by))=="year") {
+    ## REB - 'what do the following lines do?'year' changed to 'month' in the if-statement
+    if (deparse(substitute(by))[1]=="month") {
       by <- month(x)
       index(x) <- month(x)
     }
+    ## BER
     #browser()
     #print(deparse(substitute(by)))
     #print(class(x))
@@ -239,7 +244,9 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   srtlat <- order(rep(lat(x),d[1]))
   dY <- a*diff(pi*lat(x)/180)[1]
   dtheta <- diff(pi*lon(x)/180)[1]
-  aweights <- rep(dY * 2*a*pi*cos(pi*lat(x)/180)/d[1],d[1])[srtlat]
+  ## The first assumes a global field and the second is for a limited longitude range
+  #if (diff(range(lon(x)))> 350) aweights <- rep(dY * 2*pi/d[1] * a*cos(pi*lat(x)/180),d[1])[srtlat] else
+  aweights <- rep(dY * dtheta * a*cos(pi*lat(x)/180),d[1])[srtlat]
   if (FUN=='mean') {
     ok <- is.finite(colMeans(x))
     aweights <- aweights/sum(aweights[ok])

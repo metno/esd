@@ -832,7 +832,7 @@ plot.ds.pca <- function(x,ip=1,verbose=FALSE,
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
 
   if (verbose) print('PCA ip')
-  map.pca(y,ip=ip,verbose=verbose,new=FALSE,colbar=colbar1,...)
+  map.pca(y,ip=ip,verbose=verbose,new=FALSE,colbar=colbar1,fig=c(0,0.5,0.5,0.975),...)
 
   title(paste("PCA Pattern # ",ip,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
