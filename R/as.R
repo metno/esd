@@ -540,7 +540,6 @@ as.field.zoo <- function(x,lon,lat,param,unit,
   #dmo <- as.numeric(format(t[2],'%m')) - as.numeric(format(t[1],'%m')) 
   #dda <- as.numeric(format(t[2],'%d')) - as.numeric(format(t[1],'%d'))
   if (length(year(x))!=1) {
-      ## KMP 2016-09-13 problem when a monthly time series starts in dec: diff(month(x))[1] = -11 
       dyr <- median(diff(year(x)))#diff(year(x))[1]
       dmo <- median(diff(month(x)))#diff(month(x))[1]
       dda <- median(diff(day(x)))#diff(day(x))[1]
@@ -696,7 +695,6 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,anomaly=FALSE,verb
     Y <- as.field(X$eof)
     gcms <- sub(".*_","",names(X)[ix])
     S <- setNames(S,gcms)
-    
     for (i in seq_along(ix)) {
       S[[i]] <- as.field(S[[i]],index=index(X[[ix[i]]]),
                  lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
@@ -704,6 +702,7 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,anomaly=FALSE,verb
                  longname=paste('fitted',attr(Y,'longname')),
                  greenwich=attr(Y,'greenwich'),aspect='fitted')
       attr(S[[i]],'unitarea') <- attr(X,"unitarea")
+      class(S[[i]]) <- class(Y)
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     class(S) <- c("dsensemble","field","list")
