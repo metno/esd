@@ -1403,7 +1403,9 @@ as.eof.list <- function(x,verbose=FALSE) {
     return(Z)
   }
 
-  if (verbose) print(summary(x))
+  if (verbose) try(print(summary(x)))
+  if (inherits(x[[1]],'character')) x[[1]] <- NULL
+  if (inherits(x[[1]],'eof')) {eof <- x[[1]]; x[[1]] <- NULL}
   X.list <- lapply(x,wPC)
   X <- do.call("merge", X.list)
   if (verbose) print(summary(X))
@@ -1431,6 +1433,26 @@ as.eof.list <- function(x,verbose=FALSE) {
   attr(eof,'id') <- id
   names(eof) <- paste("X.",1:20,sep="")
   class(eof) <- class(x[[1]])
+  return(eof)
+}
+
+as.eof.dsensemble <- function(x,FUN='mean',verbose=FALSE) {
+  ## R.E. Benestad, 2017-05-19
+  ## Convert the dsensemble object to an EOF of the multi-model mean
+  stopifnot(inherits(x,'dsensemble'),inherits(x[[2]],'eof')|inherits(x[[2]],'pca'))
+  if (verbose) print('as.eof.dsensemble')
+  eof0 <- x[[2]]; x[[2]] <- NULL
+  x[[1]] -> info; x[[1]] <- NULL
+  d <- c(dim(x[[1]]),length(x))
+  y <- unlist(x)
+  dim(y) <- c(d[1]*d[2],d[3])
+  Y <- apply(y,1,FUN)
+  dim(Y) <- c(d[1],d[2])
+  eof <- zoo(Y,order.by=index(x[[1]]))
+  eof <- attrcp(eof0,eof)
+  class(eof) <- class(eof0)
+  attr(eof,'info') <- info
+  attr(eof,'history') <- history.stamp()
   return(eof)
 }
 
