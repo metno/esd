@@ -116,8 +116,13 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
                         threshold,unit(x),'at',loc(x)))
   }
   
-  if (is.T(x)) attr(y,'variable') <-  c("warm","cold") else
-               attr(y,'variable') <-  c("wet","dry")
+  if (is.T(x)) {
+    attr(y,'variable') <-  c("warm","cold") 
+    attr(y,'longname') <-  c("duration of warm spells","duration of cold spells") 
+  } else {
+    attr(y,'variable') <-  c("wet","dry")
+    attr(y,'longname') <-  c("duration of wet spells","duration of dry spells") 
+  }
   attr(y,'unit') <- rep("days",2)
   attr(y,'threshold') <- rep(threshold,2)
   attr(y,'threshold.unit') <- rep(attr(x,'unit'),2)
