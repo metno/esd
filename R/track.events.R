@@ -754,7 +754,7 @@ function(x) {
       rank.all[,j2==j2[ij[2]]] <- NA
       rank.all[i2==i2[ij[1]],] <- NA
       rank.all[i3==i3[ij[1]],] <- NA
-      ifplot) {
+      if(plot) {
         points(step1$lon[j1[ij[2]]],step1$lat[j1[ij[2]]],pch=as.character(step1$num[j1[ij[2]]]))
         points(step2$lon[j2[ij[2]]],step2$lat[j2[ij[2]]],pch=as.character(step2$num[j2[ij[2]]]))
         points(step3$lon[i3[ij[1]]],step3$lat[i3[ij[1]]],pch=as.character(step3$num[i3[ij[1]]]))
