@@ -4,7 +4,7 @@
 
 wheel <- function(x,...) UseMethod("wheel")
 
-wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,
+wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
                           bg="grey90",verbose=FALSE,...) {
 
   if (verbose) print('wheel.station')
@@ -42,33 +42,51 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,
   text(-1.2*(r+mx),0,"September",srt=90)
   w <- seq(0,2*pi,length=m)
   j <- 1:ny
-  col <- rgb(j/ny,abs(sin(pi*j/ny)),(1-j/ny))
+  col <- rgb(j/ny,abs(sin(pi*j/ny)),(1-j/ny),0.2)
   ## REB 2015-08-20: if y is given, use it for setting the colours.
   ## e.g. according to an index like NINO3.4
   srtc <- order(years)
   col <- col[srtc]
   years <- year(annual(x))
   if (verbose) {print(srtc); print(col)}
+  if (is.null(type) & !is.T(x)) type <- 'spiky' else type <- 'flowy'
+  if(verbose) print(type)
   
-  for (i in 1:m) {
-    wj <- -w[i]
-    s <- sin(wj)
-    c <- cos(wj)
-    ii <- is.element(MD,md[i])
+  if (type=='spiky') {
+    for (i in 1:m) {
+     wj <- -w[i]
+     s <- sin(wj)
+     c <- cos(wj)
+     ii <- is.element(MD,md[i])
     #print(sum(ii))
-    yr <- year(x)[ii]
-    y <- coredata(x)[ii]
-    yn <- min(abs(y),na.rm=TRUE)
-    srt <- order(abs(y),decreasing=TRUE)
+     yr <- year(x)[ii]
+     y <- coredata(x)[ii]
+     yn <- min(abs(y),na.rm=TRUE)
+     srt <- order(abs(y),decreasing=TRUE)
     #print(srt); print(yr)
-    yr <- yr[srt]; y <- y[srt]
-    for (j in 1:sum(is.finite(y))) {
-      jj <- (1:length(years))[is.element(years,yr[j])]
-       lines(-c((r+yn)*s,(r+y[j])*s),
-              c((r+yn)*c,(r+y[j])*c),
-             lwd=lwd,col=col[jj])
-    }  
+      yr <- yr[srt]; y <- y[srt]
+      for (j in 1:sum(is.finite(y))) {
+       jj <- (1:length(years))[is.element(years,yr[j])]
+        lines(-c((r+yn)*s,(r+y[j])*s),
+               c((r+yn)*c,(r+y[j])*c),
+              lwd=lwd,col=col[jj])
+     }  
+   }
+  } else {
+    yr <- year(x); mo <- month(x); dy <- day(x)
+    for (i in 2:length(index(x))) {
+      jday <- as.numeric(as.Date(paste(yr[i],mo[i],dy[i],sep='-'))-as.Date(paste(yr[i],'01-01',sep='-')))
+      theta1 <- 0.5*pi - 2*pi*(jday-1)/366
+      theta2 <- 0.5*pi - 2*pi*jday/366
+      jj <- (1:length(years))[is.element(years,yr[i])]
+      lines(c((r+coredata(x)[i-1])*cos(theta1),(r+coredata(x)[i])*cos(theta2)),
+            c((r+coredata(x)[i-1])*sin(theta1),(r+coredata(x)[i])*sin(theta2)),lwd=lwd,col=col[jj])
+      if (verbose & (i %% 100 ==0)) print(c(theta1,theta2,
+                           coredata(x)[i-1]*cos(theta1),coredata(x)[i]*cos(theta2),
+                           coredata(x)[i-1]*sin(theta1),coredata(x)[i]*sin(theta2)))
+    }
   }
+  
   lines(r*cos(pi*(1:360)/180),r*sin(pi*(1:360)/180),lwd=2)
   
   par(new=TRUE,fig=c(0.05,0.15,0.05,0.2),mar=c(0,3,0,0),
