@@ -1909,7 +1909,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 }
 
 
-DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
+DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
                            rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_slp_mon.nc",
                            non.stationarity.check=FALSE,
@@ -1956,7 +1956,7 @@ DSensemble.eof <- function(y,lplot=TRUE,path="CMIP5.monthly",
       if(inherits(y,"eof")) y <- as.field(y)
       for (season in names(table(season(y)))) {
         if (verbose) print(paste('Select',season))
-        z <- DSensemble.eof(subset(y,it=season),lplot=lplot,path=path,
+        z <- DSensemble.eof(subset(y,it=season),plot=plot,path=path,
                             rcp=rcp,biascorrect=biascorrect,predictor=SLP,
                             non.stationarity.check=non.stationarity.check,
                             ip=ip,lon=lon,lat=lat,rel.cord=FALSE,

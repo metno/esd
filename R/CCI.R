@@ -4,7 +4,7 @@
 CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
                 label=NULL,mindistance=5E5,dpmin=1E-3,hmax=3000,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
-                fname="cyclones.rda",lplot=FALSE,accuracy=NULL,
+                fname="cyclones.rda",plot=FALSE,accuracy=NULL,
                 allow.open=FALSE,do.track=FALSE,verbose=FALSE,...) {
   if(verbose) print("CCI - calculus based cyclone identification")
 
@@ -32,7 +32,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
         X.y <- CCI(Z.y,m=m,cyclones=cyclones,
                 label=label,mindistance=mindistance,dpmin=dpmin,
                 pmax=pmax,rmin=rmin,rmax=rmax,nsim=nsim,progress=FALSE,
-                fname=NULL,lplot=lplot,accuracy=accuracy,verbose=verbose)
+                fname=NULL,plot=plot,accuracy=accuracy,verbose=verbose)
         if(progress) setTxtProgressBar(pb,i/(length(unique(yrmn))))
         if(is.null(X)) {
           X <- X.y
@@ -450,7 +450,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     strength <- rank(pcent)
     if (!cyclones) strength <- rank(-pcent)
 
-    if (lplot) {
+    if (plot) {
       if(verbose) print("plot example of cyclone identification")
       data(geoborders,envir=environment())
       i <- length(date)/2
