@@ -112,7 +112,7 @@ DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
                           pattern="tas_Amon_ens_",verbose=FALSE,
                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,
                           ds.1900.2099=TRUE,test=FALSE)
-DSensemble.eof(y,lplot=TRUE,path="CMIP5.monthly",
+DSensemble.eof(y,plot=TRUE,path="CMIP5.monthly",
                            rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_slp_mon.nc",
                            non.stationarity.check=FALSE,

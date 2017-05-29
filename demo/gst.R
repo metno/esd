@@ -1,8 +1,11 @@
 ## R-script to plot global mean temperature
 library(esd)
 
-## Download the latest reanalysis: near-surface temperature
-download.file('ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc','air.mon.mean.nc')
+## Download the latest reanalysis: near-surface temperature if the file doesn't exist or is not up-to-date
+
+if ( !file.exists('air.mon.mean.nc') | 
+     as.Date(as.Date(Sys.time()) - file.info('air.mon.mean.nc')$ctime) > 45)
+  download.file('ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc','air.mon.mean.nc')
 t2m <- retrieve('air.mon.mean.nc')
 
 ## Estimate annual mean of global mean

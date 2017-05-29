@@ -540,7 +540,6 @@ as.field.zoo <- function(x,lon,lat,param,unit,
   #dmo <- as.numeric(format(t[2],'%m')) - as.numeric(format(t[1],'%m')) 
   #dda <- as.numeric(format(t[2],'%d')) - as.numeric(format(t[1],'%d'))
   if (length(year(x))!=1) {
-      ## KMP 2016-09-13 problem when a monthly time series starts in dec: diff(month(x))[1] = -11 
       dyr <- median(diff(year(x)))#diff(year(x))[1]
       dmo <- median(diff(month(x)))#diff(month(x))[1]
       dda <- median(diff(day(x)))#diff(day(x))[1]
@@ -696,7 +695,6 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,anomaly=FALSE,verb
     Y <- as.field(X$eof)
     gcms <- sub(".*_","",names(X)[ix])
     S <- setNames(S,gcms)
-    
     for (i in seq_along(ix)) {
       S[[i]] <- as.field(S[[i]],index=index(X[[ix[i]]]),
                  lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
@@ -704,6 +702,7 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,anomaly=FALSE,verb
                  longname=paste('fitted',attr(Y,'longname')),
                  greenwich=attr(Y,'greenwich'),aspect='fitted')
       attr(S[[i]],'unitarea') <- attr(X,"unitarea")
+      class(S[[i]]) <- class(Y)
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     class(S) <- c("dsensemble","field","list")
@@ -1403,7 +1402,9 @@ as.eof.list <- function(x,verbose=FALSE) {
     return(Z)
   }
 
-  if (verbose) print(summary(x))
+  if (verbose) try(print(summary(x)))
+  if (inherits(x[[1]],'character')) x[[1]] <- NULL
+  if (inherits(x[[1]],'eof')) {eof <- x[[1]]; x[[1]] <- NULL}
   X.list <- lapply(x,wPC)
   X <- do.call("merge", X.list)
   if (verbose) print(summary(X))
@@ -1431,6 +1432,26 @@ as.eof.list <- function(x,verbose=FALSE) {
   attr(eof,'id') <- id
   names(eof) <- paste("X.",1:20,sep="")
   class(eof) <- class(x[[1]])
+  return(eof)
+}
+
+as.eof.dsensemble <- function(x,FUN='mean',verbose=FALSE) {
+  ## R.E. Benestad, 2017-05-19
+  ## Convert the dsensemble object to an EOF of the multi-model mean
+  stopifnot(inherits(x,'dsensemble'),inherits(x[[2]],'eof')|inherits(x[[2]],'pca'))
+  if (verbose) print('as.eof.dsensemble')
+  eof0 <- x[[2]]; x[[2]] <- NULL
+  x[[1]] -> info; x[[1]] <- NULL
+  d <- c(dim(x[[1]]),length(x))
+  y <- unlist(x)
+  dim(y) <- c(d[1]*d[2],d[3])
+  Y <- apply(y,1,FUN)
+  dim(Y) <- c(d[1],d[2])
+  eof <- zoo(Y,order.by=index(x[[1]]))
+  eof <- attrcp(eof0,eof)
+  class(eof) <- class(eof0)
+  attr(eof,'info') <- info
+  attr(eof,'history') <- history.stamp()
   return(eof)
 }
 

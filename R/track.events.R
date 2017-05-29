@@ -8,7 +8,7 @@ track.events <- function(x,verbose=FALSE,...) {
 
 track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,
                           dE=0.1,dN=0.1,dmin=1E5,amax=90,ddmax=0.5,dpmax=NULL,
-                          greenwich=NULL,lplot=FALSE,progress=TRUE,verbose=FALSE) {
+                          greenwich=NULL,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
@@ -21,13 +21,13 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,
       if(verbose) print(unique(yrmn)[i])
       x.y <- subset(x,it=(yrmn==unique(yrmn)[i]))
       if (is.null(x.tracked)) {
-        x.t <- Track(x.y,x0=x0,lplot=lplot,cleanup.x0=FALSE,dE=dE,dN=dN,
+        x.t <- Track(x.y,x0=x0,plot=plot,cleanup.x0=FALSE,dE=dE,dN=dN,
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
                      amax=amax,ddmax=ddmax,dpmax=dpmax,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y
       } else {
-        x.t <- Track(x.y,x0=x.tracked,lplot=lplot,dE=dE,dN=dN,
+        x.t <- Track(x.y,x0=x.tracked,plot=plot,dE=dE,dN=dN,
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
                      amax=amax,ddmax=ddmax,dpmax=dpmax,
                      progress=FALSE,verbose=verbose)
@@ -38,7 +38,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,
     }
     y <- x.tracked
   } else {
-    x.tracked <- Track(x,x0=NULL,lplot=lplot,dE=dE,dN=dN,
+    x.tracked <- Track(x,x0=NULL,plot=plot,dE=dE,dN=dN,
                        dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
                        amax=amax,ddmax=ddmax,dpmax=dpmax,
                        progress=progress,verbose=verbose)
@@ -55,7 +55,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,
 
 Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0.1,
                   dmin=1E5,amax=NULL,ddmax=NULL,dpmax=NULL,
-                  cleanup.x0=TRUE,lplot=FALSE,progress=TRUE,verbose=FALSE) {
+                  cleanup.x0=TRUE,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
   options(digits=12)
   d <- sort(unique(strptime(paste(x$date,x$time),"%Y%m%d %H")))
@@ -129,7 +129,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0
         step3=list(lon=lons[datetime==d[i+1]],lat=lats[datetime==d[i+1]],
                    num=num[datetime==d[i+1]],dx=dx[datetime==d[i+1]],
                    pcent=pcent[datetime==d[i+1]]),
-             dmax=dmax,ddmax=ddmax,n0=n0,amax=amax,dpmax=dpmax,nend=nend,dE=dE,dN=dN)#,lplot=lplot)
+             dmax=dmax,ddmax=ddmax,n0=n0,amax=amax,dpmax=dpmax,nend=nend,dE=dE,dN=dN)#,plot=plot)
       num[datetime==d[i-1]] <- nn$step1$num
       num[datetime==d[i]] <- nn$step2$num
       num[datetime==d[i+1]] <- nn$step3$num
@@ -239,7 +239,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0
     y0 <- NULL
   }
   
-  if(lplot) {
+  if(plot) {
     lons <- y$lon
     lats <- y$lat
     num <- y$trajectory
@@ -281,7 +281,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0
 }
 
 Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
-                     amax=90,ddmax=NULL,dpmax=NULL,nend=NA,lplot=FALSE,
+                     amax=90,ddmax=NULL,dpmax=NULL,nend=NA,plot=FALSE,
                      verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
   if (is.na(n0) & !all(is.na(step1$num))) {
@@ -424,7 +424,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
   ## Connect the most likely trajectories based on the probability factors
   if(any(pf.all>0)) {
     rank.all <- matrix(rank(1-pf.all),dim(pf.all))
-    if(lplot) {
+    if(plot) {
       dev.new()
       data(geoborders,envir=environment())
       plot(geoborders,type="l",col="grey20",lwd=0.5,
@@ -470,7 +470,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
         step3$dx[k3] <- d23[k2,k3]
         rank.all[i3.all==k3,] <- NA
       }
-      if(lplot) {
+      if(plot) {
         lon.k <- c(step1$lon[k1],step2$lon[k2],step3$lon[k3])
         lat.k <- c(step1$lat[k1],step2$lat[k2],step3$lat[k3])
         lines(lon.k,lat.k,lwd=3,col="blue",type="l",lty=1)
@@ -502,7 +502,7 @@ angle <- function(lon1,lat1,lon2,lat2) {
 }
 
 ## adjust maximum distance based on angle of direction: max eastward, min westward 
-adjustdmax <- function(a,dmax=1.2E6,dE=0,dN=0,width=1,height=1,lplot=FALSE) {
+adjustdmax <- function(a,dmax=1.2E6,dE=0,dN=0,width=1,height=1,plot=FALSE) {
   rad <- a*pi/180
   east <- rad > -pi/2 & rad < pi/2
   north <- rad < pi & rad > 0
@@ -515,7 +515,7 @@ adjustdmax <- function(a,dmax=1.2E6,dE=0,dN=0,width=1,height=1,lplot=FALSE) {
   x <- x + dE
   y <- y + dN
   d <- dmax*sqrt(x^2 + y^2)
-  if(lplot) {
+  if(plot) {
     plot(0,0,cex=2,pch=3,col="black",
          xlim=c(-1.5,1.5)*dmax*1E-3,ylim=c(-1.5,1.5)*dmax*1E-3,
          xlab="dmax (km)",ylab="dmax (km)",main="maximum displacement radius")
@@ -641,7 +641,7 @@ Enumerate <- function(x,param="trajectory",verbose=FALSE) {
 
 
 NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,
-                             lplot=FALSE,verbose=FALSE) {
+                             plot=FALSE,verbose=FALSE) {
   if (verbose) print("NearestNeighbour")
   distance <- mapply(function(x,y) distAB(x,y,lon2,lat2),lon1,lat1)
   n <- length(lon1)
@@ -680,7 +680,7 @@ NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,
   }
   d.num[is.na(num)] <- 0
   d.num <- d.num*1E-3
-  if (lplot) {
+  if (plot) {
     plot(lon1,lat1,type="p",col="black",pch=1:length(lon1),lwd=1,
       xlim=c(-180,180),ylim=c(0,90))
    points(lon2,lat2,col="blue",pch=num,lwd=1)
@@ -731,7 +731,7 @@ function(x) {
     }
     rank.all[is.na(da)] <- NA
     
-    if(lplot) {
+    if(plot) {
       dev.new()
       data(geoborders,envir=environment())
       plot(geoborders,type="l",col="grey20",lwd=0.5,
@@ -754,7 +754,7 @@ function(x) {
       rank.all[,j2==j2[ij[2]]] <- NA
       rank.all[i2==i2[ij[1]],] <- NA
       rank.all[i3==i3[ij[1]],] <- NA
-      if(lplot) {
+      if(plot) {
         points(step1$lon[j1[ij[2]]],step1$lat[j1[ij[2]]],pch=as.character(step1$num[j1[ij[2]]]))
         points(step2$lon[j2[ij[2]]],step2$lat[j2[ij[2]]],pch=as.character(step2$num[j2[ij[2]]]))
         points(step3$lon[i3[ij[1]]],step3$lat[i3[ij[1]]],pch=as.character(step3$num[i3[ij[1]]]))
