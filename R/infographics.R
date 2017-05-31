@@ -1001,7 +1001,7 @@ vis.default <- function(X,it=NULL,img=NULL,verbose=FALSE,
 
 balls <- function(x,y=NULL,col=NULL,cex.max=2,n=20) {
   for (i in 1:n) {
-    if (is.null(col)) cols <- rgb(i/n,i/n,i/n) else
+    if ((is.null(col)) | length(col)==1) cols <- rgb(i/n,i/n,i/n) else
     if (is.vector(col)) {
       cols <- col/i
       cols[cols==0] <- i/n
@@ -1016,8 +1016,8 @@ balls <- function(x,y=NULL,col=NULL,cex.max=2,n=20) {
 
 graph <- function(x,...) UseMethod("graph")
 
-graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
-                          xlim=NULL,ylim=NULL,new=TRUE,...) {
+graph.default <- function(x,img=NULL,pch='fancy',it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
+                          xlim=NULL,ylim=NULL,new=TRUE,col.obs='black',...) {
     print('graph.default')
     ## Produce the graphics:
     
@@ -1033,14 +1033,15 @@ graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
     if (!is.null(it)) y <- subset(x,it=it) else y <- x
     plot.zoo(y,lwd=lwd,col=col,ylim=ylim,xlim=xlim,
              ylab=ylab(y),sub=loc(y))
-    balls(y)
+    #balls(y)
+    if (!is.null(pch)) if (pch=='fancy') balls(y,col=col.obs) else points(zoo(y),pch=pch,col=col.obs)
     par(xaxt='s',yaxt='s')
     axis(1,col='white')
     axis(2,col='white')
 }
 
-graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
-                             lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE) {
+graph.dsensemble <- function(x,img=NULL,pch='fancy',it=0,col=rgb(1,0.7,0.7,0.1),
+                             lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
     #print('graph.dsensemble')
     ## Produce the graphics:
     if ((!add) & (new)) dev.new()
@@ -1066,19 +1067,20 @@ graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
                                  lwd=3,col='red')
 
     #balls(attr(y,'station'))
+    if (!is.null(pch)) if (pch=='fancy') balls(attr(y,'station'),col=col.obs) else points(zoo(attr(y,'station')),pch=pch,col=col.obs)
     par(xaxt='s',yaxt='s')
     if (!is.null(img)) col.axis <- 'white' else col.axis <- 'black'
     axis(1,col=col.axis)
     axis(2,col=col.axis)
 }
 
-graph.list <- function(x,img=NULL,it=0,
+graph.list <- function(x,img=NULL,pch='fancy',it=0,
                        col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05),
                              rgb(0.5,0.5,0.5,0.05) ),
-                       lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE) {
+                       lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
   if ((!is.null(it)) & (inherits(x[[1]],'dsensemble')))
     y <- subset(x[[1]],it=it) else y <- x[[1]]
-  graph(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim,add=add,new=new)
+  graph(y,img=img,pch=pch,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim,add=add,new=new,col.obs=col.obs)
   if (!is.null(attr(x,'obs')) & is.null(attr(y,'dsensemble'))) obs <- attr(x,'obs') else
                                                                obs <- attr(y,'station')
   for (j in c(2:length(x),1)) {
@@ -1094,12 +1096,12 @@ graph.list <- function(x,img=NULL,it=0,
                                  lwd=3,col=emcol[i])
     legend(index(y)[1],max(coredata(y)),names(x),col=emcol,lty=1,lwd=3,bty='n')
   }
-  balls(obs)
+  if (!is.null(pch)) if (pch=='fancy') balls(obs,col=col.obs) else points(obs,pch=pch,col=col.obs)
 }
 
 
 graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
-                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE) {
+                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
   #print('graph.zoo')
     ## Produce the graphics:
     if ((!add) & (new)) dev.new()
@@ -1120,7 +1122,8 @@ graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
     grid()
     for (i in 1:dim(x)[2]) lines(y[,i],lwd=7,col=col)
 
-    balls(attr(y,'station'))
+    if (!is.null(pch)) if (pch=='fancy') balls(attr(y,'station'),col=col.obs) else points(zoo(attr(y,'station')),pch=pch,col=col.obs)
+    #balls(attr(y,'station'))
     par(xaxt='s',yaxt='s')
     if (!is.null(img)) col.axis <- 'white' else col.axis <- 'black'
     axis(1,col=col.axis)
