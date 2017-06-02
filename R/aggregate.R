@@ -22,12 +22,19 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   #print(deparse(substitute(by)))
   class(x) <- "zoo"
   
+  if (by=='yearmon') {
+    yyyymm <- format(index(Parea.merra),'%Y-%m-%d')
+    by <- yyyymm
+  }
+  
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) )
     y <- aggregate(x, by, FUN, na.rm=na.rm, ...,
                    regular = regular, frequency = frequency) else
     y <- aggregate(x, by, FUN, ..., regular = regular, frequency = frequency)
 
+  if (inherits(by[1],'character')) index(y) <- as.Date(index(y))
+    
   if (class(index(y))=="Date") {
   dy <- day(y); mo <- month(y); yr <- year(y)
     if (dy[2] - dy[1] > 0) cls[length(cls) - 1] <- "day" else
@@ -234,10 +241,13 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
                            na.rm=TRUE,smallx=FALSE,verbose=FALSE,
                            a= 6378, x0=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
-  if (verbose) print("aggregate.area")
+  if (verbose) print(paste("aggregate.area",FUN))
+  if (verbose) print(rowSums(coredata(x)))
   x <- subset(x,is=is,it=it)
+  if (verbose) print(rowSums(coredata(x)))
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   d <- attr(x,'dimensions')
+  if (verbose) print(paste('dimensions',paste(d,collapse='-')))
   #image(attr(x,'longitude'),attr(x,'latitude'),area)
   #print(c(length(colSums(area)),length(attr(x,'latitude')),sum(colSums(area))))
   #lon <- rep(lon(x),d[2])
@@ -247,6 +257,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   ## The first assumes a global field and the second is for a limited longitude range
   #if (diff(range(lon(x)))> 350) aweights <- rep(dY * 2*pi/d[1] * a*cos(pi*lat(x)/180),d[1])[srtlat] else
   aweights <- rep(dY * dtheta * a*cos(pi*lat(x)/180),d[1])[srtlat]
+  if (verbose) print(sum(aweights))
   if (FUN=='mean') {
     ok <- is.finite(colMeans(x))
     aweights <- aweights/sum(aweights[ok])
@@ -298,6 +309,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
                   reference=attr(x,'reference'),info=attr(x,'info'),
                   method=paste(FUN,attr(x,'method')),type='area aggregate',
                   aspect=attr(x,'aspect'))
+  if (verbose) attr(Y,'aweights') <- aweights
   attr(Y,'history') <- history.stamp(x)
   return(Y)
 }

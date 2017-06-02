@@ -19,7 +19,7 @@ panel <- function(ideal=FALSE,tb=0.5,tc=0.2,lwd=2,m=25,title=FALSE) {
   #lwd <- 2     # Shape border thickness
   # m - ensemble size
 
-  wpal <- wes_palette("Zissou")
+  wpal <- wes_palette("Zissou1")
   wr <- round(strtoi(paste('0x',substr(wpal[c(1,3,5)],2,3),sep=''))/255,2)
   wg <- round(strtoi(paste('0x',substr(wpal[c(1,3,5)],4,5),sep=''))/255,2)
   wb <- round(strtoi(paste('0x',substr(wpal[c(1,3,5)],6,7),sep=''))/255,2)
@@ -29,8 +29,9 @@ panel <- function(ideal=FALSE,tb=0.5,tc=0.2,lwd=2,m=25,title=FALSE) {
          if (title)  main <- 'Ad hoc ensemble mapping of State Probability Space' else 
          if (!ideal) main='a' else main='b'
   plot(c(-5,5),c(-5,5),type='n',pch=19,col=rgb(0.75,0.75,0.75,0.1),cex=1.4,
-      main=main,xlab='',ylab='',xlim=c(-4.5,3.5),ylim=c(-4.5,3.5))
-
+      main="",xlab='',ylab='',xlim=c(-4.5,3.5),ylim=c(-4.5,3.5))
+  text(-4.5,3.5,main,cex=2,pos=4)
+  
   for (a in seq(0.1,2.5,by=0.05))
    area(a=a,col=rgb(wr[1],wg[1],wb[1],0.03),border=rgb(wr[1],wg[1],wb[1],0.03))
   x0 <- 0.5*rnorm(1)-0.1; y0 <- 0.5*rnorm(1)+0.2 ## The "truth"
