@@ -22,10 +22,10 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   #print(deparse(substitute(by)))
   class(x) <- "zoo"
   
-  if (by=='yearmon') {
-    yyyymm <- format(index(Parea.merra),'%Y-%m-%d')
-    by <- yyyymm
-  }
+# if (by=='yearmon') {
+#    yyyymm <- format(index(Parea.merra),'%Y-%m-%d')
+#    by <- yyyymm
+#  }
   
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) )
@@ -33,7 +33,7 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
                    regular = regular, frequency = frequency) else
     y <- aggregate(x, by, FUN, ..., regular = regular, frequency = frequency)
 
-  if (inherits(by[1],'character')) index(y) <- as.Date(index(y))
+ # if (inherits(by[1],'character')) index(y) <- as.Date(index(y))
     
   if (class(index(y))=="Date") {
   dy <- day(y); mo <- month(y); yr <- year(y)
