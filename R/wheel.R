@@ -75,9 +75,10 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
   } else {
     yr <- year(x); mo <- month(x); dy <- day(x)
     for (i in 2:length(index(x))) {
-      jday <- as.numeric(as.Date(paste(yr[i],mo[i],dy[i],sep='-'))-as.Date(paste(yr[i],'01-01',sep='-')))
-      theta1 <- 0.5*pi - 2*pi*(jday-1)/366
-      theta2 <- 0.5*pi - 2*pi*jday/366
+      jday1 <- as.numeric(as.Date(paste(yr[i-1],mo[i-1],dy[i-1],sep='-'))-as.Date(paste(yr[i-1],'01-01',sep='-')))
+      jday2 <- as.numeric(as.Date(paste(yr[i],mo[i],dy[i],sep='-'))-as.Date(paste(yr[i],'01-01',sep='-')))
+      theta1 <- 0.5*pi - 2*pi*jday1/366
+      theta2 <- 0.5*pi - 2*pi*jday2/366
       jj <- (1:length(years))[is.element(years,yr[i])]
       lines(c((r+coredata(x)[i-1])*cos(theta1),(r+coredata(x)[i])*cos(theta2)),
             c((r+coredata(x)[i-1])*sin(theta1),(r+coredata(x)[i])*sin(theta2)),lwd=lwd,col=col[jj])
@@ -86,8 +87,9 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
                            coredata(x)[i-1]*sin(theta1),coredata(x)[i]*sin(theta2)))
     }
   }
-  
-  lines(r*cos(pi*(1:360)/180),r*sin(pi*(1:360)/180),lwd=2)
+  #clim <- coredata(climatology(x))
+  #r <- approx(1:length(clim),clim,xout = 1:360)$y
+  #lines(r[1:360]*cos(pi*(1:360)/180),r[1:360]*sin(pi*(1:360)/180),lwd=2,col=rgb(0.5,0.5,0.5,0.2))
   
   par(new=TRUE,fig=c(0.05,0.15,0.05,0.2),mar=c(0,3,0,0),
       cex.axis=0.7,yaxt="s",xaxt="n",las=1)
