@@ -689,7 +689,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=FALSE)
     
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
-    
     data("geoborders",envir=environment())
     if(sum(is.finite(x))==0) stop('No valid data')
     ## To deal with grid-conventions going from north-to-south or east-to-west:

@@ -345,6 +345,7 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
 # assumes that dimensions of x are [x,y,(t)] and that the coordinates are
 # provided as attributes as in field
   
+  if (verbose) print(match.call())
   d <- dim(x)
   if (length(d)==2) d <- c(d,1)  # if only 2-dimensional maps, then one dimension of 1 is added
   lon.old <- lon(x)
@@ -354,12 +355,13 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
     {lon.new <- is[[1]]; lat.new <- is[[2]]} else
   if ( (inherits(is,'station')) | (inherits(is,'field')) |
       (inherits(is,'eof')) ) {
-    lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
-  } else if (is.matrix(is) & !is.null(attr(is,'longitude')) &
-             !is.null(attr(is,'latitude'))) {
-    lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
+    lon.new <- lon(is); lat.new <- lat(is)
+  } else if ( is.matrix(is) & !is.null(lon(is)) &
+              !is.null(lat(is)) ) {
+    lon.new <- lon(is); lat.new <- lat(is)
   }
   
+  if (verbose) {str(lon.old);str(lat.old);str(lon.new);str(lat.new)}
   if (is.null(lon.old) | is.null(lat.old) | is.null(lon.new) | is.null(lat.new)) return(NULL)
 
   beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
