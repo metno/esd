@@ -95,11 +95,11 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
   ## PCA/EOF objects
 
   if (verbose) print('map.dsensemble')
-  
+
   if (inherits(x,c('pca','eof'))) {
     ## Extract a subset of the data
     if (verbose) print(names(x)[2])
-      x <- subset(x,is=is,im=im,ip=ip,verbose=verbose)
+    x <- subset(x,is=is,im=im,ip=ip,verbose=TRUE)#verbose)
     ## REB 2016-12-01: Do all the analysis on the PC weights to speed up. Linearity.  
 #    Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     Y <- expandpca(x,it=it,FUN=FUN,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
@@ -128,7 +128,7 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
     d <- dim(x)
   }
   dim(x) <- c(length(index(x)),d[2])
-  if (verbose) print(dim(x))
+  if(verbose) print(dim(x))
   return(x)
 }
 
@@ -143,20 +143,28 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   
   Y <- list()
   Y$info <- x$info
-  if (inherits(x,'pca')) {
+  ## KMP 2017-06-07 Some dsensemble objects may have both a PCA and EOF attached
+  #if (inherits(x,'pca')) {
+  if (any('pca' %in% names(x))) { 
     if (verbose) print('subset pca')
-    Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
+    ## KMP 2017-06-07 Do not subset pca and eof in time!
+    ## They typcially cover a shorter time span than the ensemble members and
+    ## if e.g., it = c(2050,2100) you will end up with an empty pca and eof.
+    Y$pca <- subset(x$pca,is=is,ip=ip,verbose=verbose)
+    #Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
   }
-  if (inherits(x,'eof')) {
+  #if (inherits(x,'eof')) {
+  if (any('eof' %in% names(x))) {
     if (verbose) print('subset eof')
-    Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
+    Y$eof <- subset(x$eof,is=is,ip=ip,verbose=verbose)
+    #Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
   }
   X <- x
 
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
-    y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
+  y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
   if (verbose) print(dim(y[[1]]))
 
   if (!is.null(im)) {

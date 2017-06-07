@@ -221,9 +221,9 @@ subset.pattern <- function(x,is,verbose=FALSE) {
     return(x)
 }
 
-subset.matrix <- function(x,is,verbose=FALSE)
+subset.matrix <- function(x,is,verbose=FALSE) {
   subset.pattern(x,is,verbose=verbose)
-  
+}  
 
 subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print('subset.pca')
