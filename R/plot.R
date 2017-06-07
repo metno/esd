@@ -157,11 +157,10 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
- 
     if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
-                                       cex.axis=cex.axis*0.65,add.text=FALSE,
+                                       cex.axis=0.65,add.text=FALSE,
                                        map.insert=map.insert,usegooglemap=usegooglemap,
-                                       verbose=verbose,...)
+                                       verbose=verbose)
     par(fig=par0$fig,mar=par0$mar,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
              xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
@@ -172,10 +171,15 @@ plot.station <- function(x,plot.type="single",new=TRUE,
 
 vis.map <- function(x,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
-                    cex.axis=0.7,add.text=FALSE,
+                    add.text=FALSE,cex.axis=NULL,
                     map.insert=TRUE,verbose=FALSE,
                     usegooglemap=TRUE,zoom=NULL,...) {
-  if(verbose) {print('vis.map'); print(cex.axis)}
+  if(verbose) print('vis.map')
+  ## KMP 2017-06-07 Weird problem: cex.axis is not found even though it is an argument to the function.
+  ## It looks like cex.axis exists but when applying 'print' the following error message shows up: 
+  ## 'Warning: restarting interrupted promise evaluation. Error in print(cex.axis) : object 'cex.axis' not found'
+  cex.axis <- 0.7  # Temporary fix
+  
   ## REB 2016-11-25: for dsensemble object
   if (is.null(lon(x))) attr(x,'longitude') <- lon(attr(x,'station'))
   if (is.null(lat(x))) attr(x,'latitude') <- lat(attr(x,'station'))
