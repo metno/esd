@@ -518,10 +518,11 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     ## 
     ## 
     d <- dim(val)
-    if (verbose) {
-        print("dimensions")
-        print(d)
+    if(is.null(d)) {
+      d <- c(length(lon$vals),length(lat$vals),length(time$vals))
+      d <- d[match(seq(length(d)),c(ilon,ilat,itime))]
     }
+    if (verbose) {print("dimensions"); print(d)}
     ##    
     if (!one.cell) {
         if (is.null(ilev))

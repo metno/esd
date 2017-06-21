@@ -37,7 +37,6 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   }
   if (verbose) print(c(n,d))
   dim(V) <- d
-
   ## REB 2016-12-01: Can also aggregate in time to speed things up and create a vector  
   if (!is.null(FUN)) {  
       if (FUN=='trend') FUN <- 'trend.coef'
@@ -58,10 +57,13 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   #
   
   U <- attr(UWD,'pattern')
-  if (!is.null(dim(U))) dU <- dim(U) else {
-                        dU <- c(1,length(U)) # If there is only one single station
-                        dim(U) <- dU
-                      }
+  if (!is.null(dim(U))) {
+    dU <- dim(U) 
+  } else {
+    dU <- c(1,length(U)) # If there is only one single station
+    dim(U) <- dU
+  }
+                      
   if (verbose) {print(d); print(dU)}
   if (inherits(x,'eof')) {
     if (verbose) {print('eof'); print(dU)}
@@ -78,8 +80,14 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
     Y <- t(t(Y) + c(attr(UWD,'mean')))
     if (verbose) print('add mean field')
   }
-  Y <- zoo(Y,order.by=index(subset(X[[1]],it=it)))
+  # Not right if FUN is defined and time mean has been applied:
+  if(nrow(V)==length(index(subset(X[[1]],it=it)))) {
+    Y <- zoo(Y,order.by=index(subset(X[[1]],it=it)))
+  } else {
+    Y <- zoo(Y,order.by=seq(nrow(V)))
+  }
   Y <- attrcp(UWD,Y)
+  attr(Y,'time') <- range(index(subset(X[[1]],it=it)))
   class(Y) <- class(UWD)[-1]
   if (inherits(x,'eof')) attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
   attr(Y,'mean') <- NULL
