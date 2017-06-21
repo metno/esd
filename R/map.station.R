@@ -34,12 +34,12 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              cex.main=1,cex.axis=1,cex.lab=0.6,
                              pch=19, from=NULL,to=NULL,showaxis=FALSE,
                              border=FALSE,full.names=FALSE,
-                             full.names.subset=FALSE, 
+                             full.names.subset=FALSE, use.old=FALSE,
                              text=FALSE, fancy=FALSE, 
                              na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
                              ##colorbar=TRUE,
                              legend.shrink=1,fig=c(0,1,0.05,0.95),...) { 
-  if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap)
+  if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap | use.old)
       map.station.old(x,FUN,it,is,new,
                       projection,
                       xlim, ylim,zlim,n,
@@ -561,6 +561,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       ## print(par()$fig)
       ## browser()
       ## add color bar
+      
       if (colbar$show) 
         if (fancy & !is.null(colbar))
           col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
