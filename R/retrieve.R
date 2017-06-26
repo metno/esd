@@ -596,7 +596,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     ## attr(z, "history")        <- NA
     if(is.null(attr(z,"institution"))) attr(z, "institution") <- NA 
     if(is.null(attr(z,"reference"))) attr(z, "reference") <- NA
-    attr(z, "history")  <- history.stamp(z)
+    attr(z, "history")  <- history.stamp()
     if (one.cell) {
         class(z) <- c("station",model$frequency,"zoo")
         attr(z,'location') <- 'Grid cell'
@@ -1142,7 +1142,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         ## attr(z, "history")        <- NA
         if(is.null(attr(z,"institution"))) attr(z, "institution") <- NA 
         if(is.null(attr(z,"reference"))) attr(z, "reference") <- NA
-        attr(z, "history")        <- history.stamp(z)
+        attr(z, "history")        <- history.stamp()
 
         if (one.cell) {
             class(z) <- c("station",model$frequency,"zoo")
