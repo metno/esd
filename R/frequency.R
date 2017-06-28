@@ -15,6 +15,7 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
   # Automatic detection 
   if (!is.null(unit) & length(data)>1) {
     dt <- round(median(diff(data),na.rm=TRUE))
+    #print(dt)
     if ((((dt==31) | (dt==30)) & grepl("day",unit)) | ((dt==1) & grepl("mon",unit)) | (((dt==744) | (dt==728) | (dt==720)) & grepl("hou",unit) | (((dt==31) | (dt==1440) | (dt==44640)) & grepl("min",unit))))
        freq <- "month"
     if (((dt==1) & grepl("day",unit)) | ((dt==24) & grepl("hou",unit)))
@@ -23,6 +24,8 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
        freq <- "week"
     if ((dt==14) & grepl("day",unit))
        freq <- "2weeks"
+    if ((dt>=360) & grepl("day",unit))
+      freq <- "year"
     if (((dt==1) & grepl("hou",unit)) | ((dt==3600) & grepl("hou",unit)))
        freq <- "hour"
     if ((dt==6) & grepl("hou",unit))
