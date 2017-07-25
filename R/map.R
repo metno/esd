@@ -936,7 +936,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         cex <- 1+(x[,param]-min(x[,param],na.rm=TRUE))/
             diff(range(x[,param],na.rm=TRUE))*cex
     }
-    
     period <- unique(c(min(it),max(it)))
     if(dim(x)[1]>0) {
         #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
@@ -946,12 +945,12 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
          any(c("trajectory","start","end") %in% type)) {
           xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
           if(dim(xt)[1]>1) {
-              xall <- as.trajectory(xt,nmin=2,n=45)
-              map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
-                  add=TRUE,col=col,lonR=lonR,latR=latR,
-                  projection=projection,type=type,
-                  #show.trajectory=show.trajectory,show.start=show.start,show.end=show.end,
-                  verbose=verbose)
+            xall <- as.trajectory(xt,nmin=2,n=45,verbose=verbose)
+            map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
+                add=TRUE,col=col,lonR=lonR,latR=latR,
+                projection=projection,type=type,
+                #show.trajectory=show.trajectory,show.start=show.start,show.end=show.end,
+                verbose=verbose)
           }
         }
         if("points" %in% type) {
