@@ -25,7 +25,6 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   names(x)[grep("latitude",names(x))] <- "lat"
   names(x)[grep("longitude",names(x))] <- "lon"
   names(x)[grep("step",names(x))] <- "timestep"
-  
   if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
   if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
   if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
