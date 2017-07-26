@@ -861,7 +861,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
     if(verbose) print("map.events")
     x0 <- x
     x <- subset(x,it=it,is=is,verbose=verbose)
-    
     if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
     
     if (is.null(is$lon) & !is.null(xlim)) {
@@ -943,7 +942,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
         cols <- adjustcolor(col,alpha=alpha)
         if("trajectory" %in% colnames(x0) &
          any(c("trajectory","start","end") %in% type)) {
-          xt <- subset(x0,it=(x0$trajectory %in% x$trajectory & x0$trackcount>1))
+          xt <- subset(x0,it=(x0$trajectory %in% x$trajectory))
           if(dim(xt)[1]>1) {
             xall <- as.trajectory(xt,nmin=2,n=45,verbose=verbose)
             map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
