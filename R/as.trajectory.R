@@ -17,7 +17,7 @@ as.trajectory.events <- function(x,verbose=FALSE,...) {
 
 events2trajectory <- function(x,verbose=FALSE,...) {
   if(verbose) print("events2trajectory")
-  y <- as.trajectory(x,verbose=verbose,...)
+  y <- as.trajectory.events(x,verbose=verbose,...)
   invisible(y)
 }
 
