@@ -42,87 +42,89 @@ TC.track <- function(x,n) {
   return(row)
 }
 
-read.hurdat2 <- function(url='http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html',
-                         n=20,verbose=FALSE) {
-  ## This is an awkward file read first the lines
-  aoml <- readLines(url)
-  ## Sniff out the URL to the data from this website - the url seems to
-  ## change with new updates.
-  urltest <- aoml[grep('HURDAT 2',aoml)]
-  urldata <- substr(urltest,regexpr('href=',urltest)+6,regexpr('txt',urltest)+2)[1]
-  urldata <- paste('http://www.aoml.noaa.gov/hrd/hurdat/',urldata,sep='')
-  datach <- readLines(urldata)
-  ## Short rows contain storm names - select these for keeping track of each storm
-  inm <- (1:length(datach))[nchar(datach)==37]
-  ## Get the storm names
-  stormnames <- unlist(lapply(strsplit(datach[inm],','),function(x) x[2]))
-  stormnames <- gsub(' ','',stormnames)
-  ## Identify the rows with the storm track data
-  ist <- (1:length(datach))[nchar(datach)==120]
-  ## Add the storm number and name to the rows of storm track data
-  ns <- length(stormnames)
-  ## Add a last one to capture all storms
-  inm <- c(inm,length(datach)+1)
-  for (i in 1:ns) {
-    ii <- inm[i]:(inm[i+1]-1)
-    print(c(i,stormnames[i],inm[i],(inm[i+1]-1)))
-    datach[ii] <- paste(i,stormnames[i],datach[ii],sep=',')
-  }
-  
-  X <- strsplit(datach[ist],',')
-  
-  ## Check the data structure
-  xl <- unlist(lapply(X,function(x) length(x)))
-  ci <- unlist(lapply(X,function(x) as.numeric(x[1])))
-  if (verbose) print(table(xl))
-  
-  ## Stringsplit to create a list with storm tracks - the different elements
-  ## contain different times, and one storm track includes several elements
-  
-  X <- lapply(X,hur2list)
-  
-  ## Restructure the data into a data.frame
-  d <- c(length(X),length(X[[1]]))
-  nms <- names(X[[1]])
-  X <- as.data.frame(t(matrix(unlist(X),d[2],d[1])))
-  names(X) <- nms
-  
-  ## Combine the elements belonging to the same storm track and structure as
-  ## an trajectory object (as.trajectory). The structure is a matrix where 
-  ## each row is [lon,lat,slp,start,end,n] and n is the number of lon/lat/slp points.
-  ## Aggregate on name and use approx for interpolating between end points.
-  
-  Y <- matrix(rep(NA,(3*n+3)*ns),ns,3*n+3)
-  for (i in 1:ns) Y[i,] <- TC.track(subset(X,cyclone.no==i),n=n)
-  Y[Y <= -999] <- NA
-  ok <- is.finite(rowMeans(Y))
-  Y <- Y[ok,]
-  colnames(Y) <- c(rep('lon',n),rep('lat',n),rep('slp',n),'start','end','n')
-  
-  # add attributes to trajectory matrix X
-  attr(Y, "location")= NA
-  attr(Y, "variable")= 'storm tracks'
-  attr(Y, "longname")= 'Tropical cyclone storm tracks'
-  attr(Y, "quality")= NA
-  attr(Y, "calendar")= "gregorian"
-  attr(Y, "source")= 'NOAA/USA'
-  attr(Y, "URL")= url
-  attr(Y, "unit")= NA
-  attr(Y, "type")= "analysis"
-  attr(Y, "aspect")= "interpolated"
-  attr(Y, "reference")= ''
-  attr(Y, "info")= info
-  attr(Y, "method")= 'HURDAT2'
-  attr(Y,"lon") <- NA
-  attr(Y,"lat") <- NA
-  attr(Y,"alt") <- NA
-  attr(Y,"cntr") <- NA
-  attr(Y,"stid") <- NA
-  attr(Y, "history")= history.stamp()
-  attr(Y,'storm name') <- stormnames[ok]
-  class(Y) <- c('trajectory','matrix')
-  invisible(Y)
-}
+# read.hurdat2 <- function(url='http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html',
+#                          n=20,verbose=FALSE) {
+#   ## This is an awkward file read first the lines
+#   aoml <- readLines(url)
+#   ## Sniff out the URL to the data from this website - the url seems to
+#   ## change with new updates.
+#   urltest <- aoml[grep('HURDAT 2',aoml)]
+#   urldata <- substr(urltest,regexpr('href=',urltest)+6,regexpr('txt',urltest)+2)[1]
+#   urldata <- paste('http://www.aoml.noaa.gov/hrd/hurdat/',urldata,sep='')
+#   datach <- readLines(urldata)
+#   ## Short rows contain storm names - select these for keeping track of each storm
+#   browser()
+#   inm <- (1:length(datach))[nchar(datach)==37]
+#   ## Get the storm names
+#   stormnames <- unlist(lapply(strsplit(datach[inm],','),function(x) x[2]))
+#   stormnames <- gsub(' ','',stormnames)
+#   ## Identify the rows with the storm track data
+#   ist <- (1:length(datach))[nchar(datach)==120]
+#   ## Add the storm number and name to the rows of storm track data
+#   ns <- length(stormnames)
+#   ## Add a last one to capture all storms
+#   inm <- c(inm,length(datach)+1)
+#   for (i in 1:ns) {
+#     if(verbose) print(i)
+#     ii <- inm[i]:(inm[i+1]-1)
+#     print(c(i,stormnames[i],inm[i],(inm[i+1]-1)))
+#     datach[ii] <- paste(i,stormnames[i],datach[ii],sep=',')
+#   }
+#   
+#   X <- strsplit(datach[ist],',')
+#   
+#   ## Check the data structure
+#   xl <- unlist(lapply(X,function(x) length(x)))
+#   ci <- unlist(lapply(X,function(x) as.numeric(x[1])))
+#   if (verbose) print(table(xl))
+#   
+#   ## Stringsplit to create a list with storm tracks - the different elements
+#   ## contain different times, and one storm track includes several elements
+#   
+#   X <- lapply(X,hur2list)
+#   
+#   ## Restructure the data into a data.frame
+#   d <- c(length(X),length(X[[1]]))
+#   nms <- names(X[[1]])
+#   X <- as.data.frame(t(matrix(unlist(X),d[2],d[1])))
+#   names(X) <- nms
+#   
+#   ## Combine the elements belonging to the same storm track and structure as
+#   ## an trajectory object (as.trajectory). The structure is a matrix where 
+#   ## each row is [lon,lat,slp,start,end,n] and n is the number of lon/lat/slp points.
+#   ## Aggregate on name and use approx for interpolating between end points.
+#   browser()
+#   Y <- matrix(rep(NA,(3*n+3)*ns),ns,3*n+3)
+#   for (i in 1:ns) Y[i,] <- TC.track(subset(X,cyclone.no==i),n=n)
+#   Y[Y <= -999] <- NA
+#   ok <- is.finite(rowMeans(Y))
+#   Y <- Y[ok,]
+#   colnames(Y) <- c(rep('lon',n),rep('lat',n),rep('slp',n),'start','end','n')
+#   
+#   # add attributes to trajectory matrix X
+#   attr(Y, "location")= NA
+#   attr(Y, "variable")= 'storm tracks'
+#   attr(Y, "longname")= 'Tropical cyclone storm tracks'
+#   attr(Y, "quality")= NA
+#   attr(Y, "calendar")= "gregorian"
+#   attr(Y, "source")= 'NOAA/USA'
+#   attr(Y, "URL")= url
+#   attr(Y, "unit")= NA
+#   attr(Y, "type")= "analysis"
+#   attr(Y, "aspect")= "interpolated"
+#   attr(Y, "reference")= ''
+#   attr(Y, "info")= info
+#   attr(Y, "method")= 'HURDAT2'
+#   attr(Y,"lon") <- NA
+#   attr(Y,"lat") <- NA
+#   attr(Y,"alt") <- NA
+#   attr(Y,"cntr") <- NA
+#   attr(Y,"stid") <- NA
+#   attr(Y, "history")= history.stamp()
+#   attr(Y,'storm name') <- stormnames[ok]
+#   class(Y) <- c('trajectory','matrix')
+#   invisible(Y)
+# }
 
 ## Tropical cyclones for other ocean basins from the Best-track data set. Read the information about quality:
 ## http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/best_tracks/TC_bt_report.html

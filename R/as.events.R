@@ -1,7 +1,8 @@
 as.events <- function(x,...) UseMethod("as.events")
 
-as.events.default <- function(x,...) {
-  X <- events(x,...)
+as.events.default <- function(x,verbose=FALSE,...) {
+  if(verbose) print("as.events.default")
+  X <- events(x,verbose=verbose,...)
   invisible(X)
 }
 
@@ -18,6 +19,11 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   if (verbose) print("events")
   if (verbose) print(paste('dim: ',paste(dim(x),collapse=" x ")))
   if (verbose) print(paste('names: ',paste(names(x),collapse=", ")))
+  if(inherits(x,"matrix")) {
+    cnames <- colnames(x)
+    x <- data.frame(x)
+    names(x) <- cnames
+  }
   if(is.null(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
   if(is.null(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
   if(all(is.null(unit)) & !is.null(attr(x,"unit"))) unit <- attr(x,"unit")
@@ -41,11 +47,6 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
     y <- trajectory2events(x,verbose=verbose)
   } else {
     y <- x
-  }
-  if (inherits(y,"matrix")) {
-    cnames <- colnames(y)
-    y <- data.frame(y)
-    names(y) <- cnames
   }
   names(y) <- tolower(names(y))
   names(y)[grep("latitude",names(y))] <- "lat"
@@ -298,8 +299,6 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   attr(y,"aspect") <- "subset"
   invisible(y)
 }
- 
-
 
 events2trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,

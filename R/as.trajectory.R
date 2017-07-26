@@ -1,6 +1,7 @@
 as.trajectory <- function(x,...) UseMethod("as.trajectory")
 
-as.trajectory.default <- function(x,...) {
+as.trajectory.default <- function(x,verbose=FALSE,...) {
+  if(verbose) print("as.trajectory.default")
   X <- trajectory(x,...)
   invisible(X)
 }
@@ -9,7 +10,7 @@ as.trajectory.events <- function(x,verbose=FALSE,...) {
   if (verbose) print("as.trajectory.events")
   stopifnot(inherits(x,"events"))
   if (!("trajectory" %in% names(x))) x <- Track.events(x,verbose=verbose,...)
-  if (!("trackcount" %in% names(x))) x <- Trackstats(x,verbose=verbose)
+  if (!("tracklength" %in% names(x))) x <- Trackstats(x,verbose=verbose)
   y <- trajectory(x,verbose=verbose,...)
   invisible(y)
 }
@@ -24,7 +25,6 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   names(x)[grep("latitude",names(x))] <- "lat"
   names(x)[grep("longitude",names(x))] <- "lon"
   names(x)[grep("step",names(x))] <- "timestep"
-  
   if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
   if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
   if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
@@ -62,7 +62,6 @@ rence")
   cnames <- c("trajectory","start","end","n","d",rep("lon",n),rep("lat",n))
   if(!is.null(nlist2)) cnames <- c(cnames,as.vector(sapply(nlist2,function(x) rep(x,n))))
   colnames(X) <- cnames
-  
   if(dim(X)[1]==0) {
     if(verbose) print(paste("No trajectories >",nmin-1,"time steps"))
   } else {
@@ -77,7 +76,8 @@ rence")
     dt2 <- as.numeric(strftime(strptime(paste(d2,t2),format="%Y%m%d %H"),format="%Y%m%d%H"))
     #aggregate(x$date, list(x$trajectory), length)$x -> len
     aggregate(x$trackcount, list(x$trajectory), function(x) x[1])$x -> nlen
-    aggregate(x$tracklength, list(x$trajectory), function(x) x[1])$x -> dlen
+    aggregate(x$distance, list(x$trajectory), function(x) x[1])$x -> dlen
+    #aggregate(x$tracklength, list(x$trajectory), function(x) x[1])$x -> dlen
     a <- 6.378e06
     xx <- a * cos( x$lat*pi/180 ) * cos( x$lon*pi/180 )
     yy <- a * cos( x$lat*pi/180 ) * sin( x$lon*pi/180 )

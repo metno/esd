@@ -59,7 +59,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
 
 
 read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html',
-                         path=NULL,verbose=TRUE) { 
+                         path=NULL,verbose=FALSE,...) { 
 
   if(verbose) print("read.hurdat2")
   if(verbose) print(paste("file:",fname))
@@ -116,7 +116,7 @@ read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851
                  src="National Hurricane Center (NHC) revised Atlantic hurricane database (HURDAT2)",
                  reference="Landsea, C. W., et al. 2004: The Atlantic hurricane database re-analysis project: Documentation for the 1851-1910 alterations and additions to the HURDAT database. Hurricanes and Typhoons: Past, Present and
 Future, R. J. Murname and K.-B. Liu, Eds., Columbia University Press, 177-221.",
-                 file=fname,url=fname)
+                 file=fname,url=fname,verbose=verbose)
   attr(x,"name") <- dict.names
   attr(x,"record.id") <- dict.ri
   attr(x,"status") <- dict.names
