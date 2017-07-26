@@ -132,18 +132,25 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
 hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
                           verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
     # Estimate number of days with low temperatures
-  if (verbose) print('mildwinterdays')
+  if (verbose) print('hotsummerdays')
+  if ( (inherits(y,'dsensemble')) & is.null(dse)) {
+    ## Swap y & dse.
+    print('use y  to set dse')
+    dse <- y; y <- NULL
+  }
   stopifnot(inherits(x,'station'))
   if (is.null(y)) y <- x
   djf <- subset(x,it=it)      # default: summer
   djfy <- subset(y,it=it)     # default: summer
   nwd1 <- annual(djfy,FUN='count',threshold=threshold,nmin=nmin)
-  mwd1 <- annual(djf,FUN='mean',nmin=nmin)
+  mwd1 <- annual(djfy,FUN='mean',nmin=nmin)
   ## REB 2016-11-17: exclude temperatures far from the threshold:
   xcld1 <- (mwd1 < threshold - 15) | (mwd1 > threshold + 20)
+  xcld1 <- xcld1[is.finite(xcld1)]
   if (verbose) print(paste('Exclude',sum(xcld1),'outliers'))
-  mwd1[xcld1] <- NA
+  if (sum(xcld1)>0) mwd1[xcld1] <- NA
   
+  if (verbose) print(c(length(mwd1),length(nwd1)))
   cal <- data.frame(x=c(coredata(mwd1)),
                     y=c(coredata(nwd1)))
   ## Use linear fit rather than polynomial as this analysis only

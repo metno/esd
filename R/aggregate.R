@@ -22,10 +22,10 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   #print(deparse(substitute(by)))
   class(x) <- "zoo"
   
-  if (by=='yearmon') {
-    yyyymm <- format(index(Parea.merra),'%Y-%m-%d')
-    by <- yyyymm
-  }
+# if (by=='yearmon') {
+#    yyyymm <- format(index(Parea.merra),'%Y-%m-%d')
+#    by <- yyyymm
+#  }
   
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) )
@@ -33,7 +33,7 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
                    regular = regular, frequency = frequency) else
     y <- aggregate(x, by, FUN, ..., regular = regular, frequency = frequency)
 
-  if (inherits(by[1],'character')) index(y) <- as.Date(index(y))
+ # if (inherits(by[1],'character')) index(y) <- as.Date(index(y))
     
   if (class(index(y))=="Date") {
   dy <- day(y); mo <- month(y); yr <- year(y)
@@ -157,8 +157,11 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
                          "by" = "by")
     if (is.null(clsy2)) clsy2 <- deparse(substitute(by))
     #print(clsy2)
-    if (deparse(substitute(by))[1]=="year") 
-      by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
+    if (deparse(substitute(by))[1]=="year")
+      ## KMP 2017-05-07: annual mean should have year as index, not date
+      #by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
+      by <- year(x)
+      index(x) <- year(x)
     ## REB - 'what do the following lines do?'year' changed to 'month' in the if-statement
     if (deparse(substitute(by))[1]=="month") {
       by <- month(x)

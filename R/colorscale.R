@@ -105,7 +105,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     
     ## very easy case if colbar$col and breaks are provided
     if (!is.null(colbar$col)) {
-        if (is.null(pal)) pal <- NA ## disactivate pal  ## REB - need it for 'warm', 'cold'
+        if (is.null(colbar$pal)) colbar$pal <- NA ## disactivate pal  ## REB - need it for 'warm', 'cold'
         if (!is.null(colbar$breaks)) {  
             if (length(colbar$col) != length(colbar$breaks) - 1) {
                 #str(colbar)
@@ -130,7 +130,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
           colbar$pal <- 't2m'
         }
         if (is.null(colbar$n)) colbar$n=10
-        colbar$col <- colscal(colbar$n,colbar$pal,rev=colbar$rev,alpha=colbar$alpha,
+        colbar$col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev,alpha=colbar$alpha,
                               verbose=verbose)
       }
     }
@@ -142,7 +142,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
       } else {
         colbar$pal <- 't2m'
       } 
-    }
+    } 
 
 # REB 2015-12-02: I do not understand these two lines    
 #    if (!is.null(FUN)) {

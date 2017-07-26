@@ -418,7 +418,7 @@ as.station.events <- function(x,...) {
   invisible(y)
 }
 
-count.events <- function(x,by.trajectory=TRUE,verbose=TRUE,...) {
+count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
   if (verbose) print("count.events")
   dates <- as.Date(strptime(paste(x$date,x$time),format="%Y%m%d %H"))
   fn <- function(x) as.Date(as.yearmon(x))

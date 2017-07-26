@@ -37,7 +37,6 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   }
   if (verbose) print(c(n,d))
   dim(V) <- d
-
   ## REB 2016-12-01: Can also aggregate in time to speed things up and create a vector  
   if (!is.null(FUN)) {  
       if (FUN=='trend') FUN <- 'trend.coef'
@@ -58,10 +57,13 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   #
   
   U <- attr(UWD,'pattern')
-  if (!is.null(dim(U))) dU <- dim(U) else {
-                        dU <- c(1,length(U)) # If there is only one single station
-                        dim(U) <- dU
-                      }
+  if (!is.null(dim(U))) {
+    dU <- dim(U) 
+  } else {
+    dU <- c(1,length(U)) # If there is only one single station
+    dim(U) <- dU
+  }
+                      
   if (verbose) {print(d); print(dU)}
   if (inherits(x,'eof')) {
     if (verbose) {print('eof'); print(dU)}
@@ -78,8 +80,14 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
     Y <- t(t(Y) + c(attr(UWD,'mean')))
     if (verbose) print('add mean field')
   }
-  Y <- zoo(Y,order.by=index(subset(X[[1]],it=it)))
+  # Not right if FUN is defined and time mean has been applied:
+  if(nrow(V)==length(index(subset(X[[1]],it=it)))) {
+    Y <- zoo(Y,order.by=index(subset(X[[1]],it=it)))
+  } else {
+    Y <- zoo(Y,order.by=seq(nrow(V)))
+  }
   Y <- attrcp(UWD,Y)
+  attr(Y,'time') <- range(index(subset(X[[1]],it=it)))
   class(Y) <- class(UWD)[-1]
   if (inherits(x,'eof')) attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
   attr(Y,'mean') <- NULL
@@ -95,11 +103,11 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
   ## PCA/EOF objects
 
   if (verbose) print('map.dsensemble')
-  
+
   if (inherits(x,c('pca','eof'))) {
     ## Extract a subset of the data
     if (verbose) print(names(x)[2])
-      x <- subset(x,is=is,im=im,ip=ip,verbose=verbose)
+    x <- subset(x,is=is,im=im,ip=ip,verbose=TRUE)#verbose)
     ## REB 2016-12-01: Do all the analysis on the PC weights to speed up. Linearity.  
 #    Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     Y <- expandpca(x,it=it,FUN=FUN,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
@@ -128,7 +136,7 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
     d <- dim(x)
   }
   dim(x) <- c(length(index(x)),d[2])
-  if (verbose) print(dim(x))
+  if(verbose) print(dim(x))
   return(x)
 }
 
@@ -143,20 +151,28 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   
   Y <- list()
   Y$info <- x$info
-  if (inherits(x,'pca')) {
+  ## KMP 2017-06-07 Some dsensemble objects may have both a PCA and EOF attached
+  #if (inherits(x,'pca')) {
+  if (any('pca' %in% names(x))) { 
     if (verbose) print('subset pca')
-    Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
+    ## KMP 2017-06-07 Do not subset pca and eof in time!
+    ## They typcially cover a shorter time span than the ensemble members and
+    ## if e.g., it = c(2050,2100) you will end up with an empty pca and eof.
+    Y$pca <- subset(x$pca,is=is,ip=ip,verbose=verbose)
+    #Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
   }
-  if (inherits(x,'eof')) {
+  #if (inherits(x,'eof')) {
+  if (any('eof' %in% names(x))) {
     if (verbose) print('subset eof')
-    Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
+    Y$eof <- subset(x$eof,is=is,ip=ip,verbose=verbose)
+    #Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
   }
   X <- x
 
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
-    y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
+  y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
   if (verbose) print(dim(y[[1]]))
 
   if (!is.null(im)) {

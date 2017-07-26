@@ -3,7 +3,7 @@ library(esd)
 
 globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
                        annual=TRUE,pattern='tas_',param='tas',relative=FALSE,
-                       select=NULL,lon=NULL,lat=NULL) {
+                       select=NULL,lon=NULL,lat=NULL,FUN='mean') {
 
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
   fnms <- list.files(path=path,pattern=pattern)
@@ -25,7 +25,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
     print(paste(i,n,gcmnm,run,paste(d,collapse='-'),
                 min(year(gcm)),max(year(gcm)),fnames[i]))
     if (annual) gcm <- annual(gcm)
-    y <- aggregate.area(gcm,FUN='mean')
+    y <- aggregate.area(gcm,FUN=FUN)
     if (annual) {
       i1 <- is.element(yr,year(y))
       i2 <- is.element(year(y),yr)
