@@ -15,6 +15,12 @@ as.trajectory.events <- function(x,verbose=FALSE,...) {
   invisible(y)
 }
 
+events2trajectory <- function(x,verbose=FALSE,...) {
+  if(verbose) print("events2trajectory")
+  y <- as.trajectory(x,verbose=verbose,...)
+  invisible(y)
+}
+
 trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
                           method=NA,unit=NA,nmin=5,n=15) {
