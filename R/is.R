@@ -59,3 +59,7 @@ is.model <- function(model,verbose=FALSE) {
   if (verbose) print(summary(model))
   return(inherits(model,c('lm','glm','mlm')))
 }
+
+is.url <-function(x) {
+  grepl("http:|https:|www.", x)
+}
