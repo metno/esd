@@ -1,7 +1,7 @@
 ## Author 	 Rasmus E. Bnestad
-## Updated 	 by Abdelkader Mezghani
+## Updated 	 by Abdelkader Mezghani and Kajsa Parding
 ## Rasmus. E. Benestad - attempt to simpify by splitting up
-## Last update   26.07.2013
+## Last update   27.07.2017
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
 
@@ -18,7 +18,7 @@ genfun <- function(x,FUN) {
 
 ## Simplified function for mapping station objects.
 map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
-                             projection="lonlat",
+                             add=FALSE,projection="lonlat",
                              xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                              col='darkred',bg='orange',
                              colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
@@ -29,16 +29,20 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
                              cex=2,zexpr="alt",cex.subset=1,
                              add.text.subset=FALSE,showall=FALSE,
-                             add.text=FALSE,
+                             add.text=FALSE,main=NULL,sub=NULL,
                              height=NULL,width=NULL,
-                             cex.main=1,cex.axis=1,cex.lab=0.6,
+                             cex.main=1,cex.sub=0.75,cex.axis=1,cex.lab=0.6,
+                             col.main="black",col.sub="grey",
+                             font.main=1,font.sub=4,
                              pch=19, from=NULL,to=NULL,showaxis=FALSE,
                              border=FALSE,full.names=FALSE,
                              full.names.subset=FALSE, use.old=FALSE,
                              text=FALSE, fancy=FALSE, 
                              na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
                              ##colorbar=TRUE,
-                             legend.shrink=1,fig=c(0,1,0.05,0.95),...) { 
+                             xlab="lon",ylab="lat",
+                             legend.shrink=1,fig=c(0,1,0.05,0.95),
+                             mar=rep(2,4),mgp=c(3,1,0),...) { 
   if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap | use.old)
       map.station.old(x,FUN,it,is,new,
                       projection,
@@ -67,7 +71,10 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if (is.precip(x)) colbar$rev=TRUE
       } else colbar$pal <- varid(x)[1]
       if (!is.null(FUN)) {
-        if (!(FUN %in% names(attributes(x)))) y <- apply(coredata(x),2,FUN,na.rm=na.rm) else {
+        if (!(FUN %in% names(attributes(x)))) {
+          if(is.null(dim(x))) dim(x) <- c(length(x),1)
+          y <- apply(coredata(x),2,FUN,na.rm=na.rm)
+        } else {
           y <- attr(x,FUN); FUN <- NULL
         }    
         if (verbose) print(summary(y))
@@ -87,11 +94,17 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         }
         show.colbar <- TRUE
       } else show.colbar <- FALSE
-      
-      mar <- rep(2,4)
-      par(fig=fig,mar=mar,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
-                 col.axis='grey',col.lab='grey',las=1)
-      
+   
+      ## KMP 2017-07-28: fig creates problems when you want to add map.station as a subplot.
+      ## With this solution you have to use add=TRUE and set fig to your subplot or to NULL.
+      if(is.null(fig)) fig <- par(fig)
+      if(add) {
+        par(fig=fig,mar=mar,mgp=mgp,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
+            col.axis='grey',col.lab='grey',las=1,new=TRUE)
+      } else {
+        par(fig=fig,mar=mar,mgp=mgp,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
+            col.axis='grey',col.lab='grey',las=1)
+      }
       ## Avoid errors when plotting the colorbar with small figure windows
       ## fin collects information about the figure size (in inches)
       fin <- par()$fin
@@ -104,29 +117,59 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         str(col)
       }
       
-      plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=2)
+      plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=2,new=FALSE,
+           xlab=xlab,ylab=ylab)
       if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=0.6,col='grey',pos=1)
+      
+      if(showaxis) {
+        par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
+            cex.lab=0.7,cex.axis=0.7)
+        axis(3,at=pretty(par("xaxp")[1:2],n=5),col='grey')
+        axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey')
+      }
       
       if (gridlines) {
         par(xaxt='s',yaxt='s')
-        axis(3,seq(min(round(lon(x))),max(round(lon(x))),by=5),col='grey')
-        axis(4,seq(min(round(lat(x))),max(round(lat(x))),by=5),col='grey')
         grid()
       }
+      
       data("geoborders")
       lines(geoborders$x,geoborders$y)
       if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
-      
+
       if (show.colbar) {
-        if (fin[2] >= 8) par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n') else
-                         par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n')
+        ## KMP 2017-07-28: If fig is something other than the default
+        ## the colbar may be misplaced relative to the plot.
+        if (fin[2] >= 8) {
+          cf <- c(0.2,0.8,0,0.1)*fig
+          par(new=TRUE,fig=cf,mar=rep(1.5,4),yaxt='n')
+          #par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n') 
+        } else {
+          cf <- c(0.2,0.8,0,0.15)*fig
+          par(new=TRUE,fig=cf,mar=rep(2,4),yaxt='n')
+          #par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n')
+        }
         image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col,axes=FALSE)
-        par(mar=c(2,1,2,1),cex.axis=0.7,col.axis='grey')
-        axis(3,colbar$breaks)
+        par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=0.7,col.axis='grey')
+        axis(1,colbar$breaks)
         
       } 
-      par(new=TRUE,fig=fig,mar=mar,yaxt='n',xaxt='n') 
-      plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim)
+      par(new=TRUE,fig=fig,mar=mar,yaxt='n',xaxt='n')
+      plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab)
+      
+      ## Add a title
+      if(is.null(main)) {
+        main <- paste(attr(x,"param")[1],"  (",attr(x,"unit")[1],")",sep="")
+        if(!is.null(FUN)) {
+          if(is.function(FUN)) {
+            main <- paste(as.character(quote(FUN)),"of",main)
+          } else {
+            main <- paste(as.character(FUN),"of",main)
+          }
+        }
+      }
+      title(main=main,sub=sub,line=-2,adj=0,cex.main=cex.main,cex.sub=cex.sub,
+            col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
    }
 }
 
@@ -140,6 +183,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                                       breaks=NULL,type="p",cex=2,h=0.6, v=1,
                                       pos=0.1,show=TRUE),
                          # col=NULL replaced by palette
+                         xlab=NULL,ylab=NULL,
                          type=NULL,gridlines=TRUE,
                          lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
                          cex=2,zexpr="alt",cex.subset=1,
@@ -158,7 +202,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   if (verbose) {print(paste('map.station',FUN)); print(class(x))}
   arg <- list(...)
   attr(x,'unit') <- as.character(unit(x))
-    attr(x,'variable') <- as.character(varid(x))
+  attr(x,'variable') <- as.character(varid(x))
   ## REB 2016-11-28: some objects contain the attribute 'mean' which gets in the way.
     if (!is.null(FUN))
         if ((FUN=='mean') &
@@ -198,7 +242,8 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
            col=colbar$col,new=new,FUN=FUN,cex=cex,
            cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
-           verbose=verbose,...)
+           verbose=verbose,
+           xlab=xlab,ylab=ylab...)
   else if (projection=="np")
     sphere(x,lonR=lonR,latR=90,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
@@ -461,7 +506,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     par(new=FALSE)
     
     ## Add geoborders
-    ##browser()
     lines(geoborders$x, geoborders$y, col = "black")
     lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y,
           col = "pink")##"grey90"
@@ -531,7 +575,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       ##if (is.null(col)) colbar$col <- rep(col,length(colbar$col[icol]))
       ## 
       if (!is.null(col)) col <- col else col <- colbar$col[icol]
-      ## browser()
       points(ss$longitude, ss$latitude, pch = pch,
              bg=colbar$col[icol], col=col, ##col=colbar$col[icol]
              cex = cex*scale, xlab = "", ylab = "",
@@ -559,7 +602,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       
       par(fig=fig0,new=TRUE)
       ## print(par()$fig)
-      ## browser()
       ## add color bar
       
       if (colbar$show) 
@@ -570,7 +612,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       else if (!is.null(colbar)) {
         ##fig1 <- par0$fig
         par(fig=par0$fig,new=TRUE)
-        ## browser()
         image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
                    legend.only = T, zlim = range(colbar$breaks),
                    col = colbar$col, legend.width = 1,
