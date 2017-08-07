@@ -57,12 +57,21 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   invisible(x)
 }
 
-
+#fname <- 'http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html'
 read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html',
-                         path=NULL,verbose=FALSE,...) { 
-
+                         path=NULL,verbose=FALSE,...) {
   if(verbose) print("read.hurdat2")
   if(verbose) print(paste("file:",fname))
+  browser()
+  if(is.url(fname)) {
+    aoml <- readLines(url)
+    ## Sniff out the URL to the data from this website - the url seems to
+    ## change with new updates.
+    urltest <- aoml[grep('HURDAT 2',aoml)]
+    urldata <- substr(urltest,regexpr('href=',urltest)+6,regexpr('txt',urltest)+2)[1]
+    urldata <- paste('http://www.aoml.noaa.gov/hrd/hurdat/',urldata,sep='')
+    datach <- readLines(urldata)
+  }
   if(!is.null(path)) fname <- file.path(path,fname)
   hurdat2 <- readLines(fname)
   n <- as.vector(sapply(hurdat2,nchar))
