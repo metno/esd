@@ -300,7 +300,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     #print(length(index(YYY)))
     
     # Keep track of the different fields:
-    if (is.null(attr(YYY,'source'))) attr(YYY,'source') <- as.character(i)
+    if ( (is.null(attr(YYY,'source'))) | (is.na(attr(YYY,'source'))) ) attr(YYY,'source') <- as.character(i)
     src <- paste(attr(YYY,'source'),i,sep="+")
     id.t <- c(id.t,rep(src,length(index(YYY))))
     ID.t <- c(ID.t,src)
@@ -351,12 +351,16 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   } else {
     ceof <- zoo(eof[ii,],order.by=realdates[ii])
   }
+  
+  ## Finalise - set the metadata
   if (verbose) {print("Copy attributes"); print(names(attributes(eof)))}
   ceof <- attrcp(eof,ceof)
   clim <- clim.0
   dim(clim) <- attr(X,'dimensions')[1:2]
   attr(ceof,'mean') <- clim
   attr(ceof,'dimensions') <- attr(X,'dimensions')
+  
+  ## Set the metadata for the appended data: climatology etc.
   for (i in 1:n.app) {
     jj <- is.element(id.t,ID.t[i+1])
     if (verbose) print(paste(ID.t[i+1],' -> appendix.',i,' data points=',sum(jj),sep=''))
@@ -365,10 +369,15 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     } else {
       z <- zoo(eof[jj,],order.by=realdates[jj])
     }
-    eval(parse(text=paste("yyy <- attr(X,'appendix.",i,"')",sep="")))
+    cline1 <- paste("yyy <- attr(X,'appendix.",i,"')",sep="")
+    if (verbose) print(cline1)
+    eval(parse(text=cline))
     z <- attrcp(yyy,z)
-    eval(parse(text=paste("clim <- clim.",i,sep="")))
+    cline2 <- paste("clim <- clim.",i,sep="")
+    if (verbose) print(cline2)
+    eval(parse(text=cline2))
     dim(clim) <- attr(X,'dimensions')[1:2]
+    if (verbose) print('add information about mean')
     attr(z,"mean") <- clim
     attr(ceof,paste('appendix.',i,sep="")) <- z
   }
