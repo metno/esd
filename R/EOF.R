@@ -300,7 +300,8 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     #print(length(index(YYY)))
     
     # Keep track of the different fields:
-    if ( (is.null(attr(YYY,'source'))) | (is.na(attr(YYY,'source'))) ) attr(YYY,'source') <- as.character(i)
+    if (is.null(attr(YYY,'source'))) attr(YYY,'source') <- as.character(i) else
+      if (is.na(attr(YYY,'source')))  attr(YYY,'source') <- as.character(i)
     src <- paste(attr(YYY,'source'),i,sep="+")
     id.t <- c(id.t,rep(src,length(index(YYY))))
     ID.t <- c(ID.t,src)
