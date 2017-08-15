@@ -89,8 +89,8 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       } else show.colbar <- FALSE
       
       mar <- rep(2,4)
-      par(fig=fig,mar=mar,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
-                 col.axis='grey',col.lab='grey',las=1)
+      par(fig=fig,mar=mar,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=cex.axis,
+                 col.axis='grey30',col.lab='grey30',las=1)
       
       ## Avoid errors when plotting the colorbar with small figure windows
       ## fin collects information about the figure size (in inches)
@@ -103,30 +103,33 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         print(summary(lat(x)))
         str(col)
       }
-      
-      plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=2)
-      if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=0.6,col='grey',pos=1)
+
+      plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=2,xlab="",ylab="")
+      if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=0.6,col='grey30',pos=1)
       
       if (gridlines) {
-        par(xaxt='s',yaxt='s')
-        axis(3,seq(min(round(lon(x))),max(round(lon(x))),by=5),col='grey')
-        axis(4,seq(min(round(lat(x))),max(round(lat(x))),by=5),col='grey')
+        par(xaxt='s',yaxt='s',cex.axis=cex.axis)
+        axis(3,seq(floor(par("xaxp")[1]/5)*5,par("xaxp")[2],by=5),col='grey30')
+        axis(4,seq(floor(par("yaxp")[1]/5)*5,par("yaxp")[2],by=5),col='grey30')
+        #axis(3,seq(min(round(lon(x))),max(round(lon(x))),by=5),col='grey30',cex.axis=cex.axis)
+        #axis(4,seq(min(round(lat(x))),max(round(lat(x))),by=5),col='grey30',cex.axis=cex.axis)
         grid()
       }
+      
       data("geoborders")
       lines(geoborders$x,geoborders$y)
       if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
       
       if (show.colbar) {
-        if (fin[2] >= 8) par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n') else
-                         par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n')
+        if (fin[2] >= 8) par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n',xaxt='s') else
+                         par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n',xaxt='s')
         image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col,axes=FALSE)
-        par(mar=c(2,1,2,1),cex.axis=0.7,col.axis='grey')
+        par(mar=c(2,1,2,1),cex.axis=cex.axis,col.axis='grey30')
         axis(3,colbar$breaks)
         
       } 
       par(new=TRUE,fig=fig,mar=mar,yaxt='n',xaxt='n') 
-      plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim)
+      plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim,xlab="",ylab="")
    }
 }
 
@@ -609,17 +612,17 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       text(ss$longitude, ss$latitude,substr(toupper(ss$location),1,3),pos=3,cex=cex/2)
     ##add label text
     
-    if (showaxis) title(xlab = "Longitude",line=2.2 , cex.lab = cex.lab,col="grey50") 
-    if (showaxis) title(ylab = "Latitude",line=2.2 , cex.lab = cex.lab, col="grey50") 
+    if (showaxis) title(xlab="Longitude", line=2.2, cex.lab=cex.lab, col="grey30") 
+    if (showaxis) title(ylab="Latitude", line=2.2, cex.lab=cex.lab, col="grey30") 
     ## format axes
     if (showaxis) axis(1,pretty(seq(xlim[1],xlim[2],by=5),n=5),
-                       cex.axis=cex.axis,col="grey50",col.ticks="grey50") # 0.7
+                       cex.axis=cex.axis,col="grey30",col.ticks="grey30") # 0.7
     if (showaxis) axis(2,pretty(seq(ylim[1],ylim[2],by=5),n=5),
-                       cex.axis=cex.axis,col="grey50",col.ticks="grey50")
+                       cex.axis=cex.axis,col="grey30",col.ticks="grey30")
     if (showaxis) axis(4,pretty(seq(ylim[1],ylim[2],by=5),n=5),
-                       cex.axis=cex.axis,col="grey50",col.ticks="grey50")
+                       cex.axis=cex.axis,col="grey30",col.ticks="grey30")
     if (showaxis) axis(3,pretty(seq(xlim[1],xlim[2],by=5),n=5),
-                       cex.axis=cex.axis,col="grey50",col.ticks="grey50")
+                       cex.axis=cex.axis,col="grey30",col.ticks="grey30")
     ## add grid
     par(fig=par0$fig,new=TRUE)
     if (gridlines)
