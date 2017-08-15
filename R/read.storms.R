@@ -57,10 +57,9 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   invisible(x)
 }
 
-
+#fname <- 'http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html'
 read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html',
-                         path=NULL,verbose=FALSE,...) { 
-
+                         path=NULL,verbose=FALSE,...) {
   if(verbose) print("read.hurdat2")
   if(verbose) print(paste("file:",fname))
   if(!is.null(path) & !is.url(fname)) fname <- file.path(path,fname)

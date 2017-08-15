@@ -3,7 +3,7 @@ library(esd)
 
 globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
                        annual=TRUE,pattern='tas_',param='tas',relative=FALSE,
-                       select=NULL,lon=NULL,lat=NULL,FUN='mean') {
+                       select=NULL,lon=NULL,lat=NULL,FUN='mean',anomaly=TRUE) {
 
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
   fnms <- list.files(path=path,pattern=pattern)
@@ -33,7 +33,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
       i1 <- is.element(yr,year(y)+round((month(y)-0.5)/12,2))
       i2 <- is.element(year(y) + round((month(y)-0.5)/12,2),yr)
     }
-    ya <- anomaly(y,ref=ref)
+    if (anomaly) ya <- anomaly(y,ref=ref) else ya <- y
     if(relative) {
       ya <- ya/attr(ya,"climatology")*100
       attr(ya,"unit") <- "%"

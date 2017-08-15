@@ -59,7 +59,7 @@ rence")
   x <- Trackstats(x,verbose=verbose)
   #}
   nlist1 <- c("trajectory","code99","date","time","trackcount",
-              "distance","tracklength","timestep","lon","lat")
+              "start","end","n","d","distance","tracklength","timestep","lon","lat")
   nlist1 <- nlist1[nlist1 %in% names(x)]
   nlist2 <- names(x)[!(names(x) %in% nlist1)]
   
@@ -108,10 +108,9 @@ rence")
       if(verbose) print(name)
       eval(parse(text=paste("aggregate(x$",name,
         ",list(x$trajectory),function(x) approx(x,n=",
-        n,")$y)$x ->",name,sep="")))
-      eval(parse(text=paste("colnames(",name,
-        ")<-rep('",name,"',",n,")",sep="")))
-      eval(parse(text=paste("X[,colnames(X)=='",name,"'] <- ",name,sep="")))
+        n,")$y)$x -> y",sep="")))
+      eval(parse(text=paste("colnames(y)<-rep('",name,"',",n,")",sep="")))
+      eval(parse(text=paste("X[,colnames(X)=='",name,"'] <- y",sep="")))
     }
   }
   # add attributes to trajectory matrix X

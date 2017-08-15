@@ -174,7 +174,7 @@ vis.map <- function(x,col='red',map.type=NULL,
                     add.text=FALSE,cex.axis=NULL,
                     map.insert=TRUE,verbose=FALSE,
                     usegooglemap=TRUE,zoom=NULL,...) {
-  if(verbose) print('vis.map')
+  if(verbose) {print('vis.map'); print(lon(x)); print(lat(x)); print(zoom)}
   ## KMP 2017-06-07 Weird problem: cex.axis is not found even though it is an argument to the function.
   ## It looks like cex.axis exists but when applying 'print' the following error message shows up: 
   ## 'Warning: restarting interrupted promise evaluation. Error in print(cex.axis) : object 'cex.axis' not found'
@@ -202,13 +202,14 @@ vis.map <- function(x,col='red',map.type=NULL,
       require(RgoogleMaps)
       
       if (is.null(zoom)) {
+        if (verbose) print('zoom not defined')
         if (length(lon(x))==1) zoom <- 8 else {
           ## zoom = 12 is very local, zoom = 1 is the world
           mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
           zoom <- 1 - floor(0.75*log(mxdst/360))
         }
-                             
       }
+      if (!is.finite(zoom)) zoom <- 8
       if (verbose) print(paste('zoom=',zoom))
       bgmap <- GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
                     destfile = "map.station.esd.png",

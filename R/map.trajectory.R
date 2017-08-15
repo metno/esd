@@ -42,15 +42,15 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
          col=adjustcolor(col,alpha.f=alpha))
 }
 
-segments.trajectory <- function(x,param="month",
+segments.trajectory <- function(x,param="month",label.param=NULL,
       xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
-      type=c("trajectory","start","end"),
+      type=c("trajectory","start","end"),fig=c(0,1,0.1,1),
+      showaxis=TRUE,
       #show.start=FALSE,show.end=FALSE,show.segment=TRUE,
       alpha=0.1,cex=0.5,lty=1,lwd=3,main=NULL,new=TRUE,add=FALSE,
       projection="lonlat",verbose=FALSE,...) {
   if(verbose) print("segments.trajectory")
-  
   if(is.null(param)) {
     map.trajectory(x,type=NULL,xlim=xlim,ylim=ylim,type=type,#show.start=show.start,
                    alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,add=add,
@@ -63,7 +63,7 @@ segments.trajectory <- function(x,param="month",
   }
   lons <- x[,colnames(x)=='lon']
   lats <- x[,colnames(x)=='lat']
-  if(is.null(dim(x0))) {
+  if(is.null(dim(lons))) {
     dim(lons) <- c(1,length(lons))
     dim(lats) <- c(1,length(lons))
   }
@@ -140,18 +140,29 @@ segments.trajectory <- function(x,param="month",
     p <- matrix(rep(NA,length(d)),dim(d))
     for (i in seq(length(tp))) p[d==tp[i]] <- param[tp==tp[i]]
   }
-
+  
   lon0 <- lons[,1:(dim(lons)[2]-1)]
   lon1 <- lons[,2:dim(lons)[2]]
   lat0 <- lats[,1:(dim(lats)[2]-1)]
   lat1 <- lats[,2:dim(lats)[2]]
-  pcol <- 0.5*(p[,1:(dim(p)[2]-1)] + p[,2:dim(p)[2]])
-
+  if(is.null(dim(lon0))) dim(lon0) <- c(1,length(lon0))
+  if(is.null(dim(lat0))) dim(lat0) <- c(1,length(lat0))
+  if(is.null(dim(lon1))) dim(lon1) <- c(1,length(lon1))
+  if(is.null(dim(lat1))) dim(lat1) <- c(1,length(lat1))
+  
   colbar <- colbar.ini(p,FUN=NULL,colbar=colbar,verbose=verbose)
-  icol <- apply(pcol,2,findInterval,colbar$breaks)
+  if(is.null(dim(p))) {
+    pcol <- 0.5*(p[1:(length(p)-1)] + p[2:length(p)])
+    icol <- findInterval(pcol,colbar$breaks)
+    dcol <- c(1,length(pcol))
+  } else {
+    pcol <- 0.5*(p[,1:(dim(p)[2]-1)] + p[,2:dim(p)[2]])
+    icol <- apply(pcol,2,findInterval,colbar$breaks)
+    dcol <- dim(pcol)
+  }
   icol[icol==0] <- 1
   icol[icol>colbar$n] <- colbar$n
-  col <- matrix(colbar$col[icol],dim(pcol))
+  col <- matrix(colbar$col[icol],dcol)
 
   if (new & !add) dev.new(width=8,height=7)
   if(!add) {
@@ -161,8 +172,7 @@ segments.trajectory <- function(x,param="month",
     if(!is.null(ylim)) ok <- ok & geoborders$y >= min(ylim) & geoborders$y <= max(ylim)
     mlon <- geoborders$x[ok]
     mlat <- geoborders$y[ok]
-    par0 <- par()
-    par(bty="n",fig=c(0,1,0.1,1))
+    par(bty="n",fig=fig)
     plot(mlon,mlat,pch=".",col="grey",main=main,
      xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
      xaxt="n",yaxt="n")
@@ -173,13 +183,17 @@ segments.trajectory <- function(x,param="month",
   if(verbose) print(paste(dim(lons)[1],'trajectories,',
                           sum(!OK),'crossing dateline'))
   
+  par0 <- par()
   if("trajectory" %in% type & sum(OK)>0) {
     segments(lon0[OK,],lat0[OK,],lon1[OK,],lat1[OK,],
              col=adjustcolor(col[OK,],alpha.f=alpha),lty=lty,lwd=lwd)
   }
+
   if("start" %in% type) {
-    points(lon0[OK,1],lat0[OK,1],pch=19,cex=cex,col=adjustcolor(col[OK,1],
-           alpha.f=alpha))
+    points(lon0[OK,1],lat0[OK,1],pch=22,cex=max(cex,1),bg=adjustcolor(col[OK,1],alpha.f=alpha),
+           col=adjustcolor("black",alpha.f=alpha))
+    #points(lon0[OK,1],lat0[OK,1],pch="x",cex=max(cex,1),lwd=lwd,
+    #       col=adjustcolor("black",alpha.f=alpha))
   }
   
   if("end" %in% type) {
@@ -193,14 +207,34 @@ segments.trajectory <- function(x,param="month",
   #lines(mlon,mlat,lty=1,col='grey40',lwd=1.4)
   
   if(!add) par(fig=par0$fig,new=TRUE)
-  image.plot(breaks=colbar$breaks,lab.breaks=lab.breaks,horizontal = TRUE,
-             legend.only = T, zlim = range(colbar$breaks),
-             col = adjustcolor(colbar$col,alpha.f=0.8), legend.width = 1,
-             axis.args = list(cex.axis = 0.8,
-              xaxp=c(range(colbar$breaks),n=colbar$n)),
-             border = FALSE)
+  if(is.null(lab.breaks)) lab.breaks <- colbar$breaks
+
+  if (verbose) print('Add colourbar')
+  if(showaxis) {
+    par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
+        cex.lab=0.7,cex.axis=0.7)
+    axis(2,at=pretty(lat(x)),col='grey')
+    axis(3,at=pretty(lon(x)),col='grey')
+  }
   
-  if(!add) par(bty="n",fig=c(0,1,0.1,1),new=TRUE)
+  if (colbar$show) {
+    par(xaxt="s",col.axis='black',col.lab='black',
+        cex.lab=0.7,cex.axis=0.7)
+    image.plot(breaks=colbar$breaks, legend.mar=1,
+               lab.breaks=colbar$breaks,horizontal = TRUE,
+               legend.only = TRUE, zlim = range(colbar$breaks),
+               col = colbar$col, legend.width = 1,
+               axis.args = list(cex.axis=0.8,mgp=c(1,0.5,0)), 
+               border = FALSE)
+  }
+  
+  par(bty="n",fig=par0$fig,mgp=par0$mgp,new=TRUE)
+  if(is.null(label.param)) label.param <- param
+  
+  text(par("usr")[1] + 0.05*diff(range(par("usr")[3:4])),
+       par("usr")[3] + 0.05*diff(range(par("usr")[3:4])),
+       label.param,pos=4,cex=1,col="black")
+
   ## TEST IF MAP IS AT THE SAME PLACE:
   #plot(mlon,mlat,pch=".",col="grey",main=main,
   #     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
