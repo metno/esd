@@ -63,7 +63,7 @@ read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851
 
   if(verbose) print("read.hurdat2")
   if(verbose) print(paste("file:",fname))
-  if(!is.null(path)) fname <- file.path(path,fname)
+  if(!is.null(path) & !is.url(fname)) fname <- file.path(path,fname)
   hurdat2 <- readLines(fname)
   n <- as.vector(sapply(hurdat2,nchar))
   i.storm <- which(n>80)
