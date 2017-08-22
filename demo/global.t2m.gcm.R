@@ -17,6 +17,9 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
   meta <- list()
   for (i in 1:n) {
     gcm <- retrieve(fnames[i],param=param,lon=lon,lat=lat)
+    lon.rng <- range(lon)
+    lat.rng <- range(lat)
+    gcm <- regrid(gcm,is=list(lon=seq(lon.rng[1],lon.rng[2],by=1),lat=seq(lat.rng[1],lat.rng[2],by=1))) # Added AM 21.02.2017 - All gcms must be at the same grid
     gcmnm <- attr(gcm,'model_id')
     run <- attr(gcm,'realization')
     d <- attr(gcm,'dimensions')
@@ -46,7 +49,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
   global.t2m.cmip5 <- zoo(t(X),order.by=yr)
   attr(global.t2m.cmip5,'metadata') <- meta
   attr(global.t2m.cmip5,'aspect') <- 'anomalies'
-  attr(global.t2m.cmip5,'baseline') <- '1961-1990'
+  attr(global.t2m.cmip5,'baseline') <- ref
   attr(global.t2m.cmip5,'experiment_id') <-  attr(gcm,'experiment_id')
   attr(global.t2m.cmip5,'history') <- match.call()
   invisible(global.t2m.cmip5)
@@ -132,7 +135,7 @@ if (FALSE) {
   reanalysis <- aggregate.area(annual(retrieve('air.mon.mean.nc',lon=c(-30,30),lat=c(50,70))),FUN='mean')
   obs <- anomaly(reanalysis,ref=2000:2015)
   index(obs) <- year(obs)
-  t2m.gcm <- list(t2m.cmip5.rcp45=t2m.cmip5.rcp45,
+    t2m.gcm <- list(t2m.cmip5.rcp45=t2m.cmip5.rcp45,
                   t2m.cmip5.rcp85=t2m.cmip5.rcp85,
                   t2m.cmip5.rcp26=t2m.cmip5.rcp26,
                   t2m.cmip3.sresa1b=t2m.cmip3.sresa1b)
