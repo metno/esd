@@ -26,7 +26,7 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   attr(y,'longitude') <- lon
   if (is.null(lat)) lat <- NA
   if ((is.na(lat[1])) & !is.null(attr(x,'latitude')))
-    lat <- attr(x,'latitude')    
+    lat <- attr(x,'latitude')
   attr(y,'latitude') <- lat
   if (is.null(alt)) alt <- NA
   if ((is.na(alt[1])) & !is.null(attr(x,'altitude')))
@@ -323,6 +323,23 @@ as.station.eof <- function(x,ip=1:10) {
   invisible(y)
 }
 
+
+as.station.dsensemble <- function(x,verbose=FALSE,...) {
+  if(verbose) print("as.station.dsensemble")
+  if (!is.null(x$pca) & !inherits(x,"pca") & inherits(x,"eof")) {
+    class(x) <- gsub("eof","pca",class(x)) ## REB 2016-12-13: to also work on gridded versions.
+  }
+  if (inherits(x,"pca")) {
+    y <- as.station.dsensemble.pca(x,verbose=verbose,...)
+  } else if (inherits(x,c("station","zoo"))) {
+    y <- as.station.dsensemble.station(x,verbose=verbose,...)
+  } else {
+    print(paste('unexpected class - do not know how to handle:',class(x)))
+    y <- x
+  }
+  return(y)
+}
+
 as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   X <- x ## quick fix
   if (verbose) print('as.station.dsensemble.pca')
@@ -333,9 +350,17 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   } else {
     #if (is.null(is)) is <- 1:length(loc(X$pca)) 
     if (verbose) print('Extract the results model-wise')
+    ## Find the size of the PC matrices representing model projections
     d <- apply(sapply(X[3:length(X)],dim),1,min)
+    ## The PCs from the list are extracted into the matrix V 
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    ## Select number of patterns
+
+    ## REB 2016-11-03
+    ## If there is only one single station, avoid collapse of dimension
+    if (is.null(dim(attr(X$pca,'pattern'))))
+      dim(attr(X$pca,'pattern')) <- c(1,length(attr(X$pca,'pattern')))
     if (is.null(ip)) {
       U <- attr(X$pca,'pattern')
       W <- attr(X$pca,'eigenvalues')
@@ -345,13 +370,15 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
       W <- attr(X$pca,'eigenvalues')[ip]
       V <- V[,ip,]
     }    
+      
+    ## Multi-station case (REB 2016-11-03)
+    if (verbose) print('multiple stations')
     d <- dim(U)
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], length(X)-2)
     for (i in seq(1:dim(S)[1])) {
       S[i,,] <- S[i,,] + c(attr(X$pca,'mean'))[i]
     }
-    
     S <- lapply(split(S, arrayInd(seq_along(S),dim(S))[,1]),
                 array,dim=dim(S)[-1])
     S <- lapply(S,function(x) zoo(x,order.by=index(X[[3]])))
@@ -361,7 +388,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     ##  lines(S[[1]][,i],col=adjustcolor("blue",alpha=0.3))
     #}
     if (verbose) print('Set attributes')
-    Y <- as.station(X$pca)
+    Y <- as.station(X$pca,verbose=verbose)
     locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(Y,"location")))
     locations <- gsub("__","_",locations)
     ##locations <- paste(paste("i",attr(X$pca,"station_id"),sep=""),
@@ -374,36 +401,61 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     locs <- attr(X$pca,"location")
     gcms <- sub(".*_","",names(X)[3:length(X)])
     for (i in 1:length(S)) {
-       yi <- Y[,i]
-       class(yi) <- class(Y)
-       yi <- attrcp(Y,yi)
-       attr(yi,"longitude") <- lons[i]
-       attr(yi,"latitude") <- lats[i]
-       attr(yi,"altitude") <- alts[i]
-       attr(yi,"station_id") <- stid[i]
-       attr(yi,"location") <- locs[i]
-       attr(yi,"unit") <- attr(X,"unit")
-       attr(yi,"variable") <- attr(X,"variable")
-       attr(yi,"longname") <- attr(X,"longname")
-       attr(S[[i]],"station") <- yi
-       attr(S[[i]],'aspect') <- 'original'
-       attr(S[[i]],"longitude") <- lons[i]
-       attr(S[[i]],"latitude") <- lats[i]
-       attr(S[[i]],"altitude") <- alts[i]
-       attr(S[[i]],"station_id") <- stid[i]
-       attr(S[[i]],"location") <- locs[i]
-       attr(S[[i]],'model_id') <- gcms
-       class(S[[i]]) <- c('dsensemble','zoo')
+      yi <- Y[,i]
+      class(yi) <- class(Y)
+      yi <- attrcp(Y,yi)
+      attr(yi,"longitude") <- lons[i]
+      attr(yi,"latitude") <- lats[i]
+      attr(yi,"altitude") <- alts[i]
+      attr(yi,"station_id") <- stid[i]
+      attr(yi,"location") <- locs[i]
+      attr(yi,"unit") <- attr(X$pca,"unit")
+      attr(yi,"variable") <- attr(X$pca,"variable")
+      attr(yi,"longname") <- attr(X$pca,"longname")
+      attr(S[[i]],"station") <- yi
+      attr(S[[i]],'aspect') <- 'original'
+      attr(S[[i]],"longitude") <- lons[i]
+      attr(S[[i]],"latitude") <- lats[i]
+      attr(S[[i]],"altitude") <- alts[i]
+      attr(S[[i]],"station_id") <- stid[i]
+      attr(S[[i]],"location") <- locs[i]
+      attr(S[[i]],'model_id') <- gcms
+      class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
-    class(S) <- c("dsensemble","station","list")
-    attr(S,"unit") <- attr(X,"unit")
-    attr(S,"variable") <- attr(X,"variable")
-    attr(S,"longname") <- attr(X,"longname")
+    if (length(S)>1) class(S) <- c("dsensemble",class(X$pca)[2:3],"list") else
+                     S <-  S[[1]]
+    attr(S,"unit") <- attr(X$pca,"unit")
+    attr(S,"variable") <- attr(X$pca,"variable")
+    attr(S,"longname") <- attr(X$pca,"longname")
     attr(S,"aspect") <- "dsensemble.pca transformed to stations"
     attr(S,"history") <- history.stamp()
     invisible(S)
   }
+}
+
+as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=FALSE,...) {
+
+    if (verbose) print('as.station.dsensemble.station')
+    ns <- length(x)
+    ## Find the size of the PC matrices representing model projections
+    d <- apply(sapply(x,dim),1,min); nt <- d[1]
+    ## The PCs from the list are extracted into the matrix V 
+    #V <- array(unlist(lapply( X[3:length(X)],
+    #  function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    V <- unlist(lapply(x,FUN=
+             function(x,FUN) apply(coredata(x),1,FUN=FUN),FUN))
+    dim(V) <- c(nt,ns)
+    if (verbose) str(V)
+    loc <- unlist(lapply(x,loc)); lon <- unlist(lapply(x,lon)); lat <- unlist(lapply(x,lat))
+    alt <- unlist(lapply(x,alt)); stid <- unlist(lapply(x,stid));
+    param <- attr(x,"variable")#unlist(lapply(x,varid))
+    unit <- attr(x,"unit")#unlist(lapply(x,unit))
+    longname <- attr(x,"longname")#unlist(lapply(x,function(x) attr(x,'longname')))
+    y <- as.station(zoo(V,order.by=index(x[[1]])),loc=loc, param=param,unit=unit,
+                    lon=lon,lat=lat,alt=alt,stid=stid,longname=longname)
+    attr(y,"history") <- history.stamp()
+    return(y)
 }
 
 as.pca <- function(x) UseMethod("as.pca")
@@ -470,13 +522,15 @@ as.comb.eof <- function(x,...) {
 }
 
 
+
 as.field <- function(x,...) UseMethod("as.field")
 
 as.field.zoo <- function(x,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,
                          reference=NA,info=NA,calendar='gregorian',
-                         greenwich=TRUE, method= NA,type=NA,aspect=NA) {
-  #print("as.field.zoo")
+                         greenwich=TRUE, method= NA,type=NA,aspect=NA,
+                         verbose=FALSE) {
+  if(verbose) print("as.field.zoo")
   #print("lon"); print(lon); print("lat"); print(lat); print(param); print(unit)
   #print(c(length(lon),length(lat),length(index)))
 
@@ -486,7 +540,6 @@ as.field.zoo <- function(x,lon,lat,param,unit,
   #dmo <- as.numeric(format(t[2],'%m')) - as.numeric(format(t[1],'%m')) 
   #dda <- as.numeric(format(t[2],'%d')) - as.numeric(format(t[1],'%d'))
   if (length(year(x))!=1) {
-      ## KMP 2016-09-13 problem when a monthly time series starts in dec: diff(month(x))[1] = -11 
       dyr <- median(diff(year(x)))#diff(year(x))[1]
       dmo <- median(diff(month(x)))#diff(month(x))[1]
       dda <- median(diff(day(x)))#diff(day(x))[1]
@@ -521,9 +574,10 @@ as.field.zoo <- function(x,lon,lat,param,unit,
 as.field.default <- function(x,index,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,
                          reference=NA,info=NA,calendar='gregorian',
-                         greenwich=TRUE, method= NA,type=NA,aspect=NA) {
+                         greenwich=TRUE, method= NA,type=NA,aspect=NA,
+                         verbose=FALSE) {
 
-#print("as.field.default")
+if(verbose) print("as.field.default")
 #create a zoo object z
   z <- zoo(x=x,order.by=index)
   x <- as.field.zoo(z,lon=lon,lat=lat,param=param,unit=unit,
@@ -559,15 +613,16 @@ as.field.comb <- function(x,iapp=NULL,verbose=FALSE,...) {
 
 as.field.eof <- function(x,iapp=NULL,verbose=FALSE,...) {
   if(verbose) print("as.field.eof")
-  if (!inherits(x,'comb')) {
-    y <- eof2field(x,verbose=verbose)
+  if (inherits(x,'dsensemble')) {
+    y <- as.field.dsensemble.eof(x,verbose=verbose,...)
+  } else if (!inherits(x,'comb')) {
+    y <- eof2field(x,verbose=verbose,...)
   } else {
     y <- as.eof(x,iapp,verbose=verbose)
-    y <- eof2field(y,verbose=verbose)
+    y <- eof2field(y,verbose=verbose,...)
   }
   return(y)
 }
-
 
 as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
   if(verbose) print("as.field.ds")
@@ -585,7 +640,6 @@ as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
   return(y)
 }
 
-
 as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
                              verbose=FALSE,...) {
   if(verbose) print("as.field.station")
@@ -596,32 +650,41 @@ as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
   return(y)  
 }
 
-as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,verbose=FALSE,...) {
+as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,anomaly=FALSE,verbose=FALSE,...) {
   if (verbose) print('as.field.dsensemble.eof')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"eof"))
   if (inherits(X,"field")) {
       invisible(X)
   } else {
-    #if (is.null(is)) is <- 1:length(loc(X$pca)) 
+    #if (is.null(is)) is <- 1:length(loc(X$pca))
     if (verbose) print('Extract the results model-wise')
-    d <- apply(sapply(X[3:length(X)],dim),1,min)
-    V <- array(unlist(lapply( X[3:length(X)],
-      function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    ## KMP 2016-01-04: select ensemble members with im
+    if(is.null(im)) {
+      ix <- 3:length(X)
+    } else {
+      ix <- im[im>0 & im<(length(X)-2)] + 2
+    }
+    #ix <- 3:length(X)
+    d <- apply(sapply(X[ix],dim),1,min)
+    V <- array(unlist(lapply( X[ix],
+      function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(ix)))
     if (is.null(ip)) {
       U <- attr(X$eof,'pattern')
       W <- attr(X$eof,'eigenvalues')
     } else {
-    ## If ip is specified, use a sub set of the PCA modes.
-      U <- attr(X$pca,'pattern')[,ip]
-      W <- attr(X$pca,'eigenvalues')[ip]
+    ## If ip is specified, use a subset of the PCA modes.
+      U <- attr(X$eof,'pattern')[,,ip]
+      W <- attr(X$eof,'eigenvalues')[ip]
       V <- V[,ip,]
     }    
     d <- dim(U)
     dim(U) <- c(d[1]*d[2],d[3])
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], dim(V)[3])
-    for (i in seq(1:dim(S)[1])) {
-      S[i,,] <- S[i,,] + c(attr(X$eof,'mean'))[i]
+    if(!anomaly) {
+      for (i in seq(1:dim(S)[1])) {
+        S[i,,] <- S[i,,] + c(attr(X$eof,'mean'))[i]
+      }
     }
 
     S <- aperm(S,c(3,2,1))
@@ -630,24 +693,28 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,verbose=FALSE,...) {
     
     if (verbose) print('Set attributes')
     Y <- as.field(X$eof)
-    gcms <- sub(".*_","",names(X)[3:length(X)])
+    gcms <- sub(".*_","",names(X)[ix])
     S <- setNames(S,gcms)
-    for (i in 1:length(S)) {
-      S[[i]] <- as.field(S[[i]],index=index(X[[i+2]]),
+    for (i in seq_along(ix)) {
+      S[[i]] <- as.field(S[[i]],index=index(X[[ix[i]]]),
                  lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
                  param=varid(Y),unit=unit(Y),
                  longname=paste('fitted',attr(Y,'longname')),
                  greenwich=attr(Y,'greenwich'),aspect='fitted')
       attr(S[[i]],'unitarea') <- attr(X,"unitarea")
+      class(S[[i]]) <- class(Y)
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     class(S) <- c("dsensemble","field","list")
-    attr(S,"unit") <- attr(X,"unit")
-    attr(S,'unitarea') <- attr(X,"unitarea")
-    attr(S,"variable") <- attr(X,"variable")
-    attr(S,"scenario") <- attr(X,"scenario")
-    attr(S,"longname") <- attr(X,"longname")
+    S <- attrcp(X,S)
+    attr(S,"unit") <- attr(Y,"unit")
+    attr(S,"variable") <- attr(Y,"variable")
+    attr(S,"longname") <- attr(Y,"longname")
     attr(S,"aspect") <- "dsensemble.eof transformed to field"
+    if(anomaly) {
+      attr(S,"aspect") <- c(attr(S,"aspect"), "anomaly")
+      attr(S,"mean") <- attr(X$eof,"mean")
+    }
     attr(S,"history") <- history.stamp()
     invisible(S)
   }
@@ -748,7 +815,7 @@ as.4seasons <- function(x,...) UseMethod("as.4seasons")
 
 
 
-as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,...) {
+as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,...) {
   if(verbose) print('as.4seasons.default')
   if (inherits(x,'season')) return(x)
   attr(x,'names') <- NULL
@@ -771,7 +838,7 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,...) {
      y <- aggregate(x=as.zoo(X),by= as.yearqtr,FUN=match.fun(FUN),...)
     # convert yearqtr to yearmon
       y <- zoo(x=y,order.by=as.Date(as.yearmon(index(y))))
-    } else y <- as.4seasons.day(x,FUN=FUN,...)
+    } else y <- as.4seasons.day(x,FUN=FUN,nmin=nmin,...)
     #y <- as.4seasons.day(x,FUN=match.fun(FUN),...)
     
     #print(dim(y))
@@ -897,7 +964,7 @@ as.4seasons.spell <- function(x,FUN='mean',...) {
 as.4seasons.field <- function(x,FUN='mean',verbose=FALSE,...) {
   if(verbose) print("as.4seasons.field")
   d <- attr(x,"dimensions")
-  y <- as.4seasons.default(x,FUN,...)
+  y <- as.4seasons.default(x,FUN,verbose=verbose,...)
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   ## Update dimensions
@@ -1056,6 +1123,12 @@ as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE) anomaly.default(x)
 
 as.anomaly.zoo <- function(x,ref=NULL,na.rm=TRUE,...) {
   y <- as.anomaly.station(x,ref=ref,na.rm=na.rm,...)
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+as.anomaly.list <- function(x,ref=NULL,na.rm=TRUE,...) {
+  y <- lapply(x,anomaly(x))
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
@@ -1229,6 +1302,10 @@ as.pattern.trend <- function(x) {
   invisible(y)  
 }
 
+as.pattern.matrix <- function(x) x 
+
+as.pattern.array <- function(x) x 
+
 as.pattern.field <- function(x,FUN=NULL,...) {
   if (!is.null(FUN)) {
     y <- apply(x,2,FUN,...)
@@ -1287,7 +1364,7 @@ as.eof.comb <- function(x,iapp=NULL) {
   }
   class(x) <- class(x)[-grep('comb',class(x))]
   napps <- attr(x,'n.apps')
-  for (i in napps) {
+  for (i in seq(napps)) {
     eval(parse(text=paste("attr(x,'appendix.",i,"') <- NULL",sep="")))
   }
   attr(x,'n.apps') <- NULL
@@ -1325,7 +1402,9 @@ as.eof.list <- function(x,verbose=FALSE) {
     return(Z)
   }
 
-  if (verbose) print(summary(x))
+  if (verbose) try(print(summary(x)))
+  if (inherits(x[[1]],'character')) x[[1]] <- NULL
+  if (inherits(x[[1]],'eof')) {eof <- x[[1]]; x[[1]] <- NULL}
   X.list <- lapply(x,wPC)
   X <- do.call("merge", X.list)
   if (verbose) print(summary(X))
@@ -1353,6 +1432,26 @@ as.eof.list <- function(x,verbose=FALSE) {
   attr(eof,'id') <- id
   names(eof) <- paste("X.",1:20,sep="")
   class(eof) <- class(x[[1]])
+  return(eof)
+}
+
+as.eof.dsensemble <- function(x,FUN='mean',verbose=FALSE) {
+  ## R.E. Benestad, 2017-05-19
+  ## Convert the dsensemble object to an EOF of the multi-model mean
+  stopifnot(inherits(x,'dsensemble'),inherits(x[[2]],'eof')|inherits(x[[2]],'pca'))
+  if (verbose) print('as.eof.dsensemble')
+  eof0 <- x[[2]]; x[[2]] <- NULL
+  x[[1]] -> info; x[[1]] <- NULL
+  d <- c(dim(x[[1]]),length(x))
+  y <- unlist(x)
+  dim(y) <- c(d[1]*d[2],d[3])
+  Y <- apply(y,1,FUN)
+  dim(Y) <- c(d[1],d[2])
+  eof <- zoo(Y,order.by=index(x[[1]]))
+  eof <- attrcp(eof0,eof)
+  class(eof) <- class(eof0)
+  attr(eof,'info') <- info
+  attr(eof,'history') <- history.stamp()
   return(eof)
 }
 

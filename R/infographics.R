@@ -2,46 +2,33 @@
 
 vis <- function(x,...) UseMethod("vis")
 
+vis.station <- function(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,...) {
+  yrs <- as.numeric(rownames(table(year(x))))
+  ny <- length(yrs)
+  if (is.null(n)) n <- 50
+  if (is.null(col)) col <- colscal(n,varid(x))
+  if (is.precip(x)) x[coredata(x)==0] <- NA
 
-
-vis.station <- function(x,...) {
-  if (is.precip(x)) vis.station.precip(x,...) else
-  if (is.T(x)) vis.station.t2m(x,...)
-}
-
-vis.station.precip <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1,...) {
-  # From qqplotter:
-  x[x < threshold] <- NA
-  if (is.null(dim(x))) {
-    qp <- quantile(x,prob=p,na.rm=TRUE)
-    qmu <- -log(1-p)*mean(x,na.rm=TRUE)
-  } else {
-    qp <- apply(coredata(x),2,quantile,prob=p,na.rm=TRUE)
-    qmu <- -log(1-p)%o%apply(coredata(x),2,wetmean,na.rm=TRUE)
-    #fw <- round(100*apply(coredata(x),2,wetfreq))
+  if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
+      unit <- expression(degree*C) else
+      unit <- attr(x,'unit')
+  if (is.null(main)) eval(parse(text=paste("main <- expression(paste('Seasonal evaution: ',",
+                          attr(x,'variable'),"))")))
+  if (new) dev.new()
+  par(bty="n")
+  z <- matrix(rep(NA*366*ny),366,ny)
+  for (i in 1:ny) {
+    y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
+                    end=as.Date(paste(yrs[i],'-12-31',sep='')))
+    t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep=''))) +1
+    it <- is.element(1:366,as.numeric(t))
+    if (!is.precip(x) & !log.precip) z[it,i] <- y else
+                                     z[it,i] <- log(y)
   }
-  plot(qp,qmu,pch=19,col=rgb(0,0,1,0.2))
-  lines(range(qp,qmu),range(qp,qmu))
+  image(1:366,yrs,z,main=main,xlab='',ylab='year',col=col,sub=loc(x),...)
   grid()
 }
 
-vis.station.t2m <- function(x,p=c(0.01,0.02,0.03,0.04,seq(0.1,0.95,0.05),
-                                0.97,0.98,0.99),...) {
-  d <- dim(x); if (is.null(d)) d <- c(length(x),1)
-  if (is.null(dim(x))) {
-    qp <- quantile(x,prob=p,na.rm=TRUE)
-    qmu <-  qnorm(p=p,mean=mean(coredata(x),na.rm=TRUE),sd=sd(coredata(x),na.rm=TRUE))
-  } else {
-    qp <- apply(coredata(x),2,quantile,prob=p,na.rm=TRUE)
-    qmu <- qp + NA
-    for (i in 1:length(p))
-      qmu[i,] <- qnorm(p=p[i],mean=apply(coredata(x),2,mean,na.rm=TRUE),
-                       sd=apply(coredata(x),2,sd,na.rm=TRUE))
-  }
-  plot(qp,qmu,pch=19,col=rgb(1,0,0,0.2))
-  lines(range(qp,qmu),range(qp,qmu))
-  grid() 
-}
 
 vis.field <- function(x,...) {
 }
@@ -1014,7 +1001,7 @@ vis.default <- function(X,it=NULL,img=NULL,verbose=FALSE,
 
 balls <- function(x,y=NULL,col=NULL,cex.max=2,n=20) {
   for (i in 1:n) {
-    if (is.null(col)) cols <- rgb(i/n,i/n,i/n) else
+    if ((is.null(col)) | length(col)==1) cols <- rgb(i/n,i/n,i/n) else
     if (is.vector(col)) {
       cols <- col/i
       cols[cols==0] <- i/n
@@ -1029,8 +1016,8 @@ balls <- function(x,y=NULL,col=NULL,cex.max=2,n=20) {
 
 graph <- function(x,...) UseMethod("graph")
 
-graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
-                          xlim=NULL,ylim=NULL,new=TRUE,...) {
+graph.default <- function(x,img=NULL,pch='fancy',it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
+                          xlim=NULL,ylim=NULL,new=TRUE,col.obs='black',...) {
     print('graph.default')
     ## Produce the graphics:
     
@@ -1046,14 +1033,15 @@ graph.default <- function(x,img=NULL,it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
     if (!is.null(it)) y <- subset(x,it=it) else y <- x
     plot.zoo(y,lwd=lwd,col=col,ylim=ylim,xlim=xlim,
              ylab=ylab(y),sub=loc(y))
-    balls(y)
+    #balls(y)
+    if (!is.null(pch)) if (pch=='fancy') balls(y,col=col.obs) else points(zoo(y),pch=pch,col=col.obs)
     par(xaxt='s',yaxt='s')
     axis(1,col='white')
     axis(2,col='white')
 }
 
-graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
-                             lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE) {
+graph.dsensemble <- function(x,img=NULL,pch='fancy',it=0,col=rgb(1,0.7,0.7,0.1),
+                             lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
     #print('graph.dsensemble')
     ## Produce the graphics:
     if ((!add) & (new)) dev.new()
@@ -1079,19 +1067,20 @@ graph.dsensemble <- function(x,img=NULL,it=0,col=rgb(1,0.7,0.7,0.1),
                                  lwd=3,col='red')
 
     #balls(attr(y,'station'))
+    if (!is.null(pch)) if (pch=='fancy') balls(attr(y,'station'),col=col.obs) else points(zoo(attr(y,'station')),pch=pch,col=col.obs)
     par(xaxt='s',yaxt='s')
     if (!is.null(img)) col.axis <- 'white' else col.axis <- 'black'
     axis(1,col=col.axis)
     axis(2,col=col.axis)
 }
 
-graph.list <- function(x,img=NULL,it=0,
+graph.list <- function(x,img=NULL,pch='fancy',it=0,
                        col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05),
                              rgb(0.5,0.5,0.5,0.05) ),
-                       lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE) {
+                       lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
   if ((!is.null(it)) & (inherits(x[[1]],'dsensemble')))
     y <- subset(x[[1]],it=it) else y <- x[[1]]
-  graph(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim,add=add,new=new)
+  graph(y,img=img,pch=pch,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim,add=add,new=new,col.obs=col.obs)
   if (!is.null(attr(x,'obs')) & is.null(attr(y,'dsensemble'))) obs <- attr(x,'obs') else
                                                                obs <- attr(y,'station')
   for (j in c(2:length(x),1)) {
@@ -1107,12 +1096,12 @@ graph.list <- function(x,img=NULL,it=0,
                                  lwd=3,col=emcol[i])
     legend(index(y)[1],max(coredata(y)),names(x),col=emcol,lty=1,lwd=3,bty='n')
   }
-  balls(obs)
+  if (!is.null(pch)) if (pch=='fancy') balls(obs,col=col.obs) else points(obs,pch=pch,col=col.obs)
 }
 
 
 graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
-                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE) {
+                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
   #print('graph.zoo')
     ## Produce the graphics:
     if ((!add) & (new)) dev.new()
@@ -1133,9 +1122,54 @@ graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
     grid()
     for (i in 1:dim(x)[2]) lines(y[,i],lwd=7,col=col)
 
-    balls(attr(y,'station'))
+    if (!is.null(pch)) if (pch=='fancy') balls(attr(y,'station'),col=col.obs) else points(zoo(attr(y,'station')),pch=pch,col=col.obs)
+    #balls(attr(y,'station'))
     par(xaxt='s',yaxt='s')
     if (!is.null(img)) col.axis <- 'white' else col.axis <- 'black'
     axis(1,col=col.axis)
     axis(2,col=col.axis)
+}
+
+qp.test <- function(x,...) UseMethod("qp.test")
+
+qp.test.station <- function(x,...) {
+  if (is.precip(x)) qp.test.precip(x,...) else
+  if (is.T(x)) qp.test.t2m(x,...)
+}
+
+
+qp.test.precip <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1,...) {
+  # From qqplotter:
+  x[x < threshold] <- NA
+  if (is.null(dim(x))) {
+    qp <- quantile(x,prob=p,na.rm=TRUE)
+    qmu <- -log(1-p)*mean(x,na.rm=TRUE)
+  } else {
+    qp <- apply(coredata(x),2,quantile,prob=p,na.rm=TRUE)
+    qmu <- -log(1-p)%o%apply(coredata(x),2,wetmean,na.rm=TRUE)
+    #fw <- round(100*apply(coredata(x),2,wetfreq))
+  }
+  plot(qp,qmu,pch=19,col=rgb(0,0,1,0.2),
+       xlab=expression(q[p]),ylab=expression(-log(1-p)*mu))
+  lines(range(qp,qmu),range(qp,qmu))
+  grid()
+}
+
+qp.test.t2m <- function(x,p=c(0.01,0.02,0.03,0.04,seq(0.1,0.95,0.05),
+                                0.97,0.98,0.99),...) {
+  d <- dim(x); if (is.null(d)) d <- c(length(x),1)
+  if (is.null(dim(x))) {
+    qp <- quantile(x,prob=p,na.rm=TRUE)
+    qmu <-  qnorm(p=p,mean=mean(coredata(x),na.rm=TRUE),sd=sd(coredata(x),na.rm=TRUE))
+  } else {
+    qp <- apply(coredata(x),2,quantile,prob=p,na.rm=TRUE)
+    qmu <- qp + NA
+    for (i in 1:length(p))
+      qmu[i,] <- qnorm(p=p[i],mean=apply(coredata(x),2,mean,na.rm=TRUE),
+                       sd=apply(coredata(x),2,sd,na.rm=TRUE))
+  }
+  plot(qp,qmu,pch=19,col=rgb(1,0,0,0.2),
+       xlab=expression(q[p]),ylab='qnorm(p,mean(x),sd(x))')
+  lines(range(qp,qmu),range(qp,qmu))
+  grid() 
 }

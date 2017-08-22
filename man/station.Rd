@@ -14,6 +14,7 @@
 \alias{station.sonel}
 \alias{station.gloss}
 \alias{station.newlyn}
+\alias{station.giss}
 \alias{clean.station}
 \alias{allgood}
 \title{Retrieve meta data and data from observational weather stations.}
@@ -74,6 +75,7 @@ station.sonel(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
                       verbose=FALSE)
 station.gloss(url='http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data')
 station.newlyn(path='data/gloss-241_Newlyn',verbose=TRUE) 
+station.giss(url)
 allgood(x,miss=.1,verbose=TRUE)
 clean.station(x,miss=.1,verbose=TRUE)
 }

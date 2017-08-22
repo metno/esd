@@ -203,7 +203,7 @@ TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
 
 geostrophicwind<-function(x,...) UseMethod("geostrophicwind")
 
-geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000) {
+geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000,progressbar=TRUE) {
   ## Estimates the geostrophic wind from mean sea-level pressure from stations
   n <- length(loc(x))
   ## Estimate the different combinations of 3 that is possible from the provided group of
@@ -221,16 +221,16 @@ geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000
       cn <- cn[,ii]; d <- dim(cn)
     }
   }
-  pb <- txtProgressBar(style=3)
+  if (progressbar) pb <- txtProgressBar(style=3)
   for (i in 1:d[2]) {
     wind <- TGW(subset(x,is=cn[,i]))
-    setTxtProgressBar(pb,i/d[2]) 
+    if (progressbar) setTxtProgressBar(pb,i/d[2]) 
     if (i==1) Wind <- wind else Wind <- combine(Wind,wind)
   }   
   invisible(Wind)      
 }
 
-geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
+geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,...) {
   ## Estimates the geostrophic wind from mean sea-level pressure field
   if (verbose) print('geostrophicwind')
   stopifnot(is.field(x))

@@ -22,12 +22,19 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   #print(deparse(substitute(by)))
   class(x) <- "zoo"
   
+# if (by=='yearmon') {
+#    yyyymm <- format(index(Parea.merra),'%Y-%m-%d')
+#    by <- yyyymm
+#  }
+  
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) )
-    y <- aggregate(x, by, FUN, na.rm=TRUE, ...,
+    y <- aggregate(x, by, FUN, na.rm=na.rm, ...,
                    regular = regular, frequency = frequency) else
     y <- aggregate(x, by, FUN, ..., regular = regular, frequency = frequency)
 
+ # if (inherits(by[1],'character')) index(y) <- as.Date(index(y))
+    
   if (class(index(y))=="Date") {
   dy <- day(y); mo <- month(y); yr <- year(y)
     if (dy[2] - dy[1] > 0) cls[length(cls) - 1] <- "day" else
@@ -44,8 +51,6 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   class(y) <- cls
   y <- attrcp(x,y)
 
-
- 
    #print(FUN)
   if (FUN=="counts")  {
     #print("Count")
@@ -56,26 +61,30 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
     attr(y,'unit') <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
   } else if (FUN=="wetfreq") {
     #print("Wet-day frequency")
-    attr(y,'variable') <- 'f[w]'
-    attr(y,'unit') <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
+    attr(y,'variable')[] <- 'f[w]'
+    attr(y,'longname')[] <- 'Wet-day frequency'
+    attr(y,'unit')[] <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
   } else if (FUN=="wetmean") {
     #print("Wet-day mean")
-    attr(y,'variable') <- 'mu'
-    attr(y,'unit') <- 'mm/day'
+    attr(y,'variable')[] <- 'mu'
+    attr(y,'longname')[] <- 'Wet-day mean precipitation'
+    attr(y,'unit')[] <- 'mm/day'
     n <- aggregate(x,by,FUN='nv', ...,
                    regular = regular, frequency = frequency)
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
     attributes(std.err) <- NULL
+    dim(std.err) <- dim(y)
     attr(y,'standard.error') <- zoo(std.err,order.by=index(y))
   } else if (FUN=="mean") {
-    #print("Wet-day mean")
-    sigma <- aggregate(x, by, FUN='sd', ...,
+    #print("Mean")
+    sigma <- aggregate(x, by, FUN='sd', na.rm=na.rm, ...,
                        regular = regular, frequency = frequency)
-    n <- aggregate(x,by,FUN='nv', ...,
+    n <- aggregate(x, by, FUN='nv', na.rm=na.rm, ...,
                    regular = regular, frequency = frequency)
     #n <- count(x,threshold=threshold)
     std.err <- 2*coredata(sigma)/sqrt(coredata(n)-1)
     attributes(std.err) <- NULL
+    dim(std.err) <- dim(y)
     #Finite population correction factor
     #http://en.wikipedia.org/wiki/Standard_error#Standard_error_of_the_mean
     #N <- length(n)
@@ -92,7 +101,6 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
     attr(y,'variable') <- 'GDD'
     attr(y,'unit') <- 'degree-days'
   } else attr(y,'unit') <- attr(x,'unit')
-
 
   attr(y,'history') <- history.stamp(y)
   return(y)
@@ -140,6 +148,7 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
   if (!is.list(by)) {
   # Temporal aggregation:
     #print("HERE")
+    #print(deparse(substitute(by)))
     clsy2 <- switch(deparse(substitute(by)),
                          "as.yearmon"="month",
                          "as.yearqtr"="quarter",
@@ -148,12 +157,17 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
                          "by" = "by")
     if (is.null(clsy2)) clsy2 <- deparse(substitute(by))
     #print(clsy2)
-    if (deparse(substitute(by))=="year") 
-      by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
-    if (deparse(substitute(by))=="year") {
+    if (deparse(substitute(by))[1]=="year")
+      ## KMP 2017-05-07: annual mean should have year as index, not date
+      #by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
+      by <- year(x)
+      index(x) <- year(x)
+    ## REB - 'what do the following lines do?'year' changed to 'month' in the if-statement
+    if (deparse(substitute(by))[1]=="month") {
       by <- month(x)
       index(x) <- month(x)
     }
+    ## BER
     #browser()
     #print(deparse(substitute(by)))
     #print(class(x))
@@ -227,20 +241,58 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
 
 
 aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
-                           na.rm=TRUE,smallx=FALSE,verbose=FALSE) {
+                           na.rm=TRUE,smallx=FALSE,verbose=FALSE,
+                           a= 6378, x0=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
-  if (verbose) print("aggregate.area")
+  if (verbose) print(paste("aggregate.area",FUN))
+  if (verbose) print(rowSums(coredata(x)))
   x <- subset(x,is=is,it=it)
+  if (verbose) print(rowSums(coredata(x)))
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   d <- attr(x,'dimensions')
+  if (verbose) print(paste('dimensions',paste(d,collapse='-')))
   #image(attr(x,'longitude'),attr(x,'latitude'),area)
   #print(c(length(colSums(area)),length(attr(x,'latitude')),sum(colSums(area))))
-  lon <- rep(attr(x,'longitude'),d[2])
-  lat <- sort(rep(attr(x,'latitude'),d[1]))
-  aweights <- cos(pi*lat/180)
-  aweights <- aweights/mean(aweights) 
-#  area <- cos(pi*lat/180); dim(area) <- d[1:2]
-#  area <- area/sum(area)
+  #lon <- rep(lon(x),d[2])
+  srtlat <- order(rep(lat(x),d[1]))
+  dY <- a*diff(pi*lat(x)/180)[1]
+  dtheta <- diff(pi*lon(x)/180)[1]
+  ## The first assumes a global field and the second is for a limited longitude range
+  #if (diff(range(lon(x)))> 350) aweights <- rep(dY * 2*pi/d[1] * a*cos(pi*lat(x)/180),d[1])[srtlat] else
+  aweights <- rep(dY * dtheta * a*cos(pi*lat(x)/180),d[1])[srtlat]
+  if (verbose) print(sum(aweights))
+  if (FUN=='mean') {
+    ok <- is.finite(colMeans(x))
+    aweights <- aweights/sum(aweights[ok])
+    FUN <- 'sum'
+  }
+  if (verbose) print(paste('Sum of aweights should be area or 1:',round(sum(aweights))))
+
+  
+  ## REB: For sum, we also need to consider the area:
+  if (FUN %in% c('sum','area','exceedance','exceedence','lessthan')) {
+    if (FUN=='area') {
+      ## Estimate the area of the grid boxes
+      coredata(x) -> cx
+      if (is.null(x0)) cx[is.finite(cx)] <- 1 else {cx[cx < x0] <- 0; cx[cx >= x0] <- 1}
+      coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
+      FUN <- 'sum'
+    } else if ( (FUN %in% c('exceedance','exceedence')) & !is.null(x0) ) {
+      # Estimate the sum of grid boxes with higher value than x0
+      coredata(x) -> cx
+      cx[cx < x0] <- NA
+      coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
+      FUN <- 'sum'
+    } else if ( (FUN == 'lessthan') & !is.null(x0) ) {
+      # Estimate the sum of grid boxes with lower value than x0
+      coredata(x) -> cx
+      cx[cx >= x0] <- NA
+      coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
+      FUN <- 'sum'
+    } 
+    attr(x,'unit') <- paste(attr(x,'unit'),' * km^2')
+  }
+  
   if (smallx) {
     X <- coredata(x)%*%diag(aweights)
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
@@ -249,7 +301,8 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
     for (i in 1:d[3]) X[i,] <- X[i,]*aweights
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   }
-
+  if (verbose) print(y)
+  
   Y <- as.station(y,loc=paste('area',FUN,'of',src(x)),
                   param=attr(x,'variable'),
                   unit=attr(x,'unit'),
@@ -259,6 +312,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
                   reference=attr(x,'reference'),info=attr(x,'info'),
                   method=paste(FUN,attr(x,'method')),type='area aggregate',
                   aspect=attr(x,'aspect'))
+  if (verbose) attr(Y,'aweights') <- aweights
   attr(Y,'history') <- history.stamp(x)
   return(Y)
 }

@@ -45,22 +45,26 @@ map.matrix(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                        lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                        ip=1,plot=TRUE,...)
 
-map.station(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
-              xlim = NULL, ylim = NULL, zlim = NULL,
-              col = "darkred", bg = "orange",
-              type = NULL,gridlines= TRUE, 
-              lonR = NULL,latR=45,axiR=NULL,verbose=FALSE,
-              FUN = NULL, 
-              colbar = list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                            type="p",cex=2,h=0.6,v=1),
-              cex=0.8,zexpr = "alt",
-              cex.subset = 1, add.text.subset = FALSE, showall = FALSE, 
-              add.text = FALSE, height = NULL, width = NULL, cex.axis = 1, 
-              cex.lab = 0.6, pch = 21, from = NULL, to = NULL,
-              showaxis = FALSE, border = FALSE,
-              full.names = FALSE, full.names.subset = FALSE, 
-              text = FALSE, fancy = FALSE, na.rm = TRUE, show.val = FALSE, 
-              colorbar = TRUE, legend.shrink = 1,plot=TRUE, ...)
+map.station(x,FUN=NULL, it=NULL,is=NULL,new=FALSE,
+                             projection="lonlat",
+                             xlim = NULL, ylim = NULL,zlim=NULL,n=15,
+                             col='darkred',bg='orange',
+                             colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
+                                          breaks=NULL,type="p",cex=2,h=0.6, v=1,
+                                          pos=0.1,show=TRUE),
+                             type=NULL,gridlines=TRUE,
+                             lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
+                             cex=2,zexpr="alt",cex.subset=1,
+                             add.text.subset=FALSE,showall=FALSE,
+                             add.text=FALSE,
+                             height=NULL,width=NULL,
+                             cex.main=1,cex.axis=1,cex.lab=0.6,
+                             pch=19, from=NULL,to=NULL,showaxis=FALSE,
+                             border=FALSE,full.names=FALSE,
+                             full.names.subset=FALSE, 
+                             text=FALSE, fancy=FALSE, 
+                             na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
+                             legend.shrink=1,fig=c(0,1,0.05,0.95),...)
 
 map.comb(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
            xlim=NULL,ylim=NULL,zlim=NULL,n=15,
@@ -84,8 +88,10 @@ map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
          type= c("fill", "contour"),gridlines=FALSE,
          lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE,plot=TRUE,...)
 
-map.dsensemble(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,colbar=NULL,
-               FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE)
+map.dsensemble(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
+                           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                                   show=TRUE,type="p",cex=2,h=0.6,v=1),
+                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,plot=TRUE,...)
 
 map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
             xlim=NULL,ylim=NULL,zlim=NULL, 
@@ -109,11 +115,13 @@ map.trend(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
             type=c("fill", "contour"),gridlines=FALSE,
             lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...)
 
-map.pca(x,it=NULL,is=NULL,ip=1,new=TRUE,projection="lonlat", 
-          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-          colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                      type="p",cex=2,h=0.6,v=1),
-          type=c("fill","contour"),gridlines=FALSE,verbose = FALSE, plot=TRUE,...)
+map.pca(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
+                    xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
+                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                                pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
+                                        #cex.axis=1,cex.main=1,cex.lab=1,
+                    type=c("fill","contour"),gridlines=FALSE,fig=c(0,1,0.05,0.95),
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...)
 
 
 map.mvr(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
@@ -182,15 +190,15 @@ mask(x,land=FALSE)
   \item{new}{TRUE: create a new graphic device.}
   \item{projection}{Projections: c("lonlat","sphere","np","sp") - the
     latter gives stereographic views from the North and south poles.}
-  \item{xlim}{see  \code{\link{plot}} - only used for 'lonlat' projection.}
-  \item{ylim}{see  \code{\link{plot}} - only used for 'lonlat' projection.}
+  \item{xlim}{see  \code{\link{plot}} - only used for 'lonlat' and 'sphere' projections.}
+  \item{ylim}{see  \code{\link{plot}} - only used for 'lonlat' and 'sphere' projections.}
   \item{n}{The number of colour breaks in the color bar}
   \item{breaks}{graphics setting - see \code{\link{image}}}
   \item{type}{graphics setting - colour shading or contour}
   \item{gridlines}{Only for the lon-lat projection}
-  \item{lonR}{Only for the spherical projection - see \code{\link{map2sphere}}}
-  \item{latR}{Only for the spherical projection - see \code{\link{map2sphere}}}
-  \item{axiR}{Only for the spherical projection - see \code{\link{map2sphere}}}
+  \item{lonR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
+  \item{latR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
+  \item{axiR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
   \item{density}{}
   \item{y}{a vector of y coordinates}
   \item{z}{a vector of z coordinates}
@@ -222,6 +230,7 @@ mask(x,land=FALSE)
   \item{land}{if TRUE mask land, else mask ocean}
   \item{what}{What to map: ['eof','field] for EOF pattern or the field
   recovered from the EOFs.}
+  \item{fig}{see \code{\link{par}}}
 }
 \value{A field object}
 

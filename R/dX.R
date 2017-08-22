@@ -40,10 +40,15 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
 
   ny <- length(lat)
   nx <- length(lon)
-  nt <- length(index(Z))
+  if (verbose) str(Z)
+  ## REB 2017-02-26 - to work with maxtrix-objects as well as fields
+  if (is.matrix(z)) {dim(z) <- c(dim(z),1); nt <- 1; t <- 1} else 
+  if (!is.null(index(Z))) {nt <- length(index(Z)); t <- index(t)} else 
+    {nt <- 1; t <- 1}
   
   if (is.null(m)) m <- nx
   m <- min(nx,m)
+  if(verbose) print(paste("Number of harmonics:",m))
   theta <- pi*lon/180
   phi <- pi*lat/180
   mask <- !is.finite(z)
@@ -72,6 +77,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   ## Loop over time steps and apply the harmonic fit to each latitude:
   t1 <- Sys.time()
   if(progress) pb <- txtProgressBar(style=3)
+  if (verbose) print(paste('nt=',nt))
   for ( it in 1:nt ) {
     if(progress) setTxtProgressBar(pb,it/nt) 
     ## Create a matrix containing m harmonic fits for ny latitudes:
@@ -102,7 +108,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   if (verbose) print('Find the best-fit')
   z.fit <- zz0 + zz
   dim(z.fit) <- c(nx*ny,nt)
-  Z.fit <- zoo(t(z.fit),order.by=index(Z))
+  Z.fit <- zoo(t(z.fit),order.by=t)
   Z.fit <- as.field(Z.fit,lon=lon(Z),lat=lat(Z),param=varid(Z),unit=unit(Z),
                     longname=paste('fitted',attr(Z,'longname')),
                     greenwich = attr(Z,'greenwich'),aspect='fitted')
@@ -119,7 +125,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   b2d <- b/dx;  dim(b2d) <- c(m,ny*nt)
   dz <- t(-Wi*sin(Wii))%*%a2d + t(Wi*cos(Wii))%*%b2d
   dim(dz) <- c(nx*ny,nt)
-  dZ.fit <- zoo(t(dz),order.by=index(Z))
+  dZ.fit <- zoo(t(dz),order.by=t)
   dZ.fit <- as.field(dZ.fit,lon=lon(Z),lat=lat(Z),
                     param=paste('d*',varid(Z)),
                     unit=paste(unit(Z),'/dx'),
@@ -132,7 +138,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   b2d2 <- b/dx^2;  dim(b2d2) <- c(m,nt*ny)
   dz2 <- t(-Wi^2*cos(Wii))%*%a2d2 + t(-Wi^2*sin(Wii))%*%b2d2
   dim(dz2) <- c(nx*ny,nt)
-  dZ2.fit <- zoo(t(dz2),order.by=index(Z))
+  dZ2.fit <- zoo(t(dz2),order.by=t)
   dZ2.fit <- as.field(dZ2.fit,lon=lon(Z),lat=lat(Z),param=varid(Z),
                     unit=paste(unit(Z),'^2/dx^2'),
                     longname=paste('fitted',attr(Z,'longname')),

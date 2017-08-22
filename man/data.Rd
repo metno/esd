@@ -48,7 +48,13 @@
 \alias{dse.Oslo}
 \alias{glossstations}
 \alias{IPCC.AR5.Table.9.A.1}
+\alias{cmipgcmresolution}
 \alias{global.t2m.gcm}
+\alias{QBO}
+\alias{CET}
+\alias{CO2}
+\alias{read.hurdat2}
+\alias{read.best.track}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -104,6 +110,7 @@ data(eof.sst.DNMI)
 data(eof.slp.DNMI)
 data(geoborders)
 data(IPCC.AR5.Table.9.A.1)
+cmipgcmresolution(what='deg') 
 slp.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.NCEP(lon=NULL,lat=NULL,anomaly=FALSE)
@@ -129,6 +136,12 @@ NASAgiss(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt')
 GSL(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv')
 data(global.t2m.gcm)
 AMO(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data')
+QBO(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data')
+CET(url='http://hadobs.metoffice.com/hadcet/cetml1659on.dat')
+CO2(url='ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt')
+read.hurdat2(url='http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html',n=20,verbose=FALSE)
+read.best.track(url='http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/best_tracks/',domain='io',
+                start=1945,end=2014,n=20,verbose=TRUE)                         
 }
 
 \arguments{

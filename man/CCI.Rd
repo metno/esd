@@ -29,14 +29,16 @@ Reference: Benestad \& Chen (2006) 'The use of a Calculus-based Cyclone Identifi
            Benestad (2005) 
 } 
 \usage{
-CCI(Z,m=14,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
+CCI(Z,m=10,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
                 mindistance=1E6,dpmin=1E-3,pmax=NULL,rmin=1E4,rmax=2E6,
                 accuracy=NULL,nsim=NULL,do.track=TRUE,fname="cyclones.rda",
-                lplot=FALSE,verbose=FALSE)
+                plot=FALSE,verbose=FALSE)
 }
 \arguments{
     \item{Z}{A field object.}
-    \item{m}{Number of harmonics used for fit to profile (Fourier truncation).}
+    \item{m}{Number of harmonics used for fit to profile (Fourier
+           truncation), which decides the degree of smoothing of the
+           field. Lower values of m result in greater smoothing.}
      \item{it}{A list providing time index, e.g. month.}
     \item{is}{A list providing space index, lon and/or lat.}
     \item{label}{Label for ID-purposes.}
@@ -52,7 +54,7 @@ CCI(Z,m=14,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
     \item{do.track}{TRUE: tracks the cyclones with the 'track' function,
            FALSE: no tracking is applied.}
     \item{fname}{Name of output file.}
-    \item{lplot}{TRUE: produce plots.}
+    \item{plot}{TRUE: show intermediate results as plots.}
     \item{verbose}{Print out diagnostics.}
     \item{accuracy}{Not yet finished.}
   }
@@ -92,7 +94,7 @@ identified after widening the pressure gradient zero-crossings).
 
 %% print("===================<  ERA 15  >===================")
 %% CCI(fname="data/cyclones_ERA40_r1.Rdata",dx=1,dy=1,fielddata=filname.1,
-%%     vname=vname.1,label="ERA40: slp 1-degree res.",force365.25=TRUE,lplot=FALSE)
+%%     vname=vname.1,label="ERA40: slp 1-degree res.",force365.25=TRUE,plot=FALSE)
 %% EOF
 
 %% nice R CMD BATCH --no-save paper20e.R paper20e.out

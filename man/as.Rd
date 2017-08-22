@@ -8,6 +8,7 @@
 \alias{as.station.zoo}
 \alias{as.station.spell}
 \alias{as.station.eof}
+\alias{as.station.dsensemble}
 \alias{as.station.dsensemble.pca}
 \alias{as.ds}
 \alias{as.field}
@@ -18,6 +19,7 @@
 \alias{as.field.ds}
 \alias{as.field.field}
 \alias{as.field.station}
+\alias{as.field.dsensemble.eof}
 \alias{as.anomaly}
 \alias{as.anomaly.default}
 \alias{as.anomaly.zoo}
@@ -137,6 +139,7 @@ as.field.eof(x,...)
 as.field.comb(x,iapp=NULL,...)
 as.field.ds(x,iapp=NULL,...)
 as.field.station(x,...)
+as.field.dsensemble.eof(x,is=NULL,ip=NULL,verbose=FALSE,...)
 as.fitted.values(x)
 as.fitted.values.ds(x)
 as.fitted.values.station(x)
@@ -175,7 +178,7 @@ as.trajectory(x,n=10,loc=NA,param=NA,unit=NA,lon=NA,
                           lat=NA,alt=NA,cntr=NA,longname=NA,stid=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
                           method= NA,verbose=FALSE)
-as.station.dsensemble.pca(x,is=NULL,ip=NULL,verbose=FALSE,...)
+as.station.dsensemble(x,...)
 as.station.list(x)
 as.station.ds(x)
 as.station.pca(x)

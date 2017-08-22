@@ -204,7 +204,7 @@ trend.zoo <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
     y <- trend.zoo.multi(x,result=result,model=model,...)
     return(y)
   }
-  trendx <- data.frame(t=year(x),y=coredata(x))
+  trendx <- data.frame(t=index(x),y=coredata(x))
   eval(parse(text=paste("xt <- lm(",model,",data=trendx)")))
   y <- switch(result,"trend"=zoo(predict(xt,newdata=trendx),order.by=index(x)),
                      "residual"=zoo(xt$residuals,order.by=index(x)))

@@ -2,7 +2,7 @@
 coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
                            verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
   # Estimate number of days with low temperatures or number of days with y < threshold
-  if (verbose) print('mildwinterdays')
+  if (verbose) print('coldwinterdays')
   stopifnot(inherits(x,'station'))
   if (is.null(y)) y <- x
   djf <- subset(x,it=it)     # Winter
@@ -14,6 +14,14 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   nwd2 <- annual(-mamy,FUN='count',threshold=threshold,nmin=nmin)
   mwd2 <- annual(mam,FUN='mean',nmin=nmin)
 
+  ## REB 2016-11-17: exclude temperatures far from the threshold:
+  xcld1 <- (mwd1 < threshold - 15) | (mwd1 > threshold + 20)
+  if (verbose) print(paste('Exclude',sum(xcld1),'outliers'))
+  mwd1[xcld1] <- NA
+  xcld2 <- (mwd2 < threshold - 15) | (mwd2 > threshold + 20)
+  if (verbose) print(paste('Exclude',sum(xcld2),'outliers'))
+  mwd1[xcld2] <- NA
+  
   cal <- data.frame(x=c(coredata(mwd1),coredata(mwd2)),
                     y=c(coredata(nwd1),coredata(nwd2)))
   ## Use polymomial as two different seasons are involved and the
@@ -22,12 +30,14 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   dfit <- glm(y ~ x + I(x^2) + I(x^3),family='poisson',data=cal)
   
   if (plot) {
+    if (verbose) print('plot calibration results')
     if (new) dev.new()
     par(bty='n')
-    plot(cal,ylim=c(0,90),xlim=c(-10,10),pch=19,
+    plot(cal,ylim=c(0,90),xlim=range(c(coredata(mwd1),coredata(mwd2)),na.rm=TRUE),pch=19,
          xlab=expression(paste('mean temperature ',(degree*C))),
          ylab='number of cold days',main=loc(x))
-    pre <- data.frame(x=-10:10)
+    pre <- data.frame(x=seq(min(c(coredata(mwd1),coredata(mwd2)),na.rm=TRUE),
+                            max(c(coredata(mwd1),coredata(mwd2)),na.rm=TRUE),by=0.1))
     lines(pre$x,exp(predict(dfit,newdata=pre)),col=rgb(1,0,0,0.3),lwd=3)
 
     if (new) dev.new()
@@ -39,30 +49,53 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
     grid()
   }
 
+  if (verbose) print(class(dse))
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
-  djf.dse <- subset(dse,it='djf')
+  if (verbose) {print('Seasons/annual?'); print(table(month(dse))); print(class(dse))}
+  if (length(table(month(dse)))==4) djf.dse <- subset(dse,it='djf') else djf.dse <- dse
   index(djf.dse) <- year(djf.dse)
   ovl <- window(djf.dse,start=year(start(x)),end=year(end(x)))
   djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
                        mean(coredata(mwd1),na.rm=TRUE)
+  if (verbose) {str(ovl); print(mean(coredata(ovl),na.rm=TRUE)); print(mean(coredata(mwd1),na.rm=TRUE))}
 
+  t <- year(index(djf.dse))
   q1 <- data.frame(x=apply(coredata(djf.dse),1,quantile,probs=0.05,na.rm=TRUE))
   q2 <- data.frame(x=apply(coredata(djf.dse),1,quantile,probs=0.95,na.rm=TRUE))
   qm <- data.frame(x=apply(coredata(djf.dse),1,mean,na.rm=TRUE))
   obs <- data.frame(x=coredata(mwd1))
-
-  t <- year(index(djf.dse))
+  
+  ## If the values are far from zero, set to NA
+  #q1$x[(q1$x < threshold - 15) | (q1$x > threshold + 20)] <- NA
+  #q2$x[(q2$x < threshold - 15) | (q2$x > threshold + 20)] <- NA
+  #qm$x[(qm$x < threshold - 15) | (qm$x > threshold + 20)] <- NA
+  
+  if (verbose) str(qm)
+  
+  if (verbose) {print('Fit trend cubic models'); range(t)}
+  if (verbose) print('ensemble q05')
   preq1 <- exp(predict(dfit,newdata=q1))
+  preq1[preq1 > 92] <- 92  # maximum length of the winter season
   tr1 <- predict(lm(preq1 ~ t + I(t^2) + I(t^3)))
+  tr1[!is.finite(preq1)] <- NA
+  if (verbose) print('ensemble q95')
   preq2 <- exp(predict(dfit,newdata=q2))
+  preq2[preq2 > 92] <- 92  # maximum length of the winter season
   tr2 <- predict(lm(preq2 ~ t + I(t^2) + I(t^3)))
+  tr2[!is.finite(preq2)] <- NA
+  if (verbose) print('ensemble mean')
   prem  <- exp(predict(dfit,newdata=qm))
+  prem[prem > 92] <- 92  # maximum length of the winter season
   tr3 <- predict(lm(prem ~ t + I(t^2) + I(t^3)))
+  tr1[!is.finite(prem)] <- NA
+  
+  if (verbose) print('combine predictions/trends into one object respectively')
   Nwd <- zoo(cbind(preq1,preq2,prem,tr1,tr2,tr3),order.by=t)
   nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mwd1))
-
+  
   if (plot) {
+    if (verbose) print('plots')
     if (new) dev.new()
     par(bty='n')
     plot(zoo(djf.dse,order.by=year(djf.dse)),
@@ -91,6 +124,7 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   attr(Nwd,'nwd.pre') <- nwd.pre
   index(Nwd) <- t
   class(Nwd) <- c('nevents','zoo')
+  if (verbose) print('exit coldwinterdays')
   invisible(Nwd)
 }
 
@@ -98,14 +132,25 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
 hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
                           verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
     # Estimate number of days with low temperatures
-  if (verbose) print('mildwinterdays')
+  if (verbose) print('hotsummerdays')
+  if ( (inherits(y,'dsensemble')) & is.null(dse)) {
+    ## Swap y & dse.
+    print('use y  to set dse')
+    dse <- y; y <- NULL
+  }
   stopifnot(inherits(x,'station'))
   if (is.null(y)) y <- x
   djf <- subset(x,it=it)      # default: summer
   djfy <- subset(y,it=it)     # default: summer
   nwd1 <- annual(djfy,FUN='count',threshold=threshold,nmin=nmin)
-  mwd1 <- annual(djf,FUN='mean',nmin=nmin)
-
+  mwd1 <- annual(djfy,FUN='mean',nmin=nmin)
+  ## REB 2016-11-17: exclude temperatures far from the threshold:
+  xcld1 <- (mwd1 < threshold - 15) | (mwd1 > threshold + 20)
+  xcld1 <- xcld1[is.finite(xcld1)]
+  if (verbose) print(paste('Exclude',sum(xcld1),'outliers'))
+  if (sum(xcld1)>0) mwd1[xcld1] <- NA
+  
+  if (verbose) print(c(length(mwd1),length(nwd1)))
   cal <- data.frame(x=c(coredata(mwd1)),
                     y=c(coredata(nwd1)))
   ## Use linear fit rather than polynomial as this analysis only
@@ -133,7 +178,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
 
   if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
                                            verbose=verbose,plot=plot)
-  djf.dse <- subset(dse,it='djf')
+  if (length(table(month(dse)))==4) djf.dse <- subset(dse,it='jja') else djf.dse <- dse
   index(djf.dse) <- year(djf.dse)
   ovl <- window(djf.dse,start=year(start(x)),end=year(end(x)))
   djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
@@ -146,21 +191,23 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
 
   t <- year(index(djf.dse))
   preq1 <- exp(predict(dfit,newdata=q1))
-  preq1[preq1 > 90] <- NA  # maximum length of the summer season
+  preq1[preq1 > 92] <- 92  # maximum length of the summer season
   tr1 <- predict(lm(preq1 ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
   tr1[!is.finite(preq1)] <- NA
   preq2 <- exp(predict(dfit,newdata=q2))
-  preq2[preq2 > 90] <- NA  # maximum length of the summer season
+  preq2[preq2 > 92] <- 92  # maximum length of the summer season
   tr2 <- predict(lm(preq2 ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
   tr2[!is.finite(preq2)] <- NA
   prem  <- exp(predict(dfit,newdata=qm))
-  prem[prem > 90] <- NA  # maximum length of the summer season 
+  prem[prem > 92] <- 92  # maximum length of the summer season 
   tr3 <- predict(lm(prem ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
   tr3[!is.finite(prem)] <- NA
   Nwd <- zoo(cbind(preq1,preq2,prem,tr1,tr2,tr3),order.by=t)
   nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mwd1))
-
+  
+  
   if (plot) {
+    if (verbose) print('plots')
     if (new) dev.new()
     par(bty='n')
     plot(zoo(djf.dse,order.by=year(djf.dse)),
@@ -189,6 +236,7 @@ hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
   attr(Nwd,'nwd.pre') <- nwd.pre
   index(Nwd) <- t
   class(Nwd) <- c('nevents','zoo')
+  if (verbose) print('exit hotsummerdays')
   invisible(Nwd)
 }
 

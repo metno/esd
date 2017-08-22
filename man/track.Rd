@@ -25,7 +25,7 @@ regions or 'events' of different types, e.g., anti-cyclones.
 }
 \usage{
 track(X,x0=NULL,it=NULL,is=NULL,dmax=1E6,amax=NULL,ddmax=NULL,dpmax=NULL,
-      nmax=124,nmin=5,dmin=1E5,dE=0.3,dN=0.2,lplot=FALSE,progress=TRUE,verbose=FALSE)
+      nmax=124,nmin=5,dmin=1E5,dE=0.3,dN=0.2,plot=FALSE,progress=TRUE,verbose=FALSE)
 track.events(X,...) 
 
 }
@@ -45,7 +45,7 @@ track.events(X,...)
     \item{dE}{Shift of the maximum displacement in the eastward direction.}
     \item{dN}{Shift of the maximum displacement in the northward
       direction.}
-    \item{lplot}{TRUE: Produce plots of trajectories for selected time steps.}
+    \item{plot}{TRUE: Show plots of trajectories for selected time steps.}
     \item{progress}{TRUE: Show progress bar.}
     \item{verbose}{TRUE: Print out diagnosics.}  
  }

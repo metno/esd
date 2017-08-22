@@ -33,8 +33,16 @@ plot.station(x, plot.type = "single", new = TRUE, lwd = 3, type = "l",
     map.show = TRUE, map.type = "points", mar = c(4.5, 4.5, 0.75, 
         0.5), alpha = 0.3, verbose = FALSE, ...)
 plot.pca(x,verbose=FALSE,new=TRUE,...)
-plot.eof(x,new=TRUE,xlim=NULL,ylim=NULL,ip=1,what=c("pc","eof","var"),...)
-plot.eof.field(x,new=TRUE,xlim=NULL,ylim=NULL,ip=1,what=c("pc","eof","var"),...)
+plot.eof(x,new=FALSE,xlim=NULL,ylim=NULL,
+                     ip=1,what=c("pc","eof","var"),
+                     colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
+                         breaks=NULL,type="p",cex=2,show=TRUE,
+                         h=0.6,v=1,pos=0.05),
+                     verbose=FALSE,is=NULL,it=NULL,...)
+plot.eof.field(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
+                           what=c("pc","eof","var"),## colbar=NULL,
+                           cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
+                           verbose=FALSE,it=NULL,is=NULL,cex=1,...)
 plot.eof.comb(x,new=TRUE,xlim=NULL,ylim=NULL,
                           ip=1,col=c("red"),what=c("pc","eof","var"),...)
 plot.eof.var(x,new=TRUE,xlim=NULL,ylim=NULL,ip=20,...)
@@ -56,8 +64,15 @@ plot.diagnose.comb.eof(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,new=TRUE,..
 plot.diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,...)
 plot.diagnose.dsensemble(x,map=TRUE,verbose=FALSE,new=TRUE,cex=NULL)
 plot.xval(x,new=TRUE,...)
-plot.dsensemble(x,pts=FALSE,showci=TRUE,showtrend=TRUE,legend=TRUE,it=0,
-                envcol=c(1,0,0,0.2),...)
+plot.dsensemble.pca(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,ip=1,
+                               envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,...)
+plot.dsensemble.multi(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
+                                  anomaly=FALSE,test=FALSE,...)
+plot.dsensemble.one(x,pts=FALSE,it=0,
+                             envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
+                             obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
+                             new=FALSE,xrange=NULL,yrange=NULL,alpha=0.5,alpha.map=0.7,
+                             verbose=FALSE,...)
 plot.nevents(x,verbose=FALSE,...)
 vis.map(x,col='red',map.type='points',add.text=FALSE)
 }
@@ -72,8 +87,12 @@ vis.map(x,col='red',map.type='points',add.text=FALSE)
   \item{it}{For subsetting in time - See \code{link{subset}}.'it=0'
     returns the annual means (mean of DJF + MAM + JJA + SON)}
   \item{FUN}{function}
+  \item{obs.show}{Show the observations}
+  \item{target.show}{Show a 'target plot' for quality}
   \item{map.show}{Show a small map of the location}
   \item{map.type}{}
+  \item{what}{Indicate what to plot. 'field' expands eof to field before
+  plotting}
  }
 \value{A field object}
 

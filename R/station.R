@@ -172,7 +172,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   print(paste("Retrieving data from",length(id),"records ..."))
   
   
-  ## start loap on available stations
+  ## start loop on available stations
   for (i in 1:length(id)) {
     ##
     ## For now param0 is only used for GHCND dataset
@@ -190,7 +190,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       print(paste(i,toupper(param[i]),stid[i],loc[i],cntr[i],src[i]))
     
     if (src[i]=="METNOD") { #AM-29.08.2013 added for metno data
-      ## 
+      ##browser()
       if (is.null(path.metnod)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnod ## default path
       if (is.null(url.metnod)) 
           if (user == 'metno') url="http://klapp/metnopub/production/"
@@ -216,7 +216,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ##if (!is.null(x)) X <- combine.stations(X,x)
     } else if (src[i]=="ECAD") { #AM-29.07.2013 added "|(src[i]=="ECAD")"
       ##
-      if (toupper(param[i])=='TMAX') param[] <- 'tx' #REB 2016-07-26: dirty bug-rectification
+      #if (toupper(param[i])=='TMAX') param[] <- 'tx' #REB 2016-07-26: dirty bug-rectification
       if (is.null(path.ecad)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.ecad ## default path
       if (is.null(url.ecad)) url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend" else url <- url.ecad ## default url
       x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],
@@ -452,7 +452,13 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     print(stid)
   }
   
-  ECAD <- zoo(ecad, order.by = as.Date(paste(year, month, day, sep = "-"), by='day', length.out = L))
+  ## REB 2016-10-20 
+  if (!check.bad.dates(year,month,day))  
+             ECAD <- zoo(ecad, order.by = as.Date(paste(year, month, day, sep = "-"), 
+                                                  by='day', length.out = L)) else {
+             print("Warning : Bad dates were found for this station -> Ignored")
+             return(NULL)                                          
+  }
   
   if (sum(ECAD,na.rm=TRUE)==0)
     {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
@@ -1030,7 +1036,6 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
     path <- 'data.METNOD'
   else if (ext=='mon')
     path <- 'data.METNOM'
-  ##browser()
   if (!is.null(url)) {
     Filnavn <- file.path(url, path, paste(param1,'_',sprintf('%05d',as.numeric(stid)),'.',ext, sep = ""))
   } else stop("The url must be specified")
@@ -1086,3 +1091,20 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   invisible(METNO)
 }
 
+## Read data from NASA/GISS
+station.giss <- function(url) {
+  t2m <- read.table(url,skip=2,header=TRUE)
+  meta <- read.table(url,nrows=1,as.is=TRUE)
+  lat <- as.numeric(substr(meta$V3,2,nchar(meta$V3)-2))
+  lon <- as.numeric(sub(')','',meta$V4))
+  yr <- t2m$YEAR
+  t2m[t2m >= 999] <- NA
+  t2m <- zoo(c(t(as.matrix(t2m[2:13]))),
+             order.by=as.Date(paste(sort(rep(yr,12)),rep(1:12,length(yr)),'01',sep='-')))
+  t2m <- as.station(t2m,loc=meta$V1,param='t2m',unit='degC',
+                    lon=lon,lat=lat,alt=NA,
+                    cntr=meta$V2,longname='Surface temperature',
+                    stid=meta$V5,quality=meta$V10,src=paste(meta$V6,meta$V7),url=url,
+                    reference='Parker, et. al. (1992), Int. J. Clim.',info=NA, method= NA)
+  return(t2m)
+}

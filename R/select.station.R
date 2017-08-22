@@ -170,7 +170,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
     station.meta$location <- as.character(station.meta$location)
     station.meta$country <- as.character(station.meta$country)
     station.meta$source <- as.character(station.meta$source)
-    class(station.meta) <- c("data.frame","stationmeta")
+    class(station.meta) <- c("stationmeta","data.frame")
     return(station.meta)
   } else {
     print("No available stations found for your selection")

@@ -50,7 +50,9 @@ SOI <- function(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext
   return(soi)
 }
 
-GSL <- function(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv') {
+# CSIRO
+# http://www.cmar.csiro.au/sealevel/GMSL_SG_2011_up.html
+GSL <- function(url='https://www.epa.gov/sites/production/files/2016-08/sea-level_fig-1.csv') {
 
     sl <- read.csv(url,skip=6,header=TRUE)
     zsl <- zoo(sl[[2]]*2.54,order.by=sl[[1]])
@@ -67,12 +69,59 @@ AMO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.
   nrows <- sum(is.element(nchar(amo.test),max(nchar(amo.test))))
   amo <- read.table(url,skip=1,nrows=nrows)
   amo[amo <= -99] <- NA
-  amo <- zoo(c(t(as.matrix(amo[3:13]))),
+  amo <- zoo(c(t(as.matrix(amo[2:13]))),
              order.by=as.Date(paste(sort(rep(amo$V1,12)),rep(1:12,length(amo$V1)),'01',sep='-')))
-  amo <- as.station(amo,loc=NA,param='index',unit='dimensionless',
+  amo <- as.station(amo,loc=NA,param='AMO',unit='dimensionless',
                      lon=NA,lat=NA,alt=NA,
-                     cntr=NA,longname='AMO unsmoothed from the Kaplan SST V2',
+                     cntr=NA,longname='Atlantic Multi-decadal Oscillation unsmoothed from the Kaplan SST V2',
                      stid=NA,quality=NA,src='Calculated at NOAA/ESRL/PSD1',url=url,
                      reference=NA,info=NA, method= NA)
   return(amo)
 }
+
+QBO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data') {
+  qbo.test <- readLines(url)
+  nrows <- length(qbo.test) - 6
+  qbo <- read.table(url,skip=1,nrows=nrows)
+  qbo[qbo <= -999] <- NA
+  qbo <- zoo(c(t(as.matrix(qbo[2:13]))),
+             order.by=as.Date(paste(sort(rep(qbo$V1,12)),
+                               rep(1:12,length(qbo$V1)),'01',sep='-')))
+  amo <- as.station(qbo,loc=NA,param='QBO',unit='dimensionless',
+                     lon=NA,lat=NA,alt=NA,
+                     cntr=NA,longname='Quasi-biennial oscillation',
+                     stid=NA,quality=NA,src='Calculated at NOAA/ESRL PSD',
+                     url=url,reference=NA, method= NA,
+               info='http://www.esrl.noaa.gov/psd/data/climateindices/list/')
+  return(qbo)
+}
+
+## Central England Temperature
+CET <- function(url='http://hadobs.metoffice.com/hadcet/cetml1659on.dat') {
+  cet <- read.table(url,skip=8)
+  cet[cet <= -99] <- NA
+  cet <- zoo(c(t(as.matrix(cet[2:13]))),
+             order.by=as.Date(paste(sort(rep(cet$V1,12)),rep(1:12,length(cet$V1)),'01',sep='-')))
+  cet <- as.station(cet,loc=NA,param='t2m',unit='degC',
+                    lon=NA,lat=NA,alt=NA,
+                    cntr=NA,longname='Central England Temperature',
+                    stid=NA,quality=NA,src=NA,url=url,
+                    reference='Parker, et. al. (1992), Int. J. Clim.',info=NA, method= NA)
+  return(cet)
+}
+
+CO2 <- function(url='ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt') {
+  X <- read.table(url)
+  X[X <= -99] <- NA
+  co2 <- zoo(X$V4,order.by=as.Date(paste(X$V1,X$V2,'01',sep='-')))
+  co2 <- as.station(co2,loc='Mauna Loa',param=expression(C*O[2]),unit='ppm',
+                     lon=-155.5763,lat=19.5362,alt=3397,
+                     cntr=NA,longname='Carbon dioxide',
+                     stid=NA,quality=NA,src='NOAA/ESRL',
+                     url=url,reference='C.D. Keeling, R.B. Bacastow, A.E. Bainbridge, C.A. Ekdahl, P.R. Guenther, and L.S. Waterman, (1976), Atmospheric carbon dioxide variations at Mauna Loa Observatory, Hawaii, Tellus, vol. 28, 538-551', method= NA,
+               info='Use of these data implies an agreement to reciprocate.')
+  return(co2)
+}
+
+
+

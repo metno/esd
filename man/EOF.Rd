@@ -72,7 +72,7 @@ pca2station(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE)
   analysis.}
   \item{na.action}{'fill' uses \code{\link{approx}} to interpolate the
     NA-values before the PCA.}
-  \item{what}{Default set to 'pca' for convertin the PCA-results, but
+  \item{what}{Default set to 'pca' for converting the PCA-results, but
     also works on downscaled PCA results. Option 'xval' returns the
     station values for cross-validation results and 'test' returns the
     station values used in the cross-validation (same interval as for 'xval').}

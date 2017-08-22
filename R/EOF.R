@@ -232,28 +232,33 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   X <- sp2np(X)
   YYt <- t(coredata(X));
   clim <- rowMeans(YYt,na.rm=TRUE)
+  clim.0 <- clim
   YYt <- YYt - clim
   YY <- t(YYt)
   d <- attr(X,'dimensions')
-  
-  #print('time house keeping')
+
+  ## KMP 2016-12-28: time housekeeping in EOF.comb creates problems
+  ## for DS when applied to annual data. The predictand ends up with
+  ## years as time index but the EOF has dates (YYYY-01-01).
+  ## Do the realdates and fakedates need to be in date format?
+  if (verbose) print('time house keeping')
   t <- index(X)
   datetype <- class(t)
   if (datetype=="Date") {
     fakedates <- paste(format(t,'%Y-%m'),'-01',sep='')
     realdates <- paste(format(t,'%Y-%m'),'-01',sep='')
-  } else
-  if (datetype=="numeric") {
-    fakedates <- paste(t,'-01-01',sep='')
-    realdates <- paste(t,'-01-01',sep='')
+    endsofar <- max(as.numeric(format(as.Date(fakedates),'%Y')))
+  } else if (datetype=="numeric") {
+    fakedates <- t#paste(t,'-01-01',sep='')#
+    realdates <- t#paste(t,'-01-01',sep='')#
+    endsofar <- max(t)#max(as.numeric(format(as.Date(fakedates),'%Y')))#
   }
   
   #print(realdates)
   # Keep track of the different fields:
   if (is.null(attr(X,'source'))) attr(X,'source') <- "0"
   id.t <- rep(attr(X,'source'),length(index(X)))
-  ID.t <- attr(X,'source') 
-  endsofar <- max(as.numeric(format(as.Date(fakedates),'%Y')))
+  ID.t <- attr(X,'source')
 
   for (i in 1:n.app) {
     if (verbose) print(paste("Additional field",i,endsofar))
@@ -262,14 +267,23 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     ttt <- index(YYY)
     ##print(class(ttt)); print(ttt[1:5])
     if (inherits(ttt,'Date')) {
-        year <- as.numeric(format(ttt,'%Y')) 
-        month <- format(ttt,'%m')
-    } else 
-    if (inherits(ttt,c('numeric','integer'))) {
-        year <- ttt
-        month <- rep(1,length(year))
+      year <- as.numeric(format(ttt,'%Y')) 
+      month <- format(ttt,'%m')
+    } else if (inherits(ttt,c('numeric','integer'))) {
+      year <- ttt
+      month <- rep(1,length(year))
     }
     yearf <- year - min(year) + endsofar + 10
+    if (inherits(ttt,'Date')) {
+      fakedates <- c(fakedates,paste(yearf,"-",month,'-01',sep=''))
+      realdates <- c(realdates,paste(year,"-",month,'-01',sep=''))
+      endsofar <- max(as.numeric(format(as.Date(fakedates),'%Y')))
+      #print(fakedates)
+    } else if (inherits(ttt,c('numeric','integer'))) {
+      fakedates <- c(fakedates,yearf)
+      realdates <- c(realdates,year)
+      endsofar <- max(as.numeric(fakedates))
+    }
     #print(year)
     #str(YYYt)
     d <- rbind(d,attr(YYY,'dimensions'))
@@ -277,36 +291,34 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     clim <- rowMeans(Zt,na.rm=TRUE)
     #str(clim)
     eval(parse(text=paste('clim.',i,' <- clim',sep='')))
-    Zt <- Zt  - clim
+    Zt <- Zt - clim
     #print(paste("Temporal-spatial mean values:",
     #            round(mean(YY,na.rm=TRUE),3),
     #            round(mean(clim,na.rm=TRUE),3)))
     #print(dim(YY)); print(dim(t(Zt)))
     YY <- rbind(YY,t(Zt))
     #print(length(index(YYY)))
-
+    
     # Keep track of the different fields:
-    if (is.null(attr(YYY,'source'))) attr(YYY,'source') <- as.character(i)
+    if (is.null(attr(YYY,'source'))) attr(YYY,'source') <- as.character(i) else
+      if (is.na(attr(YYY,'source')))  attr(YYY,'source') <- as.character(i)
     src <- paste(attr(YYY,'source'),i,sep="+")
     id.t <- c(id.t,rep(src,length(index(YYY))))
     ID.t <- c(ID.t,src)
-    fakedates <- c(fakedates,paste(yearf,"-",month,'-01',sep=''))
-    #print(fakedates)
-    realdates <- c(realdates,paste(year,"-",month,'-01',sep=''))
-    endsofar <- max(as.numeric(format(as.Date(fakedates),'%Y')))
     #print('YY:'); print(dim(YY)); print("d:"); print(d)
   }
-  #print(fakedates)
-
-  #print(dates)
   
   # Synthetise a new object with combined data that looks like a
   # field object, and then call the ordinary EOF method:
 
   if (verbose) print("combine original and appended fields")
-  Y <- zoo(YY,order.by=as.Date(fakedates))
+  if(is.character(fakedates)){
+    Y <- zoo(YY,order.by=as.Date(fakedates))
+  } else {
+    Y <- zoo(YY,order.by=fakedates)#as.Date(fakedates))
+  }
   #plot(rowMeans(YY,na.rm=TRUE),type="l")
-
+  
   # Discard time slices with no valid data, e.g. DJF in the beginning of the record
   ngood <- apply(coredata(Y),1,nv)
   if (verbose) print(summary(ngood))
@@ -330,25 +342,44 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   if (verbose) print("Computed the eofs:")
   # After the EOF, the results must be reorganised to reflect the different
   # data sets.
-  #browser()
   ceof <- eof
   ii <- is.element(id.t,ID.t[1])
   if (verbose) {print("Check:"); print(sum(ii)); print(ID.t); print(table(id.t))
                 print(realdates[ii]); print(dim(eof))}
 
-  ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii]))
+  if(is.character(realdates)) {
+    ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii]))
+  } else {
+    ceof <- zoo(eof[ii,],order.by=realdates[ii])
+  }
+  
+  ## Finalise - set the metadata
   if (verbose) {print("Copy attributes"); print(names(attributes(eof)))}
   ceof <- attrcp(eof,ceof)
+  clim <- clim.0
   dim(clim) <- attr(X,'dimensions')[1:2]
   attr(ceof,'mean') <- clim
   attr(ceof,'dimensions') <- attr(X,'dimensions')
   
+  ## Set the metadata for the appended data: climatology etc.
   for (i in 1:n.app) {
     jj <- is.element(id.t,ID.t[i+1])
     if (verbose) print(paste(ID.t[i+1],' -> appendix.',i,' data points=',sum(jj),sep=''))
-    z <- zoo(eof[jj,],order.by=as.Date(realdates[jj]))
-    eval(parse(text=paste("yyy <- attr(X,'appendix.",i,"')",sep="")))
+    if(is.character(realdates)) {
+      z <- zoo(eof[jj,],order.by=as.Date(realdates[jj]))
+    } else {
+      z <- zoo(eof[jj,],order.by=realdates[jj])
+    }
+    cline1 <- paste("yyy <- attr(X,'appendix.",i,"')",sep="")
+    if (verbose) print(cline1)
+    eval(parse(text=cline))
     z <- attrcp(yyy,z)
+    cline2 <- paste("clim <- clim.",i,sep="")
+    if (verbose) print(cline2)
+    eval(parse(text=cline2))
+    dim(clim) <- attr(X,'dimensions')[1:2]
+    if (verbose) print('add information about mean')
+    attr(z,"mean") <- clim
     attr(ceof,paste('appendix.',i,sep="")) <- z
   }
   attr(ceof,'n.apps') <- n.app
@@ -361,25 +392,31 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
 
 
 
-eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE) {
+eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   if (verbose) {print("eof2field"); if (!is.null(is)) print(is)}
   greenwich <- attr(x,'greenwich')
-#  if (!is.null(lon)) lon.rng <- range(lon) else lon.rng <- NULL
-#  if (!is.null(lat)) lat.rng <- range(lat) else lat.rng <- NULL
-  if ( !is.null(it) | !is.null(is) ) 
-    eof <- subset(x,it=it,is=is,verbose=verbose) else
-#  if (!is.null(is))
-#    eof <- subset(x,is=is) else
+  if ( !is.null(it) | !is.null(is) ) {
+    eof <- subset(x,it=it,is=is,verbose=verbose)
+  } else {
     eof <- x
-#  print(c(greenwich,attr(eof,'greenwich')))
-                                        # REB 04.12.13 comment below
-
+  }
   U <- attr(eof,'pattern')
   d <- dim(U) 
   if (verbose) {str(U); print(d)}
   dim(U) <- c(d[1]*d[2],d[3])
   W <- attr(eof,'eigenvalues')
   V <- coredata(eof)
+  ## ==================================================
+  ## KMP 2016-01-15: added selection of patterns (ip)
+  if(is.null(ip)) {
+    ip <- seq(length(W))
+  } else if(any(ip %in% seq(length(W)))) {
+    ip <- ip[ip>0 & ip<length(W)]
+  } else {
+    stop(paste("Error in input ip =",paste(ip,collaps=", ")))
+  }
+  ## ==================================================
+  U <- U[,ip]; W <- W[ip]; V <- V[,ip]
   y <-U %*% diag(W) %*% t(V)
 
   if (!anomaly) {
@@ -393,7 +430,7 @@ eof2field <- function(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE) {
                 longname=attr(eof,'longname'),src=attr(eof,'source'),
                 url=attr(eof,'url'),reference=attr(eof,'reference'),
                 info=attr(eof,'info'),calendar=attr(eof,'calendar'),
-                greenwich=attr(eof,'greenwich'))
+                greenwich=attr(eof,'greenwich'),verbose=verbose)
   if (!is.null(lon) | !is.null(lat)) {
     if (is.null(lon)) lon <- c(-180,180)
     if (is.null(lat)) lat <- c(-90,90)
@@ -485,13 +522,19 @@ PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL) {
 }
 
 # Transfer PCA back to station data
-pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE) {
+pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
+                        what='pca',verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if (inherits(X,'ds')) class(X) <- class(X)[-1]
   if (verbose) print('pca2station')
   
   pca <- X
   cls <- class(pca)
+
+  ## REB 2016-11-03
+    ## If there is only one single station, avoid collapse of dimension
+  if (is.null(dim(attr(pca,'pattern'))))
+    dim(attr(pca,'pattern')) <- c(1,length(attr(pca,'pattern')))
   U <- attr(pca,'pattern')
   d <- dim(U)
   W <- attr(pca,'eigenvalues')
@@ -503,10 +546,11 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
     V <- coredata(attr(X,'evaluation')[,seq(1,dim(attr(X,'evaluation'))[2]-1,by=2)])
   }
   V[!is.finite(V)] <- 0
-  #str(U); str(W); str(V)
+  if (verbose) {str(U); str(W); str(V)}
   x <-U %*% diag(W) %*% t(V)
-  #str(x)
-  
+  if (verbose) str(x)
+
+  if (verbose) print(paste('anomaly=',anomaly))
   if (!anomaly)
     x <- x + c(attr(pca,'mean'))
   x <- zoo(t(x),order.by=index(pca))
@@ -516,6 +560,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
 #  attr(x,'call') <- match.call()
 #  class(x) <- class(pca)[-1]
 
+  if (verbose) print(attr(pca,'location'))
   names(x) <- attr(pca,'location') # AM 30.07.2013 added
 
   x <- attrcp(pca,x)
@@ -523,6 +568,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
   # REB 2014-10-27: if the object is DS-results, then look for
   # cross-validation
   if (!is.null(attr(pca,'evaluation'))) {
+    if (verbose) print('include evaluation')
     cval <- attr(pca,'evaluation')
     d.cval <- dim(cval)
     V.x <- coredata(cval)
@@ -542,7 +588,6 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
     x.cval <- rbind(x.cvalx,x.cvalz)[,ii]
     mpca <- c(attr(pca,'mean'))
     jj <- order(c(1:length(mpca),1:length(mpca)+0.5))
-    #browser()
     if (!anomaly) x.cval <- x.cval + rep(mpca,2)[jj]
     if (anomaly) attr(x.cval,'aspect') <- 'anomaly' else
                  attr(x.cval,'aspect') <- 'original'
@@ -552,6 +597,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
   ## REB 2016-05-09: if the object is DS-results, then look for
   ## common EOFs
   if (!is.null(attr(pca,'n.apps'))) {
+    if (verbose) print(paste('include',attr(pca,'n.apps')))
     for (i.app in 1:attr(pca,'n.apps')) {
       cval <- attr(pca,paste('appendix.',i.app,sep=''))
       d.cval <- dim(cval)
@@ -573,6 +619,6 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
   attr(x,'latitude') <- attr(pca,'latitude')
   attr(x,'history') <- history.stamp(pca)
   class(x) <- cls[-1]
-  #print("HERE")
+  if (verbose) print("exit pca2station")
   invisible(x)
 }
