@@ -372,7 +372,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     }
     cline1 <- paste("yyy <- attr(X,'appendix.",i,"')",sep="")
     if (verbose) print(cline1)
-    eval(parse(text=cline))
+    eval(parse(text=cline1))
     z <- attrcp(yyy,z)
     cline2 <- paste("clim <- clim.",i,sep="")
     if (verbose) print(cline2)
