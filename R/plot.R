@@ -395,7 +395,8 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   var.eof <- 100* D^2/tot.var
 
   if (length(what)==3) mfrow <- c(2,2) else
-  if (length(what)==2) mfrow <- c(2,1)
+  if (length(what)==2) mfrow <- c(2,1) else
+                       mfrow <- c(1,1)
   
   if (new) dev.new()
   #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
