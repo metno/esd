@@ -1410,7 +1410,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     
     ## Get calendar from attribute if any and create vector of dates vdate
     ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
-    #
+    ##
     if (!is.null(calendar.att)) {
         if (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) {
             ## if (grepl("sec",tunit))
@@ -1498,9 +1498,9 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         #if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
         #if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
         #if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
-        if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals
-        if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60
-        if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60*60
+        if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals
+        if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60
+        if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60*60
         ##===========================================================================
         if (grepl("day",tunit)) time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
         if (grepl("mon",tunit)) {
@@ -1869,7 +1869,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         dorigin <- as.numeric(format.Date(torigin,format="%d"))
     }
     ## Get calendar from attribute if any and create vector of dates vdate
-    ##
+    
     if (!is.null(calendar.att)) {
         if (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) {
             if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
@@ -1946,9 +1946,9 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         #if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
         #if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
         #if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
-        if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals
-        if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60
-        if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin) + time$vals*60*60
+        if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals
+        if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60
+        if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60*60
         ##===========================================================================
         if (grepl("day",tunit)) time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
         if (grepl("mon",tunit)) {
