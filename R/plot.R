@@ -404,14 +404,15 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   var.eof <- 100* D^2/tot.var
 
   if (length(what)==3) mfrow <- c(2,2) else
-  if (length(what)==2) mfrow <- c(2,1)
+  if (length(what)==2) mfrow <- c(2,1) else
+                       mfrow <- NULL
   
   if (new) dev.new()
   #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-  par(mfrow=mfrow)
+  if (!is.null(mfrow)) par(mfrow=mfrow)
 
   if (length(grep('eof',what))>0) {
-    par(fig=c(0,0.5,0.5,1))
+    if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
     map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
 
@@ -426,7 +427,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   if (length(grep('var',what))>0)  {
 #    par(xaxt="s",yaxt="s")
 #    plot.eof.var(x,new=FALSE,cex.main=0.7)
-    par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
+    if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
     plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
 
@@ -456,7 +457,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 #      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
 #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
 #                                          xlim=xlim,ylim=ylim)
-      par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+    if (!is.null(mfrow)) par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
       main <- paste('Leading PC#',ip,'of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
