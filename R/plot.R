@@ -53,20 +53,28 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   ##         ylim <- apply(x,2,pretty,n=5)
   if (is.null(xlim))
     xlim <- range(index(x))
-  if (is.null(ylim))
-    ylim <- pretty(as.numeric(x))
+  #if (is.null(ylim))
+  #  ylim <- pretty(as.numeric(x))
   if (verbose) {print(xlim); print(ylim)}
   if (plot.type=="single") {
-      if (is.null(ylab))
-          ylab <- ylab(x)
-      if (inherits(ylab,"try-error")) ylab <- unit(x)
+    if (is.null(ylab))
+      ylab <- ylab(x)
+    if (inherits(ylab,"try-error")) ylab <- unit(x)
+  } else {
+    if (is.null(ylab)) { 
+      if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+        ylab <- stid(x)
+      } else 
+        ylab <- varid(y)
+    } else {
+      if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+        main <- levels(factor(varid(x)))[1]
+      } else {
+        main <- levels(factor(loc(x)))[1]
+      }
+    }  
   }
-  else if (is.null(ylab) & (length(levels(factor(stid(x))))>1))
-      ylab <- stid(x)
-  else if (is.null(ylab))
-      ylab <- apply(x,1,varid)
-  
-  if (is.null(main)) main <- attr(x,'longname')[1] 
+  #if (is.null(main)) main <- attr(x,'longname')[1] 
   if (is.null(col)) {
     if (is.null(dim(x))) {
       col <- "blue"
@@ -113,10 +121,11 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if(new) dev.new()
   if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
+  ##browser()
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
-           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,...)
-  mtext(main,side=3,line=1,adj=0,cex=cex.main)
+           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,main=main,...)
+  #mtext(main,side=3,line=1,adj=0,cex=cex.main)
   if("seasonalcycle" %in% cls) {
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
   }
