@@ -1023,7 +1023,7 @@ replace.char <- function (c, s, ny.c)  {
 metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
                           qual=NULL,start=NA,end=NA,param=NULL,verbose=FALSE,
                           re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",
-                          url = "ftp://ftp.met.no/projects/chasepl/test",save2file=TRUE) {
+                          url = "ftp://ftp.met.no/projects/chasepl/test",save2file=FALSE) {
   ##browser()
   if (verbose) print("ftp.met.no")
   ## 
@@ -1049,7 +1049,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   if (save2file) {
     if (is.null(path)) 
       path <- 'data.METNO'
-    dir.create(path,recursive = TRUE)
+    dir.create(path,showWarnings = FALSE, recursive = TRUE)
     #if (nchar(stid)<=5) 
     stid <- sprintf("%05d", as.numeric(stid))
     write.table(Datasett,file=file.path(path,paste(param1,'_',stid,'.',ext,sep='')),row.names = FALSE,col.names = names(Datasett))

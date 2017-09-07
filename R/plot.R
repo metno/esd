@@ -53,20 +53,28 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   ##         ylim <- apply(x,2,pretty,n=5)
   if (is.null(xlim))
     xlim <- range(index(x))
-  if (is.null(ylim))
-    ylim <- pretty(as.numeric(x))
+  #if (is.null(ylim))
+  #  ylim <- pretty(as.numeric(x))
   if (verbose) {print(xlim); print(ylim)}
   if (plot.type=="single") {
-      if (is.null(ylab))
-          ylab <- ylab(x)
-      if (inherits(ylab,"try-error")) ylab <- unit(x)
+    if (is.null(ylab))
+      ylab <- ylab(x)
+    if (inherits(ylab,"try-error")) ylab <- unit(x)
+  } else {
+    if (is.null(ylab)) { 
+      if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+        ylab <- stid(x)
+      } else 
+        ylab <- varid(y)
+    } else {
+      if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+        main <- levels(factor(varid(x)))[1]
+      } else {
+        main <- levels(factor(loc(x)))[1]
+      }
+    }  
   }
-  else if (is.null(ylab) & (length(levels(factor(stid(x))))>1))
-      ylab <- stid(x)
-  else if (is.null(ylab))
-      ylab <- apply(x,1,varid)
-  
-  if (is.null(main)) main <- attr(x,'longname')[1] 
+  #if (is.null(main)) main <- attr(x,'longname')[1] 
   if (is.null(col)) {
     if (is.null(dim(x))) {
       col <- "blue"
@@ -113,10 +121,11 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if(new) dev.new()
   if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
+  ##browser()
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
-           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,...)
-  mtext(main,side=3,line=1,adj=0,cex=cex.main)
+           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,main=main,...)
+  #mtext(main,side=3,line=1,adj=0,cex=cex.main)
   if("seasonalcycle" %in% cls) {
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
   }
@@ -174,7 +183,7 @@ vis.map <- function(x,col='red',map.type=NULL,
                     add.text=FALSE,cex.axis=NULL,
                     map.insert=TRUE,verbose=FALSE,
                     usegooglemap=TRUE,zoom=NULL,...) {
-  if(verbose) print('vis.map')
+  if(verbose) {print('vis.map'); print(lon(x)); print(lat(x)); print(zoom)}
   ## KMP 2017-06-07 Weird problem: cex.axis is not found even though it is an argument to the function.
   ## It looks like cex.axis exists but when applying 'print' the following error message shows up: 
   ## 'Warning: restarting interrupted promise evaluation. Error in print(cex.axis) : object 'cex.axis' not found'
@@ -202,13 +211,14 @@ vis.map <- function(x,col='red',map.type=NULL,
       require(RgoogleMaps)
       
       if (is.null(zoom)) {
+        if (verbose) print('zoom not defined')
         if (length(lon(x))==1) zoom <- 8 else {
           ## zoom = 12 is very local, zoom = 1 is the world
           mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
           zoom <- 1 - floor(0.75*log(mxdst/360))
         }
-                             
       }
+      if (!is.finite(zoom)) zoom <- 8
       if (verbose) print(paste('zoom=',zoom))
       bgmap <- GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
                     destfile = "map.station.esd.png",
@@ -394,14 +404,15 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   var.eof <- 100* D^2/tot.var
 
   if (length(what)==3) mfrow <- c(2,2) else
-  if (length(what)==2) mfrow <- c(2,1)
+  if (length(what)==2) mfrow <- c(2,1) else
+                       mfrow <- NULL
   
   if (new) dev.new()
   #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-  par(mfrow=mfrow)
+  if (!is.null(mfrow)) par(mfrow=mfrow)
 
   if (length(grep('eof',what))>0) {
-    par(fig=c(0,0.5,0.5,1))
+    if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
     map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
 
@@ -416,7 +427,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   if (length(grep('var',what))>0)  {
 #    par(xaxt="s",yaxt="s")
 #    plot.eof.var(x,new=FALSE,cex.main=0.7)
-    par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
+    if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
     plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
 
@@ -446,7 +457,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 #      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
 #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
 #                                          xlim=xlim,ylim=ylim)
-      par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+    if (!is.null(mfrow)) par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
       main <- paste('Leading PC#',ip,'of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
