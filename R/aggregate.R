@@ -156,13 +156,13 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
   # Temporal aggregation:
     #print("HERE")
     #print(deparse(substitute(by)))
-    clsy2 <- switch(deparse(substitute(by)),
-                         "as.yearmon"="month",
-                         "as.yearqtr"="quarter",
-                         "as.annual"="annual",
-                         "year"="annual",
-                         "by" = "by")
-    if (is.null(clsy2)) clsy2 <- deparse(substitute(by))
+    #clsy2 <- switch(deparse(substitute(by)),
+    #                     "as.yearmon"="month",
+    #                     "as.yearqtr"="quarter",
+    #                     "as.annual"="annual",
+    #                     "year"="annual",
+    #                     "by" = "by")
+    #if (is.null(clsy2)) clsy2 <- deparse(substitute(by))
     #print(clsy2)
     #if (deparse(substitute(by))[1]=="year") {
     #  ## KMP 2017-05-07: annual mean should have year as index, not date
@@ -185,8 +185,23 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     #print('aggregate')
     ## y <- aggregate(x, by, match.fun(FUN), ...) ## AM quick fix replaced by
     y <- aggregate(x, by, FUN, ...)
-    class(x) <- cls; class(y) <- cls
-    class(y)[2] <- clsy2
+    class(x) <- cls; 
+    
+    if (class(index(y))=="Date") {
+      dy <- day(y); mo <- month(y); yr <- year(y)
+      if (dy[2] - dy[1] > 0) cls[length(cls) - 1] <- "day" else
+        if (mo[2] - mo[1] == 1) cls[length(cls) - 1] <- "month" else
+          if (mo[2] - mo[1] == 3) cls[length(cls) - 1] <- "season" else
+            if (yr[2] - yr[1] > 0) cls[length(cls) - 1] <- "annual"
+    } else
+      if (class(index(y))=="yearmon") cls[length(cls) - 1] <- "month" else
+        if (class(index(y))=="yearqtr") cls[length(cls) - 1] <- "qtr" else
+          if (class(index(y))=="numeric") cls[length(cls) - 1] <- "annual" else
+            if (class(index(y))=="character") cls[length(cls) - 1] <- "annual"
+    if ( (length(index(y)) <= 12) & (class(index(y))=="numeric") & 
+         (min(index(y)) >= 1) & (max(index(y)) <= 12) ) cls[length(cls) - 1] <- "seasonalcycle"
+    class(y) <- cls
+    #class(y)[2] <- clsy2
     
     y <- attrcp(x,y)
     #nattr <- softattr(x)
