@@ -642,20 +642,30 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if (inherits(predictor,'field')) pre <- predictor
   rm("predictor"); gc(reset=TRUE)
   attr(pre,"source") <- "ERA40"
-
-  if (!is.null(it)) {
+  
+  ## KMP 2017-09-12: don't use subset if pre is annual data and it is months or season!
+  ## if it is character, then then extraction of months reduces number of
+  ## months per year.
+  if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+  if (!is.null(it) & !(is.character(it) & inherits(pre,"annual"))) {
     if (verbose) print('Extract some months or a time period')
     if (verbose) print(it)
     pre <- subset(pre,it=it)
-      ## if it is character, then then extraction of months reduces number of
-      ## months per year.
-    if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
   }
 
   # Use proportional variations
+  ## KMP 2017-09-12: don't calculate the annual mean if pre is already annual
   if (verbose) print("Annual mean")
-  if (sum(is.element(FUNX,xfuns))==0) PRE <- annual(pre,FUN=FUNX,nmin=nmin) else
-  eval(parse(text=paste('PRE <- annual(',FUNX,'(pre),FUN="mean",nmin=nmin)',sep="")))
+  if(inherits(pre,"annual")) {
+    PRE <- pre
+  } else {
+    if (sum(is.element(FUNX,xfuns))==0) {
+      PRE <- annual(pre,FUN=FUNX,nmin=nmin) 
+    } else {
+      eval(parse(text=paste('PRE <- annual(',FUNX,'(pre),FUN="mean",nmin=nmin)',sep="")))
+    }
+  }
+  
   if (verbose) print("graphics")
   cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
   unit <- attr(y,'unit')
@@ -702,15 +712,18 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
-
+    
     if (!is.null(it)) {
       if (verbose) print('Extract some months or a time period')
       if (verbose) print(it)
       gcm <- subset(gcm,it=it)
     }
     
-    if (sum(is.element(FUNX,xfuns))==0) GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
-    eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
+    if (sum(is.element(FUNX,xfuns))==0) {
+      GCM <- annual(gcm,FUN=FUNX,nmin=nmin)
+    } else {
+      eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
+    }
 
     model.id <- attr(gcm,'model_id')
 

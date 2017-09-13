@@ -1424,9 +1424,12 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   }
 
   if (verbose) {print(map.type); print(attr(x,'station'))}
-  if (!is.null(attr(x,'station')) &
-      !inherits(attr(x,'station'),'annual')) z <- subset(x,it=it,verbose=verbose) else
-                                             z <- x
+  if (!is.null(attr(x,'station')) & !inherits(attr(x,'station'),'annual')) {
+    z <- subset(x,it=it,verbose=verbose) 
+  } else {
+    z <- x
+  }
+  
   if (verbose) {print("diagnose"); class(z)}
   diag <- diagnose(z,plot=FALSE,verbose=verbose)
   
@@ -1463,10 +1466,11 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)
-  
-  if (pts) for (i in 1:d[2])
-    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
 
+  if (pts) for (i in 1:d[2]) {
+    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
+  }
+  
   # Produce a transparent envelope
   nt <- length(index(z))
   t2 <- c(year(t),rev(year(t)))
@@ -1477,17 +1481,17 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   col.map <- adjustcolor(col,alpha.f=alpha.map)
   col <- adjustcolor(col,alpha.f=alpha)
  
-  
   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
   si <- apply(coredata(z),1,sd,na.rm=TRUE)
   for (ii in 1:49) {
     qp1 <- qnorm(1-ii/50,mean=coredata(mu),sd=coredata(si))
     qp2 <- qnorm(ii/50,mean=coredata(mu),sd=coredata(si))
     ci <- c(qp1,rev(qp2))
-    polygon(t2,ci, col= envcol, border=NA)
+    polygon(t2[!is.na(ci)],ci[!is.na(ci)], col= envcol, border=NA)
   }
   q05 <- qnorm(0.05,mean=mu,sd=si)
   q95 <- qnorm(0.95,mean=mu,sd=si)
+  
   lines(zoo(mu,order.by=year(z)),col=rgb(1,0.7,0.7),lwd=3)
   lines(zoo(q05,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)  
   lines(zoo(q95,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)

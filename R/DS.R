@@ -27,6 +27,7 @@ sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
     if (tsx==tsy) return(y)
 
     if (verbose) print('Need to aggregate')
+    browser()
     if (tsx=="day") agrscly <- as.Date(index(y)) else
     if (tsx=="month") agrscly <- as.yearmon(index(y)) else
     if (tsx=="annual") agrscly <- year(y) else
