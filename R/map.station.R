@@ -706,7 +706,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 
 sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
                    gridlines=TRUE,col="green",bg="darkgreen",cex=0.2,
-                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",new=TRUE,verbose=FALSE) {
+                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",new=TRUE,verbose=FALSE,...) {
   if(verbose) print("sphere")
   x0 <- x
   
@@ -734,14 +734,25 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   ##srtx <- order(attr(x,'longitude')); lon <- lon[srtx]
   ##srty <- order(attr(x,'latitude')); lat <- lat[srty]
   
-  if (!is.null(FUN))
+  if (!is.null(FUN)) {
     map <- apply(as.matrix(x),2,FUN,na.rm=TRUE) ##map <- x[srtx,srty]
-  else
+  } else {
     map <- x
-  
+  }
+
   # Rotatio:
-  if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
-  if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
+  # longitudinal rotation
+  if(!is.null(xlim)) {
+    lonR <- mean(xlim, na.rm=TRUE)
+  } else if (is.null(lonR)) {
+    lonR <- mean(lon, na.rm=TRUE)  
+  }
+  # latitudinal rotation
+  if(!is.null(ylim)) {
+    latR <- mean(ylim, na.rm=TRUE) 
+  } else if (is.null(latR)) {
+    latR <- mean(lat, na.rm=TRUE)
+  }
   # axiR: rotation of Earth's axis
   
   # coastline data:
@@ -751,8 +762,9 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
   if(greenwich) gx[gx<0 & ok] <- gx[gx<0 & ok] + 360
-  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
-  if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  ## KMP 2017-09-19: New xlim/ylim code line 829
+  #if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  #if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   theta <- pi*gx[ok]/180
   phi <- pi*gy[ok]/180
   #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
@@ -813,11 +825,29 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   #dim(X) <- d; dim(Y) <- d; dim(Z) <- d
   #print(dim(rbind(X,Z)))
   
+  # Rotate xlim and ylim
+  if(!is.null(xlim) & !is.null(ylim)) {
+    thetalim <- pi*xlim/180
+    philim <- pi*ylim/180
+    Xlim <- sin(thetalim)*cos(philim)
+    Ylim <- cos(thetalim)*cos(philim)
+    Zlim <- sin(philim)
+    Alim <- rotM(x=0,y=0,z=lonR) %*% rbind(c(Xlim),c(Ylim),c(Zlim))
+    Alim <- rotM(x=latR,y=0,z=0) %*% Alim
+    Xlim <- Alim[1,]; Ylim <- Alim[2,]; Zlim <- Alim[3,]
+  } else {
+    Xlim <- range(x, na.rm=TRUE)
+    Zlim <- range(z, na.rm=TRUE)
+  }
+  
   # Plot the results:
-  dev.new()
+  if(new) dev.new()
   par(bty="n",xaxt="n",yaxt="n",new=TRUE)
-  plot(x,z,pch=".",col="white",xlab="",ylab="",
+  plot(Xlim,Zlim,pch=".",col="white",xlab="",ylab="",
        cex.axis=cex.axis,cex.lab=cex.lab)
+  #plot(x,z,pch=".",col="white",xlab="",ylab="",
+  #     cex.axis=cex.axis,cex.lab=cex.lab)
+  #par0 <- par()
   
   # plot the grid boxes, but only the gridboxes facing the view point:
   ##Visible <- Y > 0 ##colMeans(Y) > 0
@@ -852,7 +882,6 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
   
   ## Add grid ?
-  
   if (!is.null(FUN)) {    
     ## Colourbar:  
     par(fig = c(0.3, 0.7, 0.05, 0.10),mar=rep(0,4),cex=0.8,
@@ -870,10 +899,11 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
     text(0.72,0.002,unit,pos=4)  
   }
   ##result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
-  if (inherits(x0,"stationmeta"))
+  if (inherits(x0,"stationmeta")) {
     result <- data.frame(x=Y,y=Z)
-  else if (inherits(x0,"station"))
+  } else if (inherits(x0,"station")) {
     result <- data.frame(x=Y,y=Z,z=map)
+  }
   invisible(result)
 }
 
