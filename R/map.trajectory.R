@@ -445,22 +445,39 @@ sphere.trajectory <- function(x,
   Z <- A[seq(3,3*n,3),]
   X[Y<=0] = NA; Z[Y<=0] <- NA
 
-  data("geoborders",envir=environment())
-  gx <- geoborders$x
-  gy <- geoborders$y
-  ok <- is.finite(gx) & is.finite(gy)
-  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
-  if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
-  a <- sphere.rotate(gx[ok],gy[ok],lonR=lonR,latR=latR)
-  x <- a[1,]; y <- a[2,]; z <- a[3,]
-
+  if(!add) {
+    data("geoborders",envir=environment())
+    gx <- geoborders$x
+    gy <- geoborders$y
+    ok <- is.finite(gx) & is.finite(gy)
+    #if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+    #if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+    a <- sphere.rotate(gx[ok],gy[ok],lonR=lonR,latR=latR)
+    x <- a[1,]; y <- a[2,]; z <- a[3,]
+    ## xlim and ylim:
+    if(!is.null(xlim) & !is.null(ylim)) {
+      thetalim <- pi*xlim/180
+      philim <- pi*ylim/180
+      Xlim <- sin(thetalim)*cos(philim)
+      Ylim <- cos(thetalim)*cos(philim)
+      Zlim <- sin(philim)
+      Alim <- rotM(x=0,y=0,z=lonR) %*% rbind(c(Xlim),c(Ylim),c(Zlim))
+      Alim <- rotM(x=latR,y=0,z=0) %*% Alim
+      Xlim <- Alim[1,]; Ylim <- Alim[2,]; Zlim <- Alim[3,]
+    } else {
+      Xlim <- range(x, na.rm=TRUE)
+      Zlim <- range(z, na.rm=TRUE)
+    }
+  }
+  
   if(is.null(dev.list())) add <- FALSE
   if(add) new <- FALSE
       
   if(new) dev.new()
-  par(bty="n",xaxt="n",yaxt="n")
-  if(!add) plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
-
+  par(bty="n",xaxt="n",yaxt="n",new=add)
+  #if(!add) plot(x[y>0],z[y>0],pch=".",type="n",xlab="",ylab="",main=main)
+  if(!add) plot(Xlim,Zlim,pch=".",type="n",xlab="",ylab="",main=main)
+  
   if("trajectory" %in% type) {
     matlines(X,Z,lty=lty,lwd=lwd,col=adjustcolor(col,alpha.f=alpha))
   }
@@ -479,8 +496,8 @@ sphere.trajectory <- function(x,
            lwd=lwd,length=0.1)
   }
   
-  points(x[y>0],z[y>0],pch=".",col='grey30')
-  lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
+  if(!add) points(x[y>0],z[y>0],pch=".",col='grey30')
+  if(!add) lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
 
   # box marking the spatial subset
   if("subset" %in% type) {
