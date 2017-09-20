@@ -1555,6 +1555,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
     par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",xpd=NA)
     #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+    ## KMP 2017-09-13: move this text!!! vvv
     legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
                       paste(diag$robs,'%'),
                       paste(diag$outside,"observations"),
