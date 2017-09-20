@@ -686,7 +686,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
 
-    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=FALSE)
+    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
     
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
     data("geoborders",envir=environment())
