@@ -170,7 +170,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   param <- apply(as.matrix(ss$element),1,esd2ele)
   rm(ss)
   
-  if(verbose) print(paste("Retrieving data from",length(id),"records ..."))
+  print(paste("Retrieving data from",length(id),"records ..."))
   
   
   ## start loop on available stations
@@ -185,13 +185,13 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ## used only for ghcnd#update param value from ss
     }
     
-    if(verbose) {
+    #if(verbose) {
       if (!is.null(param0)) {
         print(paste(i,toupper(param0),stid[i],loc[i],cntr[i],src[i]))
       } else {
         print(paste(i,toupper(param[i]),stid[i],loc[i],cntr[i],src[i]))
       }
-    }
+    #}
     
     if (src[i]=="METNOD") { #AM-29.08.2013 added for metno data
       if (is.null(path.metnod)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnod ## default path
