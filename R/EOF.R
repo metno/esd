@@ -77,6 +77,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   ## browser()
   
   Y <- t(coredata(x))
+  Y[!is.finite(Y)] <- NA
 
   # Apply geographical weighting to account for different grid area at
   # different latitudes:
