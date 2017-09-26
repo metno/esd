@@ -34,6 +34,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   if(verbose) print("reading data")
   x <- read.fwf(fname,width=w,col.names=h,skip=1)
   x <- x[x$code99<90,]
+  x <- x[!is.na(x$lon),]
   # rearrange date and time information
   dates <- round(x["datetime"][[1]]*1E-2)
   times <- x["datetime"][[1]] - round(dates)*1E2
@@ -52,7 +53,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
     method <- paste("M0",as.character(x$code99[1]),sep="")
   }
   x <- as.events(x,longname=longname,param=param,method=method,src=src,
-                 reference=ref,file=file.path(path,fname),url=url)
+                 reference=ref,file=file.path(path,fname),url=url,verbose=verbose)
   attr(x, "history")= history.stamp() 
   invisible(x)
 }
