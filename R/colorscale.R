@@ -63,6 +63,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     ##}   
     
     if (is.zoo(x)) x <- coredata(x)
+    x[!is.finite(x)] <- NA      # REB 2017-09-20: fix to cope with Inf-values
     x.rng <- range(x,na.rm=TRUE)
     nd <- max(0,ndig(x.rng)+2)
 
