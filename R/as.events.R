@@ -373,6 +373,7 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
   attr(N,"unit") <- unit
   attr(N,"lat") <- attr(x,"lat")
   attr(N,"lon") <- attr(x,"lon")
+  N <- subset(N, it=paste(range(strftime(dates,format="%Y-%m")),"01",sep="-"))
   invisible(N)
 }
 
