@@ -131,22 +131,14 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
          xlab=xlab,ylab=ylab)
     if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=0.6,col='grey',pos=1)
     
-    if(showaxis) {
+    if(showaxis | gridlines) {
       par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
-          cex.lab=0.7,cex.axis=0.7)
-      axis(3,at=pretty(par("xaxp")[1:2],n=5),col='grey')
-      axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey')
+          cex.lab=0.9,cex.axis=0.9)
+      axis(3,seq(floor(par("xaxp")[1]/5)*5,par("xaxp")[2],by=5),col='grey')
+      axis(4,seq(floor(par("yaxp")[1]/5)*5,par("yaxp")[2],by=5),col='grey')
+      if (gridlines) grid()
     }
-    
-    if (gridlines) {
-      par(xaxt='s',yaxt='s',cex.axis=cex.axis)
-      axis(3,seq(floor(par("xaxp")[1]/5)*5,par("xaxp")[2],by=5),col='grey30')
-      axis(4,seq(floor(par("yaxp")[1]/5)*5,par("yaxp")[2],by=5),col='grey30')
-      #axis(3,seq(min(round(lon(x))),max(round(lon(x))),by=5),col='grey30',cex.axis=cex.axis)
-      #axis(4,seq(min(round(lat(x))),max(round(lat(x))),by=5),col='grey30',cex.axis=cex.axis)
-      grid()
-    }
-    
+
     data("geoborders")
     lines(geoborders$x,geoborders$y)
     if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
