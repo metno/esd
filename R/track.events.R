@@ -384,7 +384,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,
     pf.p12 <- 1 - f.dp*pf.dp12 + f.depth*pf.depth12
     pf.depth23 <- (max(p[!is.na(p)])-p23)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
     pf.dp23 <- dp23/(max(p[!is.na(p)])-min(p[!is.na(p)]))
-    pf.p23 <- 1 - f.dp*pf.dp23 + f.depth*f.depth23
+    pf.p23 <- 1 - f.dp*pf.dp23 + f.depth*pf.depth23
     pf.p12[pf.p12<0] <- 0
     pf.p23[pf.p23<0] <- 0
   } else {
