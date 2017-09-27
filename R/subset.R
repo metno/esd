@@ -380,7 +380,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
     if (verbose) print('list + pca/eof detected')
     #x <- as.station(x)
     ## Subset the PCA/EOF
-    x <- subset.dsensemble.multi(x,it=it,is=is,ip=ip,verbose=verbose,...)
+    x <- subset.dsensemble.multi(x,it=it,is=is,ip=ip,verbose=verbose)
     if (verbose) print('exit subset.dsensemble')
     return(x)
   }
@@ -640,7 +640,7 @@ subset.spell <- function(x,is=NULL,it=NULL,...) {
     invisible(y)
 }
 
-subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE) subset.station(x,it=it,is=is,verbose=verbose,...)
+subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) subset.station(x,it=it,is=is,verbose=verbose)
 
 ## Author Rasmus E. Benestad - was initially part of subset.R file
 ## Modified by A. Mezghani
