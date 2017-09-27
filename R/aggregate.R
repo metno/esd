@@ -271,7 +271,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   # Estimate the area-aggregated values, e.g. the global mean (default)
   if (verbose) print(paste("aggregate.area",FUN))
   if (verbose) print(rowSums(coredata(x)))
-  x <- subset(x,is=is,it=it)
+  x <- subset(x,is=is,it=it,verbose=verbose)
   if (verbose) print(rowSums(coredata(x)))
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   d <- attr(x,'dimensions')
@@ -279,6 +279,12 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   #image(attr(x,'longitude'),attr(x,'latitude'),area)
   #print(c(length(colSums(area)),length(attr(x,'latitude')),sum(colSums(area))))
   #lon <- rep(lon(x),d[2])
+  if (inherits(x,'pattern') | length(d)==3) {
+    if (verbose) print('need to make the pattern look like field')
+    dim(x) <- c(d[1]*d[2],d[3])
+    x <- t(x)
+  }
+  
   srtlat <- order(rep(lat(x),d[1]))
   dY <- a*diff(pi*lat(x)/180)[1]
   dtheta <- diff(pi*lon(x)/180)[1]

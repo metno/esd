@@ -1,7 +1,7 @@
 
 
 
-subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.field")
   
@@ -10,7 +10,7 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   return(y)
 }
 
-subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print("subset.comb")
     y <- subset.field(x,it=it,is=is)
     y <- attrcp(x,y)
@@ -33,7 +33,7 @@ subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     invisible(y)
 }
 
-subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
+subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print("subset.eof")
     ## browser()
     if (is.null(is) & is.null(it) & is.null(ip)) return(x)                                    
@@ -168,18 +168,18 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
 
-subset.cca <- function(x,it=NULL,is=NULL) {
+subset.cca <- function(x,it=NULL,is=NULL,...) {
     if (!is.null(is))  {
         x <- subset.pattern(x)
     }
     x
 }
 
-subset.mvr <- function(x,it=NULL,is=NULL) {
+subset.mvr <- function(x,it=NULL,is=NULL,...) {
     x
 }
 
-subset.pattern <- function(x,is,verbose=FALSE) {
+subset.pattern <- function(x,is,verbose=FALSE,...) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) print('subset.pattern')
     if (is.list(is)) {
@@ -221,11 +221,12 @@ subset.pattern <- function(x,is,verbose=FALSE) {
     return(x)
 }
 
-subset.matrix <- function(x,is,verbose=FALSE) {
+subset.matrix <- function(x,is,verbose=FALSE,...) {
   subset.pattern(x,is,verbose=verbose)
 }  
 
-subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
+
+subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
   if (verbose) print('subset.pca')
   y <- x
   if (!is.null(ip)) {
@@ -291,7 +292,7 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   return(y)
 }
 
-subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print('subset.corfield')
     stopifnot(inherits(x,"corfield"))
     y <- x
@@ -313,7 +314,7 @@ subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
 
-subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
+subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print('subset.ds')
     y <- x
     if (!is.null(it)) {
@@ -342,7 +343,7 @@ subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     x
 }
 
-subset.trend <- function(x,it=NULL,is=NULL) {
+subset.trend <- function(x,it=NULL,is=NULL,...) {
     y <- subset.field(x,it=it,is=is)
     
     pattern <- attr(x, "pattern")
@@ -615,7 +616,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
   invisible(y)
 }
 
-subset.spell <- function(x,is=NULL,it=NULL) {
+subset.spell <- function(x,is=NULL,it=NULL,...) {
     y <- subset.station(x,is=is,it=it)
     good <- is.finite(y)
     y <- zoo(y[good],order.by=index(y)[good])
@@ -639,7 +640,7 @@ subset.spell <- function(x,is=NULL,it=NULL) {
     invisible(y)
 }
 
-subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE) subset.station(x,it=it,is=is,verbose=verbose)
+subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE) subset.station(x,it=it,is=is,verbose=verbose,...)
 
 ## Author Rasmus E. Benestad - was initially part of subset.R file
 ## Modified by A. Mezghani
