@@ -271,6 +271,16 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   # Estimate the area-aggregated values, e.g. the global mean (default)
   if (verbose) print(paste("aggregate.area",FUN))
   if (verbose) print(rowSums(coredata(x)))
+  if (inherits(x,'eof')) {
+    if (verbose) print('aggregate.area for EOF')
+    y <- as.pattern(x)
+    ya <- aggregate.area(y,is=is,FUN=FUN,na.rm=na.rm,smallx=smallx,verbose=verbose,a=a,x0=x0)
+    if (verbose) {print(length(ya)); print(length(attr(x,'eigenvalues'))); print(t(dim(coredata(x))))}
+    z <- apply(diag(ya*attr(x,'eigenvalues')) %*% t(coredata(x)),2,FUN='sum')
+    if (is.zoo(x)) z <- zoo(x=z,order.by=index(x))
+    attr(z,'history') <- history.stamp(x)
+    return(z)
+  }
   x <- subset(x,is=is,it=it,verbose=verbose)
   if (verbose) print(rowSums(coredata(x)))
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
