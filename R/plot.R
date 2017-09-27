@@ -65,10 +65,10 @@ plot.station <- function(x,plot.type="single",new=TRUE,
       if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
         ylab <- stid(x)
       } else 
-        ylab <- varid(y)
+        ylab <- varid(x)
     } else {
       if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
-        main <- levels(factor(varid(x)))[1]
+        main <- levels(factor((attr(x,'longname'))))[1]
       } else {
         main <- levels(factor(loc(x)))[1]
       }
