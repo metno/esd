@@ -7,11 +7,15 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
   if (verbose) print("map.trajectory")
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
-  if(is.null(type)) type <- "trajectory"
+  if(is.null(type)) {
+    type <- "trajectory"
+  } else if ("anomaly" %in% attr(x,"aspect")) {
+    type <- "anomaly"
+  }
   if ('colors' %in% type) {
     segments.trajectory(y,type=type,verbose=verbose,...)
   } else if (any(c('shapes','anomaly') %in% type)) {
-    map.anomaly.trajectory(y,projection=projection,verbose=verbose,...)
+    map.anomaly.trajectory(y,verbose=verbose,...)
   } else if (any(c('trajectory','points','start','end') %in% type)) {
     if (projection=="sphere" | projection=="np" | projection=="sp") {
       if (projection=="np") latR <- 90
@@ -26,7 +30,8 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
 }
 
 map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
-  main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1,verbose=FALSE,new=TRUE) {
+  main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1.5,pch='.',new=TRUE,
+  verbose=FALSE,...) {
   if (verbose) print('map.anomaly.trajectory')
   stopifnot(is.trajectory(x))
   if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly(x)
@@ -36,8 +41,8 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
   par(bty="n")
   lons <- x[,colnames(x)=='lon']
   lats <- x[,colnames(x)=='lat']
-  plot(lons,lats,type='.',cex=1,col=adjustcolor(col,alpha.f=alpha),
-       main=main,xlim=xlim,ylim=ylim)
+  plot(lons,lats,lty=1,lwd=lwd,cex=1,pch=pch,col=adjustcolor(col,alpha.f=alpha),
+       main=main,xlim=xlim,ylim=ylim,type="p")
   matlines(t(lons),t(lats),lty=lty,lwd=lwd,
          col=adjustcolor(col,alpha.f=alpha))
 }
