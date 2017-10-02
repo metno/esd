@@ -103,7 +103,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
   ## if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
-
+  
   ## KMP 10-11-2015: apply xlim and ylim
   is <- NULL
   if (!is.null(xlim)) is$lon <- xlim
