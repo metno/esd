@@ -91,7 +91,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
     if (verbose) print('it - temporal indexing')
     if (verbose) print(it)
-    
+
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
        if (verbose) print('years ++')

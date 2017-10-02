@@ -77,6 +77,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   ## browser()
   
   Y <- t(coredata(x))
+  Y[!is.finite(Y)] <- NA
 
   # Apply geographical weighting to account for different grid area at
   # different latitudes:
@@ -372,7 +373,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
     }
     cline1 <- paste("yyy <- attr(X,'appendix.",i,"')",sep="")
     if (verbose) print(cline1)
-    eval(parse(text=cline))
+    eval(parse(text=cline1))
     z <- attrcp(yyy,z)
     cline2 <- paste("clim <- clim.",i,sep="")
     if (verbose) print(cline2)

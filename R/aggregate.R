@@ -135,6 +135,13 @@ aggregate.comb <- function(x,by,FUN = 'mean', ...,
 aggregate.field <- function(x,by,FUN = 'mean', ...,
                               regular = NULL, frequency = NULL) {
 
+  args <- list(...)
+  ix0 <- grep('threshold',names(args))
+  iv0 <- grep('verbose',names(args))
+  if (length(ix0)>0) threshold <- args[[ix0]] else threshold <- 0
+  if (length(iv0)>0) verbose <- args[[iv0]] else verbose <- FALSE
+  
+  if (verbose) {print('aggregate.station'); print(names(args)); print(threshold)}
   #verbose <- TRUE; str(...)
   #if (verbose) print("aggregate.field")
   class(x) -> cls
@@ -149,24 +156,27 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
   # Temporal aggregation:
     #print("HERE")
     #print(deparse(substitute(by)))
-    clsy2 <- switch(deparse(substitute(by)),
-                         "as.yearmon"="month",
-                         "as.yearqtr"="quarter",
-                         "as.annual"="annual",
-                         "year"="annual",
-                         "by" = "by")
-    if (is.null(clsy2)) clsy2 <- deparse(substitute(by))
+    #clsy2 <- switch(deparse(substitute(by)),
+    #                     "as.yearmon"="month",
+    #                     "as.yearqtr"="quarter",
+    #                     "as.annual"="annual",
+    #                     "year"="annual",
+    #                     "by" = "by")
+    #if (is.null(clsy2)) clsy2 <- deparse(substitute(by))
     #print(clsy2)
-    if (deparse(substitute(by))[1]=="year")
-      ## KMP 2017-05-07: annual mean should have year as index, not date
-      #by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
-      by <- year(x)
-      index(x) <- year(x)
+    #if (deparse(substitute(by))[1]=="year") {
+    #  ## KMP 2017-05-07: annual mean should have year as index, not date
+    #  #by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
+    #  by <- year(x)
+    #  index(x) <- year(x)
+    #}
     ## REB - 'what do the following lines do?'year' changed to 'month' in the if-statement
-    if (deparse(substitute(by))[1]=="month") {
-      by <- month(x)
-      index(x) <- month(x)
-    }
+    #if (deparse(substitute(by))[1]=="month") {
+    #  print('fixed bug')
+    #  by <- month(x)
+    #  x <- as.data.frame(x)
+    #  index(x) <- month(x)
+    #}
     ## BER
     #browser()
     #print(deparse(substitute(by)))
@@ -175,8 +185,23 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     #print('aggregate')
     ## y <- aggregate(x, by, match.fun(FUN), ...) ## AM quick fix replaced by
     y <- aggregate(x, by, FUN, ...)
-    class(x) <- cls; class(y) <- cls
-    class(y)[2] <- clsy2
+    class(x) <- cls; 
+    
+    if (class(index(y))=="Date") {
+      dy <- day(y); mo <- month(y); yr <- year(y)
+      if (dy[2] - dy[1] > 0) cls[length(cls) - 1] <- "day" else
+        if (mo[2] - mo[1] == 1) cls[length(cls) - 1] <- "month" else
+          if (mo[2] - mo[1] == 3) cls[length(cls) - 1] <- "season" else
+            if (yr[2] - yr[1] > 0) cls[length(cls) - 1] <- "annual"
+    } else
+      if (class(index(y))=="yearmon") cls[length(cls) - 1] <- "month" else
+        if (class(index(y))=="yearqtr") cls[length(cls) - 1] <- "qtr" else
+          if (class(index(y))=="numeric") cls[length(cls) - 1] <- "annual" else
+            if (class(index(y))=="character") cls[length(cls) - 1] <- "annual"
+    if ( (length(index(y)) <= 12) & (class(index(y))=="numeric") & 
+         (min(index(y)) >= 1) & (max(index(y)) <= 12) ) cls[length(cls) - 1] <- "seasonalcycle"
+    class(y) <- cls
+    #class(y)[2] <- clsy2
     
     y <- attrcp(x,y)
     #nattr <- softattr(x)
@@ -246,7 +271,17 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   # Estimate the area-aggregated values, e.g. the global mean (default)
   if (verbose) print(paste("aggregate.area",FUN))
   if (verbose) print(rowSums(coredata(x)))
-  x <- subset(x,is=is,it=it)
+  if (inherits(x,'eof')) {
+    if (verbose) print('aggregate.area for EOF')
+    y <- as.pattern(x)
+    ya <- aggregate.area(y,is=is,FUN=FUN,na.rm=na.rm,smallx=smallx,verbose=verbose,a=a,x0=x0)
+    if (verbose) {print(length(ya)); print(length(attr(x,'eigenvalues'))); print(t(dim(coredata(x))))}
+    z <- apply(diag(ya*attr(x,'eigenvalues')) %*% t(coredata(x)),2,FUN='sum')
+    if (is.zoo(x)) z <- zoo(x=z,order.by=index(x))
+    attr(z,'history') <- history.stamp(x)
+    return(z)
+  }
+  x <- subset(x,is=is,it=it,verbose=verbose)
   if (verbose) print(rowSums(coredata(x)))
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   d <- attr(x,'dimensions')
@@ -254,6 +289,12 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   #image(attr(x,'longitude'),attr(x,'latitude'),area)
   #print(c(length(colSums(area)),length(attr(x,'latitude')),sum(colSums(area))))
   #lon <- rep(lon(x),d[2])
+  if (inherits(x,'pattern') | length(d)==3) {
+    if (verbose) print('need to make the pattern look like field')
+    dim(x) <- c(d[1]*d[2],d[3])
+    x <- t(x)
+  }
+  
   srtlat <- order(rep(lat(x),d[1]))
   dY <- a*diff(pi*lat(x)/180)[1]
   dtheta <- diff(pi*lon(x)/180)[1]

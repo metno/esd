@@ -1275,30 +1275,61 @@ as.pattern <- function(x,...) UseMethod("as.pattern")
 
 as.pattern.ds <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
   attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)
 }
 
 as.pattern.eof <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
   attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)  
 }
 
 as.pattern.mvr <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)  
 }
 
 as.pattern.cca <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
   attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)  
 }
 
 as.pattern.trend <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
   attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)  
 }
 
@@ -1314,8 +1345,11 @@ as.pattern.field <- function(x,FUN=NULL,...) {
     y <- t(coredata(x))
     dim(y) <- attr(x,'dimension')
   }
-  attr(y,'longitude') <- attr(x,'longitude')
-  attr(y,'latitude') <- attr(x,'latitude')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- varid(x)
+  attr(y,'unit') <- unit(x)
+  class(y) <- c('pattern',class(y))
   attr(y,'time') <- index(x) 
   attr(y,'history') <- history.stamp(x)
   invisible(y)
@@ -1327,9 +1361,10 @@ as.pattern.corfield <- function(x) {
   y <- attrcp(x,y)
   attr(y,'longitude') <- lon(x)
   attr(y,'latitude') <- lat(x)
-  attr(y,'time') <- attr(x,'time')
-  class(y) <- 'matrix'
-  
+  attr(y,'variable') <- varid(x)
+  attr(y,'unit') <- unit(x)
+  class(y) <- c('pattern',class(y))
+  attr(y,'time') <- index(x)
   invisible(y)
 }
 

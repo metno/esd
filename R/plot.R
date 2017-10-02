@@ -53,20 +53,28 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   ##         ylim <- apply(x,2,pretty,n=5)
   if (is.null(xlim))
     xlim <- range(index(x))
-  if (is.null(ylim))
-    ylim <- pretty(as.numeric(x))
+  #if (is.null(ylim))
+  #  ylim <- pretty(as.numeric(x))
   if (verbose) {print(xlim); print(ylim)}
   if (plot.type=="single") {
-      if (is.null(ylab))
-          ylab <- ylab(x)
-      if (inherits(ylab,"try-error")) ylab <- unit(x)
+    if (is.null(ylab))
+      ylab <- ylab(x)
+    if (inherits(ylab,"try-error")) ylab <- unit(x)
+  } else {
+    if (is.null(ylab)) { 
+      if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+        ylab <- stid(x)
+      } else 
+        ylab <- varid(y)
+    } else {
+      if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+        main <- levels(factor(varid(x)))[1]
+      } else {
+        main <- levels(factor(loc(x)))[1]
+      }
+    }  
   }
-  else if (is.null(ylab) & (length(levels(factor(stid(x))))>1))
-      ylab <- stid(x)
-  else if (is.null(ylab))
-      ylab <- apply(x,1,varid)
-  
-  if (is.null(main)) main <- attr(x,'longname')[1] 
+  #if (is.null(main)) main <- attr(x,'longname')[1] 
   if (is.null(col)) {
     if (is.null(dim(x))) {
       col <- "blue"
@@ -113,10 +121,11 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if(new) dev.new()
   if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
+  ##browser()
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
-           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,...)
-  mtext(main,side=3,line=1,adj=0,cex=cex.main)
+           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,main=main,...)
+  #mtext(main,side=3,line=1,adj=0,cex=cex.main)
   if("seasonalcycle" %in% cls) {
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
   }
@@ -395,14 +404,15 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   var.eof <- 100* D^2/tot.var
 
   if (length(what)==3) mfrow <- c(2,2) else
-  if (length(what)==2) mfrow <- c(2,1)
+  if (length(what)==2) mfrow <- c(2,1) else
+                       mfrow <- NULL
   
   if (new) dev.new()
   #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-  par(mfrow=mfrow)
+  if (!is.null(mfrow)) par(mfrow=mfrow)
 
   if (length(grep('eof',what))>0) {
-    par(fig=c(0,0.5,0.5,1))
+    if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
     map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
 
@@ -417,7 +427,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   if (length(grep('var',what))>0)  {
 #    par(xaxt="s",yaxt="s")
 #    plot.eof.var(x,new=FALSE,cex.main=0.7)
-    par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
+    if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
     plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
 
@@ -447,7 +457,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 #      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
 #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
 #                                          xlim=xlim,ylim=ylim)
-      par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+    if (!is.null(mfrow)) par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
       main <- paste('Leading PC#',ip,'of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
@@ -1414,9 +1424,12 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   }
 
   if (verbose) {print(map.type); print(attr(x,'station'))}
-  if (!is.null(attr(x,'station')) &
-      !inherits(attr(x,'station'),'annual')) z <- subset(x,it=it,verbose=verbose) else
-                                             z <- x
+  if (!is.null(attr(x,'station')) & !inherits(attr(x,'station'),'annual')) {
+    z <- subset(x,it=it,verbose=verbose) 
+  } else {
+    z <- x
+  }
+  
   if (verbose) {print("diagnose"); class(z)}
   diag <- diagnose(z,plot=FALSE,verbose=verbose)
   
@@ -1453,10 +1466,11 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)
-  
-  if (pts) for (i in 1:d[2])
-    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
 
+  if (pts) for (i in 1:d[2]) {
+    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
+  }
+  
   # Produce a transparent envelope
   nt <- length(index(z))
   t2 <- c(year(t),rev(year(t)))
@@ -1467,17 +1481,17 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   col.map <- adjustcolor(col,alpha.f=alpha.map)
   col <- adjustcolor(col,alpha.f=alpha)
  
-  
   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
   si <- apply(coredata(z),1,sd,na.rm=TRUE)
   for (ii in 1:49) {
     qp1 <- qnorm(1-ii/50,mean=coredata(mu),sd=coredata(si))
     qp2 <- qnorm(ii/50,mean=coredata(mu),sd=coredata(si))
     ci <- c(qp1,rev(qp2))
-    polygon(t2,ci, col= envcol, border=NA)
+    polygon(t2[!is.na(ci)],ci[!is.na(ci)], col= envcol, border=NA)
   }
   q05 <- qnorm(0.05,mean=mu,sd=si)
   q95 <- qnorm(0.95,mean=mu,sd=si)
+  
   lines(zoo(mu,order.by=year(z)),col=rgb(1,0.7,0.7),lwd=3)
   lines(zoo(q05,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)  
   lines(zoo(q95,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)
@@ -1541,6 +1555,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
     par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",xpd=NA)
     #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+    ## KMP 2017-09-13: move this text!!! vvv
     legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
                       paste(diag$robs,'%'),
                       paste(diag$outside,"observations"),

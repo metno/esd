@@ -4,9 +4,8 @@ trackfilter <- function(x,...) UseMethod("trackfilter")
 trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"events"))
-  if(!"trajectory" %in% names(x)) x <- track(x)
-  if(!"trackcount" %in% names(x)) x <- Trackstats(x)
   if(!is.null(param) & (!is.null(pmin) | !is.null(pmax))) {
+    #y <- subset(x,ic=list(param=param,pmin=pmin,pmax=pmax,FUN=FUN),verbose=verbose)
     if(!param %in% names(x)) {
       if(verbose) print(paste("Unkown input param =",param))
       y <- x
@@ -16,6 +15,8 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
       if(is.null(pmax)) pmax <- max(x[param],na.rm=TRUE)
       if(verbose) print(paste(param,"in range",pmin,"-",pmax))
       if(verbose) print(paste("FUN =",FUN))
+      if(FUN=="any" & !"trajectory" %in% names(x)) x <- track(x)
+      if(!"trackcount" %in% names(x)) x <- Trackstats(x)
       if(is.null(FUN)) {
         ok <- as.vector(x[param]>=pmin & x[param]<=pmax)
       } else if (FUN=="any") {
@@ -37,8 +38,8 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
 trackfilter.trajectory <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"trajectory"))
-  if(!"trajectory" %in% colnames(x)) x <- track(x)
   if(!is.null(param) & (!is.null(pmin) | !is.null(pmax))) {
+    #y <- subset(x,ic=list(param=param,pmin=pmin,pmax=pmax,FUN=FUN),verbose=verbose)
     if(!param %in% colnames(x)) {
       if(verbose) print(paste("Unkown input param =",param))
       y <- x

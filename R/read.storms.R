@@ -34,6 +34,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   if(verbose) print("reading data")
   x <- read.fwf(fname,width=w,col.names=h,skip=1)
   x <- x[x$code99<90,]
+  x <- x[!is.na(x$lon),]
   # rearrange date and time information
   dates <- round(x["datetime"][[1]]*1E-2)
   times <- x["datetime"][[1]] - round(dates)*1E2
@@ -52,7 +53,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
     method <- paste("M0",as.character(x$code99[1]),sep="")
   }
   x <- as.events(x,longname=longname,param=param,method=method,src=src,
-                 reference=ref,file=file.path(path,fname),url=url)
+                 reference=ref,file=file.path(path,fname),url=url,verbose=verbose)
   attr(x, "history")= history.stamp() 
   invisible(x)
 }
@@ -62,17 +63,18 @@ read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851
                          path=NULL,verbose=FALSE,...) {
   if(verbose) print("read.hurdat2")
   if(verbose) print(paste("file:",fname))
-  browser()
-  if(is.url(fname)) {
-    aoml <- readLines(url)
-    ## Sniff out the URL to the data from this website - the url seems to
-    ## change with new updates.
-    urltest <- aoml[grep('HURDAT 2',aoml)]
-    urldata <- substr(urltest,regexpr('href=',urltest)+6,regexpr('txt',urltest)+2)[1]
-    urldata <- paste('http://www.aoml.noaa.gov/hrd/hurdat/',urldata,sep='')
-    datach <- readLines(urldata)
+  if(!is.null(path) & !is.url(fname)) {
+    fname <- file.path(path,fname)
+  } else if (is.url(fname)) {
+    destfile <- sub("http://","",fname)
+    destfile <- sub(".html","",destfile)
+    destfile <- sub(".*/","",destfile)
+    destfile <- paste(destfile,"txt",sep=".")
+    if (!is.null(path)) destfile <- file.path(path,destfile)
+    if(!file.exists(destfile)) download.file(url=fname, destfile, method="auto", 
+                                             quiet=FALSE, mode="w", cacheOK=TRUE)
+    fname <- destfile
   }
-  if(!is.null(path)) fname <- file.path(path,fname)
   hurdat2 <- readLines(fname)
   n <- as.vector(sapply(hurdat2,nchar))
   i.storm <- which(n>80)

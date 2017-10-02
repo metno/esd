@@ -686,7 +686,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
 
-    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=FALSE)
+    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
     
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
     data("geoborders",envir=environment())
@@ -912,27 +912,34 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
             fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,border=border,
             add=add,xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,verbose=verbose)
     } else {
-        if (is.null(lonR)) {
-          if(!is.null(xlim)) lonR <- mean(xlim)
-          else if (dim(x)[1]>0) lonR <- mean(x[,"lon"])
+      if(!is.null(xlim)) {
+        lonR <- mean(xlim)
+      } else if (is.null(lonR)) {
+        if (dim(x)[1]>0) {
+          lonR <- mean(x[,"lon"])
+        } else {
+          lonR <- 0
         }
-        if (is.null(latR)) {
-          if(!is.null(ylim)) {
-            latR <- mean(ylim)
-            #latR <- sign(ylim[ylim==max(abs(ylim))])*max(abs(ylim))
-          } else if (dim(x)[1]>0) {
-            latR <- mean(x[,"lat"])
-            #latR <- sign(x[,"lat"][x[,"lat"]==max(abs(x[,"lat"]))])*max(abs(x[,"lat"]))
-          }
+      }
+      if(!is.null(ylim)) {
+        latR <- mean(ylim)
+        #latR <- sign(ylim[ylim==max(abs(ylim))])*max(abs(ylim))
+      } else if (is.null(latR)) {
+        if(dim(x)[1]>0) {
+          latR <- mean(x[,"lat"])
+          #latR <- sign(x[,"lat"][x[,"lat"]==max(abs(x[,"lat"]))])*max(abs(x[,"lat"]))
+        } else {
+          latR <- 90
         }
-        data(Oslo)
-        map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
-            bg=adjustcolor("black",alpha.f=0),new=new,add=add,
-            projection=projection,main="",xlab="",ylab="",
-            fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
-            border=border,
-            xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
-            verbose=verbose)
+      }
+      data(Oslo)
+      map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
+          bg=adjustcolor("black",alpha.f=0),new=new,add=add,
+          projection=projection,main="",xlab="",ylab="",
+          fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
+          border=border,
+          xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
+          verbose=verbose)
     }
     
     #if(param %in% colnames(x) & dim(x)[1]>0) {
@@ -940,7 +947,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
     #    cex <- 1+(x[,param]-min(x[,param],na.rm=TRUE))/
     #        diff(range(x[,param],na.rm=TRUE))*cex
     #}
-    
     if(dim(x)[1]>0) {
         #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
         #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
@@ -979,17 +985,16 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
           }
         }
     }
-    
     period <- unique(c(min(it),max(it)))
     if (!is.null(period) & length(Y)==0) {
       text(par("usr")[1] + 0.05*diff(range(par("usr")[3:4])),
-           par("usr")[4] - 0.07*diff(range(par("usr")[3:4])),
+           par("usr")[4] - 0.05*diff(range(par("usr")[3:4])),
            paste(period,collapse=" - "),pos=4,cex=0.75,col="grey30")
     }
     
     if (!is.null(main)) {
       text(par("usr")[1] + 0.05*diff(range(par("usr")[3:4])),
-           par("usr")[4] - 0.17*diff(range(par("usr")[3:4])),
+           par("usr")[4] - 0.10*diff(range(par("usr")[3:4])),
            main,pos=4,cex=1,col="black")
     }
 }
