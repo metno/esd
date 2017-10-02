@@ -52,7 +52,9 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
       projection="lonlat",verbose=FALSE,...) {
   if(verbose) print("segments.trajectory")
   if(is.null(param)) {
-    map.trajectory(x,type=NULL,xlim=xlim,ylim=ylim,type=type,#show.start=show.start,
+    type <- type[type!="colors"]
+    if(length(type)==0) type <- "trajectory"
+    map.trajectory(x,xlim=xlim,ylim=ylim,type=type,#show.start=show.start,
                    alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,add=add,
                    projection=projection,new=new,verbose=verbose,...)            
   } else {
