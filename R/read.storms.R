@@ -59,7 +59,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
 }
 
 #fname <- 'http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html'
-read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html',
+read.hurdat2 <- function(fname='http://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2016-041117.txt',
                          path=NULL,verbose=FALSE,...) {
   if(verbose) print("read.hurdat2")
   if(verbose) print(paste("file:",fname))
@@ -67,9 +67,8 @@ read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851
     fname <- file.path(path,fname)
   } else if (is.url(fname)) {
     destfile <- sub("http://","",fname)
-    destfile <- sub(".html","",destfile)
+    destfile <- sub(".html",".txt",destfile)
     destfile <- sub(".*/","",destfile)
-    destfile <- paste(destfile,"txt",sep=".")
     if (!is.null(path)) destfile <- file.path(path,destfile)
     if(!file.exists(destfile)) download.file(url=fname, destfile, method="auto", 
                                              quiet=FALSE, mode="w", cacheOK=TRUE)

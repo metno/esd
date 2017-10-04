@@ -1,5 +1,5 @@
 ## Author 	 Kajsa Parding
-## Last update   16.02.2015
+## Last update   04.10.2017
 ## Require 	 geoborders.rda
 
 map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
@@ -78,13 +78,14 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   if (is.null(ylim)) ylim <- range(lats)
   if(verbose) print(paste('xlim:',paste(round(xlim),collapse=" - "),
                           ', ylim:',paste(round(ylim),collapse=" - ")))
-  
   lab.breaks <- NULL
   if (is.character(param)) {
     if (tolower(param)=="nao") {
       param <- NAO()
     } else if (tolower(param)=="amo") {
       param <- AMO()
+    } else if (tolower(param)=="enso") {
+      param <- NINO3.4(url2=NULL)
     } else if (tolower(param)=="t2m") {
       param <- HadCRUT4()
     } else if (param %in% colnames(x)) {
