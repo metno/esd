@@ -875,7 +875,6 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
     
     if(projection=="lonlat" & !any(xlim<0) & any(xlim>180)) x <- g2dl(x,greenwich=TRUE)
     
-    
     if (is.null(is$lat) & !is.null(ylim)) {
         is$lat <- ylim
     } else if (is.null(is$lat) & is.null(ylim)) {
@@ -905,11 +904,12 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
             Y <- subset(Y,it=ii)
         }
     }
+    
     if(length(Y)!=0) {
         if (is.null(lonR)) lonR <- mean(lon(Y))
         if (is.null(latR)) latR <- max(lat(Y))
         map(Y,colbar=colbar,new=new,projection=projection,main="",
-            fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,border=border,
+            fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
             add=add,xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,verbose=verbose)
     } else {
       if(!is.null(xlim)) {
