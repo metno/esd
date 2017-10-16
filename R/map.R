@@ -544,41 +544,48 @@ map.pca <- function(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
     ##
     if (verbose) print(paste('map.pca',FUN))
-    args <- list(...)
+  
+    if(inherits(x,"trajectory")) {
+      map.pca.trajectory(x,projection=projection,lonR=lonR,latR=latR,
+                         xlim=xlim,ylim=ylim,...)
+    } else {
+      args <- list(...)
                                         #print(args)
-    ## REB 2016-11-02 fix
-    if (is.null(dim(attr(x,'pattern'))))
-      dim(attr(x,'pattern')) <- c(1,length(attr(x,'pattern')))
-    
-    X <- rbind(attr(x,'pattern')[,ip],attr(x,'pattern')[,ip])
-                                        #print(dim(X))
-                                        #str(x)
-    X <- attrcp(x,X)
-
-    ## if zlim is specified, then mask data outside this range
-    if (!is.null(zlim)) {
-        d <- dim(X)
-        mask <- (X < min(zlim)) | (X > max(zlim))
-        X[mask] <- NA
-        dim(X) <- d
-        if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
-    }    
-    attr(X,'longitude') <- lon(x)
-    attr(X,'latitude') <- lat(x)
-    attr(X,'mean') <- NULL
-    class(X) <- 'station'
-    ##if (is.null(colbar$col) | is.null(colbar)) {
-    ##  colbar$col <- colscal(30,col=varid(x))
-    ##}
-    if (verbose) str(X)
-    if (is.element(FUN,args)) 
-        map.station(X,new=new,colbar=colbar,
-                    xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=TRUE,fig=fig,...)
-    else
-        map.station(X,new=new,colbar=colbar,FUN=FUN,
-                    xlim=xlim,ylim=ylim,zlim=zlim,
-                    verbose=verbose,plot=TRUE,fig=fig,...)
-}
+      ## REB 2016-11-02 fix
+      if (is.null(dim(attr(x,'pattern'))))
+        dim(attr(x,'pattern')) <- c(1,length(attr(x,'pattern')))
+      
+      X <- rbind(attr(x,'pattern')[,ip],attr(x,'pattern')[,ip])
+                                          #print(dim(X))
+                                          #str(x)
+      X <- attrcp(x,X)
+  
+      ## if zlim is specified, then mask data outside this range
+      if (!is.null(zlim)) {
+          d <- dim(X)
+          mask <- (X < min(zlim)) | (X > max(zlim))
+          X[mask] <- NA
+          dim(X) <- d
+          if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
+      }    
+      attr(X,'longitude') <- lon(x)
+      attr(X,'latitude') <- lat(x)
+      attr(X,'mean') <- NULL
+      class(X) <- 'station'
+      ##if (is.null(colbar$col) | is.null(colbar)) {
+      ##  colbar$col <- colscal(30,col=varid(x))
+      ##}
+      if (verbose) str(X)
+      if (is.element(FUN,args)) {
+          map.station(X,new=new,colbar=colbar,
+                      xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=TRUE,fig=fig,...)
+      } else {
+          map.station(X,new=new,colbar=colbar,FUN=FUN,
+                      xlim=xlim,ylim=ylim,zlim=zlim,
+                      verbose=verbose,plot=TRUE,fig=fig,...)
+      }
+    }
+  }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
