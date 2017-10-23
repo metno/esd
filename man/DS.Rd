@@ -2,6 +2,7 @@
 \alias{DS}
 \alias{DS.default}
 \alias{DS.station}
+\alias{DS.list}
 \alias{DS.eof}
 \alias{DS.comb}
 \alias{DS.field}
@@ -92,7 +93,8 @@ DS.field(X,y,biascorrect=FALSE,mon=NULL,
          method="lm",swsm="step",m=5,
          rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
          verbose=FALSE,...) 
-DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
+ DS.list(y,X,biascorrect=FALSE,mon=NULL,...)
+  DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
                    method="lm",swsm="step",
                    rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,station=TRUE)
