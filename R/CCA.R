@@ -242,51 +242,52 @@ test.cca <- function(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,
   invisible(cca.test)
 }
 
-predict.cca <- function(object, newdata=NULL, ...) {
-
-
-#predict.CCA <- function(Psi,X) {
-
-
-  Psi <- function(cca) {
-    G <- cca$a.m; d1 <- dim(G); dim(G) <- c(d1[1],d1[2]*d1[3])
-    H <- cca$b.m; d2 <- dim(H); dim(H) <- c(d2[1],d2[2]*d2[3])
-    M <- diag(cca$r)
-    V <- cca$w.m
-    U <- cca$v.m
-    G <- t(G); H <- t(H)
- 
-  # print(dim(G)); print(dim(M)); print(dim(H))
-    if (class(cca)[1] =="CCA") Psi <- G %*% M %*% solve(t(H) %*% H) %*% t(H)
-  #if (class(cca)[1] =="SVD") Psi <- G %*% M %*% solve(Cxx) %*% t(H)
-    class(Psi) <- paste(class(cca)[1],"model",sep=".")
-    attr(Psi,"dims") <- d1
-    attr(Psi,"lon") <- cca$x1$lon
-    attr(Psi,"lat") <- cca$x1$lat
-    Psi
-  }
+Psi <- function(cca) {
+  G <- cca$A.m; #d1 <- dim(G); dim(G) <- c(d1[1],d1[2]*d1[3])
+  H <- cca$B.m; #d2 <- dim(H); dim(H) <- c(d2[1],d2[2]*d2[3])
+  M <- diag(cca$r)
+  V <- cca$w.m
+  U <- cca$v.m
+  G <- t(G); H <- t(H)
   
-  if ( (class(X)[1]!="eof") & (class(X)[1]!="field")) stop('Need a field or EOF object!')
-  type <- class(X)
-  if (type[1]=="eof") field <- EOF2field(X)
-  X <- field$dat
-  d <- dim(X); dim(X) <- c(d[1],d[2]*d[3])
-  X <- t(X)
+  # print(dim(G)); print(dim(M)); print(dim(H))
+  if (class(cca)[1] =="cca") Psi <- G %*% M %*% solve(t(H) %*% H) %*% t(H)
+  #if (class(cca)[1] =="svd") Psi <- G %*% M %*% solve(Cxx) %*% t(H)
+  class(Psi) <- paste(class(cca)[1],"model",sep=".")
+  attr(Psi,"dims") <- dim(Psi)
+  attr(Psi,"lon") <- cca$x1$lon
+  attr(Psi,"lat") <- cca$x1$lat
+  Psi
+}
+
+
+predict.cca <- function(x, newdata=NULL, ...) {
+  if (!is.null(newdata)) X <- newdata else X <- x$X
+#predict.CCA <- function(Psi,X) {
+  
+  #if ( (class(X)[1]!="eof") & (class(X)[1]!="field")) stop('Need a field or EOF object!')
+  #type <- class(X)
+  #if (type[1]=="eof") X <- EOF2field(X)
+  #X <- field$dat
+  #d <- dim(X); dim(X) <- c(d[1],d[2]*d[3])
+  #X <- t(X)
   #print(dim(Psi)); print(dim(X)); print(d)
-  Y.hat <-  Psi %*% X
-  field$dat <- t(Y.hat)
+  Y.hat <-  Psi(x) %*% X
+  #field$dat <- t(Y.hat)
   #print(dim(field$dat))
-  d1 <- attr(Psi,"dims")
-  dim(field$dat) <- c(d[1],d1[2],d1[3])
-  field$lon <- attr(Psi,"lon"); nx <- length(field$lon)
-  field$lat <- attr(Psi,"lat"); ny <- length(field$lat)
-  field$id.x <- rep("CCA",nx*ny)
-  field$id.lon <- rep("CCA",nx)
-  field$id.lat <- rep("CCA",ny)
-  field$id.t <- rep("CCA",d[1])
+  #d1 <- attr(Psi,"dims")
+  #dim(field$dat) <- c(d[1],d1[2],d1[3])
+  #field$lon <- attr(Psi,"lon"); nx <- length(field$lon)
+  #field$lat <- attr(Psi,"lat"); ny <- length(field$lat)
+  #field$id.x <- rep("CCA",nx*ny)
+  #field$id.lon <- rep("CCA",nx)
+  #field$id.lat <- rep("CCA",ny)
+  #field$id.t <- rep("CCA",d[1])
   #print("HERE")
-  if (type[1]=="eof") result <- EOF(field) else result <- field
-  result
+  #if (type[1]=="eof") result <- EOF(field) else result <- field
+  #result
+  Y.hat <- attrcp(Y.hat,X)
+  Y.hat
 }
 
 

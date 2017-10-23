@@ -142,7 +142,8 @@ MVR.pca <- function(Y,X,SVD=TRUE,LINPACK=FALSE) {
 # a vector where most variables are set to zero apart from one
 # variable set to unity for the identification of teleconnection pattern.
 
-predict.mvr <- function(object, newdata=NULL, ...) {
+predict.mvr <- function(x, newdata=NULL, ...) {
+  object=x
   if (is.null(newdata)) newdata <- object$data
   x <- newdata
   

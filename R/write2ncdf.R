@@ -1,3 +1,4 @@
+## Author=? Date 
 
 ## https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDF-Data-Types.html:
 ## short: 16-bit signed integers. The short type holds values between -32768 and 32767.
@@ -122,7 +123,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
 
   locid <- ncvar_def(name="loc",dim=list(dimS),units="strings",prec="char",longname="location",verbose=verbose)
   
-  ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),longname=attr(x,'longname')[1], prec="float",compression=9,verbose=verbose)
+  ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
+                     longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
 
   ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid)) ## vars)
   ncvar_put( ncid, ncvar, y)

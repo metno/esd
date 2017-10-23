@@ -2,9 +2,9 @@
 \alias{Weather generators}
 \alias{WG}
 \alias{WG.station}
-\alias{}
-\alias{}
-\title{Weather generators for conditional simulation.}
+\alias{WG.fw.day.precip}
+\alias{WG.FT.day.t2m}
+\title{Weather generators for conditioned on simulated climate aggregated statistics.}
 \description{ 
 Weather generators for conditional simulation of daily temperature
 and/or precipitation, given mean and/or standard deviation. The family
