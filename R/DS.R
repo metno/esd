@@ -27,7 +27,7 @@ sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
     if (tsx==tsy) return(y)
 
     if (verbose) print('Need to aggregate')
-    browser()
+    ##browser()
     if (tsx=="day") agrscly <- as.Date(index(y)) else
     if (tsx=="month") agrscly <- as.yearmon(index(y)) else
     if (tsx=="annual") agrscly <- year(y) else
@@ -966,6 +966,31 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,ip=1:7,
                     verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
+  ### This method combines different EOFs into one predictor by making a new
+  ### data matrix consisting of the PCs, then weight (w) these according to their
+  ### eigenvalues (normalised so that each predictor/EOF type carry similar
+  ### weight). Then a SVD is applied to this new set of combined PCs to make
+  ### an object that looks like on EOF.
+  
+  if (verbose) print('DS.list')
+  z <- list()
+  for (ieof in 1:length(X)) {
+    if (verbose) print(names(X)[ieof])
+    z[[ieof]] <- DS(y,X[[ieof]],biascorrect=biascorrect,mon=mon,
+            method=method,swsm=swsm,m=m,rmtrend=rmtrend,ip=ip,
+            verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+    
+    y <- as.residual(z[[ieof]])
+  }
+  names(z) <-names(X)
+  invisible(z)
+}
+
+
+DS.mixedeof <- function(y,X,biascorrect=TRUE,mon=NULL,
+                    method="lm",swsm="step",m=5,
+                    rmtrend=TRUE,ip=1:7,
+                    verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
               ### This method combines different EOFs into one predictor by making a new
               ### data matrix consisting of the PCs, then weight (w) these according to their
               ### eigenvalues (normalised so that each predictor/EOF type carry similar
@@ -1022,6 +1047,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
               if (verbose) print('DS pattern: 1D')
               ##diag(c(xp)) %*% udv$v[1:dp,is.element(id,i)] -> eofweights
               ## Y = beta U^T
+              browser()
               xp %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
             } else {
               ## EOF-based predictand:
