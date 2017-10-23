@@ -2,14 +2,11 @@ matchdate <-function(x,it,verbose=FALSE,...) UseMethod("matchdate")
 
 matchdate.list <- function(x,it,verbose=FALSE) {
   if (verbose) print('matchdate.list')
-  y <- lapply(x,matchdate,it=it,verbose=verbose)
+    y <- lapply(x,matchdate.default,it=it,verbose=verbose)
   invisible(y)
 }
 
 matchdate.default <- function(x,it,verbose=FALSE) {
-  
-  if (inherits(x,'list'))
-    return(matchdate.list(x,it,verbose = verbose))
   
   ## If it is the list, then use the first element because otherwise will not find the index
   if (is.list(it)) it <- it[[1]]
