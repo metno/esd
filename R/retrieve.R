@@ -20,14 +20,10 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     X <- NULL
     qf <- NULL
     ## 
-    ## Setting the path
-    if (is.null(path)) { 
-        if (dirname(ncfile)=='.') ## path set to current directory 
-            path <- getwd()
-        else {
-            path <- dirname(ncfile)
-            ncfile <- basename(ncfile)
-        }  
+    ## Setting the path   (sessionInfo()[[1]]$os=='linux-gnu')?
+    if ( (is.null(path))) { 
+      path <- dirname(ncfile)
+      ncfile <- basename(ncfile)
     }   
     ##if (is.character(ncfile)) {
     ##    fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
