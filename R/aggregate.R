@@ -234,7 +234,6 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     dim(Z) <- c(d[1]*d[2],d[3]); rownames(Z) <- xy   
     ## z0 <- aggregate(Z,by=list(xy), match.fun(FUN),simplify=TRUE) ## AM 14-04-2015 replaced by
     z0 <- aggregate(Z,by=list(xy), FUN,simplify=TRUE)
-                                        #browser()
 
     # The aggregate function rearranges the order of lon-lat:
     lonlat <- z0$Group.1
@@ -289,7 +288,9 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   #image(attr(x,'longitude'),attr(x,'latitude'),area)
   #print(c(length(colSums(area)),length(attr(x,'latitude')),sum(colSums(area))))
   #lon <- rep(lon(x),d[2])
-  if (inherits(x,'pattern') | length(d)==3) {
+  ## KMP 2017-10-18: this doesn't look right. length(d) is 3 for all fields. 
+  #if (inherits(x,'pattern') | length(d)==3) {
+  if (inherits(x,'pattern')) {
     if (verbose) print('need to make the pattern look like field')
     dim(x) <- c(d[1]*d[2],d[3])
     x <- t(x)
