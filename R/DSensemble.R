@@ -1,4 +1,3 @@
-# R.E. Benestad - replacement for old ds.one to downscale the CMIP 5 ensemble
 # seasonal mean and standard deviation fortemperature
 #
 
@@ -28,14 +27,21 @@ DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
   
   if (is.null(attr(y,'aspect'))) attr(y,'aspect') <- "original"
   
-  if (inherits(y,'annual'))
-    z <- DSensemble.annual(y,path=path,rcp=rcp,threshold=1,...) else
-  if (is.T(y))
-    z <- DSensemble.t2m(y,path=path,rcp=rcp,...) else
-  if (is.precip(y))
-    z <- DSensemble.precip(y,path=path,rcp=rcp,threshold=1,...) else
+  if (inherits(y,'pca')) {
+    z <- DSensemble.pca(y,path=path,rcp=rcp,...) 
+  } else if (inherits(y,c('eof','field'))) {
+    z <- DSensemble.eof(y,path=path,rcp=rcp,...)
+  } else if (inherits(y,'annual')) {
+    z <- DSensemble.annual(y,path=path,rcp=rcp,threshold=1,...) 
+  } else if (inherits(y,'season')) {
+    z <- DSensemble.season(y,path=path,rcp=rcp,threshold=1,...) 
+  } else if (is.T(y)) {
+    z <- DSensemble.t2m(y,path=path,rcp=rcp,...) 
+  } else if (is.precip(y)) {
+    z <- DSensemble.precip(y,path=path,rcp=rcp,threshold=1,...) 
+  } else {
     z <- NULL 
-    
+  }
   return(z)
 }
 
@@ -82,12 +88,11 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
         unit <- attr(y,'unit')
   if (verbose) print(paste('Units:',unit))
 
-  ylim <- c(0,0)
-  ylim <- switch(FUN,'mean'=c(-2,8),'sd'=c(-0.5,1),'ar1'=c(-0.5,0.7))
-  if (verbose) print(paste('set ylim based on "',FUN,'" -> c(',ylim[1],', ',ylim[2],')',sep=''))
-  
   if (plot) {
     if(verbose) print("Plot station data (predictand)")
+    ylim <- c(0,0)
+    ylim <- switch(FUN,'mean'=c(-2,8),'sd'=c(-0.5,1),'ar1'=c(-0.5,0.7)) # assuming y is the temperature?
+    if (verbose) print(paste('set ylim based on "',FUN,'" -> c(',ylim[1],', ',ylim[2],')',sep=''))
     par(bty="n")
     plot.zoo(ya,type="b",pch=19,main=attr(y,'location'),
              xlab="year",ylab=unit,
@@ -148,8 +153,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
                             '1-R2')
 
   t <- as.Date(paste(years,months,'01',sep='-'))
-
-  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
 
   if(verbose) print("Quick test")  
   #load('control.ds.1.rda'); T2M.ctl -> T2M
@@ -325,10 +328,11 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print(scorestats[i,])
 
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
-      qcol <- quality
-      qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
      
       if (plot) {
+        qcol <- quality
+        qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
+        cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
         lines(annual(z),lwd=2,col=cols[qcol])
         lines(ya,type="b",pch=19)
         lines(dsa,lwd=2,col="grey")
@@ -432,17 +436,15 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
   rm("PREX"); gc(reset=TRUE)
   
   if (verbose) print("graphics")
-  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
   unit <- attr(y,'unit')
 
-  ylim <- switch(FUN,
-                 'exceedance'=c(0,10),'wetmean'=c(0,10),
-                 'wetfreq'=c(0,0),'spell'=c(0,0),
-                 'mean'=c(-10,50),'sd'=c(-5,10),'ar1'=c(-0.5,0.7),
-                 'HDD'=c(0,5000),'CDD'=c(0,500),'GDD'=c(0,2000))
-  if (is.null(ylim)) ylim <- c(0,0)
-  
   if (plot) {
+    ylim <- switch(FUN,
+                   'exceedance'=c(0,10),'wetmean'=c(0,10),
+                   'wetfreq'=c(0,0),'spell'=c(0,0),
+                   'mean'=c(-10,50),'sd'=c(-5,10),'ar1'=c(-0.5,0.7),
+                   'HDD'=c(0,5000),'CDD'=c(0,500),'GDD'=c(0,2000))
+    if (is.null(ylim)) ylim <- c(0,0)
     par(bty="n")
     plot.zoo(y,type="b",pch=19,main=attr(y,'location'),
              xlab="year",ylab=unit,
@@ -568,11 +570,12 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
       1-var(xval[,2])/var(xval[,1]))
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
-      qcol <- quality
-      qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
 
       index(z) <- year(z); index(ds) <- year(ds)
       if (plot) {
+        qcol <- quality
+        qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
+        cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
         lines(z,lwd=2,col=cols[qcol])
         lines(y,type="b",pch=19)
         lines(ds,lwd=2,col="grey")
@@ -667,11 +670,10 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   }
   
   if (verbose) print("graphics")
-  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
   unit <- attr(y,'unit')
-  ylim <- c(0,10)
 
   if (plot) {
+    ylim <- c(0,10)
     par(bty="n")
     plot.zoo(y,type="b",pch=19,main=attr(y,'location'),
              xlab="year",ylab=unit,
@@ -799,11 +801,12 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
         1-var(xval[,2])/var(xval[,1]))
         if (verbose) print(scorestats[i,])
         quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
-        qcol <- quality
-        qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
   
         index(z) <- year(z); index(ds) <- year(ds)
         if (plot) {
+          qcol <- quality
+          qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
+          cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
           lines(z,lwd=2,col=cols[qcol])
           lines(y,type="b",pch=19)
           lines(ds,lwd=2,col="grey")
@@ -839,22 +842,33 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
   }
   attr(X,'history') <- history.stamp(y)
   class(X) <- c("dsensemble","zoo")
+  
+  
   save(file="DSensemble.rda",X)
   print("---")
   invisible(X)
 }
 
-DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
+DSensemble.season <- function(y,season=NULL,plot=TRUE,path="CMIP5.monthly/",
                            predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf4',
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
-                           pattern="psl_Amon_ens_",
+                           pattern="psl_Amon_ens_",lev=NULL,levgcm=NULL,
                            path.ds=NULL,file.ds=NULL,
                            nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE) {
 
   if(verbose) print("DSensemble.season")
+
+  if(is.null(season)) {
+    if(inherits(y,"season")) {
+      season <- unique(season(y))
+    } else {
+      season <- "djf"
+    }
+  }
+  
   if ((FUN=='sd') | (FUN =='ar1')) {
     y <- anomaly(y)
     attr(y,'aspect') <- 'original'
@@ -887,19 +901,18 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   if (is.null(nmin)) nmin <- length(sm)
   ys <- as.4seasons(y,start=paste(s1,"01",sep="-"),
                             end=paste(s2,"28",sep="-"),FUN=FUN)
-  ys <- ys[attr(ys,"n.valid")>=nmin]
+  if(!is.null(attr(ys,"n.valid"))) ys <- ys[attr(ys,"n.valid")>=nmin]
   if (FUN=="sum" & grepl("month",attr(ys,"unit"))) {
     attr(ys,"unit") <- gsub("month","season",attr(ys,"unit"))
   }
 
-  ylim <- c(0,0)
-  ylim <- switch(FUN,'mean'=c(-2,8),'sd'=c(-0.5,1),'ar1'=c(-0.5,0.7),
-                 'sum'=c(-6,12))
-  if (verbose) print(paste('set ylim based on "',FUN,
-                           '" -> c(',ylim[1],', ',ylim[2],')',sep=''))
-  
   if (plot) {
     if(verbose) print("Plot station data (predictand)")
+    ylim <- c(0,0)
+    ylim <- switch(FUN,'mean'=c(-2,8),'sd'=c(-0.5,1),'ar1'=c(-0.5,0.7),
+                   'sum'=c(-6,12))
+    if (verbose) print(paste('set ylim based on "',FUN,
+                             '" -> c(',ylim[1],', ',ylim[2],')',sep=''))
     par(bty="n")
     plot.zoo(ys,type="b",pch=19,main=attr(y,'location'),
              xlab="year",ylab=unit,
@@ -914,7 +927,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
 
   if(verbose) print("Retrieve predictor data")
   if (is.character(predictor))
-    slp <- retrieve(ncfile=predictor,lon=lon,lat=lat,
+    slp <- retrieve(ncfile=predictor,lon=lon,lat=lat,lev=lev,
                     type=type,verbose=verbose) else
   if (inherits(predictor,'field'))
     slp <- subset(predictor,is=list(lon=lon,lat=lat))
@@ -931,13 +944,21 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
   N <- length(ncfiles)
 
-  if (is.null(select)) select <- 1:N else
-      select <- select[select<=N]; N <- length(select)
+  if (is.null(select)) {
+    select <- 1:N 
+  } else {
+    select <- select[select<=N]
+    N <- length(select)
+  }
   if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
 
   if(verbose) print("Set up results matrix & table of diagnostics")
-  years <- sort(rep(1900:2100,4))
-  months <- rep(c(1,4,7,10),length(1900:2100))
+  ## KMP 2017-10-19: Don't need to keep all seasons in X
+  months <- switch(season, "djf"=1, "mam"=4, "jja"=7, "son"=10)
+  years <- sort(rep(1900:2100,length(months)))
+  months <- rep(months,length(1900:2100))
+  #years <- sort(rep(1900:2100,4))
+  #months <- rep(c(1,4,7,10),length(1900:2100))
   m <- length(years)
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
@@ -947,7 +968,6 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration',
                             '1-R2')
   t <- as.Date(paste(years,months,'01',sep='-'))
-  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
 
   if(verbose) print("Quick test")  
   flog <- file("DSensemble.season-log.txt","at")
@@ -956,7 +976,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
-                          lon=range(lon(SLP))+c(-2,2),
+                          lon=range(lon(SLP))+c(-2,2),lev=levgcm,
                           lat=range(lat(SLP))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
@@ -996,7 +1016,6 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                        paste(year(z),month(z),sep='-'))
       i2 <- is.element(paste(year(z),month(z),sep='-'),
                        paste(years,months,sep='-'))
-    #
       X[i,i1] <- z[i2]
 
     # Diagnose the residual: ACF, pdf, trend. These will together with the
@@ -1061,10 +1080,11 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print('scorestats')
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
-      qcol <- quality
-      qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
      
       if (plot) {
+        qcol <- quality
+        qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
+        cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
         lines(z,lwd=2,col=cols[qcol])
         lines(ys,type="b",pch=19)
         lines(ds,lwd=2,col="grey")
@@ -1079,7 +1099,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   }
   if(verbose) print("Done with downscaling!")
   rm("GCM")
-
+  
   X <- zoo(t(X),order.by=t)
   colnames(X) <- gcmnm
   attr(X,"model_id") <- gcmnm
@@ -1087,7 +1107,7 @@ DSensemble.season <- function(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
   attr(X,"season") <- season
   attr(X,"longname") <- attr(y,"longname")
   attr(X,'station') <- ys
-  attr(X,'predictor') <- attr(T2M,'source')
+  attr(X,'predictor') <- attr(SLP,'source')
   attr(X,'domain') <- list(lon=lon,lat=lat)
   attr(X,'scorestats') <- scorestats
   attr(X,'path') <- path
@@ -1170,18 +1190,16 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
   PREX3 <- annual(pre3,FUN='mean')
   
   if (verbose) print("graphics")
-  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
   unit <- attr(y,'unit')
-  #ylim <- switch(deparse(substitute(FUN)),
-
-  ylim <- switch(FUN,
-                 'exceedance'=c(0,10),'wetmean'=c(0,10),
-                 'wetfreq'=c(0,0),'spell'=c(0,0),
-                 'mean'=c(-10,50),'sd'=c(-5,10),'ar1'=c(-0.5,0.7),
-                 'HDD'=c(0,5000),'CDD'=c(0,500),'GDD'=c(0,2000))
-  if (is.null(ylim)) ylim <- c(0,0)
   
   if (plot) {
+    #ylim <- switch(deparse(substitute(FUN)),
+    ylim <- switch(FUN,
+                   'exceedance'=c(0,10),'wetmean'=c(0,10),
+                   'wetfreq'=c(0,0),'spell'=c(0,0),
+                   'mean'=c(-10,50),'sd'=c(-5,10),'ar1'=c(-0.5,0.7),
+                   'HDD'=c(0,5000),'CDD'=c(0,500),'GDD'=c(0,2000))
+    if (is.null(ylim)) ylim <- c(0,0)
     par(bty="n")
     plot.zoo(y,type="b",pch=19,main=attr(y,'location'),
              xlab="year",ylab=unit,
@@ -1353,11 +1371,12 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
       dse[[i]] <- z
       
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
-      qcol <- quality
-      qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
-
       index(z) <- year(z); index(ds) <- year(ds)
+
       if (plot) {
+        qcol <- quality
+        qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
+        cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
         lines(z,lwd=2,col=cols[qcol])
         lines(y,type="b",pch=19)
         lines(ds,lwd=2,col="grey")
@@ -1685,8 +1704,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   t <- as.Date(paste(years,months,'01',sep='-'))
 
-  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
-
   if (plot) {
     par(bty='n')
     index(y) <- year(y)
@@ -1886,8 +1903,6 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print('scorestats')
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
-      qcol <- quality
-      qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
@@ -1895,8 +1910,11 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                   "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
                   round(quality)))
 
+      index(y) <- year(y); index(z) <- year(z)
       if (plot) {
-        index(y) <- year(y); index(z) <- year(z)
+        qcol <- quality
+        qcol[qcol < 1] <- 1;qcol[qcol > 100] <- 100
+        cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
         lines(z[,1],lwd=2,col=cols[qcol])
         lines(y[,1],lwd=3,main='PC1')
       }
@@ -2044,8 +2062,6 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
                             "1-R2")
 
   t <- as.Date(paste(years,months,'01',sep='-'))
-
-  cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
 
   flog <- file("DSensemble.eof-log.txt","at")
 

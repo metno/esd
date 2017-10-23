@@ -1427,7 +1427,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   }
 
   if (verbose) {print(map.type); print(attr(x,'station'))}
-  if (!is.null(attr(x,'station')) & !inherits(attr(x,'station'),'annual')) {
+  if (!is.null(attr(x,'station')) & !inherits(attr(x,'station'),c('annual','season'))) {
     z <- subset(x,it=it,verbose=verbose) 
   } else {
     z <- x
