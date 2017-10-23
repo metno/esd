@@ -178,7 +178,6 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
     projection <- tolower(projection)
 
     ## REB 2016-10-19: one option is to recover the field and then maps the field
-
     if (what=="field") {
       if (verbose) print('what=field: recover the field before mapping')
       x <- subset(x,it=it,is=is)
@@ -211,6 +210,8 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
       if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
       attr(X,'source') <- attr(x,'source')
       attr(X,'time') <- range(index(x))
+      attr(X,'greenwich') <- attr(x,"greenwich")
+
       if ( (ip==1) & !is.null(attr(x, "area.mean.expl")) )
         if (attr(x, "area.mean.expl"))
             type <- "fill"

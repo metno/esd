@@ -984,6 +984,8 @@ g2dl.eof <- function(x,greenwich=TRUE,verbose=FALSE) {
     lon <- sort(lon)
     X -> attr(x,'pattern')
     attr(x,'greenwich') <- greenwich
+    attr(x,'longitude') <- lon
+    attr(x,'latitude') <- lat
     return(x)
 }
 
