@@ -640,7 +640,11 @@ subset.spell <- function(x,is=NULL,it=NULL,...) {
     invisible(y)
 }
 
-subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) subset.station(x,it=it,is=is,verbose=verbose)
+#<<<<<<< HEAD
+#subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) subset.station(x,it=it,is=is,verbose=verbose)
+#=======
+## subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE) subset.station(x,it=it,is=is,verbose=verbose,...)
+#>>>>>>> fa42869d00c0a0da9ff8b6917baaf68394fc990c
 
 ## Author Rasmus E. Benestad - was initially part of subset.R file
 ## Modified by A. Mezghani

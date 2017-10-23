@@ -1,5 +1,5 @@
 ## Author 	 Kajsa Parding
-## Last update   16.02.2015
+## Last update   04.10.2017
 ## Require 	 geoborders.rda
 
 map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
@@ -7,11 +7,15 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
   if (verbose) print("map.trajectory")
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
-  if(is.null(type)) type <- "trajectory"
+  if(is.null(type)) {
+    type <- "trajectory"
+  } else if ("anomaly" %in% attr(x,"aspect")) {
+    type <- "anomaly"
+  }
   if ('colors' %in% type) {
     segments.trajectory(y,type=type,verbose=verbose,...)
   } else if (any(c('shapes','anomaly') %in% type)) {
-    map.anomaly.trajectory(y,projection=projection,verbose=verbose,...)
+    map.anomaly.trajectory(y,verbose=verbose,...)
   } else if (any(c('trajectory','points','start','end') %in% type)) {
     if (projection=="sphere" | projection=="np" | projection=="sp") {
       if (projection=="np") latR <- 90
@@ -26,7 +30,8 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
 }
 
 map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
-  main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1,verbose=FALSE,new=TRUE) {
+  main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1.5,pch='.',new=TRUE,
+  verbose=FALSE,...) {
   if (verbose) print('map.anomaly.trajectory')
   stopifnot(is.trajectory(x))
   if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly(x)
@@ -36,8 +41,8 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
   par(bty="n")
   lons <- x[,colnames(x)=='lon']
   lats <- x[,colnames(x)=='lat']
-  plot(lons,lats,type='.',cex=1,col=adjustcolor(col,alpha.f=alpha),
-       main=main,xlim=xlim,ylim=ylim)
+  plot(lons,lats,lty=1,lwd=lwd,cex=1,pch=pch,col=adjustcolor(col,alpha.f=alpha),
+       main=main,xlim=xlim,ylim=ylim,type="p")
   matlines(t(lons),t(lats),lty=lty,lwd=lwd,
          col=adjustcolor(col,alpha.f=alpha))
 }
@@ -52,7 +57,9 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
       projection="lonlat",verbose=FALSE,...) {
   if(verbose) print("segments.trajectory")
   if(is.null(param)) {
-    map.trajectory(x,type=NULL,xlim=xlim,ylim=ylim,type=type,#show.start=show.start,
+    type <- type[type!="colors"]
+    if(length(type)==0) type <- "trajectory"
+    map.trajectory(x,xlim=xlim,ylim=ylim,type=type,#show.start=show.start,
                    alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,add=add,
                    projection=projection,new=new,verbose=verbose,...)            
   } else {
@@ -71,13 +78,14 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   if (is.null(ylim)) ylim <- range(lats)
   if(verbose) print(paste('xlim:',paste(round(xlim),collapse=" - "),
                           ', ylim:',paste(round(ylim),collapse=" - ")))
-  
   lab.breaks <- NULL
   if (is.character(param)) {
     if (tolower(param)=="nao") {
       param <- NAO()
     } else if (tolower(param)=="amo") {
       param <- AMO()
+    } else if (tolower(param)=="enso") {
+      param <- NINO3.4(url2=NULL)
     } else if (tolower(param)=="t2m") {
       param <- HadCRUT4()
     } else if (param %in% colnames(x)) {

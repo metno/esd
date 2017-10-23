@@ -166,72 +166,74 @@ cartesian2spherical <- function(x,y,z,a=6.378e06,verbose=TRUE) {
 
 anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
                                 verbose=FALSE) {
-   stopifnot(!missing(x), inherits(x,"trajectory"))
-   if(is.null(param)) {
-     param <- unique(colnames(x)[!(colnames(x) %in% c('start','end','n'))])
-   } else if (any(!param %in% colnames(x))) {
-     print(paste('Warning! Input error: param',
-      paste(param[!param %in% colnames(x)],collapse=" "),"missing"))
-   }
-   if(verbose) print(param)
+  if(verbose) print("anomaly.trajectory")
+  stopifnot(!missing(x), inherits(x,"trajectory"))
+  if(is.null(param)) {
+    param <- unique(colnames(x)[!(colnames(x) %in% c('start','end','n'))])
+  } else if (any(!param %in% colnames(x))) {
+    print(paste('Warning! Input error: param',
+    paste(param[!param %in% colnames(x)],collapse=" "),"missing"))
+  }
+  if(verbose) print(param)
 
-   y <- x
-   y <- attrcp(x,y)  
-   if(any('anomaly' %in% attr(x,'aspect')) &
-      any(param %in% attr(x,'mean'))) x <- anomaly2trajectory(y)
-   m <- vector(mode="list",length=length(param))
-   names(m) <- param
+  y <- x
+  y <- attrcp(x,y)  
+  if(any('anomaly' %in% attr(x,'aspect')) &
+     any(param %in% attr(x,'mean'))) x <- anomaly2trajectory(y)
+  m <- vector(mode="list",length=length(param))
+  names(m) <- param
 
-   #if (any('lon' %in% param)) {
-   #  i.lon <- which(colnames(x)=='lon')
-   #  i.lat <- which(colnames(x)=='lat')
-   #  if (type=='first') {
-   #    p.anomaly <- apply(x,1,function(x) {
-   #      xyz <- spherical2cartesian(x[i.lon],x[i.lat])
-   #                           })
-   #    m[param==p] <- list(xi[1])
-   #  } else if (type=='mean') {
-   #    m[param==p] <- list(mean(x[,i]))
-   #    p.anomaly <- apply(x,1,function(x) xi-m[param==p][[1]])
-   #  }
-   #}
-   for (p in param) {
-     i <- which(colnames(x)==p)
-     xi <- x[,i]
-     if (p=='lon') xi <- t(apply(x[,i],1,lontrack))
-     if (type=='first') {
-       m[param==p] <- list(xi[1])
-       p.anomaly <- apply(xi,1,function(x) x-x[1])
-     } else if (type=='mean') {
-       m[param==p] <- list(mean(x[,i]))
-       p.anomaly <- apply(x,1,function(x) xi-m[param==p][[1]])
-     }
-     if(verbose) print(p)
-     if(verbose) print(dim(x[,i]))
-     if(verbose) print(dim(p.anomaly))
-     if(verbose) print(x[1,i])
-     if(verbose) print(t(p.anomaly)[1,])
-     y[,i] <- t(p.anomaly)
-   }
-
-   if(any('anomaly' %in% attr(y,'aspect')) &
-   any(!names(attr(y,'mean')) %in% param)) {
-     p <- names(attr(y,'mean'))
-     p <- p[!p %in% c(param)]
-     m0 <- vector(mode="list",length=length(p))
-     names(m0) <- p
-     for (q in p) {
-       eval(parse(text=paste("m0[param=",q,"] <- attr(y,'mean')$",q,sep="")))
-     }
-     m <- c(m,m0)
-   } 
-   attr(y,'mean') <- m
-   attr(y,'aspect') <- unique(c('anomaly',attr(x,'aspect')))
-   attr(y,'history') <- history.stamp(x)
-   invisible(y)
+  #if (any('lon' %in% param)) {
+  #  i.lon <- which(colnames(x)=='lon')
+  #  i.lat <- which(colnames(x)=='lat')
+  #  if (type=='first') {
+  #    p.anomaly <- apply(x,1,function(x) {
+  #      xyz <- spherical2cartesian(x[i.lon],x[i.lat])
+  #                           })
+  #    m[param==p] <- list(xi[1])
+  #  } else if (type=='mean') {
+  #    m[param==p] <- list(mean(x[,i]))
+  #    p.anomaly <- apply(x,1,function(x) xi-m[param==p][[1]])
+  #  }
+  #}
+  for (p in param) {
+    i <- which(colnames(x)==p)
+    xi <- x[,i]
+    if (p=='lon') xi <- t(apply(x[,i],1,lontrack))
+    if (type=='first') {
+      m[param==p] <- list(apply(xi,1,function(x) x[1]))#list(xi[1])
+      p.anomaly <- apply(xi,1,function(x) x-x[1])
+    } else if (type=='mean') {
+      m[param==p] <- list(mean(xi,na.rm=TRUE))
+      p.anomaly <- apply(xi,1,function(x) x-m[param==p][[1]])
+    }
+    if(verbose) print(p)
+    if(verbose) print(dim(x[,i]))
+    if(verbose) print(dim(p.anomaly))
+    if(verbose) print(x[1,i])
+    if(verbose) print(t(p.anomaly)[1,])
+    y[,i] <- t(p.anomaly)
+  }
+  
+  if(any('anomaly' %in% attr(y,'aspect')) &
+     any(!names(attr(y,'mean')) %in% param)) {
+    p <- names(attr(y,'mean'))
+    p <- p[!p %in% c(param)]
+    m0 <- vector(mode="list",length=length(p))
+    names(m0) <- p
+    for (q in p) {
+      eval(parse(text=paste("m0[param=",q,"] <- attr(y,'mean')$",q,sep="")))
+    }
+    m <- c(m,m0)
+  }
+  attr(y,'mean') <- m
+  attr(y,'aspect') <- unique(c('anomaly',attr(x,'aspect')))
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
 }
 
 anomaly2trajectory <- function(x,verbose=FALSE) {
+  if(verbose) print("anomaly2trajectory")
   stopifnot(!missing(x), inherits(x,"trajectory"))
   if (any("anomaly" %in% aspect(x))) {
     if(verbose) print(names(attr(x,'mean')))

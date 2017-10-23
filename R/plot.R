@@ -326,7 +326,6 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   } else
   if (length(what)==2) mfrow <- c(2,1) else
   if (length(what)==1) mfrow <- c(1,1)
-  
   if (new) dev.new()
   ## par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
@@ -829,8 +828,12 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose
 
 plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.pca')
-  attr(y,'longname') <- attr(y,'longname')[1]
-  plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
+  if(inherits(y,"trajectory")) {
+    plot.pca.trajectory(y,cex=cex,new=new,verbose=verbose,...)
+  } else {
+    attr(y,'longname') <- attr(y,'longname')[1]
+    plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
+  }
 }
 
 
