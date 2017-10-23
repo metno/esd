@@ -27,7 +27,7 @@ sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
     if (tsx==tsy) return(y)
 
     if (verbose) print('Need to aggregate')
-    browser()
+    ##browser()
     if (tsx=="day") agrscly <- as.Date(index(y)) else
     if (tsx=="month") agrscly <- as.yearmon(index(y)) else
     if (tsx=="annual") agrscly <- year(y) else
@@ -129,8 +129,11 @@ DS.default <- function(y,X,mon=NULL,
     if (is.null(attr(y,'standard.error'))) weighted <- FALSE
     if (verbose) {print(paste('weights',weighted)); print(weights)}
 
+    ##browser()
+    ##if (length(index(X)) == length(index(y)))
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
-                         weights=weights)
+                           weights=weights) 
+    
     predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
 
@@ -260,11 +263,18 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
 
-    if (class(index(y)) != (class(index(X)))) {
-      warning(paste('DS.station: different indices:', class(index(y)),class(index(X))))
-      if (is.numeric(index(y))) index(X) <- year(X)
-      if (is.numeric(index(X))) index(y) <- year(y)
-    }
+    y <- matchdate(y,X)
+    X <- matchdate(X,y)
+    
+    #if ( (class(index(y)) != (class(index(X)))) & inherits(X,'annual') ) {
+    #  warning(paste('DS.station: different indices:', class(index(y)),class(index(X))))
+    #  if (is.numeric(index(y))) index(X) <- year(X)
+    #  if (is.numeric(index(X))) index(y) <- year(y)
+    #} if ( (class(index(y)) != (class(index(X)))) & inherits(X,'month') ) {
+    #  warning(paste('DS.station: different indices:', class(index(y)),class(index(X))))
+    #  if (is.numeric(index(y))) index(X) <- as.Date(paste(year(X),month(X),'01',sep='-'))
+    #  if (is.numeric(index(X))) index(y) <- as.Date(paste(year(y),month(y),'01',sep='-'))
+    #} 
     
     ## Used for extracting a subset of calendar months
     if (!is.null(mon)) {
@@ -956,6 +966,31 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,ip=1:7,
                     verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
+  ### This method combines different EOFs into one predictor by making a new
+  ### data matrix consisting of the PCs, then weight (w) these according to their
+  ### eigenvalues (normalised so that each predictor/EOF type carry similar
+  ### weight). Then a SVD is applied to this new set of combined PCs to make
+  ### an object that looks like on EOF.
+  
+  if (verbose) print('DS.list')
+  z <- list()
+  for (ieof in 1:length(X)) {
+    if (verbose) print(names(X)[ieof])
+    z[[ieof]] <- DS(y,X[[ieof]],biascorrect=biascorrect,mon=mon,
+            method=method,swsm=swsm,m=m,rmtrend=rmtrend,ip=ip,
+            verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+    
+    y <- as.residual(z[[ieof]])
+  }
+  names(z) <-names(X)
+  invisible(z)
+}
+
+
+DS.mixedeof <- function(y,X,biascorrect=TRUE,mon=NULL,
+                    method="lm",swsm="step",m=5,
+                    rmtrend=TRUE,ip=1:7,
+                    verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
               ### This method combines different EOFs into one predictor by making a new
               ### data matrix consisting of the PCs, then weight (w) these according to their
               ### eigenvalues (normalised so that each predictor/EOF type carry similar
@@ -985,7 +1020,6 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
 ## REB 2015-04-09: replace the lines below with
       eof <- as.eof.list(X,verbose=verbose)
 
-
     if (verbose) print('DS(y,eof,...)')
     ds <- DS(y,eof,biascorrect=biascorrect,
              method=method,swsm=swsm,m=m,
@@ -1013,6 +1047,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
               if (verbose) print('DS pattern: 1D')
               ##diag(c(xp)) %*% udv$v[1:dp,is.element(id,i)] -> eofweights
               ## Y = beta U^T
+              browser()
               xp %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
             } else {
               ## EOF-based predictand:

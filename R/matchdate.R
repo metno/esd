@@ -1,6 +1,27 @@
-matchdate <- function(x,it,verbose=FALSE) {
-  t <- index(x)
+matchdate <-function(x,it,verbose=FALSE,...) UseMethod("matchdate")
 
+matchdate.list <- function(x,it,verbose=FALSE) {
+  if (verbose) print('matchdate.list')
+  y <- lapply(x,matchdate,it=it,verbose=verbose)
+  invisible(y)
+}
+
+matchdate.default <- function(x,it,verbose=FALSE) {
+  
+  ## If it is the list, then use the first element because otherwise will not find the index
+  if (is.list(it)) it <- it[[1]]
+  
+  ## Check the index type of it and change the time scale of x to match it
+  if (inherits(it,c('station','field','eof','ds'))) {
+    if (inherits(it,'annual')) x <- annual(x)
+    if (inherits(it,'month')) x <- as.monthly(x)
+    if (inherits(it,'seasonal')) x <- as.4seasons(x)
+    if (inherits(it,'day')) x <- aggregate(x,list(as.Date(index(x))),FUN='mean') 
+    if (verbose) print(index(x))
+  } 
+    
+  t <- index(x)
+  
   if (inherits(it,'character')) {
     nc <- nchar(it)
     # Simple fix for short date strings
