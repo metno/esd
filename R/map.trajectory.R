@@ -684,7 +684,7 @@ map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
 }
   
 map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
-      xlim=NULL,ylim=NULL,main=NULL,m=2,param=c('lon','lat')) {
+      xlim=NULL,ylim=NULL,main=NULL,m=2,alpha=0.05,param=c('lon','lat')) {
 
   stopifnot(!missing(X), inherits(X,"trajectory"))
   if (inherits(X,'pca')) {
@@ -707,7 +707,7 @@ map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
   if (is.null(latR)) latR <- 90
   if (is.null(lonR)) lonR <- mean.lon(X[,colnames(X)=='lon'])
   map.trajectory(X,projection=projection,lonR=lonR,latR=latR,
-    col='grey20',alpha=0.1,xlim=xlim,ylim=ylim,main=main,new=TRUE)
+    col='grey20',alpha=alpha,xlim=xlim,ylim=ylim,main=main,new=TRUE)
  
   for (i in 1:m) { 
     X.PC.max <- max(V[,i]) * (U[,i]*W[i])

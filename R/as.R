@@ -824,19 +824,19 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,
   if (is.null(d)) d <- c(length(x),1)
   if (!slow) {
     if (inherits(x,"month")) {
-      if ( (is.null(d)) | (d[2]==1) )
+      if ( (is.null(d)) | (d[2]==1) ) {
         X <- c(NA,coredata(x)[1:length(x)-1]) # shift the coredata by 1 to start on December. This works only for monthly data !!!  
-      else
+      } else {
         X <- rbind(rep(NA,d[2],1),coredata(x)[1:d[1]-1,])
+      }
       #print(dim(X))
       X <- zoo(X,order.by=index(x))
-    ##yrseas <- fourseasons(ix)
-    ##print(yrseas)
-     #print('agrigate')
-     #print(names(list(...)))
-
-     y <- aggregate(x=as.zoo(X),by= as.yearqtr,FUN=match.fun(FUN),...)
-    # convert yearqtr to yearmon
+      ##yrseas <- fourseasons(ix)
+      ##print(yrseas)
+      #print('aggregate')
+      #print(names(list(...)))
+      y <- aggregate(x=as.zoo(X),by=as.yearqtr,FUN=match.fun(FUN),...)
+      # convert yearqtr to yearmon
       y <- zoo(x=y,order.by=as.Date(as.yearmon(index(y))))
     } else y <- as.4seasons.day(x,FUN=FUN,nmin=nmin,...)
     #y <- as.4seasons.day(x,FUN=match.fun(FUN),...)
