@@ -129,8 +129,11 @@ DS.default <- function(y,X,mon=NULL,
     if (is.null(attr(y,'standard.error'))) weighted <- FALSE
     if (verbose) {print(paste('weights',weighted)); print(weights)}
 
+    ##browser()
+    ##if (length(index(X)) == length(index(y)))
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
-                         weights=weights)
+                           weights=weights) 
+    
     predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
 
@@ -260,11 +263,18 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
 
-    if (class(index(y)) != (class(index(X)))) {
-      warning(paste('DS.station: different indices:', class(index(y)),class(index(X))))
-      if (is.numeric(index(y))) index(X) <- year(X)
-      if (is.numeric(index(X))) index(y) <- year(y)
-    }
+    y <- matchdate(y,X)
+    X <- matchdate(X,y)
+    
+    #if ( (class(index(y)) != (class(index(X)))) & inherits(X,'annual') ) {
+    #  warning(paste('DS.station: different indices:', class(index(y)),class(index(X))))
+    #  if (is.numeric(index(y))) index(X) <- year(X)
+    #  if (is.numeric(index(X))) index(y) <- year(y)
+    #} if ( (class(index(y)) != (class(index(X)))) & inherits(X,'month') ) {
+    #  warning(paste('DS.station: different indices:', class(index(y)),class(index(X))))
+    #  if (is.numeric(index(y))) index(X) <- as.Date(paste(year(X),month(X),'01',sep='-'))
+    #  if (is.numeric(index(X))) index(y) <- as.Date(paste(year(y),month(y),'01',sep='-'))
+    #} 
     
     ## Used for extracting a subset of calendar months
     if (!is.null(mon)) {
@@ -984,7 +994,6 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
 
 ## REB 2015-04-09: replace the lines below with
       eof <- as.eof.list(X,verbose=verbose)
-
 
     if (verbose) print('DS(y,eof,...)')
     ds <- DS(y,eof,biascorrect=biascorrect,
