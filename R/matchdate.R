@@ -2,7 +2,7 @@ matchdate <-function(x,it,verbose=FALSE,...) UseMethod("matchdate")
 
 matchdate.list <- function(x,it,verbose=FALSE) {
   if (verbose) print('matchdate.list')
-  y <- lapply(x,matchdate,it=it,verbose=verbose)
+    y <- lapply(x,matchdate.default,it=it,verbose=verbose)
   invisible(y)
 }
 
