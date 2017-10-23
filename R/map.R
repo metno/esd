@@ -277,8 +277,8 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         attr(X,'longitude') <- lon(attr(x,'pattern'))
         attr(X,'latitude') <- lat(attr(x,'pattern'))
     }
-    attr(X,'variable') <- varid(x)
-    attr(X,'unit') <- unit(x)[1]
+    attr(X,'variable') <- varid(attr(x,'eof'))
+    attr(X,'unit') <- 'weight'
     
     unit <- attr(x,'unit')
     if ( (is.na(unit) | is.null(unit)) ) unit <- " "
