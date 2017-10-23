@@ -8,6 +8,9 @@ matchdate.list <- function(x,it,verbose=FALSE) {
 
 matchdate.default <- function(x,it,verbose=FALSE) {
   
+  if (inherits(x,'list'))
+    return(matchdate.list(x,it,verbose = verbose))
+  
   ## If it is the list, then use the first element because otherwise will not find the index
   if (is.list(it)) it <- it[[1]]
   
