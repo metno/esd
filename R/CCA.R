@@ -242,8 +242,8 @@ test.cca <- function(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,
   invisible(cca.test)
 }
 
-predict.cca <- function(object, newdata=NULL, ...) {
-
+predict.cca <- function(x, newdata=NULL, ...) {
+  object=x
 
 #predict.CCA <- function(Psi,X) {
 
