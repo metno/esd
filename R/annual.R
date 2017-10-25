@@ -53,7 +53,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
                            verbose=FALSE) { ## 
 
   if (verbose) print('annual.default')
-
+  
   ## If already annual, then return
   if (inherits(x,'annual')) return(x)
   ## Update the units for annual sums:
@@ -267,7 +267,10 @@ annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   attr(y,'history') <- history.stamp(x)
   attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],length(index(y)))
   class(y) <- cls
-  class(y)[2] <- "annual"
+  # KMP 2017-10-25: time resolution is not always second in class vector, e.g., for an object 
+  # of class [eof, comb, field, month, zoo] the following line will replace comb instead of month
+  #class(y)[2] <- "annual"
+  class(y)[length(cls)-1] <- "annual"
   y[which(is.infinite(y))] <- NA
   invisible(y)
 }
