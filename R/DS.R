@@ -754,14 +754,14 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     y0 <- y; X0 <- X
                                         #nattr <- softattr(y)
 
-                                        # synchronise the two zoo objects through 'merge' (zoo)
+    # synchronise the two zoo objects through 'merge' (zoo)
     y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
     X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
     dy <- dim(y); if (is.null(dy)) dy <- c(length(y),1)
     dx <- dim(X); if (is.null(dx)) dx <- c(length(X),1)
 
-                                        # Use method for downscaling
-                                        #str(y); str(X)
+    # Use method for downscaling
+    #str(y); str(X)
     if (verbose) print(method)
     if (toupper(method)=='mvr') {
         if (verbose) print('MVR')
@@ -849,7 +849,6 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             class(ys) <- c('station',class(y)[-c(1:2)])
             
             if (verbose) {print(class(ys)); print(class(X))}
-            
             z <- DS(ys,X,biascorrect=biascorrect,m=m,
                     ip=ip,rmtrend=rmtrend,verbose=verbose,...)
             if (verbose) print('--- return to DS.pca ---')
@@ -1047,7 +1046,6 @@ DS.mixedeof <- function(y,X,biascorrect=TRUE,mon=NULL,
               if (verbose) print('DS pattern: 1D')
               ##diag(c(xp)) %*% udv$v[1:dp,is.element(id,i)] -> eofweights
               ## Y = beta U^T
-              browser()
               xp %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
             } else {
               ## EOF-based predictand:
