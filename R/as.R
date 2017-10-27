@@ -331,12 +331,13 @@ as.station.dsensemble <- function(x,verbose=FALSE,...) {
   }
   if (inherits(x,"pca")) {
     y <- as.station.dsensemble.pca(x,verbose=verbose,...)
-  } else if (inherits(x,c("station","zoo"))) {
+  } else if (inherits(x,c("station","list"))) {
     y <- as.station.dsensemble.station(x,verbose=verbose,...)
   } else {
     print(paste('unexpected class - do not know how to handle:',class(x)))
     y <- x
   }
+  if (verbose) print(class(y))
   return(y)
 }
 
@@ -425,6 +426,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     if (length(S)>1) class(S) <- c("dsensemble",class(X$pca)[2:3],"list") else
                      S <-  S[[1]]
+    names(S) <- locs
     attr(S,"unit") <- attr(X$pca,"unit")
     attr(S,"variable") <- attr(X$pca,"variable")
     attr(S,"longname") <- attr(X$pca,"longname")
@@ -447,8 +449,8 @@ as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=F
              function(x,FUN) apply(coredata(x),1,FUN=FUN),FUN))
     dim(V) <- c(nt,ns)
     if (verbose) str(V)
-    loc <- unlist(lapply(x,loc)); lon <- unlist(lapply(x,lon)); lat <- unlist(lapply(x,lat))
-    alt <- unlist(lapply(x,alt)); stid <- unlist(lapply(x,stid));
+    loc <- unlist(lapply(x,esd::loc)); lon <- unlist(lapply(x,esd::lon)); lat <- unlist(lapply(x,esd::lat))
+    alt <- unlist(lapply(x,esd::alt)); stid <- unlist(lapply(x,esd::stid));
     param <- attr(x,"variable")#unlist(lapply(x,varid))
     unit <- attr(x,"unit")#unlist(lapply(x,unit))
     longname <- attr(x,"longname")#unlist(lapply(x,function(x) attr(x,'longname')))

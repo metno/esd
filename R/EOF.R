@@ -564,7 +564,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
   if (verbose) print(attr(pca,'location'))
   names(x) <- attr(pca,'location') # AM 30.07.2013 added
 
-  x <- attrcp(pca,x)
+  x <- attrcp(attr(pca,'station'),x)
 
   # REB 2014-10-27: if the object is DS-results, then look for
   # cross-validation
@@ -620,6 +620,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
   attr(x,'latitude') <- attr(pca,'latitude')
   attr(x,'history') <- history.stamp(pca)
   class(x) <- cls[-1]
+  if (verbose) print(class(x))
   if (verbose) print("exit pca2station")
   invisible(x)
 }
