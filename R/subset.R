@@ -211,7 +211,7 @@ subset.pattern <- function(x,is,verbose=FALSE,...) {
           y <- x[ix,iy]
           y <- attrcp(x,y)
           attr(y,'variable') <- varid(x)
-          attr(y,'unit') <- unit(x)
+          attr(y,'unit') <- esd::unit(x)
           lons[ix] -> attr(y,'longitude')
           lats[iy] -> attr(y,'latitude')
           x <- y

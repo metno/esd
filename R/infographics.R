@@ -1080,12 +1080,16 @@ graph.list <- function(x,img=NULL,pch='fancy',it=0,
                        lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
   if ((!is.null(it)) & (inherits(x[[1]],'dsensemble')))
     y <- subset(x[[1]],it=it) else y <- x[[1]]
+    index(y) <- year(y)
   graph(y,img=img,pch=pch,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim,add=add,new=new,col.obs=col.obs)
   if (!is.null(attr(x,'obs')) & is.null(attr(y,'dsensemble'))) obs <- attr(x,'obs') else
                                                                obs <- attr(y,'station')
+  index(obs) <- year(obs)
+  
   for (j in c(2:length(x),1)) {
     if ((!is.null(it)) & (inherits(x[[j]],'dsensemble')))
          y <- subset(x[[j]],it=it) else y <- x[[j]]
+         index(y) <- year(y)
     for (i in 1:dim(y)[2]) lines(y[,i],lwd=7,col=col[j])
   }
   lines(obs,lwd=3,col=rgb(0.5,0.5,0.5,0.25))

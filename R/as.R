@@ -344,6 +344,8 @@ as.station.dsensemble <- function(x,verbose=FALSE,...) {
 as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   X <- x ## quick fix
   if (verbose) print('as.station.dsensemble.pca')
+  ## REB: need to remove the EOF object if it is present:
+  if (!is.null(X$eof)) X$eof <- NULL
   if (inherits(X,"station")) return(X)
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
   if (inherits(X,"station")) {
@@ -356,6 +358,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     ## The PCs from the list are extracted into the matrix V 
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    if (verbose) print(paste('dim V=',paste(dim(V),collapse='-')))
     ## Select number of patterns
 
     ## REB 2016-11-03

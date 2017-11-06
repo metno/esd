@@ -50,7 +50,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',
   ## Convert the results from LatticeKrig to esd:
   W <- w$z
   attr(W,'variable') <- varid(Y)[1]
-  attr(W,'unit') <- unit(Y)[1]
+  attr(W,'unit') <- esd::unit(Y)[1]
   attr(W,'longitude') <- w$x
   attr(W,'latitude') <- w$y
   class(W) <- class(etopo5)
