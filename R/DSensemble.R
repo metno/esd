@@ -167,7 +167,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
                       gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
-                                           min(year(y),na.rm=TRUE),'2099')
+                                           min(year(y),na.rm=TRUE),'2099'))
     #gcmnm[i] <- attr(gcm,'model_id'))
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
@@ -485,7 +485,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
                       gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
-                                           min(year(y),na.rm=TRUE),'2099')
+                                           min(year(y),na.rm=TRUE),'2099'))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -720,7 +720,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
                         gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
       if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
-                                             min(year(y),na.rm=TRUE),'2099')
+                                             min(year(y),na.rm=TRUE),'2099'))
       # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
       #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -990,7 +990,7 @@ DSensemble.season <- function(y,season=NULL,plot=TRUE,path="CMIP5.monthly/",
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
                       gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
-                                           min(year(y),na.rm=TRUE),'2099')
+                                           min(year(y),na.rm=TRUE),'2099'))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -1545,7 +1545,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
                         gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
       if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
-                                             min(year(y),na.rm=TRUE),'2099')
+                                             min(year(y),na.rm=TRUE),'2099'))
       if (verbose) print(paste('mask=',mask))
       if (mask) gcm <- mask(gcm,land=TRUE)
       # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
@@ -1745,7 +1745,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
                       gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
-                                           min(year(y),na.rm=TRUE),'2099')
+                                           min(year(y),na.rm=TRUE),'2099'))
     if (!is.null(it)) {
       if (verbose) print('Extract some months or a time period')
       if (is.null(nmin)) warning(paste("The argument 'it' is set but not 'nmin'; it=",
@@ -2104,7 +2104,7 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
                       gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
-                                           min(year(y),na.rm=TRUE),'2099')
+                                           min(year(y),na.rm=TRUE),'2099'))
     ## KMP 2016-08-09 added separate level input for slp and gcm
     ##                because they can have levels of different units
     if(is.null(levgcm) & !is.null(attr(gcm,"level")))
