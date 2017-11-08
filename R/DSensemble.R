@@ -1255,7 +1255,7 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (ds.1900.2099) gcm1 <- subset(gcm1,it=c(1900,2099)) else
                       gcm1 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
     if (length(index(gcm1))<=1) print(paste('Problem selecting GCM results in period',
-                                           min(year(y),na.rm=TRUE),'2099')
+                                           min(year(y),na.rm=TRUE),'2099'))
     gcm2 <- retrieve(ncfile = ncfiles2[select[i]],type=type,
                     lon=range(lon(PRE2))+c(-2,2),lat=range(lat(PRE2))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm2 <- subset(gcm2,it=c(1900,2099)) else
