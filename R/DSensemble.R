@@ -164,7 +164,8 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
+                      gcm <- subset(gcm,it=c(min(year(T2M)),2099))
     #gcmnm[i] <- attr(gcm,'model_id'))
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
@@ -479,7 +480,8 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                     lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
+                      gcm <- subset(gcm,it=c(min(year(PRE)),2099))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -711,7 +713,8 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if(inherits(gcm,"try-error")) {
       writeLines(ncfiles[select[i]],con=flog)
     } else {
-      if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
+      if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
+                        gcm <- subset(gcm,it=c(min(year(PRE)),2099))
       # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
       #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -978,7 +981,8 @@ DSensemble.season <- function(y,season=NULL,plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                           lon=range(lon(SLP))+c(-2,2),lev=levgcm,
                           lat=range(lat(SLP))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
+                      gcm <- subset(gcm,it=c(min(year(SLP)),2099))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -1240,13 +1244,16 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
     print(paste(i,N,ncfiles1[select[i]],ncfiles2[select[i]],ncfiles3[select[i]]))
     gcm1 <- retrieve(ncfile = ncfiles1[select[i]],type=type,
                     lon=range(lon(PRE1))+c(-2,2),lat=range(lat(PRE1))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm1 <- subset(gcm1,it=c(1900,2099))
+    if (ds.1900.2099) gcm1 <- subset(gcm1,it=c(1900,2099)) else
+                      gcm1 <- subset(gcm,it=c(min(year(PRE1)),2099))
     gcm2 <- retrieve(ncfile = ncfiles2[select[i]],type=type,
                     lon=range(lon(PRE2))+c(-2,2),lat=range(lat(PRE2))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm2 <- subset(gcm2,it=c(1900,2099))
+    if (ds.1900.2099) gcm2 <- subset(gcm2,it=c(1900,2099)) else
+                      gcm2 <- subset(gcm,it=c(min(year(PRE1)),2099))
     gcm3 <- retrieve(ncfile = ncfiles3[select[i]],type=type,
                     lon=range(lon(PRE3))+c(-2,2),lat=range(lat(PRE3))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm3 <- subset(gcm3,it=c(1900,2099))
+    if (ds.1900.2099) gcm3 <- subset(gcm3,it=c(1900,2099)) else
+                      gcm3 <- subset(gcm,it=c(min(year(PRE1)),2099))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
     gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
     #gcmnm[i] <- paste(attr(gcm1,'model_id'),attr(gcm,'realization'),sep="-")
@@ -1525,7 +1532,8 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print(ncfiles[select[i]])
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,
                       type=type,verbose=FALSE)
-      if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
+      if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
+                        gcm <- subset(gcm,it=c(min(year(ya)),2099))
       if (verbose) print(paste('mask=',mask))
       if (mask) gcm <- mask(gcm,land=TRUE)
       # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
@@ -1722,7 +1730,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
+                      gcm <- subset(gcm,it=c(min(year(T2M)),2099))
     if (!is.null(it)) {
       if (verbose) print('Extract some months or a time period')
       if (is.null(nmin)) warning(paste("The argument 'it' is set but not 'nmin'; it=",
@@ -2078,7 +2087,8 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
     if(inherits(gcm,"try-error")) {
       print(paste("retrieve failed for",ncfiles[select[i]]))
     } else {
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099))
+    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
+                      gcm <- subset(gcm,it=c(min(year(SLP)),2099))
     ## KMP 2016-08-09 added separate level input for slp and gcm
     ##                because they can have levels of different units
     if(is.null(levgcm) & !is.null(attr(gcm,"level")))
