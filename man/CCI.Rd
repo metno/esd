@@ -72,32 +72,34 @@ where \code{date} and \code{time} are vectors containing the date and time of ea
 and \code{qf} is a kind of quality flag (1 = OK, 2 = less spatially precise,
 identified after widening the pressure gradient zero-crossings).
 }
+\seealso{track.events}
 \author{K.M. Parding & R.E. Benestad}
-%% \examples{
-%% \dontrun{
-%% # Shell script for running in batch (background proccess)
-%% #! /bin/bash
-%% cat > paper20e.R << EOF
-%% library(clim.pact)
-%% library(cyclones)
-%% source("cyclones/R/cyclones.R")
+\examples{
+\dontrun{
+## Set up the analysis: get the 6-hr SLP data from ERAINT
+library(esd)
+path <- '~/data/data.ERAINT'
+## Select a sub-region: the North Atlantic
+lon <- c(-50,40); lat <- c(50,75)
 
-%% a<- Sys.info()
-%% dir <- switch(substr(as.character(a[4]),1,9),
-%%               "saragasso"="/data1/hirham/",
-%%               "stratonim"="/data1/hirham/",
-%%               "virvelvin"="/home/rasmusb/data/data1/")
+## Retrieve the SLP data
+slp00 <- retrieve(file.path(path=path,name='ERAINT-full-slp00_1979-2015.nc'),lon=lon,lat=lat)
+slp06 <- retrieve(file.path(path=path,name='ERAINT-full-slp06_1979-2015.nc'),lon=lon,lat=lat)
+slp12 <- retrieve(file.path(path=path,name='ERAINT-full-slp12_1979-2015.nc'),lon=lon,lat=lat)
+slp18 <- retrieve(file.path(path=path,name='ERAINT-full-slp18_1979-2015.nc'),lon=lon,lat=lat)
 
-%% filname.1 <- "/home/rasmusb/data/ERA40/era40_slp.nc"
-%% fname.1 <- "data/cyclones_ERA40.Rdata"
-%% vname.1 <- "msl"
+## Combine the different SLP data for different times in the day:
+slp <-c(zoo(slp00),zoo(slp06),zoo(slp12),zoo(slp18))
+## Keep the original attributes and class:
+slp <- attrcp(slp00,slp)
+class(slp) <- class(slp00)
+## Remove the variables no longer needed:
+rm(slp00,slp06,slp12,slp18); gc(reset=TRUE)
 
-%% print("===================<  ERA 15  >===================")
-%% CCI(fname="data/cyclones_ERA40_r1.Rdata",dx=1,dy=1,fielddata=filname.1,
-%%     vname=vname.1,label="ERA40: slp 1-degree res.",force365.25=TRUE,plot=FALSE)
-%% EOF
-
-%% nice R CMD BATCH --no-save paper20e.R paper20e.out
-%% }
-%% }
+## Identify the storm centres and calculate storm statictics
+Nstorms <- CCI(slp,m=20,label='ERAINT-0.75x0.75',pmax=995,verbose=FALSE)
+## Track the storms.
+NAtl.storms <- track.events(Nstorms)
+}
+}
 \keyword{manip}
