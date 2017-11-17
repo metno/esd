@@ -7,11 +7,21 @@ track.events <- function(x,verbose=FALSE,...) {
 }
 
 track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmin=1E5,
-                          f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,
-		          greenwich=NULL,plot=FALSE,progress=TRUE,verbose=FALSE) {
+                          f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,dh=NULL,
+		                      greenwich=NULL,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
+  if(is.null(dh)) {
+    d <- paste(x$date,x$time, sep="")
+    d <- as.POSIXct(unique(d),format="%Y%m%d%H")
+    dh <- min(as.numeric(difftime(d[2:length(d)],d[1:(length(d)-1)],units="hours")))
+    ## Temporary fix for daylight saving time. Should try to find a more solid solution. 
+    if(dh==23 & length(unique(x$time))==1) dh <- 24
+    if(dh==11 & length(unique(x$time))==2) dh <- 12
+    if(dh==5 & length(unique(x$time))==4) dh <- 6
+    if(dh==2 & length(unique(x$time))==8) dh <- 3
+  }
   if(!is.null(greenwich)) x <- g2dl(x,"greenwich")
   yrmn <- as.yearmon(strptime(x["date"][[1]],"%Y%m%d"))
   if (length(unique(yrmn))>1 & length(yrmn)>1000) {
@@ -21,13 +31,13 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
       if(verbose) print(unique(yrmn)[i])
       x.y <- subset(x,it=(yrmn==unique(yrmn)[i]))
       if (is.null(x.tracked)) {
-        x.t <- Track(x.y,x0=x0,plot=plot,cleanup.x0=FALSE,
+        x.t <- Track(x.y,x0=x0,plot=plot,cleanup.x0=FALSE,dh=dh,
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
 		     f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y
       } else {
-        x.t <- Track(x.y,x0=x.tracked,plot=plot,
+        x.t <- Track(x.y,x0=x.tracked,plot=plot,dh=dh,
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
 		     f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
                      progress=FALSE,verbose=verbose)
@@ -38,7 +48,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
     }
     y <- x.tracked
   } else {
-    x.tracked <- Track(x,x0=NULL,plot=plot,
+    x.tracked <- Track(x,x0=NULL,plot=plot,dh=dh,
                        dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
 		       f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
                        progress=progress,verbose=verbose)
@@ -54,13 +64,13 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
 }
 
 Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
-		  f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,
+		  f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,dh=6,
 		  cleanup.x0=TRUE,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
   options(digits=12)
   d <- sort(unique(strptime(paste(x$date,x$time),"%Y%m%d %H")))
-  dh <- min(as.numeric(difftime(d[2:length(d)],
-                                 d[1:(length(d)-1)],units="hours")))
+  #dh <- min(as.numeric(difftime(d[2:length(d)],
+  #                              d[1:(length(d)-1)],units="hours")))
   x <- x[!is.na(x[,1]),]
   x <- x[order(x$date*1E2+x$time),]
   if(!is.null(x0)) x0 <- x0[!is.na(x0[,1]),]
@@ -114,6 +124,12 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     n00 <- 0
     nend0 <- 0
   }
+  
+  if(length(d)<3) {
+    y <- x
+    y0 <- x0
+  } else {
+  
   t1 <- Sys.time()
   if (progress) pb <- txtProgressBar(style=3)
   nend <- nend0
@@ -279,6 +295,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
            lats[num==nvec[i] & dates==dplot & times==tplot][1],
            col=adjustcolor(cols[i],alpha=0.5),pch=19,cex=1.5)
     }
+  }
   }
   invisible(list(y=y,y0=y0))
 }
@@ -460,6 +477,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
          col=adjustcolor("black",alpha=pf.all[rank.all==k]))
       }
     }
+    
     rank.all[pf.all<=0 | is.na(pf.all)] <- NA
     while(any(!is.na(rank.all))) {
       ij <- which(rank.all==min(rank.all,na.rm=TRUE),arr.ind=TRUE)
@@ -582,6 +600,7 @@ Trackstats <- function(x,verbose=FALSE) {
   distance <- as.numeric(by(cbind(lons,lats),rnum,fn))*1E-3
 
   y$trackcount <- trackcount$Freq[rnum]
+  y$trackcount[is.na(y$trajectory)] <- 1
   y$timestep <- timestep
   y$distance <- distance[rnum]
   if (length(attr(y,"unit"))<dim(y)[2]) {
@@ -601,7 +620,6 @@ Trackstats <- function(x,verbose=FALSE) {
       attr(y,"unit") <- c(attr(y,"unit"),c("km","km"))
     }
   }
- 
   invisible(y)
 }
 
