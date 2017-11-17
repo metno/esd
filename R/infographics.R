@@ -79,7 +79,6 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",is=1,
   cmax <- rgb(103,169,207,max=255) # red
   rgb.palette <- colorRampPalette(c(cmax,cmid,cmin),space="rgb")
   cstep <- rgb.palette(n=length(vstep)-1)
-  
   # Plot trend as color
   if (new) dev.new()
   image(cols,rows,t(trends),breaks=vstep,col=cstep,
@@ -137,7 +136,7 @@ calculate.trends <- function(x,minlen=15,is=1,verbose=FALSE){
     jvec <- i+trendlen[trendlen<=(max(year)-i+1)]-1#(i+minlen-1):(max(year)+1)
     for (j in jvec) {
       if(!is.na(xy[year==i]) & !is.na(xy[year==j])) {
-        print(paste(i,j))
+        #if(verbose) print(paste(i,j))
         ij <- which(year %in% i:j & !is.na(xy))
         ij.model <- lm(xy[ij]~year[ij])
         #ij.kendall <- Kendall(x[ij],year[ij])
