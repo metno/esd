@@ -18,8 +18,8 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
     
     # Extract unit etc for the parameter
     vatt <- ncatt_get( ncold, varid=param )
-    if (verbose) print(names(vatt))
-    if(any(grepl('unit',vatt))) {
+    # 16.11.2017 hbe added option names(vatt below)
+    if(any(grepl('unit',vatt)) | any(grepl('unit',names(vatt)))) {
       ivunit <- (1:length(names(vatt)))[is.element(substr(names(vatt),1,4),'unit')]
       vunit <- vatt[[ivunit]]
     } else {
@@ -27,7 +27,8 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
       vunit <- ""
     }
     if (verbose) print(paste('unit: ',vunit,'; time unit: ',tunit,'; time origin: ',torg,sep=''))
-    longname <- ncatt_get( ncold, varid=param, attname='long_name')
+    #HBE added value 12.11.2017
+    longname <- ncatt_get( ncold, varid=param, attname='long_name')$value
     if (is.null(longname)) {
         longname <- switch(param,'t2m'='temperature','tmax'='maximum temperature','tmin'='minimum temperature',
                            'precip'='precipitation','slp'='mean sea level pressure','pt'='precipitation',
@@ -132,7 +133,6 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
         starty <- 1; county <- d[2];
         subx <- rep(TRUE,d[1]); suby <- rep(TRUE,d[2])
     }
-
     time <- switch(substr(tunit,1,3),
                    'day'=as.Date(time+julian(as.Date(torg))),
                    'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))),
@@ -225,8 +225,9 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
         countt <- d[3] - startt + 1
         warning("retrieve.rcm: number of points in time exceeds data dimensions")
     }
+      #HBE added y-dimension to lon as well as lat (before only lat had)
     if(length(d)==3) {
-      lon <- lon[startx:(startx+countx-1)]
+      lon <- lon[startx:(startx+countx-1),starty:(starty+county-1)]
       lat <- lat[startx:(startx+countx-1),starty:(starty+county-1)]
       time <- time[startt:(startt+countt-1)]
       start <- c(startx,starty,startt)
@@ -240,7 +241,6 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
       start <- c(startxy,startt)
       count <- c(countxy,countt)
     }
-    
     if (verbose) {print(start); print(count)}
     rcm <- ncvar_get(ncold,varid=param,start=start, count=count)
     nc_close( ncold )

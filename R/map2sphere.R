@@ -326,24 +326,28 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 
 #map2sphere(x)
 
-vec <- function(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
-                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,...) {
-  x <- subset(x,it=it); y <- subset(y,it=it)
+vec <- function(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
+                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...) {
+  if (verbose) print('vec')
+  if (!is.null(it)) {x <- subset(x,it=it); y <- subset(y,it=it)}
   d <- attr(x,'dimensions')
   #print(d); print(dim(x))
   if (is.null(ix)) ix <- pretty(lon(x),n=nx)
   if (is.null(iy)) iy <- pretty(lat(x),n=ny)
   #print(c(d[2],d[1]))
+  if (verbose) {print('---pretty coordinates: ---');print(ix); print(iy)}
+  ## Operate with matrices:
   X <- coredata(x); Y <- coredata(y)
   dim(X) <- c(d[1],d[2])
   dim(Y) <- c(d[1],d[2])
   #X <- t(X); Y <- t(Y)
+  ## The starting points of the arrows: matrices
   x0 <- rep(ix,length(iy))
   y0 <- sort(rep(iy,length(ix)))
   ij <- is.element(ix,lon(x))
   ji <- is.element(iy,lat(x))
-  #print(ix); print(lon(x)); print(sum(ij))
-  #print(iy); print(lat(x)); print(sum(ji))
+  if (verbose) {print(ix); print(lon(x)); print(sum(ij))
+                print(iy); print(lat(x)); print(sum(ji))}
   dim(x0) <- c(length(ij),length(ji)); dim(y0) <- dim(x0)
   x0 <- x0[ij,ji]
   y0 <- y0[ij,ji]
@@ -375,6 +379,7 @@ vec <- function(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
     x1[invisible] <- NA; y1[invisible] <- NA
   }    
 
+  if (verbose) {print('x:'); print(x0); print(x1); print('y:'); print(y0); print(y1)}
   if (new) {
     dev.new()
     plot(range(x0,x1),range(y0,y1),xlab='',ylab='')

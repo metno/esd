@@ -63,6 +63,45 @@ GSL <- function(url='https://www.epa.gov/sites/production/files/2016-08/sea-leve
                      reference="EPA's Climate Change Indicators in the United States: www.epa.gov/climatechange",info=NA, method= NA)
     return(sl)
 }
+
+GSL.nasa <- function(url='ftp://podaac.jpl.nasa.gov/allData/merged_alt/L2/TP_J1_OSTM/global_mean_sea_level/GMSL_TPJAOS_V4_199209_201708.txt',is=9) {
+  
+  sl <- read.table(url,skip=6,header=TRUE,comment.char='H')
+  param <- switch(as.character(is),'1'='type','2'='cycle','3'='year+fraction of year',
+                  '4'='number','5'='number','6'='height','7'='error','8'='error',
+                  '9'='height','10'='error','11'='height','12'='height')
+  longname=switch(as.character(is),'1'='altimeter type','2'='merged file cycle','3'='year+fraction of year',
+                  '4'='number of observations','5'='number of weighted observations',
+                  '6'='GMSL (Global Isostatic Adjustment (GIA) not applied)',
+                  '7'='standard deviation of GMSL (GIA not applied)',
+                  '8'='smoothed (60-day Gaussian type filter) GMSL (GIA not applied)',
+                  '9'='GMSL (Global Isostatic Adjustment (GIA) applied)',
+                  '10'='standard deviation of GMSL (GIA applied)',
+                  '11'=' smoothed (60-day Gaussian type filter) GMSL (GIA applied)',
+                  '12'='smoothed (60-day Gaussian type filter) GMSL (GIA applied) anomaly')
+  unit=switch(as.character(is),'1'='rtype','2'='cycle','3'='year',
+              '4'='number','5'='number','6'='mm','7'='mm','8'='mm',
+              '9'='mm','10'='mm','11'='mm','12'='mm')
+  hdr <- readLines(url,n=42)
+  yr <- trunc(sl[[3]]); mo <- trunc(12*(sl[[3]] - trunc(sl[[3]]))) %% 12 + 1;
+  dy <- trunc(365.25*(sl[[3]] - yr - (mo-1)/12))
+  time <- as.Date(paste(yr,mo,dy,sep='-'))
+  bad0 <- is.na(time) & (dy ==0)
+  bad29 <- is.na(time) & (dy >=29)
+  ## Fudge - quick fix for bad dates:
+  #print(time); browser()
+  time[bad0] <-  as.Date(paste(yr[bad0],mo[bad0],1,sep='-'))
+  time[bad29] <-  as.Date(paste(yr[bad29],mo[bad29],dy[bad29]-2,sep='-'))
+
+  zsl <- zoo(sl[[is]],order.by=time)
+  sl <- as.station(zsl,loc=NA,param=param,unit=unit,
+                   lon=NA,lat=NA,alt=NA,
+                   cntr=NA,longname=longname,
+                   stid=NA,quality=NA,src='NASA',url=url,
+                   reference="NASA's Climate Change Indicators",info=hdr, method= NA)
+  return(sl)
+}
+
   
 AMO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data') {
   amo.test <- readLines(url)

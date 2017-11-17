@@ -1746,6 +1746,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
                       gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
+    
     if (!is.null(it)) {
       if (verbose) print('Extract some months or a time period')
       if (is.null(nmin)) warning(paste("The argument 'it' is set but not 'nmin'; it=",
@@ -1842,6 +1843,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
       ## REB 2016-11-28: adjust results to have same mean as observations in overlapping period:
       if (verbose) print('adjust offset of predicted PCs for overlapping period')
+      index(z) <- year(z)
       zolp <- window(zoo(z),start=start(y),end=end(y))
       coredata(z) <- t(t(coredata(z)) - mean(coredata(zolp)) + colMeans(coredata(y)))
                                                                   ## y is a pca with no missing values; z has no NAs.

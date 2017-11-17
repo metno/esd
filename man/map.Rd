@@ -169,8 +169,8 @@ map2sphere(x,it=NULL,is=NULL,new = TRUE,
              type = c("fill", "contour"),colorbar=TRUE,
              gridlines = TRUE, fancy = FALSE, verbose = FALSE,...) 
 
-vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
-                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,...)
+vec(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,
+                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...)
 mask(x,land=FALSE)
 }
 \arguments{

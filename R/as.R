@@ -751,6 +751,13 @@ as.annual.spell <- function(x, ...) annual.spell(x,...)
 
 as.monthly <- function(x, ...) UseMethod("as.monthly")
 
+as.monthly.default <- function(x,...) {
+  yyyymm <- function(x) ym <- as.Date(paste(year(x),month(x),'01',sep='-'))
+  y <- aggregate(x,by=yyyymm,...)
+  return(y)
+}
+
+
 as.monthly.field <- function(x,FUN='mean',...) {
 if (inherits(x,'month')) return(x)
   y <- aggregate(as.zoo(x),function(tt) as.Date(as.yearmon(tt)),FUN=FUN,...)
@@ -884,6 +891,10 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,
     y <- zoo(X[ok,],order.by=as.Date(as.yearqtr(t[ok])))
     #names(y) <- FUN
   }
+  if (!is.null(dim(y))) {
+    ok <- is.finite(rowMeans(y,na.rm=TRUE))
+    y <- y[ok,]
+  } 
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   if (inherits(x,'field'))
