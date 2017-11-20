@@ -37,7 +37,7 @@ test.rainequation <- function(loc=NULL,src='ecad',nmin=150,threshold=10) {
   lines(obsfrac,col=rgb(1,0,0,0.7),lwd=2)
   grid()
   legend(year(pr)[1],1.1*max(pr,na.rm=TRUE),
-         c(expression(Pr(X>x)==f[w]*e^{-x/mu}),expression(sum(H(X,x[0]))/n)),lty=1,lwd=c(3,2),
+         c(expression(Pr(X>x)==f[w]*e^{-x/mu}),expression(sum(H(X-x[0]))/n)),lty=1,lwd=c(3,2),
        col=c('black','red'),bty='n')
 }
 
@@ -63,7 +63,7 @@ scatterplot.rainequation <- function(src='ecad',nmin=150,threshold=c(10,20,30,40
       par(bty='n',xpd=TRUE)
       plot(X,Y,main='Test the "rain equation"',
            xlim=rng,ylim=rng,pch=19,cex=1.25,col=rgb(0,0,0.7,0.15),
-           xlab=expression(sum(H(X,x[0]))/n),ylab=expression(Pr(X>x)==f[w]*e^{-x/mu}))
+           xlab=expression(sum(H(X-x[0]))/n),ylab=expression(Pr(X>x)==f[w]*e^{-x/mu}))
       grid()
       lines(c(0,0),rep(max(c(X,Y),na.rm=TRUE),2),lty=2,col=rgb(0.5,0.5,0.5,0.3))
     }
