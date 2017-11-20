@@ -16,7 +16,7 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
 fract.gt.x <- function(x,threshold) {sum(x > threshold,na.rm=TRUE)/sum(is.finite(x))}
 
 ## To test the rain equation
-test.rainequation <- function(loc=NULL,src='ecad',nmin=150,threshold=10) {
+test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,threshold=20) {
   
   if (is.null(loc)) {
     ss <- select.station(param='precip',nmin=150,src='ecad')

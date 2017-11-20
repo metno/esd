@@ -12,7 +12,7 @@
 }
 \usage{
 rainequation(x, x0 = 10, threshold = NULL)
-test.rainequation(loc=NULL,src='ecad',nmin=150,threshold=10)
+test.rainequation(loc='DE BILT',src='ecad',nmin=150,threshold=20)
 scatterplot.rainequation(src='ecad',nmin=150,threshold=c(10,20,30,40))
 fract.gt.x(x,threshold)
 }
