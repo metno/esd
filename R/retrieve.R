@@ -470,6 +470,13 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     if (length(iunit)>0) {
         text=paste("v1$",names(v1)[iunit],sep="")
         units <- eval(parse(text=text))
+        # hebe added extra units test for unusual strings
+        if (units=="") {
+            tmp <- grep("unit",names(ncatt_get(ncid,param)),value=TRUE)
+            if (length(tmp)>0) {
+                units<-gsub(" ","",eval(parse(text=paste('ncatt_get(ncid, param)$',tmp,sep = ""))))
+            }
+        }
         if (((units=="K") | (units=="degK")) & !grepl("anom",v1$longname)) {
             val <- val - 273 
             units <- "degC"
