@@ -45,9 +45,11 @@ track.events(X,...)
   the trajectory number ('trajectory') of each event and statistical properties 
   of the trajectories ('trackcount' - number of events in path;
   'tracklen' - distance between start and end point of path').}
-\seealso{CCI}
+\seealso{CCI,as.trajectory}
 \author{K. Parding}
 \examples{
+\dontrun{
 
+}
 }
 \keyword{track}
