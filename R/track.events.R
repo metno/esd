@@ -204,7 +204,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     attr(x,"unit") <- c(attr(x,"unit"),c("numeration","km"))
   }
   if (verbose) print("calculate trajectory statistics")
-  x <- Trackstats(x)
+  x <- Trackstats(x,verbose=verbose)
   if(!is.null(x0)) {
     if(!is.null(x00)) {
       if (dim(x00)[1]>0) {
@@ -567,7 +567,6 @@ angle <- function(lon1,lat1,lon2,lat2) {
 
 Trackstats <- function(x,verbose=FALSE) {
   if(verbose) print("Trackstats")
-  
   if (!any("trajectory" %in% names(x))) x <- track(x,verbose=verbose)
   y <- x[order(x$trajectory),]
   y <- attrcp(x,y)
@@ -583,7 +582,7 @@ Trackstats <- function(x,verbose=FALSE) {
   trackcount <- data.frame(table(rnum))
 
   if(verbose) print("timestep")
-  ts <- unlist(sapply(unique(rnum),function(i) 1:trackcount$Freq[i]))
+  ts <- unlist(sapply(unique(rnum),function(i) 1:trackcount$Freq[trackcount$rnum==i]))
   timestep <- rep(NA,length(ts))
   timestep[order(rnum)] <- ts
   if (any(rnum>nummax)) timestep[rnum==(nummax+1)] <- 1
@@ -662,6 +661,8 @@ Enumerate <- function(x,param="trajectory",verbose=FALSE) {
   stopifnot(inherits(x,"data.frame"))
   num <- x[param][[1]]
   if (identical(unique(num),seq_along(unique(num)))) {
+    rnum <- num
+  } else if (length(num)==1) {
     rnum <- num
   } else {
     if(verbose) print(paste("number of events:",length(num)))
