@@ -2,8 +2,8 @@
 ## Last update   04.10.2017
 ## Require 	 geoborders.rda
 
-map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
-                           projection="sphere",verbose=FALSE,...) {
+map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",param=NA,
+                           projection="lonlat",verbose=FALSE,...) {
   if (verbose) print("map.trajectory")
   stopifnot(is.trajectory(x))
   y <- subset.trajectory(x,it=it,is=is)
@@ -12,8 +12,8 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",
   } else if ("anomaly" %in% attr(x,"aspect")) {
     type <- "anomaly"
   }
-  if ('colors' %in% type) {
-    segments.trajectory(y,type=type,verbose=verbose,...)
+  if ('colors' %in% type | !is.na(param)) {
+    segments.trajectory(y,type=type,param=param,verbose=verbose,...)
   } else if (any(c('shapes','anomaly') %in% type)) {
     map.anomaly.trajectory(y,verbose=verbose,...)
   } else if (any(c('trajectory','points','start','end') %in% type)) {
@@ -59,7 +59,7 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   if(is.null(param)) {
     type <- type[type!="colors"]
     if(length(type)==0) type <- "trajectory"
-    map.trajectory(x,xlim=xlim,ylim=ylim,type=type,#show.start=show.start,
+    map.trajectory(x,xlim=xlim,ylim=ylim,type=type,
                    alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,add=add,
                    projection=projection,new=new,verbose=verbose,...)            
   } else {
@@ -198,7 +198,8 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   }
 
   if("start" %in% type) {
-    points(lon0[OK,1],lat0[OK,1],pch=22,cex=max(cex,1),bg=adjustcolor(col[OK,1],alpha.f=alpha),
+    points(lon0[OK,1],lat0[OK,1],pch=8,cex=cex,
+           bg=adjustcolor(col[OK,1],alpha.f=alpha),
            col=adjustcolor("black",alpha.f=alpha))
     #points(lon0[OK,1],lat0[OK,1],pch="x",cex=max(cex,1),lwd=lwd,
     #       col=adjustcolor("black",alpha.f=alpha))
@@ -269,7 +270,6 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
 }
 
 lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
-    #show.trajectory=TRUE,show.start=TRUE,show.subset=TRUE,show.end=FALSE,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
     lty=1,lwd=2,main=NULL,add=FALSE,new=TRUE,verbose=FALSE,...) {
   if (verbose) print("lonlat.trajectory")
@@ -284,14 +284,6 @@ lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
   if (is.null(ylim) & !add) ylim <- range(x[,colnames(x)=='lat'])
   if(add) ylim <- par("usr")[3:4]
 
-  #if(is.null(attr(x,"greenwich"))) {
-  #  if(!max(x[,colnames(x)=="lon"])>180 |
-  #     min(x[,colnames(x)=="lon"])<0) {
-  #    attr(x,"greenwich") <- FALSE
-  #  } else {
-  #    attr(x,"greenwich") <- TRUE
-  #  }
-  #}
   if(max(xlim)>180 & min(xlim)>=0) {
     greenwich <- TRUE
   } else {
@@ -338,9 +330,9 @@ lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
            col=adjustcolor(col,alpha.f=alpha))
     }
   }
-
-  if("start" %in% type) points(lons[OK,1],lats[OK,1],pch=19,cex=cex,
-                        col=adjustcolor(col,alpha.f=alpha))
+  
+  if("start" %in% type) points(lons[OK,1],lats[OK,1],pch=8,cex=cex,
+                        col=adjustcolor(col,alpha.f=alpha),lwd=lwd)
   
   ## plot arrow at end of trajectory
   if("end" %in% type) arrows(lons[OK,ncol(lons)-1],
@@ -491,9 +483,9 @@ sphere.trajectory <- function(x,
   }
   if("start" %in% type) {
     if(is.null(dim(x0))) {
-      points(X[1],Z[1],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
+      points(X[1],Z[1],pch=8,cex=cex,col=adjustcolor(col,alpha.f=alpha))
     } else {
-      points(X[1,],Z[1,],pch=19,cex=cex,col=adjustcolor(col,alpha.f=alpha))
+      points(X[1,],Z[1,],pch=8,cex=cex,col=adjustcolor(col,alpha.f=alpha))
     }
   }
 

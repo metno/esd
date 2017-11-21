@@ -377,8 +377,11 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
   ## Probability factors for three step trajectories...
   ## ...based on the pressure at the center of the cyclones
   if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
-    pf.depth <- (max(p[!is.na(p)])-p)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
-    pf.dp <- dp/(max(p[!is.na(p)])-min(p[!is.na(p)]))#max(dp[!is.na(dp)])
+    p.range <-(max(p[!is.na(p)])-min(p[!is.na(p)]))
+    pf.depth <- (max(p[!is.na(p)])-p)/p.range
+    pf.dp <- dp/p.range#max(dp[!is.na(dp)])
+    pf.depth[p.range==0] <- 0
+    pf.dp[p.range==0] <- 0
   } else {
     pf.depth <- matrix(1,nrow(da),ncol(da))
     pf.dp <- matrix(1,nrow(da),ncol(da))
@@ -444,7 +447,6 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
   
   ## Put probability factors for 3-step trajectories into matrix
   pf.all[1:nrow(pf),1:ncol(pf)] <- pf #pf.d*pf.change
-  
   ## Put probability factors for broken trajectories into matrix - disabled
   # for(k in unique(j2)) {
   #   j.k <- which(is.na(j1.all) & j2.all==k)
