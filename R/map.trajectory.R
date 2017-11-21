@@ -270,7 +270,7 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
 }
 
 lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
-    xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=1,
+    xlim=NULL,ylim=NULL,col='blue',alpha=NULL,cex=1,
     lty=1,lwd=2,main=NULL,add=FALSE,new=TRUE,verbose=FALSE,...) {
   if (verbose) print("lonlat.trajectory")
   x0 <- x
@@ -279,6 +279,9 @@ lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
     colnames(x) <- names(x0)
   }
 
+  ## Set transparancy based on the number of trajectories
+  if(is.null(alpha)) alpha <- min(0.1+1/log(max(2,nrow(x))), 1)
+    
   if (is.null(xlim) & !add) xlim <- range(x[,colnames(x)=='lon'])
   if(add) xlim <- par("usr")[1:2]
   if (is.null(ylim) & !add) ylim <- range(x[,colnames(x)=='lat'])

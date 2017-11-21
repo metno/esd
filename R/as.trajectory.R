@@ -9,7 +9,7 @@ as.trajectory.default <- function(x,verbose=FALSE,...) {
 as.trajectory.events <- function(x,verbose=FALSE,...) {
   if (verbose) print("as.trajectory.events")
   stopifnot(inherits(x,"events"))
-  if (!("trajectory" %in% names(x))) x <- Track(x,verbose=verbose,...)
+  if (!("trajectory" %in% names(x))) x <- track(x,verbose=verbose,...)
   if (!("tracklength" %in% names(x))) x <- Trackstats(x,verbose=verbose)
   y <- trajectory(x,verbose=verbose,...)
   invisible(y)

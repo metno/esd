@@ -568,7 +568,7 @@ angle <- function(lon1,lat1,lon2,lat2) {
 Trackstats <- function(x,verbose=FALSE) {
   if(verbose) print("Trackstats")
   
-  if (!any("trajectory" %in% names(x))) x <- tracking.events(x,verbose=verbose)
+  if (!any("trajectory" %in% names(x))) x <- track(x,verbose=verbose)
   y <- x[order(x$trajectory),]
   y <- attrcp(x,y)
   class(y) <- class(x)
