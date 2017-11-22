@@ -55,12 +55,12 @@ sort.station(x,is=NULL,decreasing=TRUE)
 \item{is}{A list or data.frame providing space index, e.g. station record or a lon(gitude) and lat(itude) range}
 \item{ip}{selection of patterns in PCA or EOF (used for e.g. filtreing
   the data)}
-\item{ic}{A list providing criteria for selection of cyclones: is = list(param, pmax, pmin, FUN), 
+\item{ic}{A list providing criteria for selection of cyclones: ic = list(param, pmax, pmin, FUN), 
           where param is a parameter or element type, pmax and pmin are the upper and lower limit 
-          of the parameter. 
-          If FUN is "any" (this is the default), subset selects cyclones that are within the chosen range at any point during their lifetime.
-          If FUN is "all", subset selects cyclones that are within the range at all points, 
-           or if applied to an 'event' object, all time steps within the range.)}
+          of the parameter.
+          If FUN is "any" (default setting), subset selects cyclones or trajectories that are within the chosen range at any point during their lifetime.
+          If FUN is "all" and x is an 'events' object, subset selects all individual cyclones within the range (pmin, pmax).
+	  If FUN is "all" and x is a 'trajectory' object, subset selects cyclone trajectories that are within the chosen range at all points during their lifetime.)}
 \item{verbose}{Dump diagnostics to the screen}
 \item{ensemble.aggregate}{If TRUE, call \code{subset.dsensemble.multi}
   if appropriate.}

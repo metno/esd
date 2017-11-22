@@ -35,7 +35,6 @@ subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 
 subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print("subset.eof")
-    ## browser()
     if (is.null(is) & is.null(it) & is.null(ip)) return(x)                                    
     if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(ip)) return(x) 
     d <- dim(x); greenwich <- TRUE
@@ -157,7 +156,6 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     y <- attrcp(x,y,ignore=c('greenwich','mean'))
     attr(y,'greenwich') <- greenwich
     clim -> attr(y,'mean')
-    ## browser()
     attr(y,'pattern') <- attr(x,"pattern")
     attr(y,'eigenvalues') <-attr(x,"eigenvalues")
                                         #attr(y,'date-stamp') <- date()
@@ -286,7 +284,6 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
       attr(y,'mean') <- attr(y,'mean')[is]
     }
   }
-  #browser()
   if (length(y)==1) y <- y[[1]]
   attr(y,'history') <- history.stamp(x)
   return(y)
@@ -373,7 +370,6 @@ subset.trend <- function(x,it=NULL,is=NULL,...) {
 
 subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE,...) {
-  ## browser()
   if (verbose) print('subset.dsensemble')
   if (inherits(x,'list') & inherits(x,c('pca','eof')) &
      (inherits(x,'dsensemble')) & ensemble.aggregate) {
@@ -477,7 +473,6 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
         if (verbose) print('...') 
       } else if (inherits(x,'month')) {
         if (verbose) print('from months')
-        ## browser()
         # REB 2016-11-07: is is dealt with below - set to NULL
         jan <- subset(x,it='jan',is=NULL)
         feb <- subset(x,it='feb',is=NULL)
@@ -666,7 +661,6 @@ subset.spell <- function(x,is=NULL,it=NULL,...) {
 ##     if (inherits(is,c('field','station','zoo'))) {
 ##         ## Match the times of another esd-data object
 ##         if (verbose) print('is: field/station')
-##         browser()
 ##         x2 <- subset(x,loc=loc(is))
 ##         return(x2)
 ##     }
@@ -855,8 +849,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
             # otherwise the code crashes! 
            if (nchar(it[1])==4) it <- as.Date(c(paste(it[1],'-01-01',sep=''), 
                                                 paste(it[2],'-12-31',sep='')))
-            if (verbose) {print(it); print(class(x))}
-            #browser()
             if (inherits(x,"month")) ## it is a month
                 it <- seq(it[1],it[2],by='month') else
             if (inherits(x,"season")) ## it is a season
@@ -1145,6 +1137,15 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
       if (verbose) print("Date and time")
       if (inherits(it,c("POSIXt"))) it <- as.numeric(strftime(it,"%Y%m%d%H"))
       if (is.character(it)) it <- as.numeric(it)
+      if ( length(it) == 2 ) {
+        if (verbose) print('Between two dates')
+        if (verbose) print(it)
+        it <- strptime(range(it),format="%Y%m%d%H")
+        it <- as.numeric(strftime(seq(it[1],it[2],by="hour"),format="%Y%m%d%H"))
+      } else {
+        if (verbose) print('it is a string of dates')
+        if (verbose) print(it)
+      }
       ii <- is.element(dt,it)
     } else if (is.dates(it)) {
       if (is.character(it) & all(grepl("-",it))) {
@@ -1216,7 +1217,7 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
         ic$FUN <- "any"
       }
       if(!is.null(ic$FUN)) {
-        if(!ic$FUN=="all" & !"trajectory" %in% names(x)) x <- track(x)
+        if(ic$FUN=="any" & !"trajectory" %in% names(x)) x <- track(x)
       }
       if(!ic$param %in% names(x)) {
         if(verbose) print(paste("Unkown input param =",param))
@@ -1225,19 +1226,20 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
         if(is.null(ic$pmax)) ic$pmax <- max(x[ic$param],na.rm=TRUE)
         if(verbose) print(paste(ic$param,"in range",ic$pmin,"-",ic$pmax))
         if(verbose) print(paste("FUN =",ic$FUN))
-        if(is.null(ic$FUN)) {
-          kk <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
-        } else if (ic$FUN=="any") {
+        if (ic$FUN=="any") {
           ok.ev <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
           kk <- x$trajectory %in% unique(x$trajectory[ok.ev])
-        } else if (ic$FUN=="all") {
-          nok.ev <- as.vector(x[ic$param]<ic$pmin | x[ic$param]>ic$pmax)
-          kk <- !x$trajectory %in% unique(x$trajectory[nok.ev])
+        } else {
+          kk <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
         }
+        #} else if (ic$FUN=="all") {
+        #  nok.ev <- as.vector(x[ic$param]<ic$pmin | x[ic$param]>ic$pmax)
+        #  kk <- !x$trajectory %in% unique(x$trajectory[nok.ev])
+        #}
       }
     }
   }
-  
+
   ijk <- ii & jj & kk
   y <- x[ijk,]
   attr(y,"aspect") <- "subset"
