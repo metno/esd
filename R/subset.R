@@ -1265,10 +1265,43 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   # Generate sequence of days, months or years if range of it value is given
   if (!is.null(it)) {
     if(verbose) print('Generate sequence of time if it value is given')
-    tstart <- strftime(strptime(x[,colnames(x)=="start"],format="%Y%m%d%H"),
-                       format="%Y-%m-%d")
-    tend <- strftime(strptime(x[,colnames(x)=="end"],format="%Y%m%d%H"),
-                     format="%Y-%m-%d")
+    
+    is.datetime <- function(x) all(!is.months(x) &
+                                     (is.character(x) &
+                                      !grepl("-",x) &
+                                      all(levels(factor(nchar(x)))==10)) |
+                                   (is.numeric(x) &
+                                        all(levels(factor(nchar(x)))==10)) |
+                                   inherits(x,c("POSIXt")))
+    is.dates <- function(x) all(!is.months(x) & !is.datetime(x) & 
+                                  (is.character(x) &
+                                     all(levels(factor(nchar(x)))==10) |
+                                     all(levels(factor(nchar(x)))==8)) |
+                                  (is.numeric(x) & all(levels(factor(nchar(x)))==8)) |
+                                  inherits(x,"Date"))
+    is.years <- function(x) all(!is.months(x) & 
+                                  is.numeric(x) & levels(factor(nchar(x)))==4)
+    is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+                                                tolower(month.abb)))>0)
+    is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+                                                 names(season.abb())))>0)
+    # is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+    #                                             tolower(month.abb)))>0)
+    # is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+    #                                              names(season.abb())))>0)
+    # is.dates <- function(x) all(!is.months(x) &
+    #                               (levels(factor(nchar(x)))==10) |
+    #                               (is.numeric(x) & levels(factor(nchar(x)))==8))
+    # is.years <- function(x) all(!is.months(x) & 
+    #                               is.numeric(x) & levels(factor(nchar(x)))==4)
+
+    tstart <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
+    tend <- strptime(x[,colnames(x)=="end"],format="%Y%m%d%H")
+    if(!is.datetime(it)) {
+      tstart <- strftime(tstart,format="%Y-%m-%d")
+      tend <- strftime(tend,format="%Y-%m-%d")
+    }
+    
     yr <- year(x)
     mo <- month(x)
     dy <- day(x)
@@ -1277,16 +1310,6 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
     if(verbose) print(paste('years',paste(unique(yr),collapse=",")))
     if(verbose) print(paste('months',paste(unique(mo),collapse=",")))
     if(verbose) print(paste('mdays',paste(unique(dy),collapse=",")))
-    
-    is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
-                                                tolower(month.abb)))>0)
-    is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
-                                                 names(season.abb())))>0)
-    is.dates <- function(x) all(!is.months(x) &
-                                  (levels(factor(nchar(x)))==10) |
-                                  (is.numeric(x) & levels(factor(nchar(x)))==8))
-    is.years <- function(x) all(!is.months(x) & 
-                                  is.numeric(x) & levels(factor(nchar(x)))==4)
     
     if (is.months(it)) {
       if (verbose) print('Monthly selected')
@@ -1304,14 +1327,22 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
-        ii <- t1>min(it) & t1<max(it) | t2>min(it) & t2<max(it)
-        #it <- strftime(seq(it[1],it[2],by='day'),format="%Y%m%d")
-        #t <- strftime(t,format="%Y%m%d")       
-        #ii <- is.element(t,it)
+        ii <- t1>=min(it) & t1<=max(it) | t2>=min(it) & t2<=max(it)
       } else { 
         if (verbose) print('it is a string of dates')
-        ii <- it<t2 & it>t1
-        #ii <- is.element(t,it)
+        ii <- it<=t2 & it>=t1
+      }
+    } else if (is.datetime(it)) {
+      it <- as.numeric(strftime(it,format="%Y%m%d%H"))
+      t1 <- as.numeric(strftime(tstart,format="%Y%m%d%H"))
+      t2 <- as.numeric(strftime(tend,format="%Y%m%d%H"))
+      if ( length(it) == 2 ) {
+        if (verbose) print('Between two dates')
+        if (verbose) print(it)
+        ii <- t1>=min(it) & t1<=max(it) | t2>=min(it) & t2<=max(it)
+      } else { 
+        if (verbose) print('it is a string of dates')
+        ii <- it<=t2 & it>=t1
       }
     } else if (is.years(it)) {
       it <- as.integer(it)
