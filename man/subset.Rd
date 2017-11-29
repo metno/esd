@@ -132,24 +132,25 @@ plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2))
 # OK - identical results
 
-# Extract storm tracks for specific periods and regions
-# from the example 'trajectory' object imilast.M03
-data(imilast.M03)
-# spring season (march, april, may)
-x1 <- subset(imilast.M03,it='mam') 
-plot(x1)
-# subset deep cyclones
-x2 <- subset(imilast.M03, ic=list(param="slp", pmax=990, FUN="any"))
-# subset cyclones with a lifetime of at least 12 time steps = 72 hours
-x3 <- subset(imilast.M03, ic=list(param="n", pmin=12))
+# Extract storm tracks for specific periods and regions from the sample 'events' object
+# storms (North Atlantic storms identified from ERA5 data)
+data(storms)
 
-# region 10W-10E/55-65N
-x4 <- subset(imilast.M03,is=list(lat=c(55,65),lon=c(-10,10)))
-map(x4)
+# Subset deep cyclones...
+x <- subset(storms, ic=list(param="pcent", pmax=970, FUN="any"))
+# ... and trajectories with a lifetime of at least 12 time steps (72 hours)
+x <- subset(x, ic=list(param="trackcount", pmin=12))
 
-# storms longer than 3 days (12x6 hours)
-x5 <- subset(imilast.M03,it=(param.trajectory(imilast.M03,param='n')>12))
-map(x5)
+# Subset cyclones in the region 10W-10E/55-65N
+x.is <- subset(x,is=list(lat=c(55,65),lon=c(-10,10)))
+# ...or all cyclones passing going through the region
+x.is2 <- subset(x,it=(x$trajectory %in% unique(x.is$trajectory)))
+
+# subset spring season (march, april, may)
+x.mam <- subset(x,it='mam') 
+# subset december 2016
+x.201612 <- subset(x,it=c("2016-12-01","2016-12-31")) 
+map(x.201612)
 
 }
 \keyword{utilities}

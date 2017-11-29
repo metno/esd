@@ -29,17 +29,18 @@ Reference: Benestad \& Chen (2006) 'The use of a Calculus-based Cyclone Identifi
            Benestad (2005) 
 } 
 \usage{
-CCI(Z,m=10,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
-                mindistance=1E6,dpmin=1E-3,pmax=NULL,rmin=1E4,rmax=2E6,
-                accuracy=NULL,nsim=NULL,do.track=TRUE,fname="cyclones.rda",
+CCI(Z,m=12,it=NULL,is=NULL,label=NULL,cyclones=TRUE,greenwich=NULL,
+                mindistance=1E6,dpmin=1E-3,pmax=1000,rmin=1E4,rmax=2E6,
+                accuracy=NULL,nsim=NULL,do.track=FALSE,allow.open=FALSE,fname="cyclones.rda",
                 plot=FALSE,verbose=FALSE)
 }
+
 \arguments{
     \item{Z}{A field object.}
     \item{m}{Number of harmonics used for fit to profile (Fourier
            truncation), which decides the degree of smoothing of the
            field. Lower values of m result in greater smoothing.}
-     \item{it}{A list providing time index, e.g. month.}
+    \item{it}{A list providing time index, e.g. month.}
     \item{is}{A list providing space index, lon and/or lat.}
     \item{label}{Label for ID-purposes.}
     \item{cyclones}{TRUE: identifies cyclones, FALSE: anticyclones.}
@@ -50,7 +51,7 @@ CCI(Z,m=10,it=NULL,is=NULL,label=NULL,cyclones=TRUE,
     \item{rmin}{Min average radius of cyclone. Unit: m.}
     \item{rmax}{Max average radius of cyclone. Unit: m.}
     \item{nsim}{Number of simultaneous cyclones identified and saved
-      ordered according to depth/strength.}
+      ordered according to depth/strength (NULL = no limit).}
     \item{do.track}{TRUE: tracks the cyclones with the 'track' function,
            FALSE: no tracking is applied.}
     \item{fname}{Name of output file.}
@@ -75,31 +76,44 @@ identified after widening the pressure gradient zero-crossings).
 \seealso{track.events}
 \author{K.M. Parding & R.E. Benestad}
 \examples{
-\dontrun{
-## Set up the analysis: get the 6-hr SLP data from ERAINT
-library(esd)
-path <- '~/data/data.ERAINT'
-## Select a sub-region: the North Atlantic
-lon <- c(-50,40); lat <- c(50,75)
 
-## Retrieve the SLP data
-slp00 <- retrieve(file.path(path=path,name='ERAINT-full-slp00_1979-2015.nc'),lon=lon,lat=lat)
-slp06 <- retrieve(file.path(path=path,name='ERAINT-full-slp06_1979-2015.nc'),lon=lon,lat=lat)
-slp12 <- retrieve(file.path(path=path,name='ERAINT-full-slp12_1979-2015.nc'),lon=lon,lat=lat)
-slp18 <- retrieve(file.path(path=path,name='ERAINT-full-slp18_1979-2015.nc'),lon=lon,lat=lat)
+# Load sample data to use for example
+# ERA5 6-hourly SLP data from the North Atlantic region, 2016-09-15 to 2016-10-15
+data(slp.ERA5)
 
-## Combine the different SLP data for different times in the day:
-slp <-c(zoo(slp00),zoo(slp06),zoo(slp12),zoo(slp18))
-## Keep the original attributes and class:
-slp <- attrcp(slp00,slp)
-class(slp) <- class(slp00)
-## Remove the variables no longer needed:
-rm(slp00,slp06,slp12,slp18); gc(reset=TRUE)
+## Cyclone identification
+Cstorms <- CCI(slp.ERA5, m=20, label='ERA5', pmax=1000, verbose=TRUE, plot=TRUE)
 
-## Identify the storm centres and calculate storm statictics
-Nstorms <- CCI(slp,m=20,label='ERAINT-0.75x0.75',pmax=995,verbose=FALSE)
-## Track the storms.
-NAtl.storms <- track.events(Nstorms)
+## Cyclone tracking
+Ctracks <- track(Cstorms, plot=TRUE, verbose=TRUE)
+
+## Map with points and lines showing the cyclone centers and trajectories
+map(Ctracks, type=c("trajectory","points"), col="blue")
+## Map with only the trajectory and start and end points
+map(Ctracks, type=c("trajectory","start","end"), col="red")
+## Map showing the cyclone depth (slp) as a color scale (rd = red scale)
+map(Ctracks, param="pcent", type=c('trajectory','start'), 
+    colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1010,5)), alpha=0.9)
+
+## Select only the long lasting trajectories...
+Ct <- subset(Ctracks, ic=list(param='trackcount', pmin=12) )
+map(Ct)
+## ...or only the long distance ones...
+Ct <- subset(Ctracks, ic=list(param='tracklength', pmin=3000) )
+map(Ct)
+## ...or only the deep cyclones
+Ct <- subset(Ctracks, ic=list(param='pcent', pmax=980) )
+map(Ct)
+
+## Map of cyclone trajectories with the slp field in background
+cb <- list(pal="budrd",breaks=seq(990,1040,5))
+map(Ctracks, slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, verbose=TRUE)
+
+## Transform the cyclones into a 'trajectory' object which takes up less space
+Ctraj <- as.trajectory(Ctracks)
+map(Ctraj)
+print(object.size(Ctracks), units="auto")
+print(object.size(Ctraj), units="auto")
+
 }
-}
-\keyword{manip}
+\keyword{manip,cyclones,CCI}

@@ -141,12 +141,14 @@ map.cca(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.trajectory(x,it=NULL,is=NULL,type="paths",
                projection="sphere",verbose=TRUE,plot=TRUE,...)
 
-map.events(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-           param=NA,alpha=0.5,col="black",pch=13,lwd=4,cex=2,
-           colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
-           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-           projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
-           verbose=FALSE,plot=TRUE,...)
+map.events(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
+                       param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
+                       colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
+                                   pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                       showaxis=TRUE,fig=c(0,1,0.05,0.95),mgp=c(2,0.5,0),mar=rep(2,4),
+                       lty=1,type=c("points","trajectory","start","end"),border=FALSE,
+                       projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,add=FALSE,
+                       verbose=FALSE,...)
 
 lonlatprojection(x,it=NULL,is=NULL,new=FALSE,projection="lonlat", 
                    xlim=NULL,ylim=NULL,zlim=NULL,n =15,
@@ -247,6 +249,19 @@ map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70))
 ## Get NACD data and map the mean values
 y <- station.nacd()
 map(y,FUN='mean',colbar=list(pal=varid(y),n=10),cex=2)
+
+# Examples of cyclone maps (map.events)
+data(storms)
+# Subset cyclones from the start of January 2016 lasting a minimum of 10 time steps 
+x <- subset(storms,it=c("2016-01-01","2016-01-07"),ic=list(param="trackcount",pmin=10))
+# Map with points and lines showing the cyclone centers and trajectories
+map(x, type=c("trajectory","points"), col="blue")
+## Map with only the trajectory and start and end points
+map(x, type=c("trajectory","start","end"), col="red")
+## Map showing the cyclone depth (slp at center) as a color scale (rd = red scale)
+map(x, param="pcent", type=c('trajectory','start'), 
+    colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1000,2)), alpha=0.9)
+
 }
 \keyword{map}
 

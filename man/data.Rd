@@ -16,6 +16,7 @@
 \alias{slp.ERAINT}
 \alias{slp.MERRA}
 \alias{slp.NCEP}
+\alias{slp.atlantic.ERA5}
 \alias{t2m.NorESM.M}
 \alias{t2m.DNMI}
 \alias{sst.DNMI}
@@ -56,6 +57,7 @@
 \alias{CO2}
 \alias{read.hurdat2}
 \alias{read.best.track}
+\alias{storms}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -111,6 +113,11 @@ data(eof.sst.DNMI)
 data(eof.slp.DNMI)
 data(geoborders)
 data(IPCC.AR5.Table.9.A.1)
+data(slp.ERA5)
+data(storms)
+data(sunspots)
+data(NINO3.4)
+data(NAOI)
 cmipgcmresolution(what='deg') 
 slp.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
@@ -125,9 +132,6 @@ t2m.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 slp.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 sst.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.NorESM.M(lon=NULL,lat=NULL,anomaly=FALSE)
-data(sunspots)
-data(NINO3.4)
-data(NAOI)
 NINO3.4(url='ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/ersst3b.nino.mth.ascii',header=TRUE)
 NAO(url='http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii.table',header=FALSE)
 SOI(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',header=FALSE)
