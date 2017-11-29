@@ -33,7 +33,7 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 
 
 
-regrid.station <- function(x,is,approach="station",clever=FALSE,verbose=FALSE) {
+regrid.station <- function(x,is,approach="station",verbose=FALSE) {
 
   stopifnot(inherits(x,'station'))
   if (verbose) print('regrid.station')  
