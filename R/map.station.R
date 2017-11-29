@@ -328,7 +328,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       highlight$element <- apply(as.matrix(highlight$variable),1,esd2ele)
     }  else highlight <-  NULL
     
-    
     ## Set negative altitude to NA
     ss$altitude[ss$altitude < 0] <- NA
     
@@ -360,30 +359,34 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       print(cex)
     }
     if (is.null(xlim)) {
-      if ((is.null(highlight) | showall) & (length(is$lon) > 1)) {
-        xlim <- range(ss$longitude, na.rm = TRUE) + c(-1,1)
+      if ((is.null(highlight) | showall)) {
+        if(length(is$lon) > 1) {
+          xlim <- range(ss$longitude, na.rm = TRUE) + c(-1,1)
+        } else {
+          xlim <- range(ss$longitude, na.rm = TRUE) + c(-4,4)
+        }
       } else {
-        xlim <- range(ss$longitude, na.rm = TRUE) + c(-4,4)
-      }
-    } else {
-      if (length(is$lon) > 1) {
-        xlim <- range(highlight$longitude, na.rm = TRUE) + c(-1,1)
-      } else {
-        xlim <- range(highlight$longitude, na.rm = TRUE) + c(-4,4)
+        if (length(is$lon) > 1) {
+          xlim <- range(highlight$longitude, na.rm = TRUE) + c(-1,1)
+        } else {
+          xlim <- range(highlight$longitude, na.rm = TRUE) + c(-4,4)
+        }
       }
     }
     ## Select a subdomain in the y-axis
     if (is.null(ylim)) {
-      if ((is.null(highlight) | showall) & (length(is$lat) > 1)) {
+      if ((is.null(highlight) | showall)) {
+        if (length(is$lat) > 1) {
           ylim <- range(ss$latitude, na.rm = TRUE) + c(-1,1)
+        } else {
+          ylim <- range(ss$latitude, na.rm = TRUE) + c(-2,2)
+        } 
       } else {
-        ylim <- range(ss$latitude, na.rm = TRUE) + c(-2,2)
-      } 
-    } else {
-      if (length(is$lat) > 1) {
-        ylim <- range(highlight$latitude, na.rm = TRUE) + c(-1,1)
-      } else {
-        ylim <- range(highlight$latitude, na.rm = TRUE) + c(-2,2)
+        if (length(is$lat) > 1) {
+          ylim <- range(highlight$latitude, na.rm = TRUE) + c(-1,1)
+        } else {
+          ylim <- range(highlight$latitude, na.rm = TRUE) + c(-2,2)
+        }
       }
     }
     
@@ -537,7 +540,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       points(ss.all$longitude,ss.all$latitude,pch=".",col="grey50",
              bg="grey",cex=cex/2)
     }
-    
+
     if (!is.null(highlight)) {
       points(highlight$longitude, highlight$latitude, pch = pch, col = col,
              bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
@@ -622,7 +625,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       par(fig=fig0,new=TRUE)
       ## print(par()$fig)
       ## add color bar
-      
       if (colbar$show) {
         if (fancy & !is.null(colbar))
           col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
