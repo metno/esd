@@ -1226,20 +1226,20 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
         if(is.null(ic$pmax)) ic$pmax <- max(x[ic$param],na.rm=TRUE)
         if(verbose) print(paste(ic$param,"in range",ic$pmin,"-",ic$pmax))
         if(verbose) print(paste("FUN =",ic$FUN))
-        if (ic$FUN=="any") {
+        if (is.null(ic$FUN)) {
+          kk <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
+        } else if (ic$FUN=="any") {
           ok.ev <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
           kk <- x$trajectory %in% unique(x$trajectory[ok.ev])
-        } else {
+        } else if (ic$FUN=="all") {
           kk <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
-        }
-        #} else if (ic$FUN=="all") {
         #  nok.ev <- as.vector(x[ic$param]<ic$pmin | x[ic$param]>ic$pmax)
         #  kk <- !x$trajectory %in% unique(x$trajectory[nok.ev])
-        #}
+        }
       }
     }
   }
-
+  
   ijk <- ii & jj & kk
   y <- x[ijk,]
   attr(y,"aspect") <- "subset"
