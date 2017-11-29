@@ -472,8 +472,8 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
         units <- eval(parse(text=text))
         # hebe added extra units test for unusual strings
         if (units=="") {
-            tmp <- grep("unit",names(ncatt_get(ncid,param)),value=TRUE)
-            if (length(tmp)>0) {
+            try(tmp <- grep("unit",names(ncatt_get(ncid,param)),value=TRUE),silent = !verbose)
+            if ((!inherits(tmp, "try-error")) & (length(tmp)!=0)) {
                 units<-gsub(" ","",eval(parse(text=paste('ncatt_get(ncid, param)$',tmp,sep = ""))))
             }
         }
