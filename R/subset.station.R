@@ -114,14 +114,6 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
         ii <- (t >= min(it)) & (t <= max(it))
-        ## Generate sequence of days, months or years if range of it value is given
-        #if (inherits(x,"month")) { ## it is a month or season
-        #  it <- seq(it[1],it[2],by='month')
-        #} else if (inherits(x,"day")) { ## it is a day
-        #  it <- seq(it[1],it[2],by='day')
-        #} else if (inherits(x,"annual")) {## it is a year
-        #  it <- seq(it[1],it[2],by='year')
-        #}
       } else {
         ii <- is.element(t,it)
       }
