@@ -144,11 +144,11 @@ x <- subset(x, ic=list(param="trackcount", pmin=12))
 # Subset cyclones in the region 10W-10E/55-65N
 x.is <- subset(x,is=list(lat=c(55,65),lon=c(-10,10)))
 # ...or all cyclones passing going through the region
-x.is2 <- subset(x,it=(x$trajectory %in% unique(x.is$trajectory)))
+x.is2 <- subset(x,it=intersect(x$trajectory, x.is$trajectory))
 
-# subset spring season (march, april, may)
-x.mam <- subset(x,it='mam') 
-# subset december 2016
+# Subset cyclones in the spring season (march, april, may)
+x.mam <- subset(x, it="mam")
+# Subset cyclones in december 2016
 x.201612 <- subset(x,it=c("2016-12-01","2016-12-31")) 
 map(x.201612)
 

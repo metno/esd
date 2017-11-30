@@ -63,7 +63,6 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## alt - positive values: any above; negative any below height
     ## cntr - selection by country
     ## 
-    
     if (verbose) print("station.subset")
     nval <- function(x) sum(is.finite(x))
     x0 <- x
@@ -92,12 +91,8 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('it - temporal indexing')
     if (verbose) print(it)
 
-    ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
        if (verbose) print('years ++')
-        ## REB: replaced by lines below:
-        ##    year <- as.numeric( format(t, '%Y') ) 
-        ##    month <- as.numeric( format(t, '%m') )
         yr <- year(x)
         mo <- month(x)
         dy <- day(x)
@@ -107,133 +102,116 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         mo <- dy <- rep(1,length(t))
     } else print("Index of x should be a Date, yearmon, or numeric object")
 
-
-    ## Generate sequence of days, months or years if range of it value is given
-    if (is.character(it)) {
-        if (verbose) print('it is character')
-        if ((levels(factor(nchar(it)))==10)) ##  convert as Date
-            it <- as.Date(it)
-        if ( length(it) == 2 ) {
-            if (verbose) print('Between two dates')
-            ##if (nchar(it[1])==4) it[1] <- paste(it[1],'-01-01',sep='')
-            ##if (nchar(it[2])==4) it[2] <- paste(it[1],'-12-31',sep='')
-            if (verbose) print(it)          
-            if (inherits(x,"month")) ## it is a month or season
-                it <- seq(it[1],it[2],by='month')
-            else if (inherits(x,"day")) ## it is a day
-                it <- seq(it[1],it[2],by='day')
-            else if (inherits(x,"annual")) ## it is a year
-                it <- seq(it[1],it[2],by='year')
-            ii <- is.element(t,it)
-        } else { ## added AM 10-06-2014
-            if (verbose) print('it is a string')
-            if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
-                if (verbose) print('Monthly selected')
-                if (is.seasonal(x)) {
-                  it <- gsub('Dec', 'Jan', it, ignore.case=TRUE)
-                  it <- gsub('Feb', 'Jan', it, ignore.case=TRUE)
-                  it <- gsub('Mar', 'Apr', it, ignore.case=TRUE)
-                  it <- gsub('May', 'Apr', it, ignore.case=TRUE)
-                  it <- gsub('Jun', 'Jul', it, ignore.case=TRUE)
-                  it <- gsub('Aug', 'Jul', it, ignore.case=TRUE)
-                  it <- gsub('Sep', 'Oct', it, ignore.case=TRUE)
-                  it <- gsub('Nov', 'Oct', it, ignore.case=TRUE)
-                }
-                ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
-                                        #y <- x[ii,is] #  REB Not here
-            } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
-                if (verbose) print("Seasonally selected")
-                if (verbose) print(table(month(x)))
-                if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
-                ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
-                                        #y <- x[ii,is] # REB Not here
-            }
-            else if (inherits(it,"Date")) {
-                if (verbose) print('it is a Date object')
-                ii <- is.element(t,it)
-            } else {
-                str(it); print(class(it))
-                ii <- rep(FALSE,length(t))
-                warning("subset.station: did not recognise the selection citerion for 'it'")
-            }
-        }
-        ##    } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-##        if (min(it) > 1500) ## it is a year
-##            it <- seq(it[1],it[2],by=1)
-##        ##print("HERE"); print(it)
-##    }
-##    ii <- (t >= it[1]) & (t <= it[length(it)])
-##
-    ## get the subset indices in ii
-    } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-        if (verbose) print('it is numeric or integer')
-nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug        
-# nchar returns the string length, but these lines need to find the number of different levels/categories
-# AM 2015-02-16 DO not agree    nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
-        if (verbose) {print(nlev); print(it)}
-         if ((length(nlev)==1)) {
-            if (nlev==4) {
-                if (verbose) print("it are most probably years")
-                if (length(it)==2) {
-                    ii <- is.element(yr,it[1]:it[2])
-                     if (verbose) print(paste('Subset of',sum(ii),'data points between',
-                                             min(yr),'-',max(yr),'total:',length(yr)))
-                # if it is years:
-                  } else if (min(it)> length(it)) {
-                    if (verbose) print("match years")
-                    ii <- is.element(yr,it)
-                  } 
-            } else if (nlev<=4) {
-                if (verbose) print("it are most probably seasons")
-                if (inherits(x,'season') & (length(it)==1)) {
-                    if (verbose) print(paste("The 'it' value must be a season index between 1 and 4.",
-                                       "If not please use character strings instead. e.g. it='djf'"))
-                    it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
-                    ii <- is.element(mo,it)
-                 } else if ( (inherits(x,'month') | (inherits(x,'day'))) &
-                             ( (max(it) <= 12) & (min(it) >= 1) ) ) {
-                     if (verbose) {
-                         print(paste("The 'it' value must be a month index.",
-                                     "If not please use character strings instead"))
-                         print(range(it))
-                       }
-                     ii <- is.element(mo,it)
-                 }  else {
-                    if (verbose) print("it represents indices")
-                    ii <- it
-                }
-            } else if (nlev<=12  &
-                             ( (max(it) <= 12) & (min(it) >= 1) )) {
-                if (verbose) {
-                         print(paste("The 'it' value are most probably a month index.",
-                                     "If not please use character strings instead"))
-                         print(range(it))
-                       }
-                ii <- is.element(mo,it)
-            }  else {
-              if (verbose) {
-                         print("The 'it' value are most probably an index.")
-                         print(range(it))
-                         ii <- it
-                       }
-            }
-        } else {
-            #  length(nlev) > 1
-            if (verbose)  print("it most probably holds indices")
-            ii <- it
-        }
-    } else if (inherits(it,c("Date","yearmon"))) {       
-        ##        ii <- is.element(t,it)
-        if (verbose) print('it is a date object')
-        ii <- (t >= min(it)) & (t <= max(it))
-    } else {
-        ii <- rep(FALSE,length(t))
-        warning("subset.station: did not reckognise the selection citerion for 'it'")
-    } 
     
-    ## it <- (1:length(t))[ii]
-    ## 
-
+    if(is.character(it)) {
+      if ((levels(factor(nchar(it)))==10)) it <- as.Date(it)
+    }
+    
+    if(inherits(it,c("POSIXt"))) it <- as.Date(it)
+    
+    if(inherits(it,c("Date"))) {
+      if ( length(it) == 2 ) {
+        if (verbose) print('Between two dates')
+        if (verbose) print(it)
+        ii <- (t >= min(it)) & (t <= max(it))
+        ## Generate sequence of days, months or years if range of it value is given
+        #if (inherits(x,"month")) { ## it is a month or season
+        #  it <- seq(it[1],it[2],by='month')
+        #} else if (inherits(x,"day")) { ## it is a day
+        #  it <- seq(it[1],it[2],by='day')
+        #} else if (inherits(x,"annual")) {## it is a year
+        #  it <- seq(it[1],it[2],by='year')
+        #}
+      } else {
+        ii <- is.element(t,it)
+      }
+    } else if(inherits(it,"yearmon")) {
+      ii <- is.element(as.yearmon(t),it)
+    } else if (is.character(it)) {
+      if (verbose) print('it is character')
+      if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
+        if (verbose) print('Monthly selected')
+        if (is.seasonal(x)) {
+          it <- gsub('Dec', 'Jan', it, ignore.case=TRUE)
+          it <- gsub('Feb', 'Jan', it, ignore.case=TRUE)
+          it <- gsub('Mar', 'Apr', it, ignore.case=TRUE)
+          it <- gsub('May', 'Apr', it, ignore.case=TRUE)
+          it <- gsub('Jun', 'Jul', it, ignore.case=TRUE)
+          it <- gsub('Aug', 'Jul', it, ignore.case=TRUE)
+          it <- gsub('Sep', 'Oct', it, ignore.case=TRUE)
+          it <- gsub('Nov', 'Oct', it, ignore.case=TRUE)
+        }
+        ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
+      } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
+        if (verbose) print("Seasonally selected")
+        if (verbose) print(table(month(x)))
+        if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
+        ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
+      }
+    } else if (inherits(it,"Date")) {
+      if (verbose) print('it is a Date object')
+      ii <- is.element(t,it)
+    } else if ((class(it)=="numeric") | (class(it)=="integer")) {
+      if (verbose) print('it is numeric or integer')
+      nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug        
+      # nchar returns the string length, but these lines need to find the number of different levels/categories
+      # AM 2015-02-16 DO not agree    nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
+      if (verbose) {print(nlev); print(it)}
+      if ((length(nlev)==1)) {
+        if (nlev==4) {
+          if (verbose) print("it are most probably years")
+          if (length(it)==2) {
+            ii <- is.element(yr,it[1]:it[2])
+            if (verbose) print(paste('Subset of',sum(ii),'data points between',
+                                     min(yr),'-',max(yr),'total:',length(yr)))
+          # if it is years:
+          } else if (min(it)> length(it)) {
+            if (verbose) print("match years")
+            ii <- is.element(yr,it)
+          } 
+        } else if (nlev<=4) {
+          if (verbose) print("it are most probably seasons")
+          if (inherits(x,'season') & (length(it)==1)) {
+            if (verbose) print(paste("The 'it' value must be a season index between 1 and 4.",
+                                     "If not please use character strings instead. e.g. it='djf'"))
+            it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
+            ii <- is.element(mo,it)
+          } else if ( (inherits(x,'month') | (inherits(x,'day'))) &
+                           ( (max(it) <= 12) & (min(it) >= 1) ) ) {
+            if (verbose) {
+              print(paste("The 'it' value must be a month index.",
+                          "If not please use character strings instead"))
+              print(range(it))
+            }
+            ii <- is.element(mo,it)
+          } else {
+            if (verbose) print("it represents indices")
+            ii <- it
+          }
+        } else if (nlev<=12  & ( (max(it) <= 12) & (min(it) >= 1) )) {
+          if (verbose) {
+            print(paste("The 'it' value are most probably a month index.",
+                        "If not please use character strings instead"))
+            print(range(it))
+          }
+          ii <- is.element(mo,it)
+        } else {
+          if (verbose) {
+            print("The 'it' value are most probably an index.")
+            print(range(it))
+          }
+          ii <- it
+        }
+      } else {
+        #  length(nlev) > 1
+        if (verbose) print("it most probably holds indices")
+        ii <- it
+      }
+    } else {
+      ii <- rep(FALSE,length(t))
+      warning("subset.station: did not reckognise the selection citerion for 'it'")
+    }
+    
     class(x) -> cls
     ##print(cls)
     ## update the class of x
@@ -291,17 +269,16 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
         ## otherwise the subindexing results in an empty object
     }
 
-     if (verbose) print(paste('Subset of',sum(ii),'data points between',
+    if (verbose) print(paste('Subset of',sum(ii),'data points between',
                                min(yr),'-',max(yr),'total:',length(yr),
                               'from',length(is),'locations'))
     is[is.na(is)] <- FALSE
+    if (is.logical(ii)) ii <- which(ii)
+    if (is.logical(is)) is <- which(is)
     y <- x[ii,is]
-    #if (is.logical(is))
-    #    is <- (1:length(is))[is]
-    ##else 
-    ##    is <- is.element(1:d[2],is)
     
-    class(x) <- cls; class(y) <- cls
+    class(x) <- cls
+    class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))
     if (verbose) print(paste('Before subsetting',loc(y),varid(y),unit(y),lon(y),lat(y)))
     if (verbose) print(is)
@@ -358,11 +335,10 @@ nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug
 
     if (verbose) print(paste('Final: ',loc(y),varid(y),unit(y),lon(y),lat(y)))
     
-    if (!is.null(err(y)))
-        attr(y,'standard.error') <- err(x)[ii,is]
+    if (!is.null(err(y))) attr(y,'standard.error') <- err(x)[ii,is]
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
-    attr(y,'history') <- history.stamp(x)   
+    attr(y,'history') <- history.stamp(x)
     if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))
     return(y)
 }
