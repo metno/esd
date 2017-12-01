@@ -534,7 +534,6 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
          version="CCI in esd v1.0 (after October 6, 2015)",
          reference="Benestad & Chen, 2006, The use of a calculus-based cyclone identification method for generating storm statistics, Tellus A 58(4), 473-486.",
          url="http://onlinelibrary.wiley.com/doi/10.1111/j.1600-0870.2006.00191.x/abstract")
-  if(rm.edge) X <- subste(X,is=list(lon=lon(Z),lat=lat(Z)))
   if(do.track) X <- track(X,verbose=verbose,...)
   if(!is.null(fname)) save(file=fname,X)
   invisible(X)
