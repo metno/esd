@@ -1,5 +1,4 @@
-
-
+subset <- function(x,...) UseMethod("subset")
 
 subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (is.null(it) & is.null(is)) return(x)
@@ -767,8 +766,6 @@ default.subregion <- function(x,is=NULL,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)  
   return(y)
 } 
-    
-  
 
 default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
@@ -814,7 +811,10 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if(inherits(t,"Date")) t <- as.Date(round(as.numeric(t)))
     if(!inherits(t,"POSIXt")) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
     if (verbose) {print('default.subset: time index it'); print(it)}
-
+    if (is.character(it)) {
+      if ((levels(factor(nchar(it)))==10)) it <- as.Date(it)
+    }
+    
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
        if (verbose) print('x is a Date or yearmon object')
@@ -838,105 +838,83 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (!inherits(it,"POSIXt")) t <-  as.Date(format(t,"%Y-%m-%d"))
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
-    ## Generate sequence of days, months or years if range of it value is given
-    if (is.character(it)) {
-        if (verbose) print('it is character')
-        if ((levels(factor(nchar(it)))==10)) ##  convert as Date
-            it <- as.Date(it)
-        if ( length(it) == 2 ) {
-            if (verbose) print('Between two dates')
-            # REB 2015-01-20: Need to convert it to dates -
-            # otherwise the code crashes! 
-           if (nchar(it[1])==4) it <- as.Date(c(paste(it[1],'-01-01',sep=''), 
-                                                paste(it[2],'-12-31',sep='')))
-            if (inherits(x,"month")) ## it is a month
-                it <- seq(it[1],it[2],by='month') else
-            if (inherits(x,"season")) ## it is a season
-                it <- seq(it[1],it[2],by='season') else
-            if (inherits(x,"annual")) ## it is a year
-                it <- seq(it[1],it[2],by='year') else 
-            if (inherits(x,"day")) ## assume it is a day
-                it <- seq(it[1],it[2],by='day')
-            ii <- is.element(t,it)
-            #print(it); print(t)
-            if (verbose) print(paste('sum(ii)=',sum(ii)))
-        } else { ## added AM 10-06-2014
-            if (verbose) print('it is a string')
-            if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
-                if (verbose) print('Monthly selected')
-                ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
-                                        #y <- x[ii,is] #  REB Not here
-            } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
-                if (verbose) print("Seasonally selected")
-                if (verbose) print(table(month(x)))
-                if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
-                ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
+    if(inherits(it,c("Date"))) {
+      if ( length(it) == 2 ) {
+        if (verbose) print('Between two dates')
+        if (verbose) print(it)
+        ii <- (t >= min(it)) & (t <= max(it))
+      } else {
+        ii <- is.element(t,it)
+      }
+    } else if(inherits(it,"yearmon")) {
+      ii <- is.element(as.yearmon(t),it)
+    } else if (is.character(it)) {
+      if (verbose) print('it is a string')
+      if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
+        if (verbose) print('Monthly selected')
+        ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
+                                    #y <- x[ii,is] #  REB Not here
+      } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
+        if (verbose) print("Seasonally selected")
+        if (verbose) print(table(month(x)))
+        if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
+        ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
                                         #y <- x[ii,is] # REB Not here
-            }
-            else if (inherits(it,"Date")) {
-                if (verbose) print('it is a Date object')
-                ii <- is.element(t,it)
-            } else {
-                str(it); print(class(it))
-                ii <- rep(FALSE,length(t))
-                warning("default.subset: did not recognise the selection citerion for 'it'")
-            }
-        }
-        ##    } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-##        if (min(it) > 1500) ## it is a year
-##            it <- seq(it[1],it[2],by=1)
-##        ##print("HERE"); print(it)
-##    }
-##    ii <- (t >= it[1]) & (t <= it[length(it)])
-##
-    ## get the subset indices in ii
+      } else if (inherits(it,"Date")) {
+        if (verbose) print('it is a Date object')
+        ii <- is.element(t,it)
+      } else {
+        str(it); print(class(it))
+        ii <- rep(FALSE,length(t))
+        warning("default.subset: did not recognise the selection citerion for 'it'")
+      }
     } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-        if (verbose) print('it is numeric or integer')
+      if (verbose) print('it is numeric or integer')
 # REB bug        nlev <- as.numeric(levels(factor(nchar(it))))
 # nchar returns the string length, but these lines need to find the number of different levels/categories
-        nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
-        if (verbose) {print(nlev); print(it)}
-#         if ((length(nlev)==1)) { REB 2015-01-20: the lines below will never happen with this line:
-        if (length(it)==2) {
-          if ( (min(it) >= 1800) & (max(it) <= 2500) ) {
-            if (verbose) print("it most probably contains a years")
-            ii <- is.element(yr,year(it[1]):year(it[2]))
-          } else if ( (min(it) >= 1) & (max(it) <= length(yr)) ) {
-            if (verbose) print("it most probably contains a indices")
-            ii <- is.element(1:length(yr),it[1]:it[2])
-          } else  if (min(it) >= min(yr)) {
-            if (verbose) print("it most probably contains years")
-            ii <- is.element(yr,it[1]:max(yr))
-          } else  if (max(it) <= max(yr)) {
-            if (verbose) print("it most probably contains years")
-            ii <- is.element(yr,min(yr):it[2])
-          }
-        } else if ((length(it)>2) | length(it==1)) {
-          # if it is years:
-                if (min(it) > length(yr)) {
-                  if (verbose) print("match years")
-                  ii <- is.element(yr,it)
-                } else if (max(it) <= length(yr)) {
-                  if (verbose) print("pick by indices")
-                  ii <- is.element(1:length(t),it)
-                } else {
-                  ii <- rep(FALSE,length(t))
-                  warning("default.subset: did not reckognise the selection citerion for 'it'")
-                }
+      nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
+      if (verbose) {print(nlev); print(it)}
+#       if ((length(nlev)==1)) { REB 2015-01-20: the lines below will never happen with this line:
+      if (length(it)==2) {
+        if ( (min(it) >= 1800) & (max(it) <= 2500) ) {
+          if (verbose) print("it most probably contains a years")
+          ii <- is.element(yr,year(it[1]):year(it[2]))
+        } else if ( (min(it) >= 1) & (max(it) <= length(yr)) ) {
+          if (verbose) print("it most probably contains a indices")
+          ii <- is.element(1:length(yr),it[1]:it[2])
+        } else  if (min(it) >= min(yr)) {
+          if (verbose) print("it most probably contains years")
+          ii <- is.element(yr,it[1]:max(yr))
+        } else  if (max(it) <= max(yr)) {
+          if (verbose) print("it most probably contains years")
+          ii <- is.element(yr,min(yr):it[2])
         }
+      } else if ((length(it)>2) | length(it==1)) {
+        # if it is years:
+        if (min(it) > length(yr)) {
+          if (verbose) print("match years")
+          ii <- is.element(yr,it)
+        } else if (max(it) <= length(yr)) {
+          if (verbose) print("pick by indices")
+          ii <- is.element(1:length(t),it)
+        } else {
+          ii <- rep(FALSE,length(t))
+          warning("default.subset: did not reckognise the selection citerion for 'it'")
+        }
+      }
     } else if (inherits(it,c("Date","yearmon"))) {       
-        ##        ii <- is.element(t,it)
-        if (verbose) print('it is a date object')
-        ii <- (t >= min(it)) & (t <= max(it))
+      ##        ii <- is.element(t,it)
+      if (verbose) print('it is a date object')
+      ii <- (t >= min(it)) & (t <= max(it))
     } else if (inherits(it,"logical") & length(it)==length(yr)) {
-        ii <- it
+      ii <- it
     } else if (inherits(it,"POSIXt")) {
-        if (verbose) print('it is a POSIXt date & time object')
-        if (!inherits(t,"POSIXt")) it <- as.Date(it)
-        ii <- is.element(t,it)
+      if (verbose) print('it is a POSIXt date & time object')
+      if (!inherits(t,"POSIXt")) it <- as.Date(it)
+      ii <- is.element(t,it)
     } else if (!is.null(it)) {
-        ii <- rep(FALSE,length(t))
-        warning("default.subset: did not reckognise the selection citerion for 'it'")
+      ii <- rep(FALSE,length(t))
+      warning("default.subset: did not reckognise the selection citerion for 'it'")
     } 
     
     ## it <- (1:length(t))[ii]
