@@ -22,6 +22,10 @@ esd2ele <- function(param = NULL) {
                                      'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
                                      'rr' = "601",
                                      'slp' = "401",
+                                     'pon' = "402",
+                                     'pom' = "401",
+                                     'pox' = "403",
+                                     'pp'  = "401",
                                      'cc' = "801",
                                      't2' = "101",
                                      'precip' = "601",
@@ -211,7 +215,10 @@ metno.ele <- function() { ## must be updated - AM 2014-02-21
   ## Selected elements from GHCND database
     
     if (!file.exists('metno_element.txt')) {
-      x <- rbind(c("601" , "Precipitation"		 	, "1"	  		, "mm"	, "RR"),
+        x <- rbind(c("601" , "Precipitation"		 	, "1"	  		, "mm"	, "RR"),
+                   c("401" , "Sea level pressure"		 	, "1"	  		, "hPa"	, "POM"),
+                   c("402" , "Sea level pressure"		 	, "1"	  		, "hPa"	, "PON"),
+                   c("403" , "Sea level pressure"		 	, "1"	  		, "hPa"	, "POX"),
                  c("999" , "Snowfall"			, "1" 	  		, "mm" 	, "SNOW"),
                  c("901" , "Snow depth"			, "1" 	  		, "mm" 	, "SNWD"),
                  c("101" , "Mean temperature"	        , "1" 		        , "degree*C"  , "TAM"),
