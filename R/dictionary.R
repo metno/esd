@@ -34,7 +34,9 @@ esd2ele <- function(param = NULL) {
                                      'precip' = "601",
                                      '101' = "t2m",
                                      '401' = "slp",
-                                     '601' = "precip",
+                                     '402' = "pon",
+				     '403' = "pox",
+				     '601' = "precip",
                                      '801' = "cc",
                                      'tmin'="121",'tn'="121",                             #REB 2016-07-25                 
                                      'tmax'="111",'tx'="111",                             #REB 2016-07-25
