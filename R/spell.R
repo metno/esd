@@ -139,6 +139,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
 spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
   if (!is.finite(coredata(x[1]))) {
     y <- zoo(x)
+    browser()
     while ( !is.finite(coredata(y[1])) ) y <- y[-1]
     class(y) <- class(x)
     y <- attrcp(x,y)

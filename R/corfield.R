@@ -178,30 +178,30 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
   #print(length(x)); print(dim(y))
   #yx <- combine(x,y,all=FALSE)
     #y <- yx$y; x <- yx$X
-  ngood <- apply(coredata(y),2,nval)
-  ok <- ngood == length(index(y))
-  
-  if (sum(ok)==0) {
-    print('Problem with missing data. Try with the following argument')
-    print('na.action="na.omit"')
-    stop()
-  }
-  if (verbose) { print(paste(sum(ok),'good data points')); print(table(ngood)) }
-  yok <- y[,ok]
-  if (verbose) print(table(apply(coredata(yok),2,nval)))
-  #print(dim(yok)); image(coredata(yok))
-  merge(zoo(x),yok,all=FALSE) -> xy
-  d <- dim(xy)
-  Y <- xy[,1]
-  X <- xy[,2:d[2]]
-  
-  #browser()
-  if (verbose) {print(d);print(dim(X)); print(length(y)); print(class(x)); print(class(y))}
-  rok <- apply(coredata(X),2,cor,coredata(Y),use=use,...)
-  r <- rep(NA,dim(y)[2])
-  r[ok] <- rok
-  if (verbose) {print(length(r))}
-  
+  # ngood <- apply(coredata(y),2,nval)
+  # ok <- ngood == length(index(y))
+  # 
+  # if (sum(ok)==0) {
+  #   print('Problem with missing data. Try with the following argument')
+  #   print('na.action="na.omit"')
+  #   stop()
+  # }
+  # if (verbose) { print(paste(sum(ok),'good data points')); print(table(ngood)) }
+  # yok <- y[,ok]
+  # if (verbose) print(table(apply(coredata(yok),2,nval)))
+  # #print(dim(yok)); image(coredata(yok))
+  # cbind(zoo(x),yok,all=FALSE) -> xy
+  # d <- dim(xy)
+  # Y <- xy[,1]
+  # X <- xy[,2:d[2]]
+  # 
+  # browser()
+  # if (verbose) {print(d);print(dim(X)); print(length(y)); print(class(x)); print(class(y))}
+  # rok <- apply(coredata(X),2,cor,coredata(Y),use=use,...)
+  # r <- rep(NA,dim(y)[2])
+  # r[ok] <- rok
+  # if (verbose) {print(length(r))}
+  r <- apply(coredata(y),2,cor,coredata(x),use=use,...)
   r <- attrcp(y,r)
 
   if (verbose) {print(names(attributes(x))); print(attr(y,'dimensions'))}
@@ -209,7 +209,7 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
   attr(r,'dimensions') <- attr(y,'dimensions')[1:2]
   attr(r,'longitude') <- attr(y,'longitude')
   attr(r,'latitude') <- attr(y,'latitude')
-  attr(r,'time') <- range(index(X))
+  attr(r,'time') <- range(index(x))
   if (attr(x,'variable')[1]==attr(y,'variable')[1])
     attr(r,'variable') <- attr(x,'variable') else
     attr(r,'variable') <- c(varid(x)[1],varid(y)[1])

@@ -98,7 +98,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
              ylim=ylim + range(coredata(ya),na.rm=TRUE),xlim=c(1900,2100))
     grid()
   }
-
+browser()
   if(verbose) print("Retrieve predictor data")
   if (is.character(predictor))
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,

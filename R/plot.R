@@ -1368,10 +1368,10 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
   plot(pc[[ip]],ylab=paste("PC",ip,sep=""))
 }
 
-plot.dsensemble <- function(x,verbose=FALSE,...) {
+plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
   if(verbose) print("plot.dsensemble")
   if (inherits(x,c('pca','eof'))) {
-    y <- plot.dsensemble.multi(x,verbose=verbose,...) 
+    y <- plot.dsensemble.multi(x,verbose=verbose, plot = plot, ...) 
   } else if (inherits(x,'zoo')) {
     y <- plot.dsensemble.one(x,verbose=verbose,...) 
   } else if (inherits(x,'station')) {
@@ -1388,12 +1388,12 @@ plot.dsensemble <- function(x,verbose=FALSE,...) {
 
 ## Plot multiple stations/spatially aggregated field.
 plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
-                                  anomaly=FALSE,test=FALSE,...) {
+                                  anomaly=FALSE,test=FALSE, plot = TRUE, ...) {
   if (verbose) print('plot.dsensemble.multi')
   
   if (inherits(x,c('pca','eof'))) {
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
-    plot(Y,verbose=verbose,...)
+    if (plot) plot(Y,verbose=verbose,...)
     #invisible(Y)
   } else {
     #return(NULL)
