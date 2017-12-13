@@ -6,12 +6,22 @@ track.events <- function(x,verbose=FALSE,...) {
   track.default(x,verbose=verbose,...)
 }
 
-track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,
-                          dE=0.1,dN=0.1,dmin=1E5,amax=90,ddmax=0.5,dpmax=NULL,
-                          greenwich=NULL,plot=FALSE,progress=TRUE,verbose=FALSE) {
+track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmin=1E5,
+                          f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,dh=NULL,
+		                      greenwich=NULL,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
+  if(is.null(dh)) {
+    d <- paste(x$date,x$time, sep="")
+    d <- as.POSIXct(unique(d),format="%Y%m%d%H")
+    dh <- min(as.numeric(difftime(d[2:length(d)],d[1:(length(d)-1)],units="hours")))
+    ## Temporary fix for daylight saving time. Should try to find a more solid solution. 
+    if(dh==23 & length(unique(x$time))==1) dh <- 24
+    if(dh==11 & length(unique(x$time))==2) dh <- 12
+    if(dh==5 & length(unique(x$time))==4) dh <- 6
+    if(dh==2 & length(unique(x$time))==8) dh <- 3
+  }
   if(!is.null(greenwich)) x <- g2dl(x,"greenwich")
   yrmn <- as.yearmon(strptime(x["date"][[1]],"%Y%m%d"))
   if (length(unique(yrmn))>1 & length(yrmn)>1000) {
@@ -21,15 +31,15 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,
       if(verbose) print(unique(yrmn)[i])
       x.y <- subset(x,it=(yrmn==unique(yrmn)[i]))
       if (is.null(x.tracked)) {
-        x.t <- Track(x.y,x0=x0,plot=plot,cleanup.x0=FALSE,dE=dE,dN=dN,
+        x.t <- Track(x.y,x0=x0,plot=plot,cleanup.x0=FALSE,dh=dh,
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
-                     amax=amax,ddmax=ddmax,dpmax=dpmax,
+		     f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y
       } else {
-        x.t <- Track(x.y,x0=x.tracked,plot=plot,dE=dE,dN=dN,
+        x.t <- Track(x.y,x0=x.tracked,plot=plot,dh=dh,
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
-                     amax=amax,ddmax=ddmax,dpmax=dpmax,
+		     f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
                      progress=FALSE,verbose=verbose)
         x.tracked <- x.t$y0
         x.tracked <- merge(x.tracked,x.t$y,all=TRUE)
@@ -38,9 +48,9 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,
     }
     y <- x.tracked
   } else {
-    x.tracked <- Track(x,x0=NULL,plot=plot,dE=dE,dN=dN,
+    x.tracked <- Track(x,x0=NULL,plot=plot,dh=dh,
                        dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
-                       amax=amax,ddmax=ddmax,dpmax=dpmax,
+		       f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
                        progress=progress,verbose=verbose)
     y <- x.tracked$y
   }
@@ -53,15 +63,16 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,
   invisible(y)
 }
 
-Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0.1,
-                  dmin=1E5,amax=NULL,ddmax=NULL,dpmax=NULL,
-                  cleanup.x0=TRUE,plot=FALSE,progress=TRUE,verbose=FALSE) {
+Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
+		  f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,dh=6,
+		  cleanup.x0=TRUE,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
   options(digits=12)
   d <- sort(unique(strptime(paste(x$date,x$time),"%Y%m%d %H")))
-  dh <- min(as.numeric(difftime(d[2:length(d)],
-                                 d[1:(length(d)-1)],units="hours")))
+  #dh <- min(as.numeric(difftime(d[2:length(d)],
+  #                              d[1:(length(d)-1)],units="hours")))
   x <- x[!is.na(x[,1]),]
+  x <- x[order(x$date*1E2+x$time),]
   if(!is.null(x0)) x0 <- x0[!is.na(x0[,1]),]
   if(verbose) print("calculate trajectories")
   dates <- x$date
@@ -87,7 +98,10 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0
     dt0 <- x0$date*1E2 + x0$time
     nend0 <- unique(num0[dt0<max(dt0)])
     if (dh0<dh*2) {
-      x00 <- x0[dt0>=max(dt0),]
+      ## KMP 2017-11-10: use two timesteps from previous trajectories instead of only one
+      #dt0.max <- max(dt0)
+      dt0.max <- sort(unique(dt0))[max(1,length(unique((dt0)))-1)]
+      x00 <- x0[dt0>=dt0.max,]
       dates <- c(x00$date,dates)
       times <- c(x00$time,times)
       lons <- c(x00$lon,lons)
@@ -110,6 +124,12 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0
     n00 <- 0
     nend0 <- 0
   }
+  
+  if(length(d)<3) {
+    y <- x
+    y0 <- x0
+  } else {
+  
   t1 <- Sys.time()
   if (progress) pb <- txtProgressBar(style=3)
   nend <- nend0
@@ -118,7 +138,6 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0
     if (progress) setTxtProgressBar(pb,i/(length(d)-1))
     dhi <- as.numeric(difftime(d[i:(i+1)],d[(i-1):i],units="hours"))
     if(all(dhi<dh*2)) {
-      #if(verbose) print(d[i])
       nn <- Track123(
         step1=list(lon=lons[datetime==d[i-1]],lat=lats[datetime==d[i-1]],
                    num=num[datetime==d[i-1]],dx=dx[datetime==d[i-1]],
@@ -129,7 +148,8 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0
         step3=list(lon=lons[datetime==d[i+1]],lat=lats[datetime==d[i+1]],
                    num=num[datetime==d[i+1]],dx=dx[datetime==d[i+1]],
                    pcent=pcent[datetime==d[i+1]]),
-             dmax=dmax,ddmax=ddmax,n0=n0,amax=amax,dpmax=dpmax,nend=nend,dE=dE,dN=dN)#,plot=plot)
+             f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
+             dmax=dmax,n0=n0,nend=nend,)#,plot=plot)
       num[datetime==d[i-1]] <- nn$step1$num
       num[datetime==d[i]] <- nn$step2$num
       num[datetime==d[i+1]] <- nn$step3$num
@@ -183,9 +203,8 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0
   if ( length(names(x))>length(attr(x,"unit")) ) {
     attr(x,"unit") <- c(attr(x,"unit"),c("numeration","km"))
   }
-
   if (verbose) print("calculate trajectory statistics")
-  x <- Trackstats(x)
+  x <- Trackstats(x,verbose=verbose)
   if(!is.null(x0)) {
     if(!is.null(x00)) {
       if (dim(x00)[1]>0) {
@@ -277,13 +296,30 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=8E5,nmax=124,nmin=3,dE=0.2,dN=0
            col=adjustcolor(cols[i],alpha=0.5),pch=19,cex=1.5)
     }
   }
+  }
   invisible(list(y=y,y0=y0))
 }
 
-Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
-                     amax=90,ddmax=NULL,dpmax=NULL,nend=NA,plot=FALSE,
-                     verbose=FALSE) {
+Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
+                     f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,
+		     nend=NA,plot=FALSE,verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
+
+  ## Set constants
+  amax <- 90
+  ## Normalize relative weights of the different criteria:
+  if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
+    f.dp <- 0
+    f.depth <- 0
+  }
+  if( (f.d+f.da+f.dd+f.dp)!=1 ) {
+    f.all <- f.d+f.da+f.dd+f.dp
+    f.d <- f.d/f.all
+    f.da <- f.da/f.all
+    f.dd <- f.dd/f.all
+    f.dp <- f.dp/f.all
+  }
+  
   if (is.na(n0) & !all(is.na(step1$num))) {
     n0 <- max(step1$num,na.rm=TRUE)
   } else if (is.na(n0) & all(is.na(step1$num))) {
@@ -300,18 +336,14 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
   d23 <- mapply(function(x,y) distAB(x,y,step2$lon,step2$lat),step3$lon,step3$lat)
   d23[is.na(d23)] <- 0
   a23 <- mapply(function(x,y) 180-angle(x,y,step2$lon,step2$lat),step3$lon,step3$lat)
-  dmax23 <- adjustdmax(a23,dmax=dmax,dE=dE,dN=dN)
   dim(d23) <- c(n2,n3)
   dim(a23) <- c(n2,n3)
-  dim(dmax23) <- c(n2,n3)
   ## Distance and direction between cyclones in timesteps 2 and 3
   d12 <- mapply(function(x,y) distAB(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
   d12[is.na(d12)] <- 0
   a12 <- mapply(function(x,y) angle(x,y,step2$lon,step2$lat),step1$lon,step1$lat)
-  dmax12 <- adjustdmax(a12,dmax=dmax,dE=dE,dN=dN)
   dim(d12) <- c(n2,n1)
   dim(a12) <- c(n2,n1)
-  dim(dmax12) <- c(n2,n1)
   ## Calculate the change in direction for potential trajectorues
   da <- sapply(a12,function(x) abs(x-a23))
   da[da>180 & !is.na(da)] <- abs(da[da>180 & !is.na(da)]-360)
@@ -323,13 +355,10 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
   ## Displacement and change in displacement
   d <- sapply(d12,function(x) apply(d23,c(1,2),function(y) max(y,x)))
   dd <- sapply(d12,function(x) apply(d23,c(1,2),function(y) abs(y-x)))
-  ok.d <- sapply(d12<dmax12,function(x) sapply(d23<dmax23,function(y) y & x ))
+  ok.d <- sapply(d12<dmax,function(x) sapply(d23<dmax,function(y) y & x ))
   dim(d) <- c(n2*n3,n1*n2)
   dim(dd) <- c(n2*n3,n1*n2)
   dim(ok.d) <- c(n2*n3,n1*n2)
-  for(i in unique(i2)) ok.d[i==i2,i!=j2] <- FALSE
-  for(i in unique(i2)) da[i==i2,i!=j2] <- NA
-  for(i in unique(i2)) d[i==i2,i!=j2] <- NA
   if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
     ## Mean sea level pressure at cyclone centers
     p23 <- sapply(step3$pcent, function(x) (step2$pcent+x)/2)
@@ -337,92 +366,99 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
     dim(p12) <- c(n2,n1)
     p <- sapply(p12,function(x) (x+p23)/2)
     dim(p) <- c(n2*n3,n1*n2)
-    for(i in unique(i2)) p[i==i2,i!=j2] <- NA
     ## Change in sea level pressure at cyclone centers
     dp23 <- sapply(step3$pcent, function(x) step2$pcent-x)
     dp12 <- sapply(step1$pcent, function(x) step2$pcent-x)
     dim(dp12) <- c(n2,n1)
     dp <- sapply(dp12,function(x) (abs(x)+abs(dp23))/2)
     dim(dp) <- c(n2*n3,n1*n2)
-    for(i in unique(i2)) dp[i==i2,i!=j2] <- NA
   }
   
   ## Probability factors for three step trajectories...
-  ## ...based on the maximum displacement of cyclones
-  pf.d <- 1-d/dmax
-  pf.d[pf.d<0] <- 0
-  ## ...based on the change in displacement of cyclones and change in direction
-  pf.change <- 1-0.15*dd/d - 0.25*da/amax
-  pf.change[pf.change<0] <- 0
   ## ...based on the pressure at the center of the cyclones
   if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
-    f.depth <- (max(p[!is.na(p)])-p)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
-    f.dp <- dp/(max(p[!is.na(p)])-min(p[!is.na(p)]))#max(dp[!is.na(dp)])
-    pf.change <- pf.change - 0.2*f.dp + 0.2*f.depth
-    #pf.p <-  0.5*((max(p[!is.na(p)])-p)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
-    #               (1-dp/max(dp[!is.na(dp)])))
-    #pf.p[is.na(p)] <- 0
-  } #else {
-    #pf.p <- matrix(1,nrow(pf.d),ncol(pf.d))
-  #}
-  pf.d[!ok.d] <- 0
-  #pf.dd[!ok.d] <- 0
-  #pf.da[!ok.d] <- 0
-  #pf.p[!ok.d] <- 0
-  pf.change[!ok.d] <- 0
-  #pf.dp[!ok.d] <- 0
-  # Probability factors for broken trajectories...
-  # ...based on displacement of cyclones
-  pf.d12 <- 1 - d12/dmax12
-  pf.d23 <- 1 - d23/dmax23
-  pf.d12[pf.d12<0] <- 0
-  pf.d23[pf.d23<0] <- 0
-  # ...based on slp at cyclone center
-  if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
-    f.depth12 <- (max(p[!is.na(p)])-p12)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
-    f.dp12 <- dp12/(max(p[!is.na(p)])-min(p[!is.na(p)]))
-    pf.p12 <- 0.5 - 0.25*f.dp12 + 0.25*f.depth12
-    f.depth23 <- (max(p[!is.na(p)])-p23)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
-    f.dp23 <- dp23/(max(p[!is.na(p)])-min(p[!is.na(p)]))
-    pf.p23 <- 1 - 0.25*f.dp23 + 0.25*f.depth23
-    #pf.p12 <- 0.5*((max(p[!is.na(p)])-p12)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
-    #               (1-dp12/max(dp[!is.na(dp)])))
-    #pf.p23 <- 0.5*((max(p[!is.na(p)])-p23)/(max(p[!is.na(p)])-min(p[!is.na(p)])) +
-    #               (1-dp23/max(dp[!is.na(dp)])))
-    pf.p12[pf.p12<0] <- 0
-    pf.p23[pf.p23<0] <- 0
+    p.range <-(max(p[!is.na(p)])-min(p[!is.na(p)]))
+    pf.depth <- (max(p[!is.na(p)])-p)/p.range
+    pf.dp <- dp/p.range#max(dp[!is.na(dp)])
+    pf.depth[p.range==0] <- 0
+    pf.dp[p.range==0] <- 0
   } else {
-    pf.p12 <- matrix(1,nrow(d12),ncol(d12))
-    pf.p23 <- matrix(1,nrow(d23),ncol(d23))
+    pf.depth <- matrix(1,nrow(da),ncol(da))
+    pf.dp <- matrix(1,nrow(da),ncol(da))
+  }
+  ## ...and the change in displacement, direction and pressure of cyclones
+  pf <- 1 - f.d*d/dmax - f.da*da/amax - f.dd*dd/d - f.dp*pf.dp
+  pf[pf<0] <- 0
+  pf[!ok.d] <- 0
+  pf <- pf + f.depth*pf.depth
+  
+  ## Set pf of impossible trajectories to NA...
+  for(i in unique(i2)) pf[i==i2,i!=j2] <- NA
+  ## ...and make sure not to replace already existing trajectories.
+  if(any(!is.na(step2$num))) {
+    for(sn in step2$num[!is.na(step2$num)]) {
+      if(any(sn %in% step1$num)) {
+        i <- which(step2$num==sn & !is.na(step2$num))
+        j <- which(step1$num!=sn | is.na(step1$num))
+        pf[i2 %in% i, j1 %in% j] <- NA
+        j <- which(step1$num==sn & !is.na(step1$num))
+        i <- which(step2$num!=sn | is.na(step2$num))
+        pf[i2 %in% i, j1 %in% j] <- NA
+      }
+    }
   }
   
+  # Probability factors for broken trajectories - disabled
+  # f.break <- 0.2
+  # if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
+  #   pf.depth12 <- (max(p[!is.na(p)])-p12)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
+  #   pf.dp12 <- dp12/(max(p[!is.na(p)])-min(p[!is.na(p)]))
+  #   pf.depth23 <- (max(p[!is.na(p)])-p23)/(max(p[!is.na(p)])-min(p[!is.na(p)]))
+  #   pf.dp23 <- dp23/(max(p[!is.na(p)])-min(p[!is.na(p)]))
+  # } else {
+  #   pf.dp12 <- matrix(1,nrow(d12),ncol(d12))
+  #   pf.dp23 <- matrix(1,nrow(d23),ncol(d23))
+  #   pf.depth12 <- matrix(1,nrow(d12),ncol(d12))
+  #   pf.depth23 <- matrix(1,nrow(d23),ncol(d23))
+  # } 
+  # pf.12 <- 1 - f.d*d12/dmax - f.dp*pf.dp12 - (f.da+f.dd) - f.break
+  # pf.23 <- 1 - f.d*d23/dmax - f.dp*pf.dp23 - (f.da+f.dd) - f.break
+  # pf.12[pf.12<0] <- 0
+  # pf.23[pf.23<0] <- 0
+  # pf.12[d12>=dmax] <- 0
+  # pf.23[d23>=dmax] <- 0
+  # pf.12 <- pf.12 + f.depth*pf.depth12
+  # pf.23 <- pf.23 + f.depth*pf.depth23
+
   ## Put the probability factors into a common matrix.
   ## The indices in j1.all, j2.all, i2.all, i3.all keeps track
   ## of which row (i) and column (j) represents which cyclones in 
   ## timesteps 1, 2, and 3.
-  pf.all <- matrix(0,ncol=n1*n2+n2,nrow=n2*n3+n2)
-  j1.all <- c(j1,rep(NA,n2))
-  j2.all <- rep(seq(n2),n1+1)
-  i2.all <- rep(seq(n2),n3+1)
-  i3.all <- c(i3,rep(NA,n2))
+  # pf.all <- matrix(0,ncol=n1*n2+n2,nrow=n2*n3+n2)
+  # j1.all <- c(j1,rep(NA,n2))
+  # j2.all <- rep(seq(n2),n1+1)
+  # i2.all <- rep(seq(n2),n3+1)
+  # i3.all <- c(i3,rep(NA,n2))
+  pf.all <- pf
+  j1.all <- j1
+  j2.all <- j2
+  i2.all <- i2
+  i3.all <- i3
+  
   ## Put probability factors for 3-step trajectories into matrix
-  pf.all[1:nrow(pf.change),1:ncol(pf.change)] <- pf.d*pf.change#(pf.change+pf.p)/2#(pf.da+pf.dd+pf.p)/2
-  #rm('pf.d','pf.dd','pf.da','pf.p','pf.dp'); gc(reset=TRUE)
-  
-  ## Put probability factors for broken trajectories into matrix
-  ## and add a penalty factor of 0.2 for breaking the trajectory
-  for(k in unique(j2)) {
-    j.k <- which(is.na(j1.all) & j2.all==k)
-    i.k <- which(!is.na(i3.all) & i2.all==k)
-    pf.all[i.k,j.k] <- 0.1*pf.d23[k,]*pf.p23[k,]
-    j.k <- which(!is.na(j1.all) & j2.all==k)
-    i.k <- which(is.na(i3.all) & i2.all==k)
-    pf.all[i.k,j.k] <- 0.1*pf.d12[k,]*pf.p12[k,]
-  }
-  #rm('pf.d12','pf.d23','pf.p12','pf.p23'); gc(reset=TRUE)
-  
+  pf.all[1:nrow(pf),1:ncol(pf)] <- pf #pf.d*pf.change
+  ## Put probability factors for broken trajectories into matrix - disabled
+  # for(k in unique(j2)) {
+  #   j.k <- which(is.na(j1.all) & j2.all==k)
+  #   i.k <- which(!is.na(i3.all) & i2.all==k)
+  #   pf.all[i.k,j.k] <- pf.23[k,]
+  #   j.k <- which(!is.na(j1.all) & j2.all==k)
+  #   i.k <- which(is.na(i3.all) & i2.all==k)
+  #   pf.all[i.k,j.k] <- pf.12[k,]
+  # }
+ 
   ## Connect the most likely trajectories based on the probability factors
-  if(any(pf.all>0)) {
+  if(any(pf.all>0 & !is.na(pf.all))) {
     rank.all <- matrix(rank(1-pf.all),dim(pf.all))
     if(plot) {
       dev.new()
@@ -444,22 +480,46 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
       }
     }
     
-    rank.all[pf.all<=0] <- NA
+    rank.all[pf.all<=0 | is.na(pf.all)] <- NA
     while(any(!is.na(rank.all))) {
       ij <- which(rank.all==min(rank.all,na.rm=TRUE),arr.ind=TRUE)
+      # If more than one trajectory with same ranking:
       if(dim(ij)[1]>1) {
-        k <- which.min(apply(ij,1,function(x) da[x[1],x[2]]))
-        ij <- ij[k,]
+	      # If any three step trajectories, choose among those based on angle change
+        is.123 <- ij[,1]<=dim(da)[1] & ij[,2]<=dim(da)[2]
+        if(sum(is.123)>0 & sum(!is.123)>0) { 
+	        ij <- ij[which(is.123),]
+	        if(is.null(dim(ij))) dim(ij) <- c(1,length(ij))
+	        is.123 <- ij[,1]<=dim(da)[1] & ij[,2]<=dim(da)[2]
+	      }
+        if(sum(is.123)>1) { 
+          ij <- ij[which.min(apply(ij,1,function(x) da[x[1],x[2]])),]
+	        if(is.null(dim(ij))) dim(ij) <- c(1,length(ij))
+	      }
+	      # If still more than one trajectory, choose based on distance
+	      if(dim(ij)[1]>1) {
+          d.k <- apply(ij,1,function(x) {
+	          if(!is.na(j1.all[x[2]])) {
+	            return(d12[i2.all[x[1]],j1.all[x[2]]])
+	          } else {
+	            return(d23[i2.all[x[1]],i3.all[x[1]]])
+	          }
+          })
+	        k <- which.min(d.k)
+	        ij <- ij[k,]
+	        if(is.null(dim(ij))) dim(ij) <- c(1,length(ij))
+	      }
+	      # If still more than one trajectory, choose first one
+	      if(!is.null(dim(ij))) ij <- ij[1,]
       }
       k1 <- j1.all[ij[2]]
       k2 <- i2.all[ij[1]]
       k3 <- i3.all[ij[1]]
       if(!is.na(k1)) {
         num.k <- step1$num[k1]
-        rank.all[,j1.all==k1] <- NA
+        rank.all[,j1.all==k1 & !is.na(j1.all)] <- NA
       } else {
         num.k <- max(c(n0,step1$num,step2$num,step3$num),na.rm=TRUE)+1
-        n0 <- num.k
       }
       step2$num[k2] <- num.k
       step2$dx[k2] <- d12[k2,k1]
@@ -475,6 +535,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
         lat.k <- c(step1$lat[k1],step2$lat[k2],step3$lat[k3])
         lines(lon.k,lat.k,lwd=3,col="blue",type="l",lty=1)
       }
+      n0 <- max(c(n0,step1$num,step2$num,step3$num),na.rm=TRUE)
     }
   }
   
@@ -484,11 +545,14 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=8E5,dE=0,dN=0,
     step2$num[is.na(step2$num)] <- seq(sum(is.na(step2$num))) +
         max(c(n0,step2$num),na.rm=TRUE)    
   }
-  nok <- (step2$num %in% step1$num) & !(step2$num %in% step3$num) & !is.na(step2$num)
-  if(any(nok)) {
-    nend <- c(nend,step2$num[nok])
-    nend <- nend[!is.na(nend)]
-  }
+  ## trajectories that should end:
+  ## 1) tracks that are in step 1 (and 2) but not 3
+  ## 2) tracks that are in step 2 but not 3
+  nok1 <- (!(step1$num %in% step3$num) & !is.na(step1$num))
+  nok2 <- (!(step2$num %in% step3$num) & !is.na(step2$num))
+  if(any(nok1)) nend <- c(nend,step1$num[nok1])
+  if(any(nok2)) nend <- c(nend,step2$num[nok2])
+  nend <- unique(nend[!is.na(nend)])
   return(list(step1=step1,step2=step2,step3=step3,nend=nend,
          n0=max(c(step1$num,step2$num,step3$num,n0),na.rm=TRUE)))
 }
@@ -501,34 +565,9 @@ angle <- function(lon1,lat1,lon2,lat2) {
   #return(atan2(lat2-lat1,lon2-lon1)*180/pi+90)
 }
 
-## adjust maximum distance based on angle of direction: max eastward, min westward 
-adjustdmax <- function(a,dmax=1.2E6,dE=0,dN=0,width=1,height=1,plot=FALSE) {
-  rad <- a*pi/180
-  east <- rad > -pi/2 & rad < pi/2
-  north <- rad < pi & rad > 0
-  x <- width*height/sqrt(height^2 + width^2*(tan(rad)^2))
-  x[!east] <- -x[!east]
-  y <- height*sqrt(1-(x/width)^2)
-  y[!north] <- -y[!north]
-  #x <- (x + dE)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
-  #y <- (y + dN)/sqrt((cos(atan(dN/dE)) + dE)^2 + (sin(atan(dN/dE)) + dN)^2)
-  x <- x + dE
-  y <- y + dN
-  d <- dmax*sqrt(x^2 + y^2)
-  if(plot) {
-    plot(0,0,cex=2,pch=3,col="black",
-         xlim=c(-1.5,1.5)*dmax*1E-3,ylim=c(-1.5,1.5)*dmax*1E-3,
-         xlab="dmax (km)",ylab="dmax (km)",main="maximum displacement radius")
-    points(dmax*x*1E-3,dmax*y*1E-3,pch=19,cex=0.5)
-    grid()
-  }
-  return(d)
-}
-
 Trackstats <- function(x,verbose=FALSE) {
   if(verbose) print("Trackstats")
-  
-  if (!any("trajectory" %in% names(x))) x <- tracking.events(x,verbose=verbose)
+  if (!any("trajectory" %in% names(x))) x <- track(x,verbose=verbose)
   y <- x[order(x$trajectory),]
   y <- attrcp(x,y)
   class(y) <- class(x)
@@ -541,10 +580,9 @@ Trackstats <- function(x,verbose=FALSE) {
   rnum[is.na(rnum)] <- nummax+1
   if(verbose) print("trackcount")
   trackcount <- data.frame(table(rnum))
-  #if (any(rnum>nummax)) trackcount$Freq[nummax+1] <- 1
 
   if(verbose) print("timestep")
-  ts <- unlist(sapply(unique(rnum),function(i) 1:trackcount$Freq[i]))
+  ts <- unlist(sapply(unique(rnum),function(i) 1:trackcount$Freq[trackcount$rnum==i]))
   timestep <- rep(NA,length(ts))
   timestep[order(rnum)] <- ts
   if (any(rnum>nummax)) timestep[rnum==(nummax+1)] <- 1
@@ -563,6 +601,7 @@ Trackstats <- function(x,verbose=FALSE) {
   distance <- as.numeric(by(cbind(lons,lats),rnum,fn))*1E-3
 
   y$trackcount <- trackcount$Freq[rnum]
+  y$trackcount[is.na(y$trajectory)] <- 1
   y$timestep <- timestep
   y$distance <- distance[rnum]
   if (length(attr(y,"unit"))<dim(y)[2]) {
@@ -582,7 +621,6 @@ Trackstats <- function(x,verbose=FALSE) {
       attr(y,"unit") <- c(attr(y,"unit"),c("km","km"))
     }
   }
- 
   invisible(y)
 }
 
@@ -624,6 +662,8 @@ Enumerate <- function(x,param="trajectory",verbose=FALSE) {
   num <- x[param][[1]]
   if (identical(unique(num),seq_along(unique(num)))) {
     rnum <- num
+  } else if (length(num)==1) {
+    rnum <- num
   } else {
     if(verbose) print(paste("number of events:",length(num)))
     if(verbose) print(paste("number of trajectories:",length(unique(num))))
@@ -637,7 +677,7 @@ Enumerate <- function(x,param="trajectory",verbose=FALSE) {
     rnum[is.na(num)] <- NA
   }
   invisible(rnum)
-}
+ }
 
 
 NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,
@@ -688,77 +728,3 @@ NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,
   invisible(cbind(num,d.num))
 }
 
-
-function(x) {
-  for(i in unique(i2)) ok[i==i2,,i!=j2] <- FALSE
-  if(any(ok)) {
-    da[!ok] <- NA
-    dim(da) <- c(n2*n3,n1*n2)
-    dim(d12) <- c(n2,n1)
-    dim(d23) <- c(n3,n2)
-    nok <- matrix(rep(FALSE,length(da)),dim(da))
-    if(any(!is.na(step2$num))) {
-      for(k in unique(step2$num[!is.na(step2$num)])) {
-        nok[,(j1==which(step1$num==k) & j2!=which(step2$num==k))] <- TRUE
-        nok[,(j1!=which(step1$num==k) & j2==which(step2$num==k))] <- TRUE
-        nok[(i2==which(step2$num==k)),j1!=which(step1$num==k)] <- TRUE    
-      }
-    }
-    if(any(!is.na(nend))) {
-      for(k in nend[!is.na(nend) & nend %in% step1$num]) {
-        nok[,(j1==which(step1$num==k))] <- TRUE
-      }
-      for(k in nend[!is.na(nend) & nend %in% step2$num]) {
-        nok[,(j2==which(step2$num==k))] <- TRUE
-        nok[(i2==which(step2$num==k)),] <- TRUE
-      }
-    }
-    da[nok] <- NA
-    dd[is.na(da)] <- NA
-    d123[is.na(da)] <- NA
-    rank.da <- matrix(rank(da),dim(da))
-    rank.dd <- matrix(rank(dd),dim(dd))
-    rank.d123 <- matrix(rank(d123),dim(d123))
-    rank.all <- rank.da + rank.d123 + rank.dd
-    if(!is.null(dp)) {
-      p[is.na(da)] <- NA
-      dp[is.na(dp)] <- NA
-      #ddp[is.na(ddp)] <- NA
-      rank.p <- matrix(rank(p),dim(p))
-      rank.dp <- matrix(rank(dp),dim(dp))
-      #rank.ddp <- matrix(rank(ddp),dim(ddp))
-      rank.all <- rank.all + rank.p + rank.dp #+ rank.ddp
-    }
-    rank.all[is.na(da)] <- NA
-    
-    if(plot) {
-      dev.new()
-      data(geoborders,envir=environment())
-      plot(geoborders,type="l",col="grey20",lwd=0.5,
-           xlim=c(-90,90),ylim=c(30,90))      
-      points(step1$lon,step1$lat,col="red",pch=21)
-      points(step2$lon,step2$lat,col="orange",pch=21)
-      points(step3$lon,step3$lat,col="yellow",pch=21)
-    }
-    while(any(!is.na(rank.all))) {
-      ij <- which(rank.all==min(rank.all,na.rm=TRUE),arr.ind=TRUE)
-      if(dim(ij)[1]>1) {
-        k <- which.min(apply(ij,1,function(x) da[x[1],x[2]]))
-        ij <- ij[k,]
-      }
-      step2$num[j2[ij[2]]] <- step1$num[j1[ij[2]]]
-      step3$num[i3[ij[1]]] <- step1$num[j1[ij[2]]]
-      step2$dx[j2[ij[2]]] <- d12[j2[ij[2]],j1[ij[2]]]
-      step3$dx[i3[ij[1]]] <- d23[i3[ij[1]],j2[ij[2]]]
-      rank.all[,j1==j1[ij[2]]] <- NA
-      rank.all[,j2==j2[ij[2]]] <- NA
-      rank.all[i2==i2[ij[1]],] <- NA
-      rank.all[i3==i3[ij[1]],] <- NA
-      if(plot) {
-        points(step1$lon[j1[ij[2]]],step1$lat[j1[ij[2]]],pch=as.character(step1$num[j1[ij[2]]]))
-        points(step2$lon[j2[ij[2]]],step2$lat[j2[ij[2]]],pch=as.character(step2$num[j2[ij[2]]]))
-        points(step3$lon[i3[ij[1]]],step3$lat[i3[ij[1]]],pch=as.character(step3$num[i3[ij[1]]]))
-      }
-    }
-  }
-}

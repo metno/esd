@@ -55,7 +55,7 @@ index(warmarea) <- year(warmarea)
 ## Read the data
 url <- 'http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html'
 hurdat2 <- readLines(url)
-writeLines(hurdat2,con='/disk1/hurdat2-1851-2014-022315.html')
+writeLines(hurdat2,con='hurdat2-1851-2014-022315.html')
 
 ## Extract the storms
 itc <- grep('^AL',hurdat2,perl=TRUE)

@@ -34,6 +34,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   if(verbose) print("reading data")
   x <- read.fwf(fname,width=w,col.names=h,skip=1)
   x <- x[x$code99<90,]
+  x <- x[!is.na(x$lon),]
   # rearrange date and time information
   dates <- round(x["datetime"][[1]]*1E-2)
   times <- x["datetime"][[1]] - round(dates)*1E2
@@ -52,17 +53,27 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
     method <- paste("M0",as.character(x$code99[1]),sep="")
   }
   x <- as.events(x,longname=longname,param=param,method=method,src=src,
-                 reference=ref,file=file.path(path,fname),url=url)
+                 reference=ref,file=file.path(path,fname),url=url,verbose=verbose)
   attr(x, "history")= history.stamp() 
   invisible(x)
 }
 
 #fname <- 'http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html'
-read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html',
+read.hurdat2 <- function(fname='http://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2016-041117.txt',
                          path=NULL,verbose=FALSE,...) {
   if(verbose) print("read.hurdat2")
   if(verbose) print(paste("file:",fname))
-  if(!is.null(path) & !is.url(fname)) fname <- file.path(path,fname)
+  if(!is.null(path) & !is.url(fname)) {
+    fname <- file.path(path,fname)
+  } else if (is.url(fname)) {
+    destfile <- sub("http://","",fname)
+    destfile <- sub(".html",".txt",destfile)
+    destfile <- sub(".*/","",destfile)
+    if (!is.null(path)) destfile <- file.path(path,destfile)
+    if(!file.exists(destfile)) download.file(url=fname, destfile, method="auto", 
+                                             quiet=FALSE, mode="w", cacheOK=TRUE)
+    fname <- destfile
+  }
   hurdat2 <- readLines(fname)
   n <- as.vector(sapply(hurdat2,nchar))
   i.storm <- which(n>80)

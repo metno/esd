@@ -174,7 +174,7 @@ as.station.zoo(x,location=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                       reference=NA,info=NA, method=
   NA,type=NA,aspect=NA)
 as.station.dsensemble.pca(x, is = NULL, ip = NULL, verbose = FALSE, ...) 
-as.trajectory(x,n=10,loc=NA,param=NA,unit=NA,lon=NA,
+as.trajectory(x,n=15,loc=NA,param=NA,unit=NA,lon=NA,
                           lat=NA,alt=NA,cntr=NA,longname=NA,stid=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
                           method= NA,verbose=FALSE)
@@ -308,5 +308,11 @@ pca.t2m <- subset(pca.t2m,ip = 1:3)
 z.pca <- DSensemble.pca(pca.t2m,predictor=predictor,select=1:4)
 z <- as.station.dsensemble.pca(z.pca)
 plot(z[[1]])
+
+## Example of transforming cyclone data from an 'events' object (individual events)
+## into a 'trajectory' object (interpolated trajectories) which takes less space
+data(storms)
+x <- as.trajectory(storms)
+map(x, alpha=0.1)
 }
 \keyword{utilities}

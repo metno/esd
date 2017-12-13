@@ -20,6 +20,7 @@ trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
 trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.one.station",result))
+  if (sum(is.finite(x)) <= 3) return(NA)
   #print(class(index(x)))
   if (class(index(x))=="Date") {
     if (verbose) print("Date index")
@@ -226,6 +227,8 @@ trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
 ## Compute the linear trend
 trend.coef <- function(x,...) {
+  if (sum(is.finite(x)) <= 3) return(NA)
+  x[!is.finite(x)] <- NA
   t <- 1:length(x)
   model <- lm(x ~ t)
   y <- c(model$coefficients[2]*10)
@@ -235,6 +238,8 @@ trend.coef <- function(x,...) {
 
 ## Compute the linear trend
 trend.err <- function(x,...) {
+  if (sum(is.finite(x)) <= 3) return(NA)
+  x[!is.finite(x)] <- NA
   t <- 1:length(x)
   model <- lm(x ~ t)
   y <- c(summary(model)$coefficients[4]*10)
@@ -245,9 +250,11 @@ trend.err <- function(x,...) {
 
 ## Compute the p-value of the linear trend 
 trend.pval <- function(x,...) {
-    t <- 1:length(x)
-    model <- lm(x ~ t)
-    y <- anova(model)$Pr[1]
-    names(y) <- c("trend.pvalue")
-    return(y)
+  if (sum(is.finite(x)) <= 3) return(NA)
+  x[!is.finite(x)] <- NA
+  t <- 1:length(x)
+  model <- lm(x ~ t)
+  y <- anova(model)$Pr[1]
+  names(y) <- c("trend.pvalue")
+  return(y)
 }

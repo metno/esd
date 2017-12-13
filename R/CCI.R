@@ -2,7 +2,7 @@
 # Last updated 10.10.2016
 
 CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
-                label=NULL,mindistance=5E5,dpmin=1E-3,hmax=3000,
+                label=NULL,mindistance=5E5,dpmin=1E-3,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,
                 fname="cyclones.rda",plot=FALSE,accuracy=NULL,
                 allow.open=FALSE,do.track=FALSE,verbose=FALSE,...) {
@@ -42,6 +42,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
           class(X) <- class(X.y)
         }
       }
+      if(!is.null(fname)) save(file=fname,X)
     }
     t2 <- Sys.time()
     if (verbose) print(paste('CCI took',round(as.numeric(t2-t1,units="secs")),'s'))
@@ -163,7 +164,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   }
   rm("dP","P.zonal"); gc(reset=TRUE)
 
-  ## Exclude identified depressions in high altitude regions
+  # Exclude identified depressions in high altitude regions
   if(verbose) print("Penalty factor for high altitude")
   data(etopo5)
   fn <- function(lon=0,lat=60) {
@@ -181,15 +182,16 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   }
 
   ## Penalty factor for topography
+  hmax <- 1000
   h <- mapply(fn,lonXY,latXY)
   dh <- apply(h[2:3,],2,max)  
-  pf.h <- 1 - 0.25*h[1,]/hmax - 0.25*dh/300
+  pf.h <- 1 - 0.25*h[1,]/hmax - 0.25*dh/200
   pf.h[h[1,]<0] <- 1
   pf.h[h[1,]>hmax] <- 0
   pf.h <- rep(pf.h,nt)
   dim(pf.h) <- c(nx-1,ny-1,nt)
-  pf.h <- aperm(pf.h,c(3,1,2))  
-    
+  pf.h <- aperm(pf.h,c(3,1,2))
+ 
   ## Quality flag to keep track of cyclones found with widened mask
   qf <- matrix(rep(0,length(lows1)),dim(lows1))
   qf[lows1] <- 1
@@ -398,20 +400,11 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
       nlat <- length(ilat)
       ilon <- c(rep(which(lonXY[,1]==lon[i]),nlat),ilon)
       ilat <- c(ilat,rep(which(latXY[1,]==lat[i]),nlon))
-      oki <- sum(!is.na(ilon))>=3
+      oki <- sum(!is.na(ilon))>=nmin
       if(oki) {
         dpi <- mapply(function(i1,i2) dpsl[t==date[i],i1,i2],ilon,ilat)
-        oki <- sum(!is.na(dpi) & (pf.h[i]*dpi)>dpmin/2)>=3 &
+        oki <- sum(!is.na(dpi) & (pf.h[i]*dpi)>dpmin/2)>=nmin &
                (pf.h[i]*mean(dpi,na.rm=TRUE))>dpmin
-        #print(paste(lon[i],lat[i],sep=","))
-        #print(paste(fn(lon[i],lat[i]),collapse=","))
-        #print(pf.h[i])
-        #pf.dpi <- 1-10^(-0.31*dpi/dpmin)
-        #pf.i <- (pf.h[i]+pf.dh[i])/2*pf.dpi
-        #print(pf.dpi)
-        #print(pf.i)
-        #oki <- sum(!is.na(dpi) & pf.i>=0.25)>=nmin &
-        #         mean(pf.i,na.rm=TRUE)>0.5
       }
       if (oki) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])

@@ -331,18 +331,21 @@ as.station.dsensemble <- function(x,verbose=FALSE,...) {
   }
   if (inherits(x,"pca")) {
     y <- as.station.dsensemble.pca(x,verbose=verbose,...)
-  } else if (inherits(x,c("station","zoo"))) {
+  } else if (inherits(x,c("station","list"))) {
     y <- as.station.dsensemble.station(x,verbose=verbose,...)
   } else {
     print(paste('unexpected class - do not know how to handle:',class(x)))
     y <- x
   }
+  if (verbose) print(class(y))
   return(y)
 }
 
 as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   X <- x ## quick fix
   if (verbose) print('as.station.dsensemble.pca')
+  ## REB: need to remove the EOF object if it is present:
+  if (!is.null(X$eof)) X$eof <- NULL
   if (inherits(X,"station")) return(X)
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
   if (inherits(X,"station")) {
@@ -355,6 +358,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     ## The PCs from the list are extracted into the matrix V 
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    if (verbose) print(paste('dim V=',paste(dim(V),collapse='-')))
     ## Select number of patterns
 
     ## REB 2016-11-03
@@ -425,6 +429,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     if (length(S)>1) class(S) <- c("dsensemble",class(X$pca)[2:3],"list") else
                      S <-  S[[1]]
+    names(S) <- locs
     attr(S,"unit") <- attr(X$pca,"unit")
     attr(S,"variable") <- attr(X$pca,"variable")
     attr(S,"longname") <- attr(X$pca,"longname")
@@ -447,8 +452,8 @@ as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=F
              function(x,FUN) apply(coredata(x),1,FUN=FUN),FUN))
     dim(V) <- c(nt,ns)
     if (verbose) str(V)
-    loc <- unlist(lapply(x,loc)); lon <- unlist(lapply(x,lon)); lat <- unlist(lapply(x,lat))
-    alt <- unlist(lapply(x,alt)); stid <- unlist(lapply(x,stid));
+    loc <- unlist(lapply(x,esd::loc)); lon <- unlist(lapply(x,esd::lon)); lat <- unlist(lapply(x,esd::lat))
+    alt <- unlist(lapply(x,esd::alt)); stid <- unlist(lapply(x,esd::stid));
     param <- attr(x,"variable")#unlist(lapply(x,varid))
     unit <- attr(x,"unit")#unlist(lapply(x,unit))
     longname <- attr(x,"longname")#unlist(lapply(x,function(x) attr(x,'longname')))
@@ -746,6 +751,13 @@ as.annual.spell <- function(x, ...) annual.spell(x,...)
 
 as.monthly <- function(x, ...) UseMethod("as.monthly")
 
+as.monthly.default <- function(x,...) {
+  yyyymm <- function(x) ym <- as.Date(paste(year(x),month(x),'01',sep='-'))
+  y <- aggregate(x,by=yyyymm,...)
+  return(y)
+}
+
+
 as.monthly.field <- function(x,FUN='mean',...) {
 if (inherits(x,'month')) return(x)
   y <- aggregate(as.zoo(x),function(tt) as.Date(as.yearmon(tt)),FUN=FUN,...)
@@ -824,19 +836,19 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,
   if (is.null(d)) d <- c(length(x),1)
   if (!slow) {
     if (inherits(x,"month")) {
-      if ( (is.null(d)) | (d[2]==1) )
+      if ( (is.null(d)) | (d[2]==1) ) {
         X <- c(NA,coredata(x)[1:length(x)-1]) # shift the coredata by 1 to start on December. This works only for monthly data !!!  
-      else
+      } else {
         X <- rbind(rep(NA,d[2],1),coredata(x)[1:d[1]-1,])
+      }
       #print(dim(X))
       X <- zoo(X,order.by=index(x))
-    ##yrseas <- fourseasons(ix)
-    ##print(yrseas)
-     #print('agrigate')
-     #print(names(list(...)))
-
-     y <- aggregate(x=as.zoo(X),by= as.yearqtr,FUN=match.fun(FUN),...)
-    # convert yearqtr to yearmon
+      ##yrseas <- fourseasons(ix)
+      ##print(yrseas)
+      #print('aggregate')
+      #print(names(list(...)))
+      y <- aggregate(x=as.zoo(X),by=as.yearqtr,FUN=match.fun(FUN),...)
+      # convert yearqtr to yearmon
       y <- zoo(x=y,order.by=as.Date(as.yearmon(index(y))))
     } else y <- as.4seasons.day(x,FUN=FUN,nmin=nmin,...)
     #y <- as.4seasons.day(x,FUN=match.fun(FUN),...)
@@ -879,6 +891,10 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,
     y <- zoo(X[ok,],order.by=as.Date(as.yearqtr(t[ok])))
     #names(y) <- FUN
   }
+  if (!is.null(dim(y))) {
+    ok <- is.finite(rowMeans(y,na.rm=TRUE))
+    y <- y[ok,]
+  } 
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   if (inherits(x,'field'))
@@ -1275,30 +1291,61 @@ as.pattern <- function(x,...) UseMethod("as.pattern")
 
 as.pattern.ds <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
   attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)
 }
 
 as.pattern.eof <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
   attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)  
 }
 
 as.pattern.mvr <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)  
 }
 
 as.pattern.cca <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
   attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)  
 }
 
 as.pattern.trend <- function(x) {
   y <- attr(x,'pattern')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- paste('weights(',varid(x),')',sep='')
+  attr(y,'unit') <- 'dimensionless'
+  attr(y,'dimensions') <- dim(y)
   attr(y,'history') <- history.stamp(x)
+  class(y) <- c('pattern',class(y))
   invisible(y)  
 }
 
@@ -1314,8 +1361,11 @@ as.pattern.field <- function(x,FUN=NULL,...) {
     y <- t(coredata(x))
     dim(y) <- attr(x,'dimension')
   }
-  attr(y,'longitude') <- attr(x,'longitude')
-  attr(y,'latitude') <- attr(x,'latitude')
+  attr(y,'longitude') <- lon(x)
+  attr(y,'latitude') <- lat(x)
+  attr(y,'variable') <- varid(x)
+  attr(y,'unit') <- unit(x)
+  class(y) <- c('pattern',class(y))
   attr(y,'time') <- index(x) 
   attr(y,'history') <- history.stamp(x)
   invisible(y)
@@ -1327,9 +1377,10 @@ as.pattern.corfield <- function(x) {
   y <- attrcp(x,y)
   attr(y,'longitude') <- lon(x)
   attr(y,'latitude') <- lat(x)
-  attr(y,'time') <- attr(x,'time')
-  class(y) <- 'matrix'
-  
+  attr(y,'variable') <- varid(x)
+  attr(y,'unit') <- unit(x)
+  class(y) <- c('pattern',class(y))
+  attr(y,'time') <- index(x)
   invisible(y)
 }
 

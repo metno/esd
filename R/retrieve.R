@@ -20,14 +20,10 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     X <- NULL
     qf <- NULL
     ## 
-    ## Setting the path
-    if (is.null(path)) { 
-        if (dirname(ncfile)=='.') ## path set to current directory 
-            path <- getwd()
-        else {
-            path <- dirname(ncfile)
-            ncfile <- basename(ncfile)
-        }  
+    ## Setting the path   (sessionInfo()[[1]]$os=='linux-gnu')?
+    if ( (is.null(path))) { 
+      path <- dirname(ncfile)
+      ncfile <- basename(ncfile)
     }   
     ##if (is.character(ncfile)) {
     ##    fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
@@ -475,6 +471,13 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     if (length(iunit)>0) {
         text=paste("v1$",names(v1)[iunit],sep="")
         units <- eval(parse(text=text))
+        # hebe added extra units test for unusual strings
+        if (units=="") {
+            try(tmp <- grep("unit",names(ncatt_get(ncid,param)),value=TRUE),silent = !verbose)
+            if ((!inherits(tmp, "try-error")) & (length(tmp)!=0)) {
+                units<-gsub(" ","",eval(parse(text=paste('ncatt_get(ncid, param)$',tmp,sep = ""))))
+            }
+        }
         if (((units=="K") | (units=="degK")) & !grepl("anom",v1$longname)) {
             val <- val - 273 
             units <- "degC"

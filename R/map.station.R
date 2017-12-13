@@ -43,14 +43,19 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          xlab="lon",ylab="lat",
                          legend.shrink=1,fig=c(0,1,0.05,0.95),
                          mar=rep(2,4),mgp=c(3,1,0),...) { 
-  # browser() 
-  if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap | use.old)
-    map.station.old(x,FUN, it,is,new, projection,xlim, ylim,zlim,n,
-                    col,bg,colbar, xlab,ylab,type,gridlines,lonR,latR,axiR,verbose, cex,zexpr,cex.subset,
-                    add.text.subset,showall,add.text,height,width,cex.main,cex.axis,cex.lab,
-                    pch, from,to,showaxis,border,full.names, full.names.subset, text, fancy, 
-                    na.rm,show.val,usegooglemap, legend.shrink,...) 
-  else {
+  if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap | use.old) {
+    map.station.old(x=x,FUN=FUN,it=it,is=is,new=new,projection=projection,
+                    xlim=xlim,ylim=ylim,zlim=zlim,n=n,col=col,bg=bg,
+                    colbar=colbar,xlab=xlab,ylab=ylab,type=type,gridlines=gridlines,
+                    lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,
+                    cex=cex,zexpr=zexpr,cex.subset=cex.subset,
+                    add.text.subset=add.text.subset,showall=showall,add.text=add.text,
+                    height=height,width=width,cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
+                    pch=pch,from=from,to=to,showaxis=showaxis,border=border,
+                    full.names=full.names,full.names.subset=full.names.subset,
+                    text=text,fancy=fancy,na.rm=na.rm,show.val=show.val,
+                    usegooglemap=usegooglemap,legend.shrink=legend.shrink,...)
+  } else {
     if (verbose) print('map.station - new version')
     if (new) dev.new()
     if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
@@ -106,26 +111,34 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       str(col)
     }
     
+    if (is.null(xlim)) {
+      if (length(is$lon)>1) {
+        xlim <- range(is$lon,na.rm=TRUE) + c(-1,1)
+      } else {
+        xlim <- range(lon(x),na.rm=TRUE) + c(-4,4)
+      }
+    }
+
+    if (is.null(ylim)) {
+      if (length(is$lat)>1) {
+        ylim <- range(is$lat,na.rm=TRUE) + c(-1,1)
+      } else {
+        ylim <- range(lat(x),na.rm=TRUE) + c(-2,2)
+      }
+    }
+    
     plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=2,new=FALSE,
          xlab=xlab,ylab=ylab)
     if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=0.6,col='grey',pos=1)
     
-    if(showaxis) {
+    if(showaxis | gridlines) {
       par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
-          cex.lab=0.7,cex.axis=0.7)
-      axis(3,at=pretty(par("xaxp")[1:2],n=5),col='grey')
-      axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey')
+          cex.lab=0.9,cex.axis=0.9)
+      axis(3,seq(floor(par("xaxp")[1]/5)*5,par("xaxp")[2],by=5),col='grey')
+      axis(4,seq(floor(par("yaxp")[1]/5)*5,par("yaxp")[2],by=5),col='grey')
+      if (gridlines) grid()
     }
-    
-    if (gridlines) {
-      par(xaxt='s',yaxt='s',cex.axis=cex.axis)
-      axis(3,seq(floor(par("xaxp")[1]/5)*5,par("xaxp")[2],by=5),col='grey30')
-      axis(4,seq(floor(par("yaxp")[1]/5)*5,par("yaxp")[2],by=5),col='grey30')
-      #axis(3,seq(min(round(lon(x))),max(round(lon(x))),by=5),col='grey30',cex.axis=cex.axis)
-      #axis(4,seq(min(round(lat(x))),max(round(lat(x))),by=5),col='grey30',cex.axis=cex.axis)
-      grid()
-    }
-    
+
     data("geoborders")
     lines(geoborders$x,geoborders$y)
     if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
@@ -192,34 +205,38 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              ##colorbar=TRUE,
                              legend.shrink=1,...) { 
   ##
-  if (verbose) {print(paste('map.station',FUN)); print(class(x))}
+  if (verbose) {
+    print(paste('map.station',FUN))
+    print(class(x))
+  }
   arg <- list(...)
   attr(x,'unit') <- as.character(unit(x))
   attr(x,'variable') <- as.character(varid(x))
   ## REB 2016-11-28: some objects contain the attribute 'mean' which gets in the way.
-  if (!is.null(FUN))
-    if ((FUN=='mean') &
-        (!is.null(attr(x,'mean'))))  attr(x,'mean') <- NULL
-  
+  if (!is.null(FUN)) {
+    if ((FUN=='mean') & (!is.null(attr(x,'mean')))) attr(x,'mean') <- NULL
+  }
   if (inherits(x,"stationmeta")) {
     x$years <- as.numeric(x$end) - as.numeric(x$start) + 1
     if (!is.null(FUN)) if (FUN=='alt') FUN <- 'altitude'
     if (verbose) print(names(x))
   }
   
-  if (!is.null(FUN)) 
-    if (is.character(FUN)) if (FUN=="NULL") FUN <- NULL else FUN <- genfun(x,FUN)
-  if (!is.function(FUN) & !is.null(FUN)) {x <- FUN; FUN <- NULL}
+  if (!is.null(FUN)) {
+    if (is.character(FUN)) {
+      if (FUN=="NULL") FUN <- NULL else FUN <- genfun(x,FUN)
+    } else if (!is.function(FUN)) {
+      x <- FUN
+      FUN <- NULL
+    }
+  }
   if (verbose) print(FUN)
   
   fig0 <- c(0,1,0,1); mar0 <- rep(2,4)
   par0 <- par(fig=fig0,mar=mar0)
-  if ( (par()$mfcol[1]> 1) | (par()$mfcol[2]> 1) )
-    new <- FALSE
+  if ((par()$mfcol[1]> 1) | (par()$mfcol[2]> 1)) new <- FALSE
   
-  if (verbose)
-    print(paste("List of arguments in the three-dots listed below ",
-                arg,sep=""))
+  if (verbose) print(paste("List of arguments in the three-dots listed below ",arg,sep=""))
   
   if (sum(is.element(type,c('fill','contour')))) {
     x0 <- x
@@ -229,41 +246,36 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   if ((!is.null(FUN)) & is.character(FUN)) if (FUN=='trend') FUN <- 'trend.coef'
   
   if (verbose) print(paste(projection,'projection'))
-  
-  if (projection=="sphere")
+  if (projection=="sphere") {
     sphere(x,lonR=lonR,latR=latR,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
            col=colbar$col,new=new,FUN=FUN,cex=cex,
            cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
            verbose=verbose,
            xlab=xlab,ylab=ylab...)
-  else if (projection=="np")
+  } else if (projection=="np") {
     sphere(x,lonR=lonR,latR=90,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
            col=colbar$col,new=new,FUN=FUN,
-           cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,...) else
-             if (projection=="sp")
-               sphere(x,lonR=lonR,latR=-90,axiR=axiR,
-                      gridlines=gridlines,xlim=xlim,ylim=ylim,
-                      col=colbar$col,new=new,FUN=FUN,
-                      cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
-                      verbose=verbose,...)
+           cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,...) 
+  } else if (projection=="sp") {
+    sphere(x,lonR=lonR,latR=-90,axiR=axiR,
+           gridlines=gridlines,xlim=xlim,ylim=ylim,
+           col=colbar$col,new=new,FUN=FUN,
+           cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
+           verbose=verbose,...)
   ## else if (projection=="lonlat")
   ##    lonlatprojection(x=X,xlim=xlim,ylim=ylim, n=colbar$n,col=colbar$col,breaks=colbar$breaks,new=new,
   ##                     type=type,gridlines=gridlines,...)
-  else if (projection=="lonlat") {
-    ##
+  } else if (projection=="lonlat") {
     data("geoborders", envir = environment())
-    if (zexpr == "alt") 
-      zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
-    ##
+    if (zexpr == "alt") zexpr <- "sqrt( station.meta$alt/max(station.meta$alt,na.rm=TRUE) )"
     if (verbose & !is.null(x)) print(class(x)) else if (verbose) print('x is null')
     if (!is.null(x)) { 
       if (inherits(x,"stationmeta")) {
         ss <- x
-        ss$variable <-apply(as.matrix(ss$element),1,esd2ele)
-      }
-      else if (inherits(x,"station")) {
+        ss$variable <- apply(as.matrix(ss$element),1,esd2ele)
+      } else if (inherits(x,"station")) {
         if (is.null(dim(x))) dim(x) <- c(length(x),1)
         ss <- list(station_id=attr(x,"station_id"),
                    location=attr(x,'location'),
@@ -277,12 +289,15 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                    end=rep(end(x),dim(x)[2]),
                    source=attr(x,"source"))
       }
-    } else
+    } else {
       ss <- select.station()
-    if (verbose) {print('The station metadata'); str(ss)}  
+    }
+    if (verbose) {
+      print('The station metadata')
+      str(ss)
+    }  
     
-    if (is.null(attr(ss,"element")))
-      ss$element <-apply(as.matrix(ss$variable),1,esd2ele)   
+    if (is.null(attr(ss,"element"))) ss$element <-apply(as.matrix(ss$variable),1,esd2ele)   
     
     if (verbose) str(ss)
     
@@ -297,8 +312,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         highlight$variable <- apply(as.matrix(highlight$element),1,
                                     esd2ele)
       } else if (inherits(is$x,"station")) {
-        if (is.null(dim(is$x)))
-          dim(is$x) <- c(length(is$x),1)
+        if (is.null(dim(is$x))) dim(is$x) <- c(length(is$x),1)
         highlight <- list(station_id=attr(is$x,"station_id"),
                           location=attr(is$x,'location'),
                           country=attr(is$x,'country'),
@@ -314,72 +328,85 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       highlight$element <- apply(as.matrix(highlight$variable),1,esd2ele)
     }  else highlight <-  NULL
     
-    
     ## Set negative altitude to NA
     ss$altitude[ss$altitude < 0] <- NA
     
     tte <- "rwb"
     
-    ##<<<<<<< HEAD
-    ##if (is.null(cex))
-    ##    cex <- 5/log(dim(ss)[1])
-    ##=======
     ## An attempt to set the size of the symbols automatically,
     ## but this fails if ss is a list.
     if (inherits(x,'station')) {
       nok <- apply(coredata(x),2,FUN='nv')
-      if (verbose) { print('nok:'); print(nok) }
-      if ( (is.null(cex)) & !is.null(dim(ss)) )
-        cex <- 5/log(dim(ss)[1]) else
-          if (is.null(cex)) cex <- 5/log(length(ss[[1]])) else
-            if (cex==0) cex <- 1.25*nok/max(nok,na.rm=TRUE)
-            if (cex<0) cex <- abs(cex)*nok/max(nok,na.rm=TRUE)
-    } 
-    ##>>>>>>> d6d9c84656c9b9b73e711c2e7ee2c8d0fb230980
+      if (verbose) {
+        print('nok:')
+        print(nok)
+      }
+      if ((is.null(cex)) & !is.null(dim(ss))) {
+        cex <- 5/log(dim(ss)[1]) 
+      } else {
+        if (is.null(cex)) {
+          cex <- 5/log(length(ss[[1]])) 
+        } else if (cex==0) {
+          cex <- 1.25*nok/max(nok,na.rm=TRUE)
+          if (cex<0) cex <- abs(cex)*nok/max(nok,na.rm=TRUE)
+        }
+      }
+    }
     
     ## Select a subdomain in the x-axis
-    
-    if (verbose) { print('cex:'); print(cex) }
-    if (is.null(xlim))
-      if (is.null(highlight) | showall)
-        if (length(is$lon) > 1)
-          xlim <- floor(range(ss$longitude, na.rm = TRUE))
-    else
-      xlim <-floor(range(ss$longitude, na.rm = TRUE) + c(-1,1))  # +/- 5 degrees
-    else
-      if (length(is$lon) > 1)
-        xlim <- floor(range(highlight$longitude, na.rm = TRUE))
-    else
-      xlim <-floor(range(highlight$longitude, na.rm = TRUE),
-                   + c(-1,1))  # +/- 5 degrees
+    if (verbose) {
+      print('cex:')
+      print(cex)
+    }
+    if (is.null(xlim)) {
+      if ((is.null(highlight) | showall)) {
+        if(length(is$lon) > 1) {
+          xlim <- range(ss$longitude, na.rm = TRUE) + c(-1,1)
+        } else {
+          xlim <- range(ss$longitude, na.rm = TRUE) + c(-4,4)
+        }
+      } else {
+        if (length(is$lon) > 1) {
+          xlim <- range(highlight$longitude, na.rm = TRUE) + c(-1,1)
+        } else {
+          xlim <- range(highlight$longitude, na.rm = TRUE) + c(-4,4)
+        }
+      }
+    }
     ## Select a subdomain in the y-axis
-    if (is.null(ylim))
-      if (is.null(highlight) | showall)
-        if (length(is$lat) > 1)
-          ylim <- floor(range(ss$latitude, na.rm = TRUE))
-    else
-      ylim <- floor(range(ss$latitude, na.rm = TRUE) + c(-1,1))
-    else
-      if (length(is$lat) > 1)
-        ylim <- floor(range(highlight$latitude, na.rm = TRUE))
-    else
-      ylim <-floor(range(highlight$latitude, na.rm = TRUE),
-                   + c(-1,1))  # +/- 5 degrees
+    if (is.null(ylim)) {
+      if ((is.null(highlight) | showall)) {
+        if (length(is$lat) > 1) {
+          ylim <- range(ss$latitude, na.rm = TRUE) + c(-1,1)
+        } else {
+          ylim <- range(ss$latitude, na.rm = TRUE) + c(-2,2)
+        } 
+      } else {
+        if (length(is$lat) > 1) {
+          ylim <- range(highlight$latitude, na.rm = TRUE) + c(-1,1)
+        } else {
+          ylim <- range(highlight$latitude, na.rm = TRUE) + c(-2,2)
+        }
+      }
+    }
     
     ## scaling factor to apply on cex ...
     if (verbose) print('scale:')
-    if (!inherits(x,"stationmeta") & !is.null(attr(x,'na')))
+    if (!inherits(x,"stationmeta") & !is.null(attr(x,'na'))) {
       scale <- attr(x,'na')
-    else
+    } else {
       scale <- 1
-    ##       
+    }
     ##print(par()$fig)
     par(fig=par0$fig,mar=mar0)
     
     ## Transform x using FUN and insert color bar
     ##
     
-    if (verbose) { print('FUN:'); print(FUN) }
+    if (verbose) {
+      print('FUN:')
+      print(FUN)
+    }
     if (!is.null(FUN)) {
       if (is.function(FUN)) {
         if (verbose) print('function')
@@ -394,9 +421,9 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           if (verbose) print(FUN)
           if (is.element("na.rm",names(formals(FUN))) |
               is.element("...",names(formals(FUN))) |
-              (is.element(FUN,c("max","min","sum","mean","sd"))))
+              (is.element(FUN,c("max","min","sum","mean","sd")))) {
             y <- apply(coredata(x),2,FUN=FUN,na.rm=TRUE)
-          else if (FUN=="trend") {
+          } else if (FUN=="trend") {
             if (verbose) print("trend")
             y <- apply(x,2,FUN=FUN,na.omit=FALSE)
           } else {
@@ -418,14 +445,12 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ##if (!is.null(colbar)) {
         colbar <- colbar.ini(y,FUN=FUN,colbar=colbar,verbose=verbose)
       }
-      if (verbose)
-        print("length(col) =",length(colbar$col))
+      if (verbose) print("length(col) =",length(colbar$col))
       
       ## Range of scale
       y.rng <- range(y,na.rm=TRUE)
-      if (verbose)
-        print(paste("range of mapped values",paste(y.rng,
-                                                   collapse="/")))          
+      if (verbose) print(paste("range of mapped values",paste(y.rng,
+                                                    collapse="/")))          
       ## find color index in colbar
       icol <- apply(as.matrix(y),2,findInterval,colbar$breaks)
       
@@ -438,36 +463,42 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (is.null(FUN)) bg.all <- bg
     
     ##scale <- apply(y,2,function(x) sum(!is.na(x))/length(x))
-    if (!is.null(attr(x,'na')) & (!inherits(x,"stationmeta"))) 
+    if (!is.null(attr(x,'na')) & (!inherits(x,"stationmeta"))) {
       scale <- attr(x,'na')
-    else
+    } else {
       scale <- 1
+    }
     
     ##points(ss$longitude, ss$latitude, pch = pch, bg=bg , col=col,
     ##       cex = cex*scale, xlab = "", ylab = "", xlim = xlim, ylim = ylim,...)       
     
     if(is.null(colbar$pos)) pos <- 0.05
     
-    ## 
     ##fig0 <- par0$fig
     if (is.null(colbar$show)) colbar$show <- TRUE ## quick fix REB
     if (!is.null(FUN) & (!is.null(colbar)) & colbar$show) {
-      if (showaxis) fig0[3] <- par0$fig[3] + colbar$pos
-      ## (par0$fig[4]-par0$fig[3])/150 ##0.075
-      else fig0[3] <- par0$fig[3] + colbar$pos
-      ## (par0$fig[4]-par0$fig[3])/120 ##0.05
-    } else 
+      if (showaxis) {
+        fig0[3] <- par0$fig[3] + colbar$pos
+        ## (par0$fig[4]-par0$fig[3])/150 ##0.075
+      } else {
+        fig0[3] <- par0$fig[3] + colbar$pos
+        ## (par0$fig[4]-par0$fig[3])/120 ##0.05
+      }
+    } else {
       fig0 <- par0$fig
-    ## 
+    }
     par(fig=fig0)
     
     ## REB: 2016-10-12 - add the possibility to use google maps
-    if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
-         (projection=="lonlat") & usegooglemap ){
+    if (("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
+         (projection=="lonlat") & usegooglemap) {
       require(RgoogleMaps)
       mxdst <- max(diff(range(ss$latitude)),diff(range(ss$longitude)))
-      if (!is.finite(mxdst) | mxdst==0) zoom <- 3 else
+      if (!is.finite(mxdst) | mxdst==0) {
+        zoom <- 3 
+      } else {
         zoom <- 7 - round(log(mxdst))
+      }
       bgmap <- GetMap(center=c(lat=mean(ss$latitude),lon=mean(ss$longitude)),
                       destfile = "map.station.esd.png",
                       maptype = "mobile", zoom=zoom)
@@ -476,23 +507,24 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       print('Unfinished')
       return()
     }
-    if (!is.null(highlight))
+
+    if (!is.null(highlight)) {
       plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
            bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
            xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE,
            cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
-    else if (!is.null(ss) & !is.null(FUN))
+    } else if (!is.null(ss) & !is.null(FUN)) {
       plot(ss$longitude, ss$latitude, pch = pch, col = "white",
            bg = "white", cex = cex * scale, xlab = "", ylab = "",
            xlim = xlim, ylim = ylim , axes = FALSE ,
            frame.plot = FALSE,
            cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
-    else
+    } else {
       plot(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg,
            cex = cex*scale, xlab = "", ylab = "", xlim = xlim,
            ylim = ylim , axes = FALSE , frame.plot = FALSE,
            cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
-    
+    }
     #if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) )
     #     par(new=FALSE) else ## REB: 2016-10-12 - add the possibility to use google maps
     #     par(new=TRUE)
@@ -508,24 +540,23 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       points(ss.all$longitude,ss.all$latitude,pch=".",col="grey50",
              bg="grey",cex=cex/2)
     }
-    
-    if (!is.null(highlight))
+
+    if (!is.null(highlight)) {
       points(highlight$longitude, highlight$latitude, pch = pch, col = col,
              bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
              xlim = xlim, ylim = ylim, cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
-    else if (!is.null(ss) & !is.null(FUN))
+    } else if (!is.null(ss) & !is.null(FUN)) {
       points(ss$longitude, ss$latitude, pch = pch, col = "white",
              bg = "white", cex = cex*scale, xlab = "", ylab = "",
              xlim = xlim, ylim = ylim, cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
-    else
+    } else {
       points(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg,
              cex = cex*scale, xlab = "", ylab = "", xlim = xlim,
              ylim = ylim , cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
-    
+    }
     ## par(fig=par0$fig)
     ## print(par()$fig)
     ## add search info to plot
-    
     if (text) {
       if (!is.null(highlight)) {
         title(main=paste("SOURCE(S): ",
@@ -536,16 +567,16 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         title(main=paste(min(highlight$start,na.rm=TRUE),"/",
                          max(highlight$end,na.rm=TRUE)),
               line=2,cex.main=cex.main,adj=1)
-        if (!is.null(FUN))
+        if (!is.null(FUN)) {
           title(main=paste(paste(toupper(apply(as.matrix(levels(,
                                                                 factor(highlight$variable))),
                                                1,esd2ele)),collapse="/"),toupper(FUN),sep="/"),
                 line=2,cex.main=cex.main , adj = 0)
-        else
+        } else {
           title(main=paste(toupper(apply(as.matrix(levels(factor(highlight$variable))),
                                          1,esd2ele)),collapse="/"),line=2,cex.main=cex.main , adj = 0)
-      }
-      else {
+        }
+      } else {
         title(main=paste("SOURCE(S) : ",
                          paste(levels(factor(ss$source)),collapse="/" )),
               line=3,cex.main=cex.main)
@@ -559,8 +590,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     }
     ## title(main=attr(z,"title"),line=2.2,cex.main=0.7)
     ## add margin text
-    if (text)
-      mtext(paste(("ESD package - map.station() - MET Norway 2014"),
+    if (text) mtext(paste(("ESD package - map.station() - MET Norway 2014"),
                   "(www.met.no)",sep=" "),side=1,line=4,cex=0.6)
     
     par1 <- par()    
@@ -583,26 +613,24 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                bg=bg.subset, cex = cex.subset,...)
         
       }
-      
+
       ## Add geoborders
       lines(geoborders$x, geoborders$y, col = "grey50")
       lines(attr(geoborders, "borders")$x,
             attr(geoborders, "borders")$y, col = "pink") ##"grey90"
       
-      if (show.val)
-        text(ss$longitude,ss$latitude,round(y,digits=2),
-             cex=cex/4)
+      if (show.val) text(ss$longitude,ss$latitude,round(y,digits=2),
+                         cex=cex/4)
       
       par(fig=fig0,new=TRUE)
       ## print(par()$fig)
       ## add color bar
-      
-      if (colbar$show) 
+      if (colbar$show) {
         if (fancy & !is.null(colbar))
           col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
                   col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
                   type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
-      else if (!is.null(colbar)) {
+      } else if (!is.null(colbar)) {
         ##fig1 <- par0$fig
         par(fig=par0$fig,new=TRUE)
         image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
@@ -627,25 +655,28 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                   length(colbar$col)))      
       print(paste('colbar$n ', paste(colbar$n,collapse="/")))
     }
+    
     ## add text if TRUE
-    if (!is.null(unlist(is)))
-      if (add.text.subset)
-        if (full.names.subset)
-          text(highlight$longitude, highlight$latitude,highlight$location,
-               pos=3,cex=cex.subset/2)
-    else
+    if (!is.null(unlist(is))) {
+      if (add.text.subset & full.names.subset) {
+        text(highlight$longitude, highlight$latitude, highlight$location,
+             pos=3,cex=cex.subset/2)
+      }
+    } else if(!is.null(highlight)) {
       text(highlight$longitude, highlight$latitude,
            substr(toupper(highlight$location),1,3),pos=3,cex=cex.subset/2)
-    
-    if (add.text)
-      if (full.names)
+    }
+    if (add.text) {
+      if (full.names) {
         text(ss$longitude, ss$latitude,ss$location,pos=3,cex=cex/2)
-    else
+      } else {
       text(ss$longitude, ss$latitude,substr(toupper(ss$location),1,3),pos=3,cex=cex/2)
-    ##add label text
+      }
+    } 
     
     if (showaxis) title(xlab="Longitude", line=2.2, cex.lab=cex.lab, col="grey30") 
     if (showaxis) title(ylab="Latitude", line=2.2, cex.lab=cex.lab, col="grey30") 
+    
     ## format axes
     if (showaxis) axis(1,pretty(seq(xlim[1],xlim[2],by=5),n=5),
                        cex.axis=cex.axis,col="grey30",col.ticks="grey30") # 0.7
@@ -656,11 +687,8 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (showaxis) axis(3,pretty(seq(xlim[1],xlim[2],by=5),n=5),
                        cex.axis=cex.axis,col="grey30",col.ticks="grey30")
     ## add grid
-    
     par(fig=par0$fig,new=TRUE)
-    
-    if (gridlines)
-      grid()
+    if (gridlines) grid()
     
     ## lines(geoborders$x, geoborders$y, col = "black")
     ## lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y, col = "grey90")
@@ -672,7 +700,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 
 sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
                    gridlines=TRUE,col="green",bg="darkgreen",cex=0.2,
-                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",new=TRUE,verbose=FALSE) {
+                   cex.axis=1,cex.lab=1,cex.main=1.5,pch=".",new=TRUE,verbose=FALSE,...) {
   if(verbose) print("sphere")
   x0 <- x
   
@@ -700,14 +728,25 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   ##srtx <- order(attr(x,'longitude')); lon <- lon[srtx]
   ##srty <- order(attr(x,'latitude')); lat <- lat[srty]
   
-  if (!is.null(FUN))
+  if (!is.null(FUN)) {
     map <- apply(as.matrix(x),2,FUN,na.rm=TRUE) ##map <- x[srtx,srty]
-  else
+  } else {
     map <- x
-  
+  }
+
   # Rotatio:
-  if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
-  if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
+  # longitudinal rotation
+  if(!is.null(xlim)) {
+    lonR <- mean(xlim, na.rm=TRUE)
+  } else if (is.null(lonR)) {
+    lonR <- mean(lon, na.rm=TRUE)  
+  }
+  # latitudinal rotation
+  if(!is.null(ylim)) {
+    latR <- mean(ylim, na.rm=TRUE) 
+  } else if (is.null(latR)) {
+    latR <- mean(lat, na.rm=TRUE)
+  }
   # axiR: rotation of Earth's axis
   
   # coastline data:
@@ -717,8 +756,9 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
   if(greenwich) gx[gx<0 & ok] <- gx[gx<0 & ok] + 360
-  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
-  if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  ## KMP 2017-09-19: New xlim/ylim code line 829
+  #if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  #if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
   theta <- pi*gx[ok]/180
   phi <- pi*gy[ok]/180
   #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
@@ -779,11 +819,29 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   #dim(X) <- d; dim(Y) <- d; dim(Z) <- d
   #print(dim(rbind(X,Z)))
   
+  # Rotate xlim and ylim
+  if(!is.null(xlim) & !is.null(ylim)) {
+    thetalim <- pi*xlim/180
+    philim <- pi*ylim/180
+    Xlim <- sin(thetalim)*cos(philim)
+    Ylim <- cos(thetalim)*cos(philim)
+    Zlim <- sin(philim)
+    Alim <- rotM(x=0,y=0,z=lonR) %*% rbind(c(Xlim),c(Ylim),c(Zlim))
+    Alim <- rotM(x=latR,y=0,z=0) %*% Alim
+    Xlim <- Alim[1,]; Ylim <- Alim[2,]; Zlim <- Alim[3,]
+  } else {
+    Xlim <- range(x, na.rm=TRUE)
+    Zlim <- range(z, na.rm=TRUE)
+  }
+  
   # Plot the results:
-  dev.new()
+  if(new) dev.new()
   par(bty="n",xaxt="n",yaxt="n",new=TRUE)
-  plot(x,z,pch=".",col="white",xlab="",ylab="",
+  plot(Xlim,Zlim,pch=".",col="white",xlab="",ylab="",
        cex.axis=cex.axis,cex.lab=cex.lab)
+  #plot(x,z,pch=".",col="white",xlab="",ylab="",
+  #     cex.axis=cex.axis,cex.lab=cex.lab)
+  #par0 <- par()
   
   # plot the grid boxes, but only the gridboxes facing the view point:
   ##Visible <- Y > 0 ##colMeans(Y) > 0
@@ -794,7 +852,6 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   # xleft, ybottom, xright, ytop
   
   ##if (!is.null(FUN)) {
-  ##    breaks <- pretty(map,n=n)
   ##    colb <- colscal(n=length(breaks)) 
   ##    col <- colb[findInterval(map,breaks)]
   ##    bg <- col
@@ -819,7 +876,6 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   lines(cos(pi/180*1:360),sin(pi/180*1:360),col="black")
   
   ## Add grid ?
-  
   if (!is.null(FUN)) {    
     ## Colourbar:  
     par(fig = c(0.3, 0.7, 0.05, 0.10),mar=rep(0,4),cex=0.8,
@@ -837,10 +893,11 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
     text(0.72,0.002,unit,pos=4)  
   }
   ##result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
-  if (inherits(x0,"stationmeta"))
+  if (inherits(x0,"stationmeta")) {
     result <- data.frame(x=Y,y=Z)
-  else if (inherits(x0,"station"))
+  } else if (inherits(x0,"station")) {
     result <- data.frame(x=Y,y=Z,z=map)
+  }
   invisible(result)
 }
 

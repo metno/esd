@@ -92,10 +92,14 @@ trajectory2events <- function(x,minlen=3,verbose=FALSE) {
                          nrow=sum(x[,"n"]),ncol=length(cnames)))
   names(y) <- cnames
   i.n <- colnames(x)=="n"
-  i.t <- colnames(x)=="trajectory"
   i.lat <- colnames(x)=="lat"
   i.lon <- colnames(x)=="lon"
-  y$trajectory <- unlist(apply(x,1,function(z) rep(z[i.t],z[i.n])))
+  if(!"trajectory" %in% colnames(x)) {
+    tr <- seq(nrow(x))
+  } else {
+    tr <- x[,"trajectory"]
+  }
+  y$trajectory <- unlist(mapply(rep, tr, x[,i.n]))
   y$n <- unlist(apply(x,1,function(z) rep(z[i.n],z[i.n])))
   if(verbose) print('interpolate time')
   i.start <- colnames(x)=="start"
@@ -369,6 +373,7 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
   attr(N,"unit") <- unit
   attr(N,"lat") <- attr(x,"lat")
   attr(N,"lon") <- attr(x,"lon")
+  N <- subset(N, it=paste(range(strftime(dates,format="%Y-%m")),"01",sep="-"))
   invisible(N)
 }
 

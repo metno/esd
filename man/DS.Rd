@@ -2,6 +2,7 @@
 \alias{DS}
 \alias{DS.default}
 \alias{DS.station}
+\alias{DS.list}
 \alias{DS.eof}
 \alias{DS.comb}
 \alias{DS.field}
@@ -55,7 +56,14 @@
   [ref: Benestad (2001), "The cause of warming over Norway in the
   ECHAM4/OPYC3 GHG integration", \emph{Int. J. Clim.}, 15 March,
   \bold{vol 21}, p.371-387.].
-
+  
+   \code{DS.list} can take a list of predictors and perform a \code{DS}
+   on each of them, seperately, at once. First, \code{DS} is used on the first predictor, 
+   then, it is repeated by applying \code{DS} on the residuals from the first step. The DS
+   is repeated for all predictors. The final DS output is list containing as 
+   many \code{DS} object as the number of predictors. To get the final DS object, 
+   a summation of the different values in the list data object must be done.
+   
   \code{DS.seasonalcycle} is an experimental set-up where the
   calibration is carried out based on the similarity of the seasonal
   variation to make most use of available information on a 'worst-case'
@@ -92,7 +100,8 @@ DS.field(X,y,biascorrect=FALSE,mon=NULL,
          method="lm",swsm="step",m=5,
          rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
          verbose=FALSE,...) 
-DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
+ DS.list(y,X,biascorrect=FALSE,mon=NULL,...)
+  DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
                    method="lm",swsm="step",
                    rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,station=TRUE)
@@ -123,7 +132,8 @@ biasfix(x)
 }
 \arguments{
 \item{y}{The predictand - the station series representing local climate parameter}
-\item{X}{The predictor - an \code{\link{EOF}} object representing the large-scale situation.}
+\item{X}{The predictor - an \code{\link{EOF}} object or a list of \code{\link{EOF}} 
+         objects representing the large-scale situation.}
 \item{mon}{An integer or a vector of integers. The calendar month to
   downscale, e.g. '1' is all January months, '2' is February, and so on. }
 \item{method}{Model type, e.g. \code{\link{lm}} og \code{\link{glm}}}

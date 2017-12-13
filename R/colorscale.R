@@ -63,7 +63,23 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     ##}   
     
     if (is.zoo(x)) x <- coredata(x)
+    x[!is.finite(x)] <- NA      # REB 2017-09-20: fix to cope with Inf-values
     x.rng <- range(x,na.rm=TRUE)
+    if (verbose) {print('Value range:'); print(x.rng)}
+    ## If there are bad range values
+    if (!is.finite(x.rng[1])) {
+      ## If only the first is bad: set to 0 or a value lower than 2nd (negative)
+      if (is.finite(x.rng[2])) x.rng[1] <- min(0,x.rng[2]*2) else {
+        x.rng <- c(0,1)
+      }
+    }
+    if (!is.finite(x.rng[2])) {
+      ## If only the first is bad: set to 0 or a value higher than 2nd
+      if (is.finite(x.rng[1])) x.rng[2] <- max(0,x.rng[1]*2) else {
+        x.rng <- c(0,1)
+      }
+    }
+    if (verbose) print(x.rng)
     nd <- max(0,ndig(x.rng)+2)
 
     if (!is.null(colbar$col)) {

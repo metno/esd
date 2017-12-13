@@ -25,36 +25,42 @@ The subset method tries to be 'intelligent', and if the list has no names, then 
 }
 \usage{
 subset(x,it=NULL,is=NULL,...)
-subset.station(x,it = NULL,is = NULL,verbose=FALSE)
-subset.eof(x,it=NULL,is=NULL,verbose=FALSE)
-subset.cca(x,it=NULL,is=NULL)
-subset.mvr(x,it=NULL,is=NULL)
-subset.pca(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE)
-subset.trend(x,it=NULL,is=NULL)
-subset.corfield(x,it=NULL,is=NULL)
-subset.comb(x,it=NULL,is=NULL)
-subset.events(x,it=NULL,is=NULL) 
-subset.trajectory(x,it=NULL,is=NULL) 
-subset.field(x,it=NULL,is=NULL)
-subset.spell(x,is=NULL,it=NULL) 
-subset.ds(x,it=NULL,is=NULL)
-subset.trend(x,it=NULL,is=NULL)
+subset.station(x,it = NULL,is = NULL,verbose=FALSE,...)
+subset.eof(x,it=NULL,is=NULL,verbose=FALSE,...)
+subset.cca(x,it=NULL,is=NULL,...)
+subset.mvr(x,it=NULL,is=NULL,...)
+subset.pca(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...)
+subset.trend(x,it=NULL,is=NULL,...)
+subset.corfield(x,it=NULL,is=NULL,...)
+subset.comb(x,it=NULL,is=NULL,...)
+subset.events(x,it=NULL,is=NULL,ic=NULL,...)
+subset.trajectory(x,it=NULL,is=NULL,ic=NULL,...) 
+subset.field(x,it=NULL,is=NULL,...)
+subset.spell(x,is=NULL,it=NULL,...) 
+subset.ds(x,it=NULL,is=NULL,...)
+subset.trend(x,it=NULL,is=NULL,...)
 subset.dsensemble(x,it=NULL,is=NULL,
                   ensemble.aggregate=TRUE,verbose=FALSE,...)
 subset.dsensemble.multi(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                         verbose=FALSE,...)
-subset.zoo(x,it=NULL)
-subset.trajectory(x,it=NULL,is=NULL)
-subset.stationmeta(x,it=NULL,is=NULL,verbose=FALSE)
+subset.zoo(x,it=NULL,...)
+subset.trajectory(x,it=NULL,is=NULL,...)
+subset.stationmeta(x,it=NULL,is=NULL,verbose=FALSE,...)
 matchdate(x,it)
 sort.station(x,is=NULL,decreasing=TRUE)
 }
 \arguments{
 \item{x}{Data object from which the subset is taken}
 \item{it}{A list or data.frame providing time index, e.g. month}
-\item{is}{A list or data.frame providing space index, e.g. station record}
+\item{is}{A list or data.frame providing space index, e.g. station record or a lon(gitude) and lat(itude) range}
 \item{ip}{selection of patterns in PCA or EOF (used for e.g. filtreing
   the data)}
+\item{ic}{A list providing criteria for selection of cyclones: ic = list(param, pmax, pmin, FUN), 
+          where param is a parameter or element type, pmax and pmin are the upper and lower limit 
+          of the parameter.
+          If FUN is "any" (default setting), subset selects cyclones or trajectories that are within the chosen range at any point during their lifetime.
+          If FUN is "all" and x is an 'events' object, subset selects all individual cyclones within the range (pmin, pmax).
+	  If FUN is "all" and x is a 'trajectory' object, subset selects cyclone trajectories that are within the chosen range at all points during their lifetime.)}
 \item{verbose}{Dump diagnostics to the screen}
 \item{ensemble.aggregate}{If TRUE, call \code{subset.dsensemble.multi}
   if appropriate.}
@@ -126,20 +132,25 @@ plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2))
 # OK - identical results
 
-# Extract storm tracks for specific periods and regions
-# from the example 'trajectory' object imilast.M03
-data(imilast.M03)
-# spring season (march, april, may)
-x1 <- subset(imilast.M03,it='mam') 
-plot(x1)
+# Extract storm tracks for specific periods and regions from the sample 'events' object
+# storms (North Atlantic storms identified from ERA5 data)
+data(storms)
 
-# region 10W-10E/55-65N
-x2 <- subset(imilast.M03,is=list(lat=c(55,65),lon=c(-10,10)))
-map(x2)
+# Subset deep cyclones...
+x <- subset(storms, ic=list(param="pcent", pmax=970, FUN="any"))
+# ... and trajectories with a lifetime of at least 12 time steps (72 hours)
+x <- subset(x, ic=list(param="trackcount", pmin=12))
 
-# storms longer than 3 days (12x6 hours)
-x3 <- subset(imilast.M03,it=(param.trajectory(imilast.M03,param='n')>12))
-map(x3)
+# Subset cyclones in the region 10W-10E/55-65N
+x.is <- subset(x,is=list(lat=c(55,65),lon=c(-10,10)))
+# ...or all cyclones passing going through the region
+x.is2 <- subset(x,it=intersect(x$trajectory, x.is$trajectory))
+
+# Subset cyclones in the spring season (march, april, may)
+x.mam <- subset(x, it="mam")
+# Subset cyclones in december 2016
+x.201612 <- subset(x,it=c("2016-12-01","2016-12-31")) 
+map(x.201612)
 
 }
 \keyword{utilities}

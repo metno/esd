@@ -199,11 +199,10 @@ plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
   } else {
     budnames <- budnames[budnames %in% names(bud) & !(budnames %in% c("lons", "lats"))]
   }
-  nr <- ceiling(length(budnames)/4)
+  nr <- ceiling(length(budnames)/3)
   nc <- ceiling(length(budnames)/nr)
-  
   if(new) dev.new(width=nc*2.2,height=nr*2.3)
-  par(mar=c(1.8,1.5,4.0,0.5),mgp=c(0.5,0.5,0))
+  par(mar=c(1.8,1.5,4.0,1.5),mgp=c(0.5,0.5,0.5))
   
   for(i in 1:length(budnames)){
     v <- budnames[i]

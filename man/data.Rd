@@ -16,6 +16,7 @@
 \alias{slp.ERAINT}
 \alias{slp.MERRA}
 \alias{slp.NCEP}
+\alias{slp.atlantic.ERA5}
 \alias{t2m.NorESM.M}
 \alias{t2m.DNMI}
 \alias{sst.DNMI}
@@ -38,6 +39,7 @@
 \alias{NINO3.4}
 \alias{SOI}
 \alias{GSL}
+\alias{GSL.nasa}
 \alias{AMO}
 \alias{bjornholt}
 \alias{vardo}
@@ -55,6 +57,7 @@
 \alias{CO2}
 \alias{read.hurdat2}
 \alias{read.best.track}
+\alias{storms}
 \title{Sample data.}
 \description{Different data sets: station data from northern Europe
   (NACD, NARP) and historic reconstructions (Oslo, Svalbard) from
@@ -110,6 +113,11 @@ data(eof.sst.DNMI)
 data(eof.slp.DNMI)
 data(geoborders)
 data(IPCC.AR5.Table.9.A.1)
+data(slp.ERA5)
+data(storms)
+data(sunspots)
+data(NINO3.4)
+data(NAOI)
 cmipgcmresolution(what='deg') 
 slp.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.MERRA(lon=NULL,lat=NULL,anomaly=FALSE)
@@ -124,9 +132,6 @@ t2m.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 slp.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 sst.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.NorESM.M(lon=NULL,lat=NULL,anomaly=FALSE)
-data(sunspots)
-data(NINO3.4)
-data(NAOI)
 NINO3.4(url='ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/ersst3b.nino.mth.ascii',header=TRUE)
 NAO(url='http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii.table',header=FALSE)
 SOI(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',header=FALSE)
@@ -134,6 +139,7 @@ data(dse.Oslo)
 HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt",plot=FALSE)
 NASAgiss(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt')
 GSL(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv')
+GSL.nasa(url='ftp://podaac.jpl.nasa.gov/allData/merged_alt/L2/TP_J1_OSTM/global_mean_sea_level/GMSL_TPJAOS_V4_199209_201708.txt',is=9)
 data(global.t2m.gcm)
 AMO(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data')
 QBO(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data')

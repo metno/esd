@@ -20,7 +20,6 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
   }
   else {
     if (inherits(x,"station")) {
-      ##
       ##var2param <- function(x) {
       ##  variable <- as.matrix(as.character(attr(x,"variable")))
       ##  var2prm <- function(x) switch(x,"T[2 * m]"="t2m")

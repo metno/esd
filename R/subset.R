@@ -1,7 +1,6 @@
+subset <- function(x,...) UseMethod("subset")
 
-
-
-subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.field")
   
@@ -10,7 +9,7 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   return(y)
 }
 
-subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print("subset.comb")
     y <- subset.field(x,it=it,is=is)
     y <- attrcp(x,y)
@@ -33,9 +32,8 @@ subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     invisible(y)
 }
 
-subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
+subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print("subset.eof")
-    ## browser()
     if (is.null(is) & is.null(it) & is.null(ip)) return(x)                                    
     if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(ip)) return(x) 
     d <- dim(x); greenwich <- TRUE
@@ -157,7 +155,6 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     y <- attrcp(x,y,ignore=c('greenwich','mean'))
     attr(y,'greenwich') <- greenwich
     clim -> attr(y,'mean')
-    ## browser()
     attr(y,'pattern') <- attr(x,"pattern")
     attr(y,'eigenvalues') <-attr(x,"eigenvalues")
                                         #attr(y,'date-stamp') <- date()
@@ -168,18 +165,18 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
 
-subset.cca <- function(x,it=NULL,is=NULL) {
+subset.cca <- function(x,it=NULL,is=NULL,...) {
     if (!is.null(is))  {
         x <- subset.pattern(x)
     }
     x
 }
 
-subset.mvr <- function(x,it=NULL,is=NULL) {
+subset.mvr <- function(x,it=NULL,is=NULL,...) {
     x
 }
 
-subset.pattern <- function(x,is,verbose=FALSE) {
+subset.pattern <- function(x,is,verbose=FALSE,...) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) print('subset.pattern')
     if (is.list(is)) {
@@ -211,7 +208,7 @@ subset.pattern <- function(x,is,verbose=FALSE) {
           y <- x[ix,iy]
           y <- attrcp(x,y)
           attr(y,'variable') <- varid(x)
-          attr(y,'unit') <- unit(x)
+          attr(y,'unit') <- esd::unit(x)
           lons[ix] -> attr(y,'longitude')
           lats[iy] -> attr(y,'latitude')
           x <- y
@@ -221,11 +218,12 @@ subset.pattern <- function(x,is,verbose=FALSE) {
     return(x)
 }
 
-subset.matrix <- function(x,is,verbose=FALSE) {
+subset.matrix <- function(x,is,verbose=FALSE,...) {
   subset.pattern(x,is,verbose=verbose)
 }  
 
-subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
+
+subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
   if (verbose) print('subset.pca')
   y <- x
   if (!is.null(ip)) {
@@ -285,13 +283,12 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
       attr(y,'mean') <- attr(y,'mean')[is]
     }
   }
-  #browser()
   if (length(y)==1) y <- y[[1]]
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
 
-subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print('subset.corfield')
     stopifnot(inherits(x,"corfield"))
     y <- x
@@ -313,7 +310,7 @@ subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
 
-subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
+subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print('subset.ds')
     y <- x
     if (!is.null(it)) {
@@ -342,7 +339,7 @@ subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     x
 }
 
-subset.trend <- function(x,it=NULL,is=NULL) {
+subset.trend <- function(x,it=NULL,is=NULL,...) {
     y <- subset.field(x,it=it,is=is)
     
     pattern <- attr(x, "pattern")
@@ -372,14 +369,13 @@ subset.trend <- function(x,it=NULL,is=NULL) {
 
 subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE,...) {
-  ## browser()
   if (verbose) print('subset.dsensemble')
   if (inherits(x,'list') & inherits(x,c('pca','eof')) &
      (inherits(x,'dsensemble')) & ensemble.aggregate) {
     if (verbose) print('list + pca/eof detected')
     #x <- as.station(x)
     ## Subset the PCA/EOF
-    x <- subset.dsensemble.multi(x,it=it,is=is,ip=ip,verbose=verbose,...)
+    x <- subset.dsensemble.multi(x,it=it,is=is,ip=ip,verbose=verbose)
     if (verbose) print('exit subset.dsensemble')
     return(x)
   }
@@ -476,7 +472,6 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
         if (verbose) print('...') 
       } else if (inherits(x,'month')) {
         if (verbose) print('from months')
-        ## browser()
         # REB 2016-11-07: is is dealt with below - set to NULL
         jan <- subset(x,it='jan',is=NULL)
         feb <- subset(x,it='feb',is=NULL)
@@ -615,7 +610,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
   invisible(y)
 }
 
-subset.spell <- function(x,is=NULL,it=NULL) {
+subset.spell <- function(x,is=NULL,it=NULL,...) {
     y <- subset.station(x,is=is,it=it)
     good <- is.finite(y)
     y <- zoo(y[good],order.by=index(y)[good])
@@ -639,7 +634,11 @@ subset.spell <- function(x,is=NULL,it=NULL) {
     invisible(y)
 }
 
-subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE) subset.station(x,it=it,is=is,verbose=verbose)
+#<<<<<<< HEAD
+#subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) subset.station(x,it=it,is=is,verbose=verbose)
+#=======
+## subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE) subset.station(x,it=it,is=is,verbose=verbose,...)
+#>>>>>>> fa42869d00c0a0da9ff8b6917baaf68394fc990c
 
 ## Author Rasmus E. Benestad - was initially part of subset.R file
 ## Modified by A. Mezghani
@@ -661,7 +660,6 @@ subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE) subset.station(x,it=it,i
 ##     if (inherits(is,c('field','station','zoo'))) {
 ##         ## Match the times of another esd-data object
 ##         if (verbose) print('is: field/station')
-##         browser()
 ##         x2 <- subset(x,loc=loc(is))
 ##         return(x2)
 ##     }
@@ -768,8 +766,6 @@ default.subregion <- function(x,is=NULL,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)  
   return(y)
 } 
-    
-  
 
 default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
@@ -815,7 +811,10 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if(inherits(t,"Date")) t <- as.Date(round(as.numeric(t)))
     if(!inherits(t,"POSIXt")) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
     if (verbose) {print('default.subset: time index it'); print(it)}
-
+    if (is.character(it)) {
+      if ((levels(factor(nchar(it)))==10)) it <- as.Date(it)
+    }
+    
     ##  if (datetype=="Date") {
     if (inherits(t,c("Date","yearmon"))) {
        if (verbose) print('x is a Date or yearmon object')
@@ -839,107 +838,83 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (!inherits(it,"POSIXt")) t <-  as.Date(format(t,"%Y-%m-%d"))
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
-    ## Generate sequence of days, months or years if range of it value is given
-    if (is.character(it)) {
-        if (verbose) print('it is character')
-        if ((levels(factor(nchar(it)))==10)) ##  convert as Date
-            it <- as.Date(it)
-        if ( length(it) == 2 ) {
-            if (verbose) print('Between two dates')
-            # REB 2015-01-20: Need to convert it to dates -
-            # otherwise the code crashes! 
-           if (nchar(it[1])==4) it <- as.Date(c(paste(it[1],'-01-01',sep=''), 
-                                                paste(it[2],'-12-31',sep='')))
-            if (verbose) {print(it); print(class(x))}
-            #browser()
-            if (inherits(x,"month")) ## it is a month
-                it <- seq(it[1],it[2],by='month') else
-            if (inherits(x,"season")) ## it is a season
-                it <- seq(it[1],it[2],by='season') else
-            if (inherits(x,"annual")) ## it is a year
-                it <- seq(it[1],it[2],by='year') else 
-            if (inherits(x,"day")) ## assume it is a day
-                it <- seq(it[1],it[2],by='day')
-            ii <- is.element(t,it)
-            #print(it); print(t)
-            if (verbose) print(paste('sum(ii)=',sum(ii)))
-        } else { ## added AM 10-06-2014
-            if (verbose) print('it is a string')
-            if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
-                if (verbose) print('Monthly selected')
-                ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
-                                        #y <- x[ii,is] #  REB Not here
-            } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
-                if (verbose) print("Seasonally selected")
-                if (verbose) print(table(month(x)))
-                if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
-                ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
+    if(inherits(it,c("Date"))) {
+      if ( length(it) == 2 ) {
+        if (verbose) print('Between two dates')
+        if (verbose) print(it)
+        ii <- (t >= min(it)) & (t <= max(it))
+      } else {
+        ii <- is.element(t,it)
+      }
+    } else if(inherits(it,"yearmon")) {
+      ii <- is.element(as.yearmon(t),it)
+    } else if (is.character(it)) {
+      if (verbose) print('it is a string')
+      if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
+        if (verbose) print('Monthly selected')
+        ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
+                                    #y <- x[ii,is] #  REB Not here
+      } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
+        if (verbose) print("Seasonally selected")
+        if (verbose) print(table(month(x)))
+        if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
+        ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
                                         #y <- x[ii,is] # REB Not here
-            }
-            else if (inherits(it,"Date")) {
-                if (verbose) print('it is a Date object')
-                ii <- is.element(t,it)
-            } else {
-                str(it); print(class(it))
-                ii <- rep(FALSE,length(t))
-                warning("default.subset: did not recognise the selection citerion for 'it'")
-            }
-        }
-        ##    } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-##        if (min(it) > 1500) ## it is a year
-##            it <- seq(it[1],it[2],by=1)
-##        ##print("HERE"); print(it)
-##    }
-##    ii <- (t >= it[1]) & (t <= it[length(it)])
-##
-    ## get the subset indices in ii
+      } else if (inherits(it,"Date")) {
+        if (verbose) print('it is a Date object')
+        ii <- is.element(t,it)
+      } else {
+        str(it); print(class(it))
+        ii <- rep(FALSE,length(t))
+        warning("default.subset: did not recognise the selection citerion for 'it'")
+      }
     } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-        if (verbose) print('it is numeric or integer')
+      if (verbose) print('it is numeric or integer')
 # REB bug        nlev <- as.numeric(levels(factor(nchar(it))))
 # nchar returns the string length, but these lines need to find the number of different levels/categories
-        nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
-        if (verbose) {print(nlev); print(it)}
-#         if ((length(nlev)==1)) { REB 2015-01-20: the lines below will never happen with this line:
-        if (length(it)==2) {
-          if ( (min(it) >= 1800) & (max(it) <= 2500) ) {
-            if (verbose) print("it most probably contains a years")
-            ii <- is.element(yr,year(it[1]):year(it[2]))
-          } else if ( (min(it) >= 1) & (max(it) <= length(yr)) ) {
-            if (verbose) print("it most probably contains a indices")
-            ii <- is.element(1:length(yr),it[1]:it[2])
-          } else  if (min(it) >= min(yr)) {
-            if (verbose) print("it most probably contains years")
-            ii <- is.element(yr,it[1]:max(yr))
-          } else  if (max(it) <= max(yr)) {
-            if (verbose) print("it most probably contains years")
-            ii <- is.element(yr,min(yr):it[2])
-          }
-        } else if ((length(it)>2) | length(it==1)) {
-          # if it is years:
-                if (min(it) > length(yr)) {
-                  if (verbose) print("match years")
-                  ii <- is.element(yr,it)
-                } else if (max(it) <= length(yr)) {
-                  if (verbose) print("pick by indices")
-                  ii <- is.element(1:length(t),it)
-                } else {
-                  ii <- rep(FALSE,length(t))
-                  warning("default.subset: did not reckognise the selection citerion for 'it'")
-                }
+      nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
+      if (verbose) {print(nlev); print(it)}
+#       if ((length(nlev)==1)) { REB 2015-01-20: the lines below will never happen with this line:
+      if (length(it)==2) {
+        if ( (min(it) >= 1800) & (max(it) <= 2500) ) {
+          if (verbose) print("it most probably contains a years")
+          ii <- is.element(yr,year(it[1]):year(it[2]))
+        } else if ( (min(it) >= 1) & (max(it) <= length(yr)) ) {
+          if (verbose) print("it most probably contains a indices")
+          ii <- is.element(1:length(yr),it[1]:it[2])
+        } else  if (min(it) >= min(yr)) {
+          if (verbose) print("it most probably contains years")
+          ii <- is.element(yr,it[1]:max(yr))
+        } else  if (max(it) <= max(yr)) {
+          if (verbose) print("it most probably contains years")
+          ii <- is.element(yr,min(yr):it[2])
         }
+      } else if ((length(it)>2) | length(it==1)) {
+        # if it is years:
+        if (min(it) > length(yr)) {
+          if (verbose) print("match years")
+          ii <- is.element(yr,it)
+        } else if (max(it) <= length(yr)) {
+          if (verbose) print("pick by indices")
+          ii <- is.element(1:length(t),it)
+        } else {
+          ii <- rep(FALSE,length(t))
+          warning("default.subset: did not reckognise the selection citerion for 'it'")
+        }
+      }
     } else if (inherits(it,c("Date","yearmon"))) {       
-        ##        ii <- is.element(t,it)
-        if (verbose) print('it is a date object')
-        ii <- (t >= min(it)) & (t <= max(it))
+      ##        ii <- is.element(t,it)
+      if (verbose) print('it is a date object')
+      ii <- (t >= min(it)) & (t <= max(it))
     } else if (inherits(it,"logical") & length(it)==length(yr)) {
-        ii <- it
+      ii <- it
     } else if (inherits(it,"POSIXt")) {
-        if (verbose) print('it is a POSIXt date & time object')
-        if (!inherits(t,"POSIXt")) it <- as.Date(it)
-        ii <- is.element(t,it)
+      if (verbose) print('it is a POSIXt date & time object')
+      if (!inherits(t,"POSIXt")) it <- as.Date(it)
+      ii <- is.element(t,it)
     } else if (!is.null(it)) {
-        ii <- rep(FALSE,length(t))
-        warning("default.subset: did not reckognise the selection citerion for 'it'")
+      ii <- rep(FALSE,length(t))
+      warning("default.subset: did not reckognise the selection citerion for 'it'")
     } 
     
     ## it <- (1:length(t))[ii]
@@ -1091,12 +1066,13 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 }
     
 
-subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
   if(verbose) print("subset.events")
   cls <- class(x)
   
   if (length(it)==0) it <- NULL
   if (length(is)==0) is <- NULL
+  if (length(ic)==0) ic <- NULL
   ii <- rep(TRUE,dim(x)[1])
   
   if(!is.null(it)) {
@@ -1139,6 +1115,15 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
       if (verbose) print("Date and time")
       if (inherits(it,c("POSIXt"))) it <- as.numeric(strftime(it,"%Y%m%d%H"))
       if (is.character(it)) it <- as.numeric(it)
+      if ( length(it) == 2 ) {
+        if (verbose) print('Between two dates')
+        if (verbose) print(it)
+        it <- strptime(range(it),format="%Y%m%d%H")
+        it <- as.numeric(strftime(seq(it[1],it[2],by="hour"),format="%Y%m%d%H"))
+      } else {
+        if (verbose) print('it is a string of dates')
+        if (verbose) print(it)
+      }
       ii <- is.element(dt,it)
     } else if (is.dates(it)) {
       if (is.character(it) & all(grepl("-",it))) {
@@ -1200,13 +1185,237 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     warning("default.subset: did not reckognise the selection citerion for 'is'")
   }
   
-  ij <- ii & jj
-  y <- x[ij,]
+  kk <- rep(TRUE,dim(x)[1])
+  if(is.list(ic)) {
+    if(!is.null(ic$param) & (!is.null(ic$pmin) | !is.null(ic$pmax))) {
+      if(ic$param %in% c("trajectory","trackcount","distance","tracklength")) {
+        ic$FUN <- NULL
+        if(!ic$param %in% names(x)) x <- Trackstats(x)
+      } else if(is.null(ic$FUN)) {
+        ic$FUN <- "any"
+      }
+      if(!is.null(ic$FUN)) {
+        if(ic$FUN=="any" & !"trajectory" %in% names(x)) x <- track(x)
+      }
+      if(!ic$param %in% names(x)) {
+        if(verbose) print(paste("Unkown input param =",param))
+      } else {
+        if(is.null(ic$pmin)) ic$pmin <- min(x[ic$param],na.rm=TRUE)
+        if(is.null(ic$pmax)) ic$pmax <- max(x[ic$param],na.rm=TRUE)
+        if(verbose) print(paste(ic$param,"in range",ic$pmin,"-",ic$pmax))
+        if(verbose) print(paste("FUN =",ic$FUN))
+        if (is.null(ic$FUN)) {
+          kk <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
+        } else if (ic$FUN=="any") {
+          ok.ev <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
+          kk <- x$trajectory %in% unique(x$trajectory[ok.ev])
+        } else if (ic$FUN=="all") {
+          kk <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
+        #  nok.ev <- as.vector(x[ic$param]<ic$pmin | x[ic$param]>ic$pmax)
+        #  kk <- !x$trajectory %in% unique(x$trajectory[nok.ev])
+        }
+      }
+    }
+  }
+  
+  ijk <- ii & jj & kk
+  y <- x[ijk,]
   attr(y,"aspect") <- "subset"
   attr(y,'history') <- history.stamp(x)  
   if (!is.null(is$lat)) attr(y,"lat") <- is$lat
   if (!is.null(is$lon)) attr(y,"lon") <- is$lon
   class(y) <- cls
+  invisible(y)
+}
+
+subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
+  if(verbose) print("subset.trajectory")
+  
+  x0 <- x
+  cls <- class(x)
+  if (is.null(it) & is.null(is) & is.null(ic)) return(x)
+  
+  l <- dim(x)[1]
+  if (is.null(it)) ii <- rep(TRUE,l)
+  if (is.null(is)) ij <- rep(TRUE,l)
+  if (is.null(ic)) ik <- rep(TRUE,l)
+  
+  # Generate sequence of days, months or years if range of it value is given
+  if (!is.null(it)) {
+    if(verbose) print('Generate sequence of time if it value is given')
+    
+    is.datetime <- function(x) all(!is.months(x) &
+                                     (is.character(x) &
+                                      !grepl("-",x) &
+                                      all(levels(factor(nchar(x)))==10)) |
+                                   (is.numeric(x) &
+                                        all(levels(factor(nchar(x)))==10)) |
+                                   inherits(x,c("POSIXt")))
+    is.dates <- function(x) all(!is.months(x) & !is.datetime(x) & 
+                                  (is.character(x) &
+                                     all(levels(factor(nchar(x)))==10) |
+                                     all(levels(factor(nchar(x)))==8)) |
+                                  (is.numeric(x) & all(levels(factor(nchar(x)))==8)) |
+                                  inherits(x,"Date"))
+    is.years <- function(x) all(!is.months(x) & 
+                                  is.numeric(x) & levels(factor(nchar(x)))==4)
+    is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+                                                tolower(month.abb)))>0)
+    is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+                                                 names(season.abb())))>0)
+    # is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+    #                                             tolower(month.abb)))>0)
+    # is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
+    #                                              names(season.abb())))>0)
+    # is.dates <- function(x) all(!is.months(x) &
+    #                               (levels(factor(nchar(x)))==10) |
+    #                               (is.numeric(x) & levels(factor(nchar(x)))==8))
+    # is.years <- function(x) all(!is.months(x) & 
+    #                               is.numeric(x) & levels(factor(nchar(x)))==4)
+
+    tstart <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
+    tend <- strptime(x[,colnames(x)=="end"],format="%Y%m%d%H")
+    if(!is.datetime(it)) {
+      tstart <- strftime(tstart,format="%Y-%m-%d")
+      tend <- strftime(tend,format="%Y-%m-%d")
+    }
+    
+    yr <- year(x)
+    mo <- month(x)
+    dy <- day(x)
+    if(verbose) print(paste('length of t',length(t),'yr',length(yr),
+                            'mo',length(mo),'dy',length(dy)))
+    if(verbose) print(paste('years',paste(unique(yr),collapse=",")))
+    if(verbose) print(paste('months',paste(unique(mo),collapse=",")))
+    if(verbose) print(paste('mdays',paste(unique(dy),collapse=",")))
+    
+    if (is.months(it)) {
+      if (verbose) print('Monthly selected')
+      ii <- is.element(mo,(1:12)[is.element(tolower(month.abb),
+                                            tolower(substr(it,1,3)))])
+    } else if (is.seasons(it)) {
+      if (verbose) print("Seasonally selected")
+      if (verbose) print(table(mo))
+      if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
+      ii <- is.element(mo,eval(parse(text=paste('season.abb()$',it,sep=''))))
+    } else if (is.dates(it)) {
+      it <- strftime(as.Date(it),format="%Y%m%d")
+      t1 <- strftime(as.Date(tstart),format="%Y%m%d")
+      t2 <- strftime(as.Date(tend),format="%Y%m%d")
+      if ( length(it) == 2 ) {
+        if (verbose) print('Between two dates')
+        if (verbose) print(it)
+        ii <- t1>=min(it) & t1<=max(it) | t2>=min(it) & t2<=max(it)
+      } else { 
+        if (verbose) print('it is a string of dates')
+        ii <- it<=t2 & it>=t1
+      }
+    } else if (is.datetime(it)) {
+      it <- as.numeric(strftime(it,format="%Y%m%d%H"))
+      t1 <- as.numeric(strftime(tstart,format="%Y%m%d%H"))
+      t2 <- as.numeric(strftime(tend,format="%Y%m%d%H"))
+      if ( length(it) == 2 ) {
+        if (verbose) print('Between two dates')
+        if (verbose) print(it)
+        ii <- t1>=min(it) & t1<=max(it) | t2>=min(it) & t2<=max(it)
+      } else { 
+        if (verbose) print('it is a string of dates')
+        ii <- it<=t2 & it>=t1
+      }
+    } else if (is.years(it)) {
+      it <- as.integer(it)
+      if ( length(it) == 2 ) {
+        if (verbose) print('Between two years')
+        if (verbose) print(it)          
+        ii <- is.element(yr,seq(it[1],it[2],1))
+      } else { 
+        if (verbose) print('it is a string of years')
+        ii <- is.element(yr,it)
+      }
+    } else if (is.logical(it) & length(it)==length(yr)) {
+      if (verbose) print('it is a logical array')
+      ii <- it
+    } else if (is.numeric(it) & max(it)<=length(yr)) {
+      if (verbose) print('it is an index array')
+      ii <- rep(FALSE,length(yr))
+      ii[it] <- TRUE
+    } else {
+      ii <- rep(FALSE,length(yr))
+      warning("subset.trajectory: did not recognise the selection citerion for 'it'")
+    }
+  }
+  
+  # is can be a list to select region or according to other criterion
+  if (inherits(is,'list')) {
+    selx <- rep(TRUE,l); sely <- selx;
+    selp <- selx; selF <- selx
+    nms <- names(is)
+    ix <- grep('lon',tolower(nms))
+    iy <- grep('lat',tolower(nms))
+    ip <- grep('slp',tolower(nms))
+    iF <- grep('FUN',nms)
+    if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
+    if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
+    if (length(ip)>0) sslp <- is[[ip]] else sslp <- NULL        
+    if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
+    if (length(slon)==2 & length(slat)==2) {
+      if (verbose) print(paste('is selects longitudes ',
+                               slon[1],'–',slon[2],'E ',
+                               "and latitudes ",
+                               slat[1],'–',slat[2],'N ',sep=""))
+      jx <- colnames(x)=='lon'
+      jy <- colnames(x)=='lat'
+      selx <- apply(x,1,function(x) any(x[jx]>=min(slon) &
+                                          x[jx]<=max(slon) & x[jy]>=min(slat) & x[jy]<=max(slat)))        
+    } else if (length(slon)==2) {
+      if (verbose) print(paste('is selects longitudes ',
+                               slon[1],'–',slon[2],'E',sep=""))
+      jx <- colnames(x)=='lon'
+      selx <- apply(x,1,function(x) any(x[jx]>=min(slon) & x[jx]<=max(slon)))
+    } else if (length(slat)==2) {
+      if (verbose) print(paste('is selects latitudes ',
+                               slat[1],'–',slat[2],'N',sep=""))
+      jy <- colnames(x)=='lat'
+      selx <- apply(x,1,function(x) any(x[jy]>=min(slat) & x[jy]<=max(slat)))
+    }
+    ij <- selx & selp & selF
+  }
+  
+  if(is.list(ic)) {
+    if(is.null(ic$FUN)) ic$FUN <- "any"
+    if(!is.null(ic$param) & (!is.null(ic$pmin) | !is.null(ic$pmax))) {
+      if(!ic$param %in% colnames(x)) {
+        if(verbose) print(paste("Unkown input ic$param =",ic$param))
+      } else {
+        ip <- colnames(x)==ic$param
+        if(is.null(ic$pmin)) ic$pmin <- min(x[,ip],na.rm=TRUE)
+        if(is.null(ic$pmax)) ic$pmax <- max(x[,ip],na.rm=TRUE)
+        if(verbose) print(paste(ic$param,"in range",ic$pmin,"-",ic$pmax))
+        if(verbose) print(paste("FUN =",ic$FUN))
+        if (ic$FUN %in% c("any","all")) {
+          fn <- function(x) do.call(ic$FUN,list(x[ip]>=ic$pmin & x[ip]<=ic$pmax))
+        } else {
+          fn <- function(x) do.call(ic$FUN,list(x[ip]))>=ic$pmin &  do.call(ic$FUN,list(x[ip]))<=ic$pmax
+        }
+        ik <- apply(x,1,fn)
+      }
+    }
+  }
+  
+  if(verbose) print(paste('length(ii)',length(ii),'length(ij)',length(ij),'length(ik)',length(ik)))
+  if(verbose) print(paste('it selects',sum(ii),'is selects',sum(ij),'ic selects',sum(ik)))
+  ist <- (1:l)[(ii & ij & ik)]
+  y <- x[ist,]
+  if(verbose) print(paste('total subset',sum(ii & ij & ik)))
+
+  class(y) <- cls
+  y <- attrcp(x,y)
+  if (inherits(is,'list')) {
+    if (length(slon)==2) attr(y,'longitude') <- slon
+    if (length(slat)==2) attr(y,'latitude') <- slat
+  }
+  if (is.seasons(it) | is.months(it)) class(y) <- c(class(y),'season')
+  attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 

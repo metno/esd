@@ -178,7 +178,6 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
     projection <- tolower(projection)
 
     ## REB 2016-10-19: one option is to recover the field and then maps the field
-
     if (what=="field") {
       if (verbose) print('what=field: recover the field before mapping')
       x <- subset(x,it=it,is=is)
@@ -211,6 +210,8 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
       if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
       attr(X,'source') <- attr(x,'source')
       attr(X,'time') <- range(index(x))
+      attr(X,'greenwich') <- attr(x,"greenwich")
+
       if ( (ip==1) & !is.null(attr(x, "area.mean.expl")) )
         if (attr(x, "area.mean.expl"))
             type <- "fill"
@@ -277,8 +278,8 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         attr(X,'longitude') <- lon(attr(x,'pattern'))
         attr(X,'latitude') <- lat(attr(x,'pattern'))
     }
-    attr(X,'variable') <- varid(x)
-    attr(X,'unit') <- unit(x)[1]
+    attr(X,'variable') <- varid(attr(x,'eof'))
+    attr(X,'unit') <- 'weight'
     
     unit <- attr(x,'unit')
     if ( (is.na(unit) | is.null(unit)) ) unit <- " "
@@ -544,41 +545,48 @@ map.pca <- function(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
     ##
     if (verbose) print(paste('map.pca',FUN))
-    args <- list(...)
+  
+    if(inherits(x,"trajectory")) {
+      map.pca.trajectory(x,projection=projection,lonR=lonR,latR=latR,
+                         xlim=xlim,ylim=ylim,...)
+    } else {
+      args <- list(...)
                                         #print(args)
-    ## REB 2016-11-02 fix
-    if (is.null(dim(attr(x,'pattern'))))
-      dim(attr(x,'pattern')) <- c(1,length(attr(x,'pattern')))
-    
-    X <- rbind(attr(x,'pattern')[,ip],attr(x,'pattern')[,ip])
-                                        #print(dim(X))
-                                        #str(x)
-    X <- attrcp(x,X)
-
-    ## if zlim is specified, then mask data outside this range
-    if (!is.null(zlim)) {
-        d <- dim(X)
-        mask <- (X < min(zlim)) | (X > max(zlim))
-        X[mask] <- NA
-        dim(X) <- d
-        if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
-    }    
-    attr(X,'longitude') <- lon(x)
-    attr(X,'latitude') <- lat(x)
-    attr(X,'mean') <- NULL
-    class(X) <- 'station'
-    ##if (is.null(colbar$col) | is.null(colbar)) {
-    ##  colbar$col <- colscal(30,col=varid(x))
-    ##}
-    if (verbose) str(X)
-    if (is.element(FUN,args)) 
-        map.station(X,new=new,colbar=colbar,
-                    xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=TRUE,fig=fig,...)
-    else
-        map.station(X,new=new,colbar=colbar,FUN=FUN,
-                    xlim=xlim,ylim=ylim,zlim=zlim,
-                    verbose=verbose,plot=TRUE,fig=fig,...)
-}
+      ## REB 2016-11-02 fix
+      if (is.null(dim(attr(x,'pattern'))))
+        dim(attr(x,'pattern')) <- c(1,length(attr(x,'pattern')))
+      
+      X <- rbind(attr(x,'pattern')[,ip],attr(x,'pattern')[,ip])
+                                          #print(dim(X))
+                                          #str(x)
+      X <- attrcp(x,X)
+  
+      ## if zlim is specified, then mask data outside this range
+      if (!is.null(zlim)) {
+          d <- dim(X)
+          mask <- (X < min(zlim)) | (X > max(zlim))
+          X[mask] <- NA
+          dim(X) <- d
+          if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
+      }    
+      attr(X,'longitude') <- lon(x)
+      attr(X,'latitude') <- lat(x)
+      attr(X,'mean') <- NULL
+      class(X) <- 'station'
+      ##if (is.null(colbar$col) | is.null(colbar)) {
+      ##  colbar$col <- colscal(30,col=varid(x))
+      ##}
+      if (verbose) str(X)
+      if (is.element(FUN,args)) {
+          map.station(X,new=new,colbar=colbar,
+                      xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=TRUE,fig=fig,...)
+      } else {
+          map.station(X,new=new,colbar=colbar,FUN=FUN,
+                      xlim=xlim,ylim=ylim,zlim=zlim,
+                      verbose=verbose,plot=TRUE,fig=fig,...)
+      }
+    }
+  }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
@@ -686,7 +694,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
     colorbar <- !is.null(colbar)
 
-    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=FALSE)
+    colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
     
     fig0 <- c(0,1,0,1)                        # REB 2015-06-25
     data("geoborders",envir=environment())
@@ -853,115 +861,100 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
                        param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       #show.points=TRUE,show.trajectory=FALSE,show.start=FALSE,show.end=FALSE,
                        showaxis=TRUE,fig=c(0,1,0.05,0.95),mgp=c(2,0.5,0),mar=rep(2,4),
                        lty=1,type=c("points","trajectory","start","end"),
                        border=FALSE,
-                       projection="sphere",latR=NULL,lonR=NULL,new=TRUE,add=FALSE,
+                       projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,add=FALSE,
                        verbose=FALSE,...) {
     if(verbose) print("map.events")
     x0 <- x
     x <- subset(x,it=it,is=is,verbose=verbose)
     if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
-    
+        
     if (is.null(is$lon) & !is.null(xlim)) {
-        is$lon <- xlim
+      is$lon <- xlim
     } else if (is.null(is$lon) & is.null(xlim)) {
-        if(dim(x)[1]>0) {
-          is$lon <- range(x[,"lon"])+c(-5,5)
-        }
+      if(length(Y)>0) {
+        is$lon <- range(lon(Y))
+      } else if(dim(x)[1]>0) {
+        is$lon <- range(x[,"lon"])+c(-5,5)
+      }
     }
     if (is.null(xlim) & projection=="lonlat") xlim <- is$lon
     
     if(projection=="lonlat" & !any(xlim<0) & any(xlim>180)) x <- g2dl(x,greenwich=TRUE)
     
-    
     if (is.null(is$lat) & !is.null(ylim)) {
-        is$lat <- ylim
+      is$lat <- ylim
     } else if (is.null(is$lat) & is.null(ylim)) {
-        if(dim(x)[1]>0) is$lat <- range(x[,"lat"])+c(-2,2)
+      if(length(Y)>0) {
+        is$lat <- range(lat(Y))
+      } else if(dim(x)[1]>0) {
+        is$lat <- range(x[,"lat"])+c(-2,2)
+      }
     }
     if (is.null(ylim) & projection=="lonlat") ylim <- is$lat
     
     if (!is.null(Y)) {
-        Y <- subset(Y,is=is)
+      Y <- subset(Y,is=is)
     }
     if(length(Y)>0) {
-        if(dim(x)[1]==0) {
-            Y <- subset(Y,it=it)
-        } else {
-            ty <- index(Y)
-            if (inherits(Y,"month")) {
-                tx <- round(x[,"date"]*1E-2)*1E2+1
-                ty <- as.numeric(strftime(ty,"%Y%m%d"))
-            } else if (inherits(ty,"Date")) {
-                tx <- x[,"date"]
-                ty <- as.numeric(strftime(ty,"%Y%m%d"))
-            } else if (inherits(ty,"POSIXt")) {
-                tx <- x[,"date"]*1E2 + x[,"time"]
-                ty <- as.numeric(strftime(ty,"%Y%m%d%H"))
-            }
-            ii <- is.element(ty,tx)
-            Y <- subset(Y,it=ii)
+      if(dim(x)[1]==0) {
+        Y <- subset(Y,it=it)
+      } else {
+        ty <- index(Y)
+        if (inherits(Y,"month")) {
+          tx <- round(x[,"date"]*1E-2)*1E2+1
+          ty <- as.numeric(strftime(ty,"%Y%m%d"))
+        } else if (inherits(ty,"Date")) {
+          tx <- x[,"date"]
+          ty <- as.numeric(strftime(ty,"%Y%m%d"))
+        } else if (inherits(ty,"POSIXt")) {
+          tx <- x[,"date"]*1E2 + x[,"time"]
+          ty <- as.numeric(strftime(ty,"%Y%m%d%H"))
         }
+        ii <- is.element(ty,tx)
+        Y <- subset(Y,it=ii)
+      }
     }
     if(length(Y)!=0) {
-        if (is.null(lonR)) lonR <- mean(lon(Y))
-        if (is.null(latR)) latR <- max(lat(Y))
-        map(Y,colbar=colbar,new=new,projection=projection,main="",
-            fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,border=border,
-            add=add,xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,verbose=verbose)
+      if (is.null(lonR)) lonR <- mean(lon(Y))
+      if (is.null(latR)) latR <- max(lat(Y))
+      map(Y,colbar=colbar,new=new,projection=projection,main="",
+          fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
+          add=add,xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,verbose=verbose)
     } else {
-        if (is.null(lonR)) {
-          if(!is.null(xlim)) lonR <- mean(xlim)
-          else if (dim(x)[1]>0) lonR <- mean(x[,"lon"])
+      if(!is.null(xlim)) {
+        lonR <- mean(xlim)
+      } else if (is.null(lonR)) {
+        if (dim(x)[1]>0) {
+          lonR <- mean(x[,"lon"])
+        } else {
+          lonR <- 0
         }
-        if (is.null(latR)) {
-          if(!is.null(ylim)) {
-            latR <- mean(ylim)
-            #latR <- sign(ylim[ylim==max(abs(ylim))])*max(abs(ylim))
-          } else if (dim(x)[1]>0) {
-            latR <- mean(x[,"lat"])
-            #latR <- sign(x[,"lat"][x[,"lat"]==max(abs(x[,"lat"]))])*max(abs(x[,"lat"]))
-          }
+      }
+      if(!is.null(ylim)) {
+        latR <- mean(ylim)
+        #latR <- sign(ylim[ylim==max(abs(ylim))])*max(abs(ylim))
+      } else if (is.null(latR)) {
+        if(dim(x)[1]>0) {
+          latR <- mean(x[,"lat"])
+          #latR <- sign(x[,"lat"][x[,"lat"]==max(abs(x[,"lat"]))])*max(abs(x[,"lat"]))
+        } else {
+          latR <- 90
         }
-        data(Oslo)
-        map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
-            bg=adjustcolor("black",alpha.f=0),new=new,add=add,
-            projection=projection,main="",xlab="",ylab="",
-            fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
-            border=border,
-            xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
-            verbose=verbose)
+      }
+      data(Oslo)
+      map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
+          bg=adjustcolor("black",alpha.f=0),new=new,add=add,
+          projection=projection,main="",xlab="",ylab="",
+          fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
+          border=border,
+          xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
+          verbose=verbose)
     }
-    
-    #if(param %in% colnames(x) & dim(x)[1]>0) {
-    #    if(verbose) print(paste("size proportional to",param))
-    #    cex <- 1+(x[,param]-min(x[,param],na.rm=TRUE))/
-    #        diff(range(x[,param],na.rm=TRUE))*cex
-    #}
-    
     if(dim(x)[1]>0) {
-        #mn <- month(strptime(x[,"date"],format="%Y%m%d"))
-        #cols <- adjustcolor(colscal(n=12),alpha=alpha)[mn]
         cols <- adjustcolor(col,alpha=alpha)
-        if("trajectory" %in% colnames(x0) &
-         any(c("trajectory","start","end") %in% type)) {
-          xt <- subset(x0,it=(x0$trajectory %in% x$trajectory))
-          if(!("trackcount" %in% names(x)) & dim(xt)[1]>1) {
-            xt <- Trackstats(xt)
-            xt <- subset(xt,it=xt$trackcount>1)
-          }
-          if(dim(xt)[1]>1) {
-            xall <- as.trajectory(xt,nmin=2,n=45,verbose=verbose)
-            map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
-                add=TRUE,col=col,lonR=lonR,latR=latR,
-                projection=projection,type=type,param=param,
-                showaxis=FALSE,
-                #show.trajectory=show.trajectory,show.start=show.start,show.end=show.end,
-                colbar=colbar,verbose=verbose,...)
-          }
-        }
         if("points" %in% type) {
           if(verbose) print("plot points")
           if(projection=="lonlat") {
@@ -978,18 +971,33 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
             points(ax[ay>0],az[ay>0],col=cols,bg=bg,cex=cex,pch=pch,lwd=lwd)    
           }
         }
+        if("trajectory" %in% colnames(x0) &
+           any(c("trajectory","start","end") %in% type)) {
+          xt <- subset(x0,it=(x0$trajectory %in% x$trajectory))
+          if(!("trackcount" %in% names(x)) & dim(xt)[1]>1) {
+            xt <- Trackstats(xt)
+            xt <- subset(xt,it=xt$trackcount>1)
+          }
+          if(dim(xt)[1]>1) {
+            xall <- as.trajectory(xt,nmin=2,n=45,verbose=verbose)
+            map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
+                add=TRUE,col=col,lonR=lonR,latR=latR,
+                projection=projection,type=type,param=param,
+                showaxis=FALSE,
+                colbar=colbar,verbose=verbose,...)
+          }
+        }
     }
-    
     period <- unique(c(min(it),max(it)))
     if (!is.null(period) & length(Y)==0) {
       text(par("usr")[1] + 0.05*diff(range(par("usr")[3:4])),
-           par("usr")[4] - 0.07*diff(range(par("usr")[3:4])),
+           par("usr")[4] - 0.05*diff(range(par("usr")[3:4])),
            paste(period,collapse=" - "),pos=4,cex=0.75,col="grey30")
     }
     
     if (!is.null(main)) {
       text(par("usr")[1] + 0.05*diff(range(par("usr")[3:4])),
-           par("usr")[4] - 0.17*diff(range(par("usr")[3:4])),
+           par("usr")[4] - 0.10*diff(range(par("usr")[3:4])),
            main,pos=4,cex=1,col="black")
     }
 }

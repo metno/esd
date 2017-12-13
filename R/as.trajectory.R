@@ -9,7 +9,7 @@ as.trajectory.default <- function(x,verbose=FALSE,...) {
 as.trajectory.events <- function(x,verbose=FALSE,...) {
   if (verbose) print("as.trajectory.events")
   stopifnot(inherits(x,"events"))
-  if (!("trajectory" %in% names(x))) x <- Track.events(x,verbose=verbose,...)
+  if (!("trajectory" %in% names(x))) x <- track(x,verbose=verbose,...)
   if (!("tracklength" %in% names(x))) x <- Trackstats(x,verbose=verbose)
   y <- trajectory(x,verbose=verbose,...)
   invisible(y)
@@ -78,6 +78,11 @@ rence")
     aggregate(x$time, list(x$trajectory), function(x) x[1])$x -> t1
     aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> d2
     aggregate(x$time, list(x$trajectory), function(x) x[length(x)])$x -> t2
+    ## KMP 2017-10-04: Solution to problem with 06 time step when using format HHMM:
+    if(max(c(t1,t2))>24) {
+      t1 <- t1*1E-2
+      t2 <- t2*1E-2
+    }
     dt1 <- as.numeric(strftime(strptime(paste(d1,t1),format="%Y%m%d %H"),format="%Y%m%d%H"))
     dt2 <- as.numeric(strftime(strptime(paste(d2,t2),format="%Y%m%d %H"),format="%Y%m%d%H"))
     #aggregate(x$date, list(x$trajectory), length)$x -> len

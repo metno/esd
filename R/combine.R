@@ -722,8 +722,12 @@ combine.field <- function(x,y,all=FALSE,dimension="time",
                                         #class(Z) <- class(y)
 
                                         # Add the regridded data as an attribute, but change class
-        if (is.null(attr(x,'n.apps'))) n.app <- 1 else
-        n.app <- attr(x,'n.apps') + 1
+        if (is.null(attr(x,'n.apps'))) {
+          n.app <- 1 
+        } else {
+          n.app <- attr(x,'n.apps') + 1
+        }
+
         attr(x,paste('appendix.',n.app,sep='')) <- Z
         attr(x,'n.apps') <- n.app
 
@@ -980,6 +984,8 @@ g2dl.eof <- function(x,greenwich=TRUE,verbose=FALSE) {
     lon <- sort(lon)
     X -> attr(x,'pattern')
     attr(x,'greenwich') <- greenwich
+    attr(x,'longitude') <- lon
+    attr(x,'latitude') <- lat
     return(x)
 }
 

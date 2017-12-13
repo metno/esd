@@ -10,9 +10,11 @@ PCA.trajectory <- function(X,neofs=20,param=c('lon','lat'),
   X <- sort(X)
   if (anomaly) {
     p <- param[!param %in% names(attr(X,'mean'))]
-    if(verbose) print('calculating anomaly')
-    if(verbose) print(p)
-    if(length(p)>0) X <- anomaly.trajectory(X,param=p)
+    if(length(p)>0) {
+      if(verbose) print('calculating anomaly')
+      if(verbose) print(p)
+      X <- anomaly.trajectory(X,param=p)
+    }
   } else if (!anomaly & "anomaly" %in% attr(X,'aspect')) {
     X <- anomaly2trajectory(X)
   }
@@ -55,7 +57,7 @@ PCA.trajectory <- function(X,neofs=20,param=c('lon','lat'),
   y[,invert] <- -y[,invert]
 
   y <- attrcp(X,y)
-  if (anomaly) attr(y,'mean') <- attr(X,'mean') 
+  if (anomaly) attr(y,'mean') <- attr(X,'mean')
   attr(y,'start') <- X[,colnames(X)=='start']
   attr(y,'end') <- X[,colnames(X)=='end']
   attr(y,'n') <- X[,colnames(X)=='n']

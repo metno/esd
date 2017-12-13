@@ -41,10 +41,17 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   ny <- length(lat)
   nx <- length(lon)
   if (verbose) str(Z)
-  ## REB 2017-02-26 - to work with maxtrix-objects as well as fields
-  if (is.matrix(z)) {dim(z) <- c(dim(z),1); nt <- 1; t <- 1} else 
-  if (!is.null(index(Z))) {nt <- length(index(Z)); t <- index(t)} else 
-    {nt <- 1; t <- 1}
+  if (is.matrix(z)) {
+    dim(z) <- c(dim(z),1)
+    nt <- 1
+    t <- 1 
+  } else if (!is.null(index(Z))) {
+    nt <- length(index(Z))
+    t <- index(Z)
+  } else {
+    nt <- 1
+    t <- 1
+  }
   
   if (is.null(m)) m <- nx
   m <- min(nx,m)

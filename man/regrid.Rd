@@ -3,6 +3,7 @@
 \alias{regrid.weights}
 \alias{regrid.default}
 \alias{regrid.field}
+\alias{regrid.station}
 \alias{regrid.matrix}
 \alias{regrid.eof}
 \alias{regrid.eof2field}
@@ -43,6 +44,7 @@ sparseMproduct(beta,x)
 regrid(x,is,...)
 regrid.default(x,is,verbose=FALSE,...) 
 regrid.field(x,is,verbose=FALSE,...) 
+regrid.station(x,is,approach="station",verbose=FALSE,...)
 regrid.matrix(x,is,verbose=FALSE,...) 
 regrid.eof(x,is,verbose=FALSE)
 nearest(x,is,...)
@@ -59,6 +61,7 @@ nearest.field(x,is)
 \item{is}{A list holding the coordinates xn and yn, a field object, an
   eof object, or a station object - for the latter three, the field x is
 interpolated to the longitude/latitude held by is.}
+\item{approach}{'station' or 'pca2station'. If 'pca2station', the stations are turned into PCAs before regridding and then converted back to station objects.}
 \item{verbose}{Clutter the screen.}
  }
 \value{A field object}

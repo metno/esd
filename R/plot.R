@@ -326,7 +326,6 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   } else
   if (length(what)==2) mfrow <- c(2,1) else
   if (length(what)==1) mfrow <- c(1,1)
-  
   if (new) dev.new()
   ## par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
@@ -829,8 +828,12 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose
 
 plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.pca')
-  attr(y,'longname') <- attr(y,'longname')[1]
-  plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
+  if(inherits(y,"trajectory")) {
+    plot.pca.trajectory(y,cex=cex,new=new,verbose=verbose,...)
+  } else {
+    attr(y,'longname') <- attr(y,'longname')[1]
+    plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
+  }
 }
 
 
@@ -1424,9 +1427,12 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   }
 
   if (verbose) {print(map.type); print(attr(x,'station'))}
-  if (!is.null(attr(x,'station')) &
-      !inherits(attr(x,'station'),'annual')) z <- subset(x,it=it,verbose=verbose) else
-                                             z <- x
+  if (!is.null(attr(x,'station')) & !inherits(attr(x,'station'),c('annual','season'))) {
+    z <- subset(x,it=it,verbose=verbose) 
+  } else {
+    z <- x
+  }
+  
   if (verbose) {print("diagnose"); class(z)}
   diag <- diagnose(z,plot=FALSE,verbose=verbose)
   
@@ -1463,10 +1469,11 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)
-  
-  if (pts) for (i in 1:d[2])
-    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
 
+  if (pts) for (i in 1:d[2]) {
+    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
+  }
+  
   # Produce a transparent envelope
   nt <- length(index(z))
   t2 <- c(year(t),rev(year(t)))
@@ -1477,17 +1484,17 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   col.map <- adjustcolor(col,alpha.f=alpha.map)
   col <- adjustcolor(col,alpha.f=alpha)
  
-  
   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
   si <- apply(coredata(z),1,sd,na.rm=TRUE)
   for (ii in 1:49) {
     qp1 <- qnorm(1-ii/50,mean=coredata(mu),sd=coredata(si))
     qp2 <- qnorm(ii/50,mean=coredata(mu),sd=coredata(si))
     ci <- c(qp1,rev(qp2))
-    polygon(t2,ci, col= envcol, border=NA)
+    polygon(t2[!is.na(ci)],ci[!is.na(ci)], col= envcol, border=NA)
   }
   q05 <- qnorm(0.05,mean=mu,sd=si)
   q95 <- qnorm(0.95,mean=mu,sd=si)
+  
   lines(zoo(mu,order.by=year(z)),col=rgb(1,0.7,0.7),lwd=3)
   lines(zoo(q05,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)  
   lines(zoo(q95,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)
@@ -1551,6 +1558,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
     par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",xpd=NA)
     #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+    ## KMP 2017-09-13: move this text!!! vvv
     legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
                       paste(diag$robs,'%'),
                       paste(diag$outside,"observations"),
