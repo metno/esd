@@ -1091,7 +1091,7 @@ biasfix <- function(x) {
     n <- attr(x,'n.apps')
     for ( i in 1:n ) {
         eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
-        Z <- coredata(z)
+        Z <- coredata(z) 
         ## Use overlapping years
         year.ox <- range(year(z)[is.element(year(z),year(x))])
         sd.o <- apply(coredata(subset(x,it=range(year.ox))),2,sd,na.rm=TRUE)

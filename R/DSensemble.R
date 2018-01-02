@@ -103,7 +103,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
              ylim=ylim + range(coredata(ya),na.rm=TRUE),xlim=c(1900,2100))
     grid()
   }
-browser()
+  #browser()
   if(verbose) print("Retrieve predictor data")
   if (is.character(predictor))
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,
@@ -215,7 +215,8 @@ browser()
     }
     ##
     # REB: 30.04.2014 - new lines...
-    if (verbose) print("- - - > DS")
+    if (verbose) print("- - - > DS (seasonal)")
+    if (verbose) print(class(attr(Z,'appendix.1')))
     if (biascorrect) try(Z1 <- biasfix(Z1))
     ds1 <- try(DS(subset(y,it='djf'),Z1,ip=ip))
     if (inherits(ds1,"try-error")) {    
@@ -534,7 +535,8 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
     if (verbose) print("diagnose")
     diag <- diagnose(Z)
     if (biascorrect) Z <- biasfix(Z)
-    if (verbose) print("- - - > DS")
+    if (verbose) print("- - - > DS (precip)")
+    if (verbose) print(class(attr(Z,'appendix.1')))
     ds <- try(DS(y,Z,ip=ip,verbose=verbose))
     if (inherits(ds,"try-error")) {    
       writeLines(gcmnm[i],con=flog)
@@ -767,7 +769,8 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
       if (verbose) print("diagnose")
       diag <- diagnose(Z)
       if (biascorrect) Z <- biasfix(Z)
-      if (verbose) print("- - - > DS")
+      if (verbose) print("- - - > DS (annual)")
+      if (verbose) print(class(attr(Z,'appendix.1')))
       ds <- try(DS(y,Z,ip=ip,verbose=verbose))
       
       if (inherits(ds,"try-error")) {    
@@ -1009,7 +1012,8 @@ DSensemble.season <- function(y,season=NULL,plot=TRUE,path="CMIP5.monthly/",
       rm("testGCM"); gc(reset=TRUE)
     }
 
-    if (verbose) print("- - - > DS")
+    if (verbose) print("- - - > DS (seasonal)")
+    if (verbose) print(class(attr(Z,'appendix.1')))
     if (biascorrect) try(Z <- biasfix(Z))
     ds <- try(DS(ys,Z,ip=ip))
     if (inherits(ds,"try-error")) {    
@@ -1803,8 +1807,9 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
     rm("gcm","GCM"); gc(reset=TRUE)
 
-    if (verbose) print("- - - > DS")
+    if (verbose) print("- - - > DS (pca)")
     Z0 <- Z
+    if (verbose) print(class(attr(Z,'appendix.1')))
     if (biascorrect) Z <- biasfix(Z)
     ds <- try(DS(y,Z,ip=ip,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
@@ -2180,7 +2185,8 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
     }
     rm("gcm","GCM"); gc(reset=TRUE)
 
-    if (verbose) print("- - - > DS")
+    if (verbose) print("- - - > DS (eof)")
+    if (verbose) print(class(attr(Z,'appendix.1')))
     if (biascorrect) Z <- biasfix(Z)
     
     diag <- diagnose(Z)

@@ -67,7 +67,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
             X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
-      browser()  
+      #browser()  
       nc <- nc_open(file.path(path,ncfile))
         dimnames <- names(nc$dim)
 	      ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))

@@ -9,6 +9,16 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   return(y)
 }
 
+subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
+  if (is.null(it) & is.null(is)) return(x)
+  if (verbose) print("subset.zoo")
+  
+  y <- default.subset(x,is=is,it=it,verbose=verbose)
+  attr(y,'history') <- history.stamp(x)
+  return(y)
+}
+
+
 subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print("subset.comb")
     y <- subset.field(x,it=it,is=is)
