@@ -1628,6 +1628,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
   if (is.character(predictor)) {
+    if (verbose) print('retrieve the predictor from netCDF file')
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,
                     type=type,verbose=verbose)
       if (!is.null(it)) {
@@ -1638,11 +1639,12 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
         ## days per year.
       }
   } else if (inherits(predictor,'field')) {
+    if (verbose) print('use the predictor provided as an argument')
     t2m <- predictor
     lon <- range(lon(t2m))
     lat <- range(lat(t2m))
     if (!is.annual(t2m) & !is.null(it)) {
-      if (verbose) print('Extract some months or a time period')
+      if (verbose) print('Extract months/time period:')
       if (verbose) print(it)
       t2m <- subset(t2m,it=it,verbose=verbose)
     }
@@ -1652,13 +1654,15 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
   
   if (inherits(y,'season')) {
-    if (verbose) print('seasonal data')
+    if (verbose) print('seasonal data found in the predictand')
     if (FUNX !='C.C.eq') {
+      if (verbose) print(paste('apply',FUNX,'to the predictor'))
       T2M <- as.4seasons(t2m,FUN=FUNX,nmin=nmin) 
     } else {
+      if (verbose) print('apply C.C.eq to the predictor:')
       eval(parse(text=paste('T2M <- as.4seasons(',FUNX,'(t2m),FUN="mean",nmin=nmin)',sep="")))
     }
-    T2M <- matchdate(T2M,y)
+    T2M <- matchdate(T2M,y,verbose=verbose)
 
     # Recursive: do each season seperately if there are more than one season
     if (length(table(season(y)))>1) {
@@ -1705,6 +1709,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   }
   if (inherits(T2M,"eof")) T2M <- as.field(T2M)
   rm("predictor","t2m"); gc(reset=TRUE)
+  if (verbose) {print('Check T2M:'); print(class(T2M)); print(index(T2M))}
   
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
@@ -1767,12 +1772,13 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
     if (inherits(y,'season')) {
       if (sum(is.element(FUNX,xfuns))==0) {
-          if (verbose) print('No special transformation') 
+          if (verbose) print(paste('No special transformation (PCA)',FUNX,nmin)) 
           GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
        } else {
            if (verbose) print('Need to aggregate FUNX(gcm)')
            eval(parse(text=paste('GCM <- as.4seasons(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
        }
+      if (verbose) {print('Check: index(T2M)'); print(index(T2M))}
       GCM <- subset(GCM,it=season(T2M)[1])
     } else if (inherits(y,'annual')) {
       if (verbose) print(paste('Annualy aggregated',FUNX,'for GCM'))
@@ -2132,7 +2138,7 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
     if (inherits(y,'season')) {
       if (verbose) print(paste('Seasonally aggregated',FUNX,'for GCM'))
       if (sum(is.element(FUNX,xfuns))==0) {
-          if (verbose) print('No special transformation') 
+          if (verbose) print('No special transformation (EOF)') 
           GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin)
        } else {
            if (verbose) print('Need to aggregate FUNX(gcm)')

@@ -50,14 +50,14 @@ DS.default <- function(y,X,mon=NULL,
                        method="lm",swsm="step",m=5,
                        rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,...) {
-    ##
-    if (verbose) print('--- DS.default ---')
+    if (verbose) { print('--- DS.default ---'); print(summary(coredata(y)))}
     #print('err(y)'); print(err(y))
     if (verbose) {print('index(y)'); print(index(y))}
     if (verbose) {print(class(y)); print(class(X))}
     
     swapped <- FALSE
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
+      if (verbose) print('SWAP y & X')
         yy <- X
         X <- y
         y <- yy
@@ -77,7 +77,7 @@ DS.default <- function(y,X,mon=NULL,
     ip <- ip[ip <= length(attr(X,'eigenvalues'))]
     
     if (verbose) {print(paste(sum(!is.finite(coredata(y))),'missing values in y'))}
-    if (verbose)  {print('index(y) before removing missing values:'); print(index(y))}
+    if (verbose)  {print('index and y before removing missing values:'); print(zoo(y))}
     y <- subset(y,it=is.finite(coredata(y)))
     W <- attr(X,'eigenvalues')
     cls <- c(class(y)[1],class(X))
@@ -259,7 +259,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
     ##  
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
-    if (verbose) print("--- DS.station ---")
+    if (verbose) { print('--- DS.station ---'); print(summary(coredata(y)))}
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
 
@@ -401,7 +401,7 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,weighted=TRUE,...) {
-    if (verbose) print("DS.comb")
+    if (verbose) { print('--- DS.comb ---'); print(summary(coredata(y)))}
     ##print('index(y)'); print(index(y))
     ##print('err(y)'); print(err(y))
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
@@ -472,7 +472,7 @@ DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
                      method="lm",swsm="step",m=5,
                      rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                      verbose=FALSE,weighted=TRUE,...) {
-    if (verbose) print("DS.field")
+    if (verbose) { print('--- DS.field ---'); print(summary(coredata(y)))}
     ## Keep track of which is an eof object and which is a station record:
     swapped <- FALSE
     if ( inherits(y,c("field")) & inherits(X,c("station"))) {
@@ -528,7 +528,7 @@ DS.t2m.month.field <- function(y,X,biascorrect=FALSE,mon=NULL,
                                method="lm",swsm="step",m=m,
                                rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                                verbose=FALSE,weighted=TRUE,station=TRUE) {
-    if (verbose) print("DS.t2m.month.field")
+    if (verbose) { print('--- DS.t2m.month.field ---'); print(summary(coredata(y)))}
     if (inherits(X,'comb')) type <- 'eof.comb' else type <- "eof.field"
     cls <- class(y)
 
@@ -568,7 +568,7 @@ DS.t2m.season.field <- function(y,X,biascorrect=FALSE,
                                 rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                                 verbose=FALSE,weighted=TRUE,station=TRUE) {
   ## Downscale seasonal mean and standard deviation
-    if (verbose) print("DS.t2m.season.field")
+    if (verbose) { print('--- DS.t2m.season.field ---'); print(summary(coredata(y)))}
 
     Z1 <- EOF(subset(X,it='djf'),area.mean.expl=area.mean.expl)
     if (verbose) print("downscale DJF")
@@ -599,7 +599,7 @@ DS.t2m.annual.field <- function(y,X,biascorrect=FALSE,
                                 rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                                 verbose=FALSE,weighted=TRUE,station=TRUE) {
   ## Downscale seasonal mean and standard deviation
-    if (verbose) print("DS.t2m.annual.field")
+    if (verbose) { print('--- DS.t2m.annual.field ---'); print(summary(coredata(y)))}
 
     
     Z <- EOF(annual(X),area.mean.expl=area.mean.expl)
@@ -618,6 +618,7 @@ DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
   ## Also computes seasonal variations from PCA X[year,calendar months].
   ## One PC for each year.
 
+    if (verbose) { print('--- DS.precip.season.field ---'); print(summary(coredata(y)))}
     mu <- as.4seasons(y,FUN="exceedance",threshold=threshold)
     fw <- as.4seasons(y,FUN="exceedance",fun="freq")
     wL <- as.4seasons(spell(y))
@@ -645,6 +646,7 @@ DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
 DS.freq <- function(y,X,threshold=1,biascorrect=FALSE,method="glm",
                     family="gaussian",swsm="step",m=5,
                     rmtrend=TRUE,ip=1:7,verbose=FALSE,weighted=TRUE,...) {
+    if (verbose) { print('--- DS.freq ---'); print(summary(coredata(y)))}
     if (inherits(X,'month'))
         Z <- aggregate(y,as.yearmon,FUN="wetfreq",threshold=threshold) else
     if (inherits(X,'season'))
@@ -663,6 +665,7 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
                      rmtrend=TRUE,ip=1:7,verbose=FALSE,weighted=TRUE,...) {
   ## Downscale the spell length using a GLM with poisson family.
   ##  the mean spell length over a given interval:
+    if (verbose) { print('--- DS.spell ---'); print(summary(coredata(y)))}
     if (inherits(y,'spell')) z <- as.station(y) else
     if (inherits(y,'sstation')) {
         z <- as.station(spell(y))
@@ -690,13 +693,15 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,ip=1:10,
                    rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
     
-    if (verbose) {print('DS.pca'); print(class(X))}
+    if (verbose) { print('--- DS.pca ---'); print(summary(coredata(y))); print(class(y)); print(class(X))}
     
     if (class(index(y)) != (class(index(X)))) {
+      if (verbose) {print('different class'); summary(coredata(y))}
       warning(paste('DS.pca: different indices:', class(index(y)),class(index(X))))
-      if (is.numeric(index(y))) index(X) <- year(X)
-      if (is.numeric(index(X))) index(y) <- year(y)
+      if (is.numeric(index(y)) | is.numeric(index(X))) {index(y) <- year(y); index(X) <- year(X)}
+      if (verbose) {print('Summary of predictand - intermediate inspection1'); print(zoo(y))}
     }
+  
     ## If the predictor is a list, then use DS.list
     if (is.list(X)) {
       if (verbose) print('Predictors represented by a list object')
@@ -728,10 +733,10 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                   weighted=weighted,...)
       return(z)
     } else if (verbose) print('Predictor is OK - an EOF object')
-    
+   
     ## Check the predictand
     if (inherits(y,"eof") & inherits(y,"field")) {
-      if (verbose) print('Make the Ip lool like PCAs before downscaling')
+      if (verbose) print('Make the predictand EOF look like PCAs before downscaling')
       cls0 <- class(y)
       class(y)[1:2] <- c('pca','station')
       z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
@@ -755,11 +760,18 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         #nattr <- softattr(y)
 
     # synchronise the two zoo objects through 'merge' (zoo)
+    if (verbose) { print('Summary of predictand before matchdate'); print(summary(coredata(y)))
+      print(index(y)); print(index(X))
+    }
+    if (verbose) print('predictand y: match date with predictor x')
     y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
+    if (verbose) {print('summary of predictand y after matchdate'); print(summary(coredata(y)))}
+    
+    if (verbose) print('predictor: match date with predictand')
     X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
     dy <- dim(y); if (is.null(dy)) dy <- c(length(y),1)
     dx <- dim(X); if (is.null(dx)) dx <- c(length(X),1)
-
+    
     # Use method for downscaling
     #str(y); str(X)
     if (verbose) print(method)
@@ -841,6 +853,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         ## multiple predictors.
         if (dp[3] == length(attr(X0,'eigenvalues'))) x0p <- x0p %*% diag(attr(X0,'eigenvalues'))
         model <- list(); eof <- list()
+        if (verbose) {print('Summary of predictand'); print(summary(coredata(y)))}
         for (i in 1:dy[2]) {
             if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
             ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],
@@ -947,7 +960,7 @@ DS.eof <- function(y,X,mon=NULL,
                    method="lm",swsm="step",m=5,
                    rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,weighted=TRUE,pca=TRUE,...) {
-    if (verbose) print("DS.eof")
+    if (verbose) { print('--- DS.eof ---'); print(summary(coredata(y)))}
     ds <- DS.pca(y,X,mon=mon,
                  method=method,swsm=swsm,m=m,
                  rmtrend=rmtrend,ip=ip,
@@ -971,7 +984,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
   ### weight). Then a SVD is applied to this new set of combined PCs to make
   ### an object that looks like on EOF.
   
-  if (verbose) print('DS.list')
+  if (verbose) { print('--- DS.list ---'); print(summary(coredata(y)))}
   z <- list()
   for (ieof in 1:length(X)) {
     if (verbose) print(names(X)[ieof])
@@ -995,7 +1008,7 @@ DS.mixedeof <- function(y,X,biascorrect=TRUE,mon=NULL,
               ### eigenvalues (normalised so that each predictor/EOF type carry similar
               ### weight). Then a SVD is applied to this new set of combined PCs to make
               ### an object that looks like on EOF.
-    if (verbose) print('DS.list')
+    if (verbose) { print('--- DS.mixedeof ---'); print(summary(coredata(y)))}
     preds <- names(X)
     if (verbose) print(preds)
     np <- length(preds)
@@ -1077,6 +1090,7 @@ DS.station.pca <- function(y,X,mon=NULL,
                            rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                            verbose=FALSE,weighted=TRUE,...) {
   ## This function does the same as DS.eof
+    if (verbose) { print('--- DS.station.pca ---'); print(summary(coredata(y)))}
     z <- DS.default(y=y,X=X,mon=mon,method=method,swsm=swsm,m=m,
                     rmtrend=trend,ip=ip,area.mean.expl=area.mean.expl,
                     verbose=verbose,weighted=weighted,..)
@@ -1125,8 +1139,8 @@ DS.trajectory <- function(y,X,it=NULL,is=NULL,FUN='count',param=NULL,
                        rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
    
+  if (verbose) { print('--- DS.trajectory ---'); print(summary(coredata(y)))}
   stopifnot(!missing(y),!missing(X),inherits(y,"trajectory"))
-  if (verbose) print("--- DS.trajectory ---")
 
   y <- subset(y,it=it,is=is)
   ys <- trajectory2station(y,param=param,FUN=FUN,unit=unit,
