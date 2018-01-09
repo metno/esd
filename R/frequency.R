@@ -28,11 +28,12 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
       freq <- "year"
     if (((dt==1) & grepl("hou",unit)) | ((dt==3600) & grepl("hou",unit)))
        freq <- "hour"
-    if (grepl("hour",unit)) freq <- "hour"
     if ((dt==6) & grepl("hou",unit))
        freq <- "6hour"
     if ((dt==12) & grepl("hou",unit))
        freq <- "12hour"
+    if (dt >= 672 & dt <= 744 & grepl("hou",unit)) 
+      freq <- "month"
     if ((dt==12) & grepl("mon",unit))
        freq <- "year"
     if ((dt==3) & grepl("mon",unit))
