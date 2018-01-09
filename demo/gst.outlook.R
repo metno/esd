@@ -9,7 +9,7 @@ download.file('ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/a
               destfile = 'air.mon.mean.nc')
 
 ## ------------------------------------------------------------------------
-t2m <- retrieve('~/Downloads/air.mon.mean.nc')
+t2m <- retrieve('air.mon.mean.nc')
 gmst <- aggregate.area(t2m,FUN='mean')
 gmsta <- anomaly(gmst,ref=1961:1990)
 

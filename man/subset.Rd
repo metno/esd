@@ -16,6 +16,7 @@
 \alias{subset.zoo}
 \alias{subset.trajectory}
 \alias{station.subset}
+\alias{subset.zoo}
 \alias{matchdate}
 \alias{sort.station}
 \alias{subset.stationmeta}
