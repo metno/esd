@@ -1,4 +1,4 @@
-subset <- function(x,...) UseMethod("subset")
+## subset <- function(x,...) UseMethod("subset")
 
 subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (is.null(it) & is.null(is)) return(x)
