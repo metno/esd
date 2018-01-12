@@ -191,20 +191,22 @@ subset.pattern <- function(x,is,verbose=FALSE,...) {
   if (verbose) print('subset.pattern')
     if (is.list(is)) {
         y <- attr(x,'pattern')
-        lons <- attr(x,'longitude')
-        lats <- attr(x,'latitude')
+        lons <- lon(x)
+        lats <- lat(x)
         nms <- substr(tolower(names(is)),1,3)
         IS <- 1:length(nms)
         if (verbose) print(nms)
         if (sum(is.element(nms,'lon'))>0) {
           inm <- IS[is.element(nms,'lon')]
-            ix <- (lons >= min(is[[inm]])) &
-                  (lons <= max(is[[inm]]))
+            if (!is.null(is[[inm]]))           
+              ix <- (lons >= min(is[[inm]])) &
+                    (lons <= max(is[[inm]])) else ix <- is.finite(lons)
           } else ix <- is.finite(lons)
         if (sum(is.element(nms,'lat'))>0) {
           inm <- IS[is.element(nms,'lat')]
+          if (!is.null(is[[inm]]))   
             iy <- (lats >= min(is[[inm]])) &
-                  (lats <= max(is[[inm]]))
+                  (lats <= max(is[[inm]])) else iy <- is.finite(lats)
           } else iy <- is.finite(lats)
 
         if (!is.null(attr(x,'pattern'))) {

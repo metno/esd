@@ -283,7 +283,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   x <- subset(x,is=is,it=it,verbose=verbose)
   if (verbose) print(rowSums(coredata(x)))
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
-  d <- attr(x,'dimensions')
+  if (!is.null(attr(x,'dimensions'))) d <- attr(x,'dimensions') else d <- c(dim(x),1)
   if (verbose) print(paste('dimensions',paste(d,collapse='-')))
   #image(attr(x,'longitude'),attr(x,'latitude'),area)
   #print(c(length(colSums(area)),length(attr(x,'latitude')),sum(colSums(area))))
@@ -340,6 +340,8 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   } else {
     X <-coredata(x) 
+    if (d[3]==1) dim(X) <- c(1,length(X)) ## If only one map, then set the dimensions right to get a matrix.
+    if (verbose) {print(dim(X)); print(length(aweights))}
     for (i in 1:d[3]) X[i,] <- X[i,]*aweights
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   }
