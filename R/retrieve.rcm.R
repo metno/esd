@@ -11,6 +11,11 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
                                         #if (verbose) print(names(tatt))
     itunit <- (1:length(names(tatt)))[is.element(substr(names(tatt),1,4),'unit')]
     tunit <- tatt[[itunit]]
+    tcal <-""
+    if (sum(is.element(substr(names(tatt),1,4),'cale'))!=0) {
+      if (verbose) print("Calender found")
+      tcal <- tatt$cale
+      }
     a <- regexpr("since",tunit)
     torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
     torig <- paste(unlist(strsplit(tunit," "))[3:4],collapse=" ")
@@ -138,7 +143,13 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
                    'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))),
                    'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600,
                    'sec'=strptime(torig,format="%Y-%m-%d %H") + time)
-    
+    # next save for later if adding no_leap func
+    #if ((tcal %in% c("365_day", "365day", "no_leap", "no leap")) && (any(grepl('hou',tunit))) && ((diff(ttest)>29) && (diff(ttest) <= 31 )) )
+    #HBE 2018/1/17 saving POSIX with monthly freq as Date at month start
+    if ((diff(time)>=28) && (diff(time) <= 31 )) {
+      time <- as.Date(strftime(time, format="%Y-%m-01"))
+      if (verbose) print("monthly frequency, saving as Date Y-m-01")
+      }
     if (verbose) print(paste(start(time),end(time),sep=' - '))
     if (!is.null(it)) {
         if (inherits(it,c('field','station'))) {
@@ -244,7 +255,6 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
     if (verbose) {print(start); print(count)}
     rcm <- ncvar_get(ncold,varid=param,start=start, count=count)
     nc_close( ncold )
-    
     if(length(dim(rcm))==3) {
       d <- dim(rcm)
     } else if (length(dim(rcm))!=3 & length(d)==3) {
