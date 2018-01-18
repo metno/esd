@@ -1,5 +1,5 @@
 gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',
-                    xlim=NULL,ylim=NULL,verbose=FALSE) {
+                    xlim=NULL,ylim=NULL,zlim=NULL,verbose=FALSE) {
   if (verbose) print(paste('gridmap',FUN))
   if (is.null(xlim)) xlim <- range(lon(Y))
   if (is.null(ylim)) ylim <- range(lat(Y))
@@ -17,6 +17,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',
                            lat=range(lat(Y))+c(-1,1)))
   ## Mask the sea: elevations below 1m below sea level is masked.
   etopo5[etopo5<=-1] <- NA
+  if (!is.null(zlim)) {etopo5[(etopo5<min(zlim)) & ((etopo5>min(zlim)))] <- NA}
 
   ## Set the grid to be the same as that of etopo5:
   if (verbose) print('Use same structure as etopo5')
