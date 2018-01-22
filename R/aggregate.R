@@ -269,7 +269,9 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
                            a= 6378, x0=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
   if (verbose) print(paste("aggregate.area",FUN))
-  if (verbose) print(rowSums(coredata(x)))
+  if (verbose) 
+    if (FUN=='sum') print(rowSums(coredata(x),na.rm=TRUE)) else
+                    print(rowMeans(coredata(x),na.rm=TRUE))
   if (inherits(x,'eof')) {
     if (verbose) print('aggregate.area for EOF')
     y <- as.pattern(x)
@@ -281,7 +283,9 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
     return(z)
   }
   x <- subset(x,is=is,it=it,verbose=verbose)
-  if (verbose) print(rowSums(coredata(x)))
+  if ( (verbose) & (!is.null(is) | !is.null(it)) )
+               print(rowSums(coredata(x),na.rm=TRUE)) else
+               print(rowMeans(coredata(x),na.rm=TRUE))
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   if (!is.null(attr(x,'dimensions'))) d <- attr(x,'dimensions') else d <- c(dim(x),1)
   if (verbose) print(paste('dimensions',paste(d,collapse='-')))
@@ -304,8 +308,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   aweights <- rep(dY * dtheta * a*cos(pi*lat(x)/180),d[1])[srtlat]
   if (verbose) print(sum(aweights))
   if (FUN=='mean') {
-    ok <- is.finite(colMeans(x))
-    aweights <- aweights/sum(aweights[ok])
+    aweights <- aweights/sum(aweights,na.rm=TRUE)
     FUN <- 'sum'
   }
   if (verbose) print(paste('Sum of aweights should be area or 1:',round(sum(aweights))))
