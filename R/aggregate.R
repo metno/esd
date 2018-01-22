@@ -269,9 +269,10 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
                            a= 6378, x0=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
   if (verbose) print(paste("aggregate.area",FUN))
-  if (verbose) 
+  if (verbose) {
     if (FUN=='sum') print(rowSums(coredata(x),na.rm=TRUE)) else
                     print(rowMeans(coredata(x),na.rm=TRUE))
+  }
   if (inherits(x,'eof')) {
     if (verbose) print('aggregate.area for EOF')
     y <- as.pattern(x)
@@ -283,9 +284,10 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
     return(z)
   }
   x <- subset(x,is=is,it=it,verbose=verbose)
-  if ( (verbose) & (!is.null(is) | !is.null(it)) )
-               print(rowSums(coredata(x),na.rm=TRUE)) else
-               print(rowMeans(coredata(x),na.rm=TRUE))
+  if ( (verbose) & (!is.null(is) | !is.null(it)) ) {
+    if (FUN=='sum') print(rowSums(coredata(x),na.rm=TRUE)) else
+                    print(rowMeans(coredata(x),na.rm=TRUE))
+  }
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   if (!is.null(attr(x,'dimensions'))) d <- attr(x,'dimensions') else d <- c(dim(x),1)
   if (verbose) print(paste('dimensions',paste(d,collapse='-')))
