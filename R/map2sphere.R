@@ -198,7 +198,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   #                  ( max(colbar$breaks) - min(colbar$breaks) ) )
   ## The findInterval implementation can use irregularly spaced breaks.
   ## (If a point has the same value as a break it will be assigned to the bin above it.)
-  index = findInterval(map,breaks,all.inside=TRUE)
+  index = findInterval(map,colbar$breaks,all.inside=TRUE)
   ## where all.inside does to the indices what the clipping does to the values.
   
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
