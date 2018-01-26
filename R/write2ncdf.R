@@ -8,8 +8,63 @@ write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 write2ncdf4.default <- function(x,...) {
 }
 
+write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
+                             torg="1970-01-01",missval=-999,verbose=FALSE) {
+  if (verbose) print('write2ncdf4.list')
+  stopifnot(inherits(x[[1]],'field'))
+  ## Write.list is meant to add several fields to one netCDF file
+  if (verbose) print(names(x))
+  n <- length(x)
+  ## Accomodate for the possibility with different precisions, scaling factor, etc
+  ## If one is given, use it for all variables
+  if (length(prec)==1) prec <- rep(prec,n)
+  if (length(scale)==1) scale <- rep(scale,n)
+  if (length(offset)==1) offset <- rep(offset,n)
+  
+  if (verbose) print(attr(x[[1]],'dimensions'))
+  
+  dimlon <- ncdim_def( "longitude", "degree_east", lon(x[[1]]) )
+  dimlat <- ncdim_def( "latitude", "degree_north", lat(x[[1]]) )
+  if (inherits(index(x),c('numeric','integer')))
+    index(x[[1]]) <- as.Date(paste(index(x[[1]]),'-01-01',sep=''))
+  
+  dimtim <- ncdim_def( "time", paste("days since",torg),
+                       as.numeric(as.Date(index(x[[1]]),origin=torg)) )
+  varids <- unlist(lapply(x,function(x) varid(x)[1]))
+  units <- unlist(lapply(x,function(x) unit(x)[1]))
+  if (verbose) {print(varids); print(units)}
+  x4nc <- list()
+  for (i in 1:n) {
+    x4nc[[varids[i]]] <- ncvar_def(varids[i], units[i], list(dimlon,dimlat,dimtim), -1, 
+                         longname=attr(x[[i]],'longname'), prec=prec[i])
+  }
+  
+  # Create a netCDF file with this variable
+  ncnew <- nc_create( fname, x4nc )
+  
+  # Write some values to this variable on disk.
+  for (i in 1:n) {
+    y <- coredata(x[[i]])
+    if (is.null(offset)) offset <- mean(y,na.rm=TRUE)
+    if (is.null(scale)) scale <- 1
+    y <- t(y)
+    y[!is.finite(y)] <- missval
+    y <- round((y-offset)/scale)
+    if (verbose) {print(dim(y)); print(attr(y,'dimensions'))}
+    dim(y) <- attr(x,'dimensions')
+    ncvar_put( ncnew, x4nc[[i]], round(y) )
+    ncatt_put( ncnew, x4nc[[i]], "add_offset", offset, prec="float" )
+    ncatt_put( ncnew, x4nc[[i]], "scale_factor", scale, prec="float" ) 
+    ncatt_put( ncnew, x4nc[[i]], "_FillValue", missval, prec="float" ) 
+    ncatt_put( ncnew, x4nc[[i]], "missing_value", missval, prec="float" ) 
+  }
+  ncatt_put( ncnew, 0, "description", 
+             paste("Saved from esd using write2ncdf4",date()))
+  nc_close(ncnew)
+}
+
 write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
-                              torg="1970-01-01",missval=-999,verbose=FALSE) {
+                              torg="1970-01-01",missval=-999,ncclose=TRUE) {
   if (verbose) print('write2ncdf4.field')
 
   y <- coredata(x)
@@ -36,13 +91,12 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=N
 
   # Write some values to this variable on disk.
   ncvar_put( ncnew, x4nc, round(y) )
-  ncvar_put( ncnew, x4nc, round(y) )
   ncatt_put( ncnew, x4nc, "add_offset", offset, prec="float" )
   ncatt_put( ncnew, x4nc, "scale_factor", scale, prec="float" ) 
   ncatt_put( ncnew, x4nc, "_FillValue", missval, prec="float" ) 
   ncatt_put( ncnew, x4nc, "missing_value", missval, prec="float" ) 
   ncatt_put( ncnew, 0, "description", 
-             "Saved from esd using write2ncdf4")
+             paste("Saved from esd using write2ncdf4",date()))
   nc_close(ncnew)
 }
 

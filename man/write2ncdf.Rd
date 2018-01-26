@@ -3,6 +3,7 @@
 \alias{write2ncdf4.station}
 \alias{write2ncdf4.default}
 \alias{write2ncdf4.field}
+\alias{write2ncdf4.list}
 \alias{write2ncdf4.station}
 \alias{write2ncdf4.eof}
 \alias{write2ncdf4.pca}
@@ -16,6 +17,8 @@
 \usage{
 write2ncdf4(x,...) 
 write2ncdf4.default(x,...)
+write2ncdf4.list(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
+                 torg="1970-01-01",missval=-999,verbose=FALSE)
 write2ncdf4.field(x,fname='field.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999,verbose=FALSE)
 write2ncdf4.eof(x,fname='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999)
 write2ncdf4.pca(x,fname='pca.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) 
