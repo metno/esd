@@ -72,7 +72,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        gridlines=TRUE,fancy=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
 
-  
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
   ## If only a few items are provided in colbar - then set the rest to the default
@@ -194,9 +193,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## }
   nc <- length(colbar$col)
   ## AM commented
-  index <- round( nc*( map - min(colbar$breaks) )/
-                    ( max(colbar$breaks) - min(colbar$breaks) ) )
-
+  ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
+  #index <- round( nc*( map - min(colbar$breaks) )/
+  #                  ( max(colbar$breaks) - min(colbar$breaks) ) )
+  ## The findInterval implementation can use irregularly spaced breaks.
+  ## (If a point has the same value as a break it will be assigned to the bin above it.)
+  index = findInterval(map,breaks,all.inside=TRUE)
+  ## where all.inside does to the indices what the clipping does to the values.
+  
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
   print('Clip the value range to extremes of colour scale')
   toohigh <- map>max(colbar$breaks)
