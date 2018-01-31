@@ -27,7 +27,7 @@ sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
     if (tsx==tsy) return(y)
 
     if (verbose) print('Need to aggregate')
-    ##browser()
+    ##
     if (tsx=="day") agrscly <- as.Date(index(y)) else
     if (tsx=="month") agrscly <- as.yearmon(index(y)) else
     if (tsx=="annual") agrscly <- year(y) else
@@ -129,7 +129,7 @@ DS.default <- function(y,X,mon=NULL,
     if (is.null(attr(y,'standard.error'))) weighted <- FALSE
     if (verbose) {print(paste('weights',weighted)); print(weights)}
 
-    ##browser()
+    #
     ##if (length(index(X)) == length(index(y)))
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
                            weights=weights) 
@@ -257,7 +257,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                        method="lm",swsm="step",m=5,
                        rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
-    browser()
+    
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
     if (verbose) { print('--- DS.station ---'); print(summary(coredata(y)))}
     #print('err(y)'); print(err(y))
@@ -1062,7 +1062,7 @@ DS.mixedeof <- function(y,X,biascorrect=TRUE,mon=NULL,
               xp %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
             } else {
               ## EOF-based predictand:
-              #browser()
+              #
               if (verbose) print('DS pattern: 3D')
               xd <- dim(xp)
               dim(xp) <- c(xd[1]*xd[2],xd[3])
