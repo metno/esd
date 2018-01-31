@@ -54,6 +54,8 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
 
   if (verbose) print('annual.default')
   
+  ## Case when subsetting one specific season / in this case nmin =1
+  
   ## If already annual, then return
   if (inherits(x,'annual')) return(x)
   ## Update the units for annual sums:
@@ -84,7 +86,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   if (inherits(x,'month')) {
     if (is.null(nmin)) nmin <- 12
   } else if (inherits(x,'season')) {
-    if (is.null(nmin)) nmin <-  4
+    if (is.null(nmin)) nmin <-  length(levels(factor(month(x))))
   } else nmin <- NA
   if (verbose) {print(paste('nmin=',nmin)); print(class(x))}
   
@@ -94,7 +96,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   attr(X,'units') <- unit(x)
   attr(X,'variable') <- varid(x)
   
-  ## Check how manye valid data points)
+  ## Check how many valid data points)
   nok <- aggregate(X,year,FUN='nv')
 
   if (FUN == 'sum') na.rm <- FALSE ## AM
@@ -102,14 +104,16 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
 
   if (verbose) str(X)
   ## If threshold needed - set a default:
-  if (is.null(threshold)) threshold <- 1 ## AM added 20-05-2015
-  if ((sum(is.element(names(formals(FUN)),'na.rm')==1)) |
-      (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0))
-      y <- aggregate(X,year,FUN=FUN,...,na.rm=na.rm)
-  else if (sum(is.element(names(formals(FUN)),'threshold')==1))
-      y <- aggregate(X,year,FUN=FUN,...,threshold=threshold) ## AM 20-05-2015
+  if (is.null(threshold) & inherits(x,'station')) {
+    threshold <- 1 ## AM added 20-05-2015
+    if (verbose) print('Warning : threshold value not found and set to 1')
+  } else if (sum(is.element(names(formals(FUN)),'threshold')==1))
+    y <- aggregate(X,year,FUN=FUN,...,threshold=threshold) ## AM 20-05-2015
+  else if ((sum(is.element(names(formals(FUN)),'na.rm')==1)) |
+           (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0))
+    y <- aggregate(X,year,FUN=FUN,...,na.rm=na.rm)
   else
-      y <- aggregate(X,year,FUN=FUN,...) # REB
+    y <- aggregate(X,year,FUN=FUN,...) # REB
   y[!is.finite(y)] <- NA ## AM
 
   if (verbose) print('check for incomplete sampling')
@@ -275,6 +279,35 @@ annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   invisible(y)
 }
 
+# AM need to enhance this function
+annual.eof <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
+  if (verbose) print('annual.eof')
+  attr(x,'names') <- NULL
+  if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB110314
+  yr <- year(x)
+  cls <- class(x)
+  #  class(x) <- "zoo"
+  if ( (inherits(x,'mon'))  & is.null(nmin) ) {
+    iy <- year(x)
+    nmy <- as.numeric(table(iy))
+    full <- nmy[nmy==12]
+    x[is.element(iy,!full),] <- NA
+    na.rm=FALSE
+  }
+  
+  y <- annual.default(x,FUN=FUN,nmin=nmin,verbose=verbose,...) 
+  y <- attrcp(x,y)
+  attr(y,'history') <- history.stamp(x)
+  attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],length(index(y)))
+  class(y) <- cls
+  # KMP 2017-10-25: time resolution is not always second in class vector, e.g., for an object 
+  # of class [eof, comb, field, month, zoo] the following line will replace comb instead of month
+  #class(y)[2] <- "annual"
+  class(y)[length(cls)-1] <- "annual"
+  y[which(is.infinite(y))] <- NA
+  invisible(y)
+}
+
 year <- function(x) {
   #str(x); print(class(x)); print(index(x))
   if (inherits(x,'integer')) x <- as.numeric(x)
@@ -328,7 +361,7 @@ month <- function(x) {
     return(x) 
   if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) ) y <- rep(1,length(x))
   if (inherits(x,c('station','field','zoo'))) {
-    #browser()
+    #
     y <- month(index(x))
     return(y)
   }
@@ -445,7 +478,7 @@ season.default <- function(x,format="character") {
   } else {
     season <- paste(substr(month.abb[as.numeric(rownames(table(month(x))))],1,1),sep='')
   }
-#  browser()
+#
   season
 }
 

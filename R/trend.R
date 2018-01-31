@@ -108,13 +108,19 @@ trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   #print(dim(y))
   nc <- sum(is.element(strsplit(model,"")[[1]],"t")) + 1
   coefficients <- matrix(rep(NA,nc*d[2]),nc,d[2])
+  browser()
   for (i in 1:d[2]) {
     trendx <- data.frame(t=t,y=coredata(x[,i]))
-    eval(parse(text=paste("xt <- lm(",model,",data=trendx)")))
-  #print(summary(xt))
+    xt <- try(eval(parse(text=paste("xt <- lm(",model,",data=trendx)"))))
+    if (attr(xt,"class") != "try-error") {
+    #print(summary(xt))
     Y[,i] <- switch(result,"trend"=zoo(predict(xt,newdata=trendx),order.by=index(x)),
                            "residual"=zoo(xt$residuals,order.by=index(x)))
     coefficients[,i] <- xt$coefficients
+    } else {
+      Y[,i] <-zoo(rep(NA,d[1]),order.by=index(x))
+        coefficients[,i] <- rep(NA,2)
+    }
     #xt <- lm(y ~ t,data=trendx)
     #z <- predict(xt); print(length(z))
     #Y[,i] <- xt$residual

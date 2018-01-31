@@ -257,7 +257,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                        method="lm",swsm="step",m=5,
                        rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
-    ##  
+    browser()
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
     if (verbose) { print('--- DS.station ---'); print(summary(coredata(y)))}
     #print('err(y)'); print(err(y))
@@ -808,7 +808,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         pca <- svd(UWV)
                                         #str(pca)
         ds <- zoo(pca$v,order.by=index(X))
-        model$fitted.values <- zoo(model$fitted.values,order.by=index(X)) +
+        model$fitted.values <- zoo(model$fitted.values,order.by=index(X)) # +
           ##    attr(y0,'mean') + offset  # REB 04.12.13: included attr(y0,'mean') in
           ##                              # addition to offset
             model$calibration.data <- X

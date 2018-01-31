@@ -42,7 +42,7 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   
   # Convert indeces all to 'Date':
   # The time index of x:
-  #browser()
+  #
   if ( (is.numeric(t)) | (is.integer(t)) |
      ( (is.character(t)) & (nchar(t[1])==4) ) ) t <- as.Date(paste(t,'-01-01',sep='')) 
   if ( (is.character(t)) & (nchar(t[1])==10) )  t <- as.Date(t)
@@ -66,7 +66,7 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     if (verbose) print(paste('matchdate found',sum(ii),'matching dates'))
     if (sum(ii)==length(index(y))) index(y) <- t0[ii] # REB 2015-01-14: to ensure same index class as it.
     if (verbose) {print('matchdate: index(y)'); print(index(y))}
-    #browser()
+    #
   } else if (length(it)==2) {
   # Pick an interval
     if (verbose) print(paste('select an interval',it,collapse=' '))
