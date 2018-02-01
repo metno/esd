@@ -20,6 +20,7 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
        freq <- "month"
     if (((dt==1) & grepl("day",unit)) | ((dt==24) & grepl("hou",unit)))
        freq <- "day" 
+    if (grepl("hour",unit)) freq <- "hour"
     if ((dt==7) & grepl("day",unit))
        freq <- "week"
     if ((dt==14) & grepl("day",unit))
