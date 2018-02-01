@@ -45,11 +45,11 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
   # Write some values to this variable on disk.
   for (i in 1:n) {
     y <- coredata(x[[i]])
-    if (is.null(offset)) offset <- mean(y,na.rm=TRUE)
-    if (is.null(scale)) scale <- 1
+    if (is.null(offset[i])) offset[i] <- mean(y,na.rm=TRUE)
+    if (is.null(scale[i])) scale[i] <- 1
     y <- t(y)
     y[!is.finite(y)] <- missval
-    y <- round((y-offset)/scale)
+    y <- round((y-offset[i])/scale[i])
     if (verbose) {print(dim(y)); print(attr(y,'dimensions'))}
     dim(y) <- attr(x,'dimensions')
     ncvar_put( ncnew, x4nc[[i]], round(y) )
@@ -64,7 +64,7 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
 }
 
 write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
-                              torg="1970-01-01",missval=-999,ncclose=TRUE) {
+                              torg="1970-01-01",missval=-999,ncclose=TRUE,verbose=FALSE) {
   if (verbose) print('write2ncdf4.field')
 
   y <- coredata(x)
