@@ -17,6 +17,8 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
   n <- length(x)
   ## Accomodate for the possibility with different precisions, scaling factor, etc
   ## If one is given, use it for all variables
+  if (is.null(scale)) scale <- 1
+  if (is.null(offset)) offset <- 0
   if (length(prec)==1) prec <- rep(prec,n)
   if (length(scale)==1) scale <- rep(scale,n)
   if (length(offset)==1) offset <- rep(offset,n)
@@ -36,7 +38,7 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
   x4nc <- list()
   for (i in 1:n) {
     x4nc[[varids[i]]] <- ncvar_def(varids[i], units[i], list(dimlon,dimlat,dimtim), -1, 
-                         longname=attr(x[[i]],'longname'), prec=prec[i])
+                                   longname=attr(x[[i]],'longname'), prec=prec[i])
   }
   
   # Create a netCDF file with this variable
@@ -44,19 +46,26 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
   
   # Write some values to this variable on disk.
   for (i in 1:n) {
+    if (verbose) print(names(x)[i])
     y <- coredata(x[[i]])
     if (is.null(offset[i])) offset[i] <- mean(y,na.rm=TRUE)
     if (is.null(scale[i])) scale[i] <- 1
     y <- t(y)
     y[!is.finite(y)] <- missval
     y <- round((y-offset[i])/scale[i])
-    if (verbose) {print(dim(y)); print(attr(y,'dimensions'))}
+    if (verbose) {
+      print(dim(y)); print(attr(y,'dimensions'))
+      print(offset[i]); print(scale[i])
+      }
     dim(y) <- attr(x,'dimensions')
-    ncvar_put( ncnew, x4nc[[i]], round(y) )
-    ncatt_put( ncnew, x4nc[[i]], "add_offset", offset, prec="float" )
-    ncatt_put( ncnew, x4nc[[i]], "scale_factor", scale, prec="float" ) 
-    ncatt_put( ncnew, x4nc[[i]], "_FillValue", missval, prec="float" ) 
-    ncatt_put( ncnew, x4nc[[i]], "missing_value", missval, prec="float" ) 
+    if (verbose) print(summary(round(y)))
+    ncvar <- x4nc[[i]]
+    ncvar_put( ncnew, ncvar, round(y) )
+    ncatt_put( ncnew, ncvar, "add_offset", offset[i], prec="float" )
+    ncatt_put( ncnew, ncvar, "scale_factor", scale[i], prec="float" ) 
+    ncatt_put( ncnew, ncvar, "_FillValue", missval, prec="float" ) 
+    ncatt_put( ncnew, ncvar, "missing_value", missval, prec="float" ) 
+    ncatt_put( ncnew, ncvar, "test", i, prec="float" ) 
   }
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
