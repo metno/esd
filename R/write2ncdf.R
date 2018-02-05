@@ -33,10 +33,12 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
   dimtim <- ncdim_def( "time", paste("days since",torg),
                        as.numeric(as.Date(index(x[[1]]),origin=torg)) )
   varids <- unlist(lapply(x,function(x) varid(x)[1]))
+  if (length(varids) != length(names(x))) varids <- names(x)
   units <- unlist(lapply(x,function(x) unit(x)[1]))
-  if (verbose) {print(varids); print(units)}
+  if (verbose) {print(varids); print(units); print(n)}
   x4nc <- list()
   for (i in 1:n) {
+    if (verbose) print(paste(i,'ncvar_def',varids[i]))
     x4nc[[varids[i]]] <- ncvar_def(varids[i], units[i], list(dimlon,dimlat,dimtim), -1, 
                                    longname=attr(x[[i]],'longname'), prec=prec[i])
   }
@@ -59,7 +61,7 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
       }
     dim(y) <- attr(x,'dimensions')
     if (verbose) print(summary(round(y)))
-    ncvar <- x4nc[[i]]
+    ncvar <- x4nc[[varids[i]]]
     ncvar_put( ncnew, ncvar, round(y) )
     ncatt_put( ncnew, ncvar, "add_offset", offset[i], prec="float" )
     ncatt_put( ncnew, ncvar, "scale_factor", scale[i], prec="float" ) 
@@ -70,6 +72,7 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
   nc_close(ncnew)
+  if (verbose) print('netCDF file saved')
 }
 
 write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
