@@ -67,17 +67,20 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
     ncatt_put( ncnew, ncvar, "scale_factor", scale[i], prec="float" ) 
     ncatt_put( ncnew, ncvar, "_FillValue", missval, prec="float" ) 
     ncatt_put( ncnew, ncvar, "missing_value", missval, prec="float" ) 
-    ncatt_put( ncnew, ncvar, "test", i, prec="float" ) 
+    history <- toString(attr(x[[i]],'history')$call)
+    ncatt_put( ncnew, ncvar, "history", history, prec="text" ) 
   }
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
+  ncatt_put( ncnew, 0, "esd-version", attr(x[[1]],'history')$sessioninfo$esd.version)
+  
   nc_close(ncnew)
   if (verbose) print('netCDF file saved')
 }
 
 write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
                               torg="1970-01-01",missval=-999,ncclose=TRUE,verbose=FALSE) {
-  if (verbose) print('write2ncdf4.field')
+  if (verbose) {print('write2ncdf4.field'); print(names(attributes(x)))}
 
   y <- coredata(x)
   if (is.null(offset)) offset <- mean(y,na.rm=TRUE)
@@ -107,8 +110,12 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=N
   ncatt_put( ncnew, x4nc, "scale_factor", scale, prec="float" ) 
   ncatt_put( ncnew, x4nc, "_FillValue", missval, prec="float" ) 
   ncatt_put( ncnew, x4nc, "missing_value", missval, prec="float" ) 
+  history <- toString(attr(x[[i]],'history')$call)
+  ncatt_put( ncnew, x4nc, "history", history, prec="text" ) 
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
+  if (verbose) print(attr(x,'history'))
+  ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$sessioninfo$esd.version)
   nc_close(ncnew)
 }
 
