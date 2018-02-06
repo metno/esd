@@ -216,7 +216,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   ncatt_put( ncid, 0, 'source', paste(levels(factor(attr(x,"source"))),collapse="/"))
   ncatt_put( ncid, 0, 'history', paste(unlist(attr(tmax,"history")),collapse="/"))
   ncatt_put( ncid, 0, 'references', paste(levels(factor(attr(tmax,"reference"))),collapse="/"))
-  
+  ncatt_put( ncid, 0, "esd-version", attr(x,'history')$sessioninfo$esd.version)
   nc_close(ncid)
   if (verbose) print('close')
 }
@@ -263,6 +263,8 @@ write2ncdf4.pca <- function(x,fname='esd.pca.nc',prec='short',verbose=FALSE,scal
   ncatt_put( nc, pca, "scale_factor", scale, prec="float" ) 
   ncatt_put( nc, pca, "_FillValue", missval, prec="float" ) 
   ncatt_put( nc, pca, "missing_value", missval, prec="float" ) 
+  history <- toString(attr(x,'history')$call)
+  ncatt_put( nc, pca, "history", history, prec="text" ) 
   ncvar_put( nc, pat, round((pattern - offset)/scale) )
   ncatt_put( nc, pat, "add_offset", offset, prec="float" )
   ncatt_put( nc, pat, "scale_factor", scale, prec="float" ) 
@@ -282,6 +284,7 @@ write2ncdf4.pca <- function(x,fname='esd.pca.nc',prec='short',verbose=FALSE,scal
 #  ncvar_put( nc, src, src(x) )
   ncvar_put( nc, lambda, attr(x,'eigenvalues') )
   ncatt_put( nc, pca, "history", paste(attr(x,'history'),collapse=';'), prec="char" )
+  ncatt_put( nc, 0, "esd-version", attr(x,'history')$sessioninfo$esd.version)
 }
 
 write2ncdf4.eof <- function(x,fname='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) {
@@ -437,6 +440,7 @@ write2ncdf4.dsensemble <- function(x,fname='esd.dsensemble.nc',prec='short',offs
   ## Global attributes:
   ncatt_put( ncnew, 0, "description", "Saved from esd using write2ncdf4.dsensemble")
   ncatt_put( ncnew, 0, "class", paste(class.x,collapse='-'))
+  ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$sessioninfo$esd.version)
   nc_close(ncnew)
   if (verbose) print(paste('Finished sucessfully - file', fname))  
 }
