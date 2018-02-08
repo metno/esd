@@ -5,7 +5,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
         ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
     if (verbose) print(paste('retrieve ',ncfile))
     ncold <- nc_open(ncfile)
-    
+
     # Extract the time information: unit and time origin
     tatt <- ncatt_get( ncold, varid='time' )
                                         #if (verbose) print(names(tatt))
@@ -20,7 +20,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
     torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
     torig <- paste(unlist(strsplit(tunit," "))[3:4],collapse=" ")
     tunit <- tolower(substr(tunit,1,a-2))
-    
+
     # Extract unit etc for the parameter
     vatt <- ncatt_get( ncold, varid=param )
     # 16.11.2017 hbe added option names(vatt below)
@@ -45,32 +45,32 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
     ##lonid <- vnames[is.element(tolower(substr(vnames,1,3)),'lon')]
     #latid <- vnames[grep('lat',tolower(vnames))]
     #lonid <- vnames[grep('lon',tolower(vnames))]
-    ## KMP 2016-12-20: grep('lat',...) sometimes finds more than 1 match 
+    ## KMP 2016-12-20: grep('lat',...) sometimes finds more than 1 match
     latid <- vnames[tolower(vnames) %in% c("lat","latitude")]
-    lonid <- vnames[tolower(vnames) %in% c("lon","longitude")]   
+    lonid <- vnames[tolower(vnames) %in% c("lon","longitude")]
     lat <- ncvar_get(ncold,varid=latid)
     lon <- ncvar_get(ncold,varid=lonid)
     time <- ncvar_get(ncold,varid='time')
     d <- c(dim(lat),length(time))
                                         #str(lat); str(lon)
     if (verbose) print(paste('region: ',round(min(lon),digits=2),'-',round(max(lon,digits=2)),'E /',round(min(lat),digits=2),'-',round(max(lat),digits=2),'N'))
-    
+
                                         # Extract only the region of interest: only read the needed data
-    
+
     if (!is.null(is)) {
         if (inherits(is,c('field','station'))) {
             y <- is
             if (verbose) print(paste('Use spatial coverage from an object:',floor(min(c(lon(y)))),'-',
                                      ceiling(max(c(lon(y)))),'E /',floor(min(c(lat(y)))),'-',ceiling(max(c(lat(y)))),'N'))
-                                        #      if (!is.null(attr(y,'lon_ref')) & !is.null(attr(y,'lat_ref'))) 
+                                        #      if (!is.null(attr(y,'lon_ref')) & !is.null(attr(y,'lat_ref')))
                                         #        is <- list( lon=attr(y,'lon_ref'),
                                         #                    lat=attr(y,'lat_ref') ) else
             is <- list(lon=c(floor(min(c(lon(y)))),ceiling(max(c(lon(y))))),
                        lat=c(floor(min(c(lat(y)))),ceiling(max(c(lat(y))))))
             rm('y')
-        } 
+        }
         if (is.list(is)) {
-            nms <- names(is)    
+            nms <- names(is)
             iy <- grep("lat", tolower(substr(nms, 1, 3)))
             if (length(iy)>0) {
                 lat.rng <- range(is[[iy]])
@@ -97,10 +97,10 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
                 starty <- min(is[[iy]]); county <- length(is[[iy]])
                 suby <- is.element(1:d[2],iy)
             } else {starty <- 1; county <- d[2]; suby <- is.finite(1:d[2])}
-            
+
             ix <- grep("lon", tolower(substr(nms, 1, 3)))
             if (length(ix)>0) {
-              lon.rng <- range(is[[ix]]) 
+              lon.rng <- range(is[[ix]])
               if(length(dim(lat))==2) {
                 # The coordinates lon and lat are [X,Y] maxtrices:
                 lonn <- apply(lon,1,min); lonx <- apply(lon,1,min)
@@ -113,7 +113,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
               if (sum(subx)==0) stop(paste('retrieve.rcm: problems, the requested longitude range (',
                          lon.rng[1],'-',lon.rng[2],') is not within present data (',
                          min(lonn),'-',max(lonx),')'))
-              
+
               if (verbose) print(paste('longitudes:',min(is[[ix]]),'-',max(is[[ix]]),
                                          'extracted:',min(lonn[subx]),'-',max(lonn[subx]),
                                          'start=',startx,'count=',countx))
@@ -123,9 +123,9 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
               startx <- min(is[[ix]]); countx <- length(is[[ix]])
               subx <- is.element(1:d[1],ix)
             } else {startx <- 1; countx <- d[1]; subx <- is.finite(1:d[1])}
-            
+
         } else if (is.numeric(is) | is.integer(is)) {
-                                        # Select 
+                                        # Select
             if (verbose) print('Select by spatial index')
             startx <- 1
             starty <- min(it) %/% d[1] + 1
@@ -134,7 +134,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
             if (verbose) print(paste('selecting is: ',min(is),'-',max(is), 'reads rows',starty,'to',county))
         }
     } else {
-        startx <- 1; countx <- d[1]; 
+        startx <- 1; countx <- d[1];
         starty <- 1; county <- d[2];
         subx <- rep(TRUE,d[1]); suby <- rep(TRUE,d[2])
     }
@@ -146,7 +146,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
     # next save for later if adding no_leap func
     #if ((tcal %in% c("365_day", "365day", "no_leap", "no leap")) && (any(grepl('hou',tunit))) && ((diff(ttest)>29) && (diff(ttest) <= 31 )) )
     #HBE 2018/1/17 saving POSIX with monthly freq as Date at month start
-    if ((diff(time)>=28) && (diff(time) <= 31 )) {
+    if (((diff(time)>=28) && (diff(time) <= 31 )) | (length(time) == 1)) {
       time <- as.Date(strftime(time, format="%Y-%m-01"))
       if (verbose) print("monthly frequency, saving as Date Y-m-01")
       }
@@ -167,9 +167,9 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
           } else if (levels(factor(nchar(it)))==4) {
             it <- as.Date(c(paste(it[1],'-01-01',sep=''),
                             paste(it[2],'-12-31',sep='')))
-          } 
+          }
         }
-          
+
         if (inherits(it,'Date')) {
             startt <- min( (1:length(time))[it >= time] )
             stoptt <- max( (1:length(time))[it <= time] )
@@ -185,18 +185,18 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
             print(paste("unkown format of input it:",it))
         }
     } else {startt <- 1; countt <- length(time); it <- NA}
-    
+
                                         # This information is used when retrieve.rcm is used again to extract similar region
                                         #mx <- trunc(d[1]/2); my <- trunc(d[2]/2)
                                         #lon.ref <- range(lon[subx,my])
                                         #lat.ref <- range(lat[mx,suby])
-    
+
                                         # Test the dimensions so that the count does not exceed the array:
 
       d1 <- d[1]
       if(length(d)==3) {
-        d2 <- d[2]; d3 <- d[3] 
-      } else { 
+        d2 <- d[2]; d3 <- d[3]
+      } else {
         d2 <- d[1]; d3 <- d[2]
       }
       if (startx > d1) {
@@ -204,7 +204,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
           warning("retrieve.rcm: points along the longitude exceed data dimensions")
       }
       if (starty > d2) {
-          starty <- d2 
+          starty <- d2
           warning("retrieve.rcm: points along the latitude exceed data dimensions")
       }
       if (startt > d3) {
@@ -216,7 +216,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
           warning("retrieve.rcm: points along the longitude exceed data dimensions")
       }
       if (starty < 1) {
-          starty <- 1 
+          starty <- 1
           warning("retrieve.rcm: points along the latitude exceed data dimensions")
       }
       if (startt < 1) {
@@ -266,7 +266,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
       d <- c(1,dim(rcm))
     }
     dim(rcm) <- c(d[1]*d[2],d[3])
-    
+
     if (is.numeric(is) | is.integer(is)) {
         # If only reading a set index, then remove the ones before and after, i.e. read the first 1000 grid points or
         # the next 1000 grid points. Useful for processing the data chunck-wise.
