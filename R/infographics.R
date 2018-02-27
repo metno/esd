@@ -668,9 +668,11 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,FUN='mean',...) {
   image(1:2,yrs,colbar,col=col)
 
   srt <- order(cm,decreasing=TRUE)
-  invisible(cbind(yrs[srt],cm[srt]))
   if (verbose) print(y2n)
-  invisible(y2n)
+  result <- cbind(yrs[srt],cm[srt])
+  colnames(result) <- c('year','cumulated')
+  invisible(result)
+  
 }
 
 # Estimate how the variance varies with season 
