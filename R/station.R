@@ -124,9 +124,11 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   URL <- url
   
   ## Select one or a set of stations based on the metadata
-  if (is.null(ss)) { 
+  if (is.null(ss) & (tolower(param) != 'dd')) { 
     ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param=param,src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
-  } 
+  } else 
+    ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param='dd06',src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
+  
   ## 
   ##if (!is.null(ss)) {
   ##  SRC <- src
@@ -167,7 +169,11 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   qual <- ss$quality
   start <- ss$start
   end <- ss$end
-  param <- apply(as.matrix(ss$element),1,esd2ele)
+  if (param == 'dd')
+    param1 <-  apply(as.matrix(ss$element),1,esd2ele)
+  else 
+    param1 <- NULL
+  
   rm(ss)
   
   print(paste("Retrieving data from",length(id),"records ..."))
@@ -201,7 +207,29 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       } else {
         url <- url.metnod ## default url
       }
-      x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
+      if (is.null(param1)) {
+        x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
+      } else { ## compute the avg 
+        
+        dd06 <- metnod.station(param='dd06',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
+        dd12 <- metnod.station(param='dd12',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
+        dd18 <- metnod.station(param='dd18',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
+        ## scale.tmin <-as.numeric(ele2param(ele="121",src="GHCND")[3])
+        x <- (dd06 + dd12 + dd18) / 3
+        ## copy all attributes
+        x <- attrcp(dd06,x)
+        class(x) <- class(dd06)
+        rm(dd06,dd12,dd18)
+        print("WARNING : Average temperature values have been computed from TMIN and TMAX values")
+        param1 <- "DD"
+        ele <-  "502"
+        ## update attributes variable and ele
+        attr(x,'variable') <- param
+        ## attr(x,'variable') <- switch(param1,'TAVG'=expression(T[2*m]),'TMAX'=expression(paste("max ",T[2*m])),'TMIN'=expression(paste("min ",T[2*m])))
+        attr(x,'element') <- ele
+        attr(x,'longname') <- "Average of wind directions at 06 12 and 18 utc"
+      }
+      
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
         print("Warning : No values found in the time series -> This station will be ignored")
@@ -805,8 +833,6 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
                           url = "http://klapp/metnopub/production/",save2file=TRUE) {
   
   if (verbose) print("http://eklima.met.no")
-  ## 
-  ## if (!is.na(end)) end1 <- format(Sys.time(),'%d.%m.%Y')
   if (!is.na(end)) end1 <-format(as.Date(paste("31.12.",as.character(end),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
   if (!is.na(start)) start1 <- format(as.Date(paste("01.01.",as.character(start),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
   if (!is.null(url)) {
