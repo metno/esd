@@ -103,17 +103,23 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   if (verbose) print(paste('aggregate: FUN=',FUN))
 
   if (verbose) str(X)
-  ## If threshold needed - set a default:
-  if (is.null(threshold) & inherits(x,'station')) {
-    threshold <- 1 ## AM added 20-05-2015
-    if (verbose) print('Warning : threshold value not found and set to 1')
-  } else if (sum(is.element(names(formals(FUN)),'threshold')==1))
+ 
+  
+  if (sum(is.element(names(formals(FUN)),'threshold')==1)) {
+    ## If threshold needed - set a default:
+    if (is.null(threshold) & inherits(x,'station')) {
+      threshold <- 1 ## AM added 20-05-2015
+      if (verbose) print('Warning : threshold value not found and set to 1')
+    }
     y <- aggregate(X,year,FUN=FUN,...,threshold=threshold) ## AM 20-05-2015
-  else if ((sum(is.element(names(formals(FUN)),'na.rm')==1)) |
-           (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0))
+  } else if ((sum(is.element(names(formals(FUN)),'na.rm')==1)) |
+           (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0)) {
+    if (verbose) print('Function has na.rm-argument')
     y <- aggregate(X,year,FUN=FUN,...,na.rm=na.rm)
-  else
+  } else {
+    if (verbose) print('Function has no treshold nor na.rm arguments')
     y <- aggregate(X,year,FUN=FUN,...) # REB
+  }
   y[!is.finite(y)] <- NA ## AM
 
   if (verbose) print('check for incomplete sampling')

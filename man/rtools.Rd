@@ -16,6 +16,8 @@
 \alias{ensemblemean}
 \alias{propchange}
 \alias{stand}
+\alias{rmse}
+\alias{RMSE}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -56,6 +58,8 @@ attrcp(x, y, ignore = c("name", "model", "n.apps",
 ensemblemean(x,FUN='rowMeans')
 propchange(x,it0=c(1979,2013))
 stand(x)
+rmse(x,y,na.rm=TRUE)
+RMSE(x,y,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

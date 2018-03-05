@@ -429,7 +429,8 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     if (length(S)>1) class(S) <- c("dsensemble",class(X$pca)[2:3],"list") else
                      S <-  S[[1]]
-    names(S) <- locs
+    #REB 2018-03-02: The line below causes big problems. Besides, I don't understand why it's there
+    if ( (is.list(S)) & (length(S)==length(locs)) ) names(S) <- locs
     attr(S,"unit") <- attr(X$pca,"unit")
     attr(S,"variable") <- attr(X$pca,"variable")
     attr(S,"longname") <- attr(X$pca,"longname")

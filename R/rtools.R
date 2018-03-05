@@ -39,12 +39,12 @@ cv <- function(x,na.rm=TRUE) {sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)}
 stand <- function(x) (x - mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)
 
 ## Estimate the root-mean-squared-error
-rmse <- function(x,y) {
+rmse <- function(x,y,na.rm=TRUE) {
   z <- sqrt( (x - y)^2 )
-  z <- sum(z,na.rm=TRUE)/sum(is.finite(z),na.rm=TRUE)
+  z <- sum(z,na.rm=na.rm)/sum(is.finite(z),na.rm=na.rm)
   return(z)             
 }
-RMSE <- function(x,y) return(rmse(x,y))
+RMSE <- function(x,y,...) return(rmse(x,y,...))
 
 # Wrap-around for lag.zoo to work on station and field objects:
 lag.station <- function(x,...) {

@@ -552,7 +552,7 @@ diagram.station <- function(x,it=NULL,new=TRUE,...) {
 
 # Show the cumulative sum of station value from January 1st. Use
 # different colours for different year.
-cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
+cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,FUN='mean',...) {
   stopifnot(!missing(x),inherits(x,"station"))
   
   #print("cumugram")
@@ -586,7 +586,8 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     y2n[i] <- mean(coredata(window(x,end=as.Date(paste(yrs[i],format(Sys.Date()-1,'-%m-%d'),sep='')),
                                      start=as.Date(paste(yrs[i],'-01-01',sep='')))))                                  
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
-    z <- cumsum(coredata(y))/1:length(y)
+    if (FUN=='mean') z <- cumsum(coredata(y))/1:length(y) else
+    if (FUN=='sum') z <- cumsum(coredata(y))
     ok <- is.finite(z)
     #rint(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
     ylim[!is.finite(ylim)] <- NA
@@ -609,7 +610,8 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
-    z <- cumsum(coredata(y))/1:length(y)
+    if (FUN=='mean') z <- cumsum(coredata(y))/1:length(y) else
+    if (FUN=='sum') z <- cumsum(coredata(y))
 
     mm <- format(yesterday, "%m")
     dd <- as.numeric(yesterday, "%d")
@@ -618,7 +620,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
             start=as.Date(paste(yrs[i],'-01-01',sep='')),
             end=as.Date(paste(yrs[i],mm,dd,sep='-')))))
     lines(t,z,lwd=2,col=col[i])
-    print(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
+    if (verbose) print(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
   }
   if (is.null(it)) {
     lines(t,z,lwd=5,col="black")
@@ -627,7 +629,8 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
     y <- window(x,start=as.Date(paste(it,'-01-01',sep='')),
                     end=as.Date(paste(it,'-12-31',sep='')))
     t <- julian(index(y)) - julian(as.Date(paste(it,'-01-01',sep='')))
-    z <- cumsum(coredata(y))/1:length(y)   
+    if (FUN=='mean') z <- cumsum(coredata(y))/1:length(y)  else
+    if (FUN=='sum') z <- cumsum(coredata(y))  
     lines(t,z,lwd=5,col="black")
     lines(t,z,lwd=2,col=col[i])
   }
@@ -665,9 +668,11 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,...) {
   image(1:2,yrs,colbar,col=col)
 
   srt <- order(cm,decreasing=TRUE)
-  invisible(cbind(yrs[srt],cm[srt]))
   if (verbose) print(y2n)
-  invisible(y2n)
+  result <- cbind(yrs[srt],cm[srt])
+  colnames(result) <- c('year','cumulated')
+  invisible(result)
+  
 }
 
 # Estimate how the variance varies with season 

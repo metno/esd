@@ -109,6 +109,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   ##
   ## check wether x is a 'location' or a 'stationmeta' object
   
+  if (verbose) {print('station.default'); print(match.call())}
   if (inherits(loc,"stationmeta")) {
     ss <- loc
   } else if (is.character(loc)) {
@@ -124,11 +125,14 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   URL <- url
   
   ## Select one or a set of stations based on the metadata
-  if (is.null(ss) & (tolower(param) != 'dd')) { 
-    ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param=param,src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
-  } else 
-    ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param='dd06',src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
-  
+<<<<<<< HEAD
+  if (is.null(ss)) {
+    if (verbose) print('select.station')
+    if (tolower(param) != 'dd') { 
+      ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param=param,src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
+    } else 
+      ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param='dd06',src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
+  }  
   ## 
   ##if (!is.null(ss)) {
   ##  SRC <- src

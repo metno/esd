@@ -7,6 +7,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
 
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
   fnms <- list.files(path=path,pattern=pattern)
+  print(fnms)
   if (!is.null(select)) {fnames <- fnames[select];fnms <- fnms[select]}
   if (!usefnames) fnms <- paste('gcm',1:length(fnames),sep='.')
   n <- length(fnames)
@@ -16,10 +17,12 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
               yr <- sort(rep(1861:2100,12)) + round((rep(1:12,240)-0.5)/12,2)
   meta <- list()
   for (i in 1:n) {
+    print(fnames[i])
     gcm <- retrieve(fnames[i],param=param,lon=lon,lat=lat)
     lon.rng <- range(lon)
     lat.rng <- range(lat)
-    gcm <- regrid(gcm,is=list(lon=seq(lon.rng[1],lon.rng[2],by=1),lat=seq(lat.rng[1],lat.rng[2],by=1))) # Added AM 21.02.2017 - All gcms must be at the same grid
+    ## The line below doesn't work and is not necessay (REB)
+    ##gcm <- regrid(gcm,is=list(lon=seq(lon.rng[1],lon.rng[2],by=1),lat=seq(lat.rng[1],lat.rng[2],by=1))) # Added AM 21.02.2017 - All gcms must be at the same grid
     gcmnm <- attr(gcm,'model_id')
     run <- attr(gcm,'realization')
     rip <- attr(gcm,'parent_experiment_rip')
