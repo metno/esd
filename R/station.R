@@ -125,8 +125,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   URL <- url
   
   ## Select one or a set of stations based on the metadata
-<<<<<<< HEAD
-  if (is.null(ss)) {
+ if (is.null(ss)) {
     if (verbose) print('select.station')
     if (tolower(param) != 'dd') { 
       ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param=param,src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
