@@ -127,11 +127,8 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   ## Select one or a set of stations based on the metadata
  if (is.null(ss)) {
     if (verbose) print('select.station')
-    if (tolower(param) != 'dd') { 
-      ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param=param,src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
-    } else 
-      ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param='dd06',src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
-  }  
+    ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param=param,src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
+ }  
   ## 
   ##if (!is.null(ss)) {
   ##  SRC <- src
@@ -208,7 +205,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       }
       
       if (param[i] == 'dd')
-        param1 <- esdd2ele(param[i],src = src[i])
+        param1 <- esd2ele(param[i])
       else 
         param1 <- NULL
       
@@ -224,7 +221,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
         x <- attrcp(dd06,x)
         class(x) <- class(dd06)
         rm(dd06,dd12,dd18)
-        print("WARNING : Average temperature values have been computed from TMIN and TMAX values")
+        print("WARNING : Averaged wind direction values computed from 06, 12,and 18 UTC")
         param1 <- "DD"
         ele <-  "502"
         ## update attributes variable and ele
