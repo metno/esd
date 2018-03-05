@@ -172,11 +172,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   qual <- ss$quality
   start <- ss$start
   end <- ss$end
-  if (param == 'dd')
-    param1 <-  apply(as.matrix(ss$element),1,esd2ele)
-  else 
-    param1 <- NULL
-  
+  param <-  apply(as.matrix(ss$element),1,esd2ele)
   rm(ss)
   
   print(paste("Retrieving data from",length(id),"records ..."))
@@ -210,10 +206,15 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       } else {
         url <- url.metnod ## default url
       }
+      
+      if (param[i] == 'dd')
+        param1 <- esdd2ele(param[i],src = src[i])
+      else 
+        param1 <- NULL
+      
       if (is.null(param1)) {
         x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
       } else { ## compute the avg 
-        
         dd06 <- metnod.station(param='dd06',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
         dd12 <- metnod.station(param='dd12',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
         dd18 <- metnod.station(param='dd18',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
