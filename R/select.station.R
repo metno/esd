@@ -10,6 +10,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
                             alt = NULL, cntr = NULL, src = NULL ,
                             it = NULL , nmin = NULL , verbose=FALSE,...) 
 {
+  if (verbose) print('select.station')
     ## 
     if (is.null(x)) {
     data("station.meta",envir=environment())
