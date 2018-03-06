@@ -165,13 +165,16 @@ regrid.temporal <- function(x,it,verbose=FALSE) {
   if (verbose) print('regrid.temporal')
   stopifnot(is.field(x))
   if (verbose) {print(index(x)); print(it)}
-  if (verbose) print(c(sum(is.finite(x)),sum(!is.finite(x))))
+  if (verbose) print(paste(sum(is.finite(x)),'data-boxes with valid data and',
+                           sum(!is.finite(x)),'with no data'))
   ## Only aply interpolation on grid-boxes with (some) valid data.
-  ng <- apply(coredata(x),2,FUN='nv')
-  y <- zoo(coredata(x)[,ng>= 2],order.by=index(x))
+  ok <- apply(coredata(x),2,FUN='nv') >= 2
+  if (verbose) print(paste('Interpolating',sum(ok),'grid-boxes'))
+  y <- zoo(coredata(x)[,ok],order.by=index(x))
   zc <- apply(y,2,function(x) approx(index(x),coredata(x),it)$y)
-  z <- matrix(rep(NA,length(ng)*length(it)),length(it),length(ng))
-  z[,ng >= 2] <- zc
+  z <- matrix(rep(NA,length(ok)*length(it)),length(it),length(ok))
+  if (verbose) {print(dim(z[,ok])); print(dim(zc)); print(dim(z))}
+  z[,ok] <- zc
   z <- zoo(z,order.by=it)
   z <- attrcp(x,z)
   class(z) <- class(x)
