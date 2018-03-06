@@ -8,7 +8,7 @@ pieslice <- function(theta1,theta2,r=1,
 
 ## This code is based on an old version from clim.pact - can be rewritten to enhance efficiency.
 
-windrose <- function(x,saw=10,max.scale=NULL,
+windrose <- function(x,saw=10,max.scale=NULL,main=NULL,
             cols=c("grey90","yellow","green","red","blue","darkgreen",
                    "darkred","magenta","black"),param=c("u","v"),
                     simple=TRUE,verbose=FALSE) {
@@ -67,8 +67,9 @@ windrose <- function(x,saw=10,max.scale=NULL,
     dd[is.element(dd,360)] <- 0
    }
   par(col.axis="white")
+  if (is.null(main)) main <- paste(loc(u),"wind rose; N=",sum(ii))
   plot(c(-1,1),c(-1,1),type="n",
-       main=paste(loc(u),"wind rose; N=",sum(ii)),
+       main=main,
        sub=paste("Lon=",round(lon(u),3),"E, lat=",round(lat(u),3),sep=""),xlab="S",ylab="W")
 
   for (ix in seq(-15,345,by=60)) {

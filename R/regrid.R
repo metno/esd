@@ -34,7 +34,7 @@ sparseMproduct <- function(beta,x) {
   y
 }
 
-regrid <- function(x,is,...)
+regrid <- function(x,is,it=NULL,...)
   UseMethod("regrid")
 
 
@@ -161,16 +161,25 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
 }
 
 
+regrid.temporal <- function(x,it,verbose=FALSE) {
+  if (verbose) print('regrid.temporal')
+  stopifnot(is.field(x))
+  if (verbose) {print(index(x)); print(it)}
+  z <- zoo(apply(x,2,function(x) approx(index(x),coredata(x),t)$y),order.by=it)
+  z <- attrcp(x,z)
+  class(z) <- class(x)
+  if (verbose) print('finished regrid.temporal')
+  return(z)
+}
 
 
-
-
-regrid.default <- function(x,is,verbose=FALSE,...) {
+regrid.default <- function(x,is=NULL,it=NULL,verbose=FALSE,...) {
   print('not used')
 }
 
-regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
+regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose=FALSE) {
 
+  if (verbose) print("regrid.field ")
   stopifnot(inherits(x,'field'))
  
   if (approach=="eof2field") {
@@ -178,9 +187,12 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
     return(y)
   }
   
-  #print("regrid.field ")
   x <- sp2np(x)
-
+  
+  ## If it is provided, also regrid in time
+  if (!is.null(it)) x <- regrid.temporal(x,it,verbose=FALSE)
+  if (is.null(is)) return(x)
+  
   ## case wether lon or lat is given in is i.e. regrid on these values along the other dimension
   if (length(is)==1) {
       nm <- names(is)
