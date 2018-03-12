@@ -12,7 +12,7 @@ vis.station <- function(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,..
   if ( (attr(x,'unit')[1] == "deg C") | (attr(x,'unit')[1] == "degree Celsius") )
       unit <- expression(degree*C) else
       unit <- attr(x,'unit')
-  if (is.null(main)) eval(parse(text=paste("main <- expression(paste('Seasonal evaution: ',",
+  if (is.null(main)) eval(parse(text=paste("main <- expression(paste('Annual+seasonal evaluation of daily ',",
                           attr(x,'variable'),"))")))
   if (new) dev.new()
   par(bty="n")
