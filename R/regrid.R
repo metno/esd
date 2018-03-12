@@ -171,10 +171,14 @@ regrid.temporal <- function(x,it,verbose=FALSE) {
   ok <- apply(coredata(x),2,FUN='nv') >= 2
   if (verbose) print(paste('Interpolating',sum(ok),'grid-boxes'))
   y <- zoo(coredata(x)[,ok],order.by=index(x))
-  zc <- apply(y,2,function(x) approx(index(x),coredata(x),it)$y)
+  if (verbose) print(summary(c(coredata(y))))
+  #zc <- apply(y,2,function(x) approx(index(x),coredata(x),it)$y)
   z <- matrix(rep(NA,length(ok)*length(it)),length(it),length(ok))
-  if (verbose) {print(dim(z[,ok])); print(dim(zc)); print(dim(z))}
-  z[,ok] <- zc
+  for (i in 1:dim(y)[2])
+    z[,(1:length(ok))[ok][i]] <- approx(index(y),coredata(y[,i]),it)$y
+  if (verbose) print(summary(c(z)))
+  if (verbose) {print(dim(z[,ok])); print(dim(x)); print(dim(z))}
+  #z[,ok] <- zc
   z <- zoo(z,order.by=it)
   z <- attrcp(x,z)
   class(z) <- class(x)

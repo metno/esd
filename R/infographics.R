@@ -9,7 +9,7 @@ vis.station <- function(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,..
   if (is.null(col)) col <- colscal(n,varid(x))
   if (is.precip(x)) x[coredata(x)==0] <- NA
 
-  if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
+  if ( (attr(x,'unit')[1] == "deg C") | (attr(x,'unit')[1] == "degree Celsius") )
       unit <- expression(degree*C) else
       unit <- attr(x,'unit')
   if (is.null(main)) eval(parse(text=paste("main <- expression(paste('Seasonal evaution: ',",
@@ -22,8 +22,8 @@ vis.station <- function(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,..
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep=''))) +1
     it <- is.element(1:366,as.numeric(t))
-    if (!is.precip(x) & !log.precip) z[it,i] <- y else
-                                     z[it,i] <- log(y)
+    if (is.precip(x) & log.precip) z[it,i] <- log(y) else
+                                   z[it,i] <- y
   }
   image(1:366,yrs,z,main=main,xlab='',ylab='year',col=col,sub=loc(x),...)
   grid()
