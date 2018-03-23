@@ -13,11 +13,12 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
   return(pr.gt.x0)
 }
 
-fract.gt.x <- function(x,threshold) {sum(x > threshold,na.rm=TRUE)/sum(is.finite(x))}
+fract.gt.x <- function(x,x0) {sum(x > x0,na.rm=TRUE)/sum(is.finite(x))}
 
 ## To test the rain equation
-test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,threshold=20) {
+test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,threshold=1,verbose=FALSE) {
   
+  if (verbose) {print('test.rainequation'); print(c(x0,threshold))}
   if (is.null(loc)) {
     ss <- select.station(param='precip',nmin=150,src='ecad')
     Y <- station(ss)
@@ -29,11 +30,12 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,threshold=20) {
   
   d <- dim(y)
   if (!is.null(d)) y <- subset(y,is=1)
-  pr <- rainequation(y,threshold=threshold)
+  if (verbose) print(loc(y))
+  pr <- rainequation(y,x0=x0,threshold=threshold)
   par(bty='n',xpd=TRUE)
   plot(pr,main=paste('The "rain equation" for',loc(y)),lwd=3,
        ylab=paste('fraction of days with more than',threshold,'mm'),xlab='Year')
-  obsfrac <- annual(y,FUN='fract.gt.x',threshold=threshold)
+  obsfrac <- annual(y,FUN='fract.gt.x',x0=x0)
   lines(obsfrac,col=rgb(1,0,0,0.7),lwd=2)
   grid()
   legend(year(pr)[1],1.1*max(pr,na.rm=TRUE),
@@ -43,10 +45,13 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,threshold=20) {
 
 ## Use a scatter plot to evaluate the rain equation for a selection of rain gauge records.
 ## Select time series from e.g. ECA&D with a minimum number (e.g. 150) of years with data
-scatterplot.rainequation <- function(src='ecad',nmin=150,threshold=c(10,20,30,40)) {
+scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),threshold=1) {
   
-  ss <- select.station(param='precip',nmin=150,src='ecad')
-  precip <- station(ss)
+  if (is.character(src)) {
+    ss <- select.station(param='precip',nmin=150,src='ecad') 
+    precip <- station(ss)
+  } else if (is.station(src) & is.precip(src)) precip <- src
+  
 
   d <- dim(precip)
   firstplot <- TRUE
@@ -54,9 +59,9 @@ scatterplot.rainequation <- function(src='ecad',nmin=150,threshold=c(10,20,30,40
   for (is in 1:d[2]) {
     y <- subset(precip,is=is)
     print(loc(y))
-    for (itr in threshold) {
-      pr <- rainequation(y,threshold=itr)
-      obsfrac <- annual(y,FUN='fract.gt.x',threshold=itr)
+    for (itr in x0) {
+      pr <- rainequation(y,x0=itr)
+      obsfrac <- annual(y,FUN='fract.gt.x',x0=itr)
       pr <- matchdate(pr,it=obsfrac); obsfrac <- matchdate(obsfrac,it=pr)
       X <- c(X,coredata(obsfrac)); Y <- c(Y,coredata(pr))
       rng <- range(c(X,Y),na.rm=TRUE)
