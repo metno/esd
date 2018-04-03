@@ -526,11 +526,17 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
       d <- d[match(seq(length(d)),c(ilon,ilat,itime))]
     }
     if (verbose) {print("dimensions"); print(d)}
-    ##    
+    ##  
     if (!one.cell) {
-        if (is.null(ilev))
-            dim(val) <- c(d[ilon]*d[ilat],d[itime])
-        else {
+      if (is.null(ilev)) {
+        #HBE added option for 2-D field at one/single time 
+        if ((length(d)==2) & (length(time$vdate)==1)) { 
+          d<-c(d[ilon],d[ilat],1)
+          dim(val) <- c(d[ilon]*d[ilat],1) 
+        } else {
+          dim(val) <- c(d[ilon]*d[ilat],d[itime])
+        } 
+        } else {
             if (length(lev.w)==1) {
                 dim(val) <- c(d[ilon]*d[ilat],d[itime]) ## AM 10.08.2015 Single level selection
                 d <- d[-ilev]
@@ -1074,9 +1080,15 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                   }
         ## Convert into 1D or 2D object
         if (!one.cell) {
-            if (is.null(ilev))
-                dim(val) <- c(d[ilon]*d[ilat],d[itime])
-            else {
+            if (is.null(ilev)) {
+                #HBE added option to read 2-D field with single timestamp
+                if ((length(d)==2) & (length(time$vdate)==1)) { 
+                      d<-c(d[ilon],d[ilat],1)
+                      dim(val) <- c(d[ilon]*d[ilat],1) 
+                } else {
+                      dim(val) <- c(d[ilon]*d[ilat],d[itime])
+                }     
+            } else {
                 if (length(lev.w)==1) {
                     dim(val) <- c(d[ilon]*d[ilat],d[itime]) ## AM 10.08.2015 Single level selection
                     d <- d[-ilev]
