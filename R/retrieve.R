@@ -16,6 +16,9 @@ retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 retrieve.default <- function(ncfile,param="auto",type="ncdf4",
                              path=NULL,verbose=FALSE,...) {
     if (verbose) print('retrieve.default')
+    ## REB 2018-04-06: Add a check for e.g. station data
+    class.x <- file.class(ncfile)
+  
     ##
     X <- NULL
     qf <- NULL
@@ -88,6 +91,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
         }
         else {
             if (verbose) print('Irregular grid field found')
+            
             X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
     } else {
@@ -104,6 +108,9 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     ## Begin of function
     ## Update argument names for internal use only
     require(ncdf4) # REB
+    ## REB 2018-04-06: Add a check for e.g .station station data
+    class.x <- file.class(ncfile)
+    
     ##
     lon.rng  <- lon
     lat.rng  <- lat
@@ -620,7 +627,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
 } # End of the function
 
 
-## Set retrieve for ncdf4 object
+## Set retrieve for ncdf3 object
 retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                            lon = NULL, lat = NULL, lev = NULL, it = NULL,
                            miss2na = TRUE, greenwich = FALSE , ##ncdf.check = TRUE ,
@@ -629,6 +636,8 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         ## Update argument names for internal function use only
         require(ncdf)
         if (verbose) print('retrieve.ncdf')
+        ## REB 2018-04-06: Add a check for e.g. station data
+        class.x <- file.class(ncfile,type='ncdf3')
         lon.rng  <- lon
         lat.rng  <- lat
         lev.rng  <- lev
@@ -2108,4 +2117,79 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     ##ac.gcm <- data.frame(y = y.test, x1 = as.vector(cos(2 * pi * tim/daysayear)), x2 = as.vector(sin(2 * pi * tim/daysayear)))
     result <- list(model=model,time=time)
     invisible(result)
+}
+
+retrieve.station <- function(ncfile,param="auto",type="ncdf4",
+                                 path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
+                                 alt=NULL,cntr=NULL,verbose=FALSE,...) {
+  if (verbose) print(paste('retrieve.nc4.station',ncfile))
+  ## REB 2018-04-06: Add a check for e.g. station data
+  class.x <- file.class(ncfile)
+  if (verbose) {print('Check class'); print(class.x$value)}
+  stopifnot(tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
+  ncid <- nc_open(ncfile)
+  if (param=='auto') param <- names(ncid$var)[1]
+  if (verbose) print(paste('reading',param))
+  ## Read the metadata:
+  tim <- ncvar_get(ncid,'time'); nt <- length(tim)
+  stids <- ncvar_get(ncid,'stid'); ns <- length(stids)
+  tunit <- ncatt_get(ncid,'time','units')
+  lons <- ncvar_get(ncid,'lon')
+  lats <- ncvar_get(ncid,'lat')
+  alts <- ncvar_get(ncid,'alt')
+  cntrs <- ncatt_get(ncid,param,'country')
+  cntrs <- sub(' ','',unlist(strsplit(cntrs$value,split=',')))
+  longname <- ncatt_get(ncid,param,'long_name')
+  unit <- ncatt_get(ncid,param,'unit')
+  locs <- ncatt_get(ncid,param,'location')
+  locs <- sub(' ','',unlist(strsplit(locs$value,split=',')))
+  missing <- ncatt_get(ncid,param,'missing_value')
+  ## Use the metadata to select the stations to read: there is no need to read
+  ## all the stations if only a subset is desired
+  if (verbose) print('Select selected stations')
+  if (!is.null(stid)) ii <- is.element(stids,stid) else ii <- is.finite(stids)
+  if (!is.null(lon)) ii <- ii & (lons >= min(lon)) & (lons >= max(lon))
+  if (!is.null(lat)) ii <- ii & (lats >= min(lat)) & (lats >= max(lat))
+  if (!is.null(alt)) { 
+    if (length(alt)==2) ii <- ii & (alts >= min(alt)) & (alts >= max(alt)) else
+    if (alt > 0) ii <- ii & (alts >= min(alt)) else 
+                 ii <- ii & (alts <= min(alt))
+  }
+  #browser()
+  if (!is.null(loc)) ii <- ii & 
+    is.element(tolower(substr(locs,1,nchar(loc))),tolower(loc))
+  if (!is.null(cntr)) ii <-ii & 
+    is.element(tolower(substr(cntrs,1,nchar(cntr))),tolower(cntr))
+  if (verbose) {print('Read following locations');
+    print((1:ns)[ii]); print(locs[ii])}
+  ## Read the actual data:
+  x <- ncvar_get(ncid,param,start=c(1,min((1:ns)[ii])),
+                 count=c(nt,max((1:ns)[ii]) - min((1:ns)[ii])+1))
+  nc_close(ncid)
+  x[x<=missing$value] <- NA
+  ## The data matrix is not full but it may not necessarily correspond to the selection
+  iii <- seq(min((1:ns)[ii]),max((1:ns)[ii]) - min((1:ns)[ii])+1,by=1)
+  iv <- ii[iii]
+  x <- x[,iv]
+  if (verbose) {print(dim(x)); print(summary(c(x)))}
+  if (!is.null(dim(x))) { 
+    nv <- apply(x,1,'nv') 
+    it <- (nv > 0)
+  } else it <- is.finite(x) 
+  
+  if (verbose) {print(dim(x)); print(length(ii)); print(length(it))}
+  lons <- lons[ii]; lats <- lats[ii]; alts <- alts[ii]; cntrs <- cntrs[ii]
+  locs <- locs[ii]
+  if (!is.null(dim(x))) x <- x[it,] else x <- x[it]
+  tim <- tim[it]
+  if (length(grep('days since',tunit$value))) 
+    t <- as.Date(substr(tunit$value,12,21)) + tim else
+  if (length(grep('months since',tunit$value))) 
+    t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
+  if (length(grep('years since',tunit$value))) 
+    t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
+  y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
+                  cntr = cntrs,stid = stids,longname=longname,
+                  unit=unit$value,param=param)
+  return(y)
 }

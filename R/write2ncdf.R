@@ -70,9 +70,10 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
     history <- toString(attr(x[[i]],'history')$call)
     ncatt_put( ncnew, ncvar, "history", history, prec="text" ) 
   }
+  ncatt_put( ncnew, 0, 'class', class(x))
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
-  ncatt_put( ncnew, 0, "esd-version", attr(x[[1]],'history')$sessioninfo$esd.version)
+  ncatt_put( ncnew, 0, "esd-version", attr(x[[1]],'history')$session$esd.version)
   
   nc_close(ncnew)
   if (verbose) print('netCDF file saved')
@@ -112,10 +113,11 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=N
   ncatt_put( ncnew, x4nc, "missing_value", missval, prec="float" ) 
   history <- toString(attr(x[[i]],'history')$call)
   ncatt_put( ncnew, x4nc, "history", history, prec="text" ) 
+  ncatt_put( ncnew, 0, 'class', class(x))
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
   if (verbose) print(attr(x,'history'))
-  ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$sessioninfo$esd.version)
+  ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$session$esd.version)
   nc_close(ncnew)
 }
 
@@ -130,7 +132,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
 
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   
-  if (verbose) print('write.ncdf')
+  if (verbose) print('write2ncdf4.station')
   
   ## Write a station object as a netCDF file using the short-type combined with add_offsetet and scale_factor
   ## to reduce the size.   
@@ -155,10 +157,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   if (verbose) print(paste('attributes:', paste(atts, collapse=', '),
                            '; types:',paste(attrprec, collapse=', ')))
   
-  y <- t(coredata(x))
+  y <- coredata(x)
   y[!is.finite(y)] <- missval
   y <- round((y - offset)/scale)
-  dim(y) <- c(ns,nt)
   
   if (is.null(attr(x,'calendar')))
       attr(x,'calendar') <- 'standard'
@@ -177,7 +178,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
 # Define the dimensions
   if (verbose) print('Define dimensions')
   if (verbose) print(stid(x))
-  dimS <- ncdim_def( name="stid", units="number",vals=c(1:ns))
+  dimS <- ncdim_def( name="stid", units="number",vals=1:ns)
   dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar)
   
   if (verbose) print('Define variable')
@@ -189,12 +190,17 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   if (verbose) print(paste('create netCDF-file',fname))
      
   if (verbose) {str(y); print(summary(c(y)))}
-  latid <- ncvar_def(name="lat",dim=list(dimS), units="degrees_north", missval=missval,longname="latitude", prec=prec,verbose=verbose)
+  latid <- ncvar_def(name="lat",dim=list(dimS), units="degrees_north", missval=missval,longname="latitude", 
+                     prec="float",verbose=verbose)
 
-  lonid <- ncvar_def(name="lon",dim=list(dimS), units="degrees_east", missval=missval,longname="longitude", prec=prec,verbose=verbose)
-   altid <- ncvar_def(name="alt",dim=list(dimS), units="meters", missval=missval,longname="altitude", prec=prec,verbose=verbose)
+  lonid <- ncvar_def(name="lon",dim=list(dimS), units="degrees_east", missval=missval,longname="longitude", 
+                     prec="float",verbose=verbose)
+  altid <- ncvar_def(name="alt",dim=list(dimS), units="meters", missval=missval,longname="altitude", 
+                     prec=prec,verbose=verbose)
 
   locid <- ncvar_def(name="loc",dim=list(dimS),units="strings",prec="char",longname="location",verbose=verbose)
+  
+  stid <- ncvar_def(name="stid",dim=list(dimS),units="strings",prec="char",longname="station_id",verbose=verbose)
   
   ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
                      longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
@@ -206,17 +212,19 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
   ncatt_put( ncid, ncvar, 'location',paste(loc(x),collapse=", "),prec='char')
   ncatt_put( ncid, ncvar, 'country',paste(cntr(x),collapse=", "),prec='character')
-  ncvar_put( ncid, lonid, attr(x,"longitude"))
-  ncvar_put( ncid, latid, attr(x,"latitude"))
-  ncvar_put( ncid, altid, attr(x,"altitude"))
-  ncvar_put( ncid, locid, as.array(attr(x,"location")))
+  ncvar_put( ncid, lonid, lon(x))
+  ncvar_put( ncid, latid, lat(x))
+  ncvar_put( ncid, altid, alt(x))
+  ncvar_put( ncid, locid, as.array(loc(x)))
+  ncvar_put( ncid, stid, as.array(stid(x)))
   
   ## global attributes
+  ncatt_put( ncid, 0, 'class', class(x))
   ncatt_put( ncid, 0, 'title', paste(levels(factor(attr(x,"info"))),collapse="/"))
   ncatt_put( ncid, 0, 'source', paste(levels(factor(attr(x,"source"))),collapse="/"))
   ncatt_put( ncid, 0, 'history', paste(unlist(attr(x,"history")),collapse="/"))
   ncatt_put( ncid, 0, 'references', paste(levels(factor(attr(x,"reference"))),collapse="/"))
-  ncatt_put( ncid, 0, "esd-version", attr(x,'history')$sessioninfo$esd.version)
+  ncatt_put( ncid, 0, "esd-version", attr(x,'history')$session$esd.version)
   nc_close(ncid)
   if (verbose) print('close')
 }
@@ -284,7 +292,8 @@ write2ncdf4.pca <- function(x,fname='esd.pca.nc',prec='short',verbose=FALSE,scal
 #  ncvar_put( nc, src, src(x) )
   ncvar_put( nc, lambda, attr(x,'eigenvalues') )
   ncatt_put( nc, pca, "history", paste(attr(x,'history'),collapse=';'), prec="char" )
-  ncatt_put( nc, 0, "esd-version", attr(x,'history')$sessioninfo$esd.version)
+  ncatt_put( nc, 0, 'class', class(x))
+  ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
 }
 
 write2ncdf4.eof <- function(x,fname='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) {
@@ -438,9 +447,10 @@ write2ncdf4.dsensemble <- function(x,fname='esd.dsensemble.nc',prec='short',offs
   if (verbose) print('history')
   ncatt_put( ncnew, varlist$pca, "history", paste(attr(x,'history'),collapse=';'), prec="char" )  
   ## Global attributes:
+  ncatt_put( ncnew, 0, 'class', class(x))
   ncatt_put( ncnew, 0, "description", "Saved from esd using write2ncdf4.dsensemble")
-  ncatt_put( ncnew, 0, "class", paste(class.x,collapse='-'))
-  ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$sessioninfo$esd.version)
+  #ncatt_put( ncnew, 0, "class", paste(class.x,collapse='-'))
+  ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$session$esd.version)
   nc_close(ncnew)
   if (verbose) print(paste('Finished sucessfully - file', fname))  
 }
@@ -449,18 +459,19 @@ write2ncdf4.dsensemble <- function(x,fname='esd.dsensemble.nc',prec='short',offs
 ## retrieve.eof or retrieve.station rather than the standard form to read field objects.
 ## Assumes that empty class attribute means a field object
 file.class <- function(ncfile,path=NULL,type="ncdf4") {
-  
+  if (is.null(path)) path <- '.'
   if (type=='ncdf4') {
     nc <- nc_open(file.path(path,ncfile))
     dimnames <- names(nc$dim)
-    class <- ncatt_get(nc,0,'class')
-    close.ncdf(nc)
+    class.x <- ncatt_get(nc,0,'class')
+    nc_close(nc)
   } else {
     nc <- open.ncdf(file.path(path,ncfile))
     dimnames <- names(nc$dim)
-    class <- get.att.ncdf(nc,0,'class')
+    class.x <- get.att.ncdf(nc,0,'class')
     close.ncdf(nc)
   }
-  attr(class,'dimnames') <- dimnames
-  return(class)
+  #attr(class.x,'dimnames') <- dimnames
+  class.x$dimnames <- dimnames
+  return(class.x)
 }
