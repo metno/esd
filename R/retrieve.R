@@ -24,10 +24,10 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     qf <- NULL
     ## 
     ## Setting the path   (sessionInfo()[[1]]$os=='linux-gnu')?
-    if ( (is.null(path))) { 
-      path <- dirname(ncfile)
-      ncfile <- basename(ncfile)
-    }   
+   # if ( (is.null(path))) { 
+  #    path <- dirname(ncfile)
+   #   ncfile <- basename(ncfile)
+  #  }   
     ##if (is.character(ncfile)) {
     ##    fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
     ##    stopifnot(fext=="nc")
@@ -50,7 +50,8 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     test <- NULL
     
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
-        nc <- open.ncdf(file.path(path,ncfile))
+       # nc <- open.ncdf(file.path(path,ncfile))
+        nc <- open.ncdf(ncfile)
         dimnames <- names(nc$dim)
         ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
         ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
@@ -73,7 +74,8 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
               X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
-      nc <- nc_open(file.path(path,ncfile))
+      #nc <- nc_open(file.path(path,ncfile))
+      nc <- nc_open(ncfile)
         dimnames <- names(nc$dim)
 	      ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
         ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
@@ -89,7 +91,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
           lat <- NULL
         }
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
-            if (verbose) print('Regular grid field found')
+            if (verbose) print(paste('Regular grid field found',ncfile))
             X <- retrieve.ncdf4(ncfile,path=path,param=param,verbose=verbose,...)
         }
         else {
@@ -122,12 +124,12 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     lev.rng  <- lev
     time.rng <- it
     ## set path
-    if (!is.null(path)) {
-        ## AM this line creates pbms for windows users.
+ #   if (!is.null(path)) {
+       ## AM this line creates pbms for windows users.
         ##path <- gsub("[[:punct:]]$","",path) 
         ## Update netcdf file name
-        ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
-    }
+#        ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
+#    }
     
     ## check if file exists and type of ncfile object
     if (is.character(ncfile)) {
@@ -650,11 +652,11 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         ##
 
         ## set path
-        if (!is.null(path)) {
-            ## AM this line creates pbms for windows users.
-            ## path <- gsub("[[:punct:]]$","",path)
-            ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
-        }
+       # if (!is.null(path)) {
+      #      ## AM this line creates pbms for windows users.
+      #      ## path <- gsub("[[:punct:]]$","",path)
+      #      ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
+      #  }
 
         ## check if file exists and type of ncfile object
         if (is.character(ncfile)) {
@@ -2208,4 +2210,24 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
                   cntr = cntrs,stid = stids,longname=longname,
                   unit=unit$value,param=param)
   return(y)
+}
+
+## Used to check the contents in netCDF file - to use in retrieve to call retrieve.dsenemble,
+## retrieve.eof or retrieve.station rather than the standard form to read field objects.
+## Assumes that empty class attribute means a field object
+file.class <- function(ncfile,type="ncdf4") {
+  if (type=='ncdf4') {
+    nc <- nc_open(ncfile)
+    dimnames <- names(nc$dim)
+    class.x <- ncatt_get(nc,0,'class')
+    nc_close(nc)
+  } else {
+    nc <- open.ncdf(ncfile)
+    dimnames <- names(nc$dim)
+    class.x <- get.att.ncdf(nc,0,'class')
+    close.ncdf(nc)
+  }
+  #attr(class.x,'dimnames') <- dimnames
+  class.x$dimnames <- dimnames
+  return(class.x)
 }

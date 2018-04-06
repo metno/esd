@@ -8,6 +8,7 @@
 \alias{summary.ncdf4}
 \alias{check.ncdf4}
 \alias{check.ncdf}
+\alias{file.class}
 \title{Retrieve field data from a netcdf file.}
 \description{Retrieve data from a netcdf file and return a zoo field object with attributes. 
   \code{retrieve} assumes data on a regular lon-lat grid and \code{retrieve.rcm} reads data on irregular (rotated) grid. typically output from RCMs.
@@ -32,6 +33,7 @@ retrieve.station(ncfile,param="auto",type="ncdf4",
 summary.ncdf4(ncfile, verbose=FALSE)
 check.ncdf4(ncid = ncid, param = "auto" , verbose = FALSE)
 check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
+file.class(ncfile,type="ncdf4")
 }
 
 \arguments{

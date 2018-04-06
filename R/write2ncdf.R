@@ -478,24 +478,3 @@ write2ncdf4.dsensemble <- function(x,fname='esd.dsensemble.nc',prec='short',offs
   nc_close(ncnew)
   if (verbose) print(paste('Finished sucessfully - file', fname))  
 }
-
-## Used to check the contents in netCDF file - to use in retrieve to call retrieve.dsenemble,
-## retrieve.eof or retrieve.station rather than the standard form to read field objects.
-## Assumes that empty class attribute means a field object
-file.class <- function(ncfile,path=NULL,type="ncdf4") {
-  if (is.null(path)) path <- '.'
-  if (type=='ncdf4') {
-    nc <- nc_open(file.path(path,ncfile))
-    dimnames <- names(nc$dim)
-    class.x <- ncatt_get(nc,0,'class')
-    nc_close(nc)
-  } else {
-    nc <- open.ncdf(file.path(path,ncfile))
-    dimnames <- names(nc$dim)
-    class.x <- get.att.ncdf(nc,0,'class')
-    close.ncdf(nc)
-  }
-  #attr(class.x,'dimnames') <- dimnames
-  class.x$dimnames <- dimnames
-  return(class.x)
-}
