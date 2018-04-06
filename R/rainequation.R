@@ -65,7 +65,7 @@ scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),thres
       pr <- matchdate(pr,it=obsfrac); obsfrac <- matchdate(obsfrac,it=pr)
       X <- c(X,coredata(obsfrac)); Y <- c(Y,coredata(pr))
       rng <- range(c(X,Y),na.rm=TRUE)
-      par(bty='n',xpd=TRUE)
+      par(bty='n',xpd=TRUE,mar=par()$mar + c(0,1,0,0))
       plot(X,Y,main='Test the "rain equation"',
            xlim=rng,ylim=rng,pch=19,cex=1.25,col=rgb(0,0,0.7,0.15),
            xlab=expression(sum(H(X-x))/n),ylab=expression(Pr(X>x)==f[w]*e^{-x/mu}))

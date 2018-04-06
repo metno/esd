@@ -214,8 +214,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   ## global attributes
   ncatt_put( ncid, 0, 'title', paste(levels(factor(attr(x,"info"))),collapse="/"))
   ncatt_put( ncid, 0, 'source', paste(levels(factor(attr(x,"source"))),collapse="/"))
-  ncatt_put( ncid, 0, 'history', paste(unlist(attr(tmax,"history")),collapse="/"))
-  ncatt_put( ncid, 0, 'references', paste(levels(factor(attr(tmax,"reference"))),collapse="/"))
+  ncatt_put( ncid, 0, 'history', paste(unlist(attr(x,"history")),collapse="/"))
+  ncatt_put( ncid, 0, 'references', paste(levels(factor(attr(x,"reference"))),collapse="/"))
   ncatt_put( ncid, 0, "esd-version", attr(x,'history')$sessioninfo$esd.version)
   nc_close(ncid)
   if (verbose) print('close')
