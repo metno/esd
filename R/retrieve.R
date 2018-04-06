@@ -67,7 +67,10 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
             X <- retrieve.ncdf(ncfile,path=path,param=param,verbose=verbose,...)
         } else {
             if (verbose) print('Irregular grid field found')
-            X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
+            class.x <- file.class(ncfile)
+            if (tolower(class.x$value[1]=='station') | length(is.element(class.x$dimnames,'stid')) > 0)
+              X <- retrieve.station(ncfile,path=path,param=param,verbose=verbose,...) else
+              X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
       nc <- nc_open(file.path(path,ncfile))
@@ -91,8 +94,10 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
         }
         else {
             if (verbose) print('Irregular grid field found')
-            
-            X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
+            class.x <- file.class(ncfile)
+            if (tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
+              X <- retrieve.station(ncfile,path=path,param=param,verbose=verbose,...) else
+              X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
     } else {
       print("No suitable ncdf or ncdf4 libraries found to read your file or data")
