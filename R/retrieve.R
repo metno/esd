@@ -2126,7 +2126,8 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
 
 retrieve.station <- function(ncfile,param="auto",type="ncdf4",
                                  path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
-                                 alt=NULL,cntr=NULL,verbose=FALSE,...) {
+                                 alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
+                                 nmin=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('retrieve.nc4.station',ncfile))
   ## REB 2018-04-06: Add a check for e.g. station data
   class.x <- file.class(ncfile)
@@ -2144,6 +2145,12 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   alts <- ncvar_get(ncid,'alt')
   cntrs <- ncatt_get(ncid,param,'country')
   cntrs <- sub(' ','',unlist(strsplit(cntrs$value,split=',')))
+  nv <- ncatt_get(ncid,param,'number_valid_data')
+  nv <- as.numeric(unlist(strsplit(nv$value,split=',')))
+  fyr <- ncatt_get(ncid,param,'first_year')
+  fyr <- as.numeric(unlist(strsplit(fyr$value,split=',')))
+  lyr <- ncatt_get(ncid,param,'last_year')
+  lyr <- as.numeric(unlist(strsplit(lyr$value,split=',')))
   longname <- ncatt_get(ncid,param,'long_name')
   unit <- ncatt_get(ncid,param,'unit')
   locs <- ncatt_get(ncid,param,'location')
@@ -2153,12 +2160,12 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   ## all the stations if only a subset is desired
   if (verbose) print('Select selected stations')
   if (!is.null(stid)) ii <- is.element(stids,stid) else ii <- is.finite(stids)
-  if (!is.null(lon)) ii <- ii & (lons >= min(lon)) & (lons >= max(lon))
-  if (!is.null(lat)) ii <- ii & (lats >= min(lat)) & (lats >= max(lat))
+  if (!is.null(lon)) ii <- ii & (lons >= min(lon)) & (lons <= max(lon))
+  if (!is.null(lat)) ii <- ii & (lats >= min(lat)) & (lats <= max(lat))
   if (!is.null(alt)) { 
     if (length(alt)==2) ii <- ii & (alts >= min(alt)) & (alts >= max(alt)) else
-    if (alt > 0) ii <- ii & (alts >= min(alt)) else 
-                 ii <- ii & (alts <= min(alt))
+    if (alt > 0) ii <- ii & (alts >= alt) else 
+                 ii <- ii & (alts <= abs(alt))
   }
   #browser()
   if (!is.null(loc)) ii <- ii & 
@@ -2167,6 +2174,10 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
     is.element(tolower(substr(cntrs,1,nchar(cntr))),tolower(cntr))
   if (verbose) {print('Read following locations');
     print((1:ns)[ii]); print(locs[ii])}
+  if (!is.null(nmin)) ii <- ii & (nv >= nmin)
+  if (!is.null(start.year.before)) ii <- ii & (fy <= start.year.before)
+  if (!is.null(end.year.after)) ii <- ii & (ly >= end.year.after)
+  
   ## Read the actual data:
   x <- ncvar_get(ncid,param,start=c(1,min((1:ns)[ii])),
                  count=c(nt,max((1:ns)[ii]) - min((1:ns)[ii])+1))

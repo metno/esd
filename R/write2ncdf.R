@@ -3,6 +3,21 @@
 ## https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDF-Data-Types.html:
 ## short: 16-bit signed integers. The short type holds values between -32768 and 32767.
 
+## Help functions 
+firstyear <- function(x) {
+  yrs <- year(x)
+  if (is.null(dim(x))) y <- min(yrs[is.finite(x)]) else
+                       y <- apply(x,2,function(x,yrs=yrs) min(yrs[is.finite(x)]),yrs)
+  return(y)
+}
+
+lastyear <- function(x) {
+  yrs <- year(x)
+  if (is.null(dim(x))) y <- max(yrs[is.finite(x)]) else
+                       y <- apply(x,2,function(x,yrs=yrs) max(yrs[is.finite(x)]),yrs)
+  return(y)
+}
+
 write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 
 write2ncdf4.default <- function(x,...) {
@@ -157,6 +172,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   if (verbose) print(paste('attributes:', paste(atts, collapse=', '),
                            '; types:',paste(attrprec, collapse=', ')))
   
+  fyr <- firstyear(x)
+  lyr <- lastyear(x)
+  nv <- apply(coredata(x),2,'nv')
+  
   y <- coredata(x)
   y[!is.finite(y)] <- missval
   y <- round((y - offset)/scale)
@@ -202,6 +221,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   
   stid <- ncvar_def(name="stid",dim=list(dimS),units="strings",prec="char",longname="station_id",verbose=verbose)
   
+  
+  
   ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
                      longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
 
@@ -212,6 +233,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
   ncatt_put( ncid, ncvar, 'location',paste(loc(x),collapse=", "),prec='char')
   ncatt_put( ncid, ncvar, 'country',paste(cntr(x),collapse=", "),prec='character')
+  ncatt_put( ncid, ncvar, 'first_year',paste(fyr,collapse=", "),prec='character')
+  ncatt_put( ncid, ncvar, 'last_year',paste(lyr,collapse=", "),prec='character')
+  ncatt_put( ncid, ncvar, 'number_valid_data',paste(nv,collapse=", "),prec='character')
   ncvar_put( ncid, lonid, lon(x))
   ncvar_put( ncid, latid, lat(x))
   ncvar_put( ncid, altid, alt(x))

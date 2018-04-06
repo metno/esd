@@ -4,6 +4,7 @@
 \alias{retrieve.ncdf}
 \alias{retrieve.ncdf4}
 \alias{retrieve.rcm}
+\alias{retrieve.station}
 \alias{summary.ncdf4}
 \alias{check.ncdf4}
 \alias{check.ncdf}
@@ -23,6 +24,10 @@ retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
                miss2na = TRUE, greenwich = TRUE,
                verbose = FALSE , plot = TRUE) 
 retrieve.rcm(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE)
+retrieve.station(ncfile,param="auto",type="ncdf4",
+                path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
+                alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
+                nmin=NULL,verbose=FALSE,...) 
 
 summary.ncdf4(ncfile, verbose=FALSE)
 check.ncdf4(ncid = ncid, param = "auto" , verbose = FALSE)
