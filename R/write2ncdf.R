@@ -141,7 +141,7 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=N
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDL-Data-Types.html:
 # short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
 
-write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
+write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=NULL,
                                 scale=0.1,torg='1899-12-31',verbose=FALSE) {
   #require(ncdf4)
 
@@ -154,8 +154,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   ## Examine the station object: dimensions and attributes  
 
   ## Get time 
-  nt <- dim(x)[1]
-  ns <- dim(x)[2]
+  if (is.null(tim)) nt <- dim(x)[1] else nt <- length(tim)
+  ns <- dim(x)[2] 
   
   ## if (is.null(d)) d <- c(length(x),1)
   if (verbose) print(paste('Number of stations: ',paste(ns)))
@@ -188,7 +188,14 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   else calendar <- 'standard'
 
   if (class(index(x))=='Date')
-      time <- julian(index(x)) - julian(as.Date(torg))
+      if (is.null(tim)) time <- julian(index(x)) - julian(as.Date(torg)) else {
+        if (verbose) print('Use prescribed time coordinates')
+        x2 <- merge(zoo(rep(NA,nt),order.by=tim),zoo(y),all=FALSE)
+        x2 <- window(x2[,-1],start=tim[1],end=tim[length(tim)])
+        x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; rm('x2')
+        time <- julian(index(y)) - julian(as.Date(torg))
+        if (verbose) {print(range(index(x))); print(dim(x))}
+      }
   else if (inherits(x,'annual'))
       time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
   
@@ -199,12 +206,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   if (verbose) print(stid(x))
   dimS <- ncdim_def( name="stid", units="number",vals=1:ns)
   dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar)
+  dimnchar   <- ncdim_def("nchar",   "", 1:12, create_dimvar=FALSE )
+  dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
   
   if (verbose) print('Define variable')
-
-  lon <- lon(x)
-  lat <- lat(x)
-  alt <- alt(x)
   
   if (verbose) print(paste('create netCDF-file',fname))
      
@@ -217,31 +222,40 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,
   altid <- ncvar_def(name="alt",dim=list(dimS), units="meters", missval=missval,longname="altitude", 
                      prec=prec,verbose=verbose)
 
-  locid <- ncvar_def(name="loc",dim=list(dimS),units="strings",prec="char",longname="location",verbose=verbose)
+  locid <- ncvar_def(name="loc",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="location",verbose=verbose)
+  stid <- ncvar_def(name="station",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="station_id",verbose=verbose)
+  cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="country",verbose=verbose)
   
-  stid <- ncvar_def(name="stid",dim=list(dimS),units="strings",prec="char",longname="station_id",verbose=verbose)
-  
-  
+  fyrid <- ncvar_def(name="first",dim=list(dimS), units="year", missval=missval,longname="first_year", 
+                     prec="short",verbose=verbose)
+  lyrid <- ncvar_def(name="last",dim=list(dimS), units="year", missval=missval,longname="last_year", 
+                     prec="short",verbose=verbose)
+  nvid <- ncvar_def(name="number",dim=list(dimS), units="count", missval=missval,longname="number_valid_data", 
+                     prec="short",verbose=verbose)
   
   ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
                      longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
 
-  ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid)) ## vars)
-  ncvar_put( ncid, ncvar, y)
+  ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, fyrid,lyrid,nvid)) ## vars)
+  ncvar_put( ncid, ncvar, coredata(y))
   ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
   ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
   ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
-  ncatt_put( ncid, ncvar, 'location',paste(loc(x),collapse=", "),prec='char')
-  ncatt_put( ncid, ncvar, 'country',paste(cntr(x),collapse=", "),prec='character')
-  ncatt_put( ncid, ncvar, 'first_year',paste(fyr,collapse=", "),prec='character')
-  ncatt_put( ncid, ncvar, 'last_year',paste(lyr,collapse=", "),prec='character')
-  ncatt_put( ncid, ncvar, 'number_valid_data',paste(nv,collapse=", "),prec='character')
-  ncvar_put( ncid, lonid, lon(x))
-  ncvar_put( ncid, latid, lat(x))
-  ncvar_put( ncid, altid, alt(x))
-  ncvar_put( ncid, locid, as.array(loc(x)))
-  ncvar_put( ncid, stid, as.array(stid(x)))
-  
+  #ncatt_put( ncid, ncvar, 'location',paste(loc(x),collapse=", "),prec='char')
+  #ncatt_put( ncid, ncvar, 'country',paste(cntr(x),collapse=", "),prec='character')
+  #ncatt_put( ncid, ncvar, 'firstyear',paste(fyr,collapse=", "),prec='character')
+  #ncatt_put( ncid, ncvar, 'lastyear',paste(lyr,collapse=", "),prec='character')
+  #ncatt_put( ncid, ncvar, 'number_valid_data',paste(nv,collapse=", "),prec='character')
+  ncvar_put( ncid, lonid, lon(y))
+  ncvar_put( ncid, latid, lat(y))
+  ncvar_put( ncid, altid, alt(y))
+  ncvar_put( ncid, locid, loc(y))
+  ncvar_put( ncid, stid, as.character(stid(y)))
+  ncvar_put( ncid, cntrid, cntr(y))
+  ncvar_put( ncid, fyrid, firstyear(y))
+  ncvar_put( ncid, lyrid, lastyear(y))
+  if (is.null(dim(x))) ncvar_put( ncid, nvid, nv(y)) else
+                       ncvar_put( ncid, nvid, apply(coredata(y),2,FUN='nv'))
   ## global attributes
   ncatt_put( ncid, 0, 'class', class(x))
   ncatt_put( ncid, 0, 'title', paste(levels(factor(attr(x,"info"))),collapse="/"))
