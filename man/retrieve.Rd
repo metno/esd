@@ -18,7 +18,7 @@
 retrieve.default(ncfile,type="ncdf",verbose=FALSE,...)
 retrieve.ncdf(ncfile = ncfile, path = path , param = "auto",
                lon = NULL, lat = NULL, lev = NULL, it = NULL,
-               miss2na = TRUE, greenwich = TRUE,
+               miss2na = TRUE, greenwich = FALSE,
                verbose = FALSE , plot = TRUE)
 retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
                lon = NULL, lat = NULL, lev = NULL, it = NULL,
@@ -53,7 +53,7 @@ file.class(ncfile,type="ncdf4")
            tmin, tasmin     = Minimum temperature (in degrees Celcius)
            }
   \item{plot}{Logical value. if, TRUE provides a map.}
-  \item{greenwich}{Logical value. If FALSE, convert longitudes to -180E/180E or centre maps on Greenwich meridian (0 deg E).} 
+  \item{greenwich}{Logical value. If FALSE, convert longitudes to -180E/180E or centre maps on Greenwich meridian (0 deg E). In other  words, when Greenwich == TRUE, the left boundary of a global field is set to Greenwich and not the dateline.} 
   \item{ncdf.check}{Logical value. If TRUE, performs a quick check of the ncfile contents} 
   \item{miss2na}{Logical value. If TRUE missing values are converted to "NA"}
   \item{verbose}{Logical value defaulting to FALSE. If FALSE, do not
