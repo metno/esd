@@ -16,18 +16,15 @@ retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 retrieve.default <- function(ncfile,param="auto",type="ncdf4",
                              path=NULL,verbose=FALSE,...) {
     if (verbose) print('retrieve.default')
-    ## REB 2018-04-06: Add a check for e.g. station data
-    class.x <- file.class(ncfile)
-  
     ##
     X <- NULL
     qf <- NULL
     ## 
     ## Setting the path   (sessionInfo()[[1]]$os=='linux-gnu')?
-   # if ( (is.null(path))) { 
-  #    path <- dirname(ncfile)
-   #   ncfile <- basename(ncfile)
-  #  }   
+    if ( (is.null(path))) { 
+      path <- dirname(ncfile)
+      ncfile <- basename(ncfile)
+    }   
     ##if (is.character(ncfile)) {
     ##    fext <- substr(ncfile,nchar(ncfile)-1,nchar(ncfile))
     ##    stopifnot(fext=="nc")
@@ -50,8 +47,7 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     test <- NULL
     
     if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
-       # nc <- open.ncdf(file.path(path,ncfile))
-        nc <- open.ncdf(ncfile)
+        nc <- open.ncdf(file.path(path,ncfile))
         dimnames <- names(nc$dim)
         ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
         ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
@@ -68,14 +64,10 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
             X <- retrieve.ncdf(ncfile,path=path,param=param,verbose=verbose,...)
         } else {
             if (verbose) print('Irregular grid field found')
-            class.x <- file.class(ncfile)
-            if (tolower(class.x$value[1]=='station') | length(is.element(class.x$dimnames,'stid')) > 0)
-              X <- retrieve.station(ncfile,path=path,param=param,verbose=verbose,...) else
-              X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
+            X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
     } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
-      #nc <- nc_open(file.path(path,ncfile))
-      nc <- nc_open(ncfile)
+      nc <- nc_open(file.path(path,ncfile))
         dimnames <- names(nc$dim)
 	      ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
         ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
@@ -91,15 +83,12 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
           lat <- NULL
         }
         if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
-            if (verbose) print(paste('Regular grid field found',ncfile))
+            if (verbose) print('Regular grid field found')
             X <- retrieve.ncdf4(ncfile,path=path,param=param,verbose=verbose,...)
         }
         else {
             if (verbose) print('Irregular grid field found')
-            class.x <- file.class(ncfile)
-            if (tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
-              X <- retrieve.station(ncfile,path=path,param=param,verbose=verbose,...) else
-              X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
+            X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
     } else {
       print("No suitable ncdf or ncdf4 libraries found to read your file or data")
@@ -115,21 +104,18 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     ## Begin of function
     ## Update argument names for internal use only
     require(ncdf4) # REB
-    ## REB 2018-04-06: Add a check for e.g .station station data
-    class.x <- file.class(ncfile)
-    
     ##
     lon.rng  <- lon
     lat.rng  <- lat
     lev.rng  <- lev
     time.rng <- it
     ## set path
- #   if (!is.null(path)) {
-       ## AM this line creates pbms for windows users.
+    if (!is.null(path)) {
+        ## AM this line creates pbms for windows users.
         ##path <- gsub("[[:punct:]]$","",path) 
         ## Update netcdf file name
-#        ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
-#    }
+        ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
+    }
     
     ## check if file exists and type of ncfile object
     if (is.character(ncfile)) {
@@ -540,17 +526,15 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
       d <- d[match(seq(length(d)),c(ilon,ilat,itime))]
     }
     if (verbose) {print("dimensions"); print(d)}
-    ##  
+    ##    
     if (!one.cell) {
       if (is.null(ilev)) {
-        #HBE added option for 2-D field at one/single time 
-        if ((length(d)==2) & (length(time$vdate)==1)) { 
-          d<-c(d[ilon],d[ilat],1)
-          dim(val) <- c(d[ilon]*d[ilat],1) 
-        } else {
-          dim(val) <- c(d[ilon]*d[ilat],d[itime])
-        } 
-        } else {
+      #HBE added option for 2-D field at one/single time 
+          if ((length(d)==2) & (length(time$vdate)==1)) { 
+                d<-c(d[ilon],d[ilat],1)
+                dim(val) <- c(d[ilon]*d[ilat],1) 
+          } else  dim(val) <- c(d[ilon]*d[ilat],d[itime]) 
+      } else {
             if (length(lev.w)==1) {
                 dim(val) <- c(d[ilon]*d[ilat],d[itime]) ## AM 10.08.2015 Single level selection
                 d <- d[-ilev]
@@ -558,7 +542,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
                 dim(val) <- c(d[ilon]*d[ilat]*d[ilev],d[itime])
                 print("Warning: 'esd-package' cannot handle more than one level (or height) - Please select one level to retrieve the data (e.g. lev=1000)")
             }   
-        }
+      }
     }
     ## d <- dim(val)
     ##create a zoo object z
@@ -634,7 +618,7 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
 } # End of the function
 
 
-## Set retrieve for ncdf3 object
+## Set retrieve for ncdf4 object
 retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                            lon = NULL, lat = NULL, lev = NULL, it = NULL,
                            miss2na = TRUE, greenwich = FALSE , ##ncdf.check = TRUE ,
@@ -643,8 +627,6 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         ## Update argument names for internal function use only
         require(ncdf)
         if (verbose) print('retrieve.ncdf')
-        ## REB 2018-04-06: Add a check for e.g. station data
-        class.x <- file.class(ncfile,type='ncdf3')
         lon.rng  <- lon
         lat.rng  <- lat
         lev.rng  <- lev
@@ -652,11 +634,11 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         ##
 
         ## set path
-       # if (!is.null(path)) {
-      #      ## AM this line creates pbms for windows users.
-      #      ## path <- gsub("[[:punct:]]$","",path)
-      #      ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
-      #  }
+        if (!is.null(path)) {
+            ## AM this line creates pbms for windows users.
+            ## path <- gsub("[[:punct:]]$","",path)
+            ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
+        }
 
         ## check if file exists and type of ncfile object
         if (is.character(ncfile)) {
@@ -743,13 +725,13 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         if (!greenwich) {
             id <- lon$vals > 180
             if (sum(id) > 0) {
-                if (verbose) print("Convert to non-Greenwich")
+                if (verbose) print("Convert to non-Greenwich as left boundary")
                 lon$vals[id] <- lon$vals[id] - 360
             }
         } else {
             id <- lon$vals < 0
             if (sum(id) > 0) {
-                if (verbose) print("Convert to Greenwich")
+                if (verbose) print("Convert to Greenwich as left boundary")
                 lon$vals[id] <- lon$vals[id] + 360
             }
         }##else if (!(sum(id) > 0)) lon$vals <- lon$vals + 180
@@ -1096,15 +1078,13 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                   }
         ## Convert into 1D or 2D object
         if (!one.cell) {
-            if (is.null(ilev)) {
-                #HBE added option to read 2-D field with single timestamp
-                if ((length(d)==2) & (length(time$vdate)==1)) { 
-                      d<-c(d[ilon],d[ilat],1)
-                      dim(val) <- c(d[ilon]*d[ilat],1) 
-                } else {
-                      dim(val) <- c(d[ilon]*d[ilat],d[itime])
-                }     
-            } else {
+          if (is.null(ilev)) {
+            #HBE added option for 2-D field at one/single time 
+            if ((length(d)==2) & (length(time$vdate)==1)) { 
+              d<-c(d[ilon],d[ilat],1)
+              dim(val) <- c(d[ilon]*d[ilat],1) 
+            } else  dim(val) <- c(d[ilon]*d[ilat],d[itime]) 
+          } else {
                 if (length(lev.w)==1) {
                     dim(val) <- c(d[ilon]*d[ilat],d[itime]) ## AM 10.08.2015 Single level selection
                     d <- d[-ilev]
@@ -1414,7 +1394,9 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ##  
     ## Checking frequency from data
     frequency <- freq.data <- NULL
-    freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
+    if (length(time$vals) > 1)
+         freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE) else
+	 freq.data <- 'none'
     if (!is.null(freq.data)) {
         if (verbose)
             print("Checking Frequency from the data --> [ok]")
@@ -2124,110 +2106,4 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     ##ac.gcm <- data.frame(y = y.test, x1 = as.vector(cos(2 * pi * tim/daysayear)), x2 = as.vector(sin(2 * pi * tim/daysayear)))
     result <- list(model=model,time=time)
     invisible(result)
-}
-
-retrieve.station <- function(ncfile,param="auto",type="ncdf4",
-                                 path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
-                                 alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
-                                 nmin=NULL,verbose=FALSE,...) {
-  if (verbose) print(paste('retrieve.nc4.station',ncfile))
-  ## REB 2018-04-06: Add a check for e.g. station data
-  class.x <- file.class(ncfile)
-  if (verbose) {print('Check class'); print(class.x$value)}
-  stopifnot(tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
-  ncid <- nc_open(ncfile)
-  if (param=='auto') param <- names(ncid$var)[1]
-  if (verbose) print(paste('reading',param))
-  ## Read the metadata:
-  tim <- ncvar_get(ncid,'time'); nt <- length(tim)
-  stids <- ncvar_get(ncid,'stid'); ns <- length(stids)
-  tunit <- ncatt_get(ncid,'time','units')
-  lons <- ncvar_get(ncid,'lon')
-  lats <- ncvar_get(ncid,'lat')
-  alts <- ncvar_get(ncid,'alt')
-  cntrs <- ncatt_get(ncid,param,'country')
-  cntrs <- sub(' ','',unlist(strsplit(cntrs$value,split=',')))
-  nv <- ncatt_get(ncid,param,'number_valid_data')
-  nv <- as.numeric(unlist(strsplit(nv$value,split=',')))
-  fyr <- ncatt_get(ncid,param,'first_year')
-  fyr <- as.numeric(unlist(strsplit(fyr$value,split=',')))
-  lyr <- ncatt_get(ncid,param,'last_year')
-  lyr <- as.numeric(unlist(strsplit(lyr$value,split=',')))
-  longname <- ncatt_get(ncid,param,'long_name')
-  unit <- ncatt_get(ncid,param,'unit')
-  locs <- ncatt_get(ncid,param,'location')
-  locs <- sub(' ','',unlist(strsplit(locs$value,split=',')))
-  missing <- ncatt_get(ncid,param,'missing_value')
-  ## Use the metadata to select the stations to read: there is no need to read
-  ## all the stations if only a subset is desired
-  if (verbose) print('Select selected stations')
-  if (!is.null(stid)) ii <- is.element(stids,stid) else ii <- is.finite(stids)
-  if (!is.null(lon)) ii <- ii & (lons >= min(lon)) & (lons <= max(lon))
-  if (!is.null(lat)) ii <- ii & (lats >= min(lat)) & (lats <= max(lat))
-  if (!is.null(alt)) { 
-    if (length(alt)==2) ii <- ii & (alts >= min(alt)) & (alts >= max(alt)) else
-    if (alt > 0) ii <- ii & (alts >= alt) else 
-                 ii <- ii & (alts <= abs(alt))
-  }
-  #browser()
-  if (!is.null(loc)) ii <- ii & 
-    is.element(tolower(substr(locs,1,nchar(loc))),tolower(loc))
-  if (!is.null(cntr)) ii <-ii & 
-    is.element(tolower(substr(cntrs,1,nchar(cntr))),tolower(cntr))
-  if (verbose) {print('Read following locations');
-    print((1:ns)[ii]); print(locs[ii])}
-  if (!is.null(nmin)) ii <- ii & (nv >= nmin)
-  if (!is.null(start.year.before)) ii <- ii & (fy <= start.year.before)
-  if (!is.null(end.year.after)) ii <- ii & (ly >= end.year.after)
-  
-  ## Read the actual data:
-  x <- ncvar_get(ncid,param,start=c(1,min((1:ns)[ii])),
-                 count=c(nt,max((1:ns)[ii]) - min((1:ns)[ii])+1))
-  nc_close(ncid)
-  x[x<=missing$value] <- NA
-  ## The data matrix is not full but it may not necessarily correspond to the selection
-  iii <- seq(min((1:ns)[ii]),max((1:ns)[ii]) - min((1:ns)[ii])+1,by=1)
-  iv <- ii[iii]
-  x <- x[,iv]
-  if (verbose) {print(dim(x)); print(summary(c(x)))}
-  if (!is.null(dim(x))) { 
-    nv <- apply(x,1,'nv') 
-    it <- (nv > 0)
-  } else it <- is.finite(x) 
-  
-  if (verbose) {print(dim(x)); print(length(ii)); print(length(it))}
-  lons <- lons[ii]; lats <- lats[ii]; alts <- alts[ii]; cntrs <- cntrs[ii]
-  locs <- locs[ii]
-  if (!is.null(dim(x))) x <- x[it,] else x <- x[it]
-  tim <- tim[it]
-  if (length(grep('days since',tunit$value))) 
-    t <- as.Date(substr(tunit$value,12,21)) + tim else
-  if (length(grep('months since',tunit$value))) 
-    t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
-  if (length(grep('years since',tunit$value))) 
-    t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
-  y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
-                  cntr = cntrs,stid = stids,longname=longname,
-                  unit=unit$value,param=param)
-  return(y)
-}
-
-## Used to check the contents in netCDF file - to use in retrieve to call retrieve.dsenemble,
-## retrieve.eof or retrieve.station rather than the standard form to read field objects.
-## Assumes that empty class attribute means a field object
-file.class <- function(ncfile,type="ncdf4") {
-  if (type=='ncdf4') {
-    nc <- nc_open(ncfile)
-    dimnames <- names(nc$dim)
-    class.x <- ncatt_get(nc,0,'class')
-    nc_close(nc)
-  } else {
-    nc <- open.ncdf(ncfile)
-    dimnames <- names(nc$dim)
-    class.x <- get.att.ncdf(nc,0,'class')
-    close.ncdf(nc)
-  }
-  #attr(class.x,'dimnames') <- dimnames
-  class.x$dimnames <- dimnames
-  return(class.x)
 }
