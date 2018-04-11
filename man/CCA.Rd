@@ -38,9 +38,9 @@ Try the same type of argument as in lm (' y ~ x, data= ')
 \usage{
 CCA(Y,X,...)
 CCA.default(Y,X,...) 
-CCA.eof(Y,X,ip=1:8)
-CCA.pca(Y,X,ip=1:8)
-CCA.field(Y,X,ip=1:8)
+CCA.eof(Y,X,ip=1:8,verbose=FALSE)
+CCA.pca(Y,X,ip=1:8,verbose=FALSE)
+CCA.field(Y,X,ip=1:8,verbose=FALSE)
 test.cca(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,
          SVD=TRUE,n.pc=4,synthetic=TRUE)
 

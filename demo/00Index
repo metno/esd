@@ -1,0 +1,38 @@
+climmodel.R                     Model of the mean seasonal cycle
+CORDEX.ESD.exp.1.pr.R           CORDEX experiment 1 for precipitation
+CORDEX.ESD.exp.1.tn.R           CORDEX experiment 1 for daily minimum temperature
+CORDEX.ESD.exp.1.tx.R           CORDEX experiment 1 for daily maximum temperature
+dailyfield2monthlyfield.R       R script using CDO to convert daily to monthly fields for large netCDF files
+dscmip5.R                       Blue print for downscaling CMIP5 GCM simulations
+ecad2nc4.R                      R script transforming ECA&D data into netCDF files - one for each element
+eklima.R                        R script reading old output from eklima.met.no as esd station object
+EuropeT2mRconstr.R              Reads the Luterbacher et al. (2004) temperature for Europe
+global.t2m.gcm.R                Gets global/regional mean temperature/precipitation from GCMs
+global_tas_anomaly_cmip3.R      ?
+globt.R                         Plots the global mean temperature from GCMs, reanalysis, & observations on picture of the earth
+gridmap.R                       Grids stations using kriging from LatticeKrig and altitude as a covariate.
+gst.outlook.R                   Global surface temperature outlook
+gst.R                           Plots the global surface temperature from NCEP/NCAR reanalysis 1
+hydroex.R                       Example for downscaling river run-off.
+illustratedownscalingclimate.R  R script used to illustrate downscaling
+informationuncertainty.R        R script illustrating the information associated with uncertainty   
+mist2.temp.R                    Run DSensemble for PCA data for monthly temperature in Norway.
+muerror.R                       Test of the sampling uncertainty associated with the mean for exponentially distributed variable
+nordic.R                        Make trend maps of temperature and precipitation statistics for the Nordics
+numberofthemometers.R           How many thermometers are there within GHCN & ECA&D over time
+pca2eof.R                       converts PCA to EOFs through gridding
+sf4bmd.R                        Example of how seasonal forecasts using MOS for Bangladesh 
+sf4brazil.R                     Example of how seasonal forecasts using MOS for Brazil
+slrolr.R                        Compare outgoing longwaveradiation from T2m and satellite
+station.midas.R                 R script that reads the rain gauge data from the MIDAS data base
+test2.retrieve.ncdf.R           test script for retrieve
+testDS4pca.R                    test script for downscaling using PCAs for predictands
+testDSensemble4pca.R            test script for downscaling ensembles of GCMs and using PCA for predictands
+testDS.R                        test script fordownscaling
+testgcm.R                       test the reading of GCMs in the ensemble.
+test.history.stamp.R            test script for history attribute in esd objects (provenance)
+testregrid.R                    testscript for regridding
+test.retrieve.ncdf4.R           testscript for retrieve using netCDF4
+test.retrieve.ncdf.R            testscript for retrieve using netCDF3
+tropicalcyclones.R              script to plot tropical cyclones in the North Atlantic
+world-precip-stats.R            Global map of precipitation statistics
