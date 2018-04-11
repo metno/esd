@@ -154,14 +154,18 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   ## Examine the station object: dimensions and attributes  
 
   ## Get time 
-  if (is.null(tim)) nt <- dim(x)[1] else nt <- length(tim)
+  if (is.null(tim)) {nt <- dim(x)[1]; tim <- time} else nt <- length(tim)
   if (!is.null(stano)) {
-    if (append & (length(stano) != dim(x)[2])) stop('write2ncdf4.station: stano argument does not match x')
+    if (append & (length(stano) != dim(x)[2])) {
+      print(dim(x)); print(length(stano))
+      stop('write2ncdf4.station: stano argument does not match x')
+    }
     ns <- length(stano) 
   } else {
     ns <- dim(x)[2] 
     stano <- 1:ns
   }
+  if (verbose) print(c(nt,ns))
   
   ## if (is.null(d)) d <- c(length(x),1)
   if (verbose) print(paste('Number of stations: ',paste(ns)))
@@ -208,17 +212,20 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
 # Attributes with same number of elements as stations are saved as variables
   
   start <- c( (1:length(tim))[is.element(tim,index(y)[1])],stano[1] )
-  count <- dim(x)
-  if (verbose) {print("start + count"); print(start); print(count)}
+  count <- dim(y)
+  if (verbose) {
+    print("start + count"); print(start); print(count); print(dim(y))
+    print(c(nt,ns)); print(start+count-c(1,1))
+    }
   
 # Define the dimensions
   if (!append) {
     if (verbose) print('Define dimensions')
     if (verbose) print(stid(x))
-    dimS <- ncdim_def( name="stid", units="number",vals=stano)
-    dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar)
+    dimS <- ncdim_def( name="stid", units="number",vals=1:ns)
+    dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar)
     dimnchar   <- ncdim_def("nchar",   "", 1:12, create_dimvar=FALSE )
-    dimstation <- ncdim_def("station", "", stano, create_dimvar=FALSE )
+    dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
   
     if (verbose) {
       print('Define variable')
@@ -237,7 +244,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
 
     locid <- ncvar_def(name="loc",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="location",
                        verbose=verbose)
-    stid <- ncvar_def(name="station",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="station_id",
+    stid <- ncvar_def(name="stationID",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="station_id",
                       verbose=verbose)
     cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="country",
                         verbose=verbose)
@@ -250,21 +257,32 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
                        prec="short",verbose=verbose)
     
     ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
-                       longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
+                         longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
   }
-
-  if (append & file.exists(fname)) ncid <- nc_open(fname) else 
-     ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, fyrid,lyrid,nvid)) ## vars)
+  
+  if (append & file.exists(fname)) {
+    ncid <- nc_open(fname, write=TRUE)
+    ncvar <- ncid$var[[1]]
+    lonid <- ncid$var[["lon"]]
+    latid <- ncid$var[["lat"]]
+    altid <- ncid$var[["alt"]]
+    locid <- ncid$var[["loc"]]
+    cntrid <- ncid$var[["cntr"]]
+    fyrid <- ncid$var[["first"]]
+    lyrid <- ncid$var[["last"]]
+    nvid <- ncid$var[["number"]]
+    stid <- ncid$var[["stationID"]]
+  } else ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, fyrid,lyrid,nvid)) ## vars)
   ncvar_put( ncid, ncvar, coredata(y),start=start,count=count)
-  ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float',start=start[2],count=count[2])
-  ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float',start=start[2],count=count[2])
-  ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float',start=start[2],count=count[2])
+  ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
+  ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
+  ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
   ncvar_put( ncid, lonid, lon(y),start=start[2],count=count[2])
   ncvar_put( ncid, latid, lat(y),start=start[2],count=count[2])
   ncvar_put( ncid, altid, alt(y),start=start[2],count=count[2])
-  ncvar_put( ncid, locid, loc(y),start=start[2],count=count[2])
-  ncvar_put( ncid, stid, as.character(stid(y)),start=start[2],count=count[2])
-  ncvar_put( ncid, cntrid, cntr(y),start=start[2],count=count[2])
+  ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(12,count[2]))
+  ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(12,count[2]))
+  ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(12,count[2]))
   ncvar_put( ncid, fyrid, firstyear(y),start=start[2],count=count[2])
   ncvar_put( ncid, lyrid, lastyear(y),start=start[2],count=count[2])
   if (is.null(dim(x))) ncvar_put( ncid, nvid, nv(y),start=start[2],count=count[2]) else

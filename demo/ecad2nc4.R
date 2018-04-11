@@ -3,6 +3,7 @@
 ## then can be combined into one. 
 
 require(esd)
+source('~/R/esd/R/write2ncdf.R')
 SS <- select.station(src='ecad')
 
 cntrs <- rownames(table(SS$country))
@@ -20,7 +21,7 @@ for (ele in eles) {
     
     if (!is.null(ss)) {
       x <- station(cntr=cntr,param=param,src='ecad')
-      if (!append) stano <- 1:dim(Ss)[1] else stano <- ii:(ii+dim(x)[2])
+      if (!append) stano <- 1:dim(Ss)[1] else stano <- ii:(ii+dim(x)[2]-1)
       if (length(x) > 0) write2ncdf4(x,fname,tim=seq(as.Date('1900-01-01'),as.Date('2018-02-28'),by=1),
                                      stano=stano,append=append,verbose=TRUE)
       ii <- ii + dim(x)[2]
