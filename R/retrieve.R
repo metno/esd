@@ -1538,7 +1538,8 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
             } else print("Warning : Monthly data are mangeled") 
         } 
     }
-    if ((length(time$vdate)>0) & (sum(diff(as.numeric(format.Date(time$vdate,"%m")))>1)) & (verbose)) stop("Vector date is mangeled ! Need extra check !")
+    #HBE 11/04/18 added check for monthly time-unit in test below
+    if ((length(time$vdate)>0) & (grepl("mon",tunit)) & (sum(diff(as.numeric(format.Date(time$vdate,"%m")))>1)) & (verbose)) stop("Vector date is mangeled ! Need extra check !")
     ## Checking the data / Extra checks / Automatic calendar detection / etc.
     ## Check 1 # Regular frequency
     ## 
@@ -1623,6 +1624,13 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                 dy <- "01"
                 time$vdate <- as.Date(paste(yr,mo,dy,sep="-"))     
             }
+          #HBE 11/04/18 added regular season time-stamp
+          if (model$frequency=="season") {
+            yr <-year(time$vdate)
+            mo <- month(time$vdate)
+            dy <- "15"
+            time$vdate <- as.Date(paste(yr,mo,dy,sep="-"))     
+          }
         }
     }
 

@@ -37,13 +37,15 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
       freq <- "month"
     if ((dt==12) & grepl("mon",unit))
        freq <- "year"
-    if ((dt==3) & grepl("mon",unit))
+    #HBE 11/04/18 added check for daily seasonal data
+    if (((dt==3) & grepl("mon",unit)) |  ((dt<93) & (dt>88) & grepl("day",unit))) 
        freq <- "season"
   } 
   if (is.null(freq)) {
     # User entry
     if (verbose) print("Frequency could not be set automatically !")
-    print(paste(as.character(seq(1,12,1)),frequency.name,sep=":"))
+    #HBE 11/04/18 set length options integer equal length options 
+    print(paste(as.character(seq(1,length(frequency.name),1)),frequency.name,sep=":"))
     ifreq <- as.integer(readline("Please select a frequency number from the list before continue and press Enter:"))   
     if (!is.na(ifreq)) {
       freq <- frequency.abb[ifreq]
