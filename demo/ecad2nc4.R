@@ -2,8 +2,8 @@
 ## Go through the data conuntry and element wise to generate several netCDF files which 
 ## then can be combined into one. 
 
-require(esd)
-source('~/R/esd/R/write2ncdf.R')
+#require(esd)
+#source('~/R/esd/R/write2ncdf.R')
 SS <- select.station(src='ecad')
 
 cntrs <- rownames(table(SS$country))
