@@ -23,7 +23,7 @@ for (ele in eles) {
       x <- station(cntr=cntr,param=param,src='ecad')
       if (!append) stano <- 1:dim(Ss)[1] else stano <- ii:(ii+dim(x)[2]-1)
       if (length(x) > 0) write2ncdf4(x,fname,tim=seq(as.Date('1900-01-01'),as.Date('2018-02-28'),by=1),
-                                     stano=stano,append=append,verbose=TRUE)
+                                     stano=stano,append=append,verbose=FALSE)
       ii <- ii + dim(x)[2]
     }
   }

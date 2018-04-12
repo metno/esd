@@ -200,6 +200,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   if (class(index(x))=='Date')
       if (is.null(tim)) time <- julian(index(x)) - julian(as.Date(torg)) else {
         if (verbose) print('Use prescribed time coordinates')
+        y <- zoo(y,order.by=index(x))
         x2 <- merge(zoo(rep(NA,nt),order.by=tim),zoo(y),all=FALSE)
         x2 <- window(x2[,-1],start=tim[1],end=tim[length(tim)])
         x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; rm('x2')
@@ -214,8 +215,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   start <- c( (1:length(tim))[is.element(tim,index(y)[1])],stano[1] )
   count <- dim(y)
   if (verbose) {
-    print("start + count"); print(start); print(count); print(dim(y))
-    print(c(nt,ns)); print(start+count-c(1,1))
+    print("start & count"); print(start); print(count); 
+    print("dim(y)"); print(dim(y))
+    print("netCDF dimensions"); print(c(nt,ns)); print(start+count-c(1,1))
     }
   
 # Define the dimensions
@@ -230,7 +232,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
     if (verbose) {
       print('Define variable')
       print(paste('create netCDF-file',fname))
-      str(y); print(summary(c(y)))
+      print(summary(c(y)))
     }
   
     if (verbose) print('Define the netCDF structure')
@@ -254,7 +256,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
     lyrid <- ncvar_def(name="last",dim=list(dimS), units="year", missval=missval,longname="last_year", 
                        prec="short",verbose=verbose)
     nvid <- ncvar_def(name="number",dim=list(dimS), units="count", missval=missval,longname="number_valid_data", 
-                       prec="short",verbose=verbose)
+                       prec="float",verbose=verbose)
     
     ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
                          longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
@@ -285,8 +287,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(12,count[2]))
   ncvar_put( ncid, fyrid, firstyear(y),start=start[2],count=count[2])
   ncvar_put( ncid, lyrid, lastyear(y),start=start[2],count=count[2])
-  if (is.null(dim(x))) ncvar_put( ncid, nvid, nv(y),start=start[2],count=count[2]) else
-                       ncvar_put( ncid, nvid, apply(coredata(y),2,FUN='nv'),start=start[2],count=count[2])
+  
+  if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else
+                       number <- apply(coredata(x),2,FUN='nv')
+  ncvar_put( ncid, nvid, number,start=start[2],count=count[2])
   
   if (!append) {
   ## global attributes
