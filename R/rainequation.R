@@ -34,7 +34,7 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,threshold=
   pr <- rainequation(y,x0=x0,threshold=threshold)
   par(bty='n',xpd=TRUE)
   plot(pr,main=paste('The "rain equation" for',loc(y)),lwd=3,
-       ylab=paste('fraction of days with more than',threshold,'mm'),xlab='Year')
+       ylab=paste('fraction of days with more than',x0,'mm'),xlab='Year')
   obsfrac <- annual(y,FUN='fract.gt.x',x0=x0)
   lines(obsfrac,col=rgb(1,0,0,0.7),lwd=2)
   grid()
