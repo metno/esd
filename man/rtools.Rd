@@ -18,6 +18,8 @@
 \alias{stand}
 \alias{rmse}
 \alias{RMSE}
+\alias{firstyear}
+\alias{lastyear}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~

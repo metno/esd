@@ -155,8 +155,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
 
   ## Get time 
   if (is.null(tim)) {nt <- dim(x)[1]; tim <- time} else nt <- length(tim)
-  if (!is.null(stano)) {
-    if (append & (length(stano) != dim(x)[2])) {
+  if (!is.null(stano))  {
+    if (!is.null(dim(x))) nstations <- dim(x)[2] else if (!is.null(x)) nstations <- 1 else nstations <- 0
+    if (append & (length(stano) != nstations)) {
       print(dim(x)); print(length(stano))
       stop('write2ncdf4.station: stano argument does not match x')
     }
@@ -289,7 +290,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   ncvar_put( ncid, lyrid, lastyear(y),start=start[2],count=count[2])
   
   if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else
-                       number <- apply(coredata(x),2,FUN='nv')
+  if (length(dim(x))==2) number <- apply(coredata(x),2,FUN='nv') else number <- -1
   ncvar_put( ncid, nvid, number,start=start[2],count=count[2])
   
   if (!append) {
