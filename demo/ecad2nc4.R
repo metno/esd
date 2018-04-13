@@ -14,6 +14,7 @@ cntrs <- gsub(",",".",cntrs,fixed=TRUE)
 eles <- rownames(table(SS$element))
 ii <- 1
 
+eles <- eles[-1]
 for (ele in eles) {
   param <- tolower(as.character(ele2param(ele,src='ecad')[5]))
   print(param)

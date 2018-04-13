@@ -183,9 +183,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   if (verbose) print(paste('attributes:', paste(atts, collapse=', '),
                            '; types:',paste(attrprec, collapse=', ')))
   
-  fyr <- firstyear(x)
-  lyr <- lastyear(x)
-  nv <- apply(coredata(x),2,'nv')
+  #fyr <- firstyear(x)
+  #lyr <- lastyear(x)
+  #nv <- apply(coredata(x),2,'nv')
   
   y <- coredata(x)
   y[!is.finite(y)] <- missval
@@ -214,7 +214,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
 # Attributes with same number of elements as stations are saved as variables
   
   start <- c( (1:length(tim))[is.element(tim,index(y)[1])],stano[1] )
-  count <- dim(y)
+  if (!is.null(dim(y))) count <- dim(y) else count <- c(length(y),1)
   if (verbose) {
     print("start & count"); print(start); print(count); 
     print("dim(y)"); print(dim(y))
