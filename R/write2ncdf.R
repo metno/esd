@@ -225,8 +225,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   if (!append) {
     if (verbose) print('Define dimensions')
     if (verbose) print(stid(x))
-    dimS <- ncdim_def( name="stid", units="number",vals=1:ns)
-    dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar)
+    dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=TRUE)
+    dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar,unlim=TRUE)
     dimnchar   <- ncdim_def("nchar",   "", 1:12, create_dimvar=FALSE )
     dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
   
