@@ -2141,10 +2141,10 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   stopifnot(tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
   ncid <- nc_open(ncfile)
   if (param=='auto') param <- names(ncid$var)[1]
-  if (verbose) print(paste('reading',param))
+  if (verbose) print(paste('The variable to read is',param))
   ## Read the metadata:
   tim <- ncvar_get(ncid,'time'); nt <- length(tim)
-  stids <- ncvar_get(ncid,'station'); ns <- length(stids)
+  stids <- ncvar_get(ncid,'stationID'); ns <- length(stids)
   if (verbose) print(stids)
   tunit <- ncatt_get(ncid,'time','units')
   lons <- ncvar_get(ncid,'lon')
@@ -2181,6 +2181,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   if (!is.null(end.year.after)) ii <- ii & (ly >= end.year.after)
   
   ## Read the actual data:
+  if (verbose) print(paste('reading',param))
   x <- ncvar_get(ncid,param,start=c(1,min((1:ns)[ii])),
                  count=c(nt,max((1:ns)[ii]) - min((1:ns)[ii])+1))
   nc_close(ncid)
