@@ -154,7 +154,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   ## Examine the station object: dimensions and attributes  
 
   ## Get time 
-  if (is.null(tim)) {nt <- dim(x)[1]; tim <- time} else nt <- length(tim)
+  if (is.null(tim)) nt <- dim(x)[1] else nt <- length(tim)
   if (!is.null(stano))  {
     if (!is.null(dim(x))) nstations <- dim(x)[2] else if (!is.null(x)) nstations <- 1 else nstations <- 0
     if (append & (length(stano) != nstations)) {
@@ -213,6 +213,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
        
 # Attributes with same number of elements as stations are saved as variables
   
+  if (is.null(tim)) tim <- index(y)
   start <- c( (1:length(tim))[is.element(tim,index(y)[1])],stano[1] )
   if (!is.null(dim(y))) count <- dim(y) else count <- c(length(y),1)
   if (verbose) {
@@ -261,9 +262,11 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
     
     ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
                          longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
+    if (verbose) print('The variables have been defined')
   }
   
   if (append & file.exists(fname)) {
+    if (verbose) print(paste('Appending',fname))
     ncid <- nc_open(fname, write=TRUE)
     ncvar <- ncid$var[[1]]
     lonid <- ncid$var[["lon"]]
@@ -275,7 +278,12 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
     lyrid <- ncid$var[["last"]]
     nvid <- ncid$var[["number"]]
     stid <- ncid$var[["stationID"]]
-  } else ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, fyrid,lyrid,nvid)) ## vars)
+  } else {
+    if (verbose) print(paste('Creating file',fname))
+    ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+                                      fyrid,lyrid,nvid)) ## vars)
+  }
+  if (verbose) print('Saving the variables')
   ncvar_put( ncid, ncvar, coredata(y),start=start,count=count)
   ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
   ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
@@ -286,8 +294,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(12,count[2]))
   ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(12,count[2]))
   ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(12,count[2]))
-  ncvar_put( ncid, fyrid, firstyear(y),start=start[2],count=count[2])
-  ncvar_put( ncid, lyrid, lastyear(y),start=start[2],count=count[2])
+  ncvar_put( ncid, fyrid, firstyear(x),start=start[2],count=count[2])
+  ncvar_put( ncid, lyrid, lastyear(x),start=start[2],count=count[2])
   
   if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else
   if (length(dim(x))==2) number <- apply(coredata(x),2,FUN='nv') else number <- -1
