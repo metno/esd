@@ -263,7 +263,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
     ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
                          longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
     if (verbose) print('The variables have been defined')
-  }
+  } 
   
   if (append & file.exists(fname)) {
     if (verbose) print(paste('Appending',fname))
@@ -278,11 +278,14 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
     lyrid <- ncid$var[["last"]]
     nvid <- ncid$var[["number"]]
     stid <- ncid$var[["stationID"]]
+    dimS <- ncid$dim[["stid"]]; ns <- dimS$len
+    dimT <- ncid$dim[["time"]]; nt <- dimT$len
   } else {
     if (verbose) print(paste('Creating file',fname))
     ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                       fyrid,lyrid,nvid)) ## vars)
   }
+ 
   if (verbose) print('Saving the variables')
   ncvar_put( ncid, ncvar, coredata(y),start=start,count=count)
   ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')

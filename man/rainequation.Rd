@@ -13,20 +13,25 @@
 \usage{
 rainequation(x, x0 = 10, threshold = NULL)
 test.rainequation(loc='DE BILT',src='ecad',nmin=150,x0=20,threshold=1,verbose=FALSE)
-scatterplot.rainequation(src='ecad',nmin=150,x0=c(10,20,30,40))
+scatterplot.rainequation(src='ecad',nmin=150,x0=c(10,20,30,40),colour.by='x0',col=NULL)
 fract.gt.x(x,x0)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{
+  \item{x}{A station object - single station
 %%     ~~Describe \code{x} here~~
 }
-  \item{x0}{
+  \item{x0}{The threshold value defining an event.
 %%     ~~Describe \code{x0} here~~
 }
-  \item{threshold}{
+  \item{threshold}{The threshold defining a 'wet day'.
 %%     ~~Describe \code{threshold} here~~
 }
+  \item{src}{Data source}
+  \item{nmin}{Minimum number of years with data}
+  \item{verbose}{TRUE for printing out diagnostics}
+  \item{colour.by}{Used to plot the data points with differentcolours according to e.g. 'x0', 'stid', 'alt', 'lon', or 'lat'}
+  \item{col}{colour palette}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~

@@ -174,6 +174,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   
   print(paste("Retrieving data from",length(id),"records ..."))
   
+  X <- NULL
   
   ## start loop on available stations
   for (i in 1:length(id)) {
@@ -256,6 +257,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],
                         qual=qual[i],param=param[i],verbose=verbose,path=path, url=url)
       if (verbose) {print("obs"); str(x)}
+      
       if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
         print("Warning : No values found in the time series for-> This station will be ignored")
         print(paste('stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],'loc=',loc[i],'cntr=',
@@ -345,11 +347,9 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       }
     }
     
+    if (verbose) print(paste('Combine the station records for i=',i))
     if (!is.null(x)) {
-      if (i==1)
-        X <- x 
-      else
-        X <- combine.stations(X,x)
+      if (is.null(X)) X <- x else X <- combine.stations(X,x)
     }
   }
   ## 
@@ -411,6 +411,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   ##end <- ss$end
   ##param <- apply(as.matrix(ss$element),1,esd2ele)
   ##rm(ss)
+  if (verbose) print('--- enter ecad.station ---')
   ele <- esd2ele(param=param)
   if (is.null(ele)) {
     param1 <-as.character(ele2param(ele=param,src="ECAD")[5])
@@ -506,6 +507,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   attr(ECAD,'history') <- c(match.call(),date())
   attr(ECAD,'history') <- history.stamp(ECAD)
   ## class(ECAD) <- c("station","day","zoo")
+  if (verbose) print('--- exit ecad.station ---')
   invisible(ECAD)
 }
 
