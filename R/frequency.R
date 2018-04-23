@@ -37,8 +37,8 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
       freq <- "month"
     if ((dt==12) & grepl("mon",unit))
        freq <- "year"
-    #HBE 11/04/18 added check for daily seasonal data
-    if (((dt==3) & grepl("mon",unit)) |  ((dt<93) & (dt>88) & grepl("day",unit))) 
+    #HBE 11/04/18 added check for daily and hourly seasonal data
+    if (((dt==3) & grepl("mon",unit)) |  ((dt<93) & (dt>88) & grepl("day",unit)) |  ((dt<2209) & (dt>2159) & grepl("hou",unit))) 
        freq <- "season"
   } 
   if (is.null(freq)) {
