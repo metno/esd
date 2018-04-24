@@ -212,7 +212,7 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
   ndbr <- diff(julian(as.Date(index(ncdd.cwd[is.finite(ncdd.cwd[,1]),1]))))
   if (plot) {
     dev.new()
-    f.k <- dgeom(0:max(ndbr), prob=1/mean(ndbr))
+    f.k <- dgeom(0:max(ndbr), prob=1/(mean(ndbr)+1))
     hist(ndbr,freq=FALSE,col="grey",xlab="days",
          main="The time between the start of each precipitation event",
          sub="Test: Red curve is the fitted geometric distribution")
@@ -356,7 +356,7 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
 
     # Simulate the start of each rain event: 
     t0 <- cumsum(rgeom(max(coredata(nawe),na.rm=TRUE),
-                       prob=1/coredata(ndbram[i])))
+                       prob=1/(coredata(ndbram[i])+1)))
     #simulate the duration of wet events:
     #str(t0); print(prob)
     nwd <- rgeom(length(t0),prob=prob[i])+1 

@@ -286,7 +286,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
                                       fyrid,lyrid,nvid)) ## vars)
   }
  
-  if (verbose) print('Saving the variables')
+  if (verbose) print('Saving the variables:')
   ncvar_put( ncid, ncvar, coredata(y),start=start,count=count)
   ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
   ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
@@ -294,15 +294,28 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   ncvar_put( ncid, lonid, lon(y),start=start[2],count=count[2])
   ncvar_put( ncid, latid, lat(y),start=start[2],count=count[2])
   ncvar_put( ncid, altid, alt(y),start=start[2],count=count[2])
-  ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(12,count[2]))
-  ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(12,count[2]))
-  ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(12,count[2]))
+
   ncvar_put( ncid, fyrid, firstyear(x),start=start[2],count=count[2])
   ncvar_put( ncid, lyrid, lastyear(x),start=start[2],count=count[2])
-  
   if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else
   if (length(dim(x))==2) number <- apply(coredata(x),2,FUN='nv') else number <- -1
   ncvar_put( ncid, nvid, number,start=start[2],count=count[2])
+  
+  ## There are some times problems saving text data, and there seems to be some 
+  ## inconsistency in the ncdf4 package. To by-pass this problem, we had to make
+  ## the following code more complicated. There seems to be a mix-up between the 
+  ## dimensions sometimes.
+  if (verbose) print('Saving textual information')
+  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(12,count[2])))
+  if (inherits(test,'try-error'))
+    try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],12)))
+  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(12,count[2])))
+  if (inherits(test,'try-error'))
+    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],12)))
+  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(12,count[2])))
+  if (inherits(test,'try-error'))
+    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],12)))
+  if (verbose) print('textual data saved')
   
   if (!append) {
   ## global attributes
