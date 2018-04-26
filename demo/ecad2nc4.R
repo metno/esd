@@ -44,7 +44,7 @@ for (ele in eles) {
       if ( (min(x,na.rm=TRUE) < -999) | (max(x,na.rm=TRUE)>9999) ) {
         print("Detected suspect data")
         print(range(x,na.rm=TRUE))
-        xc <- coredata(x); xc[xc < -999] <- NA; xc[xc > 9999] <- NA; xc -> as.matrix(coredata(x))
+        xc <- coredata(x); xc[xc < -999] <- NA; xc[xc > 9999] <- NA; coredata(x) <- as.matrix(xc)
       }
       if (length(x) > 0) write2ncdf4(x,fname,tim=seq(as.Date('1900-01-01'),as.Date('2018-02-28'),by=1),
                                      stano=stano,append=append,verbose=FALSE)
