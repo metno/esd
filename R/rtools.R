@@ -15,6 +15,90 @@ as.decimal <- function(x=NULL) {
 }
 
 
+
+## Function to compare downscaled field with original field: subtracts the original data
+## from the downscaled data (REB + HBE)
+test.ds.field <- function(x,what='xval',verbose=FALSE) {
+  if (verbose) print('fieldtest')
+  stopifnot (inherits(x,'eof') & inherits(x,'ds'))
+  if (verbose) print(colnames(attr(x,'evaluation')))
+  isel <- is.element(colnames(attr(x,'evaluation')),paste('X.PCA',1:dim(x)[2],sep='.'))
+  eof1 <- attr(x,'evaluation')[,isel]
+  isel <- is.element(colnames(attr(x,'evaluation')),paste('Z.PCA',1:dim(x)[2],sep='.'))
+  eof2 <- attr(x,'evaluation')[,isel]
+  if (verbose) {str(eof1); print(names(attributes(x)))}
+  attr(eof1,'variable') <- varid(x)
+  attr(eof1,'unit') <- unit(x)
+  attr(eof1,'longname') <- attr(x,'longname')
+  attr(eof1,'pattern') <- attr(x,'pattern')
+  attr(eof1,'eigenvalues') <- attr(x,'eigenvalues')
+  attr(eof1,'dimensions') <- c(dim(attr(x,'evaluate'))[1],dim(attr(x,'pattern'))[3])
+  attr(eof1,'mean') <- attr(x,'mean')
+  attr(eof1,'longitude') <- lon(x)
+  attr(eof1,'latitude') <- lat(x)
+  attr(eof1,'max.autocor') <- attr(x,'max.autocor')
+  attr(eof1,'eigenvalues') <- attr(x,'eigenvalues')
+  attr(eof1,'sum.eigenv') <- attr(x,'sum.eigenv')
+  attr(eof1,'tot.var') <- attr(x,'tot.var')
+  attr(eof1,'aspect') <- 'anomaly'
+  attr(eof1,'dimnames') <- NULL   # REB 2016-03-04
+  class(eof1) <- c("eof",class(x))[3:6]
+  eof2 <- attrcp(eof1,eof2)
+  class(eof2) <- c("eof",class(x))[3:6]
+  if (verbose) print(c(dim(eof1),dim(eof2)))
+  if (verbose) print('estimated EOFs - now get the fields..')
+  x1 <- as.field(eof1)
+  x2 <- as.field(eof2)
+  if (verbose) print(c(dim(x1),dim(x2)))
+  coredata(x1) <- coredata(x1 - x2)
+  attr(x,'history') <- history.stamp()
+  attr(x,'info') <- 'orginale - downscaled'
+  invisible(x1)
+}
+
+## Simplify life to extract the variance of the EOFs
+eofvar <- function(x) if (inherits(x,c('eof','pca'))) 
+                          attr(x,'eigenvalues')^2/attr(x,'tot.var')*100 else NULL
+
+## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands   
+test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=6,verbose=TRUE) {
+predictor_field <- x
+predictand_field <- y
+max_EOFs_predictor <- nmax.x
+min_EOFs_predictor <- nmin.x
+max_EOFs_predictor <- nmax.y
+if (verbose) print('The input data should be a field. Iteratively downscaling with a different number of predictor EOFs, and returning a dataframe with a summary of cross-validated r.')
+stopifnot (inherits(predictor_field,'field') & inherits(predictor_field,'zoo'))
+stopifnot (inherits(predictand_field,'field') & inherits(predictand_field,'zoo')) #need to add and not eof and not ds
+training<-setNames(data.frame(matrix(ncol =max_EOFs_predictand-min_EOFs_predictand+2, nrow = max_EOFs_predictor-min_EOFs_predictor+2)), c("weighted_cross_val_geq_0.2", paste('EOF',seq(min_EOFs_predictand,max_EOFs_predictand))))
+rownames(training)<- c('R2', paste('Cross val.:',seq(min_EOFs_predictor,max_EOFs_predictor),'predictor EOFs'))
+
+n_predictand_EOFs <- max_EOFs_predictand #rev(seq(min_EOFs_predictand,max_EOFs_predictand))) {
+if (verbose) cat('Downscaling',n_predictand_EOFs,'EOFs from the predictand field. \n',fill = TRUE)
+predictand <- EOF(predictand_field,n=max_EOFs_predictand)
+training[1,2:ncol(training)]<-eofvar(predictand)
+
+
+for (n_predictor_EOFs in rev(seq(min_EOFs_predictor,max_EOFs_predictor))) {
+  if (verbose) cat('Using',n_predictor_EOFs,'EOFs from the coarse input as predictors.\n',fill = TRUE)
+  predictor <- EOF(predictor_field,n=n_predictor_EOFs)
+  ds_obj <- DS(predictand,predictor)
+  
+  #Since ortho one can reduce the DS model later
+  xc=cor(attr(ds_obj,'evaluation'),attr(ds_obj,'evaluation'))
+  crossvals<-diag(xc[seq(2,nrow(xc),2),seq(1,ncol(xc),2)])
+  if (verbose) cat('\n Cross-val of', n_predictand_EOFs ,'predictand EOFs based on ',n_predictor_EOFs, 'predictors (PCAs or EOFs of the coarse scale model) is:', crossvals, '. The number of predictand EOFs where the  prediction model has no skill is:',sum(crossvals<0.2),"\n",fill = TRUE)
+  training[n_predictor_EOFs-1,2:ncol(training)]<-crossvals
+  training[n_predictor_EOFs-1,1]<-sum(eofvar(predictand)/sum(eofvar(predictand))*crossvals)
+  if (verbose)  cat('sum of cross-val R for each EOF of predictand where the model has skill (cross-var>0.2) weighted by explained variance by each predictand EOF',sum(eofvar(predictand)[crossvals>0.2]/sum(eofvar(predictand)[crossvals>0.2])*crossvals[crossvals>0.2]),"\n",fill = TRUE)
+}
+if (sum(crossvals<0.2)>0) {
+  if (verbose)  cat('Suggestion to omit', paste('EOF',seq(1,length(attr(predictand,'eigenvalues')))[crossvals<0.2],sep=','),'from the downscaling, as the model has poor skill in reproducing these (cross-val<0.2). \n') 
+}
+if (verbose)  print(training)
+invisible(training)
+}
+
 ## compute the percentage of missing data in x
 missval <- function(x) sum(is.na(coredata(x)))/length(coredata(x))
 

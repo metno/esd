@@ -20,6 +20,10 @@
 \alias{RMSE}
 \alias{firstyear}
 \alias{lastyear}
+\alias{eofvar}
+\alias{test.ds.field}
+\alias{test.num.predictors}
+
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -62,6 +66,9 @@ propchange(x,it0=c(1979,2013))
 stand(x)
 rmse(x,y,na.rm=TRUE)
 RMSE(x,y,...)
+eofvar(x)
+test.ds.field(x)
+test.num.predictors(x,y,nmax.x=6,nmin.x=3,nmax.y=6,verbose=TRUE) 
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
