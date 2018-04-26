@@ -16,7 +16,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   ## Deal with missing data
   missing <- !is.finite(z)
   ## Use interpolation to fill in
-  if (sum(missing)>0) print(paste('Warning: ',sum(missing),
+  if (sum(missing)>0) print(paste('Warning for',loc(x),'-',sum(missing),
                                   'missing values (',round(100*sum(missing)/length(z),1),
                                   ' %) filled by interpolation'))
   z <- approx(x=index(x)[!missing],y=z[!missing],xout=index(x))$y

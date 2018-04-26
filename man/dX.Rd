@@ -16,19 +16,19 @@ dT(y, m = NULL, plot = FALSE, verbose = FALSE, chk.conf = 1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{Z}{
+  \item{Z}{A field object
 %%     ~~Describe \code{Z} here~~
 }
-  \item{m}{
+  \item{m}{number of harmonics for fitting the Fourier series
 %%     ~~Describe \code{m} here~~
 }
-  \item{mask.bad}{
+  \item{mask.bad}{mask missing data
 %%     ~~Describe \code{mask.bad} here~~
 }
-  \item{plot}{
+  \item{plot}{for 
 %%     ~~Describe \code{plot} here~~
 }
-  \item{r}{
+  \item{r}{radius of the Earth (m)
 %%     ~~Describe \code{r} here~~
 }
   \item{chk.conf}{
@@ -37,22 +37,28 @@ dT(y, m = NULL, plot = FALSE, verbose = FALSE, chk.conf = 1)
   \item{accuracy}{
 %%     ~~Describe \code{accuracy} here~~
 }
-  \item{progress}{
+  \item{progress}{show the progress intereactively
 %%     ~~Describe \code{progress} here~~
 }
-  \item{verbose}{
+  \item{verbose}{show diagnostics of the progress
 %%     ~~Describe \code{verbose} here~~
 }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
-\value{a list with several comonents. The dZ component contains the first derivative.
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+\value{a list with several comonents:
+
+\item{Z}{original data}
+\item{a}{Fourier coefficients for cosine}
+\item{b}{Fourier coeffieicnes for sine}
+\item{z0}{defunct?}
+\item{dZ}{The component contains the first derivative.}
+\item{dZ2}{The component contains the second derivative (quicker to do both in one go).}
+\item{lon}{longitude}
+\item{lat}{latitude}
+\item{dx}{spatial resolution}
+\item{span}{spatial extent}
 }
 \references{
 %% ~put references to the literature/web site here ~
