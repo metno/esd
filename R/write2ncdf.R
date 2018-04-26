@@ -94,17 +94,20 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
   if (verbose) print('netCDF file saved')
 }
 
-write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
+write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=NULL,
                               torg="1970-01-01",missval=-999,ncclose=TRUE,verbose=FALSE) {
   if (verbose) {print('write2ncdf4.field'); print(names(attributes(x)))}
 
   y <- coredata(x)
   if (is.null(offset)) offset <- mean(y,na.rm=TRUE)
-  if (is.null(scale)) scale <- 1
+  if (is.null(scale)) scale <- (max(abs(c(y)),na.rm=TRUE) - offset)/10000
   y <- t(y)
-  y[!is.finite(y)] <- missval
   y <- round((y-offset)/scale)
-  if (verbose) print(attr(y,'dimensions'))
+  y[!is.finite(y)] <- missval
+  if (verbose) {
+    print(attr(y,'dimensions')); print(c(scale,offset))
+    print(range(c(y))); print(range(c(x),na.rm=TRUE))
+  }
   dim(y) <- attr(x,'dimensions')
 
   dimlon <- ncdim_def( "longitude", "degree_east", lon(x) )
@@ -126,7 +129,7 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=0.1,offset=N
   ncatt_put( ncnew, x4nc, "scale_factor", scale, prec="float" ) 
   ncatt_put( ncnew, x4nc, "_FillValue", missval, prec="float" ) 
   ncatt_put( ncnew, x4nc, "missing_value", missval, prec="float" ) 
-  history <- toString(attr(x[[i]],'history')$call)
+  history <- toString(attr(x,'history')$call)
   ncatt_put( ncnew, x4nc, "history", history, prec="text" ) 
   ncatt_put( ncnew, 0, 'class', class(x))
   ncatt_put( ncnew, 0, "description", 
