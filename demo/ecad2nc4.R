@@ -12,7 +12,7 @@ cntrs <- gsub("[","",cntrs,fixed=TRUE)
 cntrs <- gsub("]","",cntrs,fixed=TRUE)
 cntrs <- gsub(",",".",cntrs,fixed=TRUE)
 eles <- rev(rownames(table(SS$element)))
-##eles <- eles[-c(1:4)]
+eles <- eles[-c(1:8)]
 
 for (ele in eles) {
   ii <- 1 ## counter to keep track of number of stations saved
@@ -41,10 +41,10 @@ for (ele in eles) {
       }
       print(loc(x))
       ## Quality check
-      if ( (min(x,na.rm=TRUE) < -999) | (max(x,na.rm=TRUE)>9999) ) {
+      if ( (min(x,na.rm=TRUE) < -999) | (max(x,na.rm=TRUE)>2000) ) {
         print("Detected suspect data")
         print(range(x,na.rm=TRUE))
-        xc <- coredata(x); xc[xc < -999] <- NA; xc[xc > 9999] <- NA; coredata(x) <- as.matrix(xc)
+        xc <- coredata(x); xc[xc < -999] <- NA; xc[xc > 2000] <- NA; coredata(x) <- as.matrix(xc)
       }
       if (length(x) > 0) write2ncdf4(x,fname,tim=seq(as.Date('1900-01-01'),as.Date('2018-02-28'),by=1),
                                      stano=stano,append=append,verbose=FALSE)

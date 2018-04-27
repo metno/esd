@@ -356,7 +356,7 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
 
     # Simulate the start of each rain event: 
     t0 <- cumsum(rgeom(max(coredata(nawe),na.rm=TRUE),
-                       prob=1/(coredata(ndbram[i])+1)))
+                       prob=1/(coredata(ndbram[i]))))
     #simulate the duration of wet events:
     #str(t0); print(prob)
     nwd <- rgeom(length(t0),prob=prob[i])+1 

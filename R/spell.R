@@ -246,8 +246,8 @@ hist.spell <- function(x,family='geom',...) {
     dh <- dpois(n,lambda=mean(x[,1],na.rm=TRUE))
     dl <- dpois(n,lambda=mean(abs(x[,2]),na.rm=TRUE))
   } else {
-    dh <- dgeom(n,prob=1/(mean(x[,1],na.rm=TRUE)+1))
-    dl <- dgeom(n,prob=1/(mean(abs(x[,2]),na.rm=TRUE)+1))
+    dh <- dgeom(n,prob=1/(mean(x[,1],na.rm=TRUE)))
+    dl <- dgeom(n,prob=1/(mean(abs(x[,2]),na.rm=TRUE)))
   }
   col <- c('red','blue')
   runs <- c('hot','cold')
@@ -275,9 +275,9 @@ hist.spell <- function(x,family='geom',...) {
 
 qqgeom <- function(x,treshold=1,pois=FALSE,...) {
   s <- spell(x,threshold=treshold)
-  x1 <- qgeom(seq(0,1,length=101),prob=1/(mean(coredata(s[,1]),na.rm=TRUE)+1))
+  x1 <- qgeom(seq(0,1,length=101),prob=1/(mean(coredata(s[,1]),na.rm=TRUE)))
   y1 <- quantile(as.numeric(s[,1]),probs=seq(0,1,length=101),na.rm=TRUE)
-  x2 <- qgeom(seq(0,1,length=101),prob=1/(mean(coredata(s[,2]),na.rm=TRUE)+1))
+  x2 <- qgeom(seq(0,1,length=101),prob=1/(mean(coredata(s[,2]),na.rm=TRUE)))
   y2 <- quantile(as.numeric(s[,2]),probs=seq(0,1,length=101),na.rm=TRUE)
   xp1 <- qpois(seq(0,1,length=101),lambda=mean(coredata(s[,1]),na.rm=TRUE))
   xp2 <- qpois(seq(0,1,length=101),lambda=mean(coredata(s[,2]),na.rm=TRUE))
