@@ -1505,12 +1505,15 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                 #mndays <- c(0,mndays[month1:length(mndays)-1],mndays[1:month1-1])
                 if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
                 days <- time$vals%%time$daysayear - rep(cumsum(mndays),time$len/12)
+                #HBE added seperate test for seasonal data May 2nd 2018
+                if (freq.data!='season') {
                 if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
                     print("Warning : Jumps in data have been found !")
                     print("Warning: Trust the first date and force a continuous vector of dates !")
                     time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=time$len)
                     qf <- c(qf,"jumps in data found - continuous vector forced")
-                } else time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)                  
+                } else time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)
+              } else time$vdate <- as.Date(paste(years,months,"15",sep="-")) 
             }  
         } else   
             if (verbose) {
