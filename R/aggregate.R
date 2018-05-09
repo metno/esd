@@ -341,13 +341,27 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   }
   
   if (smallx) {
-    X <- coredata(x)%*%diag(aweights)
+    if (sum(!is.finite(x))==0) X <- coredata(x)%*%diag(aweights) else {
+      if (verbose) print('Need to account for missing data in the area weighting')
+        Aweights <- rep(aweights,length(index(x))); dim(Aweights) <- dim(x)
+        print('This is incomplete -needs vchecking!')
+        browser()
+        Aweights[!is.finite(coredata(x))] <- NA
+        Aweights <- Aweights/apply(Aweights,1,FUN='sum',na.rm=TRUE)
+        X <- coredata(X)*Aweights
+    }
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   } else {
     X <-coredata(x) 
     if (d[3]==1) dim(X) <- c(1,length(X)) ## If only one map, then set the dimensions right to get a matrix.
     if (verbose) {print(dim(X)); print(length(aweights))}
-    for (i in 1:d[3]) X[i,] <- X[i,]*aweights
+    for (i in 1:d[3]) {
+      ## Temporary weights to account for variable gaps of missing data
+      aweights2 <- aweights
+      aweights2[!is.finite(coredata(x[i,]))] <- NA
+      aweights2 <- aweights2/sum(aweights2,na.rm=TRUE)
+      X[i,] <- X[i,]*aweights2
+    }
     y <- zoo(apply(X,1,FUN,na.rm=na.rm),order.by=index(x))
   }
   if (verbose) print(y)
