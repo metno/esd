@@ -28,7 +28,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',
   ok <- !(duplicated(lon(Y)) & duplicated(lat(Y)))
 
   ## Kriging
-  if (verbose) print('Apply kriging')
+  if (verbose) print(paste('Apply kriging to',sum(ok),'locations'))
   
   ## KMP 2017-08-07: moved require(LatticeKrig) down here because 
   ## it interfered with function unit which is used in subset.pattern
@@ -56,8 +56,8 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',
   attr(W,'latitude') <- w$y
   class(W) <- class(etopo5)
 
-  ## Make a projection that zooms in on the Barents region
-  if (verbose)
-      map(W,xlim=xlim,ylim=ylim,colbar=colbar,project=project)
+  ## Make the graphics
+  if (verbose) print("make the map")
+  map(W,xlim=xlim,ylim=ylim,colbar=colbar,project=project)
   invisible(W)
 }

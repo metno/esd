@@ -177,6 +177,15 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     title(main=main,sub=sub,line=-2,adj=0,cex.main=cex.main,cex.sub=cex.sub,
           col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
   }
+  if (verbose) print('Organise output')
+  dim(y) <- c(1,length(y))
+  y <- zoo(y,order.by=1)
+  if (verbose) print(dim(y))
+  class(y) <- class(x)
+  y <- attrcp(x,y)
+  attr(y,'period') <- paste(range(index(x)))
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
 }
 
 ###
