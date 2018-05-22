@@ -61,25 +61,25 @@ eofvar <- function(x) if (inherits(x,c('eof','pca')))
                           attr(x,'eigenvalues')^2/attr(x,'tot.var')*100 else NULL
 
 ## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands   
-test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,verbose=TRUE) {
+test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y='NA', nam.y.dom='NA',nam.t='NA',verbose=FALSE) {
   predictor_field <- x
   predictand_field <- y
   max_EOFs_predictor <- nmax.x
   min_EOFs_predictor <- nmin.x
   max_EOFs_predictand <- nmax.y
   min_EOFs_predictand <- 1
-  if (verbose) cat('The input data should be a field. \n The field is iteratively downscaling with a different number of predictor EOFs. \n A dataframe with a summary of the cross-validated rs is returned.\n')
+  if (verbose) cat('The input data should be a field. \n The field is iteratively downscaling with a different number of predictor EOFs. \n A dataframe with a summary of cross-validation correlation coefficients (Q2) and, if provided, meta-data is returned.\n')
   stopifnot (inherits(predictor_field,'field') & inherits(predictor_field,'zoo'))
   stopifnot (inherits(predictand_field,'field') & inherits(predictand_field,'zoo')) #add not eof not ds
-  training<-setNames(data.frame(matrix(ncol =max_EOFs_predictand-min_EOFs_predictand+2, nrow = max_EOFs_predictor-min_EOFs_predictor+2)), c(paste('EOF',seq(min_EOFs_predictand,max_EOFs_predictand)),"weighted_cross_val_geq_0.2"))
-  rownames(training)<- c('R2 of predictand EOFs', paste('Cross val.:',seq(min_EOFs_predictor,max_EOFs_predictor),'predictor EOFs'))
+  
+  training<-setNames(data.frame(matrix(ncol =max_EOFs_predictand-min_EOFs_predictand+2, nrow = max_EOFs_predictor-min_EOFs_predictor+2), stringsAsFactors = FALSE), c(paste('y.EOF',seq(min_EOFs_predictand,max_EOFs_predictand)),"wQ2_lim0.2"))
+  rownames(training)<- c('y R2:', paste(seq(min_EOFs_predictor,max_EOFs_predictor),'x.EOFs Q2:'))
 
   n_predictand_EOFs <- max_EOFs_predictand 
   if (verbose) cat('\n Downscaling',n_predictand_EOFs,'EOFs from the predictand field. \n',fill = TRUE)
   predictand <- EOF(predictand_field,n=max_EOFs_predictand)
-  training[1,1:(ncol(training)-1)]<-eofvar(predictand)
-
-
+  training[1,1:(ncol(training)-1)]<-round(eofvar(predictand),3)
+  
   for (n_predictor_EOFs in rev(seq(min_EOFs_predictor,max_EOFs_predictor))) {
     if (verbose) cat('\n Using',n_predictor_EOFs,'EOFs from the coarse input as predictors.\n',fill = TRUE)
     predictor <- EOF(predictor_field,n=n_predictor_EOFs)
@@ -88,11 +88,18 @@ test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,verbose=TRU
     #Since ortho one can reduce the DS model later
     xc=cor(attr(ds_obj,'evaluation'),attr(ds_obj,'evaluation'))
     crossvals<-diag(xc[seq(2,nrow(xc),2),seq(1,ncol(xc),2)])
-    training[n_predictor_EOFs,1:(ncol(training)-1)]<-crossvals
-    training[n_predictor_EOFs,ncol(training)]<-sum(eofvar(predictand)[crossvals>0.2]/sum(eofvar(predictand))*crossvals[crossvals>0.2])
-    }
-  if (verbose)  print(training)
-  invisible(training)
+    training[n_predictor_EOFs-1,1:(ncol(training)-1)]<-round(crossvals,3)
+    training[n_predictor_EOFs-1,ncol(training)]<-round(sum(eofvar(predictand)[crossvals>0.2]/sum(eofvar(predictand))*crossvals[crossvals>0.2]),3)
+  }
+  training$y.name=nam.y
+  training$x.name=nam.x
+  training$t.name=nam.t
+  training$dom.name=nam.y.dom
+  tm<-cbind(setNames(data.frame(rownames(training)),c('names')), data.frame(training, row.names=NULL))
+  tmn<-tm[,c(ncol(tm)-3, ncol(tm)-2, ncol(tm)-1,  ncol(tm),1:(ncol(tm)-4))]
+  if (verbose) {cat('\n .')  
+    print(tmn) }
+  invisible(tmn)
 }
 
 ## compute the percentage of missing data in x
