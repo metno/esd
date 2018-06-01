@@ -60,9 +60,13 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (new) dev.new()
     if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
     if (!is.null(FUN)) if (FUN=='trend') {
-      FUN <- 'trend.coef'; colbar$pal <- 't2m'
-      if (is.precip(x)) colbar$rev=TRUE
-    } else colbar$pal <- varid(x)[1]
+      FUN <- 'trend.coef'
+      if(is.null(colbar$pal)) colbar$pal <- 't2m'
+      if(is.null(colbar$rev)) if (is.precip(x)) colbar$rev=TRUE
+    } else {
+      ## KMP 2018-05-31: Allow user to set different pal than default
+      if(is.null(colbar$pal)) colbar$pal <- varid(x)[1]
+    }
     if (!is.null(FUN)) {
       if (!(FUN %in% names(attributes(x)))) {
         if(is.null(dim(x))) dim(x) <- c(length(x),1)
