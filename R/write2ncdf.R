@@ -232,7 +232,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
     dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=TRUE)
     dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar,unlim=TRUE)
     dimnchar   <- ncdim_def("nchar",   "", 1:12, create_dimvar=FALSE )
-    dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
+    #dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
   
     if (verbose) {
       print('Define variable')
@@ -249,11 +249,17 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
     altid <- ncvar_def(name="alt",dim=list(dimS), units="meters", missval=missval,longname="altitude", 
                        prec=prec,verbose=verbose)
 
-    locid <- ncvar_def(name="loc",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="location",
+    #locid <- ncvar_def(name="loc",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="location",
+    #                   verbose=verbose)
+    #stid <- ncvar_def(name="stationID",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="station_id",
+    #                  verbose=verbose)
+    #cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="country",
+    #                    verbose=verbose)
+    locid <- ncvar_def(name="loc",dim=list(dimnchar,dimS),units="name",prec="char",longname="location",
                        verbose=verbose)
-    stid <- ncvar_def(name="stationID",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="station_id",
+    stid <- ncvar_def(name="stationID",dim=list(dimnchar,dimS),units="number",prec="char",longname="station_id",
                       verbose=verbose)
-    cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimstation),units="NA",prec="char",longname="country",
+    cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimS),units="name",prec="char",longname="country",
                         verbose=verbose)
   
     fyrid <- ncvar_def(name="first",dim=list(dimS), units="year", missval=missval,longname="first_year", 
