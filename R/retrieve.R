@@ -2213,6 +2213,9 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
                   cntr = cntrs,stid = stids,longname=longname,
                   unit=unit$value,param=param)
+  ## Weed out empty spaces
+  iv <- apply(coredata(y),1,FUN='nv')
+  y <- subset(y,it=iv > 0)
   return(y)
 }
 
