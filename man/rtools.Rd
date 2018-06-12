@@ -23,6 +23,9 @@
 \alias{eofvar}
 \alias{test.ds.field}
 \alias{test.num.predictors}
+\alias{arec}
+\alias{arec.default}
+\alias{arec.station}
 
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
@@ -42,6 +45,8 @@ statistics, e.g \code{FUN='q95'} where \code{q95=function(x) apply(x,1,quantile,
 geostrophic wind based on Alexandersson et al. (1998), Glob. Atm. and
 Oce. Sys.
 \code{stand} gives a standardised time series.
+
+\code{arec} compares the number of record-breaking events to the number of events for a stime series of iid data (\code{sum(1/1:n)})
 }
 \usage{
 as.decimal(x = NULL)
@@ -69,6 +74,8 @@ RMSE(x,y,...)
 eofvar(x)
 test.ds.field(x)
 test.num.predictors(x,y,nmax.x=6,nmin.x=3,nmax.y=6,verbose=TRUE) 
+arec.station(x,...)
+arec.default(x,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

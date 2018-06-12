@@ -250,3 +250,14 @@ propchange <- function(x,it0=c(1979,2013)) {
   x
 }
 
+arec <- function(x,...) UseMethod("arec")
+
+arec.default <- function(x,...) {
+  y <- length(records(x))/sum(1/(1:nv(x)))
+  return(y)
+}
+
+arec.station <- function(x,...) {
+  y <- unlist(lapply(records(x),length))/apply(x,2,function(x) sum(1/(1:nv(x))))
+  return(y)
+}

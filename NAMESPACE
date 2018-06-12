@@ -2,6 +2,9 @@ import(ncdf4)
 import(zoo)
 
 # Exports - in alphabetic order
+export(arec)
+export(arec.default)
+export(arec.station)
 export(aggregate.comb)
 export(aggregate.field)
 export(aggregate.station)
