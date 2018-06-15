@@ -2158,7 +2158,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   fyr <- try(ncvar_get(ncid,'first'))
   lyr <- try(ncvar_get(ncid,'last'))
   longname <- ncatt_get(ncid,param,'long_name')
-  unit <- ncatt_get(ncid,param,'unit')
+  unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
   missing <- ncatt_get(ncid,param,'missing_value')
   ## Use the metadata to select the stations to read: there is no need to read
@@ -2184,15 +2184,27 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   if (!is.null(end.year.after)) ii <- ii & (ly >= end.year.after)
   
   ## Read the actual data:
-  if (verbose) print(paste('reading',param))
+  if (verbose) {
+    print(paste('reading',param))
+    print(paste('Number of stations in file=',ns,' reading',sum(ii)))
+    print('start=')
+    print(c(1,min((1:ns)[ii])))
+    print('count=')
+    print(c(nt,max((1:ns)[ii]) - min((1:ns)[ii])+1))
+  }
   x <- ncvar_get(ncid,param,start=c(1,min((1:ns)[ii])),
                  count=c(nt,max((1:ns)[ii]) - min((1:ns)[ii])+1))
   nc_close(ncid)
+  if (verbose) print('Data is extracted from the netCDF file')
   x[x<=missing$value] <- NA
-  ## The data matrix is not full but it may not necessarily correspond to the selection
-  iii <- seq(min((1:ns)[ii]),max((1:ns)[ii]) - min((1:ns)[ii])+1,by=1)
-  iv <- ii[iii]
-  x <- x[,iv]
+  ## The data matrix is not full and may not necessarily correspond to the selection
+  ## Need to remove unwanted stations with station numbers in the range of those selected
+  iii <- seq(min((1:ns)[ii]),max((1:ns)[ii]),by=1)
+  if (verbose) print(c(length(iii),length(ii),sum(ii)))
+  if (sum(ii)>1) {
+    iv <- ii[iii]
+    x <- x[,iv]
+  } else dim(x) <- NULL
   if (verbose) {print(dim(x)); print(summary(c(x)))}
   if (!is.null(dim(x))) { 
     nv <- apply(x,1,'nv') 
@@ -2214,7 +2226,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
                   cntr = cntrs,stid = stids,longname=longname,
                   unit=unit$value,param=param)
   ## Weed out empty spaces
-  iv <- apply(coredata(y),1,FUN='nv')
+  if (!is.null(dim(y))) iv <- apply(coredata(y),1,FUN='nv') else iv <- nv(y)
   y <- subset(y,it=iv > 0)
   return(y)
 }
