@@ -145,7 +145,7 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=
 # short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
 
 write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=NULL,stano=NULL,append=FALSE,
-                                scale=0.1,torg='1899-12-31',verbose=FALSE) {
+                                scale=0.1,torg='1899-12-31',verbose=FALSE,staid_unlim=FALSE) {
   #require(ncdf4)
 
   if (!inherits(x,"station")) stop('x argument must be a station object') 
@@ -229,7 +229,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,tim=
   if (!append) {
     if (verbose) print('Define dimensions')
     if (verbose) print(stid(x))
-    dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=TRUE)
+    dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=staid_unlim)
     dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar,unlim=TRUE)
     dimnchar   <- ncdim_def("nchar",   "", 1:12, create_dimvar=FALSE )
     #dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
