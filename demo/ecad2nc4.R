@@ -46,8 +46,8 @@ for (ele in eles) {
         print(range(x,na.rm=TRUE))
         xc <- coredata(x); xc[xc < -999] <- NA; xc[xc > 2000] <- NA; coredata(x) <- as.matrix(xc)
       }
-      if (length(x) > 0) write2ncdf4(x,fname,tim=seq(as.Date('1900-01-01'),as.Date('2018-02-28'),by=1),
-                                     stano=stano,append=append,verbose=FALSE,,staid_unlim=TRUE)
+      if (length(x) > 0) write2ncdf4(x,fname,it=seq(as.Date('1900-01-01'),as.Date('2018-02-28'),by=1),
+                                     stid=stano,append=append,verbose=TRUE,stid_unlim=TRUE)
       if (!is.null(dim(x))) ii <- ii + dim(x)[2] else if (!is.null(x)) ii <- ii + 1
     } else x <- NULL
     print(ii)

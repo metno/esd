@@ -2137,7 +2137,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
                              path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                              nmin=NULL,verbose=FALSE,...) {
-  if (verbose) print(paste('retrieve.nc4.station',ncfile))
+  if (verbose) print(paste('retrieve.station',ncfile))
   ## REB 2018-04-06: Add a check for e.g. station data
   class.x <- file.class(ncfile)
   if (verbose) {print('Check class'); print(class.x$value)}
@@ -2228,6 +2228,62 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   ## Weed out empty spaces
   if (!is.null(dim(y))) iv <- apply(coredata(y),1,FUN='nv') else iv <- nv(y)
   y <- subset(y,it=iv > 0)
+  return(y)
+}
+
+retrieve.stationsummary <- function(ncfile,type="ncdf4",
+                                    path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
+                                    alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
+                                    nmin=NULL,verbose=FALSE,...) {
+  if (verbose) print(paste('retrieve.stationsummary',ncfile))
+  ## REB 2018-04-06: Add a check for e.g. station data
+  class.x <- file.class(ncfile)
+  if (verbose) {print('Check class'); print(class.x$value)}
+  stopifnot(tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
+  ncid <- nc_open(ncfile)
+  param <- names(ncid$var)[1]
+  stats <- names(ncid$var)[grep('summary',names(ncid$var))]
+  if (verbose) print(paste('The summary statistics to read is',stats))
+  ## Read the metadata:
+  tim <- ncvar_get(ncid,'time'); nt <- length(tim)
+  stids <- ncvar_get(ncid,'stationID'); ns <- length(stids)
+  if (verbose) print(stids)
+  tunit <- ncatt_get(ncid,'time','units')
+  lons <- ncvar_get(ncid,'lon')
+  lats <- ncvar_get(ncid,'lat')
+  alts <- ncvar_get(ncid,'alt')
+  cntrs <- try(ncvar_get(ncid,'cntr'))
+  nv <- try(ncvar_get(ncid,'number'))
+  fyr <- try(ncvar_get(ncid,'first'))
+  lyr <- try(ncvar_get(ncid,'last'))
+  longname <- ncatt_get(ncid,param,'long_name')
+  unit <- ncatt_get(ncid,param,'units')
+  locs <- try(ncvar_get(ncid,'loc'))
+  missing <- ncatt_get(ncid,param,'missing_value')
+  y <- data.frame(location=locs,longitude=lons,latitude=lats,altitude=alts,country=cntrs,
+                 number.valid=nv,first.year=fyr,last.year=lyr,station.id=stids)
+  attr(y,'variable') <- param
+  if (length(grep('days since',tunit$value))) 
+    t <- as.Date(substr(tunit$value,12,21)) + tim else
+      if (length(grep('months since',tunit$value))) 
+        t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
+          if (length(grep('years since',tunit$value))) 
+            t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
+  attr(y,'period') <- range(t)
+  attr(y,'unit') <- unit
+  attr(y,'missing_value') <- missing
+  
+  if(verbose) print('Read the summary statistics')
+  for (i in 1:length(stats)) {
+    if(verbose) print(stats[i])
+    sname <- substr(stats[i],9,nchar(stats[i]))
+    z <- try(ncvar_get(ncid,stats[i]))
+    eval(parse(text=paste('y[["',sname,'"]] <- z',sep='')))
+  }
+  
+  nc_close(ncid)
+  if (verbose) print('Data is extracted from the netCDF file')
+  if(verbose) print(summary(y))
   return(y)
 }
 

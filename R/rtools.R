@@ -261,3 +261,11 @@ arec.station <- function(x,...) {
   y <- unlist(lapply(records(x),length))/apply(x,2,function(x) sum(1/(1:nv(x))))
   return(y)
 }
+
+lastrains <- function(x,x0=1,uptodate=TRUE,verbose=FALSE) {
+  y <- cumsum(rev(coredata(x)))
+  z <- sum(y < x0)
+  if (uptodate) if (Sys.Date() - end(x) > 1) z <- NA 
+  return(z)
+}
+
