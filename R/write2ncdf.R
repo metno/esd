@@ -186,15 +186,15 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   if (verbose) print(paste('attributes:', paste(atts, collapse=', '),
                            '; types:',paste(attrprec, collapse=', ')))
 
+  ## For single stations, we need to fix the dimensions
+  if (is.null(dim(x))) dim(x) <- c(length(x),1)
+  
   ## Esimate summary statistics for the station data
   if (verbose) print('Estimate summary statistics')
   mx <- apply(x,2,'max',na.rm=TRUE)
   mn <- apply(x,2,'min',na.rm=TRUE)
   nhr <- apply(anomaly(x),2,'arec')
   nlr <- apply(-anomaly(x),2,'arec')
-  
-  ## For single stations, we need to fix the dimensions
-  if (is.null(dim(x))) dim(x) <- c(length(x),1)
   
   if (is.T(x)) {
     if (verbose) print('Temperature')
