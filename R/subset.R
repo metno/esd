@@ -12,8 +12,11 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.zoo")
-  
+  d <- dim(x)
   y <- default.subset(x,is=is,it=it,verbose=verbose)
+  ## Check if there is only one series but if the dimension 
+  if ( (!is.null(d)) & is.null(dim(y)) ) 
+    if (d[2]==1) dim(y) <- c(length(y),1)
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
@@ -1091,6 +1094,10 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
+    
+    ## Check if there is only one series but if the dimension 
+    if ( (!is.null(d)) & is.null(dim(y)) ) 
+      if (d[2]==1) dim(y) <- c(length(y),1)
     attr(y,'history') <- history.stamp(x)   
     if (verbose) print('exit default.subset')
     if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))

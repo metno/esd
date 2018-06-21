@@ -10,6 +10,7 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
     
     ##
     if (verbose) print('subset.station')
+    d <- dim(x)
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
         if (verbose) print('field/station')
@@ -51,6 +52,9 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
         ##}
         ##if (!is.null(is)) x2 <- station.subset(x2,it=it,is=is,verbose=verbose)
     }
+    ## Check if there is only one series but if the dimension 
+    if ( (!is.null(d)) & is.null(dim(x2)) ) 
+      if (d[2]==1) dim(x2) <- c(length(x2),1)
     return(x2)
 }
 
