@@ -2148,7 +2148,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   ## Read the metadata:
   tim <- ncvar_get(ncid,'time'); nt <- length(tim)
   stids <- ncvar_get(ncid,'stationID'); ns <- length(stids)
-  if (verbose) print(stids)
+  if (verbose) {print('Get metadata');print(stids)}
   tunit <- ncatt_get(ncid,'time','units')
   lons <- ncvar_get(ncid,'lon')
   lats <- ncvar_get(ncid,'lat')
@@ -2160,10 +2160,11 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   longname <- ncatt_get(ncid,param,'long_name')
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
+  locs <- sub('\xc3','',locs)
   missing <- ncatt_get(ncid,param,'missing_value')
   ## Use the metadata to select the stations to read: there is no need to read
   ## all the stations if only a subset is desired
-  if (verbose) print('Select selected stations')
+  if (verbose) print('Metadata is read - Select selected stations')
   if (!is.null(stid)) ii <- is.element(stids,stid) else ii <- rep(TRUE,length(stids))
   if (!is.null(lon)) ii <- ii & (lons >= min(lon)) & (lons <= max(lon))
   if (!is.null(lat)) ii <- ii & (lats >= min(lat)) & (lats <= max(lat))
@@ -2211,23 +2212,27 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
     it <- (nv > 0)
   } else it <- is.finite(x) 
   
-  if (verbose) {print(dim(x)); print(length(ii)); print(length(it))}
+  if (verbose) {print(dim(x)); print(length(ii)); print(length(it)); print('select subset...')}
   lons <- lons[ii]; lats <- lats[ii]; alts <- alts[ii]; cntrs <- cntrs[ii]
-  locs <- locs[ii]
+  locs <- locs[ii]; stids <- stids[ii]
   if (!is.null(dim(x))) x <- x[it,] else x <- x[it]
   tim <- tim[it]
+  if (verbose) {print('Time information'); print(tunit$value); print(range(tim))}
   if (length(grep('days since',tunit$value))) 
     t <- as.Date(substr(tunit$value,12,21)) + tim else
   if (length(grep('months since',tunit$value))) 
     t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
   if (length(grep('years since',tunit$value))) 
     t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
+  if (verbose) print('as.station')
   y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
                   cntr = cntrs,stid = stids,longname=longname,
                   unit=unit$value,param=param)
   ## Weed out empty spaces
+  if (verbose) print('Exclude empty time periods')
   if (!is.null(dim(y))) iv <- apply(coredata(y),1,FUN='nv') else iv <- nv(y)
   y <- subset(y,it=iv > 0)
+  if (verbose) print('exit retrieve.station')
   return(y)
 }
 
@@ -2247,7 +2252,7 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   ## Read the metadata:
   tim <- ncvar_get(ncid,'time'); nt <- length(tim)
   stids <- ncvar_get(ncid,'stationID'); ns <- length(stids)
-  if (verbose) print(stids)
+  if (verbose) {print('Get metadata');print(stids)}
   tunit <- ncatt_get(ncid,'time','units')
   lons <- ncvar_get(ncid,'lon')
   lats <- ncvar_get(ncid,'lat')
@@ -2259,10 +2264,23 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   longname <- ncatt_get(ncid,param,'long_name')
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
+  ## Fix names: remove unacceptable coding
+  locs <- tolower(sub('\xc3','',locs))
+  
+  ## Order alphabetically
+  if (verbose) 'Sort alphabetically and in proper order with Scandinavian characters'
+  locssrt <- tolower(locs); locssrt <- sub('å','zzzå',locssrt)
+  locssrt <- sub('æ','zzæ',locssrt); locssrt <- sub('ø','zzzø',locssrt)
+  locssrt <- sub('ä','zzä',locssrt); locssrt <- sub('ö','zzzö',locssrt)
+  srt <- order(locssrt); rm('locssrt')
+  locs <- paste(toupper(substr(locs,1,1)),tolower(substr(locs,2,nchar(locs))),sep='')
+  
   missing <- ncatt_get(ncid,param,'missing_value')
   y <- data.frame(location=locs,longitude=lons,latitude=lats,altitude=alts,country=cntrs,
                  number.valid=nv,first.year=fyr,last.year=lyr,station.id=stids)
+  y <- y[srt,]
   attr(y,'variable') <- param
+  if (verbose) print('Created data.frame with metadata: y')
   if (length(grep('days since',tunit$value))) 
     t <- as.Date(substr(tunit$value,12,21)) + tim else
       if (length(grep('months since',tunit$value))) 
@@ -2272,6 +2290,7 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   attr(y,'period') <- range(t)
   attr(y,'unit') <- unit
   attr(y,'missing_value') <- missing
+  if (verbose) print('got metadata attributes: period, unit, missing')
   
   if(verbose) print('Read the summary statistics')
   for (i in 1:length(stats)) {
@@ -2282,6 +2301,7 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   }
   
   nc_close(ncid)
+  
   if (verbose) print('Data is extracted from the netCDF file')
   if(verbose) print(summary(y))
   return(y)

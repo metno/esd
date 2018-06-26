@@ -247,7 +247,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     tdmu.mam <- apply(annual(subset(x,it='mam'),'wetmean',nmin=75),2,'trend.coef')
     tdmu.jja <- apply(annual(subset(x,it='jja'),'wetmean',nmin=75),2,'trend.coef')
     tdmu.son <- apply(annual(subset(x,it='son'),'wetmean',nmin=75),2,'trend.coef')
-    lr <- apply(x,2,'lastrains')
+    lr <- sapply(x,'lastrains')
   } else {
     ave <- apply(x,2,'mean',na.rm=TRUE)
     ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
@@ -303,6 +303,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   if (verbose) {
     print("start & count"); print(start); print(count); 
     print("dim(y)"); print(dim(y))
+    print("time"); print(range(time))
     print("netCDF dimensions"); print(c(nt,ns)); print(start+count-c(1,1))
     }
   
@@ -311,7 +312,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     if (verbose) print('Define dimensions')
     if (verbose) print(stid(x))
     dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=stid_unlim)
-    dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar,unlim=TRUE)
+    #dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar,unlim=TRUE)
+    dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar,unlim=TRUE)
     dimnchar   <- ncdim_def("nchar",   "", 1:12, create_dimvar=FALSE )
     #dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
   
