@@ -2278,7 +2278,6 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   missing <- ncatt_get(ncid,param,'missing_value')
   y <- data.frame(location=locs,longitude=lons,latitude=lats,altitude=alts,country=cntrs,
                  number.valid=nv,first.year=fyr,last.year=lyr,station.id=stids)
-  y <- y[srt,]
   attr(y,'variable') <- param
   if (verbose) print('Created data.frame with metadata: y')
   if (length(grep('days since',tunit$value))) 
@@ -2301,7 +2300,7 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   }
   
   nc_close(ncid)
-  
+  y <- y[srt,]
   if (verbose) print('Data is extracted from the netCDF file')
   if(verbose) print(summary(y))
   return(y)
