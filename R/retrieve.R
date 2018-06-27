@@ -2289,6 +2289,7 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   attr(y,'period') <- range(t)
   attr(y,'unit') <- unit
   attr(y,'missing_value') <- missing
+  attr(y,'length') <- length(t)
   if (verbose) print('got metadata attributes: period, unit, missing')
   
   if(verbose) print('Read the summary statistics')
