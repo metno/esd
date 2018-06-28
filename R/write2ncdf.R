@@ -152,6 +152,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   
   if (verbose) print('write2ncdf4.station')
   
+  ## Don't save empty space:
+  good <- apply(coredata(x),1,FUN='nv')
+  x <- subset(x,it=good > 0)
+  
   ## Write a station object as a netCDF file using the short-type combined with add_offsetet and scale_factor
   ## to reduce the size.   
   ## Examine the station object: dimensions and attributes  

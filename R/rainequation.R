@@ -16,7 +16,7 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
 fract.gt.x <- function(x,x0) {sum(x > x0,na.rm=TRUE)/sum(is.finite(x))}
 
 ## To test the rain equation
-test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,threshold=1,verbose=FALSE) {
+test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,threshold=1,verbose=FALSE,plot=TRUE) {
   
   if (verbose) {print('test.rainequation'); print(c(x0,threshold))}
   if (is.null(loc)) {
@@ -36,11 +36,13 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,threshold=
   plot(pr,main=paste('The "rain equation" for',loc(y)),lwd=3,
        ylab=paste('fraction of days with more than',x0,'mm'),xlab='Year')
   obsfrac <- annual(y,FUN='fract.gt.x',x0=x0)
+  counts <- annual(y,FUN='count',x0=x0)
   lines(obsfrac,col=rgb(1,0,0,0.7),lwd=2)
   grid()
   legend(year(pr)[1],1.1*max(pr,na.rm=TRUE),
          c(expression(Pr(X>x)==f[w]*e^{-x/mu}),expression(sum(H(X-x))/n)),lty=1,lwd=c(3,2),
        col=c('black','red'),bty='n')
+  return(merge(pr,obsfrac,counts))
 }
 
 ## Use a scatter plot to evaluate the rain equation for a selection of rain gauge records.
