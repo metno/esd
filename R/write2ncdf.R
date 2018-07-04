@@ -640,6 +640,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     ncvar_put( ncid, tdmuid.mam, tdmu.mam,start=start[2],count=count[2])
     ncvar_put( ncid, tdmuid.jja, tdmu.jja,start=start[2],count=count[2])
     ncvar_put( ncid, tdmuid.son, tdmu.son,start=start[2],count=count[2])
+    ncvar_put( ncid, lrid, lr, start=start[2],count=count[2])
   } else {
     if (verbose) print(paste('extra for',varid(x)[1]))
     ncvar_put( ncid, sdid, std, start=start[2],count=count[2])
