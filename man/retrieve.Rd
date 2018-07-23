@@ -27,7 +27,7 @@ retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
                verbose = FALSE , plot = TRUE) 
 retrieve.rcm(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE)
 retrieve.station(ncfile,param="auto",type="ncdf4",
-                path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
+                path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                 alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                 nmin=NULL,verbose=FALSE,...) 
 retrieve.stationsummary(ncfile,type="ncdf4",

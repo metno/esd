@@ -2134,7 +2134,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
 }
 
 retrieve.station <- function(ncfile,param="auto",type="ncdf4",
-                             path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
+                             path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                              nmin=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('retrieve.station',ncfile))
@@ -2193,45 +2193,66 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
     print('count=')
     print(c(nt,max((1:ns)[ii]) - min((1:ns)[ii])+1))
   }
-  x <- ncvar_get(ncid,param,start=c(1,min((1:ns)[ii])),
-                 count=c(nt,max((1:ns)[ii]) - min((1:ns)[ii])+1))
+  
+  ## Find the real dates:
+  if (verbose) {print('Time information'); print(tunit$value); print(range(tim))}
+  if (length(grep('days since',tunit$value))) 
+    t <- as.Date(substr(tunit$value,12,21)) + tim else
+      if (length(grep('months since',tunit$value))) 
+        t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
+          if (length(grep('years since',tunit$value))) 
+            t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
+  
+  if (is.null(it)) {
+    if (verbose) print('Read whole record')
+    it1 <- 1; it2 <- nt
+  } else {
+    if (verbose) print('it is not NULL')
+    if (is.character(it)) it <- as.Date(it)
+    if (verbose) print(paste('Read selected period',min(it),'-',max(it)))
+    it1 <- (1:length(t))[is.element(t,it)]
+    it2 <- length(it)
+    t <- t[it1:(it1+it2-1)]
+  }
+  x <- ncvar_get(ncid,param,start=c(it1,min((1:ns)[ii])),
+                 count=c(it2,max((1:ns)[ii]) - min((1:ns)[ii])+1))
   nc_close(ncid)
   if (verbose) print('Data is extracted from the netCDF file')
   x[x<=missing$value] <- NA
+  
   ## The data matrix is not full and may not necessarily correspond to the selection
   ## Need to remove unwanted stations with station numbers in the range of those selected
   iii <- seq(min((1:ns)[ii]),max((1:ns)[ii]),by=1)
   if (verbose) print(c(length(iii),length(ii),sum(ii)))
   if (sum(ii)>1) {
     iv <- ii[iii]
-    x <- x[,iv]
+    if (length(dim(x))==2) x <- x[,iv] else x <- x[iv]
   } else dim(x) <- NULL
   if (verbose) {print(dim(x)); print(summary(c(x)))}
-  if (!is.null(dim(x))) { 
+  if (length(dim(x))==2) { 
     nv <- apply(x,1,'nv') 
-    it <- (nv > 0)
-  } else it <- is.finite(x) 
+    jt <- (nv > 0)
+  } else if (length(t)>1) jt <- is.finite(x) else jt <- is.finite(t)
   
-  if (verbose) {print(dim(x)); print(length(ii)); print(length(it)); print('select subset...')}
+  if (verbose) {print(dim(x)); print(length(ii)); print(length(jt)); print('select subset...')}
   lons <- lons[ii]; lats <- lats[ii]; alts <- alts[ii]; cntrs <- cntrs[ii]
   locs <- locs[ii]; stids <- stids[ii]
-  if (!is.null(dim(x))) x <- x[it,] else x <- x[it]
-  tim <- tim[it]
-  if (verbose) {print('Time information'); print(tunit$value); print(range(tim))}
-  if (length(grep('days since',tunit$value))) 
-    t <- as.Date(substr(tunit$value,12,21)) + tim else
-  if (length(grep('months since',tunit$value))) 
-    t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
-  if (length(grep('years since',tunit$value))) 
-    t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
-  if (verbose) print('as.station')
+  if (verbose) print(paste('length(t)=',length(t),'length(x)=',length(x),'sum(jt)=',sum(jt)))
+  if (length(dim(x))==2) x <- x[jt,] else if (length(t)>1) x <- x[jt]
+  tim <- tim[jt]
+  
+  if (verbose) print(paste('as.station',min(t),max(t),'Data size=',length(x),'record length=',length(t)))
+  if (length(t)==1) dim(x) <- c(1,length(x))
   y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
                   cntr = cntrs,stid = stids,longname=longname,
                   unit=unit$value,param=param)
+  
   ## Weed out empty spaces
-  if (verbose) print('Exclude empty time periods')
-  if (!is.null(dim(y))) iv <- apply(coredata(y),1,FUN='nv') else iv <- nv(y)
-  y <- subset(y,it=iv > 0)
+  if (length(t)>1) {
+    if (verbose) print('Exclude empty time periods')
+    if (length(dim(y))==2) iv <- apply(coredata(y),1,FUN='nv') else iv <- nv(y)
+    y <- subset(y,it=iv > 0)
+  }
   if (verbose) print('exit retrieve.station')
   return(y)
 }
