@@ -2210,9 +2210,10 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
     if (verbose) print('it is not NULL')
     if (is.character(it)) it <- as.Date(it)
     if (verbose) print(paste('Read selected period',min(it),'-',max(it)))
-    it1 <- (1:length(t))[is.element(t,it)]
+    it1 <- (1:length(t))[is.element(t,it)][1]
     it2 <- length(it)
     t <- t[it1:(it1+it2-1)]
+    if (verbose) print(c(it1,it2))
   }
   x <- ncvar_get(ncid,param,start=c(it1,min((1:ns)[ii])),
                  count=c(it2,max((1:ns)[ii]) - min((1:ns)[ii])+1))
