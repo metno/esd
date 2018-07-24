@@ -269,7 +269,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
     td.son <- apply(annual(subset(x,it='son'),'mean',nmin=75),2,'trend.coef')
   }
-  if (verbose) print('Summary statistics computed')
+  if (verbose) {print('Summary statistics computed'); print(lr)}
   
   #fyr <- firstyear(x)
   #lyr <- lastyear(x)

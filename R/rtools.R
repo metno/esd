@@ -264,10 +264,8 @@ arec.station <- function(x,...) {
 
 lastrains <- function(x,x0=1,uptodate=TRUE,verbose=FALSE) {
   if (verbose) print('lastrains')
-  if (!is.finite(x[length(x)])) {
-    if (verbose) print('last element is NA: remove')
-    x <- x[-length(x)]
-  }
+  ## Clean up missing values
+  x <- x[is.finite(x)]
   y <- cumsum(rev(coredata(x)))
   z <- sum(y < x0,na.rm=TRUE)
   if (uptodate) if (Sys.Date() - end(x) > 1) z <- NA 
