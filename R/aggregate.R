@@ -52,10 +52,10 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   y <- attrcp(x,y)
 
    #print(FUN)
-  if (FUN=="counts")  {
+  if (substr(FUN,1,4)=="count")  {
     #print("Count")
     attr(y,'unit') <- paste("counts | X >",threshold," * ",attr(x,'unit'))
-  } else if (FUN=="freq") {
+  } else if (substr(FUN,1,4)=="freq") {
     #print("Frequency")
     attr(y,'variable') <- 'f'
     attr(y,'unit') <- paste("frequency | X >",threshold," * ",attr(x,'unit'))
