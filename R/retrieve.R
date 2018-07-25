@@ -2144,7 +2144,11 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   stopifnot(tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
   ncid <- nc_open(ncfile)
   if (param=='auto') param <- names(ncid$var)[1]
-  if (verbose) print(paste('The variable to read is',param))
+  size <- eval(parse(text=paste('ncid$var$',param,'$size',sep='')))
+  if (verbose) {
+    print(paste('The variable to read is',param))
+    print(paste('Variable size in netCDF file:',paste(size,collapse=' - ')))
+  }
   ## Read the metadata:
   tim <- ncvar_get(ncid,'time'); nt <- length(tim)
   stids <- ncvar_get(ncid,'stationID'); ns <- length(stids)
@@ -2183,16 +2187,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   if (!is.null(nmin)) ii <- ii & (nv >= nmin)
   if (!is.null(start.year.before)) ii <- ii & (fy <= start.year.before)
   if (!is.null(end.year.after)) ii <- ii & (ly >= end.year.after)
-  
-  ## Read the actual data:
-  if (verbose) {
-    print(paste('reading',param))
-    print(paste('Number of stations in file=',ns,' reading',sum(ii)))
-    print('start=')
-    print(c(1,min((1:ns)[ii])))
-    print('count=')
-    print(c(nt,max((1:ns)[ii]) - min((1:ns)[ii])+1))
-  }
+  is <- (1:ns)[ii]
   
   ## Find the real dates:
   if (verbose) {print('Time information'); print(tunit$value); print(range(tim))}
@@ -2209,41 +2204,68 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   } else {
     if (verbose) print('it is not NULL')
     if (is.character(it)) it <- as.Date(it)
-    if (verbose) print(paste('Read selected period',min(it),'-',max(it)))
+    if (verbose) print(paste('Read selected period',min(it),'-',max(it),
+                             'from interval',min(t),max(t)))
     it1 <- (1:length(t))[is.element(t,it)][1]
     it2 <- length(it)
-    t <- t[it1:(it1+it2-1)]
     if (verbose) print(c(it1,it2))
+    t <- t[it1:(it1+it2-1)]
   }
-  x <- ncvar_get(ncid,param,start=c(it1,min((1:ns)[ii])),
-                 count=c(it2,max((1:ns)[ii]) - min((1:ns)[ii])+1))
+  
+  start <- c(it1,min(is))
+  count <- c(it2,max(is) - min(is)+1)
+ 
+  ## Read the actual data:
+  if (verbose) {
+    print(paste('reading',param))
+    print(paste('Number of stations in file=',ns,' reading',sum(ii)))
+    print('Confirmation of station IDs:'); print(stids[is])
+    print('start=')
+    print(start)
+    print('count=')
+    print(count)
+  }
+  
+  x <- ncvar_get(ncid,param,start=start,count=count)
   nc_close(ncid)
-  if (verbose) print('Data is extracted from the netCDF file')
+  if (verbose) print('All data has been extracted from the netCDF file')
   x[x<=missing$value] <- NA
   
   ## The data matrix is not full and may not necessarily correspond to the selection
   ## Need to remove unwanted stations with station numbers in the range of those selected
   iii <- seq(min((1:ns)[ii]),max((1:ns)[ii]),by=1)
-  if (verbose) print(c(length(iii),length(ii),sum(ii)))
+  if (verbose) print(paste(' Number of stations read so far',length(iii),
+                           ' Total number of stations',length(ii),
+                           ' Selected stations=',sum(ii)))
   if (sum(ii)>1) {
     iv <- ii[iii]
     if (length(dim(x))==2) x <- x[,iv] else x <- x[iv]
   } else dim(x) <- NULL
-  if (verbose) {print(dim(x)); print(summary(c(x)))}
+  if (verbose) {
+    print(paste('Dimensions of x is ',paste(dim(x),collapse=' - ')))
+    print(summary(c(x))); print(sum(is.finite(x)))
+  }
   if (length(dim(x))==2) { 
     nv <- apply(x,1,'nv') 
     jt <- (nv > 0)
   } else if (length(t)>1) jt <- is.finite(x) else jt <- is.finite(t)
   
-  if (verbose) {print(dim(x)); print(length(ii)); print(length(jt)); print('select subset...')}
+  if (verbose) print(paste('Number of valid data points',length(jt)))
   lons <- lons[ii]; lats <- lats[ii]; alts <- alts[ii]; cntrs <- cntrs[ii]
   locs <- locs[ii]; stids <- stids[ii]
   if (verbose) print(paste('length(t)=',length(t),'length(x)=',length(x),'sum(jt)=',sum(jt)))
   if (length(dim(x))==2) x <- x[jt,] else if (length(t)>1) x <- x[jt]
-  tim <- tim[jt]
+  tim <- tim[jt]; t <- t[jt]
   
-  if (verbose) print(paste('as.station',min(t),max(t),'Data size=',length(x),'record length=',length(t)))
-  if (length(t)==1) dim(x) <- c(1,length(x))
+  if (length(t)==1) dim(x) <- c(1,length(x)) else 
+    if (is.null(dim(x))) dim(x) <- c(length(x),1)
+  if (verbose) print(paste('Dimensions of x is ',paste(dim(x),collapse=' - '),
+                           'and length(t) is',length(t)))
+  if (length(t) != dim(x)[1]) {
+    print(paste('Dimensions of x is ',paste(dim(x),collapse=' - '),
+                'and length(t) is',length(t)))
+    stop('retrieve.station error:')
+  }
   y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
                   cntr = cntrs,stid = stids,longname=longname,
                   unit=unit$value,param=param)
@@ -2254,6 +2276,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
     if (length(dim(y))==2) iv <- apply(coredata(y),1,FUN='nv') else iv <- nv(y)
     y <- subset(y,it=iv > 0)
   }
+  if (verbose) print(paste('as.station',min(index(y)),max(index(y)),'Data size=',length(x),'record length=',length(index(y))))
   if (verbose) print('exit retrieve.station')
   return(y)
 }
