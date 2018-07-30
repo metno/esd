@@ -26,6 +26,8 @@
 \alias{arec}
 \alias{arec.default}
 \alias{arec.station}
+\alias{lastrains}
+\alias{lastelementrecord}
 
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
@@ -76,6 +78,8 @@ test.ds.field(x)
 test.num.predictors(x,y,nmax.x=6,nmin.x=3,nmax.y=6,verbose=TRUE) 
 arec.station(x,...)
 arec.default(x,...)
+lastrains(x,x0=1,uptodate=TRUE,verbose=FALSE)
+lastelementrecord(x,verbose=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
