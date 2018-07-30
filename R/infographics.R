@@ -606,15 +606,19 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,verbose=FALSE,FUN='mean
   cm <- rep(NA,ny)
   
   #browser()
+
+  mm <- format(yesterday, "%m")
+  dd <- format(yesterday, "%d")
+  period <- paste('YYYY',start,' to YYYY-',paste(mm,dd,sep='-'),sep='')
+  if (verbose) {print(yesterday); print(mm); print(dd); print(period)}
+  
+  if (verbose) print('No. year min max ylim[1] ylim[2]')
   for (i in 1:ny) {
     y <- window(x,start=as.Date(paste(yrs[i],start,sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
     t <- julian(index(y)) - julian(as.Date(paste(yrs[i],start,sep='')))
     if (FUN=='mean') z <- cumsum(coredata(y))/1:length(y) else
     if (FUN=='sum') z <- cumsum(coredata(y))
-
-    mm <- format(yesterday, "%m")
-    dd <- as.numeric(yesterday, "%d")
     
     if (FUN=='mean') cm[i] <- mean(coredata(window(x,
                                    start=as.Date(paste(yrs[i],start,sep='')),
@@ -674,6 +678,7 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,verbose=FALSE,FUN='mean
   if (verbose) print(y2n)
   result <- cbind(yrs[srt],cm[srt])
   colnames(result) <- c('year','cumulated')
+  attr(result,'period')  <- period
   invisible(result)
   
 }

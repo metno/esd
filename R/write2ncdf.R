@@ -200,6 +200,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   nhr <- apply(anomaly(x),2,'arec')
   nlr <- apply(-anomaly(x),2,'arec')
   
+  ## Is the last element a high or low record?
+  lehr <- lastelementrecord(x)
+  lelr <- lastelementrecord(-x)
+  
   if (is.T(x)) {
     if (verbose) print('Temperature')
     ## Maximum temperature
@@ -362,6 +366,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     nhrid <- ncvar_def(name="summary_records",dim=list(dimS), 
                        units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
                        missval=missval,longname="fraction_of_high_records",prec="float",verbose=verbose)
+    lehrid <- ncvar_def(name="last_element_highest",dim=list(dimS), 
+                       units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+                       missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
+    
     if (is.T(x)) {
       meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="degC", 
                           missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
@@ -395,6 +403,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
                               missval=missval,longname="seasonal_mean_temperature_Jun-Aug",prec="float",verbose=verbose)
       tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units="degC/decade", 
                               missval=missval,longname="seasonal_mean_temperature_Sep-Nov",prec="float",verbose=verbose)
+      lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
+                          units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+                          missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
       
     } else
     if (is.precip(x)) {
@@ -491,6 +502,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
                             missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
       tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units=unit(x)[1], 
                             missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+      lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
+                          units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+                          missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
     }
   } 
   
@@ -522,6 +536,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     maxid <- ncid$var[["summary_max"]]
     minid <- ncid$var[["summary_min"]]
     nhrid <- ncid$var[["summary_records"]]
+    lehrid <- ncid$var[["last_element_highest"]]
+    
     if (is.T(x)) {
      sdid <- ncid$var[["summary_sd"]]
      sdid.djf <- ncid$var[["summary_sd_DJF"]]
@@ -529,6 +545,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
      sdid.jja <- ncid$var[["summary_sd_JJA"]]
      sdid.son <- ncid$var[["summary_sd_SON"]]
      nlrid <- ncid$var[["summary_lows"]]
+     lelrid <- ncid$var[["last_element_lowest"]]
     } else if (is.precip(x)) {
       muid <- ncid$var[["summary_wetmean"]]
       muid.djf <- ncid$var[["summary_wetmean_DJF"]]
@@ -557,24 +574,25 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
       sdid.mam <- ncid$var[["summary_sd_MAM"]]
       sdid.jja <- ncid$var[["summary_sd_JJA"]]
       sdid.son <- ncid$var[["summary_sd_SON"]]
+      lelrid <- ncid$var[["last_element_lowest"]]
     }
   } else {
     if (verbose) print(paste('Creating file',fname))
     if (is.T(x)) ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                                    fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                                    sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,maxid,minid,nhrid,nlrid,
-                                                   tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son)) else
+                                                   tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,lehrid,lelrid)) else
         if (is.precip(x)) ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                             fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                             maxid,minid,nhrid,muid,muid.djf,muid.mam,muid.jja,muid.son,
                                             fwid,fwid.djf,fwid.mam,fwid.jja,fwid.son,
                                             tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,
                                             tdmuid,tdmuid.djf,tdmuid.mam,tdmuid.jja,tdmuid.son,
-                                            tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid)) else 
+                                            tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid,lehrid)) else 
         ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                           fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                           sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,tdid,
-                                          tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid))
+                                          tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,lehrid,lelrid))
   }
  
   if (verbose) print('Saving the variables:')
@@ -609,6 +627,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   ncvar_put( ncid, minid, mn, start=start[2],count=count[2])
   if (verbose) print('Add summary statistics: records')
   ncvar_put( ncid, nhrid, nhr, start=start[2],count=count[2])
+  ncvar_put( ncid, lehrid, lehr, start=start[2],count=count[2])
   if (is.T(x)) {
     if (verbose) print('extra for temperature')
     ncvar_put( ncid, sdid, std, start=start[2],count=count[2])
@@ -617,6 +636,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     ncvar_put( ncid, sdid.jja, std.jja, start=start[2],count=count[2])
     ncvar_put( ncid, sdid.son, std.son, start=start[2],count=count[2])
     ncvar_put( ncid, nlrid, nlr, start=start[2],count=count[2])
+    ncvar_put( ncid, lelrid, lelr, start=start[2],count=count[2])
   }
   if (is.precip(x)) {
     if (verbose) print('extra for precipitation')
@@ -648,6 +668,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     ncvar_put( ncid, sdid.mam, std.mam, start=start[2],count=count[2])
     ncvar_put( ncid, sdid.jja, std.jja, start=start[2],count=count[2])
     ncvar_put( ncid, sdid.son, std.son, start=start[2],count=count[2])
+    ncvar_put( ncid, lelrid, lelr, start=start[2],count=count[2])
   }
   
   ## There are some times problems saving text data, and there seems to be some 

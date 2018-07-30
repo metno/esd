@@ -272,3 +272,23 @@ lastrains <- function(x,x0=1,uptodate=TRUE,verbose=FALSE) {
   return(z)
 }
 
+lastelementrecord <- function(x,verbose=FALSE) {
+  ## Checks last element of the record to see if they are the highest - a record
+  if (verbose) print('lastelementrecord')
+  ## If minimum, then multiply x with -1
+  y <- coredata(x)
+  nt <- length(index(x))
+  if (length(dim(y)) == 2) {
+    z <- rep(0,dim(y)[2])
+    validlast <- is.finite(y[nt,])
+    z[validlast] <- apply(y[,validlast],2,function(x) if (x[length(x)] == max(x,na.rm=TRUE)) 1 else 0)
+  } else {
+    z <- 0
+    if(is.finite(y[nt])) 
+      if (y[nt]==max(y,na.rm=TRUE)) z <- 1
+  }
+  return(z)
+}
+
+
+
