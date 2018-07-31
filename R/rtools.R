@@ -61,7 +61,7 @@ eofvar <- function(x) if (inherits(x,c('eof','pca')))
                           attr(x,'eigenvalues')^2/attr(x,'tot.var')*100 else NULL
 
 ## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands   
-test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y='NA', nam.y.dom='NA',nam.t='NA',verbose=FALSE) {
+test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y.res='NA', nam.y='NA', nam.x.dom='NA',nam.t='NA',verbose=FALSE) {
   predictor_field <- x
   predictand_field <- y
   max_EOFs_predictor <- nmax.x
@@ -93,8 +93,9 @@ test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA',
   }
   training$y.name=nam.y
   training$x.name=nam.x
+  training$y.res=nam.y.res
   training$t.name=nam.t
-  training$dom.name=nam.y.dom
+  training$dom.name=nam.x.dom
   tm<-cbind(setNames(data.frame(rownames(training)),c('names')), data.frame(training, row.names=NULL))
   tmn<-tm[,c(ncol(tm)-3, ncol(tm)-2, ncol(tm)-1,  ncol(tm),1:(ncol(tm)-4))]
   if (verbose) {cat('\n .')  

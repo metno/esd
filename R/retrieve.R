@@ -1477,7 +1477,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                 time$daysayear <- as.numeric(substr(calendar.att, 1, 3))
             if (!is.null(time$daysayear)) if (verbose) print(paste("Creating time$daysayear attribute and setting attribute to ", time$daysayear, sep=" "))
         }
-        if (!is.null(time$daysayear)) {
+        if (!is.null(time$daysayear) & tunit!='hours') {
             if (time$daysayear==365) 
                 mndays <- c(31,28,31,30,31,30,31,31,30,31,30,31) # Number of days in each month
             else if (time$daysayear==360)
@@ -1514,7 +1514,12 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                     qf <- c(qf,"jumps in data found - continuous vector forced")
                 } else time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)
               } else time$vdate <- as.Date(paste(years,months,"15",sep="-")) 
-            }  
+            }
+                # HBE added fix for no_leap or 365_day hourly calander
+            } else if (!is.null(time$daysayear) & tunit =='hours' & time$daysayear==365) {
+              rankp<- seq(as.POSIXct(torigin), as.POSIXct("2200-01-01 00:00:00"), by="hour")
+              rankp <- rankp[(month(rankp)!=2 | day(rankp)!=29)]
+              time$vdate <- rankp[floor(time$vals)+1]
         } else   
             if (verbose) {
                 print(time$vdate[1])
