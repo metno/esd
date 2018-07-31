@@ -201,7 +201,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   nlr <- apply(-anomaly(x),2,'arec')
   
   ## Is the last element a high or low record?
-  lehr <- lastelementrecord(x)
+  lehr <- lastelementrecord(x,verbose=verbose)
   lelr <- lastelementrecord(-x)
   
   if (is.T(x)) {

@@ -281,7 +281,8 @@ lastelementrecord <- function(x,verbose=FALSE) {
   if (length(dim(y)) == 2) {
     z <- rep(0,dim(y)[2])
     validlast <- is.finite(y[nt,])
-    z[validlast] <- apply(y[,validlast],2,function(x) if (x[length(x)] == max(x,na.rm=TRUE)) 1 else 0)
+    if (sum(validlast)>0)
+      z[validlast] <- apply(y[,validlast],2,function(x) if (x[length(x)] == max(x,na.rm=TRUE)) 1 else 0)
   } else {
     z <- 0
     if(is.finite(y[nt])) 
