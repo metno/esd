@@ -11,8 +11,7 @@ cntrs <- gsub(" ",".",cntrs)
 cntrs <- gsub("[","",cntrs,fixed=TRUE)
 cntrs <- gsub("]","",cntrs,fixed=TRUE)
 cntrs <- gsub(",",".",cntrs,fixed=TRUE)
-eles <- rev(rownames(table(SS$element)))
-#eles <- eles[-c(1:2)]
+if (is.null(eles)) eles <- rev(rownames(table(SS$element)))
 
 for (ele in eles) {
   ii <- 1 ## counter to keep track of number of stations saved
