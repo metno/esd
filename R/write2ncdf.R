@@ -153,7 +153,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   if (verbose) print('write2ncdf4.station')
   
   ## Don't save empty space:
-  good <- apply(coredata(x),1,FUN='nv')
+  if (length(dim(x))==2) good <- apply(coredata(x),1,FUN='nv') else
+                         good <- nv(x)
   x <- subset(x,it=good > 0)
   
   ## Write a station object as a netCDF file using the short-type combined with add_offsetet and scale_factor
@@ -169,10 +170,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
       stop('write2ncdf4.station: stid argument does not match x')
     }
     ns <- length(stid) 
-  } else {
+  } else if (length(dim(x))==2) {
     ns <- dim(x)[2] 
     stid <- 1:ns
-  }
+  } else ns <- 1
   if (verbose) print(c(nt,ns))
   
   ## if (is.null(d)) d <- c(length(x),1)
@@ -307,6 +308,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   
   if (is.null(it)) it <- index(y)
   start <- c( (1:length(it))[is.element(it,index(y)[1])],stid[1] )
+  if (length(start)==1) start <- c(start,1)
   if (!is.null(dim(y))) count <- dim(y) else count <- c(length(y),1)
   if (verbose) {
     print("start & count"); print(start); print(count); 
