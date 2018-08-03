@@ -12,6 +12,7 @@ cntrs <- gsub("[","",cntrs,fixed=TRUE)
 cntrs <- gsub("]","",cntrs,fixed=TRUE)
 cntrs <- gsub(",",".",cntrs,fixed=TRUE)
 if (is.null(eles)) eles <- rev(rownames(table(SS$element)))
+if (is.null(nmin)) nmin <- NULL
 
 for (ele in eles) {
   ii <- 1 ## counter to keep track of number of stations saved
@@ -21,13 +22,13 @@ for (ele in eles) {
     print(cntr)
 #    meta <- read.table(file.path(paste('data.ECAD/ECA_nonblend',param,sep='_'),'sources.txt'),
 #                       skip=22,header=TRUE,sep=',')
-    ss <- select.station(src='ecad',cntr=cntr,param=param)   ## single country
-    Ss <- select.station(src='ecad',param=param)             ## All countries
+    ss <- select.station(src='ecad',cntr=cntr,param=param,nmin=nmin)   ## single country
+    Ss <- select.station(src='ecad',param=param,nmin=nmin)             ## All countries
     fname <- paste(param,'ecad','nc',sep='.')
     append <- file.exists(fname)
     
     if (!is.null(ss)) {
-      x <- station(cntr=cntr,param=param,src='ecad')
+      x <- station(cntr=cntr,param=param,src='ecad',save2file=FALSE)
       if (sum(!is.na(unit(x)))==0) {
         units <- switch(toupper(param),'SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
                         'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')

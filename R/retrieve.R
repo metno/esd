@@ -2195,6 +2195,11 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   is <- (1:ns)[ii]
   
   ## Find the real dates:
+  if (sum(tim > 10e7)>0) {
+    ## If silly values due to missing data
+    print(paste(sum(tim > 10e7),'suspect time stamps!'))
+    notsuspect <- tim <= 10e7
+  } 
   if (verbose) {print('Time information'); print(tunit$value); print(range(tim))}
   if (length(grep('days since',tunit$value))) 
     t <- as.Date(substr(tunit$value,12,21)) + tim else
@@ -2234,6 +2239,11 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   x <- ncvar_get(ncid,param,start=start,count=count)
   nc_close(ncid)
   if (verbose) print('All data has been extracted from the netCDF file')
+  
+  if (sum(!notsuspect)>0) {
+    x <- x[notsuspect,]; t <- t[notsuspect]
+    tim <- tim[notsuspect]; nt <- length(tim)
+  }
   x[x<=missing$value] <- NA
   
   ## The data matrix is not full and may not necessarily correspond to the selection
