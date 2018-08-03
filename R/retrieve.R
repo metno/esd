@@ -2199,7 +2199,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
     ## If silly values due to missing data
     print(paste(sum(tim > 10e7),'suspect time stamps!'))
     notsuspect <- tim <= 10e7
-  } 
+  } else notsuspect <- rep(TRUE,length(tim))
   if (verbose) {print('Time information'); print(tunit$value); print(range(tim))}
   if (length(grep('days since',tunit$value))) 
     t <- as.Date(substr(tunit$value,12,21)) + tim else
