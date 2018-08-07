@@ -2346,7 +2346,9 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
         t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
           if (length(grep('years since',tunit$value))) 
             t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
-  attr(y,'period') <- range(t)
+  if (verbose) print(paste('Get the time period',paste(range(t),collapse=' - ')))
+  ok <- ( (t > as.Date('1700-01-01')) & (t < as.Date('2300-01-01')) )
+  attr(y,'period') <- range(t[ok])
   attr(y,'unit') <- unit
   attr(y,'missing_value') <- missing
   attr(y,'length') <- length(t)
