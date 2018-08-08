@@ -150,12 +150,13 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
 
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   
-  if (verbose) print('write2ncdf4.station')
+  if (verbose) {print('write2ncdf4.station'); print(range(index(x)))}
   
   ## Don't save empty space:
   if (length(dim(x))==2) good <- apply(coredata(x),1,FUN='nv') else
                          good <- nv(x)
-  x <- subset(x,it=good > 0)
+  if (is.null(it)) x <- subset(x,it=good > 0)
+  if (verbose) {print('time period after missing data have been removed'); print(range(index(x)))}
   
   ## Write a station object as a netCDF file using the short-type combined with add_offsetet and scale_factor
   ## to reduce the size.   
@@ -298,8 +299,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
         x2 <- merge(zoo(rep(NA,nt),order.by=it),zoo(y),all=FALSE)
         x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
         x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; rm('x2')
-        time <- julian(index(y)) - julian(as.Date(torg))
-        if (verbose) {print(range(index(x))); print(dim(x))}
+        #time <- julian(index(y)) - julian(as.Date(torg))
+        time <- julian(it) - julian(as.Date(torg))
+        if (verbose) {print(range(index(x))); print(range(it)); print(dim(x))}
       }
   else if (inherits(x,'annual'))
       time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
@@ -309,6 +311,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   if (is.null(it)) it <- index(y)
   start <- c( (1:length(it))[is.element(it,index(y)[1])],stid[1] )
   if (length(start)==1) start <- c(start,1)
+  
   if (!is.null(dim(y))) count <- dim(y) else count <- c(length(y),1)
   if (verbose) {
     print("start & count"); print(start); print(count); 
@@ -578,6 +581,11 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
       sdid.son <- ncid$var[["summary_sd_SON"]]
       lelrid <- ncid$var[["last_element_lowest"]]
     }
+    
+    ## Appending the data after those that already exist:
+    if (verbose) print(paste('Adjust start[2] so tht data is added after',ns,'stations'))
+    start[2] <- start[2] + ns
+    
   } else {
     if (verbose) print(paste('Creating file',fname))
     if (is.T(x)) ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
