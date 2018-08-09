@@ -296,7 +296,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
       if (is.null(it)) time <- julian(index(x)) - julian(as.Date(torg)) else {
         if (verbose) print('Use prescribed time coordinates')
         y <- zoo(y,order.by=index(x))
-        x2 <- merge(zoo(rep(NA,nt),order.by=it),zoo(y),all=FALSE)
+        x2 <- merge(zoo(rep(0,nt),order.by=it),zoo(y),all=FALSE)
         x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
         x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; rm('x2')
         #time <- julian(index(y)) - julian(as.Date(torg))
@@ -305,6 +305,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
       }
   else if (inherits(x,'annual'))
       time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
+  print(paste('Period in data: ',min(firstyear(x)),' - ', max(lastyear(x)),' and time dimension: ',
+              paste(range(as.Date(time,origin=torg)),collapse=' - ')))
        
 # Attributes with same number of elements as stations are saved as variables
   
