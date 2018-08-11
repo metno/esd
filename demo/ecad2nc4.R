@@ -6,8 +6,7 @@
 #source('~/R/esd/R/write2ncdf.R')
 
 variables <- ls()
-it <- seq(min(c(as.Date('1900-01-01'),index(x))),
-          max(c(as.Date('2018-05-31'),index(x))),by='day')
+it <- seq(as.Date('1900-01-01'),as.Date('2018-05-31'),by='day')
 
 # cntrs <- rownames(table(SS$country))
 # cntrs <- gsub(" ",".",cntrs)
