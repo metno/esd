@@ -52,7 +52,6 @@ for (ele in eles) {
       # if (length(x) > 0) write2ncdf4(x,fname,it=it,
       #                                stid=stano,append=append,verbose=FALSE,stid_unlim=TRUE)
       if (length(x) > 0) write2ncdf4(x,fname,it=it,append=append,verbose=FALSE,stid_unlim=TRUE)
-      if (!is.null(dim(x))) ii <- ii + dim(x)[2] else if (!is.null(x)) ii <- ii + 1
     } else x <- NULL
     rm("x"); gc(reset=TRUE)
   }
