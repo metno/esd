@@ -13,7 +13,8 @@ it <- seq(as.Date('1900-01-01'),as.Date('2018-05-31'),by='day')
 # cntrs <- gsub("[","",cntrs,fixed=TRUE)
 # cntrs <- gsub("]","",cntrs,fixed=TRUE)
 # cntrs <- gsub(",",".",cntrs,fixed=TRUE)
-if (sum(is.element(variables,'eles'))==0)  eles <- rev(rownames(table(SS$element)))
+if (sum(is.element(variables,'eles'))==0)  
+  eles <- rev(rownames(table(select.station(src='ecad')$element)))
 if (sum(is.element(variables,'nmin'))==0) nmin <- NULL
 
 for (ele in eles) {
@@ -32,7 +33,6 @@ for (ele in eles) {
     iii <- iii[iii <= ns]
     
     append <- file.exists(fname)
-    
     x <- try(station(SS[iii,],save2file=FALSE))
     
     #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
