@@ -4,45 +4,44 @@
 
 #require(esd)
 #source('~/R/esd/R/write2ncdf.R')
-SS <- select.station(src='ecad')
-variables <- ls()
 
-cntrs <- rownames(table(SS$country))
-cntrs <- gsub(" ",".",cntrs)
-cntrs <- gsub("[","",cntrs,fixed=TRUE)
-cntrs <- gsub("]","",cntrs,fixed=TRUE)
-cntrs <- gsub(",",".",cntrs,fixed=TRUE)
+variables <- ls()
+it <- seq(min(c(as.Date('1900-01-01'),index(x))),
+          max(c(as.Date('2018-05-31'),index(x))),by='day')
+
+# cntrs <- rownames(table(SS$country))
+# cntrs <- gsub(" ",".",cntrs)
+# cntrs <- gsub("[","",cntrs,fixed=TRUE)
+# cntrs <- gsub("]","",cntrs,fixed=TRUE)
+# cntrs <- gsub(",",".",cntrs,fixed=TRUE)
 if (sum(is.element(variables,'eles'))==0)  eles <- rev(rownames(table(SS$element)))
 if (sum(is.element(variables,'nmin'))==0) nmin <- NULL
 
 for (ele in eles) {
-  ii <- 1 ## counter to keep track of number of stations saved
+  SS <- select.station(src='ecad',ele=ele)
+  stids <- SS$station_id
+  ns <- length(stids)
+  is <- seq(1,ns,by=50)
+  if (max(is) < ns) is <- c(is,ns)
+  
   param <- tolower(as.character(ele2param(ele,src='ecad')[5]))
   print(param)
   fname <- paste(param,'ecad','nc',sep='.')
   if (file.exists(fname)) file.remove(fname)
-  for (cntr in cntrs) {
-    print(cntr)
-#    meta <- read.table(file.path(paste('data.ECAD/ECA_nonblend',param,sep='_'),'sources.txt'),
-#                       skip=22,header=TRUE,sep=',')
-    ss <- select.station(src='ecad',cntr=cntr,param=param,nmin=nmin)   ## single country
-    Ss <- select.station(src='ecad',param=param,nmin=nmin)             ## All countries
+  for (id in is) {
+    iii <- seq(id,id+49,length=50)
+    iii <- iii[iii <= ns]
+    
     append <- file.exists(fname)
     
-    if (!is.null(ss)) {
-      x <- station(cntr=cntr,param=param,src='ecad',save2file=FALSE)
-      if (!append) it <- seq(min(c(as.Date('1900-01-01'),index(x))),max(c(as.Date('2018-05-31'),index(x))),by='day')
-      #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
-      if (sum(!is.na(unit(x)))==0) {
-        units <- switch(toupper(param),'SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
-                        'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')
-        attr(x,'unit') <- units
-      }
-      if (!is.null(dim(x))) {
-        if (!append) stano <- 1:dim(Ss)[1] else stano <- ii:(ii+dim(x)[2]-1)
-      } else if (!is.null(x)) {
-        if (!append) stano <- 1:dim(Ss)[1] else stano <- ii
-      }
+    x <- try(station(SS[iii,],save2file=FALSE))
+    
+    #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
+    if (!inherits(x,'try-error')) {
+      units <- switch(toupper(param),'SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
+                      'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')
+      attr(x,'unit') <- units
+      
       print(rbind(loc(x),firstyear(x),lastyear(x)))
       ## Quality check
       if ( (min(x,na.rm=TRUE) < -999) | (max(x,na.rm=TRUE)>2000) ) {
@@ -57,6 +56,5 @@ for (ele in eles) {
       if (!is.null(dim(x))) ii <- ii + dim(x)[2] else if (!is.null(x)) ii <- ii + 1
     } else x <- NULL
     rm("x"); gc(reset=TRUE)
-    print(ii)
   }
 }
