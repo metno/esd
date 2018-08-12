@@ -149,6 +149,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   #require(ncdf4)
 
   if (!inherits(x,"station")) stop('x argument must be a station object') 
+  unitx <- unit(x)
   
   if (verbose) {print('write2ncdf4.station'); print(range(index(x)))}
   
@@ -275,7 +276,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
     td.son <- apply(annual(subset(x,it='son'),'mean',nmin=75),2,'trend.coef')
   }
-  if (verbose) {print('Summary statistics computed'); print(lr)}
+  if (verbose) print('Summary statistics computed')
   
   #fyr <- firstyear(x)
   #lyr <- lastyear(x)
@@ -354,8 +355,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimS),units="name",prec="char",longname="country",
                         verbose=verbose)
     
-    if (verbose) print(paste('ncvar:',varid(x)[1]))
-    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
+    if (verbose) {print(paste('ncvar:',varid(x)[1])); print(unitx[1])}
+    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="°C", "degC",unitx[1]),
                          longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
 
     if (verbose) print('The variables have been defined - now the summary statistics...')

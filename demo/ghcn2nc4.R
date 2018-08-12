@@ -6,7 +6,7 @@
 #source('~/R/esd/R/write2ncdf.R')
 library(esd)
 nmin <- 75
-eles <- c(111,121,601)[2:3]
+eles <- c(111,121,601)
 it <- seq(as.Date('1893-01-01'),as.Date('2017-12-1'),by=1)
 
 for (ele in eles) {
@@ -23,12 +23,11 @@ for (ele in eles) {
   print(fname)
   append <- file.exists(fname) 
   for (id in is) {for (id in is) {
-    iii <- seq(id,id+99,length=100)
+    iii <- seq(id,id+49,length=50)
     iii <- iii[iii <= ns]
     print('Read data');print(id)
     
     x <- try(station(SS[iii,]))
-    
     if (!inherits(x,'try-error')) {
       print(loc(x))
       
