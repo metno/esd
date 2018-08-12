@@ -23,7 +23,7 @@ for (ele in eles) {
   print(fname)
   append <- file.exists(fname) 
   for (id in is) {for (id in is) {
-    iii <- seq(id,id+49,length=50)
+    iii <- seq(id,id+99,length=100)
     iii <- iii[iii <= ns]
     print('Read data');print(id)
     
@@ -31,11 +31,6 @@ for (ele in eles) {
     
     if (!inherits(x,'try-error')) {
       print(loc(x))
-      units <- switch(toupper(param),'SD'='cm',
-                      'CC'='octas','RR'='mm/day','FX'='m/s',
-                      'DD'='degree','FG'='m/s','PP'='hPa',
-                      'SS'='hours','HU'='percent')
-      attr(x,'unit') <- units
       
       ## Quality check
       if ( (min(x,na.rm=TRUE) < -999) | (max(x,na.rm=TRUE)>2000) ) {
