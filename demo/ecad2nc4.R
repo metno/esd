@@ -37,7 +37,8 @@ for (ele in eles) {
     
     #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
     if (!inherits(x,'try-error')) {
-      units <- switch(toupper(param),'SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
+      units <- switch(toupper(param),'t2m'='degC','tmax'='degC','tmin'='degC',
+                      'precip'='mm/day','SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
                       'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')
       attr(x,'unit') <- units
       
