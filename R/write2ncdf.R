@@ -144,7 +144,7 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDL-Data-Types.html:
 # short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
 
-write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=NULL,stid=NULL,append=FALSE,
+write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
                                 scale=0.1,torg='1899-12-31',verbose=FALSE,stid_unlim=FALSE) {
   #require(ncdf4)
 
@@ -154,6 +154,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   if (verbose) {print('write2ncdf4.station'); print(range(index(x)))}
   
   ## Don't save empty space:
+  cx <- coredata(x); cx[cx <= missval] <- NA; coredata(x) <- cx; rm('cx')
   if (length(dim(x))==2) good <- apply(coredata(x),1,FUN='nv') else
                          good <- nv(x)
   if (is.null(it)) x <- subset(x,it=good > 0)
