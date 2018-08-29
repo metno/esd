@@ -10,7 +10,7 @@ it <- seq(as.Date('1900-01-01'),as.Date('2018-05-31'),by='day')
 
 if (sum(is.element(variables,'eles'))==0)  
   eles <- rev(rownames(table(select.station(src='ecad')$element)))
-if (sum(is.element(variables,'nmin'))==0) nmin <- NULL
+if (sum(is.element(variables,'nmin'))==0) nmin <- 30
 
 for (ele in eles) {
   SS <- select.station(src='ecad',ele=ele)
