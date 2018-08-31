@@ -161,7 +161,7 @@ dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   results <- list(Z=Z,a=a,b=b,z0=z0,dZ=dZ.fit,dZ2=dZ2.fit,Z.fit=Z.fit,
                   lon=lon,lat=lat,dx=diff(lon)[1],span=range(lon))
   class(results) <- "map"
-  attr(results,"long_name") <- "y-derivative"
+  attr(results,"long_name") <- "x-derivative"
   attr(results,"spatial units") <- "hPa/m"
   attr(results,"descr") <- "dX()"
   invisible(results)

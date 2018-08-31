@@ -108,7 +108,7 @@ trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   #print(dim(y))
   nc <- sum(is.element(strsplit(model,"")[[1]],"t")) + 1
   coefficients <- matrix(rep(NA,nc*d[2]),nc,d[2])
-  browser()
+  #browser()
   for (i in 1:d[2]) {
     trendx <- data.frame(t=t,y=coredata(x[,i]))
     xt <- try(eval(parse(text=paste("xt <- lm(",model,",data=trendx)"))))
@@ -233,8 +233,9 @@ trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
 ## Compute the linear trend
 trend.coef <- function(x,...) {
+  if (is.zoo(x)) x <- coredata(x)
   if (sum(is.finite(x)) <= 3) return(NA)
-  x[!is.finite(x)] <- NA
+  if (sum(!is.finite(x))>0) x[!is.finite(x)] <- NA
   t <- 1:length(x)
   model <- lm(x ~ t)
   y <- c(model$coefficients[2]*10)

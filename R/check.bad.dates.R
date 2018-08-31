@@ -5,5 +5,6 @@ check.bad.dates <- function(yyyy,mm,dd) {
   ndpy <- as.numeric(table(yyyy))  ## Number of days per year
   bad.dates <- (max(ndpy) > 366) | (min(mm) < 1) | (max(mm) > 12) |
                 (min(dd) < 0) | (max(dd)>31)
+  if (is.na(bad.dates)) bad.dates <- TRUE
   return(bad.dates)
 }

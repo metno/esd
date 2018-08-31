@@ -201,6 +201,10 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
   # r <- rep(NA,dim(y)[2])
   # r[ok] <- rok
   # if (verbose) {print(length(r))}
+  if (verbose) {print(dim(y)); print(length(x))}
+  y <- matchdate(y,it=x)
+  x <- matchdate(x,it=y)
+  if (verbose) {print(dim(y)); print(length(x))}
   r <- apply(coredata(y),2,cor,coredata(x),use=use,...)
   r <- attrcp(y,r)
 

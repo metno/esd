@@ -60,9 +60,13 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (new) dev.new()
     if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
     if (!is.null(FUN)) if (FUN=='trend') {
-      FUN <- 'trend.coef'; colbar$pal <- 't2m'
-      if (is.precip(x)) colbar$rev=TRUE
-    } else colbar$pal <- varid(x)[1]
+      FUN <- 'trend.coef'
+      if(is.null(colbar$pal)) colbar$pal <- 't2m'
+      if(is.null(colbar$rev)) if (is.precip(x)) colbar$rev=TRUE
+    } else {
+      ## KMP 2018-05-31: Allow user to set different pal than default
+      if(is.null(colbar$pal)) colbar$pal <- varid(x)[1]
+    }
     if (!is.null(FUN)) {
       if (!(FUN %in% names(attributes(x)))) {
         if(is.null(dim(x))) dim(x) <- c(length(x),1)
@@ -177,6 +181,15 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     title(main=main,sub=sub,line=-2,adj=0,cex.main=cex.main,cex.sub=cex.sub,
           col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
   }
+  if (verbose) print('Organise output')
+  dim(y) <- c(1,length(y))
+  y <- zoo(y,order.by=1)
+  if (verbose) print(dim(y))
+  class(y) <- class(x)
+  y <- attrcp(x,y)
+  attr(y,'period') <- paste(range(index(x)))
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
 }
 
 ###

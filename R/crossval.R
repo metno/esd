@@ -110,3 +110,20 @@ crossval.list <- function(x, m=5, ...) {
   invisible(x)
 }
 
+crossval.dsensemble <- function(x,n=NULL,plot=TRUE) {
+  X <- x
+  if (is.null(n)) n <- dim(x$pca)[2]
+  m <- (n-1)%%3+1; k <- (n-1)%/%m+1
+  mfrow=c(m,k)
+  X$info <- NULL; X$eof <- NULL; X$pca <- NULL
+  xval <- lapply(X,function(x) diag(cor(attr(x,'evaluation'))[seq(2,2*n,by=2),seq(1,2*n-1,by=2)]))
+  if (plot) {
+    par(mfrow=mfrow)
+    for (i in 1:n) { 
+      hist(unlist(lapply(xval,function(x) x[i])),col='grey',lwd=2,
+         main=paste('X-validation correlation for PCA',i),xlab='correlation')
+    }
+  }
+  invisible(xval)
+}
+

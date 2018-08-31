@@ -4,9 +4,12 @@
 \alias{retrieve.ncdf}
 \alias{retrieve.ncdf4}
 \alias{retrieve.rcm}
+\alias{retrieve.station}
+\alias{retrieve.stationsummary}
 \alias{summary.ncdf4}
 \alias{check.ncdf4}
 \alias{check.ncdf}
+\alias{file.class}
 \title{Retrieve field data from a netcdf file.}
 \description{Retrieve data from a netcdf file and return a zoo field object with attributes. 
   \code{retrieve} assumes data on a regular lon-lat grid and \code{retrieve.rcm} reads data on irregular (rotated) grid. typically output from RCMs.
@@ -16,17 +19,26 @@
 retrieve.default(ncfile,type="ncdf",verbose=FALSE,...)
 retrieve.ncdf(ncfile = ncfile, path = path , param = "auto",
                lon = NULL, lat = NULL, lev = NULL, it = NULL,
-               miss2na = TRUE, greenwich = TRUE,
+               miss2na = TRUE, greenwich = FALSE,
                verbose = FALSE , plot = TRUE)
 retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
                lon = NULL, lat = NULL, lev = NULL, it = NULL,
                miss2na = TRUE, greenwich = TRUE,
                verbose = FALSE , plot = TRUE) 
 retrieve.rcm(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE)
+retrieve.station(ncfile,param="auto",type="ncdf4",
+                path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
+                alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
+                nmin=NULL,verbose=FALSE,...) 
+retrieve.stationsummary(ncfile,type="ncdf4",
+                        path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
+                        alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
+                        nmin=NULL,verbose=FALSE,...)                
 
 summary.ncdf4(ncfile, verbose=FALSE)
 check.ncdf4(ncid = ncid, param = "auto" , verbose = FALSE)
 check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
+file.class(ncfile,type="ncdf4")
 }
 
 \arguments{
@@ -46,7 +58,7 @@ check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
            tmin, tasmin     = Minimum temperature (in degrees Celcius)
            }
   \item{plot}{Logical value. if, TRUE provides a map.}
-  \item{greenwich}{Logical value. If FALSE, convert longitudes to -180E/180E or centre maps on Greenwich meridian (0 deg E).} 
+  \item{greenwich}{Logical value. If FALSE, convert longitudes to -180E/180E or centre maps on Greenwich meridian (0 deg E). In other  words, when Greenwich == TRUE, the left boundary of a global field is set to Greenwich and not the dateline.} 
   \item{ncdf.check}{Logical value. If TRUE, performs a quick check of the ncfile contents} 
   \item{miss2na}{Logical value. If TRUE missing values are converted to "NA"}
   \item{verbose}{Logical value defaulting to FALSE. If FALSE, do not

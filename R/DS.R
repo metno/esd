@@ -954,6 +954,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         #lines(zoo(ds[,1],order.by=year(ds)),col='red',lty=2)
 
     invisible(ds)
+    cat('\n')
 }
 
 DS.eof <- function(y,X,mon=NULL,

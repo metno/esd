@@ -12,8 +12,11 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.zoo")
-  
+  d <- dim(x)
   y <- default.subset(x,is=is,it=it,verbose=verbose)
+  ## Check if there is only one series but if the dimension 
+  if ( (!is.null(d)) & is.null(dim(y)) ) 
+    if (d[2]==1) dim(y) <- c(length(y),1)
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
@@ -333,7 +336,27 @@ subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
       if (inherits(x,'pca')) {
         y <- subset.pca(x,ip=ip,verbose=verbose)
         attr(y,'eof') <- subset.eof(attr(x,'eof'),ip=ip,verbose=verbose)
-        attr(y,'evaluation') <- attr(x,'evaluation')[,c(2*(ip-1)+1,2*(ip-1)+2)]
+        xcols <- is.element(names(attr(x,'evaluation')),paste(c('X.PCA','Z.PCA'),rep(ip,2),sep='.'))
+        ##attr(y,'evaluation') <- attr(x,'evaluation')[,c(2*(ip-1)+1,2*(ip-1)+2)]
+        attr(y,'evaluation') <- attr(x,'evaluation')[,xcols]
+        attr(y,'model') <- attr(x,'model')[ip]
+        attr(y,'fitted_values') <- attr(x,'fitted_values')[ip]
+        if (!is.null(attr(x,'n.apps'))) {
+          natt <- attr(x,'n.apps')
+          for (i in 1:natt)
+            attr(y,paste('appendix.',i,sep='')) <-
+              attr(y,paste('appendix.',i,sep=''))[,ip]
+        }
+        x <- y
+      }
+      if (inherits(x,'eof')) {
+        y <- subset.eof(x,ip=ip,verbose=verbose)
+        attr(y,'eof') <- subset.eof(attr(x,'eof'),ip=ip,verbose=verbose)
+        xcols <- is.element(names(attr(x,'evaluation')),paste(c('X.PCA','Z.PCA'),rep(ip,2),sep='.'))
+        ##attr(y,'evaluation') <- attr(x,'evaluation')[,c(2*(ip-1)+1,2*(ip-1)+2)]
+        attr(y,'evaluation') <- attr(x,'evaluation')[,xcols]
+        attr(y,'model') <- attr(x,'model')[ip]
+        attr(y,'fitted_values') <- attr(x,'fitted_values')[ip]
         if (!is.null(attr(x,'n.apps'))) {
           natt <- attr(x,'n.apps')
           for (i in 1:natt)
@@ -1071,6 +1094,10 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     
     ##attr(y,'date-stamp') <- date()
     ##attr(y,'call') <- match.call()
+    
+    ## Check if there is only one series but if the dimension 
+    if ( (!is.null(d)) & is.null(dim(y)) ) 
+      if (d[2]==1) dim(y) <- c(length(y),1)
     attr(y,'history') <- history.stamp(x)   
     if (verbose) print('exit default.subset')
     if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))

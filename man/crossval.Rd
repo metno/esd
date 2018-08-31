@@ -2,6 +2,7 @@
 \alias{crossval}
 \alias{crossval.ds}
 \alias{crossval.list}
+\alias{crossval.dsensemble}
 \title{Cross-validation}
 \description{
 Applies a cross-validation of DS results, using the same strategy as in
@@ -10,11 +11,14 @@ independently of that used to identify the subset of skillful predictors
 in the original analysis. The model coeffiecients (beta) is saved for
 each iteration, and both correlation and root-mean-squared-error are
 returned as scores.
+
+\code{crossval.dsensemble} will make use of the \code{evaluation} attribute with cross-validation results and returns the correlation.
 }
 \usage{
 crossval(x, m=5, ...)
 crossval.ds(x, m=5, ...)
 crossval.list(x, m=5, ...)
+crossval.dsensemble(x,plot=TRUE)
 }
 \arguments{
     \item{x}{The results from \code{\link{DS}}.}

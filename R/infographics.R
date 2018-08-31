@@ -552,7 +552,7 @@ diagram.station <- function(x,it=NULL,new=TRUE,...) {
 
 # Show the cumulative sum of station value from January 1st. Use
 # different colours for different year.
-cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,FUN='mean',...) {
+cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,verbose=FALSE,FUN='mean',...) {
   stopifnot(!missing(x),inherits(x,"station"))
   
   #print("cumugram")
@@ -579,7 +579,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,FUN='mean',...) {
   y.rest <- rep(NA,ny); y2n <- y.rest
   ylim <- max(coredata(x),na.rm=TRUE) # to avoid getting warnings with empty vectors.
   for (i in 1:ny) {
-    y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
+    y <- window(x,start=as.Date(paste(yrs[i],start,sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
     y.rest[i] <- mean(coredata(window(x,start=as.Date(paste(yrs[i],format(Sys.Date(),'-%m-%d'),sep='')),
                                       end=as.Date(paste(yrs[i],'-12-31',sep='')))))
@@ -591,14 +591,14 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,FUN='mean',...) {
     ok <- is.finite(z)
     #rint(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
     ylim[!is.finite(ylim)] <- NA
-    ylim[1] <- min(c(ylim,z[ok]),na.rm=TRUE)
-    ylim[2] <- max(c(ylim,z[ok]),na.rm=TRUE)
+    ylim[1] <- min(c(ylim,y[ok]),na.rm=TRUE)
+    ylim[2] <- max(c(ylim,y[ok]),na.rm=TRUE)
   }
   #print(ylim)
   names(y2n) <- yrs
   y2n <- round(sort(y2n,decreasing=TRUE),2)
   
-  plot(c(0,365),ylim,
+  plot(c(0,length(y)),ylim,
        type="n",xlab="",
        main=main,sub=attr(x,'location'),ylab=ylab(x),...)
   grid()
@@ -606,19 +606,26 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,FUN='mean',...) {
   cm <- rep(NA,ny)
   
   #browser()
+
+  mm <- format(yesterday, "%m")
+  dd <- format(yesterday, "%d")
+  period <- paste('YYYY',start,' to YYYY-',paste(mm,dd,sep='-'),sep='')
+  if (verbose) {print(yesterday); print(mm); print(dd); print(period)}
+  
+  if (verbose) print('No. year min max ylim[1] ylim[2]')
   for (i in 1:ny) {
-    y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
+    y <- window(x,start=as.Date(paste(yrs[i],start,sep='')),
                     end=as.Date(paste(yrs[i],'-12-31',sep='')))
-    t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
+    t <- julian(index(y)) - julian(as.Date(paste(yrs[i],start,sep='')))
     if (FUN=='mean') z <- cumsum(coredata(y))/1:length(y) else
     if (FUN=='sum') z <- cumsum(coredata(y))
-
-    mm <- format(yesterday, "%m")
-    dd <- as.numeric(yesterday, "%d")
     
-    cm[i] <- mean(coredata(window(x,
-            start=as.Date(paste(yrs[i],'-01-01',sep='')),
-            end=as.Date(paste(yrs[i],mm,dd,sep='-')))))
+    if (FUN=='mean') cm[i] <- mean(coredata(window(x,
+                                   start=as.Date(paste(yrs[i],start,sep='')),
+                                   end=as.Date(paste(yrs[i],mm,dd,sep='-'))))) else 
+                     cm[i] <- sum(coredata(window(x,
+                                    start=as.Date(paste(yrs[i],start,sep='')),
+                                    end=as.Date(paste(yrs[i],mm,dd,sep='-')))))
     lines(t,z,lwd=2,col=col[i])
     if (verbose) print(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
   }
@@ -626,9 +633,9 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,FUN='mean',...) {
     lines(t,z,lwd=5,col="black")
     lines(t,z,lwd=2,col=col[i])
   } else {
-    y <- window(x,start=as.Date(paste(it,'-01-01',sep='')),
+    y <- window(x,start=as.Date(paste(it,start,sep='')),
                     end=as.Date(paste(it,'-12-31',sep='')))
-    t <- julian(index(y)) - julian(as.Date(paste(it,'-01-01',sep='')))
+    t <- julian(index(y)) - julian(as.Date(paste(it,start,sep='')))
     if (FUN=='mean') z <- cumsum(coredata(y))/1:length(y)  else
     if (FUN=='sum') z <- cumsum(coredata(y))  
     lines(t,z,lwd=5,col="black")
@@ -640,7 +647,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,FUN='mean',...) {
   if (!is.na(coredata(z[length(z)]))) zn <- coredata(z[length(z)]) else
                                       zn <- coredata(z[length(z)-1])
   n <- max(table(year(x)))
-  if (n>=365) n <- as.numeric(diff(as.Date(c(paste(yrs[ny],'-01-01',sep=''),
+  if (n>=365) n <- as.numeric(diff(as.Date(c(paste(yrs[ny],start,sep=''),
                                              paste(yrs[ny],'-12-31',sep=''))))+1)
   if (n>=365) tm <- julian(as.Date('1900-12-31')) - julian(as.Date('1900-01-01')) else
               tm <- julian(as.Date('1900-12-01')) - julian(as.Date('1900-01-01'))
@@ -671,6 +678,7 @@ cumugram <- function(x,it=NULL,prog=FALSE,verbose=FALSE,FUN='mean',...) {
   if (verbose) print(y2n)
   result <- cbind(yrs[srt],cm[srt])
   colnames(result) <- c('year','cumulated')
+  attr(result,'period')  <- period
   invisible(result)
   
 }

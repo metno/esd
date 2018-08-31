@@ -126,7 +126,7 @@ diagnose.cca <- function(x) {
 }
 
 # Display cross-validation and statistics on the residual
-diagnose.ds <- function(x,plot=FALSE,verbose=FALSE,new=TRUE) {
+diagnose.ds <- function(x,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
   
   ## the attribute 'evaluation' contains cross-validation
   if (verbose) print("diagnose.ds")
@@ -139,20 +139,26 @@ diagnose.ds <- function(x,plot=FALSE,verbose=FALSE,new=TRUE) {
   if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
                                       xval <- crossval(x)
   ## Check the residuals
-  y <- as.residual(x)
+  if (verbose) print('residuals')
+  y <- zoo(x) - zoo(attr(x,'eof'))
   z <- as.original.data(x)
   anova <- summary(attr(x,'model'))
   eof <- attr(x,'eof')
   if (inherits(eof,'comb')) bias.diag <- diagnose(eof) else
                             bias.diag <- NULL
 
-  spectrum(coredata(y),plot=FALSE) -> s
+  if (verbose) print('spectrum')
+  spectrum(coredata(y)[,ip],plot=FALSE) -> s
   sp <- data.frame(y=log(s$spec),x=log(s$freq))
+  ## beta is used to estimate the Hurst coefficient 
   if (length(dim(y))==0) {
     beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
     beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
     ar1 <- acf(y,plot=FALSE)$acf[2]
   } else {beta <- NA; beta.error <- NA; ar1 <- NA}
+  
+  ## Auto-correlation of the residual
+  ar <- acf(coredata(y)[,ip],plot=FALSE)
   
   if (plot) {
     ## Timer series of the residual
@@ -162,29 +168,36 @@ diagnose.ds <- function(x,plot=FALSE,verbose=FALSE,new=TRUE) {
          main='cross-validation',
          sub=paste('correlation=',round(cor(xval)[2,1],2)))
 
-    plot(y,main='contains a trend?')
-    lines(trend(y))
     
-    ## Auto-correlation of the residual
-    ar <- acf(y,plot=TRUE)
+    for (i in 1:dim(y)[2]) {
+      plot(y[,i],main='contains a trend?',lwd=2,col='grey')
+      lines(trend(y[,i]),lty=2)
+    }
+    
     plot(ar$lag,ar$acf,type='b',main='Residual ACF?')
 
     ## Rsidual correlated with original data?
-    plot(coredata(z),coredata(y),main='Residual correlated with original data?')
+    plot(coredata(z)[,ip],coredata(y)[,ip],
+         main='Residual correlated with original data?')
 
     #sp <- spectrum(y,plot=FALSE)
     plot(s$freq,s$spec,type='l',main='Residual power-spectrum',log='xy')
 
     ## Residual normally distributed?
-    qqnorm(y,main='Residual normally distributed?')
+    qqnorm(coredata(y)[,ip],main='Residual normally distributed?')
     qqline(y)
 
-    if  (!is.null(attr(x,'diagnose'))) 
-      plot(attr(x,'diagnose'))
+    if  (!is.null(attr(x,'diagnose'))) plot(attr(x,'diagnose'))
   }
   
+  ii1 <- is.element(names(xval),paste('X.PCA',ip,sep='.'))
+  ii2 <- is.element(names(xval),paste('Z.PCA',ip,sep='.'))
+  x.corr <- cor(xval)[ii1,ii2]
+  R2 <- summary(attr(x,'model')[[ip]])$r.squared
+
   diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,
-                      ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error)
+                      ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error,
+                      x.corr = x.corr,R2=R2)
   return(diagnostics)
 }
 

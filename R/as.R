@@ -750,7 +750,7 @@ as.annual.spell <- function(x, ...) annual.spell(x,...)
 #  return(y)
 #}
 
-as.monthly <- function(x, ...) UseMethod("as.monthly")
+as.monthly <- function(x,...) UseMethod("as.monthly")
 
 as.monthly.default <- function(x,...) {
   yyyymm <- function(x) ym <- as.Date(paste(year(x),month(x),'01',sep='-'))

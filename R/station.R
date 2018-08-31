@@ -105,7 +105,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
                             path.ghcnd=NULL,url.ghcnd=NULL,
                             path.metnom=NULL,url.metnom=NULL,
                             path.metnod=NULL,url.metnod=NULL,
-                            user='external') { # user='metno'
+                            user='external',save2file=TRUE) { # user='metno'
   ##
   ## check wether x is a 'location' or a 'stationmeta' object
   
@@ -174,6 +174,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   
   print(paste("Retrieving data from",length(id),"records ..."))
   
+  X <- NULL
   
   ## start loop on available stations
   for (i in 1:length(id)) {
@@ -210,11 +211,11 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
         param1 <- NULL
       
       if (is.null(param1)) {
-        x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
+        x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user,save2file = save2file) ## ,path=path, url=url
       } else { ## compute the avg 
-        dd06 <- metnod.station(param='dd06',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
-        dd12 <- metnod.station(param='dd12',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
-        dd18 <- metnod.station(param='dd18',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
+        dd06 <- metnod.station(param='dd06',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user,save2file = save2file)
+        dd12 <- metnod.station(param='dd12',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user,save2file = save2file)
+        dd18 <- metnod.station(param='dd18',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user,save2file = save2file)
         ## scale.tmin <-as.numeric(ele2param(ele="121",src="GHCND")[3])
         x <- (dd06 + dd12 + dd18) / 3
         ## copy all attributes
@@ -232,7 +233,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       }
       
       if (verbose) {print("obs"); str(x)}
-      if (sum(is.na(coredata(x)))==length(coredata(x))) {
+      if ( is.null(x)| (sum(is.na(coredata(x)))==length(coredata(x))) ) {
         print("Warning : No values found in the time series -> This station will be ignored")
         x <- NULL
       }
@@ -243,7 +244,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       if (is.null(url.metnom)) url="http://klapp/metnopub/production/" else url <- url.metnom ## default url
       x <- metnom.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
       if (verbose) {print("obs"); str(x)}
-      if (sum(is.na(coredata(x)))==length(coredata(x))) {
+      if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
         print("Warning : No values found in the time series -> This station will be ignored")
         x <- NULL
       }
@@ -256,7 +257,8 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],
                         qual=qual[i],param=param[i],verbose=verbose,path=path, url=url)
       if (verbose) {print("obs"); str(x)}
-      if (sum(is.na(coredata(x)))==length(coredata(x))) {
+      
+      if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
         print("Warning : No values found in the time series for-> This station will be ignored")
         print(paste('stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],'loc=',loc[i],'cntr=',
                     cntr[i],'param=',param[i],'path=',path,'url=',url)) # REB 2016-07-26
@@ -269,7 +271,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       x <- nacd.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose)
       ##
       if (verbose) {print("obs"); str(x)}
-      if (sum(is.na(coredata(x)))==length(coredata(x))) {
+      if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
         print("Warning : No values found in the time series -> This station will be ignored")
         x <- NULL
       }
@@ -278,7 +280,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ##
       x <- narp.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose)
       if (verbose) {print("obs"); str(x)}
-      if (sum(is.na(coredata(x)))==length(coredata(x))) {
+      if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
         print("Warning : No values found in the time series -> This station will be ignored")
         x <- NULL
       }
@@ -287,7 +289,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ##
       x <- nordklim.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose)
       if (verbose) {print("obs"); str(x)}
-      if (sum(is.na(coredata(x)))==length(coredata(x))) {
+      if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
         print("Warning : No values found in the time series -> This station will be ignored")
         x <- NULL
       }
@@ -299,7 +301,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       if (is.null(url.ghcnm)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn" else url <- url.ghcnm ## default url
       x <- ghcnm.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path = path,url=url)
       if (verbose) {print("obs"); str(x)}
-      if (sum(is.na(coredata(x)))==length(coredata(x))) {
+      if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
         print("Warning : No values found in the time series -> This station will be ignored")
         x <- NULL
       }
@@ -337,7 +339,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
         x <- ghcnd.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path = path,url=url)
         if (verbose) {print("obs"); str(x)}
         ## 
-        if (sum(is.na(coredata(x)))==length(coredata(x))) {
+        if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
           print("Warning : No values found in the time series -> This station will be ignored")
           x <- NULL
         }
@@ -345,11 +347,9 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       }
     }
     
+    if (verbose) print(paste('Combine the station records for i=',i))
     if (!is.null(x)) {
-      if (i==1)
-        X <- x 
-      else
-        X <- combine.stations(X,x)
+      if (is.null(X)) X <- x else X <- combine.stations(X,x)
     }
   }
   ## 
@@ -411,6 +411,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   ##end <- ss$end
   ##param <- apply(as.matrix(ss$element),1,esd2ele)
   ##rm(ss)
+  if (verbose) print('--- enter ecad.station ---')
   ele <- esd2ele(param=param)
   if (is.null(ele)) {
     param1 <-as.character(ele2param(ele=param,src="ECAD")[5])
@@ -506,6 +507,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   attr(ECAD,'history') <- c(match.call(),date())
   attr(ECAD,'history') <- history.stamp(ECAD)
   ## class(ECAD) <- c("station","day","zoo")
+  if (verbose) print('--- exit ecad.station ---')
   invisible(ECAD)
 }
 
@@ -802,12 +804,12 @@ ghcnd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 ## adapted from stnr() function 
 metnom.station <-  function(re=15,stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,qual=NULL,
                             start=NULL,end=NULL,param=NULL,verbose=FALSE, h = NULL, nmt = 0,
-                            path = NULL, dup = "A", user='metno',url = "http://klapp/metnopub/production/") {
+                            path = NULL, dup = "A", user='metno',url = "http://klapp/metnopub/production/",save2file = TRUE) {
   
   if (user=='metno')
     y <- metno.station.internal(re=re,stid=stid,lon=lon,lat=lat,loc=loc,alt=alt,cntr=cntr,qual=qual,
                        start=start,end=end,param=param,verbose=verbose,h = h, nmt = nmt,
-                       path = path, dup = dup, url = url)
+                       path = path, dup = dup, url = url,save2file = save2file)
   else
     y <- metno.station(re=re,stid=stid,lon=lon,lat=lat,loc=loc,alt=alt,cntr=cntr,qual=qual,
                        start=start,end=end,param=param,verbose=verbose,h = h, nmt = nmt,
@@ -817,13 +819,13 @@ metnom.station <-  function(re=15,stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,
     attr(y,"source") <- "METNOM"
   invisible(y)
 }
-metnod.station <-  function(re=14, url = 'ftp://ftp.met.no/projects/chasepl/test', user='else',...) {
+metnod.station <-  function(re=14, url = 'ftp://ftp.met.no/projects/chasepl/test', user='else',save2file = TRUE,...) {
   ## 
   ## url <- "ftp://ftp.met.no/projects/chasepl/test"
   if (user=='metno')
-    y <- metno.station.internal(re=re,url=url,...)
+    y <- metno.station.internal(re=re,url=url,save2file = save2file,...)
   else 
-    y <- metno.station(re=re,url=url,...)
+    y <- metno.station(re=re,url=url,save2file = save2file,...)
   if (!is.null(y))
     attr(y,"source") <- "METNOD"
   invisible(y)

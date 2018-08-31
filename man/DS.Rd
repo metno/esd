@@ -81,27 +81,31 @@
 }
 \usage{
 DS(y,X,verbose=TRUE,plot=FALSE,...)
-DS.default(y, X, mon = NULL, method = "lm", swsm = "step", m = 5,
-  rmtrend = TRUE, ip = 1:7, 
-  area.mean.expl = FALSE, verbose = FALSE, weighted = TRUE, ...)
+DS.default(y,X,mon=NULL,
+                       method="lm",swsm="step",m=5,
+                       rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
+                       verbose=FALSE,weighted=TRUE,...)
 DS.station(y,X,biascorrect=FALSE,mon=NULL,
                        method="lm",swsm="step",m=5,
                        rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...)
-DS.eof(X,y,mon=NULL,
-       method="lm",swsm="step",m=5,
-       rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-       verbose=FALSE,pca=TRUE,npca=20,...)
-DS.comb(X,y,biascorrect=FALSE,mon=NULL,
-        method="lm",swsm="step",m=5,
-        rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-        verbose=FALSE,...) 
+DS.station.pca(y,X,mon=NULL,method="lm",swsm="step",m=5,
+                           rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
+                           verbose=FALSE,weighted=TRUE,...)
+DS.eof(y,X,mon=NULL,
+                   method="lm",swsm="step",m=5,
+                   rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
+                   verbose=FALSE,weighted=TRUE,pca=TRUE,...)
+DS.comb(y,X,biascorrect=FALSE,mon=NULL,
+                    method="lm",swsm="step",m=5,
+                    rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
+                    verbose=FALSE,weighted=TRUE,...) 
 DS.field(X,y,biascorrect=FALSE,mon=NULL,
-         method="lm",swsm="step",m=5,
-         rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-         verbose=FALSE,...) 
- DS.list(y,X,biascorrect=FALSE,mon=NULL,...)
-  DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
+                     method="lm",swsm="step",m=5,
+                     rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
+                     verbose=FALSE,weighted=TRUE,...) 
+DS.list(y,X,biascorrect=FALSE,mon=NULL,...)
+DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
                    method="lm",swsm="step",
                    rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,station=TRUE)
@@ -109,22 +113,23 @@ DS.t2m.season.field(y,X,biascorrect=FALSE,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,station=TRUE)
-DS.precip.season.field(y,X,biascorrect=FALSE,
-                      method="lm",swsm="step",
-                      rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                      verbose=FALSE,...)
+DS.precip.season.field(y,X,biascorrect=FALSE,threshold=1,
+                                   method="lm",swsm="step",m=5,
+                                   rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
+                                   verbose=FALSE,weighted=TRUE,...)
 DS.freq(y,X,threshold=1,biascorrect=FALSE,method="glm",
-family="gaussian",swsm="step",
-        rmtrend=TRUE,ip=1:7,verbose=FALSE,...)
-DS.spell(y,X,threshold=1,biascorrect=FALSE,method="glm",
-family="gaussian",swsm="step",
-         rmtrend=TRUE,ip=1:7,verbose=FALSE,...)
+                    family="gaussian",swsm="step",m=5,
+                    rmtrend=TRUE,ip=1:7,verbose=FALSE,weighted=TRUE,...)
+DS.spell(y,X,threshold=1,biascorrect=FALSE,
+                     method="glm",family="gaussian",swsm="step",m=5,
+                     rmtrend=TRUE,ip=1:7,verbose=FALSE,weighted=TRUE,...)
 DS.pca(y,X,biascorrect=FALSE,mon=NULL,
-       method="MVR",swsm=NULL,rmtrend=TRUE,...)
+                   method="lm",swsm=NULL,m=5,ip=1:10,
+                   rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...)
 DS.seasonalcycle(y,X,mon=NULL,FUN='wetmean',fun='mean',
-                            method="lm",swsm="step",m=1,
-                            ip=1:7,area.mean.expl=FALSE,
-                            verbose=FALSE,weighted=TRUE,...)
+                             method="lm",swsm="step",m=1,
+                             ip=1:7,area.mean.expl=FALSE,
+                             verbose=FALSE,weighted=TRUE,...)
 predict.ds.mon(x,...) 
 sametimescale(y,X,FUN='mean')
 biasfix(x)
