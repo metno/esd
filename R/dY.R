@@ -20,14 +20,24 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   z <- as.pattern(Z)
   lon <- lon(Z)
   lat <- lat(Z)
-  
+  print(m)
   if (is.null(accuracy)) accuracy <-  max(diff(lon))
   LON <- seq(min(lon),max(lon),by=accuracy)
   NX <- length(LON)
 
   ny <- length(lat)
   nx <- length(lon)
-  nt <- length(index(Z))
+  ##nt <- length(index(Z))
+  if (is.matrix(z)) {
+    dim(z) <- c(dim(z),1)
+    nt <- 1; t=1
+  } else if (!is.null(index(Z))) {
+    nt <- length(index(Z))
+    t <- index(Z)
+  } else {
+    nt <- 1
+    t <- 1
+  }
   
   if (is.null(m)) m <- nx
   m <- min(nx,m)
@@ -85,7 +95,7 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   if (verbose) print('Find the best-fit')
   z.fit <- zz0 + zz
   dim(z.fit) <- c(nx*ny,nt)
-  Z.fit <- zoo(t(z.fit),order.by=index(Z))
+  Z.fit <- zoo(t(z.fit),order.by=t)
   Z.fit <- as.field(Z.fit,lon=lon(Z),lat=lat(Z),param=varid(Z),unit=unit(Z),
                     longname=paste('fitted',attr(Z,'longname')),
                     greenwich = attr(Z,'greenwich'),aspect='fitted')
@@ -100,7 +110,7 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   b2d <- b/dy;  dim(b2d) <- c(m,nx*nt)
   dz <- t(-Wi*sin(Wii))%*%a2d +  t(Wi*cos(Wii))%*%b2d
   dim(dz) <- c(ny,nx,nt); dz <- aperm(dz,c(2,1,3)); dim(dz) <- c(nx*ny,nt)
-  dZ.fit <- zoo(t(dz),order.by=index(Z))
+  dZ.fit <- zoo(t(dz),order.by=t)
   dZ.fit <- as.field(dZ.fit,lon=lon(Z),lat=lat(Z),
                     param=paste('d*',varid(Z)),
                     unit=paste(unit(Z),'/dx'),
@@ -113,7 +123,7 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   b2d2 <- b/dy^2;  dim(b2d2) <- c(m,nx*nt)
   dz2 <- t(-Wi^2*cos(Wii))%*%a2d2 + t(-Wi^2*sin(Wii))%*%b2d2
   dim(dz2) <- c(ny,nx,nt); dz2 <- aperm(dz2,c(2,1,3)); dim(dz2) <- c(nx*ny,nt)
-  dZ2.fit <- zoo(t(dz2),order.by=index(Z))
+  dZ2.fit <- zoo(t(dz2),order.by=t)
   dZ2.fit <- as.field(dZ2.fit,lon=lon(Z),lat=lat(Z),param=varid(Z),
                     unit=paste(unit(Z),'^2/dy^2'),
                     longname=paste('fitted',attr(Z,'longname')),

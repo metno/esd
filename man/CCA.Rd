@@ -38,9 +38,9 @@ Try the same type of argument as in lm (' y ~ x, data= ')
 \usage{
 CCA(Y,X,...)
 CCA.default(Y,X,...) 
-CCA.eof(Y,X,i.eofs=1:8)
-CCA.pca(Y,X,i.eofs=1:8)
-CCA.field(Y,X,i.eofs=1:8)
+CCA.eof(Y,X,ip=1:8)
+CCA.pca(Y,X,ip=1:8)
+CCA.field(Y,X,ip=1:8)
 test.cca(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,
          SVD=TRUE,n.pc=4,synthetic=TRUE)
 
@@ -50,7 +50,7 @@ predict.CCA <- function(object, newdata=NULL, ...)
     \item{Y}{An object with climate data: field, eof, pca.}
     \item{X}{Same as Y.}
     \item{SVD}{Use a singular value decomposition as a basis for the PCA.}
-    \item{i.eofs}{Which EOFs to include in the CCA.}
+    \item{ip}{Which EOFs to include in the CCA.}
     \item{LINPACK}{an option for \code{\link{svd}}.}
     \item{object}{The result from CCA.}
     \item{newdata}{The same as X.}

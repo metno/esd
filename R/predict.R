@@ -73,8 +73,8 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
       idx <- index(newdata)
       src <- attr(newdata,'source')
       newdata <- as.data.frame(newdata)
-      if ((length(attr(X,'eigenvalues'))) != (length(attr(newdata,'eigenvalues'))))
-        warning('newdata and X have different number of EOFs')
+      if ((length(attr(X,'eigenvalues'))) != neofs)
+        warning(paste('Warning: newdata and X have different number of EOFs:',length(attr(X,'eigenvalues')),neofs))
   }
   #print(summary(newdata))
   names(newdata) <- Xnames 

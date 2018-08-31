@@ -1,4 +1,16 @@
 ## Function for gridding station data Y.
+
+## Check if you need to get the esd-package:
+install.LK <- ("LatticeKrig" %in% rownames(installed.packages()) == FALSE)
+
+if (install.LK) {
+  print('Need to install the LatticeKrig package')
+  ## Need online access.
+  install.packages('LatticeKrig')
+  print('The latest version of LatticeKrig has been installed from CRAN')
+}
+
+
 gridstation <- function(Y,i=1,verbose=FALSE,xlim=NULL,ylim=NULL) {
   if (verbose) print(paste('gridstation'))
   require(LatticeKrig)
@@ -20,7 +32,7 @@ gridstation <- function(Y,i=1,verbose=FALSE,xlim=NULL,ylim=NULL) {
   ## Flag dubplicated stations:
   ok <- !(duplicated(lon(Y)) & duplicated(lat(Y)))
 
-  if (verbose) print(paste(sum(ok),'locations'))
+  if (verbose) print(paste('Use',sum(ok),'locations from',length(lon(Y))))
 
   obj <- LatticeKrig( x=cbind(lon(Y)[ok],lat(Y)[ok]),
                       y=Y[ok,i],Z=alt(Y)[ok])
@@ -53,10 +65,13 @@ pca2eof <- function(x,verbose=FALSE,xlim=NULL,ylim=NULL) {
   if (verbose) print('pca2eof')
   stopifnot(inherits(x,'pca'))
   y <- x
-  z <- attr(x,'pattern')
-  attr(z,'longitude') <- lon(x)
-  attr(z,'latitude') <- lat(x)
-  attr(z,'altitude') <- alt(x)
+  if (!is.null(z <- attr(x,'pattern'))) {
+    z <- attr(x,'pattern')
+    attr(z,'longitude') <- lon(x)
+    attr(z,'latitude') <- lat(x)
+    attr(z,'altitude') <- alt(x)
+  } else if (!is.null(x$pca)) z <- x$pca else
+                              stop('Do not know how to handle this object!')
   d <- dim(z)
   Z <- list()
   if (verbose) print('Grid the modes')
@@ -82,21 +97,23 @@ pca2eof <- function(x,verbose=FALSE,xlim=NULL,ylim=NULL) {
   attr(y,'variable') <- varid(x)[1]
   attr(y,'unit') <- unit(x)[1]
   attr(y,'longname') <- attr(x,'longname')[1]
+  attr(y,'greenwich') <- TRUE
   class(y) <- c('eof','field',class(x)[-c(1,2)])
   return(y)
 }
 
 ## A function that converts PCA-based DSensemble objects to EOF-based results (gridded)
-as.eof.dsensemble.pca <- function(X,is=NULL,it=NULL,eofs=NULL,verbose=FALSE,...) {
+as.eof.dsensemble.pca <- function(X,is=NULL,it=NULL,ip=NULL,verbose=FALSE,...) {
   if (verbose) print('as.eof.dsensemble.pca')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
   if (inherits(X,"eof")) {
       invisible(X)
   } else {
     eof <- pca2eof(X$pca)
-    eof <- subset(eof,pattern=eofs)
+    eof <- subset(eof,ip=ip)
     if (!is.null(is)) eof <- subset(eof,is=is,it=it,verbose=verbose)
-    X$eof <- eof    
+    X$eof <- eof 
+    class(X) <- c("dsensemble", "eof", "list")
     invisible(X)
   }
 }

@@ -64,7 +64,7 @@ gridbox <- function(x,col,density = NULL, angle = 45) {
 #}
 
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
-                       colbar= list(pal='t2m',rev=FALSE,n=10,
+                       colbar= list(col='t2m',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
@@ -72,7 +72,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        gridlines=TRUE,fancy=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
 
-  
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
   ## If only a few items are provided in colbar - then set the rest to the default
@@ -103,7 +102,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
   ## if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
-
+  
   ## KMP 10-11-2015: apply xlim and ylim
   is <- NULL
   if (!is.null(xlim)) is$lon <- xlim
@@ -194,9 +193,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## }
   nc <- length(colbar$col)
   ## AM commented
-  index <- round( nc*( map - min(colbar$breaks) )/
-                    ( max(colbar$breaks) - min(colbar$breaks) ) )
-
+  ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
+  #index <- round( nc*( map - min(colbar$breaks) )/
+  #                  ( max(colbar$breaks) - min(colbar$breaks) ) )
+  ## The findInterval implementation can use irregularly spaced breaks.
+  ## (If a point has the same value as a break it will be assigned to the bin above it.)
+  index = findInterval(map,colbar$breaks,all.inside=TRUE)
+  ## where all.inside does to the indices what the clipping does to the values.
+  
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
   print('Clip the value range to extremes of colour scale')
   toohigh <- map>max(colbar$breaks)
@@ -243,9 +247,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   #print(dim(rbind(X,Z)))
   
 # Plot the results:
-  if (new) dev.new()
+  if (new) {
+    dev.new()
+    par(fig=c(0,1,0.1,1), mgp=c(2,0.5,0), mar=c(4,1,2,1))
+  }
   par(bty="n") ## ,xaxt="n",yaxt="n")
-  par(fig=c(0,1,0.1,1), mgp=c(2,0.5,0), mar=c(4,1,2,1))
   plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",main=main)
   
 # plot the grid boxes, but only the gridboxes facing the view point:
@@ -324,14 +330,16 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 
 #map2sphere(x)
 
-vec <- function(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
-                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,...) {
-  x <- subset(x,it=it); y <- subset(y,it=it)
+vec <- function(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
+                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...) {
+  if (verbose) print('vec')
+  if (!is.null(it)) {x <- subset(x,it=it); y <- subset(y,it=it)}
   d <- attr(x,'dimensions')
-  #print(d); print(dim(x))
+  if (verbose) {print(d); print(dim(x))}
   if (is.null(ix)) ix <- pretty(lon(x),n=nx)
   if (is.null(iy)) iy <- pretty(lat(x),n=ny)
   #print(c(d[2],d[1]))
+  if (verbose) {print('---pretty coordinates: ---');print(ix); print(iy)}
   X <- coredata(x); Y <- coredata(y)
   dim(X) <- c(d[1],d[2])
   dim(Y) <- c(d[1],d[2])
@@ -340,8 +348,8 @@ vec <- function(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
   y0 <- sort(rep(iy,length(ix)))
   ij <- is.element(ix,lon(x))
   ji <- is.element(iy,lat(x))
-  #print(ix); print(lon(x)); print(sum(ij))
-  #print(iy); print(lat(x)); print(sum(ji))
+  if (verbose) {print(ix); print(lon(x)); print(sum(ij))
+    print(iy); print(lat(x)); print(sum(ji))}
   dim(x0) <- c(length(ij),length(ji)); dim(y0) <- dim(x0)
   x0 <- x0[ij,ji]
   y0 <- y0[ij,ji]
@@ -372,7 +380,8 @@ vec <- function(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
     invisible <- a[2,] < 0
     x1[invisible] <- NA; y1[invisible] <- NA
   }    
-
+  
+  if (verbose) {print('x:'); print(x0); print(x1); print('y:'); print(y0); print(y1)}
   if (new) {
     dev.new()
     plot(range(x0,x1),range(y0,y1),xlab='',ylab='')

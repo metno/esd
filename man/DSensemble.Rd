@@ -8,6 +8,7 @@
 \alias{DSensemble.mu}
 \alias{DSensemble.mu.worstcase}
 \alias{DSensemble.pca}
+\alias{DSensemble.eof}
 \title{Downscale ensemble runs}
 \description{
 Downscales an ensemble of climate model runs, e.g. CMIP5, taking the
@@ -55,44 +56,44 @@ DSensemble.t2m(y,plot=TRUE,path="CMIP5.monthly/",
                            predictor="ERA40_t2m_mon.nc",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf',
-                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                           ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="tas_Amon_ens_",
                            path.ds=NULL,file.ds="DSensemble.rda",
-                           nmin=NULL,verbose=FALSE)
+                           nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE)
 DSensemble.precip((y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_pr_mon.nc",
                               non.stationarity.check=FALSE,
                               type='ncdf',
-                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                              ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
                               FUNX="sum",xfuns='C.C.eq',threshold=1,
-                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL)
+                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE)
 DSensemble.annual(y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_t2m_mon.nc",
                               non.stationarity.check=FALSE,type='ncdf',
-                              eofs=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                              ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
                               FUNX="mean",xfuns='C.C.eq',threshold=1,
-                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL)
+                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE)
 DSensemble.season(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,
                            non.stationarity.check=FALSE,type='ncdf',
-                           eofs=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
+                           ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="psl_Amon_ens_",
                            path.ds=NULL,file.ds=NULL,
-                           nmin=NULL,verbose=FALSE)
+                           nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE)
 DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
                           predictor=list(t2m="data/ncep/air.mon.mean.nc",
                                          olr="data/ncep/OLR.mon.mean.nc",
                                          slp="data/ncep/slp.mon.mean.nc"),
                           non.stationarity.check=FALSE,type='ncdf',
-                          eofs=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
+                          ip=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="wetmean",threshold=1,
                           pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365)
 DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
@@ -100,16 +101,27 @@ DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
                                     rcp="rcp45",biascorrect=FALSE,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf',
-                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE)
+                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE,ds.1900.2099=TRUE)
 DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
                           predictor="ERA40_t2m_mon.nc",
                           non.stationarity.check=FALSE,
-                          eofs=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
+                          ip=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="mean",rmtrend=TRUE,
                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf',
                           pattern="tas_Amon_ens_",verbose=FALSE,
-                          file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL)
+                          file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,
+                          ds.1900.2099=TRUE,test=FALSE)
+DSensemble.eof(y,plot=TRUE,path="CMIP5.monthly",
+                           rcp="rcp45",biascorrect=FALSE,
+                           predictor="ERA40_slp_mon.nc",
+                           non.stationarity.check=FALSE,
+                           ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,
+                           rel.cord=TRUE,nmin=NULL,lev=NULL,levgcm=NULL,
+                           select=NULL,FUN="mean",rmtrend=TRUE,
+                           FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
+                           pattern="psl_Amon_ens_",verbose=FALSE,
+                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE,test=FALSE)
 }
 \arguments{
     \item{y}{A station object.}
@@ -119,7 +131,7 @@ DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
     \item{biascorrect}{TRUE, apply a bias adjustment using \code{\link{biasfix}}}
     \item{predictor}{}
     \item{non.stationarity.check}{}
-    \item{eofs}{Which EOFs to include in the step-wise multiple regresion}
+    \item{ip}{Which EOFs to include in the step-wise multiple regresion}
     \item{rmtrend}{TRUE: detrend before calibrating the regression model.}
     \item{lon}{Longitude range for predictor}
     \item{lat}{Latitude range for predictor}
@@ -145,6 +157,7 @@ reading GCM data.}
 \code{annual(x,FUN=f)}. These functions are used using the following
 code \code{annual(f(x),FUN="mean")}}
     \item{mask}{TRUE mask out land}
+    \item{ds.1900.2099}{Default, only downscale for the period 1900-2099}
  }
 \value{A 'dsensembele' object - a list object holding DS-results.}
 \author{R.E. Benestad and A. Mezghani}

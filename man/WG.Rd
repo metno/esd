@@ -2,9 +2,9 @@
 \alias{Weather generators}
 \alias{WG}
 \alias{WG.station}
-\alias{}
-\alias{}
-\title{Weather generators for conditional simulation.}
+\alias{WG.fw.day.precip}
+\alias{WG.FT.day.t2m}
+\title{Weather generators for conditioned on simulated climate aggregated statistics.}
 \description{ 
 Weather generators for conditional simulation of daily temperature
 and/or precipitation, given mean and/or standard deviation. The family
@@ -54,7 +54,7 @@ annual mean number was estimated from the sample series.
 FTscramble(x,interval=NULL,spell.stats=FALSE,wetfreq.pred=FALSE)
 WG(x,...)
 WG.station(x,option='default',...)
-WG.FT.day.t2m(x=NULL,amean=NULL,asd=NULL,t=NULL,eofs=1:4,
+WG.FT.day.t2m(x=NULL,amean=NULL,asd=NULL,t=NULL,ip=1:4,
           select=NULL,lon=c(-20,20),lat=c(-20,20),
           plot=TRUE,biascorrect=TRUE,verbose=FALSE)
 WG.fw.day.precip(x=NULL,mu=NULL,fw=NULL,ndd=NULL,t=NULL,
@@ -75,7 +75,7 @@ WG.pca.day.t2m.precip(t2m=NULL,precip=NULL,threshold=1,select=NULL)
       provided, assume a 'dsensemble' object.}
     \item{t}{Time axis. If null, use the same as x or the last interval
       of same length as x from downscaled results.}
-    \item{eofs}{passed on to \code{\link{DSensemble.t2m}}}
+    \item{ip}{passed on to \code{\link{DSensemble.t2m}}}
     \item{select}{passed on to \code{\link{DSensemble.t2m}}}
     \item{lon}{passed on to \code{\link{DSensemble.t2m}}}
     \item{lat}{passed on to \code{\link{DSensemble.t2m}}}

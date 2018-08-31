@@ -84,12 +84,16 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
         if (verbose) print("Downloading metadata from 'ftp.ncdc.noaa.gov'")    	
         download.file(fullurl, destfile, method = "wget", quiet = FALSE, mode = "w",cacheOK = TRUE, extra = getOption("download.file.extra"))
       }
+      
       files <- untar(destfile,list="TRUE")
       inv.file <- files[grep("inv",files)]
       dat.file <- files[grep("dat",files)]
       upd.ver <- substr(inv.file, nchar(inv.file)-22,nchar(inv.file)-8)
-      untar(destfile, files = c(inv.file,dat.file), list = FALSE,exdir =path)	
+      untar(destfile, files = c(inv.file,dat.file), list = FALSE, exdir=path)	
                                         # Cleaning the file from "#" character
+      # make sure filenames have correct path
+      inv.file <- file.path(path,sub('./','',inv.file))
+      dat.file <- file.path(path,sub('./','',dat.file))
       text <- readLines(inv.file,encoding="US-ASCII")
       text1 <- gsub("#",replacement="X",x=text)
       writeLines(text1,inv.file)							
@@ -101,7 +105,8 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
       #setwd(newpath)  	
                                         #finventory <- paste(newpath,invfile,sep="")
                                         # Reading meta data ...
-      meta <- read.fwf(inv.file,widths=c(11,9,10,8,30,38),col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
+      #meta <- read.fwf(inv.file,widths=c(11,9,10,8,30,38),col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
+      meta <- read.fwf(inv.file,widths=c(11,9,10,8,29,38),col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
       #attach(meta,warn.conflicts=FALSE)
                                         #if (!is.null(stid)) { 
                                         #ID <- paste(ghcnm.meta$COUNTRY.CODE,ghcnm.meta$STN,sep="")	  
@@ -111,6 +116,7 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
       cntr <- substr(meta$stid,1,3)
              				# Generate country full name
       cc <- as.integer(table(factor(cntr)))
+      ##browser()
       meta$country <- rep(ghcn.country.code()$name[is.element(ghcn.country.code()$code,levels(factor(cntr)))],cc)
                                         # remove consecutive blanks from location name
       meta$loc <- gsub(pattern="  ",x=meta$loc,replacement="")
@@ -178,21 +184,22 @@ ghcnm.data <- function(ele = 101, stid = "10160403000", ver = "v3", adj = "qca",
   ## browser()
   ## Check if file exists 
   if (!file.exists(gzip.path) | force) {  
-      url = paste(url,ver,gzip.name,sep="/")
-      if (verbose) print(paste("Reading data from",url))    	
-      test <- try(eval(download.file(url, gzip.path, method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))))
-      if (test>0) {
-          if (verbose) print(paste(destfile,"does not exist",sep=" "))
-          return(NULL)
-      }
+    url = paste(url,ver,gzip.name,sep="/")
+    if (verbose) print(paste("Reading data from",url))    	
+    test <- try(eval(download.file(url, gzip.path, method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))))
+    if (test>0) {
+      if (verbose) print(paste(destfile,"does not exist",sep=" "))
+      return(NULL)
+    }
   }
-  else {
+  ## KMP 2016-09-16: This part has to be done regardless of if gzip.path exists or not.
+  #} else {
       untar(gzip.path, list = FALSE, exdir=path) ## files = c(inv.file,gzip.path),
+      ## do we really have to untar for every station? we could search for file first
       files <- untar(gzip.path,list="TRUE")
       inv.file <- files[grep("inv",files)]
       data.file <- files[grep("dat",files)]
       upd.ver <- substr(inv.file, nchar(inv.file)-22,nchar(inv.file)-8)
-      ## browser()  
       ## untar(destfile, files = c(inv.file,data.file), list = FALSE,exdir=file.path(path,ver))	
       ## Cleaning the file from comment "#" character
       inv.path <- file.path(path,paste(src,upd.ver,sep="."),fsep= .Platform$file.sep)
@@ -201,14 +208,14 @@ ghcnm.data <- function(ele = 101, stid = "10160403000", ver = "v3", adj = "qca",
       text1 <- gsub("#",replacement="X",x=text)
       writeLines(text1,inv.file)
       data.path <- file.path(path,paste(src,upd.ver,sep="."),fsep= .Platform$file.sep)
-      data.file <- file.path(data.path,paste(src,param,upd.ver,adj,"dat",sep="."),fsep= .Platform$file.sep)              
-  }
+      data.file <- file.path(data.path,paste(src,param,upd.ver,adj,"dat",sep="."),fsep= .Platform$file.sep)
+  #}
   if (verbose) print(paste("Version",upd.ver))
   if (verbose) print(paste("Adjusted", adj))
   ## Reading data as text ...
   ## setwd(newpath)		
   ## fdata <- paste(src,param,upd.version,adj,"dat",sep=".")  	
-  ## fdata <- "ghcnm.tavg.v3.2.0.20130120.qca.dat"   
+  ## fdata <- "ghcnm.tavg.v3.2.0.20130120.qca.dat"
   datatext = readLines(data.file)
   if (!is.null(stid)) datatext <- datatext[grep(stid,datatext)]       
   writeLines(datatext,file.path(path,"station.tmp",fsep= .Platform$file.sep))
@@ -235,4 +242,3 @@ ghcnm.data <- function(ele = 101, stid = "10160403000", ver = "v3", adj = "qca",
   return(ghcnm.data)
 }
 ## END OF FUCNTION dataghcnm
-

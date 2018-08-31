@@ -10,6 +10,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
                             alt = NULL, cntr = NULL, src = NULL ,
                             it = NULL , nmin = NULL , verbose=FALSE,...) 
 {
+  if (verbose) print('select.station')
     ## 
     if (is.null(x)) {
     data("station.meta",envir=environment())
@@ -20,7 +21,6 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
   }
   else {
     if (inherits(x,"station")) {
-      ##
       ##var2param <- function(x) {
       ##  variable <- as.matrix(as.character(attr(x,"variable")))
       ##  var2prm <- function(x) switch(x,"T[2 * m]"="t2m")
@@ -54,7 +54,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
   ##
   if (!is.null(param) & is.null(ele)) {
     print("No variable found for your selection or the param identifier has not been set correctly.")
-    print("Please refrech your selection based on the list below")
+    print("Please refresh your selection based on the list below")
     print(as.matrix(ele2param(src=src))[,c(2,5,6)])
   }  
   ## get the lenght of the data base
@@ -170,7 +170,7 @@ select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
     station.meta$location <- as.character(station.meta$location)
     station.meta$country <- as.character(station.meta$country)
     station.meta$source <- as.character(station.meta$source)
-    class(station.meta) <- c("data.frame","stationmeta")
+    class(station.meta) <- c("stationmeta","data.frame")
     return(station.meta)
   } else {
     print("No available stations found for your selection")

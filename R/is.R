@@ -48,7 +48,8 @@ is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
                                             tolower(month.abb)))>0)
 is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
                                              names(season.abb())))>0)
-is.dates <- function(x) all(!is.months(x) &
+## KMP 2017-06-07 Why wasn't inherits(x,"Date") included in is.dates? Changed to solve problem in subset.pc
+is.dates <- function(x) all(inherits(x,"Date") | !is.months(x) &
                             (levels(factor(nchar(x)))==10) |
                             (is.numeric(x) & levels(factor(nchar(x)))==8))
 is.years <- function(x) all(!is.months(x) & 
@@ -57,4 +58,8 @@ is.years <- function(x) all(!is.months(x) &
 is.model <- function(model,verbose=FALSE) {
   if (verbose) print(summary(model))
   return(inherits(model,c('lm','glm','mlm')))
+}
+
+is.url <-function(x) {
+  grepl("http:|https:|www.", x)
 }

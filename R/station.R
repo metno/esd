@@ -99,7 +99,7 @@ station.monthly <- function(src=NULL,...) {
 ## default / retrieve several stations into a zoo object from one or several data sources
 station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NULL,url = NULL,
                             stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
-                            it= NULL,nmin=NULL, plot=FALSE,verbose=FALSE,
+                            it= NULL,nmin=NULL, plot=FALSE, verbose=FALSE,
                             path.ecad=NULL,url.ecad=NULL,
                             path.ghcnm=NULL,url.ghcnm=NULL,
                             path.ghcnd=NULL,url.ghcnd=NULL,
@@ -109,6 +109,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   ##
   ## check wether x is a 'location' or a 'stationmeta' object
   
+  if (verbose) {print('station.default'); print(match.call())}
   if (inherits(loc,"stationmeta")) {
     ss <- loc
   } else if (is.character(loc)) {
@@ -124,9 +125,10 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   URL <- url
   
   ## Select one or a set of stations based on the metadata
-  if (is.null(ss)) { 
+ if (is.null(ss)) {
+    if (verbose) print('select.station')
     ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param=param,src=src,it=it,nmin=nmin) # AM-29.07.2013 "loc" added into the arguments 
-  } 
+ }  
   ## 
   ##if (!is.null(ss)) {
   ##  SRC <- src
@@ -148,11 +150,12 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       else stop("Process stopped")
     }
   } 
-  ## 
-  
   ## Update attributes based on selected stations (ss)
   id <- ss$station_id
-  if (verbose) {print("Station ID:"); str(id) }
+  if (verbose) {
+    print("Station ID:")
+    str(id)
+  }
   ## 
   ## Extract attributes of all selected stations
   stid <- ss$station_id
@@ -166,13 +169,13 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
   qual <- ss$quality
   start <- ss$start
   end <- ss$end
-  param <- apply(as.matrix(ss$element),1,esd2ele)
+  param <-  apply(as.matrix(ss$element),1,esd2ele)
   rm(ss)
   
   print(paste("Retrieving data from",length(id),"records ..."))
   
   
-  ## start loap on available stations
+  ## start loop on available stations
   for (i in 1:length(id)) {
     ##
     ## For now param0 is only used for GHCND dataset
@@ -184,19 +187,50 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ## used only for ghcnd#update param value from ss
     }
     
-    if (!is.null(param0))
-      print(paste(i,toupper(param0),stid[i],loc[i],cntr[i],src[i]))
-    else
-      print(paste(i,toupper(param[i]),stid[i],loc[i],cntr[i],src[i]))
+    #if(verbose) {
+      if (!is.null(param0)) {
+        print(paste(i,toupper(param0),stid[i],loc[i],cntr[i],src[i]))
+      } else {
+        print(paste(i,toupper(param[i]),stid[i],loc[i],cntr[i],src[i]))
+      }
+    #}
     
     if (src[i]=="METNOD") { #AM-29.08.2013 added for metno data
-      ## 
       if (is.null(path.metnod)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnod ## default path
-      if (is.null(url.metnod)) 
+      if (is.null(url.metnod)) {
           if (user == 'metno') url="http://klapp/metnopub/production/"
           else url= 'ftp://ftp.met.no/projects/chasepl/test'
-      else url <- url.metnod ## default url
-      x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
+      } else {
+        url <- url.metnod ## default url
+      }
+      
+      if (param[i] == 'dd')
+        param1 <- esd2ele(param[i])
+      else 
+        param1 <- NULL
+      
+      if (is.null(param1)) {
+        x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
+      } else { ## compute the avg 
+        dd06 <- metnod.station(param='dd06',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
+        dd12 <- metnod.station(param='dd12',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
+        dd18 <- metnod.station(param='dd18',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
+        ## scale.tmin <-as.numeric(ele2param(ele="121",src="GHCND")[3])
+        x <- (dd06 + dd12 + dd18) / 3
+        ## copy all attributes
+        x <- attrcp(dd06,x)
+        class(x) <- class(dd06)
+        rm(dd06,dd12,dd18)
+        print("WARNING : Averaged wind direction values computed from 06, 12,and 18 UTC")
+        param1 <- "DD"
+        ele <-  "502"
+        ## update attributes variable and ele
+        attr(x,'variable') <- param
+        ## attr(x,'variable') <- switch(param1,'TAVG'=expression(T[2*m]),'TMAX'=expression(paste("max ",T[2*m])),'TMIN'=expression(paste("min ",T[2*m])))
+        attr(x,'element') <- ele
+        attr(x,'longname') <- "Average of wind directions at 06 12 and 18 utc"
+      }
+      
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
         print("Warning : No values found in the time series -> This station will be ignored")
@@ -216,10 +250,11 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ##if (!is.null(x)) X <- combine.stations(X,x)
     } else if (src[i]=="ECAD") { #AM-29.07.2013 added "|(src[i]=="ECAD")"
       ##
-      if (toupper(param[i])=='TMAX') param[] <- 'tx' #REB 2016-07-26: dirty bug-rectification
+      #if (toupper(param[i])=='TMAX') param[] <- 'tx' #REB 2016-07-26: dirty bug-rectification
       if (is.null(path.ecad)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.ecad ## default path
       if (is.null(url.ecad)) url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend" else url <- url.ecad ## default url
-      x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path=path, url=url)
+      x <- ecad.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],
+                        qual=qual[i],param=param[i],verbose=verbose,path=path, url=url)
       if (verbose) {print("obs"); str(x)}
       if (sum(is.na(coredata(x)))==length(coredata(x))) {
         print("Warning : No values found in the time series for-> This station will be ignored")
@@ -259,7 +294,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       ## if (!is.null(x)) X <- combine.stations(X,x)  
       #AM-29.07.2013 added begin
     } else if (src[i]=="GHCNM") {
-      ## 
+      ##
       if (is.null(path.ghcnm)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.ghcnm ## default path
       if (is.null(url.ghcnm)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn" else url <- url.ghcnm ## default url
       x <- ghcnm.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],param=param[i],verbose=verbose,path = path,url=url)
@@ -353,7 +388,9 @@ t2m.ghcnd.avg <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   invisible(ghcnd)
 }
 
-ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,param=NULL,qual=NULL,path="data.ECAD",url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",verbose=FALSE) {  ## it=it,nmin=nmin
+ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
+                         param=NULL,qual=NULL,path="data.ECAD",remove.suspect=FALSE,
+                         url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",verbose=FALSE) {  ## it=it,nmin=nmin
   ## ECAD basic function to retrieve data for one station
   ## http://eca.knmi.nl/
   ## ECA&D was initiated by the ECSN in 1998 
@@ -374,18 +411,19 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   ##end <- ss$end
   ##param <- apply(as.matrix(ss$element),1,esd2ele)
   ##rm(ss)
-  ##browser()
   ele <- esd2ele(param=param)
-  if (is.null(ele)) 
+  if (is.null(ele)) {
     param1 <-as.character(ele2param(ele=param,src="ECAD")[5])
-  else
+  } else {
     param1 <- as.character(ele2param(ele=ele,src="ECAD")[5])
-  
-  if (!is.null(param) & (!is.null(dim(param1)[1])))
-    if (dim(param1)==0) 
-      stop('Please refrech your selection, element not found in meta data')
-  
+  }
+  if (!is.null(param) & (!is.null(dim(param1)[1]))) {
+    if (dim(param1)==0) { 
+      stop('Please refresh your selection, element not found in meta data')
+    }
+  }
   scale <-as.numeric(ele2param(ele=ele,src="ECAD")[3])
+  if (verbose) print(paste('scale=',scale))                         ## REB 2016-10-18
   ##param.gp <- substr(param1,1,nchar(param1)-1)
   fdata <- paste(url,"_",tolower(param1),".zip",sep="") 
   text  <- unlist(strsplit(fdata,split="/"))
@@ -398,19 +436,19 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   if (file.exists(destfile) & !file.exists(destfile2)) {
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   } 
-  ## if folder does not exist, then download and unzip
+  ## If folder does not exist, then download and unzip
   if (!file.exists(destfile2)) {
-    if(!file.exists(path)) dir.create(path,showWarnings = FALSE,recursive=TRUE) ## KMP 2016-07-28 download.file doesn't work if the directory doesn't exist
-    download.file(fdata,destfile,method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))
+    if(!file.exists(path)) dir.create(path,showWarnings = FALSE,recursive=TRUE)
+    download.file(fdata,destfile,method = "wget", quiet = !verbose, mode = "w", cacheOK = TRUE,
+                  extra = getOption("download.file.extra"))
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   }
-  
   if (verbose) print("station.ecad")
   newpath <- substr(destfile,1,nchar(destfile)-4) 
   stid <- gsub(' ','',stid)
-  for (i in 1:length(stid)) 
+  for (i in 1:length(stid)) {
     while(nchar(stid[i]) < 6) stid[i] <- paste('0',stid[i],sep="")
-  
+  }
   fnames <- paste(toupper(param1),'_SOUID',stid,'.txt',sep="")
   fnames <- file.path(newpath,fnames,fsep = .Platform$file.sep)
   ##print(fnames)
@@ -429,8 +467,14 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   year <- substr(as.character(x$DATE),1,4);L <- length(year)
   month <- substr(as.character(x$DATE),5,6)
   day <- substr(as.character(x$DATE),7,8)
-  
-  ecad[ecad < 0] <- NA
+  ## Use the quality flags in the ECA&D data files if they are present  ## REB 2016-10-18
+  if (verbose) {print('Make use of the quality flags'); str(x)}         ## REB 2016-10-18
+  if (dim(x)[2]==5) dataQ <- x[[5]] else dataQ <- ecad*0                ## REB 2016-10-17 
+  #ecad[ecad <0] <- NA                          ## REB 2016-10-18 This bug sets all temperatures below zero to NA
+  ecad[ecad <=-999] <- NA                       ## REB 2016-10-18
+  ## Also set suspect values to NA              ## REB 2016-10-18
+  if (remove.suspect) ecad[dataQ == 1] <- NA    ## REB 2016-10-18
+  ecad[dataQ == 9] <- NA                        ## REB 2016-10-18
   
   if (verbose) {
     print(c(year[1],month[1],day[1]))
@@ -439,11 +483,16 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     print(length(ecad))
     print(stid)
   }
+  ## REB 2016-10-20 
+  if (!check.bad.dates(year,month,day))  
+             ECAD <- zoo(ecad, order.by = as.Date(paste(year, month, day, sep = "-"), 
+                                                  by='day', length.out = L)) else {
+             print("Warning : Bad dates were found for this station -> Ignored")
+             return(NULL)                                          
+  }
   
-  ECAD <- zoo(ecad, order.by = as.Date(paste(year, month, day, sep = "-"), by='day', length.out = L))
-  
-  if (sum(ECAD,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
-  
+  if (sum(ECAD,na.rm=TRUE)==0)
+    {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
   ## create a station object
   ECAD <- as.station(ECAD, stid=stid, lon=lon, lat=lat, alt=alt,
                      ## ele=esd2ele(param), freq=1,calendar='gregorian',
@@ -485,7 +534,6 @@ nacd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   data("NACD")
   loc <- gsub("-",".",loc) # AM replace.char() replaced by gsub()
   loc <- gsub("/",".",loc) # AM replace.char() replaced by gsub()
-  ## browser()
   #id.dot <- grep('.',loc)
   #if (substr(loc,nchar(loc),id.dot[length(id.dot)])) loc <- substr(loc,1,nchar(loc)-1) # AM 29.07.2013 added 
   #elem<-switch(ele.c,'101'='t2m','601'='precip','401'='slp','801'='cloud')
@@ -519,7 +567,6 @@ nacd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   #                'e'='Environm. changes prevents clim.change studies',
   #                ' I'='Inhomogenous series which presently are unadjustable',
   #                'i'='Inhomogenous series which presently are unadjustable')
-  #browser()
   ny <- length(attr(x,'year'))
   year <- rep(attr(x,'year'),each=12); L <- length(year)
   month <- rep(1:12,ny)
@@ -665,7 +712,7 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   scale <-as.numeric(ele2param(ele=ele,src="GHCNM")[3])
   
   if (verbose) print("station.GHCNM")
-  
+
   ghcnm <- ghcnm.data(ele=ele,stid = stid, src = "ghcnm", ver = ver , adj = adj, path = path, url=url,force = force, flag = flag, verbose = verbose)
   x <- c(t(ghcnm[,5:16]))*scale
   ## 
@@ -787,8 +834,6 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
                           url = "http://klapp/metnopub/production/",save2file=TRUE) {
   
   if (verbose) print("http://eklima.met.no")
-  ## 
-  ## if (!is.na(end)) end1 <- format(Sys.time(),'%d.%m.%Y')
   if (!is.na(end)) end1 <-format(as.Date(paste("31.12.",as.character(end),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
   if (!is.na(start)) start1 <- format(as.Date(paste("01.01.",as.character(start),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
   if (!is.null(url)) {
@@ -807,7 +852,6 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
   } else stop("The url must be specified")
   
   if (verbose) print(Filnavn)
-  ## browser()
   firstline <- readLines(Filnavn, n = 1, encoding = "latin1")
   if (substr(firstline, 1, 3) == "***") {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
   ## 
@@ -1004,8 +1048,7 @@ replace.char <- function (c, s, ny.c)  {
 metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
                           qual=NULL,start=NA,end=NA,param=NULL,verbose=FALSE,
                           re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",
-                          url = "ftp://ftp.met.no/projects/chasepl/test",save2file=TRUE) {
-  ##browser()
+                          url = "ftp://ftp.met.no/projects/chasepl/test",save2file=FALSE) {
   if (verbose) print("ftp.met.no")
   ## 
   ## if (!is.na(end)) end1 <- format(Sys.time(),'%d.%m.%Y')
@@ -1017,13 +1060,10 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
     path <- 'data.METNOD'
   else if (ext=='mon')
     path <- 'data.METNOM'
-  ##browser()
   if (!is.null(url)) {
     Filnavn <- file.path(url, path, paste(param1,'_',sprintf('%05d',as.numeric(stid)),'.',ext, sep = ""))
   } else stop("The url must be specified")
-  #browser()
   if (verbose) print(Filnavn)
-  ## browser()
   Datasett <- as.list(read.table(Filnavn,dec = ".", header = TRUE, as.is = TRUE, fileEncoding = "latin1"))
   if (param1=='RR') 
     Datasett$RR[Datasett$RR == "."] <- "0"
@@ -1031,7 +1071,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   if (save2file) {
     if (is.null(path)) 
       path <- 'data.METNO'
-    dir.create(path,recursive = TRUE)
+    dir.create(path,showWarnings = FALSE, recursive = TRUE)
     #if (nchar(stid)<=5) 
     stid <- sprintf("%05d", as.numeric(stid))
     write.table(Datasett,file=file.path(path,paste(param1,'_',stid,'.',ext,sep='')),row.names = FALSE,col.names = names(Datasett))
@@ -1073,3 +1113,20 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   invisible(METNO)
 }
 
+## Read data from NASA/GISS
+station.giss <- function(url) {
+  t2m <- read.table(url,skip=2,header=TRUE)
+  meta <- read.table(url,nrows=1,as.is=TRUE)
+  lat <- as.numeric(substr(meta$V3,2,nchar(meta$V3)-2))
+  lon <- as.numeric(sub(')','',meta$V4))
+  yr <- t2m$YEAR
+  t2m[t2m >= 999] <- NA
+  t2m <- zoo(c(t(as.matrix(t2m[2:13]))),
+             order.by=as.Date(paste(sort(rep(yr,12)),rep(1:12,length(yr)),'01',sep='-')))
+  t2m <- as.station(t2m,loc=meta$V1,param='t2m',unit='degC',
+                    lon=lon,lat=lat,alt=NA,
+                    cntr=meta$V2,longname='Surface temperature',
+                    stid=meta$V5,quality=meta$V10,src=paste(meta$V6,meta$V7),url=url,
+                    reference='Parker, et. al. (1992), Int. J. Clim.',info=NA, method= NA)
+  return(t2m)
+}

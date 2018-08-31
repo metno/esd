@@ -38,7 +38,13 @@ cv <- function(x,na.rm=TRUE) {sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)}
 
 stand <- function(x) (x - mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)
 
-
+## Estimate the root-mean-squared-error
+rmse <- function(x,y,na.rm=TRUE) {
+  z <- sqrt( (x - y)^2 )
+  z <- sum(z,na.rm=na.rm)/sum(is.finite(z),na.rm=na.rm)
+  return(z)             
+}
+RMSE <- function(x,y,...) return(rmse(x,y,...))
 
 # Wrap-around for lag.zoo to work on station and field objects:
 lag.station <- function(x,...) {
@@ -127,9 +133,9 @@ filt.default <- function(x,n,type='ma',lowpass=TRUE) {
 }
   
 figlab <- function(x,xpos=0.001,ypos=0.001) {
-  par(new=TRUE,pdx=NA,fig=c(0,1,0,1),xaxt='n',yaxt='n',bty='n',mar=rep(0,4))
+  par(new=TRUE,fig=c(0,1,0,1),xaxt='n',yaxt='n',bty='n',mar=rep(0,4))
   plot(c(0,1),c(0,1),type='n')
-  text(xpos,ypos,x,type=2,cex=1.2,pos=4,col='grey30')
+  text(xpos,ypos,x,cex=1.2,pos=4,col='grey30')
 }
 
 ensemblemean <- function(x,FUN='rowMeans') {

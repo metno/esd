@@ -4,23 +4,23 @@
 
 ## Function for one time series based on multiple regression
 ## Allow EOFs with different number of PCs.
-fitpc <- function(y,x,eofs=1:4) {
+fitpc <- function(y,x,ip=1:4) {
   caldat <- data.frame(y=y,x)
   #print(summary(caldat))
-  eofs <- eofs[eofs <=dim(x)[2]]
-  fitstr <- paste('y ~ ',paste('X.',eofs,sep='',collapse=' + '))
+  ip <- ip[ip <=dim(x)[2]]
+  fitstr <- paste('y ~ ',paste('X.',ip,sep='',collapse=' + '))
   fit <- eval(parse(text=paste('lm(',fitstr,', data=caldat)')))
   z <- predict(fit,newdata=caldat)
   invisible(z)
 }
 
-eoffit <- function(X,U,eofs) {
+eoffit <- function(X,U,ip) {
   ## Use regression to project the pattern of observations onto the PCA pattern and estimate
   ## the PCs.
   caldat <- data.frame(X=X,U=U)
-  names(caldat) <- c('X',paste('U.',eofs,sep=''))
+  names(caldat) <- c('X',paste('U.',ip,sep=''))
   #print(names(caldat))
-  calexpr <- paste('X ~ ',paste('U.',eofs,sep='',collapse=' + '))
+  calexpr <- paste('X ~ ',paste('U.',ip,sep='',collapse=' + '))
   eval(parse(text=paste('projection <- lm(',calexpr,',data=caldat)')))
   V <- projection$coefficients
   invisible(V[-1])
@@ -32,7 +32,7 @@ eoffit <- function(X,U,eofs) {
 #  invisible(z)
 #}
 
-pcafill <- function(X,insertmiss=0,eofs=1:4,mnv=0,complete=FALSE,test=FALSE,verbose=FALSE) {
+pcafill <- function(X,insertmiss=0,ip=1:4,mnv=0,complete=FALSE,test=FALSE,verbose=FALSE) {
   if (verbose) print('pcafill')
   X0 <- X ## For debugging
   if (verbose) print(dim(X0))
@@ -68,13 +68,13 @@ pcafill <- function(X,insertmiss=0,eofs=1:4,mnv=0,complete=FALSE,test=FALSE,verb
     stop('pcafill: Too many missing data or too small set of stations')
   
   ## PCA for stations with complete data
-  pca <- PCA(subset(X,is=mok==length(index(X))),n=max(eofs))
+  pca <- PCA(subset(X,is=mok==length(index(X))),n=max(ip))
 
   ## Y contains the more complete data set - copy all the attributes from X
   Y <- X
   ## Replace the data in Y with predicted based on the PCA
   #  coredata(Y) <- fillmiss(X,pca,neofs=neofs)
-  coredata(Y) <- apply(coredata(X),2,fitpc,coredata(pca),eofs=eofs)
+  coredata(Y) <- apply(coredata(X),2,fitpc,coredata(pca),ip=ip)
 
   if (complete) {
     print("UNFINISHED")
@@ -83,13 +83,13 @@ pcafill <- function(X,insertmiss=0,eofs=1:4,mnv=0,complete=FALSE,test=FALSE,verb
     ## Projection of patterns onto the original data to get a more complete data set
     ## X0 = U W t(V) -> estimate new t(V) based on U & W from Y
     ## 1/W t(U) X0 = t(V) -> V = t(X0) U /W
-    pcax <- PCA(Y); pcax <- subset(pcax,pattern=eofs)
+    pcax <- PCA(Y); pcax <- subset(pcax,ip=ip)
     U <- attr(pcax,'pattern'); W <- attr(pcax,'eigenvalues')
     U <-  U %*% diag(W)
     XX <- X0
     XX <- t(t(XX) - rowMeans(XX,na.rm=TRUE))
     ## Estimate the PCs for the entire data set through projection:
-    Vx <- zoo(t(apply(t(coredata(XX)),2,eoffit,U=U,eofs=eofs)),order.by=index(X0))
+    Vx <- zoo(t(apply(t(coredata(XX)),2,eoffit,U=U,ip=ip)),order.by=index(X0))
     ## assign the attributes from the PCA
     Vx <- attrcp(pcax,Vx); class(Vx) <- class(pcax) 
     plot.zoo(pca[,1]); lines(Vx[,1],col='red'); browser()
@@ -122,7 +122,7 @@ pcafill <- function(X,insertmiss=0,eofs=1:4,mnv=0,complete=FALSE,test=FALSE,verb
   invisible(Y)
 }
 
-pcafill.test <- function(X,N=100,max.miss=100,eofs=1:4,verbose=FALSE) {
+pcafill.test <- function(X,N=100,max.miss=100,ip=1:4,verbose=FALSE) {
   insertmiss <- round(runif(N)*max.miss)
   insertmiss[insertmiss<1] <- 2
   par(bty='n')
@@ -135,7 +135,7 @@ pcafill.test <- function(X,N=100,max.miss=100,eofs=1:4,verbose=FALSE) {
   grid()
   for (i in 1:N) {
     if (verbose) print(insertmiss[i])
-    Y.test <- pcafill(X,insertmiss=insertmiss[i],eofs=eofs,verbose=verbose)
+    Y.test <- pcafill(X,insertmiss=insertmiss[i],ip=ip,verbose=verbose)
     points(attr(Y.test,'na.test'),pch=19,col=rgb(0,0,0.6,0.1))
     if (i==1) test.res <- attr(Y.test,'na.test') else
               test.res <- rbind(test.res,attr(Y.test,'na.test'))

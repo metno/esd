@@ -8,7 +8,7 @@ pieslice <- function(theta1,theta2,r=1,
 
 ## This code is based on an old version from clim.pact - can be rewritten to enhance efficiency.
 
-windrose <- function(x,saw=10,max.scale=NULL,
+windrose <- function(x,saw=10,max.scale=NULL,main=NULL,
             cols=c("grey90","yellow","green","red","blue","darkgreen",
                    "darkred","magenta","black"),param=c("u","v"),
                     simple=TRUE,verbose=FALSE) {
@@ -67,8 +67,9 @@ windrose <- function(x,saw=10,max.scale=NULL,
     dd[is.element(dd,360)] <- 0
    }
   par(col.axis="white")
+  if (is.null(main)) main <- paste(loc(u),"wind rose; N=",sum(ii))
   plot(c(-1,1),c(-1,1),type="n",
-       main=paste(loc(u),"wind rose; N=",sum(ii)),
+       main=main,
        sub=paste("Lon=",round(lon(u),3),"E, lat=",round(lat(u),3),sep=""),xlab="S",ylab="W")
 
   for (ix in seq(-15,345,by=60)) {
@@ -203,7 +204,7 @@ TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
 
 geostrophicwind<-function(x,...) UseMethod("geostrophicwind")
 
-geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000) {
+geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000,progressbar=TRUE) {
   ## Estimates the geostrophic wind from mean sea-level pressure from stations
   n <- length(loc(x))
   ## Estimate the different combinations of 3 that is possible from the provided group of
@@ -221,16 +222,16 @@ geostrophicwind.station <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000
       cn <- cn[,ii]; d <- dim(cn)
     }
   }
-  pb <- txtProgressBar(style=3)
+  if (progressbar) pb <- txtProgressBar(style=3)
   for (i in 1:d[2]) {
     wind <- TGW(subset(x,is=cn[,i]))
-    setTxtProgressBar(pb,i/d[2]) 
+    if (progressbar) setTxtProgressBar(pb,i/d[2]) 
     if (i==1) Wind <- wind else Wind <- combine(Wind,wind)
   }   
   invisible(Wind)      
 }
 
-geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE) {
+geostrophicwind.field <- function(x,f=1.25e-4,rho=1.25,verbose=FALSE,...) {
   ## Estimates the geostrophic wind from mean sea-level pressure field
   if (verbose) print('geostrophicwind')
   stopifnot(is.field(x))

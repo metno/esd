@@ -8,6 +8,8 @@
 \alias{as.station.zoo}
 \alias{as.station.spell}
 \alias{as.station.eof}
+\alias{as.station.dsensemble}
+\alias{as.station.dsensemble.pca}
 \alias{as.ds}
 \alias{as.field}
 \alias{as.field.default}
@@ -17,6 +19,7 @@
 \alias{as.field.ds}
 \alias{as.field.field}
 \alias{as.field.station}
+\alias{as.field.dsensemble.eof}
 \alias{as.anomaly}
 \alias{as.anomaly.default}
 \alias{as.anomaly.zoo}
@@ -136,6 +139,7 @@ as.field.eof(x,...)
 as.field.comb(x,iapp=NULL,...)
 as.field.ds(x,iapp=NULL,...)
 as.field.station(x,...)
+as.field.dsensemble.eof(x,is=NULL,ip=NULL,verbose=FALSE,...)
 as.fitted.values(x)
 as.fitted.values.ds(x)
 as.fitted.values.station(x)
@@ -167,18 +171,20 @@ as.station.data.frame(x,location=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                       reference=NA,info=NA, method= NA)
 as.station.zoo(x,location=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                       cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,url=NA,
-                      reference=NA,info=NA, method= NA,type=NA,aspect=NA)
-as.trajectory(x,n=10,loc=NA,param=NA,unit=NA,lon=NA,
+                      reference=NA,info=NA, method=
+  NA,type=NA,aspect=NA)
+as.station.dsensemble.pca(x, is = NULL, ip = NULL, verbose = FALSE, ...) 
+as.trajectory(x,n=15,loc=NA,param=NA,unit=NA,lon=NA,
                           lat=NA,alt=NA,cntr=NA,longname=NA,stid=NA,
                           quality=NA,src=NA,url=NA,reference=NA,info=NA,
                           method= NA,verbose=FALSE)
-as.station.dsensemble.pca(x,is=NULL,eofs=NULL,verbose=FALSE,...)
+as.station.dsensemble(x,...)
 as.station.list(x)
 as.station.ds(x)
 as.station.pca(x)
 as.station.field(x)
 as.station.spell(x)
-as.station.eof(x,pattern=1:10)
+as.station.eof(x,ip=1:10)
 as.pca.ds(x)
 as.pca.station(x)
 }
@@ -210,7 +216,7 @@ as.pca.station(x)
   \item{iapp}{For values greater than 1, select the corresponding
     appended field in 'comb' objects (e.g. 1 gives
     \code{attr(x,'appendix.1')})}
-  \item{pattern}{Which EOF pattern (mode) to extract as a series for PC}
+  \item{ip}{Which EOF pattern (mode) to extract as a series for PC}
  }
  \details{
   `field' object must be a two dimensional object
@@ -261,17 +267,17 @@ plot(annual(bjornholt,FUN="exceedance",fun="count"))
 plot(annual(bjornholt,FUN="exceedance",fun="freq"))
 plot(annual(bjornholt,FUN="exceedance"))
 
-# Test the as.4seasons function:
+## Test the as.4seasons function:
 data(ferder)
-#Daily data:
+## Daily data:
 yd <- ferder
-# Monthly data:
+##  Monthly data:
 ym <- aggregate(ferder,as.yearmon)
 ym <- zoo(coredata(ym),as.Date(index(ym)))
 ym <- attrcp(ferder,ym)
 plot(ym)
 
-#Monthly reanalyses:
+## Monthly reanalyses:
 t2m <- t2m.ERAINT(lon=c(-30,40),lat=c(50,70))
 T2m <- as.4seasons(t2m)
 #Extract the grid point with location corresponding to that of the station:
@@ -285,10 +291,28 @@ lines(y4s2,col="red",lty=2)
 lines(x4s,col="darkblue",lwd=2)
 lines(X4s,col="lightblue",lty=2)
 
-# Select a random season
+## Select a random season
 data(bjornholt)
 data(ferder)
 plot(as.seasons(ferder,FUN='CDD'))
 plot(as.seasons(ferder,start='05-17',end='11-11',FUN='HDD'))
+
+## PCA-example - switch back and forthe between station and PCAs
+t2m <- station.narp()
+pca.t2m <- as.pca(annual(t2m))
+y <- as.station(pca.t2m)
+
+## Quick example of downscaling PCA and then extract the single station series
+predictor <- annual(t2m.NCEP(lon=c(-20,30),lat=c(50,80)))
+pca.t2m <- subset(pca.t2m,ip = 1:3)
+z.pca <- DSensemble.pca(pca.t2m,predictor=predictor,select=1:4)
+z <- as.station.dsensemble.pca(z.pca)
+plot(z[[1]])
+
+## Example of transforming cyclone data from an 'events' object (individual events)
+## into a 'trajectory' object (interpolated trajectories) which takes less space
+data(storms)
+x <- as.trajectory(storms)
+map(x, alpha=0.1)
 }
 \keyword{utilities}

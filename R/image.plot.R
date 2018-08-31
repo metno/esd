@@ -3,13 +3,13 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
         3.1, 5.1), legend.lab = NULL, legend.line = 2, graphics.reset = FALSE, 
     bigplot = NULL, smallplot = NULL, legend.only = FALSE, col = tim.colors(nlevel), 
     lab.breaks = NULL, axis.args = NULL, legend.args = NULL, 
-    midpoint = FALSE, border = NA, lwd = 1) 
-{
-    
+    midpoint = FALSE, border = NA, lwd = 1, verbose=FALSE) {
+  
+    if(verbose) print("image.plot")
     old <- par()
     ## print("old") ; print(old$fig)
     old.par <- par(no.readonly = TRUE)
-    info <- imageplot.info(...)
+    info <- imageplot.info(verbose=verbose,...)
     if (add) {
         big.plot <- old.par$plt
     }
@@ -21,9 +21,10 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
     }
     temp <- imageplot.setup(add = add, legend.shrink = legend.shrink, 
         legend.width = legend.width, legend.mar = legend.mar, 
-        horizontal = horizontal, bigplot = bigplot, smallplot = smallplot)
+        horizontal = horizontal, bigplot = bigplot, smallplot = smallplot, verbose=verbose)
     smallplot <- temp$smallplot
     bigplot <- temp$bigplot
+    
     if (!legend.only) {
         if (!add) {
             par(plt = bigplot)
@@ -33,7 +34,7 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
         }
         else {
             poly.image(..., add = add, col = col, midpoint = midpoint, 
-                border = border, lwd.poly = lwd)
+                border = border, lwd.poly = lwd, verbose=verbose)
         }
         big.par <- par(no.readonly = TRUE)
     }
@@ -117,8 +118,8 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
 
 
 
-imageplot.info <- function (...) 
-{
+imageplot.info <- function (verbose=FALSE,...) {
+    if(verbose) print("imageplot.info")
     temp <- list(...)
     xlim <- NA
     ylim <- NA
@@ -173,9 +174,8 @@ imageplot.info <- function (...)
 
 poly.image <- function (x, y, z, col = tim.colors(64), breaks, transparent.color = "white", 
     midpoint = FALSE, zlim = range(z, na.rm = TRUE), xlim = range(x), 
-    ylim = range(y), add = FALSE, border = NA, lwd.poly = 1, 
-    ...) 
-{
+    ylim = range(y), add = FALSE, border = NA, lwd.poly = 1, verbose=FALSE, ...) {
+    if(verbose) print("poly.image")
     Dx <- dim(x)
     Dy <- dim(y)
     if (any((Dx - Dy) != 0)) {
@@ -212,14 +212,17 @@ poly.image <- function (x, y, z, col = tim.colors(64), breaks, transparent.color
         }
     }
 }
+
 imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width = 1, 
-    horizontal = FALSE, legend.mar = NULL, bigplot = NULL, smallplot = NULL, 
-    ...) 
-{
+      horizontal = FALSE, legend.mar = NULL, bigplot = NULL, smallplot = NULL, 
+      verbose=FALSE, ...) {
+    if(verbose) print("imageplot.setup")
     old.par <- par(no.readonly = TRUE)
-    if (is.null(smallplot)) 
-        stick <- TRUE
-    else stick <- FALSE
+    if (is.null(smallplot)) {
+      stick <- TRUE
+    } else {
+      stick <- FALSE
+    }
     if (is.null(legend.mar)) {
         legend.mar <- ifelse(horizontal, 3.1, 5.1)
     }

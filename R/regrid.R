@@ -34,7 +34,7 @@ sparseMproduct <- function(beta,x) {
   y
 }
 
-regrid <- function(x,is,...)
+regrid <- function(x,is,it=NULL,...)
   UseMethod("regrid")
 
 
@@ -161,16 +161,39 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
 }
 
 
+regrid.temporal <- function(x,it,verbose=FALSE) {
+  if (verbose) print('regrid.temporal')
+  stopifnot(is.field(x))
+  if (verbose) {print(index(x)); print(it)}
+  if (verbose) print(paste(sum(is.finite(x)),'data-boxes with valid data and',
+                           sum(!is.finite(x)),'with no data'))
+  ## Only aply interpolation on grid-boxes with (some) valid data.
+  ok <- apply(coredata(x),2,FUN='nv') >= 2
+  if (verbose) print(paste('Interpolating',sum(ok),'grid-boxes'))
+  y <- zoo(coredata(x)[,ok],order.by=index(x))
+  if (verbose) print(summary(c(coredata(y))))
+  #zc <- apply(y,2,function(x) approx(index(x),coredata(x),it)$y)
+  z <- matrix(rep(NA,length(ok)*length(it)),length(it),length(ok))
+  for (i in 1:dim(y)[2])
+    z[,(1:length(ok))[ok][i]] <- approx(index(y),coredata(y[,i]),it)$y
+  if (verbose) print(summary(c(z)))
+  if (verbose) {print(dim(z[,ok])); print(dim(x)); print(dim(z))}
+  #z[,ok] <- zc
+  z <- zoo(z,order.by=it)
+  z <- attrcp(x,z)
+  class(z) <- class(x)
+  if (verbose) print('finished regrid.temporal')
+  return(z)
+}
 
 
-
-
-regrid.default <- function(x,is,verbose=FALSE,...) {
+regrid.default <- function(x,is=NULL,it=NULL,verbose=FALSE,...) {
   print('not used')
 }
 
-regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
+regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose=FALSE) {
 
+  if (verbose) print("regrid.field ")
   stopifnot(inherits(x,'field'))
  
   if (approach=="eof2field") {
@@ -178,9 +201,12 @@ regrid.field <- function(x,is,approach="field",clever=FALSE,verbose=FALSE) {
     return(y)
   }
   
-  #print("regrid.field ")
   x <- sp2np(x)
-
+  
+  ## If it is provided, also regrid in time
+  if (!is.null(it)) x <- regrid.temporal(x,it,verbose=verbose)
+  if (is.null(is)) return(x)
+  
   ## case wether lon or lat is given in is i.e. regrid on these values along the other dimension
   if (length(is)==1) {
       nm <- names(is)
@@ -345,6 +371,7 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
 # assumes that dimensions of x are [x,y,(t)] and that the coordinates are
 # provided as attributes as in field
   
+  if (verbose) print(match.call())
   d <- dim(x)
   if (length(d)==2) d <- c(d,1)  # if only 2-dimensional maps, then one dimension of 1 is added
   lon.old <- lon(x)
@@ -354,12 +381,13 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
     {lon.new <- is[[1]]; lat.new <- is[[2]]} else
   if ( (inherits(is,'station')) | (inherits(is,'field')) |
       (inherits(is,'eof')) ) {
-    lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
-  } else if (is.matrix(is) & !is.null(attr(is,'longitude')) &
-             !is.null(attr(is,'latitude'))) {
-    lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
+    lon.new <- lon(is); lat.new <- lat(is)
+  } else if ( is.matrix(is) & !is.null(lon(is)) &
+              !is.null(lat(is)) ) {
+    lon.new <- lon(is); lat.new <- lat(is)
   }
   
+  if (verbose) {str(lon.old);str(lat.old);str(lon.new);str(lat.new)}
   if (is.null(lon.old) | is.null(lat.old) | is.null(lon.new) | is.null(lat.new)) return(NULL)
 
   beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)

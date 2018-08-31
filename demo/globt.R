@@ -40,7 +40,7 @@ if (!file.exists(img))
 
 ftp <- 'ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc'
 
-if (!file.exists('air.mon.mean.nc'))
+if (!file.exists('air.mon.mean.nc') | as.Date(as.Date(Sys.time()) - file.info('air.mon.mean.nc')$ctime) > 45)
     download.file(ftp,'air.mon.mean.nc')
 
 balls <- function(x) {
@@ -66,7 +66,7 @@ rasterImage(img, -0.05, -0.05, 1.05, 1.05)
 
 par(new=TRUE,col.axis='white',col.lab='white',xaxt='n',yaxt='n')
 plot(hadcrut,lwd=5,col='black',ylim=c(-0.8,1.2),xlim=c(1950,2020),
-     ylab=expression(T[2*m]*~(degree*C)))
+     ylab=expression(T[2*m]*~(degree*C)),new=FALSE)
 for (i in 1:dim(global.t2m.cmip5)[2]) {
   offs <- mean(subset(hadcrut,it=c(1961,1990))) -
           mean(window(global.t2m.cmip5[,i],start=1961,end=1990))

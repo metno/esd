@@ -1,4 +1,4 @@
-##plot <- function(x,y, ...)  UseMethod("plot")
+plot <- function(x,y, ...)  UseMethod("plot")
 
 plot.list <- function(x,is=NULL,
                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
@@ -16,23 +16,36 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
-                         map.show=TRUE,map.type="points",map.insert=TRUE,
+                         map.show=TRUE,map.type=NULL,map.insert=TRUE,
+                         usegooglemap=TRUE,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
-                         mar=c(4.5,4.5,0.75,0.5),
-                         alpha=0.5,alpha.map=0.7,verbose=FALSE,...) {
+                         mar=c(4.5,4.5,0.75,0.5),fig=NULL,
+                         alpha=0.5,alpha.map=0.7,
+                         verbose=FALSE,...) {
 
   if (verbose) print('plot.station')
-
+  par(las=1)
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
-  } else if (length(lon(x))!=length(lat(x)) | inherits(x,'field')) {
-    map.type <- "rectangle"
+  }
+  if(map.show) {
+    if (verbose) print('show map')
+    if (is.null(map.type)) {
+      if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+          (length(lon(x))==2 & length(lat(x))==2) ) {
+        map.type <- "rectangle"
+      } else {
+        map.type <- "points"
+      }
+    }
+    if (verbose) print(map.type)
   }
   
-  fig <- c(0,1,0,0.95)
-  if (map.show & map.insert) fig[4] <- 0.8
+  if(is.null(fig) & new) {
+    fig <- c(0,1,0,0.95)
+    if (map.show & map.insert) fig[4] <- 0.8
+  }
   if (legend.show) fig[3] <- 0.05  
-  ## browser()
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
   ##         ylim <- pretty(x)
@@ -40,20 +53,28 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   ##         ylim <- apply(x,2,pretty,n=5)
   if (is.null(xlim))
     xlim <- range(index(x))
-  if (is.null(ylim))
-    ylim <- pretty(as.numeric(x))
+  #if (is.null(ylim))
+  #  ylim <- pretty(as.numeric(x))
   if (verbose) {print(xlim); print(ylim)}
   if (plot.type=="single") {
-      if (is.null(ylab))
-          ylab <- ylab(x)
-      if (inherits(ylab,"try-error")) ylab <- unit(x)
+    if (is.null(ylab))
+      ylab <- ylab(x)
+    if (inherits(ylab,"try-error")) ylab <- unit(x)
+  } else {
+    if (is.null(ylab)) { 
+      if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+        ylab <- stid(x)
+      } else 
+        ylab <- varid(x)
+    } else {
+      if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+        main <- levels(factor((attr(x,'longname'))))[1]
+      } else {
+        main <- levels(factor(loc(x)))[1]
+      }
+    }  
   }
-  else if (is.null(ylab) & (length(levels(factor(stid(x))))>1))
-      ylab <- stid(x)
-  else if (is.null(ylab))
-      ylab <- apply(x,1,varid)
-  
-  if (is.null(main)) main <- attr(x,'longname')[1] 
+  #if (is.null(main)) main <- attr(x,'longname')[1] 
   if (is.null(col)) {
     if (is.null(dim(x))) {
       col <- "blue"
@@ -88,7 +109,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   
   if(map.show & !map.insert) {
     vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.8)
+            cex.axis=cex.axis,cex=1.8,usegooglemap=usegooglemap,
+            verbose=verbose,...)
     new <- TRUE
   }
 
@@ -97,11 +119,13 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
   class(x) <- "zoo"
   if(new) dev.new()
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,cex.axis=1,fig=fig,mar=mar)
+  if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
+  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
+  ##browser()
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
-           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,...)
-  mtext(main,side=3,line=1,adj=0,cex=cex.main)
+           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,main=main,...)
+  #mtext(main,side=3,line=1,adj=0,cex=cex.main)
   if("seasonalcycle" %in% cls) {
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
   }
@@ -112,16 +136,16 @@ plot.station <- function(x,plot.type="single",new=TRUE,
       # REB 2014-10-03: add an errorbar to the plots.
       segments(index(x),x-err(x),index(x),x+err(x),
                lwd=3,col=rgb(0.5,0.5,0.5,0.25))
-#      d.err <- dim(std.err)
+#      d.err <- dim(err(x))
 #      dt <- 0.3*diff(index(x))[1]
-#      if (is.null(d.err)) d.err <- c(length(std.err),1)
+#      if (is.null(d.err)) d.err <- c(length(err(x),1)
 #      for (i in 1:d.err[2]) {
 #        for (j in 1:d.err[splot.dse1])
-#          lines(rep(index(x)[j],2),rep(x[j],2) + std.err[j]*c(-1,1),
+#          lines(rep(index(x)[j],2),rep(x[j],2) + err(x)[j]*c(-1,1),
 #                lwd=3,col=rgb(1,0.5,0.5,0.25))
-#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) + std.err[j],
+#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) + err(x)[j],
 #                lwd=1,col=rgb(1,0.5,0.5,0.25))
-#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) - std.err[j],
+#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) - err(x)[j],
 #                lwd=1,col=rgb(1,0.5,0.5,0.25))
 #       }
     }
@@ -129,8 +153,8 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
  
-    if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
-                           text.col=col,cex=0.75)
+    #if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
+    #                       text.col=col,cex=0.75)
     #title(main=loc(x),cex=1)
     
     if(legend.show) {
@@ -142,85 +166,157 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                            attr(x,'altitude')," masl)",sep=""),
            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
-
-    if(map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
-                                      cex.axis=cex.axis*0.75,
-                                      add.text=FALSE,map.insert=map.insert)
-    par(fig=par0$fig,mar=par0$mar,bty="n",xaxt="n",yaxt="n",
-        xpd=FALSE,new=TRUE)
+    if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
+                                       cex.axis=0.65,add.text=FALSE,
+                                       map.insert=map.insert,usegooglemap=usegooglemap,
+                                       verbose=verbose)
+    par(fig=par0$fig,mar=par0$mar,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
-             xlim=xlim,ylim=ylim,new=FALSE)
+             xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
    
   }
 }
 
 
-vis.map <- function(x,col='red',map.type='points',
+vis.map <- function(x,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
-                    cex.axis=0.8,add.text=FALSE,
-                    map.insert=TRUE,verbose=FALSE) {
-  if(verbose) print('vis.map')
+                    add.text=FALSE,cex.axis=NULL,
+                    map.insert=TRUE,verbose=FALSE,
+                    usegooglemap=TRUE,zoom=NULL,...) {
+  if(verbose) {print('vis.map'); print(lon(x)); print(lat(x)); print(zoom)}
+  ## KMP 2017-06-07 Weird problem: cex.axis is not found even though it is an argument to the function.
+  ## It looks like cex.axis exists but when applying 'print' the following error message shows up: 
+  ## 'Warning: restarting interrupted promise evaluation. Error in print(cex.axis) : object 'cex.axis' not found'
+  cex.axis <- 0.7  # Temporary fix
+  
+  ## REB 2016-11-25: for dsensemble object
+  if (is.null(lon(x))) attr(x,'longitude') <- lon(attr(x,'station'))
+  if (is.null(lat(x))) attr(x,'latitude') <- lat(attr(x,'station'))
   if(is.null(xrange)) xrange <- range(lon(x)) + c(-5,5)
   if(is.null(yrange)) yrange <- range(lat(x)) + c(-2,2)
   if(!map.insert) new <- TRUE else new <- FALSE
-  data(geoborders)
-  lon <- geoborders$x
-  lat <- geoborders$y
-  ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
-        lat>(min(yrange)-1) & lat<(max(yrange)+1)
-  lon2 <- attr(geoborders,"borders")$x
-  lat2 <- attr(geoborders,"borders")$y
-  ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
-        lat2>(min(yrange)-1) & lat2<(max(yrange)+1)
-  if(map.insert) {
-    par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
-        mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
-  } else dev.new()
-  plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=1.2,
-                                        #type='l', KMP 2016-03-16 problem with lines in map
-       xlab=NA,ylab=NA,axes=FALSE,new=new,
-       xlim=xrange,ylim=yrange)
+  
+  if (is.null(map.type)) {
+    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+        (length(lon(x))==2 & length(lat(x))==2) ) {
+      map.type <- "rectangle"
+    } else {
+      map.type <- "points"
+    }
+  }
+  
+  ## REB: 2016-10-12 - add the possibility to use google maps
+  if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
+         usegooglemap ) {
+      require(RgoogleMaps)
+      
+      if (is.null(zoom)) {
+        if (verbose) print('zoom not defined')
+        if (length(lon(x))==1) zoom <- 8 else {
+          ## zoom = 12 is very local, zoom = 1 is the world
+          mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
+          zoom <- 1 - floor(0.75*log(mxdst/360))
+        }
+      }
+      if (!is.finite(zoom)) zoom <- 8
+      if (verbose) print(paste('zoom=',zoom))
+      bgmap <- GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
+                    destfile = "map.station.esd.png",
+                    maptype = "mobile", zoom=zoom)
+      if(map.insert) {
+       par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
+           mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
+     }
+     if(map.type=="rectangle") {
+       xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
+       yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
+       plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
+       PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
+     } else {
+       plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+     }
+      
+   } else {
+     if (verbose) {print('basic map'); print(cex.axis)}
+     data(geoborders)
+     lon <- geoborders$x
+     lat <- geoborders$y
+     ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
+           lat>(min(yrange)-1) & lat<(max(yrange)+1) &
+           is.finite(lon) & is.finite(lat)
+     lon2 <- attr(geoborders,"borders")$x
+     lat2 <- attr(geoborders,"borders")$y
+     ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
+            lat2>(min(yrange)-1) & lat2<(max(yrange)+1) &
+            is.finite(lon2) & is.finite(lat2)
+     if (verbose) {print(sum(ok)); print(range(lon[ok])); print(range(lat[ok]))}
+     if(map.insert) {
+       par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
+           mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
+     } else {
+       dev.new()
+     }
+     plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=2,
+          #type='l', KMP 2016-03-16 problem with lines in map
+          xlab=NA,ylab=NA,axes=FALSE,new=new,
+          xlim=xrange,ylim=yrange)
        #xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
        #ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
-  axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
-  axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
-  lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
-  if (map.type=="points") {
-    points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
-    if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
-  } else if (map.type=="rectangle") {
-    rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
-         border="black",lwd=1,lty=2)
-  }
+     par(xpd=FALSE)
+     lines(lon,lat) ## REB: 2016-11-25 need more solid lines.
+     axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
+     axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
+     lines(lon2,lat2,col = "pink",lwd=1)
+     #lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+     if (verbose) print(map.type)
+     if (map.type=="points") {
+       if (verbose) {print(c(lon(x),lat(x),cex)); print(col)}
+       points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
+       if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
+     } else if (map.type=="rectangle") {
+       rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
+            border="black",lwd=1,lty=2)
+     }
+   }
+  if(verbose) print("exit vis.map")
 }
 
 plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
-                     pattern=1,what=c("pc","eof","var"),
+                     ip=1,what=c("pc","eof","var"),
                      colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
                          breaks=NULL,type="p",cex=2,show=TRUE,
                          h=0.6,v=1,pos=0.05),
-                     verbose=FALSE,...) {
+                     verbose=FALSE,is=NULL,it=NULL,...) {
   if (verbose) print(paste('plot.eof',paste(what,collapse=',')))
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
-                  pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
+                  ip=ip,what=what,colbar=colbar,verbose=verbose,...) else
   if (inherits(x,"field"))
     plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
-                   pattern=pattern,what=what,colbar=colbar,verbose=verbose,...) else
+                   ip=ip,what=what,colbar=colbar,verbose=verbose,
+                   it=it,is=is,...) else
     print("x does not have 'comb' or 'field' aspects...")
 }
 
 
 
 
-plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
+plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                            what=c("pc","eof","var"),## colbar=NULL,
                            cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
-                           verbose=FALSE,cex=1,...) {
+                           verbose=FALSE,it=NULL,is=NULL,cex=1,...) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
-  n <- pattern
+  n <- ip
   what <- tolower(what)
-  #str(pattern); stop("HERE")
+  if ('field' %in% what) {
+      ## Expand EOF to original field before plotting
+      if (verbose) print('Transform eof to field before plot')
+      x <- subset(x,it=it,is=is)
+      y <- as.field(x)
+      z <- plot(y,xlim=xlim,ylim=ylim,new=new,...)
+      invisible(z)
+  }
+  #str(ip); stop("HERE")
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
@@ -230,7 +326,6 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   } else
   if (length(what)==2) mfrow <- c(2,1) else
   if (length(what)==1) mfrow <- c(1,1)
-  
   if (new) dev.new()
   ## par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
@@ -239,16 +334,17 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
       if (inherits(x,'eof')) {## inherits(x,'pca') |
           par(fig=c(0,0.5,0.5,1))
           ## par(fig=c(0.025,0.5,0.5,0.975)) ## c(0,0.45,0.5,0.975) c(0.05,0.5,0.55,0.95)
-          map(x,pattern=pattern,verbose=verbose,
+          map(x,ip=ip,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
               cex.lab=cex.lab,cex=cex,...) ## AM formely new=FALSE colbar=colbar,
       } else if (inherits(x,'pca')) {
-          par(fig=c(0,0.5,0.5,1))
-          main1 <- paste('Leading EOF#',pattern, ' (',
-                         round(var.eof[pattern],digits=2),"%)",sep='')
-          map(x,pattern=pattern,verbose=verbose,
+          fig <- c(0,0.5,0.5,1)
+          par(fig=fig)
+          main1 <- paste('Leading EOF#',ip, ' (',
+                         round(var.eof[ip],digits=2),"%)",sep='')
+          map(x,ip=ip,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
-              cex.lab=cex.lab,cex=cex,...) ## colbar=colbar,
+              cex.lab=cex.lab,cex=cex,fig=fig,...) ## colbar=colbar,
           title(main=src(x)[1],cex.main=cex.main*0.8,
                 col.main="grey40",adj=0,line=0)
           title(main=main1,cex.main=cex.main)
@@ -260,20 +356,19 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
   ylab <- paste("PC",n)
   main <- paste('First',n,"leading EOFs: ", ## attr(x,'longname')
                  round(sum(var.eof[1:n]),1),"% of variance")
-  ## browser()
+  
   if (length(grep('var',what))>0) {
     par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=cex.main,
+    plot.eof.var(x,ip=ip,new=FALSE,cex.main=cex.main,
                  cex.axis=cex.axis,bty="n",cex=cex)
   }
   
   #print(main)
-  #browser()
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
       par(fig=c(0.05,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-      main <- paste('Leading PC#',pattern,' of ',attr(x,'longname'),
-                 " - Explained variance = ",round(var.eof[pattern],digits=2),
+      main <- paste('Leading PC#',ip,' of ',attr(x,'longname'),
+                 " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
 
       if(inherits(x,"seasonalcycle")) xaxt <- "n" else  xaxt <- NULL
@@ -299,24 +394,25 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,pattern=1,
 
 
 plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
-                          pattern=1,col=c("red"),alpha=1,
+                          ip=1,col=c("red"),alpha=1,
                           what=c("pc","eof","var"),colbar=NULL,verbose=FALSE,...) {
   if (verbose) print("plot.eof.comb")
-  n <- pattern
+  n <- ip
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
 
   if (length(what)==3) mfrow <- c(2,2) else
-  if (length(what)==2) mfrow <- c(2,1)
+  if (length(what)==2) mfrow <- c(2,1) else
+                       mfrow <- NULL
   
   if (new) dev.new()
   #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-  par(mfrow=mfrow)
+  if (!is.null(mfrow)) par(mfrow=mfrow)
 
   if (length(grep('eof',what))>0) {
-    par(fig=c(0,0.5,0.5,1))
-    map(x,pattern=pattern,verbose=verbose,colbar=colbar,...)
+    if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
+    map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
 
   n.app <- attr(x,'n.apps')
@@ -326,12 +422,12 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
   ylab <- paste("PC",n)
   main <- paste("EOF: ",n,"accounts for",
                 round(var.eof[n],1),"% of variance")
-
+  
   if (length(grep('var',what))>0)  {
 #    par(xaxt="s",yaxt="s")
 #    plot.eof.var(x,new=FALSE,cex.main=0.7)
-    par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,pattern=pattern,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
+    if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
+    plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
 
   if (is.null(ylim)) {
@@ -347,8 +443,9 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
     for (i in 1:n.app) {
       z <- attr(x,paste('appendix.',i,sep=""))
       xlim <- range(xlim,index(z))
-    }  
+    }
   }
+  if(is.character(xlim)) xlim <- as.Date(xlim)
 
   if (length(grep('pc',what))>0) {
     if (verbose) {print('time series');print(index(x)); print(index(attr(x,'appendix.1')))}
@@ -359,9 +456,9 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 #      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
 #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
 #                                          xlim=xlim,ylim=ylim)
-      par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-      main <- paste('Leading PC#',pattern,'of ',attr(x,'longname'),
-                 " - Explained variance = ",round(var.eof[pattern],digits=2),
+    if (!is.null(mfrow)) par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+      main <- paste('Leading PC#',ip,'of ',attr(x,'longname'),
+                 " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
       
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
@@ -383,7 +480,6 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
       }
 
       lines(x[,n],lwd=2,col="black")
-
     }
 #    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
 #        mar=rep(0,4),new=TRUE)
@@ -435,7 +531,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   
   cols <- rep("blue",100)
   model <- attr(x,'model')
-  ## browser()
+  
   if (length(what)==2) mfrow <- c(2,1) else
   if (length(what)==1) mfrow <- c(1,1)
   
@@ -581,7 +677,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 
 
 
-plot.eof.var <- function(x,pattern=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
+plot.eof.var <- function(x,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
   n <- min(c(n,length(attr(x,'eigenvalues'))))
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
@@ -614,7 +710,7 @@ plot.eof.var <- function(x,pattern=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
   }
   points(var.eof,cex=1.5)
   points(var.eof,pch=20,cex=1.2,col="darkgrey")
-  points(pattern,var.eof[pattern],pch=20,col="red",cex=1.2)
+  points(ip,var.eof[ip],pch=20,col="red",cex=1.2)
   attr(var.eof,'errorbar') <- cbind(100*(D-dD)^2/tot.var,100*(D+dD)^2/tot.var)
   invisible(var.eof)
 }
@@ -732,12 +828,16 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose
 
 plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.pca')
-  attr(y,'longname') <- attr(y,'longname')[1]
-  plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
+  if(inherits(y,"trajectory")) {
+    plot.pca.trajectory(y,cex=cex,new=new,verbose=verbose,...)
+  } else {
+    attr(y,'longname') <- attr(y,'longname')[1]
+    plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
+  }
 }
 
 
-plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
+plot.ds.pca <- function(x,ip=1,verbose=FALSE,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                             type="p",cex=1,show=TRUE,
                             h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
@@ -749,21 +849,21 @@ plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
   #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
   par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
 
-  if (verbose) print('PCA pattern')
-  map.pca(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,...)
+  if (verbose) print('PCA ip')
+  map.pca(y,ip=ip,verbose=verbose,new=FALSE,colbar=colbar1,fig=c(0,0.5,0.5,0.975),...)
 
-  title(paste("PCA Pattern # ",pattern,sep=""))
+  title(paste("PCA Pattern # ",ip,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
   if (verbose) print('Predictor pattern')
-  map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
+  map(attr(y,'predictor.pattern'),ip=ip,new=FALSE,
       colbar=colbar2,verbose=verbose,
-      main=paste("EOF Pattern # ",pattern,sep=""))
-  #title(paste("EOF Pattern # ",pattern,sep=""))
+      main=paste("EOF Pattern # ",ip,sep=""))
+  #title(paste("EOF Ip # ",ip,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     ## Get the right pattern
-    xvp <- (pattern-1)*2 +1
+    xvp <- (ip-1)*2 +1
     xok <- is.finite(attr(y,'evaluation')[,xvp]) & is.finite(attr(y,'evaluation')[,xvp+1])
     xcor <- cor(attr(y,'evaluation')[xok,xvp],attr(y,'evaluation')[xok,xvp+1])
     plot(attr(y,'evaluation')[,xvp],attr(y,'evaluation')[,xvp+1],
@@ -776,22 +876,22 @@ plot.ds.pca <- function(x,pattern=1,verbose=FALSE,
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
     par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
-    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
-    legend(x=index(attr(y,'original_data')[,pattern])[1],
-           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,pattern]))/10,
+    plot(attr(y,'original_data')[,ip],lwd=2,type='b',pch=19)
+    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,ip])[1],
+           y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,ip]))/10,
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
   } else {
     par(fig=c(0.05,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],lwd=2,type='b',pch=19)
-    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
+    plot(attr(y,'original_data')[,ip],lwd=2,type='b',pch=19)
+    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
     xvalfit <- NULL
   }
 }
 
-plot.ds.eof <- function(x,pattern=1,
+plot.ds.eof <- function(x,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
   y <- x # quick fix
@@ -799,17 +899,17 @@ plot.ds.eof <- function(x,pattern=1,
   if (is.null(colbar2)) colbar2 <- colbar1 
   attr(y,'longname') <- attr(y,'longname')[1]
   par(fig=c(0,0.5,0.5,1),mar=c(3,5,4.2,1),mgp=c(3,0.5,0.5))
-  map.eof(y,pattern=pattern,verbose=verbose,new=FALSE,colbar=colbar1,
-          main=paste("Predictand EOF pattern # ",pattern,sep=""),...)
+  map.eof(y,ip=ip,verbose=verbose,new=FALSE,colbar=colbar1,
+          main=paste("Predictand EOF pattern # ",ip,sep=""),...)
   par(fig=c(0.5,1,0.5,1),mar=c(3,4,4.2,1),new=TRUE)
-  map(attr(y,'predictor.pattern'),it=pattern,new=FALSE,
+  map(attr(y,'predictor.pattern'),ip=ip,new=FALSE,
       colbar=colbar2,verbose=verbose,
-      main=paste("Predictor EOF pattern # ",pattern,sep=""))
-  #title(paste("EOF Pattern # ",pattern,sep=""))
+      main=paste("Predictor EOF pattern # ",ip,sep=""))
+  #title(paste("EOF Pattern # ",ip,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0,0.5,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
-    pc.obs <- attr(y,'evaluation')[,1+2*(pattern-1)]
-    pc.ds <- attr(y,'evaluation')[,2+2*(pattern-1)]
+    pc.obs <- attr(y,'evaluation')[,1+2*(ip-1)]
+    pc.ds <- attr(y,'evaluation')[,2+2*(ip-1)]
     plot(pc.obs,pc.ds,main='Cross-validation',xlab='original data',
          ylab='prediction',pch=19,col="grey",
          xlim=range(pc.obs,pc.ds),ylim=range(pc.obs,pc.ds))
@@ -823,26 +923,26 @@ plot.ds.eof <- function(x,pattern=1,
          paste("r =",r.xval),#round(xvalfit$coefficients[2],digits=2)),
          pos=4,cex=0.9)
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],
-         main=paste("PC",pattern),ylab="",
-         ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
+    plot(attr(y,'original_data')[,ip],
+         main=paste("PC",ip),ylab="",
+         ylim=range(attr(y,'original_data')[,ip])*c(1.6,1.6),
          lwd=2,type='b',pch=19)
-    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
-    legend(x=index(attr(y,'original_data')[,pattern])[1],
-           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,pattern]))/3,
+    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,ip])[1],
+           y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,ip]))/3,
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
   } else {
     par(fig=c(0,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
-    plot(attr(y,'original_data')[,pattern],
+    plot(attr(y,'original_data')[,ip],
          main="PC1",ylab="",
-         ylim=range(attr(y,'original_data')[,pattern])*c(1.6,1.6),
+         ylim=range(attr(y,'original_data')[,ip])*c(1.6,1.6),
          lwd=2,type='b',pch=19)
-    lines(zoo(y[,pattern]),lwd=2,col='red',type='b')
-    legend(x=index(attr(y,'original_data')[,pattern])[1],
-           y=max(attr(y,'original_data')[,pattern],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,pattern]))/3,
+    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
+    legend(x=index(attr(y,'original_data')[,ip])[1],
+           y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
+               diff(range(attr(y,'original_data')[,ip]))/3,
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
     xvalfit <- NULL
@@ -1001,17 +1101,20 @@ plot.diagnose <- function(x,...) {
   if (inherits(x,"dsensembles")) plot.diagnose.dsensemble(x,...)
 }
 
-plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE,new=TRUE,...) {
+plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,
+                                   alpha=0.5,lwd=2,verbose=FALSE,...) {
   if (verbose) print('plot.diagnose.comb.eof')
   stopifnot(!missing(x), inherits(x,"diagnose"),
             inherits(x,"eof"),inherits(x,"comb"))
 
   n <- length(x$mean.diff)
   j <- 1:n
-  col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n),0.3)
+  col <- rgb(j/n,abs(sin(pi*j/n)),(1-j/n),alpha)
 
-  if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
-  if (is.null(ylim)) ylim <- range(c(-1,1,1-x$sd.ratio),na.rm=TRUE)
+  ## KMP 2016-11-02 xlim changed because of changes in diagnose.comb.eof
+  #if (is.null(xlim)) xlim <- range(abs(c(0,1,x$mean.diff)),na.rm=TRUE)
+  if (is.null(xlim)) xlim <- range(c(-1,1,x$mean.diff),na.rm=TRUE)
+  if (is.null(ylim)) ylim <- range(c(-1,1,x$sd.ratio),na.rm=TRUE)
   
   if (!add) {
     if (new) dev.new()
@@ -1019,12 +1122,17 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
     par0 <- par()
     wt <- 0:360
     plot(cos(pi*wt/180),sin(pi*wt/180),type="l",
-         xlab="mean difference",ylab=expression(paste("|",sigma[pre] - sigma[ref],"|/",sigma[pre])),
+         ## KMP 2016-11-02 changed definition of the sd ratio and diff (see diagnose.comb.eof)
+         #xlab="mean difference",
+         #ylab=expression(paste("|",sigma[pre] - sigma[ref],"|/",sigma[pre])),
+         #xlab=expression(paste("(mean difference)/",sigma[ref])),
+         xlab=expression(paste("(",mean[ref] - mean[pre],")/",sigma[ref])),
+         ylab=expression(paste("(",sigma[ref] - sigma[pre],")/",sigma[ref])),
          main=paste("Diagnostics: common EOFs",attr(x,'variable')),
          xlim=xlim,ylim=ylim,col="grey",
          sub=paste(x$calibrationdata," - ",rownames(x$mean.diff),collapse = "/"))
-    lines(c(0,10),rep(0,2))
-    lines(rep(0,2),c(0,10))
+    lines(c(-10,10),rep(0,2))
+    lines(rep(0,2),c(-10,10))
     grid()
     xpos <- xlim[2] - 0.2*diff(xlim)
     ypos <- ylim[1] + 0.1*diff(ylim)
@@ -1048,18 +1156,17 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,add=FALSE
          xlab='',ylab='',main='',sub='')
     par(par0$new)
   }
-  cex <- x$autocorr.ratio;
+  cex <- x$autocorr.ratio*1.5;
   pch <- rep(19,n); pch[cex < 0] <- 21
-  cex <- abs(cex); cex[cex > 2] <- 2
+  cex <- abs(cex); cex[cex > 2.5] <- 2.5
   if (verbose) {
      print('Mean difference:');print(x$mean.diff)
      print('Ration of standard deviation');print(x$sd.ratio)
      print('Size');print(cex)
      print('col');print(col)
-     #points(x$mean.diff,1-x$sd.ratio,pch=pch,col='grey75',cex=1)
   }
   
-  points(abs(x$mean.diff),x$sd.ratio,pch=pch,col=col,cex=cex)
+  points(x$mean.diff,x$sd.ratio,pch=pch,col=col,lwd=lwd,cex=cex)
 
 }
 
@@ -1108,8 +1215,18 @@ plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,..
 
 
 plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=TRUE,
-                                     map.type="points",verbose=FALSE,main=NULL,...) {
+                                     map.type=NULL,verbose=FALSE,main=NULL,...) {
   if (verbose) print('plot.diagnose.dsensemble')
+
+  if (is.null(map.type)) {
+    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+        (length(lon(x))==2 & length(lat(x))==2) ) {
+      map.type <- "rectangle"
+    } else {
+      map.type <- "points"
+    }
+  }
+  
   Y <- -round(200*(0.5-pbinom(x$outside,size=x$N,prob=0.1)),2)
   X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),
                              sd=sd(x$deltagcm))),2)
@@ -1120,8 +1237,9 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
   if (!is.null(cex)) par(cex=cex)
   plot(c(-100,100),c(-100,100),type="n",axes=FALSE,mgp=mgp,
        ylab="",xlab="",main=main)
+  par(las=0)
   mtext("trend",side=1,line=1.5,cex=par("cex"))
-  mtext("standard deviation",side=2,line=2,cex=par("cex"))
+  mtext("standard deviation",side=2,line=2,srt=180,cex=par("cex"))
   u <- par("usr")
   dx <- (u[2]-u[1])/20
   dy <- (u[4]-u[3])/20
@@ -1133,10 +1251,10 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
   arrows(u[1],u[3]+dy,u[1],u[4]-dy,
          lwd=0.75,length=0.1,angle=20,code=2,xpd=NA)
-  mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.75)
-  mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.75)
-  mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.75)
-  mtext("ensemble < obs",side=2,line=0.5,adj=1,cex=par("cex")*0.75)  
+  mtext("ensemble > obs",side=1,line=0,adj=0,cex=par("cex")*0.65)
+  mtext("ensemble < obs",side=1,line=0,adj=1,cex=par("cex")*0.65)
+  mtext("ensemble > obs",side=2,line=0.5,adj=0,cex=par("cex")*0.65)
+  mtext("ensemble < obs",side=2,line=0.5,adj=1,cex=par("cex")*0.65)  
   bcol=c("grey95","grey40")
   for (i in 1:10) {
     r <- (11-i)*10
@@ -1231,8 +1349,9 @@ plot.xval <- function(x,new=TRUE,...) {
   grid()
 }
 
-plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,pattern=1,
-                               envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,...) {
+plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,ip=1,
+                               envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,
+                               ...) {
   if (verbose) print("plot.dsensemble.pca")
   stopifnot(inherits(x,'dsensemble') & inherits(x,'pca'))
   d <- index(x[[3]])
@@ -1249,19 +1368,72 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
     attr(pc[[i]],"station") <- as.station(x[[2]][,i],param=attr(x,"variable"),
                               longname=attr(x,"longname"),unit=attr(x,"unit"))
   }
-  plot(pc[[pattern]],ylab=paste("PC",pattern,sep=""))
+  plot(pc[[ip]],ylab=paste("PC",ip,sep=""))
 }
 
-plot.dsensemble <-  function(x,pts=FALSE,it=0,
-                             envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
-                             target.show=TRUE,map.show=TRUE,map.type="points",new=TRUE,
-                             xrange=NULL,yrange=NULL,verbose=FALSE,...) {
+plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
   if(verbose) print("plot.dsensemble")
+  if (inherits(x,c('pca','eof'))) {
+    y <- plot.dsensemble.multi(x,verbose=verbose, plot = plot, ...) 
+  } else if (inherits(x,'zoo')) {
+    y <- plot.dsensemble.one(x,verbose=verbose,...) 
+  } else if (inherits(x,'station')) {
+    x <- as.station(x,verbose=verbose)
+    y <- plot(x,verbose=verbose,...)
+  } else {
+    print(paste('Unknown class - do not know how to plot',
+                paste(class(x),collapse=", ")))
+    y <- x
+  }
+  if(verbose) print("exit plot.dsensemble")
+  invisible(y)
+}
+
+## Plot multiple stations/spatially aggregated field.
+plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
+                                  anomaly=FALSE,test=FALSE, plot = TRUE, ...) {
+  if (verbose) print('plot.dsensemble.multi')
+  
+  if (inherits(x,c('pca','eof'))) {
+    Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
+    if (plot) plot(Y,verbose=verbose,...)
+    #invisible(Y)
+  } else {
+    #return(NULL)
+    Y <- NULL
+  }
+  if (verbose) print('exit plot.dsensemble.multi')
+  invisible(Y)
+}
+
+## Plots one time series
+plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
+                             envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
+                             obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
+                             usegooglemap=TRUE,new=FALSE,xrange=NULL,yrange=NULL,
+                             alpha=0.5,alpha.map=0.7,mar=c(5.1,4.5,4.1,2.1),
+                             verbose=FALSE,...) {
+  if(verbose) print("plot.dsensemble.one")
   stopifnot(inherits(x,'dsensemble'))
-    
-  if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
+  
+  if (is.null(map.type)) {
+    if (verbose) print(class(x))
+    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+        (length(lon(x))==2 & length(lat(x))==2) ) {
+      map.type <- "rectangle"
+    } else {
+      map.type <- "points"
+    }
+  }
+
+  if (verbose) {print(map.type); print(attr(x,'station'))}
+  if (!is.null(attr(x,'station')) & !inherits(attr(x,'station'),c('annual','season'))) {
+    z <- subset(x,it=it,verbose=verbose) 
+  } else {
     z <- x
-  if (verbose) print("diagnose")
+  }
+  
+  if (verbose) {print("diagnose"); class(z)}
   diag <- diagnose(z,plot=FALSE,verbose=verbose)
   
   y <- attr(z,'station')
@@ -1287,86 +1459,106 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
                       ylim <- args[[iyl]]  
   #print("...")
-  #if(new) dev.new()
+  if(new) dev.new()
   index(y) <- year(y)
-  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col="black",main='',
+  if(!is.null(mar)) par(mar=mar)
+  par0 <- par()
+  if (obs.show) obscol <- 'black' else obscol='white'
+  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
        ylab=ylab,map.show=FALSE,new=new)
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)
-  
-  if (pts) for (i in 1:d[2])
-    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
 
+  if (pts) for (i in 1:d[2]) {
+    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
+  }
+  
   # Produce a transparent envelope
   nt <- length(index(z))
   t2 <- c(year(t),rev(year(t)))
+  
   col <- rgb(rep(1,49),seq(0.95,0.1,length=49),seq(0.95,0.1,length=49),0.1)
-
+  ## REB 2016-11-25
+  if(is.null(alpha.map)) alpha.map <- alpha
+  col.map <- adjustcolor(col,alpha.f=alpha.map)
+  col <- adjustcolor(col,alpha.f=alpha)
+ 
   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
   si <- apply(coredata(z),1,sd,na.rm=TRUE)
   for (ii in 1:49) {
     qp1 <- qnorm(1-ii/50,mean=coredata(mu),sd=coredata(si))
     qp2 <- qnorm(ii/50,mean=coredata(mu),sd=coredata(si))
     ci <- c(qp1,rev(qp2))
-    polygon(t2,ci, col= envcol, border=NA)
+    polygon(t2[!is.na(ci)],ci[!is.na(ci)], col= envcol, border=NA)
   }
   q05 <- qnorm(0.05,mean=mu,sd=si)
   q95 <- qnorm(0.95,mean=mu,sd=si)
+  
   lines(zoo(mu,order.by=year(z)),col=rgb(1,0.7,0.7),lwd=3)
   lines(zoo(q05,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)  
   lines(zoo(q95,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)
-  lines(y,type="b",pch=19)
+  if (obs.show) lines(y,type="b",pch=19)
 
-  index(diag$y) <- year(diag$y)
-  outside <- diag$above | diag$below
-  points(zoo(coredata(diag$y)[which(outside)],
+  if (!is.null(diag)) {
+    index(diag$y) <- year(diag$y)
+    outside <- diag$above | diag$below
+    points(zoo(coredata(diag$y)[which(outside)],
              order.by=year(diag$y)[which(outside)]),col="grey")
+  }
 
   title(main=toupper(loc(x)),cex.main=1)
-  
-  if (target.show) {
+  if ((target.show) & (!is.null(diag))) {
     if (verbose) print('add target diagnostic')
-    par(fig=c(0.23,0.45,0.78,0.98),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
+    par(fig=c(0.23,0.45,0.75,0.95),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
-    plot(diag,map.sho=FALSE,new=FALSE,cex=0.75)
+    plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
   } 
   
-  if (map.show) {
-    if(verbose) print("add map")
-    if(is.null(xrange) & !is.null(lon(y))) {
-      xrange <- range(lon(y)) + c(-15,15)
-    }
-    if(is.null(yrange) & !is.null(lat(y))) {
-      yrange <- range(lat(y)) + c(-10,10)
-    }
-    if (!is.null(xrange) & !is.null(xrange)) {
-      data(geoborders)
-      lon <- geoborders$x
-      lat <- geoborders$y
-      lon2 <- attr(geoborders,"borders")$x
-      lat2 <- attr(geoborders,"borders")$y
-      par(fig=c(0.7,0.95,0.78,0.98),new=TRUE, mar=c(0,0,0,0),
-        cex.main=0.75,xpd=FALSE,col.main="grey",bty="n")
-      plot(lon,lat,lwd=1,col="black",type='l',xlab=NA,ylab=NA,
-         axes=FALSE,xlim=xrange,ylim=yrange)
-      axis(1,mgp=c(3,.5,0))
-      axis(2,mgp=c(2,.5,0))
-      lines(lon2,lat2,col = "pink",lwd=1)
-      if("points" %in% map.type) {
-        points(lon(y),lat(y),pch=21,cex=1,col='black',bg='red',lwd=1)
-    }
-      if("rectangle" %in% map.type) {
-        rect(min(lon(y)),min(lat(y)),max(lon(y)),max(lat(y)),lwd=1,col=NA,border='red',lty=2)
-      }
-    } else if (verbose) print(paste('lon=',lon(y),'lat=',lat(y)))
-  }  
+  if(map.show & !map.insert) {
+    vis.map(x,"red",map.type,add.text=FALSE,map.insert=map.insert,
+            cex.axis=cex.axis,cex=1.5,usegooglemap=usegooglemap,
+            xrange=xrange,yrange=yrange,
+            verbose=verbose,...)
+    new <- TRUE
+  }
+  # REB 2016-11-25
+  #if (map.show) {
+  #  if(verbose) print("add map")
+  #  if(is.null(xrange) & !is.null(lon(y))) {
+  #    xrange <- range(lon(y)) + c(-15,15)
+  #  }
+  #  if(is.null(yrange) & !is.null(lat(y))) {
+  #    yrange <- range(lat(y)) + c(-10,10)
+  #  }
+  #  if (!is.null(xrange) & !is.null(xrange)) {
+  #    data(geoborders)
+  #    lon <- geoborders$x
+  #    lat <- geoborders$y
+  #    lon2 <- attr(geoborders,"borders")$x
+  #    lat2 <- attr(geoborders,"borders")$y
+  #    par(fig=c(0.7,0.95,0.78,0.98),new=TRUE, mar=c(0,0,0,0),
+  #      cex.main=0.75,xpd=FALSE,col.main="grey",bty="n")
+  #    plot(lon,lat,lwd=1,col="black",type='l',xlab=NA,ylab=NA,
+  #       axes=FALSE,xlim=xrange,ylim=yrange)
+  #    axis(1,mgp=c(3,.5,0))
+  #    axis(2,mgp=c(2,.5,0))
+  #    lines(lon2,lat2,col = "pink",lwd=1)
+  #    if("points" %in% map.type) {
+  #      points(lon(y),lat(y),pch=21,cex=1,col='black',bg='red',lwd=1)
+  #  }
+  #    if("rectangle" %in% map.type) {
+  #      rect(min(lon(y)),min(lat(y)),max(lon(y)),max(lat(y)),lwd=1,col=NA,border='red',lty=2)
+  #    }
+  #  } else if (verbose) print(paste('lon=',lon(y),'lat=',lat(y)))
+  #}  
   # finished plotting
 
   if (legend.show) {
     par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",xpd=NA)
     #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+    ## KMP 2017-09-13: move this text!!! vvv
     legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
                       paste(diag$robs,'%'),
                       paste(diag$outside,"observations"),
@@ -1383,6 +1575,11 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
                       paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
             bty="n",cex=0.7,text.col="grey40")    
   }
+  if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
+                                     cex.axis=cex.axis*0.65,add.text=FALSE,
+                                     map.insert=map.insert,usegooglemap=usegooglemap,
+                                     xrange=xrange,yrange=yrange,
+                                     verbose=verbose,...)
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
   par(fig=fig,new=TRUE, mar=mar)
@@ -1390,7 +1587,10 @@ plot.dsensemble <-  function(x,pts=FALSE,it=0,
        type="n",ylab="",xlab="",xlim=usr[1:2],ylim=usr[3:4])
 
   # target: perfect score is bull's eye
-  # from diagnostics?
+                                        # from diagnostics?
+  par(fig=par0$fig,new=TRUE, mar=par0$mar)
+  if(verbose) print("exit plot.dsensemble.one")
+  invisible(z)
 }
 
 plot.xsection <- function(x,...) {
@@ -1555,7 +1755,6 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
 
 barplot.station <- function(x,threshold=0,...) {
     stopifnot(inherits(x,'station'))
-    browser()
     x.above <- x.below <- x
     x.above[x < threshold] <- NA
     x.below[x > threshold] <- NA

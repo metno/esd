@@ -3,23 +3,22 @@
 \alias{predict.ds.eof}
 \alias{predict.ds.com}
 \alias{project.ds}
+\alias{predict.cca}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
-Prediction based on DS model
+Prediction based on DS or CCA model
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 
 }
 \usage{
-
 predict.ds(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.eof(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.comb(x, newdata = NULL, addnoise = FALSE, n = 100)
-
-predict.mvr(object, newdata = NULL, ...) 
-
+predict.cca(x, newdata=NULL, ...)
+predict.mvr(x, newdata = NULL, ...) 
 project.ds(x, newdata = NULL, addnoise = FALSE, n = 100) # Not yet finished
 }
 %- maybe also 'usage' for other objects documented here.

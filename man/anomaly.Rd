@@ -1,4 +1,5 @@
 \name{anomaly}
+\alias{anomaly}
 \alias{anomaly.default}
 \alias{anomaly.comb}
 \alias{anomaly.field}

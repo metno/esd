@@ -27,6 +27,7 @@ sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
     if (tsx==tsy) return(y)
 
     if (verbose) print('Need to aggregate')
+    ##
     if (tsx=="day") agrscly <- as.Date(index(y)) else
     if (tsx=="month") agrscly <- as.yearmon(index(y)) else
     if (tsx=="annual") agrscly <- year(y) else
@@ -47,23 +48,24 @@ DS<-function(y,X,verbose=TRUE,...) UseMethod("DS")
 
 DS.default <- function(y,X,mon=NULL,
                        method="lm",swsm="step",m=5,
-                       rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                       rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,...) {
-    ##
-    if (verbose) print('--- DS.default ---')
+    if (verbose) { print('--- DS.default ---'); print(summary(coredata(y)))}
     #print('err(y)'); print(err(y))
     if (verbose) {print('index(y)'); print(index(y))}
     if (verbose) {print(class(y)); print(class(X))}
     
     swapped <- FALSE
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
+      if (verbose) print('SWAP y & X')
         yy <- X
         X <- y
         y <- yy
         swapped <- TRUE
     }
     stopifnot(!missing(y),!missing(X), is.matrix(X),
-              inherits(X,"eof"),inherits(y,"station"))
+              inherits(X,c("eof","field")),inherits(y,"station"))
+    if(!inherits(X,"eof")) X <- EOF(X)
     if (class(index(y)) != (class(index(X)))) {
       warning(paste('DS.default: different indices:', class(index(y)),class(index(X))))
       if (is.numeric(index(y))) index(X) <- year(X)
@@ -72,10 +74,10 @@ DS.default <- function(y,X,mon=NULL,
     
     y0 <- y
     X0 <- X
-    eofs <- eofs[eofs <= length(attr(X,'eigenvalues'))]
-
+    ip <- ip[ip <= length(attr(X,'eigenvalues'))]
+    
     if (verbose) {print(paste(sum(!is.finite(coredata(y))),'missing values in y'))}
-    if (verbose)  {print('index(y) before removing missing values:'); print(index(y))}
+    if (verbose)  {print('index and y before removing missing values:'); print(zoo(y))}
     y <- subset(y,it=is.finite(coredata(y)))
     W <- attr(X,'eigenvalues')
     cls <- c(class(y)[1],class(X))
@@ -127,15 +129,18 @@ DS.default <- function(y,X,mon=NULL,
     if (is.null(attr(y,'standard.error'))) weighted <- FALSE
     if (verbose) {print(paste('weights',weighted)); print(weights)}
 
+    #
+    ##if (length(index(X)) == length(index(y)))
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
-                         weights=weights)
+                           weights=weights) 
+    
     predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
 
     if (is.null(names(X))) names(X) <- 1:dim(X)[2]
     Xnames <- paste("X.",1:length(names(X)),sep="")
     colnames(caldat) <- c("y",Xnames,'weights')
-    Xnames <- Xnames[eofs]
+    Xnames <- Xnames[ip]
                                         # REB 2014-10-03:
     if (weighted)
         calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
@@ -179,9 +184,9 @@ DS.default <- function(y,X,mon=NULL,
     if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3])
     if (!is.null(du)) {
       pattern <- t(COEFS[2:dc[1],1]) %*%
-          diag(attr(X,'eigenvalues')[eofs]) %*% t(U[,eofs])
+          diag(attr(X,'eigenvalues')[ip]) %*% t(U[,ip])
       dim(pattern) <- c(du[1],du[2]) 
-    } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[eofs]
+    } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[ip]
                                                  
     
     ##  ds <- zoo(predict(model),order.by=index(X)) + offset
@@ -250,19 +255,26 @@ DS.default <- function(y,X,mon=NULL,
 
 DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                        method="lm",swsm="step",m=5,
-                       rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                       rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
-    ##  
+    
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
-    if (verbose) print("--- DS.station ---")
+    if (verbose) { print('--- DS.station ---'); print(summary(coredata(y)))}
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
 
-    if (class(index(y)) != (class(index(X)))) {
-      warning(paste('DS.station: different indices:', class(index(y)),class(index(X))))
-      if (is.numeric(index(y))) index(X) <- year(X)
-      if (is.numeric(index(X))) index(y) <- year(y)
-    }
+    y <- matchdate(y,X)
+    X <- matchdate(X,y)
+    
+    #if ( (class(index(y)) != (class(index(X)))) & inherits(X,'annual') ) {
+    #  warning(paste('DS.station: different indices:', class(index(y)),class(index(X))))
+    #  if (is.numeric(index(y))) index(X) <- year(X)
+    #  if (is.numeric(index(X))) index(y) <- year(y)
+    #} if ( (class(index(y)) != (class(index(X)))) & inherits(X,'month') ) {
+    #  warning(paste('DS.station: different indices:', class(index(y)),class(index(X))))
+    #  if (is.numeric(index(y))) index(X) <- as.Date(paste(year(X),month(X),'01',sep='-'))
+    #  if (is.numeric(index(X))) index(y) <- as.Date(paste(year(y),month(y),'01',sep='-'))
+    #} 
     
     ## Used for extracting a subset of calendar months
     if (!is.null(mon)) {
@@ -273,7 +285,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     
      if ( (!inherits(y,'seasonalcycle')) & (inherits(X,'seasonalcycle')) ) {
                                         #print("HERE")
-        ds <- DS.seasonalcycle(y=y,X=X,eofs=eofs,verbose=verbose,...) 
+        ds <- DS.seasonalcycle(y=y,X=X,ip=ip,verbose=verbose,...) 
         return(ds)
     }
     
@@ -281,7 +293,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         #print("HERE")
       ds <- DS.field(y=y,X=X,biascorrect=biascorrect,mon=mon,
                      method=method,swsm=swsm,m=m,
-                     rmtrend=rmtrend,eofs=eofs,
+                     rmtrend=rmtrend,ip=ip,
                      area.mean.expl=area.mean.expl,verbose=verbose,
                      weighted=TRUE,pca=FALSE,npca=20,...) 
       return(ds)
@@ -290,7 +302,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
         if (verbose) print("The predictor is a list")
         ds <- DS.list(y=y,X=X,biascorrect=biascorrect,mon=mon,
                       method=method,swsm=swsm,m=m,
-                      rmtrend=rmtrend,eofs=eofs,
+                      rmtrend=rmtrend,ip=ip,
                       area.mean.expl=area.mean.expl,verbose=verbose,
                       weighted=TRUE,pca=FALSE,npca=20,...) 
         return(ds)
@@ -329,7 +341,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                 ## X is combined EOFs
                 ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,mon=mon,
                               method=method,swsm=swsm,
-                              rmtrend=rmtrend,eofs=eofs,
+                              rmtrend=rmtrend,ip=ip,
                               area.mean.expl=area.mean.expl,verbose=verbose,...)
                 if (verbose) print("---")
             } else if (inherits(X,'eof')) {
@@ -337,7 +349,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                 ## X is ordinary EOF
                 ds <- DS.default(y=z,X=X,mon=mon,
                                  method=method,swsm=swsm,
-                                 rmtrend=rmtrend,eofs=eofs,
+                                 rmtrend=rmtrend,ip=ip,
                                  area.mean.expl=area.mean.expl,
                                  verbose=verbose,...)
             if (verbose) print("+++")
@@ -347,7 +359,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
             ## X is a field
             ds <- DS.field(y=z,X=X,biascorrect=biascorrect,mon=mon,
                            method=method,swsm=swsm,
-                           rmtrend=rmtrend,eofs=eofs,
+                           rmtrend=rmtrend,ip=ip,
                            area.mean.expl=area.mean.expl,verbose=verbose,...)
         }
         ## May need an option for coombined field: x is 'field' + 'comb'
@@ -387,10 +399,9 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
 
 DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
                     method="lm",swsm="step",m=5,
-                    rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                    rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                     verbose=FALSE,weighted=TRUE,...) {
-
-    if (verbose) print("DS.comb")
+    if (verbose) { print('--- DS.comb ---'); print(summary(coredata(y)))}
     ##print('index(y)'); print(index(y))
     ##print('err(y)'); print(err(y))
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
@@ -408,7 +419,7 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
     ## For combined fields/common EOFs, do the DS-fitting once, and then
     ## use the model n times to predict the values associated with the
     ## appended fields:
-
+    
     if (class(index(y)) != (class(index(X)))) {
       warning(paste('DS.comb: different indices:', class(index(y)),class(index(X))))
       if (is.numeric(index(y))) index(X) <- year(X)
@@ -417,14 +428,13 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
     
     if (!inherits(X,"eof")) X <- EOF(X,mon=mon,area.mean.expl=area.mean.expl)
     
-    
     if (biascorrect) {
-        if (verbose) print("Bias correcion - bias-fix common EOF")
+        if (verbose) print("Bias correction - bias-fix common EOF")
         X <- biasfix(X)
     }
     
     ds <- DS.default(y,X,mon=mon,method=method,swsm=swsm,m=m,
-                     rmtrend=rmtrend,eofs=eofs,
+                     rmtrend=rmtrend,ip=ip,
                      area.mean.expl=area.mean.expl,verbose=verbose,...)
 
     ## For combined fields, make sure to add the appended PCs to
@@ -460,9 +470,9 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
 
 DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
                      method="lm",swsm="step",m=5,
-                     rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                     rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                      verbose=FALSE,weighted=TRUE,...) {
-    if (verbose) print("DS.field")
+    if (verbose) { print('--- DS.field ---'); print(summary(coredata(y)))}
     ## Keep track of which is an eof object and which is a station record:
     swapped <- FALSE
     if ( inherits(y,c("field")) & inherits(X,c("station"))) {
@@ -482,29 +492,29 @@ DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
         if (inherits(X,'month')) 
             ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
                                      mon=mon,method=method,swsm=swsm,m=m,
-                                     rmtrend=rmtrend,eofs=eofs,
+                                     rmtrend=rmtrend,ip=ip,
                                      area.mean.expl=area.mean.expl,
                                      verbose=verbose) else
         if (inherits(X,'season')) 
             ds <- DS.t2m.season.field(y=y,X=X,biascorrect=biascorrect,
                                       method=method,swsm=swsm,m=m,
-                                      rmtrend=rmtrend,eofs=eofs,
+                                      rmtrend=rmtrend,ip=ip,
                                       area.mean.expl=area.mean.expl,
                                       verbose=verbose) else
         if (inherits(X,'annual')) 
             ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
                                       method=method,swsm=swsm,m=m,
-                                      rmtrend=rmtrend,eofs=eofs,
+                                      rmtrend=rmtrend,ip=ip,
                                       area.mean.expl=area.mean.expl,
                                       verbose=verbose)
     } else if (tolower(attr(y,'variable'))=='precip')
         ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
                                      method=method,swsm=swsm,m=m,
-                                     rmtrend=rmtrend,eofs=eofs,
+                                     rmtrend=rmtrend,ip=ip,
                                      area.mean.expl=area.mean.expl,verbose=verbose)
     else ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
                           method=method,swsm=swsm,m=m,
-                          rmtrend=rmtrend,eofs=eofs,
+                          rmtrend=rmtrend,ip=ip,
                           area.mean.expl=area.mean.expl,verbose=verbose)
     if (verbose) print('return downscaled results')
     invisible(ds)
@@ -516,9 +526,9 @@ DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
 ## and compute the EOFs before applying the default DS method.
 DS.t2m.month.field <- function(y,X,biascorrect=FALSE,mon=NULL,
                                method="lm",swsm="step",m=m,
-                               rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                               rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                                verbose=FALSE,weighted=TRUE,station=TRUE) {
-    if (verbose) print("DS.t2m.month.field")
+    if (verbose) { print('--- DS.t2m.month.field ---'); print(summary(coredata(y)))}
     if (inherits(X,'comb')) type <- 'eof.comb' else type <- "eof.field"
     cls <- class(y)
 
@@ -531,7 +541,7 @@ DS.t2m.month.field <- function(y,X,biascorrect=FALSE,mon=NULL,
         if (biascorrect) eof <- biasfix(eof)
         cline <- paste("ds$",month.abb[i],
                        "<- DS.station(y,eof,method=method,swsm=swsm,m=m,",
-                       "rmtrend=rmtrend,eofs=eofs,",
+                       "rmtrend=rmtrend,ip=ip,",
                        "area.mean.expl=area.mean.expl,verbose=verbose)",
                        sep="")
         if (verbose) print(cline)
@@ -555,25 +565,25 @@ DS.t2m.month.field <- function(y,X,biascorrect=FALSE,mon=NULL,
 
 DS.t2m.season.field <- function(y,X,biascorrect=FALSE,
                                 method="lm",swsm="step",m=5,
-                                rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                                rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                                 verbose=FALSE,weighted=TRUE,station=TRUE) {
   ## Downscale seasonal mean and standard deviation
-    if (verbose) print("DS.t2m.season.field")
+    if (verbose) { print('--- DS.t2m.season.field ---'); print(summary(coredata(y)))}
 
     Z1 <- EOF(subset(X,it='djf'),area.mean.expl=area.mean.expl)
     if (verbose) print("downscale DJF")
-    ds1 <- DS(y,Z1,biascorrect=biascorrect,eofs=eofs)
+    ds1 <- DS(y,Z1,biascorrect=biascorrect,ip=ip)
     Z2 <- EOF(subset(X,it='mam'),area.mean.expl=area.mean.expl)
     if (verbose) print("downscale MAM")
-    ds2 <- DS(y,Z2,biascorrect=biascorrect,eofs=eofs)
+    ds2 <- DS(y,Z2,biascorrect=biascorrect,ip=ip)
     Z3 <- EOF(subset(X,it='jja'),area.mean.expl=area.mean.expl)
     if (verbose) print("downscale JJA")
-    ds3 <- DS(y,Z3,biascorrect=biascorrect,eofs=eofs)
+    ds3 <- DS(y,Z3,biascorrect=biascorrect,ip=ip)
     
     
     Z4 <- EOF(subset(X,it='son'),area.mean.expl=area.mean.expl)
     if (verbose) print("downscale SON")
-    ds4 <- DS(y,Z4,biascorrect=biascorrect,eofs=eofs)
+    ds4 <- DS(y,Z4,biascorrect=biascorrect,ip=ip)
     if (verbose) print("Combine the 4 seasons")
     ds <- combine(list(ds1,ds2,ds3,ds4))
     z <- c(crossval(ds1,m=m),crossval(ds2,m=m),
@@ -586,10 +596,10 @@ DS.t2m.season.field <- function(y,X,biascorrect=FALSE,
 
 DS.t2m.annual.field <- function(y,X,biascorrect=FALSE,
                                 method="lm",swsm="step",m=5,
-                                rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                                rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                                 verbose=FALSE,weighted=TRUE,station=TRUE) {
   ## Downscale seasonal mean and standard deviation
-    if (verbose) print("DS.t2m.annual.field")
+    if (verbose) { print('--- DS.t2m.annual.field ---'); print(summary(coredata(y)))}
 
     
     Z <- EOF(annual(X),area.mean.expl=area.mean.expl)
@@ -601,13 +611,14 @@ DS.t2m.annual.field <- function(y,X,biascorrect=FALSE,
 
 DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
                                    method="lm",swsm="step",m=5,
-                                   rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                                   rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                                    verbose=FALSE,weighted=TRUE,...) {
 
   ## Computes the annual mean values for wet-day mean mu, wet-day frequency, and spell.
   ## Also computes seasonal variations from PCA X[year,calendar months].
   ## One PC for each year.
 
+    if (verbose) { print('--- DS.precip.season.field ---'); print(summary(coredata(y)))}
     mu <- as.4seasons(y,FUN="exceedance",threshold=threshold)
     fw <- as.4seasons(y,FUN="exceedance",fun="freq")
     wL <- as.4seasons(spell(y))
@@ -618,11 +629,11 @@ DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
         x <- EOF(X,it=i,area.mean.expl=area.mean.expl)
         if (biascorrect) x <- biasfix(x)
         ds.mu <- DS.default(mu,x,method=method,swsm=swsm,m=m,
-                            rmtrend=rmtrend,eofs=eofs,
+                            rmtrend=rmtrend,ip=ip,
                             verbose=verbose,...)
-        ds.fw <- DS.freq(fw,x,rmtrend=rmtrend,eofs=eofs,m=m,
+        ds.fw <- DS.freq(fw,x,rmtrend=rmtrend,ip=ip,m=m,
                          verbose=verbose,...)
-        ds.wL <- DS.spell(wL,x,rmtrend=rmtrend,eofs=eofs,m=m,
+        ds.wL <- DS.spell(wL,x,rmtrend=rmtrend,ip=ip,m=m,
                           verbose=verbose,...)
     }
     
@@ -634,7 +645,8 @@ DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
 ## Use family='gaussian' for sample sizes gt 30 - > central limit theorem
 DS.freq <- function(y,X,threshold=1,biascorrect=FALSE,method="glm",
                     family="gaussian",swsm="step",m=5,
-                    rmtrend=TRUE,eofs=1:7,verbose=FALSE,weighted=TRUE,...) {
+                    rmtrend=TRUE,ip=1:7,verbose=FALSE,weighted=TRUE,...) {
+    if (verbose) { print('--- DS.freq ---'); print(summary(coredata(y)))}
     if (inherits(X,'month'))
         Z <- aggregate(y,as.yearmon,FUN="wetfreq",threshold=threshold) else
     if (inherits(X,'season'))
@@ -643,16 +655,17 @@ DS.freq <- function(y,X,threshold=1,biascorrect=FALSE,method="glm",
         Z <- annual(y,FUN=wetfreq,threshold=threshold)
     
     ds <- DS.default(Z,X,biascorrect=biascorrect,method=method,
-                     swsm=swsm,m=m,rmtrend=rmtrend,eofs=eofs,verbose=verbose,...)
+                     swsm=swsm,m=m,rmtrend=rmtrend,ip=ip,verbose=verbose,...)
     return(ds)
 }
 
 
 DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
                      method="glm",family="gaussian",swsm="step",m=5,
-                     rmtrend=TRUE,eofs=1:7,verbose=FALSE,weighted=TRUE,...) {
+                     rmtrend=TRUE,ip=1:7,verbose=FALSE,weighted=TRUE,...) {
   ## Downscale the spell length using a GLM with poisson family.
   ##  the mean spell length over a given interval:
+    if (verbose) { print('--- DS.spell ---'); print(summary(coredata(y)))}
     if (inherits(y,'spell')) z <- as.station(y) else
     if (inherits(y,'sstation')) {
         z <- as.station(spell(y))
@@ -663,7 +676,7 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
     if (inherits(X,'annual')) Z <- annual(z,FUN=mean)
 
     ds <- DS(Z,X,biascorrect=biascorrect,method=method,swsm=swsm,m=m,
-             rmtrend=rmtrend,eofs=eofs,
+             rmtrend=rmtrend,ip=ip,
              verbose=verbose,...)
     invisible(ds)
 }
@@ -677,22 +690,24 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
 ## The data may be pre-filtered using CCA.
 ## Rasmus Benestad, 19.08.2013
 DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
-                   method="lm",swsm=NULL,m=5,eofs=1:10,
+                   method="lm",swsm=NULL,m=5,ip=1:10,
                    rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
     
-    if (verbose) {print('DS.pca'); print(class(X))}
+    if (verbose) { print('--- DS.pca ---'); print(summary(coredata(y))); print(class(y)); print(class(X))}
     
     if (class(index(y)) != (class(index(X)))) {
+      if (verbose) {print('different class'); summary(coredata(y))}
       warning(paste('DS.pca: different indices:', class(index(y)),class(index(X))))
-      if (is.numeric(index(y))) index(X) <- year(X)
-      if (is.numeric(index(X))) index(y) <- year(y)
+      if (is.numeric(index(y)) | is.numeric(index(X))) {index(y) <- year(y); index(X) <- year(X)}
+      if (verbose) {print('Summary of predictand - intermediate inspection1'); print(zoo(y))}
     }
+  
     ## If the predictor is a list, then use DS.list
     if (is.list(X)) {
       if (verbose) print('Predictors represented by a list object')
       z <- DS.list(y,X,biascorrect=biascorrect,mon=mon,
                    method=method,swsm=swsm,m=m,
-                   rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
+                   rmtrend=rmtrend,ip=ip,area.mean.expl=area.mean.expl,
                    verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
       return(z)
     }
@@ -714,18 +729,18 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
   
       class(X) <- c('eof',class(X))
       z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
-                  eofs=eofs,rmtrend=rmtrend,verbose=verbose,
+                  ip=ip,rmtrend=rmtrend,verbose=verbose,
                   weighted=weighted,...)
       return(z)
     } else if (verbose) print('Predictor is OK - an EOF object')
-
+   
     ## Check the predictand
     if (inherits(y,"eof") & inherits(y,"field")) {
-      if (verbose) print('Make the EOFs lool like PCAs before downscaling')
+      if (verbose) print('Make the predictand EOF look like PCAs before downscaling')
       cls0 <- class(y)
       class(y)[1:2] <- c('pca','station')
       z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
-                  eofs=eofs,rmtrend=rmtrend,verbose=verbose,
+                  ip=ip,rmtrend=rmtrend,verbose=verbose,
                   weighted=weighted,...)
       class(z)[2:3] <- c('eof','field')
       attr(z,'pattern') <- attr(y,'pattern')
@@ -744,14 +759,21 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     y0 <- y; X0 <- X
                                         #nattr <- softattr(y)
 
-                                        # synchronise the two zoo objects through 'merge' (zoo)
+    # synchronise the two zoo objects through 'merge' (zoo)
+    if (verbose) { print('Summary of predictand before matchdate'); print(summary(coredata(y)))
+      print(index(y)); print(index(X))
+    }
+    if (verbose) print('predictand y: match date with predictor x')
     y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
+    if (verbose) {print('summary of predictand y after matchdate'); print(summary(coredata(y)))}
+    
+    if (verbose) print('predictor: match date with predictand')
     X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
     dy <- dim(y); if (is.null(dy)) dy <- c(length(y),1)
     dx <- dim(X); if (is.null(dx)) dx <- c(length(X),1)
-
-                                        # Use method for downscaling
-                                        #str(y); str(X)
+    
+    # Use method for downscaling
+    #str(y); str(X)
     if (verbose) print(method)
     if (toupper(method)=='mvr') {
         if (verbose) print('MVR')
@@ -786,7 +808,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         pca <- svd(UWV)
                                         #str(pca)
         ds <- zoo(pca$v,order.by=index(X))
-        model$fitted.values <- zoo(model$fitted.values,order.by=index(X)) +
+        model$fitted.values <- zoo(model$fitted.values,order.by=index(X)) # +
           ##    attr(y0,'mean') + offset  # REB 04.12.13: included attr(y0,'mean') in
           ##                              # addition to offset
             model$calibration.data <- X
@@ -812,7 +834,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         fit.val <- y.out
         dxp <- dim(Xp); if (is.null(dxp)) dxp <- c(length(Xp),1)
         yp.out <- matrix(rep(NA,dxp[1]*dy[2]),dxp[1],dy[2])
-        if (verbose) print(paste('PC',eofs,collapse=' '))
+        if (verbose) print(paste('PC',ip,collapse=' '))
                                         # Loop over the PCs...
         ## REB 2015-03-23
         ## The predictor pattern associated with PCA-predictands: one
@@ -831,6 +853,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         ## multiple predictors.
         if (dp[3] == length(attr(X0,'eigenvalues'))) x0p <- x0p %*% diag(attr(X0,'eigenvalues'))
         model <- list(); eof <- list()
+        if (verbose) {print('Summary of predictand'); print(summary(coredata(y)))}
         for (i in 1:dy[2]) {
             if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
             ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],
@@ -840,7 +863,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
             
             if (verbose) {print(class(ys)); print(class(X))}
             z <- DS(ys,X,biascorrect=biascorrect,m=m,
-                    eofs=eofs,rmtrend=rmtrend,verbose=verbose,...)
+                    ip=ip,rmtrend=rmtrend,verbose=verbose,...)
             if (verbose) print('--- return to DS.pca ---')
 
             model[[i]] <- attr(z,'model')
@@ -906,7 +929,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
           eof <- eof[[1]]
           if (verbose) print('Check suggests that eof is stored as list -> eof')
         }
-                                        #print(class(model)); str(model)
+                           #print(class(model)); str(model)
     attr(ds,'calibration_data') <- attr(z,'calibration_data')
     attr(ds,'fitted_values') <- zoo(fit.val,order.by=index(attr(z,'fitted_values')))
     class(attr(ds,'fitted_values')) <- class(y0)
@@ -935,14 +958,16 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
 
 DS.eof <- function(y,X,mon=NULL,
                    method="lm",swsm="step",m=5,
-                   rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                   rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                    verbose=FALSE,weighted=TRUE,pca=TRUE,...) {
-    if (verbose) print("DS.eof")
+    if (verbose) { print('--- DS.eof ---'); print(summary(coredata(y)))}
     ds <- DS.pca(y,X,mon=mon,
                  method=method,swsm=swsm,m=m,
-                 rmtrend=rmtrend,eofs=eofs,
+                 rmtrend=rmtrend,ip=ip,
                  area.mean.expl=area.mean.expl,
                  verbose=verbose,...)
+    if(verbose) print("---return to DS.eof---")
+    attr(ds,'original_data') <- y
     class(attr(ds,'original_data')) <- class(y)
     class(attr(ds,'fitted_values')) <- class(y)
     invisible(ds)
@@ -951,14 +976,39 @@ DS.eof <- function(y,X,mon=NULL,
 
 DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
                     method="lm",swsm="step",m=5,
-                    rmtrend=TRUE,eofs=1:7,
+                    rmtrend=TRUE,ip=1:7,
+                    verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
+  ### This method combines different EOFs into one predictor by making a new
+  ### data matrix consisting of the PCs, then weight (w) these according to their
+  ### eigenvalues (normalised so that each predictor/EOF type carry similar
+  ### weight). Then a SVD is applied to this new set of combined PCs to make
+  ### an object that looks like on EOF.
+  
+  if (verbose) { print('--- DS.list ---'); print(summary(coredata(y)))}
+  z <- list()
+  for (ieof in 1:length(X)) {
+    if (verbose) print(names(X)[ieof])
+    z[[ieof]] <- DS(y,X[[ieof]],biascorrect=biascorrect,mon=mon,
+            method=method,swsm=swsm,m=m,rmtrend=rmtrend,ip=ip,
+            verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+    
+    y <- as.residual(z[[ieof]])
+  }
+  names(z) <-names(X)
+  invisible(z)
+}
+
+
+DS.mixedeof <- function(y,X,biascorrect=TRUE,mon=NULL,
+                    method="lm",swsm="step",m=5,
+                    rmtrend=TRUE,ip=1:7,
                     verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
               ### This method combines different EOFs into one predictor by making a new
               ### data matrix consisting of the PCs, then weight (w) these according to their
               ### eigenvalues (normalised so that each predictor/EOF type carry similar
               ### weight). Then a SVD is applied to this new set of combined PCs to make
               ### an object that looks like on EOF.
-    if (verbose) print('DS.list')
+    if (verbose) { print('--- DS.mixedeof ---'); print(summary(coredata(y)))}
     preds <- names(X)
     if (verbose) print(preds)
     np <- length(preds)
@@ -971,7 +1021,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
         for ( i in 1:length(predictands)) {
           ds1 <- DS(y[[i]],X,biascorrect=biascorrect,mon=mon,
                     method=method,swsm=swsm,
-                    rmtrend=rmtrend,eofs=eofs,
+                    rmtrend=rmtrend,ip=ip,
                     weighted=TRUE,pca=FALSE,npca=20,...)
           eval(parse(text=paste('ds$',predictands[i],' <- ds1',sep='')))
         }
@@ -982,11 +1032,10 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
 ## REB 2015-04-09: replace the lines below with
       eof <- as.eof.list(X,verbose=verbose)
 
-
     if (verbose) print('DS(y,eof,...)')
     ds <- DS(y,eof,biascorrect=biascorrect,
              method=method,swsm=swsm,m=m,
-             rmtrend=rmtrend,eofs=eofs,
+             rmtrend=rmtrend,ip=ip,
              weighted=TRUE,pca=FALSE,verbose=verbose,...)
 
     ## Now, we need to reconstruct the spatial maps/patterns. There will be
@@ -1013,7 +1062,7 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
               xp %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
             } else {
               ## EOF-based predictand:
-              #browser()
+              #
               if (verbose) print('DS pattern: 3D')
               xd <- dim(xp)
               dim(xp) <- c(xd[1]*xd[2],xd[3])
@@ -1038,11 +1087,12 @@ DS.list <- function(y,X,biascorrect=TRUE,mon=NULL,
 
 DS.station.pca <- function(y,X,mon=NULL,
                            method="lm",swsm="step",m=5,
-                           rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                           rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                            verbose=FALSE,weighted=TRUE,...) {
   ## This function does the same as DS.eof
+    if (verbose) { print('--- DS.station.pca ---'); print(summary(coredata(y)))}
     z <- DS.default(y=y,X=X,mon=mon,method=method,swsm=swsm,m=m,
-                    rmtrend=trend,eofs=eofs,area.mean.expl=area.mean.expl,
+                    rmtrend=trend,ip=ip,area.mean.expl=area.mean.expl,
                     verbose=verbose,weighted=weighted,..)
     return(z)
 }
@@ -1055,7 +1105,7 @@ biasfix <- function(x) {
     n <- attr(x,'n.apps')
     for ( i in 1:n ) {
         eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
-        Z <- coredata(z)
+        Z <- coredata(z) 
         ## Use overlapping years
         year.ox <- range(year(z)[is.element(year(z),year(x))])
         sd.o <- apply(coredata(subset(x,it=range(year.ox))),2,sd,na.rm=TRUE)
@@ -1086,11 +1136,11 @@ DS.trajectory <- function(y,X,it=NULL,is=NULL,FUN='count',param=NULL,
                        unit=NULL,longname=NULL,loc=NULL,
                        biascorrect=FALSE,mon=NULL,
                        method="lm",swsm="step",m=5,
-                       rmtrend=TRUE,eofs=1:7,area.mean.expl=FALSE,
+                       rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                        verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
    
+  if (verbose) { print('--- DS.trajectory ---'); print(summary(coredata(y)))}
   stopifnot(!missing(y),!missing(X),inherits(y,"trajectory"))
-  if (verbose) print("--- DS.trajectory ---")
 
   y <- subset(y,it=it,is=is)
   ys <- trajectory2station(y,param=param,FUN=FUN,unit=unit,
@@ -1105,7 +1155,7 @@ DS.trajectory <- function(y,X,it=NULL,is=NULL,FUN='count',param=NULL,
   }
   
   ds <- DS(ys,X,biascorrect=biascorrect,mon=mon,method=method,swsm=swsm,m=m,
-     rmtrend=rmtrend,eofs=eofs,area.mean.expl=area.mean.expl,
+     rmtrend=rmtrend,ip=ip,area.mean.expl=area.mean.expl,
      verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
   invisible(ds)
 }

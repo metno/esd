@@ -6,6 +6,7 @@
 \alias{map.comb}
 \alias{map.eof}
 \alias{map.ds}
+\alias{map.dsensemble}
 \alias{map.field}
 \alias{map.corfield}
 \alias{map.cca}
@@ -42,45 +43,55 @@ map.matrix(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        type=c("fill","contour"),gridlines=FALSE,
                        lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                       pattern=1,plot=TRUE,...)
+                       ip=1,plot=TRUE,...)
 
-map.station(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
-              xlim = NULL, ylim = NULL, zlim = NULL,
-              col = "darkred", bg = "orange",
-              type = NULL,gridlines= TRUE, 
-              lonR = NULL,latR=45,axiR=NULL,verbose=FALSE,
-              FUN = NULL, 
-              colbar = list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                            type="p",cex=2,h=0.6,v=1),
-              cex=0.8,zexpr = "alt",
-              cex.subset = 1, add.text.subset = FALSE, showall = FALSE, 
-              add.text = FALSE, height = NULL, width = NULL, cex.axis = 1, 
-              cex.lab = 0.6, pch = 21, from = NULL, to = NULL,
-              showaxis = FALSE, border = FALSE,
-              full.names = FALSE, full.names.subset = FALSE, 
-              text = FALSE, fancy = FALSE, na.rm = TRUE, show.val = FALSE, 
-              colorbar = TRUE, legend.shrink = 1,plot=TRUE, ...)
+map.station(x,FUN=NULL, it=NULL,is=NULL,new=FALSE,
+                             projection="lonlat",
+                             xlim = NULL, ylim = NULL,zlim=NULL,n=15,
+                             col='darkred',bg='orange',
+                             colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
+                                          breaks=NULL,type="p",cex=2,h=0.6, v=1,
+                                          pos=0.1,show=TRUE),
+                             type=NULL,gridlines=TRUE,
+                             lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
+                             cex=2,zexpr="alt",cex.subset=1,
+                             add.text.subset=FALSE,showall=FALSE,
+                             add.text=FALSE,
+                             height=NULL,width=NULL,
+                             cex.main=1,cex.axis=1,cex.lab=0.6,
+                             pch=19, from=NULL,to=NULL,showaxis=FALSE,
+                             border=FALSE,full.names=FALSE,
+                             full.names.subset=FALSE, 
+                             text=FALSE, fancy=FALSE, 
+                             na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
+                             legend.shrink=1,fig=c(0,1,0.05,0.95),...)
 
 map.comb(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
            xlim=NULL,ylim=NULL,zlim=NULL,n=15,
            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                        type="p",cex=2,h=0.6,v=1),
            type=c("fill", "contour"),gridlines=FALSE,
-           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,pattern=1,plot=TRUE,...)
+           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,ip=1,plot=TRUE,...)
 
-map.eof(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
-           xlim= NULL,ylim=NULL,zlim=NULL,n=15,
-           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                       type="p",cex=2,h=0.6,v=1),
-           type=c("fill","contour"),gridlines=FALSE,
-           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,pattern=1,plot=TRUE,...)
+map.eof(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
+                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                                pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                    type=c("fill","contour"),gridlines=FALSE,
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
+                    ip=1,cex=1,plot=TRUE,...)
 
 map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
          colbar=list(pal = NULL,rev=FALSE,n=10,breaks=NULL,
                      type="p",cex = 2,h=0.6,v=1,pos=0.05),
          type= c("fill", "contour"),gridlines=FALSE,
-         lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE,plot=TRUE,...) 
+         lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE,plot=TRUE,...)
+
+map.dsensemble(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
+                           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                                   show=TRUE,type="p",cex=2,h=0.6,v=1),
+                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,plot=TRUE,...)
 
 map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
             xlim=NULL,ylim=NULL,zlim=NULL, 
@@ -104,11 +115,13 @@ map.trend(x,it=NULL,is=NULL,new=TRUE,projection="lonlat",
             type=c("fill", "contour"),gridlines=FALSE,
             lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...)
 
-map.pca(x,it=NULL,is=NULL,pattern=1,new=TRUE,projection="lonlat", 
-          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-          colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                      type="p",cex=2,h=0.6,v=1),
-          type=c("fill","contour"),gridlines=FALSE,verbose = FALSE, plot=TRUE,...)
+map.pca(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
+                    xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
+                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                                pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
+                                        #cex.axis=1,cex.main=1,cex.lab=1,
+                    type=c("fill","contour"),gridlines=FALSE,fig=c(0,1,0.05,0.95),
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...)
 
 
 map.mvr(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
@@ -128,12 +141,14 @@ map.cca(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.trajectory(x,it=NULL,is=NULL,type="paths",
                projection="sphere",verbose=TRUE,plot=TRUE,...)
 
-map.events(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,
-           param=NA,alpha=0.5,col="black",pch=13,lwd=4,cex=2,
-           colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
-           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-           projection="sphere",latR=NULL,lonR=NULL,new=TRUE,
-           verbose=FALSE,plot=TRUE,...)
+map.events(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
+                       param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
+                       colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
+                                   pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                       showaxis=TRUE,fig=c(0,1,0.05,0.95),mgp=c(2,0.5,0),mar=rep(2,4),
+                       lty=1,type=c("points","trajectory","start","end"),border=FALSE,
+                       projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,add=FALSE,
+                       verbose=FALSE,...)
 
 lonlatprojection(x,it=NULL,is=NULL,new=FALSE,projection="lonlat", 
                    xlim=NULL,ylim=NULL,zlim=NULL,n =15,
@@ -156,15 +171,14 @@ map2sphere(x,it=NULL,is=NULL,new = TRUE,
              type = c("fill", "contour"),colorbar=TRUE,
              gridlines = TRUE, fancy = FALSE, verbose = FALSE,...) 
 
-vec(x,y,it=10,a=1,r=1,ix=NULL,iy=NULL,
-                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,...)
+vec(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,
+                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...)
 mask(x,land=FALSE)
 }
 \arguments{
   \item{x}{the object to be plotted; in \code{rotM}, x holds a vector
     of x-coordinates.}
   \item{FUN}{The function to be applied on x before mapping (e.g. \code{mean})}
-  \item{pattern}{Which EOF pattern (mode) to plot}
   \item{colbar}{The colour scales defined through \code{colscal}. Users can
                 specify the colour `pal'*ette (`pal'), the number of
                 breaks (`n'), values of `breaks', and the position of
@@ -178,19 +192,19 @@ mask(x,land=FALSE)
   \item{new}{TRUE: create a new graphic device.}
   \item{projection}{Projections: c("lonlat","sphere","np","sp") - the
     latter gives stereographic views from the North and south poles.}
-  \item{xlim}{see  \code{\link{plot}} - only used for 'lonlat' projection.}
-  \item{ylim}{see  \code{\link{plot}} - only used for 'lonlat' projection.}
+  \item{xlim}{see  \code{\link{plot}} - only used for 'lonlat' and 'sphere' projections.}
+  \item{ylim}{see  \code{\link{plot}} - only used for 'lonlat' and 'sphere' projections.}
   \item{n}{The number of colour breaks in the color bar}
   \item{breaks}{graphics setting - see \code{\link{image}}}
   \item{type}{graphics setting - colour shading or contour}
   \item{gridlines}{Only for the lon-lat projection}
-  \item{lonR}{Only for the spherical projection - see \code{\link{map2sphere}}}
-  \item{latR}{Only for the spherical projection - see \code{\link{map2sphere}}}
-  \item{axiR}{Only for the spherical projection - see \code{\link{map2sphere}}}
+  \item{lonR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
+  \item{latR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
+  \item{axiR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
   \item{density}{}
   \item{y}{a vector of y coordinates}
   \item{z}{a vector of z coordinates}
-  \item{pattern}{Selects which pattern (see \code{\link{EOF}},  \code{\link{CCA}}) to plot}
+  \item{ip}{Selects which pattern (see \code{\link{EOF}},  \code{\link{CCA}}) to plot}
   \item{geography}{TRUE: plot geographical features}
   \item{angle}{for hatching}
   \item{a}{used in \code{\link{vec}} to scale the length of the arrows}
@@ -216,6 +230,9 @@ mask(x,land=FALSE)
     (values between 0 and 1)}
   \item{...}{further arguments passed to or from other methods.}
   \item{land}{if TRUE mask land, else mask ocean}
+  \item{what}{What to map: ['eof','field] for EOF pattern or the field
+  recovered from the EOFs.}
+  \item{fig}{see \code{\link{par}}}
 }
 \value{A field object}
 
@@ -232,6 +249,19 @@ map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70))
 ## Get NACD data and map the mean values
 y <- station.nacd()
 map(y,FUN='mean',colbar=list(pal=varid(y),n=10),cex=2)
+
+# Examples of cyclone maps (map.events)
+data(storms)
+# Subset cyclones from the start of January 2016 lasting a minimum of 10 time steps 
+x <- subset(storms,it=c("2016-01-01","2016-01-07"),ic=list(param="trackcount",pmin=10))
+# Map with points and lines showing the cyclone centers and trajectories
+map(x, type=c("trajectory","points"), col="blue")
+## Map with only the trajectory and start and end points
+map(x, type=c("trajectory","start","end"), col="red")
+## Map showing the cyclone depth (slp at center) as a color scale (rd = red scale)
+map(x, param="pcent", type=c('trajectory','start'), 
+    colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1000,2)), alpha=0.9)
+
 }
 \keyword{map}
 

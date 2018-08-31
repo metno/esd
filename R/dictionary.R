@@ -22,12 +22,21 @@ esd2ele <- function(param = NULL) {
                                      'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
                                      'rr' = "601",
                                      'slp' = "401",
+                                     'pon' = "402",
+                                     'pom' = "401",
+                                     'pox' = "403",
+                                     'prn' = "402",
+                                     'prm' = "401",
+                                     'prx' = "403",
+                                     'pp'  = "401",
                                      'cc' = "801",
                                      't2' = "101",
                                      'precip' = "601",
                                      '101' = "t2m",
                                      '401' = "slp",
-                                     '601' = "precip",
+                                     '402' = "pon",
+				                             '403' = "pox",
+				                             '601' = "precip",
                                      '801' = "cc",
                                      'tmin'="121",'tn'="121",                             #REB 2016-07-25                 
                                      'tmax'="111",'tx'="111",                             #REB 2016-07-25
@@ -35,30 +44,38 @@ esd2ele <- function(param = NULL) {
                                      '111' = "tmax",
                                      '901'  = "sd",
                                      'sd' = '901',
-                                     'dd' = '502',
+				                             '901' = 'sd',
+				                             'dd' = '502',
                                      '502' = 'dd',
                                      'fg' = '501', # Wind speed
                                      '501' = 'fg',
                                      'fx' = '503',
                                      '503' = 'fx',
-                                     '201' = 'HU',
-                                     'HU' = '201',
+                                     '504' = 'dd06',
+				                             '505' = 'dd12',
+				                             '506' = 'dd18',
+				                             'ffm' = '501',
+				                             'ffx' = '503',
+				                             'dd06' = '504',
+				                             'dd12' = '505',
+				                             'dd18' = '506',
+				                             '201' = 'hu',
+                                     'hu' = '201',
                                      '301' = 'ss',
                                      'ss' = '301',
-                                     'sd'='901',
                                      '999'='sf',
-                                     '122'='Tl',
-                                     '123'='Tld',
-                                     'Tl'='122',
-                                     'Tld'='123',
+                                     '122'='tl',
+                                     '123'='tld',
+                                     'tl'='122',
+                                     'tld'='123',
                                      'dsc'='701',
                                      '701'='dsc',
-                                     'Th'='112',
-                                     '112'='Th',
-                                     '113'='Thd',
-                                     'Thd'='113',
-                                     '602'='Rx',
-                                     'Rx'='602')
+                                     'th'='112',
+                                     '112'='th',
+                                     '113'='thd',
+                                     'thd'='113',
+                                     '602'='rx',
+                                     'rx'='602')
  else ele <- 'NA'
 return(ele)
 }
@@ -210,20 +227,28 @@ return(y)
 metno.ele <- function() { ## must be updated - AM 2014-02-21
   ## Selected elements from GHCND database
     
-    if (!file.exists('metno_element.txt')) {
-      x <- rbind(c("601" , "Precipitation"		 	, "1"	  		, "mm"	, "RR"),
-                 c("999" , "Snowfall"			, "1" 	  		, "mm" 	, "SNOW"),
-                 c("901" , "Snow depth"			, "1" 	  		, "mm" 	, "SNWD"),
-                 c("101" , "Mean temperature"	        , "1" 		        , "degree*C"  , "TAM"),
-                 c("111" , "Maximum temperature" 	 	, "1"   		, "degree*C"	, "TAX"),
-                 c("121" , "Minimum temperature" 	 	, "1"	  		, "degree*C" 	, "TAN"))
-      y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO",stringsAsFactors=FALSE)
-      
-      } else {
-        x <- read.csv('metno_element.txt')
-
-        y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = 1 , unit = x[,5] , param = x[,1] , source = "METNO",stringsAsFactors=FALSE)
-      }
+    if (!file.exists('metno_element.txt')) { ## AM :  Need to update the file name, the problem is that the meta file does not contain elements !!
+        x <- rbind(c("601" , "Precipitation"		 	        , "1"	  		, "mm"	      , "RR"),
+                   c("401" , "Sea level pressure"		 	    , "1"	  		, "hPa"	      , "POM"),
+                   c("402" , "Sea level pressure"		 	    , "1"	  		, "hPa"	      , "PON"),
+                   c("403" , "Sea level pressure"		 	    , "1"	  		, "hPa"	      , "POX"),
+                   c("999" , "Snowfall"			              , "1" 	    , "mm" 	      , "SNOW"),
+                   c("901" , "Snow depth"			            , "1" 	    , "mm" 	      , "SD"),
+                   c("101" , "Mean temperature"	          , "1" 		  , "degree*C"  , "TAM"),
+                   c("111" , "Maximum temperature" 	 	    , "1"   		, "degree*C"	, "TAX"),
+                   c("121" , "Minimum temperature" 	 	    , "1"	  		, "degree*C" 	, "TAN"),
+                   c("501" , "Wind speed" 		            , "1"   		, "m/s" 	    , "FFM"),
+                   c("502" , "Wind direction"             ,  "1"   		, "degrees" 	, "DD"),
+                   c("504" , "Wind direction at 06 UTC"   , "1"   		, "degrees" 	, "DD06"),
+                   c("505" , "Wind direction at 12 UTC"   , "1"   		, "degrees" 	, "DD12"),
+                   c("506" , "Wind direction at 18 UTC"   , "1"   		, "degrees" 	, "DD18"),
+                   c("503" , "Wind Gust" 		              , "1"   		, "m/s" 	    , "FGX"))
+        y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO",stringsAsFactors=FALSE)
+        
+    } else {
+      x <- read.csv(file = 'metno_element.csv',sep = ';',header = TRUE,stringsAsFactors = FALSE)
+      y <- data.frame(element= x$Elem_codes, longname = x$NAME , scale_factor = rep(1,dim(x)[1]) , unit = x$UNIT , param = x$Elem_codes , source = "METNO")
+    }
   return(y)
 }
 

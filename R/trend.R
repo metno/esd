@@ -20,6 +20,7 @@ trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
 trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.one.station",result))
+  if (sum(is.finite(x)) <= 3) return(NA)
   #print(class(index(x)))
   if (class(index(x))=="Date") {
     if (verbose) print("Date index")
@@ -107,13 +108,19 @@ trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   #print(dim(y))
   nc <- sum(is.element(strsplit(model,"")[[1]],"t")) + 1
   coefficients <- matrix(rep(NA,nc*d[2]),nc,d[2])
+  browser()
   for (i in 1:d[2]) {
     trendx <- data.frame(t=t,y=coredata(x[,i]))
-    eval(parse(text=paste("xt <- lm(",model,",data=trendx)")))
-  #print(summary(xt))
+    xt <- try(eval(parse(text=paste("xt <- lm(",model,",data=trendx)"))))
+    if (attr(xt,"class") != "try-error") {
+    #print(summary(xt))
     Y[,i] <- switch(result,"trend"=zoo(predict(xt,newdata=trendx),order.by=index(x)),
                            "residual"=zoo(xt$residuals,order.by=index(x)))
     coefficients[,i] <- xt$coefficients
+    } else {
+      Y[,i] <-zoo(rep(NA,d[1]),order.by=index(x))
+        coefficients[,i] <- rep(NA,2)
+    }
     #xt <- lm(y ~ t,data=trendx)
     #z <- predict(xt); print(length(z))
     #Y[,i] <- xt$residual
@@ -204,7 +211,7 @@ trend.zoo <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
     y <- trend.zoo.multi(x,result=result,model=model,...)
     return(y)
   }
-  trendx <- data.frame(t=year(x),y=coredata(x))
+  trendx <- data.frame(t=index(x),y=coredata(x))
   eval(parse(text=paste("xt <- lm(",model,",data=trendx)")))
   y <- switch(result,"trend"=zoo(predict(xt,newdata=trendx),order.by=index(x)),
                      "residual"=zoo(xt$residuals,order.by=index(x)))
@@ -226,6 +233,8 @@ trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
 ## Compute the linear trend
 trend.coef <- function(x,...) {
+  if (sum(is.finite(x)) <= 3) return(NA)
+  x[!is.finite(x)] <- NA
   t <- 1:length(x)
   model <- lm(x ~ t)
   y <- c(model$coefficients[2]*10)
@@ -235,6 +244,8 @@ trend.coef <- function(x,...) {
 
 ## Compute the linear trend
 trend.err <- function(x,...) {
+  if (sum(is.finite(x)) <= 3) return(NA)
+  x[!is.finite(x)] <- NA
   t <- 1:length(x)
   model <- lm(x ~ t)
   y <- c(summary(model)$coefficients[4]*10)
@@ -245,9 +256,11 @@ trend.err <- function(x,...) {
 
 ## Compute the p-value of the linear trend 
 trend.pval <- function(x,...) {
-    t <- 1:length(x)
-    model <- lm(x ~ t)
-    y <- anova(model)$Pr[1]
-    names(y) <- c("trend.pvalue")
-    return(y)
+  if (sum(is.finite(x)) <= 3) return(NA)
+  x[!is.finite(x)] <- NA
+  t <- 1:length(x)
+  model <- lm(x ~ t)
+  y <- anova(model)$Pr[1]
+  names(y) <- c("trend.pvalue")
+  return(y)
 }

@@ -1,6 +1,7 @@
 as.trajectory <- function(x,...) UseMethod("as.trajectory")
 
-as.trajectory.default <- function(x,...) {
+as.trajectory.default <- function(x,verbose=FALSE,...) {
+  if(verbose) print("as.trajectory.default")
   X <- trajectory(x,...)
   invisible(X)
 }
@@ -8,9 +9,15 @@ as.trajectory.default <- function(x,...) {
 as.trajectory.events <- function(x,verbose=FALSE,...) {
   if (verbose) print("as.trajectory.events")
   stopifnot(inherits(x,"events"))
-  if (!("trajectory" %in% names(x))) x <- Track.events(x,verbose=verbose,...)
-  if (!("trackcount" %in% names(x))) x <- Trackstats(x,verbose=verbose)
+  if (!("trajectory" %in% names(x))) x <- track(x,verbose=verbose,...)
+  if (!("tracklength" %in% names(x))) x <- Trackstats(x,verbose=verbose)
   y <- trajectory(x,verbose=verbose,...)
+  invisible(y)
+}
+
+events2trajectory <- function(x,verbose=FALSE,...) {
+  if(verbose) print("events2trajectory")
+  y <- as.trajectory.events(x,verbose=verbose,...)
   invisible(y)
 }
 
@@ -24,7 +31,6 @@ trajectory <- function(x,verbose=FALSE,loc=NA,param=NA,longname=NA,
   names(x)[grep("latitude",names(x))] <- "lat"
   names(x)[grep("longitude",names(x))] <- "lon"
   names(x)[grep("step",names(x))] <- "timestep"
-  
   if(is.na(loc) & !is.null(attr(x,"loc"))) loc <- attr(x,"loc")
   if(is.na(param) & !is.null(attr(x,"variable"))) param <- attr(x,"variable")
   if(is.na(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
@@ -53,16 +59,15 @@ rence")
   x <- Trackstats(x,verbose=verbose)
   #}
   nlist1 <- c("trajectory","code99","date","time","trackcount",
-              "tracklength","timestep","lon","lat")
+              "start","end","n","d","distance","tracklength","timestep","lon","lat")
   nlist1 <- nlist1[nlist1 %in% names(x)]
   nlist2 <- names(x)[!(names(x) %in% nlist1)]
-
+  
   x <- subset.events(x,it=x$trackcount>=nmin)
   X <- matrix(,nrow=length(unique(x$trajectory)),ncol=5+2*n+length(nlist2)*n)
   cnames <- c("trajectory","start","end","n","d",rep("lon",n),rep("lat",n))
   if(!is.null(nlist2)) cnames <- c(cnames,as.vector(sapply(nlist2,function(x) rep(x,n))))
   colnames(X) <- cnames
-  
   if(dim(X)[1]==0) {
     if(verbose) print(paste("No trajectories >",nmin-1,"time steps"))
   } else {
@@ -73,11 +78,17 @@ rence")
     aggregate(x$time, list(x$trajectory), function(x) x[1])$x -> t1
     aggregate(x$date, list(x$trajectory), function(x) x[length(x)])$x -> d2
     aggregate(x$time, list(x$trajectory), function(x) x[length(x)])$x -> t2
+    ## KMP 2017-10-04: Solution to problem with 06 time step when using format HHMM:
+    if(max(c(t1,t2))>24) {
+      t1 <- t1*1E-2
+      t2 <- t2*1E-2
+    }
     dt1 <- as.numeric(strftime(strptime(paste(d1,t1),format="%Y%m%d %H"),format="%Y%m%d%H"))
     dt2 <- as.numeric(strftime(strptime(paste(d2,t2),format="%Y%m%d %H"),format="%Y%m%d%H"))
     #aggregate(x$date, list(x$trajectory), length)$x -> len
     aggregate(x$trackcount, list(x$trajectory), function(x) x[1])$x -> nlen
-    aggregate(x$tracklength, list(x$trajectory), function(x) x[1])$x -> dlen
+    aggregate(x$distance, list(x$trajectory), function(x) x[1])$x -> dlen
+    #aggregate(x$tracklength, list(x$trajectory), function(x) x[1])$x -> dlen
     a <- 6.378e06
     xx <- a * cos( x$lat*pi/180 ) * cos( x$lon*pi/180 )
     yy <- a * cos( x$lat*pi/180 ) * sin( x$lon*pi/180 )
@@ -102,10 +113,9 @@ rence")
       if(verbose) print(name)
       eval(parse(text=paste("aggregate(x$",name,
         ",list(x$trajectory),function(x) approx(x,n=",
-        n,")$y)$x ->",name,sep="")))
-      eval(parse(text=paste("colnames(",name,
-        ")<-rep('",name,"',",n,")",sep="")))
-      eval(parse(text=paste("X[,colnames(X)=='",name,"'] <- ",name,sep="")))
+        n,")$y)$x -> y",sep="")))
+      eval(parse(text=paste("colnames(y)<-rep('",name,"',",n,")",sep="")))
+      eval(parse(text=paste("X[,colnames(X)=='",name,"'] <- y",sep="")))
     }
   }
   # add attributes to trajectory matrix X

@@ -1,6 +1,6 @@
 
 read.imilast <- function(fname,path=NULL,verbose=FALSE) {
-  fname <- file.path(path,fname)
+  if(!is.null(path)) fname <- file.path(path,fname)
   # read and rearrange file header
   if(verbose) print(paste("reading file header:"))
   h <- tolower(readLines(fname,1))
@@ -34,6 +34,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   if(verbose) print("reading data")
   x <- read.fwf(fname,width=w,col.names=h,skip=1)
   x <- x[x$code99<90,]
+  x <- x[!is.na(x$lon),]
   # rearrange date and time information
   dates <- round(x["datetime"][[1]]*1E-2)
   times <- x["datetime"][[1]] - round(dates)*1E2
@@ -52,18 +53,27 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
     method <- paste("M0",as.character(x$code99[1]),sep="")
   }
   x <- as.events(x,longname=longname,param=param,method=method,src=src,
-                 reference=ref,file=file.path(path,fname),url=url)
+                 reference=ref,file=file.path(path,fname),url=url,verbose=verbose)
   attr(x, "history")= history.stamp() 
   invisible(x)
 }
 
-
-read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html',
-                         path=NULL,verbose=TRUE) { 
-
+#fname <- 'http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html'
+read.hurdat2 <- function(fname='http://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2016-041117.txt',
+                         path=NULL,verbose=FALSE,...) {
   if(verbose) print("read.hurdat2")
   if(verbose) print(paste("file:",fname))
-  if(!is.null(path)) fname <- file.path(path,fname)
+  if(!is.null(path) & !is.url(fname)) {
+    fname <- file.path(path,fname)
+  } else if (is.url(fname)) {
+    destfile <- sub("http://","",fname)
+    destfile <- sub(".html",".txt",destfile)
+    destfile <- sub(".*/","",destfile)
+    if (!is.null(path)) destfile <- file.path(path,destfile)
+    if(!file.exists(destfile)) download.file(url=fname, destfile, method="auto", 
+                                             quiet=FALSE, mode="w", cacheOK=TRUE)
+    fname <- destfile
+  }
   hurdat2 <- readLines(fname)
   n <- as.vector(sapply(hurdat2,nchar))
   i.storm <- which(n>80)
@@ -116,9 +126,60 @@ read.hurdat2 <- function(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851
                  src="National Hurricane Center (NHC) revised Atlantic hurricane database (HURDAT2)",
                  reference="Landsea, C. W., et al. 2004: The Atlantic hurricane database re-analysis project: Documentation for the 1851-1910 alterations and additions to the HURDAT database. Hurricanes and Typhoons: Past, Present and
 Future, R. J. Murname and K.-B. Liu, Eds., Columbia University Press, 177-221.",
-                 file=fname,url=fname)
+                 file=fname,url=fname,verbose=verbose)
   attr(x,"name") <- dict.names
   attr(x,"record.id") <- dict.ri
   attr(x,"status") <- dict.names
   invisible(x)
+}
+
+read.otto <- function(fname,path=NULL,progress=TRUE,verbose=FALSE) {
+  #path <- "~/Dropbox/stormtracks/Otto"
+  #fname <- "trkdat_pmsl_2001-2001.cfsr"
+  if(verbose) print("read.otto")
+  if(verbose) print(paste("file:",fname))
+  if(!is.null(path)) fname <- file.path(path,fname)
+  if(verbose) print("read data")
+  otto <- readLines(fname)
+  n <- as.vector(sapply(otto,nchar))
+  h <- hist(n,sort(c(unique(n)-0.5,unique(n)+0.5)),plot=FALSE)
+  n.storm <- h$mids[which.max(h$counts)]
+  i.header <- which(n==n.storm)[1]
+  i.storm <- which(n==n.storm & c(10,diff(n))<=0)
+  i.track <- which(diff(n)==diff(n)[i.header-1])-1
+  header <- unlist(strsplit(otto[i.header],"\\s+"))
+  header <- header[nzchar(header)]
+  header[header=="x"] <- "lon"
+  header[header=="y"] <- "lat"
+  header[header=="t"] <- "timestep"
+  header[header=="da"] <- "date"
+  header[header=="hr"] <- "time"
+  x <- strsplit(otto[i.storm],"\\s+")
+  x <- lapply(x,function(x) as.numeric(x[nzchar(x)]))
+  x <- do.call(rbind, x)
+  if(verbose) print("arange data")
+  if (progress) pb <- txtProgressBar(style=3)
+  if (progress) setTxtProgressBar(pb,0/(length(i.track)))
+  x.track <- as.numeric(gsub(":.*","",gsub(".*Track","",otto[i.track])))
+  n.track <- sapply(2:length(i.track),function(i) {
+                    if(progress) setTxtProgressBar(pb,i/(length(i.track)))
+                    n.i <- sum(i.storm>i.track[i-1] & i.storm<i.track[i])
+                    return(n.i) })
+  n.track <- c(n.track,sum(i.storm>i.track[length(i.track)]))
+  tracks <- unlist(sapply(seq_along(x.track),function(i) rep(x.track[i],n.track[i])))
+  y <- cbind(tracks,x)
+  colnames(y) <- c("trajectory",header)
+  if(verbose) print("organize date and time")
+  da <- y[,"date"]
+  da[y[,"date"]<2E5] <- da[y[,"date"]<2E5] + 2E7
+  da[y[,"date"]>=2E5] <- da[y[,"date"]>=2E5] + 1.9E7
+  hr <- y[,"time"]*1E-2
+  y[,"date"] <- da
+  y[,"time"] <- hr
+  z <- as.events(y,longname="sub-tropical cyclones",
+                 param="storm tracks",method="Otto...",
+                 src="FMI",
+                 reference="Otto",
+                 file=fname,url=fname,verbose=verbose)
+  return(z)
 }
