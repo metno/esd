@@ -8,14 +8,9 @@
 variables <- ls()
 it <- seq(as.Date('1900-01-01'),as.Date('2018-05-31'),by='day')
 
-# cntrs <- rownames(table(SS$country))
-# cntrs <- gsub(" ",".",cntrs)
-# cntrs <- gsub("[","",cntrs,fixed=TRUE)
-# cntrs <- gsub("]","",cntrs,fixed=TRUE)
-# cntrs <- gsub(",",".",cntrs,fixed=TRUE)
 if (sum(is.element(variables,'eles'))==0)  
   eles <- rev(rownames(table(select.station(src='ecad')$element)))
-if (sum(is.element(variables,'nmin'))==0) nmin <- NULL
+if (sum(is.element(variables,'nmin'))==0) nmin <- 30
 
 for (ele in eles) {
   SS <- select.station(src='ecad',ele=ele)
@@ -37,7 +32,9 @@ for (ele in eles) {
     
     #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
     if (!inherits(x,'try-error')) {
-      units <- switch(toupper(param),'SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
+      units <- switch(toupper(param),'TG'='degC','TX'='degC','TN'='degC',
+                      'TMAX'='degC','TMIN'='degC','T2M'='degC',
+                      'PRECIP'='mm/day','SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
                       'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')
       attr(x,'unit') <- units
       

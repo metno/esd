@@ -1852,12 +1852,12 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       attr(z,'evaluation') <- attr(ds,'evaluation')
 
-      ## REB 2016-11-28: adjust results to have same mean as observations in overlapping period:
+      # REB 2016-11-28: adjust results to have same mean as observations in overlapping period:
       if (verbose) print('adjust offset of predicted PCs for overlapping period')
       index(z) <- year(z)
       zolp <- window(zoo(z),start=start(y),end=end(y))
       coredata(z) <- t(t(coredata(z)) - mean(coredata(zolp)) + colMeans(coredata(y)))
-                                                                  ## y is a pca with no missing values; z has no NAs.
+      ## y is a pca with no missing values; z has no NAs.
       if (verbose) print(round(colMeans(y),2))             
       
       cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
