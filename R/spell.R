@@ -261,7 +261,7 @@ hist.spell <- function(x,family='geom',...) {
   main=paste(attr(x,'location')[1],spelltype,'spell duration')
   par(bty="n")
   plot(hh$mids,hh$density,type="s",col=col[1],lwd=3,
-       xlab="",ylab="days",main=main,
+       ylab="",xlab="days",main=main,
        sub=paste("threshold=",attr(x,'threshold'),attr(x,'threshold.unit')))
   lines(hl$mids,hl$density,type="s",col=col[2],lwd=3)
   lines(n,dh,col=col[1],lty=2)
