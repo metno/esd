@@ -1,4 +1,4 @@
-gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NULL,verbose=FALSE,plot=FALSE) {
+gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NULL,zlim=NULL,verbose=FALSE,plot=FALSE) {
 
   if (verbose) print(paste('gridmap',FUN))
   if (is.null(xlim)) xlim <- range(lon(Y))
@@ -58,7 +58,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
 
   ## Make the graphics
   if (verbose | plot) print("make the map")
-  map(W,xlim=xlim,ylim=ylim,colbar=colbar,project=project)
+  map(W,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,project=project)
 
   invisible(W)
 }
