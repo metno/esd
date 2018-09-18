@@ -686,7 +686,7 @@ plot.eof.var <- function(x,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
   n.eff <- round(nt * (1.0-attr(x,'max.autocor'))/
                       (1.0+attr(x,'max.autocor')))  
   dD <- D*sqrt(2.0/n.eff)
-  main <- paste('First',n,"leading EOFs: ", ## attr(x,'longname')
+  main <- paste(n,"leading EOFs: ", ## attr(x,'longname')
                  round(sum(var.eof[1:n]),digits=1),"% of variance")
   ##main <- paste(attr(x,'longname'),n,"leading EOFs: ",
   ##               round(sum(var.eof[1:n]),1),"% of variance")
