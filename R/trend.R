@@ -233,8 +233,9 @@ trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
 ## Compute the linear trend
 trend.coef <- function(x,...) {
+  if (is.zoo(x)) x <- coredata(x)
   if (sum(is.finite(x)) <= 3) return(NA)
-  x[!is.finite(x)] <- NA
+  if (sum(!is.finite(x))>0) x[!is.finite(x)] <- NA
   t <- 1:length(x)
   model <- lm(x ~ t)
   y <- c(model$coefficients[2]*10)

@@ -4,52 +4,52 @@
 
 #require(esd)
 #source('~/R/esd/R/write2ncdf.R')
-SS <- select.station(src='ecad')
 
-cntrs <- rev(rownames(table(SS$country)))
-cntrs <- gsub(" ",".",cntrs)
-cntrs <- gsub("[","",cntrs,fixed=TRUE)
-cntrs <- gsub("]","",cntrs,fixed=TRUE)
-cntrs <- gsub(",",".",cntrs,fixed=TRUE)
-eles <- rev(rownames(table(SS$element)))
-##eles <- eles[-c(1:9)]
+variables <- ls()
+it <- seq(as.Date('1900-01-01'),as.Date('2018-05-31'),by='day')
+
+if (sum(is.element(variables,'eles'))==0)  
+  eles <- rev(rownames(table(select.station(src='ecad')$element)))
+if (sum(is.element(variables,'nmin'))==0) nmin <- 30
 
 for (ele in eles) {
-  ii <- 1 ## counter to keep track of number of stations saved
+  SS <- select.station(src='ecad',ele=ele)
+  stids <- SS$station_id
+  ns <- length(stids)
+  is <- seq(1,ns,by=50)
+  if (max(is) < ns) is <- c(is,ns)
+  
   param <- tolower(as.character(ele2param(ele,src='ecad')[5]))
   print(param)
-  for (cntr in cntrs) {
-    print(cntr)
-#    meta <- read.table(file.path(paste('data.ECAD/ECA_nonblend',param,sep='_'),'sources.txt'),
-#                       skip=22,header=TRUE,sep=',')
-    ss <- select.station(src='ecad',cntr=cntr,param=param)   ## single country
-    Ss <- select.station(src='ecad',param=param)             ## All countries
-    fname <- paste(param,'ecad','nc',sep='.')
-    append <- file.exists(fname)
+  fname <- paste(param,'ecad','nc',sep='.')
+  if (file.exists(fname)) file.remove(fname)
+  for (id in is) {
+    iii <- seq(id,id+49,length=50)
+    iii <- iii[iii <= ns]
     
-    if (!is.null(ss)) {
-      x <- station(cntr=cntr,param=param,src='ecad')
-      if (sum(!is.na(unit(x)))==0) {
-        units <- switch(toupper(param),'SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
-                        'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')
-        attr(x,'unit') <- units
-      }
-      if (!is.null(dim(x))) {
-        if (!append) stano <- 1:dim(Ss)[1] else stano <- ii:(ii+dim(x)[2]-1)
-      } else if (!is.null(x)) {
-        if (!append) stano <- 1:dim(Ss)[1] else stano <- ii
-      }
-      print(loc(x))
+    append <- file.exists(fname)
+    x <- try(station(SS[iii,],save2file=FALSE))
+    
+    #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
+    if (!inherits(x,'try-error')) {
+      units <- switch(toupper(param),'TG'='degC','TX'='degC','TN'='degC',
+                      'TMAX'='degC','TMIN'='degC','T2M'='degC',
+                      'PRECIP'='mm/day','SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
+                      'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')
+      attr(x,'unit') <- units
+      
+      print(rbind(loc(x),firstyear(x),lastyear(x)))
       ## Quality check
       if ( (min(x,na.rm=TRUE) < -999) | (max(x,na.rm=TRUE)>2000) ) {
         print("Detected suspect data")
         print(range(x,na.rm=TRUE))
         xc <- coredata(x); xc[xc < -999] <- NA; xc[xc > 2000] <- NA; coredata(x) <- as.matrix(xc)
+        rm("xc"); gc(reset=TRUE)
       }
-      if (length(x) > 0) write2ncdf4(x,fname,tim=seq(as.Date('1900-01-01'),as.Date('2018-02-28'),by=1),
-                                     stano=stano,append=append,verbose=FALSE)
-      if (!is.null(dim(x))) ii <- ii + dim(x)[2] else if (!is.null(x)) ii <- ii + 1
+      # if (length(x) > 0) write2ncdf4(x,fname,it=it,
+      #                                stid=stano,append=append,verbose=FALSE,stid_unlim=TRUE)
+      if (length(x) > 0) write2ncdf4(x,fname,it=it,append=append,verbose=FALSE,stid_unlim=TRUE)
     } else x <- NULL
-    print(ii)
+    rm("x"); gc(reset=TRUE)
   }
 }

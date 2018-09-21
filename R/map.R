@@ -787,6 +787,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
     } else {
         par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
+        fig0 <- par()$fig
     }
 
     if (verbose) print('Set up the figure')
@@ -847,7 +848,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                 }
     }
 
-                                        #par(fig=fig0)
+    par(fig=fig0)
 
     par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
         xaxt="s",yaxt="s")

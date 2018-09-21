@@ -61,7 +61,7 @@ eofvar <- function(x) if (inherits(x,c('eof','pca')))
                           attr(x,'eigenvalues')^2/attr(x,'tot.var')*100 else NULL
 
 ## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands   
-test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y='NA', nam.y.dom='NA',nam.t='NA',verbose=FALSE) {
+test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y.res='NA', nam.y='NA', nam.x.dom='NA',nam.t='NA',verbose=FALSE) {
   predictor_field <- x
   predictand_field <- y
   max_EOFs_predictor <- nmax.x
@@ -93,8 +93,9 @@ test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA',
   }
   training$y.name=nam.y
   training$x.name=nam.x
+  training$y.res=nam.y.res
   training$t.name=nam.t
-  training$dom.name=nam.y.dom
+  training$dom.name=nam.x.dom
   tm<-cbind(setNames(data.frame(rownames(training)),c('names')), data.frame(training, row.names=NULL))
   tmn<-tm[,c(ncol(tm)-3, ncol(tm)-2, ncol(tm)-1,  ncol(tm),1:(ncol(tm)-4))]
   if (verbose) {cat('\n .')  
@@ -249,4 +250,49 @@ propchange <- function(x,it0=c(1979,2013)) {
   z -> coredata(x)  
   x
 }
+
+arec <- function(x,...) UseMethod("arec")
+
+arec.default <- function(x,...) {
+  y <- length(records(x))/sum(1/(1:nv(x)))
+  return(y)
+}
+
+arec.station <- function(x,...) {
+  y <- unlist(lapply(records(x),length))/apply(x,2,function(x) sum(1/(1:nv(x))))
+  return(y)
+}
+
+lastrains <- function(x,x0=1,uptodate=TRUE,verbose=FALSE) {
+  if (verbose) print('lastrains')
+  ## Clean up missing values
+  x <- x[is.finite(x)]
+  y <- cumsum(rev(coredata(x)))
+  z <- sum(y < x0,na.rm=TRUE)
+  if (uptodate) if (Sys.Date() - end(x) > 1) z <- NA 
+  return(z)
+}
+
+lastelementrecord <- function(x,verbose=FALSE) {
+  ## Checks last element of the record to see if they are the highest - a record
+  if (verbose) print('lastelementrecord')
+  ## If minimum, then multiply x with -1
+  y <- coredata(x)
+  nt <- length(index(x))
+  if (length(dim(y)) == 2) {
+    z <- rep(0,dim(y)[2])
+    validlast <- is.finite(y[nt,])
+    if (verbose) print(sum(validlast))
+    if (sum(validlast)>1)
+      z[validlast] <- apply(y[,validlast],2,function(x) if (x[length(x)] == max(x,na.rm=TRUE)) 1 else 0) else
+    if (sum(validlast)>1) if (y[nt,validlast]==max(y[,validlast],na.rm=TRUE)) z <- 1    
+  } else {
+    z <- 0
+    if(is.finite(y[nt])) 
+      if (y[nt]==max(y,na.rm=TRUE)) z <- 1
+  }
+  return(z)
+}
+
+
 

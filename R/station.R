@@ -105,7 +105,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
                             path.ghcnd=NULL,url.ghcnd=NULL,
                             path.metnom=NULL,url.metnom=NULL,
                             path.metnod=NULL,url.metnod=NULL,
-                            user='external') { # user='metno'
+                            user='external',save2file=TRUE) { # user='metno'
   ##
   ## check wether x is a 'location' or a 'stationmeta' object
   
@@ -211,11 +211,11 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
         param1 <- NULL
       
       if (is.null(param1)) {
-        x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
+        x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user,save2file = save2file) ## ,path=path, url=url
       } else { ## compute the avg 
-        dd06 <- metnod.station(param='dd06',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
-        dd12 <- metnod.station(param='dd12',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
-        dd18 <- metnod.station(param='dd18',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user)
+        dd06 <- metnod.station(param='dd06',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user,save2file = save2file)
+        dd12 <- metnod.station(param='dd12',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user,save2file = save2file)
+        dd18 <- metnod.station(param='dd18',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose, path=path,url=url,user=user,save2file = save2file)
         ## scale.tmin <-as.numeric(ele2param(ele="121",src="GHCND")[3])
         x <- (dd06 + dd12 + dd18) / 3
         ## copy all attributes
@@ -804,12 +804,12 @@ ghcnd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 ## adapted from stnr() function 
 metnom.station <-  function(re=15,stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,qual=NULL,
                             start=NULL,end=NULL,param=NULL,verbose=FALSE, h = NULL, nmt = 0,
-                            path = NULL, dup = "A", user='metno',url = "http://klapp/metnopub/production/") {
+                            path = NULL, dup = "A", user='metno',url = "http://klapp/metnopub/production/",save2file = TRUE) {
   
   if (user=='metno')
     y <- metno.station.internal(re=re,stid=stid,lon=lon,lat=lat,loc=loc,alt=alt,cntr=cntr,qual=qual,
                        start=start,end=end,param=param,verbose=verbose,h = h, nmt = nmt,
-                       path = path, dup = dup, url = url)
+                       path = path, dup = dup, url = url,save2file = save2file)
   else
     y <- metno.station(re=re,stid=stid,lon=lon,lat=lat,loc=loc,alt=alt,cntr=cntr,qual=qual,
                        start=start,end=end,param=param,verbose=verbose,h = h, nmt = nmt,
@@ -819,13 +819,13 @@ metnom.station <-  function(re=15,stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,
     attr(y,"source") <- "METNOM"
   invisible(y)
 }
-metnod.station <-  function(re=14, url = 'ftp://ftp.met.no/projects/chasepl/test', user='else',...) {
+metnod.station <-  function(re=14, url = 'ftp://ftp.met.no/projects/chasepl/test', user='else',save2file = TRUE,...) {
   ## 
   ## url <- "ftp://ftp.met.no/projects/chasepl/test"
   if (user=='metno')
-    y <- metno.station.internal(re=re,url=url,...)
+    y <- metno.station.internal(re=re,url=url,save2file = save2file,...)
   else 
-    y <- metno.station(re=re,url=url,...)
+    y <- metno.station(re=re,url=url,save2file = save2file,...)
   if (!is.null(y))
     attr(y,"source") <- "METNOD"
   invisible(y)

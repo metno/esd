@@ -21,6 +21,7 @@ x <- aggregate(zoo(subset(gmsta,it=month.abb[1:mon])),year,FUN='mean')
 z <- lm(coredata(Y) ~ coredata(x))
 y <- predict(z,newdata=x)
 n <- length(y)
+x1m <- zoo(subset(gmsta,it=month.abb[mon]))
 
 ## ------------------------------------------------------------------------
 ylim<- range(c(coredata(Y),coredata(y)),na.rm=TRUE) + 0.25*c(-1,1)
@@ -36,4 +37,11 @@ grid()
 
 ## ------------------------------------------------------------------------
 map(subset(anomaly(t2m,ref=1961:1990),it=length(index(t2m))),colbar=list(breaks=seq(-20,20,by=1)))
+
+## ------------------------------------------------------------------------
+par(bty='n')
+plot(x1m,type='b',lwd=2,main=paste(month.abb[mon],'global mean temperature anomaly'),ylab=expression(degree*C),xlab='year',sub='source: NCEP/NCAR reanalysis')
+lines(trend(x1m),lty=2)
+grid()
+print(year(x1m)[order(coredata(x1m))])
 

@@ -10,6 +10,7 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
     
     ##
     if (verbose) print('subset.station')
+    d <- dim(x)
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
         if (verbose) print('field/station')
@@ -51,6 +52,9 @@ subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
         ##}
         ##if (!is.null(is)) x2 <- station.subset(x2,it=it,is=is,verbose=verbose)
     }
+    ## Check if there is only one series but if the dimension 
+    if ( (!is.null(d)) & is.null(dim(x2)) ) 
+      if (d[2]==1) dim(x2) <- c(length(x2),1)
     return(x2)
 }
 
@@ -166,7 +170,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           if (inherits(x,'season') & (length(it)==1)) {
             if (verbose) print(paste("The 'it' value must be a season index between 1 and 4.",
                                      "If not please use character strings instead. e.g. it='djf'"))
-            it <- switch(it,'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
+            it <- switch(tolower(it),'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
             ii <- is.element(mo,it)
           } else if ( (inherits(x,'month') | (inherits(x,'day'))) &
                            ( (max(it) <= 12) & (min(it) >= 1) ) ) {
