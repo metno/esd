@@ -2058,7 +2058,8 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
       if (verbose) print('Extract some months or a time period')
       if (verbose) print(it)
       slp <- subset(slp,it=it)
-      if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+      if (is.null(nmin) & is.character(it)) nmin <- length(it)
+      if (is.null(nmin)) nmin <- 1
     }
     if (!is.annual(slp)) {
       if (FUNX!='C.C.eq')
@@ -2160,7 +2161,12 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
         GCM <- do.call(FUNX,list(GCM))
       }
     }
-
+    
+    #ds.parts <- TRUE
+    #if(ds.parts) {
+    #  GCM <- subset(GCM,it=c(seq(1900,1920),year(SLP),seq(1981,2100)))
+    #}
+      
     ## REB 2016-10-25
     #if (inherits(y,'season')) {
     #  if (FUNX!='C.C.eq') GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin) else
@@ -2178,6 +2184,7 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
     if (verbose) {str(SLP); str(GCM)}
     SLPGCM <- combine(SLP,GCM)
     if (verbose) print("- - - > EOFs")
+    
     Z <- try(EOF(SLPGCM))
     
     ## The test lines are included to assess for non-stationarity
