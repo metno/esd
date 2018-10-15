@@ -548,7 +548,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 
   if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ){
     #if (is.null(attr(x,'evaluation'))) attr(x,'evaluation') <- crossval(x)
-     par(new=TRUE,fig=c(0.5,1,0.5,1)) ##par(bty="n",fig=c(0.55,0.95,0.55,0.95),mar=c(4,3,1,1),new=TRUE, xaxt='s',yaxt='s',cex.sub=0.7)
+    par(new=TRUE,fig=c(0.5,1,0.5,1)) ##par(bty="n",fig=c(0.55,0.95,0.55,0.95),mar=c(4,3,1,1),new=TRUE, xaxt='s',yaxt='s',cex.sub=0.7)
      
     plot(attr(x,'evaluation')[,1],attr(x,'evaluation')[,2],
          main='Cross-validation',xlab='original data',
@@ -576,7 +576,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 #  y <- predict(x)
 #  print(dim(y))
   
-  #print("HERE")
+ # print("HERE")
 
   Y0 <- as.original.data(x)
   #print(index(Y0)); print(index(x))
@@ -600,7 +600,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
   if (is.null(xlim))
     xlim <- range(index(x),index(y0),x.rng,na.rm=TRUE)
-
+  browser()
 
   par(fig=c(0.025,1,0.025,0.475),new=TRUE)
   par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
@@ -876,7 +876,9 @@ plot.ds.pca <- function(x,ip=1,verbose=FALSE,
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
     par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,ip],lwd=2,type='b',pch=19)
+    xlim <- range(index(attr(y,'original_data')),index(y))
+    ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE)
+    plot(attr(y,'original_data')[,ip],lwd=2,type='b',pch=19,xlim=xlim,ylim=ylim)
     lines(zoo(y[,ip]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,ip])[1],
            y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
@@ -923,9 +925,11 @@ plot.ds.eof <- function(x,ip=1,
          paste("r =",r.xval),#round(xvalfit$coefficients[2],digits=2)),
          pos=4,cex=0.9)
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
+    xlim <- range(index(attr(y,'original_data')),index(y))
+    ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE)
     plot(attr(y,'original_data')[,ip],
          main=paste("PC",ip),ylab="",
-         ylim=range(attr(y,'original_data')[,ip])*c(1.6,1.6),
+         ylim=ylim*c(1.2,1.2),xlim=xlim,
          lwd=2,type='b',pch=19)
     lines(zoo(y[,ip]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,ip])[1],
