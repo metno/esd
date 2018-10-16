@@ -634,6 +634,13 @@ as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
   if(verbose) print("as.field.ds")
   if (inherits(x,'eof')) {
     class(x) <- class(x)[-1]
+    ## REB a few lines to catch cases where ds has not caught the comb-aspects.
+    if (!is.null(iapp)) {
+      if (!is.null(attr(x,'n.apps'))) {
+        y <- as.field.comb(x,iapp,...)
+        return(y)
+      }
+    }
     y <- as.field.eof(x,iapp,...)
     ## The residuals
     fit <- attr(x,'fitted_values')
