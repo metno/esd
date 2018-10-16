@@ -637,10 +637,10 @@ as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
     ## REB a few lines to catch cases where ds has not caught the comb-aspects.
     if (!is.null(iapp)) {
       if (!is.null(attr(x,'n.apps'))) {
-        y <- as.field.comb(x,iapp,...)
-        return(y)
-      }
-    }
+        class(x)[length(class(x))+1]<-'comb'
+        y <- as.field.eof(x,iapp,...)
+        return(y)}
+    }else{
     y <- as.field.eof(x,iapp,...)
     ## The residuals
     fit <- attr(x,'fitted_values')
@@ -649,7 +649,7 @@ as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
     attr(y,'fitted_values') <- fit
     attr(y,'original_data') <- attr(x,'original_data')
     attr(y,'calibration_data') <- attr(x,'calibration_data')
-  } else y <- NULL
+  }} else y <- NULL
   return(y)
 }
 
@@ -1404,7 +1404,7 @@ as.eof.ds <- function(x,iapp=NULL) {
   return(y)
 }
 
-as.eof.eof <-function(x,iapp=NULL) {
+as.eof.eof <-function(x,iapp=NULL,...) {
   if (inherits(x,'comb')) x <- as.eof.comb(x,iapp) else
   return(x)
 }
