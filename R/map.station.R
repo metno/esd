@@ -185,12 +185,14 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
   }
   if (verbose) print('Organise output')
-  dim(y) <- c(1,length(y))
-  y <- zoo(y,order.by=1)
-  if (verbose) print(dim(y))
-  class(y) <- class(x)
-  y <- attrcp(x,y)
-  attr(y,'period') <- paste(range(index(x)))
+  if (inherits(x,'station')) {
+    dim(y) <- c(1,length(y))
+    y <- zoo(y,order.by=1)
+    if (verbose) print(dim(y))
+    class(y) <- class(x)
+    y <- attrcp(x,y)
+    attr(y,'period') <- paste(range(index(x)))
+  }
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
@@ -226,28 +228,30 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     print(class(x))
   }
   arg <- list(...)
-  attr(x,'unit') <- as.character(unit(x))
-  attr(x,'variable') <- as.character(varid(x))
-  ## REB 2016-11-28: some objects contain the attribute 'mean' which gets in the way.
-  if (!is.null(FUN)) {
-    if ((FUN=='mean') & (!is.null(attr(x,'mean')))) attr(x,'mean') <- NULL
-  }
-  if (inherits(x,"stationmeta")) {
-    x$years <- as.numeric(x$end) - as.numeric(x$start) + 1
-    if (!is.null(FUN)) if (FUN=='alt') FUN <- 'altitude'
-    if (verbose) print(names(x))
-  }
-  
-  if (!is.null(FUN)) {
-    if (is.character(FUN)) {
-      if (FUN=="NULL") FUN <- NULL else FUN <- genfun(x,FUN)
-    } else if (!is.function(FUN)) {
-      x <- FUN
-      FUN <- NULL
+  if (inherits(x,'station')) {
+    attr(x,'unit') <- as.character(unit(x))
+    attr(x,'variable') <- as.character(varid(x))
+    
+    ## REB 2016-11-28: some objects contain the attribute 'mean' which gets in the way.
+    if (!is.null(FUN)) {
+      if ((FUN=='mean') & (!is.null(attr(x,'mean')))) attr(x,'mean') <- NULL
     }
-  }
+    if (inherits(x,"stationmeta")) {
+      x$years <- as.numeric(x$end) - as.numeric(x$start) + 1
+      if (!is.null(FUN)) if (FUN=='alt') FUN <- 'altitude'
+      if (verbose) print(names(x))
+    }
+    
+    if (!is.null(FUN)) {
+      if (is.character(FUN)) {
+        if (FUN=="NULL") FUN <- NULL else FUN <- genfun(x,FUN)
+      } else if (!is.function(FUN)) {
+        x <- FUN
+        FUN <- NULL
+      }
+    }
   if (verbose) print(FUN)
-  
+  }
   fig0 <- c(0,1,0,1); mar0 <- rep(2,4)
   par0 <- par(fig=fig0,mar=mar0)
   if ((par()$mfcol[1]> 1) | (par()$mfcol[2]> 1)) new <- FALSE
