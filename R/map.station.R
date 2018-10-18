@@ -90,7 +90,10 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         } else col[i] <- rgb(0.5,0.5,0.5,0.2)
       }
       show.colbar <- TRUE
-    } else show.colbar <- FALSE
+    } else {
+      y <- rep(1,length(lon(x)))
+      show.colbar <- FALSE
+    }
     
     ## KMP 2017-07-28: fig creates problems when you want to add map.station as a subplot.
     ## With this solution you have to use add=TRUE and set fig to your subplot or to NULL.
