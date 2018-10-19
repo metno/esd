@@ -145,13 +145,25 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=
 # short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
 
 write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
-                                scale=0.1,torg='1899-12-31',verbose=FALSE,stid_unlim=FALSE) {
+                                scale=0.1,torg='1899-12-31',verbose=FALSE,stid_unlim=FALSE,namelength=12) {
   #require(ncdf4)
 
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- unit(x)
   
-  if (verbose) {print('write2ncdf4.station'); print(range(index(x)))}
+  if (verbose) {print('write2ncdf4.station'); print(range(index(x))); print(range(c(coredata(x)),na.rm=TRUE))}
+  ## Quality check - remove obviously unrealistic values
+  if (is.precip(x)) {
+    cx <- coredata(x); cx[cx < 0] <- NA; cx[cx > 1500] <- NA; cx -> coredata(x); rm('cx') 
+  }
+  if (is.T(x)) {
+    cx <- coredata(x); cx[cx < -100] <- NA; cx[cx > 100] <- NA; cx -> coredata(x); rm('cx') 
+  }
+    
+  cx <- coredata(x); cx[cx < -100] <- NA; 
+  if (prec=='short') cx[cx > 3200] <- NA; 
+  cx -> coredata(x); rm('cx') 
+  
   
   ## Don't save empty space:
   x0 <- x
@@ -345,7 +357,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=stid_unlim)
     #dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar,unlim=TRUE)
     dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar,unlim=TRUE)
-    dimnchar   <- ncdim_def("nchar",   "", 1:12, create_dimvar=FALSE )
+    dimnchar   <- ncdim_def("nchar",   "", 1:namelength, create_dimvar=FALSE )
     #dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
   
     if (verbose) {
@@ -731,15 +743,15 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
   ## the following code more complicated. There seems to be a mix-up between the 
   ## dimensions sometimes.
   if (verbose) print('Saving textual information')
-  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(12,count[2])))
+  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(namelength,count[2])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],12)))
-  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(12,count[2])))
+    try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],namelength)))
+  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(namelength,count[2])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],12)))
-  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(12,count[2])))
+    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],namelength)))
+  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(namelength,count[2])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],12)))
+    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],namelength)))
   if (verbose) print('textual data saved')
   
   if (!append) {
