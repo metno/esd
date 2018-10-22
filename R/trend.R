@@ -257,10 +257,12 @@ trend.err <- function(x,...) {
 
 ## Compute the p-value of the linear trend 
 trend.pval <- function(x,...) {
+  x <- zoo(x)
   if (sum(is.finite(x)) <= 3) return(NA)
   x[!is.finite(x)] <- NA
-  t <- 1:length(x)
-  model <- lm(x ~ t)
+  t <- index(x)
+  ok <- is.finite(x)
+  model <- lm(x[ok] ~ t[ok])
   y <- anova(model)$Pr[1]
   names(y) <- c("trend.pvalue")
   return(y)
