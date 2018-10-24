@@ -621,10 +621,9 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     attr(z,'location') <- 'Grid cell'
   } else 
     class(z) <- c("field",model$frequency,"zoo")
-  
+
   ## plot the results
   if (plot) map(z,...)
-  
   invisible(z)
   
 } # End of the function
@@ -1397,7 +1396,9 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
   if (length(ifreq)>0) {  
     itype <- grep(tolower(eval(parse(text=paste("model$",names(model)[ifreq],sep="")))),tolower(type))
     if (length(itype>0)) {
-      if (verbose) print(paste("Frequency has been found in model$frequency attribute (",type[itype],")",sep="")) 
+      if (verbose) print(paste("Frequency has been found in model$frequency attribute (",type[itype],")",sep=""))
+      # KMP 2018-10-22: to handle subdaily frequencies, e.g, 6hr 
+      model$frequency <- sub("hr","hou",sub("[[:digit:]]","",model$frequency))
       freq.att <- frequency.name[grep(model$frequency,frequency.abb)]
     }
     if (verbose) print("Checking Frequency from attribute --> [ok]")
@@ -1461,7 +1462,6 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
           ##     } else print("Warning : Monthly data are Mangeled")
         }
       } 
-      
       time$vdate <- switch(tunit,'seconds'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
                            'minutes'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
                            'hours'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*3600,
@@ -1504,20 +1504,34 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         ## KMP 2016-11-08 this doesn't work. why add a 0?
         #mndays <- c(0,mndays[month1:length(mndays)-1],mndays[1:month1-1])
         if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
-        days <- time$vals%%time$daysayear - rep(cumsum(mndays),time$len/12)
+        # KMP 2018-10-23: changed to work for daily and sub-daily data
+        days <- time$vals%%time$daysayear - (cumsum(mndays)-mndays)[months] + 1#rep(cumsum(mndays),time$len/12)
         #HBE added seperate test for seasonal data May 2nd 2018
         if (freq.data!='season') {
-          if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
+          if(median(diff(days))<1) {
+            # KMP 2018-10-23: subdaily
+            hours <- (days-floor(days))*24
+            days <- floor(days)
+            time$vdate <- as.PCICt(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H",
+                                   cal=time$daysayear)
+            #time$vdate <- as.POSIXct(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H")
+          } else if(median(diff(days))==1) {
+            # KMP 2018-10-23: daily
+            time$vdate <- as.PCICt(paste(years,months,floor(days),sep="-"),cal=time$daysayear)
+            #time$vdate <- as.Date(paste(years,months,floor(days),sep="-"))
+          } else if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
             print("Warning : Jumps in data have been found !")
             print("Warning: Trust the first date and force a continuous vector of dates !")
             time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=time$len)
             qf <- c(qf,"jumps in data found - continuous vector forced")
-          } else time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)
+          } else {
+            time$vdate <- as.Date(paste(years,months,"01",sep="-"))
+          }
         } else time$vdate <- as.Date(paste(years,months,"15",sep="-")) 
       }
-      # HBE added fix for no_leap or 365_day hourly calander
+      # HBE added fix for no_leap or 365_day hourly calendar
     } else if ( !is.null(time$daysayear) & (tunit =='hours') ) if (time$daysayear==365) {
-      rankp<- seq(as.POSIXct(torigin), as.POSIXct("2200-01-01 00:00:00"), by="hour")
+      rankp <- seq(as.POSIXct(torigin), as.POSIXct("2200-01-01 00:00:00"), by="hour")
       rankp <- rankp[(month(rankp)!=2 | day(rankp)!=29)]
       time$vdate <- rankp[floor(time$vals)+1]
     } else if (verbose) {
@@ -1527,7 +1541,6 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
   } else {
     if (verbose) print("warnings : Automatic detection of the calendar")
     calendar.detect <- "auto"
-    ##                                     # NOT COMPLETE ...
     ##======= KMP 2016-05-04: as.Date does not work for sec, min, hour ========== 
     #if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
     #if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
@@ -1535,10 +1548,12 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals
     if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60
     if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60*60
+    # KMP 2018-10-23: for sub-daily data with tunit=day
+    if (grepl("day",tunit) & median(diff(time$vals))<1) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60*60*24
     ##===========================================================================
-    if (grepl("day",tunit)) time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
+    if (grepl("day",tunit) & median(diff(time$vals))>=1) time$vdate <- as.Date((time$vals),origin=as.Date(torigin))
     if (grepl("mon",tunit)) {
-      if (sum(diff(time$vals>1)) < 1) {
+      if (sum(diff(time$vals)>1) < 1) {
         year1 <- time$vals[1]%/%12 + yorigin
         month1 <- morigin
         time$vdate <- seq(as.Date(paste(as.character(year1),month1,"15",sep="-")), by = "month",length.out=length(time$vals))
@@ -1596,7 +1611,6 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     }
     
   }
-  
   ## End check 1
   ## Begin check 2 if freq.att matches freq.data
   
@@ -1879,7 +1893,9 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
   if (length(ifreq)>0) {  
     itype <- grep(tolower(eval(parse(text=paste("model$",names(model)[ifreq],sep="")))),tolower(type))
     if (length(itype>0)) {
-      if (verbose) print(paste("Frequency has been found in model$frequency attribute (",type[itype],")",sep="")) 
+      if (verbose) print(paste("Frequency has been found in model$frequency attribute (",type[itype],")",sep=""))
+      # KMP 2018-10-22: to handle model frequencies like 6hr or 3hr
+      model$frequency <- sub("hr","hou",sub("[[:digit:]]","",model$frequency))
       freq.att <- frequency.name[grep(model$frequency,frequency.abb)]
     }
     if (verbose) print("Checking Frequency from attribute --> [ok]")
@@ -1914,10 +1930,17 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
   
   if (!is.null(calendar.att)) {
     if (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) {
-      if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
-      if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
-      if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
-      if (grepl("day",tunit)) {
+      ##======= KMP 2018-10-23: as.Date does not work for sec, min, hour ========== 
+      #if (grepl("sec",tunit)) time$vdate <- as.Date((time$vals/(24*60*60)),origin=as.Date(torigin))
+      #if (grepl("min",tunit)) time$vdate <- as.Date((time$vals/(24*60)),origin=as.Date(torigin))
+      #if (grepl("hou",tunit)) time$vdate <- as.Date((time$vals/24),origin=as.Date(torigin))
+      if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals
+      if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60
+      if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60*60
+      # KMP 2018-10-23: for sub-daily data with tunit=day
+      if (grepl("day",tunit) & median(diff(time$vals))<1) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60*60*24
+      ##=========================================================================== 
+      if (grepl("day",tunit) & median(diff(time$vals))>=1) {
         time$vdate <- as.Date((time$vals),origin=as.Date(torigin))   
       }
       if (grepl("mon",tunit)) {
@@ -1960,16 +1983,27 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         #mndays <- c(0,mndays[month1:length(mndays)-1],
         #            mndays[1:month1-1])
         if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
-        days <- time$vals%%time$daysayear - rep(cumsum(mndays),
-                                                time$len/12)
-        if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
-          print("Warning: Jumps in data have been found !")
+        # KMP 2018-10-23: changed to work for daily and subdaily data
+        days <- time$vals%%time$daysayear - (cumsum(mndays)-mndays)[months] + 1#rep(cumsum(mndays),time$len/12)
+        if(median(diff(days))<1) { 
+          # KMP 2018-10-23: subdaily
+          hours <- (days-floor(days))*24
+          days <- floor(days)
+          time$vdate <- as.PCICt(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H",
+                                 cal=time$daysayear)
+          #time$vdate <- as.POSIXct(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H")
+        } else if(median(diff(days))==1) { 
+          # KMP 2018-10-23: daily
+          time$vdate <- as.PCICt(paste(years,months,days,sep="-"),cal=time$daysayear)
+          #time$vdate <- as.Date(paste(years,months,floor(days),sep="-"))
+        } else if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
+          print("Warning: Jumps in data have been found!")
           print("Warning: Trust the first date and force a continuous vector of dates !")
           time$vdate <- seq(as.Date(paste(as.character(year1),
                                           month1,"01",sep="-")),
                             by = "month",length.out=time$len)
           qf <- c(qf,"jumps in data found - continuous vector forced")
-        } else
+        } else 
           time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)                  
       }  
     } else  
@@ -2025,7 +2059,8 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     if (verbose)
       print(paste("Time difference dt : ",paste(dt,collapse="/"))) ## diff(time$vdate))
   }
-  ## 
+  ##
+
   if (!is.null(time$vdate)) {
     if (grepl("sec",tunit))
       dt <- as.numeric(rownames(
@@ -2199,7 +2234,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
     print(paste(sum(tim > 10e7),'suspect time stamps!'))
     notsuspect <- tim <= 10e7
   } else notsuspect <- rep(TRUE,length(tim))
-  if (verbose) {print('Time information'); print(tunit$value); print(range(tim))}
+  if (verbose) {print('Time information'); print(tunit$value); print(range(tim,na.rm=TRUE))}
   if (length(grep('days since',tunit$value))) 
     t <- as.Date(substr(tunit$value,12,21)) + tim else
       if (length(grep('months since',tunit$value))) 
@@ -2346,9 +2381,9 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
         t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
           if (length(grep('years since',tunit$value))) 
             t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
-  if (verbose) print(paste('Get the time period',paste(range(t),collapse=' - ')))
+  if (verbose) print(paste('Get the time period',paste(range(t,na.rm=TRUE),collapse=' - ')))
   ok <- ( (t > as.Date('1700-01-01')) & (t < as.Date('2300-01-01')) )
-  attr(y,'period') <- range(t[ok])
+  attr(y,'period') <- range(t[ok],na.rm=TRUE)
   attr(y,'unit') <- unit
   attr(y,'missing_value') <- missing
   attr(y,'length') <- length(t)
