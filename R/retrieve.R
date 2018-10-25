@@ -2138,10 +2138,11 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
 }
 
 retrieve.station <- function(ncfile,param="auto",type="ncdf4",
-                             path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
+                             path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
-                             nmin=NULL,verbose=FALSE,...) {
+                             nmin=NULL,verbose=FALSE,onebyone=FALSE,...) {
   if (verbose) print(paste('retrieve.station',ncfile))
+  
   ## REB 2018-04-06: Add a check for e.g. station data
   class.x <- file.class(ncfile)
   if (verbose) {print('Check class'); print(class.x$value)}
@@ -2173,7 +2174,11 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   ## Use the metadata to select the stations to read: there is no need to read
   ## all the stations if only a subset is desired
   if (verbose) print('Metadata is read - Select selected stations')
-  if (!is.null(stid)) ii <- is.element(stids,stid) else ii <- rep(TRUE,length(stids))
+  if (is.null(is)) ii <- rep(TRUE,length(stids)) else
+    if (!is.logical(is)) {
+      ii <- rep(FALSE,length(stids)); ii[is] <- TRUE
+    } else ii <- is
+  if (!is.null(stid)) ii <- ii & is.element(stids,stid)
   if (!is.null(lon)) ii <- ii & (lons >= min(lon)) & (lons <= max(lon))
   if (!is.null(lat)) ii <- ii & (lats >= min(lat)) & (lats <= max(lat))
   if (!is.null(alt)) { 
@@ -2192,6 +2197,27 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
   if (!is.null(start.year.before)) ii <- ii & (fy <= start.year.before)
   if (!is.null(end.year.after)) ii <- ii & (ly >= end.year.after)
   is <- (1:ns)[ii]
+  
+  if (onebyone) {
+    if (verbose) print("Read stations one by one")
+    ## For large files and where the stations are seperated far from each other in the
+    ## netCDF file, it may be faster to read the files individually and then combine them 
+    ## into one object
+    X <- retrieve.station(ncfile,param=param,type=type,path=path,is=is[1],
+                          it=it,start.year.before=start.year.before,
+                          end.year.after=end.year.after,
+                          nmin=nmin)
+    if (length(is)>1) {
+      for (ii in is[2:length(is)]) {
+        x <- retrieve.station(ncfile,param=param,type=type,path=path,is=ii,
+                              it=it,start.year.before=start.year.before,
+                              end.year.after=end.year.after,
+                              nmin=nmin)
+        X <- combine(X,x)
+      }
+    }
+    return(X)
+  }
   
   ## Find the real dates:
   if (sum(tim > 10e7)>0) {
@@ -2346,7 +2372,9 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
         t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
           if (length(grep('years since',tunit$value))) 
             t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
-  attr(y,'period') <- range(t)
+  if (verbose) print(paste('Get the time period',paste(range(t),collapse=' - ')))
+  ok <- ( (t > as.Date('1700-01-01')) & (t < as.Date('2300-01-01')) )
+  attr(y,'period') <- range(t[ok])
   attr(y,'unit') <- unit
   attr(y,'missing_value') <- missing
   attr(y,'length') <- length(t)

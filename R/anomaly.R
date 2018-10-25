@@ -237,7 +237,12 @@ anomaly.day <- function(x,ref=NULL,verbose=FALSE,...) {
   y <- zoo(y,order.by=index(x))
   y <- attrcp(x,y)
   class(y) <- class(x)
-  clim <- (x - y)[is.element(yr,yr[1]),] 
+  ## find the first year with complete data (365 valid points)
+  z <- y[is.finite(y)]
+  fullyear <- table(year(z)) == 365
+  completeyear <- as.numeric(rownames(table(year(z)))[fullyear])
+  clim <- (x - y)[is.element(yr,completeyear[1])] 
+  if (verbose) print(paste('Climatology has',sum(is.finite(clim)),'valid data'))
   attr(y,'climatology') <- clim
   attr(y,'aspect') <- 'anomaly'
   return(y)
@@ -246,17 +251,17 @@ anomaly.day <- function(x,ref=NULL,verbose=FALSE,...) {
 
 climatology <- function(x,...) UseMethod("climatology")
 
-climatology.default <- function(x) {
+climatology.default <- function(x,verbose=FALSE) {
   x <- as.climatology(x)
   return(x)
 }
 
-climatology.field <- function(x) {
+climatology.field <- function(x,verbose=FALSE) {
   x <- as.climatology(x)
   return(x)
 }
 
-climatology.station <- function(x) {
+climatology.station <- function(x,verbose=FALSE) {
 #  x <- X
 #  orig <- coredata(X)
 #  if (is.null(attr(x,'climatology'))) {
@@ -297,10 +302,10 @@ climatology.station <- function(x) {
 
 clim2pca <-function(x,...) UseMethod("clim2pca")
 
-clim2pca.default <- function(x) {
+clim2pca.default <- function(x,verbose=FALSE) {
 }
 
-clim2pca.month <- function(x) {
+clim2pca.month <- function(x,verbose=FALSE) {
   X <- aggregate(x,year)
   ny <- length(x) %/% 12
   nm <- length(x) %% 12
@@ -321,7 +326,7 @@ clim2pca.month <- function(x) {
   return(Z)
 }
 
-clim2pca.day <- function(x) {
+clim2pca.day <- function(x,verbose=FALSE) {
 }
 
 

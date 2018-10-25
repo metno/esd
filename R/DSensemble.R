@@ -1852,12 +1852,12 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
       attr(z,'predictor.pattern') <- attr(ds,'predictor.pattern')
       attr(z,'evaluation') <- attr(ds,'evaluation')
 
-      ## REB 2016-11-28: adjust results to have same mean as observations in overlapping period:
+      # REB 2016-11-28: adjust results to have same mean as observations in overlapping period:
       if (verbose) print('adjust offset of predicted PCs for overlapping period')
       index(z) <- year(z)
       zolp <- window(zoo(z),start=start(y),end=end(y))
       coredata(z) <- t(t(coredata(z)) - mean(coredata(zolp)) + colMeans(coredata(y)))
-                                                                  ## y is a pca with no missing values; z has no NAs.
+      ## y is a pca with no missing values; z has no NAs.
       if (verbose) print(round(colMeans(y),2))             
       
       cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
@@ -2058,7 +2058,8 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
       if (verbose) print('Extract some months or a time period')
       if (verbose) print(it)
       slp <- subset(slp,it=it)
-      if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
+      if (is.null(nmin) & is.character(it)) nmin <- length(it)
+      if (is.null(nmin)) nmin <- 1
     }
     if (!is.annual(slp)) {
       if (FUNX!='C.C.eq')
@@ -2160,7 +2161,12 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
         GCM <- do.call(FUNX,list(GCM))
       }
     }
-
+    
+    #ds.parts <- TRUE
+    #if(ds.parts) {
+    #  GCM <- subset(GCM,it=c(seq(1900,1920),year(SLP),seq(1981,2100)))
+    #}
+      
     ## REB 2016-10-25
     #if (inherits(y,'season')) {
     #  if (FUNX!='C.C.eq') GCM <- as.4seasons(gcm,FUN=FUNX,nmin=nmin) else
@@ -2178,6 +2184,7 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
     if (verbose) {str(SLP); str(GCM)}
     SLPGCM <- combine(SLP,GCM)
     if (verbose) print("- - - > EOFs")
+    
     Z <- try(EOF(SLPGCM))
     
     ## The test lines are included to assess for non-stationarity

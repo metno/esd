@@ -144,18 +144,49 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDL-Data-Types.html:
 # short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
 
-write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=NULL,stid=NULL,append=FALSE,
-                                scale=0.1,torg='1899-12-31',verbose=FALSE,stid_unlim=FALSE) {
+write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
+                                scale=0.1,torg='1899-12-31',verbose=FALSE,stid_unlim=FALSE,namelength=12) {
   #require(ncdf4)
 
   if (!inherits(x,"station")) stop('x argument must be a station object') 
+  unitx <- unit(x)
   
-  if (verbose) print('write2ncdf4.station')
+  if (verbose) {print('write2ncdf4.station'); print(range(index(x))); print(range(c(coredata(x)),na.rm=TRUE))}
+  ## Quality check - remove obviously unrealistic values
+  if (is.precip(x)) {
+    cx <- coredata(x); cx[cx < 0] <- NA; cx[cx > 1500] <- NA; cx -> coredata(x); rm('cx') 
+  }
+  if (is.T(x)) {
+    cx <- coredata(x); cx[cx < -100] <- NA; cx[cx > 100] <- NA; cx -> coredata(x); rm('cx') 
+  }
+    
+  cx <- coredata(x); cx[cx < -100] <- NA; 
+  if (prec=='short') cx[cx > 3200] <- NA; 
+  cx -> coredata(x); rm('cx') 
+  
   
   ## Don't save empty space:
+  x0 <- x
+  if (length(dim(x))==2) {
+    cx <- coredata(x); cx[cx <= missval] <- NA; coredata(x) <- cx; rm('cx')
+  }
+  if (sum(is.finite(x))==0) {
+    print('write2ncdf4.station: No valid data after weeding missing values')
+    print(summary(x0)); print(summary(x))
+    return()
+  }
+  rm('x0'); gc(reset=TRUE)
+  
+  ## Weed out stations with short time series:
+  if (length(dim(x))==2) {
+    good <- apply(coredata(x),2,FUN='nv') 
+    x <- subset(x,is=good > 365)
+  }
+  
   if (length(dim(x))==2) good <- apply(coredata(x),1,FUN='nv') else
                          good <- nv(x)
-  x <- subset(x,it=good > 0)
+  if (is.null(it)) x <- subset(x,it=good > 0)
+  if (verbose) {print('time period after missing data have been removed'); print(range(index(x)))}
   
   ## Write a station object as a netCDF file using the short-type combined with add_offsetet and scale_factor
   ## to reduce the size.   
@@ -274,11 +305,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
     td.son <- apply(annual(subset(x,it='son'),'mean',nmin=75),2,'trend.coef')
   }
-  if (verbose) {print('Summary statistics computed'); print(lr)}
-  
-  #fyr <- firstyear(x)
-  #lyr <- lastyear(x)
-  #nv <- apply(coredata(x),2,'nv')
+  if (verbose) print('Summary statistics computed')
+  ## Only do summary statistics for stations with more than 30 years
+  insufficient <- apply(coredata(x),2,nv) < 30*365
+  if (verbose) print(nv)
   
   y <- coredata(x)
   y[!is.finite(y)] <- missval
@@ -295,20 +325,23 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
       if (is.null(it)) time <- julian(index(x)) - julian(as.Date(torg)) else {
         if (verbose) print('Use prescribed time coordinates')
         y <- zoo(y,order.by=index(x))
-        x2 <- merge(zoo(rep(NA,nt),order.by=it),zoo(y),all=FALSE)
+        x2 <- merge(zoo(rep(0,nt),order.by=it),zoo(y),all=FALSE)
         x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
         x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; rm('x2')
-        time <- julian(index(y)) - julian(as.Date(torg))
-        if (verbose) {print(range(index(x))); print(dim(x))}
+        time <- julian(it) - julian(as.Date(torg))
+        if (verbose) {print(range(index(x))); print(range(it)); print(dim(x))}
       }
   else if (inherits(x,'annual'))
       time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
+  print(paste('Period in data: ',min(firstyear(x)),' - ', max(lastyear(x)),' and time dimension: ',
+              paste(range(as.Date(time,origin=torg)),collapse=' - ')))
        
 # Attributes with same number of elements as stations are saved as variables
   
   if (is.null(it)) it <- index(y)
   start <- c( (1:length(it))[is.element(it,index(y)[1])],stid[1] )
   if (length(start)==1) start <- c(start,1)
+  
   if (!is.null(dim(y))) count <- dim(y) else count <- c(length(y),1)
   if (verbose) {
     print("start & count"); print(start); print(count); 
@@ -324,7 +357,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=stid_unlim)
     #dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar,unlim=TRUE)
     dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar,unlim=TRUE)
-    dimnchar   <- ncdim_def("nchar",   "", 1:12, create_dimvar=FALSE )
+    dimnchar   <- ncdim_def("nchar",   "", 1:namelength, create_dimvar=FALSE )
     #dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
   
     if (verbose) {
@@ -349,8 +382,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimS),units="name",prec="char",longname="country",
                         verbose=verbose)
     
-    if (verbose) print(paste('ncvar:',varid(x)[1]))
-    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
+    if (verbose) {print(paste('ncvar:',varid(x)[1])); print(unitx[1])}
+    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="°C", "degC",unitx[1]),
                          longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
 
     if (verbose) print('The variables have been defined - now the summary statistics...')
@@ -578,6 +611,11 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
       sdid.son <- ncid$var[["summary_sd_SON"]]
       lelrid <- ncid$var[["last_element_lowest"]]
     }
+    
+    ## Appending the data after those that already exist:
+    if (verbose) print(paste('Adjust start[2] so tht data is added after',ns,'stations'))
+    start[2] <- start[2] + ns
+    
   } else {
     if (verbose) print(paste('Creating file',fname))
     if (is.T(x)) ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
@@ -613,6 +651,14 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   ncvar_put( ncid, nvid, number,start=start[2],count=count[2])
   
   if (verbose) print('Add summary statistics: mean')
+  ave[insufficient] <- missval; ave.djf[insufficient] <- missval
+  ave.mam[insufficient] <- missval; ave.jja[insufficient] <- missval
+  ave.son[insufficient] <- missval; td[insufficient] <- missval
+  td.djf[insufficient] <- missval; td.mam[insufficient] <- missval
+  td.jja[insufficient] <- missval; td.son[insufficient] <- missval
+  mx[insufficient] <- missval; mn[insufficient] <- missval; 
+  nhr[insufficient] <- missval; lehr[insufficient] <- missval
+  
   ncvar_put( ncid, meanid, ave,start=start[2],count=count[2])
   ncvar_put( ncid, meanid.djf, ave.djf,start=start[2],count=count[2])
   ncvar_put( ncid, meanid.mam, ave.mam,start=start[2],count=count[2])
@@ -632,6 +678,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   ncvar_put( ncid, lehrid, lehr, start=start[2],count=count[2])
   if (is.T(x)) {
     if (verbose) print('extra for temperature')
+    std[insufficient] <- missval; std.djf[insufficient] <- missval
+    std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
+    std.son[insufficient] <- missval; nlr[insufficient] <- missval
+    lelr[insufficient] <- missval; 
     ncvar_put( ncid, sdid, std, start=start[2],count=count[2])
     ncvar_put( ncid, sdid.djf, std.djf, start=start[2],count=count[2])
     ncvar_put( ncid, sdid.mam, std.mam, start=start[2],count=count[2])
@@ -642,6 +692,17 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   }
   if (is.precip(x)) {
     if (verbose) print('extra for precipitation')
+    mu[insufficient] <- missval; mu.djf[insufficient] <- missval
+    mu.mam[insufficient] <- missval; mu.jja[insufficient] <- missval
+    mu.son[insufficient] <- missval; fw[insufficient] <- missval
+    fw.mam[insufficient] <- missval; fw.djf[insufficient] <- missval
+    fw.jja[insufficient] <- missval; fw.son[insufficient] <- missval
+    tdmu[insufficient] <- missval; tdmu.djf[insufficient] <- missval
+    tdmu.mam[insufficient] <- missval; tdmu.jja[insufficient] <- missval
+    tdmu.son[insufficient] <- missval; tdfw[insufficient] <- missval
+    tdfw.mam[insufficient] <- missval; tdfw.djf[insufficient] <- missval
+    tdfw.jja[insufficient] <- missval; tdfw.son[insufficient] <- missval
+    lr[insufficient] <- missval
     ncvar_put( ncid, muid, mu,start=start[2],count=count[2])
     ncvar_put( ncid, muid.djf, mu.djf,start=start[2],count=count[2])
     ncvar_put( ncid, muid.mam, mu.mam,start=start[2],count=count[2])
@@ -665,6 +726,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
     ncvar_put( ncid, lrid, lr, start=start[2],count=count[2])
   } else {
     if (verbose) print(paste('extra for',varid(x)[1]))
+    std[insufficient] <- missval; std.djf[insufficient] <- missval
+    std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
+    std.son[insufficient] <- missval; nlr[insufficient] <- missval
+    lelr[insufficient] <- missval; 
     ncvar_put( ncid, sdid, std, start=start[2],count=count[2])
     ncvar_put( ncid, sdid.djf, std.djf, start=start[2],count=count[2])
     ncvar_put( ncid, sdid.mam, std.mam, start=start[2],count=count[2])
@@ -678,15 +743,15 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-999,it=N
   ## the following code more complicated. There seems to be a mix-up between the 
   ## dimensions sometimes.
   if (verbose) print('Saving textual information')
-  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(12,count[2])))
+  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(namelength,count[2])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],12)))
-  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(12,count[2])))
+    try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],namelength)))
+  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(namelength,count[2])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],12)))
-  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(12,count[2])))
+    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],namelength)))
+  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(namelength,count[2])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],12)))
+    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],namelength)))
   if (verbose) print('textual data saved')
   
   if (!append) {

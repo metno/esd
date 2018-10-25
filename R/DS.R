@@ -742,6 +742,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
       z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
                   ip=ip,rmtrend=rmtrend,verbose=verbose,
                   weighted=weighted,...)
+      #browser()
       class(z)[2:3] <- c('eof','field')
       attr(z,'pattern') <- attr(y,'pattern')
       attr(z,'eigenvalues') <- attr(y,'eigenvalues')
@@ -952,8 +953,9 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                                         #plot(zoo(y[,1],order.by=year(y)),lwd=3)
                                         #lines(zoo(y.out[,1],order.by=year(X)),col='blue',lwd=2)
                                         #lines(zoo(ds[,1],order.by=year(ds)),col='red',lty=2)
-
+    if (verbose) print('--- return ---')
     invisible(ds)
+    
 }
 
 DS.eof <- function(y,X,mon=NULL,
@@ -970,6 +972,7 @@ DS.eof <- function(y,X,mon=NULL,
     attr(ds,'original_data') <- y
     class(attr(ds,'original_data')) <- class(y)
     class(attr(ds,'fitted_values')) <- class(y)
+    if(verbose) print("---return---")
     invisible(ds)
 }
 
