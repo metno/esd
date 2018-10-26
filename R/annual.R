@@ -334,7 +334,7 @@ year <- function(x) {
     y <- strptime(x$date,format="%Y%m%d")$year + 1900
     return(y)
   }
-  if (inherits(x,"POSIXt")) {
+  if (inherits(x,c("POSIXt","PCICt"))) {
     y <- as.numeric(format(x, '%Y'))
     return(y)
   }
@@ -379,7 +379,7 @@ month <- function(x) {
     y <- strptime(x$date,format="%Y%m%d")$mon + 1
     return(y)
   }
-  if (inherits(x,"POSIXt")) {
+  if (inherits(x,c("POSIXt","PCICt"))) {
     y <- as.numeric(format(x, '%m'))
     return(y)
   }
@@ -418,7 +418,7 @@ day <- function(x) {
   if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 32) )
     return(x)
   if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) ) y <- rep(1,length(x))  
-  if (inherits(x,"POSIXt")) {
+  if (inherits(x,c("POSIXt","PCICt"))) {
     y <- as.numeric(format(x, '%d'))
     return(y)
   }

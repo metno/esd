@@ -9,7 +9,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   if(verbose) print("CCI - calculus based cyclone identification")
 
   stopifnot(inherits(Z,'field'))
-  Z <- subset(Z,it=it,is=is)
+  Z <- subset(Z,it=it,is=is,verbose=verbose)
   if(is.null(greenwich) & !is.null(attr(Z,"greenwich"))) {
     greenwich <- attr(Z,"greenwich")
   } else if (is.null(greenwich) & is.null(attr(Z,"greenwich"))) {
@@ -51,7 +51,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   } else {
 
   ## Rearrange time index
-  t <- as.numeric(strftime(index(Z),format="%Y%m%d%H%M"))
+  t <- as.numeric(format(index(Z),format="%Y%m%d%H%M"))#strftime(index(Z),format="%Y%m%d%H%M"))
   
   ## Calculate first and second derivative
   if(verbose) print("Calculate first and second derivative")
@@ -388,6 +388,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
       infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
         DY2[date[i]==t,lonXY[,1]==lon[i],1:(NY-1)]
+      if(length(inflx)>nrow(lonXY)) browser()
       lon.infl <- lonXY[inflx<0,1]
       lat.infl <- latXY[1,infly<0]
       dlon <- lon.infl-lon[i]
@@ -511,9 +512,14 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     rm('lonXY','latXY','inflx','infly','DX2','DY2','px','py'); gc(reset=TRUE)
   
     ## Arrange results
-    date <- strptime(date,"%Y%m%d%H%M")
-    dd <- as.numeric(strftime(date,"%Y%m%d"))
-    hh <- as.numeric(strftime(date,"%H"))
+    #dd <- strftime(strptime(date,"%Y%m%d%H%M"),"%Y%m%d"))
+    #hh <- strftime(strptime(date,"%Y%m%d%H%M"),"%H"))
+    # Workaround to work for PCICt format (360-day calendar data)
+    dd <- round(date*1E-4)
+    hh <- round((date-dd*1E4)*1E-2)
+    #dd <- as.character(dd)
+    #hh <- as.character(hh)
+    #hh[as.numeric(hh)<10] <- paste("0",hh[as.numeric(hh)<10],sep="") 
     X <- data.frame(date=dd,time=hh,lon=lon,lat=lat,pcent=pcent,
          #dslp=dslp,
          max.gradient=max.gradient,max.speed=max.speed,
@@ -530,6 +536,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   }
   X <- as.events(X,unit=unit,longname=longname,greenwich=greenwich,
          param=param,src=attr(Z,"source"),file=attr(Z,"file"),
+         calendar=attr(Z,"calendar"),
          method="calculus based cylone identification, CCI",
          version="CCI in esd v1.0 (after October 6, 2015)",
          reference="Benestad & Chen, 2006, The use of a calculus-based cyclone identification method for generating storm statistics, Tellus A 58(4), 473-486.",

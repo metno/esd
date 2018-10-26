@@ -13,7 +13,7 @@ as.events.trajectory <- function(x,verbose=FALSE,...) {
   invisible(y)
 }
 
-events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
+events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,calendar=NULL,
                    quality=NULL,src=NULL,url=NULL,reference=NULL,greenwich=NULL,
                    info=NULL,method=NULL,unit=NULL,file=NULL,version=NULL) {
   if (verbose) print("events")
@@ -29,6 +29,7 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   if(all(is.null(unit)) & !is.null(attr(x,"unit"))) unit <- attr(x,"unit")
   if(is.null(version) & !is.null(attr(x,"version"))) version <- attr(x,"version")
   if(is.null(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
+  if(is.null(calendar) & !is.null(attr(x,"calendar"))) calendar <- attr(x,"calendar")
   if(is.null(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
   if(is.null(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
   if(is.null(file) & !is.null(attr(x,"file"))) src <- attr(x,"file")
@@ -56,9 +57,9 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   attr(y, "location") <- loc
   attr(y, "variable") <- param
   attr(y, "longname") <- longname
+  attr(y, "calendar") <- calendar
   attr(y, "unit") <- unit
   attr(y, "quality") <- quality
-  attr(y, "calendar") <- "gregorian"
   attr(y, "source") <- src
   attr(y, "URL") <- url
   attr(y, "type") <- "analysis"
@@ -104,12 +105,12 @@ trajectory2events <- function(x,minlen=3,verbose=FALSE) {
   if(verbose) print('interpolate time')
   i.start <- colnames(x)=="start"
   i.end <- colnames(x)=="end"
-  datetime <- unlist(apply( x, 1, function(z) strftime(
+  datetime <- unlist(apply( x, 1, function(z) format(
         seq(strptime(z[i.start],format="%Y%m%d%H"),
         strptime(z[i.end],format="%Y%m%d%H"),
         length.out=z[i.n]),format="%Y%m%d%H")))
-  y$date <- as.numeric(strftime(strptime(datetime,"%Y%m%d%H"),"%Y%m%d"))
-  y$time <- as.numeric(strftime(strptime(datetime,"%Y%m%d%H"),"%H"))
+  y$date <- as.numeric(format(strptime(datetime,"%Y%m%d%H"),"%Y%m%d"))
+  y$time <- as.numeric(format(strptime(datetime,"%Y%m%d%H"),"%H"))
   if(verbose) print('interpolate lon and lat')
   a <- 6.378e06
   xx <- a * cos( x[,i.lat]*pi/180 ) * cos( x[,i.lon]*pi/180 )

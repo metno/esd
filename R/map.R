@@ -870,7 +870,13 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
     if(verbose) print("map.events")
     x0 <- x
     x <- subset(x,it=it,is=is,verbose=verbose)
-    if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
+    if(is.null(it) & dim(x)[1]>0) {
+      if(attr(x,"calendar") %in% c("360","360_day")) {
+        it <- range(as.PCICt(as.character(x$date),cal="360_day",format="%Y%m%d"))
+      } else {
+        it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
+      }
+    }
         
     if (is.null(is$lon) & !is.null(xlim)) {
       is$lon <- xlim

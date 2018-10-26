@@ -1574,7 +1574,7 @@ as.original.station <- function(x) {
 as.events <- function(x,...) UseMethod("as.events")
 
 as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
-                      units=NULL,longname=NULL,variable=NULL,
+                      units=NULL,longname=NULL,variable=NULL,calendar=NULL,
                       qflabel=NULL,method=NULL,src=NULL,reference=NULL,
                       file=NULL,version=NULL,url=NULL,verbose=FALSE) {
   if (verbose) print("as.events")
@@ -1588,6 +1588,7 @@ as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
   attr(X,"dx") <- dx
   attr(X,"dy") <- dy
   attr(X,"longname") <- longname
+  attr(X,"calendar") <- calendar
   attr(X,"variable") <- variable
   attr(X,"quality") <- qflabel
   attr(X,"units") <- units

@@ -12,10 +12,14 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
+  if(grepl(attr(x,"calendar"),"360_day")) {
+    d <- as.PCICt(unique(paste(x$date,x$time)),format="%Y%m%d %H",cal="360_day")
+  } else {
+    d <- as.POSIXct(unique(paste(x$date,x$time)),format="%Y%m%d %H")
+  }
   if(is.null(dh)) {
-    d <- paste(x$date,x$time, sep="")
-    d <- as.POSIXct(unique(d),format="%Y%m%d%H")
-    dh <- min(as.numeric(difftime(d[2:length(d)],d[1:(length(d)-1)],units="hours")))
+    #dh <- min(as.numeric(difftime(d[2:length(d)],d[1:(length(d)-1)],units="hours")))
+    dh <- min(as.numeric((d[2:length(d)]-d[1:(length(d)-1)])/(60*60)))
     ## Temporary fix for daylight saving time. Should try to find a more solid solution. 
     if(dh==23 & length(unique(x$time))==1) dh <- 24
     if(dh==11 & length(unique(x$time))==2) dh <- 12
@@ -23,7 +27,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
     if(dh==2 & length(unique(x$time))==8) dh <- 3
   }
   if(!is.null(greenwich)) x <- g2dl(x,"greenwich")
-  yrmn <- as.yearmon(strptime(x["date"][[1]],"%Y%m%d"))
+  yrmn <- as.numeric(format(d,"%Y"))+as.numeric(format(d,"%m"))/12#as.yearmon(strptime(x["date"][[1]],"%Y%m%d"))
   if (length(unique(yrmn))>1 & length(yrmn)>1000) {
     x.tracked <- NULL
     if (progress) pb <- txtProgressBar(style=3)
@@ -68,9 +72,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
 		  cleanup.x0=TRUE,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
   options(digits=12)
-  d <- sort(unique(strptime(paste(x$date,x$time),"%Y%m%d %H")))
-  #dh <- min(as.numeric(difftime(d[2:length(d)],
-  #                              d[1:(length(d)-1)],units="hours")))
+
   x <- x[!is.na(x[,1]),]
   x <- x[order(x$date*1E2+x$time),]
   if(!is.null(x0)) x0 <- x0[!is.na(x0[,1]),]
@@ -82,12 +84,22 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   pcent <- x$pcent
   num <- rep(NA,dim(x)[1])
   dx <- rep(NA,dim(x)[1])
-  datetime <- strptime(paste(dates,times),"%Y%m%d %H")
+  if(grepl(attr(x,"calendar"),"360_day")) {
+    datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal="360_day")
+  } else {
+    datetime <- strptime(paste(dates,times),"%Y%m%d %H")
+  }
   d <- sort(unique(datetime))
+  #dh <- min(as.numeric((d[2:length(d)],d[1:(length(d)-1)])/(60*60)))
+  
   if(!is.null(x0)) {
     if (dim(x0)[1]>0) {
-      d0 <- sort(unique(strptime(paste(x0$date,x0$time),"%Y%m%d %H")))
-      dh0 <- as.numeric(difftime(min(d),max(d0),units="hours"))
+      if(grepl(attr(x,"calendar"),"360_day")) {
+        d0 <- sort(unique(as.PCICt(paste(x0$date,x0$time),format="%Y%m%d %H",cal="360_day")))
+      } else {
+        d0 <- sort(unique(strptime(paste(x0$date,x0$time),"%Y%m%d %H")))
+      }
+      dh0 <- as.numeric((min(d)-max(d0))/(60*60))
     } else dh0 <- 1E5
   } else {
     dh0 <- 1E5
@@ -114,7 +126,11 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
       x00 <- NULL
       i.start <- 1
     }
-    datetime <- strptime(paste(dates,times),"%Y%m%d %H")
+    if(grepl(attr(x,"calendar"),"360_day")) {
+      datetime <- as.PCICt(paste(dates,times),"%Y%m%d %H")
+    } else {
+      datetime <- strptime(paste(dates,times),"%Y%m%d %H")
+    }
     d <- unique(c(datetime[i.start:length(datetime)],d))
     d <- d[!is.na(d)]
   } else {
@@ -136,7 +152,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   n0 <- n00
   for (i in 2:(length(d)-1)) {
     if (progress) setTxtProgressBar(pb,i/(length(d)-1))
-    dhi <- as.numeric(difftime(d[i:(i+1)],d[(i-1):i],units="hours"))
+    dhi <- as.numeric((d[i:(i+1)]-d[(i-1):i])/(60*60))
     if(all(dhi<dh*2)) {
       nn <- Track123(
         step1=list(lon=lons[datetime==d[i-1]],lat=lats[datetime==d[i-1]],
@@ -220,10 +236,17 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     dnum <- x01$date*1E2 + x01$time
     if (is.null(nmin)) nmin <- 3
     if (is.null(dmin)) dmin <- 0
-    starts <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
-              (nmin-1)*dh*3600,"%Y%m%d%H") )
-    ends <- dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
-              (nmin-1)*dh*3600,"%Y%m%d%H") )
+    if(grepl(attr(x,"calendar"),"360_day")) {
+      starts <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal="360_day") +
+                                              (nmin-1)*dh*3600,"%Y%m%d%H") )
+      ends <- dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal="360_day") -
+                                            (nmin-1)*dh*3600,"%Y%m%d%H") )
+    } else {
+      starts <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
+                                              (nmin-1)*dh*3600,"%Y%m%d%H") )
+      ends <- dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
+                                            (nmin-1)*dh*3600,"%Y%m%d%H") )
+    }
     ok <- x01$n>=nmin | ends | starts
     ok <- ok & (x01$distance>=(dmin*1E-3) | ends | starts)
     if(!cleanup.x0) ok[dnum<min(x$date*1E2 + x$time)]
@@ -244,10 +267,17 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   } else {
     dnum <- x["date"][[1]]*1E2 + x["time"][[1]]
     ok <- rep(TRUE,length(x$n))
-    ends <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
-                   (nmin-1)*dh*3600,"%Y%m%d%H") ) |
-            dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
-                   (nmin-1)*dh*3600,"%Y%m%d%H") )
+    if(grepl(attr(x,"calendar"),"360_day")) {
+      ends <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal="360_day") +
+                                            (nmin-1)*dh*3600,"%Y%m%d%H") ) |
+              dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal="360_day") -
+                                            (nmin-1)*dh*3600,"%Y%m%d%H") )
+    } else {
+      ends <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
+                                            (nmin-1)*dh*3600,"%Y%m%d%H") ) |
+      dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
+                                            (nmin-1)*dh*3600,"%Y%m%d%H") )
+    }
     ok <- x$n>=nmin | ends
     ok <- ok & (x$distance>=(dmin*1E-3) | ends)
     y <- subset(x,it=ok,verbose=verbose)
@@ -348,10 +378,6 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
   da <- sapply(a12,function(x) abs(x-a23))
   da[da>180 & !is.na(da)] <- abs(da[da>180 & !is.na(da)]-360)
   dim(da) <- c(n2*n3,n1*n2)
-  j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))
-  j2 <- rep(seq(n2),n1)
-  i2 <- rep(seq(n2),n3)#as.vector(sapply(seq(n2),function(x) rep(x,n3)))
-  i3 <- as.vector(sapply(seq(n3),function(x) rep(x,n2)))#rep(seq(n3),n2)
   ## Displacement and change in displacement
   d <- sapply(d12,function(x) apply(d23,c(1,2),function(y) max(y,x)))
   dd <- sapply(d12,function(x) apply(d23,c(1,2),function(y) abs(y-x)))
@@ -375,6 +401,16 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
   }
   
   ## Probability factors for three step trajectories...
+  
+  ## Indices for the probability factor (pf) matrix: Each point in pf represents the probability 
+  ## of a possible trajectory. The index vectors j1 and j2 indicate which columns correspond to 
+  ## which cyclones in time steps 1 and 2, and i2 and i3 indicate which which rows correspond
+  ## to which cyclones in time steps 2 and 3.
+  j1 <- as.vector(sapply(seq(n1),function(x) rep(x,n2)))
+  j2 <- rep(seq(n2),n1)
+  i2 <- rep(seq(n2),n3)
+  i3 <- as.vector(sapply(seq(n3),function(x) rep(x,n2)))
+  
   ## ...based on the pressure at the center of the cyclones
   if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
     p.range <-(max(p[!is.na(p)])-min(p[!is.na(p)]))
@@ -407,7 +443,13 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
       }
     }
   }
-  
+
+  ## Set pf of trajectories that have ended...
+  if(any(step1$num %in% nend)) {
+    i <- which(step1$num %in% nend & !is.na(step1$num))
+    pf[, j1 %in% i] <- NA
+  }
+
   # Probability factors for broken trajectories - disabled
   # f.break <- 0.2
   # if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
@@ -480,6 +522,8 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
       }
     }
     
+    # apply nend in ranking!
+    
     rank.all[pf.all<=0 | is.na(pf.all)] <- NA
     while(any(!is.na(rank.all))) {
       ij <- which(rank.all==min(rank.all,na.rm=TRUE),arr.ind=TRUE)
@@ -545,14 +589,11 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
     step2$num[is.na(step2$num)] <- seq(sum(is.na(step2$num))) +
         max(c(n0,step2$num),na.rm=TRUE)    
   }
-  ## trajectories that should end:
-  ## 1) tracks that are in step 1 (and 2) but not 3
-  ## 2) tracks that are in step 2 but not 3
+  ## trajectories that should end: tracks that are in step 1 but not in step 3
   nok1 <- (!(step1$num %in% step3$num) & !is.na(step1$num))
-  nok2 <- (!(step2$num %in% step3$num) & !is.na(step2$num))
   if(any(nok1)) nend <- c(nend,step1$num[nok1])
-  if(any(nok2)) nend <- c(nend,step2$num[nok2])
   nend <- unique(nend[!is.na(nend)])
+  
   return(list(step1=step1,step2=step2,step3=step3,nend=nend,
          n0=max(c(step1$num,step2$num,step3$num,n0),na.rm=TRUE)))
 }
