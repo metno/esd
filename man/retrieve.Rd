@@ -27,9 +27,9 @@ retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
                verbose = FALSE , plot = TRUE) 
 retrieve.rcm(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE)
 retrieve.station(ncfile,param="auto",type="ncdf4",
-                path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
-                alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
-                nmin=NULL,verbose=FALSE,...) 
+                             path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
+                             alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
+                             nmin=NULL,verbose=FALSE,onebyone=FALSE,...) 
 retrieve.stationsummary(ncfile,type="ncdf4",
                         path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                         alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
@@ -46,10 +46,15 @@ file.class(ncfile,type="ncdf4")
   (include the path if necessary) or any object of class 'ncdf' or 'ncdf4'.}
   \item{type}{The type of the NetCDF format to be returned as "ncdf" or "ncdf4".}
   \item{ncid}{An object of class 'ncdf' or 'ncdf4'.}
+  \item{stid}{Station IDs to read with retrieve.station}
+  \item{loc}{locations to read with retrieve.station}
   \item{lon}{Numeric value of longitude for the reference point (in decimal degrees East) or a vector containing the range of longitude values in the form of c(lon.min,lon.max)}
   \item{lat}{Numeric value of latitude for the reference point (in decimal degrees North) or a vector containing the range of latitude values in the form of c(lat.min,lat.max)}
   \item{lev}{Numeric value of pressure levels or a vector containing the range of pressure level values in the form of c(lev.min,lev.max) }
+  \item{alt}{Altititude for stations to read with retrieve.station. Negative values for reading stations below the altitude. For a range use c(alt.min,alt.max) }
+  \item{cntr}{Countries of stations to read with retrieve.station}
   \item{it}{Numerical or date values of time or a vector containing the range of values in the form of c(start,end). Date format should be in the form of "YYYY-MM-DD".}
+  \item{is}{Numerical or logical values of spatial indexing for reading station data (retrieve.station).}
   \item{param}{Parameter or element type. There are several core parameters or elements as well as a number of additional parameters. The parameters or elements are:
            auto             = automatic selection.
            precip, prcp, pr = Precipitation (mm)
@@ -63,6 +68,7 @@ file.class(ncfile,type="ncdf4")
   \item{miss2na}{Logical value. If TRUE missing values are converted to "NA"}
   \item{verbose}{Logical value defaulting to FALSE. If FALSE, do not
   display comments (silent mode). If TRUE, displays extra information on progress.}
+  \item{onebyone}{Logical value. If TRUE, retrieve.station reads one station at the time rather than reading a block of data which can be demaning if the stations are stored in widely different parts of the netCDF file.}
 }
 \value{A "zoo" "field" object with additional attributes used for further processing.}
 
