@@ -90,7 +90,19 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         } else col[i] <- rgb(0.5,0.5,0.5,0.2)
       }
       show.colbar <- TRUE
-    } else show.colbar <- FALSE
+      # KMP 2018-10-24: moved up from end of function because y only exists if FUN=NULL 
+      dim(y) <- c(1,length(y))
+      y <- zoo(y,order.by=1)
+      if (verbose) print(dim(y))
+      class(y) <- class(x)
+      y <- attrcp(x,y)
+      attr(y,'period') <- paste(range(index(x)))
+      attr(y,'history') <- history.stamp(x)
+      
+    } else {
+      show.colbar <- FALSE
+      y <- NULL
+    }
     
     ## KMP 2017-07-28: fig creates problems when you want to add map.station as a subplot.
     ## With this solution you have to use add=TRUE and set fig to your subplot or to NULL.
@@ -182,13 +194,14 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
   }
   if (verbose) print('Organise output')
-  dim(y) <- c(1,length(y))
-  y <- zoo(y,order.by=1)
-  if (verbose) print(dim(y))
-  class(y) <- class(x)
-  y <- attrcp(x,y)
-  attr(y,'period') <- paste(range(index(x)))
-  attr(y,'history') <- history.stamp(x)
+  # KMP 2018-10-24: moved up to definition of y
+  #dim(y) <- c(1,length(y))
+  #y <- zoo(y,order.by=1)
+  #if (verbose) print(dim(y))
+  #class(y) <- class(x)
+  #y <- attrcp(x,y)
+  #attr(y,'period') <- paste(range(index(x)))
+  #attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 

@@ -844,7 +844,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     
     ## KMP 2016-02-03: to solve problem with subset.events 
     if(inherits(t,"Date")) t <- as.Date(round(as.numeric(t)))
-    if(!inherits(t,"POSIXt")) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
+    if(!inherits(t,c("POSIXt","PCICt"))) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
     if (verbose) {print('default.subset: time index it'); print(it)}
     if (is.character(it)) {
       if ((levels(factor(nchar(it)))==10)) it <- as.Date(it)
@@ -863,14 +863,14 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (verbose) print('X has a numeric index - select by years')
         yr <- t
         mo <- dy <- rep(1,length(t))
-    } else if (inherits(t,"POSIXt")) {
+    } else if (inherits(t,c("POSIXt","PCICt"))) {
         if (verbose) print('X has a POSIXt index')
         yr <- year(t)
         mo <- month(t)
         dy <- day(t)
         hr <- as.numeric(format(t,"%H"))
         mn <- as.numeric(format(t,"%M"))
-        if (!inherits(it,"POSIXt")) t <-  as.Date(format(t,"%Y-%m-%d"))
+        if (!inherits(it,c("POSIXt","PCICt"))) t <-  as.Date(format(t,"%Y-%m-%d"))
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
     if(inherits(it,c("Date"))) {
@@ -943,9 +943,9 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       ii <- (t >= min(it)) & (t <= max(it))
     } else if (inherits(it,"logical") & length(it)==length(yr)) {
       ii <- it
-    } else if (inherits(it,"POSIXt")) {
+    } else if (inherits(it,c("POSIXt","PCICt"))) {
       if (verbose) print('it is a POSIXt date & time object')
-      if (!inherits(t,"POSIXt")) it <- as.Date(it)
+      if (!inherits(t,c("POSIXt","PCICt"))) it <- as.Date(it)
       ii <- is.element(t,it)
     } else if (!is.null(it)) {
       ii <- rep(FALSE,length(t))
@@ -1125,7 +1125,7 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
                              all(levels(factor(nchar(x)))==10)) |
                             (is.numeric(x) &
                              all(levels(factor(nchar(x)))==10)) |
-                            inherits(x,c("POSIXt")))
+                            inherits(x,c("POSIXt","PCICt")))
     is.dates <- function(x) all(!is.months(x) & !is.datetime(x) & 
                             (is.character(x) &
                             all(levels(factor(nchar(x)))==10) |
@@ -1152,13 +1152,13 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
       ii <- is.element(mo,eval(parse(text=paste('season.abb()$',it,sep=''))))
     } else if (is.datetime(it)) {
       if (verbose) print("Date and time")
-      if (inherits(it,c("POSIXt"))) it <- as.numeric(strftime(it,"%Y%m%d%H"))
+      if (inherits(it,c("POSIXt"))) it <- as.numeric(format(it,"%Y%m%d%H"))
       if (is.character(it)) it <- as.numeric(it)
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
         it <- strptime(range(it),format="%Y%m%d%H")
-        it <- as.numeric(strftime(seq(it[1],it[2],by="hour"),format="%Y%m%d%H"))
+        it <- as.numeric(format(seq(it[1],it[2],by="hour"),format="%Y%m%d%H"))
       } else {
         if (verbose) print('it is a string of dates')
         if (verbose) print(it)
@@ -1173,8 +1173,8 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
-        it <- strftime(seq(it[1],it[2],by='day'),format="%Y%m%d")
-        t <- strftime(t,format="%Y%m%d")
+        it <- format(seq(it[1],it[2],by='day'),format="%Y%m%d")
+        t <- format(t,format="%Y%m%d")
         ii <- is.element(t,it)
       } else { 
         if (verbose) print('it is a string of dates')
@@ -1289,7 +1289,7 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
                                       all(levels(factor(nchar(x)))==10)) |
                                    (is.numeric(x) &
                                         all(levels(factor(nchar(x)))==10)) |
-                                   inherits(x,c("POSIXt")))
+                                   inherits(x,c("POSIXt","PCICt")))
     is.dates <- function(x) all(!is.months(x) & !is.datetime(x) & 
                                   (is.character(x) &
                                      all(levels(factor(nchar(x)))==10) |
