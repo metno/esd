@@ -870,12 +870,10 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
     if(verbose) print("map.events")
     x0 <- x
     x <- subset(x,it=it,is=is,verbose=verbose)
+    if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
     if(is.null(it) & dim(x)[1]>0) {
-      if(attr(x,"calendar") %in% c("360","360_day")) {
-        it <- range(as.PCICt(as.character(x$date),cal="360_day",format="%Y%m%d"))
-      } else {
-        it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
-      }
+      it <- range(as.PCICt(as.character(x$date),cal=calendar,format="%Y%m%d"))
+      #it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
     }
         
     if (is.null(is$lon) & !is.null(xlim)) {
@@ -916,7 +914,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
         } else if (inherits(ty,"Date")) {
           tx <- x[,"date"]
           ty <- as.numeric(strftime(ty,"%Y%m%d"))
-        } else if (inherits(ty,"POSIXt")) {
+        } else if (inherits(ty,c("POSIXt","PCICt")) {
           tx <- x[,"date"]*1E2 + x[,"time"]
           ty <- as.numeric(strftime(ty,"%Y%m%d%H"))
         }
