@@ -12,14 +12,11 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
   if(verbose) print("track.default")
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
-  if(grepl(attr(x,"calendar"),"360_day")) {
-    d <- as.PCICt(unique(paste(x$date,x$time)),format="%Y%m%d %H",cal="360_day")
-  } else {
-    d <- as.POSIXct(unique(paste(x$date,x$time)),format="%Y%m%d %H")
-  }
+  if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+  d <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+  #d <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
   if(is.null(dh)) {
-    #dh <- min(as.numeric(difftime(d[2:length(d)],d[1:(length(d)-1)],units="hours")))
-    dh <- min(as.numeric((d[2:length(d)]-d[1:(length(d)-1)])/(60*60)))
+    dh <- min(as.numeric(diff(sort(unique(d)),units="hours")))
     ## Temporary fix for daylight saving time. Should try to find a more solid solution. 
     if(dh==23 & length(unique(x$time))==1) dh <- 24
     if(dh==11 & length(unique(x$time))==2) dh <- 12
@@ -27,7 +24,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
     if(dh==2 & length(unique(x$time))==8) dh <- 3
   }
   if(!is.null(greenwich)) x <- g2dl(x,"greenwich")
-  yrmn <- as.numeric(format(d,"%Y"))+as.numeric(format(d,"%m"))/12#as.yearmon(strptime(x["date"][[1]],"%Y%m%d"))
+  yrmn <- as.numeric(format(d,"%Y"))+as.numeric(format(d,"%m"))/12
   if (length(unique(yrmn))>1 & length(yrmn)>1000) {
     x.tracked <- NULL
     if (progress) pb <- txtProgressBar(style=3)
@@ -82,28 +79,24 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   lons <- x$lon
   lats <- x$lat
   pcent <- x$pcent
+  if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   num <- rep(NA,dim(x)[1])
   dx <- rep(NA,dim(x)[1])
-  if(grepl(attr(x,"calendar"),"360_day")) {
-    datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal="360_day")
-  } else {
-    datetime <- strptime(paste(dates,times),"%Y%m%d %H")
-  }
+  datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
+  #datetime <- strptime(paste(dates,times),"%Y%m%d %H")
   d <- sort(unique(datetime))
-  #dh <- min(as.numeric((d[2:length(d)],d[1:(length(d)-1)])/(60*60)))
+  #dh <- min(as.numeric(diff(d,units="hours")))
   
   if(!is.null(x0)) {
     if (dim(x0)[1]>0) {
-      if(grepl(attr(x,"calendar"),"360_day")) {
-        d0 <- sort(unique(as.PCICt(paste(x0$date,x0$time),format="%Y%m%d %H",cal="360_day")))
-      } else {
-        d0 <- sort(unique(strptime(paste(x0$date,x0$time),"%Y%m%d %H")))
-      }
+      d0 <- sort(unique(as.PCICt(paste(x0$date,x0$time),format="%Y%m%d %H",cal=calendar)))
+      #d0 <- sort(unique(strptime(paste(x0$date,x0$time),"%Y%m%d %H")))
       dh0 <- as.numeric((min(d)-max(d0))/(60*60))
     } else dh0 <- 1E5
   } else {
     dh0 <- 1E5
   }
+  
   if (all(c("date","time","lon","lat","trajectory") %in% names(x0))) {
     num0 <- x0$trajectory
     n00 <- max(num0,na.rm=TRUE)
@@ -126,11 +119,8 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
       x00 <- NULL
       i.start <- 1
     }
-    if(grepl(attr(x,"calendar"),"360_day")) {
-      datetime <- as.PCICt(paste(dates,times),"%Y%m%d %H")
-    } else {
-      datetime <- strptime(paste(dates,times),"%Y%m%d %H")
-    }
+    datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
+    #datetime <- strptime(paste(dates,times),"%Y%m%d %H")
     d <- unique(c(datetime[i.start:length(datetime)],d))
     d <- d[!is.na(d)]
   } else {
@@ -145,7 +135,6 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     y <- x
     y0 <- x0
   } else {
-  
   t1 <- Sys.time()
   if (progress) pb <- txtProgressBar(style=3)
   nend <- nend0
@@ -236,17 +225,14 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     dnum <- x01$date*1E2 + x01$time
     if (is.null(nmin)) nmin <- 3
     if (is.null(dmin)) dmin <- 0
-    if(grepl(attr(x,"calendar"),"360_day")) {
-      starts <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal="360_day") +
-                                              (nmin-1)*dh*3600,"%Y%m%d%H") )
-      ends <- dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal="360_day") -
+    starts <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
                                             (nmin-1)*dh*3600,"%Y%m%d%H") )
-    } else {
-      starts <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
-                                              (nmin-1)*dh*3600,"%Y%m%d%H") )
-      ends <- dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
-                                            (nmin-1)*dh*3600,"%Y%m%d%H") )
-    }
+    ends <- dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
+                                          (nmin-1)*dh*3600,"%Y%m%d%H") )
+    #starts <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
+    #                                      (nmin-1)*dh*3600,"%Y%m%d%H") )
+    #ends <- dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
+    #                                      (nmin-1)*dh*3600,"%Y%m%d%H") )
     ok <- x01$n>=nmin | ends | starts
     ok <- ok & (x01$distance>=(dmin*1E-3) | ends | starts)
     if(!cleanup.x0) ok[dnum<min(x$date*1E2 + x$time)]
@@ -264,20 +250,19 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     dnum1 <- x$date*1E2 + x$time
     y0 <- subset(y01,it=dnum<min(dnum1))
     y <- subset(y01,it=dnum>=min(dnum1))
+    attr(y0,"calendar") <- calendar
+    attr(y,"calendar") <- calendar
   } else {
     dnum <- x["date"][[1]]*1E2 + x["time"][[1]]
     ok <- rep(TRUE,length(x$n))
-    if(grepl(attr(x,"calendar"),"360_day")) {
-      ends <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal="360_day") +
-                                            (nmin-1)*dh*3600,"%Y%m%d%H") ) |
-              dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal="360_day") -
-                                            (nmin-1)*dh*3600,"%Y%m%d%H") )
-    } else {
-      ends <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
-                                            (nmin-1)*dh*3600,"%Y%m%d%H") ) |
-      dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
-                                            (nmin-1)*dh*3600,"%Y%m%d%H") )
-    }
+    ends <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
+                                          (nmin-1)*dh*3600,"%Y%m%d%H") ) |
+    dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
+                                          (nmin-1)*dh*3600,"%Y%m%d%H") )
+    #ends <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
+    #                                      (nmin-1)*dh*3600,"%Y%m%d%H") ) |
+    #dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
+    #                                      (nmin-1)*dh*3600,"%Y%m%d%H") )
     ok <- x$n>=nmin | ends
     ok <- ok & (x$distance>=(dmin*1E-3) | ends)
     y <- subset(x,it=ok,verbose=verbose)
@@ -285,6 +270,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     rnum[y$trajectory<=n00 & !is.na(rnum)] <- y$trajectory[y$trajectory<=n00 & !is.na(rnum)]
     rnum[y$trajectory>n00 & !is.na(rnum)] <- n00 + rnum[y$trajectory>n00 & !is.na(rnum)]
     y$trajectory <- rnum
+    attr(y,"calendar") <- calendar
     y0 <- NULL
   }
   
@@ -708,7 +694,7 @@ Enumerate <- function(x,param="trajectory",verbose=FALSE) {
   } else {
     if(verbose) print(paste("number of events:",length(num)))
     if(verbose) print(paste("number of trajectories:",length(unique(num))))
-    rnum <- num[2:length(num)]-num[1:(length(num)-1)]
+    rnum <- diff(num)
     rnum[is.na(rnum)] <- 0
     rnum[rnum>0] <- 2:(sum(rnum>0)+1)
     rnum <- c(1,rnum)

@@ -23,31 +23,41 @@ density.events <- function(x,dt="month",dx=1,dy=1,plot=FALSE,
   lats <- round(lats/dy)*dy
   lats <- seq(min(lats),max(lats),dy)
   if (verbose) print("calculate event density")
+  d <- as.PCICt(paste(y$date,y$time),format="%Y%m%d %H",cal=attr(y,"calendar"))
   if (grepl('day',dt)) {
     if (verbose) print("daily")
-    d <- as.Date(strptime(y["date"][[1]],"%Y%m%d"))
+    #d <- as.Date(strptime(y["date"][[1]],"%Y%m%d"))
+    d <- as.PCICt(format(d,"%Y-%m-%d"),cal=attr(y,"calendar"))
     dvec <- seq(min(d),max(d),by="day")
     unit <- 'tracks/day/unit~area'
   } else if (grepl('month',dt)) {
     if (verbose) print("monthly")
-    d <- as.Date(as.yearmon(strptime(y["date"][[1]],"%Y%m%d")))
+    #d <- as.Date(as.yearmon(strptime(y["date"][[1]],"%Y%m%d")))
+    d <- as.PCICt(paste(format(d,"%Y-%m-"),"01",sep=""),cal=attr(y,"calendar"))
     dvec <- seq(min(d),max(d),by="month")
     unit <- 'tracks/month/unit~area'
   } else if (grepl('season',dt) | grepl('quarter',dt)) {
     if (verbose) print("seasonal")
-    d <- as.Date(as.yearqtr(strptime(y["date"][[1]],"%Y%m%d")))
-    dvec <- seq(min(d),max(d),by="quarter")
+    if(grepl(attr(y,"calendar"),"360_day")) {
+      d <- as.PCICt(paste(format(d,"%Y-%m-"),"01",sep=""),cal=attr(y,"calendar"))
+      dvec <- seq(min(d),max(d),by=90*24*60*60)
+    } else {
+      d <- as.Date(as.yearqtr(strptime(y["date"][[1]],"%Y%m%d")))
+      dvec <- seq(min(d),max(d),by="quarter")
+    }
     unit <- 'tracks/season/unit~area'
   } else if (grepl('year',dt) | grepl('annual',dt)) {
     if (verbose) print("annual")
-    d <- as.Date(paste(year(strptime(y["date"][[1]],"%Y%m%d")),"-01-01",sep=""))
+    #d <- as.Date(paste(year(strptime(y["date"][[1]],"%Y%m%d")),"-01-01",sep=""))
+    d <- as.PCICt(paste(format(d,"%Y-"),"01-01",sep=""),cal=attr(y,"calendar"))
     dvec <- seq(min(d),max(d),by="year")
     unit <- 'tracks/year/unit~area'
   } else if (grepl('hour',dt)) {
     if (verbose) print("hourly")
-    d <- as.POSIXct(strptime(paste(y["date"][[1]],y["time"][[1]]),
-                             format="%Y%m%d %H"))
-    dh <- min(diff(sort(unique(y["time"][[1]]))))
+    #d <- as.POSIXct(strptime(paste(y["date"][[1]],y["time"][[1]]),
+    #                         format="%Y%m%d %H"))
+    #d <- as.PCICt(paste(y$date,y$time),format="%Y%m%d %H",cal=attr(y,"calendar"))
+    dh <- min(diff(sort(unique(y$time))))
     dvec <- seq(min(d),max(d),by=dh*60*60)
     unit <- paste('tracks/',dh,'hours/unit~area',sep='')
   } else {

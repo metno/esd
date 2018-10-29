@@ -19,7 +19,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   
   #yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
   #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
-  yrmn <- year(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  yrmn <- format(index(Z),"%Y")#"%Y%m")
   if (length(unique(yrmn))>2) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
@@ -51,7 +51,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   } else {
 
   ## Rearrange time index
-  t <- as.numeric(format(index(Z),format="%Y%m%d%H%M"))#strftime(index(Z),format="%Y%m%d%H%M"))
+  t <- as.numeric(format(index(Z),format="%Y%m%d%H%M"))
   
   ## Calculate first and second derivative
   if(verbose) print("Calculate first and second derivative")
@@ -512,14 +512,8 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     rm('lonXY','latXY','inflx','infly','DX2','DY2','px','py'); gc(reset=TRUE)
   
     ## Arrange results
-    #dd <- strftime(strptime(date,"%Y%m%d%H%M"),"%Y%m%d"))
-    #hh <- strftime(strptime(date,"%Y%m%d%H%M"),"%H"))
-    # Workaround to work for PCICt format (360-day calendar data)
     dd <- round(date*1E-4)
     hh <- round((date-dd*1E4)*1E-2)
-    #dd <- as.character(dd)
-    #hh <- as.character(hh)
-    #hh[as.numeric(hh)<10] <- paste("0",hh[as.numeric(hh)<10],sep="") 
     X <- data.frame(date=dd,time=hh,lon=lon,lat=lat,pcent=pcent,
          #dslp=dslp,
          max.gradient=max.gradient,max.speed=max.speed,
