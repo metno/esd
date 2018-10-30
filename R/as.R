@@ -555,8 +555,10 @@ as.field.zoo <- function(x,lon,lat,param,unit,
       if (dda>0)  timescale <- "day"
       if (dyr==0 & dmo==0 & dda==0) timescale <- "sub-daily"
       ##print(timescale)
-  } else timescale <- "day"
-# Add attributes to x
+  } else { 
+    timescale <- "day"
+  }
+  # Add attributes to x
   attr(x,"variable") <- param
   attr(x,"longname") <- longname
   attr(x,"unit") <- unit
@@ -589,7 +591,8 @@ if(verbose) print("as.field.default")
   x <- as.field.zoo(z,lon=lon,lat=lat,param=param,unit=unit,
                     longname=longname,quality=quality,src=src,url=url,
                     reference=reference,info=info,calendar=calendar,
-                    greenwich=greenwich, method=method,type=type,aspect=aspect)
+                    greenwich=greenwich, method=method,type=type,
+                    aspect=aspect, verbose=verbose)
   invisible(x)
 }
 

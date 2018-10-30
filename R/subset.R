@@ -870,7 +870,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         dy <- day(t)
         hr <- as.numeric(format(t,"%H"))
         mn <- as.numeric(format(t,"%M"))
-        if (!inherits(it,c("POSIXt","PCICt"))) t <- format(t,"%Y-%m-%d")#as.Date(format(t,"%Y-%m-%d"))
+        if (!inherits(it,c("POSIXt","PCICt"))) t <- format(t,"%Y-%m-%d")
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
     if(inherits(it,c("Date"))) {
@@ -945,7 +945,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       ii <- it
     } else if (inherits(it,c("POSIXt","PCICt"))) {
       if (verbose) print('it is a date & time object')
-      if (!inherits(t,c("POSIXt","PCICt"))) it <- as.Date(it)
+      if (!inherits(t,c("POSIXt","PCICt"))) it <- as.Date(format(it,"%Y-%m-%d"))
       ii <- is.element(t,it)
     } else if (!is.null(it)) {
       ii <- rep(FALSE,length(t))
@@ -1117,7 +1117,11 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
   if(!is.null(it)) {
     dt <- x[,"date"]*1E2 + x[,"time"]
     if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
-    t <- as.PCICt(format(paste(x[,"date"],x[,"time"]),format="%Y%m%d %H"),cal=calendar)
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      t <- as.PCICt(as.character(dt),format="%Y%m%d%H",cal=calendar)
+    } else {
+      t <- as.POSIXct(as.character(dt),format="%Y%m%d%H")
+    }
     #t <- as.Date(strptime(x[,"date"],format="%Y%m%d"))
     if(verbose) print(paste('length of t',length(t)))
     is.datetime <- function(x) all(!is.months(x) &
@@ -1158,7 +1162,11 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
-        it <- as.PCICt(as.character(range(it)),format="%Y%m%d%H",cal=calendar)
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- as.PCICt(as.character(range(it)),format="%Y%m%d%H",cal=calendar)
+        } else {
+          it <- as.POSIXct(as.character(range(it)),format="%Y%m%d%H",cal=calendar)
+        }
         it <- as.numeric(format(seq(it[1],it[2],by="hour"),format="%Y%m%d%H"))
         #it <- strptime(range(it),format="%Y%m%d%H")
         #it <- as.numeric(format(seq(it[1],it[2],by="hour"),format="%Y%m%d%H"))
@@ -1169,11 +1177,17 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
       ii <- is.element(dt,it)
     } else if (is.dates(it)) {
       if (is.character(it) & all(grepl("-",it))) {
-        it <- as.PCICt(it,cal=calendar)
-        #it <- as.Date(it)
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- as.PCICt(it,cal=calendar)
+        } else {
+          it <- as.Date(it)
+        }
       } else if (!inherits(it,"Date")) {
-        it <- as.PCICt(as.character(it),format="%Y%m%d",cal=calendar)
-        #it <- as.Date(strptime(it,format="%Y%m%d"))
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- as.PCICt(as.character(it),format="%Y%m%d",cal=calendar)
+        } else {
+          it <- as.Date(as.character(it),format="%Y%m%d")
+        }
       }
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
@@ -1307,28 +1321,16 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
                                                 tolower(month.abb)))>0)
     is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
                                                  names(season.abb())))>0)
-    # is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
-    #                                             tolower(month.abb)))>0)
-    # is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
-    #                                              names(season.abb())))>0)
-    # is.dates <- function(x) all(!is.months(x) &
-    #                               (levels(factor(nchar(x)))==10) |
-    #                               (is.numeric(x) & levels(factor(nchar(x)))==8))
-    # is.years <- function(x) all(!is.months(x) & 
-    #                               is.numeric(x) & levels(factor(nchar(x)))==4)
 
     if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
-    tstart <- as.PCICt(x[,colnames(x)=="start"],format="%Y%m%d%H",cal=calendar)
-    tend <- as.PCICt(x[,colnames(x)=="end"],format="%Y%m%d%H",cal=calendar)
-    #tstart <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
-    #tend <- strptime(x[,colnames(x)=="end"],format="%Y%m%d%H")
-    #if(!is.datetime(it)) {
-    #  tstart <- format(tstart,format="%Y-%m-%d")
-    #  tend <- format(tend,format="%Y-%m-%d")
-    #  #tstart <- strftime(tstart,format="%Y-%m-%d")
-    #  #tend <- strftime(tend,format="%Y-%m-%d")
-    #}
-    
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      tstart <- as.PCICt(as.character(x[,colnames(x)=="start"]),format="%Y%m%d%H",cal=calendar)
+      tend <- as.PCICt(as.character(x[,colnames(x)=="end"]),format="%Y%m%d%H",cal=calendar)
+    } else {
+      tstart <- as.POSIXct(as.character(x[,colnames(x)=="start"]),format="%Y%m%d%H")
+      tend <- as.POSIXct(as.character(x[,colnames(x)=="end"]),format="%Y%m%d%H")
+    }
+
     yr <- year(x)
     mo <- month(x)
     dy <- day(x)

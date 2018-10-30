@@ -154,9 +154,11 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (length(is)==0) is <- NULL
   ## date vector
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
-  d <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
-  #d <- strptime(paste(x["date"][[1]],x["time"][[1]]),"%Y%m%d %H")
-  #d <- as.POSIXct(d)
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    d <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+  } else {
+    d <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
+  }
   yr <- year(d)
   mo <- month(d)
   dy <- day(d)
@@ -168,25 +170,37 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     nlev <- levels(factor(nchar(it)))
     if (length(nlev)==1 & is.element(nlev[1],c(4,8,10,13))) {
       if (nlev==13) {
-        it <- as.PCICt(it,format="%Y-%m-%d %H",cal=calendar)
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- as.PCICt(it,format="%Y-%m-%d %H",cal=calendar)
+        } else {
+          it <- as.POSIXct(it,format="%Y-%m-%d %H")
+        }
         t <- d
-        #it <- as.POSIXct(strptime(it,format="%Y-%m-%d %H")); t <- d
       } else if (nlev==10) {
         if (any(grep("-",it[1]))) {
-          it <- as.PCICt(it,format="%Y-%m-%d",cal=calendar)
-          t <- as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
-          #it <- as.Date(strptime(it,format="%Y-%m-%d"))
-          #t <- as.Date(d)
+          if (requireNamespace("PCICt", quietly = TRUE)) {
+            it <- as.PCICt(it,format="%Y-%m-%d",cal=calendar)
+            t <- as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
+          } else {
+            it <- as.Date(strptime(it,format="%Y-%m-%d"))
+            t <- as.Date(d)
+          }
         } else {
-          it <- as.PCICt(format(it,format="%Y%m%d%H"),cal=calendar)
-          #it <- as.POSIXct(strptime(it,format="%Y%m%d%H"))
+          if (requireNamespace("PCICt", quietly = TRUE)) {
+            it <- as.PCICt(format(it,format="%Y%m%d%H"),cal=calendar)
+          } else {
+            it <- as.POSIXct(strptime(it,format="%Y%m%d%H"))
+          }
           t <- d
         }
       } else if (nlev==8) {
-        it <- as.PCICt(it,format="%Y%m%d",cal=calendar)
-        t <- as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
-        #it <- as.Date(strptime(it,format="%Y%m%d"))
-        #t <- as.Date(d)      
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- as.PCICt(it,format="%Y%m%d",cal=calendar)
+          t <- as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
+        } else {
+          it <- as.Date(strptime(it,format="%Y%m%d"))
+          t <- as.Date(d)
+        }
       } else if (nlev==4) {
         t <- yr
       }
@@ -322,10 +336,13 @@ as.station.events <- function(x,...) {
 count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
   if (verbose) print("count.events")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
-  dates <- as.PCICt(x$date,format="%Y%m%d",cal=calendar)
-  fn <- function(x) as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
-  #dates <- as.Date(strptime(paste(x$date,x$time),format="%Y%m%d %H"))
-  #fn <- function(x) as.Date(as.yearmon(x))
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    dates <- as.PCICt(x$date,format="%Y%m%d",cal=calendar)
+    fn <- function(x) as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
+  } else {
+    dates <- as.Date(strptime(x$date,format="%Y%m%d"))
+    fn <- function(x) as.Date(as.yearmon(x))
+  }
   if (by.trajectory) {
     if (!"trajectory" %in% names(x)) x <- Track.events(x)
     z <- zoo(x$trajectory,order.by=dates)
@@ -335,9 +352,11 @@ count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
     N <- aggregate(z,by=fn,FUN=length)
   }
   # fill in missing months by merging with an empty time series
-  nrt <- as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
-  #nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,
-  #              format="%Y%m%d"))
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    nrt <- as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
+  } else {
+    nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,format="%Y%m%d"))
+  }
   N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
   N <- merge(N, N0)
   N[is.na(N)] <- 0
@@ -350,9 +369,13 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
                          longname=NULL,unit=NULL,...) {
   if (verbose) print("param.events")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
-  dates <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H"),cal=calendar)
-  #dates <- as.Date(strptime(paste(x$date,x$time),format="%Y%m%d %H"))
-  fn <- function(x) as.Date(as.yearmon(x))
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    dates <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H"),cal=calendar)
+    fn <- function(x) as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
+  } else {
+    dates <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
+    fn <- function(x) as.Date(as.yearmon(x))
+  }
   if (param=="count") {
     N <- count.events(x,...)
     longname <- paste(attr(x,"variable"),param)
@@ -360,9 +383,11 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
   } else if (param %in% names(x)) {
     y <- zoo(x[,param],order.by=dates)
     N <- aggregate(y,by=fn,FUN=FUN)
-    nrt <- as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
-    #nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,
-    #          format="%Y%m%d"))
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      nrt <- as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
+    } else {
+      nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,format="%Y%m%d"))
+    }
     N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
     N <- merge(N, N0)
     N <- attrcp(x,N)

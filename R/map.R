@@ -872,8 +872,11 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
     x <- subset(x,it=it,is=is,verbose=verbose)
     if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
     if(is.null(it) & dim(x)[1]>0) {
-      it <- range(as.PCICt(as.character(x$date),cal=calendar,format="%Y%m%d"))
-      #it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
+      if (requireNamespace("PCICt", quietly = TRUE)) {
+        it <- range(as.PCICt(as.character(x$date),cal=calendar,format="%Y%m%d"))
+      } else {
+        it <- range(as.Date(as.character(x$date),cal=calendar,format="%Y%m%d"))
+      }
     }
         
     if (is.null(is$lon) & !is.null(xlim)) {
@@ -910,13 +913,13 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
         ty <- index(Y)
         if (inherits(Y,"month")) {
           tx <- round(x[,"date"]*1E-2)*1E2+1
-          ty <- as.numeric(strftime(ty,"%Y%m%d"))
+          ty <- as.numeric(format(ty,"%Y%m%d"))
         } else if (inherits(ty,"Date")) {
           tx <- x[,"date"]
-          ty <- as.numeric(strftime(ty,"%Y%m%d"))
-        } else if (inherits(ty,c("POSIXt","PCICt")) {
+          ty <- as.numeric(format(ty,"%Y%m%d"))
+        } else if (inherits(ty,c("POSIXt","PCICt"))) {
           tx <- x[,"date"]*1E2 + x[,"time"]
-          ty <- as.numeric(strftime(ty,"%Y%m%d%H"))
+          ty <- as.numeric(format(ty,"%Y%m%d%H"))
         }
         ii <- is.element(ty,tx)
         Y <- subset(Y,it=ii)

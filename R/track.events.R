@@ -13,8 +13,11 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
   x <- subset(x,it=!is.na(x["date"][[1]]))
   x <- subset(x,it=it,is=is)
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
-  d <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
-  #d <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    d <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+  } else {
+    d <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
+  }
   if(is.null(dh)) {
     dh <- min(as.numeric(diff(sort(unique(d)),units="hours")))
     ## Temporary fix for daylight saving time. Should try to find a more solid solution. 
@@ -82,15 +85,21 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   num <- rep(NA,dim(x)[1])
   dx <- rep(NA,dim(x)[1])
-  datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
-  #datetime <- strptime(paste(dates,times),"%Y%m%d %H")
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
+  } else {
+    datetime <- strptime(paste(dates,times),"%Y%m%d %H")  
+  }
   d <- sort(unique(datetime))
   #dh <- min(as.numeric(diff(d,units="hours")))
   
   if(!is.null(x0)) {
     if (dim(x0)[1]>0) {
-      d0 <- sort(unique(as.PCICt(paste(x0$date,x0$time),format="%Y%m%d %H",cal=calendar)))
-      #d0 <- sort(unique(strptime(paste(x0$date,x0$time),"%Y%m%d %H")))
+      if (requireNamespace("PCICt", quietly = TRUE)) {
+        d0 <- sort(unique(as.PCICt(paste(x0$date,x0$time),format="%Y%m%d %H",cal=calendar)))
+      } else {
+        d0 <- sort(unique(strptime(paste(x0$date,x0$time),"%Y%m%d %H")))
+      }
       dh0 <- as.numeric((min(d)-max(d0))/(60*60))
     } else dh0 <- 1E5
   } else {
@@ -119,8 +128,11 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
       x00 <- NULL
       i.start <- 1
     }
-    datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
-    #datetime <- strptime(paste(dates,times),"%Y%m%d %H")
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
+    } else {
+      datetime <- strptime(paste(dates,times),"%Y%m%d %H")
+    }
     d <- unique(c(datetime[i.start:length(datetime)],d))
     d <- d[!is.na(d)]
   } else {
@@ -155,6 +167,18 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
                    pcent=pcent[datetime==d[i+1]]),
              f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
              dmax=dmax,n0=n0,nend=nend,)#,plot=plot)
+      #if(format(d[i-1],"%Y%m%d")==19800120) {
+      #  dev.new()
+      #  plot(nn$step1$lon,nn$step1$lat,pch=1)
+      #  title(d[i])
+      #  points(nn$step2$lon,nn$step2$lat,pch=2,col="blue")
+      #  points(nn$step3$lon,nn$step3$lat,pch=3,col="red")
+      #  for(n.i in nn$step3$num[!is.na(nn$step3$num)]) {
+      #    lon.i <- c(nn$step1$lon[nn$step1$num==n.i],nn$step2$lon[nn$step2$num==n.i],nn$step3$lon[nn$step3$num==n.i&!is.na(nn$step3$num)])
+      #    lat.i <- c(nn$step1$lat[nn$step1$num==n.i],nn$step2$lat[nn$step2$num==n.i],nn$step3$lat[nn$step3$num==n.i&!is.na(nn$step3$num)])
+      #    lines(lon.i,lat.i,col=adjustcolor("black",alpha.f=0.8))
+      #  }
+      #}
       num[datetime==d[i-1]] <- nn$step1$num
       num[datetime==d[i]] <- nn$step2$num
       num[datetime==d[i+1]] <- nn$step3$num
@@ -225,14 +249,17 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     dnum <- x01$date*1E2 + x01$time
     if (is.null(nmin)) nmin <- 3
     if (is.null(dmin)) dmin <- 0
-    starts <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
-                                            (nmin-1)*dh*3600,"%Y%m%d%H") )
-    ends <- dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      starts <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
                                           (nmin-1)*dh*3600,"%Y%m%d%H") )
-    #starts <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
-    #                                      (nmin-1)*dh*3600,"%Y%m%d%H") )
-    #ends <- dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
-    #                                      (nmin-1)*dh*3600,"%Y%m%d%H") )
+      ends <- dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
+                                          (nmin-1)*dh*3600,"%Y%m%d%H") )
+    } else {
+      starts <- dnum < as.numeric( format(strptime(min(dnum),"%Y%m%d%H") +
+                                          (nmin-1)*dh*3600,"%Y%m%d%H") )
+      ends <- dnum > as.numeric( format(strptime(max(dnum),"%Y%m%d%H") -
+                                          (nmin-1)*dh*3600,"%Y%m%d%H") )
+    }
     ok <- x01$n>=nmin | ends | starts
     ok <- ok & (x01$distance>=(dmin*1E-3) | ends | starts)
     if(!cleanup.x0) ok[dnum<min(x$date*1E2 + x$time)]
@@ -255,14 +282,17 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   } else {
     dnum <- x["date"][[1]]*1E2 + x["time"][[1]]
     ok <- rep(TRUE,length(x$n))
-    ends <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      ends <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
                                           (nmin-1)*dh*3600,"%Y%m%d%H") ) |
-    dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
+      dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
                                           (nmin-1)*dh*3600,"%Y%m%d%H") )
-    #ends <- dnum < as.numeric( strftime(strptime(min(dnum),"%Y%m%d%H") +
-    #                                      (nmin-1)*dh*3600,"%Y%m%d%H") ) |
-    #dnum > as.numeric( strftime(strptime(max(dnum),"%Y%m%d%H") -
-    #                                      (nmin-1)*dh*3600,"%Y%m%d%H") )
+    } else {
+      ends <- dnum < as.numeric( format(strptime(min(dnum),"%Y%m%d%H") +
+                                          (nmin-1)*dh*3600,"%Y%m%d%H") ) |
+      dnum > as.numeric( format(strptime(max(dnum),"%Y%m%d%H") -
+                                          (nmin-1)*dh*3600,"%Y%m%d%H") )
+    }
     ok <- x$n>=nmin | ends
     ok <- ok & (x$distance>=(dmin*1E-3) | ends)
     y <- subset(x,it=ok,verbose=verbose)
@@ -320,7 +350,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
                      f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,
 		     nend=NA,plot=FALSE,verbose=FALSE) {
   if (verbose) print("Three step cyclone tracking")
-
+  
   ## Set constants
   amax <- 90
   ## Normalize relative weights of the different criteria:
@@ -366,9 +396,10 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
   dim(da) <- c(n2*n3,n1*n2)
   ## Displacement and change in displacement
   d <- sapply(d12,function(x) apply(d23,c(1,2),function(y) max(y,x)))
+  ## KMP 2018-10-30: dd/d doesn't work if d=0, i.e., for cyclone that is stationary in steps 1,2,3
+  d[d==0 & !is.na(d)] <- 0.1
   dd <- sapply(d12,function(x) apply(d23,c(1,2),function(y) abs(y-x)))
   ok.d <- sapply(d12<dmax,function(x) sapply(d23<dmax,function(y) y & x ))
-  dim(d) <- c(n2*n3,n1*n2)
   dim(dd) <- c(n2*n3,n1*n2)
   dim(ok.d) <- c(n2*n3,n1*n2)
   if(!is.null(step3$pcent) & !is.null(step2$pcent) & !is.null(step1$pcent)) {
@@ -484,7 +515,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
   #   i.k <- which(is.na(i3.all) & i2.all==k)
   #   pf.all[i.k,j.k] <- pf.12[k,]
   # }
- 
+  
   ## Connect the most likely trajectories based on the probability factors
   if(any(pf.all>0 & !is.na(pf.all))) {
     rank.all <- matrix(rank(1-pf.all),dim(pf.all))
@@ -508,8 +539,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
       }
     }
     
-    # apply nend in ranking!
-    
+    #print(rank.all[i2.all==8&i3.all==10,j1.all==11&j2.all==8])
     rank.all[pf.all<=0 | is.na(pf.all)] <- NA
     while(any(!is.na(rank.all))) {
       ij <- which(rank.all==min(rank.all,na.rm=TRUE),arr.ind=TRUE)
