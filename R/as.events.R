@@ -370,7 +370,7 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
   if (verbose) print("param.events")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
-    dates <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H"),cal=calendar)
+    dates <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
     fn <- function(x) as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
   } else {
     dates <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
