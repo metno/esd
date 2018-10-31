@@ -1,5 +1,5 @@
 
-trajectory2field <- function(x,dt='month',dx=2,dy=2,
+trajectory2field <- function(x,dt='month',dx=2,dy=2,radius=5E5,
                              it=NULL,is=NULL,verbose=FALSE) {
   if(verbose) print("trajectory2field")
   stopifnot(is.trajectory(x))
@@ -21,7 +21,7 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,
     X <- array(rep(0,),dim=c(length(lons),length(lats)))
     if(verbose) print(dim(x))
     if(!is.null(dim(x)) & length(x)>0) {
-      A <- density.trajectory(x,dx=dx,dy=dy)
+      A <- density.trajectory(x,dx=dx,dy=dy,radius=radius)
       lat <- A$lat
       lon <- A$lon
       den <- A$density
@@ -87,12 +87,12 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,
   invisible(Y)
 }
 
-density.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,verbose=FALSE) {
+density.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,radius=5E5,verbose=FALSE) {
   if(verbose) print("density.trajectory")
   y <- subset(x,it=it,is=is)
   A <- apply(y,1,function(x) trackdensity(x[colnames(y)=='lon'],
                                      x[colnames(y)=='lat'],
-                                     dx=dx,dy=dy))
+                                     dx=dx,dy=dy,radius=radius))
   lon <- unlist(lapply(A,function(x) factor2numeric(x$lon)))
   lat <- unlist(lapply(A,function(x) factor2numeric(x$lat)))
   hits <- as.data.frame(table(lon,lat))
