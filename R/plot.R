@@ -206,9 +206,11 @@ vis.map <- function(x,col='red',map.type=NULL,
   }
   
   ## REB: 2016-10-12 - add the possibility to use google maps
-  if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
-         usegooglemap ) {
-      require(RgoogleMaps)
+  ## KMP 2018-10-31: Don't use require inside the esd package. 
+  ## Instead call the external package explicitly, e.g., RgoogleMaps::GetMap()
+  if (requireNamespace("RgoogleMaps", quietly = TRUE) & usegooglemaps) {
+  #if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) & usegooglemap ) {
+      #require(RgoogleMaps)
       
       if (is.null(zoom)) {
         if (verbose) print('zoom not defined')
@@ -220,7 +222,7 @@ vis.map <- function(x,col='red',map.type=NULL,
       }
       if (!is.finite(zoom)) zoom <- 8
       if (verbose) print(paste('zoom=',zoom))
-      bgmap <- GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
+      bgmap <- RgoogleMaps::GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
                     destfile = "map.station.esd.png",
                     maptype = "mobile", zoom=zoom)
       if(map.insert) {
@@ -230,10 +232,10 @@ vis.map <- function(x,col='red',map.type=NULL,
      if(map.type=="rectangle") {
        xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
        yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
-       plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
-       PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
+       RgoogleMaps::plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
+       RgoogleMaps::PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
      } else {
-       plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+       RgoogleMaps::plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
      }
       
    } else {
