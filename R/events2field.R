@@ -25,14 +25,14 @@ density.events <- function(x,dt="month",dx=1,dy=1,plot=FALSE,
   if (verbose) print("calculate event density")
   if(is.null(attr(y,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
-    d <- as.PCICt(paste(y$date,y$time),format="%Y%m%d %H",cal=calendar)
+    d <- PCICt::as.PCICt(paste(y$date,y$time),format="%Y%m%d %H",cal=calendar)
   } else {
     d <- as.POSIXct(paste(y$date,y$time),format="%Y%m%d %H",cal=calendar)
   }
   if (grepl('day',dt)) {
     if (verbose) print("daily")
     if (requireNamespace("PCICt", quietly = TRUE)) {
-      d <- as.PCICt(format(d,"%Y-%m-%d"),cal=attr(y,"calendar"))
+      d <- PCICt::as.PCICt(format(d,"%Y-%m-%d"),cal=attr(y,"calendar"))
     } else {
       d <- as.POSIXct(format(d,"%Y-%m-%d"),cal=attr(y,"calendar"))
     }

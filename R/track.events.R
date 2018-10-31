@@ -14,7 +14,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
   x <- subset(x,it=it,is=is)
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
-    d <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+    d <- PCICt::as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
   } else {
     d <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
   }
@@ -86,7 +86,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   num <- rep(NA,dim(x)[1])
   dx <- rep(NA,dim(x)[1])
   if (requireNamespace("PCICt", quietly = TRUE)) {
-    datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
+    datetime <- PCICt::as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
   } else {
     datetime <- strptime(paste(dates,times),"%Y%m%d %H")  
   }
@@ -96,7 +96,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   if(!is.null(x0)) {
     if (dim(x0)[1]>0) {
       if (requireNamespace("PCICt", quietly = TRUE)) {
-        d0 <- sort(unique(as.PCICt(paste(x0$date,x0$time),format="%Y%m%d %H",cal=calendar)))
+        d0 <- sort(unique(PCICt::as.PCICt(paste(x0$date,x0$time),format="%Y%m%d %H",cal=calendar)))
       } else {
         d0 <- sort(unique(strptime(paste(x0$date,x0$time),"%Y%m%d %H")))
       }
@@ -129,7 +129,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
       i.start <- 1
     }
     if (requireNamespace("PCICt", quietly = TRUE)) {
-      datetime <- as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
+      datetime <- PCICt::as.PCICt(paste(dates,times),format="%Y%m%d %H",cal=calendar)
     } else {
       datetime <- strptime(paste(dates,times),"%Y%m%d %H")
     }
@@ -250,9 +250,9 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     if (is.null(nmin)) nmin <- 3
     if (is.null(dmin)) dmin <- 0
     if (requireNamespace("PCICt", quietly = TRUE)) {
-      starts <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
+      starts <- dnum < as.numeric( format(PCICt::as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
                                           (nmin-1)*dh*3600,"%Y%m%d%H") )
-      ends <- dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
+      ends <- dnum > as.numeric( format(PCICt::as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
                                           (nmin-1)*dh*3600,"%Y%m%d%H") )
     } else {
       starts <- dnum < as.numeric( format(strptime(min(dnum),"%Y%m%d%H") +
@@ -283,9 +283,9 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     dnum <- x["date"][[1]]*1E2 + x["time"][[1]]
     ok <- rep(TRUE,length(x$n))
     if (requireNamespace("PCICt", quietly = TRUE)) {
-      ends <- dnum < as.numeric( format(as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
+      ends <- dnum < as.numeric( format(PCICt::as.PCICt(as.character(min(dnum)),"%Y%m%d%H",cal=calendar) +
                                           (nmin-1)*dh*3600,"%Y%m%d%H") ) |
-      dnum > as.numeric( format(as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
+      dnum > as.numeric( format(PCICt::as.PCICt(as.character(max(dnum)),"%Y%m%d%H",cal=calendar) -
                                           (nmin-1)*dh*3600,"%Y%m%d%H") )
     } else {
       ends <- dnum < as.numeric( format(strptime(min(dnum),"%Y%m%d%H") +

@@ -1508,20 +1508,16 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         days <- time$vals%%time$daysayear - (cumsum(mndays)-mndays)[months] + 1#rep(cumsum(mndays),time$len/12)
         #HBE added seperate test for seasonal data May 2nd 2018
         if (freq.data!='season') {
-          if(median(diff(days))<=1) {
-            if(!requireNamespace("PCICt",quietly=TRUE)) {
-              stop("Package \"PCICt\" needed to retrieve subdaily 360-day calendar data. Please install it.")
-            }
+          if(median(diff(days))<=1 & !requireNamespace("PCICt",quietly=TRUE)) {
+            stop("Package \"PCICt\" needed to retrieve subdaily 360-day calendar data. Please install it.")
           }
           if(median(diff(days))<1) { # KMP 2018-10-23: subdaily
             hours <- (days-floor(days))*24
             days <- floor(days)
-            time$vdate <- as.PCICt(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H",
+            time$vdate <- PCICt::as.PCICt(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H",
                                    cal=time$daysayear)
-            #time$vdate <- as.POSIXct(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H")
           } else if(median(diff(days))==1) { # KMP 2018-10-23: daily
-            time$vdate <- as.PCICt(paste(years,months,floor(days),sep="-"),cal=time$daysayear)
-            #time$vdate <- as.Date(paste(years,months,floor(days),sep="-"))
+            time$vdate <- PCICt::as.PCICt(paste(years,months,floor(days),sep="-"),cal=time$daysayear)
           } else if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
             print("Warning : Jumps in data have been found !")
             print("Warning: Trust the first date and force a continuous vector of dates !")
@@ -1612,7 +1608,6 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
       if (verbose) print(paste("Warning : Irregular frequencies have been detected - The data might be corrupted and needs extra Checking !"))   
       if (verbose) print(paste(as.character(dt),tunit,sep=" "))
     }
-    
   }
   ## End check 1
   ## Begin check 2 if freq.att matches freq.data
@@ -1988,22 +1983,16 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
         # KMP 2018-10-23: changed to work for daily and subdaily data
         days <- time$vals%%time$daysayear - (cumsum(mndays)-mndays)[months] + 1#rep(cumsum(mndays),time$len/12)
-        if(median(diff(days))<=1) { 
-          if(!requireNamespace("PCICt",quietly=TRUE)) {
-            stop("Package \"PCICt\" needed to retrieve subdaily 360-day calendar data. Please install it.")
-          }
+        if(median(diff(days))<=1 & !requireNamespace("PCICt",quietly=TRUE)) {
+          stop("Package \"PCICt\" needed to retrieve subdaily 360-day calendar data. Please install it.")
         }
-        if(median(diff(days))<1) { 
-          # KMP 2018-10-23: subdaily
+        if(median(diff(days))<1) { # KMP 2018-10-23: subdaily
           hours <- (days-floor(days))*24
           days <- floor(days)
-          time$vdate <- as.PCICt(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H",
+          time$vdate <- PCICt::as.PCICt(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H",
                                  cal=time$daysayear)
-          #time$vdate <- as.POSIXct(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H")
-        } else if(median(diff(days))==1) { 
-          # KMP 2018-10-23: daily
-          time$vdate <- as.PCICt(paste(years,months,days,sep="-"),cal=time$daysayear)
-          #time$vdate <- as.Date(paste(years,months,floor(days),sep="-"))
+        } else if(median(diff(days))==1) { # KMP 2018-10-23: daily
+          time$vdate <- PCICt::as.PCICt(paste(years,months,days,sep="-"),cal=time$daysayear)
         } else if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
           print("Warning: Jumps in data have been found!")
           print("Warning: Trust the first date and force a continuous vector of dates !")

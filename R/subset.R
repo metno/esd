@@ -1118,7 +1118,7 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
     dt <- x[,"date"]*1E2 + x[,"time"]
     if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
     if (requireNamespace("PCICt", quietly = TRUE)) {
-      t <- as.PCICt(as.character(dt),format="%Y%m%d%H",cal=calendar)
+      t <- PCICt::as.PCICt(as.character(dt),format="%Y%m%d%H",cal=calendar)
     } else {
       t <- as.POSIXct(as.character(dt),format="%Y%m%d%H")
     }
@@ -1163,7 +1163,7 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
         if (requireNamespace("PCICt", quietly = TRUE)) {
-          it <- as.PCICt(as.character(range(it)),format="%Y%m%d%H",cal=calendar)
+          it <- PCICt::as.PCICt(as.character(range(it)),format="%Y%m%d%H",cal=calendar)
         } else {
           it <- as.POSIXct(as.character(range(it)),format="%Y%m%d%H",cal=calendar)
         }
@@ -1178,13 +1178,13 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
     } else if (is.dates(it)) {
       if (is.character(it) & all(grepl("-",it))) {
         if (requireNamespace("PCICt", quietly = TRUE)) {
-          it <- as.PCICt(it,cal=calendar)
+          it <- PCICt::as.PCICt(it,cal=calendar)
         } else {
           it <- as.Date(it)
         }
       } else if (!inherits(it,"Date")) {
         if (requireNamespace("PCICt", quietly = TRUE)) {
-          it <- as.PCICt(as.character(it),format="%Y%m%d",cal=calendar)
+          it <- PCICt::as.PCICt(as.character(it),format="%Y%m%d",cal=calendar)
         } else {
           it <- as.Date(as.character(it),format="%Y%m%d")
         }
@@ -1324,8 +1324,8 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
 
     if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
     if (requireNamespace("PCICt", quietly = TRUE)) {
-      tstart <- as.PCICt(as.character(x[,colnames(x)=="start"]),format="%Y%m%d%H",cal=calendar)
-      tend <- as.PCICt(as.character(x[,colnames(x)=="end"]),format="%Y%m%d%H",cal=calendar)
+      tstart <- PCICt::as.PCICt(as.character(x[,colnames(x)=="start"]),format="%Y%m%d%H",cal=calendar)
+      tend <- PCICt::as.PCICt(as.character(x[,colnames(x)=="end"]),format="%Y%m%d%H",cal=calendar)
     } else {
       tstart <- as.POSIXct(as.character(x[,colnames(x)=="start"]),format="%Y%m%d%H")
       tend <- as.POSIXct(as.character(x[,colnames(x)=="end"]),format="%Y%m%d%H")

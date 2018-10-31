@@ -83,8 +83,8 @@ rence")
       t1 <- t1*1E-2
       t2 <- t2*1E-2
     }
-    dt1 <- as.numeric(strftime(strptime(paste(d1,t1),format="%Y%m%d %H"),format="%Y%m%d%H"))
-    dt2 <- as.numeric(strftime(strptime(paste(d2,t2),format="%Y%m%d %H"),format="%Y%m%d%H"))
+    dt1 <- as.numeric(paste(d1,sapply(t1,function(h) if(h<10) paste("0",h,sep="") else as.character(h)),sep=""))
+    dt2 <- as.numeric(paste(d2,sapply(t2,function(h) if(h<10) paste("0",h,sep="") else as.character(h)),sep=""))
     #aggregate(x$date, list(x$trajectory), length)$x -> len
     aggregate(x$trackcount, list(x$trajectory), function(x) x[1])$x -> nlen
     aggregate(x$distance, list(x$trajectory), function(x) x[1])$x -> dlen
@@ -142,34 +142,34 @@ rence")
   invisible(X)
 }
 
-matrix2tdf <- function(x) {
-  i.t <- colnames(x) %in% c('start','end')
-  i.n <- colnames(x)=='n'  
-  pnames <- unique(colnames(x))
-  pnames <- pnames[!(pnames %in% c('start','end','n'))]
-  trajectory <- unlist(mapply(function(i,n) rep(i,n),seq(1,dim(x)[1]),x[,i.n]))
-  for(p in pnames) {
-    i.p <- colnames(x)==p
-    if (p=='lon') {
-      lon <- unlist(apply(x,1,function(x) approxlon(x[i.p],n=x[i.n])$y))
-    } else {
-      eval(parse(text=paste(p,
-       " <- unlist(apply(x,1,function(x) approx(x[i.p],n=x[i.n])$y))",sep="")))
-    }
-  }
-  fn <- function(x) {
-    d <- strptime(x[i.t],format="%Y%m%d%H")
-    d <- seq(d[1],d[2],length=x[i.n])
-    d <- as.numeric(strftime(d,"%Y%m%d%H"))
-    invisible(d)
-  }
-  date <- unlist(apply(x,1,fn))
-  year <- as.integer(date*1E-6)
-  code99 <- rep(as.numeric(substring(attr(x,"method"),2)),length(date))
-  eval(parse(text=paste('X <- data.frame(trajectory,date,year,',
-               paste(pnames,collapse=","),',code99)',sep="")))
-  invisible(X)
-}
+#matrix2tdf <- function(x) {
+#  i.t <- colnames(x) %in% c('start','end')
+#  i.n <- colnames(x)=='n'  
+#  pnames <- unique(colnames(x))
+#  pnames <- pnames[!(pnames %in% c('start','end','n'))]
+#  trajectory <- unlist(mapply(function(i,n) rep(i,n),seq(1,dim(x)[1]),x[,i.n]))
+#  for(p in pnames) {
+#    i.p <- colnames(x)==p
+#    if (p=='lon') {
+#      lon <- unlist(apply(x,1,function(x) approxlon(x[i.p],n=x[i.n])$y))
+#    } else {
+#      eval(parse(text=paste(p,
+#       " <- unlist(apply(x,1,function(x) approx(x[i.p],n=x[i.n])$y))",sep="")))
+#    }
+#  }
+#  fn <- function(x) {
+#    d <- strptime(x[i.t],format="%Y%m%d%H")
+#    d <- seq(d[1],d[2],length=x[i.n])
+#    d <- as.numeric(format(d,format="%Y%m%d%H"))
+#    invisible(d)
+#  }
+#  date <- unlist(apply(x,1,fn))
+#  year <- as.integer(date*1E-6)
+#  code99 <- rep(as.numeric(substring(attr(x,"method"),2)),length(date))
+#  eval(parse(text=paste('X <- data.frame(trajectory,date,year,',
+#               paste(pnames,collapse=","),',code99)',sep="")))
+#  invisible(X)
+#}
 
 
 trajectory2station <- function(x,it=NULL,is=NULL,param=NULL,FUN='count',

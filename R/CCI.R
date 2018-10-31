@@ -17,8 +17,6 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   }  
   Z <- g2dl(Z,greenwich=greenwich)
   
-  #yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
-  #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
   yrmn <- format(index(Z),"%Y")#"%Y%m")
   if (length(unique(yrmn))>2) {
     t1 <- Sys.time()  

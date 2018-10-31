@@ -155,7 +155,7 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   ## date vector
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
-    d <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+    d <- PCICt::as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
   } else {
     d <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
   }
@@ -171,7 +171,7 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     if (length(nlev)==1 & is.element(nlev[1],c(4,8,10,13))) {
       if (nlev==13) {
         if (requireNamespace("PCICt", quietly = TRUE)) {
-          it <- as.PCICt(it,format="%Y-%m-%d %H",cal=calendar)
+          it <- PCICt::as.PCICt(it,format="%Y-%m-%d %H",cal=calendar)
         } else {
           it <- as.POSIXct(it,format="%Y-%m-%d %H")
         }
@@ -179,15 +179,15 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
       } else if (nlev==10) {
         if (any(grep("-",it[1]))) {
           if (requireNamespace("PCICt", quietly = TRUE)) {
-            it <- as.PCICt(it,format="%Y-%m-%d",cal=calendar)
-            t <- as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
+            it <- PCICt::as.PCICt(it,format="%Y-%m-%d",cal=calendar)
+            t <- PCICt::as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
           } else {
             it <- as.Date(strptime(it,format="%Y-%m-%d"))
             t <- as.Date(d)
           }
         } else {
           if (requireNamespace("PCICt", quietly = TRUE)) {
-            it <- as.PCICt(format(it,format="%Y%m%d%H"),cal=calendar)
+            it <- PCICt::as.PCICt(format(it,format="%Y%m%d%H"),cal=calendar)
           } else {
             it <- as.POSIXct(strptime(it,format="%Y%m%d%H"))
           }
@@ -195,8 +195,8 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
         }
       } else if (nlev==8) {
         if (requireNamespace("PCICt", quietly = TRUE)) {
-          it <- as.PCICt(it,format="%Y%m%d",cal=calendar)
-          t <- as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
+          it <- PCICt::as.PCICt(it,format="%Y%m%d",cal=calendar)
+          t <- PCICt::as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
         } else {
           it <- as.Date(strptime(it,format="%Y%m%d"))
           t <- as.Date(d)
@@ -337,8 +337,8 @@ count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
   if (verbose) print("count.events")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
-    dates <- as.PCICt(x$date,format="%Y%m%d",cal=calendar)
-    fn <- function(x) as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
+    dates <- PCICt::as.PCICt(x$date,format="%Y%m%d",cal=calendar)
+    fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
   } else {
     dates <- as.Date(strptime(x$date,format="%Y%m%d"))
     fn <- function(x) as.Date(as.yearmon(x))
@@ -353,7 +353,7 @@ count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
   }
   # fill in missing months by merging with an empty time series
   if (requireNamespace("PCICt", quietly = TRUE)) {
-    nrt <- as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
+    nrt <- PCICt::as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
   } else {
     nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,format="%Y%m%d"))
   }
@@ -370,8 +370,8 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
   if (verbose) print("param.events")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
-    dates <- as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
-    fn <- function(x) as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
+    dates <- PCICt::as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+    fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
   } else {
     dates <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
     fn <- function(x) as.Date(as.yearmon(x))
@@ -384,7 +384,7 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
     y <- zoo(x[,param],order.by=dates)
     N <- aggregate(y,by=fn,FUN=FUN)
     if (requireNamespace("PCICt", quietly = TRUE)) {
-      nrt <- as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
+      nrt <- PCICt::as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
     } else {
       nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,format="%Y%m%d"))
     }

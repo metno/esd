@@ -873,7 +873,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
     if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
     if(is.null(it) & dim(x)[1]>0) {
       if (requireNamespace("PCICt", quietly = TRUE)) {
-        it <- range(as.PCICt(as.character(x$date),cal=calendar,format="%Y%m%d"))
+        it <- range(PCICt::as.PCICt(as.character(x$date),cal=calendar,format="%Y%m%d"))
       } else {
         it <- range(as.Date(as.character(x$date),cal=calendar,format="%Y%m%d"))
       }
