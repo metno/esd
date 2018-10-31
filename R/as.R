@@ -2,7 +2,7 @@
 as.station <- function(x,...) UseMethod("as.station")
 
 as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
-                          cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,
+                          cntr=NA,longname=NA,calendar=NA,stid=NA,quality=NA,src=NA,
                           url=NA,reference=NA,info=NA, method= NA,type=NA,
                            aspect=NA,verbose=FALSE) {
   #print(c(length(X),length(index)))
@@ -48,7 +48,14 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   if ((is.na(quality[1])) & !is.null(attr(x,'quality')))
     quality <- attr(x,'guality')    
   attr(y,'quality') <- quality
-  attr(y,'calendar') <- 'gregorian'
+  if (is.na(calendar)) {
+    if(!is.null(attr(x,'calendar'))) {
+      calendar <- attr(y,'calendar')
+    } else {
+      calendar <- 'gregorian'
+    }
+  }
+  attr(y,'calendar') <- calendar
   if (is.null(src)) src <- NA 
   if ((is.na(src[1])) & !is.null(attr(x,'source')))
     src <- attr(x,'source')    
@@ -762,8 +769,9 @@ as.annual.spell <- function(x, ...) annual.spell(x,...)
 
 as.monthly <- function(x,...) UseMethod("as.monthly")
 
+yyyymm <- function(x) ym <- as.Date(paste(year(x),month(x),'01',sep='-'))
+
 as.monthly.default <- function(x,...) {
-  yyyymm <- function(x) ym <- as.Date(paste(year(x),month(x),'01',sep='-'))
   y <- aggregate(x,by=yyyymm,...)
   return(y)
 }
@@ -771,7 +779,8 @@ as.monthly.default <- function(x,...) {
 
 as.monthly.field <- function(x,FUN='mean',...) {
 if (inherits(x,'month')) return(x)
-  y <- aggregate(as.zoo(x),function(tt) as.Date(as.yearmon(tt)),FUN=FUN,...)
+  y <- aggregate(as.zoo(x), yyyymm, #function(tt) as.Date(as.yearmon(tt)),
+                 FUN=FUN,...)
   y <- attrcp(x,y)
   attr(y,"dimensions") <- c(attr(x,"dimensions")[1:2],length(index(y)))
   attr(y,'history') <- history.stamp(x)
@@ -783,7 +792,7 @@ if (inherits(x,'month')) return(x)
 ## This is a dublicate of that in as.R
 as.monthly.station <- function (x, FUN = "mean", ...) 
 {
-    y <- aggregate(zoo(x), function(tt) as.Date(as.yearmon(tt)), 
+    y <- aggregate(zoo(x), yyyymm, #function(tt) as.Date(as.yearmon(tt)), 
                    FUN = FUN, ...)
     y <- attrcp(x, y)
     attr(y, "history") <- history.stamp(x)
@@ -794,7 +803,7 @@ as.monthly.station <- function (x, FUN = "mean", ...)
 
 
 # Not to confuse with season
-# This function extracts a given seasonal interval and aggrigates a given statistic
+# This function extracts a given seasonal interval and aggregates a given statistic
 as.seasons <- function(x,start='01-01',end='12-31',FUN='mean', ...) {
   IV <- function(x) sum(is.finite(x))
   yrs <- year(x); d <- dim(x)
@@ -858,9 +867,12 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,
       ##print(yrseas)
       #print('aggregate')
       #print(names(list(...)))
-      y <- aggregate(x=as.zoo(X),by=as.yearqtr,FUN=match.fun(FUN),...)
+      browser()
+      yq <- function(t) year(t) + 0.25*floor((month(t)-1)/3)
+      y <- aggregate(x=as.zoo(X),by=yq,#as.yearqtr,
+                     FUN=match.fun(FUN),...)
       # convert yearqtr to yearmon
-      y <- zoo(x=y,order.by=as.Date(as.yearmon(index(y))))
+      y <- zoo(x=y,order.by=as.Date(yyyymm(y)))#as.yearmon(index(y))))
     } else y <- as.4seasons.day(x,FUN=FUN,nmin=nmin,...)
     #y <- as.4seasons.day(x,FUN=match.fun(FUN),...)
     
