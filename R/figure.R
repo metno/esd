@@ -189,7 +189,7 @@ fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline =
   
   if (add.2C) {
     abline(2,0,lty=2,col="red")
-    text(x=c(round(clim1+clim2)/2),y=2.1,labels = "2°C",col="red")
+    text(x=c(round(clim1+clim2)/2),y=2.1,labels="2 deg C",col="red")
   }
   
   
