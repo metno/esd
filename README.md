@@ -13,7 +13,7 @@ Maintainer: Rasmus E. Benestad (rasmus.benestad-at-met.no) and Abdelkader Mezgha
 
 Depends: ncdf4, zoo, R (>= 2.10.0)
 
-Recommends: LatticeKrig, RgoogleMaps
+Suggests: LatticeKrig, RgoogleMaps, PCICt
 
 Description: The package contains R functions for retrieving data, making climate analysis and downscaling of monthly mean and daily mean global climate scenarios.
 
