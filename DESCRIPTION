@@ -1,18 +1,18 @@
 Package: esd
-Version: 1.8
-Date: Oct 31 2018
+Version: 1.7078
+Date: Oct 22 2018
 Title: Climate analysis and empirical-statistical downscaling (ESD) package for
     monthly and daily data.
 Author: Rasmus E. Benestad <rasmus.benestad@physics.org>, Abdelkader Mezghani, and Kajsa M. Parding
 Maintainer: Rasmus E. Benestad <rasmus.benestad@physics.org>
 Depends:
-      ncdf4,
-      zoo,
-      R (>= 2.10.0)
+    ncdf4,
+    zoo,
+    R (>= 2.10.0)
 Suggests:
-      LatticeKrig,
-      RgoogleMaps,
-      PCICt
+    PCICt,
+    LatticeKrig,
+    RgoogleMaps
 Description: The package contains R functions for retrieving data, making
     climate analysis and downscaling of monthly mean and daily mean global
     climate scenarios.

@@ -85,7 +85,8 @@ polyfit <- function(x,y=NULL) {
   return(z)
 }
 
-count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
+count.trajectory <- function(x,it=NULL,is=NULL,by='year',verbose=FALSE) {
+  if(verbose) print("count.trajectory")
   y <- subset(x,it=it,is=is)
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
   if (requireNamespace("PCICt", quietly = TRUE)) {
@@ -109,6 +110,7 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   } else if (by %in% c('month','4seasons')) {
     fmt <- "%Y%m%d"
     t <- as.Date(paste(format(t,format="%Y-%m"),"01",sep="-"))
+    nrt <- as.Date(format(nrt,"%Y-%m-%d"))
     cls <- 'month'
     unit <- 'events/month'
     n0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
