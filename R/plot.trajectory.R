@@ -5,14 +5,14 @@
 plot.trajectory <- function(x,it=NULL,is=NULL,
       main=NULL,xlim=NULL,ylim=NULL,
       col=NULL,pch=0,type='l',lwd=3,
-      xlab="",ylab=NULL,new=TRUE,verbose=FALSE) {
+      xlab="",ylab=NULL,new=TRUE,verbose=FALSE,...) {
   y <- subset(x,it=it,is=is)
   n <- count.trajectory(y,by='year')
   if(new) dev.new()
   plot.station(n,main=main,new=new,col=col,
                xlim=xlim,ylim=ylim,type=type,
                lwd=lwd,pch=pch,xlab=xlab,ylab=ylab,
-               legend.show=FALSE)
+               legend.show=FALSE,...)
   if (is.null(col)) col <- rainbow(length(y[1,]))
   if (!is.null(attr(y,"longitude")) |
       !is.null(attr(y,"latitude"))) {
