@@ -257,12 +257,19 @@ trend.err <- function(x,...) {
 
 ## Compute the p-value of the linear trend 
 trend.pval <- function(x,...) {
+  #print('trend.val'); print(class(x)); print(str(x))
+  #if (inherits(x,'day')) browser()
   x <- zoo(x)
+  #print('zoo')
   if (sum(is.finite(x)) <= 3) return(NA)
+  #print('ok')
   x[!is.finite(x)] <- NA
   t <- index(x)
-  ok <- is.finite(x)
-  model <- lm(x[ok] ~ t[ok])
+  ok <- is.finite(as.numeric(x)) & is.finite(as.numeric(t))
+  #print(sum(ok))
+  trenddata <- data.frame(x=coredata(x[ok]),t=t[ok])
+  #print(summary(trenddata))
+  model <- lm(x ~ t, data=trenddata)
   y <- anova(model)$Pr[1]
   names(y) <- c("trend.pvalue")
   return(y)
