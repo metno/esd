@@ -109,6 +109,7 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   } else if (by %in% c('month','4seasons')) {
     fmt <- "%Y%m%d"
     t <- as.Date(paste(format(t,format="%Y-%m"),"01",sep="-"))
+    nrt <- as.Date(format(nrt,format="%Y-%m-%d"))
     cls <- 'month'
     unit <- 'events/month'
     n0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
@@ -139,6 +140,8 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
   }
   if (by=='4seasons') n <- as.4seasons(n,FUN=sum)
   n <- subset(n,it=format(c(min(t),max(t)),"%Y-%m-%d"))
+  if(!is.null(attr(y,"longitude"))) attr(n,"longitude") <- attr(y,"longitude")
+  if(!is.null(attr(y,"latitude"))) attr(n,"latitude") <- attr(y,"latitude")
   invisible(n)
 }
 
