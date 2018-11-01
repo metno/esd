@@ -5,6 +5,7 @@
 predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
   stopifnot(!missing(x),inherits(x,"ds"))
+  
   if ( (inherits(x,'eof')) & (is.null(newdata)) ) {
     if(verbose) print("no new predictor data is provided")
     if(verbose) print("predictand is an EOF")
@@ -130,6 +131,9 @@ predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     t <- index(as.eof(newdata))
     newdata <- data.frame(coredata(as.eof(newdata)))
   }
+  ## Fudge fix for when the names of the data are x.1, x.2,,, instead of X.1, X.2,.. 
+  if (nchar(names(newdata))[1]!=3) names(newdata) <- paste('X',1:dim(newdata)[2],sep='.')
+  names(newdata) <- toupper(names(newdata))
   
   d <- dim(newdata)
   if (is.null(d)) d <- c(length(x),1)
@@ -198,6 +202,7 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
       if (is.null(newdata))
           newdata <- attr(X,paste('appendix.',i,sep="")) 
       names(newdata) <- Xnames
+      if (verbose) print(Xnames)
       y <- predict.ds.eof(x=x,newdata=newdata,addnoise=FALSE,n=100)
       
     #print(dim(X))

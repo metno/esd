@@ -5,9 +5,13 @@
 #require(esd)
 #source('~/R/esd/R/write2ncdf.R')
 library(esd)
-nmin <- 75
-eles <- c(111,121,601)
-it <- seq(as.Date('1893-01-01'),as.Date('2017-12-1'),by=1)
+
+variables <- ls()
+it <- seq(as.Date('1900-01-01'),as.Date('2018-05-31'),by='day')
+
+if (sum(is.element(variables,'eles'))==0)  
+  eles <- rev(rownames(table(select.station(src='ghcnd')$element)))
+if (sum(is.element(variables,'nmin'))==0) nmin <- 75
 
 for (ele in eles) {
   SS <- select.station(src='ghcnd',nmin=nmin,ele=ele)
