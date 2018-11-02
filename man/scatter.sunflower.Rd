@@ -7,7 +7,10 @@
      accidental and invisible.
 }
 \usage{
-scatter.sunflower(x, y, petalsize = 7, dx = NULL, dy = NULL, xgrid = NULL, ygrid = NULL, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL, leg = TRUE, rotate = TRUE, alpha = 0.6, leg.loc = 2, new = TRUE)
+scatter.sunflower(x, y, petalsize = 7, dx=NULL, dy=NULL, 
+                  xgrid=NULL, ygrid=NULL, xlim=NULL, ylim=NULL, 
+                  xlab=NULL, ylab=NULL, leg=TRUE, rotate=TRUE,
+                  alpha=0.6, leg.loc=2, new=TRUE)
 }
 \arguments{
   \item{x, y}{the ‘x’ and ‘y’ arguments provide the x and y coordinates for

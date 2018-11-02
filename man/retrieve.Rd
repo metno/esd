@@ -27,12 +27,14 @@ retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
                verbose = FALSE , plot = TRUE) 
 retrieve.rcm(ncfile,param=NULL,is=NULL,it=NULL,verbose=FALSE)
 retrieve.station(ncfile,param="auto",type="ncdf4",
-                             path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
-                             alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
-                             nmin=NULL,verbose=FALSE,onebyone=FALSE,...) 
+                 path=NULL,is=NULL,stid=NULL,loc=NULL,
+                 lon=NULL,lat=NULL,it=NULL,alt=NULL,cntr=NULL,
+                 start.year.before=NULL,end.year.after=NULL,
+                 nmin=NULL,verbose=FALSE,onebyone=FALSE,...) 
 retrieve.stationsummary(ncfile,type="ncdf4",
                         path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
-                        alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
+                        alt=NULL,cntr=NULL,start.year.before=NULL,
+                        end.year.after=NULL,
                         nmin=NULL,verbose=FALSE,...)                
 
 summary.ncdf4(ncfile, verbose=FALSE)
@@ -78,22 +80,27 @@ file.class(ncfile,type="ncdf4")
 
 \author{A. Mezghani}
 \examples{
-#\dontrun{
-# Download air surface temperature (tas) for the 'NorESM1-ME' model
-# output prepared for 'CMIP5 RCP4.5' and for run 'r1i1p1' from the climate
-# explorer web portal (http://climexp.knmi.nl) and store the file into the 
-# local machine, e.g. temporary folder '/tmp' (Size ~96Mb) using the following
-# command if needed. Otherwise, specify a netcdf file to retrieve data from. 
-url <- "http://climexp.knmi.nl/CMIP5/monthly/tas"
-noresm <- "tas_Amon_NorESM1-ME_rcp45_000.nc"
-# download.file(url=file.path(url,noresm), destfile=noresm, method = "auto", quiet = FALSE,mode = "w",cacheOK = TRUE)
-# Retrieve the data into "gcm" object
-gcm <-retrieve(ncfile=file.path(~,noresm),param="tas",lon=c(-20,30),lat=c(40,90),plot=TRUE)
-# Download the air surface temperature (tas) for RCP 4.5 scenarios and
-# NorESM1-ME model from the climate explorer and store it in destfile. 
-# Compute the anomalies
-gcm.a <- as.anomaly(gcm,ref=c(1960:2001))
-map(gcm.a,projection="sphere")
-#}
+\dontrun{
+  # Download air surface temperature (tas) for the 'NorESM1-ME' model
+  # output prepared for 'CMIP5 RCP4.5' and for run 'r1i1p1' from the climate
+  # explorer web portal (http://climexp.knmi.nl) and store the file into the 
+  # local machine, e.g. temporary folder '/tmp' (Size ~96Mb) using the following
+  # command if needed. Otherwise, specify a netcdf file to retrieve data from. 
+  url <- "http://climexp.knmi.nl/CMIP5/monthly/tas"
+  noresm <- "tas_Amon_NorESM1-ME_rcp45_000.nc"
+  download.file(url=file.path(url,noresm), destfile=noresm,
+               method="auto", quiet=FALSE, mode="w",
+               cacheOK = TRUE)
+  # Retrieve the data into "gcm" object
+  gcm <- retrieve(ncfile=file.path(~,noresm),param="tas",
+                lon=c(-20,30),lat=c(40,90),plot=TRUE)
+  # Download the air surface temperature (tas) for RCP 4.5 scenarios and
+  # NorESM1-ME model from the climate explorer and store it in destfile. 
+  # Compute the anomalies
+  gcm.a <- as.anomaly(gcm,ref=c(1960:2001))
+  map(gcm.a,projection="sphere")
 }
-\keyword{?}
+}
+\keyword{"data"}
+\keyword{"netCDF"}
+\keyword{"netcdf"}

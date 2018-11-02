@@ -7,14 +7,25 @@ Identifies cyclones (low pressure systems) in a gridded data set using a
 Calculus Cyclone Identification (CCI) method (EMS04-A-00146, Benestad,
 R.E.; Sorteberg, A.; Chen, D. 'Storm statistics derived using a
 calculus-based cyclone identification method',
-\url{http://www.cosis.net/members/meetings/sessions/oral_programme.php?p_id=110&s_id=1845}, European Meteorological Society AC2, Nice, Sept 28, 2004). Storms are identified with longitude, latitude, and date. Also returned are estimates of local minimum pressure, max pressure gradient near storm, max geostrophic and gradient windspeed near storm, and radius of the storm. The storm location is by means of finding where first derivatives of north--south and east--west gradients both are zero. The storm radius is estimated from the points of inflexion along the latitude and longitude lines running trough the centre of the storm. 
+\url{http://www.cosis.net/members/meetings/sessions/oral_programme.php?p_id=110&s_id=1845}, 
+European Meteorological Society AC2, Nice, Sept 28, 2004). Storms are identified 
+with longitude, latitude, and date. Also returned are estimates of local minimum 
+pressure, max pressure gradient near storm, max geostrophic and gradient windspeed
+near storm, and radius of the storm. The storm location is by means of finding where
+first derivatives of north--south and east--west gradients both are zero. The storm
+radius is estimated from the points of inflexion along the latitude and longitude
+lines running trough the centre of the storm. 
 
-If a north-south or east-west sea level pressure (p) profile can be approximated as \deqn{p(\theta) = p_0 + \sum_{i=1}^{N_\theta} [ a_\theta(i) \cos(\omega_\theta(i) \theta) + b_\theta(i) \sin(\omega_\theta(i) \theta) ]}{p = p0 + sum [ a cos(w t) + b sin(w t) ]} 
+If a north-south or east-west sea level pressure (p) profile can be approximated
+as 
+\deqn{p(\theta) = p_0 + \sum_{i=1}^{N_\theta} [ a_\theta(i) \cos(\omega_\theta(i) \theta) + b_\theta(i) \sin(\omega_\theta(i) \theta) ]}{p = p0 + sum [ a cos(w t) + b sin(w t) ]} 
 
-Then the pressure gradient can be estimated as: \deqn{\frac{\partial \hat{p}(\theta)}{\partial \theta} = \sum_{i=1}^{N_\theta} \omega_\theta(i)[ -\hat{a}_\theta(i) \sin(\omega_\theta(i) \theta) + \hat{b}_\theta(i) \cos(\omega_\theta(i) \theta)]}{dp/dt = sum (w[ -a sin(w t) + b cos(w w)])}
+Then the pressure gradient can be estimated as: 
+\deqn{\frac{\partial \hat{p}(\theta)}{\partial \theta} = \sum_{i=1}^{N_\theta} \omega_\theta(i)[ -\hat{a}_\theta(i) \sin(\omega_\theta(i) \theta) + \hat{b}_\theta(i) \cos(\omega_\theta(i) \theta)]}{dp/dt = sum (w[ -a sin(w t) + b cos(w w)])}
 
 The gradient in x and y directions are found after the transform
-\deqn{\frac{d\hat{p}(x)}{dx} = \frac{1}{a \cos(\phi)} \frac{d\hat{p}(\theta)}{d\theta}}{dp/dx= 1/[a cos(t)] dp(t)/dt} and \deqn{\frac{d\hat{p}(y)}{dy} = \frac{1}{a} \frac{d\hat{p}(\phi)}{d\phi}}{dp/dy = 1/a dp/dt} (Gill, 1982).
+\deqn{\frac{d\hat{p}(x)}{dx} = \frac{1}{a \cos(\phi)} \frac{d\hat{p}(\theta)}{d\theta}}{dp/dx= 1/[a cos(t)] dp(t)/dt} and \deqn{\frac{d\hat{p}(y)}{dy} = \frac{1}{a} \frac{d\hat{p}(\phi)}{d\phi}}{dp/dy = 1/a dp/dt} 
+(Gill, 1982).
 
 This code is based on the CCI method of the R-package 'cyclones' and has
 been adapted for 'esd'.
@@ -25,14 +36,15 @@ been adapted for 'esd'.
 The maximum gradient wind (max.speed) is estimated as described in
 Fleagle and Businger (1980) p. 163. (eq 4.27). 
 
-Reference: Benestad \& Chen (2006) 'The use of a Calculus-based Cyclone Identification method for generating storm statistics', Tellus A, in press.
-           Benestad (2005) 
+Reference: Benestad \& Chen (2006) 'The use of a Calculus-based Cyclone 
+Identification method for generating storm statistics', Tellus A, in press.
+Benestad (2005) 
 } 
 \usage{
 CCI(Z,m=12,it=NULL,is=NULL,label=NULL,cyclones=TRUE,greenwich=NULL,
                 mindistance=1E6,dpmin=1E-3,pmax=1000,rmin=1E4,rmax=2E6,
-                accuracy=NULL,nsim=NULL,do.track=FALSE,allow.open=FALSE,fname="cyclones.rda",
-                plot=FALSE,verbose=FALSE)
+                accuracy=NULL,nsim=NULL,do.track=FALSE,allow.open=FALSE,
+                fname="cyclones.rda",plot=FALSE,verbose=FALSE)
 }
 
 \arguments{
