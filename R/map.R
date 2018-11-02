@@ -952,7 +952,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
           latR <- 90
         }
       }
-      data(Oslo)
+      data(Oslo, envir = environment())
       map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
           bg=adjustcolor("black",alpha.f=0),new=new,add=add,
           projection=projection,main="",xlab="",ylab="",
@@ -962,7 +962,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
           verbose=verbose)
     }
     if(dim(x)[1]>0) {
-        cols <- adjustcolor(col,alpha=alpha)
+        cols <- adjustcolor(col,alpha.f=alpha)
         if("points" %in% type) {
           if(verbose) print("plot points")
           if(projection=="lonlat") {
@@ -1012,7 +1012,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
 
 ## Function that masks either ocean or land
 mask <- function(x,land=FALSE) {
-    data(etopo5)
+    data(etopo5, envir = environment())
     h <- regrid(etopo5,is=x)
     if (!land) h[h < -5] <- NA else
                h[h > 5] <- NA

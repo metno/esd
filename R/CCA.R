@@ -122,61 +122,65 @@ CCA.pca <- function(Y,X,ip=1:8,verbose=FALSE) {
 
 CCA.field <- function(Y,X,ip=1:8,verbose=FALSE) {
   
-  if (verbose) print("CCA.field")
-  history <- attr(X,'history')
-  Z <- Y
-  cls <- class(Y)
-  # Synchronise the two time series objects:
-  y <- zoo(coredata(Y),order.by=as.Date(format(index(Y),'%Y-%m-01')))
-  x <- zoo(coredata(X),order.by=as.Date(format(index(X),'%Y-%m-01')))
-  colnames(y) <- paste("Y",1:dim(y)[2],sep=".")
-  colnames(x) <- paste("X",1:dim(x)[2],sep=".")
-  YX <- merge(y,x,all=FALSE)
-  #str(YX); str(Y); str(X)
-  vars <- names(YX)
-  #print(vars)
-  ys <- vars[grep('Y',vars)]
-  Xs <- vars[grep('X',vars)]
-  ix <- is.element(vars,Xs)
-  iy <- is.element(vars,ys)
-  x <- coredata(YX[,ix])
-  y <- coredata(YX[,iy])
-  Y <- YX[,iy]
-  
-  x.m <- rowMeans(x); y.m <- rowMeans(y)
-  x <- x - x.m; y <- y - y.m
-  S.yx <- cov(x,y)
-  S.yy <- cov(x,y)
-  S.xx <- cov(x,y)
-
-# After Wilks, 1995, p. 401
-    ## sub <- paste(sub,"(BP CCA - after Wilks (1995))")
-    M.y <- solve(S.yy) %*% S.yx %*% solve(S.xx) %*% S.yx
-    M.x <- solve(S.xx) %*% S.yx %*% solve(S.yy) %*% S.yx
-    a.m <- eigen(M.y)
-    b.m <- eigen(M.x)
-    # Dimensions of X & Y are ordered as [time,space]
-    if (verbose) {print(dim(a.m)); print(dim(b.m))}
-    w.m <- t(a.m) %*% t(coredata(X))
-    v.m <- t(b.m) %*% t(coredata(Y))
-    R <- sqrt(Re(x.m$values))
- 
-  dim(a.m) <- c(d1[1],d.1[2],d.1[3]); dim(b.m) <- c(d2[1],d.2[2],d.2[3])
-
-  cca <- list(a.m = a.m, b.m =b.m, w.m= w.m, v.m = v.m, r=R,
-              Y=Y,X=X, info=info)
-
-  class(cca) <- c("cca", class(Y)[2])
-
-  if (round(R[1],2) != round(cor(w.m[i1,1],v.m[i2,1]),2)) {
-    print("WARNING: The correlations are not internally consistent!")
-    print(paste("CCA: leading canonical correlation=", round(R[1],2),
-                " actual correlation=",round(cor(w.m[i1,1],v.m[i2,1]),2)))
-  }
-
-  invisible(cca)
+ if(verbose) print("CCA.field")
+ if(verbose) "print performing EOF analysis and redirecting to CCA.eof"
+ eof.y <- EOF(Y,verbose=verbose)
+ eof.x <- EOF(X,verbose=verbose)
+ cca <- CCA.eof(eof.y,eof.x,ip=ip,verbose=verbose)
+ invisible(cca)
 }
 
+## KMP 2018-11-02: this code (CCA.field) doesn't work
+#   history <- attr(X,'history')
+#   Z <- Y
+#   cls <- class(Y)
+#   # Synchronise the two time series objects:
+#   y <- zoo(coredata(Y),order.by=as.Date(format(index(Y),'%Y-%m-01')))
+#   x <- zoo(coredata(X),order.by=as.Date(format(index(X),'%Y-%m-01')))
+#   colnames(y) <- paste("Y",1:dim(y)[2],sep=".")
+#   colnames(x) <- paste("X",1:dim(x)[2],sep=".")
+#   YX <- merge(y,x,all=FALSE)
+#   #str(YX); str(Y); str(X)
+#   vars <- names(YX)
+#   #print(vars)
+#   ys <- vars[grep('Y',vars)]
+#   Xs <- vars[grep('X',vars)]
+#   ix <- is.element(vars,Xs)
+#   iy <- is.element(vars,ys)
+#   x <- coredata(YX[,ix])
+#   y <- coredata(YX[,iy])
+#   Y <- YX[,iy]
+#   
+#   x.m <- rowMeans(x); y.m <- rowMeans(y)
+#   x <- x - x.m; y <- y - y.m
+#   S.yx <- cov(x,y)
+#   S.yy <- cov(x,y)
+#   S.xx <- cov(x,y)
+# 
+# # After Wilks, 1995, p. 401
+#     ## sub <- paste(sub,"(BP CCA - after Wilks (1995))")
+#     M.y <- solve(S.yy) %*% S.yx %*% solve(S.xx) %*% S.yx
+#     M.x <- solve(S.xx) %*% S.yx %*% solve(S.yy) %*% S.yx
+#     a.m <- eigen(M.y)
+#     b.m <- eigen(M.x)
+#     # Dimensions of X & Y are ordered as [time,space]
+#     if (verbose) {print(dim(a.m)); print(dim(b.m))}
+#     w.m <- t(a.m) %*% t(coredata(X))
+#     v.m <- t(b.m) %*% t(coredata(Y))
+#     R <- sqrt(Re(x.m$values))
+#  
+#   dim(a.m) <- c(d1[1],d.1[2],d.1[3]); dim(b.m) <- c(d2[1],d.2[2],d.2[3])
+# 
+#   cca <- list(a.m = a.m, b.m =b.m, w.m= w.m, v.m = v.m, r=R,
+#               Y=Y,X=X, info=info)
+# 
+#   class(cca) <- c("cca", class(Y)[2])
+# 
+#   if (round(R[1],2) != round(cor(w.m[i1,1],v.m[i2,1]),2)) {
+#     print("WARNING: The correlations are not internally consistent!")
+#     print(paste("CCA: leading canonical correlation=", round(R[1],2),
+#                 " actual correlation=",round(cor(w.m[i1,1],v.m[i2,1]),2)))
+#   }
 
 
 

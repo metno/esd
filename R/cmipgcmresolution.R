@@ -14,7 +14,7 @@
 ##http://www.ecmwf.int/en/forecasts/documentation-and-support/gaussian_n640
 
 cmipgcmresolution <- function(what='deg') {
-  data("IPCC.AR5.Table.9.A.1")
+  data("IPCC.AR5.Table.9.A.1", envir = environment())
   tX <- c('T21',   'T31',  'T42',     'T62',    'T63',   'T85',      'T106',   'T255',     'T382',       'T799',      'T127',
           'N96',   'T159', 'C48',     'N48',    'T126',  NA,         'C360',   'C180',     'R42',        'T959',      'M45', 
            'unknown')

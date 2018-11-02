@@ -431,6 +431,9 @@ day <- function(x) {
     return(y)
   }
   if (class(x)[1]=="Date") y <- as.numeric(format(x, '%d'))
+  if (class(x)[1] %in% c("yearmon","yearqtr","season")) {
+    y <- rep(1,length(x))
+  }
   return(y)
 }
 

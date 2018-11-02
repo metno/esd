@@ -867,12 +867,11 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,
       ##print(yrseas)
       #print('aggregate')
       #print(names(list(...)))
-      browser()
-      yq <- function(t) year(t) + 0.25*floor((month(t)-1)/3)
+      yq <- function(t) as.yearqtr(year(t) + 0.25*floor((month(t)-1)/3))
       y <- aggregate(x=as.zoo(X),by=yq,#as.yearqtr,
                      FUN=match.fun(FUN),...)
       # convert yearqtr to yearmon
-      y <- zoo(x=y,order.by=as.Date(yyyymm(y)))#as.yearmon(index(y))))
+      y <- zoo(x=y,order.by=as.Date(as.yearmon(index(y))))
     } else y <- as.4seasons.day(x,FUN=FUN,nmin=nmin,...)
     #y <- as.4seasons.day(x,FUN=match.fun(FUN),...)
     

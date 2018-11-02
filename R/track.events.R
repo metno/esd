@@ -339,7 +339,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
              col=cols[i],pch=".",cex=3)
       points(lons[num==nvec[i] & dates==dplot & times==tplot][1],
            lats[num==nvec[i] & dates==dplot & times==tplot][1],
-           col=adjustcolor(cols[i],alpha=0.5),pch=19,cex=1.5)
+           col=adjustcolor(cols[i],alpha.f=0.5),pch=19,cex=1.5)
     }
   }
   }
@@ -535,7 +535,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
         lon.k <- c(step1$lon[i1.k],step2$lon[i2.k],step3$lon[i3.k])
         lat.k <- c(step1$lat[i1.k],step2$lat[i2.k],step3$lat[i3.k])
         lines(lon.k,lat.k,lwd=1,lty=1,
-         col=adjustcolor("black",alpha=pf.all[rank.all==k]))
+         col=adjustcolor("black",alpha.f=pf.all[rank.all==k]))
       }
     }
     

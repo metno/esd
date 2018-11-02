@@ -34,7 +34,7 @@ DSensemble.default <- function(y,path='CMIP5.monthly/',rcp='rcp45',...) {
   } else if (inherits(y,'annual')) {
     z <- DSensemble.annual(y,path=path,rcp=rcp,threshold=1,...) 
   } else if (inherits(y,'season')) {
-    z <- DSensemble.season(y,path=path,rcp=rcp,threshold=1,...) 
+    z <- DSensemble.season(y,path=path,rcp=rcp,...) 
   } else if (is.T(y)) {
     z <- DSensemble.t2m(y,path=path,rcp=rcp,...) 
   } else if (is.precip(y)) {
@@ -132,7 +132,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
   # Ensemble GCMs
   if(verbose) print("Retrieve & arrange GCMs")
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
-  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else
@@ -462,7 +462,7 @@ DSensemble.precip <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
-  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else
@@ -695,7 +695,7 @@ DSensemble.annual <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
-  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else
@@ -953,7 +953,7 @@ DSensemble.season <- function(y,season=NULL,plot=TRUE,path="CMIP5.monthly/",
   # Ensemble GCMs
   if(verbose) print("Retrieve & arrange GCMs")
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
-  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) {
@@ -1154,13 +1154,11 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
                           non.stationarity.check=FALSE,type='ncdf4',
                           ip=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="wetmean",threshold=1,
-                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),
+                          pattern=c("tas_Amon_ens_","olr_Amon_ens_","slp_Amon_ens_"),
                           verbose=FALSE,nmin=365,ds.1900.2099=TRUE) {
 
 # This function is for downscaling wet-day mean using a combination of predictors
 
-  
-  
   # Get the global mean temeprature: pentads
 
   # Or a combination of OLR + C.C.eq(t2m) + SLP
@@ -1229,11 +1227,18 @@ DSensemble.mu <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
-  ncfiles1 <- list.files(path=path,pattern=pattern1,full.name=TRUE)
-  ncfiles2 <- list.files(path=path,pattern=pattern2,full.name=TRUE)
-  ncfiles3 <- list.files(path=path,pattern=pattern3,full.name=TRUE)
+  ## KMP 2018-11-02: pattern1, pattern2, pattern3 have not been defined
+  ## but ncfiles1, ncfiles2, ncfiles3 are used later
+  #ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
+  pattern1 <- pattern[1]
+  pattern2 <- pattern[2]
+  pattern3 <- pattern[3]
+  ncfiles1 <- list.files(path=path,pattern=pattern1,full.names=TRUE)
+  ncfiles2 <- list.files(path=path,pattern=pattern2,full.names=TRUE)
+  ncfiles3 <- list.files(path=path,pattern=pattern3,full.names=TRUE)
+  ncfiles <- ncfiles[1]
+  
   N <- length(ncfiles)
-
   if (is.null(select)) select <- 1:N else
                        N <- length(select)
   if (verbose) print(ncfiles[select])
@@ -1481,7 +1486,7 @@ DSensemble.mu.worstcase <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
   ## Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
-  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else
@@ -1713,7 +1718,7 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
-  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else N <- length(select)
@@ -1954,8 +1959,8 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
         lines(z[,1],lwd=2,col=cols[qcol])
         lines(y[,1],lwd=3,main='PC1')
       }
-   }
-  
+    }
+   
     if (verbose) print('Downscaling finished')
   }
 
@@ -1979,9 +1984,11 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(dse.pca,'variable') <- attr(y,"variable")[1]
   attr(dse.pca,'unit') <- attr(y,"unit")[1]
   attr(dse.pca,'history') <- history.stamp(y)
-  if (non.stationarity.check)
-    attr(dse.pca,'on.stationarity.check') <- difference.z else
+  if (non.stationarity.check) {
+    attr(dse.pca,'on.stationarity.check') <- difference.z
+  } else {
     attr(dse.pca,'on.stationarity.check') <- NULL
+  }
   class(dse.pca) <- c("dsensemble","pca","list")
 
   if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)
@@ -2079,7 +2086,7 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
       
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
-  ncfiles <- list.files(path=path,pattern=pattern,full.name=TRUE)
+  ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
   if (is.null(select)) select <- 1:N else
@@ -2188,17 +2195,19 @@ DSensemble.eof <- function(y,plot=TRUE,path="CMIP5.monthly",
     Z <- try(EOF(SLPGCM))
     
     ## The test lines are included to assess for non-stationarity
-    ## REB this does not work for 
+    ## KMP 2018-11-02: Does the nonstationarity test work for DSensemble.eof?
     if (non.stationarity.check) {
       testGCM <- subset(GCM,it=range(year(SLP)))      
       testy <- regrid(testGCM,is=as.field(y)) 
       attr(testGCM,'source') <- 'testGCM'
-      testZ <- combine(testGCM,GCM)            
+      testZ <- combine(testGCM,GCM)
+      difference.z <- testy - testZ
       rm("testGCM"); gc(reset=TRUE)
     }
     rm("gcm","GCM"); gc(reset=TRUE)
 
     if (verbose) print("- - - > DS (eof)")
+    Z0 <- Z
     if (verbose) print(class(attr(Z,'appendix.1')))
     if (biascorrect) Z <- biasfix(Z)
     

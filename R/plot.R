@@ -242,7 +242,7 @@ vis.map <- function(x,col='red',map.type=NULL,
       
   } else {
     if (verbose) {print('basic map'); print(cex.axis)}
-    data(geoborders)
+    data(geoborders, envir = environment())
     lon <- geoborders$x
     lat <- geoborders$y
     ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
@@ -477,7 +477,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
       ## Plot the common PCs
       for (i in 1:n.app) {
         z <- attr(x,paste('appendix.',i,sep=""))
-        lines(z[,n],col=adjustcolor(col[i],alpha=alpha),lwd=2)
+        lines(z[,n],col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
         if (verbose) print(attr(z,'source'))
         if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
                                         src[i+1] <- paste('x',i,sep='.')
@@ -1027,25 +1027,25 @@ vis.pca <- function(x,cex=1.5,new=TRUE) {
   image(cbind(1:nc,1:nc),col=col)
   nl <- pretty(scale0)
   par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),label=nl)
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
 
   par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
   image(cbind(1:nc,1:nc),col=col)
   nl <- pretty(scale)
   par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),label=nl)
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
 
   par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.665,0.695),new=TRUE,cex.axis=0.6,xaxt="n")
   image(cbind(1:nc,1:nc),col=col)
   nl <- pretty(scale)
   par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),label=nl)
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
 
   par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
   image(cbind(1:nc,1:nc),col=col)
   nl <- pretty(scale)
   par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),label=nl)
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
   
   par(mfcol=c(1,1),fig=c(0,1,0,0.33),new=TRUE,xaxt="s",yaxt="n",bty="n",
       mar=c(2,2,1,1))
@@ -1281,7 +1281,7 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
       x$yrange <- c(attr(x$z,"lat")-10,attr(x$z,"lat")+10)
     }
     if (!is.null(x$xrange) & !is.null(x$xrange)) {
-      data(geoborders)
+      data(geoborders, envir = environment())
       lon <- geoborders$x
       lat <- geoborders$y
       ok <- lon>(min(x$xrange)-1) & lon<(max(x$xrange)+1) &
@@ -1540,7 +1540,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   #    yrange <- range(lat(y)) + c(-10,10)
   #  }
   #  if (!is.null(xrange) & !is.null(xrange)) {
-  #    data(geoborders)
+  #    data(geoborders, envir = environment())
   #    lon <- geoborders$x
   #    lat <- geoborders$y
   #    lon2 <- attr(geoborders,"borders")$x

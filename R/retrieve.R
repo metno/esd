@@ -2387,9 +2387,14 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   
   ## Order alphabetically
   if (verbose) 'Sort alphabetically and in proper order with Scandinavian characters'
-  locssrt <- tolower(locs); locssrt <- sub('å','zzzå',locssrt)
-  locssrt <- sub('æ','zzæ',locssrt); locssrt <- sub('ø','zzzø',locssrt)
-  locssrt <- sub('ä','zzä',locssrt); locssrt <- sub('ö','zzzö',locssrt)
+  locssrt <- tolower(locs);
+  ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+  ## Scandinavian characters with their escape sequence counterparts, but I'm not sure if it is going to work.
+  locssrt <- sub("\u00E5",'zzz\u00E5',locssrt)
+  locssrt <- sub("\u00E6",'zz\u00E6',locssrt)
+  locssrt <- sub("\u00F8",'zzz\u00F8',locssrt)
+  locssrt <- sub("\u00E4",'zz\u00E4',locssrt)
+  locssrt <- sub("\u00F6",'zzz\u00F6',locssrt)
   srt <- order(locssrt); rm('locssrt')
   locs <- paste(toupper(substr(locs,1,1)),tolower(substr(locs,2,nchar(locs))),sep='')
   

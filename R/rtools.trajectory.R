@@ -140,7 +140,7 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year',verbose=FALSE) {
     n <- subset(n,it=ok)
   }
   if (by=='4seasons') n <- as.4seasons(n,FUN=sum)
-  n <- subset(n,it=format(c(min(t),max(t)),"%Y-%m-%d"))
+  n <- subset(n,it=format(c(min(t),max(t)),format="%Y-%m-%d"))
   if(!is.null(attr(y,"longitude"))) attr(n,"longitude") <- attr(y,"longitude")
   if(!is.null(attr(y,"latitude"))) attr(n,"latitude") <- attr(y,"latitude")
   invisible(n)

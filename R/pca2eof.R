@@ -1,29 +1,16 @@
 ## Function for gridding station data Y.
 
-## Check if you need to get the esd-package:
-#install.LK <- ("LatticeKrig" %in% rownames(installed.packages()) == FALSE)
-install.LK <- ("LatticeKrig" %in% rownames(installed.packages()) == FALSE)
-
-if (install.LK) {
-  print('Need to install the LatticeKrig package')
-  ## Need online access.
-  install.packages('LatticeKrig')
-  print('The latest version of LatticeKrig has been installed from CRAN')
-}
 
 gridstation <- function(Y,i=1,verbose=FALSE,xlim=NULL,ylim=NULL) {
   if (verbose) print(paste('gridstation'))
   if (!requireNamespace("LatticeKrig", quietly = TRUE)) {
     stop("Package 'LatticeKrig' needed to use 'gridstation'. Please install it.")
   } else {
-  ## Instead of importing LatticeKrig, just call the functions that we need from the external package
-    #require(LatticeKrig)
-
     if (is.null(xlim)) xlim <- range(lon(Y))
     if (is.null(ylim)) ylim <- range(lat(Y))
     
     ## Get data on the topography on the 5-minute resolution
-    data(etopo5)
+    data(etopo5, envir = environment())
     etopo5 <- subset(etopo5, is=list(lon=range(lon(Y))+c(-1,1),
                              lat=range(lat(Y))+c(-1,1)))
     ## Mask the sea: elevations below 1m below sea level is masked.
@@ -42,13 +29,6 @@ gridstation <- function(Y,i=1,verbose=FALSE,xlim=NULL,ylim=NULL) {
     
     w <- LatticeKrig::predictSurface(obj, grid.list = grid,Z=etopo5)
     w$z[is.na(etopo5)] <- NA
-    
-    ## Get rid of packages that have functions of same name:
-    #detach("package:LatticeKrig")
-    #detach("package:fields")
-    #detach("package:spam")
-    #detach("package:grid")
-    #detach("package:maps")
     
     ## Convert the results from LatticeKrig to esd:
     W <- w$z

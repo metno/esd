@@ -53,7 +53,7 @@ station.sonel <- function(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/d
 ## Monthly means
 station.gloss <- function(url='http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data') {
   lonlat <- read.table(paste(url,'glosspos.dat',sep='/'))
-  data(glossstations)
+  data(glossstations, envir = environment())
   #glossstations <- read.table('glossstations.txt',sep='\t')
   SL <- read.fwf(paste(url,'psmsl.dat',sep='/'),skip=2,
                  widths=c(3,4,4,32,rep(5,14)),
@@ -97,7 +97,7 @@ station.newlyn <- function(path='data/gloss-241_Newlyn',verbose=TRUE) {
     system(paste('unzip newlyn.zip d',path))
   }
   metadata <- read.table(paste(path,'ig241.txt',sep='/'),skip=5,nrows=1)
-  files <- list.files(path=path,pattern='.lst',full.name=TRUE)
+  files <- list.files(path=path,pattern='.lst',full.names=TRUE)
   for (i in 1:length(files)) {
     if (verbose) print(files[i])
     testline <- readLines(files[i],n=1)

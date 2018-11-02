@@ -146,7 +146,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if (gridlines) grid()
     }
 
-    data("geoborders")
+    data("geoborders", envir = environment())
     lines(geoborders$x,geoborders$y)
     if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
     

@@ -1417,21 +1417,21 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
     if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
     if (length(slon)==2 & length(slat)==2) {
       if (verbose) print(paste('is selects longitudes ',
-                               slon[1],'–',slon[2],'E ',
+                               paste(slon,sep="-"),'E ',
                                "and latitudes ",
-                               slat[1],'–',slat[2],'N ',sep=""))
+                               paste(slat,sep="-"),'N ',sep=""))
       jx <- colnames(x)=='lon'
       jy <- colnames(x)=='lat'
       selx <- apply(x,1,function(x) any(x[jx]>=min(slon) &
                                           x[jx]<=max(slon) & x[jy]>=min(slat) & x[jy]<=max(slat)))        
     } else if (length(slon)==2) {
       if (verbose) print(paste('is selects longitudes ',
-                               slon[1],'–',slon[2],'E',sep=""))
+                               paste(slon,sep="-"),'E',sep=""))
       jx <- colnames(x)=='lon'
       selx <- apply(x,1,function(x) any(x[jx]>=min(slon) & x[jx]<=max(slon)))
     } else if (length(slat)==2) {
       if (verbose) print(paste('is selects latitudes ',
-                               slat[1],'–',slat[2],'N',sep=""))
+                               paste(slat,sep="-"),'N',sep=""))
       jy <- colnames(x)=='lat'
       selx <- apply(x,1,function(x) any(x[jy]>=min(slat) & x[jy]<=max(slat)))
     }

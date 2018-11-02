@@ -19,10 +19,12 @@ plot.trajectory <- function(x,it=NULL,is=NULL,
     if(verbose) print("adding legend")
     par(xpd=TRUE)
     leg <- ""
-    if (!any(is.na(attr(y,"longitude"))) & !is.null(attr(y,"longitude"))) 
-      leg <- paste(leg,round(attr(y,"longitude"),2)[1],"–",round(attr(y,"longitude"),2)[2],"E/",sep="")
-    if (!any(is.na(attr(y,"latitude"))) & !is.null(attr(y,"latitude"))) 
-      leg <- paste(leg,round(attr(y,"latitude"),2)[1],"–",round(attr(y,"latitude"),2)[2],"N",sep="")
+    if (!any(is.na(attr(y,"longitude"))) & !is.null(attr(y,"longitude"))) {
+      leg <- paste(leg,paste(round(range(attr(y,"longitude")),2),sep="-"),"E/",sep="")
+    }
+    if (!any(is.na(attr(y,"latitude"))) & !is.null(attr(y,"latitude"))) {
+      leg <- paste(leg,paste(round(range(attr(y,"latitude")),2),sep="-"),"N",sep="")
+    }
     if (is.null(col)) col <- rainbow(1)
     if(verbose) print(paste('legend:',leg,', color:',col[1]))
     legend("bottomleft",inset=c(0,-0.25),legend=leg,bty="n",cex=0.6,ncol=3,

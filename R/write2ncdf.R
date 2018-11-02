@@ -383,7 +383,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                         verbose=verbose)
     
     if (verbose) {print(paste('ncvar:',varid(x)[1])); print(unitx[1])}
-    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="°C", "degC",unitx[1]),
+    ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+    ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
+    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
                          longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
 
     if (verbose) print('The variables have been defined - now the summary statistics...')
@@ -394,17 +396,19 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                        prec="short",verbose=verbose)
     nvid <- ncvar_def(name="number",dim=list(dimS), units="count", missval=missval,longname="number_valid_data", 
                       prec="float",verbose=verbose)
-    maxid <- ncvar_def(name="summary_max",dim=list(dimS), units= ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
+    ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+    ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
+    maxid <- ncvar_def(name="summary_max",dim=list(dimS), units= ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]),
                        missval=missval,longname=varid(x),prec="float",verbose=verbose)
-    minid <- ncvar_def(name="summary_min",dim=list(dimS), ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+    minid <- ncvar_def(name="summary_min",dim=list(dimS), ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                        missval=missval,longname=varid(x),prec="float",verbose=verbose)
-    nhrid <- ncvar_def(name="summary_records",dim=list(dimS), 
-                       units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+    nhrid <- ncvar_def(name="summary_records",dim=list(dimS),
+                       units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                        missval=missval,longname="fraction_of_high_records",prec="float",verbose=verbose)
-    lehrid <- ncvar_def(name="last_element_highest",dim=list(dimS), 
-                       units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+    lehrid <- ncvar_def(name="last_element_highest",dim=list(dimS),
+                       units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                        missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
-    
+
     if (is.T(x)) {
       meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="degC", 
                           missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
@@ -438,10 +442,12 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                               missval=missval,longname="seasonal_mean_temperature_Jun-Aug",prec="float",verbose=verbose)
       tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units="degC/decade", 
                               missval=missval,longname="seasonal_mean_temperature_Sep-Nov",prec="float",verbose=verbose)
+      ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+      ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
       lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
-                          units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+                          units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                           missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
-      
+
     } else
     if (is.precip(x)) {
       meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="mm/year", 
@@ -537,8 +543,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                             missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
       tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units=unit(x)[1], 
                             missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+      ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+      ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
       lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
-                          units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+                          units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                           missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
     }
   } 

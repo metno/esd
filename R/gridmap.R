@@ -15,7 +15,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
   
     ## Get data on the topography on the 5-minute resolution
     if (verbose) print('Use etopo5 elevation data')
-    data(etopo5)
+    data(etopo5, envir = environment())
     etopo5 <- subset(etopo5,is=list(lon=range(lon(Y))+c(-1,1),
                            lat=range(lat(Y))+c(-1,1)))
     ## Mask the sea: elevations below 1m below sea level is masked.
@@ -32,13 +32,8 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
 
     ## Kriging
     if (verbose) print(paste('Apply kriging to',sum(ok),'locations'))
-  
-    ## KMP 2018-10-23: instead of importing LatticeKrig, we can just call the 
-    ## functions that we need from the external package, package::function()
-    ## so that we don't import a bunch of functions that interfere with ours
-    #require(LatticeKrig)
-    obj <- LatticeKrig::LatticeKrig( x=cbind(lon(Y)[ok],lat(Y)[ok]),
-                      y=y[ok],Z=alt(Y)[ok])
+    obj <- LatticeKrig::LatticeKrig(x=cbind(lon(Y)[ok],lat(Y)[ok]),
+                                    y=y[ok],Z=alt(Y)[ok])
 
     ##  obj <- LatticeKrig::LatticeKrig( x=cbind(lon[ok],lat[ok]), y=z[2,ok],Z=alt[ok])
     if (verbose) print('Predict surface')

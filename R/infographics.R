@@ -74,9 +74,9 @@ vis.trends <- function(x,unitlabel="unit",varlabel="",is=1,
   cticks <- vstep[2:length(vstep)]-dv/2
 
   #cstep <- colscal(n=length(vstep)-1,col="t2m")
-  cmin <- rgb(239,138,98,max=255) # blue
-  cmid <- rgb(247,247,247,max=255) # white
-  cmax <- rgb(103,169,207,max=255) # red
+  cmin <- rgb(239,138,98,maxColorValue=255) # blue
+  cmid <- rgb(247,247,247,maxColorValue=255) # white
+  cmax <- rgb(103,169,207,maxColorValue=255) # red
   rgb.palette <- colorRampPalette(c(cmax,cmid,cmin),space="rgb")
   cstep <- rgb.palette(n=length(vstep)-1)
   # Plot trend as color
@@ -217,7 +217,7 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
     # Plot hexagons
     mapply(polygon.fill,X[i.multi],Y[i.multi],dx,dy,
            col=adjustcolor('khaki1',alpha.f=alpha),
-           border=adjustcolor('khaki3',alpha=alpha),n=6)
+           border=adjustcolor('khaki3',alpha.f=alpha),n=6)
     # Draw sunflowers
     i.rep <- rep.int(i.multi, N[i.multi])
     z <- numeric()
@@ -921,9 +921,9 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
   
   #alpha <- p
   #alpha[p>0.05] <- 0.5
-  #col <- mapply(function(a,b) adjustcolor(a,alpha=b),col,alpha)
-  #col.q5 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q5,alpha)
-  #col.q95 <- mapply(function(a,b) adjustcolor(a,alpha=b),col.q95,alpha)
+  #col <- mapply(function(a,b) adjustcolor(a,alpha.f=b),col,alpha)
+  #col.q5 <- mapply(function(a,b) adjustcolor(a,alpha.f=b),col.q5,alpha)
+  #col.q95 <- mapply(function(a,b) adjustcolor(a,alpha.f=b),col.q95,alpha)
 
   data("geoborders",envir=environment())
   dx <- max(diff(range(lons))/10,2)
@@ -965,7 +965,7 @@ vis.dsensemble.list <- function(X,verbose=FALSE,FUN='trend',
   if(verbose) print("add legends")
   rect(min(xrange)-0.1*dlon,max(yrange)-0.9*dlat,
        mean(xrange)+0.3*dlon,max(yrange)+0.2*dlat,
-       col=adjustcolor("white",alpha=0.8),border="grey50")
+       col=adjustcolor("white",alpha.f=0.8),border="grey50")
   ## inner and outer layers
   points(min(xrange)+dlon/3,max(yrange)-dlat/3,pch=21,
          col="grey70",bg="grey80",cex=7,lwd=7)

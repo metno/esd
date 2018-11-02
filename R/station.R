@@ -531,9 +531,7 @@ nacd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   ele <- esd2ele(param=param)
   #  ele.c<-switch(tolower(param),'t2m'='101','tg'='101','rr'='601','slp'='401','cloud'='801','t2'='101','precip'='601','101'='101','401'='401','601'='601','801'='801')
   
-  ## 
-  ## load("esd/data/NACD.rda")
-  data("NACD")
+  data("NACD", envir = environment())
   loc <- gsub("-",".",loc) # AM replace.char() replaced by gsub()
   loc <- gsub("/",".",loc) # AM replace.char() replaced by gsub()
   #id.dot <- grep('.',loc)

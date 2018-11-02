@@ -625,7 +625,7 @@ map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
   par(bty="n",mar=c(4.4,4.0,1.0,1.0))
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
   scatter.sunflower(lon[OK],lat[OK],petalsize=petalsize,
-           dx=dx,dy=dy,xlab='lon',yla='lat',
+           dx=dx,dy=dy,xlab='lon',ylab='lat',
            xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
            xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha,
            main=main,new=FALSE)

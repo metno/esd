@@ -623,7 +623,7 @@ DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
     fw <- as.4seasons(y,FUN="exceedance",fun="freq")
     wL <- as.4seasons(spell(y))
 
-    if (!inhetits(X,'season')) X <- as.4seasons(X)
+    if (!inherits(X,'season')) X <- as.4seasons(X)
 
     for (i in 1:4) {
         x <- EOF(X,it=i,area.mean.expl=area.mean.expl)
@@ -691,6 +691,7 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
 ## Rasmus Benestad, 19.08.2013
 DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,ip=1:10,
+                   area.mean.expl=FALSE,npca=20,
                    rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
     
     if (verbose) { print('--- DS.pca ---'); print(summary(coredata(y))); print(class(y)); print(class(X))}
@@ -764,7 +765,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     if (verbose) { print('Summary of predictand before matchdate'); print(summary(coredata(y)))
       print(index(y)); print(index(X))
     }
-    if (verbose) print('predictand y: match date with predictor x')
+    if (verbose) print('predictand y: match date with predictor X')
     y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
     if (verbose) {print('summary of predictand y after matchdate'); print(summary(coredata(y)))}
     
@@ -780,7 +781,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         if (verbose) print('MVR')
         if (is.null(dy)) dy <- c(length(y),1)
         if (dy[2]>1) colnames(y) <- paste("y",1:dy[2],sep=".")
-        if (is.null(dx)) dx <- c(length(x),1)
+        if (is.null(dx)) dx <- c(length(X),1)
         if (dx[2]>1) colnames(X) <- paste("X",1:dx[2],sep=".") 
                                         #colnames(y) <- paste("y",1:dim(y)[2],sep=".")
                                         #colnames(X) <- paste("X",1:dim(y)[2],sep=".")
@@ -1096,7 +1097,7 @@ DS.station.pca <- function(y,X,mon=NULL,
     if (verbose) { print('--- DS.station.pca ---'); print(summary(coredata(y)))}
     z <- DS.default(y=y,X=X,mon=mon,method=method,swsm=swsm,m=m,
                     rmtrend=trend,ip=ip,area.mean.expl=area.mean.expl,
-                    verbose=verbose,weighted=weighted,..)
+                    verbose=verbose,weighted=weighted,...)
     return(z)
 }
 

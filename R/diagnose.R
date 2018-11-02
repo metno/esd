@@ -612,7 +612,7 @@ diagnose.dsensemble.list <- function(x,plot=FALSE,is=NULL,ip=NULL,
     y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
     points(x,y,pch=21,cex=2*par("cex"),col='black',bg=col)
     if(map.show) {
-      data(geoborders)
+      data(geoborders, envir = environment())
       lon <- geoborders$x
       lat <- geoborders$y
       ok <- lon>min(xrange) & lon<max(xrange) &

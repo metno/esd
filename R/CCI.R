@@ -164,7 +164,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
   # Exclude identified depressions in high altitude regions
   if(verbose) print("Penalty factor for high altitude")
-  data(etopo5)
+  data(etopo5, envir = environment())
   fn <- function(lon=0,lat=60) {
     i.lon <- which.min(abs(longitude(etopo5)-lon))
     i.lat <- which.min(abs(latitude(etopo5)-lat))

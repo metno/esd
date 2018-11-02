@@ -12,8 +12,8 @@
 
 ## Comparing cmip3 to cmip5 over the Arctic
 plot.cmip35.global <- function(saveplot=TRUE) { 
-  data(global.t2m.cmip5)
-  data(global.t2m.cmip3)
+  data(global.t2m.cmip5, envir = environment())
+  data(global.t2m.cmip3, envir = environment())
   dev.new()
   fig1.zoo(z=list(z1=arctic.t2m.cmip3,z2=arctic.t2m.cmip5),select="noresm")
   if (saveplot) dev.copy2pdf(file="Global_mean_t2m_anomaly_CMIP3-5_1986-2005.pdf")
@@ -21,16 +21,16 @@ plot.cmip35.global <- function(saveplot=TRUE) {
 
 ## Comparing cmip3 to cmip5 over Scandinavia
 plot.cmip35.global <- function(saveplot=TRUE) { 
-  data(scandinavia.t2m.cmip5)
-  data(scandinavia.t2m.cmip3)
+  data(scandinavia.t2m.cmip5, envir = environment())
+  data(scandinavia.t2m.cmip3, envir = environment())
   dev.new()
   fig1.zoo(z=list(z1=arctic.t2m.cmip3,z2=arctic.t2m.cmip5),select="noresm")
   if (saveplot) dev.copy2pdf(file="Scandinavia_mean_t2m_anomaly_CMIP3-5_1986-2005.pdf")
 }
 ## Comparing cmip3 to cmip5 over the Arctic
 plot.cmip35.arctic <- function(saveplot=TRUE) { 
-  data(arctic.t2m.cmip5)
-  data(arctic.t2m.cmip3)
+  data(arctic.t2m.cmip5, envir = environment())
+  data(arctic.t2m.cmip3, envir = environment())
   dev.new()
   fig1.zoo(z=list(z1=arctic.t2m.cmip3,z2=arctic.t2m.cmip5),select="noresm")
   if (saveplot) dev.copy2pdf(file="Arctic_mean_t2m_anomaly_CMIP3-5_1986-2005.pdf")
