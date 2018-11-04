@@ -27,7 +27,7 @@ x1m <- zoo(subset(gmsta,it=month.abb[mon]))
 ylim<- range(c(coredata(Y),coredata(y)),na.rm=TRUE) + 0.25*c(-1,1)
 plot(zoo(x),zoo(Y),ylim=ylim,
      xlab=paste('Jan-',month.abb[mon],' mean',sep=''),
-     ylab='annual mean', sub='base line: 1961-1990; source NCEP/NCAR reanalysis 1',
+     ylab='annual mean', sub='baseline: 1961-1990 (NCEP/NCAR reanalysis 1)',
      main='Global mean temperature',pch=19,cex=1.5)
 lines(rep(coredata(x)[n],2),ylim,lwd=7,col='grey90')
 arrows(coredata(x)[n],coredata(y)[n],min(x,na.rm=TRUE),coredata(y)[n],lty=2)
@@ -43,5 +43,5 @@ par(bty='n')
 plot(x1m,type='b',lwd=2,main=paste(month.abb[mon],'global mean temperature anomaly'),ylab=expression(degree*C),xlab='year',sub='source: NCEP/NCAR reanalysis')
 lines(trend(x1m),lty=2)
 grid()
-print(year(x1m)[order(coredata(x1m))])
+print(year(x1m)[order(coredata(x1m),decreasing=TRUE)])
 
