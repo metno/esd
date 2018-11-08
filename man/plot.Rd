@@ -75,9 +75,9 @@ plot.dsensemble.multi(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
                       anomaly=FALSE,test=FALSE,...)
 plot.dsensemble.one(x,pts=FALSE,it=0,
                     envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
-                    obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                    new=FALSE,xrange=NULL,yrange=NULL,alpha=0.5,alpha.map=0.7,
-                    verbose=FALSE,...)
+                    obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,
+                    map.insert=TRUE,new=FALSE,xrange=NULL,yrange=NULL,
+                    alpha=0.5,alpha.map=0.7,verbose=FALSE,...)
 plot.nevents(x,verbose=FALSE,...)
 vis.map(x,col='red',map.type='points',add.text=FALSE)
 }

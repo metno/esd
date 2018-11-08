@@ -97,7 +97,8 @@ DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
                           non.stationarity.check=FALSE,type='ncdf',
                           ip=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="wetmean",threshold=1,
-                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365)
+                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),
+                          verbose=FALSE,nmin=365)
 DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
                                     predictor="ERA40_t2m_mon.nc",
                                     rcp="rcp45",biascorrect=FALSE,

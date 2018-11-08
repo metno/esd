@@ -105,7 +105,6 @@ zeros(x)
 
 \author{R.E. Benestad}
 \examples{
-library(esd)
 t2m <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
 T2m <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
 

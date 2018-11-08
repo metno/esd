@@ -159,7 +159,8 @@ read.hurdat2(url='http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html',
              n=20,verbose=FALSE)
 read.best.track(url=paste('http://www.usno.navy.mil/NOOC/',
                           'nmfc-ph/RSS/jtwc/best_tracks/',sep=""),
-                domain='io',start=1945,end=2014,n=20,verbose=TRUE)                         
+                domain='io',start=1945,end=2014,
+                n=20,verbose=TRUE)                         
 }
 
 \arguments{

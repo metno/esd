@@ -79,6 +79,9 @@ dT(y, m = NULL, plot = FALSE, verbose = FALSE, chk.conf = 1)
 }
 \examples{
 \dontrun{
+slp <- slp.ERAINT()
+slp.dx <- dX(slp,verbose=TRUE)
+
 u10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='u10')
 v10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='v10')
 ## Estimate the vorticity
