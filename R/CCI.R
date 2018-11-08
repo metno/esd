@@ -1,4 +1,3 @@
-# K Parding, 29.05.2015
 # Last updated 10.10.2016
 
 CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,

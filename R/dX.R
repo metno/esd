@@ -6,10 +6,6 @@
 # where PHI is the latitude in radians and THETA the longitude.
 # R.E. Benestad & Kajsa Parding, 2015-05-26
 
-#library(esd)
-#slp <- slp.ERAINT()
-#slp.dx <- dX(slp,verbose=TRUE)
-
 regfit <- function(z,cal.dat,terms) {
   ## Generate model for fitting profile
   cal.dat$Z <- z

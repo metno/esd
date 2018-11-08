@@ -1003,8 +1003,15 @@ vis.default <- function(X,it=NULL,img=NULL,verbose=FALSE,
                         ref=c(as.Date('1961-01-01'),as.Date('1990-12-31')),...) {
   if (!is.null(img)) {
     if (is.character(img)) {
-      require(jpeg)
-      img <- readJPEG(img)
+      ## KMP 2018-11-08: Don't use require in the R-scripts.
+      ## Call the function explicitly and add the package under 'Suggests' in the DESCRIPTION file.
+      ## Also check if the package is installed and add an alternative or error message if it isn't.
+      #require(jpeg)
+      if (requireNamespace("jpeg", quietly = TRUE)) {
+        img <- jpeg::readJPEG(img)
+      } else{
+        stop("Package \"jpeg\" needed to read a jpeg file. Please install it.")
+      }
     }
   }
 

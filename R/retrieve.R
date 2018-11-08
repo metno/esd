@@ -113,7 +113,8 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
                             plot = FALSE , verbose = FALSE , ...)  {
   ## Begin of function
   ## Update argument names for internal use only
-  require(ncdf4) # REB
+  #require(ncdf4) # REB # KMP 2018-11-07: Don't use require in the functions.
+  ## The functions or package should be imported in NAMESPACE. 
   ## REB 2018-04-06: Add a check for e.g .station station data
   class.x <- file.class(ncfile)
   ##
@@ -636,7 +637,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                            plot = FALSE , verbose = FALSE , ...) {
   
   ## Update argument names for internal function use only
-  require(ncdf)
+  #require(ncdf)
   if (verbose) print('retrieve.ncdf')
   ## REB 2018-04-06: Add a check for e.g. station data
   class.x <- file.class(ncfile,type='ncdf3')

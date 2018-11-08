@@ -5,8 +5,6 @@
 #
 #------------------------------------------------------------------------
 
-require(zoo)
-
 EOF<-function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,...)
   UseMethod("EOF")
 

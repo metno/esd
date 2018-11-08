@@ -207,7 +207,9 @@ vis.map <- function(x,col='red',map.type=NULL,
   
   ## REB: 2016-10-12 - add the possibility to use google maps
   ## KMP 2018-10-31: Don't use require inside the esd package. 
-  ## Instead call the external package explicitly, e.g., RgoogleMaps::GetMap()
+  ## Instead check if it the external package is installed and then 
+  ## call it explicitly, e.g., RgoogleMaps::GetMap().
+  ## Also add the package under 'Suggested' in the DESCRIPTION file.
   if (requireNamespace("RgoogleMaps", quietly = TRUE) & usegooglemap) {
   #if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) & usegooglemap ) {
     #require(RgoogleMaps)

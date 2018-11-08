@@ -6,10 +6,6 @@
 # where PHI is the latitude in radians and THETA the longitude.
 # R.E. Benestad & Kajsa Parding, 2015-05-26
 
-#library(esd)
-#slp <- slp.ERAINT()
-#slp.dx <- dX(slp,verbose=TRUE)
-
 dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
                chk.conf=1,accuracy=NULL,progress=TRUE,verbose=FALSE) {
 

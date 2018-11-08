@@ -146,7 +146,6 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=
 
 write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
                                 scale=0.1,torg='1899-12-31',verbose=FALSE,stid_unlim=FALSE,namelength=12) {
-  #require(ncdf4)
 
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- unit(x)
@@ -795,19 +794,23 @@ write2ncdf4.pca <- function(x,fname='esd.pca.nc',prec='short',verbose=FALSE,scal
                     longname='principal components', prec=prec)
   pat <- ncvar_def("pattern_pca", "weights", list(dimxy,dimpca), missval, 
                     longname='principal component analysis patterns', prec=prec)
-  lon <- ncvar_def("longitude", "degree_east", dimxy,missval, 
+  ## KMP 2018-11-08: tim not defined
+  tim <- ncvar_def("time", "year", dimtim, missval, 
+                   longname='time', prec='float')
+  lon <- ncvar_def("longitude", "degree_east", dimxy, missval, 
                     longname='longitude', prec='float')
-  lat <- ncvar_def("latitude", "degree_north", dimxy,missval, 
+  lat <- ncvar_def("latitude", "degree_north", dimxy, missval, 
                     longname='latitude', prec='float')
-  alt <- ncvar_def("altitude", "m", dimxy,missval, 
+  alt <- ncvar_def("altitude", "m", dimxy, missval, 
                     longname='altitude', prec='float')
-  stid <- ncvar_def("station_id", "number", dimxy,missval, 
+  stid <- ncvar_def("station_id", "number", dimxy, missval, 
                     longname='station ID', prec="integer")
-
-  lambda <- ncvar_def("lambda", "number", dimpca,missval, 
+  lambda <- ncvar_def("lambda", "number", dimpca, missval, 
                     longname='eigenvalues', prec="float")
   if (is.numeric(index(x))) index(x) <- year(x)
   dpca <- dim(pca); attributes(pca) <- NULL; dpca -> dim(pca)
+  ## KMP 2018-11-08: nc has not been defined! should it be created or opened from a file?
+  nc <- nc_create(fname,vars=list(lon,lat,alt,stid,pca,pat,lambda))
   ncvar_put( nc, pca, round((pca - offset)/scale) )
   ncatt_put( nc, pca, "add_offset", offset, prec="float" )
   ncatt_put( nc, pca, "scale_factor", scale, prec="float" ) 

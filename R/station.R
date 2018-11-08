@@ -6,7 +6,6 @@
 
 ## Major updates : 29.07.2013 ; 29.08.2013 ; 03.09.2013 ; 25.09.2013 ; 18.10.2013
 ## station.metno(ok) ; station.nordklim(ok) ; station.nacd(ok) ; station.ecad(ok) ; station.narp(in progress) ; station.ghcnm(ok) ; station.ghcnd(almost done - checking for t2m)  
-## require(zoo)
 
 ## ecad (updated) , 
 

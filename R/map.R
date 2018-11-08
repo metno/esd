@@ -1,8 +1,6 @@
 ## R.E. Benestad
 ## Plot a map of the station locations, fields, EOFs, CCA results, correlation, composites, ...
 
-##require(zoo)
-
 map <- function(x,it=NULL,is=NULL,new=FALSE,...) UseMethod("map")
 
 map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,

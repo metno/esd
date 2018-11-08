@@ -252,13 +252,15 @@ metno.ele <- function() { ## must be updated - AM 2014-02-21
   return(y)
 }
 
-wmo.ele.code <- function(pattern='^wind.*.speed.*.10') {
-    x <- read.csv('/disk1/downloads/fnmoc.B2L-058-001-B.txt',sep='\t',stringsAsFactor=FALSE,skip=5,header=TRUE)
-    ele.sel <- subset(x,subset= grepl(pattern,Element.Name,ignore.case=TRUE))
-    ele <- as.numeric(paste(ele.sel$X,ele.sel$Y,sep=''))
-    if (dim(ele.sel)[1] >1) {
-        print(ele.sel)
-        print('please refine your selection')
-    }
-    invisible(ele.sel)
-}
+## KMP 2018-11-08: This function doesn't work. Element.Name is not defined and it contains an absolute path. 
+## Also it is not in the NAMESPACE and is not used in any other function.
+#wmo.ele.code <- function(pattern='^wind.*.speed.*.10') {
+#    x <- read.csv('/disk1/downloads/fnmoc.B2L-058-001-B.txt',sep='\t',stringsAsFactor=FALSE,skip=5,header=TRUE)
+#    ele.sel <- subset(x,subset= grepl(pattern,Element.Name,ignore.case=TRUE))
+#    ele <- as.numeric(paste(ele.sel$X,ele.sel$Y,sep=''))
+#    if (dim(ele.sel)[1] >1) {
+#        print(ele.sel)
+#        print('please refine your selection')
+#    }
+#    invisible(ele.sel)
+#}

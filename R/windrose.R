@@ -38,7 +38,7 @@ windrose <- function(x,saw=10,max.scale=NULL,main=NULL,
       dev.new()
       uv <- combine.stations(subset(u,is=is),subset(v,is=is))
       ff <- windrose(uv,saw=saw,max.scale=max.scale,cols=cols,simple=simple,verbose=verbose)
-      eval(parse(test=paste('results$ffdd.',is,' <- ff',sep='')))
+      eval(parse(text=paste('results$ffdd.',is,' <- ff',sep='')))
     }
     return(results)
   }
