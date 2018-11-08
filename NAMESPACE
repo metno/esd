@@ -1,5 +1,34 @@
-import(ncdf4)
-import(zoo)
+#import(ncdf4)
+importFrom("ncdf4","ncatt_get","nc_close","nc_open","ncvar_get",
+           "ncdim_def","ncvar_def","nc_create","ncatt_put","ncvar_put")
+#import(zoo)
+importFrom("zoo","as.yearmon","as.yearqtr","as.Date","is.zoo",
+           "as.zoo","index","coredata","zoo")
+
+## Imports from base packages:
+importFrom("grDevices", "adjustcolor", "cm.colors", "col2rgb",
+            "colorRampPalette", "dev.copy2eps", "dev.copy2pdf",
+            "dev.list", "dev.new", "dev.off", "gray.colors",
+            "heat.colors", "rainbow", "rgb", "terrain.colors",
+            "topo.colors")
+importFrom("graphics", "abline", "arrows", "axis", "barplot", "box",
+           "boxplot", "contour", "grid", "hist", "image", "layout",
+           "legend", "lines", "matlines", "matplot", "mtext", "par",
+           "pie", "points", "polygon", "rasterImage", "rect",
+           "segments", "symbols", "text", "title")
+importFrom("methods", "new")
+importFrom("stats", "acf", "aggregate", "anova", "approx", "ccf",
+           "cor", "cor.test", "cov", "dgeom", "dnorm", "dpois", "end",
+           "fft", "filter", "glm", "ks.test", "lag", "lm", "median",
+           "na.omit", "na.pass", "pbinom", "pexp", "pnorm", "predict",
+           "qbinom", "qexp", "qgeom", "qnorm", "qpois", "qqline",
+           "qqnorm", "quantile", "rexp", "rgeom", "rnorm", "runif",
+           "sd", "setNames", "smooth.spline", "spectrum", "start",
+           "time", "var", "wilcox.test", "window")
+importFrom("utils", "combn", "data", "download.file", "head",
+           "read.csv", "read.csv2", "read.fwf", "read.table",
+           "sessionInfo", "setTxtProgressBar", "str", "tail",
+           "txtProgressBar", "untar", "unzip", "write.table")
 
 # Exports - in alphabetic order
 export(arec)
@@ -395,7 +424,6 @@ export(subset.dsensemble.multi)
 export(subset.events)
 export(subset.stationmeta)
 export(summary.ncdf4)
-#export(test.scandinavia)
 export(t2m.DNMI)
 export(t2m.ERA40)
 export(t2m.ERAINT)
