@@ -46,7 +46,9 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
              c(expression(Pr(X>x)==f[w]*e^{-x/mu}),expression(sum(H(X-x))/n)),lty=1,lwd=c(3,2),
              col=c('black','red'),bty='n')
     }
-    return(merge(pr,obsfrac,counts))
+    results <- merge(pr,obsfrac,counts)
+    results <- attrcp(y,results)
+    return(results)
 }
 
 ## Use a scatter plot to evaluate the rain equation for a selection of rain gauge records.
