@@ -2,8 +2,8 @@
 importFrom("ncdf4","ncatt_get","nc_close","nc_open","ncvar_get",
            "ncdim_def","ncvar_def","nc_create","ncatt_put","ncvar_put")
 #import(zoo)
-importFrom("zoo","as.yearmon","as.yearqtr","as.Date","is.zoo",
-           "as.zoo","index","coredata","zoo")
+importFrom("zoo","as.yearmon","as.yearqtr","as.Date","index","coredata",
+            "is.zoo","as.zoo","zoo")
 
 ## Imports from base packages:
 importFrom("grDevices", "adjustcolor", "cm.colors", "col2rgb",
@@ -243,7 +243,7 @@ export(DSensemble.t2m)
 export(DSensemble.precip)
 export(DSensemble.annual)
 export(DSensemble.season)
-export(DSensemble.mu)
+#export(DSensemble.mu)
 export(DSensemble.mu.worstcase)
 export(DSensemble.pca)
 export(DSensemble.eof)

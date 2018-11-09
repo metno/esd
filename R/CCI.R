@@ -458,13 +458,13 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
          xlab="lon",ylab="slp (hPa)")
       points(lon[i],pxi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
       points(lonXY[inflx<0,1],pxi[inflx<0,latXY[1,]==lat[i]],col="red",pch=1)
-      dev.copy2eps(file="cyclones.lon.eps", paper="letter")#; dev.off()
+      #dev.copy2eps(file="cyclones.lon.eps", paper="letter")#; dev.off()
       dev.new()
       plot(latXY[1,],pyi[lonXY[,1]==lon[i],],lty=1,type="l",main=date[i],
          xlab="lat",ylab="slp (hPa)")
       points(lat[i],pyi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
       points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
-      dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
+      #dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
       dev.new()
       image(xi,yi,zi,main=date[i],col=colscal(col="budrd",n=14,rev=FALSE),
           xlab="lon",ylab="lat",breaks=seq(940,1080,10))
@@ -502,7 +502,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
       sz[qf[j]==2] <- 1
       points(lon[j],lat[j],pch=21,lwd=2,bg="white",col=col,cex=sz)
       points(lon[i],lat[i],pch=4,lwd=2,col="black",cex=1)
-      dev.copy2eps(file="cyclones.map.eps", paper="letter")#; dev.off()
+      #dev.copy2eps(file="cyclones.map.eps", paper="letter")#; dev.off()
     }
 
     ## Remove temporary variables and release the memory:

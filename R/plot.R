@@ -1678,12 +1678,12 @@ plot.spell <- function(x,xlim=NULL,ylim=NULL) {
 plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
     if ( (class(ssa)[1]!="SSA") ) stop("Need an 'SSA' object")
     nt <- ssa$nt
-    newFig()
+    dev.new()
     plot(ssa$d,main=main,sub=sub,ylab="Singular value",pch=20,col="grey50")
     points(ssa$d)
     grid()
 
-    newFig()
+    dev.new()
     par(mfcol=c(3,1))
     plot(ssa$v[,1],type="l",main=main,sub=sub,
            xlab="Time",ylab="SSA vector: mode 1",lwd=3,col="grey70")
@@ -1696,7 +1696,7 @@ plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
     grid()
 
 
-    newFig()
+    dev.new()
     par(mfcol=c(3,1))
     if (class(ssa)[3] == "monthly.station.record") {
       yy <- sort(rep(ssa$x$yy,12)); yy <- yy[1:ssa$Nm]

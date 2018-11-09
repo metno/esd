@@ -20,7 +20,8 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     if (verbose) print(index(x))
   } 
     
-  t <- index(x); t0 <- t
+  t <- index(x)
+  t0 <- t
   cls <- class(x)
   
   if (inherits(it,'character')) {
@@ -28,15 +29,18 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     ## If given years but y has dates as index, convert to dates.
     nc <- nchar(it)
     # Simple fix for short date strings
-    if ((nc[1]==4) & (length(it)>1)) it <- paste(it,'-01-01',sep='') else
-    if ((nc[1]==4) & (length(it)==1))
-      it <- c(paste(it,'-01-01',sep=''),paste(it,'-12-31',sep='')) else
-    if (nc[1]==7) it <- paste(it,'-01',sep='')
+    if ((nc[1]==4) & (length(it)>1)) {
+      it <- paste(it,'-01-01',sep='') 
+    } else if ((nc[1]==4) & (length(it)==1)) {
+      it <- c(paste(it,'-01-01',sep=''),paste(it,'-12-31',sep='')) 
+    } else if (nc[1]==7) {
+      it <- paste(it,'-01',sep='')
+    }
     it <- as.Date(it)
   }
     
   if (inherits(it,c('field','station','zoo'))) it <- index(it)
-  if (is.logical(it)) it <- (1 <- length(it))[it]
+  if (is.logical(it)) it <- seq(1,length(it))[it]
 
   #print(c(t[1],it[1]));   print(c(class(t),class(it)))
   

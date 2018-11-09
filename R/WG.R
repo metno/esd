@@ -115,8 +115,7 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 #                          select=select,verbose=verbose)
     zts <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
                           FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
-                          FUNx='sd',       
-                          select=select,verbose=verbose)
+                          FUNX='sd',select=select,verbose=verbose)
     asd <- zoo(rowMeans(zts,na.rm=TRUE) - mean(zts,na.rm=TRUE),
                order.by=index(zts))
   } else if (inherits(asd,'dsensemble'))

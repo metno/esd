@@ -14,56 +14,60 @@ MVR.default <- function(Y,X,...) {
 }
 
 
-MVR.field <- function(Y,X,SVD=TRUE,LINPACK=FALSE) {
+MVR.field <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   # Synchronise the two time series objects:
-  print("MVR.field")
-  history <- attr(X,'history')
-  cls <- class(Y)
-  colnames(Y) <- paste("Y",1:dim(Y)[2],sep=".")
-  colnames(X) <- paste("X",1:dim(Y)[2],sep=".")
-  yX <- merge(y,X,all=FALSE)
-  Z <- attr(y,pattern)
-
-  ys <- vars[grep('Y',vars)]
-  Xs <- vars[grep('X',vars)]
-  ix <- is.element(vars,Xs)
-  iy <- is.element(vars,ys)
-  X <- coredata(comb[,ix])
-  Y <- coredata(comb[,iy])
-  t <- index(comb)
-
-  if (SVD) {
-    if (LINPACK) UWV <-svd(X) else 
-                 UWV <-La.svd(X)
-    V <- UWV$v; U <- UWV$u; D <- UWV$d
-
-    if (dim(V)[2] != dim(V)[1]) {
-      print("V is not a square matrix (no. spatial pts < no. temporal pts)")
-      print("Need to swap and transpose SVD products to get correct dimensions")
-      if (!LINPACK) {
-           V <- UWV$v; U <- UWV$u
-      } else {
-           V <- t(UWV$v); U <- t(UWV$u)
-      }
-      psi <- chol2inv(t(V) %*% diag(D^2) %*% V) %*% t(X) %*% Y
-    }
-  } else {
-      print("Warning: may not always be well-posed.")
-      psi <- solve(t(X) %*% X) %*% t(X) %*% Y # may be close to singular
-  }
-      
-  Yhat <- X %*% psi
-  rmse <- colMeans( (Y - Yhat)^2 )
-  R2 <- colSums( Yhat^2/Y^2 )
-  
-  mvr  <- list(model=psi,fitted.values=Yhat,
-               residual=Y - Yhat, r.squared=R2,rmse=rmse)
-  attr(mvr,'history') <- history.stamp(x)
-  #attr(mvr,'call') <- match.call()
-  #attr(mu.pca,'history') <- c('MVR.field',history)
-  #attr(mu.pca,'date-stamp') <- date()
-  class(mvr) <- c("MVR",class(y))
-  invisible(mvr,cls)
+  if(verbose) print("MVR.field is not finished. Converting to EOF and redirecting to MVR.eof.")
+  eof.Y <- EOF(Y)
+  eof.X <- EOF(X)
+  mvr <- MVR.eof(Y,X,SVD=SVD,LINPACK=LINPACK,verbose=verbose)
+  invisible(mvr)
+  # history <- attr(X,'history')
+  # cls <- class(Y)
+  # colnames(Y) <- paste("Y",1:dim(Y)[2],sep=".")
+  # colnames(X) <- paste("X",1:dim(Y)[2],sep=".")
+  # YX <- merge(Y,X,all=FALSE)
+  # Z <- attr(Y,"pattern")
+  # 
+  # ys <- vars[grep('Y',vars)]
+  # Xs <- vars[grep('X',vars)]
+  # ix <- is.element(vars,Xs)
+  # iy <- is.element(vars,ys)
+  # X <- coredata(comb[,ix])
+  # Y <- coredata(comb[,iy])
+  # t <- index(comb)
+  # 
+  # if (SVD) {
+  #   if (LINPACK) UWV <-svd(X) else 
+  #                UWV <-La.svd(X)
+  #   V <- UWV$v; U <- UWV$u; D <- UWV$d
+  # 
+  #   if (dim(V)[2] != dim(V)[1]) {
+  #     print("V is not a square matrix (no. spatial pts < no. temporal pts)")
+  #     print("Need to swap and transpose SVD products to get correct dimensions")
+  #     if (!LINPACK) {
+  #          V <- UWV$v; U <- UWV$u
+  #     } else {
+  #          V <- t(UWV$v); U <- t(UWV$u)
+  #     }
+  #     psi <- chol2inv(t(V) %*% diag(D^2) %*% V) %*% t(X) %*% Y
+  #   }
+  # } else {
+  #     print("Warning: may not always be well-posed.")
+  #     psi <- solve(t(X) %*% X) %*% t(X) %*% Y # may be close to singular
+  # }
+  #     
+  # Yhat <- X %*% psi
+  # rmse <- colMeans( (Y - Yhat)^2 )
+  # R2 <- colSums( Yhat^2/Y^2 )
+  # 
+  # mvr  <- list(model=psi,fitted.values=Yhat,
+  #              residual=Y - Yhat, r.squared=R2,rmse=rmse)
+  # attr(mvr,'history') <- history.stamp(x)
+  # #attr(mvr,'call') <- match.call()
+  # #attr(mu.pca,'history') <- c('MVR.field',history)
+  # #attr(mu.pca,'date-stamp') <- date()
+  # class(mvr) <- c("MVR",cls)
+  # invisible(mvr)
 }
 
 
