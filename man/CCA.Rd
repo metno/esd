@@ -6,7 +6,7 @@
 \alias{CCA.pca}
 \alias{CCA.field}
 \alias{test.cca}
-\alias{predict.CCA}
+\alias{predict.cca}
 \title{Canonical correlation analysis}
 \description{
 Applies a canonical correlation analysis (CCA) to two data sets. The CCA here
@@ -44,7 +44,7 @@ CCA.field(Y,X,ip=1:8,verbose=FALSE)
 test.cca(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,
          SVD=TRUE,n.pc=4,synthetic=TRUE)
 
-predict.CCA <- function(object, newdata=NULL, ...)
+predict.cca <- function(object, newdata=NULL, ...)
 }
 \arguments{
     \item{Y}{An object with climate data: field, eof, pca.}
@@ -61,8 +61,8 @@ predict.CCA <- function(object, newdata=NULL, ...)
 # CCA with two eofs
 slp <- slp.NCEP(lat=c(-40,40),anomaly=TRUE)
 sst <- sst.NCEP(lat=c(-40,40),anomaly=TRUE)
-eof.1 <- EOF(slp,it=1)
-eof.2 <- EOF(sst,it=1)
+eof.1 <- EOF(slp,it='Jan')
+eof.2 <- EOF(sst,it='Jan')
 cca <- CCA(eof.1,eof.2)
 plot(cca)
 
@@ -74,8 +74,11 @@ pca <- PCA(NACD)
 plot(pca)
 naslp <- slp.NCEP(lon=c(-30,40),lat=c(30,70),anomaly=TRUE)
 map(naslp)
-eof <- EOF(naslp,it=1)
+eof <- EOF(naslp,it='Jan')
 nacca <- CCA(pca,eof)
 plot(nacca)
+\dontrun{
+cca.pre <- precit.cca(nacca)
+}
 }
 \keyword{manip}
