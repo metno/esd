@@ -832,7 +832,7 @@ metnod.station <-  function(re=14, url = 'ftp://ftp.met.no/projects/chasepl/test
 }
 metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
                           qual=NULL,start=NULL,end=NULL,param=NULL,verbose=FALSE,
-                          re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",
+                          re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",qa = 4,
                           url = "http://klapp/metnopub/production/",save2file=TRUE) {
   
   if (verbose) print("http://eklima.met.no")
@@ -848,6 +848,7 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
       Filnavn <- paste(Filnavn, "&nmt=", nmt, sep = "")
     Filnavn <- paste(Filnavn, "&fd=", start1, "&td=", end1, sep = "")
     Filnavn <- paste(Filnavn, "&s=", stid, sep = "")
+    Filnavn <- paste(Filnavn, "&qa=", qa, sep = "")
     ##for (i in 1:length(StNr)) Filnavn <- paste(Filnavn, "&s=", StNr[i], sep = "")
     if (!is.null(h)) 
       Filnavn <- paste(Filnavn, "&dup=", dup, sep = "")
