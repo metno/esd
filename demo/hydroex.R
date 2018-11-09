@@ -69,7 +69,7 @@ emu <- glm(u ~ mu + fw, data=am, family='poisson')
 plot(uamx,lwd=3,ylim=c(0,70))
 lines(zoo(exp(predict(emu)),order.by=index(uamx)))
 
-text(1980,70,pos=4,'Number of annual events: u > 30 m³/s')
+text(1980,70,pos=4,'Number of annual events: u > 30 m^3/s')
 legend(1980,65,c("hydrologic model",expression(f(mu,f[w]))),
        lty=1,col=c("red","black"),lwd=c(3,1),bty="n")
 dev2bitmap('hydroex-u.gt.30.png',res=150)
