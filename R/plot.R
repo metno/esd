@@ -602,7 +602,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
   if (is.null(xlim))
     xlim <- range(index(x),index(y0),x.rng,na.rm=TRUE)
-  browser()
+  #browser()
 
   par(fig=c(0.025,1,0.025,0.475),new=TRUE)
   par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
