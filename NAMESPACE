@@ -1,11 +1,7 @@
-#import(ncdf4)
-importFrom("ncdf4","ncatt_get","nc_close","nc_open","ncvar_get",
-           "ncdim_def","ncvar_def","nc_create","ncatt_put","ncvar_put")
-#import(zoo)
-importFrom("zoo","as.yearmon","as.yearqtr","as.Date","index","coredata",
-            "is.zoo","as.zoo","zoo")
+import(ncdf4)
+import(zoo)
 
-## Imports from base packages:
+## Imports from other packages:
 importFrom("grDevices", "adjustcolor", "cm.colors", "col2rgb",
             "colorRampPalette", "dev.copy2eps", "dev.copy2pdf",
             "dev.list", "dev.new", "dev.off", "gray.colors",
