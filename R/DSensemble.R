@@ -207,8 +207,11 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     #rm("GCM"); gc(reset=TRUE)
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
-      testGCM <- subset(GCM,it=range(year(T2M))) # REB 29.04.2014
-      testy <- as.station(regrid(testGCM,is=y))  # REB 29.04.2014
+      ## KMP 2018-11-12: Not sure if this test works.
+      ## It's only done for DJF here but could be expanded to other seasons
+      ## if it is a useful diagnostic.
+      testGCM <- subset(DJFGCM,it=range(year(DJF))) # REB 29.04.2014
+      testy <- as.station(regrid(testGCM,is=DJF))  # REB 29.04.2014
       attr(testGCM,'source') <- 'testGCM'        # REB 29.04.2014
       testZ <- combine(testGCM,GCM)              # REB 29.04.2014
       rm("testGCM"); gc(reset=TRUE)
@@ -1984,11 +1987,12 @@ DSensemble.pca <- function(y,plot=TRUE,path="CMIP5.monthly/",
   attr(dse.pca,'variable') <- attr(y,"variable")[1]
   attr(dse.pca,'unit') <- attr(y,"unit")[1]
   attr(dse.pca,'history') <- history.stamp(y)
-  if (non.stationarity.check) {
-    attr(dse.pca,'on.stationarity.check') <- difference.z
-  } else {
-    attr(dse.pca,'on.stationarity.check') <- NULL
-  }
+  # KMP 2018-11-12: difference.z is not defined in this function
+  #if (non.stationarity.check) {
+  #  attr(dse.pca,'on.stationarity.check') <- difference.z
+  #} else {
+  #  attr(dse.pca,'on.stationarity.check') <- NULL
+  #}
   class(dse.pca) <- c("dsensemble","pca","list")
 
   if(!is.null(path.ds)) file.ds <- file.path(path.ds,file.ds)

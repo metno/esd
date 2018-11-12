@@ -37,7 +37,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
 
     ##  obj <- LatticeKrig::LatticeKrig( x=cbind(lon[ok],lat[ok]), y=z[2,ok],Z=alt[ok])
     if (verbose) print('Predict surface')
-    w <- LatticeKrig::predictSurface(obj, grid.list = grid,Z=etopo5)
+    w <- fields::predictSurface(obj, grid.list = grid,Z=etopo5)
     w$z[is.na(etopo5)] <- NA
 
     ## Convert the results from LatticeKrig to esd:

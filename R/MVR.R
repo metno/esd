@@ -71,8 +71,8 @@ MVR.field <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
 }
 
 
-MVR.eof <- function(Y,X, SVD = SVD, LINPACK = LINPACK) {
-  print("MVR.eof")
+MVR.eof <- function(Y, X, SVD=SVD, LINPACK=LINPACK, verbose=FALSE) {
+  if(verbose) print("MVR.eof")
   history <- attr(X,'history')
   Z <- Y
   cls <- class(Y)
@@ -84,7 +84,7 @@ MVR.eof <- function(Y,X, SVD = SVD, LINPACK = LINPACK) {
   YX <- merge(y,x,all=FALSE)
   #str(YX); str(Y); str(X)
   vars <- names(YX)
-  #print(vars)
+  #if(verbose) print(vars)
   ys <- vars[grep('Y',vars)]
   Xs <- vars[grep('X',vars)]
   ix <- is.element(vars,Xs)
@@ -93,7 +93,7 @@ MVR.eof <- function(Y,X, SVD = SVD, LINPACK = LINPACK) {
   y <- coredata(YX[,iy])
   Y <- YX[,iy]
 
-  print(dim(x)); print(dim(y))
+  if(verbose) print(dim(x)); print(dim(y))
 #  psi <- solve(t(x) %*% x) %*% t(x) %*% y
   xtx <- t(x) %*% x
   print(round(xtx,3))
@@ -135,9 +135,9 @@ MVR.eof <- function(Y,X, SVD = SVD, LINPACK = LINPACK) {
   invisible(mvr)
 }
 
-MVR.pca <- function(Y,X,SVD=TRUE,LINPACK=FALSE) {
-  print("MVR.pca")
-  mvr <- MVR.eof(Y,X,SVD=SVD,LINPACK=LINPACK)
+MVR.pca <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
+  if(verbose) print("MVR.pca")
+  mvr <- MVR.eof(Y,X,SVD=SVD,LINPACK=LINPACK,verbose=verbose)
   invisible(mvr)
 }
 
@@ -146,7 +146,8 @@ MVR.pca <- function(Y,X,SVD=TRUE,LINPACK=FALSE) {
 # a vector where most variables are set to zero apart from one
 # variable set to unity for the identification of teleconnection pattern.
 
-predict.mvr <- function(x, newdata=NULL, ...) {
+predict.mvr <- function(x, newdata=NULL, verbose=FALSE,...) {
+  if(verbose) print("predict.mvr")
   object=x
   if (is.null(newdata)) newdata <- object$data
   x <- newdata

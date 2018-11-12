@@ -186,7 +186,7 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
                              ncwd=NULL,ndbr=NULL,t=NULL,
                              threshold=1,select=NULL,
-                             lon=c(-10,10),lat=c(-10,10),
+			     ip=1:6,lon=c(-10,10),lat=c(-10,10),
                              plot=FALSE,biascorrect=TRUE,
                              verbose=TRUE) {
 
@@ -247,7 +247,8 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
                     lon=lon(x) + lon,lat=lat(x) + lat)
     zmu <- DSensemble.precip(x,predictor=PRE,biascorrect=biascorrect,
                           plot=plot,lon=lon,lat=lat,ip=ip,
-                          select=select,verbose=verbose,treshold=threshold)
+			  treshold=threshold,
+                          select=select,verbose=verbose)
     mu <- rowMeans(zmu,na.rm=TRUE) - mean(zmu,na.rm=TRUE)
   } else if (inherits(mu,'dsensemble'))
     mu <- rowMeans(mu,na.rm=TRUE) - mean(mu,na.rm=TRUE) 

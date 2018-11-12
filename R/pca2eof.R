@@ -17,7 +17,7 @@ gridstation <- function(Y,i=1,verbose=FALSE,xlim=NULL,ylim=NULL) {
     etopo5[etopo5<=-1] <- NA
     
     ## Set the grid to be the same as that of etopo5:
-    grid <- LatticeKrig::structure(list(x=lon(etopo5),y=lat(etopo5)),class='gridList')
+    grid <- structure(list(x=lon(etopo5),y=lat(etopo5)),class='gridList')
     
     ## Flag dubplicated stations:
     ok <- !(duplicated(lon(Y)) & duplicated(lat(Y)))
@@ -27,7 +27,7 @@ gridstation <- function(Y,i=1,verbose=FALSE,xlim=NULL,ylim=NULL) {
     obj <- LatticeKrig::LatticeKrig( x=cbind(lon(Y)[ok],lat(Y)[ok]),
                         y=Y[ok,i],Z=alt(Y)[ok])
     
-    w <- LatticeKrig::predictSurface(obj, grid.list = grid,Z=etopo5)
+    w <- fields::predictSurface(obj, grid.list = grid,Z=etopo5)
     w$z[is.na(etopo5)] <- NA
     
     ## Convert the results from LatticeKrig to esd:
