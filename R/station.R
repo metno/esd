@@ -859,9 +859,10 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
   if (substr(firstline, 1, 3) == "***") {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
   ## 
   Datasett <- as.list(read.table(Filnavn,dec = ".", header = TRUE, as.is = TRUE, fileEncoding = "latin1"))
+  
   if (param1=='RR') 
     Datasett$RR[Datasett$RR == "."] <- "0"
-  
+  Datasett$RR[Datasett$RR == "x"] <- NA
   ext <- switch(as.character(re), '14' = 'dly', '17' = 'obs', '15' = 'mon')
   
   if (save2file) {
