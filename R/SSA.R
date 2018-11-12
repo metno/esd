@@ -1,13 +1,18 @@
 SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
-                anom=TRUE,i.eof=1) {
-# After von Storch & Zwiers (1999), Statistical Analysis in Climate Research, p. 312.  
+                anom=TRUE,ip=1,verbose=FALSE) {
+  if(verbose) print("SSA")
+  # After von Storch & Zwiers (1999), Statistical Analysis in Climate Research, p. 312.  
 
-  if ( (class(x)[1] != "station") & (class(x)[1] != "eof") )
+  if ( (class(x)[1] != "station") & (class(x)[1] != "eof") ) {
     stop('SSA: need a station object or EOF object')
+  }
   x.mean <- 0
 
-  if (class(x)[2] == "station") y <- "val" else
-  if (class(x)[1] == "eof") y <- "PC[,i.eof]"
+  if (class(x)[2] == "station") {
+    y <- "val"
+  } else if (class(x)[1] == "eof") {
+    y <- "PC[,ip]"
+  }
 
   if (anom) x <- anomaly(y) 
   nt <- length(y)
@@ -20,19 +25,18 @@ SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
   
   Nm <- nt - m + 1
   X <- matrix(rep(NA,Nm*m),Nm,m)
-  #print(dim(X))
+  #if(verbose) print(dim(X))
   for (i in 1:m) {
     ii <- i:(Nm-i+1)
     X[ii,i] <- coredata(y[ii])
   }
   
-  str(c(X))
-  ## browser()
+  if(verbose) print(str(c(X)))
   udv <- svd(X) 
 
   if (sub=="") sub <- paste("Window width=",m)
 
-  ssa <- zoo(uvd$v,order.by=index(x)[1:Nm])
+  ssa <- zoo(udv$v,order.by=index(x)[1:Nm])
   attr(ssa,'pattern') <- udv$u 
   attr(ssa,'eigenvalues') <- udv$d
   attr(ssa,'m') <- m; 
