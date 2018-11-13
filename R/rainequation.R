@@ -48,6 +48,8 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
     }
     results <- merge(pr,obsfrac,counts)
     results <- attrcp(y,results)
+    attr(results,'variable') <- c('probability','frequency','events')
+    attr(results,'unit') <- c('fraction','fraction','count')
     return(results)
 }
 
