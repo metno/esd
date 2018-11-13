@@ -625,7 +625,7 @@ as.field.eof <- function(x,iapp=NULL,verbose=FALSE,...) {
     y <- eof2field(x,verbose=verbose,...)
   } else {
     y <- as.eof(x,iapp,verbose=verbose)
-    y <- eof2field(y,verbose=verbose,...)
+    y <- eof2field(y,verbose=verbose,anomaly=TRUE,...)
   }
   return(y)
 }
