@@ -1,6 +1,6 @@
 ## Rasmus.Benestad@met.no
 ## climmodel - Model of the meanseasonal variations
-
+library(esd)
 x <- station(stid=18700,src='metnod',user='metno')
 yrs <- rownames(table(year(x)))
 ny <- length(yrs)
