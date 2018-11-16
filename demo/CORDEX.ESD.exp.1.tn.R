@@ -1,4 +1,4 @@
-# Script for setting up and running CORDEX ESD experiment 1 for Tmax
+# Script for setting up and running CORDEX ESD experiment 1 for Tmean
 # R.E. Benestad
 
 rm(list=ls()); gc(reset=TRUE)

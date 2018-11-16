@@ -1,14 +1,17 @@
 DSE                           Unfinished ensemble downscaling function.  
 climmodel                     Model of the mean seasonal cycle
+CORDEX.ESD.exp.1.pr           Script for setting up and running CORDEX ESD experiment 1 for precip
+CORDEX.ESD.exp.1.tn           Script for setting up and running CORDEX ESD experiment 1 for mean temperature
+CORDEX.ESD.exp.1.tx           Script for setting up and running CORDEX ESD experiment 1 for maximum temperature
 dailyfield2monthlyfield       R script using CDO to convert daily to monthly fields for large netCDF files
 dscmip5                       Blue print for downscaling CMIP5 GCM simulations
 ecad2nc4                      R script transforming ECA&D data into netCDF files - one for each element
 eklima                        R script reading old output from eklima.met.no as esd station object
 EuropeT2mRconstr              Reads the Luterbacher et al. (2004) temperature for Europe
+ghcn2nc4                      Save the GHCN station data as a netCDF4 file.
 global.t2m.gcm                Gets global/regional mean temperature/precipitation from GCMs
-global_tas_anomaly_cmip3      ?
+global_tas_anomaly_cmip3      Computes the spatial mean surface temperature based on the 92 GCM outputs from the CMIP3 experiment or any other experiment.
 globt                         Plots the global mean temperature from GCMs, reanalysis, & observations on picture of the earth
-gridmap                       Grids stations using kriging from LatticeKrig and altitude as a covariate.
 gst.outlook                   Global surface temperature outlook
 gst                           Plots the global surface temperature from NCEP/NCAR reanalysis 1
 hydroex                       Example for downscaling river run-off.

@@ -1,5 +1,5 @@
-library(ncdf4)
-library(zoo)
+import(ncdf4)
+import(zoo)
 
 ## Imports from other packages:
 importFrom("grDevices", "adjustcolor", "cm.colors", "col2rgb",

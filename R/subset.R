@@ -815,7 +815,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## both field and station objects.
     
     nval <- function(x) sum(is.finite(x))
-    
     ## Sometimes 'it' = 'integer(0)' - reset to NULL!
     if (length(it)==0) it <- NULL
     if (length(is)==0) is <- NULL

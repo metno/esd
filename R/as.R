@@ -188,8 +188,8 @@ as.station.pca <- function(x,...) {
 }
 
 
-as.station.list <- function(x) {
-#print("as.station.ds")
+as.station.list <- function(x,verbose=FALSE) {
+  if(verbose) print("as.station.ds")
 #  Jan <- x$Jan + attr(x$Jan,'mean')
 #  Feb <- x$Feb + attr(x$Feb,'mean')
 #  Mar <- x$Mar + attr(x$Mar,'mean')
@@ -486,7 +486,7 @@ as.pca.station <- function(x) {
 
 
 as.ds <- function(x) {
-  y <- zoo(X,order.by=index)
+  y <- zoo(x,order.by=index)
   attr(y,'location') <- attr(x,'location')
   attr(y,'variable') <- attr(x,'variable')
   attr(y,'unit') <- attr(x,'unit')
@@ -1532,26 +1532,28 @@ as.eof.dsensemble <- function(x,FUN='mean',verbose=FALSE) {
 
 as.appended <- function(x,...) UseMethod("as.appended")
 
-as.appended.ds.comb <- function(x,iapp=1) {
-  eval(parse(text=paste("X <- attr(x,'appendix.",it,"')",sep="")))
+as.appended.ds.comb <- function(x,iapp=1,verbose=FALSE) {
+  if(verbose) print("as.appended.ds.comb")
+  eval(parse(text=paste("X <- attr(x,'appendix.",iapp,"')",sep="")))
   X <- attrcp(x,X,ignore='appendix')
   attr(X,'history') <- history.stamp(x)
   invisible(X)
 }
 
 as.appended.eof.comb <- function(x,iapp=1) {
-  X <- as.appended.ds.comb(x,it=it)
+  X <- as.appended.ds.comb(x,iapp=iapp)
   invisible(X)
 }
 
 as.appended.field.comb <- function(x,iapp=1) {
-  X <- as.appended.ds.comb(x,it=it)
+  X <- as.appended.ds.comb(x,iapp=iapp)
   invisible(X)
 }
 
 as.stand <- function(x,...) UseMethod("as.stand")
 
-as.stand.station <- function(x) {
+as.stand.station <- function(x,verbose=FALSE,na.rm=TRUE) {
+  if(verbose) print("as.stand.station")
   if (is.precip(x)) {
     mu <- apply(x,2,mean,na.rm=na.rm)
     X <- 100*x/mu

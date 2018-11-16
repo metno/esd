@@ -54,7 +54,6 @@ DS.default <- function(y,X,mon=NULL,
     #print('err(y)'); print(err(y))
     if (verbose) {print('index(y)'); print(index(y))}
     if (verbose) {print(class(y)); print(class(X))}
-    
     swapped <- FALSE
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
       if (verbose) print('SWAP y & X')
@@ -85,9 +84,10 @@ DS.default <- function(y,X,mon=NULL,
     if (verbose) print('Ensure matching time scale')
     if (verbose) {print('index(y) before sametimescale:'); print(index(y))}
     y <- sametimescale(y,X,verbose=verbose)
-    ## REB is needed to ensure that maye y annual if X is annual
+    ## REB is needed to ensure that y is annual if X is annual
     #if (verbose) {print('index(y) after sametimescale:'); print(index(y))}
     #if (verbose) print('Match dates')
+    
     y <- matchdate(y,X,verbose=verbose) ##
     #if (verbose) {print('index(y) after matchdate'); print(index(y))}
     X <- matchdate(X,y,verbose=verbose) # REB 2015-01-14
@@ -262,7 +262,6 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     if (verbose) { print('--- DS.station ---'); print(summary(coredata(y)))}
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
-
     y <- matchdate(y,X)
     X <- matchdate(X,y)
     

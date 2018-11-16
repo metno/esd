@@ -203,8 +203,6 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       writeLines(gcmnm[i],con=flog)
       writeLines(Z4[[1]],con=flog)
     }
-    #save(file='inside.dsens.rda',T2M,GCM)
-    #rm("GCM"); gc(reset=TRUE)
     # The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
       ## KMP 2018-11-12: Not sure if this test works.
@@ -213,13 +211,13 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
       testGCM <- subset(DJFGCM,it=range(year(DJF))) # REB 29.04.2014
       testy <- as.station(regrid(testGCM,is=DJF))  # REB 29.04.2014
       attr(testGCM,'source') <- 'testGCM'        # REB 29.04.2014
-      testZ <- combine(testGCM,GCM)              # REB 29.04.2014
+      testZ <- combine(testGCM,DJFGCM)              # REB 29.04.2014
       rm("testGCM"); gc(reset=TRUE)
     }
     ##
     # REB: 30.04.2014 - new lines...
     if (verbose) print("- - - > DS (seasonal)")
-    if (verbose) print(class(attr(Z,'appendix.1')))
+    if (verbose) print(class(attr(Z1,'appendix.1')))
     if (biascorrect) try(Z1 <- biasfix(Z1))
     ds1 <- try(DS(subset(y,it='djf'),Z1,ip=ip))
     if (inherits(ds1,"try-error")) {    
@@ -257,7 +255,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
 
       if (verbose) print("post-processing")
       z <- attr(ds,'appendix.1')
-    #save(file='inside.dsens.1.rda',ds,y,Z)
+    #save(file='inside.dsens.1.rda',ds,y,Z1)
 
       if (non.stationarity.check) {
         testds <- DS(testy,testZ,biascorrect=biascorrect,ip=ip)   # REB 29.04.2014
@@ -352,7 +350,7 @@ DSensemble.t2m <- function(y,plot=TRUE,path="CMIP5.monthly/",
     }
   }
   if(verbose) print("Done with downscaling!")
-  rm("GCM")
+  rm("DJFGCM")
 
   X <- zoo(t(X),order.by=t)
   colnames(X) <- gcmnm

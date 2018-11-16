@@ -6,10 +6,10 @@ Title: Climate analysis and empirical-statistical downscaling (ESD) package for
 Author: Rasmus E. Benestad <rasmus.benestad@met.no>, Abdelkader Mezghani, and Kajsa M. Parding
 Maintainer: Rasmus E. Benestad <rasmus.benestad@met.no>
 Depends:
-    R (>= 2.10.0)
-Imports:
+    R (>= 2.10.0),
     ncdf4,
-    zoo,
+    zoo
+Imports:
     graphics,
     grDevices,
     methods,
@@ -18,6 +18,7 @@ Imports:
 Suggests:
     LatticeKrig,
     RgoogleMaps,
+    fields,
     PCICt,
     jpeg
 Description: The package contains R functions for retrieving data, making

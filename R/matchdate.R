@@ -23,7 +23,6 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   t <- index(x)
   t0 <- t
   cls <- class(x)
-  
   if (inherits(it,'character')) {
     if (verbose) print('Convert years and incomplete dates to %YYYY-%MM-%DD date format')
     ## If given years but y has dates as index, convert to dates.
@@ -38,12 +37,10 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     }
     it <- as.Date(it)
   }
-    
+
   if (inherits(it,c('field','station','zoo'))) it <- index(it)
   if (is.logical(it)) it <- seq(1,length(it))[it]
-
   #print(c(t[1],it[1]));   print(c(class(t),class(it)))
-  
   # Convert indeces all to 'Date':
   # The time index of x:
   #
@@ -64,7 +61,10 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   
   if (length(it)>2) {
     ii <- is.element(t,it)
-    if (verbose) {print(paste('select',sum(ii),'dates')); print(t[ii])}
+    if (verbose) {
+      print(paste('select',sum(ii),'dates'))
+      print(t[ii])
+    }
     y <- x[ii,]
     
     if (verbose) print(paste('matchdate found',sum(ii),'matching dates'))
@@ -87,8 +87,8 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     #print(class(x)); print(sum(ii))
     if (sum(ii) > 0) y <- x[ii,] else {
   # Weight the two nearest in time
-      if (verbose) print(paste('matchdate: Weight the two nearest in time because no overlaps: sum(ii)=',
-                               sum(ii),'t = [',max(t),'-',min(t),'], it= [',
+      if (verbose) print(paste('matchdate: Weight the two nearest in time because no overlaps:',
+      	 	   	       ' sum(ii)=',sum(ii),'t = [',max(t),'-',min(t),'], it= [',
                                max(it),'-',min(it),']'))
       i1 <- t <= it; t1 <- max(t[i1])
       i2 <- t > it; t2 <- min(t[i2])
@@ -111,9 +111,9 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     attr(y,'n.apps') <- attr(x,'n.apps')
     attr(y,'appendix.1') <- attr(x,'appendix.1')
   }
-  good <- is.finite(index(y))
+  good <- as.logical(is.finite(index(y)))
   if (verbose) print(paste('Final check: finite values for index of y:',sum(good)))
-  y <- subset(y,it=is.finite(good))
+  y <- subset(y,it=good)#is.finite(good))
   nt <- index(y)
   
   attr(y,'history') <- history.stamp(x)
