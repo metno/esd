@@ -333,27 +333,27 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
         z <- subset(Y,is=i)
         if (verbose) {print(class(z)); print(names(attributes(z)))}
         if (inherits(X,'eof')) {
-            if (verbose) print("The predictor is some kind of EOF-object")
-            ## Call different functions, depending on the class of X:
-                                        #print("the predictor is an EOF-object")
-            if (inherits(X,'comb')) {
-                if (verbose) print("*** Comb ***")
-                ## X is combined EOFs
-                ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,mon=mon,
-                              method=method,swsm=swsm,
-                              rmtrend=rmtrend,ip=ip,
-                              area.mean.expl=area.mean.expl,verbose=verbose,...)
-                if (verbose) print("---")
-            } else if (inherits(X,'eof')) {
-                if (verbose) print("*** EOF ***")
-                ## X is ordinary EOF
-                ds <- DS.default(y=z,X=X,mon=mon,
-                                 method=method,swsm=swsm,
-                                 rmtrend=rmtrend,ip=ip,
-                                 area.mean.expl=area.mean.expl,
-                                 verbose=verbose,...)
+          if (verbose) print("The predictor is some kind of EOF-object")
+          ## Call different functions, depending on the class of X:
+          #print("the predictor is an EOF-object")
+          if (inherits(X,'comb')) {
+            if (verbose) print("*** Comb ***")
+            ## X is combined EOFs
+            ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,mon=mon,
+                          method=method,swsm=swsm,
+                          rmtrend=rmtrend,ip=ip,
+                          area.mean.expl=area.mean.expl,verbose=verbose,...)
+            if (verbose) print("---")
+          } else {
+            if (verbose) print("*** EOF ***")
+            ## X is ordinary EOF
+            ds <- DS.default(y=z,X=X,mon=mon,
+                             method=method,swsm=swsm,
+                             rmtrend=rmtrend,ip=ip,
+                             area.mean.expl=area.mean.expl,
+                             verbose=verbose,...)
             if (verbose) print("+++")
-            }
+          }
         } else if (inherits(X,'field')) {
             if (verbose) print("the predictor is a field-object")
             ## X is a field
@@ -363,7 +363,8 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                            area.mean.expl=area.mean.expl,verbose=verbose,...)
         }
         ## May need an option for coombined field: x is 'field' + 'comb'
-
+        if (is.null(ds)) browser()
+        
         ## Unless told not to - carry out a cross-validation
         if (!is.null(m))  {
           if (verbose) print("Cross-validation")
@@ -769,6 +770,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     if (verbose) {print('summary of predictand y after matchdate'); print(summary(coredata(y)))}
     
     if (verbose) print('predictor: match date with predictand')
+    browser()
     X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
     dy <- dim(y); if (is.null(dy)) dy <- c(length(y),1)
     dx <- dim(X); if (is.null(dx)) dx <- c(length(X),1)

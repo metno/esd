@@ -11,6 +11,7 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   ## If it is the list, then use the first element because otherwise will not find the index
   if (is.list(it)) it <- it[[1]]
 
+  cls <- class(x)
   ## Check the index type of it and change the time scale of x to match it
   if (inherits(it,c('station','field','eof','ds'))) {
     if (inherits(it,'annual')) x <- annual(x)
@@ -21,7 +22,7 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   } 
     
   t <- index(x); t0 <- t
-  cls <- class(x)
+  if (inherits(it,c('annual','month','seasonal','day'))) cls[2] <- class(it)[2]
   
   if (inherits(it,'character')) {
     if (verbose) print('Convert years and incomplete dates to %YYYY-%MM-%DD date format')
