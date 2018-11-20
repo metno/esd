@@ -572,13 +572,6 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   }  else {
     xvalfit <- NULL
   }
-  
- 
-#  print("predict")
-#  y <- predict(x)
-#  print(dim(y))
-  
- # print("HERE")
 
   Y0 <- as.original.data(x)
   #print(index(Y0)); print(index(x))
@@ -602,7 +595,6 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
   if (is.null(xlim))
     xlim <- range(index(x),index(y0),x.rng,na.rm=TRUE)
-  #browser()
 
   par(fig=c(0.025,1,0.025,0.475),new=TRUE)
   par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
@@ -611,8 +603,13 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
            main=main,xlim=xlim,ylim=ylim,lwd=1,type='b',pch=19)
   par0 <- par()
   grid()
+  if (verbose) print(c(class(index(x)),class(index(y0))))
+  if ( (class(index(x))=='Date') & (class(index(y0))=='numeric') & inherits(x,'annual') ) 
+    index(x) <- year(index(x))
+  if ( (class(index(x))=='numeric') & (class(index(y0))=='Date') & inherits(x,'annual') ) 
+    index(x) <- as.Date(paste(index(x),'01-01',sep='-'))
   lines(x,col="red",type="l",lwd=lwd)
-
+  
   cal0 <- data.frame(y=coredata(y0),t=year(y0))
   cal1 <- data.frame(y=coredata(x),t=year(x))
  
@@ -650,11 +647,13 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   } else  legcol <- c("black","red")
 
   ## Replot observations and prediction for calibration period
+
   lines(y0,lwd=1,type='b',pch=19)
   lines(x,col="red",type="l",lwd=lwd)
   #print(legcol)
-
-  legend(x="topleft",legend=c("Obs.","Cal.","Proj"),bty="n",horiz=TRUE,
+  if (!is.null(attr(x,'appendix.1'))) legend <- c("Obs.","Cal.","Proj") else
+                                      legend <- c("Obs.","Cal.")
+  legend(x="topleft",legend=legend,bty="n",horiz=TRUE,
          col=c("black","red","blue"),lwd=c(1,1,1),pch=c(19,1,1))
   
   if (plot.type=="single") {
@@ -880,7 +879,13 @@ plot.ds.pca <- function(x,ip=1,verbose=FALSE,
     par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
     xlim <- range(index(attr(y,'original_data')),index(y))
     ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE)
-    plot(attr(y,'original_data')[,ip],lwd=2,type='b',pch=19,xlim=xlim,ylim=ylim)
+    y0 <- attr(y,'original_data')
+    plot(y0[,ip],lwd=2,type='b',pch=19,xlim=xlim,ylim=ylim)
+    if ( (class(index(y))=='Date') & (class(index(y0))=='numeric') & inherits(y,'annual') ) 
+      index(y) <- year(index(y))
+    if ( (class(index(y))=='numeric') & (class(index(y0))=='Date') & inherits(y,'annual') ) 
+      index(y) <- as.Date(paste(index(y),'01-01',sep='-'))
+    
     lines(zoo(y[,ip]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,ip])[1],
            y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
@@ -929,10 +934,15 @@ plot.ds.eof <- function(x,ip=1,
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     xlim <- range(index(attr(y,'original_data')),index(y))
     ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE)
-    plot(attr(y,'original_data')[,ip],
+    y0 <- attr(y,'original_data')
+    plot(y0[,ip],
          main=paste("PC",ip),ylab="",
          ylim=ylim*c(1.2,1.2),xlim=xlim,
          lwd=2,type='b',pch=19)
+    if ( (class(index(y))=='Date') & (class(index(y0))=='numeric') & inherits(y,'annual') ) 
+      index(y) <- year(index(y))
+    if ( (class(index(y))=='numeric') & (class(index(y0))=='Date') & inherits(y,'annual') ) 
+      index(y) <- as.Date(paste(index(y),'01-01',sep='-'))
     lines(zoo(y[,ip]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,ip])[1],
            y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
