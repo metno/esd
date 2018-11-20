@@ -17,7 +17,7 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     if (inherits(it,'annual')) x <- annual(x)
     if (inherits(it,'month')) x <- as.monthly(x)
     if (inherits(it,'seasonal')) x <- as.4seasons(x)
-    if (inherits(it,'day')) x <- aggregate(x,list(as.Date(index(x))),FUN='mean') 
+    ## if (inherits(it,'day')) x <- aggregate(x,list(as.Date(index(x))),FUN='mean') ## REB 2018-11-20: what does this line actually do? It causes errors.
     if (verbose) print(index(x))
   } 
   
