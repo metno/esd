@@ -198,7 +198,7 @@ str(Y)
 
 # Look at the residual of the ESD analysis
 y <- as.residual(Y)
-plot(y)
+plot.zoo(y)
 
 # Check the residual: dependency to the global mean temperature?
 T2m <- (t2m.ERA40())
@@ -217,6 +217,7 @@ y <- as.annual(bjornholt,FUN="exceedance")
 z <- DS(y,X)
 plot(z)
 
+## Example on using common EOFs as a framework for the downscaling:
 lon <- c(-12,37)
 lat <- c(52,72)
 ylim <- c(-6,6)
@@ -224,23 +225,19 @@ t2m <- t2m.NCEP(lon=lon,lat=lat)
 T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 data(Oslo)
 X <- combine(t2m,T2m)
-
-eof <- EOF(X,it=7)
+eof <- EOF(X,it='Jul')
 ds <- DS(Oslo,eof)
 plot(ds)
 
-DS(Oslo,X,station=FALSE) -> y
-plot(y)
-##Y <- combine.ds.comb(y)
-##plot(Y)
-
+## Example downscaling statistical parameters: mean and standard deviation
+## using different predictors
 data(ferder)
 t2m <- t2m.NCEP(lon=c(-30,50),lat=c(40,70))
 slp <- slp.NCEP(lon=c(-30,50),lat=c(40,70))
 T2m <- as.4seasons(t2m)
 SLP <- as.4seasons(slp)
-X <- EOF(T2m,it=1)
-Z <- EOF(SLP,it=1)
+X <- EOF(T2m,it='Jan')
+Z <- EOF(SLP,it='Jan')
 y <- ferder
 sametimescale(y,X) -> z
 ym <- as.4seasons(y,FUN="mean")
@@ -267,7 +264,7 @@ plot(ds2)
 ## Use downscale results to fill in missin data:
 y3 <- predict(ds2,newdata=X)
 ## Plot a subset of y based on dates in predicted y3
-plot(subset(y,it=range(index(y3))),col='grey80',lwd=4)
+plot(subset(y,it=range(index(y3))),col='grey80',lwd=4,map.show=FALSE)
 points(as.station(predict(ds2)))
 # The downscaled 
 lines(y3,lty=2)

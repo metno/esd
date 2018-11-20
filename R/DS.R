@@ -130,13 +130,13 @@ DS.default <- function(y,X,mon=NULL,
     ##str(y); print(class(y))
 
     ## REB: 2014-10-03: add weights if available
-    if (!is.null(attr(y,'standard.error')))
-        if (sum(is.finite(attr(y,'standard.error')))>0) weights <- 1/coredata(attr(y,'standard.error')) else
-                                                        weights <- rep(1,length(y))
-    weights[!is.finite(weights)] <- 0
-    if (is.null(attr(y,'standard.error'))) weighted <- FALSE
-    if (verbose) {print(paste('weights',weighted)); print(weights)}
-
+    weights <- rep(1,length(y))
+    if (!is.null(attr(y,'standard.error'))) {
+      if (sum(is.finite(attr(y,'standard.error')))>0) weights <- 1/coredata(attr(y,'standard.error'))
+      weights[!is.finite(weights)] <- 0
+      if (is.null(attr(y,'standard.error'))) weighted <- FALSE
+      if (verbose) {print(paste('weights',weighted)); print(weights)}
+    }
     #
     ##if (length(index(X)) == length(index(y)))
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
