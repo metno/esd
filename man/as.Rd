@@ -135,7 +135,7 @@ as.field.default(x,index,lon,lat,param,unit,
                  longname=NA,quality=NA,src=NA,url=NA,
                  reference=NA,info=NA,calendar='gregorian',
                  greenwich=TRUE, method= NA,type=NA,aspect=NA)
-as.field.eof(x,...)
+as.field.eof(x,iapp=NULL,anomaly=FALSE,verbose=FALSE,...)
 as.field.comb(x,iapp=NULL,...)
 as.field.ds(x,iapp=NULL,...)
 as.field.station(x,...)
