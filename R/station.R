@@ -833,8 +833,7 @@ metnod.station <-  function(re=14, url = 'ftp://ftp.met.no/projects/chasepl/test
 metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
                           qual=NULL,start=NULL,end=NULL,param=NULL,verbose=FALSE,
                           re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",qa = 4,
-                          url = "http://klapp/metnopub/production/",save2file=TRUE) {
-  
+                          url = "http://klapp/metnopub/production/",save2file=FALSE) {
   if (verbose) print("http://eklima.met.no")
   if (!is.na(end)) end1 <-format(as.Date(paste("31.12.",as.character(end),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
   if (!is.na(start)) start1 <- format(as.Date(paste("01.01.",as.character(start),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
@@ -860,9 +859,11 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
   ## 
   Datasett <- as.list(read.table(Filnavn,dec = ".", header = TRUE, as.is = TRUE, fileEncoding = "latin1"))
   
-  if (param1=='RR') 
+  if (param1=='RR') {
     Datasett$RR[Datasett$RR == "."] <- "0"
-  Datasett$RR[Datasett$RR == "x"] <- NA
+    Datasett$RR[Datasett$RR == "x"] <- NA
+  } else if (param1 == 'SA')
+    Datasett$SA[Datasett$SA == "."] <- "0"
   ext <- switch(as.character(re), '14' = 'dly', '17' = 'obs', '15' = 'mon')
   
   if (save2file) {
@@ -873,8 +874,7 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
     stid <- sprintf("%05d", as.numeric(stid))
     write.table(Datasett,file=file.path(path,paste(param1,'_',stid,'.',ext,sep='')),row.names = FALSE,col.names = names(Datasett))
   }
-  
-  eval(parse(text = paste("y <- as.numeric(Datasett$", param1, ")",sep = "")))
+  eval(parse(text = paste("y <- as.numeric(Datasett$", param1,")", sep = "")))
   if (sum(y,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
   
   type <- switch(re, '14' = "daily values", '17' = "observations", '15' = "Monthly means")
