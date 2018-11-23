@@ -2,104 +2,104 @@
 ## Matrix lon & lat indices: (i, j).
 ## @RasmusBenestad, 2018-10-29
 
+aggregate.size <- function(x, ...) UseMethod("aggregate.size")
 
-aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
+aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) {
 
-    
-    recursive.search <- function(z,y,I,J,eno) {
-        if (verbose) print(paste('recursive.search:',sum(is.finite(y)),eno))
-        if (sum(is.finite(y))==0) browser()
-        ## Only keep the points where y has valid data
-        valgp <- !is.na(y); y <- y[valgp]; I <- I[valgp]; J <- J[valgp]
-        if (sum(valgp,na.rm=TRUE)==0) {
-            if (verbose) print('finished')
-            return(list(z,y,I,J,eno))
-        }
-
-  
-        ## Distance between the first and all the other grid boxes:
-        nbr <- c(0,sqrt( (I[-1] - I[1])^2 + (J[-1] - J[1])^2 ))
-        
-        ## Sort the gridpoints according to distance
-        srtgp <- order(nbr); nbr <- nbr[srtgp]; y <- y[srtgp]; I <- I[srtgp]; J <- J[srtgp]
-        ## Select the girboxes which lie next to the fist grid box:
-        sel <- (nbr==1)
-        while (sum(sel,na.rm=TRUE)>0) {
-            if (verbose) print(paste('more adjacen points',(sum(sel,na.rm=TRUE))))
-            
-            if (plot) points(I[1],J[1],pch=19,col=rgb(1,0,0,0.2))
-            ## If a grid lying next to grid one is identified, then mask grid one, keep a record,
-            ## (z[i1] <- eno) and continue search
-            z[I[1],J[1]] <- eno; y[1] <- NA; I[1] <- NA; J[1] <- NA
-            is <- (1:length(sel))[sel]  
-            if ( (length(sel)>=1) & (sum(is.finite(y))==0) ) {
-                ## If one adjacent gridbox is detected
-                psel <- recursive.search(z,y,I,J,eno)
-            }
-            ## If more than one neighbouring gridpoints: 2 or more
-            if ( (length(sel) >= 2) & (sum(is.finite(y))==0) ) {
-                if (verbose) print(paste('>=2',is[1]))
-                y[is[1]] <- NA; I[is[1]] <- NA; J[is[1]] <- NA
-                psel <- recursive.search(z,y,I,J,eno)
-            }
-            ## If more than one neighbouring gridpoints: 3 or more
-            if ( (length(sel) >= 3)  & (sum(is.finite(y))==0) ) {
-                if (verbose) print(paste('>=3',is[1]))
-                y[is[2]] <- NA; I[is[2]] <- NA; J[is[2]] <- NA
-                psel <- recursive.search(z,y,I,J,eno)
-            }
-            ## If more than one neighbouring gridpoints: 4
-            if ( (length(sel) == 4)  & (sum(is.finite(y))==0) ) {
-                if (verbose) print(paste('>=4',is[1]))
-                y[is[3]] <- NA; I[is[3]] <- NA; J[is[3]] <- NA
-                psel <- recursive.search(z,y,I,J,eno)
-            }
-            ## Distance between the first and all the other grid boxes:
-            nbr <- c(0,sqrt( (I[-1] - I[1])^2 + (J[-1] - J[1])^2 ))
-            
-            ## Sort the gridpoints according to distance
-            srtgp <- order(nbr); nbr <- nbr[srtgp]; y <- y[srtgp]; I <- I[srtgp]; J <- J[srtgp]
-            ## Select the girboxes which lie next to the fist grid box:
-            sel <- (nbr==1)
-            
-        }
-        ## If there are no more grid boxes next to the ones identified, then return the
-        ## data and increase the event number (evo):
-        #browser()
-        if (verbose) print('...')
-        return(list(z,y,I,J,eno))
-    }
-
+    ## Select all grid boxes with values exceeding x0
     if (verbose) print('aggregate.size.matrix')
     ## Copy data that can be masked
-    mask <- (x > x0); y <- x[mask];  ## Space mask
-    z <- x*NA
-    if (verbose) print(paste('Detected',sum(mask),'grid points'))
+    mask <- (x > x0)
+    if (sum(mask)==0) return(list(events=x*NA,number=0,statistic=NULL))
+    y <- x[mask];  ## Space mask
+    z <- y*NA; ns <- sum(mask)
+    if (verbose) print(paste('Detected',ns,'grid points from total of',length(x)))
     ## Determine the dimensions of the matrix
     d <- dim(x)
     ## Generate same size matrix with i-indexes
     I <- matrix(rep(1:d[1],d[2]),d[1],d[2])[mask]
     J <- matrix(sort(rep(1:d[2],d[1])),d[1],d[2])[mask]
-    if (plot) plot(I,J)
-    
+    if (plot) {
+        plot(I,J,pch=19,col='grey70')
+        points(I[1],J[1],pch='1')
+    }
     ##  Loop: distance (i, j) =1. Store and mask points that are sorted.
     ## Zero, one, two, three or four cases for each point.
-    eno <- 1
-
-    ## Loop over unmasked points which have been selected
-    while (sum(is.finite(y))>0) {
-        Z <- recursive.search(z,y,I,J,eno)
-        z <- Z$z; y <- Z$y; I <- Z$I; J <- Z$J; eno <- Z$eno + 1
-        browser()
+    eno <- 1; z[1] <- 1 ## First selected gridbox always belongs to event-number 1
+    for (ij in 1:ns) {
+        
+        ## If the event-number has not been assigned: see if it is adjacent to a gridpoint with an event-number
+        if (is.na(z[ij])) {
+            ## Distance between the first and all the other grid boxes:
+            nbr <- c(0,sqrt( (I[-ij] - I[ij])^2 + (J[-ij] - J[ij])^2 ))
+            ## The tested gridpoint has distance to itsel nbr=0
+            if (ij > 1) {nbr[1:(ij-1)] <- nbr[2:ij]; nbr[ij] <- 0}
+            ## Select the gridboxes attached to the fist grid box: nbr==1
+            sel <- (nbr==1)
+            if (sum(is.na(sel)) >0) browser()
+            if (sum(sel)>0) {
+                if (verbose) print(paste('more adjacent points',sum(sel,na.rm=TRUE),eno))
+                getnumber <- z[sel]
+                assigned <- getnumber[is.finite(getnumber)]
+                if (length(assigned)>0) {
+                    z[ij] <- assigned[1]; z[sel] <- assigned[1] 
+                } else {
+                    ## None of the adjacent gridboxes have an event-number, the gridbox gets a new event number
+                    eno <- eno + 1
+                    z[ij] <- eno
+                    z[sel] <- eno
+                }
+            } else {
+                ## If there are no adjacent events, then the gridbox gets a new event number
+                eno <- eno + 1
+                z[ij] <- eno
+            }
+            if (plot) points(I[ij],J[ij],pch=as.character(z[ij]))
+        }
     }
-    
-    return(Z)
+    ## Synthesise the results in the  
+    Z <- x*NA; Z[mask] <- z
+    if (plot) image(Z)
+    if ( (!is.null(attr(z,'longitude'))) & (!is.null(attr(z,'latitude'))) ) {
+      ## Estimate the area of the gridboxes
+      W <- Z; for (j in 1:d[2]) W[,j] <- a*cos(pi*lat(z)[j]/180)
+      stats <- rep(NA,eno)
+      for (i in 1:eno) {stats[i] <- sum(W[Z==eno])}  
+    } else stats <- table(z)
+    ## The biggest event is always the first
+    stats <- sort(stats)
+    if (verbose) print(stats)
+    return(list(events=Z,number=eno,statistic=stats))
 }
 
-test.events <- function(n=40, m=30, verbose=TRUE) {
+
+aggregate.size.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
+  if (verbose) print('aggregate.size.field')  
+  nt <- length(index(x))
+  d <- attr(x,'dimensions')
+  sizestats <- list()
+  for (it in 1:nt) {
+    z <- matrix(x[it,],d[1],d[2])
+    attr(z,'longitude') <- lon(x); attr(z,'latitude') <- lat(x)              
+    sizestats[[it]] <- aggregate.size(z,x0=x0)$statistic
+    if (verbose) print(sizestats[[it]])  
+  }
+  names(sizestats) <- index(x)
+  ne <- max(unlist(lapply(sizestats,length)))
+  size <-  unlist(lapply(sizestats,function(x) {y <- rep(0,ne); y[1:length(x)] <- x[]; return(y)}))
+  dim(size) <- c(ne,length(sizestats))
+  size <- zoo(t(size),order.by=index(x))
+  names(size) <- paste('event',1:ne)
+  attr(size,'unit') <- 'm^2' 
+  if (plot) plot(size)
+  return(size)
+}
+
+
+test.events <- function(n=62, m=78, verbose=TRUE) {
     x <- matrix(rep(sin(seq(0,4*pi,length=n)),m)*
                 sort(rep(cos(seq(0,pi,length=m)),n)),n,m)
-    par(mfcol=c(2,1))
+    par(mfcol=c(3,1))
     image(x)
     test.results <- aggregate.size.matrix(x,x0=0,plot=TRUE,verbose=verbose)
     
