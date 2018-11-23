@@ -14,3 +14,7 @@ esd.issues <- function(url='https://github.com/metno/esd/issues',browser='firefo
 
 downscaling.about <- function(url='http://climatescience.oxfordre.com/view/10.1093/acrefore/9780190228620.001.0001/acrefore-9780190228620-e-27',browser='firefox')
   system(paste(browser,url))
+
+element.kode <- function(url='http://klapp/metnopub/production/metno?re=26&ct=text/plain&del=semicolon&tab=T_ELEM_DIURNAL',browser='firefox')
+  system(paste(browser,url)) 
+
