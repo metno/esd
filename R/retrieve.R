@@ -2308,7 +2308,7 @@ retrieve.station <- function(ncfile,param="auto",type="ncdf4",
     stop('retrieve.station error:')
   }
   y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
-                  cntr = cntrs,stid = stids,longname=longname,
+                  cntr = cntrs,stid = stids,longname=longname$value,
                   unit=unit$value,param=param)
   
   ## Weed out empty spaces
@@ -2375,8 +2375,9 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   if (verbose) print(paste('Get the time period',paste(range(t),collapse=' - ')))
   ok <- ( (t > as.Date('1700-01-01')) & (t < as.Date('2300-01-01')) )
   attr(y,'period') <- range(t[ok])
-  attr(y,'unit') <- unit
-  attr(y,'missing_value') <- missing
+  attr(y,'unit') <- unit$value
+  attr(y,'longname') <- longname$value
+  attr(y,'missing_value') <- missing$value
   attr(y,'length') <- length(t)
   if (verbose) print('got metadata attributes: period, unit, missing')
   
