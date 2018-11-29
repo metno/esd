@@ -393,11 +393,6 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     S <- lapply(split(S, arrayInd(seq_along(S),dim(S))[,1]),
                 array,dim=dim(S)[-1])
     S <- lapply(S,function(x) zoo(x,order.by=index(X[[3]])))
-    ##dev.new()
-    ##plot(S[[1]][,1],ylim=c(-35,5),col=adjustcolor("blue",alpha=0.3),type="l")
-    ##for (i in 2:dim(S[[1]])[2]) {
-    ##  lines(S[[1]][,i],col=adjustcolor("blue",alpha=0.3))
-    #}
     if (verbose) print('Set attributes')
     Y <- as.station(X$pca,verbose=verbose)
     locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(Y,"location")))
@@ -405,12 +400,15 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
     ##locations <- paste(paste("i",attr(X$pca,"station_id"),sep=""),
     ##                   locations,sep=".")
     S <- setNames(S,locations)
+    param <- attr(X$pca,"variable")[1]
+    longname <- attr(X$pca,"longname")[1]
+    unit <- attr(X$pca,"unit")[1]
     lons <- attr(X$pca,"longitude")
     lats <- attr(X$pca,"latitude")
     alts <- attr(X$pca,"altitude")
     stid <- attr(X$pca,"station_id")
     locs <- attr(X$pca,"location")
-    gcms <- sub(".*_","",names(X)[3:length(X)])
+    gcms <- sub("^i[0-9]{1,3}_","",names(X)[3:length(X)])
     for (i in 1:length(S)) {
       yi <- Y[,i]
       class(yi) <- class(Y)
@@ -420,9 +418,9 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
       attr(yi,"altitude") <- alts[i]
       attr(yi,"station_id") <- stid[i]
       attr(yi,"location") <- locs[i]
-      attr(yi,"unit") <- attr(X$pca,"unit")
-      attr(yi,"variable") <- attr(X$pca,"variable")
-      attr(yi,"longname") <- attr(X$pca,"longname")
+      attr(yi,"unit") <- unit
+      attr(yi,"variable") <- param
+      attr(yi,"longname") <- longname
       attr(S[[i]],"station") <- yi
       attr(S[[i]],'aspect') <- 'original'
       attr(S[[i]],"longitude") <- lons[i]
@@ -434,13 +432,16 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
       class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
-    if (length(S)>1) class(S) <- c("dsensemble",class(X$pca)[2:3],"list") else
-                     S <-  S[[1]]
+    if (length(S)>1) {
+      class(S) <- c("dsensemble",class(X$pca)[2:3],"list") 
+    } else {
+      S <-  S[[1]]
+    }
     #REB 2018-03-02: The line below causes big problems. Besides, I don't understand why it's there
-    if ( (is.list(S)) & (length(S)==length(locs)) ) names(S) <- locs
-    attr(S,"unit") <- attr(X$pca,"unit")
-    attr(S,"variable") <- attr(X$pca,"variable")
-    attr(S,"longname") <- attr(X$pca,"longname")
+    #if ( (is.list(S)) & (length(S)==length(locs)) ) names(S) <- locs
+    attr(S,"unit") <- unit
+    attr(S,"variable") <- param
+    attr(S,"longname") <- longname
     attr(S,"aspect") <- "dsensemble.pca transformed to stations"
     attr(S,"history") <- history.stamp()
     invisible(S)

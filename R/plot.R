@@ -210,10 +210,11 @@ vis.map <- function(x,col='red',map.type=NULL,
   ## Instead check if it the external package is installed and then 
   ## call it explicitly, e.g., RgoogleMaps::GetMap().
   ## Also add the package under 'Suggested' in the DESCRIPTION file.
-  if (requireNamespace("RgoogleMaps", quietly = TRUE) & usegooglemap) {
-  #if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) & usegooglemap ) {
-    #require(RgoogleMaps)
-     
+  if (!requireNamespace("RgoogleMaps", quietly = TRUE)) {
+    usegooglemap <- FALSE
+  }
+  
+  if(usegooglemap) {
     if (is.null(zoom)) {
       if (verbose) print('zoom not defined')
       if (length(lon(x))==1) {
@@ -226,24 +227,32 @@ vis.map <- function(x,col='red',map.type=NULL,
     }
     if (!is.finite(zoom)) zoom <- 5
     if (verbose) print(paste('zoom=',zoom))
-    bgmap <- RgoogleMaps::GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
+    bgmap <- try(RgoogleMaps::GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
                   destfile = "map.station.esd.png",
-                  maptype = "mobile", zoom=zoom)
-    if(map.insert) {
-      par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
-           mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
-    }
-    if(map.type=="rectangle") {
-      xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
-      yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
-      RgoogleMaps::plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
-      RgoogleMaps::PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
+                  maptype = "mobile", zoom=zoom))
+    if(inherits(bgmap,"try-error")) {
+      usegooglemap <- FALSE
     } else {
-      RgoogleMaps::plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+      if(map.insert) {
+        par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
+             mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
+      }
+      if(map.type=="rectangle") {
+        xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
+        yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
+        RgoogleMaps::plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
+        RgoogleMaps::PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
+      } else {
+        RgoogleMaps::plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+      }
     }
-      
-  } else {
-    if (verbose) {print('basic map'); print(cex.axis)}
+  }
+  
+  if(!usegooglemap) {
+    if (verbose) {
+      print('basic map')
+      print(cex.axis)
+    }
     data(geoborders, envir = environment())
     lon <- geoborders$x
     lat <- geoborders$y
@@ -547,14 +556,13 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 
   if (sum(is.element(what,'map'))>0) {
     if (verbose) print('Show map...')
-    par(fig=c(0,0.5,0.5,1)) ## par(bty="n",fig=c(0,0.5,0.5,1),mar=c(1,1,1,1))
+    par(fig=c(0,0.5,0.5,1))
     map(x,new=FALSE,colbar=list(show=FALSE),verbose=verbose,...)
     points(lon(x),lat(x),lwd=3,cex=1.5)
   }
 
   if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ){
-    #if (is.null(attr(x,'evaluation'))) attr(x,'evaluation') <- crossval(x)
-    par(new=TRUE,fig=c(0.5,1,0.5,1)) ##par(bty="n",fig=c(0.55,0.95,0.55,0.95),mar=c(4,3,1,1),new=TRUE, xaxt='s',yaxt='s',cex.sub=0.7)
+    par(new=TRUE,fig=c(0.5,1,0.5,1)) 
      
     plot(attr(x,'evaluation')[,1],attr(x,'evaluation')[,2],
          main='Cross-validation',xlab='original data',
@@ -570,8 +578,9 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     plot(c(0,1),c(0,1),type='n',xlab='',ylab='')
     ok <- is.finite(attr(x,'evaluation')[,1]) &
           is.finite(attr(x,'evaluation')[,2])
-    text(0,0.5,paste('correlation=',
-           round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
+    text(par()$xaxp[1],mean(par()$yaxp[1:2]),
+          paste('correlation=',
+          round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
          pos=4,cex=0.8,col='grey')
   }  else {
     xvalfit <- NULL
@@ -602,11 +611,12 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
       x.rng <- range(x.rng,index(y),na.rm=TRUE)
   }
   
-  if (is.null(ylim))
+  if (is.null(ylim)) {
     ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
-  if (is.null(xlim))
+  }
+  if (is.null(xlim)) {
     xlim <- range(index(x),index(y0),x.rng,na.rm=TRUE)
-  browser()
+  }
 
   par(fig=c(0.025,1,0.025,0.475),new=TRUE)
   par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')

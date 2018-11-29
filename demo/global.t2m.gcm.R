@@ -4,7 +4,6 @@ library(esd)
 globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
                        annual=TRUE,pattern='tas_',param='tas',relative=FALSE,
                        select=NULL,lon=NULL,lat=NULL,FUN='mean',anomaly=TRUE) {
-
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
   fnms <- list.files(path=path,pattern=pattern)
   print(fnms)
