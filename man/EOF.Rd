@@ -89,7 +89,7 @@ eof.sst <- EOF(SST)
 plot(eof.sst)
 
 # EOF of July SST:
-eof.sst7 <- EOF(sst,it=7)
+eof.sst7 <- EOF(sst,it="Jul")
 plot(eof.sst7)
 
 # common EOF for model
@@ -117,7 +117,7 @@ pca <- PCA(X)
 map(pca)
 
 slp <- slp.NCEP(lon=c(-20,30),lat=c(30,70))
-eof <- EOF(slp,it=1)
+eof <- EOF(slp,it="Jan")
 ds <- DS(pca,eof)
 # ds is a PCA-object
 plot(ds)
