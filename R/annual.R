@@ -82,12 +82,13 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   # Need to accomodate for the possibility of more than one station series.
   if (inherits(x,'day')) {
     if (is.null(nmin)) nmin <- 30*nmo
-  }  else
-  if (inherits(x,'month')) {
+  } else if (inherits(x,'month')) {
     if (is.null(nmin)) nmin <- 12
   } else if (inherits(x,'season')) {
     if (is.null(nmin)) nmin <-  length(levels(factor(month(x))))
-  } else nmin <- NA
+  } else {
+    nmin <- NA
+  }
   if (verbose) {print(paste('nmin=',nmin)); print(class(x))}
   
   ## Convert x to a zoo-object:
@@ -103,7 +104,6 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   if (verbose) print(paste('aggregate: FUN=',FUN))
 
   if (verbose) str(X)
- 
   
   if (sum(is.element(names(formals(FUN)),'threshold')==1)) {
     ## If threshold needed - set a default:

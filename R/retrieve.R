@@ -22,13 +22,13 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
   qf <- NULL
   test <- NULL
   
-  if (requireNamespace("ncdf4", quietly = TRUE)) {
-    type <- "ncdf4"
-  } else if(requireNamespace("ncdf", quietly = TRUE)) {
-    type <- "ncdf"
-  } else {
-    stop("Package \"ncdf4\" or \"ncdf\" needed to retrieve netCDF data. Please install it.")
-  }
+  #if (requireNamespace("ncdf4", quietly = TRUE)) {
+  #  type <- "ncdf4"
+  #} else if(requireNamespace("ncdf", quietly = TRUE)) {
+  #  type <- "ncdf"
+  #} else {
+  #  stop("Package \"ncdf4\" or \"ncdf\" needed to retrieve netCDF data. Please install it.")
+  #}
   
   if ((type=="ncdf") | (class(ncfile)=="ncdf")) { 
     nc <- open.ncdf(ncfile)
@@ -86,9 +86,9 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
                             miss2na=TRUE, greenwich=FALSE,
                             plot=FALSE, verbose=FALSE, ...)  {
   if(verbose) print("retrieve.ncd4")
-  if (!requireNamespace("ncdf4", quietly = TRUE)) {
-    stop("Package \"ncdf4\" needed to retrieve netCDF data with this function. Please install the required package.")
-  } else {
+  #if (!requireNamespace("ncdf4", quietly = TRUE)) {
+  #  stop("Package \"ncdf4\" needed to retrieve netCDF data with this function. Please install the required package.")
+  #} else {
     class.x <- file.class(ncfile)
     lon.rng  <- lon
     lat.rng  <- lat
@@ -562,19 +562,7 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
     attr(z, 'frequency')      <- 1
     mattr <- names(model)[!names(model) %in% c(names(attributes(z)),"project_id","filename")]
     for(a in mattr) attr(z, a) <- model[[a]]
-    ## not needed with the mattr loop:
-    #attr(z, "title") <- model$title
-    #attr(z, "model_id")       <- model$model_id
-    #attr(z, "experiment_id")  <- model$experiment_id
-    #attr(z, "realization")    <- model$realization
-    #attr(z, "initialization_method") <- model$initialization_method
-    #attr(z, "physics_version") <- model$physics_version
-    #attr(z, "parent_experiment_rip") <- model$parent_experiment_rip
-    #attr(z, 'type')           <- model$type
-    ## attr(z, "timestamp")      <- date()
-    ## attr(z, "anomaly")        <- FALSE
-    ## attr(z, "time:method")    <- NA
-    ## attr(z, "spatial:method") <- NA
+    attr(z, "model_history") <- model$history
     attr(z, "URL")            <- "http://climexp.knmi.nl/"
     attr(z, "call")           <- match.call()
     ## attr(z, "history")        <- NA
@@ -590,7 +578,7 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
     ## plot the results
     if (plot) map(z,...)
     invisible(z)
-  }  
+  #}  
 } 
 
 
@@ -600,9 +588,9 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
                            miss2na = TRUE, greenwich = FALSE , ##ncdf.check = TRUE ,
                            plot = FALSE , verbose = FALSE , ...) {
   
-  if (!requireNamespace("ncdf", quietly = TRUE)) {
-    stop("Package \"ncdf\" needed to retrieve netCDF data with this function. Please install the required package.")
-  } else {
+  #if (!requireNamespace("ncdf", quietly = TRUE)) {
+  #  stop("Package \"ncdf\" needed to retrieve netCDF data with this function. Please install the required package.")
+  #} else {
     if (verbose) print('retrieve.ncdf')
     class.x <- file.class(ncfile,type='ncdf3')
     lon.rng  <- lon
@@ -1106,6 +1094,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
     ## Add attributes
     attr(z, "file") <- model$filename
     attr(z,'source') <- model$project_id
+    attr(z,'model_history') <- model$history
     attr(z,'timeunit') <- model$frequency
     attr(z,'frequency') <- 1
     mattr <- names(model)[!names(model) %in% c(names(attributes(z)),"filename","project_id")]
@@ -1127,7 +1116,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
     ## plot the results
     if (plot) map(z,...)
     invisible(z)
-  }
+  #}
 } 
 
 ## Define check as a method
@@ -1135,10 +1124,11 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
 
 check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   if(verbose) print("check.ncdf4")
-  if (!requireNamespace("ncdf4", quietly = TRUE)) {
-    stop("Package \"ncdf4\" needed to check netCDF data with this function. Please install the required package.")
-  } else {
+  #if (!requireNamespace("ncdf4", quietly = TRUE)) {
+  #  stop("Package \"ncdf4\" needed to check netCDF data with this function. Please install the required package.")
+  #} else {
     ## Checking : Number of variables and select only one from the netcdf file, get variable attributes in v1. The user should decide between the list of variables
+    qf <- NULL
     if (tolower(param) == "auto") {
       if (ncid$nvars > 1) {
         i <- length(names(ncid$var))
@@ -1605,16 +1595,17 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     ##ac.gcm <- data.frame(y = y.test, x1 = as.vector(cos(2 * pi * tim/daysayear)), x2 = as.vector(sin(2 * pi * tim/daysayear)))
     result <- list(model=model,time=time)
     invisible(result)
-  }  
+  #}  
 }
 
 
 check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FALSE - AM 22-10-2013 not used any more ! 
-  if (!requireNamespace("ncdf", quietly=TRUE)) {
-    stop("Package \"ncdf\" needed to check netCDF data with this function. Please install the required package.")
-  } else {
+  #if (!requireNamespace("ncdf", quietly=TRUE)) {
+  #  stop("Package \"ncdf\" needed to check netCDF data with this function. Please install the required package.")
+  #} else {
     ##
     ## Checking : Number of variables and select only one from the netcdf file, get variable attributes in v1. The user should decide between the list of variables
+    qf <- NULL
     if (tolower(param) == "auto") {
       if (ncid$nvars > 1) {
         i <- length(names(ncid$var))
@@ -2104,7 +2095,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     ##ac.gcm <- data.frame(y = y.test, x1 = as.vector(cos(2 * pi * tim/daysayear)), x2 = as.vector(sin(2 * pi * tim/daysayear)))
     result <- list(model=model,time=time)
     invisible(result)
-  }
+  #}
 }
 
 retrieve.station <- function(ncfile,param="auto",type="ncdf4",

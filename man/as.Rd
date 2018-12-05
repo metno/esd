@@ -240,7 +240,8 @@ as.pca.station(x)
 \author{R.E. Benestad and A.  Mezghani}
 \examples{
 # Example: how to generate a new station object.
-data <- round(matrix(rnorm(20*12),20,12),2); colnames(data) <- month.abb
+data <- round(matrix(rnorm(20*12),20,12),2)
+colnames(data) <- month.abb
 x <- data.frame(year=1981:2000,data)
 X <- as.station.data.frame(x,loc="",param="noise",unit="none")
 
@@ -248,8 +249,10 @@ X <- as.station.data.frame(x,loc="",param="noise",unit="none")
 year <- sort(rep(1991:2000,12))
 month <- rep(1:12,length(1991:2000))
 n <-length(year)
-lon <- seq(-30,40,by=5); nx <- length(lon)
-lat <- seq(40,70,by=5); ny <- length(lat)
+lon <- seq(-30,40,by=5)
+nx <- length(lon)
+lat <- seq(40,70,by=5)
+ny <- length(lat)
 # Time dimension should come first, space second.
 y <- matrix(rnorm(nx*ny*n),n,nx*ny)
 index <- as.Date(paste(year,month,1,sep="-"))
@@ -257,7 +260,7 @@ Y <- as.field(y,index,lon,lat,param="noise",unit="none")
 map(Y)
 plot(EOF(Y))
 
-data(Oslo)
+data("Oslo")
 plot(as.anomaly(Oslo))
 
 data(ferder)
@@ -266,41 +269,40 @@ plot(annual(ferder,FUN="IQR",na.rm=TRUE))
 plot(as.4seasons(ferder))
 
 data(bjornholt)
-plot(annual(bjornholt,FUN="exceedance",fun="count"))
-plot(annual(bjornholt,FUN="exceedance",fun="freq"))
-plot(annual(bjornholt,FUN="exceedance"))
+plot(annual(bjornholt,FUN="count",threshold=1))
+plot(annual(bjornholt,FUN="wetfreq",threshold=1))
+plot(annual(bjornholt,FUN="wetmean",threshold=1))
 
 ## Test the as.4seasons function:
-data(ferder)
+data("ferder")
 ## Daily data:
 yd <- ferder
 ##  Monthly data:
-ym <- aggregate(ferder,as.yearmon)
-ym <- zoo(coredata(ym),as.Date(index(ym)))
-ym <- attrcp(ferder,ym)
+ym <- as.monthly(ferder, FUN="mean")
 plot(ym)
 
 ## Monthly reanalyses:
 t2m <- t2m.ERAINT(lon=c(-30,40),lat=c(50,70))
 T2m <- as.4seasons(t2m)
-#Extract the grid point with location corresponding to that of the station:
+# Extract the grid point with location corresponding to that of the station:
 x <- regrid(t2m,is=ferder)
 x4s <- as.4seasons(x)
 X4s <- regrid(T2m,is=ferder)
 y4s1 <- as.4seasons(yd)
 y4s2 <- as.4seasons(ym)
-plot.zoo(y4s1,lwd=2,xlim=as.Date(c("1980-01-01","2000-01-01")),ylim=c(-10,20))
+plot(y4s1,lwd=2,xlim=as.Date(c("1980-01-01","2000-01-01")),ylim=c(-10,20))
 lines(y4s2,col="red",lty=2)
 lines(x4s,col="darkblue",lwd=2)
 lines(X4s,col="lightblue",lty=2)
 
 ## Select a random season
-data(bjornholt)
-data(ferder)
-plot(as.seasons(ferder,FUN='CDD'))
-plot(as.seasons(ferder,start='05-17',end='11-11',FUN='HDD'))
+data("bjornholt")
+data("ferder")
+plot(as.seasons(ferder,FUN='mean'))
+plot(as.seasons(ferder,start='05-17',end='11-11',FUN='mean'))
 
-## PCA-example - switch back and forthe between station and PCAs
+\dontrun{
+## PCA-example - switch back and forth between station and PCAs
 t2m <- station.narp()
 pca.t2m <- as.pca(annual(t2m))
 y <- as.station(pca.t2m)
@@ -311,6 +313,7 @@ pca.t2m <- subset(pca.t2m,ip = 1:3)
 z.pca <- DSensemble.pca(pca.t2m,predictor=predictor,select=1:4)
 z <- as.station.dsensemble.pca(z.pca)
 plot(z[[1]])
+}
 
 ## Example of transforming cyclone data from an 'events' object (individual events)
 ## into a 'trajectory' object (interpolated trajectories) which takes less space
