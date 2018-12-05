@@ -317,7 +317,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     cols <- rainbow(length(nvec))
     if(max(lats)>0) ylim <- c(0,90) else ylim <- c(-90,0)
     if(attr(x,"greenwich")) xlim <- c(0,360) else xlim <- c(-180,180)
-    data(geoborders,envir=environment())
+    data("geoborders",envir=environment())
     if(!attr(x,"greenwich")) {
       plot(geoborders,type="l",col="grey20",lwd=0.5,
            xlim=xlim,ylim=ylim,main=paste(dplot,tplot))
@@ -521,7 +521,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
     rank.all <- matrix(rank(1-pf.all),dim(pf.all))
     if(plot) {
       dev.new()
-      data(geoborders,envir=environment())
+      data("geoborders",envir=environment())
       plot(geoborders,type="l",col="grey20",lwd=0.5,
            xlim=c(-90,90),ylim=c(30,90))      
       points(step1$lon,step1$lat,col="hotpink",pch=21,lwd=3)
