@@ -233,7 +233,7 @@ metno.ele <- function() { ## must be updated - AM 2014-02-21
                    c("402" , "Sea level pressure"		 	    , "1"	  		, "hPa"	      , "PON"),
                    c("403" , "Sea level pressure"		 	    , "1"	  		, "hPa"	      , "POX"),
                    c("999" , "Snowfall"			              , "1" 	    , "mm" 	      , "SNOW"),
-                   c("901" , "Snow depth"			            , "1" 	    , "mm" 	      , "SD"),
+                   c("901" , "Snow depth"			            , "1" 	    , "cm" 	      , "SA"),
                    c("101" , "Mean temperature"	          , "1" 		  , "degree*C"  , "TAM"),
                    c("111" , "Maximum temperature" 	 	    , "1"   		, "degree*C"	, "TAX"),
                    c("121" , "Minimum temperature" 	 	    , "1"	  		, "degree*C" 	, "TAN"),

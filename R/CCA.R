@@ -251,7 +251,7 @@ Psi <- function(cca) {
   G <- t(G); H <- t(H)
   
   # print(dim(G)); print(dim(M)); print(dim(H))
-  if (class(cca)[1] =="cca") Psi <- G %*% M %*% solve(t(H) %*% H) %*% t(H)
+  if (class(cca)[1] =="cca") Psi <- t(G) %*% M %*% solve(t(H) %*% H) %*% t(H)
   #if (class(cca)[1] =="svd") Psi <- G %*% M %*% solve(Cxx) %*% t(H)
   class(Psi) <- paste(class(cca)[1],"model",sep=".")
   attr(Psi,"dims") <- dim(Psi)

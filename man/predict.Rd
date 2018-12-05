@@ -19,7 +19,7 @@ predict.ds.eof(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.comb(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.cca(x, newdata=NULL, ...)
 predict.mvr(x, newdata = NULL, ...) 
-project.ds(x, newdata = NULL, addnoise = FALSE, n = 100) # Not yet finished
+project.ds(x, newdata = NULL, addnoise = FALSE, n = 100) ## beta-version
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -84,14 +84,16 @@ data(Oslo)
 ds <- DS(Oslo,ceof)
 # Plot ds results
 plot(ds)
-# Do the prediction
-ds.pre <- predict.ds(ds)
+# Do the prediction based on the calibration (or the fitted values)
+ds.pre <- predict(ds)
 #Plot predicted results based on ds object
 plot(ds.pre)
 # Display the attribute "aspect"
 attr(ds.pre, "aspect")
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
+## Now try project to extract the projected results
+plot(project(ds.pre))
 }
 \keyword{ ~kwd1 }
 \keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

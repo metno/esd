@@ -873,6 +873,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (!inherits(it,"POSIXt")) t <-  as.Date(format(t,"%Y-%m-%d"))
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
+    if (is.logical(it)) ii <- it else  ## REB 2018-11-30
     if(inherits(it,c("Date"))) {
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')

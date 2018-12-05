@@ -617,7 +617,7 @@ as.field.comb <- function(x,iapp=NULL,verbose=FALSE,...) {
   return(y)  
 }
 
-as.field.eof <- function(x,iapp=NULL,verbose=FALSE,...) {
+as.field.eof <- function(x,iapp=NULL,anomaly=FALSE,verbose=FALSE,...) {
   if(verbose) print("as.field.eof")
   if (inherits(x,'dsensemble')) {
     y <- as.field.dsensemble.eof(x,verbose=verbose,...)
@@ -625,7 +625,7 @@ as.field.eof <- function(x,iapp=NULL,verbose=FALSE,...) {
     y <- eof2field(x,verbose=verbose,...)
   } else {
     y <- as.eof(x,iapp,verbose=verbose)
-    y <- eof2field(y,verbose=verbose,...)
+    y <- eof2field(y,verbose=verbose,anomaly=anomaly,...)
   }
   return(y)
 }
@@ -1439,10 +1439,14 @@ as.eof.field <- function(x,iapp=NULL,...) {
 
 as.eof.appendix <- function(x,iapp=1,verbose=FALSE) {
   if (verbose) print("as.eof.appendix")
+  clim <- eval(parse(text=paste("attr(attr(x,'appendix.",iapp,"'),'climatology')",sep="")))
+  aveg <- eval(parse(text=paste("attr(attr(x,'appendix.",iapp,"'),'mean')",sep="")))
   stopifnot(inherits(x,'comb'))
   y <- eval(parse(text=paste("attr(x,'appendix.",iapp,"')",sep="")))
   x <- as.eof.comb(x)
   y <- attrcp(x,y)
+  if (!is.null(clim)) attr(y,'climatology') <- clim 
+  if (!is.null(aveg)) attr(y,'mean') <- aveg
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(x)
   return(y)

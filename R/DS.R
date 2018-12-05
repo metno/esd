@@ -32,10 +32,18 @@ sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
     if (tsx=="month") agrscly <- as.yearmon(index(y)) else
     if (tsx=="annual") agrscly <- year(y) else
     if (tsx=="year") agrscly <- year(y)
-    if (verbose) str(agrscly)
+    if (verbose) {str(agrscly); print(FUN)}
+    ##
     if (tsx !="season")
-        y <- aggregate(y, agrscly, match.fun(FUN)) else 
-        y <- as.4seasons(y, FUN=match.fun(FUN),dateindex=TRUE)
+        y <- aggregate(y, agrscly, FUN) else
+        y <- as.4seasons(y, FUN=FUN,dateindex=TRUE)
+        ## y <- aggregate(y, agrscly, match.fun(FUN)) else ## REB, 2018-11-20 - match.fun caused problems
+        ## y <- as.4seasons(y, FUN=match.fun(FUN),dateindex=TRUE) ## REB, 2018-11-20 - match.fun caused problems
+    if(verbose) print(c(class(index(y)),class(index(X))))
+    if ( (class(index(y))=='Date') & (class(index(X))=='numeric') & 
+         ((tsx=='year') |  (tsx=='annual')) ) index(y) <- year(index(y))
+    if ( (class(index(y))=='numeric') & (class(index(X))=='Date') & 
+         ((tsx=='year') |  (tsx=='annual')) ) index(y) <- as.Date(paste(index(y),'01-01',sep='-'))
     invisible(y)
 }
 
@@ -119,16 +127,16 @@ DS.default <- function(y,X,mon=NULL,
         X <- trend(X,result="residual")
     } else offset <- 0
 
-                                        #str(y); print(class(y))
+    ##str(y); print(class(y))
 
     ## REB: 2014-10-03: add weights if available
-    if (!is.null(attr(y,'standard.error')))
-        weights <- 1/coredata(attr(y,'standard.error')) else
     weights <- rep(1,length(y))
-    weights[!is.finite(weights)] <- 0
-    if (is.null(attr(y,'standard.error'))) weighted <- FALSE
-    if (verbose) {print(paste('weights',weighted)); print(weights)}
-
+    if (!is.null(attr(y,'standard.error'))) {
+      if (sum(is.finite(attr(y,'standard.error')))>0) weights <- 1/coredata(attr(y,'standard.error'))
+      weights[!is.finite(weights)] <- 0
+      if (is.null(attr(y,'standard.error'))) weighted <- FALSE
+      if (verbose) {print(paste('weights',weighted)); print(weights)}
+    }
     #
     ##if (length(index(X)) == length(index(y)))
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
@@ -141,13 +149,12 @@ DS.default <- function(y,X,mon=NULL,
     Xnames <- paste("X.",1:length(names(X)),sep="")
     colnames(caldat) <- c("y",Xnames,'weights')
     Xnames <- Xnames[ip]
-                                        # REB 2014-10-03:
+    ## REB 2014-10-03:
     if (weighted)
         calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                         ", weights=weights, data=caldat, ...)",sep="") else
         calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                         ", data=caldat, ...)",sep="")
-
 
     MODEL <- eval(parse(text=calstr))
     FSUM <- summary(MODEL)
@@ -188,7 +195,6 @@ DS.default <- function(y,X,mon=NULL,
       dim(pattern) <- c(du[1],du[2]) 
     } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[ip]
                                                  
-    
     ##  ds <- zoo(predict(model),order.by=index(X)) + offset
     ##  ds <- zoo(predict(model,newdata=caldat),order.by=index(X)) + offset
     if (verbose) print('predict')
@@ -207,6 +213,14 @@ DS.default <- function(y,X,mon=NULL,
       print('set attibutes')
       print(names(attributes(y0)))
       print(names(attributes(X0)))
+    }
+    ## Make sure that predictions have the same index class (time units) as the original data 
+    if (class(index(ds)) != class(index(y0))) {
+      ## For annual data:
+      if ( (class(index(ds))=='Date') & (class(index(y0))=='numeric') & inherits(y0,'annual') ) 
+        index(ds) <- year(index(ds))
+      if ( (class(index(ds))=='numeric') & (class(index(y0))=='Date') & inherits(y0,'annual') ) 
+        index(ds) <- as.Date(paste(index(ds),'01-01',sep='-'))
     }
     ds <- attrcp(y0,ds,ignore='names')
     pattern <- attrcp(X0,pattern,ignore=c('longitude','latitude','names','dimnames'))
@@ -295,7 +309,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                      method=method,swsm=swsm,m=m,
                      rmtrend=rmtrend,ip=ip,
                      area.mean.expl=area.mean.expl,verbose=verbose,
-                     weighted=TRUE,pca=FALSE,npca=20,...) 
+                     weighted=weighted,pca=pca,npca=npca,...) 
       return(ds)
     } else if (is.list(X)) {
                                         # REB 2014-10-08
@@ -304,7 +318,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                       method=method,swsm=swsm,m=m,
                       rmtrend=rmtrend,ip=ip,
                       area.mean.expl=area.mean.expl,verbose=verbose,
-                      weighted=TRUE,pca=FALSE,npca=20,...) 
+                      weighted=weighted,pca=pca,npca=npca,...) 
         return(ds)
     } 
 
@@ -333,27 +347,27 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
         z <- subset(Y,is=i)
         if (verbose) {print(class(z)); print(names(attributes(z)))}
         if (inherits(X,'eof')) {
-            if (verbose) print("The predictor is some kind of EOF-object")
-            ## Call different functions, depending on the class of X:
-                                        #print("the predictor is an EOF-object")
-            if (inherits(X,'comb')) {
-                if (verbose) print("*** Comb ***")
-                ## X is combined EOFs
-                ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,mon=mon,
-                              method=method,swsm=swsm,
-                              rmtrend=rmtrend,ip=ip,
-                              area.mean.expl=area.mean.expl,verbose=verbose,...)
-                if (verbose) print("---")
-            } else if (inherits(X,'eof')) {
-                if (verbose) print("*** EOF ***")
-                ## X is ordinary EOF
-                ds <- DS.default(y=z,X=X,mon=mon,
-                                 method=method,swsm=swsm,
-                                 rmtrend=rmtrend,ip=ip,
-                                 area.mean.expl=area.mean.expl,
-                                 verbose=verbose,...)
+          if (verbose) print("The predictor is some kind of EOF-object")
+          ## Call different functions, depending on the class of X:
+          #print("the predictor is an EOF-object")
+          if (inherits(X,'comb')) {
+            if (verbose) print("*** Comb ***")
+            ## X is combined EOFs
+            ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,mon=mon,
+                          method=method,swsm=swsm,
+                          rmtrend=rmtrend,ip=ip,
+                          area.mean.expl=area.mean.expl,verbose=verbose,...)
+            if (verbose) print("---")
+          } else {
+            if (verbose) print("*** EOF ***")
+            ## X is ordinary EOF
+            ds <- DS.default(y=z,X=X,mon=mon,
+                             method=method,swsm=swsm,
+                             rmtrend=rmtrend,ip=ip,
+                             area.mean.expl=area.mean.expl,
+                             verbose=verbose,...)
             if (verbose) print("+++")
-            }
+          }
         } else if (inherits(X,'field')) {
             if (verbose) print("the predictor is a field-object")
             ## X is a field
@@ -363,7 +377,8 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
                            area.mean.expl=area.mean.expl,verbose=verbose,...)
         }
         ## May need an option for coombined field: x is 'field' + 'comb'
-
+        if (is.null(ds)) browser()
+        
         ## Unless told not to - carry out a cross-validation
         if (!is.null(m))  {
           if (verbose) print("Cross-validation")
@@ -400,7 +415,7 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
 DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                    verbose=FALSE,weighted=TRUE,...) {
+                    verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) {
     if (verbose) { print('--- DS.comb ---'); print(summary(coredata(y)))}
     ##print('index(y)'); print(index(y))
     ##print('err(y)'); print(err(y))
@@ -433,9 +448,8 @@ DS.comb <- function(y,X,biascorrect=FALSE,mon=NULL,
         X <- biasfix(X)
     }
     
-    ds <- DS.default(y,X,mon=mon,method=method,swsm=swsm,m=m,
-                     rmtrend=rmtrend,ip=ip,
-                     area.mean.expl=area.mean.expl,verbose=verbose,...)
+    ds <- DS.default(y,X,biascorrect=biascorrect,mon=mon,method=method,swsm=swsm,m=m,
+                     rmtrend=rmtrend,ip=ip,pca=pca,npca=npca,weighted=weighted,verbose=verbose,...)
 
     ## For combined fields, make sure to add the appended PCs to
     ## the results.
@@ -691,7 +705,7 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
 ## Rasmus Benestad, 19.08.2013
 DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,ip=1:10,
-                   rmtrend=TRUE,verbose=FALSE,weighted=TRUE,...) {
+                   rmtrend=TRUE,verbose=FALSE,weighted=TRUE,pca=TRUE,npca=20,...) {
     
     if (verbose) { print('--- DS.pca ---'); print(summary(coredata(y))); print(class(y)); print(class(X))}
     
@@ -730,7 +744,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
       class(X) <- c('eof',class(X))
       z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
                   ip=ip,rmtrend=rmtrend,verbose=verbose,
-                  weighted=weighted,...)
+                  weighted=weighted,pca=pca,npca=npca,...)
       return(z)
     } else if (verbose) print('Predictor is OK - an EOF object')
    
@@ -769,6 +783,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     if (verbose) {print('summary of predictand y after matchdate'); print(summary(coredata(y)))}
     
     if (verbose) print('predictor: match date with predictand')
+
     X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
     dy <- dim(y); if (is.null(dy)) dy <- c(length(y),1)
     dx <- dim(X); if (is.null(dx)) dx <- c(length(X),1)
@@ -927,16 +942,25 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
 
     ## Check the 'eof' attribute
     if ( (!is.list(X0)) & is.list(eof) ) {
-          eof <- eof[[1]]
-          if (verbose) print('Check suggests that eof is stored as list -> eof')
-        }
-                           #print(class(model)); str(model)
+      eof <- eof[[1]]
+      if (verbose) print('Check suggests that eof is stored as list -> eof')
+    }
+    
+    ## Make sure that predictions have the same index class (time units) as the original data 
+    if (class(index(ds)) != class(index(y))) {
+      ## For annual data:
+      if ( (class(index(ds))=='Date') & (class(index(y0))=='numeric') & inherits(y0,'annual') ) 
+        index(ds) <- year(index(ds))
+      if ( (class(index(ds))=='numeric') & (class(index(y0))=='Date') & inherits(y0,'annual') ) 
+        index(ds) <- as.Date(paste(index(ds),'01-01',sep='-'))
+    }
+    ##print(class(model)); str(model)
     attr(ds,'calibration_data') <- attr(z,'calibration_data')
     attr(ds,'fitted_values') <- zoo(fit.val,order.by=index(attr(z,'fitted_values')))
     class(attr(ds,'fitted_values')) <- class(y0)
     attr(ds,'model') <- model
     attr(ds,'eof') <- eof
-    attr(ds,'original_data') <- y
+    attr(ds,'original_data') <- y0
     attr(ds,'variable') <- varid(y0)
     attr(ds,'mean') <- attr(y0,'mean') # + offset
     attr(ds,'max.autocor') <- attr(y0,'max.autocor')
@@ -958,17 +982,24 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     
 }
 
-DS.eof <- function(y,X,mon=NULL,
-                   method="lm",swsm="step",m=5,
-                   rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                   verbose=FALSE,weighted=TRUE,pca=TRUE,...) {
+DS.eof <- function(y,X,biascorrect=FALSE,mon=NULL,
+                   method="lm",swsm=NULL,m=5,ip=1:10,
+                   rmtrend=TRUE,verbose=FALSE,weighted=TRUE,pca=TRUE,npca=20,...
+                   ) {
     if (verbose) { print('--- DS.eof ---'); print(summary(coredata(y)))}
-    ds <- DS.pca(y,X,mon=mon,
+    ds <- DS.pca(y,X,biascorrect=biascorrect,mon=mon,
                  method=method,swsm=swsm,m=m,
                  rmtrend=rmtrend,ip=ip,
-                 area.mean.expl=area.mean.expl,
-                 verbose=verbose,...)
+                 verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
     if(verbose) print("---return to DS.eof---")
+    ## Make sure that predictions have the same index class (time units) as the original data 
+    if (class(index(ds)) != class(index(y))) {
+      ## For annual data:
+      if ( (class(index(ds))=='Date') & (class(index(y))=='numeric') & inherits(y,'annual') ) 
+        index(ds) <- year(index(ds))
+      if ( (class(index(ds))=='numeric') & (class(index(y))=='Date') & inherits(y,'annual') ) 
+        index(ds) <- as.Date(paste(index(ds),'01-01',sep='-'))
+    }
     attr(ds,'original_data') <- y
     class(attr(ds,'original_data')) <- class(y)
     class(attr(ds,'fitted_values')) <- class(y)
