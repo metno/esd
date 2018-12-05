@@ -385,7 +385,7 @@ vec <- function(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
   if (new) {
     dev.new()
     plot(range(x0,x1),range(y0,y1),xlab='',ylab='')
-    data(geoborders)
+    data(geoborders, envir = environment())
     lines(geoborders$x,geoborders$y)
   }
   arrows(x0, y0, x1, y1,...)

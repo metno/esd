@@ -7,7 +7,10 @@
     overplotting is visualized instead of accidental and invisible.
 }
 \usage{
-scatter.hexbin(x, y, new = TRUE, scale.col=TRUE, scale.size=TRUE, Nmax = NULL, dx = NULL, dy = NULL, xgrid = NULL, ygrid = NULL, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL, leg = TRUE, colmap='gray.colors', col = "blue", border = "black")
+scatter.hexbin(x, y, new = TRUE, scale.col=TRUE, scale.size=TRUE, 
+               Nmax=NULL, dx=NULL, dy=NULL, xgrid=NULL, ygrid=NULL, 
+              xlim=NULL, ylim=NULL, xlab=NULL, ylab=NULL, leg=TRUE, 
+              colmap='gray.colors', col="blue", border="black")
 }
 \arguments{
   \item{x, y}{the ‘x’ and ‘y’ arguments provide the x and y coordinates for

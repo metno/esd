@@ -4,8 +4,8 @@
 
 as.decimal <- function(x=NULL) {
     ## converts from degree min sec format to degrees ...
-    ##x is in the form "49°17´38´´"
-    if (!is.null(x)) {
+    ##x is in the form "49 deg 17' 38''"
+  if (!is.null(x)) {
         deg <-as.numeric(substr(x,1,2)) 
         min <- as.numeric(substr(x,4,5))
         sec <- as.numeric(substr(x,7,8))     

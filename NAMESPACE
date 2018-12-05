@@ -1,6 +1,31 @@
 import(ncdf4)
 import(zoo)
 
+## Imports from other packages:
+importFrom("grDevices", "adjustcolor", "cm.colors", "col2rgb",
+            "colorRampPalette", "dev.copy2eps", "dev.copy2pdf",
+            "dev.list", "dev.new", "dev.off", "gray.colors",
+            "heat.colors", "rainbow", "rgb", "terrain.colors",
+            "topo.colors")
+importFrom("graphics", "abline", "arrows", "axis", "barplot", "box",
+           "boxplot", "contour", "grid", "hist", "image", "layout",
+           "legend", "lines", "matlines", "matplot", "mtext", "par",
+           "pie", "points", "polygon", "rasterImage", "rect",
+           "segments", "symbols", "text", "title")
+importFrom("methods", "new")
+importFrom("stats", "acf", "aggregate", "anova", "approx", "ccf",
+           "cor", "cor.test", "cov", "dgeom", "dnorm", "dpois", "end",
+           "fft", "filter", "glm", "ks.test", "lag", "lm", "median",
+           "na.omit", "na.pass", "pbinom", "pexp", "pnorm", "predict",
+           "qbinom", "qexp", "qgeom", "qnorm", "qpois", "qqline",
+           "qqnorm", "quantile", "rexp", "rgeom", "rnorm", "runif",
+           "sd", "setNames", "smooth.spline", "spectrum", "start",
+           "time", "var", "wilcox.test", "window")
+importFrom("utils", "combn", "data", "download.file", "head",
+           "read.csv", "read.csv2", "read.fwf", "read.table",
+           "sessionInfo", "setTxtProgressBar", "str", "tail",
+           "txtProgressBar", "untar", "unzip", "write.table")
+
 # Exports - in alphabetic order
 export(arec)
 export(arec.default)
@@ -211,13 +236,13 @@ export(DS.pca)
 export(DS.seasonalcycle)
 export(DS.seasonalcycle)
 export(DSensemble)
-export(DSE)
+#export(DSE)
 export(DSensemble.default)
 export(DSensemble.t2m)
 export(DSensemble.precip)
 export(DSensemble.annual)
 export(DSensemble.season)
-export(DSensemble.mu)
+#export(DSensemble.mu)
 export(DSensemble.mu.worstcase)
 export(DSensemble.pca)
 export(DSensemble.eof)
@@ -255,6 +280,8 @@ export(ghcnd.data)
 export(ghcnm.meta)
 export(ghcnm.data)
 export(gridbox)
+export(gridmap)
+export(gridstation)
 export(lag.station)
 export(lag.field)
 export(lonlatprojection)
@@ -292,6 +319,7 @@ export(param2ele)
 export(PCA)
 export(PCA.station)
 export(pca2station)
+export(pca2eof)
 export(plot.station)
 export(plot.eof)
 export(plot.eof.field)
@@ -370,6 +398,7 @@ export(station.metnom)
 export(station.metnod)
 export(station.nordklim)
 export(station.giss)
+export(station2field)
 export(stnr)
 export(sst.DNMI)
 export(sst.NCEP)
@@ -394,7 +423,6 @@ export(subset.dsensemble.multi)
 export(subset.events)
 export(subset.stationmeta)
 export(summary.ncdf4)
-#export(test.scandinavia)
 export(t2m.DNMI)
 export(t2m.ERA40)
 export(t2m.ERAINT)

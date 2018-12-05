@@ -6,10 +6,6 @@
 # where PHI is the latitude in radians and THETA the longitude.
 # R.E. Benestad & Kajsa Parding, 2015-05-26
 
-#library(esd)
-#slp <- slp.ERAINT()
-#slp.dx <- dX(slp,verbose=TRUE)
-
 dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
                chk.conf=1,accuracy=NULL,progress=TRUE,verbose=FALSE) {
 
@@ -98,7 +94,8 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   Z.fit <- zoo(t(z.fit),order.by=t)
   Z.fit <- as.field(Z.fit,lon=lon(Z),lat=lat(Z),param=varid(Z),unit=unit(Z),
                     longname=paste('fitted',attr(Z,'longname')),
-                    greenwich = attr(Z,'greenwich'),aspect='fitted')
+                    greenwich = attr(Z,'greenwich'),
+                    calendar = attr(Z,'calendar'),aspect='fitted')
   ## Remove temporary variable and release the memory:
   rm('zz0','zz','z.fit'); gc(reset=TRUE)
 
@@ -115,7 +112,8 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
                     param=paste('d*',varid(Z)),
                     unit=paste(unit(Z),'/dx'),
                     longname=paste('fitted',attr(Z,'longname')),
-                    greenwich = attr(Z,'greenwich'),aspect='fitted')  
+                    greenwich = attr(Z,'greenwich'),
+                    calendar = attr(Z,'calendar'),aspect='fitted')  
   
   ## Derive the second derivative:
   if (verbose) print('Find the second derivative')
@@ -127,7 +125,8 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   dZ2.fit <- as.field(dZ2.fit,lon=lon(Z),lat=lat(Z),param=varid(Z),
                     unit=paste(unit(Z),'^2/dy^2'),
                     longname=paste('fitted',attr(Z,'longname')),
-                    greenwich = attr(Z,'greenwich'),aspect='fitted')  
+                    greenwich = attr(Z,'greenwich'),
+                    calendar = attr(Z,'calendar'),aspect='fitted')  
 
   if (mask.bad) {
     mask.fit <- aperm(mask,c(3,1,2))

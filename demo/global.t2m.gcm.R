@@ -1,10 +1,38 @@
 ## Re-compute the global mean
 library(esd)
 
+history2info <- function(hist) {
+  h <- strsplit(hist," ")
+  fname <- unlist(h)[grep("rcp.*.nc",unlist(h))[1]]
+  fname <- gsub(".*/","",fname)
+  var <- gsub("_Amon.*","",fname)
+  gcmnm <- gsub("_rcp.*","",gsub(".*_Amon_","",fname))
+  i.rip <- regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}",fname)
+  rip <- substr(fname, i.rip[1], i.rip[1]+attr(i.rip,"match.length")[1]-1)
+  rcp <- toupper(substr(fname,regexpr("rcp",fname)[1],
+                                                  regexpr("rcp",fname)[1]+4))
+  N <- nchar(rcp)
+  rcp <- paste(substr(rcp,1,N-1), substr(rcp,N,N), sep=".")
+  attr(hist,"var") <- var
+  attr(hist,"model_id") <- gcmnm
+  attr(hist,"parent_experiment_rip") <- rip
+  attr(hist,"experiment_id") <- rcp
+  return(hist)
+}
+
+clean <- function(x,lower=TRUE,upper=FALSE) {
+  y <- gsub("[[:punct:]]|[[:space:]]","",x)
+  if(lower) {
+    y <- tolower(y)
+  } else if(upper) {
+    y <- toupper(y)
+  }
+  return(y)
+}
+
 globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
                        annual=TRUE,pattern='tas_',param='tas',relative=FALSE,
                        select=NULL,lon=NULL,lat=NULL,FUN='mean',anomaly=TRUE) {
-
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
   fnms <- list.files(path=path,pattern=pattern)
   print(fnms)
@@ -16,18 +44,61 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
   if (annual) yr <- 1861:2100 else
               yr <- sort(rep(1861:2100,12)) + round((rep(1:12,240)-0.5)/12,2)
   meta <- list()
+  elements <- list(
+    names=c("gcmnm", "rcp", "var", "rip"),
+    id=c("model_id", "experiment_id", "variable","parent_experiment_rip"))
   for (i in 1:n) {
     print(fnames[i])
-    gcm <- retrieve(fnames[i],param=param,lon=lon,lat=lat)
+    gcm <- retrieve(fnames[i], param=param, lon=lon, lat=lat)
     lon.rng <- range(lon)
     lat.rng <- range(lat)
-    ## The line below doesn't work and is not necessay (REB)
-    ##gcm <- regrid(gcm,is=list(lon=seq(lon.rng[1],lon.rng[2],by=1),lat=seq(lat.rng[1],lat.rng[2],by=1))) # Added AM 21.02.2017 - All gcms must be at the same grid
-    gcmnm <- attr(gcm,'model_id')
-    run <- attr(gcm,'realization')
-    rip <- attr(gcm,'parent_experiment_rip')
+    qf <- attr(gcm,"qf")
+    units <- attr(gcm,'unit')
     d <- attr(gcm,'dimensions')
     cal <- attr(gcm,'calendar')
+    hist <- attr(gcm,'model_history')
+    h <- history2info(hist)
+    for(j in seq_along(elements$id)) {
+      ok <- FALSE
+      if(!is.null(attr(gcm, elements$id[j]))) {
+        if(!is.na(attr(gcm, elements$id[j]))) {
+          ok <- TRUE
+          eval(parse(text=paste(elements$names[j]," <- attr(gcm, '",
+                                elements$id[j],"')",sep="")))
+        }
+      }
+      if(!ok) {
+        eval(parse(text=paste(elements$names[j]," <- attr(h, '",
+                              elements$id[j],"')",sep="")))
+        qf <- c(qf, paste("Information about ",elements$id[j],
+                          " missing from netCDF header, ",
+                          "recovered from history attribute.",sep=""))
+      }
+    }
+    # Check rip agains other attributes:
+    run <- attr(gcm,'realization')
+    ini <- attr(gcm,'initialization')
+    phys <- attr(gcm,'physics')
+    rip2 <- paste("r",run,"i",ini,"p",phys,sep="")
+    if(grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}",rip2)) {
+      if(rip!=rip2) {
+        print(paste("Inconsistent experiment_rip in file ",fnames[i],sep=""))
+        rip <- rip2
+        qf <- c(qf,paste("Replaced inconsistent parent_experiment_rip with ",
+               "realization, physics_version, intialization_method from ",fnames[i],".",sep=""))
+      }
+    }
+    rip3 <- attr(h,"parent_experiment_rip")
+    if(grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", rip3)) {
+      if(rip!=rip3) {
+        print(paste("Experiment_rip inconsistent with model history in file ",fnames[i],sep=""))
+        qf <- c(qf,paste("CGM rip inconsistent with information in ",
+                         "model history of ",fnames[i],".",sep=""))
+      }
+    }
+    #if(!grepl("rcp[0-9]{2}",clean(rcp,lower=TRUE))) {
+    #  browser()
+    #}
     print(paste(i,n,gcmnm,run,paste(d,collapse='-'),
                 min(year(gcm)),max(year(gcm)),fnames[i]))
     if (annual) gcm <- annual(gcm)
@@ -49,7 +120,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
     gcmnm <- gsub('-','.',gcmnm)
     cline <- paste('meta$',fnms[i],
              ' <- list(GCM=gcmnm,run=run,rip=rip,d=d,calendar=cal,',
-             'mean=attr(ya,"climatology"))',sep='')
+             'mean=attr(ya,"climatology"),qf=qf)',sep='')
     eval(parse(text=cline))
   }
   if (!annual) yr <- as.Date(paste(trunc(yr),round(12*(yr-trunc(yr))+0.5),'01',sep='-'))
@@ -63,11 +134,12 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
     attr(global.t2m.cmip5,"unit") <- "%"
     attr(global.t2m.cmip5,"aspect") <- "relative anomaly"
   } else {
-    attr(global.t2m.cmip5,'unit') <- attr(gcm,'unit')
+    attr(global.t2m.cmip5,'unit') <- units
     attr(global.t2m.cmip5,'aspect') <- 'anomalies'
   }
-  attr(global.t2m.cmip5,'experiment_id') <-  attr(gcm,'experiment_id')
-  attr(global.t2m.cmip5,'variable') <- attr(gcm,'variable')
+  attr(global.t2m.cmip5,'calendar') <- cal
+  attr(global.t2m.cmip5,'experiment_id') <- rcp
+  attr(global.t2m.cmip5,'variable') <- var
   attr(global.t2m.cmip5,'history') <- match.call()
   invisible(global.t2m.cmip5)
 }

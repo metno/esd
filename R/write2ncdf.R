@@ -145,8 +145,7 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=
 # short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
 
 write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
-                                scale=0.1,torg='1899-12-31',verbose=FALSE,stid_unlim=FALSE,namelength=24) {
-  #require(ncdf4)
+                                scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,verbose=FALSE) {
 
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- unit(x)
@@ -383,7 +382,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                         verbose=verbose)
     
     if (verbose) {print(paste('ncvar:',varid(x)[1])); print(unitx[1])}
-    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="°C", "degC",unitx[1]),
+    ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+    ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
+    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
                          longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
 
     if (verbose) print('The variables have been defined - now the summary statistics...')
@@ -394,17 +395,19 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                        prec="short",verbose=verbose)
     nvid <- ncvar_def(name="number",dim=list(dimS), units="count", missval=missval,longname="number_valid_data", 
                       prec="float",verbose=verbose)
-    maxid <- ncvar_def(name="summary_max",dim=list(dimS), units= ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]),
+    ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+    ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
+    maxid <- ncvar_def(name="summary_max",dim=list(dimS), units= ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]),
                        missval=missval,longname=varid(x),prec="float",verbose=verbose)
-    minid <- ncvar_def(name="summary_min",dim=list(dimS), ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+    minid <- ncvar_def(name="summary_min",dim=list(dimS), ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                        missval=missval,longname=varid(x),prec="float",verbose=verbose)
-    nhrid <- ncvar_def(name="summary_records",dim=list(dimS), 
-                       units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+    nhrid <- ncvar_def(name="summary_records",dim=list(dimS),
+                       units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                        missval=missval,longname="fraction_of_high_records",prec="float",verbose=verbose)
-    lehrid <- ncvar_def(name="last_element_highest",dim=list(dimS), 
-                       units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+    lehrid <- ncvar_def(name="last_element_highest",dim=list(dimS),
+                       units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                        missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
-    
+
     if (is.T(x)) {
       meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="degC", 
                           missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
@@ -438,10 +441,12 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                               missval=missval,longname="seasonal_mean_temperature_Jun-Aug",prec="float",verbose=verbose)
       tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units="degC/decade", 
                               missval=missval,longname="seasonal_mean_temperature_Sep-Nov",prec="float",verbose=verbose)
+      ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+      ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
       lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
-                          units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+                          units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                           missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
-      
+
     } else
     if (is.precip(x)) {
       meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="mm/year", 
@@ -537,8 +542,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                             missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
       tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units=unit(x)[1], 
                             missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
+      ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
+      ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
       lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
-                          units=ifelse(unit(x)[1]=="°C", "degC",unit(x)[1]), 
+                          units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
                           missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
     }
   } 
@@ -787,19 +794,23 @@ write2ncdf4.pca <- function(x,fname='esd.pca.nc',prec='short',verbose=FALSE,scal
                     longname='principal components', prec=prec)
   pat <- ncvar_def("pattern_pca", "weights", list(dimxy,dimpca), missval, 
                     longname='principal component analysis patterns', prec=prec)
-  lon <- ncvar_def("longitude", "degree_east", dimxy,missval, 
+  ## KMP 2018-11-08: tim not defined
+  tim <- ncvar_def("time", "year", dimtim, missval, 
+                   longname='time', prec='float')
+  lon <- ncvar_def("longitude", "degree_east", dimxy, missval, 
                     longname='longitude', prec='float')
-  lat <- ncvar_def("latitude", "degree_north", dimxy,missval, 
+  lat <- ncvar_def("latitude", "degree_north", dimxy, missval, 
                     longname='latitude', prec='float')
-  alt <- ncvar_def("altitude", "m", dimxy,missval, 
+  alt <- ncvar_def("altitude", "m", dimxy, missval, 
                     longname='altitude', prec='float')
-  stid <- ncvar_def("station_id", "number", dimxy,missval, 
+  stid <- ncvar_def("station_id", "number", dimxy, missval, 
                     longname='station ID', prec="integer")
-
-  lambda <- ncvar_def("lambda", "number", dimpca,missval, 
+  lambda <- ncvar_def("lambda", "number", dimpca, missval, 
                     longname='eigenvalues', prec="float")
   if (is.numeric(index(x))) index(x) <- year(x)
   dpca <- dim(pca); attributes(pca) <- NULL; dpca -> dim(pca)
+  ## KMP 2018-11-08: nc has not been defined! should it be created or opened from a file?
+  nc <- nc_create(fname,vars=list(lon,lat,alt,stid,pca,pat,lambda))
   ncvar_put( nc, pca, round((pca - offset)/scale) )
   ncatt_put( nc, pca, "add_offset", offset, prec="float" )
   ncatt_put( nc, pca, "scale_factor", scale, prec="float" ) 

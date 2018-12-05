@@ -467,7 +467,7 @@ colbar2 <- function(x,col) {
     n <- length(nl)
     image(cbind(1:n,1:n),col=col) 
     par(xaxt="s",new=new)
-    axis(1,at=seq(0,1,length=length(nl)),label=nl)
+    axis(1,at=seq(0,1,length=length(nl)),labels=nl)
 }
 
 ## colorscheme <- function(pal="BuDOr",n=12,alpha=1) {

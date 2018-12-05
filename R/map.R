@@ -1,8 +1,6 @@
 ## R.E. Benestad
 ## Plot a map of the station locations, fields, EOFs, CCA results, correlation, composites, ...
 
-##require(zoo)
-
 map <- function(x,it=NULL,is=NULL,new=FALSE,...) UseMethod("map")
 
 map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
@@ -870,7 +868,14 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
     if(verbose) print("map.events")
     x0 <- x
     x <- subset(x,it=it,is=is,verbose=verbose)
-    if(is.null(it) & dim(x)[1]>0) it <- range(strftime(strptime(x$date,"%Y%m%d"),"%Y-%m-%d"))
+    if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+    if(is.null(it) & dim(x)[1]>0) {
+      if (requireNamespace("PCICt", quietly = TRUE)) {
+        it <- range(PCICt::as.PCICt(as.character(x$date),cal=calendar,format="%Y%m%d"))
+      } else {
+        it <- range(as.Date(as.character(x$date),cal=calendar,format="%Y%m%d"))
+      }
+    }
         
     if (is.null(is$lon) & !is.null(xlim)) {
       is$lon <- xlim
@@ -906,13 +911,13 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
         ty <- index(Y)
         if (inherits(Y,"month")) {
           tx <- round(x[,"date"]*1E-2)*1E2+1
-          ty <- as.numeric(strftime(ty,"%Y%m%d"))
+          ty <- as.numeric(format(ty,"%Y%m%d"))
         } else if (inherits(ty,"Date")) {
           tx <- x[,"date"]
-          ty <- as.numeric(strftime(ty,"%Y%m%d"))
-        } else if (inherits(ty,"POSIXt")) {
+          ty <- as.numeric(format(ty,"%Y%m%d"))
+        } else if (inherits(ty,c("POSIXt","PCICt"))) {
           tx <- x[,"date"]*1E2 + x[,"time"]
-          ty <- as.numeric(strftime(ty,"%Y%m%d%H"))
+          ty <- as.numeric(format(ty,"%Y%m%d%H"))
         }
         ii <- is.element(ty,tx)
         Y <- subset(Y,it=ii)
@@ -945,7 +950,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
           latR <- 90
         }
       }
-      data(Oslo)
+      data(Oslo, envir = environment())
       map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
           bg=adjustcolor("black",alpha.f=0),new=new,add=add,
           projection=projection,main="",xlab="",ylab="",
@@ -955,7 +960,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
           verbose=verbose)
     }
     if(dim(x)[1]>0) {
-        cols <- adjustcolor(col,alpha=alpha)
+        cols <- adjustcolor(col,alpha.f=alpha)
         if("points" %in% type) {
           if(verbose) print("plot points")
           if(projection=="lonlat") {
@@ -1005,7 +1010,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
 
 ## Function that masks either ocean or land
 mask <- function(x,land=FALSE) {
-    data(etopo5)
+    data(etopo5, envir = environment())
     h <- regrid(etopo5,is=x)
     if (!land) h[h < -5] <- NA else
                h[h > 5] <- NA

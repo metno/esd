@@ -67,7 +67,8 @@ combine.ds(...,all=TRUE)
 combine.ds.comb(...,all=TRUE) 
 combine.ds.station(...,all=TRUE)
 combine.ds.pca(...,all=TRUE)
-combine.field(x,y,all=FALSE,dimension="time",approach="field",orig.format=TRUE,verbose=FALSE)
+combine.field(x,y,all=FALSE,dimension="time",approach="field",
+              orig.format=TRUE,verbose=FALSE)
 combine.field.station(x,y,all=FALSE,orig.format=TRUE,verbose=FALSE)
 combine.list(...,all=TRUE)
 combine.station(...,all=TRUE)
@@ -104,7 +105,6 @@ zeros(x)
 
 \author{R.E. Benestad}
 \examples{
-library(esd)
 t2m <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
 T2m <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
 

@@ -64,12 +64,15 @@ graph(x,...)
 graph.default(x,img=NULL,pch='fancy',it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
                           xlim=NULL,ylim=NULL,new=TRUE,col.obs='black',...)
 graph.dsensemble(x,img=NULL,pch='fancy',it=0,col=rgb(1,0.7,0.7,0.1),
-                 lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black')
+                 lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,
+                 col.obs='black')
 graph.list(x,img=NULL,pch='fancy',it=0,
            col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
-           lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black')
+           lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,
+           col.obs='black')
 graph.zoo(x,img=NULL,pch='fancy',it=NULL,col=rgb(1,0.7,0.7,0.1),
-          lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black')
+          lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE,
+          col.obs='black')
 balls(x,y=NULL,col=NULL,cex.max=2,n=20)
 qq.test(x,...)
 qp.test.station(x,...)

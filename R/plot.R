@@ -17,7 +17,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
                          map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                         usegooglemap=TRUE,
+                         usegooglemap=TRUE,zoom=NULL,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
                          mar=c(4.5,4.5,0.75,0.5),fig=NULL,
                          alpha=0.5,alpha.map=0.7,
@@ -112,7 +112,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if(map.show & !map.insert) {
     vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
             cex.axis=cex.axis,cex=1.8,usegooglemap=usegooglemap,
-            verbose=verbose,...)
+            zoom=zoom,verbose=verbose)
     new <- TRUE
   }
 
@@ -171,7 +171,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
                                        cex.axis=0.65,add.text=FALSE,
                                        map.insert=map.insert,usegooglemap=usegooglemap,
-                                       verbose=verbose)
+                                       zoom=zoom,verbose=verbose)
     par(fig=par0$fig,mar=par0$mar,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
              xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
@@ -208,78 +208,93 @@ vis.map <- function(x,col='red',map.type=NULL,
   }
   
   ## REB: 2016-10-12 - add the possibility to use google maps
-  if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
-         usegooglemap ) {
-      require(RgoogleMaps)
-      
-      if (is.null(zoom)) {
-        if (verbose) print('zoom not defined')
-        if (length(lon(x))==1) zoom <- 8 else {
-          ## zoom = 12 is very local, zoom = 1 is the world
-          mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
-          zoom <- 1 - floor(0.75*log(mxdst/360))
-        }
+  ## KMP 2018-10-31: Don't use require inside the esd package. 
+  ## Instead check if it the external package is installed and then 
+  ## call it explicitly, e.g., RgoogleMaps::GetMap().
+  ## Also add the package under 'Suggested' in the DESCRIPTION file.
+  if (!requireNamespace("RgoogleMaps", quietly = TRUE)) {
+    usegooglemap <- FALSE
+  }
+  
+  if(usegooglemap) {
+    if (is.null(zoom)) {
+      if (verbose) print('zoom not defined')
+      if (length(lon(x))==1) {
+        zoom <- 5 
+      } else {
+        ## zoom = 12 is very local, zoom = 1 is the world
+        mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
+        zoom <- 1 - floor(0.75*log(mxdst/360))
       }
-      if (!is.finite(zoom)) zoom <- 8
-      if (verbose) print(paste('zoom=',zoom))
-      bgmap <- GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
-                    destfile = "map.station.esd.png",
-                    maptype = "mobile", zoom=zoom)
+    }
+    if (!is.finite(zoom)) zoom <- 5
+    if (verbose) print(paste('zoom=',zoom))
+    bgmap <- try(RgoogleMaps::GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
+                  destfile = "map.station.esd.png",
+                  maptype = "mobile", zoom=zoom))
+    if(inherits(bgmap,"try-error")) {
+      usegooglemap <- FALSE
+    } else {
       if(map.insert) {
-       par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
-           mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
-     }
-     if(map.type=="rectangle") {
-       xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
-       yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
-       plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
-       PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
-     } else {
-       plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
-     }
-      
-   } else {
-     if (verbose) {print('basic map'); print(cex.axis)}
-     data(geoborders)
-     lon <- geoborders$x
-     lat <- geoborders$y
-     ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
-           lat>(min(yrange)-1) & lat<(max(yrange)+1) &
-           is.finite(lon) & is.finite(lat)
-     lon2 <- attr(geoborders,"borders")$x
-     lat2 <- attr(geoborders,"borders")$y
-     ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
-            lat2>(min(yrange)-1) & lat2<(max(yrange)+1) &
-            is.finite(lon2) & is.finite(lat2)
-     if (verbose) {print(sum(ok)); print(range(lon[ok])); print(range(lat[ok]))}
-     if(map.insert) {
-       par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
-           mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
-     } else {
-       dev.new()
-     }
-     plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=2,
-          #type='l', KMP 2016-03-16 problem with lines in map
-          xlab=NA,ylab=NA,axes=FALSE,new=new,
-          xlim=xrange,ylim=yrange)
-       #xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
-       #ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
-     par(xpd=FALSE)
-     lines(lon,lat) ## REB: 2016-11-25 need more solid lines.
-     axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
-     axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
-     lines(lon2,lat2,col = "pink",lwd=1)
-     #lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
-     if (verbose) print(map.type)
-     if (map.type=="points") {
-       if (verbose) {print(c(lon(x),lat(x),cex)); print(col)}
-       points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
-       if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
-     } else if (map.type=="rectangle") {
-       rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
+        par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
+             mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
+      }
+      if(map.type=="rectangle") {
+        xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
+        yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
+        RgoogleMaps::plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
+        RgoogleMaps::PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
+      } else {
+        RgoogleMaps::plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+      }
+    }
+  }
+  
+  if(!usegooglemap) {
+    if (verbose) {
+      print('basic map')
+      print(cex.axis)
+    }
+    data("geoborders", envir = environment())
+    lon <- geoborders$x
+    lat <- geoborders$y
+    ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
+          lat>(min(yrange)-1) & lat<(max(yrange)+1) &
+          is.finite(lon) & is.finite(lat)
+    lon2 <- attr(geoborders,"borders")$x
+    lat2 <- attr(geoborders,"borders")$y
+    ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
+           lat2>(min(yrange)-1) & lat2<(max(yrange)+1) &
+          is.finite(lon2) & is.finite(lat2)
+    if (verbose) {print(sum(ok)); print(range(lon[ok])); print(range(lat[ok]))}
+    if(map.insert) {
+      par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
+          mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
+    } else {
+      dev.new()
+    }
+    plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=2,
+        #type='l', KMP 2016-03-16 problem with lines in map
+        xlab=NA,ylab=NA,axes=FALSE,new=new,
+        xlim=xrange,ylim=yrange)
+      #xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
+      #ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
+    par(xpd=FALSE)
+    lines(lon,lat) ## REB: 2016-11-25 need more solid lines.
+    axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
+    axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
+    lines(lon2,lat2,col = "pink",lwd=1)
+    #lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+    if (verbose) print(map.type)
+    if (map.type=="points") {
+      if (verbose) {print(c(lon(x),lat(x),cex)); print(col)}
+      points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
+      if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
+    } else if (map.type=="rectangle") {
+      rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
             border="black",lwd=1,lty=2)
-     }
-   }
+    }
+  }
   if(verbose) print("exit vis.map")
 }
 
@@ -475,7 +490,7 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
       ## Plot the common PCs
       for (i in 1:n.app) {
         z <- attr(x,paste('appendix.',i,sep=""))
-        lines(z[,n],col=adjustcolor(col[i],alpha=alpha),lwd=2)
+        lines(z[,n],col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
         if (verbose) print(attr(z,'source'))
         if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
                                         src[i+1] <- paste('x',i,sep='.')
@@ -543,14 +558,13 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 
   if (sum(is.element(what,'map'))>0) {
     if (verbose) print('Show map...')
-    par(fig=c(0,0.5,0.5,1)) ## par(bty="n",fig=c(0,0.5,0.5,1),mar=c(1,1,1,1))
+    par(fig=c(0,0.5,0.5,1))
     map(x,new=FALSE,colbar=list(show=FALSE),verbose=verbose,...)
     points(lon(x),lat(x),lwd=3,cex=1.5)
   }
 
   if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ){
-    #if (is.null(attr(x,'evaluation'))) attr(x,'evaluation') <- crossval(x)
-    par(new=TRUE,fig=c(0.5,1,0.5,1)) ##par(bty="n",fig=c(0.55,0.95,0.55,0.95),mar=c(4,3,1,1),new=TRUE, xaxt='s',yaxt='s',cex.sub=0.7)
+    par(new=TRUE,fig=c(0.5,1,0.5,1)) 
      
     plot(attr(x,'evaluation')[,1],attr(x,'evaluation')[,2],
          main='Cross-validation',xlab='original data',
@@ -566,8 +580,9 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     plot(c(0,1),c(0,1),type='n',xlab='',ylab='')
     ok <- is.finite(attr(x,'evaluation')[,1]) &
           is.finite(attr(x,'evaluation')[,2])
-    text(0,0.5,paste('correlation=',
-           round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
+    text(par()$xaxp[1],mean(par()$yaxp[1:2]),
+          paste('correlation=',
+          round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
          pos=4,cex=0.8,col='grey')
   }  else {
     xvalfit <- NULL
@@ -591,10 +606,12 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
       x.rng <- range(x.rng,index(y),na.rm=TRUE)
   }
   
-  if (is.null(ylim))
+  if (is.null(ylim)) {
     ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
-  if (is.null(xlim))
+  }
+  if (is.null(xlim)) {
     xlim <- range(index(x),index(y0),x.rng,na.rm=TRUE)
+  }
 
   par(fig=c(0.025,1,0.025,0.475),new=TRUE)
   par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
@@ -1002,7 +1019,7 @@ vis.pca <- function(x,cex=1.5,new=TRUE) {
        main="Climatology",
        col=col[a.T[1,]],pch=19,xlab="",ylab="",cex=cex)
   points(lon,lat,cex=cex)
-  data(geoborders,envir=environment())
+  data("geoborders",envir=environment())
   lines(geoborders,col='grey40')
   lines(geoborders$x - 360,geoborders$y,col='grey40')
   points(lon,lat,cex=cex,col=col[a.T[1,]],pch=19)
@@ -1035,25 +1052,25 @@ vis.pca <- function(x,cex=1.5,new=TRUE) {
   image(cbind(1:nc,1:nc),col=col)
   nl <- pretty(scale0)
   par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),label=nl)
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
 
   par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
   image(cbind(1:nc,1:nc),col=col)
   nl <- pretty(scale)
   par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),label=nl)
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
 
   par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.665,0.695),new=TRUE,cex.axis=0.6,xaxt="n")
   image(cbind(1:nc,1:nc),col=col)
   nl <- pretty(scale)
   par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),label=nl)
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
 
   par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
   image(cbind(1:nc,1:nc),col=col)
   nl <- pretty(scale)
   par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),label=nl)
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
   
   par(mfcol=c(1,1),fig=c(0,1,0,0.33),new=TRUE,xaxt="s",yaxt="n",bty="n",
       mar=c(2,2,1,1))
@@ -1289,7 +1306,7 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
       x$yrange <- c(attr(x$z,"lat")-10,attr(x$z,"lat")+10)
     }
     if (!is.null(x$xrange) & !is.null(x$xrange)) {
-      data(geoborders)
+      data("geoborders", envir = environment())
       lon <- geoborders$x
       lat <- geoborders$y
       ok <- lon>(min(x$xrange)-1) & lon<(max(x$xrange)+1) &
@@ -1548,7 +1565,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   #    yrange <- range(lat(y)) + c(-10,10)
   #  }
   #  if (!is.null(xrange) & !is.null(xrange)) {
-  #    data(geoborders)
+  #    data("geoborders", envir = environment())
   #    lon <- geoborders$x
   #    lat <- geoborders$y
   #    lon2 <- attr(geoborders,"borders")$x
@@ -1684,12 +1701,12 @@ plot.spell <- function(x,xlim=NULL,ylim=NULL) {
 plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
     if ( (class(ssa)[1]!="SSA") ) stop("Need an 'SSA' object")
     nt <- ssa$nt
-    newFig()
+    dev.new()
     plot(ssa$d,main=main,sub=sub,ylab="Singular value",pch=20,col="grey50")
     points(ssa$d)
     grid()
 
-    newFig()
+    dev.new()
     par(mfcol=c(3,1))
     plot(ssa$v[,1],type="l",main=main,sub=sub,
            xlab="Time",ylab="SSA vector: mode 1",lwd=3,col="grey70")
@@ -1702,7 +1719,7 @@ plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
     grid()
 
 
-    newFig()
+    dev.new()
     par(mfcol=c(3,1))
     if (class(ssa)[3] == "monthly.station.record") {
       yy <- sort(rep(ssa$x$yy,12)); yy <- yy[1:ssa$Nm]

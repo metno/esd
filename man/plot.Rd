@@ -30,33 +30,38 @@ nam2expr(x)
 plot.station(x, plot.type = "single", new = TRUE, lwd = 3, type = "l", 
     pch = 0, main = NULL, col = NULL, xlim = NULL, ylim = NULL, 
     xlab = "", ylab = NULL, errorbar = TRUE, legend.show = FALSE, 
-    map.show = TRUE, map.type = "points", mar = c(4.5, 4.5, 0.75, 
-        0.5), alpha = 0.3, verbose = FALSE, ...)
+    map.show = TRUE, map.type = "points", 
+    mar = c(4.5, 4.5, 0.75, 0.5), alpha = 0.3, 
+    verbose = FALSE, ...)
 plot.pca(x,verbose=FALSE,new=TRUE,...)
 plot.eof(x,new=FALSE,xlim=NULL,ylim=NULL,
-                     ip=1,what=c("pc","eof","var"),
-                     colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
-                         breaks=NULL,type="p",cex=2,show=TRUE,
-                         h=0.6,v=1,pos=0.05),
-                     verbose=FALSE,is=NULL,it=NULL,...)
+         ip=1,what=c("pc","eof","var"),
+         colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
+                     breaks=NULL,type="p",cex=2,show=TRUE,
+                     h=0.6,v=1,pos=0.05),
+         verbose=FALSE,is=NULL,it=NULL,...)
 plot.eof.field(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
-                           what=c("pc","eof","var"),## colbar=NULL,
-                           cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
-                           verbose=FALSE,it=NULL,is=NULL,cex=1,...)
+               what=c("pc","eof","var"),
+               cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
+               verbose=FALSE,it=NULL,is=NULL,cex=1,...)
 plot.eof.comb(x,new=TRUE,xlim=NULL,ylim=NULL,
-                          ip=1,col=c("red"),what=c("pc","eof","var"),...)
+              ip=1,col=c("red"),what=c("pc","eof","var"),...)
 plot.eof.var(x,new=TRUE,xlim=NULL,ylim=NULL,ip=20,...)
 plot.ds(x,plot.type="single",what=c("map","ts"),new=TRUE,
         lwd=3,type='b',pch=0,main=NULL,col=NULL,
         xlim=NULL,ylim=NULL,xlab="",ylab=NULL,...)
 plot.ds.pca(x,ip=1,verbose=FALSE,
-                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,...)
+            colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
+                         cex=2,show=TRUE,h=0.6, v=1,pos=0.05),
+            colbar2=NULL,...)
 plot.ds.eof(x,ip=1,
-                        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...)
-plot.cca(x,ip=1,colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE,...)
+            colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
+                         cex=2,show=TRUE,h=0.6, v=1,pos=0.05),
+            colbar2=NULL,verbose=FALSE,...)
+plot.cca(x,ip=1,
+         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
+                      cex=2,show=TRUE,h=0.6, v=1,pos=0.05),
+         colbar2=NULL,verbose=FALSE,new=TRUE,...)
 plot.field(x,is=NULL,it=NULL,FUN="mean",...)
 plot.spell(x)
 plot.diagnose(x,...) 
@@ -65,14 +70,14 @@ plot.diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,...)
 plot.diagnose.dsensemble(x,map=TRUE,verbose=FALSE,new=TRUE,cex=NULL)
 plot.xval(x,new=TRUE,...)
 plot.dsensemble.pca(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,ip=1,
-                               envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,...)
+                    envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,...)
 plot.dsensemble.multi(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
-                                  anomaly=FALSE,test=FALSE,...)
+                      anomaly=FALSE,test=FALSE,...)
 plot.dsensemble.one(x,pts=FALSE,it=0,
-                             envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
-                             obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                             new=FALSE,xrange=NULL,yrange=NULL,alpha=0.5,alpha.map=0.7,
-                             verbose=FALSE,...)
+                    envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
+                    obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,
+                    map.insert=TRUE,new=FALSE,xrange=NULL,yrange=NULL,
+                    alpha=0.5,alpha.map=0.7,verbose=FALSE,...)
 plot.nevents(x,verbose=FALSE,...)
 vis.map(x,col='red',map.type='points',add.text=FALSE)
 }

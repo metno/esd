@@ -5,8 +5,6 @@
 #
 #------------------------------------------------------------------------
 
-require(zoo)
-
 EOF<-function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,...)
   UseMethod("EOF")
 
@@ -40,7 +38,6 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   attr(X,'dimnames') <- NULL
   stopifnot(!missing(X), is.matrix(X),
             inherits(X,c("field","zoo")))
-  
 
   # REB: 29.04.2014
   if (area.mean.expl) {
@@ -69,13 +66,11 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   if (verbose) print(dates)
   
   d <- attr(x,'dimensions')
-  if ((length(d) != 3) | min(d) == 1)
+  if ((length(d) != 3) | min(d) == 1) {
     stop(paste('EOF.field: too small data dimensions'))
-    
+  }    
   cls <- class(x)
-  #print(cls)
-  ## browser()
-  
+
   Y <- t(coredata(x))
   Y[!is.finite(Y)] <- NA
 
@@ -99,7 +94,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   if (verbose) print(paste('Exclude the missing values/zero-sd:',
                            sum(sd0>0.0),sum(nf > 0)))
   y <- Y[,(sd0>0.0) & (nf > 0)]
-  ## browser()
+
   # Exclude the time slices with missing values:
   skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
   y <- as.matrix(y)[skip == npts,]
@@ -579,7 +574,6 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
     # Recover the staiton data from the original data x and the
     # cross-validation prediction z
     # seperately using the same spatial PCA pattern and eiganvalues:
-    #browser()
     x.cvalx <-U %*% diag(W) %*% t(V.x[,ii1])
     x.cvalz <-U %*% diag(W) %*% t(V.x[,ii2])
     # Combine the two together and then sort so that the prediction

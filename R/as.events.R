@@ -13,7 +13,7 @@ as.events.trajectory <- function(x,verbose=FALSE,...) {
   invisible(y)
 }
 
-events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
+events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,calendar=NULL,
                    quality=NULL,src=NULL,url=NULL,reference=NULL,greenwich=NULL,
                    info=NULL,method=NULL,unit=NULL,file=NULL,version=NULL) {
   if (verbose) print("events")
@@ -29,6 +29,7 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   if(all(is.null(unit)) & !is.null(attr(x,"unit"))) unit <- attr(x,"unit")
   if(is.null(version) & !is.null(attr(x,"version"))) version <- attr(x,"version")
   if(is.null(longname) & !is.null(attr(x,"longname"))) longname <- attr(x,"longname")
+  if(is.null(calendar) & !is.null(attr(x,"calendar"))) calendar <- attr(x,"calendar")
   if(is.null(quality) & !is.null(attr(x,"quality"))) quality <- attr(x,"quality")
   if(is.null(src) & !is.null(attr(x,"source"))) src <- attr(x,"source")
   if(is.null(file) & !is.null(attr(x,"file"))) src <- attr(x,"file")
@@ -56,9 +57,9 @@ events <- function(x,verbose=FALSE,loc=NULL,param=NULL,longname=NULL,
   attr(y, "location") <- loc
   attr(y, "variable") <- param
   attr(y, "longname") <- longname
+  attr(y, "calendar") <- calendar
   attr(y, "unit") <- unit
   attr(y, "quality") <- quality
-  attr(y, "calendar") <- "gregorian"
   attr(y, "source") <- src
   attr(y, "URL") <- url
   attr(y, "type") <- "analysis"
@@ -104,12 +105,12 @@ trajectory2events <- function(x,minlen=3,verbose=FALSE) {
   if(verbose) print('interpolate time')
   i.start <- colnames(x)=="start"
   i.end <- colnames(x)=="end"
-  datetime <- unlist(apply( x, 1, function(z) strftime(
+  datetime <- unlist(apply( x, 1, function(z) format(
         seq(strptime(z[i.start],format="%Y%m%d%H"),
         strptime(z[i.end],format="%Y%m%d%H"),
         length.out=z[i.n]),format="%Y%m%d%H")))
-  y$date <- as.numeric(strftime(strptime(datetime,"%Y%m%d%H"),"%Y%m%d"))
-  y$time <- as.numeric(strftime(strptime(datetime,"%Y%m%d%H"),"%H"))
+  y$date <- as.numeric(format(strptime(datetime,"%Y%m%d%H"),"%Y%m%d"))
+  y$time <- as.numeric(format(strptime(datetime,"%Y%m%d%H"),"%H"))
   if(verbose) print('interpolate lon and lat')
   a <- 6.378e06
   xx <- a * cos( x[,i.lat]*pi/180 ) * cos( x[,i.lon]*pi/180 )
@@ -152,8 +153,12 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (length(it)==0) it <- NULL
   if (length(is)==0) is <- NULL
   ## date vector
-  d <- strptime(paste(x["date"][[1]],x["time"][[1]]),"%Y%m%d %H")
-  d <- as.POSIXct(d)
+  if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    d <- PCICt::as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+  } else {
+    d <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
+  }
   yr <- year(d)
   mo <- month(d)
   dy <- day(d)
@@ -165,18 +170,37 @@ subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     nlev <- levels(factor(nchar(it)))
     if (length(nlev)==1 & is.element(nlev[1],c(4,8,10,13))) {
       if (nlev==13) {
-        it <- as.POSIXct(strptime(it,format="%Y-%m-%d %H")); t <- d
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- PCICt::as.PCICt(it,format="%Y-%m-%d %H",cal=calendar)
+        } else {
+          it <- as.POSIXct(it,format="%Y-%m-%d %H")
+        }
+        t <- d
       } else if (nlev==10) {
         if (any(grep("-",it[1]))) {
-          it <- as.Date(strptime(it,format="%Y-%m-%d"))
-          t <- as.Date(d)
+          if (requireNamespace("PCICt", quietly = TRUE)) {
+            it <- PCICt::as.PCICt(it,format="%Y-%m-%d",cal=calendar)
+            t <- PCICt::as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
+          } else {
+            it <- as.Date(strptime(it,format="%Y-%m-%d"))
+            t <- as.Date(d)
+          }
         } else {
-          it <- as.POSIXct(strptime(it,format="%Y%m%d%H"))
+          if (requireNamespace("PCICt", quietly = TRUE)) {
+            it <- PCICt::as.PCICt(format(it,format="%Y%m%d%H"),cal=calendar)
+          } else {
+            it <- as.POSIXct(strptime(it,format="%Y%m%d%H"))
+          }
           t <- d
         }
       } else if (nlev==8) {
-        it <- as.Date(strptime(it,format="%Y%m%d"))
-        t <- as.Date(d)      
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- PCICt::as.PCICt(it,format="%Y%m%d",cal=calendar)
+          t <- PCICt::as.PCICt(format(d,"%Y-%m-%d"),cal=calendar)
+        } else {
+          it <- as.Date(strptime(it,format="%Y%m%d"))
+          t <- as.Date(d)
+        }
       } else if (nlev==4) {
         t <- yr
       }
@@ -311,8 +335,14 @@ as.station.events <- function(x,...) {
 
 count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
   if (verbose) print("count.events")
-  dates <- as.Date(strptime(paste(x$date,x$time),format="%Y%m%d %H"))
-  fn <- function(x) as.Date(as.yearmon(x))
+  if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    dates <- PCICt::as.PCICt(x$date,format="%Y%m%d",cal=calendar)
+    fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
+  } else {
+    dates <- as.Date(strptime(x$date,format="%Y%m%d"))
+    fn <- function(x) as.Date(as.yearmon(x))
+  }
   if (by.trajectory) {
     if (!"trajectory" %in% names(x)) x <- Track.events(x)
     z <- zoo(x$trajectory,order.by=dates)
@@ -322,8 +352,11 @@ count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
     N <- aggregate(z,by=fn,FUN=length)
   }
   # fill in missing months by merging with an empty time series
-  nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,
-                format="%Y%m%d"))
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    nrt <- PCICt::as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
+  } else {
+    nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,format="%Y%m%d"))
+  }
   N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
   N <- merge(N, N0)
   N[is.na(N)] <- 0
@@ -335,8 +368,14 @@ count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
 param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
                          longname=NULL,unit=NULL,...) {
   if (verbose) print("param.events")
-  dates <- as.Date(strptime(paste(x$date,x$time),format="%Y%m%d %H"))
-  fn <- function(x) as.Date(as.yearmon(x))
+  if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    dates <- PCICt::as.PCICt(paste(x$date,x$time),format="%Y%m%d %H",cal=calendar)
+    fn <- function(x) PCICt::as.PCICt(paste(format(x,"%Y-%m"),"01",sep="-"),cal=calendar)
+  } else {
+    dates <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
+    fn <- function(x) as.Date(as.yearmon(x))
+  }
   if (param=="count") {
     N <- count.events(x,...)
     longname <- paste(attr(x,"variable"),param)
@@ -344,8 +383,11 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
   } else if (param %in% names(x)) {
     y <- zoo(x[,param],order.by=dates)
     N <- aggregate(y,by=fn,FUN=FUN)
-    nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,
-              format="%Y%m%d"))
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      nrt <- PCICt::as.PCICt(as.character(range(year(dates))*1E4+range(month(dates))*1E2+1),format="%Y%m%d",cal=calendar)
+    } else {
+      nrt <- as.Date(strptime(range(year(dates))*1E4+range(month(dates))*1E2+1,format="%Y%m%d"))
+    }
     N0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
     N <- merge(N, N0)
     N <- attrcp(x,N)
@@ -370,10 +412,12 @@ param.events <- function(x,param="count",FUN="mean",verbose=TRUE,
   }
   attr(N,"variable") <- param
   attr(N,"longname") <- longname
+  attr(N,"calendar") <- calendar
   attr(N,"unit") <- unit
   attr(N,"lat") <- attr(x,"lat")
   attr(N,"lon") <- attr(x,"lon")
-  N <- subset(N, it=paste(range(strftime(dates,format="%Y-%m")),"01",sep="-"))
+  N <- subset(N, it=paste(range(format(dates,format="%Y-%m")),"01",sep="-"))
+  #N <- subset(N, it=paste(range(strftime(dates,format="%Y-%m")),"01",sep="-"))
   invisible(N)
 }
 

@@ -32,7 +32,7 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   if(verbose) print(paste("width of columns:",paste(w,collapse=",")))                
   # read data
   if(verbose) print("reading data")
-  x <- read.fwf(fname,width=w,col.names=h,skip=1)
+  x <- read.fwf(fname,widths=w,col.names=h,skip=1)
   x <- x[x$code99<90,]
   x <- x[!is.na(x$lon),]
   # rearrange date and time information
@@ -46,7 +46,8 @@ read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   longname <- "mid-latitude storm trajectories"
   src <- "IMILAST"
   url <- "http://journals.ametsoc.org/doi/abs/10.1175/BAMS-D-11-00154.1"
-  ref <- "Neu, et al. , 2013: IMILAST: A Community Effort to Intercompare Extratropical Cyclone Detection and Tracking Algorithms. Bull. Amer. Meteor. Soc., 94, 529–547."
+  ref <- paste("Neu et al. 2013: IMILAST: A Community Effor to Intercompare Extratroptical Cyclone Detection and Tracking Algorithms.",
+               "Bull. Amer. Meteor. Soc., 94, 529-547.")
   if (x$code99[1]>9) {
     method <- paste("M",as.character(x$code99[1]),sep="")
   } else {

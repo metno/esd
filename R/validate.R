@@ -73,7 +73,7 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
     plot(lon(ro),lat(ro),pch=19,col=cols,cex=colbar$cex,
          xlab='',ylab='',main='Validation of downscaled ensemble',
          sub='p-values from a Wilcox-test: how observation ranks amongst model results')
-    data(geoborders)
+    data(geoborders, envir = environment())
     lines(geoborders,col='grey')
     points(lon(ro),lat(ro),cex=colbar$cex,col='grey')
     good <- (ro > conf.int[1]) & (ro < conf.int[2])

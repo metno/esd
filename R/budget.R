@@ -217,18 +217,3 @@ plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
   }
 }
 
-## # an example how this works so far
-## #data(imilast.M03)
-## load("/vol/fou/klima/kajsamp/MIST2/trajectories.NH.rda")
-## it <- apply(X[,colnames(X)=="pcent"],1,function(x) any(x<990)) &
-##       apply(X[,colnames(X)=="max.dslp"],1,function(x) any(x>2e-2))
-## X.deep <- subset(X,it=it)
-
-## bud <- calculate.cyclonebudget(X.deep)
-
-## library(RColorBrewer)
-## #png(filename = "examplebudget.png",width = 800, height = 800)
-
-## plot(bud,col=RColorBrewer::brewer.pal(n=9,name = "Blues"))
-
-## #dev.off()

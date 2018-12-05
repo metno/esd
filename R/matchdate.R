@@ -20,27 +20,29 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     ## if (inherits(it,'day')) x <- aggregate(x,list(as.Date(index(x))),FUN='mean') ## REB 2018-11-20: what does this line actually do? It causes errors.
     if (verbose) print(index(x))
   } 
-  
-  t <- index(x); t0 <- t
+
+  t <- index(x)
+  t0 <- t
   if (inherits(it,c('annual','month','seasonal','day'))) cls[2] <- class(it)[2]
-  
+ 
   if (inherits(it,'character')) {
     if (verbose) print('Convert years and incomplete dates to %YYYY-%MM-%DD date format')
     ## If given years but y has dates as index, convert to dates.
     nc <- nchar(it)
     # Simple fix for short date strings
-    if ((nc[1]==4) & (length(it)>1)) it <- paste(it,'-01-01',sep='') else
-      if ((nc[1]==4) & (length(it)==1))
-        it <- c(paste(it,'-01-01',sep=''),paste(it,'-12-31',sep='')) else
-          if (nc[1]==7) it <- paste(it,'-01',sep='')
+    if ((nc[1]==4) & (length(it)>1)) {
+      it <- paste(it,'-01-01',sep='') 
+    } else if ((nc[1]==4) & (length(it)==1)) {
+      it <- c(paste(it,'-01-01',sep=''),paste(it,'-12-31',sep='')) 
+    } else if (nc[1]==7) {
+      it <- paste(it,'-01',sep='')
+    }
     it <- as.Date(it)
   }
-  
+
   if (inherits(it,c('field','station','zoo'))) it <- index(it)
-  if (is.logical(it)) it <- (1 <- length(it))[it]
-  
+  if (is.logical(it)) it <- seq(1,length(it))[it]
   #print(c(t[1],it[1]));   print(c(class(t),class(it)))
-  
   # Convert indeces all to 'Date':
   # The time index of x:
   #
@@ -61,7 +63,10 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   
   if (length(it)>2) {
     ii <- is.element(t,it)
-    if (verbose) {print(paste('select',sum(ii),'dates')); print(t[ii])}
+    if (verbose) {
+      print(paste('select',sum(ii),'dates'))
+      print(t[ii])
+    }
     y <- x[ii,]
     
     if (verbose) print(paste('matchdate found',sum(ii),'matching dates'))
@@ -76,25 +81,26 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   } else {
     # Pick one date:
     if (verbose) print('one date')
-    if (inherits(x,c('day','zoo'))) ii <- is.element(t,it) else
-      if (inherits(x,c('month','seasonal')))
-        ii <- is.element(year(t)*100+month(t),year(it)*100+month(it)) else
-          #    if (inherits(x,'annual')) ii <- is.element(year(t),year(it)*100) # REB: bug year(it)*100
-          if (inherits(x,'annual')) ii <- is.element(year(t),year(it)) # REB 2015-01-21
-          #print(class(x)); print(sum(ii))
-          if (sum(ii) > 0) y <- x[ii,] else {
-            # Weight the two nearest in time
-            if (verbose) print(paste('matchdate: Weight the two nearest in time because no overlaps: sum(ii)=',
-                                     sum(ii),'t = [',max(t),'-',min(t),'], it= [',
-                                     max(it),'-',min(it),']'))
-            i1 <- t <= it; t1 <- max(t[i1])
-            i2 <- t > it; t2 <- min(t[i2])
-            dt <- t2 - t1
-            if (verbose) print(c(max(t[i1]),min(t[i2]),sum(is.element(t,t1))))
-            y1 <- (it-t1)/dt*x[is.element(t,t1),]
-            y2 <- (t2 - it)/dt*x[is.element(t,t2),]
-            y <- zoo(coredata(y1)+coredata(y2),order.by=it)
-          }
+    if (inherits(x,c('day','zoo'))) {
+      ii <- is.element(t,it) 
+    } else if (inherits(x,c('month','seasonal'))) {
+      ii <- is.element(year(t)*100+month(t),year(it)*100+month(it))
+    } else if (inherits(x,'annual')) {
+      ii <- is.element(year(t),year(it))
+    }
+    if (sum(ii) > 0) y <- x[ii,] else {
+    # Weight the two nearest in time
+      if (verbose) print(paste('matchdate: Weight the two nearest in time because no overlaps:',
+      	 	   	       ' sum(ii)=',sum(ii),'t = [',max(t),'-',min(t),'], it= [',
+                               max(it),'-',min(it),']'))
+      i1 <- t <= it; t1 <- max(t[i1])
+      i2 <- t > it; t2 <- min(t[i2])
+      dt <- t2 - t1
+      if (verbose) print(c(max(t[i1]),min(t[i2]),sum(is.element(t,t1))))
+      y1 <- (it-t1)/dt*x[is.element(t,t1),]
+      y2 <- (t2 - it)/dt*x[is.element(t,t2),]
+      y <- zoo(coredata(y1)+coredata(y2),order.by=it)
+    }
   }
   
   y <- attrcp(x,y)

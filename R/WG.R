@@ -115,8 +115,7 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 #                          select=select,verbose=verbose)
     zts <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
                           FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
-                          FUNx='sd',       
-                          select=select,verbose=verbose)
+                          FUNX='sd',select=select,verbose=verbose)
     asd <- zoo(rowMeans(zts,na.rm=TRUE) - mean(zts,na.rm=TRUE),
                order.by=index(zts))
   } else if (inherits(asd,'dsensemble'))
@@ -187,7 +186,7 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
                              ncwd=NULL,ndbr=NULL,t=NULL,
                              threshold=1,select=NULL,
-                             lon=c(-10,10),lat=c(-10,10),
+			     ip=1:6,lon=c(-10,10),lat=c(-10,10),
                              plot=FALSE,biascorrect=TRUE,
                              verbose=TRUE) {
 
@@ -248,7 +247,8 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
                     lon=lon(x) + lon,lat=lat(x) + lat)
     zmu <- DSensemble.precip(x,predictor=PRE,biascorrect=biascorrect,
                           plot=plot,lon=lon,lat=lat,ip=ip,
-                          select=select,verbose=verbose,treshold=threshold)
+			  treshold=threshold,
+                          select=select,verbose=verbose)
     mu <- rowMeans(zmu,na.rm=TRUE) - mean(zmu,na.rm=TRUE)
   } else if (inherits(mu,'dsensemble'))
     mu <- rowMeans(mu,na.rm=TRUE) - mean(mu,na.rm=TRUE) 
@@ -396,7 +396,10 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
 # temperature and precipitation is constant and doesn't change in the future.
 # Moreover, the method also assumes that the spell-statistics will stay the same.
 
-WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL) {
+WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL,
+                                  wetfreq.pred=FALSE,spell.stats=FALSE,
+				  verbose=FALSE) {
+  if(verbose) print("WG.pca.day.t2m.precip")				  
   if (is.null(t2m)) {
     data(ferder,envir=environment())
     t2m <- ferder
@@ -424,10 +427,10 @@ WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL) 
   
   zpm = DSensemble.precip(pr,FUN='wetmean',predictor=PRE,biascorrect=TRUE,
     plot=FALSE,select=select)
-  if (wetfreq.pred)
+  if (wetfreq.pred) {
     zpf = DSensemble.precip(pr,FUN='wetfreq',predictor=SLP,biascorrect=TRUE,plot=FALSE,
                             path='data/CMIP5.mslp/',pattern='psl_Amon_ens',select=select)
-
+  }
 # select an equal number of years at the end of the downscaled results if none is specified
   if (is.null(interval)) {
     interval <- c(max(year(ztm))-ny+1,max(year(ztm)))
@@ -480,7 +483,7 @@ WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL) 
 
   ytm <- approx(julian(as.Date(index(ztm))),tensm,xout=julian(as.Date(t)),rule=2)$y
   yts <- approx(julian(as.Date(index(zts))),tensm,xout=julian(as.Date(t)),rule=2)$y
-  ypm <- approx(julian(as.Date(index(ztm))),pensm,xout=julian(as.Date(t)),rule=2)$y
+  ypm <- approx(julian(as.Date(index(ztm))),tensm,xout=julian(as.Date(t)),rule=2)$y
   
   #qq-transform: temp(N1 -> N2) - year by year or for a given interval?
   t2m.x <- qnorm(pnorm(q=t2m.x,mean=mean(t2m.x,na.rm=TRUE),sd=sd(t2m.x,na.rm=TRUE)),

@@ -35,7 +35,7 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE
   #print("OK so far?")
 
   d <- dim(yx)
-  r <- apply(coredata(yx[,2:d[2]]),2,cor,coredata(yx[,1]),use=use,...)
+  r <- apply(coredata(yx[,2:d[2]]),2,cor,coredata(yx[,1]),use=use)
   #print(length(r))
   
   r <- attrcp(y,r)

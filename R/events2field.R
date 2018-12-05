@@ -23,31 +23,45 @@ density.events <- function(x,dt="month",dx=1,dy=1,plot=FALSE,
   lats <- round(lats/dy)*dy
   lats <- seq(min(lats),max(lats),dy)
   if (verbose) print("calculate event density")
+  if(is.null(attr(y,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    d <- PCICt::as.PCICt(paste(y$date,y$time),format="%Y%m%d %H",cal=calendar)
+  } else {
+    d <- as.POSIXct(paste(y$date,y$time),format="%Y%m%d %H",cal=calendar)
+  }
   if (grepl('day',dt)) {
     if (verbose) print("daily")
-    d <- as.Date(strptime(y["date"][[1]],"%Y%m%d"))
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      d <- PCICt::as.PCICt(format(d,"%Y-%m-%d"),cal=attr(y,"calendar"))
+    } else {
+      d <- as.POSIXct(format(d,"%Y-%m-%d"),cal=attr(y,"calendar"))
+    }
     dvec <- seq(min(d),max(d),by="day")
     unit <- 'tracks/day/unit~area'
   } else if (grepl('month',dt)) {
     if (verbose) print("monthly")
-    d <- as.Date(as.yearmon(strptime(y["date"][[1]],"%Y%m%d")))
+    d <- as.Date(paste(format(d,"%Y-%m"),"-01",sep=""))
     dvec <- seq(min(d),max(d),by="month")
+    calendar <- "gregorian"
     unit <- 'tracks/month/unit~area'
   } else if (grepl('season',dt) | grepl('quarter',dt)) {
     if (verbose) print("seasonal")
-    d <- as.Date(as.yearqtr(strptime(y["date"][[1]],"%Y%m%d")))
+    d <- as.Date(as.yearqtr(paste(format(d,"%Y-%m"),"-01",sep=""),format="%Y-%m-%d"))
     dvec <- seq(min(d),max(d),by="quarter")
+    calendar <- "gregorian"
     unit <- 'tracks/season/unit~area'
   } else if (grepl('year',dt) | grepl('annual',dt)) {
     if (verbose) print("annual")
-    d <- as.Date(paste(year(strptime(y["date"][[1]],"%Y%m%d")),"-01-01",sep=""))
+    #d <- as.Date(paste(year(strptime(y["date"][[1]],"%Y%m%d")),"-01-01",sep=""))
+    d <- as.Date(as.yearqtr(paste(format(d,"%Y-"),"01-01",sep=""),format="%Y-%m-%d"))
     dvec <- seq(min(d),max(d),by="year")
+    calendar <- "gregorian"
     unit <- 'tracks/year/unit~area'
   } else if (grepl('hour',dt)) {
     if (verbose) print("hourly")
-    d <- as.POSIXct(strptime(paste(y["date"][[1]],y["time"][[1]]),
-                             format="%Y%m%d %H"))
-    dh <- min(diff(sort(unique(y["time"][[1]]))))
+    #d <- as.POSIXct(strptime(paste(y["date"][[1]],y["time"][[1]]),
+    #                         format="%Y%m%d %H"))
+    dh <- min(diff(sort(unique(y$time))))
     dvec <- seq(min(d),max(d),by=dh*60*60)
     unit <- paste('tracks/',dh,'hours/unit~area',sep='')
   } else {
@@ -89,11 +103,12 @@ density.events <- function(x,dt="month",dx=1,dy=1,plot=FALSE,
     if(is.null(param)) param <- "track~density"
     if(is.null(longname)) longname <- paste("lysis density",attr(x,'variable'),sep=', ')
   }
+  
   Y <- as.field(Y,index=dvec,lon=lons,lat=lats,
           unit=unit,longname=longname,param=param,
           quality=attr(x,'quality'),src=attr(x,'source'),
           url=attr(x,'URL'),reference=attr(x,'reference'),
-          info=attr(x,'info'),calendar=attr(x,'calendar'),
+          info=attr(x,'info'),calendar=calendar,
           method=attr(x,'method'),aspect=attr(x,'aspect'))
   attr(Y,"unitarea") <- unitarea
   if(plot) {

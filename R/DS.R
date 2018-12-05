@@ -62,7 +62,6 @@ DS.default <- function(y,X,mon=NULL,
     #print('err(y)'); print(err(y))
     if (verbose) {print('index(y)'); print(index(y))}
     if (verbose) {print(class(y)); print(class(X))}
-    
     swapped <- FALSE
     if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
       if (verbose) print('SWAP y & X')
@@ -93,9 +92,10 @@ DS.default <- function(y,X,mon=NULL,
     if (verbose) print('Ensure matching time scale')
     if (verbose) {print('index(y) before sametimescale:'); print(index(y))}
     y <- sametimescale(y,X,verbose=verbose)
-    ## REB is needed to ensure that maye y annual if X is annual
+    ## REB is needed to ensure that y is annual if X is annual
     #if (verbose) {print('index(y) after sametimescale:'); print(index(y))}
     #if (verbose) print('Match dates')
+    
     y <- matchdate(y,X,verbose=verbose) ##
     #if (verbose) {print('index(y) after matchdate'); print(index(y))}
     X <- matchdate(X,y,verbose=verbose) # REB 2015-01-14
@@ -276,7 +276,6 @@ DS.station <- function(y,X,biascorrect=FALSE,mon=NULL,
     if (verbose) { print('--- DS.station ---'); print(summary(coredata(y)))}
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
-
     y <- matchdate(y,X)
     X <- matchdate(X,y)
     
@@ -503,33 +502,36 @@ DS.field <- function(X,y,biascorrect=FALSE,mon=NULL,
                                         #print(class(X)); print(attr(y,'variable'))
     if (verbose) {print(class(X)); print(varid(y))}
     if (sum(is.element(tolower(attr(y,'variable')),c('t2m','tmax','tmin'))) >0) {
-        if (inherits(X,'month')) 
-            ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
-                                     mon=mon,method=method,swsm=swsm,m=m,
-                                     rmtrend=rmtrend,ip=ip,
-                                     area.mean.expl=area.mean.expl,
-                                     verbose=verbose) else
-        if (inherits(X,'season')) 
-            ds <- DS.t2m.season.field(y=y,X=X,biascorrect=biascorrect,
-                                      method=method,swsm=swsm,m=m,
-                                      rmtrend=rmtrend,ip=ip,
-                                      area.mean.expl=area.mean.expl,
-                                      verbose=verbose) else
-        if (inherits(X,'annual')) 
-            ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
-                                      method=method,swsm=swsm,m=m,
-                                      rmtrend=rmtrend,ip=ip,
-                                      area.mean.expl=area.mean.expl,
-                                      verbose=verbose)
-    } else if (tolower(attr(y,'variable'))=='precip')
-        ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
-                                     method=method,swsm=swsm,m=m,
-                                     rmtrend=rmtrend,ip=ip,
-                                     area.mean.expl=area.mean.expl,verbose=verbose)
-    else ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
+      if (inherits(X,'month')) {
+        ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
+                                 mon=mon,method=method,swsm=swsm,m=m,
+                                 rmtrend=rmtrend,ip=ip,
+                                 area.mean.expl=area.mean.expl,
+                                 verbose=verbose) 
+      } else if (inherits(X,'season')) {
+        ds <- DS.t2m.season.field(y=y,X=X,biascorrect=biascorrect,
+                                  method=method,swsm=swsm,m=m,
+                                  rmtrend=rmtrend,ip=ip,
+                                  area.mean.expl=area.mean.expl,
+                                  verbose=verbose)
+      } else if (inherits(X,'annual')) { 
+        ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
+                                  method=method,swsm=swsm,m=m,
+                                  rmtrend=rmtrend,ip=ip,
+                                  area.mean.expl=area.mean.expl,
+                                  verbose=verbose)
+      }
+    } else if (tolower(attr(y,'variable'))=='precip') {
+      ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
+                                   method=method,swsm=swsm,m=m,
+                                   rmtrend=rmtrend,ip=ip,
+                                   area.mean.expl=area.mean.expl,verbose=verbose)
+    } else {
+      ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
                           method=method,swsm=swsm,m=m,
                           rmtrend=rmtrend,ip=ip,
                           area.mean.expl=area.mean.expl,verbose=verbose)
+    }
     if (verbose) print('return downscaled results')
     invisible(ds)
 }
@@ -542,38 +544,39 @@ DS.t2m.month.field <- function(y,X,biascorrect=FALSE,mon=NULL,
                                method="lm",swsm="step",m=m,
                                rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
                                verbose=FALSE,weighted=TRUE,station=TRUE) {
-    if (verbose) { print('--- DS.t2m.month.field ---'); print(summary(coredata(y)))}
-    if (inherits(X,'comb')) type <- 'eof.comb' else type <- "eof.field"
-    cls <- class(y)
+  if (verbose) { 
+    print('--- DS.t2m.month.field ---')
+    print(summary(coredata(y)))
+  }
+  if (inherits(X,'comb')) {
+    type <- 'eof.comb' 
+  } else {
+    type <- "eof.field"
+  }
+  cls <- class(y)
+  ds <- list()
+  if (is.null(mon)) mon <-  1:12
+  
+  for (i in mon) {
+    eof <- EOF(X,it=month.abb[i],area.mean.expl=area.mean.expl)
+    if (biascorrect) eof <- biasfix(eof)
+    cline <- paste("ds$",month.abb[i],
+                   "<- DS.station(y,eof,method=method,swsm=swsm,m=m,",
+                   "rmtrend=rmtrend,ip=ip,",
+                   "area.mean.expl=area.mean.expl,verbose=verbose)",
+                   sep="")
+    if (verbose) print(cline)
+    eval(parse(text=cline))
+  }
 
-    ds <- list()
-    if (is.null(mon)) mon <-  1:12
-    
-    for (i in mon) {
-                                        #print(month.name[i])
-        eof <- EOF(X,it=i,area.mean.expl=area.mean.expl)
-        if (biascorrect) eof <- biasfix(eof)
-        cline <- paste("ds$",month.abb[i],
-                       "<- DS.station(y,eof,method=method,swsm=swsm,m=m,",
-                       "rmtrend=rmtrend,ip=ip,",
-                       "area.mean.expl=area.mean.expl,verbose=verbose)",
-                       sep="")
-        if (verbose) print(cline)
-        eval(parse(text=cline))
-    }
-                                        #print(summary(ds))
-    
-    if (station) ds <- combine.ds(ds) else
+  if (station) {
+    ds <- combine.ds(ds) 
+  } else {
     cls <- c("list","dsfield",cls)
+  }
 
-                                        #ds <- attrcp(y,ds)
-                                        #nattr <- softattr(y)
-                                        #for (i in 1:length(nattr))
-                                        #  attr(ds,nattr[i]) <- attr(y,nattr[i])
-
-    attr(ds,'predictand.class') <- cls
-                                        #class(ds) <- c("list","dsfield",cls)
-    invisible(ds)
+  attr(ds,'predictand.class') <- cls
+  invisible(ds)
 }
 
 
@@ -637,7 +640,7 @@ DS.precip.season.field <- function(y,X,biascorrect=FALSE,threshold=1,
     fw <- as.4seasons(y,FUN="exceedance",fun="freq")
     wL <- as.4seasons(spell(y))
 
-    if (!inhetits(X,'season')) X <- as.4seasons(X)
+    if (!inherits(X,'season')) X <- as.4seasons(X)
 
     for (i in 1:4) {
         x <- EOF(X,it=i,area.mean.expl=area.mean.expl)
@@ -705,8 +708,9 @@ DS.spell <- function(y,X,threshold=1,biascorrect=FALSE,
 ## Rasmus Benestad, 19.08.2013
 DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
                    method="lm",swsm=NULL,m=5,ip=1:10,
-                   rmtrend=TRUE,verbose=FALSE,weighted=TRUE,pca=TRUE,npca=20,...) {
-    
+                   rmtrend=TRUE,weighted=TRUE,pca=TRUE,
+                   area.mean.expl=FALSE,npca=20,verbose=FALSE,...) {
+
     if (verbose) { print('--- DS.pca ---'); print(summary(coredata(y))); print(class(y)); print(class(X))}
     
     if (class(index(y)) != (class(index(X)))) {
@@ -778,7 +782,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
     if (verbose) { print('Summary of predictand before matchdate'); print(summary(coredata(y)))
       print(index(y)); print(index(X))
     }
-    if (verbose) print('predictand y: match date with predictor x')
+    if (verbose) print('predictand y: match date with predictor X')
     y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
     if (verbose) {print('summary of predictand y after matchdate'); print(summary(coredata(y)))}
     
@@ -795,7 +799,7 @@ DS.pca <- function(y,X,biascorrect=FALSE,mon=NULL,
         if (verbose) print('MVR')
         if (is.null(dy)) dy <- c(length(y),1)
         if (dy[2]>1) colnames(y) <- paste("y",1:dy[2],sep=".")
-        if (is.null(dx)) dx <- c(length(x),1)
+        if (is.null(dx)) dx <- c(length(X),1)
         if (dx[2]>1) colnames(X) <- paste("X",1:dx[2],sep=".") 
                                         #colnames(y) <- paste("y",1:dim(y)[2],sep=".")
                                         #colnames(X) <- paste("X",1:dim(y)[2],sep=".")
@@ -1127,7 +1131,7 @@ DS.station.pca <- function(y,X,mon=NULL,
     if (verbose) { print('--- DS.station.pca ---'); print(summary(coredata(y)))}
     z <- DS.default(y=y,X=X,mon=mon,method=method,swsm=swsm,m=m,
                     rmtrend=trend,ip=ip,area.mean.expl=area.mean.expl,
-                    verbose=verbose,weighted=weighted,..)
+                    verbose=verbose,weighted=weighted,...)
     return(z)
 }
 

@@ -17,7 +17,8 @@ Methods for reading cyclone data.
 }
 \usage{
 read.imilast(fname, path = NULL, verbose = FALSE)
-read.hurdat2(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html', path = NULL, verbose = FALSE)
+read.hurdat2(fname='http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html',
+             path = NULL, verbose = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

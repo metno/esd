@@ -82,12 +82,13 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   # Need to accomodate for the possibility of more than one station series.
   if (inherits(x,'day')) {
     if (is.null(nmin)) nmin <- 30*nmo
-  }  else
-  if (inherits(x,'month')) {
+  } else if (inherits(x,'month')) {
     if (is.null(nmin)) nmin <- 12
   } else if (inherits(x,'season')) {
     if (is.null(nmin)) nmin <-  length(levels(factor(month(x))))
-  } else nmin <- NA
+  } else {
+    nmin <- NA
+  }
   if (verbose) {print(paste('nmin=',nmin)); print(class(x))}
   
   ## Convert x to a zoo-object:
@@ -103,7 +104,6 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   if (verbose) print(paste('aggregate: FUN=',FUN))
 
   if (verbose) str(X)
- 
   
   if (sum(is.element(names(formals(FUN)),'threshold')==1)) {
     ## If threshold needed - set a default:
@@ -334,7 +334,7 @@ year <- function(x) {
     y <- strptime(x$date,format="%Y%m%d")$year + 1900
     return(y)
   }
-  if (inherits(x,"POSIXt")) {
+  if (inherits(x,c("POSIXt","PCICt"))) {
     y <- as.numeric(format(x, '%Y'))
     return(y)
   }
@@ -379,7 +379,7 @@ month <- function(x) {
     y <- strptime(x$date,format="%Y%m%d")$mon + 1
     return(y)
   }
-  if (inherits(x,"POSIXt")) {
+  if (inherits(x,c("POSIXt","PCICt"))) {
     y <- as.numeric(format(x, '%m'))
     return(y)
   }
@@ -418,7 +418,7 @@ day <- function(x) {
   if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 32) )
     return(x)
   if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) ) y <- rep(1,length(x))  
-  if (inherits(x,"POSIXt")) {
+  if (inherits(x,c("POSIXt","PCICt"))) {
     y <- as.numeric(format(x, '%d'))
     return(y)
   }
@@ -431,6 +431,9 @@ day <- function(x) {
     return(y)
   }
   if (class(x)[1]=="Date") y <- as.numeric(format(x, '%d'))
+  if (class(x)[1] %in% c("yearmon","yearqtr","season")) {
+    y <- rep(1,length(x))
+  }
   return(y)
 }
 

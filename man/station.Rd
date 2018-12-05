@@ -155,7 +155,8 @@ precip.ann <- as.annual(precip.dly,FUN="sum") ; plot(precip.ann)
 ss <- select.station(cntr="NORWAY",param="precip",src="GHCND",nmin=130)
 y <- station.ghcnd(loc=ss , path="~/data.GHCND",plot=TRUE)
 str(y)
-# Subselect one station and display the geographical location of both selected stations and highlight the subselected station (is=2).
+# Subselect one station and display the geographical location of both selected 
+# stations and highlight the subselected station (is=2).
 y1 <- subset(y,is=2)
 map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showall=TRUE)
 #}

@@ -122,127 +122,68 @@ CCA.pca <- function(Y,X,ip=1:8,verbose=FALSE) {
 
 CCA.field <- function(Y,X,ip=1:8,verbose=FALSE) {
   
-  if (verbose) print("CCA.field")
-  history <- attr(X,'history')
-  Z <- Y
-  cls <- class(Y)
-  # Synchronise the two time series objects:
-  y <- zoo(coredata(Y),order.by=as.Date(format(index(Y),'%Y-%m-01')))
-  x <- zoo(coredata(X),order.by=as.Date(format(index(X),'%Y-%m-01')))
-  colnames(y) <- paste("Y",1:dim(y)[2],sep=".")
-  colnames(x) <- paste("X",1:dim(x)[2],sep=".")
-  YX <- merge(y,x,all=FALSE)
-  #str(YX); str(Y); str(X)
-  vars <- names(YX)
-  #print(vars)
-  ys <- vars[grep('Y',vars)]
-  Xs <- vars[grep('X',vars)]
-  ix <- is.element(vars,Xs)
-  iy <- is.element(vars,ys)
-  x <- coredata(YX[,ix])
-  y <- coredata(YX[,iy])
-  Y <- YX[,iy]
-  
-  x.m <- rowMeans(x); y.m <- rowMeans(y)
-  x <- x - x.m; y <- y - y.m
-  S.yx <- cov(x,y)
-  S.yy <- cov(x,y)
-  S.xx <- cov(x,y)
-
-# After Wilks, 1995, p. 401
-    ## sub <- paste(sub,"(BP CCA - after Wilks (1995))")
-    M.y <- solve(S.yy) %*% S.yx %*% solve(S.xx) %*% S.yx
-    M.x <- solve(S.xx) %*% S.yx %*% solve(S.yy) %*% S.yx
-    a.m <- eigen(M.y)
-    b.m <- eigen(M.x)
-    # Dimensions of X & Y are ordered as [time,space]
-    if (verbose) {print(dim(a.m)); print(dim(b.m))}
-    w.m <- t(a.m) %*% t(coredata(X))
-    v.m <- t(b.m) %*% t(coredata(Y))
-    R <- sqrt(Re(x.m$values))
- 
-  dim(a.m) <- c(d1[1],d.1[2],d.1[3]); dim(b.m) <- c(d2[1],d.2[2],d.2[3])
-
-  cca <- list(a.m = a.m, b.m =b.m, w.m= w.m, v.m = v.m, r=R,
-              Y=Y,X=X, info=info)
-
-  class(cca) <- c("cca", class(Y)[2])
-
-  if (round(R[1],2) != round(cor(w.m[i1,1],v.m[i2,1]),2)) {
-    print("WARNING: The correlations are not internally consistent!")
-    print(paste("CCA: leading canonical correlation=", round(R[1],2),
-                " actual correlation=",round(cor(w.m[i1,1],v.m[i2,1]),2)))
-  }
-
-  invisible(cca)
+ if(verbose) print("CCA.field")
+ if(verbose) "print performing EOF analysis and redirecting to CCA.eof"
+ eof.y <- EOF(Y,verbose=verbose)
+ eof.x <- EOF(X,verbose=verbose)
+ cca <- CCA.eof(eof.y,eof.x,ip=ip,verbose=verbose)
+ invisible(cca)
 }
 
+## KMP 2018-11-02: this code (CCA.field) doesn't work
+#   history <- attr(X,'history')
+#   Z <- Y
+#   cls <- class(Y)
+#   # Synchronise the two time series objects:
+#   y <- zoo(coredata(Y),order.by=as.Date(format(index(Y),'%Y-%m-01')))
+#   x <- zoo(coredata(X),order.by=as.Date(format(index(X),'%Y-%m-01')))
+#   colnames(y) <- paste("Y",1:dim(y)[2],sep=".")
+#   colnames(x) <- paste("X",1:dim(x)[2],sep=".")
+#   YX <- merge(y,x,all=FALSE)
+#   #str(YX); str(Y); str(X)
+#   vars <- names(YX)
+#   #print(vars)
+#   ys <- vars[grep('Y',vars)]
+#   Xs <- vars[grep('X',vars)]
+#   ix <- is.element(vars,Xs)
+#   iy <- is.element(vars,ys)
+#   x <- coredata(YX[,ix])
+#   y <- coredata(YX[,iy])
+#   Y <- YX[,iy]
+#   
+#   x.m <- rowMeans(x); y.m <- rowMeans(y)
+#   x <- x - x.m; y <- y - y.m
+#   S.yx <- cov(x,y)
+#   S.yy <- cov(x,y)
+#   S.xx <- cov(x,y)
+# 
+# # After Wilks, 1995, p. 401
+#     ## sub <- paste(sub,"(BP CCA - after Wilks (1995))")
+#     M.y <- solve(S.yy) %*% S.yx %*% solve(S.xx) %*% S.yx
+#     M.x <- solve(S.xx) %*% S.yx %*% solve(S.yy) %*% S.yx
+#     a.m <- eigen(M.y)
+#     b.m <- eigen(M.x)
+#     # Dimensions of X & Y are ordered as [time,space]
+#     if (verbose) {print(dim(a.m)); print(dim(b.m))}
+#     w.m <- t(a.m) %*% t(coredata(X))
+#     v.m <- t(b.m) %*% t(coredata(Y))
+#     R <- sqrt(Re(x.m$values))
+#  
+#   dim(a.m) <- c(d1[1],d.1[2],d.1[3]); dim(b.m) <- c(d2[1],d.2[2],d.2[3])
+# 
+#   cca <- list(a.m = a.m, b.m =b.m, w.m= w.m, v.m = v.m, r=R,
+#               Y=Y,X=X, info=info)
+# 
+#   class(cca) <- c("cca", class(Y)[2])
+# 
+#   if (round(R[1],2) != round(cor(w.m[i1,1],v.m[i2,1]),2)) {
+#     print("WARNING: The correlations are not internally consistent!")
+#     print(paste("CCA: leading canonical correlation=", round(R[1],2),
+#                 " actual correlation=",round(cor(w.m[i1,1],v.m[i2,1]),2)))
+#   }
 
-
-
-
-
-test.cca <- function(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,
-                     SVD=TRUE,n.pc=4,synthetic=TRUE) {
-  print("version 0.1:")
-  data(eof.slp,envir=environment())
-  print(dim(eof.slp$EOF)); print(dim(eof.slp$PC)); print(length(eof.slp$W))
-  eof.slp$EOF[!is.finite(eof.slp$EOF)] <- 0
-  print(summary(c(eof.slp$EOF)))
-  print(summary(c(eof.slp$PC)))
-  print(summary(c(eof.slp$W)))
-  eof.slp$clim <- eof.slp$EOF[1,]*0
-  dim(eof.slp$clim) <- c(73,144)
-  if (synthetic) {
-    nt <- 200
-    eof.slp$tim <- 1:nt; eof.slp$yy <- 2000 + floor((1:nt)/360)
-    eof.slp$mm <- mod(floor((1:nt)/30),12)+1; eof.slp$dd <- mod(1:nt,30)+1 
-    eof.slp$size[1,1] <- nt
-    #print(rbind(eof.slp$tim,eof.slp$yy,eof.slp$mm,eof.slp$dd))
-    eof.slp$PC <- matrix(rep(0,n.pc*nt),nt,n.pc)
-    eof.slp$id.t <- rep("test",nt)
-  } else nt <- length(eof.slp$tim)
-  eof1 <- eof.slp; eof2 <- eof.slp; rm(eof.slp); gc(reset=TRUE)
-  eof1$PC <- eof1$PC[,1:n.pc]; eof1$EOF <- eof1$EOF[1:n.pc,]; eof1$W <- eof1$W[1:n.pc]
-  eof2$PC <- eof2$PC[,1:n.pc]; eof2$EOF <- eof2$EOF[1:n.pc,]; eof2$W <- eof2$W[1:n.pc]
-  eof1$dW <- eof1$dW[1:n.pc]; eof2$dW <- eof2$dW[1:n.pc]
-  eof1$var.eof <- eof1$var.eof[1:n.pc]; eof2$var.eof <- eof2$var.eof[1:n.pc]
-
-  print(dim(eof1$EOF)); print(dim(eof1$PC)); print(length(eof1$W))
-  y.1 <- EOF2field(eof1,anomalies=TRUE)$dat[,1,1]
-  print(summary(y.1))
-  
-  if (synthetic) {
-    modes <- 1:n.pc; modes <- modes[-mode]
-    print("signal: sin")
-    eof1$PC[,mode] <- 50*sin(seq(-12*pi,12*pi,length=nt))
-    eof2$PC[,mode] <- 50*sin(seq(-12*pi,12*pi,length=nt))
-    print("noise: rnorm")
-    for (i in modes) {
-      eof1$PC[,i] <- rnorm(nt)
-      eof2$PC[,i] <- rnorm(nt)
-    }
-  }
-  if (reconstr) {
-    print("Reconstruct fields...")
-    x1 <- EOF2field(eof1)
-    x2 <- EOF2field(eof2)
-    print(class(x1))
-    print("Run test...")
-    print(paste(method,"(x1,x2,test=",test,
-                 ",LINPACK=",LINPACK,",SVD=",SVD,")",sep=""))
-    cca.test <- eval(parse(text=paste(method,"(x1,x2,test=",test,
-                 ",LINPACK=",LINPACK,",SVD=",SVD,")",sep="")))
-  } else {
-    print(paste(method,"(eof1,eof2,test=",test,
-                 ",LINPACK=",LINPACK,",SVD=",SVD,")",sep=""))
-    cca.test <- eval(parse(text=paste(method,"(eof1,eof2,test=",test,
-                 ",LINPACK=",LINPACK,",SVD=",SVD,")",sep="")))
-  }
-  invisible(cca.test)
-}
-
-Psi <- function(cca) {
+Psi <- function(cca,verbose=FALSE) {
+  if(verbose) print("Psi")
   G <- cca$A.m; #d1 <- dim(G); dim(G) <- c(d1[1],d1[2]*d1[3])
   H <- cca$B.m; #d2 <- dim(H); dim(H) <- c(d2[1],d2[2]*d2[3])
   M <- diag(cca$r)
@@ -257,9 +198,8 @@ Psi <- function(cca) {
   attr(Psi,"dims") <- dim(Psi)
   attr(Psi,"lon") <- cca$x1$lon
   attr(Psi,"lat") <- cca$x1$lat
-  Psi
+  return(Psi)
 }
-
 
 predict.cca <- function(x, newdata=NULL, ...) {
   if (!is.null(newdata)) X <- newdata else X <- x$X

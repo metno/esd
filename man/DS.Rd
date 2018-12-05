@@ -261,7 +261,7 @@ y2[set2na] <- NA
 ds2 <- DS(y2,X)
 plot(ds2) 
 
-## Use downscale results to fill in missin data:
+## Use downscale results to fill in missing data:
 y3 <- predict(ds2,newdata=X)
 ## Plot a subset of y based on dates in predicted y3
 plot(subset(y,it=range(index(y3))),col='grey80',lwd=4,map.show=FALSE)

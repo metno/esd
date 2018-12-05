@@ -67,6 +67,7 @@ cca <- CCA(eof.1,eof.2)
 plot(cca)
 
 # CCA with PCA and EOF:
+\dontrun{
 NACD <- station.nacd()
 plot(annual(NACD))
 map(NACD,FUN="sd")
@@ -77,7 +78,6 @@ map(naslp)
 eof <- EOF(naslp,it='Jan')
 nacca <- CCA(pca,eof)
 plot(nacca)
-\dontrun{
 cca.pre <- precit.cca(nacca)
 }
 }

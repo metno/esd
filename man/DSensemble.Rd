@@ -69,7 +69,8 @@ DSensemble.precip((y,plot=TRUE,path="CMIP5.monthly/",
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",
                               FUNX="sum",xfuns='C.C.eq',threshold=1,
-                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE)
+                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL,
+                              ds.1900.2099=TRUE)
 DSensemble.annual(y,plot=TRUE,path="CMIP5.monthly/",
                               rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_t2m_mon.nc",
@@ -77,7 +78,8 @@ DSensemble.annual(y,plot=TRUE,path="CMIP5.monthly/",
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,
                               FUNX="mean",xfuns='C.C.eq',threshold=1,
-                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE)
+                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL,
+                              ds.1900.2099=TRUE)
 DSensemble.season(y,season="djf",plot=TRUE,path="CMIP5.monthly/",
                            predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,
@@ -95,13 +97,15 @@ DSensemble.mu(y,plot=TRUE,path="CMIP5.monthly/",
                           non.stationarity.check=FALSE,type='ncdf',
                           ip=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
                           select=NULL,FUN="wetmean",threshold=1,
-                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),verbose=FALSE,nmin=365)
+                          pattern=c("tas_Amon_ens_","slp_Amon_ens_"),
+                          verbose=FALSE,nmin=365)
 DSensemble.mu.worstcase(y,plot=TRUE,path="CMIP5.monthly/",
                                     predictor="ERA40_t2m_mon.nc",
                                     rcp="rcp45",biascorrect=FALSE,
                                     lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                                     select=NULL,FUN="wetmean",type='ncdf',
-                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE,ds.1900.2099=TRUE)
+                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE,
+                                    ds.1900.2099=TRUE)
 DSensemble.pca(y,plot=TRUE,path="CMIP5.monthly/",
                           rcp="rcp45",biascorrect=FALSE,
                           predictor="ERA40_t2m_mon.nc",
@@ -121,7 +125,8 @@ DSensemble.eof(y,plot=TRUE,path="CMIP5.monthly",
                            select=NULL,FUN="mean",rmtrend=TRUE,
                            FUNX="mean",xfuns='C.C.eq',threshold=1,type='ncdf4',
                            pattern="psl_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE,test=FALSE)
+                           file.ds="DSensemble.eof.rda",path.ds=NULL,
+                           ds.1900.2099=TRUE,test=FALSE)
 }
 \arguments{
     \item{y}{A station object.}
@@ -162,28 +167,46 @@ code \code{annual(f(x),FUN="mean")}}
 \value{A 'dsensembele' object - a list object holding DS-results.}
 \author{R.E. Benestad and A. Mezghani}
 \examples{
+\dontrun{
+# Import historical temperature data from Oslo
 data(Oslo)
+
 ## Download NorESM1-M from 'climexp.knmi.nl' in default directory
 ## (home directory for linux/mac users)
-url <-"http://climexp.knmi.nl/CMIP5/monthly/tas/"
-## Download NorESM1-ME from the rcp45
+url <-"http://climexp.knmi.nl/CMIP5/monthly/tas"
+## Download NorESM1-ME for the emission scenario RCP4.5
 noresm <- "tas_Amon_NorESM1-M_rcp45_000.nc"
-if (!file.exists(noresm))
-    download.file(url=file.path(url,noresm), destfile=noresm,
-                 method = "auto",quiet=FALSE,mode = "w",cacheOK = TRUE)
+if (!file.exists(noresm)) {
+  download.file(url=file.path(url,noresm), destfile=noresm,
+                method="auto", quiet=FALSE, mode="w", cacheOK=TRUE)
+}
+
+## Download FIO-ESM for the emission scenario RCP4.5
 fioesm <- "tas_Amon_FIO-ESM_rcp45_000.nc"
-if (!file.exists(fioesm))
-    download.file(url=file.path(url,fioesm), destfile=fioesm,
-                  method = "auto", quiet = FALSE, mode = "w",cacheOK = TRUE)
-## Downscale 2m temperature             
-rcp4.5 <- DSensemble.t2m(Oslo,path='~',rcp='',pattern = "tas_Amon_",
-biascorrect=TRUE, predictor = "~/air.2m.mon.mean.nc",plot=TRUE)
+if (!file.exists(fioesm)) {
+  download.file(url=file.path(url,fioesm), destfile=fioesm,
+                method="auto", quiet=FALSE, mode="w", cacheOK=TRUE)
+}
 
-# Evaluation: (1) combare the past trend with downscaled trends for same
-# interval by ranking and by fitting a Gaussian to the model ensemble;
-# (2) estimate the probabilty for the counts outside the 90
-# percent confidence interval according to a binomial distribution.
+## Downscale the predictor (ERA-interim reanalysis 2m temperature)
+predictor <- "air.2m.mon.mean.nc"
+if (!file.exists(predictor)) {
+  url <-"http://climexp.knmi.nl/ERA-interim/erai_t2m.nc"
+  download.file(url=url, destfile=predictor,
+                method="auto", quiet=FALSE, mode="w", cacheOK=TRUE)
+}
 
+# Downscale the temperature in Oslo
+rcp4.5 <- DSensemble.t2m(Oslo, path='~', rcp='', pattern="tas_Amon_",
+                         biascorrect=TRUE, predictor = predictor,
+                         plot=TRUE, verbose=TRUE)
+
+## Evaluation: 
+## (1) combare the past trend with downscaled trends for same
+## interval by ranking and by fitting a Gaussian to the model ensemble;
+## (2) estimate the probabilty for the counts outside the 90
+## percent confidence interval according to a binomial distribution.
 diagnose(rcp4.5, plot = TRUE, type = "target")
+}
 }
 \keyword{manip}

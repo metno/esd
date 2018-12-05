@@ -198,7 +198,7 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
     par(col.axis="black")
     axis(1)
     axis(2,at=exp(1:(2*sum(record.density,na.rm=TRUE))),
-         label=1:(2*sum(record.density,na.rm=TRUE)))
+         labels=1:(2*sum(record.density,na.rm=TRUE)))
     legend(1,exp(sum(1/(1:N))),c("Theoretical","Forward","Backward"),
            pch=c(-1,19,21),lwd=c(3,1,1),lty=c(1,0,0),col=c("grey60",
                                                     rep("black",2)))

@@ -146,7 +146,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if (gridlines) grid()
     }
 
-    data("geoborders")
+    data("geoborders", envir = environment())
     lines(geoborders$x,geoborders$y)
     if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
     
@@ -183,18 +183,19 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     }
     title(main=main,sub=sub,line=-2,adj=0,cex.main=cex.main,cex.sub=cex.sub,
           col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
+
+    if (verbose) print('Organise output')
+    if (inherits(x,'station')) {
+      dim(y) <- c(1,length(y))
+      y <- zoo(y,order.by=1)
+      if (verbose) print(dim(y))
+      class(y) <- class(x)
+      y <- attrcp(x,y)
+      attr(y,'period') <- paste(range(index(x)))
+    }
+    attr(y,'history') <- history.stamp(x)
+    invisible(y)
   }
-  if (verbose) print('Organise output')
-  if (inherits(x,'station')) {
-    dim(y) <- c(1,length(y))
-    y <- zoo(y,order.by=1)
-    if (verbose) print(dim(y))
-    class(y) <- class(x)
-    y <- attrcp(x,y)
-    attr(y,'period') <- paste(range(index(x)))
-  }
-  attr(y,'history') <- history.stamp(x)
-  invisible(y)
 }
 
 ###
@@ -510,16 +511,18 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     par(fig=fig0)
     
     ## REB: 2016-10-12 - add the possibility to use google maps
-    if (("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) &
+    ## KMP 2018-10-31: Don't use require inside the esd package. 
+    ## Instead call the external package explicitly, e.g., RgoogleMaps::GetMap()
+    if (requireNamespace("RgoogleMaps", quietly = TRUE) &
          (projection=="lonlat") & usegooglemap) {
-      require(RgoogleMaps)
+      #require(RgoogleMaps)
       mxdst <- max(diff(range(ss$latitude)),diff(range(ss$longitude)))
       if (!is.finite(mxdst) | mxdst==0) {
         zoom <- 3 
       } else {
         zoom <- 7 - round(log(mxdst))
       }
-      bgmap <- GetMap(center=c(lat=mean(ss$latitude),lon=mean(ss$longitude)),
+      bgmap <- RgoogleMaps::GetMap(center=c(lat=mean(ss$latitude),lon=mean(ss$longitude)),
                       destfile = "map.station.esd.png",
                       maptype = "mobile", zoom=zoom)
       plotmap(ss$latitude, ss$longitude, bgmap)

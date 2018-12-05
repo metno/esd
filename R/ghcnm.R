@@ -2,16 +2,7 @@
 ## Author 	: Abdelkader Mezghani (MET)
 ## Created 	: 22-03-2013 
 ## Last update	: 14-06-2013
-## Functions    : test.ghcnm(completed) ; t2m.GHCNM(completed) ; metaghcnm(completed) ; dataghcnm(completed)
-
-## TEST FUCNTION
-                                        #  source("~/SHARED/R_scripts/esd/R/ghcnm.R")
-test.ghcnm <- function(silent=FALSE) {
-  stid <- 89001000
-  obs <- t2m.ghcnm(stid = stid , verbose = verbose)
-  str(obs)
-  plot(obs)
-}
+## Functions    : t2m.GHCNM(completed) ; metaghcnm(completed) ; dataghcnm(completed)
 
 ## MAIN FUNCTION
                                         # Get and format output data for esd further processing
