@@ -1229,7 +1229,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     ## Get system info
     a <- Sys.info()
     ## Get time dimension / val + attributes
-    itime <- grep("tim", dimnames)
+    itime <- grep("tim", tolower(dimnames))
     if (length(itime) == 0) {
       itime <- NULL
     } else if (length(itime) > 1) {
