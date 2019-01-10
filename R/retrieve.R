@@ -461,7 +461,7 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
         val <- val - 273 
         units <- "degC"
       }
-      if ((length(grep("pa",tolower(units)))>0) | (length(grep("N",tolower(units)))>0)) {
+     if (((length(grep("pa",tolower(units)))>0) & (!grepl("vapo",tolower(v1$longname)))) | ((length(grep("N",tolower(units)))>0) )) {
         val <- val/100 
         units <- "hPa"
       }
@@ -998,8 +998,8 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
         val <- val - 273 
         units <- "degC"
       }
-      if ((length(grep("pa",tolower(units)))>0) | (length(grep("N",tolower(units)))>0)) {
-        val <- val/100 
+      if (((length(grep("pa",tolower(units)))>0) & (!grepl("vapo",tolower(v1$longname))))| (length(grep("N",tolower(units)))>0) ) {
+        val <- val/100. 
         units <- "hPa"
       }
       ## 
