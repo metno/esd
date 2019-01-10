@@ -5,23 +5,22 @@
 #
 #------------------------------------------------------------------------
 
-EOF<-function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,...)
+EOF<-function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
   UseMethod("EOF")
 
 EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
-                        area.mean.expl=FALSE,verbose=FALSE,...) {
+                        verbose=FALSE,anomaly=TRUE,...) {
   # Verify Arguments
   if (verbose) print("EOF.default")
   stopifnot(!missing(X), is.matrix(X),inherits(X,"zoo"))
-
+  
   if ( !zeros(inherits(X,c("comb","zoo"),which=TRUE)) )
-         eof <- EOF.comb(X,it=it,is=is,n=n,
-                         area.mean.expl=area.mean.expl,
-                         verbose=verbose) else
-  if ( !zeros(inherits(X,c("field","zoo"),which=TRUE)) )
-         eof <- EOF.field(X,it=it,is=is,n=n,
-                       area.mean.expl=area.mean.expl,
-                          verbose=verbose)
+    eof <- EOF.comb(X,it=it,is=is,n=n,anomaly=anomaly,
+                    verbose=verbose) else
+                      if ( !zeros(inherits(X,c("field","zoo"),which=TRUE)) )
+                        eof <- EOF.field(X,it=it,is=is,n=n,
+                                         anomaly=anomaly,
+                                         verbose=verbose)
   attr(eof,'dimnames') <- NULL   # REB 2016-03-04
   return(eof)
 }
@@ -30,28 +29,17 @@ EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
 # Apply EOF analysis to the monthly mean field values:
 
 EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
-                      area.mean.expl=FALSE,verbose=FALSE) {
-
+                      anomaly=TRUE,verbose=FALSE) {
+  
   SF <- function(x) {sum(is.finite(x))}
-
+  
   if (verbose) print("EOF.field")
   attr(X,'dimnames') <- NULL
   stopifnot(!missing(X), is.matrix(X),
             inherits(X,c("field","zoo")))
-
-  # REB: 29.04.2014
-  if (area.mean.expl) {
-    if (verbose) print('area.mean.expl')
-    A <- aggregate.area(X,FUN='mean')
-    x <- X - A
-    x <- attrcp(X,x)
-    attr(x,'dimensions') <- attr(X,'dimensions')
-    class(x) <- class(X)
-    X <- x
-  }
-
+  
   # Remove time slices with missing data:
-#  nok <- !is.finite(rowMeans(X))
+  #  nok <- !is.finite(rowMeans(X))
   # The regridded appendix may contain some NA's if its domain exceeds that of the original field.
   # Get rid of time slices with all NAs.
   nok <- apply(X,1,nv) < 0.5*dim(X)[2]
@@ -70,16 +58,16 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
     stop(paste('EOF.field: too small data dimensions'))
   }    
   cls <- class(x)
-
+  
   Y <- t(coredata(x))
   Y[!is.finite(Y)] <- NA
-
+  
   # Apply geographical weighting to account for different grid area at
   # different latitudes:
   if (verbose) print('svd:')
   stdv <- sd(c(Y),na.rm=TRUE)  # Account for mixed fields with different
-                               # magnitudes...
-
+  # magnitudes...
+  
   #print(d); print(dim(Y)); str(attr(X,'latitude'))
   Wght <-matrix(nrow=d[1],ncol=d[2])
   for (i in 1:d[1])  Wght[i,]<-sqrt(abs(cos(pi*attr(X,'latitude')/180)))
@@ -94,16 +82,18 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   if (verbose) print(paste('Exclude the missing values/zero-sd:',
                            sum(sd0>0.0),sum(nf > 0)))
   y <- Y[,(sd0>0.0) & (nf > 0)]
-
+  
   # Exclude the time slices with missing values:
   skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
   y <- as.matrix(y)[skip == npts,]
-
+  
   # Remove the mean value - center the analysis:
-  if (verbose) print('center the data')
-  ave <- rowMeans(y)
-  #print(c(length(ave),dim(y)))
-  y <- y - ave
+  if (anomaly) {
+    if (verbose) print('center the data')
+    ave <- rowMeans(y)
+    #print(c(length(ave),dim(y)))
+    y <- y - ave
+  } else ave <- rowMeans(y)*0
   npca <- min(dim(y)) 
   ny <- min(c(dim(y),20)) # REB 2015-05-21
   # Apply the SVD decomposition: see e.g. Strang (1988) or Press et al. (1989)
@@ -124,51 +114,35 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
     SVD$v <- temp
   }
   if (inherits(SVD,"try-error") & verbose) print("both svd(x) and svd(t(x) failed.")
-      
+  
   #print("---"); print(dim(SVD$u)); print(dim(SVD$v)); print("---")
-
+  
   autocor <- 0
   if (verbose) print(paste("Find max autocorr in the grid boxes."))
   #print(dim(y))
   for (i in 1:npts) {
-  vec <- as.vector(y[,i])
-  i.bad <- is.na(vec)
+    vec <- as.vector(y[,i])
+    i.bad <- is.na(vec)
     if (sum(i.bad) == 0) {
       ar1 <- acf(vec[],plot=FALSE)
       autocor <- max(c(autocor,ar1$acf[2,1,1]),na.rm=TRUE)
     }
   }
-
+  
   n <- min(n,length(SVD$d))
   
   #a <- y[,1]; dim(a) <- c(d[1],d[2]); image(a)
   eof <- zoo(SVD$v[,1:n],order.by = dates)
   invert <- apply(SVD$u[,1:n],2,mean) < 0
-
+  
   # Some data points may have been excluded due to missing values.
   # Need to insert the results for valid data onto the original grid.
   pattern <- matrix(rep(NA,d[1]*d[2]*n),d[1]*d[2],n)
   pattern[skip == npts,] <- SVD$u[,1:n]
-
+  
   Ave <- rep(NA,d[1]*d[2])
   Ave[skip == npts] <- ave
-
-  ## Do no longer use this REB
-#  if (area.mean.expl) {
-#    if (verbose) print('area.mean.expl')
-#    ave <- ave + mean(A,na.rm=TRUE)
-#    A <- A - mean(A,na.rm=TRUE)
-#    s <- sd(A,na.rm=TRUE)
-#    A <- A/s
-#    n <- n + 1
-#    #print(dim(pattern))
-#    pattern <- cbind(rep(1,d[1]*d[2]),pattern)
-#    SVD$d <- c(d[1]*d[2]*s,SVD$d)
-#    #print(dim(pattern))
-#    eof <- merge(zoo(A,order.by=index(eof)),eof)
-#  }
-  #print(dim(pattern)); print(d); print(n)
-
+  
   # Make all the EOF vectors havine the same sense rather than
   # being random:
   if (verbose) print(paste("Invert EOF",(1:length(invert))[invert],collapse=' '))
@@ -181,7 +155,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   #nattr <- softattr(X)
   #for (i in 1:length(nattr))
   #  attr(eof,nattr[i]) <- attr(X,nattr[i])
-
+  
   names(eof) <- paste("X.",1:n,sep="")
   attr(eof,'pattern') <- pattern
   attr(eof,'dimensions') <- d
@@ -193,8 +167,6 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
   attr(eof,'history') <- history.stamp(X)
   attr(eof,'aspect') <- 'anomaly'
   attr(eof,'dimnames') <- NULL   # REB 2016-03-04
-  if (area.mean.expl) attr(eof,'area.mean.expl') <- TRUE else
-                      attr(eof,'area.mean.expl') <- FALSE
   class(eof) <- c("eof",cls)
   #str(eof)
   return(eof)
@@ -202,20 +174,20 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
 
 
 EOF.comb <- function(X,it=NULL,is=NULL,n=20,
-                     area.mean.expl=FALSE,verbose=FALSE) {
-
+                     anomaly=TRUE,verbose=FALSE) {
+  
   n.app <- attr(X,'n.apps')
   if (verbose) print(paste("EOF.comb: ",n.app,"additional field(s)"))
-
+  
   # Extract the data into an ordinary matrix, remove the respective
   # mean values from the different data sets, and combine the data into
   # one matrix. Also keep track of dates, but this is monthly data, and
   # the day is used to reflect the different data set, where day==1 for
   # the original (first field), day==2 for the first field appended,
   # day ==3, for the second, and so on.
-
+  
   ## AM 11-11-2013 added lines begin
-
+  
   #print('subset')
   if (!is.null(is) | !is.null(it))
     X <- subset(X,it=it,is=is,verbose=verbose)
@@ -223,7 +195,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   #  X <- subset(X,it=it,is=is)
   ## AM 11-11-2013 added lines end
   #print(dim(X))
-
+  
   #print('soutpole-to-northpole')
   X <- sp2np(X)
   YYt <- t(coredata(X));
@@ -232,7 +204,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   YYt <- YYt - clim
   YY <- t(YYt)
   d <- attr(X,'dimensions')
-
+  
   ## KMP 2016-12-28: time housekeeping in EOF.comb creates problems
   ## for DS when applied to annual data. The predictand ends up with
   ## years as time index but the EOF has dates (YYYY-01-01).
@@ -255,11 +227,11 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   if (is.null(attr(X,'source'))) attr(X,'source') <- "0"
   id.t <- rep(attr(X,'source'),length(index(X)))
   ID.t <- attr(X,'source')
-
+  
   for (i in 1:n.app) {
     if (verbose) print(paste("Additional field",i,endsofar))
     YYY <- attr(X,paste('appendix.',i,sep=""))
-
+    
     ttt <- index(YYY)
     ##print(class(ttt)); print(ttt[1:5])
     if (inherits(ttt,'Date')) {
@@ -306,7 +278,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   
   # Synthetise a new object with combined data that looks like a
   # field object, and then call the ordinary EOF method:
-
+  
   if (verbose) print("combine original and appended fields")
   if(is.character(fakedates)){
     Y <- zoo(YY,order.by=as.Date(fakedates))
@@ -330,19 +302,19 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   
   attr(Y,'dimensions') <- c(d[1,1],d[1,2],sum(ngood>0))
   if (verbose) {print(dim(Y)); print(attr(Y,'dimensions'))}
-
+  
   if (verbose) print('Ordinary EOF')
   eof <- EOF.field(Y,it=it,is=is,n=n,
-                   area.mean.expl=area.mean.expl,verbose=verbose)
-
+                   anomaly=anomaly,verbose=verbose)
+  
   if (verbose) print("Computed the eofs:")
   # After the EOF, the results must be reorganised to reflect the different
   # data sets.
   ceof <- eof
   ii <- is.element(id.t,ID.t[1])
   if (verbose) {print("Check:"); print(sum(ii)); print(ID.t); print(table(id.t))
-                print(realdates[ii]); print(dim(eof))}
-
+    print(realdates[ii]); print(dim(eof))}
+  
   if(is.character(realdates)) {
     ceof <- zoo(eof[ii,],order.by=as.Date(realdates[ii]))
   } else {
@@ -414,7 +386,7 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   ## ==================================================
   U <- U[,ip]; W <- W[ip]; V <- V[,ip]
   y <-U %*% diag(W) %*% t(V)
-
+  
   if (!anomaly) {
     if (verbose) print('Anomalies')
     y <- y + c(attr(eof,'mean'))
@@ -422,18 +394,18 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   y <- t(y)
   y <- as.field.default(y,index(eof),
                         lon=attr(eof,'longitude'),lat=attr(eof,'latitude'),
-                param=attr(eof,'variable'),unit=attr(eof,'unit'),
-                longname=attr(eof,'longname'),src=attr(eof,'source'),
-                url=attr(eof,'url'),reference=attr(eof,'reference'),
-                info=attr(eof,'info'),calendar=attr(eof,'calendar'),
-                greenwich=attr(eof,'greenwich'),verbose=verbose)
+                        param=attr(eof,'variable'),unit=attr(eof,'unit'),
+                        longname=attr(eof,'longname'),src=attr(eof,'source'),
+                        url=attr(eof,'url'),reference=attr(eof,'reference'),
+                        info=attr(eof,'info'),calendar=attr(eof,'calendar'),
+                        greenwich=attr(eof,'greenwich'),verbose=verbose)
   if (!is.null(lon) | !is.null(lat)) {
     if (is.null(lon)) lon <- c(-180,180)
     if (is.null(lat)) lat <- c(-90,90)
   }
   attr(y,'history') <- history.stamp(x)
   if (anomaly) attr(y,'aspect') <- 'anomaly' else
-               attr(y,'aspect') <- 'original'
+    attr(y,'aspect') <- 'original'
   class(y) <- class(eof)[-1]
   
   invisible(y)
@@ -446,10 +418,10 @@ PCA.default <- function(X,...) {
   stop("Don't know how to handle objects other than station")
 }
 
-PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL) {
-    if (!is.null(it) | !is.null(is))
-        X <- subset(X,it=it,is=is)
-   
+PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE) {
+  if (!is.null(it) | !is.null(is))
+    X <- subset(X,it=it,is=is)
+  
   if (na.action=='fill') {
     if (verbose) print('Fill missing data gaps')
     # Use interpolation to till missing data gaps. OK for small glitches.
@@ -470,21 +442,21 @@ PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL) {
   ok.site <- is.finite(rowMeans(z))
   z <- z[ok.site,]
   if (verbose) print(paste('Extract',sum(ok.site),'stations',
-                             'and',sum(ok.time),'time steps',
-                             'dimension=',dim(z)[1],'x',dim(z)[2]))
+                           'and',sum(ok.time),'time steps',
+                           'dimension=',dim(z)[1],'x',dim(z)[2]))
   X.clim <- rowMeans(x,na.rm=TRUE)
   pca <- svd(z - rowMeans(z))
   #str(pca); print(neofs)
-
+  
   autocor <- 0
   #print(paste("Find max autocorr in the grid boxes."))
   #print(dim(y))
   for (i in 1:dim(z)[2]) {
     vec <- as.vector(coredata(z[,i]))
-     ar1 <- acf(vec[],plot=FALSE)
-     autocor <- max(c(autocor,ar1$acf[2,1,1]),na.rm=TRUE)
-   }  
-
+    ar1 <- acf(vec[],plot=FALSE)
+    autocor <- max(c(autocor,ar1$acf[2,1,1]),na.rm=TRUE)
+  }  
+  
   # Recover the original matrix size, and insert the results
   # where there was valid data
   U <- matrix(rep(NA,D[1]*neofs),D[1],neofs)
@@ -495,7 +467,7 @@ PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL) {
   V[ok.time,] <- pca$v[,1:neofs]
   y <- zoo(V,order.by=index(X))
   names(y) <- paste("X.",1:neofs,sep="")
-
+  
   invert <- apply(U,2,mean) < 0
   U[,invert] <- -U[,invert]
   y[,invert] <- -y[,invert]
@@ -526,9 +498,9 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
   
   pca <- X
   cls <- class(pca)
-
+  
   ## REB 2016-11-03
-    ## If there is only one single station, avoid collapse of dimension
+  ## If there is only one single station, avoid collapse of dimension
   if (is.null(dim(attr(pca,'pattern'))))
     dim(attr(pca,'pattern')) <- c(1,length(attr(pca,'pattern')))
   U <- attr(pca,'pattern')
@@ -545,22 +517,22 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
   if (verbose) {str(U); str(W); str(V)}
   x <-U %*% diag(W) %*% t(V)
   if (verbose) str(x)
-
+  
   if (verbose) print(paste('anomaly=',anomaly))
   if (!anomaly)
     x <- x + c(attr(pca,'mean'))
   x <- zoo(t(x),order.by=index(pca))
   
   if (anomaly) attr(x,'aspect') <- 'anomaly' else
-               attr(x,'aspect') <- 'original'
-#  attr(x,'call') <- match.call()
-#  class(x) <- class(pca)[-1]
-
+    attr(x,'aspect') <- 'original'
+  #  attr(x,'call') <- match.call()
+  #  class(x) <- class(pca)[-1]
+  
   if (verbose) print(attr(pca,'location'))
   names(x) <- attr(pca,'location') # AM 30.07.2013 added
-
+  
   x <- attrcp(attr(pca,'station'),x)
-
+  
   # REB 2014-10-27: if the object is DS-results, then look for
   # cross-validation
   if (!is.null(attr(pca,'evaluation'))) {
@@ -585,10 +557,10 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
     jj <- order(c(1:length(mpca),1:length(mpca)+0.5))
     if (!anomaly) x.cval <- x.cval + rep(mpca,2)[jj]
     if (anomaly) attr(x.cval,'aspect') <- 'anomaly' else
-                 attr(x.cval,'aspect') <- 'original'
+      attr(x.cval,'aspect') <- 'original'
     attr(x,'evaluation') <- zoo(t(x.cval),order.by=index(cval)) 
   }
-
+  
   ## REB 2016-05-09: if the object is DS-results, then look for
   ## common EOFs
   if (!is.null(attr(pca,'n.apps'))) {
@@ -601,7 +573,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
       mpca <- c(attr(pca,'mean'))
       if (!anomaly) x.cval <- x.cval + mpca
       if (anomaly) attr(x.cval,'aspect') <- 'anomaly' else
-      attr(x.cval,'aspect') <- 'original'
+        attr(x.cval,'aspect') <- 'original'
       attr(x,paste('appendix.',i.app,sep='')) <- zoo(t(x.cval),order.by=index(cval))
     }
   }

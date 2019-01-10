@@ -134,13 +134,13 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       }
     }
     
-    plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=2,new=FALSE,
+    plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=cex,new=FALSE,
          xlab=xlab,ylab=ylab)
-    if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=0.6,col='grey',pos=1)
+    if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=cex.lab,col='grey',pos=1)
     
     if(showaxis | gridlines) {
       par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
-          cex.lab=0.9,cex.axis=0.9)
+          cex.lab=cex.lab,cex.axis=cex.axis)
       axis(3,seq(floor(par("xaxp")[1]/5)*5,par("xaxp")[2],by=5),col='grey')
       axis(4,seq(floor(par("yaxp")[1]/5)*5,par("yaxp")[2],by=5),col='grey')
       if (gridlines) grid()
@@ -163,7 +163,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         #par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n')
       }
       image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col,axes=FALSE)
-      par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=0.7,col.axis='grey')
+      par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=cex.axis,col.axis='grey')
       axis(1,colbar$breaks)
       
     } 
