@@ -12,7 +12,7 @@ CCA.default <- function(Y,X,...) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
 }
 
-CCA.eof <- function(Y,X,ip=1:8,verbose=FALSE) {
+CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
 
   if (verbose) print("CCA.eof")
   history <- attr(X,'history')
@@ -114,13 +114,13 @@ CCA.eof <- function(Y,X,ip=1:8,verbose=FALSE) {
 }
 
 
-CCA.pca <- function(Y,X,ip=1:8,verbose=FALSE) {
+CCA.pca <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   if (verbose) print("CCA.pca")
   cca <- CCA.eof(Y,X,ip)
   invisible(cca)
 }
 
-CCA.field <- function(Y,X,ip=1:8,verbose=FALSE) {
+CCA.field <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   
  if(verbose) print("CCA.field")
  if(verbose) "print performing EOF analysis and redirecting to CCA.eof"

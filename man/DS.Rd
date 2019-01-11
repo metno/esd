@@ -80,55 +80,30 @@
   Benestad (2005), \emph{Theor. Appl. Clim.} \url{http://dx.doi.org/10.1007/s00704-005-0133-4}.
 }
 \usage{
-DS(y,X,verbose=TRUE,plot=FALSE,...)
-DS.default(y,X,mon=NULL,
-                       method="lm",swsm="step",m=5,
-                       rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                       verbose=FALSE,weighted=TRUE,...)
-DS.station(y,X,biascorrect=FALSE,mon=NULL,
-                       method="lm",swsm="step",m=5,
-                       rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                       verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...)
-DS.station.pca(y,X,mon=NULL,method="lm",swsm="step",m=5,
-                           rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                           verbose=FALSE,weighted=TRUE,...)
-DS.eof(y,X,biascorrect=FALSE,mon=NULL,
-                   method="lm",swsm=NULL,m=5,ip=1:10,
-                   rmtrend=TRUE,verbose=FALSE,weighted=TRUE,pca=TRUE,npca=20,...)
-DS.pca(y,X,biascorrect=FALSE,mon=NULL,
-                   method="lm",swsm=NULL,m=5,ip=1:10,
-                   rmtrend=TRUE,verbose=FALSE,weighted=TRUE,pca=TRUE,npca=20,...)
-DS.comb(y,X,biascorrect=FALSE,mon=NULL,
-                    method="lm",swsm="step",m=5,
-                    rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                    verbose=FALSE,weighted=TRUE,pca=FALSE,npca=20,...) 
-DS.field(X,y,biascorrect=FALSE,mon=NULL,
-                     method="lm",swsm="step",m=5,
-                     rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                     verbose=FALSE,weighted=TRUE,...) 
-DS.list(y,X,biascorrect=FALSE,mon=NULL,...)
-DS.t2m.month.field(y,X,biascorrect=FALSE,mon=NULL,m=5,
-                   method="lm",swsm="step",
-                   rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                   verbose=FALSE,station=TRUE)
-DS.t2m.season.field(y,X,biascorrect=FALSE,
-                    method="lm",swsm="step",m=5,
-                    rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                    verbose=FALSE,station=TRUE)
-DS.precip.season.field(y,X,biascorrect=FALSE,threshold=1,
-                                   method="lm",swsm="step",m=5,
-                                   rmtrend=TRUE,ip=1:7,area.mean.expl=FALSE,
-                                   verbose=FALSE,weighted=TRUE,...)
-DS.freq(y,X,threshold=1,biascorrect=FALSE,method="glm",
-                    family="gaussian",swsm="step",m=5,
-                    rmtrend=TRUE,ip=1:7,verbose=FALSE,weighted=TRUE,...)
-DS.spell(y,X,threshold=1,biascorrect=FALSE,
-                     method="glm",family="gaussian",swsm="step",m=5,
-                     rmtrend=TRUE,ip=1:7,verbose=FALSE,weighted=TRUE,...)
-DS.seasonalcycle(y,X,mon=NULL,FUN='wetmean',fun='mean',
-                             method="lm",swsm="step",m=1,
-                             ip=1:7,area.mean.expl=FALSE,
-                             verbose=FALSE,weighted=TRUE,...)
+DS(y,X,verbose=FALSE,plot=FALSE,...)
+DS.default(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
+           method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE)
+DS.station(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALSE,
+           method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20)
+DS.station.pca(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,method="lm",swsm="step",m=5,
+               rmtrend=TRUE,ip=1:7,weighted=TRUE)
+DS.eof(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
+       method="lm",swsm=NULL,m=5,ip=1:10,rmtrend=TRUE,weighted=TRUE,pca=TRUE,npca=20)
+DS.pca(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
+       rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20)
+DS.comb(y,X,verbose=FALSE,plot=FALSE,,...,biascorrect=FALSE,
+        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7, weighted=TRUE,pca=FALSE,npca=20) 
+DS.field(y,X,verbose=FALSE,plot=FALSE,,...,biascorrect=FALSE,
+        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE) 
+DS.list(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
+        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20)
+DS.trajectory()
+#DS.t2m.month.field()
+#DS.t2m.season.field()
+#DS.precip.season.field()
+#DS.freq()
+#DS.spell()
+#DS.seasonalcycle()
 predict.ds.mon(x,...) 
 sametimescale(y,X,FUN='mean')
 biasfix(x)

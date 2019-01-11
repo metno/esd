@@ -1,15 +1,14 @@
-# Computes Empirical Orthogonal Functions (EOFs)
-#
-# R.E. Benestad, 
-# rasmus.benestad@met.no
-#
-#------------------------------------------------------------------------
+## Computes Empirical Orthogonal Functions (EOFs)
+##
+## R.E. Benestad, 
+## rasmus.benestad@met.no
+## 
+## ------------------------------------------------------------------------
 
 EOF<-function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
   UseMethod("EOF")
 
-EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
-                        verbose=FALSE,anomaly=TRUE,...) {
+EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   # Verify Arguments
   if (verbose) print("EOF.default")
   stopifnot(!missing(X), is.matrix(X),inherits(X,"zoo"))
@@ -28,8 +27,7 @@ EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
 
 # Apply EOF analysis to the monthly mean field values:
 
-EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
-                      anomaly=TRUE,verbose=FALSE) {
+EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   SF <- function(x) {sum(is.finite(x))}
   
@@ -173,8 +171,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,
 }
 
 
-EOF.comb <- function(X,it=NULL,is=NULL,n=20,
-                     anomaly=TRUE,verbose=FALSE) {
+EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   n.app <- attr(X,'n.apps')
   if (verbose) print(paste("EOF.comb: ",n.app,"additional field(s)"))
@@ -304,8 +301,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,
   if (verbose) {print(dim(Y)); print(attr(Y,'dimensions'))}
   
   if (verbose) print('Ordinary EOF')
-  eof <- EOF.field(Y,it=it,is=is,n=n,
-                   anomaly=anomaly,verbose=verbose)
+  eof <- EOF.field(Y,it=it,is=is,n=n,lon=lon,lat=lat,anomaly=anomaly,verbose=verbose)
   
   if (verbose) print("Computed the eofs:")
   # After the EOF, the results must be reorganised to reflect the different
@@ -374,7 +370,7 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   dim(U) <- c(d[1]*d[2],d[3])
   W <- attr(eof,'eigenvalues')
   V <- coredata(eof)
-  ## ==================================================
+  ### ==================================================
   ## KMP 2016-01-15: added selection of patterns (ip)
   if(is.null(ip)) {
     ip <- seq(length(W))
@@ -383,7 +379,7 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   } else {
     stop(paste("Error in input ip =",paste(ip,collaps=", ")))
   }
-  ## ==================================================
+  ### ==================================================
   U <- U[,ip]; W <- W[ip]; V <- V[,ip]
   y <-U %*% diag(W) %*% t(V)
   
@@ -418,7 +414,7 @@ PCA.default <- function(X,...) {
   stop("Don't know how to handle objects other than station")
 }
 
-PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE) {
+PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE) {
   if (!is.null(it) | !is.null(is))
     X <- subset(X,it=it,is=is)
   
@@ -490,8 +486,7 @@ PCA.station <- function(X,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,an
 }
 
 # Transfer PCA back to station data
-pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,
-                        what='pca',verbose=FALSE) {
+pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if (inherits(X,'ds')) class(X) <- class(X)[-1]
   if (verbose) print('pca2station')

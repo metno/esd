@@ -47,16 +47,14 @@
 }
 
 \usage{
-EOF(X,it=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,nomaly=TRUE,...)
-EOF.default(X,it=NULL,n=20,lon=NULL,lat=NULL,
-            anomaly=TRUE,verbose=FALSE,...)
-EOF.field(X,it=NULL,n=20,lon=NULL,lat=NULL,
-          anomaly=TRUE,verbose=FALSE)
-EOF.comb(X,it=NULL,n=20,lon=NULL,lat=NULL,anomaly=TRUE,verbose=FALSE)
-eof2field(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE)
+EOF(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
+EOF.default(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
+EOF.field(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
+EOF.comb(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
+eof2field(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE)
 PCA(X,...) 
-EOF.default(X,...)
-PCA.station(X,na.action='fill',verbose=FALSE)
+PCA.default(X,...)
+PCA.station(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE)
 pca2station(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE)
 }
 \arguments{
