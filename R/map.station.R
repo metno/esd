@@ -172,14 +172,14 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     ## Add a title
     if(is.null(main)) {
-      main <- paste(attr(x,"param")[1],"  (",attr(x,"unit")[1],")",sep="")
       if(!is.null(FUN)) {
+        main <- paste(esd::varid(x)[1]," (",esd::unit(x)[1],")",sep="")
         if(is.function(FUN)) {
           main <- paste(as.character(quote(FUN)),"of",main)
         } else {
           main <- paste(as.character(FUN),"of",main)
         }
-      }
+      } else main <- esd::varid(x)[1]
     }
     title(main=main,sub=sub,line=-2,adj=0,cex.main=cex.main,cex.sub=cex.sub,
           col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
