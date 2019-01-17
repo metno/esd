@@ -12,6 +12,7 @@ ghcn2nc4                      Save the GHCN station data as a netCDF4 file.
 global.t2m.gcm                Gets global/regional mean temperature/precipitation from GCMs
 global_tas_anomaly_cmip3      Computes the spatial mean surface temperature based on the 92 GCM outputs from the CMIP3 experiment or any other experiment.
 globt                         Plots the global mean temperature from GCMs, reanalysis, & observations on picture of the earth
+gridmap	                      Function that grids station data using the 'LatticeKrig'-package and elevation as a co-variable.
 gst.outlook                   Global surface temperature outlook
 gst                           Plots the global surface temperature from NCEP/NCAR reanalysis 1
 hydroex                       Example for downscaling river run-off.

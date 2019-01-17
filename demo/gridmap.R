@@ -5,7 +5,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
   if (is.null(xlim)) xlim <- range(lon(Y))
   if (is.null(ylim)) ylim <- range(lat(Y))
   if (!is.null(dim(Y)))
-      y <- apply(Y,2,FUN,na.rm=TRUE)
+      y <- apply(Y,2,FUN,na.rm=TRUE) 
   else
      y <- Y  ## single specific date
   
@@ -24,10 +24,13 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
 
   ## Flag dubplicated stations:
   if (verbose) print('Check for duplicates')
-  ok <- !(duplicated(lon(Y)) & duplicated(lat(Y)))
+  ok <- !(duplicated(lon(Y)) & duplicated(lat(Y))) & is.finite(y) & is.finite(alt(Y))
 
   ## Kriging
-  if (verbose) print('Apply kriging')
+  if (verbose) {
+    print('Apply kriging')
+    print(cbind(lon(Y)[ok],lat(Y)[ok],y=y[ok],Z=alt(Y)[ok]))
+  }
   
   obj <- LatticeKrig( x=cbind(lon(Y)[ok],lat(Y)[ok]),
                       y=y[ok],Z=alt(Y)[ok])
