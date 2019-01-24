@@ -355,9 +355,11 @@ year <- function(x) {
   if (class(x)[1]=="numeric") y <- trunc(x) else
   if (class(x)[1]=="season") {
     # If season, then the first month is really the December month of the previous year
-     month <- round(12*(as.numeric(index(x)) - trunc(as.numeric(index(x)))) + 1)
-     y[is.element(month,1)] <- y[is.element(month,1)] - 1
-   } else print(paste(class(x)[1],' confused...'))
+    month <- round(12*(as.numeric(index(x)) - trunc(as.numeric(index(x)))) + 1)
+    y[is.element(month,1)] <- y[is.element(month,1)] - 1
+  } else {
+    print(paste(class(x)[1],' confused...'))
+  }
   return(y)
 }
 
@@ -488,7 +490,7 @@ season.default <- function(x,format="character") {
     season <- paste(substr(month.abb[as.numeric(rownames(table(month(x))))],1,1),sep='')
   }
 #
-  season
+  return(season)
 }
 
 seasonal.yearmon <- function(x) {
@@ -511,7 +513,7 @@ season.abb <- function() {
   season.abb <- c(season.abb,toupper(season.abb))
   season <- rep(season,2)
   names(season) <- season.abb
-  season
+  return(season)
 }
 
 

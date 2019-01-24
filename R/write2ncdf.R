@@ -994,5 +994,5 @@ write2ncdf4.dsensemble <- function(x,fname='esd.dsensemble.nc',prec='short',offs
   #ncatt_put( ncnew, 0, "class", paste(class.x,collapse='-'))
   ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$session$esd.version)
   nc_close(ncnew)
-  if (verbose) print(paste('Finished sucessfully - file', fname))  
+  if (verbose) print(paste('Finished successfully - file', fname))  
 }
