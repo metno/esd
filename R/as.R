@@ -547,7 +547,6 @@ as.field.zoo <- function(x,lon,lat,param,unit,
   if(verbose) print("as.field.zoo")
   #print("lon"); print(lon); print("lat"); print(lat); print(param); print(unit)
   #print(c(length(lon),length(lat),length(index)))
-
   t <- index(x)
   #print(length(t))
   #dyr <- as.numeric(format(t[2],'%Y')) - as.numeric(format(t[1],'%Y')) 
@@ -929,7 +928,6 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,
 }
 
 as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,...) {
-    ##browser()
   IV <- function(x) sum(is.finite(x))
     if (inherits(x,'month')) nmin <- 3 # AM 06-07-2015
   #print('as.4seasons.day')
@@ -1014,7 +1012,6 @@ as.4seasons.field <- function(x,FUN='mean',verbose=FALSE,...) {
 }
 
 as.4seasons.dsensemble <- function(x,FUN='mean',...) {
-    ##browser()
     cls <- class(x)
     class(x) <- c("station",cls[2],"zoo") ## AM 06-07-2015 Quick fix here, time step added into the class of x
     attrx <- attributes(x)

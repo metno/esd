@@ -17,10 +17,11 @@ rbind.field <- function(...) {
 }
 
 cbind.field <- function(...) {
+    print('note: the results inherit the metadata from the first argument')
     x <- list(...)
     y <- cbind.zoo(...)
-    print('unfinished - need to combine the attributes from all inputs')
     y <- attrcp(x[[1]],y)
+    attr(y,'dimensions') <- c(attr(x[[1]],'dimensions')[1:2],length(index(y)))
     attr(y,'history') <- history.stamp(x[[1]])
     class(y) <- class(x[[1]])
     return(y)
