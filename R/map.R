@@ -745,16 +745,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         if (verbose) print(attr(x,'timescale'))
         timescale <- attr(x,'timescale')
         if (timescale == 'annual') {
-            t1 <- year(attr(x,'time'))[1]
-            t2 <- year(attr(x,'time'))[2]
-        } else
-            if (sum(is.element(c('month','season'),timescale))>0) {
-                t1 <- paste(year(attr(x,'time'))[1],month(attr(x,'time'))[1])
-                t2 <- paste(year(attr(x,'time'))[2],month(attr(x,'time'))[2])
-            } else {
-                t1 <- attr(x,'time')[1]  
-                t2 <- attr(x,'time')[2]
-            }
+          t1 <- year(attr(x,'time'))[1]
+          t2 <- year(attr(x,'time'))[2]
+        } else if (sum(is.element(c('month','season'),timescale))>0) {
+          t1 <- paste(year(attr(x,'time'))[1],month(attr(x,'time'))[1])
+          t2 <- paste(year(attr(x,'time'))[2],month(attr(x,'time'))[2])
+        } else {
+          t1 <- attr(x,'time')[1]  
+          t2 <- attr(x,'time')[2]
+        }
         period <- paste('[',t1,', ',t2,']',sep='')
     } else period <- NULL
     if (verbose) print(paste('period:',period))
