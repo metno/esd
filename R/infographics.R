@@ -568,7 +568,7 @@ diagram.station <- function(x,it=NULL,new=TRUE,plot=TRUE,...) {
 
 # Show the cumulative sum of station value from January 1st. Use
 # different colours for different year.
-cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,verbose=FALSE,FUN='mean',...) {
+cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,verbose=FALSE,FUN='mean',main=NULL,...) {
   stopifnot(!missing(x),inherits(x,"station"))
   
   #print("cumugram")
@@ -584,8 +584,10 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,verbose=FALSE,FUN='mean
   if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
       unit <- expression(degree*C) else
       unit <- attr(x,'unit')
-  eval(parse(text=paste("main <- expression(paste('Running cumulative mean of  ',",
-               attr(x,'variable'),sep=' ',"))")))
+  titletext <- paste('Running cumulative',FUN,'of')
+  if (is.null(main)) 
+    eval(parse(text=paste("main <- paste('",titletext,"',
+                          tolower(attr(x,'longname')),sep=' ')")))
   dev.new()
   par(bty="n")
   z <- coredata(x)
@@ -643,7 +645,7 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,verbose=FALSE,FUN='mean
                                     start=as.Date(paste(yrs[i],start,sep='')),
                                     end=as.Date(paste(yrs[i],mm,dd,sep='-')))))
     lines(t,z,lwd=2,col=col[i])
-    if (verbose) print(c(i,yrs[i],range(z[ok],na.rm=TRUE),ylim))
+    if (verbose) print(c(i,yrs[i],cm[i],range(z[ok],na.rm=TRUE),ylim))
   }
   if (is.null(it)) {
     lines(t,z,lwd=5,col="black")
@@ -693,6 +695,7 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,verbose=FALSE,FUN='mean
   srt <- order(cm,decreasing=TRUE)
   if (verbose) print(y2n)
   result <- cbind(yrs[srt],cm[srt])
+  if (verbose) print(round(t(result)))
   colnames(result) <- c('year','cumulated')
   attr(result,'period')  <- period
   invisible(result)

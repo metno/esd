@@ -444,6 +444,7 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
     }
   }
   
+<<<<<<< HEAD
   ## Convert units
   iunit <- grep("unit",names(v1))
   if (length(iunit)>0) {
@@ -466,6 +467,36 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
     }
     ## 
     if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(abs(val),na.rm=TRUE)<0.001)) {
+=======
+    ## Convert units
+    iunit <- grep("unit",names(v1))
+    if (length(iunit)>0) {
+      text=paste("v1$",names(v1)[iunit],sep="")
+      units <- eval(parse(text=text))
+      # hebe added extra units test for unusual strings
+      if (units=="") {
+        try(tmp <- grep("unit",names(ncatt_get(ncid,param)),value=TRUE),silent = !verbose)
+        if ((!inherits(tmp, "try-error")) & (length(tmp)!=0)) {
+          units<-gsub(" ","",eval(parse(text=paste('ncatt_get(ncid, param)$',tmp,sep = ""))))
+        }
+      }
+      if (((units=="K") | (units=="degK")) & !grepl("anom",v1$longname)) {
+        val <- val - 273 
+        units <- "degC"
+      }
+     if (((length(grep("pa",tolower(units)))>0) & (!grepl("vapo",tolower(v1$longname)))) | ((length(grep("N",tolower(units)))>0) )) {
+        val <- val/100 
+        units <- "hPa"
+      }
+      ## 
+      if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(abs(val),na.rm=TRUE)<0.001)) {
+        val <- val * (24*60*60) 
+        units <- "mm/day"
+      }
+      if (verbose) print(paste("Data converted to unit:",units, sep= " "))
+    } else if (max(val,na.rm=TRUE)<0.001) {
+      if (verbose) print('Variable is likely to be precipitation intensity !')
+>>>>>>> 66e59af4697e7acae07929f9e8f58ce037c08f44
       val <- val * (24*60*60) 
       units <- "mm/day"
     }
@@ -997,22 +1028,26 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
       val <- val - 273 
       units <- "degC"
     }
-    if ((length(grep("pa",tolower(units)))>0) | (length(grep("N",tolower(units)))>0)) {
-      val <- val/100 
+    if (((length(grep("pa",tolower(units)))>0) &
+       (!grepl("vapo",tolower(v1$longname)))) |
+       (length(grep("N",tolower(units)))>0) ) {
+      val <- val/100.
       units <- "hPa"
     }
     ## 
-    if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(abs(val),na.rm=TRUE)<0.1)) {
+    if ((units=="Kg/m^2/s") |
+       (units=="kg m-2 s-1") |
+       (max(abs(val),na.rm=TRUE)<0.1)) {
       val <- val * (24*60*60) 
       units <- "mm"
     }
     if (verbose) print(paste("Data converted to unit:",units, sep= " "))
   } else if (max(val,na.rm=TRUE)<0.001) {
-    if (verbose) print('Variable is likely to be precipitation intensity !')
+    if (verbose) print('Variable is likely to be precipitation intensity!')
     val <- val * (24*60*60) 
     units <- "mm"
   }
-  
+ 
   ## replace missval by NA
   if (miss2na) {
     imissval <- grep("miss",names(v1))
@@ -1282,11 +1317,28 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       torigin <- "0001-01-01 00:00:00"
       if (verbose) print(paste("Re-setting time origin (",torigin,")",sep=""))
     }
+<<<<<<< HEAD
   } else {
     torigin <- readline("Give me the time origin (format='YYYY-MM-DD' as '1949-22-01'):")
     if (!is.null(torigin)) {
       if (verbose) print(paste("Time origin set to =", torigin))
       else stop("Could not determine the time origin. The processing has been stopped !")
+=======
+    
+    ## END CMIP3 MODEL NAMES UPDATE
+    ## 
+    ## Checking : Time unit and origin
+    ## Get system info
+    a <- Sys.info()
+    ## Get time dimension / val + attributes
+    itime <- grep("tim", tolower(dimnames))
+    if (length(itime) == 0) {
+      itime <- NULL
+    } else if (length(itime) > 1) {
+      stop("Error in time dim")
+    } else if (length(itime)==1) {
+      time <- eval(parse(text=paste("v1$dim[[",as.character(itime),"]]",sep="")))
+>>>>>>> 66e59af4697e7acae07929f9e8f58ce037c08f44
     }
   }
   

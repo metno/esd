@@ -47,16 +47,14 @@
 }
 
 \usage{
-EOF(X,it=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,...)
-EOF.default(X,it=NULL,n=20,lon=NULL,lat=NULL,
-            area.mean.expl=TRUE,verbose=FALSE,...)
-EOF.field(X,it=NULL,n=20,lon=NULL,lat=NULL,
-          area.mean.expl=TRUE,verbose=FALSE)
-EOF.comb(X,it=NULL,n=20,lon=NULL,lat=NULL,area.mean.expl=TRUE,verbose=FALSE)
-eof2field(x,it=NULL,is=NULL,anomaly=FALSE,verbose=FALSE)
+EOF(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
+EOF.default(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
+EOF.field(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
+EOF.comb(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
+eof2field(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE)
 PCA(X,...) 
-EOF.default(X,...)
-PCA.station(X,na.action='fill',verbose=FALSE)
+PCA.default(X,...)
+PCA.station(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE)
 pca2station(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE)
 }
 \arguments{
@@ -67,9 +65,7 @@ pca2station(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE)
   \item{lon}{set longitude range - see \code{\link{t2m.ERAINT}}}
   \item{lat}{set latitude range}
   \item{verbose}{TRUE - clutter the screen with messages}
-  \item{area.mean.expl}{When TRUE, subtract the area mean for the domain
-  and use as a the first co-variate before the PCs from the EOF
-  analysis.}
+  \item{anomaly}{When TRUE, subtract the mean before SVD.}
   \item{na.action}{'fill' uses \code{\link{approx}} to interpolate the
     NA-values before the PCA.}
   \item{what}{Default set to 'pca' for converting the PCA-results, but

@@ -55,12 +55,17 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
 
 ## Use a scatter plot to evaluate the rain equation for a selection of rain gauge records.
 ## Select time series from e.g. ECA&D with a minimum number (e.g. 150) of years with data
-scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),threshold=1,colour.by='x0',col=NULL) {
-  
+scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),
+                                     threshold=1,colour.by='x0',col=NULL,verbose=FALSE) {
+  if (verbose) print('scatterplot.rainequation')
   if (is.character(src)) {
     ss <- select.station(param='precip',nmin=150,src='ecad') 
     precip <- station(ss)
   } else if (is.station(src) & is.precip(src)) precip <- src
+  
+  d <- dim(precip)
+  if (is.null(d)) d <- c(length(precip),1)
+  if (verbose) print(d)
   
   if (!is.null(colour.by)) {
       if (is.character(('colour.by'))) {
@@ -76,7 +81,6 @@ scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),thres
         if (tolower(colour.by)=='x0') col <- cols
   if (is.null(col)) col <- rgb(0,0,0.7,0.15)
   
-  d <- dim(precip)
   firstplot <- TRUE
   X <- c(); Y <- X; COL <- NULL
   
@@ -100,12 +104,14 @@ scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),thres
       pr <- matchdate(pr,it=obsfrac); obsfrac <- matchdate(obsfrac,it=pr)
       X <- c(X,coredata(obsfrac)); Y <- c(Y,coredata(pr))
       rng <- range(c(X,Y),na.rm=TRUE)
-      
-      plot(X,Y,main='Test the "rain equation"',
-           xlim=rng,ylim=rng,pch=19,cex=1.25,col=COL,
-           xlab=expression(sum(H(X-x))/n),ylab=expression(Pr(X>x)==f[w]*e^{-x/mu}))
-      grid()
-      lines(c(0,0),rep(max(c(X,Y),na.rm=TRUE),2),lty=2,col=rgb(0.5,0.5,0.5,0.3))
+      if (verbose) print(rng)
+      if (sum(is.finite(rng))==2) {
+        plot(X,Y,main='Test the "rain equation"',
+             xlim=rng,ylim=rng,pch=19,cex=1.25,col=COL,
+             xlab=expression(sum(H(X-x))/n),ylab=expression(Pr(X>x)==f[w]*e^{-x/mu}))
+        grid()
+        lines(c(0,0),rep(max(c(X,Y),na.rm=TRUE),2),lty=2,col=rgb(0.5,0.5,0.5,0.3))
+      }
     }
   }
   ok <- is.finite(X) & is.finite(Y)
