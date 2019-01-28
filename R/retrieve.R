@@ -1233,7 +1233,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   ## Get system info
   a <- Sys.info()
   ## Get time dimension / val + attributes
-  itime <- grep("tim", dimnames)
+  itime <- grep("tim", tolower(dimnames))
   if (length(itime) == 0) {
     itime <- NULL
   } else if (length(itime) > 1) {
@@ -1279,7 +1279,14 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   ##   }
   #}
   if (is.null(torigin)) {
-    if (verbose) print(paste("Time units:", tunit, " l=", min(tim[is.finite(time$vals)]),"-", max(tim[is.finite(time$vals)])))
+    ## REB 2019-01-28: error here
+    # if (verbose) print(paste("Time units:", tunit, " l=", 
+    #                          min(tim[is.finite(time$vals)]),"-", 
+    #                          max(tim[is.finite(time$vals)])))
+    browser()
+    if (verbose) print(paste("Time units:", tunit, " l=", 
+                             min(time$vals[is.finite(time$vals)]),"-", 
+                             max(time$vals[is.finite(time$vals)])))
     if (verbose) warning("Cannot determine the time origin!")
     if (verbose) warning("Example format: '15-Dec-1949'")
     if (verbose) warning("NCEP reanalysis typically: 01-01-01")
