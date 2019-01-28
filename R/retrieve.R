@@ -1360,11 +1360,14 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     if (verbose) print("Frequency has not been found in the attributes") 
   }
   ##  
+
   ## Checking frequency from data
   frequency <- freq.data <- NULL
-  if (length(time$vals) > 1)
-    freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE) else
-      freq.data <- 'none'
+  if (length(time$vals) > 1) {
+    freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE) 
+  } else {
+    freq.data <- 'none'
+  }
   if (!is.null(freq.data)) {
     if (verbose)
       print("Checking Frequency from the data --> [ok]")
