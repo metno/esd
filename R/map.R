@@ -347,20 +347,22 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
       #str(X)
     X <- coredata(x)
     
-
-    ## If one time slice, then map this time slice
-    if (dim(X)[1]==1) {
-      X <- coredata(x[1,])
-    } else if (is.null(X)) {
-      X <- coredata(X)
-    } else if (inherits(X,"matrix")) {
-      ## If several time slices, map the required statistics
-      good <- apply(coredata(x),2,nv) > 1
-      X <- rep(NA,length(good))
-      xx <- coredata(x[,good])
-      X[good] <- apply(xx,2,FUN=FUN,na.rm=na.rm)
-    }
-
+    natts <- names(attributes(x))
+    ## REB 2019-01-30
+    if (sum(is.element(natts,FUN))) X <- attr(x,FUN) else
+      ## If one time slice, then map this time slice
+      if (dim(X)[1]==1) {
+        X <- coredata(x[1,])
+      } else if (is.null(X)) {
+        X <- coredata(X)
+      } else if (inherits(X,"matrix")) {
+        ## If several time slices, map the required statistics
+        good <- apply(coredata(x),2,nv) > 1
+        X <- rep(NA,length(good))
+        xx <- coredata(x[,good])
+        X[good] <- apply(xx,2,FUN=FUN,na.rm=na.rm)
+      }
+    
     ## if zlim is specified, then mask data outside this range
     if (!is.null(zlim)) {
         d <- dim(X)
