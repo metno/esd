@@ -138,6 +138,7 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
     cl <- as.list(match.call())
                                         #str(cl)
     args <- list(...)
+    #if (verbose) print(args)
                                         #str(args)
     X <- merge.zoo(...,all=all)
                                         #plot(X)
@@ -150,6 +151,7 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
     lon <- ID; lat <- ID; alt <- ID; param <- loc; lname <- loc
     src <- loc; qlty <- loc; url <- loc; ref <- loc
     info <- loc; ele <- asp <- ID
+    if (verbose) print('Organise the attributes')
     for (i in 1:n) {
         Z <- args[[i]]
                                         #attr <- softattr(Z)

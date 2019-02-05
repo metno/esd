@@ -35,12 +35,20 @@ is.inside <- function(x,y,verbose=FALSE,plot=FALSE) {
     col <- rep('lightblue',dim(x)[1])
     col[inside] <- 'darkgreen'
     points(x,pch=19,cex=1.2,col=col)
-    text(x$x,x$y,1:length(x$x),sub=1,cex=0.6,font=2)
+    #text(x$x,x$y,1:length(x$x),sub=1,cex=0.6,font=2)
   }
+  invisible(inside)
 }
 
 is.inside.1 <- function(x,y,verbose=FALSE,plot=FALSE) {
   if (verbose) print('is.inside.1')
+  ## Check if the point shares the same coordinates as the polygon -if so, move it slightly
+  if (sum(x$x == y$x)>0) {
+    x$x <- x$x + 0.01 * min(diff(y$x),na.rm=TRUE)
+  }
+  if (sum(x$y == y$y)>0) {
+    x$y <- x$y + 0.01 * min(diff(y$y),na.rm=TRUE)
+  }
   
   ## First do the quick simple test: is the coordinate of x within the range of the coordinates of y?
   if ( (x$x < min(y$x,na.rm=TRUE)) |
@@ -51,10 +59,10 @@ is.inside.1 <- function(x,y,verbose=FALSE,plot=FALSE) {
     return(FALSE)
   }
   
-  if (plot) {
-    lines(rep(x$x,2),range(y$y),lty=2,col=rgb(1,0.7,0.5))
-    lines(range(y$x),rep(x$y,2),lty=2,col=rgb(1,0.7,0.5))
-  }
+  # if (plot) {
+  #   lines(rep(x$x,2),range(y$y),lty=2,col=rgb(1,0.7,0.5))
+  #   lines(range(y$x),rep(x$y,2),lty=2,col=rgb(1,0.7,0.5))
+  # }
   
   ## Compare the x and y coordinates of x and y
   dx <- (y$x - x$x); nx <- length(dx)
@@ -62,8 +70,8 @@ is.inside.1 <- function(x,y,verbose=FALSE,plot=FALSE) {
   ## Check if the location has common x/y-points:
   x0 <- (dx == 0); y0 <- (dy == 0)
   ## Check where the coordinates falls between the adjacent points on the border
-  x1 <- c(dx[2:nx]*dx[1:(nx-1)],0)
-  y1 <- c(dy[2:ny]*dy[1:(ny-1)],0) 
+  x1 <- c(dx[2:nx]*dx[1:(nx-1)],dx[1]*dx[nx])
+  y1 <- c(dy[2:ny]*dy[1:(ny-1)],dy[1]*dy[ny]) 
   ## Count the number of intesects between the two axes and the border
   i1 <- (x0 | (x1 < 0)) & (y$y < x$y)
   i2 <- (x0 | (x1 < 0)) & (y$y >= x$y)
@@ -71,15 +79,26 @@ is.inside.1 <- function(x,y,verbose=FALSE,plot=FALSE) {
   j2 <- (y0 | (y1 < 0)) & (y$x >= x$x)
   
   ## If all the numbers of intersect are odd numbers, then x is inside y
-  if (plot) points(y[i1 | i2 | j1 | j2,],pch='x',cex=0.75,col='red',lwd=2)
+  #if (plot) points(y[i1 | i2 | j1 | j2,],pch='x',cex=0.75,col='red',lwd=2)
   nx1 <- sum(i1,na.rm=TRUE); nx2 <- sum(i2,na.rm=TRUE)
   ny1 <- sum(j1,na.rm=TRUE); ny2 <- sum(j2,na.rm=TRUE)
+  ## Extra check: there should be an even number of line crossings in total for each axis
+ 
   inside <- (nx1%%2==1) & (nx2%%2==1) & (ny1%%2==1) & (ny2%%2==1)
   
   if (verbose) {
     print(c(nx1,nx2,ny1,ny2))
     print(x)
     print(inside)
+  }
+  
+  if  ( ((nx1 + nx2)%%2 !=0) | ((ny1 + ny2)%%2 !=0) ) {
+    if (plot) points(x$x,x$y,col='red')
+    print(c(nx1,nx2,ny1,ny2))
+    print(x)
+    print(inside)
+    inside <- NA
+    browser()
   }
   #browser()
   return(inside)

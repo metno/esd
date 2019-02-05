@@ -48,62 +48,20 @@ test.is.inside((N=5000,verbose=TRUE,plot=TRUE))
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+\dontrun{ 
+## Example 
+library(esd)
+library(readINAMdata)
+## Get a polygon for Mozambique
+data("Moz")
 
-## The function is currently defined as
-function (x, y, verbose = FALSE, plot = FALSE) 
-{
-    if (verbose) 
-        print("is.inside")
-    if (plot) 
-        plot(y, type = "l")
-    if ((is.list(x)) | is.data.frame(x)) {
-        els <- names(x)
-        nn <- length(els)
-        ixy <- (1:nn)[is.element(substr(tolower(els), 1, 3), 
-            c("x", "lon"))][1]
-        iyy <- (1:nn)[is.element(substr(tolower(els), 1, 3), 
-            c("y", "lat"))][1]
-        if (verbose) 
-            print(c(els[ixy], els[iyy]))
-        X <- data.frame(x = x[[els[ixy]]], y = x[[els[ixy]]])
-    }
-    else if ((!is.null(lon(x))) & (!is.null(lat(x)))) 
-        X <- data.frame(x = lon(x), y = lat(x))
-    if ((is.list(y)) | is.data.frame(y)) {
-        els <- names(y)
-        nn <- length(els)
-        ixy <- (1:nn)[is.element(substr(tolower(els), 1, 3), 
-            c("x", "lon"))][1]
-        iyy <- (1:nn)[is.element(substr(tolower(els), 1, 3), 
-            c("y", "lat"))][1]
-        if (verbose) 
-            print(c(els[ixy], els[iyy]))
-        Y <- data.frame(x = y[[els[ixy]]], y = y[[els[ixy]]])
-    }
-    else if ((!is.null(lon(y))) & (!is.null(lat(y)))) 
-        Y <- data.frame(x = lon(y), y = lat(y))
-    d <- dim(x)
-    if (verbose) 
-        print(d)
-    inside <- rep(FALSE, d[1])
-    for (i in 1:d[1]) {
-        if (verbose) 
-            print(i)
-        inside[i] <- is.inside.1(x[i, ], y, verbose = verbose, 
-            plot = plot)
-    }
-    if (verbose) 
-        print(table(inside))
-    if (plot) {
-        col <- rep("lightblue", dim(x)[1])
-        col[inside] <- "darkgreen"
-        points(x, pch = 19, cex = 1.2, col = col)
-        text(x$x, x$y, 1:length(x$x), sub = 1, cex = 0.6, font = 2)
-    }
-  }
+osmoz <- !is.inside(data.frame(x=lons,y=lats),Moz)
+plot(lons,lats)
+points(lons[osmoz],lats[osmoz],pch=19,col='red')
+points(lons[!osmoz],lats[!osmoz],pch=19,col='green')
+points(lons[is.na(osmoz)],lats[is.na(osmoz)],pch=19,col='black')
+lines(Moz,type='b')
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
