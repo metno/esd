@@ -4,17 +4,34 @@
 ## short: 16-bit signed integers. The short type holds values between -32768 and 32767.
 
 ## Help functions 
-firstyear <- function(x) {
+firstyear <- function(x,na.rm=FALSE,verbose=FALSE) {
+  if (verbose) print('firstyear')
   yrs <- year(x)
-  if (is.null(dim(x))) y <- min(yrs[is.finite(x)]) else
-                       y <- apply(x,2,function(x,yrs=yrs) min(yrs[is.finite(x)]),yrs)
+  if (verbose) print(range(as.numeric(yrs)))
+  if (is.null(dim(x))) y <- min(yrs[is.finite(x)]) else { 
+    nv <- apply(x,2,'nv')
+    y <- rep(NA,length(nv))
+    ok <- (1:length(nv))[nv > 0]
+    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) min(yrs[is.finite(x)]),yrs)
+    #for (i in ok) y[i] <- min(yrs[is.finite(x[,i])])
+  }
+  y[!is.finite(y)] <- NA
+  if (verbose) print(table(as.numeric(y)))
   return(y)
 }
 
-lastyear <- function(x) {
+lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
+  if (verbose) print('lastyear')
   yrs <- year(x)
-  if (is.null(dim(x))) y <- max(yrs[is.finite(x)]) else
-                       y <- apply(x,2,function(x,yrs=yrs) max(yrs[is.finite(x)]),yrs)
+  if (verbose) print(range(as.numeric(yrs)))
+  if (is.null(dim(x))) y <- max(yrs[is.finite(x)]) else { 
+    nv <- apply(x,2,'nv')
+    y <- rep(NA,length(nv))
+    ok <- (1:length(nv))[nv > 0]
+    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) max(yrs[is.finite(x)]),yrs)
+  }     
+  y[!is.finite(y)] <- NA
+  if (verbose) print(table(as.numeric(y)))
   return(y)
 }
 
