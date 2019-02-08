@@ -130,21 +130,21 @@ GSL.nasa <- function(url='ftp://podaac.jpl.nasa.gov/allData/merged_alt/L2/TP_J1_
   return(sl)
 }
 
-  
-AMO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data') {
-  amo.test <- readLines(url)
-  nrows <- sum(is.element(nchar(amo.test),max(nchar(amo.test))))
-  amo <- read.table(url,skip=1,nrows=nrows)
-  amo[amo <= -99] <- NA
-  amo <- zoo(c(t(as.matrix(amo[2:13]))),
-             order.by=as.Date(paste(sort(rep(amo$V1,12)),rep(1:12,length(amo$V1)),'01',sep='-')))
-  amo <- as.station(amo,loc=NA,param='AMO',unit='dimensionless',
-                     lon=NA,lat=NA,alt=NA,
-                     cntr=NA,longname='Atlantic Multi-decadal Oscillation unsmoothed from the Kaplan SST V2',
-                     stid=NA,quality=NA,src='Calculated at NOAA/ESRL/PSD1',url=url,
-                     reference=NA,info=NA, method= NA)
-  return(amo)
-}
+# KMP 2019-02-19 moved AMO to its own R-script called AMO.R
+#AMO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data') {
+#  amo.test <- readLines(url)
+#  nrows <- sum(is.element(nchar(amo.test),max(nchar(amo.test))))
+#  amo <- read.table(url,skip=1,nrows=nrows)
+#  amo[amo <= -99] <- NA
+#  amo <- zoo(c(t(as.matrix(amo[2:13]))),
+#             order.by=as.Date(paste(sort(rep(amo$V1,12)),rep(1:12,length(amo$V1)),'01',sep='-')))
+#  amo <- as.station(amo,loc=NA,param='AMO',unit='dimensionless',
+#                     lon=NA,lat=NA,alt=NA,
+#                     cntr=NA,longname='Atlantic Multi-decadal Oscillation unsmoothed from the Kaplan SST V2',
+#                     stid=NA,quality=NA,src='Calculated at NOAA/ESRL/PSD1',url=url,
+#                     reference=NA,info=NA, method= NA)
+#  return(amo)
+#}
 
 QBO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data') {
   qbo.test <- readLines(url)
