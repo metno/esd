@@ -154,6 +154,21 @@ class(ws) <- class(v)
 attr(ws,'variable')='windspeed'
 attr(ws,'longname')='geostrophic wind speed'
 map(ws,FUN='quantile',probs=0.98)
+
+## Test firstyears on HadCRUT4
+if (!file.exists('~/Downloads/HadCRUT.4.6.0.0.median.nc')) {
+  print('Download HadCRUT4')
+  download.file('https://crudata.uea.ac.uk/cru/data/temperature/HadCRUT.4.6.0.0.median.nc',
+                dest='~/Downloads/HadCRUT.4.6.0.0.median.nc') 
+}
+
+Obs <- annual(retrieve('~/Downloads/HadCRUT.4.6.0.0.median.nc',param='temperature_anomaly'))
+lons <- rep(lon(Obs),length(lat(Obs)))
+lats <- sort(rep(lat(Obs),length(lon(Obs))))
+fy <- firstyear(Obs)
+map(subset(Obs,it=1))
+points(lons[fy==1850],lats[fy==1850])
+map(Obs,FUN='firstyear')
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

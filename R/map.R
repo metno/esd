@@ -346,22 +346,31 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     }
       #str(X)
     X <- coredata(x)
+    ## Fudge, since these don't work with apply
+    if (FUN=='firstyear') attr(x,FUN) <- firstyear(x)
+    if (FUN=='lastyear') attr(x,FUN) <- lastyear(x)
     
     natts <- names(attributes(x))
     ## REB 2019-01-30
-    if (sum(is.element(natts,FUN))) X <- attr(x,FUN) else
+    if (sum(is.element(natts,FUN))) {
+      if (verbose) print(paste('Use attribute',FUN))
+      X <- attr(x,FUN)
+      } else
       ## If one time slice, then map this time slice
       if (dim(X)[1]==1) {
+        if (verbose) print('One point in time')
         X <- coredata(x[1,])
       } else if (is.null(X)) {
+        if (verbose) print('Data is a vector')
         X <- coredata(X)
       } else if (inherits(X,"matrix")) {
+        if (verbose) print(paste('Data is a matrix',FUN))
         ## If several time slices, map the required statistics
         good <- apply(coredata(x),2,nv) > 1
         X <- rep(NA,length(good))
-        xx <- coredata(x[,good])
-        X[good] <- apply(xx,2,FUN=FUN,na.rm=na.rm)
-      }
+        xx <- x[,good]
+        X[good] <- apply(coredata(xx),2,FUN=FUN,na.rm=na.rm)
+      } else {print('Do not know what to do')}
     
     ## if zlim is specified, then mask data outside this range
     if (!is.null(zlim)) {
@@ -371,7 +380,7 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
         X[mask] <- NA
         dim(X) <- d
         if (verbose) print(paste('zlim=',zlim[1],zlim[2],
-                                 '  sum(mask)=',print(sum(mask)),
+                                 '  sum(mask)=',sum(mask),
                                  '  range(X)=',rng[1],rng[2]))
     }
     
@@ -392,10 +401,10 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(X,'time') <- range(index(x))
     attr(X,'method') <- FUN
     attr(X,'timescale') <- class(x)[2]
-                                        #print(length(X)); print(attr(x,'dimensions'))
+    if (verbose) {print(length(X)); print(attr(x,'dimensions'))}
     dim(X) <- attr(x,'dimensions')[1:2]
-                                        #class(X) <- class(x)
-                                        #str(X)
+                                  
+    if (verbose) {print(str(X)); print(summary(c(X)))}
     
     if (plot) {
       if (projection=="lonlat") {
