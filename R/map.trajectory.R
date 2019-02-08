@@ -85,7 +85,7 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
     } else if (tolower(param)=="amo") {
       param <- AMO()
     } else if (tolower(param)=="enso") {
-      param <- NINO3.4(url2=NULL)
+      param <- NINO3.4()[,2] # NINO3.4 downloads two indices
     } else if (tolower(param)=="t2m") {
       param <- HadCRUT4()
     } else if (param %in% colnames(x)) {
@@ -171,7 +171,6 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   icol[icol==0] <- 1
   icol[icol>colbar$n] <- colbar$n
   col <- matrix(colbar$col[icol],dcol)
-
   if (new & !add) dev.new(width=8,height=7)
   if(!add) {
     data("geoborders",envir=environment())
@@ -192,6 +191,7 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
                           sum(!OK),'crossing dateline'))
   
   par0 <- par()
+  #browser()
   if("trajectory" %in% type & sum(OK)>0) {
     segments(lon0[OK,],lat0[OK,],lon1[OK,],lat1[OK,],
              col=adjustcolor(col[OK,],alpha.f=alpha),lty=lty,lwd=lwd)
