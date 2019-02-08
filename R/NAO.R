@@ -2,7 +2,7 @@ NAO <- function(freq="monthly", url=NULL, header=FALSE, verbose=FALSE) {
   if(verbose) print("NAO")
   if(is.null(url)) {
     if(freq=="daily") {
-      url <- "ftp://ftp.cdc.noaa.gov/Public/gbates/teleconn/nao.reanalysis.t10trunc.1948-present.txt"
+      url <- "ftp://ftp.cpc.ncep.noaa.gov/cwlinks/norm.daily.nao.index.b500101.current.ascii"
     } else {
       url <- 'http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii.table'
     }
