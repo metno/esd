@@ -81,11 +81,11 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   lab.breaks <- NULL
   if (is.character(param)) {
     if (tolower(param)=="nao") {
-      param <- NAO()
+      param <- NAO(freq="daily")
     } else if (tolower(param)=="amo") {
       param <- AMO()
     } else if (tolower(param)=="enso") {
-      param <- NINO3.4()[,2] # NINO3.4 downloads two indices
+      param <- NINO3.4(freq="daily")
     } else if (tolower(param)=="t2m") {
       param <- HadCRUT4()
     } else if (param %in% colnames(x)) {
