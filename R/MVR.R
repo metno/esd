@@ -7,9 +7,9 @@
 # The equation:
 # y = x %psi + %xi
 
-MVR <-function(Y,X,...) UseMethod("MVR")
+MVR <-function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) UseMethod("MVR")
 
-MVR.default <- function(Y,X,...) {
+MVR.default <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
 }
 
@@ -146,9 +146,9 @@ MVR.pca <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
 # a vector where most variables are set to zero apart from one
 # variable set to unity for the identification of teleconnection pattern.
 
-predict.mvr <- function(x, newdata=NULL, verbose=FALSE,...) {
+predict.mvr <- function(x, newdata=NULL, verbose=FALSE) {
   if(verbose) print("predict.mvr")
-  object=x
+  object <- x
   if (is.null(newdata)) newdata <- object$data
   x <- newdata
   

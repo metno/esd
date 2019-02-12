@@ -15,12 +15,12 @@ set of different elements from a group of stations.
 
 }
 \usage{
-MVR(Y,X,...) 
-MVR.default(Y,X,...) 
-MVR.field(Y,X,SVD=TRUE,LINPACK=FALSE) 
-MVR.pca(Y,X,SVD=TRUE,LINPACK=FALSE) 
-MVR.eof(Y,X,SVD=TRUE,LINPACK=FALSE) 
-predict.MVR(object, newdata=NULL, ...)
+MVR(Y,X,\dots) 
+\method{MVR}{default}{Y,X} 
+\method{MVR}{field}{Y,X,SVD=TRUE,LINPACK=FALSE} 
+\method{MVR}{pca}{Y,X,SVD=TRUE,LINPACK=FALSE} 
+\method{MVR}{eof}{Y,X,SVD=TRUE,LINPACK=FALSE} 
+predict.MVR(object, newdata=NULL)
 }
 \arguments{
     \item{Y}{An object with climate data: field, eof, or pca.}

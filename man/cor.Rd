@@ -49,8 +49,8 @@ r <- corfield(annual(x),annual(y))
 
 data(Oslo)
 t2m <- t2m.ERAINT()
-x <- subset(Oslo,it=1)
-y <- subset(t2m,it=1)
+x <- subset(Oslo,it='january')
+y <- subset(t2m,it='january')
 r <- corfield(x,y)
 }
 \keyword{manip}
