@@ -1470,7 +1470,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
         # KMP 2018-10-23: changed to work for daily and sub-daily data
         days <- time$vals%%time$daysayear - (cumsum(mndays)-mndays)[months] + 1#rep(cumsum(mndays),time$len/12)
         #HBE added seperate test for seasonal data May 2nd 2018
-        if (freq.data!='season') {
+        if (!freq.data %in% c('season','month','year')) {
           if(median(diff(days))<=1 & !requireNamespace("PCICt",quietly=TRUE)) {
             stop("Package \"PCICt\" needed to retrieve subdaily 360-day calendar data. Please install it.")
           }

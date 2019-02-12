@@ -66,7 +66,7 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
                        as.numeric(as.Date(index(x[[1]]),origin=torg)) )
   varids <- unlist(lapply(x,function(x) varid(x)[1]))
   if (length(varids) != length(names(x))) varids <- names(x)
-  units <- unlist(lapply(x,function(x) unit(x)[1]))
+  units <- unlist(lapply(x,function(x) attr(x,"unit")[1]))
   if (verbose) {print(varids); print(units); print(n)}
   x4nc <- list()
   for (i in 1:n) {
@@ -134,7 +134,7 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=
   
   dimtim <- ncdim_def( "time", paste("days since",torg),
                       as.numeric(as.Date(index(x),origin=torg)) )
-  x4nc <- ncvar_def(varid(x)[1], unit(x)[1], list(dimlon,dimlat,dimtim), -1, 
+  x4nc <- ncvar_def(varid(x)[1], attr(x,"unit")[1], list(dimlon,dimlat,dimtim), -1, 
                     longname=attr(x,'longname'), prec=prec)
      
      # Create a netCDF file with this variable
@@ -165,8 +165,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                                 scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,verbose=FALSE) {
 
   if (!inherits(x,"station")) stop('x argument must be a station object') 
-  unitx <- unit(x)
-  
+  unitx <- attr(x,'unit')
+
   if (verbose) {print('write2ncdf4.station'); print(range(index(x))); print(range(c(coredata(x)),na.rm=TRUE))}
   ## Quality check - remove obviously unrealistic values
   if (is.precip(x)) {
@@ -251,7 +251,6 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
   ## Is the last element a high or low record?
   lehr <- lastelementrecord(x,verbose=verbose)
   lelr <- lastelementrecord(-x)
-  
   if (is.T(x)) {
     if (verbose) print('Temperature')
     ## Maximum temperature
@@ -270,8 +269,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     td.mam <- apply(annual(subset(x,it='mam'),'mean',nmin=75),2,'trend.coef')
     td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
     td.son <- apply(annual(subset(x,it='son'),'mean',nmin=75),2,'trend.coef')
-  } else
-  if (is.precip(x)) {
+  } else if (is.precip(x)) {
     if (verbose) print('Precipitation')
     ave <- apply(annual(x,'sum'),2,'mean',na.rm=TRUE)
     ave.djf <- apply(annual(subset(x,it='djf'),'sum',nmin=90),2,'mean',na.rm=TRUE)
@@ -330,30 +328,39 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
   y[!is.finite(y)] <- missval
   y <- round((y - offset)/scale)
   
-  if (is.null(attr(x,'calendar')))
-      attr(x,'calendar') <- 'standard'
-
-  if (!is.na(attr(x,'calendar')))
-      calendar <- attr(x,'calendar')
-  else calendar <- 'standard'
-
-  if (class(index(x))=='Date')
-      if (is.null(it)) time <- julian(index(x)) - julian(as.Date(torg)) else {
-        if (verbose) print('Use prescribed time coordinates')
-        y <- zoo(y,order.by=index(x))
-        x2 <- merge(zoo(rep(0,nt),order.by=it),zoo(y),all=FALSE)
-        x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
-        x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; rm('x2')
-        time <- julian(it) - julian(as.Date(torg))
-        if (verbose) {print(range(index(x))); print(range(it)); print(dim(x))}
-      }
-  else if (inherits(x,'annual'))
-      time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
-  print(paste('Period in data: ',min(firstyear(x)),' - ', max(lastyear(x)),' and time dimension: ',
-              paste(range(as.Date(time,origin=torg)),collapse=' - ')))
-       
-# Attributes with same number of elements as stations are saved as variables
+  if (is.null(attr(x,'calendar'))) {
+    attr(x,'calendar') <- 'standard'
+  }
   
+  if (!is.na(attr(x,'calendar'))) {
+    calendar <- attr(x,'calendar')
+  } else {
+    calendar <- 'standard'
+  }
+
+  if (class(index(x))=='Date') {
+    if (is.null(it)) {
+      time <- julian(index(x)) - julian(as.Date(torg)) 
+    } else {
+      if (verbose) print('Use prescribed time coordinates')
+      y <- zoo(y,order.by=index(x))
+      x2 <- merge(zoo(rep(0,nt),order.by=it),zoo(y),all=FALSE)
+      x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
+      x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; rm('x2')
+      time <- julian(it) - julian(as.Date(torg))
+      if (verbose) {
+        print(range(index(x)))
+        print(range(it))
+        print(dim(x))
+      }
+    }
+  } else if (inherits(x,'annual')) {
+    time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
+  }
+  if(verbose) print(paste('Period in data: ',min(firstyear(x)),' - ', max(lastyear(x)),' and time dimension: ',
+                    paste(range(as.Date(time,origin=torg)),collapse=' - ')))
+       
+  # Attributes with same number of elements as stations are saved as variables
   if (is.null(it)) it <- index(y)
   start <- c( (1:length(it))[is.element(it,index(y)[1])],stid[1] )
   if (length(start)==1) start <- c(start,1)
@@ -364,9 +371,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     print("dim(y)"); print(dim(y))
     print("time"); print(range(time))
     print("netCDF dimensions"); print(c(nt,ns)); print(start+count-c(1,1))
-    }
+  }
   
-# Define the dimensions
+  # Define the dimensions
   if (!append) {
     if (verbose) print('Define dimensions')
     if (verbose) print(stid(x))
@@ -375,7 +382,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar,unlim=TRUE)
     dimnchar   <- ncdim_def("nchar",   "", 1:namelength, create_dimvar=FALSE )
     #dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
-  
+    
     if (verbose) {
       print('Define variable')
       print(paste('create netCDF-file',fname))
@@ -398,12 +405,15 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     cntrid <- ncvar_def(name="cntr",dim=list(dimnchar,dimS),units="name",prec="char",longname="country",
                         verbose=verbose)
     
-    if (verbose) {print(paste('ncvar:',varid(x)[1])); print(unitx[1])}
+    if (verbose) {
+      print(paste('ncvar:',varid(x)[1]))
+      print(unitx[1])
+    }
     ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
     ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
     ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
                          longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
-
+    
     if (verbose) print('The variables have been defined - now the summary statistics...')
     
     fyrid <- ncvar_def(name="first",dim=list(dimS), units="year", missval=missval,longname="first_year", 
@@ -412,19 +422,20 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                        prec="short",verbose=verbose)
     nvid <- ncvar_def(name="number",dim=list(dimS), units="count", missval=missval,longname="number_valid_data", 
                       prec="float",verbose=verbose)
+    
     ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
     ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
-    maxid <- ncvar_def(name="summary_max",dim=list(dimS), units= ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]),
+    maxid <- ncvar_def(name="summary_max",dim=list(dimS), units= ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]),
                        missval=missval,longname=varid(x),prec="float",verbose=verbose)
-    minid <- ncvar_def(name="summary_min",dim=list(dimS), ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
+    minid <- ncvar_def(name="summary_min",dim=list(dimS), ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                        missval=missval,longname=varid(x),prec="float",verbose=verbose)
     nhrid <- ncvar_def(name="summary_records",dim=list(dimS),
-                       units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
+                       units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                        missval=missval,longname="fraction_of_high_records",prec="float",verbose=verbose)
     lehrid <- ncvar_def(name="last_element_highest",dim=list(dimS),
-                       units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
+                       units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                        missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
-
+    
     if (is.T(x)) {
       meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="degC", 
                           missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
@@ -461,11 +472,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
       ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
       ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
       lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
-                          units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
+                          units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                           missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
 
-    } else
-    if (is.precip(x)) {
+    } else if (is.precip(x)) {
       meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units="mm/year", 
                           missval=missval,longname="mean_annual_precipitation_sum",prec="float",verbose=verbose)
       meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units="mm/season", 
@@ -529,15 +539,15 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
       lrid <- ncvar_def(name="summary_lastrains",dim=list(dimS), units="days", 
                           missval=missval,longname="number_of_dry_days_at_end_of_record",prec="float",verbose=verbose)
     } else {
-      meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units=unit(x)[1], 
+      meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units=attr(x,"unit")[1], 
                           missval=missval,longname=paste("mean_annual",varid(x),sep='_'),prec="float",verbose=verbose)
-      meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units=unit(x)[1], 
+      meanid.djf <- ncvar_def(name="summary_mean_DJF",dim=list(dimS), units=attr(x,"unit")[1], 
                               missval=missval,longname=paste("Dec-Feb_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      meanid.mam <- ncvar_def(name="summary_mean_MAM",dim=list(dimS), units=unit(x)[1], 
+      meanid.mam <- ncvar_def(name="summary_mean_MAM",dim=list(dimS), units=attr(x,"unit")[1], 
                               missval=missval,longname=paste("Mar-May_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      meanid.jja <- ncvar_def(name="summary_mean_JJA",dim=list(dimS), units=unit(x)[1], 
+      meanid.jja <- ncvar_def(name="summary_mean_JJA",dim=list(dimS), units=attr(x,"unit")[1], 
                               missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      meanid.son <- ncvar_def(name="summary_mean_SON",dim=list(dimS), units=unit(x)[1], 
+      meanid.son <- ncvar_def(name="summary_mean_SON",dim=list(dimS), units=attr(x,"unit")[1], 
                               missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
       sdid <- ncvar_def(name="summary_sd",dim=list(dimS), units="degC", 
                         missval=missval,longname="annual_temperature_anomaly_standard_deviation",prec="float",verbose=verbose)
@@ -549,20 +559,20 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                             missval=missval,longname="temperature_anomaly_standard_deviation_Jun-Aug",prec="float",verbose=verbose)
       sdid.son <- ncvar_def(name="summary_sd_SON",dim=list(dimS), units="degC", 
                             missval=missval,longname="temperature_anomaly_standard_deviation_Sep-Nov",prec="float",verbose=verbose)
-      tdid <- ncvar_def(name="summary_trend",dim=list(dimS), units=unit(x)[1], 
+      tdid <- ncvar_def(name="summary_trend",dim=list(dimS), units=attr(x,"unit")[1], 
                         missval=missval,longname="annual_mean_temperature",prec="float",verbose=verbose)
-      tdid.djf <- ncvar_def(name="summary_trend_DJF",dim=list(dimS), units=unit(x)[1], 
+      tdid.djf <- ncvar_def(name="summary_trend_DJF",dim=list(dimS), units=attr(x,"unit")[1], 
                             missval=missval,longname=paste("Dec-Feb_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      tdid.mam <- ncvar_def(name="summary_trend_MAM",dim=list(dimS), units=unit(x)[1], 
+      tdid.mam <- ncvar_def(name="summary_trend_MAM",dim=list(dimS), units=attr(x,"unit")[1], 
                             missval=missval,longname=paste("Mar-May_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      tdid.jja <- ncvar_def(name="summary_trend_JJA",dim=list(dimS), units=unit(x)[1], 
+      tdid.jja <- ncvar_def(name="summary_trend_JJA",dim=list(dimS), units=attr(x,"unit")[1], 
                             missval=missval,longname=paste("Jun-Aug_mean",varid(x),sep='_'),prec="float",verbose=verbose)
-      tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units=unit(x)[1], 
+      tdid.son <- ncvar_def(name="summary_trend_SON",dim=list(dimS), units=attr(x,"unit")[1], 
                             missval=missval,longname=paste("Sep-Nov_mean",varid(x),sep='_'),prec="float",verbose=verbose)
       ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
       ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
       lelrid <- ncvar_def(name="last_element_lowest",dim=list(dimS), 
-                          units=ifelse(unit(x)[1]=="\u00B0C", "degC",unit(x)[1]), 
+                          units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                           missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
     }
   } 

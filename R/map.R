@@ -127,11 +127,12 @@ map.array <- function(x,FUN='mean',ip=NULL,is=NULL,new=FALSE,
     attr(z,'longitude') <- lon(x)
     attr(z,'latitude') <- lat(x)
     attr(z,'variable') <- varid(x)
-    attr(z,'unit') <- unit(x)[1]
+    attr(z,'unit') <- attr(x,'unit')[1]
 
     if (plot) map(z,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
                   lonR=lonR,latR=latR,axiR=axiR,
-                  type=type,gridlines=gridlines,projection=projection,verbose=verbose,...)
+                  type=type,gridlines=gridlines,projection=projection,
+                  verbose=verbose,...)
     invisible(z)
 }
 
@@ -448,8 +449,8 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ## if (!is.null(colbar)) colbar$pal <- varid(x)[2] ## AM 08-07-2015 comment 
     attr(x,'variable') <- paste(varid(x),collapse='/')
     
-                                        #if (length(unit(x))>1) attr(x,'unit') <- paste(unit(x),collapse='/')
-    attr(x,'unit') <- unit(x)[1]
+                                        #if (length(attr(x,'unit'))>1) attr(x,'unit') <- paste(attr(x,'unit'),collapse='/')
+    attr(x,'unit') <- attr(x,'unit')[1]
     
     ## if zlim is specified, then mask data outside this range
     if (!is.null(zlim)) {
@@ -552,50 +553,52 @@ map.pca <- function(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                                         #cex.axis=1,cex.main=1,cex.lab=1,
                     type=c("fill","contour"),gridlines=FALSE,fig=c(0,1,0.05,0.95),
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
-    ##
-    if (verbose) print(paste('map.pca',FUN))
+  ##
+  if (verbose) print(paste('map.pca',FUN))
   
-    if(inherits(x,"trajectory")) {
-      map.pca.trajectory(x,projection=projection,lonR=lonR,latR=latR,
-                         xlim=xlim,ylim=ylim,...)
-    } else {
-      args <- list(...)
-                                        #print(args)
-      ## REB 2016-11-02 fix
-      if (is.null(dim(attr(x,'pattern'))))
-        dim(attr(x,'pattern')) <- c(1,length(attr(x,'pattern')))
-      
-      X <- rbind(attr(x,'pattern')[,ip],attr(x,'pattern')[,ip])
+  if(inherits(x,"trajectory")) {
+    map.pca.trajectory(x,projection=projection,lonR=lonR,latR=latR,
+                       xlim=xlim,ylim=ylim,...)
+  } else {
+    args <- list(...)
+                                      #print(args)
+    ## REB 2016-11-02 fix
+    if (is.null(dim(attr(x,'pattern')))) {
+      dim(attr(x,'pattern')) <- c(1,length(attr(x,'pattern')))
+    }
+    X <- rbind(attr(x,'pattern')[,ip],attr(x,'pattern')[,ip])
                                           #print(dim(X))
                                           #str(x)
-      X <- attrcp(x,X)
+    X <- attrcp(x,X)
   
-      ## if zlim is specified, then mask data outside this range
-      if (!is.null(zlim)) {
-          d <- dim(X)
-          mask <- (X < min(zlim)) | (X > max(zlim))
-          X[mask] <- NA
-          dim(X) <- d
-          if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
-      }    
-      attr(X,'longitude') <- lon(x)
-      attr(X,'latitude') <- lat(x)
-      attr(X,'mean') <- NULL
-      class(X) <- 'station'
-      ##if (is.null(colbar$col) | is.null(colbar)) {
-      ##  colbar$col <- colscal(30,col=varid(x))
-      ##}
-      if (verbose) str(X)
-      if (is.element(FUN,args)) {
-          map.station(X,new=new,colbar=colbar,
-                      xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=TRUE,fig=fig,...)
-      } else {
-          map.station(X,new=new,colbar=colbar,FUN=FUN,
-                      xlim=xlim,ylim=ylim,zlim=zlim,
-                      verbose=verbose,plot=TRUE,fig=fig,...)
-      }
+    ## if zlim is specified, then mask data outside this range
+    if (!is.null(zlim)) {
+        d <- dim(X)
+        mask <- (X < min(zlim)) | (X > max(zlim))
+        X[mask] <- NA
+        dim(X) <- d
+        if (verbose) {print(zlim); print(dim(X)); print(sum(mask))}
+    }    
+    attr(X,'longitude') <- lon(x)
+    attr(X,'latitude') <- lat(x)
+    attr(X,'mean') <- NULL
+    class(X) <- 'station'
+    ##if (is.null(colbar$col) | is.null(colbar)) {
+    ##  colbar$col <- colscal(30,col=varid(x))
+    ##}
+    if (verbose) str(X)
+
+    if (is.element(FUN,args)) {
+      map.station(X,new=new,colbar=colbar,
+                  xlim=xlim,ylim=ylim,zlim=zlim,
+                  plot=TRUE,fig=fig,verbose=verbose,...)
+    } else {
+      map.station(X,new=new,colbar=colbar,FUN=FUN,
+                  xlim=xlim,ylim=ylim,zlim=zlim,
+                  plot=TRUE,fig=fig,verbose=verbose,...)
     }
   }
+}
 
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
@@ -732,7 +735,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     srtx <- order(lon(x)); lon <- lon(x)[srtx]
     srty <- order(lat(x)); lat <- lat(x)[srty]
     if (verbose) print('meta-stuff')
-    unit <- unit(x); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
+    unit <- attr(x,'unit'); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
 
     if(!is.null(variable)) variable <- as.character(variable)
     if(!is.null(unit)) unit <- as.character(unit)

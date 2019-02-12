@@ -153,19 +153,23 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (show.colbar) {
       ## KMP 2017-07-28: If fig is something other than the default
       ## the colbar may be misplaced relative to the plot.
-      if (fin[2] >= 8) {
-        cf <- c(0.2,0.8,0,0.1)*fig
-        par(new=TRUE,fig=cf,mar=rep(1.5,4),yaxt='n')
-        #par(new=TRUE,fig=c(0.2,0.8,0,0.1),mar=rep(1.5,4),yaxt='n') 
-      } else {
-        cf <- c(0.2,0.8,0,0.15)*fig
-        par(new=TRUE,fig=cf,mar=rep(2,4),yaxt='n')
-        #par(new=TRUE,fig=c(0.2,0.8,0,0.15),mar=rep(2,4),yaxt='n')
-      }
-      image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),col=colbar$col,axes=FALSE)
-      par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=cex.axis,col.axis='grey')
-      axis(1,colbar$breaks)
-      
+      #if (fin[2] >= 8) {
+      #  cf <- cf <- c(fig[1:3],min(fig[3]+0.1,1))#c(0.2,0.8,0,0.1)
+      #  cf[cf>1] <- 1
+      #  par(new=TRUE,fig=cf,mar=rep(1.5,4),yaxt='n')
+      #} else {
+      #  cf <- c(fig[1:3],min(fig[3]+0.15,1))#c(0.2,0.8,0,0.15)
+      #  par(new=TRUE,fig=cf,mar=rep(2,4),yaxt='n')
+      #}
+      image.plot(breaks=colbar$breaks,
+                 lab.breaks=colbar$breaks,horizontal = TRUE,
+                 legend.only = T, zlim = range(colbar$breaks),
+                 col = colbar$col, legend.width = 1,
+                 axis.args = list(cex.axis = 0.8), border = FALSE)
+      #image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),
+      #      col=colbar$col,axes=FALSE)
+      #par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=cex.axis,col.axis='grey')
+      #axis(1,colbar$breaks)
     } 
     par(new=TRUE,fig=fig,mar=mar,yaxt='n',xaxt='n')
     plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab)
@@ -173,7 +177,7 @@ map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     ## Add a title
     if(is.null(main)) {
       if(!is.null(FUN)) {
-        main <- paste(esd::varid(x)[1]," (",esd::unit(x)[1],")",sep="")
+        main <- paste(esd::varid(x)[1]," (",attr(x,'unit')[1],")",sep="")
         if(is.function(FUN)) {
           main <- paste(as.character(quote(FUN)),"of",main)
         } else {
@@ -230,7 +234,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
   }
   arg <- list(...)
   if (inherits(x,'station')) {
-    attr(x,'unit') <- as.character(unit(x))
+    attr(x,'unit') <- as.character(attr(x,'unit'))
     attr(x,'variable') <- as.character(varid(x))
     
     ## REB 2016-11-28: some objects contain the attribute 'mean' which gets in the way.

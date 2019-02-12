@@ -59,7 +59,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if (plot.type=="single") {
     if (is.null(ylab))
       ylab <- ylab(x)
-    if (inherits(ylab,"try-error")) ylab <- unit(x)
+    if (inherits(ylab,"try-error")) ylab <- attr(x,'unit')
   } else {
     if (is.null(ylab)) { 
       if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
@@ -639,11 +639,11 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
   obstrend <- paste('obs. trend: ', round(st0$coefficients[2],2),' (',
                     round(st0$coefficients[2]-2*st0$coefficients[4],2),',',
                     round(st0$coefficients[2]+2*st0$coefficients[4],2),')',
-                    unit(x),'/decade',sep='')
+                    attr(x,'unit'),'/decade',sep='')
   dstrend <- paste('obs. trend: ', round(st1$coefficients[2],2),' (',
                     round(st1$coefficients[2]-2*st1$coefficients[4],2),',',
                     round(st1$coefficients[2]+2*st1$coefficients[4],2),')',
-                    unit(x),'/decade',sep='')
+                    attr(x,'unit'),'/decade',sep='')
   
   if (is.null(attr(x,'source'))) attr(x,'source') <- 'ESD'
   if (is.na(attr(x,'source'))) attr(x,'source') <- 'ESD'
@@ -855,28 +855,35 @@ plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
 }
 
 
-plot.ds.pca <- function(x,ip=1,verbose=FALSE,
+plot.ds.pca <- function(x,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                            type="p",cex=1,show=TRUE,
-                            h=0.6, v=1,pos=0.05),colbar2=NULL,...) {
+                            type="p",cex=1,show=TRUE,h=0.6, v=1,pos=0.05),
+                        colbar2=NULL,mar=c(3,2,2,0.5),mgp=c(1,0.5,0),
+                        verbose=FALSE,...) {
   y <- x # quick fix
 
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
   #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
-  par(fig=c(0,0.5,0.5,0.975)) #par(fig=c(0,0.45,0.5,0.975))
+  par(fig=c(0,0.5,0.5,0.975), mar=mar, mgp=mgp) #par(fig=c(0,0.45,0.5,0.975))
 
   if (verbose) print('PCA ip')
-  map.pca(y,ip=ip,verbose=verbose,new=FALSE,colbar=colbar1,fig=c(0,0.5,0.5,0.975),...)
+  map.pca(y,ip=ip,new=FALSE,colbar=colbar1,
+          fig=c(0,0.5,0.5,0.975),
+          main=paste("PCA Pattern #",ip," (unitless)",sep=""),
+          verbose=verbose,...)
 
-  title(paste("PCA Pattern # ",ip,sep=""))
+  #title(paste("PCA Pattern # ",ip,sep=""))
   par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
   if (verbose) print('Predictor pattern')
-  map(attr(y,'predictor.pattern'),ip=ip,new=FALSE,
+  pp <- attr(y,'predictor.pattern')
+  attr(pp,"variable") <- paste("EOF.Pattern.",ip,sep="")
+  attr(pp,"unit") <- "unitless"
+  map(pp,ip=ip,new=FALSE,
       colbar=colbar2,verbose=verbose,
-      main=paste("EOF Pattern # ",ip,sep=""))
-  #title(paste("EOF Ip # ",ip,sep=""))
+      main="")#paste("EOF Pattern # ",ip,sep=""))
+  title(paste("EOF Pattern #",ip,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
@@ -884,6 +891,8 @@ plot.ds.pca <- function(x,ip=1,verbose=FALSE,
     xvp <- (ip-1)*2 +1
     xok <- is.finite(attr(y,'evaluation')[,xvp]) & is.finite(attr(y,'evaluation')[,xvp+1])
     xcor <- cor(attr(y,'evaluation')[xok,xvp],attr(y,'evaluation')[xok,xvp+1])
+    
+    par(mgp=c(2,0.5,0), mar=c(3,3.5,1.5,1.5))
     plot(attr(y,'evaluation')[,xvp],attr(y,'evaluation')[,xvp+1],
          main=paste('Cross-validation: r=',round(xcor,2)),
          xlab='original data',ylab='prediction',pch=19,col="grey")
@@ -895,9 +904,11 @@ plot.ds.pca <- function(x,ip=1,verbose=FALSE,
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
     par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
     xlim <- range(index(attr(y,'original_data')),index(y))
-    ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE)
+    ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE) + 
+      diff(range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE))*c(-0.1,0.2)
     y0 <- attr(y,'original_data')
-    plot(y0[,ip],lwd=2,type='b',pch=19,xlim=xlim,ylim=ylim)
+    plot(y0[,ip], lwd=2, type='b', pch=19, xlim=xlim, ylim=ylim, 
+         xlab="Date",ylab=paste("PC #",ip,sep=""))
     if ( (class(index(y))=='Date') & (class(index(y0))=='numeric') & inherits(y,'annual') ) 
       index(y) <- year(index(y))
     if ( (class(index(y))=='numeric') & (class(index(y0))=='Date') & inherits(y,'annual') ) 
@@ -906,7 +917,7 @@ plot.ds.pca <- function(x,ip=1,verbose=FALSE,
     lines(zoo(y[,ip]),lwd=2,col='red',type='b')
     legend(x=index(attr(y,'original_data')[,ip])[1],
            y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,ip]))/10,
+               0.2*diff(range(attr(y,'original_data')[,ip])),
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
   } else {
@@ -1597,12 +1608,12 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                       paste(diag$outside,"observations"),
                       "p-value: "),
             bty="n",cex=0.7,text.col="grey40")
-    #legend(0.5,0.90,c(expression(paste(levels(factor(unit(x)))[1]/d*e*c*a*d*e)),
+    #legend(0.5,0.90,c(expression(paste(levels(factor(attr(x,'unit')))[1]/d*e*c*a*d*e)),
     #                  "ensemble trends > obs.",
     #                  "outside ensemble 90% conf.int.",
     #                  paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
     #        bty="n",cex=0.7,text.col="grey40")
-    legend(0.5,0.90,c(paste(levels(factor(unit(y)))[1],"/decade",sep=""),
+    legend(0.5,0.90,c(paste(levels(factor(attr(y,'unit')))[1],"/decade",sep=""),
                       "ensemble trends > obs.",
                       "outside ensemble 90% conf.int.",
                       paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
@@ -1794,7 +1805,7 @@ barplot.station <- function(x,threshold=0,...) {
     ylim <- range(pretty(coredata(x)),na.rm=TRUE)
     barplot(as.numeric(x),col='white',ylim=ylim,border=NA)
     barplot(as.numeric(x.above),col='red',names.arg=year(x),
-            ylab=paste(varid(x),'[',unit(x),']'),axes=FALSE,
+            ylab=paste(varid(x),'[',attr(x,'unit'),']'),axes=FALSE,
             border=NA,add=TRUE)
     barplot(as.numeric(x.below),col='blue',axes=FALSE,border=NA,add=TRUE)
     title(toupper(loc(x)))
