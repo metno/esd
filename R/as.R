@@ -1031,7 +1031,7 @@ as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
 # REB 2015-03-23 Tidy up - use anomaly
 
-as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE) anomaly.default(x)
+as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE,...) anomaly.default(x,...)
 
 #
 #as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE) {

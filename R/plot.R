@@ -22,7 +22,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          mar=c(4.5,4.5,0.75,0.5),fig=NULL,
                          alpha=0.5,alpha.map=0.7,
                          verbose=FALSE,...) {
-
+  
   if (verbose) print('plot.station')
   par(las=1)
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
@@ -56,9 +56,11 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   #if (is.null(ylim))
   #  ylim <- pretty(as.numeric(x))
   if (verbose) {print(xlim); print(ylim)}
+  
   if (plot.type=="single") {
-    if (is.null(ylab))
-      ylab <- ylab(x)
+    if (is.null(ylab)) {
+      ylab <- esd::ylab(x) # ggplot2 ylab can interfere with esd
+    }
     if (inherits(ylab,"try-error")) ylab <- attr(x,'unit')
   } else {
     if (is.null(ylab)) { 
@@ -123,7 +125,6 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if(new) dev.new()
   if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
-  ##browser()
   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
            cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,main=main,...)
@@ -132,7 +133,6 @@ plot.station <- function(x,plot.type="single",new=TRUE,
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
   }
   par0 <- par()
-  
   if (plot.type=="single") {
     if (errorbar) {
       # REB 2014-10-03: add an errorbar to the plots.
@@ -902,6 +902,8 @@ plot.ds.pca <- function(x,ip=1,
                       x=coredata(attr(y,'evaluation')[,2]))
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
+    browser()
+    #legend("bottomleft", )
     par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
     xlim <- range(index(attr(y,'original_data')),index(y))
     ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE) + 
@@ -1477,9 +1479,12 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
     z <- x
   }
   
-  if (verbose) {print("diagnose"); class(z)}
+  if (verbose) {
+    print("diagnose")
+    class(z)
+  }
   diag <- diagnose(z,plot=FALSE,verbose=verbose)
-  
+
   y <- attr(z,'station')
   attr(y,'standard.error') <- NULL
   if (verbose) print(paste('lon=',lon(y),'lat=',lat(y))) 
@@ -1509,7 +1514,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   par0 <- par()
   if (obs.show) obscol <- 'black' else obscol='white'
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
-       ylab=ylab,map.show=FALSE,new=new)
+       ylab=ylab,map.show=FALSE,new=new, verbose=TRUE)
   grid()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)
@@ -1538,10 +1543,11 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   }
   q05 <- qnorm(0.05,mean=mu,sd=si)
   q95 <- qnorm(0.95,mean=mu,sd=si)
-  
-  lines(zoo(mu,order.by=year(z)),col=rgb(1,0.7,0.7),lwd=3)
-  lines(zoo(q05,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)  
-  lines(zoo(q95,order.by=year(z)),col=rgb(0.5,0.5,0.5),lty=2)
+
+  lcol <- adjustcolor(envcol,offset=c(0.5,0.5,0.5,0.2))
+  lines(zoo(mu,order.by=year(z)),lwd=3,col=lcol)
+  lines(zoo(q05,order.by=year(z)),lty=2,col=lcol)  
+  lines(zoo(q95,order.by=year(z)),lty=2,col=lcol)
   if (obs.show) lines(y,type="b",pch=19)
 
   if (!is.null(diag)) {
@@ -1603,21 +1609,23 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
     #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
     ## KMP 2017-09-13: move this text!!! vvv
-    legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
-                      paste(diag$robs,'%'),
-                      paste(diag$outside,"observations"),
-                      "p-value: "),
-            bty="n",cex=0.7,text.col="grey40")
-    #legend(0.5,0.90,c(expression(paste(levels(factor(attr(x,'unit')))[1]/d*e*c*a*d*e)),
-    #                  "ensemble trends > obs.",
-    #                  "outside ensemble 90% conf.int.",
-    #                  paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
-    #        bty="n",cex=0.7,text.col="grey40")
-    legend(0.5,0.90,c(paste(levels(factor(attr(y,'unit')))[1],"/decade",sep=""),
-                      "ensemble trends > obs.",
-                      "outside ensemble 90% conf.int.",
-                      paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
-            bty="n",cex=0.7,text.col="grey40")    
+    if(!is.null(diag)) {
+      legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
+                        paste(diag$robs,'%'),
+                        paste(diag$outside,"observations"),
+                        "p-value: "),
+              bty="n",cex=0.7,text.col="grey40")
+      #legend(0.5,0.90,c(expression(paste(levels(factor(attr(x,'unit')))[1]/d*e*c*a*d*e)),
+      #                  "ensemble trends > obs.",
+      #                  "outside ensemble 90% conf.int.",
+      #                  paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
+      #        bty="n",cex=0.7,text.col="grey40")
+      legend(0.5,0.90,c(paste(levels(factor(attr(y,'unit')))[1],"/decade",sep=""),
+                        "ensemble trends > obs.",
+                        "outside ensemble 90% conf.int.",
+                        paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
+              bty="n",cex=0.7,text.col="grey40")
+    }
   }
   if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
                                      cex.axis=cex.axis*0.65,add.text=FALSE,

@@ -5,21 +5,36 @@
 anomaly <-function(x,...) UseMethod("anomaly")
 
 anomaly.default <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
-    if (verbose) print(class(x))
-    if (!is.null(ref)) it <- is.element(year(x),ref) else it <- rep(TRUE,length(index(x)))
-    if (inherits(x,'annual')) y <- anomaly.annual(x,ref=ref,na.rm=na.rm,verbose=verbose,...) else
-    if (inherits(x,'month')) y <- anomaly.month(x,ref=ref,na.rm=na.rm,verbose=verbose,...) else
-    if (inherits(x,'day')) y <- anomaly.day(x,ref=ref,na.rm=na.rm,verbose=verbose,...) else
-    if (inherits(x,'season')) y <- anomaly.season(x,ref=ref,na.rm=na.rm,verbose=verbose,...) else {
-      if (is.null(dim(x))) y <- x - mean(x[it],na.rm=TRUE) else 
-                           y <- zoo(apply(x,2,function(x,it) x - mean(x[it],na.rm=TRUE),it),order.by=index(x))
-      y <- attrcp(x,y)
-      class(y) <- class(x)
-      if (!is.null(attr(y,'station'))) attr(y,'station') <- anomaly(attr(y,'station'))
-      attr(y,'aspect') <- 'anomaly' 
-      attr(y,'history') <- history.stamp(x)
-    }
-    return(y)
+  if(verbose) print('anomaly.default')
+  if (verbose) print(class(x))
+  if (!is.null(ref)) {
+    it <- is.element(year(x),ref) 
+  } else {
+    it <- rep(TRUE,length(index(x)))
+  }
+  if (inherits(x,'annual')) {
+    y <- anomaly.annual(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
+  } else if (inherits(x,'month')) {
+    y <- anomaly.month(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
+  } else if (inherits(x,'day')) {
+    y <- anomaly.day(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
+  } else if (inherits(x,'season')) {
+    y <- anomaly.season(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
+  } else if (is.null(dim(x))) {
+    y <- x - mean(x[it],na.rm=TRUE) 
+  } else {
+    y <- zoo(apply(x,2,function(x,it) x - mean(x[it],na.rm=TRUE),it), order.by=index(x))
+  }
+  y <- attrcp(x,y)
+  class(y) <- class(x)
+  # KMP 2019-02-12: attr(y,'station') sometimes gets the station_id instead of station
+  # so !is.null(attr...) is not enough to check if the attribute is available
+  if ('station' %in% names(attributes(y)) & !is.null(attr(y,'station'))) {
+    attr(y,'station') <- anomaly(attr(y,'station'), ref=ref)
+  }
+  attr(y,'aspect') <- 'anomaly' 
+  attr(y,'history') <- history.stamp(x)
+  return(y)
 }
 
 anomaly.dsensemble <- function(x,ref=NULL,...) {
@@ -88,6 +103,7 @@ anomaly.station <- function(x,...) {
 
 anomaly.annual <- function(x,ref=1961:1990,na.rm=TRUE,verbose=FALSE,...) {
   if (verbose) print('anomaly.annual')
+  if(is.null(ref)) ref <- 1961:1990
   if(length(ref)==2) ref <- seq(min(ref),max(ref))
   X <- x;  x <- coredata(X)
   t <- index(X)
@@ -95,9 +111,11 @@ anomaly.annual <- function(x,ref=1961:1990,na.rm=TRUE,verbose=FALSE,...) {
   if (verbose) print(datetype)
   if (datetype=="Date") years <- year(X) else
   if (datetype=="numeric") years <- t
-  if (is.null(dim(x))) 
-    clim <- mean(x[is.element(years,ref)],na.rm=TRUE) else
-    clim <- apply(x,2,FUN=mean,na.rm=TRUE)
+  if (is.null(dim(x))) { 
+    clim <- mean(x[is.element(years,ref)],na.rm=TRUE) 
+  } else {
+    clim <- apply(x,2,FUN=mean,na.rm=TRUE) 
+  }
   if (verbose) print(clim)
   x <- t(t(x) - clim)
   x <- zoo(x,order.by=index(X))

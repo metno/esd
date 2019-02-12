@@ -460,7 +460,6 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   # Counts outside 90% confidence: binomial distrib. & prob.
   stopifnot(!missing(x),inherits(x,"dsensemble"))
   
-  
   if (inherits(x,"pca") | inherits(x,"list")) {
     diag <- diagnose.dsensemble.list(x,plot=plot,map.show=map.show,
                                      main=main,xrange=xrange,yrange=yrange,
