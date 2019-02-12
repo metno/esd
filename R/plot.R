@@ -12,172 +12,174 @@ plot.list <- function(x,is=NULL,
   }
 }
 
-plot.station <- function(x,plot.type="single",new=TRUE,
-                         lwd=3,type='l',pch=0,main=NULL,col=NULL,
-                         xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
-                         errorbar=TRUE,legend.show=FALSE,
-                         map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                         usegooglemap=TRUE,zoom=NULL,
-                         cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
-                         mar=c(4.5,4.5,0.75,0.5),fig=NULL,
-                         alpha=0.5,alpha.map=0.7,
-                         verbose=FALSE,...) {
-  
-  if (verbose) print('plot.station')
-  par(las=1)
-  if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
-    map.show <- FALSE
-  }
-  if(map.show) {
-    if (verbose) print('show map')
-    if (is.null(map.type)) {
-      if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
-          (length(lon(x))==2 & length(lat(x))==2) ) {
-        map.type <- "rectangle"
-      } else {
-        map.type <- "points"
-      }
-    }
-    if (verbose) print(map.type)
-  }
-  
-  if(is.null(fig) & new) {
-    fig <- c(0,1,0,0.95)
-    if (map.show & map.insert) fig[4] <- 0.8
-  }
-  if (legend.show) fig[3] <- 0.05  
-  ## if (is.null(ylim))
-  ##     if (is.null(dim(x)))
-  ##         ylim <- pretty(x)
-  ##     else              
-  ##         ylim <- apply(x,2,pretty,n=5)
-  if (is.null(xlim))
-    xlim <- range(index(x))
-  #if (is.null(ylim))
-  #  ylim <- pretty(as.numeric(x))
-  if (verbose) {print(xlim); print(ylim)}
-  
-  if (plot.type=="single") {
-    if (is.null(ylab)) {
-      ylab <- esd::ylab(x) # ggplot2 ylab can interfere with esd
-    }
-    if (inherits(ylab,"try-error")) ylab <- attr(x,'unit')
-  } else {
-    if (is.null(ylab)) { 
-      if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
-        ylab <- stid(x)
-      } else 
-        ylab <- varid(x)
-    } else {
-      if (is.null(main)) {
-        if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
-          main <- levels(factor((attr(x,'longname'))))[1]
-        } else {
-          main <- levels(factor(loc(x)))[1]
-        }
-      }
-    }  
-  }
-  #if (is.null(main)) main <- attr(x,'longname')[1] 
-  if (is.null(col)) {
-    if (is.null(dim(x))) {
-      col <- "blue"
-    } else if (!is.null(lon(x)) & !is.null(lat(x)) &
-               length(lon(x))==dim(x)[2] &
-               length(lat(x))==dim(x)[2]) {
-      nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
-      ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
-      if ( all(is.finite(nx) & is.finite(ny)) ) {
-        col <- rgb(1-ny,nx,ny,1)
-      } else {
-        col <- rainbow(dim(x)[2])
-      }
-    } else {
-      col <- rainbow(length(x[1,]))  
-    }
-  }
-  if(is.null(alpha.map)) alpha.map <- alpha
-  col.map <- adjustcolor(col,alpha.f=alpha.map)
-  col <- adjustcolor(col,alpha.f=alpha)
-
-  ns <- length(stid(x))
-#  if ( (ns > 1) & (plot.type=="multiple") ) {
-#    for (i in 1:ns) {
-#        z <- try(eval(parse(text=paste("ylab[",i,"] <- expression(",ylab[i],
-#                      "*phantom(0)*(",unit[i],"))"))),silent=TRUE)
-#        if (inherits(z,"try-error")) ylab[i] <- unit[i]
-#      }
-#  }
- 
-  errorbar <- errorbar & !is.null(err(x))
-  
-  if(map.show & !map.insert) {
-    vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.8,usegooglemap=usegooglemap,
-            zoom=zoom,verbose=verbose)
-    new <- TRUE
-  }
-
-  #print(ylab)
-  cls <- class(x)
-  if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
-  class(x) <- "zoo"
-  if(new) dev.new()
-  if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
-  plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
-           col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
-           cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt,main=main,...)
-  #mtext(main,side=3,line=1,adj=0,cex=cex.main)
-  if("seasonalcycle" %in% cls) {
-    axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
-  }
-  par0 <- par()
-  if (plot.type=="single") {
-    if (errorbar) {
-      # REB 2014-10-03: add an errorbar to the plots.
-      segments(index(x),x-err(x),index(x),x+err(x),
-               lwd=3,col=rgb(0.5,0.5,0.5,0.25))
-#      d.err <- dim(err(x))
-#      dt <- 0.3*diff(index(x))[1]
-#      if (is.null(d.err)) d.err <- c(length(err(x),1)
-#      for (i in 1:d.err[2]) {
-#        for (j in 1:d.err[splot.dse1])
-#          lines(rep(index(x)[j],2),rep(x[j],2) + err(x)[j]*c(-1,1),
-#                lwd=3,col=rgb(1,0.5,0.5,0.25))
-#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) + err(x)[j],
-#                lwd=1,col=rgb(1,0.5,0.5,0.25))
-#          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) - err(x)[j],
-#                lwd=1,col=rgb(1,0.5,0.5,0.25))
+# Moved plot.station to its own file: plot.station.R
+# plot.station <- function(x,plot.type="single",new=TRUE,
+#                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
+#                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
+#                          errorbar=TRUE,legend.show=FALSE,
+#                          map.show=TRUE,map.type=NULL,map.insert=TRUE,
+#                          usegooglemap=TRUE,zoom=NULL,
+#                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
+#                          mar=c(4.5,4.5,0.75,0.5),fig=NULL,
+#                          alpha=0.5,alpha.map=0.7,
+#                          verbose=FALSE,...) {
+#   
+#   if (verbose) print('plot.station')
+#   par(las=1)
+#   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
+#     map.show <- FALSE
+#   }
+#   if(map.show) {
+#     if (verbose) print('show map')
+#     if (is.null(map.type)) {
+#       if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+#           (length(lon(x))==2 & length(lat(x))==2) ) {
+#         map.type <- "rectangle"
+#       } else {
+#         map.type <- "points"
 #       }
-    }
-    
-    par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
-    plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
- 
-    #if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
-    #                       text.col=col,cex=0.75)
-    #title(main=loc(x),cex=1)
-    
-    if(legend.show) {
-      legend(0.01,0.95,paste(attr(x,'location'),": ",
-                           #attr(x,'aspect'),
-                           #attr(x,'longname')," - ",
-                           round(attr(x,'longitude'),2),"E/",
-                           round(attr(x,'latitude'),2),"N (",
-                           attr(x,'altitude')," masl)",sep=""),
-           bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
-    }
-    if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
-                                       cex.axis=0.65,add.text=FALSE,
-                                       map.insert=map.insert,usegooglemap=usegooglemap,
-                                       zoom=zoom,verbose=verbose)
-    par(fig=par0$fig,mar=par0$mar,new=TRUE)
-    plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
-             xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
-   
-  }
-}
+#     }
+#     if (verbose) print(map.type)
+#   }
+#   
+#   if(is.null(fig) & new) {
+#     fig <- c(0,1,0,0.95)
+#     if (map.show & map.insert) fig[4] <- 0.8
+#   }
+#   if (legend.show) fig[3] <- 0.05  
+#   ## if (is.null(ylim))
+#   ##     if (is.null(dim(x)))
+#   ##         ylim <- pretty(x)
+#   ##     else              
+#   ##         ylim <- apply(x,2,pretty,n=5)
+#   if (is.null(xlim))
+#     xlim <- range(index(x))
+#   #if (is.null(ylim))
+#   #  ylim <- pretty(as.numeric(x))
+#   if (verbose) {print(xlim); print(ylim)}
+#   
+#   if (plot.type=="single") {
+#     if (is.null(ylab)) {
+#       ylab <- esd::ylab(x) # ggplot2 ylab can interfere with esd
+#     }
+#     if (inherits(ylab,"try-error")) ylab <- attr(x,'unit')
+#   } else {
+#     if (is.null(ylab)) { 
+#       if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+#         ylab <- stid(x)
+#       } else 
+#         ylab <- varid(x)
+#     } else {
+#       if (is.null(main)) {
+#         if ((length(levels(factor(stid(x))))>1) & (length(levels(factor(varid(x))))<=1)) {
+#           main <- levels(factor((attr(x,'longname'))))[1]
+#         } else {
+#           main <- levels(factor(loc(x)))[1]
+#         }
+#       }
+#     }  
+#   }
+#   #if (is.null(main)) main <- attr(x,'longname')[1] 
+#   if (is.null(col)) {
+#     if (is.null(dim(x))) {
+#       col <- "blue"
+#     } else if (!is.null(lon(x)) & !is.null(lat(x)) &
+#                length(lon(x))==dim(x)[2] &
+#                length(lat(x))==dim(x)[2]) {
+#       nx <- (lon(x)-min(lon(x)))/diff(range(lon(x)))
+#       ny <- (lat(x)-min(lat(x)))/diff(range(lat(x)))
+#       if ( all(is.finite(nx) & is.finite(ny)) ) {
+#         col <- rgb(1-ny,nx,ny,1)
+#       } else {
+#         col <- rainbow(dim(x)[2])
+#       }
+#     } else {
+#       col <- rainbow(length(x[1,]))  
+#     }
+#   }
+#   if(is.null(alpha.map)) alpha.map <- alpha
+#   col.map <- adjustcolor(col,alpha.f=alpha.map)
+#   col <- adjustcolor(col,alpha.f=alpha)
+# 
+#   ns <- length(stid(x))
+# #  if ( (ns > 1) & (plot.type=="multiple") ) {
+# #    for (i in 1:ns) {
+# #        z <- try(eval(parse(text=paste("ylab[",i,"] <- expression(",ylab[i],
+# #                      "*phantom(0)*(",unit[i],"))"))),silent=TRUE)
+# #        if (inherits(z,"try-error")) ylab[i] <- unit[i]
+# #      }
+# #  }
+#  
+#   errorbar <- errorbar & !is.null(err(x))
+#   
+#   if(map.show & !map.insert) {
+#     vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
+#             cex.axis=cex.axis,cex=1.8,usegooglemap=usegooglemap,
+#             zoom=zoom,verbose=verbose)
+#     new <- TRUE
+#   }
+# 
+#   #print(ylab)
+#   cls <- class(x)
+#   if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
+#   class(x) <- "zoo"
+#   if(new) dev.new()
+#   if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
+#   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
+#   plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
+#            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
+#            cex.axis=cex.axis,cex.lab=cex.lab,cex.main=cex.main,
+#            xaxt=xaxt,main=main,...)
+#   #mtext(main,side=3,line=1,adj=0,cex=cex.main)
+#   if("seasonalcycle" %in% cls) {
+#     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
+#   }
+#   par0 <- par()
+#   if (plot.type=="single") {
+#     if (errorbar) {
+#       # REB 2014-10-03: add an errorbar to the plots.
+#       segments(index(x),x-err(x),index(x),x+err(x),
+#                lwd=3,col=rgb(0.5,0.5,0.5,0.25))
+# #      d.err <- dim(err(x))
+# #      dt <- 0.3*diff(index(x))[1]
+# #      if (is.null(d.err)) d.err <- c(length(err(x),1)
+# #      for (i in 1:d.err[2]) {
+# #        for (j in 1:d.err[splot.dse1])
+# #          lines(rep(index(x)[j],2),rep(x[j],2) + err(x)[j]*c(-1,1),
+# #                lwd=3,col=rgb(1,0.5,0.5,0.25))
+# #          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) + err(x)[j],
+# #                lwd=1,col=rgb(1,0.5,0.5,0.25))
+# #          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) - err(x)[j],
+# #                lwd=1,col=rgb(1,0.5,0.5,0.25))
+# #       }
+#     }
+#     
+#     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
+#     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+#  
+#     #if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
+#     #                       text.col=col,cex=0.75)
+#     #title(main=loc(x),cex=1)
+#     
+#     if(legend.show) {
+#       legend(0.01,0.95,paste(attr(x,'location'),": ",
+#                            #attr(x,'aspect'),
+#                            #attr(x,'longname')," - ",
+#                            round(attr(x,'longitude'),2),"E/",
+#                            round(attr(x,'latitude'),2),"N (",
+#                            attr(x,'altitude')," masl)",sep=""),
+#            bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
+#     }
+#     if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
+#                                        cex.axis=0.65,add.text=FALSE,
+#                                        map.insert=map.insert,usegooglemap=usegooglemap,
+#                                        zoom=zoom,verbose=verbose)
+#     par(fig=par0$fig,mar=par0$mar,new=TRUE)
+#     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
+#              xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
+#    
+#   }
+# }
 
 
 vis.map <- function(x,col='red',map.type=NULL,
@@ -1452,198 +1454,199 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
   invisible(Y)
 }
 
-## Plots one time series
-plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
-                             envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
-                             obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                             usegooglemap=TRUE,new=FALSE,xrange=NULL,yrange=NULL,
-                             alpha=0.5,alpha.map=0.7,mar=c(5.1,4.5,4.1,2.1),
-                             verbose=FALSE,...) {
-  if(verbose) print("plot.dsensemble.one")
-  stopifnot(inherits(x,'dsensemble'))
-  
-  if (is.null(map.type)) {
-    if (verbose) print(class(x))
-    if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
-        (length(lon(x))==2 & length(lat(x))==2) ) {
-      map.type <- "rectangle"
-    } else {
-      map.type <- "points"
-    }
-  }
-
-  if (verbose) {print(map.type); print(attr(x,'station'))}
-  if (!is.null(attr(x,'station')) & !inherits(attr(x,'station'),c('annual','season'))) {
-    z <- subset(x,it=it,verbose=verbose) 
-  } else {
-    z <- x
-  }
-  
-  if (verbose) {
-    print("diagnose")
-    class(z)
-  }
-  diag <- diagnose(z,plot=FALSE,verbose=verbose)
-
-  y <- attr(z,'station')
-  attr(y,'standard.error') <- NULL
-  if (verbose) print(paste('lon=',lon(y),'lat=',lat(y))) 
-    
-  d <- dim(z)
-  index(y) <- year(y)
-
-  if(map.show | target.show) {
-    pscl <- c(0.9,1.3)
-  } else {
-    pscl <- c(0.9,1.1)
-  }
-  
-  if (max(coredata(z),na.rm=TRUE) < 0) pscl <- rev(pscl)
-  args <- list(...)
-  if (verbose) print(names(args))
-  ixl <- grep('xlim',names(args))
-  if (length(ixl)==0) xlim <- range(year(z)) else
-                      xlim <- args[[ixl]]
-  iyl <- grep('ylim',names(args))
-  if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
-                      ylim <- args[[iyl]]  
-  #print("...")
-  if(new) dev.new()
-  index(y) <- year(y)
-  if(!is.null(mar)) par(mar=mar)
-  par0 <- par()
-  if (obs.show) obscol <- 'black' else obscol='white'
-  plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
-       ylab=ylab,map.show=FALSE,new=new, verbose=TRUE)
-  grid()
-  usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
-  t <- index(z)
-
-  if (pts) for (i in 1:d[2]) {
-    points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
-  }
-  
-  # Produce a transparent envelope
-  nt <- length(index(z))
-  t2 <- c(year(t),rev(year(t)))
-  
-  col <- rgb(rep(1,49),seq(0.95,0.1,length=49),seq(0.95,0.1,length=49),0.1)
-  ## REB 2016-11-25
-  if(is.null(alpha.map)) alpha.map <- alpha
-  col.map <- adjustcolor(col,alpha.f=alpha.map)
-  col <- adjustcolor(col,alpha.f=alpha)
- 
-  mu <- apply(coredata(z),1,mean,na.rm=TRUE)
-  si <- apply(coredata(z),1,sd,na.rm=TRUE)
-  for (ii in 1:49) {
-    qp1 <- qnorm(1-ii/50,mean=coredata(mu),sd=coredata(si))
-    qp2 <- qnorm(ii/50,mean=coredata(mu),sd=coredata(si))
-    ci <- c(qp1,rev(qp2))
-    polygon(t2[!is.na(ci)],ci[!is.na(ci)], col= envcol, border=NA)
-  }
-  q05 <- qnorm(0.05,mean=mu,sd=si)
-  q95 <- qnorm(0.95,mean=mu,sd=si)
-
-  lcol <- adjustcolor(envcol,offset=c(0.5,0.5,0.5,0.2))
-  lines(zoo(mu,order.by=year(z)),lwd=3,col=lcol)
-  lines(zoo(q05,order.by=year(z)),lty=2,col=lcol)  
-  lines(zoo(q95,order.by=year(z)),lty=2,col=lcol)
-  if (obs.show) lines(y,type="b",pch=19)
-
-  if (!is.null(diag)) {
-    index(diag$y) <- year(diag$y)
-    outside <- diag$above | diag$below
-    points(zoo(coredata(diag$y)[which(outside)],
-             order.by=year(diag$y)[which(outside)]),col="grey")
-  }
-
-  title(main=toupper(loc(x)),cex.main=1)
-  if ((target.show) & (!is.null(diag))) {
-    if (verbose) print('add target diagnostic')
-    par(fig=c(0.23,0.45,0.75,0.95),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
-        cex.main=0.75,xpd=NA,col.main="grey30")
-    plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
-  } 
-  
-  if(map.show & !map.insert) {
-    vis.map(x,"red",map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.5,usegooglemap=usegooglemap,
-            xrange=xrange,yrange=yrange,
-            verbose=verbose,...)
-    new <- TRUE
-  }
-  # REB 2016-11-25
-  #if (map.show) {
-  #  if(verbose) print("add map")
-  #  if(is.null(xrange) & !is.null(lon(y))) {
-  #    xrange <- range(lon(y)) + c(-15,15)
-  #  }
-  #  if(is.null(yrange) & !is.null(lat(y))) {
-  #    yrange <- range(lat(y)) + c(-10,10)
-  #  }
-  #  if (!is.null(xrange) & !is.null(xrange)) {
-  #    data("geoborders", envir = environment())
-  #    lon <- geoborders$x
-  #    lat <- geoborders$y
-  #    lon2 <- attr(geoborders,"borders")$x
-  #    lat2 <- attr(geoborders,"borders")$y
-  #    par(fig=c(0.7,0.95,0.78,0.98),new=TRUE, mar=c(0,0,0,0),
-  #      cex.main=0.75,xpd=FALSE,col.main="grey",bty="n")
-  #    plot(lon,lat,lwd=1,col="black",type='l',xlab=NA,ylab=NA,
-  #       axes=FALSE,xlim=xrange,ylim=yrange)
-  #    axis(1,mgp=c(3,.5,0))
-  #    axis(2,mgp=c(2,.5,0))
-  #    lines(lon2,lat2,col = "pink",lwd=1)
-  #    if("points" %in% map.type) {
-  #      points(lon(y),lat(y),pch=21,cex=1,col='black',bg='red',lwd=1)
-  #  }
-  #    if("rectangle" %in% map.type) {
-  #      rect(min(lon(y)),min(lat(y)),max(lon(y)),max(lat(y)),lwd=1,col=NA,border='red',lty=2)
-  #    }
-  #  } else if (verbose) print(paste('lon=',lon(y),'lat=',lat(y)))
-  #}  
-  # finished plotting
-
-  if (legend.show) {
-    par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",xpd=NA)
-    #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
-    plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-    ## KMP 2017-09-13: move this text!!! vvv
-    if(!is.null(diag)) {
-      legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
-                        paste(diag$robs,'%'),
-                        paste(diag$outside,"observations"),
-                        "p-value: "),
-              bty="n",cex=0.7,text.col="grey40")
-      #legend(0.5,0.90,c(expression(paste(levels(factor(attr(x,'unit')))[1]/d*e*c*a*d*e)),
-      #                  "ensemble trends > obs.",
-      #                  "outside ensemble 90% conf.int.",
-      #                  paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
-      #        bty="n",cex=0.7,text.col="grey40")
-      legend(0.5,0.90,c(paste(levels(factor(attr(y,'unit')))[1],"/decade",sep=""),
-                        "ensemble trends > obs.",
-                        "outside ensemble 90% conf.int.",
-                        paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
-              bty="n",cex=0.7,text.col="grey40")
-    }
-  }
-  if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
-                                     cex.axis=cex.axis*0.65,add.text=FALSE,
-                                     map.insert=map.insert,usegooglemap=usegooglemap,
-                                     xrange=xrange,yrange=yrange,
-                                     verbose=verbose,...)
-  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-      fig=c(0,1,0.1,1),new=TRUE)
-  par(fig=fig,new=TRUE, mar=mar)
-  plot(usr[1:2],usr[3:4],
-       type="n",ylab="",xlab="",xlim=usr[1:2],ylim=usr[3:4])
-
-  # target: perfect score is bull's eye
-                                        # from diagnostics?
-  par(fig=par0$fig,new=TRUE, mar=par0$mar)
-  if(verbose) print("exit plot.dsensemble.one")
-  invisible(z)
-}
+# Moved plot.dsensemble.one to its own file: plot.dsensemble.one.R
+# ## Plots one time series
+# plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
+#                              envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
+#                              obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
+#                              usegooglemap=TRUE,new=FALSE,xrange=NULL,yrange=NULL,
+#                              alpha=0.5,alpha.map=0.7,mar=c(5.1,4.5,4.1,2.1),
+#                              verbose=FALSE,...) {
+#   if(verbose) print("plot.dsensemble.one")
+#   stopifnot(inherits(x,'dsensemble'))
+#   
+#   if (is.null(map.type)) {
+#     if (verbose) print(class(x))
+#     if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
+#         (length(lon(x))==2 & length(lat(x))==2) ) {
+#       map.type <- "rectangle"
+#     } else {
+#       map.type <- "points"
+#     }
+#   }
+# 
+#   if (verbose) {print(map.type); print(attr(x,'station'))}
+#   if (!is.null(attr(x,'station')) & !inherits(attr(x,'station'),c('annual','season'))) {
+#     z <- subset(x,it=it,verbose=verbose) 
+#   } else {
+#     z <- x
+#   }
+#   
+#   if (verbose) {
+#     print("diagnose")
+#     class(z)
+#   }
+#   diag <- diagnose(z,plot=FALSE,verbose=verbose)
+# 
+#   y <- attr(z,'station')
+#   attr(y,'standard.error') <- NULL
+#   if (verbose) print(paste('lon=',lon(y),'lat=',lat(y))) 
+#     
+#   d <- dim(z)
+#   index(y) <- year(y)
+# 
+#   if(map.show | target.show) {
+#     pscl <- c(0.9,1.3)
+#   } else {
+#     pscl <- c(0.9,1.1)
+#   }
+#   
+#   if (max(coredata(z),na.rm=TRUE) < 0) pscl <- rev(pscl)
+#   args <- list(...)
+#   if (verbose) print(names(args))
+#   ixl <- grep('xlim',names(args))
+#   if (length(ixl)==0) xlim <- range(year(z)) else
+#                       xlim <- args[[ixl]]
+#   iyl <- grep('ylim',names(args))
+#   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
+#                       ylim <- args[[iyl]]  
+#   #print("...")
+#   if(new) dev.new()
+#   index(y) <- year(y)
+#   if(!is.null(mar)) par(mar=mar)
+#   par0 <- par()
+#   if (obs.show) obscol <- 'black' else obscol='white'
+#   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
+#        ylab=ylab,map.show=FALSE,new=new, verbose=TRUE)
+#   grid()
+#   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
+#   t <- index(z)
+# 
+#   if (pts) for (i in 1:d[2]) {
+#     points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
+#   }
+#   
+#   # Produce a transparent envelope
+#   nt <- length(index(z))
+#   t2 <- c(year(t),rev(year(t)))
+#   
+#   col <- rgb(rep(1,49),seq(0.95,0.1,length=49),seq(0.95,0.1,length=49),0.1)
+#   ## REB 2016-11-25
+#   if(is.null(alpha.map)) alpha.map <- alpha
+#   col.map <- adjustcolor(col,alpha.f=alpha.map)
+#   col <- adjustcolor(col,alpha.f=alpha)
+#  
+#   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
+#   si <- apply(coredata(z),1,sd,na.rm=TRUE)
+#   for (ii in 1:49) {
+#     qp1 <- qnorm(1-ii/50,mean=coredata(mu),sd=coredata(si))
+#     qp2 <- qnorm(ii/50,mean=coredata(mu),sd=coredata(si))
+#     ci <- c(qp1,rev(qp2))
+#     polygon(t2[!is.na(ci)],ci[!is.na(ci)], col= envcol, border=NA)
+#   }
+#   q05 <- qnorm(0.05,mean=mu,sd=si)
+#   q95 <- qnorm(0.95,mean=mu,sd=si)
+# 
+#   lcol <- adjustcolor(envcol,offset=c(0.5,0.5,0.5,0.2))
+#   lines(zoo(mu,order.by=year(z)),lwd=3,col=lcol)
+#   lines(zoo(q05,order.by=year(z)),lty=2,col=lcol)  
+#   lines(zoo(q95,order.by=year(z)),lty=2,col=lcol)
+#   if (obs.show) lines(y,type="b",pch=19)
+# 
+#   if (!is.null(diag)) {
+#     index(diag$y) <- year(diag$y)
+#     outside <- diag$above | diag$below
+#     points(zoo(coredata(diag$y)[which(outside)],
+#              order.by=year(diag$y)[which(outside)]),col="grey")
+#   }
+# 
+#   title(main=toupper(loc(x)),cex.main=1)
+#   if ((target.show) & (!is.null(diag))) {
+#     if (verbose) print('add target diagnostic')
+#     par(fig=c(0.23,0.45,0.75,0.95),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
+#         cex.main=0.75,xpd=NA,col.main="grey30")
+#     plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
+#   } 
+#   
+#   if(map.show & !map.insert) {
+#     vis.map(x,"red",map.type,add.text=FALSE,map.insert=map.insert,
+#             cex.axis=cex.axis,cex=1.5,usegooglemap=usegooglemap,
+#             xrange=xrange,yrange=yrange,
+#             verbose=verbose,...)
+#     new <- TRUE
+#   }
+#   # REB 2016-11-25
+#   #if (map.show) {
+#   #  if(verbose) print("add map")
+#   #  if(is.null(xrange) & !is.null(lon(y))) {
+#   #    xrange <- range(lon(y)) + c(-15,15)
+#   #  }
+#   #  if(is.null(yrange) & !is.null(lat(y))) {
+#   #    yrange <- range(lat(y)) + c(-10,10)
+#   #  }
+#   #  if (!is.null(xrange) & !is.null(xrange)) {
+#   #    data("geoborders", envir = environment())
+#   #    lon <- geoborders$x
+#   #    lat <- geoborders$y
+#   #    lon2 <- attr(geoborders,"borders")$x
+#   #    lat2 <- attr(geoborders,"borders")$y
+#   #    par(fig=c(0.7,0.95,0.78,0.98),new=TRUE, mar=c(0,0,0,0),
+#   #      cex.main=0.75,xpd=FALSE,col.main="grey",bty="n")
+#   #    plot(lon,lat,lwd=1,col="black",type='l',xlab=NA,ylab=NA,
+#   #       axes=FALSE,xlim=xrange,ylim=yrange)
+#   #    axis(1,mgp=c(3,.5,0))
+#   #    axis(2,mgp=c(2,.5,0))
+#   #    lines(lon2,lat2,col = "pink",lwd=1)
+#   #    if("points" %in% map.type) {
+#   #      points(lon(y),lat(y),pch=21,cex=1,col='black',bg='red',lwd=1)
+#   #  }
+#   #    if("rectangle" %in% map.type) {
+#   #      rect(min(lon(y)),min(lat(y)),max(lon(y)),max(lat(y)),lwd=1,col=NA,border='red',lty=2)
+#   #    }
+#   #  } else if (verbose) print(paste('lon=',lon(y),'lat=',lat(y)))
+#   #}  
+#   # finished plotting
+# 
+#   if (legend.show) {
+#     par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",xpd=NA)
+#     #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+#     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+#     ## KMP 2017-09-13: move this text!!! vvv
+#     if(!is.null(diag)) {
+#       legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
+#                         paste(diag$robs,'%'),
+#                         paste(diag$outside,"observations"),
+#                         "p-value: "),
+#               bty="n",cex=0.7,text.col="grey40")
+#       #legend(0.5,0.90,c(expression(paste(levels(factor(attr(x,'unit')))[1]/d*e*c*a*d*e)),
+#       #                  "ensemble trends > obs.",
+#       #                  "outside ensemble 90% conf.int.",
+#       #                  paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
+#       #        bty="n",cex=0.7,text.col="grey40")
+#       legend(0.5,0.90,c(paste(levels(factor(attr(y,'unit')))[1],"/decade",sep=""),
+#                         "ensemble trends > obs.",
+#                         "outside ensemble 90% conf.int.",
+#                         paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
+#               bty="n",cex=0.7,text.col="grey40")
+#     }
+#   }
+#   if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
+#                                      cex.axis=cex.axis*0.65,add.text=FALSE,
+#                                      map.insert=map.insert,usegooglemap=usegooglemap,
+#                                      xrange=xrange,yrange=yrange,
+#                                      verbose=verbose,...)
+#   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+#       fig=c(0,1,0.1,1),new=TRUE)
+#   par(fig=fig,new=TRUE, mar=mar)
+#   plot(usr[1:2],usr[3:4],
+#        type="n",ylab="",xlab="",xlim=usr[1:2],ylim=usr[3:4])
+# 
+#   # target: perfect score is bull's eye
+#                                         # from diagnostics?
+#   par(fig=par0$fig,new=TRUE, mar=par0$mar)
+#   if(verbose) print("exit plot.dsensemble.one")
+#   invisible(z)
+# }
 
 plot.xsection <- function(x,...) {
                                         #print("plot.xsection")
