@@ -904,7 +904,7 @@ plot.ds.pca <- function(x,ip=1,
                       x=coredata(attr(y,'evaluation')[,2]))
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
-    browser()
+    #browser()
     #legend("bottomleft", )
     par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
     xlim <- range(index(attr(y,'original_data')),index(y))
