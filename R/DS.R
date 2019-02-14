@@ -775,7 +775,6 @@ DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,method="lm
     if (verbose) {print('summary of predictand y after matchdate'); print(summary(coredata(y)))}
     
     if (verbose) print('predictor: match date with predictand')
-
     X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
     dy <- dim(y); if (is.null(dy)) dy <- c(length(y),1)
     dx <- dim(X); if (is.null(dx)) dx <- c(length(X),1)
@@ -931,7 +930,6 @@ DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,method="lm
             yp.out -> attr(ds,'appendix.1')
         }
     }
-
     ## Check the 'eof' attribute
     if ( (!is.list(X0)) & is.list(eof) ) {
       eof <- eof[[1]]
