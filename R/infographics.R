@@ -2,7 +2,7 @@
 
 vis <- function(x,...) UseMethod("vis")
 
-vis.station <- function(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,...) {
+vis.station <- function(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,plot=TRUE,...) {
   yrs <- as.numeric(rownames(table(year(x))))
   ny <- length(yrs)
   if (is.null(n)) n <- 50
@@ -14,8 +14,7 @@ vis.station <- function(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,..
       unit <- attr(x,'unit')
   if (is.null(main)) eval(parse(text=paste("main <- expression(paste('Annual+seasonal evaluation of daily ',",
                           attr(x,'variable'),"))")))
-  if (new) dev.new()
-  par(bty="n")
+  
   z <- matrix(rep(NA*366*ny),366,ny)
   for (i in 1:ny) {
     y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
@@ -25,8 +24,15 @@ vis.station <- function(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,..
     if (is.precip(x) & log.precip) z[it,i] <- log(y) else
                                    z[it,i] <- y
   }
-  image(1:366,yrs,z,main=main,xlab='',ylab='year',col=col,sub=loc(x),...)
-  grid()
+  if (plot) { 
+    if (new) dev.new()
+    par(bty="n")
+    image(1:366,yrs,z,main=main,xlab='',ylab='year',col=col,sub=loc(x),...)
+    grid()
+  }
+  attr(z,'x') <- 1:366
+  attr(z,'y') <- yrs
+  invisible(z)
 }
 
 
@@ -1078,7 +1084,7 @@ graph.default <- function(x,img=NULL,pch='fancy',it=NULL,col=rgb(0.5,0.5,0.5,0.5
     axis(2,col='white')
 }
 
-graph.dsensemble <- function(x,img=NULL,pch='fancy',it=0,col=rgb(1,0.7,0.7,0.1),
+graph.dsensemble <- function(x,img=NULL,pch='fancy',it=NULL,col=rgb(1,0.7,0.7,0.1),
                              lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
     #print('graph.dsensemble')
     ## Produce the graphics:
@@ -1112,7 +1118,7 @@ graph.dsensemble <- function(x,img=NULL,pch='fancy',it=0,col=rgb(1,0.7,0.7,0.1),
     axis(2,col=col.axis)
 }
 
-graph.list <- function(x,img=NULL,pch='fancy',it=0,
+graph.list <- function(x,img=NULL,pch='fancy',it=NULL,
                        col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05),
                              rgb(0.5,0.5,0.5,0.05) ),
                        lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
