@@ -499,9 +499,14 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
         ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
                                  method=method,swsm=swsm,m=m,
                                  rmtrend=rmtrend,ip=ip,
-                                 verbose=verbose) 
+                                 verbose=verbose)
       } else if (inherits(X,'season')) {
-        ds <- DS.t2m.season.field(y=y,X=X,biascorrect=biascorrect,
+        # the DS.t2m.season.field is not in working order
+        #ds <- DS.t2m.season.field(y=y,X=X,biascorrect=biascorrect,
+        #                          method=method,swsm=swsm,m=m,
+        #                          rmtrend=rmtrend,ip=ip,
+        #                          verbose=verbose)
+        ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
                                   method=method,swsm=swsm,m=m,
                                   rmtrend=rmtrend,ip=ip,
                                   verbose=verbose)

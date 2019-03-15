@@ -131,45 +131,50 @@ anomaly.annual <- function(x,ref=1961:1990,na.rm=TRUE,verbose=FALSE,...) {
 }
 
 anomaly.month <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
+  if(verbose) print("anomaly.month")
 #   anomaly.month1 <- function(x,yr=NULL,ref=NULL) {
-
-        clim.month <- function(x,months,years,ref=NULL,na.rm=TRUE,verbose=FALSE) {
-          ## This function calculated the mean for each calendar month.
-        if (verbose) cat('.')
-        if (!is.null(ref)) it <- is.element(years,c(min(ref):max(ref))) else
-                           if (na.rm) it=is.finite(x) else it <- rep(TRUE,length(x))
-        clim <- rep(NA,12)
-        for (i in 1:12) {
-          ii <- is.element(months,i) & it
-          clim[i] <- mean(x[ii],na.rm=TRUE)
-        }
-        names(clim) <- month.abb
-        return(clim)
-    }
-
-    X <- x
-    if (verbose) print(paste('anomaly.month: ref=',ref))
-    
-    if (is.null(dim(x))) {
-      if (verbose) print('Estimate clim for a single seies')
-      Yc <- clim.month(x,months=month(x),years=year(x),ref=ref,na.rm=na.rm,verbose=verbose)
-      Y <- X-Yc[month(x)] ##anomaly.month1(x,t=t,ref=ref)
-       
+  clim.month <- function(x,months,years,ref=NULL,na.rm=TRUE,verbose=FALSE) {
+    ## This function calculated the mean for each calendar month.
+    if (verbose) cat('.')
+    if (!is.null(ref)) {
+      it <- is.element(years,c(min(ref):max(ref))) 
+    } else if (na.rm) {
+      it=is.finite(x) 
     } else {
-      if (verbose) print('Estimate clim for multiple seies')
-      Yc <- apply(coredata(x),2,FUN='clim.month',months=month(x),years=year(x),ref=ref,na.rm=na.rm,verbose=verbose)
-      Y <- X-Yc[month(x),] ## apply(coredata(x),2,FUN='anomaly.month1',t=t,ref=ref)  
+      it <- rep(TRUE,length(x))
     }
+    clim <- rep(NA,12)
+    for (i in 1:12) {
+      ii <- is.element(months,i) & it
+      clim[i] <- mean(x[ii],na.rm=TRUE)
+    }
+    names(clim) <- month.abb
+    return(clim)
+  }
+
+  X <- x
+  if (verbose) print(paste('anomaly.month: ref=',ref))
+  browser()
+  if (is.null(dim(x))) {
+    if (verbose) print('Estimate clim for a single series')
+    Yc <- clim.month(x,months=month(x),years=year(x),ref=ref,na.rm=na.rm,verbose=verbose)
+    Y <- X-Yc[month(x)] ##anomaly.month1(x,t=t,ref=ref)
+  } else {
+    if (verbose) print('Estimate clim for multiple seies')
+    Yc <- apply(coredata(x),2,FUN='clim.month',months=month(x),years=year(x),
+                ref=ref,na.rm=na.rm,verbose=verbose)
+    Y <- X-Yc[month(x),] ## apply(coredata(x),2,FUN='anomaly.month1',t=t,ref=ref)  
+  }
     
-    y <- Y
-    x <- zoo(y,order.by=index(X))
-    x <- attrcp(X,x)
+  y <- Y
+  x <- zoo(y,order.by=index(X))
+  x <- attrcp(X,x)
   #nattr <- softattr(X)
   #for (i in 1:length(nattr))
-    attr(x,'climatology') <- Yc
-    attr(x,'aspect') <- 'anomaly'
-    class(x) <- class(X)
-    return(x)
+  attr(x,'climatology') <- Yc
+  attr(x,'aspect') <- 'anomaly'
+  class(x) <- class(X)
+  return(x)
 }
 
 
