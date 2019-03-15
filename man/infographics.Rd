@@ -44,7 +44,7 @@
 }
 \usage{
 vis(x,...)
-vis.station(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,...)
+vis.station(x,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,plot=TRUE,...)
 diagram(x,...)
 diagram.dsensemble(x,it=0,...)
 diagram.station(x,it=NULL,new=TRUE,plot=TRUE,...)
@@ -63,10 +63,10 @@ prob.station.precip(x,y=NULL,is=1,threshold=1,...)
 graph(x,...)
 graph.default(x,img=NULL,pch='fancy',it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
                           xlim=NULL,ylim=NULL,new=TRUE,col.obs='black',...)
-graph.dsensemble(x,img=NULL,pch='fancy',it=0,col=rgb(1,0.7,0.7,0.1),
+graph.dsensemble(x,img=NULL,pch='fancy',it=NULL,col=rgb(1,0.7,0.7,0.1),
                  lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,
                  col.obs='black')
-graph.list(x,img=NULL,pch='fancy',it=0,
+graph.list(x,img=NULL,pch='fancy',it=NULL,
            col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
            lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,
            col.obs='black')
@@ -79,6 +79,25 @@ qp.test.station(x,...)
 }
 \arguments{
  \item{x}{a data object}
+ \item{new}{TRUE, invoke \code{dev.new()}}
+ \item{col}{Colour palette}
+ \item{col.obs}{Colour for the observations}
+ \item{n}{number of colour scales}
+ \item{main}{main title}
+ \item{log.precip}{Use logarithmig scale for precipitation}
+ \item{plot}{FALSE, just return the results}
+ \item{verbose}{If TRUE, print out diagnostics}
+ \item{img}{image from jpeg}
+ \item{start}{starting date of the year}
+ \item{ensmean}{Ensemble mean}
+ \item{pch}{Plot symbol style}
+ \item{it}{index time}
+ \item{xlim}{see \code{\link{plot}}}
+ \item{ylim}{see \code{\link{plot}}}
+ \item{xlab}{see \code{\link{plot}}}
+ \item{ylab}{see \code{\link{plot}}}
+ \item{lwd}{see \code{\link{plot}}}
+ \item{add}{TRUE: update existing plot}
  }
 \value{A field object}
 
