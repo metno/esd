@@ -28,7 +28,7 @@
 \alias{arec.station}
 \alias{lastrains}
 \alias{lastelementrecord}
-
+\alias{strstrip}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -49,6 +49,7 @@ Oce. Sys.
 \code{stand} gives a standardised time series.
 
 \code{arec} compares the number of record-breaking events to the number of events for a stime series of iid data (\code{sum(1/1:n)})
+\code{strstrip} strips off spaces before and after text in a string. 
 }
 \usage{
 as.decimal(x = NULL)
@@ -80,6 +81,7 @@ arec.station(x,...)
 arec.default(x,...)
 lastrains(x,x0=1,uptodate=TRUE,verbose=FALSE)
 lastelementrecord(x,verbose=FALSE)
+strstrip(x)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
