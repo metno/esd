@@ -92,7 +92,8 @@ station.gloss <- function(url='https://www.psmsl.org/data/obtaining/rlr.monthly.
     ii <- is.element(meta$V1,i)
     loc <- strstrip(as.character(meta[ii,4]))
     if (verbose) print(paste(iv,i,loc)); iv <- iv + 1
-    y <- as.station(y,loc=loc,lon=meta[ii,3],lat=meta[ii,2],alt=0,src='GLOSS',url=url,stid=meta[ii,6])
+    y <- as.station(y,loc=loc,lon=meta[ii,3],lat=meta[ii,2],alt=0,src='GLOSS',url=url,stid=meta[ii,6],
+                    param = 'sea-level',unit='mm')
     if (i==meta$V1[is][1]) Y <- y else Y <- combine.stations(Y,y)
   }
   # data(glossstations, envir = environment())
