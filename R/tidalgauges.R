@@ -70,19 +70,29 @@ station.gloss <- function(url='https://www.psmsl.org/data/obtaining/rlr.monthly.
     if (is.character(is)) {
       for (i in 1:length(is)) is[i] <- grep(toupper(is[i]),toupper(as.character(meta$V4)))
       is <- as.numeric(is)
+    } else if (is.list(is)) {
+      il <- is; is <- 1:length(meta$V1)
+      if (!is.null(il$lon)) i1 <- meta$V3>= min(il$lon) & meta$V3<= max(il$lon) else i1 <- rep(TRUE,length(is))
+      if (!is.null(il$lat)) i2 <- meta$V2>= min(il$lat) & meta$V2<= max(il$lat) else i2 <- rep(TRUE,length(is))
+      #print(c(sum(i1),sum(i2)))
+      is <- is[i1 & i2]
+      #print(is)
+      if (verbose) {print(range(meta$V3[is])); print(range(meta$V2[is]))}
     } else if (is.numeric(is))
       is <- (1:length(meta$V1))[is.element(meta$V1,is)]
   }
-  #if (verbose) print(is)
+  if (verbose) print(paste('Reading',length(is),'stations'))
+  iv <- 1
   for (i in meta$V1[is]) {
     filename <- paste0("rlr_monthly/data/",i,".rlrdata")
     con1 <- unzip('rlr_monthly.zip', files=filename)
     x <- read.table(filename,sep=';')
     x$V2[x$V2 < -999] <- NA; yr <- trunc(x$V1)
     y <- zoo(x$V2,order.by=as.Date(paste(yr,round(12*(x$V1 - yr)+0.5),'01',sep='-')))
-    loc <- strstrip(as.character(meta[is.element(meta$V1,i),4]))
-    if (verbose) print(paste(i,loc))
-    y <- as.station(y,loc=loc,lon=meta[i,3],lat=meta[i,2],alt=0,src='GLOSS',url=url,stid=meta[i,6])
+    ii <- is.element(meta$V1,i)
+    loc <- strstrip(as.character(meta[ii,4]))
+    if (verbose) print(paste(iv,i,loc)); iv <- iv + 1
+    y <- as.station(y,loc=loc,lon=meta[ii,3],lat=meta[ii,2],alt=0,src='GLOSS',url=url,stid=meta[ii,6])
     if (i==meta$V1[is][1]) Y <- y else Y <- combine.stations(Y,y)
   }
   # data(glossstations, envir = environment())
