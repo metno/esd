@@ -2,6 +2,7 @@
 \alias{map}
 \alias{map.default}
 \alias{map.matrix}
+\alias{map.data.frame}
 \alias{map.station}
 \alias{map.comb}
 \alias{map.eof}
@@ -43,7 +44,8 @@ map.matrix(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
            type=c("fill","contour"),gridlines=FALSE,
            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
            ip=1,plot=TRUE,...)
-
+map.data.frame(x,...)         
+           
 map.station(x,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             projection="lonlat",
             xlim = NULL, ylim = NULL,zlim=NULL,n=15,

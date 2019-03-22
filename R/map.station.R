@@ -595,8 +595,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          max(highlight$end,na.rm=TRUE)),
               line=2,cex.main=cex.main,adj=1)
         if (!is.null(FUN)) {
-          title(main=paste(paste(toupper(apply(as.matrix(levels(,
-                                                                factor(highlight$variable))),
+          title(main=paste(paste(toupper(apply(as.matrix(levels(factor(highlight$variable))),
                                                1,esd2ele)),collapse="/"),toupper(FUN),sep="/"),
                 line=2,cex.main=cex.main , adj = 0)
         } else {
@@ -823,8 +822,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   if (!is.null(FUN)) {
     if (is.null(col)) col <- colscal(n=n,col=varid(x)) else
       if (length(col)==1) {
-        pal <- col
-        col <- colscal(pal=pal,n=n)
+        col <- colscal(col=col,n=n)
       }
     nc <- length(col)
     index <- round( nc*( map - min(map) )/

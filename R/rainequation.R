@@ -15,6 +15,21 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
 
 fract.gt.x <- function(x,x0) {sum(x > x0,na.rm=TRUE)/sum(is.finite(x))}
 
+rainvar <- function(x,na.rm=FALSE) {
+  ## The variance estimated from the integral of the pdf
+  sigma2 <- 2*wetfreq(x)*wetmean(x)^3
+  return(sigma2)
+}
+
+rainvartrend <- function(x,na.rm=TRUE,mean=TRUE,nmin=NULL) {
+  ## The rate of change estimated as the first derivative from the analytic expression for sigma^2.
+  mu <- annual(x,FUN='wetmean',nmin=nmin)
+  fw <- annual(x,FUN='wetfreq',nmin=nmin)
+  ds2.dt <- 2*mu^3 * trend.coef(fw) + 6*fw*mu^2*trend.coef(mu)
+  if (mean) ds2.dt <- mean(ds2.dt,na.rm=na.rm)
+  return(ds2.dt)
+}
+
 ## To test the rain equation
 test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
                               threshold=1,verbose=FALSE,plot=TRUE) {
