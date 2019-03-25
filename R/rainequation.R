@@ -21,12 +21,18 @@ rainvar <- function(x,na.rm=FALSE) {
   return(sigma2)
 }
 
-rainvartrend <- function(x,na.rm=TRUE,mean=TRUE,nmin=NULL) {
+rainvartrend <- function(x,na.rm=TRUE,mean=TRUE,nmin=NULL,verbose=FALSE) {
   ## The rate of change estimated as the first derivative from the analytic expression for sigma^2.
+  if (verbose) {print('rainvartrend'); print(class(x))}
+  if (verbose) print('wetmean')
   mu <- annual(x,FUN='wetmean',nmin=nmin)
+  if (verbose) print('wetfreq')
   fw <- annual(x,FUN='wetfreq',nmin=nmin)
+  if (verbose) print('first derivative')
   ds2.dt <- 2*mu^3 * trend.coef(fw) + 6*fw*mu^2*trend.coef(mu)
-  if (mean) ds2.dt <- mean(ds2.dt,na.rm=na.rm)
+  if (verbose) ('mean slope?')
+  if (mean) if (is.null(dim(x))) ds2.dt <- mean(ds2.dt,na.rm=na.rm) else
+                                 ds2.dt <- apply(ds2.dt,2,'mean',na.rm=na.rm)
   return(ds2.dt)
 }
 
