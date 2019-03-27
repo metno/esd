@@ -964,12 +964,12 @@ map.data.frame <- function(x,...) {
   if (sum(is.element(names(x),att))==12) {   
     class(x) <- c("stationmeta","data.frame")
     map.station(x,...)
-  } else if (inherits(x,'stationstats')) {
-    map.stationstats(x,...)
+  } else if (inherits(x,'stationsummary')) {
+    map.stationsummary(x,...)
   } else print("x is not a stationmeta object")
 }
 
-map.stationstats <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins=15,
+map.stationsummary <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins=15,
                              new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),...) {
   if (verbose) print(match.call())
   if (!is.null(FUN)) {
@@ -995,16 +995,31 @@ map.stationstats <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins=1
     if (length(grep(cex,names(x)))==1) {
       z <- x[[FUN]]  
       if (is.numeric(z)) {
-        cex <- 2*sqrt(z - min(z,na.rm=TRUE)/(max(z,na.rm=TRUE) - min(z,na.rm=TRUE)))
+        cex <- 2*sqrt( (z - min(z,na.rm=TRUE))/(max(z,na.rm=TRUE) - min(z,na.rm=TRUE)) )
       }
+      if (verbose) print(summary(cex))
     }
   }
   if (new) dev.new()
-  par(bty='n')
-  plot(x$longitude,x$latitude,col=col,cex=cex,pch=pch,...)
+  par(bty='n',mar=c(3,1,3,2),xaxt='n',yaxt='n')
+  if (!is.null(FUN)) {  
+    nf <- layout(matrix(c(rep(1,56),0,0,rep(2,4),0,0), 8, 8, byrow = TRUE), respect = TRUE)
+    main=FUN
+  } else main <- ''
+  plot(x$longitude,x$latitude,col=col,cex=cex,pch=pch,xlab='',ylab='',
+       main=main,...)
   data("geoborders",envir = environment())
+  grid()
+  par(yaxt='s',xaxt='s')
+  axis(1,at=10*round(x$longitude/10),col='grey',col.axis='grey',col.lab='grey',col.ticks='grey')
+  axis(2,at=10*round(x$latitude/10),col='grey',col.axis='grey',col.lab='grey',col.ticks='grey')
   lines(geoborders,col='grey')
   lines(attr(geoborders,'borders'),col='lightgreen')
   points(x$longitude,x$latitude,col=col,cex=cex,pch=pch)
-  if (!is.null(FUN)) colbar(breaks=breaks,col = colbar,fig = fig)
+  if (!is.null(FUN)) {
+    par0 <- par()
+    par(mar=c(3,0,1,0),cex.lab=0.5,yaxt='n',xaxt='s')
+    image(breaks, 1:2, cbind(breaks, breaks), col = colbar, cex.axis = 0.75)
+    par(par0)
+  }
 }

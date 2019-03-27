@@ -2402,7 +2402,7 @@ retrieve.stationsummary <- function(ncfile,type="ncdf4",
   y$location <- as.character(y$location)
   if (verbose) print('Data is extracted from the netCDF file')
   if(verbose) print(summary(y))
-  class(y) <- c("stationstats","data.frame")
+  class(y) <- c("stationsummary","data.frame")
   return(y)
 }
 

@@ -38,7 +38,7 @@ rainvartrend <- function(x,na.rm=TRUE,mean=TRUE,nmin=NULL,verbose=FALSE) {
 
 ## To test the rain equation
 test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
-                              threshold=1,verbose=FALSE,plot=TRUE) {
+                              threshold=1,verbose=FALSE,plot=TRUE,new=TRUE) {
   
   if (verbose) {print('test.rainequation'); print(c(x0,threshold))}
   if (is.null(loc)) {
@@ -59,7 +59,7 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
     if (plot) {
       par(bty='n',xpd=TRUE)
       plot(pr,main=paste('The "rain equation" for',loc(y)),lwd=3,
-           ylab=paste('fraction of days with more than',x0,'mm'),xlab='Year')
+           ylab=paste('fraction of days with more than',x0,'mm'),xlab='Year',new=new)
       
       lines(obsfrac,col=rgb(1,0,0,0.7),lwd=2)
       grid()
