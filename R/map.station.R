@@ -954,8 +954,8 @@ test.map.station <- function(save=FALSE) {
 
 
 ## The main function to produce map of subseted stations
-map.stationmeta <- function(...)
-  map.station(...)
+map.stationmeta <- function(x,...)
+  map.station(x,...)
 
 map.data.frame <- function(x,...) {
   
@@ -964,6 +964,47 @@ map.data.frame <- function(x,...) {
   if (sum(is.element(names(x),att))==12) {   
     class(x) <- c("stationmeta","data.frame")
     map.station(x,...)
+  } else if (inherits(x,'stationstats')) {
+    map.stationstats(x,...)
+  } else print("x is not a stationmeta object")
+}
+
+map.stationstats <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins=15,
+                             new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),...) {
+  if (verbose) print(match.call())
+  if (!is.null(FUN)) {
+    if (verbose) {print(paste('FUN=',FUN)); print(names(x))}
+    ## If FUN specified, change the colours
+    if (length(grep(FUN,names(x)[is.element(nchar(names(x)),nchar(FUN))]))==1) {
+      z <- x[[FUN]]  
+      if (verbose) print(summary(z))
+      colbar <- colscal(n=nbins,col=pal)
+      breaks <- pretty(z,nbins)
+      #ic <- trunc(nbins*(z - min(z,na.rm=TRUE))/(max(z,na.rm=TRUE) - min(z,na.rm=TRUE))) + 1
+      #breaks <- round(seq(min(z,na.rm=TRUE),max(z,na.rm=TRUE),length=nbins),2)
+      #ic[ic > nbins] <- nbins
+      ic <- rep(NA,length(z))
+      for (i in 1:length(z)) ic[i] <- sum(breaks < z[i],na.rm=TRUE) + 1
+      if (verbose) print(table(ic))
+      col <- colbar[ic]
+    } else if (verbose) print('No match')
   }
-  else print("x is not a stationmeta object")
+  if (is.character(cex)) {
+    if (verbose) print(paste('cex=',cex))
+    ## If FUN specified, change the colours
+    if (length(grep(cex,names(x)))==1) {
+      z <- x[[FUN]]  
+      if (is.numeric(z)) {
+        cex <- 2*sqrt(z - min(z,na.rm=TRUE)/(max(z,na.rm=TRUE) - min(z,na.rm=TRUE)))
+      }
+    }
+  }
+  if (new) dev.new()
+  par(bty='n')
+  plot(x$longitude,x$latitude,col=col,cex=cex,pch=pch,...)
+  data("geoborders",envir = environment())
+  lines(geoborders,col='grey')
+  lines(attr(geoborders,'borders'),col='lightgreen')
+  points(x$longitude,x$latitude,col=col,cex=cex,pch=pch)
+  if (!is.null(FUN)) colbar(breaks=breaks,col = colbar,fig = fig)
 }

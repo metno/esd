@@ -4,6 +4,8 @@
 \alias{map.matrix}
 \alias{map.data.frame}
 \alias{map.station}
+\alias{map.stationmeta}
+\alias{map.stationstats}
 \alias{map.comb}
 \alias{map.eof}
 \alias{map.ds}
@@ -44,7 +46,10 @@ map.matrix(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
            type=c("fill","contour"),gridlines=FALSE,
            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
            ip=1,plot=TRUE,...)
-map.data.frame(x,...)         
+map.data.frame(x,...)
+map.stationmeta(x,...)
+map.stationstats(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins=15,
+                 new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),...)
            
 map.station(x,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             projection="lonlat",
@@ -234,6 +239,7 @@ mask(x,land=FALSE)
   \item{what}{What to map: ['eof','field] for EOF pattern or the field
   recovered from the EOFs.}
   \item{fig}{see \code{\link{par}}}
+  \item{nbins}{number of bins/colour categories}
 }
 \value{A field object}
 
