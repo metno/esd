@@ -994,9 +994,9 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins
     if (verbose) print(paste('cex=',cex))
     ## If FUN specified, change the colours
     if (length(grep(cex,names(x)))==1) {
-      z <- x[[cex]]  
-      if (is.numeric(z)) {
-        cex <- 2*sqrt( (z - min(z,na.rm=TRUE))/(max(z,na.rm=TRUE) - min(z,na.rm=TRUE)) )
+      z2 <- x[[cex]]  
+      if (is.numeric(z2)) {
+        cex <- 2*sqrt( (z2 - min(z2,na.rm=TRUE))/(max(z2,na.rm=TRUE) - min(z2,na.rm=TRUE)) )
       }
       if (verbose) print(summary(cex))
     }
