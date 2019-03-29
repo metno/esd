@@ -105,15 +105,12 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   } else {
     dh0 <- 1E5
   }
-  
   if (all(c("date","time","lon","lat","trajectory") %in% names(x0))) {
     num0 <- x0$trajectory
     n00 <- max(num0,na.rm=TRUE)
     dt0 <- x0$date*1E2 + x0$time
     nend0 <- unique(num0[dt0<max(dt0)])
     if (dh0<dh*2) {
-      ## KMP 2017-11-10: use two timesteps from previous trajectories instead of only one
-      #dt0.max <- max(dt0)
       dt0.max <- sort(unique(dt0))[max(1,length(unique((dt0)))-1)]
       x00 <- x0[dt0>=dt0.max,]
       dates <- c(x00$date,dates)
@@ -166,19 +163,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
                    num=num[datetime==d[i+1]],dx=dx[datetime==d[i+1]],
                    pcent=pcent[datetime==d[i+1]]),
              f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
-             dmax=dmax,n0=n0,nend=nend,)#,plot=plot)
-      #if(format(d[i-1],"%Y%m%d")==19800120) {
-      #  dev.new()
-      #  plot(nn$step1$lon,nn$step1$lat,pch=1)
-      #  title(d[i])
-      #  points(nn$step2$lon,nn$step2$lat,pch=2,col="blue")
-      #  points(nn$step3$lon,nn$step3$lat,pch=3,col="red")
-      #  for(n.i in nn$step3$num[!is.na(nn$step3$num)]) {
-      #    lon.i <- c(nn$step1$lon[nn$step1$num==n.i],nn$step2$lon[nn$step2$num==n.i],nn$step3$lon[nn$step3$num==n.i&!is.na(nn$step3$num)])
-      #    lat.i <- c(nn$step1$lat[nn$step1$num==n.i],nn$step2$lat[nn$step2$num==n.i],nn$step3$lat[nn$step3$num==n.i&!is.na(nn$step3$num)])
-      #    lines(lon.i,lat.i,col=adjustcolor("black",alpha.f=0.8))
-      #  }
-      #}
+             dmax=dmax,n0=n0,nend=nend)
       num[datetime==d[i-1]] <- nn$step1$num
       num[datetime==d[i]] <- nn$step2$num
       num[datetime==d[i+1]] <- nn$step3$num
