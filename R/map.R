@@ -97,6 +97,27 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                         #map.station(NULL,...)
 }
 
+map.data.frame <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                           colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                                        pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+                           type=c("fill","contour"),gridlines=FALSE,
+                           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
+                           ip=1,plot=TRUE,...) {
+  
+  attr(x,'location') <- x$location; x$location <- NULL
+  attr(x,'longitude') <- x$longitude; x$longitude <- NULL
+  attr(x,'latitude') <- x$latitude; x$latitude <- NULL
+  attr(x,'country') <- x$country; x$country <- NULL
+  x <- as.matrix(x)
+  z <- map(x,it=it,is=is,new=new,projection=projection,
+           xlim=xlim,ylim=ylim,zlim=zlim,n=15,
+           colbar= colbar,type=type,gridlines=gridlines,
+           lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,
+           ip=ip,plot=plot,...)
+  invisible(z)
+}
+
 map.array <- function(x,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       projection="lonlat",na.rm=TRUE,
                       xlim=NULL,ylim=NULL,zlim=NULL,##n=15,

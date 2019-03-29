@@ -15,9 +15,30 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
 
 fract.gt.x <- function(x,x0) {sum(x > x0,na.rm=TRUE)/sum(is.finite(x))}
 
+rainvar <- function(x,na.rm=FALSE) {
+  ## The variance estimated from the integral of the pdf
+  sigma2 <- 2*wetfreq(x)*wetmean(x)^3
+  return(sigma2)
+}
+
+rainvartrend <- function(x,na.rm=TRUE,mean=TRUE,nmin=NULL,verbose=FALSE) {
+  ## The rate of change estimated as the first derivative from the analytic expression for sigma^2.
+  if (verbose) {print('rainvartrend'); print(class(x))}
+  if (verbose) print('wetmean')
+  mu <- annual(x,FUN='wetmean',nmin=nmin)
+  if (verbose) print('wetfreq')
+  fw <- annual(x,FUN='wetfreq',nmin=nmin)
+  if (verbose) print('first derivative')
+  ds2.dt <- 2*mu^3 * trend.coef(fw) + 6*fw*mu^2*trend.coef(mu)
+  if (verbose) ('mean slope?')
+  if (mean) if (is.null(dim(x))) ds2.dt <- mean(ds2.dt,na.rm=na.rm) else
+                                 ds2.dt <- apply(ds2.dt,2,'mean',na.rm=na.rm)
+  return(ds2.dt)
+}
+
 ## To test the rain equation
 test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
-                              threshold=1,verbose=FALSE,plot=TRUE) {
+                              threshold=1,verbose=FALSE,plot=TRUE,new=TRUE) {
   
   if (verbose) {print('test.rainequation'); print(c(x0,threshold))}
   if (is.null(loc)) {
@@ -38,7 +59,7 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
     if (plot) {
       par(bty='n',xpd=TRUE)
       plot(pr,main=paste('The "rain equation" for',loc(y)),lwd=3,
-           ylab=paste('fraction of days with more than',x0,'mm'),xlab='Year')
+           ylab=paste('fraction of days with more than',x0,'mm'),xlab='Year',new=new)
       
       lines(obsfrac,col=rgb(1,0,0,0.7),lwd=2)
       grid()

@@ -73,7 +73,7 @@ station.sonel(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dPBLOC.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dLROCH.slv'),
                       verbose=FALSE)
-station.gloss(url='http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data')
+station.gloss(url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',is=NULL,verbose=TRUE)
 station.newlyn(path='data/gloss-241_Newlyn',verbose=TRUE) 
 station.giss(url)
 allgood(x,miss=.1,verbose=TRUE)
@@ -107,6 +107,7 @@ clean.station(x,miss=.1,verbose=TRUE)
   \item{it}{A single integer or a vector of integers or Dates. An integer in the
   range of [1:12] for months, an integer of 4 digits for years
   (e.g. 2014), or a vector of Dates in the form "2014-01-01").}
+   \item{is}{Index space: integer (station ID) or character (location name) or list with lon/lat ranges.}
   \item{nmin}{Select only stations with at least nmin number of
   years, months or days depending on the class of object x (e.g. 30 years).}
   \item{plot}{Logical value. If, TRUE provides a plot.}

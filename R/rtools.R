@@ -294,5 +294,12 @@ lastelementrecord <- function(x,verbose=FALSE) {
   return(z)
 }
 
-
-
+bin <- function(x,nbins=5,labels=NULL,na.rm=TRUE) {
+  if (na.rm) good <- is.finite(x) else good <- rep(TRUE,length(x))
+  rank <- order(x[good])
+  y <- (rank -1) %/% trunc(length(rank)/nbins) + 1
+  z <- rep(NA,length(x))
+  z[good] <- y
+  if (is.null(labels)) names(z) <- quantile(x,probs = (1:nbins -0.5)/nbins)
+  return(z)
+}
