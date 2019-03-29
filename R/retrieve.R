@@ -468,9 +468,9 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
     }
     ## 
     if ((units=="Kg/m^2/s") | (units=="kg m-2 s-1") | (max(abs(val),na.rm=TRUE)<0.001)) {
-      val <- val * (24*60*60) 
+      val <- val * (24*60*60)
       units <- "mm/day"
-    }
+    } 
     if (verbose) print(paste("Data converted to unit:",units, sep= " "))
   } else if (max(val,na.rm=TRUE)<0.001) {
     if (verbose) print('Variable is likely to be precipitation intensity!')
