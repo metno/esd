@@ -819,7 +819,29 @@ combine.events <- function(x,y,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbos
 
   ## Combine events in x and y
   cn <- colnames(x)[colnames(x) %in% colnames(y)]
-  z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+  if(!"trajectory" %in% cn) {
+    z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+  } else {
+    if(difftime(min(as.Date(paste(y$date,y$time),format="%Y%m%d %H")),
+                max(as.Date(paste(x$date,x$time),format="%Y%m%d %H")), 
+                unit="hours")>6) {
+      dt <- max(x$trajectory)-min(y$trajectory)+1
+      y$trajectory <- y$trajectory+dt
+      z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+      remove.close <- FALSE
+    } else {
+      # If there is 6 hours or less between the end of x and beginning of y
+      # check if the tracks of x continue in y. If not, track y again.
+      if(any(x$trajectory[x$date==max(x$date)] %in% y$trajectory[y$date==min(y$date)])) {
+        z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+      } else {
+        y2 <- y[!colnames(y) %in% c("trajectory","dx","trackcount","timestep","distance","tracklength")]
+        y2 <- track(y2, x0=x)
+        z <- rbind(x[colnames(x) %in% cn],y2[colnames(y2) %in% cn])
+        remove.close <- FALSE
+      }
+    }
+  }
   
   if(!any(x$date %in% y$date)) remove.close <- FALSE
   
