@@ -970,7 +970,7 @@ map.data.frame <- function(x,...) {
   } else print("x is not a stationmeta object")
 }
 
-map.stationsummary <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins=15,
+map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=19,nbins=15,
                                new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),...) {
   if (verbose) print(match.call())
   if (!is.null(FUN)) {
@@ -996,7 +996,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins
     if (length(grep(cex,names(x)))==1) {
       z2 <- x[[cex]]  
       if (is.numeric(z2)) {
-        cex <- 2*sqrt( (z2 - min(z2,na.rm=TRUE))/(max(z2,na.rm=TRUE) - min(z2,na.rm=TRUE)) )
+        cex <- cex0*sqrt( (z2 - min(z2,na.rm=TRUE))/(max(z2,na.rm=TRUE) - min(z2,na.rm=TRUE)) )
       }
       if (verbose) print(summary(cex))
     }
