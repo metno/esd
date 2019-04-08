@@ -973,11 +973,13 @@ map.data.frame <- function(x,...) {
 map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=19,nbins=15,
                                new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),...) {
   if (verbose) print(match.call())
+  ok <- rep(TRUE,length(x$longitude))
   if (!is.null(FUN)) {
     if (verbose) {print(paste('FUN=',FUN)); print(names(x))}
     ## If FUN specified, change the colours
     if (length(grep(FUN,names(x)[is.element(nchar(names(x)),nchar(FUN))]))==1) {
-      z <- x[[FUN]]  
+      z <- x[[FUN]] 
+      ok <- is.finite(z)
       if (verbose) print(summary(z))
       colbar <- colscal(n=nbins,col=pal)
       breaks <- pretty(z,nbins)
@@ -988,6 +990,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
       for (i in 1:length(z)) ic[i] <- sum(breaks < z[i],na.rm=TRUE) + 1
       if (verbose) print(table(ic))
       col <- colbar[ic]
+      col <- col[ok]
     } else if (verbose) print('No match')
   }
   if (is.character(cex)) {
@@ -995,9 +998,11 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
     ## If FUN specified, change the colours
     if (length(grep(cex,names(x)))==1) {
       z2 <- x[[cex]]  
+      ok <- is.finite(z2)
       if (is.numeric(z2)) {
         cex <- cex0*sqrt( (z2 - min(z2,na.rm=TRUE))/(max(z2,na.rm=TRUE) - min(z2,na.rm=TRUE)) )
       }
+      cex <- cex[ok]
       if (verbose) print(summary(cex))
     }
   }
@@ -1010,7 +1015,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
     main=paste0(FUN,' (mean= ',round(mean(z,na.rm=TRUE),nd),', sd=',round(sd(z,na.rm=TRUE),nd),
                ' [',round(min(z,na.rm=TRUE),nd),', ',round(max(z,na.rm=TRUE),nd),'])')
   } else main <- ''
-  plot(x$longitude,x$latitude,col=col,cex=cex,pch=pch,xlab='',ylab='',
+  plot(x$longitude[ok],x$latitude[ok],col=col,cex=cex,pch=pch,xlab='',ylab='',
        main=main,...)
   data("geoborders",envir = environment())
   grid()
@@ -1019,7 +1024,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
   axis(2,at=10*round(x$latitude/10),col='grey',col.axis='grey',col.lab='grey',col.ticks='grey')
   lines(geoborders,col='grey')
   lines(attr(geoborders,'borders'),col='lightgreen')
-  points(x$longitude,x$latitude,col=col,cex=cex,pch=pch)
+  points(x$longitude[ok],x$latitude[ok],col=col,cex=cex,pch=pch)
   if (!is.null(FUN)) {
     par0 <- par()
     par(mar=c(3,0,1,0),cex.lab=0.5,yaxt='n',xaxt='s')
