@@ -20,7 +20,7 @@ rainvar <- function(x,x0=1,na.rm=FALSE) {
   ## of 1 mm/day
   mu <- wetmean(x,threshold=x0)
   fw <- wetfreq(x,threshold=x0)
-  sigma2 <- (1 - fw)*mu^2 + (2*x0 + 2*mu*x0 + 2* mu^2)*exp(-x0/mu) - mu^2
+  sigma2 <- (1 - fw)*mu^2 + (2*x0^2 + 2*mu*x0 + 2* mu^2)*exp(-x0/mu) - mu^2
   return(sigma2)
 }
 
