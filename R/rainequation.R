@@ -15,21 +15,24 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
 
 fract.gt.x <- function(x,x0) {sum(x > x0,na.rm=TRUE)/sum(is.finite(x))}
 
-rainvar <- function(x,na.rm=FALSE) {
-  ## The variance estimated from the integral of the pdf
-  sigma2 <- 2*wetfreq(x)*wetmean(x)^3
+rainvar <- function(x,x0=1,na.rm=FALSE) {
+  ## The variance estimated from the integral of the pdf assuming a threshold x0
+  ## of 1 mm/day
+  mu <- wetmean(x,threshold=x0)
+  fw <- wetfreq(x,threshold=x0)
+  sigma2 <- (1 - fw)*mu^2 + (2*x0 + 2*mu*x0 + 2* mu^2)*exp(-x0/mu) - mu^2
   return(sigma2)
 }
 
-rainvartrend <- function(x,na.rm=TRUE,mean=TRUE,nmin=NULL,verbose=FALSE) {
+rainvartrend <- function(x,x0=1,na.rm=TRUE,mean=TRUE,nmin=NULL,verbose=FALSE) {
   ## The rate of change estimated as the first derivative from the analytic expression for sigma^2.
   if (verbose) {print('rainvartrend'); print(class(x))}
   if (verbose) print('wetmean')
-  mu <- annual(x,FUN='wetmean',nmin=nmin)
+  mu <- annual(x,FUN='wetmean',nmin=nmin,threshold=x0)
   if (verbose) print('wetfreq')
-  fw <- annual(x,FUN='wetfreq',nmin=nmin)
+  fw <- annual(x,FUN='wetfreq',nmin=nmin,threshold=x0)
   if (verbose) print('first derivative')
-  ds2.dt <- 2*mu^3 * trend.coef(fw) + 6*fw*mu^2*trend.coef(mu)
+  ds2.dt <- -mu^2*trend.coef(fw) + (1 - fw + (4*x0 + 4*mu+x0^3/mu^2 + 2*x0^2/mu)*exp(-x0/mu) - 2*mu)*trend.coef(mu)
   if (verbose) ('mean slope?')
   if (mean) if (is.null(dim(x))) ds2.dt <- mean(ds2.dt,na.rm=na.rm) else
                                  ds2.dt <- apply(ds2.dt,2,'mean',na.rm=na.rm)

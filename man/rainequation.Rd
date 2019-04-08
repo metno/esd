@@ -21,8 +21,8 @@ test.rainequation(loc='DE BILT',src='ecad',nmin=150,
 scatterplot.rainequation(src='ecad',nmin=150,x0=c(10,20,30,40),
                   colour.by='x0',col=NULL,verbose=FALSE)
 fract.gt.x(x,x0)
-rainvar(x,na.rm=FALSE)
-rainvartrend(x,na.rm=TRUE,mean=TRUE,nmin=NULL)
+rainvar(x,x0=1,na.rm=FALSE)
+rainvartrend(x,x0=1,na.rm=TRUE,mean=TRUE,nmin=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
