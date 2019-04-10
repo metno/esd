@@ -49,7 +49,7 @@ map.matrix(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 map.data.frame(x,...)
 map.stationmeta(x,...)
 map.stationsummary(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=19,nbins=15,
-                 new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),...)
+                 new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),hist=TRUE,lon=NULL,lat=NULL,...)
            
 map.station(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          add=FALSE,projection="lonlat",

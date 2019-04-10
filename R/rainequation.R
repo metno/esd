@@ -20,11 +20,11 @@ rainvar <- function(x,x0=1,na.rm=FALSE) {
   ## of 1 mm/day
   mu <- wetmean(x,threshold=x0)
   fw <- wetfreq(x,threshold=x0)
-  sigma2 <- (1 - fw)*mu^2 + (2*x0^2 + 2*mu*x0 + 2* mu^2)*exp(-x0/mu) - mu^2
+  sigma2 <- fw*mu^2 + 2*mu*x0 + x0^2
   return(sigma2)
 }
 
-rainvartrend <- function(x,x0=1,na.rm=TRUE,mean=TRUE,nmin=NULL,verbose=FALSE) {
+rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
   ## The rate of change estimated as the first derivative from the analytic expression for sigma^2.
   if (verbose) {print('rainvartrend'); print(class(x))}
   if (verbose) print('wetmean')
@@ -32,10 +32,10 @@ rainvartrend <- function(x,x0=1,na.rm=TRUE,mean=TRUE,nmin=NULL,verbose=FALSE) {
   if (verbose) print('wetfreq')
   fw <- annual(x,FUN='wetfreq',nmin=nmin,threshold=x0)
   if (verbose) print('first derivative')
-  ds2.dt <- -mu^2*trend.coef(fw) + (1 - fw + (4*x0 + 4*mu+x0^3/mu^2 + 2*x0^2/mu)*exp(-x0/mu) - 2*mu)*trend.coef(mu)
-  if (verbose) ('mean slope?')
-  if (mean) if (is.null(dim(x))) ds2.dt <- mean(ds2.dt,na.rm=na.rm) else
-                                 ds2.dt <- apply(ds2.dt,2,'mean',na.rm=na.rm)
+  if (is.null(dim(x))) ds2.dt <- mean(mu,na.rm=na.rm)^2*trend.coef(fw) + 
+                                2*(mean(fw,na.rm=na.rm)*mean(mu,na.rm=na.rm) + x0)*trend.coef(mu) else
+                      ds2.dt <- colMeans(mu,na.rm=na.rm)^2*trend.coef(fw) + 
+                                2*(colMeans(fw,na.rm=na.rm)*colMeans(mu,na.rm=na.rm) + x0)*trend.coef(mu)
   return(ds2.dt)
 }
 
