@@ -974,7 +974,8 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
                                new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),
                                hist=TRUE,lon=NULL,lat=NULL,...) {
   if (verbose) print(match.call())
-  ok <- rep(TRUE,length(x$longitude))
+  if (new) dev.new()
+  ok <- rep(TRUE,length(x$longitude)); ok2 <- ok
   if (!is.null(lon)) {
     keep <- (x$longitude >= min(lon)) & (x$longitude <= max(lon))
     x <- x[keep,]
@@ -1016,7 +1017,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
       if (verbose) print(summary(cex))
     }
   }
-  if (new) dev.new()
+  
   par(bty='n',mar=c(3,1,3,2),xaxt='n',yaxt='n')
   if (!is.null(FUN)) {  
     nf <- layout(matrix(c(rep(1,56),0,0,rep(2,4),0,0), 8, 8, byrow = TRUE), respect = TRUE)
