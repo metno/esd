@@ -150,5 +150,6 @@ scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),
   attr(test.results,'station') <- precip
   attr(test.results,'threshold') <- threshold
   attr(test.results,'col') <- COL
+  par(mar=par()$mar - c(0,1,0,0))
   return(test.results)
 }
