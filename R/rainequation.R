@@ -20,7 +20,7 @@ rainvar <- function(x,x0=1,na.rm=FALSE) {
   ## of 1 mm/day
   mu <- wetmean(x,threshold=x0)
   fw <- wetfreq(x,threshold=x0)
-  sigma2 <- fw*mu^2 + 2*mu*x0 + x0^2
+  sigma2 <- fw*(  mu^2 + (x0^2 + 2*x0*mu + 2*mu)*exp(-x0/mu) )
   return(sigma2)
 }
 
@@ -32,10 +32,15 @@ rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
   if (verbose) print('wetfreq')
   fw <- annual(x,FUN='wetfreq',nmin=nmin,threshold=x0)
   if (verbose) print('first derivative')
-  if (is.null(dim(x))) ds2.dt <- mean(mu,na.rm=na.rm)^2*trend.coef(fw) + 
-                                2*(mean(fw,na.rm=na.rm)*mean(mu,na.rm=na.rm) + x0)*trend.coef(mu) else
-                      ds2.dt <- colMeans(mu,na.rm=na.rm)^2*trend.coef(fw) + 
-                                2*(colMeans(fw,na.rm=na.rm)*colMeans(mu,na.rm=na.rm) + x0)*trend.coef(mu)
+  if (is.null(dim(x))) {
+    m <- mean(mu)
+    f <- mean(fw)
+  } else { 
+    m <- colMeans(mu)
+    f <- colMeans(fw)
+  }
+  ds2.dt <- (  m^2 + (x0^2 + 2*x0*m + 2*m)*exp(-x0/m) ) * trend.coef(fw) +
+            ( 2*m + (4*x0 + 4*m + x0^3/m^2 + 2*x0/m)*exp(-x0/m) ) * trend.coef(mu)
   return(ds2.dt)
 }
 
