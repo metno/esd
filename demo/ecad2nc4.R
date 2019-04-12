@@ -49,7 +49,7 @@ for (ele in eles) {
       # if (length(x) > 0) write2ncdf4(x,fname,it=it,
       #                                stid=stano,append=append,verbose=FALSE,stid_unlim=TRUE)
       print('write2ncdf4')
-      if (length(x) > 0) write2ncdf4(x,fname,it=it,append=append,verbose=TRUE,stid_unlim=TRUE)
+      if (dim(x)[2] > 1) write2ncdf4(x,fname,it=it,append=append,verbose=TRUE,stid_unlim=TRUE)
     } else x <- NULL
     rm("x"); gc(reset=TRUE)
   }
