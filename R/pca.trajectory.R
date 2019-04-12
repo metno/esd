@@ -3,7 +3,7 @@
 
 # Principle Component Analysis (PCA) of trajectory object, e.g., storm tracks
 
-PCA.trajectory <- function(X,neofs=20,param=c('lon','lat'),
+PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
                       anomaly=TRUE,verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"trajectory"))
 

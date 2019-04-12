@@ -8,7 +8,7 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-gridmap(Y, FUN = "mean", colbar = NULL, project = "lonlat", xlim = NULL, ylim = NULL, zlim = NULL, verbose = FALSE, plot = FALSE)
+gridmap(Y, FUN = "mean", colbar = list(col='t2m'), project = "lonlat", xlim = NULL, ylim = NULL, zlim = NULL, verbose = FALSE, plot = FALSE, new=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

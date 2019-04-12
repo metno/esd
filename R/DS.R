@@ -703,8 +703,8 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
 ## weighting.
 ## The data may be pre-filtered using CCA.
 ## Rasmus Benestad, 19.08.2013
-DS.pca <- function(y,X,plot=FALSE,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
-                   rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20,verbose=FALSE,...) {
+DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
+                   rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20,...) {
 
     if (verbose) {
       print('--- DS.pca ---')

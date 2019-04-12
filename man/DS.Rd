@@ -89,8 +89,8 @@ DS.station.pca(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,method="lm",swsm="step",
                rmtrend=TRUE,ip=1:7,weighted=TRUE)
 DS.eof(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
        method="lm",swsm=NULL,m=5,ip=1:10,rmtrend=TRUE,weighted=TRUE,pca=TRUE,npca=20)
-DS.pca(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
-       rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20)
+DS.pca(y,X,verbose=FALSE,plot=FALSE,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
+                   rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20,...)
 DS.comb(y,X,verbose=FALSE,plot=FALSE,,...,biascorrect=FALSE,
         method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7, weighted=TRUE,pca=FALSE,npca=20) 
 DS.field(y,X,verbose=FALSE,plot=FALSE,,...,biascorrect=FALSE,
