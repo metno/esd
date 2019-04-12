@@ -48,8 +48,8 @@ map.matrix(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
            ip=1,plot=TRUE,...)
 map.data.frame(x,...)
 map.stationmeta(x,...)
-map.stationsummary(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins=15,
-                 new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),...)
+map.stationsummary(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=19,nbins=15,
+                 new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),hist=TRUE,lon=NULL,lat=NULL,...)
            
 map.station(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          add=FALSE,projection="lonlat",
@@ -227,6 +227,8 @@ mask(x,land=FALSE)
   \item{colorbar}{Show the color bar in the map (default TRUE). If
     FALSE, the colorbar is not added into the map (ignored).}
   
+  \item{cex}{Size of symbols.}
+  \item{cex0}{Scaling of symbols if \code{cex} is defined by a variable with different size for different locations.}
   \item{cex.subset}{...}
   \item{add.text}{Add abbreviated location names.}
   \item{full.names}{Show the full name of the location.}

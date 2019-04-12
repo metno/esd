@@ -970,14 +970,26 @@ map.data.frame <- function(x,...) {
   } else print("x is not a stationmeta object")
 }
 
-map.stationsummary <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins=15,
-                               new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),...) {
+map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=19,nbins=15,
+                               new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),
+                               hist=TRUE,lon=NULL,lat=NULL,...) {
   if (verbose) print(match.call())
+  if (new) dev.new()
+  ok <- rep(TRUE,length(x$longitude)); ok2 <- ok
+  if (!is.null(lon)) {
+    keep <- (x$longitude >= min(lon)) & (x$longitude <= max(lon))
+    x <- x[keep,]
+  }
+  if (!is.null(lat)) {
+    keep <- (x$latitude >= min(lat)) & (x$latitude <= max(lat))
+    x <- x[keep,]
+  }
   if (!is.null(FUN)) {
     if (verbose) {print(paste('FUN=',FUN)); print(names(x))}
     ## If FUN specified, change the colours
     if (length(grep(FUN,names(x)[is.element(nchar(names(x)),nchar(FUN))]))==1) {
-      z <- x[[FUN]]  
+      z <- x[[FUN]] 
+      ok <- is.finite(z); ok2 <- ok
       if (verbose) print(summary(z))
       colbar <- colscal(n=nbins,col=pal)
       breaks <- pretty(z,nbins)
@@ -985,9 +997,11 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins
       #breaks <- round(seq(min(z,na.rm=TRUE),max(z,na.rm=TRUE),length=nbins),2)
       #ic[ic > nbins] <- nbins
       ic <- rep(NA,length(z))
-      for (i in 1:length(z)) ic[i] <- sum(breaks < z[i],na.rm=TRUE) + 1
-      if (verbose) print(table(ic))
-      col <- colbar[ic]
+      if (verbose) print(summary(z))
+      for (i in 1:length(z)) ic[i] <- sum(breaks <= z[i],na.rm=TRUE) 
+      ok <- ok & (ic > 0) & (ic <= length(breaks))
+      if (verbose) {print(c(NA,breaks)); print(table(ic))}
+      col <- colbar[ic[ok]]
     } else if (verbose) print('No match')
   }
   if (is.character(cex)) {
@@ -995,13 +1009,15 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins
     ## If FUN specified, change the colours
     if (length(grep(cex,names(x)))==1) {
       z2 <- x[[cex]]  
+      ok2 <- is.finite(z2)
       if (is.numeric(z2)) {
-        cex <- 2*sqrt( (z2 - min(z2,na.rm=TRUE))/(max(z2,na.rm=TRUE) - min(z2,na.rm=TRUE)) )
+        cex <- cex0*sqrt( (z2 - min(z2,na.rm=TRUE))/(max(z2,na.rm=TRUE) - min(z2,na.rm=TRUE)) )
       }
+      cex <- cex[ok2]
       if (verbose) print(summary(cex))
     }
   }
-  if (new) dev.new()
+  
   par(bty='n',mar=c(3,1,3,2),xaxt='n',yaxt='n')
   if (!is.null(FUN)) {  
     nf <- layout(matrix(c(rep(1,56),0,0,rep(2,4),0,0), 8, 8, byrow = TRUE), respect = TRUE)
@@ -1010,7 +1026,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins
     main=paste0(FUN,' (mean= ',round(mean(z,na.rm=TRUE),nd),', sd=',round(sd(z,na.rm=TRUE),nd),
                ' [',round(min(z,na.rm=TRUE),nd),', ',round(max(z,na.rm=TRUE),nd),'])')
   } else main <- ''
-  plot(x$longitude,x$latitude,col=col,cex=cex,pch=pch,xlab='',ylab='',
+  plot(x$longitude[ok&ok2],x$latitude[ok&ok2],col=col,cex=cex,pch=pch,xlab='',ylab='',
        main=main,...)
   data("geoborders",envir = environment())
   grid()
@@ -1019,15 +1035,17 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,col='red',pal='t2m',pch=19,nbins
   axis(2,at=10*round(x$latitude/10),col='grey',col.axis='grey',col.lab='grey',col.ticks='grey')
   lines(geoborders,col='grey')
   lines(attr(geoborders,'borders'),col='lightgreen')
-  points(x$longitude,x$latitude,col=col,cex=cex,pch=pch)
+  points(x$longitude[ok&ok2],x$latitude[ok&ok2],col=col,cex=cex,pch=pch)
   if (!is.null(FUN)) {
     par0 <- par()
     par(mar=c(3,0,1,0),cex.lab=0.5,yaxt='n',xaxt='s')
     image(breaks, 1:2, cbind(breaks, breaks), col = colbar, cex.axis = 0.75)
     par(par0)
     
-    par(new=TRUE,fig=c(0.05,0.30,0.03,0.32))
-    hist(z,col='grey',main='')
-    par(new=FALSE,fig=c(0,1,0,1))
+    if (hist) {
+      par(new=TRUE,fig=c(0.05,0.30,0.03,0.32))
+      hist(z,col='grey',main='')
+      par(new=FALSE,fig=c(0,1,0,1))
+    }
   }
 }
