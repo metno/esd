@@ -53,16 +53,16 @@ annual mean number was estimated from the sample series.
 \usage{
 FTscramble(x,interval=NULL,spell.stats=FALSE,wetfreq.pred=FALSE)
 WG(x,...)
-WG.station(x,option='default',...)
-WG.FT.day.t2m(x=NULL,amean=NULL,asd=NULL,t=NULL,ip=1:4,
+WG.station(x,...,option='default')
+WG.FT.day.t2m(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
           select=NULL,lon=c(-20,20),lat=c(-20,20),
           plot=TRUE,biascorrect=TRUE,verbose=FALSE)
-WG.fw.day.precip(x=NULL,mu=NULL,fw=NULL,ndd=NULL,t=NULL,
+WG.fw.day.precip(x=NULL,...,mu=NULL,fw=NULL,ndd=NULL,t=NULL,
              threshold=1,select=NULL,
              lon=c(-10,10),lat=c(-10,10),
              plot=TRUE,biascorrect=TRUE,
              method='rgeom')
-WG.pca.day.t2m.precip(t2m=NULL,precip=NULL,threshold=1,select=NULL)
+WG.pca.day.t2m.precip(x=NULL,...,precip=NULL,threshold=1,select=NULL)
 }
 \arguments{
     \item{x}{station object}
