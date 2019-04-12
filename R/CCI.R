@@ -406,7 +406,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
       }
       if (oki) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
-        fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
+        fi <- 2*7.29212*1E-5*sin(pi*abs(latXY[1,ilat])/180)
         vg <- dpi/(fi*rho)
         v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
         radius[i] <- mean(ri,na.rm=TRUE)
