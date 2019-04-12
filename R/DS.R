@@ -64,7 +64,7 @@ sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
 
 
 
-DS<-function(y,X,verbose=FALSE,plot=FALSE,...) UseMethod("DS")
+DS <- function(y,X,verbose=FALSE,plot=FALSE,...) UseMethod("DS")
 
                                         # The basic DS-function, used by other methods
                                         # REB HERE!
@@ -163,11 +163,13 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
     colnames(caldat) <- c("y",Xnames,'weights')
     Xnames <- Xnames[ip]
     ## REB 2014-10-03:
-    if (weighted)
-        calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
-                        ", weights=weights, data=caldat, ...)",sep="") else
-        calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
-                        ", data=caldat, ...)",sep="")
+    if (weighted) {
+      calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
+                      ", weights=weights, data=caldat, ...)",sep="") 
+    } else {
+      calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
+                      ", data=caldat, ...)",sep="")
+    }
 
     MODEL <- eval(parse(text=calstr))
     FSUM <- summary(MODEL)
@@ -175,14 +177,14 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
 
     ## Stepwise regression
     if (!is.null(swsm)) {
-        cline <- paste("model <- ",swsm,"(MODEL,trace=0)",sep="")
-        eval(parse(text=cline))
-    } else
-        model <- MODEL
+      cline <- paste("model <- ",swsm,"(MODEL,trace=0)",sep="")
+      eval(parse(text=cline))
+    } else {
+      model <- MODEL
+    }
     terms1 <- attr(model$terms,'term.labels')
 
     if (verbose) print(summary(model))
-
     fsum <- summary(model)
     COEFS=FSUM$coefficients
     COEFS[,1] <- 0; 
@@ -701,10 +703,15 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
 ## weighting.
 ## The data may be pre-filtered using CCA.
 ## Rasmus Benestad, 19.08.2013
-DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
-                   rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20) {
+DS.pca <- function(y,X,plot=FALSE,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
+                   rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20,verbose=FALSE,...) {
 
-    if (verbose) { print('--- DS.pca ---'); print(summary(coredata(y))); print(class(y)); print(class(X))}
+    if (verbose) {
+      print('--- DS.pca ---')
+      print(summary(coredata(y)))
+      print(class(y))
+      print(class(X))
+    }
     
     if (class(index(y)) != (class(index(X)))) {
       if (verbose) {print('different class'); summary(coredata(y))}
@@ -874,7 +881,7 @@ DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,method="lm
             class(ys) <- c('station',class(y)[-c(1:2)])
             
             if (verbose) {print(class(ys)); print(class(X))}
-            z <- DS(ys,X,biascorrect=biascorrect,m=m,
+            z <- DS(ys,X,biascorrect=biascorrect,m=m,swsm=swsm,
                     ip=ip,rmtrend=rmtrend,verbose=verbose,...)
             if (verbose) print('--- return to DS.pca ---')
 
@@ -979,7 +986,8 @@ DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,method="lm
 }
 
 DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
-                   method="lm",swsm=NULL,m=5,ip=1:10,rmtrend=TRUE,weighted=TRUE,pca=TRUE,npca=20) {
+                   method="lm",swsm=NULL,m=5,ip=1:10,rmtrend=TRUE,weighted=TRUE,
+                   pca=TRUE,npca=20) {
     if (verbose) { print('--- DS.eof ---'); print(summary(coredata(y)))}
     ds <- DS.pca(y,X,biascorrect=biascorrect,
                  method=method,swsm=swsm,m=m,

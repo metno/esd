@@ -152,8 +152,8 @@ trackdensity <- function(lons,lats,track,dx=NULL,dy=NULL,
       lon <- A$lon
       lat <- A$lat
     } 
-    xvec <- seq(round(min(lon)/dx)*dx-round(5+20*max(lat)/90)*dx,
-                round(max(lon)/dx)*dx+round(5+20*max(lat)/90)*dx,dx)
+    xvec <- seq(round(min(lon)/dx)*dx-round(5+20*max(abs(lat))/90)*dx,
+                round(max(lon)/dx)*dx+round(5+20*max(abs(lat))/90)*dx,dx)
     yvec <- seq(round(min(lat)/dy)*dy-ceiling(5/dy)*dy,
                 round(max(lat)/dy)*dy+ceiling(5/dy)*dy,dy)
     xx <- as.vector(sapply(xvec,function(x) rep(x,length(yvec))))
