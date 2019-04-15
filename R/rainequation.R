@@ -40,7 +40,7 @@ rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
     f <- colMeans(fw)
   }
   ds2.dt <- (  m^2 + (x0^2 + 2*x0*m + 2*m)*exp(-x0/m) ) * trend.coef(fw) +
-            ( 2*m + (4*x0 + 4*m + x0^3/m^2 + 2*x0/m)*exp(-x0/m) ) * trend.coef(mu)
+            f*( 2*m + (4*x0 + 4*m + x0^3/m^2 + 2*x0/m)*exp(-x0/m) ) * trend.coef(mu)
   return(ds2.dt)
 }
 

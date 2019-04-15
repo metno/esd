@@ -179,7 +179,7 @@ cartesian2spherical <- function(x,y,z,a=6.378e06,verbose=TRUE) {
 }
 
 
-anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
+anomaly.trajectory <- function(x,...,type='first',param=c('lon','lat'),
                                 verbose=FALSE) {
   if(verbose) print("anomaly.trajectory")
   stopifnot(!missing(x), inherits(x,"trajectory"))

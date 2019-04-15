@@ -1,4 +1,4 @@
-gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NULL,zlim=NULL,verbose=FALSE,plot=FALSE) {
+gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
 
   if (verbose) print(paste('gridmap',FUN))
   if (!requireNamespace("LatticeKrig", quietly = TRUE)) {
@@ -50,7 +50,7 @@ gridmap <- function(Y,FUN='mean',colbar=NULL,project='lonlat',xlim=NULL,ylim=NUL
   
     ## Make the graphics
     if (verbose | plot) print("make the map")
-    map(W,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,project=project)
+    map(W,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,project=project,new=new)
     invisible(W)
   }
 }

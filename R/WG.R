@@ -14,7 +14,7 @@ FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
   
   # This function scramles the phase information of the FT components of a
   # time series, maintaining the same spectral and time structure
-
+  
   if (sum(is.na(x))>0) {
     ok <- is.finite(x)
     y <- approx((1:n)[ok],x[ok],xout=1:n,rule=2)$y
@@ -39,18 +39,18 @@ FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
   ReY <- Z*cos(phiY)
   ImY <- Z*sin(phiY)
   ReY[1] <- ReX[1]; ImY[1] <- ImX[1]
-#  ReY[n] <- ReX[n]; ImY[n] <- ImX[n]
+  #  ReY[n] <- ReX[n]; ImY[n] <- ImX[n]
   Y <- complex(real=ReY, imaginary=ImY)
-
+  
   # Inverse FT to generate new time series:
   y <- Re(fft(Y,inverse=TRUE))/n
   # Make sure that the new scrambled series has the same mean and standard deviation
   # as the original data:
   y <- sd(x,na.rm=TRUE)*(y - mean(y,na.rm=TRUE))/sd(y,na.rm=TRUE) + mean(x,na.rm=TRUE)
-
+  
   if (!is.null(t)) {
     if (length(t) <= length(y)) y <- y[1:length(t)] else
-                                y <- c(y,rep(NA,length(t)-length(y)))
+      y <- c(y,rep(NA,length(t)-length(y)))
   }
   invisible(y)
 }
@@ -58,17 +58,17 @@ FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
 
 WG <- function(x,...) UseMethod("WG")
 
-WG.station <- function(x,option='default',...) {
+WG.station <- function(x,...,option='default') {
   if (inherits(x,'day')) {
     if (length(varid(x))==1) {
       if (varid(x)=='t2m') y <- WG.FT.day.t2m(x,...) else
-      if (varid(x)=='precip') y <- WG.fw.day.precip(x,...)
+        if (varid(x)=='precip') y <- WG.fw.day.precip(x,...)
     }
   }
   return(y)
 }
 
-WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,ip=1:4,
+WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
                           select=NULL,lon=c(-20,20),lat=c(-20,20),
                           plot=FALSE,biascorrect=TRUE,verbose=TRUE) {
   if (verbose) print('WG.FT.day.t2m')
@@ -76,120 +76,120 @@ WG.FT.day.t2m <- function(x=NULL,amean=NULL,asd=NULL,t=NULL,ip=1:4,
   ## The arguments mean and sd are time series predicted through ESD or
   ## adopted from a zoo or station object (x). 
   if (is.null(x)) {
-  ## If no stations objects is given, use default 
+    ## If no stations objects is given, use default 
     if (verbose) print("use default: Ferder, Norway")
     data("ferder",envir=environment())
     x <- ferder
     rm('ferder')
   }
-
-## Different options for annual mean temperature. Default - estimate from the station
+  
+  ## Different options for annual mean temperature. Default - estimate from the station
   if (is.null(amean)) amean <- annual(x) else
-  ## If NA, then compute using DSensemble
-  if (is.na(amean)) {
-    if (verbose) print('Estimate mean change')
-    T2M <- retrieve('~/data/ERAINT/ERAINT_t2m_mon.nc',
-                    lon=lon(x) + lon,lat=lat(x) + lat)
-    ztm <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
-                          plot=plot,lon=lon,lat=lat,ip=ip,
-                          select=select,verbose=verbose)
-    amean <- zoo(rowMeans(ztm,na.rm=TRUE) - mean(ztm,na.rm=TRUE),
-                 order.by=index(ztm))
-  } else if (inherits(amean,'dsensemble'))
-  ## Or use prescribed projections
-     amean <- rowMeans(amean,na.rm=TRUE) - mean(amean,na.rm=TRUE)
-  print(paste('mean(amean)=',mean(amean)))
-  
-  ## Also select annual standard deviations estimated from daly anomalies -
-  ## repeat the same procedure as for the mean.
-  if (is.null(asd)) asd <- annual(anomaly(x),FUN='sd') else
-  if (is.na(asd)) {
-    if (verbose) print('Estimate standard deviation change')
-    SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
-                    lon=lon(x) + lon,lat=lat(x) + lat)
-    coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
-    if (plot) dev.new()
-#    zts <- DSensemble.t2m(x,predictor=SLP,biascorrect=biascorrect,
-#                          FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
-#                          path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
-#                          select=select,verbose=verbose)
-    zts <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
-                          FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
-                          FUNX='sd',select=select,verbose=verbose)
-    asd <- zoo(rowMeans(zts,na.rm=TRUE) - mean(zts,na.rm=TRUE),
-               order.by=index(zts))
-  } else if (inherits(asd,'dsensemble'))
-    asd <- rowMeans(asd,na.rm=TRUE) - mean(asd,na.rm=TRUE) 
- 
-## Get the daily anomalies and the climatology
-  xa <- anomaly(x); clim <- x - xa
-
-## Define time axis for projection based on the annual mean data either from station or
-## downscaled projections
-  if (is.null(t)) {
-    if (verbose) print("set the time index")
-    ly <- max(year(amean)); ny <- length(rownames(table(year(amean)))) 
-    interval <- c(ly-ny+1,ly)
-    print(interval)
-    t <- seq.Date(as.Date(paste(interval[1],substr(start(x),5,10),sep='')),
-                  as.Date(paste(interval[2],substr(end(x),5,10),sep='')),
-                  by="day")
-    #browser()
-    #str(t); print(paste(interval[1],month(x)[1],day(x)[1],sep='-'))
-    #t <- t - julian(t[1]) +
-    #  julian(as.Date(paste(interval[1],month(x)[1],day(x)[1],sep='-')))
-  }
-  
-  ## Estimate a smooth curve for the annual mean and standard deviation that has a daily resolution
-  if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
-  ym <- approx(julian(as.Date(index(amean))),coredata(amean),xout=julian(as.Date(t)),rule=2)$y
-  #print(summary(ym))
-  ys <- approx(julian(as.Date(index(asd))),coredata(asd),xout=julian(as.Date(t)),rule=2)$y
-
-  ## New object y that contains random variable as original data but with same spectral 
-  ## characteristics and same climatology
-  if (verbose) print("Construct a station object with random timing but original time structure:")
-  y <- zoo(FTscramble(xa,t),order.by=t)
-  if (verbose) print("add climatology")
-  y <- y + matchdate(clim,y)
-  
-  if (plot) {
-    dev.new()
-    plot(merge(zoo(xa),zoo(anomaly(y))),plot.type='single',lwd=c(2,1),
-         col=c('black','grey'))
-  }
-
-  ## qq-transform to transform the temperature distribution from present shape to future shape
-  ## assuming a normal distribution: ~N(m1,s1) -> ~N(m2,s2). Estimate probabilities based on the 
-  ## scrambeled series y and use these probabilities to derive new quantiles based on the shifted 
-  ## pdf.
-  cdf <- pnorm(q=y,mean=mean(y,na.rm=TRUE),sd=sd(y,na.rm=TRUE))
-  q2 <- qnorm(cdf,mean=ym,sd=ys)
-  #print(summary(cdf)); print(summary(q2))
-  #hist(cdf); browser()
-  z <- zoo(q2,order.by=t)
-  #print(summary(z))
-  if (verbose) print("Attach attributes")
-  z <- attrcp(x,z)
-  attr(z,'mean') <- ym
-  attr(z,'sd') <- ys
-  attr(z,'aspect') <- paste(attr(z,'aspect'),'weather_generator',sep=', ')
-  attr(z,'history') <- history.stamp(x)
-  return(z)
+    ## If NA, then compute using DSensemble
+    if (is.na(amean)) {
+      if (verbose) print('Estimate mean change')
+      T2M <- retrieve('~/data/ERAINT/ERAINT_t2m_mon.nc',
+                      lon=lon(x) + lon,lat=lat(x) + lat)
+      ztm <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
+                            plot=plot,lon=lon,lat=lat,ip=ip,
+                            select=select,verbose=verbose)
+      amean <- zoo(rowMeans(ztm,na.rm=TRUE) - mean(ztm,na.rm=TRUE),
+                   order.by=index(ztm))
+    } else if (inherits(amean,'dsensemble'))
+      ## Or use prescribed projections
+      amean <- rowMeans(amean,na.rm=TRUE) - mean(amean,na.rm=TRUE)
+    print(paste('mean(amean)=',mean(amean)))
+    
+    ## Also select annual standard deviations estimated from daly anomalies -
+    ## repeat the same procedure as for the mean.
+    if (is.null(asd)) asd <- annual(anomaly(x),FUN='sd') else
+      if (is.na(asd)) {
+        if (verbose) print('Estimate standard deviation change')
+        SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
+                        lon=lon(x) + lon,lat=lat(x) + lat)
+        coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
+        if (plot) dev.new()
+        #    zts <- DSensemble.t2m(x,predictor=SLP,biascorrect=biascorrect,
+        #                          FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
+        #                          path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
+        #                          select=select,verbose=verbose)
+        zts <- DSensemble.t2m(x,predictor=T2M,biascorrect=biascorrect,
+                              FUN='sd',plot=plot,lon=lon,lat=lat,ip=ip,
+                              FUNX='sd',select=select,verbose=verbose)
+        asd <- zoo(rowMeans(zts,na.rm=TRUE) - mean(zts,na.rm=TRUE),
+                   order.by=index(zts))
+      } else if (inherits(asd,'dsensemble'))
+        asd <- rowMeans(asd,na.rm=TRUE) - mean(asd,na.rm=TRUE) 
+    
+    ## Get the daily anomalies and the climatology
+    xa <- anomaly(x); clim <- x - xa
+    
+    ## Define time axis for projection based on the annual mean data either from station or
+    ## downscaled projections
+    if (is.null(t)) {
+      if (verbose) print("set the time index")
+      ly <- max(year(amean)); ny <- length(rownames(table(year(amean)))) 
+      interval <- c(ly-ny+1,ly)
+      print(interval)
+      t <- seq.Date(as.Date(paste(interval[1],substr(start(x),5,10),sep='')),
+                    as.Date(paste(interval[2],substr(end(x),5,10),sep='')),
+                    by="day")
+      #browser()
+      #str(t); print(paste(interval[1],month(x)[1],day(x)[1],sep='-'))
+      #t <- t - julian(t[1]) +
+      #  julian(as.Date(paste(interval[1],month(x)[1],day(x)[1],sep='-')))
+    }
+    
+    ## Estimate a smooth curve for the annual mean and standard deviation that has a daily resolution
+    if (verbose) print("Estimate smooth day-by-day changes in mean and sd:")
+    ym <- approx(julian(as.Date(index(amean))),coredata(amean),xout=julian(as.Date(t)),rule=2)$y
+    #print(summary(ym))
+    ys <- approx(julian(as.Date(index(asd))),coredata(asd),xout=julian(as.Date(t)),rule=2)$y
+    
+    ## New object y that contains random variable as original data but with same spectral 
+    ## characteristics and same climatology
+    if (verbose) print("Construct a station object with random timing but original time structure:")
+    y <- zoo(FTscramble(xa,t),order.by=t)
+    if (verbose) print("add climatology")
+    y <- y + matchdate(clim,y)
+    
+    if (plot) {
+      dev.new()
+      plot(merge(zoo(xa),zoo(anomaly(y))),plot.type='single',lwd=c(2,1),
+           col=c('black','grey'))
+    }
+    
+    ## qq-transform to transform the temperature distribution from present shape to future shape
+    ## assuming a normal distribution: ~N(m1,s1) -> ~N(m2,s2). Estimate probabilities based on the 
+    ## scrambeled series y and use these probabilities to derive new quantiles based on the shifted 
+    ## pdf.
+    cdf <- pnorm(q=y,mean=mean(y,na.rm=TRUE),sd=sd(y,na.rm=TRUE))
+    q2 <- qnorm(cdf,mean=ym,sd=ys)
+    #print(summary(cdf)); print(summary(q2))
+    #hist(cdf); browser()
+    z <- zoo(q2,order.by=t)
+    #print(summary(z))
+    if (verbose) print("Attach attributes")
+    z <- attrcp(x,z)
+    attr(z,'mean') <- ym
+    attr(z,'sd') <- ys
+    attr(z,'aspect') <- paste(attr(z,'aspect'),'weather_generator',sep=', ')
+    attr(z,'history') <- history.stamp(x)
+    return(z)
 }
 
 ## Fuure considerations -lso allow for estimating the AR(1) coefficient of the Hurst coefficient?
 ## Fractional Gaussian noise...?
-  
+
 ## --- Precipitation  
-  
-WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
+
+WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
                              ncwd=NULL,ndbr=NULL,t=NULL,
                              threshold=1,select=NULL,
-			     ip=1:6,lon=c(-10,10),lat=c(-10,10),
+                             ip=1:6,lon=c(-10,10),lat=c(-10,10),
                              plot=FALSE,biascorrect=TRUE,
                              verbose=TRUE) {
-
+  
   if (verbose) print('WG.fw.day.precip')
   # Single function for just precipitation
   if (is.null(x)) {
@@ -197,13 +197,13 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
     x <- bjornholt
     rm('bjornholt')
   }
-
+  
   # use fw to estimate the number of rainy days per year:
   x.fw <-  as.annual(x,'wetfreq',threshold=threshold)
-    
+  
   # Use predicted mu to generate exponentially distributed data:
   x.mu <- as.annual(x,'exceedance',threshold=threshold)
-
+  
   # according to a geometric (default) or Poisson distribution
   ncdd.cwd <- spell(x,threshold=threshold)
   x.nd <- subset(annual(ncdd.cwd),is=1)
@@ -217,11 +217,11 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
          sub="Test: Red curve is the fitted geometric distribution")
     lines(0:max(ndbr),f.k,lwd=5,col="red")
   }
- 
+  
   # Aggregate the number of days between start of each rain event
   # to annual mean
   ndbram <- annual(zoo(x=ndbr,order.by=index(ncdd.cwd)[-1]))
-
+  
   # Estimate number of wet events each year:
   wet <-   subset(ncdd.cwd,is=1)
   nawe <- aggregate(wet,by=year(wet),FUN="nv")
@@ -236,45 +236,45 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
     lines(seq(0,100,by=1),dpois(seq(0,100,by=1),lambda=mean(coredata(nawe))),
           col="red",lwd=3)
   }
-
+  
   # Wet-day mean: from DS or from observations
   if (verbose) print('wet-day mean')
   if (is.null(mu))
     mu <- zoo(FTscramble(x.mu),order.by=index(x.mu)) else
-  if (is.na(mu)) {
-    if (verbose) print('Estimate mean change')
-    PRE <- retrieve('~/data/ERAINT/ERAINT_precip_mon.nc',
-                    lon=lon(x) + lon,lat=lat(x) + lat)
-    zmu <- DSensemble.precip(x,predictor=PRE,biascorrect=biascorrect,
-                          plot=plot,lon=lon,lat=lat,ip=ip,
-			  treshold=threshold,
-                          select=select,verbose=verbose)
-    mu <- rowMeans(zmu,na.rm=TRUE) - mean(zmu,na.rm=TRUE)
-  } else if (inherits(mu,'dsensemble'))
-    mu <- rowMeans(mu,na.rm=TRUE) - mean(mu,na.rm=TRUE) 
-
+      if (is.na(mu)) {
+        if (verbose) print('Estimate mean change')
+        PRE <- retrieve('~/data/ERAINT/ERAINT_precip_mon.nc',
+                        lon=lon(x) + lon,lat=lat(x) + lat)
+        zmu <- DSensemble.precip(x,predictor=PRE,biascorrect=biascorrect,
+                                 plot=plot,lon=lon,lat=lat,ip=ip,
+                                 treshold=threshold,
+                                 select=select,verbose=verbose)
+        mu <- rowMeans(zmu,na.rm=TRUE) - mean(zmu,na.rm=TRUE)
+      } else if (inherits(mu,'dsensemble'))
+        mu <- rowMeans(mu,na.rm=TRUE) - mean(mu,na.rm=TRUE) 
+  
   # Wet-day frequency: from DS or from observations
   if (verbose) print('wet-day frequency')
   if (is.null(fw))
     fw <- zoo(FTscramble(x.fw),order.by=index(x.fw)) else
-  if (is.na(fw)) {
-    SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
-                    lon=lon(x) + lon,lat=lat(x) + lat)
-    coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
-    if (plot) dev.new()
-    zfw <- DSensemble.precip(x,predictor=SLP,biascorrect=biascorrect,
-                             FUN='wetfreq',threshold=threshold,
-                             plot=plot,lon=lon,lat=lat,ip=ip,
-                             path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
-                             select=select,verbose=verbose)
-    fw <- rowMeans(zfw,na.rm=TRUE) - mean(zfw,na.rm=TRUE)
-  } else if (inherits(fw,'dsensemble'))
-    fw <- rowMeans(fw,na.rm=TRUE) - mean(fw,na.rm=TRUE)
-
+      if (is.na(fw)) {
+        SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
+                        lon=lon(x) + lon,lat=lat(x) + lat)
+        coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
+        if (plot) dev.new()
+        zfw <- DSensemble.precip(x,predictor=SLP,biascorrect=biascorrect,
+                                 FUN='wetfreq',threshold=threshold,
+                                 plot=plot,lon=lon,lat=lat,ip=ip,
+                                 path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
+                                 select=select,verbose=verbose)
+        fw <- rowMeans(zfw,na.rm=TRUE) - mean(zfw,na.rm=TRUE)
+      } else if (inherits(fw,'dsensemble'))
+        fw <- rowMeans(fw,na.rm=TRUE) - mean(fw,na.rm=TRUE)
+  
   # Number of consequtive wet days: from DS or from observations
   if (verbose) print('random annual mean number of n_cwd:')
   rnd <- rnorm(length(mu),mean=mean(coredata(x.nd),na.rm=TRUE),
-                          sd=sd(coredata(x.nd),na.rm=TRUE))
+               sd=sd(coredata(x.nd),na.rm=TRUE))
   rnd[rnd < 1] <- 1;
   if (verbose) print(rnd)
   prob <- 1/rnd
@@ -282,24 +282,24 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
   if (verbose) print(prob)
   if (verbose) print('the annual mean number of consecutive wet days: ncwd')
   if (is.null(ncwd)) ncwd <- rgeom(length(mu),prob=prob)+1 else
-  if (is.na(ncwd)) {
-    if (verbose) print('estimate from ERAINT')
-    SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
-                    lon=lon(x) + lon,lat=lat(x) + lat)
-    coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
-    if (plot) dev.new()
-    y.ncwd <- annual(subset(spell(x,threshold=threshold),is=1))
-    znd <- DSensemble.precip(y.ncwd,predictor=SLP,biascorrect=biascorrect,
-                             plot=plot,lon=lon,lat=lat,ip=ip,
-                             path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
-                             select=select,verbose=verbose)
-    ncwd <- rowMeans(znd,na.rm=TRUE) - mean(znd,na.rm=TRUE)
-  } else {
-   if (verbose) print("inherits(ncwd,'dsensemble')")
-    if (inherits(ncwd,'dsensemble'))
-    ncwd <- rowMeans(ncwd,na.rm=TRUE) - mean(ncwd,na.rm=TRUE)
-    if (verbose) print(ncwd)
-  }
+    if (is.na(ncwd)) {
+      if (verbose) print('estimate from ERAINT')
+      SLP <- retrieve('~/data/ERAINT/ERAINT_slp_mon.nc',
+                      lon=lon(x) + lon,lat=lat(x) + lat)
+      coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
+      if (plot) dev.new()
+      y.ncwd <- annual(subset(spell(x,threshold=threshold),is=1))
+      znd <- DSensemble.precip(y.ncwd,predictor=SLP,biascorrect=biascorrect,
+                               plot=plot,lon=lon,lat=lat,ip=ip,
+                               path='data/CMIP5.mslp/',pattern='psl_Amon_ens',
+                               select=select,verbose=verbose)
+      ncwd <- rowMeans(znd,na.rm=TRUE) - mean(znd,na.rm=TRUE)
+    } else {
+      if (verbose) print("inherits(ncwd,'dsensemble')")
+      if (inherits(ncwd,'dsensemble'))
+        ncwd <- rowMeans(ncwd,na.rm=TRUE) - mean(ncwd,na.rm=TRUE)
+      if (verbose) print(ncwd)
+    }
   
   # Time axsis for projection:
   if (verbose) print('Time axis for projection')
@@ -316,30 +316,30 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
   yrs <- rownames(table(year(t)))
   
   # One alternative: qq-transform: precip(exp1 -> exp2)
-#  pr.x.wet <- qexp(pexp(q=round(365.25*coredata(x.fw)),
-#                        rate=1/coredata(x.mu),na.rm=TRUE)),
-#                   rate=1/coredata(mu))
-
+  #  pr.x.wet <- qexp(pexp(q=round(365.25*coredata(x.fw)),
+  #                        rate=1/coredata(x.mu),na.rm=TRUE)),
+  #                   rate=1/coredata(mu))
+  
   # Estimate the number of rainy days for each year
   if (verbose) print('Number of wet days each year:')
   nwet <- round( ( julian(as.Date(paste(year(fw),'12-31',sep='-'))) -
-                   julian(as.Date(paste(year(fw),'01-01',sep='-'))) + 1) *
+                     julian(as.Date(paste(year(fw),'01-01',sep='-'))) + 1) *
                    coredata(fw) )
   #print(rbind(nwet,coredata(mu)))
-
+  
   # Errorbars for mu: var = mu**2 for exponential distrib:
   mu.err <- mu/sqrt(nwet -1)
   
   # set up a record with no rain:
   z <- zoo(rep(0,length(t)),order.by=t)
-
+  
   #print(c(length(annual(x)),length(x.fw),length(x.mu),length(fw),length(mu)))
   #print(start(annual(x)));print(end(annual(x)))
   #print(start(x.mu));print(end(x.mu))
   #print(start(x.fw));print(end(x.fw))
   #print(start(mu));print(end(mu))
   #print(start(fw));print(end(fw))
-
+  
   #browser()
   
   # add rain events:
@@ -347,13 +347,13 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
   for ( i in 1:ny ) {
     # Simulate precipitation amount: reduce to one decimal point and add
     # threshol to mimic the original data...
-
+    
     if (!is.finite(mu[i])) mu[i] <- mean(mu,na.rm=TRUE)
     if (!is.finite(ndbram[i])) ndbram[i] <- mean(ndbram,na.rm=TRUE)
     if (!is.finite(nwet[i])) nwet[i] <- mean(nwet,na.rm=TRUE)
-
+    
     y <- round(rexp(nwet[i],1/coredata(mu[i])),1) + threshold # Check!
-
+    
     # Simulate the start of each rain event: 
     t0 <- cumsum(rgeom(max(coredata(nawe),na.rm=TRUE),
                        prob=1/(coredata(ndbram[i]))))
@@ -362,13 +362,13 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
     nwd <- rgeom(length(t0),prob=prob[i])+1 
     nwd <- nwd[cumsum(nwd <= nwet[i])]
     t0 <- t0[1:length(nwd)]
-
+    
     # add rain to the appropriate year:
     ii <- is.element(year(t),yrs[i])
     rain <- rep(0,sum(ii)); iii <- 0
-  
+    
     #browser()
-
+    
     # simulate the rain-eve-t occurrances which start at t0 and vary in
     # duration: nwd
     for (iv in 1:length(nwd)) {
@@ -396,10 +396,11 @@ WG.fw.day.precip <- function(x=NULL,mu=NULL,fw=NULL,
 # temperature and precipitation is constant and doesn't change in the future.
 # Moreover, the method also assumes that the spell-statistics will stay the same.
 
-WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL,
+WG.pca.day.t2m.precip <- function(x=NULL,...,precip=NULL,threshold=1,select=NULL,
                                   wetfreq.pred=FALSE,spell.stats=FALSE,
-				  verbose=FALSE) {
-  if(verbose) print("WG.pca.day.t2m.precip")				  
+                                  verbose=FALSE) {
+  if(verbose) print("WG.pca.day.t2m.precip")			
+  t2m <- x
   if (is.null(t2m)) {
     data("ferder",envir=environment())
     t2m <- ferder
@@ -410,7 +411,7 @@ WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL,
     pr <- bjornholt
     rm('bjornholt')
   }
-
+  
   lon <- lon(t2m) + c(-10,10)
   lat <- lat(t2m) + c(-10,10)
   
@@ -418,7 +419,7 @@ WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL,
   coredata(SLP) <- 100*coredata(SLP)  # The CMIP5 units are in Pa!
   T2M <- retrieve('~/data/ERAINT/ERAINT_t2m_mon.nc',lon=lon,lat=lat)
   PRE <- retrieve('~/data/ERAINT/ERAINT_pr_mon.nc',lon=lon,lat=lat)
-
+  
   ztm = DSensemble.t2m(t2m,predictor=T2M,biascorrect=TRUE,plot=FALSE,
                        lon=c(-10,10),lat=c(-10,10),select=select)
   zts = DSensemble.t2m(t2m,FUN='sd',predictor=SLP,biascorrect=TRUE,plot=FALSE,
@@ -426,12 +427,12 @@ WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL,
                        lon=c(-10,10),lat=c(-10,10),select=select)
   
   zpm = DSensemble.precip(pr,FUN='wetmean',predictor=PRE,biascorrect=TRUE,
-    plot=FALSE,select=select)
+                          plot=FALSE,select=select)
   if (wetfreq.pred) {
     zpf = DSensemble.precip(pr,FUN='wetfreq',predictor=SLP,biascorrect=TRUE,plot=FALSE,
                             path='data/CMIP5.mslp/',pattern='psl_Amon_ens',select=select)
   }
-# select an equal number of years at the end of the downscaled results if none is specified
+  # select an equal number of years at the end of the downscaled results if none is specified
   if (is.null(interval)) {
     interval <- c(max(year(ztm))-ny+1,max(year(ztm)))
   }
@@ -439,16 +440,16 @@ WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL,
   zts  <- subset(zts,it=interval)
   zpm  <- subset(zpm,it=interval)
   
-# Generate the daily variability from the observations:
+  # Generate the daily variability from the observations:
   t2ma <- anomaly(t2m); t2mc <- t2m - t2ma
   xy <- merge(zoo(t2m),zoo(pr),zoo(t2mc),all=FALSE)
   years <- as.numeric(rownames(table(year(xy))))
   ny <- length(years)
-
+  
   wet <- (xy[,2] > threshold) & (is.finite(xy[,1])) & (is.finite(xy[,2]))
   dry <- (xy[,2] <= threshold) & (is.finite(xy[,1])) & (is.finite(xy[,2]))
   if (spell.stats) L <- spell(pr,threshold=threshold)
-
+  
   # Rainy days:
   # Find the co-variate structures in daily temperature and precipitation
   X <- coredata(xy[wet,1:2])
@@ -461,26 +462,26 @@ WG.pca.day.t2m.precip <- function(t2m=NULL,precip=NULL,threshold=1,select=NULL,
   pca$u <- cbind(z1,z2)
   X <- pca$u %*% diag(pca$d) %*% t(pca$v)
   X[,2] <- exp(X[,2])
-
+  
   # All days: set up date string
   t <- julian(as.Date(paste(year(xy)-year(xy)[1]+interval[1],
                             month(xy),day(xy),sep='-')))
   x <- zoo(coredata(xy[,1]),order.by=t)
   attributes(x) <- NULL
-
+  
   # initialise temperature and precip - for t2m, add observed daily climatology
   n <- length(x)
   pr.x <- rep(0,n) 
-
+  
   # shoehorn the rainy day temperature and precipitation into series
   t2m.x[wet] <-  X[,1]
-
+  
   # generate time series for predicted mean and sd with same length as the scrambled
   # daily series: use the seasonal estimates
   tensm <- rowMeans(ztm,na.rm=TRUE) - mean(ztm,na.rm=TRUE)
   tenss <- rowMeans(zts,na.rm=TRUE) - mean(zts,na.rm=TRUE)
   penss <- rowMeans(zpm,na.rm=TRUE) - mean(zpm,na.rm=TRUE)
-
+  
   ytm <- approx(julian(as.Date(index(ztm))),tensm,xout=julian(as.Date(t)),rule=2)$y
   yts <- approx(julian(as.Date(index(zts))),tensm,xout=julian(as.Date(t)),rule=2)$y
   ypm <- approx(julian(as.Date(index(ztm))),tensm,xout=julian(as.Date(t)),rule=2)$y
