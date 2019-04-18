@@ -199,8 +199,9 @@ read.best.track <- function(url='http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/
   attr(Y,"alt") <- NA
   attr(Y,"cntr") <- NA
   attr(Y,"stid") <- NA
-  attr(Y,'domain') <- switch(domain,'io'='Northern Indian Ocean',
-                              'sh'='Southern Hemisphere','wp'='Northwestern Pacific')
+  attr(Y,'domain') <- switch(domain,
+                             'io'='Northern Indian Ocean',
+  'sh'='Southern Hemisphere','wp'='Northwestern Pacific')
   attr(Y, "history")= history.stamp()
   attr(Y,'storm name') <- storms
   class(Y) <- c('trajectory','matrix')
