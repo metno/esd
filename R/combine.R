@@ -824,7 +824,7 @@ combine.events <- function(x,y,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbos
   } else {
     if(difftime(min(as.Date(paste(y$date,y$time),format="%Y%m%d %H")),
                 max(as.Date(paste(x$date,x$time),format="%Y%m%d %H")), 
-                unit="hours")>6) {
+                units="hours")>6) {
       dt <- max(x$trajectory)-min(y$trajectory)+1
       y$trajectory <- y$trajectory+dt
       z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
