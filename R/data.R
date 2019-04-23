@@ -1,17 +1,17 @@
 # Workaround from having R-scripts in the data folder:
 # Rasmus Benestad
 
-slp.MERRA <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
-  data("eof.slp.MERRA",envir=environment())
-  slp.MERRA<- eof2field(eof.slp.MERRA,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  slp.MERRA
-}
-
-t2m.MERRA <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
-  data("eof.t2m.MERRA",envir=environment())
-  t2m.MERRA<- eof2field(eof.t2m.MERRA,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  t2m.MERRA
-}
+# slp.MERRA <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+#   data("eof.slp.MERRA",envir=environment())
+#   slp.MERRA<- eof2field(eof.slp.MERRA,is=list(lon=lon,lat=lat),anomaly=anomaly)
+#   slp.MERRA
+# }
+# 
+# t2m.MERRA <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+#   data("eof.t2m.MERRA",envir=environment())
+#   t2m.MERRA<- eof2field(eof.t2m.MERRA,is=list(lon=lon,lat=lat),anomaly=anomaly)
+#   t2m.MERRA
+# }
 
 t2m.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE,latest=FALSE,
                      url='ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc') {
@@ -48,11 +48,11 @@ slp.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
   slp.NCEP
 }
 
-t2m.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
-  data("eof.t2m.ERAINT",envir=environment())
-  t2m.ERAINT<- eof2field(eof.t2m.ERAINT,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  t2m.ERAINT
-}
+# t2m.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+#   data("eof.t2m.ERAINT",envir=environment())
+#   t2m.ERAINT<- eof2field(eof.t2m.ERAINT,is=list(lon=lon,lat=lat),anomaly=anomaly)
+#   t2m.ERAINT
+# }
 
 precip.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
   data("eof.precip.ERAINT",envir=environment())
@@ -60,17 +60,17 @@ precip.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
   precip.ERAINT
 }
 
-slp.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
-  data("eof.slp.ERAINT",envir=environment())
-  slp.ERAINT<- eof2field(eof.slp.ERAINT,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  slp.ERAINT
-}
-
-t2m.ERA40 <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
-  data("eof.t2m.ERA40",envir=environment())
-  t2m.ERA40<- eof2field(eof.t2m.ERA40,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  t2m.ERA40
-}
+# slp.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+#   data("eof.slp.ERAINT",envir=environment())
+#   slp.ERAINT<- eof2field(eof.slp.ERAINT,is=list(lon=lon,lat=lat),anomaly=anomaly)
+#   slp.ERAINT
+# }
+# 
+# t2m.ERA40 <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+#   data("eof.t2m.ERA40",envir=environment())
+#   t2m.ERA40<- eof2field(eof.t2m.ERA40,is=list(lon=lon,lat=lat),anomaly=anomaly)
+#   t2m.ERA40
+# }
 
 t2m.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
   data("eof.t2m.DNMI",envir=environment())

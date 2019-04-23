@@ -11,7 +11,7 @@
 }
 
 \usage{
-PCA.trajectory(X,neofs=20,param=c('lon','lat'),anomaly=TRUE,verbose=FALSE)
+PCA.trajectory(X,...,neofs=20,param=c('lon','lat'),anomaly=TRUE,verbose=FALSE)
 pca2trajectory(X)
 }
 \arguments{

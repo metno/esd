@@ -3,18 +3,26 @@
 \alias{fract.gt.x}
 \alias{test.rainequation}
 \alias{scatterplot.rainequation}
+\alias{rainvar}
+\alias{rainvartrend}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Rain equation
 %%  ~~function to do ... ~~
 }
 \description{The rain equation  \eqn{Pr(X>x)=fw exp(-x/mu)}{Pr(X>x)==f_w exp(-x/\mu)} estimates the likelihood of 24-hr precipitation exceedint a threshold value x. It is analogous to the normal distribution used to describe the statistical distribution of e.g. daily temperature over a season, but applied to precipitation. It has two parameters, the wet-day frequency fw and the wet-day mean mu. It assumes that the distribution for wet-day precipitation can be approximated with an exponential distribution, and has one tail.  
+
+The function \code{rainvar} returns the dail variance of the 24-hr precipitation according to \eqn{sigma^2 = 2 fw * mu^3}{\sigma^2 = 2 f_w \mu^3} and \code{rainvartrend} calculates the first derivative accroding to \eqn{d sigma^2/dt = 2 mu^3 dfw/dt + 6 fw mu^2 dmu/dt}{d \frac{\sigma^2}{dt}= 2 \mu^3 \frac{d f_w}{dt} + 6 f_w * \mu^2 * \frac{d \mu}{dt}}.
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
 rainequation(x, x0 = 10, threshold = NULL)
-test.rainequation(loc='DE BILT',src='ecad',nmin=150,x0=20,threshold=1,verbose=FALSE,plot=TRUE)
-scatterplot.rainequation(src='ecad',nmin=150,x0=c(10,20,30,40),colour.by='x0',col=NULL)
+test.rainequation(loc='DE BILT',src='ecad',nmin=150,
+                  x0=20,threshold=1,verbose=FALSE,plot=TRUE)
+scatterplot.rainequation(src='ecad',nmin=150,x0=c(10,20,30,40),
+                  colour.by='x0',col=NULL,verbose=FALSE)
 fract.gt.x(x,x0)
+rainvar(x,x0=1,na.rm=FALSE)
+rainvartrend(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

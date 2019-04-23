@@ -17,10 +17,11 @@ rbind.field <- function(...) {
 }
 
 cbind.field <- function(...) {
+    print('note: the results inherit the metadata from the first argument')
     x <- list(...)
     y <- cbind.zoo(...)
-    print('unfinished - need to combine the attributes from all inputs')
     y <- attrcp(x[[1]],y)
+    attr(y,'dimensions') <- c(attr(x[[1]],'dimensions')[1:2],length(index(y)))
     attr(y,'history') <- history.stamp(x[[1]])
     class(y) <- class(x[[1]])
     return(y)
@@ -137,6 +138,7 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
     cl <- as.list(match.call())
                                         #str(cl)
     args <- list(...)
+    #if (verbose) print(args)
                                         #str(args)
     X <- merge.zoo(...,all=all)
                                         #plot(X)
@@ -149,6 +151,7 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
     lon <- ID; lat <- ID; alt <- ID; param <- loc; lname <- loc
     src <- loc; qlty <- loc; url <- loc; ref <- loc
     info <- loc; ele <- asp <- ID
+    if (verbose) print('Organise the attributes')
     for (i in 1:n) {
         Z <- args[[i]]
                                         #attr <- softattr(Z)
@@ -816,7 +819,29 @@ combine.events <- function(x,y,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbos
 
   ## Combine events in x and y
   cn <- colnames(x)[colnames(x) %in% colnames(y)]
-  z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+  if(!"trajectory" %in% cn) {
+    z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+  } else {
+    if(difftime(min(as.Date(paste(y$date,y$time),format="%Y%m%d %H")),
+                max(as.Date(paste(x$date,x$time),format="%Y%m%d %H")), 
+                unit="hours")>6) {
+      dt <- max(x$trajectory)-min(y$trajectory)+1
+      y$trajectory <- y$trajectory+dt
+      z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+      remove.close <- FALSE
+    } else {
+      # If there is 6 hours or less between the end of x and beginning of y
+      # check if the tracks of x continue in y. If not, track y again.
+      if(any(x$trajectory[x$date==max(x$date)] %in% y$trajectory[y$date==min(y$date)])) {
+        z <- rbind(x[colnames(x) %in% cn],y[colnames(y) %in% cn])
+      } else {
+        y2 <- y[!colnames(y) %in% c("trajectory","dx","trackcount","timestep","distance","tracklength")]
+        y2 <- track(y2, x0=x)
+        z <- rbind(x[colnames(x) %in% cn],y2[colnames(y2) %in% cn])
+        remove.close <- FALSE
+      }
+    }
+  }
   
   if(!any(x$date %in% y$date)) remove.close <- FALSE
   

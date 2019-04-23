@@ -73,7 +73,7 @@ station.sonel(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dPBLOC.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dLROCH.slv'),
                       verbose=FALSE)
-station.gloss(url='http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data')
+station.gloss(url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',is=NULL,verbose=TRUE)
 station.newlyn(path='data/gloss-241_Newlyn',verbose=TRUE) 
 station.giss(url)
 allgood(x,miss=.1,verbose=TRUE)
@@ -107,6 +107,7 @@ clean.station(x,miss=.1,verbose=TRUE)
   \item{it}{A single integer or a vector of integers or Dates. An integer in the
   range of [1:12] for months, an integer of 4 digits for years
   (e.g. 2014), or a vector of Dates in the form "2014-01-01").}
+   \item{is}{Index space: integer (station ID) or character (location name) or list with lon/lat ranges.}
   \item{nmin}{Select only stations with at least nmin number of
   years, months or days depending on the class of object x (e.g. 30 years).}
   \item{plot}{Logical value. If, TRUE provides a plot.}
@@ -155,7 +156,8 @@ precip.ann <- as.annual(precip.dly,FUN="sum") ; plot(precip.ann)
 ss <- select.station(cntr="NORWAY",param="precip",src="GHCND",nmin=130)
 y <- station.ghcnd(loc=ss , path="~/data.GHCND",plot=TRUE)
 str(y)
-# Subselect one station and display the geographical location of both selected stations and highlight the subselected station (is=2).
+# Subselect one station and display the geographical location of both selected 
+# stations and highlight the subselected station (is=2).
 y1 <- subset(y,is=2)
 map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showall=TRUE)
 #}

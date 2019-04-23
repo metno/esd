@@ -67,7 +67,8 @@ combine.ds(...,all=TRUE)
 combine.ds.comb(...,all=TRUE) 
 combine.ds.station(...,all=TRUE)
 combine.ds.pca(...,all=TRUE)
-combine.field(x,y,all=FALSE,dimension="time",approach="field",orig.format=TRUE,verbose=FALSE)
+combine.field(x,y,all=FALSE,dimension="time",approach="field",
+              orig.format=TRUE,verbose=FALSE)
 combine.field.station(x,y,all=FALSE,orig.format=TRUE,verbose=FALSE)
 combine.list(...,all=TRUE)
 combine.station(...,all=TRUE)
@@ -104,18 +105,17 @@ zeros(x)
 
 \author{R.E. Benestad}
 \examples{
-library(esd)
-t2m <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
-T2m <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
+T2m_NCEP <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
+T2m_NorESM <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
 
 # Combine in time to compute common EOFs:
-X <- combine(t2m,T2m)
-ceof <- EOF(X,it=1)
+X <- combine(T2m_NCEP,T2m_NorESM)
+ceof <- EOF(X,it="Jan")
 plot(ceof)
 
 # Use combine to synchronise field and station data:
-data(Oslo)
-y <- combine.field.station(Oslo,t2m)
+data("Oslo")
+y <- combine.field.station(Oslo,T2m_NCEP)
 plot(y$y)
 }
 \keyword{utilities}

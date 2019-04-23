@@ -1,6 +1,6 @@
 retrieve.dsensemble <- function(ncfile,param="auto",type="ncdf4",
                              path=NULL,verbose=FALSE,...) {
-   if ((type=="ncdf") | (class(ncfile)=="ncdf")) { ##(library("ncdf",logical.return=TRUE)) {
+   if ((type=="ncdf") | (class(ncfile)=="ncdf")) {
         nc <- open.ncdf(file.path(path,ncfile))
         dimnames <- names(nc$dim)
         lon <- get.var.ncdf(nc,dimnames[grep("lon|x",tolower(dimnames))])
@@ -13,7 +13,7 @@ retrieve.dsensemble <- function(ncfile,param="auto",type="ncdf4",
             if (verbose) print('Irregular grid field found')
             X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...) 
         }
-    } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {##(library("ncdf4",logical.return=TRUE)) {
+    } else if ((type=="ncdf4") | (class(ncfile)=="ncdf4")) {
         nc <- nc_open(file.path(path,ncfile))
         dimnames <- names(nc$dim)
         lon <- ncvar_get(nc,dimnames[grep("lon|x",tolower(dimnames))])

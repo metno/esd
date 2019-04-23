@@ -10,8 +10,10 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-dX(Z, m = 10, mask.bad = TRUE, plot = FALSE, r = 6378000, chk.conf = 1, accuracy = NULL, progress = TRUE, verbose = FALSE)
-dY(Z, m = 10, mask.bad = TRUE, plot = FALSE, r = 6378000, chk.conf = 1, accuracy = NULL, progress = TRUE, verbose = FALSE)
+dX(Z, m = 10, mask.bad = TRUE, plot = FALSE, r = 6378000, chk.conf = 1, 
+   accuracy = NULL, progress = TRUE, verbose = FALSE)
+dY(Z, m = 10, mask.bad = TRUE, plot = FALSE, r = 6378000, chk.conf = 1, 
+   accuracy = NULL, progress = TRUE, verbose = FALSE)
 dT(y, m = NULL, plot = FALSE, verbose = FALSE, chk.conf = 1)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -77,6 +79,9 @@ dT(y, m = NULL, plot = FALSE, verbose = FALSE, chk.conf = 1)
 }
 \examples{
 \dontrun{
+slp <- slp.ERAINT()
+slp.dx <- dX(slp,verbose=TRUE)
+
 u10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='u10')
 v10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='v10')
 ## Estimate the vorticity

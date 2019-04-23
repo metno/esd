@@ -1,32 +1,60 @@
-NINO3.4 <- function(url='ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/ersst3b.nino.mth.ascii',header=TRUE,
-url2='http://www.cpc.ncep.noaa.gov/data/indices/sstoi.indices') {
+NINO3.4 <- function(url=NULL, url2=NULL, header=TRUE, freq="monthly", verbose=FALSE) {
+  if(verbose) print("NINO3.4")
+  if(is.null(url)) {
+    if(freq=="daily") {
+      url <- 'https://climexp.knmi.nl/data/inino34_daily.dat'
+      header <- TRUE
+    } else {
+      url <- 'https://climexp.knmi.nl/data/inino5.dat'
+      header <- FALSE
+      # alt2: header <- TRUE; url <- 'ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/ersst3b.nino.mth.81-10.ascii'
+      # alt3: header <- TRUE; url <- https://www.esrl.noaa.gov/psd/data/correlation/nina34.data
+      # alt4: header <- TRUE; url <- 'http://www.cpc.ncep.noaa.gov/data/indices/sstoi.indices'
+    }
+  }
   enso <- read.table(url,header=header)
-  nino3.4 <- zoo(enso[10],
-                 order.by=as.Date(paste(enso$YR,enso$MON,'01',sep='-')))
+  if(ncol(enso)==2) {
+    d <- as.Date(strptime(enso[,1],format="%Y%m%d"))
+    nino3.4 <- zoo(enso[,2], order.by=d)
+  } else if(ncol(enso)==13) {
+    d <- as.Date(paste(sort(rep(enso[,1],12)),1:12,'01',sep='-'))
+    nino3.4 <- zoo(c(unlist(t(enso[,2:13]))), order.by=d)
+  } else if (all(c("YR","MON","ANOM.3") %in% colnames(enso))) {
+    d <- as.Date(paste(enso$YR,enso$MON,'01',sep='-'))
+    nino3.4 <- zoo(enso$ANOM.3, order.by=d)
+  } else {
+    print("Warning! Don't know how to read data from url",url)
+  }
   nino3.4 <- as.station(nino3.4,loc='Nino3.4',param='Nino3.4',
                         unit='dimensionless')
+  ## KMP 2019-02-08: No need with updated nino3.4 from KNMI Climate Explorer
   ## Combine with more updated data from url2 (which do not extend far back in time)                     
-  if (!is.null(url2)) {
-    y <- read.table(url2,header=TRUE)
-    y <- zoo(y$ANOM.3,order.by=as.Date(paste(y$YR,y$MON,'01',sep='-')))
-    y <- as.station(y,loc='Nino3.4',param='Nino3.4',lon=c(-170,-120),lat=c(-5,5),
-                    unit='dimensionless')
-    nino3.4 <- combine(nino3.4,y)                
-  }
+  #if (!is.null(url2)) {
+  #  y <- read.table(url2,header=TRUE)
+  #  y <- zoo(y$ANOM.3,order.by=as.Date(paste(y$YR,y$MON,'01',sep='-')))
+  #  y <- as.station(y,loc='Nino3.4',param='Nino3.4',lon=c(-170,-120),lat=c(-5,5),
+  #                  unit='dimensionless')
+  #  nino3.4 <- combine(nino3.4,y)                
+  #}
+  #if(is.null(url2)) {
   attr(nino3.4,'url') <- url
+  #} else {
+  #  attr(nino3.4,'url') <- list(url, url2)
+  #}
   return(nino3.4)
 }
 
-NAO <- function(url='http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii.table',header=FALSE) {
-
-  nao <- read.table(url,header,fill=TRUE)
-  naoi <- zoo(c(unlist(t(nao[,2:13]))),
-              order.by=as.Date(paste(sort(rep(nao[,1],12)),1:12,'01',sep='-')))
-  naoi <- as.station(naoi,loc='NAOI',param='NAOI',
-                     unit='dimensionless')
-  attr(naoi,'url') <- url
-  return(naoi)
-}
+# Moved NAO function to its own R-file (NAO.R) and added a choice of downloading daily or monthly 
+#NAO <- function(url='http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii.table',header=FALSE) {
+#
+#  nao <- read.table(url,header,fill=TRUE)
+#  naoi <- zoo(c(unlist(t(nao[,2:13]))),
+#              order.by=as.Date(paste(sort(rep(nao[,1],12)),1:12,'01',sep='-')))
+#  naoi <- as.station(naoi,loc='NAOI',param='NAOI',
+#                     unit='dimensionless')
+#  attr(naoi,'url') <- url
+#  return(naoi)
+#}
 
 ## Southern Oscillation Index
 SOI <- function(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',header=FALSE) {
@@ -42,7 +70,7 @@ SOI <- function(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext
   i1 <- grep('year',tolower(SOI))+1
   i2 <- grep('/pre',tolower(SOI))-1
   writeLines(SOI[i1:i2],con='SOI.txt')
-  soi <- read.table('SOI.txt',na.string='*',skip=13)
+  soi <- read.table('SOI.txt',na.strings='*',skip=13)
   soi <- zoo(c(unlist(t(soi[,2:13]))),
               order.by=as.Date(paste(sort(rep(soi[,1],12)),1:12,'01',sep='-')))
   soi <- as.station(soi,loc='SOI',param='SOI',unit='dimensionless',url=url,
@@ -102,21 +130,21 @@ GSL.nasa <- function(url='ftp://podaac.jpl.nasa.gov/allData/merged_alt/L2/TP_J1_
   return(sl)
 }
 
-  
-AMO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data') {
-  amo.test <- readLines(url)
-  nrows <- sum(is.element(nchar(amo.test),max(nchar(amo.test))))
-  amo <- read.table(url,skip=1,nrows=nrows)
-  amo[amo <= -99] <- NA
-  amo <- zoo(c(t(as.matrix(amo[2:13]))),
-             order.by=as.Date(paste(sort(rep(amo$V1,12)),rep(1:12,length(amo$V1)),'01',sep='-')))
-  amo <- as.station(amo,loc=NA,param='AMO',unit='dimensionless',
-                     lon=NA,lat=NA,alt=NA,
-                     cntr=NA,longname='Atlantic Multi-decadal Oscillation unsmoothed from the Kaplan SST V2',
-                     stid=NA,quality=NA,src='Calculated at NOAA/ESRL/PSD1',url=url,
-                     reference=NA,info=NA, method= NA)
-  return(amo)
-}
+# KMP 2019-02-19 moved AMO to its own R-script called AMO.R
+#AMO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data') {
+#  amo.test <- readLines(url)
+#  nrows <- sum(is.element(nchar(amo.test),max(nchar(amo.test))))
+#  amo <- read.table(url,skip=1,nrows=nrows)
+#  amo[amo <= -99] <- NA
+#  amo <- zoo(c(t(as.matrix(amo[2:13]))),
+#             order.by=as.Date(paste(sort(rep(amo$V1,12)),rep(1:12,length(amo$V1)),'01',sep='-')))
+#  amo <- as.station(amo,loc=NA,param='AMO',unit='dimensionless',
+#                     lon=NA,lat=NA,alt=NA,
+#                     cntr=NA,longname='Atlantic Multi-decadal Oscillation unsmoothed from the Kaplan SST V2',
+#                     stid=NA,quality=NA,src='Calculated at NOAA/ESRL/PSD1',url=url,
+#                     reference=NA,info=NA, method= NA)
+#  return(amo)
+#}
 
 QBO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data') {
   qbo.test <- readLines(url)

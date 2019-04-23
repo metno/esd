@@ -1,5 +1,5 @@
 
-trajectory2field <- function(x,dt='month',dx=2,dy=2,
+trajectory2field <- function(x,dt='month',dx=2,dy=2,radius=5E5,
                              it=NULL,is=NULL,verbose=FALSE) {
   if(verbose) print("trajectory2field")
   stopifnot(is.trajectory(x))
@@ -8,14 +8,20 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,
   lons <- seq(min(lons),max(lons),dx)
   lats <- round(x[,colnames(x)=='lat']/dy)*dy
   lats <- seq(min(lats),max(lats),dy)
-  dates <- as.Date(strptime(x[,'start'],format='%Y%m%d%H'))
+  dates <- strptime(x[,'start'],format='%Y%m%d%H')
+  if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    dates <- PCICt::as.PCICt(as.character(x[,'start']),format='%Y%m%d%H',cal=calendar)
+  } else {
+    dates <- as.POSIXct(as.character(x[,'start']),format='%Y%m%d%H')
+  }
   fn <- function(x,it=NULL) {
     x <- subset(x,it=it)
     if(verbose) print(paste(range(x[,'start']),collapse="-"))
     X <- array(rep(0,),dim=c(length(lons),length(lats)))
     if(verbose) print(dim(x))
     if(!is.null(dim(x)) & length(x)>0) {
-      A <- density.trajectory(x,dx=dx,dy=dy)
+      A <- density.trajectory(x,dx=dx,dy=dy,radius=radius)
       lat <- A$lat
       lon <- A$lon
       den <- A$density
@@ -31,21 +37,22 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,
   if(verbose) print("calculate trajectory density")
   if (grepl('month',dt)) {   
     if(verbose) print("monthly")
-    dvec <- seq(min(as.Date(as.yearmon(dates))),max(dates),by='month')
-    dall <- as.Date(as.yearmon(dates))
+    dall <- as.Date(paste(format(dates,format="%Y-%m"),"01",sep="-"))
+    dvec <- seq(min(dall),max(dall),by='month')
     unit <- 'events/month/area'
     fn2 <- function(di) fn(x,it=(dall==di))
     #X <- t(sapply(dvec,function(di) fn2))
   } else if (grepl('season',dt) | grepl('quarter',dt)) {
     if(verbose) print("seasonal")
-    dvec <- seq(min(as.Date(as.yearmon(dates))),max(dates),by='quarter')
-    dall <- as.Date(as.yearqtr(dates))
+    dall <- as.Date(as.yearqtr(as.Date(paste(format(dates,format="%Y-%m"),"01",sep="-"))))
+    dvec <- seq(min(dall),max(dall),by='quarter')
     fn2 <- function(di) fn(x,it=(dall==di))
     #X <- t(sapply(dvec,fn2))
     unit <- 'events/quarter/area'
   } else if (grepl('year',dt) | grepl('annual',dt)) {
     if(verbose) print("annual")
-    dvec <- seq(min(dates),max(dates),by='year')
+    dall <- as.Date(paste(format(dates,format="%Y"),"01-01",sep="-"))
+    dvec <- seq(min(dall),max(dall),by='year')
     unit <- 'events/year/area'
     fn2 <- function(di) fn(x,it=c(year(di),year(di)))
     #X <- t(sapply(dvec,fn2)
@@ -80,12 +87,12 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,
   invisible(Y)
 }
 
-density.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,verbose=FALSE) {
+density.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,radius=5E5,verbose=FALSE) {
   if(verbose) print("density.trajectory")
   y <- subset(x,it=it,is=is)
   A <- apply(y,1,function(x) trackdensity(x[colnames(y)=='lon'],
                                      x[colnames(y)=='lat'],
-                                     dx=dx,dy=dy))
+                                     dx=dx,dy=dy,radius=radius))
   lon <- unlist(lapply(A,function(x) factor2numeric(x$lon)))
   lat <- unlist(lapply(A,function(x) factor2numeric(x$lat)))
   hits <- as.data.frame(table(lon,lat))

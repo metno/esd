@@ -7,29 +7,19 @@
 \alias{t2m.NORDKLIM}
 \alias{precip.NORDKLIM}
 \alias{geoborders}
-\alias{t2m.ERAINT}
-\alias{t2m.ERA40}
 \alias{t2m.NCEP}
-\alias{t2m.MERRA}
 \alias{sst.NCEP}
 \alias{precip.ERAINT}
-\alias{slp.ERAINT}
-\alias{slp.MERRA}
 \alias{slp.NCEP}
 \alias{slp.atlantic.ERA5}
 \alias{t2m.NorESM.M}
 \alias{t2m.DNMI}
 \alias{sst.DNMI}
 \alias{slp.DNMI}
-\alias{eof.t2m.ERAINT}
-\alias{eof.t2m.ERA40}
 \alias{eof.t2m.NCEP}
-\alias{eof.t2m.MERRA}
 \alias{eof.sst.NCEP}
-\alias{eof.precip.ERAINT}
-\alias{eof.slp.ERAINT}
-\alias{eof.slp.MERRA}
 \alias{eof.slp.NCEP}
+\alias{eof.precip.ERAINT}
 \alias{eof.t2m.NorESM.M}
 \alias{eof.t2m.DNMI}
 \alias{eof.sst.DNMI}
@@ -100,13 +90,10 @@ data(NACD)
 data(NARP)
 data(Oslo)
 data(Svalbard)
-data(eof.t2m.ERAINT)
-data(eof.t2m.ERA40)
 data(eof.t2m.NCEP)
-data(eof.precip.ERAINT)
-data(eof.slp.ERAINT)
-data(eof.slp.MERRA)
 data(eof.slp.NCEP)
+data(eof.sst.NCEP)
+data(eof.precip.ERAINT)
 data(eof.t2m.NorESM.M)
 data(eof.t2m.DNMI)
 data(eof.sst.DNMI)
@@ -132,22 +119,35 @@ t2m.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 slp.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 sst.DNMI(lon=NULL,lat=NULL,anomaly=FALSE)
 t2m.NorESM.M(lon=NULL,lat=NULL,anomaly=FALSE)
-NINO3.4(url='ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/indices/ersst3b.nino.mth.ascii',header=TRUE)
-NAO(url='http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii.table',header=FALSE)
-SOI(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',header=FALSE)
+NINO3.4(url=paste('ftp://ftp.cpc.ncep.noaa.gov/wd52dg/data/',
+                  'indices/ersst3b.nino.mth.ascii',sep=""),
+        header=TRUE)
+NAO(url=paste('http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/',
+              'norm.nao.monthly.b5001.current.ascii.table',sep=""),header=FALSE)
+SOI(url=paste('ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext.html',sep=""),
+    header=FALSE)
 data(dse.Oslo)
-HadCRUT4(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt",plot=FALSE)
-NASAgiss(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt')
-GSL(url='http://www3.epa.gov/climatechange/images/indicator_downloads/sea-level_fig-1.csv')
-GSL.nasa(url='ftp://podaac.jpl.nasa.gov/allData/merged_alt/L2/TP_J1_OSTM/global_mean_sea_level/GMSL_TPJAOS_V4_199209_201708.txt',is=9)
+HadCRUT4(url=paste("http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/",
+                   "time_series/HadCRUT.4.2.0.0.monthly_ns_avg.txt",sep=""),
+         plot=FALSE)
+NASAgiss(url=paste('http://data.giss.nasa.gov/gistemp/tabledata_v3/',
+                   'GLB.Ts+dSST.txt',sep=""))
+GSL(url=paste('http://www3.epa.gov/climatechange/images/indicator_downloads/',
+              'sea-level_fig-1.csv',sep=""))
+GSL.nasa(url=paste('ftp://podaac.jpl.nasa.gov/allData/merged_alt/L2/TP_J1_OSTM/',
+                   'global_mean_sea_level/GMSL_TPJAOS_V4_199209_201708.txt',sep=""),
+        is=9)
 data(global.t2m.gcm)
 AMO(url='http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data')
 QBO(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data')
 CET(url='http://hadobs.metoffice.com/hadcet/cetml1659on.dat')
 CO2(url='ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt')
-read.hurdat2(url='http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html',n=20,verbose=FALSE)
-read.best.track(url='http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/best_tracks/',domain='io',
-                start=1945,end=2014,n=20,verbose=TRUE)                         
+read.hurdat2(url='http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html',
+             n=20,verbose=FALSE)
+read.best.track(url=paste('http://www.usno.navy.mil/NOOC/',
+                          'nmfc-ph/RSS/jtwc/best_tracks/',sep=""),
+                domain='io',start=1945,end=2014,
+                n=20,verbose=TRUE)                         
 }
 
 \arguments{

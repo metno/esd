@@ -35,7 +35,7 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE
   #print("OK so far?")
 
   d <- dim(yx)
-  r <- apply(coredata(yx[,2:d[2]]),2,cor,coredata(yx[,1]),use=use,...)
+  r <- apply(coredata(yx[,2:d[2]]),2,cor,coredata(yx[,1]),use=use)
   #print(length(r))
   
   r <- attrcp(y,r)
@@ -48,6 +48,7 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE
   attr(r,'source') <- attr(y,'source')
   attr(r,'unit') <- attr(y,'unit')
   attr(r,'time') <- range(index(y))
+  attr(r,'n_data_points') <- d[1]
   class(r) <- 'corfield'
 
   #print("map")
@@ -123,6 +124,7 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
     attr(r,'variable') <- c(attr(x,'variable')[1], attr(y,'variable')[1])
   attr(r,'source') <- paste(attr(x,'source'),attr(y,'source'),sep="/")
   attr(r,'location') <- attr(y,'location')
+  attr(r,'n_data_points') <- dim(x)[1]
   if (attr(x,'unit')[1]==attr(y,'unit')[1]) 
     attr(r,'unit') <- attr(x,'unit')[1] else
     attr(r,'unit') <- c(attr(x,'unit')[1],attr(y,'unit')[1])   
@@ -224,6 +226,7 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
   attr(r,'x.altitude') <- attr(x,'altitude')
   attr(r,'stadion_id') <- attr(x,'station_id')
   attr(r,'country') <- attr(x,'country')
+  attr(r,'n_data_points') <- dim(y)[1]
   if (attr(x,'unit')[1]==attr(y,'unit')[1]) 
     attr(r,'unit') <- attr(x,'unit')[1] else
     attr(r,'unit') <- c(unit(x)[1],unit(y)[1])

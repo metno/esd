@@ -38,9 +38,9 @@ Try the same type of argument as in lm (' y ~ x, data= ')
 \usage{
 CCA(Y,X,...)
 CCA.default(Y,X,...) 
-CCA.eof(Y,X,ip=1:8,verbose=FALSE)
-CCA.pca(Y,X,ip=1:8,verbose=FALSE)
-CCA.field(Y,X,ip=1:8,verbose=FALSE)
+CCA.eof(Y,X,...,ip=1:8,verbose=FALSE)
+CCA.pca(Y,X,...,ip=1:8,verbose=FALSE)
+CCA.field(Y,X,...,ip=1:8,verbose=FALSE)
 test.cca(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,
          SVD=TRUE,n.pc=4,synthetic=TRUE)
 
@@ -67,6 +67,7 @@ cca <- CCA(eof.1,eof.2)
 plot(cca)
 
 # CCA with PCA and EOF:
+\dontrun{
 NACD <- station.nacd()
 plot(annual(NACD))
 map(NACD,FUN="sd")
@@ -77,7 +78,6 @@ map(naslp)
 eof <- EOF(naslp,it='Jan')
 nacca <- CCA(pca,eof)
 plot(nacca)
-\dontrun{
 cca.pre <- precit.cca(nacca)
 }
 }

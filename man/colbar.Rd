@@ -11,10 +11,10 @@ Color bar
 Display a color bar object on an existing plot.
 }
 \usage{
-col.bar(breaks, horiz = TRUE, pch = 21, v = 1, h = 1, col = col, cex =
-2, cex.lab = 0.6, type = "r", verbose = FALSE, vl = 0.5, border = FALSE,
-...)
-colbar(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,mar,new=new,las=las,cex.axis=cex.axis)
+col.bar(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
+        cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border=FALSE,...)
+colbar(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
+       mar=c(1,0,0,0),new=TRUE,las=1,cex.axis=0.6,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

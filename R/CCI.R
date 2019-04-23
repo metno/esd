@@ -1,4 +1,3 @@
-# K Parding, 29.05.2015
 # Last updated 10.10.2016
 
 CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
@@ -9,7 +8,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   if(verbose) print("CCI - calculus based cyclone identification")
 
   stopifnot(inherits(Z,'field'))
-  Z <- subset(Z,it=it,is=is)
+  Z <- subset(Z,it=it,is=is,verbose=verbose)
   if(is.null(greenwich) & !is.null(attr(Z,"greenwich"))) {
     greenwich <- attr(Z,"greenwich")
   } else if (is.null(greenwich) & is.null(attr(Z,"greenwich"))) {
@@ -17,9 +16,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   }  
   Z <- g2dl(Z,greenwich=greenwich)
   
-  #yrmn <- as.yearmon(as.Date(strftime(index(Z),"%Y-%m-%d")))
-  #yrmn <- as.yearqtr(as.Date(strftime(index(Z),"%Y-%m-%d")))
-  yrmn <- year(as.Date(strftime(index(Z),"%Y-%m-%d")))
+  yrmn <- format(index(Z),"%Y")#"%Y%m")
   if (length(unique(yrmn))>2) {
     t1 <- Sys.time()  
     if (progress) pb <- txtProgressBar(style=3)
@@ -51,7 +48,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   } else {
 
   ## Rearrange time index
-  t <- as.numeric(strftime(index(Z),format="%Y%m%d%H%M"))
+  t <- as.numeric(format(index(Z),format="%Y%m%d%H%M"))
   
   ## Calculate first and second derivative
   if(verbose) print("Calculate first and second derivative")
@@ -166,7 +163,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
   # Exclude identified depressions in high altitude regions
   if(verbose) print("Penalty factor for high altitude")
-  data(etopo5)
+  data("etopo5", envir = environment())
   fn <- function(lon=0,lat=60) {
     i.lon <- which.min(abs(longitude(etopo5)-lon))
     i.lat <- which.min(abs(latitude(etopo5)-lat))
@@ -388,6 +385,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
       infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
         DY2[date[i]==t,lonXY[,1]==lon[i],1:(NY-1)]
+      if(length(inflx)>nrow(lonXY)) browser()
       lon.infl <- lonXY[inflx<0,1]
       lat.infl <- latXY[1,infly<0]
       dlon <- lon.infl-lon[i]
@@ -408,7 +406,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
       }
       if (oki) {
         ri <- distAB(lon[i],lat[i],lonXY[ilon,1],latXY[1,ilat])
-        fi <- 2*7.29212*1E-5*sin(pi*latXY[1,ilat]/180)
+        fi <- 2*7.29212*1E-5*sin(pi*abs(latXY[1,ilat])/180)
         vg <- dpi/(fi*rho)
         v.grad <- -0.5*fi*pi*ri*(1 - sqrt(1 + 4*vg/(fi*ri)))
         radius[i] <- mean(ri,na.rm=TRUE)
@@ -445,7 +443,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
     if (plot) {
       if(verbose) print("plot example of cyclone identification")
-      data(geoborders,envir=environment())
+      data("geoborders",envir=environment())
       i <- length(date)/2
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
@@ -460,13 +458,13 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
          xlab="lon",ylab="slp (hPa)")
       points(lon[i],pxi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
       points(lonXY[inflx<0,1],pxi[inflx<0,latXY[1,]==lat[i]],col="red",pch=1)
-      dev.copy2eps(file="cyclones.lon.eps", paper="letter")#; dev.off()
+      #dev.copy2eps(file="cyclones.lon.eps", paper="letter")#; dev.off()
       dev.new()
       plot(latXY[1,],pyi[lonXY[,1]==lon[i],],lty=1,type="l",main=date[i],
          xlab="lat",ylab="slp (hPa)")
       points(lat[i],pyi[lonXY[,1]==lon[i],latXY[1,]==lat[i]],col="blue",pch=19)
       points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
-      dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
+      #dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
       dev.new()
       image(xi,yi,zi,main=date[i],col=colscal(col="budrd",n=14,rev=FALSE),
           xlab="lon",ylab="lat",breaks=seq(940,1080,10))
@@ -504,16 +502,15 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
       sz[qf[j]==2] <- 1
       points(lon[j],lat[j],pch=21,lwd=2,bg="white",col=col,cex=sz)
       points(lon[i],lat[i],pch=4,lwd=2,col="black",cex=1)
-      dev.copy2eps(file="cyclones.map.eps", paper="letter")#; dev.off()
+      #dev.copy2eps(file="cyclones.map.eps", paper="letter")#; dev.off()
     }
 
     ## Remove temporary variables and release the memory:
     rm('lonXY','latXY','inflx','infly','DX2','DY2','px','py'); gc(reset=TRUE)
   
     ## Arrange results
-    date <- strptime(date,"%Y%m%d%H%M")
-    dd <- as.numeric(strftime(date,"%Y%m%d"))
-    hh <- as.numeric(strftime(date,"%H"))
+    dd <- round(date*1E-4)
+    hh <- round((date-dd*1E4)*1E-2)
     X <- data.frame(date=dd,time=hh,lon=lon,lat=lat,pcent=pcent,
          #dslp=dslp,
          max.gradient=max.gradient,max.speed=max.speed,
@@ -530,6 +527,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   }
   X <- as.events(X,unit=unit,longname=longname,greenwich=greenwich,
          param=param,src=attr(Z,"source"),file=attr(Z,"file"),
+         calendar=attr(Z,"calendar"),
          method="calculus based cylone identification, CCI",
          version="CCI in esd v1.0 (after October 6, 2015)",
          reference="Benestad & Chen, 2006, The use of a calculus-based cyclone identification method for generating storm statistics, Tellus A 58(4), 473-486.",

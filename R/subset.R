@@ -815,7 +815,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## both field and station objects.
     
     nval <- function(x) sum(is.finite(x))
-    
     ## Sometimes 'it' = 'integer(0)' - reset to NULL!
     if (length(it)==0) it <- NULL
     if (length(is)==0) is <- NULL
@@ -844,7 +843,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     
     ## KMP 2016-02-03: to solve problem with subset.events 
     if(inherits(t,"Date")) t <- as.Date(round(as.numeric(t)))
-    if(!inherits(t,"POSIXt")) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
+    if(!inherits(t,c("POSIXt","PCICt"))) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
     if (verbose) {print('default.subset: time index it'); print(it)}
     if (is.character(it)) {
       if ((levels(factor(nchar(it)))==10)) it <- as.Date(it)
@@ -863,16 +862,17 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (verbose) print('X has a numeric index - select by years')
         yr <- t
         mo <- dy <- rep(1,length(t))
-    } else if (inherits(t,"POSIXt")) {
+    } else if (inherits(t,c("POSIXt","PCICt"))) {
         if (verbose) print('X has a POSIXt index')
         yr <- year(t)
         mo <- month(t)
         dy <- day(t)
         hr <- as.numeric(format(t,"%H"))
         mn <- as.numeric(format(t,"%M"))
-        if (!inherits(it,"POSIXt")) t <-  as.Date(format(t,"%Y-%m-%d"))
+        if (!inherits(it,c("POSIXt","PCICt"))) t <- format(t,"%Y-%m-%d")
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
+    if (is.logical(it)) ii <- it else  ## REB 2018-11-30
     if(inherits(it,c("Date"))) {
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
@@ -943,9 +943,9 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       ii <- (t >= min(it)) & (t <= max(it))
     } else if (inherits(it,"logical") & length(it)==length(yr)) {
       ii <- it
-    } else if (inherits(it,"POSIXt")) {
-      if (verbose) print('it is a POSIXt date & time object')
-      if (!inherits(t,"POSIXt")) it <- as.Date(it)
+    } else if (inherits(it,c("POSIXt","PCICt"))) {
+      if (verbose) print('it is a date & time object')
+      if (!inherits(t,c("POSIXt","PCICt"))) it <- as.Date(format(it,"%Y-%m-%d"))
       ii <- is.element(t,it)
     } else if (!is.null(it)) {
       ii <- rep(FALSE,length(t))
@@ -1116,16 +1116,21 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
   
   if(!is.null(it)) {
     dt <- x[,"date"]*1E2 + x[,"time"]
-    t <- as.Date(strptime(x[,"date"],format="%Y%m%d"))
+    if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      t <- PCICt::as.PCICt(as.character(dt),format="%Y%m%d%H",cal=calendar)
+    } else {
+      t <- as.POSIXct(as.character(dt),format="%Y%m%d%H")
+    }
+    #t <- as.Date(strptime(x[,"date"],format="%Y%m%d"))
     if(verbose) print(paste('length of t',length(t)))
-    
     is.datetime <- function(x) all(!is.months(x) &
                             (is.character(x) &
                              !grepl("-",x) &
                              all(levels(factor(nchar(x)))==10)) |
                             (is.numeric(x) &
                              all(levels(factor(nchar(x)))==10)) |
-                            inherits(x,c("POSIXt")))
+                            inherits(x,c("POSIXt","PCICt")))
     is.dates <- function(x) all(!is.months(x) & !is.datetime(x) & 
                             (is.character(x) &
                             all(levels(factor(nchar(x)))==10) |
@@ -1152,13 +1157,19 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
       ii <- is.element(mo,eval(parse(text=paste('season.abb()$',it,sep=''))))
     } else if (is.datetime(it)) {
       if (verbose) print("Date and time")
-      if (inherits(it,c("POSIXt"))) it <- as.numeric(strftime(it,"%Y%m%d%H"))
+      if (inherits(it,c("POSIXt","PCICt"))) it <- as.numeric(format(it,"%Y%m%d%H"))
       if (is.character(it)) it <- as.numeric(it)
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
-        it <- strptime(range(it),format="%Y%m%d%H")
-        it <- as.numeric(strftime(seq(it[1],it[2],by="hour"),format="%Y%m%d%H"))
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- PCICt::as.PCICt(as.character(range(it)),format="%Y%m%d%H",cal=calendar)
+        } else {
+          it <- as.POSIXct(as.character(range(it)),format="%Y%m%d%H",cal=calendar)
+        }
+        it <- as.numeric(format(seq(it[1],it[2],by="hour"),format="%Y%m%d%H"))
+        #it <- strptime(range(it),format="%Y%m%d%H")
+        #it <- as.numeric(format(seq(it[1],it[2],by="hour"),format="%Y%m%d%H"))
       } else {
         if (verbose) print('it is a string of dates')
         if (verbose) print(it)
@@ -1166,15 +1177,23 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
       ii <- is.element(dt,it)
     } else if (is.dates(it)) {
       if (is.character(it) & all(grepl("-",it))) {
-        it <- as.Date(it)
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- PCICt::as.PCICt(it,cal=calendar)
+        } else {
+          it <- as.Date(it)
+        }
       } else if (!inherits(it,"Date")) {
-        it <- as.Date(strptime(it,format="%Y%m%d"))
+        if (requireNamespace("PCICt", quietly = TRUE)) {
+          it <- PCICt::as.PCICt(as.character(it),format="%Y%m%d",cal=calendar)
+        } else {
+          it <- as.Date(as.character(it),format="%Y%m%d")
+        }
       }
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
-        it <- strftime(seq(it[1],it[2],by='day'),format="%Y%m%d")
-        t <- strftime(t,format="%Y%m%d")
+        it <- format(seq(it[1],it[2],by='day'),format="%Y%m%d")
+        t <- format(t,format="%Y%m%d")
         ii <- is.element(t,it)
       } else { 
         if (verbose) print('it is a string of dates')
@@ -1289,7 +1308,7 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
                                       all(levels(factor(nchar(x)))==10)) |
                                    (is.numeric(x) &
                                         all(levels(factor(nchar(x)))==10)) |
-                                   inherits(x,c("POSIXt")))
+                                   inherits(x,c("POSIXt","PCICt")))
     is.dates <- function(x) all(!is.months(x) & !is.datetime(x) & 
                                   (is.character(x) &
                                      all(levels(factor(nchar(x)))==10) |
@@ -1302,23 +1321,16 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
                                                 tolower(month.abb)))>0)
     is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
                                                  names(season.abb())))>0)
-    # is.months <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
-    #                                             tolower(month.abb)))>0)
-    # is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
-    #                                              names(season.abb())))>0)
-    # is.dates <- function(x) all(!is.months(x) &
-    #                               (levels(factor(nchar(x)))==10) |
-    #                               (is.numeric(x) & levels(factor(nchar(x)))==8))
-    # is.years <- function(x) all(!is.months(x) & 
-    #                               is.numeric(x) & levels(factor(nchar(x)))==4)
 
-    tstart <- strptime(x[,colnames(x)=="start"],format="%Y%m%d%H")
-    tend <- strptime(x[,colnames(x)=="end"],format="%Y%m%d%H")
-    if(!is.datetime(it)) {
-      tstart <- strftime(tstart,format="%Y-%m-%d")
-      tend <- strftime(tend,format="%Y-%m-%d")
+    if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+    if (requireNamespace("PCICt", quietly = TRUE)) {
+      tstart <- PCICt::as.PCICt(as.character(x[,colnames(x)=="start"]),format="%Y%m%d%H",cal=calendar)
+      tend <- PCICt::as.PCICt(as.character(x[,colnames(x)=="end"]),format="%Y%m%d%H",cal=calendar)
+    } else {
+      tstart <- as.POSIXct(as.character(x[,colnames(x)=="start"]),format="%Y%m%d%H")
+      tend <- as.POSIXct(as.character(x[,colnames(x)=="end"]),format="%Y%m%d%H")
     }
-    
+
     yr <- year(x)
     mo <- month(x)
     dy <- day(x)
@@ -1338,9 +1350,12 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
       if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
       ii <- is.element(mo,eval(parse(text=paste('season.abb()$',it,sep=''))))
     } else if (is.dates(it)) {
-      it <- strftime(as.Date(it),format="%Y%m%d")
-      t1 <- strftime(as.Date(tstart),format="%Y%m%d")
-      t2 <- strftime(as.Date(tend),format="%Y%m%d")
+      it <- format(it,format="%Y%m%d")
+      t1 <- format(tstart,format="%Y%m%d")
+      t2 <- format(tend,format="%Y%m%d")
+      #it <- strftime(as.Date(it),format="%Y%m%d")
+      #t1 <- strftime(as.Date(tstart),format="%Y%m%d")
+      #t2 <- strftime(as.Date(tend),format="%Y%m%d")
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
@@ -1350,9 +1365,12 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
         ii <- it<=t2 & it>=t1
       }
     } else if (is.datetime(it)) {
-      it <- as.numeric(strftime(it,format="%Y%m%d%H"))
-      t1 <- as.numeric(strftime(tstart,format="%Y%m%d%H"))
-      t2 <- as.numeric(strftime(tend,format="%Y%m%d%H"))
+      it <- as.numeric(format(it,format="%Y%m%d%H"))
+      t1 <- as.numeric(format(tstart,format="%Y%m%d%H"))
+      t2 <- as.numeric(format(tend,format="%Y%m%d%H"))
+      #it <- as.numeric(strftime(it,format="%Y%m%d%H"))
+      #t1 <- as.numeric(strftime(tstart,format="%Y%m%d%H"))
+      #t2 <- as.numeric(strftime(tend,format="%Y%m%d%H"))
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
@@ -1399,21 +1417,21 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
     if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
     if (length(slon)==2 & length(slat)==2) {
       if (verbose) print(paste('is selects longitudes ',
-                               slon[1],'–',slon[2],'E ',
+                               paste(slon,sep="-"),'E ',
                                "and latitudes ",
-                               slat[1],'–',slat[2],'N ',sep=""))
+                               paste(slat,sep="-"),'N ',sep=""))
       jx <- colnames(x)=='lon'
       jy <- colnames(x)=='lat'
       selx <- apply(x,1,function(x) any(x[jx]>=min(slon) &
                                           x[jx]<=max(slon) & x[jy]>=min(slat) & x[jy]<=max(slat)))        
     } else if (length(slon)==2) {
       if (verbose) print(paste('is selects longitudes ',
-                               slon[1],'–',slon[2],'E',sep=""))
+                               paste(slon,sep="-"),'E',sep=""))
       jx <- colnames(x)=='lon'
       selx <- apply(x,1,function(x) any(x[jx]>=min(slon) & x[jx]<=max(slon)))
     } else if (length(slat)==2) {
       if (verbose) print(paste('is selects latitudes ',
-                               slat[1],'–',slat[2],'N',sep=""))
+                               paste(slat,sep="-"),'N',sep=""))
       jy <- colnames(x)=='lat'
       selx <- apply(x,1,function(x) any(x[jy]>=min(slat) & x[jy]<=max(slat)))
     }

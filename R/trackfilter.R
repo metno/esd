@@ -15,11 +15,11 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
       if(is.null(pmax)) pmax <- max(x[param],na.rm=TRUE)
       if(verbose) print(paste(param,"in range",pmin,"-",pmax))
       if(verbose) print(paste("FUN =",FUN))
-      if(FUN=="any" & !"trajectory" %in% names(x)) x <- track(x)
       if(!"trackcount" %in% names(x)) x <- Trackstats(x)
       if(is.null(FUN)) {
         ok <- as.vector(x[param]>=pmin & x[param]<=pmax)
       } else if (FUN=="any") {
+        if(!"trajectory" %in% names(x)) x <- track(x)
         ok.ev <- as.vector(x[param]>=pmin & x[param]<=pmax)
         ok <- x$trajectory %in% unique(x$trajectory[ok.ev])
       } else if (FUN=="all") {

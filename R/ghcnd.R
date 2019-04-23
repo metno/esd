@@ -50,9 +50,13 @@ ghcnd.meta <- function(param =NULL,src ="ghcnd", adj = TRUE, path = "data.GHCND"
       if (verbose) print(paste("Adjusted", adj))
       if (verbose) print("Reading metadata...") 	
       #
-      meta1 <- read.fwf(finventory,widths=c(11,9,11,4,5,5),col.names=c("stid","lat","lon","param","start","end"), sep = "\t",as.is=TRUE,head=FALSE)
+      meta1 <- read.fwf(finventory,widths=c(11,9,11,4,5,5),
+                        col.names=c("stid","lat","lon","param","start","end"), sep = "\t",
+                        as.is=TRUE,header=FALSE)
       ## meta1 <- read.fwf(finventory,widths=c(3,8,9,11,4,5,5),col.names=c("country.code","wmo.code","lat","lon","param","start","end"), sep = "\t",as.is=TRUE) 
-      meta <- read.fwf("ghcnd-stations.txt",widths=c(11,9,10,7,4,30,4,4,6),col.names=c("stid","lat","lon","alt","state","stnm","gsnflag","hcnflag","wmo_id"), sep = "\t",as.is=TRUE,head=FALSE)
+      meta <- read.fwf("ghcnd-stations.txt",widths=c(11,9,10,7,4,30,4,4,6),
+                       col.names=c("stid","lat","lon","alt","state","stnm","gsnflag","hcnflag","wmo_id"), 
+                       sep = "\t",as.is=TRUE,header=FALSE)
      
       ## meta <- read.fwf("ghcnd-stations.txt",widths=c(2,1,8,9,10,7,4,30,4,4,6),col.names=c("cntr.abb","cntr.netw.c","stid","lat","lon","alt","state","stnm","gsnflag","hcnflag","wmo_id"), sep = "\t",as.is=TRUE
       

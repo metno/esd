@@ -3,7 +3,7 @@ ghcn.country.code <- function(code = NULL , name = NULL) {
 if (!is.null(code)) icode <- as.numeric(code) else icode <- NULL
 if (!is.null(name)) iname <- tolower(as.character(name)) else iname <- NULL
 
-x <- read.csv2("~/SHARED/data/country-codes",head=FALSE)
+x <- read.csv2("~/SHARED/data/country-codes",header=FALSE)
 x.code <- as.numeric(substr(x$V1,1,3))
 x.name <- substr(x$V1,5,nchar(as.character(x$V1)))
 x.name <- as.character(gsub("  ",x=x.name,replacement=""))
@@ -30,7 +30,7 @@ ghcnd.country.abb  <- function(abb = NULL , name = NULL) {
 iabb <- abb
 iname <- name
 
-x      <- read.csv2("~/SHARED/data/ghcnd/ghcnd-countries.txt",head=FALSE)
+x      <- read.csv2("~/SHARED/data/ghcnd/ghcnd-countries.txt",header=FALSE)
 x.abb  <- substr(x$V1,1,2)
 x.name <- substr(x$V1,4,nchar(as.character(x$V1)))
 
@@ -60,7 +60,7 @@ ecad.country.abb  <- function(abb = NULL , name = NULL) {
 iabb <- abb
 iname <- name
 
-x      <- read.csv2("~/SHARED/data/ecad/ecad-countries.txt",head=FALSE)
+x      <- read.csv2("~/SHARED/data/ecad/ecad-countries.txt",header=FALSE)
 x.abb  <- substr(x$V1,1,2)
 x.name <- substr(x$V1,4,nchar(as.character(x$V1)))
 

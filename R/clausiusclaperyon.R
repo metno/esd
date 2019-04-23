@@ -70,15 +70,15 @@ t2m.Pr <- function(x,x0=10,na.rm=TRUE) {
 }
 
 NE <- function(p) {
-  nel <- qbinom(p=0.05,
-                size=attr(p,'size'),prob=p)
-  nem <- qbinom(p=0.5,
-                   size=attr(p,'size'),prob=p)
-  neh <- qbinom(p=0.95,
-                   size=attr(p,'size'),prob=p)
+  nel <- qbinom(p=0.05,size=attr(p,'size'),prob=p)
+  nem <- qbinom(p=0.5,size=attr(p,'size'),prob=p)
+  neh <- qbinom(p=0.95,size=attr(p,'size'),prob=p)
   ne <- c(nel,nem,neh)
+  ## KMP 2018-11-12: x0 was not defined in the function.
+  ## Should it be provided as input or as an attribute of p?
+  x0 <- attr(p,"x0")
   attr(ne,'variable') <- paste('N(X>',x0,'mm/day)')
   attr(ne,'unit') <- 'days'
-  ne
+  return(ne)
 }
 

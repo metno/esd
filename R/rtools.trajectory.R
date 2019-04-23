@@ -85,11 +85,18 @@ polyfit <- function(x,y=NULL) {
   return(z)
 }
 
-count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
+count.trajectory <- function(x,it=NULL,is=NULL,by='year',verbose=FALSE) {
+  if(verbose) print("count.trajectory")
   y <- subset(x,it=it,is=is)
-  t <- as.Date(strptime(y[,colnames(y)=="start"],format="%Y%m%d%H"))
-  nrt <- as.Date(strptime(range(year(t))*1E4+range(month(t))*1E2+1,
-                format="%Y%m%d"))
+  if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
+  if (requireNamespace("PCICt", quietly = TRUE)) {
+    t <- PCICt::as.PCICt(as.character(y[,colnames(y)=="start"]),format="%Y%m%d%H",cal=calendar)
+    nrt <- PCICt::as.PCICt(as.character(range(year(t))*1E4+range(month(t))*1E2+1),
+                           format="%Y%m%d",cal=attr(x,"calendar"))
+  } else {
+    t <- as.POSIXct(as.character(y[,colnames(y)=="start"]),format="%Y%m%d%H")
+    nrt <- as.POSIXct(as.character(range(year(t))*1E4+range(month(t))*1E2+1),format="%Y%m%d")
+  }
   if (by=='year') {
     fmt <- "%Y"
     if (inherits(y,'season')) {
@@ -102,7 +109,8 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
     n0 <- zoo(,seq(from = year(nrt[1]), to = year(nrt[2])))
   } else if (by %in% c('month','4seasons')) {
     fmt <- "%Y%m%d"
-    t <- as.yearmon(t)
+    t <- as.Date(paste(format(t,format="%Y-%m"),"01",sep="-"))
+    nrt <- as.Date(format(nrt,format="%Y-%m-%d"))
     cls <- 'month'
     unit <- 'events/month'
     n0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "month"))
@@ -112,22 +120,29 @@ count.trajectory <- function(x,it=NULL,is=NULL,by='year') {
     unit <- 'events/day'
     n0 <- zoo(,seq(from = nrt[1], to = nrt[2], by = "day"))
   }
-  d <- strftime(t,format=fmt)
+  d <- format(t,format=fmt)
   n <- table(d)
-  if (by=='year') {dn <- dimnames(n)$d
-  } else dn <- as.Date(strptime(dimnames(n)$d,format=fmt))
+  if (by=='year') {
+    dn <- as.integer(dimnames(n)$d)
+  } else if(by=="day" & requireNamespace("PCICt", quietly = TRUE)) {
+    dn <- PCICt::as.PCICt(dimnames(n)$d,format=fmt,cal=calendar)
+  } else {
+    dn <- as.Date(strptime(dimnames(n)$d,format=fmt))
+  }
   nz <- zoo(n,order.by=dn)
   n <- merge(nz, n0)
   n[is.na(n)] <- 0
   n <- attrcp(y,n)
   n <- as.station(n,param='trajectory count',unit=unit,
-       longname='trajectory count')
+                  calendar=calendar,longname='trajectory count')
   if (inherits(y,"season")) {
     ok <- sapply(month(index(n0)),function(x) x %in% unique(month(t)))
     n <- subset(n,it=ok)
   }
   if (by=='4seasons') n <- as.4seasons(n,FUN=sum)
-  n <- subset(n,it=as.Date(c(min(t),max(t))))
+  n <- subset(n,it=format(c(min(t),max(t)),format="%Y-%m-%d"))
+  if(!is.null(attr(y,"longitude"))) attr(n,"longitude") <- attr(y,"longitude")
+  if(!is.null(attr(y,"latitude"))) attr(n,"latitude") <- attr(y,"latitude")
   invisible(n)
 }
 
@@ -164,7 +179,7 @@ cartesian2spherical <- function(x,y,z,a=6.378e06,verbose=TRUE) {
 }
 
 
-anomaly.trajectory <- function(x,type='first',param=c('lon','lat'),
+anomaly.trajectory <- function(x,...,type='first',param=c('lon','lat'),
                                 verbose=FALSE) {
   if(verbose) print("anomaly.trajectory")
   stopifnot(!missing(x), inherits(x,"trajectory"))

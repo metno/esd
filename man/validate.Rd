@@ -11,7 +11,10 @@
 }
 \usage{
 validate.eof.comb(x, ...)
-validate.dsensemble(x, conf.int = c(0.05, 0.95), colbar = list(breaks = seq(0, 1, by = 0.1), cex = 1.5, col = colscal(11, col = "t2m", alpha = 0.5)), plot = TRUE, verbose = FALSE, ...)
+validate.dsensemble(x, conf.int=c(0.05, 0.95), 
+                    colbar=list(breaks=seq(0,1,by=0.1), cex=1.5, 
+                                col=colscal(11, col="t2m", alpha=0.5)),
+                    plot=TRUE, verbose=FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

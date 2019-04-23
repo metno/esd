@@ -19,10 +19,15 @@ write2ncdf4(x,...)
 write2ncdf4.default(x,...)
 write2ncdf4.list(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
                  torg="1970-01-01",missval=-999,verbose=FALSE)
-write2ncdf4.field(x,fname='field.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999,verbose=FALSE)
-write2ncdf4.eof(x,fname='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999)
-write2ncdf4.pca(x,fname='pca.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) 
-write2ncdf4.dsensemble(x,fname='dsensemble.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) 
+		 
+write2ncdf4.field(x,fname='field.nc',prec='short',scale=10,offset=NULL,
+                 torg="1970-01-01",missval=-999,verbose=FALSE)
+write2ncdf4.eof(x,fname='eof.nc',prec='short',scale=10,offset=NULL,
+                torg="1970-01-01",missval=-999)
+write2ncdf4.pca(x,fname='pca.nc',prec='short',scale=10,offset=NULL,
+                torg="1970-01-01",missval=-999) 
+write2ncdf4.dsensemble(x,fname='dsensemble.nc',prec='short',scale=10,offset=NULL,
+                       torg="1970-01-01",missval=-999) 
 write2ncdf4.station(x,fname,prec='short',offset=0, missval=-999,
                     scale=0.1,torg='1899-12-31',verbose=FALSE) 
 }

@@ -51,40 +51,83 @@ station.sonel <- function(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/d
 ## http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data/glosshlp.txt
 ## http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data
 ## Monthly means
-station.gloss <- function(url='http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data') {
-  lonlat <- read.table(paste(url,'glosspos.dat',sep='/'))
-  data(glossstations)
-  #glossstations <- read.table('glossstations.txt',sep='\t')
-  SL <- read.fwf(paste(url,'psmsl.dat',sep='/'),skip=2,
-                 widths=c(3,4,4,32,rep(5,14)),
-                 col.names=c('XRE','CCO','SCO','location','year',month.abb,'annual'))
-  Xt <- table(SL$location)
-  n <- length(names(Xt))
-  yearmon <- seq(min(SL$year,na.rm=TRUE),max(SL$year,na.rm=TRUE)+11/12,by=1/12)
-  X <- matrix(rep(NA,n*length(yearmon)),n,length(yearmon));
-  loc <- names(Xt)
-  loc <- gsub('  ','',loc)
-  loc <- substr(loc,2,nchar(loc)-1)
-  lon <- rep(NA,n); lat <- rep(NA,n); cntr <- rep('NA',n)
-  for (i in 1:n) {
-    ii <- is.element(as.character(SL$location),names(Xt)[i])
-    yrmn <- seq(min(SL$year[ii],na.rm=TRUE),max(SL$year[ii],na.rm=TRUE)+11/12,by=1/12)
-    yrmn <- yrmn[is.element(trunc(yrmn),SL$year[ii])]
-    i1 <- is.element(yearmon,yrmn)
-    i2 <- is.element(yrmn,yearmon)
-    x <- c(t(SL[ii,6:17]))
-    X[i,i1] <- as.numeric(x)[i2]
-    iii <- is.element(substr(toupper(glossstations$V1),1,nchar(loc[i])),toupper(loc[i]))
-    if (sum(iii)>0) {
-      lon[i] <- glossstations$V5[iii]
-      lat[i] <- glossstations$V4[iii]
-      cntr[i] <- glossstations$V2[iii]
-    }
+
+strstrip <- function(x) {
+  if (is.na(x)) return(NA)
+  if (is.factor(x)) x <- as.character(x)
+  if (!is.character(x)) return(NA)
+  while (substr(x,1,1)==' ') x <- substr(x,2,nchar(x))
+  while (substr(x,nchar(x),nchar(x))==' ') x <- substr(x,1,nchar(x)-1)
+  return(x)
+}
+  
+station.gloss <- function(url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',is=NULL,verbose=TRUE) {
+  if (!file.exists('rlr_monthly.zip')) download.file(url,'rlr_monthly.zip')
+  con1 <- unzip('rlr_monthly.zip', files="rlr_monthly/filelist.txt")
+  meta <- read.table('rlr_monthly/filelist.txt',sep=';')
+  if (verbose) print(paste('station.gloss:',dim(meta)[1],'stations'))
+  if (is.null(is)) is <- 1:length(meta$V1) else {
+    if (is.character(is)) {
+      for (i in 1:length(is)) is[i] <- grep(toupper(is[i]),toupper(as.character(meta$V4)))
+      is <- as.numeric(is)
+    } else if (is.list(is)) {
+      il <- is; is <- 1:length(meta$V1)
+      if (!is.null(il$lon)) i1 <- meta$V3>= min(il$lon) & meta$V3<= max(il$lon) else i1 <- rep(TRUE,length(is))
+      if (!is.null(il$lat)) i2 <- meta$V2>= min(il$lat) & meta$V2<= max(il$lat) else i2 <- rep(TRUE,length(is))
+      #print(c(sum(i1),sum(i2)))
+      is <- is[i1 & i2]
+      #print(is)
+      if (verbose) {print(range(meta$V3[is])); print(range(meta$V2[is]))}
+    } else if (is.numeric(is))
+      is <- (1:length(meta$V1))[is.element(meta$V1,is)]
   }
-  Y <- zoo(t(X),order.by=as.Date(paste(trunc(yearmon),
-                  round(12*(yearmon-trunc(yearmon)))+1,'01',sep='-')))
-  Y <- as.station(Y,loc=loc,param='sea-level',unit='mm',info='http://www.gloss-sealevel.org/',
-                  lon=lon,lat=lat,alt=rep(0,n),cntr=cntr,url=url,src='GLOSS')
+  if (verbose) print(paste('Reading',length(is),'stations'))
+  iv <- 1
+  for (i in meta$V1[is]) {
+    filename <- paste0("rlr_monthly/data/",i,".rlrdata")
+    con1 <- unzip('rlr_monthly.zip', files=filename)
+    x <- read.table(filename,sep=';')
+    x$V2[x$V2 < -999] <- NA; yr <- trunc(x$V1)
+    y <- zoo(x$V2,order.by=as.Date(paste(yr,round(12*(x$V1 - yr)+0.5),'01',sep='-')))
+    ii <- is.element(meta$V1,i)
+    loc <- strstrip(as.character(meta[ii,4]))
+    if (verbose) print(paste(iv,i,loc)); iv <- iv + 1
+    y <- as.station(y,loc=loc,lon=meta[ii,3],lat=meta[ii,2],alt=0,src='GLOSS',url=url,stid=meta[ii,6],
+                    param = 'sea-level',unit='mm')
+    if (i==meta$V1[is][1]) Y <- y else Y <- combine.stations(Y,y)
+  }
+  # data(glossstations, envir = environment())
+  # #glossstations <- read.table('glossstations.txt',sep='\t')
+  # SL <- read.fwf(paste(url,'psmsl.dat',sep='/'),skip=2,
+  #                widths=c(3,4,4,32,rep(5,14)),
+  #                col.names=c('XRE','CCO','SCO','location','year',month.abb,'annual'))
+  # Xt <- table(SL$location)
+  # n <- length(names(Xt))
+  # yearmon <- seq(min(SL$year,na.rm=TRUE),max(SL$year,na.rm=TRUE)+11/12,by=1/12)
+  # X <- matrix(rep(NA,n*length(yearmon)),n,length(yearmon));
+  # loc <- names(Xt)
+  # loc <- gsub('  ','',loc)
+  # loc <- substr(loc,2,nchar(loc)-1)
+  # lon <- rep(NA,n); lat <- rep(NA,n); cntr <- rep('NA',n)
+  # for (i in 1:n) {
+  #   ii <- is.element(as.character(SL$location),names(Xt)[i])
+  #   yrmn <- seq(min(SL$year[ii],na.rm=TRUE),max(SL$year[ii],na.rm=TRUE)+11/12,by=1/12)
+  #   yrmn <- yrmn[is.element(trunc(yrmn),SL$year[ii])]
+  #   i1 <- is.element(yearmon,yrmn)
+  #   i2 <- is.element(yrmn,yearmon)
+  #   x <- c(t(SL[ii,6:17]))
+  #   X[i,i1] <- as.numeric(x)[i2]
+  #   iii <- is.element(substr(toupper(glossstations$V1),1,nchar(loc[i])),toupper(loc[i]))
+  #   if (sum(iii)>0) {
+  #     lon[i] <- glossstations$V5[iii]
+  #     lat[i] <- glossstations$V4[iii]
+  #     cntr[i] <- glossstations$V2[iii]
+  #   }
+  # }
+  # Y <- zoo(t(X),order.by=as.Date(paste(trunc(yearmon),
+  #                 round(12*(yearmon-trunc(yearmon)))+1,'01',sep='-')))
+  # Y <- as.station(Y,loc=loc,param='sea-level',unit='mm',info='http://www.gloss-sealevel.org/',
+  #                 lon=lon,lat=lat,alt=rep(0,n),cntr=cntr,url=url,src='GLOSS')
   return(Y)
 }
 
@@ -97,7 +140,7 @@ station.newlyn <- function(path='data/gloss-241_Newlyn',verbose=TRUE) {
     system(paste('unzip newlyn.zip d',path))
   }
   metadata <- read.table(paste(path,'ig241.txt',sep='/'),skip=5,nrows=1)
-  files <- list.files(path=path,pattern='.lst',full.name=TRUE)
+  files <- list.files(path=path,pattern='.lst',full.names=TRUE)
   for (i in 1:length(files)) {
     if (verbose) print(files[i])
     testline <- readLines(files[i],n=1)

@@ -5,7 +5,7 @@
 predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
   stopifnot(!missing(x),inherits(x,"ds"))
-  
+
   if ( inherits(x,c('eof','comb')) & (is.null(newdata) | is.logical(newdata)) ) {
     if(verbose) print("no new predictor data is provided")
     if(verbose) print("predictand is an EOF")
@@ -21,11 +21,13 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   } else if (inherits(x,'field')) {
     if (verbose) print("predictand is a field object")
     
-    if (inherits(x,'station')) 
+    if (inherits(x,'station')) {
       y <- predict.ds.eof(x,newdata=newdata,addnoise=addnoise,
-                          n=n,verbose=verbose) else 
-                            y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,
-                                                n=n,verbose=verbose)
+                          n=n,verbose=verbose) 
+    } else {
+      y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,
+                          n=n,verbose=verbose)
+    }
   } else if (inherits(x,'eof')) {
     if (verbose) print("predictand is an EOF") 
     if(verbose) print("new predictor data is provided")
@@ -43,11 +45,32 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   } else if (inherits(x,'pca')) {
     if(verbose) print("predictand is PCA")
     y <- predict.ds.pca(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
+  } else if (inherits(x,'station')) {
+    y <- predict.ds.station(x,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
   }
-  
   y <- attrcp(attr(x,'original_data'),y)
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(x)
+  invisible(y)
+}
+
+## KMP: added new method 2018-12-29
+predict.ds.station <- function(x,newdata,addnoise=FALSE,n=100,verbose=FALSE) {
+  if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
+  if (is.null(names(newdata))) names(newdata) <- paste('X',1:dim(newdata)[2],sep='.')
+  t <- index(as.eof(newdata))
+  newdata <- data.frame(coredata(as.eof(newdata)))
+  ## Fudge fix for when the names of the data are x.1, x.2,,, instead of X.1, X.2,.. 
+  if (nchar(names(newdata))[1]!=3) names(newdata) <- paste('X',1:dim(newdata)[2],sep='.')
+  names(newdata) <- toupper(names(newdata))
+  d <- dim(newdata)
+  if (is.null(d)) d <- c(length(x),1)
+  model <- attr(x,'model')
+  y <- predict(model,newdata)
+  y <- zoo(y, order.by=t)
+  # KMP 2018-12-30: Changed to include model in attrcp. Is there any reason not to copy model to y? 
+  y <- attrcp(x, y, ignore=c("name", "n.apps", "appendix", "dimnames","aspect"))
+  class(y) <- class(x)[-1]
   invisible(y)
 }
 
@@ -119,7 +142,8 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (!is.null(residual)) attr(y,'residual.mean') <- mean(residual,na.rm=TRUE)
   if (!is.null(residual)) attr(y,'residual.sd') <- sd(residual,na.rm=TRUE)
   class(y) <- class(x)[-1] ## AM remove 'ds' from output class
-  y <- attrcp(x,y)
+  # KMP 2018-12-30: Changed to include model in attrcp. Is there any reason not to copy model to y? 
+  y <- attrcp(x, y, ignore=c("name", "n.apps", "appendix", "dimnames","aspect"))
   if (verbose) print('predict.ds.eof complete')
   invisible(y)
 }
@@ -161,7 +185,8 @@ predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   ## Replace 
   #browser()
   y <- zoo(y, order.by=t)
-  y <- attrcp(x,y)
+  # KMP 2018-12-30: Changed to include model in attrcp. Is there any reason not to copy model to y? 
+  y <- attrcp(x, y, ignore=c("name", "n.apps", "appendix", "dimnames","aspect"))
   class(y) <- class(x)[-1]
   invisible(y)
 }
@@ -238,6 +263,7 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   attr(Y,'source') <- attr(X,'source')
   attr(Y,'residual.mean') <- mean(residual,na.rm=TRUE)
   attr(Y,'residual.sd') <- sd(residual,na.rm=TRUE)
+  ## KMP 2018-12-30: Why ignore model?
   Y <- attrcp(x,Y,ignore = c("name", "model", "n.apps", "appendix", 
                             "dimnames","aspect"))
   attr(Y,'aspect') <- 'predicted'
@@ -250,10 +276,11 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print("project.ds")
   
   
-  if (is.null(newdata))
+  if (is.null(newdata)) {
     X <- attr(x,'eof')
-  else
+  } else {
     X <- newdata ## newdata must be an eof object
+  }
   
   neofs <- length(attr(X,'eigenvalues'))
   
@@ -308,7 +335,8 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   attr(Y,'source') <- attr(X,'source')
   attr(Y,'residual.mean') <- mean(residual,na.rm=TRUE)
   attr(Y,'residual.sd') <- sd(residual,na.rm=TRUE)
-  Y <- attrcp(x,Y)
+  # KMP 2018-12-30: Changed to include model in attrcp. Is there any reason not to copy model to y? 
+  y <- attrcp(x, y, ignore=c("name", "n.apps", "appendix", "dimnames","aspect"))
   attr(Y,'aspect') <- 'projected'
   Y <- as.station(Y)
   invisible(Y)

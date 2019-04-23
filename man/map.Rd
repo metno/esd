@@ -2,7 +2,10 @@
 \alias{map}
 \alias{map.default}
 \alias{map.matrix}
+\alias{map.data.frame}
 \alias{map.station}
+\alias{map.stationmeta}
+\alias{map.stationsummary}
 \alias{map.comb}
 \alias{map.eof}
 \alias{map.ds}
@@ -27,7 +30,6 @@
 \description{Make map of geophysical data. These plot functions are S3 methods for esd objects.
 }
 \usage{
-<<<<<<< HEAD
 map(x,it=NULL,is=NULL,new=TRUE,...)
 
 map.default(x,FUN="mean",it=NULL,is=NULL,new=FALSE,
@@ -38,60 +40,71 @@ map.default(x,FUN="mean",it=NULL,is=NULL,new=FALSE,
             latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE, ...)
 
 map.matrix(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
-                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       type=c("fill","contour"),gridlines=FALSE,
-                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                       ip=1,plot=TRUE,...)
-
-map.station(x,FUN=NULL, it=NULL,is=NULL,new=FALSE,
-                             projection="lonlat",
-                             xlim = NULL, ylim = NULL,zlim=NULL,n=15,
-                             col='darkred',bg='orange',
-                             colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
-                                          breaks=NULL,type="p",cex=2,h=0.6, v=1,
-                                          pos=0.1,show=TRUE),
-                             type=NULL,gridlines=TRUE,
-                             lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
-                             cex=2,zexpr="alt",cex.subset=1,
-                             add.text.subset=FALSE,showall=FALSE,
-                             add.text=FALSE,
-                             height=NULL,width=NULL,
-                             cex.main=1,cex.axis=1,cex.lab=0.6,
-                             pch=19, from=NULL,to=NULL,showaxis=FALSE,
-                             border=FALSE,full.names=FALSE,
-                             full.names.subset=FALSE, 
-                             text=FALSE, fancy=FALSE, 
-                             na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
-                             legend.shrink=1,fig=c(0,1,0.05,0.95),...)
+           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+           colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                        pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+           type=c("fill","contour"),gridlines=FALSE,
+           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
+           ip=1,plot=TRUE,...)
+map.data.frame(x,...)
+map.stationmeta(x,...)
+map.stationsummary(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=19,nbins=15,
+                 new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),hist=TRUE,lon=NULL,lat=NULL,...)
+           
+map.station(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
+                         add=FALSE,projection="lonlat",
+                         xlim = NULL, ylim = NULL,zlim=NULL,n=15,
+                         col='darkred',bg='orange',
+                         colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
+                                      breaks=NULL,type="p",cex=2,h=0.6, v=1,
+                                      pos=0.1,show=TRUE),
+                         # col=NULL replaced by palette
+                         type=NULL,gridlines=TRUE,
+                         lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
+                         cex=2,zexpr="alt",cex.subset=1,
+                         add.text.subset=FALSE,showall=FALSE,
+                         add.text=FALSE,main=NULL,sub=NULL,
+                         height=NULL,width=NULL,
+                         cex.main=1,cex.sub=0.75,cex.axis=1,cex.lab=0.6,
+                         col.main="black",col.sub="grey",
+                         font.main=1,font.sub=4,
+                         pch=19, from=NULL,to=NULL,showaxis=FALSE,
+                         border=FALSE,full.names=FALSE,
+                         full.names.subset=FALSE, use.old=FALSE,
+                         text=FALSE, fancy=FALSE, 
+                         na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
+                         ##colorbar=TRUE,
+                         xlab="lon",ylab="lat",
+                         legend.shrink=1,fig=c(0,1,0.05,0.95),
+                         mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...)
 
 map.comb(x,it=NULL,is=NULL,new=TRUE,projection = "lonlat",
-           xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                       type="p",cex=2,h=0.6,v=1),
-           type=c("fill", "contour"),gridlines=FALSE,
-           lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,ip=1,plot=TRUE,...)
+         xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+         colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                     type="p",cex=2,h=0.6,v=1),
+         type=c("fill", "contour"),gridlines=FALSE,
+         lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,ip=1,plot=TRUE,...)
 
 map.eof(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
-                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
-                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                                pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                    type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                    ip=1,cex=1,plot=TRUE,...)
+        xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+        colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+        type=c("fill","contour"),gridlines=FALSE,
+        lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
+        ip=1,cex=1,plot=TRUE,...)
 
 map.ds(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
-         xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-         colbar=list(pal = NULL,rev=FALSE,n=10,breaks=NULL,
-                     type="p",cex = 2,h=0.6,v=1,pos=0.05),
-         type= c("fill", "contour"),gridlines=FALSE,
-         lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE,plot=TRUE,...)
+       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+       colbar=list(pal = NULL,rev=FALSE,n=10,breaks=NULL,
+                   type="p",cex = 2,h=0.6,v=1,pos=0.05),
+       type= c("fill", "contour"),gridlines=FALSE,
+       lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE,plot=TRUE,...)
 
 map.dsensemble(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
-                           colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                                   show=TRUE,type="p",cex=2,h=0.6,v=1),
-                           FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,plot=TRUE,...)
+               colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                           show=TRUE,type="p",cex=2,h=0.6,v=1),
+               FUN='mean',FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,
+               plot=TRUE,...)
 
 map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
             xlim=NULL,ylim=NULL,zlim=NULL, 
@@ -102,60 +115,59 @@ map.field(x,FUN="mean",it=NULL,is=NULL,new=TRUE,projection = "lonlat",
             na.rm = TRUE, plot=TRUE,...)
 
 map.corfield(x,it=NULL,is=NULL,new=TRUE,projection= "lonlat", 
-               xlim=NULL,ylim=NULL,zlim=NULL,n = 15,
-               colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                           type="p",cex=2,h=0.6,v=1),
-               type=c("fill", "contour"),gridlines=FALSE,
-               lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE, ...)
+             xlim=NULL,ylim=NULL,zlim=NULL,n = 15,
+             colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                         type="p",cex=2,h=0.6,v=1),
+             type=c("fill", "contour"),gridlines=FALSE,
+             lonR=NULL,latR=NULL,axiR = NULL,verbose = FALSE, ...)
  
 map.trend(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
-            xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                        type="p",cex=2,h=0.6,v=1,),
-            type=c("fill", "contour"),gridlines=FALSE,
-            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...)
+          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+          colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                      type="p",cex=2,h=0.6,v=1,),
+          type=c("fill", "contour"),gridlines=FALSE,
+          lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...)
 
 map.pca(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
-                    xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
-                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                                pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
-                                        #cex.axis=1,cex.main=1,cex.lab=1,
-                    type=c("fill","contour"),gridlines=FALSE,fig=c(0,1,0.05,0.95),
-                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...)
+        xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',
+        colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                    pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
+        type=c("fill","contour"),gridlines=FALSE,fig=c(0,1,0.05,0.95),
+        lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...)
 
 
 map.mvr(x,it=NULL,is=NULL,new=TRUE,projection="lonlat", 
-          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
-          colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                      type="p",cex=2,h=0.6,v=1),
-          type=c("fill", "contour"),gridlines = FALSE, verbose = FALSE, plot=TRUE,...)
+        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+        colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                    type="p",cex=2,h=0.6,v=1),
+        type=c("fill", "contour"),gridlines = FALSE, verbose = FALSE, plot=TRUE,...)
 
 
 map.cca(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
-                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
-                    colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
-                               cex=2,show=TRUE,h=0.6, v=1,pos=0.05), colbar2= NULL,
-                    type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE,...)
+        xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+        colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
+                     cex=2,show=TRUE,h=0.6, v=1,pos=0.05), colbar2= NULL,
+        type=c("fill","contour"),gridlines=FALSE,
+        lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE,...)
 
 map.trajectory(x,it=NULL,is=NULL,type="paths",
                projection="sphere",verbose=TRUE,plot=TRUE,...)
 
 map.events(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
-                       param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
-                       colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
-                                   pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                       showaxis=TRUE,fig=c(0,1,0.05,0.95),mgp=c(2,0.5,0),mar=rep(2,4),
-                       lty=1,type=c("points","trajectory","start","end"),border=FALSE,
-                       projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,add=FALSE,
-                       verbose=FALSE,...)
+           param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
+           colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
+                       pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
+           showaxis=TRUE,fig=c(0,1,0.05,0.95),mgp=c(2,0.5,0),mar=rep(2,4),
+           lty=1,type=c("points","trajectory","start","end"),border=FALSE,
+           projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,add=FALSE,
+           verbose=FALSE,...)
 
 lonlatprojection(x,it=NULL,is=NULL,new=FALSE,projection="lonlat", 
-                   xlim=NULL,ylim=NULL,zlim=NULL,n =15,
-                   colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
-                               type="p",cex=2,h=0.6,v=1),
-                   type = c("fill", "contour"),geography=TRUE,
-                   gridlines = FALSE, verbose = FALSE,fancy=FALSE,plot=TRUE,...) 
+                 xlim=NULL,ylim=NULL,zlim=NULL,n =15,
+                 colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
+                             type="p",cex=2,h=0.6,v=1),
+                 type = c("fill", "contour"),geography=TRUE,
+                 gridlines = FALSE, verbose = FALSE,fancy=FALSE,plot=TRUE,...) 
 
 map.googleearth(x)
 
@@ -164,15 +176,15 @@ rotM(x=0,y=0,z=0)
 gridbox(x,col,density = NULL, angle = 45)
 
 map2sphere(x,it=NULL,is=NULL,new = TRUE,
-             xlim=NULL,ylim=NULL,zlim = NULL,
-             colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                          type="p",cex=2,h=0.6,v=1,pos=0.05),
-             lonR = NULL, latR = NULL, axiR = 0, 
-             type = c("fill", "contour"),colorbar=TRUE,
-             gridlines = TRUE, fancy = FALSE, verbose = FALSE,...) 
+           xlim=NULL,ylim=NULL,zlim = NULL,
+           colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
+                        type="p",cex=2,h=0.6,v=1,pos=0.05),
+           lonR = NULL, latR = NULL, axiR = 0, 
+           type = c("fill", "contour"),colorbar=TRUE,
+           gridlines = TRUE, fancy = FALSE, verbose = FALSE,...) 
 
 vec(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,
-                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...)
+    projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...)
 mask(x,land=FALSE)
 }
 \arguments{
@@ -215,6 +227,8 @@ mask(x,land=FALSE)
   \item{colorbar}{Show the color bar in the map (default TRUE). If
     FALSE, the colorbar is not added into the map (ignored).}
   
+  \item{cex}{Size of symbols.}
+  \item{cex0}{Scaling of symbols if \code{cex} is defined by a variable with different size for different locations.}
   \item{cex.subset}{...}
   \item{add.text}{Add abbreviated location names.}
   \item{full.names}{Show the full name of the location.}
@@ -233,6 +247,7 @@ mask(x,land=FALSE)
   \item{what}{What to map: ['eof','field] for EOF pattern or the field
   recovered from the EOFs.}
   \item{fig}{see \code{\link{par}}}
+  \item{nbins}{number of bins/colour categories}
 }
 \value{A field object}
 
@@ -242,7 +257,8 @@ mask(x,land=FALSE)
 
 \author{R.E. Benestad}
 \examples{
-# Select stations in ss and map the geographical location of the selected stations with a zoom on Norway.
+# Select stations in ss and map the geographical location 
+# of the selected stations with a zoom on Norway.
 ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
 map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70))
 

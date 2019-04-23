@@ -96,16 +96,15 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print(it)
 
     if (inherits(t,c("Date","yearmon"))) {
-       if (verbose) print('years ++')
-        yr <- year(x)
-        mo <- month(x)
-        dy <- day(x)
+      if (verbose) print('years ++')
+      yr <- year(x)
+      mo <- month(x)
+      dy <- day(x)
     } else if (inherits(t,c("numeric","integer"))) {
-        if (verbose) print('years')
-        yr <- t
-        mo <- dy <- rep(1,length(t))
+      if (verbose) print('years')
+      yr <- t
+      mo <- dy <- rep(1,length(t))
     } else print("Index of x should be a Date, yearmon, or numeric object")
-
     
     if(is.character(it)) {
       if ((levels(factor(nchar(it)))==10)) it <- as.Date(it)
@@ -114,6 +113,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if(inherits(it,c("POSIXt"))) it <- as.Date(it)
     
     if(inherits(it,c("Date"))) {
+      if (inherits(t,"yearmon")) t <- as.Date(t)
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
@@ -245,9 +245,9 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
                                         #print(slat); print(range(lat(x)))
         if (length(sloc)>0) sell <- is.element(tolower(sloc(x)),sloc)
-        if (length(slon)==2) selx <- (lon(x) >= min(slon)) & (lon(x) <= max(slon))
-        if (length(slat)==2) sely <- (lat(x) >= min(slat)) & (lat(x) <= max(slat))
-        if (length(salt)==2) selz <- (alt(x) >= min(salt)) & (alt(x) <= max(salt))
+        if (length(slon)==2) selx <- as.logical((lon(x) >= min(slon)) & (lon(x) <= max(slon)))
+        if (length(slat)==2) sely <- as.logical((lat(x) >= min(slat)) & (lat(x) <= max(slat)))
+        if (length(salt)==2) selz <- as.logical((alt(x) >= min(salt)) & (alt(x) <= max(salt)))
         if (length(salt)==1) {
             if (salt < 0) selz <- alt(x) <= abs(salt) else
             selz <- alt(x) >= salt
@@ -263,6 +263,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ##
         ## Need to make sure both it and is are same type: here integers for index rather than logical
         ## otherwise the subindexing results in an empty object
+        if (verbose) print(paste(sum(is),'locations'))
     }
 
     if (verbose) print(paste('Subset of',sum(ii),'data points between',

@@ -14,7 +14,7 @@
 }
 \usage{
 summary.dsensemble(x, years = seq(1990, 2090, by = 20))
-summary.station(x)
+summary.station(x,im=1:12)
 summary.ds(x)
 summary.eof(x)
 summary.cca(x)
@@ -27,6 +27,7 @@ summary.cca(x)
   \item{years}{
 %%     ~~Describe \code{years} here~~
 }
+\item{im}{The order of months in the table. Use \code{im=c(10:12,1:9)} for Oct-Sep.}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~

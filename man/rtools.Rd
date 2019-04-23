@@ -28,7 +28,8 @@
 \alias{arec.station}
 \alias{lastrains}
 \alias{lastelementrecord}
-
+\alias{strstrip}
+\alias{bin}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -49,6 +50,7 @@ Oce. Sys.
 \code{stand} gives a standardised time series.
 
 \code{arec} compares the number of record-breaking events to the number of events for a stime series of iid data (\code{sum(1/1:n)})
+\code{strstrip} strips off spaces before and after text in a string. 
 }
 \usage{
 as.decimal(x = NULL)
@@ -80,6 +82,8 @@ arec.station(x,...)
 arec.default(x,...)
 lastrains(x,x0=1,uptodate=TRUE,verbose=FALSE)
 lastelementrecord(x,verbose=FALSE)
+strstrip(x)
+bin(x,nbins=5,labels=NULL,na.rm=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -92,6 +96,7 @@ lastelementrecord(x,verbose=FALSE)
      returned}
    \item{triangle}{a group of three stations with sea-level
      pressure', e.g. from ECA\&D.}
+     \item{nbins}{number of bins/categories}
 }
 \details{
   'as.decimal' converts between degree-minute-second into decimal value.
@@ -154,6 +159,21 @@ class(ws) <- class(v)
 attr(ws,'variable')='windspeed'
 attr(ws,'longname')='geostrophic wind speed'
 map(ws,FUN='quantile',probs=0.98)
+
+## Test firstyears on HadCRUT4
+if (!file.exists('~/Downloads/HadCRUT.4.6.0.0.median.nc')) {
+  print('Download HadCRUT4')
+  download.file('https://crudata.uea.ac.uk/cru/data/temperature/HadCRUT.4.6.0.0.median.nc',
+                dest='~/Downloads/HadCRUT.4.6.0.0.median.nc') 
+}
+
+Obs <- annual(retrieve('~/Downloads/HadCRUT.4.6.0.0.median.nc',param='temperature_anomaly'))
+lons <- rep(lon(Obs),length(lat(Obs)))
+lats <- sort(rep(lat(Obs),length(lon(Obs))))
+fy <- firstyear(Obs)
+map(subset(Obs,it=1))
+points(lons[fy==1850],lats[fy==1850])
+map(Obs,FUN='firstyear')
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

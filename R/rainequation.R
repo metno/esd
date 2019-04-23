@@ -15,9 +15,38 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
 
 fract.gt.x <- function(x,x0) {sum(x > x0,na.rm=TRUE)/sum(is.finite(x))}
 
+rainvar <- function(x,x0=1,na.rm=FALSE) {
+  ## The variance estimated from the integral of the pdf assuming a threshold x0
+  ## of 1 mm/day
+  mu <- wetmean(x,threshold=x0)
+  fw <- wetfreq(x,threshold=x0)
+  sigma2 <- fw*(  mu^2 + (x0^2 + 2*x0*mu + 2*mu)*exp(-x0/mu) )
+  return(sigma2)
+}
+
+rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
+  ## The rate of change estimated as the first derivative from the analytic expression for sigma^2.
+  if (verbose) {print('rainvartrend'); print(class(x))}
+  if (verbose) print('wetmean')
+  mu <- annual(x,FUN='wetmean',nmin=nmin,threshold=x0)
+  if (verbose) print('wetfreq')
+  fw <- annual(x,FUN='wetfreq',nmin=nmin,threshold=x0)
+  if (verbose) print('first derivative')
+  if (is.null(dim(x))) {
+    m <- mean(mu)
+    f <- mean(fw)
+  } else { 
+    m <- colMeans(mu)
+    f <- colMeans(fw)
+  }
+  ds2.dt <- (  m^2 + (x0^2 + 2*x0*m + 2*m)*exp(-x0/m) ) * trend.coef(fw) +
+            f*( 2*m + (4*x0 + 4*m + x0^3/m^2 + 2*x0/m)*exp(-x0/m) ) * trend.coef(mu)
+  return(ds2.dt)
+}
+
 ## To test the rain equation
 test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
-                              threshold=1,verbose=FALSE,plot=TRUE) {
+                              threshold=1,verbose=FALSE,plot=TRUE,new=TRUE) {
   
   if (verbose) {print('test.rainequation'); print(c(x0,threshold))}
   if (is.null(loc)) {
@@ -38,7 +67,7 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
     if (plot) {
       par(bty='n',xpd=TRUE)
       plot(pr,main=paste('The "rain equation" for',loc(y)),lwd=3,
-           ylab=paste('fraction of days with more than',x0,'mm'),xlab='Year')
+           ylab=paste('fraction of days with more than',x0,'mm'),xlab='Year',new=new)
       
       lines(obsfrac,col=rgb(1,0,0,0.7),lwd=2)
       grid()
@@ -55,12 +84,17 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
 
 ## Use a scatter plot to evaluate the rain equation for a selection of rain gauge records.
 ## Select time series from e.g. ECA&D with a minimum number (e.g. 150) of years with data
-scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),threshold=1,colour.by='x0',col=NULL) {
-  
+scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),
+                                     threshold=1,colour.by='x0',col=NULL,verbose=FALSE) {
+  if (verbose) print('scatterplot.rainequation')
   if (is.character(src)) {
     ss <- select.station(param='precip',nmin=150,src='ecad') 
     precip <- station(ss)
   } else if (is.station(src) & is.precip(src)) precip <- src
+  
+  d <- dim(precip)
+  if (is.null(d)) d <- c(length(precip),1)
+  if (verbose) print(d)
   
   if (!is.null(colour.by)) {
       if (is.character(('colour.by'))) {
@@ -76,7 +110,6 @@ scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),thres
         if (tolower(colour.by)=='x0') col <- cols
   if (is.null(col)) col <- rgb(0,0,0.7,0.15)
   
-  d <- dim(precip)
   firstplot <- TRUE
   X <- c(); Y <- X; COL <- NULL
   
@@ -100,12 +133,14 @@ scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),thres
       pr <- matchdate(pr,it=obsfrac); obsfrac <- matchdate(obsfrac,it=pr)
       X <- c(X,coredata(obsfrac)); Y <- c(Y,coredata(pr))
       rng <- range(c(X,Y),na.rm=TRUE)
-      
-      plot(X,Y,main='Test the "rain equation"',
-           xlim=rng,ylim=rng,pch=19,cex=1.25,col=COL,
-           xlab=expression(sum(H(X-x))/n),ylab=expression(Pr(X>x)==f[w]*e^{-x/mu}))
-      grid()
-      lines(c(0,0),rep(max(c(X,Y),na.rm=TRUE),2),lty=2,col=rgb(0.5,0.5,0.5,0.3))
+      if (verbose) print(rng)
+      if (sum(is.finite(rng))==2) {
+        plot(X,Y,main='Test the "rain equation"',
+             xlim=rng,ylim=rng,pch=19,cex=1.25,col=COL,
+             xlab=expression(sum(H(X-x))/n),ylab=expression(Pr(X>x)==f[w]*e^{-x/mu}))
+        grid()
+        lines(c(0,0),rep(max(c(X,Y),na.rm=TRUE),2),lty=2,col=rgb(0.5,0.5,0.5,0.3))
+      }
     }
   }
   ok <- is.finite(X) & is.finite(Y)
@@ -115,5 +150,6 @@ scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),thres
   attr(test.results,'station') <- precip
   attr(test.results,'threshold') <- threshold
   attr(test.results,'col') <- COL
+  par(mar=par()$mar - c(0,1,0,0))
   return(test.results)
 }

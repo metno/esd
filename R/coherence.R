@@ -59,24 +59,3 @@ if (plot) {
 invisible(coh)
 }
 
-test.coherence <- function(x=NULL,y=NULL) {
-  default <- FALSE
-  if ( (is.null(x)) & (is.null(y)) ) { N <- 1000; default=TRUE } else
-  if (!is.null(x)) N <- length(x) else
-  if (!is.null(y)) N <- length(y)
-  if ( (!is.null(x)) & (!is.null(y)) & (length(x)!=length(y)) )
-    stop("testcoh: arguments x and y must have same length")
-  if (is.null(x)) x <- cos(pi * seq(0,6,length=N)) +
-                       0.5*cos(pi * seq(0,40,length=N)) +
-                       0.1*rnorm(N)
-  if (is.null(y)) y <- 0.2*sin(pi * seq(0,6,length=N)) +
-                       0.3*sin(pi * seq(0,40,length=N)) +
-                       0.6*sin(pi * seq(0,20,length=N)) +
-                       0.05*rnorm(N)
-  plot(x,type="l",main="Test data"); lines(y,col="red")
-  if (default) mtext("Common time scales= 167 & 25",1,col="grey")
-  newFig()
-  coherence(x,y) -> coh
-  if (default) mtext("Common time scales= 167 & 25",1,col="grey")
-  invisible(coh)
-}

@@ -81,11 +81,11 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   lab.breaks <- NULL
   if (is.character(param)) {
     if (tolower(param)=="nao") {
-      param <- NAO()
+      param <- NAO(freq="daily")
     } else if (tolower(param)=="amo") {
       param <- AMO()
     } else if (tolower(param)=="enso") {
-      param <- NINO3.4(url2=NULL)
+      param <- NINO3.4(freq="daily")
     } else if (tolower(param)=="t2m") {
       param <- HadCRUT4()
     } else if (param %in% colnames(x)) {
@@ -171,7 +171,6 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   icol[icol==0] <- 1
   icol[icol>colbar$n] <- colbar$n
   col <- matrix(colbar$col[icol],dcol)
-
   if (new & !add) dev.new(width=8,height=7)
   if(!add) {
     data("geoborders",envir=environment())
@@ -192,6 +191,7 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
                           sum(!OK),'crossing dateline'))
   
   par0 <- par()
+  #browser()
   if("trajectory" %in% type & sum(OK)>0) {
     segments(lon0[OK,],lat0[OK,],lon1[OK,],lat1[OK,],
              col=adjustcolor(col[OK,],alpha.f=alpha),lty=lty,lwd=lwd)
@@ -535,7 +535,6 @@ sphere.trajectory <- function(x,
   }
 }
 
-
 map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
       colbar=list(pal='precip',rev=TRUE,breaks=NULL,cex=2,h=0.6,v=1),
       projection='sphere',latR=90,lonR=10,gridlines=FALSE,...) {
@@ -547,7 +546,6 @@ map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
   map(X,colbar=colbar,projection=projection,latR=latR,
       lonR=lonR,gridlines=gridlines,...)
 }
-
 
 map.hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
           xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
@@ -614,8 +612,8 @@ map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
   ilon <- colnames(x)=='lon'
   ilat <- colnames(x)=='lat'
   ilen <- colnames(x)=='n' 
-  lon <- unlist(apply(x,1,function(x) approx.lon(x[ilon],n=x[ilen])$y))
-  lat <- unlist(apply(x,1,function(x) approx(x[ilat],n=x[ilen])$y))
+  lon <- unlist(apply(x,1,function(x) approx.lonlat(x[ilon],x[ilat],n=x[ilen])[,1]))
+  lat <- unlist(apply(x,1,function(x) approx.lonlat(x[ilon],x[ilat],n=x[ilen])[,2]))
   if (is.null(xlim)) xlim <- range(lon)
   if (is.null(ylim)) ylim <- range(lat)
 
@@ -627,7 +625,7 @@ map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
   par(bty="n",mar=c(4.4,4.0,1.0,1.0))
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
   scatter.sunflower(lon[OK],lat[OK],petalsize=petalsize,
-           dx=dx,dy=dy,xlab='lon',yla='lat',
+           dx=dx,dy=dy,xlab='lon',ylab='lat',
            xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
            xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha,
            main=main,new=FALSE)
@@ -656,15 +654,15 @@ map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
   slat <- attr(x,'latitude')
   if(verbose) print(paste('subset','lon',paste(slon,collapse="-"),
                           'lat',paste(slat,collapse="-")))
-  if (any(!is.na(c(slat,slon)))) {
+  if (any(!is.null(c(slat,slon)))) {
     if(verbose) print('draw subset box')
-    if (sum(is.na(attr(x,'longitude')))==0) {
+    if (sum(is.null(attr(x,'longitude')))==0) {
       xlim <- attr(x,'longitude')
     } else {
       xlim <- c(min(x[,colnames(x)=='lon']),
                 max(x[,colnames(x)=='lon']))
     }
-    if (sum(is.na(attr(x,'latitude')))==0) {
+    if (sum(is.null(attr(x,'latitude')))==0) {
       ylim <- attr(x,'latitude')
     } else {
       ylim <- c(min(x[,colnames(x)=='lat']),
@@ -677,7 +675,7 @@ map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
     lines(xbox,ybox,lty=1,col='grey20',lwd=1.0)
   }
 }
-  
+
 map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
       xlim=NULL,ylim=NULL,main=NULL,m=2,alpha=0.05,param=c('lon','lat')) {
 
