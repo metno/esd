@@ -8,6 +8,7 @@
 ## input	: a zoo field object / 3 dimensional field with dimensions (time,lon,lat)
 
 ## depends on both ncdf and ncdf4 library, one of the two must be installed
+require(PCICt)
 
 ## Define retrieve as method
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
@@ -52,8 +53,8 @@ retrieve.default <- function(ncfile,param="auto",type="ncdf4",
     # nc <- open.ncdf(file.path(path,ncfile))
     nc <- open.ncdf(ncfile)
     dimnames <- names(nc$dim)
-    ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
-    ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
+    ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames)) | grepl("west_east",tolower(dimnames))
+    ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames)) | grepl("south_north",tolower(dimnames))
     lon <- ncvar_get(nc,dimnames[ilon])
     lat <- ncvar_get(nc,dimnames[ilat])
     ## KMP 2017-03-13: grep(lon|x|i) picks out everything containing the letters 
@@ -563,7 +564,8 @@ retrieve.ncdf4 <- function (ncfile = ncfile, path = NULL , param = "auto",
     z <- zoo(x=val,order.by=time$vdate)  
   } else {
     ##create a zoo object z
-    z <- zoo(x=t(val),order.by=time$vdate)
+    #browser()
+    z <- zoo(x=t(val),order.by=as.Date(as.character(time$vdate)))
   }
   ## z <- zoo(x=t(val),order.by=time$vdate)
   ## Add attributes to z
@@ -791,7 +793,7 @@ retrieve.ncdf <- function (ncfile = ncfile, path = NULL , param = "auto",
   ## Check and update info 
   ##  
   ##if (ncdf.check) { 
-  ncid2 <- F(ncid,param=param,verbose=verbose) 
+  ncid2 <- check.ncdf(ncid,param=param,verbose=verbose) 
   if (length(grep("model",ls())) > 0) model <- ncid2$model 
   if (!is.null(itime)) time <- ncid2$time
   rm(ncid2)
@@ -1434,7 +1436,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     dorigin <- as.numeric(format.Date(torigin,format="%d"))
     horigin <- as.numeric(format.Date(torigin,format="%H"))
   }
-  
+  # browser()
   ## Get calendar from attribute if any and create vector of dates vdate
   ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
   ##
@@ -1470,6 +1472,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
                            'years'= year(as.Date(torigin)) + time$vals)
       
     } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap",calendar.att)) {
+      
       if (verbose) print(paste(substr(calendar.att,1, 3), "-days' model year found in calendar attribute"))
       if (grepl("noleap",calendar.att))
         time$daysayear <- 365
@@ -1477,6 +1480,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         time$daysayear <- as.numeric(substr(calendar.att, 1, 3))
       if (!is.null(time$daysayear)) if (verbose) print(paste("Creating time$daysayear attribute and setting attribute to ", time$daysayear, sep=" "))
     }
+    
     if (!is.null(time$daysayear) & tunit!='hours') {
       if (time$daysayear==365) 
         mndays <- c(31,28,31,30,31,30,31,31,30,31,30,31) # Number of days in each month
@@ -1488,13 +1492,14 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
       if (!is.null(time$daysayear) & !is.null(mndays)) {
         year1 <- time$vals[1]%/%time$daysayear + yorigin
         month1 <- morigin
-        
+        if (grepl('day',tunit))
+          day1 <- ceiling(time$vals%%time$daysayear)[1]
         if (sum(diff(time$vals)%/%time$daysayear) > 1 & (verbose))
           print("Warning : Jumps of years has been found in the time series ")
         qf <- c(qf,"jumps of years found in time series")
         if (time$vals[1]%%time$daysayear > 27) {
-          year1 <- year1 + 1
-          month1 <- month1 + 1
+          year1 <- year1
+          month1 <- month1
         } 
         if (month1>12) month1 <- month1 - 12 
         # construct vdate
@@ -1504,16 +1509,34 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
         ## KMP 2016-11-08 this doesn't work. why add a 0?
         #mndays <- c(0,mndays[month1:length(mndays)-1],mndays[1:month1-1])
         if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
-        days <- time$vals%%time$daysayear - rep(cumsum(mndays),time$len/12)
+        
+        if (is.element(tunit,'month'))
+          days <- time$vals%%time$daysayear - rep(cumsum(mndays),ceiling(time$len/12))
+        else if (grepl('day',tunit))
+          days <- time$vals%%time$daysayear + .5
+        ##browser()
         #HBE added seperate test for seasonal data May 2nd 2018
-        if (freq.data!='season') {
+        if (freq.data=='season') {
           if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
             print("Warning : Jumps in data have been found !")
             print("Warning: Trust the first date and force a continuous vector of dates !")
             time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=time$len)
             qf <- c(qf,"jumps in data found - continuous vector forced")
           } else time$vdate <- as.Date(paste(years,months,"01",sep="-")) #round (days)
-        } else time$vdate <- as.Date(paste(years,months,"15",sep="-")) 
+        } else if (freq.data=='month') time$vdate <- as.Date(paste(years,months,"15",sep="-")) 
+        else if (freq.data =='day' & grepl('365',calendar.att)) {
+          ## browser()
+          is.leapyear <- function(year){
+            #http://en.wikipedia.org/wiki/Leap_year
+            return(((year %% 4 == 0) & (year %% 100 != 0)) | (year %% 400 == 0))
+          }
+          nyears <- end(time$vals)[1]/time$daysayear
+          nmissdays <- sum(is.leapyear(seq(year1,length.out = nyears,by = 1)))
+          x <- as.PCICt(as.character(seq(as.Date(paste(c(year1,month1,day1),collapse = '-')),
+                                                 length.out = time$len + nmissdays,by = 'day')),
+                                     cal= gsub('-','_',calendar.att))
+          time$vdate <- x[!duplicated(x)]
+        }
       }
       # HBE added fix for no_leap or 365_day hourly calander
     } else if ( !is.null(time$daysayear) & (tunit =='hours') ) if (time$daysayear==365) {
@@ -1550,15 +1573,16 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
   ## Checking the data / Extra checks / Automatic calendar detection / etc.
   ## Check 1 # Regular frequency
   ## 
+  ## browser()
   if (!is.null(time$vdate))
     dt <- as.numeric(rownames(table(diff(time$vdate))))
   else
     dt <- NULL
-  if (!is.null(time$vdate)) {
-    if (verbose) print("Vector of date is in the form :")
-    if (verbose) print(str(time$vdate))
-    if (verbose) print(diff(time$vdate))
-  } else {
+  # if (!is.null(time$vdate)) {
+  #   if (verbose) print("Vector of date is in the form :")
+  #   if (verbose) print(str(time$vdate))
+  #   if (verbose) print(diff(time$vdate))
+  # } else {
     if (grepl("sec",tunit))
       dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60*60)))))
     if (grepl("min",tunit))
@@ -1578,7 +1602,6 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
       if (verbose) print(paste(as.character(dt),tunit,sep="-"))
     }
     if ((length(dt)==4) & grepl("day",tunit)) {
-      ## 
       if (verbose) print(paste("Calendar is likely to be a Gregorian 365/366-",tunit," with: ",as.character(length(dt))," irregular frequencies : ",sep=""))
       dt <- c(28,29,30,31)
       if (verbose) print(paste(as.character(dt),tunit,sep="-")) 
@@ -1595,7 +1618,7 @@ check.ncdf4 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
       if (verbose) print(paste(as.character(dt),tunit,sep=" "))
     }
     
-  }
+  # }
   
   ## End check 1
   ## Begin check 2 if freq.att matches freq.data
@@ -1947,10 +1970,11 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
         month1 <- morigin
         
         if (sum(diff(time$vals%/%time$daysayear) > 1) & (verbose)) print("Warning : Jumps of years has been found in the time series ")
-        if (time$vals[1]%%time$daysayear > 27) {
-          year1 <- year1 + 1
-          month1 <- month1 + 1
-        } 
+        #if (time$vals[1]%%time$daysayear > 27) {
+          year1 <- year1
+          month1 <- month1
+          #day1 <- day1 + time$vals%/%time$daysayear
+        #} 
         if (month1>12) month1 <- month1 - 12 
         # construct vdate
         months <- ((time$vals%%time$daysayear)%/%round(mean(mndays))) + 1
