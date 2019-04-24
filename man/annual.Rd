@@ -96,7 +96,7 @@ ym <- attrcp(ferder,ym)
 plot(ym)
 
 #Monthly reanalyses:
-t2m <- t2m.ERAINT(lon=c(-30,40),lat=c(50,70))
+t2m <- t2m.NCEP(lon=c(-30,40),lat=c(50,70))
 T2m <- as.4seasons(t2m)
 #Extract the grid point with location corresponding to that of the station:
 x <- regrid(t2m,is=ferder)

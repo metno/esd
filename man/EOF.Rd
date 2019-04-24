@@ -62,7 +62,7 @@ pca2station(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE)
   \item{it}{see \code{\link{subset}}}
   \item{n}{number of EOFs}
   \item{is}{Spatial subsetting - see \code{\link{subset.eof}}}
-  \item{lon}{set longitude range - see \code{\link{t2m.ERAINT}}}
+  \item{lon}{set longitude range - see \code{\link{t2m.NCEP}}}
   \item{lat}{set latitude range}
   \item{verbose}{TRUE - clutter the screen with messages}
   \item{anomaly}{When TRUE, subtract the mean before SVD.}
@@ -92,10 +92,10 @@ plot(eof.sst7)
 # Get some sample data, extract regions:
 GCM <- t2m.NorESM.M()
 gcm <- subset(GCM,is=list(lon=c(-50,60),lat=c(30,70)))
-t2m.eraint <- t2m.ERAINT()
-eraint <- subset(t2m.eraint,is=list(lon=c(-50,60),lat=c(30,70)))
+t2m.dnmi <- t2m.DNMI()
+dnmi <- subset(t2m.dnmi,is=list(lon=c(-50,60),lat=c(30,70)))
 
-OBS <-  aggregate(eraint, by=year, mean, na.rm = FALSE)
+OBS <-  aggregate(dnmi, by=year, mean, na.rm = FALSE)
 GCM <- aggregate(gcm, by=year, mean, na.rm = FALSE)
 OBSGCM <- combine(OBS,GCM,dimension='time')
 

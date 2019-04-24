@@ -43,12 +43,12 @@ corfield.trajectory(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
 \value{Map of correlation}
 \author{R.E. Benestad and A. Mezghani}
 \examples{
-x <- t2m.ERAINT(lon=c(-40,30),lat=c(0,50))
+x <- t2m.DNMI(lon=c(-40,30),lat=c(0,50))
 y <- t2m.NCEP(lon=c(-40,30),lat=c(0,50))
 r <- corfield(annual(x),annual(y))
 
 data(Oslo)
-t2m <- t2m.ERAINT()
+t2m <- t2m.DNMI()
 x <- subset(Oslo,it='january')
 y <- subset(t2m,it='january')
 r <- corfield(x,y)

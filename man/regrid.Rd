@@ -72,7 +72,7 @@ interpolated to the longitude/latitude held by is.}
 \author{R.E. Benestad and A.  Mezghanil}
 \examples{
 # Use regrid to interpolate to station location:
-t2m <- t2m.ERAINT()
+t2m <- t2m.DNMI()
 data(Oslo)
 z.oslo <- regrid(t2m,is=Oslo)
 plot(Oslo)

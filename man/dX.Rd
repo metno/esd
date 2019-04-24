@@ -78,10 +78,12 @@ dT(y, m = NULL, plot = FALSE, verbose = FALSE, chk.conf = 1)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
+data(slp.ERA5)
+slp.dx <- dX(slp.ERA5,verbose=TRUE)
+map(slp.dx$Z) # map of SLP 
+map(slp.dx$dZ) # map of first derivative in longitude direction
+map(slp.dx$dZ2) # map of second derivative in longitude direction
 \dontrun{
-slp <- slp.ERAINT()
-slp.dx <- dX(slp,verbose=TRUE)
-
 u10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='u10')
 v10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='v10')
 ## Estimate the vorticity

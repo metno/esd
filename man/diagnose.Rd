@@ -69,16 +69,15 @@ T2m <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
 X <- combine(t2m,T2m)
 diagnose(X)
 
-ceof <-EOF(X,it=1)
+ceof <- EOF(X,it="jan")
 plot(diagnose(ceof))
 
 slp <- slp.NCEP(lat=c(-40,40),anomaly=TRUE)
 sst <- sst.NCEP(lat=c(-40,40),anomaly=TRUE)
-eof.1 <- EOF(slp,it=1)
-eof.2 <- EOF(sst,it=1)
+eof.1 <- EOF(slp,it="jan")
+eof.2 <- EOF(sst,it="jan")
 cca <- CCA(eof.1,eof.2)
 diagnose(cca)
-
 
 }
 \keyword{utilities}

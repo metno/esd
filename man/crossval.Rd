@@ -31,8 +31,8 @@ crossval.dsensemble(x,plot=TRUE)
 \author{R.E. Benestad}
 \examples{
 data(Oslo)
-t2m <- t2m.NCEP(lon=c(-20,40),lat=c(45,65))
-eof <- EOF(t2m,1)
+t2m <- t2m.DNMI(lon=c(-20,40),lat=c(45,65))
+eof <- EOF(t2m)
 
 ds <- DS(Oslo,eof)
 xv <- crossval(ds)

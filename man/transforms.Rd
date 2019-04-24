@@ -63,7 +63,7 @@ NE(p)
 
 \author{R. Benestad, MET Norway}
 \examples{
-t2m <- t2m.ERAINT(lon=c(-70,-10),lat=c(20,60))
+t2m <- t2m.DNMI(lon=c(-70,-10),lat=c(20,60))
 es <- C.C.eq(t2m)
 map(es)
 }
