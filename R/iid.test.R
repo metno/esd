@@ -265,7 +265,13 @@ n.records <- function(x,verbose=FALSE) {
     print("See Benestad (2004) 'Record-values, non-stationarity tests and extreme value distributions' Global and Planetary Change, 44, 11-26")
     print("http://www.sciencedirect.com/science?_ob=ArticleURL&_udi=B6VF0-4D6373Y-2&_coverDate=12%2F01%2F2004&_alid=228212815&_rdoc=1&_fmt=&_orig=search&_qd=1&_cdi=5996&_sort=d&view=c&_acct=C000056508&_version=1&_urlVersion=0&_userid=2181464&md5=632559476e84eb8c48287cf8038690d2")
   }
-  y.rev <- rev(y); index(y.rev) <- index(y) 
+  if(is.null(dim(y))) {
+    y.rev <- rev(y)
+    index(y.rev) <- index(y) # why set new index?
+  } else {
+    y.rev <- apply(y, 2, rev)
+    #index(y.rev) <- index(y) # doesn't work
+  }
   if (verbose) {str(y); str(y.rev)}
   N <- 1; N.rev <- N
   t <- rep(1,m); t.rev <- rep(m,m)
@@ -277,19 +283,19 @@ n.records <- function(x,verbose=FALSE) {
   events.rev <- records(y.rev,verbose=verbose)
     
   if (is.numeric(events)) { 
-      if (verbose) print('single series')
-      N <- sum(is.finite(events)) 
-      t <- attr(events,'t')
-      N.rev <- sum(is.finite(events.rev))
-      t.rev <- attr(events.rev,'t')
+    if (verbose) print('single series')
+    N <- sum(is.finite(events)) 
+    t <- attr(events,'t')
+    N.rev <- sum(is.finite(events.rev))
+    t.rev <- attr(events.rev,'t')
   } else if (is.list(events)) {
     if (verbose) print('matrix')
-      N <- lapply(events,function(x) sum(is.finite(x)))
-      t <- lapply(events,function(x) attr(x,'t'))
-      N <- lapply(events.rev,function(x) sum(is.finite(x)))
-      t.rev <- lapply(events.rev,function(x) attr(x,'t'))
-  } else stop(paste('n.records - naot programmed to handle',class(events)))
-
+    N <- lapply(events,function(x) sum(is.finite(x)))
+    t <- lapply(events,function(x) attr(x,'t'))
+    N <- lapply(events.rev,function(x) sum(is.finite(x)))
+    t.rev <- lapply(events.rev,function(x) attr(x,'t'))
+  } else stop(paste('n.records - not programmed to handle',class(events)))
+  
   if (verbose) print('organise into list object')
   records <- list(N=N,t=t,events=events,N.rev=N.rev, 
                   t.rev=t.rev, events.rev=events.rev)
