@@ -163,7 +163,7 @@ biasfix(x)
 \author{R.E. Benestad}
 \examples{
 # One exampe doing a simple ESD analysis:
-X <- t2m.ERA40(lon=c(-40,50),lat=c(40,75))
+X <- t2m.DNMI(lon=c(-40,50),lat=c(40,75))
 data(Oslo)
 #X <- OptimalDomain(X,Oslo)
 eof <- EOF(X,it='jan')
@@ -176,7 +176,7 @@ y <- as.residual(Y)
 plot.zoo(y)
 
 # Check the residual: dependency to the global mean temperature?
-T2m <- (t2m.ERA40())
+T2m <- t2m.DNMI()
 yT2m <- merge.zoo(y,T2m)
 plot(coredata(yT2m[,1]),coredata(yT2m[,2]))
 
@@ -224,7 +224,7 @@ plot(dss)
 
 ## Example for downscaling with missing data
 data(Oslo)
-era40 <- t2m.ERA40(lon=c(-10,20),lat=c(55,65))
+era40 <- t2m.DNMI(lon=c(-10,20),lat=c(55,65))
 y <- subset(Oslo,it='jan')
 X <- EOF(subset(era40,it='jan'))
 ds <- DS(y,X)
