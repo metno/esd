@@ -8,7 +8,9 @@
 ## input	: a zoo field object / 3 dimensional field with dimensions (time,lon,lat)
 
 ## depends on both ncdf and ncdf4 library, one of the two must be installed
-require(PCICt)
+## KMP 2019-04-24: Do NOT import PCICt!! It is not necessary unless you have a non-standard calendar
+## and should only be used after checking temporal resolution and calendar type. 
+#require(PCICt)
 
 ## Define retrieve as method
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
