@@ -163,7 +163,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
   # Exclude identified depressions in high altitude regions
   if(verbose) print("Penalty factor for high altitude")
-  data("etopo5", envir = environment())
+  data('etopo5', envir = environment())
   fn <- function(lon=0,lat=60) {
     i.lon <- which.min(abs(longitude(etopo5)-lon))
     i.lat <- which.min(abs(latitude(etopo5)-lat))
@@ -443,7 +443,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
     if (plot) {
       if(verbose) print("plot example of cyclone identification")
-      data("geoborders",envir=environment())
+      data('geoborders',envir=environment())
       i <- length(date)/2
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
