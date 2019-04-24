@@ -62,7 +62,7 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   }
   
   if (length(it)>2) {
-    ii <- is.element(t,it)
+    ii <- is.element(as.character(t),as.character(it))
     if (verbose) {
       print(paste('select',sum(ii),'dates'))
       print(t[ii])
