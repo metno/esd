@@ -307,7 +307,7 @@ DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALS
             if (verbose) print("*** Comb ***")
             ## X is combined EOFs
             ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,
-                          method=method,swsm=swsm,
+                          method=method,swsm=swsm,it=it,
                           rmtrend=rmtrend,ip=ip,verbose=verbose,...)
             if (verbose) print("---")
           } else {
@@ -363,7 +363,8 @@ DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALS
 ## calibration data
 
 DS.comb <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
-                    method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7, weighted=TRUE,pca=FALSE,npca=20) {
+                    method="lm",swsm="step",m=5,rmtrend=TRUE,it=NULL,ip=1:7, 
+                    weighted=TRUE,pca=FALSE,npca=20) {
     if (verbose) { print('--- DS.comb ---'); print(summary(coredata(y)))}
     ##print('index(y)'); print(index(y))
     ##print('err(y)'); print(err(y))

@@ -154,7 +154,6 @@ anomaly.month <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
 
   X <- x
   if (verbose) print(paste('anomaly.month: ref=',ref))
-  browser()
   if (is.null(dim(x))) {
     if (verbose) print('Estimate clim for a single series')
     Yc <- clim.month(x,months=month(x),years=year(x),ref=ref,na.rm=na.rm,verbose=verbose)
