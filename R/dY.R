@@ -110,7 +110,7 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   dZ.fit <- zoo(t(dz),order.by=t)
   dZ.fit <- as.field(dZ.fit,lon=lon(Z),lat=lat(Z),
                     param=paste('d*',varid(Z)),
-                    unit=paste(unit(Z),'/dx'),
+                    unit=paste0(unit(Z),'/dx'),
                     longname=paste('fitted',attr(Z,'longname')),
                     greenwich = attr(Z,'greenwich'),
                     calendar = attr(Z,'calendar'),aspect='fitted')  
@@ -123,7 +123,7 @@ dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
   dim(dz2) <- c(ny,nx,nt); dz2 <- aperm(dz2,c(2,1,3)); dim(dz2) <- c(nx*ny,nt)
   dZ2.fit <- zoo(t(dz2),order.by=t)
   dZ2.fit <- as.field(dZ2.fit,lon=lon(Z),lat=lat(Z),param=varid(Z),
-                    unit=paste(unit(Z),'^2/dy^2'),
+                    unit=paste0(unit(Z),'2/dy2'),
                     longname=paste('fitted',attr(Z,'longname')),
                     greenwich = attr(Z,'greenwich'),
                     calendar = attr(Z,'calendar'),aspect='fitted')  
