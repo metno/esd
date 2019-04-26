@@ -269,14 +269,21 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
       main <- paste('Leading PC#',ip,' of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
-
       if(inherits(x,"seasonalcycle")) xaxt <- "n" else  xaxt <- NULL
-      plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
+      xn <- x[,n]
+      if(inherits(index(xn),"PCICt")) {
+        # KMP 2019-05-25: To handle data with PCICt format time index (special calendar data)
+        # works but the date format on the x-axis sometimes looks weird...
+        caldays <- as.numeric(substr(attr(x,"calendar"),1,3))
+        index(xn) <- as.numeric(format(index(x),"%Y")) + 
+                      (as.numeric(format(index(x),"%j"))+as.numeric(format(index(x),"%H"))/24)/caldays
+      }
+      plot.zoo(xn,#x[,n],
+               lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
                cex.main=cex.main,bty="n",cex.axis=cex.axis,
                cex.lab=cex.lab,xaxt=xaxt)
       if(inherits(x,"seasonalcycle")) axis(1,at=seq(1,12),labels=month.abb,
                                            cex.axis=cex.axis,las=2)
-      #axis(1,at=pretty(index(x),n=10),labels=,cex.axis=0.9)
       grid()
   }
  

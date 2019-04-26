@@ -2,12 +2,6 @@
 
 library(esd)
 
-retrieve <- function(x,...) {
-  require(ncdf4)
-  y <- retrieve.ncdf4(x,...)
-  return(y)
-}
-
 path <- 'CMIP5.monthly/'; rcp <- 'rcp45'
 verbose <- FALSE
 lon <- c(0,30)
@@ -16,8 +10,7 @@ predictor="ERA40_t2m_mon.nc"
 FUNX="mean"
 pattern="tas_Amon_ens_"
 
-t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,type='ncdf4',
-                verbose=verbose) 
+t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,verbose=verbose) 
 
   #rm("predictor"); gc(reset=TRUE)
   #t2m <- t2m.ERA40(lon=lon,lat=lat)

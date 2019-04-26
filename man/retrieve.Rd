@@ -1,26 +1,19 @@
 \name{retrieve}
 \alias{retrieve}
 \alias{retrieve.default}
-%\alias{retrieve.ncdf}
 \alias{retrieve.ncdf4}
 \alias{retrieve.rcm}
 \alias{retrieve.station}
 \alias{retrieve.stationsummary}
 \alias{summary.ncdf4}
 \alias{check.ncdf4}
-%\alias{check.ncdf}
 \alias{file.class}
 \title{Retrieve field data from a netcdf file.}
 \description{Retrieve data from a netcdf file and return a zoo field object with attributes. 
   \code{retrieve} assumes data on a regular lon-lat grid and \code{retrieve.rcm} reads data on irregular (rotated) grid. typically output from RCMs.
 }
 \usage{
-%retrieve.default(...)
 retrieve.default(ncfile,verbose=FALSE,...)
-%retrieve.ncdf(ncfile = ncfile, path = path , param = "auto",
-%               lon = NULL, lat = NULL, lev = NULL, it = NULL,
-%               miss2na = TRUE, greenwich = FALSE,
-%               verbose = FALSE , plot = TRUE)
 retrieve.ncdf4(ncfile = ncfile, path = path , param = "auto",
                lon = NULL, lat = NULL, lev = NULL, it = NULL,
                miss2na = TRUE, greenwich = TRUE,
@@ -39,15 +32,13 @@ retrieve.stationsummary(ncfile,
 
 summary.ncdf4(ncfile, verbose=FALSE)
 check.ncdf4(ncid = ncid, param = "auto" , verbose = FALSE)
-%check.ncdf(ncid = ncid, param = "auto" , verbose = FALSE)
-file.class(ncfile,type="ncdf4")
+file.class(ncfile\)
 }
 
 \arguments{
   \item{ncfile}{A character string of full path netcdf file name
-  (include the path if necessary) or any object of class 'ncdf' or 'ncdf4'.}
-  \item{type}{The type of the NetCDF format to be returned as "ncdf" or "ncdf4".}
-  \item{ncid}{An object of class 'ncdf' or 'ncdf4'.}
+  (include the path if necessary) or any object of class 'ncdf4'.}
+  \item{ncid}{An object of class 'ncdf4'}
   \item{stid}{Station IDs to read with retrieve.station}
   \item{loc}{locations to read with retrieve.station}
   \item{lon}{Numeric value of longitude for the reference point (in decimal degrees East) or a vector containing the range of longitude values in the form of c(lon.min,lon.max)}

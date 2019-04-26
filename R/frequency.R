@@ -36,11 +36,6 @@ frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
       freq <- "hour"
     if((dt>1) & grepl("hou",unit))
       freq <- paste(dt,"hour",sep="")
-    #if ((dt==6) & grepl("hou",unit))
-    #  freq <- "6hour"
-    #if ((dt==12) & grepl("hou",unit))
-    #  freq <- "12hour"
-    # KMP 2018-10-23: for subdaily data with unit=day and e.g. dt=0.25 (6-hourly)
     if(dt<1 & grepl("day",unit))
       freq <- paste(round(dt*24),"hour",sep="")
     if (dt >= 672 & dt <= 744 & grepl("hou",unit)) 
