@@ -13,7 +13,7 @@ file5 <- file.path(path.lustre,"storeB/users/kajsamp/Data/NCEP/slp.mon.mean.nc")
 file6 <- file.path(path.lustre,"storeA/users/kajsamp/Data/CMIP5/KNMI/GCM106.tas.rcp45.nc")
 file7 <- file.path(path.lustre,"storeB/users/kajsamp/Data/EOBS/pp_0.25deg_reg_v13.1.nc")
 
-file <- file3
+file <- file6
 x <- retrieve(file, verbose=TRUE)
 range(index(x))
 class(x)
