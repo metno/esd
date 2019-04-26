@@ -262,6 +262,7 @@ mask(x,land=FALSE)
 # Select stations in ss and map the geographical location 
 # of the selected stations with a zoom on Norway.
 ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
+par()
 map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70))
 
 ## Get NACD data and map the mean values

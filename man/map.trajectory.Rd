@@ -58,9 +58,17 @@ map.trajectory(imilast.M03,col="blue",alpha=0.1,
 # spherical projection
 map.trajectory(imilast.M03,col="blue",alpha=0.1,projection='sphere')
 
+\dontrun{
+# calculate cyclone density, takes a little while
+cdens <- as.field(imilast.M03)
+map(cdens)
+}
+
 # plot number density for grid boxes of width 2 degrees and height 1 degree
 map.hexbin.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1)
 map.sunflower.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1)
+
+
 }
 
 \keyword{map}

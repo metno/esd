@@ -140,14 +140,6 @@ trajectory2events <- function(x,minlen=3,verbose=FALSE) {
   return(y)
 }
 
-
-#map.events <- function(x,it=NULL,is=NULL,
-#               projection="sphere",verbose=TRUE,...) {
-#  y <- subset(x,it=it,is=is)
-#  Y <- as.field(y)
-#  map(Y,...)  
-#}
-
 subset.events <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if(verbose) print("subset.events")
   if (length(it)==0) it <- NULL

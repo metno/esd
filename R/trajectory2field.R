@@ -1,4 +1,3 @@
-
 trajectory2field <- function(x,dt='month',dx=2,dy=2,radius=5E5,
                              it=NULL,is=NULL,verbose=FALSE) {
   if(verbose) print("trajectory2field")
@@ -17,22 +16,30 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,radius=5E5,
   }
   fn <- function(x,it=NULL) {
     x <- subset(x,it=it)
-    if(verbose) print(paste(range(x[,'start']),collapse="-"))
-    X <- array(rep(0,),dim=c(length(lons),length(lats)))
-    if(verbose) print(dim(x))
-    if(!is.null(dim(x)) & length(x)>0) {
-      A <- density.trajectory(x,dx=dx,dy=dy,radius=radius)
-      lat <- A$lat
-      lon <- A$lon
-      den <- A$density
-      for(j in 1:length(lat)) {
-        X[lons==lon[j],lats==lat[j]] <- den[j]	
+    X.out <- array(rep(0,),dim=c(length(lons),length(lats)))
+    if(length(x)>0) {
+      if(verbose) {
+        if(!is.null(dim(x))) {
+          print(paste(range(x[,'start']),collapse="-"))
+          print(dim(x))
+        } else {
+          print(x['start'])
+        }
       }
-      dim(X) <- c(length(lons),length(lats))#length(X)
-    } else {
+      if(!is.null(dim(x))) {
+        A <- density.trajectory(x,dx=dx,dy=dy,radius=radius)
+        lat <- A$lat
+        lon <- A$lon
+        den <- A$density
+        for(j in 1:length(lat)) {
+          X.out[lons==lon[j],lats==lat[j]] <- den[j]
+        }
+        dim(X.out) <- c(length(lons),length(lats))#length(X)
+      } else {
         if(verbose) print("no storms")
+      }
     }
-    invisible(X)
+    invisible(X.out)
   }
   if(verbose) print("calculate trajectory density")
   if (grepl('month',dt)) {   
@@ -66,7 +73,7 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,radius=5E5,
   pb <- txtProgressBar(style=3)
   for (i in 1:length(dvec)) {
     setTxtProgressBar(pb,i/length(dvec))
-    di <- fn2(dvec[i])
+    di <- try(fn2(dvec[i]))
     X[i,,] <- di
   }
   t2 <- Sys.time()
@@ -85,32 +92,6 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,radius=5E5,
           method=attr(x,'method'),aspect=attr(x,'aspect'))
   if(verbose) print("done")
   invisible(Y)
-}
-
-density.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,radius=5E5,verbose=FALSE) {
-  if(verbose) print("density.trajectory")
-  y <- subset(x,it=it,is=is)
-  A <- apply(y,1,function(x) trackdensity(x[colnames(y)=='lon'],
-                                     x[colnames(y)=='lat'],
-                                     dx=dx,dy=dy,radius=radius))
-  lon <- unlist(lapply(A,function(x) factor2numeric(x$lon)))
-  lat <- unlist(lapply(A,function(x) factor2numeric(x$lat)))
-  hits <- as.data.frame(table(lon,lat))
-  names(hits)[names(hits)=="Freq"] <- "density"
-  invisible(hits)
-}
-
-approx.lonlat <- function(lon,lat,n=20,a=6.378e06,verbose=FALSE) {
-  if (verbose) print("approx.lonlat")
-  x <- a * cos( lat*pi/180 ) * cos( lon*pi/180 )
-  y <- a * cos( lat*pi/180 ) * sin( lon*pi/180 )
-  z <- a * sin( lat*pi/180 )
-  xa <- approx(x,n=n)$y
-  ya <- approx(y,n=n)$y
-  za <- approx(z,n=n)$y
-  lona <- atan2( ya, xa )*180/pi
-  lata <- asin( za/sqrt( xa^2 + ya^2 + za^2 ))*180/pi
-  invisible(cbind(lona,lata))
 }
 
 ## density.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,R=6378) {
