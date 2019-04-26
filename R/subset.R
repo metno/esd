@@ -840,7 +840,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ##print("HERE")
     ## get time in t
     t <- index(x)
-    
     ## KMP 2016-02-03: to solve problem with subset.events 
     if(inherits(t,"Date")) t <- as.Date(round(as.numeric(t)))
     if(!inherits(t,c("POSIXt","PCICt"))) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
@@ -872,8 +871,9 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (!inherits(it,c("POSIXt","PCICt"))) t <- format(t,"%Y-%m-%d")
     } else print("Index of x should be a Date, yearmon, or numeric object")
     
-    if (is.logical(it)) ii <- it else  ## REB 2018-11-30
-    if(inherits(it,c("Date"))) {
+    if (is.logical(it)) {
+      ii <- it 
+    } else if(inherits(it,c("Date"))) {
       if ( length(it) == 2 ) {
         if (verbose) print('Between two dates')
         if (verbose) print(it)
@@ -888,7 +888,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
         if (verbose) print('Monthly selected')
         ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
-                                    #y <- x[ii,is] #  REB Not here
       } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
         if (verbose) print("Seasonally selected")
         if (verbose) print(table(month(x)))
@@ -905,8 +904,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       }
     } else if ((class(it)=="numeric") | (class(it)=="integer")) {
       if (verbose) print('it is numeric or integer')
-# REB bug        nlev <- as.numeric(levels(factor(nchar(it))))
-# nchar returns the string length, but these lines need to find the number of different levels/categories
       nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
       if (verbose) {print(nlev); print(it)}
 #       if ((length(nlev)==1)) { REB 2015-01-20: the lines below will never happen with this line:
@@ -951,7 +948,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       ii <- rep(FALSE,length(t))
       warning("default.subset: did not reckognise the selection citerion for 'it'")
     } 
-    
     ## it <- (1:length(t))[ii]
     ## 
 
@@ -1022,19 +1018,15 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
         x <- g2dl.field(x,greenwich=TRUE) }
       is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
-    } else
-    if ( is.null(is) ) is <- rep(TRUE,d[2]) else
-    if ( is.numeric(is)) {
+    } else if (is.null(is)) {
+      is <- rep(TRUE,d[2]) 
+    } else if (is.numeric(is)) {
       iss <- rep(FALSE,d[2]); iss[is] <- TRUE
       is <- iss
     }
     
     if (verbose) print(paste('number of points:',sum(ii),sum(is)))
-    y <- x[which(ii),which(is)] ## AM 2015-02-17 do not work with logical indexes
-    #if (is.logical(is))
-    #    is <- (1:length(is))[is]
-    ##else 
-    ##    is <- is.element(1:d[2],is)
+    y <- x[which(ii),which(is)] 
     
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))
@@ -1061,8 +1053,11 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (!is.null(attr(y,'aspect')))
         attr(y,'aspect') <- attr(x,'aspect')[is]
       if (!is.null(attr(y,'unit')))
-        if (length(attr(x,'unit'))==length(is)) attr(y,'unit') <- attr(x,'unit')[is] else
-                                                attr(y,'unit') <- attr(x,'unit')
+        if (length(attr(x,'unit'))==length(is)) {
+          attr(y,'unit') <- attr(x,'unit')[is] 
+        } else {
+          attr(y,'unit') <- attr(x,'unit')
+        }
       if (!is.null(attr(y,'longname')))
         attr(y,'longname') <- attr(x,'longname')[is]
       if (!is.null(attr(y,'reference')))
@@ -1091,13 +1086,10 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     } else {
       attr(y,"greenwich") <- FALSE
     }
-    
-    ##attr(y,'date-stamp') <- date()
-    ##attr(y,'call') <- match.call()
-    
     ## Check if there is only one series but if the dimension 
-    if ( (!is.null(d)) & is.null(dim(y)) ) 
+    if ( (!is.null(d)) & is.null(dim(y)) ) {
       if (d[2]==1) dim(y) <- c(length(y),1)
+    }
     attr(y,'history') <- history.stamp(x)   
     if (verbose) print('exit default.subset')
     if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))

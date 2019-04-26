@@ -67,13 +67,13 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   # magnitudes...
   
   #print(d); print(dim(Y)); str(attr(X,'latitude'))
-  Wght <-matrix(nrow=d[1],ncol=d[2])
+  Wght <- matrix(nrow=d[1],ncol=d[2])
   for (i in 1:d[1])  Wght[i,]<-sqrt(abs(cos(pi*attr(X,'latitude')/180)))
   #plot(attr(X,'latitude'),colMeans(Wght),type="l"); stop("HERE")
   dim(Wght) <- c(d[1]*d[2])
   #print(length(Wght)); print(dim(Y)); print(d[3])
   #for (it in 1:d[3]) Y[,it] <- (Wght/stdv)*Y[,it]
-  
+
   # Exclude the missing values 'NA' and grid points with sd == 0 for all times:
   sd0 <- apply(as.matrix(Y),2,sd,na.rm=TRUE)
   nf <- apply(as.matrix(Y),2,SF)
@@ -84,7 +84,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   # Exclude the time slices with missing values:
   skip <- apply(as.matrix(y),1,SF); npts <- dim(y)[2]
   y <- as.matrix(y)[skip == npts,]
-  
+
   # Remove the mean value - center the analysis:
   if (anomaly) {
     if (verbose) print('center the data')
@@ -93,7 +93,9 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
     y <- y - ave
   } else ave <- rowMeans(y)*0
   npca <- min(dim(y)) 
-  ny <- min(c(dim(y),20)) # REB 2015-05-21
+  ny <- min(c(dim(y),20))
+
+  # REB 2015-05-21
   # Apply the SVD decomposition: see e.g. Strang (1988) or Press et al. (1989)
   #SVD <- svd(y,nu=min(c(20,npca)),nv=min(c(20,npca)))
   ## KMP 23-11-2015
@@ -112,7 +114,6 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
     SVD$v <- temp
   }
   if (inherits(SVD,"try-error") & verbose) print("both svd(x) and svd(t(x) failed.")
-  
   #print("---"); print(dim(SVD$u)); print(dim(SVD$v)); print("---")
   
   autocor <- 0
@@ -126,7 +127,6 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
       autocor <- max(c(autocor,ar1$acf[2,1,1]),na.rm=TRUE)
     }
   }
-  
   n <- min(n,length(SVD$d))
   
   #a <- y[,1]; dim(a) <- c(d[1],d[2]); image(a)
@@ -140,7 +140,6 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   
   Ave <- rep(NA,d[1]*d[2])
   Ave[skip == npts] <- ave
-  
   # Make all the EOF vectors havine the same sense rather than
   # being random:
   if (verbose) print(paste("Invert EOF",(1:length(invert))[invert],collapse=' '))
@@ -153,7 +152,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   #nattr <- softattr(X)
   #for (i in 1:length(nattr))
   #  attr(eof,nattr[i]) <- attr(X,nattr[i])
-  
+
   names(eof) <- paste("X.",1:n,sep="")
   attr(eof,'pattern') <- pattern
   attr(eof,'dimensions') <- d
