@@ -313,6 +313,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     tsigma2.mam <- rainvartrend(subset(x,it='mam'),nmin=90)
     tsigma2.jja <- rainvartrend(subset(x,it='jja'),nmin=90)
     tsigma2.son <- rainvartrend(subset(x,it='son'),nmin=90)
+    ## Mean wet/dry-spell length
+    mwsl <- as.numeric(unlist(apply(x,2,function(x) mean(subset(spell(x,threshold=1),is=1),na.rm=TRUE))))
+    mdsl <- as.numeric(unlist(apply(x,2,function(x) mean(subset(spell(x,threshold=1),is=2),na.rm=TRUE))))
   } else {
     ave <- apply(x,2,'mean',na.rm=TRUE)
     ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
@@ -569,6 +572,10 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                               missval=missval,longname="variance_daily_precip_trend_Jun-Aug",prec="float",verbose=verbose)
       tsigma2id.son <- ncvar_def(name="summary_trend_sigma2_SON",dim=list(dimS), units="mm^2", 
                               missval=missval,longname="variance_daily_precip_trend_Sep-Nov",prec="float",verbose=verbose)
+      mwslid <- ncvar_def(name="summary_mean_wetdur",dim=list(dimS), units="day", 
+                            missval=missval,longname="mean_wet-day-spell_length",prec="float",verbose=verbose)
+      mdslid <- ncvar_def(name="summary_mean_drydur",dim=list(dimS), units="day", 
+                          missval=missval,longname="mean_dry-spell_length",prec="float",verbose=verbose)
     } else {
       meanid <- ncvar_def(name="summary_mean",dim=list(dimS), units=attr(x,"unit")[1], 
                           missval=missval,longname=paste("mean_annual",varid(x),sep='_'),prec="float",verbose=verbose)
@@ -678,6 +685,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
       tsigma2id.mam <- ncid$var[["summary_trend_sigma2_MAM"]]
       tsigma2id.jja <- ncid$var[["summary_trend_sigma2_JJA"]]
       tsigma2id.son <- ncid$var[["summary_trend_sigma2_SON"]]
+      mwslid <- ncid$var[["summary_wetdur"]]
+      mwdlid <- ncid$var[["summary_drydur"]]
     } else {
       sdid <- ncid$var[["summary_sd"]]
       sdid.djf <- ncid$var[["summary_sd_DJF"]]
@@ -705,7 +714,8 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                                             tdmuid,tdmuid.djf,tdmuid.mam,tdmuid.jja,tdmuid.son,
                                             tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid,lehrid,
                                             sigma2id,sigma2id.djf,sigma2id.mam,sigma2id.jja,sigma2id.son,
-                                            tsigma2id,tsigma2id.djf,tsigma2id.mam,tsigma2id.jja,tsigma2id.son)) else 
+                                            tsigma2id,tsigma2id.djf,tsigma2id.mam,tsigma2id.jja,tsigma2id.son,
+                                            mwslid,mdslid)) else 
         ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                           fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                           sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,tdid,
@@ -811,6 +821,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     ncvar_put( ncid, tsigma2id.mam, tsigma2.mam,start=start[2],count=count[2])
     ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[2],count=count[2])
     ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[2],count=count[2])
+    if (verbose) print('Mean spell length')
+    ncvar_put( ncid, mwslid, mwsl,start=start[2],count=count[2])
+    ncvar_put( ncid, mdslid, mdsl,start=start[2],count=count[2])
   } else {
     if (verbose) print(paste('extra for',varid(x)[1]))
     std[insufficient] <- missval; std.djf[insufficient] <- missval
