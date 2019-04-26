@@ -1,4 +1,4 @@
-                                        # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
+# Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
 retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     if(verbose) print("retrieve.rcm")
     if (!is.null(path))
@@ -15,7 +15,7 @@ retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FAL
     if (sum(is.element(substr(names(tatt),1,4),'cale'))!=0) {
       if (verbose) print("Calender found")
       tcal <- tatt$cale
-      }
+    }
     a <- regexpr("since",tunit)
     torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
     torig <- paste(unlist(strsplit(tunit," "))[3:4],collapse=" ")
