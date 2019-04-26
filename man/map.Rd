@@ -257,6 +257,8 @@ mask(x,land=FALSE)
 
 \author{R.E. Benestad}
 \examples{
+# dontrun because of this problem: "Error in plot.new() : figure margins too large"
+\dontrun{ 
 # Select stations in ss and map the geographical location 
 # of the selected stations with a zoom on Norway.
 ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
@@ -277,7 +279,7 @@ map(x, type=c("trajectory","start","end"), col="red")
 ## Map showing the cyclone depth (slp at center) as a color scale (rd = red scale)
 map(x, param="pcent", type=c('trajectory','start'), 
     colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1000,2)), alpha=0.9)
-
+}
 }
 \keyword{map}
 
