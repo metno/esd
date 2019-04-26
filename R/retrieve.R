@@ -953,14 +953,11 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   if (!is.null(model$frequency)) {
     if (verbose) print(paste("Frequency set to ",model$frequency,sep=""))
     if (model$frequency %in% c("month","season","year")) {
-      browser()
       yr <- year(time$vdate)
       mo <- month(time$vdate)
       dy <- "01"
-      time$vdate <- as.Date(paste(yr,mo,dy,sep="-"))     
-    }
-    #HBE 11/04/18 added regular season time-stamp
-    #if (model$frequency=="season") {
+      time$vdate <- as.Date(paste(yr,mo,dy,sep="-"))
+    } #else if (model$frequency=="season") {
     #  yr <-year(time$vdate)
     #  mo <- month(time$vdate)
     #  dy <- "15"
