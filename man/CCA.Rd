@@ -61,8 +61,8 @@ predict.cca <- function(object, newdata=NULL, ...)
 # CCA with two eofs
 slp <- slp.NCEP(lat=c(-40,40),anomaly=TRUE)
 sst <- sst.NCEP(lat=c(-40,40),anomaly=TRUE)
-eof.1 <- EOF(slp,it='Jan')
-eof.2 <- EOF(sst,it='Jan')
+eof.1 <- EOF(slp, it='Jan')
+eof.2 <- EOF(sst, it='Jan')
 cca <- CCA(eof.1,eof.2)
 plot(cca)
 

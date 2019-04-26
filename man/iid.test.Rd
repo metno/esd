@@ -42,8 +42,9 @@ test.records(N=1000)
 \value{list: 'record.density' and 'record.density.rev' for the reverse analysis. The variables CI.95, p.val, and i.cluster (and their reverse equivalents '.rev') return the estimated 95\% conf. int, p-value, and the location of the clusters (binomial).}
 \author{R.E. Benestad}
 \examples{
-dat <- rnorm(100*30)
-dim(dat) <- c(100,30)
-iid.test(dat)
+  # takes a long time to run
+  dat <- rnorm(100*30)
+  dim(dat) <- c(100,30)
+  iid.test(dat)
 }
 \keyword{manip}

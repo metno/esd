@@ -192,45 +192,54 @@ subset.mvr <- function(x,it=NULL,is=NULL,...) {
 subset.pattern <- function(x,is,verbose=FALSE,...) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) print('subset.pattern')
-    if (is.list(is)) {
-        y <- attr(x,'pattern')
-        lons <- lon(x)
-        lats <- lat(x)
-        nms <- substr(tolower(names(is)),1,3)
-        IS <- 1:length(nms)
-        if (verbose) print(nms)
-        if (sum(is.element(nms,'lon'))>0) {
-          inm <- IS[is.element(nms,'lon')]
-            if (!is.null(is[[inm]]))           
-              ix <- (lons >= min(is[[inm]])) &
-                    (lons <= max(is[[inm]])) else ix <- is.finite(lons)
-          } else ix <- is.finite(lons)
-        if (sum(is.element(nms,'lat'))>0) {
-          inm <- IS[is.element(nms,'lat')]
-          if (!is.null(is[[inm]]))   
-            iy <- (lats >= min(is[[inm]])) &
-                  (lats <= max(is[[inm]])) else iy <- is.finite(lats)
-          } else iy <- is.finite(lats)
-
-        if (!is.null(attr(x,'pattern'))) {
-          if (verbose) print('replace the pattern argument')
-          y[ix,iy] -> attr(x,'pattern')
-          lons[ix] -> attr(x,'longitude')
-          lats[iy] -> attr(x,'latitude')
-        } else {
-          if (verbose) print(paste('subset the matrix:',sum(ix),sum(iy)))
-          if (verbose) print(dim(x))
-          y <- x[ix,iy]
-          y <- attrcp(x,y)
-          attr(y,'variable') <- varid(x)
-          attr(y,'unit') <- esd::unit(x)
-          lons[ix] -> attr(y,'longitude')
-          lats[iy] -> attr(y,'latitude')
-          x <- y
-        }
-    } 
+  if (is.list(is)) {
+    y <- attr(x,'pattern')
+    lons <- lon(x)
+    lats <- lat(x)
+    nms <- substr(tolower(names(is)),1,3)
+    IS <- 1:length(nms)
+    if (verbose) print(nms)
+    if (sum(is.element(nms,'lon'))>0) {
+      inm <- IS[is.element(nms,'lon')]
+      if (!is.null(is[[inm]])) {
+        ix <- (lons >= min(is[[inm]])) &
+              (lons <= max(is[[inm]])) 
+      } else { 
+        ix <- is.finite(lons)
+      }
+    } else {
+      ix <- is.finite(lons)
+    }
+    if (sum(is.element(nms,'lat'))>0) {
+      inm <- IS[is.element(nms,'lat')]
+      if (!is.null(is[[inm]])) {
+        iy <- (lats >= min(is[[inm]])) &
+              (lats <= max(is[[inm]])) 
+      } else {
+        iy <- is.finite(lats)
+      }
+    } else {
+      iy <- is.finite(lats)
+    }
+    if (!is.null(attr(x,'pattern'))) {
+      if (verbose) print('replace the pattern argument')
+      y[ix,iy] -> attr(x,'pattern')
+      lons[ix] -> attr(x,'longitude')
+      lats[iy] -> attr(x,'latitude')
+    } else {
+      if (verbose) print(paste('subset the matrix:',sum(ix),sum(iy)))
+      if (verbose) print(dim(x))
+      y <- x[ix,iy]
+      y <- attrcp(x,y)
+      attr(y,'variable') <- varid(x)
+      attr(y,'unit') <- esd::unit(x)
+      lons[ix] -> attr(y,'longitude')
+      lats[iy] -> attr(y,'latitude')
+      x <- y
+    }
     attr(x,'history') <- history.stamp(x)  
-    return(x)
+  }
+  return(x)
 }
 
 subset.matrix <- function(x,is,verbose=FALSE,...) {
@@ -840,8 +849,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ##print("HERE")
     ## get time in t
     t <- index(x)
-    ## KMP 2016-02-03: to solve problem with subset.events 
-    if(inherits(t,"Date")) t <- as.Date(round(as.numeric(t)))
+    if(inherits(t,"Date")) t <- as.Date(format.Date(t,"%Y-%m-%d"))
     if(!inherits(t,c("POSIXt","PCICt"))) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
     if (verbose) {print('default.subset: time index it'); print(it)}
     if (is.character(it)) {

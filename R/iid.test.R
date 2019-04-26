@@ -89,7 +89,7 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
   CI.95 <- rep(t.r[2],t.r[1]*2); dim(CI.95) <- c(t.r[1],2); CI.95.rev <- CI.95 
   p.val <- rep(NA,t.r[1]); i.cluster <- rep(FALSE,t.r[1])
   p.val.rev <- p.val; i.cluster.rev <- i.cluster
-
+  
   if (plot) {
     par(col.axis="white")
     plot(c(1,t.r[1]),c(1,2*t.r[2]),type="n",main="iid-test",
@@ -102,22 +102,22 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
     text(0,round(3*t.r[2]/2),"Backward",cex=1,vfont=c("sans serif","italic"))
     par(par.0)
   }
-
   
   for (ir in 1:t.r[2]) {
-    #record.stats <- n.records(Y[,ir])
-    record.stats <- n.records(subset(x,is=ir))
+    #record.stats <- n.records(subset(x,is=ir))
+    record.stats <- n.records(zoo(Y[,ir], order.by=index(Y)))
     if (verbose) str(record.stats)
     N.records[ir] <- record.stats$N
     events[record.stats$t,ir] <- TRUE
     events.rev[record.stats$t.rev,ir] <- TRUE
-
     if (plot) {
       # Timing index for record.
       t1 <- record.stats$t
-      if (rev.plot.rev) t2 <- record.stats$t.rev  else 
-                        t2 <- t.r[1] - record.stats$t.rev + 1
-
+      if (rev.plot.rev) {
+        t2 <- record.stats$t.rev  
+      } else {
+        t2 <- t.r[1] - record.stats$t.rev + 1
+      }
       #lines(c(1,t.r[1]),rep(ir,2),col="grey70")            
       points(t1,rep(ir,record.stats$N)+0.025,pch=20,cex=1.50,col="grey30")
       points(t1+0.05,rep(ir,record.stats$N)+0.050,pch=20,cex=0.70,col="grey50")
@@ -133,10 +133,10 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
              cex=0.50,col="grey70")
       points(t2+0.1,rep(ir,record.stats$N.rev)+0.100+t.r[2],pch=20,
              cex=0.30,col="white")
-      text(loc(x)[ir],0,ir,pos=3)
+      if(!is.null(loc(x)[ir])) text(loc(x)[ir],0,ir,pos=3)
     }
   }
-
+  
   if (plot) {
     for (it in 2:t.r[1]) {
       CI.95[it,] <- qbinom(p=c(0.025,0.975),size=t.r[2],prob=1/it)
@@ -158,19 +158,21 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
       }    
     }
   }
-
+  
   events[!is.finite(Y)] <- NA
   events.rev[!is.finite(Y)] <- NA
   record.density <- rowMeans(events,na.rm=TRUE)
   record.density.rev <- rev(rowMeans(events.rev,na.rm=TRUE))
   N <- length(record.density)
-
-  q025=rep(NA,N); q975=q025    
+  
+  q025 <- rep(NA,N)
+  q975 <- q025    
   if (Monte.Carlo) {
     print(paste("Please be patient -",N.test,"Monte Carlo runs in progress..."))
-    record.mc <- rep(NA,2*N.test*N); dim(record.mc) <- c(N,N.test,2)
+    record.mc <- rep(NA,2*N.test*N)
+    dim(record.mc) <- c(N,N.test,2)
     for (ii in 1:N.test) {
-      mc.stats <- test.iid.test(d=dim(events),plot=FALSE,Monte.Carlo=FALSE)  
+      mc.stats <- test.iid.test(d=dim(events),plot=FALSE,Monte.Carlo=FALSE)
       record.mc[,ii,1] <- cumsum(mc.stats$record.density)
       record.mc[,ii,2] <- cumsum(mc.stats$record.density.rev)
     } 
@@ -272,10 +274,16 @@ n.records <- function(x,verbose=FALSE) {
     y.rev <- apply(y, 2, rev)
     #index(y.rev) <- index(y) # doesn't work
   }
-  if (verbose) {str(y); str(y.rev)}
-  N <- 1; N.rev <- N
-  t <- rep(1,m); t.rev <- rep(m,m)
-  events <- rep(FALSE,m); events.rev <- events
+  if (verbose) {
+    str(y)
+    str(y.rev)
+  }
+  N <- 1
+  N.rev <- N
+  t <- rep(1,m)
+  t.rev <- rep(m,m)
+  events <- rep(FALSE,m)
+  events.rev <- events
   
   if (verbose) print('fast algorithm')
   events <- records(y,verbose=verbose)
@@ -295,7 +303,6 @@ n.records <- function(x,verbose=FALSE) {
     N <- lapply(events.rev,function(x) sum(is.finite(x)))
     t.rev <- lapply(events.rev,function(x) attr(x,'t'))
   } else stop(paste('n.records - not programmed to handle',class(events)))
-  
   if (verbose) print('organise into list object')
   records <- list(N=N,t=t,events=events,N.rev=N.rev, 
                   t.rev=t.rev, events.rev=events.rev)
