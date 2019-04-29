@@ -971,7 +971,7 @@ map.data.frame <- function(x,...) {
   } else print("x is not a stationmeta object")
 }
 
-map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=19,nbins=15,
+map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=19,nbins=15,rev=FALSE,
                                new=TRUE,verbose=FALSE,fig=c(0.2,0.25,0.6,0.8),
                                hist=TRUE,lon=NULL,lat=NULL,...) {
   if (verbose) print(match.call())
@@ -992,7 +992,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
       z <- x[[FUN]] 
       ok <- is.finite(z); ok2 <- ok
       if (verbose) print(summary(z))
-      colbar <- colscal(n=nbins,col=pal)
+      colbar <- colscal(n=nbins,col=pal,rev=rev)
       breaks <- pretty(z,nbins)
       #ic <- trunc(nbins*(z - min(z,na.rm=TRUE))/(max(z,na.rm=TRUE) - min(z,na.rm=TRUE))) + 1
       #breaks <- round(seq(min(z,na.rm=TRUE),max(z,na.rm=TRUE),length=nbins),2)
