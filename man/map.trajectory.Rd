@@ -53,22 +53,21 @@ map.density.trajectory(x,dx=4,dy=2,it=NULL,is=NULL,
 # plot storm tracks zoomed in on the north Atlantic and northern Europe
 data(imilast.M03)
 map.trajectory(imilast.M03,col="blue",alpha=0.1,
-          projection='latlon',xlim=c(-60,60),ylim=c(30,90))
+          projection='latlon',xlim=c(-60,60),ylim=c(30,90),
+          new=FALSE)
 
 # spherical projection
-map.trajectory(imilast.M03,col="blue",alpha=0.1,projection='sphere')
+map.trajectory(imilast.M03,col="blue",alpha=0.1,projection='sphere',new=FALSE)
+
+# plot number density for grid boxes of width 2 degrees and height 1 degree
+map.hexbin.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
+map.sunflower.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
 
 \dontrun{
 # calculate cyclone density, takes a little while
 cdens <- as.field(imilast.M03)
-map(cdens)
+map(cdens,new=FALSE)
 }
-
-# plot number density for grid boxes of width 2 degrees and height 1 degree
-map.hexbin.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1)
-map.sunflower.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1)
-
-
 }
 
 \keyword{map}

@@ -451,7 +451,7 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     map(x,new=FALSE,colbar=list(show=FALSE),verbose=verbose,...)
     points(lon(x),lat(x),lwd=3,cex=1.5)
   }
-
+  
   if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ){
     par(new=TRUE,fig=c(0.5,1,0.5,1)) 
      
@@ -464,12 +464,13 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                       x=coredata(attr(x,'evaluation')[,2]))
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
-    par(bty="n",fig=c(0.6,0.95,0.48,0.52),mar=c(0,0,0,0),new=TRUE,
-        xaxt='n',yaxt='n',cex.sub=0.7)
-    plot(c(0,1),c(0,1),type='n',xlab='',ylab='')
+    #par(bty="n",fig=c(0.6,0.95,0.48,0.52),mar=c(0,0,0,0),new=TRUE,
+    #    xaxt='n',yaxt='n',cex.sub=0.7)
+    #plot(c(0,1),c(0,1),type='n',xlab='',ylab='')
     ok <- is.finite(attr(x,'evaluation')[,1]) &
           is.finite(attr(x,'evaluation')[,2])
-    text(par()$xaxp[1],mean(par()$yaxp[1:2]),
+    text(par()$usr[1] + diff(range(par()$usr[1:2]))/24,
+         par()$usr[4] - diff(range(par()$usr[3:4]))/12,
           paste('correlation=',
           round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
          pos=4,cex=0.8,col='grey')
@@ -790,7 +791,6 @@ plot.ds.pca <- function(x,ip=1,
                       x=coredata(attr(y,'evaluation')[,2]))
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
-    #browser()
     #legend("bottomleft", )
     par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
     xlim <- range(index(attr(y,'original_data')),index(y))

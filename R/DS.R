@@ -110,7 +110,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
     
     predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
-
+    
     if (is.null(names(X))) names(X) <- 1:dim(X)[2]
     Xnames <- paste("X.",1:length(names(X)),sep="")
     colnames(caldat) <- c("y",Xnames,'weights')
@@ -223,6 +223,12 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
     attr(ds,'history') <- history.stamp(X0)
                                         #print("HERE"); print(cls)
     class(ds) <- c("ds",cls[-2])
+    ## KMP 2019-04-29: Added crossval in DS.default. Any reason why it shoudn't be here?
+    if (!is.null(m))  {
+      if (verbose) print("Cross-validation")
+      xval <- crossval(ds,m=m)
+      attr(ds,'evaluation') <- zoo(xval)
+    } else attr(ds,'evaluation') <- NULL
     rm("y0","X0")
                                         #print("Completed")
                                         #lines(ds,col="darkred",lwd=2,lty=2)
@@ -452,10 +458,14 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
     if (verbose) {print(class(X)); print(varid(y))}
     if (sum(is.element(tolower(attr(y,'variable')),c('t2m','tmax','tmin'))) >0) {
       if (inherits(X,'month')) {
-        ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
-                                 method=method,swsm=swsm,m=m,
-                                 rmtrend=rmtrend,ip=ip,
-                                 verbose=verbose)
+        ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
+                         method=method,swsm=swsm,m=m,
+                         rmtrend=rmtrend,ip=ip,
+                         verbose=verbose)
+        #ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
+        #                         method=method,swsm=swsm,m=m,
+        #                         rmtrend=rmtrend,ip=ip,
+        #                         verbose=verbose)
       } else if (inherits(X,'season')) {
         # the DS.t2m.season.field is not in working order
         #ds <- DS.t2m.season.field(y=y,X=X,biascorrect=biascorrect,
@@ -466,11 +476,15 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
                                   method=method,swsm=swsm,m=m,
                                   rmtrend=rmtrend,ip=ip,
                                   verbose=verbose)
-      } else if (inherits(X,'annual')) { 
-        ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
-                                  method=method,swsm=swsm,m=m,
-                                  rmtrend=rmtrend,ip=ip,
-                                  verbose=verbose)
+      } else if (inherits(X,'annual')) {
+        ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
+                         method=method,swsm=swsm,m=m,
+                         rmtrend=rmtrend,ip=ip,
+                         verbose=verbose)
+        #ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
+        #                          method=method,swsm=swsm,m=m,
+        #                          rmtrend=rmtrend,ip=ip,
+        #                          verbose=verbose)
       }
     } else if (tolower(attr(y,'variable'))=='precip') {
       ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
@@ -714,7 +728,6 @@ DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,biascorrect=FALSE,method="lm",sw
       z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
                   ip=ip,rmtrend=rmtrend,verbose=verbose,
                   weighted=weighted,...)
-      #browser()
       class(z)[2:3] <- c('eof','field')
       attr(z,'pattern') <- attr(y,'pattern')
       attr(z,'eigenvalues') <- attr(y,'eigenvalues')

@@ -258,16 +258,15 @@ mask(x,land=FALSE)
 \author{R.E. Benestad}
 \examples{
 # dontrun because of this problem: "Error in plot.new() : figure margins too large"
-\dontrun{ 
 # Select stations in ss and map the geographical location 
 # of the selected stations with a zoom on Norway.
 ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
-par()
-map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70))
+graphics.off()
+map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70), new=FALSE)
 
 ## Get NACD data and map the mean values
 y <- station.nacd()
-map(y,FUN='mean',colbar=list(pal=varid(y),n=10),cex=2)
+map(y,FUN='mean',colbar=list(pal=varid(y),n=10), cex=2, new=FALSE)
 
 # Examples of cyclone maps (map.events)
 data(storms)
@@ -279,8 +278,8 @@ map(x, type=c("trajectory","points"), col="blue")
 map(x, type=c("trajectory","start","end"), col="red")
 ## Map showing the cyclone depth (slp at center) as a color scale (rd = red scale)
 map(x, param="pcent", type=c('trajectory','start'), 
-    colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1000,2)), alpha=0.9)
-}
+    colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1000,2)), 
+    alpha=0.9, new=FALSE)
 }
 \keyword{map}
 

@@ -10,7 +10,7 @@ density.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,radius=5E5,verbose=FA
     hits <- as.data.frame(table(lon,lat))
     names(hits)[names(hits)=="Freq"] <- "density"
   } else {
-    A <- trackdensity(y[names(y)=='lon'],y[names(y)=='lat'],dx=dx,dy=dy,radius=radius))
+    A <- trackdensity(y[names(y)=='lon'],y[names(y)=='lat'],dx=dx,dy=dy,radius=radius)
     lon <- factor2numeric(A$lon)
     lat <- factor2numeric(A$lat)
     hits <- as.data.frame(table(lon,lat))

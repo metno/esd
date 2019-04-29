@@ -108,15 +108,13 @@ vis.map(x,col='red',map.type='points',add.text=FALSE)
 \examples{
 # Example: use aggregate to compute annual mean temperature for Svalbard:
 data(Svalbard)
-year <- as.numeric( format(index(Svalbard), '\%Y') ) 
-y <- aggregate(Svalbard, by=year, FUN='mean', na.rm = FALSE) 
+y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
 plot(y)
-
 
 # Example with downscaling:
 lon <- c(-12,37)
 lat <- c(52,72)
-t2m <- t2m.ERA40(lon=lon,lat=lat)
+t2m <- t2m.DNMI(lon=lon,lat=lat)
 data(Oslo)
 ds <- DS(Oslo,t2m)
 
@@ -146,8 +144,8 @@ plot(T2m,ferder)
 ## plot(T2m,is=list(lon=0)) 
 
 print("Extract a subset - the January month")
-x <- subset(t2m,it=1)
-X <- subset(T2m,it=1)
+x <- subset(t2m,it="jan")
+X <- subset(T2m,it="jan")
 
 print("Combine the fields for computing common EOFs:")
 XX <- combine(x,X)

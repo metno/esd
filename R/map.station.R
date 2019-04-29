@@ -17,7 +17,7 @@ genfun <- function(x,FUN) {
   }}
 
 ## Simplified function for mapping station objects.
-map.station <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
+map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          add=FALSE,projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                          col='darkred',bg='orange',
@@ -387,15 +387,15 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (is.null(xlim)) {
       if ((is.null(highlight) | showall)) {
         if(length(is$lon) > 1) {
-          xlim <- range(ss$longitude, na.rm = TRUE) + c(-1,1)
+          xlim <- range(ss$longitude, na.rm = TRUE) + c(-2,2)
         } else {
-          xlim <- range(ss$longitude, na.rm = TRUE) + c(-4,4)
+          xlim <- range(ss$longitude, na.rm = TRUE) + c(-5,5)
         }
       } else {
         if (length(is$lon) > 1) {
-          xlim <- range(highlight$longitude, na.rm = TRUE) + c(-1,1)
+          xlim <- range(highlight$longitude, na.rm = TRUE) + c(-2,2)
         } else {
-          xlim <- range(highlight$longitude, na.rm = TRUE) + c(-4,4)
+          xlim <- range(highlight$longitude, na.rm = TRUE) + c(-5,5)
         }
       }
     }
@@ -424,8 +424,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       scale <- 1
     }
     ##print(par()$fig)
-    par(fig=par0$fig,mar=mar0)
-    
     ## Transform x using FUN and insert color bar
     ##
     
@@ -513,7 +511,10 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     } else {
       fig0 <- par0$fig
     }
-    par(fig=fig0)
+    #par(fig=fig0)
+    
+    if(new) dev.new()
+    par(fig=fig0,mar=mar0)
     
     ## REB: 2016-10-12 - add the possibility to use google maps
     ## KMP 2018-10-31: Don't use require inside the esd package. 
@@ -540,18 +541,18 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
            bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
            xlim = xlim, ylim = ylim , axes =FALSE , frame.plot = FALSE,
-           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
+           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab, new=FALSE)
     } else if (!is.null(ss) & !is.null(FUN)) {
       plot(ss$longitude, ss$latitude, pch = pch, col = "white",
            bg = "white", cex = cex * scale, xlab = "", ylab = "",
            xlim = xlim, ylim = ylim , axes = FALSE ,
            frame.plot = FALSE,
-           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
+           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab, new=FALSE)
     } else {
       plot(ss$longitude, ss$latitude, pch = pch, col = col, bg = bg,
            cex = cex*scale, xlab = "", ylab = "", xlim = xlim,
            ylim = ylim , axes = FALSE , frame.plot = FALSE,
-           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab)
+           cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab, new=FALSE)
     }
     #if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) )
     #     par(new=FALSE) else ## REB: 2016-10-12 - add the possibility to use google maps
