@@ -14,12 +14,11 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
     ## data in the esd package.
 
     if (verbose) print('map.default')
-    
     if (is.logical(colbar)) colbar <- NULL
     ## If only a few items are provided in colbar - then set the rest to the default
     if (!is.null(colbar)) {
-        colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=FALSE)
-    } else col <- 'black'
+      colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=FALSE)
+    }
     
     x <- subset(x,it=it,is=is)
     X <- attr(x,'pattern')

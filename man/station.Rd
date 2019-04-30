@@ -125,7 +125,7 @@ clean.station(x,miss=.1,verbose=TRUE)
 
 \author{A. Mezghani}
 \examples{
-# \dontrun{
+ \dontrun{
 # Get daily and monthly mean temperature for "Oslo" station ("18700") from METNO data source
 t2m.dly <- station.metnod(stid="18700",param="t2m")
 t2m.mon <- station.metnom(stid="18700",param="t2m")
@@ -160,6 +160,6 @@ str(y)
 # stations and highlight the subselected station (is=2).
 y1 <- subset(y,is=2)
 map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showall=TRUE)
-#}
+}
 }
 \keyword{select.station}

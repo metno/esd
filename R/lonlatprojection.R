@@ -147,13 +147,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(col.axis='black',col.lab='black',
         cex.lab=0.5,cex.axis=0.5)
     
-    if (!is.null(colbar))
-      if (colbar$show)
-        if (fancy)
+    if (!is.null(colbar)) {
+      if (colbar$show) {
+        if (fancy) {
           col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
                   col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
                   type=type,verbose=FALSE,vl=1,border=FALSE)
-    else {
+        }
+      }
+    } else {
       #par(fig=par0$fig)
       image.plot(breaks=colbar$breaks,
                  lab.breaks=colbar$breaks,horizontal = TRUE,

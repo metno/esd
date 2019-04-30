@@ -198,17 +198,17 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
     if (src[i]=="METNOD") { #AM-29.08.2013 added for metno data
       if (is.null(path.metnod)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnod ## default path
       if (is.null(url.metnod)) {
-          if (user == 'metno') url="http://klapp/metnopub/production/"
+          if (user == 'metno') url="http://klapp/metnopub/production"
           else url= 'ftp://ftp.met.no/projects/chasepl/test'
       } else {
         url <- url.metnod ## default url
       }
       
-      if (param[i] == 'dd')
+      if (param[i] == 'dd') {
         param1 <- esd2ele(param[i])
-      else 
+      } else { 
         param1 <- NULL
-      
+      }
       if (is.null(param1)) {
         x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user,save2file = save2file) ## ,path=path, url=url
       } else { ## compute the avg 
@@ -230,7 +230,6 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
         attr(x,'element') <- ele
         attr(x,'longname') <- "Average of wind directions at 06 12 and 18 utc"
       }
-      
       if (verbose) {print("obs"); str(x)}
       if ( is.null(x)| (sum(is.na(coredata(x)))==length(coredata(x))) ) {
         print("Warning : No values found in the time series -> This station will be ignored")
@@ -240,7 +239,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
     } else if (src[i]=="METNOM") { #AM-29.08.2013 added for metno data
       ## ment
       if (is.null(path.metnom)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnom ## default path
-      if (is.null(url.metnom)) url="http://klapp/metnopub/production/" else url <- url.metnom ## default url
+      if (is.null(url.metnom)) url="http://klapp/metnopub/production" else url <- url.metnom ## default url
       x <- metnom.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
       if (verbose) {print("obs"); str(x)}
       if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
@@ -803,26 +802,28 @@ metnom.station <-  function(re=15,stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,
                             start=NULL,end=NULL,param=NULL,verbose=FALSE, h = NULL, nmt = 0,
                             path = NULL, dup = "A", user='metno',url = "http://klapp/metnopub/production/",save2file = TRUE) {
   
-  if (user=='metno')
+  if (user=='metno') {
     y <- metno.station.internal(re=re,stid=stid,lon=lon,lat=lat,loc=loc,alt=alt,cntr=cntr,qual=qual,
                        start=start,end=end,param=param,verbose=verbose,h = h, nmt = nmt,
                        path = path, dup = dup, url = url,save2file = save2file)
-  else
+  } else {
     y <- metno.station(re=re,stid=stid,lon=lon,lat=lat,loc=loc,alt=alt,cntr=cntr,qual=qual,
                        start=start,end=end,param=param,verbose=verbose,h = h, nmt = nmt,
                        path = path, dup = dup, url = url)
-  
+  }
   if (!is.null(y))
     attr(y,"source") <- "METNOM"
   invisible(y)
 }
+
 metnod.station <-  function(re=14, url = 'ftp://ftp.met.no/projects/chasepl/test', user='else',save2file = TRUE,...) {
   ## 
   ## url <- "ftp://ftp.met.no/projects/chasepl/test"
-  if (user=='metno')
+  if (user=='metno') {
     y <- metno.station.internal(re=re,url=url,save2file = save2file,...)
-  else 
+  } else { 
     y <- metno.station(re=re,url=url,save2file = save2file,...)
+  }
   if (!is.null(y))
     attr(y,"source") <- "METNOD"
   invisible(y)
@@ -1057,10 +1058,11 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   #if (!is.na(start)) start1 <- format(as.Date(paste("01.01.",as.character(start),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')
   param1 <- ele2param(ele=esd2ele(param),src="metno")$param ## switch(param,"t2m"="TAM","precip"="RR")
   ext <- switch(as.character(re), '14' = 'dly', '17' = 'obs', '15' = 'mon')
-  if (ext=='dly')
+  if (ext=='dly') {
     path <- 'data.METNOD'
-  else if (ext=='mon')
+  } else if (ext=='mon') {
     path <- 'data.METNOM'
+  }
   if (!is.null(url)) {
     Filnavn <- file.path(url, path, paste(param1,'_',sprintf('%05d',as.numeric(stid)),'.',ext, sep = ""))
   } else stop("The url must be specified")
