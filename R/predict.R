@@ -150,7 +150,6 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 
 
 predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
-  ## REB: modified the code 2015-04-09
   if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
   if (is.null(newdata)) {
     newdata <- data.frame(coredata(as.eof(x)))
@@ -167,25 +166,11 @@ predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   d <- dim(newdata)
   if (is.null(d)) d <- c(length(x),1)
   model <- attr(x,'model')
-  #  browser()
   y <- lapply(model,predict,newdata)
   y <- matrix(unlist(y),nrow=d[1],ncol=length(model))
-  #  Z <- list()
-  #  for (i in 1:npca) {
-  #    y <- zoo(x[,i])
-  #    attr(y,'model') <- attr(x,'model')[[i]]
-  #    attr(y,'eof') <- attr(x,'eof')[[i]]
-  #    attr(y,'eof') <- as.eof(x)
-  #    attr(y,'mean') <- 0
-  #    class(y) <- c('ds','eof','zoo')
-  #    Z[[i]] <- predict.ds.eof(y,newdata=newdata,addnoise=addnoise,n=n,verbose=verbose)
-  #  }
-  ## Copy the original object and only change the predicted values
-  
+
   ## Replace 
-  #browser()
   y <- zoo(y, order.by=t)
-  # KMP 2018-12-30: Changed to include model in attrcp. Is there any reason not to copy model to y? 
   y <- attrcp(x, y, ignore=c("name", "n.apps", "appendix", "dimnames","aspect"))
   class(y) <- class(x)[-1]
   invisible(y)
@@ -216,7 +201,7 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   
   ## In newdata is set as TRUE or FALSE -------------------------------------------------
   if (is.logical(newdata)) {
-    # For some reason, the column names of newdata is muddled here,
+    # For some reason, the column names of newdata are muddled here,
     # and hence Xnames is used to enforce names 'X.1', 'X.2', 'X.3', ...
     #Xnames <- paste("X.",1:neofs,sep="")
     if (newdata) {
@@ -235,8 +220,6 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
     } else {
       for (i in 1:n.app) {
         X <- attr(x,paste('appendix.',i,sep=""))
-        #names(X) <- Xnames
-        #if (verbose) print(Xnames)
         if (inherits(x,c('pca','eof'))) 
           y <- predict.ds.eof(x=x,newdata=X,verbose=verbose) else
           y <- X
@@ -263,9 +246,8 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   attr(Y,'source') <- attr(X,'source')
   attr(Y,'residual.mean') <- mean(residual,na.rm=TRUE)
   attr(Y,'residual.sd') <- sd(residual,na.rm=TRUE)
-  ## KMP 2018-12-30: Why ignore model?
-  Y <- attrcp(x,Y,ignore = c("name", "model", "n.apps", "appendix", 
-                            "dimnames","aspect"))
+  ## KMP 2018-12-30: Changed to include model in attrcp. Is there any reason not to copy model to y? 
+  Y <- attrcp(x,Y,ignore = c("name", "n.apps", "appendix", "dimnames","aspect"))
   attr(Y,'aspect') <- 'predicted'
   invisible(Y)
 }
@@ -275,7 +257,6 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   stopifnot(!missing(x),inherits(x,"ds")) ## ,inherits(x,'comb')
   if (verbose) print("project.ds")
   
-  
   if (is.null(newdata)) {
     X <- attr(x,'eof')
   } else {
@@ -284,13 +265,12 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   
   neofs <- length(attr(X,'eigenvalues'))
   
-  # For some reason, the column names of newdata is muddled here,
+  # For some reason, the column names of newdata are muddled here,
   # and hence Xnames is used to enforce names 'X.1', 'X.2', 'X.3', ...
   Xnames <- paste("X.",1:neofs,sep="")
   if (verbose) print(Xnames)
   if (is.null(newdata)) {
-    ## newdata <- data.frame(X=coredata(X))
-    n.app <- attr(x,'n.apps') 
+    n.app <- attr(X,'n.apps')
   } else {
     ## X <- newdata
     n.app <- attr(newdata,'n.apps')
@@ -301,23 +281,31 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   
   rownm <- rep("",n.app+1)
   rownm[1] <- attr(x,'source')
-  
   for (i in 1:n.app) {
-    if (is.null(newdata))
-      newdata <- attr(X,paste('appendix.',i,sep="")) 
-    if (verbose) {print("Data for obs:"); print(summary(newdata))}
-    names(newdata) <- Xnames      
+    if(is.null(newdata)) newdata <- attr(X,paste('appendix.',i,sep=""))
+    if(verbose) {
+      print("Data for obs:")
+      print(summary(newdata))
+    }
+    names(newdata) <- Xnames
     newdata <- attrcp(X,newdata)
     y <- predict.ds.eof(x=x,newdata=newdata,addnoise=FALSE,n=100,verbose=verbose)
     
     names(newdata) <- Xnames
-    if (verbose) {print("Data for GCM:"); print(summary(newdata))}
-    if (verbose) {print("DS values:"); print(summary(predict(model,newdata=newdata)))}
+    if (verbose) {
+      print("Data for GCM:")
+      print(summary(newdata))
+    }
+    if (verbose) {
+      print("DS values:")
+      print(summary(predict(model,newdata=newdata)))
+    }
     
-    if (i==1) 
+    if (i==1) {
       Y <- y
-    else
+    } else {
       Y <- merge(y,Y,all=TRUE)
+    }
   }
   
   residual <- model$residuals

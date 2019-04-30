@@ -92,9 +92,9 @@ image(lon(z),lat(z),z)
 data(geoborders)
 lines(geoborders)
 
+\dontrun{
 ## Regrid station data using weights defined by the distance of the 4
 ## nearest stations: quick and dirty method
-
 if (!file.exists("stationsVALUE_exp1a.rda")) {
   download.file("http://files.figshare.com/2085591/value_predictands4exp1a.R",
                 "value_predictands4exp1a.R")
@@ -104,6 +104,6 @@ if (!file.exists("stationsVALUE_exp1a.rda")) {
 load("stationsVALUE_exp1a.rda")
 TX <- regrid(Tx,is=list(lon=seq(-8,30,by=1),lat=seq(40,60,by=0.5)))
 map(TX)
-
+}
 }
 \keyword{utilities}

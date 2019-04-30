@@ -71,7 +71,7 @@ A. Mezghani
 \examples{
 # Get predictor
 ## Get reanalysis
-X <- t2m.ERA40(lon=c(-40,50),lat=c(40,75))
+X <- t2m.DNMI(lon=c(-40,50),lat=c(40,75))
 ## Get Gcm output
 Y <- t2m.NorESM.M(lon=c(-40,50),lat=c(40,75))
 ## Combine
@@ -86,14 +86,12 @@ ds <- DS(Oslo,ceof)
 plot(ds)
 # Do the prediction based on the calibration (or the fitted values)
 ds.pre <- predict(ds)
-#Plot predicted results based on ds object
+# Plot predicted results based on ds object
 plot(ds.pre)
 # Display the attribute "aspect"
 attr(ds.pre, "aspect")
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-## Now try project to extract the projected results
-plot(project(ds.pre))
+## Extract the projected results
+plot(project.ds(ds))
 }
 \keyword{ ~kwd1 }
 \keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
