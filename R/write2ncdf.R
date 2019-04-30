@@ -686,7 +686,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
       tsigma2id.jja <- ncid$var[["summary_trend_sigma2_JJA"]]
       tsigma2id.son <- ncid$var[["summary_trend_sigma2_SON"]]
       mwslid <- ncid$var[["summary_mean_wetdur"]]
-      mwdlid <- ncid$var[["summary_mean_drydur"]]
+      mdslid <- ncid$var[["summary_mean_drydur"]]
     } else {
       sdid <- ncid$var[["summary_sd"]]
       sdid.djf <- ncid$var[["summary_sd_DJF"]]
