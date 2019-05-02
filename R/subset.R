@@ -1143,7 +1143,6 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
                                                 tolower(month.abb)))>0)
     is.seasons <- function(x) all(sum(is.element(tolower(substr(x,1,3)),
                                                  names(season.abb())))>0)
-                            
     if (is.months(it)) {
       if (verbose) print('Monthly selected')
       mo <- month(t)
@@ -1213,10 +1212,10 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
     } else if (is.logical(it) & length(it)==length(t)) {
       if (verbose) print('it is a logical array')
       ii <- it
-    } else if (is.integer(it) & max(it)<=length(t)) {
+    } else if (is.numeric(it) & max(it)<=length(t)) {
       if (verbose) print('it is an index array')
       ii <- rep(FALSE,length(t))
-      ii[it] <- TRUE
+      ii[as.integer(it)] <- TRUE
     } else {
       ii <- rep(FALSE,length(t))
       warning("subset.station: did not recognise the selection citerion for 'it'")

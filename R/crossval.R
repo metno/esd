@@ -6,11 +6,11 @@
 
 crossval <- function(x, m=5, ...) UseMethod("crossval")
 
-crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
+crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
   # Repeat the regression from DS, but through several iterations with
   # leave-m-out. These are masked by setting them to NA before the
   # regression.
-  #print("crossval.ds")
+  if(verbose) print("crossval.ds")
 
   CALDAT <- attr(x,'calibration_data')
   calstr <- attr(CALDAT,'calibration_expression')
@@ -100,18 +100,21 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
   invisible(X)
 }
 
-crossval.list <- function(x, m=5, ...) {
+crossval.list <- function(x, m=5, ..., verbose=FALSE) {
+  if(verbose) print("crossval.list")
   elements <- names(x)
   for (i in 1:length(elements)) {
     ds <- x[[i]]
-    xval <- crossval.ds(ds)
+    xval <- crossval.ds(ds,m=m,verbose=verbose,...)
     attr(x[[i]],'evaluation') <- xval
   }
   invisible(x)
 }
 
-crossval.dsensemble <- function(x,n=NULL,plot=TRUE) {
+crossval.dsensemble <- function(x,m=NULL,...,plot=TRUE,verbose=FALSE) {
+  if(verbose) print("crossval.dsensemble")
   X <- x
+  n <- m
   if (is.null(n)) n <- dim(x$pca)[2]
   m <- (n-1)%%3+1; k <- (n-1)%/%m+1
   mfrow=c(m,k)

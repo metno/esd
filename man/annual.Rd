@@ -68,7 +68,7 @@ lat <- seq(40,70,by=5); ny <- length(lat)
 # Time dimension should come first, space second.
 y <- matrix(rnorm(nx*ny*n),n,nx*ny)
 index <- as.Date(paste(year,month,1,sep="-"))
-Y <- as.field(y,index,lon,lat,param="noise",unit="none")
+Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
 map(Y)
 plot(EOF(Y))
 

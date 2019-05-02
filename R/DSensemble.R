@@ -46,7 +46,7 @@ DSensemble.default <- function(y,...,path='CMIP5.monthly/',rcp='rcp45') {
 }
 
 DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA40_t2m_mon.nc",
-                           rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,type='ncdf4',
+                           rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="tas_Amon_ens_",path.ds=NULL,file.ds="DSensemble.rda",
@@ -104,7 +104,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
   if(verbose) print("Retrieve predictor data")
   if (is.character(predictor))
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,
-                    type=type,verbose=verbose) else
+                    verbose=verbose) else
   if (inherits(predictor,'field'))
     t2m <- subset(predictor,is=list(lon=lon,lat=lat))
 
@@ -158,7 +158,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
   if (verbose) print("loop...")
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
-    gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
+    gcm <- retrieve(ncfile = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
@@ -372,7 +372,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
 #save(file=paste("dscmip5_",attr(y,'location'),"_",N,"_rcp4.5.rda",sep=""),rcp4.5)
 
 DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
-                              predictor="ERA40_pr_mon.nc",non.stationarity.check=FALSE,type='ncdf4',
+                              predictor="ERA40_pr_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",FUNX="sum",xfuns='C.C.eq',threshold=1,
                               pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
@@ -408,7 +408,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   if (verbose) print("predictor")
   if (is.character(predictor))
     pre <- retrieve(ncfile=predictor,lon=lon,lat=lat,
-                    type=type,verbose=verbose) else
+                    verbose=verbose) else
   if (inherits(predictor,'field')) pre <- predictor
   rm("predictor"); gc(reset=TRUE)
   attr(pre,"source") <- "ERA40"
@@ -475,7 +475,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   flog <- file("DSensemble.precip-log.txt","at")
   for (i in 1:N) {
     #
-    gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
+    gcm <- retrieve(ncfile = ncfiles[select[i]],
                     lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
                       gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
@@ -613,7 +613,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
 }
 
 DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
-                              predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,type='ncdf4',
+                              predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,FUNX="mean",xfuns='C.C.eq',threshold=1,
                               pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
@@ -640,7 +640,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   if (verbose) print("predictor")
   if (is.character(predictor))
     pre <- retrieve(ncfile=predictor,lon=lon,lat=lat,
-                    type=type,verbose=verbose) else
+                    verbose=verbose) else
   if (inherits(predictor,'field')) pre <- predictor
   rm("predictor"); gc(reset=TRUE)
   attr(pre,"source") <- "ERA40"
@@ -705,7 +705,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   flog <- file("DSensemble.precip-log.txt","at")
   for (i in 1:N) {
     #
-    gcm <- try(retrieve(ncfile = ncfiles[select[i]],type=type,
+    gcm <- try(retrieve(ncfile = ncfiles[select[i]],
       lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2),verbose=verbose))
     if(inherits(gcm,"try-error")) {
       writeLines(ncfiles[select[i]],con=flog)
@@ -853,7 +853,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
 }
 
 DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",predictor="slp.mon.mean.nc",
-                           rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,type='ncdf4',
+                           rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="psl_Amon_ens_",lev=NULL,levgcm=NULL,path.ds=NULL,file.ds=NULL,
@@ -928,7 +928,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
   if(verbose) print("Retrieve predictor data")
   if (is.character(predictor))
     slp <- retrieve(ncfile=predictor,lon=lon,lat=lat,lev=lev,
-                    type=type,verbose=verbose) else
+                    verbose=verbose) else
   if (inherits(predictor,'field'))
     slp <- subset(predictor,is=list(lon=lon,lat=lat))
 
@@ -975,7 +975,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
-    gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
+    gcm <- retrieve(ncfile = ncfiles[select[i]],
                           lon=range(lon(SLP))+c(-2,2),lev=levgcm,
                           lat=range(lat(SLP))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
@@ -1139,7 +1139,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 #                           predictor=list(t2m="data/ncep/air.mon.mean.nc",
 #                                          olr="data/ncep/OLR.mon.mean.nc",
 #                                          slp="data/ncep/slp.mon.mean.nc"),
-#                           non.stationarity.check=FALSE,type='ncdf4',
+#                           non.stationarity.check=FALSE,
 #                           ip=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
 #                           select=NULL,FUN="wetmean",threshold=1,
 #                           pattern=c("tas_Amon_ens_","olr_Amon_ens_","slp_Amon_ens_"),
@@ -1173,15 +1173,12 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 #   # # Get the predictor: NCEP/NCAR
 #   # if (verbose) print(paste("Get the set of predictors:",names(predictor),collapse=' '))
 #   # if (is.character(predictor[[1]])) pre1 <- retrieve(ncfile=predictor[[1]],
-#   #                                                    type=type,
 #   #                                                    lon=lon,lat=lat,
 #   #                                                    verbose=verbose)
 #   # if (is.character(predictor[[2]])) pre2 <- retrieve(ncfile=predictor[[2]],
-#   #                                                    type=type,
 #   #                                                    lon=lon,lat=lat,
 #   #                                                    verbose=verbose)
 #   # if (is.character(predictor[[3]])) pre3 <- retrieve(ncfile=predictor[[3]],
-#   #                                                    type=type,
 #   #                                                    lon=lon,lat=lat,
 #   #                                                    verbose=verbose)
 #   # 
@@ -1247,17 +1244,17 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 #   # for (i in 1:N) {
 #   #   ## Need to ensure that the different predictor files match...
 #   #   print(paste(i,N,ncfiles1[select[i]],ncfiles2[select[i]],ncfiles3[select[i]]))
-#   #   gcm1 <- retrieve(ncfile = ncfiles1[select[i]],type=type,
+#   #   gcm1 <- retrieve(ncfile = ncfiles1[select[i]],
 #   #                   lon=range(lon(PRE1))+c(-2,2),lat=range(lat(PRE1))+c(-2,2),verbose=verbose)
 #   #   if (ds.1900.2099) gcm1 <- subset(gcm1,it=c(1900,2099)) else
 #   #                     gcm1 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
 #   #   if (length(index(gcm1))<=1) print(paste('Problem selecting GCM results in period',
 #   #                                          min(year(y),na.rm=TRUE),'2099'))
-#   #   gcm2 <- retrieve(ncfile = ncfiles2[select[i]],type=type,
+#   #   gcm2 <- retrieve(ncfile = ncfiles2[select[i]],
 #   #                   lon=range(lon(PRE2))+c(-2,2),lat=range(lat(PRE2))+c(-2,2),verbose=verbose)
 #   #   if (ds.1900.2099) gcm2 <- subset(gcm2,it=c(1900,2099)) else
 #   #                     gcm2 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
-#   #   gcm3 <- retrieve(ncfile = ncfiles3[select[i]],type=type,
+#   #   gcm3 <- retrieve(ncfile = ncfiles3[select[i]],
 #   #                   lon=range(lon(PRE3))+c(-2,2),lat=range(lat(PRE3))+c(-2,2),verbose=verbose)
 #   #   if (ds.1900.2099) gcm3 <- subset(gcm3,it=c(1900,2099)) else
 #   #                     gcm3 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
@@ -1421,7 +1418,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 
 DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA40_t2m_mon.nc",
                                     rcp="rcp45",biascorrect=FALSE,n=6,lon=c(-20,20),lat=c(-10,10),
-                                    it=NULL,rel.cord=TRUE,select=NULL,FUN="wetmean",type='ncdf4',
+                                    it=NULL,rel.cord=TRUE,select=NULL,FUN="wetmean",
                                     pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE,ds.1900.2099=TRUE) {
   if (verbose) print('DSensemble.mu.worstcase')
 
@@ -1455,7 +1452,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
   
   if (verbose) print("predictor")
   if (is.character(predictor)) {
-    pre <- retrieve(ncfile=predictor,lon=lon,lat=lat,type=type,verbose=verbose)
+    pre <- retrieve(ncfile=predictor,lon=lon,lat=lat,verbose=verbose)
     if (mask) pre=mask(pre,land=TRUE)
     pre <- spatial.avg.field(C.C.eq(pre))
   } else if (inherits(predictor,'field')) pre <- spatial.avg.field(predictor)
@@ -1535,7 +1532,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
     for (i in 1:N) {
       if (verbose) print(ncfiles[select[i]])
       gcm <- retrieve(ncfile = ncfiles[select[i]],lon=lon,lat=lat,
-                      type=type,verbose=FALSE)
+                      verbose=FALSE)
       if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
                         gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
       if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
@@ -1596,7 +1593,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",xfuns='C.C.eq',
-                           threshold=1,type='ncdf4',pattern="tas_Amon_ens_",verbose=FALSE,
+                           threshold=1,pattern="tas_Amon_ens_",verbose=FALSE,
                            file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE,test=FALSE) {
 
   if (verbose) print('DSensemble.pca')
@@ -1615,7 +1612,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   if (is.character(predictor)) {
     if (verbose) print('retrieve the predictor from netCDF file')
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,
-                    type=type,verbose=verbose)
+                    verbose=verbose)
       if (!is.null(it)) {
         if (verbose) print('Extract some months or a time period')
         if (verbose) print(it)
@@ -1661,7 +1658,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
                             non.stationarity.check=non.stationarity.check,
                             ip=ip,lon=lon,lat=lat,rel.cord=FALSE,
                             select=select,FUN=FUN,rmtrend=rmtrend,
-                            FUNX=FUNX,xfuns=xfuns,threshold=threshold,type=type,
+                            FUNX=FUNX,xfuns=xfuns,threshold=threshold,
                             pattern=pattern,verbose=verbose,nmin=nmin)
         eval(parse(text=paste('Z$',season,' <- z',sep='')))
       }
@@ -1733,7 +1730,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
-    gcm <- retrieve(ncfile = ncfiles[select[i]],type=type,
+    gcm <- retrieve(ncfile = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
     if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
@@ -1984,7 +1981,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
                            predictor="ERA40_slp_mon.nc",non.stationarity.check=FALSE,
                            ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,nmin=NULL,
                            lev=NULL,levgcm=NULL,select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",
-                           xfuns='C.C.eq',threshold=1,type='ncdf4',pattern="psl_Amon_ens_",verbose=FALSE,
+                           xfuns='C.C.eq',threshold=1,pattern="psl_Amon_ens_",verbose=FALSE,
                            file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE,test=FALSE) {
 
   if(verbose) print("DSensemble.eof")
@@ -2003,7 +2000,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
 
   if (is.character(predictor))
     slp <- retrieve(ncfile=predictor,lon=lon,lat=lat,lev=lev,
-                    type=type,verbose=verbose) else
+                    verbose=verbose) else
   if (inherits(predictor,'field'))
     slp <- subset(predictor,is=list(lon=lon,lat=lat))
 
@@ -2028,7 +2025,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
                             non.stationarity.check=non.stationarity.check,
                             ip=ip,lon=lon,lat=lat,rel.cord=FALSE,
                             select=select,FUN=FUN,rmtrend=rmtrend,
-                            FUNX=FUNX,threshold=threshold,type=type,
+                            FUNX=FUNX,threshold=threshold,
                             pattern=pattern,verbose=verbose,nmin=nmin)
         eval(parse(text=paste('Z$',season,' <- z',sep='')))
       }
@@ -2092,7 +2089,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
   if (verbose) print("loop...") 
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
-    gcm <- try(retrieve(ncfile = ncfiles[select[i]],type=type,
+    gcm <- try(retrieve(ncfile = ncfiles[select[i]],
                         lon=range(lon(SLP))+c(-2,2),
                         lat=range(lat(SLP))+c(-2,2),
                         lev=levgcm,verbose=verbose))
@@ -2355,7 +2352,7 @@ DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",b
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10),it=c('djf','mam','jja','son'),
                            rel.cord=TRUE,select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",
-                           xfuns='C.C.eq',threshold=1,type='ncdf4',pattern="tas_Amon_ens_",verbose=FALSE,
+                           xfuns='C.C.eq',threshold=1,pattern="tas_Amon_ens_",verbose=FALSE,
                            file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
   ## For downscaling gridded predictand. This is a wrap-around which extracts the season or aggregates
   ## to annual values and then calls the other types for the downscaling.
@@ -2365,7 +2362,7 @@ DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",b
                            predictor=predictor,non.stationarity.check=non.stationarity.check,
                            ip=ip,lon=lon,lat=lat,it=it,rel.cord=rel.cord,select=select,
                            FUN=FUN,rmtrend=rmtrend,FUNX=FUNX,xfuns=xfuns,threshold=threshold,
-                           type=type,pattern=pattern,verbose=verbose,
+                           pattern=pattern,verbose=verbose,
                            file.ds=file.ds,path.ds=path.ds,nmin=nmin)
   invisible(dse.eof)
 }
@@ -2374,6 +2371,6 @@ DSensemble.station <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45"
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10),it=c('djf','mam','jja','son'),
                            rel.cord=TRUE,select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",
-                           xfuns='C.C.eq',threshold=1,type='ncdf4',pattern="tas_Amon_ens_",verbose=FALSE,
+                           xfuns='C.C.eq',threshold=1,pattern="tas_Amon_ens_",verbose=FALSE,
                            file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
 }

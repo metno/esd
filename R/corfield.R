@@ -9,7 +9,7 @@ corfield.default <- function(x,y,...) {
   cor(x,y)
 }
 
-corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
+corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
   if (verbose) { print("corfield.zoo:"); print('station against field') }
 
@@ -56,8 +56,8 @@ corfield.zoo <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE
   invisible(r)
 }
 
-corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
-                           colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...) {
+corfield.field <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
+                           colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
  
   if (verbose) {print('corfield.field'); print('field against field')}
   if (class(index(x))!=class(index(y))) warning('corfield.field: Different time index classes!')
@@ -134,17 +134,17 @@ corfield.field <- function(x,y,plot=TRUE,use='pairwise.complete.obs',verbose=FAL
 }
 
 
-corfield.field.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
+corfield.field.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
                                    colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
-                                   use='pairwise.complete.obs',...) {
+                                   use='pairwise.complete.obs') {
   r <- corfield.station(y,x,plot=plot,verbose=verbose,use=use,colbar=colbar,new=new,...)
   invisible(r)
 }
 
 
-corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
+corfield.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
                              use='pairwise.complete.obs',
-                             na.action='na.omit',colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),...) {
+                             na.action='na.omit',colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
   if (verbose) print("corfield.station:")
   
   # Keep track of which is an eof object and which is a station record:
@@ -237,9 +237,9 @@ corfield.station <- function(x,y,plot=TRUE,verbose=FALSE,new=TRUE,
   invisible(r)
 }
 
-corfield.eof <- function(x,y,ip=1,plot=TRUE,new=TRUE,
+corfield.eof <- function(x,y,...,ip=1,plot=TRUE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
-                         use='pairwise.complete.obs',na.action='na.omit',...) {
+                         use='pairwise.complete.obs',na.action='na.omit') {
   stopifnot(inherits(x,'eof'),inherits(y,'field'))
   z <- as.station(x[,ip],loc=paste('eof',ip),param='PC',unit='dimensionless')
   r <- corfield(z,y,plot=plot,use=use,na.action=na.action,colbar=colbar,new=new)
@@ -248,7 +248,7 @@ corfield.eof <- function(x,y,ip=1,plot=TRUE,new=TRUE,
 
 
 
-corfield.trajectory <- function(x,y,it=NULL,is=NULL,param=NULL,FUN="count",
+corfield.trajectory <- function(x,y,...,it=NULL,is=NULL,param=NULL,FUN="count",
                                 unit=NULL,longname=NULL,loc=NULL,
                                 use="pairwise.complete.obs",
                                 colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),

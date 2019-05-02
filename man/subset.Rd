@@ -75,32 +75,32 @@ sort.station(x,is=NULL,decreasing=TRUE)
 \examples{
 data(Oslo)
 # January months:
-jan <- subset(Oslo,1)
+jan <- subset(Oslo,it="jan")
 # The last 10 years:
-recent <- subset(Oslo,2003:2012)
+recent <- subset(Oslo,it=c(2003,2012))
 # JJA season
 jja <- subset(Oslo,it="jja")
 # Seasonl values for MAM
-mam <- subset(as.4seasons(Oslo),it=2)
+mam <- subset(as.4seasons(Oslo),it="mam")
 
 data(ferder)
-# Aggregated values for May (it=5)
-may <- subset(as.monthly(Oslo),it=5)
+# Aggregated values for May
+may <- subset(as.monthly(Oslo),it="may")
 # The last 10 aggregated annual values 
 recent.ann <- subset(as.annual(Oslo),it=2004:2013)
 
 gcm <- t2m.NorESM.M()
 # Extract July months from a field:
-gcm.jul <- subset(gcm,it=7)
+gcm.jul <- subset(gcm,it="jul")
 
 # Extract a period from a field:
-gcm.short <- subset(gcm.jul,it=1950:2030)
+gcm.short <- subset(gcm.jul,it=c(1950,2030))
 
 # Extract data for the region 0-50E/55-65N
 X <-  subset(gcm,is=list(c(0,50),c(55,65)))
 
 # Extract data for a specific set of longitudes and latitudes
-Z <-  subset(gcm,is=list(lon=1:30,lat=58:63))
+Z <-  subset(gcm,is=list(lon=c(1,30),lat=c(58,63)))
 
 t2m <- t2m.NCEP(lon=c(-10,30),lat=c(50,70))
 cal <- subset(t2m,it=c("1948-01-01","1980-12-31"))
@@ -124,8 +124,8 @@ plot(z)
 T2M <- as.4seasons(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
 GCM <- as.4seasons(t2m.NorESM.M(lon = range(lon(T2M))+c(-2,2), lat = range(lat(T2M))+c(-2,2)))
 XY <- combine(T2M,GCM)
-X1 <- subset(XY,it=3)
-X2 <- combine(subset(T2M,it=3),subset(GCM,it=3))
+X1 <- subset(XY,it="mam")
+X2 <- combine(subset(T2M,it="mam"),subset(GCM,it="mam"))
 eof1 <- EOF(X1)
 eof2 <- EOF(X2)
 eof3 <- biasfix(eof2)
@@ -144,8 +144,8 @@ x <- subset(x, ic=list(param="trackcount", pmin=12))
 
 # Subset cyclones in the region 10W-10E/55-65N
 x.is <- subset(x,is=list(lat=c(55,65),lon=c(-10,10)))
-# ...or all cyclones passing going through the region
-x.is2 <- subset(x,it=intersect(x$trajectory, x.is$trajectory))
+# ...and all cyclones passing going through the region
+x.is2 <- subset(x,it=which(x$trajectory \%in\% x.is$trajectory))
 
 # Subset cyclones in the spring season (march, april, may)
 x.mam <- subset(x, it="mam")

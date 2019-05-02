@@ -387,7 +387,7 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
     y <- y + c(attr(eof,'mean'))
   }
   y <- t(y)
-  y <- as.field.default(y,index(eof),
+  y <- as.field.default(y,index=index(eof),
                         lon=attr(eof,'longitude'),lat=attr(eof,'latitude'),
                         param=attr(eof,'variable'),unit=attr(eof,'unit'),
                         longname=attr(eof,'longname'),src=attr(eof,'source'),

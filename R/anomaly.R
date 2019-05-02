@@ -273,17 +273,17 @@ anomaly.day <- function(x,ref=NULL,verbose=FALSE,...) {
 
 climatology <- function(x,...) UseMethod("climatology")
 
-climatology.default <- function(x,verbose=FALSE) {
+climatology.default <- function(x,verbose=FALSE,...) {
   x <- as.climatology(x)
   return(x)
 }
 
-climatology.field <- function(x,verbose=FALSE) {
+climatology.field <- function(x,verbose=FALSE,...) {
   x <- as.climatology(x)
   return(x)
 }
 
-climatology.station <- function(x,verbose=FALSE) {
+climatology.station <- function(x,verbose=FALSE,...) {
 #  x <- X
 #  orig <- coredata(X)
 #  if (is.null(attr(x,'climatology'))) {
@@ -322,12 +322,15 @@ climatology.station <- function(x,verbose=FALSE) {
 # Station data can be expressed as PCA where each of the EOFs represent one
 # year. The PCs describe the seasonal variations
 
-clim2pca <-function(x,...) UseMethod("clim2pca")
+clim2pca <-function(x,verbose=FALSE,...) UseMethod("clim2pca")
 
-clim2pca.default <- function(x,verbose=FALSE) {
+clim2pca.default <- function(x,verbose=FALSE,...) {
+  if(verbose) print("clim2pca.default - unfinished function returning input object")
+  return(x)
 }
 
-clim2pca.month <- function(x,verbose=FALSE) {
+clim2pca.month <- function(x,verbose=FALSE,...) {
+  if(verbose) print("clim2pca.month")
   X <- aggregate(x,year)
   ny <- length(x) %/% 12
   nm <- length(x) %% 12
@@ -348,7 +351,9 @@ clim2pca.month <- function(x,verbose=FALSE) {
   return(Z)
 }
 
-clim2pca.day <- function(x,verbose=FALSE) {
+clim2pca.day <- function(x,verbose=FALSE,...) {
+  if(verbose) print("clim2pca.day - unfinished function returning input object")
+  return(x)
 }
 
 

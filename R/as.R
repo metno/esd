@@ -1,7 +1,7 @@
 
 as.station <- function(x,...) UseMethod("as.station")
 
-as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
+as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                           cntr=NA,longname=NA,calendar=NA,stid=NA,quality=NA,src=NA,
                           url=NA,reference=NA,info=NA, method= NA,type=NA,
                            aspect=NA,verbose=FALSE) {
@@ -115,44 +115,44 @@ as.station.zoo <- function(x,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   return(y)
 }
 
-as.station.data.frame <-  function (x, loc = NA, param = NA, unit = NA,
-                                    lon = NA, lat = NA,
-    alt = NA, cntr = NA, longname = NA, stid = NA, quality = NA,
-    src = NA, url = NA, reference = NA, info = NA, method= NA,type=NA,aspect=NA)
-{
-    cnam <- names(x)
-    year <- sort(rep(x[[1]], 12))
-    month <- rep(1:12, length(x[[1]]))
-    index <- as.Date(paste(year, month, 1, sep = "-"))
-    X <- c(t(as.matrix(x)[, 2:13]))
-    y <- zoo(X, order.by = index)
-    attr(y, "location") <- loc
-    attr(y, "variable") <- param
-    attr(y, "unit") <- unit
-    attr(y, "longitude") <- lon
-    attr(y, "latitude") <- lat
-    attr(y, "altitude") <- alt
-    attr(y, "country") <- cntr
-    attr(y, "longname") <- longname
-    attr(y, "station_id") <- stid
-    attr(y, "quality") <- quality
-    attr(y, "calendar") <- "gregorian"
-    attr(y, "source") <- src
-    attr(y, "URL") <- url
-    #attr(y, "history") <- "as.station.data.frame"
-    #attr(y, "date-stamp") <- date()
-    attr(y, "type") <- type
-    attr(y, "aspect") <- aspect
-    attr(y, "reference") <- reference
-    attr(y, "info") <- info
-    attr(y, "method") <- method
-    #attr(y, "call") <- match.call()
-    attr(y,'history') <- history.stamp(x)
-    class(y) <- c("station", "month", "zoo")
-    return(y)
+as.station.data.frame <-  function (x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
+                                    cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,url=NA,
+                                    reference=NA,info=NA,method=NA,type=NA,aspect=NA,verbose=FALSE) {
+  if(verbose) print("as.station.data.frame")
+  cnam <- names(x)
+  year <- sort(rep(x[[1]], 12))
+  month <- rep(1:12, length(x[[1]]))
+  index <- as.Date(paste(year, month, 1, sep = "-"))
+  X <- c(t(as.matrix(x)[, 2:13]))
+  y <- zoo(X, order.by = index)
+  attr(y, "location") <- loc
+  attr(y, "variable") <- param
+  attr(y, "unit") <- unit
+  attr(y, "longitude") <- lon
+  attr(y, "latitude") <- lat
+  attr(y, "altitude") <- alt
+  attr(y, "country") <- cntr
+  attr(y, "longname") <- longname
+  attr(y, "station_id") <- stid
+  attr(y, "quality") <- quality
+  attr(y, "calendar") <- "gregorian"
+  attr(y, "source") <- src
+  attr(y, "URL") <- url
+  #attr(y, "history") <- "as.station.data.frame"
+  #attr(y, "date-stamp") <- date()
+  attr(y, "type") <- type
+  attr(y, "aspect") <- aspect
+  attr(y, "reference") <- reference
+  attr(y, "info") <- info
+  attr(y, "method") <- method
+  #attr(y, "call") <- match.call()
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- c("station", "month", "zoo")
+  return(y)
 }
 
-as.station.ds <- function(x) {
+as.station.ds <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.station.ds")
   if (inherits(x,'pca')) {
     class(x) <- class(x)[-1]
     y <- as.station.pca(x)
@@ -172,7 +172,8 @@ as.station.ds <- function(x) {
   return(y)
 }
 
-as.station.pca <- function(x,...) {
+as.station.pca <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.station.pca")
   if (inherits(x,"dsensemble")) {
     y <- as.station.dsensemble.pca(x,...)
   } else {
@@ -188,7 +189,7 @@ as.station.pca <- function(x,...) {
 }
 
 
-as.station.list <- function(x,verbose=FALSE) {
+as.station.list <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.ds")
 #  Jan <- x$Jan + attr(x$Jan,'mean')
 #  Feb <- x$Feb + attr(x$Feb,'mean')
@@ -260,14 +261,15 @@ as.station.list <- function(x,verbose=FALSE) {
   #attr(y,'date') <- date()
   #attr(y,'call') <- match.call()
   attr(y,'history') <- history.stamp(x)
-  if (attr(x[[i]],'type')== 'downscaled results')
-      class(y) <- class(x[[1]])
-  else
-      class(y) <- c("station",class(x[[1]]))
+  if (attr(x[[i]],'type')== 'downscaled results') {
+    class(y) <- class(x[[1]])
+  } else {
+    class(y) <- c("station",class(x[[1]]))
+  }
   return(y)
 }
 
-as.station.field <- function(x,is=NULL,verbose=FALSE) {
+as.station.field <- function(x,...,is=NULL,verbose=FALSE) {
   index <- index(x)
   stopifnot(!missing(x),
            !zeros(inherits(x,c("field","zoo"),which=TRUE) ))
@@ -295,7 +297,8 @@ as.station.field <- function(x,is=NULL,verbose=FALSE) {
   invisible(y)
 }
 
-as.station.spell <- function(x) {
+as.station.spell <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.station.spell")
   y <- coredata(x)
   ok1 <- is.finite(y[,1])
   above <- zoo(y[ok1,1],index(x)[ok1])
@@ -315,7 +318,8 @@ as.station.spell <- function(x) {
 }
 
 
-as.station.eof <- function(x,ip=1:10) {
+as.station.eof <- function(x,...,ip=1:10,verbose=FALSE) {
+  if(verbose) print("as.station.eof")
   stopifnot(!missing(x),inherits(x,'eof'))
   z <- zoo(x[,ip],order.by=index(x))
   y <- as.station.zoo(z,loc=paste('PC[',ip,']',sep=''),
@@ -331,7 +335,7 @@ as.station.eof <- function(x,ip=1:10) {
 }
 
 
-as.station.dsensemble <- function(x,verbose=FALSE,...) {
+as.station.dsensemble <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.dsensemble")
   if (!is.null(x$pca) & !inherits(x,"pca") & inherits(x,"eof")) {
     class(x) <- gsub("eof","pca",class(x)) ## REB 2016-12-13: to also work on gridded versions.
@@ -348,7 +352,8 @@ as.station.dsensemble <- function(x,verbose=FALSE,...) {
   return(y)
 }
 
-as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
+as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
+  if(verbose) print("as.station.dsensemble.pca")
   X <- x ## quick fix
   if (verbose) print('as.station.dsensemble.pca')
   ## REB: need to remove the EOF object if it is present:
@@ -448,7 +453,7 @@ as.station.dsensemble.pca <- function(x,is=NULL,ip=NULL,verbose=FALSE,...) {
   }
 }
 
-as.station.dsensemble.station <- function(x,is=NULL,it=NULL,FUN='mean',verbose=FALSE,...) {
+as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',verbose=FALSE) {
 
     if (verbose) print('as.station.dsensemble.station')
     ns <- length(x)
@@ -539,7 +544,7 @@ as.comb.eof <- function(x,...) {
 
 as.field <- function(x,...) UseMethod("as.field")
 
-as.field.zoo <- function(x,lon,lat,param,unit,
+as.field.zoo <- function(x,...,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,
                          reference=NA,info=NA,calendar='gregorian',
                          greenwich=TRUE, method= NA,type=NA,aspect=NA,
@@ -586,7 +591,7 @@ as.field.zoo <- function(x,lon,lat,param,unit,
 
 
 
-as.field.default <- function(x,index,lon,lat,param,unit,
+as.field.default <- function(x,...,index,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,
                          reference=NA,info=NA,calendar='gregorian',
                          greenwich=TRUE, method= NA,type=NA,aspect=NA,
@@ -609,7 +614,7 @@ as.field.field <- function(x,...) {
   return(x)
 }
 
-as.field.comb <- function(x,iapp=NULL,verbose=FALSE,...) {
+as.field.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.field.comb")
   if (is.null(iapp)) {
     # Drop the appendend fields:
@@ -627,7 +632,7 @@ as.field.comb <- function(x,iapp=NULL,verbose=FALSE,...) {
   return(y)  
 }
 
-as.field.eof <- function(x,iapp=NULL,anomaly=FALSE,verbose=FALSE,...) {
+as.field.eof <- function(x,...,iapp=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("as.field.eof")
   if (inherits(x,'dsensemble')) {
     y <- as.field.dsensemble.eof(x,verbose=verbose,...)
@@ -640,7 +645,7 @@ as.field.eof <- function(x,iapp=NULL,anomaly=FALSE,verbose=FALSE,...) {
   return(y)
 }
 
-as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
+as.field.ds <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.field.ds")
   if (inherits(x,'eof')) {
     class(x) <- class(x)[-1]
@@ -648,23 +653,24 @@ as.field.ds <- function(x,iapp=NULL,verbose=FALSE,...) {
     if (!is.null(iapp)) {
       if (!is.null(attr(x,'n.apps'))) {
         class(x)[length(class(x))+1]<-'comb'
-        y <- as.field.eof(x,iapp,...)
+        y <- as.field.eof(x,iapp=iapp,...)
         return(y)}
-    }else{
-    y <- as.field.eof(x,iapp,...)
-    ## The residuals
-    fit <- attr(x,'fitted_values')
-    fit <- attrcp(attr(x,'eof'),fit)
-    class(fit) <- class(attr(x,'eof'))
-    attr(y,'fitted_values') <- fit
-    attr(y,'original_data') <- attr(x,'original_data')
-    attr(y,'calibration_data') <- attr(x,'calibration_data')
-  }} else y <- NULL
+    } else {
+      y <- as.field.eof(x,iapp=iapp,...)
+      ## The residuals
+      fit <- attr(x,'fitted_values')
+      fit <- attrcp(attr(x,'eof'),fit)
+      class(fit) <- class(attr(x,'eof'))
+      attr(y,'fitted_values') <- fit
+      attr(y,'original_data') <- attr(x,'original_data')
+      attr(y,'calibration_data') <- attr(x,'calibration_data')
+    }
+  } else y <- NULL
   return(y)
 }
 
-as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
-                             verbose=FALSE,...) {
+as.field.station <- function(x,...,lon=NULL,lat=NULL,nx=30,ny=30,
+                             verbose=FALSE) {
   if(verbose) print("as.field.station")
   if (is.null(lon)) lon <- seq(min(lon(x)),max(lon(x)),length=nx)
   if (is.null(lat)) lat <- seq(min(lat(x)),max(lat(x)),length=ny)
@@ -673,31 +679,32 @@ as.field.station <- function(x,lon=NULL,lat=NULL,nx=30,ny=30,
   return(y)  
 }
 
-as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,anomaly=FALSE,verbose=FALSE,...) {
+as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
+                                    anomaly=FALSE,verbose=FALSE) {
   if (verbose) print('as.field.dsensemble.eof')
-  stopifnot(inherits(X,"dsensemble") & inherits(X,"eof"))
-  if (inherits(X,"field")) {
-      invisible(X)
+  stopifnot(inherits(x,"dsensemble") & inherits(x,"eof"))
+  if (inherits(x,"field")) {
+      invisible(x)
   } else {
-    #if (is.null(is)) is <- 1:length(loc(X$pca))
+    #if (is.null(is)) is <- 1:length(loc(x$pca))
     if (verbose) print('Extract the results model-wise')
     ## KMP 2016-01-04: select ensemble members with im
     if(is.null(im)) {
-      ix <- 3:length(X)
+      ix <- 3:length(x)
     } else {
-      ix <- im[im>0 & im<(length(X)-2)] + 2
+      ix <- im[im>0 & im<(length(x)-2)] + 2
     }
-    #ix <- 3:length(X)
-    d <- apply(sapply(X[ix],dim),1,min)
-    V <- array(unlist(lapply( X[ix],
+    #ix <- 3:length(x)
+    d <- apply(sapply(x[ix],dim),1,min)
+    V <- array(unlist(lapply( x[ix],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(ix)))
     if (is.null(ip)) {
-      U <- attr(X$eof,'pattern')
-      W <- attr(X$eof,'eigenvalues')
+      U <- attr(x$eof,'pattern')
+      W <- attr(x$eof,'eigenvalues')
     } else {
     ## If ip is specified, use a subset of the PCA modes.
-      U <- attr(X$eof,'pattern')[,,ip]
-      W <- attr(X$eof,'eigenvalues')[ip]
+      U <- attr(x$eof,'pattern')[,,ip]
+      W <- attr(x$eof,'eigenvalues')[ip]
       V <- V[,ip,]
     }    
     d <- dim(U)
@@ -706,7 +713,7 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,anomaly=FALSE,verb
     dim(S) <- c(dim(U)[1], dim(V)[1], dim(V)[3])
     if(!anomaly) {
       for (i in seq(1:dim(S)[1])) {
-        S[i,,] <- S[i,,] + c(attr(X$eof,'mean'))[i]
+        S[i,,] <- S[i,,] + c(attr(x$eof,'mean'))[i]
       }
     }
 
@@ -715,28 +722,28 @@ as.field.dsensemble.eof <- function(X,is=NULL,ip=NULL,im=NULL,anomaly=FALSE,verb
                 array,dim=dim(S)[2:3])
     
     if (verbose) print('Set attributes')
-    Y <- as.field(X$eof)
-    gcms <- sub(".*_","",names(X)[ix])
+    Y <- as.field(x$eof)
+    gcms <- sub(".*_","",names(x)[ix])
     S <- setNames(S,gcms)
     for (i in seq_along(ix)) {
-      S[[i]] <- as.field(S[[i]],index=index(X[[ix[i]]]),
+      S[[i]] <- as.field(S[[i]],index=index(x[[ix[i]]]),
                  lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
                  param=varid(Y),unit=unit(Y),
                  longname=paste('fitted',attr(Y,'longname')),
                  greenwich=attr(Y,'greenwich'),aspect='fitted')
-      attr(S[[i]],'unitarea') <- attr(X,"unitarea")
+      attr(S[[i]],'unitarea') <- attr(x,"unitarea")
       class(S[[i]]) <- class(Y)
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     class(S) <- c("dsensemble","field","list")
-    S <- attrcp(X,S)
+    S <- attrcp(x,S)
     attr(S,"unit") <- attr(Y,"unit")
     attr(S,"variable") <- attr(Y,"variable")
     attr(S,"longname") <- attr(Y,"longname")
     attr(S,"aspect") <- "dsensemble.eof transformed to field"
     if(anomaly) {
       attr(S,"aspect") <- c(attr(S,"aspect"), "anomaly")
-      attr(S,"mean") <- attr(X$eof,"mean")
+      attr(S,"mean") <- attr(x$eof,"mean")
     }
     attr(S,"history") <- history.stamp()
     invisible(S)
@@ -804,7 +811,7 @@ as.monthly.station <- function (x, FUN = "mean", ...)
 
 # Not to confuse with season
 # This function extracts a given seasonal interval and aggregates a given statistic
-as.seasons <- function(x,start='01-01',end='12-31',FUN='mean', ...) {
+as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',...) {
   IV <- function(x) sum(is.finite(x))
   yrs <- year(x); d <- dim(x)
   # ns = number of stations
@@ -847,7 +854,7 @@ as.4seasons <- function(x,...) UseMethod("as.4seasons")
 
 
 
-as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,...) {
+as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL) {
   if(verbose) print('as.4seasons.default')
   if (inherits(x,'season')) return(x)
   attr(x,'names') <- NULL
@@ -927,7 +934,7 @@ as.4seasons.default <- function(x,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL,
   return(y) 
 }
 
-as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,...) {
+as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85) {
   IV <- function(x) sum(is.finite(x))
     if (inherits(x,'month')) nmin <- 3 # AM 06-07-2015
   #print('as.4seasons.day')
@@ -978,9 +985,9 @@ as.4seasons.day <- function(x,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,...) 
   invisible(y)
 }
 
-as.4seasons.station <- function(x,FUN='mean',...) {
+as.4seasons.station <- function(x,...,FUN='mean') {
   #print('as.4seasons.station')
-  y <- as.4seasons.default(x,FUN,...)
+  y <- as.4seasons.default(x,FUN=FUN,...)
 #  y <- attrcp(x,y)
 #  attr(y,'history') <- history.stamp(x)
 #  class(y) <- class(x)
@@ -988,8 +995,8 @@ as.4seasons.station <- function(x,FUN='mean',...) {
   return(y) 
 }
 
-as.4seasons.spell <- function(x,FUN='mean',...) {
-  y <- as.4seasons.default(as.station(x),FUN,...)
+as.4seasons.spell <- function(x,...,FUN='mean') {
+  y <- as.4seasons.default(as.station(x),FUN=FUN,...)
 #  y <- attrcp(x,y)
 #  attr(y,'history') <- history.stamp(x)
 #  class(y) <- class(x)
@@ -998,10 +1005,10 @@ as.4seasons.spell <- function(x,FUN='mean',...) {
 }
 
 
-as.4seasons.field <- function(x,FUN='mean',verbose=FALSE,...) {
+as.4seasons.field <- function(x,...,FUN='mean',verbose=FALSE) {
   if(verbose) print("as.4seasons.field")
   d <- attr(x,"dimensions")
-  y <- as.4seasons.default(x,FUN,verbose=verbose,...)
+  y <- as.4seasons.default(x,...,FUN=FUN,verbose=verbose)
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   ## Update dimensions
@@ -1011,11 +1018,11 @@ as.4seasons.field <- function(x,FUN='mean',verbose=FALSE,...) {
   return(y)
 }
 
-as.4seasons.dsensemble <- function(x,FUN='mean',...) {
+as.4seasons.dsensemble <- function(x,...,FUN='mean') {
     cls <- class(x)
     class(x) <- c("station",cls[2],"zoo") ## AM 06-07-2015 Quick fix here, time step added into the class of x
     attrx <- attributes(x)
-    y <- as.4seasons.station(x,FUN,...)
+    y <- as.4seasons.station(x,FUN=FUN,...)
     ##attributes(y) <- attrx
     
     y <- attrcp(x,y)
@@ -1031,7 +1038,7 @@ as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
 # REB 2015-03-23 Tidy up - use anomaly
 
-as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE,...) anomaly.default(x,...)
+as.anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE) anomaly.default(x,...)
 
 #
 #as.anomaly.default <- function(x,ref=NULL,na.rm=TRUE) {
@@ -1200,7 +1207,7 @@ as.climatology <- function(x,...) {
 
 as.residual <- function(x,...) UseMethod("as.residual")
 
-as.residual.ds <- function(x,verbose=FALSE){
+as.residual.ds <- function(x,...,verbose=FALSE){
   if (verbose) print('as.residual.ds')
   if (is.ds(x)) {
     ## If the predictand was originally an EOF or PCA product, then
@@ -1244,13 +1251,13 @@ as.residual.ds <- function(x,verbose=FALSE){
   invisible(y)
 }
 
-as.residual.station <- function(x){
+as.residual.station <- function(x,...) {
   if (!is.null(attr(x,'calibration_data')))
     y <- as.residual.ds(x) else y <- NULL
   invisible(y)
 }
 
-as.residual.field <- function(x){
+as.residual.field <- function(x,...) {
   if (!is.null(attr(x,'calibration_data')))
     y <- as.residual.ds(x) else y <- NULL
   invisible(y)
@@ -1309,7 +1316,8 @@ as.original.data.station <- function(x) {
 
 as.pattern <- function(x,...) UseMethod("as.pattern")
 
-as.pattern.ds <- function(x) {
+as.pattern.ds <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.pattern.ds")
   y <- attr(x,'pattern')
   attr(y,'longitude') <- lon(x)
   attr(y,'latitude') <- lat(x)
@@ -1321,7 +1329,8 @@ as.pattern.ds <- function(x) {
   invisible(y)
 }
 
-as.pattern.eof <- function(x) {
+as.pattern.eof <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.pattern.eof")
   y <- attr(x,'pattern')
   attr(y,'longitude') <- lon(x)
   attr(y,'latitude') <- lat(x)
@@ -1333,7 +1342,8 @@ as.pattern.eof <- function(x) {
   invisible(y)  
 }
 
-as.pattern.mvr <- function(x) {
+as.pattern.mvr <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.pattern.mvr")
   y <- attr(x,'pattern')
   attr(y,'longitude') <- lon(x)
   attr(y,'latitude') <- lat(x)
@@ -1345,7 +1355,8 @@ as.pattern.mvr <- function(x) {
   invisible(y)  
 }
 
-as.pattern.cca <- function(x) {
+as.pattern.cca <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.pattern.cca")
   y <- attr(x,'pattern')
   attr(y,'longitude') <- lon(x)
   attr(y,'latitude') <- lat(x)
@@ -1357,7 +1368,8 @@ as.pattern.cca <- function(x) {
   invisible(y)  
 }
 
-as.pattern.trend <- function(x) {
+as.pattern.trend <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.pattern.trend")
   y <- attr(x,'pattern')
   attr(y,'longitude') <- lon(x)
   attr(y,'latitude') <- lat(x)
@@ -1369,11 +1381,20 @@ as.pattern.trend <- function(x) {
   invisible(y)  
 }
 
-as.pattern.matrix <- function(x) x 
+as.pattern.matrix <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.pattern.matrix")
+  if(verbose) print("Unfinished function - returning input object")
+  return(x)
+}
 
-as.pattern.array <- function(x) x 
+as.pattern.array <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.pattern.array")
+  if(verbose) print("Unfinished function - returning input object")
+  return(x)
+}
 
-as.pattern.field <- function(x,FUN=NULL,...) {
+as.pattern.field <- function(x,...,FUN=NULL,verbose=FALSE) {
+  if(verbose) print("as.pattern.field")
   if (!is.null(FUN)) {
     y <- apply(x,2,FUN,...)
     dim(y) <- attr(x,'dimension')[1:2]
@@ -1391,7 +1412,8 @@ as.pattern.field <- function(x,FUN=NULL,...) {
   invisible(y)
 }
 
-as.pattern.corfield <- function(x) {
+as.pattern.corfield <- function(x,...,verbose=FALSE) {
+  if(verbose) print("as.pattern.corfield")
   y <- coredata(x)
   dim(y) <- attr(x,'dimension')[1:2]
   y <- attrcp(x,y)
@@ -1411,17 +1433,19 @@ as.eof.zoo <- function(x,...) {
   return(x)
 }
 
-as.eof.ds <- function(x,iapp=NULL) {
-  y <- as.eof(attr(x,'eof'),iapp) 
+as.eof.ds <- function(x,...,iapp=NULL) {
+  y <- as.eof(attr(x,'eof'),iapp=iapp) 
   return(y)
 }
 
-as.eof.eof <-function(x,iapp=NULL,...) {
-  if (inherits(x,'comb')) x <- as.eof.comb(x,iapp) else
+as.eof.eof <-function(x,...,iapp=NULL) {
+  if (inherits(x,'comb')) {
+    x <- as.eof.comb(x,iapp=iapp) 
+  } 
   return(x)
 }
   
-as.eof.comb <- function(x,iapp=NULL) {
+as.eof.comb <- function(x,...,iapp=NULL) {
   #print("as.eof.comb")
   stopifnot(inherits(x,'comb'))
 
@@ -1430,7 +1454,7 @@ as.eof.comb <- function(x,iapp=NULL) {
 
   # assume x from now on is an 'eof'
   if (!is.null(iapp)) {
-    y <- as.eof.appendix(x,iapp)
+    y <- as.eof.appendix(x,iapp=iapp)
     return(y)
   }
   class(x) <- class(x)[-grep('comb',class(x))]
@@ -1443,13 +1467,13 @@ as.eof.comb <- function(x,iapp=NULL) {
   return(x)
 }
 
-as.eof.field <- function(x,iapp=NULL,...) {
+as.eof.field <- function(x,...,iapp=NULL) {
   y <- EOF(x,...)
-  if (!is.null(iapp)) y <- as.eof.appendix(y,iapp)
+  if (!is.null(iapp)) y <- as.eof.appendix(y,iapp=iapp)
   return(y)
 }
 
-as.eof.appendix <- function(x,iapp=1,verbose=FALSE) {
+as.eof.appendix <- function(x,...,iapp=1,verbose=FALSE) {
   if (verbose) print("as.eof.appendix")
   clim <- eval(parse(text=paste("attr(attr(x,'appendix.",iapp,"'),'climatology')",sep="")))
   aveg <- eval(parse(text=paste("attr(attr(x,'appendix.",iapp,"'),'mean')",sep="")))
@@ -1464,7 +1488,7 @@ as.eof.appendix <- function(x,iapp=1,verbose=FALSE) {
   return(y)
 }
 
-as.eof.list <- function(x,verbose=FALSE) {
+as.eof.list <- function(x,...,verbose=FALSE) {
   stopifnot(inherits(x,'list'),inherits(x[[1]],'eof'))
   if (verbose) print('as.eof.list')
   
@@ -1510,7 +1534,7 @@ as.eof.list <- function(x,verbose=FALSE) {
   return(eof)
 }
 
-as.eof.dsensemble <- function(x,FUN='mean',verbose=FALSE) {
+as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
   ## R.E. Benestad, 2017-05-19
   ## Convert the dsensemble object to an EOF of the multi-model mean
   stopifnot(inherits(x,'dsensemble'),inherits(x[[2]],'eof')|inherits(x[[2]],'pca'))
@@ -1534,7 +1558,7 @@ as.eof.dsensemble <- function(x,FUN='mean',verbose=FALSE) {
 
 as.appended <- function(x,...) UseMethod("as.appended")
 
-as.appended.ds.comb <- function(x,iapp=1,verbose=FALSE) {
+as.appended.ds.comb <- function(x,...,iapp=1,verbose=FALSE) {
   if(verbose) print("as.appended.ds.comb")
   eval(parse(text=paste("X <- attr(x,'appendix.",iapp,"')",sep="")))
   X <- attrcp(x,X,ignore='appendix')
@@ -1542,19 +1566,19 @@ as.appended.ds.comb <- function(x,iapp=1,verbose=FALSE) {
   invisible(X)
 }
 
-as.appended.eof.comb <- function(x,iapp=1) {
+as.appended.eof.comb <- function(x,...,iapp=1) {
   X <- as.appended.ds.comb(x,iapp=iapp)
   invisible(X)
 }
 
-as.appended.field.comb <- function(x,iapp=1) {
+as.appended.field.comb <- function(x,...,iapp=1) {
   X <- as.appended.ds.comb(x,iapp=iapp)
   invisible(X)
 }
 
 as.stand <- function(x,...) UseMethod("as.stand")
 
-as.stand.station <- function(x,verbose=FALSE,na.rm=TRUE) {
+as.stand.station <- function(x,...,verbose=FALSE,na.rm=TRUE) {
   if(verbose) print("as.stand.station")
   if (is.precip(x)) {
     mu <- apply(x,2,mean,na.rm=na.rm)
@@ -1598,7 +1622,7 @@ as.original.station <- function(x) {
 
 as.events <- function(x,...) UseMethod("as.events")
 
-as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
+as.events.default <- function(x,...,label=NULL,dx=NULL,dy=NULL,
                       units=NULL,longname=NULL,variable=NULL,calendar=NULL,
                       qflabel=NULL,method=NULL,src=NULL,reference=NULL,
                       file=NULL,version=NULL,url=NULL,verbose=FALSE) {
@@ -1628,7 +1652,7 @@ as.events.default <- function(x,label=NULL,dx=NULL,dy=NULL,
   invisible(X)
 }
 
-as.events.trajectory <- function(x,verbose=FALSE,...) {
+as.events.trajectory <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.events.trajectory")
   stopifnot(inherits(x,"trajectory"))
   invisible(x)

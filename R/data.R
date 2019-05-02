@@ -13,8 +13,10 @@
 #   t2m.MERRA
 # }
 
-t2m.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE,latest=FALSE,
-                     url='ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc') {
+t2m.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,latest=FALSE,
+                     url='ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc',
+                     verbose=FALSE) {
+  if(verbose) print("t2m.NCEP")
   if (latest) {
     ## If the URL exists, check if a newer version should be downloaded
     if (file.exists('air.mon.mean.nc')) {
@@ -33,19 +35,21 @@ t2m.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE,latest=FALSE,
     data("eof.t2m.NCEP",envir=environment())
     t2m.NCEP<- eof2field(eof.t2m.NCEP,is=list(lon=lon,lat=lat),anomaly=anomaly)
   }
-  t2m.NCEP
+  return(t2m.NCEP)
 }
 
-sst.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+sst.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
+  if(verbose) print("sst.NCEP")
   data("eof.sst.NCEP",envir=environment())
   sst.NCEP<- eof2field(eof.sst.NCEP,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  sst.NCEP
+  return(sst.NCEP)
 }
 
-slp.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+slp.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
+  if(verbose) print("slp.NCEP")
   data("eof.slp.NCEP",envir=environment())
-  slp.NCEP<- eof2field(eof.slp.NCEP,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  slp.NCEP
+  slp.NCEP <- eof2field(eof.slp.NCEP,is=list(lon=lon,lat=lat),anomaly=anomaly)
+  return(slp.NCEP)
 }
 
 # t2m.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
@@ -54,10 +58,11 @@ slp.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
 #   t2m.ERAINT
 # }
 
-precip.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+precip.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
+  if(verbose) print("precip.ERAINT")
   data("eof.precip.ERAINT",envir=environment())
-  precip.ERAINT<- eof2field(eof.precip.ERAINT,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  precip.ERAINT
+  precip.ERAINT <- eof2field(eof.precip.ERAINT,is=list(lon=lon,lat=lat),anomaly=anomaly)
+  return(precip.ERAINT)
 }
 
 # slp.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
@@ -72,26 +77,30 @@ precip.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
 #   t2m.ERA40
 # }
 
-t2m.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+t2m.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
+  if(verbose) print("t2m.DNMI")
   data("eof.t2m.DNMI",envir=environment())
-  t2m.DNMI<- eof2field(eof.t2m.DNMI,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  t2m.DNMI
+  t2m.DNMI <- eof2field(eof.t2m.DNMI,is=list(lon=lon,lat=lat),anomaly=anomaly)
+  return(t2m.DNMI)
 }
 
-slp.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+slp.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
+  if(verbose) print("slp.DNMI")
   data("eof.slp.DNMI",envir=environment())
-  slp.DNMI<- eof2field(eof.slp.DNMI,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  slp.DNMI
+  slp.DNMI <- eof2field(eof.slp.DNMI,is=list(lon=lon,lat=lat),anomaly=anomaly)
+  return(slp.DNMI)
 }
 
-sst.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+sst.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
+  if(verbose) print("sst.DNMI")
   data("eof.sst.DNMI",envir=environment())
-  sst.DNMI<- eof2field(eof.sst.DNMI,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  sst.DNMI
+  sst.DNMI <- eof2field(eof.sst.DNMI,is=list(lon=lon,lat=lat),anomaly=anomaly)
+  return(sst.DNMI)
 }
 
-t2m.NorESM.M <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
+t2m.NorESM.M <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
+  if(verbose) print("t2m.NorESM.M")
   data("eof.t2m.NorESM.M",envir=environment())
-  t2m.NorESM.M<- eof2field(eof.t2m.NorESM.M,is=list(lon=lon,lat=lat),anomaly=anomaly)
-  t2m.NorESM.M
+  t2m.NorESM.M <- eof2field(eof.t2m.NorESM.M,is=list(lon=lon,lat=lat),anomaly=anomaly)
+  return(t2m.NorESM.M)
 }

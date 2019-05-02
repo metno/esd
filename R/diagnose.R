@@ -3,7 +3,7 @@ diagnose <-function(x,...) UseMethod("diagnose")
 diagnose.default <- function(x,...) {
 }
 
-diagnose.comb <- function(x) {
+diagnose.comb <- function(x,...) {
   n.app <- attr(x,'n.apps')
   cols <- c("black","red","blue","darkgreen","darkred","darblue",
             "grey","green","mangenta","cyan")
@@ -24,7 +24,7 @@ diagnose.eof <- function(x,...) {
   return(y)
 }
 
-diagnose.comb.eof <- function(x,verbose=FALSE) {
+diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   if (verbose) print("diagnose.comb.eof")
   ACF <- function(x) acf(x,plot=FALSE,na.action=na.omit)$acf[2]
   sign <- function(x,y) {z<-x*y; z[z<0] <- -1; z[z>0] <- 1; z}
@@ -81,11 +81,11 @@ diagnose.comb.eof <- function(x,verbose=FALSE) {
 }
 
 
-diagnose.mvr <- function(x) {
+diagnose.mvr <- function(x,...) {
   print("Not finished")
 }
 
-diagnose.cca <- function(x) {
+diagnose.cca <- function(x,...) {
   par(bty="n")
   plot(x$r,pch=19,cex=1.5,main="Canonical correlations",
        ylim=c(-1,1),ylab="correlation",xlab="pattern number")
@@ -93,9 +93,9 @@ diagnose.cca <- function(x) {
   grid()
 }
 
-diagnose.station <- function(x,main='Data availability',
+diagnose.station <- function(x,...,main='Data availability',
                             xlab='',ylab='station',
-                            sub=src(x),verbose=FALSE,...) {
+                            sub=src(x),verbose=FALSE) {
   if(verbose) print("diagnose.station")
   d <- dim(x)
   if (is.null(d)) {
@@ -113,11 +113,11 @@ diagnose.station <- function(x,main='Data availability',
   grid(nx=nyrs,ny=d[2])
 }
 
-diagnose.mvr <- function(x) {
+diagnose.mvr <- function(x,...) {
   print("Not finished")
 }
 
-diagnose.cca <- function(x) {
+diagnose.cca <- function(x,...) {
   par(bty="n")
   plot(x$r,pch=19,cex=1.5,main="Canonical correlations",
        ylim=c(-1,1),ylab="correlation",xlab="pattern number")
@@ -126,7 +126,7 @@ diagnose.cca <- function(x) {
 }
 
 # Display cross-validation and statistics on the residual
-diagnose.ds <- function(x,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
+diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
   
   ## the attribute 'evaluation' contains cross-validation
   if (verbose) print("diagnose.ds")
@@ -202,7 +202,7 @@ diagnose.ds <- function(x,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
 }
 
 # Display cross-validation and statistics on the residual
-diagnose.ds.pca <- function(x,plot=FALSE,verbose=FALSE,new=TRUE) {
+diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
 
   ## the attribute 'evaluation' contains cross-validation
   if (verbose) print("diagnose.ds.pca")
@@ -389,9 +389,10 @@ diagnose.ds.pca <- function(x,plot=FALSE,verbose=FALSE,new=TRUE) {
 ## }
 
 
-diagnose.distr <- function(x,main=NULL,
+diagnose.distr <- function(x,...,main=NULL,
                            xlab='mean',ylab=expression(q[p]),
-                           sub=src(x),probs=0.95,plot=TRUE) {
+                           sub=src(x),probs=0.95,plot=TRUE,verbose=FALSE) {
+  if(verbose) print("diagnose.distr")
   x0 <- x
   if (is.T(x)) {
     y <- anomaly(x)
@@ -452,9 +453,9 @@ diagnose.distr <- function(x,main=NULL,
 
 
 
-diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
+diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
                                 yrange=NULL,main=NULL,map.show=TRUE,
-                                map.type="points",verbose=FALSE,...) {
+                                map.type="points",verbose=FALSE) {
   if (verbose) print('diagnose.dsensemble')
   # Trend-evaluation: rank
   # Counts outside 90% confidence: binomial distrib. & prob.
@@ -540,9 +541,9 @@ diagnose.dsensemble <- function(x,plot=TRUE,type='target',xrange=NULL,
   }
 }
 
-diagnose.dsensemble.list <- function(x,plot=FALSE,is=NULL,ip=NULL,
+diagnose.dsensemble.list <- function(x,...plot=FALSE,is=NULL,ip=NULL,
                  map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
-                 main=NULL,verbose=FALSE,new=TRUE,...) {
+                 main=NULL,verbose=FALSE,new=TRUE) {
   X <- x
   if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
@@ -633,7 +634,7 @@ diagnose.dsensemble.list <- function(x,plot=FALSE,is=NULL,ip=NULL,
   invisible(d)
 }
 
-diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
+diagnose.matrix <- function(x,...,xlim=NULL,ylim=NULL,verbose=FALSE) {
   if (verbose) print('diagnose.matrix')
   plot.diagnose.matrix(x,xlim=xlim,ylim=ylim,verbose=verbose)
 }
