@@ -51,6 +51,7 @@ test.cmip35.global()
 
 \author{A.  Mezghani}
 \examples{
+\dontrun{
 # Eg.1 : 
 # Compute the global mean surface temperature anomalies from CMIP3 experiment
 test.cmip3.global(...)
@@ -64,6 +65,6 @@ test.cmip3.arctic(...)
 
 # Eg.3 Compute the mean surface temperature anomalies from CMIP5 experiment over Scandinavia.
 test.cmip5.scandinavia(...)
-
+}
 }
 \keyword{utilities}
