@@ -40,7 +40,7 @@ write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 write2ncdf4.default <- function(x,...) {
 }
 
-write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NULL,
+write2ncdf4.list <- function(x,file='field.nc',prec='short',scale=0.1,offset=NULL,
                              torg="1970-01-01",missval=-999,verbose=FALSE) {
   if (verbose) print('write2ncdf4.list')
   stopifnot(inherits(x[[1]],'field'))
@@ -76,7 +76,7 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
   }
   
   # Create a netCDF file with this variable
-  ncnew <- nc_create( fname, x4nc )
+  ncnew <- nc_create( file, x4nc )
   
   # Write some values to this variable on disk.
   for (i in 1:n) {
@@ -111,7 +111,7 @@ write2ncdf4.list <- function(x,fname='field.nc',prec='short',scale=0.1,offset=NU
   if (verbose) print('netCDF file saved')
 }
 
-write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=NULL,
+write2ncdf4.field <- function(x,file='field.nc',prec='short',scale=NULL,offset=NULL,
                               torg="1970-01-01",missval=-999,ncclose=TRUE,verbose=FALSE) {
   if (verbose) {print('write2ncdf4.field'); print(names(attributes(x)))}
 
@@ -138,7 +138,7 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=
                     longname=attr(x,'longname'), prec=prec)
      
      # Create a netCDF file with this variable
-  ncnew <- nc_create( fname, x4nc )
+  ncnew <- nc_create( file, x4nc )
 
   # Write some values to this variable on disk.
   ncvar_put( ncnew, x4nc, round(y) )
@@ -161,7 +161,7 @@ write2ncdf4.field <- function(x,fname='field.nc',prec='short',scale=NULL,offset=
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDL-Data-Types.html:
 # short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
 
-write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
+write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
                                 scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,verbose=FALSE) {
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 
@@ -399,7 +399,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     
     if (verbose) {
       print('Define variable')
-      print(paste('create netCDF-file',fname))
+      print(paste('create netCDF-file',file))
       print(summary(c(y)))
     }
     
@@ -615,9 +615,9 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     }
   } 
   
-  if (append & file.exists(fname)) {
-    if (verbose) print(paste('Appending',fname))
-    ncid <- nc_open(fname, write=TRUE)
+  if (append & file.exists(file)) {
+    if (verbose) print(paste('Appending',file))
+    ncid <- nc_open(file, write=TRUE)
     ncvar <- ncid$var[[1]]
     lonid <- ncid$var[["lon"]]
     latid <- ncid$var[["lat"]]
@@ -701,12 +701,12 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
     start[2] <- start[2] + ns
     
   } else {
-    if (verbose) print(paste('Creating file',fname))
-    if (is.T(x)) ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+    if (verbose) print(paste('Creating file',file))
+    if (is.T(x)) ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                                    fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                                    sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,maxid,minid,nhrid,nlrid,
                                                    tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,lehrid,lelrid)) else
-        if (is.precip(x)) ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+        if (is.precip(x)) ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                             fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                             maxid,minid,nhrid,muid,muid.djf,muid.mam,muid.jja,muid.son,
                                             fwid,fwid.djf,fwid.mam,fwid.jja,fwid.son,
@@ -716,7 +716,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
                                             sigma2id,sigma2id.djf,sigma2id.mam,sigma2id.jja,sigma2id.son,
                                             tsigma2id,tsigma2id.djf,tsigma2id.mam,tsigma2id.jja,tsigma2id.son,
                                             mwslid,mdslid)) else 
-        ncid <- nc_create(fname,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+        ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                           fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
                                           sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,tdid,
                                           tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,lehrid,lelrid))
@@ -870,7 +870,7 @@ write2ncdf4.station <- function(x,fname,prec='short',offset=0, missval=-99,it=NU
 
 
 ## These small functions are common code that simplify saving data as netCDF 
-write2ncdf4.pca <- function(x,fname='esd.pca.nc',prec='short',verbose=FALSE,scale=0.01,offset=0,missval=-99) {
+write2ncdf4.pca <- function(x,file='esd.pca.nc',prec='short',verbose=FALSE,scale=0.01,offset=0,missval=-99) {
   if (verbose) print('write2ncdf4.pca')
   pcaatts <- names(attributes(x))
   pattern <- attr(x,'pattern')
@@ -903,7 +903,7 @@ write2ncdf4.pca <- function(x,fname='esd.pca.nc',prec='short',verbose=FALSE,scal
   if (is.numeric(index(x))) index(x) <- year(x)
   dpca <- dim(pca); attributes(pca) <- NULL; dpca -> dim(pca)
   ## KMP 2018-11-08: nc has not been defined! should it be created or opened from a file?
-  nc <- nc_create(fname,vars=list(lon,lat,alt,stid,pca,pat,lambda))
+  nc <- nc_create(file,vars=list(lon,lat,alt,stid,pca,pat,lambda))
   ncvar_put( nc, pca, round((pca - offset)/scale) )
   ncatt_put( nc, pca, "add_offset", offset, prec="float" )
   ncatt_put( nc, pca, "scale_factor", scale, prec="float" ) 
@@ -931,11 +931,11 @@ write2ncdf4.pca <- function(x,fname='esd.pca.nc',prec='short',verbose=FALSE,scal
   ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
 }
 
-write2ncdf4.eof <- function(x,fname='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) {
+write2ncdf4.eof <- function(x,file='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) {
 }
 
   
-write2ncdf4.dsensemble <- function(x,fname='esd.dsensemble.nc',prec='short',offset=0,scale=0.1,
+write2ncdf4.dsensemble <- function(x,file='esd.dsensemble.nc',prec='short',offset=0,scale=0.1,
                               torg="1970-01-01",missval=-99,verbose=TRUE) {
   ## prec - see http://james.hiebert.name/blog/work/2015/04/18/NetCDF-Scale-Factors/
   if (verbose) print('write2ncdf4.field')
@@ -1034,7 +1034,7 @@ write2ncdf4.dsensemble <- function(x,fname='esd.dsensemble.nc',prec='short',offs
   ## Create a netCDF file with this variable
   if (verbose) print('Create netCDF-file')
 
-  ncnew <- nc_create( fname, varlist,verbose=verbose)
+  ncnew <- nc_create( file, varlist,verbose=verbose)
   
   if (verbose) print('write pca/eof data')                   
   ## Add the information stored in the list elements as 2D zoo objects
@@ -1087,5 +1087,5 @@ write2ncdf4.dsensemble <- function(x,fname='esd.dsensemble.nc',prec='short',offs
   #ncatt_put( ncnew, 0, "class", paste(class.x,collapse='-'))
   ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$session$esd.version)
   nc_close(ncnew)
-  if (verbose) print(paste('Finished successfully - file', fname))  
+  if (verbose) print(paste('Finished successfully - file', file))  
 }
