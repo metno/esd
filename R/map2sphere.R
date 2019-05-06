@@ -31,32 +31,6 @@
 # a1 =  cosYcosZ; b1 = cosXsinZ; c1= -cosXsinY
 # a2 = -cosXsinZ; b2 = cosXcosZ; c2= -sinXcosY
 # a3 =  cosXsinY; b3 = sinXcosZ; c3=  cosXcosY
-#
-# Rasmus E. Benestad
-# 14.04.2013
-
-
-rotM <- function(x=0,y=0,z=0) {
-  X <- -pi*x/180; Y <- -pi*y/180; Z <- -pi*z/180
-  cosX <- cos(X); sinX <- sin(X); cosY <- cos(Y)
-  sinY <- sin(Y); cosZ <- cos(Z); sinZ <- sin(Z)
-  rotM <- rbind( c( cosY*cosZ, cosY*sinZ,-sinY*cosZ ),
-                 c(-cosX*sinZ, cosX*cosZ,-sinX*cosZ ),
-                 c( sinY*cosX, sinX*cosY, cosX*cosY ) )
-  return(rotM)
-}
-
-gridbox <- function(x,col,density = NULL, angle = 45) {
-#  if (length(x) != 5) {print(length(x)); stop("gridbox")}
-# W,E,S,N
-# xleft, ybottom, xright, ytop
-  i <- round(x[9])
-  if(i==0) {border <- rgb(0,0,0,0.1)
-  } else border <- col[i]
-#  rect(x[1], x[3], x[2], x[4],col=cols[i],border=cols[i])
-  polygon(c(x[1:4],x[1]),c(x[5:8],x[5]),
-          col=col[i],border=border)
-}
 
 #angleofview <- function(r,P) {
 #  angle <- acos( (P%*%r)/( sqrt(P%*%P)*sqrt(r%*%r) ) )

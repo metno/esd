@@ -172,7 +172,7 @@ map.googleearth(x)
 
 rotM(x=0,y=0,z=0)
 
-gridbox(x,col,density = NULL, angle = 45)
+gridbox(x,col)
 
 map2sphere(x,it=NULL,is=NULL,new = TRUE,
            xlim=NULL,ylim=NULL,zlim = NULL,

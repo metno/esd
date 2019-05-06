@@ -110,9 +110,9 @@ DSensemble.field(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=F
     \item{path}{The path where the GCM results are stored.}
     \item{rcp}{Which (RCP) scenario}
     \item{biascorrect}{TRUE, apply a bias adjustment using \code{\link{biasfix}}}
-    \item{predictor}{}
-    \item{non.stationarity.check}{}
-    \item{ip}{Which EOFs to include in the step-wise multiple regresion}
+    \item{predictor}{The predictor, a field or EOF object}
+    \item{non.stationarity.check}{If TRUE perform stationarity test - work in progress}
+    \item{ip}{Which EOFs to include in the step-wise multiple regression.}
     \item{rmtrend}{TRUE: detrend before calibrating the regression model.}
     \item{lon}{Longitude range for predictor}
     \item{lat}{Latitude range for predictor}

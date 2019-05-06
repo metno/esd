@@ -56,4 +56,6 @@ nacd <- station(src='nacd')
 X <- annual(nacd)
 write2ncdf4(X,file='test.nc')
 }
-\keyword{?}
+\keyword{netcdf}
+\keyword{ncdf4}
+\keyword{save}

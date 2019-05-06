@@ -8,7 +8,7 @@
 }
 \usage{
 is.inside(x, y, verbose = FALSE, plot = FALSE)
-test.is.inside((N=5000,verbose=TRUE,plot=TRUE))
+test.is.inside(N=5000,verbose=TRUE,plot=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

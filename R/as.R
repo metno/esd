@@ -4,7 +4,7 @@ as.station <- function(x,...) UseMethod("as.station")
 as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                           cntr=NA,longname=NA,calendar=NA,stid=NA,quality=NA,src=NA,
                           url=NA,reference=NA,info=NA, method= NA,type=NA,
-                           aspect=NA,verbose=FALSE) {
+                          aspect=NA,verbose=FALSE) {
   #print(c(length(X),length(index)))
   y <- zoo(x,order.by=index(x))
 
@@ -973,8 +973,9 @@ as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85) 
   ok <- nd >= nmin  
   coredata(y)[!ok] <- NA
   # dateindex: convert "1775 Q1" to "1775-01-01"
-  if (dateindex)
+  if (dateindex) {
     y <- zoo(coredata(y),order.by=as.Date(index(y)))
+  }
   unit <- attr(y,'unit')
   y <- attrcp(x,y,ignore=c("unit","names"))
   unit -> attr(y,'unit')

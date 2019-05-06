@@ -41,10 +41,10 @@ Identification method for generating storm statistics', Tellus A, in press.
 Benestad (2005) 
 } 
 \usage{
-CCI(Z,m=12,it=NULL,is=NULL,label=NULL,cyclones=TRUE,greenwich=NULL,
-                mindistance=1E6,dpmin=1E-3,pmax=1000,rmin=1E4,rmax=2E6,
-                accuracy=NULL,nsim=NULL,do.track=FALSE,allow.open=FALSE,
-                fname="cyclones.rda",plot=FALSE,verbose=FALSE)
+CCI(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
+                label=NULL,mindistance=5E5,dpmin=1E-3,pmax=1000,rmin=1E4,rmax=2E6,
+                nsim=NULL,progress=TRUE,fname="cyclones.rda",plot=FALSE,
+                accuracy=NULL,allow.open=FALSE,,do.track=FALSE,verbose=FALSE,...)
 }
 
 \arguments{

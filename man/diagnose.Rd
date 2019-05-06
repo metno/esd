@@ -33,28 +33,43 @@
 \usage{
 diagnose(x,...)
 diagnose.default(x,...)
-diagnose.comb(x)
-diagnose.eof(x)
-diagnose.comb.eof(x)
-diagnose.mvr(x)
-diagnose.cca(x)
-diagnose.ds(x,plot=FALSE,verbose=FALSE,new=TRUE)
-diagnose.ds.pca(x,plot=FALSE,verbose=FALSE,new=TRUE)
-diagnose.station(x,it=NULL,...)
-diagnose.matrix(x,xlim=NULL,ylim=NULL,verbose=FALSE,...)
-diagnose.dsensemble(x,plot=TRUE,map=TRUE,plot.type='target',...)
-diagnose.dsensemble.list(x,plot=FALSE,is=NULL,ip=NULL,
+diagnose.comb(x,...)
+diagnose.eof(x,...)
+diagnose.comb.eof(x,...)
+diagnose.mvr(x,...)
+diagnose.cca(x,...)
+diagnose.ds(x,...,plot=FALSE,verbose=FALSE,new=TRUE)
+diagnose.ds.pca(x,...,plot=FALSE,verbose=FALSE,new=TRUE)
+diagnose.station(x,...,it=NULL,...)
+diagnose.matrix(x,...,xlim=NULL,ylim=NULL,verbose=FALSE)
+diagnose.dsensemble(x,...,plot=TRUE,map=TRUE,plot.type='target')
+diagnose.dsensemble.list(x,...,plot=FALSE,is=NULL,ip=NULL,
                  map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
-                 main=NULL,verbose=FALSE,new=TRUE,...)
-diagnose.distr(x,main='Mean - quantile',
+                 main=NULL,verbose=FALSE,new=TRUE)
+diagnose.distr(x,...,main='Mean - quantile',
                xlab='mean',ylab=expression(q[p]),
                sub=src(x),probs=0.95)
 }
 \arguments{
   \item{x}{data object}
   \item{it}{teporal selection - see \code{\link{subset}}}
-  \item{plot}{}
-  \item{plot.type}{}
+  \item{plot}{if TRUE, plot results}
+  \item{plot.type}{type of plot}
+  \item{verbose}{Logical value defaulting to FALSE. If FALSE, do not
+  display comments (silent mode). If TRUE, displays extra information on progress.}
+  \item{new}{if TRUE plot in new window}
+  \item{xlim}{range of x-axis}
+  \item{xlim}{range of y-axis}
+  \item{alpha}{factor modifying the opacity alpha; typically in [0,1]}
+  \item{map.show}{if TRUE show map}
+  \item{xrange}{longitude range to display in map}
+  \item{yrange}{latitude range to display in map}
+  \item{main}{main label in plot}
+  \item{sub}{smaller label (subtitle) in plot}
+  \item{xlab}{label of x-axis}
+  \item{ylab}{label of y-axis}
+  \item{probs}{quantile to display in plot, e.g., probs=0.95 
+               gives a diagnosis of the 95th percentile of the data.}
  }
 \value{A 'diag' object containing test results}
 

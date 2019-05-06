@@ -98,6 +98,7 @@ vis.map(x,col='red',map.type='points',add.text=FALSE)
   \item{map.type}{}
   \item{what}{Indicate what to plot. 'field' expands eof to field before
   plotting}
+  \item{new}{if TRUE plot in new window}
  }
 \value{A field object}
 

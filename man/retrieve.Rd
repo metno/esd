@@ -32,7 +32,7 @@ retrieve.stationsummary(ncfile,
 
 summary.ncdf4(ncfile, verbose=FALSE)
 check.ncdf4(ncid = ncid, param = "auto" , verbose = FALSE)
-file.class(ncfile\)
+file.class(ncfile)
 }
 
 \arguments{

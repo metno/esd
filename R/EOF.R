@@ -13,20 +13,17 @@ EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,a
   if (verbose) print("EOF.default")
   stopifnot(!missing(X), is.matrix(X),inherits(X,"zoo"))
   
-  if ( !zeros(inherits(X,c("comb","zoo"),which=TRUE)) )
-    eof <- EOF.comb(X,it=it,is=is,n=n,anomaly=anomaly,
-                    verbose=verbose) else
-                      if ( !zeros(inherits(X,c("field","zoo"),which=TRUE)) )
-                        eof <- EOF.field(X,it=it,is=is,n=n,
-                                         anomaly=anomaly,
-                                         verbose=verbose)
+  if (!zeros(inherits(X,c("comb","zoo"),which=TRUE))) {
+    eof <- EOF.comb(X,it=it,is=is,n=n,anomaly=anomaly,verbose=verbose) 
+  } else if ( !zeros(inherits(X,c("field","zoo"),which=TRUE)) ) {
+    eof <- EOF.field(X,it=it,is=is,n=n,anomaly=anomaly,verbose=verbose)
+  }
   attr(eof,'dimnames') <- NULL   # REB 2016-03-04
   return(eof)
 }
 
 
 # Apply EOF analysis to the monthly mean field values:
-
 EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   SF <- function(x) {sum(is.finite(x))}
@@ -185,8 +182,9 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
   ## AM 11-11-2013 added lines begin
   
   #print('subset')
-  if (!is.null(is) | !is.null(it))
+  if (!is.null(is) | !is.null(it)) {
     X <- subset(X,it=it,is=is,verbose=verbose)
+  }
   #else if (!is.null(it))
   #  X <- subset(X,it=it,is=is)
   ## AM 11-11-2013 added lines end
@@ -352,8 +350,6 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
   class(ceof) <- c("eof",class(X))
   invisible(ceof)
 }
-
-
 
 eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   if (verbose) {print("eof2field"); if (!is.null(is)) print(is)}

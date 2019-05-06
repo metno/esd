@@ -92,12 +92,15 @@ DS.eof(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
 DS.pca(y,X,verbose=FALSE,plot=FALSE,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
                    rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20,...)
 DS.comb(y,X,verbose=FALSE,plot=FALSE,,...,biascorrect=FALSE,
-        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7, weighted=TRUE,pca=FALSE,npca=20) 
-DS.field(y,X,verbose=FALSE,plot=FALSE,,...,biascorrect=FALSE,
-        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE) 
+        method="lm",swsm="step",m=5,rmtrend=TRUE,it=NULL,ip=1:7,
+        weighted=TRUE,pca=FALSE,npca=20)
+DS.field(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
+        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE)
 DS.list(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
         method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20)
-DS.trajectory()
+DS.trajectory(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,is=NULL,biascorrect=FALSE, 
+              method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20)
+
 #DS.t2m.month.field()
 #DS.t2m.season.field()
 #DS.precip.season.field()
@@ -131,7 +134,6 @@ biasfix(x)
     the cross-validation, e.g. for short data series.}
   \item{weighted}{TRUE: use the attribute '\code{error.estimate}' as
     weight for the regresion analysis.}
-  \item{\dots}{ }
 }
 
 \value{
@@ -168,12 +170,12 @@ data(Oslo)
 #X <- OptimalDomain(X,Oslo)
 eof <- EOF(X,it='jan')
 Y <- DS(Oslo,eof)
-plot(Y)
+plot(Y, new=FALSE)
 str(Y)
 
 # Look at the residual of the ESD analysis
 y <- as.residual(Y)
-plot.zoo(y)
+plot.zoo(y,new=FALSE)
 
 # Check the residual: dependency to the global mean temperature?
 T2m <- t2m.DNMI()
@@ -190,7 +192,7 @@ X <- EOF(comb)
 data(bjornholt)
 y <- as.annual(bjornholt,FUN="exceedance")
 z <- DS(y,X)
-plot(z)
+plot(z, new=FALSE)
 
 ## Example on using common EOFs as a framework for the downscaling:
 lon <- c(-12,37)
@@ -224,9 +226,9 @@ plot(dss)
 
 ## Example for downscaling with missing data
 data(Oslo)
-era40 <- t2m.DNMI(lon=c(-10,20),lat=c(55,65))
+dnmi <- t2m.DNMI(lon=c(-10,20),lat=c(55,65))
 y <- subset(Oslo,it='jan')
-X <- EOF(subset(era40,it='jan'))
+X <- EOF(subset(dnmi,it='jan'))
 ds <- DS(y,X)
 plot(ds) # Looks OK
 # Now we replace some values of y with missing data:

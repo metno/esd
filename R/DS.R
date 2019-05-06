@@ -110,7 +110,6 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
     
     predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
-    
     if (is.null(names(X))) names(X) <- 1:dim(X)[2]
     Xnames <- paste("X.",1:length(names(X)),sep="")
     colnames(caldat) <- c("y",Xnames,'weights')
@@ -123,7 +122,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
       calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
                       ", data=caldat, ...)",sep="")
     }
-
+    
     MODEL <- eval(parse(text=calstr))
     FSUM <- summary(MODEL)
     if (verbose) print(FSUM)
@@ -272,33 +271,33 @@ DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALS
                      weighted=weighted,pca=pca,npca=npca,...) 
       return(ds)
     } else if (is.list(X)) {
-                                        # REB 2014-10-08
-        if (verbose) print("The predictor is a list")
-        ds <- DS.list(y=y,X=X,biascorrect=biascorrect,
-                      method=method,swsm=swsm,m=m,
-                      rmtrend=rmtrend,ip=ip,verbose=verbose,
-                      weighted=weighted,pca=pca,npca=npca,...) 
-        return(ds)
+      if (verbose) print("The predictor is a list")
+      ds <- DS.list(y=y,X=X,biascorrect=biascorrect,
+                    method=method,swsm=swsm,m=m,
+                    rmtrend=rmtrend,ip=ip,verbose=verbose,
+                    weighted=weighted,pca=pca,npca=npca,...) 
+      return(ds)
     } 
 
     ## REB inserted lines to accomodate for multiple stations
     d <- dim(y)
     if (!is.null(d)) ns <- d[2] else ns <- 1
     if (!is.null(d)) {
-        if (verbose) print(paste('predictand contains',ns,'stations'))
-        ## More than one station
-        Y <- y
-        if (pca) {
-            if (verbose) print("PCA")
-            ## PCA is used when y represents a group of variables and when
-            ## their covariance is a concern: it preserves the covariance
-            ## as seen in the past, as the PCs and eigenvectors are orthogonal.
-            ## Useful for spatial response, wind vectors, temperature/precipitation
-            Y <- PCA(y,npca)
-        }
-        ns <- dim(Y)[2]
-    } else Y <- y
-    
+      if (verbose) print(paste('predictand contains',ns,'stations'))
+      ## More than one station
+      Y <- y
+      if (pca) {
+        if (verbose) print("PCA")
+        ## PCA is used when y represents a group of variables and when
+        ## their covariance is a concern: it preserves the covariance
+        ## as seen in the past, as the PCs and eigenvectors are orthogonal.
+        ## Useful for spatial response, wind vectors, temperature/precipitation
+        Y <- PCA(y,npca)
+      }
+      ns <- dim(Y)[2]
+    } else {
+      Y <- y
+    }
 
     ## Loop over the different PCs or stations
     for (i in 1:ns) {
@@ -353,11 +352,13 @@ DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALS
     ## spatial covariance, then do the inverse to recover the results
     ## in a structure comparable to the original stations.
     if ( (ns>1) & pca ) {
-        attr(dsall,'pattern') <- attr(Y,'pattern')
-        attr(dsall,'eigenvalues') <- attr(Y,'eigenvalues')    
-        attr(dsall,'mean') <- attr(Y,'mean')    
-        ds.results <- pca2station(dsall)
-    } else ds.results <- dsall
+      attr(dsall,'pattern') <- attr(Y,'pattern')
+      attr(dsall,'eigenvalues') <- attr(Y,'eigenvalues')    
+      attr(dsall,'mean') <- attr(Y,'mean')    
+      ds.results <- pca2station(dsall)
+    } else {
+      ds.results <- dsall
+    }
     
     if (verbose) print("--- exit DS.station ---")
     if (plot) plot(ds.results)
@@ -403,8 +404,8 @@ DS.comb <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
         X <- biasfix(X)
     }
     
-    ds <- DS.default(y,X,biascorrect=biascorrect,method=method,swsm=swsm,m=m,
-                     rmtrend=rmtrend,ip=ip,pca=pca,npca=npca,weighted=weighted,verbose=verbose,...)
+    ds <- DS.default(y,X,method=method,swsm=swsm,m=m,
+                     rmtrend=rmtrend,ip=ip,weighted=weighted,verbose=verbose,...)
 
     ## For combined fields, make sure to add the appended PCs to
     ## the results.
@@ -458,8 +459,7 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
     if (verbose) {print(class(X)); print(varid(y))}
     if (sum(is.element(tolower(attr(y,'variable')),c('t2m','tmax','tmin'))) >0) {
       if (inherits(X,'month')) {
-        ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
-                         method=method,swsm=swsm,m=m,
+        ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
                          rmtrend=rmtrend,ip=ip,
                          verbose=verbose)
         #ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
@@ -472,30 +472,26 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
         #                          method=method,swsm=swsm,m=m,
         #                          rmtrend=rmtrend,ip=ip,
         #                          verbose=verbose)
-        ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
-                                  method=method,swsm=swsm,m=m,
-                                  rmtrend=rmtrend,ip=ip,
-                                  verbose=verbose)
+        ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+                         rmtrend=rmtrend,ip=ip,verbose=verbose)
       } else if (inherits(X,'annual')) {
-        ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
-                         method=method,swsm=swsm,m=m,
-                         rmtrend=rmtrend,ip=ip,
-                         verbose=verbose)
+        ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+                         rmtrend=rmtrend,ip=ip,verbose=verbose)
         #ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
         #                          method=method,swsm=swsm,m=m,
         #                          rmtrend=rmtrend,ip=ip,
         #                          verbose=verbose)
       }
     } else if (tolower(attr(y,'variable'))=='precip') {
-      ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
-                                   method=method,swsm=swsm,m=m,
-                                   rmtrend=rmtrend,ip=ip,
-                                   verbose=verbose)
+      ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+                       rmtrend=rmtrend,ip=ip,verbose=verbose)
+      #ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
+      #                             method=method,swsm=swsm,m=m,
+      #                             rmtrend=rmtrend,ip=ip,
+      #                             verbose=verbose)
     } else {
-      ds <- DS.default(y=y,X=X,biascorrect=biascorrect,
-                          method=method,swsm=swsm,m=m,
-                          rmtrend=rmtrend,ip=ip,
-                          verbose=verbose)
+      ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+                       rmtrend=rmtrend,ip=ip,verbose=verbose)
     }
     if (verbose) print('return downscaled results')
     if (plot) plot(ds)
@@ -636,8 +632,7 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
 #     if (inherits(X,'annual'))
 #         Z <- annual(y,FUN=wetfreq,threshold=threshold)
 #     
-#     ds <- DS.default(Z,X,biascorrect=biascorrect,method=method,
-#                      swsm=swsm,m=m,rmtrend=rmtrend,ip=ip,verbose=verbose,...)
+#     ds <- DS.default(Z,X,method=method,swsm=swsm,m=m,rmtrend=rmtrend,ip=ip,verbose=verbose,...)
 #     return(ds)
 # }
 # 
@@ -1005,7 +1000,7 @@ DS.list <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
 DS.mixedeof <- function(y,X,plot=FALSE,...,it=NULL,biascorrect=TRUE,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,ip=1:7,
-                    weighted=TRUE,pca=FALSE,npca=20) {
+                    weighted=TRUE,pca=FALSE,npca=20,verbose=FALSE) {
               ### This method combines different EOFs into one predictor by making a new
               ### data matrix consisting of the PCs, then weight (w) these according to their
               ### eigenvalues (normalised so that each predictor/EOF type carry similar
@@ -1094,46 +1089,10 @@ DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,method="lm",
   ## This function does the same as DS.eof
     if (verbose) { print('--- DS.station.pca ---'); print(summary(coredata(y)))}
     z <- DS.default(y=y,X=X,it=it,method=method,swsm=swsm,m=m,
-                    rmtrend=trend,ip=ip,
-                    verbose=verbose,weighted=weighted,...)
-    if (plot) plot(ds)
+                    rmtrend=trend,ip=ip,verbose=verbose,weighted=weighted)
+    if (plot) plot(z)
     return(z)
 }
-
-biasfix <- function(x) {
-    stopifnot(!missing(x), inherits(x,"eof"),inherits(x,"comb"))
-    ## Check if the results already have been bias-corrected
-    if (!is.null(attr(x,'diagnose'))) return(x)
-    diag <- diagnose(x)
-    n <- attr(x,'n.apps')
-    for ( i in 1:n ) {
-        eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
-        Z <- coredata(z) 
-        ## Use overlapping years
-        year.ox <- range(year(z)[is.element(year(z),year(x))])
-        sd.o <- apply(coredata(subset(x,it=range(year.ox))),2,sd,na.rm=TRUE)
-        sd.x <- apply(coredata(subset(z,it=range(year.ox))),2,sd,na.rm=TRUE)
-        scalfac <- sd.o/sd.x
-        me.o <- apply(coredata(subset(x,it=range(year.ox))),2,mean,na.rm=TRUE)
-        me.x <- apply(coredata(subset(z,it=range(year.ox))),2,mean,na.rm=TRUE)
-        mean.diff <- me.o - me.x
-          
-        ## diagnose: (1 + sd(z))/(1 + sd(x))
-        ## x is reanalysis; z is gcm:
-        for (j in 1:length(Z[1,]))
-            Z[,j] <- scalfac[j]*Z[,j] + mean.diff[j]
-        y <- zoo(Z,order.by=index(z))
-        y <- attrcp(z,y)
-        eval(parse(text=paste("y -> attr(x,'appendix.",i,"')",sep="")))
-    }
-    attr(x,'history') <- history.stamp(x)
-    attr(x,'quality') <- "'bias' corrected -  ref (Imbert & Benestad (2005); Theor. Appl. Clim.; DOI: 10.1007/s00704-005-0133-4"
-    attr(x,'baseline') <- year.ox
-    attr(x,'diagnose') <- diag
-    invisible(x)
-}
-
-
 
 DS.trajectory <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,is=NULL,FUN='count',param=NULL,
                        unit=NULL,longname=NULL,loc=NULL,
@@ -1145,8 +1104,7 @@ DS.trajectory <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,is=NULL,FUN='
   stopifnot(!missing(y),!missing(X),inherits(y,"trajectory"))
 
   y <- subset(y,it=it,is=is)
-  ys <- trajectory2station(y,param=param,FUN=FUN,unit=unit,
-                           longname=longname,loc=loc)
+  ys <- trajectory2station(y,...)
   
   cls <- class(X)
   if(is.list(X)) cls <- class(X[[1]])
@@ -1157,8 +1115,8 @@ DS.trajectory <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,is=NULL,FUN='
   }
   
   ds <- DS(ys,X,biascorrect=biascorrect,method=method,swsm=swsm,m=m,
-     rmtrend=rmtrend,ip=ip,
-     verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+           rmtrend=rmtrend,ip=ip,verbose=verbose,weighted=weighted,
+           pca=pca,npca=npca)
   if (plot) plot(ds)
   invisible(ds)
 }

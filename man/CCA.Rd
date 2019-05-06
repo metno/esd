@@ -43,8 +43,7 @@ CCA.pca(Y,X,...,ip=1:8,verbose=FALSE)
 CCA.field(Y,X,...,ip=1:8,verbose=FALSE)
 test.cca(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,
          SVD=TRUE,n.pc=4,synthetic=TRUE)
-
-predict.cca <- function(object, newdata=NULL, ...)
+predict.cca(x, newdata=NULL, ..., verbose=FALSE)
 }
 \arguments{
     \item{Y}{An object with climate data: field, eof, pca.}

@@ -201,33 +201,3 @@ Psi <- function(cca,verbose=FALSE) {
   return(Psi)
 }
 
-predict.cca <- function(x, newdata=NULL, ...) {
-  if (!is.null(newdata)) X <- newdata else X <- x$X
-#predict.CCA <- function(Psi,X) {
-  
-  #if ( (class(X)[1]!="eof") & (class(X)[1]!="field")) stop('Need a field or EOF object!')
-  #type <- class(X)
-  #if (type[1]=="eof") X <- EOF2field(X)
-  #X <- field$dat
-  #d <- dim(X); dim(X) <- c(d[1],d[2]*d[3])
-  #X <- t(X)
-  #print(dim(Psi)); print(dim(X)); print(d)
-  Y.hat <-  Psi(x) %*% X
-  #field$dat <- t(Y.hat)
-  #print(dim(field$dat))
-  #d1 <- attr(Psi,"dims")
-  #dim(field$dat) <- c(d[1],d1[2],d1[3])
-  #field$lon <- attr(Psi,"lon"); nx <- length(field$lon)
-  #field$lat <- attr(Psi,"lat"); ny <- length(field$lat)
-  #field$id.x <- rep("CCA",nx*ny)
-  #field$id.lon <- rep("CCA",nx)
-  #field$id.lat <- rep("CCA",ny)
-  #field$id.t <- rep("CCA",d[1])
-  #print("HERE")
-  #if (type[1]=="eof") result <- EOF(field) else result <- field
-  #result
-  Y.hat <- attrcp(Y.hat,X)
-  Y.hat
-}
-
-

@@ -1,8 +1,8 @@
-plot <- function(x,y, ...)  UseMethod("plot")
+plot <- function(x,...)  UseMethod("plot")
 
-plot.list <- function(x,is=NULL,
+plot.list <- function(x,...,is=NULL,
                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
-                      lwd=3,xlim=NULL,ylim=NULL,...) {
+                      lwd=3,xlim=NULL,ylim=NULL) {
   if (!is.null(is)) y <- subset(x,it=is) else y <- x[[1]]
   plot(y,img=img,col=col[1],lwd=lwd,xlim=xlim,ylim=ylim)
   for (j in c(2:length(x),1)) {
@@ -12,7 +12,7 @@ plot.list <- function(x,is=NULL,
   }
 }
 
-plot.station <- function(x,plot.type="single",new=TRUE,
+plot.station <- function(x,...,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
@@ -21,7 +21,7 @@ plot.station <- function(x,plot.type="single",new=TRUE,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
                          mar=c(4.5,4.5,0.75,0.5),fig=NULL,
                          alpha=0.5,alpha.map=0.7,
-                         verbose=FALSE,...) {
+                         verbose=FALSE) {
   
   if (verbose) print('plot.station')
   par(las=1)
@@ -125,10 +125,10 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   if(new) dev.new()
   if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
-  plot.zoo(x,plot.type=plot.type,xlab=xlab,ylab=ylab,
+  plot.zoo(x,...,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
            cex.axis=cex.axis,cex.lab=cex.lab,cex.main=cex.main,
-           xaxt=xaxt,main=main,...)
+           xaxt=xaxt,main=main)
   #mtext(main,side=3,line=1,adj=0,cex=cex.main)
   if("seasonalcycle" %in% cls) {
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
@@ -180,12 +180,12 @@ plot.station <- function(x,plot.type="single",new=TRUE,
   }
 }
 
-plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
+plot.eof <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                      ip=1,what=c("pc","eof","var"),
                      colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
                          breaks=NULL,type="p",cex=2,show=TRUE,
                          h=0.6,v=1,pos=0.05),
-                     verbose=FALSE,is=NULL,it=NULL,...) {
+                     verbose=FALSE,is=NULL,it=NULL) {
   if (verbose) print(paste('plot.eof',paste(what,collapse=',')))
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
@@ -200,10 +200,10 @@ plot.eof <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 
 
 
-plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
+plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                            what=c("pc","eof","var"),## colbar=NULL,
                            cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
-                           verbose=FALSE,it=NULL,is=NULL,cex=1,...) {
+                           verbose=FALSE,it=NULL,is=NULL,cex=1) {
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   n <- ip
   what <- tolower(what)
@@ -299,9 +299,9 @@ plot.eof.field <- function(x,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
 }
 
 
-plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
+plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                           ip=1,col=c("red"),alpha=1,
-                          what=c("pc","eof","var"),colbar=NULL,verbose=FALSE,...) {
+                          what=c("pc","eof","var"),colbar=NULL,verbose=FALSE) {
   if (verbose) print("plot.eof.comb")
   n <- ip
   D <- attr(x,'eigenvalues')
@@ -405,12 +405,12 @@ plot.eof.comb <- function(x,new=FALSE,xlim=NULL,ylim=NULL,
 }
 
 
-plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
+plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                     lwd=1,type='l',pch=0,main=NULL,col=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,
                         breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),
-                    xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE,...) {
+                    xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
   if (inherits(x,'pca')) {
     plot.ds.pca(x,verbose=verbose,...)
@@ -452,9 +452,8 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
     points(lon(x),lat(x),lwd=3,cex=1.5)
   }
   
-  if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ){
+  if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ) {
     par(new=TRUE,fig=c(0.5,1,0.5,1)) 
-     
     plot(attr(x,'evaluation')[,1],attr(x,'evaluation')[,2],
          main='Cross-validation',xlab='original data',
          ylab='prediction',pch=19,col="grey")
@@ -585,7 +584,8 @@ plot.ds <- function(x,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
 
 
 
-plot.eof.var <- function(x,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
+plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FALSE) {
+  if(verbose) print("plot.eof.var")
   n <- min(c(n,length(attr(x,'eigenvalues'))))
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
@@ -625,7 +625,7 @@ plot.eof.var <- function(x,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,...) {
 
 
 
-plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose=FALSE,...) {
+plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose=FALSE) {
   if (verbose) print("plot.field")
   stopifnot(!missing(x),inherits(x,'field'))
 
@@ -734,7 +734,7 @@ plot.field <- function(x,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose
   invisible(z)
 }
 
-plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
+plot.pca <- function(y,...,cex=1,verbose=FALSE,new=TRUE) {
   if (verbose) print('plot.pca')
   if(inherits(y,"trajectory")) {
     plot.pca.trajectory(y,cex=cex,new=new,verbose=verbose,...)
@@ -744,11 +744,11 @@ plot.pca <- function(y,cex=1,verbose=FALSE,new=TRUE,...) {
   }
 }
 
-plot.ds.pca <- function(x,ip=1,
+plot.ds.pca <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                             type="p",cex=1,show=TRUE,h=0.6, v=1,pos=0.05),
                         colbar2=NULL,mar=c(3,2,2,0.5),mgp=c(1,0.5,0),
-                        verbose=FALSE,...) {
+                        verbose=FALSE) {
   y <- x # quick fix
 
   if (verbose) print('plot.ds.pca')
@@ -818,9 +818,9 @@ plot.ds.pca <- function(x,ip=1,
   }
 }
 
-plot.ds.eof <- function(x,ip=1,
+plot.ds.eof <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,...) {
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE) {
   y <- x # quick fix
   if (verbose) print('plot.ds.eof')
   if (is.null(colbar2)) colbar2 <- colbar1 
@@ -881,108 +881,6 @@ plot.ds.eof <- function(x,ip=1,
            lwd=c(2,2),pch=c(21,19),bty="n")
     xvalfit <- NULL
   }  
-}
-
-vis.pca <- function(x,cex=1.5,new=TRUE) {
-
-  y <- x # quick fix
-  col <- colscal(col=varid(y)); nc <- length(col)
-  #if (is.precip(y)) col <- rev(col)
-  lon <- attr(y,'longitude') 
-  lat <- attr(y,'latitude') 
-  N <- length(lon)
-  R2 <- round(100*attr(y,'eigenvalues')^2/attr(y,'tot.var'),2)
-
-  #print(N); print(length(attr(y,'mean')))
-  m <- min(3,dim(attr(y,'pattern'))[2])
-  
-  # Set scale for colour scheme
-  #str(y)
-  a.T <- matrix(rep(NA,4*N),4,N)
-  ax <- quantile(abs(attr(y,'mean')),0.99,na.rm=TRUE)
-  if (min(attr(y,'mean'))<0) scale0 <- seq(-ax,ax,length=nc) else
-                             scale0 <- seq(0,ax,length=nc)
-  ax <- quantile(abs(attr(y,'pattern')),0.99,na.rm=TRUE)
-  scale <- seq(-ax,ax,length=nc)
-
-  #print("here")
-  for (i in 1:N) {
-    a.T[1,i] <-  sum(attr(y,'mean')[i] > scale0)
-    for (j in 1:m) 
-      a.T[j+1,i] <-  sum(attr(y,'pattern')[i,j] > scale)
-  }
-  a.T[a.T < 1] <- 1; a.T[a.T > 100] <- 100
-
-  if (new) dev.new(width=5,height=7)
-  par(mfrow=c(3,2),mar=c(3.5,3,3.5,3),bty="n",xaxt="n",yaxt="n")
-  
-  plot(lon,lat,
-       main="Climatology",
-       col=col[a.T[1,]],pch=19,xlab="",ylab="",cex=cex)
-  points(lon,lat,cex=cex)
-  data("geoborders",envir=environment())
-  lines(geoborders,col='grey40')
-  lines(geoborders$x - 360,geoborders$y,col='grey40')
-  points(lon,lat,cex=cex,col=col[a.T[1,]],pch=19)
-
-  plot(lon,lat,
-       main=paste("EOF #1:",R2[1],"% of variance"),
-       col=col[a.T[2,]],pch=19,xlab="",ylab="",cex=cex)
-  points(lon,lat,cex=cex)
-  lines(geoborders)
-  lines(geoborders$x - 360,geoborders$y)
-  points(lon,lat,cex=cex,col=col[a.T[2,]],pch=19)
-
-  plot(lon,lat,
-       main=paste("EOF #2:",R2[2],"% of variance"),
-       col=col[a.T[3,]],pch=19,xlab="",ylab="",cex=cex)
-  points(lon,lat,cex=cex)
-  lines(geoborders,col='grey40')
-  lines(geoborders$x - 360,geoborders$y,col='grey40')
-  points(lon,lat,cex=cex,col=col[a.T[3,]],pch=19)
-
-  plot(lon,lat,
-       main=paste("EOF #3:",R2[3],"% of variance"),
-       col=col[a.T[4,]],pch=19,xlab="",ylab="",cex=cex)
-  points(lon,lat,cex=cex)
-  lines(geoborders,col='grey40')
-  lines(geoborders$x - 360,geoborders$y,col='grey40')
-  points(lon,lat,cex=cex,col=col[a.T[4,]],pch=19)
-
-  par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.665,0.695),new=TRUE,cex.axis=0.6)
-  image(cbind(1:nc,1:nc),col=col)
-  nl <- pretty(scale0)
-  par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
-
-  par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
-  image(cbind(1:nc,1:nc),col=col)
-  nl <- pretty(scale)
-  par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
-
-  par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.665,0.695),new=TRUE,cex.axis=0.6,xaxt="n")
-  image(cbind(1:nc,1:nc),col=col)
-  nl <- pretty(scale)
-  par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
-
-  par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
-  image(cbind(1:nc,1:nc),col=col)
-  nl <- pretty(scale)
-  par(xaxt="s")
-  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
-  
-  par(mfcol=c(1,1),fig=c(0,1,0,0.33),new=TRUE,xaxt="s",yaxt="n",bty="n",
-      mar=c(2,2,1,1))
-  ylim <- 2*range(coredata(y[,1:m]),na.rm=TRUE)
-  plot(y[,1]+0.5*ylim[2],lwd=2,ylim=ylim)
-  grid()
-  col <- c("red","blue")
-  for (j in 1:m) lines(y[,j+1]+(1-j)*0.5*ylim[2],lwd=2,col=col[j])
-  legend(index(y)[1],ylim[1],c('PC 1','PC 2','PC 3'),
-         col=c('black','red','blue'),bty='n',lwd=2)
-  invisible(a.T)
 }
 
 plot.mvr <- function(x) {

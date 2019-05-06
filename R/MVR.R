@@ -7,7 +7,7 @@
 # The equation:
 # y = x %psi + %xi
 
-MVR <-function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) UseMethod("MVR")
+MVR <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) UseMethod("MVR")
 
 MVR.default <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
@@ -107,7 +107,7 @@ MVR.eof <- function(Y, X, SVD=SVD, LINPACK=LINPACK, verbose=FALSE) {
       attr(Yhat,nattr[i]) <- attr(Z,nattr[i])
       attr(res,nattr[i]) <- attr(Z,nattr[i])
     }
-}
+  }
   #attr(Yhat,'history') <- c('MVR',attr(Z,'history'))
   #attr(Yhat,'date-stamp') <- date()
   #attr(Yhat,'call') <- match.call()
@@ -139,35 +139,5 @@ MVR.pca <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   if(verbose) print("MVR.pca")
   mvr <- MVR.eof(Y,X,SVD=SVD,LINPACK=LINPACK,verbose=verbose)
   invisible(mvr)
-}
-
-
-# To get one predictor pattern, use predict with newdata set to
-# a vector where most variables are set to zero apart from one
-# variable set to unity for the identification of teleconnection pattern.
-
-predict.mvr <- function(x, newdata=NULL, verbose=FALSE) {
-  if(verbose) print("predict.mvr")
-  object <- x
-  if (is.null(newdata)) newdata <- object$data
-  x <- newdata
-  
-  psi <- object$model
-  Z <- object$fitted.values
-  if (inherits(newdata,'zoo'))
-    Yhat <- zoo(coredata(x) %*% psi,order.by=index(x)) else
-    if (is.vector(x)) Yhat <- t(x) %*% psi
-  
-  nattr <- softattr(Z)
-  for (i in 1:length(nattr)) 
-    attr(Yhat,nattr[i]) <- attr(Z,nattr[i])
-  class(Yhat) <- class(object$fitted.values)
-
-  if (inherits(Yhat,'eof')) Yhat <- eof2field(Yhat)
-  #attr(Yhat,'history') <- c('predict.MVR',attr(Z,'history'))
-  #attr(Yhat,'date-stamp') <- date()
-  #attr(Yhat,'call') <- match.call()
-  attr(Yhat,'history') <- history.stamp(x)
-  invisible(Yhat)
 }
 

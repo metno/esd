@@ -316,9 +316,6 @@ climatology.station <- function(x,verbose=FALSE,...) {
 }
 
 
-
-
-
 # Station data can be expressed as PCA where each of the EOFs represent one
 # year. The PCs describe the seasonal variations
 

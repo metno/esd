@@ -166,20 +166,19 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- attr(x,'unit')
-  
-  if (verbose) {print('write2ncdf4.station'); print(range(index(x))); print(range(c(coredata(x)),na.rm=TRUE))}
+
+    if (verbose) {print('write2ncdf4.station'); print(range(index(x))); print(range(c(coredata(x)),na.rm=TRUE))}
   ## Quality check - remove obviously unrealistic values
   if (is.precip(x)) {
     cx <- coredata(x); cx[cx < 0] <- NA; cx[cx > 1500] <- NA; cx -> coredata(x); rm('cx') 
   }
   if (is.T(x)) {
-    cx <- coredata(x); cx[cx < -100] <- NA; cx[cx > 100] <- NA; cx -> coredata(x); rm('cx') 
+    cx <- coredata(x); cx[cx < -100] <- NA; cx[cx > 100] <- NA; cx -> coredata(x); rm('cx')
   }
   
-  cx <- coredata(x); cx[cx < -100] <- NA; 
-  if (prec=='short') cx[cx > 3200] <- NA; 
+  cx <- coredata(x); cx[cx < -100] <- NA;
+  if (prec=='short') cx[cx > 3200] <- NA;
   cx -> coredata(x); rm('cx') 
-  
   
   ## Don't save empty space:
   x0 <- x
@@ -192,16 +191,26 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
     return()
   }
   rm('x0'); gc(reset=TRUE)
-  
   ## Weed out stations with short time series:
   if (length(dim(x))==2) {
-    good <- apply(coredata(x),2,FUN='nv') 
-    x <- subset(x,is=good > 365)
+    good <- apply(coredata(x),2,FUN='nv')
+    #x <- subset(x,is=good > 365) # doesn't work for annual/seasonal data
+    if(inherits(x,c("annual","season"))) {
+      x <- subset(x,is=good > 5)
+    } else if (inherits(x,"month")) {
+      x <- subset(x,is=good > 24)
+    } else {
+      x <- subset(x,is=good > 365)
+    }
   }
   
-  if (length(dim(x))==2) good <- apply(coredata(x),1,FUN='nv') else
+  if (length(dim(x))==2) {
+    good <- apply(coredata(x),1,FUN='nv') 
+  } else {
     good <- nv(x)
-  if (is.null(it)) x <- subset(x,it=good > 0)
+  }
+  
+  if (is.null(it)) x <- subset(x,it=good>0)
   if (verbose) {print('time period after missing data have been removed'); print(range(index(x)))}
   
   ## Write a station object as a netCDF file using the short-type combined with add_offsetet and scale_factor

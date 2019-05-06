@@ -174,8 +174,7 @@ as.station.data.frame(x,location=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                       reference=NA,info=NA, method= NA)
 as.station.zoo(x,location=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                       cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,url=NA,
-                      reference=NA,info=NA, method=
-  NA,type=NA,aspect=NA)
+                      reference=NA,info=NA, method=NA,type=NA,aspect=NA)
 as.station.dsensemble.pca(x, is = NULL, ip = NULL, verbose = FALSE, ...) 
 as.trajectory(x,n=15,loc=NA,param=NA,unit=NA,lon=NA,
                           lat=NA,alt=NA,cntr=NA,longname=NA,stid=NA,
@@ -213,9 +212,8 @@ as.pca.station(x)
   \item{nmin}{Minimum number of valid data points. Default value is set 
               to nmin=85 for daily values, nmin=3 for monthly values, and 
               nmin=300 for annual values.}
-  \item{dateindex}{}
-  \item{monthly}{}
-  \item{aspect}{}
+  \item{dateindex}{if TRUE, convert format of index from year quarter to date}
+  \item{aspect}{decription of data type, e.g., original, anomaly, fitted, or predicted}
   \item{iapp}{For values greater than 1, select the corresponding
     appended field in 'comb' objects (e.g. 1 gives
     \code{attr(x,'appendix.1')})}

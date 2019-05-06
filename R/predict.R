@@ -2,7 +2,7 @@
 # apply the DS model.
 # Rasmus Benestad
 
-predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+predict.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
   stopifnot(!missing(x),inherits(x,"ds"))
 
@@ -55,7 +55,7 @@ predict.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 }
 
 ## KMP: added new method 2018-12-29
-predict.ds.station <- function(x,newdata,addnoise=FALSE,n=100,verbose=FALSE) {
+predict.ds.station <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
   if (is.null(names(newdata))) names(newdata) <- paste('X',1:dim(newdata)[2],sep='.')
   t <- index(as.eof(newdata))
@@ -74,7 +74,7 @@ predict.ds.station <- function(x,newdata,addnoise=FALSE,n=100,verbose=FALSE) {
   invisible(y)
 }
 
-predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+predict.ds.eof <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   stopifnot(!missing(x),inherits(x,"ds"))
   if (verbose) print(paste("predict.ds.eof",paste(class(x),collapse='-')))
   X <- as.eof(x)
@@ -149,7 +149,7 @@ predict.ds.eof <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 }
 
 
-predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+predict.ds.pca <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
   if (is.null(newdata)) {
     newdata <- data.frame(coredata(as.eof(x)))
@@ -176,7 +176,7 @@ predict.ds.pca <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   invisible(y)
 }
 
-predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+predict.ds.comb <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   ## based on predict.ds.eof function
   stopifnot(!missing(x),inherits(x,"ds"))
   if (verbose) print("predict.ds.comb")
@@ -252,7 +252,7 @@ predict.ds.comb <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   invisible(Y)
 }
 
-project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+project.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   ## based on predict.ds.eof function
   stopifnot(!missing(x),inherits(x,"ds")) ## ,inherits(x,'comb')
   if (verbose) print("project.ds")
@@ -330,3 +330,63 @@ project.ds <- function(x,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   invisible(Y)
 }
 
+# To get one predictor pattern, use predict with newdata set to
+# a vector where most variables are set to zero apart from one
+# variable set to unity for the identification of teleconnection pattern.
+predict.mvr <- function(x, newdata=NULL, ..., verbose=FALSE) {
+  if(verbose) print("predict.mvr")
+  object <- x
+  if (is.null(newdata)) newdata <- object$data
+  x <- newdata
+  
+  psi <- object$model
+  Z <- object$fitted.values
+  if (inherits(newdata,'zoo')) {
+    Yhat <- zoo(coredata(x) %*% psi,order.by=index(x)) 
+  } else if (is.vector(x)) {
+    Yhat <- t(x) %*% psi
+  }
+  
+  nattr <- softattr(Z)
+  for (i in 1:length(nattr)) {
+    attr(Yhat,nattr[i]) <- attr(Z,nattr[i])
+  }
+  class(Yhat) <- class(object$fitted.values)
+  
+  if (inherits(Yhat,'eof')) Yhat <- eof2field(Yhat)
+  #attr(Yhat,'history') <- c('predict.MVR',attr(Z,'history'))
+  #attr(Yhat,'date-stamp') <- date()
+  #attr(Yhat,'call') <- match.call()
+  attr(Yhat,'history') <- history.stamp(x)
+  invisible(Yhat)
+}
+
+predict.cca <- function(x, newdata=NULL, ..., verbose=FALSE) {
+  if(verbose) print("predict.cca")
+  if (!is.null(newdata)) X <- newdata else X <- x$X
+  #predict.CCA <- function(Psi,X) {
+  
+  #if ( (class(X)[1]!="eof") & (class(X)[1]!="field")) stop('Need a field or EOF object!')
+  #type <- class(X)
+  #if (type[1]=="eof") X <- EOF2field(X)
+  #X <- field$dat
+  #d <- dim(X); dim(X) <- c(d[1],d[2]*d[3])
+  #X <- t(X)
+  #print(dim(Psi)); print(dim(X)); print(d)
+  Y.hat <-  Psi(x) %*% X
+  #field$dat <- t(Y.hat)
+  #print(dim(field$dat))
+  #d1 <- attr(Psi,"dims")
+  #dim(field$dat) <- c(d[1],d1[2],d1[3])
+  #field$lon <- attr(Psi,"lon"); nx <- length(field$lon)
+  #field$lat <- attr(Psi,"lat"); ny <- length(field$lat)
+  #field$id.x <- rep("CCA",nx*ny)
+  #field$id.lon <- rep("CCA",nx)
+  #field$id.lat <- rep("CCA",ny)
+  #field$id.t <- rep("CCA",d[1])
+  #print("HERE")
+  #if (type[1]=="eof") result <- EOF(field) else result <- field
+  #result
+  Y.hat <- attrcp(Y.hat,X)
+  Y.hat
+}

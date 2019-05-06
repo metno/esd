@@ -79,7 +79,7 @@ WG.pca.day.t2m.precip(x=NULL,...,precip=NULL,threshold=1,select=NULL)
     \item{select}{passed on to \code{\link{DSensemble.t2m}}}
     \item{lon}{passed on to \code{\link{DSensemble.t2m}}}
     \item{lat}{passed on to \code{\link{DSensemble.t2m}}}
-    \item{plot}{}
+    \item{plot}{if TRUE, plot results}
     \item{biascorrect}{passed on to \code{\link{DSensemble.t2m}}}
     \item{verbose}{passed on to \code{\link{DSensemble.t2m}}}
     \item{mu}{annual wet-mean values. If NULL, use those estimated from

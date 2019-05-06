@@ -25,7 +25,6 @@ sf4bmd                        Example of how seasonal forecasts using MOS for Ba
 sf4brazil                     Example of how seasonal forecasts using MOS for Brazil
 slrolr                        Compare outgoing longwaveradiation from T2m and satellite
 station.midas                 R script that reads the rain gauge data from the MIDAS data base
-test2.retrieve.ncdf           test script for retrieve
 testDS4pca                    test script for downscaling using PCAs for predictands
 testDSensemble4pca            test script for downscaling ensembles of GCMs and using PCA for predictands
 testDS                        test script fordownscaling
