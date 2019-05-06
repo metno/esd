@@ -336,7 +336,7 @@ count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
     fn <- function(x) as.Date(as.yearmon(x))
   }
   if (by.trajectory) {
-    if (!"trajectory" %in% names(x)) x <- Track.events(x)
+    if (!"trajectory" %in% names(x)) x <- track(x)
     z <- zoo(x$trajectory,order.by=dates)
     N <- aggregate(z,by=fn,FUN=function(x) length(unique(x,na.rm=TRUE)))
   } else {

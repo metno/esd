@@ -98,9 +98,7 @@ is.inside.1 <- function(x,y,verbose=FALSE,plot=FALSE) {
     print(x)
     print(inside)
     inside <- NA
-    browser()
   }
-  #browser()
   return(inside)
 }
 

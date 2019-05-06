@@ -92,7 +92,8 @@ pcafill <- function(X,insertmiss=0,ip=1:4,mnv=0,complete=FALSE,test=FALSE,verbos
     Vx <- zoo(t(apply(t(coredata(XX)),2,eoffit,U=U,ip=ip)),order.by=index(X0))
     ## assign the attributes from the PCA
     Vx <- attrcp(pcax,Vx); class(Vx) <- class(pcax) 
-    plot.zoo(pca[,1]); lines(Vx[,1],col='red'); browser()
+    plot.zoo(pca[,1])
+    lines(Vx[,1],col='red')
     ## Reconstruct the data:
     Y <- pca2station(Vx,verbose=verbose)
   }

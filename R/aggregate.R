@@ -178,7 +178,6 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     #  index(x) <- month(x)
     #}
     ## BER
-    #browser()
     #print(deparse(substitute(by)))
     #print(class(x))
     #print(class(index(x)))

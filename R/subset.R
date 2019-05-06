@@ -973,12 +973,14 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
     # REB 11.04.2014: is can be a list to select region or according to other criterion
     if ( inherits(is,'list') & inherits(x,'station') ) {
-        if (verbose) {print('spatial selection'); print(is)}
+        if (verbose) {
+          print('spatial selection')
+          print(is)
+        }
         nms <- names(is)
         il <- grep('loc',tolower(nms))
         ix <- grep('lon',tolower(nms))
         iy <- grep('lat',tolower(nms))
-                                        #print(nms); print(c(ix,iy))
         iz <- grep('alt',tolower(nms))
         ic <- grep('cntr',tolower(nms))
         im <- grep('nmin',tolower(nms))
@@ -988,14 +990,12 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         if (length(il)>0) sloc <- is[[il]] else sloc <- NULL
         if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
         if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
-                                        #print(slon); print(range(lon(x)))
         if (length(iz)>0) salt <- is[[iz]] else salt <- NULL
         if (length(ic)>0) scntr <- is[[ic]] else scntr <- NULL
         if (length(im)>0) snmin <- is[[im]] else snmin <- NULL
         if (length(ip)>0) sparam <- is[[ip]] else sparam <- NULL        
         if (length(id)>0) sstid <- is[[id]] else sstid <- NULL
         if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
-                                        #print(slat); print(range(lat(x)))
         if (length(sloc)>0) sell <- is.element(tolower(sloc(x)),sloc)
 
         # The lines for selx/sely differ for station and field objects:
@@ -1005,14 +1005,20 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         
         if (length(salt)==2) selz <- (alt(x) >= min(salt)) & (alt(x) <= max(salt))
         if (length(salt)==1) {
-            if (salt < 0) selz <- alt(x) <= abs(salt) else
+          if (salt < 0) {
+            selz <- alt(x) <= abs(salt) 
+          } else {
             selz <- alt(x) >= salt
+          }
         }
         if (length(scntr)>0) selc <- is.element(tolower(cntr(x)),scntr)
         if (length(snmin)>0) selm <- apply(coredata(x),2,nval) > snmin
-        if (length(sparam)>0) selp <- is.element(tolower(param(x)),sparam)
-        if (length(sstid)==2) seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) else
-        if (length(sstid)>0) seli <- is.element(stid(x),sstid)
+        if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),sparam)
+        if (length(sstid)==2) {
+          seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) 
+        } else if (length(sstid)>0) {
+          seli <- is.element(stid(x),sstid)
+        }
         if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...
         ##
         is <- sell & selx & sely & selz & selc & seli & selm & selp & selF

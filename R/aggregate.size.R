@@ -36,7 +36,7 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) 
             if (ij > 1) {nbr[1:(ij-1)] <- nbr[2:ij]; nbr[ij] <- 0}
             ## Select the gridboxes attached to the fist grid box: nbr==1
             sel <- (nbr==1)
-            if (sum(is.na(sel)) >0) browser()
+            if (sum(is.na(sel)) >0) {print("Something is wrong!"); browser()}
             if (sum(sel)>0) {
                 if (verbose) print(paste('more adjacent points',sum(sel,na.rm=TRUE),eno))
                 getnumber <- z[sel]

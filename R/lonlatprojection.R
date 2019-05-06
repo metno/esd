@@ -1,5 +1,5 @@
 lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
-                             xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                             xlim=NULL,ylim=NULL,zlim=NULL,
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
@@ -159,7 +159,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       #par(fig=par0$fig)
       image.plot(breaks=colbar$breaks,
                  lab.breaks=colbar$breaks,horizontal = TRUE,
-                 legend.only = T, zlim = range(colbar$breaks),
+                 legend.only = TRUE, zlim = range(colbar$breaks),
                  col = colbar$col, legend.width = 1,
                  axis.args = list(cex.axis = 0.8), border = FALSE)
     }

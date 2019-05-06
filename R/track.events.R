@@ -691,7 +691,6 @@ Displacement <- function(x,verbose=FALSE) {
         dx[ik] <- dk*1E-3
       } else {
         print("oops, something went wrong!")
-        browser()
       }
     } else if (sum(ik)==1) dx[ik] <- 0
   }

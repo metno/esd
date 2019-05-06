@@ -100,7 +100,6 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
              ylim=ylim + range(coredata(ya),na.rm=TRUE),xlim=c(1900,2100))
     grid()
   }
-  #browser()
   if(verbose) print("Retrieve predictor data")
   if (is.character(predictor))
     t2m <- retrieve(ncfile=predictor,lon=lon,lat=lat,
@@ -1685,7 +1684,6 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   } else if (inherits(y,'month')) {
     if (verbose) print('monthly data')
     T2M <- matchdate(t2m,y)
-    ## browser()
     ##if (FUNX=='C.C.eq') 
     ##  T2M <- mask(T2M,land=TRUE)
   }
@@ -1783,7 +1781,6 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM,verbose=verbose))
-    #if (test) browser()
     
     ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {

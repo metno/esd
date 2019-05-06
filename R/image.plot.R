@@ -1,23 +1,25 @@
 image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE, 
     legend.shrink = 0.9, legend.width = 1.2, legend.mar = ifelse(horizontal, 
         3.1, 5.1), legend.lab = NULL, legend.line = 2, graphics.reset = FALSE, 
-    bigplot = NULL, smallplot = NULL, legend.only = FALSE, col = tim.colors(nlevel), 
+    bigplot = NULL, smallplot = NULL, legend.only = FALSE, col = NULL, pal="heat", 
     lab.breaks = NULL, axis.args = NULL, legend.args = NULL, 
     midpoint = FALSE, border = NA, lwd = 1, verbose=FALSE) {
   
     if(verbose) print("image.plot")
+  
+    if(is.null(col)) colscal(n=nlevel, col=pal)
     old <- par()
     ## print("old") ; print(old$fig)
     old.par <- par(no.readonly = TRUE)
     info <- imageplot.info(verbose=verbose,...)
     if (add) {
-        big.plot <- old.par$plt
+      big.plot <- old.par$plt
     }
     if (legend.only) {
-        graphics.reset <- TRUE
+      graphics.reset <- TRUE
     }
     if (is.null(legend.mar)) {
-        legend.mar <- ifelse(horizontal, 3.1, 5.1)
+      legend.mar <- ifelse(horizontal, 3.1, 5.1)
     }
     temp <- imageplot.setup(add = add, legend.shrink = legend.shrink, 
         legend.width = legend.width, legend.mar = legend.mar, 
@@ -26,21 +28,20 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
     bigplot <- temp$bigplot
     
     if (!legend.only) {
-        if (!add) {
-            par(plt = bigplot)
-        }
-        if (!info$poly.grid) {
-            image(..., add = add, col = col)
-        }
-        else {
-            poly.image(..., add = add, col = col, midpoint = midpoint, 
-                border = border, lwd.poly = lwd, verbose=verbose)
-        }
-        big.par <- par(no.readonly = TRUE)
+      if (!add) {
+        par(plt = bigplot)
+      }
+      if (!info$poly.grid) {
+        image(..., add = add, col = col)
+      } else {
+        poly.image(..., add = add, col = col, midpoint = midpoint, 
+                   border = border, lwd.poly = lwd, verbose=verbose)
+      }
+      big.par <- par(no.readonly = TRUE)
     }
     if ((smallplot[2] < smallplot[1]) | (smallplot[4] < smallplot[3])) {
-        par(old.par)
-        stop("plot region too small to add legend\n")
+      par(old.par)
+      stop("plot region too small to add legend\n")
     }
     breaks <- list(...)$breaks
     ix <- 1
@@ -61,55 +62,50 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
     }
     par(new = TRUE, pty = "m", plt = smallplot, err = -1)
     if (!is.null(breaks) & !is.null(lab.breaks)) {
-        axis.args <- c(list(side = ifelse(horizontal, 1, 4), 
+      axis.args <- c(list(side = ifelse(horizontal, 1, 4), 
             mgp = c(3, 1, 0), las = ifelse(horizontal, 0, 2), 
             at = breaks, labels = lab.breaks), axis.args)
-    }
-    else {
-        axis.args <- c(list(side = ifelse(horizontal, 1, 4), 
+    } else {
+      axis.args <- c(list(side = ifelse(horizontal, 1, 4), 
             mgp = c(3, 1, 0), las = ifelse(horizontal, 0, 2)), 
             axis.args)
     }
     if (!horizontal) {
         if (is.null(breaks)) {
-            image(ix, iy, iz, xaxt = "n", yaxt = "n", xlab = "", 
+          image(ix, iy, iz, xaxt = "n", yaxt = "n", xlab = "", 
                 ylab = "", col = col)
-        }
-        else {
-            image(ix, iy, iz, xaxt = "n", yaxt = "n", xlab = "", 
+        } else {
+          image(ix, iy, iz, xaxt = "n", yaxt = "n", xlab = "", 
                 ylab = "", col = col, breaks = breaks)
         }
-    }
-    else {
-        if (is.null(breaks)) {
-            image(iy, ix, t(iz), xaxt = "n", yaxt = "n", xlab = "", 
-                ylab = "", col = col)
-        }
-        else {
-            image(iy, ix, t(iz), xaxt = "n", yaxt = "n", xlab = "", 
-                ylab = "", col = col, breaks = breaks)
-        }
+    } else {
+      if (is.null(breaks)) {
+        image(iy, ix, t(iz), xaxt = "n", yaxt = "n", xlab = "", 
+              ylab = "", col = col)
+      } else {
+        image(iy, ix, t(iz), xaxt = "n", yaxt = "n", xlab = "", 
+              ylab = "", col = col, breaks = breaks)
+      }
     }
     do.call("axis", axis.args)
     box()
     if (!is.null(legend.lab)) {
-        legend.args <- list(text = legend.lab, side = ifelse(horizontal, 
+      legend.args <- list(text = legend.lab, side = ifelse(horizontal, 
             1, 4), line = legend.line)
     }
     if (!is.null(legend.args)) {
-        do.call(mtext, legend.args)
+      do.call(mtext, legend.args)
     }
     mfg.save <- par()$mfg
     if (graphics.reset | add) {
-        par(old.par)
-        par(mfg = mfg.save, new = FALSE)
-        invisible()
-    }
-    else {
-        par(big.par)
-        par(plt = big.par$plt, xpd = FALSE)
-        par(mfg = mfg.save, new = FALSE)
-        invisible()
+      par(old.par)
+      par(mfg = mfg.save, new = FALSE)
+      invisible()
+    } else {
+      par(big.par)
+      par(plt = big.par$plt, xpd = FALSE)
+      par(mfg = mfg.save, new = FALSE)
+      invisible()
     }
     ## print(old$fig)
     par(fig = old$fig)

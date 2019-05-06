@@ -158,7 +158,7 @@ map.array <- function(x,FUN='mean',ip=NULL,is=NULL,new=FALSE,
 
 
 map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
-                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+                     xlim=NULL,ylim=NULL,zlim=NULL,#n=15,
                      colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                  pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                      type=c("fill","contour"),gridlines=FALSE,
@@ -177,14 +177,14 @@ map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ## if (tolower(varid(x))=='precip') col <- rev(col) 
     
     map.eof(x=x,xlim=xlim,ylim=ylim,zlim=zlim,ip=ip,
-            n=n,projection=projection,colbar=colbar,new=new,
+            projection=projection,colbar=colbar,new=new,
             lonR=lonR,latR=latR,axiR=axiR,type=type,
-            gridlines=gridlines,verbose=verbose,plot=plot...) -> result
+            gridlines=gridlines,verbose=verbose,plot=plot,...) -> result
     invisible(result)
 }
 
 map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
-                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+                    xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
@@ -237,7 +237,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
       if (plot) {
         if (projection=="lonlat") {
           lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
-                           n=n,colbar=colbar,new=new,type=type,
+                           colbar=colbar,new=new,type=type,
                            gridlines=gridlines,verbose=verbose,...)
         } else if (projection=="sphere") {
           map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
@@ -259,7 +259,7 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
 }
 
 map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
-                   xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+                   xlim=NULL,ylim=NULL,zlim=NULL,
                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                    type=c("fill","contour"),gridlines=FALSE,
@@ -312,7 +312,7 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
     if (plot) {
         if (projection=="lonlat") {
-            lonlatprojection(x=X,n=n,colbar=colbar,verbose=verbose,xlim=xlim,ylim=ylim,
+            lonlatprojection(x=X,colbar=colbar,verbose=verbose,xlim=xlim,ylim=ylim,
                              type='fill',gridlines=gridlines,new=new,...)
             if (is.list(attr(x,'pattern'))) {
                 Xa <- attr(x,'pattern')
@@ -621,15 +621,15 @@ map.pca <- function(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
 }
 
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
-                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
+                    xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                  pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     verbose=FALSE,plot=TRUE,...) {
-    x <- subset(x,it=it,is=is)
-    map.field(x,new=new,FUN="mean",
-              colbar=colbar,
-              cex=cex,xlim=xlim,ylim=ylim,verbose=verbose,plot=TRUE,...)
+  if(verbose) print("map.mvr")
+  x <- subset(x,it=it,is=is)
+  map.field(x,new=new,FUN="mean",colbar=colbar,xlim=xlim,ylim=ylim,
+            verbose=verbose,plot=TRUE,...)
     
 }
 

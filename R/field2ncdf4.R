@@ -5,8 +5,8 @@ esd2ncdf4 <- function(x,...) UseMethod("esd2ncdf4")
 esd2ncdf4.default <- function(x,...) {
 }
 
-esd2ncdf4.field <- function(x,fname='field.nc',scale=10,offset=NULL,torg="1970-01-01") {
-  print('esd2ncdf4.field')
+esd2ncdf4.field <- function(x,fname='field.nc',scale=10,offset=NULL,torg="1970-01-01",verbose=FALSE) {
+  if(verbose) print('esd2ncdf4.field')
   dimlon <- ncdim_def( "longitude", "degree_east", lon(x) )
   dimlat <- ncdim_def( "latitude", "degree_north", lat(x) )
   if (inherits(index(x),c('numeric','integer')))
@@ -15,7 +15,7 @@ esd2ncdf4.field <- function(x,fname='field.nc',scale=10,offset=NULL,torg="1970-0
   dimtim <- ncdim_def( "time", paste("days since",torg),
                       as.numeric(as.Date(index(x),origin=torg)) )
   x4nc <- ncvar_def(varid(x)[1], unit(x)[1], list(dimlon,dimlat,dimtim), -1, 
-                    longname=atr(x,'longname'), prec="short")
+                    longname=attr(x,'longname'), prec="short")
      
      # Create a netCDF file with this variable
   ncnew <- nc_create( fname, x4nc )
@@ -26,7 +26,7 @@ esd2ncdf4.field <- function(x,fname='field.nc',scale=10,offset=NULL,torg="1970-0
   # Write some values to this variable on disk.
   ncvar_put( ncnew, x4nc, round(y) )
   ncvar_put( ncnew, x4nc, round(y) )
-  ncatt_put( ncnew, x4nc, "add_offset", meany, prec="float" )
+  ncatt_put( ncnew, x4nc, "add_offset", mean(y,na.rm=TRUE), prec="float" )
   ncatt_put( ncnew, x4nc, "scale_factor", 0.01, prec="float" ) 
   ncatt_put( ncnew, x4nc, "_FillValue", -99, prec="float" ) 
   ncatt_put( ncnew, x4nc, "missing_value", -99, prec="float" ) 

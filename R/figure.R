@@ -1,7 +1,4 @@
-
-# to load the funtion into R use : source("/home/abdelkaderm/Documents/R_scripts/plot.R")
-
-frame.metno <- function(z=z,select = NULL, col="gray50", col.select = NULL,add.climatology=TRUE,cex.lab=1,...) {
+frame.metno <- function(z=z,select = NULL, col="gray50", col.select = NULL,add.clim=TRUE,cex.lab=1,...) {
   
   ## Get data in x
   x  <- as.matrix(coredata(z)) 
@@ -109,7 +106,7 @@ fig0.zoo <- function(z=z,select = c(1,2), col="gray90", col.select = NULL,add.cl
   
   # higlight selected lines
   if (!is.null(select)) {
-    if (is.character(select)) select <- grep(tolower(paste(collapse(select,"|"))),tolower(cnames))
+    if (is.character(select)) select <- grep(tolower(paste(select,collapse="|")),tolower(cnames))
     if (is.null(col.select)) { 
       col.select <- rev(rainbow(length(select)))
     } else if (length(select)!=length(col.select)) { 
@@ -123,7 +120,9 @@ fig0.zoo <- function(z=z,select = c(1,2), col="gray90", col.select = NULL,add.cl
 } # End of function plot.fig0.0
 
 # Function to generate figures of type fig1
-fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline = FALSE, col="grey",envelope=TRUE,col.envelope=NULL,add.clim=FALSE,add.2C=FALSE,error=-1,text=FALSE,main=NULL,...) {
+fig1.zoo <- function(z=list(z1=NULL,z2=NULL),select = NULL, col.select=NULL,
+                     tsline = FALSE, col="grey",envelope=TRUE,col.envelope=NULL,
+                     add.clim=FALSE,add.2C=FALSE,error=-1,text=FALSE,main=NULL,...) {
   
   Z <- z[!is.na(z)]
   Z <- attrcp(z,Z)
@@ -141,8 +140,8 @@ fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline =
   }
   ## browser()
   # Set Y axis limits
-  #ylim1 <- round(range(x,na.rm=TRUE)[1]) # round(min(x,na.rm=TRUE))
-  #ylim2 <- round(range(x,na.rm=TRUE)[2]) # round(max(x,na.rm=TRUE)) 
+  ylim1 <- round(range(x,na.rm=TRUE)[1]) # round(min(x,na.rm=TRUE))
+  ylim2 <- round(range(x,na.rm=TRUE)[2]) # round(max(x,na.rm=TRUE)) 
   
   # Create the plot and define axis variables
   plot(yr,x[,1],type="l",col="white",frame.plot=FALSE,axes=FALSE,xlab="YEARS",...)## ,ylim=c(ylim1,ylim2))
@@ -178,7 +177,7 @@ fig1.zoo <- function(z=list(z1=z1,z2=z2),select = NULL, col.select=NULL,tsline =
   #Get climatology if any
   if (add.clim) {
     clim <- attr(x,"climatology")
-    if (!is.null(clim) & add.climatology) {
+    if (!is.null(clim) & add.clim) {
       clim1 <- as.numeric(unlist(strsplit(clim,split="-"))[1])
       clim2 <- as.numeric(unlist(strsplit(clim,split="-"))[2])
       rect(xleft=clim1,xright=clim2,ybottom=ylim1,ytop=ylim2,col="lightyellow",border=NA)

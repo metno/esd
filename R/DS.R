@@ -331,7 +331,7 @@ DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALS
                            rmtrend=rmtrend,ip=ip,verbose=verbose,...)
         }
         ## May need an option for coombined field: x is 'field' + 'comb'
-        if (is.null(ds)) browser()
+        #if (is.null(ds)) browser()
         
         ## Unless told not to - carry out a cross-validation
         if (!is.null(m))  {

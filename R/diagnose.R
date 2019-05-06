@@ -541,7 +541,7 @@ diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
   }
 }
 
-diagnose.dsensemble.list <- function(x,...plot=FALSE,is=NULL,ip=NULL,
+diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
                  map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
                  main=NULL,verbose=FALSE,new=TRUE) {
   X <- x

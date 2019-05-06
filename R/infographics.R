@@ -469,8 +469,9 @@ graph.list <- function(x,img=NULL,pch='fancy',it=NULL,
 }
 
 
-graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
-                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,new=TRUE,ensmean=FALSE,col.obs='black') {
+graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),pch=1,
+                      lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,
+                      new=TRUE,ensmean=FALSE,col.obs='black') {
   #print('graph.zoo')
     ## Produce the graphics:
     if ((!add) & (new)) dev.new()
@@ -491,8 +492,13 @@ graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),
     grid()
     for (i in 1:dim(x)[2]) lines(y[,i],lwd=7,col=col)
 
-    if (!is.null(pch)) if (pch=='fancy') balls(attr(y,'station'),col=col.obs) else points(zoo(attr(y,'station')),pch=pch,col=col.obs)
-    #balls(attr(y,'station'))
+    if (!is.null(pch)) {
+      if (pch=='fancy') {
+        balls(attr(y,'station'),col=col.obs) 
+      } else {
+        points(zoo(attr(y,'station')),pch=pch,col=col.obs)
+      }
+    }
     par(xaxt='s',yaxt='s')
     if (!is.null(img)) col.axis <- 'white' else col.axis <- 'black'
     axis(1,col=col.axis)

@@ -7,7 +7,7 @@
 
 
 ## Sub function "metaghcnd"
-ghcnd.meta <- function(param =NULL,src ="ghcnd", adj = TRUE, path = "data.GHCND",
+ghcnd.meta <- function(param=NULL, src="ghcnd", adj=TRUE, path="data.GHCND",
                        url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily",
                        save.file=FALSE, test = TRUE,verbose=TRUE , force = TRUE) {
   ## Get old path
@@ -28,10 +28,11 @@ ghcnd.meta <- function(param =NULL,src ="ghcnd", adj = TRUE, path = "data.GHCND"
     if (!file.exists("ghcnd.meta.rda") | force) {  
       ## Reading data source - version
       destfile <- paste(src,"-version.txt",sep="")
-      ##destfile = paste(source,"-version.txt",sep="")
       if (!file.exists(destfile)) {
-        url <- paste("ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/",fversion,sep="")
-        download.file(url, fversion, method = "wget", quiet = TRUE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra")) } 
+        url <- paste("ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/",destfile,sep="")
+        download.file(url, destfile, method = "wget", quiet = TRUE, mode = "w", 
+                      cacheOK = TRUE, extra = getOption("download.file.extra")) 
+      } 
       text <- readLines(destfile)
       tunlist <- unlist(strsplit(text,' '))
       version.por <- tunlist[grep("-por-",tunlist)]
@@ -89,7 +90,11 @@ ghcnd.meta <- function(param =NULL,src ="ghcnd", adj = TRUE, path = "data.GHCND"
       ## Remove meta data of missing stations in the inventory
       meta <- meta[-which(is.element(meta$stid,meta1$stid)==FALSE),]
       ##                                 # esd output format
-      ghcnd.meta <- list(station_id = as.character(meta1$stid) , location = rep(as.character(meta$stnm),cc) , country = as.character(rep(meta$cntr,cc)) , longitude = as.numeric(meta1$lon) , latitude = as.numeric(meta1$lat) ,  altitude = as.numeric(rep(meta$alt,cc)) , element = as.numeric(meta1$param) , start = as.integer(meta1$start) , end = as.integer(meta1$end))
+      ghcnd.meta <- list(station_id = as.character(meta1$stid), 
+                         location = rep(as.character(meta$stnm),cc), country = as.character(rep(meta$cntr,cc)) , 
+                         longitude = as.numeric(meta1$lon), latitude = as.numeric(meta1$lat),  
+                         altitude = as.numeric(rep(meta$alt,cc)), element = as.numeric(meta1$param), 
+                         start = as.integer(meta1$start), end = as.integer(meta1$end))
                                         # Add attributes
       attr(ghcnd.meta, "source") <- src  
       attr(ghcnd.meta, "version") <- c(version.por,version.upd)

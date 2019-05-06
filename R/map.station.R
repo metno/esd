@@ -5,7 +5,7 @@
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
 
-genfun <- function(x,FUN) {
+genfun <- function(x,FUN,verbose=FALSE) {
   if (sum(is.element(names(attributes(x)),FUN))>0){
     ## REB 2015-12-17: Use FUN to colour the symbols according to some attribute:
     FUN <- eval(parse(text=paste("attr(x,'",FUN,"')")))
@@ -14,7 +14,8 @@ genfun <- function(x,FUN) {
     if (verbose) print('FUN refers to a list element')
     FUN <- eval(parse(text=paste("function(x,...) x$",FUN,sep='')))
     return(FUN)
-  }}
+  }
+}
 
 ## Simplified function for mapping station objects.
 map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
@@ -38,12 +39,12 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          border=FALSE,full.names=FALSE,
                          full.names.subset=FALSE, use.old=FALSE,
                          text=FALSE, fancy=FALSE, 
-                         na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
+                         na.rm=TRUE,show.val=FALSE,#usegooglemap=FALSE,
                          ##colorbar=TRUE,
                          xlab="lon",ylab="lat",
                          legend.shrink=1,fig=c(0,1,0.05,0.95),
                          mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...) { 
-  if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | usegooglemap | use.old) {
+  if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | use.old) {#| usegooglemap) {
     map.station.old(x=x,FUN=FUN,it=it,is=is,new=new,projection=projection,
                     xlim=xlim,ylim=ylim,zlim=zlim,n=n,col=col,bg=bg,
                     colbar=colbar,xlab=xlab,ylab=ylab,type=type,gridlines=gridlines,
@@ -54,7 +55,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                     pch=pch,from=from,to=to,showaxis=showaxis,border=border,
                     full.names=full.names,full.names.subset=full.names.subset,
                     text=text,fancy=fancy,na.rm=na.rm,show.val=show.val,
-                    usegooglemap=usegooglemap,legend.shrink=legend.shrink,...)
+                    legend.shrink=legend.shrink,...)#,usegooglemap=usegooglemap)
   } else {
     if (verbose) print('map.station - new version')
     if (new) dev.new()
@@ -225,7 +226,9 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              border=FALSE,full.names=FALSE,
                              full.names.subset=FALSE, 
                              text=FALSE, fancy=FALSE, 
-                             na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
+                             na.rm=TRUE,show.val=FALSE,
+                             col.subset="red", bg.subset="red",
+                             #usegooglemap=FALSE,
                              ##colorbar=TRUE,
                              legend.shrink=1,...) { 
   ##
@@ -278,7 +281,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            col=colbar$col,new=new,FUN=FUN,cex=cex,
            cex.main=cex.main,cex.axis=cex.axis,cex.lab=cex.lab,
            verbose=verbose,
-           xlab=xlab,ylab=ylab...)
+           xlab=xlab,ylab=ylab,...)
   } else if (projection=="np") {
     sphere(x,lonR=lonR,latR=90,axiR=axiR,
            gridlines=gridlines,xlim=xlim,ylim=ylim,
@@ -519,23 +522,23 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     ## REB: 2016-10-12 - add the possibility to use google maps
     ## KMP 2018-10-31: Don't use require inside the esd package. 
     ## Instead call the external package explicitly, e.g., RgoogleMaps::GetMap()
-    if (requireNamespace("RgoogleMaps", quietly = TRUE) &
-        (projection=="lonlat") & usegooglemap) {
-      #require(RgoogleMaps)
-      mxdst <- max(diff(range(ss$latitude)),diff(range(ss$longitude)))
-      if (!is.finite(mxdst) | mxdst==0) {
-        zoom <- 3 
-      } else {
-        zoom <- 7 - round(log(mxdst))
-      }
-      bgmap <- RgoogleMaps::GetMap(center=c(lat=mean(ss$latitude),lon=mean(ss$longitude)),
-                                   destfile = "map.station.esd.png",
-                                   maptype = "mobile", zoom=zoom)
-      plotmap(ss$latitude, ss$longitude, bgmap)
-      
-      print('Unfinished')
-      return()
-    }
+    #if (requireNamespace("RgoogleMaps", quietly = TRUE) &
+    #    (projection=="lonlat") & usegooglemap) {
+    #  #require(RgoogleMaps)
+    #  mxdst <- max(diff(range(ss$latitude)),diff(range(ss$longitude)))
+    #  if (!is.finite(mxdst) | mxdst==0) {
+    #    zoom <- 3 
+    #  } else {
+    #    zoom <- 7 - round(log(mxdst))
+    #  }
+    #  bgmap <- RgoogleMaps::GetMap(center=c(lat=mean(ss$latitude),lon=mean(ss$longitude)),
+    #                               destfile = "map.station.esd.png",
+    #                               maptype = "mobile", zoom=zoom)
+    #  plotmap(ss$latitude, ss$longitude, bgmap)
+    #  
+    #  print('Unfinished')
+    #  return()
+    #}
     
     if (!is.null(highlight)) {
       plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
