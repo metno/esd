@@ -115,3 +115,106 @@ vis.map <- function(x,col='red',map.type=NULL,
   }
   if(verbose) print("exit vis.map")
 }
+
+
+vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
+  if(verbose) print("vis.pca")
+  y <- x # quick fix
+  col <- colscal(col=varid(y)); nc <- length(col)
+  #if (is.precip(y)) col <- rev(col)
+  lon <- attr(y,'longitude') 
+  lat <- attr(y,'latitude') 
+  N <- length(lon)
+  R2 <- round(100*attr(y,'eigenvalues')^2/attr(y,'tot.var'),2)
+  
+  #print(N); print(length(attr(y,'mean')))
+  m <- min(3,dim(attr(y,'pattern'))[2])
+  
+  # Set scale for colour scheme
+  #str(y)
+  a.T <- matrix(rep(NA,4*N),4,N)
+  ax <- quantile(abs(attr(y,'mean')),0.99,na.rm=TRUE)
+  if (min(attr(y,'mean'))<0) scale0 <- seq(-ax,ax,length=nc) else
+    scale0 <- seq(0,ax,length=nc)
+  ax <- quantile(abs(attr(y,'pattern')),0.99,na.rm=TRUE)
+  scale <- seq(-ax,ax,length=nc)
+  
+  #print("here")
+  for (i in 1:N) {
+    a.T[1,i] <-  sum(attr(y,'mean')[i] > scale0)
+    for (j in 1:m) 
+      a.T[j+1,i] <-  sum(attr(y,'pattern')[i,j] > scale)
+  }
+  a.T[a.T < 1] <- 1; a.T[a.T > 100] <- 100
+  
+  if (new) dev.new(width=5,height=7)
+  par(mfrow=c(3,2),mar=c(3.5,3,3.5,3),bty="n",xaxt="n",yaxt="n")
+  
+  plot(lon,lat,
+       main="Climatology",
+       col=col[a.T[1,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
+  data("geoborders",envir=environment())
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[1,]],pch=19)
+  
+  plot(lon,lat,
+       main=paste("EOF #1:",R2[1],"% of variance"),
+       col=col[a.T[2,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
+  lines(geoborders)
+  lines(geoborders$x - 360,geoborders$y)
+  points(lon,lat,cex=cex,col=col[a.T[2,]],pch=19)
+  
+  plot(lon,lat,
+       main=paste("EOF #2:",R2[2],"% of variance"),
+       col=col[a.T[3,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[3,]],pch=19)
+  
+  plot(lon,lat,
+       main=paste("EOF #3:",R2[3],"% of variance"),
+       col=col[a.T[4,]],pch=19,xlab="",ylab="",cex=cex)
+  points(lon,lat,cex=cex)
+  lines(geoborders,col='grey40')
+  lines(geoborders$x - 360,geoborders$y,col='grey40')
+  points(lon,lat,cex=cex,col=col[a.T[4,]],pch=19)
+  
+  par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.665,0.695),new=TRUE,cex.axis=0.6)
+  image(cbind(1:nc,1:nc),col=col)
+  nl <- pretty(scale0)
+  par(xaxt="s")
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
+  
+  par(mar=c(1,0,0,0),fig=c(0.1,0.3,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
+  image(cbind(1:nc,1:nc),col=col)
+  nl <- pretty(scale)
+  par(xaxt="s")
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
+  
+  par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.665,0.695),new=TRUE,cex.axis=0.6,xaxt="n")
+  image(cbind(1:nc,1:nc),col=col)
+  nl <- pretty(scale)
+  par(xaxt="s")
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
+  
+  par(mar=c(1,0,0,0),fig=c(0.6,0.8,0.32,0.35),new=TRUE,cex.axis=0.6,xaxt="n")
+  image(cbind(1:nc,1:nc),col=col)
+  nl <- pretty(scale)
+  par(xaxt="s")
+  axis(1,at=seq(0,1,length=length(nl)),labels=nl)
+  
+  par(mfcol=c(1,1),fig=c(0,1,0,0.33),new=TRUE,xaxt="s",yaxt="n",bty="n",
+      mar=c(2,2,1,1))
+  ylim <- 2*range(coredata(y[,1:m]),na.rm=TRUE)
+  plot(y[,1]+0.5*ylim[2],lwd=2,ylim=ylim)
+  grid()
+  col <- c("red","blue")
+  for (j in 1:m) lines(y[,j+1]+(1-j)*0.5*ylim[2],lwd=2,col=col[j])
+  legend(index(y)[1],ylim[1],c('PC 1','PC 2','PC 3'),
+         col=c('black','red','blue'),bty='n',lwd=2)
+  invisible(a.T)
+}
