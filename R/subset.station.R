@@ -254,7 +254,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         }
         if (length(scntr)>0) selc <- is.element(tolower(cntr(x)),scntr)
         if (length(snmin)>0) selm <- apply(coredata(x),2,nval) > snmin
-        if (length(sparam)>0) selp <- is.element(tolower(param(x)),sparam)
+        if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),sparam)
         if (length(sstid)==2) seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) else
         if (length(sstid)>0) seli <- is.element(stid(x),sstid)
         if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...

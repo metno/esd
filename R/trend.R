@@ -108,7 +108,6 @@ trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   #print(dim(y))
   nc <- sum(is.element(strsplit(model,"")[[1]],"t")) + 1
   coefficients <- matrix(rep(NA,nc*d[2]),nc,d[2])
-  #browser()
   for (i in 1:d[2]) {
     trendx <- data.frame(t=t,y=coredata(x[,i]))
     xt <- try(eval(parse(text=paste("xt <- lm(",model,",data=trendx)"))))
@@ -145,9 +144,6 @@ trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
   gettrend <- function(x,model="y ~ t") {
-    #browser()
-    #print(match.call()); str(x); print(model)
-    #print(table(year))
     trendx <- data.frame(y=x,t=1:length(x))
     eval(parse(text=paste("trendfit <- lm(",model,",data=trendx)")))
     trend <- predict(trendfit,newdata=trendx)
@@ -162,9 +158,6 @@ trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   Y <- x
   #print(dim(Y))
 #  for (i in 1:d[2]) {
-#    #browser()
-#    
-#    
 #    #print(summary(xt))
 #    #str(xt)
 
@@ -264,7 +257,6 @@ trend.err <- function(x,...) {
 ## Compute the p-value of the linear trend 
 trend.pval <- function(x,...) {
   #print('trend.val'); print(class(x)); print(str(x))
-  #if (inherits(x,'day')) browser()
   x <- zoo(x)
   #print('zoo')
   if (sum(is.finite(x)) <= 3) return(NA)

@@ -19,7 +19,7 @@
 \alias{map.pca}
 \alias{map.trend}
 \alias{lonlatprojection}
-\alias{map.googleearth}
+%\alias{map.googleearth}
 \alias{rotM}
 \alias{gridbox}
 \alias{map2sphere}
@@ -71,7 +71,7 @@ map.station(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          border=FALSE,full.names=FALSE,
                          full.names.subset=FALSE, use.old=FALSE,
                          text=FALSE, fancy=FALSE, 
-                         na.rm=TRUE,show.val=FALSE,usegooglemap=FALSE,
+                         na.rm=TRUE,show.val=FALSE,%usegooglemap=FALSE,
                          ##colorbar=TRUE,
                          xlab="lon",ylab="lat",
                          legend.shrink=1,fig=c(0,1,0.05,0.95),
@@ -168,7 +168,7 @@ lonlatprojection(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                  type = c("fill", "contour"),geography=TRUE,
                  gridlines = FALSE, verbose = FALSE,fancy=FALSE,plot=TRUE,...) 
 
-map.googleearth(x)
+%map.googleearth(x)
 
 rotM(x=0,y=0,z=0)
 

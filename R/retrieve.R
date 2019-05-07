@@ -1016,9 +1016,13 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
   if (!is.null(lon)) ii <- ii & (lons >= min(lon)) & (lons <= max(lon))
   if (!is.null(lat)) ii <- ii & (lats >= min(lat)) & (lats <= max(lat))
   if (!is.null(alt)) { 
-    if (length(alt)==2) ii <- ii & (alts >= min(alt)) & (alts >= max(alt)) else
-      if (alt > 0) ii <- ii & (alts >= alt) else 
-        ii <- ii & (alts <= abs(alt))
+    if (length(alt)==2) {
+      ii <- ii & (alts >= min(alt)) & (alts >= max(alt)) 
+    } else if (alt > 0) {
+      ii <- ii & (alts >= alt) 
+    } else { 
+      ii <- ii & (alts <= abs(alt))
+    }
   }
   if (!is.null(loc)) ii <- ii & 
     is.element(tolower(substr(locs,1,nchar(loc))),tolower(loc))
@@ -1027,8 +1031,8 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
   if (verbose) {print('Read following locations');
     print((1:ns)[ii]); print(locs[ii])}
   if (!is.null(nmin)) ii <- ii & (nv >= nmin)
-  if (!is.null(start.year.before)) ii <- ii & (fy <= start.year.before)
-  if (!is.null(end.year.after)) ii <- ii & (ly >= end.year.after)
+  if (!is.null(start.year.before)) ii <- ii & (fyr <= start.year.before)
+  if (!is.null(end.year.after)) ii <- ii & (lyr >= end.year.after)
   is <- (1:ns)[ii]
   
   if (onebyone) {

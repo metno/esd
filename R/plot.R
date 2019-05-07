@@ -17,7 +17,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
                          map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                         usegooglemap=TRUE,zoom=NULL,
+                         zoom=NULL,#usegooglemap=TRUE,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
                          mar=c(4.5,4.5,0.75,0.5),fig=NULL,
                          alpha=0.5,alpha.map=0.7,
@@ -113,7 +113,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   
   if(map.show & !map.insert) {
     vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.8,usegooglemap=usegooglemap,
+            cex.axis=cex.axis,cex=1.8,#usegooglemap=usegooglemap,
             zoom=zoom,verbose=verbose)
     new <- TRUE
   }
@@ -171,7 +171,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
     }
     if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
                                        cex.axis=0.65,add.text=FALSE,
-                                       map.insert=map.insert,usegooglemap=usegooglemap,
+                                       map.insert=map.insert,#usegooglemap=usegooglemap,
                                        zoom=zoom,verbose=verbose)
     par(fig=par0$fig,mar=par0$mar,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
@@ -1242,7 +1242,7 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
 plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                                  envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
                                  obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
-                                 usegooglemap=TRUE,new=FALSE,xrange=NULL,yrange=NULL,
+                                 new=FALSE,xrange=NULL,yrange=NULL,#usegooglemap=TRUE,
                                  alpha=0.5,alpha.map=0.7,mar=c(5.1,4.5,4.1,2.1),
                                  cex.axis=1, cex.lab=1.2, cex.main=1.2, 
                                  verbose=FALSE,...) {
@@ -1355,7 +1355,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   
   if(map.show & !map.insert) {
     vis.map(x,"red",map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.5,usegooglemap=usegooglemap,
+            cex.axis=cex.axis,cex=1.5,#usegooglemap=usegooglemap,
             xrange=xrange,yrange=yrange,
             verbose=verbose,...)
     new <- TRUE
@@ -1417,7 +1417,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   }
   if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
                                      cex.axis=cex.axis*0.65,add.text=FALSE,
-                                     map.insert=map.insert,usegooglemap=usegooglemap,
+                                     map.insert=map.insert,#usegooglemap=usegooglemap,
                                      xrange=xrange,yrange=yrange,
                                      verbose=verbose,...)
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,

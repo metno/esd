@@ -75,7 +75,7 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
         if ( (is.null(is[[1]])) | (sum(is.finite(is[[1]])) < 2) ) is[[1]] <- c(-180,360)
         if ( (is.null(is[[2]])) | (sum(is.finite(is[[2]])) < 2) ) is[[2]] <- c(-90,90)
         
-                                        # Select a subregion from the EOFs:
+        # Select a subregion from the EOFs:
         if (verbose) print(names(attributes(x)))
         lons <- lon(x); lon.rng <- range(lon(x))
         lats <- lat(x); lat.rng <- range(lat(x))
@@ -1261,7 +1261,7 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
         if(ic$FUN=="any" & !"trajectory" %in% names(x)) x <- track(x)
       }
       if(!ic$param %in% names(x)) {
-        if(verbose) print(paste("Unkown input param =",param))
+        if(verbose) print(paste("Unkown input param =",ic$param))
       } else {
         if(is.null(ic$pmin)) ic$pmin <- min(x[ic$param],na.rm=TRUE)
         if(is.null(ic$pmax)) ic$pmax <- max(x[ic$param],na.rm=TRUE)

@@ -358,7 +358,7 @@ export(regrid.eof)
 export(regrid.station)
 export(regrid.pca)
 export(regrid.irregweights)
-#export(replace.char)
+
 export(retrieve)
 export(retrieve.ncdf4)
 export(retrieve.station)

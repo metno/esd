@@ -344,7 +344,7 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
     if (sum(!is.finite(x))==0) X <- coredata(x)%*%diag(aweights) else {
       if (verbose) print('Need to account for missing data in the area weighting')
         Aweights <- rep(aweights,length(index(x))); dim(Aweights) <- dim(x)
-        print('This is incomplete -needs vchecking!')
+        print('This is incomplete - needs vchecking!')
         browser()
         Aweights[!is.finite(coredata(x))] <- NA
         Aweights <- Aweights/apply(Aweights,1,FUN='sum',na.rm=TRUE)

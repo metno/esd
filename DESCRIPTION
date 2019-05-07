@@ -17,7 +17,6 @@ Imports:
     utils
 Suggests:
     LatticeKrig,
-    RgoogleMaps,
     fields,
     PCICt,
     jpeg

@@ -530,8 +530,8 @@ nacd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   #  ele.c<-switch(tolower(param),'t2m'='101','tg'='101','rr'='601','slp'='401','cloud'='801','t2'='101','precip'='601','101'='101','401'='401','601'='601','801'='801')
   
   data("NACD", envir = environment())
-  loc <- gsub("-",".",loc) # AM replace.char() replaced by gsub()
-  loc <- gsub("/",".",loc) # AM replace.char() replaced by gsub()
+  loc <- gsub("-",".",loc)
+  loc <- gsub("/",".",loc)
   #id.dot <- grep('.',loc)
   #if (substr(loc,nchar(loc),id.dot[length(id.dot)])) loc <- substr(loc,1,nchar(loc)-1) # AM 29.07.2013 added 
   #elem<-switch(ele.c,'101'='t2m','601'='precip','401'='slp','801'='cloud')
@@ -824,7 +824,7 @@ metnod.station <-  function(re=14, url = 'ftp://ftp.met.no/projects/chasepl/test
   } else { 
     y <- metno.station(re=re,url=url,save2file = save2file,...)
   }
-  if (!is.null(y))
+  if (!is.null(y)) 
     attr(y,"source") <- "METNOD"
   invisible(y)
 }
@@ -911,11 +911,10 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
 
 stnr <- function (navn = NULL, lon = NULL, lat = NULL, max.dist = 10, 
                   alt = NULL, Fylke = NULL, Kommune = NULL, fy = NULL, ty = NULL, 
-                  ny = NULL, param = "TAM", plot = FALSE, print = FALSE) 
-{
+                  ny = NULL, param = "TAM", plot = FALSE, print = FALSE) {
   met.no.meta <- MET.no.meta(param = param, print = print)
   iue <- nchar(met.no.meta$TODATE) == 2
-  met.no.meta$TODATE[iue] <- now()
+  met.no.meta$TODATE[iue] <- Sys.time()
   i9c <- (nchar(met.no.meta$TODATE) == 9)
   met.no.meta$TODATE[i9c] <- paste("0", met.no.meta$TODATE[i9c], 
                                    sep = "")
@@ -932,38 +931,38 @@ stnr <- function (navn = NULL, lon = NULL, lat = NULL, max.dist = 10,
   met.no.meta$Lat[!is.finite(met.no.meta$Lat)] <- -90
   ii <- 1:length(met.no.meta$STNR)
   if (!is.null(navn)) {
-    ii <- grep(upper.case(navn), met.no.meta$Navn)
+    ii <- grep(toupper(navn), met.no.meta$Navn)
     print(navn)
     print(rbind(met.no.meta$Navn[ii], met.no.meta$Stnr[ii]))
   }
+  II <- ii # Is II supposed to be the same as ii?
   if (plot) {
+    data("geoborders",envir=environment())
     plot(c(0, 32), c(57, 73), type = "n", xlab = "lon", ylab = "lat")
-    addland()
+    lines(geoborders$x,geoborders$y,col="darkblue")
+    lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,col="pink")
+    lines(geoborders$x+360,geoborders$y,col="darkblue")
     points(met.no.meta$Lon, met.no.meta$Lat, col = "grey", cex = 0.8)
   }
   if (xor(is.null(lon), is.null(lat))) 
     stop("both or none of lon/lat must be specified")
   if (!is.null(lon)) {
     if (length(lon) == 1) {
-      if (plot) 
-        points(lon, lat, pch = "+", col = "blue", cex = 0.7)
-      d <- round(distAB(lon,lat,met.no.meta$Lon, met.no.meta$Lat)/1000, 
-                 3)
+      if (plot) points(lon, lat, pch = "+", col = "blue", cex = 0.7)
+      d <- round(distAB(lon,lat,met.no.meta$Lon, met.no.meta$Lat)/1000, 3)
       print(length(d))
       ii <- II[(d <= max.dist)]
       print(rbind(met.no.meta$Navn[ii], met.no.meta$Stnr[ii], 
                   met.no.meta$Lon[ii], met.no.meta$Lat[ii], d[ii]))
-    }
-    else if (length(lon) == 2) {
-      if (plot) 
-        polygon(c(lon[1], lon[2], lon[2], lon[1], lon[1]), 
-                c(lat[1], lat[1], lat[2], lat[2], lat[1]), 
-                border = "blue", lwd = 2)
-      if (length(lat) == 1) 
-        stop("both or none of lon/lat must have two entries")
-      ii <- II[(met.no.meta$Lon >= min(lon)) & (met.no.meta$Lon <= 
-                                                  max(lon)) & (met.no.meta$Lat >= min(lat)) & (met.no.meta$Lat <= 
-                                                                                                 max(lat))]
+    } else if (length(lon) == 2) {
+      if (plot) polygon(c(lon[1], lon[2], lon[2], lon[1], lon[1]), 
+                        c(lat[1], lat[1], lat[2], lat[2], lat[1]), 
+                        border = "blue", lwd = 2)
+      if (length(lat)==1) stop("both or none of lon/lat must have two entries")
+      ii <- II[(met.no.meta$Lon >= min(lon)) & 
+               (met.no.meta$Lon <= max(lon)) & 
+               (met.no.meta$Lat >= min(lat)) & 
+               (met.no.meta$Lat <= max(lat))]
       print(rbind(met.no.meta$Navn[ii], met.no.meta$Stnr[ii], 
                   met.no.meta$Lon[ii], met.no.meta$Lat[ii]))
       met.no.meta <- met.no.meta[ii, ]
@@ -971,27 +970,30 @@ stnr <- function (navn = NULL, lon = NULL, lat = NULL, max.dist = 10,
   }
   if (!is.null(alt)) {
     if (length(alt) == 1) {
-      if (alt > 0) 
+      if (alt > 0) {
         ii <- (met.no.meta$Hoh >= alt) & is.finite(met.no.meta$Hoh)
-      else ii <- (met.no.meta$Hoh <= abs(alt)) &
-          is.finite(met.no.meta$Hoh)
+      } else {
+        ii <- (met.no.meta$Hoh <= abs(alt)) &
+               is.finite(met.no.meta$Hoh)
+      }
+    } else {
+      ii <- (met.no.meta$Hoh >= min(alt)) & 
+            (met.no.meta$Hoh <= max(alt))
     }
-    else ii <- (met.no.meta$Hoh >= min(alt)) & (met.no.meta$Hoh <= 
-                                                  max(alt))
     ii[is.na(met.no.meta$Stnr[ii])] <- FALSE
     print(rbind(met.no.meta$Navn[ii], met.no.meta$Stnr[ii],
                 met.no.meta$Hoh[ii]))
     met.no.meta <- met.no.meta[ii, ]
   }
   if (!is.null(Fylke)) {
-    ii <- is.element(upper.case(met.no.meta$Fylke), upper.case(Fylke))
+    ii <- is.element(toupper(met.no.meta$Fylke), toupper(Fylke))
     print(rbind(met.no.meta$Navn[ii], met.no.meta$Stnr[ii],
                 met.no.meta$Fylke[ii], 
                 met.no.meta$Kommune[ii]))
     met.no.meta <- met.no.meta[ii, ]
   }
   if (!is.null(Kommune)) {
-    ii <- is.element(upper.case(met.no.meta$Kommune), upper.case(Kommune))
+    ii <- is.element(toupper(met.no.meta$Kommune), toupper(Kommune))
     print(rbind(met.no.meta$Navn[ii], met.no.meta$Stnr[ii],
                 met.no.meta$Fylke[ii], 
                 met.no.meta$Kommune[ii]))
@@ -1026,32 +1028,11 @@ MET.no.meta <- function (param = "TAM", print = FALSE) {
   invisible(dnmi.meta)
 }
 
-
-replace.char <- function (c, s, ny.c)  {
-  if (c == ny.c) return(s)
-  nc <- nchar(c); ns <- nchar(s)
-  is <- 1
-  tries <- instring(c, s)
-  if (length(tries)==0) return(s)
-  #print(nc)
-  while ( (instring(c, s)[1] > 0) & (is <= length(tries)) ) {        
-    ii <- instring(c, s)[1]
-    #print(ii); print(c);print(s)
-    if (ii > 1) {
-      s <- paste(substr(s, 1, ii - 1), ny.c,
-                 substr(s, ii + nc, nchar(s)), sep = "")
-    } else if (ii==1) s <- paste(ny.c,
-                                 substr(s, ii + nc + 1, nchar(s)), sep = "")
-    is <- is + 1
-  }
-  s
-}
-
 metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
                           qual=NULL,start=NA,end=NA,param=NULL,verbose=FALSE,
                           re = 14,h = NULL, nmt = 0,  path = NULL, dup = "A",
                           url = "ftp://ftp.met.no/projects/chasepl/test",save2file=FALSE) {
-  if (verbose) print("ftp.met.no")
+  if (verbose) print("metno.station - access data from ftp.met.no")
   ## 
   ## if (!is.na(end)) end1 <- format(Sys.time(),'%d.%m.%Y')
   #if (!is.na(end)) end1 <-format(as.Date(paste("31.12.",as.character(end),sep=""),format='%d.%m.%Y'),'%d.%m.%Y')

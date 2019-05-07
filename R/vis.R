@@ -93,7 +93,7 @@ vis.map <- function(x,...,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     add.text=FALSE,cex.axis=NULL,
                     map.insert=TRUE,verbose=FALSE,
-                    usegooglemap=TRUE,zoom=NULL) {
+                    zoom=NULL) {#, usegooglemap=TRUE) {
   if(verbose) {print('vis.map'); print(lon(x)); print(lat(x)); print(zoom)}
   ## KMP 2017-06-07 Weird problem: cex.axis is not found even though it is an argument to the function.
   ## It looks like cex.axis exists but when applying 'print' the following error message shows up: 
@@ -121,45 +121,45 @@ vis.map <- function(x,...,col='red',map.type=NULL,
   ## Instead check if it the external package is installed and then 
   ## call it explicitly, e.g., RgoogleMaps::GetMap().
   ## Also add the package under 'Suggested' in the DESCRIPTION file.
-  if (!requireNamespace("RgoogleMaps", quietly = TRUE)) {
-    usegooglemap <- FALSE
-  }
+  #if (!requireNamespace("RgoogleMaps", quietly = TRUE)) {
+  #  usegooglemap <- FALSE
+  #}
   
-  if(usegooglemap) {
-    if (is.null(zoom)) {
-      if (verbose) print('zoom not defined')
-      if (length(lon(x))==1) {
-        zoom <- 5 
-      } else {
-        ## zoom = 12 is very local, zoom = 1 is the world
-        mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
-        zoom <- 1 - floor(0.75*log(mxdst/360))
-      }
-    }
-    if (!is.finite(zoom)) zoom <- 5
-    if (verbose) print(paste('zoom=',zoom))
-    bgmap <- try(RgoogleMaps::GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
-                                     destfile = "map.station.esd.png",
-                                     maptype = "mobile", zoom=zoom))
-    if(inherits(bgmap,"try-error")) {
-      usegooglemap <- FALSE
-    } else {
-      if(map.insert) {
-        par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
-            mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
-      }
-      if(map.type=="rectangle") {
-        xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
-        yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
-        RgoogleMaps::plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
-        RgoogleMaps::PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
-      } else {
-        RgoogleMaps::plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
-      }
-    }
-  }
+  #if(usegooglemap) {
+  #  if (is.null(zoom)) {
+  #    if (verbose) print('zoom not defined')
+  #    if (length(lon(x))==1) {
+  #      zoom <- 5 
+  #    } else {
+  #      ## zoom = 12 is very local, zoom = 1 is the world
+  #      mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
+  #      zoom <- 1 - floor(0.75*log(mxdst/360))
+  #    }
+  #  }
+  #  if (!is.finite(zoom)) zoom <- 5
+  #  if (verbose) print(paste('zoom=',zoom))
+  #  bgmap <- try(RgoogleMaps::GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
+  #                                   destfile = "map.station.esd.png",
+  #                                   maptype = "mobile", zoom=zoom))
+  #  if(inherits(bgmap,"try-error")) {
+  #    usegooglemap <- FALSE
+  #  } else {
+  #    if(map.insert) {
+  #      par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
+  #          mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
+  #    }
+  #    if(map.type=="rectangle") {
+  #      xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
+  #      yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
+  #      RgoogleMaps::plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
+  #      RgoogleMaps::PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
+  #    } else {
+  #      RgoogleMaps::plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
+  #    }
+  #  }
+  #}
   
-  if(!usegooglemap) {
+  #if(!usegooglemap) {
     if (verbose) {
       print('basic map')
       print(cex.axis)
@@ -203,7 +203,7 @@ vis.map <- function(x,...,col='red',map.type=NULL,
       rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
            border="black",lwd=1,lty=2)
     }
-  }
+  #}
   if(verbose) print("exit vis.map")
 }
 
