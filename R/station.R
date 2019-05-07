@@ -4,7 +4,6 @@
 ## It is also possible to use a set of station objects to provide multi-information from
 ## one location: e.g. T(2m), precip; mean, variance, skewness, & kurtosis...
 
-## Major updates : 29.07.2013 ; 29.08.2013 ; 03.09.2013 ; 25.09.2013 ; 18.10.2013
 ## station.metno(ok) ; station.nordklim(ok) ; station.nacd(ok) ; station.ecad(ok) ; station.narp(in progress) ; station.ghcnm(ok) ; station.ghcnd(almost done - checking for t2m)  
 
 ## ecad (updated) , 
@@ -198,7 +197,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
     if (src[i]=="METNOD") { #AM-29.08.2013 added for metno data
       if (is.null(path.metnod)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnod ## default path
       if (is.null(url.metnod)) {
-          if (user == 'metno') url="http://klapp/metnopub/production"
+          if (user == 'metno') url="http://klapp/metnopub/production/"
           else url= 'ftp://ftp.met.no/projects/chasepl/test'
       } else {
         url <- url.metnod ## default url
@@ -239,7 +238,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
     } else if (src[i]=="METNOM") { #AM-29.08.2013 added for metno data
       ## ment
       if (is.null(path.metnom)) path <- paste("data.",toupper(src[i]),sep="") else path <- path.metnom ## default path
-      if (is.null(url.metnom)) url="http://klapp/metnopub/production" else url <- url.metnom ## default url
+      if (is.null(url.metnom)) url="http://klapp/metnopub/production/" else url <- url.metnom ## default url
       x <- metnom.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],param=param[i],verbose=verbose, path=path,url=url,user=user) ## ,path=path, url=url
       if (verbose) {print("obs"); str(x)}
       if ( is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
