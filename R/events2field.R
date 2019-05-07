@@ -66,7 +66,6 @@ density.events <- function(x,dt="month",dx=1,dy=1,plot=FALSE,
     unit <- paste('tracks/',dh,'hours/unit~area',sep='')
   } else {
     print(paste("WARNING! invalid time resolution dt",dt))
-    break
   }
   X <- array(rep(0,),dim=c(length(dvec),length(lons),length(lats)))
   if (verbose) print("looping...")

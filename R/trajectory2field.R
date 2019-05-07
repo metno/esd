@@ -65,7 +65,6 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,radius=5E5,
     #X <- t(sapply(dvec,fn2)
   } else {
     print(paste("WARNING! invalid time resolution dt",dt))
-    break
   }
   X <- array(rep(0,),dim=c(length(dvec),length(lons),length(lats)))
   if (verbose) print("looping...")
