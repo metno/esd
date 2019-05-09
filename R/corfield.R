@@ -119,6 +119,8 @@ corfield.field <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose
   attr(r,'longitude') <- attr(x,'longitude')
   attr(r,'latitude') <- attr(x,'latitude')
   attr(r,'time') <- range(index(x))
+  if (is.null(attr(x,'variable'))) attr(x,'variable') <- '.'
+  if (is.null(attr(y,'variable'))) attr(y,'variable') <- '.'
   if (attr(x,'variable')[1]==attr(y,'variable')[1])
     attr(r,'variable') <- attr(x,'variable')[1] else
     attr(r,'variable') <- c(attr(x,'variable')[1], attr(y,'variable')[1])
