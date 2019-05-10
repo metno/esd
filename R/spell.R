@@ -157,20 +157,37 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
 
 
 spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
-  if (!is.finite(coredata(x[1]))) {
-    y <- zoo(x)
-    #browser()
-    while ( !is.finite(coredata(y[1])) ) y <- y[-1]
-    class(y) <- class(x)
-    y <- attrcp(x,y)
-    y -> x ; rm('y')
+  if (verbose) print('spell.station')
+  if (!is.null(dim(x))) {
+    if (verbose) print('group of stations')
+    for (is in 1:dim(x)[2]) {
+      if (is==1) y <- spell.default(subset(x,is=is),threshold=threshold,upper=upper,verbose=verbose,...) else
+        y <- combine.stations(y,spell.default(subset(x,is=is),threshold=threshold,upper=upper,verbose=verbose,...))
+    }
+  } else {
+    ## Single station
+    #
+    missing <- (1:length(x))[!is.finite(x)]
+    if (min(missing)==1) {
+      if (verbose) {
+        print('strip away missing data at the beginning')
+        print(paste('Data series length=',length(x),'number of missing data=',sum(missing)))
+      }
+      remove <- is.element(1:length(x),missing)
+      # Make sure that the series does not start with missing data
+      y <- zoo(x[!remove])
+      class(y) <- class(x)
+      y <- attrcp(x,y)
+      y -> x ; rm('y')
+    }
+    if (verbose) {print('Analyse spells'); str(x)}
+    y <- spell.default(x,threshold=threshold,upper=upper,verbose=verbose,...)
+    if (is.null(y)) return(y)
+    y <- attrcp(x,y,ignore=c("variable","unit"))
+    natr <- names(attributes(y))
+    for (i in 1:length(natr)) 
+      if (length(attr(y,natr[i]))==1) attr(y,natr[i]) <- rep(attr(y,natr[i]),2)
   }
-  y <- spell.default(x,threshold=threshold,upper=upper,verbose=verbose,...)
-  if (is.null(y)) return(y)
-  y <- attrcp(x,y,ignore=c("variable","unit"))
-  natr <- names(attributes(y))
-  for (i in 1:length(natr)) 
-    if (length(attr(y,natr[i]))==1) attr(y,natr[i]) <- rep(attr(y,natr[i]),2)
   invisible(y)
 }
 

@@ -323,8 +323,10 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
     tsigma2.jja <- rainvartrend(subset(x,it='jja'),nmin=90)
     tsigma2.son <- rainvartrend(subset(x,it='son'),nmin=90)
     ## Mean wet/dry-spell length
-    mwsl <- as.numeric(unlist(apply(x,2,function(x) mean(subset(spell(x,threshold=1),is=1),na.rm=TRUE))))
-    mdsl <- as.numeric(unlist(apply(x,2,function(x) mean(subset(spell(x,threshold=1),is=2),na.rm=TRUE))))
+    if (verbose) print('Spell')
+    t <- index(x)
+    mwsl <- as.numeric(unlist(apply(x,2,function(x) mean(subset(spell(zoo(x,t),threshold=1),is=1),na.rm=TRUE))))
+    mdsl <- as.numeric(unlist(apply(x,2,function(x) mean(subset(spell(zoo(x,t),threshold=1),is=2),na.rm=TRUE))))
   } else {
     ave <- apply(x,2,'mean',na.rm=TRUE)
     ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
