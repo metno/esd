@@ -16,10 +16,12 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   ## Deal with missing data
   missing <- !is.finite(z)
   ## Use interpolation to fill in
-  if (sum(missing)>0) print(paste('Warning for',loc(x),'-',sum(missing),
-                                  'missing values (',round(100*sum(missing)/length(z),1),
-                                  ' %) filled by interpolation'))
-  z <- approx(x=index(x)[!missing],y=z[!missing],xout=index(x))$y
+  # if (sum(missing)>0) print(paste('Warning for',loc(x),'-',sum(missing),
+  #                                 'missing values (',round(100*sum(missing)/length(z),1),
+  #                                 ' %) filled by interpolation'))
+  # z <- approx(x=index(x)[!missing],y=z[!missing],xout=index(x))$y
+  ## REB 2019-05-09: remove the spells when there are missing data
+  mdate <- index(x)[missing]
 
   ## Highligh the times when the values is above and below the given
   ## threshold:
@@ -107,7 +109,25 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   
   Above <- zoo(high,order.by=index(x)[start])
   Below <- zoo(low,order.by=index(x)[end])
-
+  
+  ## Remove the spells with missing data:
+  if (verbose) {
+    print('remove spells when there are missing data')
+    print(paste(sum(missing),'missing data')); print(summary(high)); print(summary(below))
+  }
+  if (verbose) print(paste('Above:',length(Above)))
+  for (ii in 1:length(Above)) {
+    fromd <- index(Above)[ii]; tod <- index(Above)[ii]+coredata(Above)[ii]
+    if (!is.finite(tod)) tod <- fromd
+    if (sum(is.element(seq(fromd,tod,by="1 day"),mdate)>0)) Above[ii] <- NA
+  }
+  if (verbose) print(paste('Below:',length(Below)))
+  for (ii in 1:length(Below)) {
+    fromd <- index(Below)[ii]; tod <- index(Below)[ii]+coredata(Below)[ii]
+    if (!is.finite(tod)) tod <- fromd
+    if (sum(is.element(seq(fromd,tod,by="1 day"),mdate)>0)) Below[ii] <- NA
+  }
+  
   #browser()
   y <- merge(Above,Below,all=TRUE)
 
