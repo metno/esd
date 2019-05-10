@@ -1,6 +1,5 @@
 \name{coherence}
 \alias{coherence}
-\alias{testcoherence}
 \title{Coherence spectrum - cross-spectrum analysis}
 \description{
  Based on: \url{http://en.wikipedia.org/wiki/Wiener-Khinchin_theorem};
@@ -17,7 +16,6 @@
 }
 \usage{
 coherence(x,y,dt=1,M=NULL,plot=TRUE)
-testcoherence(x=NULL,y=NULL)
 }
 \arguments{
     \item{x}{A vector (time series).}
@@ -30,16 +28,7 @@ testcoherence(x=NULL,y=NULL)
 \author{R.E. Benestad}
 \examples{
 \dontrun{
-data(DNMI.t2m)
-data(DNMI.slp)
-eof.1 <- EOF(DNMI.t2m,mon=1)
-eof.2 <- EOF(DNMI.slp,mon=1)
-cca <- CCA(eof.1,eof.2)
-# Testing routine:
-testCCA()
-
-data(oslo.dm)
-testcoherence(oslo.dm$t2m,oslo.dm$t2m)
+# Add example of usage
 }
 }
 \keyword{manip}

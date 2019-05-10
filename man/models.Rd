@@ -14,13 +14,6 @@ and 'f()' here is 'beta * C.C.eq()'.
 data(mu.eq.f.tx)
 }
 
-\arguments{
-}
-
-\seealso{
-}
-
-
 \value{lm() object.}
 \author{R.E. Benestad}
 \examples{

@@ -122,19 +122,8 @@ bin(x,nbins=5,labels=NULL,na.rm=TRUE)
  \item{as.decimal }{Decimal value}
  \item{trend.coef }{Linear trend per decade}
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{A. Mezghani}
-\note{
-%%  ~~further notes~~
-}
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
 \examples{
 ## Monthly mean temperature at 'Oslo - Blindern' station 
 data(Oslo)

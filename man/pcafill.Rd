@@ -40,9 +40,6 @@ fitpc(y,x,ip=4)
 This function is handy for the downscaling of PCAs. See Benestad, R.E., D. Chen, A. Mezghani, L. Fan, K. Parding, On using principal components to represent stations in empirical-statistical downscaling, Tellus A 28326,  accepted.
 }
 \value{The same as the input - station object with filled-in values}
-\references{
-
-}
 \author{Rasmus Benestad}
 
 \seealso{

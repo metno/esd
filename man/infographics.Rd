@@ -14,19 +14,19 @@
 \alias{climvar}
 \title{InfoGraphics.}
 \alias{colscal}
-\alias{prob}
+\alias{visprob}
 \alias{balls}
 \alias{graph}
 \alias{graph.dsensemble}
 \alias{graph.zoo}
 \alias{graph.list}
-\alias{qq.test}
+%\alias{qq.test}
 \description{
   Wheel
 
   Risk
 
-  prob - boxes with forseen outcomes - area proportional to probability
+  visprob - boxes with forseen outcomes - area proportional to probability
 
   conf - confidence intervals and uncertainty - clouds...
 
@@ -35,8 +35,6 @@
   diagram
 
   cumugram
-  
-  prob
   
   graph
   
@@ -56,10 +54,10 @@ climvar(x,FUN='sd',plot=TRUE,...)
 colscal(n=30,col="bwr",alpha=NULL,test=FALSE)
 seasevol(x,...)
 seasevol.station(x,it=NULL,nv=25,...)
-prob(x,...) 
-prob.default(x,...)
-prob.station(x,y=NULL,is=1,...)
-prob.station.precip(x,y=NULL,is=1,threshold=1,...)
+visprob(x,...) 
+visprob.default(x,...)
+visprob.station(x,y=NULL,is=1,...)
+visprob.station.precip(x,y=NULL,is=1,threshold=1,...)
 graph(x,...)
 graph.default(x,img=NULL,pch='fancy',it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
                           xlim=NULL,ylim=NULL,new=TRUE,col.obs='black',...)

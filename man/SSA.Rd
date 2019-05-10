@@ -1,7 +1,7 @@
 \name{SSA}
 \alias{Singular Spectrum Analysis}
 \alias{SSA}
-\alias{plotSSA}
+\alias{plot.ssa}
 \title{Singular Spectrum Analysis}
 \description{After von Storch & Zwiers (1999), Statistical Analysis in Climate Research, p. 312}
 \usage{

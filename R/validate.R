@@ -1,39 +1,53 @@
 validate <- function(x, ...)  UseMethod("validate")
 
-validate.default <- function(x, ...) {
+validate.default <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.default")
+  if(verbose) print("unfinished function - not returning anything")
 }
 
-validate.eof <- function(x, ...) {
+validate.eof <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.eof")
+  if(inherits(x,"comb")) {
+    validate.eof.comb(x,...,verbose=verbose)
+  } else {
+    if(verbose) print("unfinished function - not returning anything")
+  }
 }
 
-validate.pca <- function(x, ...) {
+validate.pca <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.eof.field")
+  if(verbose) print("unfinished function - not returning anything")
 }
 
-validate.eof.field <- function(x, ...) {
+validate.eof.field <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.eof.field")
+  if(verbose) print("unfinished function - not returning anything")
 }
 
-
-validate.eof.comb <- function(x, new=TRUE,...) {
-  #plot(x)
+validate.eof.comb <- function(x,...,new=TRUE,verbose=FALSE) {
+  if(verbose) print("validate.eof.comb")
   zz <- attr(x,'appendix.1')
-  
   if (new) dev.new()
-  plot(attr(x,'clim'),type="l",main="Mean values")
-  lines(attr(zz,'clim'),col="red")
+  plot(attr(x,'mean'),type="l",main="Mean values")
+  lines(attr(zz,'mean'),col="red")
 }
 
  
-validate.ds <- function(x, ...) {
-  
+validate.ds <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.ds")
+  if(verbose) print("unfinished function - not returning anything")
 }
 
-validate.cca <- function(x, ...) {
+validate.cca <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.cca")
+  if(verbose) print("unfinished function - not returning anything") 
 }
 
 ## Use rank test to validate the DS.ensemble objects
 validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
                                 colbar=list(breaks=seq(0,1,by=0.1),cex=1.5,
-                                col=colscal(11,col="t2m",alpha=0.5)),plot=TRUE,verbose=FALSE,...) {
+                                col=colscal(11,col="t2m",alpha=0.5)),
+				plot=TRUE,verbose=FALSE,...) {
   if (verbose) print('validate.dsensemble')
   ranktest <- function(x) {
     ## Convert to zoo objects and extract data for common times
@@ -53,21 +67,27 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
   if (verbose) print('as.station')
   if (inherits(x,'pca')) x <- as.station(x)
   if (verbose) print('ranktest')
-  ro <- unlist(lapply(x,ranktest))
+  if(is.list(x)) {
+    ro <- unlist(lapply(x,ranktest))
+    attr(ro,'longitude') <- unlist(lapply(x,function(x) lon(attr(x,'station'))))
+    attr(ro,'latitude') <- unlist(lapply(x,function(x) lat(attr(x,'station'))))
+  } else {
+    ro <- ranktest(x)
+    attr(ro,'longitude') <- lon(attr(x,'station'))
+    attr(ro,'latitude') <- lat(attr(x,'station'))
+  }
   if (verbose) print('attributes')
-  attr(ro,'longitude') <- unlist(lapply(x,function(x) lon(attr(x,'station'))))
-  attr(ro,'latitude') <- unlist(lapply(x,function(x) lat(attr(x,'station'))))
   attr(ro,'variable') <- 'Wilcox-test score'
   attr(ro,'unit') <- 'probability'
   attr(ro,'longname') <- 'Wilcox-test of how observation ranks amongst model results'
   attr(ro,'history') <- history.stamp(x)
+  if(plot) {
   if (verbose) print('visualisation')
   if (is.null(colbar)) colbar <- colbar.ini(ro,verbose=verbose)
   ic <- round(as.numeric(ro)*length(colbar$col))
   ic[ic < 1] <- 1; ic[ic > length(colbar$col)] <- length(colbar$col)
   cols <- colbar$col[ic]
   ## Plot the results
-  if(plot) {
     par0 <- par()
     par(bty='n',fig=c(0,1,0,0.82))
     plot(lon(ro),lat(ro),pch=19,col=cols,cex=colbar$cex,
@@ -93,11 +113,4 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
   }
   ## return the results
   invisible(ro)
-}
-
-
-
-
-test.EOF <- function() {
-  
 }

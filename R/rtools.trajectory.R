@@ -53,7 +53,8 @@ sort.trajectory <- function(x) {
   }
 }
 
-polyfit.trajectory <- function(x) {
+polyfit.trajectory <- function(x,verbose=FALSE) {
+  if(verbose) print("polyfit.trajectory")
   stopifnot(is.trajectory(x))
   if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly.trajectory(x)
   ilon <- which(colnames(x)=='lon')
@@ -63,10 +64,8 @@ polyfit.trajectory <- function(x) {
   if(any(!OK)) {lon <- x[!OK,ilon]
              lon[lon<0] <- lon[lon<0]+360
              x[!OK,ilon] <- lon}
-  #latfit <- apply(x,1,function(y) { xyz <- spherical2cartesian(y[ilon],y[ilat])
-  #                                  polyfit(y[ilon],y[ilat])
   latfit <- apply(x,1,function(y) polyfit(y[ilon],y[ilat]))
-  coefs <- apply(x,1,function(y) attr(polyfit(y[ilon],y[ilat]),'model'))
+  coefs <- apply(x,1,function(y) attr(polyfit(y[ilon],y[ilat]),'coefs'))
   z <- x
   z[,ilat] <- t(latfit)
   attr(z,'aspect') <- unique(c("pfit",attr(x,'aspect')))
@@ -81,7 +80,7 @@ polyfit <- function(x,y=NULL) {
   }
   pfit <- lm(y ~ I(x) + I(x^2) + I(x^3) + I(x^4) + I(x^5))
   z <- predict(pfit)
-  attr(z,'model') <- pfit$coef
+  attr(z,'coefs') <- pfit$coef
   return(z)
 }
 

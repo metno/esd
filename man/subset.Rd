@@ -66,10 +66,7 @@ sort.station(x,is=NULL,decreasing=TRUE)
 \item{ensemble.aggregate}{If TRUE, call \code{subset.dsensemble.multi}
   if appropriate.}
  }
-\value{A field object}
-
-\seealso{
-}
+\value{An object of the same class as the input object}
 
 \author{R.E. Benestad and A.  Mezghanil}
 \examples{

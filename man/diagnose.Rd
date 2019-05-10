@@ -73,9 +73,6 @@ diagnose.distr(x,...,main='Mean - quantile',
  }
 \value{A 'diag' object containing test results}
 
-\seealso{
-}
-
 \author{R.E. Benestad}
 \examples{
 t2m <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))

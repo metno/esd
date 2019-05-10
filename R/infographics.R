@@ -1,132 +1,3 @@
-# Visualise - different type of plotting... 'Infographics' type.
-diagram <- function(x,...) UseMethod("diagram")
-
-diagram.dsensemble <- function(x,it=0,...) {
-  stopifnot(inherits(x,'dsensemble'))
-  #print("subset") 
-  if (!inherits(attr(x,'station'),'annual')) z <- subset(x,it=it) else
-                                             z <- x
-  y <- attr(z,'station')
-  #print("diagnose")
-  pscl <- c(0.9,1.1)
-  if (max(coredata(z),na.rm=TRUE) < 0) pscl <- rev(pscl)
-  #print("...")
-  plot(y,type="b",pch=19,
-       xlim=range(year(z)),
-       ylim=pscl*range(coredata(z),na.rm=TRUE))
-  grid()
-  usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
-  t <- year(z); n <- dim(z)[2]
-  col <- rgb(seq(1,0,length=n)^2,sin(seq(0,pi,length=n))^2,seq(0,1,length=n)^2,0.2)
-  for (i in 1:n) lines(t,z[,i],col=col[i],lwd=2)
-  points(y,pch=19,lty=1)
-}
-
-diagram.ds <- function(x,...) {
-}
-
-# Show the temperatures against the day of the year. Use
-# different colours for different year.
-diagram.station <- function(x,it=NULL,new=TRUE,plot=TRUE,...) {
-  yrs <- as.numeric(rownames(table(year(x))))
-  d <- dim(x)
-  #print(yrs)
-  ny <- length(yrs)
-  j <- 1:ny
-  Z <- matrix(rep(NA,ny*365),ny,365)
-  col <- rgb(j/ny,abs(sin(pi*j/ny)),(1-j/ny),0.2)
-  class(x) <- "zoo"
-  
-  if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
-    unit <- expression(degree*C) else
-      unit <- attr(x,'unit')
-  eval(parse(text=paste("main <- expression(paste('Seasonal evaution: ',",
-                        attr(x,'variable'),"))")))
-  if (plot) {
-    if (new) dev.new()
-    par(bty="n")
-  }
-  z <- coredata(x)
-  if (plot) {
-    if (is.T(x)) ylab <- expression(T*(degree*C)) else 
-      ylab <- paste(varid(x),' (',esd::unit(x),')',sep='')
-    plot(c(0,365),1.25*range(z,na.rm=TRUE),
-         type="n",xlab="",
-         main=main,
-         sub=attr(x,'location'),ylab=ylab)
-    grid()
-  }
-  for (i in 1:ny) {
-    y <- window(x,start=as.Date(paste(yrs[i],'-01-01',sep='')),
-                end=as.Date(paste(yrs[i],'-12-31',sep='')))
-    t <- julian(index(y)) - julian(as.Date(paste(yrs[i],'-01-01',sep='')))
-    i1 <- is.element(0:364,t)
-    i2 <- is.element(t,0:364)
-    Z[i,i1] <- y[i2]
-    if (plot) {
-      if (is.null(d)) points(t,coredata(y),lwd=2,col=col[i],pch=19,cex=0.5) else
-        points(rep(t,d[2]),coredata(y),lwd=2,col=col[i],pch=19,cex=0.5)
-    }
-  }
-  if (!is.null(it)) {
-    y <- window(x,start=as.Date(paste(it,'-01-01',sep='')),
-                end=as.Date(paste(it,'-12-31',sep='')))
-    t <- julian(index(y)) - julian(as.Date(paste(it,'-01-01',sep='')))
-  }
-  if (plot) {
-    if (is.null(d)) points(t,coredata(y),col="black",cex=0.7) else
-      points(rep(t,d[2]),coredata(y),col="black",cex=0.7)
-    
-    par(new=TRUE,fig=c(0.70,0.85,0.70,0.85),mar=c(0,3,0,0),
-        cex.axis=0.7,yaxt="s",xaxt="n",las=1)
-    colbar <- rbind(1:ny,1:ny)
-    image(1:2,yrs,colbar,col=col)
-  }
-  rownames(Z) <- yrs
-  invisible(t(Z))
-}
-
-#seNorge
-#nodata	10000
-#nobits	16
-#header1	*Temperatur
-#header2	*Siste døgn (18-18 UTC)
-#legend	*Grader Celsius
-#From	To	R	G	B	Forklaring
-#2931	10000	204	0	0	*Over 20 
-#2881	2931	255	25	0	*15 - 20
-#2831	2881	255	102	0	*10 - 15
-#2781	2831	255	179	0	*5 - 10
-#2761	2781	255	230	77	*3 - 5
-#2741	2761	255	255	64	*1 - 3
-#2731	2741	255	255	190	*0 - 1
-#2721	2731	217	255	255	*÷1 - 0
-#2701	2721	179	255	255	*÷3 - ÷1
-#2681	2701	128	235	255	*÷5 - ÷3
-#2631	2681	64	204	255	*÷10 - ÷5
-#2581	2631	0 	153	255	*÷15 - ÷10
-#2531	2581	0 	25	255	*÷20 - ÷15
-#0	2531	0	0	153	*Under ÷20
-
-
-#nodata	10000
-#nobits	16
-#header1	*Nedbør
-#header2	*Siste døgn (06-06 UTC)
-#legend	*mm
-#From	To	R	G	B	Forklaring
-#1500	10000	0	0	153	*Over 150 
-#750	1500	0 	25	255	*75 - 150 
-#500	750	0 	153	255	*50 - 75
-#300	500	64	204	255	*30 - 50
-#200	300	128	235	255	*20 - 30
-#100	200	179	255	255	*10 - 20
-#1	100	217	255	255	*Under 10
-#0	1	229	229	229	*Ikke nedbør
-
-
-
-
 # Show the cumulative sum of station value from January 1st. Use
 # different colours for different year.
 cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,verbose=FALSE,FUN='mean',main=NULL,...) {
@@ -333,13 +204,13 @@ visprob.default <- function(x,...) {
 
 }
 
-visprob.station <- function(x,y=NULL,is=1,dy=0.01,verbose=FALSE,...) {
+visprob.station <- function(x,...,y=NULL,is=1,dy=0.01,verbose=FALSE) {
   if (is.precip(x)) visprob.station.precip(x,y=y,is=is,
                                            dy=dy,verbose=verbose,...) 
 }
 
-visprob.station.precip <- function(x,y=NULL,is=1,threshold=1,dy=0.005,
-                                   breaks=NULL,pdf=FALSE,verbose=FALSE,...) {
+visprob.station.precip <- function(x,...,y=NULL,is=1,threshold=1,dy=0.005,
+                                   breaks=NULL,pdf=FALSE,verbose=FALSE) {
 ## Plot the histogram for each year in different colours, depending on y. Iy y
 ## is NULL, use the year to set the colour
   if (verbose) print('visprob.station.precip')

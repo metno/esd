@@ -46,9 +46,6 @@ dT(y, m = NULL, plot = FALSE, verbose = FALSE, chk.conf = 1)
 %%     ~~Describe \code{verbose} here~~
 }
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
 \value{a list with several comonents:
 
 \item{Z}{original data}
@@ -62,21 +59,9 @@ dT(y, m = NULL, plot = FALSE, verbose = FALSE, chk.conf = 1)
 \item{dx}{spatial resolution}
 \item{span}{spatial extent}
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
 \examples{
 data(slp.ERA5)
 slp.dx <- dX(slp.ERA5,verbose=TRUE)

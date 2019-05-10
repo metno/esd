@@ -36,15 +36,6 @@ List of 12 \cr
  "http://www.norden.org/en/publications/publikationer/2005-450" \cr
  "http://www.smhi.se/hfa_coord/nordklim/" "http://eca.knmi.nl/" ... \cr
 }
-\details{
-%%  ~~ If necessary, more details than the __description__ above ~~
-}
-\source{
-
-}
-\references{
-%%  ~~ possibly secondary sources and usages ~~
-}
 \examples{
 data(station.meta)
 str(station.meta)

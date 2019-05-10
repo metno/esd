@@ -49,8 +49,10 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
     class(W) <- class(etopo5)
   
     ## Make the graphics
-    if (verbose | plot) print("make the map")
-    map(W,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,project=project,new=new)
+    if(plot) {
+      if (verbose) print("make the map")
+      map(W,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,project=project,new=new)
+    }
     invisible(W)
   }
 }

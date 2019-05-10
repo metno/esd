@@ -66,9 +66,6 @@ interpolated to the longitude/latitude held by is.}
  }
 \value{A field object}
 
-\seealso{
-}
-
 \author{R.E. Benestad and A.  Mezghanil}
 \examples{
 # Use regrid to interpolate to station location:

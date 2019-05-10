@@ -53,9 +53,6 @@ esd2ele(param='t2m',src='GHCND',verbose=FALSE)
 \value{A meta data matrix object with the glossary of the different variables or
   element identifiers as originally defined by each data source}
 
-\seealso{
-  \code{\link{}}
-}
 \author{A. Mezghani, MET Norway}
 \examples{
 # Eg.1 # Display the glossary of paramerters or element identifiers for 'GHCND' data source.

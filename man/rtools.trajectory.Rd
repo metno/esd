@@ -1,131 +1,50 @@
 \name{anomaly.trajectory}
 \alias{anomaly.trajectory}
+\alias{polyfit.trajectory}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{R-tools for trajectories
 %%  ~~function to do ... ~~
 }
 \description{Functions to process and analyse storm trajectories
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
 anomaly.trajectory(x, ..., type = "first", param = c("lon", "lat"), verbose = FALSE)
+anomaly2trajectory(x, verbose=FALSE)
+polyfit.trajectory(x)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{trajectory object.
-%%     ~~Describe \code{x} here~~
-}
-  \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
-}
-  \item{type}{
-%%     ~~Describe \code{type} here~~
-}
-  \item{param}{
-%%     ~~Describe \code{param} here~~
-}
-  \item{verbose}{
-%%     ~~Describe \code{verbose} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{Kajsa M. PArding
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
+  \item{x}{A trajectory object}
+  \item{\dots}{Other arguments}
+  \item{type}{type of anomaly: 'first' gives you the spatial anomaly with regards to the first time step of the trajectory and 'mean' centers the trajectories around the mean longitude and latitude}
+  \item{param}{parameters to calculate anomaly of}
+  \item{verbose}{if TRUE print information about progress}
+ }
+  \value{A trajecory object}
+\author{Kajsa M. Parding}
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+# Load trajectory example data
+data('imilast.M03')
+# Calculate anomaly
+x <- anomaly.trajectory(imilast.M03)
+# Show maps of original trajectories and spatial anomalies
+map(imilast.M03)
+map(x)
+# Transform trajectory anomalies back to regular trajectories
+y <- anomaly2trajectory(x)
+# Print longitudes of first trajectory
+imilast.M03[1,1:12]
+x[1,1:12]
+y[1,12]
 
-## The function is currently defined as
-function (x, ..., type = "first", param = c("lon", "lat"), verbose = FALSE) 
-{
-    if (verbose) 
-        print("anomaly.trajectory")
-    stopifnot(!missing(x), inherits(x, "trajectory"))
-    if (is.null(param)) {
-        param <- unique(colnames(x)[!(colnames(x) \%in\% c("start", 
-            "end", "n"))])
-    }
-    else if (any(!param \%in\% colnames(x))) {
-        print(paste("Warning! Input error: param", paste(param[!param \%in\% 
-            colnames(x)], collapse = " "), "missing"))
-    }
-    if (verbose) 
-        print(param)
-    y <- x
-    y <- attrcp(x, y)
-    if (any("anomaly" \%in\% attr(x, "aspect")) & any(param \%in\% 
-        attr(x, "mean"))) 
-        x <- anomaly2trajectory(y)
-    m <- vector(mode = "list", length = length(param))
-    names(m) <- param
-    for (p in param) {
-        i <- which(colnames(x) == p)
-        xi <- x[, i]
-        if (p == "lon") 
-            xi <- t(apply(x[, i], 1, lontrack))
-        if (type == "first") {
-            m[param == p] <- list(apply(xi, 1, function(x) x[1]))
-            p.anomaly <- apply(xi, 1, function(x) x - x[1])
-        }
-        else if (type == "mean") {
-            m[param == p] <- list(mean(xi, na.rm = TRUE))
-            p.anomaly <- apply(xi, 1, function(x) x - m[param == 
-                p][[1]])
-        }
-        if (verbose) 
-            print(p)
-        if (verbose) 
-            print(dim(x[, i]))
-        if (verbose) 
-            print(dim(p.anomaly))
-        if (verbose) 
-            print(x[1, i])
-        if (verbose) 
-            print(t(p.anomaly)[1, ])
-        y[, i] <- t(p.anomaly)
-    }
-    if (any("anomaly" \%in\% attr(y, "aspect")) & any(!names(attr(y, 
-        "mean")) \%in\% param)) {
-        p <- names(attr(y, "mean"))
-        p <- p[!p \%in\% c(param)]
-        m0 <- vector(mode = "list", length = length(p))
-        names(m0) <- p
-        for (q in p) {
-            eval(parse(text = paste("m0[param=", q, "] <- attr(y,'mean')$", 
-                q, sep = "")))
-        }
-        m <- c(m, m0)
-    }
-    attr(y, "mean") <- m
-    attr(y, "aspect") <- unique(c("anomaly", attr(x, "aspect")))
-    attr(y, "history") <- history.stamp(x)
-    invisible(y)
-  }
+# Fit polynomial to trajectories
+y <- polyfit.trajectory(x)
+# Show coefficients of first trajectory
+print(attr(y,"coefs")[,1])
+# Plot original trajectory and polynomial fit
+ilon <- colnames(x)=="lon"
+ilat <- colnames(x)=="lat"
+plot(x[1,ilon], x[1,ilat], col="black", pch=1)
+lines(y[1,ilon], y[1,ilat], col="blue", lty=2)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{manip}% use one of  RShowDoc("KEYWORDS")
-\keyword{spatial}% __ONLY ONE__ keyword per line

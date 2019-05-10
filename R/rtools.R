@@ -146,7 +146,7 @@ lag.field <- function(x,...) lag.station(x,...)
   
 exit <- function() q(save="no")
 
-filt <- function(x,...) UseMethod("filt")
+filt <- function(x,n,type='ma',lowpass=TRUE) UseMethod("filt")
 
 filt.default <- function(x,n,type='ma',lowpass=TRUE) {
   

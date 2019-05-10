@@ -10,7 +10,7 @@
 \alias{month}
 \alias{day}
 \alias{season}
-\alias{seasonal.name}
+\alias{seasonal.abb}
 \alias{pentad}
 \title{Conversion to esd objects.}
 \description{
@@ -30,7 +30,7 @@ year(x, ...)
 month(x, ...)
 day(x, ...)
 season(x,format="character")
-season.name()
+season.abb()
 pentad(x,l=5,it0=NULL,...)
 }
 \arguments{

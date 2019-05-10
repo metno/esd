@@ -41,9 +41,6 @@ rainvartrend(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE)
   \item{colour.by}{Used to plot the data points with differentcolours according to e.g. 'x0', 'stid', 'alt', 'lon', or 'lat'}
   \item{col}{colour palette}
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
 \value{a station object
 %%  ~Describe the value returned
 %%  If it is a LIST, use
@@ -52,28 +49,14 @@ rainvartrend(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE)
 %% ...
 }
 \references{
-%% ~put references to the literature/web site here ~
 Benestad R. and  A. Mezghani (2015), On downscaling probabilities for heavy 24-hr precipitation events at seasonal-to-decadal scales, Tellus A 2015, 67, 25954, http://dx.doi.org/10.3402/tellusa.v67.25954
 }
-\author{Rasmus Benestad
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\author{Rasmus Benestad}
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
 \examples{
 data(bjornholt)
 plot(rainequation(bjornholt))
 test.rainequation(bjornholt,threshold=30)
 \dontrun{scatterplot.rainequation()}
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

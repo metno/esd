@@ -5,7 +5,6 @@
 \alias{CCA.eof}
 \alias{CCA.pca}
 \alias{CCA.field}
-\alias{test.cca}
 \alias{predict.cca}
 \title{Canonical correlation analysis}
 \description{
@@ -26,8 +25,7 @@ The CCA analysis can be used to develope statistical models according to:
 \deqn{Y = \Psi X}{Y = Psi X}
 
 Where Y is the predictand and X the predictor.
-\code{plotCCA} plots the CCA results, \code{testCCA} is for code
-verification, and \code{Psi} returns the matrix \deqn{\Psi}{Psi}.
+\code{plotCCA} plots the CCA results, and \code{Psi} returns the matrix \deqn{\Psi}{Psi}.
 
 \code{stations2field} turns a group of station objects into a field by
 the means of a simple and crude interpolation/gridding. \code{check.repeat} is a quality-control
@@ -41,18 +39,15 @@ CCA.default(Y,X,...)
 CCA.eof(Y,X,...,ip=1:8,verbose=FALSE)
 CCA.pca(Y,X,...,ip=1:8,verbose=FALSE)
 CCA.field(Y,X,...,ip=1:8,verbose=FALSE)
-test.cca(method="CCA",reconstr=FALSE,mode=1,test=TRUE,LINPACK=TRUE,
-         SVD=TRUE,n.pc=4,synthetic=TRUE)
 predict.cca(x, newdata=NULL, ..., verbose=FALSE)
 }
 \arguments{
     \item{Y}{An object with climate data: field, eof, pca.}
     \item{X}{Same as Y.}
-    \item{SVD}{Use a singular value decomposition as a basis for the PCA.}
+    \item{...}{Other arguments.}
     \item{ip}{Which EOFs to include in the CCA.}
-    \item{LINPACK}{an option for \code{\link{svd}}.}
-    \item{object}{The result from CCA.}
     \item{newdata}{The same as X.}
+    \item{verbose}{If TRUE print information about progress.}
  }
 \value{A CCA object: a list containing a.m, b.m, u.k, v.k, and r, describing the Canonical Correlation variates, patterns and correlations. a.m and b.m are the patterns and u.k and v.k the vectors (time evolution).}
 \author{R.E. Benestad}

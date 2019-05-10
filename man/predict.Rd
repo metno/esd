@@ -9,10 +9,7 @@
 %%  ~~function to do ... ~~
 Prediction based on DS or CCA model
 }
-\description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
-
-}
+\description{Apply an empirical-statistical downscaling model to new data}
 \usage{
 predict.ds(x, newdata = NULL, addnoise = FALSE, n = 100)
 predict.ds.eof(x, newdata = NULL, addnoise = FALSE, n = 100)
@@ -46,24 +43,10 @@ project.ds(x, newdata = NULL, addnoise = FALSE, n = 100) ## beta-version
 }
 \value{
 Predicted ds values.
-  %%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
 A. Mezghani
 }
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
 \code{\link{DS}} %% ~~objects to See Also as \code{\link{help}}, ~~~

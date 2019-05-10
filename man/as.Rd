@@ -33,7 +33,6 @@
 \alias{as.eof.comb}
 \alias{as.eof.field}
 \alias{as.eof.appendix}
-\alias{as.observed}
 \alias{as.annual}
 \alias{as.annual.default}
 \alias{as.annual.numeric}
@@ -147,7 +146,6 @@ as.monthly(x,...)
 as.monthly.default(x,...)
 as.monthly.field(x,FUN='mean',...)
 as.monthly.station(x, FUN = "mean", ...)
-as.observed.station(x)
 as.original.data(x)
 as.original.data.ds(x)
 as.original.data.station(x)
@@ -231,9 +229,6 @@ as.pca.station(x)
 }
  
 \value{A field object}
-
-\seealso{
-}
 
 \author{R.E. Benestad and A.  Mezghani}
 \examples{

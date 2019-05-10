@@ -100,9 +100,6 @@ zeros(x)
  }
 \value{A field object}
 
-\seealso{
-}
-
 \author{R.E. Benestad}
 \examples{
 T2m_NCEP <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))

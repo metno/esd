@@ -20,7 +20,7 @@ MVR.default(Y,X)
 MVR.field(Y,X,SVD=TRUE,LINPACK=FALSE) 
 MVR.pca(Y,X,SVD=TRUE,LINPACK=FALSE) 
 MVR.eof(Y,X,SVD=TRUE,LINPACK=FALSE) 
-predict.MVR(object, newdata=NULL)
+predict.mvr(object, newdata=NULL)
 }
 \arguments{
     \item{Y}{An object with climate data: field, eof, or pca.}

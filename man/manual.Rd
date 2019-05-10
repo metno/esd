@@ -19,12 +19,6 @@ downscaling.about(url=paste('http://climatescience.oxfordre.com/view/10.1093/acr
                             '9780190228620.001.0001/acrefore-9780190228620-e-27',sep=''),
                   browser='firefox')
 }
-\source{
-
-}
-\references{
-%%  ~~ possibly secondary sources and usages ~~
-}
 \examples{
 manual()
 }

@@ -97,7 +97,6 @@ WG.pca.day.t2m.precip(x=NULL,...,precip=NULL,threshold=1,select=NULL)
     \item{t2m}{station object with temperature}
     \item{precip}{station object with precipitation.}
  }
-\value{}
 \author{R.E. Benestad}
 \examples{
 data(ferder)

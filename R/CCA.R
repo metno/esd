@@ -200,4 +200,3 @@ Psi <- function(cca,verbose=FALSE) {
   attr(Psi,"lat") <- cca$x1$lat
   return(Psi)
 }
-

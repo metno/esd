@@ -107,7 +107,6 @@ DS.trajectory(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,is=NULL,biascorrect=FALSE
 #DS.freq()
 #DS.spell()
 #DS.seasonalcycle()
-predict.ds.mon(x,...) 
 sametimescale(y,X,FUN='mean')
 biasfix(x)
 
@@ -116,8 +115,6 @@ biasfix(x)
 \item{y}{The predictand - the station series representing local climate parameter}
 \item{X}{The predictor - an \code{\link{EOF}} object or a list of \code{\link{EOF}} 
          objects representing the large-scale situation.}
-\item{mon}{An integer or a vector of integers. The calendar month to
-  downscale, e.g. '1' is all January months, '2' is February, and so on. }
 \item{method}{Model type, e.g. \code{\link{lm}} og \code{\link{glm}}}
 \item{swsm}{Stepwise screening, e.g. \code{\link{step}}. NULL skips stepwise screening}
 \item{rmtrend}{TRUE for detrending the predicant and predictors (in the
