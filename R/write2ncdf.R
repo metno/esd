@@ -325,8 +325,9 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
     ## Mean wet/dry-spell length
     if (verbose) print('Spell')
     t <- index(x)
-    mwsl <- as.numeric(unlist(apply(x,2,function(x) mean(subset(spell(zoo(x,t),threshold=1),is=1),na.rm=TRUE))))
-    mdsl <- as.numeric(unlist(apply(x,2,function(x) mean(subset(spell(zoo(x,t),threshold=1),is=2),na.rm=TRUE))))
+    ss <- spell(x,1)
+    mwsl <- colMeans(subset.station(ss,is=list(param='wet')),na.rm=TRUE)
+    mdsl <- colMeans(subset.station(ss,is=list(param='dry')),na.rm=TRUE)
   } else {
     ave <- apply(x,2,'mean',na.rm=TRUE)
     ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)

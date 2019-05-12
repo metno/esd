@@ -12,19 +12,25 @@ spell <- function(x,threshold,...) UseMethod("spell")
 spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
 
   if (verbose) print('spell.default')
-  z <- coredata(x)
-  ## Deal with missing data
-  missing <- !is.finite(z)
-  ## Use interpolation to fill in
-  # if (sum(missing)>0) print(paste('Warning for',loc(x),'-',sum(missing),
-  #                                 'missing values (',round(100*sum(missing)/length(z),1),
-  #                                 ' %) filled by interpolation'))
-  # z <- approx(x=index(x)[!missing],y=z[!missing],xout=index(x))$y
-  ## REB 2019-05-09: remove the spells when there are missing data
-  mdate <- index(x)[missing]
 
+  ## Deal with missing data
+  missing <- (1:length(x))[!is.finite(x)]
+  if (min(missing)==1) {
+    if (verbose) {
+      print('strip away missing data at the beginning')
+      print(paste('Data series length=',length(x),'number of missing data=',sum(missing)))
+    }
+    remove <- is.element(1:length(x),missing)
+    # Make sure that the series does not start with missing data
+    y <- zoo(x[!remove])
+    class(y) <- class(x)
+    y <- attrcp(x,y)
+    y -> x ; rm('y')
+  }
   ## Highligh the times when the values is above and below the given
   ## threshold:
+  z <- coredata(x)
+  mdate <- index(x)[!is.finite(x)]
   above <- z > threshold
   below <- z <= threshold
   if (verbose) print(paste('above=',sum(above),'below=',sum(below)))
@@ -130,10 +136,11 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   
   #browser()
   y <- merge(Above,Below,all=TRUE)
+  if (is.null(attr(x,'unit'))) attr(x,'unit') <- 'NA'
 
   if (verbose) {
     dev.new(); plot(y,main=paste(varid(x),'above/below',
-                        threshold,unit(x),'at',loc(x)))
+                        threshold,esd::unit(x),'at',loc(x)))
   }
   
   if (is.T(x)) {
@@ -143,6 +150,11 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
     attr(y,'variable') <-  c("wet","dry")
     attr(y,'longname') <-  c("duration of wet spells","duration of dry spells") 
   }
+  attr(y,'location') <- rep(loc(x),2)
+  attr(y,'station_id') <- rep(stid(x),2)
+  attr(y,'longitude') <- rep(lon(x),2)
+  attr(y,'latitude') <- rep(lat(y),2)
+  attr(y,'altitude') <- rep(alt(x),2)
   attr(y,'unit') <- rep("days",2)
   attr(y,'threshold') <- rep(threshold,2)
   attr(y,'threshold.unit') <- rep(attr(x,'unit'),2)
