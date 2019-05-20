@@ -150,7 +150,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (!is.null(colbar)) {
       if (colbar$show) {
         if (fancy) {
-          col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
+          col.bar(colbar$breaks,horiz=TRUE,pch=21,v=colbar$v, h=colbar$h,#v=1,h=1,
                   col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
                   type=type,verbose=FALSE,vl=1,border=FALSE)
         }

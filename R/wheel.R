@@ -1,9 +1,31 @@
-# A function that makes infographics - plots precipitation as a wheel
-# with different colours for different years, and different angles for
-# different julian days. The largest values are drawn first
-
+#' InfoGraphics
+#'
+#' Various functions for visual display of data and statistics
+#'
+#' \code{wheel} shows the seasonal cycle with different colors for different years
+#'
+#' @aliases wheel.station wheel.spell
+#' @seealso graph visprob conf vis diagram cumugram scatter plot map
+#' 
+#' @param x an input object of class 'station' or 'spell'
+#' @param y an input object of class 'station' or 'spell'
+#' @param new if new create new graphic device
+#' @param lwd relative line width
+#' @param col color of line
+#' @param type 'spiky' or 'flowy'
+#' @param bg background color
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
+#'
+#' @example
+#' data(bjornholt)
+#' wheel(bjornholt)
+#'
+#' @export
 wheel <- function(x,...) UseMethod("wheel")
 
+# S3 method for 'station' object
+#' @export
 wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
                           bg="grey90",verbose=FALSE,...) {
 
@@ -98,6 +120,8 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
   image(1:2,years,colbar,col=col)
 }
 
+# S3 method for 'spell' object
+#' @export
 wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,verbose=FALSE,...) {
 
     if (verbose) print('wheel.spell')

@@ -1,389 +1,282 @@
-
-
-#' aggregate
-#' 
-#' The aggregation is based on the S3 method for \code{zoo} objects, but takes
-#' care of extra house keeping, such as attributes with meta data.
-#' 
-#' \code{aggregate.area} is used for aggregating spatial statistics, such as
-#' the global mean or the global area of some phenomenon. \code{aggregate.size}
-#' is similar to \code{aggregate.area}, but returns the size statistics (square
-#' meters) for individual events (defined as gridboxes touching each other).
-#' 
-#' 
-#' @aliases aggregate.comb aggregate.field aggregate.station aggregate.area
-#' aggregate.size aggregate.size.matrix aggregate.size.field
-#' @param x A \code{\link{station}}, \code{\link{spell}} or a
-#' \code{\link{field}} object
-#' @param by see \code{\link{aggregate.zoo}}
-#' @param FUN see \code{\link{aggregate.zoo}}.  In addition,
-#' 'area','exceedance','lessthan'.
-#' @param regular see \code{\link{aggregate.zoo}}
-#' @param frequency see \code{\link{aggregate.zoo}}
-#' @param is spatial selection - see \code{\link{subset.field}}
-#' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
-#' @param a Earth's radius (km)
-#' @param x0 threshold for FUN=c('exceedance','lessthan')
-#' @return The call returns a station object
-#' @author R.E. Benestad
-#' @seealso \code{\link{spatial.avg.field}} \code{\link{as.4seasons}},
-#' \code{\link{annual}}
-#' @keywords utilities
-#' @examples
-#' 
-#' ## Example: use aggregate to compute annual mean temperature for Svalbard:
-#' data(Svalbard)
-#' y <- aggregate(Svalbard, year, FUN='mean', na.rm = FALSE) 
-#' plot(y)
-#' 
-#' ## Example for getting seasonal aggregate of standard deviation of
-#' data(Oslo)
-#' ym <- as.4seasons(Oslo,FUN='mean')
-#' ys <- as.4seasons(Oslo,FUN='sd')
-#' y <- combine(ym,ys)
-#' plot(y)
-#' 
-#' ## Aggregate the global mean temperature
-#' x <- t2m.NCEP()
-#' z <- aggregate.area(x,FUN='mean')
-#' plot(z)
-#' 
-#' ## Aggregate statistics for the size of high-pressure systems
-#' slp <- slp.DNMI()
-#' highs <- aggregate.size(slp,x0=1015)
-#' plot(highs)
-#' 
-#' lows <-  aggregate.size(-slp,x0=-1015)
-#' plot(lows)
-#' 
-NULL
-
-
-
-
-
-#' Conversion to esd objects.
-#' 
-#' Various methods for converting objects from one shape to another. These
-#' methods do the house keeping, keeping track of attributes and metadata.
-#' 
-#' \code{as.field.station} uses \code{regrid} to generate a field based on
-#' bi-linear interpolation of station values and their coordinates.
-#' Unfinished...
-#' 
-#' `field' object must be a two dimensional object (time,nlon*nlat). Time index
-#' must be the first dimension. The second dimension is a product of the number
-#' of longitudes by the number of latitudes. For a different format, users can
-#' use `aperm' function (Transpose an array by permuting its dimensions) to
-#' rearrange the object to meet the required format and `dim' function can be
-#' used to transform a 3D (d1,d2,d3) object into 2D (d1,d2*d3) object as
-#' dim(3D) <- c(d1,d2*d3)
-#' 
-#' @aliases as.station.data as.station.data.frame as.station.list as.station.ds
-#' as.station.pca as.station.field as.station.zoo as.station.spell
-#' as.station.eof as.station.dsensemble as.station.dsensemble.pca as.ds
-#' as.field as.field.default as.field.zoo as.field.comb as.field.eof
-#' as.field.ds as.field.field as.field.station as.field.dsensemble.eof
-#' as.anomaly as.anomaly.default as.anomaly.zoo as.anomaly.station
-#' as.anomaly.field as.climatology as.eof as.eof.zoo as.eof.eof as.eof.ds
-#' as.eof.comb as.eof.field as.eof.appendix as.annual as.annual.default
-#' as.annual.numeric as.annual.integer as.annual.yearqtr as.annual.station
-#' as.annual.spell as.monthly as.4seasons as.4seasons.default
-#' as.4seasons.station as.4seasons.day as.4seasons.field as.4seasons.spell
-#' as.seasons as.residual as.residual.ds as.residual.station as.original.data
-#' as.original.data.ds as.original.station as.appended as.appended.ds.comb
-#' as.appended.eof.comb as.appended.field.comb as.calibrationdata
-#' as.calibrationdata.ds as.calibrationdata.station as.fitted.values
-#' as.fitted.values.ds as.fitted.values.station as.pattern as.pattern.ds
-#' as.pattern.eof as.pattern.mvr as.pattern.cca as.pattern.trend
-#' as.pattern.field as.pattern.corfield as.pca as.pca.ds as.pca.station as.comb
-#' as.comb.eof as.trajectory
-#' @param x Data object
-#' @param location define location attribute \code{attr(x,'location')}
-#' @param param define variable attribute \code{attr(x,'variable')}
-#' @param unit define unit attribute \code{attr(x,'unit')}
-#' @param lon define longitude attribute \code{attr(x,'longitude')}
-#' @param lat define latitude attribute \code{attr(x,'latitude')}
-#' @param alt define altitude attribute \code{attr(x,'altitude')}
-#' @param cntr define country attribute \code{attr(x,'country')}
-#' @param longname define long-name attribute \code{attr(x,'loongname')}
-#' @param stid define station ID attribute \code{attr(x,'station_id')}
-#' @param quality define quality attribute \code{attr(x,'quality')}
-#' @param src define source attribute \code{attr(x,'source')}
-#' @param url define URL attribute \code{attr(x,'URL')}
-#' @param reference define reference attribute \code{attr(x,'reference')}
-#' @param info define info attribute \code{attr(x,'info')}
-#' @param method define method attribute \code{attr(x,'method')}
-#' @param FUN function
-#' @param na.rm TRUE: ignore NA values
-#' @param nmin Minimum number of valid data points. Default value is set to
-#' nmin=85 for daily values, nmin=3 for monthly values, and nmin=300 for annual
-#' values.
-#' @param dateindex if TRUE, convert format of index from year quarter to date
-#' @param aspect decription of data type, e.g., original, anomaly, fitted, or
-#' predicted
-#' @param iapp For values greater than 1, select the corresponding appended
-#' field in 'comb' objects (e.g. 1 gives \code{attr(x,'appendix.1')})
-#' @param ip Which EOF pattern (mode) to extract as a series for PC
-#' @return A field object
-#' @author R.E. Benestad and A.  Mezghani
-#' @keywords utilities
-#' @examples
-#' 
-#' # Example: how to generate a new station object.
-#' data <- round(matrix(rnorm(20*12),20,12),2)
-#' colnames(data) <- month.abb
-#' x <- data.frame(year=1981:2000,data)
-#' X <- as.station.data.frame(x,loc="",param="noise",unit="none")
-#' 
-#' # Example: how to generate a new field object.
-#' year <- sort(rep(1991:2000,12))
-#' month <- rep(1:12,length(1991:2000))
-#' n <-length(year)
-#' lon <- seq(-30,40,by=5)
-#' nx <- length(lon)
-#' lat <- seq(40,70,by=5)
-#' ny <- length(lat)
-#' # Time dimension should come first, space second.
-#' y <- matrix(rnorm(nx*ny*n),n,nx*ny)
-#' index <- as.Date(paste(year,month,1,sep="-"))
-#' Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
-#' map(Y)
-#' plot(EOF(Y))
-#' 
-#' data("Oslo")
-#' plot(as.anomaly(Oslo))
-#' 
-#' data(ferder)
-#' plot(annual(ferder,FUN="min"))
-#' plot(annual(ferder,FUN="IQR",na.rm=TRUE))
-#' plot(as.4seasons(ferder))
-#' 
-#' data(bjornholt)
-#' plot(annual(bjornholt,FUN="count",threshold=1))
-#' plot(annual(bjornholt,FUN="wetfreq",threshold=1))
-#' plot(annual(bjornholt,FUN="wetmean",threshold=1))
-#' 
-#' ## Test the as.4seasons function:
-#' data("ferder")
-#' ## Daily data:
-#' yd <- ferder
-#' ##  Monthly data:
-#' ym <- as.monthly(ferder, FUN="mean")
-#' plot(ym)
-#' 
-#' ## Monthly reanalyses:
-#' t2m <- t2m.NCEP(lon=c(-30,40),lat=c(50,70))
-#' T2m <- as.4seasons(t2m)
-#' # Extract the grid point with location corresponding to that of the station:
-#' x <- regrid(t2m,is=ferder)
-#' x4s <- as.4seasons(x)
-#' X4s <- regrid(T2m,is=ferder)
-#' y4s1 <- as.4seasons(yd)
-#' y4s2 <- as.4seasons(ym)
-#' plot(y4s1,lwd=2,xlim=as.Date(c("1980-01-01","2000-01-01")),ylim=c(-10,20))
-#' lines(y4s2,col="red",lty=2)
-#' lines(x4s,col="darkblue",lwd=2)
-#' lines(X4s,col="lightblue",lty=2)
-#' 
-#' ## Select a random season
-#' data("bjornholt")
-#' data("ferder")
-#' plot(as.seasons(ferder,FUN='mean'))
-#' plot(as.seasons(ferder,start='05-17',end='11-11',FUN='mean'))
-#' 
-#' \dontrun{
-#' ## PCA-example - switch back and forth between station and PCAs
-#' t2m <- station.narp()
-#' pca.t2m <- as.pca(annual(t2m))
-#' y <- as.station(pca.t2m)
-#' 
-#' ## Quick example of downscaling PCA and then extract the single station series
-#' predictor <- annual(t2m.NCEP(lon=c(-20,30),lat=c(50,80)))
-#' pca.t2m <- subset(pca.t2m,ip = 1:3)
-#' z.pca <- DSensemble.pca(pca.t2m,predictor=predictor,select=1:4)
-#' z <- as.station.dsensemble.pca(z.pca)
-#' plot(z[[1]])
-#' }
-#' 
-#' ## Example of transforming cyclone data from an 'events' object (individual events)
-#' ## into a 'trajectory' object (interpolated trajectories) which takes less space
-#' data(storms)
-#' x <- as.trajectory(storms)
-#' map(x, alpha=0.1)
-#' 
-NULL
+# Conversion to esd objects.
+# 
+# Various methods for converting objects from one shape to another. These
+# methods do the house keeping, keeping track of attributes and metadata.
+# 
+# \code{as.field.station} uses \code{regrid} to generate a field based on
+# bi-linear interpolation of station values and their coordinates.
+# Unfinished...
+# 
+# `field' object must be a two dimensional object (time,nlon*nlat). Time index
+# must be the first dimension. The second dimension is a product of the number
+# of longitudes by the number of latitudes. For a different format, users can
+# use `aperm' function (Transpose an array by permuting its dimensions) to
+# rearrange the object to meet the required format and `dim' function can be
+# used to transform a 3D (d1,d2,d3) object into 2D (d1,d2*d3) object as
+# dim(3D) <- c(d1,d2*d3)
+# 
+# @aliases as.station.data as.station.data.frame as.station.list as.station.ds
+# as.station.pca as.station.field as.station.zoo as.station.spell
+# as.station.eof as.station.dsensemble as.station.dsensemble.pca as.ds
+# as.field as.field.default as.field.zoo as.field.comb as.field.eof
+# as.field.ds as.field.field as.field.station as.field.dsensemble.eof
+# as.anomaly as.anomaly.default as.anomaly.zoo as.anomaly.station
+# as.anomaly.field as.climatology as.eof as.eof.zoo as.eof.eof as.eof.ds
+# as.eof.comb as.eof.field as.eof.appendix as.annual as.annual.default
+# as.annual.numeric as.annual.integer as.annual.yearqtr as.annual.station
+# as.annual.spell as.monthly as.4seasons as.4seasons.default
+# as.4seasons.station as.4seasons.day as.4seasons.field as.4seasons.spell
+# as.seasons as.residual as.residual.ds as.residual.station as.original.data
+# as.original.data.ds as.original.station as.appended as.appended.ds.comb
+# as.appended.eof.comb as.appended.field.comb as.calibrationdata
+# as.calibrationdata.ds as.calibrationdata.station as.fitted.values
+# as.fitted.values.ds as.fitted.values.station as.pattern as.pattern.ds
+# as.pattern.eof as.pattern.mvr as.pattern.cca as.pattern.trend
+# as.pattern.field as.pattern.corfield as.pca as.pca.ds as.pca.station as.comb
+# as.comb.eof as.trajectory
+# @param x Data object
+# @param location define location attribute \code{attr(x,'location')}
+# @param param define variable attribute \code{attr(x,'variable')}
+# @param unit define unit attribute \code{attr(x,'unit')}
+# @param lon define longitude attribute \code{attr(x,'longitude')}
+# @param lat define latitude attribute \code{attr(x,'latitude')}
+# @param alt define altitude attribute \code{attr(x,'altitude')}
+# @param cntr define country attribute \code{attr(x,'country')}
+# @param longname define long-name attribute \code{attr(x,'loongname')}
+# @param stid define station ID attribute \code{attr(x,'station_id')}
+# @param quality define quality attribute \code{attr(x,'quality')}
+# @param src define source attribute \code{attr(x,'source')}
+# @param url define URL attribute \code{attr(x,'URL')}
+# @param reference define reference attribute \code{attr(x,'reference')}
+# @param info define info attribute \code{attr(x,'info')}
+# @param method define method attribute \code{attr(x,'method')}
+# @param FUN function
+# @param na.rm TRUE: ignore NA values
+# @param nmin Minimum number of valid data points. Default value is set to
+# nmin=85 for daily values, nmin=3 for monthly values, and nmin=300 for annual
+# values.
+# @param dateindex if TRUE, convert format of index from year quarter to date
+# @param aspect decription of data type, e.g., original, anomaly, fitted, or
+# predicted
+# @param iapp For values greater than 1, select the corresponding appended
+# field in 'comb' objects (e.g. 1 gives \code{attr(x,'appendix.1')})
+# @param ip Which EOF pattern (mode) to extract as a series for PC
+# @return A field object
+# @author R.E. Benestad and A.  Mezghani
+# @keywords utilities
+# @examples
+# 
+# # Example: how to generate a new station object.
+# data <- round(matrix(rnorm(20*12),20,12),2)
+# colnames(data) <- month.abb
+# x <- data.frame(year=1981:2000,data)
+# X <- as.station.data.frame(x,loc="",param="noise",unit="none")
+# 
+# # Example: how to generate a new field object.
+# year <- sort(rep(1991:2000,12))
+# month <- rep(1:12,length(1991:2000))
+# n <-length(year)
+# lon <- seq(-30,40,by=5)
+# nx <- length(lon)
+# lat <- seq(40,70,by=5)
+# ny <- length(lat)
+# # Time dimension should come first, space second.
+# y <- matrix(rnorm(nx*ny*n),n,nx*ny)
+# index <- as.Date(paste(year,month,1,sep="-"))
+# Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
+# map(Y)
+# plot(EOF(Y))
+# 
+# data("Oslo")
+# plot(as.anomaly(Oslo))
+# 
+# data(ferder)
+# plot(annual(ferder,FUN="min"))
+# plot(annual(ferder,FUN="IQR",na.rm=TRUE))
+# plot(as.4seasons(ferder))
+# 
+# data(bjornholt)
+# plot(annual(bjornholt,FUN="count",threshold=1))
+# plot(annual(bjornholt,FUN="wetfreq",threshold=1))
+# plot(annual(bjornholt,FUN="wetmean",threshold=1))
+# 
+# ## Test the as.4seasons function:
+# data("ferder")
+# ## Daily data:
+# yd <- ferder
+# ##  Monthly data:
+# ym <- as.monthly(ferder, FUN="mean")
+# plot(ym)
+# 
+# ## Monthly reanalyses:
+# t2m <- t2m.NCEP(lon=c(-30,40),lat=c(50,70))
+# T2m <- as.4seasons(t2m)
+# # Extract the grid point with location corresponding to that of the station:
+# x <- regrid(t2m,is=ferder)
+# x4s <- as.4seasons(x)
+# X4s <- regrid(T2m,is=ferder)
+# y4s1 <- as.4seasons(yd)
+# y4s2 <- as.4seasons(ym)
+# plot(y4s1,lwd=2,xlim=as.Date(c("1980-01-01","2000-01-01")),ylim=c(-10,20))
+# lines(y4s2,col="red",lty=2)
+# lines(x4s,col="darkblue",lwd=2)
+# lines(X4s,col="lightblue",lty=2)
+# 
+# ## Select a random season
+# data("bjornholt")
+# data("ferder")
+# plot(as.seasons(ferder,FUN='mean'))
+# plot(as.seasons(ferder,start='05-17',end='11-11',FUN='mean'))
+# 
+# \dontrun{
+# ## PCA-example - switch back and forth between station and PCAs
+# t2m <- station.narp()
+# pca.t2m <- as.pca(annual(t2m))
+# y <- as.station(pca.t2m)
+# 
+# ## Quick example of downscaling PCA and then extract the single station series
+# predictor <- annual(t2m.NCEP(lon=c(-20,30),lat=c(50,80)))
+# pca.t2m <- subset(pca.t2m,ip = 1:3)
+# z.pca <- DSensemble.pca(pca.t2m,predictor=predictor,select=1:4)
+# z <- as.station.dsensemble.pca(z.pca)
+# plot(z[[1]])
+# }
+# 
+# ## Example of transforming cyclone data from an 'events' object (individual events)
+# ## into a 'trajectory' object (interpolated trajectories) which takes less space
+# data(storms)
+# x <- as.trajectory(storms)
+# map(x, alpha=0.1)
 
 
 
 
 
-#' Calculate and plot the cyclone budget
-#' 
-#' Calculate and plot the cyclone budget: total - tracks all grid boxes
-#' visited, can be visited many times system - tracks all grid boxes visited,
-#' but only the first visit genesis - record the position of the first step
-#' lysis - record the position of the last step outN,E,S,W - from where did the
-#' cyclone come to the present grid box? inN,E,S,W - to where will the cyclone
-#' go from the present grid box?
-#' 
-#' 
-#' @aliases calculate.cyclonebudget plot.cyclonebudget
-#' @param X A 'trajectory' or 'event' object of cyclone trajectories
-#' @param it A list or data.frame providing time index, e.g. months, season,
-#' year range
-#' @param is A list providing space index, e.g.,
-#' list(lon=c(-50,50),lat=c(45,70)
-#' @param resolution.lon Longitudinal resolution
-#' @param resolution.lat Latitudinal resolution
-#' @param progress Show progress bar. TRUE or FALSE.
-#' @param verbose Print out diagnostics. TRUE or FALSE.
-#' @return A 'cyclonebudget' object: a list of various aspects of the cyclone
-#' budget.
-#' @author K. Parding, MET Norway
-#' @keywords cyclonebudget
-#' @examples
-#' 
-#' \dontrun{
-#' data(storms)
-#' storms.deep <- trackfilter(storms,param="pcent",pmax=970,FUN="any")
-#' storms.deep <- trackfilter(storms.deep,param="max.gradient",pmin=2.5e-2,FUN="any")
-#' bud <- calculate.cyclonebudget(storms.deep)
-#' plot(bud,col=colscal(n=9,name= "bu"))
-#' }
-#' 
-NULL
+# Sample data.
+# 
+# Different data sets: station data from northern Europe (NACD, NARP) and
+# historic reconstructions (Oslo, Svalbard) from Dr. Nordli, Met Norway.
+# 
+# The object \code{station.meta} contains station information, used in the
+# methods \code{\link{station}}.
+# 
+# Also reduced representation of re-analyses, where the data have been sampled
+# by skipping grid points to reduce the spatial dimensions and stored as 20
+# EOFS (30 for precipitation). The data compression facilitated by the EOFs
+# can provide 80-90\% of the variance in the data. ESD uses the large-scale
+# features from these reanalyses, and hence this information loss may be
+# acceptable for downscaling work.
+# 
+# A reduced copy of the NorESM (M RCP 4.5) is also provided for the examples
+# and demonstrations on how the downscaling can be implemented. Note:
+# downscaling for end-users should never be based on one GCM simulation alone.
+# 
+# The object \code{geoborders} contains data on coastlines and borders, used
+# in the methods \code{\link{map}}.
+# 
+# \code{glossstations} contains META-data for GLOSS stations taken from the
+# table in
+# \url{http://www.gloss-sealevel.org/station_handbook/stations/#.Vqtc6kL4phg}
+# 
+# Some data sets, such as NINO3.4 and NAOI come with a 'frozen' version in the
+# package, but there are also functions that read the most recent version of
+# these indeces from the Internet. GSL reads the global mean sea level.
+# 
+# 
+# @aliases station.meta NACD NARP Oslo Svalbard t2m.NORDKLIM precip.NORDKLIM
+# geoborders t2m.NCEP sst.NCEP precip.ERAINT slp.NCEP slp.atlantic.ERA5
+# t2m.NorESM.M t2m.DNMI sst.DNMI slp.DNMI eof.t2m.NCEP eof.sst.NCEP
+# eof.slp.NCEP eof.precip.ERAINT eof.t2m.NorESM.M eof.t2m.DNMI eof.sst.DNMI
+# eof.slp.DNMI NAOI sunspots NINO3.4 SOI GSL GSL.nasa AMO bjornholt vardo
+# ferder dse.ferder HadCRUT4 NASAgiss dse.Oslo glossstations
+# IPCC.AR5.Table.9.A.1 cmipgcmresolution global.t2m.gcm QBO CET CO2
+# read.hurdat2 read.best.track storms
+# @param lon longitude range c(lin.min,lon.max)
+# @param lat latitude range
+# @param anomaly TRUE: return anomaly
+# @param url source of data
+# @param plot TRUE:plot
+# @return Numeric vectors/matrices with a set of attributes describing the
+# data.
+# @author R.E. Benestad
+# @seealso \code{\link{aggregate.area}} \code{\link{as.4seasons}},
+# \code{\link{annual}}
+# @keywords datasets
+# @examples
+# 
+# data(Oslo)
+# year <- as.numeric( format(index(Oslo), '%Y') ) 
+# plot(aggregate(Oslo, by=year,FUN='mean', na.rm = FALSE), new=FALSE)
+# 
+# data(etopo5)
+# z <- subset(etopo5,is=list(lon=c(-10,30),lat=c(40,60)))
+# map(z, new=FALSE)
+# 
+# 
 
 
 
 
 
-#' Sample data.
-#' 
-#' Different data sets: station data from northern Europe (NACD, NARP) and
-#' historic reconstructions (Oslo, Svalbard) from Dr. Nordli, Met Norway.
-#' 
-#' The object \code{station.meta} contains station information, used in the
-#' methods \code{\link{station}}.
-#' 
-#' Also reduced representation of re-analyses, where the data have been sampled
-#' by skipping grid points to reduce the spatial dimensions and stored as 20
-#' EOFS (30 for precipitation). The data compression facilitated by the EOFs
-#' can provide 80-90\% of the variance in the data. ESD uses the large-scale
-#' features from these reanalyses, and hence this information loss may be
-#' acceptable for downscaling work.
-#' 
-#' A reduced copy of the NorESM (M RCP 4.5) is also provided for the examples
-#' and demonstrations on how the downscaling can be implemented. Note:
-#' downscaling for end-users should never be based on one GCM simulation alone.
-#' 
-#' The object \code{geoborders} contains data on coastlines and borders, used
-#' in the methods \code{\link{map}}.
-#' 
-#' \code{glossstations} contains META-data for GLOSS stations taken from the
-#' table in
-#' \url{http://www.gloss-sealevel.org/station_handbook/stations/#.Vqtc6kL4phg}
-#' 
-#' Some data sets, such as NINO3.4 and NAOI come with a 'frozen' version in the
-#' package, but there are also functions that read the most recent version of
-#' these indeces from the Internet. GSL reads the global mean sea level.
-#' 
-#' 
-#' @aliases station.meta NACD NARP Oslo Svalbard t2m.NORDKLIM precip.NORDKLIM
-#' geoborders t2m.NCEP sst.NCEP precip.ERAINT slp.NCEP slp.atlantic.ERA5
-#' t2m.NorESM.M t2m.DNMI sst.DNMI slp.DNMI eof.t2m.NCEP eof.sst.NCEP
-#' eof.slp.NCEP eof.precip.ERAINT eof.t2m.NorESM.M eof.t2m.DNMI eof.sst.DNMI
-#' eof.slp.DNMI NAOI sunspots NINO3.4 SOI GSL GSL.nasa AMO bjornholt vardo
-#' ferder dse.ferder HadCRUT4 NASAgiss dse.Oslo glossstations
-#' IPCC.AR5.Table.9.A.1 cmipgcmresolution global.t2m.gcm QBO CET CO2
-#' read.hurdat2 read.best.track storms
-#' @param lon longitude range c(lin.min,lon.max)
-#' @param lat latitude range
-#' @param anomaly TRUE: return anomaly
-#' @param url source of data
-#' @param plot TRUE:plot
-#' @return Numeric vectors/matrices with a set of attributes describing the
-#' data.
-#' @author R.E. Benestad
-#' @seealso \code{\link{aggregate.area}} \code{\link{as.4seasons}},
-#' \code{\link{annual}}
-#' @keywords datasets
-#' @examples
-#' 
-#' data(Oslo)
-#' year <- as.numeric( format(index(Oslo), '%Y') ) 
-#' plot(aggregate(Oslo, by=year,FUN='mean', na.rm = FALSE), new=FALSE)
-#' 
-#' data(etopo5)
-#' z <- subset(etopo5,is=list(lon=c(-10,30),lat=c(40,60)))
-#' map(z, new=FALSE)
-#' 
-#' 
-NULL
+# InfoGraphics.
+# 
+# Wheel
+# 
+# Risk
+# 
+# visprob - boxes with forseen outcomes - area proportional to probability
+# 
+# conf - confidence intervals and uncertainty - clouds...
+# 
+# vis
+# 
+# diagram
+# 
+# cumugram
+# 
+# graph
+# 
+# \code{balls} draws 3D ball symbols.
+# 
+# 
+# @aliases wheel wheel.station wheel.spell diagram diagram.dsensemble
+# diagram.station seasevol seasevol.station vis vis.station diagram cumugram
+# climvar colscal visprob balls graph graph.dsensemble graph.zoo graph.list
+# @param x a data object
+# @param new TRUE, invoke \code{dev.new()}
+# @param col Colour palette
+# @param col.obs Colour for the observations
+# @param n number of colour scales
+# @param main main title
+# @param log.precip Use logarithmig scale for precipitation
+# @param plot FALSE, just return the results
+# @param verbose If TRUE, print out diagnostics
+# @param img image from jpeg
+# @param start starting date of the year
+# @param ensmean Ensemble mean
+# @param pch Plot symbol style
+# @param it index time
+# @param xlim see \code{\link{plot}}
+# @param ylim see \code{\link{plot}}
+# @param xlab see \code{\link{plot}}
+# @param ylab see \code{\link{plot}}
+# @param lwd see \code{\link{plot}}
+# @param add TRUE: update existing plot
+# @return A field object
+# @author R.E. Benestad and A.  Mezghanil
+# @seealso \code{\link{map}}, \code{\link{plot.station}},
+# \code{\link{hist.spell}}
+# @keywords utilities
+# @examples
+# 
+# data(bjornholt)
+# wheel(bjornholt)
+# 
+# z <- spell(bjornholt,threshold=1)
+# wheel(z)
+# 
+# 
 
-
-
-
-
-#' InfoGraphics.
-#' 
-#' Wheel
-#' 
-#' Risk
-#' 
-#' visprob - boxes with forseen outcomes - area proportional to probability
-#' 
-#' conf - confidence intervals and uncertainty - clouds...
-#' 
-#' vis
-#' 
-#' diagram
-#' 
-#' cumugram
-#' 
-#' graph
-#' 
-#' \code{balls} draws 3D ball symbols.
-#' 
-#' 
-#' @aliases wheel wheel.station wheel.spell diagram diagram.dsensemble
-#' diagram.station seasevol seasevol.station vis vis.station diagram cumugram
-#' climvar colscal visprob balls graph graph.dsensemble graph.zoo graph.list
-#' @param x a data object
-#' @param new TRUE, invoke \code{dev.new()}
-#' @param col Colour palette
-#' @param col.obs Colour for the observations
-#' @param n number of colour scales
-#' @param main main title
-#' @param log.precip Use logarithmig scale for precipitation
-#' @param plot FALSE, just return the results
-#' @param verbose If TRUE, print out diagnostics
-#' @param img image from jpeg
-#' @param start starting date of the year
-#' @param ensmean Ensemble mean
-#' @param pch Plot symbol style
-#' @param it index time
-#' @param xlim see \code{\link{plot}}
-#' @param ylim see \code{\link{plot}}
-#' @param xlab see \code{\link{plot}}
-#' @param ylab see \code{\link{plot}}
-#' @param lwd see \code{\link{plot}}
-#' @param add TRUE: update existing plot
-#' @return A field object
-#' @author R.E. Benestad and A.  Mezghanil
-#' @seealso \code{\link{map}}, \code{\link{plot.station}},
-#' \code{\link{hist.spell}}
-#' @keywords utilities
-#' @examples
-#' 
-#' data(bjornholt)
-#' wheel(bjornholt)
-#' 
-#' z <- spell(bjornholt,threshold=1)
-#' wheel(z)
-#' 
-#' 
-NULL
 
 
 

@@ -1,37 +1,64 @@
-# R.E .Benestad
+#' aggregate
+#' 
+#' The aggregation functions are based on the S3 method for \code{zoo} objects,
+#' but takes care of extra house keeping, such as attributes with meta data.
+#'
+#' \code{aggregate} calculates a time aggregate of an input object,
+#' e.g, the mean seasonal cycle (if \code{by}=month and \code{FUN}="mean") or the
+#' annual sum (if \code{by}=year and \code{FUN}="sum").
+#'
+#' \code{aggregate.area} is used for aggregating spatial statistics, such as
+#' the global mean or the global area of some phenomenon.
+#' \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
+#' meters) for individual events (defined as gridboxes touching each other).
+#' 
+#' @aliases aggregate.comb aggregate.field aggregate.area aggregate.size aggregate.size.matrix aggregate.size.field
+#' 
+#' @param x A \code{\link{station}} object
+#' @param by see \code{\link{aggregate.zoo}}
+#' @param FUN see \code{\link{aggregate.zoo}}. Additional options: 'area','exceedance','lessthan'.
+#' @param regular see \code{\link{aggregate.zoo}}
+#' @param frequency see \code{\link{aggregate.zoo}}
+#' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
+#'
+#' @return The call returns a station object
+#'
+#' @author R.E. Benestad
+#' @keywords utilities
+#' @examples
+#' 
+#' ## S3 method for class 'station'
+#' data(Svalbard)
+#' x <- aggregate(Svalbard, month, FUN='mean', na.rm=TRUE)
+#' plot(x)
+#'
+#' ## S3 method for class 'field'
+#' slp <- slp.DNMI()
+#' y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
+#'
+#' ## Aggregate area
+#' w <- aggregate.area(y)
+#' plot(w)
+#'
+#' @export
+aggregate.station <- function(x, by, FUN='mean', na.rm=TRUE, regular = NULL, ...,
+                              frequency = NULL, verbose=FALSE, threshold=1) {
 
-# I'm unsure about the use of 'as' functions - perhaps just use 'monthly.station' or 'aggregate'?
-# as.Date(,format='%m/%d/%Y'), weekdays()
-
-
-# Time conversion tools:
-
-
-
-aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
-                              regular = NULL, frequency = NULL) {
-
-  args <- list(...)
-  ix0 <- grep('threshold',names(args))
-  iv0 <- grep('verbose',names(args))
-  if (length(ix0)>0) threshold <- args[[ix0]] else threshold <- 1
-  if (length(iv0)>0) verbose <- args[[iv0]] else verbose <- FALSE
-
-  if (verbose) {print('aggregate.station'); print(names(args)); print(threshold)}
+  if(verbose) print("aggregate.station")
   class(x) -> cls
-  #print(deparse(substitute(by)))
   class(x) <- "zoo"
-  
-# if (by=='yearmon') {
-#    yyyymm <- format(index(Parea.merra),'%Y-%m-%d')
-#    by <- yyyymm
-#  }
+
+  if (by=='yearmon') {
+    by <- as.Date(as.yearmon(index(x)))
+  }
   
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
-       (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) )
+       (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) ) {
     y <- aggregate(x, by, FUN, na.rm=na.rm, ...,
-                   regular = regular, frequency = frequency) else
+                   regular = regular, frequency = frequency)
+  } else {
     y <- aggregate(x, by, FUN, ..., regular = regular, frequency = frequency)
+  }
 
  # if (inherits(by[1],'character')) index(y) <- as.Date(index(y))
     
@@ -106,6 +133,8 @@ aggregate.station <- function(x,by,FUN = 'mean', na.rm=TRUE, ...,
   return(y)
 }
 
+# Aggregate S3 method for a 'comb' object
+#' @export
 aggregate.comb <- function(x,by,FUN = 'mean', ...,
                               regular = NULL, frequency = NULL) {
   # Also need to apply the aggregation to the appended fields
@@ -132,18 +161,13 @@ aggregate.comb <- function(x,by,FUN = 'mean', ...,
   return(z)
 }
 
+# Aggregate S3 method for a field object
+#' @export
 aggregate.field <- function(x,by,FUN = 'mean', ...,
-                              regular = NULL, frequency = NULL) {
-
-  args <- list(...)
-  ix0 <- grep('threshold',names(args))
-  iv0 <- grep('verbose',names(args))
-  if (length(ix0)>0) threshold <- args[[ix0]] else threshold <- 0
-  if (length(iv0)>0) verbose <- args[[iv0]] else verbose <- FALSE
+                            regular = NULL, frequency = NULL,
+			    threshold=0, verbose=FALSE) {
   
-  if (verbose) {print('aggregate.station'); print(names(args)); print(threshold)}
-  #verbose <- TRUE; str(...)
-  #if (verbose) print("aggregate.field")
+  if (verbose) print('aggregate.field')
   class(x) -> cls
   #print(class(index(x)))
   class(x) <- "zoo"
@@ -262,10 +286,11 @@ aggregate.field <- function(x,by,FUN = 'mean', ...,
     }
 }
 
-
+# Aggregate area
+#' @export
 aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
                            na.rm=TRUE,smallx=FALSE,verbose=FALSE,
-                           a= 6378, x0=NULL) {
+                           a=6378, threshold=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
   if (verbose) print(paste("aggregate.area",FUN))
   if (verbose) {
@@ -275,7 +300,8 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
   if (inherits(x,'eof')) {
     if (verbose) print('aggregate.area for EOF')
     y <- as.pattern(x)
-    ya <- aggregate.area(y,is=is,FUN=FUN,na.rm=na.rm,smallx=smallx,verbose=verbose,a=a,x0=x0)
+    ya <- aggregate.area(y,is=is,FUN=FUN,na.rm=na.rm,smallx=smallx,verbose=verbose,
+                         a=a,threshold=threshold)
     if (verbose) {print(length(ya)); print(length(attr(x,'eigenvalues'))); print(t(dim(coredata(x))))}
     z <- apply(diag(ya*attr(x,'eigenvalues')) %*% t(coredata(x)),2,FUN='sum')
     if (is.zoo(x)) z <- zoo(x=z,order.by=index(x))
@@ -321,19 +347,23 @@ aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
       ## Estimate the area of the grid boxes
       coredata(x) -> cx
       ## REB: 2018-11-13: minor fix - added 'cx[!is.finite(cx)] <- 0'
-      if (is.null(x0)) {cx[is.finite(cx)] <- 1; cx[!is.finite(cx)] <- 0} else {cx[cx < x0] <- 0; cx[cx >= x0] <- 1}
+      if (is.null(threshold)) {
+        cx[is.finite(cx)] <- 1; cx[!is.finite(cx)] <- 0
+      } else {
+        cx[cx<threshold] <- 0; cx[cx >= threshold] <- 1
+      }
       coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
       FUN <- 'sum'
-    } else if ( (FUN %in% c('exceedance','exceedence')) & !is.null(x0) ) {
-      # Estimate the sum of grid boxes with higher value than x0
+    } else if ( (FUN %in% c('exceedance','exceedence')) & !is.null(threshold) ) {
+      # Estimate the sum of grid boxes with higher value than threshold
       coredata(x) -> cx
-      cx[cx < x0] <- NA
+      cx[cx < threshold] <- NA
       coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
       FUN <- 'sum'
-    } else if ( (FUN == 'lessthan') & !is.null(x0) ) {
-      # Estimate the sum of grid boxes with lower value than x0
+    } else if ( (FUN == 'lessthan') & !is.null(threshold) ) {
+      # Estimate the sum of grid boxes with lower value than threshold
       coredata(x) -> cx
-      cx[cx >= x0] <- NA
+      cx[cx >= threshold] <- NA
       coredata(x) <- cx; rm('cx'); gc(reset=TRUE)
       FUN <- 'sum'
     } 

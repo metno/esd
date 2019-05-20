@@ -2,8 +2,12 @@
 ## Matrix lon & lat indices: (i, j).
 ## @RasmusBenestad, 2018-10-29
 
+# Aggregate size of events - see documentation in aggregate.R
+#' @export
 aggregate.size <- function(x, ...) UseMethod("aggregate.size")
 
+# Aggregate size of events - S3 method for matrix
+#' @export
 aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) {
 
     ## Select all grid boxes with values exceeding x0
@@ -72,7 +76,8 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) 
     return(list(events=Z,number=eno,statistic=stats))
 }
 
-
+# Aggregate size of events - S3 method for field
+#' @export
 aggregate.size.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
   if (verbose) print('aggregate.size.field')  
   nt <- length(index(x))
@@ -95,7 +100,7 @@ aggregate.size.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
   return(size)
 }
 
-
+# Test function - do not export?
 test.events <- function(n=62, m=78, verbose=TRUE) {
     x <- matrix(rep(sin(seq(0,4*pi,length=n)),m)*
                 sort(rep(cos(seq(0,pi,length=m)),n)),n,m)

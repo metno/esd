@@ -1,65 +1,100 @@
-##seNorge
-#nodata	10000
-#nobits	16
-#header1	*Temperatur
-#header2	*Siste døgn (18-18 UTC)
-#legend	*Grader Celsius
-#From	To	R	G	B	Forklaring
-#2931	10000	204	0	0	*Over 20 
-#2881	2931	255	25	0	*15 - 20
-#2831	2881	255	102	0	*10 - 15
-#2781	2831	255	179	0	*5 - 10
-#2761	2781	255	230	77	*3 - 5
-#2741	2761	255	255	64	*1 - 3
-#2731	2741	255	255	190	*0 - 1
-#2721	2731	217	255	255	*÷1 - 0
-#2701	2721	179	255	255	*÷3 - ÷1
-#2681	2701	128	235	255	*÷5 - ÷3
-#2631	2681	64	204	255	*÷10 - ÷5
-#2581	2631	0 	153	255	*÷15 - ÷10
-#2531	2581	0 	25	255	*÷20 - ÷15
-#0	2531	0	0	153	*Under ÷20
-
-
-#nodata	10000
-#nobits	16
-#header1	*Nedbør
-#header2	*Siste døgn (06-06 UTC)
-#legend	*mm
-#From	To	R	G	B	Forklaring
-#1500	10000	0	0	153	*Over 150 
-#750	1500	0 	25	255	*75 - 150 
-#500	750	0 	153	255	*50 - 75
-#300	500	64	204	255	*30 - 50
-#200	300	128	235	255	*20 - 30
-#100	200	179	255	255	*10 - 20
-#1	100	217	255	255	*Under 10
-#0	1	229	229	229	*Ikke nedbør
-
-ndig <- function(x) {
-  i0 <- (x==0) & !is.finite(x)
-  if (sum(i0)>0) x[i0] <- 1
-  y <- -trunc(log(abs(x))/log(10))
-  if (sum(i0)>0) y[i0] <- 0
-  return(y)
+#' Display a color bar object on an existing plot.
+#' 
+#' Add a color bar or color points into an exisiting plot or map
+#' 
+#' @aliases col.bar colbar
+#' @seealso colbar.ini
+#' 
+#' @param breaks A numeric vector of breakpoints for the colours %% ~~Describe
+#' @param horiz a boolean; if TRUE add horizontal color bar, else add vertical color bar 
+#' @param pch see \code{\link{par}} 
+#' @param v Vertical space between color bar points
+#' @param h horizontal space between color bar points
+#' @param col see \code{\link{par}}
+#' @param pal palette:
+#' c("bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold","warm")
+#' @param cex see \code{\link{par}}
+#' @param cex.lab see \code{\link{par}}
+#' @param type r : rectangular shape , p : for points
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param vl a numerical specifying the relative placement of the vertical lines
+#' @param border a boolean; if TRUE show color bar borders
+#' @param \dots Additional graphical parameters to be passed on
+#' 
+#' @export
+col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
+                    cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
+  par0 <- par()
+  xleft <- par()$usr[1] 
+  xright <- par()$usr[2]
+  ybottom <- par()$usr[4] - 1 - h
+  ytop <-  par()$usr[4] - 1 
+  
+  by <- (xright - xleft - v * (length(col)))/(length(breaks))
+  steps <-   seq(0, (xright -xleft - v * (length(col))) ,by=by ) # 
+  nsteps <- length(steps) 
+  
+  if (verbose) print(steps)
+  if (verbose) print(breaks)
+  if (verbose) print(nsteps)
+    
+  k <- 1/2
+  for (i in 1 :(nsteps-2)) {  
+    if (!is.null(v)) 
+      if (i == 1) k <- k + v/2 else k <- k + v  
+      if (type == "r") { ## "r" for rectangle
+        rect(xleft= k  + xleft + steps[i] ,xright= k + xleft + steps[i+1],
+             ybottom=ybottom,ytop=ytop,col=col[i],border=border)
+      } else if (type == "p") { ## "p" points
+        points(x= k + xleft + (steps[i]+ steps[i+1])/2, y=(ybottom + ytop)/2,
+               pch=pch, bg=col[i],cex=cex,...)
+            
+      }        
+      text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl,
+           labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
+  } 
 }
 
+#' @export
+colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
+                   mar=c(1,0,0,0),new=TRUE,las=1,cex.axis=0.6,...) {
+  if (horiz) {
+    par(xaxt="s",yaxt="n",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
+    image(breaks,1:2,cbind(breaks,breaks),col=col,cex.axis=cex.axis)
+  } else {
+    par(xaxt="n",yaxt="s",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
+    image(1:2,breaks,rbind(breaks,breaks),col=col,cex.axis=cex.axis)
+  }
+}
+
+#' Display a color bar object on an existing plot.
+#' 
+#' Generate a color bar list and add information about the breaks of the color scale based on the numerical range of the input data.
+#' 
+#' @seealso col.bar colbar
+#' 
+#' @param x an input object, e.g., a 'zoo', 'station' or 'field' object or numerical vector
+#' @param FUN a function 
+#' @param colbar a list
+#' @param verbose a boolean; if TRUE print information about progress
+#' 
+#' @param a list: colbar = list(col, breaks, n, type, cex, h, v, pos, show, rev)
+#' where 
+#' \code{col} is a vector containing the colors corresponding to the values 
+#' specified in the numerical vector \code{breaks},
+#' \code{show} if TRUE show color bar,
+#' \code{rev} if TRUE reverse color scale,
+#' \code{cex} see \code{\link{par}},
+#' \code{h}, \code{v}, \code{type}: see \code{\link{col.bar}}
+#' \code{pos} not in use?
+#'
+#' @export
 colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
-
-  ## Number of digits when rounding off - to get a prettier scale
-
-    ## 
     if (verbose) {print('colbar.ini'); print(colbar)}
     if (length(x)==0) stop('colbar.ini: x is empty!')
     if (is.null(colbar)) colbar <- list(show=FALSE,n=14,rev=NULL,alpha=NULL)
     if (is.logical(colbar)) colbar <- list(show=colbar)
-    ##if (!is.null(colbar)) {
     if (verbose) print('sort out the colours')
-
-    ##if (!is.null(colbar$col)) {
-    ##    colbar$n <- length(colbar$col) + 1
-    ##    colbar$pal <- NULL
-    ##}   
     
     if (is.zoo(x)) x <- coredata(x)
     x[!is.finite(x)] <- NA      # REB 2017-09-20: fix to cope with Inf-values
@@ -82,61 +117,45 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     nd <- max(0,ndig(x.rng)+2)
 
     if (!is.null(colbar$col)) {
-      if (is.null(colbar$breaks))
+      if (is.null(colbar$breaks)) {
         colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1),nd)
+      }
       colbar$n <- length(colbar$col)
     }
     
     ## if breaks are null then use pretty 
     if (is.null(colbar$breaks)) { 
-        if (verbose) print("pretty is used here to set break values ...")
-        if (!is.null(colbar$n))
-            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),n=colbar$n+1)
-        else 
-            colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10),n=10)
-        colbar$n <- length(colbar$breaks)-1      
+      if (verbose) print("pretty is used here to set break values ...")
+      if (!is.null(colbar$n)) {
+        colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),n=colbar$n+1)
+      } else {
+        colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10),n=10)
       }
+      colbar$n <- length(colbar$breaks)-1      
+    }
     if (is.null(colbar$n)) colbar$n <- length(colbar$breaks)-1 
-    
-    #if (is.null(colbar$n))
-    #    if (!is.null(colbar$col))
-    #        colbar$n <- length(colbar$breaks) - 1
-    #    else
-    #        colbar$n <- 10
-
     if (is.null(colbar$type)) colbar$type <- 'p'
-
     if (is.null(colbar$cex)) colbar$cex <- 2
-
     if (is.null(colbar$h)) colbar$h <- 0.6
-
     if (is.null(colbar$v)) colbar$v <- 1
-
     if (is.null(colbar$pos)) colbar$pos <- 0.05
-
     if (is.null(colbar$show)) colbar$show <-TRUE
-
     if (is.null(colbar$rev)) colbar$rev <- FALSE
-    
     ## very easy case if colbar$col and breaks are provided
     if (!is.null(colbar$col)) {
-        if (is.null(colbar$pal)) colbar$pal <- NA ## disactivate pal  ## REB - need it for 'warm', 'cold'
-        if (!is.null(colbar$breaks)) {  
-            if (length(colbar$col) != length(colbar$breaks) - 1) {
-                #str(colbar)
-                #stop('colbar.ini: This should never happen!')   
-                ## This can happen if both col and breaks are specified
-                ## but not consistent with each other. Instead of stopping, 
-                ## col can be interpolated to the right length:
-                col.rgb <- col2rgb(colbar$col)
-                col.rgb <- apply(col.rgb,1,function(x) approx(x,
-                                    n=length(colbar$breaks)-1)$y)
-                if(is.null(dim(col.rgb))) dim(col.rgb) <- c(1,length(col.rgb))
-                colbar$col <- rgb(col.rgb,maxColorValue=255)
-            }
-        } else if (is.null(colbar$breaks))
-          colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),nd)
-        ## if only colbar$col is provided, then the breaks are set using seq   
+      if (is.null(colbar$pal)) colbar$pal <- NA
+      if (!is.null(colbar$breaks)) {  
+        if (length(colbar$col) != length(colbar$breaks) - 1) {
+          # if col and breaks are specified but not consistent, interpolate col to right length:
+          col.rgb <- col2rgb(colbar$col)
+          col.rgb <- apply(col.rgb,1,function(x) approx(x,
+                           n=length(colbar$breaks)-1)$y)
+          if(is.null(dim(col.rgb))) dim(col.rgb) <- c(1,length(col.rgb))
+          colbar$col <- rgb(col.rgb,maxColorValue=255)
+        }
+      } else if (is.null(colbar$breaks)) {
+        colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),nd)   
+      }
     } else {
       if (is.null(colbar$pal)) {
         if (is.precip(x)) {
@@ -159,11 +178,11 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
       } 
     } 
 
-# REB 2015-12-02: I do not understand these two lines    
-#    if (!is.null(FUN)) {
-#        if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
-#            colbar$breaks <- pretty(x,n=colbar$n)
-# Replaced by the following line:
+    # REB 2015-12-02: I do not understand these two lines    
+    # if (!is.null(FUN)) {
+    #   if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
+    #     colbar$breaks <- pretty(x,n=colbar$n)
+    # Replaced by the following line:
     if (is.null(colbar$breaks)) {
       ## If colbar$breaks is unspecified, then set up the levels for colour scale:
       if (verbose) print('define breaks')
@@ -188,29 +207,34 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     ## if colbar$col is null
     if (is.null(colbar$col)) {
       if (verbose) print('define col')
-
-        ## colscal is used as default to set the colors
+      ## colscal is used as default to set the colors
       if (verbose) print(paste('colbar$n',colbar$n))
         colbar$col <- colscal(n=colbar$n,col=colbar$pal,alpha=colbar$alpha,
                               rev=colbar$rev,verbose=verbose)
-      }
+    }
     if (verbose) print(colbar)
-    
-    ##    if (verbose) print(paste("length(col) =",length(colbar$col)))
-    ##    col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev)       
-    
-    ## if (!inherits(x,"stationmeta"))
-    ##     colbar$col <- colscal(n=colbar$n,col=colbar$pal,rev=colbar$rev,verbose=verbose)
     if (verbose) print(paste("length(col) =",length(colbar$col),
                              "length(breaks) =",length(colbar$breaks)))
 
-    if (length(colbar$col) != length(colbar$breaks)-1)
-      stop('colbar.ini: Error in setting colbar!')
-    ##}
-    if (verbose) {print(colbar); print(' exists colbar.ini')}
+    if (length(colbar$col) != length(colbar$breaks)-1) stop('colbar.ini: Error in setting colbar!')
+ 
+    if (verbose) {
+      print(colbar)
+      print('exit colbar.ini')
+    }
     invisible(colbar)
 }
 
+#' @export
+ndig <- function(x) {
+  i0 <- (x==0) & !is.finite(x)
+  if (sum(i0)>0) x[i0] <- 1
+  y <- -trunc(log(abs(x))/log(10))
+  if (sum(i0)>0) y[i0] <- 0
+  return(y)
+}
+
+#' @export
 colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
                     test=FALSE,verbose=FALSE) {
   
@@ -410,136 +434,6 @@ colscal <- function(n=14,col="t2m",rev=FALSE,alpha=NULL,
   return(col)
 }
 
-colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
-                   mar=c(1,0,0,0),new=TRUE,las=1,cex.axis=0.6,...) {
-  if (horiz) {
-    par(xaxt="s",yaxt="n",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
-    image(breaks,1:2,cbind(breaks,breaks),col=col,cex.axis=cex.axis)
-  } else {
-    par(xaxt="n",yaxt="s",fig=fig,mar=mar,new=new,las=las,cex.axis=cex.axis,...)
-    image(1:2,breaks,rbind(breaks,breaks),col=col,cex.axis=cex.axis)
-  }
-}
-
-
-
-#' %% ~~function to do ... ~~ Color bar
-#' 
-#' %% ~~ A concise (1-5 lines) description of what the function does. ~~
-#' Display a color bar object on an existing plot.
-#' 
-#' %% ~~ If necessary, more details than the description above ~~ Insert a
-#' color bar or color points into an exisiting plot or map
-#' 
-#' @aliases col.bar colbar
-#' @param breaks A numeric vector of breakpoints for the colours %% ~~Describe
-#' \code{breaks} here~~
-#' @param horiz %% ~~Describe \code{horiz} here~~
-#' @param pch \code{\link{par}} %% ~~Describe \code{pch} here~~
-#' @param v Vertical space between color bar points %% ~~Describe \code{v}
-#' here~~
-#' @param h horizontal space between color bar points %% ~~Describe \code{h}
-#' here~~
-#' @param col \code{\link{par}} %% ~~Describe \code{col} here~~
-#' @param pal palette:
-#' c("bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold","warm")
-#' @param cex \code{\link{par}} %% ~~Describe \code{cex} here~~
-#' @param cex.lab \code{\link{par}} %% ~~Describe \code{cex.lab} here~~
-#' @param type r : rectangular shape , p : for points %% ~~Describe \code{type}
-#' here~~
-#' @param verbose %% ~~Describe \code{verbose} here~~
-#' @param vl Vertical lines %% ~~Describe \code{vl} here~~
-#' @param border Color bar borders %% ~~Describe \code{border} here~~
-#' @param \dots More graphical parameters to be passed %% ~~Describe
-#' \code{\dots} here~~
-#' @author A. Mezghani %% ~~who you are~~
-#' @keywords ~kwd1 ~kwd2
-#' @examples
-#' 
-#' ##---- Should be DIRECTLY executable !! ----
-#' ##-- ==>  Define data, use random,
-#' ##--	or do  help(data=index)  for the standard data sets.
-#' 
-#' ## The function is currently defined as
-#' function (breaks, horiz = TRUE, pch = 21, v = 1, h = 1, col = col, 
-#'     cex = 2, cex.lab = 0.6, type = "r", verbose = FALSE, vl = 0.5, 
-#'     border = FALSE, ...) 
-#' {
-#'     par0 <- par()
-#'     xleft <- par()$usr[1]
-#'     xright <- par()$usr[2]
-#'     ybottom <- par()$usr[4] - 1 - h
-#'     ytop <- par()$usr[4] - 1
-#'     by <- (xright - xleft - v * (length(col)))/(length(breaks))
-#'     steps <- seq(0, (xright - xleft - v * (length(col))), by = by)
-#'     nsteps <- length(steps)
-#'     if (verbose) 
-#'         print(steps)
-#'     if (verbose) 
-#'         print(breaks)
-#'     if (verbose) 
-#'         print(nsteps)
-#'     k <- 1/2
-#'     for (i in 1:(nsteps - 2)) {
-#'         if (!is.null(v)) 
-#'             if (i == 1) 
-#'                 k <- k + v/2
-#'             else k <- k + v
-#'         if (type == "r") {
-#'             rect(xleft = k + xleft + steps[i], xright = k + xleft + 
-#'                 steps[i + 1], ybottom = ybottom, ytop = ytop, 
-#'                 col = col[i], border = border)
-#'         }
-#'         else if (type == "p") {
-#'             points(x = k + xleft + (steps[i] + steps[i + 1])/2, 
-#'                 y = (ybottom + ytop)/2, pch = pch, bg = col[i], 
-#'                 cex = cex, ...)
-#'         }
-#'         text(x = k + xleft + (steps[i] + steps[i + 1])/2, y = ybottom - 
-#'             vl, labels = levels(cut(breaks, breaks))[i], col = "grey50", 
-#'             cex = cex.lab)
-#'     }
-#'     par(fig = par0$fig)
-#'   }
-#' 
-col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
-                    cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
-    par0 <- par()
-    xleft <- par()$usr[1] 
-    xright <- par()$usr[2]
-    ybottom <- par()$usr[4] - 1 - h
-    ytop <-  par()$usr[4] - 1 
-    
-    by <- (xright - xleft - v * (length(col)))/(length(breaks))
-    steps <-   seq(0, (xright -xleft - v * (length(col))) ,by=by ) # 
-    nsteps <- length(steps) 
-    
-    if (verbose) print(steps)
-    if (verbose) print(breaks)
-    if (verbose) print(nsteps)
-    
-    ## if (max(abs(breaks))<=1) breaks <- round(breaks,digits=2)
-    k <- 1/2
-    for (i in 1 :(nsteps-2)) {  
-        if (!is.null(v)) 
-            if (i == 1) k <- k + v/2 else k <- k + v  
-        if (type == "r") { ## "r" for rectangle
-            rect(xleft= k  + xleft + steps[i] ,xright= k + xleft + steps[i+1],
-                 ybottom=ybottom,ytop=ytop,col=col[i],border=border)
-            
-            ## text(x = k + xleft + steps[i], y = ybottom - 1,labels=sprintf("%.1f",icn[i]),cex=cex)
-        }
-        else if (type == "p") { ## "p" points
-            points(x= k + xleft + (steps[i]+ steps[i+1])/2, y=(ybottom + ytop)/2,
-                   pch=pch, bg=col[i],cex=cex,...)
-            
-        }
-        
-        text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl,
-             labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
-    } 
-    #par(fig=par0$fig)
-}
 
 colbar2 <- function(x,col) {
     par(mar=c(1,0,0,0),fig=c(0.5,1,0.665,0.695),new=TRUE,cex.axis=0.6)
@@ -606,369 +500,4 @@ colbar2 <- function(x,col) {
 ##   }
 ##   cols <- lapply(cols,function(x) approx(x,n=n)$y)
 ##   return(rgb(cols$r,cols$g,cols$b,alpha))
-## }
-
-## from DSE ...
-## col.bar <- function(x,horiz=TRUE,v=1,h=1,col=col,cex=0.7,type="r",...) {
-    
-##     xleft <- par()$usr[1] 
-##     xright <- par()$usr[2]
-##     ybottom <- par()$usr[4] - 1 - h
-##     ytop <-  par()$usr[4] - 1 
-    
-##     steps <-   seq(0, (xright -xleft - v * (length(col))) , (xright - xleft - v * (length(col)))/(length(col))) # 
-##     nsteps <- length(steps) - 1 
-##     icn <- seq(0,1,1/nsteps) ; print(icn)
-##     k <- 0
-##     for (i in 1 :nsteps) {  
-##         if (!is.null(v)) 
-##             if (i == 1) k <- v/2 else k <- k + v  
-##         if (type == "r") { ## "r" for rectangle
-##             rect(xleft= k  + xleft + steps[i] ,xright= k + xleft + steps[i+1],ybottom=ybottom,ytop=ytop,col=col[i])
-##             text(x = k + xleft + steps[i],  y = ybottom - 1, labels=sprintf("%.1f",icn[i]),cex=cex)
-##             text(x = k + xleft + steps[i+1],y = ybottom - 1, labels=sprintf("%.1f",icn[i+1]),cex=cex)
-##             ## text(x = k + xleft + steps[i], y = ybottom - 1,labels=sprintf("%.1f",icn[i]),cex=cex)
-##         }
-##         else if (type == "p") { ## "p" points
-##             points(x= k + xleft + (steps[i]+ steps[i+1])/2, y=(ybottom + ytop)/2,pch=21, bg=col[i],cex=v)
-##             text(x = k + xleft + steps[i],  y = ybottom - 1, labels=sprintf("%.1f",icn[i]),cex=cex)
-##             text(x = k + xleft + steps[i+1],y = ybottom - 1, labels=sprintf("%.1f",icn[i+1]),cex=cex)
-##         }
-##     }
-## }
-
-
-## copied from infographics.R
-
-#seNorge
-#nodata	10000
-#nobits	16
-#header1	*Temperatur
-#header2	*Siste døgn (18-18 UTC)
-#legend	*Grader Celsius
-#From	To	R	G	B	Forklaring
-#2931	10000	204	0	0	*Over 20 
-#2881	2931	255	25	0	*15 - 20
-#2831	2881	255	102	0	*10 - 15
-#2781	2831	255	179	0	*5 - 10
-#2761	2781	255	230	77	*3 - 5
-#2741	2761	255	255	64	*1 - 3
-#2731	2741	255	255	190	*0 - 1
-#2721	2731	217	255	255	*÷1 - 0
-#2701	2721	179	255	255	*÷3 - ÷1
-#2681	2701	128	235	255	*÷5 - ÷3
-#2631	2681	64	204	255	*÷10 - ÷5
-#2581	2631	0 	153	255	*÷15 - ÷10
-#2531	2581	0 	25	255	*÷20 - ÷15
-#0	2531	0	0	153	*Under ÷20
-
-
-#nodata	10000
-#nobits	16
-#header1	*Nedbør
-#header2	*Siste døgn (06-06 UTC)
-#legend	*mm
-#From	To	R	G	B	Forklaring
-#1500	10000	0	0	153	*Over 150 
-#750	1500	0 	25	255	*75 - 150 
-#500	750	0 	153	255	*50 - 75
-#300	500	64	204	255	*30 - 50
-#200	300	128	235	255	*20 - 30
-#100	200	179	255	255	*10 - 20
-#1	100	217	255	255	*Under 10
-#0	1	229	229	229	*Ikke nedbør
-
-## colscal <- function(n=14,col="t2m",alpha=NULL,test=FALSE) {
-
-##   test.col <- function(r,g,b) {
-##     dev.new()
-##     par(bty="n")
-##     plot(r,col="red")
-##     points(b,col="blue")
-##     points(g,col="green")
-##   }
-
-##   # Set up colour-palette
-##   col <- tolower(col)
-##   x <- 1:n
-##   r0 <- round(n*0.55)
-##   g0 <- round(n*0.5)
-##   b0 <- round(n*0.45)
-##   s <- -0.1/n
-##   if (n < 30) sg <- s*2.5 else sg <- s
-##   n1 <- g0; n2 <- n-n1
-  
-## #R	G	B
-##   seNorgeT <- c(204,  0,    0,	
-##                255, 25,    0,	
-##                255, 102,   0,	
-##                255, 179,   0,	
-##                255, 230,  77,	
-##                255, 255,  64,	
-##                255, 255, 190,	
-##                217, 255, 255,	
-##                179, 255, 255,	
-##                128, 235, 255,	
-##                64, 204, 255,	
-##                0, 153, 255,	
-##                0,  25, 255,	
-##                0,   0, 153)	
-##   dim(seNorgeT) <- c(3,14)
-
-##   seNorgeP <- c(0, 0, 153,
-##                 0, 25, 255,
-##                 0, 153, 255,
-##                 64, 204, 255,
-##                 128, 235, 255,
-##                 179, 255, 255,
-##                 217, 255, 255,
-##                 229, 229, 229)
-##   dim(seNorgeP) <- c(3,8)
-
-##   ##if (!is.null(col))
-##   ##  if ((length(col)==1) & is.character(col) &
-##   ##      (sum(is.element(c('t2m','precip','bwr','rwb','mu','fw','tp',
-##   ##                        'faint.bwr','faint.rwb','rainbow',
-##   ##                        'gray.colors','heat.colors','terrain.colors',
-##   ##                        'topo.colors','cm.colors'),col))==0))
-##   ##      col <- 'bwr'
-
-##   #if (exists("r")) remove(r)
-##   #if (exists("g")) remove(g) 
-##   #if (exists("b")) remove(b)
-
-##   if (!is.null(alpha)) alpha <- rep(alpha[1],n)
-  
-##   if ( (col[1]=="bwr") | (col[1]=="slp") | (col[1]=="mslp") |
-##       (col[1]=="pressure") ) {
-##     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
-##     g <- exp(sg*(x - g0)^2)^2
-##     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
-##     if (is.null(alpha)) col <- rgb(r,g,b) else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if (col[1]=="rwb") {
-##     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
-##     g <- exp(sg*(x - g0)^2)^2
-##     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
-##     if (is.null(alpha)) col <- rgb(b,g,r)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if (col[1]=="faint.bwr") {
-##     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
-##     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
-##     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
-##     if (is.null(alpha)) col <- rgb(r,g,b)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if (col[1]=="faint.rwb") {
-##     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
-##     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
-##     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
-##     if (is.null(alpha)) col <- rgb(b,g,r)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if ( (col[1]=="t2m") | (col[1]=="tmax") | (col[1]=="tmin") |
-##              (col[1]=="sst")  | (col[1]=="air") ){
-##     r <- approx(seNorgeT[1,],n=n)$y/255
-##     g <- approx(seNorgeT[2,],n=n)$y/255
-##     b <- approx(seNorgeT[3,],n=n)$y/255
-##     if (is.null(alpha)) col <- rgb(b,g,r)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
-##              (col[1]=="f[w]") | (col[1]=="tp")) {
-##     r <- approx(seNorgeP[1,],n=n)$y/255
-##     g <- approx(seNorgeP[2,],n=n)$y/255
-##     b <- approx(seNorgeP[3,],n=n)$y/255
-##     if (is.null(alpha)) col <- rgb(r,g,b)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if (col[1]=="rainbow") {
-##     col <- rainbow(n,start=0,end=4/6)
-##   } else if (col[1]=="gray.colors") {
-##     col <- gray.colors(n)
-##   } else if (col[1]=="heat.colors") {
-##     col <- heat.colors(n)
-##   } else if (col[1]=="terrain.colors") {
-##     col <- terrain.colors(n)
-##   } else if (col[1]=="topo.colors") {
-##     col <- topo.colors(n)
-##   } else if (col[1]=="cm.colors") {
-##     col <- cm.colors(n)
-##   }
-
-##   if (test) { #& !exists("r")) {
-##     RGB <- col2rgb(col)/255
-##     r <- RGB[1,]; g <- RGB[2,]; b <- RGB[3,]
-##   }
-  
-##   if (test) test.col(r,g,b)
-##   return(col)
-## }
-
-## colbar <- function(scale,col,fig=c(0.15,0.2,0.15,0.3)) {
-##   par(xaxt="n",yaxt="s",fig=fig,mar=c(0,1,0,0),new=TRUE,las=1,cex.axis=0.6)
-##   image(1:2,scale,rbind(scale,scale),col=col
-##     )
-
-## from vis.R
-#seNorge
-#nodata	10000
-#nobits	16
-#header1	*Temperatur
-#header2	*Siste døgn (18-18 UTC)
-#legend	*Grader Celsius
-#From	To	R	G	B	Forklaring
-#2931	10000	204	0	0	*Over 20 
-#2881	2931	255	25	0	*15 - 20
-#2831	2881	255	102	0	*10 - 15
-#2781	2831	255	179	0	*5 - 10
-#2761	2781	255	230	77	*3 - 5
-#2741	2761	255	255	64	*1 - 3
-#2731	2741	255	255	190	*0 - 1
-#2721	2731	217	255	255	*÷1 - 0
-#2701	2721	179	255	255	*÷3 - ÷1
-#2681	2701	128	235	255	*÷5 - ÷3
-#2631	2681	64	204	255	*÷10 - ÷5
-#2581	2631	0 	153	255	*÷15 - ÷10
-#2531	2581	0 	25	255	*÷20 - ÷15
-#0	2531	0	0	153	*Under ÷20
-
-
-#nodata	10000
-#nobits	16
-#header1	*Nedbør
-#header2	*Siste døgn (06-06 UTC)
-#legend	*mm
-#From	To	R	G	B	Forklaring
-#1500	10000	0	0	153	*Over 150 
-#750	1500	0 	25	255	*75 - 150 
-#500	750	0 	153	255	*50 - 75
-#300	500	64	204	255	*30 - 50
-#200	300	128	235	255	*20 - 30
-#100	200	179	255	255	*10 - 20
-#1	100	217	255	255	*Under 10
-#0	1	229	229	229	*Ikke nedbør
-
-## colscal <- function(n=14,col="t2m",alpha=NULL,test=FALSE) {
-
-##   test.col <- function(r,g,b) {
-##     dev.new()
-##     par(bty="n")
-##     plot(r,col="red")
-##     points(b,col="blue")
-##     points(g,col="green")
-##   }
-
-##   # Set up colour-palette
-##   col <- tolower(col)
-##   x <- 1:n
-##   r0 <- round(n*0.55)
-##   g0 <- round(n*0.5)
-##   b0 <- round(n*0.45)
-##   s <- -0.1/n
-##   if (n < 30) sg <- s*2.5 else sg <- s
-##   n1 <- g0; n2 <- n-n1
-  
-## #R	G	B
-##   seNorgeT <- c(204,  0,    0,	
-##                255, 25,    0,	
-##                255, 102,   0,	
-##                255, 179,   0,	
-##                255, 230,  77,	
-##                255, 255,  64,	
-##                255, 255, 190,	
-##                217, 255, 255,	
-##                179, 255, 255,	
-##                128, 235, 255,	
-##                64, 204, 255,	
-##                0, 153, 255,	
-##                0,  25, 255,	
-##                0,   0, 153)	
-##   dim(seNorgeT) <- c(3,14)
-
-##   seNorgeP <- c(0, 0, 153,
-##                 0, 25, 255,
-##                 0, 153, 255,
-##                 64, 204, 255,
-##                 128, 235, 255,
-##                 179, 255, 255,
-##                 217, 255, 255,
-##                 229, 229, 229)
-##   dim(seNorgeP) <- c(3,8)
-
-##   ##if (!is.null(col))
-##   ##  if ((length(col)==1) & is.character(col) &
-##   ##      (sum(is.element(c('t2m','precip','bwr','rwb','mu','fw','tp',
-##   ##                        'faint.bwr','faint.rwb','rainbow',
-##   ##                        'gray.colors','heat.colors','terrain.colors',
-##   ##                        'topo.colors','cm.colors'),col))==0))
-##   ##      col <- 'bwr'
-
-##   #if (exists("r")) remove(r)
-##   #if (exists("g")) remove(g) 
-##   #if (exists("b")) remove(b)
-
-##   if (!is.null(alpha)) alpha <- rep(alpha[1],n)
-  
-##   if ( (col[1]=="bwr") | (col[1]=="slp") | (col[1]=="mslp") |
-##       (col[1]=="pressure") ) {
-##     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
-##     g <- exp(sg*(x - g0)^2)^2
-##     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
-##     if (is.null(alpha)) col <- rgb(r,g,b) else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if (col[1]=="rwb") {
-##     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
-##     g <- exp(sg*(x - g0)^2)^2
-##     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0,length=n1))
-##     if (is.null(alpha)) col <- rgb(b,g,r)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if (col[1]=="faint.bwr") {
-##     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
-##     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
-##     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
-##     if (is.null(alpha)) col <- rgb(r,g,b)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if (col[1]=="faint.rwb") {
-##     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0.5,1,length=n1),rep(1,n2))
-##     g <- min(exp(sg*(x - g0)^2)^2 + 0.5,1)
-##     b <- exp(s*(x - b0)^2)^0.5 * c(rep(1,n2),seq(1,0.5,length=n1))
-##     if (is.null(alpha)) col <- rgb(b,g,r)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if ( (col[1]=="t2m") | (col[1]=="tmax") | (col[1]=="tmin") |
-##              (col[1]=="sst")  | (col[1]=="air") ){
-##     r <- approx(seNorgeT[1,],n=n)$y/255
-##     g <- approx(seNorgeT[2,],n=n)$y/255
-##     b <- approx(seNorgeT[3,],n=n)$y/255
-##     if (is.null(alpha)) col <- rgb(b,g,r)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if ((col[1]=="precip") | (col[1]=="mu") | (col[1]=="fw") |
-##              (col[1]=="f[w]") | (col[1]=="tp")) {
-##     r <- approx(seNorgeP[1,],n=n)$y/255
-##     g <- approx(seNorgeP[2,],n=n)$y/255
-##     b <- approx(seNorgeP[3,],n=n)$y/255
-##     if (is.null(alpha)) col <- rgb(r,g,b)  else
-##                         col <- rgb(r,g,b,alpha)
-##   } else if (col[1]=="rainbow") {
-##     col <- rainbow(n,start=0,end=4/6)
-##   } else if (col[1]=="gray.colors") {
-##     col <- gray.colors(n)
-##   } else if (col[1]=="heat.colors") {
-##     col <- heat.colors(n)
-##   } else if (col[1]=="terrain.colors") {
-##     col <- terrain.colors(n)
-##   } else if (col[1]=="topo.colors") {
-##     col <- topo.colors(n)
-##   } else if (col[1]=="cm.colors") {
-##     col <- cm.colors(n)
-##   }
-
-##   if (test) { #& !exists("r")) {
-##     RGB <- col2rgb(col)/255
-##     r <- RGB[1,]; g <- RGB[2,]; b <- RGB[3,]
-##   }
-  
-##   if (test) test.col(r,g,b)
-##   return(col)
-## }
-
-## colbar <- function(scale,col,fig=c(0.15,0.2,0.15,0.3)) {
-##   par(xaxt="n",yaxt="s",fig=fig,mar=c(0,1,0,0),new=TRUE,las=1,cex.axis=0.6)
-##   image(1:2,scale,rbind(scale,scale),col=col)
 ## }
