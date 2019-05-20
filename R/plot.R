@@ -1490,11 +1490,13 @@ plot.spell <- function(x,xlim=NULL,ylim=NULL) {
   plot(range(t),c(-1,1)*max(c(h,l),na.rm=TRUE),type="n",
        xlab="",ylab="Spell length",xlim=xlim,ylim=ylim,
        main=paste(attr(x,'location')[1],": ",spelltype[1],sep=""))
-  leg <- eval(parse(text=paste("expression(paste(X > ",
-                      attr(x,'threshold'),"*",tunit,"))")))
+  leg <- try(eval(parse(text=paste("expression(paste(X > ",
+                      attr(x,'threshold'),"*",tunit,"))"))))
+  if (inherits(leg,'try-error')) leg <- ''
   text(t[1],0.75*max(c(h,l),na.rm=TRUE),leg,srt=90,cex=0.7,col="grey")
-  leg <- eval(parse(text=paste("expression(paste(X <= ",
-                      attr(x,'threshold'),"*",tunit,"))")))
+  leg <- try(eval(parse(text=paste("expression(paste(X <= ",
+                      attr(x,'threshold'),"*",tunit,"))"))))
+  if (inherits(leg,'try-error')) leg <- ''
   text(t[1],-0.75*max(c(h,l),na.rm=TRUE),leg,srt=90,cex=0.7,col="grey")
   lines(range(t),rep(0,2))
   apply(cbind(th1,rep(0,length(h)),th2,h),1,bar,col[1])
