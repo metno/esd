@@ -204,6 +204,8 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                            what=c("pc","eof","var"),## colbar=NULL,
                            cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
                            verbose=FALSE,it=NULL,is=NULL,cex=1) {
+  browser()
+  layout(matrix(c(1,2,3,3),nrow = 2,ncol = 2,byrow = TRUE))
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   n <- ip
   what <- tolower(what)
@@ -227,18 +229,18 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   if (length(what)==1) mfrow <- c(1,1)
   if (new) dev.new()
   ## par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-  par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
+  #par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
   if (length(grep('eof',what))>0) {
       if (verbose) {print('Show map'); print(class(x))}
       if (inherits(x,'eof')) {## inherits(x,'pca') |
-          par(fig=c(0,0.5,0.5,1))
+          #par(fig=c(0,0.5,0.5,1))
           ## par(fig=c(0.025,0.5,0.5,0.975)) ## c(0,0.45,0.5,0.975) c(0.05,0.5,0.55,0.95)
           map(x,ip=ip,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
               cex.lab=cex.lab,cex=cex,...) ## AM formely new=FALSE colbar=colbar,
       } else if (inherits(x,'pca')) {
           fig <- c(0,0.5,0.5,1)
-          par(fig=fig)
+          #par(fig=fig)
           main1 <- paste('Leading EOF#',ip, ' (',
                          round(var.eof[ip],digits=2),"%)",sep='')
           map(x,ip=ip,verbose=verbose,
@@ -257,7 +259,7 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                  round(sum(var.eof[1:n]),1),"% of variance")
   
   if (length(grep('var',what))>0) {
-    par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
+    #par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
     plot.eof.var(x,ip=ip,new=FALSE,cex.main=cex.main,
                  cex.axis=cex.axis,bty="n",cex=cex)
   }
@@ -265,7 +267,7 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   #print(main)
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
-      par(fig=c(0.05,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+      #par(fig=c(0.05,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
       main <- paste('Leading PC#',ip,' of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
@@ -287,14 +289,14 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
       grid()
   }
  
-  par(fig=c(0,1,0,0.55),new=TRUE, mar=c(1,1,1,1),xaxt="n",yaxt="n",bty="n")
+  #par(fig=c(0,1,0,0.55),new=TRUE, mar=c(1,1,1,1),xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
 
   varnm <- varid(x)[1]
   legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   
-  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-      fig=c(0,1,0.1,1),new=FALSE)
+  #par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+  #    fig=c(0,1,0.1,1),new=FALSE)
   #par(fig=c(0,1,0,0.1),new=NEW, mar=c(0,0,0,0))  
 }
 

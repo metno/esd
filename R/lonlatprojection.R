@@ -41,7 +41,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (verbose) print('meta-stuff')
   unit <- attr(x,'unit'); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
   
-  if(!is.null(variable)) variable <- as.character(variable)
+  if(!is.null(variable)) {
+    variable <- as.character(variable)
+   varname <- attr(x,'longname') 
+  }
   if(!is.null(unit)) unit <- as.character(unit)
   if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") | (unit=="degree Celsius"))
     unit <- "degree*C"
@@ -127,14 +130,25 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub)}
   
-  text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2, cex=0.85)
-  if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
+  lab <- varlabel
+  ## text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2, cex=0.85)
   
+  ## if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
+  if ((!is.null(sub)) & (length(sub)>0)) {
+    sub <- paste('pattern derived from',sub)
+    lab <- parse(text=paste(lab,'*',as.expression(paste('~ ',paste(unlist(strsplit(sub,split=' ')),collapse = ' *~ '),sep=''))))
+  }  #title(main = as.expression(sub),line = 3, adj =0.25)
   if (!is.null(period))
-    text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
+    lab <- parse(text=paste(lab,'*',as.expression(period)))
+    #title(main = as.expression(period),line = 3, adj =1)
+    #text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
   if (!is.null(method))
-    text(lon[length(lon)],lat[1] - dlat,method,col="grey30",pos=2,cex=0.7)
-  
+    lab <- parse(text=paste(lab,'*',as.expression(method)))
+    #title(main = as.expression(method),line = 3, adj =0.5)
+    #text(lon[length(lon)],lat[1] - dlat,method,col="grey30",pos=2,cex=0.7)
+  #browser()
+  title(sub = lab,line = 0 , adj = 0.5)
+  #browser()
   if (!is.null(colbar)) {
     if (verbose) print('Add colourbar')
     
@@ -147,24 +161,27 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(col.axis='black',col.lab='black',
         cex.lab=0.5,cex.axis=0.5)
     
-    if (!is.null(colbar)) {
-      if (colbar$show) {
-        if (fancy) {
-          col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
-                  col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
-                  type=type,verbose=FALSE,vl=1,border=FALSE)
-        }
+    #if (!is.null(colbar)) {
+    if (colbar$show) {
+      if (fancy) {
+        col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
+                col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
+                type=type,verbose=FALSE,vl=1,border=FALSE)
+        #}
+        #  }
+      } else {
+        #par(fig=par0$fig)
+        #op <- par()
+        #par(mgp = c(0, 2, 0))
+        image.plot(breaks=colbar$breaks,
+                   lab.breaks=colbar$breaks,horizontal = TRUE,
+                   legend.only = TRUE, zlim = range(colbar$breaks),
+                   col = colbar$col, legend.width = 1,
+                   axis.args = list(cex.axis = 1,hadj = 0.5,mgp = c(0, 0.5, 0)), border = FALSE)
+        #par(op)
       }
-    } else {
-      #par(fig=par0$fig)
-      image.plot(breaks=colbar$breaks,
-                 lab.breaks=colbar$breaks,horizontal = TRUE,
-                 legend.only = TRUE, zlim = range(colbar$breaks),
-                 col = colbar$col, legend.width = 1,
-                 axis.args = list(cex.axis = 0.8), border = FALSE)
     }
   }
-  
   par(fig=fig0)
   
   par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
