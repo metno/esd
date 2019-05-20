@@ -223,7 +223,7 @@ subset.pattern <- function(x,is=NULL,verbose=FALSE,...) {
     }
     if (!is.null(attr(x,'pattern'))) {
       if (verbose) print('replace the pattern argument')
-      y[ix,iy] -> attr(x,'pattern')
+      y[ix,iy,] -> attr(x,'pattern')
       lons[ix] -> attr(x,'longitude')
       lats[iy] -> attr(x,'latitude')
     } else {

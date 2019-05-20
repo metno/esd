@@ -822,24 +822,25 @@ plot.ds.pca <- function(x,...,ip=1,
 
 plot.ds.eof <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE) {
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,type1="fill",type2=c("fill","contour"),
+                        verbose=FALSE) {
   y <- x # quick fix
   if (verbose) print('plot.ds.eof')
   if (is.null(colbar2)) colbar2 <- colbar1 
   attr(y,'longname') <- attr(y,'longname')[1]
   par(fig=c(0,0.5,0.5,1),mar=c(3,5,4.2,1),mgp=c(3,0.5,0.5))
   map.eof(y,ip=ip,verbose=verbose,new=FALSE,colbar=colbar1,
-          main=paste("Predictand EOF pattern # ",ip,sep=""),...)
+          main=paste("(a) Predictand EOF pattern # ",ip,sep=""),type=type1,...)
   par(fig=c(0.5,1,0.5,1),mar=c(3,4,4.2,1),new=TRUE)
   map(attr(y,'predictor.pattern'),ip=ip,new=FALSE,
       colbar=colbar2,verbose=verbose,
-      main=paste("Predictor EOF pattern # ",ip,sep=""))
+      main=paste("(b) Predictor EOF pattern # ",ip,sep=""),type=type2)
   #title(paste("EOF Pattern # ",ip,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0,0.5,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     pc.obs <- attr(y,'evaluation')[,1+2*(ip-1)]
     pc.ds <- attr(y,'evaluation')[,2+2*(ip-1)]
-    plot(pc.obs,pc.ds,main='Cross-validation',xlab='original data',
+    plot(pc.obs,pc.ds,main='(c) Cross-validation',xlab='original data',
          ylab='prediction',pch=19,col="grey",
          xlim=range(pc.obs,pc.ds),ylim=range(pc.obs,pc.ds))
     lines(range(c(attr(y,'evaluation')),na.rm=TRUE),
@@ -848,15 +849,13 @@ plot.ds.eof <- function(x,...,ip=1,
     xvalfit <- lm(y ~ x, data = cal)
     r.xval <- round(cor(pc.obs,pc.ds),2)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
-    text(min(pc.obs)+diff(range(pc.obs))/12,max(pc.ds),
-         paste("r =",r.xval),#round(xvalfit$coefficients[2],digits=2)),
-         pos=4,cex=0.9)
+    legend("topleft", paste("r =",r.xval),bty='n')
     par(fig=c(0.5,1,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     xlim <- range(index(attr(y,'original_data')),index(y))
     ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE)
     y0 <- attr(y,'original_data')
     plot(y0[,ip],
-         main=paste("PC",ip),ylab="",
+         main=paste("(d) PC",ip),ylab="",
          ylim=ylim*c(1.2,1.2),xlim=xlim,
          lwd=2,type='b',pch=19)
     if ( (class(index(y))=='Date') & (class(index(y0))=='numeric') & inherits(y,'annual') ) 
@@ -864,9 +863,7 @@ plot.ds.eof <- function(x,...,ip=1,
     if ( (class(index(y))=='numeric') & (class(index(y0))=='Date') & inherits(y,'annual') ) 
       index(y) <- as.Date(paste(index(y),'01-01',sep='-'))
     lines(zoo(y[,ip]),lwd=2,col='red',type='b')
-    legend(x=index(attr(y,'original_data')[,ip])[1],
-           y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,ip]))/3,
+    legend("topleft",
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
   } else {
@@ -876,9 +873,7 @@ plot.ds.eof <- function(x,...,ip=1,
          ylim=range(attr(y,'original_data')[,ip])*c(1.6,1.6),
          lwd=2,type='b',pch=19)
     lines(zoo(y[,ip]),lwd=2,col='red',type='b')
-    legend(x=index(attr(y,'original_data')[,ip])[1],
-           y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
-               diff(range(attr(y,'original_data')[,ip]))/3,
+    legend("topleft",
            legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
            lwd=c(2,2),pch=c(21,19),bty="n")
     xvalfit <- NULL

@@ -136,7 +136,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
   if ((!is.null(sub)) & (length(sub)>0)) {
     sub <- paste('pattern derived from',sub)
-    lab <- parse(text=paste(lab,'*',as.expression(paste('~ ',paste(unlist(strsplit(sub,split=' ')),collapse = ' *~ '),sep=''))))
+    lab <- try(parse(text=paste(lab,'*',as.expression(paste('~ ',
+                                                        paste(unlist(strsplit(sub,split=' ')),collapse = ' *~ '),sep='')))))
+    if (inherits(lab,'try-error')) lab <- ''
   }  #title(main = as.expression(sub),line = 3, adj =0.25)
   if (!is.null(period))
     lab <- parse(text=paste(lab,'*',as.expression(period)))
