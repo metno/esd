@@ -2,6 +2,57 @@
 # apply the DS model.
 # Rasmus Benestad
 
+
+
+#' %% ~~function to do ... ~~ Prediction based on DS or CCA model
+#' 
+#' Apply an empirical-statistical downscaling model to new data
+#' 
+#' %% ~~ If necessary, more details than the description above ~~ 'predict' is
+#' similar to the predict function in R
+#' 
+#' 'project' returns projection of climate
+#' 
+#' @aliases predict.ds predict.ds.eof predict.ds.com project.ds predict.cca
+#' @param x A ds object
+#' @param newdata An eof object containing the new data sets on which the
+#' prediction is made. %% ~~Describe \code{newdata} here~~
+#' @param addnoise If TRUE, will add an attribute called "noise" to the ouput
+#' based on WG %% ~~Describe \code{addnoise} here~~
+#' @param n Number of runs to be generated, used only if addnoise is set to
+#' TRUE %% ~~Describe \code{n} here~~
+#' @return Predicted ds values.
+#' @author A. Mezghani
+#' @seealso \code{\link{DS}} %% ~~objects to See Also as \code{\link{help}},
+#' ~~~
+#' @keywords ~kwd1 ~kwd2
+#' @examples
+#' 
+#' # Get predictor
+#' ## Get reanalysis
+#' X <- t2m.DNMI(lon=c(-40,50),lat=c(40,75))
+#' ## Get Gcm output
+#' Y <- t2m.NorESM.M(lon=c(-40,50),lat=c(40,75))
+#' ## Combine
+#' XY <- combine(X,Y)
+#' # Compute common eof for January
+#' ceof <- EOF(XY,it='jan')
+#' # Get predictand
+#' data(Oslo)
+#' # Do the downscaling
+#' ds <- DS(Oslo,ceof)
+#' # Plot ds results
+#' plot(ds)
+#' # Do the prediction based on the calibration (or the fitted values)
+#' ds.pre <- predict(ds)
+#' # Plot predicted results based on ds object
+#' plot(ds.pre)
+#' # Display the attribute "aspect"
+#' attr(ds.pre, "aspect")
+#' ## Extract the projected results
+#' plot(project.ds(ds))
+#' 
+#' @export predict.ds
 predict.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
   stopifnot(!missing(x),inherits(x,"ds"))

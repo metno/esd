@@ -6,6 +6,52 @@
 #------------------------------------------------------------------------
 
 
+
+
+#' Spell statistics
+#' 
+#' Statistics of spell durations (consecutive wet and dry days), e.g. dry and
+#' wet periods or duration of extremes.
+#' 
+#' \code{exceedance} estimates statistics for peak-over-treshold, and
+#' \code{nevents} returns the number of events with exceeding values (e.g. the
+#' number of rainy days X > 1 mm/day). \code{wetfreq} resturs n the wet-day
+#' frequency (a fraction) and \code{wetmean} wet-day mean.
+#' 
+#' 
+#' @aliases spell spell.default spell.station hist.spell count wetfreq wetmean
+#' nevents exceedance exceedance.default exceedance.station exceedance.field
+#' HDD CDD GDD coldwinterdays
+#' @param x station or field object
+#' @param threshold threshold value
+#' @param upper upper limit for maximum length - ignore any above this because
+#' they are likely errornous
+#' @param fraction TRUE: divide the number of counts by number of samples
+#' @param fun function
+#' @return Station or field objects
+#' @author R.E. Benestad and A.  Mezghanil
+#' @seealso plot
+#' @keywords utilities
+#' @examples
+#' 
+#' # Example 1 : 
+#' precip <- station.metnod(stid="18700",param="precip")
+#' x <- spell(precip,threshold=.1)
+#' x.ann <- annual(x,FUN="max")
+#' plot(x.ann,plot.type="multiple")
+#' # Example 2 :
+#' x11() ; plot(x)
+#' 
+#' # Growing degree days:
+#' data(ferder)
+#' plot(as.seasons(ferder,FUN='GDD'))
+#' 
+#' # Mild winter days - number of days in the winter season with
+#' # above freezing temperatures
+#' data(ferder)
+#' try(coldwinterdays(ferder))
+#' 
+#' @export spell
 spell <- function(x,threshold,...) UseMethod("spell")
 
 

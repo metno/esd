@@ -19,6 +19,61 @@ regfit <- function(z,cal.dat,terms) {
   return(modelcoefs)
 }
 
+
+
+#' Derivatives %% ~~function to do ... ~~
+#' 
+#' Functions to estimate derivatives for gridded field objects based on a fit
+#' to truncated Fourier series. The three functions give the x-, y- and time
+#' derivatives respectively.  See Benestad & Chen (2006) 'The use of a
+#' Calculus-based Cyclone Identification method for generating storm
+#' statistics' (Tellus A 58A, 473-486, doi:10.1111/j.1600-0870.2006.00191) for
+#' more details.  %% ~~ A concise (1-5 lines) description of what the function
+#' does. ~~
+#' 
+#' 
+#' @aliases dX dY dT
+#' @param Z A field object %% ~~Describe \code{Z} here~~
+#' @param m number of harmonics for fitting the Fourier series %% ~~Describe
+#' \code{m} here~~
+#' @param mask.bad mask missing data %% ~~Describe \code{mask.bad} here~~
+#' @param plot for %% ~~Describe \code{plot} here~~
+#' @param r radius of the Earth (m) %% ~~Describe \code{r} here~~
+#' @param chk.conf %% ~~Describe \code{chk.conf} here~~
+#' @param accuracy %% ~~Describe \code{accuracy} here~~
+#' @param progress show the progress intereactively %% ~~Describe
+#' \code{progress} here~~
+#' @param verbose show diagnostics of the progress %% ~~Describe \code{verbose}
+#' here~~
+#' @return a list with several comonents:
+#' 
+#' \item{Z}{original data} \item{a}{Fourier coefficients for cosine}
+#' \item{b}{Fourier coeffieicnes for sine} \item{z0}{defunct?} \item{dZ}{The
+#' component contains the first derivative.} \item{dZ2}{The component contains
+#' the second derivative (quicker to do both in one go).} \item{lon}{longitude}
+#' \item{lat}{latitude} \item{dx}{spatial resolution} \item{span}{spatial
+#' extent}
+#' @keywords ~kwd1 ~kwd2
+#' @examples
+#' 
+#' data(slp.ERA5)
+#' slp.dx <- dX(slp.ERA5,verbose=TRUE)
+#' map(slp.dx$Z) # map of SLP 
+#' map(slp.dx$dZ) # map of first derivative in longitude direction
+#' map(slp.dx$dZ2) # map of second derivative in longitude direction
+#' \dontrun{
+#' u10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='u10')
+#' v10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='v10')
+#' ## Estimate the vorticity
+#' zeta <- dX(v10)$dZ - dY(u10)$dZ
+#' zeta <- attrcp(u10,zeta)
+#' class(zeta) <- class(u10)
+#' attr(zeta,'variable') <- 'vorticity'
+#' attr(zeta,'unit') <- '1/s'
+#' map(subset(zeta,it=1),projection='np')
+#' }
+#' 
+#' @export dX
 dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
                chk.conf=1,accuracy=NULL,progress=TRUE,verbose=FALSE) {
 

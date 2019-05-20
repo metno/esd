@@ -1,5 +1,32 @@
 ## method for saving results and objects from esd as netCDF files:
 
+
+
+#' Export esd-objects to netCDF files
+#' 
+#' \code{esd2ncdf4} saves the data and its main structure (metadata) as netCDF
+#' files according to the CF-convention \url{http://cfconventions.org/}.
+#' 
+#' 
+#' @aliases esd2ncdf4 esd2ncdf4.default esd2ncdf4.field esd2ncdf4.station
+#' esd2ncdf4.eof esd2ncdf4.pca esd2ncdf4.dsensemble
+#' @param x esd object
+#' @param fname file name
+#' @param scale scaling factor
+#' @param offset offset
+#' @param torg time origin
+#' @param \dots %% ~~Describe \code{\dots} here~~
+#' @keywords ~kwd1 ~kwd2
+#' @examples
+#' 
+#' ##---- Should be DIRECTLY executable !! ----
+#' ##-- ==>  Define data, use random,
+#' ##--	or do  help(data=index)  for the standard data sets.
+#' 
+#' ## The function is currently defined as
+#' function (x, ...) 
+#' UseMethod("esd2ncdf4")
+#' 
 esd2ncdf4 <- function(x,...) UseMethod("esd2ncdf4")
 
 esd2ncdf4.default <- function(x,...) {

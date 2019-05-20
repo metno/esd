@@ -2,6 +2,37 @@
 # Estimate the naomaly and climatology
 # Store the monthly climatology as an attribute (12,np)
 
+
+
+#' Anomaly and Climatology
+#' 
+#' S3-method that computes anomalies and/or climatology for time series and
+#' fields.  \code{clim2pca} is unfinished
+#' 
+#' 
+#' @aliases anomaly anomaly.default anomaly.comb anomaly.field anomaly.station
+#' anomaly.annual anomaly.month anomaly.season anomaly.day climatology
+#' climatology.default climatology.field climatology.station clim2pca
+#' clim2pca.default clim2pca.month clim2pca.day
+#' @param x A station or field object
+#' @param ref vector defining the reference interval
+#' @return The call returns a similar object as x containing anomalies and data
+#' climatology.
+#' 
+#' In `anomaly.dsensemble', the default value of the reference period is taken
+#' as the available time period from observations, i.e. same time period as in
+#' attribute `station' is used as baseperiod to compute anomalies of GCM
+#' downscaled results.
+#' @author R.E. Benestad
+#' @seealso \code{\link{as.anomaly}}, \code{\link{as.climatology}}
+#' @keywords utilities
+#' @examples
+#' 
+#' data(ferder)
+#' plot(anomaly(ferder))
+#' 
+#' 
+#' @export anomaly
 anomaly <-function(x,...) UseMethod("anomaly")
 
 anomaly.default <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {

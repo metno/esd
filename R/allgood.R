@@ -12,6 +12,25 @@ allgood <- function(x,miss=.1,verbose=FALSE) {
 
   ## Remove stations with little data:
   nok <- as.numeric(apply(coredata(x),2,nv))
+
+
+#' Test for .
+#' 
+#' Computes different formulas
+#' 
+#' 
+#' @aliases is.T is.precip is.field( is.station is.eof is.pca is.cca
+#' is.trajectory is.daily is.monthly is.seasonal is.annual is.model is.wind
+#' is.direction is.pressure
+#' @param x a data object
+#' @return Boolean
+#' @author R. Benestad, MET Norway
+#' @keywords parameter,element
+#' @examples
+#' 
+#' data(ferder)
+#' is.T(ferder)
+#' 
   is <- (1:d[2])[nok>=0.7*d[2]]
   if (length(is)>0) y <- subset(x,is=is) else
                     y <- x

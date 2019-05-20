@@ -2,6 +2,40 @@
 
 # Binned scatterplot with sunflowers
 
+
+
+#' Advanced scatter plots
+#' 
+#' Various functions that display bi-variate data in different ways. The
+#' default presents the number of points falling into pixles of a 2D grid.
+#' 
+#' The 'heat' type produces a heat map type display whereas 'sunflower' and
+#' 'hexbin' present alternative infographics
+#' 
+#' @param x x-variable
+#' @param y y-variable
+#' @param type Type of scatter cplot \code{c('heat','sunflower','hexbin'}
+#' @param verbose TRUE for diagnosing the internals of the function.
+#' @return Graphics and visualisation only.
+#' @author Kajsa M. Parding and Rasmus E. Benestad
+#' @seealso \code{\link{vis}},\code{\link{map}},\code{\link{plot}}
+#' @keywords graphics infographics
+#' @examples
+#' 
+#' scatter(rnorm(10000),rnorm(10000),dig=1,log=TRUE)
+#' scatter(rnorm(10000),rnorm(10000),type='sunflower',petalsize=7,dx=NULL,dy=NULL,
+#'                               xgrid=NULL,ygrid=NULL,xlim=NULL,ylim=NULL,
+#'                               xlab=NULL,ylab=NULL,main=NULL,leg=TRUE,rotate=TRUE,
+#'                               alpha=0.6,leg.loc=2,new=TRUE, verbose=FALSE)
+#' scatter(rnorm(10000),rnorm(10000),type='hexbin',new=TRUE,Nmax=NULL,
+#'                            dx=NULL,dy=NULL,xgrid=NULL,ygrid=NULL,
+#'                            xlim=NULL,ylim=NULL,
+#'                            xlab=NULL,ylab=NULL,main=NULL,
+#'                            leg=TRUE,col='blue',border='white',
+#'                            colmap='heat.colors',
+#'                            scale.col=TRUE,scale.size=FALSE, verbose=FALSE)
+#' 
+#' @export scatter
 scatter <- function(x,y,type='heat', verbose=FALSE,...) {
   if (verbose) print(match.call())
   if (tolower(type)=='heat') scatter.heat(x,y,verbose=verbose,...)

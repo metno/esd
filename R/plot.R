@@ -1,3 +1,87 @@
+#' Plot esd objects
+#' 
+#' These plot functions are S3 methods for esd objects, based on \code{plot}.
+#' 
+#' 
+#' @aliases plot.station plot.pca vis.map plot.eof plot.eof.field plot.eof.var
+#' plot.eof.comb plot.field plot.spell plot.cca plot.ds plot.ds.pca plot.ds.eof
+#' plot.dsx plot.dsensemble plot.diagnose plot.xval plot.diagnose.comb.eof
+#' plot.diagnose.matrix plot.diagnose.dsensemble plot.nevents nam2expr
+#' @param x the object to be plotted
+#' @param ip Which EOF/CCA pattern (mode) to plot
+#' @param col Colour
+#' @param is For subsetting in space - See \code{link{subset}}, but can also be
+#' a station value and if provided, the plotting will involve an interploation
+#' to the same coordinates as defined by \code{is}.
+#' @param it For subsetting in time - See \code{link{subset}}.'it=0' returns
+#' the annual means (mean of DJF + MAM + JJA + SON)
+#' @param FUN function
+#' @param obs.show Show the observations
+#' @param target.show Show a 'target plot' for quality
+#' @param map.show Show a small map of the location
+#' @param map.type
+#' @param what Indicate what to plot. 'field' expands eof to field before
+#' plotting
+#' @param new if TRUE plot in new window
+#' @return A field object
+#' @author R.E. Benestad
+#' @seealso \code{\link{plot}}
+#' @keywords hplot
+#' @examples
+#' 
+#' # Example: use aggregate to compute annual mean temperature for Svalbard:
+#' data(Svalbard)
+#' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
+#' plot(y)
+#' 
+#' # Example with downscaling:
+#' lon <- c(-12,37)
+#' lat <- c(52,72)
+#' t2m <- t2m.DNMI(lon=lon,lat=lat)
+#' data(Oslo)
+#' ds <- DS(Oslo,t2m)
+#' 
+#' # Plot the results for January month
+#' # plot(subset(ds,it='Jan'))
+#' 
+#' # Plot the residuals:
+#' residual <- as.residual(ds)
+#' obs <- as.anomaly(as.calibrationdata(ds))
+#' 
+#' plot.zoo(obs,lwd=2)
+#' lines(residual,col="red")
+#' 
+#' print("Global climate model simulation NorESM")
+#' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
+#' 
+#' # Plot the global mean of the field:
+#' plot(T2m)
+#' # Plot area mean of a sub region
+#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+#' 
+#' # Plot interpolated results corresponding to ferder
+#' data(ferder)
+#' plot(T2m,ferder)
+#' 
+#' # Plot Hovmuller diagram: Not working ...
+#' ## plot(T2m,is=list(lon=0)) 
+#' 
+#' print("Extract a subset - the January month")
+#' x <- subset(t2m,it="jan")
+#' X <- subset(T2m,it="jan")
+#' 
+#' print("Combine the fields for computing common EOFs:")
+#' XX <- combine(x,X)
+#' 
+#' print("Compute common EOFs")
+#' eofxx <- EOF(XX)
+#' plot(eofxx)
+#' 
+#' print("Downscale the January mean temperature") 
+#' ds.jan <- DS(Oslo,eofxx)
+#' plot(ds.jan)
+#' 
+#' 
 plot <- function(x,...)  UseMethod("plot")
 
 plot.list <- function(x,...,is=NULL,

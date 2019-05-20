@@ -3,6 +3,41 @@
 #------------------------------------------------------------------------
 
 
+
+
+#' Trending and detrending data
+#' 
+#' Trend analysis and de-trending of data. The three methods \code{trend.coef},
+#' \code{trend.err} and \code{trend.pval} are somewhat different to the other
+#' trend methods and designed for the use in \code{apply} operations, as
+#' reflected in the different sets of arguments. They are used in the other
+#' methods if the \code{result} argument is set to one of
+#' ["coef","err","pval"].
+#' 
+#' 
+#' @aliases trend.one.station trend.station trend.eof trend.field trend.zoo
+#' trend.zoo.multi trend.coef trend.err trend.pval
+#' @param x The data object
+#' @param result "trend" returns the trend; "residual" returns the residual;
+#' "coef" returns the trend coefficient; "err" the error estimate; "pval" the
+#' p-value.
+#' @param model The trend model used by \code{\link{lm}}.
+#' @return Similar type object as the input object
+#' @author R.E. Benestad
+#' @seealso \code{link{climatology}}, \code{link{anomaly}}
+#' @keywords utilities
+#' @examples
+#' 
+#' data(ferder)
+#' 
+#' plot(annual(ferder,'max'))
+#' tr <- trend(annual(ferder,'max'))
+#' lines(tr)
+#' grid()
+#' print(attr(tr,'coefficients'))
+#' print(trend(ferder,results='pval'))
+#' 
+#' @export trend
 trend<-function(x,result="trend",model="y ~ t",...) UseMethod("trend")
 
 trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {

@@ -1,4 +1,3 @@
-
 ##seNorge
 #nodata	10000
 #nobits	16
@@ -422,6 +421,87 @@ colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
   }
 }
 
+
+
+#' %% ~~function to do ... ~~ Color bar
+#' 
+#' %% ~~ A concise (1-5 lines) description of what the function does. ~~
+#' Display a color bar object on an existing plot.
+#' 
+#' %% ~~ If necessary, more details than the description above ~~ Insert a
+#' color bar or color points into an exisiting plot or map
+#' 
+#' @aliases col.bar colbar
+#' @param breaks A numeric vector of breakpoints for the colours %% ~~Describe
+#' \code{breaks} here~~
+#' @param horiz %% ~~Describe \code{horiz} here~~
+#' @param pch \code{\link{par}} %% ~~Describe \code{pch} here~~
+#' @param v Vertical space between color bar points %% ~~Describe \code{v}
+#' here~~
+#' @param h horizontal space between color bar points %% ~~Describe \code{h}
+#' here~~
+#' @param col \code{\link{par}} %% ~~Describe \code{col} here~~
+#' @param pal palette:
+#' c("bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold","warm")
+#' @param cex \code{\link{par}} %% ~~Describe \code{cex} here~~
+#' @param cex.lab \code{\link{par}} %% ~~Describe \code{cex.lab} here~~
+#' @param type r : rectangular shape , p : for points %% ~~Describe \code{type}
+#' here~~
+#' @param verbose %% ~~Describe \code{verbose} here~~
+#' @param vl Vertical lines %% ~~Describe \code{vl} here~~
+#' @param border Color bar borders %% ~~Describe \code{border} here~~
+#' @param \dots More graphical parameters to be passed %% ~~Describe
+#' \code{\dots} here~~
+#' @author A. Mezghani %% ~~who you are~~
+#' @keywords ~kwd1 ~kwd2
+#' @examples
+#' 
+#' ##---- Should be DIRECTLY executable !! ----
+#' ##-- ==>  Define data, use random,
+#' ##--	or do  help(data=index)  for the standard data sets.
+#' 
+#' ## The function is currently defined as
+#' function (breaks, horiz = TRUE, pch = 21, v = 1, h = 1, col = col, 
+#'     cex = 2, cex.lab = 0.6, type = "r", verbose = FALSE, vl = 0.5, 
+#'     border = FALSE, ...) 
+#' {
+#'     par0 <- par()
+#'     xleft <- par()$usr[1]
+#'     xright <- par()$usr[2]
+#'     ybottom <- par()$usr[4] - 1 - h
+#'     ytop <- par()$usr[4] - 1
+#'     by <- (xright - xleft - v * (length(col)))/(length(breaks))
+#'     steps <- seq(0, (xright - xleft - v * (length(col))), by = by)
+#'     nsteps <- length(steps)
+#'     if (verbose) 
+#'         print(steps)
+#'     if (verbose) 
+#'         print(breaks)
+#'     if (verbose) 
+#'         print(nsteps)
+#'     k <- 1/2
+#'     for (i in 1:(nsteps - 2)) {
+#'         if (!is.null(v)) 
+#'             if (i == 1) 
+#'                 k <- k + v/2
+#'             else k <- k + v
+#'         if (type == "r") {
+#'             rect(xleft = k + xleft + steps[i], xright = k + xleft + 
+#'                 steps[i + 1], ybottom = ybottom, ytop = ytop, 
+#'                 col = col[i], border = border)
+#'         }
+#'         else if (type == "p") {
+#'             points(x = k + xleft + (steps[i] + steps[i + 1])/2, 
+#'                 y = (ybottom + ytop)/2, pch = pch, bg = col[i], 
+#'                 cex = cex, ...)
+#'         }
+#'         text(x = k + xleft + (steps[i] + steps[i + 1])/2, y = ybottom - 
+#'             vl, labels = levels(cut(breaks, breaks))[i], col = "grey50", 
+#'             cex = cex.lab)
+#'     }
+#'     par(fig = par0$fig)
+#'   }
+#' 
 col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
                     cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
     par0 <- par()

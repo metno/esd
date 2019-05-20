@@ -1,5 +1,134 @@
 # Last updated 10.10.2016
 
+
+
+#' Calculus Cyclone identification.
+#' 
+#' Identifies cyclones (low pressure systems) in a gridded data set using a
+#' Calculus Cyclone Identification (CCI) method (EMS04-A-00146, Benestad, R.E.;
+#' Sorteberg, A.; Chen, D. 'Storm statistics derived using a calculus-based
+#' cyclone identification method',
+#' \url{http://www.cosis.net/members/meetings/sessions/oral_programme.php?p_id=110&s_id=1845},
+#' European Meteorological Society AC2, Nice, Sept 28, 2004). Storms are
+#' identified with longitude, latitude, and date. Also returned are estimates
+#' of local minimum pressure, max pressure gradient near storm, max geostrophic
+#' and gradient windspeed near storm, and radius of the storm. The storm
+#' location is by means of finding where first derivatives of north--south and
+#' east--west gradients both are zero. The storm radius is estimated from the
+#' points of inflexion along the latitude and longitude lines running trough
+#' the centre of the storm.
+#' 
+#' If a north-south or east-west sea level pressure (p) profile can be
+#' approximated as \deqn{p(\theta) = p_0 + \sum_{i=1}^{N_\theta} [ a_\theta(i)
+#' \cos(\omega_\theta(i) \theta) + b_\theta(i) \sin(\omega_\theta(i) \theta)
+#' ]}{p = p0 + sum [ a cos(w t) + b sin(w t) ]}
+#' 
+#' Then the pressure gradient can be estimated as: \deqn{\frac{\partial
+#' \hat{p}(\theta)}{\partial \theta} = \sum_{i=1}^{N_\theta} \omega_\theta(i)[
+#' -\hat{a}_\theta(i) \sin(\omega_\theta(i) \theta) + \hat{b}_\theta(i)
+#' \cos(\omega_\theta(i) \theta)]}{dp/dt = sum (w[ -a sin(w t) + b cos(w w)])}
+#' 
+#' The gradient in x and y directions are found after the transform
+#' \deqn{\frac{d\hat{p}(x)}{dx} = \frac{1}{a \cos(\phi)}
+#' \frac{d\hat{p}(\theta)}{d\theta}}{dp/dx= 1/[a cos(t)] dp(t)/dt} and
+#' \deqn{\frac{d\hat{p}(y)}{dy} = \frac{1}{a}
+#' \frac{d\hat{p}(\phi)}{d\phi}}{dp/dy = 1/a dp/dt} (Gill, 1982).
+#' 
+#' This code is based on the CCI method of the R-package 'cyclones' and has
+#' been adapted for 'esd'.
+#' 
+#' %% \code{stopCCI} signals the CCI process to stop in a safe manner by %%
+#' removing the file '.CCI.run' in the run directory.
+#' 
+#' The maximum gradient wind (max.speed) is estimated as described in Fleagle
+#' and Businger (1980) p. 163. (eq 4.27).
+#' 
+#' Reference: Benestad \& Chen (2006) 'The use of a Calculus-based Cyclone
+#' Identification method for generating storm statistics', Tellus A, in press.
+#' Benestad (2005)
+#' 
+#' 
+#' @aliases CCI stopCCI
+#' @param Z A field object.
+#' @param m Number of harmonics used for fit to profile (Fourier truncation),
+#' which decides the degree of smoothing of the field. Lower values of m result
+#' in greater smoothing.
+#' @param it A list providing time index, e.g. month.
+#' @param is A list providing space index, lon and/or lat.
+#' @param label Label for ID-purposes.
+#' @param cyclones TRUE: identifies cyclones, FALSE: anticyclones.
+#' @param mindistance Min distance between cyclones. Unit: m.
+#' @param dpmin Min pressure gradient at points of inflection around cyclone.
+#' Unit: Pa/m (10hPa/km).
+#' @param pmax Max pressure in center of cyclone. Unit: hPa.
+#' @param rmin Min average radius of cyclone. Unit: m.
+#' @param rmax Max average radius of cyclone. Unit: m.
+#' @param nsim Number of simultaneous cyclones identified and saved ordered
+#' according to depth/strength (NULL = no limit).
+#' @param do.track TRUE: tracks the cyclones with the 'track' function, FALSE:
+#' no tracking is applied.
+#' @param fname Name of output file.
+#' @param plot TRUE: show intermediate results as plots.
+#' @param verbose Print out diagnostics.
+#' @param accuracy Not yet finished.
+#' @return The CCI function returns an 'events' object (a data frame with
+#' spatio-temporal information) that is organized as follows:
+#' \code{as.events(X=data.frame(date,time,lon,lat,pcent,max.dspl,
+#' max.speed,radius,qf),label=label,...}, where \code{date} and \code{time} are
+#' vectors containing the date and time of each cyclone, \code{lon} and
+#' \code{lat} are the longitude and latitude of the cyclone centers (unit:
+#' degrees), \code{pcent} is the pressure at the center of each cyclone (unit:
+#' hPa), \code{max.dpsl} is the maximum pressure gradient associated with each
+#' cyclone (unit: hPa/m), \code{max.speed} is the estimated maximum windspeed
+#' (unit: m/s), \code{radius} is the cyclone radius (unit: km), and \code{qf}
+#' is a kind of quality flag (1 = OK, 2 = less spatially precise, identified
+#' after widening the pressure gradient zero-crossings).
+#' @author K.M. Parding & R.E. Benestad
+#' @seealso track.events
+#' @keywords manip,cyclones,CCI
+#' @examples
+#' 
+#' 
+#' # Load sample data to use for example
+#' # ERA5 6-hourly SLP data from the North Atlantic region, 2016-09-15 to 2016-10-15
+#' data(slp.ERA5)
+#' 
+#' ## Cyclone identification
+#' Cstorms <- CCI(slp.ERA5, m=20, label='ERA5', pmax=1000, verbose=TRUE, plot=TRUE)
+#' 
+#' ## Cyclone tracking
+#' Ctracks <- track(Cstorms, plot=TRUE, verbose=TRUE)
+#' 
+#' ## Map with points and lines showing the cyclone centers and trajectories
+#' map(Ctracks, type=c("trajectory","points"), col="blue")
+#' ## Map with only the trajectory and start and end points
+#' map(Ctracks, type=c("trajectory","start","end"), col="red")
+#' ## Map showing the cyclone depth (slp) as a color scale (rd = red scale)
+#' map(Ctracks, param="pcent", type=c('trajectory','start'), 
+#'     colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1010,5)), alpha=0.9)
+#' 
+#' ## Select only the long lasting trajectories...
+#' Ct <- subset(Ctracks, ic=list(param='trackcount', pmin=12) )
+#' map(Ct)
+#' ## ...or only the long distance ones...
+#' Ct <- subset(Ctracks, ic=list(param='tracklength', pmin=3000) )
+#' map(Ct)
+#' ## ...or only the deep cyclones
+#' Ct <- subset(Ctracks, ic=list(param='pcent', pmax=980) )
+#' map(Ct)
+#' 
+#' ## Map of cyclone trajectories with the slp field in background
+#' cb <- list(pal="budrd",breaks=seq(990,1040,5))
+#' map(Ctracks, slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, verbose=TRUE)
+#' 
+#' ## Transform the cyclones into a 'trajectory' object which takes up less space
+#' Ctraj <- as.trajectory(Ctracks)
+#' map(Ctraj)
+#' print(object.size(Ctracks), units="auto")
+#' print(object.size(Ctraj), units="auto")
+#' 
+#' 
+#' @export CCI
 CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
                 label=NULL,mindistance=5E5,dpmin=1E-3,
                 pmax=1000,rmin=1E4,rmax=2E6,nsim=NULL,progress=TRUE,

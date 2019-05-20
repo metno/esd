@@ -28,6 +28,82 @@ cbind.field <- function(...) {
 }
 
 
+
+
+#' Combine
+#' 
+#' \code{combine} is a S3 method for combinng esd objects, e.g. into groups of
+#' stations, stations and eof object, or fields. The function is based on
+#' \code{\link[zoo]{merge}}, and is also used to synchronise the esd objects.
+#' 
+#' For fields, \code{combine.field} is used to append different data sets, e.g.
+#' for the purpose of computing common EOFs (seeo \code{\link{EOF}} or for
+#' mixing fields (coupled EOFs).
+#' 
+#' For stations, \code{combine.station} can work tow ways: (1) to combine a set
+#' of stations and group them into one data object; (2) combine series with
+#' different monthly values for one specific site into one record for the
+#' monthly data. E.g. January, February, ..., December months can be combined
+#' into one complete series of monthly data.
+#' 
+#' For DS-results, \code{combine.ds} is based on \code{combine.station}, but
+#' also takes care of the additional meta data (the original series and
+#' predictor patterns). For instance, this method can combine seperate
+#' downscaled results for each calendar months at a single location into one
+#' complete time series.
+#' 
+#' \code{g2dl} transform objects between grid starting at the grenwich
+#' (\code{greenwich=TRUE}) and the data line (\code{greenwich=FALSE}).
+#' 
+#' \code{sp2np} re-arranges field objects accroding to a grid going from 90S
+#' (South Pole) to 90N (Noth Pole) for \code{SP2NP=TRUE}. Otherwise, the object
+#' is arranged from 90N to 90S.
+#' 
+#' \code{softattr} copies the names of a subset of the attributes excluding
+#' "index", "dim" and others specified by \code{ignore}. \code{attrcp} passes
+#' on the attributes from one object (x) to another (y).
+#' 
+#' \code{zeros} counts the occurrence of zero values in a vector.
+#' 
+#' Other operations, such as \code{c(...)}, \code{rbind(...)} (combine along
+#' the time dimension), and \code{cbind(...)} (combine along the space
+#' dimension) also work.
+#' 
+#' 
+#' @aliases combine combine.default combine.stations combine.zoo combine.ds
+#' combine.ds.comb combine.ds.station combine.ds.station.eof
+#' combine.ds.station.field combine.station.month combine.ds.pca combine.list
+#' combine.station.eof zeros softattr g2dl g2dl.field g2dl.corfield g2dl.eof
+#' g2dl.default sp2np
+#' @param x station, eof, or field object
+#' @param all See \code{link{merge.zoo}}
+#' @param orig.format TRUE: the result will the formatted the same way as the
+#' input.
+#' @param dimension Which dimension to combine - in time or in space
+#' @param approach How to combine
+#' @param greenwich TRUE: center map on the Greenwich line (0E)
+#' @param SP2NP TRUE: order from south pole (bottom of plot) to north pole (top
+#' of plot)
+#' @param ignore List of attributes to ignore.
+#' @return A field object
+#' @author R.E. Benestad
+#' @keywords utilities
+#' @examples
+#' 
+#' T2m_NCEP <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
+#' T2m_NorESM <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
+#' 
+#' # Combine in time to compute common EOFs:
+#' X <- combine(T2m_NCEP,T2m_NorESM)
+#' ceof <- EOF(X,it="Jan")
+#' plot(ceof)
+#' 
+#' # Use combine to synchronise field and station data:
+#' data("Oslo")
+#' y <- combine.field.station(Oslo,T2m_NCEP)
+#' plot(y$y)
+#' 
+#' @export combine
 combine <- function(...)
   UseMethod("combine")
 

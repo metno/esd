@@ -18,6 +18,135 @@ ltp <- function(x,type='exponential',...) {
 }
 
 
+
+
+#' Downscale ensemble runs
+#' 
+#' Downscales an ensemble of climate model runs, e.g. CMIP5, taking the results
+#' to be seasonal climate statistics. For temperature, the result hold the
+#' seasonal mean and standard deviation, whereas for precipitation, the results
+#' hold the wet-day mean, the wet-day frequency, and the wet/dry-spell
+#' statistics. The call assumes that netCDF files containing the climate model
+#' ensemble runs are stores in a file structure, linked to the path argument
+#' and the rcp argument.
+#' 
+#' These methods are based on \code{\link{DS}}, and \code{DSensemble} is
+#' designed to make a number of checks and evaluations in addition to
+#' performing the DS on an ensemble of models. It is based on a similar
+#' philosophy as the old R-package '\code{clim.pact}', but there is a new
+#' default way of handling the predictors. In order to attempt to ensure a
+#' degree of consistency between the downscaled results and those of the GCMs,
+#' a fist covariate is introduced before the principal components (PCs)
+#' describing the \code{\link{EOF}s}.
+#' 
+#' \code{DSensemble.pca} is used to downscale a predictor represented in terms
+#' of PCA, and can reduce the computation time significantly. See Benestad et
+#' al. (2015) \url{http://dx.doi.org/10.3402/tellusa.v67.28326}.
+#' 
+#' The argument \code{non.stationarity.check} is used to conduct an additional
+#' test, taking the GCM results as 'pseudo-reality' where the predictand is
+#' replaced by GCM results interpolated to the same location as the provided
+#' predictand. The time series with interpolated values are then used as
+#' predictor in calibrating the model, and used to predict future values. This
+#' set of prediction is then compared with the interpolated value itself to see
+#' if the dependency between the large and small scales in the model world is
+#' non-stationary.
+#' 
+#' Other chekch include cross-validation (\code{\link{crossval}}) and
+#' diagnostics comparing the sample of ensemble results with the observations:
+#' number of observations outside the predicted 90-percent conf. int and
+#' comparing trends for the past.
+#' 
+#' The 'bias correction' is described in Imbert and Benestad (2005),
+#' \emph{Theor. Appl. Clim.} \url{http://dx.doi.org/10.1007/s00704-005-0133-4}.
+#' 
+#' 
+#' @aliases DSensemble DSensemble.default DSensemble.station DSensemble.t2m
+#' DSensemble.precip DSensemble.annual DSensemble.season DSensemble.field
+#' DSensemble.mu.worstcase DSensemble.pca DSensemble.eof
+#' @param y A station object.
+#' @param plot Plot intermediate results if TRUE.
+#' @param path The path where the GCM results are stored.
+#' @param rcp Which (RCP) scenario
+#' @param biascorrect TRUE, apply a bias adjustment using \code{\link{biasfix}}
+#' @param predictor The predictor, a field or EOF object
+#' @param non.stationarity.check If TRUE perform stationarity test - work in
+#' progress
+#' @param ip Which EOFs to include in the step-wise multiple regression.
+#' @param rmtrend TRUE: detrend before calibrating the regression model.
+#' @param lon Longitude range for predictor
+#' @param lat Latitude range for predictor
+#' @param rel.cord TRUE: use the range relative to predictand; FALSE use
+#' absolute range
+#' @param it Used to extract months or a time period. See \code{\link{subset}}.
+#' @param select GCMs to select, e.g .subsample the ensemble (1:3 selects the
+#' three first GCMs)
+#' @param FUN Function for aggregating the predictand (daily), e.g. 'mean',
+#' 'wetmean'
+#' @param threshold Used together with FUN for some functions ('wetmean').
+#' @param nmin Minimum number of day used in \code{\link{annual}} used for
+#' aggregating the predictand/predictor
+#' @param FUNX Function for transforming the predictor, e.g.
+#' '\code{\link{C.C.eq}}' to estimate the saturation water vapout
+#' @param type Type of netCDF used in \code{\link{retrieve}} for reading GCM
+#' data.
+#' @param pattern File name pattern for GCM data.
+#' @param verbose TRUE for checking and debugging the functions.
+#' @param file.ds Name of file saving the results.
+#' @param path.ds Path of file saving the results.
+#' @param xfuns Names of functions which do not work in \code{annual(x,FUN=f)}.
+#' These functions are used using the following code
+#' \code{annual(f(x),FUN="mean")}
+#' @param mask TRUE mask out land
+#' @param ds.1900.2099 Default, only downscale for the period 1900-2099
+#' @return A 'dsensembele' object - a list object holding DS-results.
+#' @author R.E. Benestad and A. Mezghani
+#' @keywords manip
+#' @examples
+#' 
+#' \dontrun{
+#' # Import historical temperature data from Oslo
+#' data(Oslo)
+#' 
+#' ## Download NorESM1-M from 'climexp.knmi.nl' in default directory
+#' ## (home directory for linux/mac users)
+#' url <-"http://climexp.knmi.nl/CMIP5/monthly/tas"
+#' ## Download NorESM1-ME for the emission scenario RCP4.5
+#' noresm <- "tas_Amon_NorESM1-M_rcp45_000.nc"
+#' if (!file.exists(noresm)) {
+#'   download.file(url=file.path(url,noresm), destfile=noresm,
+#'                 method="auto", quiet=FALSE, mode="w", cacheOK=TRUE)
+#' }
+#' 
+#' ## Download FIO-ESM for the emission scenario RCP4.5
+#' fioesm <- "tas_Amon_FIO-ESM_rcp45_000.nc"
+#' if (!file.exists(fioesm)) {
+#'   download.file(url=file.path(url,fioesm), destfile=fioesm,
+#'                 method="auto", quiet=FALSE, mode="w", cacheOK=TRUE)
+#' }
+#' 
+#' ## Downscale the predictor (ERA-interim reanalysis 2m temperature)
+#' predictor <- "air.2m.mon.mean.nc"
+#' if (!file.exists(predictor)) {
+#'   url <-"http://climexp.knmi.nl/ERA-interim/erai_t2m.nc"
+#'   download.file(url=url, destfile=predictor,
+#'                 method="auto", quiet=FALSE, mode="w", cacheOK=TRUE)
+#' }
+#' 
+#' # Downscale the temperature in Oslo
+#' rcp4.5 <- DSensemble.t2m(Oslo, path='~', rcp='', pattern="tas_Amon_",
+#'                          biascorrect=TRUE, predictor = predictor,
+#'                          plot=TRUE, verbose=TRUE)
+#' 
+#' ## Evaluation: 
+#' ## (1) combare the past trend with downscaled trends for same
+#' ## interval by ranking and by fitting a Gaussian to the model ensemble;
+#' ## (2) estimate the probabilty for the counts outside the 90
+#' ## percent confidence interval according to a binomial distribution.
+#' diagnose(rcp4.5, plot = TRUE, type = "target")
+#' }
+#' 
+#' @export DSensemble
 DSensemble<-function(y,...) UseMethod("DSensemble")
 
 DSensemble.default <- function(y,...,path='CMIP5.monthly/',rcp='rcp45') {

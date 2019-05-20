@@ -1,4 +1,30 @@
-
+#' Read cyclone data
+#' 
+#' Methods for reading cyclone data.
+#' 
+#' \code{read.imilast} reads data from files following the standards of the
+#' IMILAST project (Neu et al., 2013: IMILAST: A Community Effort to
+#' Intercompare Extratropical Cyclone Detection and Tracking Algorithms. Bull.
+#' Amer. Meteor. Soc., 94, 529–547, https://doi.org/10.1175/BAMS-D-11-00154.1).
+#' 
+#' \code{read.hurdat2} reads data from the Atlantic hurricane database
+#' (http://www.nhc.noaa.gov/data/#hurdat).
+#' 
+#' 
+#' @aliases read.imilast read.hurdat2
+#' @param fname filename (for \code{read.hurdat}, filename can also be a url)
+#' @param path path to file
+#' @param verbose Logical value defaulting to FALSE. If FALSE, do not display
+#' comments (silent mode). If TRUE, displays extra information on progress.
+#' @return An "events" "data.frame" object containing the date, time, lon, and
+#' lat, as well as additional information (e.g., trajectory number, slp or
+#' other measure of storm strengt) of the cyclones.
+#' @author K. Parding
+#' @keywords cyclones storms IMILAST hurdat2
+#' @examples
+#' 
+#' 
+#' @export read.imilast
 read.imilast <- function(fname,path=NULL,verbose=FALSE) {
   if(!is.null(path)) fname <- file.path(path,fname)
   # read and rearrange file header

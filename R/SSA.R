@@ -1,3 +1,38 @@
+#' Singular Spectrum Analysis
+#' 
+#' After von Storch & Zwiers (1999), Statistical Analysis in Climate Research,
+#' p. 312
+#' 
+#' 
+#' @aliases Singular Spectrum Analysis SSA plot.ssa
+#' @param x A station or eof object.
+#' @param m Window length.
+#' @param plot Flag: plot the diagnostics.
+#' @param LINPACK 'TRUE': svd; 'FALSE':La.svd
+#' @param main main title (see \code{link{plot}}).
+#' @param sub subtitle (see \code{link{plot}}).
+#' @param ssa An 'SSA' object returned by SSA().
+#' @param param Which parameter ("daily.station.record") to use: "precip",
+#' "t2m" or other.
+#' @param anom TRUE if analysis on anomalies
+#' @param ip If x is an eof-object, which PC to use.
+#' @param verbose Print out diagnostics.
+#' @return A SSA object: An \code{link{svd}} object with additional parameters:
+#' m (window length), nt (original length of series), Nm (effective length of
+#' series= nt - m), anom (FLAG for use of anomaly), param (name of parameter,
+#' typically 'precip' or 't2m'), station (the station object to which SSA is
+#' applied).
+#' @author R.E. Benestad
+#' @keywords manip
+#' @examples
+#' 
+#' \dontrun{
+#' data(DNMI.t2m)
+#' eof.1 <- EOF(DNMI.t2m,mon=1)
+#' pop <- POP(eof.1)
+#' }
+#' 
+#' @export SSA
 SSA <- function(x,m=12,plot=TRUE,main="SSA analysis",sub="",
                 anom=TRUE,ip=1,verbose=FALSE) {
   if(verbose) print("SSA")

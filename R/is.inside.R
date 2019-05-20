@@ -1,6 +1,37 @@
 ## A test to see if a point is inside a polygon (e.g. borders of a country)
 ## rasmus.benestad@met.no
 
+
+
+#' is.inside checks whether a point or a set of points is inside a polygon
+#' 
+#' \code{is.inside} returns \code{TRUE} if the point(s) \code{x} is/are inside
+#' a polygon \code{y}.
+#' 
+#' 
+#' @aliases is.inside test.is.inside
+#' @param x an esd-object or a list/data.frame with the elements \code{x$x} and
+#' \code{x$y} containing the coordinates.
+#' @param y A polygon in the shape of a list/data.frame with the elements
+#' \code{x$x} and \code{x$y} containing the coordinates.
+#' @param verbose \code{TRUE} prints out diagnostics for the code.
+#' @param plot \code{TRUE} provides a graphical disgnostic.
+#' @param N Number of tests with random coordinates
+#' @examples
+#' 
+#' \dontrun{ 
+#' library(readINAMdata)
+#' data("Moz")
+#' 
+#' osmoz <- !is.inside(data.frame(x=lons,y=lats),Moz)
+#' plot(lons,lats)
+#' points(lons[osmoz],lats[osmoz],pch=19,col='red')
+#' points(lons[!osmoz],lats[!osmoz],pch=19,col='green')
+#' points(lons[is.na(osmoz)],lats[is.na(osmoz)],pch=19,col='black')
+#' lines(Moz,type='b')
+#' }
+#' 
+#' @export is.inside
 is.inside <- function(x,y,verbose=FALSE,plot=FALSE) {
   if (verbose) print('is.inside')
   if (plot) plot(y,type='l')

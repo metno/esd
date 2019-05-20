@@ -1,3 +1,25 @@
+#' Creates a griddded map %% ~~function to do ... ~~
+#' 
+#' A function that uses \code{LatticeKrieg} and elevation data to grid station
+#' based data and present a map.
+#' 
+#' 
+#' @param Y A station object
+#' @param FUN A function or name of a function, e.g, "mean" or "trend"
+#' @param colbar A list specifying the color bar, e.g., list(col="precip",
+#' breaks=seq(1,10), rev=FALSE)
+#' @param project projection: "lonlat" or "sphere"
+#' @param xlim range of x-axis
+#' @param ylim range of y-axis
+#' @param zlim range of color axis
+#' @param verbose if TRUE print information about progress
+#' @param plot if TRUE display results as plots
+#' @examples
+#' 
+#' data("precip.NORDKLIM")
+#' precip.gp <- gridmap(precip.NORDKLIM, plot=TRUE)
+#' 
+#' @export gridmap
 gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
 
   if (verbose) print(paste('gridmap',FUN))

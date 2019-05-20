@@ -4,6 +4,55 @@
 ## does not provide an accurate description of the extremes in the upper tail, but is
 ## more analogous to the normal distribution for seasonal temperature.
 
+
+
+#' Rain equation %% ~~function to do ... ~~
+#' 
+#' The rain equation \eqn{Pr(X>x)=fw exp(-x/mu)}{Pr(X>x)==f_w exp(-x/\mu)}
+#' estimates the likelihood of 24-hr precipitation exceedint a threshold value
+#' x. It is analogous to the normal distribution used to describe the
+#' statistical distribution of e.g. daily temperature over a season, but
+#' applied to precipitation. It has two parameters, the wet-day frequency fw
+#' and the wet-day mean mu. It assumes that the distribution for wet-day
+#' precipitation can be approximated with an exponential distribution, and has
+#' one tail.
+#' 
+#' The function \code{rainvar} returns the dail variance of the 24-hr
+#' precipitation according to \eqn{sigma^2 = 2 fw * mu^3}{\sigma^2 = 2 f_w
+#' \mu^3} and \code{rainvartrend} calculates the first derivative accroding to
+#' \eqn{d sigma^2/dt = 2 mu^3 dfw/dt + 6 fw mu^2 dmu/dt}{d \frac{\sigma^2}{dt}=
+#' 2 \mu^3 \frac{d f_w}{dt} + 6 f_w * \mu^2 * \frac{d \mu}{dt}}. %% ~~ A
+#' concise (1-5 lines) description of what the function does. ~~
+#' 
+#' 
+#' @aliases rainequation fract.gt.x test.rainequation scatterplot.rainequation
+#' rainvar rainvartrend
+#' @param x A station object - single station %% ~~Describe \code{x} here~~
+#' @param x0 The threshold value defining an event. %% ~~Describe \code{x0}
+#' here~~
+#' @param threshold The threshold defining a 'wet day'. %% ~~Describe
+#' \code{threshold} here~~
+#' @param src Data source
+#' @param nmin Minimum number of years with data
+#' @param verbose TRUE for printing out diagnostics
+#' @param colour.by Used to plot the data points with differentcolours
+#' according to e.g. 'x0', 'stid', 'alt', 'lon', or 'lat'
+#' @param col colour palette
+#' @return a station object %% ~Describe the value returned %% If it is a LIST,
+#' use %% \item{comp1 }{Description of 'comp1'} %% \item{comp2 }{Description of
+#' 'comp2'} %% ...
+#' @author Rasmus Benestad
+#' @references Benestad R. and A. Mezghani (2015), On downscaling probabilities
+#' for heavy 24-hr precipitation events at seasonal-to-decadal scales, Tellus A
+#' 2015, 67, 25954, http://dx.doi.org/10.3402/tellusa.v67.25954
+#' @examples
+#' 
+#' data(bjornholt)
+#' plot(rainequation(bjornholt))
+#' test.rainequation(bjornholt,threshold=30)
+#' \dontrun{scatterplot.rainequation()}
+#' 
+#' @export rainequation
 rainequation <- function(x,x0 = 10,threshold=NULL) {
   fw <- annual(x,FUN='wetfreq',threshold=threshold)
   mu <- annual(x,FUN='wetmean',threshold=threshold)

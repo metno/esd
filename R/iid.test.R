@@ -1,5 +1,55 @@
-
-
+#' iid test
+#' 
+#' Test for whether a variable is independent and identically distributed
+#' (iid). Used in \code{\link{daily.station.records}}.
+#' 
+#' Reference:
+#' 
+#' Benestad, R.E., 2003: How often can we expect a record-event? Climate
+#' Research. 23, 3-13 (pdf)
+#' 
+#' Benestad, R.E., 2004: Record values, nonstationarity tests and extreme value
+#' distributions, Global and Planetary Change, vol 44, p. 11-26
+#' 
+#' The papers are available in the pdf format from
+#' \url{http://regclim.met.no/results_iii_artref.html}.
+#' 
+#' Note, gaps of missing data (NA) can bias the results and produce an
+#' under-count. The sign of non-iid behaviour is when the 'forward' analysis
+#' indicated higher number of record-events than the confidence region and the
+#' backward analysis gives lower than the confidence region.
+#' 
+#' Version 0.7: Added a test checking for dependencies based on an expected
+#' number from a binomial distribution and given the probability p1(n) = 1/n.
+#' This test is applied to the parallel series for one respective time
+#' (realisation), and is then repeated for all observation times. The check
+#' uses \code{\link{qbinom}} to compute a theoretical 95\% confidence interval,
+#' and a number outside this range is marked with red in the 'ball diagram'
+#' (first plot). \code{\link{pbinom}} is used to estimate the p-value for the
+#' 
+#' 
+#' @aliases iid.test iid.test.station iid.test.field iid.test.default n.records
+#' recods test.records
+#' @param x A data matrix or a vector.
+#' @param plot Flag: plot the diagnostics.
+#' @param Monte.Carlo Flag: for estimating confidence limits.
+#' @param N.test Number of Monre-Carlo runs.
+#' @param reverse.plot.reverse TRUE: plots reverse from right to left, else
+#' left to right.
+#' @return list: 'record.density' and 'record.density.rev' for the reverse
+#' analysis. The variables CI.95, p.val, and i.cluster (and their reverse
+#' equivalents '.rev') return the estimated 95\% conf. int, p-value, and the
+#' location of the clusters (binomial).
+#' @author R.E. Benestad
+#' @keywords manip
+#' @examples
+#' 
+#'   # takes a long time to run
+#'   dat <- rnorm(100*30)
+#'   dim(dat) <- c(100,30)
+#'   iid.test(dat)
+#' 
+#' @export iid.test
 iid.test <- function(x,...) UseMethod("iid.test")
 
 iid.test.station <- function(x,verbose=TRUE,...) {

@@ -129,6 +129,42 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
 }
 
 
+
+
+#' Projection of hot and cold day statistics
+#' 
+#' The functions \code{hotsummerdays}, \code{heatwavespells},
+#' \code{coldwinterdays}, and \code{coldspells} estimate statistics for
+#' heatwaves/hot days or cold spells based on seasonal mean temperatures. The
+#' estimations are based on a regression analysis (GLM) between observed number
+#' of events or spell lengths and seasonal mean from station data.
+#' \code{nwetdays} estimates the number of days per year with precipitation
+#' amount exceeding a threshold values.
+#' 
+#' The estimation of these statistics makes use of general linear models (GLMs)
+#' and take the counts to follow the 'Poisson family' whereas the spall lengths
+#' belong to the geometric distribution. The seasonal mean temperature or
+#' annual wet-mean precipitation are used as independent variable.
+#' 
+#' @aliases hotsummerdays coldwinterdays coldspells heatwavespells nwetdays
+#' @param x station object, e.g. the temperature. Matches the element used in
+#' the dsensemble object 'dse'
+#' @param y station object which may be some statistics with dependency to x,
+#' e.g. snow depth.
+#' @param dse a dsensembel object. If NULL, then run DSensemble
+#' @param it Default season set for northern hemisphere. %% ~~Describe
+#' \code{it} here~~
+#' @param threshold Temperature threshold
+#' @param verbose TRUE for trouble shooting, debugging etc.
+#' @param plot TRUE - produce graphics
+#' @author R.E. Benestad
+#' @examples
+#' 
+#' data(ferder)
+#' data(dse.ferder)
+#' hw <- hotsummerdays(ferder,dse.ferder,threshold=20)
+#' 
+#' @export hotsummerdays
 hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
                           verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
     # Estimate number of days with low temperatures

@@ -1,4 +1,21 @@
-
+#' Summary showing summary of objects %% ~~function to do ... ~~
+#' 
+#' Produce a summary table
+#' 
+#' 
+#' @aliases summary.dsensemble summary.station summary.ds summary.eof
+#' summary.cca
+#' @param x an object of type 'DSensemble', 'station', 'DS', 'EOF' or 'CCA'
+#' @param years A set of years for which to produce summary statistics
+#' @param im The order of months in the table. Use \code{im=c(10:12,1:9)} for
+#' Oct-Sep.
+#' @return A matrix containing summary statistics
+#' @examples
+#' 
+#' data("Oslo")
+#' summary(Oslo)
+#' 
+#' @export summary.dsensemble
 summary.dsensemble <- function(x,years=seq(1990,2090,by=20)) {
     x0 <- subset(x,it=0)
     djf <- subset(x,it='djf')

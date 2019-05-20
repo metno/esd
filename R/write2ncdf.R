@@ -35,6 +35,40 @@ lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
   return(y)
 }
 
+
+
+#' Saves climate data as netCDF.
+#' 
+#' Method to save station data as netCDF, making sure to include the data
+#' structure and meta-data (attributes). The code tries to follow the netCDf
+#' 'CF' convention. The method is built on the \code{\link{ncdf4}} package.
+#' 
+#' 
+#' @aliases write2ncdf4 write2ncdf4.station write2ncdf4.default
+#' write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.eof
+#' write2ncdf4.pca write2ncdf4.dsensemble
+#' @param x data object
+#' @param file file name
+#' @param prec Precision: see \code{\link[ncdf4]{ncvar_def}}
+#' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
+#' @param offset Sets the attribute 'add_offset' which is added to the values
+#' stored (to save space may be represented as 'short').
+#' @param scale Sets the atttribute 'scale_factor' which is used to scale
+#' (multiply) the values stored (to save space may be represented as 'short').
+#' @param torg Time origin
+#' @param verbose TRUE - clutter the screen.
+#' @return A "zoo" "field" object with additional attributes used for further
+#' processing.
+#' @author R.E. Benestad
+#' @seealso \code{\link{test.retrieve.ncdf4}}.
+#' @keywords netcdf ncdf4 save
+#' @examples
+#' 
+#' nacd <- station(src='nacd')
+#' X <- annual(nacd)
+#' write2ncdf4(X,file='test.nc')
+#' 
+#' @export write2ncdf4
 write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 
 write2ncdf4.default <- function(x,...) {

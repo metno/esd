@@ -103,6 +103,37 @@ param2ele <- function(param = NULL , src = NULL , verbose = TRUE) {
   return(ele)
 }
   
+
+
+#' Dictionary and conversion tools between esd element identifier and variables
+#' names and specifications.
+#' 
+#' Converts between esd element/parameter identifier and variable names from
+#' different data sources.
+#' 
+#' 
+#' @aliases ele2param esd2ele
+#' @param param,ele Parameter or element identifier. There are several core
+#' parameters or elements as well as a number of additional parameters. The
+#' parameters or elements are :
+#' @param src A character string for the acronym of the data source. The data
+#' sources are :
+#' @return A meta data matrix object with the glossary of the different
+#' variables or element identifiers as originally defined by each data source
+#' @author A. Mezghani, MET Norway
+#' @keywords parameter,element
+#' @examples
+#' 
+#' # Eg.1 # Display the glossary of paramerters or element identifiers for 'GHCND' data source.
+#' print(ele2param(ele=NULL,src='GHCND'))
+#' # Eg.2 # Display the glossary of parameters or element identifiers for all data sources. 
+#' print(ele2param())
+#' # Eg.3 # Convert mean temperature parameter (param) to esd element (ele).
+#' ele <- esd2ele(param='t2m')
+#' print(ele)
+#' 
+#' 
+#' @export ele2param
 ele2param <- function(ele = NULL , src = NULL) {
 # convert arguments
   src <- toupper(src)

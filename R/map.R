@@ -1,6 +1,113 @@
 ## R.E. Benestad
 ## Plot a map of the station locations, fields, EOFs, CCA results, correlation, composites, ...
 
+
+
+#' Plot maps for esd objects
+#' 
+#' Make map of geophysical data. These plot functions are S3 methods for esd
+#' objects.
+#' 
+#' 
+#' @aliases map map.default map.matrix map.data.frame map.station
+#' map.stationmeta map.stationsummary map.comb map.eof map.ds map.dsensemble
+#' map.field map.corfield map.cca map.events map.trajectory map.mvr map.pca
+#' map.trend lonlatprojection rotM gridbox map2sphere vec mask
+#' @param x the object to be plotted; in \code{rotM}, x holds a vector of
+#' x-coordinates.
+#' @param FUN The function to be applied on x before mapping (e.g. \code{mean})
+#' @param colbar The colour scales defined through \code{colscal}. Users can
+#' specify the colour `pal'*ette (`pal'), the number of breaks (`n'), values of
+#' `breaks', and the position of the color bar from the main plot (`pos'). The
+#' `rev' argument, will produce a reversed color bar if set to TRUE. The other
+#' arguments (`type',`h' and `v') are more specific to \code{col.bar} and are
+#' used only if argument `fancy' is set to TRUE (not yet finished).
+#' @param it see \code{\link{subset}}
+#' @param is see \code{\link{subset}}
+#' @param new TRUE: create a new graphic device.
+#' @param projection Projections: c("lonlat","sphere","np","sp") - the latter
+#' gives stereographic views from the North and south poles.
+#' @param xlim see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
+#' projections.
+#' @param ylim see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
+#' projections.
+#' @param n The number of colour breaks in the color bar
+#' @param breaks graphics setting - see \code{\link{image}}
+#' @param type graphics setting - colour shading or contour
+#' @param gridlines Only for the lon-lat projection
+#' @param lonR Only for the spherical projection used by \code{map2sphere} to
+#' change viewing angle
+#' @param latR Only for the spherical projection used by \code{map2sphere} to
+#' change viewing angle
+#' @param axiR Only for the spherical projection used by \code{map2sphere} to
+#' change viewing angle
+#' @param density
+#' @param y a vector of y coordinates
+#' @param z a vector of z coordinates
+#' @param ip Selects which pattern (see \code{\link{EOF}}, \code{\link{CCA}})
+#' to plot
+#' @param geography TRUE: plot geographical features
+#' @param angle for hatching
+#' @param a used in \code{\link{vec}} to scale the length of the arrows
+#' @param r used in \code{\link{vec}} to make a 3D effect of plotting the
+#' arrows up in the air.
+#' @param ix used to subset points for plotting errors
+#' @param iy used to subset points for plotting errors
+#' @param colorbar Show the color bar in the map (default TRUE). If FALSE, the
+#' colorbar is not added into the map (ignored).
+#' @param cex Size of symbols.
+#' @param cex0 Scaling of symbols if \code{cex} is defined by a variable with
+#' different size for different locations.
+#' @param cex.subset ...
+#' @param add.text Add abbreviated location names.
+#' @param full.names Show the full name of the location.
+#' @param showall Default is set to FALSE
+#' @param showaxis If set to FALSE, the axis are not displayed in the plot.
+#' @param fancy If set to true, will use \code{\link{col.bar}} instead of
+#' \code{image} to produce the colour bar
+#' @param text If TRUE, display text info on the map.The default is set to
+#' FALSE
+#' @param show.val Display the values of 'x' or 'FUN(x)' on top of the coloured
+#' map.
+#' @param legend.shrink If set, the size of the color bar is shrinked (values
+#' between 0 and 1)
+#' @param ... further arguments passed to or from other methods.
+#' @param land if TRUE mask land, else mask ocean
+#' @param what What to map: ['eof','field] for EOF pattern or the field
+#' recovered from the EOFs.
+#' @param fig see \code{\link{par}}
+#' @param nbins number of bins/colour categories
+#' @return A field object
+#' @author R.E. Benestad
+#' @seealso \code{\link{plot.station}}
+#' @keywords map
+#' @examples
+#' 
+#' # dontrun because of this problem: "Error in plot.new() : figure margins too large"
+#' # Select stations in ss and map the geographical location 
+#' # of the selected stations with a zoom on Norway.
+#' ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
+#' graphics.off()
+#' map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70), new=FALSE)
+#' 
+#' ## Get NACD data and map the mean values
+#' y <- station.nacd()
+#' map(y,FUN='mean',colbar=list(pal=varid(y),n=10), cex=2, new=FALSE)
+#' 
+#' # Examples of cyclone maps (map.events)
+#' data(storms)
+#' # Subset cyclones from the start of January 2016 lasting a minimum of 10 time steps 
+#' x <- subset(storms,it=c("2016-01-01","2016-01-07"),ic=list(param="trackcount",pmin=10))
+#' # Map with points and lines showing the cyclone centers and trajectories
+#' map(x, type=c("trajectory","points"), col="blue")
+#' ## Map with only the trajectory and start and end points
+#' map(x, type=c("trajectory","start","end"), col="red")
+#' ## Map showing the cyclone depth (slp at center) as a color scale (rd = red scale)
+#' map(x, param="pcent", type=c('trajectory','start'), 
+#'     colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1000,2)), 
+#'     alpha=0.9, new=FALSE)
+#' 
+#' @export map
 map <- function(x,it=NULL,is=NULL,new=FALSE,...) UseMethod("map")
 
 map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,

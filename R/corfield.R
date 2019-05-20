@@ -3,6 +3,37 @@
 #------------------------------------------------------------------------
 
 
+
+
+#' Correlation
+#' 
+#' Compute the correlation between field objects and station/field.
+#' 
+#' 
+#' @aliases corfield corfield.default corfield.zoo corfield.field
+#' corfield.field.station corfield.station corfield.eof corfield.trajectory
+#' @param x data object
+#' @param y data object
+#' @param plot TRUE: plot the results
+#' @param use see \code{\link{cor}}
+#' @param new see \code{link{map}}
+#' @param ip index EOF pattern
+#' @return Map of correlation
+#' @author R.E. Benestad and A. Mezghani
+#' @keywords manip
+#' @examples
+#' 
+#' x <- t2m.DNMI(lon=c(-40,30),lat=c(0,50))
+#' y <- t2m.NCEP(lon=c(-40,30),lat=c(0,50))
+#' r <- corfield(annual(x),annual(y))
+#' 
+#' data(Oslo)
+#' t2m <- t2m.DNMI()
+#' x <- subset(Oslo,it='january')
+#' y <- subset(t2m,it='january')
+#' r <- corfield(x,y)
+#' 
+#' @export corfield
 corfield<-function(x,y,...) UseMethod("corfield")
 
 corfield.default <- function(x,y,...) {

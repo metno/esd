@@ -493,6 +493,45 @@ vis.dsensemble.list <- function(X,...,verbose=FALSE,FUN='trend',
   invisible(d)
 }
 
+
+
+#' Visualise trends for multiple overlapping periods
+#' 
+#' Produce a plot showing trends for multiple periods within a time series. The
+#' strength of the trend is represented by the color scale and significant
+#' trends are marked with black borders.
+#' 
+#' 
+#' @param x the 'x' argument provides the time series for which the trend
+#' analysis is performed. Only zoo objects are accepted.
+#' @param minlen minimum time interval to calculate trends for in units of
+#' years.
+#' @param unitlabel unit of x.
+#' @param varlabel name of x.
+#' @param vmax upper limit of trend scale.
+#' @param show.significance TRUE to mark statistically significant trends.
+#' @param pmax maximum p-value of trends marked as significant.
+#' @param verbose TRUE or FALSE.
+#' @author Kajsa Parding
+#' @keywords trend
+#' @examples
+#' 
+#' 
+#' t <- seq(as.Date("1955-01-01"),as.Date("2004-12-31"),by=1)
+#' x <- zoo(sample(seq(-30,30,1e-1),length(t),rep=TRUE),order.by=t)
+#' vis.trends(x,show.significance=FALSE)
+#' 
+#' data(Oslo)
+#' vis.trends(Oslo, unitlabel="oC", varlabel = "Temperature",
+#'   pmax = 1e-2, minlen = 40)
+#' vis.trends(subset(Oslo,it='jja'), unitlabel="oC",
+#'   varlabel = "Temperature JJA",
+#'   pmax = 1e-3, vmax=0.5, minlen = 40)
+#' vis.trends(subset(Oslo,it='mam'), unitlabel="oC",
+#'   varlabel = "Temperature MAM",
+#'   pmax = 1e-3, vmax=0.5, minlen = 40)
+#' 
+#' @export vis.trends
 vis.trends <- function(x,...,unitlabel="unit",varlabel="",is=1,
                        pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE,
                        show.significance=TRUE,verbose=FALSE) {
