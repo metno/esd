@@ -1,3 +1,4 @@
+#' @export
 NAO <- function(freq="monthly", url=NULL, header=FALSE, verbose=FALSE) {
   if(verbose) print("NAO")
   if(is.null(url)) {

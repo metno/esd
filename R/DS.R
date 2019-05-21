@@ -1,22 +1,49 @@
-## Empirical downscaling using EOFs of monthly values from eof.R
-## Predictand is a time series of monthly values from NACD or climate station.
-###
-### Reference: R.E. Benestad et al. (2002),
-###            Empirically downscaled temperature scenarios for Svalbard,
-###            doi.10.1006/asle.2002.005, September 18.
-###
-###            R.E. Benestad (2001),
-###            A comparison between two empirical downscaling strategies,
-###            Int. J. Climatology, 1645-1668, vol. 21, DOI 10.1002/joc.703
-###
-### R.E. Benestad, met.no, Oslo, Norway 11.04.2013
-### rasmus.benestad@met.no
-###------------------------------------------------------------------------
-
-## dat -> y; preds -> X
-## Needs to work also for daily, annual and seasonal data
-##
-
+#' Test function for DS.field
+#'
+#' @param x a \code{ds} \code{eof} object
+#' @param verbose a boolean; if TRUE print information on progress
+#'
+#' @return a \code{field} object with the difference between the original field and the field
+#' reconstructed from the independent downscaled principle components from cross-validation
+#'
+#' @export
+test.ds.field <- function(x,verbose=FALSE) {
+  if (verbose) print('fieldtest')
+  stopifnot (inherits(x,'eof') & inherits(x,'ds'))
+  if (verbose) print(colnames(attr(x,'evaluation')))
+  isel <- is.element(colnames(attr(x,'evaluation')),paste('X.PCA',1:dim(x)[2],sep='.'))
+  eof1 <- attr(x,'evaluation')[,isel]
+  isel <- is.element(colnames(attr(x,'evaluation')),paste('Z.PCA',1:dim(x)[2],sep='.'))
+  eof2 <- attr(x,'evaluation')[,isel]
+  if (verbose) {str(eof1); print(names(attributes(x)))}
+  attr(eof1,'variable') <- varid(x)
+  attr(eof1,'unit') <- unit(x)
+  attr(eof1,'longname') <- attr(x,'longname')
+  attr(eof1,'pattern') <- attr(x,'pattern')
+  attr(eof1,'eigenvalues') <- attr(x,'eigenvalues')
+  attr(eof1,'dimensions') <- c(dim(attr(x,'evaluate'))[1],dim(attr(x,'pattern'))[3])
+  attr(eof1,'mean') <- attr(x,'mean')
+  attr(eof1,'longitude') <- lon(x)
+  attr(eof1,'latitude') <- lat(x)
+  attr(eof1,'max.autocor') <- attr(x,'max.autocor')
+  attr(eof1,'eigenvalues') <- attr(x,'eigenvalues')
+  attr(eof1,'sum.eigenv') <- attr(x,'sum.eigenv')
+  attr(eof1,'tot.var') <- attr(x,'tot.var')
+  attr(eof1,'aspect') <- 'anomaly'
+  attr(eof1,'dimnames') <- NULL   # REB 2016-03-04
+  class(eof1) <- c("eof",class(x))[3:6]
+  eof2 <- attrcp(eof1,eof2)
+  class(eof2) <- c("eof",class(x))[3:6]
+  if (verbose) print(c(dim(eof1),dim(eof2)))
+  if (verbose) print('estimated EOFs - now get the fields..')
+  x1 <- as.field(eof1)
+  x2 <- as.field(eof2)
+  if (verbose) print(c(dim(x1),dim(x2)))
+  coredata(x1) <- coredata(x1 - x2)
+  attr(x,'history') <- history.stamp()
+  attr(x,'info') <- 'original - downscaled'
+  invisible(x1)
+}
 
 
 #' Downscale
@@ -216,12 +243,13 @@
 #' lines(y3,lty=2)
 #' 
 #' 
-#' @export DS
+#' @export
 DS <- function(y,X,verbose=FALSE,plot=FALSE,...) UseMethod("DS")
 
                                         # The basic DS-function, used by other methods
                                         # REB HERE!
 
+#' @export
 DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE) {
     if (verbose) { print('--- DS.default ---'); print(summary(coredata(y)))}
@@ -440,7 +468,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
 
 
 
-
+#' @export
 DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALSE,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20) {
     
@@ -568,7 +596,7 @@ DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALS
 
 ## DS for combined fields - to make predictions not based on the
 ## calibration data
-
+#' @export
 DS.comb <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
                     method="lm",swsm="step",m=5,rmtrend=TRUE,it=NULL,ip=1:7, 
                     weighted=TRUE,pca=FALSE,npca=20) {
@@ -638,7 +666,7 @@ DS.comb <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
 ## This function takes care of downscaling based on a field-object X.
 ## X can be a combined field. This function calls more primitive DS methods,
 ## depending on the time scale represented in X (monthly or seasonal).
-
+#' @export
 DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
                      method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE) {
     if (verbose) { print('--- DS.field ---'); print(summary(coredata(y)))}
@@ -866,6 +894,7 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
 ## weighting.
 ## The data may be pre-filtered using CCA.
 ## Rasmus Benestad, 19.08.2013
+#' @export
 DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
                    rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20,...) {
 
@@ -1147,6 +1176,7 @@ DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,biascorrect=FALSE,method="lm",sw
     
 }
 
+' @export
 DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
                    method="lm",swsm=NULL,m=5,ip=1:10,rmtrend=TRUE,weighted=TRUE,
                    pca=TRUE,npca=20) {
@@ -1172,7 +1202,7 @@ DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
     invisible(ds)
 }
 
-
+' @export
 DS.list <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
                     method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20) {
   ### This method combines different EOFs into one predictor by making a new
@@ -1196,7 +1226,7 @@ DS.list <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
   invisible(z)
 }
 
-
+# NOT EXPORTED
 DS.mixedeof <- function(y,X,plot=FALSE,...,it=NULL,biascorrect=TRUE,
                     method="lm",swsm="step",m=5,
                     rmtrend=TRUE,ip=1:7,
@@ -1284,6 +1314,7 @@ DS.mixedeof <- function(y,X,plot=FALSE,...,it=NULL,biascorrect=TRUE,
     invisible(ds)
 }
 
+#' @export
 DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,method="lm",swsm="step",m=5,
                            rmtrend=TRUE,ip=1:7,weighted=TRUE) {
   ## This function does the same as DS.eof
@@ -1294,6 +1325,7 @@ DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,method="lm",
     return(z)
 }
 
+#' @export
 DS.trajectory <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,is=NULL,FUN='count',param=NULL,
                        unit=NULL,longname=NULL,loc=NULL,
                        biascorrect=FALSE, method="lm",swsm="step",m=5,
