@@ -38,9 +38,10 @@
 #' xv <- crossval(ds)
 #' plot(xv)
 #' 
-#' @export crossval
+#' @export
 crossval <- function(x, m=5, ...) UseMethod("crossval")
 
+#' @export
 crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
   # Repeat the regression from DS, but through several iterations with
   # leave-m-out. These are masked by setting them to NA before the
@@ -85,25 +86,20 @@ crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
   
   Y <- rep(NA,nt); Z <- Y; 
   k <- 0
-  #print(ii); print(m)
   for (i in ii) {
     k <- k + 1
     caldat <- as.data.frame(coredata(CALDAT))
-    #str(caldat)
     j <- i:(i+m[is.element(ii,i)]-1)
     j <- j[j <= nt] # do not exceed the index
-    #print(j)
     Y[j] <- caldat$y[j]
     caldat$y[j] <- NA
     MODEL <- eval(parse(text=calstr))
-    # Stepwise regression
     if (!is.null(swsm)) {
       cline <- paste("model <- ",swsm,"(MODEL,trace=0)",sep="")
-    #print(paste("HERE: stepping",cline))
       eval(parse(text=cline))
-    } else
+    } else {
       model <- MODEL
-    # Need to also include the intercept:
+    }
     terms <- c(1,as.integer(gsub('X.','',attr(model$terms,'term.labels')))+1)
     beta[terms,k] <- model$coefficients
     #print(terms); print(model$coefficients)
@@ -135,6 +131,7 @@ crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
   invisible(X)
 }
 
+#' @export
 crossval.list <- function(x, m=5, ..., verbose=FALSE) {
   if(verbose) print("crossval.list")
   elements <- names(x)
@@ -146,6 +143,7 @@ crossval.list <- function(x, m=5, ..., verbose=FALSE) {
   invisible(x)
 }
 
+#' @export
 crossval.dsensemble <- function(x,m=NULL,...,plot=TRUE,verbose=FALSE) {
   if(verbose) print("crossval.dsensemble")
   X <- x
