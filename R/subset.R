@@ -229,7 +229,7 @@ subset.pattern <- function(x,is=NULL,verbose=FALSE,...) {
     } else {
       if (verbose) print(paste('subset the matrix:',sum(ix),sum(iy)))
       if (verbose) print(dim(x))
-      y <- x[ix,iy]
+      y <- x[ix,iy,]
       y <- attrcp(x,y)
       attr(y,'variable') <- varid(x)
       attr(y,'unit') <- esd::unit(x)
