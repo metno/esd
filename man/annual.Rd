@@ -31,7 +31,7 @@ month(x, ...)
 day(x, ...)
 season(x,format="character")
 season.abb()
-pentad(x,l=5,it0=NULL,...)
+pentad(x,l=5,it0=NULL,verbose=FALSE,...)
 }
 \arguments{
   \item{x}{a station, field object, or a date}
