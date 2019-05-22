@@ -1,20 +1,14 @@
-# Used to estimate annual statistics
-## class creation
-#annual <- function(x) structure(floor(x + .0001), class = "annual")
-
-
-
 #' Conversion to esd objects.
 #' 
 #' \code{annual} aggregates time series into annual values (e.g. means).
-#' \code{year}, \code{month}, \code{season} return the years, months, and days
-#' associated with the data.
-#' 
 #' 
 #' @aliases annual annual.zoo annual.default annual.dsensemble annual.station
-#' annual.spell annual.field year month day season seasonal.abb pentad
-#' @param x a station, field object, or a date
-#' @param FUN see \code{\link{aggregate.zoo}}
+#' annual.spell annual.field
+#'
+#' @seealso 
+#' 
+#' @param x an input object of, e.g., class 'station', 'field'
+#' @param FUN a function, see \code{\link{aggregate.zoo}}
 #' @param nmin Minimum number of data points (e.g. days or months) with valid
 #' data accepted for annual estimate. NULL demands complete years.
 #' @param format 'numeric' or 'character'
@@ -22,73 +16,26 @@
 #' @param l length of window
 #' @param it0 Value of specific year to include in the aggregated series
 #' (it0=1970 and l=1 will give year 1970, 1975, 1980, ...)
-#' @return Same as x, or a numeric for \code{year}, \code{month}, \code{day},
-#' or \code{pentad}.
-#' @author R.E. Benestad and A.  Mezghanil
-#' @seealso \code{\link{as.annual}},\code{\link{aggregate.station}}
+#' 
+#' @return Same class as x
+#'
+#' @seealso \code{\link{as.annual}} \code{\link{aggregate.station}} \code{\link{pentad}}
 #' @keywords utilities
+#'
 #' @examples
-#' 
-#' # Example: how to generate a new station object.
-#' data <- round(matrix(rnorm(20*12),20,12),2); colnames(data) <- month.abb
-#' x <- data.frame(year=1981:2000,data)
-#' X <- as.station.data.frame(x,loc="",param="noise",unit="none")
-#' 
-#' # Example: how to generate a new field object.
-#' year <- sort(rep(1991:2000,12))
-#' month <- rep(1:12,length(1991:2000))
-#' n <-length(year)
-#' lon <- seq(-30,40,by=5); nx <- length(lon)
-#' lat <- seq(40,70,by=5); ny <- length(lat)
-#' # Time dimension should come first, space second.
-#' y <- matrix(rnorm(nx*ny*n),n,nx*ny)
-#' index <- as.Date(paste(year,month,1,sep="-"))
-#' Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
-#' map(Y)
-#' plot(EOF(Y))
-#' 
-#' data(Oslo)
-#' plot(as.anomaly(Oslo))
-#' 
 #' data(ferder)
 #' plot(annual(ferder,FUN="min"))
 #' plot(annual(ferder,FUN="IQR",na.rm=TRUE))
-#' plot(as.4seasons(ferder))
 #' 
 #' data(bjornholt)
 #' plot(annual(bjornholt,FUN="exceedance",fun="count"))
 #' plot(annual(bjornholt,FUN="exceedance",fun="freq"))
 #' plot(annual(bjornholt,FUN="exceedance"))
 #' 
-#' # Test the as.4seasons function:
-#' data(ferder)
-#' #Daily data:
-#' yd <- ferder
-#' # Monthly data:
-#' ym <- aggregate(ferder,as.yearmon)
-#' ym <- zoo(coredata(ym),as.Date(index(ym)))
-#' ym <- attrcp(ferder,ym)
-#' plot(ym)
-#' 
-#' #Monthly reanalyses:
-#' t2m <- t2m.NCEP(lon=c(-30,40),lat=c(50,70))
-#' T2m <- as.4seasons(t2m)
-#' #Extract the grid point with location corresponding to that of the station:
-#' x <- regrid(t2m,is=ferder)
-#' x4s <- as.4seasons(x)
-#' X4s <- regrid(T2m,is=ferder)
-#' y4s1 <- as.4seasons(yd)
-#' y4s2 <- as.4seasons(ym)
-#' plot.zoo(y4s1,lwd=2,xlim=as.Date(c("1980-01-01","2000-01-01")),ylim=c(-10,20))
-#' lines(y4s2,col="red",lty=2)
-#' lines(x4s,col="darkblue",lwd=2)
-#' lines(X4s,col="lightblue",lty=2)
-#' 
 #' @export annual
 annual <- function(x, ...) UseMethod("annual")
 
-
-  
+#' @export
 annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
   if (verbose) print("annual.zoo")
   if (inherits(x,'annual')) return(x)
@@ -129,7 +76,7 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
 }
 
 
-
+#' @export
 annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
                            threshold=NULL,regular=NULL,frequency=NULL,
                            verbose=FALSE) { ## 
@@ -289,23 +236,16 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   invisible(y)
 }
 
-
+#' @export
 annual.station <- function(x,FUN='mean',nmin=NULL,threshold=NULL,verbose=FALSE,...) {
   if (verbose) print('annual.station')
   attr(x,'names') <- NULL
-#  if (inherits(x,'day')) {
-#    y <- annual.station.day(x,FUN=match.fun(FUN),...)
-#  } else {
-#  ns <- length(x[1,])
-#  for (i in 1:ns) {
-#    y <- annual.default(x,FUN=match.fun(FUN),nmin=nmin,...)
-    y <- annual.default(x,FUN=FUN,nmin=nmin,threshold=threshold,verbose=verbose,...) ## threshold=threshold,
-#    if (i==1) y <- z else y <- c(y,z)
-#  }
-   y[which(is.infinite(y))] <- NA
+  y <- annual.default(x,FUN=FUN,nmin=nmin,threshold=threshold,verbose=verbose,...)
+  y[which(is.infinite(y))] <- NA
   invisible(y)
 }
 
+#' @export
 annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
   attr(x,'names') <- NULL
   if ( (inherits(x,'mon'))  & is.null(nmin) ) {
@@ -320,6 +260,7 @@ annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
   invisible(y)
 }
 
+#' @export
 annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
   if (verbose) print("annual.dsensemble")
   clsx <- class(x)
@@ -336,8 +277,7 @@ annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
   invisible(y)
 }
 
-
-
+#' @export
 annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   if (verbose) print('annual.field')
   attr(x,'names') <- NULL
@@ -367,7 +307,7 @@ annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   invisible(y)
 }
 
-# AM need to enhance this function
+#' @export
 annual.eof <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   if (verbose) print('annual.eof')
   attr(x,'names') <- NULL
@@ -396,218 +336,4 @@ annual.eof <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   invisible(y)
 }
 
-year <- function(x) {
-  #str(x); print(class(x)); print(index(x))
-  if (inherits(x,'integer')) x <- as.numeric(x)
-  
-  if ( (inherits(x,'numeric')) & (min(x,na.rm=TRUE) > 0) &
-      (max(x,na.rm=TRUE) < 3000) )
-    return(x)
-  
-  if (inherits(x,c('station','field','zoo'))) {
-    y <- year(index(x))
-    return(y)
-  }
-  if (inherits(x,'trajectory')) {
-    y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$year + 1900
-    return(y)
-  }
-  if (inherits(x,'events')) {
-    y <- strptime(x$date,format="%Y%m%d")$year + 1900
-    return(y)
-  }
-  if (inherits(x,c("POSIXt","PCICt"))) {
-    y <- as.numeric(format(x, '%Y'))
-    return(y)
-  }
-  if ( (class(x)[1]=="character") & (nchar(x[1])==10)) {
-    y <- year(as.Date(x))
-    return(y)
-  }
-  if (class(index(x))=="numeric") {
-    y <- trunc(index(x))
-    return(y)
-  }
-  #print("here"); print(index(x))
-  if (class(x)[1]=="Date")
-    y <- as.numeric(format(x, '%Y')) else
-  if (class(x)[1]=="yearmon") y <- trunc(as.numeric(x)) else
-  if (class(x)[1]=="yearqtr") y <- trunc(as.numeric(x)) else
-  if (class(x)[1]=="character") y <- trunc(as.numeric(x)) else
-  if (class(x)[1]=="numeric") y <- trunc(x) else
-  if (class(x)[1]=="season") {
-    # If season, then the first month is really the December month of the previous year
-    month <- round(12*(as.numeric(index(x)) - trunc(as.numeric(index(x)))) + 1)
-    y[is.element(month,1)] <- y[is.element(month,1)] - 1
-  } else {
-    print(paste(class(x)[1],' confused...'))
-  }
-  return(y)
-}
-
-
-month <- function(x) {
-  if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 13) )
-    return(x) 
-  if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) ) y <- rep(1,length(x))
-  if (inherits(x,c('station','field','zoo'))) {
-    #
-    y <- month(index(x))
-    return(y)
-  }
-  if (inherits(x,'trajectory')) {
-    y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mon + 1
-    return(y)
-  }
-  if (inherits(x,'events')) {
-    y <- strptime(x$date,format="%Y%m%d")$mon + 1
-    return(y)
-  }
-  if (inherits(x,c("POSIXt","PCICt"))) {
-    y <- as.numeric(format(x, '%m'))
-    return(y)
-  }
-  if ( (class(x)[1]=="character") & (nchar(x[1])==10)) {
-    y <- month(as.Date(x))
-    return(y)
-  }
-  #print(class(index(x)))
-  if (class(x)[1]=="Date")
-    y <- as.numeric(format(x, '%m')) else
-  if (class(x)[1]=="yearmon")
-    y <- round(12*(as.numeric(x) - trunc(as.numeric(x))) + 1) else
-  if (class(x)[1]=="yearqtr") y <- round(12*(as.numeric(x) - trunc(as.numeric(x))) + 1)
-  if (class(x)[1]=="season") {
-    # If season, then the first month is really the months are DJF, MAM, JJA, and OND:
-    y <- y - 1
-    y[y==-1] <- 12
-  }
-  return(y)
-}
-
-day <- function(x) {
-  if (inherits(x,c('station','field','zoo'))) {
-    y <- day(index(x))
-    return(y)
-  }
-  if (inherits(x,'trajectory')) {
-    y <- strptime(x[,colnames(x)=='start'],format="%Y%m%d%H")$mday
-    return(y)
-  }
-  if (inherits(x,'events')) {
-    y <- strptime(x$date,format="%Y%m%d")$mday
-    return(y)
-  }
-  if (inherits(x,c('numeric','integer'))) x <- as.numeric(x)
-  if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 32) )
-    return(x)
-  if ( (inherits(x,c('numeric','integer'))) & (min(x,na.rm=TRUE) > 0) ) y <- rep(1,length(x))  
-  if (inherits(x,c("POSIXt","PCICt"))) {
-    y <- as.numeric(format(x, '%d'))
-    return(y)
-  }
-  if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
-    y <- day(as.Date(x))
-    return(y)
-  }
-  if ( (class(x)[1]=="character") & (nchar(x[1])==4) ) {
-    y <- rep(1,length(x)) 
-    return(y)
-  }
-  if (class(x)[1]=="Date") y <- as.numeric(format(x, '%d'))
-  if (class(x)[1] %in% c("yearmon","yearqtr","season")) {
-    y <- rep(1,length(x))
-  }
-  return(y)
-}
-
-# Used to estimate Dec-Feb, Mar-May, Jun-Aug, and Sep-Nov statistics
-# Manipulate the zoo-object by shifting the year/chonology so that
-# zoo thinks the year defined as December-November is January-December.
-
-#season <- function(x,format="numeric", ...) {
-#  if (inherits(x,'integer')) x <- as.numeric(x)
-#  if ( (inherits(x,'numeric')) & (min(x,na.rm=TRUE) > 0) & (max(x,na.rm=TRUE) < 5) )
-#    return(x)
-#  
-#  if (inherits(x,c('station','field','zoo'))) {
-#    y <- season(index(x))
-#    return(y)
-#  }
-#  if ( (class(x)[1]=="character") & (nchar(x[1])==10) ) {
-#    y <- season(as.Date(x))
-#    return(y)
-# }  
-#  if (class(x)[1]=="Date") {
-#    xl <- x
-#    n <- length(x)
-#    xl[2:n] <- x[1:n-1]
-#    xl[1] <- NA
-#    y <- yearqtr(xl)    
-#    y <- as.numeric(format(x, '%q'))
-#  }
-#  if (format=="character") y <- season.name[y+1]
-#  return(y)
-#}
-
-season <- function(x, ...) UseMethod("season")
-
-season.default <- function(x,format="character") {
-  nt <- length(index(x))
-  season <- rep('',nt)
-  m <- month(x)
-  if ( (inherits(x,'zoo')) & (format=="character") ) {
-    for (i in 1:nt)  season[i] <- switch(m[i],
-                                        '1'='djf','2'='djf','12'='djf',
-                                         '3'='mam','4'='mam','5'='mam',
-                                         '6'='jja','7'='jja','8'='jja',
-                                         '9'='son','10'='son','11'='son')
-  } else if ( (inherits(x,'zoo')) & (format=="numeric") ){
-    for (i in 1:nt)  season[i] <- switch(m[i],'1'=1,'2'=1,'12'=1,
-                                         '3'=2,'4'=2,'5'=2,
-                                         '6'=3,'7'=3,'8'=3,
-                                         '9'=4,'10'=4,'11'=4)
-    season <- as.numeric(season)
-  } else {
-    season <- paste(substr(month.abb[as.numeric(rownames(table(month(x))))],1,1),sep='')
-  }
-#
-  return(season)
-}
-
-seasonal.yearmon <- function(x) {
-
-  attr(season,'history') <- history.stamp(x)
-  season
-}
-
-season.abb <- function() {
-  season.abb <- c('annual','djf','jfm','fma','mam','amj',
-                  'mjj','jja','jas','aso',
-                  'son','ond','ndj','ondjfm','amjjas',
-                  'ndjf','jjas','mjjas',
-                  'djfm','djfma','ndjfma',
-                  'ndjfmam','ondjfma')
-  season<-list(1:12,c(12,1,2),1:3,2:4,3:5,4:6,5:7,6:8,7:9,8:10,9:11,10:12,
-               c(11,12,1),c(10:12,1:3),4:9,c(11,12,1,2),6:9,5:9,
-               c(12,1,2,3),c(12,1,2,3,4),c(11,12,1,2,3,4),c(11,12,1,2,3,4,5),
-               c(10,11,12,1,2,3,4))
-  season.abb <- c(season.abb,toupper(season.abb))
-  season <- rep(season,2)
-  names(season) <- season.abb
-  return(season)
-}
-
-
-
-pentad <- function(x,l=5,it0=NULL,...) {
-  if (!is.null(it0)) yr <- year(x) - it0 else yr <- year(x)
-  yrl <- l*trunc(yr/l)
-  if (!is.null(it0)) yrl <- yrl + it0  
-  index(x) <- yrl
-  
-  xl <- aggregate(x,yrl,...)
-  attr(xl,'dimnames') <- NULL
-  xl
-}
 

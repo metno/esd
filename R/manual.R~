@@ -1,8 +1,0 @@
-## Help and assistence.
-
-manual <- function(url='https://ndownloader.figshare.com/files/2126237',browser='firefox')
-  system(paste(browser,url))
-
-ABC4esd <- function(url='http://www.gvc2.gu.se/ngeo/rcg/edu/esd.pdf',browser='firefox')
-  system(paste(browser,url))
-

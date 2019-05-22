@@ -3,45 +3,83 @@
 ## Description    internal functions 
 ## Last update    08.01.2014
 
-
+#' Shortcuts to attributes
+#'
+#' Fast access to attributes, e.g, \code{lon(x)} gives you the same output as \code{attr(x,"longitude")}.
+#'
+#' @aliases lon longitude lat latitude alt altitude stid qual quality calendar
+#' cntr country loc location varid variable unit src aspect ref reference info information
+#' history.esd pattern ele element err
+#'
+#' @param x input object
+#'
+#' @export
 lon <- longitude <- function(x) return(attr(x,"longitude"))
 
+#' @export
 lat <- latitude <- function(x) return(attr(x,"latitude"))
 
-stid <- station_id <- function(x) return(attr(x,"station_id")) 
+#' @export
+stid <- function(x) return(attr(x,"station_id")) 
 
+# NOT EXPORTED
 wmo <- function(x) return(attr(x,"wmo"))
 
+#' @export
 qual <- quality <-  function(x) return(attr(x,"quality"))
 
+#' @export
 alt <- altitude <- function(x) return(attr(x,"altitude"))
 
+#' @export
 calendar <- function(x) return(attr(x,"calendar"))
 
+#' @export
 cntr <- country <- function(x) return(attr(x,"country"))
 
+#' @export
 loc <- location <- function(x) return(attr(x,"location"))
 
+#' @export
 varid <- variable <- function(x) return(attr(x,"variable"))
 
+#' @export
 unit <- function(x) return(attr(x, "unit"))
 
+#' @export
 src <-  function(x) return(attr(x,"source"))
 
+#' @export
 aspect <- function(x) return(attr(x, "aspect"))
 
+#' @export
 ref <- reference <-  function(x) (attr(x, "reference"))
 
-info <- function(x) return(attr(x,"info"))
+#' @export
+info <- information <- function(x) return(attr(x,"info"))
 
+#' @export
 history.esd <- function(x) return(attr(x, "history"))
 
+#' @export
 pattern <- function(x) return(attr(x,"pattern"))
 
+#' @export
 ele <- element <- function(x) return(attr(x,"element"))
 
+#' @export
 err <- function(x) return(attr(x,"standard.error"))
 
+#' Create a label for plots
+#'
+#' Using the attributes of an object, put together a character string with 
+#' the variable name and unit to be used as label in plots and maps.
+#'
+#' @param x an input object
+#'
+#' @return a character string
+#'
+#' @export
 ylab <- function(x) {
   unit <- unit(x)[1]
   varnm <- varid(x)[1]

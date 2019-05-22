@@ -10,7 +10,20 @@
 #' @param ... other arguments
 #' 
 #' @return a \code{field} object
-#' 
+#'
+#' @example
+#' # how to generate a new field object.
+#' year <- sort(rep(1991:2000,12))
+#' month <- rep(1:12,length(1991:2000))
+#' n <-length(year)
+#' lon <- seq(-30,40,by=5); nx <- length(lon)
+#' lat <- seq(40,70,by=5); ny <- length(lat)
+#' # Time dimension should come first, space second.
+#' y <- matrix(rnorm(nx*ny*n),n,nx*ny)
+#' index <- as.Date(paste(year,month,1,sep="-"))
+#' Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
+#' map(Y)
+#'
 #' @export
 as.field <- function(x,...) UseMethod("as.field")
 
@@ -107,7 +120,20 @@ as.field.zoo <- function(x,...,lon,lat,param,unit,
 #' @return a \code{field} object
 #' 
 #' @seealso as.field as.field.zoo zoo
-#' 
+#'
+#' @example
+#' # how to generate a new field object.
+#' year <- sort(rep(1991:2000,12))
+#' month <- rep(1:12,length(1991:2000))
+#' n <-length(year)
+#' lon <- seq(-30,40,by=5); nx <- length(lon)
+#' lat <- seq(40,70,by=5); ny <- length(lat)
+#' # Time dimension should come first, space second.
+#' y <- matrix(rnorm(nx*ny*n),n,nx*ny)
+#' index <- as.Date(paste(year,month,1,sep="-"))
+#' Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
+#' map(Y)
+#'
 #' @export
 as.field.default <- function(x,...,index,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,

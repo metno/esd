@@ -17,7 +17,7 @@
 #' 
 #' @param x A \code{\link{station}} object
 #' @param by see \code{\link{aggregate.zoo}}
-#' @param FUN see \code{\link{aggregate.zoo}}. Additional options: 'area','exceedance','lessthan'.
+#' @param FUN a function; see \code{\link{aggregate.zoo}}. Additional options: 'area','exceedance','lessthan'.
 #' @param regular see \code{\link{aggregate.zoo}}
 #' @param frequency see \code{\link{aggregate.zoo}}
 #' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}

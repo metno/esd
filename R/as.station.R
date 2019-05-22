@@ -11,6 +11,13 @@
 #' 
 #' @return a \code{station} object
 #' 
+#' @example
+#' # How to generate a new 'station' object
+#' data <- round(matrix(rnorm(20*12),20,12),2)
+#' colnames(data) <- month.abb
+#' x <- data.frame(year=1981:2000,data)
+#' X <- as.station(x,loc="",param="noise",unit="none")
+#' 
 #' @export
 as.station <- function(x,...) UseMethod("as.station")
 
@@ -40,7 +47,7 @@ as.station <- function(x,...) UseMethod("as.station")
 #' @param verbose a boolean; if TRUE print information about progress
 #' 
 #' @return a \code{station} object
-#' 
+#'
 #' @seealso as.station
 #' 
 #' @export
@@ -184,7 +191,14 @@ as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
 #' @param verbose a boolean; if TRUE print information about progress
 #' 
 #' @return a \code{station} object
-#' 
+#'
+#' @example
+#' # How to generate a new 'station' object
+#' data <- round(matrix(rnorm(20*12),20,12),2)
+#' colnames(data) <- month.abb
+#' x <- data.frame(year=1981:2000,data)
+#' X <- as.station(x,loc="",param="noise",unit="none")
+#'
 #' @seealso as.station
 #' 
 #' @export

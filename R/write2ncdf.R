@@ -3,7 +3,7 @@
 ## https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDF-Data-Types.html:
 ## short: 16-bit signed integers. The short type holds values between -32768 and 32767.
 
-## Help functions 
+## Help functions - NOT EXPORTED
 firstyear <- function(x,na.rm=FALSE,verbose=FALSE) {
   if (verbose) print('firstyear')
   yrs <- year(x)
@@ -20,6 +20,7 @@ firstyear <- function(x,na.rm=FALSE,verbose=FALSE) {
   return(y)
 }
 
+## Help functions - NOT EXPORTED
 lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
   if (verbose) print('lastyear')
   yrs <- year(x)
@@ -34,8 +35,6 @@ lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
   if (verbose) print(table(as.numeric(y)))
   return(y)
 }
-
-
 
 #' Saves climate data as netCDF.
 #' 
@@ -68,12 +67,13 @@ lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
 #' X <- annual(nacd)
 #' write2ncdf4(X,file='test.nc')
 #' 
-#' @export write2ncdf4
+#' @export
 write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 
 write2ncdf4.default <- function(x,...) {
 }
 
+#' @export
 write2ncdf4.list <- function(x,file='field.nc',prec='short',scale=0.1,offset=NULL,
                              torg="1970-01-01",missval=-999,verbose=FALSE) {
   if (verbose) print('write2ncdf4.list')
@@ -145,6 +145,7 @@ write2ncdf4.list <- function(x,file='field.nc',prec='short',scale=0.1,offset=NUL
   if (verbose) print('netCDF file saved')
 }
 
+#' @export
 write2ncdf4.field <- function(x,file='field.nc',prec='short',scale=NULL,offset=NULL,
                               torg="1970-01-01",missval=-999,ncclose=TRUE,verbose=FALSE) {
   if (verbose) {print('write2ncdf4.field'); print(names(attributes(x)))}
@@ -194,7 +195,7 @@ write2ncdf4.field <- function(x,file='field.nc',prec='short',scale=NULL,offset=N
 
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDL-Data-Types.html:
 # short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
-
+#' @export
 write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
                                 scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,verbose=FALSE) {
   
@@ -915,7 +916,8 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
 }
 
 
-## These small functions are common code that simplify saving data as netCDF 
+## These small functions are common code that simplify saving data as netCDF
+#' @export
 write2ncdf4.pca <- function(x,file='esd.pca.nc',prec='short',verbose=FALSE,scale=0.01,offset=0,missval=-99) {
   if (verbose) print('write2ncdf4.pca')
   pcaatts <- names(attributes(x))
@@ -977,10 +979,13 @@ write2ncdf4.pca <- function(x,file='esd.pca.nc',prec='short',verbose=FALSE,scale
   ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
 }
 
-write2ncdf4.eof <- function(x,file='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) {
+#' @export
+write2ncdf4.eof <- function(x,file='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999,verbose=FALSE){
+  if(verbose) print("write2ncdf.eof")
+  if(vebrose) print("unfinished function that doesn't do anything")
 }
 
-  
+#' @export  
 write2ncdf4.dsensemble <- function(x,file='esd.dsensemble.nc',prec='short',offset=0,scale=0.1,
                               torg="1970-01-01",missval=-99,verbose=TRUE) {
   ## prec - see http://james.hiebert.name/blog/work/2015/04/18/NetCDF-Scale-Factors/

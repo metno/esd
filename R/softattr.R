@@ -1,8 +1,19 @@
 # For copying non-standard (soft) attributes such as meta data:
 
-# Copy the attributes of x to y
+#' Copy attributes
+#'
+#' Copy the attributes of x to y
+#' 
+#' @param x input object with attributes
+#' @param y input object to receive attributes
+#' @param ignore names of attributes that will not be copied from x to y
+#'
+#' @seealso softattr
+#'
+#' @return same as y but with attributes of x
+#'
+#' @export
 attrcp <- function(x,y,ignore=c("name","model","n.apps","appendix","dimnames")) {
-                                        #print("attrcp")
   nattr <- softattr(x,ignore=ignore)
   if (length(nattr)>0) {
     for (i in 1:length(nattr)) {
@@ -19,7 +30,16 @@ attrcp <- function(x,y,ignore=c("name","model","n.apps","appendix","dimnames")) 
   invisible(y)
 }
 
-
+#' Get names of attributes
+#'
+#' @param x input object with attributes
+#' @param ignore names to ignore
+#'
+#' @return character string or vector with names of attributes
+#'
+#' @seealso attrcp
+#'
+#' @export
 softattr <- function (x, ignore = NULL) {
   nattr <- names(attributes(x))
   if (sum(is.element(nattr, "names")) > 0) {
