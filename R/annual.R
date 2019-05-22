@@ -57,7 +57,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   ## Case when subsetting one specific season / in this case nmin =1
   
   ## If already annual, then return
-  if (inherits(x,'annual')) return(x)
+  if (inherits(x,c('annual','year'))) return(x)
   ## Update the units for annual sums:
   if (FUN=='sum') {
     attr(x,'unit') <- sub('day','year',attr(x,'unit'))
@@ -520,7 +520,7 @@ season.abb <- function() {
 
 pentad <- function(x,l=5,it0=NULL,verbose=FALSE,...) {
   if (verbose) {print(paste('pentad',l)); print(class(x))}
-  if (l == 1) return(annual(subset(x,it=it0)))
+  if (l == 1) return(annual(subset(x,it=it0),...))
   if (!is.null(it0)) yr <- year(x) - it0 else yr <- year(x)
   yrl <- l*trunc(yr/l)
   if (!is.null(it0)) yrl <- yrl + it0  
