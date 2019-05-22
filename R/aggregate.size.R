@@ -2,13 +2,50 @@
 ## Matrix lon & lat indices: (i, j).
 ## @RasmusBenestad, 2018-10-29
 
-# Aggregate size of events - see documentation in aggregate.R
+# Aggregate size of events
+#' aggregate
+#' 
+#' The aggregation functions are based on the S3 method for \code{zoo} objects,
+#' but takes care of extra house keeping, such as attributes with meta data.
+#'
+#' \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
+#' meters) for individual events (defined as gridboxes touching each other).
+#' 
+#' @aliases aggregate.size aggregate.size.matrix aggregate.size.field
+#' @seealso aggregate.area aggregate aggregate.comb aggregate.field
+#' 
+#' @param x A \code{\link{station}} object
+#' @param x0 threshold defining an event
+#' @param plot a boolean; if TRUE display results as a plot
+#' @param a radius of earth (unit: km)
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
+#'
+#' @return The call returns a station object
+#'
+#' @author R.E. Benestad
+#' @keywords utilities
+#' @examples
+#' 
+#' ## S3 method for class 'station'
+#' data(Svalbard)
+#' x <- aggregate(Svalbard, month, FUN='mean', na.rm=TRUE)
+#' plot(x)
+#'
+#' ## S3 method for class 'field'
+#' slp <- slp.DNMI()
+#' y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
+#'
+#' ## Aggregate area
+#' w <- aggregate.area(y)
+#' plot(w)
+#'
 #' @export
 aggregate.size <- function(x, ...) UseMethod("aggregate.size")
 
 # Aggregate size of events - S3 method for matrix
 #' @export
-aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) {
+aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6378,...) {#,a=6.378e06,...) {
 
     ## Select all grid boxes with values exceeding x0
     if (verbose) print('aggregate.size.matrix')
@@ -40,7 +77,10 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) 
             if (ij > 1) {nbr[1:(ij-1)] <- nbr[2:ij]; nbr[ij] <- 0}
             ## Select the gridboxes attached to the fist grid box: nbr==1
             sel <- (nbr==1)
-            if (sum(is.na(sel)) >0) {print("Something is wrong!"); browser()}
+            if (sum(is.na(sel)) >0) {
+	      print("Something is wrong!")
+	      browser()
+	    }
             if (sum(sel)>0) {
                 if (verbose) print(paste('more adjacent points',sum(sel,na.rm=TRUE),eno))
                 getnumber <- z[sel]
@@ -85,13 +125,23 @@ aggregate.size.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
   sizestats <- list()
   for (it in 1:nt) {
     z <- matrix(x[it,],d[1],d[2])
-    attr(z,'longitude') <- lon(x); attr(z,'latitude') <- lat(x)              
-    sizestats[[it]] <- aggregate.size(z,x0=x0)$statistic
-    if (verbose) print(sizestats[[it]])  
+    attr(z,'longitude') <- lon(x)
+    attr(z,'latitude') <- lat(x)
+    stat.it <- aggregate.size(z,x0=x0)$statistic
+    if(is.null(stat.it)) {
+      sizestats[[it]] <- 0
+    } else {
+      sizestats[[it]] <- as.numeric(stat.it)
+    }
   }
-  names(sizestats) <- index(x)
+  names(sizestats) <- index(x)[1:length(sizestats)]
   ne <- max(unlist(lapply(sizestats,length)))
-  size <-  unlist(lapply(sizestats,function(x) {y <- rep(0,ne); y[1:length(x)] <- x[]; return(y)}))
+  size <-  unlist(lapply(sizestats,
+       function(x) {
+         y <- rep(0,ne)
+	 if(length(x)>0) y[1:length(x)] <- x
+    	 return(y)
+       } ))
   dim(size) <- c(ne,length(sizestats))
   size <- zoo(t(size),order.by=index(x))
   names(size) <- paste('event',1:ne)
@@ -100,8 +150,8 @@ aggregate.size.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
   return(size)
 }
 
-# Test function - do not export?
-test.events <- function(n=62, m=78, verbose=TRUE) {
+# Test function - do not export
+test.aggregate.size <- function(n=62, m=78, verbose=TRUE) {
     x <- matrix(rep(sin(seq(0,4*pi,length=n)),m)*
                 sort(rep(cos(seq(0,pi,length=m)),n)),n,m)
     par(mfcol=c(3,1))
