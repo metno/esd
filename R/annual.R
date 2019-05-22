@@ -539,7 +539,7 @@ pentad <- function(x,l=5,it0=NULL,verbose=FALSE,...) {
     for (i in 1:nt) {
       if (verbose) print(t[i])
       it <- is.element(index(x),t[i])
-      xl[i,] <- apply(coredata(x)[it,],2,FUN=FUN)
+      if (sum(it)==1) xl[i,] <- NA else xl[i,] <- apply(coredata(x)[it,],2,FUN=FUN)
     }
     xl <- zoo(xl,order.by=t)
     xl <- attrcp(x,xl)
