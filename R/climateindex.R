@@ -11,7 +11,7 @@
 #'
 #' GSL.nasa: Global Average Sea level from NASA
 #'
-#' QBO: Quasi-Biennial Oscillation. Calculated at NOAA ESRL Physical Sciences Division (PSD) from the zonal average
+#' QBO: Quasi-Biennial Oscillation. Calculated at NOAA/ESRL/PSD from the zonal average
 #' of the 30mb zonal wind at the equator as computed from the NCEP/NCAR Reanalysis.
 #'
 #' CET: Central England Temperature from the Hadley Center
@@ -20,7 +20,9 @@
 #' Reference: 'C.D. Keeling, R.B. Bacastow, A.E. Bainbridge, C.A. Ekdahl, P.R. Guenther, and L.S. Waterman, (1976),
 #' Atmospheric carbon dioxide variations at Mauna Loa Observatory, Hawaii, Tellus, vol. 28, 538-551'
 #'
-#' @aliases NAO NINO3.4 SOI GSL GSL.nasa QBO CET CO2
+#' AMO: Atlantic Multidecadal Oscillation, unsmoothed calculated from the Kaplan SST V2 at NOAA/ESRL/PSD1
+#'
+#' @aliases NAO NINO3.4 SOI GSL GSL.nasa QBO CET CO2 AMO
 #'
 #' @param freq frequency
 #' @param url a URL or web address to location of data
@@ -207,5 +209,27 @@ CO2 <- function(url='ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt
   return(co2)
 }
 
+#' @export
+AMO <- function(url=NULL, verbose=FALSE) {
+  if(verbose) print("AMO")
+  if(is.null(url)) url <- 'http://www.esrl.noaa.gov/psd/data/correlation/amon.us.long.data'
+  amo.test <- readLines(url)
+  nrows <- sum(is.element(nchar(amo.test),max(nchar(amo.test))))
+  skip <- min(which(is.element(nchar(amo.test), max(nchar(amo.test)))))-1
+  amo <- read.table(url, skip=skip, nrows=nrows)
+  amo[amo <= -99] <- NA
+  if(ncol(amo)==13) {
+    d <- as.Date(paste(sort(rep(amo$V1,12)),rep(1:12,length(amo$V1)),'01',sep='-'))
+    amo <- zoo(c(t(as.matrix(amo[2:13]))), order.by=d)
+  } else if(ncol(amo)==2) {
+    
+  }
+  amo <- as.station(amo,loc=NA,param='AMO',unit='dimensionless',
+                    lon=NA,lat=NA,alt=NA,
+                    cntr=NA,longname='Atlantic Multi-decadal Oscillation unsmoothed from the Kaplan SST V2',
+                    stid=NA,quality=NA,src='Calculated at NOAA/ESRL/PSD1', url=url,
+                    reference=NA,info=NA, method= NA)
+  return(amo)
+}
 
 
