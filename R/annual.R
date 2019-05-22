@@ -518,13 +518,32 @@ season.abb <- function() {
 
 
 
-pentad <- function(x,l=5,it0=NULL,...) {
+pentad <- function(x,l=5,it0=NULL,verbose=FALSE,...) {
+  if (verbose) {print(paste('pentad',l)); print(class(x))}
   if (!is.null(it0)) yr <- year(x) - it0 else yr <- year(x)
   yrl <- l*trunc(yr/l)
   if (!is.null(it0)) yrl <- yrl + it0  
   index(x) <- yrl
-  
-  xl <- aggregate(x,yrl,...)
+  if (verbose) print(table(yrl))
+  if (inherits(x,'year')) {
+    if (verbose) print('Annual data')
+    ## Use a faster algorithm for annual data
+    args <- list(...)
+    if (verbose) print(args)
+    if (!is.null(args$FUN)) FUN <- args$FUN else FUN='mean'
+    t <- as.numeric(rownames(table(yrl)))
+    nx <- dim(x)[2]
+    nt <- length(t)
+    xl <- matrix(rep(NA,nt,nx),nt,nx)
+    for (i in 1:nt) {
+      if (verbose) print(t[i])
+      it <- is.element(index(x),t[i])
+      xl[i,] <- apply(coredata(x)[it,],2,FUN=FUN)
+    }
+    xl <- zoo(xl,order.by=t)
+    xl <- attrcp(x,xl)
+    class(xl) <- class(x)
+  } else xl <- aggregate(x,yrl,...)
   attr(xl,'dimnames') <- NULL
   xl
 }
