@@ -1,7 +1,22 @@
 #' Conversion to esd objects.
 #' 
-#' \code{annual} aggregates time series into annual values (e.g. means).
-#' 
+#' \code{as.annual} and \code{annual} aggregates time series into annual values (e.g. means).
+#'
+#' \code{as.monthly} aggregates time series into monthly values (e.g. means).
+#'
+#' \code{as.4seasons} aggregates to four seasons ('djf': December-February, 'mam': March-May, 'jja': June-August, 'son': September-November)
+#' and \code{as.season}
+#'
+#' @param x input object, e.g., a 'station' or 'field' object
+#' @param FUN a function
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param nmin minimum number of data points in a season
+#' @param slow a boolean; if FALSE run a fast version that might not work on all data types?
+#' @param dateindex a boolean; if TRUE transform index into date format
+#' @param start first month and day of the season, e.g., '01-01' for January 1 (argument in \code{season})
+#' @param end last month and day of the season, e.g., '12-31' for December 31 (argument in \code{season})
+#' @param \dots additional arguments
+
 #' @aliases annual annual.zoo annual.default annual.dsensemble annual.station
 #' annual.spell annual.field
 #'

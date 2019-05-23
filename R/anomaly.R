@@ -308,3 +308,54 @@ clim2pca.day <- function(x,verbose=FALSE,...) {
 }
 
 
+
+as.anomaly <- function(x,...) UseMethod("as.anomaly")
+
+as.anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE) anomaly.default(x,ref=ref,na.rm=na.rm,...)
+
+#' @export
+as.anomaly.zoo <- function(x,...,ref=NULL,na.rm=TRUE) {
+  y <- as.anomaly.station(x,ref=ref,na.rm=na.rm,...)
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+#' @export
+as.anomaly.list <- function(x,...,ref=NULL,na.rm=TRUE) {
+  y <- lapply(x,anomaly(x))
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+#' @export
+as.anomaly.station <- function(x,...,ref=NULL,na.rm=TRUE) {
+  y <- as.anomaly.default(x,ref=ref,na.rm=na.rm,...)
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+#' @export
+as.anomaly.field<- function(x,...,ref=NULL,na.rm=TRUE) {
+   y <- anomaly.default(x,ref=ref,na.rm=na.rm,...)
+   attr(y,'history') <- history.stamp(x)
+   attr(y,'dimensions') <- attr(x,'dimensions')
+   invisible(y)
+}
+
+# Handy conversion algorithms:
+#' @export
+as.climatology <- function(x,...) {
+  ya <- as.anomaly(x,...)
+  clim <- coredata(attr(ya,'climatology'))
+  if (!is.null(dim(clim))) {
+    len.clim <- dim(clim)[1]
+  } else {
+    len.clim <- length(clim)
+  }
+  y <- zoo(clim,order.by=1:len.clim)      
+  y <- attrcp(x,y)
+  attr(y,'aspect') <- 'climatology'
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- class(x)
+  invisible(y)
+}
