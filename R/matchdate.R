@@ -1,11 +1,25 @@
+#' Match date of one object with another object or date string
+#'
+#' @param x input object (e.g., \code{station}, \code{field} or \code{zoo}) with a date index
+#' @param it a character string with dates or an object (e.g., \code{station}, \code{field} or \code{zoo}) with a date index
+#' @param verbose a boolean; if TRUE print information about progress
+#'
+#' @return the part of \code{x} that matches the dates provided in \code{it} 
+#' 
+#' @aliases matchdate matchdate.list matchdate.default
+#' @seealso subset
+#' 
+#' @export
 matchdate <-function(x,it,verbose=FALSE,...) UseMethod("matchdate")
 
+#' @export
 matchdate.list <- function(x,it,verbose=FALSE) {
   if (verbose) print('matchdate.list')
   y <- lapply(x,matchdate.default,it=it,verbose=verbose)
   invisible(y)
 }
 
+#' @export
 matchdate.default <- function(x,it,verbose=FALSE) {
   if(verbose) print("<matchdate.default>")
   ## If it is the list, then use the first element because otherwise will not find the index

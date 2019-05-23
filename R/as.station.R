@@ -1,31 +1,32 @@
 #' Coerce input to a \code{station} object
 #' 
 #' Transform an input object into the esd class \code{station}. 
-#' \code{as.station} is an S3 method and will redirect to a fitting function depending on the output. 
-#' The way in which the transformation is performed depends on the type of input data.
+#' \code{as.station} is an S3 method and will redirect to a fitting function depending on the type of input data.
+#'
+#' \code{as.station.zoo} and \code{as.station.data.frame} adds attributes and changes the class to transform the input to a 'station' object.
+#'
+#' \code{as.station.field} returns an object where every grid box is represented as one station.
+#'
+#' \code{as.station.pca} transforms a 'pca' object (see \code{\link{PCA}}) to a 'station' object using the method \code{\link{pca2station}}.
+#'
+#' \code{as.station.eof} represents the principle components of an 'eof' object as different stations.
+#'
+#' \code{as.station.dsensemble} transform a \code{dsensemble} object to a \code{station} object in one of two ways:
+#' i) If the input is of class \code{dsensemble} \code{pca}, you are redirected to \code{as.station.dsensemble.pca}
+#' which calculates the downscaled ensemble for each station based on the downscaled ensemble of principle components,
+#' returning a \code{dsensemble} \code{station} or \code{dsensemble} \code{list} object.
+#' ii) If the input is a \code{dsensemble} \code{station} or \code{dsensemble} \code{list} object, you are redirected to \code{as.station.dsensemble.station}
+#' which returns a \code{station} object holding the ensemble mean (or another statistical characteristic of the ensemble, see input argument \code{FUN})
+#' of the downscaled results for each station.
+#'
+#' \code{as.station.events} and \code{as.station.trajectory} aggregate an 'event' or 'trajectory' object to a 'station' object by
+#' aggregating some aspect of the cyclones/anti-cyclones (or other type of event). By default, the total number of events/trajectories per month is calculated 
+#' but the method can also estimate some other characteristic, e.g., the monthly mean sea level pressure at the center of the cyclones ().
 #' 
-#' @seealso as.station.zoo as.station.data.frame as.station.ds as.station.pca
+#' @aliases as.station as.station.zoo as.station.data.frame as.station.ds as.station.pca as.station.spell
+#' as.station.dsensemble as.station.dsensemble.pca as.station.dsensemble.station as.station.events
 #' 
 #' @param x the input object
-#' @param ... other arguments
-#' 
-#' @return a \code{station} object
-#' 
-#' @example
-#' # How to generate a new 'station' object
-#' data <- round(matrix(rnorm(20*12),20,12),2)
-#' colnames(data) <- month.abb
-#' x <- data.frame(year=1981:2000,data)
-#' X <- as.station(x,loc="",param="noise",unit="none")
-#' 
-#' @export
-as.station <- function(x,...) UseMethod("as.station")
-
-#' Coerce input to a \code{station} object
-#' 
-#' Transform a \code{zoo} object into a \code{station} object
-#' 
-#' @param x the input object of class \code{zoo} typically containing data from one or several measurement stations
 #' @param loc location(s), e.g, "Manchester" or c("Oslo","Bergen")
 #' @param param short name of variable
 #' @param unit unit of variable, e.g., 't2m'
@@ -45,11 +46,27 @@ as.station <- function(x,...) UseMethod("as.station")
 #' @param type type of data
 #' @param aspect aspect describing data, e.g., 'original', 'anomaly', 'climatology'
 #' @param verbose a boolean; if TRUE print information about progress
+#' @param ... other arguments
 #' 
 #' @return a \code{station} object
-#'
-#' @seealso as.station
 #' 
+#' @example
+#' # How to generate a new 'station' object
+#' data <- round(matrix(rnorm(20*12),20,12),2)
+#' colnames(data) <- month.abb
+#' x <- data.frame(year=1981:2000,data)
+#' X <- as.station(x,loc="",param="noise",unit="none")
+#'
+#' # Transform a field object into a station object
+#' slp.field <- slp.DNMI(lon=c(-20,20), lat=c(50,70)) # get example SLP data
+#' slp.station <- as.station(slp.field) # coerce SLP field to a station object
+#' cb <- list(pal="burd", breaks=seq(1000,1020,2)) # specify color bar for maps
+#' map(slp.field, FUN="mean", colbar=cb) # show map of SLP field
+#' map(slp.station, FUN="mean", colbar=cb) # show map of SLP as station data
+#'
+#' @export
+as.station <- function(x,...) UseMethod("as.station")
+
 #' @export
 as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                           cntr=NA,longname=NA,calendar=NA,stid=NA,quality=NA,src=NA,
@@ -165,42 +182,6 @@ as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   return(y)
 }
 
-#' Coerce input to a \code{station} object
-#' 
-#' Transform a \code{data.frame} into a \code{station} object
-#' 
-#' @param x the input object of class \code{data.frame} typically containing data from one or several measurement stations
-#' @param loc location(s), e.g, "Manchester" or c("Oslo","Bergen")
-#' @param param short name of variable
-#' @param unit unit of variable, e.g., 't2m'
-#' @param lon longitude(s), a numerical or numerical vector
-#' @param lat latitudes(s), a numerical or numerical vector
-#' @param alt altitude(s), a numerical or numerical vector
-#' @param cntr country, a character string or vector of character strings
-#' @param longname long name of variable, e.g, 'temperature at 2m'
-#' @param calendar calendar type
-#' @param stid station id, a numerical or numerical vector
-#' @param quality quality flag
-#' @param src source of data
-#' @param url url to website where data can be downloaded
-#' @param reference reference describing data set
-#' @param info additional information
-#' @param method method applied to data
-#' @param type type of data
-#' @param aspect aspect describing data, e.g., 'original', 'anomaly', 'climatology'
-#' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @return a \code{station} object
-#'
-#' @example
-#' # How to generate a new 'station' object
-#' data <- round(matrix(rnorm(20*12),20,12),2)
-#' colnames(data) <- month.abb
-#' x <- data.frame(year=1981:2000,data)
-#' X <- as.station(x,loc="",param="noise",unit="none")
-#'
-#' @seealso as.station
-#' 
 #' @export
 as.station.data.frame <-  function (x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                                     cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,url=NA,
@@ -238,18 +219,6 @@ as.station.data.frame <-  function (x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,
   return(y)
 }
 
-#' Coerce input to a \code{station} object
-#' 
-#' Transform a \code{ds} object (empirical-statistical downscaling output of the \code{DS} function) into a \code{station} object
-#' 
-#' @param x the input object of class \code{ds}
-#' @param ... other arguments
-#' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @return a \code{station} object
-#' 
-#' @seealso as.station DS
-#' 
 #' @export
 as.station.ds <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.ds")
@@ -272,18 +241,6 @@ as.station.ds <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' Coerce input to a \code{station} object
-#' 
-#' Transform a \code{pca} object (output of the \code{PCA} function) into a \code{station} object
-#' 
-#' @param x the input object of class \code{pca}
-#' @param ... other arguments
-#' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @return a \code{station} object
-#' 
-#' @seealso as.station PCA
-#' 
 #' @export
 as.station.pca <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.pca")
@@ -301,19 +258,6 @@ as.station.pca <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' Coerce input to a \code{station} object
-#' 
-#' Transform a \code{list} of downscaled results into a \code{station} object. 
-#' Note that this function will not work on lists containing other types of data.
-#' 
-#' @param x the input object of class \code{list} containing downscaled results e.g. for various months or seasons
-#' @param ... other arguments
-#' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @return a \code{station} object
-#' 
-#' @seealso as.station as.station.ds DS
-#' 
 #' @export
 as.station.list <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.list")
@@ -395,26 +339,6 @@ as.station.list <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' Coerce input to a \code{station} object
-#' 
-#' Transform a \code{field} object into a \code{station} object.
-#' 
-#' @param x the input object of class \code{field}
-#' @param ... other arguments
-#' @param is a list or data.frame providing space index, e.g. station record or a lon(gitude) and lat(itude) range 
-#' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @return a \code{station} object where every grid box is represented as one station
-#' 
-#' @example 
-#' slp.field <- slp.DNMI(lon=c(-20,20), lat=c(50,70)) # get example SLP data
-#' slp.station <- as.station(slp.field) # coerce SLP field to a station object
-#' cb <- list(pal="burd", breaks=seq(1000,1020,2)) # specify color bar for maps
-#' map(slp.field, FUN="mean", colbar=cb) # show map of SLP field
-#' map(slp.station, FUN="mean", colbar=cb) # show map of SLP as station data
-#' 
-#' @seealso as.station
-#' 
 #' @export
 as.station.field <- function(x,...,is=NULL,verbose=FALSE) {
   if(verbose) print("as.station.field")
@@ -445,18 +369,6 @@ as.station.field <- function(x,...,is=NULL,verbose=FALSE) {
   invisible(y)
 }
 
-#' Coerce input to a \code{station} object
-#' 
-#' Transform a \code{spell} object (containing information about e.g. warm or cold spells) into a \code{station} object.
-#' 
-#' @param x the input object of class \code{spell}
-#' @param ... other arguments
-#' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @return a \code{station} object
-#' 
-#' @seealso as.station
-#' 
 #' @export
 as.station.spell <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.spell")
@@ -478,20 +390,6 @@ as.station.spell <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' Coerce input to a \code{station} object
-#' 
-#' Transform an \code{eof} object (output of the \code{EOF} function) into a \code{station} object.
-#' The function \code{as.station.EOF} represents the various principle components of the EOF as stations. 
-#' 
-#' @param x the input object of class \code{eof}
-#' @param ... other arguments
-#' @param ip a numerical or numerical vector with indices of principle components to be included
-#' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @return a \code{station} object
-#' 
-#' @seealso as.station EOF
-#' 
 #' @export
 as.station.eof <- function(x,...,ip=1:10,verbose=FALSE) {
   if(verbose) print("as.station.eof")
@@ -511,15 +409,6 @@ as.station.eof <- function(x,...,ip=1:10,verbose=FALSE) {
 
 #' Coerce input to a \code{station} object
 #' 
-#' Transform a \code{dsensemble} object to a \code{station} object.
-#'
-#' If the input is of class \code{dsensemble} \code{pca}, you are redirected to \code{as.station.dsensemble.pca}
-#' which calculates the downscaled ensemble for each station based on the downscaled ensemble of principle components,
-#' returning a \code{dsensemble} \code{station} or \code{dsensemble} \code{list} object.
-#'
-#' If the input is a \code{dsensemble} \code{station} or \code{dsensemble} \code{list} object, you are redirected to \code{as.station.dsensemble.station}
-#' which returns a \code{station} object holding the ensemble mean (or another statistical characteristic of the ensemble, see input argument \code{FUN})
-#' of the downscaled results for each station.
 #'
 #' @param x the input object of class \code{dsensemble} 
 #' @param ... other arguments
@@ -547,21 +436,6 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' Coerce input to a \code{station} object
-#' 
-#' Transform a \code{dsensemble} \code{pca} object to a \code{dsensemble} \code{list} or \code{dsensemble} \code{station} object
-#' holding the downscaled ensemble for each station, calculated based on the corresponding ensemble of downscaled principle components
-#' 
-#' @param x the input object of class \code{dsensemble} \code{pca}
-#' @param ... other arguments
-#' @param is a list or data.frame providing a space index, e.g., station record or a lon(gitude) and lat(itude) range 
-#' @param ip a numerical or numerical vector with indices of the principle components to be included
-#' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @return a \code{dsensemble} \code{list} or \code{dsensemble} \code{station} object
-#' 
-#' @seealso as.station DSensemble PCA
-#' 
 #' @export
 as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   if(verbose) print("as.station.dsensemble.pca")
@@ -664,22 +538,6 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   }
 }
 
-#' Coerce input to a \code{station} object
-#' 
-#' Transform a \code{dsensemble} \code{pca} object into a \code{station} object holding the ensemble mean
-#' of the downscaled results for each station (or another statistical characteristic of the ensemble, see input argument \code{FUN}).
-#' 
-#' @param x the input object of class \code{dsensemble}
-#' @param ... other arguments
-#' @param is a list or data.frame providing a space index, e.g., station record or a lon(gitude) and lat(itude) range 
-#' @param it a list providing a time index such as months (c("dec","jan","feb")), seasons ("djf"), a range of years or dates, or a logical or numerical vector providing the elements to be selected (1:10 for the first ten elements)
-#' @param FUN a function, applied to the downscaled ensemble
-#' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @return a \code{station} object
-#' 
-#' @seealso as.station DSensemble
-#' 
 #' @export
 as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',verbose=FALSE) {
 
@@ -703,4 +561,16 @@ as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',verbo
                     lon=lon,lat=lat,alt=alt,stid=stid,longname=longname)
     attr(y,"history") <- history.stamp()
     return(y)
+}
+
+'# @export
+as.station.trajectory <- function(x,...) {
+  y <- trajectory2station(x,...)
+  return(y)
+}
+
+'# @export
+as.station.events <- function(x,...) {
+  y <- events2station(x,...)
+  invisible(y)
 }

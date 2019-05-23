@@ -380,3 +380,15 @@ as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
     invisible(S)
   }
 }
+
+#' @export
+as.field.events <- function(x,...) {
+  y <- events2field(x,...)
+  return(y)
+}
+
+#' @export
+as.field.trajectory <- function(x,...) {
+  y <- trajectory2field(x,...)
+  return(y)
+}

@@ -12,16 +12,18 @@
 #' @aliases subset subset.station subset.eof subset.pca subset.cca
 #' subset.events subset.trajectory subset.trend subset.corfield subset.ds
 #' subset.dsensemble subset.comb subset.field subset.spell subset.zoo
-#' subset.trajectory station.subset subset.zoo matchdate sort.station
-#' subset.stationmeta
+#' subset.trajectory station.subset subset.zoo subset.stationmeta
+#' @seealso matchdate sort.station
+#'
 #' @param x Data object from which the subset is taken
-#' @param it A list or data.frame providing time index, e.g. month
-#' @param is A list or data.frame providing space index, e.g. station record or
-#' a lon(gitude) and lat(itude) range
-#' @param ip selection of patterns in PCA or EOF (used for e.g. filtreing the
-#' data)
-#' @param ic A list providing criteria for selection of cyclones: ic =
-#' list(param, pmax, pmin, FUN), where param is a parameter or element type,
+#' @param it A list or data.frame providing time index, e.g. a range of years like c(1979,2010), a season ('djf'), or a month ('dec' or 'december').
+#' @param is A list or data.frame providing space index, e.g. a list of longitude and latitude range like list(lon=c(0,60), lat=c(35,60)).
+#' @param ip selection of patterns in PCA or EOF (used for e.g. filtering the data)
+#' @param verbose Dump diagnostics to the screen
+#' @param ensemble.aggregate If TRUE, call \code{subset.dsensemble.multi} if
+#' appropriate.
+#' @param ic Argument of \code{subset.events}: A list providing criteria for selection of cyclones, 
+#' ic = list(param, pmax, pmin, FUN), where param is a parameter or element type,
 #' pmax and pmin are the upper and lower limit of the parameter.  If FUN is
 #' "any" (default setting), subset selects cyclones or trajectories that are
 #' within the chosen range at any point during their lifetime.  If FUN is "all"
@@ -29,9 +31,6 @@
 #' the range (pmin, pmax).  If FUN is "all" and x is a 'trajectory' object,
 #' subset selects cyclone trajectories that are within the chosen range at all
 #' points during their lifetime.)
-#' @param verbose Dump diagnostics to the screen
-#' @param ensemble.aggregate If TRUE, call \code{subset.dsensemble.multi} if
-#' appropriate.
 #' @return An object of the same class as the input object
 #' @author R.E. Benestad and A.  Mezghanil
 #' @keywords utilities
@@ -121,6 +120,7 @@
 #' @export subset
 subset <- function(x,...) UseMethod("subset")
 
+#' @export
 subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.field")
@@ -130,6 +130,7 @@ subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   return(y)
 }
 
+#' @export
 subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.zoo")
@@ -142,7 +143,7 @@ subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   return(y)
 }
 
-
+#' @export
 subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print("subset.comb")
     y <- subset.field(x,it=it,is=is)
@@ -166,6 +167,7 @@ subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     invisible(y)
 }
 
+#' @export
 subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print("subset.eof")
     if (is.null(is) & is.null(it) & is.null(ip)) return(x)                                    
@@ -310,6 +312,7 @@ subset.mvr <- function(x,it=NULL,is=NULL,...) {
     x
 }
 
+#' @export
 subset.pattern <- function(x,is=NULL,verbose=FALSE,...) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) print('subset.pattern')
@@ -363,11 +366,12 @@ subset.pattern <- function(x,is=NULL,verbose=FALSE,...) {
   return(x)
 }
 
+#' @export
 subset.matrix <- function(x,is=NULL,verbose=FALSE,...) {
   subset.pattern(x,is,verbose=verbose)
 }  
 
-
+#' @export
 subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
   if (verbose) print('subset.pca')
   y <- x
@@ -433,6 +437,7 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
   return(y)
 }
 
+#' @export
 subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print('subset.corfield')
     stopifnot(inherits(x,"corfield"))
@@ -455,6 +460,7 @@ subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     return(y)
 }
 
+#' @export
 subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     if (verbose) print('subset.ds')
     y <- x
@@ -504,6 +510,7 @@ subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     return(x)
 }
 
+#' @export
 subset.trend <- function(x,it=NULL,is=NULL,...) {
     y <- subset.field(x,it=it,is=is)
     
@@ -532,6 +539,7 @@ subset.trend <- function(x,it=NULL,is=NULL,...) {
     return(y)
 }
 
+#' @export
 subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE,...) {
   if (verbose) print('subset.dsensemble')
@@ -775,6 +783,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
   invisible(y)
 }
 
+#' @export
 subset.spell <- function(x,is=NULL,it=NULL,...) {
     y <- subset.station(x,is=is,it=it)
     good <- is.finite(y)
@@ -881,6 +890,7 @@ default.subregion <- function(x,is=NULL,verbose=FALSE) {
   return(y)
 } 
 
+#' @export
 default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 
     ## REB: Use select.station to condition the selection index is...
@@ -1180,7 +1190,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
     
-
+#' @export
 subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
   if(verbose) print("subset.events")
   cls <- class(x)
@@ -1361,6 +1371,7 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
   invisible(y)
 }
 
+#' @export
 subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   if(verbose) print("subset.trajectory")
   
@@ -1551,7 +1562,8 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   invisible(y)
 }
 
-## Routine for sorting the order of station series.
+#' Routine for sorting the order of station series.
+#' @export
 sort.station <- function(x,is=NULL,decreasing=TRUE) {
   if (is.null(is)) is <- order(stid(x),decreasing=decreasing)
   y <- zoo(x)[,is]

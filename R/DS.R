@@ -252,8 +252,11 @@ DS <- function(y,X,verbose=FALSE,plot=FALSE,...) UseMethod("DS")
 #' @export
 DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE) {
-    if (verbose) { print('--- DS.default ---'); print(summary(coredata(y)))}
-    #print('err(y)'); print(err(y))
+    if (verbose) {
+      print('DS.default')
+      print(summary(coredata(y)))
+    }
+    
     if (verbose) {print('index(y)'); print(index(y))}
     if (verbose) {print(class(y)); print(class(X))}
     swapped <- FALSE
@@ -335,7 +338,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
     ##if (length(index(X)) == length(index(y)))
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
                            weights=weights) 
-    
+    browser()
     predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
     if (is.null(names(X))) names(X) <- 1:dim(X)[2]
@@ -1176,7 +1179,7 @@ DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,biascorrect=FALSE,method="lm",sw
     
 }
 
-' @export
+#' @export
 DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
                    method="lm",swsm=NULL,m=5,ip=1:10,rmtrend=TRUE,weighted=TRUE,
                    pca=TRUE,npca=20) {
@@ -1189,20 +1192,20 @@ DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
     ## Make sure that predictions have the same index class (time units) as the original data 
     if (class(index(ds)) != class(index(y))) {
       ## For annual data:
-      if ( (class(index(ds))=='Date') & (class(index(y))=='numeric') & inherits(y,'annual') ) 
+      if ( (class(index(ds))=="Date") & class(index(y)=="numeric") & inherits(y,"annual") )
         index(ds) <- year(index(ds))
-      if ( (class(index(ds))=='numeric') & (class(index(y))=='Date') & inherits(y,'annual') ) 
-        index(ds) <- as.Date(paste(index(ds),'01-01',sep='-'))
+      if ( (class(index(ds))=="numeric") & (class(index(y))=="Date") & inherits(y,"annual") ) 
+        index(ds) <- as.Date(paste(index(ds),"01-01",sep="-"))
     }
-    attr(ds,'original_data') <- y
-    class(attr(ds,'original_data')) <- class(y)
-    class(attr(ds,'fitted_values')) <- class(y)
-    if(verbose) print("---return---")
+    attr(ds,"original_data") <- y
+    class(attr(ds,"original_data")) <- class(y)
+    class(attr(ds,"fitted_values")) <- class(y)
+    if(verbose) print("return")
     if (plot) plot(ds)
     invisible(ds)
 }
 
-' @export
+#' @export
 DS.list <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
                     method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20) {
   ### This method combines different EOFs into one predictor by making a new
