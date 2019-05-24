@@ -6,10 +6,6 @@ pieslice <- function(theta1,theta2,r=1,
   polygon(r*x,r*y,col=col,density=density,border=border)
 }
 
-## This code is based on an old version from clim.pact - can be rewritten to enhance efficiency.
-
-
-
 #' Wind analysis
 #' 
 #' A function that plots windroses from station objects which contain both the
@@ -17,8 +13,8 @@ pieslice <- function(theta1,theta2,r=1,
 #' two different station records.
 #' 
 #' 
-#' @aliases windrose TGW geostrophicwind geostrophicwind.station
-#' geostrophicwind.field
+#' @aliases windrose TGW geostrophicwind geostrophicwind.station geostrophicwind.field
+#' 
 #' @param x station object
 #' @param thrshld Threshold for windspeed
 #' @param saw Directional resolution in degrees
@@ -28,9 +24,13 @@ pieslice <- function(theta1,theta2,r=1,
 #' @param simple Only plot the windrose, not an additional historgram for
 #' windspeed
 #' @param verbose if TRUE print information about progress
+#' 
 #' @note Adapted from clim.pact
+#' 
 #' @author R.E. Benestad
+#' 
 #' @seealso \code{link{geostrophicwind}}
+#' 
 #' @examples
 #' 
 #' \dontrun{
@@ -174,6 +174,7 @@ windrose <- function(x,saw=10,max.scale=NULL,main=NULL,
 }
 
 ## Triangulation of pressure measurements to estimate wind
+#' @export
 TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
   if (verbose) print("Get stations")
   stopifnot(is.station(triangle))
@@ -235,9 +236,10 @@ TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
 }
 
 
-
+#' @export
 geostrophicwind<-function(x,...) UseMethod("geostrophicwind")
 
+#' @export
 geostrophicwind.station <- function(x,...,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000,progressbar=TRUE) {
   ## Estimates the geostrophic wind from mean sea-level pressure from stations
   n <- length(loc(x))
@@ -265,6 +267,7 @@ geostrophicwind.station <- function(x,...,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=
   invisible(Wind)      
 }
 
+#' @export
 geostrophicwind.field <- function(x,...,f=1.25e-4,rho=1.25,verbose=FALSE) {
   ## Estimates the geostrophic wind from mean sea-level pressure field
   if (verbose) print('geostrophicwind')

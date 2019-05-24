@@ -2,11 +2,11 @@
 #' 
 #' These plot functions are S3 methods for esd objects, based on \code{plot}.
 #' 
-#' 
 #' @aliases plot.station plot.pca vis.map plot.eof plot.eof.field plot.eof.var
 #' plot.eof.comb plot.field plot.spell plot.cca plot.ds plot.ds.pca plot.ds.eof
 #' plot.dsx plot.dsensemble plot.diagnose plot.xval plot.diagnose.comb.eof
-#' plot.diagnose.matrix plot.diagnose.dsensemble plot.nevents nam2expr
+#' plot.diagnose.matrix plot.diagnose.dsensemble plot.nevents
+#' 
 #' @param x the object to be plotted
 #' @param ip Which EOF/CCA pattern (mode) to plot
 #' @param col Colour
@@ -23,10 +23,13 @@
 #' @param what Indicate what to plot. 'field' expands eof to field before
 #' plotting
 #' @param new if TRUE plot in new window
+#' 
 #' @return A field object
-#' @author R.E. Benestad
+#' 
 #' @seealso \code{\link{plot}}
+#' 
 #' @keywords hplot
+#' 
 #' @examples
 #' 
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:
@@ -81,9 +84,10 @@
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #' 
-#' 
+#' @export
 plot <- function(x,...)  UseMethod("plot")
 
+#' @export
 plot.list <- function(x,...,is=NULL,
                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
                       lwd=3,xlim=NULL,ylim=NULL) {
@@ -96,6 +100,7 @@ plot.list <- function(x,...,is=NULL,
   }
 }
 
+#' @export
 plot.station <- function(x,...,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
@@ -264,6 +269,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   }
 }
 
+#' @export
 plot.eof <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                      ip=1,what=c("pc","eof","var"),
                      colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
@@ -281,9 +287,7 @@ plot.eof <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     print("x does not have 'comb' or 'field' aspects...")
 }
 
-
-
-
+#' @export
 plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                            what=c("pc","eof","var"),## colbar=NULL,
                            cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
@@ -382,7 +386,7 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   #par(fig=c(0,1,0,0.1),new=NEW, mar=c(0,0,0,0))  
 }
 
-
+#' @export
 plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                           ip=1,col=c("red"),alpha=1,
                           what=c("pc","eof","var"),colbar=NULL,verbose=FALSE) {
@@ -488,7 +492,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))  
 }
 
-
+#' @export
 plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                     lwd=1,type='l',pch=0,main=NULL,col=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,
@@ -666,8 +670,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
   invisible(list(trend0=trend0,trend1=trend1,xvalfit=xvalfit))
 }
 
-
-
+#' @export
 plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FALSE) {
   if(verbose) print("plot.eof.var")
   n <- min(c(n,length(attr(x,'eigenvalues'))))
@@ -707,8 +710,7 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
   invisible(var.eof)
 }
 
-
-
+#' @export
 plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose=FALSE) {
   if (verbose) print("plot.field")
   stopifnot(!missing(x),inherits(x,'field'))
@@ -818,6 +820,7 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
   invisible(z)
 }
 
+#' @export
 plot.pca <- function(y,...,cex=1,verbose=FALSE,new=TRUE) {
   if (verbose) print('plot.pca')
   if(inherits(y,"trajectory")) {
@@ -828,6 +831,7 @@ plot.pca <- function(y,...,cex=1,verbose=FALSE,new=TRUE) {
   }
 }
 
+#' @export
 plot.ds.pca <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                             type="p",cex=1,show=TRUE,h=0.6, v=1,pos=0.05),
@@ -902,6 +906,7 @@ plot.ds.pca <- function(x,...,ip=1,
   }
 }
 
+#' @export
 plot.ds.eof <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE) {
@@ -967,11 +972,12 @@ plot.ds.eof <- function(x,...,ip=1,
   }  
 }
 
+#' @export
 plot.mvr <- function(x) {
   plot(x$fitted.values)
 }
 
-
+#' @export
 plot.cca <- function(x,icca=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE,...) {
@@ -1006,17 +1012,18 @@ plot.cca <- function(x,icca=1,
   ## par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))
 }
 
-
+#' @export
 plot.list <- function(x,...) {
   plot(combine.ds(x),...)
 }
 
-
+#' @export
 plot.diagnose <- function(x,...) {
   if ( (inherits(x,"eof")) & (inherits(x,"comb")) ) plot.diagnose.comb.eof(x,...) else
   if (inherits(x,"dsensembles")) plot.diagnose.dsensemble(x,...)
 }
 
+#' @export
 plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,
                                    alpha=0.5,lwd=2,verbose=FALSE,...) {
   if (verbose) print('plot.diagnose.comb.eof')
@@ -1081,11 +1088,10 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,
      print('Size');print(cex)
      print('col');print(col)
   }
-  
   points(x$mean.diff,x$sd.ratio,pch=pch,col=col,lwd=lwd,cex=cex)
-
 }
 
+#' @export
 plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.diagnose.matrix')
   x <- as.data.frame(x)
@@ -1129,7 +1135,7 @@ plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,..
   image(1:2,1:n,colbar,col=col)  
 }
 
-
+#' @export
 plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=TRUE,
                                      map.type=NULL,verbose=FALSE,main=NULL,...) {
   if (verbose) print('plot.diagnose.dsensemble')
@@ -1215,20 +1221,6 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
     } 
   }  
 }
-
-nam2expr <- function(x) {
-  y <- x
-  for (i in 1:length(y)) {
-    z <- switch(tolower(x[i]),
-                  't2m'=expression(T[2 * m]),
-                  'tmax'=expression(T[x]),
-                  'tmin'=expression(T[n]),
-                  'tas'=expression(T[2 * m]))
-    if (is.null(z)) y[i] <- x[i] else y[i] <- z
-  }
-  return(y)
-}
-
  
 plot.xval <- function(x,new=TRUE,...) {
   if (new) dev.new()
@@ -1590,72 +1582,67 @@ plot.spell <- function(x,xlim=NULL,ylim=NULL) {
 }
 
 plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
-    if ( (class(ssa)[1]!="SSA") ) stop("Need an 'SSA' object")
-    nt <- ssa$nt
-    dev.new()
-    plot(ssa$d,main=main,sub=sub,ylab="Singular value",pch=20,col="grey50")
-    points(ssa$d)
+  if ( (class(ssa)[1]!="SSA") ) stop("Need an 'SSA' object")
+  nt <- ssa$nt
+  dev.new()
+  plot(ssa$d,main=main,sub=sub,ylab="Singular value",pch=20,col="grey50")
+  points(ssa$d)
+  grid()
+  dev.new()
+  par(mfcol=c(3,1))
+  plot(ssa$v[,1],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA vector: mode 1",lwd=3,col="grey70")
+  grid()
+  plot(ssa$v[,2],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA vector: mode 2",lwd=3,col="grey70")
+  grid()
+  plot(ssa$v[,3],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA vector: mode 3",lwd=3,col="grey70")
+  grid()
+  dev.new()
+  par(mfcol=c(3,1))
+  if (class(ssa)[3] == "monthly.station.record") {
+    yy <- sort(rep(ssa$x$yy,12)); yy <- yy[1:ssa$Nm]
+    mm <- rep(1:12,nt); mm <- mm[1:ssa$Nm]
+    plot(yy + (mm-0.5)/12, ssa$u[,1],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
     grid()
-
-    dev.new()
-    par(mfcol=c(3,1))
-    plot(ssa$v[,1],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA vector: mode 1",lwd=3,col="grey70")
+    plot(yy + (mm-0.5)/12, ssa$u[,2],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
     grid()
-    plot(ssa$v[,2],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA vector: mode 2",lwd=3,col="grey70")
+    plot(yy + (mm-0.5)/12, ssa$u[,3],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
     grid()
-    plot(ssa$v[,3],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA vector: mode 3",lwd=3,col="grey70")
+  } else if (class(ssa)[3] == "daily.station.record") {
+    plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
+         ssa$u[,1],type="l",main=main,sub=sub,
+       xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
     grid()
-
-
-    dev.new()
-    par(mfcol=c(3,1))
-    if (class(ssa)[3] == "monthly.station.record") {
-      yy <- sort(rep(ssa$x$yy,12)); yy <- yy[1:ssa$Nm]
-      mm <- rep(1:12,nt); mm <- mm[1:ssa$Nm]
-      #print(rbind(yy,mm))
-      #print(dim(ssa$v)); print(dim(ssa$u)); print(length(yy));
-      #print(length(mm));  print(ssa$Nm); print(nt); print(length(ssa$x$yy))
-      plot(yy + (mm-0.5)/12, ssa$u[,1],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
-      grid()
-      plot(yy + (mm-0.5)/12, ssa$u[,2],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
-      grid()
-      plot(yy + (mm-0.5)/12, ssa$u[,3],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
-      grid()
-    } else if (class(ssa)[3] == "daily.station.record") {
-      plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
-           ssa$u[,1],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
-      grid()
-      plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
-           ssa$u[,2],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
-      grid()
-      plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
-           ssa$u[,3],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
-      grid()
-    } else {
-      plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
-           ssa$u[,1],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
-      grid()
-      plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
-           ssa$u[,2],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
-      grid()
-      plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
-           ssa$u[,3],type="l",main=main,sub=sub,
-           xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
-      grid()
-    }
+    plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
+         ssa$u[,2],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
+    grid()
+    plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
+         ssa$u[,3],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
+    grid()
+  } else {
+    plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
+         ssa$u[,1],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
+    grid()
+    plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
+         ssa$u[,2],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
+    grid()
+    plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
+         ssa$u[,3],type="l",main=main,sub=sub,
+         xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
+    grid()
   }
+}
 
+#' @export
 plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,...) {
   # Plot the results from 
   if (verbose) print('plot.nevents')
@@ -1677,6 +1664,7 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
   lines(attr(x,'nwd.pre'),col=rgb(0.5,0.5,0.5,0.5))
 }
 
+#' @export
 plot.trajectory <- function(x,it=NULL,is=NULL,
                             main=NULL,xlim=NULL,ylim=NULL,
                             col=NULL,pch=0,type='l',lwd=3,
@@ -1709,6 +1697,7 @@ plot.trajectory <- function(x,it=NULL,is=NULL,
   invisible(n)
 }
 
+#' @export
 barplot.station <- function(x,threshold=0,...) {
     stopifnot(inherits(x,'station'))
     x.above <- x.below <- x
@@ -1722,3 +1711,18 @@ barplot.station <- function(x,threshold=0,...) {
     barplot(as.numeric(x.below),col='blue',axes=FALSE,border=NA,add=TRUE)
     title(toupper(loc(x)))
 }
+
+#' @export
+nam2expr <- function(x) {
+  y <- x
+  for (i in 1:length(y)) {
+    z <- switch(tolower(x[i]),
+                't2m'=expression(T[2 * m]),
+                'tmax'=expression(T[x]),
+                'tmin'=expression(T[n]),
+                'tas'=expression(T[2 * m]))
+    if (is.null(z)) y[i] <- x[i] else y[i] <- z
+  }
+  return(y)
+}
+

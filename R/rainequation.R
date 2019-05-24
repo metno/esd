@@ -1,11 +1,3 @@
-## The rain equation. rasmus.benestad@met.no 2017-11-20
-## Based on the assumption that the 24-hr accumulated precipitation approximately
-## follows an exponential distribution for days with precipitation. The rain equation
-## does not provide an accurate description of the extremes in the upper tail, but is
-## more analogous to the normal distribution for seasonal temperature.
-
-
-
 #' Rain equation
 #' 
 #' The rain equation \eqn{Pr(X>x)=fw exp(-x/mu)}{Pr(X>x)==f_w exp(-x/\mu)}
@@ -60,6 +52,7 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
   return(pr.gt.x0)
 }
 
+#' @export
 fract.gt.x <- function(x,x0) {sum(x > x0,na.rm=TRUE)/sum(is.finite(x))}
 
 #' @export

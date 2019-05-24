@@ -43,7 +43,7 @@ lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
 #' 'CF' convention. The method is built on the \code{\link{ncdf4}} package.
 #' 
 #' 
-#' @aliases write2ncdf4 write2ncdf4.station write2ncdf4.default
+#' @aliases write2ncdf4 write2ncdf4.station 
 #' write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.eof
 #' write2ncdf4.pca write2ncdf4.dsensemble
 #' @param x data object

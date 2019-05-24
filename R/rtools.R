@@ -40,6 +40,7 @@
 #' filt.default exit figlab ndig attrcp ensemblemean propchange stand rmse RMSE
 #' firstyear lastyear eofvar test.ds.field test.num.predictors arec
 #' arec.default arec.station lastrains lastelementrecord strstrip bin
+#' 
 #' @param x A data.frame or a coredata zoo object.
 #' @param na.rm If TRUE, remove NA's from data
 #' @param type 'ma' for moving average (box-car), 'gauss' for Gaussian, 'binom'
