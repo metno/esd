@@ -15,7 +15,7 @@
 #' @param main main title
 #' @param \dots additional arguments
 #'
-#' @example
+#' @examples
 #' data(bjornholt)
 #' cumugram(bjornholt)
 #'
