@@ -33,14 +33,16 @@ rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
   fw <- annual(x,FUN='wetfreq',nmin=nmin,threshold=x0)
   if (verbose) print('first derivative')
   if (is.null(dim(x))) {
-    m <- mean(mu)
-    f <- mean(fw)
+    m <- mean(mu,na.rm=TRUE)
+    f <- mean(fw,na.rm=TRUE)
   } else { 
-    m <- colMeans(mu)
-    f <- colMeans(fw)
+    m <- colMeans(mu,na.rm=TRUE)
+    f <- colMeans(fw,na.rm=TRUE)
   }
+  if (verbose) {print(summary(m)); print(summary(f))}
   ds2.dt <- (  m^2 + (x0^2 + 2*x0*m + 2*m)*exp(-x0/m) ) * trend.coef(fw) +
             f*( 2*m + (4*x0 + 4*m + x0^3/m^2 + 2*x0/m)*exp(-x0/m) ) * trend.coef(mu)
+  if (verbose) {print('Final sigma2-trend estimate'); print(summary(ds2.dt))}
   return(ds2.dt)
 }
 
