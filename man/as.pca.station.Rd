@@ -2,6 +2,7 @@
 % Please edit documentation in R/as.pca.R
 \name{as.pca.station}
 \alias{as.pca.station}
+\alias{PCA}
 \title{Coerce input to a \code{pca} object}
 \usage{
 \method{as.pca}{station}(x, verbose = FALSE, ...)
@@ -16,7 +17,11 @@ a \code{pc} object
 }
 \description{
 Transform a \code{station} object into a \code{pca} object using the function \code{PCA}.
+\code{PCA} decomposes a group of time series (a \code{station} object) into a set of spatial patterns 
+(stored as the attribute \code{'pattern'} of the \code{pca} object), 
+corresponding time series (the core of the \code{pca} object often referred to as principle components),
+and eigenvalues that represent the relative strength of each spatial pattern.
 }
 \seealso{
-as.pca PCA
+as.pca plot.pca map.pca as.station.pca DS.pca
 }

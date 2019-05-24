@@ -23,7 +23,6 @@
 \alias{plot.diagnose.matrix}
 \alias{plot.diagnose.dsensemble}
 \alias{plot.nevents}
-\alias{nam2expr}
 \title{Plot esd objects}
 \usage{
 plot(x, ...)
@@ -49,6 +48,8 @@ the annual means (mean of DJF + MAM + JJA + SON)}
 \item{target.show}{Show a 'target plot' for quality}
 
 \item{map.show}{Show a small map of the location}
+
+\item{map.type}{type of map: 'rectangle' to show area or 'points' to show points}
 
 \item{what}{Indicate what to plot. 'field' expands eof to field before
 plotting}
@@ -115,12 +116,8 @@ print("Downscale the January mean temperature")
 ds.jan <- DS(Oslo,eofxx)
 plot(ds.jan)
 
-
 }
 \seealso{
 \code{\link{plot}}
-}
-\author{
-R.E. Benestad
 }
 \keyword{hplot}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/as.pca.R
 \name{as.pca}
 \alias{as.pca}
-\title{Coerce input to a \code{station} object}
+\title{Coerce input to a \code{pca} object}
 \usage{
 as.pca(x, verbose = FALSE, ...)
 }
@@ -15,7 +15,11 @@ as.pca(x, verbose = FALSE, ...)
 a \code{pca} object
 }
 \description{
-Transform an input object into the esd class \code{pca}. 
+Transform an input object into the esd class \code{pca} which is the output of principle component analysis (\code{PCA}). 
+\code{PCA} decomposes a group of time series (a \code{station} object) into a set of spatial patterns 
+(stored as the attribute \code{'pattern'} of the \code{pca} object), 
+corresponding time series (the core of the \code{pca} object often referred to as principle components),
+and eigenvalues that represent the relative strength of each spatial pattern.
 \code{as.pca} is an S3 method and will redirect to a fitting function depending on the output. 
 The way in which the transformation is performed depends on the type of input data.
 }

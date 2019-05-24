@@ -17,8 +17,6 @@
 \alias{subset.spell}
 \alias{subset.zoo}
 \alias{station.subset}
-\alias{matchdate}
-\alias{sort.station}
 \alias{subset.stationmeta}
 \title{Subsetting esd objects}
 \usage{
@@ -27,16 +25,19 @@ subset(x, ...)
 \arguments{
 \item{x}{Data object from which the subset is taken}
 
-\item{it}{A list or data.frame providing time index, e.g. month}
+\item{it}{A list or data.frame providing time index, e.g. a range of years like c(1979,2010), a season ('djf'), or a month ('dec' or 'december').}
 
-\item{is}{A list or data.frame providing space index, e.g. station record or
-a lon(gitude) and lat(itude) range}
+\item{is}{A list or data.frame providing space index, e.g. a list of longitude and latitude range like list(lon=c(0,60), lat=c(35,60)).}
 
-\item{ip}{selection of patterns in PCA or EOF (used for e.g. filtreing the
-data)}
+\item{ip}{selection of patterns in PCA or EOF (used for e.g. filtering the data)}
 
-\item{ic}{A list providing criteria for selection of cyclones: ic =
-list(param, pmax, pmin, FUN), where param is a parameter or element type,
+\item{verbose}{Dump diagnostics to the screen}
+
+\item{ensemble.aggregate}{If TRUE, call \code{subset.dsensemble.multi} if
+appropriate.}
+
+\item{ic}{Argument of \code{subset.events}: A list providing criteria for selection of cyclones, 
+ic = list(param, pmax, pmin, FUN), where param is a parameter or element type,
 pmax and pmin are the upper and lower limit of the parameter.  If FUN is
 "any" (default setting), subset selects cyclones or trajectories that are
 within the chosen range at any point during their lifetime.  If FUN is "all"
@@ -44,11 +45,6 @@ and x is an 'events' object, subset selects all individual cyclones within
 the range (pmin, pmax).  If FUN is "all" and x is a 'trajectory' object,
 subset selects cyclone trajectories that are within the chosen range at all
 points during their lifetime.)}
-
-\item{verbose}{Dump diagnostics to the screen}
-
-\item{ensemble.aggregate}{If TRUE, call \code{subset.dsensemble.multi} if
-appropriate.}
 }
 \value{
 An object of the same class as the input object
@@ -145,6 +141,9 @@ x.201612 <- subset(x,it=c("2016-12-01","2016-12-31"))
 map(x.201612)
 
 
+}
+\seealso{
+matchdate sort.station
 }
 \author{
 R.E. Benestad and A.  Mezghanil

@@ -1,6 +1,11 @@
-#' Coerce input to a \code{station} object
+#' Coerce input to a \code{pca} object
 #' 
-#' Transform an input object into the esd class \code{pca}. 
+#' Transform an input object into the esd class \code{pca} which is the output of principle component analysis (\code{PCA}). 
+#' \code{PCA} decomposes a group of time series (a \code{station} object) into a set of spatial patterns 
+#' (stored as the attribute \code{'pattern'} of the \code{pca} object), 
+#' corresponding time series (the core of the \code{pca} object often referred to as principle components),
+#' and eigenvalues that represent the relative strength of each spatial pattern.
+
 #' \code{as.pca} is an S3 method and will redirect to a fitting function depending on the output. 
 #' The way in which the transformation is performed depends on the type of input data.
 #' 
@@ -16,7 +21,7 @@ as.pca <- function(x,verbose=FALSE,...) UseMethod("as.pca")
 
 #' Coerce input to a \code{pca} object
 #' 
-#' Coerce a \code{ds} \code{pca} object into a \code{pca} object by simply replacing the class.
+#' Coerce a \code{ds} \code{pca} object into a \code{pca} object by replacing the class.
 #'
 #' @seealso as.pca DS
 #' 
@@ -37,8 +42,14 @@ as.pca.ds <- function(x,verbose=FALSE,...) {
 #' Coerce input to a \code{pca} object
 #' 
 #' Transform a \code{station} object into a \code{pca} object using the function \code{PCA}.
+#' \code{PCA} decomposes a group of time series (a \code{station} object) into a set of spatial patterns 
+#' (stored as the attribute \code{'pattern'} of the \code{pca} object), 
+#' corresponding time series (the core of the \code{pca} object often referred to as principle components),
+#' and eigenvalues that represent the relative strength of each spatial pattern.
 #'
-#' @seealso as.pca PCA
+#' @aliases PCA
+#' 
+#' @seealso as.pca plot.pca map.pca as.station.pca DS.pca
 #' 
 #' @param x the input object
 #' @param ... other arguments

@@ -129,7 +129,7 @@ map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showal
 
 }
 \seealso{
-\code{\link{station.meta}} and \code{\link{map.station}}.
+\code{\link{map.station}}.
 }
 \author{
 A. Mezghani

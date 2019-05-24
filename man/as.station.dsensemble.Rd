@@ -17,16 +17,7 @@
 a \code{station} object or a \code{dsensemble} \code{list} or \code{dsensemble} \code{station} object
 }
 \description{
-Transform a \code{dsensemble} object to a \code{station} object.
-}
-\details{
-If the input is of class \code{dsensemble} \code{pca}, you are redirected to \code{as.station.dsensemble.pca}
-which calculates the downscaled ensemble for each station based on the downscaled ensemble of principle components,
-returning a \code{dsensemble} \code{station} or \code{dsensemble} \code{list} object.
-
-If the input is a \code{dsensemble} \code{station} or \code{dsensemble} \code{list} object, you are redirected to \code{as.station.dsensemble.station}
-which returns a \code{station} object holding the ensemble mean (or another statistical characteristic of the ensemble, see input argument \code{FUN})
-of the downscaled results for each station.
+Coerce input to a \code{station} object
 }
 \seealso{
 as.station as.station.dsensemble.pca as.station.dsensemble.station DSensemble PCA

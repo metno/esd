@@ -68,21 +68,17 @@ projections.}
 
 \item{gridlines}{Only for the lon-lat projection}
 
-\item{lonR}{Only for the spherical projection used by \code{map2sphere} to
-change viewing angle}
+\item{lonR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
 
-\item{latR}{Only for the spherical projection used by \code{map2sphere} to
-change viewing angle}
+\item{latR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
 
-\item{axiR}{Only for the spherical projection used by \code{map2sphere} to
-change viewing angle}
+\item{axiR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
 
 \item{y}{a vector of y coordinates}
 
 \item{z}{a vector of z coordinates}
 
-\item{ip}{Selects which pattern (see \code{\link{EOF}}, \code{\link{CCA}})
-to plot}
+\item{ip}{Selects which pattern (see \code{\link{EOF}}, \code{\link{CCA}}) to plot}
 
 \item{geography}{TRUE: plot geographical features}
 
@@ -90,8 +86,7 @@ to plot}
 
 \item{a}{used in \code{\link{vec}} to scale the length of the arrows}
 
-\item{r}{used in \code{\link{vec}} to make a 3D effect of plotting the
-arrows up in the air.}
+\item{r}{used in \code{\link{vec}} to make a 3D effect of plotting the arrows up in the air.}
 
 \item{ix}{used to subset points for plotting errors}
 

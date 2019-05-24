@@ -15,7 +15,7 @@ as.comb(x, verbose = FALSE, ...)
 \item{...}{other arguments}
 }
 \value{
-a \code{station} object
+an \code{eof} object
 }
 \description{
 Transform an \code{eof} object into the esd class \code{comb} by applying \code{eof2field} to the input object and its appendices.

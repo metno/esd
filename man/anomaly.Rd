@@ -11,13 +11,7 @@
 \alias{anomaly.season}
 \alias{anomaly.day}
 \alias{climatology}
-\alias{climatology.default}
-\alias{climatology.field}
-\alias{climatology.station}
-\alias{clim2pca}
-\alias{clim2pca.default}
-\alias{clim2pca.month}
-\alias{clim2pca.day}
+\alias{as.climatology}
 \title{Anomaly and Climatology}
 \usage{
 anomaly(x, ...)
@@ -26,31 +20,33 @@ anomaly(x, ...)
 \item{x}{A station or field object}
 
 \item{ref}{vector defining the reference interval}
+
+\item{na.rm}{a boolean; if TRUE remove NA values}
+
+\item{verbose}{a boolean; if TRUE print information about progress}
 }
 \value{
-The call returns a similar object as x containing anomalies and data
-climatology.
-
-In `anomaly.dsensemble', the default value of the reference period is taken
-as the available time period from observations, i.e. same time period as in
-attribute `station' is used as baseperiod to compute anomalies of GCM
-downscaled results.
+a similar object as x containing anomalies and climatology
 }
 \description{
 S3-method that computes anomalies and/or climatology for time series and
-fields.  \code{clim2pca} is unfinished
+fields.
+}
+\details{
+In 'anomaly.dsensemble', the default value of the reference period is taken
+as the available time period from observations, i.e., same time period as in
+attribute `station' is used as base period to compute anomalies of GCM
+downscaled results.
 }
 \examples{
-
 data(ferder)
 plot(anomaly(ferder))
 
 
 }
 \seealso{
+as.stand
+
 \code{\link{as.anomaly}}, \code{\link{as.climatology}}
-}
-\author{
-R.E. Benestad
 }
 \keyword{utilities}

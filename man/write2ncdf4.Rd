@@ -3,7 +3,6 @@
 \name{write2ncdf4}
 \alias{write2ncdf4}
 \alias{write2ncdf4.station}
-\alias{write2ncdf4.default}
 \alias{write2ncdf4.field}
 \alias{write2ncdf4.list}
 \alias{write2ncdf4.eof}

@@ -7,18 +7,16 @@
 \alias{scatterplot.rainequation}
 \alias{rainvar}
 \alias{rainvartrend}
-\title{Rain equation %% ~~function to do ... ~~}
+\title{Rain equation}
 \usage{
 rainequation(x, x0 = 10, threshold = NULL)
 }
 \arguments{
-\item{x}{A station object - single station %% ~~Describe \code{x} here~~}
+\item{x}{A station object - single station}
 
-\item{x0}{The threshold value defining an event. %% ~~Describe \code{x0}
-here~~}
+\item{x0}{The threshold value defining an event.}
 
-\item{threshold}{The threshold defining a 'wet day'. %% ~~Describe
-\code{threshold} here~~}
+\item{threshold}{The threshold defining a 'wet day'.}
 
 \item{src}{Data source}
 
@@ -30,6 +28,9 @@ here~~}
 according to e.g. 'x0', 'stid', 'alt', 'lon', or 'lat'}
 
 \item{col}{colour palette}
+}
+\value{
+a station object
 }
 \description{
 The rain equation \eqn{Pr(X>x)=fw exp(-x/mu)}{Pr(X>x)==f_w exp(-x/\mu)}
@@ -50,7 +51,6 @@ precipitation according to \eqn{sigma^2 = 2 fw * mu^3}{\sigma^2 = 2 f_w
 concise (1-5 lines) description of what the function does. ~~
 }
 \examples{
-
 data(bjornholt)
 plot(rainequation(bjornholt))
 test.rainequation(bjornholt,threshold=30)
@@ -61,7 +61,4 @@ test.rainequation(bjornholt,threshold=30)
 Benestad R. and A. Mezghani (2015), On downscaling probabilities
 for heavy 24-hr precipitation events at seasonal-to-decadal scales, Tellus A
 2015, 67, 25954, http://dx.doi.org/10.3402/tellusa.v67.25954
-}
-\author{
-Rasmus Benestad
 }

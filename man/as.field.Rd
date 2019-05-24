@@ -19,6 +19,20 @@ Transform an input object into the esd class \code{field}.
 \code{as.field} is an S3 method and will redirect to a fitting function depending on the output. 
 The way in which the transformation is performed depends on the type of input data.
 }
+\examples{
+# how to generate a new field object.
+year <- sort(rep(1991:2000,12))
+month <- rep(1:12,length(1991:2000))
+n <-length(year)
+lon <- seq(-30,40,by=5); nx <- length(lon)
+lat <- seq(40,70,by=5); ny <- length(lat)
+# Time dimension should come first, space second.
+y <- matrix(rnorm(nx*ny*n),n,nx*ny)
+index <- as.Date(paste(year,month,1,sep="-"))
+Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
+map(Y)
+
+}
 \seealso{
 as.field.default as.field.zoo as.field.eof as.field.comb as.field.field as.field.ds as.field.station as.field.events as.field.trajectory as.field.dsensemble.eof
 }

@@ -4,7 +4,7 @@
 #'
 #' \code{graph} shows a fancy graph of output of \code{\link{DSensemble}}.
 #'
-#' @alias graph.default graph.dsensemble graph.list graph.zoo
+#' @aliases graph.default graph.dsensemble graph.list graph.zoo
 #' @seealso wheel cumugram visprob conf vis diagram scatter plot map
 #' 
 #' @param x an input object of class 'DSensemble'
@@ -21,7 +21,7 @@
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param \dots additional arguments
 #'
-#' @example
+#' @examples
 #' data(dse.Oslo)
 #' graph(dse.Oslo)
 #'

@@ -46,12 +46,28 @@
 \item{aspect}{aspect describing data, e.g., 'original', 'anomaly', 'climatology'}
 
 \item{verbose}{a boolean; if TRUE print information about progress}
+
+\item{time}{index}
 }
 \value{
 a \code{field} object
 }
 \description{
 Transform an input object into the esd class \code{field}. The function first transforms the input object \code{x} into a \code{zoo} object (\code{zoo(x, order.by=index)}) and then applies \code{as.field.zoo} to obtain a \code{field} object.)
+}
+\examples{
+# how to generate a new field object.
+year <- sort(rep(1991:2000,12))
+month <- rep(1:12,length(1991:2000))
+n <-length(year)
+lon <- seq(-30,40,by=5); nx <- length(lon)
+lat <- seq(40,70,by=5); ny <- length(lat)
+# Time dimension should come first, space second.
+y <- matrix(rnorm(nx*ny*n),n,nx*ny)
+index <- as.Date(paste(year,month,1,sep="-"))
+Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
+map(Y)
+
 }
 \seealso{
 as.field as.field.zoo zoo
