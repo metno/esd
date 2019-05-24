@@ -30,22 +30,16 @@
 #' @param breaks graphics setting - see \code{\link{image}}
 #' @param type graphics setting - colour shading or contour
 #' @param gridlines Only for the lon-lat projection
-#' @param lonR Only for the spherical projection used by \code{map2sphere} to
-#' change viewing angle
-#' @param latR Only for the spherical projection used by \code{map2sphere} to
-#' change viewing angle
-#' @param axiR Only for the spherical projection used by \code{map2sphere} to
-#' change viewing angle
-#' @param density
+#' @param lonR Only for the spherical projection used by \code{map2sphere} to change viewing angle
+#' @param latR Only for the spherical projection used by \code{map2sphere} to change viewing angle
+#' @param axiR Only for the spherical projection used by \code{map2sphere} to change viewing angle
 #' @param y a vector of y coordinates
 #' @param z a vector of z coordinates
-#' @param ip Selects which pattern (see \code{\link{EOF}}, \code{\link{CCA}})
-#' to plot
+#' @param ip Selects which pattern (see \code{\link{EOF}}, \code{\link{CCA}}) to plot
 #' @param geography TRUE: plot geographical features
 #' @param angle for hatching
 #' @param a used in \code{\link{vec}} to scale the length of the arrows
-#' @param r used in \code{\link{vec}} to make a 3D effect of plotting the
-#' arrows up in the air.
+#' @param r used in \code{\link{vec}} to make a 3D effect of plotting the arrows up in the air.
 #' @param ix used to subset points for plotting errors
 #' @param iy used to subset points for plotting errors
 #' @param colorbar Show the color bar in the map (default TRUE). If FALSE, the

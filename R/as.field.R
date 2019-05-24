@@ -11,7 +11,7 @@
 #' 
 #' @return a \code{field} object
 #'
-#' @example
+#' @examples
 #' # how to generate a new field object.
 #' year <- sort(rep(1991:2000,12))
 #' month <- rep(1:12,length(1991:2000))
@@ -98,7 +98,7 @@ as.field.zoo <- function(x,...,lon,lat,param,unit,
 #' Transform an input object into the esd class \code{field}. The function first transforms the input object \code{x} into a \code{zoo} object (\code{zoo(x, order.by=index)}) and then applies \code{as.field.zoo} to obtain a \code{field} object.)  
 #' 
 #' @param x the input object
-#' @index time index
+#' @param time index
 #' @param lon longitude(s), a numerical or numerical vector
 #' @param lat latitudes(s), a numerical or numerical vector
 #' @param param short name of variable
@@ -121,7 +121,7 @@ as.field.zoo <- function(x,...,lon,lat,param,unit,
 #' 
 #' @seealso as.field as.field.zoo zoo
 #'
-#' @example
+#' @examples
 #' # how to generate a new field object.
 #' year <- sort(rep(1991:2000,12))
 #' month <- rep(1:12,length(1991:2000))

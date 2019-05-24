@@ -50,7 +50,7 @@
 #' 
 #' @return a \code{station} object
 #' 
-#' @example
+#' @examples
 #' # How to generate a new 'station' object
 #' data <- round(matrix(rnorm(20*12),20,12),2)
 #' colnames(data) <- month.abb

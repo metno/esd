@@ -19,7 +19,7 @@
 #' @param obs.show Show the observations
 #' @param target.show Show a 'target plot' for quality
 #' @param map.show Show a small map of the location
-#' @param map.type
+#' @param map.type type of map: 'rectangle' to show area or 'points' to show points
 #' @param what Indicate what to plot. 'field' expands eof to field before
 #' plotting
 #' @param new if TRUE plot in new window

@@ -6,7 +6,7 @@
 
 
 
-#' Rain equation %% ~~function to do ... ~~
+#' Rain equation
 #' 
 #' The rain equation \eqn{Pr(X>x)=fw exp(-x/mu)}{Pr(X>x)==f_w exp(-x/\mu)}
 #' estimates the likelihood of 24-hr precipitation exceedint a threshold value
@@ -27,32 +27,30 @@
 #' 
 #' @aliases rainequation fract.gt.x test.rainequation scatterplot.rainequation
 #' rainvar rainvartrend
-#' @param x A station object - single station %% ~~Describe \code{x} here~~
-#' @param x0 The threshold value defining an event. %% ~~Describe \code{x0}
-#' here~~
-#' @param threshold The threshold defining a 'wet day'. %% ~~Describe
-#' \code{threshold} here~~
+#'
+#' @param x A station object - single station
+#' @param x0 The threshold value defining an event.
+#' @param threshold The threshold defining a 'wet day'.
 #' @param src Data source
 #' @param nmin Minimum number of years with data
 #' @param verbose TRUE for printing out diagnostics
 #' @param colour.by Used to plot the data points with differentcolours
 #' according to e.g. 'x0', 'stid', 'alt', 'lon', or 'lat'
 #' @param col colour palette
-#' @return a station object %% ~Describe the value returned %% If it is a LIST,
-#' use %% \item{comp1 }{Description of 'comp1'} %% \item{comp2 }{Description of
-#' 'comp2'} %% ...
-#' @author Rasmus Benestad
+#'
+#' @return a station object
+#'
 #' @references Benestad R. and A. Mezghani (2015), On downscaling probabilities
 #' for heavy 24-hr precipitation events at seasonal-to-decadal scales, Tellus A
 #' 2015, 67, 25954, http://dx.doi.org/10.3402/tellusa.v67.25954
+#'
 #' @examples
-#' 
 #' data(bjornholt)
 #' plot(rainequation(bjornholt))
 #' test.rainequation(bjornholt,threshold=30)
 #' \dontrun{scatterplot.rainequation()}
 #' 
-#' @export rainequation
+#' @export
 rainequation <- function(x,x0 = 10,threshold=NULL) {
   fw <- annual(x,FUN='wetfreq',threshold=threshold)
   mu <- annual(x,FUN='wetmean',threshold=threshold)
@@ -64,6 +62,7 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
 
 fract.gt.x <- function(x,x0) {sum(x > x0,na.rm=TRUE)/sum(is.finite(x))}
 
+#' @export
 rainvar <- function(x,x0=1,na.rm=FALSE) {
   ## The variance estimated from the integral of the pdf assuming a threshold x0
   ## of 1 mm/day
@@ -73,6 +72,7 @@ rainvar <- function(x,x0=1,na.rm=FALSE) {
   return(sigma2)
 }
 
+#' @export
 rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
   ## The rate of change estimated as the first derivative from the analytic expression for sigma^2.
   if (verbose) {print('rainvartrend'); print(class(x))}
@@ -94,6 +94,7 @@ rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
 }
 
 ## To test the rain equation
+#' @export
 test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
                               threshold=1,verbose=FALSE,plot=TRUE,new=TRUE) {
   
@@ -133,6 +134,7 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
 
 ## Use a scatter plot to evaluate the rain equation for a selection of rain gauge records.
 ## Select time series from e.g. ECA&D with a minimum number (e.g. 150) of years with data
+#' @export
 scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),
                                      threshold=1,colour.by='x0',col=NULL,verbose=FALSE) {
   if (verbose) print('scatterplot.rainequation')

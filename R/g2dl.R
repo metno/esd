@@ -1,6 +1,45 @@
+#' Transform longitudes between a system of 0-360E and 180W-180E 
+#' 
+#' Transform longitudes between a system starting at the Greenwich line (\code{greenwich}=TRUE), going from 0 to 360 degrees, 
+#' and one starting at the date line (\code{greenwich}=FALSE) going from -180 to 180 degrees.
+#' 
+#' \code{g2dl} is an S3 method and will redirect to a fitting function depending on the input. 
+#' The output of \code{g2dl} is of the same class and format as the input. The attribute 'greenwich' (\code{attr(x,'greenwich')})
+#' holds information about the longitude system of an object.
+#' 
+#' @aliases g2dl.stationmeta g2dl.field g2dl.eof g2dl.corfield g2dl.events g2dl.trajectory
+#' 
+#' @seealso g2dl.default
+#' 
+#' @param x the input object
+#' @param greenwich a boolean; if TRUE longitudes are transformed to a system starting at the Greenwich line (0-360E); if FALSE longitudes are transformed to a system starting at the date line (180W-180E)
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param ... other arguments
+#' 
+#' @return an object of the same type as the input
+#' 
+#' @export
 g2dl <- function(x,greenwich=TRUE,verbose=FALSE,...)
   UseMethod("g2dl")
 
+#' Transform longitudes between a system of 0-360E and 180W-180E 
+#' 
+#' Transform longitudes between a system starting at the Greenwich line (\code{greenwich}=TRUE), going from 0 to 360 degrees, 
+#' and one starting at the date line (\code{greenwich}=FALSE) going from -180 to 180 degrees.
+#' 
+#' @seealso g2dl
+#' 
+#' @param x the input object
+#' @param greenwich a boolean; if TRUE longitudes are transformed to a system starting at the Greenwich line (0-360E); if FALSE longitudes are transformed to a system starting at the date line (180W-180E)
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param lon longitudes
+#' @param lat latitudes
+#' @param d dimensions
+#' @param ... other arguments
+#' 
+#' @return an object of the same type as the input
+#' 
+#' @export
 g2dl.default <- function(x,greenwich=TRUE,verbose=FALSE,...,lon=NULL,lat=NULL,d=NULL) {
   if(verbose) {print("g2dl.default"); str(x)}
   if (is.null(lon)) lon <- attr(x,'longitude')

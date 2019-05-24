@@ -18,7 +18,7 @@
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param \dots additional arguments
 #'
-#' @example
+#' @examples
 #' data(bjornholt)
 #' visprob(bjornholt)
 #'
