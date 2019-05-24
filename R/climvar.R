@@ -1,24 +1,13 @@
-#' InfoGraphics
-#'
-#' Various functions for visual display of data and statistics
+#' Seasonally varying variance
 #'
 #' \code{climvar} estimates how the variance varies with season
 #' in terms of the inter-annual variability of daily standard deviation
 #'
-#' @seealso wheel graph visprob conf vis diagram cumugram scatter plot map
-#' 
 #' @param x an input object of class 'station'
-#' @param it A list or data.frame providing time index, e.g. month
-#' @param start year and month, e.g., '-01-01' to start in january
-#' @param prog a boolean; if TRUE show prognosis for end of year in cumugram
+#' @param plot a boolean; if TRUE show plot
 #' @param FUN a function
 #' @param verbose a boolean; if TRUE print information about progress
-#' @param main main title
 #' @param \dots additional arguments
-#'
-#' @examples
-#' data(bjornholt)
-#' cumugram(bjornholt)
 #'
 #' @export
 climvar <- function(x,FUN='sd',plot=TRUE,...) {
@@ -68,8 +57,8 @@ climvar <- function(x,FUN='sd',plot=TRUE,...) {
     legend(0,1,c("raw data","harmonic fit"),lwd=3,col=c("grey","red"),bty="n",cex=0.6)  
   }
   
-  acfit <- attrcp(x,acfit)
-  attr(acfit,'raw_data') <- z
-  attr(acfit,'history') <- history.stamp(x)
+  #acfit <- attrcp(x,acfit)
+  #attr(acfit,'raw_data') <- z
+  #attr(acfit,'history') <- history.stamp(x)
   return(z)
 }

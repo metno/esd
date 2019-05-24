@@ -1,8 +1,7 @@
-# seasonal mean and standard deviation fortemperature
-#
-
+# not exported
 ar1 <- function(x,...) acf(x,plot=FALSE,na.action = na.pass)$acf[2]
 
+# not exported
 ltp <- function(x,type='exponential',...) {
   # Rybski et al. (2006), i:10.1029/2005GL025591
   ar <- acf(x,plot=FALSE)$acf
@@ -64,6 +63,7 @@ ltp <- function(x,type='exponential',...) {
 #' @aliases DSensemble DSensemble.default DSensemble.station DSensemble.t2m
 #' DSensemble.precip DSensemble.annual DSensemble.season DSensemble.field
 #' DSensemble.mu.worstcase DSensemble.pca DSensemble.eof
+#'
 #' @param y A station object.
 #' @param plot Plot intermediate results if TRUE.
 #' @param path The path where the GCM results are stored.
@@ -99,8 +99,9 @@ ltp <- function(x,type='exponential',...) {
 #' \code{annual(f(x),FUN="mean")}
 #' @param mask TRUE mask out land
 #' @param ds.1900.2099 Default, only downscale for the period 1900-2099
+#'
 #' @return A 'dsensembele' object - a list object holding DS-results.
-#' @author R.E. Benestad and A. Mezghani
+#' 
 #' @keywords manip
 #' @examples
 #' 
@@ -149,6 +150,7 @@ ltp <- function(x,type='exponential',...) {
 #' @export DSensemble
 DSensemble<-function(y,...) UseMethod("DSensemble")
 
+#' @export
 DSensemble.default <- function(y,...,path='CMIP5.monthly/',rcp='rcp45') {
    ## 
   stopifnot(!missing(y),inherits(y,"station"),
@@ -174,6 +176,7 @@ DSensemble.default <- function(y,...,path='CMIP5.monthly/',rcp='rcp45') {
   return(z)
 }
 
+#' @export
 DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA40_t2m_mon.nc",
                            rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
@@ -499,6 +502,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
 } 
 #save(file=paste("dscmip5_",attr(y,'location'),"_",N,"_rcp4.5.rda",sep=""),rcp4.5)
 
+#' @export
 DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_pr_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
@@ -740,6 +744,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   invisible(X)
 }
 
+#' @export
 DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
@@ -980,6 +985,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   invisible(X)
 }
 
+#' @export
 DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
@@ -1543,7 +1549,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 #   # invisible(dse)
 # }
 
-
+#' @export
 DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA40_t2m_mon.nc",
                                     rcp="rcp45",biascorrect=FALSE,n=6,lon=c(-20,20),lat=c(-10,10),
                                     it=NULL,rel.cord=TRUE,select=NULL,FUN="wetmean",
@@ -1716,7 +1722,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
   invisible(X)   
 }
 
-
+#' @export
 DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
@@ -2102,7 +2108,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   invisible(dse.pca)
 }
 
-
+#' @export
 DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_slp_mon.nc",non.stationarity.check=FALSE,
                            ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,nmin=NULL,
@@ -2473,7 +2479,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
   invisible(dse.eof)
 }
 
-
+#' @export
 DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10),it=c('djf','mam','jja','son'),
@@ -2493,10 +2499,9 @@ DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",b
   invisible(dse.eof)
 }
 
-DSensemble.station <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
-                           predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
-                           ip=1:16,lon=c(-30,20),lat=c(-20,10),it=c('djf','mam','jja','son'),
-                           rel.cord=TRUE,select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",
-                           xfuns='C.C.eq',threshold=1,pattern="tas_Amon_ens_",verbose=FALSE,
-                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
+#' @export
+DSensemble.station <- function(y,...,verbose=FALSE) {
+  if(verbose) print("DSensemble.station")
+  dse <- DSensemble.default(y=y,...,verbose=verbose)
+  return(dse)
 }

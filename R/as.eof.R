@@ -2,9 +2,13 @@
 #' 
 #' Transform an input object into the esd class \code{eof} (see \code{\link{EOF}}).
 #' 
-#' \code{as.eof} is an S3 method and will redirect to a fitting function depending on the class of the input object. 
-#' 
-#' @seealso as.eof as.eof.field as.eof.comb as.eof.list as.eof.zoo as.eof.ds as.eof.dsensemble as.eof.appendix
+#' \code{as.eof} is an S3 method and will redirect to a fitting function depending on
+#' the class of the input object. 
+#'
+#' \code{as.eof.dsensemble.pca} converts PCA-based DSensemble objects to EOF-based results (gridded)
+#'
+#' @seealso as.eof as.eof.field as.eof.comb as.eof.list as.eof.zoo as.eof.ds
+#' as.eof.dsensemble as.eof.appendix as.eof.dsensemble.pca
 #' 
 #' @param x the input object
 #' @param iapp index of appendix
@@ -150,4 +154,20 @@ as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
   attr(eof,'info') <- info
   attr(eof,'history') <- history.stamp()
   return(eof)
+}
+
+#' @export
+as.eof.dsensemble.pca <- function(X,is=NULL,it=NULL,ip=NULL,verbose=FALSE,...) {
+  if (verbose) print('as.eof.dsensemble.pca')
+  stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
+  if (inherits(X,"eof")) {
+      invisible(X)
+  } else {
+    eof <- pca2eof(X$pca)
+    eof <- subset(eof,ip=ip)
+    if (!is.null(is)) eof <- subset(eof,is=is,it=it,verbose=verbose)
+    X$eof <- eof 
+    class(X) <- c("dsensemble", "eof", "list")
+    invisible(X)
+  }
 }

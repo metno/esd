@@ -1,6 +1,11 @@
-# Visualise - different type of plotting... 'Infographics' type.
+#' Visualise - different type of plotting...
+#'
+#' @aliases diagram.dsensemble diagram.station
+#'
+#' @export
 diagram <- function(x,...) UseMethod("diagram")
 
+#' @export
 diagram.dsensemble <- function(x,...,it=0,verbose=FALSE) {
   if(verbose) print("diagram.dsensemble")
   stopifnot(inherits(x,'dsensemble'))
@@ -24,12 +29,14 @@ diagram.dsensemble <- function(x,...,it=0,verbose=FALSE) {
   points(y,pch=19,lty=1)
 }
 
+# not exported
 diagram.ds <- function(x,...,verbose=FALSE) {
   if(verbose) print("diagram.ds - unfinished function")
 }
 
 # Show the temperatures against the day of the year. Use
 # different colours for different year.
+#' @export
 diagram.station <- function(x,...,it=NULL,new=TRUE,plot=TRUE,verbose=FALSE) {
   if(verbose) print("diagram.station")
   yrs <- as.numeric(rownames(table(year(x))))

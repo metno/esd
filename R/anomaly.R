@@ -266,47 +266,7 @@ anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
   return(y)
 }
 
-climatology <- function(x,...,verbose=FALSE) {
-  x <- as.climatology(x,...,verbose=verbose)
-  return(x)
-}
 
-# Station data can be expressed as PCA where each of the EOFs represent one
-# year. The PCs describe the seasonal variations
-
-clim2pca <-function(x,verbose=FALSE,...) UseMethod("clim2pca")
-
-clim2pca.default <- function(x,verbose=FALSE,...) {
-  if(verbose) print("clim2pca.default - unfinished function returning input object")
-  return(x)
-}
-
-clim2pca.month <- function(x,verbose=FALSE,...) {
-  if(verbose) print("clim2pca.month")
-  X <- aggregate(x,year)
-  ny <- length(x) %/% 12
-  nm <- length(x) %% 12
-  y <- coredata(x[1:(length(x)-nm)])
-  dim(y) <- c(12,ny)
-  ok <- is.finite(colMeans(y))
-  pca <- svd(y[,ok])
-  for (i in 1:12) {
-    z <- zoo(pca$v[,i],order.by=index(X))
-    if (i == 1) Z <- z else
-                Z <- merge(Z,z)
-  }
-  season <- pca$u
-  colnames(season) <- month.abb
-  rownames(season) <- paste("pattern",1:12,sep=".")
-  attr(Z,'season') <- season
-  attr(Z,'d') <- pca$d
-  return(Z)
-}
-
-clim2pca.day <- function(x,verbose=FALSE,...) {
-  if(verbose) print("clim2pca.day - unfinished function returning input object")
-  return(x)
-}
 
 
 
@@ -343,6 +303,12 @@ as.anomaly.field<- function(x,...,ref=NULL,na.rm=TRUE) {
    invisible(y)
 }
 
+#' @export
+climatology <- function(x,...,verbose=FALSE) {
+  x <- as.climatology(x,...,verbose=verbose)
+  return(x)
+}
+
 # Handy conversion algorithms:
 #' @export
 as.climatology <- function(x,...) {
@@ -361,61 +327,3 @@ as.climatology <- function(x,...) {
   invisible(y)
 }
 
-#' Normalise data
-#'
-#' \code{as.stand} returns normalised values:
-#' If the input contains precipitation data the data are normalised by the mean value.
-#' If the input contains temperature data, the data are stanardised by subtracting the mean and dividing by the standard deviation.
-#' \code{as.original} transforms normalised data to its original values.
-#'
-#' @aliases as.stand as.stand.station as.original as.original.station
-#'
-#' @param x a station object
-#' @param verbose a boolean; if TRUE print information about progress
-#' @param na.rm a boolean; if TRUE remove NA values
-#'
-#' @export
-as.stand <- function(x,...) UseMethod("as.stand")
-
-#' @export
-as.stand.station <- function(x,...,verbose=FALSE,na.rm=TRUE) {
-  if(verbose) print("as.stand.station")
-  if (is.precip(x)) {
-    mu <- apply(x,2,mean,na.rm=na.rm)
-    X <- 100*x/mu
-    attr(X,'clim') <- mu
-    attr(X,'aspect') <- 'proportional'
-    attr(X,'unit') <- '%'
-    attr(X,'oldunit') <- attr(x,'unit')
-  } else if (is.T(x)) {
-    mu <- apply(x,2,mean,na.rm=na.rm)
-    sigma <- apply(x,2,sd,na.rm=na.rm)
-    X <- (x - mu)/sigma
-    attr(X,'mean') <- mu
-    attr(X,'sigma') <- sigma
-    attr(X,'aspect') <- 'standardised'    
-  }
-  attr(X,'history') <- history.stamp(x)
-  return(X)
-}
-
-#' @export
-as.original <- function(x) UseMethod("as.original")
-
-#' @export
-as.original.station <- function(x) {
-  if (attr(x,'aspect')=='proportional') {
-    X <- attr(x,'clim')*x/100
-    attr(X,'clim') <- NULL
-    attr(X,'unit') <- attr(x,'oldunit')
-    attr(X,'oldunit') <- NULL
-    attr(X,'aspect') <- 'original'
-  } else if (attr(x,'aspect')=='standardised') {
-    X <- x * attr(x,'sigma') + attr(x,'mean')
-    attr(X,'mean') <- NULL
-    attr(X,'sigma') <- NULL
-    attr(X,'aspect') <- 'original'     
-  } else X <- x
-  attr(X,'history') <- history.stamp(x)
-  return(X)
-}

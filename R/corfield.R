@@ -1,28 +1,22 @@
-# R.E. Benestad, met.no, Oslo, Norway 12.04.2013
-# rasmus.benestad@met.no
-#------------------------------------------------------------------------
-
-
-
-
 #' Correlation
 #' 
 #' Compute the correlation between field objects and station/field.
 #' 
-#' 
 #' @aliases corfield corfield.default corfield.zoo corfield.field
 #' corfield.field.station corfield.station corfield.eof corfield.trajectory
+#'
 #' @param x data object
 #' @param y data object
 #' @param plot TRUE: plot the results
 #' @param use see \code{\link{cor}}
 #' @param new see \code{link{map}}
 #' @param ip index EOF pattern
+#'
 #' @return Map of correlation
-#' @author R.E. Benestad and A. Mezghani
+#'
 #' @keywords manip
+#'
 #' @examples
-#' 
 #' x <- t2m.DNMI(lon=c(-40,30),lat=c(0,50))
 #' y <- t2m.NCEP(lon=c(-40,30),lat=c(0,50))
 #' r <- corfield(annual(x),annual(y))
@@ -36,10 +30,12 @@
 #' @export corfield
 corfield<-function(x,y,...) UseMethod("corfield")
 
+#' @export
 corfield.default <- function(x,y,...) {
   cor(x,y)
 }
 
+#' @export
 corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
   if (verbose) { print("corfield.zoo:"); print('station against field') }
@@ -87,6 +83,7 @@ corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=F
   invisible(r)
 }
 
+#' @export
 corfield.field <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                            colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
  
@@ -166,7 +163,7 @@ corfield.field <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose
   invisible(r)
 }
 
-
+#' @export
 corfield.field.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
                                    colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                                    use='pairwise.complete.obs') {
@@ -270,6 +267,7 @@ corfield.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
   invisible(r)
 }
 
+#' @export
 corfield.eof <- function(x,y,...,ip=1,plot=TRUE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                          use='pairwise.complete.obs',na.action='na.omit') {
@@ -279,8 +277,7 @@ corfield.eof <- function(x,y,...,ip=1,plot=TRUE,new=TRUE,
   invisible(r)
 }
 
-
-
+#' @export
 corfield.trajectory <- function(x,y,...,it=NULL,is=NULL,param=NULL,FUN="count",
                                 unit=NULL,longname=NULL,loc=NULL,
                                 use="pairwise.complete.obs",

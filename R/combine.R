@@ -1,10 +1,8 @@
-# R.E. Benestad
 # Combines a group of station objects to form a set of time series
 # Combines field objects; either in time (concatinates) or in space (mixing fields)
 # Can be used to combine EOFS
 
-zeros <- function(x) (sum(is.infinite(1/x)) > 0)
-
+#' @export
 rbind.field <- function(...) {
   print('note: the results inherit the metadata from the first argument')
   x <- list(...)
@@ -16,6 +14,7 @@ rbind.field <- function(...) {
   return(y)
 }
 
+#' @export
 cbind.field <- function(...) {
   print('note: the results inherit the metadata from the first argument')
   x <- list(...)
@@ -26,9 +25,6 @@ cbind.field <- function(...) {
   class(y) <- class(x[[1]])
   return(y)
 }
-
-
-
 
 #' Combine
 #' 
@@ -75,6 +71,7 @@ cbind.field <- function(...) {
 #' combine.ds.station.field combine.station.month combine.ds.pca combine.list
 #' combine.station.eof zeros softattr g2dl g2dl.field g2dl.corfield g2dl.eof
 #' g2dl.default sp2np
+#'
 #' @param x station, eof, or field object
 #' @param all See \code{link{merge.zoo}}
 #' @param orig.format TRUE: the result will the formatted the same way as the
@@ -85,11 +82,12 @@ cbind.field <- function(...) {
 #' @param SP2NP TRUE: order from south pole (bottom of plot) to north pole (top
 #' of plot)
 #' @param ignore List of attributes to ignore.
+#'
 #' @return A field object
-#' @author R.E. Benestad
+#'
 #' @keywords utilities
-#' @examples
-#' 
+#'
+#' @examples 
 #' T2m_NCEP <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
 #' T2m_NorESM <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
 #' 
@@ -107,6 +105,7 @@ cbind.field <- function(...) {
 combine <- function(...)
   UseMethod("combine")
 
+#' @export
 combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.default")
   # If either of the arguments is NULL, then return the x - useful for looping
@@ -142,6 +141,7 @@ combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose
 # combine.station can be used to either combine a group of stations into
 # one data object or timerseries from one stations with different monthly
 # values into one time series with all months
+#' @export
 combine.station <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station")
   cl <- as.list(match.call())
@@ -176,6 +176,7 @@ combine.station <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+# not exported
 combine.station.month <- function(...,verbose=FALSE) {
   if(verbose) print("combine.station.month")
   cl <- as.list(match.call())
@@ -195,6 +196,7 @@ combine.station.month <- function(...,verbose=FALSE) {
   invisible(X)
 }
 
+#' @export
 combine.zoo <- function(...,verbose=FALSE) {
   if(verbose) print("combine.zoo")
   Z <- merge.zoo(...,all=TRUE)
@@ -203,7 +205,7 @@ combine.zoo <- function(...,verbose=FALSE) {
 }
 
 # combine.stations is used to combine a group of stations into one object
-
+#' @export
 combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.stations")
   # If either of the arguments is NULL, then return the x -
@@ -272,6 +274,7 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+#' @export
 combine.ds <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds")
   cl <- as.list(match.call())
@@ -418,6 +421,7 @@ combine.list <- function(...,all=TRUE,verbose=FALSE) {
   return(y)
 }
 
+#' @export
 combine.ds.comb <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds.comb")
   cl <- as.list(match.call())
@@ -481,6 +485,7 @@ combine.ds.comb <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+# not exported
 combine.ds.station <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds.station") 
   # Combine downscaled station records. Use combine.station for
@@ -499,6 +504,7 @@ combine.ds.station <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+# not exported
 combine.ds.pca <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds.pca")  
   # Combine downscaled PCA: i.e. the different principal components
@@ -520,7 +526,7 @@ combine.ds.pca <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
-
+#' @export
 combine.station.eof <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station.eof")
   if (is.null(x)) return(y)
@@ -620,14 +626,14 @@ combine.station.eof <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,ver
   invisible(X)
 }
 
-
+#' @export
 combine.station.field <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station.field")
   X <- combine.field.station(x=y,y=x,all=all,orig.format=orig.format)
   invisible(X) 
 }
 
-
+#' @export
 combine.field.station <- function(x=NULL,y=NULL,...,all=FALSE,
                                   orig.format=TRUE,verbose=FALSE) {
   if (verbose) print("combine.field.station")
@@ -692,8 +698,7 @@ combine.field.station <- function(x=NULL,y=NULL,...,all=FALSE,
   invisible(X)
 }
 
-
-
+#' @export
 combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
                           approach="field",orig.format=TRUE,verbose=FALSE) {
   if (verbose) print(paste("combine.field",approach))
@@ -858,6 +863,7 @@ combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
   invisible(X)
 }
 
+#' @export
 combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbose=FALSE) {
   if(verbose) print("combine.events")
   stopifnot(inherits(x,"events") & inherits(y,"events"))
@@ -950,6 +956,7 @@ combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,F
   return(z)
 }
 
+#' @export
 combine.trajectory <- function(x=NULL,y=NULL,...,verbose=FALSE) {
   if(verbose) print("combine.trajectory")
   z <- rbind(x,y,all=TRUE)
@@ -959,6 +966,7 @@ combine.trajectory <- function(x=NULL,y=NULL,...,verbose=FALSE) {
   return(z)
 }
 
+#' @export
 sp2np <- function(x,SP2NP=TRUE,verbose=FALSE) {
   if(verbose) print("sp2np")
   # Take care of different latitude orientations: N-> S & S -> N
@@ -999,3 +1007,6 @@ sp2np <- function(x,SP2NP=TRUE,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
+
+#' @export
+zeros <- function(x) (sum(is.infinite(1/x)) > 0)

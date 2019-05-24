@@ -1,3 +1,13 @@
+#' Calculate distance between points on earth
+#'
+#' @param lon a longitude
+#' @param lat a latitude
+#' @param lons longitude or vector of longitudes 
+#' @param lats latitude or vector of longitudes
+#'
+#' @return distance between [lon, lat] and [lons, lats] (unit: m)
+#'
+#' @export
 distAB <- function(lon,lat,lons,lats,a=6.378e06) {
   good <- is.finite(lons) & is.finite(lats)
   lons <- lons[good]

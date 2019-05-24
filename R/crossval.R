@@ -1,11 +1,3 @@
-# Cross-validation:
-# Estimate both the correlation, RMSE, R^2, and the coeffieients for
-# each iteration - leave-out sample. Collect the statistics on the
-# coeffieients - estimate and error - and assess the consistency over
-# the iterations.
-
-
-
 #' Cross-validation
 #' 
 #' Applies a cross-validation of DS results, using the same strategy as in the
@@ -20,16 +12,18 @@
 #' 
 #' 
 #' @aliases crossval crossval.ds crossval.list crossval.dsensemble
+#'
 #' @param x The results from \code{\link{DS}}.
 #' @param m window with - leave m-out for each iteration. There are also some
 #' pre-set options: 'cordex-esd-exp1', 'value-exp1', and 'loo' for experiments
 #' defined at CORDEX-ESD, COST-VALUE, and leave-one-out ('loo')
 #' cross-validation.
+#'
 #' @return Cross-validation object.
-#' @author R.E. Benestad
+#'
 #' @keywords manip
-#' @examples
-#' 
+#'
+#' @examples 
 #' data(Oslo)
 #' t2m <- t2m.DNMI(lon=c(-20,40),lat=c(45,65))
 #' eof <- EOF(t2m)

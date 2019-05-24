@@ -1,13 +1,3 @@
-# Canonical correlation analysis (CCA) and CCA-based predictions
-#
-# R.E. Benestad, met.no, Oslo, Norway 20.08.2013
-# rasmus.benestad@met.no
-#------------------------------------------------------------------------
-# Y - first data set
-# X - second data set
-
-
-
 #' Canonical correlation analysis
 #' 
 #' Applies a canonical correlation analysis (CCA) to two data sets. The CCA
@@ -21,26 +11,8 @@
 #' 
 #' The analysis can also be applied to either EOFs or fields.
 #' 
-#' Note: the analysis has sometimes been somewhat unstable, returning
-#' inconsistent results. The recommendation is to use EOFs and SVD option.
-#' 
-#' The CCA analysis can be used to develope statistical models according to:
-#' 
-#' \deqn{Y = \Psi X}{Y = Psi X}
-#' 
-#' Where Y is the predictand and X the predictor. \code{plotCCA} plots the CCA
-#' results, and \code{Psi} returns the matrix \deqn{\Psi}{Psi}.
-#' 
-#' \code{stations2field} turns a group of station objects into a field by the
-#' means of a simple and crude interpolation/gridding. \code{check.repeat} is a
-#' quality-control function that eliminates repeated years in the station
-#' objects.
-#' 
-#' Try the same type of argument as in lm (' y ~ x, data= ')
-#' 
-#' 
-#' @aliases Canonical correlation analysis CCA CCA.default CCA.eof CCA.pca
-#' CCA.field predict.cca
+#' @aliases CCA CCA.default CCA.eof CCA.pca CCA.field predict.cca
+#'
 #' @param Y An object with climate data: field, eof, pca.
 #' @param X Same as Y.
 #' @param ... Other arguments.
@@ -50,8 +22,7 @@
 #' @return A CCA object: a list containing a.m, b.m, u.k, v.k, and r,
 #' describing the Canonical Correlation variates, patterns and correlations.
 #' a.m and b.m are the patterns and u.k and v.k the vectors (time evolution).
-#' @author R.E. Benestad
-#' @keywords manip
+#' 
 #' @examples
 #' 
 #' # CCA with two eofs
@@ -80,10 +51,12 @@
 #' @export CCA
 CCA <-function(Y,X,...) UseMethod("CCA")
 
+#' @export CCA
 CCA.default <- function(Y,X,...) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
 }
 
+#' @export CCA
 CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
 
   if (verbose) print("CCA.eof")
@@ -146,7 +119,7 @@ CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   }
   LY <- attr(Y,'eigenvalues')[ip]; LX <- attr(X,'eigenvalues')[ip]
 
-# After Wilks, 1995, p. 401
+  # After Wilks, 1995, p. 401
   info <- "(BP CCA - after Wilks (1995))"
   M.y <- solve(S.yy) %*% S.yx %*% solve(S.xx) %*% t(S.yx)
   M.x <- solve(S.xx) %*% t(S.yx) %*% solve(S.yy) %*% S.yx
@@ -185,13 +158,14 @@ CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   invisible(cca)
 }
 
-
+#' @export CCA
 CCA.pca <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   if (verbose) print("CCA.pca")
   cca <- CCA.eof(Y,X,ip)
   invisible(cca)
 }
 
+#' @export CCA
 CCA.field <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   
  if(verbose) print("CCA.field")

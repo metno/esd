@@ -1,3 +1,4 @@
+#' @export
 cmip3.model_id<- function(txt) {
 
 # filtering the names
@@ -61,6 +62,7 @@ txt[txt=="ukmo_hadcm3_144.nc"     ] <- 		"ukmo_hadcm3"
 invisible(txt)
 } 
 
+#' @export
 cmip5.model_id <- function(txt) {
 txt <- substr(txt,10,nchar(txt))
 txt2 <- unlist(strsplit(txt,split="_"))
