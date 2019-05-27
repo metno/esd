@@ -1,9 +1,8 @@
-#' Creates a griddded map %% ~~function to do ... ~~
+#' Creates a griddded map
 #' 
 #' A function that uses \code{LatticeKrieg} and elevation data to grid station
 #' based data and present a map.
-#' 
-#' 
+#'  
 #' @param Y A station object
 #' @param FUN A function or name of a function, e.g, "mean" or "trend"
 #' @param colbar A list specifying the color bar, e.g., list(col="precip",
@@ -14,6 +13,7 @@
 #' @param zlim range of color axis
 #' @param verbose if TRUE print information about progress
 #' @param plot if TRUE display results as plots
+#'
 #' @examples
 #' 
 #' data("precip.NORDKLIM")

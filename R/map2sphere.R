@@ -1,42 +1,5 @@
-# This function maps a longitude-latitude grid onto a sphere. This
-# function will be embeeded in map as an option.
-#" c("lonlat","sphere","NP","SP")
-# First transform longitude (theta) and latitude (phi) to cartesian
-# coordinates:
-#
-# (theta,phi) -> (x,y,z) = r
-#
-# Use a transform to rotate the sphere through the following matrix
-# product:
-#
-# ( x' )    ( a1  b1  c1 )  ( x )
-# ( y' ) =  ( a2  b2  c2 )  ( y )
-# ( z' )    ( a3  b3  c3 )  ( z )
-#
-# There can be three different rotation, about each of the axes
-# For 90-degree rotatins, e.g. aroud the z-axis:
-# Z = 90 (X = Y = 0): x' = y; y' = -x: z'= z
-# a1 = cos(Z) ; b1=sin(Z); c1=cos(Z);
-# a2 = -sin(Z); b2=cos(Z); c2=cos(Z)
-# a3 = cos(Z) ; b3=cos(Z); c3=sin(Z)
-# Y = 90 (Z = X = 0): x' = -z; z' = x; y' = y
-# a1= cos(Y); b1 = cos(Y); c1=-sin(Y);
-# a2= cos(Y); b2 = sin(Y); c2= cos(Y);
-# a3= sin(Y); b3 = cos(Y); c3= cos(Y)
-# X = 90 (Y = Z = 0): x' = x; z' = y; y' = - z
-# a1 = sin(X); b1 = cos(X); c1 = cos(X)
-# a2 = cos(X); b2 = cos(X); c2 = -sin(X);
-# a3 = cos(X); b3 = sin(X), c3 = cos(X)
-#
-# a1 =  cosYcosZ; b1 = cosXsinZ; c1= -cosXsinY
-# a2 = -cosXsinZ; b2 = cosXcosZ; c2= -sinXcosY
-# a3 =  cosXsinY; b3 = sinXcosZ; c3=  cosXcosY
-
-#angleofview <- function(r,P) {
-#  angle <- acos( (P%*%r)/( sqrt(P%*%P)*sqrt(r%*%r) ) )
-#  return(angle)
-#}
-
+# Documentation in map.R
+#' @export
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        colbar= list(col='t2m',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
@@ -274,7 +237,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 }
 
 #map2sphere(x)
-
+#' @export
 vec <- function(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
                 projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...) {
   if (verbose) print('vec')

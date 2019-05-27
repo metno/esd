@@ -1,12 +1,3 @@
-## Computes Empirical Orthogonal Functions (EOFs)
-##
-## R.E. Benestad, 
-## rasmus.benestad@met.no
-## 
-## ------------------------------------------------------------------------
-
-
-
 #' Empirical Orthogonal Functions (EOFs).
 #' 
 #' Computes EOFs (a type of principal component analysis) for combinations of
@@ -43,7 +34,10 @@
 #' 
 #' 
 #' @aliases EOF EOF.default EOF.field EOF.comb eof2field PCA PCA.default
-#' PCA.station pca2station Empirical orthogonal Functions
+#' PCA.station pca2station
+#'
+#' @seealso as.eof
+#'
 #' @param X a 'field' or 'pca' object
 #' @param it see \code{\link{subset}}
 #' @param n number of EOFs
@@ -107,12 +101,10 @@
 #' Z <- pca2station(pca)
 #' plot(Z,plot.type='multiple')
 #' 
-#' 
-#' 
 #' @export EOF
-EOF<-function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
-  UseMethod("EOF")
+EOF <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) { UseMethod("EOF") }
 
+#' @export
 EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   # Verify Arguments
   if (verbose) print("EOF.default")
@@ -129,6 +121,7 @@ EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,a
 
 
 # Apply EOF analysis to the monthly mean field values:
+#' @export
 EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   SF <- function(x) {sum(is.finite(x))}
@@ -271,7 +264,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   return(eof)
 }
 
-
+#' @export
 EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   n.app <- attr(X,'n.apps')
@@ -456,6 +449,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
   invisible(ceof)
 }
 
+#' @export
 eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   if (verbose) {print("eof2field"); if (!is.null(is)) print(is)}
   greenwich <- attr(x,'greenwich')

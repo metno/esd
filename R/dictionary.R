@@ -1,109 +1,13 @@
-## Description : elements and variables dictionary for different data sources including conversion tools from elements to variables, and vice versa. 
-## author  : Abdelkader Mezghani
-## created : 12-06-2013
-## updated : 12-06-2013
-
 test.ele2param <- function() {
-
-# RUN the following lines
-ele2param(ele=NULL,src=NULL)
-ele2param(ele="101",src=NULL)
-ele2param(ele="101",src="GHCND")
-ele2param(ele="101",src="GHCNM")
-ele2param(ele="101",src="NORDKLIM")
-ele2param(ele="601",src=NULL)
-ele2param(ele="601",src="GHCND")
-ele2param(ele="601",src="GHCNM")
+  ele2param(ele=NULL,src=NULL)
+  ele2param(ele="101",src=NULL)
+  ele2param(ele="101",src="GHCND")
+  ele2param(ele="101",src="GHCNM")
+  ele2param(ele="101",src="NORDKLIM")
+  ele2param(ele="601",src=NULL)
+  ele2param(ele="601",src="GHCND")
+  ele2param(ele="601",src="GHCNM")
 }
-
-esd2ele <- function(param = NULL) {
-  if (!is.null(param)) ele <- switch(tolower(param),
-                                     't2m' = "101",
-                                     'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
-                                     'rr' = "601",
-                                     'slp' = "401",
-                                     'pon' = "402",
-                                     'pom' = "401",
-                                     'pox' = "403",
-                                     'prn' = "402",
-                                     'prm' = "401",
-                                     'prx' = "403",
-                                     'pp'  = "401",
-                                     'cc' = "801",
-                                     't2' = "101",
-                                     'precip' = "601",
-                                     '101' = "t2m",
-                                     '401' = "slp",
-                                     '402' = "pon",
-				                             '403' = "pox",
-				                             '601' = "precip",
-                                     '801' = "cc",
-                                     'tmin'="121",'tn'="121",                             #REB 2016-07-25                 
-                                     'tmax'="111",'tx'="111",                             #REB 2016-07-25
-                                     '121' ="tmin",
-                                     '111' = "tmax",
-                                     '901'  = "sd",
-                                     'sd' = '901',
-				                             '901' = 'sd',
-				                             'dd' = '502',
-                                     '502' = 'dd',
-                                     'fg' = '501', # Wind speed
-                                     '501' = 'fg',
-                                     'fx' = '503',
-                                     '503' = 'fx',
-                                     '504' = 'dd06',
-				                             '505' = 'dd12',
-				                             '506' = 'dd18',
-				                             'ffm' = '501',
-				                             'ffx' = '503',
-				                             'dd06' = '504',
-				                             'dd12' = '505',
-				                             'dd18' = '506',
-				                             '201' = 'hu',
-                                     'hu' = '201',
-                                     '301' = 'ss',
-                                     'ss' = '301',
-                                     '999'='sf',
-                                     '122'='tl',
-                                     '123'='tld',
-                                     'tl'='122',
-                                     'tld'='123',
-                                     'dsc'='701',
-                                     '701'='dsc',
-                                     'th'='112',
-                                     '112'='th',
-                                     '113'='thd',
-                                     'thd'='113',
-                                     '602'='rx',
-                                     'rx'='602')
- else ele <- 'NA'
-return(ele)
-}
-
-param2ele <- function(param = NULL , src = NULL , verbose = TRUE) {
-  ## convert arguments
-  src <- toupper(src)
-  param <- as.character(param)
-  ## get elements and variable metadata info
-                                        #browser()
-  if (length(param)==0 & length(src)==0) {
-    if (verbose) print("No selected variable")
-    ele <- ele2param()
-    print(ele)
-  } else if (length(param) == 0 & length(src) >0) {  
-    x <- ele2param(ele=NULL,src=src)
-    ele <- as.character(x[,1])
-    if (verbose) print("No conversion between variables and elements")
-    ele <- NA
-  } else if (length(param)> 0 & length(src) >0) {
-    x <- ele2param(ele=NULL,src=src)
-    ele <- as.character(x[x[,5]==param,1])
-    if (length(ele)==0) ele <- NA
-  } else ele <- NA 
-  return(ele)
-}
-  
-
 
 #' Dictionary and conversion tools between esd element identifier and variables
 #' names and specifications.
@@ -112,23 +16,24 @@ param2ele <- function(param = NULL , src = NULL , verbose = TRUE) {
 #' different data sources.
 #' 
 #' 
-#' @aliases ele2param esd2ele
+#' @aliases ele2param esd2ele param2ele
+#'
 #' @param param,ele Parameter or element identifier. There are several core
 #' parameters or elements as well as a number of additional parameters. The
 #' parameters or elements are :
-#' @param src A character string for the acronym of the data source. The data
-#' sources are :
+#' @param src A character string for the acronym of the data source.
+#'
 #' @return A meta data matrix object with the glossary of the different
 #' variables or element identifiers as originally defined by each data source
-#' @author A. Mezghani, MET Norway
+#'
 #' @keywords parameter,element
+#'
 #' @examples
-#' 
-#' # Eg.1 # Display the glossary of paramerters or element identifiers for 'GHCND' data source.
+#' # Display the glossary of paramerters or element identifiers for 'GHCND' data source.
 #' print(ele2param(ele=NULL,src='GHCND'))
-#' # Eg.2 # Display the glossary of parameters or element identifiers for all data sources. 
+#' # Display the glossary of parameters or element identifiers for all data sources. 
 #' print(ele2param())
-#' # Eg.3 # Convert mean temperature parameter (param) to esd element (ele).
+#' # Convert mean temperature parameter (param) to esd element (ele).
 #' ele <- esd2ele(param='t2m')
 #' print(ele)
 #' 
@@ -153,23 +58,118 @@ ele2param <- function(ele = NULL , src = NULL) {
   if (length(x)==0) print(paste("Selected element does not exist in the",src,"database",sep=" "))
   invisible(x)
 }
+
+#' @export
+esd2ele <- function(param = NULL) {
+  if (!is.null(param)) {
+    ele <- switch(tolower(param),
+                  't2m' = "101",
+                  'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
+                  'rr' = "601",
+                  'slp' = "401",
+                  'pon' = "402",
+                  'pom' = "401",
+                  'pox' = "403",
+                  'prn' = "402",
+                  'prm' = "401",
+                  'prx' = "403",
+                  'pp'  = "401",
+                  'cc' = "801",
+                  't2' = "101",
+                  'precip' = "601",
+                  '101' = "t2m",
+                  '401' = "slp",
+                  '402' = "pon",
+                  '403' = "pox",
+                  '601' = "precip",
+                  '801' = "cc",
+                  'tmin'="121",'tn'="121",
+                  'tmax'="111",'tx'="111",
+                  '121' ="tmin",
+                  '111' = "tmax",
+                  '901'  = "sd",
+                  'sd' = '901',
+                  '901' = 'sd',
+                  'dd' = '502',
+                  '502' = 'dd',
+                  'fg' = '501', # Wind speed
+                  '501' = 'fg',
+                  'fx' = '503',
+                  '503' = 'fx',
+                  '504' = 'dd06',
+                  '505' = 'dd12',
+                  '506' = 'dd18',
+                  'ffm' = '501',
+                  'ffx' = '503',
+                  'dd06' = '504',
+                  'dd12' = '505',
+                  'dd18' = '506',
+                  '201' = 'hu',
+                  'hu' = '201',
+                  '301' = 'ss',
+                  'ss' = '301',
+                  '999'='sf',
+                  '122'='tl',
+                  '123'='tld',
+                  'tl'='122',
+                  'tld'='123',
+                  'dsc'='701',
+                  '701'='dsc',
+                  'th'='112',
+                  '112'='th',
+                  '113'='thd',
+                  'thd'='113',
+                  '602'='rx',
+                  'rx'='602')
+  } else {
+    ele <- 'NA'
+  }
+  return(ele)
+}
+
+#' @export
+param2ele <- function(param = NULL , src = NULL , verbose = TRUE) {
+  ## convert arguments
+  src <- toupper(src)
+  param <- as.character(param)
+  ## get elements and variable metadata info
+                                        #browser()
+  if (length(param)==0 & length(src)==0) {
+    if (verbose) print("No selected variable")
+    ele <- ele2param()
+    print(ele)
+  } else if (length(param) == 0 & length(src) >0) {  
+    x <- ele2param(ele=NULL,src=src)
+    ele <- as.character(x[,1])
+    if (verbose) print("No conversion between variables and elements")
+    ele <- NA
+  } else if (length(param)> 0 & length(src) >0) {
+    x <- ele2param(ele=NULL,src=src)
+    ele <- as.character(x[x[,5]==param,1])
+    if (length(ele)==0) ele <- NA
+  } else ele <- NA 
+  return(ele)
+}
+
+
 # Selected elements from NORDKLIM database 
 nordklim.ele <- function() {
-x <- rbind(c("101" , "Mean temperature"		 	, "0.1"   		, "degree*C" 	, "T"),
-	   c("111" , "Mean maximum temperature"	 	, "0.1"   		, "degree*C" 	, "Tx"), 
- 	   c("112" , "Highest maximum temperature"  	, "0.1"   		, "degree*C" 	, "Th"),
-	   c("113" , "Day of Th" 			, "1"     		, "date", "Thd"),
-	   c("121" , "Mean minimum temperature" 	, "0.1"   		, "degree*C" 	, "Tn"),
-	   c("122" , "Lowest minimum temperature" 	, "0.1"   		, "degree*C"	, "Tl"),
-	   c("123" , "Day of Tl"			, "1"	  		, "date", "Tld"),
-	   c("401" , "Mean Pressure" 		 	, "0.1"   		, "hPa" , "P"),
-	   c("601" , "Precipitation Sum"		, "0.1"   		, "mm"	, "R"),
-	   c("602" , "Maximum 1-day precipitation"	, "0.1"	  		, "mm"	, "Rx"),
-	   c("701" , "Number of days with snow cover (> 50% covered)" , "1"	, "days", "dsc"),
-	   c("801" , "Mean cloud cover"	, "1" 			, "%"	, "N"))
-y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "NORDKLIM",stringsAsFactors=FALSE)
-return(y)
+  x <- rbind(c("101" , "Mean temperature"		, "0.1"   		, "degree*C" 	, "T"),
+  	     c("111" , "Mean maximum temperature"	, "0.1"   		, "degree*C" 	, "Tx"), 
+ 	     c("112" , "Highest maximum temperature"  	, "0.1"   		, "degree*C" 	, "Th"),
+	     c("113" , "Day of Th" 			, "1"     		, "date", "Thd"),
+	     c("121" , "Mean minimum temperature" 	, "0.1"   		, "degree*C" 	, "Tn"),
+	     c("122" , "Lowest minimum temperature" 	, "0.1"   		, "degree*C"	, "Tl"),
+	     c("123" , "Day of Tl"			, "1"	  		, "date", "Tld"),
+	     c("401" , "Mean Pressure" 		 	, "0.1"   		, "hPa" , "P"),
+	     c("601" , "Precipitation Sum"		, "0.1"   		, "mm"	, "R"),
+	     c("602" , "Maximum 1-day precipitation"	, "0.1"	  		, "mm"	, "Rx"),
+	     c("701" , "Number of days with snow cover (> 50% covered)" , "1"	, "days", "dsc"),
+	     c("801" , "Mean cloud cover"	, "1" 			, "%"	, "N"))
+  y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "NORDKLIM",stringsAsFactors=FALSE)
+  return(y)
 }
+
 # Selected elements from NACD database / Same elements as nordklim database
 nacd.ele <- function() {
 x <- rbind(c("101" , "Mean temperature"			, "0.1"   		, "degree*C" 	, "T"),
@@ -187,6 +187,7 @@ x <- rbind(c("101" , "Mean temperature"			, "0.1"   		, "degree*C" 	, "T"),
 y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "NACD",stringsAsFactors=FALSE)
 return(y)
 }
+
 # Selected elements from NARP database / Same elements as nordklim database
 narp.ele <- function() {
 x <- rbind(c("101" , "Mean temperature"		 	, "0.1"   		, "degree*C" 	, "T"),
@@ -204,6 +205,7 @@ x <- rbind(c("101" , "Mean temperature"		 	, "0.1"   		, "degree*C" 	, "T"),
 y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "NARP",stringsAsFactors=FALSE)
 return(y)
 }
+
 # Selected elements from ECAD database
 ecad.ele <- function(file='~/ecad_element.csv') {
     ## browser()
@@ -237,6 +239,7 @@ ecad.ele <- function(file='~/ecad_element.csv') {
     ## }
     return(y)   
 }
+
 # Selected elements from GHCNM database
 ghcnm.ele <- function() {
 x <- rbind(c("101" , "monthly mean temperature"	 	, "0.01" 		, "degree*C" , "TAVG"), 
@@ -245,6 +248,7 @@ x <- rbind(c("101" , "monthly mean temperature"	 	, "0.01" 		, "degree*C" , "TAV
 y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "GHCNM",stringsAsFactors=FALSE)
 return(y)
 }
+
 ghcnd.ele <- function() {
 # Selected elements from GHCND database
 x <- rbind(c("601" , "Precipitation"		 	, "0.1"	  		, "mm"	, "PRCP"),
@@ -255,6 +259,7 @@ x <- rbind(c("601" , "Precipitation"		 	, "0.1"	  		, "mm"	, "PRCP"),
 y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "GHCND",stringsAsFactors=FALSE)
 return(y)
 }
+
 metno.ele <- function() { ## must be updated - AM 2014-02-21
   ## Selected elements from GHCND database
     
@@ -282,16 +287,3 @@ metno.ele <- function() { ## must be updated - AM 2014-02-21
     }
   return(y)
 }
-
-## KMP 2018-11-08: This function doesn't work. Element.Name is not defined and it contains an absolute path. 
-## Also it is not in the NAMESPACE and is not used in any other function.
-#wmo.ele.code <- function(pattern='^wind.*.speed.*.10') {
-#    x <- read.csv('/disk1/downloads/fnmoc.B2L-058-001-B.txt',sep='\t',stringsAsFactor=FALSE,skip=5,header=TRUE)
-#    ele.sel <- subset(x,subset= grepl(pattern,Element.Name,ignore.case=TRUE))
-#    ele <- as.numeric(paste(ele.sel$X,ele.sel$Y,sep=''))
-#    if (dim(ele.sel)[1] >1) {
-#        print(ele.sel)
-#        print('please refine your selection')
-#    }
-#    invisible(ele.sel)
-#}

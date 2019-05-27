@@ -1,9 +1,13 @@
+# Documentation in EOF.R
+#' @export
 PCA <- function(X,...) UseMethod("PCA")
 
+#' @export
 PCA.default <- function(X,...) {
   stop("Don't know how to handle objects other than station")
 }
 
+#' @export
 PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE) {
   if (!is.null(it) | !is.null(is))
     X <- subset(X,it=it,is=is)
@@ -76,6 +80,7 @@ PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NUL
 }
 
 # Transfer PCA back to station data
+#' @export
 pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if (inherits(X,'ds')) class(X) <- class(X)[-1]

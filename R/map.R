@@ -3,11 +3,11 @@
 #' Make map of geophysical data. These plot functions are S3 methods for esd
 #' objects.
 #' 
-#' 
 #' @aliases map map.default map.matrix map.data.frame map.station
 #' map.stationmeta map.stationsummary map.comb map.eof map.ds map.dsensemble
 #' map.field map.corfield map.cca map.events map.trajectory map.mvr map.pca
 #' map.trend lonlatprojection rotM gridbox map2sphere vec mask
+#'
 #' @param x the object to be plotted; in \code{rotM}, x holds a vector of
 #' x-coordinates.
 #' @param FUN The function to be applied on x before mapping (e.g. \code{mean})
@@ -17,6 +17,7 @@
 #' `rev' argument, will produce a reversed color bar if set to TRUE. The other
 #' arguments (`type',`h' and `v') are more specific to \code{col.bar} and are
 #' used only if argument `fancy' is set to TRUE (not yet finished).
+#'
 #' @param it see \code{\link{subset}}
 #' @param is see \code{\link{subset}}
 #' @param new TRUE: create a new graphic device.
@@ -66,13 +67,13 @@
 #' recovered from the EOFs.
 #' @param fig see \code{\link{par}}
 #' @param nbins number of bins/colour categories
+#'
 #' @return A field object
-#' @author R.E. Benestad
+#' 
 #' @seealso \code{\link{plot.station}}
 #' @keywords map
 #' @examples
 #' 
-#' # dontrun because of this problem: "Error in plot.new() : figure margins too large"
 #' # Select stations in ss and map the geographical location 
 #' # of the selected stations with a zoom on Norway.
 #' ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
@@ -722,6 +723,7 @@ map.pca <- function(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
   }
 }
 
+#' @export
 map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -735,6 +737,7 @@ map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     
 }
 
+#' @export
 map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                     colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",

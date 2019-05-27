@@ -1,3 +1,5 @@
+# Documentaion in map.R
+#' @export
 lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              xlim=NULL,ylim=NULL,zlim=NULL,
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,

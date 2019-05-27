@@ -3,6 +3,7 @@
 ## Select a set of PCs and then use these in matrix product to reproduce
 ## physical elements.
 
+#' @export
 expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
   ## Get the spatial weights
   if (verbose) print('expandpca')
@@ -95,7 +96,7 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   return(Y)
 }
 
-
+#' @export
 map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
                            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                                    show=TRUE,type="p",cex=2,h=0.6,v=1),
@@ -119,6 +120,7 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
 }
 
 ## Function for extracting the subset from PCs stored as zoo
+# not exported
 subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
   if (verbose) print('subset.pc')
   d <- dim(x)
@@ -143,6 +145,7 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
 
 ## Tools to subset or reduce the size of a dsensemble, e.g. removing the
 ## high-order modes of PCA/EOF that represent noise.
+#' @export
 subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                               verbose=FALSE,...) {
  
@@ -184,7 +187,6 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   }
   Y <- c(Y,y)
   class(Y) <- cls
-  if (verbose) print('exit subset.dsensemble.multi')
   return(Y)
 }
 

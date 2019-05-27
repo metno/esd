@@ -1,9 +1,3 @@
-## Author 	 Kajsa Parding
-## Last update   04.10.2017
-## Require 	 geoborders.rda
-
-
-
 #' Plot trajectory maps
 #' 
 #' Make different types of trajectory maps. Individual trajectories are mapped
@@ -32,7 +26,7 @@
 #' @param latR Only for the spherical projection - see \code{\link{map2sphere}}
 #' @param leg logical. If TRUE, legend is shown.
 #' @param alpha factor modifying the opacity alpha; typically in [0,1]
-#' @author K. Parding
+#'
 #' @seealso \code{\link{map} \link{map.events}}
 #' @keywords map trajectory
 #' @examples
@@ -84,6 +78,7 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",param=NA,
   } else print("unkown map type")
 }
 
+#' @export
 map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
   main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1.5,pch='.',new=TRUE,
   verbose=FALSE,...) {
@@ -102,6 +97,7 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
          col=adjustcolor(col,alpha.f=alpha))
 }
 
+#' @export
 segments.trajectory <- function(x,param="month",label.param=NULL,
       xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),
@@ -590,6 +586,7 @@ sphere.trajectory <- function(x,
   }
 }
 
+#' @export
 map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
       colbar=list(pal='precip',rev=TRUE,breaks=NULL,cex=2,h=0.6,v=1),
       projection='sphere',latR=90,lonR=10,gridlines=FALSE,...) {
@@ -602,6 +599,7 @@ map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
       lonR=lonR,gridlines=gridlines,...)
 }
 
+#' @export
 map.hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
           xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
           xlim=NULL,ylim=NULL,col='red',border='firebrick4',
@@ -657,6 +655,7 @@ map.hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
   }
 }
 
+#' @export
 map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
       dx=6,dy=2,petalsize=7,
       xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
@@ -731,6 +730,7 @@ map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
   }
 }
 
+#' @export
 map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
       xlim=NULL,ylim=NULL,main=NULL,m=2,alpha=0.05,param=c('lon','lat')) {
 
@@ -796,9 +796,6 @@ map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
 
   invisible(pca)
 }
-
-
-
 
 angle <- function(lon1,lat1,lon2,lat2) {
   a <- 360 - (atan2(lat2-lat1,lon2-lon1)*(180/pi) + 360) %% 360

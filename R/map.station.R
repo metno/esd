@@ -18,6 +18,7 @@ genfun <- function(x,FUN,verbose=FALSE) {
 }
 
 ## Simplified function for mapping station objects.
+#' @export
 map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          add=FALSE,projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
@@ -205,7 +206,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 }
 
 ###
-
+#' @export
 map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              projection="lonlat",
                              xlim = NULL, ylim = NULL,zlim=NULL,n=15,
@@ -932,6 +933,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
 }
 
 ## Perform a series of tests that produce and save maps of the different data sources into the local directory.
+# do not export
 test.map.station <- function(save=FALSE) {
   
   map.station(src="NACD",col="darkgreen",bg="green")
@@ -959,9 +961,11 @@ test.map.station <- function(save=FALSE) {
 
 
 ## The main function to produce map of subseted stations
+#' @export
 map.stationmeta <- function(x,...)
   map.station(x,...)
 
+#' @export
 map.data.frame <- function(x,...) {
   
   att <- c("station_id","location","country","longitude","latitude","altitude","element","start","end","source","wmo","quality")

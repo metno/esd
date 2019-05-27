@@ -112,8 +112,13 @@ as.decimal <- function(x=NULL) {
 }
 
 #' @export
-eofvar <- function(x) if (inherits(x,c('eof','pca'))) 
-                          attr(x,'eigenvalues')^2/attr(x,'tot.var')*100 else NULL
+eofvar <- function(x) {
+  if (inherits(x,c('eof','pca'))) {
+    attr(x,'eigenvalues')^2/attr(x,'tot.var')*100
+  } else {
+    NULL
+  }
+}
 
 ## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands   
 test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y.res='NA', nam.y='NA', nam.x.dom='NA',nam.t='NA',verbose=FALSE) {

@@ -973,8 +973,9 @@ plot.ds.eof <- function(x,...,ip=1,
 }
 
 #' @export
-plot.mvr <- function(x) {
-  plot(x$fitted.values)
+plot.mvr <- function(x,verbose=FALSE,...) {
+  if(verbose) print("plot.mvr")
+  plot(x$fitted.values, verbose=verbose,...)
 }
 
 #' @export
@@ -1221,8 +1222,10 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
     } 
   }  
 }
- 
-plot.xval <- function(x,new=TRUE,...) {
+
+#' @export
+plot.xval <- function(x,new=TRUE,verbose=FALSE,...) {
+  if(verbose) print("plot.xval")
   if (new) dev.new()
   par(bty="n")
   unit <- attr(x,'unit')
@@ -1257,6 +1260,7 @@ plot.xval <- function(x,new=TRUE,...) {
   grid()
 }
 
+#' @export
 plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,ip=1,
                                envcol=rgb(1,0,0,0.2),legend.show=TRUE,verbose=FALSE,
                                ...) {
@@ -1279,6 +1283,7 @@ plot.dsensemble.pca <- function(x,pts=FALSE,target.show=TRUE,map.show=TRUE,it=0,
   plot(pc[[ip]],ylab=paste("PC",ip,sep=""))
 }
 
+#' @export
 plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
   if(verbose) print("plot.dsensemble")
   if (inherits(x,c('pca','eof'))) {
@@ -1537,6 +1542,7 @@ plot.xsection <- function(x,...) {
 
 
 # plot wet/dry or cold/warm spells.
+#' @export
 plot.spell <- function(x,xlim=NULL,ylim=NULL) {
   bar <- function(x,col) {
     rect(x[1],x[2],x[3],x[4],col=col,border=col)

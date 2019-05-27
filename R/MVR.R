@@ -1,26 +1,15 @@
-# Multi-variate regression (MVR) and MVR-based predictions for EOFs, PCA
-# and gridded fiels/data matrix (zoo).
-#
-# R.E. Benestad, met.no, Oslo, Norway 20.08.2013
-# rasmus.benestad@met.no
-#------------------------------------------------------------------------
-# The equation:
-# y = x %psi + %xi
-
-
-
 #' Multi-variate regression
 #' 
 #' MVR solves the equation \deqn{Y = \Psi X}{Y = Psi X} and estimates
-#' \deqn{\Psi}{Psi} by inverting the equation. Predictions give the varlue of
+#' \deqn{\Psi}{Psi} by inverting the equation. Predictions give the value of
 #' Y, given this matrix and some input. MVR is useful for data where Y contains
 #' several time series where the spatial coherence/covariance is important to
 #' reproduce. For instance, Y may be a combination of stations, the two wind
 #' components from one station, or a set of different elements from a group of
 #' stations.
 #' 
-#' 
-#' @aliases Multi-variate regression MVR predict.MVR plot.MVR
+#' @aliases MVR MVR.default MVR.field MVR.pca MVR.eof predict.MVR plot.MVR
+#'
 #' @param Y An object with climate data: field, eof, or pca.
 #' @param X Same as Y or any zoo object.
 #' @param SVD Use a singular value decomposition as a basis for the PCA.
@@ -79,14 +68,15 @@
 #' map(teleconnection,cex=2)
 #' }
 #' 
-#' @export MVR
+#' @export
 MVR <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) UseMethod("MVR")
 
+#' @export
 MVR.default <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
 }
 
-
+#' @export
 MVR.field <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   # Synchronise the two time series objects:
   if(verbose) print("MVR.field is not finished. Converting to EOF and redirecting to MVR.eof.")
@@ -143,7 +133,7 @@ MVR.field <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   # invisible(mvr)
 }
 
-
+#' @export
 MVR.eof <- function(Y, X, SVD=SVD, LINPACK=LINPACK, verbose=FALSE) {
   if(verbose) print("MVR.eof")
   history <- attr(X,'history')
@@ -186,7 +176,7 @@ MVR.eof <- function(Y, X, SVD=SVD, LINPACK=LINPACK, verbose=FALSE) {
   #attr(Yhat,'call') <- match.call()
   attr(Yhat,'history') <- history.stamp(x)
   class(Yhat) <- cls
-  #attr(res,'history') <- c('MVR',attr(Z,'history'))
+  #attr(res,'history') <- c('MVR',attr(Z,'history'))n
   #attr(res,'date-stamp') <- date()
   #attr(res,'call') <- match.call()
   attr(res,'history') <- history.stamp(x)
@@ -208,6 +198,7 @@ MVR.eof <- function(Y, X, SVD=SVD, LINPACK=LINPACK, verbose=FALSE) {
   invisible(mvr)
 }
 
+#' @export
 MVR.pca <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   if(verbose) print("MVR.pca")
   mvr <- MVR.eof(Y,X,SVD=SVD,LINPACK=LINPACK,verbose=verbose)
