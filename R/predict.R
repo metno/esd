@@ -1,31 +1,24 @@
-# Predict can take an eof or field, projected onto the EOFs,R then
-# apply the DS model.
-# Rasmus Benestad
-
-
-
-#' %% ~~function to do ... ~~ Prediction based on DS or CCA model
+#' Prediction based on DS or CCA model
 #' 
 #' Apply an empirical-statistical downscaling model to new data
 #' 
-#' %% ~~ If necessary, more details than the description above ~~ 'predict' is
-#' similar to the predict function in R
+#' \code{predict} is similar to the predict function in R
 #' 
-#' 'project' returns projection of climate
+#' \code{project] returns projection of climate
 #' 
-#' @aliases predict.ds predict.ds.eof predict.ds.com project.ds predict.cca
+#' @aliases predict.ds predict.ds.eof predict.ds.comb predict.mvr predict.cca project.ds
+#'
 #' @param x A ds object
 #' @param newdata An eof object containing the new data sets on which the
-#' prediction is made. %% ~~Describe \code{newdata} here~~
+#' prediction is made. 
 #' @param addnoise If TRUE, will add an attribute called "noise" to the ouput
-#' based on WG %% ~~Describe \code{addnoise} here~~
+#' based on WG
 #' @param n Number of runs to be generated, used only if addnoise is set to
-#' TRUE %% ~~Describe \code{n} here~~
+#' TRUE 
+#' 
 #' @return Predicted ds values.
-#' @author A. Mezghani
-#' @seealso \code{\link{DS}} %% ~~objects to See Also as \code{\link{help}},
-#' ~~~
-#' @keywords ~kwd1 ~kwd2
+#' @seealso \code{\link{DS}} 
+#' 
 #' @examples
 #' 
 #' # Get predictor
@@ -52,7 +45,7 @@
 #' ## Extract the projected results
 #' plot(project.ds(ds))
 #' 
-#' @export predict.ds
+#' @export
 predict.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
   stopifnot(!missing(x),inherits(x,"ds"))
@@ -105,7 +98,7 @@ predict.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   invisible(y)
 }
 
-## KMP: added new method 2018-12-29
+#' @export
 predict.ds.station <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
   if (is.null(names(newdata))) names(newdata) <- paste('X',1:dim(newdata)[2],sep='.')
@@ -125,6 +118,7 @@ predict.ds.station <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=F
   invisible(y)
 }
 
+#' @export
 predict.ds.eof <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   stopifnot(!missing(x),inherits(x,"ds"))
   if (verbose) print(paste("predict.ds.eof",paste(class(x),collapse='-')))
@@ -199,7 +193,7 @@ predict.ds.eof <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE
   invisible(y)
 }
 
-
+#' @export
 predict.ds.pca <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
   if (is.null(newdata)) {
@@ -227,6 +221,7 @@ predict.ds.pca <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE
   invisible(y)
 }
 
+#' @export
 predict.ds.comb <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   ## based on predict.ds.eof function
   stopifnot(!missing(x),inherits(x,"ds"))
@@ -303,6 +298,7 @@ predict.ds.comb <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALS
   invisible(Y)
 }
 
+#' @export
 project.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
   ## based on predict.ds.eof function
   stopifnot(!missing(x),inherits(x,"ds")) ## ,inherits(x,'comb')
@@ -384,6 +380,7 @@ project.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
 # To get one predictor pattern, use predict with newdata set to
 # a vector where most variables are set to zero apart from one
 # variable set to unity for the identification of teleconnection pattern.
+#' @export
 predict.mvr <- function(x, newdata=NULL, ..., verbose=FALSE) {
   if(verbose) print("predict.mvr")
   object <- x
@@ -412,6 +409,7 @@ predict.mvr <- function(x, newdata=NULL, ..., verbose=FALSE) {
   invisible(Yhat)
 }
 
+#' @export
 predict.cca <- function(x, newdata=NULL, ..., verbose=FALSE) {
   if(verbose) print("predict.cca")
   if (!is.null(newdata)) X <- newdata else X <- x$X

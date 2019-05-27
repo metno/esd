@@ -28,8 +28,7 @@
 #' (first plot). \code{\link{pbinom}} is used to estimate the p-value for the
 #' 
 #' 
-#' @aliases iid.test iid.test.station iid.test.field iid.test.default n.records
-#' recods test.records
+#' @aliases iid.test iid.test.station iid.test.field iid.test.default n.records records test.records
 #' @param x A data matrix or a vector.
 #' @param plot Flag: plot the diagnostics.
 #' @param Monte.Carlo Flag: for estimating confidence limits.
@@ -361,7 +360,7 @@ n.records <- function(x,verbose=FALSE) {
 
 ## This algorithm is faster than the older code that used for-loop
 ## Search 'back-ward' statring with the highest value:
-
+#' @export
 records <- function(x,verbose=FALSE,diff=FALSE) {
   if (verbose) print('records')
   if (!is.null(dim(x))) {
@@ -390,6 +389,7 @@ records <- function(x,verbose=FALSE,diff=FALSE) {
   return(r)
 }
 
+#' @export
 test.records <- function(N=1000) {
   y <- rnorm(N) + seq(0,1,length=N)
   rbv <- records(y)

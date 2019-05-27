@@ -1,3 +1,4 @@
+#' @export
 regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 # Compute the weights for irregular grids (xo,yo) - the station class
 
@@ -32,7 +33,7 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 
 
 
-
+#' @export
 regrid.station <- function(x,is,approach="station",verbose=FALSE) {
 
   stopifnot(inherits(x,'station'))
@@ -125,7 +126,7 @@ regrid.station <- function(x,is,approach="station",verbose=FALSE) {
   invisible(y)
 }
 
-
+#' @export
 regrid.pca <- function(x,is,verbose=FALSE) {
   stopifnot(inherits(x,'pca'))
   if (is.list(is)) {lon.new <- is[[1]]; lat.new <- is[[2]]} else

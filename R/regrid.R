@@ -35,7 +35,6 @@ sparseMproduct <- function(beta,x) {
 }
 
 
-
 #' Regrid
 #' 
 #' Fast transform data from one longitude-latitude grid to another through
@@ -125,7 +124,7 @@ sparseMproduct <- function(beta,x) {
 regrid <- function(x,is,it=NULL,...)
   UseMethod("regrid")
 
-
+#' @export
 regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
 # Compute weights for regular grids: (xo,yo) - the field class
   
@@ -274,11 +273,11 @@ regrid.temporal <- function(x,it,verbose=FALSE) {
   return(z)
 }
 
-
 regrid.default <- function(x,is=NULL,it=NULL,verbose=FALSE,...) {
   print('not used')
 }
 
+#' @export
 regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose=FALSE) {
 
   if (verbose) print("regrid.field ")
@@ -454,7 +453,7 @@ regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose
 
 
 
-
+#' @export
 regrid.matrix <- function(x,is,verbose=FALSE) {
 # assumes that dimensions of x are [x,y,(t)] and that the coordinates are
 # provided as attributes as in field
@@ -505,7 +504,7 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
 
 
 
-
+#' @export
 regrid.eof <- function(x,is,verbose=FALSE) {
   stopifnot(inherits(x,'eof'))
   if (is.list(is)) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
