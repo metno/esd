@@ -388,10 +388,13 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
   
   # Attributes with same number of elements as stations are saved as variables
   if (is.null(it)) it <- index(y)
-  start <- c( (1:length(it))[is.element(it,index(y)[1])],stid[1] )
-  if (length(start)==1) start <- c(start,1)
+  #start <- c( (1:length(it))[is.element(it,index(y)[1])],stid[1] )
+  start <- c(stid[1], (1:length(it))[is.element(it,index(y)[1])] )
+  #if (length(start)==1) start <- c(start,1)  #BER
+  if (length(start)==1) start <- c(1,start)
   
-  if (!is.null(dim(y))) count <- dim(y) else count <- c(length(y),1)
+  #if (!is.null(dim(y))) count <- dim(y) else count <- c(length(y),1) #BER
+  if (!is.null(dim(y))) count <- dim(t(y)) else count <- c(1,length(y))
   if (verbose) {
     print("start & count"); print(start); print(count); 
     print("dim(y)"); print(dim(y))
@@ -404,10 +407,8 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
     if (verbose) print('Define dimensions')
     if (verbose) print(stid(x))
     dimS <- ncdim_def( name="stid", units="number",vals=1:ns,unlim=stid_unlim)
-    #dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=1:nt, calendar=calendar,unlim=TRUE)
     dimT <- ncdim_def( name="time", units=paste("days since",torg), vals=time, calendar=calendar,unlim=TRUE)
     dimnchar   <- ncdim_def("nchar",   "", 1:namelength, create_dimvar=FALSE )
-    #dimstation <- ncdim_def("station", "", 1:ns, create_dimvar=FALSE )
     
     if (verbose) {
       print('Define variable')
@@ -437,7 +438,9 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
     }
     ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
     ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
-    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
+#    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
+#                       longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
+    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimS,dimT), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
                        longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
     
     if (verbose) print('The variables have been defined - now the summary statistics...')
@@ -709,8 +712,9 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
     }
     
     ## Appending the data after those that already exist:
-    if (verbose) print(paste('Adjust start[2] so tht data is added after',ns,'stations'))
-    start[2] <- start[2] + ns
+    if (verbose) print(paste('Adjust start[1] so tht data is added after',ns,'stations'))
+    #start[2] <- start[2] + ns #BER
+    start[1] <- start[1] + ns
     
   } else {
     if (verbose) print(paste('Creating file',file))
@@ -735,19 +739,26 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
   }
  
   if (verbose) print('Saving the variables:')
-  ncvar_put( ncid, ncvar, coredata(y),start=start,count=count)
+  #ncvar_put( ncid, ncvar, coredata(y),start=start,count=count)  #BER
+  ncvar_put( ncid, ncvar, t(coredata(y)),start=start,count=count)
   ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
   ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
   ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
-  ncvar_put( ncid, lonid, lon(y),start=start[2],count=count[2])
-  ncvar_put( ncid, latid, lat(y),start=start[2],count=count[2])
-  ncvar_put( ncid, altid, alt(y),start=start[2],count=count[2])
+  #ncvar_put( ncid, lonid, lon(y),start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, latid, lat(y),start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, altid, alt(y),start=start[2],count=count[2]) #BER
+  ncvar_put( ncid, lonid, lon(y),start=start[1],count=count[1])
+  ncvar_put( ncid, latid, lat(y),start=start[1],count=count[1])
+  ncvar_put( ncid, altid, alt(y),start=start[1],count=count[1])
 
-  ncvar_put( ncid, fyrid, firstyear(x),start=start[2],count=count[2])
-  ncvar_put( ncid, lyrid, lastyear(x),start=start[2],count=count[2])
+  #ncvar_put( ncid, fyrid, firstyear(x),start=start[2],count=count[2])
+  #ncvar_put( ncid, lyrid, lastyear(x),start=start[2],count=count[2])
+  ncvar_put( ncid, fyrid, firstyear(x),start=start[1],count=count[1])
+  ncvar_put( ncid, lyrid, lastyear(x),start=start[1],count=count[1])
   if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else
   if (length(dim(x))==2) number <- apply(coredata(x),2,FUN='nv') else number <- -1
-  ncvar_put( ncid, nvid, number,start=start[2],count=count[2])
+  #ncvar_put( ncid, nvid, number,start=start[2],count=count[2])
+  ncvar_put( ncid, nvid, number,start=start[1],count=count[1])
   
   if (verbose) print('Add summary statistics: mean')
   ave[insufficient] <- missval; ave.djf[insufficient] <- missval
@@ -758,36 +769,57 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
   mx[insufficient] <- missval; mn[insufficient] <- missval; 
   nhr[insufficient] <- missval; lehr[insufficient] <- missval
   
-  ncvar_put( ncid, meanid, ave,start=start[2],count=count[2])
-  ncvar_put( ncid, meanid.djf, ave.djf,start=start[2],count=count[2])
-  ncvar_put( ncid, meanid.mam, ave.mam,start=start[2],count=count[2])
-  ncvar_put( ncid, meanid.jja, ave.jja,start=start[2],count=count[2])
-  ncvar_put( ncid, meanid.son, ave.son,start=start[2],count=count[2])
+  #ncvar_put( ncid, meanid, ave,start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, meanid.djf, ave.djf,start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, meanid.mam, ave.mam,start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, meanid.jja, ave.jja,start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, meanid.son, ave.son,start=start[2],count=count[2]) #BER
+  ncvar_put( ncid, meanid, ave,start=start[1],count=count[1])
+  ncvar_put( ncid, meanid.djf, ave.djf,start=start[1],count=count[1])
+  ncvar_put( ncid, meanid.mam, ave.mam,start=start[1],count=count[1])
+  ncvar_put( ncid, meanid.jja, ave.jja,start=start[1],count=count[1])
+  ncvar_put( ncid, meanid.son, ave.son,start=start[1],count=count[1])
   if (verbose) print('Add summary statistics: trend')
-  ncvar_put( ncid, tdid, td  ,start=start[2],count=count[2])
-  ncvar_put( ncid, tdid.djf, td.djf,start=start[2],count=count[2])
-  ncvar_put( ncid, tdid.mam, td.mam,start=start[2],count=count[2])
-  ncvar_put( ncid, tdid.jja, td.jja,start=start[2],count=count[2])
-  ncvar_put( ncid, tdid.son, td.son,start=start[2],count=count[2])
+  #ncvar_put( ncid, tdid, td  ,start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, tdid.djf, td.djf,start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, tdid.mam, td.mam,start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, tdid.jja, td.jja,start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, tdid.son, td.son,start=start[2],count=count[2]) #BER
+  ncvar_put( ncid, tdid, td  ,start=start[1],count=count[1])
+  ncvar_put( ncid, tdid.djf, td.djf,start=start[1],count=count[1])
+  ncvar_put( ncid, tdid.mam, td.mam,start=start[1],count=count[1])
+  ncvar_put( ncid, tdid.jja, td.jja,start=start[1],count=count[1])
+  ncvar_put( ncid, tdid.son, td.son,start=start[1],count=count[1])
   if (verbose) print('Add summary statistics: max, min')
-  ncvar_put( ncid, maxid, mx, start=start[2],count=count[2])
-  ncvar_put( ncid, minid, mn, start=start[2],count=count[2])
+  #ncvar_put( ncid, maxid, mx, start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, minid, mn, start=start[2],count=count[2]) #BER
+  ncvar_put( ncid, maxid, mx, start=start[1],count=count[1])
+  ncvar_put( ncid, minid, mn, start=start[1],count=count[1])
   if (verbose) print('Add summary statistics: records')
-  ncvar_put( ncid, nhrid, nhr, start=start[2],count=count[2])
-  ncvar_put( ncid, lehrid, lehr, start=start[2],count=count[2])
+  #ncvar_put( ncid, nhrid, nhr, start=start[2],count=count[2]) #BER
+  #ncvar_put( ncid, lehrid, lehr, start=start[2],count=count[2]) #BER
+  ncvar_put( ncid, nhrid, nhr, start=start[1],count=count[1])
+  ncvar_put( ncid, lehrid, lehr, start=start[1],count=count[1])
   if (is.T(x)) {
     if (verbose) print('extra for temperature')
     std[insufficient] <- missval; std.djf[insufficient] <- missval
     std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
     std.son[insufficient] <- missval; nlr[insufficient] <- missval
     lelr[insufficient] <- missval; 
-    ncvar_put( ncid, sdid, std, start=start[2],count=count[2])
-    ncvar_put( ncid, sdid.djf, std.djf, start=start[2],count=count[2])
-    ncvar_put( ncid, sdid.mam, std.mam, start=start[2],count=count[2])
-    ncvar_put( ncid, sdid.jja, std.jja, start=start[2],count=count[2])
-    ncvar_put( ncid, sdid.son, std.son, start=start[2],count=count[2])
-    ncvar_put( ncid, nlrid, nlr, start=start[2],count=count[2])
-    ncvar_put( ncid, lelrid, lelr, start=start[2],count=count[2])
+    #ncvar_put( ncid, sdid, std, start=start[2],count=count[2]) #BER
+    #ncvar_put( ncid, sdid.djf, std.djf, start=start[2],count=count[2]) #BER
+    #ncvar_put( ncid, sdid.mam, std.mam, start=start[2],count=count[2]) #BER
+    #ncvar_put( ncid, sdid.jja, std.jja, start=start[2],count=count[2]) #BER
+    #ncvar_put( ncid, sdid.son, std.son, start=start[2],count=count[2]) #BER
+    #ncvar_put( ncid, nlrid, nlr, start=start[2],count=count[2]) #BER
+    #ncvar_put( ncid, lelrid, lelr, start=start[2],count=count[2]) #BER
+    ncvar_put( ncid, sdid, std, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.djf, std.djf, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.mam, std.mam, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.jja, std.jja, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.son, std.son, start=start[1],count=count[1])
+    ncvar_put( ncid, nlrid, nlr, start=start[1],count=count[1])
+    ncvar_put( ncid, lelrid, lelr, start=start[1],count=count[1])
   }
   if (is.precip(x)) {
     if (verbose) print('extra for precipitation')
@@ -802,52 +834,91 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
     tdfw.mam[insufficient] <- missval; tdfw.djf[insufficient] <- missval
     tdfw.jja[insufficient] <- missval; tdfw.son[insufficient] <- missval
     lr[insufficient] <- missval
-    ncvar_put( ncid, muid, mu,start=start[2],count=count[2])
-    ncvar_put( ncid, muid.djf, mu.djf,start=start[2],count=count[2])
-    ncvar_put( ncid, muid.mam, mu.mam,start=start[2],count=count[2])
-    ncvar_put( ncid, muid.jja, mu.jja,start=start[2],count=count[2])
-    ncvar_put( ncid, muid.son, mu.son,start=start[2],count=count[2])
-    ncvar_put( ncid, fwid, fw,start=start[2],count=count[2])
-    ncvar_put( ncid, fwid.djf, fw.djf,start=start[2],count=count[2])
-    ncvar_put( ncid, fwid.mam, fw.mam,start=start[2],count=count[2])
-    ncvar_put( ncid, fwid.jja, fw.jja,start=start[2],count=count[2])
-    ncvar_put( ncid, fwid.son, fw.son,start=start[2],count=count[2])
-    ncvar_put( ncid, tdfwid, tdfw,start=start[2],count=count[2])
-    ncvar_put( ncid, tdfwid.djf, tdfw.djf,start=start[2],count=count[2])
-    ncvar_put( ncid, tdfwid.mam, tdfw.mam,start=start[2],count=count[2])
-    ncvar_put( ncid, tdfwid.jja, tdfw.jja,start=start[2],count=count[2])
-    ncvar_put( ncid, tdfwid.son, tdfw.son,start=start[2],count=count[2])
-    ncvar_put( ncid, tdmuid, tdmu,start=start[2],count=count[2])
-    ncvar_put( ncid, tdmuid.djf, tdmu.djf,start=start[2],count=count[2])
-    ncvar_put( ncid, tdmuid.mam, tdmu.mam,start=start[2],count=count[2])
-    ncvar_put( ncid, tdmuid.jja, tdmu.jja,start=start[2],count=count[2])
-    ncvar_put( ncid, tdmuid.son, tdmu.son,start=start[2],count=count[2])
-    ncvar_put( ncid, lrid, lr, start=start[2],count=count[2])
-    ncvar_put( ncid, sigma2id, sigma2,start=start[2],count=count[2])
-    ncvar_put( ncid, sigma2id.djf, sigma2.djf,start=start[2],count=count[2])
-    ncvar_put( ncid, sigma2id.mam, sigma2.mam,start=start[2],count=count[2])
-    ncvar_put( ncid, sigma2id.jja, sigma2.jja,start=start[2],count=count[2])
-    ncvar_put( ncid, sigma2id.son, sigma2.son,start=start[2],count=count[2])
-    ncvar_put( ncid, tsigma2id, tsigma2,start=start[2],count=count[2])
-    ncvar_put( ncid, tsigma2id.djf, tsigma2.djf,start=start[2],count=count[2])
-    ncvar_put( ncid, tsigma2id.mam, tsigma2.mam,start=start[2],count=count[2])
-    ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[2],count=count[2])
-    ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[2],count=count[2])
+    #ncvar_put( ncid, muid, mu,start=start[2],count=count[2]) #BER
+    #ncvar_put( ncid, muid.djf, mu.djf,start=start[2],count=count[2])
+    #ncvar_put( ncid, muid.mam, mu.mam,start=start[2],count=count[2])
+    #ncvar_put( ncid, muid.jja, mu.jja,start=start[2],count=count[2])
+    #ncvar_put( ncid, muid.son, mu.son,start=start[2],count=count[2])
+    #ncvar_put( ncid, fwid, fw,start=start[2],count=count[2])
+    #ncvar_put( ncid, fwid.djf, fw.djf,start=start[2],count=count[2])
+    #ncvar_put( ncid, fwid.mam, fw.mam,start=start[2],count=count[2])
+    #ncvar_put( ncid, fwid.jja, fw.jja,start=start[2],count=count[2])
+    #ncvar_put( ncid, fwid.son, fw.son,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdfwid, tdfw,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdfwid.djf, tdfw.djf,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdfwid.mam, tdfw.mam,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdfwid.jja, tdfw.jja,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdfwid.son, tdfw.son,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdmuid, tdmu,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdmuid.djf, tdmu.djf,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdmuid.mam, tdmu.mam,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdmuid.jja, tdmu.jja,start=start[2],count=count[2])
+    #ncvar_put( ncid, tdmuid.son, tdmu.son,start=start[2],count=count[2])
+    #ncvar_put( ncid, lrid, lr, start=start[2],count=count[2])
+    #ncvar_put( ncid, sigma2id, sigma2,start=start[2],count=count[2])
+    #ncvar_put( ncid, sigma2id.djf, sigma2.djf,start=start[2],count=count[2])
+    #ncvar_put( ncid, sigma2id.mam, sigma2.mam,start=start[2],count=count[2])
+    #ncvar_put( ncid, sigma2id.jja, sigma2.jja,start=start[2],count=count[2])
+    #ncvar_put( ncid, sigma2id.son, sigma2.son,start=start[2],count=count[2])
+    #ncvar_put( ncid, tsigma2id, tsigma2,start=start[2],count=count[2])
+    #ncvar_put( ncid, tsigma2id.djf, tsigma2.djf,start=start[2],count=count[2])
+    #ncvar_put( ncid, tsigma2id.mam, tsigma2.mam,start=start[2],count=count[2])
+    #ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[2],count=count[2])
+    #ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[2],count=count[2]) #BER
+    ncvar_put( ncid, muid, mu,start=start[1],count=count[1])
+    ncvar_put( ncid, muid.djf, mu.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, muid.mam, mu.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, muid.jja, mu.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, muid.son, mu.son,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid, fw,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid.djf, fw.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid.mam, fw.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid.jja, fw.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, fwid.son, fw.son,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid, tdfw,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid.djf, tdfw.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid.mam, tdfw.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid.jja, tdfw.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, tdfwid.son, tdfw.son,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid, tdmu,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid.djf, tdmu.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid.mam, tdmu.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid.jja, tdmu.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, tdmuid.son, tdmu.son,start=start[1],count=count[1])
+    ncvar_put( ncid, lrid, lr, start=start[1],count=count[1])
+    ncvar_put( ncid, sigma2id, sigma2,start=start[1],count=count[1])
+    ncvar_put( ncid, sigma2id.djf, sigma2.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, sigma2id.mam, sigma2.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, sigma2id.jja, sigma2.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, sigma2id.son, sigma2.son,start=start[1],count=count[1])
+    ncvar_put( ncid, tsigma2id, tsigma2,start=start[1],count=count[1])
+    ncvar_put( ncid, tsigma2id.djf, tsigma2.djf,start=start[1],count=count[1])
+    ncvar_put( ncid, tsigma2id.mam, tsigma2.mam,start=start[1],count=count[1])
+    ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[1],count=count[1])
+    ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[1],count=count[1])
     if (verbose) print('Mean spell length')
-    ncvar_put( ncid, mwslid, mwsl,start=start[2],count=count[2])
-    ncvar_put( ncid, mdslid, mdsl,start=start[2],count=count[2])
+    #ncvar_put( ncid, mwslid, mwsl,start=start[2],count=count[2]) #BER
+    #ncvar_put( ncid, mdslid, mdsl,start=start[2],count=count[2]) #BER
+    ncvar_put( ncid, mwslid, mwsl,start=start[1],count=count[1])
+    ncvar_put( ncid, mdslid, mdsl,start=start[1],count=count[1])
   } else {
     if (verbose) print(paste('extra for',varid(x)[1]))
     std[insufficient] <- missval; std.djf[insufficient] <- missval
     std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
     std.son[insufficient] <- missval; nlr[insufficient] <- missval
     lelr[insufficient] <- missval; 
-    ncvar_put( ncid, sdid, std, start=start[2],count=count[2])
-    ncvar_put( ncid, sdid.djf, std.djf, start=start[2],count=count[2])
-    ncvar_put( ncid, sdid.mam, std.mam, start=start[2],count=count[2])
-    ncvar_put( ncid, sdid.jja, std.jja, start=start[2],count=count[2])
-    ncvar_put( ncid, sdid.son, std.son, start=start[2],count=count[2])
-    ncvar_put( ncid, lelrid, lelr, start=start[2],count=count[2])
+    #ncvar_put( ncid, sdid, std, start=start[2],count=count[2]) #BER
+    #ncvar_put( ncid, sdid.djf, std.djf, start=start[2],count=count[2])
+    #ncvar_put( ncid, sdid.mam, std.mam, start=start[2],count=count[2])
+    #ncvar_put( ncid, sdid.jja, std.jja, start=start[2],count=count[2])
+    #ncvar_put( ncid, sdid.son, std.son, start=start[2],count=count[2])
+    #ncvar_put( ncid, lelrid, lelr, start=start[2],count=count[2]) #BER
+    ncvar_put( ncid, sdid, std, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.djf, std.djf, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.mam, std.mam, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.jja, std.jja, start=start[1],count=count[1])
+    ncvar_put( ncid, sdid.son, std.son, start=start[1],count=count[1])
+    ncvar_put( ncid, lelrid, lelr, start=start[1],count=count[1])
   }
   
   ## There are some times problems saving text data, and there seems to be some 
@@ -855,15 +926,21 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
   ## the following code more complicated. There seems to be a mix-up between the 
   ## dimensions sometimes.
   if (verbose) print('Saving textual information')
-  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(namelength,count[2])))
+  #test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[2]),count=c(namelength,count[2]))) #BER
+  test <- try(ncvar_put( ncid, locid, loc(y),start=c(1,start[1]),count=c(namelength,count[1])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],namelength)))
-  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(namelength,count[2])))
+    try(ncvar_put( ncid, locid, loc(y),start=c(start[1],1),count=c(count[1],namelength)))
+    #try(ncvar_put( ncid, locid, loc(y),start=c(start[2],1),count=c(count[2],namelength)))
+  #test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[2]),count=c(namelength,count[2])))
+  test <- try(ncvar_put( ncid, stid, as.character(stid(y)),c(1,start[1]),count=c(namelength,count[1])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],namelength)))
-  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(namelength,count[2])))
+    try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[1],1),count=c(count[1],namelength)))
+    #try(ncvar_put( ncid, stid, as.character(stid(y)),c(start[2],1),count=c(count[2],namelength)))
+  #test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[2]),count=c(namelength,count[2])))
+  test <- try(ncvar_put( ncid, cntrid, cntr(y),start=c(1,start[1]),count=c(namelength,count[1])))
   if (inherits(test,'try-error'))
-    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],namelength)))
+    try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[1],1),count=c(count[1],namelength)))
+    #try(ncvar_put( ncid, cntrid, cntr(y),start=c(start[2],1),count=c(count[2],namelength)))
   if (verbose) print('textual data saved')
   
   if (!append) {
