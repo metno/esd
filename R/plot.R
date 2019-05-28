@@ -112,7 +112,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   errorbar <- errorbar & !is.null(err(x))
   
   if(map.show & !map.insert) {
-    vis.map(x,col.map,map.type,add.text=FALSE,map.insert=map.insert,
+    vis.map(x,col=col.map,map.type,add.text=FALSE,map.insert=map.insert,
             cex.axis=cex.axis,cex=1.8,#usegooglemap=usegooglemap,
             zoom=zoom,verbose=verbose)
     new <- TRUE
@@ -169,7 +169,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
                              attr(x,'altitude')," masl)",sep=""),
              bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
     }
-    if (map.show & map.insert) vis.map(x,col.map,map.type=map.type,cex=1,
+    if (map.show & map.insert) vis.map(x,col=col.map,map.type=map.type,cex=1,
                                        cex.axis=0.65,add.text=FALSE,
                                        map.insert=map.insert,#usegooglemap=usegooglemap,
                                        zoom=zoom,verbose=verbose)
@@ -1354,7 +1354,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   } 
   
   if(map.show & !map.insert) {
-    vis.map(x,"red",map.type,add.text=FALSE,map.insert=map.insert,
+    vis.map(x,col="red",map.type,add.text=FALSE,map.insert=map.insert,
             cex.axis=cex.axis,cex=1.5,#usegooglemap=usegooglemap,
             xrange=xrange,yrange=yrange,
             verbose=verbose,...)
@@ -1415,7 +1415,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
              bty="n",cex=0.7,text.col="grey40")
     }
   }
-  if (map.show & map.insert) vis.map(x,"red",map.type=map.type,cex=1.5,
+  if (map.show & map.insert) vis.map(x,col="red",map.type=map.type,cex=1.5,
                                      cex.axis=cex.axis*0.65,add.text=FALSE,
                                      map.insert=map.insert,#usegooglemap=usegooglemap,
                                      xrange=xrange,yrange=yrange,
