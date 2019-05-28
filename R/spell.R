@@ -7,7 +7,7 @@
 #' \code{nevents} returns the number of events with exceeding values (e.g. the
 #' number of rainy days X > 1 mm/day).
 #'
-#' \code{wetfreq} resturs n the wet-day frequency (a fraction) and \code{wetmean} wet-day mean.
+#' \code{wetfreq} returns the wet-day frequency (a fraction) and \code{wetmean} returns the wet-day mean.
 #' 
 #' \code{CDD}: Cooling degree day
 #' \code{GDD}: Growing degree days (\url{http://en.wikipedia.org/wiki/Growing_degree-day})
@@ -15,7 +15,8 @@
 #'
 #' @aliases spell spell.default spell.station hist.spell count wetfreq wetmean
 #' nevents exceedance exceedance.default exceedance.station exceedance.field
-#' HDD CDD GDD coldwinterdays
+#' HDD CDD GDD
+#' @seealso hotsummerdays coldwinterdays coldspells heatwavespells nwetdays
 #'
 #' @param x station or field object
 #' @param threshold threshold value
@@ -253,9 +254,6 @@ count <- function(x,threshold=1,fraction=FALSE,...) {
 
 #' @export
 wetfreq <- function(x,threshold=1,...) {
-  ## REB 2015-03-23 - slow
-##  y <- exceedance.default(x,threshold=threshold,FUN="freq")
-  ## REB 2015-03-23 - faster
   x[x < threshold] <- NA
   y <- sum(is.finite(x))/length(x)
   return(y)

@@ -1588,8 +1588,14 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
   if (is.character(predictor)) {
     pre <- retrieve(ncfile=predictor,lon=lon,lat=lat,verbose=verbose)
     if (mask) pre=mask(pre,land=TRUE)
-    pre <- spatial.avg.field(C.C.eq(pre))
-  } else if (inherits(predictor,'field')) pre <- spatial.avg.field(predictor)
+    # KMP 2019-05-28: replaced spatial.avg.field with aggregate.area
+    #pre <- spatial.avg.field(C.C.eq(pre)) 
+    pre <- aggregate.area(C.C.eq(pre), FUN="mean")
+  } else if (inherits(predictor,'field')) {
+    # KMP 2019-05-28: replaced spatial.avg.field with aggregate.area
+    #pre <- spatial.avg.field(predictor)
+    pre <- aggregtate.area(predictor, FUN="mean")
+  }
   rm("predictor"); gc(reset=TRUE)
   ## Estimate the reference level
   normal61.90 <- mean(coredata(subset(pre,it=c(1961,1990))))
@@ -1677,7 +1683,9 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
       gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
       #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
       if (verbose) print('spatial average')
-      GCM <- spatial.avg.field(C.C.eq(gcm))
+      # KMP 2019-05-28: replaced spatial.avg.field with aggregate.area
+      #GCM <- spatial.avg.field(C.C.eq(gcm))
+      GCM <- aggregate.area(C.C.eq(gcm), FUN='mean')
       z <- annual(GCM,FUN="max")
       z <- z - mean(coredata(subset(z,it=c(1961,1990)))) + normal61.90
       i1 <- is.element(year(z),years)

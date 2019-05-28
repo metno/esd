@@ -55,10 +55,6 @@ cbind.field <- function(...) {
 #' (South Pole) to 90N (Noth Pole) for \code{SP2NP=TRUE}. Otherwise, the object
 #' is arranged from 90N to 90S.
 #' 
-#' \code{softattr} copies the names of a subset of the attributes excluding
-#' "index", "dim" and others specified by \code{ignore}. \code{attrcp} passes
-#' on the attributes from one object (x) to another (y).
-#' 
 #' \code{zeros} counts the occurrence of zero values in a vector.
 #' 
 #' Other operations, such as \code{c(...)}, \code{rbind(...)} (combine along
@@ -69,7 +65,7 @@ cbind.field <- function(...) {
 #' @aliases combine combine.default combine.stations combine.zoo combine.ds
 #' combine.ds.comb combine.ds.station combine.ds.station.eof
 #' combine.ds.station.field combine.station.month combine.ds.pca combine.list
-#' combine.station.eof zeros softattr g2dl g2dl.field g2dl.corfield g2dl.eof
+#' combine.station.eof zeros g2dl g2dl.field g2dl.corfield g2dl.eof
 #' g2dl.default sp2np
 #'
 #' @param x station, eof, or field object

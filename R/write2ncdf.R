@@ -1,8 +1,3 @@
-## Author=? Date 
-
-## https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDF-Data-Types.html:
-## short: 16-bit signed integers. The short type holds values between -32768 and 32767.
-
 ## Help functions - NOT EXPORTED
 firstyear <- function(x,na.rm=FALSE,verbose=FALSE) {
   if (verbose) print('firstyear')

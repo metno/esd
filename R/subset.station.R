@@ -1,8 +1,5 @@
-
-## Author Rasmus E. Benestad - was initially part of subset.R file
-## Modified by A. Mezghani
-## Last update 06.01.2014 ; 24-02-2014
-
+# Documentation in subset.R
+#' @export
 subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
                            stid = NULL ,lon = NULL, lat = NULL, 
                            alt = NULL, cntr = NULL, src = NULL , nmin = NULL,
@@ -340,7 +337,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
     
-
+#' @export
 subset.stationmeta <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   if(verbose) print('subset.stationmeta')
   if (is.null(is)) is <- rep(TRUE,dim(x)[1])

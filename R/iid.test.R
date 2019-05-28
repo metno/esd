@@ -51,6 +51,7 @@
 #' @export iid.test
 iid.test <- function(x,...) UseMethod("iid.test")
 
+#' @export
 iid.test.station <- function(x,verbose=TRUE,...) {
   # Re-orders the station data into parallel time series for each calendar
   # month into new matrix X. Then apply the iid.test to this matrix.
@@ -93,6 +94,7 @@ iid.test.station <- function(x,verbose=TRUE,...) {
   invisible(iid)
 }
 
+#' @export
 iid.test.field <- function(x,verbose=TRUE,...) {
   # Uses EOFs to account for spatial co-variance, and test the PCs rather
   # than the grid points.
@@ -106,7 +108,9 @@ iid.test.field <- function(x,verbose=TRUE,...) {
     eof <- EOF(subset(x,it=month.abb[i]))
     # The PCs and EOFs have a random sign. ensure that these are
     # consistent with the original data:
-    y <- spatial.avg.field(subset(x,it=month.abb[i]))
+    # KMP 2019-05-28: replaced spatial.avg.field with aggregate.area
+    #y <- spatial.avg.field(subset(x,it=month.abb[i]))
+    y <- aggregate.area(subset(x,it=month.abb[i]), FUN="mean")
     #print(length(y)); dim(eof)
     r <- y %*% coredata(eof)
     #print(paste('inner-product: ',round(r,2)))
@@ -124,7 +128,7 @@ iid.test.field <- function(x,verbose=TRUE,...) {
 }
 
 
-
+#' @export
 iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
                              N.test=200,rev.plot.rev=TRUE,verbose=TRUE) {
   if (verbose) print('iid.test.default')
@@ -293,7 +297,7 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
 }
 
   
-
+#' @export
 test.iid.test <- function(distr="rnorm",d=c(70,50),plot=TRUE,
                           Monte.Carlo=TRUE) {
   rnd <- eval(parse(text=paste(distr,"(",d[1]*d[2],")",sep="")))
@@ -303,7 +307,7 @@ test.iid.test <- function(distr="rnorm",d=c(70,50),plot=TRUE,
   invisible(test.results)
 }
 
-
+#' @export
 n.records <- function(x,verbose=FALSE) {
   if (verbose) print('n.records')
   y <- x

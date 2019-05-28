@@ -237,7 +237,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 }
 
 #map2sphere(x)
-#' @export
 vec <- function(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
                 projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...) {
   if (verbose) print('vec')

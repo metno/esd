@@ -143,51 +143,6 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
 }
 
 
-## Tools to subset or reduce the size of a dsensemble, e.g. removing the
-## high-order modes of PCA/EOF that represent noise.
-#' @export
-subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
-                              verbose=FALSE,...) {
- 
-  if (verbose) print('subset.dsensemble.multi')
-  cls <- class(x)
-  
-  Y <- list()
-  Y$info <- x$info
-  ## KMP 2017-06-07 Some dsensemble objects may have both a PCA and EOF attached
-  #if (inherits(x,'pca')) {
-  if (any('pca' %in% names(x))) { 
-    if (verbose) print('subset pca')
-    ## KMP 2017-06-07 Do not subset pca and eof in time!
-    ## They typcially cover a shorter time span than the ensemble members and
-    ## if e.g., it = c(2050,2100) you will end up with an empty pca and eof.
-    Y$pca <- subset(x$pca,is=is,ip=ip,verbose=verbose)
-    #Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
-  }
-  #if (inherits(x,'eof')) {
-  if (any('eof' %in% names(x))) {
-    if (verbose) print('subset eof')
-    Y$eof <- subset(x$eof,is=is,ip=ip,verbose=verbose)
-    #Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
-  }
-  X <- x
 
-  X$info <- NULL; X$pca <- NULL; X$eof <- NULL
-  n <- length(names(X))
-  if (verbose) print('subset gcm-zoo')
-  y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
-  if (verbose) print(dim(y[[1]]))
-
-  if (!is.null(im)) {
-    ## Subset ensemble members
-    if(verbose) print(paste('subset im',length(y)))
-    if (is.logical(im)) im <- (1:n)[im]
-    for (i in rev(setdiff(1:n,im))) y[[i]] <- NULL
-    if(verbose) print(paste('subset im',length(y)))
-  }
-  Y <- c(Y,y)
-  class(Y) <- cls
-  return(Y)
-}
 
 

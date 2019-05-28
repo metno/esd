@@ -1,7 +1,8 @@
-## Author     K. Parding
-## Last update   24.04.2015
-## Tools for analyzing trajectory objects
-
+#' Tools for analyzing trajectory objects
+#'
+#' @aliases season.trajectory count.trajectory param.trajectory sort.trajectory polyfit.trajectory
+#'
+#' @export
 season.trajectory <- function(x) {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   mn <- month(x)
@@ -11,6 +12,7 @@ season.trajectory <- function(x) {
   invisible(sn)
 }
 
+#' @export
 param.trajectory <- function(x,param=NULL,FUN='mean') {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   if (is.null(param)) {
@@ -34,7 +36,8 @@ param.trajectory <- function(x,param=NULL,FUN='mean') {
   }
   invisible(y)
 }
-  
+
+#' @export
 sort.trajectory <- function(x) {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   if (any('sorted' %in% attr(x,'aspect'))) {
@@ -53,6 +56,7 @@ sort.trajectory <- function(x) {
   }
 }
 
+#' @export
 polyfit.trajectory <- function(x,verbose=FALSE) {
   if(verbose) print("polyfit.trajectory")
   stopifnot(is.trajectory(x))
@@ -84,6 +88,7 @@ polyfit <- function(x,y=NULL) {
   return(z)
 }
 
+#' @export
 count.trajectory <- function(x,it=NULL,is=NULL,by='year',verbose=FALSE) {
   if(verbose) print("count.trajectory")
   y <- subset(x,it=it,is=is)

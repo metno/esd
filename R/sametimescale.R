@@ -1,5 +1,14 @@
+#' Function to ensure that station y has the same time scale as X
+#'
+#' @param y an input object, e.g., of class \code{station} or \code{field}
+#' @param X a second input object, e.g., of class \code{station} or \code{field}
+#' @param FUN a function
+#' @param verbose a boolean; if TRUE print information about progress
+#'
+#' @return input object y aggregated to the same time scale as X
+#'
+#' @export
 sametimescale <- function(y,X,FUN='mean',verbose=FALSE) {
-  ### Function to ensure that station y has the same time scales as X
   
   if (verbose) print('sametimescale')
   tsx <- class(X)[length(class(X))-1]

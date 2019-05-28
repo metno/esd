@@ -19,4 +19,3 @@ season.abb <- function() {
   names(season) <- season.abb
   return(season)
 }
-

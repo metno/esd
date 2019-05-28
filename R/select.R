@@ -1,8 +1,10 @@
-# R.E. Benestad
-# Function that searches the meta data base for the requested station data
-# Search priority: ID, name, coordinates, altitude, country,...
-# Can return several matches 
-
+#' Select from meta data base
+#'
+#' Function that searches the meta data base for the requested station data
+#' Search priority: ID, name, coordinates, altitude, country,...
+#' Can return several matches 
+'
+#' @export
 select <- function(stid=NULL,param=NULL,lon=NULL,lat=NULL,alt=NULL,cntr=NULL,
                     ...) UseMethod("select")
 
@@ -16,7 +18,7 @@ select.default <- function() {
 
 # author : Abdelkader Mezghani
 # date   : 30-05-2013
-
+#' @export
 select.station <- function (stid = NULL, param = NULL, lon = NULL, lat = NULL, 
     alt = NULL, cntr = NULL, src = NULL,silent=FALSE) 
 {

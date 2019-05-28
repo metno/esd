@@ -120,7 +120,8 @@ eofvar <- function(x) {
   }
 }
 
-## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands   
+## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands
+#' @export
 test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y.res='NA', nam.y='NA', nam.x.dom='NA',nam.t='NA',verbose=FALSE) {
   predictor_field <- x
   predictand_field <- y

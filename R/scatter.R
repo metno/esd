@@ -1,9 +1,3 @@
-## Scatter
-
-# Binned scatterplot with sunflowers
-
-
-
 #' Advanced scatter plots
 #' 
 #' Various functions that display bi-variate data in different ways. The

@@ -1,5 +1,3 @@
-# For copying non-standard (soft) attributes such as meta data:
-
 #' Copy attributes
 #'
 #' Copy the attributes of x to y

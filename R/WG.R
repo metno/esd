@@ -7,53 +7,7 @@
 #
 # Rasmus Benestad
 
-FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
-                       wetfreq.pred=FALSE) {
-  attributes(x) <- NULL
-  n <- length(x)
-  
-  # This function scramles the phase information of the FT components of a
-  # time series, maintaining the same spectral and time structure
-  
-  if (sum(is.na(x))>0) {
-    ok <- is.finite(x)
-    y <- approx((1:n)[ok],x[ok],xout=1:n,rule=2)$y
-    x <- y
-    rm('y')
-  }
-  
-  # Fourier transform (FT) to obtain power and phase information
-  X <- fft(x)
-  #print(summary(Re(X))); print(summary(Im(X)))
-  
-  # Z contains the phase information
-  Z <- Mod(X)
-  #print(summary(Z))
-  ReX <- Re(X)
-  ImX <- Im(X)
-  phiX <- Arg(X)
-  #plot(phiX)
-  
-  # Set new phase information to random
-  phiY <- runif(n,min=-pi,max=pi)
-  ReY <- Z*cos(phiY)
-  ImY <- Z*sin(phiY)
-  ReY[1] <- ReX[1]; ImY[1] <- ImX[1]
-  #  ReY[n] <- ReX[n]; ImY[n] <- ImX[n]
-  Y <- complex(real=ReY, imaginary=ImY)
-  
-  # Inverse FT to generate new time series:
-  y <- Re(fft(Y,inverse=TRUE))/n
-  # Make sure that the new scrambled series has the same mean and standard deviation
-  # as the original data:
-  y <- sd(x,na.rm=TRUE)*(y - mean(y,na.rm=TRUE))/sd(y,na.rm=TRUE) + mean(x,na.rm=TRUE)
-  
-  if (!is.null(t)) {
-    if (length(t) <= length(y)) y <- y[1:length(t)] else
-      y <- c(y,rep(NA,length(t)-length(y)))
-  }
-  invisible(y)
-}
+
 
 
 
@@ -103,7 +57,7 @@ FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
 #' sample series.
 #' 
 #' 
-#' @aliases Weather generators WG WG.station WG.fw.day.precip WG.FT.day.t2m
+#' @aliases WG WG.station WG.fw.day.precip WG.FT.day.t2m FTscramble
 #' @param x station object
 #' @param option Define the type of WG
 #' @param amean annual mean values. If NULL, use those estimated from x; if NA,
@@ -147,6 +101,7 @@ FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
 #' @export WG
 WG <- function(x,...) UseMethod("WG")
 
+#' @export
 WG.station <- function(x,...,option='default') {
   if (inherits(x,'day')) {
     if (length(varid(x))==1) {
@@ -157,6 +112,7 @@ WG.station <- function(x,...,option='default') {
   return(y)
 }
 
+#' @export
 WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
                           select=NULL,lon=c(-20,20),lat=c(-20,20),
                           plot=FALSE,biascorrect=TRUE,verbose=TRUE) {
@@ -271,7 +227,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 ## Fractional Gaussian noise...?
 
 ## --- Precipitation  
-
+#' @export
 WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
                              ncwd=NULL,ndbr=NULL,t=NULL,
                              threshold=1,select=NULL,
@@ -484,7 +440,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
 # This weather generator assumes that the past covariate structure between
 # temperature and precipitation is constant and doesn't change in the future.
 # Moreover, the method also assumes that the spell-statistics will stay the same.
-
+#' @export
 WG.pca.day.t2m.precip <- function(x=NULL,...,precip=NULL,threshold=1,select=NULL,
                                   wetfreq.pred=FALSE,spell.stats=FALSE,
                                   verbose=FALSE) {
@@ -606,7 +562,51 @@ WG.pca.day.t2m.precip <- function(x=NULL,...,precip=NULL,threshold=1,select=NULL
   return(y)
 }
 
-# Pca temp plus precip. Phase scramble pc. DS mu fw mean temp sd.
-# Qq-map to new pdf: exp plus ~N()
-# Rainy dais only. Temp + dry seperately. Order stats for blending
-
+#' @export
+FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
+                       wetfreq.pred=FALSE) {
+  attributes(x) <- NULL
+  n <- length(x)
+  
+  # This function scramles the phase information of the FT components of a
+  # time series, maintaining the same spectral and time structure
+  
+  if (sum(is.na(x))>0) {
+    ok <- is.finite(x)
+    y <- approx((1:n)[ok],x[ok],xout=1:n,rule=2)$y
+    x <- y
+    rm('y')
+  }
+  
+  # Fourier transform (FT) to obtain power and phase information
+  X <- fft(x)
+  #print(summary(Re(X))); print(summary(Im(X)))
+  
+  # Z contains the phase information
+  Z <- Mod(X)
+  #print(summary(Z))
+  ReX <- Re(X)
+  ImX <- Im(X)
+  phiX <- Arg(X)
+  #plot(phiX)
+  
+  # Set new phase information to random
+  phiY <- runif(n,min=-pi,max=pi)
+  ReY <- Z*cos(phiY)
+  ImY <- Z*sin(phiY)
+  ReY[1] <- ReX[1]; ImY[1] <- ImX[1]
+  #  ReY[n] <- ReX[n]; ImY[n] <- ImX[n]
+  Y <- complex(real=ReY, imaginary=ImY)
+  
+  # Inverse FT to generate new time series:
+  y <- Re(fft(Y,inverse=TRUE))/n
+  # Make sure that the new scrambled series has the same mean and standard deviation
+  # as the original data:
+  y <- sd(x,na.rm=TRUE)*(y - mean(y,na.rm=TRUE))/sd(y,na.rm=TRUE) + mean(x,na.rm=TRUE)
+  
+  if (!is.null(t)) {
+    if (length(t) <= length(y)) y <- y[1:length(t)] else
+      y <- c(y,rep(NA,length(t)-length(y)))
+  }
+  invisible(y)
+}

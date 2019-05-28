@@ -1,57 +1,9 @@
-validate <- function(x, ...)  UseMethod("validate")
-
-validate.default <- function(x,...,verbose=FALSE) {
-  if(verbose) print("validate.default")
-  if(verbose) print("unfinished function - not returning anything")
-}
-
-validate.eof <- function(x,...,verbose=FALSE) {
-  if(verbose) print("validate.eof")
-  if(inherits(x,"comb")) {
-    validate.eof.comb(x,...,verbose=verbose)
-  } else {
-    if(verbose) print("unfinished function - not returning anything")
-  }
-}
-
-validate.pca <- function(x,...,verbose=FALSE) {
-  if(verbose) print("validate.eof.field")
-  if(verbose) print("unfinished function - not returning anything")
-}
-
-validate.eof.field <- function(x,...,verbose=FALSE) {
-  if(verbose) print("validate.eof.field")
-  if(verbose) print("unfinished function - not returning anything")
-}
-
-validate.eof.comb <- function(x,...,new=TRUE,verbose=FALSE) {
-  if(verbose) print("validate.eof.comb")
-  zz <- attr(x,'appendix.1')
-  if (new) dev.new()
-  plot(attr(x,'mean'),type="l",main="Mean values")
-  lines(attr(zz,'mean'),col="red")
-}
-
- 
-validate.ds <- function(x,...,verbose=FALSE) {
-  if(verbose) print("validate.ds")
-  if(verbose) print("unfinished function - not returning anything")
-}
-
-validate.cca <- function(x,...,verbose=FALSE) {
-  if(verbose) print("validate.cca")
-  if(verbose) print("unfinished function - not returning anything") 
-}
-
-## Use rank test to validate the DS.ensemble objects
-
-
 #' Validate
 #' 
 #' The method \code{validate}
 #' 
-#' 
 #' @aliases validate.dsensemble validate.eof.comb
+#'
 #' @param x esd object to be validated
 #' @param conf.int confidence interval
 #' @param colbar for plotting. See \code{colbar}
@@ -66,7 +18,19 @@ validate.cca <- function(x,...,verbose=FALSE) {
 #'   eofcomb <- EOF(slpcomb)
 #'   validate(eofcomb)
 #' 
-#' @export validate.dsensemble
+#' @export
+validate <- function(x, ...)  UseMethod("validate")
+
+#' @export
+validate.eof.comb <- function(x,...,new=TRUE,verbose=FALSE) {
+  if(verbose) print("validate.eof.comb")
+  zz <- attr(x,'appendix.1')
+  if (new) dev.new()
+  plot(attr(x,'mean'),type="l",main="Mean values")
+  lines(attr(zz,'mean'),col="red")
+}
+
+#' @export
 validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
                                 colbar=list(breaks=seq(0,1,by=0.1),cex=1.5,
                                 col=colscal(11,col="t2m",alpha=0.5)),
@@ -136,4 +100,38 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
   }
   ## return the results
   invisible(ro)
+}
+
+validate.default <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.default")
+  if(verbose) print("unfinished function - not returning anything")
+}
+
+validate.eof <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.eof")
+  if(inherits(x,"comb")) {
+    validate.eof.comb(x,...,verbose=verbose)
+  } else {
+    if(verbose) print("unfinished function - not returning anything")
+  }
+}
+
+validate.pca <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.eof.field")
+  if(verbose) print("unfinished function - not returning anything")
+}
+
+validate.eof.field <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.eof.field")
+  if(verbose) print("unfinished function - not returning anything")
+}
+
+validate.ds <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.ds")
+  if(verbose) print("unfinished function - not returning anything")
+}
+
+validate.cca <- function(x,...,verbose=FALSE) {
+  if(verbose) print("validate.cca")
+  if(verbose) print("unfinished function - not returning anything") 
 }

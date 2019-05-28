@@ -1,13 +1,17 @@
-biasfix <- function(x) {
+#' Bias correct
+#'
+#' Bias correction as described in  Imbert & Benestad (2005), Theor. Appl. Clim., DOI: 10.1007/s00704-005-0133-4
+#'
+#' @export
+biasfix <- function(x,verbose=FALSE) {
+  if(verbose) print("biasfix")
   stopifnot(!missing(x), inherits(x,"eof"),inherits(x,"comb"))
-  ## Check if the results already have been bias-corrected
   if (!is.null(attr(x,'diagnose'))) return(x)
   diag <- diagnose(x)
   n <- attr(x,'n.apps')
   for ( i in 1:n ) {
     eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
     Z <- coredata(z) 
-    ## Use overlapping years
     year.ox <- range(year(z)[is.element(year(z),year(x))])
     sd.o <- apply(coredata(subset(x,it=range(year.ox))),2,sd,na.rm=TRUE)
     sd.x <- apply(coredata(subset(z,it=range(year.ox))),2,sd,na.rm=TRUE)

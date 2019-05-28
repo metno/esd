@@ -18,14 +18,10 @@
 #' @param dt time incremet - for plotting.
 #' @param M Window length - default= half series length
 #' @param plot Flag: plot the diagnostics.
+#'
 #' @return A complex vector .
-#' @author R.E. Benestad
-#' @keywords manip
-#' @examples
 #' 
-#' \dontrun{
-#' # Add example of usage
-#' }
+#' @keywords manip
 #' 
 #' @export coherence
 coherence <- function(x,y,dt=1,M=NULL,plot=TRUE) {

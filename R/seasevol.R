@@ -1,6 +1,21 @@
-seasevol <-function(x,...) UseMethod("seasevol")
+#' Visualise the seasonal evolution of a daily time series
+#'
+#' Visualise the daily values of time series as a color scale on a plot
+#' with the julian day on the y-axis and year on the x-axis. 
+#'
+#' @param x as \code{station} object with daily data
+#' @param nv number of steps in color scale
+#' @param verbose a boolean; if TRUE print information about progress
+#'
+#' @examples
+#' data(ferder)
+#' seasevol(ferder)
+#'
+#' @export
+seasevol <- function(x,nv=25,verbose=FALSE,...) UseMethod("seasevol")
 
-seasevol.station <- function(x,it=NULL,nv=25,...) {
+#' @export
+seasevol.station <- function(x,nv=25,verbose=FALSE,...) {
 
   stopifnot(inherits(x,'day'))
   yrs <- as.numeric(rownames(table(year(x))))
@@ -12,11 +27,13 @@ seasevol.station <- function(x,it=NULL,nv=25,...) {
   xi <- seq(floor(xn),ceiling(xx),length=nv)
   
   j <- 1:nv
-  if (attr(x,'variable')=='t2m')
-    col <- rgb(j/nv,abs(sin(pi*j/nv)),(1-j/nv)) else
-  if (attr(x,'variable')=='precip')
-    col <- rgb(1-j/nv,1-j/nv,1) else
+  if (attr(x,'variable')=='t2m') {
+    col <- rgb(j/nv,abs(sin(pi*j/nv)),(1-j/nv))
+  } else if (attr(x,'variable')=='precip') {
+    col <- rgb(1-j/nv,1-j/nv,1)
+  } else {
     col <- rainbow(nv)
+  }
   class(x) <- "zoo"
 
   Z <- matrix(rep(NA,ny*366),ny,366)

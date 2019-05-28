@@ -3,7 +3,7 @@
 #' Function for converting station data to field data vie the computation of PCAs
 #' gridding to EOFs and then transforming the EOFs to field object.
 #'
-#' @seealso pca2eof eof2field
+#' @seealso pca2eof eof2field as.field
 #'
 #' @param x a \code{station} object
 #' @param verbose a boolean; if TRUE print information about progress

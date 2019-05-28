@@ -1,3 +1,4 @@
+#' @export
 image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE, 
                         legend.shrink = 0.9, legend.width = 1.2, 
                         legend.mar = ifelse(horizontal, 3.1, 5.1), 
@@ -114,7 +115,7 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
 }
 
 
-
+#' @export
 imageplot.info <- function (verbose=FALSE,...) {
   if(verbose) print("imageplot.info")
   temp <- list(...)
@@ -169,6 +170,7 @@ imageplot.info <- function (verbose=FALSE,...) {
   list(xlim = xlim, ylim = ylim, zlim = zlim, poly.grid = poly.grid)
 }
 
+#' @export
 poly.image <- function (x, y, z, col = colscal(n=64,col="heat"), breaks, transparent.color = "white", 
                         midpoint = FALSE, zlim = range(z, na.rm = TRUE), xlim = range(x), 
                         ylim = range(y), add = FALSE, border = NA, lwd.poly = 1, verbose=FALSE, ...) {
@@ -214,6 +216,7 @@ poly.image <- function (x, y, z, col = colscal(n=64,col="heat"), breaks, transpa
   }
 }
 
+#' @export
 imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width = 1, 
                              horizontal = FALSE, legend.mar = NULL, bigplot = NULL, smallplot = NULL, 
                              verbose=FALSE, ...) {

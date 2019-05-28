@@ -26,6 +26,7 @@
 #
 #------------------------------------------------------------------------
 
+#' @export
 sparseMproduct <- function(beta,x) {
   # b contains the weights and i the indexes
   b <- beta[1:4]; i <- beta[5:8]

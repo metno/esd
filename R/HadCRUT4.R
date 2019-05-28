@@ -1,5 +1,8 @@
+#' Download HadCRUT4 temperature data from UK MetOffice
+#'
+#' @export
 HadCRUT4 <- function(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.6.0.0.monthly_ns_avg.txt",plot=FALSE) {
-## REB New URL for new version 2017-10-08
+  ## REB New URL for new version 2017-10-08
   X <- read.table(url)
   year <- as.numeric(substr(X$V1,1,4))
   month <-  as.numeric(substr(X$V1,6,7))
@@ -13,6 +16,9 @@ HadCRUT4 <- function(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/curre
   T2m
 }
 
+#' Download GISS Sea Surface Temperature data from NASA
+#'
+#' @export
 NASAgiss <- function(url='http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt',plot=FALSE) {
   olines <- readLines(url)
   ll <- nchar(olines)

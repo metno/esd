@@ -5,7 +5,7 @@
 #' @aliases plot.station plot.pca vis.map plot.eof plot.eof.field plot.eof.var
 #' plot.eof.comb plot.field plot.spell plot.cca plot.ds plot.ds.pca plot.ds.eof
 #' plot.dsx plot.dsensemble plot.diagnose plot.xval plot.diagnose.comb.eof
-#' plot.diagnose.matrix plot.diagnose.dsensemble plot.nevents
+#' plot.diagnose.matrix plot.diagnose.dsensemble plot.nevents plot.ssa
 #' 
 #' @param x the object to be plotted
 #' @param ip Which EOF/CCA pattern (mode) to plot
@@ -1587,6 +1587,7 @@ plot.spell <- function(x,xlim=NULL,ylim=NULL) {
   
 }
 
+#' @export
 plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
   if ( (class(ssa)[1]!="SSA") ) stop("Need an 'SSA' object")
   nt <- ssa$nt
