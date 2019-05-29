@@ -1,6 +1,42 @@
-#' Tools for analyzing trajectory objects
-#'
-#' @aliases season.trajectory count.trajectory param.trajectory sort.trajectory polyfit.trajectory
+#' Functions to process and analyse storm trajectories
+#' 
+#' @aliases anomaly.trajectory polyfit.trajectory season.trajectory 
+#' count.trajectory param.trajectory sort.trajectory polyfit.trajectory
+#' 
+#' @param x A trajectory object
+#' @param \dots Other arguments
+#' @param type type of anomaly: 'first' gives you the spatial anomaly with
+#' regards to the first time step of the trajectory and 'mean' centers the
+#' trajectories around the mean longitude and latitude
+#' @param param parameters to calculate anomaly of
+#' @param verbose if TRUE print information about progress
+#' @return A trajecory object
+#' @author Kajsa M. Parding
+#' @examples
+#' 
+#' # Load trajectory example data
+#' data('imilast.M03')
+#' # Calculate anomaly
+#' x <- anomaly.trajectory(imilast.M03)
+#' # Show maps of original trajectories and spatial anomalies
+#' map(imilast.M03)
+#' map(x)
+#' # Transform trajectory anomalies back to regular trajectories
+#' y <- anomaly2trajectory(x)
+#' # Print longitudes of first trajectory
+#' imilast.M03[1,1:12]
+#' x[1,1:12]
+#' y[1,12]
+#' 
+#' # Fit polynomial to trajectories
+#' y <- polyfit.trajectory(x)
+#' # Show coefficients of first trajectory
+#' print(attr(y,"coefs")[,1])
+#' # Plot original trajectory and polynomial fit
+#' ilon <- colnames(x)=="lon"
+#' ilat <- colnames(x)=="lat"
+#' plot(x[1,ilon], x[1,ilat], col="black", pch=1)
+#' lines(y[1,ilon], y[1,ilat], col="blue", lty=2)
 #'
 #' @export
 season.trajectory <- function(x) {
@@ -182,51 +218,7 @@ cartesian2spherical <- function(x,y,z,a=6.378e06,verbose=TRUE) {
   invisible(cbind(lon,lat))
 }
 
-
-
-
-#' R-tools for trajectories %% ~~function to do ... ~~
-#' 
-#' Functions to process and analyse storm trajectories
-#' 
-#' 
-#' @aliases anomaly.trajectory polyfit.trajectory
-#' @param x A trajectory object
-#' @param \dots Other arguments
-#' @param type type of anomaly: 'first' gives you the spatial anomaly with
-#' regards to the first time step of the trajectory and 'mean' centers the
-#' trajectories around the mean longitude and latitude
-#' @param param parameters to calculate anomaly of
-#' @param verbose if TRUE print information about progress
-#' @return A trajecory object
-#' @author Kajsa M. Parding
-#' @examples
-#' 
-#' # Load trajectory example data
-#' data('imilast.M03')
-#' # Calculate anomaly
-#' x <- anomaly.trajectory(imilast.M03)
-#' # Show maps of original trajectories and spatial anomalies
-#' map(imilast.M03)
-#' map(x)
-#' # Transform trajectory anomalies back to regular trajectories
-#' y <- anomaly2trajectory(x)
-#' # Print longitudes of first trajectory
-#' imilast.M03[1,1:12]
-#' x[1,1:12]
-#' y[1,12]
-#' 
-#' # Fit polynomial to trajectories
-#' y <- polyfit.trajectory(x)
-#' # Show coefficients of first trajectory
-#' print(attr(y,"coefs")[,1])
-#' # Plot original trajectory and polynomial fit
-#' ilon <- colnames(x)=="lon"
-#' ilat <- colnames(x)=="lat"
-#' plot(x[1,ilon], x[1,ilat], col="black", pch=1)
-#' lines(y[1,ilon], y[1,ilat], col="blue", lty=2)
-#' 
-#' @export anomaly.trajectory
+#' @export
 anomaly.trajectory <- function(x,...,type='first',param=c('lon','lat'),
                                 verbose=FALSE) {
   if(verbose) print("anomaly.trajectory")
@@ -295,6 +287,7 @@ anomaly.trajectory <- function(x,...,type='first',param=c('lon','lat'),
   invisible(y)
 }
 
+#' @export
 anomaly2trajectory <- function(x,verbose=FALSE) {
   if(verbose) print("anomaly2trajectory")
   stopifnot(!missing(x), inherits(x,"trajectory"))
@@ -325,6 +318,7 @@ anomaly2trajectory <- function(x,verbose=FALSE) {
   invisible(x)
 }
 
+#' @export
 fnlon <- function(FUN=mean) {
   fn <- function(lon) {
     lon <- lon2dateline(lon)

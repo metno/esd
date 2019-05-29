@@ -1,3 +1,15 @@
+#' Extention of \code{\link{approx}} for longitude and latitude
+#' 
+#' Linearly interpolate longitudes and latitudes to n equally spaced points spanning 
+#' the interval (min(lon), max(lon)) and (min(lat), max(lat)).
+#' 
+#' @param lon longitudes
+#' @param lat latitudes
+#' @param n length of output
+#' @param a the radius of the earth (unit: m)
+#' @param verbose a boolean; if TRUE print information about progress
+#'
+#' @export 
 approx.lonlat <- function(lon,lat,n=20,a=6.378e06,verbose=FALSE) {
   if (verbose) print("approx.lonlat")
   x <- a * cos( lat*pi/180 ) * cos( lon*pi/180 )

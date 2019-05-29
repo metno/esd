@@ -4,6 +4,9 @@
 #' \code{as.field} is an S3 method and will redirect to a fitting function depending on the output. 
 #' The way in which the transformation is performed depends on the type of input data.
 #' 
+#' \code{as.field.events} redirects to \code{\link{events2field}}.
+#' \code{as.field.trajectory} redirects to \code{\link{trajectory2field}}.
+#' 
 #' @seealso as.field.default as.field.zoo as.field.eof as.field.comb as.field.field as.field.ds as.field.station as.field.events as.field.trajectory as.field.dsensemble.eof
 #' 
 #' @param x the input object

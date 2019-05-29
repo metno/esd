@@ -1,27 +1,20 @@
-# Author 	Kajsa Parding
-# Last update   17.03.2015
-
-# Principle Component Analysis (PCA) of trajectory object, e.g., storm tracks
-
-
-
 #' Principle component analysis of trajectory objects.
 #' 
 #' Computes principal component analysis for trajectory data, e.g., storm
 #' tracks.  Add some reference and details about the method.  The PCA is based
 #' on \code{\link{svd}}.
 #' 
+#' @aliases PCA.trajectory pca2trajectory plot.pca.trajectory
 #' 
-#' @aliases PCA.trajectory pca2trajectory plot.PCA.trajectory
 #' @param X a 'trajectory' object
 #' @param verbose TRUE - clutter the screen with messages
 #' @param anomaly logical. If TRUE, subtract the first latitude/longitude from
 #' each trajectory.
 #' @param param parameters to include in principle component analysis.
-#' @author K. Parding
-#' @keywords spatial ts multivariate
-#' @examples
 #' 
+#' @keywords spatial ts multivariate
+#' 
+#' @examples
 #' # Simple EOF for annual mean SST:
 #' data(imilast.M03)
 #' x <- subset(imilast.M03,is=list(lon=c(-20,20),lat=c(50,70)))
@@ -104,7 +97,7 @@ PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
   invisible(y)
 }
 
-
+#' @export
 pca2trajectory <- function(X,verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if(verbose) print('pca2trajectory')
@@ -131,6 +124,7 @@ pca2trajectory <- function(X,verbose=FALSE) {
   invisible(x)
 }
 
+#' @export
 plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
                            main=NULL,verbose=FALSE) {
 

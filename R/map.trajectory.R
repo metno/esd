@@ -6,8 +6,8 @@
 #' \code{\link{scatter.hexbin}} and \code{\link{scatter.sunflower}} adapted to
 #' show trajectory density.
 #' 
+#' @aliases map.trajectory map.hexbin.trajectory map.sunflower.trajectory
 #' 
-#' @aliases map.trajectory sphere.trajectory lonlat.trajectory
 #' @param x the trajectory object to be plotted.
 #' @param it A list or data.frame providing time index, e.g. month
 #' @param is A list or data.frame providing space index, e.g. station record
@@ -97,7 +97,6 @@ map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
          col=adjustcolor(col,alpha.f=alpha))
 }
 
-#' @export
 segments.trajectory <- function(x,param="month",label.param=NULL,
       xlim=NULL,ylim=NULL,colbar=list(pal='t2m',rev=FALSE,
       breaks=NULL,type="p",cex=2,h=0.6, v=1,pos=0.1,show=TRUE),

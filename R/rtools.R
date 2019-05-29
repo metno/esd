@@ -36,10 +36,13 @@
 #' 
 #' \code{ndig} estimates the number of digits for round(x,ndig), e.g. in scales for plotting.
 #' 
+#' \code{factor2numeric} transforms a factor to a numeric object
+#' 
 #' @aliases as.decimal nv cv q5 q95 q995 lag.station lag.field filt
 #' filt.default exit figlab ndig attrcp ensemblemean propchange stand rmse RMSE
 #' firstyear lastyear eofvar test.ds.field test.num.predictors arec
 #' arec.default arec.station lastrains lastelementrecord strstrip bin
+#' factor2numeric
 #' 
 #' @param x A data.frame or a coredata zoo object.
 #' @param na.rm If TRUE, remove NA's from data
@@ -387,3 +390,10 @@ bin <- function(x,nbins=5,labels=NULL,na.rm=TRUE) {
   if (is.null(labels)) names(z) <- quantile(x,probs = (1:nbins -0.5)/nbins)
   return(z)
 }
+
+#' @export
+factor2numeric <- function(f) {
+  if(!is.null(levels(f))) {return(as.numeric(levels(f))[f])
+  } else return(as.numeric(f))
+}
+

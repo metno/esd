@@ -1,9 +1,36 @@
+#' Transform an input object into a \code{field} object  
+#' 
+#' Transform a \code{trajectory} object into a \code{field} object by aggregating it in time and space.
+#'
+#' @param x a \code{trajectory} object
+#' @param dt frequency of output: 'month', 'season', 'quarter' (same as 'season') or 'year'
+#' @param dx resolution in longitude direction (unit: degrees)
+#' @param dy resolution in latitude direction (unit: degrees)
+#' @param plot if TRUE show plot of results
+#' @param radius radius within which to look for trajectories for each grid point (unit: m)
+#' @param it a time index, e.g., a range of years: c(1984,2019)
+#' @param is a spatial index, e.g., a list with longitude and latitude ranges: list(lon=c(0,45), lat=c(45,70))
+#' @param param parameter to calculate field of; if NULL calculate track density (for other options, see \code{colnames(x)})
+#' @param type 'track', 'genesis', or 'lysis'
+#' @param longname name of variable
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
+#'
+#' @return a \code{field} object
+#'
+#' @aliases as.field.trajectory
+#' @seealso as.field as.trajectory CCI track.events
+#'
+#' @aliases density.events
+#'
+#' @export
 events2field <- function(x,verbose=FALSE,...) {
   if (verbose) print("events2field")
   y <- density.events(x,verbose=verbose,...)
   invisible(y)  
 }
 
+#' @export
 density.events <- function(x,dt="month",dx=1,dy=1,plot=FALSE,
                            lons=NULL,lats=NULL,it=NULL,is=NULL,
                            radius=5e5,unitarea=NULL,type="track",
