@@ -1,4 +1,4 @@
-' Projection of hot and cold day statistics
+#' Projection of hot and cold day statistics
 #' 
 #' The functions \code{hotsummerdays}, \code{heatwavespells},
 #' \code{coldwinterdays}, and \code{coldspells} estimate statistics for

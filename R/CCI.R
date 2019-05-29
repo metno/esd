@@ -1,7 +1,3 @@
-# Last updated 10.10.2016
-
-
-
 #' Calculus Cyclone identification.
 #' 
 #' Identifies cyclones (low pressure systems) in a gridded data set using a
@@ -666,12 +662,6 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   invisible(X)
   }
 }
-
-
-#qflabel <- paste("1:",variable,"identified in cross-sections",
-#   "between EW and NS pressure gradient zero crossings;",
-#   "2: less accurate",variable,"identification from widened",
-#   "EW and NS pressure gradient zero crossings")
 
 #library(esd)
 ### MONTHLY SLP DATA:

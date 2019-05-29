@@ -17,7 +17,7 @@ as.trajectory.events <- function(x,verbose=FALSE,...) {
   if (verbose) print("as.trajectory.events")
   stopifnot(inherits(x,"events"))
   if (!("trajectory" %in% names(x))) x <- track(x,verbose=verbose,...)
-  if (!("tracklength" %in% names(x))) x <- Trackstats(x,verbose=verbose)
+  if (!("tracklength" %in% names(x))) x <- trackstats(x,verbose=verbose)
   y <- trajectory(x,verbose=verbose,...)
   invisible(y)
 }
@@ -66,7 +66,7 @@ rence")
   
   if(verbose) print("remove short trajectories")
   #if (!("trackcount" %in% names(x))) {
-  x <- Trackstats(x,verbose=verbose)
+  x <- trackstats(x,verbose=verbose)
   #}
   nlist1 <- c("trajectory","code99","date","time","trackcount",
               "start","end","n","d","distance","tracklength","timestep","lon","lat")

@@ -55,7 +55,4 @@ pop <- POP(eof.1)
 }
 
 }
-\author{
-R.E. Benestad
-}
 \keyword{manip}

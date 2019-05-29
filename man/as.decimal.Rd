@@ -32,6 +32,7 @@
 \alias{lastelementrecord}
 \alias{strstrip}
 \alias{bin}
+\alias{factor2numeric}
 \title{Simple and handy functions}
 \usage{
 as.decimal(x = NULL)
@@ -94,6 +95,10 @@ events for a time series of iid data (\code{sum(1/1:n)})
 \code{figlab} is a handy function for labelling figures (e.g. 'Figure 1')
 
 \code{ndig} estimates the number of digits for round(x,ndig), e.g. in scales for plotting.
+
+\code{factor2numeric} transforms a factor to a numeric object
+
+\code{rmse} and \code{RMSE} calculate the root-mean-square error
 }
 \examples{
 

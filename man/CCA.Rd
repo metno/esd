@@ -2,9 +2,6 @@
 % Please edit documentation in R/CCA.R
 \name{CCA}
 \alias{CCA}
-\alias{Canonical}
-\alias{correlation}
-\alias{analysis}
 \alias{CCA.default}
 \alias{CCA.eof}
 \alias{CCA.pca}
@@ -44,23 +41,6 @@ methods in the Atmospheric Sciences", Academic Press, p. 401).
 }
 \details{
 The analysis can also be applied to either EOFs or fields.
-
-Note: the analysis has sometimes been somewhat unstable, returning
-inconsistent results. The recommendation is to use EOFs and SVD option.
-
-The CCA analysis can be used to develope statistical models according to:
-
-\deqn{Y = \Psi X}{Y = Psi X}
-
-Where Y is the predictand and X the predictor. \code{plotCCA} plots the CCA
-results, and \code{Psi} returns the matrix \deqn{\Psi}{Psi}.
-
-\code{stations2field} turns a group of station objects into a field by the
-means of a simple and crude interpolation/gridding. \code{check.repeat} is a
-quality-control function that eliminates repeated years in the station
-objects.
-
-Try the same type of argument as in lm (' y ~ x, data= ')
 }
 \examples{
 
@@ -88,7 +68,3 @@ cca.pre <- precit.cca(nacca)
 }
 
 }
-\author{
-R.E. Benestad
-}
-\keyword{manip}

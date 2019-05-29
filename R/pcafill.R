@@ -4,6 +4,7 @@
 
 ## Function for one time series based on multiple regression
 ## Allow EOFs with different number of PCs.
+#' @export
 fitpc <- function(y,x,ip=1:4) {
   caldat <- data.frame(y=y,x)
   #print(summary(caldat))
@@ -25,14 +26,6 @@ eoffit <- function(X,U,ip) {
   V <- projection$coefficients
   invisible(V[-1])
 }
-
-# Redundant:
-#fillmiss <- function(y,x,neofs=7) {
-#  z <- apply(coredata(y),2,fitpc,coredata(x),neofs=neofs)
-#  invisible(z)
-#}
-
-
 
 #' PCA-based missing-value filling
 #' 
@@ -65,12 +58,14 @@ eoffit <- function(X,U,ip) {
 #' simulations
 #' @param x time series for calibrating regression analysis
 #' @param y PC input for regression analysis
-#' @return The same as the input - station object with filled-in values
-#' @author Rasmus Benestad
-#' @seealso \code{\link{PCA}}, \code{\link{allgood}}
-#' @keywords PCA missing data
-#' @examples
 #' 
+#' @return The same as the input - station object with filled-in values
+#' 
+#' @seealso \code{\link{PCA}}, \code{\link{allgood}}
+#' 
+#' @keywords PCA missing data
+#' 
+#' @examples
 #' download.file('http://files.figshare.com/2073466/Norway.Tx.rda',
 #'               'Norway.Tx.rda')
 #' load('Norway.Tx.rda')
@@ -180,6 +175,7 @@ pcafill <- function(X,insertmiss=0,ip=1:4,mnv=0,complete=FALSE,test=FALSE,verbos
 }
 
 pcafill.test <- function(X,N=100,max.miss=100,ip=1:4,verbose=FALSE) {
+  if(verbose) print('pcafill.test')
   insertmiss <- round(runif(N)*max.miss)
   insertmiss[insertmiss<1] <- 2
   par(bty='n')

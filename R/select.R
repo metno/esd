@@ -3,7 +3,7 @@
 #' Function that searches the meta data base for the requested station data
 #' Search priority: ID, name, coordinates, altitude, country,...
 #' Can return several matches 
-'
+#'
 #' @export
 select <- function(stid=NULL,param=NULL,lon=NULL,lat=NULL,alt=NULL,cntr=NULL,
                     ...) UseMethod("select")

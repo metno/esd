@@ -10,9 +10,6 @@
 \alias{PCA.default}
 \alias{PCA.station}
 \alias{pca2station}
-\alias{Empirical}
-\alias{orthogonal}
-\alias{Functions}
 \title{Empirical Orthogonal Functions (EOFs).}
 \usage{
 EOF(X, it = NULL, is = NULL, n = 20, lon = NULL, lat = NULL,
@@ -126,8 +123,9 @@ plot(ds)
 Z <- pca2station(pca)
 plot(Z,plot.type='multiple')
 
-
-
+}
+\seealso{
+as.eof
 }
 \author{
 R.E. Benestad

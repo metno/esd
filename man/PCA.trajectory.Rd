@@ -3,7 +3,7 @@
 \name{PCA.trajectory}
 \alias{PCA.trajectory}
 \alias{pca2trajectory}
-\alias{plot.PCA.trajectory}
+\alias{plot.pca.trajectory}
 \title{Principle component analysis of trajectory objects.}
 \usage{
 \method{PCA}{trajectory}(X, ..., neofs = 20, param = c("lon", "lat"),
@@ -25,7 +25,6 @@ tracks.  Add some reference and details about the method.  The PCA is based
 on \code{\link{svd}}.
 }
 \examples{
-
 # Simple EOF for annual mean SST:
 data(imilast.M03)
 x <- subset(imilast.M03,is=list(lon=c(-20,20),lat=c(50,70)))
@@ -38,9 +37,6 @@ map.pca.trajectory(pca,projection='latlon')
 pca <- PCA.trajectory(x,param=c('lat'))
 plot.pca.trajectory(pca)
 
-}
-\author{
-K. Parding
 }
 \keyword{multivariate}
 \keyword{spatial}

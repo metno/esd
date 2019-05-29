@@ -55,7 +55,6 @@ represent stations in empirical-statistical downscaling, Tellus A 28326,
 accepted.
 }
 \examples{
-
 download.file('http://files.figshare.com/2073466/Norway.Tx.rda',
               'Norway.Tx.rda')
 load('Norway.Tx.rda')
@@ -75,9 +74,6 @@ cor(Y.test)
 }
 \seealso{
 \code{\link{PCA}}, \code{\link{allgood}}
-}
-\author{
-Rasmus Benestad
 }
 \keyword{PCA}
 \keyword{data}

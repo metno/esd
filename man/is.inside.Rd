@@ -3,7 +3,7 @@
 \name{is.inside}
 \alias{is.inside}
 \alias{test.is.inside}
-\title{is.inside checks whether a point or a set of points is inside a polygon}
+\title{A test to see if a point is inside a polygon}
 \usage{
 is.inside(x, y, verbose = FALSE, plot = FALSE)
 }
@@ -20,9 +20,11 @@ is.inside(x, y, verbose = FALSE, plot = FALSE)
 
 \item{N}{Number of tests with random coordinates}
 }
+\value{
+a boolean; \code{TRUE} if the point(s) \code{x} is/are inside the polygon \code{y}.
+}
 \description{
-\code{is.inside} returns \code{TRUE} if the point(s) \code{x} is/are inside
-a polygon \code{y}.
+\code{is.inside} checks whether a point or a set of points is inside a polygon, e.g., borders of a country.
 }
 \examples{
 

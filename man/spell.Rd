@@ -16,7 +16,6 @@
 \alias{HDD}
 \alias{CDD}
 \alias{GDD}
-\alias{coldwinterdays}
 \title{Spell statistics}
 \usage{
 spell(x, threshold, ...)
@@ -26,12 +25,11 @@ spell(x, threshold, ...)
 
 \item{threshold}{threshold value}
 
-\item{upper}{upper limit for maximum length - ignore any above this because
-they are likely errornous}
+\item{upper}{upper limit for maximum length - ignore any above this because they are likely erronoeus}
 
 \item{fraction}{TRUE: divide the number of counts by number of samples}
 
-\item{fun}{function}
+\item{FUN}{function}
 }
 \value{
 Station or field objects
@@ -43,8 +41,13 @@ wet periods or duration of extremes.
 \details{
 \code{exceedance} estimates statistics for peak-over-treshold, and
 \code{nevents} returns the number of events with exceeding values (e.g. the
-number of rainy days X > 1 mm/day). \code{wetfreq} resturs n the wet-day
-frequency (a fraction) and \code{wetmean} wet-day mean.
+number of rainy days X > 1 mm/day).
+
+\code{wetfreq} returns the wet-day frequency (a fraction) and \code{wetmean} returns the wet-day mean.
+
+\code{CDD}: Cooling degree day
+\code{GDD}: Growing degree days (\url{http://en.wikipedia.org/wiki/Growing_degree-day})
+\code{HDD}: Heating degree day
 }
 \examples{
 
@@ -67,9 +70,8 @@ try(coldwinterdays(ferder))
 
 }
 \seealso{
+hotsummerdays coldwinterdays coldspells heatwavespells nwetdays
+
 plot
-}
-\author{
-R.E. Benestad and A.  Mezghanil
 }
 \keyword{utilities}

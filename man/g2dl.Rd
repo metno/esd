@@ -2,6 +2,7 @@
 % Please edit documentation in R/g2dl.R
 \name{g2dl}
 \alias{g2dl}
+\alias{g2dl.default}
 \alias{g2dl.stationmeta}
 \alias{g2dl.field}
 \alias{g2dl.eof}
@@ -20,6 +21,12 @@ g2dl(x, greenwich = TRUE, verbose = FALSE, ...)
 \item{verbose}{a boolean; if TRUE print information about progress}
 
 \item{...}{other arguments}
+
+\item{lon}{longitudes}
+
+\item{lat}{latitudes}
+
+\item{d}{dimensions}
 }
 \value{
 an object of the same type as the input
@@ -32,7 +39,4 @@ and one starting at the date line (\code{greenwich}=FALSE) going from -180 to 18
 \code{g2dl} is an S3 method and will redirect to a fitting function depending on the input. 
 The output of \code{g2dl} is of the same class and format as the input. The attribute 'greenwich' (\code{attr(x,'greenwich')})
 holds information about the longitude system of an object.
-}
-\seealso{
-g2dl.default
 }

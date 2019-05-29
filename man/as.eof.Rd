@@ -20,8 +20,12 @@ an \code{eof} object
 Transform an input object into the esd class \code{eof} (see \code{\link{EOF}}).
 }
 \details{
-\code{as.eof} is an S3 method and will redirect to a fitting function depending on the class of the input object.
+\code{as.eof} is an S3 method and will redirect to a fitting function depending on
+the class of the input object.
+
+\code{as.eof.dsensemble.pca} converts PCA-based DSensemble objects to EOF-based results (gridded)
 }
 \seealso{
-as.eof as.eof.field as.eof.comb as.eof.list as.eof.zoo as.eof.ds as.eof.dsensemble as.eof.appendix
+as.eof as.eof.field as.eof.comb as.eof.list as.eof.zoo as.eof.ds
+as.eof.dsensemble as.eof.appendix as.eof.dsensemble.pca
 }

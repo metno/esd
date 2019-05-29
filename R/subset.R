@@ -1335,7 +1335,7 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
     if(!is.null(ic$param) & (!is.null(ic$pmin) | !is.null(ic$pmax))) {
       if(ic$param %in% c("trajectory","trackcount","distance","tracklength")) {
         ic$FUN <- NULL
-        if(!ic$param %in% names(x)) x <- Trackstats(x)
+        if(!ic$param %in% names(x)) x <- trackstats(x)
       } else if(is.null(ic$FUN)) {
         ic$FUN <- "any"
       }

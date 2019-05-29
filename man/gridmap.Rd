@@ -2,7 +2,7 @@
 % Please edit documentation in R/gridmap.R
 \name{gridmap}
 \alias{gridmap}
-\title{Creates a griddded map %% ~~function to do ... ~~}
+\title{Creates a griddded map}
 \usage{
 gridmap(Y, FUN = "mean", colbar = list(pal = "t2m"),
   project = "lonlat", xlim = NULL, ylim = NULL, zlim = NULL,

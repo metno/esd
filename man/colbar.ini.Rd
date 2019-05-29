@@ -19,6 +19,7 @@ colbar.ini(x, FUN = NULL, colbar = NULL, verbose = FALSE)
 where 
 \code{col} is a vector containing the colors corresponding to the values 
 specified in the numerical vector \code{breaks},
+\code{n} is the number of breaks (used only if breaks are not specified),
 \code{show} if TRUE show color bar,
 \code{rev} if TRUE reverse color scale,
 \code{cex} see \code{\link{par}},

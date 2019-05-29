@@ -36,9 +36,7 @@ methods if the \code{result} argument is set to one of
 ["coef","err","pval"].
 }
 \examples{
-
 data(ferder)
-
 plot(annual(ferder,'max'))
 tr <- trend(annual(ferder,'max'))
 lines(tr)
@@ -49,8 +47,5 @@ print(trend(ferder,results='pval'))
 }
 \seealso{
 \code{link{climatology}}, \code{link{anomaly}}
-}
-\author{
-R.E. Benestad
 }
 \keyword{utilities}

@@ -4,10 +4,10 @@
 #' by interpolation, using the package 'LatticeKrig'.
 #'
 #' @param Y a \code{station} object
-#' @param i
-#' @param verbose
-#' @param xlim
-#' @param ylim
+#' @param i index
+#' @param verbose a boolean; if TRUE print information about progress 
+#' @param xlim longitude range
+#' @param ylim latitude range
 #'
 #' @return a \code{field} object
 #'

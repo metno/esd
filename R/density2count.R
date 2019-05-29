@@ -1,3 +1,4 @@
+#' @export
 density2count <- function(y,it=NULL,is=NULL,verbose=TRUE) {
   if(verbose) print("density2number - estimate the storm count based on cyclone density")
   if(inherits(y,"trajectory")) y <- as.events(y)

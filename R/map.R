@@ -939,7 +939,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
            any(c("trajectory","start","end") %in% type)) {
           xt <- subset(x0,it=(x0$trajectory %in% x$trajectory))
           if(!("trackcount" %in% names(x)) & dim(xt)[1]>1) {
-            xt <- Trackstats(xt)
+            xt <- trackstats(xt)
             xt <- subset(xt,it=xt$trackcount>1)
           }
           if(dim(xt)[1]>1) {

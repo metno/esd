@@ -3,14 +3,14 @@
 \name{ele2param}
 \alias{ele2param}
 \alias{esd2ele}
+\alias{param2ele}
 \title{Dictionary and conversion tools between esd element identifier and variables
 names and specifications.}
 \usage{
 ele2param(ele = NULL, src = NULL)
 }
 \arguments{
-\item{src}{A character string for the acronym of the data source. The data
-sources are :}
+\item{src}{A character string for the acronym of the data source.}
 
 \item{param, ele}{Parameter or element identifier. There are several core
 parameters or elements as well as a number of additional parameters. The
@@ -25,18 +25,14 @@ Converts between esd element/parameter identifier and variable names from
 different data sources.
 }
 \examples{
-
-# Eg.1 # Display the glossary of paramerters or element identifiers for 'GHCND' data source.
+# Display the glossary of paramerters or element identifiers for 'GHCND' data source.
 print(ele2param(ele=NULL,src='GHCND'))
-# Eg.2 # Display the glossary of parameters or element identifiers for all data sources. 
+# Display the glossary of parameters or element identifiers for all data sources. 
 print(ele2param())
-# Eg.3 # Convert mean temperature parameter (param) to esd element (ele).
+# Convert mean temperature parameter (param) to esd element (ele).
 ele <- esd2ele(param='t2m')
 print(ele)
 
 
-}
-\author{
-A. Mezghani, MET Norway
 }
 \keyword{parameter,element}

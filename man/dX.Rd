@@ -4,32 +4,27 @@
 \alias{dX}
 \alias{dY}
 \alias{dT}
-\title{Derivatives %% ~~function to do ... ~~}
+\title{Derivatives}
 \usage{
 dX(Z, m = 10, mask.bad = TRUE, plot = FALSE, r = 6378000,
-  chk.conf = 1, accuracy = NULL, progress = TRUE, verbose = FALSE)
+  accuracy = NULL, progress = TRUE, verbose = FALSE)
 }
 \arguments{
-\item{Z}{A field object %% ~~Describe \code{Z} here~~}
+\item{Z}{A field object}
 
-\item{m}{number of harmonics for fitting the Fourier series %% ~~Describe
-\code{m} here~~}
+\item{m}{number of harmonics for fitting the Fourier series}
 
-\item{mask.bad}{mask missing data %% ~~Describe \code{mask.bad} here~~}
+\item{mask.bad}{mask missing data}
 
-\item{plot}{for %% ~~Describe \code{plot} here~~}
+\item{plot}{if TRUE show plot}
 
-\item{r}{radius of the Earth (m) %% ~~Describe \code{r} here~~}
+\item{r}{radius of the Earth (m)}
 
-\item{chk.conf}{%% ~~Describe \code{chk.conf} here~~}
+\item{accuracy}{resolution of output}
 
-\item{accuracy}{%% ~~Describe \code{accuracy} here~~}
+\item{progress}{show the progress}
 
-\item{progress}{show the progress intereactively %% ~~Describe
-\code{progress} here~~}
-
-\item{verbose}{show diagnostics of the progress %% ~~Describe \code{verbose}
-here~~}
+\item{verbose}{show diagnostics of the progress}
 }
 \value{
 a list with several comonents:
@@ -47,11 +42,9 @@ to truncated Fourier series. The three functions give the x-, y- and time
 derivatives respectively.  See Benestad & Chen (2006) 'The use of a
 Calculus-based Cyclone Identification method for generating storm
 statistics' (Tellus A 58A, 473-486, doi:10.1111/j.1600-0870.2006.00191) for
-more details.  %% ~~ A concise (1-5 lines) description of what the function
-does. ~~
+more details.
 }
 \examples{
-
 data(slp.ERA5)
 slp.dx <- dX(slp.ERA5,verbose=TRUE)
 map(slp.dx$Z) # map of SLP 
@@ -70,5 +63,3 @@ map(subset(zeta,it=1),projection='np')
 }
 
 }
-\keyword{~kwd1}
-\keyword{~kwd2}

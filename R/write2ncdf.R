@@ -1,36 +1,3 @@
-## Help functions - NOT EXPORTED
-firstyear <- function(x,na.rm=FALSE,verbose=FALSE) {
-  if (verbose) print('firstyear')
-  yrs <- year(x)
-  if (verbose) print(range(as.numeric(yrs)))
-  if (is.null(dim(x))) y <- min(yrs[is.finite(x)]) else { 
-    nv <- apply(x,2,'nv')
-    y <- rep(NA,length(nv))
-    ok <- (1:length(nv))[nv > 0]
-    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) min(yrs[is.finite(x)]),yrs)
-    #for (i in ok) y[i] <- min(yrs[is.finite(x[,i])])
-  }
-  y[!is.finite(y)] <- NA
-  if (verbose) print(table(as.numeric(y)))
-  return(y)
-}
-
-## Help functions - NOT EXPORTED
-lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
-  if (verbose) print('lastyear')
-  yrs <- year(x)
-  if (verbose) print(range(as.numeric(yrs)))
-  if (is.null(dim(x))) y <- max(yrs[is.finite(x)]) else { 
-    nv <- apply(x,2,'nv')
-    y <- rep(NA,length(nv))
-    ok <- (1:length(nv))[nv > 0]
-    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) max(yrs[is.finite(x)]),yrs)
-  }     
-  y[!is.finite(y)] <- NA
-  if (verbose) print(table(as.numeric(y)))
-  return(y)
-}
-
 #' Saves climate data as netCDF.
 #' 
 #' Method to save station data as netCDF, making sure to include the data

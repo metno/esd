@@ -1,11 +1,9 @@
 ## Read the sea levels for tidal gauges (EU-Circle & eSACP)
 ## Rasmus.Benestad@met.no, 2016-01-29, Meteorologisk institutt, Oslo, Norway
 
-## French tidal stations: http://www.sonel.org/-Tide-gauges,29-.html?lang=en
-## Daily means
-
-
-
+# French tidal stations: http://www.sonel.org/-Tide-gauges,29-.html?lang=en
+# Daily means
+#' @export
 station.sonel <- function(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dRSCOF.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dLCONQ.slv',
@@ -48,19 +46,7 @@ station.sonel <- function(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/d
   return(Y)
 }
 
-## http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data/glosshlp.txt
-## http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data
-## Monthly means
-
-strstrip <- function(x) {
-  if (is.na(x)) return(NA)
-  if (is.factor(x)) x <- as.character(x)
-  if (!is.character(x)) return(NA)
-  while (substr(x,1,1)==' ') x <- substr(x,2,nchar(x))
-  while (substr(x,nchar(x),nchar(x))==' ') x <- substr(x,1,nchar(x)-1)
-  return(x)
-}
-  
+#' @export
 station.gloss <- function(url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',is=NULL,verbose=TRUE) {
   if (!file.exists('rlr_monthly.zip')) download.file(url,'rlr_monthly.zip')
   con1 <- unzip('rlr_monthly.zip', files="rlr_monthly/filelist.txt")
@@ -99,8 +85,7 @@ station.gloss <- function(url='https://www.psmsl.org/data/obtaining/rlr.monthly.
   return(Y)
 }
 
-## Newlyn
-## http://www.gloss-sealevel.org/station_handbook/stations/241/#.VqnZSkL4phh
+#' @export
 station.newlyn <- function(path='data/gloss-241_Newlyn',verbose=TRUE) {
   if (!file.exists(path)) {
     download.file('http://www.gloss-sealevel.org/extlink/https%3A//www.bodc.ac.uk/data/online_delivery/international_sea_level/gloss/ascii/g241.zip',destfile='newlyn.zip')

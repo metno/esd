@@ -7,9 +7,6 @@
 \alias{retrieve.rcm}
 \alias{retrieve.station}
 \alias{retrieve.stationsummary}
-\alias{summary.ncdf4}
-\alias{check.ncdf4}
-\alias{file.class}
 \title{Retrieve field data from a netcdf file.}
 \usage{
 retrieve(ncfile = NULL, ...)
@@ -109,11 +106,5 @@ from RCMs.
 
 }
 \seealso{
-\code{\link{test.retrieve.ncdf4}}.
+summary.ncdf4 check.ncdf4 file.class
 }
-\author{
-A. Mezghani
-}
-\keyword{"data"}
-\keyword{"netCDF"}
-\keyword{"netcdf"}

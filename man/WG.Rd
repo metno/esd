@@ -2,11 +2,10 @@
 % Please edit documentation in R/WG.R
 \name{WG}
 \alias{WG}
-\alias{Weather}
-\alias{generators}
 \alias{WG.station}
 \alias{WG.fw.day.precip}
 \alias{WG.FT.day.t2m}
+\alias{FTscramble}
 \title{Weather generators for conditioned on simulated climate aggregated
 statistics.}
 \usage{

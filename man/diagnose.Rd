@@ -2,7 +2,6 @@
 % Please edit documentation in R/diagnose.R
 \name{diagnose}
 \alias{diagnose}
-\alias{diagnose.default}
 \alias{diagnose.comb}
 \alias{diagnose.eof}
 \alias{diagnose.comb.eof}

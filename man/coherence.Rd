@@ -34,14 +34,4 @@ from \eqn{( \Gamma_{xx} * \Gamma_{yy} )}{(Gamxx * Gamyy )} to \eqn{(
 }{sqrt(Gamxx * Gamyy )}\eqn{ \sqrt{\Gamma_{xx} * \Gamma_{yy} )}}{sqrt(Gamxx
 * Gamyy )}.
 }
-\examples{
-
-\dontrun{
-# Add example of usage
-}
-
-}
-\author{
-R.E. Benestad
-}
 \keyword{manip}

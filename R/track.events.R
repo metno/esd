@@ -305,7 +305,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     attr(x,"unit") <- c(attr(x,"unit"),c("numeration","km"))
   }
   if (verbose) print("calculate trajectory statistics")
-  x <- Trackstats(x,verbose=verbose)
+  x <- trackstats(x,verbose=verbose)
   if(!is.null(x0)) {
     if(!is.null(x00)) {
       if (dim(x00)[1]>0) {
@@ -317,7 +317,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     x01 <- rbind(x0,x)
     c01 <- attrcp(x,x01)
     class(x01) <- class(x)
-    x01 <- Trackstats(x01)
+    x01 <- trackstats(x01)
     dnum <- x01$date*1E2 + x01$time
     if (is.null(nmin)) nmin <- 3
     if (is.null(dmin)) dmin <- 0
@@ -696,8 +696,8 @@ angle <- function(lon1,lat1,lon2,lat2) {
 }
 
 #' @export
-Trackstats <- function(x,verbose=FALSE) {
-  if(verbose) print("Trackstats")
+trackstats <- function(x,verbose=FALSE) {
+  if(verbose) print("trackstats")
   if (!any("trajectory" %in% names(x))) x <- track(x,verbose=verbose)
   y <- x[order(x$trajectory),]
   y <- attrcp(x,y)

@@ -1,6 +1,7 @@
-
+#' @export
 trackfilter <- function(x,...) UseMethod("trackfilter")
 
+#' @export
 trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"events"))
@@ -15,7 +16,7 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
       if(is.null(pmax)) pmax <- max(x[param],na.rm=TRUE)
       if(verbose) print(paste(param,"in range",pmin,"-",pmax))
       if(verbose) print(paste("FUN =",FUN))
-      if(!"trackcount" %in% names(x)) x <- Trackstats(x)
+      if(!"trackcount" %in% names(x)) x <- trackstats(x)
       if(is.null(FUN)) {
         ok <- as.vector(x[param]>=pmin & x[param]<=pmax)
       } else if (FUN=="any") {
@@ -35,6 +36,7 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
   invisible(y)
 }
 
+#' @export
 trackfilter.trajectory <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"trajectory"))

@@ -166,7 +166,4 @@ diagnose(rcp4.5, plot = TRUE, type = "target")
 }
 
 }
-\author{
-R.E. Benestad and A. Mezghani
-}
 \keyword{manip}

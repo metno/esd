@@ -12,7 +12,7 @@
 ## T799 	800x1600 	25 	0.225
 
 ##http://www.ecmwf.int/en/forecasts/documentation-and-support/gaussian_n640
-
+#' @export
 cmipgcmresolution <- function(what='deg') {
   data("IPCC.AR5.Table.9.A.1", envir = environment())
   tX <- c('T21',   'T31',  'T42',     'T62',    'T63',   'T85',      'T106',   'T255',     'T382',       'T799',      'T127',

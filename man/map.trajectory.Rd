@@ -2,8 +2,8 @@
 % Please edit documentation in R/map.trajectory.R
 \name{map.trajectory}
 \alias{map.trajectory}
-\alias{sphere.trajectory}
-\alias{lonlat.trajectory}
+\alias{map.hexbin.trajectory}
+\alias{map.sunflower.trajectory}
 \title{Plot trajectory maps}
 \usage{
 \method{map}{trajectory}(x, it = NULL, is = NULL,
@@ -75,9 +75,6 @@ map(cdens,new=FALSE)
 }
 \seealso{
 \code{\link{map} \link{map.events}}
-}
-\author{
-K. Parding
 }
 \keyword{map}
 \keyword{trajectory}

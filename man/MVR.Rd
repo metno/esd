@@ -2,8 +2,10 @@
 % Please edit documentation in R/MVR.R
 \name{MVR}
 \alias{MVR}
-\alias{Multi-variate}
-\alias{regression}
+\alias{MVR.default}
+\alias{MVR.field}
+\alias{MVR.pca}
+\alias{MVR.eof}
 \alias{predict.MVR}
 \alias{plot.MVR}
 \title{Multi-variate regression}
@@ -30,7 +32,7 @@ a.m and b.m are the patterns and u.k and v.k the vectors (time evolution).
 }
 \description{
 MVR solves the equation \deqn{Y = \Psi X}{Y = Psi X} and estimates
-\deqn{\Psi}{Psi} by inverting the equation. Predictions give the varlue of
+\deqn{\Psi}{Psi} by inverting the equation. Predictions give the value of
 Y, given this matrix and some input. MVR is useful for data where Y contains
 several time series where the spatial coherence/covariance is important to
 reproduce. For instance, Y may be a combination of stations, the two wind

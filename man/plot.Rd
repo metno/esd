@@ -23,6 +23,7 @@
 \alias{plot.diagnose.matrix}
 \alias{plot.diagnose.dsensemble}
 \alias{plot.nevents}
+\alias{plot.ssa}
 \title{Plot esd objects}
 \usage{
 plot(x, ...)

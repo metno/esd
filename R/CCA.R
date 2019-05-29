@@ -48,15 +48,15 @@
 #' cca.pre <- precit.cca(nacca)
 #' }
 #' 
-#' @export CCA
-CCA <-function(Y,X,...) UseMethod("CCA")
+#' @export
+CCA <- function(Y,X,...) UseMethod("CCA")
 
-#' @export CCA
+#' @export
 CCA.default <- function(Y,X,...) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
 }
 
-#' @export CCA
+#' @export
 CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
 
   if (verbose) print("CCA.eof")
@@ -158,14 +158,14 @@ CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   invisible(cca)
 }
 
-#' @export CCA
+#' @export
 CCA.pca <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   if (verbose) print("CCA.pca")
   cca <- CCA.eof(Y,X,ip)
   invisible(cca)
 }
 
-#' @export CCA
+#' @export
 CCA.field <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   
  if(verbose) print("CCA.field")

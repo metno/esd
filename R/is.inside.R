@@ -1,15 +1,9 @@
-## A test to see if a point is inside a polygon (e.g. borders of a country)
-## rasmus.benestad@met.no
-
-
-
-#' is.inside checks whether a point or a set of points is inside a polygon
-#' 
-#' \code{is.inside} returns \code{TRUE} if the point(s) \code{x} is/are inside
-#' a polygon \code{y}.
-#' 
+#' A test to see if a point is inside a polygon
+#'
+#' \code{is.inside} checks whether a point or a set of points is inside a polygon, e.g., borders of a country.
 #' 
 #' @aliases is.inside test.is.inside
+#'
 #' @param x an esd-object or a list/data.frame with the elements \code{x$x} and
 #' \code{x$y} containing the coordinates.
 #' @param y A polygon in the shape of a list/data.frame with the elements
@@ -17,6 +11,9 @@
 #' @param verbose \code{TRUE} prints out diagnostics for the code.
 #' @param plot \code{TRUE} provides a graphical disgnostic.
 #' @param N Number of tests with random coordinates
+#' 
+#' @return a boolean; \code{TRUE} if the point(s) \code{x} is/are inside the polygon \code{y}.
+#' 
 #' @examples
 #' 
 #' \dontrun{ 
@@ -139,6 +136,7 @@ pdist <- function(x,y) {
   return(d)
 }
 
+#' @export
 test.is.inside <- function(N=5000,verbose=FALSE,plot=TRUE) {
   require(esd)
   data(geoborders)

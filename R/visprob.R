@@ -75,6 +75,14 @@ visprob.station.precip <- function(x,...,y=NULL,threshold=1,dy=0.005,
     text(par()$xaxp[2],par()$yaxp[2],loc(y),pos=2)
 }
 
+#' Compute a histogram of the wet-day mean precipitation
+#' 
+#' Compute a histogram for values above \code{threshold}
+#' 
+#' @param x input object
+#' @param breaks breaks of histogram
+#' @param threshold threshold
+#'
 #' @export
 histwet <- function(x,breaks=NULL,threshold=1) {
   if (is.null(breaks)) breaks=seq(0,1.1*max(x,na.rm=TRUE),by=5)

@@ -70,6 +70,21 @@ ele <- element <- function(x) return(attr(x,"element"))
 #' @export
 err <- function(x) return(attr(x,"standard.error"))
 
+#' A function that extracts the history/provenance of an object. Eg. the list
+#' of steps in a chain of analysis.
+#' 
+#' @param x any esd-object 
+#' @param what What to return from the history attribute 
+#' 
+#' @seealso history.stamp
+#' 
+#' @examples
+#' data(Oslo)
+#' provenance(Oslo)
+#' 
+#' @export provenance
+provenance <- function(x,what='call') return(unlist(attr(x,'history')[[what]]))
+
 #' Create a label for plots
 #'
 #' Using the attributes of an object, put together a character string with 

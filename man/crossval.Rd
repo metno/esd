@@ -33,7 +33,6 @@ scores.
 with cross-validation results and returns the correlation.
 }
 \examples{
-
 data(Oslo)
 t2m <- t2m.DNMI(lon=c(-20,40),lat=c(45,65))
 eof <- EOF(t2m)
@@ -42,8 +41,5 @@ ds <- DS(Oslo,eof)
 xv <- crossval(ds)
 plot(xv)
 
-}
-\author{
-R.E. Benestad
 }
 \keyword{manip}

@@ -5,14 +5,13 @@
 #' @aliases col.bar colbar
 #' @seealso colbar.ini
 #' 
-#' @param breaks A numeric vector of breakpoints for the colours %% ~~Describe
+#' @param breaks A numeric vector of breakpoints for the colours
 #' @param horiz a boolean; if TRUE add horizontal color bar, else add vertical color bar 
 #' @param pch see \code{\link{par}} 
 #' @param v Vertical space between color bar points
 #' @param h horizontal space between color bar points
 #' @param col see \code{\link{par}}
-#' @param pal palette:
-#' c("bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold","warm")
+#' @param pal palette: c("bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold","warm")
 #' @param cex see \code{\link{par}}
 #' @param cex.lab see \code{\link{par}}
 #' @param type r : rectangular shape , p : for points
@@ -224,15 +223,6 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
       print('exit colbar.ini')
     }
     invisible(colbar)
-}
-
-#' @export
-ndig <- function(x) {
-  i0 <- (x==0) & !is.finite(x)
-  if (sum(i0)>0) x[i0] <- 1
-  y <- -trunc(log(abs(x))/log(10))
-  if (sum(i0)>0) y[i0] <- 0
-  return(y)
 }
 
 #' @export

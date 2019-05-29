@@ -15,7 +15,6 @@
 \alias{combine.list}
 \alias{combine.station.eof}
 \alias{zeros}
-\alias{softattr}
 \alias{g2dl}
 \alias{g2dl.field}
 \alias{g2dl.corfield}
@@ -77,10 +76,6 @@ complete time series.
 (South Pole) to 90N (Noth Pole) for \code{SP2NP=TRUE}. Otherwise, the object
 is arranged from 90N to 90S.
 
-\code{softattr} copies the names of a subset of the attributes excluding
-"index", "dim" and others specified by \code{ignore}. \code{attrcp} passes
-on the attributes from one object (x) to another (y).
-
 \code{zeros} counts the occurrence of zero values in a vector.
 
 Other operations, such as \code{c(...)}, \code{rbind(...)} (combine along
@@ -88,7 +83,6 @@ the time dimension), and \code{cbind(...)} (combine along the space
 dimension) also work.
 }
 \examples{
-
 T2m_NCEP <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
 T2m_NorESM <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
 
@@ -102,8 +96,5 @@ data("Oslo")
 y <- combine.field.station(Oslo,T2m_NCEP)
 plot(y$y)
 
-}
-\author{
-R.E. Benestad
 }
 \keyword{utilities}

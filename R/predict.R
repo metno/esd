@@ -4,17 +4,14 @@
 #' 
 #' \code{predict} is similar to the predict function in R
 #' 
-#' \code{project] returns projection of climate
+#' \code{project} returns projection of climate
 #' 
 #' @aliases predict.ds predict.ds.eof predict.ds.comb predict.mvr predict.cca project.ds
 #'
 #' @param x A ds object
-#' @param newdata An eof object containing the new data sets on which the
-#' prediction is made. 
-#' @param addnoise If TRUE, will add an attribute called "noise" to the ouput
-#' based on WG
-#' @param n Number of runs to be generated, used only if addnoise is set to
-#' TRUE 
+#' @param newdata An eof object containing the new data sets on which the prediction is made. 
+#' @param addnoise If TRUE, will add an attribute called "noise" to the ouput based on WG
+#' @param n Number of runs to be generated, used only if addnoise is set to TRUE 
 #' 
 #' @return Predicted ds values.
 #' @seealso \code{\link{DS}} 

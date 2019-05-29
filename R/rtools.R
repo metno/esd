@@ -38,6 +38,8 @@
 #' 
 #' \code{factor2numeric} transforms a factor to a numeric object
 #' 
+#' \code{rmse} and \code{RMSE} calculate the root-mean-square error
+#' 
 #' @aliases as.decimal nv cv q5 q95 q995 lag.station lag.field filt
 #' filt.default exit figlab ndig attrcp ensemblemean propchange stand rmse RMSE
 #' firstyear lastyear eofvar test.ds.field test.num.predictors arec
@@ -115,12 +117,64 @@ as.decimal <- function(x=NULL) {
 }
 
 #' @export
+ndig <- function(x) {
+  i0 <- (x==0) & !is.finite(x)
+  if (sum(i0)>0) x[i0] <- 1
+  y <- -trunc(log(abs(x))/log(10))
+  if (sum(i0)>0) y[i0] <- 0
+  return(y)
+}
+
+#' @export
+strstrip <- function(x) {
+  if (is.na(x)) return(NA)
+  if (is.factor(x)) x <- as.character(x)
+  if (!is.character(x)) return(NA)
+  while (substr(x,1,1)==' ') x <- substr(x,2,nchar(x))
+  while (substr(x,nchar(x),nchar(x))==' ') x <- substr(x,1,nchar(x)-1)
+  return(x)
+}
+
+#' @export
 eofvar <- function(x) {
   if (inherits(x,c('eof','pca'))) {
     attr(x,'eigenvalues')^2/attr(x,'tot.var')*100
   } else {
     NULL
   }
+}
+
+#' @export
+firstyear <- function(x,na.rm=FALSE,verbose=FALSE) {
+  if (verbose) print('firstyear')
+  yrs <- year(x)
+  if (verbose) print(range(as.numeric(yrs)))
+  if (is.null(dim(x))) y <- min(yrs[is.finite(x)]) else { 
+    nv <- apply(x,2,'nv')
+    y <- rep(NA,length(nv))
+    ok <- (1:length(nv))[nv > 0]
+    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) min(yrs[is.finite(x)]),yrs)
+    #for (i in ok) y[i] <- min(yrs[is.finite(x[,i])])
+  }
+  y[!is.finite(y)] <- NA
+  if (verbose) print(table(as.numeric(y)))
+  return(y)
+}
+
+#' @export
+lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
+  if (verbose) print('lastyear')
+  yrs <- year(x)
+  if (verbose) print(range(as.numeric(yrs)))
+  if (is.null(dim(x))) y <- max(yrs[is.finite(x)]) else { 
+    nv <- apply(x,2,'nv')
+    y <- rep(NA,length(nv))
+    ok <- (1:length(nv))[nv > 0]
+    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) max(yrs[is.finite(x)]),yrs)
+  }     
+  y[!is.finite(y)] <- NA
+  if (verbose) print(table(as.numeric(y)))
+  return(y)
 }
 
 ## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands

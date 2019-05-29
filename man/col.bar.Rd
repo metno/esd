@@ -10,7 +10,7 @@ col.bar(breaks, horiz = TRUE, pch = 21, v = 1, h = 1, col = col,
   verbose = FALSE, vl = 0.5, border = FALSE, ...)
 }
 \arguments{
-\item{breaks}{A numeric vector of breakpoints for the colours %% ~~Describe}
+\item{breaks}{A numeric vector of breakpoints for the colours}
 
 \item{horiz}{a boolean; if TRUE add horizontal color bar, else add vertical color bar}
 
@@ -36,8 +36,7 @@ col.bar(breaks, horiz = TRUE, pch = 21, v = 1, h = 1, col = col,
 
 \item{\dots}{Additional graphical parameters to be passed on}
 
-\item{pal}{palette:
-c("bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold","warm")}
+\item{pal}{palette: c("bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold","warm")}
 }
 \description{
 Add a color bar or color points into an exisiting plot or map

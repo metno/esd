@@ -19,6 +19,10 @@ Transform an input object into the esd class \code{field}.
 \code{as.field} is an S3 method and will redirect to a fitting function depending on the output. 
 The way in which the transformation is performed depends on the type of input data.
 }
+\details{
+\code{as.field.events} redirects to \code{\link{events2field}}.
+\code{as.field.trajectory} redirects to \code{\link{trajectory2field}}.
+}
 \examples{
 # how to generate a new field object.
 year <- sort(rep(1991:2000,12))

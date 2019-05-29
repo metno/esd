@@ -6,7 +6,7 @@
 \alias{iid.test.field}
 \alias{iid.test.default}
 \alias{n.records}
-\alias{recods}
+\alias{records}
 \alias{test.records}
 \title{iid test}
 \usage{

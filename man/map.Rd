@@ -140,7 +140,6 @@ objects.
 }
 \examples{
 
-# dontrun because of this problem: "Error in plot.new() : figure margins too large"
 # Select stations in ss and map the geographical location 
 # of the selected stations with a zoom on Norway.
 ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
@@ -167,8 +166,5 @@ map(x, param="pcent", type=c('trajectory','start'),
 }
 \seealso{
 \code{\link{plot.station}}
-}
-\author{
-R.E. Benestad
 }
 \keyword{map}

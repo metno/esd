@@ -3,10 +3,11 @@
 \name{predict.ds}
 \alias{predict.ds}
 \alias{predict.ds.eof}
-\alias{predict.ds.com}
-\alias{project.ds}
+\alias{predict.ds.comb}
+\alias{predict.mvr}
 \alias{predict.cca}
-\title{%% ~~function to do ... ~~ Prediction based on DS or CCA model}
+\alias{project.ds}
+\title{Prediction based on DS or CCA model}
 \usage{
 \method{predict}{ds}(x, newdata = NULL, ..., addnoise = FALSE,
   n = 100, verbose = FALSE)
@@ -14,14 +15,11 @@
 \arguments{
 \item{x}{A ds object}
 
-\item{newdata}{An eof object containing the new data sets on which the
-prediction is made. %% ~~Describe \code{newdata} here~~}
+\item{newdata}{An eof object containing the new data sets on which the prediction is made.}
 
-\item{addnoise}{If TRUE, will add an attribute called "noise" to the ouput
-based on WG %% ~~Describe \code{addnoise} here~~}
+\item{addnoise}{If TRUE, will add an attribute called "noise" to the ouput based on WG}
 
-\item{n}{Number of runs to be generated, used only if addnoise is set to
-TRUE %% ~~Describe \code{n} here~~}
+\item{n}{Number of runs to be generated, used only if addnoise is set to TRUE}
 }
 \value{
 Predicted ds values.
@@ -30,10 +28,9 @@ Predicted ds values.
 Apply an empirical-statistical downscaling model to new data
 }
 \details{
-%% ~~ If necessary, more details than the description above ~~ 'predict' is
-similar to the predict function in R
+\code{predict} is similar to the predict function in R
 
-'project' returns projection of climate
+\code{project} returns projection of climate
 }
 \examples{
 
@@ -63,11 +60,5 @@ plot(project.ds(ds))
 
 }
 \seealso{
-\code{\link{DS}} %% ~~objects to See Also as \code{\link{help}},
-~~~
+\code{\link{DS}}
 }
-\author{
-A. Mezghani
-}
-\keyword{~kwd1}
-\keyword{~kwd2}

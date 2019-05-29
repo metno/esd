@@ -2,42 +2,17 @@
 % Please edit documentation in R/allgood.R
 \name{allgood}
 \alias{allgood}
-\alias{is.T}
-\alias{is.precip}
-\alias{is.field(}
-\alias{is.station}
-\alias{is.eof}
-\alias{is.pca}
-\alias{is.cca}
-\alias{is.trajectory}
-\alias{is.daily}
-\alias{is.monthly}
-\alias{is.seasonal}
-\alias{is.annual}
-\alias{is.model}
-\alias{is.wind}
-\alias{is.direction}
-\alias{is.pressure}
-\title{Test for .}
+\title{A small function that removes stations with missing values from a group}
 \usage{
 allgood(x, miss = 0.1, verbose = FALSE)
 }
 \arguments{
-\item{x}{a data object}
-}
-\value{
-Boolean
+\item{x}{a \code{station} object}
+
+\item{miss}{fraction of data that may be missing, e.g., if miss=.1 then stations with than 10\% missing data are removed}
+
+\item{verbose}{a boolean; if TRUE print information about progress}
 }
 \description{
-Computes different formulas
+Useful before performing PCA.
 }
-\examples{
-
-data(ferder)
-is.T(ferder)
-
-}
-\author{
-R. Benestad, MET Norway
-}
-\keyword{parameter,element}

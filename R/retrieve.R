@@ -1046,7 +1046,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
 
 }
 
-#' @expert
+#' @export
 retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                              nmin=NULL,verbose=FALSE,onebyone=FALSE,...) {
@@ -1232,7 +1232,7 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
   return(y)
 }
 
-#' @expert
+#' @export
 retrieve.stationsummary <- function(ncfile,path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                                     alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                                     nmin=NULL,verbose=FALSE,...) {

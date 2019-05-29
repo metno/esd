@@ -2,7 +2,7 @@
 % Please edit documentation in R/climvar.R
 \name{climvar}
 \alias{climvar}
-\title{InfoGraphics}
+\title{Seasonally varying variance}
 \usage{
 climvar(x, FUN = "sd", plot = TRUE, ...)
 }
@@ -11,30 +11,13 @@ climvar(x, FUN = "sd", plot = TRUE, ...)
 
 \item{FUN}{a function}
 
+\item{plot}{a boolean; if TRUE show plot}
+
 \item{\dots}{additional arguments}
 
-\item{it}{A list or data.frame providing time index, e.g. month}
-
-\item{start}{year and month, e.g., '-01-01' to start in january}
-
-\item{prog}{a boolean; if TRUE show prognosis for end of year in cumugram}
-
 \item{verbose}{a boolean; if TRUE print information about progress}
-
-\item{main}{main title}
 }
 \description{
-Various functions for visual display of data and statistics
-}
-\details{
 \code{climvar} estimates how the variance varies with season
 in terms of the inter-annual variability of daily standard deviation
-}
-\examples{
-data(bjornholt)
-cumugram(bjornholt)
-
-}
-\seealso{
-wheel graph visprob conf vis diagram cumugram scatter plot map
 }
