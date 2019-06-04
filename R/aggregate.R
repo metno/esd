@@ -12,14 +12,17 @@
 #' \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
 #' meters) for individual events (defined as gridboxes touching each other).
 #' 
-#' @aliases aggregate aggregate.comb aggregate.field
-#' @seealso aggregate.area aggregate.size aggregate.size.matrix aggregate.size.field
+#' @aliases aggregate.comb aggregate.field
+#' @seealso aggregate.area aggregate.size
+#'
+#' @importFrom stats aggregate
 #' 
 #' @param x A \code{\link{station}} object
 #' @param by see \code{\link{aggregate.zoo}}
 #' @param FUN a function; see \code{\link{aggregate.zoo}}. Additional options: 'area','exceedance','lessthan'.
 #' @param regular see \code{\link{aggregate.zoo}}
 #' @param frequency see \code{\link{aggregate.zoo}}
+#' @param threshold threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'
 #' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
 #'
 #' @return The call returns a station object
@@ -37,45 +40,51 @@
 #' slp <- slp.DNMI()
 #' y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
 #'
-#' ## Aggregate area
-#' w <- aggregate.area(y)
-#' plot(w)
 #'
 #' @export
-aggregate.station <- function(x, by, FUN='mean', na.rm=TRUE, regular = NULL, ...,
-                              frequency = NULL, verbose=FALSE, threshold=1) {
+aggregate.station <- function(x, by, FUN='mean', ..., na.rm=TRUE, regular=NULL, 
+                              frequency=NULL, verbose=FALSE, threshold=1) {
 
   if(verbose) print("aggregate.station")
   class(x) -> cls
   class(x) <- "zoo"
 
-  if (by=='yearmon') {
-    by <- as.Date(as.yearmon(index(x)))
-  }
+  if(is.character(by)) if(by=='yearmon') by <- as.Date(as.yearmon(index(x)))
   
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) ) {
-    y <- aggregate(x, by, FUN, na.rm=na.rm, ...,
+    y <- aggregate(x, by, FUN=FUN, na.rm=na.rm, ...,
                    regular = regular, frequency = frequency)
   } else {
-    y <- aggregate(x, by, FUN, ..., regular = regular, frequency = frequency)
+    y <- aggregate(x, by, FUN=FUN, ..., regular = regular, frequency = frequency)
   }
 
  # if (inherits(by[1],'character')) index(y) <- as.Date(index(y))
     
   if (class(index(y))=="Date") {
-  dy <- day(y); mo <- month(y); yr <- year(y)
-    if (dy[2] - dy[1] > 0) cls[length(cls) - 1] <- "day" else
-    if (mo[2] - mo[1] == 1) cls[length(cls) - 1] <- "month" else
-    if (mo[2] - mo[1] == 3) cls[length(cls) - 1] <- "season" else
-    if (yr[2] - yr[1] > 0) cls[length(cls) - 1] <- "annual"
-   } else
-  if (class(index(y))=="yearmon") cls[length(cls) - 1] <- "month" else
-  if (class(index(y))=="yearqtr") cls[length(cls) - 1] <- "qtr" else
-  if (class(index(y))=="numeric") cls[length(cls) - 1] <- "annual" else
-  if (class(index(y))=="character") cls[length(cls) - 1] <- "annual"
+    dy <- day(y); mo <- month(y); yr <- year(y)
+    if (dy[2] - dy[1] > 0) {
+      cls[length(cls) - 1] <- "day" 
+    } else if (mo[2] - mo[1] == 1) { 
+      cls[length(cls) - 1] <- "month" 
+    } else if (mo[2] - mo[1] == 3) {
+      cls[length(cls) - 1] <- "season" 
+    } else if (yr[2] - yr[1] > 0) {
+      cls[length(cls) - 1] <- "annual"
+    }
+  } else if (class(index(y))=="yearmon") {
+     cls[length(cls) - 1] <- "month" 
+  } else if (class(index(y))=="yearqtr") {
+    cls[length(cls) - 1] <- "qtr" 
+  } else if (class(index(y))=="numeric") {
+    cls[length(cls) - 1] <- "annual" 
+  } else if (class(index(y))=="character") {
+    cls[length(cls) - 1] <- "annual"
+  }
   if ( (length(index(y)) <= 12) & (class(index(y))=="numeric") & 
-       (min(index(y)) >= 1) & (max(index(y)) <= 12) ) cls[length(cls) - 1] <- "seasonalcycle"
+       (min(index(y)) >= 1) & (max(index(y)) <= 12) ) {
+    cls[length(cls) - 1] <- "seasonalcycle"
+  }
   class(y) <- cls
   y <- attrcp(x,y)
 
@@ -136,12 +145,8 @@ aggregate.station <- function(x, by, FUN='mean', na.rm=TRUE, regular = NULL, ...
 
 # Aggregate S3 method for a 'comb' object
 #' @export
-aggregate.comb <- function(x,by,FUN = 'mean', ...,
-                              regular = NULL, frequency = NULL) {
-  # Also need to apply the aggregation to the appended fields
-  #if (verbose) print("aggregate.comb")
-  #print(class(x))
-
+aggregate.comb <- function(x, by, FUN='mean', ..., regular=NULL, frequency=NULL, verbose=FALSE) {
+  if (verbose) print("aggregate.comb")
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
   if (deparse(substitute(by))=="year")
     by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
@@ -164,9 +169,8 @@ aggregate.comb <- function(x,by,FUN = 'mean', ...,
 
 # Aggregate S3 method for a field object
 #' @export
-aggregate.field <- function(x,by,FUN = 'mean', ...,
-                            regular = NULL, frequency = NULL,
-			    threshold=0, verbose=FALSE) {
+aggregate.field <- function(x, by, FUN = 'mean', ..., regular=NULL, 
+                            frequency=NULL, threshold=0, verbose=FALSE) {
   
   if (verbose) print('aggregate.field')
   class(x) -> cls

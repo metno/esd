@@ -4,25 +4,17 @@
 #' structure and meta-data (attributes). The code tries to follow the netCDf
 #' 'CF' convention. The method is built on the \code{\link{ncdf4}} package.
 #' 
-#' 
-#' @aliases write2ncdf4 write2ncdf4.station 
+#' @seealso write2ncdf4.station 
 #' write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.eof
 #' write2ncdf4.pca write2ncdf4.dsensemble
+#' 
 #' @param x data object
-#' @param file file name
-#' @param prec Precision: see \code{\link[ncdf4]{ncvar_def}}
-#' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
-#' @param offset Sets the attribute 'add_offset' which is added to the values
-#' stored (to save space may be represented as 'short').
-#' @param scale Sets the atttribute 'scale_factor' which is used to scale
-#' (multiply) the values stored (to save space may be represented as 'short').
-#' @param torg Time origin
-#' @param verbose TRUE - clutter the screen.
-#' @return A "zoo" "field" object with additional attributes used for further
-#' processing.
-#' @author R.E. Benestad
-#' @seealso \code{\link{test.retrieve.ncdf4}}.
+#' @param \dots additional arguments
+#' 
+#' @return None
+#' 
 #' @keywords netcdf ncdf4 save
+#' 
 #' @examples
 #' 
 #' nacd <- station(src='nacd')
@@ -35,8 +27,33 @@ write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 write2ncdf4.default <- function(x,...) {
 }
 
+#' Saves climate data as netCDF.
+#' 
+#' Method to save station data as netCDF, making sure to include the data
+#' structure and meta-data (attributes). The code tries to follow the netCDf
+#' 'CF' convention. The method is built on the \code{\link{ncdf4}} package.
+#' 
+#' @aliases write2ncdf4.field
+#' @seealso write2ncdf4
+#' 
+#' @param x data object
+#' @param file file name
+#' @param prec Precision: see \code{\link[ncdf4]{ncvar_def}}
+#' @param scale Sets the atttribute 'scale_factor' which is used to scale
+#' (multiply) the values stored (to save space may be represented as 'short').
+#' @param offset Sets the attribute 'add_offset' which is added to the values
+#' stored (to save space may be represented as 'short').
+#' @param torg Time origin
+#' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
+#' @param verbose TRUE - clutter the screen.
+#' @param \dots additional arguments
+#' 
+#' @return None
+#' 
+#' @keywords netcdf ncdf4 save
+#' 
 #' @export
-write2ncdf4.list <- function(x,file='field.nc',prec='short',scale=0.1,offset=NULL,
+write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset=NULL,
                              torg="1970-01-01",missval=-999,verbose=FALSE) {
   if (verbose) print('write2ncdf4.list')
   stopifnot(inherits(x[[1]],'field'))
@@ -108,8 +125,8 @@ write2ncdf4.list <- function(x,file='field.nc',prec='short',scale=0.1,offset=NUL
 }
 
 #' @export
-write2ncdf4.field <- function(x,file='field.nc',prec='short',scale=NULL,offset=NULL,
-                              torg="1970-01-01",missval=-999,ncclose=TRUE,verbose=FALSE) {
+write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offset=NULL,
+                              torg="1970-01-01",missval=-999,verbose=FALSE) {
   if (verbose) {print('write2ncdf4.field'); print(names(attributes(x)))}
 
   y <- coredata(x)
@@ -153,12 +170,37 @@ write2ncdf4.field <- function(x,file='field.nc',prec='short',scale=NULL,offset=N
   nc_close(ncnew)
 }
 
-
-
-# https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDL-Data-Types.html:
-# short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
+#' Saves climate data as netCDF.
+#' 
+#' Method to save station data as netCDF, making sure to include the data
+#' structure and meta-data (attributes). The code tries to follow the netCDf
+#' 'CF' convention. The method is built on the \code{\link{ncdf4}} package.
+#' 
+#' @seealso write2ncdf4
+#' 
+#' @param x data object
+#' @param file file name
+#' @param prec Precision: see \code{\link[ncdf4]{ncvar_def}}
+#' @param scale Sets the atttribute 'scale_factor' which is used to scale
+#' (multiply) the values stored (to save space may be represented as 'short').
+#' @param it a time index, see \code{\link{subset}}
+#' @param stid station id
+#' @param append a boolean; if TRUE append output to existing file
+#' @param stid_unlim a boolean; if TRUE the stid dimension is unlimited
+#' @param namelength a numeric specifying the number of characters in dimension and variable names
+#' @param offset Sets the attribute 'add_offset' which is added to the values
+#' stored (to save space may be represented as 'short').
+#' @param torg Time origin
+#' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
+#' @param verbose TRUE - clutter the screen.
+#' @param \dots additional arguments
+#' 
+#' @return None
+#' 
+#' @keywords netcdf ncdf4 save
+#' 
 #' @export
-write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
+write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
                                 scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,verbose=FALSE) {
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 

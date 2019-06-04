@@ -2,14 +2,12 @@
 % Please edit documentation in R/aggregate.R
 \name{aggregate.station}
 \alias{aggregate.station}
-\alias{aggregate}
 \alias{aggregate.comb}
 \alias{aggregate.field}
 \title{aggregate}
 \usage{
-\method{aggregate}{station}(x, by, FUN = "mean", na.rm = TRUE,
-  regular = NULL, ..., frequency = NULL, verbose = FALSE,
-  threshold = 1)
+\method{aggregate}{station}(x, by, FUN = "mean", ..., na.rm = TRUE,
+  regular = NULL, frequency = NULL, verbose = FALSE, threshold = 1)
 }
 \arguments{
 \item{x}{A \code{\link{station}} object}
@@ -23,6 +21,8 @@
 \item{regular}{see \code{\link{aggregate.zoo}}}
 
 \item{frequency}{see \code{\link{aggregate.zoo}}}
+
+\item{threshold}{threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'}
 }
 \value{
 The call returns a station object
@@ -52,13 +52,10 @@ plot(x)
 slp <- slp.DNMI()
 y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
 
-## Aggregate area
-w <- aggregate.area(y)
-plot(w)
 
 }
 \seealso{
-aggregate.area aggregate.size aggregate.size.matrix aggregate.size.field
+aggregate.area aggregate.size
 }
 \author{
 R.E. Benestad

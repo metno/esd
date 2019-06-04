@@ -2,12 +2,6 @@
 % Please edit documentation in R/write2ncdf.R
 \name{write2ncdf4}
 \alias{write2ncdf4}
-\alias{write2ncdf4.station}
-\alias{write2ncdf4.field}
-\alias{write2ncdf4.list}
-\alias{write2ncdf4.eof}
-\alias{write2ncdf4.pca}
-\alias{write2ncdf4.dsensemble}
 \title{Saves climate data as netCDF.}
 \usage{
 write2ncdf4(x, ...)
@@ -15,25 +9,10 @@ write2ncdf4(x, ...)
 \arguments{
 \item{x}{data object}
 
-\item{file}{file name}
-
-\item{prec}{Precision: see \code{\link[ncdf4]{ncvar_def}}}
-
-\item{missval}{Missing value: see \code{\link[ncdf4]{ncvar_def}}}
-
-\item{offset}{Sets the attribute 'add_offset' which is added to the values
-stored (to save space may be represented as 'short').}
-
-\item{scale}{Sets the atttribute 'scale_factor' which is used to scale
-(multiply) the values stored (to save space may be represented as 'short').}
-
-\item{torg}{Time origin}
-
-\item{verbose}{TRUE - clutter the screen.}
+\item{\dots}{additional arguments}
 }
 \value{
-A "zoo" "field" object with additional attributes used for further
-processing.
+None
 }
 \description{
 Method to save station data as netCDF, making sure to include the data
@@ -48,10 +27,9 @@ write2ncdf4(X,file='test.nc')
 
 }
 \seealso{
-\code{\link{test.retrieve.ncdf4}}.
-}
-\author{
-R.E. Benestad
+write2ncdf4.station 
+write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.eof
+write2ncdf4.pca write2ncdf4.dsensemble
 }
 \keyword{ncdf4}
 \keyword{netcdf}

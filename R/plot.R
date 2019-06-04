@@ -29,7 +29,9 @@
 #' @seealso \code{\link{plot}}
 #' 
 #' @keywords hplot
-#' 
+#'
+#' @importFrom grDevices dev.new dev.copy2eps dev.copy2pdf dev.list dev.off
+#'
 #' @examples
 #' 
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:

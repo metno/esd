@@ -39,7 +39,7 @@
 #' analysis. The variables CI.95, p.val, and i.cluster (and their reverse
 #' equivalents '.rev') return the estimated 95\% conf. int, p-value, and the
 #' location of the clusters (binomial).
-#' @author R.E. Benestad
+#' 
 #' @keywords manip
 #' @examples
 #' 
@@ -52,7 +52,7 @@
 iid.test <- function(x,...) UseMethod("iid.test")
 
 #' @export
-iid.test.station <- function(x,verbose=TRUE,...) {
+iid.test.station <- function(x,...,verbose=TRUE) {
   # Re-orders the station data into parallel time series for each calendar
   # month into new matrix X. Then apply the iid.test to this matrix.
 
@@ -129,7 +129,7 @@ iid.test.field <- function(x,verbose=TRUE,...) {
 
 
 #' @export
-iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
+iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
                              N.test=200,rev.plot.rev=TRUE,verbose=TRUE) {
   if (verbose) print('iid.test.default')
   Y <- as.matrix(x)

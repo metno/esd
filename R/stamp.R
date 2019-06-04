@@ -5,7 +5,7 @@
 history.stamp <-function(x=NULL,y=NULL,verbose=FALSE,...) UseMethod("history.stamp")
 
 #' @export
-history.stamp.default <- function(x=NULL,y=NULL,verbose=FALSE) {
+history.stamp.default <- function(x=NULL,y=NULL,verbose=FALSE,...) {
   if(verbose) print("history.stamp.default")
   si <- list(R.version=sessionInfo()$R.version$version.string,
              esd.version=paste(sessionInfo()$otherPkgs$esd$Package,

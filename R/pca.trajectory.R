@@ -4,7 +4,7 @@
 #' tracks.  Add some reference and details about the method.  The PCA is based
 #' on \code{\link{svd}}.
 #' 
-#' @aliases PCA.trajectory pca2trajectory plot.pca.trajectory
+#' @aliases PCA.trajectory plot.pca.trajectory
 #' 
 #' @param X a 'trajectory' object
 #' @param verbose TRUE - clutter the screen with messages
@@ -27,9 +27,10 @@
 #' pca <- PCA.trajectory(x,param=c('lat'))
 #' plot.pca.trajectory(pca)
 #' 
-#' @export PCA.trajectory
+#' @export
 PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
                       anomaly=TRUE,verbose=FALSE) {
+  if(verbose) print("PCA.trajectory")
   stopifnot(!missing(X), inherits(X,"trajectory"))
 
   X <- sort(X)
@@ -97,7 +98,6 @@ PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
   invisible(y)
 }
 
-#' @export
 pca2trajectory <- function(X,verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if(verbose) print('pca2trajectory')

@@ -67,7 +67,4 @@ and a number outside this range is marked with red in the 'ball diagram'
   iid.test(dat)
 
 }
-\author{
-R.E. Benestad
-}
 \keyword{manip}

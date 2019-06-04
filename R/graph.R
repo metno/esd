@@ -55,7 +55,7 @@ graph.default <- function(x,...,img=NULL,pch='fancy',it=NULL,col=rgb(0.5,0.5,0.5
 }
 
 #' @export
-graph.dsensemble <- function(x,img=NULL,pch='fancy',it=NULL,col=rgb(1,0.7,0.7,0.1),
+graph.dsensemble <- function(x,...,img=NULL,pch='fancy',it=NULL,col=rgb(1,0.7,0.7,0.1),
                              lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,
 			     col.obs='black',verbose=FALSE) {
     if(verbose) print('graph.dsensemble')
@@ -91,7 +91,7 @@ graph.dsensemble <- function(x,img=NULL,pch='fancy',it=NULL,col=rgb(1,0.7,0.7,0.
 }
 
 #' @export
-graph.list <- function(x,img=NULL,pch='fancy',it=NULL,
+graph.list <- function(x,...,img=NULL,pch='fancy',it=NULL,
                        col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05),
                              rgb(0.5,0.5,0.5,0.05) ),
                        lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,
@@ -123,7 +123,7 @@ graph.list <- function(x,img=NULL,pch='fancy',it=NULL,
 }
 
 #' @export
-graph.zoo <- function(x,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),pch=1,
+graph.zoo <- function(x,...,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),pch=1,
                       lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,
                       new=TRUE,ensmean=FALSE,col.obs='black', verbose=FALSE) {
     if(verbose) print('graph.zoo')

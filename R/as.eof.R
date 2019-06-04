@@ -157,7 +157,7 @@ as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
 }
 
 #' @export
-as.eof.dsensemble.pca <- function(X,is=NULL,it=NULL,ip=NULL,verbose=FALSE,...) {
+as.eof.dsensemble.pca <- function(X,...,is=NULL,it=NULL,ip=NULL,verbose=FALSE) {
   if (verbose) print('as.eof.dsensemble.pca')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
   if (inherits(X,"eof")) {

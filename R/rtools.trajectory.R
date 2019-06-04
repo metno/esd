@@ -288,8 +288,8 @@ anomaly.trajectory <- function(x,...,type='first',param=c('lon','lat'),
 }
 
 #' @export
-density.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,radius=5E5,verbose=FALSE) {
-  if(verbose) print("density.trajectory")
+trajectory2density <- function(x,it=NULL,is=NULL,dx=2,dy=2,radius=5E5,verbose=FALSE) {
+  if(verbose) print("trajectory2density")
   y <- subset(x,it=it,is=is)
   if(!is.null(dim(y))) {
     A <- apply(y,1,function(x) trackdensity(x[colnames(y)=='lon'],

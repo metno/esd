@@ -7,7 +7,9 @@
 #' 
 #' @aliases retrieve retrieve.default retrieve.ncdf4 retrieve.rcm
 #' retrieve.station retrieve.stationsummary
-#' 
+#'
+#' @import ncdf4
+#'
 #' @seealso summary.ncdf4 check.ncdf4 file.class
 #'
 #' @param ncfile A character string of full path netcdf file name (include the
@@ -820,7 +822,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   ## Checking frequency from data
   frequency <- freq.data <- NULL
   if (length(time$vals) > 1) {
-    freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE) 
+    freq.data <- datafrequency(data=as.vector(time$vals),unit=tunit,verbose=FALSE) 
   } else {
     freq.data <- 'none'
   }

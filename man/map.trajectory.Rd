@@ -2,8 +2,8 @@
 % Please edit documentation in R/map.trajectory.R
 \name{map.trajectory}
 \alias{map.trajectory}
-\alias{map.hexbin.trajectory}
-\alias{map.sunflower.trajectory}
+\alias{hexbin.trajectory}
+\alias{sunflower.trajectory}
 \title{Plot trajectory maps}
 \usage{
 \method{map}{trajectory}(x, it = NULL, is = NULL,
@@ -47,7 +47,7 @@ single character string 'bwr' (blue-white-red) or 'rwb' ('red-white-blue')}
 \description{
 Make different types of trajectory maps. Individual trajectories are mapped
 with map.trajectory. The number density can be visualised with
-map.hexbin.trajectory and map.sunflower.trajectory which are versions of
+hexbin.trajectory and sunflower.trajectory which are versions of
 \code{\link{scatter.hexbin}} and \code{\link{scatter.sunflower}} adapted to
 show trajectory density.
 }
@@ -63,8 +63,8 @@ map.trajectory(imilast.M03,col="blue",alpha=0.1,
 map.trajectory(imilast.M03,col="blue",alpha=0.1,projection='sphere',new=FALSE)
 
 # plot number density for grid boxes of width 2 degrees and height 1 degree
-map.hexbin.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
-map.sunflower.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
+hexbin.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
+sunflower.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
 
 \dontrun{
 # calculate cyclone density, takes a little while

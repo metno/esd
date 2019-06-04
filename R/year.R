@@ -3,12 +3,14 @@
 #' \code{year}, \code{month}, \code{day}, \code{season} return the years, months, days, and seasons
 #' associated with the data.
 #' 
-#' @aliases year month season season.default
+#' @aliases month day
+#' @seealso season season.default
 #'
 #' @param x an object of, e.g., class 'station', 'field', or 'zoo', or a date
-#' @param format for season, set the format of the output 'character' or 'numeric'
 #'
 #' @return a numeric for \code{year}, \code{month}, and \code{day}; A numeric or character for \code{season}
+#'
+#' @import zoo
 #'
 #' @keywords utilities
 #'
@@ -147,12 +149,35 @@ day <- function(x) {
   return(y)
 }
 
-# Used to estimate Dec-Feb, Mar-May, Jun-Aug, and Sep-Nov statistics
-# Manipulate the zoo-object by shifting the year/chonology so that
-# zoo thinks the year defined as December-November is January-December.
 #' @export
 season <- function(x, ...) UseMethod("season")
 
+#' Conversion to esd objects.
+#'
+#' Used to estimate Dec-Feb, Mar-May, Jun-Aug, and Sep-Nov statistics
+#' Manipulate the zoo-object by shifting the year/chonology so that
+#' zoo thinks the year defined as December-November is January-December.
+#' 
+#' \code{season} return the seasons associated with the data.
+#' 
+#' @aliases season
+#' @seealso year month 
+#'
+#' @param x an object of, e.g., class 'station', 'field', or 'zoo', or a date
+#' @param format for season, set the format of the output 'character' or 'numeric'
+#'
+#' @return a numeric or character
+#'
+#' @keywords utilities
+#'
+#' @examples
+#' data(bjornholt)
+#' year(bjornholt)
+#' month(bjornholt)
+#' day(bjornholt)
+#' season(bjornholt)
+#' season(bjornholt, format="numeric")
+#' 
 #' @export
 season.default <- function(x,format="character") {
   nt <- length(index(x))

@@ -2,11 +2,11 @@
 #' 
 #' Make different types of trajectory maps. Individual trajectories are mapped
 #' with map.trajectory. The number density can be visualised with
-#' map.hexbin.trajectory and map.sunflower.trajectory which are versions of
+#' hexbin.trajectory and sunflower.trajectory which are versions of
 #' \code{\link{scatter.hexbin}} and \code{\link{scatter.sunflower}} adapted to
 #' show trajectory density.
 #' 
-#' @aliases map.trajectory map.hexbin.trajectory map.sunflower.trajectory
+#' @aliases map.trajectory hexbin.trajectory sunflower.trajectory
 #' 
 #' @param x the trajectory object to be plotted.
 #' @param it A list or data.frame providing time index, e.g. month
@@ -41,8 +41,8 @@
 #' map.trajectory(imilast.M03,col="blue",alpha=0.1,projection='sphere',new=FALSE)
 #' 
 #' # plot number density for grid boxes of width 2 degrees and height 1 degree
-#' map.hexbin.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
-#' map.sunflower.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
+#' hexbin.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
+#' sunflower.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
 #' 
 #' \dontrun{
 #' # calculate cyclone density, takes a little while
@@ -64,25 +64,24 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",param=NA,
   if ('colors' %in% type | !is.na(param)) {
     segments.trajectory(y,type=type,param=param,verbose=verbose,...)
   } else if (any(c('shapes','anomaly') %in% type)) {
-    map.anomaly.trajectory(y,verbose=verbose,...)
+    anomalymap(y,verbose=verbose,...)
   } else if (any(c('trajectory','points','start','end') %in% type)) {
     if (projection=="sphere" | projection=="np" | projection=="sp") {
       if (projection=="np") latR <- 90
       if (projection=="sp") latR <- -90
-      sphere.trajectory(y,type=type,verbose=verbose,...)
+      trajectory2sphere(y,type=type,verbose=verbose,...)
     } else if (projection=="latlon" | projection=="lonlat") {
-      lonlat.trajectory(y,type=type,verbose=verbose,...)
+      trajectory2lonlat(y,type=type,verbose=verbose,...)
     }
   } else if ('density' %in% type) {
-    map.density.trajectory(y,projection=projection,verbose=verbose,...)
+    densitymap(y,projection=projection,verbose=verbose,...)
   } else print("unkown map type")
 }
 
-#' @export
-map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
+anomalymap <- function(x,col=NULL,alpha=NULL,
   main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1.5,pch='.',new=TRUE,
   verbose=FALSE,...) {
-  if (verbose) print('map.anomaly.trajectory')
+  if (verbose) print('anomalymap')
   stopifnot(is.trajectory(x))
   if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly(x)
   if(is.null(alpha)) alpha <- 0.01 + min(10/(dim(x)[1]),0.5)
@@ -319,10 +318,10 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   }
 }
 
-lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
+trajectory2lonlat <- function(x,type=c("trajectory","start","end","subset"),
     xlim=NULL,ylim=NULL,col='blue',alpha=NULL,cex=1,
     lty=1,lwd=2,main=NULL,add=FALSE,new=TRUE,verbose=FALSE,...) {
-  if (verbose) print("lonlat.trajectory")
+  if (verbose) print("trajectory2lonlat")
   x0 <- x
   if(is.null(dim(x0))) {
     dim(x) <- c(1,length(x0))
@@ -464,14 +463,14 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
   invisible(a)
 }
 
-sphere.trajectory <- function(x,
+trajectory2sphere <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=0.5,
     lty=1,lwd=2,lonR=0,latR=90,main=NULL,add=FALSE,
     type=c("trajectory","start","end","subset"),
     #show.trajectory=TRUE,show.start=TRUE,show.end=FALSE,show.subset=TRUE,
     new=TRUE,verbose=FALSE,...) {
 
-  if(verbose) print("sphere.trajectory")
+  if(verbose) print("trajectory2sphere")
   x0 <- x
   if(is.null(dim(x0))) {
     dim(x) <- c(1,length(x0))
@@ -585,8 +584,7 @@ sphere.trajectory <- function(x,
   }
 }
 
-#' @export
-map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
+densitymap <- function(x,dx=4,dy=2,it=NULL,is=NULL,
       colbar=list(pal='precip',rev=TRUE,breaks=NULL,cex=2,h=0.6,v=1),
       projection='sphere',latR=90,lonR=10,gridlines=FALSE,...) {
   stopifnot(inherits(x,c("trajectory","field")))
@@ -599,7 +597,7 @@ map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
 }
 
 #' @export
-map.hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
+hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
           xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
           xlim=NULL,ylim=NULL,col='red',border='firebrick4',
           colmap='heat.colors',scale.col=TRUE,scale.size=FALSE,
@@ -655,7 +653,7 @@ map.hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
 }
 
 #' @export
-map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
+sunflower.trajectory <- function(x,it=NULL,is=NULL,
       dx=6,dy=2,petalsize=7,
       xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
       xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6,

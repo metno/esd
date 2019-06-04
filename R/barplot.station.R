@@ -3,6 +3,8 @@
 #' @param x a 'station' object
 #' @param threshold threshold - midline of plot
 #'
+#' @importFrom graphics barplot title
+#'
 #' @export
 barplot.station <- function(x,threshold=0,...) {
   stopifnot(inherits(x,'station'))

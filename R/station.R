@@ -103,7 +103,9 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' y1 <- subset(y,is=2)
 #' map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showall=TRUE)
 #' }
-#' 
+#'
+#' @importFrom utils download.file head read.csv read.csv2 read.fwf read.table write.table
+#'
 #' @export station
 station <- function(stid=NULL,...) UseMethod("station")
 
@@ -706,17 +708,16 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 }
 
 # NOT EXPORTED - internal function
-ghcnd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,qual=NULL,param=NULL,
-	      path="data.GHCND", url=NULL,adj = TRUE,force=FALSE,flag = FALSE, off = FALSE, verbose = FALSE) {
-  
-  ele <- esd2ele(param=param) 
-  param1 <-as.character(ele2param(ele=ele,src="GHCND")[5])
+ghcnd.station <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL, qual=NULL, param=NULL,
+	      path="data.GHCND", url=NULL, adj=TRUE, force=FALSE, flag=FALSE, off=FALSE, verbose=FALSE) {
   
   if (verbose) print("station.GHCND")
   
-  scale <-as.numeric(ele2param(ele=ele,src="GHCND")[3])
-  ghcnd <- ghcnd.data(param = param1,stid = stid, src = "ghcnd", adj = adj, path = path, url=url,
-  	force = force, flag = flag, verbose = verbose,rm.file=FALSE)
+  ele <- esd2ele(param=param) 
+  param1 <- as.character(ele2param(ele=ele,src="GHCND")[5])
+  scale <- as.numeric(ele2param(ele=ele,src="GHCND")[3])
+  ghcnd <- ghcnd.data(param=param1, stid=stid, src="ghcnd", path=path, url=url,
+  	                  force=force, flag=flag, verbose=verbose, rm.file=FALSE)
   
   if (is.null(ghcnd)) return(NULL)
   

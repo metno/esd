@@ -3,16 +3,13 @@
 \name{year}
 \alias{year}
 \alias{month}
-\alias{season}
-\alias{season.default}
+\alias{day}
 \title{Conversion to esd objects.}
 \usage{
 year(x)
 }
 \arguments{
 \item{x}{an object of, e.g., class 'station', 'field', or 'zoo', or a date}
-
-\item{format}{for season, set the format of the output 'character' or 'numeric'}
 }
 \value{
 a numeric for \code{year}, \code{month}, and \code{day}; A numeric or character for \code{season}
@@ -29,5 +26,8 @@ day(bjornholt)
 season(bjornholt)
 season(bjornholt, format="numeric")
 
+}
+\seealso{
+season season.default
 }
 \keyword{utilities}

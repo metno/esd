@@ -241,7 +241,7 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,radius=5E5,
         }
       }
       if(!is.null(dim(x))) {
-        A <- density.trajectory(x,dx=dx,dy=dy,radius=radius)
+        A <- trajectory2density(x,dx=dx,dy=dy,radius=radius)
         lat <- A$lat
         lon <- A$lon
         den <- A$density
@@ -307,42 +307,3 @@ trajectory2field <- function(x,dt='month',dx=2,dy=2,radius=5E5,
   invisible(Y)
 }
 
-## density.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,R=6378) {
-##   stopifnot(is.trajectory(x))
-##   x <- subset(x,it=it,is=is)
-##   xbin <- bin.trajectory(x,dx=dx,dy=dy,n=n)
-##   lon <- factor2numeric(xbin$lon)
-##   lat <- factor2numeric(xbin$lat)
-##   freq <- factor2numeric(xbin$Freq)
-##   A <- dx*(pi/180)*R**2*abs(sin((lat+dy/2)*pi/180)-
-##                             sin((lat-dy/2)*pi/180))
-##   dens <- freq/A
-##   dens[is.infinite(dens)] <- NA
-##   X <- data.frame(lon=lon,lat=lat,density=dens)
-##   invisible(X)
-## }
-
-## bin.trajectory <- function(x,it=NULL,is=NULL,dx=2,dy=2,n=20) {
-##   stopifnot(is.trajectory(x))
-##   y <- subset(x,it=it,is=is)
-##   A <- apply(y,1,function(x) gridbin(x[colnames(y)=='lon'],
-##                       x[colnames(y)=='lat'],dx=dx,dy=dy,n=n))
-##   lon <- unlist(lapply(A,function(x) factor2numeric(x$x)))
-##   lat <- unlist(lapply(A,function(x) factor2numeric(x$y)))
-##   hits <- as.data.frame(table(lon,lat))
-##   invisible(hits[hits$Freq>0,])
-## }
-
-## gridbin <- function(x,y,dx=1,dy=1,n=20) {
-##   xy <- approx.lonlat(x,y,n=n)
-##   xx <- xy[,1]
-##   yy <- xy[,2]
-##   xx <- round(xx/dx)*dx
-##   yy <- round(yy/dy)*dy
-##   xy <- unique(cbind(xx,yy))
-##   xx <- xy[,1]
-##   yy <- xy[,2]
-##   hit <- as.data.frame(table(xx,yy))
-##   hit <- hit[hit$Freq>0,]
-##   invisible(data.frame(x=hit$xx,y=hit$yy))
-## }

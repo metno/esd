@@ -184,7 +184,7 @@
 ##     ##  
 ##     ## Checking frequency from data
 ##     frequency <- freq.data <- NULL
-##     freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
+##     freq.data <- datafrequency(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
 ##     if (!is.null(freq.data)) {if (verbose) print("Checking Frequency from the data --> [ok]")} else if (verbose) print("Checking Frequency from the data --> [fail]")
 ##     ## Checking Calendar attribute if any, otherwise set to "ordinary"  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day"
 ##     ical <- grep(c("calend"),tatt)
@@ -548,7 +548,7 @@ check.ncdf2 <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = F
     ## 
     ## Checking frequency from data
     frequency <- freq.data <- NULL
-    freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
+    freq.data <- datafrequency(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
     if (!is.null(freq.data)) {if (verbose) print("Checking Frequency from the data --> [ok]")} else if (verbose) print("Checking Frequency from the data --> [fail]")
     ## Checking Calendar attribute if any, otherwise set to "ordinary"  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day"
     ical <- grep(c("calend"),tatt)
@@ -896,7 +896,7 @@ check.ncdf <- function(ncid, param="auto",verbose = FALSE) { ## use.cdfcont = FA
     ## 
     ## Checking frequency from data
     frequency <- freq.data <- NULL
-    freq.data <- frequency.data(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
+    freq.data <- datafrequency(data=as.vector(time$vals),unit=tunit,verbose=FALSE)
     if (!is.null(freq.data)) {if (verbose) print("Checking Frequency from the data --> [ok]")} else if (verbose) print("Checking Frequency from the data --> [fail]")
     ## Checking Calendar attribute if any, otherwise set to "ordinary"  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day"
     ical <- grep(c("calend"),tatt)

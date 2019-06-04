@@ -11,7 +11,7 @@ frequency.abb  <-  substr(tolower(frequency.name),1,3)
 
 #' Calculate the frequency
 #' @export
-frequency.data <- function(data=NULL,unit=NULL,verbose=FALSE) {
+datafrequency <- function(data=NULL,unit=NULL,verbose=FALSE) {
   if (is.null(data) | is.null(unit)) stop("Both data and unit are mandatory inputs !")
   # Initialize
   freq <- NULL

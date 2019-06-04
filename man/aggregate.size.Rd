@@ -32,24 +32,8 @@ but takes care of extra house keeping, such as attributes with meta data.
 \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
 meters) for individual events (defined as gridboxes touching each other).
 }
-\examples{
-
-## S3 method for class 'station'
-data(Svalbard)
-x <- aggregate(Svalbard, month, FUN='mean', na.rm=TRUE)
-plot(x)
-
-## S3 method for class 'field'
-slp <- slp.DNMI()
-y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
-
-## Aggregate area
-w <- aggregate.area(y)
-plot(w)
-
-}
 \seealso{
-aggregate.area aggregate aggregate.comb aggregate.field
+aggregate.area aggregate
 }
 \author{
 R.E. Benestad

@@ -127,21 +127,14 @@ ghcnd.meta <- function(param=NULL, src="ghcnd", path="data.GHCND",
 
 ## SUB-FUNCTION "dataghcnd"
 #' @export
-ghcnd.data <- function(param = "PRCP", stid = "ACW00011604" , src = "ghcnd" , path = "data.GHCND",
-                       url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all",flag = FALSE, miss2na = TRUE, 
-                       force = TRUE , verbose=TRUE , save.file = FALSE, rm.file =TRUE) {
-   ## AM 15-11-2013 removed from the argument list ver ="v3.2.0.20130120"
- 
-  ## Get old path
-  ## oldpath <- getwd()
+ghcnd.data <- function(param="PRCP", stid="ACW00011604", src="ghcnd" , path="data.GHCND",
+                       url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all", flag=FALSE, miss2na=TRUE, 
+                       force=TRUE, verbose=TRUE, save.file=FALSE, rm.file =TRUE) {
+  if(verbose) print("ghcnd.data")
+  if(is.null(url)) url <- "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all"
   src <- tolower(src)
-  ## set working directory to new path
-  ##newpath <- paste(path,paste(src,ver,sep="."),"/",sep="") 
-  
-  ## if (verbose) print(paste("Setting Work Directory to ",path, sep=" -> "))
-  ##  wser()
+
   if (!file.exists(path) & save.file) {
-    ##
     test <- readline(paste("Directory,",path," does not exist ! Would you like to create it (y or n)",sep=""))
     if ((tolower(test) == "yes") | (tolower(test) == "ye") | (tolower(test) == "y")) dir.create(path)
   } 

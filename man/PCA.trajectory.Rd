@@ -2,7 +2,6 @@
 % Please edit documentation in R/pca.trajectory.R
 \name{PCA.trajectory}
 \alias{PCA.trajectory}
-\alias{pca2trajectory}
 \alias{plot.pca.trajectory}
 \title{Principle component analysis of trajectory objects.}
 \usage{

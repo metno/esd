@@ -7,8 +7,6 @@
 \alias{q5}
 \alias{q95}
 \alias{q995}
-\alias{lag.station}
-\alias{lag.field}
 \alias{filt}
 \alias{filt.default}
 \alias{exit}
@@ -59,13 +57,10 @@ from ECA\&D.}
 per decade}
 }
 \description{
-\code{lag.station} and \code{lag.station} are wrap-around functions for
-\code{\link[zoo]{lag.zoo}} that maintains all the attributes.
-}
-\details{
 \code{attrcp(x,y)} passes on attributes from \code{x} to \code{y} and
 returns the \code{y} with new attributes.
-
+}
+\details{
 \code{ensemblemean} returns the ensemble mean for dsensemble objects. The argument \code{FUN} can also be
 used to estimate other statistics, e.g \code{FUN='q95'} where
 \code{q95=function(x) apply(x,1,quantile,probs=0.95)}

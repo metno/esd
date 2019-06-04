@@ -1,8 +1,3 @@
-## Function that calculates the size of events
-## Matrix lon & lat indices: (i, j).
-## @RasmusBenestad, 2018-10-29
-
-# Aggregate size of events
 #' aggregate
 #' 
 #' The aggregation functions are based on the S3 method for \code{zoo} objects,
@@ -11,8 +6,8 @@
 #' \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
 #' meters) for individual events (defined as gridboxes touching each other).
 #' 
-#' @aliases aggregate.size aggregate.size.matrix aggregate.size.field
-#' @seealso aggregate.area aggregate aggregate.comb aggregate.field
+#' @aliases aggregate.size.matrix aggregate.size.field
+#' @seealso aggregate.area aggregate
 #' 
 #' @param x A \code{\link{station}} object
 #' @param x0 threshold defining an event
@@ -25,20 +20,6 @@
 #'
 #' @author R.E. Benestad
 #' @keywords utilities
-#' @examples
-#' 
-#' ## S3 method for class 'station'
-#' data(Svalbard)
-#' x <- aggregate(Svalbard, month, FUN='mean', na.rm=TRUE)
-#' plot(x)
-#'
-#' ## S3 method for class 'field'
-#' slp <- slp.DNMI()
-#' y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
-#'
-#' ## Aggregate area
-#' w <- aggregate.area(y)
-#' plot(w)
 #'
 #' @export
 aggregate.size <- function(x, ...) UseMethod("aggregate.size")

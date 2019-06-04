@@ -4,6 +4,8 @@
 #' 
 #' @aliases col.bar colbar
 #' @seealso colbar.ini
+#'
+#' @importFrom grDevices heat.colors rainbow rgb terrain.colors gray.colors topo.colors col2rgb cm.colors adjustcolor
 #' 
 #' @param breaks A numeric vector of breakpoints for the colours
 #' @param horiz a boolean; if TRUE add horizontal color bar, else add vertical color bar 

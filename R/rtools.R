@@ -1,7 +1,4 @@
 #' Simple and handy functions
-#' 
-#' \code{lag.station} and \code{lag.station} are wrap-around functions for
-#' \code{\link[zoo]{lag.zoo}} that maintains all the attributes.
 #'
 #' \code{attrcp(x,y)} passes on attributes from \code{x} to \code{y} and
 #' returns the \code{y} with new attributes.
@@ -40,7 +37,7 @@
 #' 
 #' \code{rmse} and \code{RMSE} calculate the root-mean-square error
 #' 
-#' @aliases as.decimal nv cv q5 q95 q995 lag.station lag.field filt
+#' @aliases as.decimal nv cv q5 q95 q995 filt
 #' filt.default exit figlab ndig attrcp ensemblemean propchange stand rmse RMSE
 #' firstyear lastyear eofvar test.ds.field test.num.predictors arec
 #' arec.default arec.station lastrains lastelementrecord strstrip bin
@@ -263,7 +260,12 @@ rmse <- function(x,y,na.rm=TRUE) {
 #' @export
 RMSE <- function(x,y,...) return(rmse(x,y,...))
 
-# Wrap-around for lag.zoo to work on station and field objects:
+#' Wrap-around for lag.zoo to work on station and field objects
+#'
+#' @aliases lag.field
+#'
+#' @importFrom stats lag
+#'
 #' @export
 lag.station <- function(x,...) {
   y <- lag(zoo(x),...)

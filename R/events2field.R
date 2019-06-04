@@ -21,21 +21,21 @@
 #' @aliases as.field.trajectory
 #' @seealso as.field as.trajectory CCI track.events
 #'
-#' @aliases density.events
+#' @aliases events2density
 #'
 #' @export
 events2field <- function(x,verbose=FALSE,...) {
   if (verbose) print("events2field")
-  y <- density.events(x,verbose=verbose,...)
+  y <- events2density(x,verbose=verbose,...)
   invisible(y)  
 }
 
 #' @export
-density.events <- function(x,dt="month",dx=1,dy=1,plot=FALSE,
+events2density <- function(x,dt="month",dx=1,dy=1,plot=FALSE,
                            lons=NULL,lats=NULL,it=NULL,is=NULL,
                            radius=5e5,unitarea=NULL,type="track",
                            param=NULL,longname=NULL,verbose=FALSE,...) {
-  if (verbose) print("density.events")
+  if (verbose) print("events2density")
   ok <- !is.na(x["time"][[1]]) & !is.na(x["lon"][[1]]) & !is.na(x["lat"][[1]])
   x <- subset(x,it=ok)
   y <- subset(x,it=it,is=is)

@@ -98,15 +98,15 @@
 #'     alpha=0.9, new=FALSE)
 #' 
 #' @export map
-map <- function(x,it=NULL,is=NULL,new=FALSE,...) UseMethod("map")
+map <- function(x,...) UseMethod("map")
 
 #' @export
-map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
+map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       projection="lonlat",xlim=NULL,ylim=NULL,zlim=NULL,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                                    show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,cex=2,
-                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
     
     ## default with no arguments will produce a map showing available station
     ## data in the esd package.
@@ -160,13 +160,13 @@ map.default <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
 }
 
 #' @export
-map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                        colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                     pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        type=c("fill","contour"),gridlines=FALSE,
                        lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                       ip=1,plot=TRUE,...) {
+                       ip=1,plot=TRUE) {
     
     ## If x is provided, map only x...
     ## default with no arguments will produce a map showing the station data in the esd package.
@@ -196,13 +196,13 @@ map.matrix <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 #' @export
-map.data.frame <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                            colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                         pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                            type=c("fill","contour"),gridlines=FALSE,
                            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                           ip=1,plot=TRUE,...) {
+                           ip=1,plot=TRUE) {
   
   attr(x,'location') <- x$location; x$location <- NULL
   attr(x,'longitude') <- x$longitude; x$longitude <- NULL
@@ -218,13 +218,13 @@ map.data.frame <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 #' @export
-map.array <- function(x,FUN='mean',ip=NULL,is=NULL,new=FALSE,
+map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       projection="lonlat",na.rm=TRUE,
                       xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                       colbar=list(col=NULL,rev=FALSE,breaks=NULL,pos=0.05,
                                   show=TRUE,type="r",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
-                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
     if (verbose) print('map.array')
     if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
     if (is.null(ip)) {
@@ -258,13 +258,13 @@ map.array <- function(x,FUN='mean',ip=NULL,is=NULL,new=FALSE,
 }
 
 #' @export
-map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,#n=15,
                      colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                  pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                      type=c("fill","contour"),gridlines=FALSE,
                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                     ip=1,plot=TRUE,...) {
+                     ip=1,plot=TRUE) {
     if (verbose) print('map.comb')
     stopifnot(inherits(x,'eof'))
     x <- subset(x,it=it,is=is)
@@ -285,13 +285,13 @@ map.comb <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 #' @export
-map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
+map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
                     xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                    ip=1,cex=1,plot=TRUE,...) {
+                    ip=1,cex=1,plot=TRUE) {
 
     if (verbose) print('map.eof')
     stopifnot(inherits(x,'eof'))
@@ -361,12 +361,12 @@ map.eof <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
 }
 
 #' @export
-map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,
                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                    type=c("fill","contour"),gridlines=FALSE,
-                   lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
+                   lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
     if (verbose) print('map.ds')
     stopifnot(inherits(x,'ds'))
     x <- subset(x,is=is)
@@ -448,14 +448,14 @@ map.ds <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 #' @export
-map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
+map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       projection="lonlat",
                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
-                      na.rm=TRUE,plot=TRUE,add=TRUE,...) {
+                      na.rm=TRUE,plot=TRUE,add=TRUE) {
     
     stopifnot(inherits(x,'field'))
     if (verbose) print('map.field')
@@ -556,13 +556,13 @@ map.field <- function(x,FUN='mean',it=NULL,is=NULL,new=FALSE,
 }
 
 #' @export
-map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.corfield <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                          colbar= list(pal=NULL,rev=FALSE,n=NULL,
                                       breaks=seq(-1,1,by=0.05),pos=0.05,show=TRUE,
                                       type="p",cex=2,h=0.6,v=1),
                          type=c("fill","contour"),gridlines=FALSE,
-                         lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
+                         lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
     
     if (verbose) print("map.corfield")
     stopifnot(inherits(x,'corfield'))
@@ -612,12 +612,12 @@ map.corfield <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 #' @export
-map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,
-                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
+                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
     if (verbose) print('map.trend')
     stopifnot(inherits(x,'field'),inherits(x,'trend'))
     x <- subset(x,it=it,is=is)
@@ -669,13 +669,13 @@ map.trend <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 #' @export
-map.pca <- function(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
+map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
                                         #cex.axis=1,cex.main=1,cex.lab=1,
                     type=c("fill","contour"),gridlines=FALSE,fig=c(0,1,0.05,0.95),
-                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE,...) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   ##
   if (verbose) print(paste('map.pca',FUN))
   
@@ -724,12 +724,12 @@ map.pca <- function(x,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
 }
 
 #' @export
-map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                  pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
-                    verbose=FALSE,plot=TRUE,...) {
+                    verbose=FALSE,plot=TRUE) {
   if(verbose) print("map.mvr")
   x <- subset(x,it=it,is=is)
   map.field(x,new=new,FUN="mean",colbar=colbar,xlim=xlim,ylim=ylim,
@@ -738,12 +738,12 @@ map.mvr <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 #' @export
-map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                     colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
                                  cex=2,show=TRUE,h=0.6, v=1,pos=0.05), colbar2= NULL,
                     type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE,...) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE) {
     if (verbose) print('map.cca')
     if (is.null(colbar2)) colbar2 <- colbar1
     ##x <- subset(x,it=it,is=is)
@@ -814,7 +814,7 @@ map.cca <- function(x,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 #' @export
-map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
+map.events <- function(x,...,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
                        param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,
                                    pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
@@ -822,7 +822,7 @@ map.events <- function(x,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
                        lty=1,type=c("points","trajectory","start","end"),
                        border=FALSE,
                        projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,add=FALSE,
-                       verbose=FALSE,...) {
+                       verbose=FALSE) {
     if(verbose) print("map.events")
     x0 <- x
     x <- subset(x,it=it,is=is,verbose=verbose)

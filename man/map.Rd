@@ -28,17 +28,11 @@
 \alias{mask}
 \title{Plot maps for esd objects}
 \usage{
-map(x, it = NULL, is = NULL, new = FALSE, ...)
+map(x, ...)
 }
 \arguments{
 \item{x}{the object to be plotted; in \code{rotM}, x holds a vector of
 x-coordinates.}
-
-\item{it}{see \code{\link{subset}}}
-
-\item{is}{see \code{\link{subset}}}
-
-\item{new}{TRUE: create a new graphic device.}
 
 \item{...}{further arguments passed to or from other methods.}
 
@@ -50,6 +44,12 @@ specify the colour `pal'*ette (`pal'), the number of breaks (`n'), values of
 `rev' argument, will produce a reversed color bar if set to TRUE. The other
 arguments (`type',`h' and `v') are more specific to \code{col.bar} and are
 used only if argument `fancy' is set to TRUE (not yet finished).}
+
+\item{it}{see \code{\link{subset}}}
+
+\item{is}{see \code{\link{subset}}}
+
+\item{new}{TRUE: create a new graphic device.}
 
 \item{projection}{Projections: c("lonlat","sphere","np","sp") - the latter
 gives stereographic views from the North and south poles.}
