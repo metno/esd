@@ -56,8 +56,10 @@
 #' (\code{\link{rgeom}}), and the annual mean number was estimated from the
 #' sample series.
 #' 
-#' 
 #' @aliases WG WG.station WG.fw.day.precip WG.FT.day.t2m FTscramble
+#'
+#' @importFrom stats start end approx pnorm qnorm qqnorm sd dgeom rgeom rexp qexp pexp dpois
+#'
 #' @param x station object
 #' @param option Define the type of WG
 #' @param amean annual mean values. If NULL, use those estimated from x; if NA,

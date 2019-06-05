@@ -1566,7 +1566,7 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
 
 #' Routine for sorting the order of station series.
 #' @export
-sort.station <- function(x,is=NULL,decreasing=TRUE) {
+sort.station <- function(x,decreasing=TRUE,...,is=NULL) {
   if (is.null(is)) is <- order(stid(x),decreasing=decreasing)
   y <- zoo(x)[,is]
   y <- attrcp(x,y)

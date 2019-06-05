@@ -4,12 +4,12 @@
 \alias{summary.ncdf4}
 \title{Summary of netcdf file}
 \usage{
-\method{summary}{ncdf4}(ncfile, verbose = TRUE)
+\method{summary}{ncdf4}(object, ..., verbose = TRUE)
 }
 \arguments{
-\item{ncfile}{filename of netcdf file}
-
 \item{verbose}{a boolean; if TRUE print information about progress}
+
+\item{ncfile}{filename of netcdf file}
 }
 \description{
 Summary of netcdf file

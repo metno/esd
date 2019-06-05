@@ -4,7 +4,7 @@
 \alias{sort.station}
 \title{Routine for sorting the order of station series.}
 \usage{
-\method{sort}{station}(x, is = NULL, decreasing = TRUE)
+\method{sort}{station}(x, decreasing = TRUE, ..., is = NULL)
 }
 \description{
 Routine for sorting the order of station series.

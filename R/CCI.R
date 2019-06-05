@@ -43,7 +43,9 @@
 #' Identification method for generating storm statistics', Tellus A, in press.
 #' Benestad (2005)
 #' 
-#' 
+#' @importFrom utils txtProgressBar setTxtProgressBar data
+#' @importFrom graphics points image contour lines
+#'
 #' @aliases CCI stopCCI
 #' @param Z A field object.
 #' @param m Number of harmonics used for fit to profile (Fourier truncation),

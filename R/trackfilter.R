@@ -2,7 +2,7 @@
 trackfilter <- function(x,...) UseMethod("trackfilter")
 
 #' @export
-trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
+trackfilter.events <- function(x,...,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"events"))
   if(!is.null(param) & (!is.null(pmin) | !is.null(pmax))) {
@@ -37,7 +37,7 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
 }
 
 #' @export
-trackfilter.trajectory <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
+trackfilter.trajectory <- function(x,...,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"trajectory"))
   if(!is.null(param) & (!is.null(pmin) | !is.null(pmax))) {

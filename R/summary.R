@@ -14,7 +14,9 @@
 #' summary(dse.Oslo)
 #' 
 #' @export
-summary.dsensemble <- function(x,years=seq(1990,2090,by=20)) {
+summary.dsensemble <- function(object,...,years=seq(1990,2090,by=20),verbose=FALSE) {
+    if(verbose) print("summary.dsensemble")
+    x <- object
     x0 <- subset(x,it=0)
     djf <- subset(x,it='djf')
     mam <- subset(x,it='mam')
@@ -66,7 +68,9 @@ summary.dsensemble <- function(x,years=seq(1990,2090,by=20)) {
 #' 
 #' @export
 #' @export
-summary.station <- function(x,im=1:12) {
+summary.station <- function(object,...,im=1:12,verbose=FALSE) {
+  if(verbose) print("summary.station")
+  x <- object
   tab <- matrix(rep(NA,12*7),12,7)
   for (i in 1:12) {
     y <- subset(x,it=month.abb[i])
@@ -98,8 +102,9 @@ summary.cca <- function(x) {
 #' @seealso retrieve check.ncdf4
 #'
 #' @export
-summary.ncdf4 <- function(ncfile, verbose = TRUE) {
+summary.ncdf4 <- function(object, ..., verbose = TRUE) {
   if(verbose) print("summary.ncdf4")
+  ncfile <- object
   if (is.character(ncfile)) {
    if (!file.exists(ncfile)) stop(paste("Sorry, the netcdf file '", ncfile,
       			                "' does not exist or the path has not been set correctly !",sep =""))

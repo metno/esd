@@ -4,7 +4,7 @@
 \alias{nearest}
 \title{\code{nearest} selects the time series in \code{x} that are closest to the locations specified in \code{is}}
 \usage{
-nearest(x, is, ...)
+nearest(x, is)
 }
 \arguments{
 \item{x}{a \code{station} or \code{field} object (if x is a field it will first be transformed to a station object)}

@@ -32,9 +32,10 @@
 #' the two wind components from a specific site and hence extract the most
 #' important wind directions/speeds.
 #' 
-#' 
 #' @aliases EOF EOF.default EOF.field EOF.comb eof2field PCA PCA.default
 #' PCA.station pca2station
+#'
+#' @importFrom stats approx sd acf
 #'
 #' @seealso as.eof
 #'

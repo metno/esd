@@ -107,7 +107,7 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' @importFrom utils download.file head read.csv read.csv2 read.fwf read.table write.table
 #'
 #' @export station
-station <- function(stid=NULL,...) UseMethod("station")
+station <- function(...) UseMethod("station")
 
 #' @export
 station.ecad <- function(...) {
@@ -158,7 +158,7 @@ station.ghcnm <- function(...) {
 }
 
 # NOT EXPORTED
-station.daily <- function(src=NULL,...) {
+station.daily <- function(...,src=NULL) {
   
   SRC <- c("METNOD","ECAD","GHCND")  
   if (is.null(src)) src <- SRC else src <- intersect(tolower(src),tolower(SRC))
@@ -169,7 +169,7 @@ station.daily <- function(src=NULL,...) {
 }
 
 # NOT EXPORTED
-station.monthly <- function(src=NULL,...) {
+station.monthly <- function(...,src=NULL) {
   
   SRC <- c("NACD","NARP","NORDKLIM","METNOM","GHCNM")
   if (is.null(src)) src <- SRC else src <- intersect(src,SRC)
@@ -180,9 +180,9 @@ station.monthly <- function(src=NULL,...) {
 }
 
 #' @export
-station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NULL,url = NULL,
-                            stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
-                            it= NULL,nmin=NULL, plot=FALSE, verbose=FALSE,
+station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
+                            qual=NULL, url = NULL, stid=NULL, lon=NULL, lat=NULL, alt=NULL,
+			    cntr=NULL, it= NULL,nmin=NULL, plot=FALSE, verbose=FALSE,
                             path.ecad=NULL,url.ecad=NULL,
                             path.ghcnm=NULL,url.ghcnm=NULL,
                             path.ghcnd=NULL,url.ghcnd=NULL,
@@ -1055,7 +1055,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 }
 
 #' @export
-station.giss <- function(url) {
+station.giss <- function(...,url=NULL) {
   t2m <- read.table(url,skip=2,header=TRUE)
   meta <- read.table(url,nrows=1,as.is=TRUE)
   lat <- as.numeric(substr(meta$V3,2,nchar(meta$V3)-2))

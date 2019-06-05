@@ -4,7 +4,7 @@
 # French tidal stations: http://www.sonel.org/-Tide-gauges,29-.html?lang=en
 # Daily means
 #' @export
-station.sonel <- function(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
+station.sonel <- function(...,urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dRSCOF.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dLCONQ.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dBREST.slv',
@@ -47,7 +47,7 @@ station.sonel <- function(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/d
 }
 
 #' @export
-station.gloss <- function(url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',is=NULL,verbose=TRUE) {
+station.gloss <- function(...,url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',is=NULL,verbose=TRUE) {
   if (!file.exists('rlr_monthly.zip')) download.file(url,'rlr_monthly.zip')
   con1 <- unzip('rlr_monthly.zip', files="rlr_monthly/filelist.txt")
   meta <- read.table('rlr_monthly/filelist.txt',sep=';')
@@ -86,7 +86,7 @@ station.gloss <- function(url='https://www.psmsl.org/data/obtaining/rlr.monthly.
 }
 
 #' @export
-station.newlyn <- function(path='data/gloss-241_Newlyn',verbose=TRUE) {
+station.newlyn <- function(...,path='data/gloss-241_Newlyn',verbose=TRUE) {
   if (!file.exists(path)) {
     download.file('http://www.gloss-sealevel.org/extlink/https%3A//www.bodc.ac.uk/data/online_delivery/international_sea_level/gloss/ascii/g241.zip',destfile='newlyn.zip')
     dir.create(path)

@@ -4,12 +4,13 @@
 \alias{summary.dsensemble}
 \title{Show summary of objects}
 \usage{
-\method{summary}{dsensemble}(x, years = seq(1990, 2090, by = 20))
+\method{summary}{dsensemble}(object, ..., years = seq(1990, 2090, by =
+  20), verbose = FALSE)
 }
 \arguments{
-\item{x}{an object of type 'DSensemble'}
-
 \item{years}{A set of years for which to produce summary statistics}
+
+\item{x}{an object of type 'DSensemble'}
 }
 \value{
 A matrix containing summary statistics

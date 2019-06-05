@@ -22,7 +22,9 @@
 #' @return A CCA object: a list containing a.m, b.m, u.k, v.k, and r,
 #' describing the Canonical Correlation variates, patterns and correlations.
 #' a.m and b.m are the patterns and u.k and v.k the vectors (time evolution).
-#' 
+#'
+#' @importFrom stats cov cor
+#'
 #' @examples
 #' 
 #' # CCA with two eofs

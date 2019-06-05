@@ -38,7 +38,7 @@
 #' plot(w)
 #'
 #' @export
-aggregate.area <- function(x,is=NULL,it=NULL,FUN='sum',
+aggregate.area <- function(x,...,is=NULL,it=NULL,FUN='sum',
                            na.rm=TRUE,smallx=FALSE,verbose=FALSE,
                            a=6378, threshold=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)

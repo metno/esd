@@ -5,7 +5,7 @@
 \alias{season}
 \title{Conversion to esd objects.}
 \usage{
-\method{season}{default}(x, format = "character")
+\method{season}{default}(x, format = "character", verbose = FALSE)
 }
 \arguments{
 \item{x}{an object of, e.g., class 'station', 'field', or 'zoo', or a date}

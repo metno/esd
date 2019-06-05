@@ -6,7 +6,7 @@
 \alias{matchdate.default}
 \title{Match date of one object with another object or date string}
 \usage{
-matchdate(x, it, verbose = FALSE, ...)
+matchdate(x, it, verbose = FALSE)
 }
 \arguments{
 \item{x}{input object (e.g., \code{station}, \code{field} or \code{zoo}) with a date index}

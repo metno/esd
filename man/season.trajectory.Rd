@@ -9,10 +9,12 @@
 \alias{sort.trajectory}
 \title{Functions to process and analyse storm trajectories}
 \usage{
-\method{season}{trajectory}(x)
+\method{season}{trajectory}(x, format = "character", verbose = FALSE)
 }
 \arguments{
 \item{x}{A trajectory object}
+
+\item{verbose}{if TRUE print information about progress}
 
 \item{\dots}{Other arguments}
 
@@ -21,8 +23,6 @@ regards to the first time step of the trajectory and 'mean' centers the
 trajectories around the mean longitude and latitude}
 
 \item{param}{parameters to calculate anomaly of}
-
-\item{verbose}{if TRUE print information about progress}
 }
 \value{
 A trajecory object

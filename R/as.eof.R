@@ -157,17 +157,17 @@ as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
 }
 
 #' @export
-as.eof.dsensemble.pca <- function(X,...,is=NULL,it=NULL,ip=NULL,verbose=FALSE) {
+as.eof.dsensemble.pca <- function(x,...,is=NULL,it=NULL,ip=NULL,verbose=FALSE) {
   if (verbose) print('as.eof.dsensemble.pca')
-  stopifnot(inherits(X,"dsensemble") & inherits(X,"pca"))
-  if (inherits(X,"eof")) {
-      invisible(X)
+  stopifnot(inherits(x,"dsensemble") & inherits(x,"pca"))
+  if (inherits(x,"eof")) {
+      invisible(x)
   } else {
-    eof <- pca2eof(X$pca)
+    eof <- pca2eof(x$pca)
     eof <- subset(eof,ip=ip)
     if (!is.null(is)) eof <- subset(eof,is=is,it=it,verbose=verbose)
-    X$eof <- eof 
-    class(X) <- c("dsensemble", "eof", "list")
-    invisible(X)
+    x$eof <- eof 
+    class(x) <- c("dsensemble", "eof", "list")
+    invisible(x)
   }
 }

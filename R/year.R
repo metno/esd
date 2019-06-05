@@ -150,7 +150,7 @@ day <- function(x) {
 }
 
 #' @export
-season <- function(x, ...) UseMethod("season")
+season <- function(x,format="character",verbose=FALSE) UseMethod("season")
 
 #' Conversion to esd objects.
 #'
@@ -179,7 +179,8 @@ season <- function(x, ...) UseMethod("season")
 #' season(bjornholt, format="numeric")
 #' 
 #' @export
-season.default <- function(x,format="character") {
+season.default <- function(x,format="character",verbose=FALSE) {
+  if(verbose) print("season.default")
   nt <- length(index(x))
   season <- rep('',nt)
   m <- month(x)

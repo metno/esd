@@ -4,12 +4,12 @@
 \alias{summary.station}
 \title{Show summary of objects}
 \usage{
-\method{summary}{station}(x, im = 1:12)
+\method{summary}{station}(object, ..., im = 1:12, verbose = FALSE)
 }
 \arguments{
-\item{x}{an object of type 'station'}
-
 \item{im}{The order of months in the table. Use \code{im=c(10:12,1:9)} for Oct-Sep.}
+
+\item{x}{an object of type 'station'}
 }
 \value{
 A matrix containing summary statistics

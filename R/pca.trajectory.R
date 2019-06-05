@@ -125,14 +125,14 @@ pca2trajectory <- function(X,verbose=FALSE) {
 }
 
 #' @export
-plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
+plot.pca.trajectory <- function(x,...,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
                            main=NULL,verbose=FALSE) {
 
   if(verbose) print("plot.pca.trajectory")
-  stopifnot(!missing(X), inherits(X,"trajectory"))
-  if (inherits(X,'pca')) {
-    pca <- X; X <- pca2trajectory(pca)
-  } else pca <- PCA.trajectory(X,param=param)
+  stopifnot(!missing(x), inherits(x,"trajectory"))
+  if (inherits(x,'pca')) {
+    pca <- x; x <- pca2trajectory(pca)
+  } else pca <- PCA.trajectory(x,param=param)
   
   if(verbose) print("Extractpatterns, PCs and eigenvalues")
   colvec <- c('red3','mediumblue','darkolivegreen3',

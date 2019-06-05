@@ -5,7 +5,7 @@
 #'        a \code{station} or \code{field} object whos longitudes and latitudes will be used
 #'
 #' @export
-nearest <- function(x,is,...) UseMethod("nearest")
+nearest <- function(x,is) UseMethod("nearest")
 
 #' @export
 nearest.station <- function(x,is) {

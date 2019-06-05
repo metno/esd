@@ -39,11 +39,16 @@
 #' lines(y[1,ilon], y[1,ilat], col="blue", lty=2)
 #'
 #' @export
-season.trajectory <- function(x) {
+season.trajectory <- function(x, format="character",verbose=FALSE) {
+  if(verbose) print("season.trajectory")
   stopifnot(!missing(x), inherits(x,"trajectory"))
   mn <- month(x)
   mlist <- c(12,1:11)
-  slist <- c(1,1,1,2,2,2,3,3,3,4,4,4)
+  slist <- c(rep(1,3),rep(2,3),rep(3,3),rep(4,4))
+  if(format=="character") {
+    slist <- sapply(slist,
+      function(x) switch(x, "1"="djf", "2"="mam", "3"="jja", "4"="son"))
+  }
   sn <- sapply(mn,function(x) slist[mlist==x])
   invisible(sn)
 }
@@ -74,7 +79,7 @@ param.trajectory <- function(x,param=NULL,FUN='mean') {
 }
 
 #' @export
-sort.trajectory <- function(x) {
+sort.trajectory <- function(x, decreasing=FALSE, ...) {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   if (any('sorted' %in% attr(x,'aspect'))) {
     invisible(x)
@@ -84,7 +89,7 @@ sort.trajectory <- function(x) {
     while (any(duplicated(date))) {
       date[duplicated(date)] <- date[duplicated(date)]+60
     }
-    y <- x[order(date),]
+    y <- x[order(date, decreasing=decreasing),]
     y <- attrcp(x,y)
     attr(y,'aspect') <- c('sorted',attr(x,'aspect'))
     class(y) <- class(x)

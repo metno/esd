@@ -20,12 +20,9 @@
 \alias{allgood}
 \title{Retrieve meta data and data from observational weather stations.}
 \usage{
-station(stid = NULL, ...)
+station(...)
 }
 \arguments{
-\item{stid}{A string of characters as an identifier of the weather/climate
-station.}
-
 \item{loc}{A string of characters as the name of the location
 (weather/climate station) or an object of class "stationmeta".}
 
@@ -38,6 +35,9 @@ degrees Celcius)}
 
 \item{src}{Source: limit the downscaling to a specific data set ("NARP",
 "NACD", "NORDKLIMA", "GHCNM", "METNOM", "ECAD", "GHCND" and "METNOD")}
+
+\item{stid}{A string of characters as an identifier of the weather/climate
+station.}
 
 \item{lon}{Numeric value of longitude (in decimal degrees East) for the
 reference point (e.g. weather station) as a single value or a vector

@@ -64,6 +64,9 @@ ltp <- function(x,type='exponential',...) {
 #' DSensemble.precip DSensemble.annual DSensemble.season DSensemble.field
 #' DSensemble.mu.worstcase DSensemble.pca DSensemble.eof
 #'
+#' @importFrom graphics par grid segments text axis
+#' @importFrom stats ks.test pnorm acf sd na.pass lm rnorm window start end
+#'
 #' @param y A station object.
 #' @param plot Plot intermediate results if TRUE.
 #' @param path The path where the GCM results are stored.

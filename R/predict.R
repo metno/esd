@@ -43,8 +43,9 @@
 #' plot(project.ds(ds))
 #' 
 #' @export
-predict.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
+predict.ds <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
+  x <- object
   stopifnot(!missing(x),inherits(x,"ds"))
 
   if ( inherits(x,c('eof','comb')) & (is.null(newdata) | is.logical(newdata)) ) {
@@ -96,8 +97,10 @@ predict.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
 }
 
 #' @export
-predict.ds.station <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
-  if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
+predict.ds.station <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+  if (verbose) print("predict.ds.pca")
+  x <- object
+  if(verbose) print(paste(class(x),collapse='-'))
   if (is.null(names(newdata))) names(newdata) <- paste('X',1:dim(newdata)[2],sep='.')
   t <- index(as.eof(newdata))
   newdata <- data.frame(coredata(as.eof(newdata)))
@@ -116,9 +119,11 @@ predict.ds.station <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=F
 }
 
 #' @export
-predict.ds.eof <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
+predict.ds.eof <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+  if (verbose) print("predict.ds.eof")
+  x <- object  
   stopifnot(!missing(x),inherits(x,"ds"))
-  if (verbose) print(paste("predict.ds.eof",paste(class(x),collapse='-')))
+  if (verbose) print(paste(paste(class(x),collapse='-')))
   X <- as.eof(x)
   if (verbose) print(paste(class(X),collapse='-'))
   #print(dim(X))
@@ -191,8 +196,10 @@ predict.ds.eof <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE
 }
 
 #' @export
-predict.ds.pca <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
-  if (verbose) print(paste("predict.ds.pca",paste(class(x),collapse='-')))
+predict.ds.pca <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+  if (verbose) print("predict.ds.pca")
+  x <- object
+  if(verbose) print(paste(class(x),collapse="-"))
   if (is.null(newdata)) {
     newdata <- data.frame(coredata(as.eof(x)))
     t <- index(as.eof(x))
@@ -219,10 +226,10 @@ predict.ds.pca <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE
 }
 
 #' @export
-predict.ds.comb <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
-  ## based on predict.ds.eof function
-  stopifnot(!missing(x),inherits(x,"ds"))
+predict.ds.comb <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print("predict.ds.comb")
+  x <- object
+  stopifnot(!missing(x),inherits(x,"ds"))  
   ## If newdata is set as NULL, reassign it to FALSE
   if (is.null(newdata)) newdata <- FALSE
   
@@ -296,10 +303,10 @@ predict.ds.comb <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALS
 }
 
 #' @export
-project.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
-  ## based on predict.ds.eof function
-  stopifnot(!missing(x),inherits(x,"ds")) ## ,inherits(x,'comb')
+project.ds <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print("project.ds")
+  x <- object
+  stopifnot(!missing(x),inherits(x,"ds"))
   
   if (is.null(newdata)) {
     X <- attr(x,'eof')
@@ -378,9 +385,8 @@ project.ds <- function(x,newdata=NULL,...,addnoise=FALSE,n=100,verbose=FALSE) {
 # a vector where most variables are set to zero apart from one
 # variable set to unity for the identification of teleconnection pattern.
 #' @export
-predict.mvr <- function(x, newdata=NULL, ..., verbose=FALSE) {
+predict.mvr <- function(object, ..., newdata=NULL, verbose=FALSE) {
   if(verbose) print("predict.mvr")
-  object <- x
   if (is.null(newdata)) newdata <- object$data
   x <- newdata
   
@@ -407,32 +413,11 @@ predict.mvr <- function(x, newdata=NULL, ..., verbose=FALSE) {
 }
 
 #' @export
-predict.cca <- function(x, newdata=NULL, ..., verbose=FALSE) {
+predict.cca <- function(object, ..., newdata=NULL, verbose=FALSE) {
   if(verbose) print("predict.cca")
+  x <- object
   if (!is.null(newdata)) X <- newdata else X <- x$X
-  #predict.CCA <- function(Psi,X) {
-  
-  #if ( (class(X)[1]!="eof") & (class(X)[1]!="field")) stop('Need a field or EOF object!')
-  #type <- class(X)
-  #if (type[1]=="eof") X <- EOF2field(X)
-  #X <- field$dat
-  #d <- dim(X); dim(X) <- c(d[1],d[2]*d[3])
-  #X <- t(X)
-  #print(dim(Psi)); print(dim(X)); print(d)
   Y.hat <-  Psi(x) %*% X
-  #field$dat <- t(Y.hat)
-  #print(dim(field$dat))
-  #d1 <- attr(Psi,"dims")
-  #dim(field$dat) <- c(d[1],d1[2],d1[3])
-  #field$lon <- attr(Psi,"lon"); nx <- length(field$lon)
-  #field$lat <- attr(Psi,"lat"); ny <- length(field$lat)
-  #field$id.x <- rep("CCA",nx*ny)
-  #field$id.lon <- rep("CCA",nx)
-  #field$id.lat <- rep("CCA",ny)
-  #field$id.t <- rep("CCA",d[1])
-  #print("HERE")
-  #if (type[1]=="eof") result <- EOF(field) else result <- field
-  #result
   Y.hat <- attrcp(Y.hat,X)
-  Y.hat
+  return(Y.hat)
 }

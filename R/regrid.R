@@ -65,8 +65,8 @@ sparseMproduct <- function(beta,x) {
 #' Most of the elements in Beta are zero!
 #' 
 #' 
-#' @aliases regrid regrid.weights regrid.default regrid.field regrid.station
-#' regrid.matrix regrid.eof regrid.eof2field sparseMproduct nearest
+#' @aliases regrid regrid.default regrid.field regrid.station
+#' regrid.matrix regrid.eof sparseMproduct nearest
 #' nearest.station nearest.field
 #' @param xo Old x-coordinates (longitudes)
 #' @param yo Old y-coordinates (latitudes)
@@ -122,11 +122,10 @@ sparseMproduct <- function(beta,x) {
 #' }
 #' 
 #' @export regrid
-regrid <- function(x,is,it=NULL,...)
+regrid <- function(x,is=NULL,...)
   UseMethod("regrid")
 
-#' @export
-regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
+regridweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 # Compute weights for regular grids: (xo,yo) - the field class
   
   lindist <- function(x,X) {
@@ -249,8 +248,8 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
 }
 
 
-regrid.temporal <- function(x,it,verbose=FALSE) {
-  if (verbose) print('regrid.temporal')
+regridtemporal <- function(x,it,verbose=FALSE) {
+  if (verbose) print('regridtemporal')
   stopifnot(is.field(x))
   if (verbose) {print(index(x)); print(it)}
   if (verbose) print(paste(sum(is.finite(x)),'data-boxes with valid data and',
@@ -270,16 +269,12 @@ regrid.temporal <- function(x,it,verbose=FALSE) {
   z <- zoo(z,order.by=it)
   z <- attrcp(x,z)
   class(z) <- class(x)
-  if (verbose) print('finished regrid.temporal')
+  if (verbose) print('finished regridtemporal')
   return(z)
 }
 
-regrid.default <- function(x,is=NULL,it=NULL,verbose=FALSE,...) {
-  print('not used')
-}
-
 #' @export
-regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose=FALSE) {
+regrid.field <- function(x,is=NULL,...,it=NULL,verbose=FALSE,approach="field",clever=FALSE) {
 
   if (verbose) print("regrid.field ")
   stopifnot(inherits(x,'field'))
@@ -292,7 +287,7 @@ regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose
   x <- sp2np(x)
   
   ## If it is provided, also regrid in time
-  if (!is.null(it)) x <- regrid.temporal(x,it,verbose=verbose)
+  if (!is.null(it)) x <- regridtemporal(x,it,verbose=verbose)
   if (is.null(is)) return(x)
   
   ## case wether lon or lat is given in is i.e. regrid on these values along the other dimension
@@ -385,8 +380,8 @@ regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose
   # What does this do?
   # x <- subset(x,is=list(i=lon.old,j=lat.old))
   
-#  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
-  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
+#  beta <- regridweights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
+  beta <- regridweights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
   if (verbose) {print("Weight matrix");  print(dim(beta))}
                                           
   d <- dim(x)
@@ -455,7 +450,7 @@ regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose
 
 
 #' @export
-regrid.matrix <- function(x,is,verbose=FALSE) {
+regrid.matrix <- function(x,is=NULL,...,verbose=FALSE) {
 # assumes that dimensions of x are [x,y,(t)] and that the coordinates are
 # provided as attributes as in field
   
@@ -478,7 +473,7 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
   if (verbose) {str(lon.old);str(lat.old);str(lon.new);str(lat.new)}
   if (is.null(lon.old) | is.null(lat.old) | is.null(lon.new) | is.null(lat.new)) return(NULL)
 
-  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
+  beta <- regridweights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
   if (verbose) {print("Weight matrix");  print(dim(beta)); print(attr(beta,"index"))}
   X <- x;
   dim(X) <- c(d[1]*d[2],d[3])
@@ -506,7 +501,8 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
 
 
 #' @export
-regrid.eof <- function(x,is,verbose=FALSE) {
+regrid.eof <- function(x,is=NULL,...,verbose=FALSE) {
+  if(verbose) print("regrid.eof")
   stopifnot(inherits(x,'eof'))
   if (is.list(is)) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
   if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof')) ) {
@@ -524,7 +520,7 @@ regrid.eof <- function(x,is,verbose=FALSE) {
               length(lat.old),"to",
               length(lon.new),"x",length(lat.new)))  
 
-  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new)
+  beta <- regridweights(lon.old,lat.old,lon.new,lat.new)
                                           
   #print(dim(beta))
   X <- attr(x,'pattern')
@@ -570,11 +566,10 @@ regrid.eof <- function(x,is,verbose=FALSE) {
   invisible(y)
 }
 
-regrid.eof2field <- function(x,is) {
+regrid.eof2field <- function(x,is=NULL,...,verbose=FALSE) {
+  if(verbose) print("regrid.eof2field")
   stopifnot(inherits(x,'field'),inherits(is,'list'))
-  print("regrid.eof.field - estimate EOFs")
 
- #greenwich <- attr(x,'greenwich')
   if ( greenwich & (min(lon.new < 0)) ) x <- g2dl(x,greenwich=FALSE)
   eof0 <- EOF(x)
   eof1 <- regrid(eof0,is)

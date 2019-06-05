@@ -1,9 +1,8 @@
 # Documentation in subset.R
 #' @export
-subset.station <- function(x,it = NULL,is=NULL,loc=NULL , param = NULL,
-                           stid = NULL ,lon = NULL, lat = NULL, 
-                           alt = NULL, cntr = NULL, src = NULL , nmin = NULL,
-                           verbose=FALSE) {
+subset.station <- function(x, ..., it=NULL, is=NULL, loc=NULL, param=NULL,
+                           stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
+			   src=NULL, nmin=NULL, verbose=FALSE) {
     
     ##
     if (verbose) print('subset.station')
@@ -338,7 +337,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 }
     
 #' @export
-subset.stationmeta <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+subset.stationmeta <- function(x,..., it=NULL, is=NULL, verbose=FALSE) {
   if(verbose) print('subset.stationmeta')
   if (is.null(is)) is <- rep(TRUE,dim(x)[1])
   if (is.list(is)) {

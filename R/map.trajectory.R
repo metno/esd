@@ -728,13 +728,19 @@ sunflower.trajectory <- function(x,it=NULL,is=NULL,
 }
 
 #' @export
-map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
-      xlim=NULL,ylim=NULL,main=NULL,m=2,alpha=0.05,param=c('lon','lat')) {
+map.pca.trajectory <- function(x,...,projection="sphere",lonR=NULL,latR=NULL,
+                               xlim=NULL,ylim=NULL,main=NULL,m=2,alpha=0.05,
+			       param=c('lon','lat'),verbose=FALSE) {
 
+  if(verbose) print('map.pca.trajectory')
+  X <- x
   stopifnot(!missing(X), inherits(X,"trajectory"))
   if (inherits(X,'pca')) {
-    pca <- X; X <- pca2trajectory(pca)
-  } else pca <- PCA.trajectory(X,param=param)
+    pca <- X
+    X <- pca2trajectory(pca)
+  } else {
+    pca <- PCA.trajectory(X,param=param)
+  }
 
   if (any('anomaly' %in% attr(X,'aspect'))) X <- anomaly2trajectory(X)
   

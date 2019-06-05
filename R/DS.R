@@ -109,10 +109,13 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' This 'bias correction' is described in Imbert and Benestad (2005),
 #' \emph{Theor. Appl. Clim.} \url{http://dx.doi.org/10.1007/s00704-005-0133-4}.
 #' 
-#' 
 #' @aliases DS DS.default DS.station DS.list DS.eof DS.comb DS.field
 #' DS.t2m.month.field DS.t2m.season.field DS.precip.season.field DS.freq
 #' DS.spell DS.pca DS.seasonalcycle biasfix sametimescale
+#'
+#' @importFrom stats predict var
+#' @importFrom utils str 
+#'
 #' @param y The predictand - the station series representing local climate
 #' parameter
 #' @param X The predictor - an \code{\link{EOF}} object or a list of
@@ -338,7 +341,6 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
     ##if (length(index(X)) == length(index(y)))
     caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
                            weights=weights) 
-    browser()
     predat <- data.frame(X=as.matrix(coredata(X0)))
     colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
     if (is.null(names(X))) names(X) <- 1:dim(X)[2]

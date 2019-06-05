@@ -6,7 +6,10 @@
 #' plot.eof.comb plot.field plot.spell plot.cca plot.ds plot.ds.pca plot.ds.eof
 #' plot.dsx plot.dsensemble plot.diagnose plot.xval plot.diagnose.comb.eof
 #' plot.diagnose.matrix plot.diagnose.dsensemble plot.nevents plot.ssa
-#' 
+#'
+#' @importFrom graphics par grid segments text axis legend polygon
+#' @importFrom grDevices dev.new dev.off
+#'  
 #' @param x the object to be plotted
 #' @param ip Which EOF/CCA pattern (mode) to plot
 #' @param col Colour
@@ -823,13 +826,13 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
 }
 
 #' @export
-plot.pca <- function(y,...,cex=1,verbose=FALSE,new=TRUE) {
+plot.pca <- function(x,...,cex=1,verbose=FALSE,new=TRUE) {
   if (verbose) print('plot.pca')
-  if(inherits(y,"trajectory")) {
-    plot.pca.trajectory(y,cex=cex,new=new,verbose=verbose,...)
+  if(inherits(x,"trajectory")) {
+    plot.pca.trajectory(x,cex=cex,new=new,verbose=verbose,...)
   } else {
-    attr(y,'longname') <- attr(y,'longname')[1]
-    plot.eof.field(y,verbose=verbose,new=new,cex=cex,...)
+    attr(x,'longname') <- attr(x,'longname')[1]
+    plot.eof.field(x,verbose=verbose,new=new,cex=cex,...)
   }
 }
 
@@ -1226,7 +1229,7 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
 }
 
 #' @export
-plot.xval <- function(x,new=TRUE,verbose=FALSE,...) {
+plot.xval <- function(x,...,new=TRUE,verbose=FALSE) {
   if(verbose) print("plot.xval")
   if (new) dev.new()
   par(bty="n")
@@ -1545,7 +1548,7 @@ plot.xsection <- function(x,...) {
 
 # plot wet/dry or cold/warm spells.
 #' @export
-plot.spell <- function(x,xlim=NULL,ylim=NULL) {
+plot.spell <- function(x,...,xlim=NULL,ylim=NULL) {
   bar <- function(x,col) {
     rect(x[1],x[2],x[3],x[4],col=col,border=col)
   }
@@ -1590,7 +1593,9 @@ plot.spell <- function(x,xlim=NULL,ylim=NULL) {
 }
 
 #' @export
-plot.ssa <- function(ssa,main="SSA analysis",sub="")  {
+plot.ssa <- function(x,...,main="SSA analysis",sub="",verbose=FALSE)  {
+  if(verbose) print("plot.ssa")
+  ssa <- x
   if ( (class(ssa)[1]!="SSA") ) stop("Need an 'SSA' object")
   nt <- ssa$nt
   dev.new()

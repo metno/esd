@@ -1,21 +1,23 @@
 #' create a barplot
 #'
-#' @param x a 'station' object
+#' @param height a 'station' object
 #' @param threshold threshold - midline of plot
+#' @param verbose a boolean; if TRUE print information about progress
 #'
 #' @importFrom graphics barplot title
 #'
 #' @export
-barplot.station <- function(x,threshold=0,...) {
-  stopifnot(inherits(x,'station'))
-  x.above <- x.below <- x
-  x.above[x < threshold] <- NA
-  x.below[x > threshold] <- NA
-  ylim <- range(pretty(coredata(x)),na.rm=TRUE)
-  barplot(as.numeric(x),col='white',ylim=ylim,border=NA)
-  barplot(as.numeric(x.above),col='red',names.arg=year(x),
-          ylab=paste(varid(x),'[',attr(x,'unit'),']'),axes=FALSE,
+barplot.station <- function(height,...,threshold=0,verbose=FALSE) {
+  if(verbose) print("barplot.station")
+  stopifnot(inherits(height,'station'))
+  height.above <- height.below <- height
+  height.above[height < threshold] <- NA
+  hegiht.below[height > threshold] <- NA
+  ylim <- range(pretty(coredata(height)),na.rm=TRUE)
+  barplot(as.numeric(height),col='white',ylim=ylim,border=NA)
+  barplot(as.numeric(hegiht.above),col='red',names.arg=year(height),
+          ylab=paste(varid(height),'[',attr(height,'unit'),']'),axes=FALSE,
           border=NA,add=TRUE)
-  barplot(as.numeric(x.below),col='blue',axes=FALSE,border=NA,add=TRUE)
-  title(toupper(loc(x)))
+  barplot(as.numeric(height.below),col='blue',axes=FALSE,border=NA,add=TRUE)
+  title(toupper(loc(hegiht)))
 }

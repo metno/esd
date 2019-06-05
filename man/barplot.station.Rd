@@ -4,12 +4,14 @@
 \alias{barplot.station}
 \title{create a barplot}
 \usage{
-\method{barplot}{station}(x, threshold = 0, ...)
+\method{barplot}{station}(height, ..., threshold = 0, verbose = FALSE)
 }
 \arguments{
-\item{x}{a 'station' object}
+\item{height}{a 'station' object}
 
 \item{threshold}{threshold - midline of plot}
+
+\item{verbose}{a boolean; if TRUE print information about progress}
 }
 \description{
 create a barplot

@@ -10,7 +10,7 @@
 #' @seealso subset
 #' 
 #' @export
-matchdate <-function(x,it,verbose=FALSE,...) UseMethod("matchdate")
+matchdate <-function(x,it,verbose=FALSE) UseMethod("matchdate")
 
 #' @export
 matchdate.list <- function(x,it,verbose=FALSE) {
@@ -21,7 +21,7 @@ matchdate.list <- function(x,it,verbose=FALSE) {
 
 #' @export
 matchdate.default <- function(x,it,verbose=FALSE) {
-  if(verbose) print("<matchdate.default>")
+  if(verbose) print("matchdate.default")
   ## If it is the list, then use the first element because otherwise will not find the index
   if (is.list(it)) it <- it[[1]]
   

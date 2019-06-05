@@ -4,7 +4,7 @@
 \alias{aggregate.area}
 \title{aggregate}
 \usage{
-\method{aggregate}{area}(x, is = NULL, it = NULL, FUN = "sum",
+\method{aggregate}{area}(x, ..., is = NULL, it = NULL, FUN = "sum",
   na.rm = TRUE, smallx = FALSE, verbose = FALSE, a = 6378,
   threshold = NULL)
 }

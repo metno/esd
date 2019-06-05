@@ -2,20 +2,18 @@
 % Please edit documentation in R/regrid.R
 \name{regrid}
 \alias{regrid}
-\alias{regrid.weights}
 \alias{regrid.default}
 \alias{regrid.field}
 \alias{regrid.station}
 \alias{regrid.matrix}
 \alias{regrid.eof}
-\alias{regrid.eof2field}
 \alias{sparseMproduct}
 \alias{nearest}
 \alias{nearest.station}
 \alias{nearest.field}
 \title{Regrid}
 \usage{
-regrid(x, is, it = NULL, ...)
+regrid(x, is = NULL, ...)
 }
 \arguments{
 \item{x}{a field object.}

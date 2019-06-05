@@ -1316,10 +1316,11 @@ retrieve.stationsummary <- function(ncfile,path=NULL,stid=NULL,loc=NULL,lon=NULL
 
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
 #' @export
-retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
+retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     if(verbose) print("retrieve.rcm")
-    if (!is.null(path))
-        ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
+    if (!is.null(path)) {
+      ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
+    }
     if (verbose) print(paste('retrieve ',ncfile))
     ncold <- nc_open(ncfile)
 
