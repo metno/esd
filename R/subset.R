@@ -121,17 +121,17 @@
 subset <- function(x,...) UseMethod("subset")
 
 #' @export
-subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.field <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.field")
   
-  y <- default.subset(x,is=is,it=it,verbose=verbose)
+  y <- default.subset(x,...,is=is,it=it,verbose=verbose)
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
 
 #' @export
-subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.zoo <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.zoo")
   d <- dim(x)
@@ -144,7 +144,7 @@ subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 }
 
 #' @export
-subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.comb <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print("subset.comb")
     y <- subset.field(x,it=it,is=is)
     y <- attrcp(x,y)
@@ -168,7 +168,7 @@ subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 }
 
 #' @export
-subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print("subset.eof")
     if (is.null(is) & is.null(it) & is.null(ip)) return(x)                                    
     if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(ip)) return(x) 
@@ -302,7 +302,7 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
 }
 
 #' @export
-subset.cca <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.cca <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if(verbose) print("subset.cca")
   if (!is.null(is))  {
     x <- subset.pattern(x,is=is,...)
@@ -310,12 +310,12 @@ subset.cca <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
   return(x)
 }
 
-subset.mvr <- function(x,it=NULL,is=NULL,...) {
+subset.mvr <- function(x,...,it=NULL,is=NULL) {
   x
 }
 
 #' @export
-subset.pattern <- function(x,is=NULL,verbose=FALSE,...) {
+subset.pattern <- function(x,...,is=NULL,verbose=FALSE) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) print('subset.pattern')
   if (is.list(is)) {
@@ -369,12 +369,12 @@ subset.pattern <- function(x,is=NULL,verbose=FALSE,...) {
 }
 
 #' @export
-subset.matrix <- function(x,is=NULL,verbose=FALSE,...) {
+subset.matrix <- function(x,...,is=NULL,verbose=FALSE) {
   subset.pattern(x,is,verbose=verbose)
 }  
 
 #' @export
-subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.pca <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print('subset.pca')
   y <- x
   if (!is.null(ip)) {
@@ -440,7 +440,7 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
 }
 
 #' @export
-subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.corfield <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('subset.corfield')
     stopifnot(inherits(x,"corfield"))
     y <- x
@@ -463,7 +463,7 @@ subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
 }
 
 #' @export
-subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
+subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('subset.ds')
     y <- x
     if (!is.null(it)) {
@@ -512,7 +512,7 @@ subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     return(x)
 }
 
-#' @export
+#' @export subset.trend
 subset.trend <- function(x,it=NULL,is=NULL,...) {
     y <- subset.field(x,it=it,is=is)
     
@@ -542,8 +542,8 @@ subset.trend <- function(x,it=NULL,is=NULL,...) {
 }
 
 #' @export
-subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
-                              ensemble.aggregate=TRUE,verbose=FALSE,...) {
+subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
+                              ensemble.aggregate=TRUE,verbose=FALSE) {
   if (verbose) print('subset.dsensemble')
   if (inherits(x,'list') & inherits(x,c('pca','eof')) &
      (inherits(x,'dsensemble')) & ensemble.aggregate) {
@@ -785,7 +785,7 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
   invisible(y)
 }
 
-#' @export
+#' @export subset.spell
 subset.spell <- function(x,is=NULL,it=NULL,...) {
     y <- subset.station(x,is=is,it=it)
     good <- is.finite(y)
@@ -1193,7 +1193,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
 }
     
 #' @export
-subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
+subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   if(verbose) print("subset.events")
   cls <- class(x)
   
@@ -1374,7 +1374,7 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
 }
 
 #' @export
-subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
+subset.trajectory <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   if(verbose) print("subset.trajectory")
   
   x0 <- x
@@ -1585,7 +1585,7 @@ sort.station <- function(x,decreasing=TRUE,...,is=NULL) {
 
 ## Tools to subset or reduce the size of a dsensemble, e.g. removing the
 ## high-order modes of PCA/EOF that represent noise.
-#' @export
+#' @export subset.dsensemble.multi
 subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                               verbose=FALSE,...) {
  

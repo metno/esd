@@ -95,7 +95,7 @@ sparseMproduct <- function(beta,x) {
 #' 
 #' # Regrid t2m onto the grid of the gcm
 #' gcm <- t2m.NorESM.M()
-#' Z <- regrid(t2m,gcm)
+#' Z <- regrid(t2m,is=gcm)
 #' map(Z)
 #' 
 #' # Example using regrid on a matrix object:
