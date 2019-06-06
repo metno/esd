@@ -255,10 +255,7 @@ DS <- function(y,X,verbose=FALSE,plot=FALSE,...) UseMethod("DS")
 #' @export
 DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE) {
-    if (verbose) {
-      print('DS.default')
-      print(summary(coredata(y)))
-    }
+    if (verbose) print('DS.default')
     
     if (verbose) {print('index(y)'); print(index(y))}
     if (verbose) {print(class(y)); print(class(X))}
@@ -453,7 +450,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
     attr(ds,'type') <- "downscaled results"
     attr(ds,'history.predictand') <- attr(y0,'history')
     attr(ds,'history') <- history.stamp(X0)
-                                        #print("HERE"); print(cls)
+    #print("HERE"); print(cls)				
     class(ds) <- c("ds",cls[-2])
     ## KMP 2019-04-29: Added crossval in DS.default. Any reason why it shoudn't be here?
     if (!is.null(m))  {
@@ -475,10 +472,11 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
 
 #' @export
 DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALSE,
-                       method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20) {
+                       method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,
+		       pca=FALSE,npca=20) {
     
+    if (verbose) print('DS.station')
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
-    if (verbose) { print('--- DS.station ---'); print(summary(coredata(y)))}
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
     y <- matchdate(y,X)
@@ -490,7 +488,7 @@ DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALS
       if (inherits(y,'station')) y <- subset(y,it=it)
     }
     
-     if ( (!inherits(y,'seasonalcycle')) & (inherits(X,'seasonalcycle')) ) {
+    if ( (!inherits(y,'seasonalcycle')) & (inherits(X,'seasonalcycle')) ) {
                                         #print("HERE")
         ds <- DS.seasonalcycle(y=y,X=X,ip=ip,verbose=verbose,...) 
         return(ds)
@@ -594,7 +592,7 @@ DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALS
     }
     
     if (verbose) print("--- exit DS.station ---")
-    if (plot) plot(ds.results)
+    if (plot) plot(ds.results, verbose=verbose)
     invisible(ds.results)  
 }
 

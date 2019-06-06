@@ -40,7 +40,7 @@ as.residual.ds <- function(x,...,verbose=FALSE){
     }      
   }
   ## If the results are a field object, then the residuals are stored as EOFs.
-  if (is.field(x)) {
+  if (is.field(x) & !is.station(x)) {
     if (verbose) {print('x is a field object'); print(class(x))}
     y <- as.field(attr(x,'original_data')) -
          as.field(attr(x,'fitted_values'))
