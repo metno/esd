@@ -1,8 +1,8 @@
-#' @export
+# There is another version in select.R. Which one is correct?
 select.station <- function (x=NULL,loc=NULL , param = NULL,  ele = NULL,
                             stid = NULL ,lon = NULL, lat = NULL, 
-                            alt = NULL, cntr = NULL, src = NULL ,
-                            it = NULL , nmin = NULL , verbose=FALSE,...) {
+                            alt = NULL, cntr = NULL, ..., src = NULL ,
+                            it = NULL , nmin = NULL , verbose=FALSE) {
   if (verbose) print('select.station')
   if (is.null(x)) {
     data("station.meta",envir=environment())
