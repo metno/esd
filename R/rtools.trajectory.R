@@ -2,6 +2,7 @@
 #' 
 #' @aliases anomaly.trajectory polyfit.trajectory season.trajectory 
 #' count.trajectory param.trajectory sort.trajectory polyfit.trajectory
+#' anomaly2trajectory fnlon trajectory2density
 #' 
 #' @param x A trajectory object
 #' @param \dots Other arguments

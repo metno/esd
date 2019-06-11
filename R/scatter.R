@@ -13,6 +13,9 @@
 #' @return Graphics and visualisation only.
 #' @author Kajsa M. Parding and Rasmus E. Benestad
 #' @seealso \code{\link{vis}},\code{\link{map}},\code{\link{plot}}
+#'
+#' @importFrom graphics symbols lines grid par image
+#'
 #' @keywords graphics infographics
 #' @examples
 #' 
@@ -259,7 +262,7 @@ scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
   
   # Plot
   if (scale.col) {
-    colorscale <- colscal(n=10,colmap)[seq(10,1,-1)]
+    colorscale <- colscal(n=10,pal=colmap)[seq(10,1,-1)]
     col <- colorscale[round(Nf*10)]
     border <- colorscale[round(Nf*10)]
   }

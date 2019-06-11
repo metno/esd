@@ -11,6 +11,10 @@
 \arguments{
 \item{X}{a 'trajectory' object}
 
+\item{\dots}{additional arguments}
+
+\item{neofs}{number of EOF patterns to include}
+
 \item{param}{parameters to include in principle component analysis.}
 
 \item{anomaly}{logical. If TRUE, subtract the first latitude/longitude from
@@ -28,13 +32,13 @@ on \code{\link{svd}}.
 data(imilast.M03)
 x <- subset(imilast.M03,is=list(lon=c(-20,20),lat=c(50,70)))
 # PCA of longitude and latitude
-pca <- PCA.trajectory(x,param=c('lon','lat'))
-plot.pca.trajectory(pca)
-map.pca.trajectory(pca,projection='latlon')
+pca <- PCA(x,param=c('lon','lat'))
+plot(pca)
+map(pca,projection='latlon')
 
 # latitude only
-pca <- PCA.trajectory(x,param=c('lat'))
-plot.pca.trajectory(pca)
+pca <- PCA(x,param=c('lat'))
+plot(pca)
 
 }
 \keyword{multivariate}

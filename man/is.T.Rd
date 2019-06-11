@@ -3,7 +3,7 @@
 \name{is.T}
 \alias{is.T}
 \alias{is.precip}
-\alias{is.field(}
+\alias{is.field}
 \alias{is.station}
 \alias{is.eof}
 \alias{is.pca}
@@ -17,6 +17,14 @@
 \alias{is.wind}
 \alias{is.direction}
 \alias{is.pressure}
+\alias{is.dates}
+\alias{is.ds}
+\alias{is.dsensemble}
+\alias{is.events}
+\alias{is.months}
+\alias{is.seasons}
+\alias{is.url}
+\alias{is.years}
 \title{Test object type}
 \usage{
 is.T(x)

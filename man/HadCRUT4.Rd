@@ -8,6 +8,11 @@
   HadCRUT4(url = "http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.6.0.0.monthly_ns_avg.txt",
   plot = FALSE)
 }
+\arguments{
+\item{url}{url}
+
+\item{plot}{a boolean; if TRUE show resutls in plot}
+}
 \description{
 Download HadCRUT4 temperature data from UK MetOffice
 }

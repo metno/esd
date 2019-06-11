@@ -4,6 +4,7 @@
 \alias{dX}
 \alias{dY}
 \alias{dT}
+\alias{regfit}
 \title{Derivatives}
 \usage{
 dX(Z, m = 10, mask.bad = TRUE, plot = FALSE, r = 6378000,
@@ -37,12 +38,16 @@ the second derivative (quicker to do both in one go).} \item{lon}{longitude}
 extent}
 }
 \description{
-Functions to estimate derivatives for gridded field objects based on a fit
-to truncated Fourier series. The three functions give the x-, y- and time
-derivatives respectively.  See Benestad & Chen (2006) 'The use of a
+\code{dX}, \code{dY}, and \code{dT} are functions to estimate derivatives for
+gridded field objects based on a fit to truncated Fourier series.
+The three functions give the x-, y- and time derivatives respectively.
+See Benestad & Chen (2006) 'The use of a
 Calculus-based Cyclone Identification method for generating storm
 statistics' (Tellus A 58A, 473-486, doi:10.1111/j.1600-0870.2006.00191) for
 more details.
+}
+\details{
+\code{regfit} is a help function for generating a model for fitting the profile.
 }
 \examples{
 data(slp.ERA5)

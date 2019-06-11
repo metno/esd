@@ -2,11 +2,12 @@
 % Please edit documentation in R/aggregate.size.R
 \name{aggregate.size}
 \alias{aggregate.size}
-\alias{aggregate.size.matrix}
-\alias{aggregate.size.field}
+\alias{aggregateSize}
+\alias{aggregateSize.matrix}
+\alias{aggregateSize.field}
 \title{aggregate}
 \usage{
-aggregate.size(x, ...)
+\method{aggregate}{size}(x, ...)
 }
 \arguments{
 \item{x}{A \code{\link{station}} object}
@@ -31,6 +32,8 @@ but takes care of extra house keeping, such as attributes with meta data.
 \details{
 \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
 meters) for individual events (defined as gridboxes touching each other).
+
+The function \code{aggregateSize} is exactly the same as \code{aggregate.size}.
 }
 \seealso{
 aggregate.area aggregate

@@ -29,7 +29,7 @@
 #' storms.deep <- trackfilter(storms,param="pcent",pmax=970,FUN="any")
 #' storms.deep <- trackfilter(storms.deep,param="max.gradient",pmin=2.5e-2,FUN="any")
 #' bud <- calculate.cyclonebudget(storms.deep)
-#' plot(bud,col=colscal(n=9,name= "bu"))
+#' plot(bud,col=colscal(n=9,pal="bu"))
 #' }
 #'
 #' @export
@@ -206,7 +206,7 @@ plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
   #x <- unlist(bud[1:(length(bud)-2)])
   #colbar$breaks <- pretty(seq(0,q95(x[x>0], n=colbar$n)))
   #colbar <- colbar.ini(bud,colbar=colbar)
-  #col <- colscal(n=length(colbar$breaks),col=colbar$pal,
+  #col <- colscal(n=length(colbar$breaks),pal=colbar$pal,
   #                   rev=colbar$rev,alpha=colbar$alpha,
   #                   verbose=FALSE)
   #colbar$col <- col[1:(length(col)-1)]

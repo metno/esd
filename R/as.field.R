@@ -8,7 +8,9 @@
 #' \code{as.field.trajectory} redirects to \code{\link{trajectory2field}}.
 #' 
 #' @seealso as.field.default as.field.zoo as.field.eof as.field.comb as.field.field as.field.ds as.field.station as.field.events as.field.trajectory as.field.dsensemble.eof
-#' 
+#'
+#' @importFrom stats median setNames
+#'
 #' @param x the input object
 #' @param ... other arguments
 #' 

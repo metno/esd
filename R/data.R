@@ -80,7 +80,7 @@
 #' z <- subset(etopo5,is=list(lon=c(-10,30),lat=c(40,60)))
 #' map(z, new=FALSE)
 #' 
-#' export
+#' @export t2m.NCEP
 t2m.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,latest=FALSE,
                      url='ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc',
                      verbose=FALSE) {
@@ -106,7 +106,7 @@ t2m.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,latest=FALSE,
   return(t2m.NCEP)
 }
 
-#' @export
+#' @export sst.NCEP
 sst.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("sst.NCEP")
   data("eof.sst.NCEP",envir=environment())
@@ -114,7 +114,7 @@ sst.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   return(sst.NCEP)
 }
 
-#' @export
+#' @export slp.NCEP
 slp.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("slp.NCEP")
   data("eof.slp.NCEP",envir=environment())
@@ -122,13 +122,7 @@ slp.NCEP <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   return(slp.NCEP)
 }
 
-# t2m.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
-#   data("eof.t2m.ERAINT",envir=environment())
-#   t2m.ERAINT<- eof2field(eof.t2m.ERAINT,is=list(lon=lon,lat=lat),anomaly=anomaly)
-#   t2m.ERAINT
-# }
-
-#' @export
+#' @export precip.ERAINT
 precip.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("precip.ERAINT")
   data("eof.precip.ERAINT",envir=environment())
@@ -136,19 +130,7 @@ precip.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   return(precip.ERAINT)
 }
 
-# slp.ERAINT <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
-#   data("eof.slp.ERAINT",envir=environment())
-#   slp.ERAINT<- eof2field(eof.slp.ERAINT,is=list(lon=lon,lat=lat),anomaly=anomaly)
-#   slp.ERAINT
-# }
-# 
-# t2m.ERA40 <- function(lon=NULL,lat=NULL,anomaly=FALSE) {
-#   data("eof.t2m.ERA40",envir=environment())
-#   t2m.ERA40<- eof2field(eof.t2m.ERA40,is=list(lon=lon,lat=lat),anomaly=anomaly)
-#   t2m.ERA40
-# }
-
-#' @export
+#' @export t2m.DNMI
 t2m.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("t2m.DNMI")
   data("eof.t2m.DNMI",envir=environment())
@@ -156,7 +138,7 @@ t2m.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   return(t2m.DNMI)
 }
 
-#' @export
+#' @export slp.DNMI
 slp.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("slp.DNMI")
   data("eof.slp.DNMI",envir=environment())
@@ -164,7 +146,7 @@ slp.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   return(slp.DNMI)
 }
 
-#' @export
+#' @export sst.DNMI
 sst.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("sst.DNMI")
   data("eof.sst.DNMI",envir=environment())
@@ -172,7 +154,7 @@ sst.DNMI <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   return(sst.DNMI)
 }
 
-#' @export
+#' @export t2m.NorESM.M
 t2m.NorESM.M <- function(lon=NULL,lat=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("t2m.NorESM.M")
   data("eof.t2m.NorESM.M",envir=environment())

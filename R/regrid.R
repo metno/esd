@@ -66,8 +66,8 @@ sparseMproduct <- function(beta,x) {
 #' 
 #' 
 #' @aliases regrid regrid.default regrid.field regrid.station
-#' regrid.matrix regrid.eof sparseMproduct nearest
-#' nearest.station nearest.field
+#' regrid.matrix regrid.eof sparseMproduct
+#' 
 #' @param xo Old x-coordinates (longitudes)
 #' @param yo Old y-coordinates (latitudes)
 #' @param xn New x-coordinates (longitudes)

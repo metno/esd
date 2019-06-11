@@ -32,7 +32,7 @@ location of the clusters (binomial).
 }
 \description{
 Test for whether a variable is independent and identically distributed
-(iid). Used in \code{\link{daily.station.records}}.
+(iid).
 }
 \details{
 Reference:

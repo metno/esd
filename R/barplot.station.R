@@ -12,12 +12,12 @@ barplot.station <- function(height,...,threshold=0,verbose=FALSE) {
   stopifnot(inherits(height,'station'))
   height.above <- height.below <- height
   height.above[height < threshold] <- NA
-  hegiht.below[height > threshold] <- NA
+  height.below[height > threshold] <- NA
   ylim <- range(pretty(coredata(height)),na.rm=TRUE)
   barplot(as.numeric(height),col='white',ylim=ylim,border=NA)
-  barplot(as.numeric(hegiht.above),col='red',names.arg=year(height),
+  barplot(as.numeric(height.above),col='red',names.arg=year(height),
           ylab=paste(varid(height),'[',attr(height,'unit'),']'),axes=FALSE,
           border=NA,add=TRUE)
   barplot(as.numeric(height.below),col='blue',axes=FALSE,border=NA,add=TRUE)
-  title(toupper(loc(hegiht)))
+  title(toupper(loc(height)))
 }

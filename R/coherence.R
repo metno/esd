@@ -12,7 +12,8 @@
 #' }{sqrt(Gamxx * Gamyy )}\eqn{ \sqrt{\Gamma_{xx} * \Gamma_{yy} )}}{sqrt(Gamxx
 #' * Gamyy )}.
 #' 
-#' 
+#' @importFrom stats ccf
+#'
 #' @param x A vector (time series).
 #' @param y A vector (time series).
 #' @param dt time incremet - for plotting.

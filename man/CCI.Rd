@@ -2,7 +2,6 @@
 % Please edit documentation in R/CCI.R
 \name{CCI}
 \alias{CCI}
-\alias{stopCCI}
 \title{Calculus Cyclone identification.}
 \usage{
 CCI(Z, m = 12, it = NULL, is = NULL, cyclones = TRUE,
@@ -25,6 +24,9 @@ in greater smoothing.}
 
 \item{cyclones}{TRUE: identifies cyclones, FALSE: anticyclones.}
 
+\item{greenwich}{a boolean; if TRUE longitudes are transformed to a system starting at the Greenwich line (0-360E);
+if FALSE longitudes are transformed to a system starting at the date line (180W-180E)}
+
 \item{label}{Label for ID-purposes.}
 
 \item{mindistance}{Min distance between cyclones. Unit: m.}
@@ -41,16 +43,23 @@ Unit: Pa/m (10hPa/km).}
 \item{nsim}{Number of simultaneous cyclones identified and saved ordered
 according to depth/strength (NULL = no limit).}
 
+\item{progress}{a boolean; if TRUE show progress bar}
+
 \item{fname}{Name of output file.}
 
 \item{plot}{TRUE: show intermediate results as plots.}
 
 \item{accuracy}{Not yet finished.}
 
+\item{allow.open}{a boolean; if TRUE allow (anti)cyclones that are not closed, i.e.,
+that have a point of inflexion on only 3 of 4 sides.}
+
 \item{do.track}{TRUE: tracks the cyclones with the 'track' function, FALSE:
 no tracking is applied.}
 
-\item{verbose}{Print out diagnostics.}
+\item{verbose}{a boolean; if TRUE print out diagnostics.}
+
+\item{\dots}{additional arguments}
 }
 \value{
 The CCI function returns an 'events' object (a data frame with
@@ -100,9 +109,6 @@ The gradient in x and y directions are found after the transform
 
 This code is based on the CCI method of the R-package 'cyclones' and has
 been adapted for 'esd'.
-
-%% \code{stopCCI} signals the CCI process to stop in a safe manner by %%
-removing the file '.CCI.run' in the run directory.
 
 The maximum gradient wind (max.speed) is estimated as described in Fleagle
 and Businger (1980) p. 163. (eq 4.27).

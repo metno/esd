@@ -10,16 +10,12 @@
 \alias{combine.ds.station}
 \alias{combine.ds.station.eof}
 \alias{combine.ds.station.field}
-\alias{combine.station.month}
 \alias{combine.ds.pca}
 \alias{combine.list}
 \alias{combine.station.eof}
-\alias{zeros}
-\alias{g2dl}
-\alias{g2dl.field}
-\alias{g2dl.corfield}
-\alias{g2dl.eof}
-\alias{g2dl.default}
+\alias{combine.field}
+\alias{combine.filed.station}
+\alias{combine.station.field}
 \alias{sp2np}
 \title{Combine}
 \usage{
@@ -50,7 +46,7 @@ A field object
 \description{
 \code{combine} is a S3 method for combinng esd objects, e.g. into groups of
 stations, stations and eof object, or fields. The function is based on
-\code{\link[zoo]{merge}}, and is also used to synchronise the esd objects.
+\code{\link[zoo]{merge.zoo}}, and is also used to synchronise the esd objects.
 }
 \details{
 For fields, \code{combine.field} is used to append different data sets, e.g.
@@ -76,24 +72,22 @@ complete time series.
 (South Pole) to 90N (Noth Pole) for \code{SP2NP=TRUE}. Otherwise, the object
 is arranged from 90N to 90S.
 
-\code{zeros} counts the occurrence of zero values in a vector.
-
 Other operations, such as \code{c(...)}, \code{rbind(...)} (combine along
 the time dimension), and \code{cbind(...)} (combine along the space
 dimension) also work.
 }
 \examples{
-T2m_NCEP <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
+T2m_DNMI <- t2m.DNMI(lon=c(-40,40),lat=c(30,70))
 T2m_NorESM <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
 
 # Combine in time to compute common EOFs:
-X <- combine(T2m_NCEP,T2m_NorESM)
+X <- combine(T2m_DNMI,T2m_NorESM)
 ceof <- EOF(X,it="Jan")
 plot(ceof)
 
 # Use combine to synchronise field and station data:
 data("Oslo")
-y <- combine.field.station(Oslo,T2m_NCEP)
+y <- combine(Oslo,T2m_DNMI)
 plot(y$y)
 
 }

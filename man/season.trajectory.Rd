@@ -7,6 +7,9 @@
 \alias{count.trajectory}
 \alias{param.trajectory}
 \alias{sort.trajectory}
+\alias{anomaly2trajectory}
+\alias{fnlon}
+\alias{trajectory2density}
 \title{Functions to process and analyse storm trajectories}
 \usage{
 \method{season}{trajectory}(x, format = "character", verbose = FALSE)

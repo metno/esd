@@ -1,4 +1,7 @@
-## Help and assistence.
+#' Help and assistance
+#'
+#' @aliases ABC4ESD esd.tips esd.issues esd.tips esd.issues downscaling.about element.kode
+#'
 #' @export
 manual <- function(url='https://ndownloader.figshare.com/files/2126237',browser='firefox')
   system(paste(browser,url))

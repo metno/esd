@@ -6,23 +6,20 @@
 \alias{CCA.eof}
 \alias{CCA.pca}
 \alias{CCA.field}
-\alias{predict.cca}
 \title{Canonical correlation analysis}
 \usage{
-CCA(Y, X, ...)
+CCA(Y, X, ip = 1:8, verbose = FALSE, ...)
 }
 \arguments{
 \item{Y}{An object with climate data: field, eof, pca.}
 
 \item{X}{Same as Y.}
 
-\item{...}{Other arguments.}
-
 \item{ip}{Which EOFs to include in the CCA.}
 
-\item{newdata}{The same as X.}
-
 \item{verbose}{If TRUE print information about progress.}
+
+\item{...}{Other arguments.}
 }
 \value{
 A CCA object: a list containing a.m, b.m, u.k, v.k, and r,
@@ -67,4 +64,7 @@ plot(nacca)
 cca.pre <- precit.cca(nacca)
 }
 
+}
+\seealso{
+predict.cca
 }

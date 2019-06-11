@@ -2,7 +2,6 @@
 % Please edit documentation in R/as.pca.R
 \name{as.pca.station}
 \alias{as.pca.station}
-\alias{PCA}
 \title{Coerce input to a \code{pca} object}
 \usage{
 \method{as.pca}{station}(x, verbose = FALSE, ...)
@@ -23,5 +22,7 @@ corresponding time series (the core of the \code{pca} object often referred to a
 and eigenvalues that represent the relative strength of each spatial pattern.
 }
 \seealso{
+PCA
+
 as.pca plot.pca map.pca as.station.pca DS.pca
 }

@@ -8,9 +8,6 @@
 \alias{regrid.matrix}
 \alias{regrid.eof}
 \alias{sparseMproduct}
-\alias{nearest}
-\alias{nearest.station}
-\alias{nearest.field}
 \title{Regrid}
 \usage{
 regrid(x, is = NULL, ...)
@@ -80,7 +77,7 @@ lines(z.oslo)
 
 # Regrid t2m onto the grid of the gcm
 gcm <- t2m.NorESM.M()
-Z <- regrid(t2m,gcm)
+Z <- regrid(t2m,is=gcm)
 map(Z)
 
 # Example using regrid on a matrix object:

@@ -62,7 +62,7 @@ vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRU
   yrs <- as.numeric(rownames(table(year(x))))
   ny <- length(yrs)
   if (is.null(n)) n <- 50
-  if (is.null(col)) col <- colscal(n,varid(x))
+  if (is.null(col)) col <- colscal(n,pal=varid(x))
   if (is.precip(x)) x[coredata(x)==0] <- NA
   
   if ( (attr(x,'unit')[1] == "deg C") | (attr(x,'unit')[1] == "degree Celsius") )
@@ -244,7 +244,8 @@ vis.map <- function(x,...,col='red',map.type=NULL,
 vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   if(verbose) print("vis.pca")
   y <- x # quick fix
-  col <- colscal(col=varid(y)); nc <- length(col)
+  col <- colscal(pal=varid(y))
+  nc <- length(col)
   #if (is.precip(y)) col <- rev(col)
   lon <- attr(y,'longitude') 
   lat <- attr(y,'latitude') 

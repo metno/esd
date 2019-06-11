@@ -30,7 +30,7 @@ cbind.field <- function(...) {
 #' 
 #' \code{combine} is a S3 method for combinng esd objects, e.g. into groups of
 #' stations, stations and eof object, or fields. The function is based on
-#' \code{\link[zoo]{merge}}, and is also used to synchronise the esd objects.
+#' \code{\link[zoo]{merge.zoo}}, and is also used to synchronise the esd objects.
 #' 
 #' For fields, \code{combine.field} is used to append different data sets, e.g.
 #' for the purpose of computing common EOFs (seeo \code{\link{EOF}} or for
@@ -55,18 +55,14 @@ cbind.field <- function(...) {
 #' (South Pole) to 90N (Noth Pole) for \code{SP2NP=TRUE}. Otherwise, the object
 #' is arranged from 90N to 90S.
 #' 
-#' \code{zeros} counts the occurrence of zero values in a vector.
-#' 
 #' Other operations, such as \code{c(...)}, \code{rbind(...)} (combine along
 #' the time dimension), and \code{cbind(...)} (combine along the space
 #' dimension) also work.
 #' 
-#' 
 #' @aliases combine combine.default combine.stations combine.zoo combine.ds
 #' combine.ds.comb combine.ds.station combine.ds.station.eof
-#' combine.ds.station.field combine.station.month combine.ds.pca combine.list
-#' combine.station.eof zeros g2dl g2dl.field g2dl.corfield g2dl.eof
-#' g2dl.default sp2np
+#' combine.ds.station.field combine.ds.pca combine.list
+#' combine.station.eof combine.field combine.filed.station combine.station.field sp2np
 #'
 #' @param x station, eof, or field object
 #' @param all See \code{link{merge.zoo}}
@@ -84,58 +80,51 @@ cbind.field <- function(...) {
 #' @keywords utilities
 #'
 #' @examples 
-#' T2m_NCEP <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
+#' T2m_DNMI <- t2m.DNMI(lon=c(-40,40),lat=c(30,70))
 #' T2m_NorESM <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
 #' 
 #' # Combine in time to compute common EOFs:
-#' X <- combine(T2m_NCEP,T2m_NorESM)
+#' X <- combine(T2m_DNMI,T2m_NorESM)
 #' ceof <- EOF(X,it="Jan")
 #' plot(ceof)
 #' 
 #' # Use combine to synchronise field and station data:
 #' data("Oslo")
-#' y <- combine.field.station(Oslo,T2m_NCEP)
+#' y <- combine(Oslo,T2m_DNMI)
 #' plot(y$y)
 #' 
 #' @export combine
-combine <- function(...)
-  UseMethod("combine")
+combine <- function(...) UseMethod("combine")
 
 #' @export
 combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.default")
-  # If either of the arguments is NULL, then return the x - useful for looping
   stopifnot(!missing(x))
-  #print("combine.default")
   if (is.null(x)) return(y)
   if (is.null(y)) return(x)
-  
-  #print(class(x)); print(class(y)); print(summary(x))
-  #print("dim(y)="); print(dim(y))
-  
-  if ( !zeros(c(inherits(x,c("station","zoo"),which=TRUE),
-                inherits(y,c("station","zoo"),which=TRUE)) ) )
-    X <- combine.station(x=x,y=y,verbose=verbose) else
-      if ( !zeros( c(inherits(x,c("station","zoo"),which=TRUE)
-                     ,inherits(y,c("eof","zoo"),which=TRUE)) ) |
-           !zeros( c(inherits(y,c("station","zoo"),which=TRUE),
-                     inherits(x,c("eof","zoo"),which=TRUE)) ) )
-        X <- combine.station.eof(x=x,y=y,all=all,
-                                 orig.format=orig.format,verbose=verbose) else
-                                   if ( !zeros( c(inherits(x,c("station","zoo"),which=TRUE)
-                                                  ,inherits(y,c("field","zoo"),which=TRUE)) ) |
-                                        !zeros( c(inherits(y,c("station","zoo"),which=TRUE),
-                                                  inherits(x,c("field","zoo"),which=TRUE)) ) )
-                                     X <- combine.station.field(x=x,y=y,all=all,orig.format=orig.format,verbose=verbose) else { 
-                                       print("combine.default - don't know what to do :-(")
-                                       Z <- NULL
-                                     }
+  if ( !zeros(c(inherits(x,c("station","zoo"), which=TRUE),
+                inherits(y,c("station","zoo"), which=TRUE))) ) { 
+    X <- combine.station(x=x,y=y,verbose=verbose)
+  } else if ( !zeros( c(inherits(x,c("station","zoo"), which=TRUE),
+                        inherits(y,c("eof","zoo"), which=TRUE)) ) |
+              !zeros( c(inherits(y,c("station","zoo"), which=TRUE),
+	                inherits(x,c("eof","zoo"), which=TRUE)) ) ) {
+    X <- combine.station.eof(x=x,y=y,all=all,orig.format=orig.format,verbose=verbose)
+  } else if ( !zeros( c(inherits(x,c("station","zoo"), which=TRUE),
+                        inherits(y,c("field","zoo"), which=TRUE)) ) |
+              !zeros( c(inherits(y,c("station","zoo"), which=TRUE),
+	                inherits(x,c("field","zoo"), which=TRUE)) ) ) {
+    X <- combine.station.field(x=x,y=y,all=all,orig.format=orig.format,verbose=verbose)
+  } else { 
+    print("combine.default - don't know what to do :-(")
+    X <- NULL
+  }
   attr(X,'history') <- history.stamp(x)
   invisible(X)
 }
 
 # combine.station can be used to either combine a group of stations into
-# one data object or timerseries from one stations with different monthly
+# one data object or time series from one stations with different monthly
 # values into one time series with all months
 #' @export
 combine.station <- function(...,all=TRUE,verbose=FALSE) {
@@ -148,7 +137,6 @@ combine.station <- function(...,all=TRUE,verbose=FALSE) {
   allstations <- TRUE
   for (i in 1:n) {
     Z <- args[[i]]
-    #print(class(Z))
     if (inherits(Z,'station')) {
       stid <- c(stid,attr(Z,'station_id'))
       #stid[i] <- attr(Z,'station_id')#[i]
@@ -162,17 +150,19 @@ combine.station <- function(...,all=TRUE,verbose=FALSE) {
     ns <- length(table(stid))
     # If only one site, then combine the months into one series, otherwise
     # group the stations into one multivariate object
-    if (ns ==1) X <- combine.station.month(...,verbose=verbose) else
+    if (ns==1) {
+      X <- combine.station.month(...,verbose=verbose)
+    } else {
       X <- combine.stations(...,all=all,verbose=verbose)
+    }
+    class(X) <- class(Z)
   } else {
     X <- combine.default(...,all=all,verbose=verbose)
   }
   attr(X,'history') <- history.stamp(X)
-  class(X) <- class(Z)
   invisible(X)
 }
 
-# not exported
 combine.station.month <- function(...,verbose=FALSE) {
   if(verbose) print("combine.station.month")
   cl <- as.list(match.call())
@@ -201,7 +191,7 @@ combine.zoo <- function(...,verbose=FALSE) {
 }
 
 # combine.stations is used to combine a group of stations into one object
-#' @export
+#' @export combine.stations
 combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.stations")
   # If either of the arguments is NULL, then return the x -
@@ -522,7 +512,7 @@ combine.ds.pca <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
-#' @export
+#' @export combine.station.eof
 combine.station.eof <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station.eof")
   if (is.null(x)) return(y)
@@ -622,14 +612,14 @@ combine.station.eof <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,ver
   invisible(X)
 }
 
-#' @export
+#' @export combine.station.field
 combine.station.field <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station.field")
-  X <- combine.field.station(x=y,y=x,all=all,orig.format=orig.format)
+  X <- combine.field.station(x=y,y=x,all=all,orig.format=orig.format,verbose=verbose)
   invisible(X) 
 }
 
-#' @export
+#' @export combine.field.station
 combine.field.station <- function(x=NULL,y=NULL,...,all=FALSE,
                                   orig.format=TRUE,verbose=FALSE) {
   if (verbose) print("combine.field.station")
@@ -694,7 +684,7 @@ combine.field.station <- function(x=NULL,y=NULL,...,all=FALSE,
   invisible(X)
 }
 
-#' @export
+#' @export combine.field
 combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
                           approach="field",orig.format=TRUE,verbose=FALSE) {
   if (verbose) print(paste("combine.field",approach))
@@ -1004,5 +994,3 @@ sp2np <- function(x,SP2NP=TRUE,verbose=FALSE) {
   invisible(y)
 }
 
-#' @export
-zeros <- function(x) (sum(is.infinite(1/x)) > 0)

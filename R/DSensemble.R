@@ -64,8 +64,9 @@ ltp <- function(x,type='exponential',...) {
 #' DSensemble.precip DSensemble.annual DSensemble.season DSensemble.field
 #' DSensemble.mu.worstcase DSensemble.pca DSensemble.eof
 #'
-#' @importFrom graphics par grid segments text axis
+#' @importFrom graphics par grid segments text axis abline
 #' @importFrom stats ks.test pnorm acf sd na.pass lm rnorm window start end
+#' cor.test
 #'
 #' @param y A station object.
 #' @param plot Plot intermediate results if TRUE.
@@ -102,6 +103,7 @@ ltp <- function(x,type='exponential',...) {
 #' \code{annual(f(x),FUN="mean")}
 #' @param mask TRUE mask out land
 #' @param ds.1900.2099 Default, only downscale for the period 1900-2099
+#' @param \dots additional arguments
 #'
 #' @return A 'dsensembele' object - a list object holding DS-results.
 #' 
@@ -179,7 +181,7 @@ DSensemble.default <- function(y,...,path='CMIP5.monthly/',rcp='rcp45') {
   return(z)
 }
 
-#' @export
+#' @export DSensemble.t2m
 DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA40_t2m_mon.nc",
                            rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
@@ -505,7 +507,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
 } 
 #save(file=paste("dscmip5_",attr(y,'location'),"_",N,"_rcp4.5.rda",sep=""),rcp4.5)
 
-#' @export
+#' @export DSensemble.precip
 DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_pr_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
@@ -988,7 +990,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   invisible(X)
 }
 
-#' @export
+#' @export DSensemble.season
 DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
@@ -1552,7 +1554,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 #   # invisible(dse)
 # }
 
-#' @export
+#' @export DSensemble.mu.worstcase
 DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA40_t2m_mon.nc",
                                     rcp="rcp45",biascorrect=FALSE,n=6,lon=c(-20,20),lat=c(-10,10),
                                     it=NULL,rel.cord=TRUE,select=NULL,FUN="wetmean",
@@ -1597,7 +1599,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
   } else if (inherits(predictor,'field')) {
     # KMP 2019-05-28: replaced spatial.avg.field with aggregate.area
     #pre <- spatial.avg.field(predictor)
-    pre <- aggregtate.area(predictor, FUN="mean")
+    pre <- aggregate.area(predictor, FUN="mean")
   }
   rm("predictor"); gc(reset=TRUE)
   ## Estimate the reference level

@@ -5,8 +5,9 @@
 #' 
 #' @aliases map map.default map.matrix map.data.frame map.station
 #' map.stationmeta map.stationsummary map.comb map.eof map.ds map.dsensemble
-#' map.field map.corfield map.cca map.events map.trajectory map.mvr map.pca
-#' map.trend lonlatprojection rotM gridbox map2sphere vec mask
+#' map.field map.corfield map.cca map.events map.mvr map.pca
+#' map.trend lonlatprojection rotM map2sphere vec
+#' @seealso map.trajectory
 #'
 #' @param x the object to be plotted; in \code{rotM}, x holds a vector of
 #' x-coordinates.
@@ -269,10 +270,10 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     stopifnot(inherits(x,'eof'))
     x <- subset(x,it=it,is=is)
     projection <- tolower(projection)
-    ## if (is.null(col)) col <- colscal(col=colbar$pal,n=n-1,rev=colbar$rev) else
+    ## if (is.null(col)) col <- colscal(pal=colbar$pal,n=n-1,rev=colbar$rev) else
     ## if (length(col)==1) {
     ##   pal <- col
-    ##   col <- colscal(col=pal,n=n-1,rev=colbar$rev)
+    ##   col <- colscal(pal=pal,n=n-1,rev=colbar$rev)
     ## }
     if (is.null(varid(x))) attr(x,'variable') <- 'NA'
     ## if (tolower(varid(x))=='precip') col <- rev(col) 
@@ -707,7 +708,7 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
     attr(X,'mean') <- NULL
     class(X) <- 'station'
     ##if (is.null(colbar$col) | is.null(colbar)) {
-    ##  colbar$col <- colscal(30,col=varid(x))
+    ##  colbar$col <- colscal(30,pal=varid(x))
     ##}
     if (verbose) str(X)
 
@@ -782,7 +783,7 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ##  col <- rgb( c(rep(0,15),1-sqrt(seq(0,1,length=15))),
     ##              abs(sin(seq(0,pi,length=30))),
     ##              c(sqrt(seq(0,1,length=15)),rep(1,15)) )
-    ##  col <- colscal(30,col=varid(x))
+    ##  col <- colscal(30,pal=varid(x))
     ##  if (is.precip(X)) col.x <- rev(col) else
     ##                    col.x <- col
     ##  if (is.precip(Y)) col.y <- rev(col) else

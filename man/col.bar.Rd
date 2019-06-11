@@ -36,11 +36,12 @@ col.bar(breaks, horiz = TRUE, pch = 21, v = 1, h = 1, col = col,
 
 \item{\dots}{Additional graphical parameters to be passed on}
 
-\item{pal}{palette: c("bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold","warm")}
+\item{pal}{color palette: "bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold", or "warm"}
 }
 \description{
-Add a color bar or color points into an exisiting plot or map
+Add a color bar or color points into an exisiting plot or map.
+For a description of palette choices, see \code{\link{colscal}}.
 }
 \seealso{
-colbar.ini
+colbar.ini colscal
 }

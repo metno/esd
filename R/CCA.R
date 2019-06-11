@@ -11,14 +11,14 @@
 #' 
 #' The analysis can also be applied to either EOFs or fields.
 #' 
-#' @aliases CCA CCA.default CCA.eof CCA.pca CCA.field predict.cca
+#' @aliases CCA CCA.default CCA.eof CCA.pca CCA.field
+#' @seealso predict.cca
 #'
 #' @param Y An object with climate data: field, eof, pca.
 #' @param X Same as Y.
-#' @param ... Other arguments.
 #' @param ip Which EOFs to include in the CCA.
-#' @param newdata The same as X.
 #' @param verbose If TRUE print information about progress.
+#' @param ... Other arguments.
 #' @return A CCA object: a list containing a.m, b.m, u.k, v.k, and r,
 #' describing the Canonical Correlation variates, patterns and correlations.
 #' a.m and b.m are the patterns and u.k and v.k the vectors (time evolution).
@@ -51,15 +51,15 @@
 #' }
 #' 
 #' @export
-CCA <- function(Y,X,...) UseMethod("CCA")
+CCA <- function(Y,X,ip=1:8,verbose=FALSE,...) UseMethod("CCA")
 
-#' @export
-CCA.default <- function(Y,X,...) {
+#
+CCA.default <- function(Y,X,ip=1:8,verbose=FALSE,...) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
 }
 
 #' @export
-CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
+CCA.eof <- function(Y,X,ip=1:8,verbose=FALSE,...) {
 
   if (verbose) print("CCA.eof")
   history <- attr(X,'history')
@@ -168,7 +168,7 @@ CCA.pca <- function(Y,X,...,ip=1:8,verbose=FALSE) {
 }
 
 #' @export
-CCA.field <- function(Y,X,...,ip=1:8,verbose=FALSE) {
+CCA.field <- function(Y,X,ip=1:8,verbose=FALSE,...) {
   
  if(verbose) print("CCA.field")
  if(verbose) "print performing EOF analysis and redirecting to CCA.eof"

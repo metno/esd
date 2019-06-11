@@ -4,8 +4,7 @@
 \alias{select}
 \title{Select from meta data base}
 \usage{
-select(stid = NULL, param = NULL, lon = NULL, lat = NULL,
-  alt = NULL, cntr = NULL, ...)
+select(x = NULL, ...)
 }
 \description{
 Function that searches the meta data base for the requested station data

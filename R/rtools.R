@@ -11,7 +11,13 @@
 #' Alexandersson et al. (1998), Glob. Atm. and Oce. Sys.
 #'
 #' \code{stand} gives a standardised time series.
-#' 
+#'
+#' \code{zeros} counts the occurrence of zero values in a vector.
+#'
+#' \code{nv} returns the number of valid points.
+#'
+#' \code{missval} computes the percentage of missing data.
+#'
 #' \code{arec} compares the number of record-breaking events to the number of
 #' events for a time series of iid data (\code{sum(1/1:n)})
 #' 
@@ -23,7 +29,7 @@
 #' 
 #' \code{nv} count the number of valid data points.
 #' 
-#' \code{q5}, \code{q95} and \code{q995} are shortcuts to the 5\%, 95\%, and 99.5\% percentiles.
+#' \code{q5}, \code{q95}, \code{q975} and \code{q995} are shortcuts to the 5\%, 95\%, 97.5\% and 99.5\% percentiles.
 #' 
 #' \code{trend.coef} and \code{trend.pval} return the coefficient and the p-value of the linear trend.
 #' 
@@ -37,12 +43,15 @@
 #' 
 #' \code{rmse} and \code{RMSE} calculate the root-mean-square error
 #' 
-#' @aliases as.decimal nv cv q5 q95 q995 filt
-#' filt.default exit figlab ndig attrcp ensemblemean propchange stand rmse RMSE
-#' firstyear lastyear eofvar test.ds.field test.num.predictors arec
+#' @aliases as.decimal nv cv q5 q95 q975 q995 filt
+#' filt.default exit figlab ndig ensemblemean propchange stand rmse RMSE
+#' firstyear lastyear eofvar test.num.predictors arec
 #' arec.default arec.station lastrains lastelementrecord strstrip bin
-#' factor2numeric
-#' 
+#' factor2numeric zeros missval
+#' @seealso attrcp
+#'
+#' @importFrom stats quantile qgeom qpois dnorm filter 
+#'
 #' @param x A data.frame or a coredata zoo object.
 #' @param na.rm If TRUE, remove NA's from data
 #' @param type 'ma' for moving average (box-car), 'gauss' for Gaussian, 'binom'
@@ -99,19 +108,21 @@
 #' map(Obs,FUN='firstyear')
 #' }
 #'
-
-# @export
+#' @export
 as.decimal <- function(x=NULL) {
     ## converts from degree min sec format to degrees ...
     ##x is in the form "49 deg 17' 38''"
   if (!is.null(x)) {
-        deg <-as.numeric(substr(x,1,2)) 
+        deg <- as.numeric(substr(x,1,2)) 
         min <- as.numeric(substr(x,4,5))
         sec <- as.numeric(substr(x,7,8))     
         x <- deg + min/60 + sec/3600
     }
     return(x)
 }
+
+#' @export
+nv <- function(x) sum(is.finite(x))
 
 #' @export
 ndig <- function(x) {
@@ -248,6 +259,9 @@ cv <- function(x,na.rm=TRUE) {sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)}
 
 #' @export
 stand <- function(x) (x - mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)
+
+#' @export
+zeros <- function(x) (sum(is.infinite(1/x)) > 0)
 
 ## Estimate the root-mean-squared-error
 #' @export

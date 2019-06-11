@@ -16,9 +16,7 @@
 \alias{station.gloss}
 \alias{station.newlyn}
 \alias{station.giss}
-\alias{clean.station}
-\alias{allgood}
-\title{Retrieve meta data and data from observational weather stations.}
+\title{Retrieve station record from a given data source.}
 \usage{
 station(...)
 }
@@ -76,14 +74,12 @@ A time series of "zoo" "station" class with additional attributes
 used for further processing.
 }
 \description{
-Retrieve station record from a given data source.
-}
-\details{
 \code{allgood} and \code{clean.station} provide two filters for extracting
 stations with good data (discarding missing values). \code{allgood} will not
 leave any NA's whereas \code{clean.station} provides a more 'gentle'
 filtering.
-
+}
+\details{
 \code{station.sonel}, \code{station.gloss}, and \code{station.newlyn} read
 sea level from tidal gauges in France (SONEL), on a global scale (GLOSS) and
 for a single station (sub-daily data)in the UK (Newlyn).
@@ -129,6 +125,8 @@ map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showal
 
 }
 \seealso{
+clean.station allgood
+
 \code{\link{map.station}}.
 }
 \author{

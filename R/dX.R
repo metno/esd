@@ -1,6 +1,5 @@
 #' @export
 regfit <- function(z,cal.dat,terms) {
-  ## Generate model for fitting profile
   cal.dat$Z <- z
   model <- eval(parse(text=paste('lm(Z ~ ',terms,',data=cal.dat)')))
   ln <- length(unlist(strsplit(terms,split='\\+')))
@@ -14,14 +13,17 @@ regfit <- function(z,cal.dat,terms) {
 
 #' Derivatives 
 #' 
-#' Functions to estimate derivatives for gridded field objects based on a fit
-#' to truncated Fourier series. The three functions give the x-, y- and time
-#' derivatives respectively.  See Benestad & Chen (2006) 'The use of a
+#' \code{dX}, \code{dY}, and \code{dT} are functions to estimate derivatives for
+#' gridded field objects based on a fit to truncated Fourier series.
+#' The three functions give the x-, y- and time derivatives respectively.
+#' See Benestad & Chen (2006) 'The use of a
 #' Calculus-based Cyclone Identification method for generating storm
 #' statistics' (Tellus A 58A, 473-486, doi:10.1111/j.1600-0870.2006.00191) for
 #' more details.
-#' 
-#' @aliases dX dY dT
+#'
+#' \code{regfit} is a help function for generating a model for fitting the profile.
+#'
+#' @aliases dX dY dT regfit
 #' @param Z A field object 
 #' @param m number of harmonics for fitting the Fourier series 
 #' @param mask.bad mask missing data 

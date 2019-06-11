@@ -20,5 +20,5 @@ a \code{pc} object
 Coerce a \code{ds} \code{pca} object into a \code{pca} object by replacing the class.
 }
 \seealso{
-as.pca DS
+
 }

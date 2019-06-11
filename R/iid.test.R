@@ -1,7 +1,7 @@
 #' iid test
 #' 
 #' Test for whether a variable is independent and identically distributed
-#' (iid). Used in \code{\link{daily.station.records}}.
+#' (iid). 
 #' 
 #' Reference:
 #' 
@@ -297,7 +297,7 @@ iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
 }
 
   
-#' @export
+# internal function - no need to export
 test.iid.test <- function(distr="rnorm",d=c(70,50),plot=TRUE,
                           Monte.Carlo=TRUE) {
   rnd <- eval(parse(text=paste(distr,"(",d[1]*d[2],")",sep="")))

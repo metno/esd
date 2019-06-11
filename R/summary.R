@@ -101,7 +101,7 @@ summary.cca <- function(x) {
 #'
 #' @seealso retrieve check.ncdf4
 #'
-#' @export
+#' @export summary.ncdf4
 summary.ncdf4 <- function(object, ..., verbose = TRUE) {
   if(verbose) print("summary.ncdf4")
   ncfile <- object

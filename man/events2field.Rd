@@ -2,7 +2,8 @@
 % Please edit documentation in R/events2field.R
 \name{events2field}
 \alias{events2field}
-\alias{as.field.trajectory}
+\alias{as.field.events}
+\alias{events2density}
 \title{Transform an input object into a \code{field} object}
 \usage{
 events2field(x, verbose = FALSE, ...)
@@ -41,5 +42,5 @@ a \code{field} object
 Transform a \code{trajectory} object into a \code{field} object by aggregating it in time and space.
 }
 \seealso{
-as.field as.trajectory CCI track.events
+as.field CCI track.events
 }

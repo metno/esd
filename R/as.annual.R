@@ -495,11 +495,11 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
   return(y) 
 }
 
-#' @export
-as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85) {
+#' @export as.4seasons.day
+as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,verbose=FALSE) {
+  if(verbose) print('as.4seasons.day')
   IV <- function(x) sum(is.finite(x))
     if (inherits(x,'month')) nmin <- 3 # AM 06-07-2015
-  #print('as.4seasons.day')
   attr(x,'names') <- NULL  
   t <- index(x)
   year <- year(t) #as.numeric(format(t,'%Y'))

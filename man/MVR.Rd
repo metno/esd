@@ -21,9 +21,7 @@ MVR(Y, X, SVD = TRUE, LINPACK = FALSE, verbose = FALSE)
 
 \item{LINPACK}{an option for \code{\link{svd}}.}
 
-\item{object}{The result from CCA.}
-
-\item{newdata}{The same as X.}
+\item{verbose}{a boolean; if TRUE print information about progress}
 }
 \value{
 A CCA object: a list containing a.m, b.m, u.k, v.k, and r,

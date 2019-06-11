@@ -46,7 +46,7 @@ None
 \description{
 Method to save station data as netCDF, making sure to include the data
 structure and meta-data (attributes). The code tries to follow the netCDf
-'CF' convention. The method is built on the \code{\link{ncdf4}} package.
+'CF' convention. The method is built on the \code{ncdf4} package.
 }
 \seealso{
 write2ncdf4

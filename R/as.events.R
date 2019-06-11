@@ -149,6 +149,8 @@ trajectory2events <- function(x,minlen=3,verbose=FALSE) {
   return(y)
 }
 
+#' Count the number of events per month
+#'
 #' @export
 count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
   if (verbose) print("count.events")

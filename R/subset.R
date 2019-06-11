@@ -12,7 +12,7 @@
 #' @aliases subset subset.station subset.eof subset.pca subset.cca
 #' subset.events subset.trajectory subset.trend subset.corfield subset.ds
 #' subset.dsensemble subset.comb subset.field subset.spell subset.zoo
-#' subset.trajectory station.subset subset.zoo subset.stationmeta
+#' subset.trajectory station.subset subset.zoo subset.stationmeta default.subset
 #' @seealso matchdate sort.station
 #'
 #' @param x Data object from which the subset is taken
@@ -96,8 +96,8 @@
 #'      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2))
 #' # OK - identical results
 #' 
-#' # Extract storm tracks for specific periods and regions from the sample 'events' object
-#' # storms (North Atlantic storms identified from ERA5 data)
+#' # Extract storm tracks for specific periods, regions and characteristics
+#' # from the sample 'events' object \code{storms} (North Atlantic storms identified from ERA5 data)
 #' data(storms)
 #' 
 #' # Subset deep cyclones...
@@ -1585,7 +1585,7 @@ sort.station <- function(x,decreasing=TRUE,...,is=NULL) {
 
 ## Tools to subset or reduce the size of a dsensemble, e.g. removing the
 ## high-order modes of PCA/EOF that represent noise.
-#' @export subset.dsensemble.multi
+# internal function - no need to export?
 subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                               verbose=FALSE,...) {
  

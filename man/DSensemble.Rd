@@ -19,6 +19,8 @@ DSensemble(y, ...)
 \arguments{
 \item{y}{A station object.}
 
+\item{\dots}{additional arguments}
+
 \item{plot}{Plot intermediate results if TRUE.}
 
 \item{path}{The path where the GCM results are stored.}

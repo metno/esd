@@ -33,9 +33,6 @@
 #' This code is based on the CCI method of the R-package 'cyclones' and has
 #' been adapted for 'esd'.
 #' 
-#' %% \code{stopCCI} signals the CCI process to stop in a safe manner by %%
-#' removing the file '.CCI.run' in the run directory.
-#' 
 #' The maximum gradient wind (max.speed) is estimated as described in Fleagle
 #' and Businger (1980) p. 163. (eq 4.27).
 #' 
@@ -46,7 +43,8 @@
 #' @importFrom utils txtProgressBar setTxtProgressBar data
 #' @importFrom graphics points image contour lines
 #'
-#' @aliases CCI stopCCI
+#' @aliases CCI
+#'
 #' @param Z A field object.
 #' @param m Number of harmonics used for fit to profile (Fourier truncation),
 #' which decides the degree of smoothing of the field. Lower values of m result
@@ -67,8 +65,15 @@
 #' no tracking is applied.
 #' @param fname Name of output file.
 #' @param plot TRUE: show intermediate results as plots.
-#' @param verbose Print out diagnostics.
+#' @param greenwich a boolean; if TRUE longitudes are transformed to a system starting at the Greenwich line (0-360E);
+#'        if FALSE longitudes are transformed to a system starting at the date line (180W-180E)
+#' @param progress a boolean; if TRUE show progress bar
+#' @param allow.open a boolean; if TRUE allow (anti)cyclones that are not closed, i.e.,
+#' that have a point of inflexion on only 3 of 4 sides.   
+#' @param verbose a boolean; if TRUE print out diagnostics.
 #' @param accuracy Not yet finished.
+#' @param \dots additional arguments
+#'
 #' @return The CCI function returns an 'events' object (a data frame with
 #' spatio-temporal information) that is organized as follows:
 #' \code{as.events(X=data.frame(date,time,lon,lat,pcent,max.dspl,
@@ -593,7 +598,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
       points(latXY[1,infly<0],pyi[lonXY[,1]==lon[i],infly<0],col="red",pch=1)
       #dev.copy2eps(file="cyclones.lat.eps", paper="letter")#; dev.off()
       dev.new()
-      image(xi,yi,zi,main=date[i],col=colscal(col="budrd",n=14,rev=FALSE),
+      image(xi,yi,zi,main=date[i],col=colscal(pal="budrd",n=14,rev=FALSE),
           xlab="lon",ylab="lat",breaks=seq(940,1080,10))
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=1,zlim=c(940,1010),nlevels=6)
       contour(xi,yi,zi,add=TRUE,col='Grey40',lty=2,zlim=c(1020,1080),nlevels=5)

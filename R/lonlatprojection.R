@@ -136,7 +136,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
   if (!is.null(method))
     text(lon[length(lon)],lat[1] - dlat,method,col="grey30",pos=2,cex=0.7)
-  
   if (!is.null(colbar)) {
     if (verbose) print('Add colourbar')
     

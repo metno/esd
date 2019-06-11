@@ -14,8 +14,8 @@
 #' @param X Same as Y or any zoo object.
 #' @param SVD Use a singular value decomposition as a basis for the PCA.
 #' @param LINPACK an option for \code{\link{svd}}.
-#' @param object The result from CCA.
-#' @param newdata The same as X.
+#' @param verbose a boolean; if TRUE print information about progress
+#'
 #' @return A CCA object: a list containing a.m, b.m, u.k, v.k, and r,
 #' describing the Canonical Correlation variates, patterns and correlations.
 #' a.m and b.m are the patterns and u.k and v.k the vectors (time evolution).

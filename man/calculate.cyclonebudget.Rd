@@ -45,7 +45,7 @@ data(storms)
 storms.deep <- trackfilter(storms,param="pcent",pmax=970,FUN="any")
 storms.deep <- trackfilter(storms.deep,param="max.gradient",pmin=2.5e-2,FUN="any")
 bud <- calculate.cyclonebudget(storms.deep)
-plot(bud,col=colscal(n=9,name= "bu"))
+plot(bud,col=colscal(n=9,pal="bu"))
 }
 
 }

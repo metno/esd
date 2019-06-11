@@ -16,16 +16,13 @@
 \alias{map.corfield}
 \alias{map.cca}
 \alias{map.events}
-\alias{map.trajectory}
 \alias{map.mvr}
 \alias{map.pca}
 \alias{map.trend}
 \alias{lonlatprojection}
 \alias{rotM}
-\alias{gridbox}
 \alias{map2sphere}
 \alias{vec}
-\alias{mask}
 \title{Plot maps for esd objects}
 \usage{
 map(x, ...)
@@ -165,6 +162,8 @@ map(x, param="pcent", type=c('trajectory','start'),
 
 }
 \seealso{
+map.trajectory
+
 \code{\link{plot.station}}
 }
 \keyword{map}

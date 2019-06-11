@@ -826,9 +826,9 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   
   ## Define colour pal:
   if (!is.null(FUN)) {
-    if (is.null(col)) col <- colscal(n=n,col=varid(x)) else
+    if (is.null(col)) col <- colscal(n=n,pal=varid(x)) else
       if (length(col)==1) {
-        col <- colscal(col=col,n=n)
+        col <- colscal(pal=col,n=n)
       }
     nc <- length(col)
     index <- round( nc*( map - min(map) )/
@@ -999,7 +999,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
       z <- x[[FUN]] 
       ok <- is.finite(z); ok2 <- ok
       if (verbose) print(summary(z))
-      colbar <- colscal(n=nbins,col=pal,rev=rev)
+      colbar <- colscal(n=nbins,pal=pal,rev=rev)
       breaks <- pretty(z,nbins)
       #ic <- trunc(nbins*(z - min(z,na.rm=TRUE))/(max(z,na.rm=TRUE) - min(z,na.rm=TRUE))) + 1
       #breaks <- round(seq(min(z,na.rm=TRUE),max(z,na.rm=TRUE),length=nbins),2)

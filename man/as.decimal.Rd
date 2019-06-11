@@ -6,13 +6,13 @@
 \alias{cv}
 \alias{q5}
 \alias{q95}
+\alias{q975}
 \alias{q995}
 \alias{filt}
 \alias{filt.default}
 \alias{exit}
 \alias{figlab}
 \alias{ndig}
-\alias{attrcp}
 \alias{ensemblemean}
 \alias{propchange}
 \alias{stand}
@@ -21,7 +21,6 @@
 \alias{firstyear}
 \alias{lastyear}
 \alias{eofvar}
-\alias{test.ds.field}
 \alias{test.num.predictors}
 \alias{arec}
 \alias{arec.default}
@@ -31,6 +30,8 @@
 \alias{strstrip}
 \alias{bin}
 \alias{factor2numeric}
+\alias{zeros}
+\alias{missval}
 \title{Simple and handy functions}
 \usage{
 as.decimal(x = NULL)
@@ -70,6 +71,12 @@ Alexandersson et al. (1998), Glob. Atm. and Oce. Sys.
 
 \code{stand} gives a standardised time series.
 
+\code{zeros} counts the occurrence of zero values in a vector.
+
+\code{nv} returns the number of valid points.
+
+\code{missval} computes the percentage of missing data.
+
 \code{arec} compares the number of record-breaking events to the number of
 events for a time series of iid data (\code{sum(1/1:n)})
 
@@ -81,7 +88,7 @@ events for a time series of iid data (\code{sum(1/1:n)})
 
 \code{nv} count the number of valid data points.
 
-\code{q5}, \code{q95} and \code{q995} are shortcuts to the 5\%, 95\%, and 99.5\% percentiles.
+\code{q5}, \code{q95}, \code{q975} and \code{q995} are shortcuts to the 5\%, 95\%, 97.5\% and 99.5\% percentiles.
 
 \code{trend.coef} and \code{trend.pval} return the coefficient and the p-value of the linear trend.
 
@@ -137,6 +144,9 @@ points(lons[fy==1850],lats[fy==1850])
 map(Obs,FUN='firstyear')
 }
 
+}
+\seealso{
+attrcp
 }
 \author{
 A. Mezghani

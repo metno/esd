@@ -59,6 +59,8 @@
 #' @aliases WG WG.station WG.fw.day.precip WG.FT.day.t2m FTscramble
 #'
 #' @importFrom stats start end approx pnorm qnorm qqnorm sd dgeom rgeom rexp qexp pexp dpois
+#' fft runif
+#' @importFrom graphics hist
 #'
 #' @param x station object
 #' @param option Define the type of WG
@@ -229,7 +231,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 ## Fractional Gaussian noise...?
 
 ## --- Precipitation  
-#' @export
+#' @export WG.fw.day.precip
 WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
                              ncwd=NULL,ndbr=NULL,t=NULL,
                              threshold=1,select=NULL,
@@ -442,7 +444,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
 # This weather generator assumes that the past covariate structure between
 # temperature and precipitation is constant and doesn't change in the future.
 # Moreover, the method also assumes that the spell-statistics will stay the same.
-#' @export
+#' @export WG.pca.day.t2m.precip
 WG.pca.day.t2m.precip <- function(x=NULL,...,precip=NULL,threshold=1,select=NULL,
                                   wetfreq.pred=FALSE,spell.stats=FALSE,
                                   verbose=FALSE) {

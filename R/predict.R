@@ -180,7 +180,7 @@ predict.ds.eof <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=
     noise <- matrix(rep(NA,n*l),n,l)
     for (i in 1:n)
       noise[i,] <- FTscramble(noise)
-    noise <- zoo(t(noise),order.by(index(x)))
+    noise <- zoo(t(noise),order.by=index(x))
     attr(y,'noise') <- noise
   }
   

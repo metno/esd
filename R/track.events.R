@@ -695,6 +695,18 @@ angle <- function(lon1,lat1,lon2,lat2) {
   #return(atan2(lat2-lat1,lon2-lon1)*180/pi+90)
 }
 
+#' Calculate trajectory statistics
+#'
+#' The function enumerates the trajectories ("trajectory"),
+#' adds time steps and the total number of steps in a trajecotry ("trackcount"),
+#' length of trajectory (in km): "tracklength"),
+#' and if the distance "dx" beween time steps exists the
+#' length of the trajectory from start to end ("tracklength") is also calculated.
+#'
+#' @param x an \code{events} object
+#' @param verbose a boolean; if TRUE print information about progress
+#' @return an \code{events} object with statistics describing the trajectories
+#'
 #' @export
 trackstats <- function(x,verbose=FALSE) {
   if(verbose) print("trackstats")
@@ -740,7 +752,6 @@ trackstats <- function(x,verbose=FALSE) {
   }
   if('dx' %in% colnames(y)) {
     if(verbose) print("dx")
-    #dx <- y$dx
     dx <- Displacement(y)
     if (any(rnum>nummax)) dx[nummax+1] <- 0
     y$dx <- dx

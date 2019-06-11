@@ -34,7 +34,7 @@ Compute the correlation between field objects and station/field.
 }
 \examples{
 x <- t2m.DNMI(lon=c(-40,30),lat=c(0,50))
-y <- t2m.NCEP(lon=c(-40,30),lat=c(0,50))
+y <- t2m.NorESM.M(lon=c(-40,30),lat=c(0,50))
 r <- corfield(annual(x),annual(y))
 
 data(Oslo)

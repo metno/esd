@@ -111,7 +111,8 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' 
 #' @aliases DS DS.default DS.station DS.list DS.eof DS.comb DS.field
 #' DS.t2m.month.field DS.t2m.season.field DS.precip.season.field DS.freq
-#' DS.spell DS.pca DS.seasonalcycle biasfix sametimescale
+#' DS.spell DS.pca DS.seasonalcycle
+#' @seealso biasfix sametimescale
 #'
 #' @importFrom stats predict var
 #' @importFrom utils str 
@@ -125,18 +126,16 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' screening
 #' @param rmtrend TRUE for detrending the predicant and predictors (in the PCs)
 #' before calibrating the model
+#' @param it a time index e.g., a range of years (c(1979,2010)) or a month or season ("dec" or "djf")
 #' @param ip Which EOF modes to include in the model training.
 #' @param plot TRUE: plot the results
 #' @param verbose TRUE: suppress output to the terminal.
-#' @param station TRUE: convert monthly data to station class using
-#' \code{\link{combine.ds}}, else return a list of different monthly
-#' DS-results.
-#' @param area.mean.expl When TRUE, subtract the area mean for the domain and
-#' use as a the first co-variate before the PCs from the EOF analysis.
 #' @param m passed on to \code{\link{crossval}}. A NULL value suppresses the
 #' cross-validation, e.g. for short data series.
 #' @param weighted TRUE: use the attribute '\code{error.estimate}' as weight
 #' for the regresion analysis.
+#' @param \dots additional arguments
+#'
 #' @return The downscaling analysis returns a time series representing the
 #' local climate, patterns of large-scale anomalies associated with this,
 #' ANOVA, and analysis of residuals. Care must be taken when using this routine
@@ -183,7 +182,7 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' 
 #' # Example: downscale annual wet-day mean precipitation -calibrate over
 #' # part of the record and use the other part for evaluation.
-#' T2M <- as.annual(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
+#' T2M <- as.annual(t2m.DNMI(lon=c(-10,30),lat=c(50,70)))
 #' cal <- subset(T2M,it=c(1948,1980))
 #' pre <- subset(T2M,it=c(1981,2013))
 #' comb <- combine(cal,pre)
@@ -197,7 +196,7 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' lon <- c(-12,37)
 #' lat <- c(52,72)
 #' ylim <- c(-6,6)
-#' t2m <- t2m.NCEP(lon=lon,lat=lat)
+#' t2m <- t2m.DNMI(lon=lon,lat=lat)
 #' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 #' data(Oslo)
 #' X <- combine(t2m,T2m)
@@ -208,7 +207,7 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' ## Example downscaling statistical parameters: mean and standard deviation
 #' ## using different predictors
 #' data(ferder)
-#' t2m <- t2m.NCEP(lon=c(-30,50),lat=c(40,70))
+#' t2m <- t2m.DNMI(lon=c(-30,50),lat=c(40,70))
 #' slp <- slp.NCEP(lon=c(-30,50),lat=c(40,70))
 #' T2m <- as.4seasons(t2m)
 #' SLP <- as.4seasons(slp)
@@ -247,14 +246,12 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' 
 #' 
 #' @export
-DS <- function(y,X,verbose=FALSE,plot=FALSE,...) UseMethod("DS")
-
-                                        # The basic DS-function, used by other methods
-                                        # REB HERE!
+DS <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
+               method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) UseMethod("DS")
 
 #' @export
-DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
-                       method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE) {
+DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
+                       method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) {
     if (verbose) print('DS.default')
     
     if (verbose) {print('index(y)'); print(index(y))}
@@ -467,13 +464,10 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,
     invisible(ds)
 }
 
-
-
-
 #' @export
-DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALSE,
+DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,
-		       pca=FALSE,npca=20) {
+		       ..., pca=FALSE, npca=20, biascorrect=FALSE) {
     
     if (verbose) print('DS.station')
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
@@ -596,13 +590,12 @@ DS.station <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,biascorrect=FALS
     invisible(ds.results)  
 }
 
-
 ## DS for combined fields - to make predictions not based on the
 ## calibration data
 #' @export
-DS.comb <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
-                    method="lm",swsm="step",m=5,rmtrend=TRUE,it=NULL,ip=1:7, 
-                    weighted=TRUE,pca=FALSE,npca=20) {
+DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, method="lm", swsm="step", m=5,
+                    rmtrend=TRUE, it=NULL, ip=1:7, weighted=TRUE, ...,
+		    pca=FALSE, npca=20, biascorrect=FALSE) {
     if (verbose) { print('--- DS.comb ---'); print(summary(coredata(y)))}
     ##print('index(y)'); print(index(y))
     ##print('err(y)'); print(err(y))
@@ -665,13 +658,12 @@ DS.comb <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
     invisible(ds)
 }
 
-
 ## This function takes care of downscaling based on a field-object X.
 ## X can be a combined field. This function calls more primitive DS methods,
 ## depending on the time scale represented in X (monthly or seasonal).
 #' @export
-DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
-                     method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE) {
+DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
+                     method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...,biascorrect=FALSE) {
     if (verbose) { print('--- DS.field ---'); print(summary(coredata(y)))}
     ## Keep track of which is an eof object and which is a station record:
     swapped <- FALSE
@@ -889,7 +881,6 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
 #     invisible(ds)
 # }
 
-
 ## DS.pca
 ## This function applies to PCA results for a group of stations.
 ## Typically some annual statistics (e.g. mu), stored in compressed form
@@ -898,8 +889,8 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
 ## The data may be pre-filtered using CCA.
 ## Rasmus Benestad, 19.08.2013
 #' @export
-DS.pca <- function(y,X,verbose=FALSE,plot=FALSE,biascorrect=FALSE,method="lm",swsm=NULL,m=5,ip=1:10,
-                   rmtrend=TRUE,weighted=TRUE,pca=TRUE, npca=20,...) {
+DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm", swsm=NULL, m=5, ip=1:10,
+                   rmtrend=TRUE, weighted=TRUE,..., pca=TRUE, npca=20, biascorrect=FALSE) {
 
     if (verbose) {
       print('--- DS.pca ---')
@@ -1317,9 +1308,9 @@ DS.mixedeof <- function(y,X,plot=FALSE,...,it=NULL,biascorrect=TRUE,
     invisible(ds)
 }
 
-#' @export
-DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,method="lm",swsm="step",m=5,
-                           rmtrend=TRUE,ip=1:7,weighted=TRUE) {
+#' @export DS.station.pca
+DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,method="lm",swsm="step",m=5,
+                           rmtrend=TRUE,ip=1:7,weighted=TRUE,...) {
   ## This function does the same as DS.eof
     if (verbose) { print('--- DS.station.pca ---'); print(summary(coredata(y)))}
     z <- DS.default(y=y,X=X,it=it,method=method,swsm=swsm,m=m,
@@ -1329,11 +1320,10 @@ DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,method="lm",
 }
 
 #' @export
-DS.trajectory <- function(y,X,verbose=FALSE,plot=FALSE,...,it=NULL,is=NULL,FUN='count',param=NULL,
-                       unit=NULL,longname=NULL,loc=NULL,
-                       biascorrect=FALSE, method="lm",swsm="step",m=5,
-                       rmtrend=TRUE,ip=1:7,
-                       weighted=TRUE,pca=FALSE,npca=20) {
+DS.trajectory <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
+                          swsm="step", m=5, rmtrend=TRUE, ip=1:7, weighted=TRUE, ...,
+			  pca=FALSE, npca=20, is=NULL, FUN='count', param=NULL, biascorrect=FALSE,
+			  unit=NULL,longname=NULL,loc=NULL) {
    
   if (verbose) { print('--- DS.trajectory ---'); print(summary(coredata(y)))}
   stopifnot(!missing(y),!missing(X),inherits(y,"trajectory"))

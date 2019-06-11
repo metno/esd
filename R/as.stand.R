@@ -36,7 +36,7 @@ as.stand.station <- function(x,...,verbose=FALSE,na.rm=TRUE) {
   return(X)
 }
 
-#' @export
+#' @export as.original
 as.original <- function(x) UseMethod("as.original")
 
 #' @export

@@ -7,9 +7,6 @@
 \alias{as.station.ds}
 \alias{as.station.pca}
 \alias{as.station.spell}
-\alias{as.station.dsensemble}
-\alias{as.station.dsensemble.pca}
-\alias{as.station.dsensemble.station}
 \alias{as.station.events}
 \title{Coerce input to a \code{station} object}
 \usage{
@@ -100,4 +97,7 @@ cb <- list(pal="burd", breaks=seq(1000,1020,2)) # specify color bar for maps
 map(slp.field, FUN="mean", colbar=cb) # show map of SLP field
 map(slp.station, FUN="mean", colbar=cb) # show map of SLP as station data
 
+}
+\seealso{
+as.station.dsensemble as.station.dsensemble.pca as.station.dsensemble.station
 }

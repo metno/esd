@@ -2,7 +2,7 @@
 #' 
 #' Method to save station data as netCDF, making sure to include the data
 #' structure and meta-data (attributes). The code tries to follow the netCDf
-#' 'CF' convention. The method is built on the \code{\link{ncdf4}} package.
+#' 'CF' convention. The method is built on the \code{ncdf4} package.
 #' 
 #' @seealso write2ncdf4.station 
 #' write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.eof
@@ -31,7 +31,7 @@ write2ncdf4.default <- function(x,...) {
 #' 
 #' Method to save station data as netCDF, making sure to include the data
 #' structure and meta-data (attributes). The code tries to follow the netCDf
-#' 'CF' convention. The method is built on the \code{\link{ncdf4}} package.
+#' 'CF' convention. The method is built on the \code{ncdf4} package.
 #' 
 #' @aliases write2ncdf4.field
 #' @seealso write2ncdf4
@@ -174,7 +174,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' 
 #' Method to save station data as netCDF, making sure to include the data
 #' structure and meta-data (attributes). The code tries to follow the netCDf
-#' 'CF' convention. The method is built on the \code{\link{ncdf4}} package.
+#' 'CF' convention. The method is built on the \code{ncdf4} package.
 #' 
 #' @seealso write2ncdf4
 #' 
@@ -986,7 +986,7 @@ write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,s
 #' @export
 write2ncdf4.eof <- function(x,...,file='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999,verbose=FALSE){
   if(verbose) print("write2ncdf.eof")
-  if(vebrose) print("unfinished function that doesn't do anything")
+  if(verbose) print("unfinished function that doesn't do anything")
 }
 
 #' @export  

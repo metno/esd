@@ -99,7 +99,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ##if (is.null(col)) col <- colscal(n=n) else
   ##if (length(col)==1) {
   ##    palette <- col
-  ##    col <- colscal(col=palette,n=n)
+  ##    col <- colscal(pal=palette,n=n)
   ## }
   nc <- length(colbar$col)
   ## AM commented

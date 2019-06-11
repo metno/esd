@@ -18,6 +18,7 @@
 \alias{subset.zoo}
 \alias{station.subset}
 \alias{subset.stationmeta}
+\alias{default.subset}
 \title{Subsetting esd objects}
 \usage{
 subset(x, ...)
@@ -120,8 +121,8 @@ plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2))
 # OK - identical results
 
-# Extract storm tracks for specific periods and regions from the sample 'events' object
-# storms (North Atlantic storms identified from ERA5 data)
+# Extract storm tracks for specific periods, regions and characteristics
+# from the sample 'events' object \\code{storms} (North Atlantic storms identified from ERA5 data)
 data(storms)
 
 # Subset deep cyclones...

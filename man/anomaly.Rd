@@ -10,6 +10,12 @@
 \alias{anomaly.month}
 \alias{anomaly.season}
 \alias{anomaly.day}
+\alias{as.anomaly}
+\alias{as.anomaly.default}
+\alias{as.anomaly.zoo}
+\alias{as.anomaly.list}
+\alias{as.anomaly.station}
+\alias{as.anomaly.field}
 \alias{climatology}
 \alias{as.climatology}
 \title{Anomaly and Climatology}
@@ -46,7 +52,5 @@ plot(anomaly(ferder))
 }
 \seealso{
 as.stand
-
-\code{\link{as.anomaly}}, \code{\link{as.climatology}}
 }
 \keyword{utilities}

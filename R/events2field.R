@@ -18,10 +18,10 @@
 #'
 #' @return a \code{field} object
 #'
-#' @aliases as.field.trajectory
-#' @seealso as.field as.trajectory CCI track.events
+#' @aliases as.field.events events2density
+#' @seealso as.field CCI track.events 
 #'
-#' @aliases events2density
+#' @importFrom utils tail
 #'
 #' @export
 events2field <- function(x,verbose=FALSE,...) {

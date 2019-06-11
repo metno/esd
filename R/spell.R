@@ -13,10 +13,15 @@
 #' \code{GDD}: Growing degree days (\url{http://en.wikipedia.org/wiki/Growing_degree-day})
 #' \code{HDD}: Heating degree day
 #'
+#' \code{qqgeom} produces a quantile-quantile plot of streak statistics comparing the
+#' empirical quantiles with the distribution function quantiles (see \code{\link[stats]{qgeom}}). 
+#'
 #' @aliases spell spell.default spell.station hist.spell count wetfreq wetmean
 #' nevents exceedance exceedance.default exceedance.station exceedance.field
-#' HDD CDD GDD
-#' @seealso hotsummerdays coldwinterdays coldspells heatwavespells nwetdays
+#' HDD CDD GDD qqgeom
+#' @seealso hotsummerdays coldwinterdays coldspells heatwavespells nwetdays plot
+#'
+#' @importFrom stats glm qqline
 #'
 #' @param x station or field object
 #' @param threshold threshold value
@@ -26,7 +31,6 @@
 #'
 #' @return Station or field objects
 #'
-#' @seealso plot
 #' @keywords utilities
 #' @examples
 #' 
@@ -46,7 +50,10 @@
 #' # above freezing temperatures
 #' data(ferder)
 #' try(coldwinterdays(ferder))
-#' 
+#'
+#' # Quantile-quantile plot
+#' qqgeom(ferder, treshold=1, pois=TRUE)
+#'
 #' @export spell
 spell <- function(x,threshold,...) UseMethod("spell")
 

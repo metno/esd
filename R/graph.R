@@ -5,6 +5,9 @@
 #' \code{graph} shows a fancy graph of output of \code{\link{DSensemble}}.
 #'
 #' @aliases graph.default graph.dsensemble graph.list graph.zoo
+#'
+#' @importFrom graphics rasterImage
+#' 
 #' @seealso wheel cumugram visprob conf vis diagram scatter plot map
 #' 
 #' @param x an input object of class 'DSensemble'

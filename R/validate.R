@@ -4,6 +4,8 @@
 #' 
 #' @aliases validate.dsensemble validate.eof.comb
 #'
+#' @importFrom stats wilcox.test
+#'
 #' @param x esd object to be validated
 #' @param conf.int confidence interval
 #' @param colbar for plotting. See \code{colbar}
@@ -33,7 +35,7 @@ validate.eof.comb <- function(x,...,new=TRUE,verbose=FALSE) {
 #' @export
 validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
                                 colbar=list(breaks=seq(0,1,by=0.1),cex=1.5,
-                                col=colscal(11,col="t2m",alpha=0.5)),
+                                col=colscal(11,pal="t2m",alpha=0.5)),
 				plot=TRUE,verbose=FALSE,...) {
   if (verbose) print('validate.dsensemble')
   ranktest <- function(x) {

@@ -141,8 +141,10 @@ as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
   ## Convert the dsensemble object to an EOF of the multi-model mean
   if (verbose) print('as.eof.dsensemble')
   stopifnot(inherits(x,'dsensemble'),inherits(x[[2]],'eof')|inherits(x[[2]],'pca'))
-  eof0 <- x[[2]]; x[[2]] <- NULL
-  x[[1]] -> info; x[[1]] <- NULL
+  eof0 <- x[[2]]
+  x[[2]] <- NULL
+  x[[1]] -> info
+  x[[1]] <- NULL
   d <- c(dim(x[[1]]),length(x))
   y <- unlist(x)
   dim(y) <- c(d[1]*d[2],d[3])
@@ -156,12 +158,12 @@ as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
   return(eof)
 }
 
-#' @export
+#' @export as.eof.dsensemble.pca
 as.eof.dsensemble.pca <- function(x,...,is=NULL,it=NULL,ip=NULL,verbose=FALSE) {
   if (verbose) print('as.eof.dsensemble.pca')
   stopifnot(inherits(x,"dsensemble") & inherits(x,"pca"))
   if (inherits(x,"eof")) {
-      invisible(x)
+    invisible(x)
   } else {
     eof <- pca2eof(x$pca)
     eof <- subset(eof,ip=ip)

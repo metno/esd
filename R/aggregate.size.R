@@ -5,8 +5,10 @@
 #'
 #' \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
 #' meters) for individual events (defined as gridboxes touching each other).
-#' 
-#' @aliases aggregate.size.matrix aggregate.size.field
+#'
+#' The function \code{aggregateSize} is exactly the same as \code{aggregate.size}.
+#'
+#' @aliases aggregateSize aggregateSize.matrix aggregateSize.field
 #' @seealso aggregate.area aggregate
 #' 
 #' @param x A \code{\link{station}} object
@@ -21,15 +23,20 @@
 #' @author R.E. Benestad
 #' @keywords utilities
 #'
-#' @export
-aggregate.size <- function(x, ...) UseMethod("aggregate.size")
+#' @export aggregate.size
+aggregate.size <- function(x, ...) {
+  aggregateSize(x, ...)
+}
+
+#' @export aggregateSize
+aggregateSize <- function(x, ...) UseMethod("aggregateSize")
 
 # Aggregate size of events - S3 method for matrix
 #' @export
-aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6378,...) {#,a=6.378e06,...) {
+aggregateSize.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6378,...) {#,a=6.378e06,...) {
 
     ## Select all grid boxes with values exceeding x0
-    if (verbose) print('aggregate.size.matrix')
+    if (verbose) print('aggregateSize.matrix')
     ## Copy data that can be masked
     mask <- (x > x0)
     if (sum(mask)==0) return(list(events=x*NA,number=0,statistic=NULL))
@@ -99,8 +106,8 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6378,...) {#,a
 
 # Aggregate size of events - S3 method for field
 #' @export
-aggregate.size.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
-  if (verbose) print('aggregate.size.field')  
+aggregateSize.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
+  if (verbose) print('aggregateSize.field')  
   nt <- length(index(x))
   d <- attr(x,'dimensions')
   sizestats <- list()
@@ -108,7 +115,7 @@ aggregate.size.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
     z <- matrix(x[it,],d[1],d[2])
     attr(z,'longitude') <- lon(x)
     attr(z,'latitude') <- lat(x)
-    stat.it <- aggregate.size(z,x0=x0)$statistic
+    stat.it <- aggregateSize(z,x0=x0)$statistic
     if(is.null(stat.it)) {
       sizestats[[it]] <- 0
     } else {
@@ -137,6 +144,6 @@ test.aggregate.size <- function(n=62, m=78, verbose=TRUE) {
                 sort(rep(cos(seq(0,pi,length=m)),n)),n,m)
     par(mfcol=c(3,1))
     image(x)
-    test.results <- aggregate.size.matrix(x,x0=0,plot=TRUE,verbose=verbose)
+    test.results <- aggregateSize(x,x0=0,plot=TRUE,verbose=verbose)
     
 }

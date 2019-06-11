@@ -1,8 +1,25 @@
-#' @export
-trackfilter <- function(x,...) UseMethod("trackfilter")
+## Replaced by subset.trajectory and subset.events
+## where param, pmin, pmax and FUN go into argument ic
 
-#' @export
-trackfilter.events <- function(x,...,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
+# Filter trajectories
+#
+# Function for selecting trajectories with certain characteristics
+#
+# @param x events or trajectory object
+# @param param name of parameter
+# @param pmin minimum value of \code{param} to allow
+# @param pmax maximum value of \code{param} to allow
+# @param FUN If \code{FUN}="any", \code{param} must be within the range [\code{pmin},\code{pmax}]
+# during at least one time step of a trajectory, or else said trajectory will be excluded.
+# If \code{FUN}="all", \code{param} must be within the defined range during all time steps. 
+#
+# @seealso subset.events subset.trajectory
+#
+# @export
+trackfilter <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) UseMethod("trackfilter")
+
+# @export
+trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"events"))
   if(!is.null(param) & (!is.null(pmin) | !is.null(pmax))) {
@@ -36,8 +53,8 @@ trackfilter.events <- function(x,...,param=NULL,pmin=NULL,pmax=NULL,FUN="any",ve
   invisible(y)
 }
 
-#' @export
-trackfilter.trajectory <- function(x,...,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
+# @export
+trackfilter.trajectory <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"trajectory"))
   if(!is.null(param) & (!is.null(pmin) | !is.null(pmax))) {

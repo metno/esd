@@ -14,7 +14,9 @@ pieslice <- function(theta1,theta2,r=1,
 #' 
 #' 
 #' @aliases windrose TGW geostrophicwind geostrophicwind.station geostrophicwind.field
-#' 
+#'
+#' @importFrom utils combn
+#'
 #' @param x station object
 #' @param thrshld Threshold for windspeed
 #' @param saw Directional resolution in degrees

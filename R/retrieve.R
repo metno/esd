@@ -119,7 +119,7 @@ retrieve.default <- function(ncfile,param="auto",
 }
 
 ## Set retrieve for ncdf4 object
-#' @export
+#' @export retrieve.ncdf4
 retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
                             lon=NULL, lat=NULL, lev=NULL, it=NULL,
                             miss2na=TRUE, greenwich=FALSE,
@@ -604,7 +604,7 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
 #'
 #' Check content of netcdf file including parameters, units, and time format (frequency, calendar type).
 #'
-#' @export
+#' @export check.ncdf4
 check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   if(verbose) print("check.ncdf4")
   qf <- NULL
@@ -1315,7 +1315,7 @@ retrieve.stationsummary <- function(ncfile,path=NULL,stid=NULL,loc=NULL,lon=NULL
 }
 
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
-#' @export
+#' @export retrieve.rcm
 retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     if(verbose) print("retrieve.rcm")
     if (!is.null(path)) {

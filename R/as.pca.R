@@ -9,7 +9,7 @@
 #' \code{as.pca} is an S3 method and will redirect to a fitting function depending on the output. 
 #' The way in which the transformation is performed depends on the type of input data.
 #' 
-#' @seealso as.pca.ds as.pca.station PCA
+#' @seealso PCA as.pca DS
 #' 
 #' @param x the input object
 #' @param ... other arguments
@@ -23,7 +23,7 @@ as.pca <- function(x,verbose=FALSE,...) UseMethod("as.pca")
 #' 
 #' Coerce a \code{ds} \code{pca} object into a \code{pca} object by replacing the class.
 #'
-#' @seealso as.pca DS
+#' @seealso 
 #' 
 #' @param x the input object
 #' @param verbose a boolean; if TRUE print information about progress
@@ -47,7 +47,7 @@ as.pca.ds <- function(x,verbose=FALSE,...) {
 #' corresponding time series (the core of the \code{pca} object often referred to as principle components),
 #' and eigenvalues that represent the relative strength of each spatial pattern.
 #'
-#' @aliases PCA
+#' @seealso PCA
 #' 
 #' @seealso as.pca plot.pca map.pca as.station.pca DS.pca
 #' 

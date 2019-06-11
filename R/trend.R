@@ -33,7 +33,7 @@
 #' print(trend(ferder,results='pval'))
 #' 
 #' @export trend
-trend<-function(x,result="trend",model="y ~ t",...) UseMethod("trend")
+trend <- function(x,result="trend",model="y ~ t",...) UseMethod("trend")
 
 #' @export
 trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
@@ -49,7 +49,7 @@ trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(y)
 }
 
-#' @export
+#' @export trend.one.station
 trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.one.station",result))
   if (sum(is.finite(x)) <= 3) return(NA)
@@ -253,7 +253,7 @@ trend.zoo <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   invisible(y)
 }
 
-#' @export
+#' @export trend.zoo.multi
 trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.station.multi",result))
   y <- apply(coredata(x),2,trend,result=result,model=model)
@@ -262,7 +262,7 @@ trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 }
 
 ## Compute the linear trend
-#' @export
+#' @export trend.coef
 trend.coef <- function(x,...) {
   
   if (!is.null(dim(x))) {
@@ -281,7 +281,7 @@ trend.coef <- function(x,...) {
 }
 
 ## Compute the linear trend
-#' @export
+#' @export trend.err
 trend.err <- function(x,...) {
   if (sum(is.finite(x)) <= 3) return(NA)
   x[!is.finite(x)] <- NA
@@ -294,7 +294,7 @@ trend.err <- function(x,...) {
 
 
 ## Compute the p-value of the linear trend
-#' @export
+#' @export trend.pval
 trend.pval <- function(x,...) {
   #print('trend.val'); print(class(x)); print(str(x))
   x <- zoo(x)

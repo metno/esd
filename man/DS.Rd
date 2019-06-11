@@ -15,11 +15,11 @@
 \alias{DS.spell}
 \alias{DS.pca}
 \alias{DS.seasonalcycle}
-\alias{biasfix}
-\alias{sametimescale}
 \title{Downscale}
 \usage{
-DS(y, X, verbose = FALSE, plot = FALSE, ...)
+DS(y, X, verbose = FALSE, plot = FALSE, it = NULL, method = "lm",
+  swsm = "step", m = 5, rmtrend = TRUE, ip = 1:7,
+  weighted = TRUE, ...)
 }
 \arguments{
 \item{y}{The predictand - the station series representing local climate
@@ -32,28 +32,25 @@ parameter}
 
 \item{plot}{TRUE: plot the results}
 
+\item{it}{a time index e.g., a range of years (c(1979,2010)) or a month or season ("dec" or "djf")}
+
 \item{method}{Model type, e.g. \code{\link{lm}} og \code{\link{glm}}}
 
 \item{swsm}{Stepwise screening, e.g. \code{\link{step}}. NULL skips stepwise
 screening}
+
+\item{m}{passed on to \code{\link{crossval}}. A NULL value suppresses the
+cross-validation, e.g. for short data series.}
 
 \item{rmtrend}{TRUE for detrending the predicant and predictors (in the PCs)
 before calibrating the model}
 
 \item{ip}{Which EOF modes to include in the model training.}
 
-\item{station}{TRUE: convert monthly data to station class using
-\code{\link{combine.ds}}, else return a list of different monthly
-DS-results.}
-
-\item{area.mean.expl}{When TRUE, subtract the area mean for the domain and
-use as a the first co-variate before the PCs from the EOF analysis.}
-
-\item{m}{passed on to \code{\link{crossval}}. A NULL value suppresses the
-cross-validation, e.g. for short data series.}
-
 \item{weighted}{TRUE: use the attribute '\code{error.estimate}' as weight
 for the regresion analysis.}
+
+\item{\dots}{additional arguments}
 }
 \value{
 The downscaling analysis returns a time series representing the
@@ -164,7 +161,7 @@ plot(coredata(yT2m[,1]),coredata(yT2m[,2]))
 
 # Example: downscale annual wet-day mean precipitation -calibrate over
 # part of the record and use the other part for evaluation.
-T2M <- as.annual(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
+T2M <- as.annual(t2m.DNMI(lon=c(-10,30),lat=c(50,70)))
 cal <- subset(T2M,it=c(1948,1980))
 pre <- subset(T2M,it=c(1981,2013))
 comb <- combine(cal,pre)
@@ -178,7 +175,7 @@ plot(z, new=FALSE)
 lon <- c(-12,37)
 lat <- c(52,72)
 ylim <- c(-6,6)
-t2m <- t2m.NCEP(lon=lon,lat=lat)
+t2m <- t2m.DNMI(lon=lon,lat=lat)
 T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 data(Oslo)
 X <- combine(t2m,T2m)
@@ -189,7 +186,7 @@ plot(ds)
 ## Example downscaling statistical parameters: mean and standard deviation
 ## using different predictors
 data(ferder)
-t2m <- t2m.NCEP(lon=c(-30,50),lat=c(40,70))
+t2m <- t2m.DNMI(lon=c(-30,50),lat=c(40,70))
 slp <- slp.NCEP(lon=c(-30,50),lat=c(40,70))
 T2m <- as.4seasons(t2m)
 SLP <- as.4seasons(slp)
@@ -227,6 +224,9 @@ points(as.station(predict(ds2)))
 lines(y3,lty=2)
 
 
+}
+\seealso{
+biasfix sametimescale
 }
 \author{
 R.E. Benestad

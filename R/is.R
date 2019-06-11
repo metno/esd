@@ -2,9 +2,10 @@
 #' 
 #' Test if an object is of a certain class or contains some variable
 #' 
-#' @aliases is.T is.precip is.field( is.station is.eof is.pca is.cca
+#' @aliases is.T is.precip is.field is.station is.eof is.pca is.cca
 #' is.trajectory is.daily is.monthly is.seasonal is.annual is.model is.wind
-#' is.direction is.pressure
+#' is.direction is.pressure is.dates is.ds is.dsensemble is.events is.months
+#' is.seasons is.url is.years
 #'
 #' @param x a data object
 #' @return a boolean

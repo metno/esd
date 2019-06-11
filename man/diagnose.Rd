@@ -75,7 +75,7 @@ inter-annual variance varies with seasons.
 }
 \examples{
 
-t2m <- t2m.NCEP(lon=c(-40,40),lat=c(30,70))
+t2m <- t2m.DNMI(lon=c(-40,40),lat=c(30,70))
 T2m <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
 # Combine in time to compute common EOFs:
 X <- combine(t2m,T2m)

@@ -6,7 +6,7 @@
 #' 
 #' [ref: Benestad (2001), "A comparison between two empirical downscaling
 #' strategies", \emph{Int. J. Climatology}, \bold{vol 21}, Issue 13,
-#' pp.1645-1668. DOI 10.1002/joc.703]. and \code{\link{mixFields}} prepares for
+#' pp.1645-1668. DOI 10.1002/joc.703]. and \code{mixFields} prepares for
 #' mixed-field EOF analysis [ref. Bretherton et al. (1992) "An Intercomparison
 #' of Methods for finding Coupled Patterns in Climate Data", \emph{J. Climate},
 #' \bold{vol 5}, 541-560; Benestad et al. (2002), "Empirically downscaled
@@ -47,12 +47,8 @@
 #' @param lat set latitude range
 #' @param verbose TRUE - clutter the screen with messages
 #' @param anomaly When TRUE, subtract the mean before SVD.
-#' @param na.action 'fill' uses \code{\link{approx}} to interpolate the
-#' NA-values before the PCA.
-#' @param what Default set to 'pca' for converting the PCA-results, but also
-#' works on downscaled PCA results. Option 'xval' returns the station values
-#' for cross-validation results and 'test' returns the station values used in
-#' the cross-validation (same interval as for 'xval').
+#' @param \dots additional arguments
+#'
 #' @return File containing an 'eof' object which is based on the 'zoo' class.
 #' @author R.E. Benestad
 #' @keywords spatial ts multivariate

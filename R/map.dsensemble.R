@@ -3,6 +3,8 @@
 ## Select a set of PCs and then use these in matrix product to reproduce
 ## physical elements.
 
+#' Expand PCA to obtain station data
+#'
 #' @export
 expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
   ## Get the spatial weights

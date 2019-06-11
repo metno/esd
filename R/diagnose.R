@@ -13,7 +13,9 @@
 #' 
 #' \code{climvar} estimates the climatological variance, e.g. how the
 #' inter-annual variance varies with seasons.
-#' 
+#'
+#' @importFrom stats spectrum qqline na.omit
+#' @importFrom graphics matplot arrows
 #' 
 #' @aliases diagnose diagnose.comb diagnose.eof
 #' diagnose.comb.eof diagnose.mvr diagnose.cca diagnose.ds diagnose.station

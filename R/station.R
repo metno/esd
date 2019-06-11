@@ -9,8 +9,6 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
   }
 }
 
-#' Retrieve meta data and data from observational weather stations.
-#' 
 #' Retrieve station record from a given data source.
 #' 
 #' \code{allgood} and \code{clean.station} provide two filters for extracting
@@ -25,7 +23,10 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' @aliases select.station station station.default station.ecad station.nacd
 #' station.narp station.nordklim station.metnod station.metnom station.ghcnd
 #' station.ghcnm station.ghcnm station.sonel station.gloss station.newlyn
-#' station.giss clean.station allgood
+#' station.giss
+#'
+#' @seealso clean.station allgood
+#'
 #' @param loc A string of characters as the name of the location
 #' (weather/climate station) or an object of class "stationmeta".
 #' @param param Parameter or element type or variable identifier. There are
@@ -104,54 +105,55 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showall=TRUE)
 #' }
 #'
-#' @importFrom utils download.file head read.csv read.csv2 read.fwf read.table write.table
+#' @importFrom utils download.file head read.csv read.csv2 read.fwf read.table write.table untar unzip
 #'
 #' @export station
 station <- function(...) UseMethod("station")
 
-#' @export
+#' @export station.ecad
 station.ecad <- function(...) {
   y <- station(src="ecad",...)
   invisible(y)
 }
 
-#' @export
+#' @export station.ghcnd
 station.ghcnd <- function(...) {
   y <- station(src="ghcnd",...)
   invisible(y)
 }
 
-#' @export
+#' @export station.nacd
 station.nacd <- function(...) {
   y <- station(src="nacd",...)
   invisible(y)
 }
 
-#' @export
+#' @export station.narp
 station.narp <- function(...) {
   y <- station(src="narp",...)
   invisible(y)
 }
 
-#' @export
+#' @export station.nordklim
 station.nordklim <- function(...) {
   ## 
   y <- station(src="nordklim",...)
   invisible(y)
 }
 
+#' @export station.metnom
 station.metnom <- function(...) {
   y <- station(src="metnom",...)
   invisible(y)
 }
 
-#' @export
+#' @export station.metnod
 station.metnod <- function(...) {
   y <- station(src="metnod",...)
   invisible(y)
 }
 
-#' @export
+#' @export station.ghcnm
 station.ghcnm <- function(...) {
   y <- station(src="ghcnm",...)
   invisible(y)
@@ -864,6 +866,8 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
   invisible(METNO)
 }
 
+#' MetNo meta data function
+#'
 #' @export
 stnr <- function (navn = NULL, lon = NULL, lat = NULL, max.dist = 10, 
                   alt = NULL, Fylke = NULL, Kommune = NULL, fy = NULL, ty = NULL, 
@@ -963,7 +967,7 @@ stnr <- function (navn = NULL, lon = NULL, lat = NULL, max.dist = 10,
   invisible(met.no.meta)
 }
 
-#' @export
+# internal function - no need to export
 MET.no.meta <- function (param = "TAM", print = FALSE) {
   url <- paste("http://klapp/metnopub/production/metno?re=27&ct=text/plain&del=semicolon&tab=T_ELEM_MONTH&p=", 
                param, "&geo=lat&geo=utm&geo=amsl&geo=name&geo=cnr&geo=muni&nod=NA", 
@@ -1054,7 +1058,7 @@ metno.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   invisible(METNO)
 }
 
-#' @export
+#' @export station.giss
 station.giss <- function(...,url=NULL) {
   t2m <- read.table(url,skip=2,header=TRUE)
   meta <- read.table(url,nrows=1,as.is=TRUE)

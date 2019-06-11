@@ -86,7 +86,7 @@ as.fitted.values.station <- function(x) {
   invisible(y)
 }
 
-#' @export
+#' @export as.original.data
 as.original.data <- function(x) UseMethod("as.original.data")
 
 #' @export

@@ -7,8 +7,9 @@
 #' plot.dsx plot.dsensemble plot.diagnose plot.xval plot.diagnose.comb.eof
 #' plot.diagnose.matrix plot.diagnose.dsensemble plot.nevents plot.ssa
 #'
-#' @importFrom graphics par grid segments text axis legend polygon
+#' @importFrom graphics par grid segments text axis legend polygon mtext abline layout rect boxplot
 #' @importFrom grDevices dev.new dev.off
+#' @importFrom stats pbinom
 #'  
 #' @param x the object to be plotted
 #' @param ip Which EOF/CCA pattern (mode) to plot
@@ -984,9 +985,9 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 }
 
 #' @export
-plot.cca <- function(x,icca=1,
+plot.cca <- function(x,...,icca=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE,...) {
+                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE) {
   if (verbose) print("plot.cca")
   if (new) dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
@@ -1506,6 +1507,8 @@ plot.trajectory <- function(x,it=NULL,is=NULL,
   invisible(n)
 }
 
+#' name to expression - only valid for temperature
+#'
 #' @export
 nam2expr <- function(x) {
   y <- x

@@ -27,7 +27,7 @@ visprob <- function(x,...) UseMethod("visprob")
 
 #' @export
 visprob.default <- function(x,...) {
-
+  print("visprob.default unfinished - don't know what to do")
 }
 
 #' @export
@@ -35,7 +35,7 @@ visprob.station <- function(x,...,y=NULL,dy=0.01,verbose=FALSE) {
   if (is.precip(x)) visprob.station.precip(x,y=y,dy=dy,verbose=verbose,...) 
 }
 
-#' @export
+#' @export visprob.station.precip
 visprob.station.precip <- function(x,...,y=NULL,threshold=1,dy=0.005,
                                    breaks=NULL,pdf=FALSE,verbose=FALSE) {
   if (verbose) print('visprob.station.precip')

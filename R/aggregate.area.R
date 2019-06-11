@@ -5,8 +5,11 @@
 #'
 #' \code{aggregate.area} is used for aggregating spatial statistics, such as
 #' the global mean or the global area of some phenomenon.
+#'
+#' The function \code{aggregateArea} is exactly the same as \code{aggregate.area}.
 #' 
 #' @seealso aggregate aggregate.size
+#' @aliases aggregateArea
 #' 
 #' @param x A \code{\link{station}} object
 #' @param it A list or data.frame providing time index, see \code{\link{subset}}
@@ -37,12 +40,21 @@
 #' w <- aggregate.area(y)
 #' plot(w)
 #'
-#' @export
+#' @export aggregate.area
 aggregate.area <- function(x,...,is=NULL,it=NULL,FUN='sum',
                            na.rm=TRUE,smallx=FALSE,verbose=FALSE,
                            a=6378, threshold=NULL) {
+  y <- aggregateArea(x,...,is=NULL,it=NULL,FUN='sum',
+                           na.rm=TRUE,smallx=FALSE,verbose=FALSE,
+                           a=6378, threshold=NULL)
+  return(y)
+}
+ 
+aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
+                           na.rm=TRUE,smallx=FALSE,verbose=FALSE,
+                           a=6378, threshold=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
-  if (verbose) print(paste("aggregate.area",FUN))
+  if (verbose) print(paste("aggregateArea",FUN))
   if (verbose) {
     if (FUN=='sum') print(rowSums(coredata(x),na.rm=TRUE)) else
                     print(rowMeans(coredata(x),na.rm=TRUE))

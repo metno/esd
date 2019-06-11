@@ -3,7 +3,9 @@
 #' Produce a plot showing trends for multiple periods within a time series. The
 #' strength of the trend is represented by the color scale and significant
 #' trends are marked with black borders.
-#' 
+#'
+#' @importFrom stats anova lm
+#' @importFrom grDevices colorRampPalette
 #' 
 #' @param x the 'x' argument provides the time series for which the trend
 #' analysis is performed. Only zoo objects are accepted.
@@ -60,7 +62,7 @@ vis.trends <- function(x,...,unitlabel="unit",varlabel="",is=1,
   vstep <- vstep[order(vstep)]
   cticks <- vstep[2:length(vstep)]-dv/2
   
-  #cstep <- colscal(n=length(vstep)-1,col="t2m")
+  #cstep <- colscal(n=length(vstep)-1,pal="t2m")
   cmin <- rgb(239,138,98,maxColorValue=255) # blue
   cmid <- rgb(247,247,247,maxColorValue=255) # white
   cmax <- rgb(103,169,207,maxColorValue=255) # red

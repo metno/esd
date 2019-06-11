@@ -8,8 +8,10 @@
 #' attribute `station' is used as base period to compute anomalies of GCM
 #' downscaled results.
 #'
-#' @aliases anomaly anomaly.default anomaly.comb anomaly.field anomaly.station
-#' anomaly.annual anomaly.month anomaly.season anomaly.day climatology as.climatology
+#' @aliases anomaly anomaly.default anomaly.comb anomaly.field anomaly.station 
+#' anomaly.annual anomaly.month anomaly.season anomaly.day
+#' as.anomaly as.anomaly.default as.anomaly.zoo as.anomaly.list as.anomaly.station as.anomaly.field
+#' climatology as.climatology
 #' @seealso as.stand
 #' 
 #' @param x A station or field object
@@ -19,7 +21,6 @@
 #'
 #' @return a similar object as x containing anomalies and climatology
 #'
-#' @seealso \code{\link{as.anomaly}}, \code{\link{as.climatology}}
 #' @keywords utilities
 #'
 #' @examples 
@@ -269,9 +270,10 @@ anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
 
 
 
-
+#' @export
 as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
+#' @export
 as.anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE) anomaly.default(x,ref=ref,na.rm=na.rm,...)
 
 #' @export

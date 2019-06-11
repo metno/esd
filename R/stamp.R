@@ -1,6 +1,9 @@
 
-# This function adds a stamp in the history of x
-# with 'sys.call', 'date()', and 'src (source)
+#' This function adds a stamp in the history of x
+#' with 'sys.call', 'date()', and 'src (source)
+#'
+#' @importFrom utils sessionInfo
+#'
 #' @export
 history.stamp <-function(x=NULL,y=NULL,verbose=FALSE,...) UseMethod("history.stamp")
 

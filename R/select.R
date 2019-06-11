@@ -5,7 +5,7 @@
 #' Can return several matches 
 #'
 #' @export
-select <- function(stid=NULL,...) UseMethod("select")
+select <- function(x=NULL,...) UseMethod("select")
 
 #' @export
 select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=NULL, lon=NULL, lat=NULL,
@@ -220,7 +220,7 @@ test.select.station <- function() {
 
 # RUN !
 # Available ECA&D stations for the range of longitude between 0 and 10 deg. East, the range of latitude between 20 and 30 deg. North and for altitudes around 400m +/- 40 m
-available.station <- select.station2(lon = c(0,10),lat=c(20,30),src="ECA&D",alt=560,silent=FALSE)
+available.station <- select.station(lon = c(0,10),lat=c(20,30),src="ECA&D",alt=560,silent=FALSE)
 print(available.station)
 
 # Available stations for ECA&D data

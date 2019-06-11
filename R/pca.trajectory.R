@@ -10,7 +10,9 @@
 #' @param verbose TRUE - clutter the screen with messages
 #' @param anomaly logical. If TRUE, subtract the first latitude/longitude from
 #' each trajectory.
+#' @param neofs number of EOF patterns to include
 #' @param param parameters to include in principle component analysis.
+#' @param \dots additional arguments
 #' 
 #' @keywords spatial ts multivariate
 #' 
@@ -19,13 +21,13 @@
 #' data(imilast.M03)
 #' x <- subset(imilast.M03,is=list(lon=c(-20,20),lat=c(50,70)))
 #' # PCA of longitude and latitude
-#' pca <- PCA.trajectory(x,param=c('lon','lat'))
-#' plot.pca.trajectory(pca)
-#' map.pca.trajectory(pca,projection='latlon')
+#' pca <- PCA(x,param=c('lon','lat'))
+#' plot(pca)
+#' map(pca,projection='latlon')
 #' 
 #' # latitude only
-#' pca <- PCA.trajectory(x,param=c('lat'))
-#' plot.pca.trajectory(pca)
+#' pca <- PCA(x,param=c('lat'))
+#' plot(pca)
 #' 
 #' @export
 PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
@@ -124,7 +126,7 @@ pca2trajectory <- function(X,verbose=FALSE) {
   invisible(x)
 }
 
-#' @export
+#' @export plot.pca.trajectory
 plot.pca.trajectory <- function(x,...,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
                            main=NULL,verbose=FALSE) {
 

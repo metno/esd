@@ -124,7 +124,6 @@ data(etopo5)
 z <- subset(etopo5,is=list(lon=c(-10,30),lat=c(40,60)))
 map(z, new=FALSE)
 
-export
 }
 \seealso{
 \code{\link{aggregate.area}} \code{\link{as.4seasons}},

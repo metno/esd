@@ -4,6 +4,7 @@
 \alias{map.trajectory}
 \alias{hexbin.trajectory}
 \alias{sunflower.trajectory}
+\alias{map.pca.trajectory}
 \title{Plot trajectory maps}
 \usage{
 \method{map}{trajectory}(x, it = NULL, is = NULL,
@@ -18,14 +19,18 @@
 \item{is}{A list or data.frame providing space index, e.g. station record}
 
 \item{type}{type of map: 'paths' shows trajectories; 'density' shows the
-spatial density of the trajectories)}
+spatial density of the trajectories; 'colors' shows colored trajectories where
+the colorscale represents 'param'; 'anomaly' or 'shape' show  only the
+longitude and latitude displacement of the trajectories}
 
 \item{projection}{Projections: c("lonlat","sphere","np","sp") - the latter
 gives stereographic views from the North and south poles.}
 
+\item{parameter}{to display as a color scale}
+
 \item{col}{color of trajectories}
 
-\item{colmap}{Colour scales, either as an output from \code{\link{rbg}} or a
+\item{colmap}{Colour scales, either as an output from \code{\link[grDevices]{rgb}} or a
 single character string 'bwr' (blue-white-red) or 'rwb' ('red-white-blue')}
 
 \item{new}{TRUE: create a new graphics device}
@@ -45,11 +50,13 @@ single character string 'bwr' (blue-white-red) or 'rwb' ('red-white-blue')}
 \item{alpha}{factor modifying the opacity alpha; typically in [0,1]}
 }
 \description{
-Make different types of trajectory maps. Individual trajectories are mapped
-with map.trajectory. The number density can be visualised with
-hexbin.trajectory and sunflower.trajectory which are versions of
-\code{\link{scatter.hexbin}} and \code{\link{scatter.sunflower}} adapted to
-show trajectory density.
+\code{map.trajectory} is an \code{S3} method for making different types of trajectory maps.
+By default, \code{map.trajectory} shows individual trajectories, but the
+number density of trajectories can also be visualised by using the argument \code{type='denisty'}.
+}
+\details{
+The functions \code{hexbin.trajectory} and \code{sunflower.trajectory}
+produce alternative versions of trajectory density maps.
 }
 \examples{
 

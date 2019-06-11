@@ -8,6 +8,11 @@
   NASAgiss(url = "http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt",
   plot = FALSE)
 }
+\arguments{
+\item{url}{url}
+
+\item{plot}{a boolean; if TRUE show resutls in plot}
+}
 \description{
 Download GISS Sea Surface Temperature data from NASA
 }

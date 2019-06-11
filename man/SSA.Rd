@@ -2,10 +2,6 @@
 % Please edit documentation in R/SSA.R
 \name{SSA}
 \alias{SSA}
-\alias{Singular}
-\alias{Spectrum}
-\alias{Analysis}
-\alias{plot.ssa}
 \title{Singular Spectrum Analysis}
 \usage{
 SSA(x, m = 12, plot = TRUE, main = "SSA analysis", sub = "",
@@ -27,13 +23,6 @@ SSA(x, m = 12, plot = TRUE, main = "SSA analysis", sub = "",
 \item{ip}{If x is an eof-object, which PC to use.}
 
 \item{verbose}{Print out diagnostics.}
-
-\item{LINPACK}{'TRUE': svd; 'FALSE':La.svd}
-
-\item{ssa}{An 'SSA' object returned by SSA().}
-
-\item{param}{Which parameter ("daily.station.record") to use: "precip",
-"t2m" or other.}
 }
 \value{
 A SSA object: An \code{link{svd}} object with additional parameters:
@@ -45,14 +34,5 @@ applied).
 \description{
 After von Storch & Zwiers (1999), Statistical Analysis in Climate Research,
 p. 312
-}
-\examples{
-
-\dontrun{
-data(DNMI.t2m)
-eof.1 <- EOF(DNMI.t2m,mon=1)
-pop <- POP(eof.1)
-}
-
 }
 \keyword{manip}

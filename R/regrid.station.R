@@ -1,4 +1,4 @@
-#' @export regrid.irregweights
+# internal function - no need to export
 regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 # Compute the weights for irregular grids (xo,yo) - the station class
 

@@ -2,7 +2,7 @@
 #'
 #' @return a list with season abbreviations and their corresponding months: list("annual"=1:12, "djf"=c(12,1,2),...)
 #' 
-#' @export
+#' @export season.abb
 season.abb <- function() {
   season.abb <- c('annual','djf','jfm','fma','mam','amj',
                   'mjj','jja','jas','aso',

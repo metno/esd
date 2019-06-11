@@ -2,6 +2,7 @@
 % Please edit documentation in R/aggregate.area.R
 \name{aggregate.area}
 \alias{aggregate.area}
+\alias{aggregateArea}
 \title{aggregate}
 \usage{
 \method{aggregate}{area}(x, ..., is = NULL, it = NULL, FUN = "sum",
@@ -37,6 +38,8 @@ but takes care of extra house keeping, such as attributes with meta data.
 \details{
 \code{aggregate.area} is used for aggregating spatial statistics, such as
 the global mean or the global area of some phenomenon.
+
+The function \code{aggregateArea} is exactly the same as \code{aggregate.area}.
 }
 \examples{
 
