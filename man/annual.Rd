@@ -32,27 +32,9 @@
 annual(x, ...)
 }
 \arguments{
-\item{x}{input object, e.g., a 'station' or 'field' object}
-
-\item{\dots}{additional arguments}
-
-\item{FUN}{a function}
-
-\item{verbose}{a boolean; if TRUE print information about progress}
-
-\item{nmin}{minimum number of data points in a season}
-
-\item{threshold}{threshold used if FUN is, e.g., 'exceedance' or}
-
-\item{slow}{a boolean; if FALSE run a fast version that might not work on all data types?}
-
-\item{dateindex}{a boolean; if TRUE transform index into date format}
-
-\item{start}{first month and day of the season, e.g., '01-01' for January 1 (argument in \code{season})}
-
-\item{end}{last month and day of the season, e.g., '12-31' for December 31 (argument in \code{season})}
-
 \item{x}{an input object of, e.g., class 'station', 'field'}
+
+\item{\dots}{additional argument}
 
 \item{FUN}{a function, see \code{\link{aggregate.zoo}}}
 
@@ -64,8 +46,6 @@ data accepted for annual estimate. NULL demands complete years.}
 \item{na.rm}{a boolean; if TRUE, ignore NA - see see \code{\link{mean}}}
 
 \item{verbose}{a boolean; if TRUE print information about progress}
-
-\item{\dots}{additional argument}
 }
 \value{
 Same class as x
@@ -90,7 +70,5 @@ plot(as.4seasons(bjornholt,threshold=1,FUN="exceedance"))
 }
 \seealso{
 aggregate
-
-\code{\link{as.annual}} \code{\link{aggregate.station}} \code{\link{pentad}}
 }
 \keyword{utilities}

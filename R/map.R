@@ -955,9 +955,10 @@ map.events <- function(x,...,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
     }
     period <- unique(c(min(it),max(it)))
     if (!is.null(period) & length(Y)==0) {
-      text(par("usr")[1] + 0.05*diff(range(par("usr")[3:4])),
-           par("usr")[4] - 0.05*diff(range(par("usr")[3:4])),
-           paste(period,collapse=" - "),pos=4,cex=0.75,col="grey30")
+      title(sub = paste(period,collapse=" - "))
+      # text(par("usr")[1] + 0.05*diff(range(par("usr")[3:4])),
+      #      par("usr")[4] - 0.05*diff(range(par("usr")[3:4])),
+      #      paste(period,collapse=" - "),pos=4,cex=0.75,col="grey30")
     }
     
     if (!is.null(main)) {

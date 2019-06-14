@@ -38,7 +38,8 @@ corfield.default <- function(x,y,...) {
 #' @export
 corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
-  if (verbose) { print("corfield.zoo:"); print('station against field') }
+  if (verbose) print("corfield.zoo:")
+  stopifnot(inherits(y,'field'))
 
   # Keep track of which is an eof object and which is a station record:
   swapped <- FALSE
@@ -48,8 +49,7 @@ corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=F
     y <- yy
     swapped <- TRUE
   }
-  
-  stopifnot(inherits(y,'field'))
+
   # If the station data is daily, aggigate as monthly mean
   if ( inherits(y,"month") ) {
     x <- aggregate(x, as.yearmon, mean)
@@ -57,7 +57,12 @@ corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=F
   }
 
   #print("HERE")
-  if (verbose) {print(dim(x)); print(dim(y)); print(class(x)); print(class(y))}
+  if (verbose) {
+    print(dim(x))
+    print(dim(y))
+    print(class(x))
+    print(class(y))
+  }
   yx <- merge(zoo(x),zoo(y),all=FALSE)
   #print("OK so far?")
 
@@ -171,7 +176,7 @@ corfield.field.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
   invisible(r)
 }
 
-
+#' @export
 corfield.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
                              use='pairwise.complete.obs',
                              na.action='na.omit',colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {

@@ -519,28 +519,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     if(new) dev.new()
     par(fig=fig0,mar=mar0)
-    
-    ## REB: 2016-10-12 - add the possibility to use google maps
-    ## KMP 2018-10-31: Don't use require inside the esd package. 
-    ## Instead call the external package explicitly, e.g., RgoogleMaps::GetMap()
-    #if (requireNamespace("RgoogleMaps", quietly = TRUE) &
-    #    (projection=="lonlat") & usegooglemap) {
-    #  #require(RgoogleMaps)
-    #  mxdst <- max(diff(range(ss$latitude)),diff(range(ss$longitude)))
-    #  if (!is.finite(mxdst) | mxdst==0) {
-    #    zoom <- 3 
-    #  } else {
-    #    zoom <- 7 - round(log(mxdst))
-    #  }
-    #  bgmap <- RgoogleMaps::GetMap(center=c(lat=mean(ss$latitude),lon=mean(ss$longitude)),
-    #                               destfile = "map.station.esd.png",
-    #                               maptype = "mobile", zoom=zoom)
-    #  plotmap(ss$latitude, ss$longitude, bgmap)
-    #  
-    #  print('Unfinished')
-    #  return()
-    #}
-    
+        
     if (!is.null(highlight)) {
       plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
            bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
@@ -558,9 +537,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            ylim = ylim , axes = FALSE , frame.plot = FALSE,
            cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab, new=FALSE)
     }
-    #if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) )
-    #     par(new=FALSE) else ## REB: 2016-10-12 - add the possibility to use google maps
-    #     par(new=TRUE)
     par(new=FALSE)
     
     ## Add geoborders

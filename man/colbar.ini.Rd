@@ -11,11 +11,7 @@ colbar.ini(x, FUN = NULL, colbar = NULL, verbose = FALSE)
 
 \item{FUN}{a function}
 
-\item{colbar}{a list}
-
-\item{verbose}{a boolean; if TRUE print information about progress}
-
-\item{a}{list: colbar = list(col, breaks, n, type, cex, h, v, pos, show, rev)
+\item{colbar}{a list: colbar = list(col, breaks, n, type, cex, h, v, pos, show, rev)
 where 
 \code{col} is a vector containing the colors corresponding to the values 
 specified in the numerical vector \code{breaks},
@@ -25,6 +21,8 @@ specified in the numerical vector \code{breaks},
 \code{cex} see \code{\link{par}},
 \code{h}, \code{v}, \code{type}: see \code{\link{col.bar}}
 \code{pos} not in use?}
+
+\item{verbose}{a boolean; if TRUE print information about progress}
 }
 \description{
 Generate a color bar list and add information about the breaks of the color scale based on the numerical range of the input data.

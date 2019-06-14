@@ -348,14 +348,15 @@ subset.pattern <- function(x,...,is=NULL,verbose=FALSE) {
       iy <- is.finite(lats)
     }
     if (!is.null(attr(x,'pattern'))) {
-      if (verbose) print('replace the pattern argument')
-      y[ix,iy] -> attr(x,'pattern')
+      if (verbose) print('replace the pattern argument: [ix,iy,]')
+      y[ix,iy,] -> attr(x,'pattern')
       lons[ix] -> attr(x,'longitude')
       lats[iy] -> attr(x,'latitude')
     } else {
       if (verbose) print(paste('subset the matrix:',sum(ix),sum(iy)))
       if (verbose) print(dim(x))
-      y <- x[ix,iy]
+      nd <- length(dim(x))
+      if (nd == 3) y <- x[ix,iy,] else if (nd == 2) y <- x[ix,iy]
       y <- attrcp(x,y)
       attr(y,'variable') <- varid(x)
       attr(y,'unit') <- esd::unit(x)

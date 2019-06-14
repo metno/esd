@@ -77,10 +77,8 @@ colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
 #' 
 #' @param x an input object, e.g., a 'zoo', 'station' or 'field' object or numerical vector
 #' @param FUN a function 
-#' @param colbar a list
 #' @param verbose a boolean; if TRUE print information about progress
-#' 
-#' @param a list: colbar = list(col, breaks, n, type, cex, h, v, pos, show, rev)
+#' @param colbar a list: colbar = list(col, breaks, n, type, cex, h, v, pos, show, rev)
 #' where 
 #' \code{col} is a vector containing the colors corresponding to the values 
 #' specified in the numerical vector \code{breaks},

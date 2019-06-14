@@ -1160,8 +1160,16 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
     t <- t[it1:(it1+it2-1)]
   }
   
-  start <- c(it1,min(is))
-  count <- c(it2,max(is) - min(is)+1)
+  if (nt == size[1]) { 
+    start <- c(it1,min(is))
+    count <- c(it2,max(is) - min(is)+1)
+    transpose <- FALSE
+  } else { 
+    ## The netCDF retrieval is faster when the data is ordered as (space,time)
+    start <- c(min(is),it1)
+    count <- c(max(is) - min(is)+1,it2)
+    transpose <- TRUE
+  }
   
   ## Read the actual data:
   if (verbose) {
@@ -1175,6 +1183,7 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
   }
   
   x <- ncvar_get(ncid,param,start=start,count=count)
+  if (transpose) x <- t(x)
   nc_close(ncid)
   if (verbose) print('All data has been extracted from the netCDF file')
   

@@ -7,17 +7,6 @@
 #' \code{as.4seasons} aggregates to four seasons ('djf': December-February, 'mam': March-May, 'jja': June-August, 'son': September-November)
 #' and \code{as.seasons} aggregates to a user defined season (see arguments 'start' and 'end'). 
 #'
-#' @param x input object, e.g., a 'station' or 'field' object
-#' @param FUN a function
-#' @param verbose a boolean; if TRUE print information about progress
-#' @param nmin minimum number of data points in a season
-#' @param threshold threshold used if FUN is, e.g., 'exceedance' or 
-#' @param slow a boolean; if FALSE run a fast version that might not work on all data types?
-#' @param dateindex a boolean; if TRUE transform index into date format
-#' @param start first month and day of the season, e.g., '01-01' for January 1 (argument in \code{season})
-#' @param end last month and day of the season, e.g., '12-31' for December 31 (argument in \code{season})
-#' @param \dots additional arguments
-
 #' @aliases as.annual as.annual.default as.annual.numeric as.annual.integer as.annual.yearqtr as.annual.station as.annual.spell
 #' annual annual.zoo annual.default annual.dsensemble annual.station annual.spell annual.field
 #' as.monthly as.monthly.default as.monthly.station as.monthly.field
@@ -36,7 +25,6 @@
 #' 
 #' @return Same class as x
 #'
-#' @seealso \code{\link{as.annual}} \code{\link{aggregate.station}} \code{\link{pentad}}
 #' @keywords utilities
 #'
 #' @examples
