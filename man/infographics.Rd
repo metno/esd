@@ -20,6 +20,7 @@
 \alias{graph.dsensemble}
 \alias{graph.zoo}
 \alias{graph.list}
+\alias{monthabsdiff}
 %\alias{qq.test}
 \description{
   Wheel
@@ -37,6 +38,9 @@
   cumugram
   
   graph
+  
+  \code{monthabsdiff} - presents the magnitude of the interannual variations in monthly time series.
+  
   
   \code{balls} draws 3D ball symbols.
 }
@@ -74,6 +78,7 @@ graph.zoo(x,img=NULL,pch='fancy',it=NULL,col=rgb(1,0.7,0.7,0.1),
 balls(x,y=NULL,col=NULL,cex.max=2,n=20)
 qq.test(x,...)
 qp.test.station(x,...)
+monthabsdiff(x,mon=1:12,FUN=NULL,verbose=FALSE,col=NULL)
 }
 \arguments{
  \item{x}{a data object}
