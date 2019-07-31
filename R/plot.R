@@ -252,6 +252,7 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
           title(main=src(x)[1],cex.main=cex.main*0.8,
                 col.main="grey40",adj=0,line=0)
           title(main=main1,cex.main=cex.main)
+          par(xaxt='s',yaxt='s',mar=c(3,3,2,2))
       }
   }
   ##  if (length(grep('pc',what))>0) result <- as.station(x) else
