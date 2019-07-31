@@ -234,19 +234,21 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   #par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
   if (length(grep('eof',what))>0) {
       if (verbose) {print('Show map'); print(class(x))}
-      if (inherits(x,'eof')) {## inherits(x,'pca') |
+      if (inherits(x,'eof')) {  ## inherits(x,'pca') |
           par(fig=c(0,0.5,0.5,1),mar=c(3,3,2,2))
           ## par(fig=c(0.025,0.5,0.5,0.975)) ## c(0,0.45,0.5,0.975) c(0.05,0.5,0.55,0.95)
           map(x,ip=ip,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
               cex.lab=cex.lab,cex=cex,new=FALSE,colbar=colbar,...) 
       } else if (inherits(x,'pca')) {
-          par(fig=c(0.5,1,0.5,1),mar=c(3,3,2,2))
+          #par(fig=c(0.5,1,0.5,1),mar=c(3,3,2,2))
+          fig <-c(0,0.5,0.5,1)
           main1 <- paste('Leading EOF#',ip, ' (',
                          round(var.eof[ip],digits=2),"%)",sep='')
           map(x,ip=ip,verbose=verbose,
               cex.main=cex.main,cex.axis=cex.axis,
-              cex.lab=cex.lab,cex=cex,fig=fig,new=FALSE,colbar=colbar,...) 
+              cex.lab=cex.lab,cex=cex, fig=fig,
+              new=FALSE,colbar=colbar,...) 
           title(main=src(x)[1],cex.main=cex.main*0.8,
                 col.main="grey40",adj=0,line=0)
           title(main=main1,cex.main=cex.main)
