@@ -10,13 +10,16 @@ scatter <- function(x,y,type='heat', verbose=FALSE,...) {
 }
 
 scatter.heat <- function(x,y,xlim=NULL,ylim=NULL,breaks=NULL,main='Scatter',xlab='',ylab='',sub='',
-                         col=NULL,log=FALSE,dig=NULL, fig = c(0.65,0.85,0.22,0.32), verbose=FALSE) {
+                         ignorezero=TRUE,col=NULL,log=FALSE,dig=NULL, fig = c(0.65,0.85,0.22,0.32), 
+                         verbose=FALSE) {
   if (verbose) print('scatter.heat')
   par(bty='n',mar=c(5.1, 5.1, 4.1, 2.1))
   if (is.null(dig)) dig <- max(c(-2*log(max(c(x,y,na.rm=TRUE)))/log(10),0),na.rm=TRUE)
   if (verbose) print(paste(dig,'digits. Max:',max(c(x,y,na.rm=TRUE))))
   txy <- table(round(x,dig),round(y,dig))
+  if (ignorezero) txy[txy==0] <- NA
   if (log) txy <- log(txy)/log(10)
+  
   if (is.null(breaks) & is.null(col)) {
     breaks <- pretty(as.numeric(txy))
     col <- heat.colors(length(breaks)-1)

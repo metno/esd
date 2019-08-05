@@ -174,9 +174,12 @@ as.station.ds <- function(x,...,verbose=FALSE) {
 
 as.station.pca <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.pca")
+  if (verbose) print(names(attributes(attr(x,'original_data'))))
   if (inherits(x,"dsensemble")) {
+    if (verbose) print('dsensemble')
     y <- as.station.dsensemble.pca(x,...)
   } else {
+    if (verbose) print('PCA')
     y <- pca2station(x,...)
     if (!is.null(attr(x,"pca"))) {
       fit <- attr(x,'pca')
@@ -184,6 +187,8 @@ as.station.pca <- function(x,...,verbose=FALSE) {
       attr(y,'fitted_values') <- fit
       attr(y,'original_data') <- attr(x,'original_data')
     }
+    y <- attrcp(attr(x,'original_data'),y)
+    if (verbose) print(names(attributes(y)))
   }
   return(y)
 }
@@ -313,6 +318,7 @@ as.station.spell <- function(x,...,verbose=FALSE) {
   attr(y,'unit') <- c("days","days")
   attr(y,'variable') <- suffix
   class(y) <- c('station',class(x))
+  y <- attrcp(attr(x,'original_data'),y) # REB 2019-08-05
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
@@ -331,6 +337,7 @@ as.station.eof <- function(x,...,ip=1:10,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)
   class(y)[2] <- class(x)[2]
   if (dim(y)[2]==1) y <- subset(y,is=1)
+  y <- attrcp(attr(x,'original_data'),y) # REB 2019-08-05
   invisible(y)
 }
 
@@ -349,6 +356,7 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
     y <- x
   }
   if (verbose) print(class(y))
+  y <- attrcp(attr(x,'original_data'),y) # REB 2019-08-05
   return(y)
 }
 
@@ -1210,6 +1218,8 @@ as.residual <- function(x,...) UseMethod("as.residual")
 
 as.residual.ds <- function(x,...,verbose=FALSE){
   if (verbose) print('as.residual.ds')
+  x0 <- attr(x,'original_data')
+  if (verbose) print(names(attributes(x0)))
   if (is.ds(x)) {
     ## If the predictand was originally an EOF or PCA product, then
     ## the residual needs to inherits their attributes
@@ -1220,21 +1230,20 @@ as.residual.ds <- function(x,...,verbose=FALSE){
         z0 <- as.field(attr(x,'original_data'))
         z1 <- as.field(x)
         y <- z1 - z0
-        y <- attrcp(z0,y); class(y) <- class(z0)
+        y <- attrcp(x0,y); class(y) <- class(z0)
       } else
       if (is.pca(x)) {
         if (verbose) print('pca/station')
-        z0 <- as.station(attr(x,'original_data'))
+        z0 <- as.station(x0)
         z1 <- as.station(x)
         y <- z1 - z0
-        y <- attrcp(z0,y); class(y) <- class(z0)
+        y <- attrcp(x0,y); class(y) <- class(z0)
+        if (verbose) print(names(attributes(y)))
       } else
       if (is.station(x)) {
         if (verbose) print('station')
-        z0 <- attr(x,'original_data')
-        z1 <- x
-        y <- z1 - z0
-        y <- attrcp(z0,y); class(y) <- class(z0)
+        y <- x - x0
+        y <- attrcp(x0,y); class(y) <- class(z0)
       }      
    } else
   ## If the results are a field object, then the residuals are stored as EOFs.

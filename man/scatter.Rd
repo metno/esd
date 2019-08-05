@@ -7,14 +7,19 @@
 \usage{
 scatter(x,y,type='heat', verbose=FALSE,...)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{x}{x-variable}
   \item{y}{y-variable}
   \item{type}{Type of scatter cplot \code{c('heat','sunflower','hexbin'}}
   \item{verbose}{TRUE for diagnosing the internals of the function.}
+  \item{breaks}{('heat' option) Set the colour scaling.}
+  \item{ignorezero}{('heat' option - default = TRUE) Zeros are blank.}
+  \item{log}{('heat' option - default = FALSE) Use logarithmic colour scaling.}
+  \item{dig}{('heat' option) Resolution in number of decimal points/digits.}
+  \item{fig}{('heat' option) Figure region for the colour bar.}
 }
-\details{The 'heat' type produces a heat map type display whereas 'sunflower' and 'hexbin' present alternative infographics}
+\details{The 'heat' type produces a heat map type display whereas 'sunflower' and 'hexbin' present alternative infographics. Scatter also takes arguments similar to plot such as 'xlim', 'ylim', 'main', 'sub', 'xlab', and 'ylab.}
 \value{
 Graphics and visualisation only.
 }

@@ -10,9 +10,9 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) 
     if (verbose) print('aggregate.size.matrix')
     ## Copy data that can be masked
     mask <- (x > x0)
-    if (sum(mask)==0) return(list(events=x*NA,number=0,statistic=NULL))
+    if (sum(mask,na.rm=TRUE)==0) return(list(events=x*NA,number=0,statistic=NULL))
     y <- x[mask];  ## Space mask
-    z <- y*NA; ns <- sum(mask)
+    z <- y*NA; ns <- sum(mask,na.rm=TRUE)
     if (verbose) print(paste('Detected',ns,'grid points from total of',length(x)))
     ## Determine the dimensions of the matrix
     d <- dim(x)
@@ -64,7 +64,7 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) 
       ## Estimate the area of the gridboxes
       W <- Z; for (j in 1:d[2]) W[,j] <- a*cos(pi*lat(z)[j]/180)
       stats <- rep(NA,eno)
-      for (i in 1:eno) {stats[i] <- sum(W[Z==eno])}  
+      for (i in 1:eno) {stats[i] <- sum(W[Z==eno],na.rm=TRUE)}  
     } else stats <- table(z)
     ## The biggest event is always the first
     stats <- sort(stats)
