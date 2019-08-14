@@ -35,7 +35,8 @@ as.residual.ds <- function(x,...,verbose=FALSE){
       y <- attrcp(x0,y); class(y) <- class(z0)
     } else if (is.station(x)) {
       if (verbose) print('station')
-      y <- attrcp(x0,y); class(y) <- class(z0)
+      y <- x - x0
+      y <- attrcp(x0,y); class(y) <- class(x)
     }      
   }
   ## If the results are a field object, then the residuals are stored as EOFs.
