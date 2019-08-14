@@ -712,8 +712,8 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   # 
   # varnm <- varid(x)[1]
   # legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
-  ## Reset the graphics settings to original
-  par(par0)
+  ## Reset the graphics settings that have been changed to original
+  par(fig=par0$fig, mar=par0$mar, mgp=par0$mgp, xaxt=par0$xaxt , yaxt=par0$yaxt)
   
   #par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
   #    fig=c(0,1,0.1,1),new=FALSE)
