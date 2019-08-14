@@ -4,6 +4,7 @@
 \alias{validate}
 \alias{validate.dsensemble}
 \alias{validate.eof.comb}
+\alias{validate.default}
 \title{Validate}
 \usage{
 validate(x, ...)
@@ -30,6 +31,6 @@ The method \code{validate}
   slp2 <- slp.DNMI(lon=c(-50,50),lat=c(30,70))
   slpcomb <- combine(slp1,slp2)
   eofcomb <- EOF(slpcomb)
-  validate(eofcomb)
+  validate(eofcomb, new=FALSE)
 
 }

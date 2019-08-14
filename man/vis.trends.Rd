@@ -23,6 +23,8 @@ years.}
 
 \item{vmax}{upper limit of trend scale.}
 
+\item{new}{if TRUE plot in new window}
+
 \item{show.significance}{TRUE to mark statistically significant trends.}
 
 \item{verbose}{TRUE or FALSE.}
@@ -34,20 +36,19 @@ trends are marked with black borders.
 }
 \examples{
 
-
 t <- seq(as.Date("1955-01-01"),as.Date("2004-12-31"),by=1)
 x <- zoo(sample(seq(-30,30,1e-1),length(t),rep=TRUE),order.by=t)
-vis.trends(x,show.significance=FALSE)
+vis.trends(x, show.significance=FALSE, new=FALSE)
 
 data(Oslo)
 vis.trends(Oslo, unitlabel="oC", varlabel = "Temperature",
-  pmax = 1e-2, minlen = 40)
+  pmax = 1e-2, minlen = 40, new=FALSE)
 vis.trends(subset(Oslo,it='jja'), unitlabel="oC",
   varlabel = "Temperature JJA",
-  pmax = 1e-3, vmax=0.5, minlen = 40)
+  pmax = 1e-3, vmax=0.5, minlen = 40, new=FALSE)
 vis.trends(subset(Oslo,it='mam'), unitlabel="oC",
   varlabel = "Temperature MAM",
-  pmax = 1e-3, vmax=0.5, minlen = 40)
+  pmax = 1e-3, vmax=0.5, minlen = 40, new=FALSE)
 
 }
 \author{

@@ -2,17 +2,17 @@
 #'
 #' @aliases as.trajectory as.trajectory.default as.trajectory.events events2trajectory trajectory
 #'
-#' @export
+#' @export as.trajectory
 as.trajectory <- function(x,...) UseMethod("as.trajectory")
 
-#' @export
+#' @export as.trajectory.default
 as.trajectory.default <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.trajectory.default")
   X <- trajectory(x,...)
   invisible(X)
 }
 
-#' @export
+#' @export as.trajectory.events
 as.trajectory.events <- function(x,verbose=FALSE,...) {
   if (verbose) print("as.trajectory.events")
   stopifnot(inherits(x,"events"))

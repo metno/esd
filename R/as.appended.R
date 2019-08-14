@@ -21,10 +21,10 @@
 #' @param iapp index of appendix to extract
 #' @param \dots additional arguments
 #'
-#' @export
+#' @export as.appended
 as.appended <- function(x,...) UseMethod("as.appended")
 
-#' @export
+#' @export as.appended.ds.comb
 as.appended.ds.comb <- function(x,...,iapp=1,verbose=FALSE) {
   if(verbose) print("as.appended.ds.comb")
   eval(parse(text=paste("X <- attr(x,'appendix.",iapp,"')",sep="")))
@@ -33,22 +33,22 @@ as.appended.ds.comb <- function(x,...,iapp=1,verbose=FALSE) {
   invisible(X)
 }
 
-#' @export
+#' @export as.appended.eof.comb
 as.appended.eof.comb <- function(x,...,iapp=1) {
   X <- as.appended.ds.comb(x,iapp=iapp)
   invisible(X)
 }
 
-#' @export
+#' @export as.appended.field.comb
 as.appended.field.comb <- function(x,...,iapp=1) {
   X <- as.appended.ds.comb(x,iapp=iapp)
   invisible(X)
 }
 
-#' @export
+#' @export as.calibrationdata
 as.calibrationdata <- function(x) UseMethod("as.calibrationdata")
 
-#' @export
+#' @export as.calibrationdata.ds
 as.calibrationdata.ds <- function(x) {
   y <- attr(x,'calibration_data')
   y <- attrcp(x,y)
@@ -57,7 +57,7 @@ as.calibrationdata.ds <- function(x) {
   invisible(y)
 }
 
-#' @export
+#' @export as.calibrationdata.station
 as.calibrationdata.station <- function(x) {
   if (!is.null(attr(x,'calibration_data'))) {
     y <- as.calibrationdata.ds(x)
@@ -67,10 +67,10 @@ as.calibrationdata.station <- function(x) {
   invisible(y)
 }
 
-#' @export
+#' @export as.fitted.values
 as.fitted.values <- function(x) UseMethod("as.fitted.values")
 
-#' @export
+#' @export as.fitted.values.ds
 as.fitted.values.ds <- function(x) {
   y <- attr(x,'fitted_values')
   y <- attrcp(x,y)
@@ -79,7 +79,7 @@ as.fitted.values.ds <- function(x) {
   invisible(y)
 }
 
-#' @export
+#' @export as.fitted.values.station
 as.fitted.values.station <- function(x) {
    if (!is.null(attr(x,'fitted.values')))
     y <- as.fitted.values.ds(x) else y <- NULL
@@ -89,7 +89,7 @@ as.fitted.values.station <- function(x) {
 #' @export as.original.data
 as.original.data <- function(x) UseMethod("as.original.data")
 
-#' @export
+#' @export as.original.data.ds
 as.original.data.ds <- function(x) {
   y <- attr(x,'original_data')
   y <- attrcp(x,y)
@@ -98,16 +98,16 @@ as.original.data.ds <- function(x) {
   invisible(y)
 }
 
-#' @export
+#' @export as.original.data.station
 as.original.data.station <- function(x) {
   y <- as.original.data.ds(x)
   invisible(y)
 }
 
-#' @export
+#' @export as.pattern
 as.pattern <- function(x,...) UseMethod("as.pattern")
 
-#' @export
+#' @export as.pattern.ds
 as.pattern.ds <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.pattern.ds")
   y <- attr(x,'pattern')
@@ -121,7 +121,7 @@ as.pattern.ds <- function(x,...,verbose=FALSE) {
   invisible(y)
 }
 
-#' @export
+#' @export as.pattern.eof
 as.pattern.eof <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.pattern.eof")
   y <- attr(x,'pattern')
@@ -135,7 +135,7 @@ as.pattern.eof <- function(x,...,verbose=FALSE) {
   invisible(y)  
 }
 
-#' @export
+#' @export as.pattern.mvr
 as.pattern.mvr <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.pattern.mvr")
   y <- attr(x,'pattern')
@@ -149,7 +149,7 @@ as.pattern.mvr <- function(x,...,verbose=FALSE) {
   invisible(y)  
 }
 
-#' @export
+#' @export as.pattern.cca
 as.pattern.cca <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.pattern.cca")
   y <- attr(x,'pattern')
@@ -163,7 +163,7 @@ as.pattern.cca <- function(x,...,verbose=FALSE) {
   invisible(y)  
 }
 
-#' @export
+#' @export as.pattern.trend
 as.pattern.trend <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.pattern.trend")
   y <- attr(x,'pattern')
@@ -189,7 +189,7 @@ as.pattern.array <- function(x,...,verbose=FALSE) {
   return(x)
 }
 
-#' @export
+#' @export as.pattern.field
 as.pattern.field <- function(x,...,FUN=NULL,verbose=FALSE) {
   if(verbose) print("as.pattern.field")
   if (!is.null(FUN)) {
@@ -209,7 +209,7 @@ as.pattern.field <- function(x,...,FUN=NULL,verbose=FALSE) {
   invisible(y)
 }
 
-#' @export
+#' @export as.pattern.corfield
 as.pattern.corfield <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.pattern.corfield")
   y <- coredata(x)

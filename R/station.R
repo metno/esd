@@ -20,7 +20,7 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' sea level from tidal gauges in France (SONEL), on a global scale (GLOSS) and
 #' for a single station (sub-daily data)in the UK (Newlyn).
 #' 
-#' @aliases select.station station station.default station.ecad station.nacd
+#' @aliases station select.station station.default station.ecad station.nacd
 #' station.narp station.nordklim station.metnod station.metnom station.ghcnd
 #' station.ghcnm station.ghcnm station.sonel station.gloss station.newlyn
 #' station.giss
@@ -181,7 +181,7 @@ station.monthly <- function(...,src=NULL) {
   
 }
 
-#' @export
+#' @export station.default
 station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
                             qual=NULL, url = NULL, stid=NULL, lon=NULL, lat=NULL, alt=NULL,
 			    cntr=NULL, it= NULL,nmin=NULL, plot=FALSE, verbose=FALSE,

@@ -17,6 +17,9 @@
 \alias{combine.filed.station}
 \alias{combine.station.field}
 \alias{sp2np}
+\alias{combine.trajectory}
+\alias{combine.events}
+\alias{combine.field.station}
 \title{Combine}
 \usage{
 combine(...)

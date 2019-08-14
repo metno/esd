@@ -35,7 +35,7 @@
 #' @export
 crossval <- function(x, m=5, ...) UseMethod("crossval")
 
-#' @export
+#' @export crossval.ds
 crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
   # Repeat the regression from DS, but through several iterations with
   # leave-m-out. These are masked by setting them to NA before the
@@ -125,7 +125,7 @@ crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
   invisible(X)
 }
 
-#' @export
+#' @export crossval.list
 crossval.list <- function(x, m=5, ..., verbose=FALSE) {
   if(verbose) print("crossval.list")
   elements <- names(x)
@@ -137,7 +137,7 @@ crossval.list <- function(x, m=5, ..., verbose=FALSE) {
   invisible(x)
 }
 
-#' @export
+#' @export crossval.dsensemble
 crossval.dsensemble <- function(x,m=NULL,...,plot=TRUE,verbose=FALSE) {
   if(verbose) print("crossval.dsensemble")
   X <- x

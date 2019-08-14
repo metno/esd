@@ -4,6 +4,7 @@
 \alias{DS}
 \alias{DS.default}
 \alias{DS.station}
+\alias{DS.station.pca}
 \alias{DS.list}
 \alias{DS.eof}
 \alias{DS.comb}
@@ -15,6 +16,7 @@
 \alias{DS.spell}
 \alias{DS.pca}
 \alias{DS.seasonalcycle}
+\alias{DS.trajectory}
 \title{Downscale}
 \usage{
 DS(y, X, verbose = FALSE, plot = FALSE, it = NULL, method = "lm",

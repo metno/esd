@@ -38,13 +38,13 @@
 #' precip <- station.metnod(stid="18700",param="precip")
 #' x <- spell(precip,threshold=.1)
 #' x.ann <- annual(x,FUN="max")
-#' plot(x.ann,plot.type="multiple")
+#' plot(x.ann,plot.type="multiple",new=FALSE)
 #' # Example 2 :
-#' x11() ; plot(x)
+#' plot(x, new=FALSE)
 #' 
 #' # Growing degree days:
 #' data(ferder)
-#' plot(as.seasons(ferder,FUN='GDD'))
+#' plot(as.seasons(ferder,FUN='GDD'), new=FALSE)
 #' 
 #' # Mild winter days - number of days in the winter season with
 #' # above freezing temperatures
@@ -57,7 +57,7 @@
 #' @export spell
 spell <- function(x,threshold,...) UseMethod("spell")
 
-#' @export
+#' @export spell.default
 spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
 
   if (verbose) print('spell.default')
@@ -216,7 +216,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   invisible(y)
 }
 
-#' @export
+#' @export spell.station
 spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
   if (verbose) print('spell.station')
   if (!is.null(dim(x))) {
@@ -290,7 +290,7 @@ wetmean <- function(x,threshold=1,...) {
 #' @export
 exceedance <- function(x,threshold=1,FUN='mean',...) UseMethod("exceedance")
 
-#' @export
+#' @export exceedance.default
 exceedance.default <- function(x,threshold=1,FUN='mean',na.rm=TRUE,...) {
   #print("HERE");  str(x)
   yrs <- year(x); d <- dim(x)
@@ -321,20 +321,20 @@ exceedance.default <- function(x,threshold=1,FUN='mean',na.rm=TRUE,...) {
   return(y)
 }
 
-#' @export
+#' @export exceedance.station
 exceedance.station <- function(x,threshold=1,FUN='mean',...) {
   y <- exceedance.default(x,threshold=threshold,FUN=FUN,...)
   return(y)
 }
 
-#' @export
+#' @export exceedance.field
 exceedance.field <- function(x,threshold=1,FUN='mean',...) {
   y <- exceedance.default(x,threshold=threshold,FUN=FUN,...)
   #dimensions...
   return(y)
 }
 
-#' @export
+#' @export hist.spell
 hist.spell <- function(x,family='geom',...) {
   n <- seq(0,ceiling(max(c(abs(x)),na.rm=TRUE))+1,by=1)
   hh <- hist(x[,1],breaks=n,plot=FALSE)

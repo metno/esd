@@ -6,7 +6,7 @@
 #'
 #' @importFrom graphics barplot title
 #'
-#' @export
+#' @export barplot.station
 barplot.station <- function(height,...,threshold=0,verbose=FALSE) {
   if(verbose) print("barplot.station")
   stopifnot(inherits(height,'station'))

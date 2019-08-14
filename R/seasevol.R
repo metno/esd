@@ -14,7 +14,7 @@
 #' @export
 seasevol <- function(x,nv=25,verbose=FALSE,...) UseMethod("seasevol")
 
-#' @export
+#' @export seasevol.station
 seasevol.station <- function(x,nv=25,verbose=FALSE,...) {
 
   stopifnot(inherits(x,'day'))

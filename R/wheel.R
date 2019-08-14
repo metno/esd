@@ -19,13 +19,13 @@
 #'
 #' @examples
 #' data(bjornholt)
-#' wheel(bjornholt)
+#' wheel(bjornholt, new=FALSE)
 #'
 #' @export
 wheel <- function(x,...) UseMethod("wheel")
 
 # S3 method for 'station' object
-#' @export
+#' @export wheel.station
 wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
                           bg="grey90",verbose=FALSE,...) {
 
@@ -121,7 +121,7 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
 }
 
 # S3 method for 'spell' object
-#' @export
+#' @export wheel.spell
 wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,verbose=FALSE,...) {
 
     if (verbose) print('wheel.spell')

@@ -30,12 +30,12 @@
 #' @export corfield
 corfield<-function(x,y,...) UseMethod("corfield")
 
-#' @export
+#' @export corfield.default
 corfield.default <- function(x,y,...) {
   cor(x,y)
 }
 
-#' @export
+#' @export corfield.zoo
 corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
   if (verbose) print("corfield.zoo:")
@@ -88,7 +88,7 @@ corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=F
   invisible(r)
 }
 
-#' @export
+#' @export corfield.field
 corfield.field <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                            colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
  
@@ -168,7 +168,7 @@ corfield.field <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose
   invisible(r)
 }
 
-#' @export
+#' @export corfield.field.station
 corfield.field.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
                                    colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                                    use='pairwise.complete.obs') {
@@ -176,7 +176,7 @@ corfield.field.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
   invisible(r)
 }
 
-#' @export
+#' @export corfield.station
 corfield.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
                              use='pairwise.complete.obs',
                              na.action='na.omit',colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
@@ -272,7 +272,7 @@ corfield.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
   invisible(r)
 }
 
-#' @export
+#' @export corfield.eof
 corfield.eof <- function(x,y,...,ip=1,plot=TRUE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                          use='pairwise.complete.obs',na.action='na.omit') {
@@ -282,7 +282,7 @@ corfield.eof <- function(x,y,...,ip=1,plot=TRUE,new=TRUE,
   invisible(r)
 }
 
-#' @export
+#' @export corfield.trajectory
 corfield.trajectory <- function(x,y,...,it=NULL,is=NULL,param=NULL,FUN="count",
                                 unit=NULL,longname=NULL,loc=NULL,
                                 use="pairwise.complete.obs",

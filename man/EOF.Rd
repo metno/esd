@@ -9,14 +9,17 @@
 \alias{PCA}
 \alias{PCA.default}
 \alias{PCA.station}
+\alias{PCA.matrix}
 \alias{pca2station}
 \title{Empirical Orthogonal Functions (EOFs).}
 \usage{
-EOF(X, it = NULL, is = NULL, n = 20, lon = NULL, lat = NULL,
-  verbose = FALSE, anomaly = TRUE, ...)
+EOF(X, ..., it = NULL, is = NULL, n = 20, lon = NULL, lat = NULL,
+  verbose = FALSE, anomaly = TRUE)
 }
 \arguments{
 \item{X}{a 'field' or 'pca' object}
+
+\item{\dots}{additional arguments}
 
 \item{it}{see \code{\link{subset}}}
 
@@ -31,8 +34,6 @@ EOF(X, it = NULL, is = NULL, n = 20, lon = NULL, lat = NULL,
 \item{verbose}{TRUE - clutter the screen with messages}
 
 \item{anomaly}{When TRUE, subtract the mean before SVD.}
-
-\item{\dots}{additional arguments}
 }
 \value{
 File containing an 'eof' object which is based on the 'zoo' class.
@@ -69,7 +70,8 @@ useful for downscaling where the spatial covariance/coherence is important,
 e.u involving different variables from same site, same variable from
 different sites, or a mix between these. For instance, PCA can be applied to
 the two wind components from a specific site and hence extract the most
-important wind directions/speeds.
+important wind directions/speeds. \code{PCA.matrix} is just a wrapper function 
+for \code{svd} that makes sure that the dimensions of the input are in order.
 }
 \examples{
 

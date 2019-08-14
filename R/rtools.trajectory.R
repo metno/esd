@@ -20,8 +20,8 @@
 #' # Calculate anomaly
 #' x <- anomaly.trajectory(imilast.M03)
 #' # Show maps of original trajectories and spatial anomalies
-#' map(imilast.M03)
-#' map(x)
+#' map(imilast.M03, new=FALSE)
+#' map(x, new=FALSE)
 #' # Transform trajectory anomalies back to regular trajectories
 #' y <- anomaly2trajectory(x)
 #' # Print longitudes of first trajectory
@@ -39,7 +39,7 @@
 #' plot(x[1,ilon], x[1,ilat], col="black", pch=1)
 #' lines(y[1,ilon], y[1,ilat], col="blue", lty=2)
 #'
-#' @export
+#' @export season.trajectory
 season.trajectory <- function(x, format="character",verbose=FALSE) {
   if(verbose) print("season.trajectory")
   stopifnot(!missing(x), inherits(x,"trajectory"))
@@ -54,7 +54,7 @@ season.trajectory <- function(x, format="character",verbose=FALSE) {
   invisible(sn)
 }
 
-#' @export
+#' @export param.trajectory
 param.trajectory <- function(x,param=NULL,FUN='mean') {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   if (is.null(param)) {
@@ -79,7 +79,7 @@ param.trajectory <- function(x,param=NULL,FUN='mean') {
   invisible(y)
 }
 
-#' @export
+#' @export sort.trajectory
 sort.trajectory <- function(x, decreasing=FALSE, ...) {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   if (any('sorted' %in% attr(x,'aspect'))) {
@@ -98,7 +98,7 @@ sort.trajectory <- function(x, decreasing=FALSE, ...) {
   }
 }
 
-#' @export
+#' @export polyfit.trajectory
 polyfit.trajectory <- function(x,verbose=FALSE) {
   if(verbose) print("polyfit.trajectory")
   stopifnot(is.trajectory(x))
@@ -130,7 +130,7 @@ polyfit <- function(x,y=NULL) {
   return(z)
 }
 
-#' @export
+#' @export count.trajectory
 count.trajectory <- function(x,it=NULL,is=NULL,by='year',verbose=FALSE) {
   if(verbose) print("count.trajectory")
   y <- subset(x,it=it,is=is)
@@ -224,7 +224,7 @@ cartesian2spherical <- function(x,y,z,a=6.378e06,verbose=TRUE) {
   invisible(cbind(lon,lat))
 }
 
-#' @export
+#' @export anomaly.trajectory
 anomaly.trajectory <- function(x,...,type='first',param=c('lon','lat'),
                                 verbose=FALSE) {
   if(verbose) print("anomaly.trajectory")

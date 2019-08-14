@@ -18,6 +18,7 @@
 \alias{map.events}
 \alias{map.mvr}
 \alias{map.pca}
+\alias{map.array}
 \alias{map.trend}
 \alias{lonlatprojection}
 \alias{rotM}

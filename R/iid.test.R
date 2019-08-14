@@ -51,7 +51,7 @@
 #' @export iid.test
 iid.test <- function(x,...) UseMethod("iid.test")
 
-#' @export
+#' @export iid.test.station
 iid.test.station <- function(x,...,verbose=TRUE) {
   # Re-orders the station data into parallel time series for each calendar
   # month into new matrix X. Then apply the iid.test to this matrix.
@@ -94,7 +94,7 @@ iid.test.station <- function(x,...,verbose=TRUE) {
   invisible(iid)
 }
 
-#' @export
+#' @export iid.test.field
 iid.test.field <- function(x,verbose=TRUE,...) {
   # Uses EOFs to account for spatial co-variance, and test the PCs rather
   # than the grid points.
@@ -128,7 +128,7 @@ iid.test.field <- function(x,verbose=TRUE,...) {
 }
 
 
-#' @export
+#' @export iid.test.default
 iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
                              N.test=200,rev.plot.rev=TRUE,verbose=TRUE) {
   if (verbose) print('iid.test.default')
@@ -307,7 +307,7 @@ test.iid.test <- function(distr="rnorm",d=c(70,50),plot=TRUE,
   invisible(test.results)
 }
 
-#' @export
+#' @export n.records
 n.records <- function(x,verbose=FALSE) {
   if (verbose) print('n.records')
   y <- x
@@ -393,7 +393,7 @@ records <- function(x,verbose=FALSE,diff=FALSE) {
   return(r)
 }
 
-#' @export
+#' @export test.records
 test.records <- function(N=1000) {
   y <- rnorm(N) + seq(0,1,length=N)
   rbv <- records(y)

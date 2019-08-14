@@ -209,7 +209,7 @@ plot <- function(x,...)  UseMethod("plot")
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @export
+#' @export plot.list
 plot.list <- function(x,...,is=NULL,
                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
                       lwd=3,xlim=NULL,ylim=NULL) {
@@ -326,7 +326,7 @@ plot.list <- function(x,...,is=NULL,
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @export 
+#' @export plot.station
 plot.station <- function(x,...,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
@@ -596,7 +596,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @export
+#' @export plot.eof
 plot.eof <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                      ip=1,what=c("pc","eof","var"),
                      colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
@@ -618,7 +618,6 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                            what=c("pc","eof","var"), colbar=NULL,
                            cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
                            verbose=FALSE,it=NULL,is=NULL,cex=1) {
-  #browser()
   ##layout(matrix(c(1,2,3,3),nrow = 2,ncol = 2,byrow = TRUE)) # REB: this does not work well at the moment
   if (verbose) print(paste('plot.eof.field',paste(what,collapse=',')))
   ## Save the original graphics settings
@@ -658,9 +657,9 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
           par(fig=c(0.5,1,0.5,1),mar=c(3,3,2,2))
           main1 <- paste('Leading EOF#',ip, ' (',
                          round(var.eof[ip],digits=2),"%)",sep='')
-          map(x,ip=ip,verbose=verbose,
+          map(x,ip=ip,verbose=verbose, fig=c(0,0.5,0.5,1),
               cex.main=cex.main,cex.axis=cex.axis,
-              cex.lab=cex.lab,cex=cex,fig=fig,new=FALSE,colbar=colbar,...) 
+              cex.lab=cex.lab,cex=cex,new=FALSE,colbar=colbar,...) 
           title(main=src(x)[1],cex.main=cex.main*0.8,
                 col.main="grey40",adj=0,line=0)
           title(main=main1,cex.main=cex.main)
@@ -679,14 +678,14 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                  cex.axis=cex.axis,bty="n",cex=cex)
   }
   
-  #print(main)
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
-      par(fig=c(0.05,1,0.025,0.475),mar=c(3,3,2,2),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+      #par(fig=c(0.05,1,0.025,0.475),mar=c(3,3,2,2),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+      par(fig=c(0.05,1,0.025,0.475),mar=c(0.5,0.5,0.5,0.5),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
       main <- paste('Leading PC#',ip,' of ',attr(x,'longname'),
                  " - Explained variance = ",round(var.eof[ip],digits=2),
                     "%",sep='')
-      if(inherits(x,"seasonalcycle")) xaxt <- "n" else  xaxt <- NULL
+      if(inherits(x,"seasonalcycle")) xaxt <- "n" else xaxt <- NULL
       xn <- x[,n]
       if(inherits(index(xn),"PCICt")) {
         # KMP 2019-05-25: To handle data with PCICt format time index (special calendar data)
@@ -697,8 +696,8 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
       }
       plot.zoo(xn,#x[,n],
                lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
-               cex.main=cex.main,bty="n",cex.axis=cex.axis,
-               cex.lab=cex.lab,xaxt=xaxt)
+               cex.main=cex.main,bty="n",
+               cex.axis=cex.axis,cex.lab=cex.lab,xaxt=xaxt)
       if(inherits(x,"seasonalcycle")) axis(1,at=seq(1,12),labels=month.abb,
                                            cex.axis=cex.axis,las=2)
       grid()
@@ -926,7 +925,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @export
+#' @export plot.ds
 plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                     lwd=1,type='l',pch=0,main=NULL,col=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,
@@ -1247,7 +1246,7 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @export
+#' @export plot.field
 plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose=FALSE) {
   if (verbose) print("plot.field")
   stopifnot(!missing(x),inherits(x,'field'))
@@ -1461,7 +1460,7 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @export
+#' @export plot.pca
 plot.pca <- function(x,...,cex=1,verbose=FALSE,new=TRUE) {
   if (verbose) print('plot.pca')
   if(inherits(x,"trajectory")) {
@@ -1710,7 +1709,7 @@ plot.ds.eof <- function(x,...,ip=1,
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @export
+#' @export plot.mvr
 plot.mvr <- function(x,verbose=FALSE,...) {
   if(verbose) print("plot.mvr")
   plot(x$fitted.values, verbose=verbose,...)
@@ -1820,7 +1819,7 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @export
+#' @export plot.cca
 plot.cca <- function(x,...,icca=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE) {
@@ -1960,7 +1959,7 @@ plot.cca <- function(x,...,icca=1,
 #' plot(ds.jan)
 #'
 #'
-#' @export
+#' @export plot.list
 plot.list <- function(x,...) {
   plot(combine.ds(x),...)
 }
@@ -2056,7 +2055,7 @@ plot.dsensemble.pca <- function(x,...,pts=FALSE,target.show=TRUE,map.show=TRUE,
 #' 
 #' @return None
 #'
-#' @export
+#' @export plot.dsensemble
 plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
   if(verbose) print("plot.dsensemble")
   if (inherits(x,c('pca','eof'))) {
@@ -2086,7 +2085,7 @@ plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
 #' @param plot a boolean; if TRUE show plot
 #' @param \dots additional arguments
 #'
-#' @export
+#' @export plot.dsensemble.multi
 plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
                                   anomaly=FALSE,test=FALSE, plot = TRUE, ...) {
   if (verbose) print('plot.dsensemble.multi')
@@ -2124,7 +2123,7 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
 #' @param plot a boolean; if TRUE show plot
 #' @param \dots additional arguments
 #'
-#' @export
+#' @export plot.dsensemble.one
 plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                                  envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
                                  obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
@@ -2362,7 +2361,7 @@ plot.xsection <- function(x,...) {
 #' 
 #' @return None
 #'
-#' @export
+#' @export plot.spell
 plot.spell <- function(x,...,xlim=NULL,ylim=NULL) {
   bar <- function(x,col) {
     rect(x[1],x[2],x[3],x[4],col=col,border=col)
@@ -2423,7 +2422,7 @@ plot.spell <- function(x,...,xlim=NULL,ylim=NULL) {
 #' 
 #' @return None
 #'
-#' @export
+#' @export plot.ssa
 plot.ssa <- function(x,...,main="SSA analysis",sub="",verbose=FALSE)  {
   if(verbose) print("plot.ssa")
   ssa <- x
@@ -2555,7 +2554,7 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
 #' data(imilast.M03)
 #' plot(imilast.M03)
 #'
-#' @export
+#' @export plot.trajectory
 plot.trajectory <- function(x,it=NULL,is=NULL,
                             main=NULL,xlim=NULL,ylim=NULL,
                             col=NULL,pch=0,type='l',lwd=3,

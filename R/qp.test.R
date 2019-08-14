@@ -4,10 +4,10 @@
 #' @param p percentiles to show in plot, a numeric vector
 #' @param threshold threshold used only if input is precipitation data - only values above threshold are included in analysis 
 #' 
-#' @export
+#' @export qp.test
 qp.test <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1,...) UseMethod("qp.test")
 
-#' @export
+#' @export qp.test.station
 qp.test.station <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1,...) {
   if (is.precip(x)) qp.test.precip(x,...) else
   if (is.T(x)) qp.test.t2m(x,...)

@@ -8,10 +8,10 @@
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param \dots additional arguments
 #'
-#' @export 
+#' @export as.residual
 as.residual <- function(x,...) UseMethod("as.residual")
 
-#' @export
+#' @export as.residual.ds
 as.residual.ds <- function(x,...,verbose=FALSE){
   if (verbose) print('as.residual.ds')
   if (is.ds(x)) {
@@ -54,7 +54,7 @@ as.residual.ds <- function(x,...,verbose=FALSE){
   invisible(y)
 }
 
-#' @export
+#' @export as.residual.station
 as.residual.station <- function(x,...) {
   if (!is.null(attr(x,'calibration_data'))) {
     y <- as.residual.ds(x)
@@ -64,7 +64,7 @@ as.residual.station <- function(x,...) {
   invisible(y)
 }
 
-#' @export
+#' @export as.residual.field
 as.residual.field <- function(x,...) {
   if (!is.null(attr(x,'calibration_data'))) {
     y <- as.residual.ds(x)

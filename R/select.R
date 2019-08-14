@@ -7,7 +7,7 @@
 #' @export
 select <- function(x=NULL,...) UseMethod("select")
 
-#' @export
+#' @export select.station
 select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=NULL, lon=NULL, lat=NULL,
                             alt=NULL, cntr=NULL, src=NULL, it = NULL, nmin = NULL, verbose=FALSE) {
   if (verbose) print('select.station')

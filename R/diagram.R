@@ -5,7 +5,7 @@
 #' @export
 diagram <- function(x,...) UseMethod("diagram")
 
-#' @export
+#' @export diagram.dsensemble
 diagram.dsensemble <- function(x,...,it=0,verbose=FALSE) {
   if(verbose) print("diagram.dsensemble")
   stopifnot(inherits(x,'dsensemble'))
@@ -36,7 +36,7 @@ diagram.ds <- function(x,...,verbose=FALSE) {
 
 # Show the temperatures against the day of the year. Use
 # different colours for different year.
-#' @export
+#' @export diagram.station
 diagram.station <- function(x,...,it=NULL,new=TRUE,plot=TRUE,verbose=FALSE) {
   if(verbose) print("diagram.station")
   yrs <- as.numeric(rownames(table(year(x))))

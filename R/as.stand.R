@@ -11,10 +11,10 @@
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param na.rm a boolean; if TRUE remove NA values
 #'
-#' @export
+#' @export as.stand
 as.stand <- function(x,...) UseMethod("as.stand")
 
-#' @export
+#' @export as.stand.station
 as.stand.station <- function(x,...,verbose=FALSE,na.rm=TRUE) {
   if(verbose) print("as.stand.station")
   if (is.precip(x)) {
@@ -39,7 +39,7 @@ as.stand.station <- function(x,...,verbose=FALSE,na.rm=TRUE) {
 #' @export as.original
 as.original <- function(x) UseMethod("as.original")
 
-#' @export
+#' @export as.original.station
 as.original.station <- function(x) {
   if (attr(x,'aspect')=='proportional') {
     X <- attr(x,'clim')*x/100

@@ -17,33 +17,34 @@
 #' @param show.significance TRUE to mark statistically significant trends.
 #' @param pmax maximum p-value of trends marked as significant.
 #' @param verbose TRUE or FALSE.
+#' @param new if TRUE plot in new window
+#' 
 #' @author Kajsa Parding
 #' @keywords trend
 #' @examples
 #' 
-#' 
 #' t <- seq(as.Date("1955-01-01"),as.Date("2004-12-31"),by=1)
 #' x <- zoo(sample(seq(-30,30,1e-1),length(t),rep=TRUE),order.by=t)
-#' vis.trends(x,show.significance=FALSE)
+#' vis.trends(x, show.significance=FALSE, new=FALSE)
 #' 
 #' data(Oslo)
 #' vis.trends(Oslo, unitlabel="oC", varlabel = "Temperature",
-#'   pmax = 1e-2, minlen = 40)
+#'   pmax = 1e-2, minlen = 40, new=FALSE)
 #' vis.trends(subset(Oslo,it='jja'), unitlabel="oC",
 #'   varlabel = "Temperature JJA",
-#'   pmax = 1e-3, vmax=0.5, minlen = 40)
+#'   pmax = 1e-3, vmax=0.5, minlen = 40, new=FALSE)
 #' vis.trends(subset(Oslo,it='mam'), unitlabel="oC",
 #'   varlabel = "Temperature MAM",
-#'   pmax = 1e-3, vmax=0.5, minlen = 40)
+#'   pmax = 1e-3, vmax=0.5, minlen = 40, new=FALSE)
 #' 
 #' @export vis.trends
 vis.trends <- function(x,...,unitlabel="unit",varlabel="",is=1,
                        pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE,
                        show.significance=TRUE,verbose=FALSE) {
   if(verbose) print("vis.trends")
-  T <- calculate.trends(x,minlen=minlen,is=is,verbose=verbose)
-  trends <- T$trends*10
-  p <- T$p
+  Tr <- calculate.trends(x,minlen=minlen,is=is,verbose=verbose)
+  trends <- Tr$trends*10
+  p <- Tr$p
   cols <- as.numeric(colnames(trends))
   rows <- as.numeric(rownames(trends))
   significant <- ifelse(p<pmax,trends,NA)

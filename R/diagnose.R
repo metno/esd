@@ -67,7 +67,7 @@ diagnose <-function(x,...) UseMethod("diagnose")
 diagnose.default <- function(x,...) {
 }
 
-#' @export
+#' @export diagnose.comb
 diagnose.comb <- function(x,...) {
   n.app <- attr(x,'n.apps')
   cols <- c("black","red","blue","darkgreen","darkred","darblue",
@@ -82,14 +82,14 @@ diagnose.comb <- function(x,...) {
   }
 }
 
-#' @export
+#' @export diagnose.eof
 diagnose.eof <- function(x,...) {
   if (inherits(x,'comb')) y <- diagnose.comb.eof(x,...) else
                           y <- x
   return(y)
 }
 
-#' @export
+#' @export diagnose.comb.eof
 diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   if (verbose) print("diagnose.comb.eof")
   ACF <- function(x) acf(x,plot=FALSE,na.action=na.omit)$acf[2]
@@ -146,7 +146,7 @@ diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   invisible(diag)
 }
 
-#' @export
+#' @export diagnose.cca
 diagnose.cca <- function(x,...) {
   par(bty="n")
   plot(x$r,pch=19,cex=1.5,main="Canonical correlations",
@@ -155,7 +155,7 @@ diagnose.cca <- function(x,...) {
   grid()
 }
 
-#' @export
+#' @export diagnose.station
 diagnose.station <- function(x,...,main='Data availability',
                             xlab='',ylab='station',
                             sub=src(x),verbose=FALSE) {
@@ -180,7 +180,7 @@ diagnose.mvr <- function(x,...) {
   print("Not finished")
 }
 
-#' @export
+#' @export diagnose.cca
 diagnose.cca <- function(x,...) {
   par(bty="n")
   plot(x$r,pch=19,cex=1.5,main="Canonical correlations",
@@ -190,7 +190,7 @@ diagnose.cca <- function(x,...) {
 }
 
 # Display cross-validation and statistics on the residual
-#' @export
+#' @export diagnose.ds
 diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
   
   ## the attribute 'evaluation' contains cross-validation
@@ -267,7 +267,7 @@ diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
 }
 
 # Display cross-validation and statistics on the residual
-#' @export
+#' @export diagnose.ds.pca
 diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
 
   ## the attribute 'evaluation' contains cross-validation
@@ -333,7 +333,7 @@ diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
   return(diagnostics)
 }
 
-#' @export
+#' @export diagnose.distr
 diagnose.distr <- function(x,...,main=NULL,
                            xlab='mean',ylab=expression(q[p]),
                            sub=src(x),probs=0.95,plot=TRUE,verbose=FALSE) {
@@ -396,7 +396,7 @@ diagnose.distr <- function(x,...,main=NULL,
   }
 }
 
-#' @export
+#' @export diagnose.dsensemble
 diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
                                 yrange=NULL,main=NULL,map.show=TRUE,
                                 map.type="points",verbose=FALSE) {
@@ -578,7 +578,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
   invisible(d)
 }
 
-#' @export
+#' @export diagnose.matrix
 diagnose.matrix <- function(x,...,xlim=NULL,ylim=NULL,verbose=FALSE) {
   if (verbose) print('diagnose.matrix')
   plot.diagnose.matrix(x,xlim=xlim,ylim=ylim,verbose=verbose)

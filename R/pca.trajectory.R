@@ -29,7 +29,7 @@
 #' pca <- PCA(x,param=c('lat'))
 #' plot(pca)
 #' 
-#' @export
+#' @export PCA.trajectory
 PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
                       anomaly=TRUE,verbose=FALSE) {
   if(verbose) print("PCA.trajectory")
@@ -101,8 +101,8 @@ PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
 }
 
 pca2trajectory <- function(X,verbose=FALSE) {
-  stopifnot(!missing(X), inherits(X,"pca"))
   if(verbose) print('pca2trajectory')
+  stopifnot(!missing(X), inherits(X,"pca"))
   
   pca <- X
   cls <- class(pca)

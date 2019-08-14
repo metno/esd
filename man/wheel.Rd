@@ -35,7 +35,7 @@ Various functions for visual display of data and statistics
 }
 \examples{
 data(bjornholt)
-wheel(bjornholt)
+wheel(bjornholt, new=FALSE)
 
 }
 \seealso{

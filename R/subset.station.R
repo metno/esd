@@ -1,5 +1,5 @@
 # Documentation in subset.R
-#' @export
+#' @export subset.station
 subset.station <- function(x, ..., it=NULL, is=NULL, loc=NULL, param=NULL,
                            stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
 			   src=NULL, nmin=NULL, verbose=FALSE) {
@@ -336,7 +336,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
     
-#' @export
+#' @export subset.stationmeta
 subset.stationmeta <- function(x,..., it=NULL, is=NULL, verbose=FALSE) {
   if(verbose) print('subset.stationmeta')
   if (is.null(is)) is <- rep(TRUE,dim(x)[1])

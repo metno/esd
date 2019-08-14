@@ -6,7 +6,8 @@
 #' 
 #' \code{project} returns projection of climate
 #' 
-#' @aliases predict.ds predict.ds.eof predict.ds.comb predict.mvr predict.cca project.ds
+#' @aliases predict.ds predict.ds.eof predict.ds.comb predict.mvr
+#' predict.ds.pca predict.ds.station predict.cca project.ds 
 #'
 #' @param x A ds object
 #' @param newdata An eof object containing the new data sets on which the prediction is made. 
@@ -42,10 +43,10 @@
 #' ## Extract the projected results
 #' plot(project.ds(ds))
 #' 
-#' @export
-predict.ds <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+#' @export predict.ds
+predict.ds <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
-  x <- object
+  
   stopifnot(!missing(x),inherits(x,"ds"))
 
   if ( inherits(x,c('eof','comb')) & (is.null(newdata) | is.logical(newdata)) ) {
@@ -96,10 +97,10 @@ predict.ds <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALS
   invisible(y)
 }
 
-#' @export
-predict.ds.station <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+#' @export predict.ds.station
+predict.ds.station <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print("predict.ds.pca")
-  x <- object
+  
   if(verbose) print(paste(class(x),collapse='-'))
   if (is.null(names(newdata))) names(newdata) <- paste('X',1:dim(newdata)[2],sep='.')
   t <- index(as.eof(newdata))
@@ -118,10 +119,10 @@ predict.ds.station <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verb
   invisible(y)
 }
 
-#' @export
-predict.ds.eof <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+#' @export predict.ds.eof
+predict.ds.eof <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print("predict.ds.eof")
-  x <- object  
+  
   stopifnot(!missing(x),inherits(x,"ds"))
   if (verbose) print(paste(paste(class(x),collapse='-')))
   X <- as.eof(x)
@@ -195,10 +196,10 @@ predict.ds.eof <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=
   invisible(y)
 }
 
-#' @export
-predict.ds.pca <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+#' @export predict.ds.pca
+predict.ds.pca <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print("predict.ds.pca")
-  x <- object
+  
   if(verbose) print(paste(class(x),collapse="-"))
   if (is.null(newdata)) {
     newdata <- data.frame(coredata(as.eof(x)))
@@ -225,10 +226,10 @@ predict.ds.pca <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=
   invisible(y)
 }
 
-#' @export
-predict.ds.comb <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+#' @export predict.ds.comb
+predict.ds.comb <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print("predict.ds.comb")
-  x <- object
+  
   stopifnot(!missing(x),inherits(x,"ds"))  
   ## If newdata is set as NULL, reassign it to FALSE
   if (is.null(newdata)) newdata <- FALSE
@@ -302,10 +303,10 @@ predict.ds.comb <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose
   invisible(Y)
 }
 
-#' @export
-project.ds <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
+#' @export project.ds
+project.ds <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print("project.ds")
-  x <- object
+  
   stopifnot(!missing(x),inherits(x,"ds"))
   
   if (is.null(newdata)) {
@@ -384,7 +385,7 @@ project.ds <- function(object,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALS
 # To get one predictor pattern, use predict with newdata set to
 # a vector where most variables are set to zero apart from one
 # variable set to unity for the identification of teleconnection pattern.
-#' @export
+#' @export predict.mvr
 predict.mvr <- function(object, ..., newdata=NULL, verbose=FALSE) {
   if(verbose) print("predict.mvr")
   if (is.null(newdata)) newdata <- object$data
@@ -412,10 +413,9 @@ predict.mvr <- function(object, ..., newdata=NULL, verbose=FALSE) {
   invisible(Yhat)
 }
 
-#' @export
-predict.cca <- function(object, ..., newdata=NULL, verbose=FALSE) {
+#' @export predict.cca
+predict.cca <- function(x, ..., newdata=NULL, verbose=FALSE) {
   if(verbose) print("predict.cca")
-  x <- object
   if (!is.null(newdata)) X <- newdata else X <- x$X
   Y.hat <-  Psi(x) %*% X
   Y.hat <- attrcp(Y.hat,X)

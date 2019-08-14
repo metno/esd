@@ -21,7 +21,7 @@
 #' X <- annual(nacd)
 #' write2ncdf4(X,file='test.nc')
 #' 
-#' @export
+#' @export write2ncdf4
 write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 
 write2ncdf4.default <- function(x,...) {
@@ -52,7 +52,7 @@ write2ncdf4.default <- function(x,...) {
 #' 
 #' @keywords netcdf ncdf4 save
 #' 
-#' @export
+#' @export write2ncdf4.list
 write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset=NULL,
                              torg="1970-01-01",missval=-999,verbose=FALSE) {
   if (verbose) print('write2ncdf4.list')
@@ -124,7 +124,7 @@ write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset
   if (verbose) print('netCDF file saved')
 }
 
-#' @export
+#' @export write2ncdf4.field
 write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offset=NULL,
                               torg="1970-01-01",missval=-999,verbose=FALSE) {
   if (verbose) {print('write2ncdf4.field'); print(names(attributes(x)))}
@@ -199,7 +199,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' 
 #' @keywords netcdf ncdf4 save
 #' 
-#' @export
+#' @export write2ncdf4.station
 write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
                                 scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,verbose=FALSE) {
   
@@ -998,7 +998,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
 
 
 ## These small functions are common code that simplify saving data as netCDF
-#' @export
+#' @export write2ncdf4.pca
 write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,scale=0.01,offset=0,missval=-99) {
   if (verbose) print('write2ncdf4.pca')
   pcaatts <- names(attributes(x))
@@ -1060,13 +1060,13 @@ write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,s
   ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
 }
 
-#' @export
+#' @export write2ncdf4.eof
 write2ncdf4.eof <- function(x,...,file='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999,verbose=FALSE){
   if(verbose) print("write2ncdf.eof")
   if(verbose) print("unfinished function that doesn't do anything")
 }
 
-#' @export  
+#' @export write2ncdf4.dsensemble 
 write2ncdf4.dsensemble <- function(x,...,file='esd.dsensemble.nc',prec='short',offset=0,scale=0.1,
                               torg="1970-01-01",missval=-99,verbose=TRUE) {
   ## prec - see http://james.hiebert.name/blog/work/2015/04/18/NetCDF-Scale-Factors/

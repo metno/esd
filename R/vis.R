@@ -24,7 +24,7 @@
 #' @export
 vis <- function(x,...) UseMethod("vis")
 
-#' @export
+#' @export vis.default
 vis.default <- function(x,...,it=NULL,img=NULL,verbose=FALSE) {
   if(verbose) print("vis.default")
   if (!is.null(img)) {
@@ -55,7 +55,7 @@ vis.default <- function(x,...,it=NULL,img=NULL,verbose=FALSE) {
   balls(y) 
 }
 
-#' @export
+#' @export vis.station
 vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,
                         plot=TRUE,verbose=FALSE) {
   if(verbose) print("vis.station")
@@ -91,37 +91,37 @@ vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRU
   invisible(z)
 }
 
-#' @export
+#' @export vis.field
 vis.field <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export
+#' @export vis.eof
 vis.eof <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export
+#' @export vis.spell
 vis.spell <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export
+#' @export vis.cca
 vis.cca <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export
+#' @export vis.mvr
 vis.mvr <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export
+#' @export vis.ds
 vis.ds <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export
+#' @export vis.map
 vis.map <- function(x,...,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     add.text=FALSE,cex.axis=NULL,
@@ -194,7 +194,7 @@ vis.map <- function(x,...,col='red',map.type=NULL,
   if(verbose) print("exit vis.map")
 }
 
-#' @export
+#' @export vis.pca
 vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   if(verbose) print("vis.pca")
   y <- x # quick fix
@@ -298,7 +298,7 @@ vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   invisible(a.T)
 }
 
-#' @export
+#' @export vis.dsensemble
 vis.dsensemble <- function(x,...) {
   stopifnot(inherits(x,"dsensemble"))
   if (inherits(x,"list")) {
@@ -306,7 +306,7 @@ vis.dsensemble <- function(x,...) {
   } else vis.default(x,...)
 }
 
-#' @export
+#' @export vis.dsensemble.list
 vis.dsensemble.list <- function(x,...,verbose=FALSE,FUN='trend',
                                 colbar=NULL,legend.shrink=1,n=11,plim=0.01) {
   

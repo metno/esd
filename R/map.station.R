@@ -1,6 +1,6 @@
 ## Author 	 Rasmus E. Bnestad
 ## Updated 	 by Abdelkader Mezghani and Kajsa Parding
-## Rasmus. E. Benestad - attempt to simpify by splitting up
+## Rasmus. E. Benestad - attempt to simplify by splitting up
 ## Last update   27.07.2017
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
@@ -18,7 +18,7 @@ genfun <- function(x,FUN,verbose=FALSE) {
 }
 
 ## Simplified function for mapping station objects.
-#' @export
+#' @export map.station
 map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          add=FALSE,projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
@@ -206,7 +206,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 }
 
 ###
-#' @export
+# Internal function - no need to export
 map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              projection="lonlat",
                              xlim = NULL, ylim = NULL,zlim=NULL,n=15,
@@ -937,11 +937,11 @@ test.map.station <- function(save=FALSE) {
 
 
 ## The main function to produce map of subseted stations
-#' @export
+#' @export map.stationmeta
 map.stationmeta <- function(x,...)
   map.station(x,...)
 
-#' @export
+#' @export map.data.frame
 map.data.frame <- function(x,...) {
   
   att <- c("station_id","location","country","longitude","latitude","altitude","element","start","end","source","wmo","quality")

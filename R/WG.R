@@ -7,11 +7,6 @@
 #
 # Rasmus Benestad
 
-
-
-
-
-
 #' Weather generators for conditioned on simulated climate aggregated
 #' statistics.
 #' 
@@ -56,7 +51,8 @@
 #' (\code{\link{rgeom}}), and the annual mean number was estimated from the
 #' sample series.
 #' 
-#' @aliases WG WG.station WG.fw.day.precip WG.FT.day.t2m FTscramble
+#' @aliases WG WG.station WG.fw.day.precip WG.FT.day.t2m
+#' WG.pca.day.t2m.precip FTscramble
 #'
 #' @importFrom stats start end approx pnorm qnorm qqnorm sd dgeom rgeom rexp qexp pexp dpois
 #' fft runif
@@ -105,7 +101,7 @@
 #' @export WG
 WG <- function(x,...) UseMethod("WG")
 
-#' @export
+#' @export WG.station
 WG.station <- function(x,...,option='default') {
   if (inherits(x,'day')) {
     if (length(varid(x))==1) {
@@ -116,7 +112,7 @@ WG.station <- function(x,...,option='default') {
   return(y)
 }
 
-#' @export
+#' @export WG.FT.day.t2m
 WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
                           select=NULL,lon=c(-20,20),lat=c(-20,20),
                           plot=FALSE,biascorrect=TRUE,verbose=TRUE) {

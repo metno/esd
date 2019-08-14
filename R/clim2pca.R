@@ -10,13 +10,13 @@
 #' @export
 clim2pca <- function(x,verbose=FALSE,...) UseMethod("clim2pca")
 
-#' @export
+#' @export clim2pca.default
 clim2pca.default <- function(x,verbose=FALSE,...) {
   if(verbose) print("clim2pca.default - unfinished function returning input object")
   return(x)
 }
 
-#' @export
+#' @export clim2pca.month
 clim2pca.month <- function(x,verbose=FALSE,...) {
   if(verbose) print("clim2pca.month")
   X <- aggregate(x,year)
@@ -39,7 +39,7 @@ clim2pca.month <- function(x,verbose=FALSE,...) {
   return(Z)
 }
 
-#' @export
+#' @export clim2pca.day
 clim2pca.day <- function(x,verbose=FALSE,...) {
   if(verbose) print("clim2pca.day - unfinished function returning input object")
   return(x)

@@ -7,7 +7,7 @@
 #' @export
 nearest <- function(x,is) UseMethod("nearest")
 
-#' @export
+#' @export nearest.station
 nearest.station <- function(x,is) {
   
   mind <- function(x) {
@@ -41,7 +41,7 @@ nearest.station <- function(x,is) {
   return(y)
 }
 
-#' @export
+#' @export nearest.field
 nearest.field <- function(x,is) {
   # For field, turn the object into a station class:
   xo <- rep(lon(x),length(lat(x)))

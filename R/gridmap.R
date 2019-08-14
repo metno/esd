@@ -40,6 +40,7 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
     data(etopo5, envir = environment())
     etopo5 <- subset(etopo5,is=list(lon=range(lon(Y))+c(-1,1),
                            lat=range(lat(Y))+c(-1,1)))
+    
     ## Mask the sea: elevations below 1m below sea level is masked.
     etopo5[etopo5<=-1] <- NA
     if (!is.null(zlim)) {etopo5[(etopo5<min(zlim)) | ((etopo5>max(zlim)))] <- NA}
@@ -59,7 +60,7 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
 
     ##  obj <- LatticeKrig::LatticeKrig( x=cbind(lon[ok],lat[ok]), y=z[2,ok],Z=alt[ok])
     if (verbose) print('Predict surface')
-    w <- fields::predictSurface(obj, grid.list = grid,Z=etopo5)
+    w <- fields::predictSurface(obj, grid.list = grid, Z=etopo5)
     w$z[is.na(etopo5)] <- NA
 
     ## Convert the results from LatticeKrig to esd:

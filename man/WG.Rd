@@ -5,6 +5,7 @@
 \alias{WG.station}
 \alias{WG.fw.day.precip}
 \alias{WG.FT.day.t2m}
+\alias{WG.pca.day.t2m.precip}
 \alias{FTscramble}
 \title{Weather generators for conditioned on simulated climate aggregated
 statistics.}

@@ -12,7 +12,8 @@
 #' @aliases subset subset.station subset.eof subset.pca subset.cca
 #' subset.events subset.trajectory subset.trend subset.corfield subset.ds
 #' subset.dsensemble subset.comb subset.field subset.spell subset.zoo
-#' subset.trajectory station.subset subset.zoo subset.stationmeta default.subset
+#' subset.trajectory station.subset subset.zoo subset.stationmeta
+#' subset.matrix subset.pattern default.subset
 #' @seealso matchdate sort.station
 #'
 #' @param x Data object from which the subset is taken
@@ -32,7 +33,7 @@
 #' subset selects cyclone trajectories that are within the chosen range at all
 #' points during their lifetime.)
 #' @return An object of the same class as the input object
-#' @author R.E. Benestad and A.  Mezghanil
+#' @author R.E. Benestad and A.  Mezghani
 #' @keywords utilities
 #' @examples
 #' 
@@ -81,7 +82,7 @@
 #' data(ferder)
 #' y <- as.annual(ferder)
 #' z <- DS(y,X)
-#' plot(z)
+#' plot(z, new=FALSE)
 #' 
 #' # Test of subset the commutative property of subset and combine: 
 #' T2M <- as.4seasons(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
@@ -93,7 +94,7 @@
 #' eof2 <- EOF(X2)
 #' eof3 <- biasfix(eof2)
 #' plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
-#'      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2))
+#'      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2), new=FALSE)
 #' # OK - identical results
 #' 
 #' # Extract storm tracks for specific periods, regions and characteristics
@@ -114,42 +115,43 @@
 #' x.mam <- subset(x, it="mam")
 #' # Subset cyclones in december 2016
 #' x.201612 <- subset(x,it=c("2016-12-01","2016-12-31")) 
-#' map(x.201612)
+#' map(x.201612, new=FALSE)
 #' 
 #' 
-#' @export subset
+#' @export
 subset <- function(x,...) UseMethod("subset")
 
-#' @export
+#' @export subset.field
 subset.field <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
-  if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.field")
+  if (is.null(it) & is.null(is)) return(x)
   
   y <- default.subset(x,...,is=is,it=it,verbose=verbose)
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
 
-#' @export
+#' @export subset.zoo
 subset.zoo <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
-  if (is.null(it) & is.null(is)) return(x)
   if (verbose) print("subset.zoo")
+  if (is.null(it) & is.null(is)) return(x)
   d <- dim(x)
   y <- default.subset(x,is=is,it=it,verbose=verbose)
   ## Check if there is only one series but if the dimension 
-  if ( (!is.null(d)) & is.null(dim(y)) ) 
+  if ( (!is.null(d)) & is.null(dim(y)) ) {
     if (d[2]==1) dim(y) <- c(length(y),1)
+  }
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
 
-#' @export
+#' @export subset.comb
 subset.comb <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print("subset.comb")
     y <- subset.field(x,it=it,is=is)
     y <- attrcp(x,y)
     n.app <- attr(x,'n.apps')
-                                        #print(n.app)
+    
     for (i in 1:n.app) {
         eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
         attr(z,'longitude') <- attr(x,'longitude')
@@ -167,7 +169,7 @@ subset.comb <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     invisible(y)
 }
 
-#' @export
+#' @export subset.eof
 subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print("subset.eof")
     if (is.null(is) & is.null(it) & is.null(ip)) return(x)                                    
@@ -301,7 +303,7 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
 
-#' @export
+#' @export subset.cca
 subset.cca <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if(verbose) print("subset.cca")
   if (!is.null(is))  {
@@ -314,7 +316,7 @@ subset.mvr <- function(x,...,it=NULL,is=NULL) {
   x
 }
 
-#' @export
+#' @export subset.pattern
 subset.pattern <- function(x,...,is=NULL,verbose=FALSE) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) print('subset.pattern')
@@ -369,12 +371,14 @@ subset.pattern <- function(x,...,is=NULL,verbose=FALSE) {
   return(x)
 }
 
-#' @export
+#' @export subset.matrix
 subset.matrix <- function(x,...,is=NULL,verbose=FALSE) {
-  subset.pattern(x,is,verbose=verbose)
+  if(verbose) print("subset.matrix")
+  y <- subset.pattern(x,is=is,verbose=verbose)
+  return(y)
 }  
 
-#' @export
+#' @export subset.pca
 subset.pca <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print('subset.pca')
   y <- x
@@ -440,7 +444,7 @@ subset.pca <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   return(y)
 }
 
-#' @export
+#' @export subset.corfield
 subset.corfield <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('subset.corfield')
     stopifnot(inherits(x,"corfield"))
@@ -463,7 +467,7 @@ subset.corfield <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
 
-#' @export
+#' @export subset.ds
 subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('subset.ds')
     y <- x
@@ -514,7 +518,8 @@ subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
 }
 
 #' @export subset.trend
-subset.trend <- function(x,it=NULL,is=NULL,...) {
+subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
+    if(verbose) print("subset.trend")
     y <- subset.field(x,it=it,is=is)
     
     pattern <- attr(x, "pattern")
@@ -542,7 +547,7 @@ subset.trend <- function(x,it=NULL,is=NULL,...) {
     return(y)
 }
 
-#' @export
+#' @export subset.dsensemble
 subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE) {
   if (verbose) print('subset.dsensemble')
@@ -787,7 +792,8 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
 }
 
 #' @export subset.spell
-subset.spell <- function(x,is=NULL,it=NULL,...) {
+subset.spell <- function(x,is=NULL,it=NULL,...,verbose=FALSE) {
+    if(verbose) print("subset.spell")
     y <- subset.station(x,is=is,it=it)
     good <- is.finite(y)
     y <- zoo(y[good],order.by=index(y)[good])
@@ -812,7 +818,8 @@ subset.spell <- function(x,is=NULL,it=NULL,...) {
 }
 
 default.subregion <- function(x,is=NULL,verbose=FALSE) {
-  if (verbose) {print("Sub-region"); print(is)}
+  if(verbose) print("default.subregion")
+  if(verbose) {print("Sub-region"); print(is)}
   
   if ( (is.list(is)) | (is.data.frame(is)) ) {
     if ( (is.null(is[[1]])) | (sum(is.finite(is[[1]])) < 2) ) is[[1]] <- c(-180,360)
@@ -893,9 +900,10 @@ default.subregion <- function(x,is=NULL,verbose=FALSE) {
   return(y)
 } 
 
-#' @export
+#' @export default.subset
 default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-
+    if (verbose) {print("default.subset"); print(it); print(is); print('---')}
+    
     ## REB: Use select.station to condition the selection index is...
     ## loc - selection by names
     ## lon/lat selection be geography or closest if one coordinate lon/lat
@@ -913,7 +921,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## Return the original value if 'it' and 'is' are not specified
     if (is.null(it) & is.null(is)) return(x)
     
-    if (verbose) {print("default.subset"); print(it); print(is); print('---')}
     x0 <- x
     ## 
     d <- dim(x)
@@ -1193,7 +1200,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
     
-#' @export
+#' @export subset.events
 subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   if(verbose) print("subset.events")
   cls <- class(x)
@@ -1374,7 +1381,7 @@ subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   invisible(y)
 }
 
-#' @export
+#' @export subset.trajectory
 subset.trajectory <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   if(verbose) print("subset.trajectory")
   
@@ -1566,7 +1573,7 @@ subset.trajectory <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
 }
 
 #' Routine for sorting the order of station series.
-#' @export
+#' @export sort.station
 sort.station <- function(x,decreasing=TRUE,...,is=NULL) {
   if (is.null(is)) is <- order(stid(x),decreasing=decreasing)
   y <- zoo(x)[,is]

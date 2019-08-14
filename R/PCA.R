@@ -2,12 +2,30 @@
 #' @export
 PCA <- function(X,...) UseMethod("PCA")
 
-#' @export
+#' @export PCA.default
 PCA.default <- function(X,...) {
   stop("Don't know how to handle objects other than station")
 }
 
-#' @export
+#' @export PCA.matrix
+PCA.matrix <- function(X,...,verbose=FALSE) {
+  if(verbose) print("PCA.matrix")
+  if(length(dim(X))==3) {
+    product <- function(x) x[1]*x[2]
+    Z <- unlist(X)
+    dim(Z) <- c(product(dim(X)[1:2]),dim(X)[3])
+  }
+  if(length(dim(X))!=2) {
+    if(verbose) print("Warning! Wrong input dimensions. Input should be a matrix of 2 or 3 dimensions.")
+    Z.pca <- NULL
+  } else {
+    Z.pca <- svd(Z)
+  }
+  return(Z.pca)
+}
+
+
+#' @export PCA.station
 PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE) {
   if (!is.null(it) | !is.null(is))
     X <- subset(X,it=it,is=is)

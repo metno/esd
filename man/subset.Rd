@@ -18,6 +18,8 @@
 \alias{subset.zoo}
 \alias{station.subset}
 \alias{subset.stationmeta}
+\alias{subset.matrix}
+\alias{subset.pattern}
 \alias{default.subset}
 \title{Subsetting esd objects}
 \usage{
@@ -106,7 +108,7 @@ plot(X)
 data(ferder)
 y <- as.annual(ferder)
 z <- DS(y,X)
-plot(z)
+plot(z, new=FALSE)
 
 # Test of subset the commutative property of subset and combine: 
 T2M <- as.4seasons(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
@@ -118,7 +120,7 @@ eof1 <- EOF(X1)
 eof2 <- EOF(X2)
 eof3 <- biasfix(eof2)
 plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
-     col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2))
+     col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2), new=FALSE)
 # OK - identical results
 
 # Extract storm tracks for specific periods, regions and characteristics
@@ -139,7 +141,7 @@ x.is2 <- subset(x,it=which(x$trajectory \%in\% x.is$trajectory))
 x.mam <- subset(x, it="mam")
 # Subset cyclones in december 2016
 x.201612 <- subset(x,it=c("2016-12-01","2016-12-31")) 
-map(x.201612)
+map(x.201612, new=FALSE)
 
 
 }
@@ -147,6 +149,6 @@ map(x.201612)
 matchdate sort.station
 }
 \author{
-R.E. Benestad and A.  Mezghanil
+R.E. Benestad and A.  Mezghani
 }
 \keyword{utilities}

@@ -108,7 +108,7 @@
 #' map(Obs,FUN='firstyear')
 #' }
 #'
-#' @export
+#' @export as.decimal
 as.decimal <- function(x=NULL) {
     ## converts from degree min sec format to degrees ...
     ##x is in the form "49 deg 17' 38''"
@@ -186,7 +186,7 @@ lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
 }
 
 ## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands
-#' @export
+#' @export test.num.predictors
 test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y.res='NA', nam.y='NA', nam.x.dom='NA',nam.t='NA',verbose=FALSE) {
   predictor_field <- x
   predictand_field <- y
@@ -280,7 +280,7 @@ RMSE <- function(x,y,...) return(rmse(x,y,...))
 #'
 #' @importFrom stats lag
 #'
-#' @export
+#' @export lag.station
 lag.station <- function(x,...) {
   y <- lag(zoo(x),...)
   y <- attrcp(x,y)
@@ -288,7 +288,7 @@ lag.station <- function(x,...) {
   invisible(y)
 }
 
-#' @export
+#' @export lag.field
 lag.field <- function(x,...) lag.station(x,...)
 
 #' @export
@@ -297,7 +297,7 @@ exit <- function() q(save="no")
 #' @export
 filt <- function(x,n,type='ma',lowpass=TRUE) UseMethod("filt")
 
-#' @export
+#' @export filt.default
 filt.default <- function(x,n,type='ma',lowpass=TRUE) {
   
   # A number of different filters using different window
@@ -406,7 +406,7 @@ propchange <- function(x,it0=c(1979,2013)) {
 #' @export
 arec <- function(x,...) UseMethod("arec")
 
-#' @export
+#' @export arec.default
 arec.default <- function(x,...) {
   y <- length(records(x))/sum(1/(1:nv(x)))
   return(y)

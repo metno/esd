@@ -145,14 +145,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (inherits(lab,'try-error')) lab <- ''
   }  #title(main = as.expression(sub),line = 3, adj =0.25)
   
-  if (!is.null(method))
+  if (!is.null(method)) {
     lab <- try(parse(text=paste(lab,'*',as.expression(method))))
     if (inherits(lab,'try-error')) lab <- ''
     #title(main = as.expression(method),line = 3, adj =0.5)
     #text(lon[length(lon)],lat[1] - dlat,method,col="grey30",pos=2,cex=0.7)
-  #browser()
-  if (!is.null(period))
+  }
+  if (!is.null(period)) {
     lab <- try(parse(text=paste(lab,'*',as.expression(period))))
+  }
   if (inherits(lab,'try-error')) lab <- ''
   #title(main = as.expression(period),line = 3, adj =1)
   #text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")

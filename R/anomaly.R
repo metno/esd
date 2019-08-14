@@ -31,7 +31,7 @@
 #' @export
 anomaly <-function(x,...) UseMethod("anomaly")
 
-#' @export
+#' @export anomaly.default
 anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   if(verbose) print('anomaly.default')
   if (verbose) print(class(x))
@@ -65,7 +65,7 @@ anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   return(y)
 }
 
-#' @export
+#' @export anomaly.dsensemble
 anomaly.dsensemble <- function(x,...,ref=NULL,verbose=FALSE) {
     if(verbose) print("anomaly.dsensemble")
     yr.obs <- year(attr(x,'station'))
@@ -76,14 +76,14 @@ anomaly.dsensemble <- function(x,...,ref=NULL,verbose=FALSE) {
     return(x)
 }
 
-#' @export
+#' @export anomaly.field
 anomaly.field <- function(x,verbose=FALSE,...,ref=NULL,na.rm=TRUE) {
   stopifnot(inherits(x,"field"))
   x <- as.anomaly(x,ref=ref,na.rm=na.rm,verbose=verbose,...)
   return(x)
 }
 
-#' @export
+#' @export anomaly.comb
 anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
   if(verbose) print("anomaly.comb")
   stopifnot(inherits(x,"field"),inherits(x,"comb"))
@@ -100,14 +100,14 @@ anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
   return(y)
 }
 
-#' @export
+#' @export anomaly.station
 anomaly.station <- function(x,verbose=FALSE,...) {
   if(verbose) print("anomaly.station")
   x <- anomaly.default(x,...)
   return(x)
 }
 
-#' @export
+#' @export anomaly.annual
 anomaly.annual <- function(x,...,ref=1961:1990,na.rm=TRUE,verbose=FALSE) {
   if (verbose) print('anomaly.annual')
   if(is.null(ref)) ref <- 1961:1990
@@ -137,7 +137,7 @@ anomaly.annual <- function(x,...,ref=1961:1990,na.rm=TRUE,verbose=FALSE) {
   return(x)
 }
 
-#' @export
+#' @export anomaly.month
 anomaly.month <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   if(verbose) print("anomaly.month")
   clim.month <- function(x,months,years,ref=NULL,na.rm=TRUE,verbose=FALSE) {
@@ -181,7 +181,7 @@ anomaly.month <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   return(x)
 }
 
-#' @export
+#' @export anomaly.season
 anomaly.season <- function(x,...,ref=NULL,verbose=FALSE) {
   anomaly.season1 <- function(x,yr=NULL,ref=NULL,verbose=FALSE,what='anomaly') {
     l <- length(x); n <- ceiling(l/4)
@@ -219,7 +219,7 @@ anomaly.season <- function(x,...,ref=NULL,verbose=FALSE) {
   return(x)
 }
 
-#' @export
+#' @export anomaly.day
 anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
   anomaly.day.1 <- function(x,t0,t,ref=NULL) {
     ## One station 
@@ -270,35 +270,35 @@ anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
 
 
 
-#' @export
+#' @export as.anomaly
 as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
-#' @export
+#' @export as.anomaly.default
 as.anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE) anomaly.default(x,ref=ref,na.rm=na.rm,...)
 
-#' @export
+#' @export as.anomaly.zoo
 as.anomaly.zoo <- function(x,...,ref=NULL,na.rm=TRUE) {
   y <- as.anomaly.station(x,ref=ref,na.rm=na.rm,...)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-#' @export
+#' @export as.anomaly.list
 as.anomaly.list <- function(x,...,ref=NULL,na.rm=TRUE) {
   y <- lapply(x,anomaly(x))
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-#' @export
+#' @export as.anomaly.station
 as.anomaly.station <- function(x,...,ref=NULL,na.rm=TRUE) {
   y <- as.anomaly.default(x,ref=ref,na.rm=na.rm,...)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-#' @export
-as.anomaly.field<- function(x,...,ref=NULL,na.rm=TRUE) {
+#' @export as.anomaly.field
+as.anomaly.field <- function(x,...,ref=NULL,na.rm=TRUE) {
    y <- anomaly.default(x,ref=ref,na.rm=na.rm,...)
    attr(y,'history') <- history.stamp(x)
    attr(y,'dimensions') <- attr(x,'dimensions')
@@ -312,7 +312,7 @@ climatology <- function(x,...,verbose=FALSE) {
 }
 
 # Handy conversion algorithms:
-#' @export
+#' @export as.climatology
 as.climatology <- function(x,...) {
   ya <- as.anomaly(x,...)
   clim <- coredata(attr(ya,'climatology'))

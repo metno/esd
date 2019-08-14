@@ -40,8 +40,8 @@ data('imilast.M03')
 # Calculate anomaly
 x <- anomaly.trajectory(imilast.M03)
 # Show maps of original trajectories and spatial anomalies
-map(imilast.M03)
-map(x)
+map(imilast.M03, new=FALSE)
+map(x, new=FALSE)
 # Transform trajectory anomalies back to regular trajectories
 y <- anomaly2trajectory(x)
 # Print longitudes of first trajectory

@@ -6,7 +6,7 @@
 #' @return a \code{field} object with the difference between the original field and the field
 #' reconstructed from the independent downscaled principle components from cross-validation
 #'
-#' @export
+#' @export test.ds.field
 test.ds.field <- function(x,verbose=FALSE) {
   if (verbose) print('fieldtest')
   stopifnot (inherits(x,'eof') & inherits(x,'ds'))
@@ -109,9 +109,9 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' This 'bias correction' is described in Imbert and Benestad (2005),
 #' \emph{Theor. Appl. Clim.} \url{http://dx.doi.org/10.1007/s00704-005-0133-4}.
 #' 
-#' @aliases DS DS.default DS.station DS.list DS.eof DS.comb DS.field
-#' DS.t2m.month.field DS.t2m.season.field DS.precip.season.field DS.freq
-#' DS.spell DS.pca DS.seasonalcycle
+#' @aliases DS DS.default DS.station DS.station.pca DS.list DS.eof DS.comb
+#' DS.field DS.t2m.month.field DS.t2m.season.field DS.precip.season.field
+#' DS.freq DS.spell DS.pca DS.seasonalcycle DS.trajectory
 #' @seealso biasfix sametimescale
 #'
 #' @importFrom stats predict var
@@ -249,7 +249,7 @@ test.ds.field <- function(x,verbose=FALSE) {
 DS <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) UseMethod("DS")
 
-#' @export
+#' @export DS.default
 DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) {
     if (verbose) print('DS.default')
@@ -464,7 +464,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     invisible(ds)
 }
 
-#' @export
+#' @export DS.station
 DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,
 		       ..., pca=FALSE, npca=20, biascorrect=FALSE) {
@@ -592,10 +592,11 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
 
 ## DS for combined fields - to make predictions not based on the
 ## calibration data
-#' @export
-DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, method="lm", swsm="step", m=5,
-                    rmtrend=TRUE, it=NULL, ip=1:7, weighted=TRUE, ...,
-		    pca=FALSE, npca=20, biascorrect=FALSE) {
+#' @export DS.comb
+DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
+                    swsm="step", m=5, rmtrend=TRUE, ip=1:7,
+		    weighted=TRUE, ..., pca=FALSE, npca=20,
+		    biascorrect=FALSE) {
     if (verbose) { print('--- DS.comb ---'); print(summary(coredata(y)))}
     ##print('index(y)'); print(index(y))
     ##print('err(y)'); print(err(y))
@@ -661,7 +662,7 @@ DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, method="lm", swsm="step", m
 ## This function takes care of downscaling based on a field-object X.
 ## X can be a combined field. This function calls more primitive DS methods,
 ## depending on the time scale represented in X (monthly or seasonal).
-#' @export
+#' @export DS.field
 DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                      method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...,biascorrect=FALSE) {
     if (verbose) { print('--- DS.field ---'); print(summary(coredata(y)))}
@@ -888,9 +889,10 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 ## weighting.
 ## The data may be pre-filtered using CCA.
 ## Rasmus Benestad, 19.08.2013
-#' @export
-DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm", swsm=NULL, m=5, ip=1:10,
-                   rmtrend=TRUE, weighted=TRUE,..., pca=TRUE, npca=20, biascorrect=FALSE) {
+#' @export DS.pca
+DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
+                   swsm=NULL, m=5, rmtrend=TRUE, ip=1:10,
+                   weighted=TRUE,..., pca=TRUE, npca=20, biascorrect=FALSE) {
 
     if (verbose) {
       print('--- DS.pca ---')
@@ -1170,7 +1172,7 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm", swsm=N
     
 }
 
-#' @export
+#' @export DS.eof
 DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
                    method="lm",swsm=NULL,m=5,ip=1:10,rmtrend=TRUE,weighted=TRUE,
                    pca=TRUE,npca=20) {
@@ -1196,7 +1198,7 @@ DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
     invisible(ds)
 }
 
-#' @export
+#' @export DS.list
 DS.list <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
                     method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20) {
   ### This method combines different EOFs into one predictor by making a new
@@ -1319,7 +1321,7 @@ DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,method="lm",swsm
     return(z)
 }
 
-#' @export
+#' @export DS.trajectory
 DS.trajectory <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
                           swsm="step", m=5, rmtrend=TRUE, ip=1:7, weighted=TRUE, ...,
 			  pca=FALSE, npca=20, is=NULL, FUN='count', param=NULL, biascorrect=FALSE,

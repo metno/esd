@@ -12,14 +12,14 @@
 #' @export
 matchdate <-function(x,it,verbose=FALSE) UseMethod("matchdate")
 
-#' @export
+#' @export matchdate.list
 matchdate.list <- function(x,it,verbose=FALSE) {
   if (verbose) print('matchdate.list')
   y <- lapply(x,matchdate.default,it=it,verbose=verbose)
   invisible(y)
 }
 
-#' @export
+#' @export matchdate.default
 matchdate.default <- function(x,it,verbose=FALSE) {
   if(verbose) print("matchdate.default")
   ## If it is the list, then use the first element because otherwise will not find the index

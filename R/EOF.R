@@ -30,10 +30,11 @@
 #' e.u involving different variables from same site, same variable from
 #' different sites, or a mix between these. For instance, PCA can be applied to
 #' the two wind components from a specific site and hence extract the most
-#' important wind directions/speeds.
+#' important wind directions/speeds. \code{PCA.matrix} is just a wrapper function 
+#' for \code{svd} that makes sure that the dimensions of the input are in order. 
 #' 
 #' @aliases EOF EOF.default EOF.field EOF.comb eof2field PCA PCA.default
-#' PCA.station pca2station
+#' PCA.station PCA.matrix pca2station
 #'
 #' @importFrom stats approx sd acf
 #'
@@ -99,10 +100,10 @@
 #' plot(Z,plot.type='multiple')
 #' 
 #' @export EOF
-EOF <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) { UseMethod("EOF") }
+EOF <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE) { UseMethod("EOF") }
 
-#' @export
-EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
+#' @export EOF.default
+EOF.default <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE) {
   # Verify Arguments
   if (verbose) print("EOF.default")
   stopifnot(!missing(X), is.matrix(X),inherits(X,"zoo"))
@@ -116,9 +117,8 @@ EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,a
   return(eof)
 }
 
-
 # Apply EOF analysis to the monthly mean field values:
-#' @export
+#' @export EOF.field
 EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   SF <- function(x) {sum(is.finite(x))}
@@ -261,7 +261,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   return(eof)
 }
 
-#' @export
+#' @export EOF.comb
 EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   n.app <- attr(X,'n.apps')

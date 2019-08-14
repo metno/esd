@@ -83,7 +83,7 @@
 retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 
 ## Default function
-#' @export
+#' @export retrieve.default
 retrieve.default <- function(ncfile,param="auto",
                              path=NULL,verbose=FALSE,...) {
   if (verbose) print('retrieve.default')
@@ -1048,7 +1048,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
 
 }
 
-#' @export
+#' @export retrieve.station
 retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                              nmin=NULL,verbose=FALSE,onebyone=FALSE,...) {
@@ -1243,7 +1243,7 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
   return(y)
 }
 
-#' @export
+#' @export retrieve.stationsummary
 retrieve.stationsummary <- function(ncfile,path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                                     alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                                     nmin=NULL,verbose=FALSE,...) {

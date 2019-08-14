@@ -174,6 +174,7 @@ pcafill <- function(X,insertmiss=0,ip=1:4,mnv=0,complete=FALSE,test=FALSE,verbos
   invisible(Y)
 }
 
+#' @export pcafill.test
 pcafill.test <- function(X,N=100,max.miss=100,ip=1:4,verbose=FALSE) {
   if(verbose) print('pcafill.test')
   insertmiss <- round(runif(N)*max.miss)

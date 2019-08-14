@@ -98,7 +98,7 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   return(Y)
 }
 
-#' @export
+#' @export map.dsensemble
 map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
                            colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                                    show=TRUE,type="p",cex=2,h=0.6,v=1),

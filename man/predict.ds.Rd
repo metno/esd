@@ -5,21 +5,23 @@
 \alias{predict.ds.eof}
 \alias{predict.ds.comb}
 \alias{predict.mvr}
+\alias{predict.ds.pca}
+\alias{predict.ds.station}
 \alias{predict.cca}
 \alias{project.ds}
 \title{Prediction based on DS or CCA model}
 \usage{
-\method{predict}{ds}(object, ..., newdata = NULL, addnoise = FALSE,
+\method{predict}{ds}(x, ..., newdata = NULL, addnoise = FALSE,
   n = 100, verbose = FALSE)
 }
 \arguments{
+\item{x}{A ds object}
+
 \item{newdata}{An eof object containing the new data sets on which the prediction is made.}
 
 \item{addnoise}{If TRUE, will add an attribute called "noise" to the ouput based on WG}
 
 \item{n}{Number of runs to be generated, used only if addnoise is set to TRUE}
-
-\item{x}{A ds object}
 }
 \value{
 Predicted ds values.

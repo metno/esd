@@ -145,45 +145,45 @@ ghcnd.data <- function(param="PRCP", stid="ACW00011604", src="ghcnd" , path="dat
     ## set destination full path filename to destfile
     file <- paste(stid,"dly",sep=".")
     if (!save.file) path <- url
-    destfile <- file.path(path,file,fsep = .Platform$file.sep)
+    destfile <- file.path(path, file, fsep=.Platform$file.sep)
     ##
     if (!file.exists(destfile) | (file.info(destfile)$size==0) | !save.file) {  
-      if (verbose) print("Reading data from ftp.ncdc.noaa.gov")    	
+      if (verbose) print("Reading data from ftp.ncdc.noaa.gov")
       url = paste(url,file,sep="/")
       if (!save.file) {
         destfile <- url(url)
       } else {
-        test <- try(eval(download.file(url, destfile, method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))))
+        test <- try(eval(download.file(url, destfile, method = "wget", quiet=FALSE, 
+                                       mode="w", cacheOK=TRUE, extra=getOption("download.file.extra"))))
         if (test>0) {return(NULL)} ##;  setwd(oldpath)}
       }
-    }   	 
-    ## 
-    ## browser()
-    if (save.file) 
+    }
+    ##
+    if (save.file) {
       if (file.info(destfile)$size==0) {
         print(paste("Warning : File",destfile,"has null size",sep=" "))
-        return(NULL)}
+        return(NULL)
+      }
+    }
 
     ## Reading data as text ...
     ## setwd(newpath)	
     ##	
     ## fdata <- paste(stid,"dly",sep=".")  	
     ##fdata <- "ghcnd.tavg.v3.2.0.20130120.qca.dat"   
-    ## if (!is.null(stid) & save.file) datatext = readLines(destfile) ##readLines(fdata)    
-   
-    ghcnd.data <- read.fwf(destfile,widths=c(3,8,4,2,4,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,
-                                             5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3),
-			   col.names=c("COUNTRY.CODE","ID","YEAR","MONTH","ELEMENT","DAY1","MQSFLAG1","DAY2","MQSFLAG2",
-			               "DAY3","MQSFLAG3","DAY4","MQSFLAG4","DAY5","MQSFLAG5","DAY6","MQSFLAG6","DAY7","MQSFLAG7",
-				       "DAY8","MQSFLAG8","DAY9","MQSFLAG9","DAY10","MQSFLAG10","DAY11","MQSFLAG11","DAY12","MQSFLAG12",
-				       "DAY13","MQSFLAG13","DAY14","MQSFLAG14","DAY15","MQSFLAG15","DAY16","MQSFLAG16","DAY17","MQSFLAG17",
-				       "DAY18","MQSFLAG18","DAY19","MQSFLAG19","DAY20","MQSFLAG20","DAY21","MQSFLAG21","DAY22","MQSFLAG22",
-				       "DAY23","MQSFLAG23","DAY24","MQSFLAG24","DAY25","MQSFLAG25","DAY26","MQSFLAG26","DAY27","MQSFLAG27",
-				       "DAY28","MQSFLAG28","DAY29","MQSFLAG29","DAY30","MQSFLAG30","DAY31","MQSFLAG31"),sep = "\t",as.is=TRUE)   
-
-    if (dim(ghcnd.data)[1]==0) {
+    ## if (!is.null(stid) & save.file) datatext = readLines(destfile) ##readLines(fdata)
+    ghcnd.data <- try(read.fwf(destfile, widths=c(3,8,4,2,4,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,
+                                              5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3),
+                           col.names=c("COUNTRY.CODE","ID","YEAR","MONTH","ELEMENT","DAY1","MQSFLAG1","DAY2","MQSFLAG2",
+			                      "DAY3","MQSFLAG3","DAY4","MQSFLAG4","DAY5","MQSFLAG5","DAY6","MQSFLAG6","DAY7","MQSFLAG7",
+				                    "DAY8","MQSFLAG8","DAY9","MQSFLAG9","DAY10","MQSFLAG10","DAY11","MQSFLAG11","DAY12","MQSFLAG12",
+				                    "DAY13","MQSFLAG13","DAY14","MQSFLAG14","DAY15","MQSFLAG15","DAY16","MQSFLAG16","DAY17",
+				                    "MQSFLAG17","DAY18","MQSFLAG18","DAY19","MQSFLAG19","DAY20","MQSFLAG20","DAY21","MQSFLAG21",
+				                    "DAY22","MQSFLAG22","DAY23","MQSFLAG23","DAY24","MQSFLAG24","DAY25","MQSFLAG25","DAY26",
+				                    "MQSFLAG26","DAY27","MQSFLAG27","DAY28","MQSFLAG28","DAY29","MQSFLAG29","DAY30","MQSFLAG30",
+				                    "DAY31","MQSFLAG31"), sep="\t", as.is=TRUE))
+    if (inherits(ghcnd.data,"try-error")) {#} | dim(ghcnd.data)[1]==0) {
       print("Warning : No data found for that station")
-      ## setwd(oldpath)
       return(NULL)
     }
     ## attach(ghcnd.data,warn.conflicts = FALSE)
@@ -207,7 +207,7 @@ ghcnd.data <- function(param="PRCP", stid="ACW00011604", src="ghcnd" , path="dat
     ## Remove downloaded files if necessary to save disk space
     if (rm.file) file.remove(destfile)
     
-                                        #} ## else {if (verbose) print("Reading data from R-data file ...")
+    #} ## else {if (verbose) print("Reading data from R-data file ...")
     ##      load("ghcnd.data.rda")
     ##      if (verbose) print("Done !")
     ##    }

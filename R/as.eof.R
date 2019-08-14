@@ -7,8 +7,8 @@
 #'
 #' \code{as.eof.dsensemble.pca} converts PCA-based DSensemble objects to EOF-based results (gridded)
 #'
-#' @seealso as.eof as.eof.field as.eof.comb as.eof.list as.eof.zoo as.eof.ds
-#' as.eof.dsensemble as.eof.appendix as.eof.dsensemble.pca
+#' @aliases as.eof as.eof.field as.eof.comb as.eof.list as.eof.zoo as.eof.ds
+#' as.eof.dsensemble as.eof.appendix as.eof.dsensemble.pca 
 #' 
 #' @param x the input object
 #' @param iapp index of appendix
@@ -16,24 +16,24 @@
 #' 
 #' @return an \code{eof} object
 #' 
-#' @export
+#' @export as.eof
 as.eof <- function(x,...) UseMethod("as.eof")
 
-#' @export
+#' @export as.eof.zoo
 as.eof.zoo <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.eof.zoo")
   class(x) <- c('eof','zoo')
   return(x)
 }
 
-#' @export
+#' @export as.eof.ds
 as.eof.ds <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.eof.ds")
   y <- as.eof(attr(x,'eof'),iapp=iapp) 
   return(y)
 }
 
-#' @export
+#' @export as.eof.eof
 as.eof.eof <-function(x,...,iapp=NULL) {
   if (inherits(x,'comb')) {
     x <- as.eof.comb(x,iapp=iapp) 
@@ -41,7 +41,7 @@ as.eof.eof <-function(x,...,iapp=NULL) {
   return(x)
 }
 
-#' @export
+#' @export as.eof.comb
 as.eof.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.eof.comb")
   stopifnot(inherits(x,'comb'))
@@ -64,7 +64,7 @@ as.eof.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
   return(x)
 }
 
-#' @export
+#' @export as.eof.field
 as.eof.field <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.eof.field")
   y <- EOF(x,...)
@@ -72,7 +72,7 @@ as.eof.field <- function(x,...,iapp=NULL,verbose=FALSE) {
   return(y)
 }
 
-#' @export
+#' @export as.eof.appendix
 as.eof.appendix <- function(x,...,iapp=1,verbose=FALSE) {
   if (verbose) print("as.eof.appendix")
   stopifnot(inherits(x,'comb'))
@@ -88,7 +88,7 @@ as.eof.appendix <- function(x,...,iapp=1,verbose=FALSE) {
   return(y)
 }
 
-#' @export
+#' @export as.eof.list
 as.eof.list <- function(x,...,verbose=FALSE) {
   if (verbose) print('as.eof.list')
   stopifnot(inherits(x,'list'),inherits(x[[1]],'eof'))
@@ -135,7 +135,7 @@ as.eof.list <- function(x,...,verbose=FALSE) {
   return(eof)
 }
 
-#' @export
+#' @export as.eof.dsensemble
 as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
   ## R.E. Benestad, 2017-05-19
   ## Convert the dsensemble object to an EOF of the multi-model mean

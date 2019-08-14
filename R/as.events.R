@@ -2,17 +2,17 @@
 #'
 #' @aliases as.events as.events.default as.events.trajectory events trajectory2events
 #'
-#' @export
+#' @export as.events
 as.events <- function(x,...) UseMethod("as.events")
 
-#' @export
+#' @export as.events.default
 as.events.default <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.events.default")
   X <- events(x,verbose=verbose,...)
   invisible(X)
 }
 
-#' @export
+#' @export as.events.trajectory
 as.events.trajectory <- function(x,verbose=FALSE,...) {
   if (verbose) print("as.events.trajectory")
   stopifnot(inherits(x,"trajectory"))
@@ -151,7 +151,7 @@ trajectory2events <- function(x,minlen=3,verbose=FALSE) {
 
 #' Count the number of events per month
 #'
-#' @export
+#' @export count.events
 count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {
   if (verbose) print("count.events")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")

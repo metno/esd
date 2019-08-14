@@ -239,9 +239,9 @@ TGW <- function(triangle,f=1.25e-4,rho=1.25,verbose=FALSE) {
 
 
 #' @export
-geostrophicwind<-function(x,...) UseMethod("geostrophicwind")
+geostrophicwind <- function(x,...) UseMethod("geostrophicwind")
 
-#' @export
+#' @export geostrophicwind.station
 geostrophicwind.station <- function(x,...,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=1000,progressbar=TRUE) {
   ## Estimates the geostrophic wind from mean sea-level pressure from stations
   n <- length(loc(x))
@@ -269,7 +269,7 @@ geostrophicwind.station <- function(x,...,f=1.25e-4,rho=1.25,verbose=FALSE,nmax=
   invisible(Wind)      
 }
 
-#' @export
+#' @export geostrophicwind.field
 geostrophicwind.field <- function(x,...,f=1.25e-4,rho=1.25,verbose=FALSE) {
   ## Estimates the geostrophic wind from mean sea-level pressure field
   if (verbose) print('geostrophicwind')

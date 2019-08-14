@@ -5,7 +5,7 @@
 #' 
 #' @aliases map map.default map.matrix map.data.frame map.station
 #' map.stationmeta map.stationsummary map.comb map.eof map.ds map.dsensemble
-#' map.field map.corfield map.cca map.events map.mvr map.pca
+#' map.field map.corfield map.cca map.events map.mvr map.pca map.array
 #' map.trend lonlatprojection rotM map2sphere vec
 #' @seealso map.trajectory
 #'
@@ -101,7 +101,7 @@
 #' @export map
 map <- function(x,...) UseMethod("map")
 
-#' @export
+#' @export map.default
 map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       projection="lonlat",xlim=NULL,ylim=NULL,zlim=NULL,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
@@ -160,7 +160,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
     invisible(X)
 }
 
-#' @export
+#' @export map.matrix
 map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                        colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -196,7 +196,7 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                         #map.station(NULL,...)
 }
 
-#' @export
+#' @export map.data.frame
 map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                            colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -218,7 +218,7 @@ map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   invisible(z)
 }
 
-#' @export
+#' @export map.array
 map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       projection="lonlat",na.rm=TRUE,
                       xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
@@ -258,7 +258,7 @@ map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
     invisible(z)
 }
 
-#' @export
+#' @export map.comb
 map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,#n=15,
                      colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -285,7 +285,7 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     invisible(result)
 }
 
-#' @export
+#' @export map.eof
 map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
                     xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -361,7 +361,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
     invisible(z)
 }
 
-#' @export
+#' @export map.ds
 map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,
                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -448,7 +448,7 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     invisible(X)
 }
 
-#' @export
+#' @export map.field
 map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       projection="lonlat",
                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
@@ -556,7 +556,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
     invisible(X)
 }
 
-#' @export
+#' @export map.corfield
 map.corfield <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                          colbar= list(pal=NULL,rev=FALSE,n=NULL,
@@ -612,7 +612,7 @@ map.corfield <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     invisible(x)
 }
 
-#' @export
+#' @export map.trend
 map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -667,9 +667,7 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 
-
-
-#' @export
+#' @export map.pca
 map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -724,7 +722,7 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
   }
 }
 
-#' @export
+#' @export map.mvr
 map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -738,7 +736,7 @@ map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     
 }
 
-#' @export
+#' @export map.cca
 map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                     colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
@@ -814,7 +812,7 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     invisible(list(U=U,V=V))
 }
 
-#' @export
+#' @export map.events
 map.events <- function(x,...,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
                        param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,

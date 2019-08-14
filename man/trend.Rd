@@ -23,6 +23,8 @@ trend(x, result = "trend", model = "y ~ t", ...)
 p-value.}
 
 \item{model}{The trend model used by \code{\link{lm}}.}
+
+\item{new}{if TRUE plot in new window}
 }
 \value{
 Similar type object as the input object
@@ -37,7 +39,7 @@ methods if the \code{result} argument is set to one of
 }
 \examples{
 data(ferder)
-plot(annual(ferder,'max'))
+plot(annual(ferder,'max'), new=FALSE)
 tr <- trend(annual(ferder,'max'))
 lines(tr)
 grid()

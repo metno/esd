@@ -155,7 +155,7 @@ ltp <- function(x,type='exponential',...) {
 #' @export DSensemble
 DSensemble<-function(y,...) UseMethod("DSensemble")
 
-#' @export
+#' @export DSensemble.default
 DSensemble.default <- function(y,...,path='CMIP5.monthly/',rcp='rcp45') {
    ## 
   stopifnot(!missing(y),inherits(y,"station"),
@@ -749,7 +749,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   invisible(X)
 }
 
-#' @export
+#' @export DSensemble.annual
 DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
@@ -1735,7 +1735,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
   invisible(X)   
 }
 
-#' @export
+#' @export DSensemble.pca
 DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
@@ -2121,7 +2121,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   invisible(dse.pca)
 }
 
-#' @export
+#' @export DSensemble.eof
 DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_slp_mon.nc",non.stationarity.check=FALSE,
                            ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,nmin=NULL,
@@ -2492,7 +2492,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
   invisible(dse.eof)
 }
 
-#' @export
+#' @export DSensemble.field
 DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10),it=c('djf','mam','jja','son'),
@@ -2512,7 +2512,7 @@ DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",b
   invisible(dse.eof)
 }
 
-#' @export
+#' @export DSensemble.station
 DSensemble.station <- function(y,...,verbose=FALSE) {
   if(verbose) print("DSensemble.station")
   dse <- DSensemble.default(y=y,...,verbose=verbose)

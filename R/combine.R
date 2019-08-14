@@ -2,9 +2,15 @@
 # Combines field objects; either in time (concatinates) or in space (mixing fields)
 # Can be used to combine EOFS
 
-#' @export
-rbind.field <- function(...) {
-  print('note: the results inherit the metadata from the first argument')
+#' Extension of rbind for field objects
+#'
+#' @param \dots input arguments
+#' @param verbose if TRUE print information on progress
+#' 
+#' @export rbind.field
+rbind.field <- function(...,verbose=FALSE) {
+  if(verbose) print("rbind.field")
+  if(verbose) print('note: the results inherit the metadata from the first argument')
   x <- list(...)
   y <- rbind.zoo(...)
   y <- attrcp(x[[1]],y)
@@ -14,9 +20,15 @@ rbind.field <- function(...) {
   return(y)
 }
 
-#' @export
-cbind.field <- function(...) {
-  print('note: the results inherit the metadata from the first argument')
+#' Extension of rbind for field objects
+#'
+#' @param \dots input arguments
+#' @param verbose if TRUE print information on progress
+#'
+#' @export cbind.field
+cbind.field <- function(...,verbose=FALSE) {
+  if(verbose) print("cbind.field")
+  if(verbose) print('note: the results inherit the metadata from the first argument')
   x <- list(...)
   y <- cbind.zoo(...)
   y <- attrcp(x[[1]],y)
@@ -62,7 +74,9 @@ cbind.field <- function(...) {
 #' @aliases combine combine.default combine.stations combine.zoo combine.ds
 #' combine.ds.comb combine.ds.station combine.ds.station.eof
 #' combine.ds.station.field combine.ds.pca combine.list
-#' combine.station.eof combine.field combine.filed.station combine.station.field sp2np
+#' combine.station.eof combine.field combine.filed.station
+#' combine.station.field sp2np combine.trajectory combine.events
+#' combine.field.station
 #'
 #' @param x station, eof, or field object
 #' @param all See \code{link{merge.zoo}}
@@ -96,7 +110,7 @@ cbind.field <- function(...) {
 #' @export combine
 combine <- function(...) UseMethod("combine")
 
-#' @export
+#' @export combine.default
 combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.default")
   stopifnot(!missing(x))
@@ -126,7 +140,7 @@ combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose
 # combine.station can be used to either combine a group of stations into
 # one data object or time series from one stations with different monthly
 # values into one time series with all months
-#' @export
+#' @export combine.station
 combine.station <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station")
   cl <- as.list(match.call())
@@ -182,7 +196,7 @@ combine.station.month <- function(...,verbose=FALSE) {
   invisible(X)
 }
 
-#' @export
+#' @export combine.zoo
 combine.zoo <- function(...,verbose=FALSE) {
   if(verbose) print("combine.zoo")
   Z <- merge.zoo(...,all=TRUE)
@@ -260,7 +274,7 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
-#' @export
+#' @export combine.ds
 combine.ds <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds")
   cl <- as.list(match.call())
@@ -407,7 +421,7 @@ combine.list <- function(...,all=TRUE,verbose=FALSE) {
   return(y)
 }
 
-#' @export
+#' @export combine.ds.comb
 combine.ds.comb <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds.comb")
   cl <- as.list(match.call())
@@ -849,7 +863,7 @@ combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
   invisible(X)
 }
 
-#' @export
+#' @export combine.events
 combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbose=FALSE) {
   if(verbose) print("combine.events")
   stopifnot(inherits(x,"events") & inherits(y,"events"))
@@ -942,7 +956,7 @@ combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,F
   return(z)
 }
 
-#' @export
+#' @export combine.trajectory
 combine.trajectory <- function(x=NULL,y=NULL,...,verbose=FALSE) {
   if(verbose) print("combine.trajectory")
   z <- rbind(x,y,all=TRUE)

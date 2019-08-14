@@ -29,7 +29,7 @@
 #' Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
 #' map(Y)
 #'
-#' @export
+#' @export as.field
 as.field <- function(x,...) UseMethod("as.field")
 
 #' Coerce input to a \code{field} object
@@ -59,7 +59,7 @@ as.field <- function(x,...) UseMethod("as.field")
 #' 
 #' @seealso as.field
 #' 
-#' @export
+#' @export as.field.zoo
 as.field.zoo <- function(x,...,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,
                          reference=NA,info=NA,calendar='gregorian',
@@ -139,7 +139,7 @@ as.field.zoo <- function(x,...,lon,lat,param,unit,
 #' Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
 #' map(Y)
 #'
-#' @export
+#' @export as.field.default
 as.field.default <- function(x,...,index,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,
                          reference=NA,info=NA,calendar='gregorian',
@@ -167,7 +167,7 @@ as.field.default <- function(x,...,index,lon,lat,param,unit,
 #' 
 #' @seealso as.field as.field.comb
 #' 
-#' @export
+#' @export as.field.field
 as.field.field <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.field.field")
   if (inherits(x,'comb')) x <- as.field.comb(x,...)
@@ -187,7 +187,7 @@ as.field.field <- function(x,verbose=FALSE,...) {
 #' 
 #' @seealso as.field
 #' 
-#' @export
+#' @export as.field.comb
 as.field.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.field.comb")
   if (is.null(iapp)) {
@@ -221,7 +221,7 @@ as.field.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
 #' 
 #' @seealso as.field eof2field EOF as.field.dsensemble.eof
 #' 
-#' @export
+#' @export as.field.eof
 as.field.eof <- function(x,...,iapp=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("as.field.eof")
   if (inherits(x,'dsensemble')) {
@@ -248,7 +248,7 @@ as.field.eof <- function(x,...,iapp=NULL,anomaly=FALSE,verbose=FALSE) {
 #' 
 #' @seealso as.field as.field.eof DS
 #' 
-#' @export
+#' @export as.field.ds
 as.field.ds <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.field.ds")
   if (inherits(x,'eof')) {
@@ -289,7 +289,7 @@ as.field.ds <- function(x,...,iapp=NULL,verbose=FALSE) {
 #' 
 #' @seealso as.field regrid
 #' 
-#' @export
+#' @export as.field.station
 as.field.station <- function(x,...,lon=NULL,lat=NULL,nx=30,ny=30,
                              verbose=FALSE) {
   if(verbose) print("as.field.station")
@@ -318,7 +318,7 @@ as.field.station <- function(x,...,lon=NULL,lat=NULL,nx=30,ny=30,
 #' 
 #' @seealso as.field DSensemble EOF
 #' 
-#' @export
+#' @export as.field.dsensemble.eof
 as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
                                     anomaly=FALSE,verbose=FALSE) {
   if (verbose) print('as.field.dsensemble.eof')
@@ -386,13 +386,13 @@ as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
   }
 }
 
-#' @export
+#' @export as.field.events
 as.field.events <- function(x,...) {
   y <- events2field(x,...)
   return(y)
 }
 
-#' @export
+#' @export as.field.trajectory
 as.field.trajectory <- function(x,...) {
   y <- trajectory2field(x,...)
   return(y)

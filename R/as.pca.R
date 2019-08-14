@@ -16,7 +16,7 @@
 #' 
 #' @return a \code{pca} object
 #' 
-#' @export
+#' @export as.pca
 as.pca <- function(x,verbose=FALSE,...) UseMethod("as.pca")
 
 #' Coerce input to a \code{pca} object
@@ -31,7 +31,7 @@ as.pca <- function(x,verbose=FALSE,...) UseMethod("as.pca")
 #' 
 #' @return a \code{pc} object
 #' 
-#' @export
+#' @export as.pca.ds
 as.pca.ds <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.pca.ds")
   stopifnot(inherits(x,'pca'))
@@ -56,7 +56,7 @@ as.pca.ds <- function(x,verbose=FALSE,...) {
 #' 
 #' @return a \code{pc} object
 #' 
-#' @export
+#' @export as.pca.station
 as.pca.station <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.pca.station")
   y <- PCA(x,verbose=verbose,...)

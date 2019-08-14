@@ -1,4 +1,4 @@
-#' @aliases poly.image
+#' Plot image
 #'
 #' @importFrom graphics box
 #'

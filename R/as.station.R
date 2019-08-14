@@ -65,10 +65,10 @@
 #' map(slp.field, FUN="mean", colbar=cb) # show map of SLP field
 #' map(slp.station, FUN="mean", colbar=cb) # show map of SLP as station data
 #'
-#' @export
+#' @export as.station
 as.station <- function(x,...) UseMethod("as.station")
 
-#' @export
+#' @export as.station.zoo
 as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                           cntr=NA,longname=NA,calendar=NA,stid=NA,quality=NA,src=NA,
                           url=NA,reference=NA,info=NA, method= NA,type=NA,
@@ -183,7 +183,7 @@ as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   return(y)
 }
 
-#' @export
+#' @export as.station.data.frame
 as.station.data.frame <-  function (x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                                     cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,url=NA,
                                     reference=NA,info=NA,method=NA,type=NA,aspect=NA,verbose=FALSE) {
@@ -220,7 +220,7 @@ as.station.data.frame <-  function (x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,
   return(y)
 }
 
-#' @export
+#' @export as.station.ds
 as.station.ds <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.ds")
   if (inherits(x,'pca')) {
@@ -242,7 +242,7 @@ as.station.ds <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' @export
+#' @export as.station.pca
 as.station.pca <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.pca")
   if (inherits(x,"dsensemble")) {
@@ -259,7 +259,7 @@ as.station.pca <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' @export
+#' @export as.station.list
 as.station.list <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.list")
 #  Jan <- x$Jan + attr(x$Jan,'mean')
@@ -340,7 +340,7 @@ as.station.list <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' @export
+#' @export as.station.field
 as.station.field <- function(x,...,is=NULL,verbose=FALSE) {
   if(verbose) print("as.station.field")
   index <- index(x)
@@ -370,7 +370,7 @@ as.station.field <- function(x,...,is=NULL,verbose=FALSE) {
   invisible(y)
 }
 
-#' @export
+#' @export as.station.spell
 as.station.spell <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.spell")
   y <- coredata(x)
@@ -391,7 +391,7 @@ as.station.spell <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' @export
+#' @export as.station.eof
 as.station.eof <- function(x,...,ip=1:10,verbose=FALSE) {
   if(verbose) print("as.station.eof")
   stopifnot(!missing(x),inherits(x,'eof'))
@@ -419,7 +419,7 @@ as.station.eof <- function(x,...,ip=1:10,verbose=FALSE) {
 #' 
 #' @seealso as.station as.station.dsensemble.pca as.station.dsensemble.station DSensemble PCA
 #' 
-#' @export
+#' @export as.station.dsensemble
 as.station.dsensemble <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.dsensemble")
   if (!is.null(x$pca) & !inherits(x,"pca") & inherits(x,"eof")) {
@@ -547,7 +547,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   }
 }
 
-#' @export
+#' @export as.station.dsensemble.station
 as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',verbose=FALSE) {
 
     if (verbose) print('as.station.dsensemble.station')
@@ -572,13 +572,13 @@ as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',verbo
     return(y)
 }
 
-'# @export
+'# @export as.station.trajectory
 as.station.trajectory <- function(x,...) {
   y <- trajectory2station(x,...)
   return(y)
 }
 
-'# @export
+'# @export as.station.events
 as.station.events <- function(x,...) {
   y <- events2station(x,...)
   invisible(y)

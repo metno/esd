@@ -1,10 +1,18 @@
+#' Diagnosis plots
+#'
+#' Produce plots to diagnose and examine different data types
+#' and check for consistency.
+#'
+#' @aliases plot.diagnose.comb.eof plot.diagnose.dsensemble plot.diagnose.matrix
+#' @seealso diagnose
+#'
 #' @export plot.diagnose
 plot.diagnose <- function(x,...) {
   if ( (inherits(x,"eof")) & (inherits(x,"comb")) ) plot.diagnose.comb.eof(x,...) else
   if (inherits(x,"dsensembles")) plot.diagnose.dsensemble(x,...)
 }
 
-#' @export
+#' @export plot.diagnose.comb.eof
 plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,
                                    alpha=0.5,lwd=2,verbose=FALSE,...) {
   if (verbose) print('plot.diagnose.comb.eof')
@@ -72,7 +80,7 @@ plot.diagnose.comb.eof <- function(x,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,
   points(x$mean.diff,x$sd.ratio,pch=pch,col=col,lwd=lwd,cex=cex)
 }
 
-#' @export
+#' @export plot.diagnose.matrix
 plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,...) {
   if (verbose) print('plot.diagnose.matrix')
   x <- as.data.frame(x)
@@ -116,7 +124,7 @@ plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,..
   image(1:2,1:n,colbar,col=col)  
 }
 
-#' @export
+#' @export plot.diagnose.dsensemble
 plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=TRUE,
                                      map.type=NULL,verbose=FALSE,main=NULL,...) {
   if (verbose) print('plot.diagnose.dsensemble')

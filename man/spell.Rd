@@ -59,13 +59,13 @@ empirical quantiles with the distribution function quantiles (see \code{\link[st
 precip <- station.metnod(stid="18700",param="precip")
 x <- spell(precip,threshold=.1)
 x.ann <- annual(x,FUN="max")
-plot(x.ann,plot.type="multiple")
+plot(x.ann,plot.type="multiple",new=FALSE)
 # Example 2 :
-x11() ; plot(x)
+plot(x, new=FALSE)
 
 # Growing degree days:
 data(ferder)
-plot(as.seasons(ferder,FUN='GDD'))
+plot(as.seasons(ferder,FUN='GDD'), new=FALSE)
 
 # Mild winter days - number of days in the winter season with
 # above freezing temperatures

@@ -4,10 +4,10 @@
 #'
 #' @importFrom utils sessionInfo
 #'
-#' @export
+#' @export history.stamp
 history.stamp <-function(x=NULL,y=NULL,verbose=FALSE,...) UseMethod("history.stamp")
 
-#' @export
+#' @export history.stamp.default
 history.stamp.default <- function(x=NULL,y=NULL,verbose=FALSE,...) {
   if(verbose) print("history.stamp.default")
   si <- list(R.version=sessionInfo()$R.version$version.string,

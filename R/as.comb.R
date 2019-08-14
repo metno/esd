@@ -12,10 +12,10 @@
 #' 
 #' @return an \code{eof} object
 #' 
-#' @export
+#' @export as.comb
 as.comb <- function(x,verbose=FALSE,...) UseMethod("as.comb")
 
-#' @export
+#' @export as.comb.eof
 as.comb.eof <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.comb.eof")
   stopifnot(inherits(x,'eof'))

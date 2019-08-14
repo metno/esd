@@ -2,7 +2,7 @@
 #' 
 #' The method \code{validate}
 #' 
-#' @aliases validate.dsensemble validate.eof.comb
+#' @aliases validate.dsensemble validate.eof.comb validate.default
 #'
 #' @importFrom stats wilcox.test
 #'
@@ -18,12 +18,12 @@
 #'   slp2 <- slp.DNMI(lon=c(-50,50),lat=c(30,70))
 #'   slpcomb <- combine(slp1,slp2)
 #'   eofcomb <- EOF(slpcomb)
-#'   validate(eofcomb)
+#'   validate(eofcomb, new=FALSE)
 #' 
 #' @export
 validate <- function(x, ...)  UseMethod("validate")
 
-#' @export
+#' @export validate.eof.comb
 validate.eof.comb <- function(x,...,new=TRUE,verbose=FALSE) {
   if(verbose) print("validate.eof.comb")
   zz <- attr(x,'appendix.1')
@@ -32,7 +32,7 @@ validate.eof.comb <- function(x,...,new=TRUE,verbose=FALSE) {
   lines(attr(zz,'mean'),col="red")
 }
 
-#' @export
+#' @export validate.dsensemble
 validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
                                 colbar=list(breaks=seq(0,1,by=0.1),cex=1.5,
                                 col=colscal(11,pal="t2m",alpha=0.5)),
@@ -104,11 +104,13 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
   invisible(ro)
 }
 
+#' @export validate.default
 validate.default <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.default")
   if(verbose) print("unfinished function - not returning anything")
 }
 
+#' @export validate.eof
 validate.eof <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.eof")
   if(inherits(x,"comb")) {
@@ -118,21 +120,25 @@ validate.eof <- function(x,...,verbose=FALSE) {
   }
 }
 
+#' @export validate.pca
 validate.pca <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.eof.field")
   if(verbose) print("unfinished function - not returning anything")
 }
 
+#' @export validate.eof.field
 validate.eof.field <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.eof.field")
   if(verbose) print("unfinished function - not returning anything")
 }
 
+#' @export validate.ds
 validate.ds <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.ds")
   if(verbose) print("unfinished function - not returning anything")
 }
 
+#' @export validate.cca
 validate.cca <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.cca")
   if(verbose) print("unfinished function - not returning anything") 

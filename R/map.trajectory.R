@@ -737,7 +737,7 @@ sunflower.trajectory <- function(x,it=NULL,is=NULL,
   }
 }
 
-#' @export
+#' @export map.pca.trajectory
 map.pca.trajectory <- function(x,projection="sphere",lonR=NULL,latR=NULL,
                                xlim=NULL,ylim=NULL,main=NULL,m=2,alpha=0.05,
 			       param=c('lon','lat'),verbose=FALSE,...) {

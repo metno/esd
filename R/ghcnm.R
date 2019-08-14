@@ -199,11 +199,15 @@ ghcnm.data <- function(ele=101, stid="10160403000", ver="v3", adj="qca", src="gh
   datatext = readLines(data.file)
   if (!is.null(stid)) datatext <- datatext[grep(stid,datatext)]       
   writeLines(datatext,file.path(path,"station.tmp",fsep= .Platform$file.sep))
-  ghcnm.data <- read.fwf(file.path(path,"station.tmp",fsep= .Platform$file.sep),
+  ghcnm.data <- try(read.fwf(file.path(path,"station.tmp",fsep= .Platform$file.sep),
     widths=c(3,8,4,4,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3),
     col.names= c("COUNTRY.CODE","ID","year","element","JAN","FLAG1","FEB","FLAG2","MAR","FLAG3","APR",
                  "FLAG4","MAY","FLAG5","JUI","FLAG6","JUL","FLAG7","AUG","FLAG8","SEP","FLAG9","OCT",
-		 "FLAG10","NOV","FLAG11","DEC","FLAG12"),sep = "\t",as.is=TRUE)   
+		 "FLAG10","NOV","FLAG11","DEC","FLAG12"),sep = "\t",as.is=TRUE))
+  if(inherits(ghcnm.data,"try-error")) {
+    print("Warning : No data found for that station")
+    return(NULL)
+  }
   if (!flag) ghcnm.data <- subset(ghcnm.data,select = c(seq(-6,-28,-2)))	
   ## Replacement of -9999 by "NA"		
   ghcnm.data[ghcnm.data == -9999] <- NA	

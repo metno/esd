@@ -125,36 +125,38 @@ Benestad (2005)
 data(slp.ERA5)
 
 ## Cyclone identification
-Cstorms <- CCI(slp.ERA5, m=20, label='ERA5', pmax=1000, verbose=TRUE, plot=TRUE)
+Cstorms <- CCI(slp.ERA5, m=20, label='ERA5', pmax=1000, verbose=TRUE, plot=FALSE)
 
 ## Cyclone tracking
-Ctracks <- track(Cstorms, plot=TRUE, verbose=TRUE)
+Ctracks <- track(Cstorms, plot=FALSE, verbose=TRUE)
 
 ## Map with points and lines showing the cyclone centers and trajectories
-map(Ctracks, type=c("trajectory","points"), col="blue")
+map(Ctracks, type=c("trajectory","points"), col="blue", new=FALSE)
 ## Map with only the trajectory and start and end points
-map(Ctracks, type=c("trajectory","start","end"), col="red")
+map(Ctracks, type=c("trajectory","start","end"), col="red", new=FALSE)
 ## Map showing the cyclone depth (slp) as a color scale (rd = red scale)
 map(Ctracks, param="pcent", type=c('trajectory','start'), 
-    colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1010,5)), alpha=0.9)
+    colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1010,5)), 
+    alpha=0.9, new=FALSE)
 
 ## Select only the long lasting trajectories...
 Ct <- subset(Ctracks, ic=list(param='trackcount', pmin=12) )
 map(Ct)
 ## ...or only the long distance ones...
 Ct <- subset(Ctracks, ic=list(param='tracklength', pmin=3000) )
-map(Ct)
+map(Ct, new=FALSE)
 ## ...or only the deep cyclones
 Ct <- subset(Ctracks, ic=list(param='pcent', pmax=980) )
-map(Ct)
+map(Ct, new=FALSE)
 
 ## Map of cyclone trajectories with the slp field in background
 cb <- list(pal="budrd",breaks=seq(990,1040,5))
-map(Ctracks, slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, verbose=TRUE)
+map(Ctracks, slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, 
+    verbose=TRUE, new=FALSE)
 
 ## Transform the cyclones into a 'trajectory' object which takes up less space
 Ctraj <- as.trajectory(Ctracks)
-map(Ctraj)
+map(Ctraj, new=FALSE)
 print(object.size(Ctracks), units="auto")
 print(object.size(Ctraj), units="auto")
 

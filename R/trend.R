@@ -16,6 +16,7 @@
 #' "coef" returns the trend coefficient; "err" the error estimate; "pval" the
 #' p-value.
 #' @param model The trend model used by \code{\link{lm}}.
+#' @param new if TRUE plot in new window
 #'
 #' @return Similar type object as the input object
 #' 
@@ -25,7 +26,7 @@
 #'
 #' @examples 
 #' data(ferder)
-#' plot(annual(ferder,'max'))
+#' plot(annual(ferder,'max'), new=FALSE)
 #' tr <- trend(annual(ferder,'max'))
 #' lines(tr)
 #' grid()
@@ -35,7 +36,7 @@
 #' @export trend
 trend <- function(x,result="trend",model="y ~ t",...) UseMethod("trend")
 
-#' @export
+#' @export trend.default
 trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print("trend.default")
   trendx <- data.frame(t=1:length(index(x)),y=x)
@@ -93,7 +94,7 @@ trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) 
   return(y)
 }
 
-#' @export
+#' @export trend.station
 trend.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.station",result))
   # Allow for a set of stations.
@@ -124,7 +125,7 @@ trend.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(y)
 }
 
-#' @export
+#' @export trend.eof
 trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.eof",result))
   class(x) -> cls
@@ -175,7 +176,7 @@ trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(Y)
 }
 
-#' @export
+#' @export trend.field
 trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
   gettrend <- function(x,model="y ~ t") {
@@ -233,7 +234,7 @@ trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(Y)
 }
 
-#' @export
+#' @export trend.zoo
 trend.zoo <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print("trend.zoo")
   if (length(dim(x))==2) {
