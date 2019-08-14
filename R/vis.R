@@ -4,8 +4,10 @@
 #'
 #' \code{vis} shows the annual and seasonal evolution of a time series, similar to \code{\link{seasevol}}.
 #'
+#'
 #' @aliases vis vis.station vis.pca
-#' @seealso wheel cumugram visprob conf graph diagram scatter plot map
+#' @seealso vis.trends wheel cumugram visprob conf graph
+#' diagram scatter plot map
 #' 
 #' @param x an input object of class 'DSensemble'
 #' @param img a 'raster' object, or an object that can be coerced to one by 'as.raster', to be used as background

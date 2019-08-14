@@ -4,13 +4,20 @@
 #' default presents the number of points falling into pixles of a 2D grid.
 #' 
 #' The 'heat' type produces a heat map type display whereas 'sunflower' and
-#' 'hexbin' present alternative infographics
+#' 'hexbin' present alternative infographics. Scatter also takes arguments
+#' similar to plot such as 'xlim', 'ylim', 'main', 'sub', 'xlab', and 'ylab.
 #' 
 #' @param x x-variable
 #' @param y y-variable
 #' @param type Type of scatter cplot \code{c('heat','sunflower','hexbin'}
 #' @param verbose TRUE for diagnosing the internals of the function.
+#' @param breaks ('heat' option) Set the colour scaling.
+#' @param ignorezero ('heat' option - default = TRUE) Zeros are blank.
+#' @param log ('heat' option - default = FALSE) Use logarithmic colour scaling.
+#' @param dig ('heat' option) Resolution in number of decimal points/digits.
+#' @param fig ('heat' option) Figure region for the colour bar.
 #' @return Graphics and visualisation only.
+#'
 #' @author Kajsa M. Parding and Rasmus E. Benestad
 #' @seealso \code{\link{vis}},\code{\link{map}},\code{\link{plot}}
 #'
@@ -41,13 +48,16 @@ scatter <- function(x,y,type='heat', verbose=FALSE,...) {
 }
 
 scatter.heat <- function(x,y,xlim=NULL,ylim=NULL,breaks=NULL,main='Scatter',xlab='',ylab='',sub='',
-                         col=NULL,log=FALSE,dig=NULL, fig = c(0.65,0.85,0.22,0.32), verbose=FALSE) {
+                         ignorezero=TRUE,col=NULL,log=FALSE,dig=NULL, fig = c(0.65,0.85,0.22,0.32), 
+                         verbose=FALSE) {
   if (verbose) print('scatter.heat')
   par(bty='n',mar=c(5.1, 5.1, 4.1, 2.1))
   if (is.null(dig)) dig <- max(c(-2*log(max(c(x,y,na.rm=TRUE)))/log(10),0),na.rm=TRUE)
   if (verbose) print(paste(dig,'digits. Max:',max(c(x,y,na.rm=TRUE))))
   txy <- table(round(x,dig),round(y,dig))
+  if (ignorezero) txy[txy==0] <- NA
   if (log) txy <- log(txy)/log(10)
+  
   if (is.null(breaks) & is.null(col)) {
     breaks <- pretty(as.numeric(txy))
     col <- heat.colors(length(breaks)-1)

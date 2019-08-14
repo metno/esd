@@ -14,6 +14,8 @@ as.residual <- function(x,...) UseMethod("as.residual")
 #' @export as.residual.ds
 as.residual.ds <- function(x,...,verbose=FALSE){
   if (verbose) print('as.residual.ds')
+  x0 <- attr(x,'original_data')
+  if (verbose) print(names(attributes(x0)))
   if (is.ds(x)) {
     ## If the predictand was originally an EOF or PCA product, then
     ## the residual needs to inherits their attributes
@@ -24,19 +26,16 @@ as.residual.ds <- function(x,...,verbose=FALSE){
       z0 <- as.field(attr(x,'original_data'))
       z1 <- as.field(x)
       y <- z1 - z0
-      y <- attrcp(z0,y); class(y) <- class(z0)
+      y <- attrcp(x0,y); class(y) <- class(z0)
     } else if (is.pca(x)) {
       if (verbose) print('pca/station')
-      z0 <- as.station(attr(x,'original_data'))
+      z0 <- as.station(x0)
       z1 <- as.station(x)
       y <- z1 - z0
-      y <- attrcp(z0,y); class(y) <- class(z0)
+      y <- attrcp(x0,y); class(y) <- class(z0)
     } else if (is.station(x)) {
       if (verbose) print('station')
-      z0 <- attr(x,'original_data')
-      z1 <- x
-      y <- z1 - z0
-      y <- attrcp(z0,y); class(y) <- class(z0)
+      y <- attrcp(x0,y); class(y) <- class(z0)
     }      
   }
   ## If the results are a field object, then the residuals are stored as EOFs.

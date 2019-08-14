@@ -76,8 +76,9 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       } else {
         y <- attr(x,FUN); FUN <- NULL
       }    
-      if (verbose) print(summary(y))
+      if (verbose) {print('Contents of y:'); print(summary(y))}
       colbar <- colbar.ini(y,colbar=colbar)
+      if (verbose) print('Set colour scheme')
       wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
       wg <- round(strtoi(paste('0x',substr(colbar$col,4,5),sep=''))/255,2)
       wb <- round(strtoi(paste('0x',substr(colbar$col,6,7),sep=''))/255,2)
@@ -96,11 +97,12 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       y <- rep(1,length(lon(x)))
       show.colbar <- FALSE
     }
+    if (verbose) print(paste('show.colbar=',show.colbar))
     
     ## KMP 2017-07-28: fig creates problems when you want to add map.station as a subplot.
     ## With this solution you have to use add=TRUE and set fig to your subplot or to NULL.
+    if(is.null(fig)) fig <- par(fig)
     if (plot) {
-      if(is.null(fig)) fig <- par(fig)
       if(add) {
         par(fig=fig,mar=mar,mgp=mgp,new=TRUE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
             col.axis='grey30',col.lab='grey30',las=1)
@@ -154,6 +156,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
       
       if (show.colbar) {
+        if (verbose) print('show.colorbar')
         ## KMP 2017-07-28: If fig is something other than the default
         ## the colbar may be misplaced relative to the plot.
         #if (fin[2] >= 8) {

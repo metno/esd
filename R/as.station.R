@@ -245,9 +245,12 @@ as.station.ds <- function(x,...,verbose=FALSE) {
 #' @export as.station.pca
 as.station.pca <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.pca")
+  if (verbose) print(names(attributes(attr(x,'original_data'))))
   if (inherits(x,"dsensemble")) {
+    if (verbose) print('data type: dsensemble')
     y <- as.station.dsensemble.pca(x,...)
   } else {
+    if (verbose) print('data type: pca')
     y <- pca2station(x,...)
     if (!is.null(attr(x,"pca"))) {
       fit <- attr(x,'pca')
@@ -255,6 +258,8 @@ as.station.pca <- function(x,...,verbose=FALSE) {
       attr(y,'fitted_values') <- fit
       attr(y,'original_data') <- attr(x,'original_data')
     }
+    y <- attrcp(attr(x,'original_data'),y)
+    if (verbose) print(names(attributes(y)))
   }
   return(y)
 }
@@ -387,6 +392,7 @@ as.station.spell <- function(x,...,verbose=FALSE) {
   attr(y,'unit') <- c("days","days")
   attr(y,'variable') <- suffix
   class(y) <- c('station',class(x))
+  y <- attrcp(attr(x,'original_data'),y) # REB 2019-08-05
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
@@ -405,6 +411,7 @@ as.station.eof <- function(x,...,ip=1:10,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)
   class(y)[2] <- class(x)[2]
   if (dim(y)[2]==1) y <- subset(y,is=1)
+  y <- attrcp(attr(x,'original_data'),y) # REB 2019-08-05
   invisible(y)
 }
 
@@ -434,6 +441,7 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
     y <- x
   }
   if (verbose) print(class(y))
+  y <- attrcp(attr(x,'original_data'),y) # REB 2019-08-05
   return(y)
 }
 

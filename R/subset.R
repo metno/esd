@@ -124,8 +124,8 @@ subset <- function(x,...) UseMethod("subset")
 #' @export subset.field
 subset.field <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print("subset.field")
-  if (is.null(it) & is.null(is)) return(x)
-  
+  if (is.null(it) & is.null(is)) return(x) 
+  if (verbose) {str(it); str(is)}
   y <- default.subset(x,...,is=is,it=it,verbose=verbose)
   attr(y,'history') <- history.stamp(x)
   return(y)
@@ -145,24 +145,30 @@ subset.zoo <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   return(y)
 }
 
+
 #' @export subset.comb
 subset.comb <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
-    if (verbose) print("subset.comb")
-    y <- subset.field(x,it=it,is=is)
-    y <- attrcp(x,y)
+  if(verbose) print("subset.comb")
+  if(verbose) print(paste("n.apps=",attr(x,'n.apps')))
+  if ((is.null(it)) & (is.null(is))) return(x)
     n.app <- attr(x,'n.apps')
-    
+    y <- subset.field(x,it=it,is=is,verbose=verbose)
+    y <- attrcp(x,y,ignore = c('longitude','latitude'))
+    if (verbose) print('Subset the appendend fields')    
     for (i in 1:n.app) {
-        eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
+      if (verbose) print(paste0("z <- attr(x,'appendix.",i,"')"))
+        eval(parse(text=paste0("z <- attr(x,'appendix.",i,"')")))
+        class(z) <- class(x)[-1]
         attr(z,'longitude') <- attr(x,'longitude')
         attr(z,'latitude') <- attr(x,'latitude')
-        yz <- subset(z,it=it,is=is)
+        yz <- subset(z,it=it,is=is,verbose=verbose)
         yz <- zoo(coredata(yz),order.by=index(yz))
         yz <- attrcp(z,yz)
         attr(yz,'dimensions') <- c(length(attr(z,'longitude')),
                                    length(attr(z,'latitude')),
                                    length(index(yz)))
-        eval(parse(text=paste("yz -> attr(y,'appendix.",i,"')",sep="")))
+        if (verbose) print(paste0("yz -> attr(y,'appendix.",i,"')"))
+        eval(parse(text=paste0("yz -> attr(y,'appendix.",i,"')")))
     }
     n.app -> attr(y,'n.apps')
     attr(y,'history') <- history.stamp(x)
@@ -1064,7 +1070,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     # REB 11.04.2014: is can be a list to select region or according to other criterion
     if ( inherits(is,'list') & inherits(x,'station') ) {
         if (verbose) {
-          print('spatial selection')
+          print('spatial selection: station & is=list')
           print(is)
         }
         nms <- names(is)
@@ -1117,19 +1123,25 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ## Need to make sure both it and is are same type: here integers for index rather than logical
         ## otherwise the subindexing results in an empty object
     } else if ( inherits(is,'list') & inherits(x,'field') ) {
+      if (verbose) print('spatial selection: field & is=list')
       ## KMP 2016-10-20 Can we subset across the dateline and greenwich now?
       y <- default.subregion(x,is=is,verbose=verbose)
       if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
         x <- g2dl.field(x,greenwich=TRUE) }
       is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
     } else if (is.null(is)) {
+      if (verbose) print('spatial selection: is=NULL')
       is <- rep(TRUE,d[2]) 
     } else if (is.numeric(is)) {
+      if (verbose) print('spatial selection: is=numeric')
       iss <- rep(FALSE,d[2]); iss[is] <- TRUE
       is <- iss
+    } else {
+      if (verbose) print('spatial selection: otherwise')
+      is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
     }
     
-    if (verbose) print(paste('number of points:',sum(ii),sum(is)))
+    if (verbose) print(paste('number of points: ',sum(ii),sum(is),'ii=',class(ii),'is=',class(is)))
     y <- x[which(ii),which(is)] 
     
     class(x) <- cls; class(y) <- cls

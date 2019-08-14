@@ -39,5 +39,6 @@ vis(Oslo)
 
 }
 \seealso{
-wheel cumugram visprob conf graph diagram scatter plot map
+vis.trends wheel cumugram visprob conf graph
+diagram scatter plot map
 }
