@@ -647,7 +647,7 @@ as.field.eof <- function(x,...,iapp=NULL,anomaly=FALSE,verbose=FALSE) {
   } else if (!inherits(x,'comb')) {
     y <- eof2field(x,verbose=verbose,...)
   } else {
-    y <- as.eof(x,iapp,verbose=verbose)
+    y <- as.eof(x,iapp=iapp,verbose=verbose)
     y <- eof2field(y,verbose=verbose,anomaly=anomaly,...)
   }
   return(y)
