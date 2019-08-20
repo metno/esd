@@ -1436,7 +1436,7 @@ as.pattern.corfield <- function(x,...,verbose=FALSE) {
   invisible(y)
 }
 
-as.eof <- function(x,...) UseMethod("as.eof")
+as.eof <- function(x,...,iapp=NULL) UseMethod("as.eof")
 
 as.eof.zoo <- function(x,...) {
   class(x) <- c('eof','zoo')
@@ -1456,7 +1456,8 @@ as.eof.eof <-function(x,...,iapp=NULL) {
 }
   
 as.eof.comb <- function(x,...,iapp=NULL) {
-  #print("as.eof.comb")
+  if (verbose) print("as.eof.comb")
+  #if (verbose) print(paste("iapp", iapp))
   stopifnot(inherits(x,'comb'))
 
   # if x is a 'field'
@@ -1464,7 +1465,8 @@ as.eof.comb <- function(x,...,iapp=NULL) {
 
   # assume x from now on is an 'eof'
   if (!is.null(iapp)) {
-    y <- as.eof.appendix(x,iapp=iapp)
+    #if (verbose) print(paste("in iapp", iapp))
+    y <- as.eof.appendix(x,...,iapp=iapp)
     return(y)
   }
   class(x) <- class(x)[-grep('comb',class(x))]
@@ -1483,7 +1485,7 @@ as.eof.field <- function(x,...,iapp=NULL) {
   return(y)
 }
 
-as.eof.appendix <- function(x,...,iapp=1,verbose=FALSE) {
+as.eof.appendix <- function(x,...,iapp=iapp) {
   if (verbose) print("as.eof.appendix")
   clim <- eval(parse(text=paste("attr(attr(x,'appendix.",iapp,"'),'climatology')",sep="")))
   aveg <- eval(parse(text=paste("attr(attr(x,'appendix.",iapp,"'),'mean')",sep="")))
