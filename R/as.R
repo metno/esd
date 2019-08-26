@@ -1455,7 +1455,7 @@ as.eof.eof <-function(x,...,iapp=NULL) {
   return(x)
 }
   
-as.eof.comb <- function(x,...,iapp=NULL) {
+as.eof.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
   if (verbose) print("as.eof.comb")
   #if (verbose) print(paste("iapp", iapp))
   stopifnot(inherits(x,'comb'))
@@ -1485,7 +1485,7 @@ as.eof.field <- function(x,...,iapp=NULL) {
   return(y)
 }
 
-as.eof.appendix <- function(x,...,iapp=iapp) {
+as.eof.appendix <- function(x,...,iapp=iapp ,verbose=FALSE) {
   if (verbose) print("as.eof.appendix")
   clim <- eval(parse(text=paste("attr(attr(x,'appendix.",iapp,"'),'climatology')",sep="")))
   aveg <- eval(parse(text=paste("attr(attr(x,'appendix.",iapp,"'),'mean')",sep="")))
