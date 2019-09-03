@@ -87,7 +87,9 @@ yl <- filter(warmarea^4-81*scl,rep(1,7)/7)
 caldat <- data.frame(ntc=window(ntc,start=1900,end=1960),
                       nino3.4=window(nino3.4,start=1900,end=1960),
                       warmarea=window(y,start=1900,end=1960))
-predat <- data.frame(nino3.4=nino3.4,warmarea=y)
+i1 <- is.element(year(nino3.4),year(y))
+i2 <- is.element(year(y),year(nino3.4))
+predat <- data.frame(nino3.4=nino3.4[i1],warmarea=y[i2])
 model <- glm(ntc ~ warmarea + nino3.4 + I(nino3.4^2) +
              I(nino3.4^3) + I(nino3.4^4),
              data=caldat,family='poisson')
@@ -96,7 +98,7 @@ cntc <- zoo(exp(predict(model)),order.by=1900:1960)
 xntc <- zoo(exp(predict(model,newdata=predat)),order.by=index(nino3.4))
 
 par(bty='n',xpd=TRUE,las=3)
-plot(ntc,lty=2,
+plot(ntc,lty=2,xlim=range(index(y)),
      ylab=expression(paste(N[TC],' per season')),xlab="",
      pch=15,cex=1.2,type='b',
      main="Number of tropical cyclones in the North Atlantic",
