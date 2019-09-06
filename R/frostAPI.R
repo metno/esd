@@ -141,6 +141,7 @@ frostAPI <- function(param='mean(air_temperature P1D)',stid=18700,
   param <- gsub('(','%28',param,fixed=TRUE) 
   param <- gsub(')','%29',param,fixed=TRUE) 
   param <- gsub(' ','%20',param)
+  #URLencode()
   
   if (is.null(it)) it <- paste0('1960-01-01/',format(Sys.time()-24*3600,"%Y-%m-%d"))
   it <- sub('/','%2F',it)
