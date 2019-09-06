@@ -38,6 +38,7 @@ station.thredds <- function(param='t2m',is = NULL, stid = NULL,
                             loc = NULL, lon = NULL, lat = NULL, it = NULL, alt = NULL, 
                             cntr = NULL, start.year.before = NULL, end.year.after = NULL, 
                             nmin = NULL, verbose = FALSE, onebyone = FALSE, ...) {
+  if (verbose) t0 <- Sys.time()
   url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/',
                 param,'.metnod.nc')
   if (verbose) print(url)
@@ -46,5 +47,7 @@ station.thredds <- function(param='t2m',is = NULL, stid = NULL,
                         start.year.before = start.year.before, 
                         end.year.after = end.year.after,
                         nmin = nmin, verbose = verbose, onebyone = onebyone, ...)
+  if (verbose) print(paste('Time taken for reading the data was', 
+                           round(Sys.time() - t0),'s'))
   invisible(y)
 }
