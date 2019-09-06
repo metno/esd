@@ -39,8 +39,11 @@ station.thredds <- function(param='t2m',is = NULL, stid = NULL,
                             cntr = NULL, start.year.before = NULL, end.year.after = NULL, 
                             nmin = NULL, verbose = FALSE, onebyone = FALSE, ...) {
   if (verbose) t0 <- Sys.time()
+  ## Fudge - the slp file does not work - pp is the same as slp.
+  if (param=='slp') param <- 'pp'
   url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/',
                 param,'.metnod.nc')
+  if (param=='pp') param <- 'slp'
   if (verbose) print(url)
   y <- retrieve.station(url,param=param,is=is,stid=stid,loc=loc,
                         lon=lon,lat=lat,it=it,alt=alt,cntr=cntr,
