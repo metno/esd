@@ -51,7 +51,7 @@ as.eof.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
 
   # assume x from now on is an 'eof'
   if (!is.null(iapp)) {
-    y <- as.eof.appendix(x,iapp=iapp)
+    y <- as.eof.appendix(x,...,iapp=iapp)
     return(y)
   }
   class(x) <- class(x)[-grep('comb',class(x))]

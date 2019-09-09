@@ -1180,6 +1180,7 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
     print(start)
     print('count=')
     print(count)
+    #print(ncid)
   }
   
   x <- ncvar_get(ncid,param,start=start,count=count)

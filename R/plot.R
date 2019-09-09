@@ -1502,6 +1502,7 @@ plot.ds.pca <- function(x,...,ip=1,
   map(pp,ip=ip,new=FALSE,
       colbar=colbar2,verbose=verbose,
       main="")#paste("EOF Pattern # ",ip,sep=""))
+  par(cex=1)  ## REB 2019-08-06
   title(paste("EOF Pattern #",ip,sep=""))
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
@@ -1564,6 +1565,7 @@ plot.ds.eof <- function(x,...,ip=1,
       colbar=colbar2,verbose=verbose,
       main=paste("(b) Predictor EOF pattern # ",ip,sep=""),type=type2)
   #title(paste("EOF Pattern # ",ip,sep=""))
+  par(cex=1)  ## REB 2019-08-06
   if (!is.null(attr(y,'evaluation'))) {
     par(fig=c(0,0.5,0,0.48),mar=c(3,4.5,3,1),new=TRUE)
     pc.obs <- attr(y,'evaluation')[,1+2*(ip-1)]
