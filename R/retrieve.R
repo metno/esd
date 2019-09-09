@@ -548,7 +548,7 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
       }   
     }
   }
-
+  
   ## Create a zoo object z
   if (one.cell) {
     z <- zoo(x=val,order.by=time$vdate)  

@@ -72,8 +72,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       t1 <- year(attr(x,'time'))[1]
       t2 <- year(attr(x,'time'))[2]
     } else if (sum(is.element(c('month','season'),timescale))>0) {
-      t1 <- paste(year(attr(x,'time'))[1],month(attr(x,'time'))[1])
-      t2 <- paste(year(attr(x,'time'))[2],month(attr(x,'time'))[2])
+      t1 <- paste0(year(attr(x,'time'))[1],"~",month(attr(x,'time'))[1])
+      t2 <- paste0(year(attr(x,'time'))[2],"~",month(attr(x,'time'))[2])
     } else {
       t1 <- attr(x,'time')[1]  
       t2 <- attr(x,'time')[2]
@@ -134,7 +134,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub);  print(varlabel)}
   
-  lab <- paste(varlabel,'* phantom(0) - phantom(0)')
+  lab <- as.expression(parse(text=paste(varlabel,'* phantom(0) - phantom(0)')))
   ## text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2, cex=0.85)
   
   ## if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
@@ -157,9 +157,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (inherits(lab,'try-error')) lab <- ''
   #title(main = as.expression(period),line = 3, adj =1)
   #text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
-  
+
   title(sub = lab,line = 0 , adj = 0.5)
-  #browser()
   if (!is.null(colbar)) {
     if (verbose) print('Add colourbar')
     
