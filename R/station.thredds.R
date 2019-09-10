@@ -31,6 +31,8 @@
 #' ## Get the daily minimum temperature for Oslo-Blindern (station ID 18700)
 #' tmin <- station.thredds(param='tmax',stid=18700)
 #' 
+#' meta <- meta.thredds(param='precip')
+#' precip <- station.thredds(meta[1,])
 #' @export
 #' 
 
