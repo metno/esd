@@ -40,10 +40,16 @@ station.thredds <- function(param='t2m',is = NULL, stid = NULL,
                             nmin = NULL, verbose = FALSE, onebyone = FALSE, ...) {
   if (verbose) t0 <- Sys.time()
   ## Fudge - the slp file does not work - pp is the same as slp.
+  if (is.character(param)) { 
   if (param=='slp') param <- 'pp'
   url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/',
                 param,'.metnod.nc')
   if (param=='pp') param <- 'slp'
+  } else if (inherits(param,'stationsummary')) {
+    stid <- param$station.id
+    url <- attr(param,'url')
+    param <- attr(param,'variable')
+  }
   if (verbose) print(url)
   y <- retrieve.station(url,param=param,is=is,stid=stid,loc=loc,
                         lon=lon,lat=lat,it=it,alt=alt,cntr=cntr,
@@ -52,5 +58,19 @@ station.thredds <- function(param='t2m',is = NULL, stid = NULL,
                         nmin = nmin, verbose = verbose, onebyone = onebyone, ...)
   if (verbose) print(paste('Time taken for reading the data was', 
                            round(Sys.time() - t0),'s'))
+  attr(y,'url') <- url
   invisible(y)
+}
+
+## Get the metadata
+meta.thredds <- function(param='t2m',verbose=FALSE) {
+  if (param=='slp') param <- 'pp'
+  url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/',
+                param,'.metnod.nc')
+  if (param=='pp') param <- 'slp'
+  if (verbose) print(url)
+  Y <- retrieve.stationsummary(url)
+  attr(Y,'url') <- url
+  attr(Y,'variable') <- param
+  invisible(Y)
 }
