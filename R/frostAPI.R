@@ -35,12 +35,13 @@ stripblanks <- function(x) {
 #' @param fields fields to be extracted
 #' @param url url of data
 #'
+#' @importFrom utils URLencode View
+#'
 #' @export
 metafrostAPI <- function(keyfile='~/.FrostAPI.key',verbose=FALSE,
                          fields='id,name,masl,county,municipality,wmoid,geometry,type',
                          url='frost.met.no/sources/v0.jsonld?country=NO') {
   
-  require(jsonlite)
   t0 <- Sys.time()
   
   if (file.exists(keyfile)) {
@@ -95,7 +96,11 @@ metafrostAPI <- function(keyfile='~/.FrostAPI.key',verbose=FALSE,
   # if (verbose) {par(bty='n');plot(t(koords),xlab='',ylab=''); grid()}
   # if (verbose) View(cbind(locs,stid,fylke,kommune,alt,t(koords)))
   
-  xs <- try(fromJSON(URLencode(url),flatten=TRUE))
+  if(requireNamespace("PCICt",quietly=TRUE)) {
+    xs <- try(jsonlite::fromJSON(URLencode(url),flatten=TRUE))
+  } else {
+    stop("Package \"jsonlite\" needed to retrieve data fron Frost. Please install it.")
+  }
   if (class(xs) != 'try-error') {
     print("Data retrieved from frost.met.no!")
     data <- xs$data

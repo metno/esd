@@ -165,5 +165,4 @@ test.aggregate.size <- function(n=62, m=78, verbose=TRUE) {
     par(mfcol=c(3,1))
     image(x)
     test.results <- aggregateSize(x,x0=0,plot=TRUE,verbose=verbose)
-    
-
+}

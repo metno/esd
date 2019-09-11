@@ -9,7 +9,7 @@
 #' \code{as.pca} is an S3 method and will redirect to a fitting function depending on the output. 
 #' The way in which the transformation is performed depends on the type of input data.
 #' 
-#' @seealso PCA as.pca DS
+#' @seealso PCA
 #' 
 #' @param x the input object
 #' @param ... other arguments
@@ -23,7 +23,7 @@ as.pca <- function(x,verbose=FALSE,...) UseMethod("as.pca")
 #' 
 #' Coerce a \code{ds} \code{pca} object into a \code{pca} object by replacing the class.
 #'
-#' @seealso 
+#' @seealso PCA as.PCA DS
 #' 
 #' @param x the input object
 #' @param verbose a boolean; if TRUE print information about progress

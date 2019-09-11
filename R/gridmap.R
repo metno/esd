@@ -39,7 +39,7 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
     if (verbose) print('Use etopo5 elevation data')
     data(etopo5, envir = environment())
     etopo5 <- subset(etopo5,is=list(lon=range(lon(Y))+c(-1,1),
-                           lat=range(lat(Y))+c(-1,1)))
+                                    lat=range(lat(Y))+c(-1,1)))
     
     ## Mask the sea: elevations below 1m below sea level is masked.
     etopo5[etopo5<=-1] <- NA
@@ -70,11 +70,12 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
     attr(W,'longitude') <- w$x
     attr(W,'latitude') <- w$y
     class(W) <- class(etopo5)
-  
+    browser()
     ## Make the graphics
     if(plot) {
       if (verbose) print("make the map")
-      map(W,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,project=project,new=new)
+      map(W,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+          project=project,new=new,verbose=verbose)
     }
     invisible(W)
   }

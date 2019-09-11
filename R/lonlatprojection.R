@@ -57,11 +57,19 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       variable <- "T[2*m]"
   }
   if (verbose) print(paste(variable,unit,isprecip,' -> varlabel'))
-  if(!is.null(variable)) varlabel=try(eval(parse(text=paste('expression(',
-                                                        gsub(" ","~",variable)," *~(",gsub(" ","~",unit),"))",sep="")))) else varlabel <- NULL
-  if (inherits(varlabel,'try-error')) varlabel <- ''
-  if (!is.null(attr(x,'source'))) sub <- attr(x,'source') else
+  if(!is.null(variable)) {
+    varlabel <- try(eval(parse(
+      text=paste('expression(',gsub(" ","~",variable)," *~(",gsub(" ",
+                 "~",unit),"))",sep=""))))
+  } else {
+    varlabel <- NULL
+  }
+  if (inherits(varlabel,'try-error')) varlabel <- NULL
+  if (!is.null(attr(x,'source'))) {
+    sub <- attr(x,'source')
+  } else {
     sub <- NULL
+  }
   if (sum(is.element(type,'fill'))==0) colbar <- NULL
   
   if (verbose) print('time')
@@ -113,6 +121,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   }
   
   if (verbose) print('Set up the figure')
+  
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
        xlim=xlim,ylim=ylim,main=main, # to sumerimpose.
        xaxt="n",yaxt="n") # AM 17.06.2015
@@ -134,14 +143,16 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub);  print(varlabel)}
   
-  lab <- as.expression(parse(text=paste(varlabel,'* phantom(0) - phantom(0)')))
+  if(!is.null(varlabel)) lab <- paste(varlabel,'*') else lab <- ''
+  lab <- as.expression(parse(text=paste(lab,'phantom(0) - phantom(0)')))
   ## text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2, cex=0.85)
   
   ## if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
   if ((!is.null(sub)) & (length(sub)>0)) {
     sub <- paste('pattern derived from',sub)
     lab <- try(parse(text=paste(lab,'*',as.expression(paste('~ ',
-                                                        paste(unlist(strsplit(sub,split=' ')),collapse = ' *~ '),sep='')))))
+                                paste(unlist(strsplit(sub,split=' ')),
+				collapse = ' *~ '), sep='')))))
     if (inherits(lab,'try-error')) lab <- ''
   }  #title(main = as.expression(sub),line = 3, adj =0.25)
   

@@ -24,5 +24,5 @@ and eigenvalues that represent the relative strength of each spatial pattern.
 The way in which the transformation is performed depends on the type of input data.
 }
 \seealso{
-PCA as.pca DS
+PCA
 }
