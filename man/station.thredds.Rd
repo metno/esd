@@ -2,6 +2,7 @@
 % Please edit documentation in R/station.thredds.R
 \name{station.thredds}
 \alias{station.thredds}
+\alias{meta.thredds}
 \title{Read daily station data of the Norwegian Meteorological Institute from thredds netCDF
 using OpenDAP}
 \usage{
@@ -45,13 +46,18 @@ using OpenDAP}
 A station object.
 }
 \description{
-This is a wrapper that uses retrieve.station combined with information about the
-files stored on Thredds.
-The analysis can also be applied to either EOFs or fields.
+\code{station.thredds} is a wrapper that uses retrieve.station combined with information about the
+files stored on Thredds. The analysis can also be applied to either EOFs or fields.
+}
+\details{
+\code{meta.thredds} retrieves meta data from Thredds.
 }
 \examples{
 ## Get the daily minimum temperature for Oslo-Blindern (station ID 18700)
 tmin <- station.thredds(param='tmax',stid=18700)
+
+meta <- meta.thredds(param='precip')
+precip <- station.thredds(meta[1,])
 
 }
 \seealso{
