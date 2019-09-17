@@ -37,7 +37,7 @@ matchdate.default <- function(x,it,verbose=FALSE) {
 
   t <- index(x)
   t0 <- t
-  ## KMP 2019-09-17: the time scale next to last in the class, not always the second element
+  ## KMP 2019-09-17: the time scale is next to last in the class, not always the second element
   if (inherits(it,c('annual','month','seasonal','day'))) cls[length(cls)-1] <- class(it)[length(class(it))-1]
  
   if (inherits(it,'character')) {
