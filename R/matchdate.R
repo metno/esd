@@ -37,7 +37,8 @@ matchdate.default <- function(x,it,verbose=FALSE) {
 
   t <- index(x)
   t0 <- t
-  if (inherits(it,c('annual','month','seasonal','day'))) cls[2] <- class(it)[2]
+  ## KMP 2019-09-17: the time scale next to last in the class, not always the second element
+  if (inherits(it,c('annual','month','seasonal','day'))) cls[length(cls)-1] <- class(it)[length(class(it))-1]
  
   if (inherits(it,'character')) {
     if (verbose) print('Convert years and incomplete dates to %YYYY-%MM-%DD date format')

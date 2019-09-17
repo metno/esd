@@ -3,7 +3,7 @@
 #' @param keyfile location of API key
 #'
 #' @export test.API
-test.API <- function(keyfile='~/.FrostAPI.key') {
+test.API <- function(keyfile='~/.FrostAPI.key',browser='firefox',verbose=FALSE) {
   ## This test function works
   if (file.exists(keyfile)) {
     if (verbose) print(paste('Read client ID from',keyfile))
@@ -96,10 +96,10 @@ metafrostAPI <- function(keyfile='~/.FrostAPI.key',verbose=FALSE,
   # if (verbose) {par(bty='n');plot(t(koords),xlab='',ylab=''); grid()}
   # if (verbose) View(cbind(locs,stid,fylke,kommune,alt,t(koords)))
   
-  if(requireNamespace("PCICt",quietly=TRUE)) {
+  if(requireNamespace("jsonlite",quietly=TRUE)) {
     xs <- try(jsonlite::fromJSON(URLencode(url),flatten=TRUE))
   } else {
-    stop("Package \"jsonlite\" needed to retrieve data fron Frost. Please install it.")
+    stop("Package \"jsonlite\" needed to retrieve data from Frost. Please install it.")
   }
   if (class(xs) != 'try-error') {
     print("Data retrieved from frost.met.no!")

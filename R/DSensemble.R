@@ -1745,6 +1745,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
 
   if (verbose) print('DSensemble.pca')
   cls <- class(y)
+
   # This function is for downscaling PCA to represent a group of stations
   if (!is.na(attr(y,'longitude'))[1] & (any(lon>0) & any(lon<0)) & rel.cord)
     lon <- round( range(attr(y,'longitude'),na.rm=TRUE) + lon )
@@ -1838,7 +1839,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   if (inherits(T2M,"eof")) T2M <- as.field(T2M)
   rm("predictor","t2m"); gc(reset=TRUE)
   if (verbose) {print('Check T2M:'); print(class(T2M)); print(index(T2M))}
-  
+
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
   ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
@@ -1926,7 +1927,6 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     if (verbose) print('Estimate commne EOFs - combine fields')	
     if (is.null(src(T2M))) attr(T2M,'source') <- 'reanalysis'
     T2MGCM <- combine(T2M,GCM)
-    
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM,verbose=verbose))
     
