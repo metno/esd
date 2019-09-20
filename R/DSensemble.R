@@ -1845,7 +1845,12 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
-  if (is.null(select)) select <- 1:N else N <- length(select)
+  if(!is.null(select)) {
+    select <- select[select<=N]
+    N <- length(select)
+  } else {
+    select <- 1:N
+  }
   if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
 
   d.y <- dim(y)
