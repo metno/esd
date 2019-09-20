@@ -1514,7 +1514,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
            pos=4,cex=0.7,col='grey')
       par(new=TRUE,fig=c(0.5,0.97,0.1,0.5),yaxt='n',xpd=TRUE,cex.axis=0.7,col.axis='grey')
       plot((cal$x - mean(cal$x))/sd(cal$x),type='l',lwd=2,ylab='',xlab='',col=rgb(0.6,0.3,0))
-      axis(1,col='grey')
+      axis(1,col='grey')X
       lines((cal$y - mean(cal$y))/sd(cal$y),type='l',lwd=2,col=rgb(0,0.3,0.6))
       #dev.copy2eps(file='DSensemble.mu.worstcase.cal.eps')
     }
@@ -1579,7 +1579,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
     class(X) <- c("dsensemble","zoo")
     save(file="DSensemble.rda",X)
     if (verbose) print("--- end of iteration")
-    if (n>1) eval(parse(text=paste('results$pca.',is,' <- X',sep='')))
+    if (n>1) eval(parse(text=paste('results$pca.',is,' <- X',sep='')))X
   }
   if (n>1) X <- results
   if (verbose) print(names(X))
@@ -1696,7 +1696,12 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
-  if (is.null(select)) select <- 1:N else N <- length(select)
+  if (!is.null(select)) {
+    select <- select[select<=N]
+    N <- length(select)
+  } else {
+    select <- 1:N
+  }
   if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
 
   d.y <- dim(y)
