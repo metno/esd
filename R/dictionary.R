@@ -17,67 +17,71 @@ ele2param(ele="601",src="GHCNM")
 }
 
 esd2ele <- function(param = NULL) {
-  if (!is.null(param)) ele <- switch(tolower(param),
-                                     't2m' = "101",
-                                     'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
-                                     'rr' = "601",
-                                     'slp' = "401",
-                                     'pon' = "402",
-                                     'pom' = "401",
-                                     'pox' = "403",
-                                     'prn' = "402",
-                                     'prm' = "401",
-                                     'prx' = "403",
-                                     'pp'  = "401",
-                                     'cc' = "801",
-                                     't2' = "101",
-                                     'precip' = "601",
-                                     '101' = "t2m",
-                                     '401' = "slp",
-                                     '402' = "pon",
-				                             '403' = "pox",
-				                             '601' = "precip",
-                                     '801' = "cc",
-                                     'tmin'="121",'tn'="121",                             #REB 2016-07-25                 
-                                     'tmax'="111",'tx'="111",                             #REB 2016-07-25
-                                     '121' ="tmin",
-                                     '111' = "tmax",
-                                     '901'  = "sd",
-                                     'sd' = '901',
-				                             '901' = 'sd',
-				                             'dd' = '502',
-                                     '502' = 'dd',
-                                     'fg' = '501', # Wind speed
-                                     '501' = 'fg',
-                                     'fx' = '503',
-                                     '503' = 'fx',
-                                     '504' = 'dd06',
-				                             '505' = 'dd12',
-				                             '506' = 'dd18',
-				                             'ffm' = '501',
-				                             'ffx' = '503',
-				                             'dd06' = '504',
-				                             'dd12' = '505',
-				                             'dd18' = '506',
-				                             '201' = 'hu',
-                                     'hu' = '201',
-                                     '301' = 'ss',
-                                     'ss' = '301',
-                                     '999'='sf',
-                                     '122'='tl',
-                                     '123'='tld',
-                                     'tl'='122',
-                                     'tld'='123',
-                                     'dsc'='701',
-                                     '701'='dsc',
-                                     'th'='112',
-                                     '112'='th',
-                                     '113'='thd',
-                                     'thd'='113',
-                                     '602'='rx',
-                                     'rx'='602')
- else ele <- 'NA'
-return(ele)
+  if (!is.null(param)) {
+    ele <- switch(tolower(param),
+      't2m' = "101",
+      'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
+      'rr' = "601",
+      'slp' = "401",
+      'pon' = "402",
+      'pom' = "401",
+      'pox' = "403",
+      'prn' = "402",
+      'prm' = "401",
+      'prx' = "403",
+      'pp'  = "401",
+      'cc' = "801",
+      't2' = "101",
+      'precip' = "601",
+      '101' = "t2m",
+      '401' = "slp",
+      '402' = "pon",
+      '403' = "pox",
+      '601' = "precip",
+      '801' = "cc",
+      'tmin'="121",'tn'="121",                             #REB 2016-07-25                 
+      'tmax'="111",'tx'="111",                             #REB 2016-07-25
+      '121' ="tmin",
+      '111' = "tmax",
+      '901'  = "sd",
+      'sd' = '901',
+      '901' = 'sd',
+      'dd' = '502',
+      '502' = 'dd',
+      'fg' = '501', # Wind speed
+      '501' = 'fg',
+      'fx' = '503',
+      '503' = 'fx',
+      '504' = 'dd06',
+      '505' = 'dd12',
+      '506' = 'dd18',
+      'ffm' = '501',
+      'ffx' = '503',
+      'dd06' = '504',
+      'dd12' = '505',
+      'dd18' = '506',
+      '201' = 'hu',
+      'hu' = '201',
+      '301' = 'ss',
+      'ss' = '301',
+      '999'='sf',
+      '122'='tl',
+      '123'='tld',
+      'tl'='122',
+      'tld'='123',
+      'dsc'='701',
+      '701'='dsc',
+      'th'='112',
+      '112'='th',
+      '113'='thd',
+      'thd'='113',
+      '602'='rx',
+      'rx'='602'
+    )
+  } else {
+    ele <- 'NA'
+  }
+  return(ele)
 }
 
 param2ele <- function(param = NULL , src = NULL , verbose = TRUE) {
@@ -114,6 +118,7 @@ ele2param <- function(ele = NULL , src = NULL) {
   x <- merge(x,ghcnm.ele(),all=TRUE)
   x <- merge(x,ghcnd.ele(),all=TRUE)
   x <- merge(x,metno.ele(),all=TRUE)
+  x <- merge(x,metno.frost.ele(),all=TRUE)
  
   if (length(src)>0) x <- subset(x, x[,6] == src)
   if (length(ele)>0) x <- subset(x, x[,1] == ele)
@@ -250,6 +255,23 @@ metno.ele <- function() { ## must be updated - AM 2014-02-21
       y <- data.frame(element= x$Elem_codes, longname = x$NAME , scale_factor = rep(1,dim(x)[1]) , unit = x$UNIT , param = x$Elem_codes , source = "METNO")
     }
   return(y)
+}
+metno.frost.ele <- function() {
+  # TODO: wind direction is here so we can get DD06, DD12 and DD18 and perform an average.. how?
+  x <- rbind(
+    c("601" , "Precipitation"           , "1"	  		, "mm"	      , "sum(precipitation_amount *)"),
+    c("401" , "Sea level pressure"	    , "1"	  		, "hPa"	      , "mean(surface_air_pressure *)"),
+    c("402" , "Sea level pressure"		 	, "1"	  		, "hPa"	      , "min(surface_air_pressure *)"),
+    c("403" , "Sea level pressure"		 	, "1"	  		, "hPa"	      , "max(surface_air_pressure *)"),
+    c("901" , "Snow depth"			        , "1" 	    , "cm" 	      , "surface_snow_thickness"),
+    c("101" , "Mean temperature"	      , "1" 		  , "degree*C"  , "mean(air_temperature *)"),
+    c("111" , "Maximum temperature" 	 	, "1"   		, "degree*C"	, "max(air_temperature *)"),
+    c("121" , "Minimum temperature" 	 	, "1"	  		, "degree*C" 	, "min(air_temperature *)"),
+    c("501" , "Wind speed" 		          , "1"   		, "m/s" 	    , "mean(wind_speed *)"),
+    c("502" , "Wind direction"          , "1"   		, "degrees" 	, "wind_from_direction"),
+    c("503" , "Wind Gust" 		          , "1"   		, "m/s" 	    , "max(wind_speed_of_gust *)")
+  )
+  y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO.FROST" , stringsAsFactors = FALSE)
 }
 
 ## KMP 2018-11-08: This function doesn't work. Element.Name is not defined and it contains an absolute path. 
