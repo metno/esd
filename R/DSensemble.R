@@ -1579,7 +1579,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
     class(X) <- c("dsensemble","zoo")
     save(file="DSensemble.rda",X)
     if (verbose) print("--- end of iteration")
-    if (n>1) eval(parse(text=paste('results$pca.',is,' <- X',sep='')))X
+    if (n>1) eval(parse(text=paste('results$pca.',is,' <- X',sep='')))
   }
   if (n>1) X <- results
   if (verbose) print(names(X))
