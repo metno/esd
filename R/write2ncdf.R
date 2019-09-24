@@ -162,7 +162,7 @@ write2ncdf4.field <- function(x,file='field.nc',prec='short',scale=NULL,offset=N
 # short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
 
 write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
-                                scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,verbose=FALSE) {
+                                scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,nmin=30,verbose=FALSE) {
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- attr(x,'unit')
@@ -347,7 +347,7 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
   }
   if (verbose) print('Summary statistics computed')
   ## Only do summary statistics for stations with more than 30 years
-  insufficient <- apply(coredata(x),2,nv) < 30*365
+  insufficient <- apply(coredata(x),2,nv) < nmin*365
   if (verbose) print(nv)
   
   y <- coredata(x)

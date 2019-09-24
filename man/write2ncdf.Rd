@@ -29,7 +29,7 @@ write2ncdf4.pca(x,file='pca.nc',prec='short',scale=10,offset=NULL,
 write2ncdf4.dsensemble(x,file='dsensemble.nc',prec='short',scale=10,offset=NULL,
                        torg="1970-01-01",missval=-999) 
 write2ncdf4.station(x,file='station.nc',prec='short',offset=0, missval=-999,
-                    scale=0.1,torg='1899-12-31',verbose=FALSE) 
+                    scale=0.1,torg='1899-12-31',nmin=30,verbose=FALSE) 
 }
 
 \arguments{
@@ -42,6 +42,7 @@ write2ncdf4.station(x,file='station.nc',prec='short',offset=0, missval=-999,
   \item{scale}{Sets the atttribute 'scale_factor' which is used to scale
   (multiply) the values stored (to save space may be represented as 'short').}
   \item{torg}{Time origin}
+  \item{nmin}{Minimum number of years for saving valid summary statistics}
   \item{verbose}{TRUE - clutter the screen.}
 }
 \value{A "zoo" "field" object with additional attributes used for further processing.}
