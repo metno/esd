@@ -175,7 +175,11 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' Method to save station data as netCDF, making sure to include the data
 #' structure and meta-data (attributes). The code tries to follow the netCDf
 #' 'CF' convention. The method is built on the \code{ncdf4} package.
-#' 
+#'
+#' To save space, the values are saved as short (16-bit signed integer that
+#' can hold values between -32768 and 32767).
+#' (see NC_SHORT in \url{https://www.unidata.ucar.edu/software/netcdf/docs/data_type.html}).
+#'
 #' @seealso write2ncdf4
 #' 
 #' @param x data object
@@ -201,7 +205,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' 
 #' @export write2ncdf4.station
 write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
-                                scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,verbose=FALSE) {
+                                scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,nmin=30,verbose=FALSE) {
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- attr(x,'unit')
@@ -386,7 +390,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   }
   if (verbose) print('Summary statistics computed')
   ## Only do summary statistics for stations with more than 30 years
-  insufficient <- apply(coredata(x),2,nv) < 30*365
+  insufficient <- apply(coredata(x),2,nv) < nmin*365
   if (verbose) print(nv)
   
   y <- coredata(x)
