@@ -7,9 +7,10 @@
 ## station.metno(ok) ; station.nordklim(ok) ; station.nacd(ok) ; station.ecad(ok) ; station.narp(in progress) ; station.ghcnm(ok) ; station.ghcnd(almost done - checking for t2m)  
 
 ## ecad (updated) , 
+library(data.table)
 
 ## This function is used to check wether there are errors in the programming !
-test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),param="precip",src=c("GHCND","GHCNM","NORDKLIM","NACD","METNOM","METNOD","ECAD"),verbose=FALSE) {
+test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),param="precip",src=c("GHCND","GHCNM","NORDKLIM","NACD","METNOM","METNOD","METNO.FROST","ECAD"),verbose=FALSE) {
   for (i in 1:length(src)) {
     y <- station(stid=stid,alt=alt,lat=lat,lon=lon,param=param,src=src[i],nmin=100,verbose=verbose)
     print(summary(y))
@@ -67,9 +68,9 @@ station.metnod <- function(...) {
   invisible(y)
 }
 
-station.metnof <- function(...) {
+station.metno.frost <- function(...) {
   ## 
-  y <- station(src="metnof",...)
+  y <- station(src="metno.frost",...)
   invisible(y)
 }
 
@@ -109,6 +110,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
                             path.ghcnd=NULL,url.ghcnd=NULL,
                             path.metnom=NULL,url.metnom=NULL,
                             path.metnod=NULL,url.metnod=NULL,
+                            path.metno.frost=NULL,url.metno.frost=NULL,
                             user='external',save2file=TRUE) { # user='metno'
   ##
   ## check wether x is a 'location' or a 'stationmeta' object
@@ -211,7 +213,7 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
       
       if (param[i] == 'dd') {
         param1 <- esd2ele(param[i])
-      } else { 
+      } else {
         param1 <- NULL
       }
       if (is.null(param1)) {
@@ -252,6 +254,10 @@ station.default <- function(loc=NULL, param='t2m',src = NULL, path=NULL, qual=NU
         x <- NULL
       }
       ##if (!is.null(x)) X <- combine.stations(X,x)
+    } else if (src[i]=="METNO.FROST.DIURNAL") {
+      x <- metno.frost.station(timeresolutions='P1D',...)
+    } else if (src[i]=="METNO.FROST.MONTH") {
+      x <- metno.frost.station(timeresolutions='P1M',...)
     } else if (src[i]=="ECAD") { #AM-29.07.2013 added "|(src[i]=="ECAD")"
       ##
       #if (toupper(param[i])=='TMAX') param[] <- 'tx' #REB 2016-07-26: dirty bug-rectification
@@ -1120,89 +1126,63 @@ station.giss <- function(url) {
   return(t2m)
 }
 
-
-metnof.meta <- function (param="mean(air_temperature P1D)", verbose=FALSE, save2file=TRUE) {
-  ## This downloads a full list of METNO station metadata
-  ## relevant to the specified param, using the data API frost.met.no.
-  ##
-  ## Where there are multiple measuring periods registered for the parameter,
-  ## only the earliest start time and the latest end time are used.
-  ##
-  ## Author: K. Tunheim
-
-  url1 <- paste0(
-    "https://", client_id, "@frost.met.no/",
-    "sources/v0.jsonld",
-    "?elements=", param,
-    "&types=SensorSystem",
-    "&country=Norge",
-    "&fields=id,name,masl,county,municipality,geometry"
-  )
-  url2 <- paste0(
-    "https://", client_id, "@frost.met.no/",
-    "observations/availableTimeSeries/v0.jsonld",
-    "?elements=", param,
-    "&levels=default",
-    "&timeoffsets=default",
-    "&performancecategories=A,B,C",
-    "&exposurecategories=1,2",
-    "&fields=sourceId,elementId,validFrom,validTo"
-  )
-
-  if (verbose) {
-    print(url1)
-    print(url2)
-  }
-
-  xs1 <- jsonlite::fromJSON(URLencode(url1), flatten=T)
-  xs1$data$lon = sapply(xs1$data$geometry.coordinates, function(x) x[1])
-  xs1$data$lat = sapply(xs1$data$geometry.coordinates, function(x) x[2])
-  df1 <- xs1$data[c("id","name","masl","county","municipality","lat","lon")]
-
-  xs2 <- fromJSON(URLencode(url2), flatten=T)
-  df2 <- xs2$data[c("sourceId","validFrom","validTo")]
-  df2$sourceId = substring(df2$sourceId, 1, nchar(df2$sourceId)-2)
-
-  validFrom = aggregate(validFrom ~ sourceId, data=df2, min)
-  validTo = aggregate(validTo ~ sourceId, data=df2, max)
-
-  df = merge(df1, validFrom, by.x="id", by.y="sourceId", all.x = TRUE)
-  df = merge(df, validTo, by.x="id", by.y="sourceId", all.x = TRUE)
-
-  colnames(df) = c("STNR","ST_NAME","AMSL","COUNTY","MUNICIPALITY","LAT","LON","START","END")
-
-  # TODO: this should be stored in files on disk, and updated when needed
-  # if (save2file) {}
-
-  invisible(df)
-}
-
-metnof.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
-                          qual=NULL,start=NULL,end=NULL,param=NULL,verbose=FALSE,
-                          qa='0,1,2,3,4,5',path = NULL,save2file=FALSE) {
+metno.frost.station <- function(stid=NULL, param=NULL, start=NULL, end=NULL,
+                          lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL,
+                          timeresolutions='P1M', levels="default", timeoffsets="default", 
+                          performancecategories="A,B,C", exposurecategories="1,2", qualities='0,1,2,3,4,5',
+                          path=NULL, save2file=FALSE, verbose=FALSE) {
   ## This downloads METNO observational data,
   ## using the data API frost.met.no.
   ##
   ## Author: K. Tunheim
+  
+  ## tut <- metno.frost.station(stid='18700', param='t2m', start='2017-01-01', end='2018-01-01', cntr='Norway', timeresolutions='P1M', verbose=TRUE)
 
   if (verbose) print("http://frost.met.no")
-  if (stid == NULL || param == NULL || start == NULL || end == NULL) stop("stid, param, start and end must be defined")
+  
+  ## TODO 1: if stnr not defined but (lat,lon) is defined, then try to find nearest by looking at the metadata table
+  
+  if (is.null(stid) || is.null(param) || is.null(start) || is.null(end)) stop("stid, param, start and end must be defined")
+  
+  ## TODO 2: lat, lon, alt and cntr are not used in the call, that will also require a lookup in the metadata
+  if (timeresolutions=="P1M") {
+    ## metno.frost.meta.month.rda
+    
+  } else if (timeresolutions=="P1D") {
+    ## metno.frost.meta.diurnal.rda
+  }
 
+  ## TODO? if stid == NULL, actually use station meta to fetch all data for given period, assuming period is not too long?
+
+  ## TODO: get a client_id
+  client_id <- '0763dab1-d398-4a56-ba5d-601d7d352999'
+  
+  getparam1 <- function(x, col) {
+    ele = esd2ele(x)
+    withstar <- ele2param(ele, src="metno.frost")[col]
+    gsub('*', timeresolutions, withstar, fixed=TRUE)
+  }
+  param1 <- getparam1(param, col='param')
+  
   url <- paste0(
-      "https://", client_id, "@frost.met.no/observations/v0.jsonld".
+      "https://", client_id, "@frost.met.no/observations/v0.jsonld",
       "?sources=", paste0('SN',stid),
       "&referencetime=", paste0(start,"/",end),
-      "&elements=", param,
-      "&levels=default"
+      "&timeresolutions=", timeresolutions,
+      "&elements=", param1,
+      "&levels=", levels,
+      "&timeoffsets=", timeoffsets,
+      "&performancecategories=", performancecategories,
+      "&exposurecategories=", exposurecategories,
+      "&qualities=", qualities
   )
-
-  # TODO: filter by lat, lon and alt means checking station meta
+  
+  if (verbose) print(url)
 
   xs <- try(jsonlite::fromJSON(URLencode(url),flatten=TRUE))
-
   if (class(xs) == 'try-error') stop("Data retrieval from frost.met.no was not successful")
-
   data <- xs$data
+
   df <- data.table()
   for (i in 1:length(data$observations)) {
       row <- data$observations[[i]]
@@ -1211,24 +1191,32 @@ metnof.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NU
       df <- data.table::rbindlist(list(df, row), fill=TRUE)
   }
 
-  df2 <- as.data.frame(df)[c("sourceId","referenceTime","elementId","value","unit","timeOffset")]
-  df2$referenceTime <- as.Date(df2$referenceTime)
+  df <- as.data.frame(df)[c("referenceTime","value")]
+  df$referenceTime <- as.Date(df$referenceTime)
+  
+  ## TODO: getting from df2 to METNO.FROST
+  
 
   ## TODO: below is mostly just copy pasta for now
-  METNO <- as.station(METNO,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,
-                      ##frequency=1,calendar='gregorian',
-                      cntr=cntr,loc=loc,src='METNO', url=url,
-                      longname=as.character(ele2param(ele=esd2ele(param),src="METNO")[2]),
-                      unit=as.character(ele2param(ele=esd2ele(param),src="METNO")[4]),
-                      param=param, aspect="original",
-                      reference="Frost API using KlimaDataVareHuset archive (http://frost.met.no)",
-                      info="Frost API using KlimaDataVareHuset archive (http://frost.met.no)")
+  METNO.FROST <- as.station(df,
+    stid=stid,
+    loc=loc,
+    param=param,
+    quality=qualities,
+    cntr=cntr,
+    lon=lon, lat=lat, alt=alt,
+    src='METNO.FROST',
+    url=url,
+    longname=as.character(getparam1(param, col='longname')),
+    unit=as.character(getparam1(param, col='unit')),
+    aspect="original",
+    reference="Frost API (http://frost.met.no)",
+    info="Frost API (http://frost.met.no)"
+  )
 
-  attr(METNO,'history') <- c(match.call(),date())
-  attr(METNO,'history') <- history.stamp(METNO)
-  # TODO: this differentiates between monthly and diurnal data
-  #if (re==14) class(METNO) <- c("station","day","zoo") else if (re==15) class(METNO) <- c("station","month","zoo")
+  attr(METNO.FROST,'history') <- c(match.call(),date())
+  attr(METNO.FROST,'history') <- history.stamp(METNO.FROST)
 
-  invisible(METNO)
+  invisible(METNO.FROST)
 }
 
