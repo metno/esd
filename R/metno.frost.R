@@ -9,6 +9,7 @@
 # source("~/esd/R/dictionary.R")
 library(jsonlite)
 
+# get diurnal timeseries - removed DD, DD06, DD12, DD18, SD
 metno.frost.meta.diurnal <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), save=TRUE,...) {
   X <- metno.frost.meta.default(param=param, timeresolutions="P1D", ...)
 
@@ -29,8 +30,9 @@ metno.frost.meta.diurnal <- function(param=c("t2m","precip","tmin","tmax","slp",
   invisible(X)
 }
 
+# get monthly timeseries - removed DD, DD06, DD12, DD18, SD
 metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), save=TRUE,...) {
-  X <- metnof.meta.default(param=param, timeresolutions="P1M", ...)
+  X <- metno.frost.meta.default(param=param, timeresolutions="P1M", ...)
 
   attr(X, "source") <- "METNO.FROST.MONTH"  
   attr(X, "version") <- NA
@@ -49,7 +51,6 @@ metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","p
   invisible(X)
 }
 
-# removed DD, DD06, DD12, DD18, SD
 metno.frost.meta.default <- function(param=c("t2m"), timeresolutions="P1M", levels="default", timeoffsets="default", 
                         performancecategories="A,B,C", exposurecategories="1,2", verbose = FALSE) {
   # TODO: get a client_id
@@ -57,17 +58,15 @@ metno.frost.meta.default <- function(param=c("t2m"), timeresolutions="P1M", leve
 
   # convert all param to local param names
   getparam1 <- function(x) {
-    withstar <- ele2param(x, src="metnof")$param
+    withstar <- ele2param(x, src="metno.frost")$param
     gsub('*', timeresolutions, withstar, fixed=TRUE)
   }
   ele <- sapply(param, esd2ele)
   param1s <- sapply(ele, getparam1)
   names(param1s) <- ele
   strparam <- paste0(param1s, collapse=",")
-  
-  if (verbose) {
-      print(strparam)
-  }
+
+  if (verbose) print(strparam)
 
   url1 <- paste0(
     "https://", client_id, "@frost.met.no/",
@@ -109,19 +108,24 @@ metno.frost.meta.default <- function(param=c("t2m"), timeresolutions="P1M", leve
     validTo = try(aggregate(validTo ~ sourceId, data=dfparam, max), silent=TRUE)
 
     if (class(validFrom) != "try-error" & length(validFrom) > 0) {
+      validFrom$validFrom <- as.Date(validFrom$validFrom)
+      validTo$validTo <- as.Date(validTo$validTo)
+
       period = merge(validFrom, validTo, by='sourceId', all.x=TRUE)
       stperiod = merge(df1, period, by.x="id", by.y="sourceId")
-      
+
       colnames(stperiod) = c("station_id","location","country","lon","lat","altitude",
                              "municipality","municipalityid","county","countyid","start","end")
-      
+
       stperiod$element <- rep(names(param1s[i]),length(stperiod$station_id))
-      ## TODO: CONVERT AND ADD COLUMNS UTM_ZONE, UTM_NORTH, UTM_EAST
-      ## https://stackoverflow.com/questions/18639967/converting-latitude-and-longitude-points-to-utm
-      stperiod$utm_zone = rep(33,length(stperiod$station_id))
-      stperiod$utm_north = rep(0,length(stperiod$station_id))
-      stperiod$utm_east = rep(0,length(stperiod$station_id))
-      
+
+      # convert to UTM
+      utmZone <- 33
+      XY <- LatLon2UTM(lat=stperiod$lat, lon=stperiod$lon, zone=utmZone)
+      stperiod$utm_east  <- XY[[1]]
+      stperiod$utm_north <- XY[[2]]
+      stperiod$utm_zone  <- rep(utmZone, length(stperiod$station_id))
+
       df <- rbind(stperiod, df, stringsAsFactors=FALSE)
     }
   }
