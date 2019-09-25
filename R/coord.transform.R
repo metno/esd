@@ -1,8 +1,10 @@
 ## Original Javascript by Chuck Taylor
-## Port to C++ by Alex Hajnal (2)
+## Port to C++ by Alex Hajnal
 ## Port from C++ to R by Ketil Tunheim
 ##
-## This script
+## This script converts between LatLon and UTM coordinates.
+## Original code is from the Geographic/UTM Coordinate Converter (1)
+## website. This code has been ported from a C++ version (2).
 ##
 ## 1) http://home.hiwaay.net/~taylorc/toolbox/geography/geoutm.html
 ## 2) http://alephnull.net/software/gis/UTM_WGS84_C_plus_plus.shtml

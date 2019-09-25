@@ -7,7 +7,7 @@
 ## station.metno(ok) ; station.nordklim(ok) ; station.nacd(ok) ; station.ecad(ok) ; station.narp(in progress) ; station.ghcnm(ok) ; station.ghcnd(almost done - checking for t2m)  
 
 ## ecad (updated) , 
-library(data.table)
+library(data.table) # remove this line in final version?
 
 ## This function is used to check wether there are errors in the programming !
 test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),param="precip",src=c("GHCND","GHCNM","NORDKLIM","NACD","METNOM","METNOD","METNO.FROST","ECAD"),verbose=FALSE) {
@@ -1141,14 +1141,17 @@ metno.frost.station <- function(stid=NULL, param=NULL, start=NULL, end=NULL,
   if (verbose) print("http://frost.met.no")
   
   ## TODO 1: if stnr not defined but (lat,lon) is defined, then try to find nearest by looking at the metadata table
-  
-  if (is.null(stid) || is.null(param) || is.null(start) || is.null(end)) stop("stid, param, start and end must be defined")
+
+  if (is.null(stid) || is.null(param) || is.null(start) || is.null(end))
+    stop("stid, param, start and end must be defined")
   
   ## TODO 2: lat, lon, alt and cntr are not used in the call, that will also require a lookup in the metadata
   if (timeresolutions=="P1M") {
+    ## FETCH FROM:
     ## metno.frost.meta.month.rda
     
   } else if (timeresolutions=="P1D") {
+    ## FETCH FROM:
     ## metno.frost.meta.diurnal.rda
   }
 
@@ -1157,13 +1160,9 @@ metno.frost.station <- function(stid=NULL, param=NULL, start=NULL, end=NULL,
   ## TODO: get a client_id
   client_id <- '0763dab1-d398-4a56-ba5d-601d7d352999'
   
-  getparam1 <- function(x, col) {
-    ele = esd2ele(x)
-    withstar <- ele2param(ele, src="metno.frost")[col]
-    gsub('*', timeresolutions, withstar, fixed=TRUE)
-  }
-  param1 <- getparam1(param, col='param')
-  
+  param1info <- ele2param(esd2ele(param), src="metno.frost")
+  param1 <- gsub('*', timeresolutions, param1info$param, fixed=TRUE)
+
   url <- paste0(
       "https://", client_id, "@frost.met.no/observations/v0.jsonld",
       "?sources=", paste0('SN',stid),
@@ -1194,10 +1193,10 @@ metno.frost.station <- function(stid=NULL, param=NULL, start=NULL, end=NULL,
   df <- as.data.frame(df)[c("referenceTime","value")]
   df$referenceTime <- as.Date(df$referenceTime)
   
-  ## TODO: getting from df2 to METNO.FROST
-  
+  # TODO: how to (get and) use zoo?
+  var <- zoo(df)
 
-  ## TODO: below is mostly just copy pasta for now
+  ## TODO: will this work?
   METNO.FROST <- as.station(df,
     stid=stid,
     loc=loc,
@@ -1207,8 +1206,8 @@ metno.frost.station <- function(stid=NULL, param=NULL, start=NULL, end=NULL,
     lon=lon, lat=lat, alt=alt,
     src='METNO.FROST',
     url=url,
-    longname=as.character(getparam1(param, col='longname')),
-    unit=as.character(getparam1(param, col='unit')),
+    longname=param1info$longname,
+    unit=param1info$unit,
     aspect="original",
     reference="Frost API (http://frost.met.no)",
     info="Frost API (http://frost.met.no)"

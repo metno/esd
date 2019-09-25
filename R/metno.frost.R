@@ -7,7 +7,7 @@
 ## Author: K. Tunheim
 
 # source("~/esd/R/dictionary.R")
-library(jsonlite)
+library(jsonlite) # remove this line in final version?
 
 # get diurnal timeseries - removed DD, DD06, DD12, DD18, SD
 metno.frost.meta.diurnal <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), save=TRUE,...) {
