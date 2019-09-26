@@ -1,11 +1,41 @@
-# Cross-validation:
-# Estimate both the correlation, RMSE, R^2, and the coeffieients for
-# each iteration - leave-out sample. Collect the statistics on the
-# coeffieients - estimate and error - and assess the consistency over
-# the iterations.
-
+#' Cross-validation
+#' 
+#' Applies a cross-validation of DS results, using the same strategy as in the
+#' DS exercise. Any step-wise screening is applied for each iteration
+#' independently of that used to identify the subset of skillful predictors in
+#' the original analysis. The model coeffiecients (beta) is saved for each
+#' iteration, and both correlation and root-mean-squared-error are returned as
+#' scores.
+#' 
+#' \code{crossval.dsensemble} will make use of the \code{evaluation} attribute
+#' with cross-validation results and returns the correlation.
+#' 
+#' 
+#' @aliases crossval crossval.ds crossval.list crossval.dsensemble
+#'
+#' @param x The results from \code{\link{DS}}.
+#' @param m window with - leave m-out for each iteration. There are also some
+#' pre-set options: 'cordex-esd-exp1', 'value-exp1', and 'loo' for experiments
+#' defined at CORDEX-ESD, COST-VALUE, and leave-one-out ('loo')
+#' cross-validation.
+#'
+#' @return Cross-validation object.
+#'
+#' @keywords manip
+#'
+#' @examples 
+#' data(Oslo)
+#' t2m <- t2m.DNMI(lon=c(-20,40),lat=c(45,65))
+#' eof <- EOF(t2m)
+#' 
+#' ds <- DS(Oslo,eof)
+#' xv <- crossval(ds)
+#' plot(xv)
+#' 
+#' @export
 crossval <- function(x, m=5, ...) UseMethod("crossval")
 
+#' @export crossval.ds
 crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
   # Repeat the regression from DS, but through several iterations with
   # leave-m-out. These are masked by setting them to NA before the
@@ -50,25 +80,20 @@ crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
   
   Y <- rep(NA,nt); Z <- Y; 
   k <- 0
-  #print(ii); print(m)
   for (i in ii) {
     k <- k + 1
     caldat <- as.data.frame(coredata(CALDAT))
-    #str(caldat)
     j <- i:(i+m[is.element(ii,i)]-1)
     j <- j[j <= nt] # do not exceed the index
-    #print(j)
     Y[j] <- caldat$y[j]
     caldat$y[j] <- NA
     MODEL <- eval(parse(text=calstr))
-    # Stepwise regression
     if (!is.null(swsm)) {
       cline <- paste("model <- ",swsm,"(MODEL,trace=0)",sep="")
-    #print(paste("HERE: stepping",cline))
       eval(parse(text=cline))
-    } else
+    } else {
       model <- MODEL
-    # Need to also include the intercept:
+    }
     terms <- c(1,as.integer(gsub('X.','',attr(model$terms,'term.labels')))+1)
     beta[terms,k] <- model$coefficients
     #print(terms); print(model$coefficients)
@@ -100,6 +125,7 @@ crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
   invisible(X)
 }
 
+#' @export crossval.list
 crossval.list <- function(x, m=5, ..., verbose=FALSE) {
   if(verbose) print("crossval.list")
   elements <- names(x)
@@ -111,6 +137,7 @@ crossval.list <- function(x, m=5, ..., verbose=FALSE) {
   invisible(x)
 }
 
+#' @export crossval.dsensemble
 crossval.dsensemble <- function(x,m=NULL,...,plot=TRUE,verbose=FALSE) {
   if(verbose) print("crossval.dsensemble")
   X <- x

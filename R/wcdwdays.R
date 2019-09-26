@@ -1,4 +1,149 @@
-# number of wet, cold, dry, or wet days
+#' Projection of hot and cold day statistics
+#' 
+#' The functions \code{hotsummerdays}, \code{heatwavespells},
+#' \code{coldwinterdays}, and \code{coldspells} estimate statistics for
+#' heatwaves/hot days or cold spells based on seasonal mean temperatures. The
+#' estimations are based on a regression analysis (GLM) between observed number
+#' of events or spell lengths and seasonal mean from station data.
+#' \code{nwetdays} estimates the number of days per year with precipitation
+#' amount exceeding a threshold values.
+#' 
+#' The estimation of these statistics makes use of general linear models (GLMs)
+#' and take the counts to follow the 'Poisson family' whereas the spall lengths
+#' belong to the geometric distribution. The seasonal mean temperature or
+#' annual wet-mean precipitation are used as independent variable.
+#' 
+#' @aliases hotsummerdays coldwinterdays coldspells heatwavespells nwetdays
+#' @param x station object, e.g. the temperature. Matches the element used in
+#' the dsensemble object 'dse'
+#' @param y station object which may be some statistics with dependency to x,
+#' e.g. snow depth.
+#' @param dse a dsensembel object. If NULL, then run DSensemble
+#' @param it Default season set for northern hemisphere. %% ~~Describe
+#' \code{it} here~~
+#' @param threshold Temperature threshold
+#' @param verbose TRUE for trouble shooting, debugging etc.
+#' @param plot TRUE - produce graphics
+#' @author R.E. Benestad
+#' @examples
+#' 
+#' data(ferder)
+#' data(dse.ferder)
+#' hw <- hotsummerdays(ferder,dse.ferder,threshold=20)
+#' 
+#' @export hotsummerdays
+hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
+                          verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
+    # Estimate number of days with low temperatures
+  if (verbose) print('hotsummerdays')
+  if ( (inherits(y,'dsensemble')) & is.null(dse)) {
+    ## Swap y & dse.
+    print('use y  to set dse')
+    dse <- y; y <- NULL
+  }
+  stopifnot(inherits(x,'station'))
+  if (is.null(y)) y <- x
+  djf <- subset(x,it=it)      # default: summer
+  djfy <- subset(y,it=it)     # default: summer
+  nwd1 <- annual(djfy,FUN='count',threshold=threshold,nmin=nmin)
+  mwd1 <- annual(djfy,FUN='mean',nmin=nmin)
+  ## REB 2016-11-17: exclude temperatures far from the threshold:
+  xcld1 <- (mwd1 < threshold - 15) | (mwd1 > threshold + 20)
+  xcld1 <- xcld1[is.finite(xcld1)]
+  if (verbose) print(paste('Exclude',sum(xcld1),'outliers'))
+  if (sum(xcld1)>0) mwd1[xcld1] <- NA
+  
+  if (verbose) print(c(length(mwd1),length(nwd1)))
+  cal <- data.frame(x=c(coredata(mwd1)),
+                    y=c(coredata(nwd1)))
+  ## Use linear fit rather than polynomial as this analysis only
+  ## involves one season and to a greater degree extrapolation.
+  dfit <- glm(y ~ x,family='poisson',data=cal)
+
+  if (plot) {
+    if (new) dev.new()
+    par(bty='n')
+    plot(cal,pch=19,ylim=c(0,90),
+         xlab=expression(paste('mean temperature ',(degree*C))),
+         ylab='number of hot days',main=loc(x))
+    pre <- data.frame(x=seq(min(cal$x,na.rm=TRUE)-1,
+                            max(cal$x,na.rm=TRUE)+5,by=0.1))
+    lines(pre$x,exp(predict(dfit,newdata=pre)),col=rgb(1,0,0,0.3),lwd=3)
+
+    if (new) dev.new()
+    ## Use the distribution about the mean
+    djf.sd <- sd(coredata(djf),na.rm=TRUE)
+    ## Check it it is normally distributed
+    qqnorm(coredata(djf))
+    qqline(coredata(coredata(djf)),col='red')
+    grid()
+  }
+
+  if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
+                                           verbose=verbose,plot=plot)
+  if (length(table(month(dse)))==4) djf.dse <- subset(dse,it='jja') else djf.dse <- dse
+  index(djf.dse) <- year(djf.dse)
+  ovl <- window(djf.dse,start=year(start(x)),end=year(end(x)))
+  djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
+                       mean(coredata(mwd1),na.rm=TRUE)
+
+  q1 <- data.frame(x=apply(coredata(djf.dse),1,quantile,probs=0.05,na.rm=TRUE))
+  q2 <- data.frame(x=apply(coredata(djf.dse),1,quantile,probs=0.95,na.rm=TRUE))
+  qm <- data.frame(x=apply(coredata(djf.dse),1,mean,na.rm=TRUE))
+  obs <- data.frame(x=coredata(mwd1))
+
+  t <- year(index(djf.dse))
+  preq1 <- exp(predict(dfit,newdata=q1))
+  preq1[preq1 > 92] <- 92  # maximum length of the summer season
+  tr1 <- predict(lm(preq1 ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
+  tr1[!is.finite(preq1)] <- NA
+  preq2 <- exp(predict(dfit,newdata=q2))
+  preq2[preq2 > 92] <- 92  # maximum length of the summer season
+  tr2 <- predict(lm(preq2 ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
+  tr2[!is.finite(preq2)] <- NA
+  prem  <- exp(predict(dfit,newdata=qm))
+  prem[prem > 92] <- 92  # maximum length of the summer season 
+  tr3 <- predict(lm(prem ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
+  tr3[!is.finite(prem)] <- NA
+  Nwd <- zoo(cbind(preq1,preq2,prem,tr1,tr2,tr3),order.by=t)
+  nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mwd1))
+  
+  
+  if (plot) {
+    if (verbose) print('plots')
+    if (new) dev.new()
+    par(bty='n')
+    plot(zoo(djf.dse,order.by=year(djf.dse)),
+         plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
+         ylab=expression(paste('mean temperature',(degree*C))),
+         xlab='',main=loc(x))
+    points(mwd1,pch=19)
+    grid()
+    
+    if (new) dev.new()
+    par(bty='n')
+    plot(Nwd,plot.type='single',lwd=5,main=loc(x),ylim=c(0,90),
+         xlab="",ylab=paste('number of hot days: T(2m) > ',threshold,unit(x)),
+         col=c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
+               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)),
+         ...)
+    grid()
+    points(nwd1,pch=19)
+    lines(nwd.pre,col=rgb(0.5,0.5,0.5,0.5))
+  }
+
+  Nwd <- attrcp(x,Nwd)
+  attr(Nwd,'unit') <- 'days'
+  attr(Nwd,'info') <- paste('number of hot days: t2m > ',threshold)
+  attr(Nwd,'observation') <- nwd1
+  attr(Nwd,'nwd.pre') <- nwd.pre
+  index(Nwd) <- t
+  class(Nwd) <- c('nevents','zoo')
+  if (verbose) print('exit hotsummerdays')
+  invisible(Nwd)
+}
+
+#' @export
 coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
                            verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
   # Estimate number of days with low temperatures or number of days with y < threshold
@@ -128,118 +273,7 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   invisible(Nwd)
 }
 
-
-hotsummerdays <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
-                          verbose=FALSE,plot=TRUE,nmin=90,new=TRUE,...) {
-    # Estimate number of days with low temperatures
-  if (verbose) print('hotsummerdays')
-  if ( (inherits(y,'dsensemble')) & is.null(dse)) {
-    ## Swap y & dse.
-    print('use y  to set dse')
-    dse <- y; y <- NULL
-  }
-  stopifnot(inherits(x,'station'))
-  if (is.null(y)) y <- x
-  djf <- subset(x,it=it)      # default: summer
-  djfy <- subset(y,it=it)     # default: summer
-  nwd1 <- annual(djfy,FUN='count',threshold=threshold,nmin=nmin)
-  mwd1 <- annual(djfy,FUN='mean',nmin=nmin)
-  ## REB 2016-11-17: exclude temperatures far from the threshold:
-  xcld1 <- (mwd1 < threshold - 15) | (mwd1 > threshold + 20)
-  xcld1 <- xcld1[is.finite(xcld1)]
-  if (verbose) print(paste('Exclude',sum(xcld1),'outliers'))
-  if (sum(xcld1)>0) mwd1[xcld1] <- NA
-  
-  if (verbose) print(c(length(mwd1),length(nwd1)))
-  cal <- data.frame(x=c(coredata(mwd1)),
-                    y=c(coredata(nwd1)))
-  ## Use linear fit rather than polynomial as this analysis only
-  ## involves one season and to a greater degree extrapolation.
-  dfit <- glm(y ~ x,family='poisson',data=cal)
-
-  if (plot) {
-    if (new) dev.new()
-    par(bty='n')
-    plot(cal,pch=19,ylim=c(0,90),
-         xlab=expression(paste('mean temperature ',(degree*C))),
-         ylab='number of hot days',main=loc(x))
-    pre <- data.frame(x=seq(min(cal$x,na.rm=TRUE)-1,
-                            max(cal$x,na.rm=TRUE)+5,by=0.1))
-    lines(pre$x,exp(predict(dfit,newdata=pre)),col=rgb(1,0,0,0.3),lwd=3)
-
-    if (new) dev.new()
-    ## Use the distribution about the mean
-    djf.sd <- sd(coredata(djf),na.rm=TRUE)
-    ## Check it it is normally distributed
-    qqnorm(coredata(djf))
-    qqline(coredata(coredata(djf)),col='red')
-    grid()
-  }
-
-  if (is.null(dse)) dse <-  DSensemble.t2m(x,biascorrect=TRUE,
-                                           verbose=verbose,plot=plot)
-  if (length(table(month(dse)))==4) djf.dse <- subset(dse,it='jja') else djf.dse <- dse
-  index(djf.dse) <- year(djf.dse)
-  ovl <- window(djf.dse,start=year(start(x)),end=year(end(x)))
-  djf.dse <- djf.dse - mean(coredata(ovl),na.rm=TRUE) +
-                       mean(coredata(mwd1),na.rm=TRUE)
-
-  q1 <- data.frame(x=apply(coredata(djf.dse),1,quantile,probs=0.05,na.rm=TRUE))
-  q2 <- data.frame(x=apply(coredata(djf.dse),1,quantile,probs=0.95,na.rm=TRUE))
-  qm <- data.frame(x=apply(coredata(djf.dse),1,mean,na.rm=TRUE))
-  obs <- data.frame(x=coredata(mwd1))
-
-  t <- year(index(djf.dse))
-  preq1 <- exp(predict(dfit,newdata=q1))
-  preq1[preq1 > 92] <- 92  # maximum length of the summer season
-  tr1 <- predict(lm(preq1 ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
-  tr1[!is.finite(preq1)] <- NA
-  preq2 <- exp(predict(dfit,newdata=q2))
-  preq2[preq2 > 92] <- 92  # maximum length of the summer season
-  tr2 <- predict(lm(preq2 ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
-  tr2[!is.finite(preq2)] <- NA
-  prem  <- exp(predict(dfit,newdata=qm))
-  prem[prem > 92] <- 92  # maximum length of the summer season 
-  tr3 <- predict(lm(prem ~ t + I(t^2) + I(t^3) + I(t^4) + I(t^5)))
-  tr3[!is.finite(prem)] <- NA
-  Nwd <- zoo(cbind(preq1,preq2,prem,tr1,tr2,tr3),order.by=t)
-  nwd.pre <- zoo(exp(predict(dfit,newdata=obs)),order.by=year(mwd1))
-  
-  
-  if (plot) {
-    if (verbose) print('plots')
-    if (new) dev.new()
-    par(bty='n')
-    plot(zoo(djf.dse,order.by=year(djf.dse)),
-         plot.type='single',col=rgb(0.5,0.5,0.5,0.2),
-         ylab=expression(paste('mean temperature',(degree*C))),
-         xlab='',main=loc(x))
-    points(mwd1,pch=19)
-    grid()
-    
-    if (new) dev.new()
-    par(bty='n')
-    plot(Nwd,plot.type='single',lwd=5,main=loc(x),ylim=c(0,90),
-         xlab="",ylab=paste('number of hot days: T(2m) > ',threshold,unit(x)),
-         col=c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
-               rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)),
-         ...)
-    grid()
-    points(nwd1,pch=19)
-    lines(nwd.pre,col=rgb(0.5,0.5,0.5,0.5))
-  }
-
-  Nwd <- attrcp(x,Nwd)
-  attr(Nwd,'unit') <- 'days'
-  attr(Nwd,'info') <- paste('number of hot days: t2m > ',threshold)
-  attr(Nwd,'observation') <- nwd1
-  attr(Nwd,'nwd.pre') <- nwd.pre
-  index(Nwd) <- t
-  class(Nwd) <- c('nevents','zoo')
-  if (verbose) print('exit hotsummerdays')
-  invisible(Nwd)
-}
-
+#' @export
 heatwavespells <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
                            verbose=FALSE,plot=TRUE,ylab=NULL,is=1,new=TRUE,...) {
   ## Use the downscaled temperatures from ensembles to estimate the
@@ -324,6 +358,7 @@ heatwavespells <- function(x,y=NULL,dse=NULL,it='jja',threshold=30,
   return(Nwd)
 }
 
+#' @export
 coldspells <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
                        verbose=FALSE,plot=TRUE,new=TRUE,...) {
 
@@ -335,7 +370,7 @@ coldspells <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   invisible(y)
 }
 
-
+#' @export
 nwetdays <- function(x,y=NULL,dse=NULL,threshold=10,
                      verbose=FALSE,plot=TRUE,new=TRUE) {
   if (is.null(y)) y <- x

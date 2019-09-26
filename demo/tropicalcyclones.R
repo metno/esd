@@ -98,6 +98,12 @@ cntc <- zoo(exp(predict(model)),order.by=1900:1960)
 xntc <- zoo(exp(predict(model,newdata=predat)),order.by=index(nino3.4))
 
 par(bty='n',xpd=TRUE,las=3)
+
+## Update the record of number of cyclones manually: 2015-2018
+## From Wikipedia
+ntc2 <- zoo(c(11,15,17,15),order.by=2015:2018)
+ntc <- c(ntc,ntc2)
+
 plot(ntc,lty=2,xlim=range(index(y)),
      ylab=expression(paste(N[TC],' per season')),xlab="",
      pch=15,cex=1.2,type='b',

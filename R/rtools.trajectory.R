@@ -1,16 +1,60 @@
-## Author     K. Parding
-## Last update   24.04.2015
-## Tools for analyzing trajectory objects
-
-season.trajectory <- function(x) {
+#' Functions to process and analyse storm trajectories
+#' 
+#' @aliases anomaly.trajectory polyfit.trajectory season.trajectory 
+#' count.trajectory param.trajectory sort.trajectory polyfit.trajectory
+#' anomaly2trajectory fnlon trajectory2density
+#' 
+#' @param x A trajectory object
+#' @param \dots Other arguments
+#' @param type type of anomaly: 'first' gives you the spatial anomaly with
+#' regards to the first time step of the trajectory and 'mean' centers the
+#' trajectories around the mean longitude and latitude
+#' @param param parameters to calculate anomaly of
+#' @param verbose if TRUE print information about progress
+#' @return A trajecory object
+#' @author Kajsa M. Parding
+#' @examples
+#' 
+#' # Load trajectory example data
+#' data('imilast.M03')
+#' # Calculate anomaly
+#' x <- anomaly.trajectory(imilast.M03)
+#' # Show maps of original trajectories and spatial anomalies
+#' map(imilast.M03, new=FALSE)
+#' map(x, new=FALSE)
+#' # Transform trajectory anomalies back to regular trajectories
+#' y <- anomaly2trajectory(x)
+#' # Print longitudes of first trajectory
+#' imilast.M03[1,1:12]
+#' x[1,1:12]
+#' y[1,12]
+#' 
+#' # Fit polynomial to trajectories
+#' y <- polyfit.trajectory(x)
+#' # Show coefficients of first trajectory
+#' print(attr(y,"coefs")[,1])
+#' # Plot original trajectory and polynomial fit
+#' ilon <- colnames(x)=="lon"
+#' ilat <- colnames(x)=="lat"
+#' plot(x[1,ilon], x[1,ilat], col="black", pch=1)
+#' lines(y[1,ilon], y[1,ilat], col="blue", lty=2)
+#'
+#' @export season.trajectory
+season.trajectory <- function(x, format="character",verbose=FALSE) {
+  if(verbose) print("season.trajectory")
   stopifnot(!missing(x), inherits(x,"trajectory"))
   mn <- month(x)
   mlist <- c(12,1:11)
-  slist <- c(1,1,1,2,2,2,3,3,3,4,4,4)
+  slist <- c(rep(1,3),rep(2,3),rep(3,3),rep(4,4))
+  if(format=="character") {
+    slist <- sapply(slist,
+      function(x) switch(x, "1"="djf", "2"="mam", "3"="jja", "4"="son"))
+  }
   sn <- sapply(mn,function(x) slist[mlist==x])
   invisible(sn)
 }
 
+#' @export param.trajectory
 param.trajectory <- function(x,param=NULL,FUN='mean') {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   if (is.null(param)) {
@@ -34,8 +78,9 @@ param.trajectory <- function(x,param=NULL,FUN='mean') {
   }
   invisible(y)
 }
-  
-sort.trajectory <- function(x) {
+
+#' @export sort.trajectory
+sort.trajectory <- function(x, decreasing=FALSE, ...) {
   stopifnot(!missing(x), inherits(x,"trajectory"))
   if (any('sorted' %in% attr(x,'aspect'))) {
     invisible(x)
@@ -45,7 +90,7 @@ sort.trajectory <- function(x) {
     while (any(duplicated(date))) {
       date[duplicated(date)] <- date[duplicated(date)]+60
     }
-    y <- x[order(date),]
+    y <- x[order(date, decreasing=decreasing),]
     y <- attrcp(x,y)
     attr(y,'aspect') <- c('sorted',attr(x,'aspect'))
     class(y) <- class(x)
@@ -53,6 +98,7 @@ sort.trajectory <- function(x) {
   }
 }
 
+#' @export polyfit.trajectory
 polyfit.trajectory <- function(x,verbose=FALSE) {
   if(verbose) print("polyfit.trajectory")
   stopifnot(is.trajectory(x))
@@ -84,6 +130,7 @@ polyfit <- function(x,y=NULL) {
   return(z)
 }
 
+#' @export count.trajectory
 count.trajectory <- function(x,it=NULL,is=NULL,by='year',verbose=FALSE) {
   if(verbose) print("count.trajectory")
   y <- subset(x,it=it,is=is)
@@ -177,7 +224,7 @@ cartesian2spherical <- function(x,y,z,a=6.378e06,verbose=TRUE) {
   invisible(cbind(lon,lat))
 }
 
-
+#' @export anomaly.trajectory
 anomaly.trajectory <- function(x,...,type='first',param=c('lon','lat'),
                                 verbose=FALSE) {
   if(verbose) print("anomaly.trajectory")
@@ -246,6 +293,29 @@ anomaly.trajectory <- function(x,...,type='first',param=c('lon','lat'),
   invisible(y)
 }
 
+#' @export
+trajectory2density <- function(x,it=NULL,is=NULL,dx=2,dy=2,radius=5E5,verbose=FALSE) {
+  if(verbose) print("trajectory2density")
+  y <- subset(x,it=it,is=is)
+  if(!is.null(dim(y))) {
+    A <- apply(y,1,function(x) trackdensity(x[colnames(y)=='lon'],
+                                            x[colnames(y)=='lat'],
+                                            dx=dx,dy=dy,radius=radius))
+    lon <- unlist(lapply(A,function(x) factor2numeric(x$lon)))
+    lat <- unlist(lapply(A,function(x) factor2numeric(x$lat)))
+    hits <- as.data.frame(table(lon,lat))
+    names(hits)[names(hits)=="Freq"] <- "density"
+  } else {
+    A <- trackdensity(y[names(y)=='lon'],y[names(y)=='lat'],dx=dx,dy=dy,radius=radius)
+    lon <- factor2numeric(A$lon)
+    lat <- factor2numeric(A$lat)
+    hits <- as.data.frame(table(lon,lat))
+    names(hits)[names(hits)=="Freq"] <- "density"
+  }
+  invisible(hits)
+}
+
+#' @export
 anomaly2trajectory <- function(x,verbose=FALSE) {
   if(verbose) print("anomaly2trajectory")
   stopifnot(!missing(x), inherits(x,"trajectory"))
@@ -276,6 +346,7 @@ anomaly2trajectory <- function(x,verbose=FALSE) {
   invisible(x)
 }
 
+#' @export
 fnlon <- function(FUN=mean) {
   fn <- function(lon) {
     lon <- lon2dateline(lon)

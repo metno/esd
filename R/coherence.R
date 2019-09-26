@@ -1,3 +1,30 @@
+#' Coherence spectrum - cross-spectrum analysis
+#' 
+#' Based on: \url{http://en.wikipedia.org/wiki/Wiener-Khinchin_theorem}; Press
+#' et al. (1989) 'Numerical Recipes in Pascal', Cambridge, section 12.8
+#' 'Maximum Entropy (All Poles) Method'; von Storch & Zwiers (1999)
+#' 'Statistical Analysis in climate Research', Cambridge, section 11.4, eq
+#' 11.67, p. 235;
+#' 
+#' A test with two identical series the original equation (eq 11.67) from von
+#' Storch & Zwiers (1999) gave uniform values: 1. The denominator was changed
+#' from \eqn{( \Gamma_{xx} * \Gamma_{yy} )}{(Gamxx * Gamyy )} to \eqn{(
+#' }{sqrt(Gamxx * Gamyy )}\eqn{ \sqrt{\Gamma_{xx} * \Gamma_{yy} )}}{sqrt(Gamxx
+#' * Gamyy )}.
+#' 
+#' @importFrom stats ccf
+#'
+#' @param x A vector (time series).
+#' @param y A vector (time series).
+#' @param dt time incremet - for plotting.
+#' @param M Window length - default= half series length
+#' @param plot Flag: plot the diagnostics.
+#'
+#' @return A complex vector .
+#' 
+#' @keywords manip
+#' 
+#' @export coherence
 coherence <- function(x,y,dt=1,M=NULL,plot=TRUE) {
 # Based on:  
 # http://en.wikipedia.org/wiki/Wiener%E2%80%93Khinchin_theorem

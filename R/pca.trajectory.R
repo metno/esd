@@ -1,10 +1,38 @@
-# Author 	Kajsa Parding
-# Last update   17.03.2015
-
-# Principle Component Analysis (PCA) of trajectory object, e.g., storm tracks
-
+#' Principle component analysis of trajectory objects.
+#' 
+#' Computes principal component analysis for trajectory data, e.g., storm
+#' tracks.  Add some reference and details about the method.  The PCA is based
+#' on \code{\link{svd}}.
+#' 
+#' @aliases PCA.trajectory plot.pca.trajectory
+#' 
+#' @param X a 'trajectory' object
+#' @param verbose TRUE - clutter the screen with messages
+#' @param anomaly logical. If TRUE, subtract the first latitude/longitude from
+#' each trajectory.
+#' @param neofs number of EOF patterns to include
+#' @param param parameters to include in principle component analysis.
+#' @param \dots additional arguments
+#' 
+#' @keywords spatial ts multivariate
+#' 
+#' @examples
+#' # Simple EOF for annual mean SST:
+#' data(imilast.M03)
+#' x <- subset(imilast.M03,is=list(lon=c(-20,20),lat=c(50,70)))
+#' # PCA of longitude and latitude
+#' pca <- PCA(x,param=c('lon','lat'))
+#' plot(pca)
+#' map(pca,projection='latlon')
+#' 
+#' # latitude only
+#' pca <- PCA(x,param=c('lat'))
+#' plot(pca)
+#' 
+#' @export PCA.trajectory
 PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
                       anomaly=TRUE,verbose=FALSE) {
+  if(verbose) print("PCA.trajectory")
   stopifnot(!missing(X), inherits(X,"trajectory"))
 
   X <- sort(X)
@@ -72,10 +100,9 @@ PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
   invisible(y)
 }
 
-
 pca2trajectory <- function(X,verbose=FALSE) {
-  stopifnot(!missing(X), inherits(X,"pca"))
   if(verbose) print('pca2trajectory')
+  stopifnot(!missing(X), inherits(X,"pca"))
   
   pca <- X
   cls <- class(pca)
@@ -99,14 +126,15 @@ pca2trajectory <- function(X,verbose=FALSE) {
   invisible(x)
 }
 
-plot.pca.trajectory <- function(X,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
+#' @export plot.pca.trajectory
+plot.pca.trajectory <- function(x,...,cex=1.5,new=TRUE,m=2,param=c('lon','lat'),
                            main=NULL,verbose=FALSE) {
 
   if(verbose) print("plot.pca.trajectory")
-  stopifnot(!missing(X), inherits(X,"trajectory"))
-  if (inherits(X,'pca')) {
-    pca <- X; X <- pca2trajectory(pca)
-  } else pca <- PCA.trajectory(X,param=param)
+  stopifnot(!missing(x), inherits(x,"trajectory"))
+  if (inherits(x,'pca')) {
+    pca <- x; x <- pca2trajectory(pca)
+  } else pca <- PCA.trajectory(x,param=param)
   
   if(verbose) print("Extractpatterns, PCs and eigenvalues")
   colvec <- c('red3','mediumblue','darkolivegreen3',

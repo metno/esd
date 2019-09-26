@@ -1,3 +1,25 @@
+#' Creates a griddded map
+#' 
+#' A function that uses \code{LatticeKrieg} and elevation data to grid station
+#' based data and present a map.
+#'  
+#' @param Y A station object
+#' @param FUN A function or name of a function, e.g, "mean" or "trend"
+#' @param colbar A list specifying the color bar, e.g., list(col="precip",
+#' breaks=seq(1,10), rev=FALSE)
+#' @param project projection: "lonlat" or "sphere"
+#' @param xlim range of x-axis
+#' @param ylim range of y-axis
+#' @param zlim range of color axis
+#' @param verbose if TRUE print information about progress
+#' @param plot if TRUE display results as plots
+#'
+#' @examples
+#' 
+#' data("precip.NORDKLIM")
+#' precip.gp <- gridmap(precip.NORDKLIM, plot=TRUE)
+#' 
+#' @export gridmap
 gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
 
   if (verbose) print(paste('gridmap',FUN))
@@ -17,7 +39,8 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
     if (verbose) print('Use etopo5 elevation data')
     data(etopo5, envir = environment())
     etopo5 <- subset(etopo5,is=list(lon=range(lon(Y))+c(-1,1),
-                           lat=range(lat(Y))+c(-1,1)))
+                                    lat=range(lat(Y))+c(-1,1)))
+    
     ## Mask the sea: elevations below 1m below sea level is masked.
     etopo5[etopo5<=-1] <- NA
     if (!is.null(zlim)) {etopo5[(etopo5<min(zlim)) | ((etopo5>max(zlim)))] <- NA}
@@ -37,7 +60,7 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
 
     ##  obj <- LatticeKrig::LatticeKrig( x=cbind(lon[ok],lat[ok]), y=z[2,ok],Z=alt[ok])
     if (verbose) print('Predict surface')
-    w <- fields::predictSurface(obj, grid.list = grid,Z=etopo5)
+    w <- fields::predictSurface(obj, grid.list = grid, Z=etopo5)
     w$z[is.na(etopo5)] <- NA
 
     ## Convert the results from LatticeKrig to esd:
@@ -47,11 +70,12 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
     attr(W,'longitude') <- w$x
     attr(W,'latitude') <- w$y
     class(W) <- class(etopo5)
-  
+    browser()
     ## Make the graphics
     if(plot) {
       if (verbose) print("make the map")
-      map(W,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,project=project,new=new)
+      map(W,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
+          project=project,new=new,verbose=verbose)
     }
     invisible(W)
   }

@@ -26,6 +26,7 @@
 #
 #------------------------------------------------------------------------
 
+#' @export
 sparseMproduct <- function(beta,x) {
   # b contains the weights and i the indexes
   b <- beta[1:4]; i <- beta[5:8]
@@ -34,11 +35,97 @@ sparseMproduct <- function(beta,x) {
   y
 }
 
-regrid <- function(x,is,it=NULL,...)
+
+#' Regrid
+#' 
+#' Fast transform data from one longitude-latitude grid to another through
+#' bi-linear interpolation. The regridding is done by first calculating a set
+#' of weights. This is a "QUICK & DIRTY" way of getting approximate results.
+#' More sophisticated methods exist (e.g. Kriging - LatticeKrig).
+#' 
+#' Let X(i,j) be a i-j matrix containing the data on a grid with i logitudes
+#' and j latitudes. We want to transform this to a different grid with k
+#' longitudes and l latitudes:
+#' 
+#' X(i,j) -> Y(k,l)
+#' 
+#' First the routine computes a set of weight, then performs a matrix
+#' multiplication to map the original data onto the new grid.  The weights are
+#' based on the distance between points, taking longitude & latitude and use
+#' distAB() to estimate the geographical distance in km.
+#' 
+#' The matrix operation is: Y = beta X
+#' 
+#' beta is a matrix with dimensions (i*j,k*l)
+#' 
+#' ( Y(1,1) ) (beta(1,1), beta(2,1), beta(3,1), ... ) ( X(1,1) ) ( Y(1,2) ) =
+#' (beta(1,2), beta(2,2), beta(3,2), ... ) ( X(1,2) ) ( .....  ) (beta(1,3),
+#' beta(2,3), beta(3,3), ... ) ( X(1,3) )
+#' 
+#' Most of the elements in Beta are zero!
+#' 
+#' 
+#' @aliases regrid regrid.default regrid.field regrid.station
+#' regrid.matrix regrid.eof sparseMproduct
+#' 
+#' @param xo Old x-coordinates (longitudes)
+#' @param yo Old y-coordinates (latitudes)
+#' @param xn New x-coordinates (longitudes)
+#' @param yn New y-coordinates (latitudes)
+#' @param beta The matrix of interpolation weights
+#' @param x a field object.
+#' @param is A list holding the coordinates xn and yn, a field object, an eof
+#' object, or a station object - for the latter three, the field x is
+#' interpolated to the longitude/latitude held by is.
+#' @param approach 'station' or 'pca2station'. If 'pca2station', the stations
+#' are turned into PCAs before regridding and then converted back to station
+#' objects.
+#' @param verbose Clutter the screen.
+#' @return A field object
+#' @author R.E. Benestad and A.  Mezghanil
+#' @keywords utilities
+#' @examples
+#' 
+#' # Use regrid to interpolate to station location:
+#' t2m <- t2m.DNMI()
+#' data(Oslo)
+#' z.oslo <- regrid(t2m,is=Oslo)
+#' plot(Oslo)
+#' lines(z.oslo)
+#' 
+#' # Regrid t2m onto the grid of the gcm
+#' gcm <- t2m.NorESM.M()
+#' Z <- regrid(t2m,is=gcm)
+#' map(Z)
+#' 
+#' # Example using regrid on a matrix object:
+#' t2m.mean <- as.pattern(t2m,FUN='mean')
+#' z <- regrid(t2m.mean,is=list(seq(min(lon(t2m)),max(lon(t2m)),by=0.5),
+#'                              seq(min(lat(t2m)),max(lat(t2m),by=0.5))))
+#' image(lon(z),lat(z),z)
+#' # Add land borders on top
+#' data(geoborders)
+#' lines(geoborders)
+#' 
+#' \dontrun{
+#' ## Regrid station data using weights defined by the distance of the 4
+#' ## nearest stations: quick and dirty method
+#' if (!file.exists("stationsVALUE_exp1a.rda")) {
+#'   download.file("http://files.figshare.com/2085591/value_predictands4exp1a.R",
+#'                 "value_predictands4exp1a.R")
+#'   source("value_predictands4exp1a.R")
+#' }
+#'    
+#' load("stationsVALUE_exp1a.rda")
+#' TX <- regrid(Tx,is=list(lon=seq(-8,30,by=1),lat=seq(40,60,by=0.5)))
+#' map(TX)
+#' }
+#' 
+#' @export regrid
+regrid <- function(x,is=NULL,...)
   UseMethod("regrid")
 
-
-regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
+regridweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 # Compute weights for regular grids: (xo,yo) - the field class
   
   lindist <- function(x,X) {
@@ -161,8 +248,8 @@ regrid.weights <- function(xo,yo,xn,yn,verbose=FALSE) {
 }
 
 
-regrid.temporal <- function(x,it,verbose=FALSE) {
-  if (verbose) print('regrid.temporal')
+regridtemporal <- function(x,it,verbose=FALSE) {
+  if (verbose) print('regridtemporal')
   stopifnot(is.field(x))
   if (verbose) {print(index(x)); print(it)}
   if (verbose) print(paste(sum(is.finite(x)),'data-boxes with valid data and',
@@ -182,16 +269,12 @@ regrid.temporal <- function(x,it,verbose=FALSE) {
   z <- zoo(z,order.by=it)
   z <- attrcp(x,z)
   class(z) <- class(x)
-  if (verbose) print('finished regrid.temporal')
+  if (verbose) print('finished regridtemporal')
   return(z)
 }
 
-
-regrid.default <- function(x,is=NULL,it=NULL,verbose=FALSE,...) {
-  print('not used')
-}
-
-regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose=FALSE) {
+#' @export regrid.field
+regrid.field <- function(x,is=NULL,...,it=NULL,verbose=FALSE,approach="field",clever=FALSE) {
 
   if (verbose) print("regrid.field ")
   stopifnot(inherits(x,'field'))
@@ -204,7 +287,7 @@ regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose
   x <- sp2np(x)
   
   ## If it is provided, also regrid in time
-  if (!is.null(it)) x <- regrid.temporal(x,it,verbose=verbose)
+  if (!is.null(it)) x <- regridtemporal(x,it,verbose=verbose)
   if (is.null(is)) return(x)
   
   ## case wether lon or lat is given in is i.e. regrid on these values along the other dimension
@@ -297,8 +380,8 @@ regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose
   # What does this do?
   # x <- subset(x,is=list(i=lon.old,j=lat.old))
   
-#  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
-  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
+#  beta <- regridweights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
+  beta <- regridweights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
   if (verbose) {print("Weight matrix");  print(dim(beta))}
                                           
   d <- dim(x)
@@ -366,8 +449,8 @@ regrid.field <- function(x,is=NULL,it=NULL,approach="field",clever=FALSE,verbose
 
 
 
-
-regrid.matrix <- function(x,is,verbose=FALSE) {
+#' @export regrid.matrix
+regrid.matrix <- function(x,is=NULL,...,verbose=FALSE) {
 # assumes that dimensions of x are [x,y,(t)] and that the coordinates are
 # provided as attributes as in field
   
@@ -390,7 +473,7 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
   if (verbose) {str(lon.old);str(lat.old);str(lon.new);str(lat.new)}
   if (is.null(lon.old) | is.null(lat.old) | is.null(lon.new) | is.null(lat.new)) return(NULL)
 
-  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
+  beta <- regridweights(lon.old,lat.old,lon.new,lat.new,verbose=verbose)
   if (verbose) {print("Weight matrix");  print(dim(beta)); print(attr(beta,"index"))}
   X <- x;
   dim(X) <- c(d[1]*d[2],d[3])
@@ -417,8 +500,9 @@ regrid.matrix <- function(x,is,verbose=FALSE) {
 
 
 
-
-regrid.eof <- function(x,is,verbose=FALSE) {
+#' @export regrid.eof
+regrid.eof <- function(x,is=NULL,...,verbose=FALSE) {
+  if(verbose) print("regrid.eof")
   stopifnot(inherits(x,'eof'))
   if (is.list(is)) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
   if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof')) ) {
@@ -436,7 +520,7 @@ regrid.eof <- function(x,is,verbose=FALSE) {
               length(lat.old),"to",
               length(lon.new),"x",length(lat.new)))  
 
-  beta <- regrid.weights(lon.old,lat.old,lon.new,lat.new)
+  beta <- regridweights(lon.old,lat.old,lon.new,lat.new)
                                           
   #print(dim(beta))
   X <- attr(x,'pattern')
@@ -482,11 +566,10 @@ regrid.eof <- function(x,is,verbose=FALSE) {
   invisible(y)
 }
 
-regrid.eof2field <- function(x,is) {
+regrid.eof2field <- function(x,is=NULL,...,verbose=FALSE) {
+  if(verbose) print("regrid.eof2field")
   stopifnot(inherits(x,'field'),inherits(is,'list'))
-  print("regrid.eof.field - estimate EOFs")
 
- #greenwich <- attr(x,'greenwich')
   if ( greenwich & (min(lon.new < 0)) ) x <- g2dl(x,greenwich=FALSE)
   eof0 <- EOF(x)
   eof1 <- regrid(eof0,is)

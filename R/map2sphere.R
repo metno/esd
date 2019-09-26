@@ -1,42 +1,5 @@
-# This function maps a longitude-latitude grid onto a sphere. This
-# function will be embeeded in map as an option.
-#" c("lonlat","sphere","NP","SP")
-# First transform longitude (theta) and latitude (phi) to cartesian
-# coordinates:
-#
-# (theta,phi) -> (x,y,z) = r
-#
-# Use a transform to rotate the sphere through the following matrix
-# product:
-#
-# ( x' )    ( a1  b1  c1 )  ( x )
-# ( y' ) =  ( a2  b2  c2 )  ( y )
-# ( z' )    ( a3  b3  c3 )  ( z )
-#
-# There can be three different rotation, about each of the axes
-# For 90-degree rotatins, e.g. aroud the z-axis:
-# Z = 90 (X = Y = 0): x' = y; y' = -x: z'= z
-# a1 = cos(Z) ; b1=sin(Z); c1=cos(Z);
-# a2 = -sin(Z); b2=cos(Z); c2=cos(Z)
-# a3 = cos(Z) ; b3=cos(Z); c3=sin(Z)
-# Y = 90 (Z = X = 0): x' = -z; z' = x; y' = y
-# a1= cos(Y); b1 = cos(Y); c1=-sin(Y);
-# a2= cos(Y); b2 = sin(Y); c2= cos(Y);
-# a3= sin(Y); b3 = cos(Y); c3= cos(Y)
-# X = 90 (Y = Z = 0): x' = x; z' = y; y' = - z
-# a1 = sin(X); b1 = cos(X); c1 = cos(X)
-# a2 = cos(X); b2 = cos(X); c2 = -sin(X);
-# a3 = cos(X); b3 = sin(X), c3 = cos(X)
-#
-# a1 =  cosYcosZ; b1 = cosXsinZ; c1= -cosXsinY
-# a2 = -cosXsinZ; b2 = cosXcosZ; c2= -sinXcosY
-# a3 =  cosXsinY; b3 = sinXcosZ; c3=  cosXcosY
-
-#angleofview <- function(r,P) {
-#  angle <- acos( (P%*%r)/( sqrt(P%*%P)*sqrt(r%*%r) ) )
-#  return(angle)
-#}
-
+# Documentation in map.R
+#' @export
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        colbar= list(col='t2m',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
@@ -48,33 +11,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
-  ## If only a few items are provided in colbar - then set the rest to the default
-  #if (!is.null(colbar)) {
-        colbar <- colbar.ini(x,colbar=colbar,verbose=verbose)
- #   } else 
- #       if (verbose) print('colbar=NULL - no colour bar')
-  #if (!is.null(colbar)) {
-  #  if (verbose) print('sort out the colours')
-  #  if (is.null(colbar$pal)) colbar$pal <- 't2m'
-  #  if (is.null(colbar$rev)) colbar$rev <- FALSE
-  #  if (is.null(colbar$n)) colbar$n <- 10
-  #  if (is.null(colbar$breaks)) {
-  #    colbar$breaks <- pretty(x,n=colbar$n)
-  #  } else if (length(colbar$breaks)==2)
-  #    colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],length=colbar$n)
-  #  colbar$n <- length(colbar$breaks)-1
-  #  if (is.null(colbar$type)) colbar$type <- 'p'
-  #  if (is.null(colbar$cex)) colbar$cex <- 2
-  #  if (is.null(colbar$h)) colbar$h <- 0.6
-  #  if (is.null(colbar$v)) colbar$v <- 1
-  #  if (is.null(colbar$pos)) colbar$pos <- 0.05
-  #  if (verbose) print(colbar)
-  #  colbar$col <- colscal(n=colbar$n,col=colbar$pal,
-  #                        rev=colbar$rev,verbose=verbose)
-  #  if (verbose) print(paste("length(col) =",length(colbar$col)))
-  #}
-  ## if (!is.null(colbar$col)) col <- colbar$col else col <- NULL
-  ## if (!is.null(colbar$breaks)) breaks <- colbar$breaks else breaks <- NULL
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
   
   ## KMP 10-11-2015: apply xlim and ylim
@@ -163,7 +99,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ##if (is.null(col)) col <- colscal(n=n) else
   ##if (length(col)==1) {
   ##    palette <- col
-  ##    col <- colscal(col=palette,n=n)
+  ##    col <- colscal(pal=palette,n=n)
   ## }
   nc <- length(colbar$col)
   ## AM commented
@@ -184,43 +120,43 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
   
   ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
-#  crgb <- col2rgb(colbar$col)
-#  if(any(map>max(colbar$breaks))) {
-#    cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
-#    crgb <- cbind(crgb,cmax)
-#    index[index>nc] <- nc+1
-#    colbar$breaks <- c(colbar$breaks,max(map))
-#  }
-#  if(any(map<min(colbar$breaks))) {
-#    cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
-#    crgb <- cbind(cmin,crgb)
-#    index[index>nc] <- nc+1
-#    colbar$breaks <- c(min(map),colbar$breaks)
-#  }
-#  crgb[crgb>255] <- 255; crgb[crgb<0] <- 0
-#  colbar$col <- rgb(t(crgb),maxColorValue=255)
-#  colbar$n <- length(colbar$col)-1
+  #crgb <- col2rgb(colbar$col)
+  #if(any(map>max(colbar$breaks))) {
+  #  cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
+  #  crgb <- cbind(crgb,cmax)
+  #  index[index>nc] <- nc+1
+  #  colbar$breaks <- c(colbar$breaks,max(map))
+  #}
+  #if(any(map<min(colbar$breaks))) {
+  #  cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
+  #  crgb <- cbind(cmin,crgb)
+  #  index[index>nc] <- nc+1
+  #  colbar$breaks <- c(min(map),colbar$breaks)
+  #}
+  #crgb[crgb>255] <- 255; crgb[crgb<0] <- 0
+  #colbar$col <- rgb(t(crgb),maxColorValue=255)
+  #colbar$n <- length(colbar$col)-1
   #if (min(colbar$breaks)<min(map)) index[map<min(colbar$breaks)] <- 1
   #if (max(colbar$breaks)>max(map)) index[map>max(colbar$breaks)] <- nc
   if (verbose) {print('map2sphere: set colours'); print(colbar)}
   
-# Rotate coastlines:
+  # Rotate coastlines:
   a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
   a <- rotM(x=latR,y=0,z=0) %*% a
   x <- a[1,]; y <- a[2,]; z <- a[3,]
 
-# Grid coordinates:
+  # Grid coordinates:
   d <- dim(X)
   #print(d)
 
-# Rotate data grid:  
+  # Rotate data grid:  
   A <- rotM(x=0,y=0,z=lonR) %*% rbind(c(X),c(Y),c(Z))
   A <- rotM(x=latR,y=0,z=0) %*% A
   X <- A[1,]; Y <- A[2,]; Z <- A[3,]
   dim(X) <- d; dim(Y) <- d; dim(Z) <- d
   #print(dim(rbind(X,Z)))
   
-# Plot the results:
+  # Plot the results:
   if (new) {
     dev.new()
     par(fig=c(0,1,0.1,1), mgp=c(2,0.5,0), mar=c(4,1,2,1))
@@ -228,7 +164,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   par(bty="n") ## ,xaxt="n",yaxt="n")
   plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",main=main)
   
-# plot the grid boxes, but only the gridboxes facing the view point:
+  # plot the grid boxes, but only the gridboxes facing the view point:
   Visible <- colMeans(Y) > 0
   X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
   index <- index[Visible]
@@ -245,27 +181,25 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   # Colourbar:
   if (!is.null(colbar)) {
     if (verbose) print('plot colourbar')
-#    #print(breaks)
-#    par0 <- par()
-#    par(fig = c(0.3, 0.7, 0.05, 0.10),cex=0.8,
-#        new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
-#  #print("colourbar")
-#    if (is.null(breaks))
-#      breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/
-#                      ( max(map) - min(map) ) )
-#    bar <- cbind(breaks,breaks)
-#    image(breaks,c(1,2),bar,col=col)
-#
-#    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-#        xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
-#
+    #par0 <- par()
+    #par(fig = c(0.3, 0.7, 0.05, 0.10),cex=0.8,
+    #    new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
+    #if (is.null(breaks))
+    #  breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/
+    #                  ( max(map) - min(map) ) )
+    #bar <- cbind(breaks,breaks)
+    #image(breaks,c(1,2),bar,col=col)
+    #
+    #par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+    #    xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
+    #
     # Adopt from map.station
     if(is.null(colbar$show)) colbar$show <- TRUE
     par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.9)
     if(colbar$show) {
     if (fancy & !is.null(colbar)) {
       if (verbose) print("fancy colbar")
-      col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
+      col.bar(colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,#v=1,h=1,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,
               type=type,verbose=FALSE,vl=1,border=FALSE)
@@ -303,7 +237,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 }
 
 #map2sphere(x)
-
 vec <- function(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
                 projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...) {
   if (verbose) print('vec')

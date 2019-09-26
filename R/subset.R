@@ -1,36 +1,160 @@
+#' Subsetting esd objects
+#' 
+#' The subset method tries to be 'intelligent', and if the list has no names,
+#' then the list contains two vectors of length 2, then this is interpreted as
+#' a region, e.g. argument \code{is = list(
+#' c(lon.min,lon.max),c(lat.min,lat.max) )}. If, on the other hand, \code{is =
+#' list( lon=1:50,lat=55:65 )}, then the function picks the longitudes and
+#' latitudes which match these. This makes it flexible so that one can pick any
+#' irregular sequence.
+#' 
+#' 
+#' @aliases subset subset.station subset.eof subset.pca subset.cca
+#' subset.events subset.trajectory subset.trend subset.corfield subset.ds
+#' subset.dsensemble subset.comb subset.field subset.spell subset.zoo
+#' subset.trajectory station.subset subset.zoo subset.stationmeta
+#' subset.matrix subset.pattern default.subset
+#' @seealso matchdate sort.station
+#'
+#' @param x Data object from which the subset is taken
+#' @param it A list or data.frame providing time index, e.g. a range of years like c(1979,2010), a season ('djf'), or a month ('dec' or 'december').
+#' @param is A list or data.frame providing space index, e.g. a list of longitude and latitude range like list(lon=c(0,60), lat=c(35,60)).
+#' @param ip selection of patterns in PCA or EOF (used for e.g. filtering the data)
+#' @param verbose Dump diagnostics to the screen
+#' @param ensemble.aggregate If TRUE, call \code{subset.dsensemble.multi} if
+#' appropriate.
+#' @param ic Argument of \code{subset.events}: A list providing criteria for selection of cyclones, 
+#' ic = list(param, pmax, pmin, FUN), where param is a parameter or element type,
+#' pmax and pmin are the upper and lower limit of the parameter.  If FUN is
+#' "any" (default setting), subset selects cyclones or trajectories that are
+#' within the chosen range at any point during their lifetime.  If FUN is "all"
+#' and x is an 'events' object, subset selects all individual cyclones within
+#' the range (pmin, pmax).  If FUN is "all" and x is a 'trajectory' object,
+#' subset selects cyclone trajectories that are within the chosen range at all
+#' points during their lifetime.)
+#' @return An object of the same class as the input object
+#' @author R.E. Benestad and A.  Mezghani
+#' @keywords utilities
+#' @examples
+#' 
+#' data(Oslo)
+#' # January months:
+#' jan <- subset(Oslo,it="jan")
+#' # The last 10 years:
+#' recent <- subset(Oslo,it=c(2003,2012))
+#' # JJA season
+#' jja <- subset(Oslo,it="jja")
+#' # Seasonl values for MAM
+#' mam <- subset(as.4seasons(Oslo),it="mam")
+#' 
+#' data(ferder)
+#' # Aggregated values for May
+#' may <- subset(as.monthly(Oslo),it="may")
+#' # The last 10 aggregated annual values 
+#' recent.ann <- subset(as.annual(Oslo),it=2004:2013)
+#' 
+#' gcm <- t2m.NorESM.M()
+#' # Extract July months from a field:
+#' gcm.jul <- subset(gcm,it="jul")
+#' 
+#' # Extract a period from a field:
+#' gcm.short <- subset(gcm.jul,it=c(1950,2030))
+#' 
+#' # Extract data for the region 0-50E/55-65N
+#' X <-  subset(gcm,is=list(c(0,50),c(55,65)))
+#' 
+#' # Extract data for a specific set of longitudes and latitudes
+#' Z <-  subset(gcm,is=list(lon=c(1,30),lat=c(58,63)))
+#' 
+#' t2m <- t2m.NCEP(lon=c(-10,30),lat=c(50,70))
+#' cal <- subset(t2m,it=c("1948-01-01","1980-12-31"))
+#' 
+#' # Example on how to split the data into two parts for
+#' # split-sample test...
+#' 
+#' T2M <- as.annual(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
+#' cal <- subset(T2M,it=c(1948,1980))
+#' pre <- subset(T2M,it=c(1981,2012))
+#' comb <- combine(cal,pre) 
+#' X <- EOF(comb)
+#' plot(X)
+#' 
+#' data(ferder)
+#' y <- as.annual(ferder)
+#' z <- DS(y,X)
+#' plot(z, new=FALSE)
+#' 
+#' # Test of subset the commutative property of subset and combine: 
+#' T2M <- as.4seasons(t2m.NCEP(lon=c(-10,30),lat=c(50,70)))
+#' GCM <- as.4seasons(t2m.NorESM.M(lon = range(lon(T2M))+c(-2,2), lat = range(lat(T2M))+c(-2,2)))
+#' XY <- combine(T2M,GCM)
+#' X1 <- subset(XY,it="mam")
+#' X2 <- combine(subset(T2M,it="mam"),subset(GCM,it="mam"))
+#' eof1 <- EOF(X1)
+#' eof2 <- EOF(X2)
+#' eof3 <- biasfix(eof2)
+#' plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
+#'      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2), new=FALSE)
+#' # OK - identical results
+#' 
+#' # Extract storm tracks for specific periods, regions and characteristics
+#' # from the sample 'events' object \code{storms} (North Atlantic storms identified from ERA5 data)
+#' data(storms)
+#' 
+#' # Subset deep cyclones...
+#' x <- subset(storms, ic=list(param="pcent", pmax=970, FUN="any"))
+#' # ... and trajectories with a lifetime of at least 12 time steps (72 hours)
+#' x <- subset(x, ic=list(param="trackcount", pmin=12))
+#' 
+#' # Subset cyclones in the region 10W-10E/55-65N
+#' x.is <- subset(x,is=list(lat=c(55,65),lon=c(-10,10)))
+#' # ...and all cyclones passing going through the region
+#' x.is2 <- subset(x,it=which(x$trajectory %in% x.is$trajectory))
+#' 
+#' # Subset cyclones in the spring season (march, april, may)
+#' x.mam <- subset(x, it="mam")
+#' # Subset cyclones in december 2016
+#' x.201612 <- subset(x,it=c("2016-12-01","2016-12-31")) 
+#' map(x.201612, new=FALSE)
+#' 
+#' 
+#' @export
 subset <- function(x,...) UseMethod("subset")
 
-subset.field <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
-  if (is.null(it) & is.null(is)) return(x)
+#' @export subset.field
+subset.field <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print("subset.field")
+  if (is.null(it) & is.null(is)) return(x) 
   if (verbose) {str(it); str(is)}
-  y <- default.subset(x,is=is,it=it,verbose=verbose)
+  y <- default.subset(x,...,is=is,it=it,verbose=verbose)
   attr(y,'history') <- history.stamp(x)
-  if (verbose) print("exit subset.field")
   return(y)
 }
 
-subset.zoo <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
-  if (is.null(it) & is.null(is)) return(x)
+#' @export subset.zoo
+subset.zoo <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print("subset.zoo")
+  if (is.null(it) & is.null(is)) return(x)
   d <- dim(x)
   y <- default.subset(x,is=is,it=it,verbose=verbose)
   ## Check if there is only one series but if the dimension 
-  if ( (!is.null(d)) & is.null(dim(y)) ) 
+  if ( (!is.null(d)) & is.null(dim(y)) ) {
     if (d[2]==1) dim(y) <- c(length(y),1)
+  }
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
 
 
-subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
-    if (verbose) print(paste("subset.comb: n.apps=",attr(x,'n.apps')))
+#' @export subset.comb
+subset.comb <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
+  if(verbose) print("subset.comb")
+  if(verbose) print(paste("n.apps=",attr(x,'n.apps')))
   if ((is.null(it)) & (is.null(is))) return(x)
     n.app <- attr(x,'n.apps')
     y <- subset.field(x,it=it,is=is,verbose=verbose)
     y <- attrcp(x,y,ignore = c('longitude','latitude'))
-    if (verbose) print('Subset the appendend fields')
-    
+    if (verbose) print('Subset the appendend fields')    
     for (i in 1:n.app) {
       if (verbose) print(paste0("z <- attr(x,'appendix.",i,"')"))
         eval(parse(text=paste0("z <- attr(x,'appendix.",i,"')")))
@@ -51,7 +175,8 @@ subset.comb <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     invisible(y)
 }
 
-subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
+#' @export subset.eof
+subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print("subset.eof")
     if (is.null(is) & is.null(it) & is.null(ip)) return(x)                                    
     if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(ip)) return(x) 
@@ -184,18 +309,21 @@ subset.eof <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     return(y)
 }
 
-subset.cca <- function(x,it=NULL,is=NULL,...) {
-    if (!is.null(is))  {
-        x <- subset.pattern(x)
-    }
-    x
+#' @export subset.cca
+subset.cca <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
+  if(verbose) print("subset.cca")
+  if (!is.null(is))  {
+    x <- subset.pattern(x,is=is,...)
+  }
+  return(x)
 }
 
-subset.mvr <- function(x,it=NULL,is=NULL,...) {
-    x
+subset.mvr <- function(x,...,it=NULL,is=NULL) {
+  x
 }
 
-subset.pattern <- function(x,is=NULL,verbose=FALSE,...) {
+#' @export subset.pattern
+subset.pattern <- function(x,...,is=NULL,verbose=FALSE) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) print('subset.pattern')
   if (is.list(is)) {
@@ -249,12 +377,15 @@ subset.pattern <- function(x,is=NULL,verbose=FALSE,...) {
   return(x)
 }
 
-subset.matrix <- function(x,is=NULL,verbose=FALSE,...) {
-  subset.pattern(x,is,verbose=verbose)
+#' @export subset.matrix
+subset.matrix <- function(x,...,is=NULL,verbose=FALSE) {
+  if(verbose) print("subset.matrix")
+  y <- subset.pattern(x,is=is,verbose=verbose)
+  return(y)
 }  
 
-
-subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
+#' @export subset.pca
+subset.pca <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print('subset.pca')
   y <- x
   if (!is.null(ip)) {
@@ -319,7 +450,8 @@ subset.pca <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
   return(y)
 }
 
-subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
+#' @export subset.corfield
+subset.corfield <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('subset.corfield')
     stopifnot(inherits(x,"corfield"))
     y <- x
@@ -341,7 +473,8 @@ subset.corfield <- function(x,it=NULL,is=NULL,verbose=FALSE,...) {
     return(y)
 }
 
-subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
+#' @export subset.ds
+subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('subset.ds')
     y <- x
     if (!is.null(it)) {
@@ -390,7 +523,9 @@ subset.ds <- function(x,ip=NULL,it=NULL,is=NULL,verbose=FALSE,...) {
     return(x)
 }
 
-subset.trend <- function(x,it=NULL,is=NULL,...) {
+#' @export subset.trend
+subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
+    if(verbose) print("subset.trend")
     y <- subset.field(x,it=it,is=is)
     
     pattern <- attr(x, "pattern")
@@ -418,8 +553,9 @@ subset.trend <- function(x,it=NULL,is=NULL,...) {
     return(y)
 }
 
-subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
-                              ensemble.aggregate=TRUE,verbose=FALSE,...) {
+#' @export subset.dsensemble
+subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
+                              ensemble.aggregate=TRUE,verbose=FALSE) {
   if (verbose) print('subset.dsensemble')
   if (inherits(x,'list') & inherits(x,c('pca','eof')) &
      (inherits(x,'dsensemble')) & ensemble.aggregate) {
@@ -661,7 +797,9 @@ subset.dsensemble <- function(x,it=NULL,is=NULL,ip=NULL,#im=NULL,
   invisible(y)
 }
 
-subset.spell <- function(x,is=NULL,it=NULL,...) {
+#' @export subset.spell
+subset.spell <- function(x,is=NULL,it=NULL,...,verbose=FALSE) {
+    if(verbose) print("subset.spell")
     y <- subset.station(x,is=is,it=it)
     good <- is.finite(y)
     y <- zoo(y[good],order.by=index(y)[good])
@@ -686,7 +824,8 @@ subset.spell <- function(x,is=NULL,it=NULL,...) {
 }
 
 default.subregion <- function(x,is=NULL,verbose=FALSE) {
-  if (verbose) {print("Sub-region"); print(is)}
+  if(verbose) print("default.subregion")
+  if(verbose) {print("Sub-region"); print(is)}
   
   if ( (is.list(is)) | (is.data.frame(is)) ) {
     if ( (is.null(is[[1]])) | (sum(is.finite(is[[1]])) < 2) ) is[[1]] <- c(-180,360)
@@ -767,8 +906,10 @@ default.subregion <- function(x,is=NULL,verbose=FALSE) {
   return(y)
 } 
 
+#' @export default.subset
 default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-
+    if (verbose) {print("default.subset"); print(it); print(is); print('---')}
+    
     ## REB: Use select.station to condition the selection index is...
     ## loc - selection by names
     ## lon/lat selection be geography or closest if one coordinate lon/lat
@@ -786,7 +927,6 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## Return the original value if 'it' and 'is' are not specified
     if (is.null(it) & is.null(is)) return(x)
     
-    if (verbose) {print("default.subset"); print(it); print(is); print('---')}
     x0 <- x
     ## 
     d <- dim(x)
@@ -1072,8 +1212,8 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
     
-
-subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
+#' @export subset.events
+subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   if(verbose) print("subset.events")
   cls <- class(x)
   
@@ -1215,7 +1355,7 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
     if(!is.null(ic$param) & (!is.null(ic$pmin) | !is.null(ic$pmax))) {
       if(ic$param %in% c("trajectory","trackcount","distance","tracklength")) {
         ic$FUN <- NULL
-        if(!ic$param %in% names(x)) x <- Trackstats(x)
+        if(!ic$param %in% names(x)) x <- trackstats(x)
       } else if(is.null(ic$FUN)) {
         ic$FUN <- "any"
       }
@@ -1253,7 +1393,8 @@ subset.events <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE,...) {
   invisible(y)
 }
 
-subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
+#' @export subset.trajectory
+subset.trajectory <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   if(verbose) print("subset.trajectory")
   
   x0 <- x
@@ -1443,8 +1584,9 @@ subset.trajectory <- function(x,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   invisible(y)
 }
 
-## Routine for sorting the order of station series.
-sort.station <- function(x,is=NULL,decreasing=TRUE) {
+#' Routine for sorting the order of station series.
+#' @export sort.station
+sort.station <- function(x,decreasing=TRUE,...,is=NULL) {
   if (is.null(is)) is <- order(stid(x),decreasing=decreasing)
   y <- zoo(x)[,is]
   y <- attrcp(x,y)
@@ -1459,4 +1601,51 @@ sort.station <- function(x,is=NULL,decreasing=TRUE) {
   attr(y,'longname') <- attr(x,'longname')[is]
   attr(y,'history') <- history.stamp(x)
   return(y)
+}
+
+## Tools to subset or reduce the size of a dsensemble, e.g. removing the
+## high-order modes of PCA/EOF that represent noise.
+# internal function - no need to export?
+subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
+                              verbose=FALSE,...) {
+ 
+  if (verbose) print('subset.dsensemble.multi')
+  cls <- class(x)
+  
+  Y <- list()
+  Y$info <- x$info
+  ## KMP 2017-06-07 Some dsensemble objects may have both a PCA and EOF attached
+  #if (inherits(x,'pca')) {
+  if (any('pca' %in% names(x))) { 
+    if (verbose) print('subset pca')
+    ## KMP 2017-06-07 Do not subset pca and eof in time!
+    ## They typcially cover a shorter time span than the ensemble members and
+    ## if e.g., it = c(2050,2100) you will end up with an empty pca and eof.
+    Y$pca <- subset(x$pca,is=is,ip=ip,verbose=verbose)
+    #Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
+  }
+  #if (inherits(x,'eof')) {
+  if (any('eof' %in% names(x))) {
+    if (verbose) print('subset eof')
+    Y$eof <- subset(x$eof,is=is,ip=ip,verbose=verbose)
+    #Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
+  }
+  X <- x
+
+  X$info <- NULL; X$pca <- NULL; X$eof <- NULL
+  n <- length(names(X))
+  if (verbose) print('subset gcm-zoo')
+  y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
+  if (verbose) print(dim(y[[1]]))
+
+  if (!is.null(im)) {
+    ## Subset ensemble members
+    if(verbose) print(paste('subset im',length(y)))
+    if (is.logical(im)) im <- (1:n)[im]
+    for (i in rev(setdiff(1:n,im))) y[[i]] <- NULL
+    if(verbose) print(paste('subset im',length(y)))
+  }
+  Y <- c(Y,y)
+  class(Y) <- cls
+  return(Y)
 }

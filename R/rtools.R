@@ -1,12 +1,119 @@
-## Author A. Mezghani
-## Description Contains some rtools ...
-## Created 14.11.2014
-
+#' Simple and handy functions
+#'
+#' \code{attrcp(x,y)} passes on attributes from \code{x} to \code{y} and
+#' returns the \code{y} with new attributes.
+#'
+#' \code{ensemblemean} returns the ensemble mean for dsensemble objects. The argument \code{FUN} can also be
+#' used to estimate other statistics, e.g \code{FUN='q95'} where
+#' \code{q95=function(x) apply(x,1,quantile,probs=0.95)}
+#'
+#' \code{TGW} uses triangulation of pressure measurements to estimate geostrophic wind based on
+#' Alexandersson et al. (1998), Glob. Atm. and Oce. Sys.
+#'
+#' \code{stand} gives a standardised time series.
+#'
+#' \code{zeros} counts the occurrence of zero values in a vector.
+#'
+#' \code{nv} returns the number of valid points.
+#'
+#' \code{missval} computes the percentage of missing data.
+#'
+#' \code{arec} compares the number of record-breaking events to the number of
+#' events for a time series of iid data (\code{sum(1/1:n)})
+#' 
+#' \code{strstrip} strips off spaces before and after text in a string.
+#' 
+#' \code{as.decimal} converts between degree-minute-second into decimal value.
+#' 
+#' \code{cv} computes the coefficient of variation.
+#' 
+#' \code{nv} count the number of valid data points.
+#' 
+#' \code{q5}, \code{q95}, \code{q975} and \code{q995} are shortcuts to the 5\%, 95\%, 97.5\% and 99.5\% percentiles.
+#' 
+#' \code{trend.coef} and \code{trend.pval} return the coefficient and the p-value of the linear trend.
+#' 
+#' \code{exit} is a handy function for exiting the R session without saving.
+#' 
+#' \code{figlab} is a handy function for labelling figures (e.g. 'Figure 1')
+#' 
+#' \code{ndig} estimates the number of digits for round(x,ndig), e.g. in scales for plotting.
+#' 
+#' \code{factor2numeric} transforms a factor to a numeric object
+#' 
+#' \code{rmse} and \code{RMSE} calculate the root-mean-square error
+#' 
+#' @aliases as.decimal nv cv q5 q95 q975 q995 filt
+#' filt.default exit figlab ndig ensemblemean propchange stand rmse RMSE
+#' firstyear lastyear eofvar test.num.predictors arec
+#' arec.default arec.station lastrains lastelementrecord strstrip bin
+#' factor2numeric zeros missval
+#' @seealso attrcp
+#'
+#' @importFrom stats quantile qgeom qpois dnorm filter 
+#'
+#' @param x A data.frame or a coredata zoo object.
+#' @param na.rm If TRUE, remove NA's from data
+#' @param type 'ma' for moving average (box-car), 'gauss' for Gaussian, 'binom'
+#' for binomial filter,' parzen' for Parzen filter, 'hanning' for Hanning
+#' filter, or 'welch' for Welch filter.
+#' @param lowpass True for smoothing, otherwise the highpass results is
+#' returned
+#' @param triangle a group of three stations with sea-level pressure', e.g.
+#' from ECA\&D.
+#' @param nbins number of bins/categories
+#' @return \item{as.decimal }{Decimal value} \item{trend.coef }{Linear trend
+#' per decade}
+#' @author A. Mezghani
+#' @keywords rtools ~kwd2
+#' @examples
+#' 
+#' ## Monthly mean temperature at 'Oslo - Blindern' station 
+#' data(Oslo)
+#' ## Compute the linear trend and the p-value on annual aggregated values 
+#' tr <- trend.coef(coredata(annual(Oslo)))
+#' pval <- trend.pval(coredata(annual(Oslo)))
+#' \dontrun{
+#' pp <- station(param='slp',cntr='Denmark',src='ecad')
+#' wind <- TGW(subset(pp,is=c(1,3,10))
+#' plot(wind)
+#' ws <- sqrt(wind[,1]^2 + wind[,2]^2)
+#' plot(ws)
+#' hist(ws)
+#' 
+#' ## Estimate wind for a larger group of stations
+#' wind <- geostrophicwind(pp,nmax=10)
+#' u <- subset(wind,param='u')
+#' v <- subset(wind,param='u')
+#' ws <- sqrt(u^2+v^2)
+#' ws <- attrcp(v,ws)
+#' class(ws) <- class(v)
+#' attr(ws,'variable')='windspeed'
+#' attr(ws,'longname')='geostrophic wind speed'
+#' map(ws,FUN='quantile',probs=0.98)
+#' 
+#' ## Test firstyears on HadCRUT4
+#' if (!file.exists('~/Downloads/HadCRUT.4.6.0.0.median.nc')) {
+#'   print('Download HadCRUT4')
+#'   download.file('https://crudata.uea.ac.uk/cru/data/temperature/HadCRUT.4.6.0.0.median.nc',
+#'                 dest='~/Downloads/HadCRUT.4.6.0.0.median.nc') 
+#' }
+#' 
+#' Obs <- annual(retrieve('~/Downloads/HadCRUT.4.6.0.0.median.nc',param='temperature_anomaly'))
+#' lons <- rep(lon(Obs),length(lat(Obs)))
+#' lats <- sort(rep(lat(Obs),length(lon(Obs))))
+#' fy <- firstyear(Obs)
+#' map(subset(Obs,it=1))
+#' points(lons[fy==1850],lats[fy==1850])
+#' map(Obs,FUN='firstyear')
+#' }
+#'
+#' @export as.decimal
 as.decimal <- function(x=NULL) {
     ## converts from degree min sec format to degrees ...
     ##x is in the form "49 deg 17' 38''"
   if (!is.null(x)) {
-        deg <-as.numeric(substr(x,1,2)) 
+        deg <- as.numeric(substr(x,1,2)) 
         min <- as.numeric(substr(x,4,5))
         sec <- as.numeric(substr(x,7,8))     
         x <- deg + min/60 + sec/3600
@@ -14,53 +121,72 @@ as.decimal <- function(x=NULL) {
     return(x)
 }
 
+#' @export
+nv <- function(x) sum(is.finite(x))
 
-
-## Function to compare downscaled field with original field: subtracts the original data
-## from the downscaled data (REB + HBE)
-test.ds.field <- function(x,what='xval',verbose=FALSE) {
-  if (verbose) print('fieldtest')
-  stopifnot (inherits(x,'eof') & inherits(x,'ds'))
-  if (verbose) print(colnames(attr(x,'evaluation')))
-  isel <- is.element(colnames(attr(x,'evaluation')),paste('X.PCA',1:dim(x)[2],sep='.'))
-  eof1 <- attr(x,'evaluation')[,isel]
-  isel <- is.element(colnames(attr(x,'evaluation')),paste('Z.PCA',1:dim(x)[2],sep='.'))
-  eof2 <- attr(x,'evaluation')[,isel]
-  if (verbose) {str(eof1); print(names(attributes(x)))}
-  attr(eof1,'variable') <- varid(x)
-  attr(eof1,'unit') <- unit(x)
-  attr(eof1,'longname') <- attr(x,'longname')
-  attr(eof1,'pattern') <- attr(x,'pattern')
-  attr(eof1,'eigenvalues') <- attr(x,'eigenvalues')
-  attr(eof1,'dimensions') <- c(dim(attr(x,'evaluate'))[1],dim(attr(x,'pattern'))[3])
-  attr(eof1,'mean') <- attr(x,'mean')
-  attr(eof1,'longitude') <- lon(x)
-  attr(eof1,'latitude') <- lat(x)
-  attr(eof1,'max.autocor') <- attr(x,'max.autocor')
-  attr(eof1,'eigenvalues') <- attr(x,'eigenvalues')
-  attr(eof1,'sum.eigenv') <- attr(x,'sum.eigenv')
-  attr(eof1,'tot.var') <- attr(x,'tot.var')
-  attr(eof1,'aspect') <- 'anomaly'
-  attr(eof1,'dimnames') <- NULL   # REB 2016-03-04
-  class(eof1) <- c("eof",class(x))[3:6]
-  eof2 <- attrcp(eof1,eof2)
-  class(eof2) <- c("eof",class(x))[3:6]
-  if (verbose) print(c(dim(eof1),dim(eof2)))
-  if (verbose) print('estimated EOFs - now get the fields..')
-  x1 <- as.field(eof1)
-  x2 <- as.field(eof2)
-  if (verbose) print(c(dim(x1),dim(x2)))
-  coredata(x1) <- coredata(x1 - x2)
-  attr(x,'history') <- history.stamp()
-  attr(x,'info') <- 'orginale - downscaled'
-  invisible(x1)
+#' @export
+ndig <- function(x) {
+  i0 <- (x==0) & !is.finite(x)
+  if (sum(i0)>0) x[i0] <- 1
+  y <- -trunc(log(abs(x))/log(10))
+  if (sum(i0)>0) y[i0] <- 0
+  return(y)
 }
 
-## Simplify life to extract the variance of the EOFs
-eofvar <- function(x) if (inherits(x,c('eof','pca'))) 
-                          attr(x,'eigenvalues')^2/attr(x,'tot.var')*100 else NULL
+#' @export
+strstrip <- function(x) {
+  if (is.na(x)) return(NA)
+  if (is.factor(x)) x <- as.character(x)
+  if (!is.character(x)) return(NA)
+  while (substr(x,1,1)==' ') x <- substr(x,2,nchar(x))
+  while (substr(x,nchar(x),nchar(x))==' ') x <- substr(x,1,nchar(x)-1)
+  return(x)
+}
 
-## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands   
+#' @export
+eofvar <- function(x) {
+  if (inherits(x,c('eof','pca'))) {
+    attr(x,'eigenvalues')^2/attr(x,'tot.var')*100
+  } else {
+    NULL
+  }
+}
+
+#' @export
+firstyear <- function(x,na.rm=FALSE,verbose=FALSE) {
+  if (verbose) print('firstyear')
+  yrs <- year(x)
+  if (verbose) print(range(as.numeric(yrs)))
+  if (is.null(dim(x))) y <- min(yrs[is.finite(x)]) else { 
+    nv <- apply(x,2,'nv')
+    y <- rep(NA,length(nv))
+    ok <- (1:length(nv))[nv > 0]
+    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) min(yrs[is.finite(x)]),yrs)
+    #for (i in ok) y[i] <- min(yrs[is.finite(x[,i])])
+  }
+  y[!is.finite(y)] <- NA
+  if (verbose) print(table(as.numeric(y)))
+  return(y)
+}
+
+#' @export
+lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
+  if (verbose) print('lastyear')
+  yrs <- year(x)
+  if (verbose) print(range(as.numeric(yrs)))
+  if (is.null(dim(x))) y <- max(yrs[is.finite(x)]) else { 
+    nv <- apply(x,2,'nv')
+    y <- rep(NA,length(nv))
+    ok <- (1:length(nv))[nv > 0]
+    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) max(yrs[is.finite(x)]),yrs)
+  }     
+  y[!is.finite(y)] <- NA
+  if (verbose) print(table(as.numeric(y)))
+  return(y)
+}
+
+## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands
+#' @export test.num.predictors
 test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y.res='NA', nam.y='NA', nam.x.dom='NA',nam.t='NA',verbose=FALSE) {
   predictor_field <- x
   predictand_field <- y
@@ -104,37 +230,57 @@ test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA',
 }
 
 ## compute the percentage of missing data in x
+#' @export
 missval <- function(x) sum(is.na(coredata(x)))/length(coredata(x))
 
 ## compute the quantile 95% of x
+#' @export
 q95 <- function(x,na.rm=TRUE) quantile(x,probs=.95,na.rm=na.rm)
 
 ## compute the quantile 5% of x
+#' @export
 q5 <- function(x,na.rm=TRUE) quantile(x,probs=.05,na.rm=na.rm)
 
 ## compute the quantile 5% of x
+#' @export
 q995 <- function(x,na.rm=TRUE) quantile(x,probs=.995,na.rm=na.rm)
 
 ## compute the quantile 5% of x
+#' @export
 q975 <- function(x,na.rm=TRUE) quantile(x,probs=.975,na.rm=na.rm)
 
 ## count the number of valid data points
+#' @export
 nv <- function(x,...) sum(is.finite(x))
 
 ## Compute the coefficient of variation of x
+#' @export
 cv <- function(x,na.rm=TRUE) {sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)}
 
+#' @export
 stand <- function(x) (x - mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)
 
+#' @export
+zeros <- function(x) (sum(is.infinite(1/x)) > 0)
+
 ## Estimate the root-mean-squared-error
+#' @export
 rmse <- function(x,y,na.rm=TRUE) {
   z <- sqrt( (x - y)^2 )
   z <- sum(z,na.rm=na.rm)/sum(is.finite(z),na.rm=na.rm)
   return(z)             
 }
+
+#' @export
 RMSE <- function(x,y,...) return(rmse(x,y,...))
 
-# Wrap-around for lag.zoo to work on station and field objects:
+#' Wrap-around for lag.zoo to work on station and field objects
+#'
+#' @aliases lag.field
+#'
+#' @importFrom stats lag
+#'
+#' @export lag.station
 lag.station <- function(x,...) {
   y <- lag(zoo(x),...)
   y <- attrcp(x,y)
@@ -142,29 +288,33 @@ lag.station <- function(x,...) {
   invisible(y)
 }
 
+#' @export lag.field
 lag.field <- function(x,...) lag.station(x,...)
-  
+
+#' @export
 exit <- function() q(save="no")
 
+#' @export
 filt <- function(x,n,type='ma',lowpass=TRUE) UseMethod("filt")
 
+#' @export filt.default
 filt.default <- function(x,n,type='ma',lowpass=TRUE) {
   
-# A number of different filters using different window
-# shapes.
-#
-# R.E. Benestad, July, 2002, met.no.
-#
-# ref: Press et al. (1989), Numerical Recipes in Pascal, pp. 466
-#library(ts)
+  # A number of different filters using different window
+  # shapes.
+  #
+  # R.E. Benestad, July, 2002, met.no.
+  #
+  # ref: Press et al. (1989), Numerical Recipes in Pascal, pp. 466
+  #library(ts)
 
-# Moving-average (box-car) filter
+  # Moving-average (box-car) filter
   ma.filt <- function(x,n) {
     y <- filter(x,rep(1,n)/n)
     y
   }
 
-# Gaussian filter with cut-off at 0.025 and 0.975 of the area.
+  # Gaussian filter with cut-off at 0.025 and 0.975 of the area.
   gauss.filt <- function(x,n) {
     i <- seq(0,qnorm(0.975),length=n/2)
     win <- dnorm(c(sort(-i),i))
@@ -173,7 +323,7 @@ filt.default <- function(x,n,type='ma',lowpass=TRUE) {
     y
   }
 
-# Binomial filter
+  # Binomial filter
   binom.filt <- function(x,n) {
     win <- choose(n-1,0:(n-1))
     win <- win/max(win,na.rm=T)
@@ -183,7 +333,7 @@ filt.default <- function(x,n,type='ma',lowpass=TRUE) {
     y
   }
 
-# Parzen filter (Press,et al. (1989))
+  # Parzen filter (Press,et al. (1989))
   parzen.filt  <-  function(x,n) {
     j <- 0:(n-1)
     win <- 1 - abs((j - 0.5*(n-1))/(0.5*(n+1)))
@@ -192,7 +342,7 @@ filt.default <- function(x,n,type='ma',lowpass=TRUE) {
     y
   }
 
-# Hanning filter (Press,et al. (1989))
+  # Hanning filter (Press,et al. (1989))
   hanning.filt  <-  function(x,n) {
     j <- 0:(n-1)
     win <- 0.5*(1-cos(2*pi*j/(n-1)))
@@ -201,7 +351,7 @@ filt.default <- function(x,n,type='ma',lowpass=TRUE) {
     y
   }
 
-# Welch filter (Press,et al. (1989))
+  # Welch filter (Press,et al. (1989))
   welch.filt  <-  function(x,n) {
     j <- 0:(n-1)
     win <- 1 - ((j - 0.5*(n-1))/(0.5*(n+1)))^2
@@ -219,13 +369,15 @@ filt.default <- function(x,n,type='ma',lowpass=TRUE) {
   attr(x,'history') <- history.stamp(x)
   return(x)
 }
-  
+
+#' @export
 figlab <- function(x,xpos=0.001,ypos=0.001) {
   par(new=TRUE,fig=c(0,1,0,1),xaxt='n',yaxt='n',bty='n',mar=rep(0,4))
   plot(c(0,1),c(0,1),type='n')
   text(xpos,ypos,x,cex=1.2,pos=4,col='grey30')
 }
 
+#' @export
 ensemblemean <- function(x,FUN='rowMeans') {
   if (inherits(x,'pca')) z <- as.station(x) else z <- x
   ## Estimate the ensemble mean
@@ -240,7 +392,7 @@ ensemblemean <- function(x,FUN='rowMeans') {
   invisible(zm)
 }
 
-
+#' @export
 propchange <- function(x,it0=c(1979,2013)) {
   z <- coredata(x)
   if (is.null(dim(z)))
@@ -251,8 +403,10 @@ propchange <- function(x,it0=c(1979,2013)) {
   x
 }
 
+#' @export
 arec <- function(x,...) UseMethod("arec")
 
+#' @export arec.default
 arec.default <- function(x,...) {
   y <- length(records(x))/sum(1/(1:nv(x)))
   return(y)
@@ -263,6 +417,7 @@ arec.station <- function(x,...) {
   return(y)
 }
 
+#' @export
 lastrains <- function(x,x0=1,uptodate=TRUE,verbose=FALSE) {
   if (verbose) print('lastrains')
   ## Clean up missing values
@@ -273,6 +428,7 @@ lastrains <- function(x,x0=1,uptodate=TRUE,verbose=FALSE) {
   return(z)
 }
 
+#' @export
 lastelementrecord <- function(x,verbose=FALSE) {
   ## Checks last element of the record to see if they are the highest - a record
   if (verbose) print('lastelementrecord')
@@ -294,6 +450,7 @@ lastelementrecord <- function(x,verbose=FALSE) {
   return(z)
 }
 
+#' @export
 bin <- function(x,nbins=5,labels=NULL,na.rm=TRUE) {
   if (na.rm) good <- is.finite(x) else good <- rep(TRUE,length(x))
   rank <- order(x[good])
@@ -303,3 +460,10 @@ bin <- function(x,nbins=5,labels=NULL,na.rm=TRUE) {
   if (is.null(labels)) names(z) <- quantile(x,probs = (1:nbins -0.5)/nbins)
   return(z)
 }
+
+#' @export
+factor2numeric <- function(f) {
+  if(!is.null(levels(f))) {return(as.numeric(levels(f))[f])
+  } else return(as.numeric(f))
+}
+

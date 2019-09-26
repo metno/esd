@@ -4,7 +4,7 @@
 #
 # also see reg.cal.R, dX, dY
 
-dT <- function(y,m=NULL,plot=FALSE,verbose=FALSE,chk.conf=1) {
+dT <- function(y,m=NULL,plot=FALSE,verbose=FALSE) {
 
   if (verbose) print('dT')
   Y <- y

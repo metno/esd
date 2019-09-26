@@ -1,13 +1,8 @@
-## Description  : Retrieving meta and data from the GHCNM data source 
-## Author 	: Abdelkader Mezghani (MET)
-## Created 	: 22-03-2013 
-## Last update	: 14-06-2013
-## Functions    : t2m.GHCNM(completed) ; metaghcnm(completed) ; dataghcnm(completed)
-
-## MAIN FUNCTION
-                                        # Get and format output data for esd further processing
-t2m.GHCNM <- function(stid = "10160403000", param = "TAVG", src = "ghcnm", ver = "v3.2.0", adj = TRUE, path = "/klimadata/work/abdelkaderm/data/", force = TRUE, flag = FALSE, verbose = FALSE) {
+# do not export
+t2m.GHCNM <- function(stid = "10160403000", param = "TAVG", src = "ghcnm", ver = "v3.2.0", adj = TRUE,
+                      path = "/path/to/data/", force = TRUE, flag = FALSE, verbose = FALSE) {
                                         # Get the meta data
+  if(verbose) print("t2m.GHCNM")
   m <- ghcnm.meta(stid = stid , verbose = verbose)
   x <- ghcnm.data(stid = stid , ver = ver , verbose = verbose)
                                         # convert units
@@ -37,17 +32,15 @@ t2m.GHCNM <- function(stid = "10160403000", param = "TAVG", src = "ghcnm", ver =
   attr(z, "inv_filename") <- attr(m,"inv_filename")
   attr(z, "call") 	<- match.call()
 
-  class(z) <- c("station","monthly")
-  
+  class(z) <- c("station","monthly")  
   invisible(z)
-
-## obsfinalformat <- list(PARAM = rownames(table(obs.data$ELEMENT)),ID = paste(obs.meta$COUNTRY.CODE,obs.meta$STN,sep=""),NAME = obs.meta$NAME, LAT =obs.meta$LATITUDE,LON =obs.meta$LONGITUDE,ELEV = obs.meta$STNELEV,EXTRA = obs.meta$EXTRA,VAL = obs,src = upper.case(src), OR_VERSION = version.por , UPD_VERSION = version.upd, ADJUSTED = upper.case(adj), INV_FILE = invfile, DATA_FILE = fdata, ftp_src_link = "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn")
 }
 
 ## SUB-FUNCTION "metaghcnm"
-ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qca", path = "data.GHCNM",url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/",force = TRUE,verbose=FALSE) {
-  ## SETTING AND/OR CREATING WORK DIRECTORY
-  ## AM 02.09.2013 This function could not handle several variables in the same time, each variable should be loaded seperately. i.e. the argument ele should be one single value and not a vector of values !!! 
+#' @export
+ghcnm.meta <- function(stid=NULL, ele=101, src="ghcnm", ver="v3", adj="qca", path="data.GHCNM",
+                       url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/", force=TRUE, verbose=FALSE) {
+  if(verbose) print("ghcnm.meta")
   
   path <- file.path(path,ver,fsep= .Platform$file.sep) 
   if (verbose) print(paste("Working Directory is :",path, sep=" -> "))
@@ -55,8 +48,7 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
     test <- readline("Directory does not exist ! Would you like to create it (yes or no)")
     if (tolower(test) == "yes") dir.create(path,recursive=TRUE)
   }
-  ##setwd(newpath)
-                                        # SET PARAMETER
+  # SET PARAMETER
   param = tolower(as.character(ele2param(ele=ele,src=toupper(src))[1,5]))
   if (verbose) print("Reading meta data ...")
   if (verbose) print(paste("Param", param,sep=" <<-->> "))
@@ -64,9 +56,6 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
   if (tolower(src) == "ghcnm"){
     if (verbose) print(paste("src",src))
     if (!file.exists("ghcnm.meta.rda") | force) {
-     # newpath2 <- paste(path,src,sep = "")   
-     # setwd(newpath2)
-                                #destpath = paste(newpath,src,"/",sep="")
       destfile <- zipfile <- paste(src,param,"latest",adj,"tar","gz",sep=".")
                                         #destfile = paste(zipfile,sep="") 
       url <- paste(url,ver,"/",sep="")
@@ -123,8 +112,10 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
       end <- year[cumsum(cc)]
       ele <- rep(ele,length(meta$stid))
       
-      ghcnm.meta <- list(station_id =meta$stid , location = as.character(meta$loc) , country = as.character(meta$country) , longitude = as.numeric(meta$lon) , latitude = as.numeric(meta$lat) ,  altitude = as.numeric(meta$alt) , element = as.numeric(ele) , start = as.integer(start) , end = as.integer(end))
-                                        # Add attributes to dataframe  	
+      ghcnm.meta <- list(station_id =meta$stid, location = as.character(meta$loc), country = as.character(meta$country),
+                         longitude = as.numeric(meta$lon), latitude = as.numeric(meta$lat),  altitude = as.numeric(meta$alt),
+			 element = as.numeric(ele), start = as.integer(start) , end = as.integer(end))
+                                      
       attr(ghcnm.meta,"source") <- src
       attr(ghcnm.meta,"version") <- upd.ver	
       attr(ghcnm.meta,"history") <- c(inv.file,dat.file)
@@ -132,25 +123,23 @@ ghcnm.meta <- function(stid = NULL, ele = 101,src = "ghcnm",ver = "v3",adj = "qc
       attr(ghcnm.meta,"cite") <- "J. H. Lawrimore, M. J. Menne, B. E. Gleason, C. N. Williams, D. B. Wuertz, R. S. Vose, and J. Rennie (2011), An overview of the Global Historical Climatology Network monthly mean temperature data set, version 3, J. Geophys. Res., 116, D19121, doi:10.1029/2011JD016187." 
       attr(ghcnm.meta, "file") <- "ghcnm.meta.rda"
       attr(ghcnm.meta, "call") <- match.call()
-                                        # save in rda file
       save(ghcnm.meta,file="ghcnm.meta.rda")
     } else {
       if (verbose) print("Reading Meta data from rda file ...")
       load("ghcnm.meta.rda")
       if (verbose) print("Done !")
     }
-    ## reset to home directory
     setwd("~")
     return(ghcnm.meta)
   }
   
-} # END OF metaghcnm function
+}
 
-                                        # SUB-FUNCTION "dataghcnm"
-ghcnm.data <- function(ele = 101, stid = "10160403000", ver = "v3", adj = "qca", src = "ghcnm", path = "data.GHCNM",url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn",flag = FALSE, force = FALSE, verbose=FALSE) {
+#' @export
+ghcnm.data <- function(ele=101, stid="10160403000", ver="v3", adj="qca", src="ghcnm",
+                       path="data.GHCNM", url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn",flag = FALSE, force = FALSE, verbose=FALSE) {
 
-  ## oldpath <- getwd()
-  ## path <- file.path(path,ver,fsep= .Platform$file.sep) 
+  if(verbose) print("ghcnm.data")
   ## convert ele to param
   param = tolower(as.character(ele2param(ele=ele,src="GHCNM")[5]))
   ## Print work directory
@@ -210,7 +199,15 @@ ghcnm.data <- function(ele = 101, stid = "10160403000", ver = "v3", adj = "qca",
   datatext = readLines(data.file)
   if (!is.null(stid)) datatext <- datatext[grep(stid,datatext)]       
   writeLines(datatext,file.path(path,"station.tmp",fsep= .Platform$file.sep))
-  ghcnm.data <- read.fwf(file.path(path,"station.tmp",fsep= .Platform$file.sep),widths=c(3,8,4,4,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3), col.names= c("COUNTRY.CODE","ID","year","element","JAN","FLAG1","FEB","FLAG2","MAR","FLAG3","APR","FLAG4","MAY","FLAG5","JUI","FLAG6","JUL","FLAG7","AUG","FLAG8","SEP","FLAG9","OCT","FLAG10","NOV","FLAG11","DEC","FLAG12"),sep = "\t",as.is=TRUE)   
+  ghcnm.data <- try(read.fwf(file.path(path,"station.tmp",fsep= .Platform$file.sep),
+    widths=c(3,8,4,4,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3),
+    col.names= c("COUNTRY.CODE","ID","year","element","JAN","FLAG1","FEB","FLAG2","MAR","FLAG3","APR",
+                 "FLAG4","MAY","FLAG5","JUI","FLAG6","JUL","FLAG7","AUG","FLAG8","SEP","FLAG9","OCT",
+		 "FLAG10","NOV","FLAG11","DEC","FLAG12"),sep = "\t",as.is=TRUE))
+  if(inherits(ghcnm.data,"try-error")) {
+    print("Warning : No data found for that station")
+    return(NULL)
+  }
   if (!flag) ghcnm.data <- subset(ghcnm.data,select = c(seq(-6,-28,-2)))	
   ## Replacement of -9999 by "NA"		
   ghcnm.data[ghcnm.data == -9999] <- NA	
@@ -219,7 +216,7 @@ ghcnm.data <- function(ele = 101, stid = "10160403000", ver = "v3", adj = "qca",
   attr(ghcnm.data,"inv_file") <- destfile
   attr(ghcnm.data,"url") <- paste("ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/",ver,sep="/")
   
-  ##ghcnm.data <- read.fwf(invfile,widths=c(3,8,9,10,8,30,38),col.names=c			("COUNTRY.CODE","STNR","LATITUDE","LONGITUDE","STNELEV","NAME","EXTRA"),sep = "\t",as.is=TRUE)
+  ##ghcnm.data <- read.fwf(invfile,widths=c(3,8,9,10,8,30,38),col.names=c("COUNTRY.CODE","STNR","LATITUDE","LONGITUDE","STNELEV","NAME","EXTRA"),sep = "\t",as.is=TRUE)
   ## save(ghcnm.data,file="ghcnm.data.rda")
                                         # Remove temporary files
   file.remove(file.path(path,"station.tmp",fsep= .Platform$file.sep))
@@ -232,4 +229,3 @@ ghcnm.data <- function(ele = 101, stid = "10160403000", ver = "v3", adj = "qca",
   ## setwd(oldpath)
   return(ghcnm.data)
 }
-## END OF FUCNTION dataghcnm

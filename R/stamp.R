@@ -1,13 +1,15 @@
 
-# This function adds a stamp in the history of x
-# with 'sys.call', 'date()', and 'src (source)
-
+#' This function adds a stamp in the history of x
+#' with 'sys.call', 'date()', and 'src (source)
+#'
+#' @importFrom utils sessionInfo
+#'
+#' @export history.stamp
 history.stamp <-function(x=NULL,y=NULL,verbose=FALSE,...) UseMethod("history.stamp")
 
-history.stamp.default <- function(x=NULL,y=NULL,verbose=FALSE) {
-#  if (!is.null(attr(x,'source')))
-#    src <- attr(x,'source') else
-#    src <- "unknown source"
+#' @export history.stamp.default
+history.stamp.default <- function(x=NULL,y=NULL,verbose=FALSE,...) {
+  if(verbose) print("history.stamp.default")
   si <- list(R.version=sessionInfo()$R.version$version.string,
              esd.version=paste(sessionInfo()$otherPkgs$esd$Package,
                                sessionInfo()$otherPkgs$esd$Version,sep="_"),
@@ -15,8 +17,6 @@ history.stamp.default <- function(x=NULL,y=NULL,verbose=FALSE) {
   if (is.null(x)) x <- 0
   if (!is.null(attr(x,'history'))) {
     history <- attr(x,'history')
-    ## KMP 2017-11-30: Error when history attribute is not a list. 
-    ## Temporary fix. But why isn't it always?
     if(!is.list(history)) {
       call <- c(history,sys.call(sys.parent(n = 1)))
       sessioninfo <- si
@@ -34,7 +34,7 @@ history.stamp.default <- function(x=NULL,y=NULL,verbose=FALSE) {
                     timestamp=date(),
                     sessioninfo=si)
   }
-  #print(sys.call(sys.parent(n = 1)))
+  if(verbose) print(sys.call(sys.parent(n = 1)))
   return(newhistory)
 }
 

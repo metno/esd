@@ -1,38 +1,97 @@
-## Author 	 Kajsa Parding
-## Last update   04.10.2017
-## Require 	 geoborders.rda
-
+#' Plot trajectory maps
+#' 
+#' \code{map.trajectory} is an \code{S3} method for making different types of trajectory maps.
+#' By default, \code{map.trajectory} shows individual trajectories, but the
+#' number density of trajectories can also be visualised by using the argument \code{type='denisty'}.
+#'
+#' The functions \code{hexbin.trajectory} and \code{sunflower.trajectory}
+#' produce alternative versions of trajectory density maps.
+#' 
+#' @aliases map.trajectory hexbin.trajectory sunflower.trajectory map.pca.trajectory
+#' @seealso \code{\link{map} \link{map.events}}
+#' 
+#' @param x the trajectory object to be plotted.
+#' @param it A list or data.frame providing time index, e.g. month
+#' @param is A list or data.frame providing space index, e.g. station record
+#' @param type type of map: 'paths' shows trajectories; 'density' shows the
+#' spatial density of the trajectories; 'colors' shows colored trajectories where
+#' the colorscale represents 'param'; 'anomaly' or 'shape' show  only the
+#' longitude and latitude displacement of the trajectories
+#' @param parameter to display as a color scale
+#' @param col color of trajectories
+#' @param colmap Colour scales, either as an output from \code{\link[grDevices]{rgb}} or a
+#' single character string 'bwr' (blue-white-red) or 'rwb' ('red-white-blue')
+#' @param new TRUE: create a new graphics device
+#' @param projection Projections: c("lonlat","sphere","np","sp") - the latter
+#' gives stereographic views from the North and south poles.
+#' @param xlim see \code{\link{plot}} - only used for 'lonlat' projection
+#' @param ylim see \code{\link{plot}} - only used for 'lonlat' projection
+#' @param main an overall title for the plot
+#' @param lonR Only for the spherical projection - see \code{\link{map2sphere}}
+#' @param latR Only for the spherical projection - see \code{\link{map2sphere}}
+#' @param leg logical. If TRUE, legend is shown.
+#' @param alpha factor modifying the opacity alpha; typically in [0,1]
+#'
+#' @importFrom graphics matlines
+#'
+#' @keywords map trajectory
+#' @examples
+#' 
+#' # plot storm tracks zoomed in on the north Atlantic and northern Europe
+#' data(imilast.M03)
+#' map.trajectory(imilast.M03,col="blue",alpha=0.1,
+#'           projection='latlon',xlim=c(-60,60),ylim=c(30,90),
+#'           new=FALSE)
+#' 
+#' # spherical projection
+#' map.trajectory(imilast.M03,col="blue",alpha=0.1,projection='sphere',new=FALSE)
+#' 
+#' # plot number density for grid boxes of width 2 degrees and height 1 degree
+#' hexbin.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
+#' sunflower.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
+#' 
+#' \dontrun{
+#' # calculate cyclone density, takes a little while
+#' cdens <- as.field(imilast.M03)
+#' map(cdens,new=FALSE)
+#' }
+#' 
+#' @export map.trajectory
 map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",param=NA,
                            projection="lonlat",verbose=FALSE,...) {
   if (verbose) print("map.trajectory")
   stopifnot(is.trajectory(x))
-  y <- subset.trajectory(x,it=it,is=is)
-  if(is.null(type)) {
-    type <- "trajectory"
-  } else if ("anomaly" %in% attr(x,"aspect")) {
-    type <- "anomaly"
-  }
-  if ('colors' %in% type | !is.na(param)) {
-    segments.trajectory(y,type=type,param=param,verbose=verbose,...)
-  } else if (any(c('shapes','anomaly') %in% type)) {
-    map.anomaly.trajectory(y,verbose=verbose,...)
-  } else if (any(c('trajectory','points','start','end') %in% type)) {
-    if (projection=="sphere" | projection=="np" | projection=="sp") {
-      if (projection=="np") latR <- 90
-      if (projection=="sp") latR <- -90
-      sphere.trajectory(y,type=type,verbose=verbose,...)
-    } else if (projection=="latlon" | projection=="lonlat") {
-      lonlat.trajectory(y,type=type,verbose=verbose,...)
+  if(inherits(x,'pca')) {
+    map.pca.trajectory(x,projection=projection,...)
+  } else {
+    y <- subset(x,it=it,is=is)
+    if(is.null(type)) {
+      type <- "trajectory"
+    } else if ("anomaly" %in% attr(x,"aspect")) {
+      type <- "anomaly"
     }
-  } else if ('density' %in% type) {
-    map.density.trajectory(y,projection=projection,verbose=verbose,...)
-  } else print("unkown map type")
+    if ('colors' %in% type | !is.na(param)) {
+      segments.trajectory(y,type=type,param=param,verbose=verbose,...)
+    } else if (any(c('shapes','anomaly') %in% type)) {
+      anomalymap(y,verbose=verbose,...)
+    } else if (any(c('trajectory','points','start','end') %in% type)) {
+      if (projection=="sphere" | projection=="np" | projection=="sp") {
+        if (projection=="np") latR <- 90
+        if (projection=="sp") latR <- -90
+        trajectory2sphere(y,type=type,verbose=verbose,...)
+      } else if (projection=="latlon" | projection=="lonlat") {
+        trajectory2lonlat(y,type=type,verbose=verbose,...)
+      }
+    } else if ('density' %in% type) {
+      densitymap(y,projection=projection,verbose=verbose,...)
+    } else print("unkown map type")
+  }
 }
 
-map.anomaly.trajectory <- function(x,col=NULL,alpha=NULL,
+anomalymap <- function(x,col=NULL,alpha=NULL,
   main=NULL,xlim=NULL,ylim=NULL,lty=1,lwd=1.5,pch='.',new=TRUE,
   verbose=FALSE,...) {
-  if (verbose) print('map.anomaly.trajectory')
+  if (verbose) print('anomalymap')
   stopifnot(is.trajectory(x))
   if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly(x)
   if(is.null(alpha)) alpha <- 0.01 + min(10/(dim(x)[1]),0.5)
@@ -269,10 +328,10 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   }
 }
 
-lonlat.trajectory <- function(x,type=c("trajectory","start","end","subset"),
+trajectory2lonlat <- function(x,type=c("trajectory","start","end","subset"),
     xlim=NULL,ylim=NULL,col='blue',alpha=NULL,cex=1,
     lty=1,lwd=2,main=NULL,add=FALSE,new=TRUE,verbose=FALSE,...) {
-  if (verbose) print("lonlat.trajectory")
+  if (verbose) print("trajectory2lonlat")
   x0 <- x
   if(is.null(dim(x0))) {
     dim(x) <- c(1,length(x0))
@@ -414,14 +473,14 @@ sphere.rotate <- function(lon,lat,lonR=0,latR=90) {
   invisible(a)
 }
 
-sphere.trajectory <- function(x,
+trajectory2sphere <- function(x,
     xlim=NULL,ylim=NULL,col='blue',alpha=0.05,cex=0.5,
     lty=1,lwd=2,lonR=0,latR=90,main=NULL,add=FALSE,
     type=c("trajectory","start","end","subset"),
     #show.trajectory=TRUE,show.start=TRUE,show.end=FALSE,show.subset=TRUE,
     new=TRUE,verbose=FALSE,...) {
 
-  if(verbose) print("sphere.trajectory")
+  if(verbose) print("trajectory2sphere")
   x0 <- x
   if(is.null(dim(x0))) {
     dim(x) <- c(1,length(x0))
@@ -535,7 +594,7 @@ sphere.trajectory <- function(x,
   }
 }
 
-map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
+densitymap <- function(x,dx=4,dy=2,it=NULL,is=NULL,
       colbar=list(pal='precip',rev=TRUE,breaks=NULL,cex=2,h=0.6,v=1),
       projection='sphere',latR=90,lonR=10,gridlines=FALSE,...) {
   stopifnot(inherits(x,c("trajectory","field")))
@@ -547,7 +606,8 @@ map.density.trajectory <- function(x,dx=4,dy=2,it=NULL,is=NULL,
       lonR=lonR,gridlines=gridlines,...)
 }
 
-map.hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
+#' @export
+hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
           xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
           xlim=NULL,ylim=NULL,col='red',border='firebrick4',
           colmap='heat.colors',scale.col=TRUE,scale.size=FALSE,
@@ -602,7 +662,8 @@ map.hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
   }
 }
 
-map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
+#' @export
+sunflower.trajectory <- function(x,it=NULL,is=NULL,
       dx=6,dy=2,petalsize=7,
       xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
       xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6,
@@ -676,13 +737,20 @@ map.sunflower.trajectory <- function(x,it=NULL,is=NULL,
   }
 }
 
-map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
-      xlim=NULL,ylim=NULL,main=NULL,m=2,alpha=0.05,param=c('lon','lat')) {
+#' @export map.pca.trajectory
+map.pca.trajectory <- function(x,projection="sphere",lonR=NULL,latR=NULL,
+                               xlim=NULL,ylim=NULL,main=NULL,m=2,alpha=0.05,
+			       param=c('lon','lat'),verbose=FALSE,...) {
 
+  if(verbose) print('map.pca.trajectory')
+  X <- x
   stopifnot(!missing(X), inherits(X,"trajectory"))
   if (inherits(X,'pca')) {
-    pca <- X; X <- pca2trajectory(pca)
-  } else pca <- PCA.trajectory(X,param=param)
+    pca <- X
+    X <- pca2trajectory(pca)
+  } else {
+    pca <- PCA(X,param=param)
+  }
 
   if (any('anomaly' %in% attr(X,'aspect'))) X <- anomaly2trajectory(X)
   
@@ -741,9 +809,6 @@ map.pca.trajectory <- function(X,projection="sphere",lonR=NULL,latR=NULL,
 
   invisible(pca)
 }
-
-
-
 
 angle <- function(lon1,lat1,lon2,lat2) {
   a <- 360 - (atan2(lat2-lat1,lon2-lon1)*(180/pi) + 360) %% 360

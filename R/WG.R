@@ -7,57 +7,101 @@
 #
 # Rasmus Benestad
 
-FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
-                       wetfreq.pred=FALSE) {
-  attributes(x) <- NULL
-  n <- length(x)
-  
-  # This function scramles the phase information of the FT components of a
-  # time series, maintaining the same spectral and time structure
-  
-  if (sum(is.na(x))>0) {
-    ok <- is.finite(x)
-    y <- approx((1:n)[ok],x[ok],xout=1:n,rule=2)$y
-    x <- y
-    rm('y')
-  }
-  
-  # Fourier transform (FT) to obtain power and phase information
-  X <- fft(x)
-  #print(summary(Re(X))); print(summary(Im(X)))
-  
-  # Z contains the phase information
-  Z <- Mod(X)
-  #print(summary(Z))
-  ReX <- Re(X)
-  ImX <- Im(X)
-  phiX <- Arg(X)
-  #plot(phiX)
-  
-  # Set new phase information to random
-  phiY <- runif(n,min=-pi,max=pi)
-  ReY <- Z*cos(phiY)
-  ImY <- Z*sin(phiY)
-  ReY[1] <- ReX[1]; ImY[1] <- ImX[1]
-  #  ReY[n] <- ReX[n]; ImY[n] <- ImX[n]
-  Y <- complex(real=ReY, imaginary=ImY)
-  
-  # Inverse FT to generate new time series:
-  y <- Re(fft(Y,inverse=TRUE))/n
-  # Make sure that the new scrambled series has the same mean and standard deviation
-  # as the original data:
-  y <- sd(x,na.rm=TRUE)*(y - mean(y,na.rm=TRUE))/sd(y,na.rm=TRUE) + mean(x,na.rm=TRUE)
-  
-  if (!is.null(t)) {
-    if (length(t) <= length(y)) y <- y[1:length(t)] else
-      y <- c(y,rep(NA,length(t)-length(y)))
-  }
-  invisible(y)
-}
-
-
+#' Weather generators for conditioned on simulated climate aggregated
+#' statistics.
+#' 
+#' Weather generators for conditional simulation of daily temperature and/or
+#' precipitation, given mean and/or standard deviation. The family of WG
+#' functions procude stochastic time series with similar characteristics as the
+#' station series provided (if none if provided, it will use either ferder or
+#' bjornholt provided by the esd-package). Here characteristics means similar
+#' mean value, standard deviation, and spectral properties. \code{FTscramble}
+#' takes the Fourier components (doing a Fourier Transform - FT) of a series
+#' and reassigns random phase to each frequency and then returns a new series
+#' through an inverse FT. The FT scrambling is used for temperature, but not
+#' for precipitation that is non-Gaussian and involves sporadic events with
+#' rain. For precipitation, a different approach is used, taking the wet-day
+#' frequency of each year and using the wet-day mean and ranomly generated
+#' exponentially distributed numbers to provide similar aggregated annual
+#' statistics as the station or predicted though downscaling. The precipitation
+#' WG can also take into account the number of consequtive number-of-dry-days
+#' statistics, using either a Poisson or a gemoetric distribution.
+#' 
+#' The weather generater produces a series with similar length as the provided
+#' sample data, but with shifted dates according to specified scenarios for
+#' annual mean mean/standard deviation/wet-day mean/wet-day frequency.
+#' 
+#' \code{WG.FT.day.t2m} generates daily temperature from seasonal means and
+#' standard deviations. It is given a sample station series, and uses
+#' \code{FTscramble} to generate a series with random phase but similar (or
+#' predicted - in the future) spectral characteristics. It then uses a quantile
+#' transform to prescribe predicted mean and standard deviation, assuming the
+#' distributions are normal. The temperal structure (power spectrum) is
+#' therefore similar as the sample provided.
+#' 
+#' \code{WG.fw.day.precip} uses the annual wet-day mean and the wet-day
+#' frequency as input, and takes a sample station of daily values to
+#' stochastically simulate number consequtive wet days based on its annual mean
+#' number. If not specified, it is taken from the sample data after being phase
+#' scrambeled (\code{FTscramble}) The number of wet-days per year is estimated
+#' from the wed-day frequency, it too taken to be phase scrambled estimates
+#' from the sample data unless specifically specified. The daily amount is
+#' taken from stochastic values generated with \code{\link{rexp}}. The number
+#' of consequtive wet days can be approximated by a geometric distribution
+#' (\code{\link{rgeom}}), and the annual mean number was estimated from the
+#' sample series.
+#' 
+#' @aliases WG WG.station WG.fw.day.precip WG.FT.day.t2m
+#' WG.pca.day.t2m.precip FTscramble
+#'
+#' @importFrom stats start end approx pnorm qnorm qqnorm sd dgeom rgeom rexp qexp pexp dpois
+#' fft runif
+#' @importFrom graphics hist
+#'
+#' @param x station object
+#' @param option Define the type of WG
+#' @param amean annual mean values. If NULL, use those estimated from x; if NA,
+#' estimate using \code{\link{DSensemble.t2m}}, or if provided, assume a
+#' 'dsensemble' object.
+#' @param asd annual standard deviation. If NULL, use those estimated from x;
+#' if NA, estimate using \code{\link{DSensemble.t2m}}, or if provided, assume a
+#' 'dsensemble' object.
+#' @param t Time axis. If null, use the same as x or the last interval of same
+#' length as x from downscaled results.
+#' @param ip passed on to \code{\link{DSensemble.t2m}}
+#' @param select passed on to \code{\link{DSensemble.t2m}}
+#' @param lon passed on to \code{\link{DSensemble.t2m}}
+#' @param lat passed on to \code{\link{DSensemble.t2m}}
+#' @param plot if TRUE, plot results
+#' @param biascorrect passed on to \code{\link{DSensemble.t2m}}
+#' @param verbose passed on to \code{\link{DSensemble.t2m}}
+#' @param mu annual wet-mean values. If NULL, use those estimated from x; if
+#' NA, estimate using \code{\link{DSensemble.t2m}}, or if provided, assume a
+#' 'dsensemble' object.
+#' @param fw annual wet-day frequency. If NULL, use those estimated from x; if
+#' NA, estimate using \code{\link{DSensemble.t2m}}, or if provided, assume a
+#' 'dsensemble' object.
+#' @param ndd annual mean dry spell length. If NULL, use those estimated from
+#' x; if NA, estimate using \code{\link{DSensemble.t2m}}, or if provided,
+#' assume a 'dsensemble' object.
+#' @param threshold Definition of a rainy day.
+#' @param method Assume a gemoetric or a poisson distribution. Can also define
+#' ownth methods.
+#' @param t2m station object with temperature
+#' @param precip station object with precipitation.
+#' @author R.E. Benestad
+#' @keywords manip
+#' @examples
+#' 
+#' data(ferder)
+#' t2m <- WG(ferder)
+#' data(bjornholt)
+#' pr <- WG(bjornholt)
+#' 
+#' @export WG
 WG <- function(x,...) UseMethod("WG")
 
+#' @export WG.station
 WG.station <- function(x,...,option='default') {
   if (inherits(x,'day')) {
     if (length(varid(x))==1) {
@@ -68,6 +112,7 @@ WG.station <- function(x,...,option='default') {
   return(y)
 }
 
+#' @export WG.FT.day.t2m
 WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
                           select=NULL,lon=c(-20,20),lat=c(-20,20),
                           plot=FALSE,biascorrect=TRUE,verbose=TRUE) {
@@ -182,7 +227,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 ## Fractional Gaussian noise...?
 
 ## --- Precipitation  
-
+#' @export WG.fw.day.precip
 WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
                              ncwd=NULL,ndbr=NULL,t=NULL,
                              threshold=1,select=NULL,
@@ -395,7 +440,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
 # This weather generator assumes that the past covariate structure between
 # temperature and precipitation is constant and doesn't change in the future.
 # Moreover, the method also assumes that the spell-statistics will stay the same.
-
+#' @export WG.pca.day.t2m.precip
 WG.pca.day.t2m.precip <- function(x=NULL,...,precip=NULL,threshold=1,select=NULL,
                                   wetfreq.pred=FALSE,spell.stats=FALSE,
                                   verbose=FALSE) {
@@ -517,7 +562,51 @@ WG.pca.day.t2m.precip <- function(x=NULL,...,precip=NULL,threshold=1,select=NULL
   return(y)
 }
 
-# Pca temp plus precip. Phase scramble pc. DS mu fw mean temp sd.
-# Qq-map to new pdf: exp plus ~N()
-# Rainy dais only. Temp + dry seperately. Order stats for blending
-
+#' @export
+FTscramble <- function(x,t=NULL,interval=NULL,spell.stats=FALSE,
+                       wetfreq.pred=FALSE) {
+  attributes(x) <- NULL
+  n <- length(x)
+  
+  # This function scramles the phase information of the FT components of a
+  # time series, maintaining the same spectral and time structure
+  
+  if (sum(is.na(x))>0) {
+    ok <- is.finite(x)
+    y <- approx((1:n)[ok],x[ok],xout=1:n,rule=2)$y
+    x <- y
+    rm('y')
+  }
+  
+  # Fourier transform (FT) to obtain power and phase information
+  X <- fft(x)
+  #print(summary(Re(X))); print(summary(Im(X)))
+  
+  # Z contains the phase information
+  Z <- Mod(X)
+  #print(summary(Z))
+  ReX <- Re(X)
+  ImX <- Im(X)
+  phiX <- Arg(X)
+  #plot(phiX)
+  
+  # Set new phase information to random
+  phiY <- runif(n,min=-pi,max=pi)
+  ReY <- Z*cos(phiY)
+  ImY <- Z*sin(phiY)
+  ReY[1] <- ReX[1]; ImY[1] <- ImX[1]
+  #  ReY[n] <- ReX[n]; ImY[n] <- ImX[n]
+  Y <- complex(real=ReY, imaginary=ImY)
+  
+  # Inverse FT to generate new time series:
+  y <- Re(fft(Y,inverse=TRUE))/n
+  # Make sure that the new scrambled series has the same mean and standard deviation
+  # as the original data:
+  y <- sd(x,na.rm=TRUE)*(y - mean(y,na.rm=TRUE))/sd(y,na.rm=TRUE) + mean(x,na.rm=TRUE)
+  
+  if (!is.null(t)) {
+    if (length(t) <= length(y)) y <- y[1:length(t)] else
+      y <- c(y,rep(NA,length(t)-length(y)))
+  }
+  invisible(y)
+}

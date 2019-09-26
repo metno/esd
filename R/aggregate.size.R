@@ -1,17 +1,47 @@
-## Function that calculates the size of events
-## Matrix lon & lat indices: (i, j).
-## @RasmusBenestad, 2018-10-29
+#' aggregate
+#' 
+#' The aggregation functions are based on the S3 method for \code{zoo} objects,
+#' but takes care of extra house keeping, such as attributes with meta data.
+#'
+#' \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
+#' meters) for individual events (defined as gridboxes touching each other).
+#'
+#' The function \code{aggregateSize} is exactly the same as \code{aggregate.size}.
+#'
+#' @aliases aggregateSize aggregateSize.matrix aggregateSize.field
+#' @seealso aggregate.area aggregate
+#' 
+#' @param x A \code{\link{station}} object
+#' @param x0 threshold defining an event
+#' @param plot a boolean; if TRUE display results as a plot
+#' @param a radius of earth (unit: km)
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
+#'
+#' @return The call returns a station object
+#'
+#' @author R.E. Benestad
+#' @keywords utilities
+#'
+#' @export aggregate.size
+aggregate.size <- function(x, ...) {
+  aggregateSize(x, ...)
+}
 
-aggregate.size <- function(x, ...) UseMethod("aggregate.size")
+#' @export aggregateSize
+aggregateSize <- function(x, ...) UseMethod("aggregateSize")
 
-aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) {
-  
+# Aggregate size of events - S3 method for matrix
+#' @export aggregateSize.matrix
+aggregateSize.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6378,...) {#,a=6.378e06,...) {
+
   ## Select all grid boxes with values exceeding x0
-  if (verbose) print('aggregate.size.matrix')
+  if (verbose) print('aggregateSize.matrix')
   ## Copy data that can be masked
-  mask <- (x > x0); mask[is.na(mask)] <- FALSE
+  mask <- (x > x0)
+  mask[is.na(mask)] <- FALSE
   if (sum(mask,na.rm=TRUE)==0) return(list(events=x*NA,number=0,statistic=NULL))
-  y <- x[mask];  ## Space mask
+  y <- x[mask]  ## Space mask
   z <- y*NA; ns <- sum(mask,na.rm=TRUE)
   if (verbose) print(paste('Detected',ns,'grid points from total of',length(x)))
   ## Determine the dimensions of the matrix
@@ -19,27 +49,31 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) 
   ## Generate same size matrix with i-indexes
   I <- matrix(rep(1:d[1],d[2]),d[1],d[2])[mask]
   J <- matrix(sort(rep(1:d[2],d[1])),d[1],d[2])[mask]
-  if (verbose) {print(d); print(summary(I)); print(summary(J)); print(table(mask))}
   if (plot) {
-    plot(I,J,pch=19,col='grey70',cex=0.5)
-    points(I[1],J[1],pch='1')
+      plot(I,J,pch=19,col='grey70')
+      points(I[1],J[1],pch='1')
   }
   ##  Loop: distance (i, j) =1. Store and mask points that are sorted.
   ## Zero, one, two, three or four cases for each point.
   eno <- 1; ij <- 1; z[ij] <- 1 ## First selected gridbox always belongs to event-number 1
-  if (verbose) print('Loop to estimate area for each event')
+  if(verbose) print('Loop to estimate area for each event')
+
   while (sum(is.na(z))>0) {
     ## If the event-number has not been assigned: 
     ## see if it is adjacent to a gridpoint with an event-number
-    
+
     ## Distance between the first and all the other grid boxes:
     nbr <- sqrt( (I - I[ij])^2 + (J - J[ij])^2 )
     if (verbose) print(min(nbr[-ij]))
     ## Select the gridboxes attached to the fist grid box: nbr==1
     sel <- (nbr==1)
-    
+
     if (is.na(z[ij])) {
-      if (sum(is.na(sel)) >0) {print("No adjacent boxes - Something is wrong!"); browser()}
+      if (sum(is.na(sel)) >0) {
+        print("No adjacent boxes - Something is wrong!")
+        browser()
+      }
+
       if (verbose) print(paste('N adjacent points=',sum(sel,na.rm=TRUE),
                                'Cluster no=',eno))
       if (sum(sel)>0) {
@@ -54,7 +88,8 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) 
           eno <- min(assigned)
         } else {
           if (verbose) print(paste('No valid assigned number',sum(sel)))
-          ## None of the adjacent gridboxes have an event-number, the gridbox gets a new event number
+          ## None of the adjacent gridboxes have an event-number,
+          ## the gridbox gets a new event number
           eno <- eno + 1
           z[ij] <- eno; z[sel] <- eno
         }
@@ -73,7 +108,6 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) 
       if (verbose) cat('.')
       if (ij != min((1:ns)[sel])) ij <- min((1:ns)[sel]) else ij <- ij +1
     }
-    #rm("nbr"); gc(reset=TRUE)
   }
   ## Synthesise the results in the  
   Z <- x*NA; Z[mask] <- z
@@ -90,21 +124,32 @@ aggregate.size.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6.378e06,...) 
   return(list(events=Z,number=eno,statistic=stats))
 }
 
-
-aggregate.size.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
-  if (verbose) print('aggregate.size.field')  
+# Aggregate size of events - S3 method for field
+#' @export aggregateSize.field
+aggregateSize.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
+  if (verbose) print('aggregateSize.field')  
   nt <- length(index(x))
   d <- attr(x,'dimensions')
   sizestats <- list()
   for (it in 1:nt) {
     z <- matrix(x[it,],d[1],d[2])
-    attr(z,'longitude') <- lon(x); attr(z,'latitude') <- lat(x)              
-    sizestats[[it]] <- aggregate.size(z,x0=x0)$statistic
-    if (verbose) print(sizestats[[it]])  
+    attr(z,'longitude') <- lon(x)
+    attr(z,'latitude') <- lat(x)
+    stat.it <- aggregateSize(z,x0=x0)$statistic
+    if(is.null(stat.it)) {
+      sizestats[[it]] <- 0
+    } else {
+      sizestats[[it]] <- as.numeric(stat.it)
+    }
   }
-  names(sizestats) <- index(x)
+  names(sizestats) <- index(x)[1:length(sizestats)]
   ne <- max(unlist(lapply(sizestats,length)))
-  size <-  unlist(lapply(sizestats,function(x) {y <- rep(0,ne); y[1:length(x)] <- x[]; return(y)}))
+  size <-  unlist(lapply(sizestats,
+       function(x) {
+         y <- rep(0,ne)
+	 if(length(x)>0) y[1:length(x)] <- x
+    	 return(y)
+       } ))
   dim(size) <- c(ne,length(sizestats))
   size <- zoo(t(size),order.by=index(x))
   names(size) <- paste('event',1:ne)
@@ -113,12 +158,11 @@ aggregate.size.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
   return(size)
 }
 
-
-test.events <- function(n=62, m=78, verbose=TRUE) {
-  x <- matrix(rep(sin(seq(0,4*pi,length=n)),m)*
+# Test function - do not export
+test.aggregate.size <- function(n=62, m=78, verbose=TRUE) {
+    x <- matrix(rep(sin(seq(0,4*pi,length=n)),m)*
                 sort(rep(cos(seq(0,pi,length=m)),n)),n,m)
-  par(mfcol=c(3,1))
-  image(x)
-  test.results <- aggregate.size.matrix(x,x0=0,plot=TRUE,verbose=verbose)
-  
+    par(mfcol=c(3,1))
+    image(x)
+    test.results <- aggregateSize(x,x0=0,plot=TRUE,verbose=verbose)
 }

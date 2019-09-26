@@ -1,3 +1,12 @@
+#' Extention of points
+#'
+#' @param x input vector
+#' @param y input vector of same length as x
+#' @param col vector of colors
+#' @param cex.max maximum size of balls
+#' @param n length of color scale
+#'
+#' @export
 balls <- function(x,y=NULL,col=NULL,cex.max=2,n=20) {
   for (i in 1:n) {
     if ((is.null(col)) | length(col)==1) {

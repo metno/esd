@@ -1,8 +1,73 @@
+#' Diagnose
+#' 
+#' Diagnose and examine combined fields, MVR, and CCA results. applies some
+#' tests to check for consistency.
+#' 
+#' The method \code{diagnose.comb.eof} which estimates the difference in the
+#' mean for the PCs of the calibration data and GCMs over a common period in
+#' addition to the ratio of standard deviations and lag-one autocorrelation.
+#' The x-axis shows the difference in the mean of the segments in the PCs
+#' representing the different data souces, the y-axis shows difference in
+#' standard deviation and the size of the symbols the difference in the
+#' autocorrelation (open symbols if the autocorrelation have different signs).
+#' 
+#' \code{climvar} estimates the climatological variance, e.g. how the
+#' inter-annual variance varies with seasons.
+#'
+#' @importFrom stats spectrum qqline na.omit
+#' @importFrom graphics matplot arrows
+#' 
+#' @aliases diagnose diagnose.comb diagnose.eof
+#' diagnose.comb.eof diagnose.mvr diagnose.cca diagnose.ds diagnose.station
+#' diagnose.distr diagnose.matrix diagnose.dsensemble diagnose.ds.pca
+#' @param x data object
+#' @param it teporal selection - see \code{\link{subset}}
+#' @param plot if TRUE, plot results
+#' @param plot.type type of plot
+#' @param verbose Logical value defaulting to FALSE. If FALSE, do not display
+#' comments (silent mode). If TRUE, displays extra information on progress.
+#' @param new if TRUE plot in new window
+#' @param xlim range of x-axis
+#' @param xlim range of y-axis
+#' @param alpha factor modifying the opacity alpha; typically in [0,1]
+#' @param map.show if TRUE show map
+#' @param xrange longitude range to display in map
+#' @param yrange latitude range to display in map
+#' @param main main label in plot
+#' @param sub smaller label (subtitle) in plot
+#' @param xlab label of x-axis
+#' @param ylab label of y-axis
+#' @param probs quantile to display in plot, e.g., probs=0.95 gives a diagnosis
+#' of the 95th percentile of the data.
+#' @return A 'diag' object containing test results
+#' @author R.E. Benestad
+#' @keywords utilities
+#' @examples
+#' 
+#' t2m <- t2m.DNMI(lon=c(-40,40),lat=c(30,70))
+#' T2m <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
+#' # Combine in time to compute common EOFs:
+#' X <- combine(t2m,T2m)
+#' diagnose(X)
+#' 
+#' ceof <- EOF(X,it="jan")
+#' plot(diagnose(ceof))
+#' 
+#' slp <- slp.NCEP(lat=c(-40,40),anomaly=TRUE)
+#' sst <- sst.NCEP(lat=c(-40,40),anomaly=TRUE)
+#' eof.1 <- EOF(slp,it="jan")
+#' eof.2 <- EOF(sst,it="jan")
+#' cca <- CCA(eof.1,eof.2)
+#' diagnose(cca)
+#' 
+#' 
+#' @export diagnose
 diagnose <-function(x,...) UseMethod("diagnose")
 
 diagnose.default <- function(x,...) {
 }
 
+#' @export diagnose.comb
 diagnose.comb <- function(x,...) {
   n.app <- attr(x,'n.apps')
   cols <- c("black","red","blue","darkgreen","darkred","darblue",
@@ -17,13 +82,14 @@ diagnose.comb <- function(x,...) {
   }
 }
 
-
+#' @export diagnose.eof
 diagnose.eof <- function(x,...) {
   if (inherits(x,'comb')) y <- diagnose.comb.eof(x,...) else
                           y <- x
   return(y)
 }
 
+#' @export diagnose.comb.eof
 diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   if (verbose) print("diagnose.comb.eof")
   ACF <- function(x) acf(x,plot=FALSE,na.action=na.omit)$acf[2]
@@ -80,11 +146,7 @@ diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   invisible(diag)
 }
 
-
-diagnose.mvr <- function(x,...) {
-  print("Not finished")
-}
-
+#' @export diagnose.cca
 diagnose.cca <- function(x,...) {
   par(bty="n")
   plot(x$r,pch=19,cex=1.5,main="Canonical correlations",
@@ -93,6 +155,7 @@ diagnose.cca <- function(x,...) {
   grid()
 }
 
+#' @export diagnose.station
 diagnose.station <- function(x,...,main='Data availability',
                             xlab='',ylab='station',
                             sub=src(x),verbose=FALSE) {
@@ -117,6 +180,7 @@ diagnose.mvr <- function(x,...) {
   print("Not finished")
 }
 
+#' @export diagnose.cca
 diagnose.cca <- function(x,...) {
   par(bty="n")
   plot(x$r,pch=19,cex=1.5,main="Canonical correlations",
@@ -126,6 +190,7 @@ diagnose.cca <- function(x,...) {
 }
 
 # Display cross-validation and statistics on the residual
+#' @export diagnose.ds
 diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
   
   ## the attribute 'evaluation' contains cross-validation
@@ -202,6 +267,7 @@ diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
 }
 
 # Display cross-validation and statistics on the residual
+#' @export diagnose.ds.pca
 diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
 
   ## the attribute 'evaluation' contains cross-validation
@@ -267,128 +333,7 @@ diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
   return(diagnostics)
 }
 
-## # Display cross-validation and statistics on the residual
-## diagnose.ds <- function(x,plot=FALSE) {
-
-##   # the attribute 'evaluation' contains cross-validation
-##   if (!is.null(attr(x,'evaluation'))) xval <- attr(x,'evaluation') else
-##                                       xval <- crossval(x)
-##   y <- as.residual(x)
-##   z <- as.original.data(x)
-  
-##   ## Test whether the distribution is normal: the Shapiro-Wilk test of normality. 
-##   sw.test <- shapiro.test(coredata(x))
-  
-##   anova <- summary(attr(x,'model'))
-##   eof <- attr(x,'eof')
-##   if (inherits(eof,'comb')) bias.diag <- diagnose(eof) else
-##                             bias.diag <- NULL
-
-##   spectrum(coredata(y),plot=FALSE) -> s
-##   sp <- data.frame(y=log(s$spec),x=log(s$freq))
-##   if (length(dim(y))==0) {
-##     beta <- -summary(lm(y ~ x, data=sp))$coefficient[2]
-##     beta.error <- summary(lm(y ~ x, data=sp))$coefficient[4]
-##     ar1 <- acf(y,plot=FALSE)$acf[2]
-##   } else {beta <- NA; beta.error <- NA; ar1 <- NA}
-  
-##   if (plot) {
-##     plot(xval)
-
-##     dev.new()
-##     par(bty="n",mfcol=c(3,2))
-##     plot(y)
-
-##     acf(y)
-
-##     browse()
-##     plot(z,y)
-##     spectrum(y)
-
-##     qqnorm(y)
-##     qqline(y)
-
-##     if  (!is.null(attr(x,'diagnose'))) 
-##       plot(attr(x,'diagnose'))
-##   }
-  
-##   diagnostics <- list(residual=y,anova=anova,xval=xval,bias.diag=bias.diag,sw.test=sw.test,
-##                       ar1=ar1,beta=beta, H=(beta+1)/2, beta.error=beta.error)
-##   return(diagnostics)
-## }
-
-## diagnose.dsensemble <- function(x,plot=TRUE,type='target',...) {
-##   # Trend-evaluation: rank
-##   # Counts outside 90% confidence: binomial distrib. & prob.
-##   stopifnot(!missing(x),inherits(x,"dsensemble"))
-##   z <- x
-##   # Remove the results with no valid data:
-##   n <- apply(z,2,FUN=nv)
-##   browser()
-##   z <- subset(z,is=(1:length(n))[n > 0])
-  
-##   d <- dim(z)
-##   t <- index(z)
-##   y <- attr(x,'station')
-  
-##   # statistics: past trends
-  
-##   i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
-##   i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
-##   obs <- data.frame(y=y[i1],t=year(y)[i1])
-##   #print(summary(obs)); print(sum(i1)); print(sum(i2)); browser()
-##   deltaobs <- lm(y ~ t,data=obs)$coefficients[2]*10  # deg C/decade
-##   deltagcm <- rep(NA,d[2])
-##   for (j in 1:d[2]) {
-##     gcm <- data.frame(y=z[i2,j],t=year(z)[i2])
-##     deltagcm[j] <- lm(y ~ t,data=gcm)$coefficients[2]*10  # deg C/decade
-##   }
-##   robs <- round(100*sum(deltaobs < deltagcm)/d[2])
-##   #print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])
-
-##   # apply to extract mean and sd from the selected objects:
-##   mu <- apply(coredata(z),1,mean,na.rm=TRUE)
-##   si <- apply(coredata(z),1,sd,na.rm=TRUE)
-##   q05 <- qnorm(0.05,mean=mu,sd=si)
-##   q95 <- qnorm(0.95,mean=mu,sd=si)
-##   # number of points outside conf. int. (binom)
-##   above <- y[i1] > q95[i2]
-##   below <- y[i1] < q05[i2]
-##   #browser()
-##   outside <- sum(above) + sum(below)
-##   N <- sum(i1)
-  
-##   if (plot) {
-##     x <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
-##     y <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),sd=sd(deltagcm))),2)
-##     #print(c(x,y))
-    
-##     par(bty="n",xaxt="n",yaxt="n")
-##     plot(c(-100,100),c(-100,100),type="n",ylab="standard deviation",xlab="trend")
-    
-##     bcol=c("grey95","grey40")
-##     for (i in 1:10) {
-##       r <- (11-i)*10
-##       polygon(r*cos(pi*seq(0,2,length=360)),
-##               r*sin(pi*seq(0,2,length=360)),
-##               col=bcol[i %% 2 + 1],border="grey15")
-##     }
-##     for (i in seq(0,90,by=1))
-##       points(x,y,pch=19,cex=2 - i/50,col=rgb(i/90,0,0))
-##   }
-##   diag <- list(robs=robs,deltaobs=deltaobs,deltagcm=deltagcm,
-##                outside=outside,above=above,below=below,
-##                y=y[i1],N=N,i1=i1,
-##                mu=zoo(mu,order.by=index(x)),
-##                si=zoo(si,order.by=index(x)),
-##                q05=zoo(q05,order.by=index(x)),
-##                q95=zoo(q95,order.by=index(x)))
-##   attr(diag,'history') <- history.stamp(x)
-
-##   invisible(diag)
-## }
-
-
+#' @export diagnose.distr
 diagnose.distr <- function(x,...,main=NULL,
                            xlab='mean',ylab=expression(q[p]),
                            sub=src(x),probs=0.95,plot=TRUE,verbose=FALSE) {
@@ -451,8 +396,7 @@ diagnose.distr <- function(x,...,main=NULL,
   }
 }
 
-
-
+#' @export diagnose.dsensemble
 diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
                                 yrange=NULL,main=NULL,map.show=TRUE,
                                 map.type="points",verbose=FALSE) {
@@ -634,6 +578,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
   invisible(d)
 }
 
+#' @export diagnose.matrix
 diagnose.matrix <- function(x,...,xlim=NULL,ylim=NULL,verbose=FALSE) {
   if (verbose) print('diagnose.matrix')
   plot.diagnose.matrix(x,xlim=xlim,ylim=ylim,verbose=verbose)

@@ -1,46 +1,59 @@
-## Author=? Date 
-
-## https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDF-Data-Types.html:
-## short: 16-bit signed integers. The short type holds values between -32768 and 32767.
-
-## Help functions 
-firstyear <- function(x,na.rm=FALSE,verbose=FALSE) {
-  if (verbose) print('firstyear')
-  yrs <- year(x)
-  if (verbose) print(range(as.numeric(yrs)))
-  if (is.null(dim(x))) y <- min(yrs[is.finite(x)]) else { 
-    nv <- apply(x,2,'nv')
-    y <- rep(NA,length(nv))
-    ok <- (1:length(nv))[nv > 0]
-    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) min(yrs[is.finite(x)]),yrs)
-    #for (i in ok) y[i] <- min(yrs[is.finite(x[,i])])
-  }
-  y[!is.finite(y)] <- NA
-  if (verbose) print(table(as.numeric(y)))
-  return(y)
-}
-
-lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
-  if (verbose) print('lastyear')
-  yrs <- year(x)
-  if (verbose) print(range(as.numeric(yrs)))
-  if (is.null(dim(x))) y <- max(yrs[is.finite(x)]) else { 
-    nv <- apply(x,2,'nv')
-    y <- rep(NA,length(nv))
-    ok <- (1:length(nv))[nv > 0]
-    y[ok] <- apply(x[,ok],2,function(x,yrs=yrs) max(yrs[is.finite(x)]),yrs)
-  }     
-  y[!is.finite(y)] <- NA
-  if (verbose) print(table(as.numeric(y)))
-  return(y)
-}
-
+#' Saves climate data as netCDF.
+#' 
+#' Method to save station data as netCDF, making sure to include the data
+#' structure and meta-data (attributes). The code tries to follow the netCDf
+#' 'CF' convention. The method is built on the \code{ncdf4} package.
+#' 
+#' @seealso write2ncdf4.station 
+#' write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.eof
+#' write2ncdf4.pca write2ncdf4.dsensemble
+#' 
+#' @param x data object
+#' @param \dots additional arguments
+#' 
+#' @return None
+#' 
+#' @keywords netcdf ncdf4 save
+#' 
+#' @examples
+#' 
+#' nacd <- station(src='nacd')
+#' X <- annual(nacd)
+#' write2ncdf4(X,file='test.nc')
+#' 
+#' @export write2ncdf4
 write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")
 
 write2ncdf4.default <- function(x,...) {
 }
 
-write2ncdf4.list <- function(x,file='field.nc',prec='short',scale=0.1,offset=NULL,
+#' Saves climate data as netCDF.
+#' 
+#' Method to save station data as netCDF, making sure to include the data
+#' structure and meta-data (attributes). The code tries to follow the netCDf
+#' 'CF' convention. The method is built on the \code{ncdf4} package.
+#' 
+#' @aliases write2ncdf4.field
+#' @seealso write2ncdf4
+#' 
+#' @param x data object
+#' @param file file name
+#' @param prec Precision: see \code{\link[ncdf4]{ncvar_def}}
+#' @param scale Sets the atttribute 'scale_factor' which is used to scale
+#' (multiply) the values stored (to save space may be represented as 'short').
+#' @param offset Sets the attribute 'add_offset' which is added to the values
+#' stored (to save space may be represented as 'short').
+#' @param torg Time origin
+#' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
+#' @param verbose TRUE - clutter the screen.
+#' @param \dots additional arguments
+#' 
+#' @return None
+#' 
+#' @keywords netcdf ncdf4 save
+#' 
+#' @export write2ncdf4.list
+write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset=NULL,
                              torg="1970-01-01",missval=-999,verbose=FALSE) {
   if (verbose) print('write2ncdf4.list')
   stopifnot(inherits(x[[1]],'field'))
@@ -111,8 +124,9 @@ write2ncdf4.list <- function(x,file='field.nc',prec='short',scale=0.1,offset=NUL
   if (verbose) print('netCDF file saved')
 }
 
-write2ncdf4.field <- function(x,file='field.nc',prec='short',scale=NULL,offset=NULL,
-                              torg="1970-01-01",missval=-999,ncclose=TRUE,verbose=FALSE) {
+#' @export write2ncdf4.field
+write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offset=NULL,
+                              torg="1970-01-01",missval=-999,verbose=FALSE) {
   if (verbose) {print('write2ncdf4.field'); print(names(attributes(x)))}
 
   y <- coredata(x)
@@ -156,13 +170,42 @@ write2ncdf4.field <- function(x,file='field.nc',prec='short',scale=NULL,offset=N
   nc_close(ncnew)
 }
 
-
-
-# https://www.unidata.ucar.edu/software/netcdf/docs/netcdf/CDL-Data-Types.html:
-# short: 16-bit signed integers. The short type holds values between -32768 and 32767. 
-
-write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
-                                scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,verbose=FALSE) {
+#' Saves climate data as netCDF.
+#' 
+#' Method to save station data as netCDF, making sure to include the data
+#' structure and meta-data (attributes). The code tries to follow the netCDf
+#' 'CF' convention. The method is built on the \code{ncdf4} package.
+#'
+#' To save space, the values are saved as short (16-bit signed integer that
+#' can hold values between -32768 and 32767).
+#' (see NC_SHORT in \url{https://www.unidata.ucar.edu/software/netcdf/docs/data_type.html}).
+#'
+#' @seealso write2ncdf4
+#' 
+#' @param x data object
+#' @param file file name
+#' @param prec Precision: see \code{\link[ncdf4]{ncvar_def}}
+#' @param scale Sets the atttribute 'scale_factor' which is used to scale
+#' (multiply) the values stored (to save space may be represented as 'short').
+#' @param it a time index, see \code{\link{subset}}
+#' @param stid station id
+#' @param append a boolean; if TRUE append output to existing file
+#' @param stid_unlim a boolean; if TRUE the stid dimension is unlimited
+#' @param namelength a numeric specifying the number of characters in dimension and variable names
+#' @param offset Sets the attribute 'add_offset' which is added to the values
+#' stored (to save space may be represented as 'short').
+#' @param torg Time origin
+#' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
+#' @param verbose TRUE - clutter the screen.
+#' @param \dots additional arguments
+#' 
+#' @return None
+#' 
+#' @keywords netcdf ncdf4 save
+#' 
+#' @export write2ncdf4.station
+write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
+                                scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,nmin=30,verbose=FALSE) {
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- attr(x,'unit')
@@ -347,7 +390,7 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
   }
   if (verbose) print('Summary statistics computed')
   ## Only do summary statistics for stations with more than 30 years
-  insufficient <- apply(coredata(x),2,nv) < 30*365
+  insufficient <- apply(coredata(x),2,nv) < nmin*365
   if (verbose) print(nv)
   
   y <- coredata(x)
@@ -958,8 +1001,9 @@ write2ncdf4.station <- function(x,file='station.nc',prec='short',offset=0, missv
 }
 
 
-## These small functions are common code that simplify saving data as netCDF 
-write2ncdf4.pca <- function(x,file='esd.pca.nc',prec='short',verbose=FALSE,scale=0.01,offset=0,missval=-99) {
+## These small functions are common code that simplify saving data as netCDF
+#' @export write2ncdf4.pca
+write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,scale=0.01,offset=0,missval=-99) {
   if (verbose) print('write2ncdf4.pca')
   pcaatts <- names(attributes(x))
   pattern <- attr(x,'pattern')
@@ -1020,11 +1064,14 @@ write2ncdf4.pca <- function(x,file='esd.pca.nc',prec='short',verbose=FALSE,scale
   ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
 }
 
-write2ncdf4.eof <- function(x,file='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999) {
+#' @export write2ncdf4.eof
+write2ncdf4.eof <- function(x,...,file='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999,verbose=FALSE){
+  if(verbose) print("write2ncdf.eof")
+  if(verbose) print("unfinished function that doesn't do anything")
 }
 
-  
-write2ncdf4.dsensemble <- function(x,file='esd.dsensemble.nc',prec='short',offset=0,scale=0.1,
+#' @export write2ncdf4.dsensemble 
+write2ncdf4.dsensemble <- function(x,...,file='esd.dsensemble.nc',prec='short',offset=0,scale=0.1,
                               torg="1970-01-01",missval=-99,verbose=TRUE) {
   ## prec - see http://james.hiebert.name/blog/work/2015/04/18/NetCDF-Scale-Factors/
   if (verbose) print('write2ncdf4.field')

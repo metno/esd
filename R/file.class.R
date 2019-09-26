@@ -1,8 +1,12 @@
-# file.class.R
-
-## Used to check the contents in netCDF file - to use in retrieve to call retrieve.dsenemble,
-## retrieve.eof or retrieve.station rather than the standard form to read field objects.
-## Assumes that empty class attribute means a field object
+#' Used to check the contents in netCDF file.
+#'
+#' Assumes that empty class attribute means a field object
+#'
+#' @param ncfile filename of netcdf file
+#'
+#' @seealso check.ncdf4 retrieve
+#'
+#' @export
 file.class <- function(ncfile) {
   nc <- nc_open(ncfile)
   dimnames <- names(nc$dim)

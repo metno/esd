@@ -1,9 +1,48 @@
-## The rain equation. rasmus.benestad@met.no 2017-11-20
-## Based on the assumption that the 24-hr accumulated precipitation approximately
-## follows an exponential distribution for days with precipitation. The rain equation
-## does not provide an accurate description of the extremes in the upper tail, but is
-## more analogous to the normal distribution for seasonal temperature.
-
+#' Rain equation
+#' 
+#' The rain equation \eqn{Pr(X>x)=fw exp(-x/mu)}{Pr(X>x)==f_w exp(-x/\mu)}
+#' estimates the likelihood of 24-hr precipitation exceedint a threshold value
+#' x. It is analogous to the normal distribution used to describe the
+#' statistical distribution of e.g. daily temperature over a season, but
+#' applied to precipitation. It has two parameters, the wet-day frequency fw
+#' and the wet-day mean mu. It assumes that the distribution for wet-day
+#' precipitation can be approximated with an exponential distribution, and has
+#' one tail.
+#' 
+#' The function \code{rainvar} returns the dail variance of the 24-hr
+#' precipitation according to \eqn{sigma^2 = 2 fw * mu^3}{\sigma^2 = 2 f_w
+#' \mu^3} and \code{rainvartrend} calculates the first derivative accroding to
+#' \eqn{d sigma^2/dt = 2 mu^3 dfw/dt + 6 fw mu^2 dmu/dt}{d \frac{\sigma^2}{dt}=
+#' 2 \mu^3 \frac{d f_w}{dt} + 6 f_w * \mu^2 * \frac{d \mu}{dt}}. %% ~~ A
+#' concise (1-5 lines) description of what the function does. ~~
+#' 
+#' 
+#' @aliases rainequation fract.gt.x test.rainequation scatterplot.rainequation
+#' rainvar rainvartrend
+#'
+#' @param x A station object - single station
+#' @param x0 The threshold value defining an event.
+#' @param threshold The threshold defining a 'wet day'.
+#' @param src Data source
+#' @param nmin Minimum number of years with data
+#' @param verbose TRUE for printing out diagnostics
+#' @param colour.by Used to plot the data points with differentcolours
+#' according to e.g. 'x0', 'stid', 'alt', 'lon', or 'lat'
+#' @param col colour palette
+#'
+#' @return a station object
+#'
+#' @references Benestad R. and A. Mezghani (2015), On downscaling probabilities
+#' for heavy 24-hr precipitation events at seasonal-to-decadal scales, Tellus A
+#' 2015, 67, 25954, http://dx.doi.org/10.3402/tellusa.v67.25954
+#'
+#' @examples
+#' data(bjornholt)
+#' plot(rainequation(bjornholt))
+#' test.rainequation(bjornholt,threshold=30)
+#' \dontrun{scatterplot.rainequation()}
+#' 
+#' @export
 rainequation <- function(x,x0 = 10,threshold=NULL) {
   fw <- annual(x,FUN='wetfreq',threshold=threshold)
   mu <- annual(x,FUN='wetmean',threshold=threshold)
@@ -13,8 +52,10 @@ rainequation <- function(x,x0 = 10,threshold=NULL) {
   return(pr.gt.x0)
 }
 
+#' @export
 fract.gt.x <- function(x,x0) {sum(x > x0,na.rm=TRUE)/sum(is.finite(x))}
 
+#' @export
 rainvar <- function(x,x0=1,na.rm=FALSE) {
   ## The variance estimated from the integral of the pdf assuming a threshold x0
   ## of 1 mm/day
@@ -24,6 +65,7 @@ rainvar <- function(x,x0=1,na.rm=FALSE) {
   return(sigma2)
 }
 
+#' @export
 rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
   ## The rate of change estimated as the first derivative from the analytic expression for sigma^2.
   if (verbose) {print('rainvartrend'); print(class(x))}
@@ -47,6 +89,7 @@ rainvartrend <- function(x,x0=1,na.rm=TRUE,nmin=NULL,verbose=FALSE) {
 }
 
 ## To test the rain equation
+#' @export
 test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
                               threshold=1,verbose=FALSE,plot=TRUE,new=TRUE) {
   
@@ -86,6 +129,7 @@ test.rainequation <- function(loc='DE BILT',src='ecad',nmin=150,x0=20,
 
 ## Use a scatter plot to evaluate the rain equation for a selection of rain gauge records.
 ## Select time series from e.g. ECA&D with a minimum number (e.g. 150) of years with data
+#' @export
 scatterplot.rainequation <- function(src='ecad',nmin=150,x0=c(10,20,30,40),
                                      threshold=1,colour.by='x0',col=NULL,verbose=FALSE) {
   if (verbose) print('scatterplot.rainequation')

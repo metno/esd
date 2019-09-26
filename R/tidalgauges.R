@@ -1,12 +1,10 @@
 ## Read the sea levels for tidal gauges (EU-Circle & eSACP)
 ## Rasmus.Benestad@met.no, 2016-01-29, Meteorologisk institutt, Oslo, Norway
 
-## French tidal stations: http://www.sonel.org/-Tide-gauges,29-.html?lang=en
-## Daily means
-
-
-
-station.sonel <- function(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
+# French tidal stations: http://www.sonel.org/-Tide-gauges,29-.html?lang=en
+# Daily means
+#' @export station.sonel
+station.sonel <- function(...,urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dRSCOF.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dLCONQ.slv',
                              'http://www.sonel.org/msl/Demerliac/VALIDATED/dBREST.slv',
@@ -48,20 +46,8 @@ station.sonel <- function(urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/d
   return(Y)
 }
 
-## http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data/glosshlp.txt
-## http://browse.ceda.ac.uk/browse/badc/CDs/gloss/data
-## Monthly means
-
-strstrip <- function(x) {
-  if (is.na(x)) return(NA)
-  if (is.factor(x)) x <- as.character(x)
-  if (!is.character(x)) return(NA)
-  while (substr(x,1,1)==' ') x <- substr(x,2,nchar(x))
-  while (substr(x,nchar(x),nchar(x))==' ') x <- substr(x,1,nchar(x)-1)
-  return(x)
-}
-  
-station.gloss <- function(url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',is=NULL,verbose=TRUE) {
+#' @export station.gloss
+station.gloss <- function(...,url='https://www.psmsl.org/data/obtaining/rlr.monthly.data/rlr_monthly.zip',is=NULL,verbose=TRUE) {
   if (!file.exists('rlr_monthly.zip')) download.file(url,'rlr_monthly.zip')
   con1 <- unzip('rlr_monthly.zip', files="rlr_monthly/filelist.txt")
   meta <- read.table('rlr_monthly/filelist.txt',sep=';')
@@ -96,44 +82,11 @@ station.gloss <- function(url='https://www.psmsl.org/data/obtaining/rlr.monthly.
                     param = 'sea-level',unit='mm')
     if (i==meta$V1[is][1]) Y <- y else Y <- combine.stations(Y,y)
   }
-  # data(glossstations, envir = environment())
-  # #glossstations <- read.table('glossstations.txt',sep='\t')
-  # SL <- read.fwf(paste(url,'psmsl.dat',sep='/'),skip=2,
-  #                widths=c(3,4,4,32,rep(5,14)),
-  #                col.names=c('XRE','CCO','SCO','location','year',month.abb,'annual'))
-  # Xt <- table(SL$location)
-  # n <- length(names(Xt))
-  # yearmon <- seq(min(SL$year,na.rm=TRUE),max(SL$year,na.rm=TRUE)+11/12,by=1/12)
-  # X <- matrix(rep(NA,n*length(yearmon)),n,length(yearmon));
-  # loc <- names(Xt)
-  # loc <- gsub('  ','',loc)
-  # loc <- substr(loc,2,nchar(loc)-1)
-  # lon <- rep(NA,n); lat <- rep(NA,n); cntr <- rep('NA',n)
-  # for (i in 1:n) {
-  #   ii <- is.element(as.character(SL$location),names(Xt)[i])
-  #   yrmn <- seq(min(SL$year[ii],na.rm=TRUE),max(SL$year[ii],na.rm=TRUE)+11/12,by=1/12)
-  #   yrmn <- yrmn[is.element(trunc(yrmn),SL$year[ii])]
-  #   i1 <- is.element(yearmon,yrmn)
-  #   i2 <- is.element(yrmn,yearmon)
-  #   x <- c(t(SL[ii,6:17]))
-  #   X[i,i1] <- as.numeric(x)[i2]
-  #   iii <- is.element(substr(toupper(glossstations$V1),1,nchar(loc[i])),toupper(loc[i]))
-  #   if (sum(iii)>0) {
-  #     lon[i] <- glossstations$V5[iii]
-  #     lat[i] <- glossstations$V4[iii]
-  #     cntr[i] <- glossstations$V2[iii]
-  #   }
-  # }
-  # Y <- zoo(t(X),order.by=as.Date(paste(trunc(yearmon),
-  #                 round(12*(yearmon-trunc(yearmon)))+1,'01',sep='-')))
-  # Y <- as.station(Y,loc=loc,param='sea-level',unit='mm',info='http://www.gloss-sealevel.org/',
-  #                 lon=lon,lat=lat,alt=rep(0,n),cntr=cntr,url=url,src='GLOSS')
   return(Y)
 }
 
-## Newlyn
-## http://www.gloss-sealevel.org/station_handbook/stations/241/#.VqnZSkL4phh
-station.newlyn <- function(path='data/gloss-241_Newlyn',verbose=TRUE) {
+#' @export station.newlyn
+station.newlyn <- function(...,path='data/gloss-241_Newlyn',verbose=TRUE) {
   if (!file.exists(path)) {
     download.file('http://www.gloss-sealevel.org/extlink/https%3A//www.bodc.ac.uk/data/online_delivery/international_sea_level/gloss/ascii/g241.zip',destfile='newlyn.zip')
     dir.create(path)

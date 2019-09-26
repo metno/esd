@@ -1,14 +1,36 @@
+#' InfoGraphics
+#'
+#' Various functions for visual display of data and statistics
+#'
+#' \code{vis} shows the annual and seasonal evolution of a time series, similar to \code{\link{seasevol}}.
+#'
+#'
+#' @aliases vis vis.station vis.pca
+#' @seealso vis.trends wheel cumugram visprob conf graph
+#' diagram scatter plot map
+#' 
+#' @param x an input object of class 'DSensemble'
+#' @param img a 'raster' object, or an object that can be coerced to one by 'as.raster', to be used as background
+#' @param it see \code{\link{subset}}
+#' @param col color
+#' @param n number of breaks in color scale
+#' @param xlim range of x-axis
+#' @param ylim range of y-axis
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
+#'
+#' @examples
+#' data(Oslo)
+#' vis(Oslo)
+#'
+#' @export
 vis <- function(x,...) UseMethod("vis")
 
-vis.default <- function(x,...,it=NULL,img=NULL,verbose=FALSE,
-                        ref=c(as.Date('1961-01-01'),as.Date('1990-12-31'))) {
+#' @export vis.default
+vis.default <- function(x,...,it=NULL,img=NULL,verbose=FALSE) {
   if(verbose) print("vis.default")
   if (!is.null(img)) {
     if (is.character(img)) {
-      ## KMP 2018-11-08: Don't use require in the R-scripts.
-      ## Call the function explicitly and add the package under 'Suggests' in the DESCRIPTION file.
-      ## Also check if the package is installed and add an alternative or error message if it isn't.
-      #require(jpeg)
       if (requireNamespace("jpeg", quietly = TRUE)) {
         img <- jpeg::readJPEG(img)
       } else{
@@ -35,13 +57,14 @@ vis.default <- function(x,...,it=NULL,img=NULL,verbose=FALSE,
   balls(y) 
 }
 
+#' @export vis.station
 vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,
                         plot=TRUE,verbose=FALSE) {
   if(verbose) print("vis.station")
   yrs <- as.numeric(rownames(table(year(x))))
   ny <- length(yrs)
   if (is.null(n)) n <- 50
-  if (is.null(col)) col <- colscal(n,varid(x))
+  if (is.null(col)) col <- colscal(n,pal=varid(x))
   if (is.precip(x)) x[coredata(x)==0] <- NA
   
   if ( (attr(x,'unit')[1] == "deg C") | (attr(x,'unit')[1] == "degree Celsius") )
@@ -70,31 +93,42 @@ vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRU
   invisible(z)
 }
 
-
+#' @export vis.field
 vis.field <- function(x,...) {
+  print('unfinished function - returns nothing')
 }
 
+#' @export vis.eof
 vis.eof <- function(x,...) {
+  print('unfinished function - returns nothing')
 }
 
+#' @export vis.spell
 vis.spell <- function(x,...) {
+  print('unfinished function - returns nothing')
 }
 
+#' @export vis.cca
 vis.cca <- function(x,...) {
+  print('unfinished function - returns nothing')
 }
 
+#' @export vis.mvr
 vis.mvr <- function(x,...) {
+  print('unfinished function - returns nothing')
 }
 
+#' @export vis.ds
 vis.ds <- function(x,...) {
+  print('unfinished function - returns nothing')
 }
 
+#' @export vis.map
 vis.map <- function(x,...,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     add.text=FALSE,cex.axis=NULL,
-                    map.insert=TRUE,verbose=FALSE,
-                    zoom=NULL) {#, usegooglemap=TRUE) {
-  if(verbose) {print('vis.map'); print(lon(x)); print(lat(x)); print(zoom)}
+                    map.insert=TRUE,verbose=FALSE) {
+  if(verbose) {print('vis.map'); print(lon(x)); print(lat(x))}
   ## KMP 2017-06-07 Weird problem: cex.axis is not found even though it is an argument to the function.
   ## It looks like cex.axis exists but when applying 'print' the following error message shows up: 
   ## 'Warning: restarting interrupted promise evaluation. Error in print(cex.axis) : object 'cex.axis' not found'
@@ -116,50 +150,6 @@ vis.map <- function(x,...,col='red',map.type=NULL,
     }
   }
   
-  ## REB: 2016-10-12 - add the possibility to use google maps
-  ## KMP 2018-10-31: Don't use require inside the esd package. 
-  ## Instead check if it the external package is installed and then 
-  ## call it explicitly, e.g., RgoogleMaps::GetMap().
-  ## Also add the package under 'Suggested' in the DESCRIPTION file.
-  #if (!requireNamespace("RgoogleMaps", quietly = TRUE)) {
-  #  usegooglemap <- FALSE
-  #}
-  
-  #if(usegooglemap) {
-  #  if (is.null(zoom)) {
-  #    if (verbose) print('zoom not defined')
-  #    if (length(lon(x))==1) {
-  #      zoom <- 5 
-  #    } else {
-  #      ## zoom = 12 is very local, zoom = 1 is the world
-  #      mxdst <- max(diff(range(lat(x))),diff(range(lon(x))))
-  #      zoom <- 1 - floor(0.75*log(mxdst/360))
-  #    }
-  #  }
-  #  if (!is.finite(zoom)) zoom <- 5
-  #  if (verbose) print(paste('zoom=',zoom))
-  #  bgmap <- try(RgoogleMaps::GetMap(center=c(lat=mean(lat(x)),lon=mean(lon(x))),
-  #                                   destfile = "map.station.esd.png",
-  #                                   maptype = "mobile", zoom=zoom))
-  #  if(inherits(bgmap,"try-error")) {
-  #    usegooglemap <- FALSE
-  #  } else {
-  #    if(map.insert) {
-  #      par(fig=c(0.75,0.95,0.75,0.95),new=TRUE,
-  #          mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
-  #    }
-  #    if(map.type=="rectangle") {
-  #      xx <- c(rep(max(lat(x)),2), rep(min(lat(x)),2), max(lat(x)))
-  #      yy <- c(range(lon(x)), rev(range(lon(x))), min(lon(x)))
-  #      RgoogleMaps::plotmap(xx, yy, bgmap, pch=19, col=col, cex=0.25)
-  #      RgoogleMaps::PlotOnStaticMap(bgmap, lat=xx, lon=yy, lwd=1, col=col, FUN=lines, add=TRUE)
-  #    } else {
-  #      RgoogleMaps::plotmap(lat(x), lon(x), bgmap, pch=19, col=col, cex=2)
-  #    }
-  #  }
-  #}
-  
-  #if(!usegooglemap) {
     if (verbose) {
       print('basic map')
       print(cex.axis)
@@ -203,15 +193,15 @@ vis.map <- function(x,...,col='red',map.type=NULL,
       rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
            border="black",lwd=1,lty=2)
     }
-  #}
   if(verbose) print("exit vis.map")
 }
 
-
+#' @export vis.pca
 vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   if(verbose) print("vis.pca")
   y <- x # quick fix
-  col <- colscal(col=varid(y)); nc <- length(col)
+  col <- colscal(pal=varid(y))
+  nc <- length(col)
   #if (is.precip(y)) col <- rev(col)
   lon <- attr(y,'longitude') 
   lat <- attr(y,'latitude') 
@@ -310,6 +300,7 @@ vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   invisible(a.T)
 }
 
+#' @export vis.dsensemble
 vis.dsensemble <- function(x,...) {
   stopifnot(inherits(x,"dsensemble"))
   if (inherits(x,"list")) {
@@ -317,21 +308,22 @@ vis.dsensemble <- function(x,...) {
   } else vis.default(x,...)
 }
 
-vis.dsensemble.list <- function(X,...,verbose=FALSE,FUN='trend',
+#' @export vis.dsensemble.list
+vis.dsensemble.list <- function(x,...,verbose=FALSE,FUN='trend',
                                 colbar=NULL,legend.shrink=1,n=11,plim=0.01) {
   
   if (verbose) print('vis.dsensemble.list')
-  stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
+  stopifnot(inherits(x,"dsensemble") & inherits(x,"list"))
   
-  if (inherits(X,"pca")) {
+  if (inherits(x,"pca")) {
     if(verbose) print("as.station.dsensemble.pca")
-    Y <- as.station(X)
+    Y <- as.station(x)
   } else {
-    Y <- X
+    Y <- x
   }
   
-  if (is.null(attr(X,"unit"))) attr(X,"unit") <- attr(Y[[1]],"unit")
-  if (is.null(attr(X,"variable"))) attr(X,"variable") <- attr(Y[[1]],"variable")
+  if (is.null(attr(x,"unit"))) attr(x,"unit") <- attr(Y[[1]],"unit")
+  if (is.null(attr(x,"variable"))) attr(x,"variable") <- attr(Y[[1]],"variable")
   
   gcms <- attr(Y[[1]],"model_id")
   lons <- sapply(Y,lon)
@@ -341,7 +333,7 @@ vis.dsensemble.list <- function(X,...,verbose=FALSE,FUN='trend',
     FUN <- trend.coef
     FUN2 <- trend.pval
     label_fun <- "trend"
-    attr(X,"unit") <- paste(attr(X,"unit"),"/decade",sep="")
+    attr(x,"unit") <- paste(attr(x,"unit"),"/decade",sep="")
   } else {
     FUN <- trend.coef
     FUN2 <- NULL
@@ -372,9 +364,9 @@ vis.dsensemble.list <- function(X,...,verbose=FALSE,FUN='trend',
   #      colbar$breaks <- round(c(-max(abs(z.q95)),max(abs(z.q95))),ndig(z.q95))
   #  }
   
-  if (inherits(X,"pca")) {
-    xval <- lapply(X[3:length(X)],function(x) attr(x,"evaluation"))
-    r2 <- sapply(xval,function(x) 100*cor(x[,1],x[,2])^2)
+  if (inherits(x,"pca")) {
+    xval <- lapply(x[3:length(x)],function(y) attr(y,"evaluation"))
+    r2 <- sapply(xval,function(y) 100*cor(y[,1],y[,2])^2)
     if(verbose) {
       print(paste("calibration period",
                   paste(range(year(index(xval[[1]]))),collapse="-")))
@@ -443,8 +435,8 @@ vis.dsensemble.list <- function(X,...,verbose=FALSE,FUN='trend',
   points(lons,lats,pch=pch,col=col.q95,bg=col,cex=cex,lwd=cex)
   points(lons,lats,pch=pch,col=col,bg=col.q5,cex=cex/3,lwd=0.5)
   ##browser()
-  text(mean(xrange),min(yrange),cex=1,labels=paste(attr(X,"var"),
-                                                   " ",label_fun," (",attr(X,"unit"),")",sep="")) 
+  text(mean(xrange),min(yrange),cex=1,labels=paste(attr(x,"var"),
+                                                   " ",label_fun," (",attr(x,"unit"),")",sep="")) 
   if (colbar$show) {
     if(verbose) print("add colorbar")
     par(fig=par0$fig,new=TRUE)
@@ -492,142 +484,3 @@ vis.dsensemble.list <- function(X,...,verbose=FALSE,FUN='trend',
   if(verbose) print("finished!")
   invisible(d)
 }
-
-vis.trends <- function(x,...,unitlabel="unit",varlabel="",is=1,
-                       pmax=0.01,minlen=15,lwd=NA,vmax=NA,new=TRUE,
-                       show.significance=TRUE,verbose=FALSE) {
-  if(verbose) print("vis.trends")
-  T <- calculate.trends(x,minlen=minlen,is=is,verbose=verbose)
-  trends <- T$trends*10
-  p <- T$p
-  cols <- as.numeric(colnames(trends))
-  rows <- as.numeric(rownames(trends))
-  significant <- ifelse(p<pmax,trends,NA)
-  
-  ticks <- seq(1,length(cols),signif(length(cols)/10,1))
-  if (is.na(lwd)) lwd <- max(3-0.05*length(cols),0.2)
-  
-  if (is.na(vmax) | vmax=="q995") vmax <- q995(abs(trends))
-  if (vmax=="max") vmax <- max(abs(trends),na.rm=T)
-  if (vmax<1) vmax <- signif(vmax,1)
-  if (vmax>1) vmax <- signif(vmax,2)
-  dv <- signif(vmax/8,1)
-  v0 <- 0#signif(dv/2,1)
-  vstep <- seq(v0,vmax,dv)
-  vstep <- unique(c(-1*vstep,vstep))
-  vstep <- vstep[order(vstep)]
-  cticks <- vstep[2:length(vstep)]-dv/2
-  
-  #cstep <- colscal(n=length(vstep)-1,col="t2m")
-  cmin <- rgb(239,138,98,maxColorValue=255) # blue
-  cmid <- rgb(247,247,247,maxColorValue=255) # white
-  cmax <- rgb(103,169,207,maxColorValue=255) # red
-  rgb.palette <- colorRampPalette(c(cmax,cmid,cmin),space="rgb")
-  cstep <- rgb.palette(n=length(vstep)-1)
-  # Plot trend as color
-  if (new) dev.new()
-  image(cols,rows,t(trends),breaks=vstep,col=cstep,
-        xlab='start year',ylab='length of period (years)',
-        main=paste(c(varlabel," trend (",unitlabel,"/decade)"),collapse=""))
-  
-  trends.plus <- t(trends)
-  trends.plus[trends.plus<max(vstep)] <- NA
-  image(cols,rows,trends.plus,col=cstep[length(cstep)],add=TRUE)
-  trends.minus <- t(trends)
-  trends.minus[trends.minus>min(vstep)] <- NA
-  image(cols,rows,trends.minus,col=cstep[1],add=TRUE)
-  
-  # Mark significant trends with dark borders
-  if(show.significance) {
-    if(verbose) print(paste("mark significant trends (p<",pmax,")",sep=""))
-    i <- which((is.finite(t(p)) & t(p)<pmax))
-    x <- array(sapply(cols,function(x) rep(x,nrow(p))),length(p))[i]
-    y <- rep(rows,nrow(p))[i]
-    matlines(rbind(x-1/2,x+1/2),rbind(y-1/2,y-1/2),col='black',lwd=lwd,lty=1)
-    matlines(rbind(x-1/2,x+1/2),rbind(y+1/2,y+1/2),col='black',lwd=lwd,lty=1)
-    matlines(rbind(x-1/2,x-1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
-    matlines(rbind(x+1/2,x+1/2),rbind(y-1/2,y+1/2),col='black',lwd=lwd,lty=1)
-  }
-  colbar(cticks,cstep,fig=c(0.85,0.9,0.65,0.85))
-}
-
-calculate.trends <- function(x,minlen=15,is=1,verbose=FALSE){
-  # Calculate trends of time series x
-  if(verbose) print("calculate.trends - calculate trends for all subperiods")
-  stopifnot(inherits(x,'zoo'))
-  if(!is.null(dim(x))) {
-    x <- subset(x,is=is)
-    if(!is.null(dim(x))) {
-      x <- apply(x,2,mean,na.rm=TRUE)
-    }
-  }
-  if(!inherits(x,c("annual","season"))) {
-    xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean")
-    xy <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="mean")
-    ny <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="nv")
-    xy <- xy[ny==max(ny)] # exclude years with missing months
-  } else xy <- x
-  year <- as.numeric(index(xy))
-  firstyear <- min(year):(max(year)-minlen+1)
-  trendlen <- minlen:(diff(range(year))+1)
-  #lastyear <- firstyear+minlen-1
-  n <- length(firstyear)
-  trends <- matrix(NA,n,n)
-  rownames(trends) <- trendlen#firstyear
-  colnames(trends) <- firstyear#lastyear
-  p <- trends
-  # speed up with apply?
-  for (i in firstyear) {
-    jvec <- i+trendlen[trendlen<=(max(year)-i+1)]-1#(i+minlen-1):(max(year)+1)
-    for (j in jvec) {
-      if(!is.na(xy[year==i]) & !is.na(xy[year==j])) {
-        #if(verbose) print(paste(i,j))
-        ij <- which(year %in% i:j & !is.na(xy))
-        ij.model <- lm(xy[ij]~year[ij])
-        #ij.kendall <- Kendall(x[ij],year[ij])
-        iout <- firstyear==i#as.numeric(colnames(trends))==j
-        jout <- trendlen==(j-i+1)#as.numeric(rownames(trends))==i
-        trends[jout,iout] <- ij.model$coefficients[2]
-        p[jout,iout] <- anova(ij.model)$Pr[1]#ij.kendall$sl[1]
-      }
-    }
-  }  
-  return(list("trends"=trends,"p"=p))
-}
-
-monthabsdiff <- function(x,mon=1:12,FUN=NULL,verbose=FALSE,col=NULL) { 
-  y <- x
-  if (is.null(col)) col <- c(brewer.pal(11,'Spectral'),'grey')
-  if (is.null(FUN)) {
-    if (is.precip(y)) FUN <- 'sum' else FUN <- 'mean'
-  }
-  x <- list()
-  for (im in mon) {
-    ym <- subset(as.monthly(y,FUN=FUN),it=month.abb[im])
-    x[[month.abb[im]]] <- zoo(abs(diff(ym)),order.by=year(ym)[-1])
-    if (im == mon[1]) x[['annual']] <- x[[month.abb[im]]] else
-      x[['annual']] <- x[['annual']] + x[[month.abb[im]]]
-  }
-  
-  if (verbose) str(x)
-  
-  plot(x[['annual']],type='n',xlab='',ylab=paste('magnitude of interannual monthly',varid(y)),
-       main=paste(loc(y),stid(y),varid(y)),ylim=c(0,1.2*max(x[['annual']],na.rm=TRUE)))
-  grid()
-  t <- year(x[['annual']])
-  
-  legend(quantile(t,0.01),1.2*max(x[['annual']],na.rm=TRUE),x.intersp = 0.55,seg.len=1.2,
-         month.abb[mon],lty=1,lwd=5,col=col[mon],bty='n',cex=0.75,horiz = TRUE)
-  for (it in 1:length(t)) {
-    y0 <- 0
-    for (im in mon) {
-      xm <- round(coredata(x[[month.abb[im]]]),2)
-      if (verbose) print(c(it,im,t[it]-1,y0,t[it],y0+xm[it]))
-      rect(t[it]-1,y0,t[it],y0+xm[it],col=col[im],border='black')
-      y0 <- y0 + round(xm[it],2)
-    }
-  }
-  #cal <- data.frame(y=coredata(x[['annual']]),x=t)
-  #abline(lm(y ~ x,data=cal),lty=2)
-}
-

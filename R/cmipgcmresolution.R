@@ -13,6 +13,11 @@
 
 ##http://www.ecmwf.int/en/forecasts/documentation-and-support/gaussian_n640
 
+#' GCM spatial resolution
+#'
+#' Return information about spatial resolution of GCMs
+#'
+#' @export
 cmipgcmresolution <- function(what='deg') {
   data("IPCC.AR5.Table.9.A.1", envir = environment())
   tX <- c('T21',   'T31',  'T42',     'T62',    'T63',   'T85',      'T106',   'T255',     'T382',       'T799',      'T127',
@@ -66,6 +71,5 @@ cmipgcmresolution <- function(what='deg') {
     y[xs][i] <- as.numeric(substr(x[xs][i],1,regexpr(',',x[xs][i])-1))
     x[xs][i] <- NA
   }
-  ##print(x)
   return(y)
 }

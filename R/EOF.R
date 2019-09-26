@@ -1,14 +1,109 @@
-## Computes Empirical Orthogonal Functions (EOFs)
-##
-## R.E. Benestad, 
-## rasmus.benestad@met.no
-## 
-## ------------------------------------------------------------------------
+#' Empirical Orthogonal Functions (EOFs).
+#' 
+#' Computes EOFs (a type of principal component analysis) for combinations of
+#' data sets, typically from gridded data, reanalysis and climate models
+#' results.
+#' 
+#' [ref: Benestad (2001), "A comparison between two empirical downscaling
+#' strategies", \emph{Int. J. Climatology}, \bold{vol 21}, Issue 13,
+#' pp.1645-1668. DOI 10.1002/joc.703]. and \code{mixFields} prepares for
+#' mixed-field EOF analysis [ref. Bretherton et al. (1992) "An Intercomparison
+#' of Methods for finding Coupled Patterns in Climate Data", \emph{J. Climate},
+#' \bold{vol 5}, 541-560; Benestad et al. (2002), "Empirically downscaled
+#' temperature scenarios for Svalbard", \emph{Atm. Sci. Lett.},
+#' doi.10.1006/asle.2002.0051].
+#' 
+#' Uncertainty estimates are computed according to North et al. (1982),
+#' "Sampling Errors in the Estimation of Empirical Orthogonal Functions",
+#' \emph{Mon. Weather Rev.}, \bold{vol 110}, 699-706.
+#' 
+#' The EOFs are based on \code{\link{svd}}.
+#' 
+#' See the course notes from Environmental statistics for climate researchers
+#' \url{http://www.gfi.uib.no/~nilsg/kurs/notes/course.html} for a discussion
+#' on EOF analysis.
+#' 
+#' The method \code{PCA} is similar to EOF, but designed for parallel station
+#' series (e.g. grouped together with \code{\link{merge}}). PCA does not assume
+#' gridded values and hence does not weigth according to grid area. PCA is
+#' useful for downscaling where the spatial covariance/coherence is important,
+#' e.u involving different variables from same site, same variable from
+#' different sites, or a mix between these. For instance, PCA can be applied to
+#' the two wind components from a specific site and hence extract the most
+#' important wind directions/speeds. \code{PCA.matrix} is just a wrapper function 
+#' for \code{svd} that makes sure that the dimensions of the input are in order. 
+#' 
+#' @aliases EOF EOF.default EOF.field EOF.comb eof2field PCA PCA.default
+#' PCA.station PCA.matrix pca2station
+#'
+#' @importFrom stats approx sd acf
+#'
+#' @seealso as.eof
+#'
+#' @param X a 'field' or 'pca' object
+#' @param it see \code{\link{subset}}
+#' @param n number of EOFs
+#' @param is Spatial subsetting - see \code{\link{subset.eof}}
+#' @param lon set longitude range - see \code{\link{t2m.NCEP}}
+#' @param lat set latitude range
+#' @param verbose TRUE - clutter the screen with messages
+#' @param anomaly When TRUE, subtract the mean before SVD.
+#' @param \dots additional arguments
+#'
+#' @return File containing an 'eof' object which is based on the 'zoo' class.
+#' @author R.E. Benestad
+#' @keywords spatial ts multivariate
+#' @examples
+#' 
+#' # Simple EOF for annual mean SST:
+#' sst <- sst.NCEP(lon=c(-90,20),lat=c(0,70))
+#' SST <- aggregate(sst, year, mean, na.rm = FALSE)
+#' eof.sst <- EOF(SST)
+#' plot(eof.sst)
+#' 
+#' # EOF of July SST:
+#' eof.sst7 <- EOF(sst,it="Jul")
+#' plot(eof.sst7)
+#' 
+#' # common EOF for model
+#' # Get some sample data, extract regions:
+#' GCM <- t2m.NorESM.M()
+#' gcm <- subset(GCM,is=list(lon=c(-50,60),lat=c(30,70)))
+#' t2m.dnmi <- t2m.DNMI()
+#' dnmi <- subset(t2m.dnmi,is=list(lon=c(-50,60),lat=c(30,70)))
+#' 
+#' OBS <-  aggregate(dnmi, by=year, mean, na.rm = FALSE)
+#' GCM <- aggregate(gcm, by=year, mean, na.rm = FALSE)
+#' OBSGCM <- combine(OBS,GCM,dimension='time')
+#' 
+#' ceof <- EOF(OBSGCM)
+#' plot(ceof)
+#' 
+#' # Example for using PCA in downscaling
+#' ## nacd <- station(src='nacd')
+#' ## X <- annual(nacd)
+#' X <- station(src='nacd')
+#' nv <- function(x) sum(is.finite(x))
+#' ok <- (1:dim(X)[2])[apply(X,2,nv) == dim(X)[1]]
+#' X <- subset(X,is=ok)
+#' pca <- PCA(X)
+#' map(pca)
+#' 
+#' slp <- slp.NCEP(lon=c(-20,30),lat=c(30,70))
+#' eof <- EOF(slp,it="Jan")
+#' ds <- DS(pca,eof)
+#' # ds is a PCA-object
+#' plot(ds)
+#' 
+#' # Recover the station data:
+#' Z <- pca2station(pca)
+#' plot(Z,plot.type='multiple')
+#' 
+#' @export EOF
+EOF <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE) { UseMethod("EOF") }
 
-EOF<-function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...)
-  UseMethod("EOF")
-
-EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
+#' @export EOF.default
+EOF.default <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE) {
   # Verify Arguments
   if (verbose) print("EOF.default")
   stopifnot(!missing(X), is.matrix(X),inherits(X,"zoo"))
@@ -22,8 +117,8 @@ EOF.default <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,a
   return(eof)
 }
 
-
 # Apply EOF analysis to the monthly mean field values:
+#' @export EOF.field
 EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   SF <- function(x) {sum(is.finite(x))}
@@ -166,7 +261,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   return(eof)
 }
 
-
+#' @export EOF.comb
 EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   n.app <- attr(X,'n.apps')
@@ -351,6 +446,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
   invisible(ceof)
 }
 
+#' @export
 eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   if (verbose) {print("eof2field"); if (!is.null(is)) print(is)}
   greenwich <- attr(x,'greenwich')

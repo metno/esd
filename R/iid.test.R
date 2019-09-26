@@ -1,8 +1,58 @@
-
-
+#' iid test
+#' 
+#' Test for whether a variable is independent and identically distributed
+#' (iid). 
+#' 
+#' Reference:
+#' 
+#' Benestad, R.E., 2003: How often can we expect a record-event? Climate
+#' Research. 23, 3-13 (pdf)
+#' 
+#' Benestad, R.E., 2004: Record values, nonstationarity tests and extreme value
+#' distributions, Global and Planetary Change, vol 44, p. 11-26
+#' 
+#' The papers are available in the pdf format from
+#' \url{http://regclim.met.no/results_iii_artref.html}.
+#' 
+#' Note, gaps of missing data (NA) can bias the results and produce an
+#' under-count. The sign of non-iid behaviour is when the 'forward' analysis
+#' indicated higher number of record-events than the confidence region and the
+#' backward analysis gives lower than the confidence region.
+#' 
+#' Version 0.7: Added a test checking for dependencies based on an expected
+#' number from a binomial distribution and given the probability p1(n) = 1/n.
+#' This test is applied to the parallel series for one respective time
+#' (realisation), and is then repeated for all observation times. The check
+#' uses \code{\link{qbinom}} to compute a theoretical 95\% confidence interval,
+#' and a number outside this range is marked with red in the 'ball diagram'
+#' (first plot). \code{\link{pbinom}} is used to estimate the p-value for the
+#' 
+#' 
+#' @aliases iid.test iid.test.station iid.test.field iid.test.default n.records records test.records
+#' @param x A data matrix or a vector.
+#' @param plot Flag: plot the diagnostics.
+#' @param Monte.Carlo Flag: for estimating confidence limits.
+#' @param N.test Number of Monre-Carlo runs.
+#' @param reverse.plot.reverse TRUE: plots reverse from right to left, else
+#' left to right.
+#' @return list: 'record.density' and 'record.density.rev' for the reverse
+#' analysis. The variables CI.95, p.val, and i.cluster (and their reverse
+#' equivalents '.rev') return the estimated 95\% conf. int, p-value, and the
+#' location of the clusters (binomial).
+#' 
+#' @keywords manip
+#' @examples
+#' 
+#'   # takes a long time to run
+#'   dat <- rnorm(100*30)
+#'   dim(dat) <- c(100,30)
+#'   iid.test(dat)
+#' 
+#' @export iid.test
 iid.test <- function(x,...) UseMethod("iid.test")
 
-iid.test.station <- function(x,verbose=TRUE,...) {
+#' @export iid.test.station
+iid.test.station <- function(x,...,verbose=TRUE) {
   # Re-orders the station data into parallel time series for each calendar
   # month into new matrix X. Then apply the iid.test to this matrix.
 
@@ -44,6 +94,7 @@ iid.test.station <- function(x,verbose=TRUE,...) {
   invisible(iid)
 }
 
+#' @export iid.test.field
 iid.test.field <- function(x,verbose=TRUE,...) {
   # Uses EOFs to account for spatial co-variance, and test the PCs rather
   # than the grid points.
@@ -57,7 +108,9 @@ iid.test.field <- function(x,verbose=TRUE,...) {
     eof <- EOF(subset(x,it=month.abb[i]))
     # The PCs and EOFs have a random sign. ensure that these are
     # consistent with the original data:
-    y <- spatial.avg.field(subset(x,it=month.abb[i]))
+    # KMP 2019-05-28: replaced spatial.avg.field with aggregate.area
+    #y <- spatial.avg.field(subset(x,it=month.abb[i]))
+    y <- aggregate.area(subset(x,it=month.abb[i]), FUN="mean")
     #print(length(y)); dim(eof)
     r <- y %*% coredata(eof)
     #print(paste('inner-product: ',round(r,2)))
@@ -75,8 +128,8 @@ iid.test.field <- function(x,verbose=TRUE,...) {
 }
 
 
-
-iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
+#' @export iid.test.default
+iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
                              N.test=200,rev.plot.rev=TRUE,verbose=TRUE) {
   if (verbose) print('iid.test.default')
   Y <- as.matrix(x)
@@ -244,7 +297,7 @@ iid.test.default <- function(x,plot=TRUE,Monte.Carlo=TRUE,
 }
 
   
-
+# internal function - no need to export
 test.iid.test <- function(distr="rnorm",d=c(70,50),plot=TRUE,
                           Monte.Carlo=TRUE) {
   rnd <- eval(parse(text=paste(distr,"(",d[1]*d[2],")",sep="")))
@@ -254,7 +307,7 @@ test.iid.test <- function(distr="rnorm",d=c(70,50),plot=TRUE,
   invisible(test.results)
 }
 
-
+#' @export n.records
 n.records <- function(x,verbose=FALSE) {
   if (verbose) print('n.records')
   y <- x
@@ -311,7 +364,7 @@ n.records <- function(x,verbose=FALSE) {
 
 ## This algorithm is faster than the older code that used for-loop
 ## Search 'back-ward' statring with the highest value:
-
+#' @export
 records <- function(x,verbose=FALSE,diff=FALSE) {
   if (verbose) print('records')
   if (!is.null(dim(x))) {
@@ -340,6 +393,7 @@ records <- function(x,verbose=FALSE,diff=FALSE) {
   return(r)
 }
 
+#' @export test.records
 test.records <- function(N=1000) {
   y <- rnorm(N) + seq(0,1,length=N)
   rbv <- records(y)

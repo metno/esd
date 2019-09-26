@@ -1,3 +1,4 @@
+#' export
 trackdensity <- function(lons,lats,track=NULL,dx=NULL,dy=NULL,
                          radius=5E5,type="track",verbose=FALSE) {
   if (is.null(dx)) dx <- min(diff(sort(unique(lons))))

@@ -1,3 +1,4 @@
+# internal function - no need to export
 regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 # Compute the weights for irregular grids (xo,yo) - the station class
 
@@ -32,13 +33,13 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 
 
 
-
-regrid.station <- function(x,is,approach="station",verbose=FALSE) {
+#' @export regrid.station
+regrid.station <- function(x,is=NULL,...,approach="station",verbose=FALSE) {
 
   stopifnot(inherits(x,'station'))
   if (verbose) print('regrid.station')  
   if (approach=="pca2station") {
-    y <- regrid.pca2station(x,is)
+    y <- regrid.pca2station(x,is=is)
     return(y)
   }
   
@@ -125,14 +126,19 @@ regrid.station <- function(x,is,approach="station",verbose=FALSE) {
   invisible(y)
 }
 
-
-regrid.pca <- function(x,is,verbose=FALSE) {
+#' @export regrid.pca
+regrid.pca <- function(x,is=NULL,...,verbose=FALSE) {
   stopifnot(inherits(x,'pca'))
-  if (is.list(is)) {lon.new <- is[[1]]; lat.new <- is[[2]]} else
-  if ( (inherits(is,'station')) | (inherits(is,'field')) | (inherits(is,'eof')) ) {
-    lon.new <- attr(is,'longitude'); lat.new <- attr(is,'latitude')
+  if (is.list(is)) {
+    lon.new <- is[[1]]
+    lat.new <- is[[2]]
+  } else if ( (inherits(is,'station')) | (inherits(is,'field')) |
+              (inherits(is,'eof')) ) {
+    lon.new <- attr(is,'longitude')
+    lat.new <- attr(is,'latitude')
   }
-  lon.old <- attr(x,'longitude'); lat.old <- attr(x,'latitude')
+  lon.old <- attr(x,'longitude')
+  lat.old <- attr(x,'latitude')
 
   greenwich <- attr(x,'greenwich')
   if ( greenwich & (min(lon.new < 0)) ) x <- g2dl(x,greenwich=FALSE)
@@ -191,15 +197,14 @@ regrid.pca <- function(x,is,verbose=FALSE) {
 }
 
 
-
-regrid.pca2station <- function(x,is) {
+regrid.pca2station <- function(x,is=NULL) {
   stopifnot(inherits(x,'station'),inherits(is,'list'))
-  print("regrid.pca.station - estimate EOFs")
+  print("regrid.pca2station - estimate EOFs")
 
  #greenwich <- attr(x,'greenwich')
   if ( greenwich & (min(lon.new < 0)) ) x <- g2dl(x,greenwich=FALSE)
   pca0 <- PCA(x)
-  pca1 <- regrid(pca0,is)
+  pca1 <- regrid(pca0,is=is)
   print("Reconstruct field from EOFs")
   y <- pca2station(pca1)
   if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)

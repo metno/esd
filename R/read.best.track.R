@@ -1,3 +1,15 @@
+#' Read tropical storm trajectory data from \url{http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/best_tracks/}
+#'
+#' @param url url
+#' @param domain: 'io'='Northern Indian Ocean',
+#'                'sh'='Southern Hemisphere',
+#'		  'wp'='Northwestern Pacific'
+#' @param start first year
+#' @param end last year
+#' @param n length to which trajectories are interpolated
+#' @param verbose a boolean; if TRUE print information about progress
+#'
+#' @export
 read.best.track <- function(url='http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/best_tracks/',domain='io',
                             start=1945,end=2014,n=20,verbose=TRUE) {
   ## domain = c('io','sh','wp')

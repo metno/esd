@@ -1,3 +1,8 @@
+#' Plot image
+#'
+#' @importFrom graphics box
+#'
+#' @export image.plot
 image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE, 
                         legend.shrink = 0.9, legend.width = 1.2, 
                         legend.mar = ifelse(horizontal, 3.1, 5.1), 
@@ -8,7 +13,7 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
   
   if(verbose) print("image.plot")
   
-  if(is.null(col)) colscal(n=nlevel, col=pal)
+  if(is.null(col)) colscal(n=nlevel, pal=pal)
   old <- par()
   ## print("old") ; print(old$fig)
   old.par <- par(no.readonly = TRUE)
@@ -114,7 +119,7 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
 }
 
 
-
+# internal function - no need to export
 imageplot.info <- function (verbose=FALSE,...) {
   if(verbose) print("imageplot.info")
   temp <- list(...)
@@ -169,7 +174,8 @@ imageplot.info <- function (verbose=FALSE,...) {
   list(xlim = xlim, ylim = ylim, zlim = zlim, poly.grid = poly.grid)
 }
 
-poly.image <- function (x, y, z, col = colscal(n=64,col="heat"), breaks, transparent.color = "white", 
+# internal function - no need to export
+poly.image <- function (x, y, z, col = colscal(n=64,pal="heat"), breaks, transparent.color = "white", 
                         midpoint = FALSE, zlim = range(z, na.rm = TRUE), xlim = range(x), 
                         ylim = range(y), add = FALSE, border = NA, lwd.poly = 1, verbose=FALSE, ...) {
   if(verbose) print("poly.image")
@@ -214,6 +220,7 @@ poly.image <- function (x, y, z, col = colscal(n=64,col="heat"), breaks, transpa
   }
 }
 
+# internal function - no need to export
 imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width = 1, 
                              horizontal = FALSE, legend.mar = NULL, bigplot = NULL, smallplot = NULL, 
                              verbose=FALSE, ...) {
@@ -240,8 +247,7 @@ imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width =
       pr <- (smallplot[2] - smallplot[1]) * ((1 - legend.shrink)/2)
       smallplot[1] <- smallplot[1] + pr
       smallplot[2] <- smallplot[2] - pr
-    }
-    else {
+    } else {
       smallplot[2] <- 1 - legend.mar
       smallplot[1] <- smallplot[2] - legend.width
       pr <- (smallplot[4] - smallplot[3]) * ((1 - legend.shrink)/2)
@@ -253,8 +259,7 @@ imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width =
     bigplot <- old.par$plt
     if (!horizontal) {
       bigplot[2] <- min(bigplot[2], smallplot[1] - offset)
-    }
-    else {
+    } else {
       bottom.space <- old.par$mar[1] * char.size
       bigplot[3] <- smallplot[4] + offset
     }

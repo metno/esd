@@ -1,15 +1,22 @@
-## Decription  : Main Script for GHCND data format handling
-## Author      : Abdelkader Mezghani
-## Created     : 01-02-2013
-## Last update : 13-06-2013
-## Functions   : Dailyformat (in progess) ; metaghcnd (completed) ; dataghcnd (completed)
-## Comments    : Lines 70 to 75 must be updated with the full list of variables and elements
-
-
-## Sub function "metaghcnd"
-ghcnd.meta <- function(param=NULL, src="ghcnd", adj=TRUE, path="data.GHCND",
+#' Functions to fetch data from the Global Historical Climatology Network (GHCN) data base
+#'
+#' \code{ghcnd.meta} and \code{ghncm.meta} read and organize metadata of daily (ghcnd) and monthly (ghcnm) GHCN data.
+#' \code{ghncd.data} and \code{ghcnd.data} read daily and monthly mean GHCN data from NOAA (\url{ftp.ncdc.noaa.gov}).
+#'
+#' @aliases ghcnd.meta ghcnd.data ghcnm.meta ghcnm.data
+#'
+#' @param param climate variable
+#' @param src source of data
+#' @param path path to directory where to save data
+#' @param url url to data source
+#' @param save.file a boolean; if TRUE save data or metadata
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param force a boolean; if TRUE overwrite old file
+#'
+#' @export
+ghcnd.meta <- function(param=NULL, src="ghcnd", path="data.GHCND",
                        url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily",
-                       save.file=FALSE, test = TRUE,verbose=TRUE , force = TRUE) {
+                       save.file=FALSE, verbose=TRUE, force=TRUE) {
   ## Get old path
   ## oldpath <- getwd()
   if (!verbose) print(paste("Param", param, sep = " <-- "))
@@ -47,8 +54,8 @@ ghcnd.meta <- function(param=NULL, src="ghcnd", adj=TRUE, path="data.GHCND",
       if (!file.exists(destfile)) {
         download.file(url, finventory, method = "wget", quiet = FALSE, mode = "w",
                       cacheOK = TRUE, extra = getOption("download.file.extra"))
-      }   
-      if (verbose) print(paste("Adjusted", adj))
+      }
+      
       if (verbose) print("Reading metadata...") 	
       #
       meta1 <- read.fwf(finventory,widths=c(11,9,11,4,5,5),
@@ -59,7 +66,8 @@ ghcnd.meta <- function(param=NULL, src="ghcnd", adj=TRUE, path="data.GHCND",
                        col.names=c("stid","lat","lon","alt","state","stnm","gsnflag","hcnflag","wmo_id"), 
                        sep = "\t",as.is=TRUE,header=FALSE)
      
-      ## meta <- read.fwf("ghcnd-stations.txt",widths=c(2,1,8,9,10,7,4,30,4,4,6),col.names=c("cntr.abb","cntr.netw.c","stid","lat","lon","alt","state","stnm","gsnflag","hcnflag","wmo_id"), sep = "\t",as.is=TRUE
+      ## meta <- read.fwf("ghcnd-stations.txt",widths=c(2,1,8,9,10,7,4,30,4,4,6),
+      ##                  col.names=c("cntr.abb","cntr.netw.c","stid","lat","lon","alt","state","stnm","gsnflag","hcnflag","wmo_id"), sep = "\t",as.is=TRUE
       
       ## Replace element name by element id 
       meta1$param <- sub("TMIN",meta1$param,replacement="121")
@@ -116,22 +124,17 @@ ghcnd.meta <- function(param=NULL, src="ghcnd", adj=TRUE, path="data.GHCND",
     return(ghcnd.meta)
   }
 }
+
 ## SUB-FUNCTION "dataghcnd"
-ghcnd.data <- function(param = "PRCP", stid = "ACW00011604" , src = "ghcnd" , adj = TRUE, path = "data.GHCND",
-                       url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all",flag = FALSE, miss2na = TRUE, 
-                       force = TRUE , verbose=TRUE , save.file = FALSE, rm.file =TRUE) {
-   ## AM 15-11-2013 removed from the argument list ver ="v3.2.0.20130120"
- 
-  ## Get old path
-  ## oldpath <- getwd()
+#' @export
+ghcnd.data <- function(param="PRCP", stid="ACW00011604", src="ghcnd" , path="data.GHCND",
+                       url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all", flag=FALSE, miss2na=TRUE, 
+                       force=TRUE, verbose=TRUE, save.file=FALSE, rm.file =TRUE) {
+  if(verbose) print("ghcnd.data")
+  if(is.null(url)) url <- "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all"
   src <- tolower(src)
-  ## set working directory to new path
-  ##newpath <- paste(path,paste(src,ver,sep="."),"/",sep="") 
-  
-  ## if (verbose) print(paste("Setting Work Directory to ",path, sep=" -> "))
-  ##  wser()
+
   if (!file.exists(path) & save.file) {
-    ##
     test <- readline(paste("Directory,",path," does not exist ! Would you like to create it (y or n)",sep=""))
     if ((tolower(test) == "yes") | (tolower(test) == "ye") | (tolower(test) == "y")) dir.create(path)
   } 
@@ -142,37 +145,45 @@ ghcnd.data <- function(param = "PRCP", stid = "ACW00011604" , src = "ghcnd" , ad
     ## set destination full path filename to destfile
     file <- paste(stid,"dly",sep=".")
     if (!save.file) path <- url
-    destfile <- file.path(path,file,fsep = .Platform$file.sep)
+    destfile <- file.path(path, file, fsep=.Platform$file.sep)
     ##
     if (!file.exists(destfile) | (file.info(destfile)$size==0) | !save.file) {  
-      if (verbose) print("Reading data from ftp.ncdc.noaa.gov")    	
+      if (verbose) print("Reading data from ftp.ncdc.noaa.gov")
       url = paste(url,file,sep="/")
       if (!save.file) {
         destfile <- url(url)
       } else {
-        test <- try(eval(download.file(url, destfile, method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))))
+        test <- try(eval(download.file(url, destfile, method = "wget", quiet=FALSE, 
+                                       mode="w", cacheOK=TRUE, extra=getOption("download.file.extra"))))
         if (test>0) {return(NULL)} ##;  setwd(oldpath)}
       }
-    }   	 
-    ## 
-    ## browser()
-    if (save.file) 
+    }
+    ##
+    if (save.file) {
       if (file.info(destfile)$size==0) {
         print(paste("Warning : File",destfile,"has null size",sep=" "))
-        return(NULL)}
+        return(NULL)
+      }
+    }
 
     ## Reading data as text ...
     ## setwd(newpath)	
     ##	
     ## fdata <- paste(stid,"dly",sep=".")  	
     ##fdata <- "ghcnd.tavg.v3.2.0.20130120.qca.dat"   
-    ## if (!is.null(stid) & save.file) datatext = readLines(destfile) ##readLines(fdata)    
-   
-    ghcnd.data <- read.fwf(destfile,widths=c(3,8,4,2,4,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3),col.names=c("COUNTRY.CODE","ID","YEAR","MONTH","ELEMENT","DAY1","MQSFLAG1","DAY2","MQSFLAG2","DAY3","MQSFLAG3","DAY4","MQSFLAG4","DAY5","MQSFLAG5","DAY6","MQSFLAG6","DAY7","MQSFLAG7","DAY8","MQSFLAG8","DAY9","MQSFLAG9","DAY10","MQSFLAG10","DAY11","MQSFLAG11","DAY12","MQSFLAG12","DAY13","MQSFLAG13","DAY14","MQSFLAG14","DAY15","MQSFLAG15","DAY16","MQSFLAG16","DAY17","MQSFLAG17","DAY18","MQSFLAG18","DAY19","MQSFLAG19","DAY20","MQSFLAG20","DAY21","MQSFLAG21","DAY22","MQSFLAG22","DAY23","MQSFLAG23","DAY24","MQSFLAG24","DAY25","MQSFLAG25","DAY26","MQSFLAG26","DAY27","MQSFLAG27","DAY28","MQSFLAG28","DAY29","MQSFLAG29","DAY30","MQSFLAG30","DAY31","MQSFLAG31"),sep = "\t",as.is=TRUE)   
-
-    if (dim(ghcnd.data)[1]==0) {
+    ## if (!is.null(stid) & save.file) datatext = readLines(destfile) ##readLines(fdata)
+    ghcnd.data <- try(read.fwf(destfile, widths=c(3,8,4,2,4,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,
+                                              5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3),
+                           col.names=c("COUNTRY.CODE","ID","YEAR","MONTH","ELEMENT","DAY1","MQSFLAG1","DAY2","MQSFLAG2",
+			                      "DAY3","MQSFLAG3","DAY4","MQSFLAG4","DAY5","MQSFLAG5","DAY6","MQSFLAG6","DAY7","MQSFLAG7",
+				                    "DAY8","MQSFLAG8","DAY9","MQSFLAG9","DAY10","MQSFLAG10","DAY11","MQSFLAG11","DAY12","MQSFLAG12",
+				                    "DAY13","MQSFLAG13","DAY14","MQSFLAG14","DAY15","MQSFLAG15","DAY16","MQSFLAG16","DAY17",
+				                    "MQSFLAG17","DAY18","MQSFLAG18","DAY19","MQSFLAG19","DAY20","MQSFLAG20","DAY21","MQSFLAG21",
+				                    "DAY22","MQSFLAG22","DAY23","MQSFLAG23","DAY24","MQSFLAG24","DAY25","MQSFLAG25","DAY26",
+				                    "MQSFLAG26","DAY27","MQSFLAG27","DAY28","MQSFLAG28","DAY29","MQSFLAG29","DAY30","MQSFLAG30",
+				                    "DAY31","MQSFLAG31"), sep="\t", as.is=TRUE))
+    if (inherits(ghcnd.data,"try-error")) {#} | dim(ghcnd.data)[1]==0) {
       print("Warning : No data found for that station")
-      ## setwd(oldpath)
       return(NULL)
     }
     ## attach(ghcnd.data,warn.conflicts = FALSE)
@@ -196,7 +207,7 @@ ghcnd.data <- function(param = "PRCP", stid = "ACW00011604" , src = "ghcnd" , ad
     ## Remove downloaded files if necessary to save disk space
     if (rm.file) file.remove(destfile)
     
-                                        #} ## else {if (verbose) print("Reading data from R-data file ...")
+    #} ## else {if (verbose) print("Reading data from R-data file ...")
     ##      load("ghcnd.data.rda")
     ##      if (verbose) print("Done !")
     ##    }
@@ -206,14 +217,3 @@ ghcnd.data <- function(param = "PRCP", stid = "ACW00011604" , src = "ghcnd" , ad
   }
 }
 
-##Dailyformat <- function(stid = NULL, param = "t2m", src = "GHCND", ver = "v3.2.0.20130120", adj = TRUE, path = "/klimadata/work/abdelkaderm/data/", force = TRUE, flags = FALSE, test = TRUE , verbose=TRUE) {
-##  
-##  obs.meta <- metaghcnd(stid = stations[2])
-##  invfile <- attr(obs.meta,"inv_filename")
-##  version.por <- attr(obs.meta,"version_upd")
-##  version.upd <- attr(obs.meta,"version_por") 
-##  
-##  obs.data <- dataghcnd(stid = stations[2])
-##  obs.data = data.frame(subset(obs.data,select=c(-1:-3))) # remove duplicate meta info
-##  
-##  obsfinalformat <- list(PARAM = rownames(table(obs.data$ELEMENT)),ID = paste(obs.meta$COUNTRY.CODE,obs.meta$STN,sep=""),NAME = obs.meta$NAME, LAT =obs.meta$LATITUDE,LON =obs.meta$LONGITUDE,ELEV = obs.meta$STNELEV,EXTRA = obs.meta$EXTRA,VAL = obs,SOURCE = upper.case(source), OR_VERSION = version.por , UPD_VERSION = version.upd, ADJUSTED = upper.case(adj), INV_FILE = invfile, DATA_FILE = fdata, ftp_src_link = "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn")}

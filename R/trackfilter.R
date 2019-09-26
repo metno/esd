@@ -1,6 +1,24 @@
+## Replaced by subset.trajectory and subset.events
+## where param, pmin, pmax and FUN go into argument ic
 
-trackfilter <- function(x,...) UseMethod("trackfilter")
+# Filter trajectories
+#
+# Function for selecting trajectories with certain characteristics
+#
+# @param x events or trajectory object
+# @param param name of parameter
+# @param pmin minimum value of \code{param} to allow
+# @param pmax maximum value of \code{param} to allow
+# @param FUN If \code{FUN}="any", \code{param} must be within the range [\code{pmin},\code{pmax}]
+# during at least one time step of a trajectory, or else said trajectory will be excluded.
+# If \code{FUN}="all", \code{param} must be within the defined range during all time steps. 
+#
+# @seealso subset.events subset.trajectory
+#
+# @export
+trackfilter <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) UseMethod("trackfilter")
 
+# @export
 trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"events"))
@@ -15,7 +33,7 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
       if(is.null(pmax)) pmax <- max(x[param],na.rm=TRUE)
       if(verbose) print(paste(param,"in range",pmin,"-",pmax))
       if(verbose) print(paste("FUN =",FUN))
-      if(!"trackcount" %in% names(x)) x <- Trackstats(x)
+      if(!"trackcount" %in% names(x)) x <- trackstats(x)
       if(is.null(FUN)) {
         ok <- as.vector(x[param]>=pmin & x[param]<=pmax)
       } else if (FUN=="any") {
@@ -35,6 +53,7 @@ trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbos
   invisible(y)
 }
 
+# @export
 trackfilter.trajectory <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")
   stopifnot(inherits(x,"trajectory"))

@@ -1,12 +1,100 @@
-
+#' 3-step cyclone tracking algorithm.
+#' 
+#' Applies a tracking algorithm to a set of cyclones (\code{\link{CCI}}).
+#' 
+#' The algorithm connects events in three subsequent time steps, chosing the
+#' path that minimizes the total displacement as well as the change in angle
+#' and displacement between them. The relative weight of these criteria can be
+#' adjusted. The analysis can be applied to 'events' objects.
+#' 
+#' Note: The algorithm has been developed for tracking midlatitude cyclones in
+#' the northern hemisphere and may not work as well for other regions or
+#' 'events' of different types, e.g., anti-cyclones.
+#' 
+#' 
+#' @aliases track track.default track.events
+#' @param X An 'events' object containing temporal and spatial information
+#' about a set of cyclones or anticyclones.
+#' @param x0 A tracked 'events' object from previous time steps, used as a
+#' starting point for the tracking of X so that trajectories can continue from
+#' x0 to X.
+#' @param it A list providing time index, e.g. month.
+#' @param is A list providing space index, lon and/or lat.
+#' @param dmax Maximum displacement of events between two time steps. Unit: m.
+#' @param f.d Relative weight of the total displacement criterion in finding
+#' the most probable trajectories.
+#' @param f.dd Relative weight of the change in displacement as a criterion in
+#' finding the most probable trajectories.
+#' @param f.da Relative weight of the change in direction (angle) as a
+#' criterion in finding the most probable trajectories.
+#' @param nmax Maximum total lifetime of a trajectory. Unit: number of time
+#' steps.
+#' @param nmin Minimum total lifetime of a trajectory. Unit: number of time
+#' steps.
+#' @param dmin Minimum total length of a trajectory. Unit: m.
+#' @param plot TRUE: Show plots of trajectories for selected time steps.
+#' @param progress TRUE: Show progress bar.
+#' @param verbose TRUE: Print out diagnosics.
+#' @return An 'events' object containing the original information as well as
+#' the trajectory number ('trajectory') of each event and statistical
+#' properties of the trajectories ('trackcount' - number of events in path;
+#' 'tracklen' - distance between start and end point of path').
+#' @author K. Parding
+#' @seealso CCI,as.trajectory
+#' @keywords track
+#' @examples
+#' 
+#' # Load sample data to use for example
+#' # ERA5 6-hourly SLP data from the North Atlantic region, 2016-09-15 to 2016-10-15
+#' data(slp.ERA5)
+#' 
+#' ## Cyclone identification
+#' Cstorms <- CCI(slp.ERA5, m=20, label='ERA5', pmax=1000, verbose=TRUE, plot=FALSE)
+#' 
+#' ## Cyclone tracking
+#' Ctracks <- track(Cstorms, plot=FALSE, verbose=TRUE)
+#' 
+#' ## Map with points and lines showing the cyclone centers and trajectories
+#' map(Ctracks, type=c("trajectory","points"), col="blue", new=FALSE)
+#' ## Map with only the trajectory and start and end points
+#' map(Ctracks, type=c("trajectory","start","end"), col="red", new=FALSE)
+#' ## Map showing the cyclone depth (slp) as a color scale (rd = red scale)
+#' map(Ctracks, param="pcent", type=c('trajectory','start'), 
+#'     colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1010,5)), 
+#'     alpha=0.9, new=FALSE)
+#' 
+#' ## Select only the long lasting trajectories...
+#' Ct <- subset(Ctracks, ic=list(param='trackcount', pmin=12) )
+#' map(Ct, new=FALSE)
+#' ## ...or only the long distance ones...
+#' Ct <- subset(Ctracks, ic=list(param='tracklength', pmin=3000) )
+#' map(Ct, new=FALSE)
+#' ## ...or only the deep cyclones
+#' Ct <- subset(Ctracks, ic=list(param='pcent', pmax=980) )
+#' map(Ct, new=FALSE)
+#' 
+#' ## Map of cyclone trajectories with the slp field in background
+#' cb <- list(pal="budrd",breaks=seq(990,1040,5))
+#' map(Ctracks, slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, 
+#'     verbose=TRUE, new=FALSE)
+#' 
+#' ## Transform the cyclones into a 'trajectory' object which takes up less space
+#' Ctraj <- as.trajectory(Ctracks)
+#' map(Ctraj, new=FALSE)
+#' print(object.size(Ctracks), units="auto")
+#' print(object.size(Ctraj), units="auto")
+#' 
+#' @export
 track <- function(x,...) UseMethod("track")
 
-track.events <- function(x,verbose=FALSE,...) {
+#' @export track.events
+track.events <- function(x,...,verbose=FALSE) {
   if(verbose) print("track.events")
   track.default(x,verbose=verbose,...)
 }
 
-track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmin=1E5,
+#' @export track.default
+track.default <- function(x,...,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmin=1E5,
                           f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,dh=NULL,
 		                      greenwich=NULL,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if(verbose) print("track.default")
@@ -67,6 +155,7 @@ track.default <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmi
   invisible(y)
 }
 
+# NOT EXPORTED
 Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
 		  f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,dh=6,
 		  cleanup.x0=TRUE,plot=FALSE,progress=TRUE,verbose=FALSE) {
@@ -218,7 +307,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     attr(x,"unit") <- c(attr(x,"unit"),c("numeration","km"))
   }
   if (verbose) print("calculate trajectory statistics")
-  x <- Trackstats(x,verbose=verbose)
+  x <- trackstats(x,verbose=verbose)
   if(!is.null(x0)) {
     if(!is.null(x00)) {
       if (dim(x00)[1]>0) {
@@ -230,7 +319,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     x01 <- rbind(x0,x)
     c01 <- attrcp(x,x01)
     class(x01) <- class(x)
-    x01 <- Trackstats(x01)
+    x01 <- trackstats(x01)
     dnum <- x01$date*1E2 + x01$time
     if (is.null(nmin)) nmin <- 3
     if (is.null(dmin)) dmin <- 0
@@ -331,6 +420,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   invisible(list(y=y,y0=y0))
 }
 
+# NOT EXPORTED
 Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
                      f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,
 		     nend=NA,plot=FALSE,verbose=FALSE) {
@@ -599,7 +689,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
          n0=max(c(step1$num,step2$num,step3$num,n0),na.rm=TRUE)))
 }
 
-
+# NOT EXPORTED
 angle <- function(lon1,lat1,lon2,lat2) {
   a <- 360 - (atan2(lat2-lat1,lon2-lon1)*(180/pi) + 360) %% 360
   #a[a>180] <- 360-a[a>180]
@@ -607,8 +697,21 @@ angle <- function(lon1,lat1,lon2,lat2) {
   #return(atan2(lat2-lat1,lon2-lon1)*180/pi+90)
 }
 
-Trackstats <- function(x,verbose=FALSE) {
-  if(verbose) print("Trackstats")
+#' Calculate trajectory statistics
+#'
+#' The function enumerates the trajectories ("trajectory"),
+#' adds time steps and the total number of steps in a trajecotry ("trackcount"),
+#' length of trajectory (in km): "tracklength"),
+#' and if the distance "dx" beween time steps exists the
+#' length of the trajectory from start to end ("tracklength") is also calculated.
+#'
+#' @param x an \code{events} object
+#' @param verbose a boolean; if TRUE print information about progress
+#' @return an \code{events} object with statistics describing the trajectories
+#'
+#' @export
+trackstats <- function(x,verbose=FALSE) {
+  if(verbose) print("trackstats")
   if (!any("trajectory" %in% names(x))) x <- track(x,verbose=verbose)
   y <- x[order(x$trajectory),]
   y <- attrcp(x,y)
@@ -651,7 +754,6 @@ Trackstats <- function(x,verbose=FALSE) {
   }
   if('dx' %in% colnames(y)) {
     if(verbose) print("dx")
-    #dx <- y$dx
     dx <- Displacement(y)
     if (any(rnum>nummax)) dx[nummax+1] <- 0
     y$dx <- dx
@@ -666,6 +768,7 @@ Trackstats <- function(x,verbose=FALSE) {
   invisible(y)
 }
 
+# NOT EXPORTED
 Displacement <- function(x,verbose=FALSE) {
   if(verbose) print("Calculate displacement")
   if(!"trajectory" %in% colnames(x)) {
@@ -696,7 +799,8 @@ Displacement <- function(x,verbose=FALSE) {
   }
   invisible(dx)
 }
-    
+
+# NOT EXPORTED
 Enumerate <- function(x,param="trajectory",verbose=FALSE) {
   if(verbose) print("Enumerate")
   stopifnot(inherits(x,"data.frame"))
@@ -720,7 +824,7 @@ Enumerate <- function(x,param="trajectory",verbose=FALSE) {
   invisible(rnum)
  }
 
-
+# NOT EXPORTED
 NearestNeighbour <- function(lon1,lat1,lon2,lat2,dmax=1E6,
                              plot=FALSE,verbose=FALSE) {
   if (verbose) print("NearestNeighbour")

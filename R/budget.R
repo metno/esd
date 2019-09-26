@@ -1,18 +1,38 @@
-# towards the cyclone budget...
-
-# We want to calculate the cyclone budget in esd with the same output as in Python.
-# The output consists of
-#  total - tracks all boxes visited, can be visited many times
-#  system - tracks all boxes visited, but only the first visit   
-#  genesis - record the position of the first step
-#  lysis - record the position of the last step
-#  outN,E,S,W - from where did the cyclone come to the present box?
-#  inN,E,S,W - to where will the cyclone go from the present box?
-
-#  This in monthly (and/or yearly) time scale, with (preferable) adjustable geographical area and projection.
-
-# Time scale is ignored. (I do not remember what were the plans for the time scale)
-
+#' Calculate and plot the cyclone budget
+#' 
+#' Calculate and plot the cyclone budget: total - tracks all grid boxes
+#' visited, can be visited many times system - tracks all grid boxes visited,
+#' but only the first visit genesis - record the position of the first step
+#' lysis - record the position of the last step outN,E,S,W - from where did the
+#' cyclone come to the present grid box? inN,E,S,W - to where will the cyclone
+#' go from the present grid box?
+#' 
+#' 
+#' @aliases calculate.cyclonebudget plot.cyclonebudget
+#' @param X A 'trajectory' or 'event' object of cyclone trajectories
+#' @param it A list or data.frame providing time index, e.g. months, season,
+#' year range
+#' @param is A list providing space index, e.g.,
+#' list(lon=c(-50,50),lat=c(45,70)
+#' @param resolution.lon Longitudinal resolution
+#' @param resolution.lat Latitudinal resolution
+#' @param progress Show progress bar. TRUE or FALSE.
+#' @param verbose Print out diagnostics. TRUE or FALSE.
+#' @return A 'cyclonebudget' object: a list of various aspects of the cyclone
+#' budget.
+#' @author K. Parding, MET Norway
+#' @keywords cyclonebudget
+#' @examples
+#' 
+#' \dontrun{
+#' data(storms)
+#' storms.deep <- trackfilter(storms,param="pcent",pmax=970,FUN="any")
+#' storms.deep <- trackfilter(storms.deep,param="max.gradient",pmin=2.5e-2,FUN="any")
+#' bud <- calculate.cyclonebudget(storms.deep)
+#' plot(bud,col=colscal(n=9,pal="bu"))
+#' }
+#'
+#' @export
 calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
                                     resolution.lon=12,resolution.lat=6,
                                     progress=TRUE,verbose=FALSE){
@@ -177,9 +197,7 @@ calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
   return(bud)
 }
 
-
-######## simple, preliminary plotting
-
+#' @export plot.cyclonebudget
 plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
     colbar=list(pal="precip",n=10,show=TRUE),
     xlim=NULL,ylim=NULL,projection="sphere",
@@ -188,7 +206,7 @@ plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
   #x <- unlist(bud[1:(length(bud)-2)])
   #colbar$breaks <- pretty(seq(0,q95(x[x>0], n=colbar$n)))
   #colbar <- colbar.ini(bud,colbar=colbar)
-  #col <- colscal(n=length(colbar$breaks),col=colbar$pal,
+  #col <- colscal(n=length(colbar$breaks),pal=colbar$pal,
   #                   rev=colbar$rev,alpha=colbar$alpha,
   #                   verbose=FALSE)
   #colbar$col <- col[1:(length(col)-1)]

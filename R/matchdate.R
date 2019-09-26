@@ -1,13 +1,27 @@
-matchdate <-function(x,it,verbose=FALSE,...) UseMethod("matchdate")
+#' Match date of one object with another object or date string
+#'
+#' @param x input object (e.g., \code{station}, \code{field} or \code{zoo}) with a date index
+#' @param it a character string with dates or an object (e.g., \code{station}, \code{field} or \code{zoo}) with a date index
+#' @param verbose a boolean; if TRUE print information about progress
+#'
+#' @return the part of \code{x} that matches the dates provided in \code{it} 
+#' 
+#' @aliases matchdate matchdate.list matchdate.default
+#' @seealso subset
+#' 
+#' @export
+matchdate <-function(x,it,verbose=FALSE) UseMethod("matchdate")
 
+#' @export matchdate.list
 matchdate.list <- function(x,it,verbose=FALSE) {
   if (verbose) print('matchdate.list')
   y <- lapply(x,matchdate.default,it=it,verbose=verbose)
   invisible(y)
 }
 
+#' @export matchdate.default
 matchdate.default <- function(x,it,verbose=FALSE) {
-  if(verbose) print("<matchdate.default>")
+  if(verbose) print("matchdate.default")
   ## If it is the list, then use the first element because otherwise will not find the index
   if (is.list(it)) it <- it[[1]]
   
@@ -23,8 +37,9 @@ matchdate.default <- function(x,it,verbose=FALSE) {
 
   t <- index(x)
   t0 <- t
-  if (inherits(it,c('annual','month','seasonal','day'))) cls[2] <- class(it)[2]
- 
+  ## KMP 2019-09-17: the time scale is next to last in the class, not always the second element
+  if (inherits(it,c('annual','month','seasonal','day'))) cls[length(cls)-1] <- class(it)[length(class(it))-1]
+  
   if (inherits(it,'character')) {
     if (verbose) print('Convert years and incomplete dates to %YYYY-%MM-%DD date format')
     ## If given years but y has dates as index, convert to dates.

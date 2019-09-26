@@ -1,17 +1,45 @@
-# R.E. Benestad, met.no, Oslo, Norway 12.04.2013
-# rasmus.benestad@met.no
-#------------------------------------------------------------------------
-
-
+#' Correlation
+#' 
+#' Compute the correlation between field objects and station/field.
+#' 
+#' @aliases corfield corfield.default corfield.zoo corfield.field
+#' corfield.field.station corfield.station corfield.eof corfield.trajectory
+#'
+#' @param x data object
+#' @param y data object
+#' @param plot TRUE: plot the results
+#' @param use see \code{\link{cor}}
+#' @param new see \code{link{map}}
+#' @param ip index EOF pattern
+#'
+#' @return Map of correlation
+#'
+#' @keywords manip
+#'
+#' @examples
+#' x <- t2m.DNMI(lon=c(-40,30),lat=c(0,50))
+#' y <- t2m.NorESM.M(lon=c(-40,30),lat=c(0,50))
+#' r <- corfield(annual(x),annual(y))
+#' 
+#' data(Oslo)
+#' t2m <- t2m.DNMI()
+#' x <- subset(Oslo,it='january')
+#' y <- subset(t2m,it='january')
+#' r <- corfield(x,y)
+#' 
+#' @export corfield
 corfield<-function(x,y,...) UseMethod("corfield")
 
+#' @export corfield.default
 corfield.default <- function(x,y,...) {
   cor(x,y)
 }
 
+#' @export corfield.zoo
 corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
-  if (verbose) { print("corfield.zoo:"); print('station against field') }
+  if (verbose) print("corfield.zoo:")
+  stopifnot(inherits(y,'field'))
 
   # Keep track of which is an eof object and which is a station record:
   swapped <- FALSE
@@ -21,8 +49,7 @@ corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=F
     y <- yy
     swapped <- TRUE
   }
-  
-  stopifnot(inherits(y,'field'))
+
   # If the station data is daily, aggigate as monthly mean
   if ( inherits(y,"month") ) {
     x <- aggregate(x, as.yearmon, mean)
@@ -30,7 +57,12 @@ corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=F
   }
 
   #print("HERE")
-  if (verbose) {print(dim(x)); print(dim(y)); print(class(x)); print(class(y))}
+  if (verbose) {
+    print(dim(x))
+    print(dim(y))
+    print(class(x))
+    print(class(y))
+  }
   yx <- merge(zoo(x),zoo(y),all=FALSE)
   #print("OK so far?")
 
@@ -56,6 +88,7 @@ corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=F
   invisible(r)
 }
 
+#' @export corfield.field
 corfield.field <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=FALSE,new=TRUE,
                            colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
  
@@ -135,7 +168,7 @@ corfield.field <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose
   invisible(r)
 }
 
-
+#' @export corfield.field.station
 corfield.field.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
                                    colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                                    use='pairwise.complete.obs') {
@@ -143,7 +176,7 @@ corfield.field.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
   invisible(r)
 }
 
-
+#' @export corfield.station
 corfield.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
                              use='pairwise.complete.obs',
                              na.action='na.omit',colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE)) {
@@ -239,6 +272,7 @@ corfield.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
   invisible(r)
 }
 
+#' @export corfield.eof
 corfield.eof <- function(x,y,...,ip=1,plot=TRUE,new=TRUE,
                          colbar=list(breaks=seq(-1,1,by=0.05),rev=TRUE),
                          use='pairwise.complete.obs',na.action='na.omit') {
@@ -248,8 +282,7 @@ corfield.eof <- function(x,y,...,ip=1,plot=TRUE,new=TRUE,
   invisible(r)
 }
 
-
-
+#' @export corfield.trajectory
 corfield.trajectory <- function(x,y,...,it=NULL,is=NULL,param=NULL,FUN="count",
                                 unit=NULL,longname=NULL,loc=NULL,
                                 use="pairwise.complete.obs",

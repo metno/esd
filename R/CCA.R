@@ -1,18 +1,65 @@
-# Canonical correlation analysis (CCA) and CCA-based predictions
+#' Canonical correlation analysis
+#' 
+#' Applies a canonical correlation analysis (CCA) to two data sets. The CCA
+#' here can be carried out based on an \code{\link{svd}} based approach (after
+#' Bretherton et al. (1992), J. Clim. Vol 5, p. 541, also documented in
+#' Benestad (1998): "Evaluation of Seasonal Forecast Potential for Norwegian
+#' Land Temperatures and Precipitation using CCA", DNMI KLIMA Report 23/98 at
+#' \url{http://met.no/english/r_and_d_activities/publications/1998.html}) or
+#' ii) a covariance-eigenvalue approach (after Wilks, 1995, "Statistical
+#' methods in the Atmospheric Sciences", Academic Press, p. 401).
+#' 
+#' The analysis can also be applied to either EOFs or fields.
+#' 
+#' @aliases CCA CCA.default CCA.eof CCA.pca CCA.field
+#' @seealso predict.cca
+#'
+#' @param Y An object with climate data: field, eof, pca.
+#' @param X Same as Y.
+#' @param ip Which EOFs to include in the CCA.
+#' @param verbose If TRUE print information about progress.
+#' @param ... Other arguments.
+#' @return A CCA object: a list containing a.m, b.m, u.k, v.k, and r,
+#' describing the Canonical Correlation variates, patterns and correlations.
+#' a.m and b.m are the patterns and u.k and v.k the vectors (time evolution).
+#'
+#' @importFrom stats cov cor
+#'
+#' @examples
+#' 
+#' # CCA with two eofs
+#' slp <- slp.NCEP(lat=c(-40,40),anomaly=TRUE)
+#' sst <- sst.NCEP(lat=c(-40,40),anomaly=TRUE)
+#' eof.1 <- EOF(slp, it='Jan')
+#' eof.2 <- EOF(sst, it='Jan')
+#' cca <- CCA(eof.1,eof.2)
+#' plot(cca)
+#' 
+#' # CCA with PCA and EOF:
+#' \dontrun{
+#' NACD <- station.nacd()
+#' plot(annual(NACD))
+#' map(NACD,FUN="sd")
+#' pca <- PCA(NACD)
+#' plot(pca)
+#' naslp <- slp.NCEP(lon=c(-30,40),lat=c(30,70),anomaly=TRUE)
+#' map(naslp)
+#' eof <- EOF(naslp,it='Jan')
+#' nacca <- CCA(pca,eof)
+#' plot(nacca)
+#' cca.pre <- precit.cca(nacca)
+#' }
+#' 
+#' @export
+CCA <- function(Y,X,ip=1:8,verbose=FALSE,...) UseMethod("CCA")
+
 #
-# R.E. Benestad, met.no, Oslo, Norway 20.08.2013
-# rasmus.benestad@met.no
-#------------------------------------------------------------------------
-# Y - first data set
-# X - second data set
-
-CCA <-function(Y,X,...) UseMethod("CCA")
-
-CCA.default <- function(Y,X,...) {
+CCA.default <- function(Y,X,ip=1:8,verbose=FALSE,...) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
 }
 
-CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
+#' @export CCA.eof
+CCA.eof <- function(Y,X,ip=1:8,verbose=FALSE,...) {
 
   if (verbose) print("CCA.eof")
   history <- attr(X,'history')
@@ -74,7 +121,7 @@ CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   }
   LY <- attr(Y,'eigenvalues')[ip]; LX <- attr(X,'eigenvalues')[ip]
 
-# After Wilks, 1995, p. 401
+  # After Wilks, 1995, p. 401
   info <- "(BP CCA - after Wilks (1995))"
   M.y <- solve(S.yy) %*% S.yx %*% solve(S.xx) %*% t(S.yx)
   M.x <- solve(S.xx) %*% t(S.yx) %*% solve(S.yy) %*% S.yx
@@ -113,14 +160,15 @@ CCA.eof <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   invisible(cca)
 }
 
-
+#' @export CCA.pca
 CCA.pca <- function(Y,X,...,ip=1:8,verbose=FALSE) {
   if (verbose) print("CCA.pca")
   cca <- CCA.eof(Y,X,ip)
   invisible(cca)
 }
 
-CCA.field <- function(Y,X,...,ip=1:8,verbose=FALSE) {
+#' @export CCA.field
+CCA.field <- function(Y,X,ip=1:8,verbose=FALSE,...) {
   
  if(verbose) print("CCA.field")
  if(verbose) "print performing EOF analysis and redirecting to CCA.eof"

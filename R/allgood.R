@@ -1,6 +1,12 @@
-# Rasmus Benestad
-# A small function that removes stations with missing values from a group
-# Useful before performing PCA.
+#' A small function that removes stations with missing values from a group
+#'
+#' Useful before performing PCA.
+#'
+#' @param x a \code{station} object
+#' @param miss fraction of data that may be missing, e.g., if miss=.1 then stations with than 10\% missing data are removed
+#' @param verbose a boolean; if TRUE print information about progress
+#'
+#' @export
 allgood <- function(x,miss=.1,verbose=FALSE) {
 
   d <- dim(x)
@@ -12,6 +18,8 @@ allgood <- function(x,miss=.1,verbose=FALSE) {
 
   ## Remove stations with little data:
   nok <- as.numeric(apply(coredata(x),2,nv))
+
+
   is <- (1:d[2])[nok>=0.7*d[2]]
   if (length(is)>0) y <- subset(x,is=is) else
                     y <- x

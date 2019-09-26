@@ -1,10 +1,38 @@
-# Rasmus Benestad
-# Estimate the naomaly and climatology
-# Store the monthly climatology as an attribute (12,np)
-
+#' Anomaly and Climatology
+#' 
+#' S3-method that computes anomalies and/or climatology for time series and
+#' fields.
+#'
+#' In 'anomaly.dsensemble', the default value of the reference period is taken
+#' as the available time period from observations, i.e., same time period as in
+#' attribute `station' is used as base period to compute anomalies of GCM
+#' downscaled results.
+#'
+#' @aliases anomaly anomaly.default anomaly.comb anomaly.field anomaly.station 
+#' anomaly.annual anomaly.month anomaly.season anomaly.day
+#' as.anomaly as.anomaly.default as.anomaly.zoo as.anomaly.list as.anomaly.station as.anomaly.field
+#' climatology as.climatology
+#' @seealso as.stand
+#' 
+#' @param x A station or field object
+#' @param ref vector defining the reference interval
+#' @param na.rm a boolean; if TRUE remove NA values
+#' @param verbose a boolean; if TRUE print information about progress
+#'
+#' @return a similar object as x containing anomalies and climatology
+#'
+#' @keywords utilities
+#'
+#' @examples 
+#' data(ferder)
+#' plot(anomaly(ferder))
+#' 
+#' 
+#' @export
 anomaly <-function(x,...) UseMethod("anomaly")
 
-anomaly.default <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
+#' @export anomaly.default
+anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   if(verbose) print('anomaly.default')
   if (verbose) print(class(x))
   if (!is.null(ref)) {
@@ -37,8 +65,9 @@ anomaly.default <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
   return(y)
 }
 
-anomaly.dsensemble <- function(x,ref=NULL,...) {
-    
+#' @export anomaly.dsensemble
+anomaly.dsensemble <- function(x,...,ref=NULL,verbose=FALSE) {
+    if(verbose) print("anomaly.dsensemble")
     yr.obs <- year(attr(x,'station'))
     ref <- range(yr.obs[!is.na(attr(x,'station'))],na.rm=TRUE)
     stopifnot(inherits(x,"dsensemble"))
@@ -47,13 +76,16 @@ anomaly.dsensemble <- function(x,ref=NULL,...) {
     return(x)
 }
 
-anomaly.field <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
+#' @export anomaly.field
+anomaly.field <- function(x,verbose=FALSE,...,ref=NULL,na.rm=TRUE) {
   stopifnot(inherits(x,"field"))
   x <- as.anomaly(x,ref=ref,na.rm=na.rm,verbose=verbose,...)
   return(x)
 }
 
-anomaly.comb <- function(x,...) {
+#' @export anomaly.comb
+anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
+  if(verbose) print("anomaly.comb")
   stopifnot(inherits(x,"field"),inherits(x,"comb"))
   y <- anomaly(x)
   n.apps <- attr(x,'n.apps')
@@ -68,40 +100,15 @@ anomaly.comb <- function(x,...) {
   return(y)
 }
 
-
-anomaly.station <- function(x,...) {
-#  t <- index(X)[1:2]
-#  datetype <- class(t)
-#  if (!is.null(attr(x,'anomaly'))) {
-#    orig <- coredata(X)
-#    x <- zoo(attr(X,'anomaly'),order.by=index(X))
-#    nattr <- softattr(X)
-#    for (i in 1:length(nattr))
-#      attr(x,nattr[i]) <- attr(X,nattr[i])
-#    eval(parse(text=paste("attr(x,'",attr(X,'aspect'),"') <- orig")))
-#    attr(x,'aspect') <- 'anomaly'
-#    return(x)
-#  }
-#
-#  if (datetype=="Date") {
-#    dy <- diff(as.numeric(format(t,'%Y')))
-#    dm <- diff(as.numeric(format(t,'%m')))
-#    dd <- diff(as.numeric(format(t,'%d')))
-#  } else if (datetype=="numeric") {
-#    dy <- 1; dm <- 0; dd <- 0
-#  }
-#  if ((dy==1) & (dy==0) & (dd==0))
-#    x <- anomaly.yearly(X) else
-#  if ((dy==0) & (dm==1) & (dd==0))
-#    x <- anomaly.monthly(X) else 
-#  if ((dy==0) & (dm==0) & (dd==1))
-#    x <- anomaly.daily(X)
-#  attr(x,'history') <- history.stamp(X)
+#' @export anomaly.station
+anomaly.station <- function(x,verbose=FALSE,...) {
+  if(verbose) print("anomaly.station")
   x <- anomaly.default(x,...)
   return(x)
 }
 
-anomaly.annual <- function(x,ref=1961:1990,na.rm=TRUE,verbose=FALSE,...) {
+#' @export anomaly.annual
+anomaly.annual <- function(x,...,ref=1961:1990,na.rm=TRUE,verbose=FALSE) {
   if (verbose) print('anomaly.annual')
   if(is.null(ref)) ref <- 1961:1990
   if(length(ref)==2) ref <- seq(min(ref),max(ref))
@@ -130,9 +137,9 @@ anomaly.annual <- function(x,ref=1961:1990,na.rm=TRUE,verbose=FALSE,...) {
   return(x)
 }
 
-anomaly.month <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
+#' @export anomaly.month
+anomaly.month <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   if(verbose) print("anomaly.month")
-#   anomaly.month1 <- function(x,yr=NULL,ref=NULL) {
   clim.month <- function(x,months,years,ref=NULL,na.rm=TRUE,verbose=FALSE) {
     ## This function calculated the mean for each calendar month.
     if (verbose) cat('.')
@@ -157,32 +164,27 @@ anomaly.month <- function(x,ref=NULL,na.rm=TRUE,verbose=FALSE,...) {
   if (is.null(dim(x))) {
     if (verbose) print('Estimate clim for a single series')
     Yc <- clim.month(x,months=month(x),years=year(x),ref=ref,na.rm=na.rm,verbose=verbose)
-    Y <- X-Yc[month(x)] ##anomaly.month1(x,t=t,ref=ref)
+    Y <- X-Yc[month(x)] 
   } else {
     if (verbose) print('Estimate clim for multiple seies')
     Yc <- apply(coredata(x),2,FUN='clim.month',months=month(x),years=year(x),
                 ref=ref,na.rm=na.rm,verbose=verbose)
-    Y <- X-Yc[month(x),] ## apply(coredata(x),2,FUN='anomaly.month1',t=t,ref=ref)  
+    Y <- X-Yc[month(x),] 
   }
     
   y <- Y
   x <- zoo(y,order.by=index(X))
   x <- attrcp(X,x)
-  #nattr <- softattr(X)
-  #for (i in 1:length(nattr))
   attr(x,'climatology') <- Yc
   attr(x,'aspect') <- 'anomaly'
   class(x) <- class(X)
   return(x)
 }
 
-
-anomaly.season <- function(x,ref=NULL,verbose=FALSE,...) {
-
+#' @export anomaly.season
+anomaly.season <- function(x,...,ref=NULL,verbose=FALSE) {
   anomaly.season1 <- function(x,yr=NULL,ref=NULL,verbose=FALSE,what='anomaly') {
-# This function computes the anomalies by removing the 12-month seasonal cycle
     l <- length(x); n <- ceiling(l/4)
-#    pad <- l %% 4
     pad <- 4*n - l
     if (verbose) print(paste('anomaly.season1: l=',l,' n=',n,' pad=',pad))
     
@@ -198,7 +200,7 @@ anomaly.season <- function(x,ref=NULL,verbose=FALSE,...) {
     if (pad>0) x <- x[-(1:pad)]
     if (substr(what,1,4)=='clim') x <- clim
     return(x)
-}
+  }
   X <- x
   if (verbose) print('anomaly.season')
   t <- index(x); yr <- year(x)
@@ -211,19 +213,14 @@ anomaly.season <- function(x,ref=NULL,verbose=FALSE,...) {
   }
   x <- zoo(y,order.by=t)
   x <- attrcp(X,x)
-  ## nattr <- softattr(X)
-  ## for (i in 1:length(nattr))
-  ##  attr(x,nattr[i]) <- attr(X,nattr[i])
-  ##
   attr(x,'climatology') <- clim
   attr(x,'aspect') <- 'anomaly'
   class(x) <- class(X)
   return(x)
 }
 
-
-anomaly.day <- function(x,ref=NULL,verbose=FALSE,...) {
-
+#' @export anomaly.day
+anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
   anomaly.day.1 <- function(x,t0,t,ref=NULL) {
     ## One station 
     c1 <- cos(pi*t0/365.25); s1 <- sin(pi*t0/365.25)
@@ -271,86 +268,64 @@ anomaly.day <- function(x,ref=NULL,verbose=FALSE,...) {
 }
 
 
-climatology <- function(x,...) UseMethod("climatology")
 
-climatology.default <- function(x,verbose=FALSE,...) {
-  x <- as.climatology(x)
+
+#' @export as.anomaly
+as.anomaly <- function(x,...) UseMethod("as.anomaly")
+
+#' @export as.anomaly.default
+as.anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE) anomaly.default(x,ref=ref,na.rm=na.rm,...)
+
+#' @export as.anomaly.zoo
+as.anomaly.zoo <- function(x,...,ref=NULL,na.rm=TRUE) {
+  y <- as.anomaly.station(x,ref=ref,na.rm=na.rm,...)
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+#' @export as.anomaly.list
+as.anomaly.list <- function(x,...,ref=NULL,na.rm=TRUE) {
+  y <- lapply(x,anomaly(x))
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+#' @export as.anomaly.station
+as.anomaly.station <- function(x,...,ref=NULL,na.rm=TRUE) {
+  y <- as.anomaly.default(x,ref=ref,na.rm=na.rm,...)
+  attr(y,'history') <- history.stamp(x)
+  invisible(y)
+}
+
+#' @export as.anomaly.field
+as.anomaly.field <- function(x,...,ref=NULL,na.rm=TRUE) {
+   y <- anomaly.default(x,ref=ref,na.rm=na.rm,...)
+   attr(y,'history') <- history.stamp(x)
+   attr(y,'dimensions') <- attr(x,'dimensions')
+   invisible(y)
+}
+
+#' @export
+climatology <- function(x,...,verbose=FALSE) {
+  x <- as.climatology(x,...,verbose=verbose)
   return(x)
 }
 
-climatology.field <- function(x,verbose=FALSE,...) {
-  x <- as.climatology(x)
-  return(x)
-}
-
-climatology.station <- function(x,verbose=FALSE,...) {
-#  x <- X
-#  orig <- coredata(X)
-#  if (is.null(attr(x,'climatology'))) {
-#    t <- index(X)[1:2]
-#    dy <- diff(as.numeric(format(t,'%Y')))
-#    dm <- diff(as.numeric(format(t,'%m')))
-#    dd <- diff(as.numeric(format(t,'%d')))
-#    if ((dy==1) & (dy==0) & (dd==0))
-#      x <- anomaly.yearly(X) else
-#    if ((dy==0) & (dm==1) & (dd==0)) 
-#      y <- anomaly.monthly(X) 
-#    if ((dy==0) & (dm==0) & (dd==1)) 
-#      y <- anomaly.daily(X)
-#    clim <- attr(y,'climatology')
-#  } else clim <- attr(X,'climatology')
-#
-#  nc <- length(index(X))%/%length(clim)
-#  pad <- length(index(X))%%length(clim)
-#  clim <- rep(clim,nc)
-#  if (pad>0) clim <- c(clim,clim[1:pad])
-#    
-#  x <- zoo(clim,order.by=index(X))
-#  nattr <- softattr(X)
-#  for (i in 1:length(nattr))
-#      attr(x,nattr[i]) <- attr(X,nattr[i])
-#  eval(parse(text=paste("attr(x,'",attr(X,'aspect'),"') <- orig")))
-#  attr(x,'aspect') <- 'climatology'
-  x <- as.climatology(x)
-  return(x)
-}
-
-
-# Station data can be expressed as PCA where each of the EOFs represent one
-# year. The PCs describe the seasonal variations
-
-clim2pca <-function(x,verbose=FALSE,...) UseMethod("clim2pca")
-
-clim2pca.default <- function(x,verbose=FALSE,...) {
-  if(verbose) print("clim2pca.default - unfinished function returning input object")
-  return(x)
-}
-
-clim2pca.month <- function(x,verbose=FALSE,...) {
-  if(verbose) print("clim2pca.month")
-  X <- aggregate(x,year)
-  ny <- length(x) %/% 12
-  nm <- length(x) %% 12
-  y <- coredata(x[1:(length(x)-nm)])
-  dim(y) <- c(12,ny)
-  ok <- is.finite(colMeans(y))
-  pca <- svd(y[,ok])
-  for (i in 1:12) {
-    z <- zoo(pca$v[,i],order.by=index(X))
-    if (i == 1) Z <- z else
-                Z <- merge(Z,z)
+# Handy conversion algorithms:
+#' @export as.climatology
+as.climatology <- function(x,...) {
+  ya <- as.anomaly(x,...)
+  clim <- coredata(attr(ya,'climatology'))
+  if (!is.null(dim(clim))) {
+    len.clim <- dim(clim)[1]
+  } else {
+    len.clim <- length(clim)
   }
-  season <- pca$u
-  colnames(season) <- month.abb
-  rownames(season) <- paste("pattern",1:12,sep=".")
-  attr(Z,'season') <- season
-  attr(Z,'d') <- pca$d
-  return(Z)
+  y <- zoo(clim,order.by=1:len.clim)      
+  y <- attrcp(x,y)
+  attr(y,'aspect') <- 'climatology'
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- class(x)
+  invisible(y)
 }
-
-clim2pca.day <- function(x,verbose=FALSE,...) {
-  if(verbose) print("clim2pca.day - unfinished function returning input object")
-  return(x)
-}
-
 

@@ -1,10 +1,42 @@
-# R.E. Benestad, met.no, Oslo, Norway 12.04.2013
-# rasmus.benestad@met.no
-#------------------------------------------------------------------------
+#' Trending and detrending data
+#' 
+#' Trend analysis and de-trending of data. The three methods \code{trend.coef},
+#' \code{trend.err} and \code{trend.pval} are somewhat different to the other
+#' trend methods and designed for the use in \code{apply} operations, as
+#' reflected in the different sets of arguments. They are used in the other
+#' methods if the \code{result} argument is set to one of
+#' ["coef","err","pval"].
+#' 
+#' 
+#' @aliases trend.one.station trend.station trend.eof trend.field trend.zoo
+#' trend.zoo.multi trend.coef trend.err trend.pval
+#'
+#' @param x The data object
+#' @param result "trend" returns the trend; "residual" returns the residual;
+#' "coef" returns the trend coefficient; "err" the error estimate; "pval" the
+#' p-value.
+#' @param model The trend model used by \code{\link{lm}}.
+#' @param new if TRUE plot in new window
+#'
+#' @return Similar type object as the input object
+#' 
+#' @seealso \code{link{climatology}}, \code{link{anomaly}}
+#'
+#' @keywords utilities
+#'
+#' @examples 
+#' data(ferder)
+#' plot(annual(ferder,'max'), new=FALSE)
+#' tr <- trend(annual(ferder,'max'))
+#' lines(tr)
+#' grid()
+#' print(attr(tr,'coefficients'))
+#' print(trend(ferder,results='pval'))
+#' 
+#' @export trend
+trend <- function(x,result="trend",model="y ~ t",...) UseMethod("trend")
 
-
-trend<-function(x,result="trend",model="y ~ t",...) UseMethod("trend")
-
+#' @export trend.default
 trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print("trend.default")
   trendx <- data.frame(t=1:length(index(x)),y=x)
@@ -18,6 +50,7 @@ trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(y)
 }
 
+#' @export trend.one.station
 trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.one.station",result))
   if (sum(is.finite(x)) <= 3) return(NA)
@@ -61,6 +94,7 @@ trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) 
   return(y)
 }
 
+#' @export trend.station
 trend.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.station",result))
   # Allow for a set of stations.
@@ -91,6 +125,7 @@ trend.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(y)
 }
 
+#' @export trend.eof
 trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.eof",result))
   class(x) -> cls
@@ -141,6 +176,7 @@ trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(Y)
 }
 
+#' @export trend.field
 trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
   gettrend <- function(x,model="y ~ t") {
@@ -198,6 +234,7 @@ trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(Y)
 }
 
+#' @export trend.zoo
 trend.zoo <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print("trend.zoo")
   if (length(dim(x))==2) {
@@ -217,6 +254,7 @@ trend.zoo <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   invisible(y)
 }
 
+#' @export trend.zoo.multi
 trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.station.multi",result))
   y <- apply(coredata(x),2,trend,result=result,model=model)
@@ -225,6 +263,7 @@ trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 }
 
 ## Compute the linear trend
+#' @export trend.coef
 trend.coef <- function(x,...) {
   
   if (!is.null(dim(x))) {
@@ -243,6 +282,7 @@ trend.coef <- function(x,...) {
 }
 
 ## Compute the linear trend
+#' @export trend.err
 trend.err <- function(x,...) {
   if (sum(is.finite(x)) <= 3) return(NA)
   x[!is.finite(x)] <- NA
@@ -254,7 +294,8 @@ trend.err <- function(x,...) {
 }
 
 
-## Compute the p-value of the linear trend 
+## Compute the p-value of the linear trend
+#' @export trend.pval
 trend.pval <- function(x,...) {
   #print('trend.val'); print(class(x)); print(str(x))
   x <- zoo(x)

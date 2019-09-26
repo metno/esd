@@ -1,6 +1,6 @@
 ## Author 	 Rasmus E. Bnestad
 ## Updated 	 by Abdelkader Mezghani and Kajsa Parding
-## Rasmus. E. Benestad - attempt to simpify by splitting up
+## Rasmus. E. Benestad - attempt to simplify by splitting up
 ## Last update   27.07.2017
 ## Includes	 map.station() ; test.map.station()
 ## Require 	 geoborders.rda
@@ -18,6 +18,7 @@ genfun <- function(x,FUN,verbose=FALSE) {
 }
 
 ## Simplified function for mapping station objects.
+#' @export map.station
 map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          add=FALSE,projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
@@ -208,7 +209,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
 }
 
 ###
-
+# Internal function - no need to export
 map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                              projection="lonlat",
                              xlim = NULL, ylim = NULL,zlim=NULL,n=15,
@@ -521,28 +522,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     if(new) dev.new()
     par(fig=fig0,mar=mar0)
-    
-    ## REB: 2016-10-12 - add the possibility to use google maps
-    ## KMP 2018-10-31: Don't use require inside the esd package. 
-    ## Instead call the external package explicitly, e.g., RgoogleMaps::GetMap()
-    #if (requireNamespace("RgoogleMaps", quietly = TRUE) &
-    #    (projection=="lonlat") & usegooglemap) {
-    #  #require(RgoogleMaps)
-    #  mxdst <- max(diff(range(ss$latitude)),diff(range(ss$longitude)))
-    #  if (!is.finite(mxdst) | mxdst==0) {
-    #    zoom <- 3 
-    #  } else {
-    #    zoom <- 7 - round(log(mxdst))
-    #  }
-    #  bgmap <- RgoogleMaps::GetMap(center=c(lat=mean(ss$latitude),lon=mean(ss$longitude)),
-    #                               destfile = "map.station.esd.png",
-    #                               maptype = "mobile", zoom=zoom)
-    #  plotmap(ss$latitude, ss$longitude, bgmap)
-    #  
-    #  print('Unfinished')
-    #  return()
-    #}
-    
+        
     if (!is.null(highlight)) {
       plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
            bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
@@ -560,9 +540,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
            ylim = ylim , axes = FALSE , frame.plot = FALSE,
            cex.axis=cex.axis, cex.main=cex.main, cex.lab=cex.lab, new=FALSE)
     }
-    #if ( ("RgoogleMaps" %in% rownames(installed.packages()) == TRUE) )
-    #     par(new=FALSE) else ## REB: 2016-10-12 - add the possibility to use google maps
-    #     par(new=TRUE)
     par(new=FALSE)
     
     ## Add geoborders
@@ -828,9 +805,9 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
   
   ## Define colour pal:
   if (!is.null(FUN)) {
-    if (is.null(col)) col <- colscal(n=n,col=varid(x)) else
+    if (is.null(col)) col <- colscal(n=n,pal=varid(x)) else
       if (length(col)==1) {
-        col <- colscal(col=col,n=n)
+        col <- colscal(pal=col,n=n)
       }
     nc <- length(col)
     index <- round( nc*( map - min(map) )/
@@ -935,6 +912,7 @@ sphere <- function(x,n=30,FUN="mean",lonR=10,latR=45,axiR=0,xlim=NULL,ylim=NULL,
 }
 
 ## Perform a series of tests that produce and save maps of the different data sources into the local directory.
+# do not export
 test.map.station <- function(save=FALSE) {
   
   map.station(src="NACD",col="darkgreen",bg="green")
@@ -962,9 +940,11 @@ test.map.station <- function(save=FALSE) {
 
 
 ## The main function to produce map of subseted stations
+#' @export map.stationmeta
 map.stationmeta <- function(x,...)
   map.station(x,...)
 
+#' @export map.data.frame
 map.data.frame <- function(x,...) {
   
   att <- c("station_id","location","country","longitude","latitude","altitude","element","start","end","source","wmo","quality")
@@ -998,7 +978,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
       z <- x[[FUN]] 
       ok <- is.finite(z); ok2 <- ok
       if (verbose) print(summary(z))
-      colbar <- colscal(n=nbins,col=pal,rev=rev)
+      colbar <- colscal(n=nbins,pal=pal,rev=rev)
       breaks <- pretty(z,nbins)
       #ic <- trunc(nbins*(z - min(z,na.rm=TRUE))/(max(z,na.rm=TRUE) - min(z,na.rm=TRUE))) + 1
       #breaks <- round(seq(min(z,na.rm=TRUE),max(z,na.rm=TRUE),length=nbins),2)

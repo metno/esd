@@ -4,6 +4,7 @@
 
 ## Function for one time series based on multiple regression
 ## Allow EOFs with different number of PCs.
+#' @export
 fitpc <- function(y,x,ip=1:4) {
   caldat <- data.frame(y=y,x)
   #print(summary(caldat))
@@ -26,12 +27,62 @@ eoffit <- function(X,U,ip) {
   invisible(V[-1])
 }
 
-# Redundant:
-#fillmiss <- function(y,x,neofs=7) {
-#  z <- apply(coredata(y),2,fitpc,coredata(x),neofs=neofs)
-#  invisible(z)
-#}
-
+#' PCA-based missing-value filling
+#' 
+#' Fills missing (station) values by predicting their values using multiple
+#' regression. The regression uses as input pcincipal components from PCA from
+#' the same (group of station) data, but where series with missing data have
+#' been excluded. This makes sense for (station) data where most of the
+#' variability is accounted for by a few leading modes. This method is not
+#' expected to be useful when there are many large data gaps.
+#' 
+#' This function is handy for the downscaling of PCAs. See Benestad, R.E., D.
+#' Chen, A. Mezghani, L. Fan, K. Parding, On using principal components to
+#' represent stations in empirical-statistical downscaling, Tellus A 28326,
+#' accepted.
+#' 
+#' @aliases pcafill pcafill.test fitpc
+#' @param X station data (group of stations)
+#' @param insertmiss Used for testing and evaluating. Missing data are
+#' introduced to test the predictive capability
+#' @param ip Number of EOFs/PCAs to include in filling in. In many cases, it
+#' may be useful to keep this to a small set of values.
+#' @param mnv Minimum number of valid data points for any given time. Can be
+#' used to get around the problem with too many missing data
+#' @param complete Use pattern projection between PCA pattern and original data
+#' to get a complete record - otherwise a subset of times with sufficient data.
+#' @param test Extra test - debugging
+#' @param verbose Print diagnostics - debugging
+#' @param N Number of runs in Monte-Carlo simulation
+#' @param max.miss Maximum NAs to insert (insertmiss) in Monte-Carlo
+#' simulations
+#' @param x time series for calibrating regression analysis
+#' @param y PC input for regression analysis
+#' 
+#' @return The same as the input - station object with filled-in values
+#' 
+#' @seealso \code{\link{PCA}}, \code{\link{allgood}}
+#' 
+#' @keywords PCA missing data
+#' 
+#' @examples
+#' download.file('http://files.figshare.com/2073466/Norway.Tx.rda',
+#'               'Norway.Tx.rda')
+#' load('Norway.Tx.rda')
+#' X <- annual(Tx,FUN='mean',nmin=200)
+#' ok<- apply(X,1,nv)
+#' X <- subset(X,it=ok > 0)
+#' Y <- pcafill(X)
+#' 
+#' plot(PCA(Y))
+#' plot(c(coredata(Y)),c(coredata(X)))
+#' 
+#' ## Monte-Carlo test with random selection of data points set to NA:
+#' Y.test <- pcafill.test(X,max.miss=10,ip=1:3)
+#' cor(Y.test)
+#' 
+#' 
+#' @export pcafill
 pcafill <- function(X,insertmiss=0,ip=1:4,mnv=0,complete=FALSE,test=FALSE,verbose=FALSE) {
   if (verbose) print('pcafill')
   X0 <- X ## For debugging
@@ -123,7 +174,9 @@ pcafill <- function(X,insertmiss=0,ip=1:4,mnv=0,complete=FALSE,test=FALSE,verbos
   invisible(Y)
 }
 
+#' @export pcafill.test
 pcafill.test <- function(X,N=100,max.miss=100,ip=1:4,verbose=FALSE) {
+  if(verbose) print('pcafill.test')
   insertmiss <- round(runif(N)*max.miss)
   insertmiss[insertmiss<1] <- 2
   par(bty='n')

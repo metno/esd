@@ -1,5 +1,10 @@
-## Check dates for impossibilities
-
+#' Check dates for impossibilities
+#'
+#' @param yyyy year(s)
+#' @param mm month(s)
+#' @param dd day(s)
+#'
+#' @export
 check.bad.dates <- function(yyyy,mm,dd) {
   yyyy <- as.numeric(yyyy); mm <- as.numeric(mm); dd <- as.numeric(dd)
   ndpy <- as.numeric(table(yyyy))  ## Number of days per year

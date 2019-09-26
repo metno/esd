@@ -1,3 +1,5 @@
+# Documentaion in map.R
+#' @export
 lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              xlim=NULL,ylim=NULL,zlim=NULL,
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -55,11 +57,19 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       variable <- "T[2*m]"
   }
   if (verbose) print(paste(variable,unit,isprecip,' -> varlabel'))
-  if(!is.null(variable)) varlabel=try(eval(parse(text=paste('expression(',
-                                                        gsub(" ","~",variable)," *~(",gsub(" ","~",unit),"))",sep="")))) else varlabel <- NULL
-  if (inherits(varlabel,'try-error')) varlabel <- ''
-  if (!is.null(attr(x,'source'))) sub <- attr(x,'source') else
+  if(!is.null(variable)) {
+    varlabel <- try(eval(parse(
+      text=paste('expression(',gsub(" ","~",variable)," *~(",gsub(" ",
+                 "~",unit),"))",sep=""))))
+  } else {
+    varlabel <- NULL
+  }
+  if (inherits(varlabel,'try-error')) varlabel <- NULL
+  if (!is.null(attr(x,'source'))) {
+    sub <- attr(x,'source')
+  } else {
     sub <- NULL
+  }
   if (sum(is.element(type,'fill'))==0) colbar <- NULL
   
   if (verbose) print('time')
@@ -70,8 +80,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       t1 <- year(attr(x,'time'))[1]
       t2 <- year(attr(x,'time'))[2]
     } else if (sum(is.element(c('month','season'),timescale))>0) {
-      t1 <- paste(year(attr(x,'time'))[1],month(attr(x,'time'))[1])
-      t2 <- paste(year(attr(x,'time'))[2],month(attr(x,'time'))[2])
+      t1 <- paste0(year(attr(x,'time'))[1],"~",month(attr(x,'time'))[1])
+      t2 <- paste0(year(attr(x,'time'))[2],"~",month(attr(x,'time'))[2])
     } else {
       t1 <- attr(x,'time')[1]  
       t2 <- attr(x,'time')[2]
@@ -111,6 +121,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   }
   
   if (verbose) print('Set up the figure')
+  
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
        xlim=xlim,ylim=ylim,main=main, # to sumerimpose.
        xaxt="n",yaxt="n") # AM 17.06.2015
@@ -132,31 +143,33 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub);  print(varlabel)}
   
-  lab <- paste(varlabel,'* phantom(0) - phantom(0)')
+  if(!is.null(varlabel)) lab <- paste(varlabel,'*') else lab <- ''
+  lab <- as.expression(parse(text=paste(lab,'phantom(0) - phantom(0)')))
   ## text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2, cex=0.85)
   
   ## if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
   if ((!is.null(sub)) & (length(sub)>0)) {
     sub <- paste('pattern derived from',sub)
     lab <- try(parse(text=paste(lab,'*',as.expression(paste('~ ',
-                                                        paste(unlist(strsplit(sub,split=' ')),collapse = ' *~ '),sep='')))))
+                                paste(unlist(strsplit(sub,split=' ')),
+				collapse = ' *~ '), sep='')))))
     if (inherits(lab,'try-error')) lab <- ''
   }  #title(main = as.expression(sub),line = 3, adj =0.25)
   
-  if (!is.null(method))
+  if (!is.null(method)) {
     lab <- try(parse(text=paste(lab,'*',as.expression(method))))
     if (inherits(lab,'try-error')) lab <- ''
     #title(main = as.expression(method),line = 3, adj =0.5)
     #text(lon[length(lon)],lat[1] - dlat,method,col="grey30",pos=2,cex=0.7)
-  #browser()
-  if (!is.null(period))
+  }
+  if (!is.null(period)) {
     lab <- try(parse(text=paste(lab,'*',as.expression(period))))
+  }
   if (inherits(lab,'try-error')) lab <- ''
   #title(main = as.expression(period),line = 3, adj =1)
   #text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
-  
+
   title(sub = lab,line = 0 , adj = 0.5)
-  #browser()
   if (!is.null(colbar)) {
     if (verbose) print('Add colourbar')
     

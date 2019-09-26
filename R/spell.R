@@ -1,14 +1,63 @@
-# Script to calculate the statistics of spell durations, e.g. dry and wet periods
-# or duration of extremes.
-#
-# R.E. Benestad, met.no, Oslo, Norway 11.04.2013
-# rasmus.benestad@met.no
-#------------------------------------------------------------------------
-
-
+#' Spell statistics
+#' 
+#' Statistics of spell durations (consecutive wet and dry days), e.g. dry and
+#' wet periods or duration of extremes.
+#' 
+#' \code{exceedance} estimates statistics for peak-over-treshold, and
+#' \code{nevents} returns the number of events with exceeding values (e.g. the
+#' number of rainy days X > 1 mm/day).
+#'
+#' \code{wetfreq} returns the wet-day frequency (a fraction) and \code{wetmean} returns the wet-day mean.
+#' 
+#' \code{CDD}: Cooling degree day
+#' \code{GDD}: Growing degree days (\url{http://en.wikipedia.org/wiki/Growing_degree-day})
+#' \code{HDD}: Heating degree day
+#'
+#' \code{qqgeom} produces a quantile-quantile plot of streak statistics comparing the
+#' empirical quantiles with the distribution function quantiles (see \code{\link[stats]{qgeom}}). 
+#'
+#' @aliases spell spell.default spell.station hist.spell count wetfreq wetmean
+#' nevents exceedance exceedance.default exceedance.station exceedance.field
+#' HDD CDD GDD qqgeom
+#' @seealso hotsummerdays coldwinterdays coldspells heatwavespells nwetdays plot
+#'
+#' @importFrom stats glm qqline
+#'
+#' @param x station or field object
+#' @param threshold threshold value
+#' @param upper upper limit for maximum length - ignore any above this because they are likely erronoeus
+#' @param fraction TRUE: divide the number of counts by number of samples
+#' @param FUN function
+#'
+#' @return Station or field objects
+#'
+#' @keywords utilities
+#' @examples
+#' 
+#' # Example 1 : 
+#' precip <- station.metnod(stid="18700",param="precip")
+#' x <- spell(precip,threshold=.1)
+#' x.ann <- annual(x,FUN="max")
+#' plot(x.ann,plot.type="multiple",new=FALSE)
+#' # Example 2 :
+#' plot(x, new=FALSE)
+#' 
+#' # Growing degree days:
+#' data(ferder)
+#' plot(as.seasons(ferder,FUN='GDD'), new=FALSE)
+#' 
+#' # Mild winter days - number of days in the winter season with
+#' # above freezing temperatures
+#' data(ferder)
+#' try(coldwinterdays(ferder))
+#'
+#' # Quantile-quantile plot
+#' qqgeom(ferder, treshold=1, pois=TRUE)
+#'
+#' @export spell
 spell <- function(x,threshold,...) UseMethod("spell")
 
-
+#' @export spell.default
 spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
 
   if (verbose) print('spell.default')
@@ -167,7 +216,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   invisible(y)
 }
 
-
+#' @export spell.station
 spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
   if (verbose) print('spell.station')
   if (!is.null(dim(x))) {
@@ -203,31 +252,30 @@ spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
   invisible(y)
 }
 
-
-
+#' @export
 count <- function(x,threshold=1,fraction=FALSE,...) {
   count <- sum(x > threshold,na.rm=TRUE)
   if (fraction) count <- count/sum(is.finite(x))
   return(count)
 }
 
+#' @export
 wetfreq <- function(x,threshold=1,...) {
-  ## REB 2015-03-23 - slow
-##  y <- exceedance.default(x,threshold=threshold,fun="freq")
-  ## REB 2015-03-23 - faster
   x[x < threshold] <- NA
   y <- sum(is.finite(x))/length(x)
   return(y)
 }
 
+#' @export
 nevents <- function(x,threshold=1,...) {
-  y <- exceedance.default(x,threshold=threshold,fun="count")
+  y <- exceedance.default(x,threshold=threshold,FUN="count")
   return(y)
 }
 
+#' @export
 wetmean <- function(x,threshold=1,...) {
   ## REB 2015-03-23 - slow
-#   y <- exceedance.default(x,threshold=threshold,fun="mean")
+#   y <- exceedance.default(x,threshold=threshold,FUN="mean")
   ## REB 2015-03-23 - faster
   ## Also add the standard error estimate based on the sample size
   ## and assuming an exponential distribtion for daily data
@@ -238,28 +286,28 @@ wetmean <- function(x,threshold=1,...) {
   return(y)
 }
 
-# Exceedance is a function that 
-exceedance <- function(x,threshold=1,fun='mean',...) UseMethod("exceedance")
+# Exceedance is a function that
+#' @export
+exceedance <- function(x,threshold=1,FUN='mean',...) UseMethod("exceedance")
 
-exceedance.default <- function(x,threshold=1,fun='mean',na.rm=TRUE,...) {
+#' @export exceedance.default
+exceedance.default <- function(x,threshold=1,FUN='mean',na.rm=TRUE,...) {
   #print("HERE");  str(x)
   yrs <- year(x); d <- dim(x)
   X <- x; X[X <= threshold] <- NA
   # ns = number of stations
   if (is.null(d)) ns <- 1 else ns <- d[2]
-  if ((fun!="count") & (fun!="freq")) {
-    #print(fun)
-    # eval(parse(text=paste("y <- ",fun,'(X,...)',sep='')))
-    if ( (sum(is.element(names(formals(fun)),'na.rm')==1)) |
-         (sum(is.element(fun,c('mean','min','max','sum','quantile')))>0 ) )
-        y <- apply(matrix(X,length(X),ns),2,fun,na.rm=na.rm, ...) else
-        y <- apply(matrix(X,length(X),ns),2,fun, ...)
+  if ((FUN!="count") & (FUN!="freq")) {
+    if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
+         (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) )
+        y <- apply(matrix(X,length(X),ns),2,FUN,na.rm=na.rm, ...) else
+        y <- apply(matrix(X,length(X),ns),2,FUN, ...)
     attr(y,'unit') <- attr(x,'unit')
-  } else if (fun=="count")  {
+  } else if (FUN=="count")  {
     #print("Wet-day count")
     y <- sum(is.finite(X))
     attr(y,'unit') <- paste("counts | X >",threshold,attr(y,'unit'))
-  } else if (fun=="freq") {
+  } else if (FUN=="freq") {
     #print(paste("Wet-day frequency",sum(is.finite(X)),sum(is.finite(x)),
     #            length(x),length(X),sum(is.finite(X))/sum(is.finite(x))))
     y <- sum(is.finite(X))/sum(is.finite(x))
@@ -268,22 +316,25 @@ exceedance.default <- function(x,threshold=1,fun='mean',na.rm=TRUE,...) {
   #str(y)
   #y <- attrcp(x,y)
   attr(y,'variable') <- paste(attr(x,'variable'),": exceedance above",threshold,
-                              "-",fun)
+                              "-",FUN)
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
 
-exceedance.station <- function(x,threshold=1,fun='mean',...) {
-  y <- exceedance.default(x,threshold=threshold,fun=fun,...)
+#' @export exceedance.station
+exceedance.station <- function(x,threshold=1,FUN='mean',...) {
+  y <- exceedance.default(x,threshold=threshold,FUN=FUN,...)
   return(y)
 }
 
-exceedance.field <- function(x,threshold=1,fun='mean',...) {
-  y <- exceedance.default(x,threshold=threshold,fun=fun,...)
+#' @export exceedance.field
+exceedance.field <- function(x,threshold=1,FUN='mean',...) {
+  y <- exceedance.default(x,threshold=threshold,FUN=FUN,...)
   #dimensions...
   return(y)
 }
 
+#' @export hist.spell
 hist.spell <- function(x,family='geom',...) {
   n <- seq(0,ceiling(max(c(abs(x)),na.rm=TRUE))+1,by=1)
   hh <- hist(x[,1],breaks=n,plot=FALSE)
@@ -322,6 +373,7 @@ hist.spell <- function(x,family='geom',...) {
   
 }
 
+#' @export
 qqgeom <- function(x,treshold=1,pois=FALSE,...) {
   s <- spell(x,threshold=treshold)
   x1 <- qgeom(seq(0,1,length=101),prob=1/(mean(coredata(s[,1]),na.rm=TRUE)))
@@ -331,46 +383,46 @@ qqgeom <- function(x,treshold=1,pois=FALSE,...) {
   xp1 <- qpois(seq(0,1,length=101),lambda=mean(coredata(s[,1]),na.rm=TRUE))
   xp2 <- qpois(seq(0,1,length=101),lambda=mean(coredata(s[,2]),na.rm=TRUE))
   
-   par(bty='n')
-   xy <- c(x1,x2,xp1,xp2,y1,y2,y1,y2); ok <- is.finite(xy)
-   plot(range(xy[ok]),range(xy[ok]),
-        type='l',main='q-q geometric of streak statistics',
-        xlab='distribution function',ylab=expression(q[p]))
-   if (pois) {
-     points(xp1,y1,pch=15,col=rgb(0.7,0.7,1))
-     points(xp2,y2,pch=15,col=rgb(1,0.7,0.7))
-     }
-   points(x1,y1,pch=19,col=rgb(0.2,0.2,1))
-   points(x2,y2,pch=19,col=rgb(1,0.2,0.2))
-   grid()
-   
-   if (pois) legend(min(xy[ok]),max(xy[ok]),
-                    c(paste('geom.',varid(s)[1]),paste('geom.',varid(s)[2]),
-                      paste('pois.',varid(s)[1]),paste('pois.',varid(s)[2])),
-                      col=c(rgb(0.2,0.2,1),rgb(1,0.2,0.2),rgb(0.7,0.7,1),rgb(1,0.7,0.7)),
-                      pch=c(rep(19,2),rep(15,2)),bty='n') else
-           legend(min(xy[ok]),max(xy[ok]),
-                    c(paste('geom.',varid(s)[1]),paste('geom.',varid(s)[2])),
-                      col=c(rgb(0.2,0.2,1),rgb(1,0.2,0.2)),
-                      pch=rep(19,2),bty='n')
+  par(bty='n')
+  xy <- c(x1,x2,xp1,xp2,y1,y2,y1,y2); ok <- is.finite(xy)
+  plot(range(xy[ok]),range(xy[ok]),
+       type='l',main='q-q geometric of streak statistics',
+       xlab='distribution function',ylab=expression(q[p]))
+  if (pois) {
+    points(xp1,y1,pch=15,col=rgb(0.7,0.7,1))
+    points(xp2,y2,pch=15,col=rgb(1,0.7,0.7))
+  }
+  points(x1,y1,pch=19,col=rgb(0.2,0.2,1))
+  points(x2,y2,pch=19,col=rgb(1,0.2,0.2))
+  grid()
+  
+  if (pois) legend(min(xy[ok]),max(xy[ok]),
+                   c(paste('geom.',varid(s)[1]),paste('geom.',varid(s)[2]),
+                     paste('pois.',varid(s)[1]),paste('pois.',varid(s)[2])),
+                     col=c(rgb(0.2,0.2,1),rgb(1,0.2,0.2),rgb(0.7,0.7,1),rgb(1,0.7,0.7)),
+                     pch=c(rep(19,2),rep(15,2)),bty='n') else
+          legend(min(xy[ok]),max(xy[ok]),
+                   c(paste('geom.',varid(s)[1]),paste('geom.',varid(s)[2])),
+                     col=c(rgb(0.2,0.2,1),rgb(1,0.2,0.2)),
+                     pch=rep(19,2),bty='n')
 }
 
-# Heating degree day
+#' @export
 HDD <- function(x,x0=18,na.rm=TRUE) {
   cold <- x < x0
   hdd <- sum(x0 - x[cold],na.rm=na.rm)
   return(hdd)
 }
 
-# Cooling degree day
+
+#' @export
 CDD <- function(x,x0=22,na.rm=TRUE) {
   warm <- x > x0
   cdd <- sum(x[warm] - x0,na.rm=na.rm)
   return(cdd)
 }
 
-# Growing degree days
-# http://en.wikipedia.org/wiki/Growing_degree-day
+#' @export
 GDD <- function(x,x0=10,na.rm=TRUE) {
   gdd <- CDD(x,x0=x0)
   attr(gdd,'url') <- 'http://en.wikipedia.org/wiki/Growing_degree-day'

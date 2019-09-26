@@ -1,11 +1,12 @@
 #' Read daily station data of the Norwegian Meteorological Institute from thredds netCDF
 #' using OpenDAP
 #' 
-#' This is a wrapper that uses retrieve.station combined with information about the
-#' files stored on Thredds.
-#' The analysis can also be applied to either EOFs or fields.
+#' \code{station.thredds} is a wrapper that uses retrieve.station combined with information about the
+#' files stored on Thredds. The analysis can also be applied to either EOFs or fields.
+#'
+#' \code{meta.thredds} retrieves meta data from Thredds.  
 #' 
-#' @aliases station.thredds
+#' @aliases station.thredds meta.thredds
 #' @seealso retrieve.station, station
 #'
 #' @param param The element to read c('t2m','tmax','tmin','precip','slp','sd','fx','ff','dd')
@@ -30,12 +31,11 @@
 #' @examples
 #' ## Get the daily minimum temperature for Oslo-Blindern (station ID 18700)
 #' tmin <- station.thredds(param='tmax',stid=18700)
-#' 
+#'
 #' meta <- meta.thredds(param='precip')
 #' precip <- station.thredds(meta[1,])
-#' @export
-#' 
-
+#'
+#' @export station.thredds
 station.thredds <- function(param='t2m',is = NULL, stid = NULL, 
                             loc = NULL, lon = NULL, lat = NULL, it = NULL, alt = NULL, 
                             cntr = NULL, start.year.before = NULL, end.year.after = NULL, 
@@ -64,7 +64,7 @@ station.thredds <- function(param='t2m',is = NULL, stid = NULL,
   invisible(y)
 }
 
-## Get the metadata
+#' @export meta.thredds
 meta.thredds <- function(param='t2m',verbose=FALSE) {
   if (param=='slp') param <- 'pp'
   url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/',

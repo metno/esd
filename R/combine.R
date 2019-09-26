@@ -1,12 +1,16 @@
-# R.E. Benestad
 # Combines a group of station objects to form a set of time series
 # Combines field objects; either in time (concatinates) or in space (mixing fields)
 # Can be used to combine EOFS
 
-zeros <- function(x) (sum(is.infinite(1/x)) > 0)
-
-rbind.field <- function(...) {
-  print('note: the results inherit the metadata from the first argument')
+#' Extension of rbind for field objects
+#'
+#' @param \dots input arguments
+#' @param verbose if TRUE print information on progress
+#' 
+#' @export rbind.field
+rbind.field <- function(...,verbose=FALSE) {
+  if(verbose) print("rbind.field")
+  if(verbose) print('note: the results inherit the metadata from the first argument')
   x <- list(...)
   y <- rbind.zoo(...)
   y <- attrcp(x[[1]],y)
@@ -16,8 +20,15 @@ rbind.field <- function(...) {
   return(y)
 }
 
-cbind.field <- function(...) {
-  print('note: the results inherit the metadata from the first argument')
+#' Extension of rbind for field objects
+#'
+#' @param \dots input arguments
+#' @param verbose if TRUE print information on progress
+#'
+#' @export cbind.field
+cbind.field <- function(...,verbose=FALSE) {
+  if(verbose) print("cbind.field")
+  if(verbose) print('note: the results inherit the metadata from the first argument')
   x <- list(...)
   y <- cbind.zoo(...)
   y <- attrcp(x[[1]],y)
@@ -27,45 +38,109 @@ cbind.field <- function(...) {
   return(y)
 }
 
+#' Combine
+#' 
+#' \code{combine} is a S3 method for combinng esd objects, e.g. into groups of
+#' stations, stations and eof object, or fields. The function is based on
+#' \code{\link[zoo]{merge.zoo}}, and is also used to synchronise the esd objects.
+#' 
+#' For fields, \code{combine.field} is used to append different data sets, e.g.
+#' for the purpose of computing common EOFs (seeo \code{\link{EOF}} or for
+#' mixing fields (coupled EOFs).
+#' 
+#' For stations, \code{combine.station} can work tow ways: (1) to combine a set
+#' of stations and group them into one data object; (2) combine series with
+#' different monthly values for one specific site into one record for the
+#' monthly data. E.g. January, February, ..., December months can be combined
+#' into one complete series of monthly data.
+#' 
+#' For DS-results, \code{combine.ds} is based on \code{combine.station}, but
+#' also takes care of the additional meta data (the original series and
+#' predictor patterns). For instance, this method can combine seperate
+#' downscaled results for each calendar months at a single location into one
+#' complete time series.
+#' 
+#' \code{g2dl} transform objects between grid starting at the grenwich
+#' (\code{greenwich=TRUE}) and the data line (\code{greenwich=FALSE}).
+#' 
+#' \code{sp2np} re-arranges field objects accroding to a grid going from 90S
+#' (South Pole) to 90N (Noth Pole) for \code{SP2NP=TRUE}. Otherwise, the object
+#' is arranged from 90N to 90S.
+#' 
+#' Other operations, such as \code{c(...)}, \code{rbind(...)} (combine along
+#' the time dimension), and \code{cbind(...)} (combine along the space
+#' dimension) also work.
+#' 
+#' @aliases combine combine.default combine.stations combine.zoo combine.ds
+#' combine.ds.comb combine.ds.station combine.ds.station.eof
+#' combine.ds.station.field combine.ds.pca combine.list
+#' combine.station.eof combine.field combine.filed.station
+#' combine.station.field sp2np combine.trajectory combine.events
+#' combine.field.station
+#'
+#' @param x station, eof, or field object
+#' @param all See \code{link{merge.zoo}}
+#' @param orig.format TRUE: the result will the formatted the same way as the
+#' input.
+#' @param dimension Which dimension to combine - in time or in space
+#' @param approach How to combine
+#' @param greenwich TRUE: center map on the Greenwich line (0E)
+#' @param SP2NP TRUE: order from south pole (bottom of plot) to north pole (top
+#' of plot)
+#' @param ignore List of attributes to ignore.
+#'
+#' @return A field object
+#'
+#' @keywords utilities
+#'
+#' @examples 
+#' T2m_DNMI <- t2m.DNMI(lon=c(-40,40),lat=c(30,70))
+#' T2m_NorESM <- t2m.NorESM.M(lon=c(-40,40),lat=c(30,70))
+#' 
+#' # Combine in time to compute common EOFs:
+#' X <- combine(T2m_DNMI,T2m_NorESM)
+#' ceof <- EOF(X,it="Jan")
+#' plot(ceof)
+#' 
+#' # Use combine to synchronise field and station data:
+#' data("Oslo")
+#' y <- combine(Oslo,T2m_DNMI)
+#' plot(y$y)
+#' 
+#' @export combine
+combine <- function(...) UseMethod("combine")
 
-combine <- function(...)
-  UseMethod("combine")
-
+#' @export combine.default
 combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.default")
-  # If either of the arguments is NULL, then return the x - useful for looping
   stopifnot(!missing(x))
-  #print("combine.default")
   if (is.null(x)) return(y)
   if (is.null(y)) return(x)
-  
-  #print(class(x)); print(class(y)); print(summary(x))
-  #print("dim(y)="); print(dim(y))
-  
-  if ( !zeros(c(inherits(x,c("station","zoo"),which=TRUE),
-                inherits(y,c("station","zoo"),which=TRUE)) ) )
-    X <- combine.station(x=x,y=y,verbose=verbose) else
-      if ( !zeros( c(inherits(x,c("station","zoo"),which=TRUE)
-                     ,inherits(y,c("eof","zoo"),which=TRUE)) ) |
-           !zeros( c(inherits(y,c("station","zoo"),which=TRUE),
-                     inherits(x,c("eof","zoo"),which=TRUE)) ) )
-        X <- combine.station.eof(x=x,y=y,all=all,
-                                 orig.format=orig.format,verbose=verbose) else
-                                   if ( !zeros( c(inherits(x,c("station","zoo"),which=TRUE)
-                                                  ,inherits(y,c("field","zoo"),which=TRUE)) ) |
-                                        !zeros( c(inherits(y,c("station","zoo"),which=TRUE),
-                                                  inherits(x,c("field","zoo"),which=TRUE)) ) )
-                                     X <- combine.station.field(x=x,y=y,all=all,orig.format=orig.format,verbose=verbose) else { 
-                                       print("combine.default - don't know what to do :-(")
-                                       Z <- NULL
-                                     }
+  if ( !zeros(c(inherits(x,c("station","zoo"), which=TRUE),
+                inherits(y,c("station","zoo"), which=TRUE))) ) { 
+    X <- combine.station(x=x,y=y,verbose=verbose)
+  } else if ( !zeros( c(inherits(x,c("station","zoo"), which=TRUE),
+                        inherits(y,c("eof","zoo"), which=TRUE)) ) |
+              !zeros( c(inherits(y,c("station","zoo"), which=TRUE),
+	                inherits(x,c("eof","zoo"), which=TRUE)) ) ) {
+    X <- combine.station.eof(x=x,y=y,all=all,orig.format=orig.format,verbose=verbose)
+  } else if ( !zeros( c(inherits(x,c("station","zoo"), which=TRUE),
+                        inherits(y,c("field","zoo"), which=TRUE)) ) |
+              !zeros( c(inherits(y,c("station","zoo"), which=TRUE),
+	                inherits(x,c("field","zoo"), which=TRUE)) ) ) {
+    X <- combine.station.field(x=x,y=y,all=all,orig.format=orig.format,verbose=verbose)
+  } else { 
+    print("combine.default - don't know what to do :-(")
+    X <- NULL
+  }
   attr(X,'history') <- history.stamp(x)
   invisible(X)
 }
 
 # combine.station can be used to either combine a group of stations into
-# one data object or timerseries from one stations with different monthly
+# one data object or time series from one stations with different monthly
 # values into one time series with all months
+#' @export combine.station
 combine.station <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station")
   cl <- as.list(match.call())
@@ -76,7 +151,6 @@ combine.station <- function(...,all=TRUE,verbose=FALSE) {
   allstations <- TRUE
   for (i in 1:n) {
     Z <- args[[i]]
-    #print(class(Z))
     if (inherits(Z,'station')) {
       stid <- c(stid,attr(Z,'station_id'))
       #stid[i] <- attr(Z,'station_id')#[i]
@@ -90,13 +164,16 @@ combine.station <- function(...,all=TRUE,verbose=FALSE) {
     ns <- length(table(stid))
     # If only one site, then combine the months into one series, otherwise
     # group the stations into one multivariate object
-    if (ns ==1) X <- combine.station.month(...,verbose=verbose) else
+    if (ns==1) {
+      X <- combine.station.month(...,verbose=verbose)
+    } else {
       X <- combine.stations(...,all=all,verbose=verbose)
+    }
+    class(X) <- class(Z)
   } else {
     X <- combine.default(...,all=all,verbose=verbose)
   }
   attr(X,'history') <- history.stamp(X)
-  class(X) <- class(Z)
   invisible(X)
 }
 
@@ -119,6 +196,7 @@ combine.station.month <- function(...,verbose=FALSE) {
   invisible(X)
 }
 
+#' @export combine.zoo
 combine.zoo <- function(...,verbose=FALSE) {
   if(verbose) print("combine.zoo")
   Z <- merge.zoo(...,all=TRUE)
@@ -127,7 +205,7 @@ combine.zoo <- function(...,verbose=FALSE) {
 }
 
 # combine.stations is used to combine a group of stations into one object
-
+#' @export combine.stations
 combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.stations")
   # If either of the arguments is NULL, then return the x -
@@ -196,6 +274,7 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+#' @export combine.ds
 combine.ds <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds")
   cl <- as.list(match.call())
@@ -342,6 +421,7 @@ combine.list <- function(...,all=TRUE,verbose=FALSE) {
   return(y)
 }
 
+#' @export combine.ds.comb
 combine.ds.comb <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds.comb")
   cl <- as.list(match.call())
@@ -405,6 +485,7 @@ combine.ds.comb <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+# not exported
 combine.ds.station <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds.station") 
   # Combine downscaled station records. Use combine.station for
@@ -423,6 +504,7 @@ combine.ds.station <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+# not exported
 combine.ds.pca <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds.pca")  
   # Combine downscaled PCA: i.e. the different principal components
@@ -444,7 +526,7 @@ combine.ds.pca <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
-
+#' @export combine.station.eof
 combine.station.eof <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station.eof")
   if (is.null(x)) return(y)
@@ -544,14 +626,14 @@ combine.station.eof <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,ver
   invisible(X)
 }
 
-
+#' @export combine.station.field
 combine.station.field <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station.field")
-  X <- combine.field.station(x=y,y=x,all=all,orig.format=orig.format)
+  X <- combine.field.station(x=y,y=x,all=all,orig.format=orig.format,verbose=verbose)
   invisible(X) 
 }
 
-
+#' @export combine.field.station
 combine.field.station <- function(x=NULL,y=NULL,...,all=FALSE,
                                   orig.format=TRUE,verbose=FALSE) {
   if (verbose) print("combine.field.station")
@@ -616,8 +698,7 @@ combine.field.station <- function(x=NULL,y=NULL,...,all=FALSE,
   invisible(X)
 }
 
-
-
+#' @export combine.field
 combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
                           approach="field",orig.format=TRUE,verbose=FALSE) {
   if (verbose) print(paste("combine.field",approach))
@@ -782,6 +863,7 @@ combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
   invisible(X)
 }
 
+#' @export combine.events
 combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbose=FALSE) {
   if(verbose) print("combine.events")
   stopifnot(inherits(x,"events") & inherits(y,"events"))
@@ -874,6 +956,7 @@ combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,F
   return(z)
 }
 
+#' @export combine.trajectory
 combine.trajectory <- function(x=NULL,y=NULL,...,verbose=FALSE) {
   if(verbose) print("combine.trajectory")
   z <- rbind(x,y,all=TRUE)
@@ -883,6 +966,7 @@ combine.trajectory <- function(x=NULL,y=NULL,...,verbose=FALSE) {
   return(z)
 }
 
+#' @export
 sp2np <- function(x,SP2NP=TRUE,verbose=FALSE) {
   if(verbose) print("sp2np")
   # Take care of different latitude orientations: N-> S & S -> N
@@ -923,3 +1007,4 @@ sp2np <- function(x,SP2NP=TRUE,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
+

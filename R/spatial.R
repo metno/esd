@@ -1,11 +1,27 @@
-## Name		: spatial.avg.field
-## Description	: Computes the spatial average of a field.
-## Author 	: Abdelkader Mezghani, METNO
-## contact 	: abdelkaderm@met.no
-## Last Update	: 21-03-2013
-## require	: zoo 
-## input	: a zoo field object / 3 dimensional field with dimensions (time,lon,lat)
+# How is spatial.avg.field different from aggregate.area?
+# I replaced spatial.avg.field with aggregate.area in DSensemble and iid.test
+# and will not export it.
 
+# Spatial Average of a Field Object.
+# 
+# Computes the spatial average of a field object and return a zoo time series
+# object.
+# 
+# @aliases spatial
+#
+# @param x A zoo field object with two (longitude, latitude) or three
+# dimensions (longitude, latitude, time)
+#
+# @return A "zoo" "time series" object
+# 
+# @seealso \code{\link{retrieve.ncdf4}}
+#
+# @examples
+# 
+# slp <- slp.DNMI(lon=c(-60,60),lat=c(30,65))
+# slp.avg <- spatial.avg.field(slp)
+# 
+# @export spatial.avg.field
 spatial.avg.field <- function(x) {
   ## Get dimensions
   d <- attr(x,"dimensions")

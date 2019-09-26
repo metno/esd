@@ -1,13 +1,5 @@
-# Calculates the x-derivatives for gridded data in longitude-
-# latitude coordinates. After Gill (1982) p. 94
-#
-# dA/dx = 1/(r cos(PHI)) * d/d THETA  
-#
-# where PHI is the latitude in radians and THETA the longitude.
-# R.E. Benestad & Kajsa Parding, 2015-05-26
-
+#' @export
 regfit <- function(z,cal.dat,terms) {
-  ## Generate model for fitting profile
   cal.dat$Z <- z
   model <- eval(parse(text=paste('lm(Z ~ ',terms,',data=cal.dat)')))
   ln <- length(unlist(strsplit(terms,split='\\+')))
@@ -19,8 +11,58 @@ regfit <- function(z,cal.dat,terms) {
   return(modelcoefs)
 }
 
+#' Derivatives 
+#' 
+#' \code{dX}, \code{dY}, and \code{dT} are functions to estimate derivatives for
+#' gridded field objects based on a fit to truncated Fourier series.
+#' The three functions give the x-, y- and time derivatives respectively.
+#' See Benestad & Chen (2006) 'The use of a
+#' Calculus-based Cyclone Identification method for generating storm
+#' statistics' (Tellus A 58A, 473-486, doi:10.1111/j.1600-0870.2006.00191) for
+#' more details.
+#'
+#' \code{regfit} is a help function for generating a model for fitting the profile.
+#'
+#' @aliases dX dY dT regfit
+#' @param Z A field object 
+#' @param m number of harmonics for fitting the Fourier series 
+#' @param mask.bad mask missing data 
+#' @param plot if TRUE show plot 
+#' @param r radius of the Earth (m) 
+#' @param accuracy resolution of output
+#' @param progress show the progress  
+#' @param verbose show diagnostics of the progress 
+#' 
+#' @return a list with several comonents:
+#' 
+#' \item{Z}{original data} \item{a}{Fourier coefficients for cosine}
+#' \item{b}{Fourier coeffieicnes for sine} \item{z0}{defunct?} \item{dZ}{The
+#' component contains the first derivative.} \item{dZ2}{The component contains
+#' the second derivative (quicker to do both in one go).} \item{lon}{longitude}
+#' \item{lat}{latitude} \item{dx}{spatial resolution} \item{span}{spatial
+#' extent}
+#' 
+#' @examples
+#' data(slp.ERA5)
+#' slp.dx <- dX(slp.ERA5,verbose=TRUE)
+#' map(slp.dx$Z) # map of SLP 
+#' map(slp.dx$dZ) # map of first derivative in longitude direction
+#' map(slp.dx$dZ2) # map of second derivative in longitude direction
+#' \dontrun{
+#' u10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='u10')
+#' v10 <- retrieve('~/Downloads/Jan2018_ERAINT_uvp.nc',param='v10')
+#' ## Estimate the vorticity
+#' zeta <- dX(v10)$dZ - dY(u10)$dZ
+#' zeta <- attrcp(u10,zeta)
+#' class(zeta) <- class(u10)
+#' attr(zeta,'variable') <- 'vorticity'
+#' attr(zeta,'unit') <- '1/s'
+#' map(subset(zeta,it=1),projection='np')
+#' }
+#' 
+#' @export dX
 dX <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
-               chk.conf=1,accuracy=NULL,progress=TRUE,verbose=FALSE) {
+               accuracy=NULL,progress=TRUE,verbose=FALSE) {
 
   ## Convert the field object into 3D objects with lon-lat dimensions
   ## seperated.

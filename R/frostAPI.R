@@ -1,6 +1,9 @@
-## Frost API to read METNO data
-
-test.API <- function(keyfile='~/.FrostAPI.key') {
+#' Test function for \code{frostID} which retrieves data from the frost.met.no
+#'
+#' @param keyfile location of API key
+#'
+#' @export test.API
+test.API <- function(keyfile='~/.FrostAPI.key',browser='firefox',verbose=FALSE) {
   ## This test function works
   if (file.exists(keyfile)) {
     if (verbose) print(paste('Read client ID from',keyfile))
@@ -26,11 +29,19 @@ stripblanks <- function(x) {
   return(x)
 }
 
+#' Retrieve metadata of MetNo data from frost.met.no
+#'
+#' @param keyfile location of API key
+#' @param fields fields to be extracted
+#' @param url url of data
+#'
+#' @importFrom utils URLencode View
+#'
+#' @export
 metafrostAPI <- function(keyfile='~/.FrostAPI.key',verbose=FALSE,
                          fields='id,name,masl,county,municipality,wmoid,geometry,type',
                          url='frost.met.no/sources/v0.jsonld?country=NO') {
   
-  require(jsonlite)
   t0 <- Sys.time()
   
   if (file.exists(keyfile)) {
@@ -85,7 +96,11 @@ metafrostAPI <- function(keyfile='~/.FrostAPI.key',verbose=FALSE,
   # if (verbose) {par(bty='n');plot(t(koords),xlab='',ylab=''); grid()}
   # if (verbose) View(cbind(locs,stid,fylke,kommune,alt,t(koords)))
   
-  xs <- try(fromJSON(URLencode(url),flatten=TRUE))
+  if(requireNamespace("jsonlite",quietly=TRUE)) {
+    xs <- try(jsonlite::fromJSON(URLencode(url),flatten=TRUE))
+  } else {
+    stop("Package \"jsonlite\" needed to retrieve data from Frost. Please install it.")
+  }
   if (class(xs) != 'try-error') {
     print("Data retrieved from frost.met.no!")
     data <- xs$data
@@ -117,12 +132,27 @@ metafrostAPI <- function(keyfile='~/.FrostAPI.key',verbose=FALSE,
   invisible(X)
 }
 
-
+#' Function to read METNO data from Frost
+#' 
+#' Read data from the METNO server Frost. This function requires an API-key that can be obtained by contacting METNO?
+#'
+#' @param param variable name
+#' @param stid station id number
+#' @param type type of data, e.g., observations
+#' @param keyfile location of FrostAPI key
+#' @param it time index, e.g., a range of years or dates
+#' @param browser internet browes, e.g., firefox or chrome
+#' @param verbose if TRUE print information on progress
+#' @param level don't know
+#' @param fields don't know
+#'
+#' @export
 frostAPI <- function(param='mean(air_temperature P1D)',stid=18700,
                      type='observations',keyfile='~/.FrostAPI.key',it = NULL,
                      browser='firefox',verbose=FALSE,level='2',
                      fields='referenceTime%2Cvalue') {
   ## Use saved client ID
+  if(verbose) print("frostAPI")
   if (file.exists(keyfile)) {
     if (verbose) print(paste('Read client ID from',keyfile))
     frostID <- readLines(keyfile) 
