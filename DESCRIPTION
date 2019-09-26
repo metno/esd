@@ -3,7 +3,7 @@ Version: 1.9.04
 Date: Sep 25 2019
 Title: Climate analysis and empirical-statistical downscaling (ESD) package for
     monthly and daily data
-Author: Rasmus E. Benestad <rasmus.benestad@met.no>, Abdelkader Mezghani, and Kajsa M. Parding
+Author: Rasmus E. Benestad <rasmus.benestad@met.no>, Abdelkader Mezghani, Kajsa M. Parding, Helene B. Erlandsen, and Ketil Tunheim
 Maintainer: Rasmus E. Benestad <rasmus.benestad@met.no>
 Depends:
     R (>= 2.10.0),
@@ -24,6 +24,7 @@ Description: The package contains R functions for retrieving data, making
     climate analysis and downscaling of monthly mean and daily mean global
     climate scenarios.
 License: GPL (>= 2)
-URL: http://rcg.gvc.gu.se/edu/esd.pdf
+URL: http://github.com/metno/esd
+Encoding: UTF-8
 ZipData: no
 RoxygenNote: 6.1.1
