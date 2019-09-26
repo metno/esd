@@ -29,7 +29,7 @@ plot(x, ...)
 
 \item{errorbar}{if TRUE show errorbar}
 
-\item{legend.show}{if TRUE show legendp}
+\item{legend.show}{if TRUE show legend}
 
 \item{map.show}{show map of stations}
 

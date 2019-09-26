@@ -16,7 +16,7 @@
 #' @param xlab label of x-axis
 #' @param ylab label of y-axis
 #' @param errorbar if TRUE show errorbar
-#' @param legend.show if TRUE show legendp
+#' @param legend.show if TRUE show legend
 #' @param map.show show map of stations
 #' @param map.type 'points' to show stations on map, 'rectangle' to show area
 #' @param map.insert if TRUE show map as insert, else show map in new window
