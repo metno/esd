@@ -7,7 +7,7 @@
 \method{write2ncdf4}{station}(x, ..., file = "station.nc",
   prec = "short", offset = 0, missval = -99, it = NULL,
   stid = NULL, append = FALSE, scale = 0.1, torg = "1899-12-31",
-  stid_unlim = FALSE, namelength = 24, verbose = FALSE)
+  stid_unlim = FALSE, namelength = 24, nmin = 30, verbose = FALSE)
 }
 \arguments{
 \item{x}{data object}
@@ -47,6 +47,11 @@ None
 Method to save station data as netCDF, making sure to include the data
 structure and meta-data (attributes). The code tries to follow the netCDf
 'CF' convention. The method is built on the \code{ncdf4} package.
+}
+\details{
+To save space, the values are saved as short (16-bit signed integer that
+can hold values between -32768 and 32767).
+(see NC_SHORT in \url{https://www.unidata.ucar.edu/software/netcdf/docs/data_type.html}).
 }
 \seealso{
 write2ncdf4
