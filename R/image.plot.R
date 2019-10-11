@@ -13,7 +13,9 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
   
   if(verbose) print("image.plot")
   
-  if(is.null(col)) colscal(n=nlevel, pal=pal)
+  breaks <- list(...)$breaks
+  if(!is.null(breaks)) nlevel <- length(breaks)-1
+  if(is.null(col)) col <- colscal(n=nlevel, pal=pal)
   old <- par()
   ## print("old") ; print(old$fig)
   old.par <- par(no.readonly = TRUE)
@@ -49,7 +51,7 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
     par(old.par)
     stop("plot region too small to add legend\n")
   }
-  breaks <- list(...)$breaks
+  
   ix <- 1
   minz <- info$zlim[1]
   maxz <- info$zlim[2]

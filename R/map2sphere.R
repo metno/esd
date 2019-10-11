@@ -8,7 +8,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        type=c("fill","contour"),                      
                        gridlines=TRUE,fancy=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
-
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
@@ -18,7 +17,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   if (!is.null(xlim)) is$lon <- xlim
   if (!is.null(ylim)) is$lat <- ylim
   x <- subset(x,is=is)
-
+  
   # Data to be plotted:
   lon <- lon(x)  # attr(x,'longitude')
   lat <- lat(x)  # attr(x,'latitude')
@@ -48,6 +47,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   # axiR: rotation of Earth's axis
 
   # coastline data:
+  geoborders <- NULL # KMP 2019-10-11: create dummy to avoid warning during CHECK
   data("geoborders",envir=environment())
   #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
@@ -69,7 +69,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 #contourLines
   lonxy <- rep(lon,length(lat))
   latxy <- sort(rep(lat,length(lon)))
-  map<- c(map)
+  map <- c(map)
 
 # Remove grid boxes with missign data:
   ok <- is.finite(map)
@@ -90,17 +90,24 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   Z <- sin(Phi)
   #print(c( min(x),max(x)))
 
-# Define colour palette:
-  ##if (is.null(breaks)) {
-  ##  n <- 30
-  ##  breaks <- pretty(c(map),n=n)
-  ##} else n <- length(breaks)
   ## AM commented
-  ##if (is.null(col)) col <- colscal(n=n) else
-  ##if (length(col)==1) {
-  ##    palette <- col
-  ##    col <- colscal(pal=palette,n=n)
-  ## }
+  ## KMP 2019-10-11: uncommented colour palette defintion
+  ## because otherwise map2sphere doesn't work
+  # Define colour palette:
+  if (is.null(colbar$breaks)) {
+    n <- 30
+    colbar$breaks <- pretty(c(map),n=n+1)
+    colbar$n <- length(colbar$breaks)-1
+  } else {
+    n <- length(colbar$breaks)
+  }
+  if (is.null(colbar$col)) {
+    colbar <- colbar.ini(map,colbar=colbar)
+    col <- colscal(n=n) 
+  } else if (length(col)==1) {
+    palette <- col
+    col <- colscal(pal=palette,n=n)
+  }
   nc <- length(colbar$col)
   ## AM commented
   ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
@@ -108,7 +115,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   #                  ( max(colbar$breaks) - min(colbar$breaks) ) )
   ## The findInterval implementation can use irregularly spaced breaks.
   ## (If a point has the same value as a break it will be assigned to the bin above it.)
-  index = findInterval(map,colbar$breaks,all.inside=TRUE)
+  index <- findInterval(map,colbar$breaks,all.inside=TRUE)
   ## where all.inside does to the indices what the clipping does to the values.
   
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
@@ -207,10 +214,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
       if (verbose) print("regular colbar")
       image.plot(breaks=colbar$breaks,
                  lab.breaks=colbar$breaks,
-                 horizontal = TRUE,legend.only = T,
+                 horizontal = TRUE, legend.only = TRUE,
                  zlim = range(colbar$breaks),
                  col = colbar$col, legend.width = 1,
-                 axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,...)
+                 axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
+                 verbose=verbose, ...)
                  #xaxp=c(range(colbar$breaks),colbar$n)),
                  #border = FALSE,...)
       ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
