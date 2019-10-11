@@ -106,6 +106,7 @@ diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   sr <- dm; ar <- sr
   # The appended fields, e.g. GCM results
   rowname <- rep("GCM",n)
+  z <- NULL
   for ( i in 1:n ) {
     eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
     y <- zoo(coredata(z),order.by=index(z))
@@ -556,6 +557,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
     points(x,y,pch=21,cex=2*par("cex"),col='black',bg=col)
     if(map.show) {
+      geoborders <- NULL
       data(geoborders, envir = environment())
       lon <- geoborders$x
       lat <- geoborders$y

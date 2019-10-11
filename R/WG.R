@@ -123,6 +123,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
   if (is.null(x)) {
     ## If no stations objects is given, use default 
     if (verbose) print("use default: Ferder, Norway")
+    ferder <- NULL
     data("ferder",envir=environment())
     x <- ferder
     rm('ferder')
@@ -238,6 +239,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
   if (verbose) print('WG.fw.day.precip')
   # Single function for just precipitation
   if (is.null(x)) {
+    bjornholt <- NULL
     data("bjornholt",envir=environment())
     x <- bjornholt
     rm('bjornholt')
@@ -447,11 +449,13 @@ WG.pca.day.t2m.precip <- function(x=NULL,...,precip=NULL,threshold=1,select=NULL
   if(verbose) print("WG.pca.day.t2m.precip")			
   t2m <- x
   if (is.null(t2m)) {
+    ferder <- NULL
     data("ferder",envir=environment())
     t2m <- ferder
     rm('ferder')
   }
   if (is.null(precip)) {
+    bjornholt <- NULL
     data("bjornholt",envir=environment())
     pr <- bjornholt
     rm('bjornholt')

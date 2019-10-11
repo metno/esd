@@ -292,7 +292,8 @@ as.station.list <- function(x,...,verbose=FALSE) {
       eval(parse(text=paste("ds.",i," <- z",sep="")))
       cline <- paste(cline,"ds.",i,",",sep="")
     }
- 
+
+    ALL <- NULL
     cline <- paste(substr(cline,1,nchar(cline)-1),')-> ALL')
     #print(cline)
     eval(parse(text=cline))

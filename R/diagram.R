@@ -51,6 +51,7 @@ diagram.station <- function(x,...,it=NULL,new=TRUE,plot=TRUE,verbose=FALSE) {
   if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
     unit <- expression(degree*C) else
       unit <- attr(x,'unit')
+  main <- NULL
   eval(parse(text=paste("main <- expression(paste('Seasonal evaution: ',",
                         attr(x,'variable'),"))")))
   if (plot) {

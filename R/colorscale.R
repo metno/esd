@@ -97,6 +97,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     if (is.logical(colbar)) colbar <- list(show=colbar)
     if (verbose) print('sort out the colours')
     
+    ## Prepare data and calculate range
     if (is.zoo(x)) x <- coredata(x)
     x[!is.finite(x)] <- NA      # REB 2017-09-20: fix to cope with Inf-values
     x.rng <- range(x,na.rm=TRUE)
@@ -104,37 +105,57 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     ## If there are bad range values
     if (!is.finite(x.rng[1])) {
       ## If only the first is bad: set to 0 or a value lower than 2nd (negative)
-      if (is.finite(x.rng[2])) x.rng[1] <- min(0,x.rng[2]*2) else {
+      if (is.finite(x.rng[2])) {
+        x.rng[1] <- min(0,x.rng[2]*2) 
+      } else {
         x.rng <- c(0,1)
       }
     }
     if (!is.finite(x.rng[2])) {
       ## If only the first is bad: set to 0 or a value higher than 2nd
-      if (is.finite(x.rng[1])) x.rng[2] <- max(0,x.rng[1]*2) else {
+      if (is.finite(x.rng[1])) {
+        x.rng[2] <- max(0,x.rng[1]*2) 
+      } else {
         x.rng <- c(0,1)
       }
     }
     if (verbose) print(x.rng)
     nd <- max(0,ndig(x.rng)+2)
 
+    ## Set breaks and n
     if (!is.null(colbar$col)) {
       if (is.null(colbar$breaks)) {
         colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1),nd)
       }
       colbar$n <- length(colbar$col)
     }
-    
-    ## if breaks are null then use pretty 
     if (is.null(colbar$breaks)) { 
       if (verbose) print("pretty is used here to set break values ...")
       if (!is.null(colbar$n)) {
         colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),n=colbar$n+1)
       } else {
-        colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10),n=10)
+        colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10),n=11)
       }
-      colbar$n <- length(colbar$breaks)-1      
+      colbar$n <- length(colbar$breaks) - 1
     }
-    if (is.null(colbar$n)) colbar$n <- length(colbar$breaks)-1 
+    if(length(colbar$breaks)==2) {
+      if(is.null(colbar$n)) colbar$n <- 10
+      colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
+                           length=colbar$n+1)
+      colbar$n <- length(colbar$breaks) - 1
+    }
+
+    ## Activate pallette (pal)
+    if (is.null(colbar$pal)) {
+      if (is.precip(x)) {
+        colbar$pal <- 'precip'
+      } else {
+        colbar$pal <- 't2m'
+      } 
+    } 
+    
+    ## Specify other colbar stuff
+    if (is.null(colbar$n)) colbar$n <- length(colbar$breaks) - 1
     if (is.null(colbar$type)) colbar$type <- 'p'
     if (is.null(colbar$cex)) colbar$cex <- 2
     if (is.null(colbar$h)) colbar$h <- 0.6
@@ -142,7 +163,8 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     if (is.null(colbar$pos)) colbar$pos <- 0.05
     if (is.null(colbar$show)) colbar$show <-TRUE
     if (is.null(colbar$rev)) colbar$rev <- FALSE
-    ## very easy case if colbar$col and breaks are provided
+    
+    ## Check and define or correct colbar$col
     if (!is.null(colbar$col)) {
       if (is.null(colbar$pal)) colbar$pal <- NA
       if (!is.null(colbar$breaks)) {  
@@ -158,57 +180,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
         colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=colbar$n+1),nd)   
       }
     } else {
-      if (is.null(colbar$pal)) {
-        if (is.precip(x)) {
-          colbar$pal <- 'precip'
-        } else {
-          colbar$pal <- 't2m'
-        }
-        if (is.null(colbar$n)) colbar$n=10
-        colbar$col <- colscal(n=colbar$n,pal=colbar$pal,rev=colbar$rev,alpha=colbar$alpha,
-                              verbose=verbose)
-      }
-    }
-    
-    ## activate pallette (pal)
-    if (is.null(colbar$pal)) {
-      if (is.precip(x)) {
-        colbar$pal <- 'precip'
-      } else {
-        colbar$pal <- 't2m'
-      } 
-    } 
-
-    # REB 2015-12-02: I do not understand these two lines    
-    # if (!is.null(FUN)) {
-    #   if (is.null(colbar$breaks) & !inherits(x,"stationmeta")) {
-    #     colbar$breaks <- pretty(x,n=colbar$n)
-    # Replaced by the following line:
-    if (is.null(colbar$breaks)) {
-      ## If colbar$breaks is unspecified, then set up the levels for colour scale:
-      if (verbose) print('define breaks')
-      if (is.null(colbar$col)) {
-        ## If colbar$col is unspecified, then use pretty to provide pretty numbers
-            colbar$breaks <- pretty(x,n=colbar$n)
-      } else {
-        ## If colbar$col *is* specified, then the numbers are given
-        colbar$n <- length(colbar$col)
-        colbar$breaks <- seq(min(x,na.rm=TRUE),max(x,na.rm=TRUE),length=colbar$n+1)
-      }
-    } else if (length(colbar$breaks)==2) {
-      ## If colbar is a vector of two, then it is taken as a range
-      if (!is.null(colbar$col)) colbar$n <- length(colbar$col) else
-      if (!is.null(colbar$n)) colbar$n <- 11 
-      colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
-                           length=colbar$n+1)
-    }
-    colbar$n <- length(colbar$breaks) -1
-
-    
-    ## if colbar$col is null
-    if (is.null(colbar$col)) {
       if (verbose) print('define col')
-      ## colscal is used as default to set the colors
       if (verbose) print(paste('colbar$n',colbar$n))
         colbar$col <- colscal(n=colbar$n,pal=colbar$pal,alpha=colbar$alpha,
                               rev=colbar$rev,verbose=verbose)
@@ -216,7 +188,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
     if (verbose) print(colbar)
     if (verbose) print(paste("length(col) =",length(colbar$col),
                              "length(breaks) =",length(colbar$breaks)))
-
+    
     if (length(colbar$col) != length(colbar$breaks)-1) stop('colbar.ini: Error in setting colbar!')
  
     if (verbose) {
