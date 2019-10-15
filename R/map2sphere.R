@@ -96,6 +96,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## KMP 2019-10-11: uncommented colour palette defintion
   ## because otherwise map2sphere doesn't work
   # Define colour palette:
+  if (is.null(colbar$rev)) colbar$rev <- FALSE
   if (is.null(colbar$breaks)) {
     colbar$breaks <- pretty(c(map),n=31)
     colbar$n <- length(colbar$breaks)-1
@@ -109,7 +110,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   } else if (nc==1) {
     col <- colscal(pal=colbar$col,n=colbar$n-1)
   }
-  
+  if (colbar$rev) col <- rev(col)
   ## AM commented
   ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
   #index <- round( nc*( map - min(colbar$breaks) )/
@@ -218,7 +219,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                  horizontal = TRUE, legend.only = TRUE,
                  zlim = range(colbar$breaks),
                  pal = colbar$col, nlevel=length(colbar$breaks)-1, 
-                 legend.width = 1,
+                 legend.width = 1,rev = colbar$rev,
                  axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
                  verbose=verbose, ...)
                  #xaxp=c(range(colbar$breaks),colbar$n)),
