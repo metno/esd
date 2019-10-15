@@ -21,10 +21,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   # Data to be plotted:
   lon <- lon(x)  # attr(x,'longitude')
   lat <- lat(x)  # attr(x,'latitude')
+  if (verbose) {print(summary(lon)); print(summary(lat))}
   # To deal with grid-conventions going from north-to-south or east-to-west:
+  if (inherits(x,'field')) map <- map(x,plot=FALSE) else map <- x
   srtx <- order(lon); lon <- lon[srtx]
   srty <- order(lat); lat <- lat[srty]
-  map <- x[srtx,srty]
+  map <- map[srtx,srty]
   param <- attr(x,'variable')
   unit <- attr(x,'unit')[1]
   if (!is.null(unit) & !is.expression(unit)) if (unit =='%') unit <- "'%'"
@@ -40,9 +42,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
     unit <- "degrees*C"
   }
  
-  # Rotatio:
-  if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
-  if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
+  # Rotation:
+  if (is.null(lonR)) lonR <- mean(lon,na.rm=TRUE)  # logitudinal rotation
+  if (is.null(latR)) latR <- mean(lat,na.rm=TRUE)  # Latitudinal rotation
   if (verbose) print(paste('lonR=',lonR,'latR=',latR))
   # axiR: rotation of Earth's axis
 
@@ -77,7 +79,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   lonxy <- lonxy[ok]; latxy <- latxy[ok]; map <- map[ok]
 
 # Define the grid box boundaries:
-  dlon <- min(abs(diff(lon))); dlat <- min(abs(diff(lat)))
+  dlon <- min(abs(diff(lon)),na.rm=TRUE); dlat <- min(abs(diff(lat)),na.rm=TRUE)
   Lon <- rbind(lonxy - 0.5*dlon,lonxy + 0.5*dlon,
                lonxy + 0.5*dlon,lonxy - 0.5*dlon)
   Lat <- rbind(latxy - 0.5*dlat,latxy - 0.5*dlat,
@@ -95,20 +97,19 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## because otherwise map2sphere doesn't work
   # Define colour palette:
   if (is.null(colbar$breaks)) {
-    n <- 30
-    colbar$breaks <- pretty(c(map),n=n+1)
+    colbar$breaks <- pretty(c(map),n=31)
     colbar$n <- length(colbar$breaks)-1
   } else {
-    n <- length(colbar$breaks)
-  }
-  if (is.null(colbar$col)) {
-    colbar <- colbar.ini(map,colbar=colbar)
-    col <- colscal(n=n) 
-  } else if (length(col)==1) {
-    palette <- col
-    col <- colscal(pal=palette,n=n)
+    colbar$n <- length(colbar$breaks) -1
   }
   nc <- length(colbar$col)
+  if (is.null(colbar$col)) {
+    colbar <- colbar.ini(map,colbar=colbar)
+    col <- colscal(n=colbar$n-1) 
+  } else if (nc==1) {
+    col <- colscal(pal=colbar$col,n=colbar$n-1)
+  }
+  
   ## AM commented
   ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
   #index <- round( nc*( map - min(colbar$breaks) )/
@@ -119,12 +120,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   ## where all.inside does to the indices what the clipping does to the values.
   
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
-  print('Clip the value range to extremes of colour scale')
+  if (verbose) print('Clip the value range to extremes of colour scale')
   toohigh <- map>max(colbar$breaks)
   if (sum(toohigh)>0) map[toohigh] <- max(colbar$breaks)
   toolow <- map<min(colbar$breaks)
   if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
-  print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
+  if (verbose) print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
   
   ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
   #crgb <- col2rgb(colbar$col)
@@ -175,7 +176,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   Visible <- colMeans(Y) > 0
   X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
   index <- index[Visible]
-  apply(rbind(X,Z,index),2,gridbox,colbar$col)
+  apply(rbind(X,Z,index),2,gridbox,col)
   # c(W,E,S,N, colour)
   # xleft, ybottom, xright, ytop
   # Plot the coast lines  
@@ -216,7 +217,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                  lab.breaks=colbar$breaks,
                  horizontal = TRUE, legend.only = TRUE,
                  zlim = range(colbar$breaks),
-                 col = colbar$col, legend.width = 1,
+                 pal = colbar$col, nlevel=length(colbar$breaks)-1, 
+                 legend.width = 1,
                  axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
                  verbose=verbose, ...)
                  #xaxp=c(range(colbar$breaks),colbar$n)),
