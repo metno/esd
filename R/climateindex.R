@@ -10,6 +10,7 @@
 #' from EPA's Climate Change Indicators in the United States: www.epa.gov/climate-indicators
 #'
 #' GSL.nasa: Global Average Sea level from NASA
+#' GSL.aviso: Global Average Sea level from AVISO
 #'
 #' QBO: Quasi-Biennial Oscillation. Calculated at NOAA/ESRL/PSD from the zonal average
 #' of the 30mb zonal wind at the equator as computed from the NCEP/NCAR Reanalysis.
@@ -160,6 +161,14 @@ GSL.nasa <- function(url='ftp://podaac.jpl.nasa.gov/allData/merged_alt/L2/TP_J1_
                    stid=NA,quality=NA,src='NASA',url=url,
                    reference="NASA's Climate Change Indicators",info=hdr, method= NA)
   return(sl)
+}
+
+GSL.aviso <- function(url='ftp://ftp.aviso.altimetry.fr/pub/oceano/AVISO/indicators/msl/MSL_Serie_MERGED_Global_AVISO_GIA_Adjust_Filter2m.txt') {
+  gsl <- read.table(url)
+  yr <- trunc(gsl[,1])
+  t <- as.Date(julian(as.Date(paste0(yr,'-01-01'))) + 365.25*(gsl[,1]- yr))
+  z <- zoo(gsl[,2],order.by=t)
+  return(z)
 }
 
 #' @export
