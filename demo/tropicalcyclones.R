@@ -80,9 +80,9 @@ index(nino3.4) <- year(nino3.4)
 ## Use the relationship from Benestad (2009):
 y <- warmarea^5.06
 scl <- mean(window(ntc,start=1961,end=1990))/mean(window(y,start=1961,end=1990))
-y <- filter(y*scl,rep(1,7)/7)
-yu <- filter(warmarea^5.31*scl,rep(1,7)/7)
-yl <- filter(warmarea^4-81*scl,rep(1,7)/7)
+y <- stats::filter(y*scl,rep(1,7)/7)
+yu <- stats::filter(warmarea^5.31*scl,rep(1,7)/7)
+yl <- stats::filter(warmarea^4-81*scl,rep(1,7)/7)
 
 caldat <- data.frame(ntc=window(ntc,start=1900,end=1960),
                       nino3.4=window(nino3.4,start=1900,end=1960),
@@ -101,7 +101,7 @@ par(bty='n',xpd=TRUE,las=3)
 
 ## Update the record of number of cyclones manually: 2015-2018
 ## From Wikipedia
-ntc2 <- zoo(c(11,15,17,15),order.by=2015:2018)
+ntc2 <- zoo(c(11,15,17,15,17),order.by=2015:2019)
 ntc <- c(ntc,ntc2)
 
 plot(ntc,lty=2,xlim=range(index(y)),

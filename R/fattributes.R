@@ -14,10 +14,16 @@
 #' @param x input object
 #'
 #' @export
-lon <- longitude <- function(x) return(attr(x,"longitude"))
+lon <- longitude <- function(x) {
+  if (inherits(x,'trajectory')) return(x[,is.element(colnames(x),'lon')]) else 
+    return(attr(x,"longitude"))
+}
 
 #' @export
-lat <- latitude <- function(x) return(attr(x,"latitude"))
+lat <- latitude <- function(x) {
+  if (inherits(x,'trajectory')) return(x[,is.element(colnames(x),'lat')]) else 
+    return(attr(x,"latitude"))
+}
 
 #' @export
 stid <- function(x) return(attr(x,"station_id")) 
