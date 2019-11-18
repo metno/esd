@@ -135,7 +135,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
     attr(X,'variable') <- attr(x,'variable')
     attr(X,'unit') <- attr(x,'unit')[1]
     if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
-    attr(X,'source') <- attr(x,'source')
+    attr(X,'source') <- basename(attr(x,'source'))
     attr(X,'variable') <- varid(x)
     if (inherits(X,'zoo')) {
       attr(X,'time') <- range(index(x))
@@ -330,7 +330,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
       attr(X,'variable') <- attr(x,'variable')
       attr(X,'unit') <- attr(x,'unit')[1]
       if (attr(X,'unit') =='%') attr(X,'unit') <- "'%'"
-      attr(X,'source') <- attr(x,'source')
+      attr(X,'source') <- basename(attr(x,'source'))
       attr(X,'time') <- range(index(x))
       attr(X,'greenwich') <- attr(x,"greenwich")
 
@@ -412,7 +412,7 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     }
     
     attr(X,'unit') <- unit
-    attr(X,'source') <- attr(x,'source')
+    attr(X,'source') <- basename(attr(x,'source'))
 
     if (plot) {
         if (projection=="lonlat") {
@@ -522,7 +522,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
 
     unit <- as.character(unit)
     attr(X,'unit') <- unit
-    attr(X,'source') <- attr(x,'source')
+    attr(X,'source') <- basename(attr(x,'source'))
     attr(X,'time') <- range(index(x))
     attr(X,'method') <- FUN
     attr(X,'timescale') <- class(x)[2]
@@ -638,7 +638,7 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     attr(X,'variable') <- paste(attr(x,'variable'),'trend')
     attr(X,'time') <- range(index(x))
     attr(X,'unit') <- paste('d',attr(x,'unit'),'/decade')
-    attr(X,'source') <- attr(x,'source')
+    attr(X,'source') <- basename(attr(x,'source'))
     dim(X) <- attr(x,'dimension')[1:2]
                                         #str(X)
     if (plot) {

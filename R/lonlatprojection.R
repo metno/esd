@@ -66,7 +66,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   }
   if (inherits(varlabel,'try-error')) varlabel <- NULL
   if (!is.null(attr(x,'source'))) {
-    sub <- attr(x,'source')
+    sub <- paste(basename(attr(x,'source')),'*phantom(0)',sep='')
   } else {
     sub <- NULL
   }
