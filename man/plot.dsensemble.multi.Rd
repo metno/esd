@@ -4,8 +4,16 @@
 \alias{plot.dsensemble.multi}
 \title{Plot multiple stations/spatially aggregated field.}
 \usage{
-\method{plot}{dsensemble.multi}(x, it = c(2000, 2099), FUNX = "mean",
-  verbose = FALSE, anomaly = FALSE, test = FALSE, plot = TRUE, ...)
+\method{plot}{dsensemble.multi}(
+  x,
+  it = c(2000, 2099),
+  FUNX = "mean",
+  verbose = FALSE,
+  anomaly = FALSE,
+  test = FALSE,
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{input object of class 'dsensemble'}

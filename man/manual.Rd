@@ -9,8 +9,10 @@
 \alias{element.kode}
 \title{Help and assistance}
 \usage{
-manual(url = "https://ndownloader.figshare.com/files/2126237",
-  browser = "firefox")
+manual(
+  url = "https://ndownloader.figshare.com/files/2126237",
+  browser = "google-chrome"
+)
 }
 \description{
 Help and assistance

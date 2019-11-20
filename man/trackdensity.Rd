@@ -4,8 +4,16 @@
 \alias{trackdensity}
 \title{export}
 \usage{
-trackdensity(lons, lats, track = NULL, dx = NULL, dy = NULL,
-  radius = 5e+05, type = "track", verbose = FALSE)
+trackdensity(
+  lons,
+  lats,
+  track = NULL,
+  dx = NULL,
+  dy = NULL,
+  radius = 5e+05,
+  type = "track",
+  verbose = FALSE
+)
 }
 \description{
 export

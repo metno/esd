@@ -4,8 +4,7 @@
 \alias{test.API}
 \title{Test function for \code{frostID} which retrieves data from the frost.met.no}
 \usage{
-test.API(keyfile = "~/.FrostAPI.key", browser = "firefox",
-  verbose = FALSE)
+test.API(keyfile = "~/.FrostAPI.key", browser = "firefox", verbose = FALSE)
 }
 \arguments{
 \item{keyfile}{location of API key}

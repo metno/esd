@@ -4,12 +4,29 @@
 \alias{CCI}
 \title{Calculus Cyclone identification.}
 \usage{
-CCI(Z, m = 12, it = NULL, is = NULL, cyclones = TRUE,
-  greenwich = NULL, label = NULL, mindistance = 5e+05,
-  dpmin = 0.001, pmax = 1000, rmin = 10000, rmax = 2e+06,
-  nsim = NULL, progress = TRUE, fname = "cyclones.rda",
-  plot = FALSE, accuracy = NULL, allow.open = FALSE,
-  do.track = FALSE, verbose = FALSE, ...)
+CCI(
+  Z,
+  m = 12,
+  it = NULL,
+  is = NULL,
+  cyclones = TRUE,
+  greenwich = NULL,
+  label = NULL,
+  mindistance = 5e+05,
+  dpmin = 0.001,
+  pmax = 1000,
+  rmin = 10000,
+  rmax = 2e+06,
+  nsim = NULL,
+  progress = TRUE,
+  fname = "cyclones.rda",
+  plot = FALSE,
+  accuracy = NULL,
+  allow.open = FALSE,
+  do.track = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{Z}{A field object.}

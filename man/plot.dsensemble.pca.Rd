@@ -4,9 +4,18 @@
 \alias{plot.dsensemble.pca}
 \title{plot dsensemble pca results}
 \usage{
-\method{plot}{dsensemble.pca}(x, ..., pts = FALSE, target.show = TRUE,
-  map.show = TRUE, it = 0, ip = 1, envcol = rgb(1, 0, 0, 0.2),
-  legend.show = TRUE, verbose = FALSE)
+\method{plot}{dsensemble.pca}(
+  x,
+  ...,
+  pts = FALSE,
+  target.show = TRUE,
+  map.show = TRUE,
+  it = 0,
+  ip = 1,
+  envcol = rgb(1, 0, 0, 0.2),
+  legend.show = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{input object to be plotted}

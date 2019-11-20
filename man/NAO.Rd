@@ -10,6 +10,7 @@
 \alias{CET}
 \alias{CO2}
 \alias{AMO}
+\alias{IOD}
 \title{Functions to read climate indices from sources on the internet}
 \usage{
 NAO(freq = "monthly", url = NULL, header = FALSE, verbose = FALSE)
@@ -35,6 +36,7 @@ GSL: Global Average Absolute Sea level Change, 1880-2015,
 from EPA's Climate Change Indicators in the United States: www.epa.gov/climate-indicators
 
 GSL.nasa: Global Average Sea level from NASA
+GSL.aviso: Global Average Sea level from AVISO
 
 QBO: Quasi-Biennial Oscillation. Calculated at NOAA/ESRL/PSD from the zonal average
 of the 30mb zonal wind at the equator as computed from the NCEP/NCAR Reanalysis.
@@ -46,4 +48,6 @@ Reference: 'C.D. Keeling, R.B. Bacastow, A.E. Bainbridge, C.A. Ekdahl, P.R. Guen
 Atmospheric carbon dioxide variations at Mauna Loa Observatory, Hawaii, Tellus, vol. 28, 538-551'
 
 AMO: Atlantic Multidecadal Oscillation, unsmoothed calculated from the Kaplan SST V2 at NOAA/ESRL/PSD1
+
+IOD: Indian Ocean Dipole index
 }

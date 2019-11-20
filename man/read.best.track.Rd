@@ -4,10 +4,14 @@
 \alias{read.best.track}
 \title{Read tropical storm trajectory data from \url{http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/best_tracks/}}
 \usage{
-
-  read.best.track(url = "http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/best_tracks/",
-  domain = "io", start = 1945, end = 2014, n = 20,
-  verbose = TRUE)
+read.best.track(
+  url = "http://www.usno.navy.mil/NOOC/nmfc-ph/RSS/jtwc/best_tracks/",
+  domain = "io",
+  start = 1945,
+  end = 2014,
+  n = 20,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{url}{url}

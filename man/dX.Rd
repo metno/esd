@@ -7,8 +7,16 @@
 \alias{regfit}
 \title{Derivatives}
 \usage{
-dX(Z, m = 10, mask.bad = TRUE, plot = FALSE, r = 6378000,
-  accuracy = NULL, progress = TRUE, verbose = FALSE)
+dX(
+  Z,
+  m = 10,
+  mask.bad = TRUE,
+  plot = FALSE,
+  r = 6378000,
+  accuracy = NULL,
+  progress = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{Z}{A field object}

@@ -4,13 +4,34 @@
 \alias{plot.station}
 \title{Plot esd objects}
 \usage{
-\method{plot}{station}(x, ..., plot.type = "single", new = TRUE,
-  lwd = 3, type = "l", pch = 0, main = NULL, col = NULL,
-  xlim = NULL, ylim = NULL, xlab = "", ylab = NULL,
-  errorbar = TRUE, legend.show = FALSE, map.show = TRUE,
-  map.type = NULL, map.insert = TRUE, cex.axis = 1.2,
-  cex.lab = 1.2, cex.main = 1.2, mar = c(4.5, 4.5, 0.75, 0.5),
-  fig = NULL, alpha = 0.5, alpha.map = 0.7, verbose = FALSE)
+\method{plot}{station}(
+  x,
+  ...,
+  plot.type = "single",
+  new = TRUE,
+  lwd = 3,
+  type = "l",
+  pch = 0,
+  main = NULL,
+  col = NULL,
+  xlim = NULL,
+  ylim = NULL,
+  xlab = "",
+  ylab = NULL,
+  errorbar = TRUE,
+  legend.show = FALSE,
+  map.show = TRUE,
+  map.type = NULL,
+  map.insert = TRUE,
+  cex.axis = 1.2,
+  cex.lab = 1.2,
+  cex.main = 1.2,
+  mar = c(4.5, 4.5, 0.75, 0.5),
+  fig = NULL,
+  alpha = 0.5,
+  alpha.map = 0.7,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{the object to be plotted}
@@ -74,8 +95,6 @@ to the same coordinates as defined by \code{is}.}
 \item{ip}{Which EOF/CCA pattern (mode) to plot}
 
 \item{cex}{magnification factor, see \code{\link[graphics]{par}}}
-
-\item{lwd}{width of line}
 
 \item{what}{Indicate what to plot. For \code{plot.eof}, c('pc', 'eof', 'var') is the default setting which means that
 the plot will include the principle components, EOF patterns and explained variance. 'field' expands eof to field before

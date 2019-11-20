@@ -23,7 +23,8 @@
 #'
 #' AMO: Atlantic Multidecadal Oscillation, unsmoothed calculated from the Kaplan SST V2 at NOAA/ESRL/PSD1
 #'
-#' @aliases NAO NINO3.4 SOI GSL GSL.nasa QBO CET CO2 AMO
+#' IOD: Indian Ocean Dipole index
+#' @aliases NAO NINO3.4 SOI GSL GSL.nasa QBO CET CO2 AMO IOD
 #'
 #' @param freq frequency
 #' @param url a URL or web address to location of data
@@ -239,6 +240,20 @@ AMO <- function(url=NULL, verbose=FALSE) {
                     stid=NA,quality=NA,src='Calculated at NOAA/ESRL/PSD1', url=url,
                     reference=NA,info=NA, method= NA)
   return(amo)
+}
+
+#' @export
+IOD <- function(url='https://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/Data/dmi.long.data') {
+  ## Indian Ocean Dipole
+  test <- readLines(url)
+  n <- length(test)
+  X <- as.matrix(read.table(url,skip=1,nrow = n-8))
+  X[X <= -999] <- NA
+  yr <- sort(rep(X[,1],12))
+  mo <- rep(1:12,length(X[,1]))
+  iod <- c(t(X[,2:13]))
+  y <- zoo(iod,order.by=as.Date(paste(yr,mo,'01',sep='-')))
+  return(y)
 }
 
 

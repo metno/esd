@@ -1,6 +1,6 @@
 Package: esd
-Version: 1.9.08
-Date: Nov 18 2019
+Version: 1.9.09
+Date: Nov 20 2019
 Title: Climate analysis and empirical-statistical downscaling (ESD) package for
     monthly and daily data
 Author: Rasmus E. Benestad <rasmus.benestad@met.no>, Abdelkader Mezghani, Kajsa M. Parding, Helene B. Erlandsen, and Ketil Tunheim
@@ -27,4 +27,4 @@ License: GPL (>= 2)
 URL: http://github.com/metno/esd
 Encoding: UTF-8
 ZipData: no
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.0

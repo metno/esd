@@ -4,8 +4,15 @@
 \alias{plot.nevents}
 \title{Plot esd objects}
 \usage{
-\method{plot}{nevents}(x, verbose = FALSE, main = NULL, xlab = NULL,
-  ylab = NULL, col = NULL, ...)
+\method{plot}{nevents}(
+  x,
+  verbose = FALSE,
+  main = NULL,
+  xlab = NULL,
+  ylab = NULL,
+  col = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{the object to be plotted}
