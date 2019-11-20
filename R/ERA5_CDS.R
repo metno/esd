@@ -7,13 +7,20 @@
 #'
 #' @aliases ERA5.CDS
 #'
-#' @param X variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', or 
+#' @param X variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', or 'mean_sea_level_pressure'
 #' @param it the years to extract.
 #' @param varnm variable name for local data file.
-#' @param AREA the area/region to extract
+#' @param AREA the area/region to extract [south,west,north,east]
 #' @param FNAME the name of the local files for storing the data
 #' @param FUN the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum', 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).  
 #' @param verbose a boolean; if TRUE print information about progress
+#' @examples
+#' ERA5.CDS(X='2m_temperature',varnm='t2m',it=2015:2018,AREA="['50','0','60','10']",
+#'          FUN='daymean')
+#' ERA5.CDS(X='total_precipitation',varnm='tp',it=2018,AREA="['0','50','10','60']",
+#'          FUN='yearsum')
+#' ERA5.CDS(X='mean_sea_level_pressure',varnm='slp',it=2018,AREA="['40','-50','60','30']",
+#'          FUN='monmean')
 #'
 #' @export
 ERA5.CDS <- function(X='total_precipitation',it=1979:2018,

@@ -21,13 +21,13 @@ ERA5.CDS(
 )
 }
 \arguments{
-\item{X}{variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', or}
+\item{X}{variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', or 'mean_sea_level_pressure'}
 
 \item{it}{the years to extract.}
 
 \item{varnm}{variable name for local data file.}
 
-\item{AREA}{the area/region to extract}
+\item{AREA}{the area/region to extract [south,west,north,east]}
 
 \item{FNAME}{the name of the local files for storing the data}
 
@@ -42,4 +42,13 @@ as netCDF files. This script assumes that CDO is installed:
 https://www.unidata.ucar.edu/software/netcdf/workshops/most-recent/third_party/CDO.html.
 It only works on Linux platforms...
 See https://cds.climate.copernicus.eu/api-how-to
+}
+\examples{
+ERA5.CDS(X='2m_temperature',varnm='t2m',it=2015:2018,AREA="['50','0','60','10']",
+         FUN='daymean')
+ERA5.CDS(X='total_precipitation',varnm='tp',it=2018,AREA="['0','50','10','60']",
+         FUN='yearsum')
+ERA5.CDS(X='mean_sea_level_pressure',varnm='slp',it=2018,AREA="['40','-50','60','30']",
+         FUN='monmean')
+
 }
