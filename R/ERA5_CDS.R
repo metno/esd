@@ -27,6 +27,11 @@ ERA5.CDS <- function(X='total_precipitation',it=1979:2018,
                      varnm='tp', AREA="['-90','-180','90','180']",
                      FNAME="'ERA5_XXX_YYYY.nc'",FUN='monsum',
                      path='~/Downloads/',verbose=TRUE) { 
+  if (!file.exists('~/.cdsapirc')) {
+    print('You need to install the CDS API key according to the web site and then re-run the call...')
+    browser('https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key')
+    return()
+  }
   dir <- getwd()
   setwd(path)
   FNAME <- sub('XXX',varnm,FNAME)
