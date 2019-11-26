@@ -4,7 +4,7 @@
 \alias{ERA5.CDS}
 \title{R-script that downloads daily data from the Copernicus Climate Data Store (CDS) using
 the CDS set-up and python scripts through the API. The files will be stored
-as netCDF files. This script assumes that CDO is installed: 
+as netCDF files. This script assumes that CDO and python are installed: 
 https://www.unidata.ucar.edu/software/netcdf/workshops/most-recent/third_party/CDO.html.
 It only works on Linux platforms...
 See https://cds.climate.copernicus.eu/api-how-to}
@@ -38,7 +38,7 @@ ERA5.CDS(
 \description{
 R-script that downloads daily data from the Copernicus Climate Data Store (CDS) using
 the CDS set-up and python scripts through the API. The files will be stored
-as netCDF files. This script assumes that CDO is installed: 
+as netCDF files. This script assumes that CDO and python are installed: 
 https://www.unidata.ucar.edu/software/netcdf/workshops/most-recent/third_party/CDO.html.
 It only works on Linux platforms...
 See https://cds.climate.copernicus.eu/api-how-to

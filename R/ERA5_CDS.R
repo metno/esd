@@ -1,6 +1,6 @@
 #' R-script that downloads daily data from the Copernicus Climate Data Store (CDS) using
 #' the CDS set-up and python scripts through the API. The files will be stored
-#' as netCDF files. This script assumes that CDO is installed: 
+#' as netCDF files. This script assumes that CDO and python are installed: 
 #' https://www.unidata.ucar.edu/software/netcdf/workshops/most-recent/third_party/CDO.html.
 #' It only works on Linux platforms...
 #' See https://cds.climate.copernicus.eu/api-how-to
@@ -45,7 +45,7 @@ ERA5.CDS <- function(X='total_precipitation',it=1979:2018,
     py.script <- gsub('AREA',AREA,py.script)
     py.script <- gsub('XXX',X,py.script)
     writeLines(py.script,con=filename)
-    #   print(py.script[13])
+    #     print(py.script[13])
     rm('py.script')
     system(paste('python',filename))
     if (!is.null(FUN)) {
