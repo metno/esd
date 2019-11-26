@@ -45,6 +45,8 @@ ERA5.CDS <- function(X='total_precipitation',it=1979:2018,
     py.script <- gsub('AREA',AREA,py.script)
     py.script <- gsub('XXX',X,py.script)
     writeLines(py.script,con=filename)
+    #   print(py.script[13])
+    rm('py.script')
     system(paste('python',filename))
     if (!is.null(FUN)) {
       ## If FUN is provided for aggregation:
