@@ -74,5 +74,5 @@ precip <- station.thredds(meta[1,])
 
 }
 \seealso{
-retrieve.station, station
+retrieve.station, station, radar
 }
