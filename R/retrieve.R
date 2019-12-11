@@ -2,8 +2,8 @@
 #' 
 #' Retrieve data from a netcdf file and return a zoo field object with
 #' attributes.  \code{retrieve} assumes data on a regular lon-lat grid and
-#' \code{retrieve.rcm} reads data on irregular (rotated) grid. typically output
-#' from RCMs.
+#' \code{retrieve.rcm} reads data on irregular (rotated) grid (typically output
+#' from RCMs).
 #' 
 #' @aliases retrieve retrieve.default retrieve.ncdf4 retrieve.rcm
 #' retrieve.station retrieve.stationsummary
@@ -12,8 +12,9 @@
 #'
 #' @seealso summary.ncdf4 check.ncdf4 file.class
 #'
-#' @param ncfile A character string of full path netcdf file name (include the
-#' path if necessary) or any object of class 'ncdf4'.
+#' @param ncfile Name of the existing netCDF file to be opened or an object of class 'ncdf4'. 
+#' The full path to the netCDF file can either be included in 'ncfile' or entered as a separate input ('path').
+#' @param path Path to netcdf file
 #' @param ncid An object of class 'ncdf4'
 #' @param stid Station IDs to read with retrieve.station
 #' @param loc locations to read with retrieve.station
@@ -87,7 +88,7 @@ retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
 retrieve.default <- function(ncfile,param="auto",
                              path=NULL,verbose=FALSE,...) {
   if (verbose) print('retrieve.default')
-  #class.x <- file.class(ncfile)
+  if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   X <- NULL
   qf <- NULL
   test <- NULL
@@ -106,14 +107,14 @@ retrieve.default <- function(ncfile,param="auto",
   }
   if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
     if (verbose) print(paste('Regular grid field found',ncfile))
-    X <- retrieve.ncdf4(ncfile,path=path,param=param,verbose=verbose,...)
+    X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
   } else {
     if (verbose) print('Irregular grid field found')
     class.x <- file.class(ncfile)
     if (tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0) {
-      X <- retrieve.station(ncfile,path=path,param=param,verbose=verbose,...)
+      X <- retrieve.station(ncfile,param=param,verbose=verbose,...)
     } else {
-      X <- retrieve.rcm(ncfile,path=path,param=param,verbose=verbose,...)
+      X <- retrieve.rcm(ncfile,param=param,verbose=verbose,...)
     }
   }
 }
@@ -125,15 +126,17 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
                             miss2na=TRUE, greenwich=FALSE,
                             plot=FALSE, verbose=FALSE, ...)  {
   if(verbose) print("retrieve.ncdf4")
-  class.x <- file.class(ncfile)
-  lon.rng  <- lon
-  lat.rng  <- lat
-  lev.rng  <- lev
-  time.rng <- it
+  if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   
   ## check if file exists and type of ncfile object
   if (is.character(ncfile)) {
-    if (!file.exists(ncfile)) {
+    if(grepl("https://|http://",ncfile)) {
+      if(verbose) print(paste("Input",ncfile,"is a url."))
+      ncid <- try(nc_open(ncfile))
+      if(inherits(ncid,"try-error")) {
+        stop(paste0("Sorry, the url '", ncfile,"' could not be opened!"))
+      }
+    } else if(!file.exists(ncfile)) {
       stop(paste("Sorry, the netcdf file '", ncfile,
                  "' does not exist or the path has not been set correctly!",sep =""))
     } else {
@@ -144,6 +147,14 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
   } else {
     stop("ncfile format should be a valid netcdf filename or a netcdf id of class 'ncdf4'")
   }
+  
+  class.x <- file.class(ncfile)
+  if (verbose) {print('Check class'); print(class.x$value)}
+  lon.rng  <- lon
+  lat.rng  <- lat
+  lev.rng  <- lev
+  time.rng <- it
+  
   
   ## Read and put attributes in model
   model <- ncatt_get(ncid,0)
@@ -1053,6 +1064,7 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                              nmin=NULL,verbose=FALSE,onebyone=FALSE,...) {
   if (verbose) print(paste('retrieve.station',ncfile))
+  if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   
   class.x <- file.class(ncfile)
   if (verbose) {print('Check class'); print(class.x$value)}
@@ -1116,13 +1128,13 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
     ## For large files and where the stations are seperated far from each other in the
     ## netCDF file, it may be faster to read the files individually and then combine them 
     ## into one object
-    X <- retrieve.station(ncfile,param=param,path=path,is=is[1],
+    X <- retrieve.station(ncfile,param=param,is=is[1],
                           it=it,start.year.before=start.year.before,
                           end.year.after=end.year.after,
                           nmin=nmin)
     if (length(is)>1) {
       for (ii in is[2:length(is)]) {
-        x <- retrieve.station(ncfile,param=param,path=path,is=ii,
+        x <- retrieve.station(ncfile,param=param,is=ii,
                               it=it,start.year.before=start.year.before,
                               end.year.after=end.year.after,
                               nmin=nmin)
@@ -1249,6 +1261,7 @@ retrieve.stationsummary <- function(ncfile,path=NULL,stid=NULL,loc=NULL,lon=NULL
                                     alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                                     nmin=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('retrieve.stationsummary',ncfile))
+  if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   class.x <- file.class(ncfile)
   if (verbose) {print('Check class'); print(class.x$value)}
   stopifnot(tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
@@ -1328,14 +1341,13 @@ retrieve.stationsummary <- function(ncfile,path=NULL,stid=NULL,loc=NULL,lon=NULL
 #' @export retrieve.rcm
 retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     if(verbose) print("retrieve.rcm")
-    if (!is.null(path)) {
-      ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
-    }
+    if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
+    
     if (verbose) print(paste('retrieve ',ncfile))
-    ncold <- nc_open(ncfile)
+    ncid <- nc_open(ncfile)
 
     # Extract the time information: unit and time origin
-    tatt <- ncatt_get( ncold, varid='time' )
+    tatt <- ncatt_get( ncid, varid='time' )
                                         #if (verbose) print(names(tatt))
     itunit <- (1:length(names(tatt)))[is.element(substr(names(tatt),1,4),'unit')]
     tunit <- tatt[[itunit]]
@@ -1350,7 +1362,7 @@ retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose
     tunit <- tolower(substr(tunit,1,a-2))
 
     # Extract unit etc for the parameter
-    vatt <- ncatt_get( ncold, varid=param )
+    vatt <- ncatt_get( ncid, varid=param )
     # 16.11.2017 hbe added option names(vatt below)
     if(any(grepl('unit',vatt)) | any(grepl('unit',names(vatt)))) {
       ivunit <- (1:length(names(vatt)))[is.element(substr(names(vatt),1,4),'unit')]
@@ -1361,14 +1373,14 @@ retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose
     }
     if (verbose) print(paste('unit: ',vunit,'; time unit: ',tunit,'; time origin: ',torg,sep=''))
     #HBE added value 12.11.2017
-    longname <- ncatt_get( ncold, varid=param, attname='long_name')$value
+    longname <- ncatt_get( ncid, varid=param, attname='long_name')$value
     if (is.null(longname)) {
         longname <- switch(param,'t2m'='temperature','tmax'='maximum temperature','tmin'='minimum temperature',
                            'precip'='precipitation','slp'='mean sea level pressure','pt'='precipitation',
                            'pr'='precipitation')
     }
     # Extract the spatial coordinates:
-    vnames <- names(ncold$var)
+    vnames <- names(ncid$var)
     ##latid <- vnames[is.element(tolower(substr(vnames,1,3)),'lat')]
     ##lonid <- vnames[is.element(tolower(substr(vnames,1,3)),'lon')]
     #latid <- vnames[grep('lat',tolower(vnames))]
@@ -1376,9 +1388,9 @@ retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose
     ## KMP 2016-12-20: grep('lat',...) sometimes finds more than 1 match
     latid <- vnames[tolower(vnames) %in% c("lat","latitude")]
     lonid <- vnames[tolower(vnames) %in% c("lon","longitude")]
-    lat <- ncvar_get(ncold,varid=latid)
-    lon <- ncvar_get(ncold,varid=lonid)
-    time <- ncvar_get(ncold,varid='time')
+    lat <- ncvar_get(ncid,varid=latid)
+    lon <- ncvar_get(ncid,varid=lonid)
+    time <- ncvar_get(ncid,varid='time')
     d <- c(dim(lat),length(time))
                                         #str(lat); str(lon)
     if (verbose) print(paste('region: ',round(min(lon),digits=2),'-',round(max(lon,digits=2)),'E /',round(min(lat),digits=2),'-',round(max(lat),digits=2),'N'))
@@ -1499,58 +1511,61 @@ retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose
         }
 
         if (inherits(it,'Date')) {
-            startt <- min( (1:length(time))[it >= time] )
-            stoptt <- max( (1:length(time))[it <= time] )
-            countt <- max(it) - startt + 1
+            startt <- min(which(time>=min(it)))#min((1:length(time))[it >= time] )
+            stoptt <- max(which(time<=max(it)))#max( (1:length(time))[it <= time] )
+            countt <- stoptt - startt + 1#max(it) - startt + 1
         } else if (sum(is.element(it,1600:2200)) > 0) {
-                                        # Assume the years:
-            startt <- min( (1:length(time))[it >= year(time)] )
-            stoptt <- max( (1:length(time))[it <= year(time)] )
-            countt <- max(it) - startt + 1
+            startt <- min(which(year(time)>=min(it)))#min( (1:length(time))[it >= year(time)] )
+            stoptt <- max(which(year(time)<=max(it)))#max( (1:length(time))[it <= year(time)] )
+            countt <- stoptt - startt + 1#max(it) - startt + 1
         } else if ( (max(it) <= length(time)) & min(it >= 1) ) {
-            startt <- min(it); countt <- max(it) - startt + 1
+            startt <- min(it)
+            countt <- max(it) - startt + 1
         } else {
             print(paste("unkown format of input it:",it))
         }
-    } else {startt <- 1; countt <- length(time); it <- NA}
+    } else {
+      startt <- 1
+      countt <- length(time)
+      it <- NA
+    }
 
-                                        # This information is used when retrieve.rcm is used again to extract similar region
-                                        #mx <- trunc(d[1]/2); my <- trunc(d[2]/2)
-                                        #lon.ref <- range(lon[subx,my])
-                                        #lat.ref <- range(lat[mx,suby])
+    # This information is used when retrieve.rcm is used again to extract similar region
+    #mx <- trunc(d[1]/2); my <- trunc(d[2]/2)
+    #lon.ref <- range(lon[subx,my])
+    #lat.ref <- range(lat[mx,suby])
 
-                                        # Test the dimensions so that the count does not exceed the array:
-
-      d1 <- d[1]
-      if(length(d)==3) {
-        d2 <- d[2]; d3 <- d[3]
-      } else {
-        d2 <- d[1]; d3 <- d[2]
-      }
-      if (startx > d1) {
-          startx <- d1
-          warning("retrieve.rcm: points along the longitude exceed data dimensions")
-      }
-      if (starty > d2) {
-          starty <- d2
-          warning("retrieve.rcm: points along the latitude exceed data dimensions")
-      }
-      if (startt > d3) {
-          startt <- d3
-          warning("retrieve.rcm: points in time exceed data dimensions")
-      }
-      if (startx < 1) {
-          startx <- 1
-          warning("retrieve.rcm: points along the longitude exceed data dimensions")
-      }
-      if (starty < 1) {
-          starty <- 1
-          warning("retrieve.rcm: points along the latitude exceed data dimensions")
-      }
-      if (startt < 1) {
-          startt <- 1
-          warning("retrieve.rcm: points in time exceed data dimensions")
-      }
+    # Test the dimensions so that the count does not exceed the array:
+    d1 <- d[1]
+    if(length(d)==3) {
+      d2 <- d[2]; d3 <- d[3]
+    } else {
+      d2 <- d[1]; d3 <- d[2]
+    }
+    if (startx > d1) {
+        startx <- d1
+        warning("retrieve.rcm: points along the longitude exceed data dimensions")
+    }
+    if (starty > d2) {
+        starty <- d2
+        warning("retrieve.rcm: points along the latitude exceed data dimensions")
+    }
+    if (startt > d3) {
+        startt <- d3
+        warning("retrieve.rcm: points in time exceed data dimensions")
+    }
+    if (startx < 1) {
+        startx <- 1
+        warning("retrieve.rcm: points along the longitude exceed data dimensions")
+    }
+    if (starty < 1) {
+        starty <- 1
+        warning("retrieve.rcm: points along the latitude exceed data dimensions")
+    }
+    if (startt < 1) {
+        startt <- 1
+        warning("retrieve.rcm: points in time exceed data dimensions")
+    }
                                         # Test the dimensions so that the count does not exceed the array:
     if (startx + countx - 1 > d1) {
         countx <- d[1] - startx + 1
@@ -1581,8 +1596,8 @@ retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose
       count <- c(countxy,countt)
     }
     if (verbose) {print(start); print(count)}
-    rcm <- ncvar_get(ncold,varid=param,start=start, count=count)
-    nc_close( ncold )
+    rcm <- ncvar_get(ncid,varid=param,start=start, count=count)
+    nc_close( ncid )
     if(length(dim(rcm))==3) {
       d <- dim(rcm)
     } else if (length(dim(rcm))!=3 & length(d)==3) {

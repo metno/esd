@@ -25,7 +25,7 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' station.ghcnm station.ghcnm station.sonel station.gloss station.newlyn
 #' station.giss
 #'
-#' @seealso clean.station allgood
+#' @seealso clean.station allgood station.thredds
 #'
 #' @param loc A string of characters as the name of the location
 #' (weather/climate station) or an object of class "stationmeta".
