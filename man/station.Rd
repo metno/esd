@@ -125,7 +125,7 @@ map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showal
 
 }
 \seealso{
-clean.station allgood
+clean.station allgood station.thredds
 
 \code{\link{map.station}}.
 }
