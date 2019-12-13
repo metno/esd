@@ -9,6 +9,10 @@
 #' @param it Intex time - the years to select
 #' @param verbose write out diagnostics
 #' @param plot plot the results while reading. 
+#' 
+#' @examples 
+#' Z <- radar(lons = c(10.5,11), lats = c(59.5,60))
+#' z <- radar(it=2010)
 #'
 #' @seealso station.thredds, meta.thredds
 #' 
@@ -125,10 +129,22 @@ radar <- function(url='https://thredds.met.no/thredds/catalog/remotesensingradar
   if (!is.null(FUN)) time <- as.Date(time) else time <- as.POSIXlt(time)
   if (verbose) str(results)
   
+  ## Ensure that the times match the elements
+  iit <- names(results)
+  nct <- nchar(iit)
+  iit <- as.Date(substr(iit,nct-9,nct))
+  time <- time[is.element(time,iit)]
+  time <- time[!duplicated(time)]
   ## convert the elements in list to matrix
   nt <- length(time); nr <- length(results[[1]])
   #Z <- do.call(rbind,lapply(results,matrix,ncol=length(lon),byrow=TRUE))
   radarZ <- matrix(rep(NA,nt*nr),nt,nr)
+  if (nt != length(results)) {
+    print('Potential problem found - number of elements != length of time')
+    str(results)
+    print(nt)
+    browser()
+  }
   for (i in 1:nt) radarZ[i,] <- c(results[[i]])
   if (verbose) str(results)
   radarZ <- zoo(radarZ,order.by=time)

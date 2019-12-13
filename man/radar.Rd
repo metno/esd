@@ -35,6 +35,11 @@ radar(
 \description{
 Function to read radar data from thredds.met.no
 }
+\examples{
+Z <- radar(lons = c(10.5,11), lats = c(59.5,60))
+z <- radar(it=2010)
+
+}
 \seealso{
 station.thredds, meta.thredds
 }
