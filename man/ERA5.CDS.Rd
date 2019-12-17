@@ -10,7 +10,7 @@ It only works on Linux platforms...
 See https://cds.climate.copernicus.eu/api-how-to}
 \usage{
 ERA5.CDS(
-  X = "total_precipitation",
+  param = "total_precipitation",
   it = 1979:2018,
   varnm = "tp",
   AREA = "['-90','-180','90','180']",
@@ -21,7 +21,7 @@ ERA5.CDS(
 )
 }
 \arguments{
-\item{X}{variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', or 'mean_sea_level_pressure'}
+\item{param}{variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', or 'mean_sea_level_pressure'}
 
 \item{it}{the years to extract.}
 

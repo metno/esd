@@ -7,7 +7,7 @@
 #'
 #' @aliases ERA5.CDS
 #'
-#' @param X variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', or 'mean_sea_level_pressure'
+#' @param param variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', or 'mean_sea_level_pressure'
 #' @param it the years to extract.
 #' @param varnm variable name for local data file.
 #' @param AREA the area/region to extract [south,west,north,east]
@@ -23,7 +23,7 @@
 #'          FUN='monmean')
 #'
 #' @export
-ERA5.CDS <- function(X='total_precipitation',it=1979:2018,
+ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
                      varnm='tp', AREA="['-90','-180','90','180']",
                      FNAME="'ERA5_XXX_YYYY.nc'",FUN='monsum',
                      path='~/Downloads/',verbose=TRUE) { 
