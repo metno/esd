@@ -24,7 +24,7 @@
 #'
 #' @export
 ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
-                     varnm='tp', AREA="['-90','-180','90','180']",
+                     varnm=NULL, AREA="['-90','-180','90','180']",
                      FNAME="'ERA5_XXX_YYYY.nc'",FUN='monsum',
                      path='~/Downloads/',verbose=TRUE) { 
 
@@ -35,6 +35,16 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
   }
   dir <- getwd()
   setwd(path)
+  if (is.null(varnm)) {
+     if (sum(is.element(c("total_precipitation", "2m_temperature", "mean_sea_level_pressure",
+                         "10m_u_component_of_wind", "10m_v_component_of_wind", "relative_humidity",
+                         "dewpoint_depression", "snow_depth"),param)>0)) {
+      varnm <- switch(param,"total_precipitation"='tp', "2m_temperature"='t2m', 
+                      "mean_sea_level_pressure"='slp',
+                      "10m_u_component_of_wind"='u10', "10m_v_component_of_wind"='v10',
+                      "relative_humidity"='rh', "dewpoint_depression"='dpt', "snow_depth"='sd')
+     } else varnm <-'x'
+  }
   FNAME <- sub('XXX',varnm,FNAME)
   if (verbose) print(FNAME)
   
