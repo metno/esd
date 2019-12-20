@@ -13,7 +13,7 @@ gridmap(
   ylim = NULL,
   zlim = NULL,
   verbose = FALSE,
-  plot = FALSE,
+  plot = TRUE,
   new = TRUE
 )
 }

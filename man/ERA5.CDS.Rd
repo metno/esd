@@ -21,7 +21,7 @@ ERA5.CDS(
 )
 }
 \arguments{
-\item{param}{variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', or 'mean_sea_level_pressure'}
+\item{param}{variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', 'mean_sea_level_pressure', '10m_u_component_of_wind', '10m_v_component_of_wind', 'relative_humidity', 'dewpoint_depression', 'snow_depth', ...}
 
 \item{it}{the years to extract.}
 
@@ -44,11 +44,11 @@ It only works on Linux platforms...
 See https://cds.climate.copernicus.eu/api-how-to
 }
 \examples{
-ERA5.CDS(X='2m_temperature',varnm='t2m',it=2015:2018,AREA="['50','0','60','10']",
+ERA5.CDS(param='2m_temperature',varnm='t2m',it=2015:2018,AREA="['50','0','60','10']",
          FUN='daymean')
-ERA5.CDS(X='total_precipitation',varnm='tp',it=2018,AREA="['0','50','10','60']",
+ERA5.CDS(param='total_precipitation',varnm='tp',it=2018,AREA="['0','50','10','60']",
          FUN='yearsum')
-ERA5.CDS(X='mean_sea_level_pressure',varnm='slp',it=2018,AREA="['40','-50','60','30']",
+ERA5.CDS(param='mean_sea_level_pressure',varnm='slp',it=2018,AREA="['40','-50','60','30']",
          FUN='monmean')
 
 }
