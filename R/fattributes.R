@@ -44,7 +44,13 @@ calendar <- function(x) return(attr(x,"calendar"))
 cntr <- country <- function(x) return(attr(x,"country"))
 
 #' @export
-loc <- location <- function(x) return(attr(x,"location"))
+loc <- location <- function(x) { 
+  if (!is.null(attr(x,"location"))) return(attr(x,"location"))
+  if (inherits(x,'list')) {
+    if (!is.null(x$pca)) return(attr(x$pca,"location")) else
+    if (!is.null(names(x))) return(names(x))
+  }
+}
 
 #' @export
 varid <- variable <- function(x) return(attr(x,"variable"))

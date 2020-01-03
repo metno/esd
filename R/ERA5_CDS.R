@@ -40,7 +40,7 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
                          "10m_u_component_of_wind", "10m_v_component_of_wind", "relative_humidity",
                          "dewpoint_depression", "snow_depth"),param)>0)) {
       varnm <- switch(param,"total_precipitation"='tp', "2m_temperature"='t2m', 
-                      "mean_sea_level_pressure"='slp',
+                        "mean_sea_level_pressure"='slp',
                       "10m_u_component_of_wind"='u10', "10m_v_component_of_wind"='v10',
                       "relative_humidity"='rh', "dewpoint_depression"='dpt', "snow_depth"='sd')
      } else varnm <-'x'

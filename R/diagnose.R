@@ -492,6 +492,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
   X <- x
   if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
+  locations <- loc(X)
   if (inherits(X,"pca")) X <- as.station(X,is=is,ip=ip,verbose=verbose)
   gcms <- attr(X[[1]],"model_id")
   if (verbose) print("Compare variance and trends")
@@ -508,7 +509,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     N[i] <- di$N
   }
   d <- list(outside=outside,deltaobs=deltaobs,deltagcm=deltagcm,
-            N=di$N,location=names(X))
+            N=di$N,location=locations)
 
   if(is.null(main)) main <- attr(X,"variable")[1]
   if(plot) {
