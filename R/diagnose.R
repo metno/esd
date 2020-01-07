@@ -442,7 +442,7 @@ diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
     print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
     return(NULL)
   }
-  deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,2)  # deg C/decade
+  deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,4)  # deg C/decade
 #  deltagcm <- rep(NA,d[2])
 #  if (verbose) print(dim(deltagcm))
 #  for (j in 1:d[2]) {
@@ -556,6 +556,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
                                sd=sd(deltagcm))),2)
     y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
+    d$x <- x; d$y <- y
     points(x,y,pch=21,cex=2*par("cex"),col='black',bg=col)
     if(map.show) {
       geoborders <- NULL
