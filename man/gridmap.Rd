@@ -2,7 +2,7 @@
 % Please edit documentation in R/gridmap.R
 \name{gridmap}
 \alias{gridmap}
-\title{Creates a gridded map}
+\title{Creates a griddded map}
 \usage{
 gridmap(
   Y,

@@ -11,6 +11,7 @@
 \alias{CO2}
 \alias{AMO}
 \alias{IOD}
+\alias{Sunspots}
 \title{Functions to read climate indices from sources on the internet}
 \usage{
 NAO(freq = "monthly", url = NULL, header = FALSE, verbose = FALSE)
@@ -50,4 +51,6 @@ Atmospheric carbon dioxide variations at Mauna Loa Observatory, Hawaii, Tellus, 
 AMO: Atlantic Multidecadal Oscillation, unsmoothed calculated from the Kaplan SST V2 at NOAA/ESRL/PSD1
 
 IOD: Indian Ocean Dipole index
+
+Sunspots: updated monthly sunspot number
 }

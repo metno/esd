@@ -12,7 +12,7 @@ See https://cds.climate.copernicus.eu/api-how-to}
 ERA5.CDS(
   param = "total_precipitation",
   it = 1979:2018,
-  varnm = "tp",
+  varnm = NULL,
   AREA = "['-90','-180','90','180']",
   FNAME = "'ERA5_XXX_YYYY.nc'",
   FUN = "monsum",

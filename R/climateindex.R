@@ -24,7 +24,10 @@
 #' AMO: Atlantic Multidecadal Oscillation, unsmoothed calculated from the Kaplan SST V2 at NOAA/ESRL/PSD1
 #'
 #' IOD: Indian Ocean Dipole index
-#' @aliases NAO NINO3.4 SOI GSL GSL.nasa QBO CET CO2 AMO IOD
+#' 
+#' Sunspots: updated monthly sunspot number
+#' 
+#' @aliases NAO NINO3.4 SOI GSL GSL.nasa QBO CET CO2 AMO IOD Sunspots
 #'
 #' @param freq frequency
 #' @param url a URL or web address to location of data
@@ -255,5 +258,16 @@ IOD <- function(url='https://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/Data/dmi
   y <- zoo(iod,order.by=as.Date(paste(yr,mo,'01',sep='-')))
   return(y)
 }
+
+#'@export
+Sunspots <- function(url='http://sidc.oma.be/silso/DATA/SN_m_tot_V2.0.txt') {
+  S <- read.table(url,comment.char = "*")
+  s <- zoo(S$V4,order.by=as.Date(paste(S$V1,S$V2,'01',sep='-')))
+  attr(s,'url') <- url
+  attr(s,'variable') <- 'Sunspots'
+  attr(s,'unit') <- 'monthly sum'
+  return(s)
+}
+  
 
 
