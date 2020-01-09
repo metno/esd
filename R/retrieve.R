@@ -1164,6 +1164,8 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
   } else {
     if (verbose) print('it is not NULL')
     if (is.character(it)) it <- as.Date(it)
+    if ( (is.numeric(it)) & (length(it)==2) ) 
+      it <- as.Date(c(paste(it[1],'01-01',sep='-'),(paste(it[2],'12-31',sep='-'))))
     if (verbose) print(paste('Read selected period',min(it),'-',max(it),
                              'from interval',min(t),max(t)))
     it1 <- (1:length(t))[is.element(t,it)][1]
