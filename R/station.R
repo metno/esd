@@ -1139,7 +1139,7 @@ metno.frost.station <- function(stid=NULL, param=NULL, start=NULL, end=NULL,
       "&exposurecategories=", exposurecategories,
       "&qualities=", qualities
   )
-  
+
   if (verbose) print(url)
 
   xs <- try(jsonlite::fromJSON(URLencode(url),flatten=TRUE))
@@ -1154,14 +1154,15 @@ metno.frost.station <- function(stid=NULL, param=NULL, start=NULL, end=NULL,
       df <- data.table::rbindlist(list(df, row), fill=TRUE)
   }
 
+  # add to dataframe and zoo
   df <- as.data.frame(df)[c("referenceTime","value")]
   df$referenceTime <- as.Date(df$referenceTime)
-  
-  # TODO: how to (get and) use zoo?
-  var <- zoo(df)
+  var <- zoo(df$value, order.by=df$referenceTime)
 
+  print(var)
+  
   ## TODO: will this work?
-  METNO.FROST <- as.station(df,
+  METNO.FROST <- as.station(var,
     stid=stid,
     loc=loc,
     param=param,
