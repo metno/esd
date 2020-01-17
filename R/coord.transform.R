@@ -21,7 +21,7 @@ LatLon2UTM <- function(lat, lon, zone) {
     zone <- floor((lon + 180.0) / 6) + 1
   }
   cmeridian = UTMCentralMeridian(zone)
-  
+
   if (length(lat) != length(lon))
     stop("Lat and lon lists must be the same length")
   
@@ -167,12 +167,12 @@ ArclengthOfMeridian <- function(phi) {
   gamma <- 15*(n**2)/16 - 15*(n**4)/32
   delta <- -35*(n**3)/48 + 105*(n**5)/256
   epsilon <- 315*(n**4)/512
-  
+
   result <- alpha * (phi +
-                       beta*sin(2*phi) +
-                       gamma*sin(4*phi) +
-                       delta*sin(6*phi) +
-                       epsilon*sin(8*phi)
+    beta*sin(2*phi) +
+    gamma*sin(4*phi) +
+    delta*sin(6*phi) +
+    epsilon*sin(8*phi)
   )
   
   result

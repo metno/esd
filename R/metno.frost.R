@@ -1,15 +1,27 @@
-## This downloads a full list of METNO station metadata
-## relevant to the specified param, using the data API frost.met.no.
-##
-## Where there are multiple measuring periods registered for the parameter,
-## only the earliest start time and the latest end time are used.
-##
-## Author: K. Tunheim
+#' Download METNO station metadata using frost.met.no
+#' 
+#' Where there are multiple measuring periods registered for the parameter,
+#' only the earliest start time and the latest end time are used.
+#' 
+#'
+#' @param param Vector of parameters.
+#'
+#' @return A meta data matrix object for all stations in METNO's collection
+#' that have measured any of the given parameters. Start and end time are included. 
+#'
+#' @keywords parameter,metadata,metno,norway,frost
+#'
+#' @examples
+#' # Fetch all stations' measuring periods of the t2m parameter
+#' metno.frost.meta.diurnal(param=c('t2m'))
+#' # Fetch all stations' measuring periods of all available parameters
+#' metno.frost.meta.month()
 
 # source("~/esd/R/dictionary.R")
 library(jsonlite) # remove this line in final version?
 
 # get diurnal timeseries - removed DD, DD06, DD12, DD18, SD
+#' @export metno.frost.meta.diurnal
 metno.frost.meta.diurnal <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), save=TRUE,...) {
   X <- metno.frost.meta.default(param=param, timeresolutions="P1D", ...)
 
@@ -31,6 +43,7 @@ metno.frost.meta.diurnal <- function(param=c("t2m","precip","tmin","tmax","slp",
 }
 
 # get monthly timeseries - removed DD, DD06, DD12, DD18, SD
+#' @export metno.frost.meta.month
 metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), save=TRUE,...) {
   X <- metno.frost.meta.default(param=param, timeresolutions="P1M", ...)
 
