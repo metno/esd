@@ -71,7 +71,7 @@ metno.frost.meta.default <- function(param=c("t2m"), timeresolutions="P1M", leve
 
   # convert all param to local param names
   getparam1 <- function(x) {
-    withstar <- ele2param(x, src="metno.frost")$param
+    withstar <- ele2param(x, src="METNO.FROST")$param
     gsub('*', timeresolutions, withstar, fixed=TRUE)
   }
   ele <- sapply(param, esd2ele)
