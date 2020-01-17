@@ -297,14 +297,15 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
   # Exclude identified depressions in high altitude regions
   if(verbose) print("Penalty factor for high altitude")
+  etopo5 <- NULL
   data('etopo5', envir = environment())
   fn <- function(lon=0,lat=60) {
-    i.lon <- which.min(abs(longitude(etopo5)-lon))
-    i.lat <- which.min(abs(latitude(etopo5)-lat))
+    i.lon <- which.min(abs(attr(etopo5,"longitude")-lon))
+    i.lat <- which.min(abs(attr(etopo5,"latitude")-lat))
     h <- etopo5[i.lon,i.lat]
     h[h<0] <- 0
-    nlon <- max(longitude(etopo5))
-    nlat <- max(latitude(etopo5))
+    nlon <- max(lon(etopo5))
+    nlat <- max(lat(etopo5))
     dhdx <- abs(etopo5[min(i.lon+1,nlon),i.lat]-etopo5[max(i.lon-1,1),i.lat])/
             (distAB(lon+dx,lat,lon-dx,lat)*1E-3)
     dhdy <- abs(etopo5[i.lon,min(i.lat+1,nlat)]-etopo5[i.lon,max(i.lat-1,1)])/
@@ -577,6 +578,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
 
     if (plot) {
       if(verbose) print("plot example of cyclone identification")
+      geoborders <- NULL
       data('geoborders',envir=environment())
       i <- length(date)/2
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*

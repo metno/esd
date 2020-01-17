@@ -75,7 +75,7 @@
 #' 
 #' ## Map of cyclone trajectories with the slp field in background
 #' cb <- list(pal="budrd",breaks=seq(990,1040,5))
-#' map(Ctracks, slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, 
+#' map(Ctracks, Y=slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, 
 #'     verbose=TRUE, new=FALSE)
 #' 
 #' ## Transform the cyclones into a 'trajectory' object which takes up less space
@@ -391,6 +391,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     cols <- rainbow(length(nvec))
     if(max(lats)>0) ylim <- c(0,90) else ylim <- c(-90,0)
     if(attr(x,"greenwich")) xlim <- c(0,360) else xlim <- c(-180,180)
+    geoborders <- NULL
     data("geoborders",envir=environment())
     if(!attr(x,"greenwich")) {
       plot(geoborders,type="l",col="grey20",lwd=0.5,
@@ -596,6 +597,7 @@ Track123 <- function(step1,step2,step3,n0=0,dmax=1E6,
     rank.all <- matrix(rank(1-pf.all),dim(pf.all))
     if(plot) {
       dev.new()
+      geoborders <- NULL
       data("geoborders",envir=environment())
       plot(geoborders,type="l",col="grey20",lwd=0.5,
            xlim=c(-90,90),ylim=c(30,90))      

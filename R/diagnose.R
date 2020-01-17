@@ -106,6 +106,7 @@ diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   sr <- dm; ar <- sr
   # The appended fields, e.g. GCM results
   rowname <- rep("GCM",n)
+  z <- NULL
   for ( i in 1:n ) {
     eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
     y <- zoo(coredata(z),order.by=index(z))
@@ -441,7 +442,7 @@ diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
     print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
     return(NULL)
   }
-  deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,2)  # deg C/decade
+  deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,4)  # deg C/decade
 #  deltagcm <- rep(NA,d[2])
 #  if (verbose) print(dim(deltagcm))
 #  for (j in 1:d[2]) {
@@ -491,6 +492,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
   X <- x
   if (verbose) print('diagnose.dsensemble.list')
   stopifnot(inherits(X,"dsensemble") & inherits(X,"list"))
+  locations <- loc(X)
   if (inherits(X,"pca")) X <- as.station(X,is=is,ip=ip,verbose=verbose)
   gcms <- attr(X[[1]],"model_id")
   if (verbose) print("Compare variance and trends")
@@ -507,7 +509,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     N[i] <- di$N
   }
   d <- list(outside=outside,deltaobs=deltaobs,deltagcm=deltagcm,
-            N=di$N,location=names(X))
+            N=di$N,location=locations)
 
   if(is.null(main)) main <- attr(X,"variable")[1]
   if(plot) {
@@ -554,8 +556,10 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
                                sd=sd(deltagcm))),2)
     y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
+    d$x <- x; d$y <- y
     points(x,y,pch=21,cex=2*par("cex"),col='black',bg=col)
     if(map.show) {
+      geoborders <- NULL
       data(geoborders, envir = environment())
       lon <- geoborders$x
       lat <- geoborders$y

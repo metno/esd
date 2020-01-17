@@ -350,24 +350,28 @@ combine.ds <- function(...,all=TRUE,verbose=FALSE) {
       #print(argsx)
       #str(x.1); print(class(x.1))
       #print("---")
+      X0 <- NULL
       cline1 <- parse(text=paste("X0 <- rbind(",argsx,")")) ## cline1 <- parse(text=paste("X0 <- merge(",argsx,",all=TRUE)"))
       #print(cline1)
       eval(cline1)
       #lines(X0)    
       
       #print("here"); print(argsy)
+      Y <- NULL
       cline2 <- parse(text=paste("Y <- rbind(",argsy,")")) ## AM cline2 <- parse(text=paste("Y <- merge(",argsy,",all=TRUE)"))
       #print(cline2)
       eval(cline2)
       #lines(Y,col="pink")
       
       #print("HERE")
+      X0.0 <- NULL
       cline3 <- parse(text=paste("X0.0 <- rbind(",argsx0,")")) ## cline3 <- parse(text=paste("X0.0 <- merge(",argsx0,",all=TRUE)"))
       #print(cline3)
       eval(cline3)
       #lines(Y,col="pink")
       
       # Cross-validation
+      xY <- NULL
       #str(x.1); print(class(xv.1))
       cline4 <- parse(text=paste("xY <- rbind(",argsxY,")")) ## cline4 <- parse(text=paste("xY <- merge(",argsxY,",all=TRUE)"))
       eval(cline4)

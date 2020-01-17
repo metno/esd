@@ -54,9 +54,9 @@ aggregate.station <- function(x, by, FUN='mean', ..., na.rm=TRUE, regular=NULL,
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) ) {
     y <- aggregate(x, by, FUN=FUN, na.rm=na.rm, ...,
-                   regular = regular, frequency = frequency)
+                   regular = regular, frequency = frequency, threshold = threshold)
   } else {
-    y <- aggregate(x, by, FUN=FUN, ..., regular = regular, frequency = frequency)
+    y <- aggregate(x, by, FUN=FUN, ..., regular = regular, frequency = frequency, threshold = threshold)
   }
 
  # if (inherits(by[1],'character')) index(y) <- as.Date(index(y))

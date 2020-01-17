@@ -5,9 +5,15 @@
 \alias{plot.cyclonebudget}
 \title{Calculate and plot the cyclone budget}
 \usage{
-calculate.cyclonebudget(traj, is = NULL, it = NULL,
-  resolution.lon = 12, resolution.lat = 6, progress = TRUE,
-  verbose = FALSE)
+calculate.cyclonebudget(
+  traj,
+  is = NULL,
+  it = NULL,
+  resolution.lon = 12,
+  resolution.lat = 6,
+  progress = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{is}{A list providing space index, e.g.,

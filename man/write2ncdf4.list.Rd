@@ -5,9 +5,17 @@
 \alias{write2ncdf4.field}
 \title{Saves climate data as netCDF.}
 \usage{
-\method{write2ncdf4}{list}(x, ..., file = "field.nc", prec = "short",
-  scale = 0.1, offset = NULL, torg = "1970-01-01", missval = -999,
-  verbose = FALSE)
+\method{write2ncdf4}{list}(
+  x,
+  ...,
+  file = "field.nc",
+  prec = "short",
+  scale = 0.1,
+  offset = NULL,
+  torg = "1970-01-01",
+  missval = -999,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{data object}

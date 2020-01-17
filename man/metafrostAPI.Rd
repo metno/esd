@@ -4,9 +4,12 @@
 \alias{metafrostAPI}
 \title{Retrieve metadata of MetNo data from frost.met.no}
 \usage{
-metafrostAPI(keyfile = "~/.FrostAPI.key", verbose = FALSE,
+metafrostAPI(
+  keyfile = "~/.FrostAPI.key",
+  verbose = FALSE,
   fields = "id,name,masl,county,municipality,wmoid,geometry,type",
-  url = "frost.met.no/sources/v0.jsonld?country=NO")
+  url = "frost.met.no/sources/v0.jsonld?country=NO"
+)
 }
 \arguments{
 \item{keyfile}{location of API key}

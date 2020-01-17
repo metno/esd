@@ -5,8 +5,14 @@
 \alias{plot.pca.trajectory}
 \title{Principle component analysis of trajectory objects.}
 \usage{
-\method{PCA}{trajectory}(X, ..., neofs = 20, param = c("lon", "lat"),
-  anomaly = TRUE, verbose = FALSE)
+\method{PCA}{trajectory}(
+  X,
+  ...,
+  neofs = 20,
+  param = c("lon", "lat"),
+  anomaly = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{X}{a 'trajectory' object}

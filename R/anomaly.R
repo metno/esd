@@ -90,6 +90,7 @@ anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
   y <- anomaly(x)
   n.apps <- attr(x,'n.apps')
   for (i in 1:n.apps) {
+    z <- NULL
     eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
     Z <- anomaly(z)
     eval(parse(text=paste("Z -> attr(x,'appendix.",i,"')",sep="")))

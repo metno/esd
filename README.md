@@ -1,7 +1,7 @@
 esd
 ===
 
-An R-package desinged for climate and weather data analysis, empirical-statistical downscaling, and visualisation.
+An R-package designed for climate and weather data analysis, empirical-statistical downscaling, and visualisation.
 
 Package: esd
 

@@ -6,8 +6,17 @@
 \alias{aggregate.field}
 \title{aggregate}
 \usage{
-\method{aggregate}{station}(x, by, FUN = "mean", ..., na.rm = TRUE,
-  regular = NULL, frequency = NULL, verbose = FALSE, threshold = 1)
+\method{aggregate}{station}(
+  x,
+  by,
+  FUN = "mean",
+  ...,
+  na.rm = TRUE,
+  regular = NULL,
+  frequency = NULL,
+  verbose = FALSE,
+  threshold = 1
+)
 }
 \arguments{
 \item{x}{A \code{\link{station}} object}

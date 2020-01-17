@@ -21,6 +21,7 @@ climvar <- function(x,FUN='sd',plot=TRUE,...) {
   } else {
     unit <- attr(x,'unit')
   }
+  main <- NULL
   eval(parse(text=paste("main <- expression(paste('seasonal ",
 #               deparse(substitute(FUN))," of ',",
                FUN," of ',",attr(x,'variable'),"))")))

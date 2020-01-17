@@ -97,7 +97,7 @@ map(Ct, new=FALSE)
 
 ## Map of cyclone trajectories with the slp field in background
 cb <- list(pal="budrd",breaks=seq(990,1040,5))
-map(Ctracks, slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, 
+map(Ctracks, Y=slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, 
     verbose=TRUE, new=FALSE)
 
 ## Transform the cyclones into a 'trajectory' object which takes up less space

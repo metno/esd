@@ -426,6 +426,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
     } else {
       z <- zoo(eof[jj,],order.by=realdates[jj])
     }
+    yyy <- NULL
     cline1 <- paste("yyy <- attr(X,'appendix.",i,"')",sep="")
     if (verbose) print(cline1)
     eval(parse(text=cline1))

@@ -9,11 +9,14 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
                         legend.lab = NULL, legend.line = 2, graphics.reset = FALSE, 
                         bigplot = NULL, smallplot = NULL, legend.only = FALSE, col = NULL, pal="heat", 
                         lab.breaks = NULL, axis.args = NULL, legend.args = NULL, 
-                        midpoint = FALSE, border = NA, lwd = 1, verbose=FALSE) {
+                        midpoint = FALSE, border = NA, lwd = 1, rev=FALSE,verbose=FALSE) {
   
   if(verbose) print("image.plot")
   
-  if(is.null(col)) colscal(n=nlevel, pal=pal)
+  breaks <- list(...)$breaks
+  if(!is.null(breaks)) nlevel <- length(breaks)-1
+  if(is.null(col)) col <- colscal(n=nlevel, pal=pal)
+  if (rev) col <- rev(col)
   old <- par()
   ## print("old") ; print(old$fig)
   old.par <- par(no.readonly = TRUE)
@@ -49,7 +52,7 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
     par(old.par)
     stop("plot region too small to add legend\n")
   }
-  breaks <- list(...)$breaks
+  
   ix <- 1
   minz <- info$zlim[1]
   maxz <- info$zlim[2]

@@ -4,10 +4,17 @@
 \alias{frostAPI}
 \title{Function to read METNO data from Frost}
 \usage{
-frostAPI(param = "mean(air_temperature P1D)", stid = 18700,
-  type = "observations", keyfile = "~/.FrostAPI.key", it = NULL,
-  browser = "firefox", verbose = FALSE, level = "2",
-  fields = "referenceTime\%2Cvalue")
+frostAPI(
+  param = "mean(air_temperature P1D)",
+  stid = 18700,
+  type = "observations",
+  keyfile = "~/.FrostAPI.key",
+  it = NULL,
+  browser = "firefox",
+  verbose = FALSE,
+  level = "2",
+  fields = "referenceTime\%2Cvalue"
+)
 }
 \arguments{
 \item{param}{variable name}

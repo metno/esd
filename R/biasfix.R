@@ -10,6 +10,7 @@ biasfix <- function(x,verbose=FALSE) {
   diag <- diagnose(x)
   n <- attr(x,'n.apps')
   for ( i in 1:n ) {
+    z <- NULL
     eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
     Z <- coredata(z) 
     year.ox <- range(year(z)[is.element(year(z),year(x))])

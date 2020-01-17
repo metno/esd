@@ -8,7 +8,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
                        type=c("fill","contour"),                      
                        gridlines=TRUE,fancy=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
-
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
@@ -18,14 +17,16 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   if (!is.null(xlim)) is$lon <- xlim
   if (!is.null(ylim)) is$lat <- ylim
   x <- subset(x,is=is)
-
+  
   # Data to be plotted:
   lon <- lon(x)  # attr(x,'longitude')
   lat <- lat(x)  # attr(x,'latitude')
+  if (verbose) {print(summary(lon)); print(summary(lat))}
   # To deal with grid-conventions going from north-to-south or east-to-west:
+  if (inherits(x,'field')) map <- map(x,plot=FALSE) else map <- x
   srtx <- order(lon); lon <- lon[srtx]
   srty <- order(lat); lat <- lat[srty]
-  map <- x[srtx,srty]
+  map <- map[srtx,srty]
   param <- attr(x,'variable')
   unit <- attr(x,'unit')[1]
   if (!is.null(unit) & !is.expression(unit)) if (unit =='%') unit <- "'%'"
@@ -41,13 +42,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
     unit <- "degrees*C"
   }
  
-  # Rotatio:
-  if (is.null(lonR)) lonR <- mean(lon)  # logitudinal rotation
-  if (is.null(latR)) latR <- mean(lat)  # Latitudinal rotation
+  # Rotation:
+  if (is.null(lonR)) lonR <- mean(lon,na.rm=TRUE)  # logitudinal rotation
+  if (is.null(latR)) latR <- mean(lat,na.rm=TRUE)  # Latitudinal rotation
   if (verbose) print(paste('lonR=',lonR,'latR=',latR))
   # axiR: rotation of Earth's axis
 
   # coastline data:
+  geoborders <- NULL # KMP 2019-10-11: create dummy to avoid warning during CHECK
   data("geoborders",envir=environment())
   #ok <- is.finite(geoborders$x) & is.finite(geoborders$y)
   #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
@@ -69,7 +71,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
 #contourLines
   lonxy <- rep(lon,length(lat))
   latxy <- sort(rep(lat,length(lon)))
-  map<- c(map)
+  map <- c(map)
 
 # Remove grid boxes with missign data:
   ok <- is.finite(map)
@@ -77,7 +79,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   lonxy <- lonxy[ok]; latxy <- latxy[ok]; map <- map[ok]
 
 # Define the grid box boundaries:
-  dlon <- min(abs(diff(lon))); dlat <- min(abs(diff(lat)))
+  dlon <- min(abs(diff(lon)),na.rm=TRUE); dlat <- min(abs(diff(lat)),na.rm=TRUE)
   Lon <- rbind(lonxy - 0.5*dlon,lonxy + 0.5*dlon,
                lonxy + 0.5*dlon,lonxy - 0.5*dlon)
   Lat <- rbind(latxy - 0.5*dlat,latxy - 0.5*dlat,
@@ -90,34 +92,41 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   Z <- sin(Phi)
   #print(c( min(x),max(x)))
 
-# Define colour palette:
-  ##if (is.null(breaks)) {
-  ##  n <- 30
-  ##  breaks <- pretty(c(map),n=n)
-  ##} else n <- length(breaks)
   ## AM commented
-  ##if (is.null(col)) col <- colscal(n=n) else
-  ##if (length(col)==1) {
-  ##    palette <- col
-  ##    col <- colscal(pal=palette,n=n)
-  ## }
+  ## KMP 2019-10-11: uncommented colour palette defintion
+  ## because otherwise map2sphere doesn't work
+  # Define colour palette:
+  if (is.null(colbar$rev)) colbar$rev <- FALSE
+  if (is.null(colbar$breaks)) {
+    colbar$breaks <- pretty(c(map),n=31)
+    colbar$n <- length(colbar$breaks)-1
+  } else {
+    colbar$n <- length(colbar$breaks) -1
+  }
   nc <- length(colbar$col)
+  if (is.null(colbar$col)) {
+    colbar <- colbar.ini(map,colbar=colbar)
+    col <- colscal(n=colbar$n-1) 
+  } else if (nc==1) {
+    col <- colscal(pal=colbar$col,n=colbar$n-1)
+  }
+  if (colbar$rev) col <- rev(col)
   ## AM commented
   ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
   #index <- round( nc*( map - min(colbar$breaks) )/
   #                  ( max(colbar$breaks) - min(colbar$breaks) ) )
   ## The findInterval implementation can use irregularly spaced breaks.
   ## (If a point has the same value as a break it will be assigned to the bin above it.)
-  index = findInterval(map,colbar$breaks,all.inside=TRUE)
+  index <- findInterval(map,colbar$breaks,all.inside=TRUE)
   ## where all.inside does to the indices what the clipping does to the values.
   
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
-  print('Clip the value range to extremes of colour scale')
+  if (verbose) print('Clip the value range to extremes of colour scale')
   toohigh <- map>max(colbar$breaks)
   if (sum(toohigh)>0) map[toohigh] <- max(colbar$breaks)
   toolow <- map<min(colbar$breaks)
   if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
-  print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
+  if (verbose) print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
   
   ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
   #crgb <- col2rgb(colbar$col)
@@ -168,7 +177,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   Visible <- colMeans(Y) > 0
   X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
   index <- index[Visible]
-  apply(rbind(X,Z,index),2,gridbox,colbar$col)
+  apply(rbind(X,Z,index),2,gridbox,col)
   # c(W,E,S,N, colour)
   # xleft, ybottom, xright, ytop
   # Plot the coast lines  
@@ -207,10 +216,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
       if (verbose) print("regular colbar")
       image.plot(breaks=colbar$breaks,
                  lab.breaks=colbar$breaks,
-                 horizontal = TRUE,legend.only = T,
+                 horizontal = TRUE, legend.only = TRUE,
                  zlim = range(colbar$breaks),
-                 col = colbar$col, legend.width = 1,
-                 axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,...)
+                 pal = colbar$col, nlevel=length(colbar$breaks)-1, 
+                 legend.width = 1,rev = colbar$rev,
+                 axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
+                 verbose=verbose, ...)
                  #xaxp=c(range(colbar$breaks),colbar$n)),
                  #border = FALSE,...)
       ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
@@ -236,64 +247,3 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   invisible(result)
 }
 
-#map2sphere(x)
-vec <- function(x,y,it=NULL,a=1,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
-                projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,...) {
-  if (verbose) print('vec')
-  if (!is.null(it)) {x <- subset(x,it=it); y <- subset(y,it=it)}
-  d <- attr(x,'dimensions')
-  if (verbose) {print(d); print(dim(x))}
-  if (is.null(ix)) ix <- pretty(lon(x),n=nx)
-  if (is.null(iy)) iy <- pretty(lat(x),n=ny)
-  #print(c(d[2],d[1]))
-  if (verbose) {print('---pretty coordinates: ---');print(ix); print(iy)}
-  X <- coredata(x); Y <- coredata(y)
-  dim(X) <- c(d[1],d[2])
-  dim(Y) <- c(d[1],d[2])
-  #X <- t(X); Y <- t(Y)
-  x0 <- rep(ix,length(iy))
-  y0 <- sort(rep(iy,length(ix)))
-  ij <- is.element(ix,lon(x))
-  ji <- is.element(iy,lat(x))
-  if (verbose) {print(ix); print(lon(x)); print(sum(ij))
-    print(iy); print(lat(x)); print(sum(ji))}
-  dim(x0) <- c(length(ij),length(ji)); dim(y0) <- dim(x0)
-  x0 <- x0[ij,ji]
-  y0 <- y0[ij,ji]
-  ii <- is.element(lon(x),ix)
-  jj <- is.element(lat(x),iy)
-  x1 <- a*X[ii,jj]; y1 <- a*Y[ii,jj]
-  #print(dim(x1)); print(c(length(x0),sum(ii),sum(jj)))
-  x1 <- x0 + x1; y1 <- y0 + y1
-  if (projection=='sphere') {
-    # Rotate data grid:
-    # The coordinate of the arrow start:
-    
-    theta <- pi*x0/180; phi <- pi*y0/180
-    x <- r*c(sin(theta)*cos(phi))
-    y <- r*c(cos(theta)*cos(phi))
-    z <- r*c(sin(phi))
-    a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
-    x0 <- a[1,]; y0 <- a[3,]
-    invisible <- a[2,] < 0
-    x0[invisible] <- NA; y0[invisible] <- NA
-    #The coordinate of the arrow end:
-    theta <- pi*x1/180; phi <- pi*y1/180
-    x <- r*c(sin(theta)*cos(phi))
-    y <- r*c(cos(theta)*cos(phi))
-    z <- r*c(sin(phi))
-    a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
-    x1 <- a[1,]; y1 <- a[3,]
-    invisible <- a[2,] < 0
-    x1[invisible] <- NA; y1[invisible] <- NA
-  }    
-  
-  if (verbose) {print('x:'); print(x0); print(x1); print('y:'); print(y0); print(y1)}
-  if (new) {
-    dev.new()
-    plot(range(x0,x1),range(y0,y1),xlab='',ylab='')
-    data(geoborders, envir = environment())
-    lines(geoborders$x,geoborders$y)
-  }
-  arrows(x0, y0, x1, y1,...)
-}

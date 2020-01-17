@@ -7,7 +7,7 @@
 #' \code{meta.thredds} retrieves meta data from Thredds.  
 #' 
 #' @aliases station.thredds meta.thredds
-#' @seealso retrieve.station, station
+#' @seealso retrieve.station, station, radar
 #'
 #' @param param The element to read c('t2m','tmax','tmin','precip','slp','sd','fx','ff','dd')
 #' @param is Index space to select station (list)

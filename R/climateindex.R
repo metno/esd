@@ -10,6 +10,7 @@
 #' from EPA's Climate Change Indicators in the United States: www.epa.gov/climate-indicators
 #'
 #' GSL.nasa: Global Average Sea level from NASA
+#' GSL.aviso: Global Average Sea level from AVISO
 #'
 #' QBO: Quasi-Biennial Oscillation. Calculated at NOAA/ESRL/PSD from the zonal average
 #' of the 30mb zonal wind at the equator as computed from the NCEP/NCAR Reanalysis.
@@ -22,7 +23,11 @@
 #'
 #' AMO: Atlantic Multidecadal Oscillation, unsmoothed calculated from the Kaplan SST V2 at NOAA/ESRL/PSD1
 #'
-#' @aliases NAO NINO3.4 SOI GSL GSL.nasa QBO CET CO2 AMO
+#' IOD: Indian Ocean Dipole index
+#' 
+#' Sunspots: updated monthly sunspot number
+#' 
+#' @aliases NAO NINO3.4 SOI GSL GSL.nasa QBO CET CO2 AMO IOD Sunspots
 #'
 #' @param freq frequency
 #' @param url a URL or web address to location of data
@@ -162,6 +167,14 @@ GSL.nasa <- function(url='ftp://podaac.jpl.nasa.gov/allData/merged_alt/L2/TP_J1_
   return(sl)
 }
 
+GSL.aviso <- function(url='ftp://ftp.aviso.altimetry.fr/pub/oceano/AVISO/indicators/msl/MSL_Serie_MERGED_Global_AVISO_GIA_Adjust_Filter2m.txt') {
+  gsl <- read.table(url)
+  yr <- trunc(gsl[,1])
+  t <- as.Date(julian(as.Date(paste0(yr,'-01-01'))) + 365.25*(gsl[,1]- yr))
+  z <- zoo(gsl[,2],order.by=t)
+  return(z)
+}
+
 #' @export
 QBO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data') {
   qbo.test <- readLines(url)
@@ -231,5 +244,30 @@ AMO <- function(url=NULL, verbose=FALSE) {
                     reference=NA,info=NA, method= NA)
   return(amo)
 }
+
+#' @export
+IOD <- function(url='https://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/Data/dmi.long.data') {
+  ## Indian Ocean Dipole
+  test <- readLines(url)
+  n <- length(test)
+  X <- as.matrix(read.table(url,skip=1,nrow = n-8))
+  X[X <= -999] <- NA
+  yr <- sort(rep(X[,1],12))
+  mo <- rep(1:12,length(X[,1]))
+  iod <- c(t(X[,2:13]))
+  y <- zoo(iod,order.by=as.Date(paste(yr,mo,'01',sep='-')))
+  return(y)
+}
+
+#'@export
+Sunspots <- function(url='http://sidc.oma.be/silso/DATA/SN_m_tot_V2.0.txt') {
+  S <- read.table(url,comment.char = "*")
+  s <- zoo(S$V4,order.by=as.Date(paste(S$V1,S$V2,'01',sep='-')))
+  attr(s,'url') <- url
+  attr(s,'variable') <- 'Sunspots'
+  attr(s,'unit') <- 'monthly sum'
+  return(s)
+}
+  
 
 

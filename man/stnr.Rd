@@ -4,9 +4,21 @@
 \alias{stnr}
 \title{MetNo meta data function}
 \usage{
-stnr(navn = NULL, lon = NULL, lat = NULL, max.dist = 10,
-  alt = NULL, Fylke = NULL, Kommune = NULL, fy = NULL, ty = NULL,
-  ny = NULL, param = "TAM", plot = FALSE, print = FALSE)
+stnr(
+  navn = NULL,
+  lon = NULL,
+  lat = NULL,
+  max.dist = 10,
+  alt = NULL,
+  Fylke = NULL,
+  Kommune = NULL,
+  fy = NULL,
+  ty = NULL,
+  ny = NULL,
+  param = "TAM",
+  plot = FALSE,
+  print = FALSE
+)
 }
 \description{
 MetNo meta data function

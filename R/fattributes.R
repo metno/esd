@@ -14,10 +14,16 @@
 #' @param x input object
 #'
 #' @export
-lon <- longitude <- function(x) return(attr(x,"longitude"))
+lon <- longitude <- function(x) {
+  if (inherits(x,'trajectory')) return(x[,is.element(colnames(x),'lon')]) else 
+    return(attr(x,"longitude"))
+}
 
 #' @export
-lat <- latitude <- function(x) return(attr(x,"latitude"))
+lat <- latitude <- function(x) {
+  if (inherits(x,'trajectory')) return(x[,is.element(colnames(x),'lat')]) else 
+    return(attr(x,"latitude"))
+}
 
 #' @export
 stid <- function(x) return(attr(x,"station_id")) 
@@ -38,7 +44,13 @@ calendar <- function(x) return(attr(x,"calendar"))
 cntr <- country <- function(x) return(attr(x,"country"))
 
 #' @export
-loc <- location <- function(x) return(attr(x,"location"))
+loc <- location <- function(x) { 
+  if (!is.null(attr(x,"location"))) return(attr(x,"location"))
+  if (inherits(x,'list')) {
+    if (!is.null(x$pca)) return(attr(x$pca,"location")) else
+    if (!is.null(names(x))) return(names(x))
+  }
+}
 
 #' @export
 varid <- variable <- function(x) return(attr(x,"variable"))

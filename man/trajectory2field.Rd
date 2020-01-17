@@ -5,8 +5,16 @@
 \alias{as.field.trajectory}
 \title{Transform an input object into a \code{field} object}
 \usage{
-trajectory2field(x, dt = "month", dx = 2, dy = 2, radius = 5e+05,
-  it = NULL, is = NULL, verbose = FALSE)
+trajectory2field(
+  x,
+  dt = "month",
+  dx = 2,
+  dy = 2,
+  radius = 5e+05,
+  it = NULL,
+  is = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{a \code{trajectory} object}

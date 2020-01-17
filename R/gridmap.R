@@ -20,7 +20,7 @@
 #' precip.gp <- gridmap(precip.NORDKLIM, plot=TRUE)
 #' 
 #' @export gridmap
-gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,zlim=NULL,verbose=FALSE,plot=TRUE,new=TRUE) {
 
   if (verbose) print(paste('gridmap',FUN))
   if (!requireNamespace("LatticeKrig", quietly = TRUE)) {
@@ -66,11 +66,10 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
     ## Convert the results from LatticeKrig to esd:
     W <- w$z
     attr(W,'variable') <- varid(Y)[1]
-    attr(W,'unit') <- unit(Y)[1]
+    attr(W,'unit') <- esd::unit(Y)[1]
     attr(W,'longitude') <- w$x
     attr(W,'latitude') <- w$y
     class(W) <- class(etopo5)
-    browser()
     ## Make the graphics
     if(plot) {
       if (verbose) print("make the map")

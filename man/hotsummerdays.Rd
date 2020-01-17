@@ -8,8 +8,18 @@
 \alias{nwetdays}
 \title{Projection of hot and cold day statistics}
 \usage{
-hotsummerdays(x, y = NULL, dse = NULL, it = "jja", threshold = 30,
-  verbose = FALSE, plot = TRUE, nmin = 90, new = TRUE, ...)
+hotsummerdays(
+  x,
+  y = NULL,
+  dse = NULL,
+  it = "jja",
+  threshold = 30,
+  verbose = FALSE,
+  plot = TRUE,
+  nmin = 90,
+  new = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{station object, e.g. the temperature. Matches the element used in

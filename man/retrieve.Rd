@@ -12,8 +12,10 @@
 retrieve(ncfile = NULL, ...)
 }
 \arguments{
-\item{ncfile}{A character string of full path netcdf file name (include the
-path if necessary) or any object of class 'ncdf4'.}
+\item{ncfile}{Name of the existing netCDF file to be opened or an object of class 'ncdf4'. 
+The full path to the netCDF file can either be included in 'ncfile' or entered as a separate input ('path').}
+
+\item{path}{Path to netcdf file}
 
 \item{ncid}{An object of class 'ncdf4'}
 
@@ -78,8 +80,8 @@ processing.
 \description{
 Retrieve data from a netcdf file and return a zoo field object with
 attributes.  \code{retrieve} assumes data on a regular lon-lat grid and
-\code{retrieve.rcm} reads data on irregular (rotated) grid. typically output
-from RCMs.
+\code{retrieve.rcm} reads data on irregular (rotated) grid (typically output
+from RCMs).
 }
 \examples{
 

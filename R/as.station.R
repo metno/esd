@@ -292,7 +292,8 @@ as.station.list <- function(x,...,verbose=FALSE) {
       eval(parse(text=paste("ds.",i," <- z",sep="")))
       cline <- paste(cline,"ds.",i,",",sep="")
     }
- 
+
+    ALL <- NULL
     cline <- paste(substr(cline,1,nchar(cline)-1),')-> ALL')
     #print(cline)
     eval(parse(text=cline))
@@ -545,7 +546,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
       S <-  S[[1]]
     }
     #REB 2018-03-02: The line below causes big problems. Besides, I don't understand why it's there
-    #if ( (is.list(S)) & (length(S)==length(locs)) ) names(S) <- locs
+    if ( (is.list(S)) & (length(S)==length(locs)) ) names(S) <- locs
     attr(S,"unit") <- unit
     attr(S,"variable") <- param
     attr(S,"longname") <- longname

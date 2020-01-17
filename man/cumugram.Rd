@@ -4,8 +4,17 @@
 \alias{cumugram}
 \title{InfoGraphics}
 \usage{
-cumugram(x, it = NULL, start = "-01-01", prog = FALSE,
-  verbose = FALSE, FUN = "mean", main = NULL, ...)
+cumugram(
+  x,
+  it = NULL,
+  start = "-01-01",
+  prog = FALSE,
+  plot = TRUE,
+  verbose = FALSE,
+  FUN = "mean",
+  main = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{an input object of class 'station'}
@@ -15,6 +24,8 @@ cumugram(x, it = NULL, start = "-01-01", prog = FALSE,
 \item{start}{year and month, e.g., '-01-01' to start in january}
 
 \item{prog}{a boolean; if TRUE show prognosis for end of year in cumugram}
+
+\item{plot}{a boolean; if TRUE show the plot}
 
 \item{verbose}{a boolean; if TRUE print information about progress}
 

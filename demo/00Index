@@ -32,3 +32,4 @@ test.history.stamp            test script for history attribute in esd objects (
 testregrid                    testscript for regridding
 tropicalcyclones              script to plot tropical cyclones in the North Atlantic
 world-precip-stats              Global map of precipitation statistics
+gsl                           Script that combines severeal global mean sea-level records.

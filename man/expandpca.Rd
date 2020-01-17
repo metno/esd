@@ -4,8 +4,15 @@
 \alias{expandpca}
 \title{Expand PCA to obtain station data}
 \usage{
-expandpca(x, it = NULL, FUN = NULL, FUNX = "mean", verbose = FALSE,
-  anomaly = FALSE, test = FALSE)
+expandpca(
+  x,
+  it = NULL,
+  FUN = NULL,
+  FUNX = "mean",
+  verbose = FALSE,
+  anomaly = FALSE,
+  test = FALSE
+)
 }
 \description{
 Expand PCA to obtain station data
