@@ -13,6 +13,13 @@
 #' @examples 
 #' Z <- radar(lons = c(10.5,11), lats = c(59.5,60))
 #' z <- radar(it=2010)
+#' 
+#' map(z)
+#' y <- station.thredds(stid=18700,param='precip')
+#' x <- regrid(z,is=y)
+#' plot(combine.stations(subset(y,it=x),x),new=FALSE)
+#' plot(as.monthly(combine.stations(subset(y,it=x),x),FUN='sum'),new=FALSE)
+
 #'
 #' @seealso station.thredds, meta.thredds
 #' 
@@ -154,6 +161,7 @@ radar <- function(url='https://thredds.met.no/thredds/catalog/remotesensingradar
   attr(radarZ,'variable') <- param
   attr(radarZ,'unit') <- 'mm'
   attr(radarZ,'aspect') <- 'radar reflectivity'
+  attr(z,'greenwich') <- TRUE
   attr(radarZ,'source') <- 'The Norwegian Meteorological Institute'
   class(radarZ) <- c('station','day','zoo')
   radarZ <- as.field(radarZ)

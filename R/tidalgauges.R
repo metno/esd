@@ -1,25 +1,27 @@
 ## Read the sea levels for tidal gauges (EU-Circle & eSACP)
 ## Rasmus.Benestad@met.no, 2016-01-29, Meteorologisk institutt, Oslo, Norway
 
+## The documentation is provided in station.R
+
 # French tidal stations: http://www.sonel.org/-Tide-gauges,29-.html?lang=en
 # Daily means
 #' @export station.sonel
-station.sonel <- function(...,urls=c('http://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dRSCOF.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dLCONQ.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dBREST.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dHAVRE.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dDIEPP.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dBOULO.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dCALAI.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dDUNKE.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dCONCA.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dPTUDY.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dSNAZA.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dBOUCA.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dSJLUZ.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dPBLOC.slv',
-                             'http://www.sonel.org/msl/Demerliac/VALIDATED/dLROCH.slv'),
+station.sonel <- function(...,urls=c('https://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dRSCOF.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dLCONQ.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dBREST.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dHAVRE.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dDIEPP.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dBOULO.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dCALAI.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dDUNKE.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dCONCA.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dPTUDY.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dSNAZA.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dBOUCA.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dSJLUZ.slv',
+                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dPBLOC.slv',
+                             'http:s//www.sonel.org/msl/Demerliac/VALIDATED/dLROCH.slv'),
                       verbose=FALSE) {
 
   param='sea-level'; unit='mm'; src='sonel'; cntr='France'
