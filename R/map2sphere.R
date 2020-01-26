@@ -1,6 +1,6 @@
 # Documentation in map.R
 #' @export
-map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
+map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        colbar= list(col='t2m',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
@@ -177,7 +177,19 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,
   Visible <- colMeans(Y) > 0
   X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
   index <- index[Visible]
-  apply(rbind(X,Z,index),2,gridbox,col)
+  
+  ## REB 2020-01-26
+  if (style=='night') {
+    ## Add shadow effect to collours
+    brightness <- cos(Theta[1,Visible] + lonR)
+    
+  } else brightness <- rep(1,length(index))
+  alpha <- rep(1,length(index))
+  
+  if (verbose) {print(c(length(X),length(Z),length(index),length(brightness),length(alpha)))
+    print(dim(X))}
+  
+  apply(rbind(X,Z,index,brightness,alpha),2,gridbox,col)
   # c(W,E,S,N, colour)
   # xleft, ybottom, xright, ytop
   # Plot the coast lines  

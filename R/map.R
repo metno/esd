@@ -107,7 +107,8 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
                                    show=TRUE,type="p",cex=2,h=0.6,v=1),
                       type=c("fill","contour"),gridlines=FALSE,cex=2,
-                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
+                      lonR=NULL,latR=NULL,axiR=NULL,style='plain',
+                      verbose=FALSE,plot=TRUE) {
     
     ## default with no arguments will produce a map showing available station
     ## data in the esd package.
