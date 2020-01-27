@@ -181,7 +181,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## REB 2020-01-26
   if (style=='night') {
     ## Add shadow effect to collours
-    brightness <- cos(Theta[1,Visible] + lonR)
+    brightness <- cos(Theta[1,Visible] - pi*lonR/180)
     
   } else brightness <- rep(1,length(index))
   alpha <- rep(1,length(index))
