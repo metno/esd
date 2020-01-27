@@ -6,7 +6,7 @@
 #source('~/R/esd/R/write2ncdf.R')
 
 variables <- ls()
-it <- seq(as.Date('1900-01-01'),as.Date('2018-05-31'),by='day')
+it <- seq(as.Date('1900-01-01'),as.Date('2020-12-31'),by='day')
 
 if (sum(is.element(variables,'eles'))==0)  
   eles <- rev(rownames(table(select.station(src='ecad')$element)))
@@ -28,7 +28,7 @@ for (ele in eles) {
     iii <- iii[iii <= ns]
     
     append <- file.exists(fname)
-    x <- try(station(SS[iii,],save2file=FALSE))
+    x <- try(station(loc=SS[iii,],save2file=FALSE))
     
     #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
     if (!inherits(x,'try-error')) {

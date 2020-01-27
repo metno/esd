@@ -436,11 +436,11 @@ t2m.ghcnd.avg <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 }
 
 # NOT EXPORTED - internal function
-ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
+  ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
                          param=NULL,qual=NULL,path="data.ECAD",remove.suspect=FALSE,
                          url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",verbose=FALSE) {  ## it=it,nmin=nmin
 
-  if (verbose) print('ecad.station')
+  if (verbose) print('ecad.station...')
   ele <- esd2ele(param=param)
   if (is.null(ele)) {
     param1 <-as.character(ele2param(ele=param,src="ECAD")[5])
@@ -467,12 +467,14 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   } 
   ## If folder does not exist, then download and unzip
   if (!file.exists(destfile2)) {
+    print(paste('Could not find',destfile2))
+    print('Download the ECA&D data... please be patient.')
     if(!file.exists(path)) dir.create(path,showWarnings = FALSE,recursive=TRUE)
     download.file(fdata,destfile,method = "wget", quiet = !verbose, mode = "w", cacheOK = TRUE,
                   extra = getOption("download.file.extra"))
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   }
-  if (verbose) print("station.ecad")
+  if (verbose) print(paste("station.ecad: the folder has been found",destfile2))
   newpath <- substr(destfile,1,nchar(destfile)-4) 
   stid <- gsub(' ','',stid)
   for (i in 1:length(stid)) {
@@ -482,13 +484,14 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   fnames <- file.path(newpath,fnames,fsep = .Platform$file.sep)
 
   ipick <- file.exists(fnames)
+  if (verbose) print(paste('Looking for',fnames[1]))
   if (sum(ipick)==0)  return(NULL)
   if (sum(ipick)!=1) {
     warning('More than one matches - I choose the first!')
     ipick <- (1:length(ipick))[ipick][1]
   }
   fname <- fnames[ipick]
-  if (verbose) print(fname)
+  if (verbose) print(paste('FILENAME:',fname))
   
   x <- read.table(fname,header=TRUE,skip=18,sep=",")
 
