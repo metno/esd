@@ -35,6 +35,7 @@
 #' @param lonR Only for the spherical projection used by \code{map2sphere} to change viewing angle
 #' @param latR Only for the spherical projection used by \code{map2sphere} to change viewing angle
 #' @param axiR Only for the spherical projection used by \code{map2sphere} to change viewing angle
+#' @param style Only for the spherical projection used by \code{map2sphere} to apply night shade effect. c('plain','night')
 #' @param y a vector of y coordinates
 #' @param z a vector of z coordinates
 #' @param ip Selects which pattern (see \code{\link{EOF}}, \code{\link{CCA}}) to plot

@@ -72,6 +72,8 @@ projections.}
 
 \item{axiR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
 
+\item{style}{Only for the spherical projection used by \code{map2sphere} to apply night shade effect. c('plain','night')}
+
 \item{y}{a vector of y coordinates}
 
 \item{z}{a vector of z coordinates}
