@@ -429,6 +429,17 @@ lastrains <- function(x,x0=1,uptodate=TRUE,verbose=FALSE) {
 }
 
 #' @export
+lastdry <- function(x,x0=1,uptodate=TRUE,verbose=FALSE) {
+  if (verbose) print('lastdry')
+  ## Clean up missing values
+  x <- x[is.finite(x)]
+  y <- cumsum(rev(coredata(x)))
+  z <- (1:length(y))[c(1,diff(y) < x0)][1]
+  if (uptodate) if (Sys.Date() - end(x) > 1) z <- NA 
+  return(z)
+}
+
+#' @export
 lastelementrecord <- function(x,verbose=FALSE) {
   ## Checks last element of the record to see if they are the highest - a record
   if (verbose) print('lastelementrecord')

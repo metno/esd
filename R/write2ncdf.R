@@ -354,6 +354,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     tdmu.jja <- apply(annual(subset(x,it='jja'),'wetmean',nmin=75),2,'trend.coef')
     tdmu.son <- apply(annual(subset(x,it='son'),'wetmean',nmin=75),2,'trend.coef')
     lr <- sapply(x,'lastrains')
+    ld <- sapply(x,'lastdry')
     if (verbose) print('Sigma2')
     sigma2 <- apply(x,2,'rainvar')
     sigma2.djf <- apply(subset(x,it='djf'),2,'rainvar')
@@ -369,8 +370,10 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     if (verbose) print('Spell')
     t <- index(x)
     ss <- spell(x,1)
-    mwsl <- colMeans(subset.station(ss,is=list(param='wet')),na.rm=TRUE)
-    mdsl <- colMeans(subset.station(ss,is=list(param='dry')),na.rm=TRUE)
+    if (inherits(ss,'spell')) { 
+      mwsl <- colMeans(subset.station(ss,is=list(param='wet')),na.rm=TRUE)
+      mdsl <- colMeans(subset.station(ss,is=list(param='dry')),na.rm=TRUE)
+    } else {mwsl <- missval; mdsl <- missval}
   } else {
     ave <- apply(x,2,'mean',na.rm=TRUE)
     ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
@@ -610,6 +613,8 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
                               missval=missval,longname="trend_in_seasonal_precip_wet_frequency_Sep-Nov",prec="float",verbose=verbose)
       lrid <- ncvar_def(name="summary_lastrains",dim=list(dimS), units="days", 
                           missval=missval,longname="number_of_dry_days_at_end_of_record",prec="float",verbose=verbose)
+      ldid <- ncvar_def(name="summary_lastdry",dim=list(dimS), units="days", 
+                        missval=missval,longname="number_of_wet_days_at_end_of_record",prec="float",verbose=verbose)
       sigma2id <- ncvar_def(name="summary_sigma2",dim=list(dimS), units="mm^2", 
                           missval=missval,longname="variance_daily_precip",prec="float",verbose=verbose)
       sigma2id.djf <- ncvar_def(name="summary_sigma2_DJF",dim=list(dimS), units="mm^2", 
@@ -733,6 +738,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
       tdfwid.jja <- ncid$var[["summary_trend_wetfreq_JJA"]]
       tdfwid.son <- ncid$var[["summary_trend_wetfreq_SON"]]
       lrid <- ncid$var[["summary_lastrains"]]
+      ldid <- ncid$var[["summary_lastdry"]]
       sigma2id <- ncid$var[["summary_sigma2"]]
       sigma2id.djf <- ncid$var[["summary_sigma2_DJF"]]
       sigma2id.mam <- ncid$var[["summary_sigma2_MAM"]]
@@ -771,7 +777,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
                                             fwid,fwid.djf,fwid.mam,fwid.jja,fwid.son,
                                             tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,
                                             tdmuid,tdmuid.djf,tdmuid.mam,tdmuid.jja,tdmuid.son,
-                                            tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid,lehrid,
+                                            tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid,ldid,lehrid,
                                             sigma2id,sigma2id.djf,sigma2id.mam,sigma2id.jja,sigma2id.son,
                                             tsigma2id,tsigma2id.djf,tsigma2id.mam,tsigma2id.jja,tsigma2id.son,
                                             mwslid,mdslid)) else 
@@ -876,7 +882,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     tdmu.son[insufficient] <- missval; tdfw[insufficient] <- missval
     tdfw.mam[insufficient] <- missval; tdfw.djf[insufficient] <- missval
     tdfw.jja[insufficient] <- missval; tdfw.son[insufficient] <- missval
-    lr[insufficient] <- missval
+    lr[insufficient] <- missval; ld[insufficient] <- missval
     #ncvar_put( ncid, muid, mu,start=start[2],count=count[2]) #BER
     #ncvar_put( ncid, muid.djf, mu.djf,start=start[2],count=count[2])
     #ncvar_put( ncid, muid.mam, mu.mam,start=start[2],count=count[2])
@@ -929,6 +935,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     ncvar_put( ncid, tdmuid.jja, tdmu.jja,start=start[1],count=count[1])
     ncvar_put( ncid, tdmuid.son, tdmu.son,start=start[1],count=count[1])
     ncvar_put( ncid, lrid, lr, start=start[1],count=count[1])
+    ncvar_put( ncid, ldid, ld, start=start[1],count=count[1])
     ncvar_put( ncid, sigma2id, sigma2,start=start[1],count=count[1])
     ncvar_put( ncid, sigma2id.djf, sigma2.djf,start=start[1],count=count[1])
     ncvar_put( ncid, sigma2id.mam, sigma2.mam,start=start[1],count=count[1])
