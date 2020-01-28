@@ -12,18 +12,9 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
                             alt=NULL, cntr=NULL, src=NULL, it = NULL, nmin = NULL, verbose=FALSE) {
   if (verbose) print('select.station')
   if (is.null(x)) {
-    ## KMP 2020-01-24: If src is the Frost API, get frost metadata 
-    if(grepl("FROST", toupper(src))) {
-      if(grepl("MONTH", toupper(src))) {
-        station.meta <- metno.frost.meta.month(save2file=FALSE)
-      } else {
-        station.meta <- metno.frost.meta.day(save2file=FALSE)
-      }
-    } else {
-      data("station.meta",envir=environment())
-    }
+    data("station.meta",envir=environment())
     station.meta$end[is.na(station.meta$end)] <- strftime(Sys.time(), format='%Y')
-    station.meta <- as.data.frame(station.meta,stringsAsFactors=FALSE)
+    #station.meta <- as.data.frame(station.meta,stringsAsFactors=FALSE)
     if (!is.null(param)) ele <- apply(as.matrix(param),1,esd2ele)
   } else {
     if (inherits(x,"station")) {      
@@ -40,8 +31,9 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       quality <- attr(x,"quality")
 
       station.meta <- data.frame(station_id = station_id,location = location, country = country,
-                                 longitude = longitude, latitude = latitude,altitude = altitude,
-                                 element = element, start = start,end = end,source = source,quality= quality)
+                                 longitude = longitude, latitude = latitude, altitude = altitude,
+                                 element = element, start = start, end = end,
+                                 source = source, quality= quality)
 
       # update ele using element
       ## ele <- element
@@ -75,14 +67,18 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     station.meta <- station.meta[id,]
   } else {## Search by longitude values or range of values
     if (!is.null(lon)) {##search by longitude values or a range of values
-      lon.rng <- range(lon,na.rm=TRUE) 
-      id <- (station.meta$longitude >= lon.rng[1]) & (station.meta$longitude <= lon.rng[2])
+      lon.rng <- range(lon,na.rm=TRUE)
+      id <- (station.meta$longitude >= lon.rng[1]) & 
+            (station.meta$longitude <= lon.rng[2]) &
+            !is.na(station.meta$longitude)
       station.meta <- station.meta[id,]  
     }
     ## Search by latitude values or range of values
     if (!is.null(lat)) {
       lat.rng <- range(lat) 
-      id <- (station.meta$latitude >= lat.rng[1]) & (station.meta$latitude <= lat.rng[2])
+      id <- (station.meta$latitude >= lat.rng[1]) & 
+            (station.meta$latitude <= lat.rng[2]) & 
+            !is.na(station.meta$latitude)
       station.meta <- station.meta[id,]
     }
   }
@@ -94,13 +90,15 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     }  else if (length(alt) == 2) {
       alt.rng <- alt      
     }
-    id <- (station.meta$altitude >= alt.rng[1]) & (station.meta$altitude <= alt.rng[2])
-    station.meta <- station.meta[id,]   
+    id <- (station.meta$altitude >= alt.rng[1]) & 
+          (station.meta$altitude <= alt.rng[2]) & 
+          !is.na(station.meta$altitude)
+    station.meta <- station.meta[id,] 
   }
   ## Search by country name
   if (!is.null(cntr)) {
     id <- is.element(tolower(station.meta$country),tolower(cntr))
-    station.meta <- station.meta[id,]   
+    station.meta <- station.meta[id,]
   }
   ##
   ## Search by data source

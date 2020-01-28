@@ -1146,14 +1146,13 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
                             "P1M"=metno.frost.meta.month)
     if(!is.null(path)) meta.file <- file.path(path, meta.file)
     if(fetch.meta) {
-      meta <- meta.function(save2file=save2file, path=path, verbose=verbose)
+      meta <- meta.function(save2file=FALSE, verbose=verbose)
     } else {
-      if(file.exists(meta.file)) {
-        load(meta.file)
-      } else {
-        eval(parse(text=paste0("data(",meta.name,", envir=environment())")))
-      }
-      eval(parse(text=paste0("meta <- ", meta.name)))
+      data("station.meta", envir=environment())
+      id <- station.meta$source==switch(timeresolutions, 
+                                        "P1D"="METNO.FROST.DAY",
+                                        "P1M"="METNO.FROST.MONTH")
+      meta <- station.meta[id,]
     }
   
     ## If stid is not defined, use (lat,lon) to find station(s) in metadata table
@@ -1224,30 +1223,24 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     }
     
     ## Divide the call into parts because there are limits 
-    ## to how much data you can download at a time (10000 observations).
+    ## to how much data you can download at a time (1E5 observations)
+    ## and the number of characters of the url (245?).
+    # Sort stations according to start time
+    maxdata <- 1E5
+    j <- which(j)[order(meta$start[j])]
     stid.j <- meta$station_id[j]
     end.j <- sapply(meta.end[j], function(x) min(as.integer(x), as.integer(end)))
     start.j <- sapply(meta$start[j], function(x) max(as.integer(x), as.integer(start)))
-    ## ====================================
-    # Sort stations according to start time
-    stid.j <- stid.j[order(start.j)]
-    end.j <- end.j[order(start.j)]
-    start.j <- start.j[order(start.j)]
-    ## ====================================
-    maxdata <- 1E5
-    ndata <- switch(timeresolutions, "P1M"=(end.j-start.j+1)*12, "P1D"=(end.j-start.j+1)*365.25)
-    if(sum(ndata)<maxdata) {
-      stid.url <- paste0('SN',stid.j,collapse=",")
-      time.url <- paste0(min(start.j),"/",max(end.j))
-    } else {
-      stid.url <- c(); time.url <- c()
-      while(sum(ndata)>0) {
-        k <- min(which(ndata>0))
-        dk <- min(floor(maxdata/ndata[k])-1, length(stid.j)-k)
-        time.url <- c(time.url, paste0(start.j[k],"/",end.j[k]))
-        stid.url <- c(stid.url, paste(paste0('SN',stid.j[k:(k+dk)]),collapse=","))
-        ndata[k:(k+dk)] <- 0
-      }
+    ndata <- switch(timeresolutions, 
+                    "P1M"=(end.j-start.j+1)*12, 
+                    "P1D"=(end.j-start.j+1)*365.25)
+    stid.url <- c(); time.url <- c()
+    while(sum(ndata)>0) {
+      k <- min(which(ndata>0))
+      dk <- min(c(floor(maxdata/ndata[k])-1, length(stid.j)-k, 100))
+      time.url <- c(time.url, paste0(start.j[k],"/",end.j[k]))
+      stid.url <- c(stid.url, paste(paste0('SN',stid.j[k:(k+dk)]),collapse=","))
+      ndata[k:(k+dk)] <- 0
     }
     url <- paste0(
       "https://", frostID[1], "@frost.met.no/observations/v0.jsonld",
@@ -1279,43 +1272,47 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     }
     
     ## Rearrange data and transform to zoo object
-    sourceId <- unique(data$sourceId)
-    var <- sapply(data$observations, function(x) x$value)
-    time <- as.Date(data$referenceTime)
-    if(length(sourceId)==1) {
-      var <- zoo(var, order.by=time)
+    if(is.null(data)) {
+      invisible(NULL)
     } else {
-      tvec <- seq(min(time), max(time), 
-                  by = switch(timeresolutions, "P1D"="day", "P1M"="month"))
-      X <- matrix(NA, nrow=length(tvec), ncol=length(sourceId))
-      for(i in 1:ncol(X)) {
-        j <- sapply(time[data$sourceId==sourceId[i]], function(x) which(tvec==x))
-        X[j,i] <- var[data$sourceId==sourceId[i]]
+      sourceId <- unique(data$sourceId)
+      var <- sapply(data$observations, function(x) x$value)
+      time <- as.Date(data$referenceTime)
+      if(length(sourceId)==1) {
+        var <- zoo(var, order.by=time)
+      } else {
+        tvec <- seq(min(time), max(time), 
+                    by = switch(timeresolutions, "P1D"="day", "P1M"="month"))
+        X <- matrix(NA, nrow=length(tvec), ncol=length(sourceId))
+        for(i in 1:ncol(X)) {
+          j <- sapply(time[data$sourceId==sourceId[i]], function(x) which(tvec==x))
+          X[j,i] <- var[data$sourceId==sourceId[i]]
+        }
+        var <- zoo(X, order.by=tvec)
       }
-      var <- zoo(X, order.by=tvec)
+      
+      # Transform data to station object and attach attributes
+      stid <- gsub("[A-Z]|:.*","",toupper(sourceId))
+      i <- sapply(stid, function(x) which(meta$station_id==x)[1])
+      METNO.FROST <- as.station(var, stid=stid, loc=meta$location[i],
+                                param=param, quality=qualities, 
+                                cntr=meta$country[i],
+                                lon=meta$longitude[i], 
+                                lat=meta$latitude[i], 
+                                alt=meta$altitude[i],
+                                src=switch(timeresolutions, 
+                                           'P1D'='METNO.FROST.DAY', 
+                                           'P1M'='METNO.FROST.MONTH'),
+                                url="http://frost.met.no",
+                                longname=param1info$longname,
+                                unit=param1info$unit,
+                                aspect="original",
+                                reference="Frost API (http://frost.met.no)",
+                                info="Frost API (http://frost.met.no)"
+      )
+      attr(METNO.FROST,'history') <- history.stamp(METNO.FROST)
+      invisible(METNO.FROST)
     }
-    
-    # Transform data to station object and attach attributes
-    stid <- gsub("[A-Z]|:.*","",toupper(sourceId))
-    i <- sapply(stid, function(x) which(meta$station_id==x)[1])
-    METNO.FROST <- as.station(var, stid=stid, loc=meta$location[i],
-                              param=param, quality=qualities, 
-                              cntr=meta$country[i],
-                              lon=meta$longitude[i], 
-                              lat=meta$latitude[i], 
-                              alt=meta$altitude[i],
-                              src=switch(timeresolutions, 
-                                         'P1D'='METNO.FROST.DAY', 
-                                         'P1M'='METNO.FROST.MONTH'),
-                              url="http://frost.met.no",
-                              longname=param1info$longname,
-                              unit=param1info$unit,
-                              aspect="original",
-                              reference="Frost API (http://frost.met.no)",
-                              info="Frost API (http://frost.met.no)"
-    )
-    attr(METNO.FROST,'history') <- history.stamp(METNO.FROST)
-    invisible(METNO.FROST)
   }
 }
 

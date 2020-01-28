@@ -108,7 +108,6 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       if (verbose) print('Generate new client ID')  
       system(paste(browser,'https://frost.met.no/auth/newclientid.html'))
       frostID <- rep("",2)
-      browser()
       frostID[1] <- readline('Please give me the first key:')
       frostID[2] <- readline('Please give me the second key:')
       writeLines(frostID,con=keyfile)
@@ -192,7 +191,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     for(element in unique(df$element)) {
       var[df$element==element] <- esd2ele(element)
     }
-    X <- list("station_id"=gsub("[A-Z]|[a-z]","",df$station_id),
+    X <- data.frame("station_id"=gsub("[A-Z]|[a-z]","",df$station_id),
               "location"=df$location,
               "country"=df$country,
               "longitude"=df$lon,
@@ -204,12 +203,12 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
               "source"=switch(timeresolutions, "P1D"="METNO.FROST.DAY", "P1M"="METNO.FROST.MONTH"),
               "wmo"=rep(NA,length(df$station_id)),
               "quality"=rep(NA,length(df$station_id)),
-              "variable"=var)
+              "variable"=var, stringsAsFactors=FALSE)
     attr(X,"metnoURLs") <- "http://frost.met.no"
     attr(X,"author") <- "K. Tunheim & K. Parding"
     attr(X,"date") <- Sys.time()
     attr(X,"history") <- history.stamp(X)
-    class(X) <- c("stationmeta","list")
+    class(X) <- c("stationmeta", class(X))
     invisible(X)
   }
 }
