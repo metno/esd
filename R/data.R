@@ -8,6 +8,9 @@
 #'
 #' The object \code{station.meta} contains meta data for various sources of station data
 #' (NACD, NARP, NORDKLIM, ECAD, GHCN, and METNO) used in the methods \code{\link{station}}.
+#' 
+#' The objects \code{meta.metno.frost.diurnal} and \code{meta.metno.frost.month} contain
+#' meta data for the MetNo Frost API (http://frost.met.no).
 #'
 #' \code{NACD}, \code{NARP}, and \code{nordklim.data} contain staion data from Northern Europe from
 #' the North Atlantic Climatological Dataset (NACD),
@@ -42,7 +45,8 @@
 #' but there are also functions that read the most recent version of these indeces from the Internet
 #' with functions \code{\link{NINO3.4}} and \code{\link{NAO}}.
 #'
-#' @aliases geoborders etopo5 station.meta NACD NARP Oslo Svalbard bjornholt ferder Svalbard Oslo vardo
+#' @aliases geoborders etopo5 station.meta NACD NARP 
+#' Oslo Svalbard bjornholt ferder vardo
 #' nordklim.data station.meta t2m.NORDKLIM precip.NORDKLIM
 #' eof.precip.ERAINT eof.slp.NCEP eof.sst.NCEP eof.t2m.NCEP
 #' eof.slp.DNMI eof.sst.DNMI eof.t2m.DNMI
@@ -58,6 +62,8 @@
 #' dse.ferder dse.Svalbard dse.Oslo
 #' imilast.M03 storms 
 #' mu.eq.f.tx
+#' meta.metno.frost.month
+#' meta.metno.frost.diurnal
 #'
 #' @param lon longitude range c(lin.min,lon.max)
 #' @param lat latitude range

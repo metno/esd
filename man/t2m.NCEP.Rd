@@ -49,6 +49,8 @@
 \alias{imilast.M03}
 \alias{storms}
 \alias{mu.eq.f.tx}
+\alias{meta.metno.frost.month}
+\alias{meta.metno.frost.diurnal}
 \title{Sample data}
 \usage{
 t2m.NCEP(
@@ -86,6 +88,9 @@ in the methods \code{\link{map}}.
 
 The object \code{station.meta} contains meta data for various sources of station data
 (NACD, NARP, NORDKLIM, ECAD, GHCN, and METNO) used in the methods \code{\link{station}}.
+
+The objects \code{meta.metno.frost.diurnal} and \code{meta.metno.frost.month} contain
+meta data for the MetNo Frost API (http://frost.met.no).
 
 \code{NACD}, \code{NARP}, and \code{nordklim.data} contain staion data from Northern Europe from
 the North Atlantic Climatological Dataset (NACD),

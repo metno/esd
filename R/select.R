@@ -12,10 +12,19 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
                             alt=NULL, cntr=NULL, src=NULL, it = NULL, nmin = NULL, verbose=FALSE) {
   if (verbose) print('select.station')
   if (is.null(x)) {
-    data("station.meta",envir=environment())
-    station.meta$end[is.na(station.meta$end)] <- format(Sys.time(),'%Y')
+    ## KMP 2020-01-24: If src is the Frost API, get frost metadata 
+    if(grepl("FROST", toupper(src))) {
+      if(grepl("MONTH", toupper(src))) {
+        station.meta <- metno.frost.meta.month(save2file=FALSE)
+      } else {
+        station.meta <- metno.frost.meta.day(save2file=FALSE)
+      }
+    } else {
+      data("station.meta",envir=environment())
+    }
+    station.meta$end[is.na(station.meta$end)] <- strftime(Sys.time(), format='%Y')
     station.meta <- as.data.frame(station.meta,stringsAsFactors=FALSE)
-    if (!is.null(param)) ele <- apply(as.matrix(param),1,esd2ele) 
+    if (!is.null(param)) ele <- apply(as.matrix(param),1,esd2ele)
   } else {
     if (inherits(x,"station")) {      
       station_id <- attr(x, "station_id")
@@ -37,7 +46,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       # update ele using element
       ## ele <- element
       ## param <- esd2ele(ele)
-    } else stop("x must be an object of calss 'station'") 
+    } else stop("x must be an object of class 'station'") 
   }
   ##
   if (!is.null(param) & is.null(ele)) {

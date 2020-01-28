@@ -20,7 +20,7 @@
 #' @param it A list or data.frame providing time index, e.g. a range of years like c(1979,2010), a season ('djf'), or a month ('dec' or 'december').
 #' @param is A list or data.frame providing space index, e.g. a list of longitude and latitude range like list(lon=c(0,60), lat=c(35,60)).
 #' @param ip selection of patterns in PCA or EOF (used for e.g. filtering the data)
-#' @param verbose Dump diagnostics to the screen
+#' @param verbose If TRUE, print out diagnosics
 #' @param ensemble.aggregate If TRUE, call \code{subset.dsensemble.multi} if
 #' appropriate.
 #' @param ic Argument of \code{subset.events}: A list providing criteria for selection of cyclones, 

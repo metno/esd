@@ -80,9 +80,9 @@ sparseMproduct <- function(beta,x) {
 #' @param approach 'station' or 'pca2station'. If 'pca2station', the stations
 #' are turned into PCAs before regridding and then converted back to station
 #' objects.
-#' @param verbose Clutter the screen.
+#' @param verbose If TRUE, print out diagnostics
 #' @return A field object
-#' @author R.E. Benestad and A.  Mezghanil
+#' @author R.E. Benestad and A. Mezghani
 #' @keywords utilities
 #' @examples
 #' 

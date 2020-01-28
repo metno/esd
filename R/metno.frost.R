@@ -3,145 +3,213 @@
 #' Where there are multiple measuring periods registered for the parameter,
 #' only the earliest start time and the latest end time are used.
 #' 
-#'
-#' @param param Vector of parameters.
+#' @aliases metno.frost.meta.day metno.frost.meta.month
+#' 
+#' @param param Vector of parameters
+#' @param save2file if TRUE, save metadata in a local file
+#' @param verbose if TRUE, print diagnostics
+#' @param \dots additional arguments  
 #'
 #' @return A meta data matrix object for all stations in METNO's collection
 #' that have measured any of the given parameters. Start and end time are included. 
+#'
+#' @author K. Tunheim
 #'
 #' @keywords parameter,metadata,metno,norway,frost
 #'
 #' @examples
 #' # Fetch all stations' measuring periods of the t2m parameter
-#' metno.frost.meta.diurnal(param=c('t2m'))
+#' metno.frost.meta.day(param=c('t2m'))
 #' # Fetch all stations' measuring periods of all available parameters
 #' metno.frost.meta.month()
-
-# source("~/esd/R/dictionary.R")
-library(jsonlite) # remove this line in final version?
-
-# get diurnal timeseries - removed DD, DD06, DD12, DD18, SD
-#' @export metno.frost.meta.diurnal
-metno.frost.meta.diurnal <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), save=TRUE,...) {
-  X <- metno.frost.meta.default(param=param, timeresolutions="P1D", ...)
-
-  attr(X, "source") <- "METNO.FROST.DIURNAL"  
+#' 
+#' @export metno.frost.meta.day
+metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
+                                     save2file=TRUE, path=NULL, verbose=FALSE, ...) {
+  if(verbose) print("metno.frost.meta.day")
+  X <- metno.frost.meta.default(param=param, timeresolutions="P1D", verbose=verbose, ...)
+  filename <- "meta.metno.frost.day.rda"
+  attr(X, "source") <- "METNO.FROST.DAY"
   attr(X, "version") <- NA
   attr(X, "URL") <- "http://frost.met.no"
-  attr(X, "file") <- "metno.frost.meta.diurnal.rda"
+  attr(X, "file") <- filename
   attr(X, "cite") <- ""
   attr(X, "date") <- date()
   attr(X,"call") <- match.call()
-
-  if (save) {
-    metno.frost.meta.diurnal <- X
-    save(metno.frost.meta.diurnal, file="metno.frost.meta.diurnal.rda")
-    rm("metno.frost.meta.diurnal")
+  attr(X, "history") <- history.stamp(X)
+  if (save2file) {
+    meta.metno.frost.day <- X
+    if(!is.null(path)) filename <- file.path(path,filename)
+    ## KMP 2020-01-24: Added version because the rda files produced with R 3.5.1 (version 3) 
+    ## is of a vectorized format that can't be read by earlier R version.
+    save(meta.metno.frost.day, file=filename, version=2)
+    rm("meta.metno.frost.day")
   }
-
   invisible(X)
 }
 
 # get monthly timeseries - removed DD, DD06, DD12, DD18, SD
 #' @export metno.frost.meta.month
-metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), save=TRUE,...) {
-  X <- metno.frost.meta.default(param=param, timeresolutions="P1M", ...)
-
+metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
+                                   save2file=TRUE, path=NULL, verbose=FALSE,...) {
+  if(verbose) print("metno.frost.meta.month")
+  X <- metno.frost.meta.default(param=param, timeresolutions="P1M", verbose=verbose, ...)
+  filename <- "meta.metno.frost.month.rda"
   attr(X, "source") <- "METNO.FROST.MONTH"  
   attr(X, "version") <- NA
   attr(X, "URL") <- "http://frost.met.no"
   attr(X, "file") <- "metno.frost.meta.month.rda"
   attr(X, "cite") <- ""
   attr(X, "date") <- date()
-  attr(X,"call") <- match.call()
-
-  if (save) {
-    metno.frost.meta.month <- X
-    save(metno.frost.meta.month, file="metno.frost.meta.month.rda")
-    rm("metno.frost.meta.month")
+  attr(X, "call") <- match.call()
+  attr(X, "history") <- history.stamp(X)
+  if (save2file) {
+    meta.metno.frost.month <- X
+    if(!is.null(path)) filename <- file.path(path,filename)
+    ## KMP 2020-01-24: Added version because the rda files produced with R 3.5.1 (version 3) 
+    ## is of a vectorized format that can't be read by earlier R version.
+    save(meta.metno.frost.month, file=filename, version=2)
+    rm("meta.metno.frost.month")
   }
-
   invisible(X)
 }
 
-metno.frost.meta.default <- function(param=c("t2m"), timeresolutions="P1M", levels="default", timeoffsets="default", 
-                        performancecategories="A,B,C", exposurecategories="1,2", verbose = FALSE) {
-  # TODO: get a client_id
-  client_id <- '0763dab1-d398-4a56-ba5d-601d7d352999'
-
-  # convert all param to local param names
-  getparam1 <- function(x) {
-    withstar <- ele2param(x, src="METNO.FROST")$param
-    gsub('*', timeresolutions, withstar, fixed=TRUE)
-  }
-  ele <- sapply(param, esd2ele)
-  param1s <- sapply(ele, getparam1)
-  names(param1s) <- ele
-  strparam <- paste0(param1s, collapse=",")
-
-  if (verbose) print(strparam)
-
-  url1 <- paste0(
-    "https://", client_id, "@frost.met.no/",
-    "sources/v0.jsonld",
-    "?types=SensorSystem",
-    "&country=Norge",
-    "&fields=id,name,masl,country,county,countyId,municipality,municipalityId,geometry"
-  )
-  url2 <- paste0(
-    "https://", client_id, "@frost.met.no/",
-    "observations/availableTimeSeries/v0.jsonld",
-    "?elements=", strparam,
-    "&timeresolutions=", timeresolutions,
-    "&levels=", levels,
-    "&timeoffsets=", timeoffsets,
-    "&performancecategories=", performancecategories,
-    "&exposurecategories=", exposurecategories,
-    "&fields=sourceId,elementId,validFrom,validTo"
-  )
-
-  if (verbose) {
-    print(url1)
-    print(url2)
-  }
-
-  xs1 <- jsonlite::fromJSON(URLencode(url1), flatten=T)
-  xs1$data$lon = sapply(xs1$data$geometry.coordinates, function(x) x[1])
-  xs1$data$lat = sapply(xs1$data$geometry.coordinates, function(x) x[2])
-  df1 <- xs1$data[c("id","name","country","lon","lat","masl","municipality","municipalityId","county","countyId")]
-
-  xs2 <- jsonlite::fromJSON(URLencode(url2), flatten=T)
-  df2 <- xs2$data
-  df2$sourceId = substring(df2$sourceId, 1, nchar(df2$sourceId)-2)
-
-  df <- data.frame(NULL)
-  for (i in 1:length(param1s)) {
-    dfparam = df2[df2$elementId == param1s[i], ]
-    validFrom = try(aggregate(validFrom ~ sourceId, data=dfparam, min), silent=TRUE)
-    validTo = try(aggregate(validTo ~ sourceId, data=dfparam, max), silent=TRUE)
-
-    if (class(validFrom) != "try-error" & length(validFrom) > 0) {
-      validFrom$validFrom <- as.Date(validFrom$validFrom)
-      validTo$validTo <- as.Date(validTo$validTo)
-
-      period = merge(validFrom, validTo, by='sourceId', all.x=TRUE)
-      stperiod = merge(df1, period, by.x="id", by.y="sourceId")
-
-      colnames(stperiod) = c("station_id","location","country","lon","lat","altitude",
-                             "municipality","municipalityid","county","countyid","start","end")
-
-      stperiod$element <- rep(names(param1s[i]),length(stperiod$station_id))
-
-      # convert to UTM
-      utmZone <- 33
-      XY <- LatLon2UTM(lat=stperiod$lat, lon=stperiod$lon, zone=utmZone)
-      stperiod$utm_east  <- XY[[1]]
-      stperiod$utm_north <- XY[[2]]
-      stperiod$utm_zone  <- rep(utmZone, length(stperiod$station_id))
-
-      df <- rbind(stperiod, df, stringsAsFactors=FALSE)
+metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"), 
+                                     timeresolutions="P1M", levels="default", timeoffsets="default", 
+                                     performancecategories="A,B,C", exposurecategories="1,2", 
+                                     browser="firefox", verbose = FALSE) {
+  if(verbose) print("metno.frost.meta.default")
+  if (!requireNamespace("jsonlite", quietly = TRUE)) {
+    stop("Package 'jsonlite' needed to use 'meta.frost.meta.default'. Please install it.")
+  } else {
+    
+    # KMP 2020-01-22: enable timeresolutions notation monthly and daily
+    timeresolutions <- switch(toupper(timeresolutions), 
+                              "MONTHLY"="P1M", "MONTH"="P1M",
+                              "DAILY"="P1D", "DAY"="P1D", 
+                              timeresolutions)
+    
+    # convert all param to local param names
+    getparam1 <- function(x) {
+      withstar <- ele2param(x, src="METNO.FROST")$param
+      gsub('*', timeresolutions, withstar, fixed=TRUE)
     }
-  }
+    ele <- sapply(param, esd2ele)
+    param1s <- sapply(ele, getparam1)
+    names(param1s) <- ele
+    strparam <- paste0(param1s, collapse=",")
+    if (verbose) print(strparam)
+    
+    # Get a client_id
+    if (file.exists(keyfile)) {
+      if (verbose) print(paste('Read client ID from',keyfile))
+      frostID <- readLines(keyfile) 
+    } else { 
+      if (verbose) print('Generate new client ID')  
+      system(paste(browser,'https://frost.met.no/auth/newclientid.html'))
+      frostID <- rep("",2)
+      browser()
+      frostID[1] <- readline('Please give me the first key:')
+      frostID[2] <- readline('Please give me the second key:')
+      writeLines(frostID,con=keyfile)
+    }
+
+    url1 <- paste0(
+      "https://", 
+      frostID[1],
+      #client_id, 
+      "@frost.met.no/",
+      "sources/v0.jsonld",
+      "?types=SensorSystem",
+      "&country=Norge",
+      "&fields=id,name,masl,country,county,countyId,municipality,municipalityId,geometry"
+    )
+    url2 <- paste0(
+      "https://",
+      frostID[1],
+      #client_id, 
+      "@frost.met.no/",
+      "observations/availableTimeSeries/v0.jsonld",
+      "?elements=", strparam,
+      "&timeresolutions=", timeresolutions,
+      "&levels=", levels,
+      "&timeoffsets=", timeoffsets,
+      "&performancecategories=", performancecategories,
+      "&exposurecategories=", exposurecategories,
+      "&fields=sourceId,elementId,validFrom,validTo"
+    )
+
+    if (verbose) {
+      print(url1)
+      print(url2)
+    }
+
+    xs1 <- jsonlite::fromJSON(URLencode(url1), flatten=TRUE)
+    xs1$data$lon = sapply(xs1$data$geometry.coordinates, function(x) x[1])
+    xs1$data$lon[sapply(xs1$data$lon, is.null)] <- NA
+    xs1$data$lon <- unlist(xs1$data$lon)
+    xs1$data$lat = sapply(xs1$data$geometry.coordinates, function(x) x[2])
+    xs1$data$lat[sapply(xs1$data$lat, is.null)] <- NA
+    xs1$data$lat <- unlist(xs1$data$lat)    
+    df1 <- xs1$data[c("id","name","country","lon","lat","masl","municipality","municipalityId","county","countyId")]
+
+    xs2 <- jsonlite::fromJSON(URLencode(url2), flatten=TRUE)
+    df2 <- xs2$data
+    df2$sourceId = substring(df2$sourceId, 1, nchar(df2$sourceId)-2)
+
+    df <- data.frame(NULL)
+    for (i in 1:length(param1s)) {
+      dfparam = df2[df2$elementId == param1s[i], ]
+      validFrom = try(aggregate(validFrom ~ sourceId, data=dfparam, min), silent=TRUE)
+      validTo = try(aggregate(validTo ~ sourceId, data=dfparam, max), silent=TRUE)
+
+      if (class(validFrom) != "try-error" & length(validFrom) > 0) {
+        validFrom$validFrom <- as.Date(validFrom$validFrom)
+        validTo$validTo <- as.Date(validTo$validTo)
+
+        period = merge(validFrom, validTo, by='sourceId', all.x=TRUE)
+        stperiod = merge(df1, period, by.x="id", by.y="sourceId")
   
-  invisible(df)
+        colnames(stperiod) = c("station_id","location","country","lon","lat","altitude",
+                               "municipality","municipalityid","county","countyid","start","end")
+
+        stperiod$element <- rep(names(param1s[i]),length(stperiod$station_id))
+
+        # convert to UTM
+        utmZone <- 33
+        XY <- LatLon2UTM(lat=stperiod$lat, lon=stperiod$lon, zone=utmZone)
+        stperiod$utm_east  <- XY[[1]]
+        stperiod$utm_north <- XY[[2]]
+        stperiod$utm_zone  <- rep(utmZone, length(stperiod$station_id))
+  
+        df <- rbind(stperiod, df, stringsAsFactors=FALSE)
+      }
+    }
+    #invisible(df)
+    
+    ## Same format as station.meta
+    var <- df$element
+    for(element in unique(df$element)) {
+      var[df$element==element] <- esd2ele(element)
+    }
+    X <- list("station_id"=gsub("[A-Z]|[a-z]","",df$station_id),
+              "location"=df$location,
+              "country"=df$country,
+              "longitude"=df$lon,
+              "latitude"=df$lat,
+              "altitude"=df$altitude,
+              "element"=df$element,
+              "start"=strftime(df$start, format="%Y"),
+              "end"=strftime(df$end, format="%Y"),
+              "source"=switch(timeresolutions, "P1D"="METNO.FROST.DAY", "P1M"="METNO.FROST.MONTH"),
+              "wmo"=rep(NA,length(df$station_id)),
+              "quality"=rep(NA,length(df$station_id)),
+              "variable"=var)
+    attr(X,"metnoURLs") <- "http://frost.met.no"
+    attr(X,"author") <- "K. Tunheim & K. Parding"
+    attr(X,"date") <- Sys.time()
+    attr(X,"history") <- history.stamp(X)
+    class(X) <- c("stationmeta","list")
+    invisible(X)
+  }
 }

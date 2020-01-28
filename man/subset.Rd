@@ -34,7 +34,7 @@ subset(x, ...)
 
 \item{ip}{selection of patterns in PCA or EOF (used for e.g. filtering the data)}
 
-\item{verbose}{Dump diagnostics to the screen}
+\item{verbose}{If TRUE, print out diagnosics}
 
 \item{ensemble.aggregate}{If TRUE, call \code{subset.dsensemble.multi} if
 appropriate.}
@@ -124,7 +124,7 @@ plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
 # OK - identical results
 
 # Extract storm tracks for specific periods, regions and characteristics
-# from the sample 'events' object \\code{storms} (North Atlantic storms identified from ERA5 data)
+# from the sample 'events' object \code{storms} (North Atlantic storms identified from ERA5 data)
 data(storms)
 
 # Subset deep cyclones...

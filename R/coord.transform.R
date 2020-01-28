@@ -16,7 +16,23 @@ UTMScaleFactor <- 0.9996
 
 ## Inputs are lat and lon vectors in degrees, and UTM zone to convert to
 ## Output is a vector with (easting, northing)
-LatLon2UTM <- function(lat, lon, zone) {
+#' Coordinate transformations
+#' 
+#' Transform UTM (Universal Transverse Mercator) coordinates to/from latitude and longitude
+#' 
+#' @aliases LatLon2UTM UTM2LatLon
+#' 
+#' @param lat A vector containing latitudes (unit: degrees east)
+#' @param lon A vector containing longitude (unit: degrees north/south)
+#' @param x The x coordinates (easting) 
+#' @param y The y coordinates (northing)
+#' @param zone UTM zone
+#' @param verbose If TRUE, print out diagnosics
+#' @author K. Tunheim
+#' 
+#' @export
+LatLon2UTM <- function(lat, lon, zone, verbose=FALSE) {
+  if(verbose) print("LatLon2UTM")
   if ( (zone < 1) || (zone > 60) ) {
     zone <- floor((lon + 180.0) / 6) + 1
   }
@@ -25,14 +41,17 @@ LatLon2UTM <- function(lat, lon, zone) {
   if (length(lat) != length(lon))
     stop("Lat and lon lists must be the same length")
   
+  lat[sapply(lat, is.null)] <- NA
+  lon[sapply(lon, is.null)] <- NA
+  
   X <- c()
   Y <- c()
   for (i in 1:length(lat)) {
-    if (is.null(lat[[i]]) || is.null(lon[[i]])) {
+    if (is.na(lat[[i]]) || is.na(lon[[i]])) {
       X[[i]] <- NA
       Y[[i]] <- NA
     } else {
-      XY <- MapLatLon2XY(deg2rad(lat[[i]]), deg2rad(lon[[i]]), cmeridian)
+      XY <- MapLatLon2XY(deg2rad(lat[[i]]), deg2rad(lon[[i]]), cmeridian, verbose=verbose)
       XY[1] <- XY[1] * UTMScaleFactor + 500000
       XY[2] <- XY[2] * UTMScaleFactor
       if (XY[2] < 0) XY[2] <- XY[2] + 10000000
@@ -47,7 +66,9 @@ LatLon2UTM <- function(lat, lon, zone) {
 ## Inputs are x (easting), y (northing), UTM zone they are defined in,
 ## and a boolean to distinguish the southern hemisphere
 ## Output is a vector with (latitude, longitude)
-UTM2LatLon <- function(x, y, zone, southhemi=FALSE) {
+#' @export
+UTM2LatLon <- function(x, y, zone, southhemi=FALSE, verbose=FALSE) {
+  if(verbose) print("UTM2LatLon")
   x <- (x - 500000) / UTMScaleFactor
   
   if (southhemi) y <- y - 10000000
@@ -58,14 +79,17 @@ UTM2LatLon <- function(x, y, zone, southhemi=FALSE) {
   if (length(x) != length(x))
     stop("X and Y lists must be the same length")
   
+  x[sapply(x, is.null)] <- NA
+  y[sapply(y, is.null)] <- NA
+  
   Lat <- c()
   Lon <- c()
   for (i in 1:length(x)) {
-    if (is.null(x[[i]]) || is.null(y[[i]])) {
+    if (is.na(x[[i]]) || is.na(y[[i]])) {
       Lat[[i]] <- NA
       Lon[[i]] <- NA
     } else {
-      LatLon <- MapXY2LatLon(x[i], y[i], UTMCentralMeridian(zone))
+      LatLon <- MapXY2LatLon(x[i], y[i], cmeridian, verbose=verbose)
     
       Lat[[i]] <- round(rad2deg(LatLon[1]), 4)
       Lon[[i]] <- round(rad2deg(LatLon[2]), 4)
@@ -75,7 +99,8 @@ UTM2LatLon <- function(x, y, zone, southhemi=FALSE) {
 }
 
 ## The math used by LatLon2UTM
-MapLatLon2XY <- function(phi, lambda, lambda0) {
+MapLatLon2XY <- function(phi, lambda, lambda0, verbose=FALSE) {
+  if(verbose) print("MapLatLon2XY")
   ep2 <- (sm_a**2 - sm_b**2)/sm_b**2
   nu2 <- ep2 * cos(phi)**2
   N <- (sm_a**2) / (sm_b*sqrt(1+nu2))
@@ -108,7 +133,8 @@ MapLatLon2XY <- function(phi, lambda, lambda0) {
 }
 
 ## The math used by UTM2LatLon
-MapXY2LatLon <- function(x, y, lambda0) {
+MapXY2LatLon <- function(x, y, lambda0, verbose=FALSE) {
+  if(verbose) print("MapXY2LatLon")
   phif <- FootpointLatitude(y)
   
   ep2 <- (sm_a**2 - sm_b**2)/sm_b**2

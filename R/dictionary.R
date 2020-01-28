@@ -52,7 +52,7 @@ ele2param <- function(ele = NULL , src = NULL) {
   x <- merge(x,metno.ele(),all=TRUE)
   x <- merge(x,metno.frost.ele(),all=TRUE)
  
-  if (length(src)>0) x <- subset(x, x[,6] == src)
+  if (length(src)>0) x <- subset(x, toupper(x[,6])==toupper(src))
   if (length(ele)>0) x <- subset(x, x[,1] == ele)
   ## if ((length(src)==0) & (length(ele)==0)) 
   ##df <- as.data.frame(x,stringsAsFactors=FALSE)
@@ -305,6 +305,7 @@ metno.frost.ele <- function() {
     c("503" , "Wind Gust"		, "1"	, "m/s"		, "max(wind_speed_of_gust *)")
   )
   y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO.FROST" , stringsAsFactors = FALSE)
+  return(y)
 }
 
 ## KMP 2018-11-08: This function doesn't work. Element.Name is not defined and it contains an absolute path. 

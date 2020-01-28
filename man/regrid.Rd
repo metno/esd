@@ -33,7 +33,7 @@ interpolated to the longitude/latitude held by is.}
 are turned into PCAs before regridding and then converted back to station
 objects.}
 
-\item{verbose}{Clutter the screen.}
+\item{verbose}{If TRUE, print out diagnostics}
 }
 \value{
 A field object
@@ -105,6 +105,6 @@ map(TX)
 
 }
 \author{
-R.E. Benestad and A.  Mezghanil
+R.E. Benestad and A. Mezghani
 }
 \keyword{utilities}
