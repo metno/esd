@@ -40,14 +40,13 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       ## param <- esd2ele(ele)
     } else stop("x must be an object of class 'station'") 
   }
-  ##
   if (!is.null(param) & is.null(ele)) {
     print("No variable found for your selection or the param identifier has not been set correctly.")
     print("Please refresh your selection based on the list below")
     print(as.matrix(ele2param(src=src))[,c(2,5,6)])
   }  
   ## get the lenght of the data base
-  n <- length(station.meta$station_id)
+  #n <- length(station.meta$station_id)
   ## Search by station identifier
   if (!is.null(stid)) {
     if (is.numeric(stid)) {
@@ -60,7 +59,6 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   }
   ## Search by the closest station to longitude and latitude values
   if (length(lon)==1 & length(lat)==1) {
-    ## AM 25.09.2013 STILL NEED TO TEST
     d <- distAB(lon, lat, station.meta$longitude, station.meta$latitude)
     id <- d==min(d,na.rm=TRUE)
     ##id[is.na(id)] <- FALSE # Ak some of the lon values are NA's
@@ -110,29 +108,27 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     ## Search by location
   if (!is.null(loc)) {
     ## id <- is.element(tolower(station.meta$location),tolower(loc))
-      pattern <- paste(loc,collapse='|')
-      id <- grep(pattern=pattern,station.meta$location,ignore.case=TRUE,...)
-      station.meta <- station.meta[id,]
+    pattern <- paste(loc,collapse='|')
+    id <- grep(pattern=pattern,station.meta$location,ignore.case=TRUE,...)
+    station.meta <- station.meta[id,]
   }
-    ##
-    ## Search by starting and ending years
-    if (!is.null(it)) { 
-        it.rng <- range(as.numeric(it),na.rm=TRUE)
-        id <- (as.numeric(station.meta$start) <= it.rng[1]) & (as.numeric(station.meta$end) >= it.rng[2])
-        ##
-        if (sum(id,na.rm=TRUE)==0) {
-            print(paste('No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
-                        min(as.numeric(station.meta$start)),' and latest observation from ',
-                        max(as.numeric(station.meta$end)),sep=''))
-        }
-        station.meta <- station.meta[id,]
-        station.meta$start <- rep(it.rng[1],length(station.meta$loc))
-        ## paste('01-01-',rep(it.rng[1],length(station.meta$loc)),sep='')
-        station.meta$end <- rep(it.rng[2],length(station.meta$loc))
-        ## paste('31-12-',rep(it.rng[2],length(station.meta$loc)),sep='')
+  ##
+  ## Search by starting and ending years
+  if (!is.null(it)) {
+    if(is.dates(it)) it <- as.numeric(strftime(it, format="%Y"))
+    it.rng <- range(it)
+    id <- (as.numeric(station.meta$start) <= it.rng[1]) & (as.numeric(station.meta$end) >= it.rng[2])
+    if (sum(id,na.rm=TRUE)==0) {
+      print(paste('No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
+                  min(as.numeric(station.meta$start)),' and latest observation from ',
+                  max(as.numeric(station.meta$end)),sep=''))
     }
+    station.meta <- station.meta[id,]
+    station.meta$start <- rep(it.rng[1],length(station.meta$loc))
+    station.meta$end <- rep(it.rng[2],length(station.meta$loc))
+  }
 
-  ## Search by minimum number of years
+  ## Search by minimum number of observations
   if (!is.null(nmin)) { 
     ny <- as.numeric(station.meta$end) - as.numeric(station.meta$start) + 1
     id <- (ny >= nmin)
