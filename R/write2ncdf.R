@@ -787,21 +787,20 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
                                           tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,lehrid,lelrid))
   }
  
+    # if (append) {
+    #   print('Need to update the stid-dimension')
+    #   dimS$len <- dimS$len + ns
+    #   ncvar_put( ncid, dimS, n+(1:ns),start=start[1],count=count[1] )
+    # }
   if (verbose) print('Saving the variables:')
-  #ncvar_put( ncid, ncvar, coredata(y),start=start,count=count)  #BER
   ncvar_put( ncid, ncvar, t(coredata(y)),start=start,count=count)
   ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
   ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
   ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
-  #ncvar_put( ncid, lonid, lon(y),start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, latid, lat(y),start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, altid, alt(y),start=start[2],count=count[2]) #BER
   ncvar_put( ncid, lonid, lon(y),start=start[1],count=count[1])
   ncvar_put( ncid, latid, lat(y),start=start[1],count=count[1])
   ncvar_put( ncid, altid, alt(y),start=start[1],count=count[1])
 
-  #ncvar_put( ncid, fyrid, firstyear(x),start=start[2],count=count[2])
-  #ncvar_put( ncid, lyrid, lastyear(x),start=start[2],count=count[2])
   ncvar_put( ncid, fyrid, firstyear(x),start=start[1],count=count[1])
   ncvar_put( ncid, lyrid, lastyear(x),start=start[1],count=count[1])
   if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else
