@@ -25,11 +25,11 @@
 #' 
 #' @export metno.frost.meta.day
 metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
-                                     save2file=TRUE, path=NULL, verbose=FALSE, ...) {
+                                     save2file=FALSE, path=NULL, verbose=FALSE, ...) {
   if(verbose) print("metno.frost.meta.day")
   X <- metno.frost.meta.default(param=param, timeresolutions="P1D", verbose=verbose, ...)
   filename <- "meta.metno.frost.day.rda"
-  attr(X, "source") <- "METNO.FROST.DAY"
+  attr(X, "source") <- "METNOD.FROST"
   attr(X, "version") <- NA
   attr(X, "URL") <- "http://frost.met.no"
   attr(X, "file") <- filename
@@ -51,11 +51,11 @@ metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon
 # get monthly timeseries - removed DD, DD06, DD12, DD18, SD
 #' @export metno.frost.meta.month
 metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
-                                   save2file=TRUE, path=NULL, verbose=FALSE,...) {
+                                   save2file=FALSE, path=NULL, verbose=FALSE,...) {
   if(verbose) print("metno.frost.meta.month")
   X <- metno.frost.meta.default(param=param, timeresolutions="P1M", verbose=verbose, ...)
   filename <- "meta.metno.frost.month.rda"
-  attr(X, "source") <- "METNO.FROST.MONTH"  
+  attr(X, "source") <- "METNOM.FROST"  
   attr(X, "version") <- NA
   attr(X, "URL") <- "http://frost.met.no"
   attr(X, "file") <- "metno.frost.meta.month.rda"
@@ -86,7 +86,8 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     # KMP 2020-01-22: enable timeresolutions notation monthly and daily
     timeresolutions <- switch(toupper(timeresolutions), 
                               "MONTHLY"="P1M", "MONTH"="P1M",
-                              "DAILY"="P1D", "DAY"="P1D", 
+                              "DAILY"="P1D", "DAY"="P1D",
+                              "MINUTE"="PT1M", "MIN"="PT1M",
                               timeresolutions)
     
     # convert all param to local param names
@@ -137,7 +138,6 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       "&exposurecategories=", exposurecategories,
       "&fields=sourceId,elementId,validFrom,validTo"
     )
-
     if (verbose) {
       print(url1)
       print(url2)
@@ -155,7 +155,6 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     xs2 <- jsonlite::fromJSON(URLencode(url2), flatten=TRUE)
     df2 <- xs2$data
     df2$sourceId = substring(df2$sourceId, 1, nchar(df2$sourceId)-2)
-
     df <- data.frame(NULL)
     for (i in 1:length(param1s)) {
       dfparam = df2[df2$elementId == param1s[i], ]
@@ -191,16 +190,19 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     for(element in unique(df$element)) {
       var[df$element==element] <- esd2ele(element)
     }
+    cntr <- sapply(df$country, function(x) switch(x, "Norge"="NORWAY", x))
     X <- data.frame("station_id"=gsub("[A-Z]|[a-z]","",df$station_id),
               "location"=df$location,
-              "country"=df$country,
+              "country"=cntr,
               "longitude"=df$lon,
               "latitude"=df$lat,
               "altitude"=df$altitude,
               "element"=df$element,
               "start"=strftime(df$start, format="%Y"),
               "end"=strftime(df$end, format="%Y"),
-              "source"=switch(timeresolutions, "P1D"="METNO.FROST.DAY", "P1M"="METNO.FROST.MONTH"),
+              "source"=switch(timeresolutions, 
+                              "P1D"="METNOD.FROST", 
+                              "P1M"="METNOM.FROST"),
               "wmo"=rep(NA,length(df$station_id)),
               "quality"=rep(NA,length(df$station_id)),
               "variable"=var, stringsAsFactors=FALSE)
@@ -211,4 +213,27 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     class(X) <- c("stationmeta", class(X))
     invisible(X)
   }
+}
+
+# Do not export - not in use
+metno.frost.meta.minute <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
+                                    save2file=FALSE, path=NULL, verbose=FALSE, ...) {
+  if(verbose) print("metno.frost.meta.day")
+  X <- metno.frost.meta.default(param=param, timeresolutions="PT1M", verbose=verbose, ...)
+  filename <- "meta.metno.frost.day.rda"
+  attr(X, "source") <- "METNO.FROST.MINUTE"
+  attr(X, "version") <- NA
+  attr(X, "URL") <- "http://frost.met.no"
+  attr(X, "file") <- filename
+  attr(X, "cite") <- ""
+  attr(X, "date") <- date()
+  attr(X,"call") <- match.call()
+  attr(X, "history") <- history.stamp(X)
+  if (save2file) {
+    meta.metno.frost.min <- X
+    if(!is.null(path)) filename <- file.path(path,filename)
+    save(meta.metno.frost.min, file=filename, version=2)
+    rm("meta.metno.frost.min")
+  }
+  invisible(X)
 }

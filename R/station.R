@@ -200,33 +200,31 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   
   if (verbose) {print('station.default'); print(match.call())}
 
-  ## Redirect external users to Frost for metno data
-  if(any(grepl("METNO",src)) & user!="metno") {
-    if(length(src)==1) {
-      src <- switch(src,
-                    "METNOM"="METNO.FROST.MONTH",
-                    "METNOD"="METNO.FROST.DAY", src)
-    } else {
-      src["METNOM"] <- "METNO.FROST.MONTH"
-      src["METNOD"] <- "METNO.FROST.DAY"
-    }
-  }
-  
+  ss <- NULL
   if (inherits(loc,"stationmeta")) {
     ss <- loc
   } else if (is.character(loc)) {
     loc <- loc
     ss <- NULL
-  } else ss <- NULL
+  } else if(length(list(...))>0) {
+    if(inherits(list(...)[[1]],"stationmeta")) {
+      ss <- list(...)[[1]]
+    }
+  }
   
   if (is.null(ss)) {
     if (verbose) print('select.station')
-    ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,param=param,src=src,it=it,nmin=nmin)
-  }  
+    ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,
+                         param=param,src=src,it=it,nmin=nmin,user=user,
+                         verbose=verbose)
+  }
+  
   if ((param=="t2m") & is.null(ss)) {
     param0 <- param
-    ssn <- select.station(param="tmin",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,src=src,it=it,nmin=nmin)
-    ssx <- select.station(param="tmax",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,src=src,it=it,nmin=nmin)
+    ssn <- select.station(param="tmin",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,
+                          cntr=cntr,src=src,it=it,nmin=nmin,user=user,verbose=verbose)
+    ssx <- select.station(param="tmax",stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,
+                          cntr=cntr,src=src,it=it,nmin=nmin,user=user,verbose=verbose)
     if (!is.null(ssn) & !is.null(ssx)) {
       class(ssn) <- class(ssx) <- "data.frame"
     } else {
@@ -253,26 +251,62 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   
   X <- NULL
   src <- as.character(ss$source)
-  for(s in unique(src)) {
+  sources <- unique(src)
+  if(any(grepl("METNO",sources))) {
+    if(user!="metno") {
+      sources <- unique(sapply(sources, function(x) {
+        switch(toupper(x), "METNOM"="METNOM.FROST", "METNOD"="METNOD.THREDDS", x)}))
+    }
+  }
+
+  for(s in sources) {
     print(paste("Retrieving data from source",s))
     stid <- ss$station_id[src==s]
     param <- apply(as.matrix(ss$element),1,esd2ele)[src==s]
-    args <- list(...)
-    if(!is.null(it)) {args$start <- min(it); args$end <- max(it)}
-    if(grepl("month",tolower(s))) {
-      timeres <- "P1M"
-      path <- path.metnod
+    if(!is.null(it)) {
+      start <- min(it)
+      end <- max(it)
     } else {
+      args <- list(...)
+      if("start" %in% names(args)) start <- args$start else start <- NULL
+      if("end" %in% names(args)) end <- args$end else end <- NULL
+    }
+    path <- paste0("data.",toupper(s))
+    if(grepl("METNOM.FROST",toupper(s))) {
+      if(!is.null(path.metnom)) path <- path.metnom
+      timeres <- "P1M"
+    } else if(grepl("METNO.FROST.MINUTE",toupper(s))) {
+      timeres <- "PT1M"
+    } else if(grepl("METNOD.FROST",toupper(s))) {
+      if(!is.null(path.metnod)) path <- path.metnod
       timeres <- "P1D"
-      path <- path.metnom
+    } else if(grepl("METNOD.THREDDS",toupper(s))) {
+      if(!is.null(path.metnod)) path <- path.metnod
+    } else if(s=="METNOD") {
+      if(!is.null(path.metnod)) path <- path.metnod 
+      if(is.null(url.metnod)) url <- "http://klapp/metnopub/production" else url <- url.metnod
+      #if(user=='metno') {url <- "http://klapp/metnopub/production"} else {url <- 'ftp://ftp.met.no/projects/chasepl/test'}
+    } else if(s=="METNOM") {
+      if(!is.null(path.metnom)) path <- path.metnom 
+      if(is.null(url.metnom)) url="http://klapp/metnopub/production" else url <- url.metnom
+    } else if(s=="ECAD") {
+      if (!is.null(path.ecad)) path <- path.ecad
+      if (is.null(url.ecad)) {
+        url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend"
+      } else url <- url.ecad
+    } else if(s=="GHCNM") {
+      if(!is.null(path.ghcnm)) path <- path.ghcnm
+      if(is.null(url.ghcnm)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn" else url <- url.ghcnm
+    } else if(s=="GHCND") {
+      if(!is.null(path.ghcnd)) path <- path.ghcnd
+      if(is.null(url.ghcnd)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all" else url <- url.ghcnd
     }
     for(param0 in unique(param)) {
-      if(grepl("frost",tolower(s))) {
-        x <- do.call(metno.frost.station, 
-                     c(list(timeresolutions=timeres, stid=stid[param==param0], 
-                            param=param0, verbose=verbose, path=path,
-                            save2file=save2file), args) )
-        if(!is.null(x)) if(is.null(X)) X <- x else X <- combine.stations(X,x)
+      if(grepl("FROST",toupper(s))) {
+        x <- metno.frost.station(timeresolutions=timeres, stid=stid[param==param0], 
+                            param=param0, verbose=verbose, path=path, 
+                            start=start, end=end, save2file=save2file)
+        if(!is.null(x)) if(is.null(X)) X <- x else X <- combine.station(X,x)
       } else {
         j <- ss$source==s & ss$variable==param0
         stid <- ss$station_id[j]
@@ -286,49 +320,39 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
         start <- ss$start[j]
         end <- ss$end[j]
         print(paste("Retrieving data from",length(stid),"records ..."))
-        if(s=="METNOD") {
-          if (is.null(path.metnod)) path <- paste("data.",toupper(s),sep="") else path <- path.metnod 
-          if (is.null(url.metnod)) {
-            if (user == 'metno') {
-              url="http://klapp/metnopub/production"
-            } else {
-              url= 'ftp://ftp.met.no/projects/chasepl/test'
-            }
-          } else url <- url.metnod
-        } else if(s=="METNOM") {
-          if (is.null(path.metnom)) path <- paste("data.",toupper(s),sep="") else path <- path.metnom 
-          if (is.null(url.metnom)) url="http://klapp/metnopub/production" else url <- url.metnom
-        } else if(s=="ECAD") {
-          if (is.null(path.ecad)) path <- paste("data.",toupper(s),sep="") else path <- path.ecad
-          if (is.null(url.ecad)) {
-            url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend"
-          } else url <- url.ecad
-        } else if(s=="GHCNM") {
-          if (is.null(path.ghcnm)) path <- paste("data.",toupper(s),sep="") else path <- path.ghcnm
-          if (is.null(url.ghcnm)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn" else url <- url.ghcnm
-        } else if(s=="GHCND") {
-          if (is.null(path.ghcnd)) path <- paste("data.",toupper(s),sep="") else path <- path.ghcnd
-          if (is.null(url.ghcnd)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all" else url <- url.ghcnd
-        }
         for (i in 1:length(stid)) {
           if(verbose) print(paste(i,toupper(param0),stid[i],loc[i],cntr[i],s))
-          if (s=="METNOD") {
+          if (grepl("METNOD",toupper(s))) {#(s=="METNOD") {
             if (param0!='dd') param1 <- esd2ele(param0) else param1 <- NULL
             if (!is.null(param1)) {
-              x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                                  cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],
-                                  param=param0,verbose=verbose,
-                                  path=path,url=url,user=user,save2file=save2file)
+              if(grepl("THREDDS",toupper(s))) {
+                x <- station.thredds(param=param0,stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
+                                     it=as.numeric(c(start[i],end[i])),alt=alt[i],cntr=cntr[i],verbose=verbose) 
+              } else {
+                x <- metnod.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+                                    cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],
+                                    param=param0,verbose=verbose,
+                                    path=path,url=url,user=user,save2file=save2file)
+              }
 	          } else {
-              dd06 <- metnod.station(param='dd06',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                                     cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose,
-                                     path=path,url=url,user=user,save2file = save2file)
-              dd12 <- metnod.station(param='dd12',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                                     cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose,
-      	                             path=path,url=url,user=user,save2file = save2file)
-              dd18 <- metnod.station(param='dd18',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                                     cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose,
-      	                            path=path,url=url,user=user,save2file = save2file)
+	            if(grepl("THREDDS",toupper(s))) {
+	              dd06 <- station.thredds(param='dd06',stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
+	                                      it=c(start[i],end[i]),alt=alt[i],cntr=cntr[i],verbose=verbose)
+	              dd12 <- station.thredds(param='dd12',stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
+	                                      it=c(start[i],end[i]),alt=alt[i],cntr=cntr[i],verbose=verbose)
+	              dd18 <- station.thredds(param='dd18',stid=stid[i],loc=loc[i],lon=lon[i],lat=lat[i],
+	                                      it=c(start[i],end[i]),alt=alt[i],cntr=cntr[i],verbose=verbose)
+	            } else {
+                dd06 <- metnod.station(param='dd06',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+                                       cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose,
+                                       path=path,url=url,user=user,save2file = save2file)
+                dd12 <- metnod.station(param='dd12',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+                                       cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose,
+        	                             path=path,url=url,user=user,save2file = save2file)
+                dd18 <- metnod.station(param='dd18',stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+                                       cntr=cntr[i],start=start[i],end=end[i],qual=qual[i],verbose=verbose,
+         	                             path=path,url=url,user=user,save2file = save2file)
+	            }
               x <- (dd06 + dd12 + dd18) / 3
               x <- attrcp(dd06,x)
               class(x) <- class(dd06)
@@ -400,7 +424,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
           } else {
             if (verbose) {print("obs"); str(x)}
             if (verbose) print(paste('Combine the station records for i=',i))
-  	        if (is.null(X)) X <- x else X <- combine.stations(X,x)
+  	        if (is.null(X)) X <- x else X <- combine.station(X,x)
           }
         }
       }
@@ -423,7 +447,7 @@ t2m.ghcnd.avg <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   print("WARNING : Average temperature values have been computed from TMIN and TMAX values")
   param1 <- "TAVG"
   ele <-  "101"
-  attr(ghcnd,'variable') <- switch(param1,'TAVG'=expression(T[2*m]),'TMAX'=expression(paste("max ",T[2*m])),'TMIN'=expression(paste("min ",T[2*m])))
+  attr(ghcnd,'variable') <- switch(toupper(param1),'TAVG'=expression(T[2*m]),'TMAX'=expression(paste("max ",T[2*m])),'TMIN'=expression(paste("min ",T[2*m])))
   attr(ghcnd,'element') <- ele
   invisible(ghcnd)
 }
@@ -520,7 +544,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
                      ## ele=esd2ele(param), freq=1,calendar='gregorian',
                      quality=qual, cntr=cntr, loc=loc, src='ECAD',
                      url=paste("http://eca.knmi.nl/utils/downloadfile.php?file=download/ECA_nonblend_",as.character(param),".zip",sep=''),
-			param=param, aspect="original",
+			               param=param, aspect="original",
                      unit=switch(param1,'TG'='degree Celsius','TX'='deg C','TN'='deg C', 'CC'='oktas',
 		     				     'DD'='degrees','FG'='m/s', 'FX'='m/s','HU'='%','PP'='hPa', 'SS'='hours','RR'='mm/day'),
                      longname=as.character(ele2param(ele=ele,src="ECAD")[2]),
@@ -1000,7 +1024,6 @@ metno.station <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cnt
     print("Warning : No recorded values are found for this station -> Ignored")
     return(NULL)
   } else {
-    browser()
     X <- as.list(Y)
     close(Y)
     if (param1=='RR') X$RR[X$RR == "."] <- "0"
@@ -1078,7 +1101,6 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
                                 browser="firefox", save2file=FALSE, verbose=FALSE) {
   if(verbose) print("metno.frost.station")
   if(verbose) print("Fetch data from the Frost API (http://frost.met.no)")
-  
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     stop("Package 'jsonlite' needed to use 'metno.frost.station'. Please install it.")
   } else {
@@ -1086,29 +1108,26 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     if (is.null(param)) {
       stop("param must be defined")
     }
-
-    ## Enable timeresolutions "day", "daily", "month", "monthly"
-    timeresolutions <- switch(timeresolutions,
-                              "day"="P1D", "daily"="P1D",
-                              "month"="P1M", "monthly"="P1M", 
-                              timeresolutions)
     
+    ## Enable timeresolutions "day", "daily", "month", "monthly"
+    timeresolutions <- switch(toupper(timeresolutions), 
+                              "MONTHLY"="P1M", "MONTH"="P1M",
+                              "DAILY"="P1D", "DAY"="P1D",
+                              "MINUTE"="PT1M", "MIN"="PT1M",
+                              timeresolutions)
     ## Fetch metadata
-    meta.name <- switch(timeresolutions, 
-                        "P1D"="meta.metno.frost.day", 
-                        "P1M"="meta.metno.frost.month")
-    meta.file <- paste0(meta.name,".rda")
-    meta.function <- switch(timeresolutions, 
-                            "P1D"=metno.frost.meta.day, 
-                            "P1M"=metno.frost.meta.month)
-    if(!is.null(path)) meta.file <- file.path(path, meta.file)
-    if(fetch.meta) {
-      meta <- meta.function(save2file=FALSE, verbose=verbose)
+    if(fetch.meta | timeresolutions=="PT1M") {
+      meta.function <- switch(toupper(timeresolutions),
+                              "PT1M"=metno.frost.meta.minute,
+                              "P1D"=metno.frost.meta.day, 
+                              "P1M"=metno.frost.meta.month)
+      station.meta <- meta.function(save2file=FALSE, verbose=verbose)
     } else {
       data("station.meta", envir=environment())
-      id <- station.meta$source==switch(timeresolutions, 
-                                        "P1D"="METNO.FROST.DAY",
-                                        "P1M"="METNO.FROST.MONTH")
+      id <- station.meta$source==switch(toupper(timeresolutions), 
+                                        "PT1M"="METNO.FROST.MINUTE",
+                                        "P1D"="METNOD.FROST",
+                                        "P1M"="METNOM.FROST")
       meta <- station.meta[id,]
     }
   
@@ -1188,16 +1207,31 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     stid.j <- meta$station_id[j]
     end.j <- sapply(meta.end[j], function(x) min(as.integer(x), as.integer(end)))
     start.j <- sapply(meta$start[j], function(x) max(as.integer(x), as.integer(start)))
-    ndata <- switch(timeresolutions, 
+    ndata <- switch(toupper(timeresolutions), 
                     "P1M"=(end.j-start.j+1)*12, 
-                    "P1D"=(end.j-start.j+1)*365.25)
+                    "P1D"=(end.j-start.j+1)*365.25,
+                    "PT1M"=(end.j-start.j+1)*365.25*24*60)
     stid.url <- c(); time.url <- c()
     while(sum(ndata)>0) {
       k <- min(which(ndata>0))
       dk <- min(c(floor(maxdata/ndata[k])-1, length(stid.j)-k, 100))
-      time.url <- c(time.url, paste0(start.j[k],"/",end.j[k]))
-      stid.url <- c(stid.url, paste(paste0('SN',stid.j[k:(k+dk)]),collapse=","))
-      ndata[k:(k+dk)] <- 0
+      if(dk>=0) {
+        time.url <- c(time.url, paste0(start.j[k],"/",end.j[k]))
+        stid.url <- c(stid.url, paste(paste0('SN',stid.j[k:(k+dk)]),collapse=","))
+        ndata[k:(k+dk)] <- 0
+      } else {
+        for(yr in seq(start.j[k],end.j[k])) {
+          dates.k <- unique(c(seq.Date(as.Date(paste0(yr,"-01-01")),
+                                       as.Date(paste0(yr,"-12-31")), 
+                                       by=floor(maxdata/(24*60))), 
+                              as.Date(paste0(yr,"-12-31"))))
+          for(l in seq(1,length(dates.k)-1)) {
+            time.url <- c(time.url, paste0(dates.k[l],"/",dates.k[l+1]))
+            stid.url <- c(stid.url, paste0('SN',stid.j[k]))
+          }
+        }
+        ndata[k] <- 0
+      }
     }
     url <- paste0(
       "https://", frostID[1], "@frost.met.no/observations/v0.jsonld",
@@ -1211,7 +1245,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
       "&exposurecategories=", exposurecategories,
       "&qualities=", qualities
     )
-
+    
     data <- NULL
     for(u in url) {
       if (verbose) print(u)
@@ -1258,8 +1292,8 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
                                 lat=meta$latitude[i], 
                                 alt=meta$altitude[i],
                                 src=switch(timeresolutions, 
-                                           'P1D'='METNO.FROST.DAY', 
-                                           'P1M'='METNO.FROST.MONTH'),
+                                           'P1D'='METNOD.FROST', 
+                                           'P1M'='METNOM.FROST'),
                                 url="http://frost.met.no",
                                 longname=param1info$longname,
                                 unit=param1info$unit,

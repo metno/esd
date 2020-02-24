@@ -25,7 +25,7 @@ using OpenDAP}
 )
 }
 \arguments{
-\item{param}{The element to read c('t2m','tmax','tmin','precip','slp','sd','fx','ff','dd')}
+\item{param}{The element to read c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')}
 
 \item{is}{Index space to select station (list)}
 

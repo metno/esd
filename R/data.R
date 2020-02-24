@@ -7,7 +7,7 @@
 #' "Data Announcement 88-MGG-02, Digital relief of the Surface of the Earth. NOAA, National Geophysical Data Center, Boulder, Colorado, 1988."
 #'
 #' The object \code{station.meta} contains meta data for various sources of station data
-#' (NACD, NARP, NORDKLIM, ECAD, GHCN, and METNO, METNO.FROST) used in the methods \code{\link{station}}.
+#' (NACD, NARP, NORDKLIM, ECAD, GHCN, and METNO) used in the methods \code{\link{station}}.
 #'
 #' \code{NACD}, \code{NARP}, and \code{nordklim.data} contain staion data from Northern Europe from
 #' the North Atlantic Climatological Dataset (NACD),

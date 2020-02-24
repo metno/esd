@@ -9,7 +9,7 @@
 #' @aliases station.thredds meta.thredds
 #' @seealso retrieve.station, station, radar
 #'
-#' @param param The element to read c('t2m','tmax','tmin','precip','slp','sd','fx','ff','dd')
+#' @param param The element to read c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
 #' @param is Index space to select station (list)
 #' @param stid Station ID to select
 #' @param loc Name of location to select
@@ -41,12 +41,11 @@ station.thredds <- function(param='t2m',is = NULL, stid = NULL,
                             cntr = NULL, start.year.before = NULL, end.year.after = NULL, 
                             nmin = NULL, verbose = FALSE, onebyone = FALSE, ...) {
   if (verbose) t0 <- Sys.time()
-  ## Fudge - the slp file does not work - pp is the same as slp.
   if (is.character(param)) { 
-  if (param=='slp') param <- 'pp'
-  url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/',
-                param,'.metnod.nc')
-  if (param=='pp') param <- 'slp'
+    if (param=='slp') param <- 'pp'
+    url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/',
+                  param,'.metnod.nc')
+    if (param=='pp') param <- 'slp'
   } else if (inherits(param,'stationsummary')) {
     stid <- param$station.id
     url <- attr(param,'url')
@@ -66,6 +65,8 @@ station.thredds <- function(param='t2m',is = NULL, stid = NULL,
 
 #' @export meta.thredds
 meta.thredds <- function(param='t2m',verbose=FALSE) {
+  Y <- NULL
+  url <- NULL
   if (param=='slp') param <- 'pp'
   url <- paste0('https://thredds.met.no/thredds/dodsC/metusers/rasmusb/',
                 param,'.metnod.nc')

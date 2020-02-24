@@ -102,13 +102,12 @@ data(Oslo)
 ds <- DS(Oslo,t2m)
 
 # Plot the results for January month
-# plot(subset(ds,it='Jan'))
+plot(subset(ds,it='Jan'))
 
 # Plot the residuals:
 residual <- as.residual(ds)
-obs <- as.anomaly(as.calibrationdata(ds))
-
-plot.zoo(obs,lwd=2)
+obs <- as.anomaly(as.calibrationdata(ds)$y)
+plot(obs,lwd=2)
 lines(residual,col="red")
 
 print("Global climate model simulation NorESM")
@@ -117,11 +116,11 @@ T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 # Plot the global mean of the field:
 plot(T2m)
 # Plot area mean of a sub region
-plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+plot(T2m, is=list(lon=c(0,10),lat=c(60,70)))
 
 # Plot interpolated results corresponding to ferder
 data(ferder)
-plot(T2m,ferder)
+plot(T2m, ferder)
 
 # Plot Hovmuller diagram: Not working ...
 ## plot(T2m,is=list(lon=0)) 

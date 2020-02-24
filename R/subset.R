@@ -479,6 +479,19 @@ subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     y <- x
     if (!is.null(it)) {
       if (verbose) print(paste('it=',it))
+      if(inherits(x,'pca')) {
+        y <- subset.pca(x,it=it,verbose=verbose)
+      } else if(inherits(x,'station')) {
+        y <- subset.station(x,it=it,verbose=verbose)
+      } else if(inherits(x,'eof')) {
+        y <- subset.eof(x,it=it,verbose=verbose)
+      } else {
+        if(verbose) print(paste("subset.ds doesn't do anything for objects of class",
+                                paste(class(x),collapse=" ")))
+      }
+      attr(y,'evaluation') <- subset(attr(x,'evaluation'), it=it)
+      attr(y,'fitted_values') <- subset(attr(x,'fitted_values'), it=it)
+      x <- y
     }
     if (!is.null(ip)) {
       if (verbose) print(paste('pattern=',ip))
@@ -517,7 +530,7 @@ subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     }
     if (!is.null(is))  {
       if (verbose) print(paste('is=',is))
-        x <- subset.pattern(x,is,verbose=verbose)
+      x <- subset.pattern(x,is,verbose=verbose)
     }
     attr(x,'history') <- history.stamp(x)  
     return(x)
