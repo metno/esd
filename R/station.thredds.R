@@ -17,7 +17,7 @@
 #' @param lat Range of latitudes to select
 #' @param alt Range of altitudes to select of stations above (positive) or below (negative) a threshold
 #' @param it Range of times to select
-#' @param cntrs Countries to select
+#' @param cntr Countries to select
 #' @param start.year.before Select stations with record starting before a given year
 #' @param end.year.after Select stations with record ending after a given year
 #' @param nmin Select stations with minimum number of valid data points

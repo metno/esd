@@ -32,6 +32,8 @@
 #' the range (pmin, pmax).  If FUN is "all" and x is a 'trajectory' object,
 #' subset selects cyclone trajectories that are within the chosen range at all
 #' points during their lifetime.)
+#' @param \dots additional arguments 
+#'
 #' @return An object of the same class as the input object
 #' @author R.E. Benestad and A.  Mezghani
 #' @keywords utilities

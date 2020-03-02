@@ -17,6 +17,7 @@
 #' p-value.
 #' @param model The trend model used by \code{\link{lm}}.
 #' @param new if TRUE plot in new window
+#' @param \dots additional arguments
 #'
 #' @return Similar type object as the input object
 #' 

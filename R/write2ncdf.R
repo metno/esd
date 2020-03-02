@@ -192,6 +192,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' @param append a boolean; if TRUE append output to existing file
 #' @param stid_unlim a boolean; if TRUE the stid dimension is unlimited
 #' @param namelength a numeric specifying the number of characters in dimension and variable names
+#' @param nmin Only calculate summary statistics for stations with nmin years of data (e.g. 30 years).
 #' @param offset Sets the attribute 'add_offset' which is added to the values
 #' stored (to save space may be represented as 'short').
 #' @param torg Time origin

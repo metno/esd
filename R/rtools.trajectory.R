@@ -392,3 +392,4 @@ approxlon <- function(lon,n=10) {
   x$y <- lon2dateline(x$y)
   return(x)
 }
+

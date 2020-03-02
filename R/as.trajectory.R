@@ -163,8 +163,6 @@ rence")
 #' @param unit name of unit
 #' @param loc name of location/region
 #'
-#' @param a \code{station} object
-#'
 #' @seealso as.station as.station.trajectory
 #'
 #' @export

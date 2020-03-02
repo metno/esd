@@ -64,7 +64,9 @@
 #' @param lat latitude range
 #' @param anomaly TRUE: return anomaly
 #' @param url source of data
-#' @param plot TRUE:plot
+#' @param latest if TRUE check if a newer version can be downloaded
+#' @param verbose if TRUE print progress
+#'
 #' @return Numeric vectors/matrices with a set of attributes describing the
 #' data.
 #' @author R.E. Benestad

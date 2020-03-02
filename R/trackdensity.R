@@ -1,4 +1,19 @@
-#' export
+#' Calculate density of trajectories
+#'
+#' Internal function used in trajectory2density and events2field
+#'
+#' @param lons longitudes of trajectory
+#' @param lats latitudes of trajectory
+#' @param track trajectory number
+#' @param dx spatial resolution of output field in east-west direction (unit: degrees east)
+#' @param dy spatial resolution of output field in north-south direction (unit: degrees north)
+#' @param radius radius within which to look for trajectories for each grid point (unit: m)
+#' @param type "track" or "trajectory": calculate density of trajectories;
+#' "genesis", "cyclogenesis" or "start": calculate density of cyclogenesis  events;
+#' "lysis", "cyclolysis" or "end": calculate density of cyclolysis events
+#' @param verbose if TRUE print progress
+#'
+#' @export
 trackdensity <- function(lons,lats,track=NULL,dx=NULL,dy=NULL,
                          radius=5E5,type="track",verbose=FALSE) {
   if (is.null(dx)) dx <- min(diff(sort(unique(lons))))
@@ -10,10 +25,10 @@ trackdensity <- function(lons,lats,track=NULL,dx=NULL,dy=NULL,
         B <- approx.lonlat(A$lon,A$lat,n=50)
         lon <- B[,1]
         lat <- B[,2]
-      } else if (type %in% c("genesis","start")) {
+      } else if (type %in% c("genesis","cyclogenesis","start")) {
         lon <- A[1,1]
-        lat <- A[1,2] 
-      } else if (type=="lysis") {
+        lat <- A[1,2]
+      } else if (type %in% c("lysis","cyclolysis","end")) {
         lon <- A[nrow(A),1]
         lat <- A[nrow(A),2]          
       } else stop(paste("invalid input type =",type))

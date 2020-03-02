@@ -4,8 +4,10 @@
 #'
 #' @seealso summary.station summary.ncdf4
 #'
-#' @param x an object of type 'DSensemble'
+#' @param object an object of type 'DSensemble'
 #' @param years A set of years for which to produce summary statistics
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
 #'
 #' @return A matrix containing summary statistics
 #' @examples
@@ -57,8 +59,10 @@ summary.dsensemble <- function(object,...,years=seq(1990,2090,by=20),verbose=FAL
 #'
 #' @seealso summary.dsensemble summary.ncdf4
 #'
-#' @param x an object of type 'station'
+#' @param object an object of type 'station'
 #' @param im The order of months in the table. Use \code{im=c(10:12,1:9)} for Oct-Sep.
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
 #'
 #' @return A matrix containing summary statistics
 #' @examples
@@ -95,8 +99,9 @@ summary.cca <- function(x) {
 
 #' Summary of netcdf file
 #'
-#' @param ncfile filename of netcdf file
+#' @param object filename of netcdf file
 #' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
 #'
 #' @seealso retrieve check.ncdf4
 #'
