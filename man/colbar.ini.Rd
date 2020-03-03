@@ -25,7 +25,8 @@ specified in the numerical vector \code{breaks},
 \item{verbose}{a boolean; if TRUE print information about progress}
 }
 \description{
-Generate a color bar list and add information about the breaks of the color scale based on the numerical range of the input data.
+Generate a color bar list and add information about the breaks of the color scale based on the
+numerical range of the input data.
 }
 \seealso{
 col.bar colbar

@@ -7,7 +7,7 @@
 \alias{crossval.dsensemble}
 \title{Cross-validation}
 \usage{
-crossval(x, m = 5, ...)
+crossval(x, m = 5, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{The results from \code{\link{DS}}.}
@@ -16,6 +16,10 @@ crossval(x, m = 5, ...)
 pre-set options: 'cordex-esd-exp1', 'value-exp1', and 'loo' for experiments
 defined at CORDEX-ESD, COST-VALUE, and leave-one-out ('loo')
 cross-validation.}
+
+\item{verbose}{if TRUE print progress}
+
+\item{\dots}{additional arguments}
 }
 \value{
 Cross-validation object.

@@ -10,6 +10,11 @@
 \usage{
 as.trajectory(x, ...)
 }
+\arguments{
+\item{x}{input object}
+
+\item{\dots}{additional arguments}
+}
 \description{
 Transform an input object into a \code{trajectory} object
 }

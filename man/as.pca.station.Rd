@@ -9,6 +9,8 @@
 \arguments{
 \item{x}{the input object}
 
+\item{verbose}{if TRUE print progress}
+
 \item{...}{other arguments}
 }
 \value{

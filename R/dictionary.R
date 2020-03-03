@@ -15,13 +15,11 @@ test.ele2param <- function() {
 #' Converts between esd element/parameter identifier and variable names from
 #' different data sources.
 #' 
-#' 
 #' @aliases ele2param esd2ele param2ele
 #'
-#' @param param,ele Parameter or element identifier. There are several core
-#' parameters or elements as well as a number of additional parameters. The
-#' parameters or elements are :
-#' @param src A character string for the acronym of the data source.
+#' @param param parameter identifier
+#' @param ele element identifier
+#' @param src a character string for the acronym of the data source
 #'
 #' @return A meta data matrix object with the glossary of the different
 #' variables or element identifiers as originally defined by each data source

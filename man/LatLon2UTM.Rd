@@ -2,7 +2,6 @@
 % Please edit documentation in R/coord.transform.R
 \name{LatLon2UTM}
 \alias{LatLon2UTM}
-\alias{UTM2LatLon}
 \title{Coordinate transformations}
 \usage{
 LatLon2UTM(lat, lon, zone, verbose = FALSE)
@@ -15,13 +14,12 @@ LatLon2UTM(lat, lon, zone, verbose = FALSE)
 \item{zone}{UTM zone}
 
 \item{verbose}{If TRUE, print out diagnosics}
-
-\item{x}{The x coordinates (easting)}
-
-\item{y}{The y coordinates (northing)}
 }
 \description{
-Transform UTM (Universal Transverse Mercator) coordinates to/from latitude and longitude
+Transform latitude and longitude to UTM (Universal Transverse Mercator)
+}
+\seealso{
+UTM2LatLon
 }
 \author{
 K. Tunheim

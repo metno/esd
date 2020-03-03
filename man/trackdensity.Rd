@@ -2,7 +2,7 @@
 % Please edit documentation in R/trackdensity.R
 \name{trackdensity}
 \alias{trackdensity}
-\title{export}
+\title{Calculate density of trajectories}
 \usage{
 trackdensity(
   lons,
@@ -15,6 +15,25 @@ trackdensity(
   verbose = FALSE
 )
 }
+\arguments{
+\item{lons}{longitudes of trajectory}
+
+\item{lats}{latitudes of trajectory}
+
+\item{track}{trajectory number}
+
+\item{dx}{spatial resolution of output field in east-west direction (unit: degrees east)}
+
+\item{dy}{spatial resolution of output field in north-south direction (unit: degrees north)}
+
+\item{radius}{radius within which to look for trajectories for each grid point (unit: m)}
+
+\item{type}{"track" or "trajectory": calculate density of trajectories;
+"genesis", "cyclogenesis" or "start": calculate density of cyclogenesis  events;
+"lysis", "cyclolysis" or "end": calculate density of cyclolysis events}
+
+\item{verbose}{if TRUE print progress}
+}
 \description{
-export
+Internal function used in trajectory2density and events2field
 }

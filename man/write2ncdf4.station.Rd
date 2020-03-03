@@ -51,6 +51,8 @@ stored (to save space may be represented as 'short').}
 
 \item{namelength}{a numeric specifying the number of characters in dimension and variable names}
 
+\item{nmin}{Only calculate summary statistics for stations with nmin years of data (e.g. 30 years).}
+
 \item{verbose}{TRUE - clutter the screen.}
 }
 \value{

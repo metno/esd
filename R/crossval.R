@@ -18,6 +18,8 @@
 #' pre-set options: 'cordex-esd-exp1', 'value-exp1', and 'loo' for experiments
 #' defined at CORDEX-ESD, COST-VALUE, and leave-one-out ('loo')
 #' cross-validation.
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
 #'
 #' @return Cross-validation object.
 #'
@@ -33,10 +35,10 @@
 #' plot(xv)
 #' 
 #' @export
-crossval <- function(x, m=5, ...) UseMethod("crossval")
+crossval <- function(x, m=5, verbose=FALSE, ...) UseMethod("crossval")
 
 #' @export crossval.ds
-crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
+crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
   # Repeat the regression from DS, but through several iterations with
   # leave-m-out. These are masked by setting them to NA before the
   # regression.
@@ -126,7 +128,7 @@ crossval.ds <- function(x, m=5, ..., verbose=FALSE) {
 }
 
 #' @export crossval.list
-crossval.list <- function(x, m=5, ..., verbose=FALSE) {
+crossval.list <- function(x, m=5, verbose=FALSE, ...) {
   if(verbose) print("crossval.list")
   elements <- names(x)
   for (i in 1:length(elements)) {
@@ -138,7 +140,7 @@ crossval.list <- function(x, m=5, ..., verbose=FALSE) {
 }
 
 #' @export crossval.dsensemble
-crossval.dsensemble <- function(x,m=NULL,...,plot=TRUE,verbose=FALSE) {
+crossval.dsensemble <- function(x,m=NULL,verbose=FALSE,...,plot=TRUE) {
   if(verbose) print("crossval.dsensemble")
   X <- x
   n <- m

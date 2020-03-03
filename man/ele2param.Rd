@@ -10,11 +10,11 @@ names and specifications.}
 ele2param(ele = NULL, src = NULL)
 }
 \arguments{
-\item{src}{A character string for the acronym of the data source.}
+\item{ele}{element identifier}
 
-\item{param, ele}{Parameter or element identifier. There are several core
-parameters or elements as well as a number of additional parameters. The
-parameters or elements are :}
+\item{src}{a character string for the acronym of the data source}
+
+\item{param}{parameter identifier}
 }
 \value{
 A meta data matrix object with the glossary of the different

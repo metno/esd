@@ -4,6 +4,7 @@
 #' @param lat a latitude
 #' @param lons longitude or vector of longitudes 
 #' @param lats latitude or vector of longitudes
+#' @param a radius of the earth (unit: m) 
 #'
 #' @return distance between [lon, lat] and [lons, lats] (unit: m)
 #'

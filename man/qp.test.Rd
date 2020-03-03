@@ -2,6 +2,7 @@
 % Please edit documentation in R/qp.test.R
 \name{qp.test}
 \alias{qp.test}
+\alias{qp.test.station}
 \title{quantile-quantile plot}
 \usage{
 qp.test(x, p = c(seq(0.1, 0.95, 0.05), 0.97, 0.98, 0.99), threshold = 1, ...)

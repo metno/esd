@@ -10,6 +10,7 @@
 \alias{anomaly.month}
 \alias{anomaly.season}
 \alias{anomaly.day}
+\alias{anomaly.dsensemble}
 \alias{as.anomaly}
 \alias{as.anomaly.default}
 \alias{as.anomaly.zoo}
@@ -24,6 +25,8 @@ anomaly(x, ...)
 }
 \arguments{
 \item{x}{A station or field object}
+
+\item{\dots}{additional arguments}
 
 \item{ref}{vector defining the reference interval}
 

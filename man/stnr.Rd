@@ -5,21 +5,42 @@
 \title{MetNo meta data function}
 \usage{
 stnr(
-  navn = NULL,
+  name = NULL,
   lon = NULL,
   lat = NULL,
   max.dist = 10,
   alt = NULL,
-  Fylke = NULL,
-  Kommune = NULL,
-  fy = NULL,
-  ty = NULL,
-  ny = NULL,
+  County = NULL,
+  Municipality = NULL,
+  nmin = NULL,
   param = "TAM",
   plot = FALSE,
-  print = FALSE
+  verbose = FALSE
 )
 }
+\arguments{
+\item{name}{station name}
+
+\item{lon}{longitude}
+
+\item{lat}{latitude}
+
+\item{max.dist}{maximum distance to lon,lat (unit: km?)}
+
+\item{alt}{altitude}
+
+\item{County}{county}
+
+\item{Municipality}{municipality}
+
+\item{nmin}{only keep stations with nmin years of data}
+
+\item{param}{parameter name}
+
+\item{plot}{if TRUE plot a map of the stations}
+
+\item{verbose}{if TRUE print progress}
+}
 \description{
-MetNo meta data function
+Gather meta data from metno data
 }

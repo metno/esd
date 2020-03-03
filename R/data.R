@@ -8,6 +8,7 @@
 #'
 #' The object \code{station.meta} contains meta data for various sources of station data
 #' (NACD, NARP, NORDKLIM, ECAD, GHCN, and METNO) used in the methods \code{\link{station}}.
+#' \code{ISO03} contains country codes.
 #'
 #' \code{NACD}, \code{NARP}, and \code{nordklim.data} contain staion data from Northern Europe from
 #' the North Atlantic Climatological Dataset (NACD),
@@ -41,6 +42,8 @@
 #' Some data sets (\code{NINO3.4}, \code{NAOI} ) come with a 'frozen' version in the package,
 #' but there are also functions that read the most recent version of these indeces from the Internet
 #' with functions \code{\link{NINO3.4}} and \code{\link{NAO}}.
+#'
+#' The python script \code{py.script} is used in the function \code{\link{ERA5.CDS}} to download ERA5 data from the Climate Data Store.
 #'
 #' @aliases geoborders etopo5 station.meta NACD NARP 
 #' Oslo Svalbard bjornholt ferder vardo

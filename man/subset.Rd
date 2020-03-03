@@ -28,6 +28,8 @@ subset(x, ...)
 \arguments{
 \item{x}{Data object from which the subset is taken}
 
+\item{\dots}{additional arguments}
+
 \item{it}{A list or data.frame providing time index, e.g. a range of years like c(1979,2010), a season ('djf'), or a month ('dec' or 'december').}
 
 \item{is}{A list or data.frame providing space index, e.g. a list of longitude and latitude range like list(lon=c(0,60), lat=c(35,60)).}

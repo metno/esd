@@ -8,6 +8,11 @@
 \usage{
 diagram(x, ...)
 }
+\arguments{
+\item{x}{input object}
+
+\item{\dots}{additional arguments}
+}
 \description{
 Visualise - different type of plotting...
 }

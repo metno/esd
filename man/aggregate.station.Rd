@@ -25,11 +25,15 @@
 
 \item{FUN}{a function; see \code{\link{aggregate.zoo}}. Additional options: 'area','exceedance','lessthan'.}
 
+\item{\dots}{additional arguments}
+
 \item{na.rm}{TRUE: ignore NA - see see \code{\link{mean}}}
 
 \item{regular}{see \code{\link{aggregate.zoo}}}
 
 \item{frequency}{see \code{\link{aggregate.zoo}}}
+
+\item{verbose}{if TRUE print progress}
 
 \item{threshold}{threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'}
 }

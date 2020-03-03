@@ -23,9 +23,9 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' @aliases station select.station station.default station.ecad station.nacd
 #' station.narp station.nordklim station.metnod station.metnom station.ghcnd
 #' station.ghcnm station.ghcnm station.sonel station.gloss station.newlyn
-#' station.giss
+#' station.giss metno.frost.station
 #'
-#' @seealso clean.station allgood station.thredds
+#' @seealso clean.station allgood station.thredds map.station
 #'
 #' @param loc A string of characters as the name of the location
 #' (weather/climate station) or an object of class "stationmeta".
@@ -63,8 +63,9 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' @param path The path where the data are stored. Can be a symbolic link.
 #' @return A time series of "zoo" "station" class with additional attributes
 #' used for further processing.
+#'
 #' @author A. Mezghani
-#' @seealso \code{\link{map.station}}.
+#'
 #' @keywords select.station
 #' @examples
 #' 
@@ -150,12 +151,6 @@ station.metnom <- function(...) {
 #' @export station.metnod
 station.metnod <- function(...) {
   y <- station(src="metnod",...)
-  invisible(y)
-}
-
-#' @export station.metno.frost
-station.metno.frost <- function(...) {
-  y <- station(src="metno.frost",...)
   invisible(y)
 }
 
@@ -261,7 +256,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   }
 
   for(s in sources) {
-    print(paste("Retrieving data from source",s))
+    if(verbose) print(paste("Retrieving data from source",s))
     stid <- ss$station_id[src==s]
     param <- apply(as.matrix(ss$element),1,esd2ele)[src==s]
     if(!is.null(it)) {
@@ -320,7 +315,8 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
         qual <- ss$quality[j]
         start <- ss$start[j]
         end <- ss$end[j]
-        print(paste("Retrieving data from",length(stid),"records ..."))
+        if(verbose) print(paste("Retrieving data from",length(stid),
+	                        "records ..."))
         for (i in 1:length(stid)) {
           if(verbose) print(paste(i,toupper(param0),stid[i],loc[i],cntr[i],s))
           if (grepl("METNOD",toupper(s))) {#(s=="METNOD") {
@@ -358,7 +354,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
               x <- attrcp(dd06,x)
               class(x) <- class(dd06)
               rm(dd06,dd12,dd18)
-              print("WARNING : Averaged wind direction values computed from 06, 12,and 18 UTC")
+              if(verbose) print("WARNING : Averaged wind direction values computed from 06, 12,and 18 UTC")
               param1 <- "DD"
               ele <-  "502"
               attr(x,'variable') <- param1
@@ -403,7 +399,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
 		            x <- attrcp(ghcnd.tmin,x)
 		            class(x) <- class(ghcnd.tmin)
 		            rm(ghcnd.tmin,ghcnd.tmax)
-		            print("WARNING : Average temperature values have been computed from TMIN and TMAX values")
+		            if(verbose) print("WARNING : Average temperature values have been computed from TMIN and TMAX values")
 		            param1 <- "TAVG"
 		            ele <-  "101"
 		            attr(x,'variable') <- param
@@ -417,8 +413,8 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
 		        }
 	        }
           if (is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
-            print("Warning : No values found in the time series for-> This station will be ignored")
-            print(paste('stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],
+            if(verbose) print("Warning : No values found in the time series for-> This station will be ignored")
+            if(verbose) print(paste('stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],
                         'loc=',loc[i],'cntr=',cntr[i],'param=',param0,'path=',path,
                         'url=',url)) # REB 2016-07-26
             x <- NULL
@@ -445,7 +441,7 @@ t2m.ghcnd.avg <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   if (is.null(ghcnd.tmax)) return(NULL)
   ghcnd <- (ghcnd.tmin + ghcnd.tmax) / 2
   ghcnd <- attrcp(ghcnd.tmin,ghcnd)
-  print("WARNING : Average temperature values have been computed from TMIN and TMAX values")
+  if(verbose) print("WARNING : Average temperature values have been computed from TMIN and TMAX values")
   param1 <- "TAVG"
   ele <-  "101"
   attr(ghcnd,'variable') <- switch(toupper(param1),'TAVG'=expression(T[2*m]),
@@ -911,7 +907,7 @@ metno.station.internal <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL
 stnr <- function (name = NULL, lon = NULL, lat = NULL, max.dist = 10, 
                   alt = NULL, County = NULL, Municipality = NULL,
                   nmin = NULL, param = "TAM", plot = FALSE, verbose = FALSE) {
-  met.no.meta <- MET.no.meta(param = param, print = print)
+  met.no.meta <- MET.no.meta(param = param, verbose = verbose)
   iue <- nchar(met.no.meta$TODATE) == 2
   met.no.meta$TODATE[iue] <- Sys.time()
   i9c <- (nchar(met.no.meta$TODATE) == 9)

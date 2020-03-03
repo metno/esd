@@ -15,6 +15,7 @@
 \alias{annual.station}
 \alias{annual.spell}
 \alias{annual.field}
+\alias{annual.eof}
 \alias{as.monthly}
 \alias{as.monthly.default}
 \alias{as.monthly.station}

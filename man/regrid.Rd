@@ -7,6 +7,7 @@
 \alias{regrid.station}
 \alias{regrid.matrix}
 \alias{regrid.eof}
+\alias{regrid.pca}
 \alias{sparseMproduct}
 \title{Regrid}
 \usage{

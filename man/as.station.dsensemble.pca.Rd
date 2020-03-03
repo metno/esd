@@ -6,6 +6,18 @@
 \usage{
 \method{as.station}{dsensemble.pca}(x, ..., is = NULL, ip = NULL, verbose = FALSE)
 }
+\arguments{
+\item{x}{a dsensemble pca object}
+
+\item{\dots}{additional arguments}
+
+\item{is}{A list or data.frame providing space index, e.g. a list of longitude and
+latitude range like list(lon=c(0,60), lat=c(35,60)).}
+
+\item{ip}{selection of patterns in PCA or EOF (used for e.g. filtering the data)}
+
+\item{verbose}{if TRUE print progress}
+}
 \description{
 Transform a \code{dsensemble pca} object into a \code{dsensemble station} object
 by extracting the results model wise and using the downscaled principle components

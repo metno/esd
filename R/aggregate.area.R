@@ -20,6 +20,7 @@
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param a radius of earth (unit: km)
 #' @param threshold threshold to be used if FUN is 'area','exceedance', or 'lessthan'
+#' @param \dots additional arguments
 #'
 #' @return The call returns a station object
 #'

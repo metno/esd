@@ -2,6 +2,12 @@
 #' This function adds a stamp in the history of x
 #' with 'sys.call', 'date()', and 'src (source)
 #'
+#' @param x input object
+#' @param y input object
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
+#'
+#' @aliases history.stamp history.stamp.default
 #' @importFrom utils sessionInfo
 #'
 #' @export history.stamp

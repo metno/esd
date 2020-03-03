@@ -1,5 +1,8 @@
 #' Visualise - different type of plotting...
 #'
+#' @param x input object 
+#' @param \dots additional arguments
+#'
 #' @aliases diagram.dsensemble diagram.station
 #'
 #' @export

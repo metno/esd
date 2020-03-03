@@ -361,7 +361,7 @@ retrieve.meps <- function(ncfile, path=NULL, param='rr',
   class(Y) <- c('station','day','zoo')
   
   ## plot the results
-  if (plot) map(Y,...)
+  if (plot) map(Y)
   invisible(Y)
 }
 

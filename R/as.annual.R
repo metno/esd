@@ -8,7 +8,7 @@
 #' and \code{as.seasons} aggregates to a user defined season (see arguments 'start' and 'end'). 
 #'
 #' @aliases as.annual as.annual.default as.annual.numeric as.annual.integer as.annual.yearqtr as.annual.station as.annual.spell
-#' annual annual.zoo annual.default annual.dsensemble annual.station annual.spell annual.field
+#' annual annual.zoo annual.default annual.dsensemble annual.station annual.spell annual.field annual.eof
 #' as.monthly as.monthly.default as.monthly.station as.monthly.field
 #' as.4seasons as.4seasons.default as.4seasons.day as.4seasons.station as.4seasons.spell as.4seasons.field as.4seasons.dsensemble as.seasons
 #'

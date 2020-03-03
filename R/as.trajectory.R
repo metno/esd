@@ -1,5 +1,8 @@
 #' Transform an input object into a \code{trajectory} object
 #'
+#' @param x input object
+#' @param \dots additional arguments
+#'
 #' @aliases as.trajectory as.trajectory.default as.trajectory.events events2trajectory trajectory
 #'
 #' @export as.trajectory

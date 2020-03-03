@@ -7,9 +7,13 @@
 \method{summary}{dsensemble}(object, ..., years = seq(1990, 2090, by = 20), verbose = FALSE)
 }
 \arguments{
+\item{object}{an object of type 'DSensemble'}
+
+\item{\dots}{additional arguments}
+
 \item{years}{A set of years for which to produce summary statistics}
 
-\item{x}{an object of type 'DSensemble'}
+\item{verbose}{if TRUE print progress}
 }
 \value{
 A matrix containing summary statistics

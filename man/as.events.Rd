@@ -8,7 +8,14 @@
 \alias{trajectory2events}
 \title{Transform an input object into an \code{events} object}
 \usage{
-as.events(x, ...)
+as.events(x, verbose = FALSE, ...)
+}
+\arguments{
+\item{x}{input object}
+
+\item{verbose}{if TRUE print progress}
+
+\item{\dots}{additional arguments}
 }
 \description{
 Transform an input object into an \code{events} object

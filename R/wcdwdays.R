@@ -24,6 +24,10 @@
 #' @param threshold Temperature threshold
 #' @param verbose TRUE for trouble shooting, debugging etc.
 #' @param plot TRUE - produce graphics
+#' @param nmin Minimum number of data points (e.g. days or months) with valid
+#' data accepted for annual estimate. NULL demands complete years.
+#' @param new if TRUE plot in new window
+#'
 #' @author R.E. Benestad
 #' @examples
 #' 

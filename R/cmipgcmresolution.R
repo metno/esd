@@ -17,6 +17,8 @@
 #'
 #' Return information about spatial resolution of GCMs
 #'
+#' @param what unit of output ('deg' or 'km')
+#'
 #' @export
 cmipgcmresolution <- function(what='deg') {
   IPCC.AR5.Table.9.A.1 <- NULL

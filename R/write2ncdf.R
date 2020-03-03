@@ -5,8 +5,8 @@
 #' 'CF' convention. The method is built on the \code{ncdf4} package.
 #' 
 #' @seealso write2ncdf4.station 
-#' write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.eof
-#' write2ncdf4.pca write2ncdf4.dsensemble
+#' write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.dsensemble
+#' write2ncdf4.eof write2ncdf4.pca write2ncdf4.dsensemble write2ncdf4.eof
 #' 
 #' @param x data object
 #' @param \dots additional arguments

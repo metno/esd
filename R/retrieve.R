@@ -615,6 +615,10 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
 #'
 #' Check content of netcdf file including parameters, units, and time format (frequency, calendar type).
 #'
+#' @param ncid an object of the class 'ncdf4'
+#' @param param meteorological parameter
+#' @param verbose if TRUE print progress
+#'
 #' @export check.ncdf4
 check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   if(verbose) print("check.ncdf4")

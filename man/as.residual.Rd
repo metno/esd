@@ -7,14 +7,14 @@
 \alias{as.residual.field}
 \title{Calculate residual}
 \usage{
-as.residual(x, ...)
+as.residual(x, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{a 'ds' object}
 
-\item{\dots}{additional arguments}
-
 \item{verbose}{a boolean; if TRUE print information about progress}
+
+\item{\dots}{additional arguments}
 }
 \description{
 Caluculate the residual of a 'ds' object, i.e., the original data minus the fitted values.

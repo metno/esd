@@ -39,6 +39,8 @@
 #' @param ylab label of y-axis
 #' @param probs quantile to display in plot, e.g., probs=0.95 gives a diagnosis
 #' of the 95th percentile of the data.
+#' @param \dots additional arguments
+#'
 #' @return A 'diag' object containing test results
 #' @author R.E. Benestad
 #' @keywords utilities

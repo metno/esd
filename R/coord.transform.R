@@ -18,14 +18,13 @@ UTMScaleFactor <- 0.9996
 ## Output is a vector with (easting, northing)
 #' Coordinate transformations
 #' 
-#' Transform UTM (Universal Transverse Mercator) coordinates to/from latitude and longitude
-#' 
-#' @aliases LatLon2UTM UTM2LatLon
+#' Transform latitude and longitude to UTM (Universal Transverse Mercator)
+#'
+#' @aliases LatLon2UTM
+#' @seealso UTM2LatLon
 #' 
 #' @param lat A vector containing latitudes (unit: degrees east)
 #' @param lon A vector containing longitude (unit: degrees north/south)
-#' @param x The x coordinates (easting) 
-#' @param y The y coordinates (northing)
 #' @param zone UTM zone
 #' @param verbose If TRUE, print out diagnosics
 #' @author K. Tunheim
@@ -66,6 +65,20 @@ LatLon2UTM <- function(lat, lon, zone, verbose=FALSE) {
 ## Inputs are x (easting), y (northing), UTM zone they are defined in,
 ## and a boolean to distinguish the southern hemisphere
 ## Output is a vector with (latitude, longitude)
+#' Coordinate transformations
+#' 
+#' Transform UTM (Universal Transverse Mercator) coordinates to latitude and longitude
+#' 
+#' @seealso LatLon2UTM
+#' @aliases UTM2LatLon
+#' 
+#' @param x The x coordinates (easting) 
+#' @param y The y coordinates (northing)
+#' @param zone UTM zone
+#' @param southhemi if TRUE we are at the southern hemisphere 
+#' @param verbose If TRUE, print out diagnosics
+#' @author K. Tunheim
+#' 
 #' @export
 UTM2LatLon <- function(x, y, zone, southhemi=FALSE, verbose=FALSE) {
   if(verbose) print("UTM2LatLon")

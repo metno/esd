@@ -13,6 +13,7 @@
 #' @param zlim range of color axis
 #' @param verbose if TRUE print information about progress
 #' @param plot if TRUE display results as plots
+#' @param new if TRUE plot in new window
 #'
 #' @examples
 #' 
@@ -20,7 +21,8 @@
 #' precip.gp <- gridmap(precip.NORDKLIM, plot=TRUE)
 #' 
 #' @export gridmap
-gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,zlim=NULL,verbose=FALSE,plot=TRUE,new=TRUE) {
+gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
+                    zlim=NULL,verbose=FALSE,plot=TRUE,new=TRUE) {
 
   if (verbose) print(paste('gridmap',FUN))
   if (!requireNamespace("LatticeKrig", quietly = TRUE)) {

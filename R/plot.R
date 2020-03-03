@@ -904,14 +904,11 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #' plot(T2m)
 #' # Plot area mean of a sub region
 #' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
-#' 
+#'
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
 #' plot(T2m,ferder)
-#' 
-#' # Plot Hovmuller diagram: Not working ...
-#' ## plot(T2m,is=list(lon=0)) 
-#' 
+#'
 #' print("Extract a subset - the January month")
 #' x <- subset(t2m,it="jan")
 #' X <- subset(T2m,it="jan")

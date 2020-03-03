@@ -14,6 +14,8 @@ distAB(lon, lat, lons, lats, a = 6378000)
 \item{lons}{longitude or vector of longitudes}
 
 \item{lats}{latitude or vector of longitudes}
+
+\item{a}{radius of the earth (unit: m)}
 }
 \value{
 distance between [lon, lat] and [lons, lats] (unit: m)

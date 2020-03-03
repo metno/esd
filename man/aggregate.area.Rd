@@ -21,6 +21,8 @@
 \arguments{
 \item{x}{A \code{\link{station}} object}
 
+\item{\dots}{additional arguments}
+
 \item{is}{A list or data.frame providing space index, see \code{\link{subset}}}
 
 \item{it}{A list or data.frame providing time index, see \code{\link{subset}}}

@@ -9,7 +9,7 @@
 #' 
 #' 
 #' @aliases trend.one.station trend.station trend.eof trend.field trend.zoo
-#' trend.zoo.multi trend.coef trend.err trend.pval
+#' trend.zoo.multi trend.coef trend.err trend.pval trend.default
 #'
 #' @param x The data object
 #' @param result "trend" returns the trend; "residual" returns the residual;

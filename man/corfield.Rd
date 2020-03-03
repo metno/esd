@@ -18,6 +18,8 @@ corfield(x, y, ...)
 
 \item{y}{data object}
 
+\item{\dots}{additional arguments}
+
 \item{plot}{TRUE: plot the results}
 
 \item{use}{see \code{\link{cor}}}

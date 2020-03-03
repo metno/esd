@@ -2,6 +2,7 @@
 % Please edit documentation in R/seasevol.R
 \name{seasevol}
 \alias{seasevol}
+\alias{seasevol.station}
 \title{Visualise the seasonal evolution of a daily time series}
 \usage{
 seasevol(x, nv = 25, verbose = FALSE, ...)
@@ -19,6 +20,6 @@ with the julian day on the y-axis and year on the x-axis.
 }
 \examples{
 data(ferder)
-seasevol(ferder)
+seasevol(ferder, new=FALSE)
 
 }

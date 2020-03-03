@@ -5,6 +5,11 @@
 \alias{validate.dsensemble}
 \alias{validate.eof.comb}
 \alias{validate.default}
+\alias{validate.cca}
+\alias{validate.ds}
+\alias{validate.eof}
+\alias{validate.eof.field}
+\alias{validate.pca}
 \title{Validate}
 \usage{
 validate(x, ...)

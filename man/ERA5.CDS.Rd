@@ -21,7 +21,8 @@ ERA5.CDS(
 )
 }
 \arguments{
-\item{param}{variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', 'mean_sea_level_pressure', '10m_u_component_of_wind', '10m_v_component_of_wind', 'relative_humidity', 'dewpoint_depression', 'snow_depth', ...}
+\item{param}{variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', 'mean_sea_level_pressure',
+'10m_u_component_of_wind', '10m_v_component_of_wind', 'relative_humidity', 'dewpoint_depression', 'snow_depth'}
 
 \item{it}{the years to extract.}
 
@@ -31,7 +32,10 @@ ERA5.CDS(
 
 \item{FNAME}{the name of the local files for storing the data}
 
-\item{FUN}{the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum', 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).}
+\item{FUN}{the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum',
+'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).}
+
+\item{path}{The path where the data are stored. Can be a symbolic link.}
 
 \item{verbose}{a boolean; if TRUE print information about progress}
 }
