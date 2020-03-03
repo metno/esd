@@ -250,7 +250,7 @@ IOD <- function(url='https://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/Data/dmi
   ## Indian Ocean Dipole
   test <- readLines(url)
   n <- length(test)
-  X <- as.matrix(read.table(url,skip=1,nrow = n-8))
+  X <- as.matrix(read.table(url,skip=1,nrows=n-8))
   X[X <= -999] <- NA
   yr <- sort(rep(X[,1],12))
   mo <- rep(1:12,length(X[,1]))

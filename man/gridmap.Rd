@@ -36,6 +36,8 @@ breaks=seq(1,10), rev=FALSE)}
 \item{verbose}{if TRUE print information about progress}
 
 \item{plot}{if TRUE display results as plots}
+
+\item{new}{if TRUE plot in new window}
 }
 \description{
 A function that uses \code{LatticeKrieg} and elevation data to grid station

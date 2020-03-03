@@ -16,6 +16,7 @@
 \alias{station.gloss}
 \alias{station.newlyn}
 \alias{station.giss}
+\alias{metno.frost.station}
 \title{Retrieve station record from a given data source.}
 \usage{
 station(...)
@@ -125,9 +126,7 @@ map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showal
 
 }
 \seealso{
-clean.station allgood station.thredds
-
-\code{\link{map.station}}.
+clean.station allgood station.thredds map.station
 }
 \author{
 A. Mezghani

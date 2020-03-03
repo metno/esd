@@ -5,7 +5,7 @@
 #' to limit the spatial and/or temporal scope (see input options 'it', 'lon', 'lat')
 #' as you will otherwise run out of memory.
 #' 
-#' @aliases meps.thredds, retrieve.meps
+#' @aliases meps
 #'
 #' @param url URL for the data on thredds.met.no
 #' @param lon Longitude selection (=NULL reads all)
@@ -33,10 +33,10 @@
 #' map(slp, FUN="mean")
 #' 
 #' @export
-meps.thredds <- function(url='https://thredds.met.no/thredds/catalog/metpplatest',
-                    type="forecast", param='slp', lon=c(9.5,11.5), lat=c(59,61), 
-                    it="latest", dt=50, verbose=FALSE, plot=FALSE) {
-  if (verbose) print('esd::meps.thredds')
+meps <- function(url='https://thredds.met.no/thredds/catalog/metpplatest',
+                 type="forecast", param='slp', lon=c(9.5,11.5), lat=c(59,61), 
+                 it="latest", dt=50, verbose=FALSE, plot=FALSE) {
+  if (verbose) print('esd::meps')
   path <- sub("/catalog/","/dodsC/",url)
   contents <- readLines(paste0(url,'/catalog.html'))
   files <- contents[grepl(".nc",contents,fixed=TRUE)]
@@ -361,7 +361,7 @@ retrieve.meps <- function(ncfile, path=NULL, param='rr',
   class(Y) <- c('station','day','zoo')
   
   ## plot the results
-  if (plot) map(Y,...)
+  if (plot) map(Y)
   invisible(Y)
 }
 

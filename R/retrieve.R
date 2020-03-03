@@ -615,6 +615,10 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
 #'
 #' Check content of netcdf file including parameters, units, and time format (frequency, calendar type).
 #'
+#' @param ncid an object of the class 'ncdf4'
+#' @param param meteorological parameter
+#' @param verbose if TRUE print progress
+#'
 #' @export check.ncdf4
 check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   if(verbose) print("check.ncdf4")
@@ -1168,22 +1172,28 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
     if (is.character(it)) it <- as.Date(it)
     if (verbose) print(paste('Read selected period',min(it),'-',max(it),
                              'from interval',min(t),max(t)))
-    it1 <- (1:length(t))[is.element(t,it)][1]
-    #it2 <- length(it)
-    it2 <- (1:length(t))[is.element(t,it)][2] - it1 + 1
+    if(it[1]<min(t)) {
+      it1 <- 1
+    } else {
+      it1 <- (1:length(t))[is.element(t,it)][1]
+    }
+    if(it[2]>max(t)) {
+      it2 <- nt - it1 + 1
+    } else {
+      it2 <- (1:length(t))[is.element(t,it)][2] - it1 + 1
+    }
     if (verbose) print(c(it1,it2))
-    #browser()
     t <- t[it1:(it1+it2-1)]
   }
   
   if (nt == size[1]) { 
-    start <- c(it1,min(is))
-    count <- c(it2,max(is) - min(is)+1)
+    start <- c(it1, min(is))
+    count <- c(it2-it1, max(is) - min(is)+1)
     transpose <- FALSE
   } else { 
     ## The netCDF retrieval is faster when the data is ordered as (space,time)
-    start <- c(min(is),it1)
-    count <- c(max(is) - min(is)+1,it2)
+    start <- c(min(is), it1)
+    count <- c(max(is) - min(is)+1, it2)
     transpose <- TRUE
   }
   
@@ -1198,7 +1208,7 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
     print(count)
     #print(ncid)
   }
-  
+
   x <- ncvar_get(ncid,param,start=start,count=count)
   if (transpose) x <- t(x)
   nc_close(ncid)

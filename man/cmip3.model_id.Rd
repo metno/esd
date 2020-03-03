@@ -7,6 +7,9 @@
 \usage{
 cmip3.model_id(txt)
 }
+\arguments{
+\item{txt}{meta data}
+}
 \description{
 Clean up CMIP3 and CMIP5 meta data
 }

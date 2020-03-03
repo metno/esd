@@ -170,13 +170,12 @@ plot <- function(x,...)  UseMethod("plot")
 #' ds <- DS(Oslo,t2m)
 #' 
 #' # Plot the results for January month
-#' # plot(subset(ds,it='Jan'))
+#' plot(subset(ds,it='Jan'))
 #' 
 #' # Plot the residuals:
 #' residual <- as.residual(ds)
-#' obs <- as.anomaly(as.calibrationdata(ds))
-#' 
-#' plot.zoo(obs,lwd=2)
+#' obs <- as.anomaly(as.calibrationdata(ds)$y)
+#' plot(obs,lwd=2)
 #' lines(residual,col="red")
 #' 
 #' print("Global climate model simulation NorESM")
@@ -185,11 +184,11 @@ plot <- function(x,...)  UseMethod("plot")
 #' # Plot the global mean of the field:
 #' plot(T2m)
 #' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+#' plot(T2m, is=list(lon=c(0,10),lat=c(60,70)))
 #' 
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m,ferder)
+#' plot(T2m, ferder)
 #' 
 #' # Plot Hovmuller diagram: Not working ...
 #' ## plot(T2m,is=list(lon=0)) 
@@ -905,14 +904,11 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #' plot(T2m)
 #' # Plot area mean of a sub region
 #' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
-#' 
+#'
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
 #' plot(T2m,ferder)
-#' 
-#' # Plot Hovmuller diagram: Not working ...
-#' ## plot(T2m,is=list(lon=0)) 
-#' 
+#'
 #' print("Extract a subset - the January month")
 #' x <- subset(t2m,it="jan")
 #' X <- subset(T2m,it="jan")
@@ -1229,7 +1225,7 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
 #' 
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m,ferder)
+#' plot(T2m, is=ferder)
 #' 
 #' # Plot Hovmuller diagram: Not working ...
 #' ## plot(T2m,is=list(lon=0)) 

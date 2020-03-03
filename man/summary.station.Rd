@@ -7,9 +7,13 @@
 \method{summary}{station}(object, ..., im = 1:12, verbose = FALSE)
 }
 \arguments{
+\item{object}{an object of type 'station'}
+
+\item{\dots}{additional arguments}
+
 \item{im}{The order of months in the table. Use \code{im=c(10:12,1:9)} for Oct-Sep.}
 
-\item{x}{an object of type 'station'}
+\item{verbose}{if TRUE print progress}
 }
 \value{
 A matrix containing summary statistics

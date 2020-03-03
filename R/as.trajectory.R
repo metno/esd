@@ -1,5 +1,8 @@
 #' Transform an input object into a \code{trajectory} object
 #'
+#' @param x input object
+#' @param \dots additional arguments
+#'
 #' @aliases as.trajectory as.trajectory.default as.trajectory.events events2trajectory trajectory
 #'
 #' @export as.trajectory
@@ -162,8 +165,6 @@ rence")
 #' @param longname variable name
 #' @param unit name of unit
 #' @param loc name of location/region
-#'
-#' @param a \code{station} object
 #'
 #' @seealso as.station as.station.trajectory
 #'

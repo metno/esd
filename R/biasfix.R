@@ -2,6 +2,9 @@
 #'
 #' Bias correction as described in  Imbert & Benestad (2005), Theor. Appl. Clim., DOI: 10.1007/s00704-005-0133-4
 #'
+#' @param x input argument
+#' @param verbose if TRUE print progress
+#'
 #' @export
 biasfix <- function(x,verbose=FALSE) {
   if(verbose) print("biasfix")

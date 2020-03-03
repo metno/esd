@@ -3,6 +3,7 @@
 \name{combine}
 \alias{combine}
 \alias{combine.default}
+\alias{combine.station}
 \alias{combine.stations}
 \alias{combine.zoo}
 \alias{combine.ds}
@@ -11,7 +12,6 @@
 \alias{combine.ds.station.eof}
 \alias{combine.ds.station.field}
 \alias{combine.ds.pca}
-\alias{combine.list}
 \alias{combine.station.eof}
 \alias{combine.field}
 \alias{combine.filed.station}
@@ -20,6 +20,7 @@
 \alias{combine.trajectory}
 \alias{combine.events}
 \alias{combine.field.station}
+\alias{combine.list}
 \title{Combine}
 \usage{
 combine(...)

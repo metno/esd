@@ -2,8 +2,8 @@
 #' @aliases radar
 #'
 #' @param url URL for the data on thredds.met.no
-#' @param lons Longitude selection - =NULL reads all
-#' @param lats Latitude selection - =NULL reads all
+#' @param lons Longitude selection - if NULL read all
+#' @param lats Latitude selection - if NULL read all
 #' @param param Variable name
 #' @param FUN Function for daily aggregation. =NULL gives raw data
 #' @param it Intex time - the years to select
@@ -11,15 +11,13 @@
 #' @param plot plot the results while reading. 
 #' 
 #' @examples 
-#' Z <- radar(lons = c(10.5,11), lats = c(59.5,60))
-#' z <- radar(it=2010)
-#' 
-#' map(z)
+#' Z <- radar(lons = c(5,15), lats = c(55,60), it=2010)
+#' map(Z)
+#'
 #' y <- station.thredds(stid=18700,param='precip')
-#' x <- regrid(z,is=y)
+#' x <- regrid(Z,is=y)
 #' plot(combine.stations(subset(y,it=x),x),new=FALSE)
 #' plot(as.monthly(combine.stations(subset(y,it=x),x),FUN='sum'),new=FALSE)
-
 #'
 #' @seealso station.thredds, meta.thredds
 #' 
@@ -36,7 +34,7 @@ radar <- function(url='https://thredds.met.no/thredds/catalog/remotesensingradar
   for (yr in it) {
     for (mo in as.character(1:12)) {
       if (nchar(mo)==1) mo <- paste0('0',mo)
-      contents <-readLines(paste0(url,'/',yr,'/',mo,'/catalog.html'))
+      contents <- readLines(paste0(url,'/',yr,'/',mo,'/catalog.html'))
       contents <- contents[grep('dataset',contents)]
       contents <- gsub("<a href='catalog.html?dataset=remotesensingradaraccr","",contents,fixed=TRUE)
       contents <- gsub("</tt></a></td>","",contents,fixed=TRUE)
@@ -46,8 +44,9 @@ radar <- function(url='https://thredds.met.no/thredds/catalog/remotesensingradar
         eol <- regexpr("#",contents[i])[1]-1
         filename <- gsub('catalog/','dodsC/',paste0(url,substr(contents[i],1,eol)))
         if (verbose) print(filename)
-        ncid <- nc_open(filename=filename)
-        lon <- ncvar_get(ncid,'lon')
+        ncid <- try(nc_open(filename=filename))
+        if(inherits(ncid,"try-error")) browser()
+	lon <- ncvar_get(ncid,'lon')
         lat <- ncvar_get(ncid,'lat')
         dim0 <- dim(lon)
         if (verbose) print(dim0)

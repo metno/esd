@@ -89,6 +89,7 @@
 #' ownth methods.
 #' @param t2m station object with temperature
 #' @param precip station object with precipitation.
+#' @param \dots additional arguments
 #' @author R.E. Benestad
 #' @keywords manip
 #' @examples

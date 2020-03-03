@@ -1,5 +1,6 @@
 #' Clean up CMIP3 and CMIP5 meta data
 #'
+#' @param txt meta data
 #' @aliases cmip5.model_id
 #'
 #' @export

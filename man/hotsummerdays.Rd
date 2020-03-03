@@ -38,6 +38,11 @@ e.g. snow depth.}
 \item{verbose}{TRUE for trouble shooting, debugging etc.}
 
 \item{plot}{TRUE - produce graphics}
+
+\item{nmin}{Minimum number of data points (e.g. days or months) with valid
+data accepted for annual estimate. NULL demands complete years.}
+
+\item{new}{if TRUE plot in new window}
 }
 \description{
 The functions \code{hotsummerdays}, \code{heatwavespells},

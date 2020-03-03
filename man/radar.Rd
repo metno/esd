@@ -18,9 +18,9 @@ radar(
 \arguments{
 \item{url}{URL for the data on thredds.met.no}
 
-\item{lons}{Longitude selection - =NULL reads all}
+\item{lons}{Longitude selection - if NULL read all}
 
-\item{lats}{Latitude selection - =NULL reads all}
+\item{lats}{Latitude selection - if NULL read all}
 
 \item{param}{Variable name}
 
@@ -36,8 +36,7 @@ radar(
 Function to read radar data from thredds.met.no
 }
 \examples{
-Z <- radar(lons = c(10.5,11), lats = c(59.5,60))
-z <- radar(it=2010)
+Z <- radar(lons = c(10.5,11), lats = c(59.5,60), it=c(2010,2011))
 
 map(z)
 y <- station.thredds(stid=18700,param='precip')

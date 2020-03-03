@@ -9,6 +9,8 @@
 \arguments{
 \item{height}{a 'station' object}
 
+\item{\dots}{additional arguments}
+
 \item{threshold}{threshold - midline of plot}
 
 \item{verbose}{a boolean; if TRUE print information about progress}

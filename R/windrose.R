@@ -18,11 +18,11 @@ pieslice <- function(theta1,theta2,r=1,
 #' @importFrom utils combn
 #'
 #' @param x station object
-#' @param thrshld Threshold for windspeed
 #' @param saw Directional resolution in degrees
 #' @param max.scale scaling factor for windrose
 #' @param cols a vector defining colors for plot
 #' @param param Name of the variables representing zonal and meridional wind
+#' @param main main title
 #' @param simple Only plot the windrose, not an additional historgram for
 #' windspeed
 #' @param verbose if TRUE print information about progress

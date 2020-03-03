@@ -20,7 +20,7 @@
 #' @param it A list or data.frame providing time index, e.g. a range of years like c(1979,2010), a season ('djf'), or a month ('dec' or 'december').
 #' @param is A list or data.frame providing space index, e.g. a list of longitude and latitude range like list(lon=c(0,60), lat=c(35,60)).
 #' @param ip selection of patterns in PCA or EOF (used for e.g. filtering the data)
-#' @param verbose Dump diagnostics to the screen
+#' @param verbose If TRUE, print out diagnosics
 #' @param ensemble.aggregate If TRUE, call \code{subset.dsensemble.multi} if
 #' appropriate.
 #' @param ic Argument of \code{subset.events}: A list providing criteria for selection of cyclones, 
@@ -32,6 +32,8 @@
 #' the range (pmin, pmax).  If FUN is "all" and x is a 'trajectory' object,
 #' subset selects cyclone trajectories that are within the chosen range at all
 #' points during their lifetime.)
+#' @param \dots additional arguments 
+#'
 #' @return An object of the same class as the input object
 #' @author R.E. Benestad and A.  Mezghani
 #' @keywords utilities
@@ -479,6 +481,19 @@ subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     y <- x
     if (!is.null(it)) {
       if (verbose) print(paste('it=',it))
+      if(inherits(x,'pca')) {
+        y <- subset.pca(x,it=it,verbose=verbose)
+      } else if(inherits(x,'station')) {
+        y <- subset.station(x,it=it,verbose=verbose)
+      } else if(inherits(x,'eof')) {
+        y <- subset.eof(x,it=it,verbose=verbose)
+      } else {
+        if(verbose) print(paste("subset.ds doesn't do anything for objects of class",
+                                paste(class(x),collapse=" ")))
+      }
+      attr(y,'evaluation') <- subset(attr(x,'evaluation'), it=it)
+      attr(y,'fitted_values') <- subset(attr(x,'fitted_values'), it=it)
+      x <- y
     }
     if (!is.null(ip)) {
       if (verbose) print(paste('pattern=',ip))
@@ -517,7 +532,7 @@ subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     }
     if (!is.null(is))  {
       if (verbose) print(paste('is=',is))
-        x <- subset.pattern(x,is,verbose=verbose)
+      x <- subset.pattern(x,is,verbose=verbose)
     }
     attr(x,'history') <- history.stamp(x)  
     return(x)

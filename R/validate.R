@@ -2,7 +2,8 @@
 #' 
 #' The method \code{validate}
 #' 
-#' @aliases validate.dsensemble validate.eof.comb validate.default
+#' @aliases validate.dsensemble validate.eof.comb validate.default validate.cca
+#' validate.ds validate.eof validate.eof.field validate.pca
 #'
 #' @importFrom stats wilcox.test
 #'

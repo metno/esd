@@ -16,7 +16,9 @@ colscal(
 \arguments{
 \item{n}{length of color vector}
 
-\item{pal}{color palette: "bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold", or "warm"}
+\item{pal}{color palette: "bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors",
+"terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor",
+"buorr","bu","rd","cat","cold", or "warm"}
 
 \item{rev}{a boolean; if TRUE reverse color scale}
 

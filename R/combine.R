@@ -71,12 +71,12 @@ cbind.field <- function(...,verbose=FALSE) {
 #' the time dimension), and \code{cbind(...)} (combine along the space
 #' dimension) also work.
 #' 
-#' @aliases combine combine.default combine.stations combine.zoo combine.ds
-#' combine.ds.comb combine.ds.station combine.ds.station.eof
-#' combine.ds.station.field combine.ds.pca combine.list
+#' @aliases combine combine.default combine.station combine.stations
+#' combine.zoo combine.ds combine.ds.comb combine.ds.station
+#' combine.ds.station.eof combine.ds.station.field combine.ds.pca
 #' combine.station.eof combine.field combine.filed.station
 #' combine.station.field sp2np combine.trajectory combine.events
-#' combine.field.station
+#' combine.field.station combine.list
 #'
 #' @param x station, eof, or field object
 #' @param all See \code{link{merge.zoo}}

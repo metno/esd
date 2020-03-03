@@ -7,12 +7,15 @@
 #'
 #' @aliases ERA5.CDS
 #'
-#' @param param variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', 'mean_sea_level_pressure', '10m_u_component_of_wind', '10m_v_component_of_wind', 'relative_humidity', 'dewpoint_depression', 'snow_depth', ...
+#' @param param variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', 'mean_sea_level_pressure',
+#' '10m_u_component_of_wind', '10m_v_component_of_wind', 'relative_humidity', 'dewpoint_depression', 'snow_depth'
 #' @param it the years to extract.
 #' @param varnm variable name for local data file.
 #' @param AREA the area/region to extract [south,west,north,east]
 #' @param FNAME the name of the local files for storing the data
-#' @param FUN the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum', 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).  
+#' @param FUN the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum',
+#' 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).
+#' @param path The path where the data are stored. Can be a symbolic link.
 #' @param verbose a boolean; if TRUE print information about progress
 #' @examples
 #' ERA5.CDS(param='2m_temperature',varnm='t2m',it=2015:2018,AREA="['50','0','60','10']",

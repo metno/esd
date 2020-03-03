@@ -5,6 +5,10 @@
 #' represent one year and the PCs
 #' (main part of ouput object) describe the seasonal variations.
 #'
+#' @param x input object
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
+#'
 #' @aliases clim2pca.default clim2pca.month clim2pca.day
 #'
 #' @export

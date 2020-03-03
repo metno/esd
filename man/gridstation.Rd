@@ -11,7 +11,7 @@ gridstation(Y, i = 1, verbose = FALSE, xlim = NULL, ylim = NULL)
 
 \item{i}{index}
 
-\item{verbose}{a boolean; if TRUE print information about progress}
+\item{verbose}{if TRUE, print out diagnostics}
 
 \item{xlim}{longitude range}
 

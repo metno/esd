@@ -20,6 +20,8 @@ diagnose(x, ...)
 \arguments{
 \item{x}{data object}
 
+\item{\dots}{additional arguments}
+
 \item{it}{teporal selection - see \code{\link{subset}}}
 
 \item{plot}{if TRUE, plot results}

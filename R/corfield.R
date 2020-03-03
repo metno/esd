@@ -11,6 +11,7 @@
 #' @param use see \code{\link{cor}}
 #' @param new see \code{link{map}}
 #' @param ip index EOF pattern
+#' @param \dots additional arguments
 #'
 #' @return Map of correlation
 #'

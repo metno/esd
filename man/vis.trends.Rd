@@ -27,10 +27,14 @@ analysis is performed. Only zoo objects are accepted.}
 
 \item{varlabel}{name of x.}
 
+\item{is}{spatial index for subsetting station data}
+
 \item{pmax}{maximum p-value of trends marked as significant.}
 
 \item{minlen}{minimum time interval to calculate trends for in units of
 years.}
+
+\item{lwd}{width of lines}
 
 \item{vmax}{upper limit of trend scale.}
 

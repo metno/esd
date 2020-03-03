@@ -6,6 +6,15 @@
 \usage{
 count.events(x, by.trajectory = TRUE, verbose = FALSE, ...)
 }
+\arguments{
+\item{x}{input object of class 'events'}
+
+\item{by.trajectory}{if TRUE count every trajectory once, otherwise count every time step separately}
+
+\item{verbose}{if TRUE print progress}
+
+\item{\dots}{additional arguments}
+}
 \description{
 Count the number of events per month
 }

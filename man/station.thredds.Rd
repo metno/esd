@@ -25,7 +25,7 @@ using OpenDAP}
 )
 }
 \arguments{
-\item{param}{The element to read c('t2m','tmax','tmin','precip','slp','sd','fx','ff','dd')}
+\item{param}{The element to read c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')}
 
 \item{is}{Index space to select station (list)}
 
@@ -41,6 +41,8 @@ using OpenDAP}
 
 \item{alt}{Range of altitudes to select of stations above (positive) or below (negative) a threshold}
 
+\item{cntr}{Countries to select}
+
 \item{start.year.before}{Select stations with record starting before a given year}
 
 \item{end.year.after}{Select stations with record ending after a given year}
@@ -52,8 +54,6 @@ using OpenDAP}
 \item{onebyone}{If many stations, select them first individually and then combine}
 
 \item{...}{Other arguments.}
-
-\item{cntrs}{Countries to select}
 }
 \value{
 A station object.

@@ -15,7 +15,8 @@
 #' as.calibrationdata as.calibrationdata.ds as.calibrationdata.station
 #' as.fitted.values as.fitted.values.ds as.fitted.values.station
 #' as.original.data as.original.data.ds as.original.data.station
-#' as.pattern as.pattern.ds as.pattern.corfield as.pattern.eof as.pattern.cca as.pattern.mvr as.pattern.field
+#' as.pattern as.pattern.ds as.pattern.corfield as.pattern.eof as.pattern.cca as.pattern.mvr
+#' as.pattern.field as.pattern.trend
 #'
 #' @param x input object with appendix (of class \code{comb})
 #' @param iapp index of appendix to extract

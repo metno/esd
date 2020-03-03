@@ -21,6 +21,7 @@
 \alias{as.pattern.cca}
 \alias{as.pattern.mvr}
 \alias{as.pattern.field}
+\alias{as.pattern.trend}
 \title{Extract attributes}
 \usage{
 as.appended(x, ...)

@@ -10,7 +10,7 @@
 #' @param \dots additional arguments
 #'
 #' @export
-climvar <- function(x,FUN='sd',plot=TRUE,...) {
+climvar <- function(x,FUN='sd',plot=TRUE,verbose=FALSE,...) {
   yrs <- as.numeric(rownames(table(year(x))))
   #print(yrs)
   ny <- length(yrs)

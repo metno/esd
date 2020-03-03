@@ -15,13 +15,11 @@ test.ele2param <- function() {
 #' Converts between esd element/parameter identifier and variable names from
 #' different data sources.
 #' 
-#' 
 #' @aliases ele2param esd2ele param2ele
 #'
-#' @param param,ele Parameter or element identifier. There are several core
-#' parameters or elements as well as a number of additional parameters. The
-#' parameters or elements are :
-#' @param src A character string for the acronym of the data source.
+#' @param param parameter identifier
+#' @param ele element identifier
+#' @param src a character string for the acronym of the data source
 #'
 #' @return A meta data matrix object with the glossary of the different
 #' variables or element identifiers as originally defined by each data source
@@ -50,8 +48,9 @@ ele2param <- function(ele = NULL , src = NULL) {
   x <- merge(x,ghcnm.ele(),all=TRUE)
   x <- merge(x,ghcnd.ele(),all=TRUE)
   x <- merge(x,metno.ele(),all=TRUE)
+  x <- merge(x,metno.frost.ele(),all=TRUE)
  
-  if (length(src)>0) x <- subset(x, x[,6] == src)
+  if (length(src)>0) x <- subset(x, toupper(x[,6])==toupper(src))
   if (length(ele)>0) x <- subset(x, x[,1] == ele)
   ## if ((length(src)==0) & (length(ele)==0)) 
   ##df <- as.data.frame(x,stringsAsFactors=FALSE)
@@ -264,21 +263,21 @@ metno.ele <- function() { ## must be updated - AM 2014-02-21
   ## Selected elements from GHCND database
     
     if (!file.exists('metno_element.txt')) { ## AM :  Need to update the file name, the problem is that the meta file does not contain elements !!
-        x <- rbind(c("601" , "Precipitation"		 	        , "1"	  		, "mm"	      , "RR"),
-                   c("401" , "Sea level pressure"		 	    , "1"	  		, "hPa"	      , "POM"),
-                   c("402" , "Sea level pressure"		 	    , "1"	  		, "hPa"	      , "PON"),
-                   c("403" , "Sea level pressure"		 	    , "1"	  		, "hPa"	      , "POX"),
-                   c("999" , "Snowfall"			              , "1" 	    , "mm" 	      , "SNOW"),
-                   c("901" , "Snow depth"			            , "1" 	    , "cm" 	      , "SA"),
-                   c("101" , "Mean temperature"	          , "1" 		  , "degree*C"  , "TAM"),
-                   c("111" , "Maximum temperature" 	 	    , "1"   		, "degree*C"	, "TAX"),
-                   c("121" , "Minimum temperature" 	 	    , "1"	  		, "degree*C" 	, "TAN"),
-                   c("501" , "Wind speed" 		            , "1"   		, "m/s" 	    , "FFM"),
-                   c("502" , "Wind direction"             ,  "1"   		, "degrees" 	, "DD"),
-                   c("504" , "Wind direction at 06 UTC"   , "1"   		, "degrees" 	, "DD06"),
-                   c("505" , "Wind direction at 12 UTC"   , "1"   		, "degrees" 	, "DD12"),
-                   c("506" , "Wind direction at 18 UTC"   , "1"   		, "degrees" 	, "DD18"),
-                   c("503" , "Wind Gust" 		              , "1"   		, "m/s" 	    , "FGX"))
+        x <- rbind(c("601" , "Precipitation"		, "1"	, "mm"		, "RR"),
+                   c("401" , "Sea level pressure"	, "1"	, "hPa"		, "POM"),
+                   c("402" , "Sea level pressure"	, "1"	, "hPa"		, "PON"),
+                   c("403" , "Sea level pressure"	, "1"	, "hPa"		, "POX"),
+                   c("999" , "Snowfall"			, "1"	, "mm"		, "SNOW"),
+                   c("901" , "Snow depth"		, "1"	, "cm"		, "SA"),
+                   c("101" , "Mean temperature"		, "1"	, "degree*C"	, "TAM"),
+                   c("111" , "Maximum temperature"	, "1"	, "degree*C"	, "TAX"),
+                   c("121" , "Minimum temperature"	, "1"	, "degree*C"	, "TAN"),
+                   c("501" , "Wind speed"		, "1"	, "m/s"		, "FFM"),
+                   c("502" , "Wind direction"		, "1"	, "degrees"	, "DD"),
+                   c("504" , "Wind direction at 06 UTC"	, "1"	, "degrees"	, "DD06"),
+                   c("505" , "Wind direction at 12 UTC"	, "1"	, "degrees"	, "DD12"),
+                   c("506" , "Wind direction at 18 UTC"	, "1"	, "degrees"	, "DD18"),
+                   c("503" , "Wind Gust"		, "1"	, "m/s"		, "FGX"))
         y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO",stringsAsFactors=FALSE)
         
     } else {
@@ -287,3 +286,35 @@ metno.ele <- function() { ## must be updated - AM 2014-02-21
     }
   return(y)
 }
+
+metno.frost.ele <- function() {
+  # TODO: wind direction is here so we can get DD06, DD12 and DD18 and perform an average.. how?
+  x <- rbind(
+    c("601" , "Precipitation"		, "1"	, "mm"		, "sum(precipitation_amount *)"),
+    c("401" , "Sea level pressure"	, "1"	, "hPa"		, "mean(surface_air_pressure *)"),
+    c("402" , "Sea level pressure"	, "1"	, "hPa"		, "min(surface_air_pressure *)"),
+    c("403" , "Sea level pressure"	, "1"	, "hPa"		, "max(surface_air_pressure *)"),
+    c("901" , "Snow depth"		, "1"	, "cm"		, "surface_snow_thickness"),
+    c("101" , "Mean temperature"	, "1"	, "degree*C"	, "mean(air_temperature *)"),
+    c("111" , "Maximum temperature"	, "1"	, "degree*C"	, "max(air_temperature *)"),
+    c("121" , "Minimum temperature"	, "1"	, "degree*C"	, "min(air_temperature *)"),
+    c("501" , "Wind speed"		, "1"	, "m/s"		, "mean(wind_speed *)"),
+    c("502" , "Wind direction"		, "1"	, "degrees"	, "wind_from_direction"),
+    c("503" , "Wind Gust"		, "1"	, "m/s"		, "max(wind_speed_of_gust *)")
+  )
+  y <- data.frame(element=x[,1] , longname = x[,2] , scale_factor = x[,3] , unit = x[,4] , param = x[,5] , source = "METNO.FROST" , stringsAsFactors = FALSE)
+  return(y)
+}
+
+## KMP 2018-11-08: This function doesn't work. Element.Name is not defined and it contains an absolute path. 
+## Also it is not in the NAMESPACE and is not used in any other function.
+#wmo.ele.code <- function(pattern='^wind.*.speed.*.10') {
+#    x <- read.csv('/disk1/downloads/fnmoc.B2L-058-001-B.txt',sep='\t',stringsAsFactor=FALSE,skip=5,header=TRUE)
+#    ele.sel <- subset(x,subset= grepl(pattern,Element.Name,ignore.case=TRUE))
+#    ele <- as.numeric(paste(ele.sel$X,ele.sel$Y,sep=''))
+#    if (dim(ele.sel)[1] >1) {
+#        print(ele.sel)
+#        print('please refine your selection')
+#    }
+#    invisible(ele.sel)
+#}

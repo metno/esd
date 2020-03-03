@@ -9,7 +9,7 @@
 #' downscaled results.
 #'
 #' @aliases anomaly anomaly.default anomaly.comb anomaly.field anomaly.station 
-#' anomaly.annual anomaly.month anomaly.season anomaly.day
+#' anomaly.annual anomaly.month anomaly.season anomaly.day anomaly.dsensemble
 #' as.anomaly as.anomaly.default as.anomaly.zoo as.anomaly.list as.anomaly.station as.anomaly.field
 #' climatology as.climatology
 #' @seealso as.stand
@@ -18,6 +18,7 @@
 #' @param ref vector defining the reference interval
 #' @param na.rm a boolean; if TRUE remove NA values
 #' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
 #'
 #' @return a similar object as x containing anomalies and climatology
 #'

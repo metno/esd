@@ -1,8 +1,4 @@
-#' Test function for \code{frostID} which retrieves data from the frost.met.no
-#'
-#' @param keyfile location of API key
-#'
-#' @export test.API
+# internal test function - no need to export
 test.API <- function(keyfile='~/.FrostAPI.key',browser='firefox',verbose=FALSE) {
   ## This test function works
   if (file.exists(keyfile)) {

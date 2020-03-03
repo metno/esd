@@ -16,6 +16,8 @@
 #' @param vmax upper limit of trend scale.
 #' @param show.significance TRUE to mark statistically significant trends.
 #' @param pmax maximum p-value of trends marked as significant.
+#' @param is spatial index for subsetting station data
+#' @param lwd width of lines
 #' @param verbose TRUE or FALSE.
 #' @param new if TRUE plot in new window
 #' 

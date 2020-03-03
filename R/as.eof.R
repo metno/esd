@@ -8,7 +8,7 @@
 #' \code{as.eof.dsensemble.pca} converts PCA-based DSensemble objects to EOF-based results (gridded)
 #'
 #' @aliases as.eof as.eof.field as.eof.comb as.eof.list as.eof.zoo as.eof.ds
-#' as.eof.dsensemble as.eof.appendix as.eof.dsensemble.pca 
+#' as.eof.eof as.eof.dsensemble as.eof.appendix as.eof.dsensemble.pca 
 #' 
 #' @param x the input object
 #' @param iapp index of appendix

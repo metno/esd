@@ -10,6 +10,10 @@ frequency.name <- c("year","season","month","day","hours","minutes","seconds")
 frequency.abb  <-  substr(tolower(frequency.name),1,3)
 
 #' Calculate the frequency
+#'
+#' @param data input object containing a time index
+#' @param unit unit of time index in 'data'
+#'
 #' @export
 datafrequency <- function(data=NULL,unit=NULL,verbose=FALSE) {
   if (is.null(data) | is.null(unit)) stop("Both data and unit are mandatory inputs !")

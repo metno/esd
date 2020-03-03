@@ -31,8 +31,6 @@ trajectory2station(
 \item{unit}{name of unit}
 
 \item{loc}{name of location/region}
-
-\item{a}{\code{station} object}
 }
 \description{
 Transform a \code{trajectory} object into a \code{station} object by aggregating it in time and space.

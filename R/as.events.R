@@ -1,9 +1,14 @@
 #' Transform an input object into an \code{events} object
 #'
-#' @aliases as.events as.events.default as.events.trajectory events trajectory2events
+#' @param x input object
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
+#'
+#' @aliases as.events as.events.default as.events.trajectory events
+#' trajectory2events
 #'
 #' @export as.events
-as.events <- function(x,...) UseMethod("as.events")
+as.events <- function(x,verbose=FALSE,...) UseMethod("as.events")
 
 #' @export as.events.default
 as.events.default <- function(x,verbose=FALSE,...) {
@@ -150,6 +155,11 @@ trajectory2events <- function(x,minlen=3,verbose=FALSE) {
 }
 
 #' Count the number of events per month
+#'
+#' @param x input object of class 'events'
+#' @param by.trajectory if TRUE count every trajectory once, otherwise count every time step separately
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
 #'
 #' @export count.events
 count.events <- function(x,by.trajectory=TRUE,verbose=FALSE,...) {

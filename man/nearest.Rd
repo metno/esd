@@ -2,6 +2,8 @@
 % Please edit documentation in R/nearest.R
 \name{nearest}
 \alias{nearest}
+\alias{nearest.station}
+\alias{nearest.field}
 \title{\code{nearest} selects the time series in \code{x} that are closest to the locations specified in \code{is}}
 \usage{
 nearest(x, is)

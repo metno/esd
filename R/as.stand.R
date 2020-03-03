@@ -8,14 +8,15 @@
 #' @aliases as.stand as.stand.station as.original as.original.station
 #'
 #' @param x a station object
-#' @param verbose a boolean; if TRUE print information about progress
 #' @param na.rm a boolean; if TRUE remove NA values
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
 #'
 #' @export as.stand
-as.stand <- function(x,...) UseMethod("as.stand")
+as.stand <- function(x,na.rm=TRUE,verbose=FALSE,...) UseMethod("as.stand")
 
 #' @export as.stand.station
-as.stand.station <- function(x,...,verbose=FALSE,na.rm=TRUE) {
+as.stand.station <- function(x,na.rm=TRUE,verbose=FALSE,...) {
   if(verbose) print("as.stand.station")
   if (is.precip(x)) {
     mu <- apply(x,2,mean,na.rm=na.rm)

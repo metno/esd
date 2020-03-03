@@ -9,7 +9,7 @@
 #' 
 #' 
 #' @aliases trend.one.station trend.station trend.eof trend.field trend.zoo
-#' trend.zoo.multi trend.coef trend.err trend.pval
+#' trend.zoo.multi trend.coef trend.err trend.pval trend.default
 #'
 #' @param x The data object
 #' @param result "trend" returns the trend; "residual" returns the residual;
@@ -17,6 +17,7 @@
 #' p-value.
 #' @param model The trend model used by \code{\link{lm}}.
 #' @param new if TRUE plot in new window
+#' @param \dots additional arguments
 #'
 #' @return Similar type object as the input object
 #' 

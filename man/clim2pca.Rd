@@ -9,6 +9,13 @@
 \usage{
 clim2pca(x, verbose = FALSE, ...)
 }
+\arguments{
+\item{x}{input object}
+
+\item{verbose}{if TRUE print progress}
+
+\item{\dots}{additional arguments}
+}
 \description{
 Express station data as \code{\link{PCA}} where each of the EOFs
 (attribute 'pattern' of output object)
