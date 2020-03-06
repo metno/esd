@@ -36,13 +36,14 @@ radar(
 Function to read radar data from thredds.met.no
 }
 \examples{
-Z <- radar(lons = c(5,15), lats = c(55,60), it=2010)
+Z <- radar(lons = c(10,12), lats = c(59,61), it=2015)
 map(Z)
 
 y <- station.thredds(stid=18700,param='precip')
 x <- regrid(Z,is=y)
-plot(combine.stations(subset(y,it=x),x),new=FALSE)
-plot(as.monthly(combine.stations(subset(y,it=x),x),FUN='sum'),new=FALSE)
+xy <- combine.stations(subset(y,it=x),x)
+plot(xy,new=FALSE)
+plot(as.monthly(xy,na.rm=TRUE,FUN='mean'),new=FALSE)
 
 }
 \seealso{

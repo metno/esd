@@ -15,7 +15,7 @@ write2ncdf4(x, ...)
 None
 }
 \description{
-Method to save station data as netCDF, making sure to include the data
+Method to save data as netCDF, making sure to include the data
 structure and meta-data (attributes). The code tries to follow the netCDf
 'CF' convention. The method is built on the \code{ncdf4} package.
 }
@@ -28,8 +28,9 @@ write2ncdf4(X,file='test.nc')
 }
 \seealso{
 write2ncdf4.station 
-write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.dsensemble
-write2ncdf4.eof write2ncdf4.pca write2ncdf4.dsensemble write2ncdf4.eof
+write2ncdf4.field write2ncdf4.list
+write2ncdf4.station write2ncdf4.dsensemble
+write2ncdf4.eof write2ncdf4.pca write2ncdf4.eof
 }
 \keyword{ncdf4}
 \keyword{netcdf}

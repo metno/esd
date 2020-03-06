@@ -26,6 +26,7 @@
 \alias{arec.default}
 \alias{arec.station}
 \alias{lastrains}
+\alias{lastdry}
 \alias{lastelementrecord}
 \alias{strstrip}
 \alias{bin}
