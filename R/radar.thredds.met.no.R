@@ -11,13 +11,14 @@
 #' @param plot plot the results while reading. 
 #' 
 #' @examples 
-#' Z <- radar(lons = c(5,15), lats = c(55,60), it=2010)
+#' Z <- radar(lons = c(10,12), lats = c(59,61), it=2015)
 #' map(Z)
 #'
 #' y <- station.thredds(stid=18700,param='precip')
 #' x <- regrid(Z,is=y)
-#' plot(combine.stations(subset(y,it=x),x),new=FALSE)
-#' plot(as.monthly(combine.stations(subset(y,it=x),x),FUN='sum'),new=FALSE)
+#' xy <- combine.stations(subset(y,it=x),x)
+#' plot(xy,new=FALSE)
+#' plot(as.monthly(xy,na.rm=TRUE,FUN='mean'),new=FALSE)
 #'
 #' @seealso station.thredds, meta.thredds
 #' 
@@ -26,21 +27,30 @@ radar <- function(url='https://thredds.met.no/thredds/catalog/remotesensingradar
                   lons = c(9.5,11.5), lats = c(59,61),
                   param='lwe_precipitation_rate',FUN='sum',it=2010:2019,
                   verbose=FALSE,plot=FALSE) {
-  # require("RCurl")
-  # thredds <- getURL(url,verbose=verbose,ftp.use.epsv=TRUE, dirlistonly = TRUE)
-  # yrs <- strsplit(thredds,'<a[^>]* href=\\"([^"]*.txt)\\"')[[1]]
   if (verbose) print('esd::radar')
   results <- list()
-  for (yr in it) {
-    for (mo in as.character(1:12)) {
-      if (nchar(mo)==1) mo <- paste0('0',mo)
+  if(is.dates(it)) {
+    dates.ym <- seq(as.Date(strftime(min(it),"%Y-%m-01")), as.Date(max(it)), by="month") 
+    dates <- seq(as.Date(min(it)), as.Date(max(it)), by="day")
+  } else {
+    dates.ym <- seq(as.Date(paste0(min(it),"-01-01")), as.Date(paste0(max(it),"-12-31")), by="month")
+    dates <- seq(as.Date(paste0(min(it),"-01-01")), as.Date(paste0(max(it),"-12-31")), by="day")
+  }
+  #for (yr in it) {
+  #  for (mo in as.character(1:12)) {
+  for(ym in dates.ym) {
+    yr <- strftime(as.Date(ym), "%Y")
+    mo <- strftime(as.Date(ym), "%m")
+      #if (nchar(mo)==1) mo <- paste0('0',mo)
       contents <- readLines(paste0(url,'/',yr,'/',mo,'/catalog.html'))
       contents <- contents[grep('dataset',contents)]
       contents <- gsub("<a href='catalog.html?dataset=remotesensingradaraccr","",contents,fixed=TRUE)
       contents <- gsub("</tt></a></td>","",contents,fixed=TRUE)
       contents <- gsub("'","#",contents,fixed=TRUE)
       contents <- contents[grep('.nc',contents,fixed=TRUE)]
-      for (i in 1:length(contents)) {
+      #for (i in 1:length(contents)) {
+      ivec <- grep(paste(strftime(dates,"%Y%m%d"),collapse="|"), contents)
+      for (i in ivec) {
         eol <- regexpr("#",contents[i])[1]-1
         filename <- gsub('catalog/','dodsC/',paste0(url,substr(contents[i],1,eol)))
         if (verbose) print(filename)
@@ -124,7 +134,7 @@ radar <- function(url='https://thredds.met.no/thredds/catalog/remotesensingradar
         }
         nc_close(ncid)
         if (!verbose) cat('.')
-      }
+      #}
     }
   }
   if (verbose) print('Read all the data')
@@ -160,7 +170,7 @@ radar <- function(url='https://thredds.met.no/thredds/catalog/remotesensingradar
   attr(radarZ,'variable') <- param
   attr(radarZ,'unit') <- 'mm'
   attr(radarZ,'aspect') <- 'radar reflectivity'
-  attr(z,'greenwich') <- TRUE
+  attr(radarZ,'greenwich') <- TRUE
   attr(radarZ,'source') <- 'The Norwegian Meteorological Institute'
   class(radarZ) <- c('station','day','zoo')
   radarZ <- as.field(radarZ)
