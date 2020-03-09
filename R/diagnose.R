@@ -519,7 +519,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     plot(c(-100,100),c(-100,100),type="n",
          axes=FALSE,ylab="",xlab="",main=main)
     mtext("trend",side=1,line=1.5,cex=par("cex"))
-    mtext("standard deviation",side=2,line=2,cex=par("cex"))
+    mtext("interannual variability",side=2,line=2,cex=par("cex"))
     u <- par("usr")
     dx <- (u[2]-u[1])/20
     dy <- (u[4]-u[3])/20

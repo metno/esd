@@ -303,9 +303,8 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   ## Is the last element a high or low record?
   lehr <- lastelementrecord(x,verbose=verbose)
   lelr <- lastelementrecord(-x)
-  if (is.T(x)) {
-    if (verbose) print('Temperature')
-    ## Maximum temperature
+  if (!is.precip(x)) {
+    if (verbose) print('Not precipitation')
     ave <- apply(x,2,'mean',na.rm=TRUE)
     ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
     ave.mam <- apply(subset(x,it='mam'),2,'mean',na.rm=TRUE)
@@ -374,22 +373,6 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
       mwsl <- colMeans(subset.station(ss,is=list(param='wet')),na.rm=TRUE)
       mdsl <- colMeans(subset.station(ss,is=list(param='dry')),na.rm=TRUE)
     } else {mwsl <- missval; mdsl <- missval}
-  } else {
-    ave <- apply(x,2,'mean',na.rm=TRUE)
-    ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
-    ave.mam <- apply(subset(x,it='mam'),2,'mean',na.rm=TRUE)
-    ave.jja <- apply(subset(x,it='jja'),2,'mean',na.rm=TRUE)
-    ave.son <- apply(subset(x,it='son'),2,'mean',na.rm=TRUE)
-    std <- apply(anomaly(x),2,'sd',na.rm=TRUE)
-    std.djf <- apply(subset(anomaly(x),it='djf'),2,'sd',na.rm=TRUE)
-    std.mam <- apply(subset(anomaly(x),it='mam'),2,'sd',na.rm=TRUE)
-    std.jja <- apply(subset(anomaly(x),it='jja'),2,'sd',na.rm=TRUE)
-    std.son <- apply(subset(anomaly(x),it='son'),2,'sd',na.rm=TRUE)
-    td <- apply(annual(x),2,'trend.coef')
-    td.djf <- apply(annual(subset(x,it='djf'),'mean',nmin=75),2,'trend.coef')
-    td.mam <- apply(annual(subset(x,it='mam'),'mean',nmin=75),2,'trend.coef')
-    td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
-    td.son <- apply(annual(subset(x,it='son'),'mean',nmin=75),2,'trend.coef')
   }
   if (verbose) print('Summary statistics computed')
   ## Only do summary statistics for stations with more than 30 years
@@ -708,7 +691,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     nhrid <- ncid$var[["summary_records"]]
     lehrid <- ncid$var[["last_element_highest"]]
     
-    if (is.T(x)) {
+    if (!is.precip(x)) {
      sdid <- ncid$var[["summary_sd"]]
      sdid.djf <- ncid$var[["summary_sd_DJF"]]
      sdid.mam <- ncid$var[["summary_sd_MAM"]]
@@ -751,14 +734,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
       tsigma2id.son <- ncid$var[["summary_trend_sigma2_SON"]]
       mwslid <- ncid$var[["summary_mean_wetdur"]]
       mdslid <- ncid$var[["summary_mean_drydur"]]
-    } else {
-      sdid <- ncid$var[["summary_sd"]]
-      sdid.djf <- ncid$var[["summary_sd_DJF"]]
-      sdid.mam <- ncid$var[["summary_sd_MAM"]]
-      sdid.jja <- ncid$var[["summary_sd_JJA"]]
-      sdid.son <- ncid$var[["summary_sd_SON"]]
-      lelrid <- ncid$var[["last_element_lowest"]]
-    }
+    } 
     
     ## Appending the data after those that already exist:
     if (verbose) print(paste('Adjust start[1] so tht data is added after',ns,'stations'))
