@@ -4,8 +4,8 @@
 #'
 #' \code{vis} shows the annual and seasonal evolution of a time series, similar to \code{\link{seasevol}}.
 #'
-#'
-#' @aliases vis vis.station vis.pca
+#' @aliases vis vis.station vis.pca vis.cca vis.default vis.ds vis.dsensemble
+#' vis.dsensemble.list vis.eof vis.field vis.map vis.mvr vis.spell
 #' @seealso vis.trends wheel cumugram visprob conf graph
 #' diagram scatter plot map
 #' 

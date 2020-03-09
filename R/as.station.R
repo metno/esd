@@ -23,8 +23,8 @@
 #' aggregating some aspect of the cyclones/anti-cyclones (or other type of event). By default, the total number of events/trajectories per month is calculated 
 #' but the method can also estimate some other characteristic, e.g., the monthly mean sea level pressure at the center of the cyclones ().
 #' 
-#' @aliases as.station as.station.zoo as.station.data.frame as.station.ds as.station.pca
-#' as.station.spell as.station.events
+#' @aliases as.station as.station.zoo as.station.data.frame as.station.ds as.station.pca as.station.list
+#' as.station.spell as.station.events as.station.dsensemble.station as.station.eof as.station.field
 #' @seealso as.station.dsensemble as.station.dsensemble.pca as.station.dsensemble.station 
 #' 
 #' @param x the input object
@@ -451,6 +451,13 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
 #' Transform a \code{dsensemble pca} object into a \code{dsensemble station} object
 #' by extracting the results model wise and using the downscaled principle components
 #' to reconstruct station time series.
+#'
+#' @param x a dsensemble pca object
+#' @param is A list or data.frame providing space index, e.g. a list of longitude and
+#' latitude range like list(lon=c(0,60), lat=c(35,60)).
+#' @param ip selection of patterns in PCA or EOF (used for e.g. filtering the data)
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
 #'
 #' @seealso as.station as.station.dsensemble DSensemble
 #' 

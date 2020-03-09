@@ -39,11 +39,11 @@ steps.}
 
 \item{dmin}{Minimum total length of a trajectory. Unit: m.}
 
-\item{plot}{TRUE: Show plots of trajectories for selected time steps.}
+\item{plot}{If TRUE, show plots of trajectories for selected time steps.}
 
-\item{progress}{TRUE: Show progress bar.}
+\item{progress}{If TRUE, show progress bar.}
 
-\item{verbose}{TRUE: Print out diagnosics.}
+\item{verbose}{If TRUE, print out diagnosics.}
 }
 \value{
 An 'events' object containing the original information as well as

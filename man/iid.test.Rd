@@ -15,6 +15,8 @@ iid.test(x, ...)
 \arguments{
 \item{x}{A data matrix or a vector.}
 
+\item{\dots}{additional arguments}
+
 \item{plot}{Flag: plot the diagnostics.}
 
 \item{Monte.Carlo}{Flag: for estimating confidence limits.}

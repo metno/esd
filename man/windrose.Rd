@@ -27,6 +27,8 @@ windrose(
 
 \item{max.scale}{scaling factor for windrose}
 
+\item{main}{main title}
+
 \item{cols}{a vector defining colors for plot}
 
 \item{param}{Name of the variables representing zonal and meridional wind}
@@ -35,8 +37,6 @@ windrose(
 windspeed}
 
 \item{verbose}{if TRUE print information about progress}
-
-\item{thrshld}{Threshold for windspeed}
 }
 \description{
 A function that plots windroses from station objects which contain both the

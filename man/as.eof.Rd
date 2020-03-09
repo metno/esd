@@ -7,6 +7,7 @@
 \alias{as.eof.list}
 \alias{as.eof.zoo}
 \alias{as.eof.ds}
+\alias{as.eof.eof}
 \alias{as.eof.dsensemble}
 \alias{as.eof.appendix}
 \alias{as.eof.dsensemble.pca}

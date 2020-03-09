@@ -6,6 +6,11 @@
 \usage{
 biasfix(x, verbose = FALSE)
 }
+\arguments{
+\item{x}{input argument}
+
+\item{verbose}{if TRUE print progress}
+}
 \description{
 Bias correction as described in  Imbert & Benestad (2005), Theor. Appl. Clim., DOI: 10.1007/s00704-005-0133-4
 }

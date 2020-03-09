@@ -6,6 +6,7 @@
 \usage{
 \method{image}{plot}(
   ...,
+  breaks = NULL,
   add = FALSE,
   nlevel = 64,
   horizontal = FALSE,
@@ -29,6 +30,55 @@
   rev = FALSE,
   verbose = FALSE
 )
+}
+\arguments{
+\item{\dots}{additional arguments}
+
+\item{breaks}{A numeric vector of breakpoints for the colours}
+
+\item{add}{if TRUE add to current plot}
+
+\item{nlevel}{the number of breaks (used only if breaks are not specified),}
+
+\item{horizontal}{if TRUE legend is horizontal}
+
+\item{legend.shrink}{shrinkage factor for legend}
+
+\item{legend.mar}{margins of legend (see \code{link{par}})}
+
+\item{legend.lab}{legend label}
+
+\item{legend.line}{margin line of the legend}
+
+\item{graphics.reset}{a boolean}
+
+\item{bigplot}{A vector of the form ‘c(x1, x2, y1, y2)’ giving the
+coordinates of the plot region as fractions of the current
+figure region.}
+
+\item{smallplot}{Same as bigplot but for a second plot}
+
+\item{legend.only}{if TRUE show only legend}
+
+\item{col}{Specification of the plotting color (a single color or a vector)}
+
+\item{pal}{color palette, used only if col is NULL (see \code{\link{colscal}})}
+
+\item{lab.breaks}{}
+
+\item{axis.args}{list containing arguments for axis}
+
+\item{legend.args}{list containing arguments for legend}
+
+\item{midpoint}{If TRUE color scale is formed for midpoints by averaging 4 corners.}
+
+\item{border}{the color to draw the border. Use NA to omit the border.}
+
+\item{lwd}{width of line}
+
+\item{rev}{if TRUE reverse palette}
+
+\item{verbose}{if TRUE print progress}
 }
 \description{
 Plot image

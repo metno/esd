@@ -12,6 +12,7 @@
 #' @seealso PCA
 #' 
 #' @param x the input object
+#' @param verbose if TRUE print progress
 #' @param ... other arguments
 #' 
 #' @return a \code{pca} object
@@ -52,6 +53,7 @@ as.pca.ds <- function(x,verbose=FALSE,...) {
 #' @seealso as.pca plot.pca map.pca as.station.pca DS.pca
 #' 
 #' @param x the input object
+#' @param verbose if TRUE print progress 
 #' @param ... other arguments
 #' 
 #' @return a \code{pc} object

@@ -4,7 +4,7 @@
 \alias{climvar}
 \title{Seasonally varying variance}
 \usage{
-climvar(x, FUN = "sd", plot = TRUE, ...)
+climvar(x, FUN = "sd", plot = TRUE, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{an input object of class 'station'}
@@ -13,9 +13,9 @@ climvar(x, FUN = "sd", plot = TRUE, ...)
 
 \item{plot}{a boolean; if TRUE show plot}
 
-\item{\dots}{additional arguments}
-
 \item{verbose}{a boolean; if TRUE print information about progress}
+
+\item{\dots}{additional arguments}
 }
 \description{
 \code{climvar} estimates how the variance varies with season

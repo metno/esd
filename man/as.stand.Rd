@@ -7,14 +7,16 @@
 \alias{as.original.station}
 \title{Normalise data}
 \usage{
-as.stand(x, ...)
+as.stand(x, na.rm = TRUE, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{a station object}
 
+\item{na.rm}{a boolean; if TRUE remove NA values}
+
 \item{verbose}{a boolean; if TRUE print information about progress}
 
-\item{na.rm}{a boolean; if TRUE remove NA values}
+\item{\dots}{additional arguments}
 }
 \description{
 \code{as.stand} returns normalised values:

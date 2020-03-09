@@ -6,6 +6,17 @@
 \usage{
 density2count(y, it = NULL, is = NULL, verbose = TRUE)
 }
+\arguments{
+\item{y}{input object of type 'trajectory' or 'events'}
+
+\item{it}{A list or data.frame providing time index, e.g., a range of years like c(1979,2010),
+a season ('djf'), or a month ('dec' or 'december').}
+
+\item{is}{A list or data.frame providing space index, e.g., a list of longitude and latitude
+range like list(lon=c(0,60), lat=c(35,60)).}
+
+\item{verbose}{if TRUE print progress}
+}
 \description{
 Estimate the storm count based on cyclone density
 }

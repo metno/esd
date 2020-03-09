@@ -7,9 +7,11 @@
 \method{summary}{ncdf4}(object, ..., verbose = TRUE)
 }
 \arguments{
-\item{verbose}{a boolean; if TRUE print information about progress}
+\item{object}{filename of netcdf file}
 
-\item{ncfile}{filename of netcdf file}
+\item{\dots}{additional arguments}
+
+\item{verbose}{a boolean; if TRUE print information about progress}
 }
 \description{
 Summary of netcdf file

@@ -36,13 +36,13 @@ stored (to save space may be represented as 'short').}
 
 \item{missval}{Missing value: see \code{\link[ncdf4]{ncvar_def}}}
 
-\item{verbose}{TRUE - clutter the screen.}
+\item{verbose}{if TRUE print progress}
 }
 \value{
 None
 }
 \description{
-Method to save station data as netCDF, making sure to include the data
+Method to save data as netCDF, making sure to include the data
 structure and meta-data (attributes). The code tries to follow the netCDf
 'CF' convention. The method is built on the \code{ncdf4} package.
 }

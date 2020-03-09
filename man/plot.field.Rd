@@ -123,7 +123,7 @@ plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
 
 # Plot interpolated results corresponding to ferder
 data(ferder)
-plot(T2m,ferder)
+plot(T2m, is=ferder)
 
 # Plot Hovmuller diagram: Not working ...
 ## plot(T2m,is=list(lon=0)) 

@@ -62,7 +62,8 @@ ghcnm.meta <- function(stid=NULL, ele=101, src="ghcnm", ver="v3", adj="qca", pat
       fullurl = paste(url,zipfile,sep="")
       if (!file.exists(destfile)) {  
         if (verbose) print("Downloading metadata from 'ftp.ncdc.noaa.gov'")    	
-        download.file(fullurl, destfile, method = "wget", quiet = FALSE, mode = "w",cacheOK = TRUE, extra = getOption("download.file.extra"))
+        download.file(fullurl, destfile, method = "wget", quiet = FALSE, mode = "w",
+	              cacheOK = TRUE, extra = getOption("download.file.extra"))
       }
       
       files <- untar(destfile,list="TRUE")
@@ -85,8 +86,10 @@ ghcnm.meta <- function(stid=NULL, ele=101, src="ghcnm", ver="v3", adj="qca", pat
       #setwd(newpath)  	
                                         #finventory <- paste(newpath,invfile,sep="")
                                         # Reading meta data ...
-      #meta <- read.fwf(inv.file,widths=c(11,9,10,8,30,38),col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
-      meta <- read.fwf(inv.file,widths=c(11,9,10,8,29,38),col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
+      #meta <- read.fwf(inv.file,widths=c(11,9,10,8,30,38),
+      #col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
+      meta <- read.fwf(inv.file,widths=c(11,9,10,8,29,38),
+                       col.names=c("stid","lat","lon","alt","loc","extra"),sep = "\t",as.is=TRUE)
       #attach(meta,warn.conflicts=FALSE)
                                         #if (!is.null(stid)) { 
                                         #ID <- paste(ghcnm.meta$COUNTRY.CODE,ghcnm.meta$STN,sep="")	  
@@ -120,7 +123,9 @@ ghcnm.meta <- function(stid=NULL, ele=101, src="ghcnm", ver="v3", adj="qca", pat
       attr(ghcnm.meta,"version") <- upd.ver	
       attr(ghcnm.meta,"history") <- c(inv.file,dat.file)
       attr(ghcnm.meta,"URL") <- paste(url,ver,sep="/")
-      attr(ghcnm.meta,"cite") <- "J. H. Lawrimore, M. J. Menne, B. E. Gleason, C. N. Williams, D. B. Wuertz, R. S. Vose, and J. Rennie (2011), An overview of the Global Historical Climatology Network monthly mean temperature data set, version 3, J. Geophys. Res., 116, D19121, doi:10.1029/2011JD016187." 
+      attr(ghcnm.meta,"cite") <- paste0("J. H. Lawrimore, M. J. Menne, B. E. Gleason, C. N. Williams, D. B. Wuertz, R. S. Vose, and J. Rennie (2011)",
+                                       ", An overview of the Global Historical Climatology Network monthly mean temperature data set, version 3",
+				       ", J. Geophys. Res., 116, D19121, doi:10.1029/2011JD016187.")
       attr(ghcnm.meta, "file") <- "ghcnm.meta.rda"
       attr(ghcnm.meta, "call") <- match.call()
       save(ghcnm.meta,file="ghcnm.meta.rda")
@@ -146,9 +151,12 @@ ghcnm.data <- function(ele=101, stid="10160403000", ver="v3", adj="qca", src="gh
   if (verbose) print(paste("Working Directory ",path, sep=" -> "))
   ## browser()                                           # check path exist or not, otherwise, create it
   if (!file.exists(path)) {
-      test <- readline(paste("No such directory",path,"! Would you like to create it (y or n)",sep =" "))
-      if ((tolower(test) == "y") | (tolower(test) == "yes")|(tolower(test) == "ye")) {dir.create(path,recursive=TRUE)}
-      else return(NULL)
+    test <- readline(paste("No such directory",path,"! Would you like to create it (y or n)",sep =" "))
+    if ((tolower(test) == "y") | (tolower(test) == "yes")|(tolower(test) == "ye")) {
+      dir.create(path,recursive=TRUE)
+    } else {
+      return(NULL)
+    }
   }
   ## set work directory to new path
   ## setwd(newpath)
@@ -166,7 +174,8 @@ ghcnm.data <- function(ele=101, stid="10160403000", ver="v3", adj="qca", src="gh
   if (!file.exists(gzip.path) | force) {  
     url = paste(url,ver,gzip.name,sep="/")
     if (verbose) print(paste("Reading data from",url))    	
-    test <- try(eval(download.file(url, gzip.path, method = "wget", quiet = FALSE, mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))))
+    test <- try(eval(download.file(url, gzip.path, method = "wget", quiet = FALSE,
+                     mode = "w", cacheOK = TRUE, extra = getOption("download.file.extra"))))
     if (test>0) {
       if (verbose) print(paste(destfile,"does not exist",sep=" "))
       return(NULL)
@@ -216,7 +225,8 @@ ghcnm.data <- function(ele=101, stid="10160403000", ver="v3", adj="qca", src="gh
   attr(ghcnm.data,"inv_file") <- destfile
   attr(ghcnm.data,"url") <- paste("ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/",ver,sep="/")
   
-  ##ghcnm.data <- read.fwf(invfile,widths=c(3,8,9,10,8,30,38),col.names=c("COUNTRY.CODE","STNR","LATITUDE","LONGITUDE","STNELEV","NAME","EXTRA"),sep = "\t",as.is=TRUE)
+  ##ghcnm.data <- read.fwf(invfile,widths=c(3,8,9,10,8,30,38),
+  ##	       col.names=c("COUNTRY.CODE","STNR","LATITUDE","LONGITUDE","STNELEV","NAME","EXTRA"),sep = "\t",as.is=TRUE)
   ## save(ghcnm.data,file="ghcnm.data.rda")
                                         # Remove temporary files
   file.remove(file.path(path,"station.tmp",fsep= .Platform$file.sep))

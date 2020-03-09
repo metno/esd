@@ -9,9 +9,8 @@
 #' 
 #' 
 #' @aliases calculate.cyclonebudget plot.cyclonebudget
-#' @param X A 'trajectory' or 'event' object of cyclone trajectories
-#' @param it A list or data.frame providing time index, e.g. months, season,
-#' year range
+#' @param traj A 'trajectory' or 'event' object of cyclone trajectories
+#' @param it A list or data.frame providing time index, e.g. months, season, year range
 #' @param is A list providing space index, e.g.,
 #' list(lon=c(-50,50),lat=c(45,70)
 #' @param resolution.lon Longitudinal resolution
@@ -61,11 +60,11 @@ calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
     y0 <- box.coordinates(lat0,"lat")
     y1 <- box.coordinates(lat1,"lat")
     
-    if(x0==x1 & y0==y1)
+    if(x0==x1 & y0==y1) {
       return(TRUE)
-    else
+    } else {
       return(FALSE)
-    
+    }
   }
   
   # if wrong class, do something!

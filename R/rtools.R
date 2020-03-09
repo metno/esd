@@ -46,7 +46,7 @@
 #' @aliases as.decimal nv cv q5 q95 q975 q995 filt
 #' filt.default exit figlab ndig ensemblemean propchange stand rmse RMSE
 #' firstyear lastyear eofvar test.num.predictors arec
-#' arec.default arec.station lastrains lastelementrecord strstrip bin
+#' arec.default arec.station lastrains lastdry lastelementrecord strstrip bin
 #' factor2numeric zeros missval
 #' @seealso attrcp
 #'

@@ -3,6 +3,7 @@
 #' @param height a 'station' object
 #' @param threshold threshold - midline of plot
 #' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
 #'
 #' @importFrom graphics barplot title
 #'

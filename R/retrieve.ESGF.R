@@ -25,9 +25,10 @@
 #' processing.
 #'
 #' @examples 
-#' retrieve.ESGF(lon=c(-30,40),lat=c(50,70),period='205001-210012') -> X
+#' \dontrun{
+#' X <- retrieve.ESGF(lon=c(-30,40),lat=c(50,70),period='205001-210012')
 #' map(X)
-
+#'}
 #' @export retrieve.ESGF
 retrieve.ESGF <- function(param='tas',verbose=FALSE,...,
                           url='https://esgf-data3.ceda.ac.uk/thredds/dodsC',CMIP='esg_cmip6/CMIP6',
@@ -38,5 +39,4 @@ retrieve.ESGF <- function(param='tas',verbose=FALSE,...,
   if (verbose) print(opendap)
   x <- try(retrieve(ncfile=opendap,verbose=verbose,...))
   invisible(x)
-  
 }

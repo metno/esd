@@ -6,6 +6,13 @@
 \usage{
 check.ncdf4(ncid, param = "auto", verbose = FALSE)
 }
+\arguments{
+\item{ncid}{an object of the class 'ncdf4'}
+
+\item{param}{meteorological parameter}
+
+\item{verbose}{if TRUE print progress}
+}
 \description{
 Check content of netcdf file including parameters, units, and time format (frequency, calendar type).
 }

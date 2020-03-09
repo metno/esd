@@ -15,6 +15,8 @@ WG(x, ...)
 \arguments{
 \item{x}{station object}
 
+\item{\dots}{additional arguments}
+
 \item{option}{Define the type of WG}
 
 \item{amean}{annual mean values. If NULL, use those estimated from x; if NA,

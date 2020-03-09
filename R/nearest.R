@@ -4,6 +4,8 @@
 #' @param is a spatial index, either a list or data frame containing coordinates (e.g., list(lon=c(...), lat=c(...))) or
 #'        a \code{station} or \code{field} object whos longitudes and latitudes will be used
 #'
+#' @aliases nearest nearest.station nearest.field
+#'
 #' @export
 nearest <- function(x,is) UseMethod("nearest")
 

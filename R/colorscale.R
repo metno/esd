@@ -14,9 +14,10 @@
 #' @param v Vertical space between color bar points
 #' @param h horizontal space between color bar points
 #' @param col see \code{\link{par}}
-#' @param pal color palette: "bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold", or "warm"
-#' @param cex see \code{\link{par}}
-#' @param cex.lab see \code{\link{par}}
+#' @param cex A numerical value giving the amount by which plotting text
+#'        and symbols should be magnified relative to the default (see \code{\link{par}})
+#' @param cex.lab Magnification factor for x and y labels (see \code{\link{par}})
+#' @param cex.axis Magnification factor for axis annotations (see \code{\link{par}})
 #' @param type r : rectangular shape , p : for points
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param vl a numerical specifying the relative placement of the vertical lines
@@ -71,7 +72,8 @@ colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
 
 #' Display a color bar object on an existing plot.
 #' 
-#' Generate a color bar list and add information about the breaks of the color scale based on the numerical range of the input data.
+#' Generate a color bar list and add information about the breaks of the color scale based on the
+#' numerical range of the input data.
 #' 
 #' @seealso col.bar colbar
 #' 
@@ -229,15 +231,16 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
 #' @seealso colbar col.bar colbar.ini
 #'
 #' @param n length of color vector
-#' @param pal color palette: "bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold", or "warm"
+#' @param pal color palette: "bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors",
+#' "terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor",
+#' "buorr","bu","rd","cat","cold", or "warm"
 #' @param rev a boolean; if TRUE reverse color scale
 #' @param alpha factor defining transparency of color
 #' @param test a boolean; if TRUE show a sample of the color scale
 #' @param verbose a boolean; if TRUE print information about progress
 #'
 #' @export
-colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,
-                    test=FALSE,verbose=FALSE) {
+colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE) {
   
   test.col <- function(r,g,b) {
     dev.new()

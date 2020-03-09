@@ -6,8 +6,12 @@
 \alias{as.station.data.frame}
 \alias{as.station.ds}
 \alias{as.station.pca}
+\alias{as.station.list}
 \alias{as.station.spell}
 \alias{as.station.events}
+\alias{as.station.dsensemble.station}
+\alias{as.station.eof}
+\alias{as.station.field}
 \title{Coerce input to a \code{station} object}
 \usage{
 as.station(x, ...)

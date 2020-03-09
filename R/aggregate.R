@@ -24,6 +24,8 @@
 #' @param frequency see \code{\link{aggregate.zoo}}
 #' @param threshold threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'
 #' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
 #'
 #' @return The call returns a station object
 #'

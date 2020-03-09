@@ -6,6 +6,9 @@
 \usage{
 cmipgcmresolution(what = "deg")
 }
+\arguments{
+\item{what}{unit of output ('deg' or 'km')}
+}
 \description{
 Return information about spatial resolution of GCMs
 }

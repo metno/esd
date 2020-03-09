@@ -7,15 +7,17 @@
 #' @param nv number of steps in color scale
 #' @param verbose a boolean; if TRUE print information about progress
 #'
+#' @aliases seasevol seasevol.station
+#'
 #' @examples
 #' data(ferder)
-#' seasevol(ferder)
+#' seasevol(ferder, new=FALSE)
 #'
 #' @export
 seasevol <- function(x,nv=25,verbose=FALSE,...) UseMethod("seasevol")
 
 #' @export seasevol.station
-seasevol.station <- function(x,nv=25,verbose=FALSE,...) {
+seasevol.station <- function(x, nv=25, new=TRUE, verbose=FALSE...) {
 
   stopifnot(inherits(x,'day'))
   yrs <- as.numeric(rownames(table(year(x))))
@@ -48,7 +50,7 @@ seasevol.station <- function(x,nv=25,verbose=FALSE,...) {
     Z[i,1:length(y)] <- y
   }
   
-  dev.new()
+  if(new) dev.new()
   par(bty="n",yaxt="n",fig=c(0.0,0.90,0.0,1.0))
   z <- coredata(x)
   image(yrs,1:366,Z,

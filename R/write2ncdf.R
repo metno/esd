@@ -1,12 +1,13 @@
 #' Saves climate data as netCDF.
 #' 
-#' Method to save station data as netCDF, making sure to include the data
+#' Method to save data as netCDF, making sure to include the data
 #' structure and meta-data (attributes). The code tries to follow the netCDf
 #' 'CF' convention. The method is built on the \code{ncdf4} package.
 #' 
 #' @seealso write2ncdf4.station 
-#' write2ncdf4.field write2ncdf4.list write2ncdf4.station write2ncdf4.eof
-#' write2ncdf4.pca write2ncdf4.dsensemble
+#' write2ncdf4.field write2ncdf4.list
+#' write2ncdf4.station write2ncdf4.dsensemble
+#' write2ncdf4.eof write2ncdf4.pca write2ncdf4.eof
 #' 
 #' @param x data object
 #' @param \dots additional arguments
@@ -29,7 +30,7 @@ write2ncdf4.default <- function(x,...) {
 
 #' Saves climate data as netCDF.
 #' 
-#' Method to save station data as netCDF, making sure to include the data
+#' Method to save data as netCDF, making sure to include the data
 #' structure and meta-data (attributes). The code tries to follow the netCDf
 #' 'CF' convention. The method is built on the \code{ncdf4} package.
 #' 
@@ -45,7 +46,7 @@ write2ncdf4.default <- function(x,...) {
 #' stored (to save space may be represented as 'short').
 #' @param torg Time origin
 #' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
-#' @param verbose TRUE - clutter the screen.
+#' @param verbose if TRUE print progress
 #' @param \dots additional arguments
 #' 
 #' @return None
@@ -192,6 +193,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' @param append a boolean; if TRUE append output to existing file
 #' @param stid_unlim a boolean; if TRUE the stid dimension is unlimited
 #' @param namelength a numeric specifying the number of characters in dimension and variable names
+#' @param nmin Only calculate summary statistics for stations with nmin years of data (e.g. 30 years).
 #' @param offset Sets the attribute 'add_offset' which is added to the values
 #' stored (to save space may be represented as 'short').
 #' @param torg Time origin
@@ -983,7 +985,33 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
 }
 
 
-## These small functions are common code that simplify saving data as netCDF
+#' Saves climate data as netCDF.
+#' 
+#' Method to save 'pca' data as netCDF, making sure to include the data
+#' structure and meta-data (attributes). The code tries to follow the netCDf
+#' 'CF' convention. The method is built on the \code{ncdf4} package.
+#'
+#' To save space, the values are saved as short (16-bit signed integer that
+#' can hold values between -32768 and 32767).
+#' (see NC_SHORT in \url{https://www.unidata.ucar.edu/software/netcdf/docs/data_type.html}).
+#'
+#' @seealso write2ncdf4
+#' 
+#' @param x data object
+#' @param file file name
+#' @param prec Precision: see \code{\link[ncdf4]{ncvar_def}}
+#' @param scale Sets the atttribute 'scale_factor' which is used to scale
+#' (multiply) the values stored (to save space may be represented as 'short').
+#' @param offset Sets the attribute 'add_offset' which is added to the values
+#' stored (to save space may be represented as 'short').
+#' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
+#' @param verbose TRUE - clutter the screen.
+#' @param \dots additional arguments
+#' 
+#' @return None
+#' 
+#' @keywords netcdf ncdf4 save
+#'
 #' @export write2ncdf4.pca
 write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,scale=0.01,offset=0,missval=-99) {
   if (verbose) print('write2ncdf4.pca')
@@ -1046,12 +1074,48 @@ write2ncdf4.pca <- function(x,...,file='esd.pca.nc',prec='short',verbose=FALSE,s
   ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
 }
 
+#' Unfinished function that doesn't do anything.
+#'
+#' @param x input object of class 'dsensemble'
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
+#'
+#' @seealso write2ncdf4
+#' 
 #' @export write2ncdf4.eof
-write2ncdf4.eof <- function(x,...,file='eof.nc',prec='short',scale=10,offset=NULL,torg="1970-01-01",missval=-999,verbose=FALSE){
+write2ncdf4.eof <- function(x,...,verbose=FALSE){
   if(verbose) print("write2ncdf.eof")
   if(verbose) print("unfinished function that doesn't do anything")
 }
 
+#' Saves climate data as netCDF.
+#' 
+#' Method to save 'dsensemble' data as netCDF, making sure to include the data
+#' structure and meta-data (attributes). The code tries to follow the netCDf
+#' 'CF' convention. The method is built on the \code{ncdf4} package.
+#'
+#' To save space, the values are saved as short (16-bit signed integer that
+#' can hold values between -32768 and 32767).
+#' (see NC_SHORT in \url{https://www.unidata.ucar.edu/software/netcdf/docs/data_type.html}).
+#'
+#' @seealso write2ncdf4
+#' 
+#' @param x data object
+#' @param file filename
+#' @param prec Precision: see \code{\link[ncdf4]{ncvar_def}}
+#' @param scale Sets the atttribute 'scale_factor' which is used to scale
+#' (multiply) the values stored (to save space may be represented as 'short').
+#' @param offset Sets the attribute 'add_offset' which is added to the values
+#' stored (to save space may be represented as 'short').
+#' @param torg Time origin
+#' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
+#' @param verbose If TRUE print progress
+#' @param \dots additional arguments
+#' 
+#' @return None
+#' 
+#' @keywords netcdf ncdf4 save
+#' 
 #' @export write2ncdf4.dsensemble 
 write2ncdf4.dsensemble <- function(x,...,file='esd.dsensemble.nc',prec='short',offset=0,scale=0.1,
                               torg="1970-01-01",missval=-99,verbose=TRUE) {

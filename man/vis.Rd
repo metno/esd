@@ -4,6 +4,16 @@
 \alias{vis}
 \alias{vis.station}
 \alias{vis.pca}
+\alias{vis.cca}
+\alias{vis.default}
+\alias{vis.ds}
+\alias{vis.dsensemble}
+\alias{vis.dsensemble.list}
+\alias{vis.eof}
+\alias{vis.field}
+\alias{vis.map}
+\alias{vis.mvr}
+\alias{vis.spell}
 \title{InfoGraphics}
 \usage{
 vis(x, ...)

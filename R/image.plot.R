@@ -1,9 +1,35 @@
 #' Plot image
 #'
+#' @param breaks A numeric vector of breakpoints for the colours
+#' @param add if TRUE add to current plot
+#' @param nlevel the number of breaks (used only if breaks are not specified),
+#' @param horizontal if TRUE legend is horizontal
+#' @param legend.shrink shrinkage factor for legend
+#' @param legend.mar margins of legend (see \code{link{par}})
+#' @param legend.lab legend label
+#' @param legend.line margin line of the legend
+#' @param graphics.reset a boolean
+#' @param bigplot A vector of the form ‘c(x1, x2, y1, y2)’ giving the
+#'        coordinates of the plot region as fractions of the current
+#'        figure region.
+#' @param smallplot Same as bigplot but for a second plot
+#' @param legend.only if TRUE show only legend
+#' @param col Specification of the plotting color (a single color or a vector)
+#' @param pal color palette, used only if col is NULL (see \code{\link{colscal}})
+#' @param lab.breaks 
+#' @param axis.args list containing arguments for axis
+#' @param legend.args list containing arguments for legend
+#' @param midpoint If TRUE color scale is formed for midpoints by averaging 4 corners.
+#' @param border the color to draw the border. Use NA to omit the border. 
+#' @param lwd width of line
+#' @param rev if TRUE reverse palette
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments
+#'
 #' @importFrom graphics box
 #'
 #' @export image.plot
-image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE, 
+image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal = FALSE, 
                         legend.shrink = 0.9, legend.width = 1.2, 
                         legend.mar = ifelse(horizontal, 3.1, 5.1), 
                         legend.lab = NULL, legend.line = 2, graphics.reset = FALSE, 
@@ -13,7 +39,7 @@ image.plot <- function (..., add = FALSE, nlevel = 64, horizontal = FALSE,
   
   if(verbose) print("image.plot")
   
-  breaks <- list(...)$breaks
+  #breaks <- list(...)$breaks
   if(!is.null(breaks)) nlevel <- length(breaks)-1
   if(is.null(col)) col <- colscal(n=nlevel, pal=pal)
   if (rev) col <- rev(col)

@@ -2,10 +2,20 @@
 % Please edit documentation in R/stamp.R
 \name{history.stamp}
 \alias{history.stamp}
+\alias{history.stamp.default}
 \title{This function adds a stamp in the history of x
 with 'sys.call', 'date()', and 'src (source)}
 \usage{
 history.stamp(x = NULL, y = NULL, verbose = FALSE, ...)
+}
+\arguments{
+\item{x}{input object}
+
+\item{y}{input object}
+
+\item{verbose}{if TRUE print progress}
+
+\item{\dots}{additional arguments}
 }
 \description{
 This function adds a stamp in the history of x

@@ -68,9 +68,11 @@ t2m.NCEP(
 
 \item{anomaly}{TRUE: return anomaly}
 
+\item{latest}{if TRUE check if a newer version can be downloaded}
+
 \item{url}{source of data}
 
-\item{plot}{TRUE:plot}
+\item{verbose}{if TRUE print progress}
 }
 \value{
 Numeric vectors/matrices with a set of attributes describing the
@@ -86,6 +88,7 @@ in the methods \code{\link{map}}.
 
 The object \code{station.meta} contains meta data for various sources of station data
 (NACD, NARP, NORDKLIM, ECAD, GHCN, and METNO) used in the methods \code{\link{station}}.
+\code{ISO03} contains country codes.
 
 \code{NACD}, \code{NARP}, and \code{nordklim.data} contain staion data from Northern Europe from
 the North Atlantic Climatological Dataset (NACD),
@@ -119,6 +122,8 @@ from September 30 to October 10 of 2016, used to test the \code{\link{CCI}} meth
 Some data sets (\code{NINO3.4}, \code{NAOI} ) come with a 'frozen' version in the package,
 but there are also functions that read the most recent version of these indeces from the Internet
 with functions \code{\link{NINO3.4}} and \code{\link{NAO}}.
+
+The python script \code{py.script} is used in the function \code{\link{ERA5.CDS}} to download ERA5 data from the Climate Data Store.
 }
 \examples{
 

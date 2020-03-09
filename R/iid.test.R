@@ -35,6 +35,8 @@
 #' @param N.test Number of Monre-Carlo runs.
 #' @param reverse.plot.reverse TRUE: plots reverse from right to left, else
 #' left to right.
+#' @param \dots additional arguments
+#'
 #' @return list: 'record.density' and 'record.density.rev' for the reverse
 #' analysis. The variables CI.95, p.val, and i.cluster (and their reverse
 #' equivalents '.rev') return the estimated 95\% conf. int, p-value, and the

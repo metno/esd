@@ -35,9 +35,12 @@ col.bar(
 
 \item{col}{see \code{\link{par}}}
 
-\item{cex}{see \code{\link{par}}}
+\item{cex}{A numerical value giving the amount by which plotting text
+and symbols should be magnified relative to the default (see \code{\link{par}})}
 
-\item{cex.lab}{see \code{\link{par}}}
+\item{cex.lab}{Magnification factor for x and y labels (see \code{\link{par}})}
+
+\item{cex.axis}{Magnification factor for axis annotations (see \code{\link{par}})}
 
 \item{type}{r : rectangular shape , p : for points}
 
@@ -48,8 +51,6 @@ col.bar(
 \item{border}{a boolean; if TRUE show color bar borders}
 
 \item{\dots}{Additional graphical parameters to be passed on}
-
-\item{pal}{color palette: "bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors","terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor","buorr","bu","rd","cat","cold", or "warm"}
 }
 \description{
 Add a color bar or color points into an exisiting plot or map.

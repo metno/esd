@@ -5,7 +5,7 @@
 #'
 #' @param Y a \code{station} object
 #' @param i index
-#' @param verbose a boolean; if TRUE print information about progress 
+#' @param verbose if TRUE, print out diagnostics 
 #' @param xlim longitude range
 #' @param ylim latitude range
 #'

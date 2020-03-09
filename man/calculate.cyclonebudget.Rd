@@ -16,11 +16,12 @@ calculate.cyclonebudget(
 )
 }
 \arguments{
+\item{traj}{A 'trajectory' or 'event' object of cyclone trajectories}
+
 \item{is}{A list providing space index, e.g.,
 list(lon=c(-50,50),lat=c(45,70)}
 
-\item{it}{A list or data.frame providing time index, e.g. months, season,
-year range}
+\item{it}{A list or data.frame providing time index, e.g. months, season, year range}
 
 \item{resolution.lon}{Longitudinal resolution}
 
@@ -29,8 +30,6 @@ year range}
 \item{progress}{Show progress bar. TRUE or FALSE.}
 
 \item{verbose}{Print out diagnostics. TRUE or FALSE.}
-
-\item{X}{A 'trajectory' or 'event' object of cyclone trajectories}
 }
 \value{
 A 'cyclonebudget' object: a list of various aspects of the cyclone

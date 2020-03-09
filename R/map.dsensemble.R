@@ -5,6 +5,14 @@
 
 #' Expand PCA to obtain station data
 #'
+#' @param x an object of type 'pca'
+#' @param it time index (see \code{\link{subset}})
+#' @param FUN function applied to aggregate in time
+#' @param FUNX function applied aggregate ensemble members
+#' @param verbose if TRUE print progress
+#' @param anomaly if FALSE add the mean value stored as attribute in x
+#' @param test if TRUE perform test on one GCM simulation
+#'
 #' @export
 expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
   ## Get the spatial weights

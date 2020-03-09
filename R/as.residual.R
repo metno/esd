@@ -9,10 +9,10 @@
 #' @param \dots additional arguments
 #'
 #' @export as.residual
-as.residual <- function(x,...) UseMethod("as.residual")
+as.residual <- function(x,verbose=FALSE,...) UseMethod("as.residual")
 
 #' @export as.residual.ds
-as.residual.ds <- function(x,...,verbose=FALSE){
+as.residual.ds <- function(x,verbose=FALSE,...){
   if (verbose) print('as.residual.ds')
   x0 <- attr(x,'original_data')
   if (verbose) print(names(attributes(x0)))
@@ -55,7 +55,8 @@ as.residual.ds <- function(x,...,verbose=FALSE){
 }
 
 #' @export as.residual.station
-as.residual.station <- function(x,...) {
+as.residual.station <- function(x,verbose=FALSE,...) {
+  if(verbose) print("as.residual.station")
   if (!is.null(attr(x,'calibration_data'))) {
     y <- as.residual.ds(x)
   } else {
@@ -65,7 +66,8 @@ as.residual.station <- function(x,...) {
 }
 
 #' @export as.residual.field
-as.residual.field <- function(x,...) {
+as.residual.field <- function(x,verbose=FALSE,...) {
+  if(verbose) print("as.residual.field")
   if (!is.null(attr(x,'calibration_data'))) {
     y <- as.residual.ds(x)
   } else {

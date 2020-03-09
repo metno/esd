@@ -59,8 +59,10 @@ Retrieve CMIP data directly from the Earth System Grid Federation (ESGF)
 https://earthsystemcog.org/projects/cog/esgf_search_restful_api
 }
 \examples{
-retrieve.ESGF(lon=c(-30,40),lat=c(50,70),period='205001-210012') -> X
+\dontrun{
+X <- retrieve.ESGF(lon=c(-30,40),lat=c(50,70),period='205001-210012')
 map(X)
+}
 }
 \seealso{
 retrieve

@@ -32,9 +32,9 @@
 #' @param nmin Minimum total lifetime of a trajectory. Unit: number of time
 #' steps.
 #' @param dmin Minimum total length of a trajectory. Unit: m.
-#' @param plot TRUE: Show plots of trajectories for selected time steps.
-#' @param progress TRUE: Show progress bar.
-#' @param verbose TRUE: Print out diagnosics.
+#' @param plot If TRUE, show plots of trajectories for selected time steps.
+#' @param progress If TRUE, show progress bar.
+#' @param verbose If TRUE, print out diagnosics.
 #' @return An 'events' object containing the original information as well as
 #' the trajectory number ('trajectory') of each event and statistical
 #' properties of the trajectories ('trackcount' - number of events in path;

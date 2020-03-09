@@ -14,6 +14,21 @@ expandpca(
   test = FALSE
 )
 }
+\arguments{
+\item{x}{an object of type 'pca'}
+
+\item{it}{time index (see \code{\link{subset}})}
+
+\item{FUN}{function applied to aggregate in time}
+
+\item{FUNX}{function applied aggregate ensemble members}
+
+\item{verbose}{if TRUE print progress}
+
+\item{anomaly}{if FALSE add the mean value stored as attribute in x}
+
+\item{test}{if TRUE perform test on one GCM simulation}
+}
 \description{
 Expand PCA to obtain station data
 }

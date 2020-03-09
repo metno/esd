@@ -11,6 +11,7 @@
 \alias{trend.coef}
 \alias{trend.err}
 \alias{trend.pval}
+\alias{trend.default}
 \title{Trending and detrending data}
 \usage{
 trend(x, result = "trend", model = "y ~ t", ...)
@@ -23,6 +24,8 @@ trend(x, result = "trend", model = "y ~ t", ...)
 p-value.}
 
 \item{model}{The trend model used by \code{\link{lm}}.}
+
+\item{\dots}{additional arguments}
 
 \item{new}{if TRUE plot in new window}
 }

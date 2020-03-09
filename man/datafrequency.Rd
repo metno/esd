@@ -6,6 +6,11 @@
 \usage{
 datafrequency(data = NULL, unit = NULL, verbose = FALSE)
 }
+\arguments{
+\item{data}{input object containing a time index}
+
+\item{unit}{unit of time index in 'data'}
+}
 \description{
 Calculate the frequency
 }
