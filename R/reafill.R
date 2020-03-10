@@ -25,7 +25,7 @@
 #' @aliases pcafill reafill test.reafill 
 #' @author R.E. Benestad
 #' @export reafill
-reafill <- function(x,file,anomaly=FALSE,verbose=FALSE,plot=FALSE,delta=0.3) {
+reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
   ## Read only the reanalysis data for the local region surrounding the station data 
   lon <- round(range(lon(x)) + delta*c(-1,1),3)
   lat <- round(range(lat(x)) + delta*c(-1,1),3)
@@ -43,6 +43,7 @@ reafill <- function(x,file,anomaly=FALSE,verbose=FALSE,plot=FALSE,delta=0.3) {
   ## recover the original data.
   if (anomaly) {
     x0 <- x; y0 <- y
+    if (inherits(y,'day')) index(y) <- as.Date(index(y))
     x <- anomaly(x); y <- anomaly(y)
   }
   if (inherits(x,'day')) index(y) <- as.Date(index(y))
@@ -87,24 +88,27 @@ reafill <- function(x,file,anomaly=FALSE,verbose=FALSE,plot=FALSE,delta=0.3) {
   if (anomaly) { 
     ## The climatology needs to be added as a repeated seqment
     clim <- as.climatology(x0)
-    nyrs <- length(colnames(table(year(z))))
-    clim <- rep(coredata(clim),nyrs)
-    if (inherits(x,'day')) {
-      climt <- seq(as.Date(paste0(min(year(z)),'-01-01'),paste0(max(year(z)),'-12-31'),
-                           length=length(clim)))
-      clim <- clim[is.element(climt,index(z))]
-    } else if (inherits(x,'month')) {
-      climt <- seq(as.Date(paste0(min(year(z)),'-01-01'),paste0(max(year(z)),'-12-01'),
-                           length=length(clim)))
-      clim <- clim[is.element(climt,index(z))]
-    } else 
-      if (inherits(x,'seasonal')) {
-        climt <- seq(as.Date(paste0(min(year(z)),'-02-01'),paste0(max(year(z)),'-10-01'),
-                             length=length(clim)))
-        clim <- clim[is.element(climt,index(z))]
-      } else if (inherits(x,'annual')) clim <- mean(x0)
+    tyrs <- table(year(z))
+    nyrs <- length(rownames(tyrs))
+    if ((max(tyrs)==12) & (length(clim)==12)) {
+      ## Monthly data
+      for (im in 1:12) {
+        it <- is.element(month(z),im)
+        coredata(z)[it] <- coredata(z)[it] + rep(clim[im],sum(it))
+      } 
+      #plot(zoo(x0),lwd=3,col='grey'); lines(z,col='red')
+    } else {
+      ## Daily data
+      wt <- 2*pi/365.25 * c(as.numeric(index(clim)))
+      cal <- data.frame(y=coredata(clim),s1=sin(wt),c1=cos(wt),
+                        s2=sin(2*wt),c2=cos(2*wt),s3=sin(3*wt),c3=cos(3*wt))
+      wt <- 2*pi/365.25 * as.numeric(index(z))
+      pre <- data.frame(s1=sin(wt),c1=cos(wt),
+                        s2=sin(2*wt),c2=cos(2*wt),s3=sin(3*wt),c3=cos(3*wt))
+      clim <- predict(lm(y ~c1 + s1 + c2 + s2 + c3 + s3, data=cal),newdata=pre)
+      z <- z + clim
+    }
     
-    coredata(z) <- coredata(z) + clim
   }
   
   attr(z,'evaluation') <- evaluation
@@ -113,9 +117,9 @@ reafill <- function(x,file,anomaly=FALSE,verbose=FALSE,plot=FALSE,delta=0.3) {
 
 ## Test the fill-in function reafill by inserting NAs into series
 #' @export test.reafill
-test.reafill <- function(file='~/data/ERA5/ERA5_t2m_mon.nc',n=3,nmiss=100) {
+test.reafill <- function(x=NULL,file='~/data/ERA5/ERA5_t2m_mon.nc',n=3,nmiss=100,anomaly=TRUE) {
   print('test.reafill')
-  data("Oslo")
+  if (is.null(x)) data("Oslo") else Oslo <- x
   #data("ferder"); Oslo <- ferder
   z0 <- matrix(rep(NA,n*nmiss),n,nmiss); z <- z0
   for (i in 1:n) {
@@ -124,7 +128,7 @@ test.reafill <- function(file='~/data/ERA5/ERA5_t2m_mon.nc',n=3,nmiss=100) {
     ## Insert random NAs into the series
     seed <- order(rnorm(length(y)))[1:nmiss]
     cy <- coredata(y); z0[i,] <- cy[seed]; cy[seed] <- NA; c(cy) -> coredata(y)
-    x <- reafill(y,file=file,verbose=TRUE,plot=FALSE,delta=0.3)
+    x <- reafill(y,file=file,verbose=TRUE,plot=FALSE,delta=0.3,anomaly=anomaly)
     z[i,] <- coredata(x)[seed]
   }
   plot(c(z0),c(z),main='Test reafill',xlab='original data',ylab='interpolated data',

@@ -214,7 +214,7 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   ncvar_put( ncid, tdid.son, Y$trend_SON)
   ncvar_put( ncid, maxid, Y$max)
   ncvar_put( ncid, nhrid, Y$records)
-  ncvar_put( nvid, lelrid, Y$number.valid )
+  ncvar_put( ncid, lelrid, Y$number.valid )
   ncvar_put( ncid, lehrid, lehr) # last element highest
   if (!is.precip(x)) {
     if (verbose) print('extras for non-precipitation')
