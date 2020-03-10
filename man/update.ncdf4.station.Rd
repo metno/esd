@@ -4,7 +4,7 @@
 \alias{update.ncdf4.station}
 \title{update.ncdf4.station}
 \usage{
-\method{update}{ncdf4.station}(x, file, verbose = TRUE)
+\method{update}{ncdf4.station}(x, file, verbose = TRUE, torg = "1899-12-31")
 }
 \arguments{
 \item{x}{station object}
@@ -15,7 +15,9 @@
 }
 \description{
 The function adds new days of station data to an existing netCDF with daily station data
-and then updates the summary statistics.
+and then updates the summary statistics. Using this function to update netCDF files with 
+station data can be an effective solution for when reading large volumes of data from a 
+database is time-consuming.
 }
 \author{
 R.E. Benestad
