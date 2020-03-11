@@ -67,12 +67,17 @@ NINO3.4 <- function(url=NULL, header=TRUE, freq="monthly", verbose=FALSE) {
     if(freq=="daily") {
       url <- 'https://climexp.knmi.nl/data/inino34_daily.dat'
       header <- TRUE
+      skip=NULL
+      n <- -1
     } else {
-      url <- 'https://climexp.knmi.nl/data/inino5.dat'
+      # REB does not work url <- 'https://climexp.knmi.nl/data/inino5.dat'
+      url <- 'https://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/Data/nino34.long.data'
+      skip=1
+      n <- length(readLines(url)) - 6
       header <- FALSE
     }
   }
-  enso <- read.table(url,header=header)
+  enso <- read.table(url,header=header,skip=skip,nrows=n)
   if(ncol(enso)==2) {
     d <- as.Date(strptime(enso[,1],format="%Y%m%d"))
     nino3.4 <- zoo(enso[,2], order.by=d)
@@ -107,7 +112,7 @@ SOI <- function(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext
   writeLines(SOI[i1:i2],con='SOI.txt')
   soi <- read.table('SOI.txt',na.strings='*',skip=13)
   soi <- zoo(c(unlist(t(soi[,2:13]))),
-              order.by=as.Date(paste(sort(rep(soi[,1],12)),1:12,'01',sep='-')))
+             order.by=as.Date(paste(sort(rep(soi[,1],12)),1:12,'01',sep='-')))
   soi <- as.station(soi,loc='SOI',param='SOI',unit='dimensionless',url=url,
                     ref=paste(SOI[7:9],collapse=', '),longname=SOI[3])
   return(soi)
@@ -117,15 +122,15 @@ SOI <- function(url='ftp://ftp.bom.gov.au/anon/home/ncc/www/sco/soi/soiplaintext
 # http://www.cmar.csiro.au/sealevel/GMSL_SG_2011_up.html
 #' @export
 GSL <- function(url='https://www.epa.gov/sites/production/files/2016-08/sea-level_fig-1.csv') {
-
-    sl <- read.csv(url,skip=6,header=TRUE)
-    zsl <- zoo(sl[[2]]*2.54,order.by=sl[[1]])
-    sl <- as.station(zsl,loc=NA,param='height',unit='cm',
-                     lon=NA,lat=NA,alt=NA,
-                     cntr=NA,longname='CSIRO - Adjusted global mean sea level',
-                     stid=NA,quality=NA,src='CSIRO, 2015',url=url,
-                     reference="EPA's Climate Change Indicators in the United States: www.epa.gov/climatechange",info=NA, method= NA)
-    return(sl)
+  
+  sl <- read.csv(url,skip=6,header=TRUE)
+  zsl <- zoo(sl[[2]]*2.54,order.by=sl[[1]])
+  sl <- as.station(zsl,loc=NA,param='height',unit='cm',
+                   lon=NA,lat=NA,alt=NA,
+                   cntr=NA,longname='CSIRO - Adjusted global mean sea level',
+                   stid=NA,quality=NA,src='CSIRO, 2015',url=url,
+                   reference="EPA's Climate Change Indicators in the United States: www.epa.gov/climatechange",info=NA, method= NA)
+  return(sl)
 }
 
 #' @export
@@ -157,7 +162,7 @@ GSL.nasa <- function(url='ftp://podaac.jpl.nasa.gov/allData/merged_alt/L2/TP_J1_
   #print(time); browser()
   time[bad0] <-  as.Date(paste(yr[bad0],mo[bad0],1,sep='-'))
   time[bad29] <-  as.Date(paste(yr[bad29],mo[bad29],dy[bad29]-2,sep='-'))
-
+  
   zsl <- zoo(sl[[is]],order.by=time)
   sl <- as.station(zsl,loc=NA,param=param,unit=unit,
                    lon=NA,lat=NA,alt=NA,
@@ -183,13 +188,13 @@ QBO <- function(url='http://www.esrl.noaa.gov/psd/data/correlation/qbo.data') {
   qbo[qbo <= -999] <- NA
   qbo <- zoo(c(t(as.matrix(qbo[2:13]))),
              order.by=as.Date(paste(sort(rep(qbo$V1,12)),
-                               rep(1:12,length(qbo$V1)),'01',sep='-')))
+                                    rep(1:12,length(qbo$V1)),'01',sep='-')))
   amo <- as.station(qbo,loc=NA,param='QBO',unit='dimensionless',
-                     lon=NA,lat=NA,alt=NA,
-                     cntr=NA,longname='Quasi-biennial oscillation',
-                     stid=NA,quality=NA,src='Calculated at NOAA/ESRL PSD',
-                     url=url,reference=NA, method= NA,
-               info='http://www.esrl.noaa.gov/psd/data/climateindices/list/')
+                    lon=NA,lat=NA,alt=NA,
+                    cntr=NA,longname='Quasi-biennial oscillation',
+                    stid=NA,quality=NA,src='Calculated at NOAA/ESRL PSD',
+                    url=url,reference=NA, method= NA,
+                    info='http://www.esrl.noaa.gov/psd/data/climateindices/list/')
   return(qbo)
 }
 
@@ -214,11 +219,11 @@ CO2 <- function(url='ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt
   X[X <= -99] <- NA
   co2 <- zoo(X$V4,order.by=as.Date(paste(X$V1,X$V2,'01',sep='-')))
   co2 <- as.station(co2,loc='Mauna Loa',param=expression(C*O[2]),unit='ppm',
-                     lon=-155.5763,lat=19.5362,alt=3397,
-                     cntr=NA,longname='Carbon dioxide',
-                     stid=NA,quality=NA,src='NOAA/ESRL',
-                     url=url,reference='C.D. Keeling, R.B. Bacastow, A.E. Bainbridge, C.A. Ekdahl, P.R. Guenther, and L.S. Waterman, (1976), Atmospheric carbon dioxide variations at Mauna Loa Observatory, Hawaii, Tellus, vol. 28, 538-551', method= NA,
-               info='Use of these data implies an agreement to reciprocate.')
+                    lon=-155.5763,lat=19.5362,alt=3397,
+                    cntr=NA,longname='Carbon dioxide',
+                    stid=NA,quality=NA,src='NOAA/ESRL',
+                    url=url,reference='C.D. Keeling, R.B. Bacastow, A.E. Bainbridge, C.A. Ekdahl, P.R. Guenther, and L.S. Waterman, (1976), Atmospheric carbon dioxide variations at Mauna Loa Observatory, Hawaii, Tellus, vol. 28, 538-551', method= NA,
+                    info='Use of these data implies an agreement to reciprocate.')
   return(co2)
 }
 
@@ -268,6 +273,6 @@ Sunspots <- function(url='http://sidc.oma.be/silso/DATA/SN_m_tot_V2.0.txt') {
   attr(s,'unit') <- 'monthly sum'
   return(s)
 }
-  
+
 
 
