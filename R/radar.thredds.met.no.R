@@ -115,6 +115,8 @@ radar <- function(url='https://thredds.met.no/thredds/catalog/remotesensingradar
         t <- ncvar_get(ncid,'time') # units: seconds since 1970-01-01 00:00:00 +00:00
         t <- as.POSIXlt(t,origin='1970-01-01 00:00:00')
         d <- dim(z)
+        #if(is.null(d)) browser()
+        #if(length(d)<3) browser()
         ## If FUN is provided, do the daily aggregation
         if (!is.null(FUN)) {
           t <- as.Date(t[1])

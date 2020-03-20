@@ -32,9 +32,9 @@ only the earliest start time and the latest end time are used.
 }
 \examples{
 # Fetch all stations' measuring periods of the t2m parameter
-metno.frost.meta.day(param=c('t2m'))
+meta.day <- metno.frost.meta.day(param=c('t2m'))
 # Fetch all stations' measuring periods of all available parameters
-metno.frost.meta.month()
+meta.mon <- metno.frost.meta.month()
 
 }
 \author{
