@@ -29,11 +29,11 @@
 #' @examples 
 #' \dontrun{
 #' meta <- meta.ESGF()
-#' X <- retrieve.ESGF(im=2,lon=c(-30,40),lat=c(50,70),meta=meta)
+#' X <- retrieve.ESGF(im=3,lon=c(-30,40),lat=c(50,70),meta=meta)
 #' map(X)
 #'}
 #' @export retrieve.ESGF
-retrieve.ESGF <- function(im=1,meta=NULL,verbose=TRUE,...) { 
+retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) { 
   if (is.null(meta)) meta <- meta.ESGF()
   opendap <- as.character(meta$OpenDap[im])
   if (verbose) print(opendap)
