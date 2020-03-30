@@ -1,7 +1,8 @@
 #' Retrieve CMIP data directly from the Earth System Grid Federation (ESGF)
 #' https://earthsystemcog.org/projects/cog/esgf_search_restful_api
 #' meta.ESGF returns a data.frame with the model metadata and the OpenDAP URL that 
-#' can be used with retrieve.ESGF.
+#' can be used with retrieve.ESGF. The function \code{retrieve.ESGF} is a wraparound
+#' for \code{retrieve} that reads several files belonging to the same model and run.
 
 #' @aliases retrieve.ESGF meta.ESGF
 
@@ -29,10 +30,21 @@
 #' @export retrieve.ESGF
 retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) { 
   if (is.null(meta)) meta <- meta.ESGF()
-  opendap <- as.character(meta$OpenDap[im])
-  if (verbose) print(opendap)
-  x <- try(retrieve(ncfile=opendap,param=attr(meta,'variable'),verbose=verbose,...))
-  invisible(x)
+  model <- as.character(meta$model[im])
+  mem <- as.character(meta$member.id[im])
+  jm <- (1:length(meta$model))[is.element(as.character(meta$model),model) &
+                               is.element(as.character(meta$member.id),mem)]
+  for (j in jm) { 
+    print(as.character(meta$period[j]))
+    opendap <- as.character(meta$OpenDap[j])
+    if (verbose) print(opendap)
+    x <- try(retrieve(ncfile=opendap,param=attr(meta,'variable'),verbose=verbose,...))
+    if ( (!inherits(x,"try-error")) & (length(jm)>1) ) { 
+      if (j == jm[1]) X <- x else X <- c(zoo(X),zoo(x))
+      X <- attrcp(x,X); class(X) <- class(x)
+    } else if ( (length(jm)==1) | (inherits(x,"try-error")) ) X <- x 
+  }
+  invisible(X)
 }
 
 #' @export meta.ESGF
@@ -54,7 +66,7 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
   URL <- paste(url,"?type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
                "&frequency=",freq,"&experiment_id=",expid,"&format=application%2Fsolr%2Bjson",sep="")
   if (verbose) print(URL)
-
+  
   nof_datasets <- fromJSON(file=URL)$response$numFound
   if (!is.null(n)) nof_datasets <- n
   print(paste('Found',nof_datasets,'datasets'))
