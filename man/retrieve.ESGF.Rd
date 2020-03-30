@@ -8,7 +8,7 @@ https://earthsystemcog.org/projects/cog/esgf_search_restful_api
 meta.ESGF returns a data.frame with the model metadata and the OpenDAP URL that 
 can be used with retrieve.ESGF.}
 \usage{
-\method{retrieve}{ESGF}(im = 1, meta = NULL, verbose = TRUE, ...)
+\method{retrieve}{ESGF}(im = 1, meta = NULL, verbose = FALSE, ...)
 }
 \arguments{
 \item{verbose}{Logical value defaulting to FALSE. If FALSE, do not display
@@ -18,29 +18,17 @@ comments (silent mode). If TRUE, displays extra information on progress.}
 
 \item{url}{The base URL for ESGF}
 
-\item{CMIP}{Which generation of CMIP}
+\item{n}{Number of models to read - NULL reads everything}
 
-\item{MIP}{Name of activity}
+\item{expid}{Name of the MIP experiment ('historical' for historical run)}
 
-\item{inst}{Institution ID}
+\item{mip}{CMIP5 or CMIP6}
 
-\item{model}{Name of climate model}
-
-\item{scen}{Name of scenario}
-
-\item{ID}{The name of the run}
-
-\item{type}{The table ID}
-
-\item{grid}{Grid ID}
-
-\item{version}{Version}
-
-\item{period}{The time segment of the file}
+\item{freq}{Frequency of data}
 }
 \value{
-A "zoo" "field" object with additional attributes used for further
-processing.
+A data.frame for \code{meta.ESGF} and a "zoo" "field" object with additional attributes used for further
+processing for +code{retrieve.ESGF}.
 }
 \description{
 Retrieve CMIP data directly from the Earth System Grid Federation (ESGF)
@@ -50,8 +38,8 @@ can be used with retrieve.ESGF.
 }
 \examples{
 \dontrun{
-meta <- meta.ESGF()
-X <- retrieve.ESGF(im=2,lon=c(-30,40),lat=c(50,70),meta=meta)
+meta <- meta.ESGF(n=3)
+X <- retrieve.ESGF(im=3,lon=c(-30,40),lat=c(50,70),meta=meta)
 map(X)
 }
 }
