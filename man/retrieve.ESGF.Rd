@@ -2,31 +2,19 @@
 % Please edit documentation in R/retrieve.ESGF.R
 \name{retrieve.ESGF}
 \alias{retrieve.ESGF}
+\alias{meta.ESGF}
 \title{Retrieve CMIP data directly from the Earth System Grid Federation (ESGF)
-https://earthsystemcog.org/projects/cog/esgf_search_restful_api}
+https://earthsystemcog.org/projects/cog/esgf_search_restful_api
+meta.ESGF returns a data.frame with the model metadata and the OpenDAP URL that 
+can be used with retrieve.ESGF.}
 \usage{
-\method{retrieve}{ESGF}(
-  param = "tas",
-  verbose = FALSE,
-  ...,
-  url = "https://esgf-data3.ceda.ac.uk/thredds/dodsC",
-  CMIP = "esg_cmip6/CMIP6",
-  MIP = "ScenarioMIP",
-  inst = "MOHC",
-  model = "UKESM1-0-LL",
-  scen = "ssp585",
-  ID = "r2i1p1f2",
-  type = "Amon",
-  grid = "gn",
-  version = "v20190507",
-  period = "2015-2100"
-)
+\method{retrieve}{ESGF}(im = 1, meta = NULL, verbose = TRUE, ...)
 }
 \arguments{
-\item{param}{Name of parameter}
-
 \item{verbose}{Logical value defaulting to FALSE. If FALSE, do not display
 comments (silent mode). If TRUE, displays extra information on progress.}
+
+\item{param}{Name of parameter}
 
 \item{url}{The base URL for ESGF}
 
@@ -57,10 +45,13 @@ processing.
 \description{
 Retrieve CMIP data directly from the Earth System Grid Federation (ESGF)
 https://earthsystemcog.org/projects/cog/esgf_search_restful_api
+meta.ESGF returns a data.frame with the model metadata and the OpenDAP URL that 
+can be used with retrieve.ESGF.
 }
 \examples{
 \dontrun{
-X <- retrieve.ESGF(lon=c(-30,40),lat=c(50,70),period='205001-210012')
+meta <- meta.ESGF()
+X <- retrieve.ESGF(im=2,lon=c(-30,40),lat=c(50,70),meta=meta)
 map(X)
 }
 }
