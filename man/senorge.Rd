@@ -52,14 +52,6 @@ The 'senorge' function reads the seNorge data directly from the metno thredds se
 As the resolution is very high, it may be necessary to limit the spatial and/or temporal scope 
 (see input options 'it', 'lon', and 'lat') as you will otherwise run out of memory.
 }
-\examples{
-it <- as.Date(c("1962-12-01","1962-12-31"))
-lon <- c(-2,15)
-lat <- c(55,63)
-rr <- senorge(param="rr", lon=lon, lat=lat, it=it, verbose=TRUE)
-map(rr, FUN="mean")
-
-}
 \seealso{
 meta.thredds, station.thredds
 }

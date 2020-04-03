@@ -26,12 +26,13 @@
 #' @seealso meta.thredds, station.thredds
 #' 
 #' @examples
+#' \dontrun{}
 #' it <- as.Date(c("1962-12-01","1962-12-31"))
 #' lon <- c(-2,15)
 #' lat <- c(55,63)
 #' rr <- senorge(param="rr", lon=lon, lat=lat, it=it, verbose=TRUE)
 #' map(rr, FUN="mean")
-#' 
+#' }
 #' @export
 senorge <- function(url='https://thredds.met.no/thredds/catalog/senorge/seNorge_2018/Archive',
                     param='rr', lon=c(9.5,11.5), lat=c(59,61), 

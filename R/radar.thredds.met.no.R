@@ -11,9 +11,10 @@
 #' @param plot plot the results while reading. 
 #' 
 #' @examples 
+#' \dontrun{}
 #' Z <- radar(lons = c(10,12), lats = c(59,61), it=2015)
 #' map(Z)
-#'
+#'}
 #' y <- station.thredds(stid=18700,param='precip')
 #' x <- regrid(Z,is=y)
 #' xy <- combine.stations(subset(y,it=x),x)

@@ -1,4 +1,4 @@
-#' iid test
+#' iid test & n.records
 #' 
 #' Test for whether a variable is independent and identically distributed
 #' (iid). 
@@ -50,6 +50,8 @@
 #'   dim(dat) <- c(100,30)
 #'   iid.test(dat)
 #' 
+#'   print(n.records(rnorm(1000))$N)
+#'   print(n.records(rnorm(1000))$N.rev)
 #' @export iid.test
 iid.test <- function(x,...) UseMethod("iid.test")
 
@@ -312,6 +314,7 @@ test.iid.test <- function(distr="rnorm",d=c(70,50),plot=TRUE,
 #' @export n.records
 n.records <- function(x,verbose=FALSE) {
   if (verbose) print('n.records')
+  if (!inherits(x,'zoo')) x <- zoo(x,order.by=1:length(x))
   y <- x
   m <- length(y)
   y[!is.finite(y)] <- min(y,na.rm=TRUE)
