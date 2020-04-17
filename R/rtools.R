@@ -433,8 +433,8 @@ lastdry <- function(x,x0=1,uptodate=TRUE,verbose=FALSE) {
   if (verbose) print('lastdry')
   ## Clean up missing values
   x <- x[is.finite(x)]
-  y <- cumsum(rev(coredata(x)))
-  z <- (1:length(y))[c(1,diff(y) < x0)][1]
+  y <- rev(coredata(x))
+  z <- (1:length(y))[y < x0][1] - 1
   if (uptodate) if (Sys.Date() - end(x) > 1) z <- NA 
   return(z)
 }
