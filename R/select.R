@@ -20,7 +20,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     } else {
       ## KMP 2020-02-17: Redirect monthly metno to Frost and daily to Thredds
       if(user!='metno') src <- sapply(src, function(x) {
-        switch(toupper(x), "METNOM"="METNOM.FROST", "METNOD"="METNOD.THREDDS", x)})
+        switch(toupper(x), "METNOM"="METNOM.FROST", "METNOD"="METNOD.FROST", x)})
       frost <- any(grepl("FROST",toupper(src)))
       thredds <- any(grepl("THREDDS",toupper(src)))
     }
@@ -173,33 +173,47 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   }
   
   if (!is.null(it)) {
+    ## Search by minimum number of observations
+    if (!is.null(nmin)) { 
+      if(verbose) print("Search by minimum number of observations")
+      ny <- as.numeric(station.meta$end) - as.numeric(station.meta$start) + 1
+      id <- (ny >= nmin)
+      station.meta <- station.meta[id,]
+    } 
+    
+    ## Search by esd element
+    if (!is.null(ele)) {
+      if(verbose) print("Search by element")
+      id <- is.element(station.meta$element,ele)
+      station.meta <- station.meta[id,]
+    }
+    
     if(verbose) print("Search by starting and ending years")
     if(is.dates(it)) it <- as.numeric(strftime(it, format="%Y"))
     it.rng <- range(it)
-    id <- (as.numeric(station.meta$start) <= it.rng[1]) & (as.numeric(station.meta$end) >= it.rng[2])
+    ## Keep only stations with data covering the whole selected period:
+    #id <- (as.numeric(station.meta$start) <= it.rng[1]) & (as.numeric(station.meta$end) >= it.rng[2])
+    start.rng <- sapply(as.numeric(station.meta$start), function(x) max(it.rng[1], x))
+    end.rng <- sapply(as.numeric(station.meta$end), function(x) min(it.rng[2], x))
+    n.rng <- sapply(end.rng-start.rng, function(x) max(0,x))
+    if(!is.null(nmin)) {
+      ## Keep only stations with nmin years of data in the selected period:
+      id <- n.rng>=nmin
+    } else {
+      ## Keep all stations with any data within selected period:
+      id <- n.rng>0
+    }
     if (sum(id,na.rm=TRUE)==0) {
       print(paste('No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
                   min(as.numeric(station.meta$start)),' and latest observation from ',
                   max(as.numeric(station.meta$end)),sep=''))
     }
     station.meta <- station.meta[id,]
-    station.meta$start <- rep(it.rng[1],length(station.meta$loc))
-    station.meta$end <- rep(it.rng[2],length(station.meta$loc))
+    ## Why replace the meta data start and end?
+    #station.meta$start <- rep(it.rng[1],length(station.meta$loc))
+    #station.meta$end <- rep(it.rng[2],length(station.meta$loc))
   }
 
-  ## Search by minimum number of observations
-  if (!is.null(nmin)) { 
-    if(verbose) print("Search by minimum number of observations")
-    ny <- as.numeric(station.meta$end) - as.numeric(station.meta$start) + 1
-    id <- (ny >= nmin)
-    station.meta <- station.meta[id,]
-  } 
-  ## Search by esd element
-  if (!is.null(ele)) {
-    if(verbose) print("Search by element")
-    id <- is.element(station.meta$element,ele)
-    station.meta <- station.meta[id,]
-  }
   ## Outputs
   if (dim(station.meta)[1]!=0) {
     station.meta$station_id <- as.character(station.meta$station_id)

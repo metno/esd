@@ -251,7 +251,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   if(any(grepl("METNO",sources))) {
     if(user!="metno") {
       sources <- unique(sapply(sources, function(x) {
-        switch(toupper(x), "METNOM"="METNOM.FROST", "METNOD"="METNOD.THREDDS", x)}))
+        switch(toupper(x), "METNOM"="METNOM.FROST", "METNOD"="METNOD.FROST", x)}))
     }
   }
 
@@ -1228,8 +1228,8 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     maxdata <- 1E5
     j <- which(j)[order(meta$start[j])]
     stid.j <- meta$station_id[j]
-    end.j <- sapply(meta.end[j], function(x) min(as.integer(x), as.integer(end)))
-    start.j <- sapply(meta$start[j], function(x) max(as.integer(x), as.integer(start)))
+    end.j <- sapply(as.integer(meta.end[j]), function(x) min(x, as.integer(end)))
+    start.j <- sapply(as.integer(meta$start[j]), function(x) max(x, as.integer(start)))
     ndata <- switch(toupper(timeresolutions), 
                     "P1M"=(end.j-start.j+1)*12, 
                     "P1D"=(end.j-start.j+1)*365.25,
@@ -1239,7 +1239,8 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
       k <- min(which(ndata>0))
       dk <- min(c(floor(maxdata/ndata[k])-1, length(stid.j)-k, 100))
       if(dk>=0) {
-        time.url <- c(time.url, paste0(start.j[k],"/",end.j[k]))
+        time.url <- c(time.url, paste0(paste0(start.j[k],"-01-01"),"/",
+                                       paste0(end.j[k]),"-12-31"))
         stid.url <- c(stid.url, paste(paste0('SN',stid.j[k:(k+dk)]),collapse=","))
         ndata[k:(k+dk)] <- 0
       } else {
