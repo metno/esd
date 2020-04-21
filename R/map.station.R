@@ -72,7 +72,10 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     if (!is.null(FUN)) {
       if (!(FUN %in% names(attributes(x)))) {
         if(is.null(dim(x))) dim(x) <- c(length(x),1)
-        y <- apply(coredata(x),2,FUN,na.rm=na.rm)
+        ## The function first tries a function that allows the argument 'na.rm'
+        y <- try(apply(coredata(x),2,FUN,na.rm=na.rm))
+        ## If not, do it with a function that doesn't have the argument 'na.rm'
+        if (inherits(y,"try-error")) y <- apply(coredata(x),2,FUN)
       } else {
         y <- attr(x,FUN); FUN <- NULL
       }    

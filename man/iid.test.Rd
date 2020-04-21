@@ -8,7 +8,7 @@
 \alias{n.records}
 \alias{records}
 \alias{test.records}
-\title{iid test}
+\title{iid test & n.records}
 \usage{
 iid.test(x, ...)
 }
@@ -68,5 +68,7 @@ and a number outside this range is marked with red in the 'ball diagram'
   dim(dat) <- c(100,30)
   iid.test(dat)
 
+  print(n.records(rnorm(1000))$N)
+  print(n.records(rnorm(1000))$N.rev)
 }
 \keyword{manip}

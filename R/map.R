@@ -111,6 +111,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,style='plain',
                       verbose=FALSE,plot=TRUE) {
     
+  
     ## default with no arguments will produce a map showing available station
     ## data in the esd package.
 
