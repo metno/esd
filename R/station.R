@@ -1240,7 +1240,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
       dk <- min(c(floor(maxdata/ndata[k])-1, length(stid.j)-k, 100))
       if(dk>=0) {
         time.url <- c(time.url, paste0(paste0(start.j[k],"-01-01"),"/",
-                                       paste0(end.j[k]),"-12-31"))
+                                       paste0(end.j[k],"-12-31")))
         stid.url <- c(stid.url, paste(paste0('SN',stid.j[k:(k+dk)]),collapse=","))
         ndata[k:(k+dk)] <- 0
       } else {
