@@ -357,5 +357,3 @@ retrieve.senorge <- function(ncfile, path=NULL, param='rr',
   if (plot) map(Y)
   invisible(Y)
 }
-
-
