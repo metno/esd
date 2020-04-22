@@ -12,6 +12,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
                             lon=NULL, lat=NULL, alt=NULL, cntr=NULL, src=NULL, it=NULL, 
                             nmin=NULL, user='external', verbose=FALSE) {
   if (verbose) print('select.station')
+  
   if (is.null(x)) {
     data("station.meta",envir=environment())
     if(is.null(src)) {
@@ -62,7 +63,6 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     }
     station.meta$end[is.na(station.meta$end)] <- strftime(Sys.time(), format='%Y')
     #station.meta <- as.data.frame(station.meta,stringsAsFactors=FALSE)
-    if (!is.null(param)) ele <- apply(as.matrix(param),1,esd2ele)
   } else if (inherits(x,"station")) {      
      station_id <- attr(x, "station_id")
      location <- attr(x,"location")
@@ -87,11 +87,14 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   } else {
     stop("x must be an object of class 'station'") 
   }
-  
-  if (!is.null(param) & is.null(ele)) {
-    print("No variable found for your selection or the param identifier has not been set correctly.")
-    print("Please refresh your selection based on the list below")
-    print(as.matrix(ele2param(src=src))[,c(2,5,6)])
+
+  if (!is.null(param)) {
+    ele <- apply(as.matrix(param),1,esd2ele)
+    if (is.null(ele)) {
+      print("No variable found for your selection or the param identifier has not been set correctly.")
+      print("Please refresh your selection based on the list below")
+      print(as.matrix(ele2param(src=src))[,c(2,5,6)])
+    }
   }  
   ## get the lenght of the data base
   #n <- length(station.meta$station_id)
@@ -172,6 +175,13 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     station.meta <- station.meta[id,]
   }
   
+  ## Search by esd element
+  if (!is.null(ele)) {
+    if(verbose) print("Search by element")
+    id <- is.element(station.meta$element,ele)
+    station.meta <- station.meta[id,]
+  }
+  
   if (!is.null(it)) {
     ## Search by minimum number of observations
     if (!is.null(nmin)) { 
@@ -180,13 +190,6 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       id <- (ny >= nmin)
       station.meta <- station.meta[id,]
     } 
-    
-    ## Search by esd element
-    if (!is.null(ele)) {
-      if(verbose) print("Search by element")
-      id <- is.element(station.meta$element,ele)
-      station.meta <- station.meta[id,]
-    }
     
     if(verbose) print("Search by starting and ending years")
     if(is.dates(it)) it <- as.numeric(strftime(it, format="%Y"))
