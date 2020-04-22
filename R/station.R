@@ -254,7 +254,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
         switch(toupper(x), "METNOM"="METNOM.FROST", "METNOD"="METNOD.FROST", x)}))
     }
   }
-
+  
   for(s in sources) {
     if(verbose) print(paste("Retrieving data from source",s))
     stid <- ss$station_id[src==s]
@@ -1180,7 +1180,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
       frostID[2] <- readline('Please give me the second key:')
       writeLines(frostID,con=keyfile)
     }
-
+    
     ## Get parameter information
     param1info <- ele2param(esd2ele(param), src="metno.frost")
     param1 <- gsub('*', timeresolutions, param1info$param, fixed=TRUE)
