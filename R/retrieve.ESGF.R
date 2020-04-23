@@ -29,7 +29,7 @@
 #'}
 #' @export retrieve.ESGF
 retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) { 
-  if (is.null(meta)) meta <- meta.ESGF()
+  if (is.null(meta)) meta <- meta.ESGF(verbose=verbose)
   model <- as.character(meta$model[im])
   mem <- as.character(meta$member.id[im])
   jm <- (1:length(meta$model))[is.element(as.character(meta$model),model) &
@@ -50,24 +50,24 @@ retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) {
 #' @export meta.ESGF
 meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CMIP6",param="tas",
                       freq="mon",expid="ssp585",verbose=FALSE,n=NULL) {
-  if (verbose) print('meta.ESFG - this function uses the rjson-package to read metadata from ESGF')
+  if (verbose) print('meta.ESFG - this function uses the jsonlite package to read metadata from ESGF')
   ## Check if the JSON library is installed
   ## Check if you need to get the devtools-package:
-  not.installed.rjson <- ("rjson" %in% rownames(installed.packages()) == FALSE)
+  not.installed.jsonlite <- ("jsonlite" %in% rownames(installed.packages()) == FALSE)
   
-  if (not.installed.rjson) {
-    print('Need to install the rjson package')
+  if (not.installed.jsonlite) {
+    print('Need to install the jsonlite package')
     ## You need online access.
-    print("e.g. install.packages('rjson')")
+    print("e.g. install.packages('jsonlite')")
   }
   
-  require(rjson)
+  require(jsonlite)
   ## Get number of available datasets
   URL <- paste(url,"?type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
                "&frequency=",freq,"&experiment_id=",expid,"&format=application%2Fsolr%2Bjson",sep="")
   if (verbose) print(URL)
   
-  nof_datasets <- fromJSON(file=URL)$response$numFound
+  nof_datasets <- jsonlite::fromJSON(URL)$response$numFound
   if (!is.null(n)) nof_datasets <- n
   print(paste('Found',nof_datasets,'datasets'))
   if (nof_datasets==0) {
@@ -76,7 +76,7 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
   }
   
   ## Query ESGF server
-  ESGF_query <- fromJSON(file=paste(url,"?limit=",nof_datasets,"&type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
+  ESGF_query <- jsonlite::fromJSON(paste(url,"?limit=",nof_datasets,"&type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
                                     "&frequency=",freq,"&experiment_id=,",expid,"&format=application%2Fsolr%2Bjson&facets=source_id",sep=""))
   if (verbose) str(ESGF_query)
   
@@ -84,30 +84,34 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
   #nof_datasets <- 7 ## test
   results <- list()
   for (i in 1:nof_datasets) {
-    nof_files <- ESGF_query$response$docs[[i]]$number_of_files
-    ESGF_file_query <- fromJSON(file=paste("https://esgf-data.dkrz.de/esg-search/search/?limit=",nof_files,"&type=File&format=application%2Fsolr%2Bjson&dataset_id=",ESGF_query$response$docs[[i]]$id,sep=""))
+    nof_files <- ESGF_query$response$docs$number_of_files[i]
+    ESGF_file_query <- jsonlite::fromJSON(paste("https://esgf-data.dkrz.de/esg-search/search/?limit=",nof_files,"&type=File&format=application%2Fsolr%2Bjson&dataset_id=",ESGF_query$response$docs$id[i],sep=""))
     
     if (verbose) { 
-      print(paste(rep("=",nchar(ESGF_query$response$docs[[i]]$id)+9),collapse=""))
-      print(paste("Dataset:",ESGF_query$response$docs[[i]]$id))
-      print(paste(rep("=",nchar(ESGF_query$response$docs[[i]]$id)+9),collapse=""))
+      print(paste(rep("=",nchar(ESGF_query$response$docs$id[i])+9),collapse=""))
+      print(paste("Dataset:",ESGF_query$response$docs$id[i]))
+      print(paste(rep("=",nchar(ESGF_query$response$docs$id[i])+9),collapse=""))
     } else cat('.')
+    
+    opendap_idx <- which(ESGF_query$response$docs$access[[i]]=="OPENDAP")
+    http_idx <- which(ESGF_query$response$docs$access[[i]]=="HTTPServer")
     
     for (j in 1:nof_files) {
       ic <- as.character(i); if (i < 100) ic <- paste('0',ic,sep=''); if (i < 10) ic <- paste('0',ic,sep='')
       jc <- as.character(j); if (j < 100) jc <- paste('0',jc,sep=''); if (j < 10) jc <- paste('0',jc,sep='')
-      results[[paste('file.query:',ic,jc,sep='_')]] <- ESGF_query$response$docs[[i]]
-      url <- strsplit(ESGF_file_query$response$docs[[j]]$url[1],"|",fixed=TRUE)[[1]][1]
-      results[[paste('http',ic,jc,sep='_')]] <- url
-      if (verbose) print(url)
-      url <- strsplit(ESGF_file_query$response$docs[[j]]$url[1],"|",fixed=TRUE)[[1]][1]
-      results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub("fileServer","dodsC",url)
+      results[[paste('file.query:',ic,jc,sep='_')]] <- ESGF_query$response$docs[i,]
+      http_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][http_idx],"|",fixed=TRUE))[1]
+      results[[paste('http',ic,jc,sep='_')]] <- http_url
+      if (verbose) print(http_url)
+      opendap_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][opendap_idx],"|",fixed=TRUE))[1]
+      if (verbose) print(opendap_url)
+      results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub(".nc.html",".nc",opendap_url)
       #print(paste('OpenDAP',ic,jc,sep='_'))
-      results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$member_id
-      results[[paste('grid',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$grid
-      results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$source_id
-      results[[paste('type',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$source_type
-      results[[paste('title',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$title
+      results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$member_id[[j]]
+      results[[paste('grid',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$grid[[j]]
+      results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$source_id[[j]]
+      results[[paste('type',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$source_type[[j]]
+      results[[paste('title',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$title[[j]]
     }
   }
   elements <- names(results)
