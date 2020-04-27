@@ -97,7 +97,7 @@ metafrostAPI <- function(keyfile='~/.FrostAPI.key',verbose=FALSE,
   } else {
     stop("Package \"jsonlite\" needed to retrieve data from Frost. Please install it.")
   }
-  if (class(xs) != 'try-error') {
+  if (!inherits(xs,'try-error')) {
     print("Data retrieved from frost.met.no!")
     data <- xs$data
     if (verbose) View(data)

@@ -51,82 +51,97 @@ retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) {
 meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CMIP6",param="tas",
                       freq="mon",expid="ssp585",verbose=FALSE,n=NULL) {
   if (verbose) print('meta.ESFG - this function uses the rjson-package to read metadata from ESGF')
+
+  ## DO NOT USE REQUIRE IN ESD FUNCTIONS!!!!
   ## Check if the JSON library is installed
   ## Check if you need to get the devtools-package:
-  not.installed.rjson <- ("rjson" %in% rownames(installed.packages()) == FALSE)
-  
-  if (not.installed.rjson) {
-    print('Need to install the rjson package')
-    ## You need online access.
-    print("e.g. install.packages('rjson')")
-  }
-  
-  require(rjson)
-  ## Get number of available datasets
-  URL <- paste(url,"?type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
-               "&frequency=",freq,"&experiment_id=",expid,"&format=application%2Fsolr%2Bjson",sep="")
-  if (verbose) print(URL)
-  
-  nof_datasets <- fromJSON(file=URL)$response$numFound
-  if (!is.null(n)) nof_datasets <- n
-  print(paste('Found',nof_datasets,'datasets'))
-  if (nof_datasets==0) {
-    print('The connection seems to be down - try again later')
-    return(NULL)
-  }
-  
-  ## Query ESGF server
-  ESGF_query <- fromJSON(file=paste(url,"?limit=",nof_datasets,"&type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
-                                    "&frequency=",freq,"&experiment_id=,",expid,"&format=application%2Fsolr%2Bjson&facets=source_id",sep=""))
-  if (verbose) str(ESGF_query)
-  
-  ## List files in each dataset
-  #nof_datasets <- 7 ## test
-  results <- list()
-  for (i in 1:nof_datasets) {
-    nof_files <- ESGF_query$response$docs[[i]]$number_of_files
-    ESGF_file_query <- fromJSON(file=paste("https://esgf-data.dkrz.de/esg-search/search/?limit=",nof_files,"&type=File&format=application%2Fsolr%2Bjson&dataset_id=",ESGF_query$response$docs[[i]]$id,sep=""))
-    
-    if (verbose) { 
-      print(paste(rep("=",nchar(ESGF_query$response$docs[[i]]$id)+9),collapse=""))
-      print(paste("Dataset:",ESGF_query$response$docs[[i]]$id))
-      print(paste(rep("=",nchar(ESGF_query$response$docs[[i]]$id)+9),collapse=""))
-    } else cat('.')
-    
-    for (j in 1:nof_files) {
-      ic <- as.character(i); if (i < 100) ic <- paste('0',ic,sep=''); if (i < 10) ic <- paste('0',ic,sep='')
-      jc <- as.character(j); if (j < 100) jc <- paste('0',jc,sep=''); if (j < 10) jc <- paste('0',jc,sep='')
-      results[[paste('file.query:',ic,jc,sep='_')]] <- ESGF_query$response$docs[[i]]
-      url <- strsplit(ESGF_file_query$response$docs[[j]]$url[1],"|",fixed=TRUE)[[1]][1]
-      results[[paste('http',ic,jc,sep='_')]] <- url
-      if (verbose) print(url)
-      url <- strsplit(ESGF_file_query$response$docs[[j]]$url[1],"|",fixed=TRUE)[[1]][1]
-      results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub("fileServer","dodsC",url)
-      #print(paste('OpenDAP',ic,jc,sep='_'))
-      results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$member_id
-      results[[paste('grid',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$grid
-      results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$source_id
-      results[[paste('type',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$source_type
-      results[[paste('title',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$title
+  #not.installed.rjson <- ("rjson" %in% rownames(installed.packages()) == FALSE)
+  #if (not.installed.rjson) {
+  #  print('Need to install the rjson package')
+  #  ## You need online access.
+  #  print("e.g. install.packages('rjson')")
+  #}
+  #
+  #require(rjson)
+  ## DO NOT USE REQUIRE IN ESD FUNCTIONS!!!!
+  if(!requireNamespace("jsonlite",quietly=TRUE)) {
+    stop("Package \"jsonlite\" needed to retrieve data from ESGF. Please install it.")
+  } else { 
+ 
+    ## Get number of available datasets
+    URL <- paste(url,"?type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
+                 "&frequency=",freq,"&experiment_id=",expid,"&format=application%2Fsolr%2Bjson",sep="")
+    if (verbose) print(URL)
+
+    X <- try(jsonlite::fromJSON(URLencode(url),flatten=TRUE))
+    if(inherits(X, "try-error")) {
+      nof_datasets <- 0
+    } else {
+      nof_datasets <- length(X$data$id)
+    }    
+    #nof_datasets <- fromJSON(file=URL)$response$numFound
+    #if (!is.null(n)) nof_datasets <- n
+
+    if(verbose) print(paste('Found',nof_datasets,'datasets'))
+    if (nof_datasets==0) {
+      print('The connection seems to be down - try again later')
+      return(NULL)
     }
-  }
-  elements <- names(results)
-  opendap <- grep('OpenDAP',names(results))
-  http <- grep('http',names(results))
-  mem <- grep('member_id',names(results))
-  grid <- grep('grid',names(results))
-  model <- grep('source_id',names(results))
-  type <- grep('type',names(results))
-  title <- grep('title',names(results))
-  period <- substr(as.character(results[title]),nchar(as.character(results[title]))-15,
-                   nchar(as.character(results[title]))-3)
-  meta <- data.frame(OpenDap=as.character(results[opendap]),http=as.character(results[http]),
-                     member.id=as.character(results[mem]),grid=as.character(results[grid]),
-                     model=as.character(results[model]),type=as.character(results[type]),
-                     title=as.character(results[title]),period=as.character(period))
-  attr(meta,'variable') <- param
-  attr(meta,'all.query.data') <- results[grep('file.query',names(results))]
-  attr(meta,'history') <- history.stamp(meta)
-  return(meta)
   
+    ## Query ESGF server
+    browser() ##use jsonlite instead of rjson
+    ESGF_query <- jsonlite::fromJSON(file=paste(url,"?limit=",nof_datasets,"&type=Dataset&replica=false&latest=true&mip_era=",mip,
+                                      "&variable_id=",param,"&frequency=",freq,"&experiment_id=,",expid,
+				      "&format=application%2Fsolr%2Bjson&facets=source_id",sep=""))
+    if (verbose) str(ESGF_query)
+  
+    ## List files in each dataset
+    #nof_datasets <- 7 ## test
+    results <- list()
+    for (i in 1:nof_datasets) {
+      nof_files <- ESGF_query$response$docs[[i]]$number_of_files
+      ESGF_file_query <- fromJSON(file=paste("https://esgf-data.dkrz.de/esg-search/search/?limit=",nof_files,"&type=File&format=application%2Fsolr%2Bjson&dataset_id=",ESGF_query$response$docs[[i]]$id,sep=""))
+    
+      if (verbose) { 
+        print(paste(rep("=",nchar(ESGF_query$response$docs[[i]]$id)+9),collapse=""))
+        print(paste("Dataset:",ESGF_query$response$docs[[i]]$id))
+        print(paste(rep("=",nchar(ESGF_query$response$docs[[i]]$id)+9),collapse=""))
+      } else cat('.')
+    
+      for (j in 1:nof_files) {
+        ic <- as.character(i); if (i < 100) ic <- paste('0',ic,sep=''); if (i < 10) ic <- paste('0',ic,sep='')
+        jc <- as.character(j); if (j < 100) jc <- paste('0',jc,sep=''); if (j < 10) jc <- paste('0',jc,sep='')
+        results[[paste('file.query:',ic,jc,sep='_')]] <- ESGF_query$response$docs[[i]]
+        url <- strsplit(ESGF_file_query$response$docs[[j]]$url[1],"|",fixed=TRUE)[[1]][1]
+        results[[paste('http',ic,jc,sep='_')]] <- url
+        if (verbose) print(url)
+        url <- strsplit(ESGF_file_query$response$docs[[j]]$url[1],"|",fixed=TRUE)[[1]][1]
+        results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub("fileServer","dodsC",url)
+        #print(paste('OpenDAP',ic,jc,sep='_'))
+        results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$member_id
+        results[[paste('grid',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$grid
+        results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$source_id
+        results[[paste('type',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$source_type
+        results[[paste('title',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j]]$title
+      }
+    }
+    elements <- names(results)
+    opendap <- grep('OpenDAP',names(results))
+    http <- grep('http',names(results))
+    mem <- grep('member_id',names(results))
+    grid <- grep('grid',names(results))
+    model <- grep('source_id',names(results))
+    type <- grep('type',names(results))
+    title <- grep('title',names(results))
+    period <- substr(as.character(results[title]),nchar(as.character(results[title]))-15,
+                     nchar(as.character(results[title]))-3)
+    meta <- data.frame(OpenDap=as.character(results[opendap]),http=as.character(results[http]),
+                       member.id=as.character(results[mem]),grid=as.character(results[grid]),
+                       model=as.character(results[model]),type=as.character(results[type]),
+                       title=as.character(results[title]),period=as.character(period))
+    attr(meta,'variable') <- param
+    attr(meta,'all.query.data') <- results[grep('file.query',names(results))]
+    attr(meta,'history') <- history.stamp(meta)
+    return(meta)
+  }
 }
