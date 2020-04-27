@@ -40,7 +40,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     ## KMP 2020-02-18: Fetch Thredds metadata if it isn't already in station.meta
     if(thredds & !any(grepl("THREDDS",station.meta$source))) {
       if(is.null(param)) {
-        param.thredds <- c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
+        parami.thredds <- c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
       } else {
         param.thredds <- param
       }
@@ -174,7 +174,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     id <- grep(pattern=pattern,station.meta$location,ignore.case=TRUE,...)
     station.meta <- station.meta[id,]
   }
-  
+
   ## Search by esd element
   if (!is.null(ele)) {
     if(verbose) print("Search by element")
@@ -216,7 +216,13 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     #station.meta$start <- rep(it.rng[1],length(station.meta$loc))
     #station.meta$end <- rep(it.rng[2],length(station.meta$loc))
   }
-
+  ## Search by esd element
+  if (!is.null(ele)) {
+      if(verbose) print("Search by element")
+      id <- is.element(station.meta$element,ele)
+      station.meta <- station.meta[id,]
+  }
+    
   ## Outputs
   if (dim(station.meta)[1]!=0) {
     station.meta$station_id <- as.character(station.meta$station_id)
