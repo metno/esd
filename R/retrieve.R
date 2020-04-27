@@ -235,7 +235,7 @@ retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
   }
   
   ## Pressure Level if pressure variable / not used for surface variables
-  ilev <- grep("lev|hei", dimnames)
+  ilev <- grep("lev|hei|expver", dimnames)
   if (length(ilev) ==0) {
     ilev <- NULL
   } else if (length(ilev)>1) {

@@ -77,3 +77,15 @@ meta.thredds <- function(param='t2m',verbose=FALSE) {
   attr(Y,'variable') <- param
   invisible(Y)
 }
+
+## wraparound
+select.station.thredds <- function(x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=NULL, 
+                                   lon=NULL, lat=NULL, alt=NULL, cntr=NULL, src=NULL, it=NULL, 
+                                   nmin=NULL, user='external', verbose=FALSE) {
+  if (is.null(param)) param <- c('t2m','tmin','tmax','precip','slp')
+  for (i in 1:length(param)) {
+    meta <- meta.thredds(param=param[i])
+    if (i ==1) ss <- meta else ss <- cbind(ss,meta)
+  }
+  invisible(ss)
+}
