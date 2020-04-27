@@ -12,6 +12,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
                             lon=NULL, lat=NULL, alt=NULL, cntr=NULL, src=NULL, it=NULL, 
                             nmin=NULL, user='external', verbose=FALSE) {
   if (verbose) print('select.station')
+  
   if (is.null(x)) {
     data("station.meta",envir=environment())
     if(is.null(src)) {
@@ -39,7 +40,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     ## KMP 2020-02-18: Fetch Thredds metadata if it isn't already in station.meta
     if(thredds & !any(grepl("THREDDS",station.meta$source))) {
       if(is.null(param)) {
-        param.thredds <- c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
+        parami.thredds <- c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
       } else {
         param.thredds <- param
       }
@@ -62,7 +63,6 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     }
     station.meta$end[is.na(station.meta$end)] <- strftime(Sys.time(), format='%Y')
     #station.meta <- as.data.frame(station.meta,stringsAsFactors=FALSE)
-    if (!is.null(param)) ele <- apply(as.matrix(param),1,esd2ele)
   } else if (inherits(x,"station")) {      
      station_id <- attr(x, "station_id")
      location <- attr(x,"location")
@@ -87,11 +87,14 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   } else {
     stop("x must be an object of class 'station'") 
   }
-  
-  if (!is.null(param) & is.null(ele)) {
-    print("No variable found for your selection or the param identifier has not been set correctly.")
-    print("Please refresh your selection based on the list below")
-    print(as.matrix(ele2param(src=src))[,c(2,5,6)])
+
+  if (!is.null(param)) {
+    ele <- apply(as.matrix(param),1,esd2ele)
+    if (is.null(ele)) {
+      print("No variable found for your selection or the param identifier has not been set correctly.")
+      print("Please refresh your selection based on the list below")
+      print(as.matrix(ele2param(src=src))[,c(2,5,6)])
+    }
   }  
   ## get the lenght of the data base
   #n <- length(station.meta$station_id)
@@ -171,23 +174,23 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     id <- grep(pattern=pattern,station.meta$location,ignore.case=TRUE,...)
     station.meta <- station.meta[id,]
   }
+
+  ## Search by esd element
+  if (!is.null(ele)) {
+    if(verbose) print("Search by element")
+    id <- is.element(station.meta$element,ele)
+    station.meta <- station.meta[id,]
+  }
   
-  if (!is.null(it)) {
-    ## Search by minimum number of observations
-    if (!is.null(nmin)) { 
+  ## Search by minimum number of observations
+  if (!is.null(nmin)) { 
       if(verbose) print("Search by minimum number of observations")
       ny <- as.numeric(station.meta$end) - as.numeric(station.meta$start) + 1
       id <- (ny >= nmin)
       station.meta <- station.meta[id,]
-    } 
-    
-    ## Search by esd element
-    if (!is.null(ele)) {
-      if(verbose) print("Search by element")
-      id <- is.element(station.meta$element,ele)
-      station.meta <- station.meta[id,]
-    }
-    
+  } 
+
+  if (!is.null(it)) {
     if(verbose) print("Search by starting and ending years")
     if(is.dates(it)) it <- as.numeric(strftime(it, format="%Y"))
     it.rng <- range(it)
@@ -213,7 +216,13 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     #station.meta$start <- rep(it.rng[1],length(station.meta$loc))
     #station.meta$end <- rep(it.rng[2],length(station.meta$loc))
   }
-
+  ## Search by esd element
+  if (!is.null(ele)) {
+      if(verbose) print("Search by element")
+      id <- is.element(station.meta$element,ele)
+      station.meta <- station.meta[id,]
+  }
+    
   ## Outputs
   if (dim(station.meta)[1]!=0) {
     station.meta$station_id <- as.character(station.meta$station_id)
