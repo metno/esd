@@ -26,7 +26,7 @@
 #' @seealso meta.thredds, station.thredds
 #' 
 #' @examples
-#' \dontrun{}
+#' \dontrun{
 #' it <- as.Date(c("1962-12-01","1962-12-31"))
 #' lon <- c(-2,15)
 #' lat <- c(55,63)

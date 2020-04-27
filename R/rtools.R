@@ -185,6 +185,16 @@ lastyear <- function(x,na.rm=FALSE,verbose=FALSE) {
   return(y)
 }
 
+#' @export difftime.month
+difftime.month <- function(enddate, startdate, verbose=FALSE) {
+  if(verbose) print("difftime.month")
+  yend <- as.integer(strftime(enddate,"%Y"))
+  ystart <- as.integer(strftime(startdate,"%Y"))
+  mend <- as.integer(strftime(enddate,"%m"))
+  mstart <- as.integer(strftime(startdate,"%m"))
+  return((yend-ystart)*12 + mend-mstart)
+}
+
 ## Iterate using n number of predictands in the downscaling and retrive the cross-val given the number of predictands
 #' @export test.num.predictors
 test.num.predictors <- function(x=NA,y=NA,nmax.x=6,nmin.x=3,nmax.y=4,nam.x='NA', nam.y.res='NA', nam.y='NA', nam.x.dom='NA',nam.t='NA',verbose=FALSE) {

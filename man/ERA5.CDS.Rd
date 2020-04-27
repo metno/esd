@@ -47,3 +47,13 @@ https://www.unidata.ucar.edu/software/netcdf/workshops/most-recent/third_party/C
 It only works on Linux platforms...
 See https://cds.climate.copernicus.eu/api-how-to
 }
+\examples{
+\dontrun{
+ERA5.CDS(param='2m_temperature',varnm='t2m',it=2015:2018,AREA="['50','0','60','10']",
+         FUN='daymean')
+ERA5.CDS(param='total_precipitation',varnm='tp',it=2018,AREA="['0','50','10','60']",
+         FUN='yearsum')
+ERA5.CDS(param='mean_sea_level_pressure',varnm='slp',it=2018,AREA="['40','-50','60','30']",
+         FUN='monmean')
+}
+}

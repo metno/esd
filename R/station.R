@@ -1186,73 +1186,79 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     param1 <- gsub('*', timeresolutions, param1info$param, fixed=TRUE)
     
     ## If start and end are not specified, use start and end from meta data
+    ## bur first, reorganize and clean up start and end dates 
     i <- meta$station_id %in% stid & meta$element %in% param1info$element
-    if(is.null(start)) {
-      start <- meta$start[i][which.min(meta$start[i])]
+    meta.start <- meta$start[i]
+    meta.end <- meta$end[i]
+    if(is.dates(meta.end)) {
+      meta.end[is.na(meta.end)] <- strftime(Sys.time(), "%Y-%m-%d")
     } else {
-      if(start<min(meta$start[i])) start <- meta$start[i][which.min(meta$start[i])]
+      meta.end <- paste0(meta.end,"-12-31")
+      meta.end[is.na(meta.end)] <- strftime(Sys.time(), "%Y-%m-%d")
     }
-    meta.end <- meta$end
-    if(inherits(meta.end,"Date")) {
-      meta.end[is.na(meta.end)] <- as.Date(Sys.time())
-    } else {
-      meta.end[is.na(meta.end)] <- strftime(Sys.time(), format="%Y")
+    if(!is.dates(meta.start)) {
+      meta.start <- paste0(meta.start,"-01-01")
+    }
+    if(is.null(start)) {
+      start <- min(meta.start)
+    } else if(!is.dates(start)) {
+      start <- paste0(start,"-01-01")
     }
     if(is.null(end)) {
-      end <- meta.end[i][which.max(meta.end[i])]
-    } else {
-      if(end>max(meta.end[i])) end <- meta.end[i][which.max(meta.end[i])]
+      end <- max(meta.end)
+    } else if(!is.dates(end)) {
+      end <- paste0(end,"-12-31")
     }
-    ## Make sure that the start/end in input and meta data are of the same format
-    if(inherits(meta$start,"character") & is.dates(start)) {
-      start <- strftime(start, format="%Y")
-    }
-    if(inherits(meta$end,"character") & is.dates(end)) {
-      end <- strftime(end, format="%Y")
-    }
+    
+    if(start<min(meta.start)) start <- min(meta.start)
+    if(end>max(meta.end)) end <- max(meta.end)
 
     ## Exclude stations that don't have data in the specified time range
-    j <- i & meta$start<=end & meta.end>=start
+    ok <- meta.start<=end & meta.end>=start
     ## Check if there are any stations left
-    if(sum(j)==0) {
+    if(sum(ok)==0) {
       print('Found no stations with given criteria')
       return(NULL)
-    } else {
-      stid <- unique(meta$station_id[j])
-    }
+    } 
     
     ## Divide the call into parts because there are limits 
     ## to how much data you can download at a time (1E5 observations)
     ## and the number of characters of the url (245?).
     # Sort stations according to start time
     maxdata <- 1E5
-    j <- which(j)[order(meta$start[j])]
+    j <- which(i)[ok]
+    j.order <- order(meta.start)
+    j <- j[j.order]
     stid.j <- meta$station_id[j]
-    end.j <- sapply(as.integer(meta.end[j]), function(x) min(x, as.integer(end)))
-    start.j <- sapply(as.integer(meta$start[j]), function(x) max(x, as.integer(start)))
-    ndata <- switch(toupper(timeresolutions), 
-                    "P1M"=(end.j-start.j+1)*12, 
-                    "P1D"=(end.j-start.j+1)*365.25,
-                    "PT1M"=(end.j-start.j+1)*365.25*24*60)
+    stid <- unique(stid)
+    end.j <- sapply(meta.end[j.order], function(x) min(x, end))
+    start.j <- sapply(meta.start[j.order], function(x) max(x, start))
+    ndata <- switch(toupper(timeresolutions),
+                    "P1M"=difftime.month(end.j, start.j), 
+                    "P1D"=difftime(end.j, start.j, units="days"), 
+                    "PT1M"=difftime(end.j, start.j, units="minutes"))
+    ndata <- as.numeric(ndata)
     stid.url <- c(); time.url <- c()
     while(sum(ndata)>0) {
       k <- min(which(ndata>0))
       dk <- min(c(floor(maxdata/ndata[k])-1, length(stid.j)-k, 100))
       if(dk>=0) {
-        time.url <- c(time.url, paste0(paste0(start.j[k],"-01-01"),"/",
-                                       paste0(end.j[k],"-12-31")))
+        time.url <- c(time.url, paste0(min(start.j[k:(k+dk)]),"/",
+                                       max(end.j[k:(k+dk)])))
         stid.url <- c(stid.url, paste(paste0('SN',stid.j[k:(k+dk)]),collapse=","))
         ndata[k:(k+dk)] <- 0
       } else {
-        for(yr in seq(start.j[k],end.j[k])) {
-          dates.k <- unique(c(seq.Date(as.Date(paste0(yr,"-01-01")),
-                                       as.Date(paste0(yr,"-12-31")), 
-                                       by=floor(maxdata/(24*60))), 
-                              as.Date(paste0(yr,"-12-31"))))
-          for(l in seq(1,length(dates.k)-1)) {
-            time.url <- c(time.url, paste0(dates.k[l],"/",dates.k[l+1]))
-            stid.url <- c(stid.url, paste0('SN',stid.j[k]))
-          }
+        by.k <- switch(toupper(timeresolutions),
+                       "P1M"=paste(maxdata,"months"),
+                       "P1D"=paste(maxdata,"days"),
+                       "PT1M"=paste(floor(maxdata/(24*60)),"days"))
+        dates.k <- unique( c(seq.Date(as.Date(start.j[k]),
+                                     as.Date(end.j[k]),
+                                     by=by.k), 
+                            as.Date(end.j[k])) )
+        for(l in seq(1,length(dates.k)-1)) {
+          time.url <- c(time.url, paste0(dates.k[l],"/",dates.k[l+1]))
+          stid.url <- c(stid.url, paste0('SN',stid.j[k]))
         }
         ndata[k] <- 0
       }
@@ -1269,7 +1275,6 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
       "&exposurecategories=", exposurecategories,
       "&qualities=", qualities
     )
-    
     data <- NULL
     for(u in url) {
       if (verbose) print(u)

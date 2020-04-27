@@ -1,12 +1,12 @@
+# do not @export - select is not an S3 method
+#select <- function(x=NULL,...) UseMethod("select")
+
 #' Select from meta data base
 #'
 #' Function that searches the meta data base for the requested station data
 #' Search priority: ID, name, coordinates, altitude, country,...
 #' Can return several matches 
 #'
-#' @export
-select <- function(x=NULL,...) UseMethod("select")
-
 #' @export select.station
 select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=NULL, 
                             lon=NULL, lat=NULL, alt=NULL, cntr=NULL, src=NULL, it=NULL, 
@@ -182,15 +182,15 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     station.meta <- station.meta[id,]
   }
   
-  if (!is.null(it)) {
-    ## Search by minimum number of observations
-    if (!is.null(nmin)) { 
-      if(verbose) print("Search by minimum number of observations")
-      ny <- as.numeric(station.meta$end) - as.numeric(station.meta$start) + 1
-      id <- (ny >= nmin)
-      station.meta <- station.meta[id,]
-    } 
-    
+  ## Search by minimum number of observations
+  if (!is.null(nmin)) { 
+    if(verbose) print("Search by minimum number of observations")
+    ny <- as.numeric(station.meta$end) - as.numeric(station.meta$start) + 1
+    id <- (ny >= nmin)
+    station.meta <- station.meta[id,]
+  }
+  
+  if (!is.null(it)) {  
     if(verbose) print("Search by starting and ending years")
     if(is.dates(it)) it <- as.numeric(strftime(it, format="%Y"))
     it.rng <- range(it)
@@ -198,7 +198,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     #id <- (as.numeric(station.meta$start) <= it.rng[1]) & (as.numeric(station.meta$end) >= it.rng[2])
     start.rng <- sapply(as.numeric(station.meta$start), function(x) max(it.rng[1], x))
     end.rng <- sapply(as.numeric(station.meta$end), function(x) min(it.rng[2], x))
-    n.rng <- sapply(end.rng-start.rng, function(x) max(0,x))
+    n.rng <- sapply(end.rng-start.rng+1, function(x) max(0,x))
     if(!is.null(nmin)) {
       ## Keep only stations with nmin years of data in the selected period:
       id <- n.rng>=nmin
