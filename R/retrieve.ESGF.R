@@ -51,18 +51,16 @@ retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) {
 meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CMIP6",param="tas",
                       freq="mon",expid="ssp585",verbose=FALSE,n=NULL) {
   if (verbose) print('meta.ESFG - this function uses the jsonlite package to read metadata from ESGF')
-  ## Check if the JSON library is installed
-  ## Check if you need to get the devtools-package:
-  not.installed.jsonlite <- ("jsonlite" %in% rownames(installed.packages()) == FALSE)
-  
-  if (not.installed.jsonlite) {
-    print('Need to install the jsonlite package')
-    ## You need online access.
-    print("e.g. install.packages('jsonlite')")
-  }
 
-  ## DO NOT USE REQUIRE INSIDE THE PACKAGE!!!!
-  #require(jsonlite)
+  ## KMP 2020-04-27:
+  ## A) Do not use require inside a package, use requireNamespace instead.
+  ## B) We should decide on a json library, either jsonlite or rjson.
+
+  ## Check if the JSON library is installed
+  if (!requireNamespace("jsonlite", quietly = TRUE)) {
+    stop("Package 'jsonlite' needed to use 'meta.ESGF'. Please install it.")
+  } else {
+    
   ## Get number of available datasets
   URL <- paste(url,"?type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
                "&frequency=",freq,"&experiment_id=",expid,"&format=application%2Fsolr%2Bjson",sep="")
@@ -132,5 +130,6 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
     attr(meta,'all.query.data') <- results[grep('file.query',names(results))]
     attr(meta,'history') <- history.stamp(meta)
     return(meta)
+  }
   }
 }

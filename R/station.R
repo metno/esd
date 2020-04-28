@@ -1171,7 +1171,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     ## Get a client_id
     if (file.exists(keyfile)) {
       if (verbose) print(paste('Read client ID from',keyfile))
-      frostID <- readLines(keyfile) 
+      frostID <- readLines(keyfile)
     } else { 
       if (verbose) print('Generate new client ID')  
       system(paste(browser,'https://frost.met.no/auth/newclientid.html'))
@@ -1193,7 +1193,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     if(is.dates(meta.end)) {
       meta.end[is.na(meta.end)] <- strftime(Sys.time(), "%Y-%m-%d")
     } else {
-      meta.end <- paste0(meta.end,"-12-31")
+      meta.end[!is.na(meta.end)] <- paste0(meta.end[!is.na(meta.end)],"-12-31")
       meta.end[is.na(meta.end)] <- strftime(Sys.time(), "%Y-%m-%d")
     }
     if(!is.dates(meta.start)) {
@@ -1212,7 +1212,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     
     if(start<min(meta.start)) start <- min(meta.start)
     if(end>max(meta.end)) end <- max(meta.end)
-
+    
     ## Exclude stations that don't have data in the specified time range
     ok <- meta.start<=end & meta.end>=start
     ## Check if there are any stations left
