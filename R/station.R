@@ -1223,7 +1223,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     
     ## Divide the call into parts because there are limits 
     ## to how much data you can download at a time (1E5 observations)
-    ## and the number of characters of the url (245?).
+    ## and the number of characters of the url (1000?).
     # Sort stations according to start time
     maxdata <- 1E5
     j <- which(i)[ok]
@@ -1241,10 +1241,16 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     stid.url <- c(); time.url <- c()
     while(sum(ndata)>0) {
       k <- min(which(ndata>0))
-      dk <- min(c(floor(maxdata/ndata[k])-1, length(stid.j)-k, 100))
-      if(dk>=0) {
-        time.url <- c(time.url, paste0(min(start.j[k:(k+dk)]),"/",
-                                       max(end.j[k:(k+dk)])))
+      if(any(cumsum(ndata)<maxdata)) {
+        dk0 <- max(which(cumsum(ndata)<maxdata))-k
+        end.k <- max(end.j[k:(k+dk0)])
+        start.k <- min(start.j[k:(k+dk0)])
+        dt <- switch(toupper(timeresolutions),
+                     "P1M"=difftime.month(end.k, start.k), 
+                     "P1D"=difftime(end.k, start.k, units="days"), 
+                     "PT1M"=difftime(end.k, start.k, units="minutes"))
+        dk <- min(floor(maxdata/as.numeric(dt))-1, dk0, 100)
+        time.url <- c(time.url, paste0(start.k,"/",end.k))
         stid.url <- c(stid.url, paste(paste0('SN',stid.j[k:(k+dk)]),collapse=","))
         ndata[k:(k+dk)] <- 0
       } else {
