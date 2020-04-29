@@ -55,6 +55,10 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   Y$number.valid[is] <- nold + nval
   Y$last.year[is] <- lastyear(x)
   if (verbose) print('read the old data to complete the statistics')
+  missval <- ncid$var[[1]]$missval  
+  offset <- ncid$var[[1]]$addOffset
+  scale <- ncid$var[[1]]$scaleFact
+  torg <- sub('days since ','',tunit$value)
   nc_close(ncid)
   ## Retrieve the actual data in the old file: Only worry about those stations that are to be updated
   y <- retrieve.station(file,is=is)
@@ -62,12 +66,14 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   ## Update the statistics from the old data
   if (verbose) print(paste('dimensions for original data',paste(dim(y),collapse=' x ')))
   ## combine the old and new
-  if (verbose) print('Combine')
+  if (verbose) print('Combine non-overlapping periods')
   ## Make sure that the two don't overlap in time: only add part of x that is new.
   it <- !is.element(index(x),index(y))
   x <- subset(x,it=it)
-  if (verbose) {print(dim(y)); print(dim(y))}
-  y <- c(y,x)
+  ## Combine old and new data 
+  if (verbose) {print(paste(sum(it),'days added to old data')); print(dim(y)); print(dim(y))}
+  y <- c(zoo(y),zoo(x))
+  y <- attrcp(x,y); class(y) <- class(x)
   if (verbose) print(paste('dimensions for combined data',paste(dim(y),collapse=' x ')))
   if (verbose) print('annual stats')
   seasons <- c('DJF','MAM','JJA','SON')
@@ -88,7 +94,7 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
       Y[[paste0('sd_',sea)]][is] <- apply(coredata(subset(anomaly(y),it=sea)),2,'sd',na.rm=TRUE) #?!
       Y[[paste0('trend_',sea)]][is] <- trend.coef(annual(subset(y,it=sea),nmin=75))
     }
-    Y$lows <- apply(-anomaly(y),2,'arec') #?!
+    Y$lows[is] <- apply(-anomaly(y),2,'arec') #?!
   } else {
     if (verbose) print('precip')
     Y$mean[is] <-  apply(annual(y,'sum'),2,'mean',na.rm=TRUE)
@@ -127,7 +133,6 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   
   ## Check if last element is a record
   lehr <- lastelementrecord(y)
-  
   time <- julian(index(x)) - julian(as.Date(torg)) 
   
   ## Write the updated summary statistics over the old values.
@@ -200,70 +205,82 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
     mwslid <- ncid$var[["summary_mean_wetdur"]]
     mdslid <- ncid$var[["summary_mean_drydur"]]
   }
+  ## Only overwrite the stations
+  # same <- is.element(Y$station.id,stid(x))
+  # if (verbose) print(paste(sum(same),'stations with similar IDs'))
+  # s1 <- min((1:length(same))[same])           # start
+  # c1 <- max((1:length(same))[same]) - s1 + 1  # count
+  # if (verbose) print(c(s1,c1))
+  s1 <- 1; c1 <- length(Y$station.id)
+  
   if (verbose) print('over-write summary statistics')
-  ncvar_put( ncid, lyrid, Y$last.year)
-  ncvar_put( ncid, meanid, Y$mean)
-  ncvar_put( ncid, meanid.djf, Y$mean_DJF)
-  ncvar_put( ncid, meanid.mam, Y$mean_MAM)
-  ncvar_put( ncid, meanid.jja, Y$mean_JJA)
-  ncvar_put( ncid, meanid.son, Y$mean_SON)
-  ncvar_put( ncid, tdid, Y$trend)
-  ncvar_put( ncid, tdid.djf, Y$trend_DJF)
-  ncvar_put( ncid, tdid.mam, Y$trend_MAM)
-  ncvar_put( ncid, tdid.jja, Y$trend_JJA)
-  ncvar_put( ncid, tdid.son, Y$trend_SON)
-  ncvar_put( ncid, maxid, Y$max)
-  ncvar_put( ncid, nhrid, Y$records)
-  ncvar_put( ncid, lelrid, Y$number.valid )
-  ncvar_put( ncid, lehrid, lehr) # last element highest
+  ncvar_put( ncid, lyrid, Y$last.year,start=s1,count=c1)
+  ncvar_put( ncid, meanid, Y$mean,start=s1,count=c1)
+  ncvar_put( ncid, meanid.djf, Y$mean_DJF,start=s1,count=c1)
+  ncvar_put( ncid, meanid.mam, Y$mean_MAM,start=s1,count=c1)
+  ncvar_put( ncid, meanid.jja, Y$mean_JJA,start=s1,count=c1)
+  ncvar_put( ncid, meanid.son, Y$mean_SON,start=s1,count=c1)
+  ncvar_put( ncid, tdid, Y$trend,start=s1,count=c1)
+  ncvar_put( ncid, tdid.djf, Y$trend_DJF,start=s1,count=c1)
+  ncvar_put( ncid, tdid.mam, Y$trend_MAM,start=s1,count=c1)
+  ncvar_put( ncid, tdid.jja, Y$trend_JJA,start=s1,count=c1)
+  ncvar_put( ncid, tdid.son, Y$trend_SON,start=s1,count=c1)
+  ncvar_put( ncid, maxid, Y$max,start=s1,count=c1)
+  ncvar_put( ncid, nhrid, Y$records,start=s1,count=c1)
+  ncvar_put( ncid, nvid, Y$number.valid,start=s1,count=c1)
+  #print('.?.')
+    #ncvar_put( ncid, lehrid, Y$lehr,start=s1,count=c1) # last element highest
   if (!is.precip(x)) {
     if (verbose) print('extras for non-precipitation')
-    ncvar_put( ncid, minid, Y$min)
-    ncvar_put( ncid, sdid, Y$sd)
-    ncvar_put( ncid, sdid.djf, Y$sd_DJF)
-    ncvar_put( ncid, sdid.mam, Y$sd_MAM )
-    ncvar_put( ncid, sdid.jja, Y$sd_JJA )
-    ncvar_put( ncid, sdid.son, Y$sd_SON )
-    ncvar_put( ncid, nlrid, Y$lows )
-    ncvar_put( ncid, lelrid, lelr )
+    ncvar_put( ncid, minid, Y$min,start=s1,count=c1)
+    #print('.'); print(names(Y));
+    Y$sd[!is.finite(Y$sd)] <- missval
+    #print(Y$sd); str(sdid)
+    if (!is.null(sdid)) ncvar_put( ncid, sdid, Y$sd,start=s1,count=c1)
+    if (!is.null(sdid)) ncvar_put( ncid, sdid.djf, Y$sd_DJF,start=s1,count=c1)
+    if (!is.null(sdid)) ncvar_put( ncid, sdid.mam, Y$sd_MAM,start=s1,count=c1)
+    if (!is.null(sdid)) ncvar_put( ncid, sdid.jja, Y$sd_JJA,start=s1,count=c1)
+    if (!is.null(sdid)) ncvar_put( ncid, sdid.son, Y$sd_SON,start=s1,count=c1)
+    if (!is.null(nlrid)) ncvar_put( ncid, nlrid, Y$lows,start=s1,count=c1)
+    #ncvar_put( ncid, lelrid, lelr,start=s1,count=c1)
   }
   if (is.precip(x)) {
     if (verbose) print('extras for precipitation')
-    ncvar_put( ncid, muid, Y$wetmean  )
-    ncvar_put( ncid, muid.djf, Y$wetmean_DJF  )
-    ncvar_put( ncid, muid.mam, Y$wetmean_MAM  )
-    ncvar_put( ncid, muid.jja, Y$wetmean_JJA  )
-    ncvar_put( ncid, muid.son, Y$wetmean_SON  )
-    ncvar_put( ncid, fwid, Y$wetfreq  )
-    ncvar_put( ncid, fwid.djf, Y$wetfreq_DJF  )
-    ncvar_put( ncid, fwid.mam, Y$wetfreq_MAM  )
-    ncvar_put( ncid, fwid.jja, Y$wetfreq_JJA  )
-    ncvar_put( ncid, fwid.son, Y$wetfreq_SON  )
-    ncvar_put( ncid, tdfwid, Y$trend_wetfreq  )
-    ncvar_put( ncid, tdfwid.djf,  Y$trend_wetfreq_DJF )
-    ncvar_put( ncid, tdfwid.mam,  Y$trend_wetfreq_MAM )
-    ncvar_put( ncid, tdfwid.jja,  Y$trend_wetfreq_JJA )
-    ncvar_put( ncid, tdfwid.son,  Y$trend_wetfreq_SON )
-    ncvar_put( ncid, tdmuid, Y$trend_wetmean  )
-    ncvar_put( ncid, tdmuid.djf, Y$trend_wetmean_DJF  )
-    ncvar_put( ncid, tdmuid.mam, Y$trend_wetmean_MAM  )
-    ncvar_put( ncid, tdmuid.jja, Y$trend_wetmean_JJA  )
-    ncvar_put( ncid, tdmuid.son, Y$trend_wetmean_SON  )
-    ncvar_put( ncid, lrid, lr )
-    ncvar_put( ncid, ldid, ld )
-    ncvar_put( ncid, sigma2id, Y$sigma2  )
-    ncvar_put( ncid, sigma2id.djf, Y$sigma2_DJF  )
-    ncvar_put( ncid, sigma2id.mam, Y$sigma2_MAM  )
-    ncvar_put( ncid, sigma2id.jja, Y$sigma2_JJA  )
-    ncvar_put( ncid, sigma2id.son, Y$sigma2_SON  )
-    ncvar_put( ncid, tsigma2id, Y$trend_sigma2  )
-    ncvar_put( ncid, tsigma2id.djf, Y$trend_sigma2_DJF  )
-    ncvar_put( ncid, tsigma2id.mam, Y$trend_sigma2_MAM  )
-    ncvar_put( ncid, tsigma2id.jja, Y$trend_sigma2_JJA  )
-    ncvar_put( ncid, tsigma2id.son, Y$trend_sigma2_SON  )
+    ncvar_put( ncid, muid, Y$wetmean,start=s1,count=c1)
+    ncvar_put( ncid, muid.djf, Y$wetmean_DJF,start=s1,count=c1)
+    ncvar_put( ncid, muid.mam, Y$wetmean_MAM,start=s1,count=c1)
+    ncvar_put( ncid, muid.jja, Y$wetmean_JJA,start=s1,count=c1)
+    ncvar_put( ncid, muid.son, Y$wetmean_SON,start=s1,count=c1)
+    ncvar_put( ncid, fwid, Y$wetfreq,start=s1,count=c1)
+    ncvar_put( ncid, fwid.djf, Y$wetfreq_DJF,start=s1,count=c1)
+    ncvar_put( ncid, fwid.mam, Y$wetfreq_MAM,start=s1,count=c1)
+    ncvar_put( ncid, fwid.jja, Y$wetfreq_JJA,start=s1,count=c1)
+    ncvar_put( ncid, fwid.son, Y$wetfreq_SON,start=s1,count=c1)
+    ncvar_put( ncid, tdfwid, Y$trend_wetfreq,start=s1,count=c1)
+    ncvar_put( ncid, tdfwid.djf,  Y$trend_wetfreq_DJF,start=s1,count=c1)
+    ncvar_put( ncid, tdfwid.mam,  Y$trend_wetfreq_MAM,start=s1,count=c1)
+    ncvar_put( ncid, tdfwid.jja,  Y$trend_wetfreq_JJA,start=s1,count=c1)
+    ncvar_put( ncid, tdfwid.son,  Y$trend_wetfreq_SON,start=s1,count=c1)
+    ncvar_put( ncid, tdmuid, Y$trend_wetmean,start=s1,count=c1)
+    ncvar_put( ncid, tdmuid.djf, Y$trend_wetmean_DJF,start=s1,count=c1)
+    ncvar_put( ncid, tdmuid.mam, Y$trend_wetmean_MAM,start=s1,count=c1)
+    ncvar_put( ncid, tdmuid.jja, Y$trend_wetmean_JJA,start=s1,count=c1)
+    ncvar_put( ncid, tdmuid.son, Y$trend_wetmean_SON,start=s1,count=c1)
+    ncvar_put( ncid, lrid, lr,start=s1,count=c1)
+    ncvar_put( ncid, ldid, ld,start=s1,count=c1)
+    ncvar_put( ncid, sigma2id, Y$sigma2,start=s1,count=c1)
+    ncvar_put( ncid, sigma2id.djf, Y$sigma2_DJF,start=s1,count=c1)
+    ncvar_put( ncid, sigma2id.mam, Y$sigma2_MAM,start=s1,count=c1)
+    ncvar_put( ncid, sigma2id.jja, Y$sigma2_JJA,start=s1,count=c1)
+    ncvar_put( ncid, sigma2id.son, Y$sigma2_SON,start=s1,count=c1)
+    ncvar_put( ncid, tsigma2id, Y$trend_sigma2,start=s1,count=c1)
+    ncvar_put( ncid, tsigma2id.djf, Y$trend_sigma2_DJF,start=s1,count=c1)
+    ncvar_put( ncid, tsigma2id.mam, Y$trend_sigma2_MAM,start=s1,count=c1)
+    ncvar_put( ncid, tsigma2id.jja, Y$trend_sigma2_JJA,start=s1,count=c1)
+    ncvar_put( ncid, tsigma2id.son, Y$trend_sigma2_SON,start=s1,count=c1)
     if (verbose) print('Mean spell length')
-    ncvar_put( ncid, mwslid, mwsl  )
-    ncvar_put( ncid, mdslid, mdsl  )
+    ncvar_put( ncid, mwslid, mwsl,start=s1,count=c1)
+    ncvar_put( ncid, mdslid, mdsl,start=s1,count=c1)
   } 
   
   ## Add the new data to the old
@@ -272,26 +289,30 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   start <- c(1,nt+1)
   count <- c(ns,n)
   if (verbose) print(rbind(start,count))
-  
-  X <- matrix(rep(NA,ns*n),n,ns)
-  X[,is] <- coredata(subset(x,is=js))
-  if (verbose) print('add new times')
+  # X <- matrix(rep(NA,ns*n),n,ns)
+  # X[,is] <- coredata(subset(x,is=js))
+  if (verbose) print(paste('add new times',index(x)[1],'-',index(x)[length(index(x))],
+                           'to get',index(y)[1],'-',index(y)[length(index(y))]))
   ##https://stackoverflow.com/questions/30084261/extend-dimensions-in-netcdf-file-using-r
-  ncvar_put( ncid, varid='time', index(x),start=start[2],count=count[2])
+  #ncvar_put( ncid, varid='time', index(x),start=start[2],count=count[2])
+  ncvar_put( ncid, varid='time', index(y) - julian(as.Date(torg)),start=1,count=length(index(y)))
   if (verbose) print('add new data')
-  ncvar_put( ncid, ncvar, t(X),start=start,count=count)
+  print(dim(X))
+  #ncvar_put( ncid, ncvar, t(X),start=start,count=count)
+  y <- round((y - offset)/scale)
+  ncvar_put( ncid, ncvar, t(coredata(y)))
   nc_close(ncid)
   if (verbose) print('success :-)')
 }
 
 ## Test function
 #' @export test.update.ncdf4.station
-test.update.ncdf4.station <- function(param='t2m',is=1:10,verbose=FALSE) {
+test.update.ncdf4.station <- function(param='t2m',l=1,is=1:20,verbose=FALSE,plot=TRUE) {
   print('test: update.ncdf4.station')
   if (file.exists('test0.nc')) file.remove('test0.nc')
   if (file.exists('test1.nc')) file.remove('test1.nc')
   x0 <- station.thredds(param=param,is=is)
-  x1 <- subset(x0,it=range(year(x0))+c(0,-1))
+  x1 <- subset(x0,it=range(year(x0))-c(0,l))
   print('test file: test0.nc'); print(range(index(x0))); print(dim(x0))
   T1 <- Sys.time()
   write2ncdf4.station(x0,file='test0.nc')
@@ -299,7 +320,7 @@ test.update.ncdf4.station <- function(param='t2m',is=1:10,verbose=FALSE) {
   print(paste('Time it took to save original netCDF-file with all data was',round(T2-T1),'s'))
   print('test file: test1.nc'); print(range(index(x1)))
   write2ncdf4.station(x1,file='test1.nc')
-  x2 <- subset(x0,it=rep(max(year(x0)),2))
+  x2 <- subset(x0,it=max(year(x0))-c(l,0))
   print('update.ncdf4.station')
   print(dim(x2))
   t1 <- Sys.time()
@@ -308,9 +329,21 @@ test.update.ncdf4.station <- function(param='t2m',is=1:10,verbose=FALSE) {
   print(paste('The time taken to update file was',round(t2-t1),'s'))
   rm('x2')
   ## Read the updated file
+  print('--- Check the files ---')
   x0 <- retrieve.station('test0.nc')
+  print('...')
   x1 <- retrieve.station('test1.nc')
-  plot(zoo(x0) - zoo(x1))
+  print('Diagnostics...')
+  print(range(index(x0))); print(range(index(x1)))
+  print(dim(x0)); print(dim(x1))
+  print(paste(mean(zoo(x0) - zoo(x1),na.rm=TRUE),'mean difference'))
+  if (plot) {
+    plot(zoo(x0) - zoo(x1))
+    par(mfcol=c(3,1))
+    image(index(x0),is,coredata(x0),main='Original file')
+    image(index(x1),is,coredata(x1),main='Updated file')
+    image(index(x0),is,coredata(x1)- coredata(x0),main='Difference')
+  }
   print('Compare data dimensions:') 
   print(dim(x0)); print(dim(x1))
   Y0 <- retrieve.stationsummary('test0.nc')
@@ -320,6 +353,8 @@ test.update.ncdf4.station <- function(param='t2m',is=1:10,verbose=FALSE) {
   for (ii in names(Y0)) {if (!is.null(Y0[[ii]]) & !is.null(Y1[[ii]]) & is.numeric(Y0[[ii]])) 
     print(paste(ii,sum(Y0[[ii]]-Y1[[ii]] > 0, na.rm=TRUE))) else print(paste(ii,setdiff(Y0[[ii]],Y1[[ii]])))}
   file.remove('test0.nc'); file.remove('test1.nc');
+  print(attr(Y0,'period'))
+  print(attr(Y1,'period'))
   print('Finished test')
 }
 
