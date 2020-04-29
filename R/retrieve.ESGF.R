@@ -179,14 +179,14 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
                        model=as.character(results[model]),type=as.character(results[type]),
                        title=as.character(results[title]),period=as.character(period))
   }
-<<<<<<< HEAD
+  # <<<<<<< HEAD
+    }
+  # =======
+    attr(meta,'variable') <- param
+    attr(meta,'file.query.data') <- results[grep('file.query',names(results))]
+    attr(meta,'dataset.query.data') <- results[grep('dataset.query',names(results))]
+    attr(meta,'history') <- history.stamp(meta)
+    return(meta)
+    
+  # >>>>>>> 34d4aa23b8670526521b6476912dcedbc8695efc
   }
-=======
-  attr(meta,'variable') <- param
-  attr(meta,'file.query.data') <- results[grep('file.query',names(results))]
-  attr(meta,'dataset.query.data') <- results[grep('dataset.query',names(results))]
-  attr(meta,'history') <- history.stamp(meta)
-  return(meta)
-  
->>>>>>> 34d4aa23b8670526521b6476912dcedbc8695efc
-}
