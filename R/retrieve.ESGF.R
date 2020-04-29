@@ -52,10 +52,6 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
                       freq="mon",expid="ssp585",verbose=FALSE,n=NULL) {
   if (verbose) print('meta.ESFG - this function uses the jsonlite package to read metadata from ESGF')
 
-  ## KMP 2020-04-27:
-  ## A) Do not use require inside a package, use requireNamespace instead.
-  ## B) We should decide on a json library, either jsonlite or rjson.
-
   ## Check if the JSON library is installed
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     stop("Package 'jsonlite' needed to use 'meta.ESGF'. Please install it.")
@@ -93,7 +89,8 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
   results <- list()
   for (i in 1:nof_datasets) {
     nof_files <- ESGF_query$response$docs$number_of_files[i]
-    ESGF_file_query <- jsonlite::fromJSON(paste("https://esgf-data.dkrz.de/esg-search/search/?limit=",nof_files,"&type=File&format=application%2Fsolr%2Bjson&dataset_id=",ESGF_query$response$docs$id[i],sep=""))
+    ESGF_file_query <- jsonlite::fromJSON(paste("https://esgf-data.dkrz.de/esg-search/search/?limit=",nof_files,
+                "&type=File&format=application%2Fsolr%2Bjson&dataset_id=",ESGF_query$response$docs$id[i],sep=""))
     
     if (verbose) { 
       print(paste(rep("=",nchar(ESGF_query$response$docs$id[i])+9),collapse=""))
@@ -101,13 +98,17 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
       print(paste(rep("=",nchar(ESGF_query$response$docs$id[i])+9),collapse=""))
     } else cat('.')
     
-    if (mip == "CMIP5")
-    {
+    if (mip == "CMIP5") {
       param_idx <- which(ESGF_file_query$response$docs$variable == param)
       
       for (j in param_idx) {
-        ic <- as.character(i); if (i < 100) ic <- paste('0',ic,sep=''); if (i < 10) ic <- paste('0',ic,sep='')
-        jc <- as.character(which(param_idx == j)); if (which(param_idx == j) < 100) jc <- paste('0',jc,sep=''); if (which(param_idx == j) < 10) jc <- paste('0',jc,sep='')
+        ic <- as.character(i)
+	if (i < 100) ic <- paste('0',ic,sep='')
+	if (i < 10) ic <- paste('0',ic,sep='')
+
+        jc <- as.character(which(param_idx == j))
+	if (which(param_idx == j) < 100) jc <- paste('0',jc,sep='')
+	if (which(param_idx == j) < 10) jc <- paste('0',jc,sep='')
         
         results[[paste('dataset.query:',ic,jc,sep='_')]] <- ESGF_query$response$docs[i,]
         results[[paste('file.query:',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[j,]
@@ -127,8 +128,7 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
       }
     }
     
-    if (mip == "CMIP6")
-    {
+    if (mip == "CMIP6") {
       for (j in 1:nof_files) {
         ic <- as.character(i); if (i < 100) ic <- paste('0',ic,sep=''); if (i < 10) ic <- paste('0',ic,sep='')
         jc <- as.character(j); if (j < 100) jc <- paste('0',jc,sep=''); if (j < 10) jc <- paste('0',jc,sep='')
@@ -165,28 +165,22 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
   period <- substr(as.character(results[title]),nchar(as.character(results[title]))-15,
                    nchar(as.character(results[title]))-3)
   
-  if (mip == "CMIP5")
-  {
+  if (mip == "CMIP5") {
     meta <- data.frame(OpenDap=as.character(results[opendap]),http=as.character(results[http]),
                        member.id=as.character(results[mem]),model=as.character(results[model]),
                        title=as.character(results[title]),period=as.character(period))
   }
   
-  if (mip == "CMIP6")
-  {
+  if (mip == "CMIP6") {
     meta <- data.frame(OpenDap=as.character(results[opendap]),http=as.character(results[http]),
                        member.id=as.character(results[mem]),grid=as.character(results[grid]),
                        model=as.character(results[model]),type=as.character(results[type]),
                        title=as.character(results[title]),period=as.character(period))
   }
-<<<<<<< HEAD
-  }
-=======
   attr(meta,'variable') <- param
   attr(meta,'file.query.data') <- results[grep('file.query',names(results))]
   attr(meta,'dataset.query.data') <- results[grep('dataset.query',names(results))]
   attr(meta,'history') <- history.stamp(meta)
   return(meta)
-  
->>>>>>> 34d4aa23b8670526521b6476912dcedbc8695efc
+}
 }
