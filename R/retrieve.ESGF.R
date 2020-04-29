@@ -29,7 +29,7 @@
 #'}
 #' @export retrieve.ESGF
 retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) { 
-  if (is.null(meta)) meta <- meta.ESGF(verbose=verbose)
+  if (is.null(meta)) meta <- meta.ESGF(verbose=verbose,...)
   model <- as.character(meta$model[im])
   mem <- as.character(meta$member.id[im])
   jm <- (1:length(meta$model))[is.element(as.character(meta$model),model) &
@@ -62,21 +62,30 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
   } else {
     
   ## Get number of available datasets
-  URL <- paste(url,"?type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
-               "&frequency=",freq,"&experiment_id=",expid,"&format=application%2Fsolr%2Bjson",sep="")
-  if (verbose) print(URL)
+  ### Facet switches: CMIP5 | CMIP6 | else
+  facet_cmip <- switch(mip,"CMIP5" = "project", "CMIP6" = "mip_era", "project") 
+  facet_var  <- switch(mip,"CMIP5" = "variable", "CMIP6" = "variable_id")
+  facet_freq <- switch(mip,"CMIP5" = "time_frequency", "CMIP6" = "frequency")
+  facet_exp  <- switch(mip,"CMIP5" = "experiment", "CMIP6" = "experiment_id")
   
-  nof_datasets <- jsonlite::fromJSON(URL)$response$numFound
+  search_string <- paste("type=Dataset&replica=false&latest=true&",facet_cmip,"=",mip,"&",facet_var,"=",param,
+                         "&",facet_freq,"=",freq,"&",facet_exp,"=",expid,"&format=application%2Fsolr%2Bjson",sep="")
+  
+  if (verbose) print(search_string)
+  
+  nof_datasets <- jsonlite::fromJSON(paste(url,"?",search_string,sep=""))$response$numFound
+  
   if (!is.null(n)) nof_datasets <- n
   print(paste('Found',nof_datasets,'datasets'))
   if (nof_datasets==0) {
-    print('The connection seems to be down - try again later')
+    print('Please check the search URL (experiment, variable, facets, etc.):')
+    print(paste(url,search_string,sep=""))      
+    print('If all looks OK, maybe the connection is down - try again later!')
     return(NULL)
   }
   
   ## Query ESGF server
-  ESGF_query <- jsonlite::fromJSON(paste(url,"?limit=",nof_datasets,"&type=Dataset&replica=false&latest=true&mip_era=",mip,"&variable_id=",param,
-                                    "&frequency=",freq,"&experiment_id=,",expid,"&format=application%2Fsolr%2Bjson&facets=source_id",sep=""))
+  ESGF_query <- jsonlite::fromJSON(paste(url,"?limit=",nof_datasets,"&",search_string,"&facets=source_id",sep=""))
   if (verbose) str(ESGF_query)
   
   ## List files in each dataset
@@ -92,44 +101,92 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
       print(paste(rep("=",nchar(ESGF_query$response$docs$id[i])+9),collapse=""))
     } else cat('.')
     
-    opendap_idx <- which(ESGF_query$response$docs$access[[i]]=="OPENDAP")
-    http_idx <- which(ESGF_query$response$docs$access[[i]]=="HTTPServer")
-    
-    for (j in 1:nof_files) {
-      ic <- as.character(i); if (i < 100) ic <- paste('0',ic,sep=''); if (i < 10) ic <- paste('0',ic,sep='')
-      jc <- as.character(j); if (j < 100) jc <- paste('0',jc,sep=''); if (j < 10) jc <- paste('0',jc,sep='')
-      results[[paste('file.query:',ic,jc,sep='_')]] <- ESGF_query$response$docs[i,]
-      http_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][http_idx],"|",fixed=TRUE))[1]
-      results[[paste('http',ic,jc,sep='_')]] <- http_url
-      if (verbose) print(http_url)
-      opendap_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][opendap_idx],"|",fixed=TRUE))[1]
-      if (verbose) print(opendap_url)
-      results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub(".nc.html",".nc",opendap_url)
-      #print(paste('OpenDAP',ic,jc,sep='_'))
-      results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$member_id[[j]]
-      results[[paste('grid',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$grid[[j]]
-      results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$source_id[[j]]
-      results[[paste('type',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$source_type[[j]]
-      results[[paste('title',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$title[[j]]
+    if (mip == "CMIP5")
+    {
+      param_idx <- which(ESGF_file_query$response$docs$variable == param)
+      
+      for (j in param_idx) {
+        ic <- as.character(i); if (i < 100) ic <- paste('0',ic,sep=''); if (i < 10) ic <- paste('0',ic,sep='')
+        jc <- as.character(which(param_idx == j)); if (which(param_idx == j) < 100) jc <- paste('0',jc,sep=''); if (which(param_idx == j) < 10) jc <- paste('0',jc,sep='')
+        
+        results[[paste('dataset.query:',ic,jc,sep='_')]] <- ESGF_query$response$docs[i,]
+        results[[paste('file.query:',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[j,]
+        
+        opendap_idx <- grep("OPENDAP",ESGF_file_query$response$docs$url[[j]])
+        http_idx <- grep("HTTPServer",ESGF_file_query$response$docs$url[[j]])
+        
+        http_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][http_idx],"|",fixed=TRUE))[1]
+        results[[paste('http',ic,jc,sep='_')]] <- http_url
+        if (verbose) print(http_url)
+        opendap_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][opendap_idx],"|",fixed=TRUE))[1]
+        if (verbose) print(opendap_url)
+        results[[paste('OpenDAP',ic,jc,sep='_')]] <- as.character(gsub(".nc.html",".nc",opendap_url))
+        results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$ensemble[[j]]
+        results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$model[[j]]
+        results[[paste('title',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$title[[j]]
+      }
     }
-    elements <- names(results)
-    opendap <- grep('OpenDAP',names(results))
-    http <- grep('http',names(results))
-    mem <- grep('member_id',names(results))
-    grid <- grep('grid',names(results))
-    model <- grep('source_id',names(results))
-    type <- grep('type',names(results))
-    title <- grep('title',names(results))
-    period <- substr(as.character(results[title]),nchar(as.character(results[title]))-15,
-                     nchar(as.character(results[title]))-3)
+    
+    if (mip == "CMIP6")
+    {
+      for (j in 1:nof_files) {
+        ic <- as.character(i); if (i < 100) ic <- paste('0',ic,sep=''); if (i < 10) ic <- paste('0',ic,sep='')
+        jc <- as.character(j); if (j < 100) jc <- paste('0',jc,sep=''); if (j < 10) jc <- paste('0',jc,sep='')
+        
+        results[[paste('dataset.query:',ic,jc,sep='_')]] <- ESGF_query$response$docs[i,]
+        results[[paste('file.query:',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[j,]
+
+        opendap_idx <- grep("OPENDAP",ESGF_file_query$response$docs$url[[j]])
+        http_idx <- grep("HTTPServer",ESGF_file_query$response$docs$url[[j]])
+        http_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][http_idx],"|",fixed=TRUE))[1]
+        results[[paste('http',ic,jc,sep='_')]] <- http_url
+        if (verbose) print(http_url)
+        opendap_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][opendap_idx],"|",fixed=TRUE))[1]
+        if (verbose) print(opendap_url)
+        results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub(".nc.html",".nc",opendap_url)
+        results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$member_id[[j]]
+        results[[paste('grid',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$grid[[j]]
+        results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$source_id[[j]]
+        results[[paste('type',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$source_type[[j]]
+        results[[paste('title',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$title[[j]]
+      }
+    }
+    
+  }
+  
+  elements <- names(results)
+  opendap <- grep('OpenDAP',names(results))
+  http <- grep('http',names(results))
+  mem <- grep('member_id',names(results))
+  grid <- grep('grid',names(results))
+  model <- grep('source_id',names(results))
+  type <- grep('type',names(results))
+  title <- grep('title',names(results))
+  period <- substr(as.character(results[title]),nchar(as.character(results[title]))-15,
+                   nchar(as.character(results[title]))-3)
+  
+  if (mip == "CMIP5")
+  {
+    meta <- data.frame(OpenDap=as.character(results[opendap]),http=as.character(results[http]),
+                       member.id=as.character(results[mem]),model=as.character(results[model]),
+                       title=as.character(results[title]),period=as.character(period))
+  }
+  
+  if (mip == "CMIP6")
+  {
     meta <- data.frame(OpenDap=as.character(results[opendap]),http=as.character(results[http]),
                        member.id=as.character(results[mem]),grid=as.character(results[grid]),
                        model=as.character(results[model]),type=as.character(results[type]),
                        title=as.character(results[title]),period=as.character(period))
-    attr(meta,'variable') <- param
-    attr(meta,'all.query.data') <- results[grep('file.query',names(results))]
-    attr(meta,'history') <- history.stamp(meta)
-    return(meta)
   }
+<<<<<<< HEAD
   }
+=======
+  attr(meta,'variable') <- param
+  attr(meta,'file.query.data') <- results[grep('file.query',names(results))]
+  attr(meta,'dataset.query.data') <- results[grep('dataset.query',names(results))]
+  attr(meta,'history') <- history.stamp(meta)
+  return(meta)
+  
+>>>>>>> 34d4aa23b8670526521b6476912dcedbc8695efc
 }
