@@ -299,6 +299,7 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   if (verbose) print('add new data')
   print(dim(X))
   #ncvar_put( ncid, ncvar, t(X),start=start,count=count)
+  y[!is.finite(y)] <- missval
   y <- round((y - offset)/scale)
   ncvar_put( ncid, ncvar, t(coredata(y)))
   nc_close(ncid)

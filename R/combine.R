@@ -131,6 +131,7 @@ combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose
     X <- combine.station.field(x=x,y=y,all=all,orig.format=orig.format,verbose=verbose)
   } else { 
     print("combine.default - don't know what to do :-(")
+    browser()
     X <- NULL
   }
   attr(X,'history') <- history.stamp(x)
