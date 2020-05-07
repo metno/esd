@@ -30,6 +30,7 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
     print(paste('Update',sum(is),'stations of',length(Y$station.id)))
     print(attr(Y,'period')); print(range(index(x)))
   }
+  
   ## Update the summary statistics
   exclude <- c("location","longitude","latitude","altitude","country","station.id","first.year")
   sumsta <- names(Y)
@@ -60,9 +61,17 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   scale <- ncid$var[[1]]$scaleFact
   torg <- sub('days since ','',tunit$value)
   nc_close(ncid)
-  ## Retrieve the actual data in the old file: Only worry about those stations that are to be updated
-  y <- retrieve.station(file,is=is)
   
+  ## Retrieve the actual data in the old file: Only worry about those stations that are to be updated
+  if (verbose) print('read the data from the oroginal netCDF file.')
+  y <- retrieve.station(file)
+  ## Need to use similar spatial dimension
+  if (verbose) {print(dim(y)); print('Need to pad missing data with NAs')}
+  nd <- dim(x)[1]; ns <- length(Y$station.id)
+  x2 <- matrix(rep(NA,nd*ns),nd,ns)
+  x2[,is] <- coredata(x)
+  x2 <- zoo(x2,order.by=index(x)); x2 <- attrcp(y,x2); class(x2) <- class(y)
+  x <- x2; rm('x2')
   ## Update the statistics from the old data
   if (verbose) print(paste('dimensions for original data',paste(dim(y),collapse=' x ')))
   ## combine the old and new
@@ -77,46 +86,46 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   if (verbose) print(paste('dimensions for combined data',paste(dim(y),collapse=' x ')))
   if (verbose) print('annual stats')
   seasons <- c('DJF','MAM','JJA','SON')
-  Y$mean[is] <- (nold*Y$mean[is] + nval*apply(coredata(x),2,'mean',na.rm=TRUE))/(nold + nval)
-  Y$max[is] <- max(cbind(Y$max[is],coredata(x)),na.rm=TRUE) #?!
-  Y$records[is] <- apply(anomaly(y),2,'arec') #?!
+  Y$mean[is] <- (nold*Y$mean[is] + nval*apply(coredata(x),2,'mean',na.rm=TRUE)[is])/(nold + nval)
+  Y$max[is] <- max(cbind(Y$max[is],coredata(x)[,is]),na.rm=TRUE) #?!
+  Y$records[is] <- apply(anomaly(subset(y,is=is)),2,'arec') #?!
   if (!is.precip(x)) {
     if (verbose) print('not precip')
     ## The new mean estimated from weighted old and mean of new obs.
-    Y$min[is] <- min(cbind(Y$max[is],coredata(x)),na.rm=TRUE) #?!
-    Y$sd[is] <- apply(coredata(anomaly(y)),2,'sd',na.rm=TRUE)
-    Y$trend[is] <- trend.coef(annual(y)) #?!
-    lelr <- lastelementrecord(-y)
+    Y$min[is] <- min(cbind(Y$max[is],coredata(x)[,is]),na.rm=TRUE) #?!
+    Y$sd[is] <- apply(coredata(anomaly(subset(y,is=is))),2,'sd',na.rm=TRUE)
+    Y$trend[is] <- trend.coef(annual(subset(y,is=is))) #?!
+    lelr <- lastelementrecord(-subset(y,is=is))
     if (verbose) print('seasonal stats')
     for (sea in seasons) {
       if (verbose) print(sea)
-      Y[[paste0('mean_',sea)]][is] <- apply(coredata(subset(y,it=sea)),2,'mean',na.rm=TRUE)
-      Y[[paste0('sd_',sea)]][is] <- apply(coredata(subset(anomaly(y),it=sea)),2,'sd',na.rm=TRUE) #?!
-      Y[[paste0('trend_',sea)]][is] <- trend.coef(annual(subset(y,it=sea),nmin=75))
+      Y[[paste0('mean_',sea)]][is] <- apply(coredata(subset(y,is=is,it=sea)),2,'mean',na.rm=TRUE)
+      Y[[paste0('sd_',sea)]][is] <- apply(coredata(subset(anomaly(y),is=is,it=sea)),2,'sd',na.rm=TRUE) #?!
+      Y[[paste0('trend_',sea)]][is] <- trend.coef(annual(subset(y,is=is,it=sea),nmin=75))
     }
-    Y$lows[is] <- apply(-anomaly(y),2,'arec') #?!
+    Y$lows[is] <- apply(-anomaly(subset(y,is=is)),2,'arec') #?!
   } else {
     if (verbose) print('precip')
-    Y$mean[is] <-  apply(annual(y,'sum'),2,'mean',na.rm=TRUE)
-    Y$wetmean[is] <- apply(annual(y,'wetmean'),2,'mean',na.rm=TRUE)
-    Y$wetfreq[is] <- apply(100*annual(y,'wetfreq'),2,'mean',na.rm=TRUE)
-    Y$trend[is] <- trend.coef(annual(y,FUN='sum'))
-    Y$trend_wetmean[is] <- trend.coef(annual(y,FUN='wetmean'))
-    Y$trend_wetfreq[is] <- trend.coef(annual(y,FUN='wetfreq'))
-    Y$sigma2[is] <- apply(y,2,'rainvar')
-    Y$trend_sigma2[is] <- rainvartrend(y)
+    Y$mean[is] <-  apply(annual(subset(y,is=is),'sum'),2,'mean',na.rm=TRUE)
+    Y$wetmean[is] <- apply(annual(subset(y,is=is),'wetmean'),2,'mean',na.rm=TRUE)
+    Y$wetfreq[is] <- apply(100*annual(subset(y,is=is),'wetfreq'),2,'mean',na.rm=TRUE)
+    Y$trend[is] <- trend.coef(annual(subset(y,is=is),FUN='sum'))
+    Y$trend_wetmean[is] <- trend.coef(annual(subset(y,is=is),FUN='wetmean'))
+    Y$trend_wetfreq[is] <- trend.coef(annual(subset(y,is=is),FUN='wetfreq'))
+    Y$sigma2[is] <- apply(subset(y,is=is),2,'rainvar')
+    Y$trend_sigma2[is] <- rainvartrend(subset(y,is=is))
     if (verbose) print('seasonal stats')
     for (sea in seasons) {
       if (verbose) print(sea)
-      Y[[paste0('mean_',sea)]][is] <- apply(annual(subset(y,it=sea),'sum',nmin=90),2,'mean',na.rm=TRUE)
-      Y[[paste0('wetmean_',sea)]][is] <- apply(annual(subset(y,it=sea),'wetmean',nmin=90),2,'mean',na.rm=TRUE) #?!
-      Y[[paste0('wetfreq_',sea)]][is] <- apply(100*annual(subset(y,it=sea),'wetfreq',nmin=90),2,'mean',na.rm=TRUE) #?!
-      Y[[paste0('trend_',sea)]][is] <- trend.coef(annual(subset(y,it=sea),FUN='sum',nmin=90)) #?!
-      Y[[paste0('trend_wetmean_',sea)]][is] <- trend.coef(annual(subset(y,it=sea),FUN='wetmean',nmin=90)) #?!
-      Y[[paste0('trend_wetfreq_',sea)]][is] <- trend.coef(annual(subset(y,it=sea),FUN='wetfreq',nmin=90)) #?!
+      Y[[paste0('mean_',sea)]][is] <- apply(annual(subset(y,is=is,it=sea),'sum',nmin=90),2,'mean',na.rm=TRUE)
+      Y[[paste0('wetmean_',sea)]][is] <- apply(annual(subset(y,is=is,it=sea),'wetmean',nmin=90),2,'mean',na.rm=TRUE) #?!
+      Y[[paste0('wetfreq_',sea)]][is] <- apply(100*annual(subset(y,is=is,it=sea),'wetfreq',nmin=90),2,'mean',na.rm=TRUE) #?!
+      Y[[paste0('trend_',sea)]][is] <- trend.coef(annual(subset(y,is=is,it=sea),FUN='sum',nmin=90)) #?!
+      Y[[paste0('trend_wetmean_',sea)]][is] <- trend.coef(annual(subset(y,is=is,it=sea),FUN='wetmean',nmin=90)) #?!
+      Y[[paste0('trend_wetfreq_',sea)]][is] <- trend.coef(annual(subset(y,is=is,it=sea),FUN='wetfreq',nmin=90)) #?!
       if (verbose) print('Sigma2')
-      Y[[paste0('sigma2_',sea)]][is] <- apply(subset(y,it=sea),2,'rainvar')
-      Y[[paste0('trend_sigma2_',sea)]][is] <- rainvartrend(subset(y,it=sea),nmin=90) #?!
+      Y[[paste0('sigma2_',sea)]][is] <- apply(subset(y,is=is,it=sea),2,'rainvar')
+      Y[[paste0('trend_sigma2_',sea)]][is] <- rainvartrend(subset(y,is=is,it=sea),nmin=90) #?!
     }
     lr <- sapply(y,'lastrains')
     ld <- sapply(y,'lastdry')
@@ -296,8 +305,7 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   ##https://stackoverflow.com/questions/30084261/extend-dimensions-in-netcdf-file-using-r
   #ncvar_put( ncid, varid='time', index(x),start=start[2],count=count[2])
   ncvar_put( ncid, varid='time', index(y) - julian(as.Date(torg)),start=1,count=length(index(y)))
-  if (verbose) print('add new data')
-  print(dim(X))
+  if (verbose) {print('add new data'); print(dim(y))}
   #ncvar_put( ncid, ncvar, t(X),start=start,count=count)
   y[!is.finite(y)] <- missval
   y <- round((y - offset)/scale)
