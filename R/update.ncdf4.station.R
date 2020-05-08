@@ -25,7 +25,11 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   ## Identify common stations from the station numbers.
   is <- is.element(Y$station.id,stid(x))
   js <- is.element(stid(x),Y$station.id)
-  x <- subset(x,is=js)
+  x0 <- x
+  if (!inherits(x,'station')) class(x) <- c('station','day','zoo')
+  #browser()
+  #x <- subset(x,is=js)
+  x <- x[,js]; x <- attrcp(x0,x); class(x) <- class(x0)
   if (verbose) {
     print(paste('Update',sum(is),'stations of',length(Y$station.id)))
     print(attr(Y,'period')); print(range(index(x)))
@@ -78,7 +82,9 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   if (verbose) print('Combine non-overlapping periods')
   ## Make sure that the two don't overlap in time: only add part of x that is new.
   it <- !is.element(index(x),index(y))
-  x <- subset(x,it=it)
+  if (sum(it)==0) return('No new data')
+  #x <- subset(x,it=it)
+  x <- x[it,]; x <- attrcp(y,x); class(x) <- class(y)
   ## Combine old and new data 
   if (verbose) {print(paste(sum(it),'days added to old data')); print(dim(y)); print(dim(y))}
   y <- c(zoo(y),zoo(x))
@@ -87,12 +93,15 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   if (verbose) print('annual stats')
   seasons <- c('DJF','MAM','JJA','SON')
   Y$mean[is] <- (nold*Y$mean[is] + nval*apply(coredata(x),2,'mean',na.rm=TRUE)[is])/(nold + nval)
-  Y$max[is] <- max(cbind(Y$max[is],coredata(x)[,is]),na.rm=TRUE) #?!
+  Y$max[!is.finite(Y$max)] <- missval
+  Y$max[is] <- max(cbind(Y$max,coredata(x))[,is],na.rm=TRUE) #?!
+
   Y$records[is] <- apply(anomaly(subset(y,is=is)),2,'arec') #?!
   if (!is.precip(x)) {
     if (verbose) print('not precip')
     ## The new mean estimated from weighted old and mean of new obs.
-    Y$min[is] <- min(cbind(Y$max[is],coredata(x)[,is]),na.rm=TRUE) #?!
+    Y$min[is] <- min(cbind(Y$min,coredata(x))[,is],na.rm=TRUE) #?!
+    Y$min[!is.finite(Y$min)] <- missval
     Y$sd[is] <- apply(coredata(anomaly(subset(y,is=is))),2,'sd',na.rm=TRUE)
     Y$trend[is] <- trend.coef(annual(subset(y,is=is))) #?!
     lelr <- lastelementrecord(-subset(y,is=is))
@@ -234,7 +243,7 @@ update.ncdf4.station <- function(x, file, verbose=TRUE,torg='1899-12-31') {
   ncvar_put( ncid, tdid.mam, Y$trend_MAM,start=s1,count=c1)
   ncvar_put( ncid, tdid.jja, Y$trend_JJA,start=s1,count=c1)
   ncvar_put( ncid, tdid.son, Y$trend_SON,start=s1,count=c1)
-  ncvar_put( ncid, maxid, Y$max,start=s1,count=c1)
+    ncvar_put( ncid, maxid, Y$max,start=s1,count=c1)
   ncvar_put( ncid, nhrid, Y$records,start=s1,count=c1)
   ncvar_put( ncid, nvid, Y$number.valid,start=s1,count=c1)
   #print('.?.')

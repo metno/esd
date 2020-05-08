@@ -12,7 +12,7 @@
 #'
 #' @seealso summary.ncdf4 check.ncdf4 file.class
 #'
-#' @param ncfile Name of the existing netCDF file to be opened or an object of class 'ncdf4'. 
+#' @param file Name of the existing netCDF file to be opened or an object of class 'ncdf4'. 
 #' The full path to the netCDF file can either be included in 'ncfile' or entered as a separate input ('path').
 #' @param path Path to netcdf file
 #' @param ncid An object of class 'ncdf4'
@@ -81,12 +81,13 @@
 #' }
 #' 
 #' @export retrieve
-retrieve <- function(ncfile=NULL,...) UseMethod("retrieve")
+retrieve <- function(file=NULL,...) UseMethod("retrieve")
 
 ## Default function
 #' @export retrieve.default
-retrieve.default <- function(ncfile,param="auto",
+retrieve.default <- function(file,param="auto",
                              path=NULL,verbose=FALSE,...) {
+  ncfile <- file
   if (verbose) print('retrieve.default')
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   X <- NULL
@@ -121,10 +122,11 @@ retrieve.default <- function(ncfile,param="auto",
 
 ## Set retrieve for ncdf4 object
 #' @export retrieve.ncdf4
-retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
+retrieve.ncdf4 <- function (file, path=NULL , param="auto",
                             lon=NULL, lat=NULL, lev=NULL, it=NULL,
                             miss2na=TRUE, greenwich=FALSE,
                             plot=FALSE, verbose=FALSE, ...)  {
+  ncfile=file
   if(verbose) print("retrieve.ncdf4")
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   
@@ -1064,9 +1066,10 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
 }
 
 #' @export retrieve.station
-retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
+retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                              nmin=NULL,verbose=FALSE,onebyone=FALSE,...) {
+  ncfile=file
   if (verbose) print(paste('retrieve.station',ncfile))
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   
@@ -1271,9 +1274,10 @@ retrieve.station <- function(ncfile,param="auto",path=NULL,is=NULL,stid=NULL,loc
 }
 
 #' @export retrieve.stationsummary
-retrieve.stationsummary <- function(ncfile,path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
+retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                                     alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                                     nmin=NULL,verbose=FALSE,...) {
+  ncfile <- file
   if (verbose) print(paste('retrieve.stationsummary',ncfile))
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   class.x <- file.class(ncfile)
@@ -1353,7 +1357,8 @@ retrieve.stationsummary <- function(ncfile,path=NULL,stid=NULL,loc=NULL,lon=NULL
 
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
 #' @export retrieve.rcm
-retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
+retrieve.rcm <- function(file,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
+  ncfile <- file
     if(verbose) print("retrieve.rcm")
     if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
     
