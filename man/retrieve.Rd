@@ -9,10 +9,10 @@
 \alias{retrieve.stationsummary}
 \title{Retrieve field data from a netcdf file.}
 \usage{
-retrieve(ncfile = NULL, ...)
+retrieve(file = NULL, ...)
 }
 \arguments{
-\item{ncfile}{Name of the existing netCDF file to be opened or an object of class 'ncdf4'. 
+\item{file}{Name of the existing netCDF file to be opened or an object of class 'ncdf4'. 
 The full path to the netCDF file can either be included in 'ncfile' or entered as a separate input ('path').}
 
 \item{path}{Path to netcdf file}
