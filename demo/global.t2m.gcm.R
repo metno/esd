@@ -30,7 +30,7 @@ clean <- function(x,lower=TRUE,upper=FALSE) {
   return(y)
 }
 
-globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
+globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,it=NULL,
                        annual=TRUE,pattern='tas_',param='tas',relative=FALSE,
                        select=NULL,lon=NULL,lat=NULL,FUN='mean',anomaly=TRUE) {
   fnames <- list.files(path=path,pattern=pattern,full.name=TRUE)
@@ -49,7 +49,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
     id=c("model_id", "experiment_id", "variable","parent_experiment_rip"))
   for (i in 1:n) {
     print(fnames[i])
-    gcm <- retrieve(fnames[i], param=param, lon=lon, lat=lat)
+    gcm <- retrieve(fnames[i], param=param, lon=lon, lat=lat,it=it)
     lon.rng <- range(lon)
     lat.rng <- range(lat)
     qf <- attr(gcm,"qf")
@@ -107,6 +107,7 @@ globalmean <- function(path='CMIP5.monthly/rcp45',ref=1961:1990,usefnames=TRUE,
                 min(year(gcm)),max(year(gcm)),fnames[i]))
     if (annual) gcm <- annual(gcm)
     y <- aggregate.area(gcm,FUN=FUN)
+    rm('gcm'); gc(reset=TRUE)
     if (annual) {
       i1 <- is.element(yr,year(y))
       i2 <- is.element(year(y),yr)

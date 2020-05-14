@@ -1,5 +1,5 @@
 ## Demo showing how to analyse the number of record-breaking annual rainfall amounts simulated by a random CMIP6 
-## global cliamtem odel simulation. @RasmusBenestad. 2020-04-03
+## global climate model simulation. @RasmusBenestad. 2020-04-03
 library(esd)
 meta <- meta.ESGF(param='pr')
 pr <- retrieve.ESGF(im=2,meta=meta)
