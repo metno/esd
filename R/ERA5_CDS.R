@@ -18,7 +18,7 @@
 #' @param path The path where the data are stored. Can be a symbolic link.
 #' @param verbose a boolean; if TRUE print information about progress
 #' @examples
-#' \dontrun{}
+#' \dontrun{
 #' ERA5.CDS(param='2m_temperature',varnm='t2m',it=2015:2018,AREA="['50','0','60','10']",
 #'          FUN='daymean')
 #' ERA5.CDS(param='total_precipitation',varnm='tp',it=2018,AREA="['0','50','10','60']",
