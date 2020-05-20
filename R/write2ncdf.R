@@ -199,6 +199,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' @param torg Time origin
 #' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
 #' @param verbose TRUE - clutter the screen.
+#' @param doi - Data ID. All the following arguments are meant to accomodate for the convention described at \url{https://adc.met.no/node/4}
 #' @param \dots additional arguments
 #' 
 #' @return None
@@ -207,7 +208,10 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' 
 #' @export write2ncdf4.station
 write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, missval=-99,it=NULL,stid=NULL,append=FALSE,
-                                scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,nmin=30,verbose=FALSE) {
+                                scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,nmin=30,verbose=FALSE,
+                                doi='NA',namingauthority='NA',processinglevel='NA',creatortype='NA',
+                                creatoremail='NA',institution='NA',publishername='NA',publisheremail='NA',
+                                publisherurl='NA',project='NA') {
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- attr(x,'unit')
@@ -980,8 +984,8 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     ncatt_put( ncid, 0, 'references', paste(levels(factor(attr(x,"reference"))),collapse="/"))
     ncatt_put( ncid, 0, "esd-version", attr(x,'history')$session$esd.version)
     ## Add global attributes suggested in https://adc.met.no/node/4
-    ncatt_put( ncid, 0, 'id', 'DOI:')
-    ncatt_put( ncid, 0, 'naming_authority', 'NA')
+    ncatt_put( ncid, 0, 'id', doi)
+    ncatt_put( ncid, 0, 'naming_authority', namingauthority)
     ncatt_put( ncid, 0, 'title', 'netCDF-file for station data')
     ncatt_put( ncid, 0, 'summary', 'Daily data organised as station ID number and time')
     ncatt_put( ncid, 0, 'keywords', 'Observational record, summary statistics, station data')
@@ -992,16 +996,16 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     ncatt_put( ncid, 0, 'time_coverage_start', as.character(min(index(x))))
     ncatt_put( ncid, 0, 'time_coverage_end', as.character(max(index(x))))
     ncatt_put( ncid, 0, 'Conventions', 'CF-inspired')
-    ncatt_put( ncid, 0, 'processing_level', 'NA')
+    ncatt_put( ncid, 0, 'processing_level', processinglevel)
     ncatt_put( ncid, 0, 'date_created', date())
-    ncatt_put( ncid, 0, 'creator_type', 'NA')
-    ncatt_put( ncid, 0, 'creator_email', 'NA')
+    ncatt_put( ncid, 0, 'creator_type', creatortype)
+    ncatt_put( ncid, 0, 'creator_email', creatoremail)
     ncatt_put( ncid, 0, 'creator_url', 'github.com/metno/esd')
-    ncatt_put( ncid, 0, 'institution', 'NA')
-    ncatt_put( ncid, 0, 'publisher_name', 'NA')
-    ncatt_put( ncid, 0, 'publisher_email', 'NA')
-    ncatt_put( ncid, 0, 'publisher_url', 'NA')
-    ncatt_put( ncid, 0, 'project', 'NA')
+    ncatt_put( ncid, 0, 'institution', institution)
+    ncatt_put( ncid, 0, 'publisher_name', publishername)
+    ncatt_put( ncid, 0, 'publisher_email', publisheremail)
+    ncatt_put( ncid, 0, 'publisher_url', publisherurl)
+    ncatt_put( ncid, 0, 'project', project)
   }
   nc_close(ncid)
   if (verbose) print('close')

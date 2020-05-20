@@ -19,7 +19,17 @@
   stid_unlim = FALSE,
   namelength = 24,
   nmin = 30,
-  verbose = FALSE
+  verbose = FALSE,
+  doi = "NA",
+  namingauthority = "NA",
+  processinglevel = "NA",
+  creatortype = "NA",
+  creatoremail = "NA",
+  institution = "NA",
+  publishername = "NA",
+  publisheremail = "NA",
+  publisherurl = "NA",
+  project = "NA"
 )
 }
 \arguments{
@@ -54,6 +64,8 @@ stored (to save space may be represented as 'short').}
 \item{nmin}{Only calculate summary statistics for stations with nmin years of data (e.g. 30 years).}
 
 \item{verbose}{TRUE - clutter the screen.}
+
+\item{doi}{- Data ID. All the following arguments are meant to accomodate for the convention described at \url{https://adc.met.no/node/4}}
 }
 \value{
 None
