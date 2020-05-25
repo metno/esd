@@ -38,9 +38,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     unit <- gsub(" ","~",unit)
   if(length(param)>1) param <- param[1]
   if(length(unit)>1) unit <- unit[1]
-  if (is.T(x)) {
-    unit <- "degrees*C"
-  }
+  # if (is.T(x)) {
+  #   unit <- "degrees*C"
+  # }
  
   # Rotation:
   if (is.null(lonR)) lonR <- mean(lon,na.rm=TRUE)  # logitudinal rotation
