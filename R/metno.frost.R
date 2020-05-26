@@ -25,7 +25,7 @@
 #' 
 #' @export metno.frost.meta.day
 metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
-                                     save2file=FALSE, path=NULL, verbose=FALSE, ...) {
+                                 save2file=FALSE, path=NULL, verbose=FALSE, ...) {
   if(verbose) print("metno.frost.meta.day")
   X <- metno.frost.meta.default(param=param, timeresolutions="P1D", verbose=verbose, ...)
   filename <- "meta.metno.frost.day.rda"
@@ -107,7 +107,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       frostID <- readLines(keyfile) 
     } else { 
       if (verbose) print('Generate new client ID')  
-      system(paste(browser,'https://frost.met.no/auth/newclientid.html'))
+      system(paste(browser,'https://frost.met.no/auth/requestCredentials.html'))
       frostID <- rep("",2)
       frostID[1] <- readline('Please give me the first key:')
       frostID[2] <- readline('Please give me the second key:')
@@ -122,12 +122,23 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       "sources/v0.jsonld",
       "?types=SensorSystem",
       "&country=Norge",
+      "&validtime=0000-01-01/9999-01-01",
+      "&fields=id,name,masl,country,county,countyId,municipality,municipalityId,geometry"
+    )
+    # KT 2020-05-25 - fetch all stations in and around Svalbard too
+    url_sj <- paste0(
+      "https://",
+      frostID[1],
+      "@frost.met.no/",
+      "sources/v0.jsonld",
+      "?types=SensorSystem",
+      "&country=Svalbard og Jan Mayen",
+      "&validtime=0000-01-01/9999-01-01",
       "&fields=id,name,masl,country,county,countyId,municipality,municipalityId,geometry"
     )
     url2 <- paste0(
       "https://",
       frostID[1],
-      #client_id, 
       "@frost.met.no/",
       "observations/availableTimeSeries/v0.jsonld",
       "?elements=", strparam,
@@ -140,27 +151,34 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     )
     if (verbose) {
       print(url1)
+      print(url_sj)
       print(url2)
     }
 
-    xs1 <- jsonlite::fromJSON(URLencode(url1), flatten=TRUE)
-    xs1$data$lon = sapply(xs1$data$geometry.coordinates, function(x) x[1])
-    xs1$data$lon[sapply(xs1$data$lon, is.null)] <- NA
-    xs1$data$lon <- unlist(xs1$data$lon)
-    xs1$data$lat = sapply(xs1$data$geometry.coordinates, function(x) x[2])
-    xs1$data$lat[sapply(xs1$data$lat, is.null)] <- NA
-    xs1$data$lat <- unlist(xs1$data$lat)    
-    df1 <- xs1$data[c("id","name","country","lon","lat","masl","municipality","municipalityId","county","countyId")]
+    # KT 2020-05-26: getting data from both Norge and Svalbard and Jan Mayen
+    xs_no <- jsonlite::fromJSON(URLencode(url1), flatten=TRUE)
+    xs_sj <- jsonlite::fromJSON(URLencode(url_sj), flatten=TRUE)
+    xs1 <- rbind(xs_no$data, xs_sj$data)
+    xs1$lon = sapply(xs1$geometry.coordinates, function(x) x[1])
+    xs1$lon[sapply(xs1$lon, is.null)] <- NA
+    xs1$lon <- unlist(xs1$lon)
+    xs1$lat = sapply(xs1$geometry.coordinates, function(x) x[2])
+    xs1$lat[sapply(xs1$lat, is.null)] <- NA
+    xs1$lat <- unlist(xs1$lat)
+    df1 <- xs1[c("id","name","country","lon","lat","masl","municipality","municipalityId","county","countyId")]
 
     xs2 <- jsonlite::fromJSON(URLencode(url2), flatten=TRUE)
     df2 <- xs2$data
     df2$sourceId = substring(df2$sourceId, 1, nchar(df2$sourceId)-2)
     df <- data.frame(NULL)
     for (i in 1:length(param1s)) {
+      # KT 2020-05-26: preserve NA as latest validTo
       dfparam = df2[df2$elementId == param1s[i], ]
+      dfparam$validTo[is.na(dfparam$validTo)] = "9999-12-31T00:00:00.000Z"
       validFrom = try(aggregate(validFrom ~ sourceId, data=dfparam, min), silent=TRUE)
       validTo = try(aggregate(validTo ~ sourceId, data=dfparam, max), silent=TRUE)
-      browser()
+      validTo[validTo=="9999-12-31T00:00:00.000Z"] <- NA
+      #browser()
       
       if (class(validFrom) != "try-error" & length(validFrom) > 0) {
         validFrom$validFrom <- as.Date(validFrom$validFrom)
@@ -168,7 +186,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
 
         period = merge(validFrom, validTo, by='sourceId', all.x=TRUE)
         stperiod = merge(df1, period, by.x="id", by.y="sourceId")
-  
+
         colnames(stperiod) = c("station_id","location","country","lon","lat","altitude",
                                "municipality","municipalityid","county","countyid","start","end")
 
@@ -180,7 +198,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
         stperiod$utm_east  <- XY[[1]]
         stperiod$utm_north <- XY[[2]]
         stperiod$utm_zone  <- rep(utmZone, length(stperiod$station_id))
-  
+
         df <- rbind(stperiod, df, stringsAsFactors=FALSE)
       }
     }
@@ -193,20 +211,20 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     }
     cntr <- sapply(df$country, function(x) switch(x, "Norge"="NORWAY", x))
     X <- data.frame("station_id"=gsub("[A-Z]|[a-z]","",df$station_id),
-              "location"=df$location,
-              "country"=cntr,
-              "longitude"=df$lon,
-              "latitude"=df$lat,
-              "altitude"=df$altitude,
-              "element"=df$element,
-              "start"=strftime(df$start, format="%Y"),
-              "end"=strftime(df$end, format="%Y"),
-              "source"=switch(timeresolutions, 
-                              "P1D"="METNOD.FROST", 
-                              "P1M"="METNOM.FROST"),
-              "wmo"=rep(NA,length(df$station_id)),
-              "quality"=rep(NA,length(df$station_id)),
-              "variable"=var, stringsAsFactors=FALSE)
+                    "location"=df$location,
+                    "country"=cntr,
+                    "longitude"=df$lon,
+                    "latitude"=df$lat,
+                    "altitude"=df$altitude,
+                    "element"=df$element,
+                    "start"=strftime(df$start, format="%Y"),
+                    "end"=strftime(df$end, format="%Y"),
+                    "source"=switch(timeresolutions,
+                                    "P1D"="METNOD.FROST",
+                                    "P1M"="METNOM.FROST"),
+                    "wmo"=rep(NA,length(df$station_id)),
+                    "quality"=rep(NA,length(df$station_id)),
+                    "variable"=var, stringsAsFactors=FALSE)
     attr(X,"metnoURLs") <- "http://frost.met.no"
     attr(X,"author") <- "K. Tunheim & K. Parding"
     attr(X,"date") <- Sys.time()
