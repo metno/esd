@@ -160,8 +160,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       dfparam = df2[df2$elementId == param1s[i], ]
       validFrom = try(aggregate(validFrom ~ sourceId, data=dfparam, min), silent=TRUE)
       validTo = try(aggregate(validTo ~ sourceId, data=dfparam, max), silent=TRUE)
-      browser()
-      
+
       if (class(validFrom) != "try-error" & length(validFrom) > 0) {
         validFrom$validFrom <- as.Date(validFrom$validFrom)
         validTo$validTo <- as.Date(validTo$validTo)
