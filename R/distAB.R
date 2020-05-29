@@ -46,6 +46,6 @@ distAB <- function(lon,lat,lons,lats,a=6.378e06) {
 #  }
   dist <- rep(NA,length(lons))
   dist[good] <- a* angle
-  dist
+  return(dist)
 }
                    
