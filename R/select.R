@@ -28,17 +28,13 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     ## KMP 2020-02-18: Fetch Frost metadata if it isn't already in station.meta
     if(frost & (update.meta | !any(grepl("FROST",station.meta$source))) ) {
       station.meta <- station.meta[!grepl("FROST",station.meta$source),]
-      #if(grepl(src,"METNOM.FROST")) {
-        meta <- metno.frost.meta.month(save2file=FALSE, verbose=verbose)
-        station.meta <- merge(station.meta, meta, all=TRUE)
-      #} 
-      #if(grepl(src,"METNOD.FROST")) {
-        meta <- metno.frost.meta.day(save2file=FALSE, verbose=verbose)
-        station.meta <- merge(station.meta, meta, all=TRUE)
-      #}
+      meta <- metno.frost.meta.month(save2file=FALSE, verbose=verbose)
+      station.meta <- merge(station.meta, meta, all=TRUE)
+      meta <- metno.frost.meta.day(save2file=FALSE, verbose=verbose)
+      station.meta <- merge(station.meta, meta, all=TRUE)
     }
     ## KMP 2020-02-18: Fetch Thredds metadata if it isn't already in station.meta
-    if(thredds & (update.meta | !any(grepl("THREDDS",station.meta$source))) ) {
+    if(thredds & !any(grepl("THREDDS",station.meta$source)) ) {
       if(is.null(param)) {
         parami.thredds <- c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
       } else {
