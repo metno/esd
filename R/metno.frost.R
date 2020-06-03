@@ -19,9 +19,9 @@
 #'
 #' @examples
 #' # Fetch all stations' measuring periods of the t2m parameter
-#' meta.day <- metno.frost.meta.day(param=c('t2m'))
+#' metno.frost.meta.day(param=c('t2m'))
 #' # Fetch all stations' measuring periods of all available parameters
-#' meta.mon <- metno.frost.meta.month()
+#' metno.frost.meta.month()
 #' 
 #' @export metno.frost.meta.day
 metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 

@@ -10,7 +10,7 @@
 #' @export select.station
 select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=NULL, 
                             lon=NULL, lat=NULL, alt=NULL, cntr=NULL, src=NULL, it=NULL, 
-                            nmin=NULL, user='external', verbose=FALSE) {
+                            nmin=NULL, user='external', update.meta=FALSE, verbose=FALSE) {
   if (verbose) print('select.station')
   
   if (is.null(x)) {
@@ -26,19 +26,19 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       thredds <- any(grepl("THREDDS",toupper(src)))
     }
     ## KMP 2020-02-18: Fetch Frost metadata if it isn't already in station.meta
-    if(frost & !any(grepl("FROST",station.meta$source))) {
+    if(frost & (update.meta | !any(grepl("FROST",station.meta$source))) ) {
       station.meta <- station.meta[!grepl("FROST",station.meta$source),]
-      if(grepl(src,"METNOM.FROST")) {
+      #if(grepl(src,"METNOM.FROST")) {
         meta <- metno.frost.meta.month(save2file=FALSE, verbose=verbose)
         station.meta <- merge(station.meta, meta, all=TRUE)
-      } 
-      if(grepl(src,"METNOD.FROST")) {
+      #} 
+      #if(grepl(src,"METNOD.FROST")) {
         meta <- metno.frost.meta.day(save2file=FALSE, verbose=verbose)
         station.meta <- merge(station.meta, meta, all=TRUE)
-      }
+      #}
     }
     ## KMP 2020-02-18: Fetch Thredds metadata if it isn't already in station.meta
-    if(thredds & !any(grepl("THREDDS",station.meta$source))) {
+    if(thredds & (update.meta | !any(grepl("THREDDS",station.meta$source))) ) {
       if(is.null(param)) {
         parami.thredds <- c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
       } else {
