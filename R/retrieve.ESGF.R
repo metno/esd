@@ -38,7 +38,7 @@ retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) {
     print(as.character(meta$period[j]))
     opendap <- as.character(meta$OpenDap[j])
     if (verbose) print(opendap)
-    x <- try(retrieve(ncfile=opendap,param=attr(meta,'variable'),verbose=verbose,...))
+    x <- try(retrieve(file=opendap,param=attr(meta,'variable'),verbose=verbose,...))
     if ( (!inherits(x,"try-error")) & (length(jm)>1) ) { 
       if (j == jm[1]) X <- x else X <- c(zoo(X),zoo(x))
       X <- attrcp(x,X); class(X) <- class(x)

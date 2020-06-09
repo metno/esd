@@ -71,7 +71,7 @@
 #'                method="auto", quiet=FALSE, mode="w",
 #'                cacheOK = TRUE)
 #'   # Retrieve the data into "gcm" object
-#'   gcm <- retrieve(ncfile=file.path(~,noresm),param="tas",
+#'   gcm <- retrieve(file=file.path(~,noresm),param="tas",
 #'                 lon=c(-20,30),lat=c(40,90),plot=TRUE)
 #'   # Download the air surface temperature (tas) for RCP 4.5 scenarios and
 #'   # NorESM1-ME model from the climate explorer and store it in destfile. 
@@ -126,7 +126,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
                             lon=NULL, lat=NULL, lev=NULL, it=NULL,
                             miss2na=TRUE, greenwich=FALSE,
                             plot=FALSE, verbose=FALSE, ...)  {
-  ncfile=file
+  ncfile <- file
   if(verbose) print("retrieve.ncdf4")
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   
@@ -1069,7 +1069,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
 retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                              nmin=NULL,verbose=FALSE,onebyone=FALSE,...) {
-  ncfile=file
+  ncfile <- file
   if (verbose) print(paste('retrieve.station',ncfile))
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   

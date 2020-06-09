@@ -63,7 +63,7 @@ esd2ele <- function(param = NULL) {
   if (!is.null(param)) {
     ele <- switch(tolower(param),
                   't2m' = "101",
-                  'tg' = "101",'tmean'="101",'tas'="101",'mean'="101", #REB 2016-07-25: more flexibility
+                  'tg' = "101",'tmean'="101",'tas'="101",'mean'="101",
                   'rr' = "601",
                   'slp' = "401",
                   'pon' = "402",
