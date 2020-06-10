@@ -164,6 +164,8 @@ corfield.field <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose
   if (attr(x,'unit')[1]==attr(y,'unit')[1]) 
     attr(r,'unit') <- attr(x,'unit')[1] else
     attr(r,'unit') <- c(attr(x,'unit')[1],attr(y,'unit')[1])   
+  attr(r,'history') <- history.stamp(x)
+  attr(r,'history') <- history.stamp(y)
   class(r) <- 'corfield'
   if (plot) map(r,colbar=colbar,new=new)
   invisible(r)
@@ -266,6 +268,8 @@ corfield.station <- function(x,y,...,plot=TRUE,verbose=FALSE,new=TRUE,
   if (attr(x,'unit')[1]==attr(y,'unit')[1]) 
     attr(r,'unit') <- attr(x,'unit')[1] else
     attr(r,'unit') <- c(unit(x)[1],unit(y)[1])
+  attr(r,'history') <- history.stamp(x)
+  attr(r,'history') <- history.stamp(y)
   class(r) <- 'corfield'
 
   #print("map")

@@ -194,7 +194,13 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
                             user='external',save2file=FALSE) {
   
   if (verbose) {print('station.default'); print(match.call())}
-
+  ## REB 2020-05-26: a hack - the old code took forever...
+  if (!is.null(src)) if (src=='metnod.thredds') {
+    y <- station.thredds(locs=loc,param=param,stid=stid,lon=lon,lat=lat,
+                        alt=alt,cntr=cntr,it=it,nmin=nmin,verbse=verbose)
+    return(y)
+  }
+  ## end of hack meant to streamline the use REB...
   ss <- NULL
   if (inherits(loc,"stationmeta")) {
     ss <- loc
@@ -299,9 +305,10 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
     }
     for(param0 in unique(param)) {
       if(grepl("FROST",toupper(s))) {
+        ## REB 2020-05-26: replaced start and end arguments with it to make the notation 'esd-consistent'.
         x <- metno.frost.station(timeresolutions=timeres, stid=stid[param==param0], 
                             param=param0, verbose=verbose, path=path, 
-                            start=start, end=end, save2file=save2file)
+                            it=c(start, end), save2file=save2file)
         if(!is.null(x)) if(is.null(X)) X <- x else X <- combine.station(X,x)
       } else {
         j <- ss$source==s & ss$variable==param0
@@ -1116,12 +1123,17 @@ station.giss <- function(...,url=NULL) {
 
 #' @export metno.frost.station
 metno.frost.station <- function(keyfile='~/.FrostAPI.key', 
-                                stid=NULL, param=NULL, start=NULL, end=NULL,
+                                stid=NULL, param=NULL, it=NULL,
                                 lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL,
                                 timeresolutions='P1M', levels="default", timeoffsets="default", 
                                 performancecategories="A,B,C", exposurecategories="1,2", 
                                 qualities='0,1,2,3,4,5', fetch.meta=FALSE, path=NULL, 
                                 browser="firefox", save2file=FALSE, verbose=FALSE) {
+  ## REB - replaced 'start=NULL, end=NULL' with 'it = NULL' to keep the same type of arguments...
+  start <- NULL; end <- NULL
+  if (!is.null(it)) {
+    start <- it[1]; end <- it[2]
+  }
   if(verbose) print("metno.frost.station")
   if(verbose) print("Fetch data from the Frost API (http://frost.met.no)")
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
@@ -1231,6 +1243,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
     j <- j[j.order]
     stid.j <- meta$station_id[j]
     stid <- unique(stid)
+    
     end.j <- sapply(meta.end[j.order], function(x) min(x, end))
     start.j <- sapply(meta.start[j.order], function(x) max(x, start))
     ndata <- switch(toupper(timeresolutions),
@@ -1244,6 +1257,16 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
       if(any(cumsum(ndata)<maxdata)) {
         dk0 <- max(which(cumsum(ndata)<maxdata))-k
         end.k <- max(end.j[k:(k+dk0)])
+        ## REB 2020-05-27: hack to set the end to Sys.time()
+        if (is.null(it)) { 
+          end.k <- format(Sys.time(),'%Y-%m-%d')
+          print(paste('REB decided that the end should be',end))
+        } else {
+          start.k <- it[1]
+          end.k <- it[2]
+          print(paste('Fetch data between',it[1],'and',it[2]))
+        }
+        ## REB end-of-hack...
         start.k <- min(start.j[k:(k+dk0)])
         dt <- switch(toupper(timeresolutions),
                      "P1M"=difftime.month(end.k, start.k), 

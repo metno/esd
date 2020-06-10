@@ -434,7 +434,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   cls <- class(x)
   if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
   class(x) <- "zoo"
-  if(new) dev.new()
+  #if(new) dev.new()
   if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
   plot.zoo(x,...,plot.type=plot.type,xlab=xlab,ylab=ylab,
@@ -487,6 +487,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
     par(fig=par0$fig,mar=par0$mar,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
              xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
+    par(new=FALSE)
     
   }
 }

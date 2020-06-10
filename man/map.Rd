@@ -41,7 +41,13 @@ specify the colour `pal'*ette (`pal'), the number of breaks (`n'), values of
 `breaks', and the position of the color bar from the main plot (`pos'). The
 `rev' argument, will produce a reversed color bar if set to TRUE. The other
 arguments (`type',`h' and `v') are more specific to \code{col.bar} and are
-used only if argument `fancy' is set to TRUE (not yet finished).}
+used only if argument `fancy' is set to TRUE (not yet finished). \code{colbar=NULL}
+is used if the colourbar is not to be shown. Also use \code{colbar=NULL} to present several 
+maps in one figure (e.g. with \code{par(mfcol=c(2,2))}).}
+
+\item{lab}{\code{'default'} to show a lable saying what variable (unit) and time period. 
+\code('simple') to just use \code{varid(x)}, and \code{'unit'} to show variable and unit. 
+Other strings will be used as the label for the plot and \code{NULL} shows no lable.}
 
 \item{it}{see \code{\link{subset}}}
 
@@ -163,6 +169,15 @@ map(x, param="pcent", type=c('trajectory','start'),
     colbar=list(pal="rd", rev=TRUE, breaks=seq(980,1000,2)), 
     alpha=0.9, new=FALSE)
 
+# Example showing two maps in one figure:
+\dontrun{
+rr <- retrieve('~/data/data.ECAD/rr_ens_mean_0.1deg_reg.nc',it=c(2000,2001))
+it <- 195
+par(mfcol=c(1,2))
+attr(rr,'variable') <- 'precip'
+map(rr,FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=paste(range(index(rr)),collapse=' - '))
+map(subset(rr,it=it),FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=as.character(index(rr)[it]))
+}
 }
 \seealso{
 map.trajectory
