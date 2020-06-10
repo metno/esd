@@ -1,7 +1,7 @@
 # Documentaion in map.R
 #' @export
 lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
-                             xlim=NULL,ylim=NULL,zlim=NULL,
+                             xlim=NULL,ylim=NULL,zlim=NULL,lab='default',
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
@@ -9,12 +9,18 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              main=NA,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
+  ## Use temperature-palette as default, and check if the variable is precipitation
+  ## for precipitation-palette
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
-  colorbar <- !is.null(colbar)
-  
+  ## If colbar is set to NULL then remember this and do not show the colourbar
+  show.colbar <- !is.null(colbar)
+  ## Perpare the colurbar nevertheless...
   colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
+  varnm <- varid(x); unitx <- esd::unit(x)
   
   fig0 <- c(0,1,0,1)                        # REB 2015-06-25
+  
+  ## Land contours
   data("geoborders",envir=environment())
   if(sum(is.finite(x))==0) stop('No valid data')
   ## To deal with grid-conventions going from north-to-south or east-to-west:
@@ -24,6 +30,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   } else {
     greenwich <- FALSE
   }
+  ## Make sure to use the right arrrangement: frome dateline og Greenwich 
   if(inherits(x,"matrix") & is.null(attr(x,"dimensions"))) {
     x <- g2dl(x,d=c(length(lon(x)),length(lat(x)),1),
               greenwich=greenwich,verbose=verbose)
@@ -31,22 +38,18 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     x <- g2dl(x,greenwich=greenwich,verbose=verbose)
   }
   dim(x) <- c(length(lon(x)),length(lat(x)))
-  
-  #lon <- lon(x)
-  #if(!any(xlim<0) & any(xlim>180)) {
-  #  lon[lon<0] <- lon[lon<0]+360
-  #} else {
-  #  lon[lon>180] <- lon[lon>180]-360
-  #}
+  ## Make sure the longitudes are ordered correctly
   srtx <- order(lon(x)); lon <- lon(x)[srtx]
   srty <- order(lat(x)); lat <- lat(x)[srty]
+
   if (verbose) print('meta-stuff')
-  unit <- attr(x,'unit'); variable <- varid(x); varid <- varid(x); isprecip <- is.precip(x)
+  unit <- attr(x,'unit'); variable <- varid(x); isprecip <- is.precip(x)
   
-  if(!is.null(variable)) {
-    variable <- as.character(variable)
-   varname <- attr(x,'longname') 
-  }
+  ## Not used ? REB
+  # if(!is.null(variable)) {
+  #   variable <- as.character(variable)
+  #  varname <- attr(x,'longname') 
+  # }
   if(!is.null(unit)) unit <- as.character(unit)
   if ( (unit=="degC") | (unit=="deg C") | (unit=="degree C") | (unit=="degree Celsius"))
     unit <- "degree*C"
@@ -60,11 +63,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if(!is.null(variable)) {
     varlabel <- try(eval(parse(
       text=paste('expression(',gsub(" ","~",variable)," *~(",gsub(" ",
-                 "~",unit),"))",sep=""))))
+                 "~",unit),"))",sep="")))) 
   } else {
     varlabel <- NULL
   }
   if (inherits(varlabel,'try-error')) varlabel <- NULL
+  if (verbose) print(varlabel)
+  
   if (!is.null(attr(x,'source'))) {
     ## KMP 2019-12-12: Added check of source attribute because basename can't handle NA
     ## But why is source set to NA in as.field as default rather than NULL?
@@ -149,34 +154,37 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub);  print(varlabel)}
   
-  if(!is.null(varlabel)) lab <- paste(varlabel,'*') else lab <- ''
-  lab <- as.expression(parse(text=paste(lab,'phantom(0) - phantom(0)')))
-  ## text(lon[1],lat[length(lat)] - 0.5*dlat,varlabel,pos=4,font=2, cex=0.85)
-  
-  ## if ((!is.null(sub)) & (length(sub)>0)) text(lon[1],lat[1] - 1.5*dlat,sub,col="grey30",pos=4,cex=0.7)
+  ## REB 20202-06-10 - tried to 
+  if(!is.null(varlabel) & (lab=='default')) label <- paste(varlabel,'*') else label <- ''
+  label <- as.expression(parse(text=paste(label,'phantom(0) - phantom(0)')))
+ 
   if ((!is.null(sub)) & (length(sub)>0)) {
     sub <- paste('pattern derived from',sub)
-    lab <- try(parse(text=paste(lab,'*',as.expression(paste('~ ',
+    label <- try(parse(text=paste(label,'*',as.expression(paste('~ ',
                                 paste(unlist(strsplit(sub,split=' ')),
 				collapse = ' *~ '), sep='')))))
-    if (inherits(lab,'try-error')) lab <- ''
+    if (inherits(label,'try-error')) label <- ''
   }  #title(main = as.expression(sub),line = 3, adj =0.25)
   
   if (!is.null(method)) {
-    lab <- try(parse(text=paste(lab,'*',as.expression(method))))
-    if (inherits(lab,'try-error')) lab <- ''
+    label <- try(parse(text=paste(label,'*',as.expression(method))))
+    if (inherits(label,'try-error')) label <- ''
     #title(main = as.expression(method),line = 3, adj =0.5)
     #text(lon[length(lon)],lat[1] - dlat,method,col="grey30",pos=2,cex=0.7)
   }
   if (!is.null(period)) {
-    lab <- try(parse(text=paste(lab,'*',as.expression(period))))
+    label <- try(parse(text=paste(label,'*',as.expression(period))))
   }
-  if (inherits(lab,'try-error')) lab <- ''
+  if (inherits(label,'try-error')) label <- ''
   #title(main = as.expression(period),line = 3, adj =1)
   #text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
-
-  title(sub = lab,line = 0 , adj = 0.5)
-  if (!is.null(colbar)) {
+  if (lab=='simple')   label <- eval(parse(text=paste('expression(',varnm,')'))) else 
+    if (lab=='unit') label <- eval(parse(text=paste('expression(',varnm,'* phantom0 * (',unitx,')',')'))) else
+      if (is.character(lab)) label <- lab
+  title(sub = label,line = 0 , adj = 0.5)
+  
+  ## 
+  if (show.colbar) {
     if (verbose) print('Add colourbar')
     
     par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
@@ -208,11 +216,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         #par(op)
       }
     }
+    if (!new) par(fig=fig0)
+    par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
+        xaxt="s",yaxt="s",new=FALSE)
   }
-  par(fig=fig0)
   
-  par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
-      xaxt="s",yaxt="s")
+ 
   result <- list(x=lon,y=lat,z=x,breaks=colbar$breaks)
   #par(fig=par0$fig)
   invisible(result)

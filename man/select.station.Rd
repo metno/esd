@@ -19,6 +19,7 @@ select.station(
   it = NULL,
   nmin = NULL,
   user = "external",
+  update.meta = FALSE,
   verbose = FALSE
 )
 }
