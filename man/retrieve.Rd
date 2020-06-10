@@ -97,7 +97,7 @@ from RCMs).
                method="auto", quiet=FALSE, mode="w",
                cacheOK = TRUE)
   # Retrieve the data into "gcm" object
-  gcm <- retrieve(ncfile=file.path(~,noresm),param="tas",
+  gcm <- retrieve(file=file.path(~,noresm),param="tas",
                 lon=c(-20,30),lat=c(40,90),plot=TRUE)
   # Download the air surface temperature (tas) for RCP 4.5 scenarios and
   # NorESM1-ME model from the climate explorer and store it in destfile. 

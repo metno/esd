@@ -21,7 +21,7 @@
 #' is used if the colourbar is not to be shown. Also use \code{colbar=NULL} to present several 
 #' maps in one figure (e.g. with \code{par(mfcol=c(2,2))}).
 #' @param lab \code{'default'} to show a lable saying what variable (unit) and time period. 
-#' \code('simple') to just use \code{varid(x)}, and \code{'unit'} to show variable and unit. 
+#' \code{'simple'} to just use \code{varid(x)}, and \code{'unit'} to show variable and unit. 
 #' Other strings will be used as the label for the plot and \code{NULL} shows no lable.
 #'
 #' @param it see \code{\link{subset}}
