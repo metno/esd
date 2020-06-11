@@ -4,9 +4,7 @@
 \name{frequency.name}
 \alias{frequency.name}
 \title{Full time frequency names}
-\format{
-An object of class \code{character} of length 7.
-}
+\format{An object of class \code{character} of length 7.}
 \usage{
 frequency.name
 }
