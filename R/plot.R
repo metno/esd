@@ -1496,11 +1496,12 @@ plot.ds.pca <- function(x,...,ip=1,
   pp <- attr(y,'predictor.pattern')
   attr(pp,"variable") <- paste("EOF.Pattern.",ip,sep="")
   attr(pp,"unit") <- "unitless"
+  colbar2$show <- FALSE
   map(pp,ip=ip,new=FALSE,
       colbar=colbar2,verbose=verbose,
       main="")#paste("EOF Pattern # ",ip,sep=""))
   par(cex=1)  ## REB 2019-08-06
-  title(paste("EOF Pattern #",ip,sep=""))
+  title(paste("Predictor pattern #",ip,sep=""), cex=0.8)
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)

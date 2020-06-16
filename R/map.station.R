@@ -95,7 +95,11 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           col[i] <- rgb(wr[ii],wg[ii],wb[ii],0.7)
         } else col[i] <- rgb(0.5,0.5,0.5,0.2)
       }
-      show.colbar <- TRUE
+      if(is.null(colbar$show)) {
+        show.colbar <- TRUE
+      } else {
+        show.colbar <- colbar$show
+      }
     } else {
       y <- rep(1,length(lon(x)))
       show.colbar <- FALSE
@@ -149,8 +153,18 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       if(showaxis | gridlines) {
         par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
             cex.lab=cex.lab,cex.axis=cex.axis)
-        axis(3,seq(floor(par("xaxp")[1]/5)*5,par("xaxp")[2],by=5),col='grey')
-        axis(4,seq(floor(par("yaxp")[1]/5)*5,par("yaxp")[2],by=5),col='grey')
+        if(diff(range(xlim))>10) {
+          dlon <- round(round(diff(range(xlim))/4)/5)*5
+        } else {
+          dlon <- round(diff(range(xlim))/3)
+        }
+        if(diff(range(ylim))>10) {
+          dlat <- round(round(diff(range(ylim))/4)/5)*5
+        } else {
+          dlat <- round(diff(range(ylim))/3)
+        }
+        axis(3,seq(floor(par("xaxp")[1]/dlon)*dlon,par("xaxp")[2],by=dlon),col='grey')
+        axis(4,seq(floor(par("yaxp")[1]/dlat)*dlat,par("yaxp")[2],by=dlat),col='grey')
         if (gridlines) grid()
       }
       

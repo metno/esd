@@ -98,11 +98,11 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
   par(new = TRUE, pty = "m", plt = smallplot, err = -1)
   if (!is.null(breaks) & !is.null(lab.breaks)) {
     axis.args <- c(list(side = ifelse(horizontal, 1, 4), 
-                        mgp = c(3, 1, 0), las = ifelse(horizontal, 0, 2), 
+                        mgp = c(2, 0.5, 0), las = ifelse(horizontal, 0, 2), 
                         at = breaks, labels = lab.breaks), axis.args)
   } else {
     axis.args <- c(list(side = ifelse(horizontal, 1, 4), 
-                        mgp = c(3, 1, 0), las = ifelse(horizontal, 0, 2)), 
+                        mgp = c(2, 0.5, 0), las = ifelse(horizontal, 0, 2)), 
                    axis.args)
   }
   if (!horizontal) {
