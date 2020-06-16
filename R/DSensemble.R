@@ -1898,7 +1898,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (verbose) print(it)
       gcm <- subset(gcm,it=it,verbose=verbose)
     }
-    gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
+    gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'))
 
     if (verbose) {
         print(paste('Extract month/season/annual data nmin=',nmin))
