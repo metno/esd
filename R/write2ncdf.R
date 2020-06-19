@@ -383,7 +383,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   if (verbose) print('Summary statistics computed')
   ## Only do summary statistics for stations with more than 30 years
   insufficient <- apply(coredata(x),2,nv) < nmin*365
-  if (verbose) print(nv)
+  if (verbose) print(insufficient)
   
   y <- coredata(x)
   y[!is.finite(y)] <- missval
@@ -403,7 +403,11 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     if (is.null(it)) {
       time <- julian(index(x)) - julian(as.Date(torg)) 
     } else {
-      if (verbose) print('Use prescribed time coordinates')
+      if (verbose) print(paste('Use prescribed time coordinates',it))
+      if (is.numeric(it)) {
+        ## Assume its given as year - change to date
+        it <- as.Date(c(paste0(it[1],'-01-01'),paste0(it[1],'-12-31')))
+      }
       y <- zoo(y,order.by=index(x))
       x2 <- merge(zoo(rep(0,nt),order.by=it),zoo(y),all=FALSE)
       x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
