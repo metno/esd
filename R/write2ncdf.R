@@ -374,7 +374,8 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     ## Mean wet/dry-spell length
     if (verbose) print('Spell')
     t <- index(x)
-    ss <- spell(x,1)
+    ss <- spell(x,threshold=1)
+    ## If spell resturns NULL, then return NAs...
     if (inherits(ss,'spell')) { 
       mwsl <- colMeans(subset.station(ss,is=list(param='wet')),na.rm=TRUE)
       mdsl <- colMeans(subset.station(ss,is=list(param='dry')),na.rm=TRUE)

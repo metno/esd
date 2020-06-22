@@ -59,9 +59,9 @@ spell <- function(x,threshold,...) UseMethod("spell")
 
 #' @export spell.default
 spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
-
+  
   if (verbose) print('spell.default')
-
+  
   ## Deal with missing data
   missing <- (1:length(x))[!is.finite(x)]
   if (min(missing)==1) {
@@ -88,20 +88,21 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   if (sum(above,na.rm=TRUE)*sum(below,na.rm=TRUE)==0) {
     print(paste('The threshold',threshold,'is outside the range',
                 paste(range(coredata(x,na.rm=TRUE)),collapse=' - ')))
+    print("returning NULL")
     return(NULL)
   }
-
+  
   ## Estimate the length of the streaks of above/below
   n <- length(index(x))
   t <- 1:n
-
+  
   ## Use cumsum for calculating the number of days
   cath <- cumsum(above)
   cbth <- cumsum(below)
   ## Use diff to find the times when the streaks start and stop
   dt <- c(0,diff(above))
   if (verbose) print(table(dt))
-
+  
   ## A streak starts the fist day when values is above
   start <- t[dt > 0]
   ## A strak ends the day before the value is below 
@@ -112,7 +113,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   end <- end[is.finite(end)]
   
   if (verbose) print(c(length(start),length(end)))
-
+  
   ## Always start with a fresh spell
   if (start[1] > end[1]) {
     end <- end[-1]
@@ -126,7 +127,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   }
   
   chksum <- sum( (start - end) < 0)    
-
+  
   if (verbose) {
     print(paste('Check sum=',chksum))
     print(c(length(start),length(end)))
@@ -136,21 +137,21 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
     points(t[start],cath[start],col='red',lwd=2,cex=0.7)
     points(t[end],cath[end],col='blue',lwd=2)
     dev.new(); hist(diff(start),col="blue")
-
+    
     dev.new(); hist(diff(end),col="red")
-
+    
     dev.new(); plot(start,end,pch=19,cex=0.3)
     lines(c(0,100000),c(0,100000),col=rgb(0.7,0.7,0.7,0.3))
   }
   
   ## Estimate the streaks:
-#  low <- t[start[-1]] - t[end[-length(end)]]
-#  high <- t[end] - t[start]
+  #  low <- t[start[-1]] - t[end[-length(end)]]
+  #  high <- t[end] - t[start]
   high <- diff(cath[start])
   low <- diff(cbth[end])
   if (verbose) {print("high:"); print(summary(high))}  
   if (verbose) {print("low:"); print(summary(low))}
-
+  
   ## If an upper limit is provided then ignore the long spells
   if (!is.null(upper)) {
     ignoreh <- high > upper 
@@ -186,10 +187,10 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   #browser()
   y <- merge(Above,Below,all=TRUE)
   if (is.null(attr(x,'unit'))) attr(x,'unit') <- 'NA'
-
+  
   if (verbose) {
     dev.new(); plot(y,main=paste(varid(x),'above/below',
-                        threshold,esd::unit(x),'at',loc(x)))
+                                 threshold,esd::unit(x),'at',loc(x)))
   }
   
   if (is.T(x)) {
@@ -222,8 +223,33 @@ spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
   if (!is.null(dim(x))) {
     if (verbose) print('group of stations')
     for (is in 1:dim(x)[2]) {
-      if (is==1) y <- spell.default(subset(x,is=is),threshold=threshold,upper=upper,verbose=verbose,...) else
-        y <- combine.stations(y,spell.default(subset(x,is=is),threshold=threshold,upper=upper,verbose=verbose,...))
+      y1 <- spell.default(subset(x,is=is),threshold=threshold,upper=upper,verbose=verbose,...)
+      if (!inherits(y1,'spell')) {
+        ## When failure, then create two series with NA
+        y1 <- zoo(as.matrix(rep(NA,4),2,2),order.by=range(index(x)))
+        if (is.T(x)) {
+          attr(y1,'variable') <-  c("warm","cold") 
+          attr(y1,'longname') <-  c("duration of warm spells","duration of cold spells") 
+        } else {
+          attr(y1,'variable') <-  c("wet","dry")
+          attr(y1,'longname') <-  c("duration of wet spells","duration of dry spells") 
+        }
+        attr(y1,'location') <- loc(x)[is]
+        attr(y1,'station_id') <- stid(x)[is]
+        attr(y1,'longitude') <- lon(x)[is]
+        attr(y1,'latitude') <- lat(y)[is]
+        attr(y1,'altitude') <- alt(x)[is]
+        attr(y1,'unit') <- "days"
+        attr(y1,'threshold') <- rep(threshold,2)
+        attr(y1,'threshold.unit') <- rep(attr(x,'unit'),2)
+        attr(y1,'chksum') <- NA
+        attr(y1,'uncredibly.high') <- NA
+        attr(y1,'uncredibly.low') <- NA
+        attr(y1,'p.above') <- NA
+        attr(y1,'interpolated.missing') <- NA
+        class(y1) <- c("spell",class(x))
+      } 
+      if (is==1) y <- y1 else y <- combine.stations(y,y1)
     }
   } else {
     ## Single station
@@ -275,7 +301,7 @@ nevents <- function(x,threshold=1,...) {
 #' @export
 wetmean <- function(x,threshold=1,...) {
   ## REB 2015-03-23 - slow
-#   y <- exceedance.default(x,threshold=threshold,FUN="mean")
+  #   y <- exceedance.default(x,threshold=threshold,FUN="mean")
   ## REB 2015-03-23 - faster
   ## Also add the standard error estimate based on the sample size
   ## and assuming an exponential distribtion for daily data
@@ -300,9 +326,9 @@ exceedance.default <- function(x,threshold=1,FUN='mean',na.rm=TRUE,...) {
   if ((FUN!="count") & (FUN!="freq")) {
     if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
          (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) )
-        y <- apply(matrix(X,length(X),ns),2,FUN,na.rm=na.rm, ...) else
+      y <- apply(matrix(X,length(X),ns),2,FUN,na.rm=na.rm, ...) else
         y <- apply(matrix(X,length(X),ns),2,FUN, ...)
-    attr(y,'unit') <- attr(x,'unit')
+      attr(y,'unit') <- attr(x,'unit')
   } else if (FUN=="count")  {
     #print("Wet-day count")
     y <- sum(is.finite(X))
@@ -339,9 +365,9 @@ hist.spell <- function(x,family='geom',...) {
   n <- seq(0,ceiling(max(c(abs(x)),na.rm=TRUE))+1,by=1)
   hh <- hist(x[,1],breaks=n,plot=FALSE)
   hl <- hist(abs(x[,2]),breaks=n,plot=FALSE)
-
-#  dh <- dgeom(n,attr(x,'p.above')[1])
-#  dl <- dgeom(n,1-attr(x,'p.above')[2])
+  
+  #  dh <- dgeom(n,attr(x,'p.above')[1])
+  #  dl <- dgeom(n,1-attr(x,'p.above')[2])
   if (substr(family,1,4)=='pois') {
     dh <- dpois(n,lambda=mean(x[,1],na.rm=TRUE))
     dl <- dpois(n,lambda=mean(abs(x[,2]),na.rm=TRUE))
@@ -357,7 +383,7 @@ hist.spell <- function(x,family='geom',...) {
     runs <- c('wet','dry')
     spelltype <- 'wet and dry' 
   }
-
+  
   main=paste(attr(x,'location')[1],spelltype,'spell duration')
   par(bty="n")
   plot(hh$mids,hh$density,type="s",col=col[1],lwd=3,
@@ -366,7 +392,7 @@ hist.spell <- function(x,family='geom',...) {
   lines(hl$mids,hl$density,type="s",col=col[2],lwd=3)
   lines(n,dh,col=col[1],lty=2)
   lines(n,dl,col=col[2],lty=2)
-
+  
   par(xaxt="n",yaxt="n",bty="n",fig=c(0.5,0.95,0.5,0.95),new=TRUE)
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
   legend(0.1,0.9,runs,col=col,lty=1,lwd=3,bty="n")
@@ -399,12 +425,12 @@ qqgeom <- function(x,treshold=1,pois=FALSE,...) {
   if (pois) legend(min(xy[ok]),max(xy[ok]),
                    c(paste('geom.',varid(s)[1]),paste('geom.',varid(s)[2]),
                      paste('pois.',varid(s)[1]),paste('pois.',varid(s)[2])),
-                     col=c(rgb(0.2,0.2,1),rgb(1,0.2,0.2),rgb(0.7,0.7,1),rgb(1,0.7,0.7)),
-                     pch=c(rep(19,2),rep(15,2)),bty='n') else
-          legend(min(xy[ok]),max(xy[ok]),
-                   c(paste('geom.',varid(s)[1]),paste('geom.',varid(s)[2])),
-                     col=c(rgb(0.2,0.2,1),rgb(1,0.2,0.2)),
-                     pch=rep(19,2),bty='n')
+                   col=c(rgb(0.2,0.2,1),rgb(1,0.2,0.2),rgb(0.7,0.7,1),rgb(1,0.7,0.7)),
+                   pch=c(rep(19,2),rep(15,2)),bty='n') else
+                     legend(min(xy[ok]),max(xy[ok]),
+                            c(paste('geom.',varid(s)[1]),paste('geom.',varid(s)[2])),
+                            col=c(rgb(0.2,0.2,1),rgb(1,0.2,0.2)),
+                            pch=rep(19,2),bty='n')
 }
 
 #' @export
