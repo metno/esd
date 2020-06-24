@@ -78,7 +78,7 @@ for (ele in eles) {
         }
         if (is.precip(x)) {
           print('Quality check for precipitation')
-          suspect <- (coredata(x) > 400) | (coredata(x) < 0)
+          suspect <- (coredata(x) > 900) | (coredata(x) < 0)
           suspect[is.na(suspect)] <- FALSE
           print(paste('There were',sum(suspect),'suspect data points'))
           coredata(x)[suspect] <- NA
