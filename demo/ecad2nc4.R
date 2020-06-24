@@ -2,42 +2,48 @@
 ## Go through the data conuntry and element wise to generate several netCDF files which 
 ## then can be combined into one. 
 
-#require(esd)
+  require(esd)
 #source('~/R/esd/R/write2ncdf.R')
-
+SS <- select.station(src='ecad')
 variables <- ls()
-it <- seq(as.Date('1900-01-01'),as.Date('2020-12-31'),by='day')
+it <- c(1800,as.numeric(format(Sys.Date(),'%Y')))
 
-if (sum(is.element(variables,'eles'))==0)  
-  eles <- rev(rownames(table(select.station(src='ecad')$element)))
+cntrs <- rownames(table(SS$country))
+cntrs <- gsub(" ",".",cntrs)
+cntrs <- gsub("[","",cntrs,fixed=TRUE)
+cntrs <- gsub("]","",cntrs,fixed=TRUE)
+cntrs <- gsub(",",".",cntrs,fixed=TRUE)
+if (sum(is.element(variables,'eles'))==0)  eles <- rownames(table(SS$element))
 if (sum(is.element(variables,'nmin'))==0) nmin <- 30
 
 for (ele in eles) {
-  SS <- select.station(src='ecad',ele=ele)
-  stids <- SS$station_id
-  ns <- length(stids)
-  is <- seq(1,ns,by=50)
-  if (max(is) < ns) is <- c(is,ns)
-  
+  ii <- 1 ## counter to keep track of number of stations saved
   param <- tolower(as.character(ele2param(ele,src='ecad')[5]))
   print(param)
-  fname <- paste(param,'ecad','nc',sep='.')
-  if (file.exists(fname)) file.remove(fname)
-  for (id in is) {
-    iii <- seq(id,id+49,length=50)
-    iii <- iii[iii <= ns]
-    
+  fname <- paste(param,'ecad','ncx',sep='.')
+  #if (file.exists(fname)) file.remove(fname)
+  for (cntr in cntrs) {
+    print(cntr)
+#    meta <- read.table(file.path(paste('data.ECAD/ECA_nonblend',param,sep='_'),'sources.txt'),
+#                       skip=22,header=TRUE,sep=',')
+    ss <- select.station(src='ecad',cntr=cntr,param=param,nmin=nmin)   ## single country
+    Ss <- select.station(src='ecad',param=param,nmin=nmin)             ## All countries
     append <- file.exists(fname)
-    x <- try(station(loc=SS[iii,],save2file=FALSE))
     
-    #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
-    if (!inherits(x,'try-error')) {
-      units <- switch(toupper(param),'TG'='degC','TX'='degC','TN'='degC',
-                      'TMAX'='degC','TMIN'='degC','T2M'='degC',
-                      'PRECIP'='mm/day','SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
-                      'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')
-      attr(x,'unit') <- units
-      
+    if (!is.null(ss)) {
+      x <- station(cntr=cntr,param=param,src='ecad',save2file=FALSE)
+      #it <- seq(min(c(as.Date('1900-01-01'),index(x))),max(c(as.Date('2019-12-31'),index(x))),by='day')
+      #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
+      if (sum(!is.na(unit(x)))==0) {
+        units <- switch(toupper(param),'SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
+                        'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')
+        attr(x,'unit') <- units
+      }
+      if (!is.null(dim(x))) {
+        if (!append) stano <- 1:dim(Ss)[1] else stano <- ii:(ii+dim(x)[2]-1)
+      } else if (!is.null(x)) {
+        if (!append) stano <- 1:dim(Ss)[1] else stano <- ii
+      }
       print(rbind(loc(x),firstyear(x),lastyear(x)))
       ## Quality check
       if ( (min(x,na.rm=TRUE) < -999) | (max(x,na.rm=TRUE)>2000) ) {
@@ -46,11 +52,44 @@ for (ele in eles) {
         xc <- coredata(x); xc[xc < -999] <- NA; xc[xc > 2000] <- NA; coredata(x) <- as.matrix(xc)
         rm("xc"); gc(reset=TRUE)
       }
-      # if (length(x) > 0) write2ncdf4(x,fname,it=it,
-      #                                stid=stano,append=append,verbose=FALSE,stid_unlim=TRUE)
-      print('write2ncdf4')
-      if (!is.null(dim(x))) if (dim(x)[2] > 1) write2ncdf4(x,file=fname,it=it,append=append,verbose=TRUE,stid_unlim=TRUE)
+      
+      if (dim(ss)[1]==1) {
+        ## If there is only one station, then R does not treat the data as matrices ...
+        save(x,file='temp.ecad2ncd4.rda')
+      } else 
+      if (dim(x)[2] > 0) {
+        print(paste('Add',dim(x)[2],'stations to',fname))
+        if (file.exists('temp.ecad2ncd4.rda')) {
+          ## If a single station was previously aved, then add it to the next group and tidy up.  
+          x2 <- x; load('temp.ecad2ncd4.rda')
+          file.remove('temp.ecad2ncd4.rda')
+          xx <- combine.stations(x,x2)
+          x <- xx; rm("xx"); rm("x2")
+        }
+        ## Quality check
+        if (is.T(x)) {
+          print('Quality check for temperature')
+          xa <- coredata(anomaly(x))
+          suspect <- abs(xa) > 40
+          suspect[is.na(suspect)] <- FALSE
+          print(paste('There were',sum(suspect),'suspect data points'))
+          coredata(x)[suspect] <- NA
+          rm('suspect'); gc(reset=TRUE)
+        }
+        if (is.precip(x)) {
+          print('Quality check for precipitation')
+          suspect <- (coredata(x) > 400) | (coredata(x) < 0)
+          suspect[is.na(suspect)] <- FALSE
+          print(paste('There were',sum(suspect),'suspect data points'))
+          coredata(x)[suspect] <- NA
+          rm('suspect'); gc(reset=TRUE)
+        }
+        write2ncdf4(x,file=fname,it=it,append=append,verbose=TRUE,stid_unlim=TRUE)
+      }
+      if (!is.null(dim(x))) ii <- ii + dim(x)[2] else if (!is.null(x)) ii <- ii + 1
     } else x <- NULL
     rm("x"); gc(reset=TRUE)
+    print(ii)
   }
+  system(paste0('mv ',fname,' /lustre/storeB/project/ECAD/',substr(fname,1,nchar(fname)-1)))
 }

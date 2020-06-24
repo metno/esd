@@ -267,7 +267,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   ## Examine the station object: dimensions and attributes  
   
   ## Get time 
-  if (is.null(it)) nt <- dim(x)[1] else nt <- length(it)
+  if (is.null(it)) nt <- dim(x)[1] else nt <- max(it) - min(it) + 1
   if (!is.null(stid))  {
     if (!is.null(dim(x))) nstations <- dim(x)[2] else if (!is.null(x)) nstations <- 1 else nstations <- 0
     if (append & (length(stid) != nstations)) {
@@ -407,10 +407,10 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
       if (verbose) print(paste('Use prescribed time coordinates',it))
       if (is.numeric(it)) {
         ## Assume its given as year - change to date
-        it <- as.Date(c(paste0(it[1],'-01-01'),paste0(it[1],'-12-31')))
+        it <- as.Date(c(paste0(it[1],'-01-01'),paste0(it[2],'-12-31')))
       }
       y <- zoo(y,order.by=index(x))
-      x2 <- merge(zoo(rep(0,nt),order.by=it),zoo(y),all=FALSE)
+      x2 <- merge(zoo(rep(0,nt),order.by=seq(min(it),max(it),length=nt)),zoo(y),all=FALSE)
       x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
       x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; rm('x2')
       time <- julian(it) - julian(as.Date(torg))
@@ -433,13 +433,13 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   #if (length(start)==1) start <- c(start,1)  #BER
   if (length(start)==1) start <- c(1,start)
   
-  #if (!is.null(dim(y))) count <- dim(y) else count <- c(length(y),1) #BER
   if (!is.null(dim(y))) count <- dim(t(y)) else count <- c(1,length(y))
   if (verbose) {
     print("start & count"); print(start); print(count); 
-    print("dim(y)"); print(dim(y))
+    print("dim(y)"); print(dim(y)); print(c(nt,length(y)))
     print("time"); print(range(time))
     print("netCDF dimensions"); print(c(nt,ns)); print(start+count-c(1,1))
+    if (count[2]==0) browser('Detected suspect situation: count[0] = 0.')
   }
   
   # Define the dimensions
@@ -779,15 +779,17 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   #   dimS$len <- dimS$len + ns
   #   ncvar_put( ncid, dimS, n+(1:ns),start=start[1],count=count[1] )
   # }
-  if (verbose) print('Saving the variables:')
+  if (verbose) {print('Saving the main data'); print(start); print(count); print(dim(t(y)))}
   ncvar_put( ncid, ncvar, t(coredata(y)),start=start,count=count)
+  if (verbose) print('Saving attributes')
   ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
   ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
   ncatt_put( ncid, ncvar, 'missing_value',missval,prec='float')
+  if (verbose) print(paste('Saving metadata:',start[1],count[1]))
   ncvar_put( ncid, lonid, lon(y),start=start[1],count=count[1])
   ncvar_put( ncid, latid, lat(y),start=start[1],count=count[1])
   ncvar_put( ncid, altid, alt(y),start=start[1],count=count[1])
-  
+  if (verbose) print('First & last year')
   ncvar_put( ncid, fyrid, firstyear(x),start=start[1],count=count[1])
   ncvar_put( ncid, lyrid, lastyear(x),start=start[1],count=count[1])
   if (is.null(dim(x))) number <- sum(is.finite(coredata(x))) else

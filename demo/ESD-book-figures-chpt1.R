@@ -16,3 +16,4 @@ z <- retrieve('~/Downloads/hgt.sfc.nc')
 coredata(map(z,plot=FALSE)) -> Z
 Z[Z <= 100] <- NA
 map(Z)
+  
