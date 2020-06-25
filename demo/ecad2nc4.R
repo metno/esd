@@ -2,7 +2,7 @@
 ## Go through the data conuntry and element wise to generate several netCDF files which 
 ## then can be combined into one. 
 
-  require(esd)
+require(esd)
 #source('~/R/esd/R/write2ncdf.R')
 SS <- select.station(src='ecad')
 variables <- ls()
@@ -24,8 +24,8 @@ for (ele in eles) {
   #if (file.exists(fname)) file.remove(fname)
   for (cntr in cntrs) {
     print(cntr)
-#    meta <- read.table(file.path(paste('data.ECAD/ECA_nonblend',param,sep='_'),'sources.txt'),
-#                       skip=22,header=TRUE,sep=',')
+    #    meta <- read.table(file.path(paste('data.ECAD/ECA_nonblend',param,sep='_'),'sources.txt'),
+    #                       skip=22,header=TRUE,sep=',')
     ss <- select.station(src='ecad',cntr=cntr,param=param,nmin=nmin)   ## single country
     Ss <- select.station(src='ecad',param=param,nmin=nmin)             ## All countries
     append <- file.exists(fname)
@@ -57,35 +57,44 @@ for (ele in eles) {
         ## If there is only one station, then R does not treat the data as matrices ...
         save(x,file='temp.ecad2ncd4.rda')
       } else 
-      if (dim(x)[2] > 0) {
-        print(paste('Add',dim(x)[2],'stations to',fname))
-        if (file.exists('temp.ecad2ncd4.rda')) {
-          ## If a single station was previously aved, then add it to the next group and tidy up.  
-          x2 <- x; load('temp.ecad2ncd4.rda')
-          file.remove('temp.ecad2ncd4.rda')
-          xx <- combine.stations(x,x2)
-          x <- xx; rm("xx"); rm("x2")
+        if (dim(x)[2] > 0) {
+          print(paste('Add',dim(x)[2],'stations to',fname))
+          if (file.exists('temp.ecad2ncd4.rda')) {
+            ## If a single station was previously aved, then add it to the next group and tidy up.  
+            x2 <- x; load('temp.ecad2ncd4.rda')
+            file.remove('temp.ecad2ncd4.rda')
+            xx <- combine.stations(x,x2)
+            x <- xx; rm("xx"); rm("x2")
+          }
+          ## Quality check
+          if (is.T(x)) {
+            print('Quality check for temperature')
+            xa <- coredata(anomaly(x))
+            suspect <- abs(xa) > 40
+            suspect[is.na(suspect)] <- FALSE
+            print(paste('There were',sum(suspect),'suspect data points'))
+            coredata(x)[suspect] <- NA
+            rm('suspect'); gc(reset=TRUE)
+          }
+          if (is.precip(x)) {
+            print('Quality check for precipitation')
+            suspect <- (coredata(x) > 900) | (coredata(x) < 0)
+            suspect[is.na(suspect)] <- FALSE
+            print(paste('There were',sum(suspect),'suspect data points'))
+            coredata(x)[suspect] <- NA
+            rm('suspect'); gc(reset=TRUE)
+          }
+          ## If there are many stations, there may be a memory problem - save the data in
+          ## chuncks of 300 stations
+          ns <- dim(x)[2]
+          is  <- seq(1,ns,by=300)
+          print('Saving stations in chuncks up to 300 stations at a time'); print(is)
+          for (i in is) {
+            xx <- subset(x,is=seq(i,min(ns,i+299),by=1))
+            print(loc(xx))
+            write2ncdf4(xx,file=fname,it=it,append=append,verbose=TRUE,stid_unlim=TRUE)
+          }
         }
-        ## Quality check
-        if (is.T(x)) {
-          print('Quality check for temperature')
-          xa <- coredata(anomaly(x))
-          suspect <- abs(xa) > 40
-          suspect[is.na(suspect)] <- FALSE
-          print(paste('There were',sum(suspect),'suspect data points'))
-          coredata(x)[suspect] <- NA
-          rm('suspect'); gc(reset=TRUE)
-        }
-        if (is.precip(x)) {
-          print('Quality check for precipitation')
-          suspect <- (coredata(x) > 900) | (coredata(x) < 0)
-          suspect[is.na(suspect)] <- FALSE
-          print(paste('There were',sum(suspect),'suspect data points'))
-          coredata(x)[suspect] <- NA
-          rm('suspect'); gc(reset=TRUE)
-        }
-        write2ncdf4(x,file=fname,it=it,append=append,verbose=TRUE,stid_unlim=TRUE)
-      }
       if (!is.null(dim(x))) ii <- ii + dim(x)[2] else if (!is.null(x)) ii <- ii + 1
     } else x <- NULL
     rm("x"); gc(reset=TRUE)
