@@ -266,8 +266,10 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   ## to reduce the size.   
   ## Examine the station object: dimensions and attributes  
   
-  ## Get time 
+  ## Get time interval: 
   if (is.null(it)) nt <- dim(x)[1] else nt <- max(it) - min(it) + 1
+  
+  ## Determine selection of stations and umber of stations ns 
   if (!is.null(stid))  {
     if (!is.null(dim(x))) nstations <- dim(x)[2] else if (!is.null(x)) nstations <- 1 else nstations <- 0
     if (append & (length(stid) != nstations)) {
@@ -282,7 +284,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   if (verbose) print(c(nt,ns))
   
   ## if (is.null(d)) d <- c(length(x),1)
-  if (verbose) print(paste('Number of stations: ',paste(ns)))
+  if (verbose) print(paste('Number of stations to save: ',paste(ns)))
   
   atts <- names(attributes(x))
   
@@ -386,10 +388,6 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   insufficient <- apply(coredata(x),2,nv) < nmin*365
   if (verbose) print(insufficient)
   
-  y <- coredata(x)
-  y[!is.finite(y)] <- missval
-  y <- round((y - offset)/scale)
-  
   if (is.null(attr(x,'calendar'))) {
     attr(x,'calendar') <- 'standard'
   }
@@ -400,20 +398,32 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     calendar <- 'standard'
   }
   
+  ## Put the data into y in the form of a matrix with scaled values around zero and an offset: 
+  y <- coredata(x)
+  y[!is.finite(y)] <- missval
+  y <- round((y - offset)/scale)
+  if (verbose) print(dim(y))
+  
   if (class(index(x))=='Date') {
     if (is.null(it)) {
       time <- julian(index(x)) - julian(as.Date(torg)) 
     } else {
-      if (verbose) print(paste('Use prescribed time coordinates',it))
+      ## If it is provided, then ensure that the stations are saved for thistime interval
+      ## pad with NAs if necessary...
+      if (verbose) print(paste('Use prescribed time coordinates',it[1],'-',it[2]))
       if (is.numeric(it)) {
         ## Assume its given as year - change to date
         it <- as.Date(c(paste0(it[1],'-01-01'),paste0(it[2],'-12-31')))
       }
+      if (length(it)==2) it <- seq(min(it),max(it),by=1)
       y <- zoo(y,order.by=index(x))
-      x2 <- merge(zoo(rep(0,nt),order.by=seq(min(it),max(it),length=nt)),zoo(y),all=FALSE)
+      #print(dim(y))
+      x2 <- merge(zoo(rep(0,nt),order.by=seq(min(it),max(it),length=nt)),zoo(y),all=TRUE)
       x2 <- window(x2[,-1],start=it[1],end=it[length(it)])
-      x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; rm('x2')
+      x2 <- attrcp(x,x2); class(x2) <- class(x); y <- x2; #rm('x2')
+      #print(dim(y))
       time <- julian(it) - julian(as.Date(torg))
+      it <- index(y)
       if (verbose) {
         print(range(index(x)))
         print(range(it))
@@ -423,26 +433,15 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   } else if (inherits(x,'annual')) {
     time <- julian(as.Date(paste(year(x),'01-01',sep='-')))-julian(as.Date(torg))
   }
+  #plot(y,new=FALSE); browser()
+  
   if(verbose) print(paste('Period in data: ',min(firstyear(x)),' - ', max(lastyear(x)),' and time dimension: ',
                           paste(range(as.Date(time,origin=torg)),collapse=' - ')))
   
   # Attributes with same number of elements as stations are saved as variables
   if (is.null(it)) it <- index(y)
-  #start <- c( (1:length(it))[is.element(it,index(y)[1])],stid[1] )
-  start <- c(stid[1], (1:length(it))[is.element(it,index(y)[1])] )
-  #if (length(start)==1) start <- c(start,1)  #BER
-  if (length(start)==1) start <- c(1,start)
   
-  if (!is.null(dim(y))) count <- dim(t(y)) else count <- c(1,length(y))
-  if (verbose) {
-    print("start & count"); print(start); print(count); 
-    print("dim(y)"); print(dim(y)); print(c(nt,length(y)))
-    print("time"); print(range(time))
-    print("netCDF dimensions"); print(c(nt,ns)); print(start+count-c(1,1))
-    if (count[2]==0) browser('Detected suspect situation: count[0] = 0.')
-  }
-  
-  # Define the dimensions
+  # Define the dimensions: create a new file - do not append existing one
   if (!append) {
     if (verbose) print('Define dimensions')
     if (verbose) print(stid(x))
@@ -670,8 +669,13 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
                           units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                           missval=missval,longname="If_last_element_is_a_record",prec="short",verbose=verbose)
     }
+   
+    ## Set start and count: the time period it defined is already defined in y (padded NAs) 
+    start <- c(1, 1)
+    if (!is.null(dim(y))) count <- dim(t(y)) else count <- c(dim(y)[2],length(index(y)))
   } 
   
+  ## Adding data to existing file: append
   if (append & file.exists(file)) {
     if (verbose) print(paste('Appending',file))
     ncid <- nc_open(file, write=TRUE)
@@ -685,8 +689,8 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     lyrid <- ncid$var[["last"]]
     nvid <- ncid$var[["number"]]
     stid <- ncid$var[["stationID"]]
-    dimS <- ncid$dim[["stid"]]; ns <- dimS$len
-    dimT <- ncid$dim[["time"]]; nt <- dimT$len
+    dimS <- ncid$dim[["stid"]]; ns0 <- dimS$len
+    dimT <- ncid$dim[["time"]]; nt0 <- dimT$len
     meanid <- ncid$var[["summary_mean"]]
     meanid.djf <- ncid$var[["summary_mean_DJF"]]
     meanid.mam <- ncid$var[["summary_mean_MAM"]]
@@ -748,9 +752,10 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     } 
     
     ## Appending the data after those that already exist:
-    if (verbose) print(paste('Adjust start[1] so tht data is added after',ns,'stations'))
-    #start[2] <- start[2] + ns #BER
-    start[1] <- start[1] + ns
+    ns <- dim(y)[2] # the number of stations to save
+    it1 <- min((1:nt0)[is.element(dimT$vals,time)])
+    if (verbose) print(paste('Adjust start[1] so that data is added after',ns0,'stations starting from index',it1))
+    start <- c(ns0,it1); count <- c(dim(t(y)))
     
   } else {
     if (verbose) print(paste('Creating file',file))
@@ -774,13 +779,27 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
                                                                                                                                           tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,lehrid,lelrid))
   }
   
-  # if (append) {
-  #   print('Need to update the stid-dimension')
-  #   dimS$len <- dimS$len + ns
-  #   ncvar_put( ncid, dimS, n+(1:ns),start=start[1],count=count[1] )
-  # }
-  if (verbose) {print('Saving the main data'); print(start); print(count); print(dim(t(y)))}
-  ncvar_put( ncid, ncvar, t(coredata(y)),start=start,count=count)
+  if (verbose) {
+    print("start & count"); print(start); print(count); 
+    print("dim(y)"); print(dim(y)); print(c(nt,length(y)))
+    print("time"); print(range(time))
+    print("netCDF dimensions"); print(c(nt,ns)); print(start+count-c(1,1))
+    if (count[2]==0) browser('Detected suspect situation: count[0] = 0.')
+  }
+  
+  if (append) {
+    if (verbose) print(paste('Need to update the stid-dimension',ns0,'to',ns0+ns))
+    dimS$len <- dimS$len + ns
+    ncvar_put( ncid, dimS, ns0+(1:ns),start=start[1],count=count[1] )
+  }
+  
+  if (verbose) {print('Saving the main data'); print(start); print(count); print(summary(c(y))); print(dim(t(y)))}
+  ## Store the values -coredata - temporarily in yc for writine to netCDF
+  yc <- coredata(y); bad <- !is.finite(yc)
+  yc[bad] <- round(missval*scale + offset)
+  #print(summary(y)); browser()
+  
+  ncvar_put( ncid, ncvar, t(yc),start=start,count=count); rm('yc')
   if (verbose) print('Saving attributes')
   ncatt_put( ncid, ncvar, 'add_offset',offset,prec='float')
   ncatt_put( ncid, ncvar, 'scale_factor',scale,prec='float')
@@ -806,35 +825,21 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   mx[insufficient] <- missval; mn[insufficient] <- missval; 
   nhr[insufficient] <- missval; lehr[insufficient] <- missval
   
-  #ncvar_put( ncid, meanid, ave,start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, meanid.djf, ave.djf,start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, meanid.mam, ave.mam,start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, meanid.jja, ave.jja,start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, meanid.son, ave.son,start=start[2],count=count[2]) #BER
   ncvar_put( ncid, meanid, ave,start=start[1],count=count[1])
   ncvar_put( ncid, meanid.djf, ave.djf,start=start[1],count=count[1])
   ncvar_put( ncid, meanid.mam, ave.mam,start=start[1],count=count[1])
   ncvar_put( ncid, meanid.jja, ave.jja,start=start[1],count=count[1])
   ncvar_put( ncid, meanid.son, ave.son,start=start[1],count=count[1])
   if (verbose) print('Add summary statistics: trend')
-  #ncvar_put( ncid, tdid, td  ,start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, tdid.djf, td.djf,start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, tdid.mam, td.mam,start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, tdid.jja, td.jja,start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, tdid.son, td.son,start=start[2],count=count[2]) #BER
   ncvar_put( ncid, tdid, td  ,start=start[1],count=count[1])
   ncvar_put( ncid, tdid.djf, td.djf,start=start[1],count=count[1])
   ncvar_put( ncid, tdid.mam, td.mam,start=start[1],count=count[1])
   ncvar_put( ncid, tdid.jja, td.jja,start=start[1],count=count[1])
   ncvar_put( ncid, tdid.son, td.son,start=start[1],count=count[1])
   if (verbose) print('Add summary statistics: max, min')
-  #ncvar_put( ncid, maxid, mx, start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, minid, mn, start=start[2],count=count[2]) #BER
   ncvar_put( ncid, maxid, mx, start=start[1],count=count[1])
   ncvar_put( ncid, minid, mn, start=start[1],count=count[1])
   if (verbose) print('Add summary statistics: records')
-  #ncvar_put( ncid, nhrid, nhr, start=start[2],count=count[2]) #BER
-  #ncvar_put( ncid, lehrid, lehr, start=start[2],count=count[2]) #BER
   ncvar_put( ncid, nhrid, nhr, start=start[1],count=count[1])
   ncvar_put( ncid, lehrid, lehr, start=start[1],count=count[1])
   if (is.T(x)) {
@@ -843,13 +848,6 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
     std.son[insufficient] <- missval; nlr[insufficient] <- missval
     lelr[insufficient] <- missval; 
-    #ncvar_put( ncid, sdid, std, start=start[2],count=count[2]) #BER
-    #ncvar_put( ncid, sdid.djf, std.djf, start=start[2],count=count[2]) #BER
-    #ncvar_put( ncid, sdid.mam, std.mam, start=start[2],count=count[2]) #BER
-    #ncvar_put( ncid, sdid.jja, std.jja, start=start[2],count=count[2]) #BER
-    #ncvar_put( ncid, sdid.son, std.son, start=start[2],count=count[2]) #BER
-    #ncvar_put( ncid, nlrid, nlr, start=start[2],count=count[2]) #BER
-    #ncvar_put( ncid, lelrid, lelr, start=start[2],count=count[2]) #BER
     ncvar_put( ncid, sdid, std, start=start[1],count=count[1])
     ncvar_put( ncid, sdid.djf, std.djf, start=start[1],count=count[1])
     ncvar_put( ncid, sdid.mam, std.mam, start=start[1],count=count[1])
@@ -871,37 +869,6 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     tdfw.mam[insufficient] <- missval; tdfw.djf[insufficient] <- missval
     tdfw.jja[insufficient] <- missval; tdfw.son[insufficient] <- missval
     lr[insufficient] <- missval; ld[insufficient] <- missval
-    #ncvar_put( ncid, muid, mu,start=start[2],count=count[2]) #BER
-    #ncvar_put( ncid, muid.djf, mu.djf,start=start[2],count=count[2])
-    #ncvar_put( ncid, muid.mam, mu.mam,start=start[2],count=count[2])
-    #ncvar_put( ncid, muid.jja, mu.jja,start=start[2],count=count[2])
-    #ncvar_put( ncid, muid.son, mu.son,start=start[2],count=count[2])
-    #ncvar_put( ncid, fwid, fw,start=start[2],count=count[2])
-    #ncvar_put( ncid, fwid.djf, fw.djf,start=start[2],count=count[2])
-    #ncvar_put( ncid, fwid.mam, fw.mam,start=start[2],count=count[2])
-    #ncvar_put( ncid, fwid.jja, fw.jja,start=start[2],count=count[2])
-    #ncvar_put( ncid, fwid.son, fw.son,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdfwid, tdfw,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdfwid.djf, tdfw.djf,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdfwid.mam, tdfw.mam,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdfwid.jja, tdfw.jja,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdfwid.son, tdfw.son,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdmuid, tdmu,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdmuid.djf, tdmu.djf,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdmuid.mam, tdmu.mam,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdmuid.jja, tdmu.jja,start=start[2],count=count[2])
-    #ncvar_put( ncid, tdmuid.son, tdmu.son,start=start[2],count=count[2])
-    #ncvar_put( ncid, lrid, lr, start=start[2],count=count[2])
-    #ncvar_put( ncid, sigma2id, sigma2,start=start[2],count=count[2])
-    #ncvar_put( ncid, sigma2id.djf, sigma2.djf,start=start[2],count=count[2])
-    #ncvar_put( ncid, sigma2id.mam, sigma2.mam,start=start[2],count=count[2])
-    #ncvar_put( ncid, sigma2id.jja, sigma2.jja,start=start[2],count=count[2])
-    #ncvar_put( ncid, sigma2id.son, sigma2.son,start=start[2],count=count[2])
-    #ncvar_put( ncid, tsigma2id, tsigma2,start=start[2],count=count[2])
-    #ncvar_put( ncid, tsigma2id.djf, tsigma2.djf,start=start[2],count=count[2])
-    #ncvar_put( ncid, tsigma2id.mam, tsigma2.mam,start=start[2],count=count[2])
-    #ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[2],count=count[2])
-    #ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[2],count=count[2]) #BER
     ncvar_put( ncid, muid, mu,start=start[1],count=count[1])
     ncvar_put( ncid, muid.djf, mu.djf,start=start[1],count=count[1])
     ncvar_put( ncid, muid.mam, mu.mam,start=start[1],count=count[1])
@@ -935,8 +902,6 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[1],count=count[1])
     ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[1],count=count[1])
     if (verbose) print('Mean spell length')
-    #ncvar_put( ncid, mwslid, mwsl,start=start[2],count=count[2]) #BER
-    #ncvar_put( ncid, mdslid, mdsl,start=start[2],count=count[2]) #BER
     ncvar_put( ncid, mwslid, mwsl,start=start[1],count=count[1])
     ncvar_put( ncid, mdslid, mdsl,start=start[1],count=count[1])
   } else {
@@ -945,12 +910,6 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     std.mam[insufficient] <- missval; std.jja[insufficient] <- missval
     std.son[insufficient] <- missval; nlr[insufficient] <- missval
     lelr[insufficient] <- missval; 
-    #ncvar_put( ncid, sdid, std, start=start[2],count=count[2]) #BER
-    #ncvar_put( ncid, sdid.djf, std.djf, start=start[2],count=count[2])
-    #ncvar_put( ncid, sdid.mam, std.mam, start=start[2],count=count[2])
-    #ncvar_put( ncid, sdid.jja, std.jja, start=start[2],count=count[2])
-    #ncvar_put( ncid, sdid.son, std.son, start=start[2],count=count[2])
-    #ncvar_put( ncid, lelrid, lelr, start=start[2],count=count[2]) #BER
     ncvar_put( ncid, sdid, std, start=start[1],count=count[1])
     ncvar_put( ncid, sdid.djf, std.djf, start=start[1],count=count[1])
     ncvar_put( ncid, sdid.mam, std.mam, start=start[1],count=count[1])

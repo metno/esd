@@ -2,6 +2,7 @@
 ## Go through the data conuntry and element wise to generate several netCDF files which 
 ## then can be combined into one. 
 
+from.scratch <- TRUE
 require(esd)
 #source('~/R/esd/R/write2ncdf.R')
 SS <- select.station(src='ecad')
@@ -21,19 +22,16 @@ for (ele in eles) {
   param <- tolower(as.character(ele2param(ele,src='ecad')[5]))
   print(param)
   fname <- paste(param,'ecad','ncx',sep='.')
-  #if (file.exists(fname)) file.remove(fname)
+  if (file.exists(fname) & from.scratch) file.remove(fname)
+  ## Read stations country by country and put the data in netCDF files according to that order
   for (cntr in cntrs) {
     print(cntr)
-    #    meta <- read.table(file.path(paste('data.ECAD/ECA_nonblend',param,sep='_'),'sources.txt'),
-    #                       skip=22,header=TRUE,sep=',')
     ss <- select.station(src='ecad',cntr=cntr,param=param,nmin=nmin)   ## single country
     Ss <- select.station(src='ecad',param=param,nmin=nmin)             ## All countries
     append <- file.exists(fname)
     
     if (!is.null(ss)) {
       x <- station(cntr=cntr,param=param,src='ecad',save2file=FALSE)
-      #it <- seq(min(c(as.Date('1900-01-01'),index(x))),max(c(as.Date('2019-12-31'),index(x))),by='day')
-      #print(range(it)); print(range(index(subset(x,is=apply(x,1,'nv')>0))))
       if (sum(!is.na(unit(x)))==0) {
         units <- switch(toupper(param),'SD'='cm','CC'='octas','RR'='mm/day','FX'='m/s',
                         'DD'='degree','FG'='m/s','PP'='hPa','SS'='hours','HU'='percent')
@@ -45,7 +43,7 @@ for (ele in eles) {
         if (!append) stano <- 1:dim(Ss)[1] else stano <- ii
       }
       print(rbind(loc(x),firstyear(x),lastyear(x)))
-      ## Quality check
+      ## Quality check for the data in general
       if ( (min(x,na.rm=TRUE) < -999) | (max(x,na.rm=TRUE)>2000) ) {
         print("Detected suspect data")
         print(range(x,na.rm=TRUE))
@@ -66,7 +64,7 @@ for (ele in eles) {
             xx <- combine.stations(x,x2)
             x <- xx; rm("xx"); rm("x2")
           }
-          ## Quality check
+          ## additional quality check for temperature and precipitation:
           if (is.T(x)) {
             print('Quality check for temperature')
             xa <- coredata(anomaly(x))
@@ -78,7 +76,7 @@ for (ele in eles) {
           }
           if (is.precip(x)) {
             print('Quality check for precipitation')
-            suspect <- (coredata(x) > 900) | (coredata(x) < 0)
+            suspect <- (coredata(x) > 1000) | (coredata(x) < 0)
             suspect[is.na(suspect)] <- FALSE
             print(paste('There were',sum(suspect),'suspect data points'))
             coredata(x)[suspect] <- NA
@@ -92,6 +90,8 @@ for (ele in eles) {
           for (i in is) {
             xx <- subset(x,is=seq(i,min(ns,i+299),by=1))
             print(loc(xx))
+            print(range(index(xx)))
+            #map(xx,FUN='nv',new=FALSE)
             write2ncdf4(xx,file=fname,it=it,append=append,verbose=TRUE,stid_unlim=TRUE)
           }
         }
