@@ -368,6 +368,16 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   
   ## level extract range
   if (!is.null(ilev)) {
+    if (verbose) { 
+      print(dimnames[grep("lev|hei|expver", dimnames)])
+      print(lev)
+    }
+    ## REB: 2020-07-21: If the extra dimension is 'expver' pick the most recent one by default 
+    if ((length(grep('expver',dimnames))>0) & is.null(lev.rng)) {
+      lev.rng=lev$vals[1]
+      if (verbose) print(paste('exver: ilev=',ilev,'lev.rng=',lev.rng))
+    }
+
     if (is.null(lev.rng)) {
       lev.rng <- as.integer(readline(paste("Warning: 'esd-package' cannot handle more than one pressure level,",
                                            " specify one level from the list and type 'Enter'",
@@ -526,7 +536,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   }
   
   ## 
-  if (verbose) print("Done !")
+  if (verbose) print("Done!")
   
   ## Copy "filename" attribute to model attributes
   model$filename <- ncid$filename
