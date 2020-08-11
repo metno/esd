@@ -13,7 +13,8 @@ ERA5.CDS(
   param = "total_precipitation",
   it = 1979:2018,
   varnm = NULL,
-  AREA = "['-90','-180','90','180']",
+  lon = c(-180, 180),
+  lat = c(-90, 90),
   FNAME = "'ERA5_XXX_YYYY.nc'",
   FUN = "monsum",
   path = "~/Downloads/",
@@ -28,7 +29,9 @@ ERA5.CDS(
 
 \item{varnm}{variable name for local data file.}
 
-\item{AREA}{the area/region to extract [south,west,north,east]}
+\item{lon}{longitude of the area/region to extract.}
+
+\item{lat}{latitude of the area/region to extract.}
 
 \item{FNAME}{the name of the local files for storing the data}
 
@@ -49,11 +52,11 @@ See https://cds.climate.copernicus.eu/api-how-to
 }
 \examples{
 \dontrun{
-ERA5.CDS(param='2m_temperature',varnm='t2m',it=2015:2018,AREA="['50','0','60','10']",
+ERA5.CDS(param='2m_temperature',varnm='t2m',it=2015:2018,lon=c(0,10), lat=c(50,60),
          FUN='daymean')
-ERA5.CDS(param='total_precipitation',varnm='tp',it=2018,AREA="['0','50','10','60']",
+ERA5.CDS(param='total_precipitation',varnm='tp',it=2018,lon=c(50,60),lat=c(0,10),
          FUN='yearsum')
-ERA5.CDS(param='mean_sea_level_pressure',varnm='slp',it=2018,AREA="['40','-50','60','30']",
+ERA5.CDS(param='mean_sea_level_pressure',varnm='slp',it=2018,lon=c(-50,30),lat=c(40,60),
          FUN='monmean')
 }
 }
