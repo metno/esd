@@ -63,6 +63,7 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' @param path The path where the data are stored. Can be a symbolic link.
 #' @return A time series of "zoo" "station" class with additional attributes
 #' used for further processing.
+#' @param url The URL of the data portal or webpage for requesting new client credentials. 
 #'
 #' @author A. Mezghani
 #'
@@ -1122,7 +1123,7 @@ station.giss <- function(...,url=NULL) {
 }
 
 #' @export metno.frost.station
-metno.frost.station <- function(keyfile='~/.FrostAPI.key', 
+metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.no/auth/requestCredentials.html',
                                 stid=NULL, param=NULL, it=NULL,
                                 lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL,
                                 timeresolutions='P1M', levels="default", timeoffsets="default", 
@@ -1185,8 +1186,8 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key',
       if (verbose) print(paste('Read client ID from',keyfile))
       frostID <- readLines(keyfile)
     } else { 
-      if (verbose) print('Generate new client ID')  
-      system(paste(browser,'https://frost.met.no/auth/newclientid.html'))
+      if (verbose) print(paste('Generate new client ID',url))  
+      system(paste(browser,url))
       frostID <- rep("",2)
       frostID[1] <- readline('Please give me the first key:')
       frostID[2] <- readline('Please give me the second key:')
