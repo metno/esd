@@ -93,9 +93,14 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     } else if (sum(is.element(c('month','season'),timescale))>0) {
       t1 <- paste0(year(attr(x,'time'))[1],"~",month(attr(x,'time'))[1])
       t2 <- paste0(year(attr(x,'time'))[2],"~",month(attr(x,'time'))[2])
+    } else if (grepl("hour|minute",timescale)) {
+      t1 <- paste0(strftime(attr(x,"time")[1],format="%Y%m%d"),"~",
+                   strftime(attr(x,"time")[1],format="%H:%M"))
+      t2 <- paste0(strftime(attr(x,"time")[2],format="%Y%m%d"),"~",
+                   strftime(attr(x,"time")[2],format="%H:%M"))
     } else {
-      t1 <- attr(x,'time')[1]  
-      t2 <- attr(x,'time')[2]
+      t1 <- strftime(attr(x,"time")[1],format="%Y%m%d")
+      t2 <- strftime(attr(x,"time")[2],format="%Y%m%d")
     }
     ##period <- paste('[',t1,', ',t2,']',sep='')  ## REB: square brackets have special role in expressions
     period <- paste('phantom(0)* (',t1,'-',t2,')',sep='')
@@ -132,7 +137,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   }
   
   if (verbose) print('Set up the figure')
-  
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
        xlim=xlim,ylim=ylim,main=main, # to sumerimpose.
        xaxt="n",yaxt="n") # AM 17.06.2015
