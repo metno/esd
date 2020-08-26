@@ -430,21 +430,34 @@ diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
     index(z) <- year(z)
     index(y) <- year(y)
   }
+
+  if (sum(is.finite(y))==0) {
+    print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
+    return(NULL)
+  }
+  
   ## Use the same dates
   yz <- merge( zoo(y), zoo(z),all=FALSE )
   #plot(yz)
   
   # statistics: past trends
-#  i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
+  ## KMP 2020-08-05: Making code more efficient
+  delta <- apply(coredata(yz),2,FUN='trend.coef')
+  deltaobs <- delta[1]
+  deltagcm <- delta[2:length(delta)]
+  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
+  if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
+  
+  #  i1 <- is.element(year(y)*100 + month(y),year(z)*100 + month(z))
 #  i2 <- is.element(year(z)*100 + month(z),year(y)*100 + month(y))
 #  obs <- data.frame(y=y[i1],t=year(y)[i1])
-  obs <- data.frame(y=c(yz[,1]),t=year(yz))
-  if (verbose) print(summary(obs))
-  if (sum(is.finite(obs$y))==0) {
-    print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
-    return(NULL)
-  }
-  deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,4)  # deg C/decade
+#  obs <- data.frame(y=c(yz[,1]),t=year(yz))
+#  if (verbose) print(summary(obs))
+#  if (sum(is.finite(obs$y))==0) {
+#    print('diagnose.dsensemble: problem detected - no valid station data'); print(match.call())
+#    return(NULL)
+#  }
+  #deltaobs <- round(lm(y ~ t,data=obs)$coefficients[2]*10,4)  # deg C/decade
 #  deltagcm <- rep(NA,d[2])
 #  if (verbose) print(dim(deltagcm))
 #  for (j in 1:d[2]) {
@@ -452,9 +465,9 @@ diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
 #    deltagcm[j] <- round(lm(y ~ t,data=gcm)$coefficients[2]*10,2)  # deg C/decade
 #  }
   ## REB 2016-11-07: faster and more efficient code than for-loop.
-  deltagcm <- c(apply(coredata(yz)[,-1],2,FUN='trend.coef'))
-  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
-  if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
+#  deltagcm <- c(apply(coredata(yz)[,-1],2,FUN='trend.coef'))
+#  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
+#  if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
   
   # apply to extract mean and sd from the selected objects:
   mu <- apply(coredata(yz[,-1]),1,mean,na.rm=TRUE)
@@ -555,8 +568,13 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
     }
     if(is.null(xrange)) xrange <- c(min(xlon)-1,max(xlon)+1)
     if(is.null(yrange)) yrange <- c(min(xlat)-1,max(xlat)+1)
-    x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
-                               sd=sd(deltagcm))),2)
+    ## KMP 2020-08-04: Changed x (probability of observed trends) because the 
+    ## calculations did not seem right. Trend distributions for different stations 
+    ## were mixed up when applying mean(deltagcm) and sd(deltagcm). 
+    #x <- -round(200*(0.5-pnorm(deltaobs,mean=mean(deltagcm),
+    #                           sd=sd(deltagcm))),2)
+    x <- -round(200*(0.5-sapply(seq_along(deltaobs), function(i) pnorm(deltaobs[i], 
+                                    mean=mean(deltagcm[i,]), sd=sd(deltagcm[i,])))))
     y <- -round(200*(0.5-pbinom(outside,size=N,prob=0.1)),2)
     d$x <- x; d$y <- y
     points(x,y,pch=21,cex=2*par("cex"),col='black',bg=col)
