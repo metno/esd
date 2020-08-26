@@ -11,7 +11,8 @@
 #' '10m_u_component_of_wind', '10m_v_component_of_wind', 'relative_humidity', 'dewpoint_depression', 'snow_depth'
 #' @param it the years to extract.
 #' @param varnm variable name for local data file.
-#' @param AREA the area/region to extract [south,west,north,east]
+#' @param lon longitude of the area/region to extract.
+#' @param lat latitude of the area/region to extract.
 #' @param FNAME the name of the local files for storing the data
 #' @param FUN the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum',
 #' 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).
@@ -19,19 +20,21 @@
 #' @param verbose a boolean; if TRUE print information about progress
 #' @examples
 #' \dontrun{
-#' ERA5.CDS(param='2m_temperature',varnm='t2m',it=2015:2018,AREA="['50','0','60','10']",
+#' ERA5.CDS(param='2m_temperature',varnm='t2m',it=2015:2018,lon=c(0,10), lat=c(50,60),
 #'          FUN='daymean')
-#' ERA5.CDS(param='total_precipitation',varnm='tp',it=2018,AREA="['0','50','10','60']",
+#' ERA5.CDS(param='total_precipitation',varnm='tp',it=2018,lon=c(50,60),lat=c(0,10),
 #'          FUN='yearsum')
-#' ERA5.CDS(param='mean_sea_level_pressure',varnm='slp',it=2018,AREA="['40','-50','60','30']",
+#' ERA5.CDS(param='mean_sea_level_pressure',varnm='slp',it=2018,lon=c(-50,30),lat=c(40,60),
 #'          FUN='monmean')
 #'}
 #' @export
 ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
-                     varnm=NULL, AREA="['-90','-180','90','180']",
+                     varnm=NULL, lon=c(-180,180),lat=c(-90,90),
                      FNAME="'ERA5_XXX_YYYY.nc'",FUN='monsum',
                      path='~/Downloads/',verbose=TRUE) { 
-
+  system('pip install cdsapi')
+  AREA <- paste0("['",min(lat),"','",min(lon),"','",max(lat),"','",max(lon),"']")
+  if (verbose) print(AREA)
   if (!file.exists('~/.cdsapirc')) {
     print('You need to install the CDS API key according to the web site and then re-run the call...')
     browser('https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key')
@@ -62,7 +65,8 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
     writeLines(py.script,con=filename)
     #     print(py.script[13])
     rm('py.script')
-    system(paste('python',filename))
+    if (verbose) print(paste0('python ./',filename))
+    system(paste0('python ./',filename))
     if (!is.null(FUN)) {
       ## If FUN is provided for aggregation:
       system(paste('cdo -b 64 ',FUN,gsub('YYYY',as.character(yr),FNAME),'aggregated.nc'))
@@ -75,7 +79,8 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
   if (length(it)>1) { 
     system(paste('cdo -b 64 mergetime ',gsub('YYYY','????',FNAME),gsub('YYYY','',FNAME)))
     file.remove(gsub('YYYY','????',FNAME))
-  }
-  if (verbose) print(paste0('Download finished: ',path,'/',gsub('YYYY','',FNAME)))
+    if (verbose) print(paste0('Download finished: ',path,'/',gsub('YYYY','',FNAME)))
+  } else if (verbose) print(paste('Download finished:',path))
+  
   setwd(dir)
 }

@@ -11,3 +11,9 @@ nao <- subset(as.4seasons(NAO()),it='djf')
 ## Show maps of correlation
 corfield(nao,slp,new=FALSE)
   
+
+z <- retrieve('~/Downloads/hgt.sfc.nc')
+coredata(map(z,plot=FALSE)) -> Z
+Z[Z <= 100] <- NA
+map(Z)
+  

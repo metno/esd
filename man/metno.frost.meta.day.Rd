@@ -21,6 +21,8 @@ metno.frost.meta.day(
 \item{verbose}{if TRUE, print diagnostics}
 
 \item{\dots}{additional arguments}
+
+\item{url}{The URL to the webpage to request new client credentials at Frost API}
 }
 \value{
 A meta data matrix object for all stations in METNO's collection

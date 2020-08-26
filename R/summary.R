@@ -72,16 +72,20 @@ summary.dsensemble <- function(object,...,years=seq(1990,2090,by=20),verbose=FAL
 #' 
 #' @export summary.station
 summary.station <- function(object,...,im=1:12,verbose=FALSE) {
-  if(verbose) print("summary.station")
+  if(verbose) {print("summary.station"); print(table(month(object)))}
   x <- object
+  if (verbose) str(x)
   tab <- matrix(rep(NA,12*7),12,7)
   for (i in 1:12) {
     y <- subset(x,it=month.abb[i])
-    z <- as.numeric(summary(coredata(y)))
+    z <- as.numeric(substr(summary(coredata(y)),9,16))
+    if (verbose) print(z)
     attributes(z) <- NULL
     tab[i,1:length(z)] <-z 
   }
   attn <- attr(summary(coredata(x)),'names')
+  if (is.null(attn)) attn <- c(substr(summary(coredata(y)),1,7))
+  if (verbose) print(attn)
   if (length(attn)==6) colnames(tab) <- c(attn,"NA's") else colnames(tab) <- attn
   rownames(tab) <- month.abb
   tab[im,]  

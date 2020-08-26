@@ -78,6 +78,7 @@ NINO3.4 <- function(url=NULL, header=TRUE, freq="monthly", verbose=FALSE) {
     }
   }
   enso <- read.table(url,header=header,skip=skip,nrows=n)
+  
   if(ncol(enso)==2) {
     d <- as.Date(strptime(enso[,1],format="%Y%m%d"))
     nino3.4 <- zoo(enso[,2], order.by=d)
@@ -90,6 +91,8 @@ NINO3.4 <- function(url=NULL, header=TRUE, freq="monthly", verbose=FALSE) {
   } else {
     print("Warning! Don't know how to read data from url",url)
   }
+  
+  x <- coredata(nino3.4); x[x < -99] <- NA; x -> coredata(nino3.4)
   nino3.4 <- as.station(nino3.4,loc='Nino3.4',param='Nino3.4',
                         unit='dimensionless')
   attr(nino3.4,'url') <- url

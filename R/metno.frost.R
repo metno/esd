@@ -9,6 +9,7 @@
 #' @param save2file if TRUE, save metadata in a local file
 #' @param verbose if TRUE, print diagnostics
 #' @param \dots additional arguments  
+#' @param url The URL to the webpage to request new client credentials at Frost API
 #'
 #' @return A meta data matrix object for all stations in METNO's collection
 #' that have measured any of the given parameters. Start and end time are included. 
@@ -77,6 +78,7 @@ metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","p
 metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"), 
                                      timeresolutions="P1M", levels="default", timeoffsets="default", 
                                      performancecategories="A,B,C", exposurecategories="1,2", 
+                                     url='https://frost.met.no/auth/requestCredentials.html',
                                      browser="firefox", verbose = FALSE) {
   if(verbose) print("metno.frost.meta.default")
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
@@ -106,8 +108,8 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       if (verbose) print(paste('Read client ID from',keyfile))
       frostID <- readLines(keyfile) 
     } else { 
-      if (verbose) print('Generate new client ID')  
-      system(paste(browser,'https://frost.met.no/auth/requestCredentials.html'))
+      if (verbose) print(paste('Generate new client ID from',url))  
+      system(paste(browser,url))
       frostID <- rep("",2)
       frostID[1] <- readline('Please give me the first key:')
       frostID[2] <- readline('Please give me the second key:')

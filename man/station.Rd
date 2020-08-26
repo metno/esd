@@ -69,6 +69,8 @@ or days depending on the class of object x (e.g. 30 years).}
 comments (silent mode). If TRUE, displays extra information on progress.}
 
 \item{path}{The path where the data are stored. Can be a symbolic link.}
+
+\item{url}{The URL of the data portal or webpage for requesting new client credentials.}
 }
 \value{
 A time series of "zoo" "station" class with additional attributes
