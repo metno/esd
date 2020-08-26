@@ -33,8 +33,8 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          add.text.subset=FALSE,showall=FALSE,
                          add.text=FALSE,main=NULL,sub=NULL,
                          height=NULL,width=NULL,
-                         cex.main=1,cex.sub=0.75,cex.axis=1,cex.lab=0.6,
-                         col.main="black",col.sub="grey",
+                         cex.main=1,cex.sub=0.75,cex.axis=1,cex.lab=0.9,
+                         col.main="black",col.sub="grey",col.border="grey",
                          font.main=1,font.sub=4,
                          pch=19, from=NULL,to=NULL,showaxis=FALSE,
                          border=FALSE,full.names=FALSE,
@@ -117,7 +117,6 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         par(fig=fig,mar=mar,mgp=mgp,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
             col.axis='grey30',col.lab='grey30',las=1)
       }
-      
       ## Avoid errors when plotting the colorbar with small figure windows
       ## fin collects information about the figure size (in inches)
       fin <- par()$fin
@@ -145,9 +144,8 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           ylim <- range(lat(x),na.rm=TRUE) + c(-2,2)
         }
       }
-      
       plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=cex,new=FALSE,
-           xlab=xlab,ylab=ylab)
+           cex.lab=cex.lab,xlab=xlab,ylab=ylab)
       if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=cex.lab,col='grey',pos=1)
       
       if(showaxis | gridlines) {
@@ -169,8 +167,9 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       }
       
       data("geoborders", envir = environment())
-      lines(geoborders$x,geoborders$y)
-      if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,col='grey')
+      lines(geoborders$x,geoborders$y,col=col.border, lwd=1.5)
+      if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,
+                        col=adjustcolor(col.border, alpha.f=0.7), lwd=0.75)#'grey')
       
       if (show.colbar) {
         if (verbose) print('show.colorbar')
@@ -195,7 +194,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         #axis(1,colbar$breaks)
       } 
       par(new=TRUE,fig=fig,mar=mar,yaxt='n',xaxt='n')
-      plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab)
+      plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim,xlab="",ylab="")#xlab,ylab=ylab)
       
       ## Add a title
       if(is.null(main)) {
