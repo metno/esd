@@ -139,8 +139,14 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
   }
   
   Y <- -round(200*(0.5-pbinom(x$outside,size=x$N,prob=0.1)),2)
-  X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),
-                             sd=sd(x$deltagcm))),2)
+  ## KMP 2020-08-04: Changed X (probability of observed trends) because the 
+  ## calculations did not seem right. Trend distributions for different stations 
+  ## are mixed up when applying mean(deltagcm) and sd(deltagcm). 
+  #X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),
+  #                           sd=sd(x$deltagcm))),2)
+  X <- -round(200*(0.5-sapply(seq_along(deltaobs), function(i) pnorm(deltaobs[i], 
+                                  mean=mean(deltagcm[i,]), sd=sd(deltagcm[i,])))))
+              
   if (new) {
     dev.new()
     par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=mgp)

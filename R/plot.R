@@ -656,8 +656,8 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
     } else if (inherits(x,'pca')) {
       #par(fig=c(0.5,1,0.5,1),mar=c(3,3,2,2))
       fig <-c(0,0.5,0.5,1)
-      main1 <- paste('Leading EOF#',ip, ' (',
-                     round(var.eof[ip],digits=2),"%)",sep='')
+      main1 <- paste0('Leading EOF#',ip, ' (',
+                     round(var.eof[ip],digits=2),"%)")
       map(x,ip=ip,verbose=verbose,
           cex.main=cex.main,cex.axis=cex.axis,
           cex.lab=cex.lab,cex=cex, fig=fig,
@@ -685,9 +685,8 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   if (length(grep('pc',what))>0) {
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
     par(fig=c(0.05,1,0.025,0.475),mar=c(3,3,2,2),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-    main <- paste('Leading PC#',ip,' of ',attr(x,'longname'),
-                  " - Explained variance = ",round(var.eof[ip],digits=2),
-                  "%",sep='')
+    main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
+                  " - Explained variance = ",round(var.eof[ip],digits=2),"%")
     if(inherits(x,"seasonalcycle")) xaxt <- "n" else  xaxt <- NULL
     xn <- x[,n]
     if(inherits(index(xn),"PCICt")) {
@@ -783,9 +782,8 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
 #                                          xlim=xlim,ylim=ylim)
     if (!is.null(mfrow)) par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-      main <- paste('Leading PC#',ip,'of ',attr(x,'longname'),
-                 " - Explained variance = ",round(var.eof[ip],digits=2),
-                    "%",sep='')
+      main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
+                 " - Explained variance = ",round(var.eof[ip],digits=2),"%")
       
       plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
                cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
@@ -1473,7 +1471,7 @@ plot.pca <- function(x,...,cex=1,verbose=FALSE,new=TRUE) {
 
 plot.ds.pca <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                            type="p",cex=1,show=TRUE,h=0.6, v=1,pos=0.05),
+                            type="p",cex=1,show=FALSE,h=0.6, v=1,pos=0.05),
                         colbar2=NULL,mar=c(3,2,2,0.5),mgp=c(1,0.5,0),
                         verbose=FALSE) {
   y <- x # quick fix
@@ -1499,9 +1497,9 @@ plot.ds.pca <- function(x,...,ip=1,
   colbar2$show <- FALSE
   map(pp,ip=ip,new=FALSE,
       colbar=colbar2,verbose=verbose,
-      main="")#paste("EOF Pattern # ",ip,sep=""))
+      lab=paste("Predictor pattern # ",ip,sep=""))
   par(cex=1)  ## REB 2019-08-06
-  title(paste("Predictor pattern #",ip,sep=""), cex=0.8)
+  #title(paste("Predictor pattern #",ip,sep=""), cex=0.8)
   if (!is.null(attr(y,'evaluation'))) {
     if (verbose) print('Evaluation results')
     par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
