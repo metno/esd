@@ -333,17 +333,27 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   if (!is.null(itime)) {
     if (!is.null(time.rng)) {
       if (length(time.rng) > 2) {
-        stop("time.rng should be in the form of c(year1,year2)")
+        stop("time.rng should be in the form of c(year1,year2) or c(date1,date2)")
       } else if (length(time.rng) == 1) {
         time.w <- which((time$vals-time.rng) == min(abs(time$vals-time.rng)))
         if (verbose) print(paste("Single time extraction:",as.character(time$vals[time.w]),
                                  time$unit,sep=" "))
       } else if (length(time.rng) == 2) {
-        if (sum(is.element(time.rng,format.Date(time$vdate,"%Y"))) < 1) {
-          stop("Selected time interval is outside the range of the data")
-        }
-        time.w <- which((format.Date(time$vdate,"%Y") >= time.rng[1]) &
+        if(is.years(time.rng)) {
+          if (sum(is.element(time.rng,format.Date(time$vdate,"%Y"))) < 1) {
+            stop("Selected time interval is outside the range of the data")
+          }
+          time.w <- which((format.Date(time$vdate,"%Y") >= time.rng[1]) &
                           (format.Date(time$vdate,"%Y") <= time.rng[length(time.rng)]))
+        } else if(is.dates(time.rng)) {
+          time.w <- which((format.Date(time$vdate,"%Y%m%d") >= format.Date(time.rng[1], "%Y%m%d") &
+                          (format.Date(time$vdate,"%Y%m%d") <= format.Date(time.rng[length(time.rng)], "%Y%m%d"))))
+          if(length(time.w)==0) {
+            stop("Selected time interval is outside the range of the data")
+          }
+        } else {
+          stop("Unknown format of time.rng")
+        }
         if (verbose) {
           if (model$frequency == "mon") {
             print(paste("Selected time values:",
@@ -387,22 +397,28 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     }
     lev$len <- length(lev.w)
   }
-  
+  ## KMP 2020-08-25: Check the order of dimensions and use idim to rearrange 
+  ## start and count in case the they are not in standard order (lon,lat,time)
+  dimnames <- rev(names(ncid$dim))
+  idim <- sapply(c("lon","lat","time"), function(x) grep(x, dimnames))
+  idim2 <- sapply(dimnames, function(x) grep(x, dimnames[idim]))
   ## Extract values and add Scale Factor and offset if any
   if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
   if ((one.cell) & (!is.null(itime))) {
     if (!is.null(ilev)) {
       start <- c(lon.w,lat.w,lev.w[1],time.w[1])
       count <- c(1,1,length(lev.w),length(time.w))
-      val <- ncvar_get(ncid,param,start,count)
+      val <- ncvar_get(ncid,param,start[idim],count[idim])
+      val <- aperm(val, idim2)
     } else {
       start <- c(lon.w,lat.w,time.w[1])
       count <- c(1,1,length(time.w))
-      val <- ncvar_get(ncid,param,start,count)
+      val <- ncvar_get(ncid,param,start[idim],count[idim])
+      val <- aperm(val, idim2)
     }
     lon$vals <- lon$vals[lon.w]
     lat$vals <- lat$vals[lat.w]
-  } else if ((!is.null(ilon)) & (!is.null(itime))) {  
+  } else if ((!is.null(ilon)) & (!is.null(itime))) {
     diff.lon.w <- diff(rank(lon$vals[lon.w]))
     id2 <- which(diff.lon.w!=1)
     if (!is.null(ilev)) {
@@ -412,22 +428,25 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         lon.w2 <- lon.w[(id2+1):length(lon.w)]
         start1 <- c(lon.w1[1],lat.w[1],lev.w[1],time.w[1])
         count1 <- c(length(lon.w1),length(lat.w),length(lev.w),length(time.w))
-        val1 <- ncvar_get(ncid,param,start1,count1,collapse_degen=FALSE)
+        val1 <- ncvar_get(ncid,param,start1[idim],count1[idim],collapse_degen=FALSE)
+        val1 <- aperm(val1, idim2)
         d1 <- dim(val1)
         dim(val1) <- c(d1[1],prod(d1[2:length(d1)]))
         start2 <- c(lon.w2[1],lat.w[1],lev.w[1],time.w[1])
         count2 <- c(length(lon.w2),length(lat.w),length(lev.w),length(time.w))
-        val2 <- ncvar_get(ncid,param,start2,count2,collapse_degen=FALSE)
+        val2 <- ncvar_get(ncid,param,start2[idim],count2[idim],collapse_degen=FALSE)
+        val2 <- aperm(val2, idim2)
         d2 <- dim(val2)
         dim(val2) <- c(d2[1],prod(d2[2:length(d2)]))
         val <- rbind(val1,val2)
       } else {
         start <- c(lon.w[1],lat.w[1],lev.w[1],time.w[1])
         count <- c(length(lon.w),length(lat.w),length(lev.w),length(time.w))
-        val <- ncvar_get(ncid,param,start,count,collapse_degen=FALSE)
+        val <- ncvar_get(ncid,param,start[idim],count[idim],collapse_degen=FALSE)
+        val <- aperm(val, idim2)
       }
       dim(val) <- count
-     lon$vals <- lon$vals[lon.w]
+      lon$vals <- lon$vals[lon.w]
       lon.srt <- order(lon$vals)
       if (sum(diff(lon.srt)!=1)) {
         if (verbose) print("Sort Longitudes") 
@@ -448,12 +467,14 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         lon.w2 <- lon.w[(id2+1):lon$len]
         start1 <- c(lon.w1[1],lat.w[1],time.w[1])
         count1 <- c(length(lon.w1),length(lat.w),length(time.w))
-        val1 <- ncvar_get(ncid,param,start1,count1,collapse_degen=FALSE)
+        val1 <- ncvar_get(ncid,param,start1[idim],count1[idim],collapse_degen=FALSE)
+        val1 <- aperm(val1, idim2)
         d1 <- dim(val1)
         dim(val1) <- c(d1[1],prod(d1[2:length(d1)]))
         start2 <- c(lon.w2[1],lat.w[1],time.w[1])
         count2 <- c(length(lon.w2),length(lat.w),length(time.w))
-        val2 <- ncvar_get(ncid,param,start2,count2,collapse_degen=FALSE)
+        val2 <- ncvar_get(ncid,param,start2[idim],count2[idim],collapse_degen=FALSE)
+        val2 <- aperm(val2, idim2)
         d2 <- dim(val2)
         dim(val2) <- c(d2[1],prod(d2[2:length(d2)]))
         val <- rbind(val1,val2)
@@ -461,7 +482,8 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       } else {
         start <- c(lon.w[1],lat.w[1],time.w[1])
         count <- c(length(lon.w),length(lat.w),length(time.w))
-        val <- ncvar_get(ncid,param,start,count)
+        val <- ncvar_get(ncid,param,start[idim],count[idim])
+        val <- aperm(val, idim2)
       }
       dim(val) <- count   
       lon$vals <- lon$vals[lon.w]
@@ -479,7 +501,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       val <- val[lon.srt,lat.srt,]
     }
   }
-  
+
   ## Convert units
   iunit <- grep("unit",names(v1))
   if (length(iunit)>0) {
@@ -748,12 +770,18 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   } else {
     if (verbose) print("Checking Time Unit --> [fail]")
   }
-  if (!is.null(tunit) & (!is.null(grep("since",tunit)))) {
+  if (!is.null(tunit)) {
     if (verbose) print("Time unit and origin detected in time$unit attribute")
-    tunit <- time$units
-    tsplit <- unlist(strsplit(tunit,split=" "))
-    torigin <- time$origin <- paste(tsplit[3:length(tsplit)],collapse=" ")
-    tunit <- time$units <- unlist(strsplit(tunit,split=" "))[1]
+    if(grepl("since",tunit)) {
+      tunit <- time$units
+      tsplit <- unlist(strsplit(tunit,split=" "))
+      torigin <- time$origin <- paste(tsplit[3:length(tsplit)],collapse=" ")
+      tunit <- time$units <- unlist(strsplit(tunit,split=" "))[1]
+    } else if(grepl("%Y%m%d",tunit)) {
+      tunit < time$units
+      tsplit <- unlist(strsplit(tunit,split=" "))
+      torigin <- time$origin <- paste(tsplit[grep("%Y%m%d", tsplit)],collapse=" ")
+    }
     if (verbose) print(paste("Updating time$unit (",time$unit,") and creating time$origin (",time$origin,") attribute",sep= ""))
   } else if (length(itorigin)>0) {   
     torigin <- eval(parse(text = paste("time$",tatt[itorigin],sep="")))
@@ -771,9 +799,8 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     if (verbose) warning("ERA-40 typically: 1900-01-01")
     torigin <- readline("Please enter a valid time origin: ")
   }
-  
   if (!is.null(torigin)) {
-    if (torigin == "1-01-01 00:00:00") {
+    if (torigin=="1-01-01 00:00:00") {
       if (verbose) print("bad time origin")
       torigin <- "0001-01-01 00:00:00"
       if (verbose) print(paste("Re-setting time origin (",torigin,")",sep=""))
@@ -788,32 +815,35 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   }
   
   if (!is.null(torigin)) {
-    yorigin <- format.Date(as.Date(torigin),format="%Y")
-    morigin <- format.Date(as.Date(torigin),format="%m")
-    dorigin <- format.Date(as.Date(torigin),format="%d")
-    if (as.numeric(yorigin) == 0) {
-      if (verbose) warning("There is no year zero (Press et al., Numerical recipies)")
-      yorigin <- 0
-      if (verbose) print(paste("Warning : Year origin has been set to:",as.character(1900),sep="->"))     
+    if(!grepl("%Y%m%d", as.character(torigin))) {
+      yorigin <- format.Date(as.Date(torigin),format="%Y")
+      morigin <- format.Date(as.Date(torigin),format="%m")
+      dorigin <- format.Date(as.Date(torigin),format="%d")
+      if (as.numeric(yorigin) == 0) {
+        if (verbose) warning("There is no year zero (Press et al., Numerical recipies)")
+        yorigin <- 0
+        if (verbose) print(paste("Warning : Year origin has been set to:",as.character(1900),sep="->"))     
+      }
+      if (is.na(dorigin)) {
+        if (verbose) warning("Warning : Day origin is missing !")
+        dorigin <- 1
+        if (verbose) warning("Warning : Day origin has been set to:",dorigin)
+      }
+      if (is.na(morigin)) {
+        if (verbose) warning("Warning : Month origin is missing !")
+        morigin <- 1
+        if (verbose) warning("Warning : Month origin has been set to:",morigin)
+      }
+      torigin1 <- paste(yorigin,morigin,dorigin,sep="-")
+      torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ") 
     }
-    if (is.na(dorigin)) {
-      if (verbose) warning("Warning : Day origin is missing !")
-      dorigin <- 1
-      if (verbose) warning("Warning : Day origin has been set to:",dorigin)
-    }
-    if (is.na(morigin)) {
-      if (verbose) warning("Warning : Month origin is missing !")
-      morigin <- 1
-      if (verbose) warning("Warning : Month origin has been set to:",morigin)
-    }
-    torigin1 <- paste(yorigin,morigin,dorigin,sep="-")
-    torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ") 
   }
   
   if (!is.null(torigin)) {
     if (verbose) print("Checking Time Origin --> [ok]")
-  } else if (verbose)
+  } else if (verbose) {
     print("Checking Time Origin --> [fail]")
+  }
   
   ## Checking : Frequency
   type <- c("year","season","month","day","hour","minute","second")
@@ -862,31 +892,38 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   }
   ## Identifying starting and ending dates for the data if possible
   if (!is.null(torigin)) {
-    yorigin <- as.numeric(format.Date(torigin,format="%Y"))
-    morigin <- as.numeric(format.Date(torigin,format="%m"))
-    dorigin <- as.numeric(format.Date(torigin,format="%d"))
-    horigin <- as.numeric(format.Date(torigin,format="%H"))
+    if(!grepl("%Y%m%d",as.character(torigin))) {
+      yorigin <- as.numeric(format.Date(torigin,format="%Y"))
+      morigin <- as.numeric(format.Date(torigin,format="%m"))
+      dorigin <- as.numeric(format.Date(torigin,format="%d"))
+      horigin <- as.numeric(format.Date(torigin,format="%H"))
+    }
   }
   
   ## Get calendar from attribute if any and create vector of dates vdate
   ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
-  ##
   if (!is.null(calendar.att)) {
     if (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) {
-      if (grepl("mon",tunit)) {
-        if (sum(round(diff(time$vals)) > 1) < 1) {
-          year1 <- time$vals[1]%/%12 + yorigin
-          month1 <- morigin
-          torigin1 <- paste(as.character(year1),month1,"01",sep="-")
+      if(grepl("%Y%m%d",tunit)) {
+        t.day <- floor(time$vals)
+        t.hr <- 24*(time$vals-t.day)
+        time$vdate <- strptime(paste(t.day,t.hr), format="%Y%m%d %H")
+      } else {
+        if (grepl("mon",tunit)) {
+          if (sum(round(diff(time$vals)) > 1) < 1) {
+            year1 <- time$vals[1]%/%12 + yorigin
+            month1 <- morigin
+            torigin1 <- paste(as.character(year1),month1,"01",sep="-")
+          }
         }
-      } 
-      time$vdate <- switch(tunit,'seconds'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
-                           'minutes'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
-                           'hours'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*3600,
-                           'days'= as.Date(torigin) + time$vals,
-                           'months'= seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
-                           'years'= year(as.Date(torigin)) + time$vals)
-      
+        time$vdate <- switch(substr(tunit,1,3),
+                           'sec'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
+                           'min'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
+                           'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*3600,
+                           'day'= as.Date(torigin) + time$vals,
+                           'mon'= seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
+                           'yea'= year(as.Date(torigin)) + time$vals)
+      }
     } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap",calendar.att)) {
       if (verbose) print(paste0(substr(calendar.att,1, 3), "-days model year found in calendar attribute"))
       if (grepl("noleap",calendar.att)) {
@@ -1062,7 +1099,6 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   model$qf <- qf
   result <- list(model=model,time=time)
   invisible(result)
-
 }
 
 #' @export retrieve.station
