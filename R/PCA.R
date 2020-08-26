@@ -99,7 +99,7 @@ PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NUL
 
 # Transfer PCA back to station data
 #' @export
-pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FALSE) {
+pca2station <- function(X,is=NULL,ip=NULL,anomaly=FALSE,what='pca',verbose=FALSE) {
   stopifnot(!missing(X), inherits(X,"pca"))
   if (inherits(X,'ds')) class(X) <- class(X)[-1]
   if (verbose) print('pca2station')
@@ -109,11 +109,13 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
   
   ## REB 2016-11-03
   ## If there is only one single station, avoid collapse of dimension
-  if (is.null(dim(attr(pca,'pattern'))))
+  if (is.null(dim(attr(pca,'pattern')))) {
     dim(attr(pca,'pattern')) <- c(1,length(attr(pca,'pattern')))
+  }
+  
   U <- attr(pca,'pattern')
-  d <- dim(U)
   W <- attr(pca,'eigenvalues')
+  d <- dim(U)
   if (what=='pca') V <- coredata(pca) else if (what=='xval') {
     if (verbose) print('Retrieve the cross-validation data')
     V <- coredata(attr(X,'evaluation')[,seq(2,dim(attr(X,'evaluation'))[2],by=2)])
@@ -122,17 +124,32 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
     V <- coredata(attr(X,'evaluation')[,seq(1,dim(attr(X,'evaluation'))[2]-1,by=2)])
   }
   V[!is.finite(V)] <- 0
+  if (!is.null(ip)) {
+    dU <- dim(U)
+    dV <- dim(V)
+    U <- U[,ip]
+    W <- W[ip]
+    V <- V[,ip]
+    dim(U) <- c(dU[1], length(ip))
+    dim(V) <- c(dV[1], length(ip))
+  }
+
   if (verbose) {str(U); str(W); str(V)}
-  x <-U %*% diag(W) %*% t(V)
+  if(length(W)>1) diag.W <- diag(W) else diag.W <- W
+  x <- U %*% diag.W %*% t(V)
   if (verbose) str(x)
   
   if (verbose) print(paste('anomaly=',anomaly))
-  if (!anomaly)
+  if (!anomaly) {
     x <- x + c(attr(pca,'mean'))
+  }
   x <- zoo(t(x),order.by=index(pca))
   
-  if (anomaly) attr(x,'aspect') <- 'anomaly' else
+  if (anomaly) {
+    attr(x,'aspect') <- 'anomaly' 
+  } else {
     attr(x,'aspect') <- 'original'
+  }
   #  attr(x,'call') <- match.call()
   #  class(x) <- class(pca)[-1]
   
@@ -150,12 +167,18 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
     V.x <- coredata(cval)
     # The evaluation data are stored as the original calibration
     # predictand followed by the prediction, i.e. station 1,1,2,2,3,3
-    ii1 <- seq(1,d.cval[2]-1,by=2); ii2 <- seq(2,d.cval[2],by=2)
-    # Recover the staiton data from the original data x and the
+    if (is.null(ip)) {
+      ii1 <- seq(1,d.cval[2]-1,by=2)
+      ii2 <- seq(2,d.cval[2],by=2)
+    } else {
+      ii1 <- ip*2-1#seq(1,d.cval[2]-1,by=2) ip = [1,2,3]
+      ii2 <- ip*2#seq(2,d.cval[2],by=2)
+    }
+    # Recover the station data from the original data x and the
     # cross-validation prediction z
-    # seperately using the same spatial PCA pattern and eiganvalues:
-    x.cvalx <-U %*% diag(W) %*% t(V.x[,ii1])
-    x.cvalz <-U %*% diag(W) %*% t(V.x[,ii2])
+    # seperately using the same spatial PCA pattern and eigenvalues:
+    x.cvalx <- U %*% diag.W %*% t(V.x[,ii1])
+    x.cvalz <- U %*% diag.W %*% t(V.x[,ii2])
     # Combine the two together and then sort so that the prediction
     # of the first station follows the observation
     # from the first station:
@@ -177,7 +200,10 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
       cval <- attr(pca,paste('appendix.',i.app,sep=''))
       d.cval <- dim(cval)
       V.x <- coredata(cval)
-      x.cval <-U %*% diag(W) %*% t(V.x)
+      if(!is.null(ip)) {
+        V.x <- V.x[,ip,]
+      }
+      x.cval <-U %*% diag.W %*% t(V.x)
       mpca <- c(attr(pca,'mean'))
       if (!anomaly) x.cval <- x.cval + mpca
       if (anomaly) attr(x.cval,'aspect') <- 'anomaly' else
@@ -194,6 +220,7 @@ pca2station <- function(X,lon=NULL,lat=NULL,anomaly=FALSE,what='pca',verbose=FAL
   attr(x,'latitude') <- attr(pca,'latitude')
   attr(x,'history') <- history.stamp(pca)
   class(x) <- cls[-1]
+  if(!is.null(is)) x <- subset(x, is=is)
   if (verbose) print(class(x))
   if (verbose) print("exit pca2station")
   invisible(x)

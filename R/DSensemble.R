@@ -304,7 +304,13 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
     #gcmnm[i] <- attr(gcm,'model_id'))
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+    nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+    nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+    nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+    rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+    gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
+    gcmnm[i] <- gcmnm.i
+    #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
     # REB: 30.04.2014 - new lines...
     DJFGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
     MAMGCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='mam')
@@ -619,7 +625,21 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+    rip <- NULL
+    if(any(grepl("rip", names(attributes(gcm))))) {
+      nm.rip <- names(attributes(gcm))[grepl("rip",names(attributes(gcm)))][[1]]
+      if(!is.null(attr(gcm, nm.rip))) {
+        rip <- attr(gcm, nm.rip)
+        if(!grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", rip)) rip <- NULL
+      }
+    }
+    if(is.null(rip)) {
+      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+    }
+    gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     #gcmnm[i] <- attr(gcm,'model_id')
     if (verbose) print(varid(gcm))
@@ -853,7 +873,21 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
       if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                              min(year(y),na.rm=TRUE),'2099'))
       # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
-      gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+      rip <- NULL
+      if(any(grepl("rip", names(attributes(gcm))))) {
+        nm.rip <- names(attributes(gcm))[grepl("rip",names(attributes(gcm)))][[1]]
+        if(!is.null(attr(gcm, nm.rip))) {
+          rip <- attr(gcm, nm.rip)
+          if(!grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", rip)) rip <- NULL
+        }
+      }
+      if(is.null(rip)) {
+        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      }
+      gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
       #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
       #gcmnm[i] <- attr(gcm,'model_id')
       if (verbose) print(varid(gcm))
@@ -1122,7 +1156,21 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
-    gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+    rip <- NULL
+    if(any(grepl("rip", names(attributes(gcm))))) {
+      nm.rip <- names(attributes(gcm))[grepl("rip",names(attributes(gcm)))][[1]]
+      if(!is.null(attr(gcm, nm.rip))) {
+        rip <- attr(gcm, nm.rip)
+        if(!grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", rip)) rip <- NULL
+      }
+    }
+    if(is.null(rip)) {
+      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+    }
+    gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     GCM <- subset(as.4seasons(gcm,FUN=FUNX,nmin=nmin),it='djf')
     rm("gcm"); gc(reset=TRUE)
@@ -1685,7 +1733,21 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
       if (verbose) print(paste('mask=',mask))
       if (mask) gcm <- mask(gcm,land=TRUE)
       # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
-      gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
+      rip <- NULL
+      if(any(grepl("rip", names(attributes(gcm))))) {
+        nm.rip <- names(attributes(gcm))[grepl("rip",names(attributes(gcm)))][[1]]
+        if(!is.null(attr(gcm, nm.rip))) {
+          rip <- attr(gcm, nm.rip)
+          if(!grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", rip)) rip <- NULL
+        }
+      }
+      if(is.null(rip)) {
+        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      }
+      gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
       #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
       if (verbose) print('spatial average')
       # KMP 2019-05-28: replaced spatial.avg.field with aggregate.area
@@ -1845,7 +1907,6 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
 
-
   if (!is.null(select)) {
     select <- select[select<=N]
     N <- length(select)
@@ -1881,6 +1942,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
                              paste(lon,collapse='-'),'E/',paste(lat,collapse='-'),'N',sep=''),
                   pca=y) ## KMP 06-08-2015
   if (verbose) print("loop...") 
+
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
     gcm <- retrieve(file = ncfiles[select[i]],
@@ -1898,8 +1960,21 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (verbose) print(it)
       gcm <- subset(gcm,it=it,verbose=verbose)
     }
-    gcmnm.i <- paste0(attr(gcm,'model_id'),".",attr(gcm,'parent_experiment_rip'))
-
+    rip <- NULL
+    if(any(grepl("rip", names(attributes(gcm))))) {
+      nm.rip <- names(attributes(gcm))[grepl("rip",names(attributes(gcm)))][[1]]
+      if(!is.null(attr(gcm, nm.rip))) {
+        rip <- attr(gcm, nm.rip)
+        if(!grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", rip)) rip <- NULL
+      }
+    }
+    if(is.null(rip)) {
+      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+    }
+    gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     if (verbose) {
         print(paste('Extract month/season/annual data nmin=',nmin))
         print(class(y))
@@ -2109,6 +2184,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   attr(dse.pca,'scorestats') <- scorestats
   attr(dse.pca,'path') <- path
   attr(dse.pca,'scenario') <- rcp
+  attr(dse.pca,'model_id') <- gcmnm
   attr(dse.pca,'variable') <- attr(y,"variable")[1]
   attr(dse.pca,'unit') <- attr(y,"unit")[1]
   attr(dse.pca,'history') <- history.stamp(y)
@@ -2264,7 +2340,22 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
     #gcmnm[i] <- attr(gcm,'model_id')
     #gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-r")
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
-    gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")   
+    #gcmnm.i <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")   
+    rip <- NULL
+    if(any(grepl("rip", names(attributes(gcm))))) {
+      nm.rip <- names(attributes(gcm))[grepl("rip",names(attributes(gcm)))][[1]]
+      if(!is.null(attr(gcm, nm.rip))) {
+        rip <- attr(gcm, nm.rip)
+        if(!grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", rip)) rip <- NULL
+      }
+    }
+    if(is.null(rip)) {
+      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+    }
+    gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     if (verbose) print(class(y))
 
     ## REB 2016-10-25

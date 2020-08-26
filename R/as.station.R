@@ -225,7 +225,7 @@ as.station.ds <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.ds")
   if (inherits(x,'pca')) {
     class(x) <- class(x)[-1]
-    y <- as.station.pca(x)
+    y <- as.station.pca(x,...,verbose=verbose)
   } else {
     y <- zoo(coredata(x),order.by=index(x))
     if (!is.null(attr(x,"original_data")))
@@ -485,8 +485,9 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
 
     ## REB 2016-11-03
     ## If there is only one single station, avoid collapse of dimension
-    if (is.null(dim(attr(X$pca,'pattern'))))
+    if (is.null(dim(attr(X$pca,'pattern')))) {
       dim(attr(X$pca,'pattern')) <- c(1,length(attr(X$pca,'pattern')))
+    }
     if (is.null(ip)) {
       U <- attr(X$pca,'pattern')
       W <- attr(X$pca,'eigenvalues')
@@ -496,7 +497,6 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
       W <- attr(X$pca,'eigenvalues')[ip]
       V <- V[,ip,]
     }    
-      
     ## Multi-station case (REB 2016-11-03)
     if (verbose) print('multiple stations')
     d <- dim(U)
