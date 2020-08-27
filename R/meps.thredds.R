@@ -57,7 +57,7 @@ meps <- function(url='https://thredds.met.no/thredds/catalog/metpplatest',
       dates <- strptime(dates,format="%Y%m%d%H")
     }
     ok <- dates>=min(it) & dates<=max(it)
-    files <- files[ok] 
+    files <- files[ok]
   }
   if(length(files)>0) {
     ncid <- nc_open(file.path(path,files[[1]]))

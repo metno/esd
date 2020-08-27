@@ -407,16 +407,19 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     }
     lev$len <- length(lev.w)
   }
-  ## KMP 2020-08-25: Check the order of dimensions and use idim to rearrange 
-  ## start and count in case the they are not in standard order (lon,lat,time)
-  ## 2020-08-27: This didn't work. Removing temporarily until finding a fix.
-  dimnames <- names(ncid$dnciuim)[grep("lon|lat|time",names(ncid$dim))]
-  idim <- c(1,2,3)
-  idim2 <- c(1,2,3)
-  #browser()
-  #idim <- sapply(c("lon","lat","time"), function(x) grep(x, dimnames))
-  #idim2 <- unlist(sapply(dimnames, function(x) grep(x, dimnames[idim])))
-  #ncid$dim
+  ## KMP 2020-08-25: Check the order of dimensions and use idim and idim2 
+  ## to rearrange start, count and val in case the they are not in standard order 
+  ## (lon,lat,time)
+  dimnames <- names(ncid$dim)
+  lonid <- dimnames[dimnames %in% c("lon","longitude","nlon")]
+  latid <- dimnames[dimnames %in% c("lat","latitude","nlat")]
+  timeid <- dimnames[grep("time",dimnames)]
+  idlon <- ncid$dim[[lonid]]$id
+  idlat <- ncid$dim[[latid]]$id
+  idtime <- ncid$dim[[timeid]]$id
+  dimids <- ncid$var[[param]]$dimids
+  idim <- sapply(c(idlon,idlat,idtime), function(x) grep(x, dimids))
+  idim2 <- sapply(idim, function(x) grep(x, seq(length(idim))))
   ## Extract values and add Scale Factor and offset if any
   if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
   if ((one.cell) & (!is.null(itime))) {
