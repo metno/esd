@@ -411,8 +411,8 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   ## start and count in case the they are not in standard order (lon,lat,time)
   ## 2020-08-27: This didn't work. Removing temporarily until finding a fix.
   dimnames <- names(ncid$dnciuim)[grep("lon|lat|time",names(ncid$dim))]
-  idim <- c(1,1,1)
-  idim2 <- c(1,1,1)
+  idim <- c(1,2,3)
+  idim2 <- c(1,2,3)
   #browser()
   #idim <- sapply(c("lon","lat","time"), function(x) grep(x, dimnames))
   #idim2 <- unlist(sapply(dimnames, function(x) grep(x, dimnames[idim])))
