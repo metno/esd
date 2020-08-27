@@ -26,12 +26,13 @@
 #' @seealso senorge, station.thredds
 #' 
 #' @examples
+#' \dontrun{
 #' it <- "latest"
 #' lon <- c(-2,15)
 #' lat <- c(55,63)
 #' slp <- meps(param="slp", lon=lon, lat=lat, it=it, verbose=TRUE)
 #' map(slp, FUN="mean")
-#' 
+#' }
 #' @export
 meps <- function(url='https://thredds.met.no/thredds/catalog/metpplatest',
                  type="forecast", param='slp', lon=c(9.5,11.5), lat=c(59,61), 
@@ -140,7 +141,7 @@ retrieve.meps <- function(ncfile, path=NULL, param='rr',
   varnames <- names(ncid$var)
   latid <- varnames[tolower(varnames) %in% c("lat","latitude")]
   lonid <- varnames[tolower(varnames) %in% c("lon","longitude")]
-  altid <- varnames[tolower(varnames) %in% c("lon","longitude")]
+  altid <- varnames[tolower(varnames) %in% c("alt","altitude")]
   timeid <- dimnames[grep("time",dimnames)]
   vlat <- ncvar_get(ncid, varid=latid)
   vlon <- ncvar_get(ncid, varid=lonid)
@@ -148,20 +149,20 @@ retrieve.meps <- function(ncfile, path=NULL, param='rr',
   time <- ncvar_get(ncid, varid=timeid)
   d <- c(dim(vlat),length(time))
   if(verbose) print(paste0('region: ',
-               paste(round(range(vlon),digits=2),collapse='-'),'E/',
-               paste(round(range(vlat),digits=2),collapse='-'),'N'))
+               paste(round(range(vlon,na.rm=TRUE),digits=2),collapse='-'),'E/',
+               paste(round(range(vlat,na.rm=TRUE),digits=2),collapse='-'),'N'))
   vunit <- ncatt_get(ncid, varid=param, attname="units")$value
   longname <- ncatt_get(ncid, varid=param, attname='standard_name')$value
   projid <- varnames[grep("projection",tolower(varnames))]
   proj <- ncatt_get(ncid, varid=projid)
   if(length(lat)>0) {
-    lat.rng <- range(lat)
+    lat.rng <- range(lat, na.rm=TRUE)
   } else {
-    lat.rng <- range(vlat)
+    lat.rng <- range(vlat, na.rm=TRUE)
   }
   if(length(dim(vlat))==2) {
-    latn <- apply(vlat,2,min)
-    latx <- apply(vlat,2,min)
+    latn <- apply(vlat,2,min,na.rm=TRUE)
+    latx <- apply(vlat,2,min,na.rm=TRUE)
   } else {
     latn <- vlat
     latx <- vlat
@@ -169,7 +170,7 @@ retrieve.meps <- function(ncfile, path=NULL, param='rr',
   suby <- (lat.rng[1] <= latn) & (lat.rng[2] >= latx)
   starty <- min( (1:length(latx))[suby] )
   county <- sum(suby)
-  if (sum(suby)==0) stop(paste('retrieve.rcm: problems, the requested latitude range (',
+  if (sum(suby)==0) stop(paste('retrieve.meps: problems, the requested latitude range (',
                                lat.rng[1],'-',lat.rng[2],') is not within present data (',
                                min(latn),'-',max(latx),')'))
   if (verbose) print(paste('latitudes:',min(lat.rng),'-',max(lat.rng),

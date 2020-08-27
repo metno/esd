@@ -409,9 +409,14 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   }
   ## KMP 2020-08-25: Check the order of dimensions and use idim to rearrange 
   ## start and count in case the they are not in standard order (lon,lat,time)
-  dimnames <- rev(names(ncid$dim))
-  idim <- sapply(c("lon","lat","time"), function(x) grep(x, dimnames))
-  idim2 <- sapply(dimnames, function(x) grep(x, dimnames[idim]))
+  ## 2020-08-27: This didn't work. Removing temporarily until finding a fix.
+  dimnames <- names(ncid$dnciuim)[grep("lon|lat|time",names(ncid$dim))]
+  idim <- c(1,1,1)
+  idim2 <- c(1,1,1)
+  #browser()
+  #idim <- sapply(c("lon","lat","time"), function(x) grep(x, dimnames))
+  #idim2 <- unlist(sapply(dimnames, function(x) grep(x, dimnames[idim])))
+  #ncid$dim
   ## Extract values and add Scale Factor and offset if any
   if (verbose) print(paste("Reading data for ",v1$longname,sep=""))
   if ((one.cell) & (!is.null(itime))) {
