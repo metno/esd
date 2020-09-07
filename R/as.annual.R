@@ -387,6 +387,7 @@ if (inherits(x,'month')) return(x)
   return(y)
 }
 
+
 #' @export as.monthly.station
 ## This is a dublicate of that in as.R
 as.monthly.station <- function (x, FUN = "mean", ...) {
@@ -397,6 +398,42 @@ as.monthly.station <- function (x, FUN = "mean", ...) {
     class(y) <- class(x)
     class(y)[2] <- "month"
     return(y)
+}
+
+#' @export as.daily
+as.daily <- function(x,...) UseMethod("as.daily")
+
+yyyymmdd <- function(x) ymd <- as.Date(paste(year(x),month(x),day(x),sep='-'))
+
+#' @export as.daily.default
+as.daily.default <- function(x,...) {
+  y <- aggregate(x,by=yyyymmdd,...)
+  return(y)
+}
+
+#' @export as.daily.field
+as.daily.field <- function(x,FUN='mean',...) {
+  if (inherits(x,'month')) return(x)
+  y <- aggregate(as.zoo(x), yyyymmdd, #function(tt) as.Date(as.yearmon(tt)),
+                 FUN=FUN,...)
+  y <- attrcp(x,y)
+  attr(y,"dimensions") <- c(attr(x,"dimensions")[1:2],length(index(y)))
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- class(x)
+  class(y)[2] <- "day" 
+  return(y)
+}
+
+#' @export as.daily.station
+## This is a dublicate of that in as.R
+as.daily.station <- function (x, FUN = "mean", ...) {
+  y <- aggregate(zoo(x), yyyymmdd, #function(tt) as.Date(as.yearmon(tt)), 
+                 FUN = FUN, ...)
+  y <- attrcp(x, y)
+  attr(y, "history") <- history.stamp(x)
+  class(y) <- class(x)
+  class(y)[2] <- "day"
+  return(y)
 }
 
 #' @export as.4seasons
