@@ -48,7 +48,7 @@ of plot)}
 A field object
 }
 \description{
-\code{combine} is a S3 method for combinng esd objects, e.g. into groups of
+\code{combine} is a S3 method for combining esd objects, e.g. into groups of
 stations, stations and eof object, or fields. The function is based on
 \code{\link[zoo]{merge.zoo}}, and is also used to synchronise the esd objects.
 }
