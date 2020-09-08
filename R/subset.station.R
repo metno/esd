@@ -215,7 +215,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   
   ## REB 11.04.2014: is can be a list to select region or according to other criterion
   if (inherits(is,'list')) {
-    if (verbose) print('is is a list object')
+    if (verbose) print("'is' is a list object")
     n <- dim(x)[2]
     selx <- rep(TRUE,n); sely <- selx; selz <- selx
     selc <- selx; seli <- selx; selm <- selx; salt <- selx
@@ -262,7 +262,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## Need to make sure both it and is are same type: here integers for index rather than logical
     ## otherwise the subindexing results in an empty object
     if (verbose) print(paste(sum(is),'locations'))
-  }
+  } else is <- is.element(stid(x),is)
   
   if (verbose) print(paste('Subset of',sum(ii),'data points between',
                            min(yr),'-',max(yr),'total:',length(yr),
@@ -270,7 +270,10 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   is[is.na(is)] <- FALSE
   if (is.logical(ii)) ii <- which(ii)
   if (is.logical(is)) is <- which(is)
-  y <- x[ii,is]
+  d <- dim(x); if (is.null(d)) { warning('subset.station: unsuccessfull subsetting'); return(x)}
+  if ( (max(ii) <= d[1]) & (max(is) <= d[2]) ) y <- x[ii,is] else { 
+    print(is); print(dim(x)); warning('subset.station: unsuccessfull subsetting'); return(x)}
+    
   if (verbose) print(summary(coredata(y)))
   class(x) <- cls
   class(y) <- cls
