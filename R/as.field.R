@@ -7,7 +7,7 @@
 #' \code{as.field.events} redirects to \code{\link{events2field}}.
 #' \code{as.field.trajectory} redirects to \code{\link{trajectory2field}}.
 #' 
-#' @seealso as.field.default as.field.zoo as.field.eof as.field.comb as.field.field as.field.ds as.field.station as.field.events as.field.trajectory as.field.dsensemble.eof
+#' @seealso as.field.default as.field.zoo as.field.eof as.field.comb as.field.field as.field.ds as.field.station as.field.events as.field.trajectory as.field.dsensemble.eof as.field.matrix
 #'
 #' @importFrom stats median setNames
 #'
@@ -68,14 +68,14 @@ as.field.zoo <- function(x,...,lon,lat,param,unit,
   if(verbose) print("as.field.zoo")
   t <- index(x)
   if (length(year(x))!=1) {
-      dyr <- median(diff(year(x)))#diff(year(x))[1]
-      dmo <- median(diff(month(x)))#diff(month(x))[1]
-      dda <- median(diff(day(x)))#diff(day(x))[1]
-      timescale <- "annual"
-      if (dmo>0)  timescale <- "month"
-      if (dmo==3)  timescale <- "season"
-      if (dda>0)  timescale <- "day"
-      if (dyr==0 & dmo==0 & dda==0) timescale <- "sub-daily"
+    dyr <- median(diff(year(x)))#diff(year(x))[1]
+    dmo <- median(diff(month(x)))#diff(month(x))[1]
+    dda <- median(diff(day(x)))#diff(day(x))[1]
+    timescale <- "annual"
+    if (dmo>0)  timescale <- "month"
+    if (dmo==3)  timescale <- "season"
+    if (dda>0)  timescale <- "day"
+    if (dyr==0 & dmo==0 & dda==0) timescale <- "sub-daily"
   } else { 
     timescale <- "day"
   }
@@ -141,10 +141,10 @@ as.field.zoo <- function(x,...,lon,lat,param,unit,
 #'
 #' @export as.field.default
 as.field.default <- function(x,...,index,lon,lat,param,unit,
-                         longname=NA,quality=NA,src=NA,url=NA,
-                         reference=NA,info=NA,calendar='gregorian',
-                         greenwich=TRUE, method=NA,type=NA,aspect=NA,
-                         verbose=FALSE) {
+                             longname=NA,quality=NA,src=NA,url=NA,
+                             reference=NA,info=NA,calendar='gregorian',
+                             greenwich=TRUE, method=NA,type=NA,aspect=NA,
+                             verbose=FALSE) {
   if(verbose) print("as.field.default")
   z <- zoo(x=x,order.by=index)
   x <- as.field.zoo(z,lon=lon,lat=lat,param=param,unit=unit,
@@ -152,6 +152,20 @@ as.field.default <- function(x,...,index,lon,lat,param,unit,
                     reference=reference,info=info,calendar=calendar,
                     greenwich=greenwich, method=method,type=type,
                     aspect=aspect, verbose=verbose)
+  invisible(x)
+}
+
+#' @export as.field.matrix
+as.field.matrix <- function(x,...,index,lon,lat,param,unit,
+                            longname=NA,quality=NA,src=NA,url=NA,
+                            reference=NA,info=NA,calendar='gregorian',
+                            greenwich=TRUE, method=NA,type=NA,aspect=NA,
+                            verbose=FALSE) {
+  x <- as.field.default(x=x,index=index,lon=lon,lat=lat,param=param,unit=unit,
+                        longname=longname,quality=quality,src=src,url=url,
+                        reference=reference,info=info,calendar=calendar,
+                        greenwich=greenwich, method=method,type=type,
+                        aspect=aspect, verbose=verbose)
   invisible(x)
 }
 
@@ -334,7 +348,7 @@ as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
     }
     d <- apply(sapply(x[ix],dim),1,min)
     V <- array(unlist(lapply( x[ix],
-      function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(ix)))
+                              function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(ix)))
     if (is.null(ip)) {
       U <- attr(x$eof,'pattern')
       W <- attr(x$eof,'eigenvalues')
@@ -352,7 +366,7 @@ as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
         S[i,,] <- S[i,,] + c(attr(x$eof,'mean'))[i]
       }
     }
-
+    
     S <- aperm(S,c(3,2,1))
     S <- lapply(split(S, arrayInd(seq_along(S),dim(S))[,1]),
                 array,dim=dim(S)[2:3])
@@ -363,10 +377,10 @@ as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
     S <- setNames(S,gcms)
     for (i in seq_along(ix)) {
       S[[i]] <- as.field(S[[i]],index=index(x[[ix[i]]]),
-                 lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
-                 param=varid(Y),unit=unit(Y),
-                 longname=paste('fitted',attr(Y,'longname')),
-                 greenwich=attr(Y,'greenwich'),aspect='fitted')
+                         lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
+                         param=varid(Y),unit=unit(Y),
+                         longname=paste('fitted',attr(Y,'longname')),
+                         greenwich=attr(Y,'greenwich'),aspect='fitted')
       attr(S[[i]],'unitarea') <- attr(x,"unitarea")
       class(S[[i]]) <- class(Y)
     }
