@@ -253,7 +253,6 @@ DS <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) {
     if (verbose) print('DS.default')
-    
     if (verbose) {print('index(y)'); print(index(y))}
     if (verbose) {print(class(y)); print(class(X))}
     swapped <- FALSE
@@ -467,7 +466,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 #' @export DS.station
 DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,
-		       ..., pca=FALSE, npca=20, biascorrect=FALSE) {
+                       ..., pca=FALSE, npca=20, biascorrect=FALSE) {
     
     if (verbose) print('DS.station')
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
@@ -503,7 +502,7 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
                     weighted=weighted,pca=pca,npca=npca,...) 
       return(ds)
     } 
-
+    
     ## REB inserted lines to accomodate for multiple stations
     d <- dim(y)
     if (!is.null(d)) ns <- d[2] else ns <- 1
@@ -523,54 +522,58 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
     } else {
       Y <- y
     }
-
+    
     ## Loop over the different PCs or stations
     for (i in 1:ns) {
-        if (verbose) print(paste("i=",i))
-        z <- subset(Y,is=i)
-        if (verbose) {print(class(z)); print(names(attributes(z)))}
-        if (inherits(X,'eof')) {
-          if (verbose) print("The predictor is some kind of EOF-object")
-          ## Call different functions, depending on the class of X:
-          #print("the predictor is an EOF-object")
-          if (inherits(X,'comb')) {
-            if (verbose) print("*** Comb ***")
-            ## X is combined EOFs
-            ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,
-                          method=method,swsm=swsm,it=it,
-                          rmtrend=rmtrend,ip=ip,verbose=verbose,...)
-            if (verbose) print("---")
-          } else {
-            if (verbose) print("*** EOF ***")
-            ## X is ordinary EOF
-            ds <- DS.default(y=z,X=X,
-                             method=method,swsm=swsm,
-                             rmtrend=rmtrend,ip=ip,verbose=verbose,...)
-            if (verbose) print("+++")
-          }
-        } else if (inherits(X,'field')) {
-            if (verbose) print("the predictor is a field-object")
-            ## X is a field
-            ds <- DS.field(y=z,X=X,biascorrect=biascorrect,
+      if (verbose) print(paste("i=",i))
+      z <- subset(Y,is=i)
+      if (verbose) {print(class(z)); print(names(attributes(z)))}
+      if (inherits(X,'eof')) {
+        if (verbose) print("The predictor is some kind of EOF-object")
+        ## Call different functions, depending on the class of X:
+        #print("the predictor is an EOF-object")
+        if (inherits(X,'comb')) {
+          if (verbose) print("*** Comb ***")
+          ## X is combined EOFs
+          ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,
+                        method=method,swsm=swsm,it=it,
+                        rmtrend=rmtrend,ip=ip,verbose=verbose,...)            
+          if (verbose) print("---")
+        } else {
+          if (verbose) print("*** EOF ***")
+          ## X is ordinary EOF
+          ds <- DS.default(y=z,X=X,
                            method=method,swsm=swsm,
                            rmtrend=rmtrend,ip=ip,verbose=verbose,...)
+          if (verbose) print("+++")
         }
-        ## May need an option for coombined field: x is 'field' + 'comb'
-        #if (is.null(ds)) browser()
-        
-        ## Unless told not to - carry out a cross-validation
-        if (!is.null(m))  {
-          if (verbose) print("Cross-validation")
-          xval <- crossval(ds,m=m)
-          attr(ds,'evaluation') <- zoo(xval)
-        } else attr(ds,'evaluation') <- NULL
-
-        if (verbose) print(names(attributes(ds)))
-        if (ns==1) dsall <- ds else {
-            if (i==1) dsall <- list(ds.1=ds) else
-            eval(parse(text=paste('dsall$ds.',i,' <- ds',sep='')))
+      } else if (inherits(X,'field')) {
+        if (verbose) print("the predictor is a field-object")
+        ## X is a field
+        ds <- DS.field(y=z,X=X,biascorrect=biascorrect,
+                       method=method,swsm=swsm,
+                       rmtrend=rmtrend,ip=ip,verbose=verbose,...)
+      }
+      ## May need an option for coombined field: x is 'field' + 'comb'
+      #if (is.null(ds)) browser()
+      
+      ## Unless told not to - carry out a cross-validation
+      if (!is.null(m))  {
+        if (verbose) print("Cross-validation")
+        xval <- crossval(ds,m=m)
+        attr(ds,'evaluation') <- zoo(xval)
+      } else attr(ds,'evaluation') <- NULL
+      
+      if (verbose) print(names(attributes(ds)))
+      if (ns==1) {
+        dsall <- ds 
+      } else {
+        if (i==1) {
+          dsall <- list(ds.1=ds) 
+        } else {
+          eval(parse(text=paste('dsall$ds.',i,' <- ds',sep='')))
         }
-
+      }
     }
     
     ## If PCA was used to transform the predictands to preserve the

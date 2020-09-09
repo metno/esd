@@ -13,7 +13,7 @@
 #' subset.events subset.trajectory subset.trend subset.corfield subset.ds
 #' subset.dsensemble subset.comb subset.field subset.spell subset.zoo
 #' subset.trajectory station.subset subset.zoo subset.stationmeta
-#' subset.matrix subset.pattern default.subset
+#' subset.matrix subset.pattern subset.default
 #' @seealso matchdate sort.station
 #'
 #' @param x Data object from which the subset is taken
@@ -94,7 +94,6 @@
 #' X2 <- combine(subset(T2M,it="mam"),subset(GCM,it="mam"))
 #' eof1 <- EOF(X1)
 #' eof2 <- EOF(X2)
-#' eof3 <- biasfix(eof2)
 #' plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
 #'      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2), new=FALSE)
 #' # OK - identical results
@@ -128,7 +127,7 @@ subset.field <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print("subset.field")
   if (is.null(it) & is.null(is)) return(x) 
   if (verbose) {str(it); str(is)}
-  y <- default.subset(x,...,is=is,it=it,verbose=verbose)
+  y <- subset.default(x,...,is=is,it=it,verbose=verbose)
   attr(y,'history') <- history.stamp(x)
   return(y)
 }
@@ -138,7 +137,7 @@ subset.zoo <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print("subset.zoo")
   if (is.null(it) & is.null(is)) return(x)
   d <- dim(x)
-  y <- default.subset(x,is=is,it=it,verbose=verbose)
+  y <- subset.default(x,is=is,it=it,verbose=verbose)
   ## Check if there is only one series but if the dimension 
   if ( (!is.null(d)) & is.null(dim(y)) ) {
     if (d[2]==1) dim(y) <- c(length(y),1)
@@ -838,8 +837,8 @@ subset.spell <- function(x,is=NULL,it=NULL,...,verbose=FALSE) {
     invisible(y)
 }
 
-default.subregion <- function(x,is=NULL,verbose=FALSE) {
-  if(verbose) print("default.subregion")
+subregion.default <- function(x,is=NULL,verbose=FALSE) {
+  if(verbose) print("subregion.default")
   if(verbose) {print("Sub-region"); print(is)}
   
   if ( (is.list(is)) | (is.data.frame(is)) ) {
@@ -921,9 +920,9 @@ default.subregion <- function(x,is=NULL,verbose=FALSE) {
   return(y)
 } 
 
-#' @export default.subset
-default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-    if (verbose) {print("default.subset"); print(it); print(is); print('---')}
+#' @export subset.default
+subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+    if (verbose) {print("subset.default"); print(it); print(is); print('---')}
     
     ## REB: Use select.station to condition the selection index is...
     ## loc - selection by names
@@ -932,7 +931,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## alt - positive values: any above; negative any below height
     ## cntr - selection by country
   
-    ## REB 2015-02-02: renamed to default.subset because this will be used to subset
+    ## REB 2015-02-02: renamed to subset.default because this will be used to subset
     ## both field and station objects.
     
     nval <- function(x) sum(is.finite(x))
@@ -947,7 +946,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     d <- dim(x)
     if (is.null(d)) {
         if (verbose)
-            print("default.subset: Warning - One dimensional vector has been found in the coredata")
+            print("subset.default: Warning - One dimensional vector has been found in the coredata")
         x <- zoo(as.matrix(coredata(x)),order.by=index(x))
         x <- attrcp(x0,x)
         class(x) <- class(x0)
@@ -962,7 +961,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     t <- index(x)
     if(inherits(t,"Date")) t <- as.Date(format.Date(t,"%Y-%m-%d"))
     if(!inherits(t,c("POSIXt","PCICt"))) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
-    if (verbose) {print('default.subset: time index it'); print(it)}
+    if (verbose) {print('subset.default: time index it'); print(it)}
     if (is.character(it)) {
       if ((levels(factor(nchar(it)))==10)) it <- as.Date(it)
     }
@@ -1019,7 +1018,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       } else {
         str(it); print(class(it))
         ii <- rep(FALSE,length(t))
-        warning("default.subset: did not recognise the selection citerion for 'it'")
+        warning("subset.default: did not recognise the selection citerion for 'it'")
       }
     } else if ((class(it)=="numeric") | (class(it)=="integer")) {
       if (verbose) print('it is numeric or integer')
@@ -1050,7 +1049,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           ii <- is.element(1:length(t),it)
         } else {
           ii <- rep(FALSE,length(t))
-          warning("default.subset: did not reckognise the selection citerion for 'it'")
+          warning("subset.default: did not reckognise the selection citerion for 'it'")
         }
       }
     } else if (inherits(it,c("Date","yearmon"))) {       
@@ -1065,7 +1064,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       ii <- is.element(t,it)
     } else if (!is.null(it)) {
       ii <- rep(FALSE,length(t))
-      warning("default.subset: did not reckognise the selection citerion for 'it'")
+      warning("subset.default: did not reckognise the selection citerion for 'it'")
     } 
     ## it <- (1:length(t))[ii]
     ## 
@@ -1140,7 +1139,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     } else if ( inherits(is,'list') & inherits(x,'field') ) {
       if (verbose) print('spatial selection: field & is=list')
       ## KMP 2016-10-20 Can we subset across the dateline and greenwich now?
-      y <- default.subregion(x,is=is,verbose=verbose)
+      y <- subregion.default(x,is=is,verbose=verbose)
       if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
         x <- g2dl.field(x,greenwich=TRUE) }
       is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
@@ -1222,7 +1221,7 @@ default.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (d[2]==1) dim(y) <- c(length(y),1)
     }
     attr(y,'history') <- history.stamp(x)   
-    if (verbose) print('exit default.subset')
+    if (verbose) print('exit subset.default')
     if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))
     return(y)
 }
@@ -1362,7 +1361,7 @@ subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
     jj <- is  
   } else if (!is.null(is)){
     jj <- rep(FALSE,dim(x)[1])
-    warning("default.subset: did not reckognise the selection citerion for 'is'")
+    warning("subset.default: did not reckognise the selection citerion for 'is'")
   }
   
   kk <- rep(TRUE,dim(x)[1])
