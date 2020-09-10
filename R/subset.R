@@ -94,8 +94,8 @@
 #' X2 <- combine(subset(T2M,it="mam"),subset(GCM,it="mam"))
 #' eof1 <- EOF(X1)
 #' eof2 <- EOF(X2)
-#' plot(merge(eof1[,1],eof2[,1],eof3[,1]),plot.type='single',
-#'      col=c('red','blue','green'),lty=c(1,1,2),lwd=c(4,2,2), new=FALSE)
+#' plot(merge(eof1[,1],eof2[,1]),plot.type='single',
+#'      col=c('red','blue'),lty=c(1,2),lwd=c(4,2), new=FALSE)
 #' # OK - identical results
 #' 
 #' # Extract storm tracks for specific periods, regions and characteristics

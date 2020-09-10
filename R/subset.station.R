@@ -184,14 +184,14 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         }
       } else if (nlev<=12  & ( (max(it) <= 12) & (min(it) >= 1) )) {
         if (verbose) {
-          print(paste("The 'it' value are most probably a month index.",
+          print(paste("The 'it' value is most probably a month index.",
                       "If not please use character strings instead"))
           print(range(it))
         }
         ii <- is.element(mo,it)
       } else {
         if (verbose) {
-          print("The 'it' value are most probably an index.")
+          print("The 'it' value is most probably an index.")
           print(range(it))
         }
         ii <- it
@@ -203,7 +203,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     }
   } else {
     ii <- rep(FALSE,length(t))
-    warning("subset.station: did not reckognise the selection citerion for 'it'")
+    warning("subset.station: did not recognise the selection citerion for 'it'")
   }
   
   class(x) -> cls
@@ -212,14 +212,12 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   class(x) <- "zoo"
   
   if (verbose) print('is - spatial indexing')
-  
   ## REB 11.04.2014: is can be a list to select region or according to other criterion
   if (inherits(is,'list')) {
     if (verbose) print("'is' is a list object")
-    n <- dim(x)[2]
-    selx <- rep(TRUE,n); sely <- selx; selz <- selx
+    selx <- rep(TRUE,dim(x)[2]); sely <- selx; selz <- selx
     selc <- selx; seli <- selx; selm <- selx; salt <- selx
-    selp <- selx; selF <- selx ; sell <- selx
+    selp <- selx; selF <- selx ; sell <- selx; selj <- selx
     nms <- names(is)
     il <- grep('loc',tolower(nms))
     ix <- grep('lon',tolower(nms))
@@ -231,6 +229,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ip <- grep('param',tolower(nms))
     id <- grep('stid',tolower(nms))
     iF <- grep('FUN',nms)
+    ij <- grep('index',tolower(nms))
     if (length(il)>0) sloc <- is[[il]] else sloc <- NULL
     if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
     if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
@@ -241,6 +240,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(ip)>0) sparam <- is[[ip]] else sparam <- NULL        
     if (length(id)>0) sstid <- is[[id]] else sstid <- NULL
     if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
+    if (length(ij)>0) sj <- is[[ij]] else sj <- NULL
     #print(slat); print(range(lat(x)))
     if (length(sloc)>0) sell <- is.element(tolower(loc(x)),tolower(sloc))
     if (length(slon)==2) selx <- as.logical((lon(x) >= min(slon)) & (lon(x) <= max(slon)))
@@ -256,30 +256,64 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(sstid)==2) seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) else
       if (length(sstid)>0) seli <- is.element(stid(x),sstid)
     if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...
+    if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),sparam)
+    if(length(sj)>0) selj <- is.element(seq(1,dim(x)[2]),sj)
     ##
-    is <- sell & selx & sely & selz & selc & seli & selm & selp & selF
+    is <- sell & selx & sely & selz & selc & seli & selm & selp & selF & selj
     ##
     ## Need to make sure both it and is are same type: here integers for index rather than logical
     ## otherwise the subindexing results in an empty object
     if (verbose) print(paste(sum(is),'locations'))
-  } else is <- is.element(stid(x),is)
+  } else if(is.numeric(is) | is.integer(is)) {
+    print("'is' is numeric or integer.")
+    if(all(is<=dim(x)[2])) {
+      if(is.null(stid(x))) {
+        print("is most probably holds indices")
+        is <- is.element(seq(1,dim(x)[2]),is)
+      } else if (all(is.element(is,stid(x)))) {
+        print("is most probably holds station id:s")
+        is <- is.element(stid(x),is)
+      } else {
+        print("is most probably holds indices")
+        is <- is.element(seq(1,dim(x)[2]),is)
+      }
+    } else {
+      print("is most probably holds station id:s")
+      is <- is.element(stid(x),is)
+    }
+  } else {
+    is <- rep(FALSE,dim(x)[2])
+    warning("subset.station: did not recognise the selection citerion for 'is'")
+  }
   
   if (verbose) print(paste('Subset of',sum(ii),'data points between',
                            min(yr),'-',max(yr),'total:',length(yr),
                            'from',length(is),'locations'))
+
   is[is.na(is)] <- FALSE
   if (is.logical(ii)) ii <- which(ii)
   if (is.logical(is)) is <- which(is)
-  d <- dim(x); if (is.null(d)) { warning('subset.station: unsuccessfull subsetting'); return(x)}
-  if ( (max(ii) <= d[1]) & (max(is) <= d[2]) ) y <- x[ii,is] else { 
-    print(is); print(dim(x)); warning('subset.station: unsuccessfull subsetting'); return(x)}
-    
+  
+  d <- dim(x)
+  if (is.null(d)) {
+    warning('subset.station: unsuccessfull subsetting')
+    return(x)
+  }
+  if ( (max(ii) <= d[1]) & (max(is) <= d[2]) ) {
+    y <- x[ii,is]
+  } else { 
+    print(is)
+    print(dim(x))
+    warning('subset.station: unsuccessfull subsetting')
+    return(x)
+  }
+  
   if (verbose) print(summary(coredata(y)))
   class(x) <- cls
   class(y) <- cls
   y <- attrcp(x,y,ignore=c("names"))
   attr(y,'location') <- loc(x)[is]
- 
+  
   if (length(esd::unit(x))== length(x[1,])) attr(y,'unit') <- esd::unit(x)[is] else
                                          attr(y,'unit') <- esd::unit(x)[1]
   if (length(varid(x))== length(x[1,])) attr(y,'variable') <- varid(x)[is] else

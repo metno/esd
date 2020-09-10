@@ -1920,7 +1920,7 @@ plot.cca <- function(x,...,icca=1,
 #' ds <- DS(Oslo,t2m)
 #' 
 #' # Plot the results for January month
-#' # plot(subset(ds,it='Jan'))
+#' plot(subset(ds,it='Jan'))
 #' 
 #' # Plot the residuals:
 #' residual <- as.residual(ds)
