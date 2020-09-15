@@ -1248,9 +1248,9 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
     end.j <- sapply(meta.end[j.order], function(x) min(x, end))
     start.j <- sapply(meta.start[j.order], function(x) max(x, start))
     ndata <- switch(toupper(timeresolutions),
-                    "P1M"=difftime.month(end.j, start.j), 
-                    "P1D"=difftime(end.j, start.j, units="days"), 
-                    "PT1M"=difftime(end.j, start.j, units="minutes"))
+                    "P1M"=difftime.month(as.Date(end.j), as.Date(start.j)), 
+                    "P1D"=difftime(as.Date(end.j), as.Date(start.j), units="days"), 
+                    "PT1M"=difftime(as.Date(end.j), as.Date(start.j), units="minutes"))
     ndata <- as.numeric(ndata)
     stid.url <- c(); time.url <- c()
     while(sum(ndata)>0) {
@@ -1270,9 +1270,9 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
         ## REB end-of-hack...
         start.k <- min(start.j[k:(k+dk0)])
         dt <- switch(toupper(timeresolutions),
-                     "P1M"=difftime.month(end.k, start.k), 
-                     "P1D"=difftime(end.k, start.k, units="days"), 
-                     "PT1M"=difftime(end.k, start.k, units="minutes"))
+                     "P1M"=difftime.month(as.Date(end.k), as.Date(start.k)), 
+                     "P1D"=difftime(as.Date(end.k), as.Date(start.k), units="days"), 
+                     "PT1M"=difftime(as.Date(end.k), as.Date(start.k), units="minutes"))
         dk <- min(floor(maxdata/as.numeric(dt))-1, dk0, 100)
         time.url <- c(time.url, paste0(start.k,"/",end.k))
         stid.url <- c(stid.url, paste(paste0('SN',stid.j[k:(k+dk)]),collapse=","))

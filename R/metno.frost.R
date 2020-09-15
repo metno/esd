@@ -158,7 +158,6 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     }
 
     # KT 2020-05-26: getting data from both Norge and Svalbard and Jan Mayen
-    #browser()
     xs_no <- jsonlite::fromJSON(URLencode(url1), flatten=TRUE)
     xs_sj <- jsonlite::fromJSON(URLencode(url_sj), flatten=TRUE)
     xs1 <- rbind(xs_no$data, xs_sj$data)
