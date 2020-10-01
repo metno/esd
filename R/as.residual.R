@@ -48,7 +48,7 @@ as.residual.ds <- function(x,verbose=FALSE,...){
     class(y) <- class(attr(x,'original_data'))
     y <- as.field(y)
     attr(y,'aspect') <- 'residual'
-  }
+  } else if (is.ds(x)) class(y) <- class(attr(x,'original_data'))
   attr(y,'aspect') <- 'residual'
   attr(y,'history') <- history.stamp(x)
   invisible(y)
