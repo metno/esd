@@ -90,11 +90,12 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       print("No variable found for your selection or the param identifier has not been set correctly.")
       print("Please refresh your selection based on the list below")
       print(as.matrix(ele2param(src=src))[,c(2,5,6)])
+      return(NULL)
     }
   }  
   ## get the lenght of the data base
   #n <- length(station.meta$station_id)
-  if (!is.null(stid)) {
+  if (!is.null(stid) & dim(station.meta)[1]!=0) {
     if(verbose) print("Search by station identifier")
     if (is.numeric(stid)) {
       id <- is.element(station.meta$station_id,stid)
@@ -104,32 +105,34 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       station.meta <- station.meta[id,]
     }
   }
-  if (length(lon)==1 & length(lat)==1) {
-    if(verbose) print("Search by the closest station to longitude and latitude values")
-    d <- distAB(lon, lat, station.meta$longitude, station.meta$latitude)
-    id <- d==min(d,na.rm=TRUE)
-    ##id[is.na(id)] <- FALSE # Ak some of the lon values are NA's
-    station.meta <- station.meta[id,]
-  } else {
-    if (!is.null(lon)) {
-      if(verbose) print("Search by longitude values or range of values")
-      lon.rng <- range(lon,na.rm=TRUE)
-      id <- (station.meta$longitude >= lon.rng[1]) & 
-            (station.meta$longitude <= lon.rng[2]) &
-            !is.na(station.meta$longitude)
-      station.meta <- station.meta[id,]  
-    }
-    if (!is.null(lat)) {
-      if(verbose) print("Search by latitude values or range of values")
-      lat.rng <- range(lat) 
-      id <- (station.meta$latitude >= lat.rng[1]) & 
-            (station.meta$latitude <= lat.rng[2]) & 
-            !is.na(station.meta$latitude)
+  if(dim(station.meta)[1]!=0) {
+    if (length(lon)==1 & length(lat)==1) {
+      if(verbose) print("Search by the closest station to longitude and latitude values")
+      d <- distAB(lon, lat, station.meta$longitude, station.meta$latitude)
+      id <- d==min(d,na.rm=TRUE)
+      ##id[is.na(id)] <- FALSE # Ak some of the lon values are NA's
       station.meta <- station.meta[id,]
+    } else {
+      if (!is.null(lon)) {
+        if(verbose) print("Search by longitude values or range of values")
+        lon.rng <- range(lon,na.rm=TRUE)
+        id <- (station.meta$longitude >= lon.rng[1]) & 
+              (station.meta$longitude <= lon.rng[2]) &
+              !is.na(station.meta$longitude)
+        station.meta <- station.meta[id,]  
+      }
+      if (!is.null(lat)) {
+        if(verbose) print("Search by latitude values or range of values")
+        lat.rng <- range(lat) 
+        id <- (station.meta$latitude >= lat.rng[1]) & 
+              (station.meta$latitude <= lat.rng[2]) & 
+              !is.na(station.meta$latitude)
+        station.meta <- station.meta[id,]
+      }
     }
   }
   ## Search by altitude values or range of values
-  if (!is.null(alt)) {
+  if (!is.null(alt) & dim(station.meta)[1]!=0) {
     if(verbose) print("Search by altitude values or range of values")
     if (length(alt) == 1) {
       if (alt > 0) alt.rng <- c(alt,10000)
@@ -143,14 +146,14 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     station.meta <- station.meta[id,] 
   }
   ## Search by country name
-  if (!is.null(cntr)) {
+  if (!is.null(cntr) & dim(station.meta)[1]!=0) {
     if(verbose) print("Search by country")
     id <- is.element(tolower(station.meta$country),tolower(cntr))
     station.meta <- station.meta[id,]
   }
   ##
   ## Search by data source
-  if (!is.null(src)) {
+  if (!is.null(src) & dim(station.meta)[1]!=0) {
     if(verbose) print("Search by data source")
     ## Redirect external users to Frost and Thredds for metno data
     if(user!='metno') src <- sapply(src, function(x) {
@@ -163,30 +166,30 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     station.meta <- station.meta[id,]
   }
   
-  if (!is.null(loc)) {
+  if (!is.null(loc) & dim(station.meta)[1]!=0) {
     if(verbose) print("Search by location")
     ## id <- is.element(tolower(station.meta$location),tolower(loc))
     pattern <- paste(loc,collapse='|')
-    id <- grep(pattern=pattern,station.meta$location,ignore.case=TRUE,...)
+    id <- grepl(pattern=pattern,station.meta$location,ignore.case=TRUE,...)
     station.meta <- station.meta[id,]
   }
 
   ## Search by esd element
-  if (!is.null(ele)) {
+  if (!is.null(ele) & dim(station.meta)[1]!=0) {
     if(verbose) print("Search by element")
     id <- is.element(station.meta$element,ele)
     station.meta <- station.meta[id,]
   }
   
   ## Search by minimum number of observations
-  if (!is.null(nmin)) { 
+  if (!is.null(nmin) & dim(station.meta)[1]!=0) { 
     if(verbose) print("Search by minimum number of observations")
     ny <- as.numeric(station.meta$end) - as.numeric(station.meta$start) + 1
     id <- (ny >= nmin)
     station.meta <- station.meta[id,]
   }
   
-  if (!is.null(it)) {  
+  if (!is.null(it) & dim(station.meta)[1]!=0) {  
     if(verbose) print("Search by starting and ending years")
     if(is.dates(it)) it <- as.numeric(strftime(it, format="%Y"))
     it.rng <- range(it)
@@ -202,10 +205,11 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       ## Keep all stations with any data within selected period:
       id <- n.rng>0
     }
-    if (sum(id,na.rm=TRUE)==0) {
+    if (!any(id)) {
       print(paste('No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
                   min(as.numeric(station.meta$start)),' and latest observation from ',
                   max(as.numeric(station.meta$end)),sep=''))
+      return(NULL)
     }
     station.meta <- station.meta[id,]
     ## Why replace the meta data start and end?
@@ -213,10 +217,10 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     #station.meta$end <- rep(it.rng[2],length(station.meta$loc))
   }
   ## Search by esd element
-  if (!is.null(ele)) {
-      if(verbose) print("Search by element")
-      id <- is.element(station.meta$element,ele)
-      station.meta <- station.meta[id,]
+  if (!is.null(ele) & dim(station.meta)[1]!=0) {
+    if(verbose) print("Search by element")
+    id <- is.element(station.meta$element,ele)
+    station.meta <- station.meta[id,]
   }
     
   ## Outputs

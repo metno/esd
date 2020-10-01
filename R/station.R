@@ -1258,17 +1258,20 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
       if(any(cumsum(ndata)<maxdata)) {
         dk0 <- max(which(cumsum(ndata)<maxdata))-k
         end.k <- max(end.j[k:(k+dk0)])
-        ## REB 2020-05-27: hack to set the end to Sys.time()
         if (is.null(it)) { 
+          start.k <- min(start.j[k:(k+dk0)])
           end.k <- format(Sys.time(),'%Y-%m-%d')
           print(paste('REB decided that the end should be',end))
         } else {
-          start.k <- it[1]
-          end.k <- it[2]
           print(paste('Fetch data between',it[1],'and',it[2]))
+          if(!is.dates(it)) {
+            start.k <- paste0(it[1],"-01-01")
+            end.k <- paste0(it[2],"-12-31")
+          } else {
+            start.k <- it[1]
+            end.k <- it[2]
+          }
         }
-        ## REB end-of-hack...
-        start.k <- min(start.j[k:(k+dk0)])
         dt <- switch(toupper(timeresolutions),
                      "P1M"=difftime.month(as.Date(end.k), as.Date(start.k)), 
                      "P1D"=difftime(as.Date(end.k), as.Date(start.k), units="days"), 
