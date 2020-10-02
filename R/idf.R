@@ -13,6 +13,11 @@
 #' distribution taken from https://doi.org/10.1088/1748-9326/ab2bb2 
 #' @param verbose a boolean; if TRUE print information about progress
 #'
+#' @examples
+#' y <- station(stid=18700,src='metnod.thredds',param='precip')
+#' z <- IDF(y)
+#' View(z)
+#'
 #' @export day2IDF
 
 day2IDF <- function(x,L=c(1,2,3,6,12,24),tau=10,zeta=NULL,n0=365.25,
@@ -33,7 +38,7 @@ day2IDF <- function(x,L=c(1,2,3,6,12,24),tau=10,zeta=NULL,n0=365.25,
   mu <- wetmean(coredata(x))
   fw <- wetfreq(coredata(x))
   taus <- c(2, 5, 10, 20, 25, 50, 100, 200) 
-  zetaestimates <- c(0.4251593, 0.4185929, 0.4161947, 0.4147515, 0.4144257, 0.4137387, 0.4134449, 0.4134594)
+    zetaestimates <- c(0.4251593, 0.4185929, 0.4161947, 0.4147515, 0.4144257, 0.4137387, 0.4134449, 0.4134594)
   if (is.null(zeta)) zeta <- approx(x=taus,y=zetaestimates,tau)$y
   alpha <- alpha[1] + alpha[2]*log(tau)
   scaleL <- (L/24)^zeta
@@ -74,5 +79,5 @@ plot.IDF <- function(x,type='l',xlab='timescale (hrs)',ylab='return value (mm)',
   grid()
   for (i in 1:d[2]) lines(attr(x,'L'),x[,i],col="grey30",lwd=2)
   for (i in 1:d[2]) lines(attr(x,'L'),x[,i],col=cols[i],lty=2,lwd=2)
-  legend(0,max(x),colnames(x),cols)
+  legend(0,max(x),colnames(x),cols,bty='n')
 }
