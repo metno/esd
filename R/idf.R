@@ -1,8 +1,8 @@
 #' Calculate approximate intensity-duration-frequency (IDF) curves from daily data through
 #' a crude downscaling in timescales. 
-#' Caluculate the residual of a 'ds' object, i.e., the original data minus the fitted values.
+#' Calculate the residual of a 'ds' object, i.e., the original data minus the fitted values.
 #'
-#' @aliases as.residual as.residual.ds as.residual.station as.residual.field
+#' @aliases IDF plot.IDF
 #
 #' @param x a daily station object for rainfall
 #' @param L timescale in hours
@@ -19,7 +19,6 @@
 #' View(z)
 #'
 #' @export day2IDF
-
 day2IDF <- function(x,L=c(1,2,3,6,12,24),tau=10,zeta=NULL,n0=365.25,
                     alpha=c(1.256,0.064),verbose=FALSE) {
   ## Formula to estimate the sub-daily return-values for return interval tau and timescales L (unit: hours)

@@ -2,13 +2,11 @@
 % Please edit documentation in R/idf.R
 \name{day2IDF}
 \alias{day2IDF}
-\alias{as.residual}
-\alias{as.residual.ds}
-\alias{as.residual.station}
-\alias{as.residual.field}
+\alias{IDF}
+\alias{plot.IDF}
 \title{Calculate approximate intensity-duration-frequency (IDF) curves from daily data through
 a crude downscaling in timescales. 
-Caluculate the residual of a 'ds' object, i.e., the original data minus the fitted values.}
+Calculate the residual of a 'ds' object, i.e., the original data minus the fitted values.}
 \usage{
 day2IDF(
   x,
@@ -39,7 +37,7 @@ distribution taken from https://doi.org/10.1088/1748-9326/ab2bb2}
 \description{
 Calculate approximate intensity-duration-frequency (IDF) curves from daily data through
 a crude downscaling in timescales. 
-Caluculate the residual of a 'ds' object, i.e., the original data minus the fitted values.
+Calculate the residual of a 'ds' object, i.e., the original data minus the fitted values.
 }
 \examples{
 y <- station(stid=18700,src='metnod.thredds',param='precip')
