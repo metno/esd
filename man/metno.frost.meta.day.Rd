@@ -3,6 +3,7 @@
 \name{metno.frost.meta.day}
 \alias{metno.frost.meta.day}
 \alias{metno.frost.meta.month}
+\alias{metno.frost.meta.minute}
 \title{Download METNO station metadata using frost.met.no}
 \usage{
 metno.frost.meta.day(
@@ -33,9 +34,9 @@ Where there are multiple measuring periods registered for the parameter,
 only the earliest start time and the latest end time are used.
 }
 \examples{
-# Fetch all stations' measuring periods of the t2m parameter
+# Fetch metadata for all stations and measuring periods of the t2m parameter
 metno.frost.meta.day(param=c('t2m'))
-# Fetch all stations' measuring periods of all available parameters
+# Fetch metadata for all stations and measuring periods of all available parameters
 metno.frost.meta.month()
 
 }

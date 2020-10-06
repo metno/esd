@@ -3,7 +3,7 @@
 #' Where there are multiple measuring periods registered for the parameter,
 #' only the earliest start time and the latest end time are used.
 #' 
-#' @aliases metno.frost.meta.day metno.frost.meta.month
+#' @aliases metno.frost.meta.day metno.frost.meta.month metno.frost.meta.minute
 #' 
 #' @param param Vector of parameters
 #' @param save2file if TRUE, save metadata in a local file
@@ -19,9 +19,9 @@
 #' @keywords parameter,metadata,metno,norway,frost
 #'
 #' @examples
-#' # Fetch all stations' measuring periods of the t2m parameter
+#' # Fetch metadata for all stations and measuring periods of the t2m parameter
 #' metno.frost.meta.day(param=c('t2m'))
-#' # Fetch all stations' measuring periods of all available parameters
+#' # Fetch metadata for all stations and measuring periods of all available parameters
 #' metno.frost.meta.month()
 #' 
 #' @export metno.frost.meta.day
@@ -49,7 +49,7 @@ metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon
   invisible(X)
 }
 
-# get monthly timeseries - removed DD, DD06, DD12, DD18, SD
+# Get metadata for monthly timeseries - removed DD, DD06, DD12, DD18, SD
 #' @export metno.frost.meta.month
 metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
                                    save2file=FALSE, path=NULL, verbose=FALSE,...) {
@@ -156,7 +156,6 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       print(url_sj)
       print(url2)
     }
-
     # KT 2020-05-26: getting data from both Norge and Svalbard and Jan Mayen
     xs_no <- jsonlite::fromJSON(URLencode(url1), flatten=TRUE)
     xs_sj <- jsonlite::fromJSON(URLencode(url_sj), flatten=TRUE)
@@ -203,14 +202,13 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       }
     }
     #invisible(df)
-    
     ## Same format as station.meta
     var <- df$element
     for(element in unique(df$element)) {
       var[df$element==element] <- esd2ele(element)
     }
     cntr <- sapply(df$country, function(x) switch(x, "Norge"="NORWAY", x))
-    X <- data.frame("station_id"=gsub("[A-Z]|[a-z]","",df$station_id),
+    X <- data.frame("station_id"=gsub("[^0-9]","",df$station_id),
                     "location"=df$location,
                     "country"=cntr,
                     "longitude"=df$lon,
@@ -221,7 +219,8 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
                     "end"=strftime(df$end, format="%Y"),
                     "source"=switch(timeresolutions,
                                     "P1D"="METNOD.FROST",
-                                    "P1M"="METNOM.FROST"),
+                                    "P1M"="METNOM.FROST",
+                                    "PT1M"="METNOMIN.FROST"),
                     "wmo"=rep(NA,length(df$station_id)),
                     "quality"=rep(NA,length(df$station_id)),
                     "variable"=var, stringsAsFactors=FALSE)
@@ -234,12 +233,13 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
   }
 }
 
-# Do not export - not in use
+# Get metadata for minute timeseries
+#' @export metno.frost.meta.minute
 metno.frost.meta.minute <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
                                     save2file=FALSE, path=NULL, verbose=FALSE, ...) {
-  if(verbose) print("metno.frost.meta.day")
+  if(verbose) print("metno.frost.meta.minute")
   X <- metno.frost.meta.default(param=param, timeresolutions="PT1M", verbose=verbose, ...)
-  filename <- "meta.metno.frost.day.rda"
+  filename <- "meta.metno.frost.minute.rda"
   attr(X, "source") <- "METNO.FROST.MINUTE"
   attr(X, "version") <- NA
   attr(X, "URL") <- "http://frost.met.no"
