@@ -35,6 +35,8 @@ distribution taken from https://doi.org/10.1088/1748-9326/ab2bb2}
 \item{verbose}{a boolean; if TRUE print information about progress}
 
 \item{exponent}{for the power-law dependency between return values and timescales}
+
+\item{cols}{provies the colour pallette: default is ` rev(heat.colors)`.}
 }
 \description{
 Calculate approximate intensity-duration-frequency (IDF) curves from daily data through

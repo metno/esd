@@ -12,6 +12,7 @@
 #' @param alpha best fit constant and slope for scaling factor between exponential distribution and empirical 
 #' distribution taken from https://doi.org/10.1088/1748-9326/ab2bb2 
 #' @param verbose a boolean; if TRUE print information about progress
+#' @param cols provies the colour pallette: default is ` rev(heat.colors)`.
 #'
 #' @examples
 #' y <- station(stid=18700,src='metnod.thredds',param='precip')
@@ -57,7 +58,7 @@ day2IDF <- function(x,L=c(1,2,3,6,12,24),tau=10,zeta=NULL,n0=365.25,
 }
 
 #' @export IDF
-IDF <- function(x,plot=TRUE,L=c(0.25,0.5,1,2,3,6,12,24),tau=c(2,5,10,20,50,100)) {
+IDF <- function(x,plot=TRUE,L=c(0.25,0.5,1,2,3,6,12,24),tau=c(2,5,10,20,50,100),cols=NULL) {
   n <- length(L); m <- length(tau)
   X <- matrix(rep(NA,n*m),n,m)
   colnames(X) <- paste(tau,'years'); rownames(X) <- paste(L,'hours')
@@ -66,14 +67,14 @@ IDF <- function(x,plot=TRUE,L=c(0.25,0.5,1,2,3,6,12,24),tau=c(2,5,10,20,50,100))
   attr(X,'tau') <- tau
   attr(X,'original_data') <- x
   class(X) <- c('IDF','matrix')
-  if (plot) plot(X)
+  if (plot) plot(X,cols=cols)
   return(X)
 }
 
 #' @export plot.IDF
-plot.IDF <- function(x,type='l',xlab='timescale (hrs)',ylab='return value (mm)',main=NULL,...) {
+plot.IDF <- function(x,type='l',xlab='timescale (hrs)',ylab='return value (mm)',main=NULL,cols=NULL,...) {
   d <- dim(x)
-  cols <- rev(heat.colors(d[2]))
+  if (is.null(cols)) cols <- rev(heat.colors(d[2]))
   if (is.null(main)) main <- paste(loc(attr(x,'original_data')),stid(attr(x,'original_data')))
   plot(attr(x,'L'),x[,d[2]],type=type,xlab=xlab,ylab=ylab,main=main,...)
   grid()

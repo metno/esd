@@ -150,6 +150,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (verbose) {print('map2sphere: set colours'); print(colbar)}
   
   # Rotate coastlines:
+  if (verbose) {print('Rotation:');print(dim(rotM(x=0,y=0,z=lonR))); print(dim(rbind(x,y,z)))}
   a <- rotM(x=0,y=0,z=lonR) %*% rbind(x,y,z)
   a <- rotM(x=latR,y=0,z=0) %*% a
   x <- a[1,]; y <- a[2,]; z <- a[3,]

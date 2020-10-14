@@ -6,8 +6,8 @@
 #' @aliases map map.default map.matrix map.data.frame map.station
 #' map.stationmeta map.stationsummary map.comb map.eof map.ds map.dsensemble
 #' map.field map.corfield map.cca map.events map.mvr map.pca map.array
-#' map.trend lonlatprojection rotM map2sphere vec
-#' @seealso map.trajectory
+#' map.trend lonlatprojection rotM map2sphere
+#' @seealso map.trajectory vec
 #'
 #' @param x the object to be plotted; in \code{rotM}, x holds a vector of
 #' x-coordinates.
@@ -950,6 +950,7 @@ map.events <- function(x,...,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
         ax <- sin(theta)*cos(phi)
         ay <- cos(theta)*cos(phi)
         az <- sin(phi)
+        if (verbose) {print('Rotation:');print(dim(rotM(x=0,y=0,z=lonR))); print(dim(rbind(ax,ay,az)))}
         a <- rotM(x=0,y=0,z=lonR) %*% rbind(ax,ay,az)
         a <- rotM(x=latR,y=0,z=0) %*% a
         ax <- a[1,]; ay <- a[2,]; az <- a[3,]
