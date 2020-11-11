@@ -73,6 +73,7 @@
 #' @param what What to map: ['eof','field] for EOF pattern or the field
 #' recovered from the EOFs.
 #' @param fig see \code{\link{par}}
+#' @param add set add=TRUE if adding the map as a subplot
 #' @param nbins number of bins/colour categories
 #'
 #' @return A field object

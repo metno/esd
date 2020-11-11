@@ -333,7 +333,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
                          map.show=TRUE,map.type=NULL,map.insert=TRUE,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
                          mar=c(4.5,4.5,0.75,0.5),fig=NULL,
-                         alpha=0.5,alpha.map=0.7,
+                         alpha=0.5,alpha.map=0.7,add=FALSE,
                          verbose=FALSE) {
   
   if (verbose) print('plot.station')
@@ -434,9 +434,8 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   cls <- class(x)
   if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
   class(x) <- "zoo"
-  #if(new) dev.new()
   if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE)
+  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,new=add)
   plot.zoo(x,...,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
            cex.axis=cex.axis,cex.lab=cex.lab,cex.main=cex.main,
@@ -525,6 +524,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' @param cex.main see \code{\link[graphics]{par}}
 #' @param mar see \code{\link[graphics]{par}}
 #' @param fig coordinates of figure region, see \code{\link[graphics]{par}}
+#' @param add if TRUE add plot to existing figure
 #' @param alpha transparency factor for main plot
 #' @param alpha.map transparency factor for map
 #' @param verbose a boolean; if TRUE print information about progress
