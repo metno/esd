@@ -12,6 +12,7 @@ ghcn2nc4                      Save the GHCN station data as a netCDF4 file.
 global.t2m.gcm                Gets global/regional mean temperature/precipitation from GCMs
 global_tas_anomaly_cmip3      Computes the spatial mean surface temperature based on the 92 GCM outputs from the CMIP3 experiment or any other experiment.
 globt                         Plots the global mean temperature from GCMs, reanalysis, & observations on picture of the earth
+gsl                           Script that combines severeal global mean sea-level records.
 gst.outlook                   Global surface temperature outlook
 gst                           Plots the global surface temperature from NCEP/NCAR reanalysis 1
 hydroex                       Example for downscaling river run-off.
@@ -31,5 +32,5 @@ testDS                        test script fordownscaling
 test.history.stamp            test script for history attribute in esd objects (provenance)
 testregrid                    testscript for regridding
 tropicalcyclones              script to plot tropical cyclones in the North Atlantic
-world-precip-stats              Global map of precipitation statistics
-gsl                           Script that combines severeal global mean sea-level records.
+world-precip-stats            Global map of precipitation statistics
+warmingplanet                 Visualisation of global warming on a spinning earth

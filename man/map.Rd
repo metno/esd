@@ -23,7 +23,6 @@
 \alias{lonlatprojection}
 \alias{rotM}
 \alias{map2sphere}
-\alias{vec}
 \title{Plot maps for esd objects}
 \usage{
 map(x, ...)
@@ -180,7 +179,7 @@ map(subset(rr,it=it),FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=as.charact
 }
 }
 \seealso{
-map.trajectory
+map.trajectory vec
 
 \code{\link{plot.station}}
 }
