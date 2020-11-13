@@ -46,6 +46,7 @@ howsimilar <- function(x,y,plot='cor',FUN=NULL,regress=FALSE,verbose=FALSE) {
       }
     }
     y <- subset(y,is=list(lon=range(lon(x)),lat=range(lat(x))))
+    y0 <- y
     y2 <- regrid(x,is=y)
     if (verbose) {str(y);str(y2); print(class(x)); print(class(y))}
     y <- zoo(y); y2 <- zoo(y2)
@@ -54,18 +55,18 @@ howsimilar <- function(x,y,plot='cor',FUN=NULL,regress=FALSE,verbose=FALSE) {
     ns <- dim(y)[2]
     r <- rep(NA,ns); md <- r; rmse <- r
     for (is in 1:ns) { 
-      ok <- is.finite(coredata(xy[,i])) & is.finite(coredata(xy[,i+ns]))
+      ok <- is.finite(coredata(xy[,is])) & is.finite(coredata(xy[,is+ns]))
       if (sum(ok)>30) { 
-        r[is] <- cor( coredata(xy)[ok,i], coredata(xy)[ok,i+ns] )
-        md[is] <- max( abs( coredata(xy[ok,i]) - coredata(xy[ok,i+ns]) ) )
-        rmse[is] <- sum( (coredata(xy[ok,i]) - coredata(xy[ok,i+ns]) )^2, na.rm=TRUE)/nt
-      } else browser()
+        r[is] <- cor( coredata(xy)[ok,is], coredata(xy)[ok,is+ns] )
+        md[is] <- max( abs( coredata(xy[ok,is]) - coredata(xy[ok,is+ns]) ) )
+        rmse[is] <- sum( (coredata(xy[ok,is]) - coredata(xy[ok,is+ns]) )^2, na.rm=TRUE)/nt
+      } 
     }
     
+    y <- y0; rm(y0)
     attr(y,'cor') <- r
     attr(y,'rmse') <- rmse
     attr(y,'max.diff') <- md
-    browser()
     if (is.character(plot)) map(y,FUN=plot)
     invisible(y)
 }
@@ -77,7 +78,7 @@ test.howsimilar <- function(x=NULL,y=NULL,verbose=FALSE) {
   if (is.null(y)) y <- annual(station(param='t2m',src='nacd'))
   nv <- apply(y,2,'nv')
   y <- subset(y,is= (nv >= 60))
-  print(names(y))
+  print(loc(y))
   if (verbose) print('Got the test data.')
   z <- howsimilar(x,y,verbose=verbose)
 }
