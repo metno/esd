@@ -265,20 +265,20 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## otherwise the subindexing results in an empty object
     if (verbose) print(paste(sum(is),'locations'))
   } else if(is.numeric(is) | is.integer(is)) {
-    print("'is' is numeric or integer.")
+    if (verbose) print("'is' is numeric or integer.")
     if(all(is<=dim(x)[2])) {
       if(is.null(stid(x))) {
-        print("is most probably holds indices")
+        if (verbose) print("is most probably holds indices")
         is <- is.element(seq(1,dim(x)[2]),is)
       } else if (all(is.element(is,stid(x)))) {
-        print("is most probably holds station id:s")
+        if (verbose) print("is most probably holds station id:s")
         is <- is.element(stid(x),is)
       } else {
-        print("is most probably holds indices")
+        if (verbose) print("is most probably holds indices")
         is <- is.element(seq(1,dim(x)[2]),is)
       }
     } else {
-      print("is most probably holds station id:s")
+      if (verbose) print("is most probably holds station id:s")
       is <- is.element(stid(x),is)
     }
   } else {

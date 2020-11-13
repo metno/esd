@@ -105,6 +105,9 @@ map(TX)
 }
 
 }
+\seealso{
+aggregate.grid
+}
 \author{
 R.E. Benestad and A. Mezghani
 }

@@ -428,7 +428,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   timeid <- dimnames[grep("time",dimnames)]
   idlon <- ncid$dim[[lonid]]$id
   idlat <- ncid$dim[[latid]]$id
-  if (!is.null(levid)) idlev <- ncid$dim[[levid]]$id
+  if (!is.null(levid)) idlev <- ncid$dim[[levid]]$id else idlev <- NULL
   idtime <- ncid$dim[[timeid]]$id
   dimids <- ncid$var[[param]]$dimids
   if (verbose) {print(dimnames); print(dimids); print(idlev)}

@@ -144,8 +144,11 @@ plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=T
   ## are mixed up when applying mean(deltagcm) and sd(deltagcm). 
   #X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),
   #                           sd=sd(x$deltagcm))),2)
-  X <- -round(200*(0.5-sapply(seq_along(deltaobs), function(i) pnorm(deltaobs[i], 
-                                  mean=mean(deltagcm[i,]), sd=sd(deltagcm[i,])))))
+  ## REB 2020-11-12: the changes caused a problem - probably used in different ways..
+  if (!is.null(dim(x$deltagcm))) 
+    X <- -round(200*(0.5-sapply(seq_along(x$deltaobs), function(i) pnorm(x$deltaobs[i], 
+                                  mean=mean(x$deltagcm[i,]), sd=sd(x$deltagcm[i,]))))) else
+    X <- -round(200*(0.5-pnorm(x$deltaobs,mean=mean(x$deltagcm),  sd=sd(x$deltagcm))),2)                               
               
   if (new) {
     dev.new()

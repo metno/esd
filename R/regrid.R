@@ -121,6 +121,7 @@ sparseMproduct <- function(beta,x) {
 #' map(TX)
 #' }
 #' 
+#' @seealso aggregate.grid
 #' @export regrid
 regrid <- function(x,is=NULL,...)
   UseMethod("regrid")
@@ -443,7 +444,8 @@ regrid.field <- function(x,is=NULL,...,it=NULL,verbose=FALSE,approach="field",cl
   attr(y,'history') <- history.stamp(x)
   #print("---")
 
-  if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
+  #if (attr(y,'greenwich') != greenwich) y <- g2dl(y,greenwich)
+  attr(y,'greenwich') <- attr(x,'greenwich')
   invisible(y)
 }
 
