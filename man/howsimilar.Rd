@@ -2,7 +2,7 @@
 % Please edit documentation in R/howsimilar.R
 \name{howsimilar}
 \alias{howsimilar}
-\title{aggregate}
+\title{howsimilar}
 \usage{
 howsimilar(x, y, plot = "cor", FUN = NULL, regress = FALSE, verbose = FALSE)
 }
@@ -21,8 +21,12 @@ howsimilar(x, y, plot = "cor", FUN = NULL, regress = FALSE, verbose = FALSE)
 The call returns a station object
 }
 \description{
-The aggregation functions are based on the S3 method for \code{zoo} objects,
-but takes care of extra house keeping, such as attributes with meta data.
+field-station comparison
+Extract time series from field objects with the same coordinates as the stations
+Estimate correlation, RMSE, max and min for the extracted series. Store as 
+attributes in the extracted station object. Use regression to calibrate to adjust for the
+fact that a grid-box volume is not the same as a point measurement.
+Rasmus E. Benestad
 }
 \details{
 \code{howsimilar} is used for assessing reanalyses against station data.

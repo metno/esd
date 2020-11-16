@@ -1,4 +1,4 @@
-#' aggregate
+#' aggregate.grid
 #' 
 #' The aggregation functions are based on the S3 method for \code{zoo} objects,
 #' but takes care of extra house keeping, such as attributes with meta data.
@@ -28,8 +28,7 @@
 #' 
 #' test.aggregate.grid()
 #' 
-#' @export
-
+#' @export aggregate.grid
 aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
   ## The coordinates of the new aggregated results
   if (verbose) print('aggregate.grid')
@@ -51,9 +50,9 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
   dy <- diff(lats)[1]
   iy <- (lats - min(lats))/dy
   dX <- diff(Lons)[1]
-  iX <- (Lons - min(lons))*dX/dx
+  iX <- (Lons - min(lons))/dx
   dY <- diff(Lats)[1]
-  iY <- (Lats - min(lats))*dY/dy
+  iY <- (Lats - min(lats))/dy
   
   ## length of lons and lats: the dimensions of the resulting aggregated field:
   ny <- length(lats); nY <- length(Lats)
@@ -63,7 +62,10 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
   xy <- paste(rep(round(ix),ny),sort(rep(round(iy),nx)))
   XY <- paste(rep(round(iX),nY),sort(rep(round(iY),nX)))
   if (verbose) {print(xy); print(table(XY))}
-  if (sum(!is.element(XY,xy))!=0) print(XY[!is.element(XY,xy)])
+  if (sum(!is.element(XY,xy))!=0) { 
+    XY[!is.element(XY,xy)] <- NA
+    #print(XY[!is.element(XY,xy)])
+  }
   nt <- length(index(x))
   z <- matrix(rep(NA,nx*ny*nt),nt,nx*ny)
   for (it in 1:nt) {
@@ -79,7 +81,7 @@ aggregate.grid <- function(x,...,is,FUN='mean',na.rm=TRUE,verbose=FALSE) {
   invisible(z)
 }
 
-#' @export
+#' @export test.aggregate.grid
 test.aggregate.grid <- function(x=NULL,verbose=FALSE) {
   print("Test aggregate.grid")
   if (is.null(x)) {

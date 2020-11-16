@@ -2,7 +2,7 @@
 % Please edit documentation in R/aggregate.grid.R
 \name{aggregate.grid}
 \alias{aggregate.grid}
-\title{aggregate}
+\title{aggregate.grid}
 \usage{
 \method{aggregate}{grid}(x, ..., is, FUN = "mean", na.rm = TRUE, verbose = FALSE)
 }
