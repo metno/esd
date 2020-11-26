@@ -559,6 +559,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     par(new=FALSE)
     
     ## Add geoborders
+    data("geoborders", envir = environment())
     lines(geoborders$x, geoborders$y, col = "black")
     lines(attr(geoborders, "borders")$x, attr(geoborders, "borders")$y,
           col = "pink")##"grey90"
@@ -642,6 +643,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       }
       
       ## Add geoborders
+      data("geoborders", envir = environment())
       lines(geoborders$x, geoborders$y, col = "grey50")
       lines(attr(geoborders, "borders")$x,
             attr(geoborders, "borders")$y, col = "pink") ##"grey90"

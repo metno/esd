@@ -30,7 +30,8 @@ reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
   lon <- round(range(lon(x)) + delta*c(-1,1),3)
   lat <- round(range(lat(x)) + delta*c(-1,1),3)
   if (verbose) print(paste('reanfill',min(lon),max(lon),min(lat),max(lat)))
-  Y <- retrieve(file,lon=lon,lat=lat)
+  if (is.character(file)) Y <- retrieve(file,lon=lon,lat=lat) else
+    if (is.field(file)) {Y <- file; file <- attr(Y,'source')}
   if (verbose) print(class(x))
   if (inherits(x,'month')) Y <- as.monthly(Y) else 
     if (inherits(x,'seasonal')) Y <- as.4seasons(Y) else

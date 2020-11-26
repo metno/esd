@@ -1955,7 +1955,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     
     if (!is.null(it)) {
       if (verbose) print('Extract some months or a time period')
-      if (is.null(nmin)) warning(paste("The argument 'it' is set but not 'nmin'; it=",
+      if ( is.null(nmin) & is.character(it[1]) ) warning(paste("The argument 'it' is set but not 'nmin'; it=",
                                        paste(it,collapse="-")))
       if (verbose) print(it)
       gcm <- subset(gcm,it=it,verbose=verbose)
