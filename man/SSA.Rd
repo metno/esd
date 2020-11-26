@@ -4,16 +4,8 @@
 \alias{SSA}
 \title{Singular Spectrum Analysis}
 \usage{
-SSA(
-  x,
-  m = 12,
-  plot = TRUE,
-  main = "SSA analysis",
-  sub = "",
-  anom = TRUE,
-  ip = 1,
-  verbose = FALSE
-)
+SSA(x, m = 12, plot = TRUE, main = "SSA analysis", sub = "",
+  anom = TRUE, ip = 1, verbose = FALSE)
 }
 \arguments{
 \item{x}{A station or eof object.}

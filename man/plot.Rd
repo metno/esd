@@ -15,6 +15,8 @@ plot(x, ...)
 
 \item{new}{if TRUE plot in new window}
 
+\item{lwd}{width of line}
+
 \item{type}{type of plot: 'l' = line, 'p' = point, 'b' = both}
 
 \item{pch}{type of marker}

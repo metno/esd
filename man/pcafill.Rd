@@ -6,15 +6,8 @@
 \alias{fitpc}
 \title{PCA-based missing-value filling}
 \usage{
-pcafill(
-  X,
-  insertmiss = 0,
-  ip = 1:4,
-  mnv = 0,
-  complete = FALSE,
-  test = FALSE,
-  verbose = FALSE
-)
+pcafill(X, insertmiss = 0, ip = 1:4, mnv = 0, complete = FALSE,
+  test = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{X}{station data (group of stations)}

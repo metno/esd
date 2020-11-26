@@ -4,26 +4,10 @@
 \alias{as.field.zoo}
 \title{Coerce input to a \code{field} object}
 \usage{
-\method{as.field}{zoo}(
-  x,
-  ...,
-  lon,
-  lat,
-  param,
-  unit,
-  longname = NA,
-  quality = NA,
-  src = NA,
-  url = NA,
-  reference = NA,
-  info = NA,
-  calendar = "gregorian",
-  greenwich = TRUE,
-  method = NA,
-  type = NA,
-  aspect = NA,
-  verbose = FALSE
-)
+\method{as.field}{zoo}(x, ..., lon, lat, param, unit, longname = NA,
+  quality = NA, src = NA, url = NA, reference = NA, info = NA,
+  calendar = "gregorian", greenwich = TRUE, method = NA, type = NA,
+  aspect = NA, verbose = FALSE)
 }
 \arguments{
 \item{x}{the input object of class \code{zoo} typically containing data from one or several measurement stations}

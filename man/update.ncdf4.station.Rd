@@ -4,7 +4,8 @@
 \alias{update.ncdf4.station}
 \title{update.ncdf4.station}
 \usage{
-\method{update}{ncdf4.station}(x, file, verbose = TRUE, torg = "1899-12-31")
+\method{update}{ncdf4.station}(x, file, verbose = TRUE,
+  torg = "1899-12-31")
 }
 \arguments{
 \item{x}{station object}

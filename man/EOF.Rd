@@ -13,17 +13,8 @@
 \alias{pca2station}
 \title{Empirical Orthogonal Functions (EOFs).}
 \usage{
-EOF(
-  X,
-  ...,
-  it = NULL,
-  is = NULL,
-  n = 20,
-  lon = NULL,
-  lat = NULL,
-  verbose = FALSE,
-  anomaly = TRUE
-)
+EOF(X, ..., it = NULL, is = NULL, n = 20, lon = NULL, lat = NULL,
+  verbose = FALSE, anomaly = TRUE)
 }
 \arguments{
 \item{X}{a 'field' or 'pca' object}

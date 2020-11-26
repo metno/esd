@@ -11,7 +11,8 @@
 \alias{project.ds}
 \title{Prediction based on DS or CCA model}
 \usage{
-\method{predict}{ds}(x, ..., newdata = NULL, addnoise = FALSE, n = 100, verbose = FALSE)
+\method{predict}{ds}(x, ..., newdata = NULL, addnoise = FALSE,
+  n = 100, verbose = FALSE)
 }
 \arguments{
 \item{x}{A ds object}

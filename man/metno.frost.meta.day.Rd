@@ -5,13 +5,9 @@
 \alias{metno.frost.meta.month}
 \title{Download METNO station metadata using frost.met.no}
 \usage{
-metno.frost.meta.day(
-  param = c("t2m", "precip", "tmin", "tmax", "slp", "pon", "pox", "fg", "fx"),
-  save2file = FALSE,
-  path = NULL,
-  verbose = FALSE,
-  ...
-)
+metno.frost.meta.day(param = c("t2m", "precip", "tmin", "tmax", "slp",
+  "pon", "pox", "fg", "fx"), save2file = FALSE, path = NULL,
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{param}{Vector of parameters}

@@ -4,15 +4,8 @@
 \alias{events2station}
 \title{Transform an 'event' object into a 'station' object}
 \usage{
-events2station(
-  x,
-  param = "count",
-  FUN = "mean",
-  verbose = TRUE,
-  longname = NULL,
-  unit = NULL,
-  ...
-)
+events2station(x, param = "count", FUN = "mean", verbose = TRUE,
+  longname = NULL, unit = NULL, ...)
 }
 \arguments{
 \item{x}{input object of class 'events'}

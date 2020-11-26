@@ -4,14 +4,8 @@
 \alias{colscal}
 \title{Generate a color scale}
 \usage{
-colscal(
-  n = 14,
-  pal = "t2m",
-  rev = FALSE,
-  alpha = NULL,
-  test = FALSE,
-  verbose = FALSE
-)
+colscal(n = 14, pal = "t2m", rev = FALSE, alpha = NULL,
+  test = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{n}{length of color vector}

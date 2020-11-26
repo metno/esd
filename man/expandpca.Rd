@@ -4,15 +4,8 @@
 \alias{expandpca}
 \title{Expand PCA to obtain station data}
 \usage{
-expandpca(
-  x,
-  it = NULL,
-  FUN = NULL,
-  FUNX = "mean",
-  verbose = FALSE,
-  anomaly = FALSE,
-  test = FALSE
-)
+expandpca(x, it = NULL, FUN = NULL, FUNX = "mean", verbose = FALSE,
+  anomaly = FALSE, test = FALSE)
 }
 \arguments{
 \item{x}{an object of type 'pca'}

@@ -4,7 +4,8 @@
 \alias{as.field.station}
 \title{Coerce input to a \code{field} object}
 \usage{
-\method{as.field}{station}(x, ..., lon = NULL, lat = NULL, nx = 30, ny = 30, verbose = FALSE)
+\method{as.field}{station}(x, ..., lon = NULL, lat = NULL, nx = 30,
+  ny = 30, verbose = FALSE)
 }
 \arguments{
 \item{x}{the input object of class \code{ds}}

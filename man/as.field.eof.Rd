@@ -4,7 +4,8 @@
 \alias{as.field.eof}
 \title{Coerce input to a \code{field} object}
 \usage{
-\method{as.field}{eof}(x, ..., iapp = NULL, anomaly = FALSE, verbose = FALSE)
+\method{as.field}{eof}(x, ..., iapp = NULL, anomaly = FALSE,
+  verbose = FALSE)
 }
 \arguments{
 \item{x}{the input object of class \code{eof}}

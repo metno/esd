@@ -4,7 +4,8 @@
 \alias{attrcp}
 \title{Copy attributes}
 \usage{
-attrcp(x, y, ignore = c("name", "model", "n.apps", "appendix", "dimnames"))
+attrcp(x, y, ignore = c("name", "model", "n.apps", "appendix",
+  "dimnames"))
 }
 \arguments{
 \item{x}{input object with attributes}

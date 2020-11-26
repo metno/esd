@@ -4,20 +4,11 @@
 \alias{plot.eof}
 \title{Plot esd objects}
 \usage{
-\method{plot}{eof}(
-  x,
-  ...,
-  new = FALSE,
-  xlim = NULL,
-  ylim = NULL,
-  ip = 1,
-  what = c("pc", "eof", "var"),
-  colbar = list(pal = NULL, rev = FALSE, n = 10, alpha = 0.8, breaks = NULL, type = "p",
-    cex = 2, show = TRUE, h = 0.6, v = 1, pos = 0.05),
-  verbose = FALSE,
-  is = NULL,
-  it = NULL
-)
+\method{plot}{eof}(x, ..., new = FALSE, xlim = NULL, ylim = NULL,
+  ip = 1, what = c("pc", "eof", "var"), colbar = list(pal = NULL, rev
+  = FALSE, n = 10, alpha = 0.8, breaks = NULL, type = "p", cex = 2, show =
+  TRUE, h = 0.6, v = 1, pos = 0.05), verbose = FALSE, is = NULL,
+  it = NULL)
 }
 \arguments{
 \item{x}{the object to be plotted}
@@ -47,6 +38,8 @@ to the same coordinates as defined by \code{is}.}
 \item{it}{For subsetting in time - See \code{\link{subset}}.}
 
 \item{plot.type}{"single"}
+
+\item{lwd}{width of line}
 
 \item{type}{type of plot: 'l' = line, 'p' = point, 'b' = both}
 

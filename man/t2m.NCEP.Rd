@@ -51,15 +51,9 @@
 \alias{mu.eq.f.tx}
 \title{Sample data}
 \usage{
-t2m.NCEP(
-  lon = NULL,
-  lat = NULL,
-  anomaly = FALSE,
-  latest = FALSE,
- 
-    url = "ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc",
-  verbose = FALSE
-)
+t2m.NCEP(lon = NULL, lat = NULL, anomaly = FALSE, latest = FALSE,
+  url = "ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc",
+  verbose = FALSE)
 }
 \arguments{
 \item{lon}{longitude range c(lin.min,lon.max)}

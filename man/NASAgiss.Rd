@@ -4,10 +4,9 @@
 \alias{NASAgiss}
 \title{Download GISS Sea Surface Temperature data from NASA}
 \usage{
-NASAgiss(
-  url = "http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt",
-  plot = FALSE
-)
+
+  NASAgiss(url = "http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt",
+  plot = FALSE)
 }
 \arguments{
 \item{url}{url}

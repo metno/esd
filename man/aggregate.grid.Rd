@@ -4,7 +4,8 @@
 \alias{aggregate.grid}
 \title{aggregate.grid}
 \usage{
-\method{aggregate}{grid}(x, ..., is, FUN = "mean", na.rm = TRUE, verbose = FALSE)
+\method{aggregate}{grid}(x, ..., is, FUN = "mean", na.rm = TRUE,
+  verbose = FALSE)
 }
 \arguments{
 \item{x}{A \code{\link{field}} object with finer grid mesh.}

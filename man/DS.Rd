@@ -19,20 +19,9 @@
 \alias{DS.trajectory}
 \title{Downscale}
 \usage{
-DS(
-  y,
-  X,
-  verbose = FALSE,
-  plot = FALSE,
-  it = NULL,
-  method = "lm",
-  swsm = "step",
-  m = 5,
-  rmtrend = TRUE,
-  ip = 1:7,
-  weighted = TRUE,
-  ...
-)
+DS(y, X, verbose = FALSE, plot = FALSE, it = NULL, method = "lm",
+  swsm = "step", m = 5, rmtrend = TRUE, ip = 1:7,
+  weighted = TRUE, ...)
 }
 \arguments{
 \item{y}{The predictand - the station series representing local climate

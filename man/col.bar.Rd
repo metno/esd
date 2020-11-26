@@ -5,22 +5,9 @@
 \alias{colbar}
 \title{Display a color bar object on an existing plot.}
 \usage{
-col.bar(
-  breaks,
-  horiz = TRUE,
-  pch = 21,
-  v = 1,
-  h = 1,
-  col = col,
-  cex = 2,
-  cex.lab = 0.6,
-  cex.axis = 0.9,
-  type = "r",
-  verbose = FALSE,
-  vl = 0.5,
-  border = FALSE,
-  ...
-)
+col.bar(breaks, horiz = TRUE, pch = 21, v = 1, h = 1, col = col,
+  cex = 2, cex.lab = 0.6, cex.axis = 0.9, type = "r",
+  verbose = FALSE, vl = 0.5, border = FALSE, ...)
 }
 \arguments{
 \item{breaks}{A numeric vector of breakpoints for the colours}

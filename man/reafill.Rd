@@ -9,7 +9,8 @@
 the station data based on an ordinary linear regression between data from the
 reanalysis interpolated to the coordinates of the station data.}
 \usage{
-reafill(x, file, anomaly = TRUE, verbose = FALSE, plot = FALSE, delta = 0.3)
+reafill(x, file, anomaly = TRUE, verbose = FALSE, plot = FALSE,
+  delta = 0.3)
 }
 \arguments{
 \item{x}{the station data with gaps that need interpolation}

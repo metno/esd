@@ -4,7 +4,8 @@
 \alias{as.station.dsensemble.pca}
 \title{Coerce input into a station object}
 \usage{
-\method{as.station}{dsensemble.pca}(x, ..., is = NULL, ip = NULL, verbose = FALSE)
+\method{as.station}{dsensemble.pca}(x, ..., is = NULL, ip = NULL,
+  verbose = FALSE)
 }
 \arguments{
 \item{x}{a dsensemble pca object}

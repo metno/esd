@@ -4,16 +4,8 @@
 \alias{trackdensity}
 \title{Calculate density of trajectories}
 \usage{
-trackdensity(
-  lons,
-  lats,
-  track = NULL,
-  dx = NULL,
-  dy = NULL,
-  radius = 5e+05,
-  type = "track",
-  verbose = FALSE
-)
+trackdensity(lons, lats, track = NULL, dx = NULL, dy = NULL,
+  radius = 5e+05, type = "track", verbose = FALSE)
 }
 \arguments{
 \item{lons}{longitudes of trajectory}

@@ -33,6 +33,8 @@ comments (silent mode). If TRUE, displays extra information on progress.}
 
 \item{new}{if TRUE plot in new window}
 
+\item{xlim}{range of x-axis}
+
 \item{xlim}{range of y-axis}
 
 \item{alpha}{factor modifying the opacity alpha; typically in [0,1]}

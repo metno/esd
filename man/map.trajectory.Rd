@@ -7,16 +7,9 @@
 \alias{map.pca.trajectory}
 \title{Plot trajectory maps}
 \usage{
-\method{map}{trajectory}(
-  x,
-  it = NULL,
-  is = NULL,
-  type = "trajectory",
-  param = NA,
-  projection = "lonlat",
-  verbose = FALSE,
-  ...
-)
+\method{map}{trajectory}(x, it = NULL, is = NULL,
+  type = "trajectory", param = NA, projection = "lonlat",
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{the trajectory object to be plotted.}

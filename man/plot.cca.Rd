@@ -4,16 +4,9 @@
 \alias{plot.cca}
 \title{Plot esd objects}
 \usage{
-\method{plot}{cca}(
-  x,
-  ...,
-  icca = 1,
-  colbar1 = list(pal = NULL, rev = FALSE, n = 10, breaks = NULL, type = "p", cex = 2,
-    show = TRUE, h = 0.6, v = 1, pos = 0.05),
-  colbar2 = NULL,
-  verbose = FALSE,
-  new = TRUE
-)
+\method{plot}{cca}(x, ..., icca = 1, colbar1 = list(pal = NULL, rev =
+  FALSE, n = 10, breaks = NULL, type = "p", cex = 2, show = TRUE, h = 0.6,
+  v = 1, pos = 0.05), colbar2 = NULL, verbose = FALSE, new = TRUE)
 }
 \arguments{
 \item{x}{the object to be plotted}
@@ -25,6 +18,8 @@
 \item{new}{if TRUE plot in new window}
 
 \item{plot.type}{"single"}
+
+\item{lwd}{width of line}
 
 \item{type}{type of plot: 'l' = line, 'p' = point, 'b' = both}
 

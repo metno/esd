@@ -4,7 +4,8 @@
 \alias{howsimilar}
 \title{howsimilar}
 \usage{
-howsimilar(x, y, plot = "cor", FUN = NULL, regress = FALSE, verbose = FALSE)
+howsimilar(x, y, plot = "cor", FUN = NULL, regress = FALSE,
+  verbose = FALSE)
 }
 \arguments{
 \item{x}{A \code{\link{field}} object representing the reanalysis}

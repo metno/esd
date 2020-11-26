@@ -4,7 +4,8 @@
 \alias{plot.ssa}
 \title{Plot esd objects}
 \usage{
-\method{plot}{ssa}(x, ..., main = "SSA analysis", sub = "", verbose = FALSE)
+\method{plot}{ssa}(x, ..., main = "SSA analysis", sub = "",
+  verbose = FALSE)
 }
 \arguments{
 \item{x}{the object to be plotted}

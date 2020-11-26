@@ -4,30 +4,13 @@
 \alias{plot.dsensemble.one}
 \title{Plot one station}
 \usage{
-\method{plot}{dsensemble.one}(
-  x,
-  pts = FALSE,
-  it = 0,
-  envcol = rgb(1, 0, 0, 0.2),
-  legend.show = TRUE,
-  ylab = NULL,
-  obs.show = TRUE,
-  target.show = TRUE,
-  map.show = TRUE,
-  map.type = NULL,
-  map.insert = TRUE,
-  new = FALSE,
-  xrange = NULL,
-  yrange = NULL,
-  alpha = 0.5,
-  alpha.map = 0.7,
-  mar = c(5.1, 4.5, 4.1, 2.1),
-  cex.axis = 1,
-  cex.lab = 1.2,
-  cex.main = 1.2,
-  verbose = FALSE,
-  ...
-)
+\method{plot}{dsensemble.one}(x, pts = FALSE, it = 0, envcol = rgb(1,
+  0, 0, 0.2), legend.show = TRUE, ylab = NULL, obs.show = TRUE,
+  target.show = TRUE, map.show = TRUE, map.type = NULL,
+  map.insert = TRUE, new = FALSE, xrange = NULL, yrange = NULL,
+  alpha = 0.5, alpha.map = 0.7, mar = c(5.1, 4.5, 4.1, 2.1),
+  cex.axis = 1, cex.lab = 1.2, cex.main = 1.2, verbose = FALSE,
+  ...)
 }
 \arguments{
 \item{x}{input object of class 'dsensemble'}

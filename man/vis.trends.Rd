@@ -4,20 +4,9 @@
 \alias{vis.trends}
 \title{Visualise trends for multiple overlapping periods}
 \usage{
-\method{vis}{trends}(
-  x,
-  ...,
-  unitlabel = "unit",
-  varlabel = "",
-  is = 1,
-  pmax = 0.01,
-  minlen = 15,
-  lwd = NA,
-  vmax = NA,
-  new = TRUE,
-  show.significance = TRUE,
-  verbose = FALSE
-)
+\method{vis}{trends}(x, ..., unitlabel = "unit", varlabel = "",
+  is = 1, pmax = 0.01, minlen = 15, lwd = NA, vmax = NA,
+  new = TRUE, show.significance = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{x}{the 'x' argument provides the time series for which the trend

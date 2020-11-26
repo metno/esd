@@ -4,15 +4,8 @@
 \alias{as.field.dsensemble.eof}
 \title{Coerce input to a \code{field} object}
 \usage{
-\method{as.field}{dsensemble.eof}(
-  x,
-  ...,
-  is = NULL,
-  ip = NULL,
-  im = NULL,
-  anomaly = FALSE,
-  verbose = FALSE
-)
+\method{as.field}{dsensemble.eof}(x, ..., is = NULL, ip = NULL,
+  im = NULL, anomaly = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{x}{the input object of class \code{ds}}

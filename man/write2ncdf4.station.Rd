@@ -4,33 +4,14 @@
 \alias{write2ncdf4.station}
 \title{Saves climate data as netCDF.}
 \usage{
-\method{write2ncdf4}{station}(
-  x,
-  ...,
-  file = "station.nc",
-  prec = "short",
-  offset = 0,
-  missval = -99,
-  it = NULL,
-  stid = NULL,
-  append = FALSE,
-  scale = 0.1,
-  torg = "1899-12-31",
-  stid_unlim = FALSE,
-  namelength = 24,
-  nmin = 30,
-  verbose = FALSE,
-  doi = "NA",
-  namingauthority = "NA",
-  processinglevel = "NA",
-  creatortype = "NA",
-  creatoremail = "NA",
-  institution = "NA",
-  publishername = "NA",
-  publisheremail = "NA",
-  publisherurl = "NA",
-  project = "NA"
-)
+\method{write2ncdf4}{station}(x, ..., file = "station.nc",
+  prec = "short", offset = 0, missval = -99, it = NULL,
+  stid = NULL, append = FALSE, scale = 0.1, torg = "1899-12-31",
+  stid_unlim = FALSE, namelength = 24, nmin = 30, verbose = FALSE,
+  doi = "NA", namingauthority = "NA", processinglevel = "NA",
+  creatortype = "NA", creatoremail = "NA", institution = "NA",
+  publishername = "NA", publisheremail = "NA", publisherurl = "NA",
+  project = "NA")
 }
 \arguments{
 \item{x}{data object}

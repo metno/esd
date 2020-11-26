@@ -4,16 +4,11 @@
 \alias{radar}
 \title{Function to read radar data from thredds.met.no}
 \usage{
-radar(
-  url = "https://thredds.met.no/thredds/catalog/remotesensingradaraccr/",
-  lons = c(9.5, 11.5),
-  lats = c(59, 61),
-  param = "lwe_precipitation_rate",
-  FUN = "sum",
-  it = 2010:2019,
-  verbose = FALSE,
-  plot = FALSE
-)
+
+  radar(url = "https://thredds.met.no/thredds/catalog/remotesensingradaraccr/",
+  lons = c(9.5, 11.5), lats = c(59, 61),
+  param = "lwe_precipitation_rate", FUN = "sum", it = 2010:2019,
+  verbose = FALSE, plot = FALSE)
 }
 \arguments{
 \item{url}{URL for the data on thredds.met.no}

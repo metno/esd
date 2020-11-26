@@ -4,18 +4,9 @@
 \alias{gridmap}
 \title{Creates a griddded map}
 \usage{
-gridmap(
-  Y,
-  FUN = "mean",
-  colbar = list(pal = "t2m"),
-  project = "lonlat",
-  xlim = NULL,
-  ylim = NULL,
-  zlim = NULL,
-  verbose = FALSE,
-  plot = TRUE,
-  new = TRUE
-)
+gridmap(Y, FUN = "mean", colbar = list(pal = "t2m"),
+  project = "lonlat", xlim = NULL, ylim = NULL, zlim = NULL,
+  verbose = FALSE, plot = TRUE, new = TRUE)
 }
 \arguments{
 \item{Y}{A station object}

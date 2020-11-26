@@ -4,16 +4,8 @@
 \alias{write2ncdf4.pca}
 \title{Saves climate data as netCDF.}
 \usage{
-\method{write2ncdf4}{pca}(
-  x,
-  ...,
-  file = "esd.pca.nc",
-  prec = "short",
-  verbose = FALSE,
-  scale = 0.01,
-  offset = 0,
-  missval = -99
-)
+\method{write2ncdf4}{pca}(x, ..., file = "esd.pca.nc", prec = "short",
+  verbose = FALSE, scale = 0.01, offset = 0, missval = -99)
 }
 \arguments{
 \item{x}{data object}
