@@ -1154,7 +1154,14 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   if (verbose) {print('Check class'); print(class.x$value)}
   stopifnot(tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
   ncid <- nc_open(ncfile)
-  if (param=='auto') param <- names(ncid$var)[1]
+  if (param=='auto') { 
+    nvars <- length(names(ncid$var))
+    varpick <- 1
+    while ( ((ncid$var[[varpick]]$ndims==1) | (sum(is.element(names(ncid$var)[varpick],c('loc','cntr','stationID')))==1)) & 
+            (varpick <= nvars) ) varpick <- varpick + 1
+    if (verbose) print(paste(varpick,names(ncid$var)[varpick]))
+    param <- names(ncid$var)[varpick]
+  }
   size <- eval(parse(text=paste('ncid$var$',param,'$size',sep='')))
   if (verbose) {
     print(paste('The variable to read is',param))
