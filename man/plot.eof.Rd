@@ -80,6 +80,8 @@ to the same coordinates as defined by \code{is}.}
 
 \item{fig}{coordinates of figure region, see \code{\link[graphics]{par}}}
 
+\item{add}{if TRUE add plot to existing figure}
+
 \item{alpha}{transparency factor for main plot}
 
 \item{alpha.map}{transparency factor for map}

@@ -30,6 +30,7 @@
   fig = NULL,
   alpha = 0.5,
   alpha.map = 0.7,
+  add = FALSE,
   verbose = FALSE
 )
 }
