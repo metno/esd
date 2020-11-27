@@ -134,6 +134,8 @@ recovered from the EOFs.}
 
 \item{fig}{see \code{\link{par}}}
 
+\item{add}{set add=TRUE if adding the map as a subplot}
+
 \item{nbins}{number of bins/colour categories}
 }
 \value{
