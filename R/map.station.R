@@ -153,11 +153,15 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             cex.lab=cex.lab,cex.axis=cex.axis)
         if(diff(range(xlim))>10) {
           dlon <- round(round(diff(range(xlim))/4)/5)*5
+        } else if(diff(range(xlim))<2) {
+          dlon <- round(diff(range(xlim))/3, 2)
         } else {
           dlon <- round(diff(range(xlim))/3)
         }
         if(diff(range(ylim))>10) {
           dlat <- round(round(diff(range(ylim))/4)/5)*5
+        } else if(diff(range(ylim))<2) {
+          dlat <- round(diff(range(ylim))/3, 2)
         } else {
           dlat <- round(diff(range(ylim))/3)
         }
