@@ -38,7 +38,7 @@ day2IDF <- function(x,L=c(1,2,3,6,12,24),tau=10,zeta=NULL,n0=365.25,
   mu <- wetmean(coredata(x))
   fw <- wetfreq(coredata(x))
   taus <- c(2, 5, 10, 20, 25, 50, 100, 200) 
-    zetaestimates <- c(0.4251593, 0.4185929, 0.4161947, 0.4147515, 0.4144257, 0.4137387, 0.4134449, 0.4134594)
+  zetaestimates <- c(0.4251593, 0.4185929, 0.4161947, 0.4147515, 0.4144257, 0.4137387, 0.4134449, 0.4134594)
   if (is.null(zeta)) zeta <- approx(x=taus,y=zetaestimates,tau)$y
   alpha <- alpha[1] + alpha[2]*log(tau)
   scaleL <- (L/24)^zeta
