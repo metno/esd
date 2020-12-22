@@ -18,28 +18,35 @@ last.year <-2010
 natl.lon <- c(-80,10); natl.lat <- c(0,40)
 car.lon <- c(-100,-80); car.lat <- c(15,30)
 fname <- 'sst.mnmean.v4.nc'
+fname2 <- 'sst.mon.mean.nc'
 
-# Empirical ranking method:
-#
-
+# Function that returns standardised data for comparison:
 stand <- function(x,m,s) (x - m)/s
 
 #source("strip.R")
 
 print("The Tropical North Atlantic:")
-
+## Get the latest sea surface temperatures (SST) from NOAA:
 if (!file.exists(fname)) {
   download.file('ftp://ftp.cdc.noaa.gov/Datasets/noaa.ersst/sst.mnmean.v4.nc',fname)
 }
+if (!file.exists(fname2)) {
+  download.file('https://psl.noaa.gov/repository/entry/get/sst.mon.mean.nc?entryid=synth%3Ae570c8f9-ec09-4e89-93b4-babd5651e7a9%3AL0NPQkUvc3N0Lm1vbi5tZWFuLm5j',fname2)
+}
 sst <- retrieve(fname,lon=natl.lon,lat=natl.lat)
+sst2 <- retrieve(fname2,lon=natl.lon,lat=natl.lat)
 
 ## Area of boxes used to estimate area of warm surface
 boxarea <- rep(cos(pi*lat(sst)/180)* pi*min(diff(lon(sst)))/180*
                pi*min(diff(lat(sst)))/180*(6.378e03)^2,length(lon(sst)))
 dim(boxarea) <- c(length(lat(sst)),length(lon(sst)));
-image(lon(sst),lat(sst),t(boxarea))
-contour(lon(sst),lat(sst),t(boxarea),add=TRUE)
+boxarea2 <- rep(cos(pi*lat(sst2)/180)* pi*min(diff(lon(sst2)))/180*
+                 pi*min(diff(lat(sst2)))/180*(6.378e03)^2,length(lon(sst2)))
+dim(boxarea2) <- c(length(lat(sst2)),length(lon(sst2)));
+# image(lon(sst),lat(sst),t(boxarea))
+# contour(lon(sst),lat(sst),t(boxarea),add=TRUE)
 
+## Estimate the area of the warm ocean: first by masking land areas
 sst <- mask(sst,land=TRUE)
 sst <- aggregate(subset(sst,it=month.abb[6:11]),year,'max')
 sstw <- coredata(sst)
@@ -47,12 +54,21 @@ sstw[sstw <T.crit] <- NA
 sstw[sstw >=T.crit] <- 1
 sstw <- t(t(sstw)*c(t(boxarea)))
 coredata(sst) <- sstw
-
 warmarea <- zoo(apply(sst,1,sum,na.rm=TRUE),order.by=index(sst))
 index(warmarea) <- year(warmarea)
+## Repeat for the sst.mon.mean.nc data:
+sst2 <- mask(sst2,land=TRUE)
+sst2 <- aggregate(subset(sst2,it=month.abb[6:11]),year,'max')
+sstw2 <- coredata(sst2)
+sstw2[sstw2 <T.crit] <- NA
+sstw2[sstw2 >=T.crit] <- 1
+sstw2 <- t(t(sstw2)*c(t(boxarea2)))
+coredata(sst2) <- sstw2
+warmarea2 <- zoo(apply(sst2,1,sum,na.rm=TRUE),order.by=index(sst2))
+index(warmarea2) <- year(warmarea2)
 
-# Storms!
-## Read the data
+# Data on tropical cyclones:
+## Read the data from the Internet
 url <- 'http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-1851-2014-022315.html'
 hurdat2 <- readLines(url)
 writeLines(hurdat2,con='hurdat2-1851-2014-022315.html')
@@ -73,14 +89,17 @@ yr <- as.integer(substr(storms,5,8))
 stormstats <- table(yr)
 ntc <- zoo(as.numeric(stormstats),order.by=as.numeric(rownames(stormstats)))
 
-nino3.4 <- zoo(aggregate.area(subset(anomaly(retrieve(fname,lon=c(-170,-120),lat=c(-5,5))),it=c('Oct','Nov','Dec')),FUN='mean'))
-nino3.4 <- aggregate(nino3.4,year,'mean')
+nino3.4 <- aggregate(subset(NINO3.4(),it=c('Sep','Oct','Nov')),year,'mean')
 index(nino3.4) <- year(nino3.4)
 
 ## Use the relationship from Benestad (2009):
 y <- warmarea^5.06
+y2 <- warmarea2^5.06
 scl <- mean(window(ntc,start=1961,end=1990))/mean(window(y,start=1961,end=1990))
+scl2 <- mean(window(ntc,start=1961,end=1990))/mean(window(y2,start=1961,end=1990))
+## Use a smoothing filter
 y <- stats::filter(y*scl,rep(1,7)/7)
+y2 <- y2 * scl2
 yu <- stats::filter(warmarea^5.31*scl,rep(1,7)/7)
 yl <- stats::filter(warmarea^4-81*scl,rep(1,7)/7)
 
@@ -99,9 +118,9 @@ xntc <- zoo(exp(predict(model,newdata=predat)),order.by=index(nino3.4))
 
 par(bty='n',xpd=TRUE,las=3)
 
-## Update the record of number of cyclones manually: 2015-2018
+## Update the record of number of named cyclones manually: 2015-2020
 ## From Wikipedia
-ntc2 <- zoo(c(11,15,17,15,17),order.by=2015:2019)
+ntc2 <- zoo(c(11,15,17,15,17,30),order.by=2015:2020)
 ntc <- c(ntc,ntc2)
 
 plot(ntc,lty=2,xlim=range(index(y)),
@@ -117,6 +136,7 @@ text(1880,25.5,'Nat. Hazards Earth Syst. Sci., 9, 635-645, 2009',
 lines(cntc,lwd=3,col=rgb(0.5,0.5,0.5,0.5))
 lines(xntc,lwd=3,col=rgb(0.5,0.5,1,0.5))
 lines(y,lwd=7,col=rgb(0,1,0,0.5))
+lines(y2,lwd=2,col=rgb(0,1,0,0.5))
 polygon(c(index(yu),rev(index(yl))),
        c(coredata(yu),rev(coredata(yl))),
        col=rgb(0,1,0,0.7))
