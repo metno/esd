@@ -70,18 +70,18 @@ pages:
     url: /examples/
     children:
       - title: "Select a weather station and retrieve data"
-      url: /examples/#example-21-on-how-to-select-weather-stations-and-retrieve-recorded-values
+        url: /examples/#example-21-on-how-to-select-weather-stations-and-retrieve-recorded-values
       - title: "Different esd objects and classes"
-      url: /examples/#example-22-on-the-different-esd-objects-and-clasees
+        url: /examples/#example-22-on-the-different-esd-objects-and-clasees
       - title: "Loading some data sets and display the summary of statistics"
-      url: /examples/#example-24-on-how-to-load-some-data-sets-and-display-the-summary-of-statistics
+        url: /examples/#example-24-on-how-to-load-some-data-sets-and-display-the-summary-of-statistics
       - title: "Loading a weather station object and display the location on a map"
-      url: /example/load-a-weather-station-object-and-display-the-location-on-a-map
+        url: /example/load-a-weather-station-object-and-display-the-location-on-a-map
       - title: "Reading a field object and plotting the results"
-      url: examples/#example-26-on-how-to-read-a-field-object-and-plot-the-results
+        url: examples/#example-26-on-how-to-read-a-field-object-and-plot-the-results
       - title: "Retrieve wind data sets and visualising the results" 
-      url: /examples/#example-27-on-how-to-retrieve-wind-data-sets-and-visualise-the-results
+        url: /examples/#example-27-on-how-to-retrieve-wind-data-sets-and-visualise-the-results
       - title: "Diagnostic plots"
-      url: /examples/#example-28-test
+        url: /examples/#example-28-test
       - title: "Processing the data and adding the trend of the time series"
-      url: /examples/#example-29-on-how-to-process-the-data-and-visualise-the-trend-of-the-time-series
+        url: /examples/#example-29-on-how-to-process-the-data-and-visualise-the-trend-of-the-time-series
