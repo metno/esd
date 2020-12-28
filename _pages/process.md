@@ -1,6 +1,5 @@
 ---
 layout: home
-title: Process
 toc: true
 permalink: /process/
 ---
