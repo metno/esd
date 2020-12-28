@@ -3,7 +3,7 @@ layout: default
 title: Retrieve
 parent: Utilities
 nav_order: 2
-permanent: \retrieve\ 
+permanent: /retrieve/ 
 ---
 
 # Retrieving data: I/O
