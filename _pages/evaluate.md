@@ -26,7 +26,7 @@ used to predict future values for the predictand, and the predictions from the d
 The downscaled pseudo-reality can also be compared with the results downscaled for the actual station data. This is done in ‘DSensemble’ when the argument ‘non.stationarity.check’ is
 set to ‘TRUE’.
 
-###iid.test
+### iid.test
 The iid.test included in the esd package is used to test whether a variable is independent and identically distributed (iid) mainly for daily station records (Benestad , 2003, 2004). It has to be
 noted that this test is sensitive to missing data (NA) and can produce an under-count. A non i.i.d. behaviour appears when the ’forward’ (resp. ’backward’) analysis indicates higher (resp.
 lower) number of record-events than the confidence interval. 
