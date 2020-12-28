@@ -12,30 +12,33 @@ main:
 
 pages:
   - title: "Utilities"
+    url: /utilities/
     children:
-      - title: "Quick-Start Guide"
-        url: /quick-start-guide/
-      - title: "Structure"
-        url: /structure/
-      - title: "Installation"
-        url: /installation/
-      - title: "Upgrading"
-        url: /upgrading/
+      - title: "Retrieving data I/O"
+        url: /utilities/#retrieving-data-io
+      - title: "Data Structure"
+        url: /utilities/#data-structures
+      - title: "Data Summary"
+        url: /utilities/#function-summary
+      - title: "Data Visualisation"
+        url: /utilities/#data-visualisation
 
-  - title: "I/O Data Process"
+  - title: "Data Processing I/O"
+    url: /process/
     children:
-      - title: "Configuration"
-        url: /docs/configuration/
-      - title: "Navigation"
-        url: /docs/navigation/
-      - title: "UI Text"
-        url: /docs/ui-text/
-      - title: "Authors"
-        url: /docs/authors/
-      - title: "Layouts"
-        url: /docs/layouts/
+      - title: "Formulas and Functions"
+        url: /process/#formulas--functions
+      - title: "Re-gridding"
+        url: /process/#regridding
+      - title: "Subsetting"
+        url: /process/#subsetting
+      - title: "Combining and Synchronising"
+        url: /process/#Combining-and-synchronising
+      - title: "Anomalies"
+        url: /process/#anomalies/
 
   - title: "Downscale"
+    url: /downscale/
     children:
       - title: "Predictors"
         url: /downscale/#defining-predictors
@@ -51,8 +54,11 @@ pages:
         url: /downscale/#weather-generators---synthesising-daily-time-series
 
   - title: "Evaluate"
+    url: /evaluate/
     children:
-      - title: "Stylesheets"
-        url: /docs/stylesheets/
-      - title: "JavaScript"
-        url: /docs/javascript/
+      - title: "Central Limit Theorem"
+        url: /evaluate/central-limit-theorem/
+      - title: "Huth’s dilemma"
+        url: /evaluate/#huth--s-dilemma
+      - title: "Diagnose"
+        url: /evaluate/#diagnose/
