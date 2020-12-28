@@ -1,5 +1,5 @@
 main:
   - title: "Utililities"
-    url: /utilities/
+    url: /_pages/utilities/
   - title: "Retrieve"
-    url: /retrieve/
+    url: /_pages/retrieve/
