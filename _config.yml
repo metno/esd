@@ -1,2 +1,5 @@
 theme: jekyll-theme-minimal
 search: true
+
+include:
+   - _pages
