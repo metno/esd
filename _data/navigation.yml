@@ -1,12 +1,14 @@
 main:
   - title: "Utilities"
     url: /utilities/
-  - title: "I/O process"
+  - title: "Data processing"
     url: /process/
   - title: "Downscaling"
     url: /downscale/
   - title: "Analyses"
     url: /analyses/
+  - title: "Evaluate"
+    url: /evaluate/
   - title: "Trouble Shooting"
     url: /trouble/
 
@@ -44,7 +46,7 @@ pages:
         url: /downscale/#defining-predictors
       - title: "Predictands"
         url: /downscale/#defining-predictands
-      - title: "Options"
+      - title: "Options for downscaling"
         url: /downscale/#options-for-downscaling
       - title: "Downscaling of tragectory objects"
         url: /downscale/#downscaling-of-trajectory-objects
