@@ -1,6 +1,5 @@
 ---
-layout: default
-title: Trouble Shooting
+layout: home
 nav_order: 7
 permalink: \trouble\
 ---
