@@ -10,7 +10,6 @@ defaults:
       sidebar:
         nav: "pages"
 
-
 search: true
 
 # Reading Files
