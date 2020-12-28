@@ -11,6 +11,8 @@ main:
     url: /evaluate/
   - title: "Trouble Shooting"
     url: /trouble/
+  - title: "Examples"
+    url: /examples/
 
 pages:
   - title: "Utilities"
