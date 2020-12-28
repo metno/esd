@@ -1,6 +1,5 @@
 ---
-#title: Evaluation
-nav_order: 7
+layout: home
 toc: true
 permalink: /evaluate/
 ---
