@@ -179,19 +179,19 @@ map(y2,cex=1.4,col="darkred",bg="orange",showall=TRUE)
 
 Figure 11: Maps of available weather stations from the ECA&D with a minimum of 50 year recorded values including a sub-selection of stations showing higher (b) and lower (c) elevation than 100m a.s.l.
 
-## 3.5 Combining and synchronising
+## Combining and synchronising
 It is important to combine different data objects and make sure that they are synchronised before the analysis can be made to identify links and dependencies. It may also be necessary to combine several station objects into a group of objects, for instance in order to perform a canonical correlation analysis (CCA). The method is `combine`. The function `matchdate` is used to synchronise any object `x` with the time index specified by `it` as `matchdate(x,it=y)`. `matchdate()` will return the subset of `x` that matches the time index of `y`.
 
-## 3.6 Anomalies
+## Anomalies
 Geophysical data tends to have a strong seasonal cycle, and often the seasonal variations are of less interest than year-to-year variations. Anomalies are the variations after the seasonal cycle has been removed. The method ‘anomaly’ can be applied to stations and field objects, for daily, monthly, and seasonal data. The converse is ‘climatology’.
 
 
-## 3.7 Aggregate: monthly, seasonal and annual statistics
+## Aggregate: monthly, seasonal and annual statistics
 It is also convenient to compute trends on annual values rather than daily values, as the latter are noisy. To do so the S3-built in method ‘aggregate’ is used which allows splitting the data into subsets (e.g. years) and computes summary statistics for each subset (e.g. maximum values) as `aggregate(x,by=year,FUN=’max’,...)`
 
 Aggregate has been extended to deal with ‘esd’ objects, and returns the result as an identical ‘esd’ object with updates. Classes and attributes are updated accordingly (see Example 3.7). The aggregate function can also be used to create coarser grids where the boxes contain spatially aggregated values from a higher grid resolution (Example 3.8).
 
-## 3.8 Spatial averaging of field objects - aggregate.area
+## Spatial averaging of field objects - aggregate.area
 It is interesting to investigate if there are any global signals affecting the local climate. For this purpose, the ‘esd’ package makes it convenient to compute statistics on spatial averaging of an
 object over a specific spatial domain or an area of interest. The function `aggregate.area()` is used to compute an area aggregate (e.g. average means, maximum, sum, ...) taking into account that the grid box area varies with latitude. The following equations are used:
 
@@ -266,7 +266,7 @@ plot(annual(T2m),ylim=c(11.5,17.5))
 
 Figure 15: Global average of 2m air temperature from the NorESM global climate model. The error bars show 2 times the standard deviation computed based on observations.
 
-## 3.9 Transformations and conversions: as.
+## Transformations and conversions: as.
 A range of transformations between different type of objects can be done with the ‘as’ method.
 
 Table 3: The ‘esd’ extension of the `as.` method. Some of these are the same as some other functions, e.g. `annual` and `as.annual` 
