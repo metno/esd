@@ -1,9 +1,9 @@
 ---
 layout: home
-nav_order: 7
-permalink: \trouble\
+title: Trouble
+toc: true
+permalink: /trouble/
 ---
-
 
 # Trouble shooting
 The ‘esd’ comes as it is and there is no guarantee that it’s free from bugs or incorrect coding. The user therefore must make sure that the functions work as expected through thorough testing.
