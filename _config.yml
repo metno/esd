@@ -2,4 +2,6 @@ remote_theme: "mmistakes/minimal-mistakes@4.21.0"
 
 search: true
 
-include: ["_pages"]
+# Reading Files
+include:
+  - _pages
