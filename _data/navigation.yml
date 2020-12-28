@@ -11,7 +11,7 @@ main:
     url: /trouble/
 
 pages:
-  - title: Getting Started
+  - title: "Utilities"
     children:
       - title: "Quick-Start Guide"
         url: /quick-start-guide/
@@ -22,7 +22,7 @@ pages:
       - title: "Upgrading"
         url: /upgrading/
 
-  - title: Customization
+  - title: "I/O Data Process"
     children:
       - title: "Configuration"
         url: /docs/configuration/
@@ -35,7 +35,7 @@ pages:
       - title: "Layouts"
         url: /docs/layouts/
 
-  - title: Content
+  - title: "Downscale"
     children:
       - title: "Working with Posts"
         url: /docs/posts/
@@ -48,7 +48,7 @@ pages:
       - title: "Utility Classes"
         url: /docs/utility-classes/
 
-  - title: Extras
+  - title: "Evaluate"
     children:
       - title: "Stylesheets"
         url: /docs/stylesheets/
