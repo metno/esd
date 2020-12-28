@@ -38,17 +38,17 @@ pages:
   - title: "Downscale"
     children:
       - title: "Predictors"
-        url: /downscale/#define-predictors
+        url: _pages/downscale/#define-predictors
       - title: "Predictands"
-        url: /downscale/#define-predictands
+        url: _pages/downscale/#define-predictands
       - title: "Options"
-        url: /downscale/#options-for-downscaling
+        url: _pages/downscale/#options-for-downscaling
       - title: "Downscaling of tragectory objects"
-        url: /downscale/#downscaling-of-tragectory-objects
+        url: _pages/downscale/#downscaling-of-tragectory-objects
       - title: "Downscaling of Probabilities and number of events"
-        url: /downscale/#downscaling-of-tragectory-objects
+        url: _pages/downscale/#downscaling-of-tragectory-objects
       - title: "Weather Generators"
-        url: /downscale/#weather-generators---synthesising-daily-time-series
+        url: _pages/downscale/#weather-generators---synthesising-daily-time-series
 
   - title: "Evaluate"
     children:
