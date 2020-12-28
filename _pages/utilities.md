@@ -1,5 +1,6 @@
 ---
 layout: home
+title: Utilities
 toc: true
 permalink: /utilities/
 ---
