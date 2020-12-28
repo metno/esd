@@ -1,6 +1,5 @@
 ---
 layout: home
-title: Trouble
 toc: true
 permalink: /trouble/
 ---
