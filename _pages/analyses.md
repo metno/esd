@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: home
 title : Analyses I/O
 nav_order: 5
 has_children: false
