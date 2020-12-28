@@ -1,14 +1,11 @@
 ---
 layout: home
-title : Analyses I/O
-nav_order: 5
-has_children: false
-has_toc: false
+title: Analyses
+toc: true
 permalink: /analyses/
 ---
 
 # Analyses & Diagnostics
-{: .no_toc }
 
 <details open markdown="block">
   <summary>
