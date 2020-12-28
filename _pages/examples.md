@@ -1,12 +1,11 @@
 ---
-layout: default
+layout: home
 title: Examples
 nav_order: 9
 permalink: /examples/
 ---
 
 # Examples
-{: .no_toc }
 
 <details open markdown="block">
   <summary>
