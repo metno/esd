@@ -37,16 +37,18 @@ pages:
 
   - title: "Downscale"
     children:
-      - title: "Working with Posts"
-        url: /docs/posts/
-      - title: "Working with Pages"
-        url: /docs/pages/
-      - title: "Working with Collections"
-        url: /docs/collections/
-      - title: "Helpers"
-        url: /docs/helpers/
-      - title: "Utility Classes"
-        url: /docs/utility-classes/
+      - title: "Predictors"
+        url: /downscale/#define-predictors
+      - title: "Predictands"
+        url: /downscale/#define-predictands
+      - title: "Options"
+        url: /downscale/#options-for-downscaling
+      - title: "Downscaling of tragectory objects"
+        url: /downscale/#downscaling-of-tragectory-objects
+      - title: "Downscaling of Probabilities and number of events"
+        url: /downscale/#downscaling-of-tragectory-objects
+      - title: "Weather Generators"
+        url: /downscale/#weather-generators---synthesising-daily-time-series
 
   - title: "Evaluate"
     children:
