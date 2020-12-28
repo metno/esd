@@ -1,4 +1,5 @@
 ---
+layout: home
 toc: true
 permalink: /process/
 ---
