@@ -2,7 +2,7 @@
 remote_theme: "mmistakes/minimal-mistakes@4.21.0"
 
 
-search_enabled: true
+search: true
 
 # Reading Files
 include:
