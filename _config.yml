@@ -1,6 +1,15 @@
 # remote_theme: pmarsceill/just-the-docs
 remote_theme: "mmistakes/minimal-mistakes@4.19.0"
 
+defaults:
+  # _pages
+  - scope:
+      path: ""
+      type: pages
+    values:
+      sidebar:
+        nav: "pages"
+
 
 search: true
 
