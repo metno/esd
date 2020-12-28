@@ -1,21 +1,12 @@
 ---
-layout: default
-title: Evaluation
+layout: home
+#title: Evaluation
 nav_order: 7
+toc: true
 permalink: /evaluate/
 ---
 
 # Evaluation, assessment & validation
-{: .no_toc }
-
-<details open markdown="block">
-  <summary>
-    Table of contents
-  </summary>
-  {: .text-delta }
-1. TOC
-{:toc}
-</details>
 
 ## Central limit theorem
 The central limit theorem states that the distribution of the sum or average of a large number of independent, identically distributed variables (iid) will be approximately normal, regardless
