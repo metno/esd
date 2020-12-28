@@ -1,9 +1,14 @@
 main:
   - title: "Utilities"
     url: /utilities/
-  - title: "Retrieve"
-    url: /retrieve/
-
+  - title: "I/O process"
+    url: /process/
+  - title: "Downscaling"
+    url: /downscale/
+  - title: "Analyses"
+    url: /analyses/
+  - title: "Trouble Shooting"
+    url: /trouble/
 
 # sidebar navigation list sample
 sidebar-sample:
