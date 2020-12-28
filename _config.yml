@@ -1,6 +1,6 @@
 remote_theme: mmistakes/minimal-mistakes
 
-search: true
+search_enabled: true
 
 # Reading Files
 include:
