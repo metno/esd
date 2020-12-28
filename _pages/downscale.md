@@ -1,8 +1,5 @@
 ---
 layout: home
-title : Downscaling
-nav_order: 6
-has_children: false
 toc: true
 permalink: /downscale/
 ---
