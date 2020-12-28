@@ -6,7 +6,7 @@ permalink: /analyses/
 
 # Analyses and Diagnostics
 
-<details open markdown="block">
+<details markdown="block">
   <summary>
     Table of contents
   </summary>
