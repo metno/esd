@@ -1,14 +1,9 @@
 ---
-layout: default
-title : Processing I/O
-nav_order: 4
-has_children: true
-has_toc: false
+toc: true
 permalink: /process/
 ---
 
 # Data processing
-{: .no_toc }
 
 <details open markdown="block">
   <summary>
