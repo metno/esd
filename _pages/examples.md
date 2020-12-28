@@ -1,6 +1,6 @@
 ---
 layout: home
-nav_order: 9
+toc: true
 permalink: /examples/
 ---
 
