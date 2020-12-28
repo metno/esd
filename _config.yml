@@ -1,5 +1,4 @@
 theme: jekyll-theme-minimal
 search: true
 
-include:
-   - _pages
+include: ["_pages"]
