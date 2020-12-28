@@ -1,6 +1,7 @@
 ---
 layout: home
 toc: true
+classes: wide
 permalink: /evaluate/
 ---
 
