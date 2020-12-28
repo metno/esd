@@ -1,11 +1,10 @@
 ---
 layout: home
-title: Analyses
 toc: true
 permalink: /analyses/
 ---
 
-# Analyses & Diagnostics
+# Analyses and Diagnostics
 
 <details open markdown="block">
   <summary>
