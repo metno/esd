@@ -49,13 +49,15 @@ T2M/
 2014 / 1773
 ESD package − map.station() − MET Norway 2014 (www.met.no)
 
-![image](/esd/assets/images/map_station_precip.eps)
+![](/esd/assets/images/map_station_t2m.jpg)
 
 Figure 1: Map of available weather stations recording temperature that are included in the meta-data of the ‘esd’ package.
 
 ### Quick search - Function `select.station()`
 The sample data includes also a meta-data object (`stationmeta`) that can be loaded directly and contains meta data such as name of the location (`loc`) and its standard ientification number (`stid`), geographical coordinates such as longitude (`lon`), latitude (`lat`), and altitude (`alt`), country name (`country`), parameter name (`param`) of recorded weather variables (e.g. temperature and precipitation), data source (`src`) or provider for thousands of stations all over the world (Figures 1 and 2).
 These meta-data have been imported from existing meta data from the different data source providers. It has to be noted also that most of the available stations are managed by the World Meteorological Organisation (WMO) and made available by the American National Climate Data Centre (NCDC) for scientific research only. The meta data has been merged from the different sources mentioned earlier. Also, other additional data sources can be easily included into the package.
+
+![](/esd/assets/images/map_station_precip.jpg)
 
 Figure 2: Map of available weather stations recording precipitation that are included in the meta-data of the ‘esd’ package.
 
@@ -72,7 +74,7 @@ the ’zoo’ objects. Different types of data objects are processed and handled
 
 ### Example 2.2 shows some of the classes used in ‘esd’.
 
-The different data objects come bundled with relevant meta-data, stored as data attributes. These are shown using the `str`*ucture function, as displayed in Example 2.3 for a station object.
+The different data objects come bundled with relevant meta-data, stored as data attributes. These are shown using the `str`*ucture function, as displayed in  [Example 2.3](/esd/examples/#example-21-on-how-to-select-weather-stations-and-retrieve-recorded-values) for a station object.
 
 The various attributes have different functions, e.g. for handling the data, traceability, identification, and visualisation. The idea is that they are based on a standard terminology for which the terms are commonly agreed on and follow standard definitions. A common core set of attributes will make it easier to share data and methods. The attribute `history` contains the call(s) (`call`), time stamp(s), and session info that have been used to create and process the data itself.
 
@@ -110,6 +112,8 @@ The function ‘map’ is also an S3 built method and used to produce a map of g
 ### Function `vec()`
 The function vec plots vectors of a 2D flow field (Example 2.7, Figure 6).
 
+![](/esd/assets/images/vec.jpg)
+
 Figure 6: The output of the example with ‘vec’. In this example, there are different plotting windows for the vectors and the underlying map, but this can be adjusted in the arguments of ‘vec’.
 
 ### Info-graphics
@@ -118,3 +122,7 @@ analysis.
 The information stored in climate data can be extracted in various ways, with emphasis on different aspects, as can be seen in Example 2.8 and Figure 7. A `cumugram()` is shown, displaying the cumulative average value of some variable starting from the first day of the year. The results for the Oslo temperature in this example shows that 2014 has been the warmest year on record since the summer. A ‘rainbow structure’ is consistent with a gradual increase in the temperature.
 The second diagram, ‘wheel’, emphasises the time of the year when the most extreme events have taken place, and ‘climvar’ to the right shows how the year-to-year variance varies with season with a minimum in late summer. The ‘diagram’ method can also be used to view the data by comparing day-by-day values of the present temperature with those of the previous years. The figure shows that there have been some exceptionally mild autumn temperatures in 2014. Other functions for making info-graphics include `vis.*`, which make alternative graphics output displaying different information. Trends can be estimated by linear regression using the simple ‘trend’ function. An alternative trend analysis can be done using the function ‘vis.trends’ which estimates linear regressions for sliding periods of various lengths (Example 2.9, Figure 8). The results are presented visually with the strength of the trends shown as a colour scale on a grid where the x- and y-axes represent the starting point and the length of each period, respectively. Periods with statistically significant trends are marked with black outlines. The advantage of `vis.trends` is that it shows trends of various time scales, considering all variations of start- and end-points. The longest period is found in the upper left corner, representing the full length of the time series. The most recent period is shown in the bottom right corner. As demonstrated in Example 2.9,
 the strength and significance of estimated trends are sensitive to the period considered. The multiple period trend analysis is therefore a more robust alternative to single period trend fitting.
+
+![](/esd/assets/images/cumugram.jpg)
+
+Figure 7: 
