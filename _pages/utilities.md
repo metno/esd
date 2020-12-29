@@ -100,7 +100,7 @@ The function vec plots vectors of a 2D flow field (Example 2.7, Figure 6).
 
 ![](/esd/assets/images/vec.jpg)
 
-Figure 6: The output of the example with function `vec()`. In this example, there are different plotting windows for the vectors and the underlying map, but this can be adjusted in the arguments of ‘vec’.
+_Figure 6: The output of the example with function `vec()`. In this example, there are different plotting windows for the vectors and the underlying map, but this can be adjusted in the arguments of ‘vec’._
 
 ### Info-graphics
 One of the purposes of ‘esd’ is to easily produce visualisation and graphics to bring out new aspects of the information embedded in the data. The development of the info-graphics in this tool has also been inspired by Spiegelhalter et al. (2011), in order to distill the essence of the analysis.
