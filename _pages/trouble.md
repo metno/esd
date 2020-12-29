@@ -1,14 +1,16 @@
 ---
+title: "Trouble Shooting"
 layout: home
 toc: true
 classes: wide
 permalink: /trouble/
 ---
 
-# Trouble shooting
 The ‘esd’ comes as it is and there is no guarantee that it’s free from bugs or incorrect coding. The user therefore must make sure that the functions work as expected through thorough testing.
 Any tool like this should never be used blindly. Neither is there any guarantee that the code will work flawlessly. The open-source nature, however, means that the problems can be diagnosed
 or fixed by anyone with insight and programming skills. Here we try to make potential trouble shooting easier.
+
+
 
 ## General
 In case of error messages, it may be wise to check all the attributes of the data object. The way to proceed is to activate the ‘verbose’ argument if it is included in the function options,
