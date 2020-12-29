@@ -2,7 +2,7 @@
 remote_theme: "mmistakes/minimal-mistakes@4.19.0"
 
 title       : "ESD R TOOLBOX"
-subtitle    : "Maintained by MET Norway" 
+subtitle    : "by MET Norway" 
 description : "ESD R Tool for visualising and downscaling climate data"
 
 defaults:
