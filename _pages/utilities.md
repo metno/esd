@@ -49,7 +49,7 @@ T2M/
 2014 / 1773
 ESD package − map.station() − MET Norway 2014 (www.met.no)
 
-![image](/assets/images/metreport4esd-23_2.jpg)
+![image](/esd/assets/images/metreport4esd-23_2.jpg)
 
 Figure 1: Map of available weather stations recording temperature that are included in the meta-data of the ‘esd’ package.
 
