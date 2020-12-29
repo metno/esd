@@ -1,7 +1,7 @@
 # remote_theme: pmarsceill/just-the-docs
 remote_theme: "mmistakes/minimal-mistakes@4.19.0"
 
-title: "ESD R TOOL"
+title: "ESD R TOOLBOX"
 description: "ESD R Tool for visualising and downscaling climate data"
 
 defaults:
