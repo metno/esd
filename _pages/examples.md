@@ -1,11 +1,10 @@
 ---
+title: "Examples"
 layout: home
 toc: true
 classes: wide
 permalink: /examples/
 ---
-
-# Examples
 
 <details open markdown="block">
   <summary>
