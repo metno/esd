@@ -48,8 +48,9 @@ T2M/
 14632
 2014 / 1773
 ESD package − map.station() − MET Norway 2014 (www.met.no)
-Figure 1: Map of available weather stations recording temperature that are included in the meta-data
-of the ‘esd’ package.
+
+![image](/assets/images/metreport4esd-23_1.png)
+Figure 1: Map of available weather stations recording temperature that are included in the meta-data of the ‘esd’ package.
 
 ### Quick search - Function `select.station()`
 The sample data includes also a meta-data object (`stationmeta`) that can be loaded directly and contains meta data such as name of the location (`loc`) and its standard ientification number (`stid`), geographical coordinates such as longitude (`lon`), latitude (`lat`), and altitude (`alt`), country name (`country`), parameter name (`param`) of recorded weather variables (e.g. temperature and precipitation), data source (`src`) or provider for thousands of stations all over the world (Figures 1 and 2).
