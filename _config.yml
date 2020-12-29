@@ -19,7 +19,7 @@ search: true
 include:
   - _pages
 
-## Additional plugins
+# Additional plugins
 plugins:
   - jekyll-paginate
   - jekyll-sitemap
