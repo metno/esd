@@ -1,11 +1,10 @@
 ---
+title: "Data processing"
 layout: home
 toc: true
 classes: wide
 permalink: /process/
 ---
-
-# Data processing
 
 <details open markdown="block">
   <summary>
