@@ -1,11 +1,10 @@
 ---
+title: "Evaluation, assessment & validation"
 layout: home
 toc: true
 classes: wide
 permalink: /evaluate/
 ---
-
-# Evaluation, assessment & validation
 
 <details markdown="block">
   <summary>
