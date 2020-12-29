@@ -1,11 +1,11 @@
 ---
+title: "Downscaling"
 layout: home
 toc: true
 classes: wide
 permalink: /downscale/
 ---
 
-# Downscaling
 Downscaling tries to identify (statistical) existing relationships between large-scale spatial climate patterns (called predictors) and local climate variations (predictands) in climate variables, parameters, and/or indicators (indices).
 
 <details open markdown="block">
