@@ -5,6 +5,8 @@ title       : "ESD R TOOLBOX"
 subtitle    : "by MET Norway" 
 description : "ESD R Tool for visualising and downscaling climate data"
 
+logo        : "/assets/images/Met_RGB_Horisontal_ENG.jpeg"
+
 defaults:
   # _pages
   - scope:
