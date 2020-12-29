@@ -15,11 +15,11 @@ defaults:
 
 search: true
 
-# Reading Files
+## Reading Files
 include:
   - _pages
 
-# Additional plugins
+## Additional plugins
 plugins:
   - jekyll-paginate
   - jekyll-sitemap
