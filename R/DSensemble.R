@@ -304,9 +304,14 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
     #gcmnm[i] <- attr(gcm,'model_id'))
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
-    nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-    nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-    nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+    ## REB: 2020-12-23: These lines cause some problems sometimes:
+    ## Error in names(attributes(gcm))[grep("realization", names(attributes(gcm)))][[1]] : 
+    ##  subscript out of bounds
+    ## Included checks to avoid unnecessary stops 
+    nmattsgcm <- names(attributes(gcm))
+    if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+    if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+    if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
     rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     gcmnm[i] <- gcmnm.i
