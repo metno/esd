@@ -43,12 +43,10 @@ Table 2: A list of specialised functions in ‘esd’ designed to make climate a
 |`t2m.Pr()` |Simple and crude estimate of the probability of temperature exceeding a threshold (default: 30 degree C): P r(X > x) = N (µ, σ) assumes normal distribution.|
 
 
-
-![](/esd/assets/images/map_station_t2m.jpg)
-
+![](/esd/assets/images/.jpg)
 _Figure 9: Plots of precipitation statistics at Bjornholt such as a) wet-day mean (µ), b) wet-day frequency (fw), c) number of events with precipitation higher than 10mm, and d) wet/dry spells._
 
-
+![](esd/assets/images/precip.vul.jpg)
 _Figure 10: An example of a plot of the vulnerability index µ/fw (left) and an approximation of daily 10-year return values (right) for a selection of station from the ECA&D recording at least a 100 years of data._
 
 ## re-gridding
@@ -82,7 +80,7 @@ y <- subset(Y,is=X))
 or to combine several selection criteria as in Example 3.6. It is usually wise to use `subset` before other data processing (e.g. aggregate) to reduce computation time.
 
 
-Figure 11: Maps of available weather stations from the ECA&D with a minimum of 50 year recorded values including a sub-selection of stations showing higher (b) and lower (c) elevation than 100m a.s.l.
+_Figure 11: Maps of available weather stations from the ECA&D with a minimum of 50 year recorded values including a sub-selection of stations showing higher (b) and lower (c) elevation than 100m a.s.l._
 
 ## Combining and synchronising
 It is important to combine different data objects and make sure that they are synchronised before the analysis can be made to identify links and dependencies. It may also be necessary to combine several station objects into a group of objects, for instance in order to perform a canonical correlation analysis (CCA). The method is `combine`. The function `matchdate` is used to synchronise any object `x` with the time index specified by `it` as `matchdate(x,it=y)`. `matchdate()` will return the subset of `x` that matches the time index of `y`.
@@ -125,23 +123,17 @@ Example 3.9 shows the spatial averaging of the projected global mean temperature
 
 It is also convenient to compare the global mean temperature as produced by several GCMs (Figure 12). A demo script is made available in the demo ‘esd’ package called “global tas anomaly.R”. The script computes the global mean anomaly temperature for all CMIP3 and CMIP5 experiments provided by the KNMI Climate-Explorer web portal. All GCM data need to be downloaded locally before the script is run. The results can then be compared to the Figure 1 of Knutti and Sedl´aˇcek (2013) which shows the evolution of the global temperature change (mean and one standard deviation as shading) relative to 1986–2005 for the SRES scenarios run by the CMIP3 and the RCP scenarios run by the CMIP5 experiments. This figure gives a good summary of the global mean warming signal predicted by both experiments and the inter-model spread. Note that the shaded area would be different if it was based on the ensemble model outputs for each CMIP experiment as the authors gave a confidence interval based on one standard deviation of the ensemble mean.
 
+![](esd/assets/Global_mean_tas_anomaly_CMIP3-5_1986-2005.jpg)
+
 _Figure 12: Global mean temperature change for the SRES scenarios run by CMIP3 and the RCP scenarios run by CMIP5 experiments, respectively, relative to the period 1986-2005. The shaded area shows one standard deviation from the mean based on all scenarios for each experiment._
 
+![](esd/assets/.jpg)
 _Figure 13: Plotting the annual maximum values of daily precipitation recorded at ‘Bjornholt’ weather station._
 
-Example 3.8.
-```R
-# Load 2m air temperature from NCEP reanalysis on a resoltuion of 2.5 deg.
-t2m <- t2m.NCEP()
-# Do the spatial aggregation
-x <- aggregate(t2m,by=list(lon=seq(0,360,by=10),lat=seq(0,360,by=10)),FUN=’mean’)
-# Map the results
-map(x)
-```
-
+![](esd/assets/.jpg)
 _Figure 14: Maps of the original (a) and aggregated (b) spatial field of NCEP 2m air temperature._
 
-
+![](esd/assets/.jpg)
 _Figure 15: Global average of 2m air temperature from the NorESM global climate model. The error bars show 2 times the standard deviation computed based on observations._
 
 ## Transformations and conversions: as.
