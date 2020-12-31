@@ -17,6 +17,7 @@ defaults:
     values:
       sidebar:
         nav: "pages"
+      mathjax: true
 
 search: true
 
