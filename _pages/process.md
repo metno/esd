@@ -35,12 +35,12 @@ Table 2: A list of specialised functions in ‘esd’ designed to make climate a
 | `C.C.eq`  | Clausius-Clapeyron equation. |
 | `NE`  | Predict number of events, given a frequency and a sample size. |
 |`spell`  | Estimate the spell lengths (consecutive days/straights) of events. |
-|`precip.vul` | Simple vulnerability index associated with precipitation: Vp = µ/fw. |
+|`precip.vul` | Simple vulnerability index associated with precipitation: \\(Vp = µ/fw\\). |
 |`t2m.vul`  | Simple vulnerability index associated with temperature based on consecutive number of hot days above a critical threshold (default 30 degrees C): VT = nchd. |
-|`precip.rv`  | Simple and rough estimate of return value for weak-to-moderate ‘extremes’: xτ = − ln(1/(fwτ ))µ. |
+|`precip.rv`  | Simple and rough estimate of return value for weak-to-moderate ‘extremes’: \\(xτ = − ln(1/(fwτ ))µ\\). |
 |`nv` | Number of valid data points in sample. |
-|`precip.Pr`  |Simple and crude estimate of the probability of precipitation exceeding a threshold (default: 10mm/day): P r(X > x) = fw exp(−x/µ) assumes exponential distribution.|
-|`t2m.Pr()` |Simple and crude estimate of the probability of temperature exceeding a threshold (default: 30 degree C): P r(X > x) = N (µ, σ) assumes normal distribution.|
+|`precip.Pr`  |Simple and crude estimate of the probability of precipitation exceeding a threshold (default: 10mm/day): \\( Pr(X > x) = fw exp(−x/µ)\\) assumes exponential distribution.|
+|`t2m.Pr()` |Simple and crude estimate of the probability of temperature exceeding a threshold (default: 30 degree C): \\(Pr(X > x) = N (µ,σ)\\) assumes normal distribution.|
 
 
 ![](/esd/assets/images/.jpg)
@@ -57,9 +57,11 @@ Again, the common syntax for the argument `is` is shown, where `is` refers to sp
 Example 3.4 shows the re-gridding between the NCEP reanalysis and NorESM.M global climate model result for an area covering Europe (30W–30E/40N–70N). In this particular case, both the gridded products (NCEP and NorESM.M) have the same spatial resolution of 2.5 degrees, but `regrid` works also with different grid resolutions.
 
 ### How the re-gridding works
-The re-gridding is based on a bi-linear interpolation according to the linear algebra expression 
-X′ = W X (1)
-W is a sparse matrix of weights since each new grid cell is a weighted sum of the four surrounding grid cells. The sparse character saves computer resources compared to the full weight matrix which would have the dimensions of the product of X′ and X. Thus, the re-gridding becomes more efficient by (a) utilising the information about the sparseness (i.e. only needs the weights and the index of the surrounding grid cells to the point of interest) and (b) computing the weights only once, then use using the `apply()` function rather than for loops to weight all time steps.
+The re-gridding is based on a bi-linear interpolation according to the linear algebra expression
+
+\\(X′ = W X \\) (1)
+
+$$W$$ is a sparse matrix of weights since each new grid cell is a weighted sum of the four surrounding grid cells. The sparse character saves computer resources compared to the full weight matrix which would have the dimensions of the product of $$X′$$ and $$X$$. Thus, the re-gridding becomes more efficient by (a) utilising the information about the sparseness (i.e. only needs the weights and the index of the surrounding grid cells to the point of interest) and (b) computing the weights only once, then use using the `apply()` function rather than for loops to weight all time steps.
 
 ## Nearest data point
 An alternative to re-gridding is to select the nearest data point, as a bi-linear interpolation will have an influence on extremes through the estimation of values in terms of weighted sums of nearby points. The ‘esd’ package provides the function `nearest` that selects a subset of the nearest point as 
@@ -97,25 +99,12 @@ Aggregate has been extended to deal with ‘esd’ objects, and returns the resu
 ## Spatial averaging of field objects - aggregate.area
 It is interesting to investigate if there are any global signals affecting the local climate. For this purpose, the ‘esd’ package makes it convenient to compute statistics on spatial averaging of an
 object over a specific spatial domain or an area of interest. The function `aggregate.area()` is used to compute an area aggregate (e.g. average means, maximum, sum, ...) taking into account that the grid box area varies with latitude. The following equations are used:
-
-
-I
-J
-1 X
-X
-X
-¯
-x =
-(ϕ
-ϕ
-I
-
-i xi,j )/
-
-i=1
-j=1
-ϕi = cos(2 π lati / 360)
-where i and j are indices in the longitude and latitude respectively, and lati is the latitude value at point i.
+
+\\[ \bar{x} = \frac{1}{I}\:  \sum_{i=1}^{I}{\left(\sum_{j=1}^{J}{(\varphi_{i}\, x_{i,j})}/\sum{\varphi }\right)}\\]
+
+\\[ \varphi_{i} = \cos(2\, \pi\: \, lat_{i}\, /\, 360) \\]
+
+where $$i$$ and $$j$$ are indices in the longitude and latitude respectively, and lati is the latitude value at point $$i$$.
 
 `aggregate.area(x,is=NULL,it=NULL,FUN=’sum’,na.rm=TRUE,smallx=FALSE)`
 
