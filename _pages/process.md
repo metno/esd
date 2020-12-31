@@ -42,42 +42,14 @@ Table 2: A list of specialised functions in ‘esd’ designed to make climate a
 |`precip.Pr`  |Simple and crude estimate of the probability of precipitation exceeding a threshold (default: 10mm/day): P r(X > x) = fw exp(−x/µ) assumes exponential distribution.|
 |`t2m.Pr()` |Simple and crude estimate of the probability of temperature exceeding a threshold (default: 30 degree C): P r(X > x) = N (µ, σ) assumes normal distribution.|
 
-Example 3.1. # Load data for Bjornholt 
-```R
-data(bjornholt)
-y <- bjornholt
-# Annual wet-mean:
-mu <- annual(y,FUN=’wetmean’)
-# Plot the result for the period 1883 to 2014
-plot(mu,ylim=c(4,14))
-# Annual wet-freq:
-fw <- annual(y,FUN=’wetfreq’)
-# Plot the result for the period 1883 to 2014
-plot(subset(fw,it=c(1883,2014)),ylim=c(0.2,0.5))
-# Annual number of events with y > 10mm/day:
-nw <- annual(y,FUN=’count’,threshold=10)
-# Plot the result for the period 1883 to 2014
-plot(subset(nw,it=c(1883,2014)),ylim=c(10,60))
-# Compute wet/dry spells
-sp <- spell(y,threshold=1)
-# Plot the result
-plot(sp)
-```
-
-Figure 9: Plots of precipitation statistics at Bjornholt such as a) wet-day mean (µ), b) wet-day frequency (fw), c) number of events with precipitation higher than 10mm, and d) wet/dry spells.
 
 
+![](/esd/assets/images/map_station_t2m.jpg)
 
-Example 3.2.
-```R
-# Load ECAD dataset over Norway recording a 100 years of daily data
-ecad <- station(param="precip",src="ecad",cntr="Norway",nmin=100)
-# Map the vulnerability index:
-map(ecad,FUN=’precip.vul’,cex=1.2,xlim=c(-10,40), col="black",colbar=list(col=heat.colors(20)))
-# Map approximate 10-year return values:
-map(ecad,FUN=’precip.rv’,cex=1.2,xlim=c(-10,40), col="black",colbar=list(col=heat.colors(20)))
-```
-Figure 10: An example of a plot of the vulnerability index µ/fw (left) and an approximation of daily 10-year return values (right) for a selection of station from the ECA&D recording at least a 100 years of data.
+_Figure 9: Plots of precipitation statistics at Bjornholt such as a) wet-day mean (µ), b) wet-day frequency (fw), c) number of events with precipitation higher than 10mm, and d) wet/dry spells._
+
+
+_Figure 10: An example of a plot of the vulnerability index µ/fw (left) and an approximation of daily 10-year return values (right) for a selection of station from the ECA&D recording at least a 100 years of data._
 
 ## re-gridding
 Gridded data often come on different spatial grids and/or resolutions, such as re-analyses, global climate models (GCMs) and regional climate models (RCMs). In order to compare these
@@ -109,73 +81,6 @@ y <- subset(Y,is=X))
 ```
 or to combine several selection criteria as in Example 3.6. It is usually wise to use `subset` before other data processing (e.g. aggregate) to reduce computation time.
 
-Example 3.3.
-```R
-# Load NCEP 2m air temperature
-t2m <- t2m.NCEP(lon=c(-30,30),lat=c(40,70))
-# map the original field
-map(t2m)
-# Regrid based on the new lon and lat values
-y <- regrid(t2m,is=list(lon=seq(-5,15,by=0.5),lat=seq(55,65,by=0.5)))
-# Map on the new grid
-map(y)
-```
-
-Example 3.4.
-```R
-# Get NCEP data
-> ncep <- t2m.NCEP(lon=c(-15,45),lat=c(35,70))
-# Display the latitude values
-> lat(ncep)
-# Compute the grid resolution
-> diff(lat(ncep))
-# Display the longitude values
-> lon(ncep)
-# Compute the resolution in the lon axis
-> diff(lon(ncep))
-# Get GCM data
-> gcm <- t2m.NorESM.M(lon=c(-15,45),lat=c(35,70))
-> lat(gcm)
-> diff(lat(gcm))
-> lon(gcm)
-> diff(lon(gcm))
-# Do the re-gridding # this line does not work
-> gcm.regrid <- regrid(gcm, is=ncep)
-# Make sure that both longitudes are set to data line (i.e. greenwich=FALSE)
-> ncep <- g2dl(ncep,greenwich=FALSE)
-> gcm <- g2dl(gcm,greenwich=FALSE)
-# Do the re-gridding
-> gcm.regrid <- regrid(gcm, is=ncep)
-> lat(gcm.regrid)
-> lon(gcm.regrid)
-```
-
-Example 3.5.
-```R
-data(Oslo)
-# Extract an interval:
-y <- subset(Oslo,it=as.Date(c("1883-01-01","2013-12-05")))
-# Extract only the winter data (use aggregate for winter statistics)
-djf <- subset(y,it=’djf’)
-# Extract data for May:
-may <- subset(y,it=’May’)
-```
-
-Example 3.6.
-```R
-# Retrieve stations across Scandinavian regions from the
-# ECA$\&$D dataset with a minimum of 50 years of data
-y <- station(src="ecad",cntr="norway",nmin=50)
-# Show the selected stations including all available stations
-map(y,cex=1.4,col="red",bg="pink",showall=TRUE)
-# Subset stations with altitude higher than 100m
-y1 <- subset(y,is=list(alt=100))
-# Show the stations with elevation greater than 100m above sea level:
-map(y1,cex=1.4,col="darkred",bg="red",showall=TRUE)
-# Show the stations with elevation below 100m above sea level:
-y2 <- subset(y,is=list(alt=-100))
-map(y2,cex=1.4,col="darkred",bg="orange",showall=TRUE)
-```
 
 Figure 11: Maps of available weather stations from the ECA&D with a minimum of 50 year recorded values including a sub-selection of stations showing higher (b) and lower (c) elevation than 100m a.s.l.
 
@@ -220,27 +125,9 @@ Example 3.9 shows the spatial averaging of the projected global mean temperature
 
 It is also convenient to compare the global mean temperature as produced by several GCMs (Figure 12). A demo script is made available in the demo ‘esd’ package called “global tas anomaly.R”. The script computes the global mean anomaly temperature for all CMIP3 and CMIP5 experiments provided by the KNMI Climate-Explorer web portal. All GCM data need to be downloaded locally before the script is run. The results can then be compared to the Figure 1 of Knutti and Sedl´aˇcek (2013) which shows the evolution of the global temperature change (mean and one standard deviation as shading) relative to 1986–2005 for the SRES scenarios run by the CMIP3 and the RCP scenarios run by the CMIP5 experiments. This figure gives a good summary of the global mean warming signal predicted by both experiments and the inter-model spread. Note that the shaded area would be different if it was based on the ensemble model outputs for each CMIP experiment as the authors gave a confidence interval based on one standard deviation of the ensemble mean.
 
-Figure 12: Global mean temperature change for the SRES scenarios run by CMIP3 and the RCP scenarios run by CMIP5 experiments, respectively, relative to the period 1986-2005. The shaded area shows one standard deviation from the mean based on all scenarios for each experiment.
+_Figure 12: Global mean temperature change for the SRES scenarios run by CMIP3 and the RCP scenarios run by CMIP5 experiments, respectively, relative to the period 1986-2005. The shaded area shows one standard deviation from the mean based on all scenarios for each experiment._
 
-Example 3.7.
-```R
-# Load data for "Bjornholt" station
-data(bjornholt)
-# Check the class of the object
-class(bjornholt)
-## [1] "station" "day"
-"zoo"
-# Aggregate on annual maximum values
-bjornholt <- annual(bjornholt,FUN=’max’)
-# Check the class of the aggregated object
-class(bjornholt)
-## [1] "station" "annual"
-"zoo"
-# Plot the results
-plot(bjornholt)
-```
-
-Figure 13: Plotting the annual maximum values of daily precipitation recorded at ‘Bjornholt’ weather station.
+_Figure 13: Plotting the annual maximum values of daily precipitation recorded at ‘Bjornholt’ weather station._
 
 Example 3.8.
 ```R
@@ -252,19 +139,10 @@ x <- aggregate(t2m,by=list(lon=seq(0,360,by=10),lat=seq(0,360,by=10)),FUN=’mea
 map(x)
 ```
 
-Figure 14: Maps of the original (a) and aggregated (b) spatial field of NCEP 2m air temperature.
+_Figure 14: Maps of the original (a) and aggregated (b) spatial field of NCEP 2m air temperature._
 
-Example 3.9.
-```R
-# Load 2m air temperature from the NorESM.M global climate model
-t2m <- t2m.NorESM.M()
-# Compute the areal mean over the whole domain
-T2m <- aggregate.area(t2m,FUN=’mean’)
-# Plot the annual aggregated values
-plot(annual(T2m),ylim=c(11.5,17.5))
-```
 
-Figure 15: Global average of 2m air temperature from the NorESM global climate model. The error bars show 2 times the standard deviation computed based on observations.
+_Figure 15: Global average of 2m air temperature from the NorESM global climate model. The error bars show 2 times the standard deviation computed based on observations._
 
 ## Transformations and conversions: as.
 A range of transformations between different type of objects can be done with the ‘as’ method.
