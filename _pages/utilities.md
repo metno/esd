@@ -38,14 +38,14 @@ the returned object.
 ### Function `station()`
 The package ‘esd’ includes the function ‘station’ for obtaining historical climate data by querying various web portals, for instance, the MET Norway archive (KDVH) provided by the Norwegian Meteorological Institute through eKlima [website](http://eklima.met.no). Data from MET climate web service ‘eKlima’ needs to be adapted manually, the Global Historical Climate Network (GHCN, (Peterson and Vose,1997)) provided by the American National Climatic Data Center at [](http://www1.ncdc.noaa.gov/pub/), and the European Climate Assessment and Dataset ([ECA&D](http://eca.knmi.nl/)), (Klein Tank et al., 2002)) made available by the Royal Netherlands Meteorological Institute (KNMI). Some of the data that is; however, this function only works within the firewall included in the package has been pre-formatted within the ‘clim.pact’ package and adapted to meet the new ‘esd’ data format requirements.
 
-![](/esd/assets/images/map_station_t2m.jpg)
-
-_Figure 1: Map of available weather stations recording temperature that are included in the meta-data of the ‘esd’ package._
-
 ### Quick search - Function `select.station()`
 The sample data includes also a meta-data object `stationmeta` that can be loaded directly and contains meta data such as name of the location `loc` and its standard ientification number `stid`, geographical coordinates such as longitude `lon`, latitude `lat`, and altitude `alt`, country name `country`, parameter name `param` of recorded weather variables (e.g. temperature and precipitation), data source `src` or provider for thousands of stations all over the world (Figures 1 and 2).
 
 These meta-data have been imported from existing meta data from the different data source providers. It has to be noted also that most of the available stations are managed by the World Meteorological Organisation (WMO) and made available by the American National Climate Data Centre (NCDC) for scientific research only. The meta data has been merged from the different sources mentioned earlier. Also, other additional data sources can be easily included into the package.
+
+![](/esd/assets/images/map_station_t2m.jpg)
+
+_Figure 1: Map of available weather stations recording temperature that are included in the meta-data of the ‘esd’ package._
 
 ![](/esd/assets/images/map_station_precip.jpg)
 
