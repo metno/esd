@@ -41,10 +41,6 @@ plot(ya,ylim=c(29.5,32.5))
 lines(trend(ya),col="red",lwd=2)
 ```
 
-Figure 3: Map showing available stations across India from the GHCN-D dataset and b) a plot of
-the annual maximum temperature recorded at New Delhi weather station (blue point) including
-linear trend line.
-
 ## Example 2.2 on the different esd objects and clasees
 ```R
 # Example of monthly station data:
@@ -125,8 +121,6 @@ plot(bjornholt)
 map(bjornholt)
 ```
 
-Figure 4: Example of a station (a) and a map plot (b) for a single station ‘Bjornholt’.
-
 ## Example 2.6 on how to read a field object and plot the results
 ```R
 #Get NCEP 2m air temperature for the selected spatial window defined by lon and lat
@@ -136,8 +130,6 @@ X <- EOF(t2m)
 # Plot the result
 plot(X)
 ```
-
-Figure 5: An example of a plot results for an EOF object.
 
 ## Example 2.7 on how to retrieve wind data sets and visualise the results
 ```R
@@ -169,8 +161,6 @@ climvar(x)
 diagram(x)
 ```
 
-Figure 7: Examples of ‘cumugram’, ‘wheel’, ‘climvar’, and ‘diagram’ plots. The ‘cumugram’ shows how the mean value of some variable has evolved from the start of the year and compares this curve to previous years. The graphics produced by ‘wheel’, on the other hand, emphasises how the seasonal variations affect the variable, e.g. whether some extremes tend to be associated with a specific season. Panel c shows results produced by ‘climvar’ shows the year-to-year statistics for a variable, e.g. the standard deviation of the temperature on February 1st. The ‘diagram’ method can be used in different context, and for a ‘station’ object, it produces graphics that compare the day-to-day values with those of previous years.
-
 ## Example 2.9 on how to process the data and visualise the trend of the time series
 ```R
 # Get 2m temperature data for Ferder and calculate annual mean
@@ -184,4 +174,3 @@ lines(trend(x),col="red",lwd=2)
 vis.trends(x,minlen=40,pmax=0.01)
 t2m trend (deg C/decade)
 ```
-Figure 8: Visualising the trend in the temperature time series from Ferder for the full period (left panel) and simultaneously for different periods of various length (right panel). The trend analysis indicates a significant increase in temperature at Ferder since the 1900s, but also shows that the strength and significance of the trend is sensitive to the period considered because the increase is not monotone.
