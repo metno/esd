@@ -1974,9 +1974,15 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      if(any(grepl("realization", names(attributes(gcm)))))
+        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]] else
+        nm.r <- 'NA'
+      if(any(grepl("initialization", names(attributes(gcm)))))
+        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]] else
+        nm.i <- 'NA'
+      if(any(grepl("physics", names(attributes(gcm)))))
+        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]] else
+        nm.p <- 'NA'
       rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
     }
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
