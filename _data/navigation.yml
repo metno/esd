@@ -1,0 +1,101 @@
+main:
+  - title: "Utilities"
+    url: /utilities/
+  - title: "Data processing"
+    url: /process/
+  - title: "Downscaling"
+    url: /downscale/
+  - title: "Analyses"
+    url: /analyses/
+  - title: "Evaluate"
+    url: /evaluate/
+  - title: "Trouble Shooting"
+    url: /trouble/
+  - title: "Examples"
+    url: /examples/
+
+pages:
+  - title: "Utilities"
+    url: /utilities/
+    children:
+      - title: "Retrieving data I/O"
+        url: /utilities/#retrieving-data-io
+      - title: "Data Structure"
+        url: /utilities/#data-structures
+      - title: "Data Summary"
+        url: /utilities/#function-summary
+      - title: "Data Visualisation"
+        url: /utilities/#data-visualisation
+
+  - title: "Data Processing I/O"
+    url: /process/
+    children:
+      - title: "Formulas and Functions"
+        url: /process/#formulas--functions
+      - title: "Re-gridding"
+        url: /process/#re-gridding
+      - title: "Subsetting"
+        url: /process/#subsetting
+      - title: "Combining and Synchronising"
+        url: /process/#Combining-and-synchronising
+      - title: "Anomalies"
+        url: /process/#anomalies/
+
+  - title: "Analyses"
+    url: /analyses/
+    children:
+      - title: "Empirical Orthogonal Functions"
+        url: /analyses/#empirical-orthogonal-functions
+      - title: "Principal Component Analysis"
+        url: /analyses/#principal-component-analysis
+      - title: "Canonical Correlation Analysis"
+        url: /analyses/#canonical-correlation-analysis
+      - title: "Other types of analyses"
+        url: /analyses/#other-types-of-analysis
+      - title: "Predict and Project"
+        url: /analyses/#predict--project
+ 
+  - title: "Downscale"
+    url: /downscale/
+    children:
+      - title: "Predictors"
+        url: /downscale/#defining-predictors
+      - title: "Predictands"
+        url: /downscale/#defining-predictands
+      - title: "Options for downscaling"
+        url: /downscale/#options-for-downscaling
+      - title: "Downscaling of tragectory objects"
+        url: /downscale/#downscaling-of-trajectory-objects
+      - title: "Downscaling of Probabilities and number of events"
+        url: /downscale/#downscaling-probabilities-and-number-of-events
+      - title: "Weather Generators"
+        url: /downscale/#weather-generators---synthesising-daily-time-series
+
+  - title: "Evaluate"
+    url: /evaluate/
+    children:
+      - title: "Central Limit Theorem"
+        url: /evaluate/central-limit-theorem/
+      - title: "Huth’s dilemma"
+        url: /evaluate/#huth--s-dilemma
+      - title: "Diagnose"
+        url: /evaluate/#diagnose/
+  - title: "Examples"
+    url: /examples/
+    children:
+      - title: "Select a weather station and retrieve data"
+        url: /examples/#example-21-on-how-to-select-weather-stations-and-retrieve-recorded-values
+      - title: "Different esd objects and classes"
+        url: /examples/#example-22-on-the-different-esd-objects-and-clasees
+      - title: "Loading some data sets and display the summary of statistics"
+        url: /examples/#example-24-on-how-to-load-some-data-sets-and-display-the-summary-of-statistics
+      - title: "Loading a weather station object and display the location on a map"
+        url: /example/load-a-weather-station-object-and-display-the-location-on-a-map
+      - title: "Reading a field object and plotting the results"
+        url: examples/#example-26-on-how-to-read-a-field-object-and-plot-the-results
+      - title: "Retrieve wind data sets and visualising the results" 
+        url: /examples/#example-27-on-how-to-retrieve-wind-data-sets-and-visualise-the-results
+      - title: "Diagnostic plots"
+        url: /examples/#example-28-test
+      - title: "Processing the data and adding the trend of the time series"
+        url: /examples/#example-29-on-how-to-process-the-data-and-visualise-the-trend-of-the-time-series
