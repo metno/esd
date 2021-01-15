@@ -7,9 +7,15 @@
 \alias{ghcnm.data}
 \title{Functions to fetch data from the Global Historical Climatology Network (GHCN) data base}
 \usage{
-ghcnd.meta(param = NULL, src = "ghcnd", path = "data.GHCND",
+ghcnd.meta(
+  param = NULL,
+  src = "ghcnd",
+  path = "data.GHCND",
   url = "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily",
-  save.file = FALSE, verbose = TRUE, force = TRUE)
+  save.file = FALSE,
+  verbose = TRUE,
+  force = TRUE
+)
 }
 \arguments{
 \item{param}{climate variable}

@@ -4,9 +4,17 @@
 \alias{meps}
 \title{Function to read weather forecast data for the Nordic domain from thredds.met.no}
 \usage{
-meps(url = "https://thredds.met.no/thredds/catalog/metpplatest",
-  type = "forecast", param = "slp", lon = c(9.5, 11.5), lat = c(59,
-  61), it = "latest", dt = 50, verbose = FALSE, plot = FALSE)
+meps(
+  url = "https://thredds.met.no/thredds/catalog/metpplatest",
+  type = "forecast",
+  param = "slp",
+  lon = c(9.5, 11.5),
+  lat = c(59, 61),
+  it = "latest",
+  dt = 50,
+  verbose = FALSE,
+  plot = FALSE
+)
 }
 \arguments{
 \item{url}{URL for the data on thredds.met.no}

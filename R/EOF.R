@@ -102,7 +102,7 @@
 #' @export EOF
 EOF <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE) { UseMethod("EOF") }
 
-#' @export EOF.default
+#' @exportS3Method esd::EOF
 EOF.default <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE) {
   # Verify Arguments
   if (verbose) print("EOF.default")
@@ -118,7 +118,7 @@ EOF.default <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FAL
 }
 
 # Apply EOF analysis to the monthly mean field values:
-#' @export EOF.field
+#' @exportS3Method esd::EOF
 EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   SF <- function(x) {sum(is.finite(x))}
@@ -261,7 +261,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   return(eof)
 }
 
-#' @export EOF.comb
+#' @exportS3Method esd::EOF
 EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   n.app <- attr(X,'n.apps')

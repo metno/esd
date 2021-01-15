@@ -26,7 +26,7 @@
 #' @export
 vis <- function(x,...) UseMethod("vis")
 
-#' @export vis.default
+#' @exportS3Method esd::vis
 vis.default <- function(x,...,it=NULL,img=NULL,verbose=FALSE) {
   if(verbose) print("vis.default")
   if (!is.null(img)) {
@@ -57,7 +57,7 @@ vis.default <- function(x,...,it=NULL,img=NULL,verbose=FALSE) {
   balls(y) 
 }
 
-#' @export vis.station
+#' @exportS3Method esd::vis
 vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,
                         plot=TRUE,verbose=FALSE) {
   if(verbose) print("vis.station")
@@ -93,37 +93,37 @@ vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRU
   invisible(z)
 }
 
-#' @export vis.field
+#' @exportS3Method esd::vis
 vis.field <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export vis.eof
+#' @exportS3Method esd::vis
 vis.eof <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export vis.spell
+#' @exportS3Method esd::vis
 vis.spell <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export vis.cca
+#' @exportS3Method esd::vis
 vis.cca <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export vis.mvr
+#' @exportS3Method esd::vis
 vis.mvr <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export vis.ds
+#' @exportS3Method esd::vis
 vis.ds <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @export vis.map
+#' @exportS3Method esd::vis
 vis.map <- function(x,...,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     add.text=FALSE,cex.axis=NULL,
@@ -196,7 +196,7 @@ vis.map <- function(x,...,col='red',map.type=NULL,
   if(verbose) print("exit vis.map")
 }
 
-#' @export vis.pca
+#' @exportS3Method esd::vis
 vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   if(verbose) print("vis.pca")
   y <- x # quick fix
@@ -300,7 +300,7 @@ vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   invisible(a.T)
 }
 
-#' @export vis.dsensemble
+#' @exportS3Method esd::vis
 vis.dsensemble <- function(x,...) {
   stopifnot(inherits(x,"dsensemble"))
   if (inherits(x,"list")) {

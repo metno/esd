@@ -4,9 +4,19 @@
 \alias{stnr}
 \title{MetNo meta data function}
 \usage{
-stnr(name = NULL, lon = NULL, lat = NULL, max.dist = 10,
-  alt = NULL, County = NULL, Municipality = NULL, nmin = NULL,
-  param = "TAM", plot = FALSE, verbose = FALSE)
+stnr(
+  name = NULL,
+  lon = NULL,
+  lat = NULL,
+  max.dist = 10,
+  alt = NULL,
+  County = NULL,
+  Municipality = NULL,
+  nmin = NULL,
+  param = "TAM",
+  plot = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{name}{station name}

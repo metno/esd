@@ -4,8 +4,7 @@
 \alias{summary.dsensemble}
 \title{Show summary of objects}
 \usage{
-\method{summary}{dsensemble}(object, ..., years = seq(1990, 2090, by =
-  20), verbose = FALSE)
+\method{summary}{dsensemble}(object, ..., years = seq(1990, 2090, by = 20), verbose = FALSE)
 }
 \arguments{
 \item{object}{an object of type 'DSensemble'}

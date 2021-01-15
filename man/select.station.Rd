@@ -4,10 +4,24 @@
 \alias{select.station}
 \title{Select from meta data base}
 \usage{
-select.station(x = NULL, ..., loc = NULL, param = NULL, ele = NULL,
-  stid = NULL, lon = NULL, lat = NULL, alt = NULL, cntr = NULL,
-  src = NULL, it = NULL, nmin = NULL, user = "external",
-  update.meta = FALSE, verbose = FALSE)
+select.station(
+  x = NULL,
+  ...,
+  loc = NULL,
+  param = NULL,
+  ele = NULL,
+  stid = NULL,
+  lon = NULL,
+  lat = NULL,
+  alt = NULL,
+  cntr = NULL,
+  src = NULL,
+  it = NULL,
+  nmin = NULL,
+  user = "external",
+  update.meta = FALSE,
+  verbose = FALSE
+)
 }
 \description{
 Function that searches the meta data base for the requested station data

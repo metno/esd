@@ -17,8 +17,6 @@
 
 \item{new}{if TRUE plot in new window}
 
-\item{lwd}{width of line}
-
 \item{type}{type of plot: 'l' = line, 'p' = point, 'b' = both}
 
 \item{pch}{type of marker}
@@ -78,76 +76,6 @@ the plot will include the principle components, EOF patterns and explained varia
 plotting}
 
 \item{colbar}{a list, see \code{\link{colbar}}}
-
-\item{x}{the object to be plotted}
-
-\item{plot.type}{"single"}
-
-\item{new}{if TRUE plot in new window}
-
-\item{lwd}{width of line}
-
-\item{type}{type of plot: 'l' = line, 'p' = point, 'b' = both}
-
-\item{pch}{type of marker}
-
-\item{main}{main title}
-
-\item{xlab}{label of x-axis}
-
-\item{ylab}{label of y-axis}
-
-\item{errorbar}{if TRUE show errorbar}
-
-\item{legend.show}{if TRUE show legendp}
-
-\item{map.show}{show map of stations}
-
-\item{map.type}{'points' to show stations on map, 'rectangle' to show area}
-
-\item{map.insert}{if TRUE show map as insert, else show map in new window}
-
-\item{it}{For subsetting in time - See \code{\link{subset}}.}
-
-\item{is}{For subsetting in space - See \code{\link{subset}}. Can also be
-a station value and if provided, the plotting will involve an interpolation
-to the same coordinates as defined by \code{is}.}
-
-\item{ip}{Which EOF/CCA pattern (mode) to plot}
-
-\item{cex}{magnification factor, see \code{\link[graphics]{par}}}
-
-\item{cex.axis}{see \code{\link[graphics]{par}}}
-
-\item{cex.lab}{see \code{\link[graphics]{par}}}
-
-\item{cex.main}{see \code{\link[graphics]{par}}}
-
-\item{mar}{see \code{\link[graphics]{par}}}
-
-\item{fig}{coordinates of figure region, see \code{\link[graphics]{par}}}
-
-\item{alpha}{transparency factor for main plot}
-
-\item{alpha.map}{transparency factor for map}
-
-\item{verbose}{a boolean; if TRUE print information about progress}
-
-\item{col}{Colour see \code{\link[graphics]{par}}}
-
-\item{lwd}{width of line}
-
-\item{xlim}{range of x-axis}
-
-\item{ylim}{range of y-axis}
-
-\item{what}{Indicate what to plot. For \code{plot.eof}, c('pc', 'eof', 'var') is the default setting which means that
-the plot will include the principle components, EOF patterns and explained variance. 'field' expands eof to field before
-plotting}
-
-\item{colbar}{a list, see \code{\link{colbar}}}
-
-\item{\dots}{additional arguments}
 }
 \value{
 None

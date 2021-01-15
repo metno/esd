@@ -8,10 +8,17 @@
 \alias{geostrophicwind.field}
 \title{Wind analysis}
 \usage{
-windrose(x, saw = 10, max.scale = NULL, main = NULL,
-  cols = c("grey90", "yellow", "green", "red", "blue", "darkgreen",
-  "darkred", "magenta", "black"), param = c("u", "v"), simple = TRUE,
-  verbose = FALSE)
+windrose(
+  x,
+  saw = 10,
+  max.scale = NULL,
+  main = NULL,
+  cols = c("grey90", "yellow", "green", "red", "blue", "darkgreen", "darkred",
+    "magenta", "black"),
+  param = c("u", "v"),
+  simple = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{station object}

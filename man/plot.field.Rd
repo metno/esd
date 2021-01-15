@@ -4,8 +4,15 @@
 \alias{plot.field}
 \title{Plot esd objects}
 \usage{
-\method{plot}{field}(x, ..., is = NULL, it = NULL, FUN = "mean",
-  map.type = "rectangle", verbose = FALSE)
+\method{plot}{field}(
+  x,
+  ...,
+  is = NULL,
+  it = NULL,
+  FUN = "mean",
+  map.type = "rectangle",
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{the object to be plotted}
@@ -25,8 +32,6 @@ to the same coordinates as defined by \code{is}.}
 \item{plot.type}{"single"}
 
 \item{new}{if TRUE plot in new window}
-
-\item{lwd}{width of line}
 
 \item{type}{type of plot: 'l' = line, 'p' = point, 'b' = both}
 

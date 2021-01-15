@@ -155,7 +155,7 @@ ltp <- function(x,type='exponential',...) {
 #' @export DSensemble
 DSensemble<-function(y,...) UseMethod("DSensemble")
 
-#' @export DSensemble.default
+#' @exportS3Method esd::DSensemble 
 DSensemble.default <- function(y,...,path='CMIP5.monthly/',rcp='rcp45') {
    ## 
   stopifnot(!missing(y),inherits(y,"station"),
@@ -1802,7 +1802,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
   invisible(X)   
 }
 
-#' @export DSensemble.pca
+#' @exportS3Method esd::DSensemble 
 DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
@@ -2214,7 +2214,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   invisible(dse.pca)
 }
 
-#' @export DSensemble.eof
+#' @exportS3Method esd::DSensemble 
 DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_slp_mon.nc",non.stationarity.check=FALSE,
                            ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,nmin=NULL,
@@ -2600,7 +2600,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
   invisible(dse.eof)
 }
 
-#' @export DSensemble.field
+#' @exportS3Method esd::DSensemble 
 DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10),it=c('djf','mam','jja','son'),
@@ -2620,7 +2620,7 @@ DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",b
   invisible(dse.eof)
 }
 
-#' @export DSensemble.station
+#' @exportS3Method esd::DSensemble 
 DSensemble.station <- function(y,...,verbose=FALSE) {
   if(verbose) print("DSensemble.station")
   dse <- DSensemble.default(y=y,...,verbose=verbose)

@@ -5,9 +5,18 @@
 \alias{aggregateArea}
 \title{aggregate}
 \usage{
-\method{aggregate}{area}(x, ..., is = NULL, it = NULL, FUN = "sum",
-  na.rm = TRUE, smallx = FALSE, verbose = FALSE, a = 6378,
-  threshold = NULL)
+\method{aggregate}{area}(
+  x,
+  ...,
+  is = NULL,
+  it = NULL,
+  FUN = "sum",
+  na.rm = TRUE,
+  smallx = FALSE,
+  verbose = FALSE,
+  a = 6378,
+  threshold = NULL
+)
 }
 \arguments{
 \item{x}{A \code{\link{station}} object}

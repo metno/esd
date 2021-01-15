@@ -4,10 +4,25 @@
 \alias{vec}
 \title{Draw vectors on maps for esd objects}
 \usage{
-vec(x, y, it = NULL, a = NULL, r = 1, ix = NULL, iy = NULL,
-  new = TRUE, nx = 150, ny = 80, projection = "lonlat",
-  lonR = NULL, latR = NULL, axiR = 0, verbose = FALSE,
-  length = NULL, ...)
+vec(
+  x,
+  y,
+  it = NULL,
+  a = NULL,
+  r = 1,
+  ix = NULL,
+  iy = NULL,
+  new = TRUE,
+  nx = 150,
+  ny = 80,
+  projection = "lonlat",
+  lonR = NULL,
+  latR = NULL,
+  axiR = 0,
+  verbose = FALSE,
+  length = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{the zonal comonents of the vectors}

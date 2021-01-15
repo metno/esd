@@ -6,10 +6,16 @@
 \alias{retrieve.senorge}
 \title{Function to read seNorge daily temperature and precipitation data from thredds.met.no}
 \usage{
-
-  senorge(url = "https://thredds.met.no/thredds/catalog/senorge/seNorge_2018/Archive",
-  param = "rr", lon = c(9.5, 11.5), lat = c(59, 61),
-  it = 2010:2019, dt = 50, verbose = FALSE, plot = FALSE)
+senorge(
+  url = "https://thredds.met.no/thredds/catalog/senorge/seNorge_2018/Archive",
+  param = "rr",
+  lon = c(9.5, 11.5),
+  lat = c(59, 61),
+  it = 2010:2019,
+  dt = 50,
+  verbose = FALSE,
+  plot = FALSE
+)
 }
 \arguments{
 \item{url}{URL for the data on thredds.met.no}

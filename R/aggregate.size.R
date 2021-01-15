@@ -23,7 +23,7 @@
 #' @author R.E. Benestad
 #' @keywords utilities
 #'
-#' @export aggregate.size
+#' @exportS3Method esd::aggregate
 aggregate.size <- function(x, ...) {
   aggregateSize(x, ...)
 }
@@ -32,7 +32,7 @@ aggregate.size <- function(x, ...) {
 aggregateSize <- function(x, ...) UseMethod("aggregateSize")
 
 # Aggregate size of events - S3 method for matrix
-#' @export aggregateSize.matrix
+#' @exportS3Method esd::aggregateSize
 aggregateSize.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6378,...) {#,a=6.378e06,...) {
 
   ## Select all grid boxes with values exceeding x0
@@ -125,7 +125,7 @@ aggregateSize.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6378,...) {#,a=
 }
 
 # Aggregate size of events - S3 method for field
-#' @export aggregateSize.field
+#' @exportS3Method esd::aggregateSize
 aggregateSize.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
   if (verbose) print('aggregateSize.field')  
   nt <- length(index(x))

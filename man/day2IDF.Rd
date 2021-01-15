@@ -10,8 +10,15 @@
 a crude downscaling in timescales. 
 Caluculate the residual of a 'ds' object, i.e., the original data minus the fitted values.}
 \usage{
-day2IDF(x, L = c(1, 2, 3, 6, 12, 24), tau = 10, zeta = NULL,
-  n0 = 365.25, alpha = c(1.256, 0.064), verbose = FALSE)
+day2IDF(
+  x,
+  L = c(1, 2, 3, 6, 12, 24),
+  tau = 10,
+  zeta = NULL,
+  n0 = 365.25,
+  alpha = c(1.256, 0.064),
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{a daily station object for rainfall}

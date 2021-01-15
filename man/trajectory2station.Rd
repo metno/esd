@@ -4,8 +4,16 @@
 \alias{trajectory2station}
 \title{Transform an input object into a \code{station} object}
 \usage{
-trajectory2station(x, it = NULL, is = NULL, param = NULL,
-  FUN = "count", longname = NULL, unit = NULL, loc = NULL)
+trajectory2station(
+  x,
+  it = NULL,
+  is = NULL,
+  param = NULL,
+  FUN = "count",
+  longname = NULL,
+  unit = NULL,
+  loc = NULL
+)
 }
 \arguments{
 \item{x}{a \code{trajectory} object}

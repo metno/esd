@@ -4,12 +4,25 @@
 \alias{plot.ds}
 \title{Plot esd objects}
 \usage{
-\method{plot}{ds}(x, ..., plot.type = "multiple", what = c("map", "ts",
-  "xval"), new = TRUE, lwd = 1, type = "l", pch = 0, main = NULL,
-  col = NULL, colbar = list(pal = NULL, rev = FALSE, n = 10, breaks =
-  NULL, type = "p", cex = 2, show = TRUE, h = 0.6, v = 1, pos = 0.05),
-  xlim = NULL, ylim = NULL, xlab = "", ylab = NULL,
-  verbose = FALSE)
+\method{plot}{ds}(
+  x,
+  ...,
+  plot.type = "multiple",
+  what = c("map", "ts", "xval"),
+  new = TRUE,
+  lwd = 1,
+  type = "l",
+  pch = 0,
+  main = NULL,
+  col = NULL,
+  colbar = list(pal = NULL, rev = FALSE, n = 10, breaks = NULL, type = "p", cex = 2,
+    show = TRUE, h = 0.6, v = 1, pos = 0.05),
+  xlim = NULL,
+  ylim = NULL,
+  xlab = "",
+  ylab = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{the object to be plotted}
@@ -79,8 +92,6 @@ to the same coordinates as defined by \code{is}.}
 \item{alpha}{transparency factor for main plot}
 
 \item{alpha.map}{transparency factor for map}
-
-\item{lwd}{width of line}
 }
 \value{
 None

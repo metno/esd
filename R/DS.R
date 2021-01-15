@@ -249,7 +249,7 @@ test.ds.field <- function(x,verbose=FALSE) {
 DS <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) UseMethod("DS")
 
-#' @export DS.default
+#' @exportS3Method esd::DS 
 DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) {
     if (verbose) print('DS.default')
@@ -463,7 +463,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     invisible(ds)
 }
 
-#' @export DS.station
+#' @exportS3Method esd::DS 
 DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,
                        ..., pca=FALSE, npca=20, biascorrect=FALSE) {
@@ -595,7 +595,7 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
 
 ## DS for combined fields - to make predictions not based on the
 ## calibration data
-#' @export DS.comb
+#' @exportS3Method esd::DS 
 DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
                     swsm="step", m=5, rmtrend=TRUE, ip=1:7,
 		    weighted=TRUE, ..., pca=FALSE, npca=20,
@@ -665,7 +665,7 @@ DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
 ## This function takes care of downscaling based on a field-object X.
 ## X can be a combined field. This function calls more primitive DS methods,
 ## depending on the time scale represented in X (monthly or seasonal).
-#' @export DS.field
+#' @exportS3Method esd::DS 
 DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                      method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...,biascorrect=FALSE) {
     if (verbose) { print('--- DS.field ---'); print(summary(coredata(y)))}
@@ -892,7 +892,7 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 ## weighting.
 ## The data may be pre-filtered using CCA.
 ## Rasmus Benestad, 19.08.2013
-#' @export DS.pca
+#' @exportS3Method esd::DS 
 DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
                    swsm=NULL, m=5, rmtrend=TRUE, ip=1:10,
                    weighted=TRUE,..., pca=TRUE, npca=20, biascorrect=FALSE) {
@@ -1175,7 +1175,7 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     
 }
 
-#' @export DS.eof
+#' @exportS3Method esd::DS 
 DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
                    method="lm",swsm=NULL,m=5,ip=1:10,rmtrend=TRUE,weighted=TRUE,
                    pca=TRUE,npca=20) {
@@ -1201,7 +1201,7 @@ DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
     invisible(ds)
 }
 
-#' @export DS.list
+#' @exportS3Method esd::DS 
 DS.list <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
                     method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,pca=FALSE,npca=20) {
   ### This method combines different EOFs into one predictor by making a new
@@ -1324,7 +1324,7 @@ DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,method="lm",swsm
     return(z)
 }
 
-#' @export DS.trajectory
+#' @exportS3Method esd::DS 
 DS.trajectory <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
                           swsm="step", m=5, rmtrend=TRUE, ip=1:7, weighted=TRUE, ...,
 			  pca=FALSE, npca=20, is=NULL, FUN='count', param=NULL, biascorrect=FALSE,

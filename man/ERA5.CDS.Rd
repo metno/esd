@@ -9,9 +9,17 @@ https://www.unidata.ucar.edu/software/netcdf/workshops/most-recent/third_party/C
 It only works on Linux platforms...
 See https://cds.climate.copernicus.eu/api-how-to}
 \usage{
-ERA5.CDS(param = "total_precipitation", it = 1979:2018, varnm = NULL,
-  lon = c(-180, 180), lat = c(-90, 90), FNAME = "'ERA5_XXX_YYYY.nc'",
-  FUN = "monsum", path = "~/Downloads/", verbose = TRUE)
+ERA5.CDS(
+  param = "total_precipitation",
+  it = 1979:2018,
+  varnm = NULL,
+  lon = c(-180, 180),
+  lat = c(-90, 90),
+  FNAME = "'ERA5_XXX_YYYY.nc'",
+  FUN = "monsum",
+  path = "~/Downloads/",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{param}{variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', 'mean_sea_level_pressure',

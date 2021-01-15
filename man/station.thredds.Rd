@@ -6,10 +6,23 @@
 \title{Read daily station data of the Norwegian Meteorological Institute from thredds netCDF
 using OpenDAP}
 \usage{
-\method{station}{thredds}(param = "t2m", is = NULL, stid = NULL,
-  loc = NULL, lon = NULL, lat = NULL, it = NULL, alt = NULL,
-  cntr = NULL, start.year.before = NULL, end.year.after = NULL,
-  nmin = NULL, verbose = FALSE, onebyone = FALSE, ...)
+\method{station}{thredds}(
+  param = "t2m",
+  is = NULL,
+  stid = NULL,
+  loc = NULL,
+  lon = NULL,
+  lat = NULL,
+  it = NULL,
+  alt = NULL,
+  cntr = NULL,
+  start.year.before = NULL,
+  end.year.after = NULL,
+  nmin = NULL,
+  verbose = FALSE,
+  onebyone = FALSE,
+  ...
+)
 }
 \arguments{
 \item{param}{The element to read c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')}

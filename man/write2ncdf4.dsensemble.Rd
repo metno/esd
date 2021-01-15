@@ -4,9 +4,17 @@
 \alias{write2ncdf4.dsensemble}
 \title{Saves climate data as netCDF.}
 \usage{
-\method{write2ncdf4}{dsensemble}(x, ..., file = "esd.dsensemble.nc",
-  prec = "short", offset = 0, scale = 0.1, torg = "1970-01-01",
-  missval = -99, verbose = TRUE)
+\method{write2ncdf4}{dsensemble}(
+  x,
+  ...,
+  file = "esd.dsensemble.nc",
+  prec = "short",
+  offset = 0,
+  scale = 0.1,
+  torg = "1970-01-01",
+  missval = -99,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{x}{data object}

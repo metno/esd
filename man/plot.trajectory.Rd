@@ -4,10 +4,23 @@
 \alias{plot.trajectory}
 \title{Plot esd objects}
 \usage{
-\method{plot}{trajectory}(x, it = NULL, is = NULL, main = NULL,
-  xlim = NULL, ylim = NULL, col = NULL, pch = 0, type = "l",
-  lwd = 3, xlab = "", ylab = NULL, new = TRUE, verbose = FALSE,
-  ...)
+\method{plot}{trajectory}(
+  x,
+  it = NULL,
+  is = NULL,
+  main = NULL,
+  xlim = NULL,
+  ylim = NULL,
+  col = NULL,
+  pch = 0,
+  type = "l",
+  lwd = 3,
+  xlab = "",
+  ylab = NULL,
+  new = TRUE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{the object to be plotted}
@@ -22,7 +35,7 @@ to the same coordinates as defined by \code{is}.}
 
 \item{ylim}{range of y-axis}
 
-\item{col}{colour}
+\item{col}{Colour see \code{\link[graphics]{par}}}
 
 \item{lwd}{width of line}
 
@@ -35,8 +48,6 @@ to the same coordinates as defined by \code{is}.}
 \item{\dots}{additional arguments}
 
 \item{legend.show}{if TRUE show legendp}
-
-\item{col}{Colour see \code{\link[graphics]{par}}}
 }
 \value{
 None

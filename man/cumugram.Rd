@@ -4,8 +4,17 @@
 \alias{cumugram}
 \title{InfoGraphics}
 \usage{
-cumugram(x, it = NULL, start = "-01-01", prog = FALSE, plot = TRUE,
-  verbose = FALSE, FUN = "mean", main = NULL, ...)
+cumugram(
+  x,
+  it = NULL,
+  start = "-01-01",
+  prog = FALSE,
+  plot = TRUE,
+  verbose = FALSE,
+  FUN = "mean",
+  main = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{an input object of class 'station'}

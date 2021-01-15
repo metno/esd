@@ -32,7 +32,7 @@
 #' @export
 anomaly <-function(x,...) UseMethod("anomaly")
 
-#' @export anomaly.default
+#' @exportS3Method esd::anomaly
 anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   if(verbose) print('anomaly.default')
   if (verbose) print(class(x))
@@ -66,7 +66,7 @@ anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   return(y)
 }
 
-#' @export anomaly.dsensemble
+#' @exportS3Method esd::anomaly
 anomaly.dsensemble <- function(x,...,ref=NULL,verbose=FALSE) {
     if(verbose) print("anomaly.dsensemble")
     yr.obs <- year(attr(x,'station'))
@@ -77,14 +77,14 @@ anomaly.dsensemble <- function(x,...,ref=NULL,verbose=FALSE) {
     return(x)
 }
 
-#' @export anomaly.field
+#' @exportS3Method esd::anomaly
 anomaly.field <- function(x,verbose=FALSE,...,ref=NULL,na.rm=TRUE) {
   stopifnot(inherits(x,"field"))
   x <- as.anomaly(x,ref=ref,na.rm=na.rm,verbose=verbose,...)
   return(x)
 }
 
-#' @export anomaly.comb
+#' @exportS3Method esd::anomaly
 anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
   if(verbose) print("anomaly.comb")
   stopifnot(inherits(x,"field"),inherits(x,"comb"))
@@ -102,7 +102,7 @@ anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
   return(y)
 }
 
-#' @export anomaly.station
+#' @exportS3Method esd::anomaly
 anomaly.station <- function(x,verbose=FALSE,...) {
   if(verbose) print("anomaly.station")
   x <- anomaly.default(x,...)
@@ -275,31 +275,31 @@ anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
 #' @export as.anomaly
 as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
-#' @export as.anomaly.default
+#' @exportS3Method esd::as.anomaly
 as.anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE) anomaly.default(x,ref=ref,na.rm=na.rm,...)
 
-#' @export as.anomaly.zoo
+#' @exportS3Method esd::as.anomaly
 as.anomaly.zoo <- function(x,...,ref=NULL,na.rm=TRUE) {
   y <- as.anomaly.station(x,ref=ref,na.rm=na.rm,...)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-#' @export as.anomaly.list
+#' @exportS3Method esd::as.anomaly
 as.anomaly.list <- function(x,...,ref=NULL,na.rm=TRUE) {
   y <- lapply(x,anomaly(x))
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-#' @export as.anomaly.station
+#' @exportS3Method esd::as.anomaly
 as.anomaly.station <- function(x,...,ref=NULL,na.rm=TRUE) {
   y <- as.anomaly.default(x,ref=ref,na.rm=na.rm,...)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
-#' @export as.anomaly.field
+#' @exportS3Method esd::as.anomaly
 as.anomaly.field <- function(x,...,ref=NULL,na.rm=TRUE) {
    y <- anomaly.default(x,ref=ref,na.rm=na.rm,...)
    attr(y,'history') <- history.stamp(x)

@@ -122,7 +122,7 @@
 #' @export
 subset <- function(x,...) UseMethod("subset")
 
-#' @export subset.field
+#' @exportS3Method esd::subset
 subset.field <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print("subset.field")
   if (is.null(it) & is.null(is)) return(x) 
@@ -132,7 +132,7 @@ subset.field <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   return(y)
 }
 
-#' @export subset.zoo
+#' @exportS3Method esd::subset
 subset.zoo <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print("subset.zoo")
   if (is.null(it) & is.null(is)) return(x)
@@ -147,7 +147,7 @@ subset.zoo <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
 }
 
 
-#' @export subset.comb
+#' @exportS3Method esd::subset
 subset.comb <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if(verbose) print("subset.comb")
   if(verbose) print(paste("n.apps=",attr(x,'n.apps')))
@@ -176,7 +176,7 @@ subset.comb <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     invisible(y)
 }
 
-#' @export subset.eof
+#' @exportS3Method esd::subset
 subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print("subset.eof")
     if (is.null(is) & is.null(it) & is.null(ip)) return(x)                                    
@@ -310,7 +310,7 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
 
-#' @export subset.cca
+#' @exportS3Method esd::subset
 subset.cca <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
   if(verbose) print("subset.cca")
   if (!is.null(is))  {
@@ -323,7 +323,7 @@ subset.mvr <- function(x,...,it=NULL,is=NULL) {
   x
 }
 
-#' @export subset.pattern
+#' @exportS3Method esd::subset
 subset.pattern <- function(x,...,is=NULL,verbose=FALSE) {
   ## Takes a subset of the pattern attribute, e.g. a smaller region.
   if (verbose) print('subset.pattern')
@@ -378,14 +378,14 @@ subset.pattern <- function(x,...,is=NULL,verbose=FALSE) {
   return(x)
 }
 
-#' @export subset.matrix
+#' @exportS3Method esd::subset
 subset.matrix <- function(x,...,is=NULL,verbose=FALSE) {
   if(verbose) print("subset.matrix")
   y <- subset.pattern(x,is=is,verbose=verbose)
   return(y)
 }  
 
-#' @export subset.pca
+#' @exportS3Method esd::subset
 subset.pca <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print('subset.pca')
   y <- x
@@ -451,7 +451,7 @@ subset.pca <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   return(y)
 }
 
-#' @export subset.corfield
+#' @exportS3Method esd::subset
 subset.corfield <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('subset.corfield')
     stopifnot(inherits(x,"corfield"))
@@ -474,7 +474,7 @@ subset.corfield <- function(x,...,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
 
-#' @export subset.ds
+#' @exportS3Method esd::subset
 subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('subset.ds')
     y <- x
@@ -537,7 +537,7 @@ subset.ds <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     return(x)
 }
 
-#' @export subset.trend
+#' @exportS3Method esd::subset
 subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
     if(verbose) print("subset.trend")
     y <- subset.field(x,it=it,is=is)
@@ -567,7 +567,7 @@ subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
     return(y)
 }
 
-#' @export subset.dsensemble
+#' @exportS3Method esd::subset
 subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE) {
   if (verbose) print('subset.dsensemble')
@@ -811,7 +811,7 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
   invisible(y)
 }
 
-#' @export subset.spell
+#' @exportS3Method esd::subset
 subset.spell <- function(x,is=NULL,it=NULL,...,verbose=FALSE) {
     if(verbose) print("subset.spell")
     y <- subset.station(x,is=is,it=it)
@@ -920,7 +920,7 @@ subregion.default <- function(x,is=NULL,verbose=FALSE) {
   return(y)
 } 
 
-#' @export subset.default
+#' @exportS3Method esd::subset
 subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) {print("subset.default"); print(it); print(is); print('---')}
     
@@ -1226,7 +1226,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(y)
 }
     
-#' @export subset.events
+#' @exportS3Method esd::subset
 subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   if(verbose) print("subset.events")
   cls <- class(x)
@@ -1407,7 +1407,7 @@ subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   invisible(y)
 }
 
-#' @export subset.trajectory
+#' @exportS3Method esd::subset
 subset.trajectory <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   if(verbose) print("subset.trajectory")
   
