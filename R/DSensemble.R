@@ -639,9 +639,12 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+      if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+      if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+      # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
       rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
     }
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
@@ -887,9 +890,12 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
         }
       }
       if(is.null(rip)) {
-        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+        if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+        if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+        # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
         rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
       }
       gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
@@ -1170,9 +1176,12 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+      if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+      if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+      # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
       rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
     }
     gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
@@ -1747,9 +1756,12 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
         }
       }
       if(is.null(rip)) {
-        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+        if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+        if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+        # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
         rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
       }
       gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
@@ -2361,9 +2373,12 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+      if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+      if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+      # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
       rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
     }
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
