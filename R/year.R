@@ -178,7 +178,7 @@ season <- function(x,format="character",verbose=FALSE) UseMethod("season")
 #' season(bjornholt)
 #' season(bjornholt, format="numeric")
 #' 
-#' @export season.default
+#' @exportS3Method esd::season
 season.default <- function(x,format="character",verbose=FALSE) {
   if(verbose) print("season.default")
   nt <- length(index(x))

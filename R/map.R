@@ -118,7 +118,7 @@
 #' @export map
 map <- function(x,...) UseMethod("map")
 
-#' @export map.default
+#' @exportS3Method esd::map
 map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                         projection="lonlat",xlim=NULL,ylim=NULL,zlim=NULL,lab='default',
                         colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,pos=0.05,
@@ -179,7 +179,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   invisible(X)
 }
 
-#' @export map.matrix
+#' @exportS3Method esd::map
 map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                        xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                        colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -215,7 +215,7 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   #map.station(NULL,...)
 }
 
-#' @export map.data.frame
+#' @exportS3Method esd::map
 map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                            colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -237,7 +237,7 @@ map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   invisible(z)
 }
 
-#' @export map.array
+#' @exportS3Method esd::map
 map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       projection="lonlat",na.rm=TRUE,
                       xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
@@ -277,7 +277,7 @@ map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
   invisible(z)
 }
 
-#' @export map.comb
+#' @exportS3Method esd::map
 map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      xlim=NULL,ylim=NULL,zlim=NULL,#n=15,
                      colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -304,7 +304,7 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   invisible(result)
 }
 
-#' @export map.eof
+#' @exportS3Method esd::map
 map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
                     xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -380,7 +380,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
   invisible(z)
 }
 
-#' @export map.ds
+#' @exportS3Method esd::map
 map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    xlim=NULL,ylim=NULL,zlim=NULL,
                    colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -470,7 +470,7 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   invisible(X)
 }
 
-#' @export map.field
+#' @exportS3Method esd::map
 map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
                       projection="lonlat",
                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
@@ -578,7 +578,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   invisible(X)
 }
 
-#' @export map.corfield
+#' @exportS3Method esd::map
 map.corfield <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                          xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                          colbar= list(pal=NULL,rev=FALSE,n=NULL,
@@ -634,7 +634,7 @@ map.corfield <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   invisible(x)
 }
 
-#' @export map.trend
+#' @exportS3Method esd::map
 map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
                       colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -689,7 +689,7 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 
-#' @export map.pca
+#' @exportS3Method esd::map
 map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -744,7 +744,7 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
   }
 }
 
-#' @export map.mvr
+#' @exportS3Method esd::map
 map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -758,7 +758,7 @@ map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   
 }
 
-#' @export map.cca
+#' @exportS3Method esd::map
 map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                     colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
@@ -834,7 +834,7 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   invisible(list(U=U,V=V))
 }
 
-#' @export map.events
+#' @exportS3Method esd::map
 map.events <- function(x,...,Y=NULL,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NULL,
                        param=NA,alpha=0.3,lwd=3,col="black",bg="white",pch=21,cex=1,
                        colbar=list(pal="budrd",rev=FALSE,n=10,breaks=NULL,

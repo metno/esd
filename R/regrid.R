@@ -274,7 +274,7 @@ regridtemporal <- function(x,it,verbose=FALSE) {
   return(z)
 }
 
-#' @export regrid.field
+#' @exportS3Method esd::regrid
 regrid.field <- function(x,is=NULL,...,it=NULL,verbose=FALSE,approach="field",clever=FALSE) {
 
   if (verbose) print("regrid.field ")
@@ -450,8 +450,7 @@ regrid.field <- function(x,is=NULL,...,it=NULL,verbose=FALSE,approach="field",cl
 }
 
 
-
-#' @export regrid.matrix
+#' @exportS3Method esd::regrid
 regrid.matrix <- function(x,is=NULL,...,verbose=FALSE) {
 # assumes that dimensions of x are [x,y,(t)] and that the coordinates are
 # provided as attributes as in field
@@ -502,7 +501,7 @@ regrid.matrix <- function(x,is=NULL,...,verbose=FALSE) {
 
 
 
-#' @export regrid.eof
+#' @exportS3Method esd::regrid
 regrid.eof <- function(x,is=NULL,...,verbose=FALSE) {
   if(verbose) print("regrid.eof")
   stopifnot(inherits(x,'eof'))
