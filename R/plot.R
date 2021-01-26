@@ -103,7 +103,7 @@
 #' plot(ds.jan)
 #'
 #' @export 
-plot <- function(x,...)  UseMethod("plot")
+# plot <- function(x,...)  UseMethod("plot")
 
 #' Plot esd objects
 #' 
