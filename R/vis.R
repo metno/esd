@@ -26,7 +26,8 @@
 #' @export
 vis <- function(x,...) UseMethod("vis")
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export
 vis.default <- function(x,...,it=NULL,img=NULL,verbose=FALSE) {
   if(verbose) print("vis.default")
   if (!is.null(img)) {
@@ -57,7 +58,8 @@ vis.default <- function(x,...,it=NULL,img=NULL,verbose=FALSE) {
   balls(y) 
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export
 vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRUE,
                         plot=TRUE,verbose=FALSE) {
   if(verbose) print("vis.station")
@@ -93,37 +95,44 @@ vis.station <- function(x,...,new=FALSE,col=NULL,n=NULL,main=NULL,log.precip=TRU
   invisible(z)
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export 
 vis.field <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export 
 vis.eof <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export 
 vis.spell <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export 
 vis.cca <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export 
 vis.mvr <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export 
 vis.ds <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export 
 vis.map <- function(x,...,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     add.text=FALSE,cex.axis=NULL,
@@ -196,7 +205,8 @@ vis.map <- function(x,...,col='red',map.type=NULL,
   if(verbose) print("exit vis.map")
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export 
 vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   if(verbose) print("vis.pca")
   y <- x # quick fix
@@ -300,7 +310,8 @@ vis.pca <- function(x,...,cex=1.5,new=TRUE,verbose=FALSE) {
   invisible(a.T)
 }
 
-#' @exportS3Method esd::vis
+#' @exportS3Method
+#' @export
 vis.dsensemble <- function(x,...) {
   stopifnot(inherits(x,"dsensemble"))
   if (inherits(x,"list")) {
@@ -308,7 +319,8 @@ vis.dsensemble <- function(x,...) {
   } else vis.default(x,...)
 }
 
-#' @export vis.dsensemble.list
+#' @exportS3Method
+#' @export
 vis.dsensemble.list <- function(x,...,verbose=FALSE,FUN='trend',
                                 colbar=NULL,legend.shrink=1,n=11,plim=0.01) {
   

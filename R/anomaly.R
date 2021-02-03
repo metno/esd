@@ -283,7 +283,8 @@ anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
 #' @export as.anomaly
 as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
-#' @exportS3Method esd::as.anomaly
+#' @exportS3Method
+#' @export
 as.anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE) anomaly.default(x,ref=ref,na.rm=na.rm,...)
 
 #' @exportS3Method
