@@ -31,6 +31,7 @@
 #' @export
 graph <- function(x,...) UseMethod("graph")
 
+#' @exportS3Method
 #' @export graph.default
 graph.default <- function(x,...,img=NULL,pch='fancy',it=NULL,col=rgb(0.5,0.5,0.5,0.5),lwd=5,
                           xlim=NULL,ylim=NULL,new=TRUE,col.obs='black',verbose=FALSE) {
@@ -56,6 +57,7 @@ graph.default <- function(x,...,img=NULL,pch='fancy',it=NULL,col=rgb(0.5,0.5,0.5
     axis(2,col='white')
 }
 
+#' @exportS3Method
 #' @export graph.dsensemble
 graph.dsensemble <- function(x,...,img=NULL,pch='fancy',it=NULL,col=rgb(1,0.7,0.7,0.1),
                              lwd=5,xlim=NULL,ylim=NULL,add=FALSE,new=TRUE,ensmean=FALSE,
@@ -92,6 +94,7 @@ graph.dsensemble <- function(x,...,img=NULL,pch='fancy',it=NULL,col=rgb(1,0.7,0.
     axis(2,col=col.axis)
 }
 
+#' @exportS3Method
 #' @export graph.list
 graph.list <- function(x,...,img=NULL,pch='fancy',it=NULL,
                        col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05),
@@ -124,6 +127,7 @@ graph.list <- function(x,...,img=NULL,pch='fancy',it=NULL,
   if (!is.null(pch)) if (pch=='fancy') balls(obs,col=col.obs) else points(obs,pch=pch,col=col.obs)
 }
 
+#' @exportS3Method
 #' @export graph.zoo
 graph.zoo <- function(x,...,img=NULL,it=NULL,col=rgb(1,0.7,0.7,0.1),pch=1,
                       lwd=5,xlim=NULL,ylim=NULL,xlab='',ylab='',add=FALSE,

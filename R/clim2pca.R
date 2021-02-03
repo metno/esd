@@ -14,12 +14,14 @@
 #' @export
 clim2pca <- function(x,verbose=FALSE,...) UseMethod("clim2pca")
 
+#' @exportS3Method
 #' @export clim2pca.default
 clim2pca.default <- function(x,verbose=FALSE,...) {
   if(verbose) print("clim2pca.default - unfinished function returning input object")
   return(x)
 }
 
+#' @exportS3Method
 #' @export clim2pca.month
 clim2pca.month <- function(x,verbose=FALSE,...) {
   if(verbose) print("clim2pca.month")
@@ -43,6 +45,7 @@ clim2pca.month <- function(x,verbose=FALSE,...) {
   return(Z)
 }
 
+#' @exportS3Method
 #' @export clim2pca.day
 clim2pca.day <- function(x,verbose=FALSE,...) {
   if(verbose) print("clim2pca.day - unfinished function returning input object")

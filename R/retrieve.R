@@ -84,6 +84,7 @@
 retrieve <- function(file=NULL,...) UseMethod("retrieve")
 
 ## Default function
+#' @exportS3Method 
 #' @export retrieve.default
 retrieve.default <- function(file,param="auto",
                              path=NULL,verbose=FALSE,...) {
@@ -121,6 +122,7 @@ retrieve.default <- function(file,param="auto",
 }
 
 ## Set retrieve for ncdf4 object
+#' @exportS3Method
 #' @export retrieve.ncdf4
 retrieve.ncdf4 <- function (file, path=NULL , param="auto",
                             lon=NULL, lat=NULL, lev=NULL, it=NULL,
@@ -1142,6 +1144,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   invisible(result)
 }
 
+#' @exportS3Method
 #' @export retrieve.station
 retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
@@ -1357,6 +1360,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   return(y)
 }
 
+#' @exportS3Method
 #' @export retrieve.stationsummary
 retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                                     alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
@@ -1440,6 +1444,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
 }
 
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
+#' @exportS3Method
 #' @export retrieve.rcm
 retrieve.rcm <- function(file,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   ncfile <- file

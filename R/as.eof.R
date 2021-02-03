@@ -19,21 +19,24 @@
 #' @export as.eof
 as.eof <- function(x,...) UseMethod("as.eof")
 
-#' @exportS3Method esd::as.eof
+#' @exportS3Method
+#' @export
 as.eof.zoo <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.eof.zoo")
   class(x) <- c('eof','zoo')
   return(x)
 }
 
-#' @exportS3Method esd::as.eof
+#' @exportS3Method
+#' @export
 as.eof.ds <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.eof.ds")
   y <- as.eof(attr(x,'eof'),iapp=iapp) 
   return(y)
 }
 
-#' @exportS3Method esd::as.eof
+#' @exportS3Method
+#' @export
 as.eof.eof <-function(x,...,iapp=NULL) {
   if (inherits(x,'comb')) {
     x <- as.eof.comb(x,iapp=iapp) 
@@ -41,7 +44,8 @@ as.eof.eof <-function(x,...,iapp=NULL) {
   return(x)
 }
 
-#' @exportS3Method esd::as.eof
+#' @exportS3Method
+#' @export
 as.eof.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.eof.comb")
   stopifnot(inherits(x,'comb'))
@@ -64,7 +68,8 @@ as.eof.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
   return(x)
 }
 
-#' @exportS3Method esd::as.eof
+#' @exportS3Method
+#' @export
 as.eof.field <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.eof.field")
   y <- EOF(x,...)
@@ -72,7 +77,8 @@ as.eof.field <- function(x,...,iapp=NULL,verbose=FALSE) {
   return(y)
 }
 
-#' @exportS3Method esd::as.eof
+#' @exportS3Method
+#' @export
 as.eof.appendix <- function(x,...,iapp=1,verbose=FALSE) {
   if (verbose) print("as.eof.appendix")
   stopifnot(inherits(x,'comb'))
@@ -88,7 +94,8 @@ as.eof.appendix <- function(x,...,iapp=1,verbose=FALSE) {
   return(y)
 }
 
-#' @exportS3Method esd::as.eof
+#' @exportS3Method
+#' @export
 as.eof.list <- function(x,...,verbose=FALSE) {
   if (verbose) print('as.eof.list')
   stopifnot(inherits(x,'list'),inherits(x[[1]],'eof'))
@@ -135,7 +142,8 @@ as.eof.list <- function(x,...,verbose=FALSE) {
   return(eof)
 }
 
-#' @exportS3Method esd::as.eof
+#' @exportS3Method
+#' @export
 as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
   ## R.E. Benestad, 2017-05-19
   ## Convert the dsensemble object to an EOF of the multi-model mean
@@ -158,7 +166,8 @@ as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
   return(eof)
 }
 
-#' @exportS3Method esd::as.eof
+#' @exportS3Method
+#' @export
 as.eof.dsensemble.pca <- function(x,...,is=NULL,it=NULL,ip=NULL,verbose=FALSE) {
   if (verbose) print('as.eof.dsensemble.pca')
   stopifnot(inherits(x,"dsensemble") & inherits(x,"pca"))

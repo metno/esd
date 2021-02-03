@@ -18,6 +18,7 @@
 # @export
 trackfilter <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) UseMethod("trackfilter")
 
+# @exportS3Method
 # @export
 trackfilter.events <- function(x,param=NULL,pmin=NULL,pmax=NULL,FUN="any",verbose=FALSE) {
   if(verbose) print("trackfilter")

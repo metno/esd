@@ -102,7 +102,8 @@
 #' @export EOF
 EOF <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE) { UseMethod("EOF") }
 
-#' @exportS3Method esd::EOF
+#' @exportS3Method
+#' @export
 EOF.default <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE) {
   # Verify Arguments
   if (verbose) print("EOF.default")
@@ -118,7 +119,8 @@ EOF.default <- function(X,...,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FAL
 }
 
 # Apply EOF analysis to the monthly mean field values:
-#' @exportS3Method esd::EOF
+#' @exportS3Method
+#' @export
 EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   SF <- function(x) {sum(is.finite(x))}
@@ -261,7 +263,8 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   return(eof)
 }
 
-#' @exportS3Method esd::EOF
+#' @exportS3Method
+#' @export
 EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anomaly=TRUE,...) {
   
   n.app <- attr(X,'n.apps')
@@ -462,7 +465,7 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   dim(U) <- c(d[1]*d[2],d[3])
   W <- attr(eof,'eigenvalues')
   V <- coredata(eof)
-  ### ==================================================
+  # ==================================================
   ## KMP 2016-01-15: added selection of patterns (ip)
   if(is.null(ip)) {
     ip <- seq(length(W))
@@ -471,7 +474,7 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   } else {
     stop(paste("Error in input ip =",paste(ip,collaps=", ")))
   }
-  ### ==================================================
+  # ==================================================
   U <- U[,ip]; W <- W[ip]; V <- V[,ip]
   y <-U %*% diag(W) %*% t(V)
   

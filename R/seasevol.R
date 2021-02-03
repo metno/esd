@@ -16,6 +16,7 @@
 #' @export
 seasevol <- function(x,nv=25,verbose=FALSE,...) UseMethod("seasevol")
 
+#' @exportS3Method
 #' @export seasevol.station
 seasevol.station <- function(x, nv=25, new=TRUE, verbose=FALSE...) {
 

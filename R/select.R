@@ -1,4 +1,4 @@
-# do not @export - select is not an S3 method
+# do not @exportS3Method - select is not an S3 method
 #select <- function(x=NULL,...) UseMethod("select")
 
 #' Select from meta data base

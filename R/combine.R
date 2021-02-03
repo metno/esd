@@ -7,6 +7,7 @@
 #' @param \dots input arguments
 #' @param verbose if TRUE print information on progress
 #' 
+#' @exportS3Method
 #' @export rbind.field
 rbind.field <- function(...,verbose=FALSE) {
   if(verbose) print("rbind.field")
@@ -25,6 +26,7 @@ rbind.field <- function(...,verbose=FALSE) {
 #' @param \dots input arguments
 #' @param verbose if TRUE print information on progress
 #'
+#' @exportS3Method
 #' @export cbind.field
 cbind.field <- function(...,verbose=FALSE) {
   if(verbose) print("cbind.field")
@@ -111,6 +113,7 @@ cbind.field <- function(...,verbose=FALSE) {
 #' @export combine
 combine <- function(...) UseMethod("combine")
 
+#' @exportS3Method
 #' @export combine.default
 combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.default")
@@ -142,6 +145,7 @@ combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose
 # combine.station can be used to either combine a group of stations into
 # one data object or time series from one stations with different monthly
 # values into one time series with all months
+#' @exportS3Method
 #' @export combine.station
 combine.station <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station")
@@ -179,6 +183,7 @@ combine.station <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+#' @exportS3Method
 combine.station.month <- function(...,verbose=FALSE) {
   if(verbose) print("combine.station.month")
   cl <- as.list(match.call())
@@ -198,6 +203,7 @@ combine.station.month <- function(...,verbose=FALSE) {
   invisible(X)
 }
 
+#' @exportS3Method
 #' @export combine.zoo
 combine.zoo <- function(...,verbose=FALSE) {
   if(verbose) print("combine.zoo")
@@ -207,6 +213,7 @@ combine.zoo <- function(...,verbose=FALSE) {
 }
 
 # combine.stations is used to combine a group of stations into one object
+#' @exportS3Method
 #' @export combine.stations
 combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.stations")
@@ -276,6 +283,7 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+#' @exportS3Method
 #' @export combine.ds
 combine.ds <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds")
@@ -414,6 +422,8 @@ combine.ds <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+#' @exportS3Method
+#' @export 
 combine.list <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.list")
   args <- list(...)
@@ -427,6 +437,7 @@ combine.list <- function(...,all=TRUE,verbose=FALSE) {
   return(y)
 }
 
+#' @exportS3Method
 #' @export combine.ds.comb
 combine.ds.comb <- function(...,all=TRUE,verbose=FALSE) {
   if(verbose) print("combine.ds.comb")
@@ -532,6 +543,7 @@ combine.ds.pca <- function(...,all=TRUE,verbose=FALSE) {
   invisible(X)
 }
 
+#' @exportS3Method
 #' @export combine.station.eof
 combine.station.eof <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station.eof")
@@ -632,6 +644,7 @@ combine.station.eof <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,ver
   invisible(X)
 }
 
+#' @exportS3Method
 #' @export combine.station.field
 combine.station.field <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose=FALSE) {
   if(verbose) print("combine.station.field")
@@ -639,6 +652,7 @@ combine.station.field <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,v
   invisible(X) 
 }
 
+#' @exportS3Method
 #' @export combine.field.station
 combine.field.station <- function(x=NULL,y=NULL,...,all=FALSE,
                                   orig.format=TRUE,verbose=FALSE) {
@@ -703,7 +717,7 @@ combine.field.station <- function(x=NULL,y=NULL,...,all=FALSE,
   attr(X,'history') <- history.stamp(X)
   invisible(X)
 }
-
+#' @exportS3Method
 #' @export combine.field
 combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
                           approach="field",orig.format=TRUE,verbose=FALSE) {
@@ -869,6 +883,7 @@ combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
   invisible(X)
 }
 
+#' @exportS3Method
 #' @export combine.events
 combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,FUN=NULL,verbose=FALSE) {
   if(verbose) print("combine.events")
@@ -962,6 +977,7 @@ combine.events <- function(x=NULL,y=NULL,...,remove.close=TRUE,mindistance=5E5,F
   return(z)
 }
 
+#' @exportS3Method
 #' @export combine.trajectory
 combine.trajectory <- function(x=NULL,y=NULL,...,verbose=FALSE) {
   if(verbose) print("combine.trajectory")

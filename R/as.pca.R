@@ -32,7 +32,8 @@ as.pca <- function(x,verbose=FALSE,...) UseMethod("as.pca")
 #' 
 #' @return a \code{pc} object
 #' 
-#' @exportS3Method esd::as.pca
+#' @exportS3Method
+#' @export
 as.pca.ds <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.pca.ds")
   stopifnot(inherits(x,'pca'))
@@ -58,7 +59,8 @@ as.pca.ds <- function(x,verbose=FALSE,...) {
 #' 
 #' @return a \code{pc} object
 #' 
-#' @exportS3Method esd::as.pca
+#' @exportS3Method
+#' @export
 as.pca.station <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.pca.station")
   y <- PCA(x,verbose=verbose,...)

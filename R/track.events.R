@@ -87,12 +87,14 @@
 #' @export
 track <- function(x,...) UseMethod("track")
 
+#' @exportS3Method
 #' @export track.events
 track.events <- function(x,...,verbose=FALSE) {
   if(verbose) print("track.events")
   track.default(x,verbose=verbose,...)
 }
 
+#' @exportS3Method
 #' @export track.default
 track.default <- function(x,...,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3,dmin=1E5,
                           f.d=0.5,f.da=0.3,f.dd=0.2,f.dp=0,f.depth=0,dh=NULL,

@@ -37,6 +37,7 @@
 #' @export trend
 trend <- function(x,result="trend",model="y ~ t",...) UseMethod("trend")
 
+#' @exportS3Method
 #' @export trend.default
 trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print("trend.default")
@@ -51,6 +52,7 @@ trend.default <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(y)
 }
 
+#' @exportS3Method
 #' @export trend.one.station
 trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.one.station",result))
@@ -95,6 +97,7 @@ trend.one.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) 
   return(y)
 }
 
+#' @exportS3Method
 #' @export trend.station
 trend.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.station",result))
@@ -126,6 +129,7 @@ trend.station <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(y)
 }
 
+#' @exportS3Method
 #' @export trend.eof
 trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.eof",result))
@@ -177,6 +181,7 @@ trend.eof <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(Y)
 }
 
+#' @exportS3Method
 #' @export trend.field
 trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
@@ -235,6 +240,7 @@ trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   return(Y)
 }
 
+#' @exportS3Method
 #' @export trend.zoo
 trend.zoo <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print("trend.zoo")
@@ -255,6 +261,7 @@ trend.zoo <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export trend.zoo.multi
 trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
   if (verbose) print(paste("trend.station.multi",result))
@@ -264,6 +271,7 @@ trend.zoo.multi <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 }
 
 ## Compute the linear trend
+#' @exportS3Method
 #' @export trend.coef
 trend.coef <- function(x,...) {
   
@@ -283,6 +291,7 @@ trend.coef <- function(x,...) {
 }
 
 ## Compute the linear trend
+#' @exportS3Method
 #' @export trend.err
 trend.err <- function(x,...) {
   if (sum(is.finite(x)) <= 3) return(NA)
@@ -296,6 +305,7 @@ trend.err <- function(x,...) {
 
 
 ## Compute the p-value of the linear trend
+#' @exportS3Method
 #' @export trend.pval
 trend.pval <- function(x,...) {
   #print('trend.val'); print(class(x)); print(str(x))

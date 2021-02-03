@@ -43,7 +43,8 @@
 #' y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
 #'
 #'
-#' @exportS3Method esd::aggregate
+#' @exportS3Method
+#' @export aggregate.station
 aggregate.station <- function(x, by, FUN='mean', ..., na.rm=TRUE, regular=NULL, 
                               frequency=NULL, verbose=FALSE, threshold=1) {
 
@@ -146,7 +147,8 @@ aggregate.station <- function(x, by, FUN='mean', ..., na.rm=TRUE, regular=NULL,
 }
 
 # Aggregate S3 method for a 'comb' object
-#' @exportS3Method esd::aggregate
+#' @exportS3Method
+#' @export aggregate.comb
 aggregate.comb <- function(x, by, FUN='mean', ..., regular=NULL, frequency=NULL, verbose=FALSE) {
   if (verbose) print("aggregate.comb")
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
@@ -170,7 +172,8 @@ aggregate.comb <- function(x, by, FUN='mean', ..., regular=NULL, frequency=NULL,
 }
 
 # Aggregate S3 method for a field object
-#' @exportS3Method esd::aggregate
+#' @exportS3Method
+#' @export aggregate.field
 aggregate.field <- function(x, by, FUN = 'mean', ..., regular=NULL, 
                             frequency=NULL, threshold=0, verbose=FALSE) {
   

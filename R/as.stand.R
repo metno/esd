@@ -15,7 +15,8 @@
 #' @export as.stand
 as.stand <- function(x,na.rm=TRUE,verbose=FALSE,...) UseMethod("as.stand")
 
-#' @export as.stand.station
+#' @exportS3Method
+#' @export
 as.stand.station <- function(x,na.rm=TRUE,verbose=FALSE,...) {
   if(verbose) print("as.stand.station")
   if (is.precip(x)) {
@@ -40,7 +41,8 @@ as.stand.station <- function(x,na.rm=TRUE,verbose=FALSE,...) {
 #' @export as.original
 as.original <- function(x) UseMethod("as.original")
 
-#' @export as.original.station
+#' @exportS3Method
+#' @export
 as.original.station <- function(x) {
   if (attr(x,'aspect')=='proportional') {
     X <- attr(x,'clim')*x/100

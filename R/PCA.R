@@ -2,12 +2,14 @@
 #' @export
 PCA <- function(X,...) UseMethod("PCA")
 
-#' @exportS3Method esd::PCA
+#' @exportS3Method
+#' @export
 PCA.default <- function(X,...) {
   stop("Don't know how to handle objects other than station")
 }
 
-#' @exportS3Method esd::PCA
+#' @exportS3Method
+#' @export
 PCA.matrix <- function(X,...,verbose=FALSE) {
   if(verbose) print("PCA.matrix")
   if(length(dim(X))==3) {
@@ -25,7 +27,8 @@ PCA.matrix <- function(X,...,verbose=FALSE) {
 }
 
 
-#' @exportS3Method esd::PCA
+#' @exportS3Method
+#' @export
 PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE) {
   if (!is.null(it) | !is.null(is))
     X <- subset(X,it=it,is=is)

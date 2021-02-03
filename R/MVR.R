@@ -71,12 +71,14 @@
 #' @export
 MVR <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) UseMethod("MVR")
 
-#' @exportS3Method esd::MVR
+#' @exportS3Method
+#' @export
 MVR.default <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   print("Don't know what to do - the classes are not the ones I know how to handle")
 }
 
-#' @exportS3Method esd::MVR
+#' @exportS3Method
+#' @export
 MVR.field <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   # Synchronise the two time series objects:
   if(verbose) print("MVR.field is not finished. Converting to EOF and redirecting to MVR.eof.")
@@ -133,7 +135,8 @@ MVR.field <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   # invisible(mvr)
 }
 
-#' @exportS3Method esd::MVR
+#' @exportS3Method
+#' @export
 MVR.eof <- function(Y, X, SVD=SVD, LINPACK=LINPACK, verbose=FALSE) {
   if(verbose) print("MVR.eof")
   history <- attr(X,'history')
@@ -198,7 +201,8 @@ MVR.eof <- function(Y, X, SVD=SVD, LINPACK=LINPACK, verbose=FALSE) {
   invisible(mvr)
 }
 
-#' @exportS3Method esd::MVR
+#' @exportS3Method
+#' @export
 MVR.pca <- function(Y,X,SVD=TRUE,LINPACK=FALSE,verbose=FALSE) {
   if(verbose) print("MVR.pca")
   mvr <- MVR.eof(Y,X,SVD=SVD,LINPACK=LINPACK,verbose=verbose)

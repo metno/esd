@@ -103,7 +103,7 @@
 #' plot(ds.jan)
 #'
 #' @export 
-# plot <- function(x,...)  UseMethod("plot")
+plot <- function(x,...)  UseMethod("plot")
 
 #' Plot esd objects
 #' 
@@ -208,7 +208,14 @@
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @exportS3Method esd::plot
+
+#' @export plot.double
+plot.double <- plot.default
+
+#' @export plot.numeric
+plot.numeric <- plot.default
+
+#' @export plot.list
 plot.list <- function(x,...,is=NULL,
                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
                       lwd=3,xlim=NULL,ylim=NULL) {
@@ -325,7 +332,8 @@ plot.list <- function(x,...,is=NULL,
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export plot.station
 plot.station <- function(x,...,plot.type="single",new=TRUE,
                          lwd=3,type='l',pch=0,main=NULL,col=NULL,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
@@ -596,7 +604,8 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export plot.eof
 plot.eof <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                      ip=1,what=c("pc","eof","var"),
                      colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
@@ -614,6 +623,8 @@ plot.eof <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     print("x does not have 'comb' or 'field' aspects...")
 }
 
+#' @exportS3Method
+#' @export plot.eof.field
 plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
                            what=c("pc","eof","var"), colbar=NULL,
                            cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
@@ -718,6 +729,8 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   #par(fig=c(0,1,0,0.1),new=NEW, mar=c(0,0,0,0))  
 }
 
+#' @exportS3Method
+#' @export  plot.eof.comb
 plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                           ip=1,col=c("red"),alpha=1,
                           what=c("pc","eof","var"),colbar=NULL,verbose=FALSE) {
@@ -923,7 +936,8 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export plot.ds
 plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
                     lwd=1,type='l',pch=0,main=NULL,col=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,
@@ -1101,6 +1115,8 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
   invisible(list(trend0=trend0,trend1=trend1,xvalfit=xvalfit))
 }
 
+#' @exportS3Method
+#' @export plot.eof.var
 plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FALSE) {
   if(verbose) print("plot.eof.var")
   n <- min(c(n,length(attr(x,'eigenvalues'))))
@@ -1244,7 +1260,8 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export plot.field
 plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose=FALSE) {
   if (verbose) print("plot.field")
   stopifnot(!missing(x),inherits(x,'field'))
@@ -1458,7 +1475,8 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export plot.pca
 plot.pca <- function(x,...,cex=1,verbose=FALSE,new=TRUE) {
   if (verbose) print('plot.pca')
   if(inherits(x,"trajectory")) {
@@ -1469,6 +1487,8 @@ plot.pca <- function(x,...,cex=1,verbose=FALSE,new=TRUE) {
   }
 }
 
+#' @exportS3Method
+#' @export plot.ds.pca
 plot.ds.pca <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                             type="p",cex=1,show=FALSE,h=0.6, v=1,pos=0.05),
@@ -1545,6 +1565,8 @@ plot.ds.pca <- function(x,...,ip=1,
   }
 }
 
+#' @exportS3Method
+#' @export plot.ds.eof
 plot.ds.eof <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,type1="fill",type2=c("fill","contour"),
@@ -1710,7 +1732,8 @@ plot.ds.eof <- function(x,...,ip=1,
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export  plot.mvr
 plot.mvr <- function(x,verbose=FALSE,...) {
   if(verbose) print("plot.mvr")
   plot(x$fitted.values, verbose=verbose,...)
@@ -1820,7 +1843,8 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method 
+#' @export plot.cca
 plot.cca <- function(x,...,icca=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE) {
@@ -1960,10 +1984,11 @@ plot.cca <- function(x,...,icca=1,
 #' plot(ds.jan)
 #'
 #'
-#' @exportS3Method esd::plot
-plot.list <- function(x,...) {
-  plot(combine.ds(x),...)
-}
+# AM function plot.list is defined twice
+# @exportS3Method plot list
+# plot.list <- function(x,...) {
+#  plot(combine.ds(x),...)
+#}
 
 #' plot cross-validation
 #'
@@ -1971,7 +1996,8 @@ plot.list <- function(x,...) {
 #' @param new a boolean; if TRUE plot in new window
 #' @param verbose a boolean; if TRUE print information about progress
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export plot.xval
 plot.xval <- function(x,...,new=TRUE,verbose=FALSE) {
   if(verbose) print("plot.xval")
   if (new) dev.new()
@@ -2018,7 +2044,8 @@ plot.xval <- function(x,...,new=TRUE,verbose=FALSE) {
 #' @param verbose a boolean; if TRUE print information about progress
 #' @param \dots additional arguments
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method 
+#' @export plot.dsensemble.pca
 plot.dsensemble.pca <- function(x,...,pts=FALSE,target.show=TRUE,map.show=TRUE,
 				it=0,ip=1,envcol=rgb(1,0,0,0.2),
 				legend.show=TRUE,verbose=FALSE) {
@@ -2056,7 +2083,8 @@ plot.dsensemble.pca <- function(x,...,pts=FALSE,target.show=TRUE,map.show=TRUE,
 #' 
 #' @return None
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method 
+#' @export plot.dsensemble
 plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
   if(verbose) print("plot.dsensemble")
   if (inherits(x,c('pca','eof'))) {
@@ -2086,7 +2114,7 @@ plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
 #' @param plot a boolean; if TRUE show plot
 #' @param \dots additional arguments
 #'
-#' @exportS3Method esd::plot
+#' @export plot.dsensemble.multi
 plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
                                   anomaly=FALSE,test=FALSE, plot = TRUE, ...) {
   if (verbose) print('plot.dsensemble.multi')
@@ -2319,10 +2347,11 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   invisible(z)
 }
 
+#' @export plot.xsection
 plot.xsection <- function(x,...) {
-                                        #print("plot.xsection")
+    #print("plot.xsection")
     d <- attr(x,'dimensions')
-                                        #print(d)
+    #print(d)
     X <- coredata(x)
     
     if (d[1]==1) {
@@ -2362,7 +2391,8 @@ plot.xsection <- function(x,...) {
 #' 
 #' @return None
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export plot.spell
 plot.spell <- function(x,...,xlim=NULL,ylim=NULL) {
   bar <- function(x,col) {
     rect(x[1],x[2],x[3],x[4],col=col,border=col)
@@ -2423,7 +2453,8 @@ plot.spell <- function(x,...,xlim=NULL,ylim=NULL) {
 #' 
 #' @return None
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export plot.ssa
 plot.ssa <- function(x,...,main="SSA analysis",sub="",verbose=FALSE)  {
   if(verbose) print("plot.ssa")
   ssa <- x
@@ -2503,7 +2534,8 @@ plot.ssa <- function(x,...,main="SSA analysis",sub="",verbose=FALSE)  {
 #' 
 #' @return None
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method 
+#' @export plot.nevents
 plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,...) {
   # Plot the results from 
   if (verbose) print('plot.nevents')
@@ -2555,7 +2587,8 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
 #' data(imilast.M03)
 #' plot(imilast.M03)
 #'
-#' @exportS3Method esd::plot
+#' @exportS3Method
+#' @export plot.trajectory
 plot.trajectory <- function(x,it=NULL,is=NULL,
                             main=NULL,xlim=NULL,ylim=NULL,
                             col=NULL,pch=0,type='l',lwd=3,

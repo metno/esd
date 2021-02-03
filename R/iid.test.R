@@ -55,6 +55,7 @@
 #' @export iid.test
 iid.test <- function(x,...) UseMethod("iid.test")
 
+#' @exportS3Method
 #' @export iid.test.station
 iid.test.station <- function(x,...,verbose=TRUE) {
   # Re-orders the station data into parallel time series for each calendar
@@ -98,6 +99,7 @@ iid.test.station <- function(x,...,verbose=TRUE) {
   invisible(iid)
 }
 
+#' @exportS3Method
 #' @export iid.test.field
 iid.test.field <- function(x,verbose=TRUE,...) {
   # Uses EOFs to account for spatial co-variance, and test the PCs rather
@@ -131,7 +133,7 @@ iid.test.field <- function(x,verbose=TRUE,...) {
   invisible(iid)
 }
 
-
+#' @exportS3Method
 #' @export iid.test.default
 iid.test.default <- function(x,...,plot=TRUE,Monte.Carlo=TRUE,
                              N.test=200,rev.plot.rev=TRUE,verbose=TRUE) {

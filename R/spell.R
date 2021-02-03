@@ -57,6 +57,7 @@
 #' @export spell
 spell <- function(x,threshold,...) UseMethod("spell")
 
+#' @exportS3Method
 #' @export spell.default
 spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   
@@ -217,6 +218,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export spell.station
 spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
   if (verbose) print('spell.station')
@@ -316,6 +318,7 @@ wetmean <- function(x,threshold=1,...) {
 #' @export
 exceedance <- function(x,threshold=1,FUN='mean',...) UseMethod("exceedance")
 
+#' @exportS3Method
 #' @export exceedance.default
 exceedance.default <- function(x,threshold=1,FUN='mean',na.rm=TRUE,...) {
   #print("HERE");  str(x)
@@ -347,12 +350,14 @@ exceedance.default <- function(x,threshold=1,FUN='mean',na.rm=TRUE,...) {
   return(y)
 }
 
+#' @exportS3Method
 #' @export exceedance.station
 exceedance.station <- function(x,threshold=1,FUN='mean',...) {
   y <- exceedance.default(x,threshold=threshold,FUN=FUN,...)
   return(y)
 }
 
+#' @exportS3Method
 #' @export exceedance.field
 exceedance.field <- function(x,threshold=1,FUN='mean',...) {
   y <- exceedance.default(x,threshold=threshold,FUN=FUN,...)
