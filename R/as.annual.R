@@ -421,7 +421,8 @@ as.daily <- function(x,...) UseMethod("as.daily")
 
 yyyymmdd <- function(x) ymd <- as.Date(paste(year(x),month(x),day(x),sep='-'))
 
-#' @exportS3Method esd::as.daily
+#' @exportS3Method
+#' @export
 as.daily.default <- function(x,...) {
   y <- aggregate(x,by=yyyymmdd,...)
   return(y)
