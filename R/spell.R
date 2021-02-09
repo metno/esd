@@ -289,6 +289,8 @@ count <- function(x,threshold=1,fraction=FALSE,...) {
 
 #' @export
 wetfreq <- function(x,threshold=1,...) {
+  if (inherits(x,'zoo')) x <- coredata(x)
+  x <- x[is.finite(x)]
   x[x < threshold] <- NA
   y <- sum(is.finite(x))/length(x)
   return(y)
@@ -308,6 +310,7 @@ wetmean <- function(x,threshold=1,...) {
   ## Also add the standard error estimate based on the sample size
   ## and assuming an exponential distribtion for daily data
   ## (sigma = mu)
+  if (inherits(x,'zoo')) x <- coredata(x)
   x[x < threshold] <- NA
   y <- mean(x,na.rm=TRUE)
   ##error <- sd(x,na.rm=TRUE)/sqrt(sum(is.finite(x))-1)

@@ -35,9 +35,14 @@ day2IDF <- function(x,L=c(1,2,3,6,12,24),tau=10,zeta=NULL,n0=365.25,
   ## x = const = return value for 24-hr data provided by x_t = alpha mu ln(fw tau).
   ## Th e value for zeta depends on the return interval tau:
   
-  stopifnot((is.precip(x)) & (class(x)[2]=='day'))
-  mu <- wetmean(coredata(x))
-  fw <- wetfreq(coredata(x))
+  stopifnot( ((is.precip(x)) & (class(x)[2]=='day')) | (is.list(x)) ) 
+  if (is.list(x)) {
+    if (sum(is.element(names(x),c('mu','fw')))!=2) stop("day2IDF: error - list object needs 'fw' and 'mu'!") 
+    mu <- x$mu; fw <- x$fw
+  } else { 
+    mu <- wetmean(coredata(x))
+    fw <- wetfreq(coredata(x))
+  }
   taus <- c(2, 5, 10, 20, 25, 50, 100, 200) 
     zetaestimates <- c(0.4251593, 0.4185929, 0.4161947, 0.4147515, 0.4144257, 0.4137387, 0.4134449, 0.4134594)
   if (is.null(zeta)) zeta <- approx(x=taus,y=zetaestimates,tau)$y
@@ -65,7 +70,7 @@ IDF <- function(x,plot=TRUE,L=c(0.25,0.5,1,2,3,6,12,24),tau=c(2,5,10,20,50,100),
   for (i in 1:m) X[,i] <- day2IDF(x,L=L,tau=tau[i])
   attr(X,'L') <- L
   attr(X,'tau') <- tau
-  attr(X,'original_data') <- x
+  if (inherits(x,'station')) attr(X,'original_data') <- x
   class(X) <- c('IDF','matrix')
   if (plot) plot(X,cols=cols)
   return(X)
@@ -75,10 +80,21 @@ IDF <- function(x,plot=TRUE,L=c(0.25,0.5,1,2,3,6,12,24),tau=c(2,5,10,20,50,100),
 plot.IDF <- function(x,type='l',xlab='timescale (hrs)',ylab='return value (mm)',main=NULL,cols=NULL,...) {
   d <- dim(x)
   if (is.null(cols)) cols <- rev(heat.colors(d[2]))
-  if (is.null(main)) main <- paste(loc(attr(x,'original_data')),stid(attr(x,'original_data')))
+  if ((is.null(main)) & !is.null(attr(x,'original_data'))) 
+    main <- paste(loc(attr(x,'original_data')),stid(attr(x,'original_data'))) else
+      if (is.null(main)) main <- 'Intensity-Duration-Frquency'
   plot(attr(x,'L'),x[,d[2]],type=type,xlab=xlab,ylab=ylab,main=main,...)
   grid()
   for (i in 1:d[2]) lines(attr(x,'L'),x[,i],col="grey30",lwd=2)
   for (i in 1:d[2]) lines(attr(x,'L'),x[,i],col=cols[i],lty=2,lwd=2)
   legend(0,max(x),colnames(x),cols,bty='n')
 }
+
+#' @export lines.IDF
+lines.IDF <- function(x,cols=NULL,...) {
+  d <- dim(x)
+  if (is.null(cols)) cols <- rev(heat.colors(d[2])) else 
+    if (length(col)==1) cols <- rep(cols,d[2])
+  for (i in 1:d[2]) lines(attr(x,'L'),x[,i],col=cols[i],...)
+}
+
