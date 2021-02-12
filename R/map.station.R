@@ -636,7 +636,6 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
              xlim = xlim, ylim = ylim,...)
       
       par(fig=fig0,new=TRUE)
-      
       ## print(par()$fig)
       
       if (!is.null(highlight)) {

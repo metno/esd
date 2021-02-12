@@ -112,7 +112,6 @@ pca2station <- function(X,is=NULL,ip=NULL,anomaly=FALSE,what='pca',verbose=FALSE
   if (is.null(dim(attr(pca,'pattern')))) {
     dim(attr(pca,'pattern')) <- c(1,length(attr(pca,'pattern')))
   }
-  
   U <- attr(pca,'pattern')
   W <- attr(pca,'eigenvalues')
   d <- dim(U)
@@ -135,7 +134,12 @@ pca2station <- function(X,is=NULL,ip=NULL,anomaly=FALSE,what='pca',verbose=FALSE
   }
 
   if (verbose) {str(U); str(W); str(V)}
-  if(length(W)>1) diag.W <- diag(W) else diag.W <- W
+  if(length(W)>1) {
+    diag.W <- diag(W) 
+  } else {
+    diag.W <- W
+    U <- t(U)
+  }
   x <- U %*% diag.W %*% t(V)
   if (verbose) str(x)
   

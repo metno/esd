@@ -12,20 +12,11 @@
 #' \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
 #' meters) for individual events (defined as gridboxes touching each other).
 #' 
-#' @aliases aggregate.comb aggregate.field
-#' @seealso aggregate.area aggregate.size
+#' @seealso aggregate.station aggregate.comb aggregate.field aggregate.area aggregate.size
 #'
 #' @importFrom stats aggregate
 #' 
-#' @param x A \code{\link{station}} object
-#' @param by see \code{\link{aggregate.zoo}}
-#' @param FUN a function; see \code{\link{aggregate.zoo}}. Additional options: 'area','exceedance','lessthan'.
-#' @param regular see \code{\link{aggregate.zoo}}
-#' @param frequency see \code{\link{aggregate.zoo}}
-#' @param threshold threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'
-#' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
-#' @param verbose if TRUE print progress
-#' @param \dots additional arguments
+#' @param x An input object \code{\link{station}} object
 #'
 #' @return The call returns a station object
 #'
@@ -42,10 +33,29 @@
 #' slp <- slp.DNMI()
 #' y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
 #'
+#' @export
+aggregate <- function(x) {
+  UseMethod("aggregate")
+}
+
+#' Aggregate S3 method for station data
 #'
+#' @seealso aggregate, aggregate.field, aggregate.comb
+#'
+#' @param x An object of class \code{\link{station}}.
+#' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.}
+#' @param FUN a function to compute the summary statistics which can be applied to all subsets. Always needs to return a result of fixed length (typically scalar) (default: 'mean', additional options: 'area','exceedance','lessthan').
+#' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
+#' @param regular logical. The default is \code{FALSE} for \code{"zoo"} series and \code{TRUE} for \code{"zooreg"} series.
+#' @param frequency numeric indicating the frequency of the aggregated series (if a \code{"zooreg"} series should be returned. The default is to determine the frequency from the data if \code{regular} is \code{TRUE}. If \code{frequency} is specified, it sets \code{regular} to \code{TRUE}.
+#' @param threshold threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments passed to \code{FUN}.
+#'
+#' @exportS3Method
 #' @export aggregate.station
-aggregate.station <- function(x, by, FUN='mean', ..., na.rm=TRUE, regular=NULL, 
-                              frequency=NULL, verbose=FALSE, threshold=1) {
+aggregate.station <- function(x, by, FUN='mean', na.rm=TRUE, regular=NULL, 
+                              frequency=NULL, threshold=1, verbose=FALSE, ...) {
 
   if(verbose) print("aggregate.station")
   class(x) -> cls
@@ -145,43 +155,65 @@ aggregate.station <- function(x, by, FUN='mean', ..., na.rm=TRUE, regular=NULL,
   return(y)
 }
 
-# Aggregate S3 method for a 'comb' object
+#' Aggregate S3 method for a 'comb' object
+#'
+#' @param x An object of class \code{\link{comb}}.
+#' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.}
+#' @param FUN a function to compute the summary statistics which can be applied to all subsets. Always needs to return a result of fixed length (typically scalar) (default: 'mean', additional options: 'area','exceedance','lessthan').
+#' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
+#' @param regular logical. The default is \code{FALSE} for \code{"zoo"} series and \code{TRUE} for \code{"zooreg"} series.
+#' @param frequency numeric indicating the frequency of the aggregated series (if a \code{"zooreg"} series should be returned. The default is to determine the frequency from the data if \code{regular} is \code{TRUE}. If \code{frequency} is specified, it sets \code{regular} to \code{TRUE}.
+#' @param threshold threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments passed to \code{FUN}.
+#'
+#' @exportS3Method
 #' @export aggregate.comb
-aggregate.comb <- function(x, by, FUN='mean', ..., regular=NULL, frequency=NULL, verbose=FALSE) {
+aggregate.comb <- function(x, by, FUN='mean', na.rm=TRUE, regular=NULL,
+	       	  	   frequency=NULL, threshold=1, verbose=FALSE, ...) {
   if (verbose) print("aggregate.comb")
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
-  if (deparse(substitute(by))=="year")
+  if (deparse(substitute(by))=="year") {
     by <- as.Date(strptime(paste(year(x),1,1,sep='-'),'%Y-%m-%d'))
+  }
   
-  x <- aggregate.field(x,by=by,FUN=FUN, ...,
-                       regular = regular, frequency = frequency)
+  x <- aggregate.field(x, by=by, FUN=FUN, na.rm=na.rm, regular=regular,
+       		       frequency=frequency, threshold=threshold, verbose=verbose, ...)
   n <- attr(x,'n.apps')
 
-  print("appended fields...")
+  if(verbose) print("aggregating appended fields...")
+  z <- NULL
   for (i in 1:n) {
     eval(parse(text=paste("z <- attr(x,'appendix.",i,"')",sep="")))
-    #print(class(z)); print(by); print(index(z))
-    z <- aggregate(z,by=by,FUN=FUN, ...,
-                   regular = regular, frequency = frequency)
-    print("update appended field")
+    z <- aggregate(z, by=by, FUN=FUN, na.rm=na.rm, regular=regular,
+      	 	   frequency=frequency, threshold=threshold, verbose=verbose, ...)
+    if(verbose) print(paste("update appended field",i))
     eval(parse(text=paste("z -> attr(x,'appendix.",i,"')",sep="")))
   }
-  return(z)
+  return(x)
 }
 
-# Aggregate S3 method for a field object
+#' Aggregate S3 method for a field object
+#'
+#' @param x An object of class \code{\link{field}}.
+#' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.}
+#' @param FUN a function to compute the summary statistics which can be applied to all subsets. Always needs to return a result of fixed length (typically scalar) (default: 'mean', additional options: 'area','exceedance','lessthan').
+#' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
+#' @param regular logical. The default is \code{FALSE} for \code{"zoo"} series and \code{TRUE} for \code{"zooreg"} series.
+#' @param frequency numeric indicating the frequency of the aggregated series (if a \code{"zooreg"} series should be returned. The default is to determine the frequency from the data if \code{regular} is \code{TRUE}. If \code{frequency} is specified, it sets \code{regular} to \code{TRUE}.
+#' @param threshold threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'
+#' @param verbose if TRUE print progress
+#' @param \dots additional arguments passed to \code{FUN}.
+#'
+#' @exportS3Method
 #' @export aggregate.field
-aggregate.field <- function(x, by, FUN = 'mean', ..., regular=NULL, 
-                            frequency=NULL, threshold=0, verbose=FALSE) {
+aggregate.field <- function(x, by, FUN = 'mean', na.rm=TRUE, regular=NULL, 
+                            frequency=NULL, threshold=0, verbose=FALSE, ...) {
   
   if (verbose) print('aggregate.field')
   class(x) -> cls
-  #print(class(index(x)))
   class(x) <- "zoo"
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB140314
-  #str(X); plot(X)
-  #print("here...")
-  #print(class(by))
   
   if (!is.list(by)) {
   # Temporal aggregation:
@@ -216,20 +248,33 @@ aggregate.field <- function(x, by, FUN = 'mean', ..., regular=NULL,
     ## y <- aggregate(x, by, match.fun(FUN), ...) ## AM quick fix replaced by
     y <- aggregate(x, by, FUN, ...)
     class(x) <- cls; 
-    
+     
     if (class(index(y))=="Date") {
-      dy <- day(y); mo <- month(y); yr <- year(y)
-      if (dy[2] - dy[1] > 0) cls[length(cls) - 1] <- "day" else
-        if (mo[2] - mo[1] == 1) cls[length(cls) - 1] <- "month" else
-          if (mo[2] - mo[1] == 3) cls[length(cls) - 1] <- "season" else
-            if (yr[2] - yr[1] > 0) cls[length(cls) - 1] <- "annual"
-    } else
-      if (class(index(y))=="yearmon") cls[length(cls) - 1] <- "month" else
-        if (class(index(y))=="yearqtr") cls[length(cls) - 1] <- "qtr" else
-          if (class(index(y))=="numeric") cls[length(cls) - 1] <- "annual" else
-            if (class(index(y))=="character") cls[length(cls) - 1] <- "annual"
+      dy <- day(y)
+      mo <- month(y)
+      yr <- year(y)
+      if (dy[2] - dy[1] > 0) {
+        cls[length(cls) - 1] <- "day"
+      } else if (mo[2] - mo[1] == 1) {
+        cls[length(cls) - 1] <- "month"
+      } else if (mo[2] - mo[1] == 3) {
+        cls[length(cls) - 1] <- "season"
+      } else if (yr[2] - yr[1] > 0) {
+        cls[length(cls) - 1] <- "annual"
+      }
+    } else if (class(index(y))=="yearmon") {
+      cls[length(cls) - 1] <- "month"
+    } else if (class(index(y))=="yearqtr") {
+      cls[length(cls) - 1] <- "qtr"
+    } else if (class(index(y))=="numeric") {
+      cls[length(cls) - 1] <- "annual"
+    } else if (class(index(y))=="character") {
+      cls[length(cls) - 1] <- "annual"
+    }
     if ( (length(index(y)) <= 12) & (class(index(y))=="numeric") & 
-         (min(index(y)) >= 1) & (max(index(y)) <= 12) ) cls[length(cls) - 1] <- "seasonalcycle"
+         (min(index(y)) >= 1) & (max(index(y)) <= 12) ) {
+      cls[length(cls) - 1] <- "seasonalcycle"
+    }
     class(y) <- cls
     #class(y)[2] <- clsy2
     
@@ -245,8 +290,7 @@ aggregate.field <- function(x, by, FUN = 'mean', ..., regular=NULL,
     attr(y,'dimnames') <- NULL
     return(y)
   } else {
-    #print("there")
-  # spatial aggregation
+    # spatial aggregation
     Lon <- by[[1]]; Lat=by[[2]]
     dx <- diff(Lon)[1]; dy <- diff(Lat)[1]
     t <- index(x)
@@ -262,16 +306,15 @@ aggregate.field <- function(x, by, FUN = 'mean', ..., regular=NULL,
     print(paste("spatial aggregation:",d[1],"x",d[2]," ->",D[1],"x",D[2]))
     Z <- t(coredata(x)); attributes(Z) <- NULL
     dim(Z) <- c(d[1]*d[2],d[3]); rownames(Z) <- xy   
-    ## z0 <- aggregate(Z,by=list(xy), match.fun(FUN),simplify=TRUE) ## AM 14-04-2015 replaced by
     z0 <- aggregate(Z,by=list(xy), FUN,simplify=TRUE)
 
     # The aggregate function rearranges the order of lon-lat:
     lonlat <- z0$Group.1
     ll <- strsplit(lonlat,split='/')
     lxy <- rep(NA,length(ll))
-    for (i in 1:length(ll))
+    for (i in 1:length(ll)) {
       lxy[i] <- as.numeric(ll[[i]][1]) + as.numeric(ll[[i]][2])*100
-    #print(xy[1:100]); print(lonlat[1:100]); print(lonlat[order(lxy)][1:100])
+    }
     z <- as.matrix(z0[,2:(length(t)+1)])
     dim(z) <- c(D[1]*D[2],D[3])
     z <- z[order(lxy),]
@@ -290,5 +333,5 @@ aggregate.field <- function(x, by, FUN = 'mean', ..., regular=NULL,
     attr(y,'dimnames') <- NULL
     class(y) <- cls
     return(y)
-    }
+  }
 }

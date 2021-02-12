@@ -639,10 +639,16 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
-      rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      if(any(grepl("realization", names(attributes(gcm))))) {
+        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      } else {
+        h <- attr(gcm, "model_history")
+        ih <- regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", h)
+        rip <- substr(h, ih, ih+attr(ih,"match.length")-1)
+      }
     }
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -887,10 +893,16 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
         }
       }
       if(is.null(rip)) {
-        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
-        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+        if(any(grepl("realization", names(attributes(gcm))))) {
+          nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+          nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+          nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+          rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+        } else {
+          h <- attr(gcm, "model_history")
+          ih <- regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", h)
+          rip <- substr(h, ih, ih+attr(ih,"match.length")-1)
+        }
       }
       gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
       #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -1170,10 +1182,16 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
-      rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      if(any(grepl("realization", names(attributes(gcm))))) {
+        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      } else {
+        h <- attr(gcm, "model_history")
+        ih <- regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", h)
+        rip <- substr(h, ih, ih+attr(ih,"match.length")-1)
+      }
     }
     gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
     #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -1747,10 +1765,16 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
         }
       }
       if(is.null(rip)) {
-        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
-        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+        if(any(grepl("realization", names(attributes(gcm))))) {
+          nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+          nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+          nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+          rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+        } else {
+          h <- attr(gcm, "model_history")
+          ih <- regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", h)
+          rip <- substr(h, ih, ih+attr(ih,"match.length")-1)
+        }
       }
       gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
       #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
@@ -1772,7 +1796,6 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
         print('problem discovered')
         browser()
       }
-      X[i,i2] <- z.predict
       if (verbose) print(paste("i=",i,"GCM=",gcmnm[i],sum(i2)))
       #if (sum(i2) != length(years)) 
       if (plot) lines(years[i2],X[i,i2],col=rgb(0,0.3,0.6,0.2))
@@ -1910,6 +1933,11 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   # Ensemble GCMs
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
   ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
+  if(all(grepl("GCM[0-9]{1,3}",ncfiles))) {
+    gcm.i <- sapply(ncfiles, function(x) substr(x, regexpr("GCM[0-9]{1,3}",x)+3, 
+                               attr(regexpr("GCM[0-9]{1,3}",x),"match.length")))
+    nfiles <- ncfiles[order(as.numeric(gcm.i))]
+  }
   N <- length(ncfiles)
 
   if (!is.null(select)) {
@@ -1920,7 +1948,11 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   }
   if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
 
-  d.y <- dim(y)
+  if(!is.null(dim(y))) {
+    d.y <- dim(y)
+  } else {
+    d.y <- c(length(y), 1)
+  }
   years <- 1900:2100
   m <- length(years)
   months <- rep(month(y)[1],m)
@@ -1974,10 +2006,16 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
-      rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      if(any(grepl("realization", names(attributes(gcm))))) {
+        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      } else {
+        h <- attr(gcm, "model_history")
+        ih <- regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", h)
+        rip <- substr(h, ih, ih+attr(ih,"match.length")-1)
+      }
     }
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     if (verbose) {
@@ -2010,7 +2048,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       }
     }
     
-    if (verbose) print('Estimate commne EOFs - combine fields')	
+    if (verbose) print('Estimate common EOFs - combine fields')	
     if (is.null(src(T2M))) attr(T2M,'source') <- 'reanalysis'
     T2MGCM <- combine(T2M,GCM)
     if (verbose) print("- - - > EOFs")
@@ -2069,9 +2107,16 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (verbose) print('adjust offset of predicted PCs for overlapping period')
       index(z) <- year(z)
       zolp <- window(zoo(z),start=start(y),end=end(y))
-      coredata(z) <- t(t(coredata(z)) - mean(coredata(zolp)) + colMeans(coredata(y)))
+      if(!is.null(dim(y))) {
+        coredata(z) <- t(t(coredata(z)) - mean(coredata(zolp)) + colMeans(coredata(y)))
+      } else {
+        coredata(z) <- t(t(coredata(z)) - mean(coredata(zolp)) + mean(coredata(y)))
+      }
+      
       ## y is a pca with no missing values; z has no NAs.
-      if (verbose) print(round(colMeans(y),2))             
+      if (verbose) {
+        if(!is.null(dim(y))) print(round(colMeans(y),2)) else print(round(mean(y),2))
+      }
       
       cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
       eval(parse(text=cl))
@@ -2299,7 +2344,11 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
                        N <- length(select)
   if (verbose) {print('GCMs:'); print(path); print(ncfiles[select])}
 
-  d.y <- dim(y)
+  if(!is.null(dim(y))) {
+    d.y <- dim(y)
+  } else {
+    d.y <- c(length(y), 1)
+  }
   years <- 1900:2100
   m <- length(years)
   months <- rep(month(y)[1],m)
@@ -2355,10 +2404,16 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
-      rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      if(any(grepl("realization", names(attributes(gcm))))) {
+        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      } else {
+        h <- attr(gcm, "model_history")
+        ih <- regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", h)
+        rip <- substr(h, ih, ih+attr(ih,"match.length")-1)
+      }
     }
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     if (verbose) print(class(y))

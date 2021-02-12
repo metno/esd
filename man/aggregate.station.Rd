@@ -2,75 +2,40 @@
 % Please edit documentation in R/aggregate.R
 \name{aggregate.station}
 \alias{aggregate.station}
-\alias{aggregate.comb}
-\alias{aggregate.field}
-\title{aggregate}
+\title{Aggregate S3 method for station data}
 \usage{
 \method{aggregate}{station}(
   x,
   by,
   FUN = "mean",
-  ...,
   na.rm = TRUE,
   regular = NULL,
   frequency = NULL,
+  threshold = 1,
   verbose = FALSE,
-  threshold = 1
+  ...
 )
 }
 \arguments{
-\item{x}{A \code{\link{station}} object}
+\item{x}{An object of class \code{\link{station}}.}
 
-\item{by}{see \code{\link{aggregate.zoo}}}
-
-\item{FUN}{a function; see \code{\link{aggregate.zoo}}. Additional options: 'area','exceedance','lessthan'.}
-
-\item{\dots}{additional arguments}
+\item{FUN}{a function to compute the summary statistics which can be applied to all subsets. Always needs to return a result of fixed length (typically scalar) (default: 'mean', additional options: 'area','exceedance','lessthan').}
 
 \item{na.rm}{TRUE: ignore NA - see see \code{\link{mean}}}
 
-\item{regular}{see \code{\link{aggregate.zoo}}}
+\item{regular}{logical. The default is \code{FALSE} for \code{"zoo"} series and \code{TRUE} for \code{"zooreg"} series.}
 
-\item{frequency}{see \code{\link{aggregate.zoo}}}
+\item{frequency}{numeric indicating the frequency of the aggregated series (if a \code{"zooreg"} series should be returned. The default is to determine the frequency from the data if \code{regular} is \code{TRUE}. If \code{frequency} is specified, it sets \code{regular} to \code{TRUE}.}
+
+\item{threshold}{threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'}
 
 \item{verbose}{if TRUE print progress}
 
-\item{threshold}{threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'}
-}
-\value{
-The call returns a station object
+\item{\dots}{additional arguments passed to \code{FUN}.}
 }
 \description{
-The aggregation functions are based on the S3 method for \code{zoo} objects,
-but takes care of extra house keeping, such as attributes with meta data.
-}
-\details{
-\code{aggregate} calculates a time aggregate of an input object,
-e.g, the mean seasonal cycle (if \code{by}=month and \code{FUN}="mean") or the
-annual sum (if \code{by}=year and \code{FUN}="sum").
-
-\code{aggregate.area} is used for aggregating spatial statistics, such as
-the global mean or the global area of some phenomenon.
-\code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
-meters) for individual events (defined as gridboxes touching each other).
-}
-\examples{
-
-## S3 method for class 'station'
-data(Svalbard)
-x <- aggregate(Svalbard, month, FUN='mean', na.rm=TRUE)
-plot(x)
-
-## S3 method for class 'field'
-slp <- slp.DNMI()
-y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
-
-
+Aggregate S3 method for station data
 }
 \seealso{
-aggregate.area aggregate.size
+aggregate, aggregate.field, aggregate.comb
 }
-\author{
-R.E. Benestad
-}
-\keyword{utilities}

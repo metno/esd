@@ -161,7 +161,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## REB 20202-06-10 - tried to 
   if(!is.null(varlabel) & (lab=='default')) label <- paste(varlabel,'*') else label <- ''
   label <- as.expression(parse(text=paste(label,'phantom(0) - phantom(0)')))
- 
+  
   if ((!is.null(sub)) & (length(sub)>0)) {
     sub <- paste('pattern derived from',sub)
     label <- try(parse(text=paste(label,'*',as.expression(paste('~ ',
@@ -184,9 +184,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   #text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
   if (lab=='simple')   label <- eval(parse(text=paste('expression(',varnm,')'))) else 
     if (lab=='unit') label <- eval(parse(text=paste('expression(',varnm,'* phantom0 * (',unitx,')',')'))) else
-      if (is.character(lab)) label <- lab
-  title(sub = label,line = 0 , adj = 0.5)
-  
+      if (is.character(lab)) if(lab!="default") label <- lab
+  title(sub = label, line = +2 , adj = 0.5)
   ## 
   if (show.colbar) {
     if (verbose) print('Add colourbar')
