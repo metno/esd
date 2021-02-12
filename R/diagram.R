@@ -8,6 +8,7 @@
 #' @export
 diagram <- function(x,...) UseMethod("diagram")
 
+#' @exportS3Method
 #' @export diagram.dsensemble
 diagram.dsensemble <- function(x,...,it=0,verbose=FALSE) {
   if(verbose) print("diagram.dsensemble")
@@ -39,6 +40,7 @@ diagram.ds <- function(x,...,verbose=FALSE) {
 
 # Show the temperatures against the day of the year. Use
 # different colours for different year.
+#' @exportS3Method
 #' @export diagram.station
 diagram.station <- function(x,...,it=NULL,new=TRUE,plot=TRUE,verbose=FALSE) {
   if(verbose) print("diagram.station")

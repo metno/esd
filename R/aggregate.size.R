@@ -23,6 +23,7 @@
 #' @author R.E. Benestad
 #' @keywords utilities
 #'
+#' @exportS3Method
 #' @export aggregate.size
 aggregate.size <- function(x, ...) {
   aggregateSize(x, ...)
@@ -32,6 +33,7 @@ aggregate.size <- function(x, ...) {
 aggregateSize <- function(x, ...) UseMethod("aggregateSize")
 
 # Aggregate size of events - S3 method for matrix
+#' @exportS3Method
 #' @export aggregateSize.matrix
 aggregateSize.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6378,...) {#,a=6.378e06,...) {
 
@@ -125,6 +127,7 @@ aggregateSize.matrix <- function(x,x0,plot=FALSE,verbose=FALSE,a=6378,...) {#,a=
 }
 
 # Aggregate size of events - S3 method for field
+#' @exportS3Method
 #' @export aggregateSize.field
 aggregateSize.field <- function(x,x0,plot=FALSE,verbose=FALSE,...) {
   if (verbose) print('aggregateSize.field')  

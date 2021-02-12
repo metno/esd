@@ -68,7 +68,8 @@
 #' @export as.station
 as.station <- function(x,...) UseMethod("as.station")
 
-#' @export as.station.zoo
+#' @exportS3Method
+#' @export
 as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                           cntr=NA,longname=NA,calendar=NA,stid=NA,quality=NA,src=NA,
                           url=NA,reference=NA,info=NA, method= NA,type=NA,
@@ -183,7 +184,8 @@ as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   return(y)
 }
 
-#' @export as.station.data.frame
+#' @exportS3Method
+#' @export
 as.station.data.frame <-  function (x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                                     cntr=NA,longname=NA,stid=NA,quality=NA,src=NA,url=NA,
                                     reference=NA,info=NA,method=NA,type=NA,aspect=NA,verbose=FALSE) {
@@ -220,7 +222,8 @@ as.station.data.frame <-  function (x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,
   return(y)
 }
 
-#' @export as.station.ds
+#' @exportS3Method
+#' @export
 as.station.ds <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.ds")
   if (inherits(x,'pca')) {
@@ -242,7 +245,8 @@ as.station.ds <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' @export as.station.pca
+#' @exportS3Method
+#' @export
 as.station.pca <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.pca")
   if (verbose) print(names(attributes(attr(x,'original_data'))))
@@ -264,7 +268,8 @@ as.station.pca <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' @export as.station.list
+#' @exportS3Method
+#' @export
 as.station.list <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.list")
 #  Jan <- x$Jan + attr(x$Jan,'mean')
@@ -346,7 +351,8 @@ as.station.list <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' @export as.station.field
+#' @exportS3Method
+#' @export
 as.station.field <- function(x,...,is=NULL,verbose=FALSE) {
   if(verbose) print("as.station.field")
   index <- index(x)
@@ -376,7 +382,8 @@ as.station.field <- function(x,...,is=NULL,verbose=FALSE) {
   invisible(y)
 }
 
-#' @export as.station.spell
+#' @exportS3Method
+#' @export
 as.station.spell <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.spell")
   y <- coredata(x)
@@ -398,7 +405,8 @@ as.station.spell <- function(x,...,verbose=FALSE) {
   return(y)
 }
 
-#' @export as.station.eof
+#' @exportS3Method
+#' @export
 as.station.eof <- function(x,...,ip=1:10,verbose=FALSE) {
   if(verbose) print("as.station.eof")
   stopifnot(!missing(x),inherits(x,'eof'))
@@ -427,7 +435,8 @@ as.station.eof <- function(x,...,ip=1:10,verbose=FALSE) {
 #' 
 #' @seealso as.station as.station.dsensemble.pca as.station.dsensemble.station DSensemble PCA
 #' 
-#' @export as.station.dsensemble
+#' @exportS3Method
+#' @export
 as.station.dsensemble <- function(x,...,verbose=FALSE) {
   if(verbose) print("as.station.dsensemble")
   if (!is.null(x$pca) & !inherits(x,"pca") & inherits(x,"eof")) {
@@ -461,7 +470,8 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
 #'
 #' @seealso as.station as.station.dsensemble DSensemble
 #' 
-#' @export as.station.dsensemble.pca
+#' @exportS3Method
+#' @export
 as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   if(verbose) print("as.station.dsensemble.pca")
   X <- x ## quick fix
@@ -563,7 +573,8 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   }
 }
 
-#' @export as.station.dsensemble.station
+#' @exportS3Method
+#' @export
 as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',verbose=FALSE) {
 
     if (verbose) print('as.station.dsensemble.station')
@@ -588,13 +599,15 @@ as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',verbo
     return(y)
 }
 
-'# @export as.station.trajectory
+#' @exportS3Method
+#' @export
 as.station.trajectory <- function(x,...) {
   y <- trajectory2station(x,...)
   return(y)
 }
 
-'# @export as.station.events
+#' @exportS3Method
+#' @export
 as.station.events <- function(x,...) {
   y <- events2station(x,...)
   invisible(y)

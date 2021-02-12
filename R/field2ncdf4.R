@@ -16,9 +16,13 @@
 # 
 esd2ncdf4 <- function(x,...) UseMethod("esd2ncdf4")
 
+#' @exportS3Method
+#' @export
 esd2ncdf4.default <- function(x,...) {
 }
 
+#' @exportS3Method
+#' @export
 esd2ncdf4.field <- function(x,fname='field.nc',scale=10,offset=NULL,torg="1970-01-01",verbose=FALSE) {
   if(verbose) print('esd2ncdf4.field')
   dimlon <- ncdim_def( "longitude", "degree_east", lon(x) )
@@ -49,15 +53,22 @@ esd2ncdf4.field <- function(x,fname='field.nc',scale=10,offset=NULL,torg="1970-0
   nc_close(ncnew)
 }
 
+#' @exportS3Method
+#' @export
 esd2ncdf4.station <- function(x,fname='station.nc',scale=10,offset=NULL,torg="1970-01-01") {
 }
 
-
+#' @exportS3Method
+#' @export
 esd2ncdf4.eof <- function(x,fname='eof.nc',scale=10,offset=NULL,torg="1970-01-01") {
 }
 
+#' @exportS3Method
+#' @export
 esd2ncdf4.pca <- function(x,fname='pca.nc',scale=10,offset=NULL,torg="1970-01-01") {
 }
 
+#' @exportS3Method
+#' @export
 esd2ncdf4.dsensemble <- function(x,fname='dsensemble.nc',scale=10,offset=NULL,torg="1970-01-01") {
 }

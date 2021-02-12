@@ -9,6 +9,7 @@
 #' @export qp.test
 qp.test <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1,...) UseMethod("qp.test")
 
+#' @exportS3Method
 #' @export qp.test.station
 qp.test.station <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1,...) {
   if (is.precip(x)) {
@@ -18,6 +19,7 @@ qp.test.station <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1
   }
 }
 
+#' @export
 qp.test.precip <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1,...) {
   # From qqplotter:
   x[x < threshold] <- NA
@@ -35,6 +37,7 @@ qp.test.precip <- function(x,p=c(seq(0.1,0.95,0.05),0.97,0.98,0.99),threshold=1,
   grid()
 }
 
+#' @export
 qp.test.t2m <- function(x,p=c(0.01,0.02,0.03,0.04,seq(0.1,0.95,0.05),
                                 0.97,0.98,0.99),...) {
   d <- dim(x); if (is.null(d)) d <- c(length(x),1)

@@ -20,9 +20,9 @@
 #' @return an object of the same type as the input
 #' 
 #' @export
-g2dl <- function(x,greenwich=TRUE,verbose=FALSE,...)
-  UseMethod("g2dl")
+g2dl <- function(x,greenwich=TRUE,verbose=FALSE,...) UseMethod("g2dl")
 
+#' @exportS3Method
 #' @export g2dl.default
 g2dl.default <- function(x,greenwich=TRUE,verbose=FALSE,...,lon=NULL,lat=NULL,d=NULL) {
   if(verbose) {print("g2dl.default"); str(x)}
@@ -57,6 +57,7 @@ g2dl.default <- function(x,greenwich=TRUE,verbose=FALSE,...,lon=NULL,lat=NULL,d=
   return(y)
 }
 
+#' @exportS3Method
 #' @export g2dl.stationmeta
 g2dl.stationmeta <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   if(verbose) print("g2dl.stationmeta")
@@ -76,6 +77,7 @@ g2dl.stationmeta <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export g2dl.field
 g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   if(verbose) print("g2dl.field")
@@ -112,6 +114,7 @@ g2dl.field <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export g2dl.eof
 g2dl.eof <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   if(verbose) print("g2dl.eof")
@@ -136,6 +139,7 @@ g2dl.eof <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   return(x)
 }
 
+#' @exportS3Method
 #' @export g2dl.corfield
 g2dl.corfield <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   if(verbose) print("g2dl.corfield")
@@ -169,6 +173,7 @@ g2dl.corfield <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export g2dl.events
 g2dl.events <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   if(verbose) print("g2dl.events")
@@ -188,6 +193,7 @@ g2dl.events <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export g2dl.trajectory
 g2dl.trajectory <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   if(verbose) print("g2dl.trajectory")

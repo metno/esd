@@ -112,30 +112,35 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' @export station
 station <- function(...) UseMethod("station")
 
+#' @exportS3Method
 #' @export station.ecad
 station.ecad <- function(...) {
   y <- station(src="ecad",...)
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export station.ghcnd
 station.ghcnd <- function(...) {
   y <- station(src="ghcnd",...)
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export station.nacd
 station.nacd <- function(...) {
   y <- station(src="nacd",...)
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export station.narp
 station.narp <- function(...) {
   y <- station(src="narp",...)
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export station.nordklim
 station.nordklim <- function(...) {
   ## 
@@ -143,18 +148,21 @@ station.nordklim <- function(...) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export station.metnom
 station.metnom <- function(...) {
   y <- station(src="metnom",...)
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export station.metnod
 station.metnod <- function(...) {
   y <- station(src="metnod",...)
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export station.ghcnm
 station.ghcnm <- function(...) {
   y <- station(src="ghcnm",...)
@@ -183,6 +191,7 @@ station.monthly <- function(...,src=NULL) {
   
 }
 
+#' @exportS3Method
 #' @export station.default
 station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
                             qual=NULL, url = NULL, stid=NULL, lon=NULL, lat=NULL, alt=NULL,

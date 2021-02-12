@@ -59,7 +59,8 @@ as.field <- function(x,...) UseMethod("as.field")
 #' 
 #' @seealso as.field
 #' 
-#' @export as.field.zoo
+#' @exportS3Method
+#' @export
 as.field.zoo <- function(x,...,lon,lat,param,unit,
                          longname=NA,quality=NA,src=NA,url=NA,
                          reference=NA,info=NA,calendar='gregorian',
@@ -139,7 +140,8 @@ as.field.zoo <- function(x,...,lon,lat,param,unit,
 #' Y <- as.field(y,index=index,lon=lon,lat=lat,param="noise",unit="none")
 #' map(Y)
 #'
-#' @export as.field.default
+#' @exportS3Method
+#' @export
 as.field.default <- function(x,...,index,lon,lat,param,unit,
                              longname=NA,quality=NA,src=NA,url=NA,
                              reference=NA,info=NA,calendar='gregorian',
@@ -155,7 +157,8 @@ as.field.default <- function(x,...,index,lon,lat,param,unit,
   invisible(x)
 }
 
-#' @export as.field.matrix
+#' @exportS3Method
+#' @export
 as.field.matrix <- function(x,...,index,lon,lat,param,unit,
                             longname=NA,quality=NA,src=NA,url=NA,
                             reference=NA,info=NA,calendar='gregorian',
@@ -181,7 +184,8 @@ as.field.matrix <- function(x,...,index,lon,lat,param,unit,
 #' 
 #' @seealso as.field as.field.comb
 #' 
-#' @export as.field.field
+#' @exportS3Method
+#' @export
 as.field.field <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.field.field")
   if (inherits(x,'comb')) x <- as.field.comb(x,...)
@@ -201,7 +205,8 @@ as.field.field <- function(x,verbose=FALSE,...) {
 #' 
 #' @seealso as.field
 #' 
-#' @export as.field.comb
+#' @exportS3Method
+#' @export
 as.field.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.field.comb")
   if (is.null(iapp)) {
@@ -235,7 +240,8 @@ as.field.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
 #' 
 #' @seealso as.field eof2field EOF as.field.dsensemble.eof
 #' 
-#' @export as.field.eof
+#' @exportS3Method
+#' @export
 as.field.eof <- function(x,...,iapp=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("as.field.eof")
   if (inherits(x,'dsensemble')) {
@@ -262,7 +268,8 @@ as.field.eof <- function(x,...,iapp=NULL,anomaly=FALSE,verbose=FALSE) {
 #' 
 #' @seealso as.field as.field.eof DS
 #' 
-#' @export as.field.ds
+#' @exportS3Method
+#' @export
 as.field.ds <- function(x,...,iapp=NULL,verbose=FALSE) {
   if(verbose) print("as.field.ds")
   if (inherits(x,'eof')) {
@@ -303,7 +310,8 @@ as.field.ds <- function(x,...,iapp=NULL,verbose=FALSE) {
 #' 
 #' @seealso as.field regrid
 #' 
-#' @export as.field.station
+#' @exportS3Method
+#' @export
 as.field.station <- function(x,...,lon=NULL,lat=NULL,nx=30,ny=30,
                              verbose=FALSE) {
   if(verbose) print("as.field.station")
@@ -332,7 +340,8 @@ as.field.station <- function(x,...,lon=NULL,lat=NULL,nx=30,ny=30,
 #' 
 #' @seealso as.field DSensemble EOF
 #' 
-#' @export as.field.dsensemble.eof
+#' @exportS3Method
+#' @export
 as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
                                     anomaly=FALSE,verbose=FALSE) {
   if (verbose) print('as.field.dsensemble.eof')
@@ -400,13 +409,15 @@ as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
   }
 }
 
-#' @export as.field.events
+#' @exportS3Method
+#' @export
 as.field.events <- function(x,...) {
   y <- events2field(x,...)
   return(y)
 }
 
-#' @export as.field.trajectory
+#' @exportS3Method
+#' @export
 as.field.trajectory <- function(x,...) {
   y <- trajectory2field(x,...)
   return(y)

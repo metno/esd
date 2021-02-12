@@ -13,6 +13,7 @@
 #' @export history.stamp
 history.stamp <-function(x=NULL,y=NULL,verbose=FALSE,...) UseMethod("history.stamp")
 
+#' @exportS3Method
 #' @export history.stamp.default
 history.stamp.default <- function(x=NULL,y=NULL,verbose=FALSE,...) {
   if(verbose) print("history.stamp.default")

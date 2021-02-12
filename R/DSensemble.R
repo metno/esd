@@ -155,6 +155,7 @@ ltp <- function(x,type='exponential',...) {
 #' @export DSensemble
 DSensemble<-function(y,...) UseMethod("DSensemble")
 
+#' @exportS3Method
 #' @export DSensemble.default
 DSensemble.default <- function(y,...,path='CMIP5.monthly/',rcp='rcp45') {
    ## 
@@ -186,7 +187,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
                            rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
-                           pattern="tas_Amon_ens_",path.ds=NULL,file.ds="DSensemble.rda",
+                           pattern="tas_Amon_",path.ds=NULL,file.ds="DSensemble.rda",
                            nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE) {
 
   if (!inherits(y,'day')) warning('station is not daily data')
@@ -261,7 +262,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
   SON <- subset(SON,it=range(year(SON)[ok4]))
 
   rm("t2m"); gc(reset=TRUE)
-  
+   
   # Ensemble GCMs
   if(verbose) print("Retrieve & arrange GCMs")
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
@@ -523,7 +524,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
                               predictor="ERA40_pr_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",FUNX="sum",xfuns='C.C.eq',threshold=1,
-                              pattern="pr_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
+                              pattern="pr_Amon_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
   # FUN: exceedance, wetfreq, wet, dry
 
   if (verbose) print('DSensemble.precip')
@@ -639,9 +640,12 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+      if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+      if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+      # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
       rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
     }
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
@@ -774,12 +778,13 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   invisible(X)
 }
 
+#' @exportS3Method
 #' @export DSensemble.annual
 DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                               predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,FUNX="mean",xfuns='C.C.eq',threshold=1,
-                              pattern="tas_Amon_ens_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
+                              pattern="tas_Amon_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
   # FUN: exceedance, wetfreq, wet, dry
   
   if (verbose) print('DSensemble.annual')
@@ -887,9 +892,12 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
         }
       }
       if(is.null(rip)) {
-        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+        if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+        if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+        # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
         rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
       }
       gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
@@ -1029,12 +1037,13 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   invisible(X)
 }
 
+#' @exportS3Method
 #' @export DSensemble.season
 DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",predictor="slp.mon.mean.nc",
                            rcp="rcp45",biascorrect=FALSE,non.stationarity.check=FALSE,
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
-                           pattern="psl_Amon_ens_",lev=NULL,levgcm=NULL,path.ds=NULL,file.ds=NULL,
+                           pattern="psl_Amon_",lev=NULL,levgcm=NULL,path.ds=NULL,file.ds=NULL,
                            nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE) {
 
   if(verbose) print("DSensemble.season")
@@ -1170,9 +1179,12 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+      if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+      if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+      # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
       rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
     }
     gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
@@ -1611,7 +1623,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA40_t2m_mon.nc",
                                     rcp="rcp45",biascorrect=FALSE,n=6,lon=c(-20,20),lat=c(-10,10),
                                     it=NULL,rel.cord=TRUE,select=NULL,FUN="wetmean",
-                                    pattern="tas_Amon_ens_",mask=FALSE,verbose=FALSE,ds.1900.2099=TRUE) {
+                                    pattern="tas_Amon_",mask=FALSE,verbose=FALSE,ds.1900.2099=TRUE) {
   if (verbose) print('DSensemble.mu.worstcase')
 
   ## The predictor is based on the seasonal variations and assumes that the seasnoal cycle in the
@@ -1747,9 +1759,12 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
         }
       }
       if(is.null(rip)) {
-        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+        if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+        if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+        if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+        # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+        # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+        # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
         rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
       }
       gcmnm[i] <- paste0(attr(gcm,'model_id'),".",rip)
@@ -1802,12 +1817,13 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
   invisible(X)   
 }
 
-#' @export DSensemble.pca
+#' @exportS3Method
+#' @export 
 DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",xfuns='C.C.eq',
-                           threshold=1,pattern="tas_Amon_ens_",verbose=FALSE,
+                           threshold=1,pattern="tas_Amon_",verbose=FALSE,
                            file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE,test=FALSE) {
 
   if (verbose) print('DSensemble.pca')
@@ -1974,9 +1990,15 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      if(any(grepl("realization", names(attributes(gcm)))))
+        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]] else
+        nm.r <- 'NA'
+      if(any(grepl("initialization", names(attributes(gcm)))))
+        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]] else
+        nm.i <- 'NA'
+      if(any(grepl("physics", names(attributes(gcm)))))
+        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]] else
+        nm.p <- 'NA'
       rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
     }
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
@@ -2208,12 +2230,13 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   invisible(dse.pca)
 }
 
+#' @exportS3Method
 #' @export DSensemble.eof
 DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_slp_mon.nc",non.stationarity.check=FALSE,
                            ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,nmin=NULL,
                            lev=NULL,levgcm=NULL,select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",
-                           xfuns='C.C.eq',threshold=1,pattern="psl_Amon_ens_",verbose=FALSE,
+                           xfuns='C.C.eq',threshold=1,pattern="psl_Amon_",verbose=FALSE,
                            file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE,test=FALSE) {
 
   if(verbose) print("DSensemble.eof")
@@ -2355,9 +2378,12 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
       }
     }
     if(is.null(rip)) {
-      nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
-      nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
-      nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
+      if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
+      if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
+      if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
+      # nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]]
+      # nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]]
+      # nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]]
       rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
     }
     gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
@@ -2594,12 +2620,13 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
   invisible(dse.eof)
 }
 
-#' @export DSensemble.field
+#' @exportS3Method 
+#' @export DSensemble.field 
 DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",biascorrect=FALSE,
                            predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                            ip=1:16,lon=c(-30,20),lat=c(-20,10),it=c('djf','mam','jja','son'),
                            rel.cord=TRUE,select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",
-                           xfuns='C.C.eq',threshold=1,pattern="tas_Amon_ens_",verbose=FALSE,
+                           xfuns='C.C.eq',threshold=1,pattern="tas_Amon_",verbose=FALSE,
                            file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
   ## For downscaling gridded predictand. This is a wrap-around which extracts the season or aggregates
   ## to annual values and then calls the other types for the downscaling.
@@ -2614,7 +2641,8 @@ DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",b
   invisible(dse.eof)
 }
 
-#' @export DSensemble.station
+#' @exportS3Method
+#' @export DSensemble.station 
 DSensemble.station <- function(y,...,verbose=FALSE) {
   if(verbose) print("DSensemble.station")
   dse <- DSensemble.default(y=y,...,verbose=verbose)

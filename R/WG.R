@@ -102,6 +102,7 @@
 #' @export WG
 WG <- function(x,...) UseMethod("WG")
 
+#' @exportS3Method
 #' @export WG.station
 WG.station <- function(x,...,option='default') {
   if (inherits(x,'day')) {
@@ -113,6 +114,7 @@ WG.station <- function(x,...,option='default') {
   return(y)
 }
 
+#' @exportS3Method
 #' @export WG.FT.day.t2m
 WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
                           select=NULL,lon=c(-20,20),lat=c(-20,20),
@@ -229,6 +231,7 @@ WG.FT.day.t2m <- function(x=NULL,...,amean=NULL,asd=NULL,t=NULL,ip=1:4,
 ## Fractional Gaussian noise...?
 
 ## --- Precipitation  
+#' @exportS3Method
 #' @export WG.fw.day.precip
 WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
                              ncwd=NULL,ndbr=NULL,t=NULL,
@@ -443,6 +446,7 @@ WG.fw.day.precip <- function(x=NULL,...,mu=NULL,fw=NULL,
 # This weather generator assumes that the past covariate structure between
 # temperature and precipitation is constant and doesn't change in the future.
 # Moreover, the method also assumes that the spell-statistics will stay the same.
+#' @exportS3Method
 #' @export WG.pca.day.t2m.precip
 WG.pca.day.t2m.precip <- function(x=NULL,...,precip=NULL,threshold=1,select=NULL,
                                   wetfreq.pred=FALSE,spell.stats=FALSE,

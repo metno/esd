@@ -24,6 +24,7 @@
 #' @export
 validate <- function(x, ...)  UseMethod("validate")
 
+#' @exportS3Method
 #' @export validate.eof.comb
 validate.eof.comb <- function(x,...,new=TRUE,verbose=FALSE) {
   if(verbose) print("validate.eof.comb")
@@ -33,6 +34,7 @@ validate.eof.comb <- function(x,...,new=TRUE,verbose=FALSE) {
   lines(attr(zz,'mean'),col="red")
 }
 
+#' @exportS3Method
 #' @export validate.dsensemble
 validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
                                 colbar=list(breaks=seq(0,1,by=0.1),cex=1.5,
@@ -105,12 +107,14 @@ validate.dsensemble <- function(x, conf.int=c(0.05,0.95),text=FALSE,
   invisible(ro)
 }
 
+#' @exportS3Method
 #' @export validate.default
 validate.default <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.default")
   if(verbose) print("unfinished function - not returning anything")
 }
 
+#' @exportS3Method
 #' @export validate.eof
 validate.eof <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.eof")
@@ -121,24 +125,28 @@ validate.eof <- function(x,...,verbose=FALSE) {
   }
 }
 
+#' @exportS3Method
 #' @export validate.pca
 validate.pca <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.eof.field")
   if(verbose) print("unfinished function - not returning anything")
 }
 
+#' @exportS3Method
 #' @export validate.eof.field
 validate.eof.field <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.eof.field")
   if(verbose) print("unfinished function - not returning anything")
 }
 
+#' @exportS3Method
 #' @export validate.ds
 validate.ds <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.ds")
   if(verbose) print("unfinished function - not returning anything")
 }
 
+#' @exportS3Method
 #' @export validate.cca
 validate.cca <- function(x,...,verbose=FALSE) {
   if(verbose) print("validate.cca")

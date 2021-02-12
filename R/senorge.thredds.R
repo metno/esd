@@ -35,8 +35,8 @@
 #' }
 #' @export
 senorge <- function(url='https://thredds.met.no/thredds/catalog/senorge/seNorge_2018/Archive',
-                    param='rr', lon=c(9.5,11.5), lat=c(59,61), 
-                    it=2010:2019, dt=50, verbose=FALSE, plot=FALSE) {
+                    param='rr', lon=c(10.5,11.5), lat=c(59.5,60.5), 
+                    it=1961:2020, dt=50, verbose=FALSE, plot=FALSE) {
   if (verbose) print('esd::senorge')
   path <- sub("/catalog/","/dodsC/",url)
   contents <- readLines(paste0(url,'/catalog.html'))
@@ -142,6 +142,10 @@ retrieve.senorge <- function(ncfile, path=NULL, param='rr',
   vlat <- ncvar_get(ncid, varid=latid)
   vlon <- ncvar_get(ncid, varid=lonid)
   time <- ncvar_get(ncid, varid=timeid)
+  ## REB 20201-02-05:  time units: hours since 1900-01-01 00:00:00
+  if (verbose) print(range(time))
+  time <- as.Date(time/24,origin='1900-01-01')
+  if (verbose) print(range(time))
   d <- c(dim(vlat),length(time))
   if(verbose) print(paste0('region: ',paste(round(range(vlon),digits=2),collapse='-'),'E/',
                 paste(round(range(vlat),digits=2),collapse='-'),'N'))
@@ -193,30 +197,30 @@ retrieve.senorge <- function(ncfile, path=NULL, param='rr',
   if (verbose) print(paste('longitudes:',min(lon.rng),'-',max(lon.rng),
                            'extracted:',min(lonn[subx]),'-',max(lonn[subx]),
                            'start=',startx,'count=',countx))
-  
+  ## REB 2021-02-05: simple fix above
   # Extract the time information: unit and time origin
-  tatt <- ncatt_get( ncid, varid='time' )
-  itunit <- (1:length(names(time)))[is.element(substr(names(tatt),1,4),'unit')]
-  tunit <- tatt[[itunit]]
-  tcal <-""
-  if (sum(is.element(substr(names(tatt),1,4),'cale'))!=0) {
-    if (verbose) print("Calender found")
-    tcal <- tatt$cale
-  }
-  a <- regexpr("since",tunit)
-  torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
-  torig <- paste(unlist(strsplit(tunit," "))[3:4],collapse=" ")
-  tunit <- tolower(substr(tunit,1,a-2))
-  time <- switch(substr(tunit,1,3),
-                 'day'=as.Date(time, origin=torg),
-                 'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))), origin=torg),
-                 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600,
-                 'sec'=strptime(torig,format="%Y-%m-%d %H") + time)
-  if (((diff(time)>=28) && (diff(time) <= 31 )) | (length(time) == 1)) {
-    time <- as.Date(strftime(time, format="%Y-%m-01"))
-    if (verbose) print("monthly frequency, saving as Date Y-m-01")
-  }
-  if (verbose) print(paste(start(time),end(time),sep=' - '))
+  # tatt <- ncatt_get( ncid, varid='time' )
+  # itunit <- (1:length(names(time)))[is.element(substr(names(tatt),1,4),'unit')]
+  # tunit <- tatt[[itunit]]
+  # tcal <-""
+  # if (sum(is.element(substr(names(tatt),1,4),'cale'))!=0) {
+  #   if (verbose) print("Calender found")
+  #   tcal <- tatt$cale
+  # }
+  # a <- regexpr("since",tunit)
+  # torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
+  # torig <- paste(unlist(strsplit(tunit," "))[3:4],collapse=" ")
+  # tunit <- tolower(substr(tunit,1,a-2))
+  # time <- switch(substr(tunit,1,3),
+  #                'day'=as.Date(time, origin=torg),
+  #                'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))), origin=torg),
+  #                'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600,
+  #                'sec'=strptime(torig,format="%Y-%m-%d %H") + time)
+  # if (((diff(time)>=28) && (diff(time) <= 31 )) | (length(time) == 1)) {
+  #   time <- as.Date(strftime(time, format="%Y-%m-01"))
+  #   if (verbose) print("monthly frequency, saving as Date Y-m-01")
+  # }
+  # if (verbose) print(paste(start(time),end(time),sep=' - '))
   
   if (!is.null(it)) {
     if (inherits(it,c('field','station'))) {

@@ -15,7 +15,8 @@
 #' @export as.comb
 as.comb <- function(x,verbose=FALSE,...) UseMethod("as.comb")
 
-#' @export as.comb.eof
+#' @exportS3Method
+#' @export
 as.comb.eof <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.comb.eof")
   stopifnot(inherits(x,'eof'))

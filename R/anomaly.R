@@ -32,6 +32,7 @@
 #' @export
 anomaly <-function(x,...) UseMethod("anomaly")
 
+#' @exportS3Method
 #' @export anomaly.default
 anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   if(verbose) print('anomaly.default')
@@ -66,6 +67,7 @@ anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   return(y)
 }
 
+#' @exportS3Method
 #' @export anomaly.dsensemble
 anomaly.dsensemble <- function(x,...,ref=NULL,verbose=FALSE) {
     if(verbose) print("anomaly.dsensemble")
@@ -77,6 +79,7 @@ anomaly.dsensemble <- function(x,...,ref=NULL,verbose=FALSE) {
     return(x)
 }
 
+#' @exportS3Method
 #' @export anomaly.field
 anomaly.field <- function(x,verbose=FALSE,...,ref=NULL,na.rm=TRUE) {
   stopifnot(inherits(x,"field"))
@@ -84,6 +87,7 @@ anomaly.field <- function(x,verbose=FALSE,...,ref=NULL,na.rm=TRUE) {
   return(x)
 }
 
+#' @exportS3Method
 #' @export anomaly.comb
 anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
   if(verbose) print("anomaly.comb")
@@ -102,6 +106,7 @@ anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
   return(y)
 }
 
+#' @exportS3Method
 #' @export anomaly.station
 anomaly.station <- function(x,verbose=FALSE,...) {
   if(verbose) print("anomaly.station")
@@ -109,6 +114,7 @@ anomaly.station <- function(x,verbose=FALSE,...) {
   return(x)
 }
 
+#' @exportS3Method
 #' @export anomaly.annual
 anomaly.annual <- function(x,...,ref=1961:1990,na.rm=TRUE,verbose=FALSE) {
   if (verbose) print('anomaly.annual')
@@ -139,6 +145,7 @@ anomaly.annual <- function(x,...,ref=1961:1990,na.rm=TRUE,verbose=FALSE) {
   return(x)
 }
 
+#' @exportS3Method
 #' @export anomaly.month
 anomaly.month <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   if(verbose) print("anomaly.month")
@@ -183,6 +190,7 @@ anomaly.month <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
   return(x)
 }
 
+#' @exportS3Method
 #' @export anomaly.season
 anomaly.season <- function(x,...,ref=NULL,verbose=FALSE) {
   anomaly.season1 <- function(x,yr=NULL,ref=NULL,verbose=FALSE,what='anomaly') {
@@ -275,9 +283,11 @@ anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
 #' @export as.anomaly
 as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
-#' @export as.anomaly.default
+#' @exportS3Method
+#' @export
 as.anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE) anomaly.default(x,ref=ref,na.rm=na.rm,...)
 
+#' @exportS3Method
 #' @export as.anomaly.zoo
 as.anomaly.zoo <- function(x,...,ref=NULL,na.rm=TRUE) {
   y <- as.anomaly.station(x,ref=ref,na.rm=na.rm,...)
@@ -285,6 +295,7 @@ as.anomaly.zoo <- function(x,...,ref=NULL,na.rm=TRUE) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export as.anomaly.list
 as.anomaly.list <- function(x,...,ref=NULL,na.rm=TRUE) {
   y <- lapply(x,anomaly(x))
@@ -292,6 +303,7 @@ as.anomaly.list <- function(x,...,ref=NULL,na.rm=TRUE) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export as.anomaly.station
 as.anomaly.station <- function(x,...,ref=NULL,na.rm=TRUE) {
   y <- as.anomaly.default(x,ref=ref,na.rm=na.rm,...)
@@ -299,6 +311,7 @@ as.anomaly.station <- function(x,...,ref=NULL,na.rm=TRUE) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export as.anomaly.field
 as.anomaly.field <- function(x,...,ref=NULL,na.rm=TRUE) {
    y <- anomaly.default(x,ref=ref,na.rm=na.rm,...)

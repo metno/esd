@@ -11,7 +11,8 @@
 #' @export as.residual
 as.residual <- function(x,verbose=FALSE,...) UseMethod("as.residual")
 
-#' @export as.residual.ds
+#' @exportS3Method
+#' @export
 as.residual.ds <- function(x,verbose=FALSE,...){
   if (verbose) print('as.residual.ds')
   x0 <- attr(x,'original_data')
@@ -54,7 +55,8 @@ as.residual.ds <- function(x,verbose=FALSE,...){
   invisible(y)
 }
 
-#' @export as.residual.station
+#' @exportS3Method
+#' @export
 as.residual.station <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.residual.station")
   if (!is.null(attr(x,'calibration_data'))) {
@@ -65,7 +67,8 @@ as.residual.station <- function(x,verbose=FALSE,...) {
   invisible(y)
 }
 
-#' @export as.residual.field
+#' @exportS3Method
+#' @export
 as.residual.field <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.residual.field")
   if (!is.null(attr(x,'calibration_data'))) {
