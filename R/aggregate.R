@@ -1,5 +1,5 @@
-#' aggregate
-#' 
+#' Aggregate S3 method for station data
+#'
 #' The aggregation functions are based on the S3 method for \code{zoo} objects,
 #' but takes care of extra house keeping, such as attributes with meta data.
 #'
@@ -11,36 +11,8 @@
 #' the global mean or the global area of some phenomenon.
 #' \code{aggregate.size} is similar to \code{aggregate.area}, but returns the size statistics (square
 #' meters) for individual events (defined as gridboxes touching each other).
-#' 
-#' @seealso aggregate.station aggregate.comb aggregate.field aggregate.area aggregate.size
 #'
-#' @importFrom stats aggregate
-#' 
-#' @param x An input object \code{\link{station}} object
-#'
-#' @return The call returns a station object
-#'
-#' @author R.E. Benestad
-#' @keywords utilities
-#' @examples
-#' 
-#' ## S3 method for class 'station'
-#' data(Svalbard)
-#' x <- aggregate(Svalbard, month, FUN='mean', na.rm=TRUE)
-#' plot(x)
-#'
-#' ## S3 method for class 'field'
-#' slp <- slp.DNMI()
-#' y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
-#'
-#' @export
-aggregate <- function(x) {
-  UseMethod("aggregate")
-}
-
-#' Aggregate S3 method for station data
-#'
-#' @seealso aggregate, aggregate.field, aggregate.comb
+#' @seealso aggregate.field, aggregate.comb, aggregate.area, aggregate.size
 #'
 #' @param x An object of class \code{\link{station}}.
 #' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.
@@ -51,6 +23,13 @@ aggregate <- function(x) {
 #' @param threshold threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'
 #' @param verbose if TRUE print progress
 #' @param \dots additional arguments passed to \code{FUN}.
+#'
+#' @examples
+#' 
+#' ## S3 method for class 'station'
+#' data(Svalbard)
+#' x <- aggregate(Svalbard, month, FUN='mean', na.rm=TRUE)
+#' plot(x)
 #'
 #' @exportS3Method
 #' @export aggregate.station
@@ -204,6 +183,12 @@ aggregate.comb <- function(x, by, FUN='mean', na.rm=TRUE, regular=NULL,
 #' @param threshold threshold used if FUN is 'count', 'freq', 'wetfreq', or 'wetmean'
 #' @param verbose if TRUE print progress
 #' @param \dots additional arguments passed to \code{FUN}.
+#'
+#' @examples
+#'
+#' ## S3 method for class 'field'
+#' slp <- slp.DNMI()
+#' y <- aggregate(slp, year, FUN='mean', na.rm=FALSE)
 #'
 #' @exportS3Method
 #' @export aggregate.field
