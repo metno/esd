@@ -196,7 +196,8 @@ calculate.cyclonebudget <- function(traj,is=NULL,it=NULL,
   return(bud)
 }
 
-#' @export plot.cyclonebudget
+#' @exportS3Method
+#' @export
 plot.cyclonebudget = function(bud,budnames=NULL,new=TRUE,
     colbar=list(pal="precip",n=10,show=TRUE),
     xlim=NULL,ylim=NULL,projection="sphere",

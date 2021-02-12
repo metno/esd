@@ -8,14 +8,16 @@
 #' @export as.trajectory
 as.trajectory <- function(x,...) UseMethod("as.trajectory")
 
-#' @export as.trajectory.default
+#' @exportS3Method
+#' @export
 as.trajectory.default <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.trajectory.default")
   X <- trajectory(x,...)
   invisible(X)
 }
 
-#' @export as.trajectory.events
+#' @exportS3Method
+#' @export
 as.trajectory.events <- function(x,verbose=FALSE,...) {
   if (verbose) print("as.trajectory.events")
   stopifnot(inherits(x,"events"))

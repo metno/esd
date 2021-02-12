@@ -41,6 +41,20 @@ pages:
       - title: "Anomalies"
         url: /process/#anomalies/
 
+  - title: "Analyses"
+    url: /analyses/
+    children:
+      - title: "Empirical Orthogonal Functions"
+        url: /analyses/#empirical-orthogonal-functions
+      - title: "Principal Component Analysis"
+        url: /analyses/#principal-component-analysis
+      - title: "Canonical Correlation Analysis"
+        url: /analyses/#canonical-correlation-analysis
+      - title: "Other types of analyses"
+        url: /analyses/#other-types-of-analysis
+      - title: "Predict and Project"
+        url: /analyses/#predict--project
+ 
   - title: "Downscale"
     url: /downscale/
     children:

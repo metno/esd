@@ -12,6 +12,7 @@
 #' @export
 matchdate <-function(x,it,verbose=FALSE) UseMethod("matchdate")
 
+#' @exportS3Method
 #' @export matchdate.list
 matchdate.list <- function(x,it,verbose=FALSE) {
   if (verbose) print('matchdate.list')
@@ -19,6 +20,7 @@ matchdate.list <- function(x,it,verbose=FALSE) {
   invisible(y)
 }
 
+#' @exportS3Method
 #' @export matchdate.default
 matchdate.default <- function(x,it,verbose=FALSE) {
   if(verbose) print("matchdate.default")

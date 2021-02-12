@@ -43,7 +43,7 @@ aggregate <- function(x) {
 #' @seealso aggregate, aggregate.field, aggregate.comb
 #'
 #' @param x An object of class \code{\link{station}}.
-#' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.}
+#' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.
 #' @param FUN a function to compute the summary statistics which can be applied to all subsets. Always needs to return a result of fixed length (typically scalar) (default: 'mean', additional options: 'area','exceedance','lessthan').
 #' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
 #' @param regular logical. The default is \code{FALSE} for \code{"zoo"} series and \code{TRUE} for \code{"zooreg"} series.
@@ -158,7 +158,7 @@ aggregate.station <- function(x, by, FUN='mean', na.rm=TRUE, regular=NULL,
 #' Aggregate S3 method for a 'comb' object
 #'
 #' @param x An object of class \code{\link{comb}}.
-#' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.}
+#' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.
 #' @param FUN a function to compute the summary statistics which can be applied to all subsets. Always needs to return a result of fixed length (typically scalar) (default: 'mean', additional options: 'area','exceedance','lessthan').
 #' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
 #' @param regular logical. The default is \code{FALSE} for \code{"zoo"} series and \code{TRUE} for \code{"zooreg"} series.
@@ -196,7 +196,7 @@ aggregate.comb <- function(x, by, FUN='mean', na.rm=TRUE, regular=NULL,
 #' Aggregate S3 method for a field object
 #'
 #' @param x An object of class \code{\link{field}}.
-#' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.}
+#' @param by Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.
 #' @param FUN a function to compute the summary statistics which can be applied to all subsets. Always needs to return a result of fixed length (typically scalar) (default: 'mean', additional options: 'area','exceedance','lessthan').
 #' @param na.rm TRUE: ignore NA - see see \code{\link{mean}}
 #' @param regular logical. The default is \code{FALSE} for \code{"zoo"} series and \code{TRUE} for \code{"zooreg"} series.

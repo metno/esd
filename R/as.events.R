@@ -10,14 +10,16 @@
 #' @export as.events
 as.events <- function(x,verbose=FALSE,...) UseMethod("as.events")
 
-#' @export as.events.default
+#' @exportS3Method
+#' @export
 as.events.default <- function(x,verbose=FALSE,...) {
   if(verbose) print("as.events.default")
   X <- events(x,verbose=verbose,...)
   invisible(X)
 }
 
-#' @export as.events.trajectory
+#' @exportS3Method
+#' @export
 as.events.trajectory <- function(x,verbose=FALSE,...) {
   if (verbose) print("as.events.trajectory")
   stopifnot(inherits(x,"trajectory"))

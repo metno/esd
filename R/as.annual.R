@@ -38,6 +38,7 @@
 #' @export annual
 annual <- function(x, ...) UseMethod("annual")
 
+#' @exportS3Method
 #' @export annual.zoo
 annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
   if (verbose) print("annual.zoo")
@@ -79,7 +80,8 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
 }
 
 
-#' @export annual.default
+#' @exportS3Method
+#' @export
 annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
                            threshold=NULL,regular=NULL,frequency=NULL,
                            verbose=FALSE) { ## 
@@ -239,7 +241,8 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   invisible(y)
 }
 
-#' @export annual.station
+#' @exportS3Method
+#' @export
 annual.station <- function(x,FUN='mean',nmin=NULL,threshold=NULL,verbose=FALSE,...) {
   if (verbose) print('annual.station')
   attr(x,'names') <- NULL
@@ -248,7 +251,8 @@ annual.station <- function(x,FUN='mean',nmin=NULL,threshold=NULL,verbose=FALSE,.
   invisible(y)
 }
 
-#' @export annual.spell
+#' @exportS3Method
+#' @export
 annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
   attr(x,'names') <- NULL
   if ( (inherits(x,'mon'))  & is.null(nmin) ) {
@@ -263,7 +267,8 @@ annual.spell <- function(x,FUN='mean',nmin=0,threshold=NULL,verbose=FALSE,...) {
   invisible(y)
 }
 
-#' @export annual.dsensemble
+#' @exportS3Method
+#' @export
 annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
   if (verbose) print("annual.dsensemble")
   clsx <- class(x)
@@ -280,7 +285,8 @@ annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
   invisible(y)
 }
 
-#' @export annual.field
+#' @exportS3Method
+#' @export
 annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   if (verbose) print('annual.field')
   attr(x,'names') <- NULL
@@ -310,7 +316,8 @@ annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   invisible(y)
 }
 
-#' @export annual.eof
+#' @exportS3Method
+#' @export
 annual.eof <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   if (verbose) print('annual.eof')
   attr(x,'names') <- NULL
@@ -342,39 +349,47 @@ annual.eof <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
 #' @export as.annual
 as.annual <- function(x, ...) UseMethod("as.annual")
 
-#' @export as.annual.default
+#' @exportS3Method
+#' @export
 as.annual.default <- function(x, ...) annual(x, ...)
 
-#' @export as.annual.numeric
+#' @exportS3Method
+#' @export
 as.annual.numeric <- function(x, ...) annual(x, ...)
 
-#' @export as.annual.integer
+#' @exportS3Method
+#' @export
 as.annual.integer <- function(x, ...) structure(x, class = "annual")
 
-#' @export as.annual.yearqtr
+#' @exportS3Method
+#' @export
 as.annual.yearqtr <- function(x, frac = 0, ...) {
     if (frac == 0) annual(as.numeric(x)) else
     as.annual(as.Date(x, frac = frac), ...)
 }
 
-#' @export as.annual.station
+#' @exportS3Method
+#' @export
 as.annual.station <- function(x, ...) annual.station(x,...)
 
-#' @export as.annual.spell
+#' @exportS3Method
+#' @export
 as.annual.spell <- function(x, ...) annual.spell(x,...)
 
-#' @export as.monthly
+#' @export
 as.monthly <- function(x,...) UseMethod("as.monthly")
 
 yyyymm <- function(x) ym <- as.Date(paste(year(x),month(x),'01',sep='-'))
 
-#' @export as.monthly.default
+#' @exportS3Method
+#' @export
 as.monthly.default <- function(x,...) {
   y <- aggregate(x,by=yyyymm,...)
   return(y)
 }
 
-#' @export as.monthly.field
+#' @exportS3Method
+#' @export
 as.monthly.field <- function(x,FUN='mean',...) {
 if (inherits(x,'month')) return(x)
   y <- aggregate(as.zoo(x), yyyymm, #function(tt) as.Date(as.yearmon(tt)),
@@ -388,7 +403,8 @@ if (inherits(x,'month')) return(x)
 }
 
 
-#' @export as.monthly.station
+#' @exportS3Method
+#' @export
 ## This is a dublicate of that in as.R
 as.monthly.station <- function (x, FUN = "mean", ...) {
     y <- aggregate(zoo(x), yyyymm, #function(tt) as.Date(as.yearmon(tt)), 
@@ -400,18 +416,20 @@ as.monthly.station <- function (x, FUN = "mean", ...) {
     return(y)
 }
 
-#' @export as.daily
+#' @export
 as.daily <- function(x,...) UseMethod("as.daily")
 
 yyyymmdd <- function(x) ymd <- as.Date(paste(year(x),month(x),day(x),sep='-'))
 
-#' @export as.daily.default
+#' @exportS3Method
+#' @export
 as.daily.default <- function(x,...) {
   y <- aggregate(x,by=yyyymmdd,...)
   return(y)
 }
 
-#' @export as.daily.field
+#' @exportS3Method
+#' @export
 as.daily.field <- function(x,FUN='mean',...) {
   if (inherits(x,'month')) return(x)
   y <- aggregate(as.zoo(x), yyyymmdd, #function(tt) as.Date(as.yearmon(tt)),
@@ -424,7 +442,8 @@ as.daily.field <- function(x,FUN='mean',...) {
   return(y)
 }
 
-#' @export as.daily.station
+#' @exportS3Method
+#' @export
 ## This is a dublicate of that in as.R
 as.daily.station <- function (x, FUN = "mean", ...) {
   y <- aggregate(zoo(x), yyyymmdd, #function(tt) as.Date(as.yearmon(tt)), 
@@ -436,10 +455,11 @@ as.daily.station <- function (x, FUN = "mean", ...) {
   return(y)
 }
 
-#' @export as.4seasons
+#' @export
 as.4seasons <- function(x,...) UseMethod("as.4seasons")
 
-#' @export as.4seasons.default
+#' @exportS3Method
+#' @export
 as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL) {
   if(verbose) print('as.4seasons.default')
   if (inherits(x,'season')) return(x)
@@ -520,7 +540,8 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
   return(y) 
 }
 
-#' @export as.4seasons.day
+#' @exportS3Method
+#' @export
 as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,verbose=FALSE) {
   if(verbose) print('as.4seasons.day')
   IV <- function(x) sum(is.finite(x))
@@ -573,7 +594,8 @@ as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,v
   invisible(y)
 }
 
-#' @export as.4seasons.station
+#' @exportS3Method
+#' @export
 as.4seasons.station <- function(x,...,FUN='mean') {
   #print('as.4seasons.station')
   y <- as.4seasons.default(x,FUN=FUN,...)
@@ -584,7 +606,8 @@ as.4seasons.station <- function(x,...,FUN='mean') {
   return(y) 
 }
 
-#' @export as.4seasons.spell
+#' @exportS3Method
+#' @export
 as.4seasons.spell <- function(x,...,FUN='mean') {
   y <- as.4seasons.default(as.station(x),FUN=FUN,...)
 #  y <- attrcp(x,y)
@@ -594,7 +617,8 @@ as.4seasons.spell <- function(x,...,FUN='mean') {
   return(y) 
 }
 
-#' @export as.4seasons.field
+#' @exportS3Method
+#' @export
 as.4seasons.field <- function(x,...,FUN='mean',verbose=FALSE) {
   if(verbose) print("as.4seasons.field")
   d <- attr(x,"dimensions")
@@ -608,7 +632,8 @@ as.4seasons.field <- function(x,...,FUN='mean',verbose=FALSE) {
   return(y)
 }
 
-#' @export as.4seasons.dsensemble
+#' @exportS3Method
+#' @export
 as.4seasons.dsensemble <- function(x,...,FUN='mean') {
     cls <- class(x)
     class(x) <- c("station",cls[2],"zoo") ## AM 06-07-2015 Quick fix here, time step added into the class of x
@@ -627,7 +652,7 @@ as.4seasons.dsensemble <- function(x,...,FUN='mean') {
 
 # Not to confuse with season
 # This function extracts a given seasonal interval and aggregates a given statistic
-#' @export as.seasons
+#' @export
 as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...) {
   if(verbose) print("as.seasons")
   IV <- function(x) sum(is.finite(x))

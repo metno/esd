@@ -74,94 +74,14 @@ The usual requirement for ESD is that the transfer coefficients describing the l
 ## Downscaling of trajectory objects
 The function ‘DS’ can be applied to trajectory objects, but it is not the paths themselves that are downscaled but rather some statistical measure of each trajectory (Example 5.4, Figure 25). By default, the downscaling is applied to the monthly trajectory count. Trajectory objects may also be downscaled with regards to other aspects by adding a parameter name (‘param’) and a function to apply to the parameter for each path (‘FUN’). For example, we can calculate and downscale the genesis latitude (param=’lat’, FUN=’first’) or the mean longitude (param=’lon’,FUN=’mean’).
 
-Example 5.1.
-```R
-# Load eofs of NCEP 2m air temperature
-data(eof.t2m.NCEP)
-# Load eofs of NCEP sea level pressure
-data(eof.slp.NCEP)
-# Load temperature data for Oslo
-data(Oslo)
-# Do the downscaling
-z <- DS(Oslo,list(t2m=eof.t2m.NCEP,slp=eof.slp.NCEP),mon=1)
-# Plot the results
-plot(z)
-```
 Figure 22: An example of downscaled annual mean temperature in Oslo, based on the ERAINT reanalysis and using PCA for downscaling a group of stations simultaneously.
 
-Example 5.2.
-```R
-# Load ERAINT 2m air temperature from file
-T2m <- t2m.ERAINT(lon=c(-10,30),lat=c(50,70))
-# Compute the EOFs on annual values
-eof <- EOF(annual(T2m))
-# Retrieve Nordklim data sets
-y <- station(src=’nordklim’)
-# Get rid of stations with little valid data
-Y <- allgood(annual(y))
-# Do the PCA
-pca <- PCA(Y)
-# DO the downscaling
-z <- DS(pca,eof)
-# Plot the result
-plot(z)
-# Get the observations corresponding to the first station in the list
-obs <- subset(Y,is=1)
-# Get the predictions
-pre <- subset(as.station(z),is=1)
-# Match dates between obs and pre
-obs <- matchdate(obs,pre)
-# Update the attributes
-attr(obs,’location’) <- ’Observed’
-attr(pre,’location’) <- ’Predicted’
-# Combine the two
-obspre <- combine.stations(obs,pre)
-# Plot the result in a single plot
-plot(obspre,plot.type="single")
-```
 Figure 23: An example of downscaled annual mean temperature in Oslo, based on the ERAINT reanalysis and using PCA for downscaling a group of stations simultaneously.
 
-Example 5.3.
-```R
-# Get the predictand: Maximum temperature for some Norwegian sttions
-download.file(url="http://files.figshare.com/2073466/Norway.Tx.rda",destfile="NorwayTx.rda")
-load("NorwayTx.rda")
-# Process the predictand (annual mean)
-ma <- annual(Tx)
-pca <- PCA(ma)
-# Get the ERAINT T(2m):
-t2m <- t2m.ERAINT(lon=c(-30,30),lat=c(50,75))
-# Process the predictor: Compute EOFs of annual means
-eof <- EOF(annual(X))
-# Test: CCA:
-cca <- CCA(pca,eof)
-# Do the downscaling
-z <- DS(pca,eof,rmtrend=FALSE)
-# Plot the results for one station:
-plot(subset(ma,is=1))
-lines(subset(as.station(pca),is=is),lty=2,col="darkred")
-lines(subset(as.station(z),is=is),lwd=2)
-```
 Figure 24: An example of downscaled CMIP5 RCP8.5 DJF seasonal mean temperature eastern Norway. The ERA40 reanalysis is used here for calibration. The inner plot in the right bottom of the figure shows a comparison between the estimated linear trend from both simulations (in terms of distribution) and observations (black point). While, the inner plot on the top right of the figure shows the distribution of the number of observations lying outside the 90% of the confidence interval based on simulations.
 
-Example 5.4.
-```R
-# Load storm trajectories
-data(imilast.M03)
-# Load NCEP sea level pressure data for the northern hemisphere
-slp <- slp.NCEP(lat=c(0,90))
-# Compute eof
-eof.slp <- EOF(slp)
-# Do downscaling for the storm count
-(default trajectory downscaling)
-ds <- DS(imilast.M03,eof.slp)
-# Do downscaling from slp
-ds.slp <- DS(imilast.M03,eof.slp,param=’slp’,FUN=’min’,unit=’hPa’)
-# Plot downscaled results
-plot(ds)
-plot(ds.slp)
-```
 Figure 25: Two examples of downscaling the storm tracks of the North Atlantic region with regards to the storm count (a) and minimum slp (b).
+
 
 ## Downscaling probabilities and number of events
 The original time series can be summarised as the probability distribution of a climate variable or parameter, the latter can then be downscaled instead of the original time series. For instance, the 24-hour wet-day precipitation amount is expected to follows an exponential or gamma distribution, whereas the temperature is more likely to follow a normal distribution, and the wind-speed a Weibull distribution. The count of events is expected to follow a binomial or Poisson distribution and spell-length statistics tends to have a geometric distribution. The predictands here are the parameters of the probability distribution function rather than the original climate variable. These are mainly the first order and second order moments such as the mean (for exponential distribution), the mean and the standard deviation for the normal distribution, and the mean and the coefficient of variation for the gamma distribution. 

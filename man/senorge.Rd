@@ -9,9 +9,9 @@
 senorge(
   url = "https://thredds.met.no/thredds/catalog/senorge/seNorge_2018/Archive",
   param = "rr",
-  lon = c(9.5, 11.5),
-  lat = c(59, 61),
-  it = 2010:2019,
+  lon = c(10.5, 11.5),
+  lat = c(59.5, 60.5),
+  it = 1961:2020,
   dt = 50,
   verbose = FALSE,
   plot = FALSE

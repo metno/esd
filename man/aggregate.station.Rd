@@ -19,6 +19,8 @@
 \arguments{
 \item{x}{An object of class \code{\link{station}}.}
 
+\item{by}{Index vector of the same length as \code{index(x)} which defines aggregation groups and the new index to be associated with each group. If \code{by} is a function, then it is applied to \code{index(x)} to obtain the aggregation groups.}
+
 \item{FUN}{a function to compute the summary statistics which can be applied to all subsets. Always needs to return a result of fixed length (typically scalar) (default: 'mean', additional options: 'area','exceedance','lessthan').}
 
 \item{na.rm}{TRUE: ignore NA - see see \code{\link{mean}}}

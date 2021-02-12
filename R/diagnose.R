@@ -66,9 +66,12 @@
 #' @export diagnose
 diagnose <-function(x,...) UseMethod("diagnose")
 
+#' @exportS3Method
+#' @export
 diagnose.default <- function(x,...) {
 }
 
+#' @exportS3Method
 #' @export diagnose.comb
 diagnose.comb <- function(x,...) {
   n.app <- attr(x,'n.apps')
@@ -84,6 +87,7 @@ diagnose.comb <- function(x,...) {
   }
 }
 
+#' @exportS3Method
 #' @export diagnose.eof
 diagnose.eof <- function(x,...) {
   if (inherits(x,'comb')) y <- diagnose.comb.eof(x,...) else
@@ -91,6 +95,7 @@ diagnose.eof <- function(x,...) {
   return(y)
 }
 
+#' @exportS3Method
 #' @export diagnose.comb.eof
 diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   if (verbose) print("diagnose.comb.eof")
@@ -149,6 +154,7 @@ diagnose.comb.eof <- function(x,...,verbose=FALSE) {
   invisible(diag)
 }
 
+#' @exportS3Method
 #' @export diagnose.cca
 diagnose.cca <- function(x,...) {
   par(bty="n")
@@ -158,6 +164,7 @@ diagnose.cca <- function(x,...) {
   grid()
 }
 
+#' @exportS3Method
 #' @export diagnose.station
 diagnose.station <- function(x,...,main='Data availability',
                             xlab='',ylab='station',
@@ -183,6 +190,7 @@ diagnose.mvr <- function(x,...) {
   print("Not finished")
 }
 
+#' @exportS3Method
 #' @export diagnose.cca
 diagnose.cca <- function(x,...) {
   par(bty="n")
@@ -193,6 +201,7 @@ diagnose.cca <- function(x,...) {
 }
 
 # Display cross-validation and statistics on the residual
+#' @exportS3Method
 #' @export diagnose.ds
 diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
   
@@ -270,6 +279,7 @@ diagnose.ds <- function(x,...,ip=1,plot=FALSE,verbose=FALSE,new=TRUE) {
 }
 
 # Display cross-validation and statistics on the residual
+#' @exportS3Method
 #' @export diagnose.ds.pca
 diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
 
@@ -336,6 +346,7 @@ diagnose.ds.pca <- function(x,...,plot=FALSE,verbose=FALSE,new=TRUE) {
   return(diagnostics)
 }
 
+#' @exportS3Method
 #' @export diagnose.distr
 diagnose.distr <- function(x,...,main=NULL,
                            xlab='mean',ylab=expression(q[p]),
@@ -399,6 +410,7 @@ diagnose.distr <- function(x,...,main=NULL,
   }
 }
 
+#' @exportS3Method
 #' @export diagnose.dsensemble
 diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
                                 yrange=NULL,main=NULL,map.show=TRUE,
@@ -501,6 +513,8 @@ diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
   }
 }
 
+#' @exportS3Method
+#' @export
 diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
                  map.show=TRUE,alpha=0.6,xrange=NULL,yrange=NULL,
                  main=NULL,verbose=FALSE,new=TRUE) {
@@ -602,6 +616,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
   invisible(d)
 }
 
+#' @exportS3Method
 #' @export diagnose.matrix
 diagnose.matrix <- function(x,...,xlim=NULL,ylim=NULL,verbose=FALSE) {
   if (verbose) print('diagnose.matrix')

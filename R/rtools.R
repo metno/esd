@@ -307,6 +307,7 @@ exit <- function() q(save="no")
 #' @export
 filt <- function(x,n,type='ma',lowpass=TRUE) UseMethod("filt")
 
+#' @exportS3Method
 #' @export filt.default
 filt.default <- function(x,n,type='ma',lowpass=TRUE) {
   
@@ -416,12 +417,14 @@ propchange <- function(x,it0=c(1979,2013)) {
 #' @export
 arec <- function(x,...) UseMethod("arec")
 
+#' @exportS3Method
 #' @export arec.default
 arec.default <- function(x,...) {
   y <- length(records(x))/sum(1/(1:nv(x)))
   return(y)
 }
 
+#' @exportS3Method
 arec.station <- function(x,...) {
   y <- unlist(lapply(records(x),length))/apply(x,2,function(x) sum(1/(1:nv(x))))
   return(y)

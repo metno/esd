@@ -6,6 +6,7 @@
 #' @aliases plot.diagnose.comb.eof plot.diagnose.dsensemble plot.diagnose.matrix
 #' @seealso diagnose
 #'
+#' @exportS3Method
 #' @export plot.diagnose
 plot.diagnose <- function(x,...) {
   if ( (inherits(x,"eof")) & (inherits(x,"comb")) ) plot.diagnose.comb.eof(x,...) else
@@ -124,6 +125,7 @@ plot.diagnose.matrix <- function(x,xlim=NULL,ylim=NULL,verbose=FALSE,new=TRUE,..
   image(1:2,1:n,colbar,col=col)  
 }
 
+#' @exportS3Method
 #' @export plot.diagnose.dsensemble
 plot.diagnose.dsensemble <- function(x,new=TRUE,mgp=c(2,1,0),cex=NULL,map.show=TRUE,
                                      map.type=NULL,verbose=FALSE,main=NULL,...) {

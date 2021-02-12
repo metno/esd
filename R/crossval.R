@@ -37,6 +37,7 @@
 #' @export
 crossval <- function(x, m=5, verbose=FALSE, ...) UseMethod("crossval")
 
+#' @exportS3Method
 #' @export crossval.ds
 crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
   # Repeat the regression from DS, but through several iterations with
@@ -127,6 +128,7 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
   invisible(X)
 }
 
+#' @exportS3Method
 #' @export crossval.list
 crossval.list <- function(x, m=5, verbose=FALSE, ...) {
   if(verbose) print("crossval.list")
@@ -139,6 +141,7 @@ crossval.list <- function(x, m=5, verbose=FALSE, ...) {
   invisible(x)
 }
 
+#' @exportS3Method
 #' @export crossval.dsensemble
 crossval.dsensemble <- function(x,m=NULL,verbose=FALSE,...,plot=TRUE) {
   if(verbose) print("crossval.dsensemble")

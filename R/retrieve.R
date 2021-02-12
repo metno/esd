@@ -84,6 +84,7 @@
 retrieve <- function(file=NULL,...) UseMethod("retrieve")
 
 ## Default function
+#' @exportS3Method 
 #' @export retrieve.default
 retrieve.default <- function(file,param="auto",
                              path=NULL,verbose=FALSE,...) {
@@ -121,6 +122,7 @@ retrieve.default <- function(file,param="auto",
 }
 
 ## Set retrieve for ncdf4 object
+#' @exportS3Method
 #' @export retrieve.ncdf4
 retrieve.ncdf4 <- function (file, path=NULL , param="auto",
                             lon=NULL, lat=NULL, lev=NULL, it=NULL,
@@ -420,7 +422,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   ## KMP 2020-08-25: Check the order of dimensions and use idim and idim2 
   ## to rearrange start, count and val in case the they are not in standard order 
   ## (lon,lat,time)
-  ## REB 2020-09-31: Fixed some minor probems reading ERA5-data with the fourth dimension 'expver'
+  ## REB 2020-09-31: Fixed some minor problems reading ERA5-data with the fourth dimension 'expver'
   ##
   dimnames <- names(ncid$dim)
   lonid <- dimnames[dimnames %in% c("lon","longitude","nlon")]
@@ -460,29 +462,40 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     diff.lon.w <- diff(rank(lon$vals[lon.w]))
     id2 <- which(diff.lon.w!=1)
     if (!is.null(ilev)) {
-      if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich    
+      if (verbose) print('!is.null(ilev)')
+      if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich   
+        if (verbose) print('((sum(id) > 0) & (sum(id2)!=0))')
         count <- c(length(lon.w),length(lat.w),length(lev.w),length(time.w))
         lon.w1 <-lon.w[1:id2]
         lon.w2 <- lon.w[(id2+1):length(lon.w)]
         start1 <- c(lon.w1[1],lat.w[1],lev.w[1],time.w[1])
         count1 <- c(length(lon.w1),length(lat.w),length(lev.w),length(time.w))
-        if (verbose) {print(start1);print(count1); print(idim); print(idim2)}
+        if (verbose) print(rbind(start1,count1))
+        if (verbose) {print(idim); print(idim2)}
         val1 <- ncvar_get(ncid,param,start1[idim],count1[idim],collapse_degen=FALSE)
         val1 <- aperm(val1, idim2)
         d1 <- dim(val1)
         dim(val1) <- c(d1[1],prod(d1[2:length(d1)]))
         start2 <- c(lon.w2[1],lat.w[1],lev.w[1],time.w[1])
         count2 <- c(length(lon.w2),length(lat.w),length(lev.w),length(time.w))
+        if (verbose) print(rbind(start2,count2))
         val2 <- ncvar_get(ncid,param,start2[idim],count2[idim],collapse_degen=FALSE)
         val2 <- aperm(val2, idim2)
         d2 <- dim(val2)
         dim(val2) <- c(d2[1],prod(d2[2:length(d2)]))
         val <- rbind(val1,val2)
       } else {
+        if (verbose) print('!((sum(id) > 0) & (sum(id2)!=0))')
         start <- c(lon.w[1],lat.w[1],lev.w[1],time.w[1])
         count <- c(length(lon.w),length(lat.w),length(lev.w),length(time.w))
-        val <- ncvar_get(ncid,param,start[idim],count[idim],collapse_degen=FALSE)
-        val <- aperm(val, idim2)
+        if (verbose) {print(rbind(start,count)); print(ncid$dim); print(idim)}
+        check.d <- rep(NA,ncid$ndims)  
+        for (jj in 1:ncid$ndims) check.d[jj] <- ncid$dim[[jj]]$len  
+        ## REB 2021-02-08: These lines causes problems with ERA5. 'idim' has repeated element 1 & 3 for some 
+        ## strange reason. The original line does not seem consistent with the lines within this if-block.
+        # val <- ncvar_get(ncid,param,start[idim],count[idim],collapse_degen=FALSE)
+        # val <- aperm(val, idim2)
+        val <- ncvar_get(ncid,param,start,count,collapse_degen=FALSE)
       }
       dim(val) <- count
       lon$vals <- lon$vals[lon.w]
@@ -503,6 +516,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       if (verbose) print('otherwise')
       if (!is.null(ilev)) {print('HERE IS A PROBLEM...')}
       if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich
+        if (verbose) print('((sum(id) > 0) & (sum(id2)!=0))')
         count <- c(length(lon.w),length(lat.w),length(time.w))
         lon.w1 <-lon.w[1:id2]
         lon.w2 <- lon.w[(id2+1):lon$len]
@@ -521,8 +535,10 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         val <- rbind(val1,val2)
         stopifnot((d1[2]==d2[2]) | (d1[3]==d2[3]))
       } else {
+        if (verbose) print('!((sum(id) > 0) & (sum(id2)!=0))')
         start <- c(lon.w[1],lat.w[1],time.w[1])
         count <- c(length(lon.w),length(lat.w),length(time.w))
+        if (verbose) print(rbind(start,count))
         val <- ncvar_get(ncid,param,start[idim],count[idim])
         val <- aperm(val, idim2)
       }
@@ -542,6 +558,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       val <- val[lon.srt,lat.srt,]
     }
   }
+  
   
   ## Convert units
   iunit <- grep("unit",names(v1))
@@ -1142,6 +1159,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   invisible(result)
 }
 
+#' @exportS3Method
 #' @export retrieve.station
 retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
@@ -1357,6 +1375,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   return(y)
 }
 
+#' @exportS3Method
 #' @export retrieve.stationsummary
 retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                                     alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
@@ -1440,6 +1459,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
 }
 
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
+#' @exportS3Method
 #' @export retrieve.rcm
 retrieve.rcm <- function(file,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
   ncfile <- file
