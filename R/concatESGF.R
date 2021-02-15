@@ -26,9 +26,8 @@
 #' 
 #' @export
 
-concat.ESGF(meta, param='tas', path='/lustre/storeB/project/CMIP/CMIP6.monthly/from_synda/CMIP6',
+concat.ESGF <- function(meta, param='tas', path='/lustre/storeB/project/CMIP/CMIP6.monthly/from_synda/CMIP6',
             expid = 'ssp585', use = 'CDO',verbose = FALSE) {
-  
   # Group by model and member.id 
   grps <- attr(meta %>% group_by(model,member.id),'groups')
   # Print out the number of groups/experiments
@@ -58,11 +57,10 @@ concat.ESGF(meta, param='tas', path='/lustre/storeB/project/CMIP/CMIP6.monthly/f
     lfiles.srt <- lfiles[srt]
     # create output filename
     ofile <- file.path(path, paste(gsub('historical',paste('historical',expid,sep='-'),
-                        substr(lfiles.srt[1],1,nchar(lfiles.srt[1])-16)),
-                   paste(it1,it2,sep='-'),'.nc',sep=''))
+                                        substr(lfiles.srt[1],1,nchar(lfiles.srt[1])-16)),
+                                   paste(it1,it2,sep='-'),'.nc',sep=''))
     if (verbose) print(paste('Saving to file', ofile))
     # Excecute CDO job
     #eval(parse(text = paste("system('cdo", paste(lfiles.srt,collapse = ' '), ofile,"')")
   }
-  
 }
