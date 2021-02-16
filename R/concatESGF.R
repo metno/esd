@@ -37,10 +37,11 @@ concat.ESGF <- function(meta, param='tas', path='/lustre/storeB/project/CMIP/CMI
     # Get the list of files for a specific experiment
     lfiles <- meta[unlist(grps[i,3]),'title']
     nfiles <- length(lfiles)
+    urls <- meta[unlist(grps[i,3]),'OpenDap']
     urls.fix <- sapply(1:nfiles,function(x) return(paste(unlist(strsplit(urls[x],split = '/'))[7:16],collapse='/')))
-    urls <- file.path(path,urls.fix)
-    
-    if (!file.exists(urls)) retrieve.ESGF(urls,meta)
+    urls.upd <- file.path(path,urls.fix)
+    browser()
+    if (!file.exists(urls.upd)) retrieve.ESGF(meta = meta, path = urls.upd,)
     
     if (verbose) 
       print(paste('Processing',nfiles,'files for', paste(grps[i,c('model','member.id')],collapse = '-')))
