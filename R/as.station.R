@@ -265,6 +265,7 @@ as.station.pca <- function(x,...,verbose=FALSE) {
     y <- attrcp(attr(x,'original_data'),y)
     if (verbose) print(names(attributes(y)))
   }
+  if (is.null(attr(y,'unit'))) attr(y,'unit') <- attr(x,'unit')
   return(y)
 }
 
