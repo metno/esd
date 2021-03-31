@@ -102,8 +102,8 @@
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-#' @export 
-plot <- function(x,...)  UseMethod("plot")
+# @export 
+# plot <- function(x,...)  UseMethod("plot")
 
 #' Plot esd objects
 #' 
