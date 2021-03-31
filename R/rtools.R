@@ -491,3 +491,11 @@ factor2numeric <- function(f) {
   } else return(as.numeric(f))
 }
 
+#' @export
+year2date <- function(y,toy='-01-01') {
+  if (inherits(y,'zoo')) {
+    index(y) <- as.Date(paste0(index(y),toy))
+    return(y)
+  } else if(is.numeric(y)) return(as.Date(paste0(y,toy)))
+}
+
