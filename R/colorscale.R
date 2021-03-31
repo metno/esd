@@ -251,7 +251,7 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
   }
   
   if (verbose) print(paste('colscal:',pal,'rev=',rev,'n=',n,'alpha=',alpha))
-  if (is.null(pal)) pal <- 't2m'
+  if ( (is.null(pal)) | (is.na(pal)) ) pal <- 't2m'
   if (is.null(alpha)) alpha <- 1
   # Set up colour-palette
   pal <- tolower(gsub("[[:space:]]", "", pal))#[[:punct:][:space:]]", "", pal))

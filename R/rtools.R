@@ -499,3 +499,19 @@ year2date <- function(y,toy='-01-01') {
   } else if(is.numeric(y)) return(as.Date(paste0(y,toy)))
 }
 
+#' @export
+yyyymmddhh2time <- function(y,option='POSIXct',verbose=FALSE) {
+  stopifnot(is.character(y))
+  ti <- paste(substr(y,1,4),substr(y,5,6),substr(y,7,8),sep='-')
+  if (nchar(y) ==10)
+    ti <- paste0(paste(ti,substr(y,9,10),sep=' '),':00:00')
+  if (nchar(y) ==12)
+    ti <- paste0(paste(ti,substr(y,11,12),sep=':'),':00')
+  if (nchar(y) ==14)
+    ti <- paste(ti,substr(y,13,14),sep=':')
+  if (verbose) print(ti)
+  if (option=='POSIXct') y <- as.POSIXct(ti) else
+    y <- as.POSIXlt(ti)
+  return(y)
+}
+

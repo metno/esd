@@ -1166,17 +1166,22 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (verbose) print('spatial selection: is=numeric')
       iss <- rep(FALSE,d[2]); iss[is] <- TRUE
       is <- iss
-    } else {
+    } else if (!is.logical(is)) {
       if (verbose) print('spatial selection: otherwise')
       is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
     }
     
-    if (verbose) print(paste('number of points: ',sum(ii),sum(is),'ii=',class(ii),'is=',class(is)))
+    if (verbose) print(paste('Number of points: ',sum(ii),sum(is),'ii=',class(ii),'is=',class(is)))
+    ## REB 2021-03-31: something strange happened here!
+    if (!is.logical(is)) {
+      warning('subset: Something strange hapened! class(is)==NULL...')
+      return(x[which(ii),])
+    }
     y <- x[which(ii),which(is)] 
     
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))
-    if (inherits(x,'station')) {
+    if ( (inherits(x,'station')) & (length(is)>1) ) {
       if (verbose) print('station attributes')
       attr(y,'longitude') <- attr(x,'longitude')[is]
       attr(y,'latitude') <- attr(x,'latitude')[is]
