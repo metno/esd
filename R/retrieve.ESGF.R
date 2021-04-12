@@ -127,7 +127,7 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
         # if (verbose) print(http_url)
         opendap_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][opendap_idx],"|",fixed=TRUE))[1]
         # if (verbose) print(opendap_url)
-        results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub(".nc.html",".nc",opendap_url)
+        results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub("http://","https://",gsub(".nc.html",".nc",opendap_url))
         results[[paste('grid',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$grid[[j]]
         results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j,facet_ens]]
         results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j,facet_mod]]
