@@ -17,8 +17,36 @@ HadCRUT4 <- function(url="http://www.metoffice.gov.uk/hadobs/hadcrut4/data/curre
                     url=url)
   attr(T2m,'history') <- history.stamp()
   if (plot) plot(T2m)
-  T2m
+  return(T2m)
 }
+
+#' @export
+HadCRUT5 <- function(url='https://crudata.uea.ac.uk/cru/data/temperature/HadCRUT5.0Analysis_gl.txt', plot=FALSE, sep=" ") {
+## Different format to the HadCRUT4 data - annoying...
+  X <- readLines(url)
+  i1 <- seq(1,length(X),by=2); n <- length(i1)
+  yr <- sort(rep(as.numeric(substr(X[i1],1,5)),12))
+  mo <- rep(1:12,n)
+  ## temperature - remove the last with the annual mean
+  for (ic in seq(10,2,by=-1)) X <- gsub(paste0(rep(' ',ic),collapse=''),' ',X)
+  t2m <- unlist(lapply(X[i1],function(x) as.numeric(strsplit(substr(x,7,nchar(x)),sep)[[1]][-13])))
+  # print(c(length(yr),length(mo),length(t2m)))
+  # print(summary(t2m))
+  ## Area coverage- remove the last with the annual mean
+  A <- unlist(lapply(X[i1+1],function(x) as.numeric(strsplit(substr(x,7,nchar(x)),sep)[[1]][-13])))
+  #print(summary(A))
+  t <- as.Date(paste(yr,mo,15,sep='-'))
+  T2m <- zoo(x=t2m,order.by=t)
+  A <- zoo(x=A,order.by=t)
+  y <- as.station(T2m,param='t2m',unit='deg C',loc='global',
+                    lon=NA,lat=NA,longname='global mean temperature',
+                    ref='HadCrut4, UK Met Office',
+                    url=url)
+  attr(y,'history') <- history.stamp()
+  attr(y,'area-cover') <- A
+  if (plot) plot(T2m)
+  return(y)
+} 
 
 #' Download GISS Sea Surface Temperature data from NASA
 #'
