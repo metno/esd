@@ -8,7 +8,7 @@ overwrite <- FALSE
 expids <- c("ssp370","ssp126","ssp585")[-1]
 params <- c("tas","slp","pr")[3]
 lon <- NULL; lat <- NULL
-localpath <- '/lustre/storeB/project/CMIP/CMIP6.monthly/'
+localpath <- 'CMIP/CMIP6.monthly/'
 it <- c(2015,2100)
 
 ## Skip simulations that cause problems:

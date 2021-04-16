@@ -10,7 +10,7 @@ overwrite <- FALSE
 expids <- c("ssp370","ssp126","ssp585")
 params <- c("tas","slp","pr")
 lon <- NULL; lat <- NULL
-localpath <- '/lustre/storeB/project/CMIP/CMIP6.monthly/'
+localpath <- 'CMIP/CMIP6.monthly/'
 it1 <- c(2015,2040)
 it2 <- c(2041,2070)
 it3 <- c(2071,2100)
