@@ -18,7 +18,8 @@ genfun <- function(x,FUN,verbose=FALSE) {
 }
 
 ## Simplified function for mapping station objects.
-#' @export map.station
+#' @exportS3Method
+#' @export 
 map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          add=FALSE,projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,

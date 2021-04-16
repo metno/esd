@@ -90,6 +90,7 @@ retrieve.default <- function(file,param="auto",
                              path=NULL,verbose=FALSE,...) {
   ncfile <- file
   if (verbose) print('retrieve.default')
+  
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   X <- NULL
   qf <- NULL
@@ -97,6 +98,14 @@ retrieve.default <- function(file,param="auto",
   
   nc <- nc_open(ncfile)
   dimnames <- names(nc$dim)
+  ## REB 2021-04-16: Check if the file contains station data - if it does, use the retrieve.station method
+  if (sum(tolower(dimnames) %in% c("stid"))>0) {
+    if (verbose) print('Detected station netCDF')
+    nc_close(nc)
+    Y <- retrieve.station(file=file,param=param,path=path,verbose=verbose,...)
+    return(Y)
+  }
+  
   ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
   ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
   if(any(ilon) & any(ilat)) {
