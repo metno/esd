@@ -6,7 +6,7 @@
 #' 
 #' @aliases
 #'
-#' @import ncdf4 dplyr
+#' @import ncdf4
 #'
 #' @seealso meta.ESGF retrieve.ESGF
 #'
@@ -29,36 +29,37 @@
 concat.ESGF <- function(meta, param='tas', path='/lustre/storeB/project/CMIP/CMIP6.monthly/from_synda/CMIP6',
             expid = 'ssp585', use = 'CDO',verbose = FALSE) {
   # Group by model and member.id 
-  grps <- attr(meta %>% group_by(model,member.id),'groups')
+  splitlist <- split(meta,f=list(meta$member.id,meta$model),drop=T)
   # Print out the number of groups/experiments
-  if (verbose) print('Number of experiments found is ', nrow(grps))
+  if (verbose) print(paste('Number of experiments found is', length(splitlist)))
   # Loop over all model-model.id groups
-  for (i in 1:nrow(grps)) {
-    # Get the list of files for a specific experiment
-    lfiles <- meta[unlist(grps[i,3]),'title']
+  for (i in 1:length(splitlist)) {
+    # Get the list of files for a specific experiment                     
+    lfiles <- splitlist[[i]]$title
     nfiles <- length(lfiles)
-    urls <- meta[unlist(grps[i,3]),'OpenDap']
-    urls.fix <- sapply(1:nfiles,function(x) return(paste(unlist(strsplit(urls[x],split = '/'))[7:16],collapse='/')))
+    urls <- splitlist[[i]]$OpenDap
+    urls.fix <- sapply(1:nfiles,function(x) return(paste(unlist(strsplit(paste(urls[x]),split = '/'))[7:16],collapse='/')))
     urls.upd <- file.path(path,urls.fix)
+                       
     browser()
     if (!file.exists(urls.upd)) retrieve.ESGF(meta = meta, path = urls.upd,)
     
     if (verbose) 
-      print(paste('Processing',nfiles,'files for', paste(grps[i,c('model','member.id')],collapse = '-')))
-    
+      print(paste('Processing',nfiles,'files for', unique(splitlist[[i]]$model),unique(splitlist[[i]]$member.id)))
+                       
     # Get the periods
-    it <- meta[unlist(grps[i,3]),'period']
+    it <- splitlist[[i]]$period
     it.len <- length(it)
     # rank the periods
     srt <- order(it)
     it.srt <- it[srt]
     it1 <- substr(it.srt[1],1,6)
-    it2 <- substr(it.srt[it.len],8,nchar(it.srt[it.len]))
+    it2 <- substr(it.srt[it.len],8,nchar(as.character(it.srt[it.len])))
     # order the files according to the periods
     lfiles.srt <- lfiles[srt]
     # create output filename
     ofile <- file.path(path, paste(gsub('historical',paste('historical',expid,sep='-'),
-                                        substr(lfiles.srt[1],1,nchar(lfiles.srt[1])-16)),
+                                        substr(lfiles.srt[1],1,nchar(as.character(lfiles.srt[1]))-16)),
                                    paste(it1,it2,sep='-'),'.nc',sep=''))
     if (verbose) print(paste('Saving to file', ofile))
     # Excecute CDO job
