@@ -5,11 +5,11 @@
 #' \code{as.monthly} aggregates time series into monthly values (e.g. means).
 #'
 #' \code{as.4seasons} aggregates to four seasons ('djf': December-February, 'mam': March-May, 'jja': June-August, 'son': September-November)
-#' and \code{as.seasons} aggregates to a user defined season (see arguments 'start' and 'end'). 
+#' and \code{as.seasons} aggregates to a user defined season (see arguments 'start' and 'end'). \code{as.OctMar} aggregates for the Oct-Mar rainy season.
 #'
 #' @aliases as.annual as.annual.default as.annual.numeric as.annual.integer as.annual.yearqtr as.annual.station as.annual.spell
 #' annual annual.zoo annual.default annual.dsensemble annual.station annual.spell annual.field annual.eof
-#' as.monthly as.monthly.default as.monthly.station as.monthly.field
+#' as.monthly as.monthly.default as.monthly.station as.monthly.field as.OctMar
 #' as.4seasons as.4seasons.default as.4seasons.day as.4seasons.station as.4seasons.spell as.4seasons.field as.4seasons.dsensemble as.seasons
 #'
 #' @seealso aggregate

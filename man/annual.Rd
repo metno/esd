@@ -20,6 +20,7 @@
 \alias{as.monthly.default}
 \alias{as.monthly.station}
 \alias{as.monthly.field}
+\alias{as.OctMar}
 \alias{as.4seasons}
 \alias{as.4seasons.default}
 \alias{as.4seasons.day}
@@ -58,7 +59,7 @@ Same class as x
 \code{as.monthly} aggregates time series into monthly values (e.g. means).
 
 \code{as.4seasons} aggregates to four seasons ('djf': December-February, 'mam': March-May, 'jja': June-August, 'son': September-November)
-and \code{as.seasons} aggregates to a user defined season (see arguments 'start' and 'end').
+and \code{as.seasons} aggregates to a user defined season (see arguments 'start' and 'end'). \code{as.OctMar} aggregates for the Oct-Mar rainy season.
 }
 \examples{
 data(ferder)
