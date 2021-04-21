@@ -708,6 +708,8 @@ as.OctMar <- function(x,FUN='sum',nmin=90,plot=FALSE,verbose=FALSE) {
   if (FUN=='sum') OctMar <- JanMar + OctDec else
     OctMar <- 0.5*(JanMar + OctDec)
   #print(range(index(OctMar)))
+  OctMar <- attrcp(JanMar,OctMar)
+  class(OctMar) <- class(JanMar)
   
   if (plot==TRUE) {
     ## if the plot argument == TRUE, then do this:
