@@ -30,7 +30,17 @@
 #' @export retrieve.ESGF
 retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) { 
   if (is.null(meta)) meta <- meta.ESGF(verbose=verbose,...)
-  model <- as.character(meta$model[im])
+  if (inherits(im,c('numeric','integer'))) model <- as.character(meta$model[im]) else
+    if (is.character(im)) { 
+      if (verbose) print(im)
+      ## Assume the shape '<model>_<expid>_<ensid>'
+      im <- strsplit(gsub('_',' ',im),' ')
+      model <- im[[1]]; expid <- im[[2]]; ensid <- im[[3]]
+      im <- intersect( grep(model,meta$model), grep(ensid,meta$member.id) )
+      model <- meta$model[im]
+      if (verbose) print(c(im,model,ensid))
+      if (is.na(im)) return(NULL)
+    }
   mem <- as.character(meta$member.id[im])
   jm <- (1:length(meta$model))[is.element(as.character(meta$model),model) &
                                is.element(as.character(meta$member.id),mem)]
@@ -192,6 +202,7 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
                        timestamp=as.character(results[timestamp]))
     
     attr(meta,'variable') <- param
+    attr(meta,'expid') <- expid
     attr(meta,'file.query.data') <- results[grep('file.query',names(results))]
     attr(meta,'dataset.query.data') <- results[grep('dataset.query',names(results))]
     attr(meta,'history') <- history.stamp(meta)

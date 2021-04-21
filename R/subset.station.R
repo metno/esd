@@ -9,45 +9,42 @@ subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
     if (is.null(attr(x,'unit'))) attr(x,'unit') <- NA
     if (verbose) print(c(varid(x),esd::unit(x)))
     d <- dim(x)
+    ## subset times:
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
         if (verbose) print('field/station')
         x2 <- matchdate(x,it)
+        x2 <- attrcp(x,x2)
+        attr(x2,'history') <- history.stamp()
         return(x2)
     }
-   
+    ## subset space:
     if (inherits(is,c('field','station','zoo'))) {
-        ## Match the times of another esd-data object
+        ## Match the space index of another esd-data object
         if (verbose) print('is: field/station')
         x2 <- subset.station(x,is=loc(is))
         return(x2)
     }
     if (is.character(is)) {
       if (verbose) print('search on location names')
-      ## search on location name
-      locs <- tolower(loc(x))
-      locs <- substr(locs,1,min(nchar(is)))
-      is <- substr(is,1,min(nchar(is)))
-      illoc <- is.element(locs,tolower(is))
+      ## search on location name: foce lower case for all
+      locs <- tolower(loc(x)); is <- tolower(is)
+      #mcl <- min(c(nchar(is),nchar(locs)))
+      ## Set same lengths for all; minimum character
+      #locs <- substr(locs,1,mcl)
+      #is <- substr(is,1,mcl)
+      #illoc <- is.element(locs,is)
+      ns <- length(is)
+      for (ii in 1:ns) illoc <- grep(is[ii],locs)
       x2 <- subset(x,it=it,is=illoc,verbose=verbose)
       if (verbose) {print(is); print(loc(x2))}
       return(x2)
     }
     if (is.null(dim(x))) {
-        x2 <- station.subset(x,it=it,is=1,verbose=verbose)
+        x2 <- station.subset(x,it=it,verbose=verbose)
     } else {
         ##print("here")
         x2 <- station.subset(x,it=it,is=is,verbose=verbose)
-        ## 
-        ## extra selection based on meta data
-        ## ss <- select.station(x=x2,loc = loc , param = param,  stid = stid ,lon = lon, lat = lat, alt = alt, cntr = cntr, src = src , nmin = nmin)
-        ## 
-        ## if (!is.null(ss)) {
-        ##    id <- is.element(attr(x2,'station_id'),ss$station_id)
-        ## Keep selected stations only
-        ##    x2 <- station.subset(x2,it=it,is=which(id),verbose=verbose)
-        ##}
-        ##if (!is.null(is)) x2 <- station.subset(x2,it=it,is=is,verbose=verbose)
     }
     ## Check if there is only one series but if the dimension 
     if ( (!is.null(d)) & is.null(dim(x2)) ) 
@@ -343,16 +340,16 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   if (!is.null(attr(y,'quality')))
     attr(y,'quality') <- attr(x,'quality')[is]
   ## attr(y,'history') <- attr(x,'history')[is]
-  # if (!is.null(attr(y,'variable')))
-  #   if (length(varid(x))>1) attr(y,'variable') <- varid(x)[is] else
-  #     attr(y,'variable') <- varid(x)
-  ## attr(y,'element') <- attr(x,'element')[is]
+  if (!is.null(attr(y,'variable')))
+    if (length(varid(x))>1) attr(y,'variable') <- varid(x)[is] else
+      attr(y,'variable') <- varid(x)
+  # attr(y,'element') <- attr(x,'element')[is]
   if (!is.null(attr(y,'aspect')))
     if (length(attr(y,'aspect'))>1) attr(y,'aspect') <- attr(x,'aspect')[is] else
       attr(y,'aspect') <- attr(x,'aspect')
-  # if (!is.null(attr(y,'unit')))
-  #   if (length(esd::unit(x))>1) attr(y,'unit') <- esd::unit(x)[is] else
-  #     attr(y,'unit') <- esd::unit(x)
+  if (!is.null(attr(y,'unit')))
+    if (length(esd::unit(x))>1) attr(y,'unit') <- esd::unit(x)[is] else
+      attr(y,'unit') <- esd::unit(x)
   if (!is.null(attr(y,'longname')))
     if (length(attr(y,'longname'))>1) attr(y,'longname') <- attr(x,'longname')[is] else
       attr(y,'longname') <- attr(x,'longname')
