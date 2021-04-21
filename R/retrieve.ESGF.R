@@ -35,8 +35,8 @@ retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) {
       if (verbose) print(im)
       ## Assume the shape '<model>_<expid>_<ensid>'
       im <- strsplit(gsub('_',' ',im),' ')
-      model <- im[[1]]; expid <- im[[2]]; ensid <- im[[3]]
-      im <- intersect( grep(model,meta$model), grep(ensid,meta$member.id) )
+      model <- im[[1]][1]; expid <- im[[1]][2]; ensid <- im[[1]][3]
+      im <- intersect( grep(model,meta$model), grep(ensid,meta$member.id) )[1]
       model <- meta$model[im]
       if (verbose) print(c(im,model,ensid))
       if (is.na(im)) return(NULL)
