@@ -87,7 +87,10 @@ matchdate.default <- function(x,it,verbose=FALSE) {
     y <- x[ii,]
     
     if (verbose) print(paste('matchdate found',sum(ii),'matching dates'))
-    if (sum(ii)==length(index(y))) index(y) <- t0[ii] # REB 2015-01-14: to ensure same index class as it.
+    # KMP 2021-04-08: Changed index assignment method to zoo(y, order.by=t0[ii])) 
+    # to solve a mysterious problem related to an unexpected change in the class of y. 
+    #if (sum(ii)==length(index(y))) index(y) <- t0[ii] # REB 2015-01-14: to ensure same index class as it.
+    if (sum(ii)==length(index(y))) y <- zoo(coredata(y), order.by=t0[ii])
     if (verbose) {print('matchdate: index(y)'); print(index(y))}
     #
   } else if (length(it)==2) {
@@ -133,12 +136,12 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   }
   good <- as.logical(is.finite(index(y)))
   if (verbose) print(paste('Final check: finite values for index of y:',sum(good)))
+  class(y) <- cls
   y <- subset(y,it=good)
   nt <- index(y)
   
   attr(y,'history') <- history.stamp(x)
   #print(index(y)); print(class(index(y)))
-  class(y) <- cls
   if (inherits(y,'field')) attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],length(nt))
   if (!is.null(attr(y,'count'))) attr(y,'count') <- c(attr(y,'count')[1:2],length(nt))
   if(verbose) print('dates of x have been matched with it.')

@@ -147,7 +147,6 @@ pca2station <- function(X,is=NULL,ip=NULL,anomaly=FALSE,what='pca',verbose=FALSE
     x <- x + c(attr(pca,'mean'))
   }
   x <- zoo(t(x),order.by=index(pca))
-  
   if (anomaly) {
     attr(x,'aspect') <- 'anomaly' 
   } else {

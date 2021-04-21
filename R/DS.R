@@ -111,7 +111,7 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' 
 #' @aliases DS DS.default DS.station DS.station.pca DS.list DS.eof DS.comb
 #' DS.field DS.t2m.month.field DS.t2m.season.field DS.precip.season.field
-#' DS.freq DS.spell DS.pca DS.seasonalcycle DS.trajectory
+#' DS.freq DS.spell DS.pca DS.seasonalcycle DS.trajectory DS.mvcomb
 #' @seealso biasfix sametimescale
 #'
 #' @importFrom stats predict var
@@ -282,7 +282,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     y <- subset(y,it=is.finite(coredata(y)))
     W <- attr(X,'eigenvalues')
     cls <- c(class(y)[1],class(X))
- 
+    
     if (verbose) print('Ensure matching time scale')
     if (verbose) {print('index(y) before sametimescale:'); print(index(y))}
     y <- sametimescale(y,X,verbose=verbose)
@@ -365,7 +365,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 
     if (verbose) print(summary(model))
     fsum <- summary(model)
-    COEFS=FSUM$coefficients
+    COEFS <- FSUM$coefficients
     COEFS[,1] <- 0; 
     COEFS[,2:4] <- NA; 
     coefs=fsum$coefficients
@@ -376,8 +376,9 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     COEFS[ii,2] <- coefs[,2]
     COEFS[ii,3] <- coefs[,3]
     COEFS[ii,4] <- coefs[,4]
+    if (verbose) print('predict')
+    ds <- zoo(predict(model,newdata=predat),order.by=index(X)) + offset
     dc <- dim(COEFS)
-
     U <- attr(X,'pattern'); du <- dim(U)
 ### REB 2015-01-19: Also allow for patterns consisting of vectors - weights of mixed predictors
 ### See DS.list.
@@ -389,20 +390,6 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
       dim(pattern) <- c(du[1],du[2]) 
     } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[ip]
                                                  
-    ##  ds <- zoo(predict(model),order.by=index(X)) + offset
-    ##  ds <- zoo(predict(model,newdata=caldat),order.by=index(X)) + offset
-    if (verbose) print('predict')
-    ds <- zoo(predict(model,newdata=predat),order.by=index(X)) + offset
-                                        #plot(y,lwd=4); lines(ds,col="red",lwd=2)
-                                        #lines(zoo(model$fitted.values,order.by=index(ds)),col="blue",lwd=2)
-                                        #lines(yX$y,col="darkgreen",lwd=2)
-    
-                                        #nattry <- softattr(y0)
-                                        #nattrX <- softattr(X0,ignore=c('longitude','latitude')) 
-                                        #for (i in 1:length(nattry))
-                                        #  attr(ds,nattry[i]) <- attr(y0,nattry[i])
-                                        #for (i in 1:length(nattrX))
-                                        #  attr(pattern,nattrX[i]) <- attr(X0,nattrX[i])
     if (verbose) {
       print('set attibutes')
       print(names(attributes(y0)))
@@ -423,12 +410,11 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     attr(caldat,'calibration_expression') <- calstr
     attr(caldat,'stepwise_screening') <- swsm
     attr(ds,'calibration_data') <- caldat
-    attr(ds,'fitted_values') <- zoo(model$fitted.values +
-                                    offset,order.by=index(X))
+    attr(ds,'fitted_values') <- zoo(fitted(model) + offset,order.by=index(X))
     class(attr(ds,'fitted_values')) <- class(y0)
     attr(ds,'original_data') <- y0
-    r2 <- var(coredata(model$fitted.values))/var(y,na.rm=TRUE)
-    attr(r2,'description') <- ' var(fitted.values))/var(y)'
+    r2 <- var(coredata(fitted(model)))/var(y,na.rm=TRUE)
+    attr(r2,'description') <- 'var(fitted.values))/var(y)'
     attr(ds,'quality') <- r2
     attr(ds,'variable') <- attr(y0,'variable')
     attr(ds,'model') <- model
@@ -437,6 +423,8 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     attr(ds,'eof') <- X0
     attr(pattern,'longitude') <- attr(X0,'longitude')
     attr(pattern,'latitude') <- attr(X0,'latitude')
+    attr(pattern,'variable') <- attr(X0,'variable')
+    attr(pattern,'unit') <- attr(X0,'unit')
     attr(ds,'pattern') <- pattern
     attr(ds,'dimensions') <- c(du[1],du[2])
     attr(ds,'longitude') <- attr(y0,'longitude')
@@ -452,7 +440,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     ## KMP 2019-04-29: Added crossval in DS.default. Any reason why it shoudn't be here?
     if (!is.null(m))  {
       if (verbose) print("Cross-validation")
-      xval <- crossval(ds,m=m)
+      xval <- crossval(ds,m=m,...)
       attr(ds,'evaluation') <- zoo(xval)
     } else attr(ds,'evaluation') <- NULL
     rm("y0","X0")
@@ -989,7 +977,7 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     # Use method for downscaling
     #str(y); str(X)
     if (verbose) print(method)
-    if (toupper(method)=='mvr') {
+    if (toupper(method)=='MVR') {
         if (verbose) print('MVR')
         if (is.null(dy)) dy <- c(length(y),1)
         if (dy[2]>1) colnames(y) <- paste("y",1:dy[2],sep=".")

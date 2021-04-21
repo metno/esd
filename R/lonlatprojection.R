@@ -30,7 +30,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   } else {
     greenwich <- FALSE
   }
-  ## Make sure to use the right arrrangement: frome dateline og Greenwich 
+  ## Make sure to use the right arrangement: frome dateline og Greenwich 
   if(inherits(x,"matrix") & is.null(attr(x,"dimensions"))) {
     x <- g2dl(x,d=c(length(lon(x)),length(lat(x)),1),
               greenwich=greenwich,verbose=verbose)
@@ -182,9 +182,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (inherits(label,'try-error')) label <- ''
   #title(main = as.expression(period),line = 3, adj =1)
   #text(lon[length(lon)],lat[length(lat)] + 0.5*dlat,period,pos=2,cex=0.7,col="grey30")
+  #if (lab=='simple')   label <- eval(parse(text=paste('expression(',varnm,')'))) else 
   if (lab=='simple')   label <- eval(parse(text=paste('expression(',varnm,')'))) else 
     if (lab=='unit') label <- eval(parse(text=paste('expression(',varnm,'* phantom0 * (',unitx,')',')'))) else
-      if (is.character(lab)) label <- lab
+      if (is.character(lab) & lab!="default") label <- lab
   title(sub = label,line = 0 , adj = 0.5)
   
   ## 

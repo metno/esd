@@ -42,12 +42,16 @@
 #' \code{factor2numeric} transforms a factor to a numeric object
 #' 
 #' \code{rmse} and \code{RMSE} calculate the root-mean-square error
+#'
+#' \code{leapyear} checks if a year is a leap year
+#'
+#' \code{distance2ocean} estimates the distance from a point to the ocean
 #' 
 #' @aliases as.decimal nv cv q5 q95 q975 q995 filt
 #' filt.default exit figlab ndig ensemblemean propchange stand rmse RMSE
 #' firstyear lastyear eofvar test.num.predictors arec
 #' arec.default arec.station lastrains lastdry lastelementrecord strstrip bin
-#' factor2numeric zeros missval
+#' factor2numeric zeros missval leapyear
 #' @seealso attrcp
 #'
 #' @importFrom stats quantile qgeom qpois dnorm filter 
@@ -107,6 +111,13 @@
 #' points(lons[fy==1850],lats[fy==1850])
 #' map(Obs,FUN='firstyear')
 #' }
+#'
+#' ## Check for leap years
+#' leapyear(1999)
+#' leapyear(2000)
+#'
+#' ## Calculate the distance to the ocean from the point 10E/60N 
+#' distance2ocean(10, 60)
 #'
 #' @export as.decimal
 as.decimal <- function(x=NULL) {
@@ -485,9 +496,40 @@ bin <- function(x,nbins=5,labels=NULL,na.rm=TRUE) {
   return(z)
 }
 
+
 #' @export
 factor2numeric <- function(f) {
   if(!is.null(levels(f))) {return(as.numeric(levels(f))[f])
   } else return(as.numeric(f))
+}
+
+#' @export leapyear
+leapyear <- function(years) {
+  is.leap <- (years %% 4 == 0) & 
+             ( years %% 100 != 0 | 
+              (years %% 100 == 0 & years %% 400 == 0) )
+  return(is.leap)
+}
+
+#' @export
+distance2ocean <- function(lon1, lat1, dlon=c(-10,10), dlat=c(-5,5), 
+                           delta=0.4, is=NULL) {
+  if(is.null(is)) is <- list(lon=lon1+dlon, lat=lat1+dlat)
+  ## regridding to a coarser resolution to avoid problems with Fjords
+  data(etopo5, envir=environment())
+  h <- regrid(etopo5, is=list(lon=seq(min(is$lon),max(is$lon),delta), 
+                              lat=seq(min(is$lat),max(is$lat),delta)))
+  if(h[which.min(abs(lon1-lon(h))),which.min(abs(lat1-lat(h)))]>0) {
+    ocean <- which(h < -100, arr.ind=TRUE)
+    d <- distAB(lon1,lat1,lon(h)[ocean[,1]],lat(h)[ocean[,2]])*1E-3
+    lon.d <- lon(h)[ocean[,1]][which.min(d)]
+    lat.d <- lat(h)[ocean[,2]][which.min(d)]
+    d <- d[which.min(d)]
+  } else {
+    d <- 0
+    lon.d <- lon1
+    lat.d <- lat1
+  }
+  return(list("distance"=d, "lon"=lon.d, "lat"=lat.d))
 }
 

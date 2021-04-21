@@ -977,7 +977,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
   if (new) dev.new()
   if (plot.type=="single") new <- TRUE
   par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-
+  
   if (sum(is.element(what,'map'))>0) {
     if (verbose) print('Show map...')
     par(fig=c(0,0.5,0.5,1))
@@ -1015,6 +1015,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
   yX <- merge.zoo(Y0,x,all=FALSE)
   #print(summary(yX))
   y0 <- yX$Y0
+  ## KMP 2021-02-26: Plot attribute 'fitted value' instead of coredata
 
   if (!is.null(attr(x,'n.apps'))) ns <- attr(x,'n.apps') else
                                   ns <- 0
@@ -1029,7 +1030,8 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
   }
   
   if (is.null(ylim)) {
-    ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
+    #ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
+    ylim <- range(attr(x,"fitted_values"),coredata(y0),y.rng,na.rm=TRUE)
   }
   if (is.null(xlim)) {
     xlim <- range(index(x),index(y0),x.rng,na.rm=TRUE)
@@ -1047,11 +1049,13 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
     index(x) <- year(index(x))
   if ( (class(index(x))=='numeric') & (class(index(y0))=='Date') & inherits(x,'annual') ) 
     index(x) <- as.Date(paste(index(x),'01-01',sep='-'))
-  lines(x,col="red",type="l",lwd=lwd)
+  #lines(x,col="red",type="l",lwd=lwd)
+  lines(attr(x,"fitted_values"),col="red",type="l",lwd=lwd)
   
   cal0 <- data.frame(y=coredata(y0),t=year(y0))
-  cal1 <- data.frame(y=coredata(x),t=year(x))
- 
+  #cal1 <- data.frame(y=coredata(x),t=year(x))
+  cal1 <- data.frame(y=attr(x,"fitted_values"),t=year(x))
+  
   trend0 <- lm(y ~ t, data=cal0)
   trend1 <- lm(y ~ t, data=cal1)
   lines(zoo(predict(trend0),order.by=index(y0)),lty=2)
@@ -1088,7 +1092,8 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
   ## Replot observations and prediction for calibration period
 
   lines(y0,lwd=1,type='b',pch=19)
-  lines(x,col="red",type="l",lwd=lwd)
+  #lines(x,col="red",type="l",lwd=lwd)
+  lines(attr(x,"fitted_values"),col="red",type="l",lwd=lwd)
   #print(legcol)
   if (!is.null(attr(x,'appendix.1'))) legend <- c("Obs.","Cal.","Proj") else
                                       legend <- c("Obs.","Cal.")
@@ -1110,7 +1115,9 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
            col=c(col,'black',col[1]))
     
     par(fig=c(0,1,0.05,0.95),new=TRUE,mar=par0$mar,xaxt="n",yaxt="n",bty="n")
-    plot.zoo(x,plot.type=plot.type,type="n",ylab="",xlab="",xlim=xlim,ylim=ylim)
+    #plot.zoo(x,plot.type=plot.type,type="n",ylab="",xlab="",xlim=xlim,ylim=ylim)
+    plot.zoo(attr(x,"fitted_values"),plot.type=plot.type,type="n",
+             ylab="",xlab="",xlim=xlim,ylim=ylim)
   }
   invisible(list(trend0=trend0,trend1=trend1,xvalfit=xvalfit))
 }
@@ -1273,7 +1280,7 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
     return()
   }
 
-  # To distinguish between tpyes of plots - movmuller or are mean
+  # To distinguish between types of plots - movmuller or are mean
   twocoord <- (length(is)==2)
   if (twocoord) {
     l1 <- length(is[[1]]); l2 <- length(is[[2]])

@@ -131,7 +131,9 @@ vis.ds <- function(x,...) {
   print('unfinished function - returns nothing')
 }
 
-#' @exportS3Method
+## This is not an S3 method! It is called as vis.map in several of the 
+## plot functions and not applied to an object of type 'map'.
+## @exportS3Method
 #' @export 
 vis.map <- function(x,...,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,

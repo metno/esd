@@ -6,7 +6,7 @@
 #' @aliases map map.default map.matrix map.data.frame map.station
 #' map.stationmeta map.stationsummary map.comb map.eof map.ds map.dsensemble
 #' map.field map.corfield map.cca map.events map.mvr map.pca map.array
-#' map.trend lonlatprojection rotM map2sphere
+#' map.trend map.mvcomb lonlatprojection rotM map2sphere
 #' @seealso map.trajectory vec
 #'
 #' @param x the object to be plotted; in \code{rotM}, x holds a vector of
@@ -314,7 +314,7 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 #' @exportS3Method
 #' @export
 map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eof",
-                    xlim=NULL,ylim=NULL,zlim=NULL,
+                    xlim=NULL,ylim=NULL,zlim=NULL,lab="default",
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                     type=c("fill","contour"),gridlines=FALSE,
@@ -366,19 +366,19 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
         type <- "fill"
     if (plot) {
       if (projection=="lonlat") {
-        lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,
+        lonlatprojection(x=X,it=it,xlim=xlim,ylim=ylim,lab=lab,
                          colbar=colbar,new=new,type=type,
                          gridlines=gridlines,verbose=verbose,...)
       } else if (projection=="sphere") {
-        map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,
+        map2sphere(x=X,it=it,lonR=lonR,latR=latR,axiR=axiR,lab=lab,
                    xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
                    colbar=colbar,new=new,verbose=verbose,...)
       } else if (projection=="np") {
-        map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,
+        map2sphere(X,it=it,lonR=lonR,latR=90,axiR=axiR,lab=lab,
                    xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
                    colbar=colbar,new=new,verbose=verbose,...)
       } else if (projection=="sp") {
-        map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,
+        map2sphere(X,it=it,lonR=lonR,latR=-90,axiR=axiR,lab=lab,
                    xlim=xlim,ylim=ylim,type=type,gridlines=gridlines,
                    colbar=colbar,new=new,verbose=verbose,...)
       }
@@ -401,17 +401,23 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   x <- subset(x,is=is)
   
   ## REB 2015-03-26
-  if (inherits(x,'pca')) {
+  if (inherits(x,'mvcomb')) {
+    map.mvcomb(x,it=it,verbose=verbose,new=new,
+            xlim=xlim,ylim=ylim,projection=projection,
+            lonR=lonR,latR=latR,axiR=axiR,gridlines=gridlines,
+            colbar=colbar,...) ##col=col,breaks=breaks)
+    return()
+  } else if (inherits(x,'pca')) {
     map.pca(x,it=it,verbose=verbose,new=new,
             xlim=xlim,ylim=ylim,projection=projection,
             lonR=lonR,latR=latR,axiR=axiR,gridlines=gridlines,
-            colbar=colbar) ##col=col,breaks=breaks)
+            colbar=colbar,...) ##col=col,breaks=breaks)
     return()
   } else if (inherits(x,'eof')) {
     map.eof(x,it=it,verbose=verbose,new=new,
             xlim=xlim,ylim=ylim,projection=projection,
             lonR=lonR,latR=latR,axiR=axiR,gridlines=gridlines,
-            colbar=colbar) ##col=col,breaks=breaks)
+            colbar=colbar,...) ##col=col,breaks=breaks)
     return()
   }
   projection <- tolower(projection)
@@ -444,7 +450,6 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     attr(X,'unit') <- unit
     attr(X,'source') <- attr(x,'source')
   }
-  
   if ((plot) & (!is.null(X))) {
     if (projection=="lonlat") {
       lonlatprojection(x=X,colbar=colbar,verbose=verbose,xlim=xlim,ylim=ylim,

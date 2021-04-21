@@ -3,9 +3,9 @@
 #' meta.ESGF returns a data.frame with the model metadata and the OpenDAP URL that 
 #' can be used with retrieve.ESGF. The function \code{retrieve.ESGF} is a wraparound
 #' for \code{retrieve} that reads several files belonging to the same model and run.
-
+#'
 #' @aliases retrieve.ESGF meta.ESGF
-
+#'
 #' @import ncdf4
 #'
 #' @seealso retrieve 
@@ -47,6 +47,18 @@ retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) {
   invisible(X)
 }
 
+#' Read metadata from ESGF
+#'
+#' @seealso retrieve.ESGF
+#'
+#' @param url URL
+#' @param mip CMIP5 or CMIP6
+#' @param param meteorological variable name, e.g., "tas"
+#' @param freq temporal frequency, e.g., "mon"=monthly
+#' @param expid scenario (ssp for CMIP6, rcp for CMIP5)
+#' @param verbose if TRUE print progress
+#' @param n number of datasets
+#'
 #' @export meta.ESGF
 meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CMIP6",param="tas",
                       freq="mon",expid="ssp585",verbose=FALSE,n=NULL) {

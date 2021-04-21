@@ -650,6 +650,14 @@ as.4seasons.dsensemble <- function(x,...,FUN='mean') {
     return(y)
 }
 
+# do not export - local function only used in as.seasons
+leapdate <- function(years="2000", dates="02-29") {
+  yeardate <- paste(years, dates, sep="-")
+  nok <- !leapyear(years) & dates=="02-29"
+  yeardate[nok] <- paste(years[nok], "02-28", sep="-")
+  return(as.Date(yeardate))
+}
+
 # Not to confuse with season
 # This function extracts a given seasonal interval and aggregates a given statistic
 #' @export
@@ -661,21 +669,25 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...)
   if (is.null(d)) ns <- 1 else ns <- d[2]
   years <- as.numeric(rownames(table(yrs))); n <- length(years)
   y <- matrix(rep(NA,n*ns),n,ns); k <- y
-  start.1 <- as.numeric(as.Date(paste(years[1],start,sep='-')))
-  end.1 <- as.numeric(as.Date(paste(years[1],end,sep='-')))
+  start.1 <- as.numeric(leapdate(years[1], start))
+  end.1 <- as.numeric(leapdate(years[1], end))
   if (start.1 > end.1) twoyears <- 1 else twoyears <- 0
-  
+
   for (i in 1:n) {
-    z <- coredata(window(x,start=as.Date(paste(years[i],start,sep='-')),
-                           end=as.Date(paste(years[i]+twoyears,end,sep='-'))))
-    k[i,] <- apply(matrix(z,length(z),ns),2,IV)
-    y[i,] <- apply(matrix(z,length(z),ns),2,FUN, ...)
+    if(verbose) print(paste("Aggregate for year",years[i]))
+    z <- coredata(window(x, start=leapdate(years[i], start),
+                            end=leapdate(years[i]+twoyears, end)))
+    k[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,IV)
+    y[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,FUN, ...)
   }
   y <- zoo(y,order.by=as.Date(paste(years,start,sep='-')))
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
-  if (twoyears==0) attr(y,'season.interval') <- paste(start,'to',end) else
-                   attr(y,'season.interval') <- paste(start,'to',end,'the following year')
+  if (twoyears==0) {
+    attr(y,'season.interval') <- paste(start,'to',end)
+  } else {
+    attr(y,'season.interval') <- paste(start,'to',end,'the following year')
+  }
   attr(y,'n.valid') <- k
   class(y) <- class(x)
   class(y)[2] <- "annual"
