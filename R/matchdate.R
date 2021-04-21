@@ -23,19 +23,22 @@ matchdate.list <- function(x,it,verbose=FALSE) {
 #' @exportS3Method
 #' @export matchdate.default
 matchdate.default <- function(x,it,verbose=FALSE) {
-  if(verbose) print("matchdate.default")
+  if(verbose) {print("matchdate.default"); print(range(index(x)))}
   ## If it is the list, then use the first element because otherwise will not find the index
   if (is.list(it)) it <- it[[1]]
+  cls0 <- class(index(it))
   
   cls <- class(x)
   ## Check the index type of it and change the time scale of x to match it
   if (inherits(it,c('station','field','eof','ds'))) {
+    if (verbose) print('> station/field/eof/ds:')
     if (inherits(it,'annual')) x <- annual(x)
     if (inherits(it,'month')) x <- as.monthly(x)
     if (inherits(it,'seasonal')) x <- as.4seasons(x)
     ## if (inherits(it,'day')) x <- aggregate(x,list(as.Date(index(x))),FUN='mean') ## REB 2018-11-20: what does this line actually do? It causes errors.
     if (verbose) print(index(x))
-  } 
+    cls0 <- class(index(it))
+  } else cls0 <- class(it)
 
   t <- index(x)
   t0 <- t
@@ -142,6 +145,10 @@ matchdate.default <- function(x,it,verbose=FALSE) {
   
   attr(y,'history') <- history.stamp(x)
   #print(index(y)); print(class(index(y)))
+
+  ## REB 2021-02-15: fix to ensure similar  representation of date as original
+  if ( (cls0=='Date') & (is.numeric(index(y))) ) index(y) <- as.Date(paste(index(y),'-01-01',sep='')) 
+
   if (inherits(y,'field')) attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],length(nt))
   if (!is.null(attr(y,'count'))) attr(y,'count') <- c(attr(y,'count')[1:2],length(nt))
   if(verbose) print('dates of x have been matched with it.')

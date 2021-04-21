@@ -503,7 +503,7 @@ factor2numeric <- function(f) {
   } else return(as.numeric(f))
 }
 
-#' @export leapyear
+#' @export
 leapyear <- function(years) {
   is.leap <- (years %% 4 == 0) & 
              ( years %% 100 != 0 | 
@@ -531,5 +531,28 @@ distance2ocean <- function(lon1, lat1, dlon=c(-10,10), dlat=c(-5,5),
     lat.d <- lat1
   }
   return(list("distance"=d, "lon"=lon.d, "lat"=lat.d))
+}
+
+#' @export
+year2date <- function(y,toy='-01-01') {
+  if (inherits(y,'zoo')) {
+    index(y) <- as.Date(paste0(index(y),toy))
+    return(y)
+  } else if(is.numeric(y)) return(as.Date(paste0(y,toy)))
+}
+
+yyyymmddhh2time <- function(y,option='POSIXct',verbose=FALSE) {
+  stopifnot(is.character(y))
+  ti <- paste(substr(y,1,4),substr(y,5,6),substr(y,7,8),sep='-')
+  if (nchar(y) ==10)
+    ti <- paste0(paste(ti,substr(y,9,10),sep=' '),':00:00')
+  if (nchar(y) ==12)
+    ti <- paste0(paste(ti,substr(y,11,12),sep=':'),':00')
+  if (nchar(y) ==14)
+    ti <- paste(ti,substr(y,13,14),sep=':')
+  if (verbose) print(ti)
+  if (option=='POSIXct') y <- as.POSIXct(ti) else
+    y <- as.POSIXlt(ti)
+  return(y)
 }
 

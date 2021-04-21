@@ -46,7 +46,7 @@ aggregate.area <- function(x,...,is=NULL,it=NULL,FUN='sum',
                            na.rm=TRUE,smallx=FALSE,verbose=FALSE,
                            a=6378, threshold=NULL) {
   y <- aggregateArea(x,...,is=NULL,it=NULL,FUN='sum',
-                           na.rm=TRUE,smallx=FALSE,verbose=FALSE,
+                           na.rm=TRUE,smallx=FALSE,verbose=verbose,
                            a=6378, threshold=NULL)
   return(y)
 }
@@ -56,6 +56,9 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
                            a=6378, threshold=NULL) {
   # Estimate the area-aggregated values, e.g. the global mean (default)
   if (verbose) print(paste("aggregateArea",FUN))
+  ## REB 20201-02-15: fix the class
+  cls0 <- class(x)
+  if (verbose) print(cls0)
   if (verbose) {
     if (FUN=='sum') print(rowSums(coredata(x),na.rm=TRUE)) else
                     print(rowMeans(coredata(x),na.rm=TRUE))
@@ -167,6 +170,8 @@ aggregateArea <- function(x,...,is=NULL,it=NULL,FUN='sum',
                   method=paste(FUN,attr(x,'method')),type='area aggregate',
                   aspect=attr(x,'aspect'))
   if (verbose) attr(Y,'aweights') <- aweights
+  ## REB 20201-02-15: fix the class
+  class(Y) <- c('station',cls0[-1])
   attr(Y,'history') <- history.stamp(x)
   return(Y)
 }

@@ -134,11 +134,12 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
         opendap_idx <- grep("OPENDAP",ESGF_file_query$response$docs$url[[j]])
         http_idx <- grep("HTTPServer",ESGF_file_query$response$docs$url[[j]])
         http_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][http_idx],"|",fixed=TRUE))[1]
-        results[[paste('http',ic,jc,sep='_')]] <- http_url
+        #results[[paste('http',ic,jc,sep='_')]] <- http_url
+        results[[paste('https',ic,jc,sep='_')]] <- http_url  ## REB 2021-04-12 - modification
         # if (verbose) print(http_url)
         opendap_url <- unlist(strsplit(ESGF_file_query$response$docs$url[[j]][opendap_idx],"|",fixed=TRUE))[1]
         # if (verbose) print(opendap_url)
-        results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub(".nc.html",".nc",opendap_url)
+        results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub("http://","https://",gsub(".nc.html",".nc",opendap_url))
         results[[paste('grid',ic,jc,sep='_')]] <- ESGF_file_query$response$docs$grid[[j]]
         results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j,facet_ens]]
         results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_file_query$response$docs[[j,facet_mod]]
@@ -163,11 +164,12 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
           opendap_idx <- grep("OPENDAP",ESGF_hist_file_query$response$docs$url[[j]])
           http_idx <- grep("HTTPServer",ESGF_hist_file_query$response$docs$url[[j]])
           http_url <- unlist(strsplit(ESGF_hist_file_query$response$docs$url[[j]][http_idx],"|",fixed=TRUE))[1]
-          results[[paste('http',ic,jc,sep='_')]] <- http_url
+          #results[[paste('http',ic,jc,sep='_')]] <- http_url
+          results[[paste('https',ic,jc,sep='_')]] <- http_url  ## REB 2021-04-12 - modification
           # if (verbose) print(http_url)
           opendap_url <- unlist(strsplit(ESGF_hist_file_query$response$docs$url[[j]][opendap_idx],"|",fixed=TRUE))[1]
           # if (verbose) print(opendap_url)
-          results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub(".nc.html",".nc",opendap_url)
+          results[[paste('OpenDAP',ic,jc,sep='_')]] <- gsub("http://","https://",gsub(".nc.html",".nc",opendap_url))
           results[[paste('grid',ic,jc,sep='_')]] <- ESGF_hist_file_query$response$docs$grid[[j]]
           results[[paste('member_id',ic,jc,sep='_')]] <- ESGF_hist_file_query$response$docs[[j,facet_ens]]
           results[[paste('source_id',ic,jc,sep='_')]] <- ESGF_hist_file_query$response$docs[[j,facet_mod]]
@@ -184,7 +186,8 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
     
     elements <- names(results)
     opendap <- grep('OpenDAP',names(results))
-    http <- grep('http',names(results))
+    #http <- grep('http',names(results))
+    http <- grep('https',names(results))  ## REB 2021-04-12: modification
     mem <- grep('member_id',names(results))
     grid <- grep('grid',names(results))
     model <- grep('source_id',names(results))

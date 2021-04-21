@@ -462,8 +462,10 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
-    y <- matchdate(y,X)
-    X <- matchdate(X,y)
+    if (verbose) print('y <- matchdate(y,X,verbose=verbose)')
+    y <- matchdate(y,X,verbose=verbose)
+    if (verbose) print('X <- matchdate(X,y,verbose=verbose)')
+    X <- matchdate(X,y,verbose=verbose)
     
     ## Used for extracting a subset of calendar months
     if (!is.null(it)) {
