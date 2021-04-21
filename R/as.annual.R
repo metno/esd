@@ -693,3 +693,71 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...)
   class(y)[2] <- "annual"
   return(y)
 }
+
+## @RasmusBenestad, 2021-04-12
+## Summary statistics for the rainy season in Africa: October to March.
+## Function that processes the data - it assumes daily precipitation
+#' @export
+as.OctMar <- function(x,FUN='sum',nmin=90,plot=FALSE,verbose=FALSE) {
+  ## x is a station object from esd
+  ## Step 1: Oct-Dec from one year
+  if (verbose) {print('as.OctMar'); print(class(x))}
+  if (!is.precip(x)) warning("as.OctMar was designed for daily rainfall data, but that's OK")
+  OctDec <- subset(x,it=month.abb[10:12])
+  ## Step 2: Jan - Mar from another year
+  JanMar <- subset(x,it=month.abb[1:3])
+  ## Now we need to take the sum over the months using 'annual'
+  OctDec <- annual(OctDec,FUN=FUN,nmin=nmin)
+  JanMar <- annual(JanMar,FUN=FUN,nmin=nmin)
+  ## R will add the data with corresponding years
+  ## index() controls the time information
+  index(OctDec) <- year(OctDec)-1
+  index(JanMar) <- year(JanMar)
+  ## Check: 
+  #print(range(index(OctDec)))
+  #print(range(index(JanMar)))
+  ## Add the Jan-Mar sum with the previous years Oct-Dec sum
+  if (FUN=='sum') OctMar <- JanMar + OctDec else
+    OctMar <- 0.5*(JanMar + OctDec)
+  #print(range(index(OctMar)))
+  OctMar <- attrcp(JanMar,OctMar)
+  class(OctMar) <- class(JanMar)
+  
+  if (plot==TRUE) {
+    ## if the plot argument == TRUE, then do this:
+    y <- as.matrix(OctMar)
+    ## Here we set the y-axix label and wexpress y in % if FUN=='wetfreq'
+    if (FUN=='wetfreq') {
+      y <- y * 100
+      ylab='%'
+    } else if (is.precip(x)) ylab <- 'mm'
+    ## Assign row names: the year and following year
+    rownames(y) <- paste(year(OctMar),year(OctMar)+1,sep='-')
+    ## Make a graph with bars
+    #plot(y[,1],type='l') ## If you want to plot lines
+    ## Loop over all the stations:
+    ns <- length((loc(x)))
+    ## Loop over stations
+    for (i in 1:ns) {
+      par(las=2,cex.axis=0.5)
+      ## This line is to make a more sensible title for most people:
+      fun <- switch(FUN,'mean'='mean','sum'='Total rainfall',
+                    'wetfreq'='wet day frequency',
+                    'wetmean'='mean intensity')
+      ## Here we make a title text which gives additional information
+      ## about the plot and the data record.
+      main=paste('Rainy season for',loc(x)[i],':',fun,
+                 'trend=',round(100*trend.coef(y[,i])/mean(y[,i],na.rm=TRUE),1),'%/decade')
+      ## Show a bar plot for the data, but only when it's not missing
+      barplot(y[is.finite(y[,i]),i],main=main,col='blue',
+              ylab=ylab)
+      ## Add a line showing the median value:
+      lines(c(1,length(y)),rep(median(y[,i],na.rm=TRUE),2),lty=2)
+      lines(c(1,length(y)),rep(mean(y[,i],na.rm=TRUE),2),lty=3)
+      lines(trend(y[,i]),col='red',lwd=2)
+      grid()
+    }
+  }
+  return(OctMar)
+}
+

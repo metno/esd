@@ -1257,11 +1257,15 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (!is.null(attr(y,'quality')))
         attr(y,'quality') <- attr(x,'quality')[is]
     ## attr(y,'history') <- attr(x,'history')[is]
-      if (!is.null(attr(y,'variable')))
-        attr(y,'variable') <- attr(x,'variable')[is]
     ## attr(y,'element') <- attr(x,'element')[is]
       if (!is.null(attr(y,'aspect')))
         attr(y,'aspect') <- attr(x,'aspect')[is]
+      if (!is.null(attr(y,'variable')))
+        if (length(attr(x,'variable'))==length(is)) {
+          attr(y,'variable') <- attr(x,'variable')[is] 
+        } else {
+          attr(y,'variable') <- attr(x,'variable')
+        }
       if (!is.null(attr(y,'unit')))
         if (length(attr(x,'unit'))==length(is)) {
           attr(y,'unit') <- attr(x,'unit')[is] 
