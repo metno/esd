@@ -294,7 +294,10 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     for (i in 1:length(nm)) {
       eval(parse(text=paste("a <- attr(x,'",nm,"')",sep="")))
       cls <- class(a)
-      ais <- zoo(coredata(a)[keept,is],order.by=dates)
+      ## KMP 2021-04-22: The appendix has a different 
+      ## time index than x so keept can't be applied to it! 
+      #ais <- zoo(coredata(a)[keept,is],order.by=dates)
+      ais <- zoo(coredata(a)[,is],order.by=index(a))
       ais <- attrcp(a,ais)
       eval(parse(text=paste("attr(x,'",nm,"') <- ais",sep="")))
       rm(a,ais,cls)
@@ -984,7 +987,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   if(!inherits(t,c("POSIXt","PCICt"))) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
   if (verbose) {print('subset.default: time index it'); print(it)}
   if (is.character(it)) {
-    if ((levels(factor(nchar(it)))==10)) it <- as.Date(it)
+    if (levels(factor(nchar(it)))==10) it <- as.Date(it)
   }
   
   ##  if (datetype=="Date") {
@@ -1072,7 +1075,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         ii <- rep(FALSE,length(t))
         warning("subset.default: did not reckognise the selection citerion for 'it'")
       }
-    } else if (inherits(it,c("Date","yearmon"))) {       
+    } else if (inherits(it,c("Date","yearmon"))) {     
       ##        ii <- is.element(t,it)
       if (verbose) print('it is a date object')
       ii <- (t >= min(it)) & (t <= max(it))
@@ -1087,93 +1090,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       warning("subset.default: did not reckognise the selection citerion for 'it'")
     } 
     ## it <- (1:length(t))[ii]
-    ## 
-
-    class(x) -> cls
-    ##print(cls)
-    ## update the class of x
-    #class(x) <- "zoo" 
-
-    n <- dim(x)[2]
-    selx <- is.finite(lon(x)); sely <- is.finite(lat(x))
-      
-    selz <- rep(TRUE,n)
-    selc <- selz; seli <- selz; selm <- selz; salt <- selz
-    selp <- selz; selF <- selz ; sell <- selz
-
-    # REB 11.04.2014: is can be a list to select region or according to other criterion
-    if ( inherits(is,'list') & inherits(x,'station') ) {
-        if (verbose) {
-          print('spatial selection: station & is=list')
-          print(is)
-        }
-        nms <- names(is)
-        il <- grep('loc',tolower(nms))
-        ix <- grep('lon',tolower(nms))
-        iy <- grep('lat',tolower(nms))
-        iz <- grep('alt',tolower(nms))
-        ic <- grep('cntr',tolower(nms))
-        im <- grep('nmin',tolower(nms))
-        ip <- grep('param',tolower(nms))
-        id <- grep('stid',tolower(nms))
-        iF <- grep('FUN',nms)
-        if (length(il)>0) sloc <- is[[il]] else sloc <- NULL
-        if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
-        if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
-        if (length(iz)>0) salt <- is[[iz]] else salt <- NULL
-        if (length(ic)>0) scntr <- is[[ic]] else scntr <- NULL
-        if (length(im)>0) snmin <- is[[im]] else snmin <- NULL
-        if (length(ip)>0) sparam <- is[[ip]] else sparam <- NULL        
-        if (length(id)>0) sstid <- is[[id]] else sstid <- NULL
-        if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
-        if (length(sloc)>0) sell <- is.element(tolower(sloc(x)),sloc)
-
-        # The lines for selx/sely differ for station and field objects:
-        if (length(slon)==2) selx <- (lon(x) >= min(slon)) & (lon(x) <= max(slon))
-        if (length(slat)==2) sely <- (lat(x) >= min(slat)) & (lat(x) <= max(slat))
-
-        
-        if (length(salt)==2) selz <- (alt(x) >= min(salt)) & (alt(x) <= max(salt))
-        if (length(salt)==1) {
-          if (salt < 0) {
-            selz <- alt(x) <= abs(salt) 
-          } else {
-            selz <- alt(x) >= salt
-          }
-        }
-        if (length(scntr)>0) selc <- is.element(tolower(cntr(x)),scntr)
-        if (length(snmin)>0) selm <- apply(coredata(x),2,nval) > snmin
-        if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),sparam)
-        if (length(sstid)==2) {
-          seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) 
-        } else if (length(sstid)>0) {
-          seli <- is.element(stid(x),sstid)
-        }
-        if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...
-        ##
-        is <- sell & selx & sely & selz & selc & seli & selm & selp & selF
-        if (verbose) print(paste(sum(is),'spatial points'))
-        ##
-        ## Need to make sure both it and is are same type: here integers for index rather than logical
-        ## otherwise the subindexing results in an empty object
-    } else if ( inherits(is,'list') & inherits(x,'field') ) {
-      if (verbose) print('spatial selection: field & is=list')
-      ## KMP 2016-10-20 Can we subset across the dateline and greenwich now?
-      y <- subregion.default(x,is=is,verbose=verbose)
-      if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
-        x <- g2dl.field(x,greenwich=TRUE) }
-      is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
-    } else if (is.null(is)) {
-      if (verbose) print('spatial selection: is=NULL')
-      is <- rep(TRUE,d[2]) 
-    } else if (is.numeric(is)) {
-      if (verbose) print('spatial selection: is=numeric')
-      iss <- rep(FALSE,d[2]); iss[is] <- TRUE
-      is <- iss
-    } else if (!is.logical(is)) {
-      if (verbose) print('spatial selection: otherwise')
-      is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
-    }
+    ##
   } else if (inherits(it,c("Date","yearmon"))) {       
     ##        ii <- is.element(t,it)
     if (verbose) print('it is a date object')
@@ -1187,9 +1104,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   } else if (!is.null(it)) {
     ii <- rep(FALSE,length(t))
     warning("subset.default: did not reckognise the selection citerion for 'it'")
-  } 
-  ## it <- (1:length(t))[ii]
-  ## 
+  }
   
   class(x) -> cls
   ##print(cls)
@@ -1230,13 +1145,14 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
     if (length(sloc)>0) sell <- is.element(tolower(sloc(x)),sloc)
     
-    if (verbose) print(paste('Number of points: ',sum(ii),sum(is),'ii=',class(ii),'is=',class(is)))
+    if (verbose) print(paste('Number of points: ',sum(ii),sum(is),
+                             'ii=',class(ii),'is=',class(is)))
     ## REB 2021-03-31: something strange happened here!
     if (!is.logical(is)) {
-      warning('subset: Something strange hapened! class(is)==NULL...')
+      warning('subset: Something strange happened! class(is)==NULL...')
       return(x[which(ii),])
     }
-    y <- x[which(ii),which(is)] 
+    y <- x[which(ii),which(is)]
     
     class(x) <- cls; class(y) <- cls
     y <- attrcp(x,y,ignore=c("names"))
@@ -1260,18 +1176,20 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## attr(y,'element') <- attr(x,'element')[is]
       if (!is.null(attr(y,'aspect')))
         attr(y,'aspect') <- attr(x,'aspect')[is]
-      if (!is.null(attr(y,'variable')))
+      if (!is.null(attr(y,'variable'))) {
         if (length(attr(x,'variable'))==length(is)) {
           attr(y,'variable') <- attr(x,'variable')[is] 
         } else {
           attr(y,'variable') <- attr(x,'variable')
         }
-      if (!is.null(attr(y,'unit')))
+      }
+      if (!is.null(attr(y,'unit'))) {
         if (length(attr(x,'unit'))==length(is)) {
           attr(y,'unit') <- attr(x,'unit')[is] 
         } else {
           attr(y,'unit') <- attr(x,'unit')
         }
+      }
       if (!is.null(attr(y,'longname')))
         attr(y,'longname') <- attr(x,'longname')[is]
       if (!is.null(attr(y,'reference')))
@@ -1286,7 +1204,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
         attr(y,'URL') <- attr(x,'URL')[is]
       if (!is.null(attr(y,'na')))
         attr(y,'na') <- attr(x,'na')[is]
-    
+    }
     if (length(salt)==2) selz <- (alt(x) >= min(salt)) & (alt(x) <= max(salt))
     if (length(salt)==1) {
       if (salt < 0) {
@@ -1315,7 +1233,8 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## KMP 2016-10-20 Can we subset across the dateline and greenwich now?
     y <- subregion.default(x,is=is,verbose=verbose)
     if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
-      x <- g2dl.field(x,greenwich=TRUE) }
+      x <- g2dl.field(x,greenwich=TRUE) 
+    }
     is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
   } else if (is.null(is)) {
     if (verbose) print('spatial selection: is=NULL')
@@ -1329,8 +1248,9 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
   }
   
-  if (verbose) print(paste('number of points: ',sum(ii),sum(is),'ii=',class(ii),'is=',class(is)))
-  y <- x[which(ii),which(is)] 
+  if (verbose) print(paste('number of points: ',sum(ii),sum(is),
+                           'ii=',class(ii),'is=',class(is)))
+  y <- x[which(ii),which(is)]
   
   class(x) <- cls; class(y) <- cls
   y <- attrcp(x,y,ignore=c("names"))
@@ -1356,12 +1276,13 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ## attr(y,'element') <- attr(x,'element')[is]
     if (!is.null(attr(y,'aspect')))
       attr(y,'aspect') <- attr(x,'aspect')[is]
-    if (!is.null(attr(y,'unit')))
+    if (!is.null(attr(y,'unit'))) {
       if (length(attr(x,'unit'))==length(is)) {
         attr(y,'unit') <- attr(x,'unit')[is] 
       } else {
         attr(y,'unit') <- attr(x,'unit')
       }
+    }
     if (!is.null(attr(y,'longname')))
       attr(y,'longname') <- attr(x,'longname')[is]
     if (!is.null(attr(y,'reference')))
@@ -1376,7 +1297,6 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       attr(y,'URL') <- attr(x,'URL')[is]
     if (!is.null(attr(y,'na')))
       attr(y,'na') <- attr(x,'na')[is]
-    
     if (!is.null(err(y)))
       attr(y,'standard.error') <- err(x)[ii,is]
   } else {
@@ -1394,7 +1314,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   if ( (!is.null(d)) & is.null(dim(y)) ) {
     if (d[2]==1) dim(y) <- c(length(y),1)
   }
-  attr(y,'history') <- history.stamp(x)   
+  attr(y,'history') <- history.stamp(x)
   if (verbose) print('exit subset.default')
   if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))
   return(y)
@@ -1798,15 +1718,14 @@ sort.station <- function(x,decreasing=TRUE,...,is=NULL) {
 # internal function - no need to export?
 subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
                                     verbose=FALSE,...) {
-  
+
   if (verbose) print('subset.dsensemble.multi')
   cls <- class(x)
-  
+
   Y <- list()
   Y$info <- x$info
   ## KMP 2017-06-07 Some dsensemble objects may have both a PCA and EOF attached
-  #if (inherits(x,'pca')) {
-  if (any('pca' %in% names(x))) { 
+  if (any('pca' %in% names(x))) {
     if (verbose) print('subset pca')
     ## KMP 2017-06-07 Do not subset pca and eof in time!
     ## They typcially cover a shorter time span than the ensemble members and
@@ -1814,20 +1733,20 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
     Y$pca <- subset(x$pca,is=is,ip=ip,verbose=verbose)
     #Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
   }
-  #if (inherits(x,'eof')) {
+
   if (any('eof' %in% names(x))) {
     if (verbose) print('subset eof')
     Y$eof <- subset(x$eof,is=is,ip=ip,verbose=verbose)
     #Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
   }
   X <- x
-  
+
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
   y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
   if (verbose) print(dim(y[[1]]))
-  
+
   if (!is.null(im)) {
     ## Subset ensemble members
     if(verbose) print(paste('subset im',length(y)))

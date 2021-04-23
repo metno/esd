@@ -7,11 +7,11 @@
 \method{aggregate}{grid}(x, ..., is, FUN = "mean", na.rm = TRUE, verbose = FALSE)
 }
 \arguments{
-\item{x}{A \code{\link{field}} object with finer grid mesh.}
+\item{x}{A \code{field} object with finer grid mesh.}
 
 \item{\dots}{additional arguments}
 
-\item{is}{A list or \code{\link{field}} with the coarser grid with aggregated data from finer mesh.}
+\item{is}{A list or \code{field} with the coarser grid with aggregated data from finer mesh.}
 
 \item{FUN}{A function, e.g., 'sum' or 'mean'}
 

@@ -2,6 +2,9 @@
 % Please edit documentation in R/plot.R
 \name{plot.eof}
 \alias{plot.eof}
+\alias{plot.eof.comb}
+\alias{plot.eof.field}
+\alias{plot.eof.var}
 \title{Plot esd objects}
 \usage{
 \method{plot}{eof}(
@@ -100,7 +103,7 @@ These plot functions are S3 methods for esd objects, based on \code{plot}.
 
 # Example: use aggregate to compute annual mean temperature for Svalbard:
 data(Svalbard)
-y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
+y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE)
 plot(y)
 
 # Example with downscaling:
@@ -111,13 +114,13 @@ data(Oslo)
 ds <- DS(Oslo,t2m)
 
 # Plot the results for January month
-# plot(subset(ds,it='Jan'))
+plot(subset(ds,it='Jan'))
 
 # Plot the residuals:
 residual <- as.residual(ds)
 obs <- as.anomaly(as.calibrationdata(ds))
 
-plot.zoo(obs,lwd=2)
+plot.zoo(obs[,1],lwd=2)
 lines(residual,col="red")
 
 print("Global climate model simulation NorESM")
@@ -133,7 +136,7 @@ data(ferder)
 plot(T2m,ferder)
 
 # Plot Hovmuller diagram: Not working ...
-## plot(T2m,is=list(lon=0)) 
+## plot(T2m,is=list(lon=0))
 
 print("Extract a subset - the January month")
 x <- subset(t2m,it="jan")

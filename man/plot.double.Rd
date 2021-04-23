@@ -2,6 +2,9 @@
 % Please edit documentation in R/plot.R
 \name{plot.double}
 \alias{plot.double}
+\alias{plot.list}
+\alias{plot.numeric}
+\alias{plot.xsection}
 \title{Plot esd objects}
 \usage{
 \method{plot}{double}(
@@ -97,8 +100,6 @@ plotting}
 }
 \value{
 None
-
-None
 }
 \description{
 These plot functions are S3 methods for esd objects, based on \code{plot}.
@@ -118,69 +119,12 @@ data(Oslo)
 ds <- DS(Oslo,t2m)
 
 # Plot the results for January month
-# plot(subset(ds,it='Jan'))
-
-# Plot the residuals:
-residual <- as.residual(ds)
-obs <- as.anomaly(as.calibrationdata(ds))
-
-plot.zoo(obs,lwd=2)
-lines(residual,col="red")
-
-print("Global climate model simulation NorESM")
-T2m <- t2m.NorESM.M(lon=lon,lat=lat)
-
-# Plot the global mean of the field:
-plot(T2m)
-# Plot area mean of a sub region
-plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
-
-# Plot interpolated results corresponding to ferder
-data(ferder)
-plot(T2m,ferder)
-
-# Plot Hovmuller diagram: Not working ...
-## plot(T2m,is=list(lon=0)) 
-
-print("Extract a subset - the January month")
-x <- subset(t2m,it="jan")
-X <- subset(T2m,it="jan")
-
-print("Combine the fields for computing common EOFs:")
-XX <- combine(x,X)
-
-print("Compute common EOFs")
-eofxx <- EOF(XX)
-plot(eofxx)
-
-print("Downscale the January mean temperature") 
-ds.jan <- DS(Oslo,eofxx)
-plot(ds.jan)
-
-Plot esd objects
-
-These plot functions are S3 methods for esd objects, based on \code{plot}.
-
-
-# Example: use aggregate to compute annual mean temperature for Svalbard:
-data(Svalbard)
-y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-plot(y)
-
-# Example with downscaling:
-lon <- c(-12,37)
-lat <- c(52,72)
-t2m <- t2m.DNMI(lon=lon,lat=lat)
-data(Oslo)
-ds <- DS(Oslo,t2m)
-
-# Plot the results for January month
 plot(subset(ds,it='Jan'))
 
 # Plot the residuals:
 residual <- as.residual(ds)
 obs <- as.anomaly(as.calibrationdata(ds)$y)
-plot(obs,lwd=2)
+plot.zoo(obs[,1],lwd=2)
 lines(residual,col="red")
 
 print("Global climate model simulation NorESM")

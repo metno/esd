@@ -1,107 +1,107 @@
-#' Plot esd objects
-#' 
-#' These plot functions are S3 methods for esd objects, based on \code{plot}.
-#'
-#' @importFrom graphics par grid segments text axis legend polygon mtext abline layout rect boxplot
-#' @importFrom grDevices dev.new dev.off dev.copy2eps dev.copy2pdf dev.list
-#' @importFrom stats pbinom
-#'
-#' @param x the object to be plotted
-#' @param plot.type "single"
-#' @param new if TRUE plot in new window
-#' @param lwd width of line
-#' @param type type of plot: 'l' = line, 'p' = point, 'b' = both
-#' @param pch type of marker
-#' @param main main title
-#' @param xlab label of x-axis
-#' @param ylab label of y-axis
-#' @param errorbar if TRUE show errorbar
-#' @param legend.show if TRUE show legend
-#' @param map.show show map of stations
-#' @param map.type 'points' to show stations on map, 'rectangle' to show area
-#' @param map.insert if TRUE show map as insert, else show map in new window
-#' @param it For subsetting in time - See \code{\link{subset}}.
-#' @param is For subsetting in space - See \code{\link{subset}}. Can also be
-#' a station value and if provided, the plotting will involve an interpolation
-#' to the same coordinates as defined by \code{is}.
-#' @param ip Which EOF/CCA pattern (mode) to plot
-#' @param cex magnification factor, see \code{\link[graphics]{par}}
-#' @param cex.axis see \code{\link[graphics]{par}}
-#' @param cex.lab see \code{\link[graphics]{par}}
-#' @param cex.main see \code{\link[graphics]{par}}
-#' @param mar see \code{\link[graphics]{par}}
-#' @param fig coordinates of figure region, see \code{\link[graphics]{par}}
-#' @param alpha transparency factor for main plot
-#' @param alpha.map transparency factor for map
-#' @param verbose a boolean; if TRUE print information about progress
-#' @param col Colour see \code{\link[graphics]{par}}
-#' @param lwd width of line
-#' @param xlim range of x-axis
-#' @param ylim range of y-axis
-#' @param what Indicate what to plot. For \code{plot.eof}, c('pc', 'eof', 'var') is the default setting which means that
-#' the plot will include the principle components, EOF patterns and explained variance. 'field' expands eof to field before
-#' plotting
-#' @param colbar a list, see \code{\link{colbar}} 
-#' @param \dots additional arguments
-#' 
-#' @return None
-#'
-#' @keywords plot graphics
-#'
-#' @examples
-#' 
-#' # Example: use aggregate to compute annual mean temperature for Svalbard:
-#' data(Svalbard)
-#' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-#' plot(y)
-#' 
-#' # Example with downscaling:
-#' lon <- c(-12,37)
-#' lat <- c(52,72)
-#' t2m <- t2m.DNMI(lon=lon,lat=lat)
-#' data(Oslo)
-#' ds <- DS(Oslo,t2m)
-#' 
-#' # Plot the results for January month
-#' # plot(subset(ds,it='Jan'))
-#' 
-#' # Plot the residuals:
-#' residual <- as.residual(ds)
-#' obs <- as.anomaly(as.calibrationdata(ds))
-#' 
-#' plot.zoo(obs,lwd=2)
-#' lines(residual,col="red")
-#' 
-#' print("Global climate model simulation NorESM")
-#' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
-#' 
-#' # Plot the global mean of the field:
-#' plot(T2m)
-#' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
-#' 
-#' # Plot interpolated results corresponding to ferder
-#' data(ferder)
-#' plot(T2m,ferder)
-#' 
-#' # Plot Hovmuller diagram: Not working ...
-#' ## plot(T2m,is=list(lon=0)) 
-#' 
-#' print("Extract a subset - the January month")
-#' x <- subset(t2m,it="jan")
-#' X <- subset(T2m,it="jan")
-#' 
-#' print("Combine the fields for computing common EOFs:")
-#' XX <- combine(x,X)
-#' 
-#' print("Compute common EOFs")
-#' eofxx <- EOF(XX)
-#' plot(eofxx)
-#' 
-#' print("Downscale the January mean temperature") 
-#' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
-#'
+# Plot esd objects
+# 
+# These plot functions are S3 methods for esd objects, based on \code{plot}.
+# 
+# @importFrom graphics par grid segments text axis legend polygon mtext abline layout rect boxplot
+# @importFrom grDevices dev.new dev.off dev.copy2eps dev.copy2pdf dev.list
+# @importFrom stats pbinom
+# 
+# @param x the object to be plotted
+# @param plot.type "single"
+# @param new if TRUE plot in new window
+# @param lwd width of line
+# @param type type of plot: 'l' = line, 'p' = point, 'b' = both
+# @param pch type of marker
+# @param main main title
+# @param xlab label of x-axis
+# @param ylab label of y-axis
+# @param errorbar if TRUE show errorbar
+# @param legend.show if TRUE show legend
+# @param map.show show map of stations
+# @param map.type 'points' to show stations on map, 'rectangle' to show area
+# @param map.insert if TRUE show map as insert, else show map in new window
+# @param it For subsetting in time - See \code{\link{subset}}.
+# @param is For subsetting in space - See \code{\link{subset}}. Can also be
+# a station value and if provided, the plotting will involve an interpolation
+# to the same coordinates as defined by \code{is}.
+# @param ip Which EOF/CCA pattern (mode) to plot
+# @param cex magnification factor, see \code{\link[graphics]{par}}
+# @param cex.axis see \code{\link[graphics]{par}}
+# @param cex.lab see \code{\link[graphics]{par}}
+# @param cex.main see \code{\link[graphics]{par}}
+# @param mar see \code{\link[graphics]{par}}
+# @param fig coordinates of figure region, see \code{\link[graphics]{par}}
+# @param alpha transparency factor for main plot
+# @param alpha.map transparency factor for map
+# @param verbose a boolean; if TRUE print information about progress
+# @param col Colour see \code{\link[graphics]{par}}
+# @param lwd width of line
+# @param xlim range of x-axis
+# @param ylim range of y-axis
+# @param what Indicate what to plot. For \code{plot.eof}, c('pc', 'eof', 'var') is the default setting which means that
+# the plot will include the principle components, EOF patterns and explained variance. 'field' expands eof to field before
+# plotting
+# @param colbar a list, see \code{\link{colbar}}
+# @param \dots additional arguments
+# 
+# @return None
+# 
+# @keywords plot graphics
+# 
+# @examples
+# 
+# # Example: use aggregate to compute annual mean temperature for Svalbard:
+# data(Svalbard)
+# y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE)
+# plot(y)
+# 
+# # Example with downscaling:
+# lon <- c(-12,37)
+# lat <- c(52,72)
+# t2m <- t2m.DNMI(lon=lon,lat=lat)
+# data(Oslo)
+# ds <- DS(Oslo,t2m)
+# 
+# # Plot the results for January month
+# # plot(subset(ds,it='Jan'))
+# 
+# # Plot the residuals:
+# residual <- as.residual(ds)
+# obs <- as.anomaly(as.calibrationdata(ds))
+# 
+# plot.zoo(obs[,1],lwd=2)
+# lines(residual,col="red")
+# 
+# print("Global climate model simulation NorESM")
+# T2m <- t2m.NorESM.M(lon=lon,lat=lat)
+# 
+# # Plot the global mean of the field:
+# plot(T2m)
+# # Plot area mean of a sub region
+# plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+# 
+# # Plot interpolated results corresponding to ferder
+# data(ferder)
+# plot(T2m,ferder)
+# 
+# # Plot Hovmuller diagram: Not working ...
+# ## plot(T2m,is=list(lon=0))
+# 
+# print("Extract a subset - the January month")
+# x <- subset(t2m,it="jan")
+# X <- subset(T2m,it="jan")
+# 
+# print("Combine the fields for computing common EOFs:")
+# XX <- combine(x,X)
+# 
+# print("Compute common EOFs")
+# eofxx <- EOF(XX)
+# plot(eofxx)
+# 
+# print("Downscale the January mean temperature")
+# ds.jan <- DS(Oslo,eofxx)
+# plot(ds.jan)
+# 
 # @export 
 # plot <- function(x,...)  UseMethod("plot")
 
@@ -112,6 +112,8 @@
 #' @importFrom graphics par grid segments text axis legend polygon mtext abline layout rect boxplot
 #' @importFrom grDevices dev.new dev.off dev.copy2eps dev.copy2pdf dev.list
 #' @importFrom stats pbinom
+#'
+#' @aliases plot.list plot.numeric plot.xsection
 #'
 #' @param x the object to be plotted
 #' @param plot.type "single"
@@ -175,7 +177,7 @@
 #' # Plot the residuals:
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds)$y)
-#' plot(obs,lwd=2)
+#' plot.zoo(obs[,1],lwd=2)
 #' lines(residual,col="red")
 #' 
 #' print("Global climate model simulation NorESM")
@@ -208,7 +210,6 @@
 #' ds.jan <- DS(Oslo,eofxx)
 #' plot(ds.jan)
 #'
-
 #' @export plot.double
 plot.double <- plot.default
 
@@ -299,7 +300,7 @@ plot.list <- function(x,...,is=NULL,
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs,lwd=2)
+#' plot.zoo(obs[,1],lwd=2)
 #' lines(residual,col="red")
 #' 
 #' print("Global climate model simulation NorESM")
@@ -313,9 +314,6 @@ plot.list <- function(x,...,is=NULL,
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
 #' plot(T2m,ferder)
-#' 
-#' # Plot Hovmuller diagram: Not working ...
-#' ## plot(T2m,is=list(lon=0)) 
 #' 
 #' print("Extract a subset - the January month")
 #' x <- subset(t2m,it="jan")
@@ -507,6 +505,8 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' @importFrom grDevices dev.new dev.off dev.copy2eps dev.copy2pdf dev.list
 #' @importFrom stats pbinom
 #'
+#' @aliases plot.eof.comb plot.eof.field plot.eof.var
+#'
 #' @param x the object to be plotted
 #' @param plot.type "single"
 #' @param new if TRUE plot in new window
@@ -554,7 +554,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' 
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:
 #' data(Svalbard)
-#' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
+#' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE)
 #' plot(y)
 #' 
 #' # Example with downscaling:
@@ -565,13 +565,13 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' ds <- DS(Oslo,t2m)
 #' 
 #' # Plot the results for January month
-#' # plot(subset(ds,it='Jan'))
+#' plot(subset(ds,it='Jan'))
 #' 
 #' # Plot the residuals:
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs,lwd=2)
+#' plot.zoo(obs[,1],lwd=2)
 #' lines(residual,col="red")
 #' 
 #' print("Global climate model simulation NorESM")
@@ -587,7 +587,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' plot(T2m,ferder)
 #' 
 #' # Plot Hovmuller diagram: Not working ...
-#' ## plot(T2m,is=list(lon=0)) 
+#' ## plot(T2m,is=list(lon=0))
 #' 
 #' print("Extract a subset - the January month")
 #' x <- subset(t2m,it="jan")
@@ -843,6 +843,8 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #' @importFrom grDevices dev.new dev.off dev.copy2eps dev.copy2pdf dev.list
 #' @importFrom stats pbinom
 #'
+#' @aliases plot.ds.eof plot.ds.pca
+#'
 #' @param x the object to be plotted
 #' @param plot.type "single"
 #' @param new if TRUE plot in new window
@@ -906,7 +908,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs,lwd=2)
+#' plot.zoo(obs[,1],lwd=2)
 #' lines(residual,col="red")
 #' 
 #' print("Global climate model simulation NorESM")
@@ -1234,7 +1236,7 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs,lwd=2)
+#' plot.zoo(obs[,1],lwd=2)
 #' lines(residual,col="red")
 #' 
 #' print("Global climate model simulation NorESM")
@@ -1449,7 +1451,7 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs,lwd=2)
+#' plot.zoo(obs[,1],lwd=2)
 #' lines(residual,col="red")
 #' 
 #' print("Global climate model simulation NorESM")
@@ -1637,107 +1639,19 @@ plot.ds.eof <- function(x,...,ip=1,
 
 #' Plot esd objects
 #' 
-#' These plot functions are S3 methods for esd objects, based on \code{plot}.
+#' The plot functions are S3 methods for esd objects, based on \code{plot}. 
+#' The function \code{plot.mvr} produces a plot for an \code{mvr} object which
+#' is the output of the multi-variate regression function \code{MVR},
 #'
-#' @importFrom graphics par grid segments text axis legend polygon mtext abline layout rect boxplot
-#' @importFrom grDevices dev.new dev.off dev.copy2eps dev.copy2pdf dev.list
-#' @importFrom stats pbinom
+#' @seealso plot.station plot.eof plot.ds 
 #'
 #' @param x the object to be plotted
-#' @param plot.type "single"
-#' @param new if TRUE plot in new window
-#' @param lwd width of line
-#' @param type type of plot: 'l' = line, 'p' = point, 'b' = both
-#' @param pch type of marker
-#' @param main main title
-#' @param xlab label of x-axis
-#' @param ylab label of y-axis
-#' @param errorbar if TRUE show errorbar
-#' @param legend.show if TRUE show legendp
-#' @param map.show show map of stations
-#' @param map.type 'points' to show stations on map, 'rectangle' to show area
-#' @param map.insert if TRUE show map as insert, else show map in new window
-#' @param it For subsetting in time - See \code{\link{subset}}.
-#' @param is For subsetting in space - See \code{\link{subset}}. Can also be
-#' a station value and if provided, the plotting will involve an interpolation
-#' to the same coordinates as defined by \code{is}.
-#' @param ip Which EOF/CCA pattern (mode) to plot
-#' @param cex magnification factor, see \code{\link[graphics]{par}}
-#' @param cex.axis see \code{\link[graphics]{par}}
-#' @param cex.lab see \code{\link[graphics]{par}}
-#' @param cex.main see \code{\link[graphics]{par}}
-#' @param mar see \code{\link[graphics]{par}}
-#' @param fig coordinates of figure region, see \code{\link[graphics]{par}}
-#' @param alpha transparency factor for main plot
-#' @param alpha.map transparency factor for map
 #' @param verbose a boolean; if TRUE print information about progress
-#' @param col Colour see \code{\link[graphics]{par}}
-#' @param lwd width of line
-#' @param xlim range of x-axis
-#' @param ylim range of y-axis
-#' @param what Indicate what to plot. For \code{plot.eof}, c('pc', 'eof', 'var') is the default setting which means that
-#' the plot will include the principle components, EOF patterns and explained variance. 'field' expands eof to field before
-#' plotting
-#' @param colbar a list, see \code{\link{colbar}} 
 #' @param \dots additional arguments
 #' 
 #' @return None
 #'
 #' @keywords plot graphics
-#'
-#' @examples
-#' 
-#' # Example: use aggregate to compute annual mean temperature for Svalbard:
-#' data(Svalbard)
-#' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-#' plot(y)
-#' 
-#' # Example with downscaling:
-#' lon <- c(-12,37)
-#' lat <- c(52,72)
-#' t2m <- t2m.DNMI(lon=lon,lat=lat)
-#' data(Oslo)
-#' ds <- DS(Oslo,t2m)
-#' 
-#' # Plot the results for January month
-#' # plot(subset(ds,it='Jan'))
-#' 
-#' # Plot the residuals:
-#' residual <- as.residual(ds)
-#' obs <- as.anomaly(as.calibrationdata(ds))
-#' 
-#' plot.zoo(obs,lwd=2)
-#' lines(residual,col="red")
-#' 
-#' print("Global climate model simulation NorESM")
-#' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
-#' 
-#' # Plot the global mean of the field:
-#' plot(T2m)
-#' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
-#' 
-#' # Plot interpolated results corresponding to ferder
-#' data(ferder)
-#' plot(T2m,ferder)
-#' 
-#' # Plot Hovmuller diagram: Not working ...
-#' ## plot(T2m,is=list(lon=0)) 
-#' 
-#' print("Extract a subset - the January month")
-#' x <- subset(t2m,it="jan")
-#' X <- subset(T2m,it="jan")
-#' 
-#' print("Combine the fields for computing common EOFs:")
-#' XX <- combine(x,X)
-#' 
-#' print("Compute common EOFs")
-#' eofxx <- EOF(XX)
-#' plot(eofxx)
-#' 
-#' print("Downscale the January mean temperature") 
-#' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
 #'
 #' @exportS3Method
 #' @export  plot.mvr
@@ -1817,7 +1731,7 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs,lwd=2)
+#' plot.zoo(obs[,1],lwd=2)
 #' lines(residual,col="red")
 #' 
 #' print("Global climate model simulation NorESM")
@@ -1886,111 +1800,19 @@ plot.cca <- function(x,...,icca=1,
   ## par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))
 }
 
-#' Plot esd objects
-#' 
-#' These plot functions are S3 methods for esd objects, based on \code{plot}.
-#'
-#' @importFrom graphics par grid segments text axis legend polygon mtext abline layout rect boxplot
-#' @importFrom grDevices dev.new dev.off dev.copy2eps dev.copy2pdf dev.list
-#' @importFrom stats pbinom
-#'
-#' @param x the object to be plotted
-#' @param plot.type "single"
-#' @param new if TRUE plot in new window
-#' @param lwd width of line
-#' @param type type of plot: 'l' = line, 'p' = point, 'b' = both
-#' @param pch type of marker
-#' @param main main title
-#' @param xlab label of x-axis
-#' @param ylab label of y-axis
-#' @param errorbar if TRUE show errorbar
-#' @param legend.show if TRUE show legendp
-#' @param map.show show map of stations
-#' @param map.type 'points' to show stations on map, 'rectangle' to show area
-#' @param map.insert if TRUE show map as insert, else show map in new window
-#' @param it For subsetting in time - See \code{\link{subset}}.
-#' @param is For subsetting in space - See \code{\link{subset}}. Can also be
-#' a station value and if provided, the plotting will involve an interpolation
-#' to the same coordinates as defined by \code{is}.
-#' @param ip Which EOF/CCA pattern (mode) to plot
-#' @param cex magnification factor, see \code{\link[graphics]{par}}
-#' @param cex.axis see \code{\link[graphics]{par}}
-#' @param cex.lab see \code{\link[graphics]{par}}
-#' @param cex.main see \code{\link[graphics]{par}}
-#' @param mar see \code{\link[graphics]{par}}
-#' @param fig coordinates of figure region, see \code{\link[graphics]{par}}
-#' @param alpha transparency factor for main plot
-#' @param alpha.map transparency factor for map
-#' @param verbose a boolean; if TRUE print information about progress
-#' @param col Colour see \code{\link[graphics]{par}}
-#' @param lwd width of line
-#' @param xlim range of x-axis
-#' @param ylim range of y-axis
-#' @param what Indicate what to plot. For \code{plot.eof}, c('pc', 'eof', 'var') is the default setting which means that
-#' the plot will include the principle components, EOF patterns and explained variance. 'field' expands eof to field before
-#' plotting
-#' @param colbar a list, see \code{\link{colbar}} 
-#' @param \dots additional arguments
-#' 
-#' @return None
-#'
-#' @keywords plot graphics
-#'
-#' @examples
-#' 
-#' # Example: use aggregate to compute annual mean temperature for Svalbard:
-#' data(Svalbard)
-#' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-#' plot(y)
-#' 
-#' # Example with downscaling:
-#' lon <- c(-12,37)
-#' lat <- c(52,72)
-#' t2m <- t2m.DNMI(lon=lon,lat=lat)
-#' data(Oslo)
-#' ds <- DS(Oslo,t2m)
-#' 
-#' # Plot the results for January month
-#' plot(subset(ds,it='Jan'))
-#' 
-#' # Plot the residuals:
-#' residual <- as.residual(ds)
-#' obs <- as.anomaly(as.calibrationdata(ds))
-#' 
-#' plot.zoo(obs,lwd=2)
-#' lines(residual,col="red")
-#' 
-#' print("Global climate model simulation NorESM")
-#' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
-#' 
-#' # Plot the global mean of the field:
-#' plot(T2m)
-#' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
-#' 
-#' # Plot interpolated results corresponding to ferder
-#' data(ferder)
-#' plot(T2m,ferder)
-#' 
-#' # Plot Hovmuller diagram: Not working ...
-#' ## plot(T2m,is=list(lon=0)) 
-#' 
-#' print("Extract a subset - the January month")
-#' x <- subset(t2m,it="jan")
-#' X <- subset(T2m,it="jan")
-#' 
-#' print("Combine the fields for computing common EOFs:")
-#' XX <- combine(x,X)
-#' 
-#' print("Compute common EOFs")
-#' eofxx <- EOF(XX)
-#' plot(eofxx)
-#' 
-#' print("Downscale the January mean temperature") 
-#' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
-#'
-#'
+# Plot esd objects
+# 
+# These plot functions are S3 methods for esd objects, based on \code{plot}.
+#
+# @seealso plot plot.station plot.ds plot.eof plot.field plot.dsensemble
+#
+# @param x the object to be plotted
+# @param \dots additional arguments
+# 
+# @return None
+#
+# @keywords plot graphics
+#
 # AM function plot.list is defined twice
 # @exportS3Method plot list
 # plot.list <- function(x,...) {
@@ -2081,7 +1903,7 @@ plot.dsensemble.pca <- function(x,...,pts=FALSE,target.show=TRUE,map.show=TRUE,
 #'
 #' \code{plot.dsensemble} plots a downscaled GCM ensemble.
 #' 
-#' @seealso \code{\link{plot}}
+#' @seealso \code{\link{plot}} plot.station plot.ds plot.eof
 #'
 #' @param x the object to be plotted
 #' @param verbose a boolean; if TRUE print information about progress
@@ -2112,6 +1934,8 @@ plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
 
 #' Plot multiple stations/spatially aggregated field.
 #'
+#' @seealso \code{\link{plot}} plot.station plot.ds plot.eof
+#'
 #' @param x input object of class 'dsensemble'
 #' @param it a time index, see \code{\link{subset}}
 #' @param FUNX a function
@@ -2140,6 +1964,8 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
 
 #' Plot one station
 #'
+#' @seealso plot.dsensemble
+#' 
 #' @param x input object of class 'dsensemble'
 #' @param pts a boolean; if TRUE show points
 #' @param envcol color of envelope
@@ -2389,7 +2215,7 @@ plot.xsection <- function(x,...) {
 #'
 #' \code{plot.spell} plots wet/dry or cold/warm spells.
 #' 
-#' @seealso \code{\link{plot}}
+#' @seealso \code{\link{plot}} plot.station plot.ds plot.eof plot.field
 #'
 #' @param x the object to be plotted
 #' @param xlim range of x-axis
@@ -2450,7 +2276,7 @@ plot.spell <- function(x,...,xlim=NULL,ylim=NULL) {
 #' 
 #' These plot functions are S3 methods for esd objects, based on \code{plot}.
 #'
-#' @seealso \code{\link{plot}}
+#' @seealso \code{\link{plot}} plot.station plot.ds plot.eof plot.field
 #'
 #' @param x the object to be plotted
 #' @param main main title

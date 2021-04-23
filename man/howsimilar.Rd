@@ -7,9 +7,9 @@
 howsimilar(x, y, plot = "cor", FUN = NULL, regress = FALSE, verbose = FALSE)
 }
 \arguments{
-\item{x}{A \code{\link{field}} object representing the reanalysis}
+\item{x}{A \code{field} object representing the reanalysis}
 
-\item{y}{A \code{\link{station}} object}
+\item{y}{A \code{station} object}
 
 \item{plot}{a boolean; if TRUE ignore NA, see \code{\link{mean}}}
 

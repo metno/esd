@@ -4,11 +4,9 @@
 #' can be used with retrieve.ESGF. The function \code{retrieve.ESGF} is a wraparound
 #' for \code{retrieve} that reads several files belonging to the same model and run.
 #'
-#' @aliases retrieve.ESGF meta.ESGF
-#'
 #' @import ncdf4
 #'
-#' @seealso retrieve 
+#' @seealso retrieve meta.ESGF
 #'
 #' @param param Name of parameter
 #' @param verbose Logical value defaulting to FALSE. If FALSE, do not display

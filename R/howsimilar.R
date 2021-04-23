@@ -13,8 +13,8 @@
 #' @seealso regrid
 #' @aliases howsimilar
 #' 
-#' @param x A \code{\link{field}} object representing the reanalysis
-#' @param y A \code{\link{station}} object
+#' @param x A \code{field} object representing the reanalysis
+#' @param y A \code{station} object
 #' @param plot a boolean; if TRUE ignore NA, see \code{\link{mean}}
 #' @param regress a boolean defaulting to FALSE
 #' @param verbose a boolean; if TRUE print information about progress

@@ -130,7 +130,7 @@ ds <- DS(Oslo,t2m)
 residual <- as.residual(ds)
 obs <- as.anomaly(as.calibrationdata(ds))
 
-plot.zoo(obs,lwd=2)
+plot.zoo(obs[,1],lwd=2)
 lines(residual,col="red")
 
 print("Global climate model simulation NorESM")
@@ -144,9 +144,6 @@ plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
 # Plot interpolated results corresponding to ferder
 data(ferder)
 plot(T2m,ferder)
-
-# Plot Hovmuller diagram: Not working ...
-## plot(T2m,is=list(lon=0)) 
 
 print("Extract a subset - the January month")
 x <- subset(t2m,it="jan")

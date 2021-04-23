@@ -69,3 +69,6 @@
 \description{
 Plot one station
 }
+\seealso{
+plot.dsensemble
+}

@@ -35,3 +35,6 @@
 \description{
 Plot multiple stations/spatially aggregated field.
 }
+\seealso{
+\code{\link{plot}} plot.station plot.ds plot.eof
+}

@@ -4,8 +4,6 @@
 #' 
 #' This function assumes that the data has been downloaded locally using the functions \code{meta.ESGF} and \code{retrieve.ESGF}. 
 #' 
-#' @aliases
-#'
 #' @import ncdf4
 #'
 #' @seealso meta.ESGF retrieve.ESGF
@@ -17,15 +15,7 @@
 #' 
 #' @return NetCDF file output containing both historical and future climate simulations.
 #'
-#' @examples
-#' 
-#' \dontrun{
-#' }
-#' 
-#' 
-#' 
 #' @export
-
 concat.ESGF <- function(meta, param='tas', path='/lustre/storeB/project/CMIP/CMIP6.monthly/from_synda/CMIP6',
             expid = 'ssp585', use = 'CDO',verbose = FALSE) {
   # Group by model and member.id 

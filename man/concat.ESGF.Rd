@@ -2,7 +2,6 @@
 % Please edit documentation in R/concatESGF.R
 \name{concat.ESGF}
 \alias{concat.ESGF}
-\alias{}
 \title{concat.ESGF
 Concatenate netcdf files from ESGF into a combined netcdf file of historical + projected 
 climate simulations using CDO command line}
@@ -29,14 +28,6 @@ NetCDF file output containing both historical and future climate simulations.
 }
 \description{
 This function assumes that the data has been downloaded locally using the functions \code{meta.ESGF} and \code{retrieve.ESGF}.
-}
-\examples{
-
-\dontrun{
-}
-
-
-
 }
 \seealso{
 meta.ESGF retrieve.ESGF

@@ -25,5 +25,5 @@ These plot functions are S3 methods for esd objects, based on \code{plot}.
 \code{plot.dsensemble} plots a downscaled GCM ensemble.
 }
 \seealso{
-\code{\link{plot}}
+\code{\link{plot}} plot.station plot.ds plot.eof
 }

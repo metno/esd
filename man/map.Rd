@@ -20,6 +20,7 @@
 \alias{map.pca}
 \alias{map.array}
 \alias{map.trend}
+\alias{map.mvcomb}
 \alias{lonlatprojection}
 \alias{rotM}
 \alias{map2sphere}

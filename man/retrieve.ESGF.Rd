@@ -2,7 +2,6 @@
 % Please edit documentation in R/retrieve.ESGF.R
 \name{retrieve.ESGF}
 \alias{retrieve.ESGF}
-\alias{meta.ESGF}
 \title{Retrieve CMIP data directly from the Earth System Grid Federation (ESGF)
 https://earthsystemcog.org/projects/cog/esgf_search_restful_api
 meta.ESGF returns a data.frame with the model metadata and the OpenDAP URL that 
@@ -46,5 +45,5 @@ map(X)
 }
 }
 \seealso{
-retrieve
+retrieve meta.ESGF
 }

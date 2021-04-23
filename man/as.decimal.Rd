@@ -33,6 +33,9 @@
 \alias{factor2numeric}
 \alias{zeros}
 \alias{missval}
+\alias{leapyear}
+\alias{distance2ocean}
+\alias{difftime.month}
 \title{Simple and handy functions}
 \usage{
 as.decimal(x = NULL)
@@ -102,6 +105,14 @@ events for a time series of iid data (\code{sum(1/1:n)})
 \code{factor2numeric} transforms a factor to a numeric object
 
 \code{rmse} and \code{RMSE} calculate the root-mean-square error
+
+\code{leapyear} checks if a year is a leap year
+
+\code{distance2ocean} estimates the distance from a point to the ocean
+
+\code{lastyear} checks the availability of data of a station object and returns the last year(s) of valid data entries
+
+\code{difftime.month} returns the number of months between two dates
 }
 \examples{
 
@@ -144,6 +155,13 @@ map(subset(Obs,it=1))
 points(lons[fy==1850],lats[fy==1850])
 map(Obs,FUN='firstyear')
 }
+
+## Check for leap years
+leapyear(1999)
+leapyear(2000)
+
+## Calculate the distance to the ocean from the point 10E/60N 
+distance2ocean(10, 60)
 
 }
 \seealso{

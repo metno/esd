@@ -21,6 +21,7 @@
 \alias{subset.matrix}
 \alias{subset.pattern}
 \alias{subset.default}
+\alias{subset.mvcomb}
 \title{Subsetting esd objects}
 \usage{
 subset(x, ...)

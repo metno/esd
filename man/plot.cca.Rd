@@ -111,7 +111,7 @@ ds <- DS(Oslo,t2m)
 residual <- as.residual(ds)
 obs <- as.anomaly(as.calibrationdata(ds))
 
-plot.zoo(obs,lwd=2)
+plot.zoo(obs[,1],lwd=2)
 lines(residual,col="red")
 
 print("Global climate model simulation NorESM")

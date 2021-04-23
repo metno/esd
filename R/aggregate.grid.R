@@ -13,8 +13,8 @@
 #' @seealso aggregate.area regrid
 #' @aliases aggregate.grid
 #' 
-#' @param x A \code{\link{field}} object with finer grid mesh.
-#' @param is A list or \code{\link{field}} with the coarser grid with aggregated data from finer mesh.
+#' @param x A \code{field} object with finer grid mesh.
+#' @param is A list or \code{field} with the coarser grid with aggregated data from finer mesh.
 #' @param FUN A function, e.g., 'sum' or 'mean'
 #' @param na.rm a boolean; if TRUE ignore NA, see \code{\link{mean}}
 #' @param verbose a boolean; if TRUE print information about progress

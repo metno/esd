@@ -25,5 +25,5 @@ These plot functions are S3 methods for esd objects, based on \code{plot}.
 \code{plot.spell} plots wet/dry or cold/warm spells.
 }
 \seealso{
-\code{\link{plot}}
+\code{\link{plot}} plot.station plot.ds plot.eof plot.field
 }

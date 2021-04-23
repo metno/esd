@@ -46,12 +46,16 @@
 #' \code{leapyear} checks if a year is a leap year
 #'
 #' \code{distance2ocean} estimates the distance from a point to the ocean
+#'
+#' \code{lastyear} checks the availability of data of a station object and returns the last year(s) of valid data entries
+#'
+#' \code{difftime.month} returns the number of months between two dates
 #' 
 #' @aliases as.decimal nv cv q5 q95 q975 q995 filt
 #' filt.default exit figlab ndig ensemblemean propchange stand rmse RMSE
 #' firstyear lastyear eofvar test.num.predictors arec
 #' arec.default arec.station lastrains lastdry lastelementrecord strstrip bin
-#' factor2numeric zeros missval leapyear
+#' factor2numeric zeros missval leapyear distance2ocean difftime.month
 #' @seealso attrcp
 #'
 #' @importFrom stats quantile qgeom qpois dnorm filter 
@@ -541,6 +545,7 @@ year2date <- function(y,toy='-01-01') {
   } else if(is.numeric(y)) return(as.Date(paste0(y,toy)))
 }
 
+#' @export
 yyyymmddhh2time <- function(y,option='POSIXct',verbose=FALSE) {
   stopifnot(is.character(y))
   ti <- paste(substr(y,1,4),substr(y,5,6),substr(y,7,8),sep='-')

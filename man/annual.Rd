@@ -28,6 +28,7 @@
 \alias{as.4seasons.field}
 \alias{as.4seasons.dsensemble}
 \alias{as.seasons}
+\alias{as.daily}
 \title{Conversion to esd objects.}
 \usage{
 annual(x, ...)
@@ -57,8 +58,13 @@ Same class as x
 \details{
 \code{as.monthly} aggregates time series into monthly values (e.g. means).
 
+\code{as.daily} aggregates time series into daily values (e.g. means).
+
 \code{as.4seasons} aggregates to four seasons ('djf': December-February, 'mam': March-May, 'jja': June-August, 'son': September-November)
-and \code{as.seasons} aggregates to a user defined season (see arguments 'start' and 'end').
+
+\code{as.seasons} aggregates to a user defined season with input arguments 'start' and 'end' giving the dates. To select march to september: start='03-01' and end='09-30'.
+
+\code{as.OctMar} aggregates to the season October to March, which is the rainy season in parts of Africa.
 }
 \examples{
 data(ferder)
