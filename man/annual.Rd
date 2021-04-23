@@ -29,6 +29,7 @@
 \alias{as.4seasons.dsensemble}
 \alias{as.seasons}
 \alias{as.daily}
+\alias{as.OctMar}
 \title{Conversion to esd objects.}
 \usage{
 annual(x, ...)
@@ -62,7 +63,7 @@ Same class as x
 
 \code{as.4seasons} aggregates to four seasons ('djf': December-February, 'mam': March-May, 'jja': June-August, 'son': September-November)
 
-\code{as.seasons} aggregates to a user defined season with input arguments 'start' and 'end' giving the dates. To select march to september: start='03-01' and end='09-30'.
+\code{as.seasons} aggregates to a user defined season with input arguments 'start' and 'end' giving the dates. To select march to september, use either start='03-01' and end='09-30' or start = 3 and end = 9.
 
 \code{as.OctMar} aggregates to the season October to March, which is the rainy season in parts of Africa.
 }

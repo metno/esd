@@ -167,11 +167,28 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
   ncatt_put( ncnew, x4nc, "missing_value", missval, prec="float" ) 
   history <- toString(attr(x,'history')$call)
   ncatt_put( ncnew, x4nc, "history", history, prec="text" ) 
-  ncatt_put( ncnew, 0, 'class', class(x))
+  #ncatt_put( ncnew, 0, 'class', class(x))
   ncatt_put( ncnew, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
   if (verbose) print(attr(x,'history'))
   ncatt_put( ncnew, 0, "esd-version", attr(x,'history')$session$esd.version)
+  
+  # Add the attributes of object x
+  attnames <- names(attributes(x))
+  if (verbose) print(attnames)
+  attnames <- attnames[-grep('history',attnames)]
+  attnames <- attnames[-grep('units',attnames)]
+  attnames <- attnames[-grep('variable',attnames)]
+  attnames <- attnames[-grep('dim',attnames)]
+  attnames <- attnames[-grep('index',attnames)]
+  attnames <- attnames[-grep('longitude',attnames)]
+  attnames <- attnames[-grep('latitude',attnames)]
+  attnames <- attnames[-grep('greenwich',attnames)]
+  attnames <- attnames[-grep('call',attnames)]
+  for (ia in 1:length(attnames)) {
+    if (verbose) print(paste(attnames[ia], attr(x,attnames[ia])))
+    ncatt_put( ncnew, 0, attnames[ia], as.character(attr(x,attnames[ia])), prec="text")
+  }
   nc_close(ncnew)
 }
 

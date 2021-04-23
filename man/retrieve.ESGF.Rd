@@ -6,7 +6,8 @@
 https://earthsystemcog.org/projects/cog/esgf_search_restful_api
 meta.ESGF returns a data.frame with the model metadata and the OpenDAP URL that 
 can be used with retrieve.ESGF. The function \code{retrieve.ESGF} is a wraparound
-for \code{retrieve} that reads several files belonging to the same model and run.}
+for \code{retrieve} that reads several files belonging to the same model and run.
+Also see <https://pcmdi.llnl.gov/CMIP6/Guide/dataUsers.html> for more documentation}
 \usage{
 \method{retrieve}{ESGF}(im = 1, meta = NULL, verbose = FALSE, ...)
 }
@@ -36,6 +37,7 @@ https://earthsystemcog.org/projects/cog/esgf_search_restful_api
 meta.ESGF returns a data.frame with the model metadata and the OpenDAP URL that 
 can be used with retrieve.ESGF. The function \code{retrieve.ESGF} is a wraparound
 for \code{retrieve} that reads several files belonging to the same model and run.
+Also see <https://pcmdi.llnl.gov/CMIP6/Guide/dataUsers.html> for more documentation
 }
 \examples{
 \dontrun{

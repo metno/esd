@@ -3,6 +3,7 @@
 #' meta.ESGF returns a data.frame with the model metadata and the OpenDAP URL that 
 #' can be used with retrieve.ESGF. The function \code{retrieve.ESGF} is a wraparound
 #' for \code{retrieve} that reads several files belonging to the same model and run.
+#' Also see <https://pcmdi.llnl.gov/CMIP6/Guide/dataUsers.html> for more documentation
 #'
 #' @import ncdf4
 #'
@@ -33,15 +34,15 @@ retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) {
       if (verbose) print(im)
       ## Assume the shape '<model>_<expid>_<ensid>'
       im <- strsplit(gsub('_',' ',im),' ')
-      model <- im[[1]]; expid <- im[[2]]; ensid <- im[[3]]
-      im <- intersect( grep(model,meta$model), grep(ensid,meta$member.id) )
+      model <- im[[1]][1]; expid <- im[[1]][2]; ensid <- im[[1]][3]
+      im <- intersect( grep(model,meta$model), grep(ensid,meta$member.id) )[1]
       model <- meta$model[im]
       if (verbose) print(c(im,model,ensid))
       if (is.na(im)) return(NULL)
     }
-  mem <- as.character(meta$member.id[im])
+  ripf <- as.character(meta$member.id[im])
   jm <- (1:length(meta$model))[is.element(as.character(meta$model),model) &
-                               is.element(as.character(meta$member.id),mem)]
+                               is.element(as.character(meta$member.id),ripf)]
   for (j in jm) { 
     print(as.character(meta$period[j]))
     opendap <- as.character(meta$OpenDap[j])
@@ -52,6 +53,8 @@ retrieve.ESGF <- function(im=1,meta=NULL,verbose=FALSE,...) {
       X <- attrcp(x,X); class(X) <- class(x)
     } else if ( (length(jm)==1) | (inherits(x,"try-error")) ) X <- x 
   }
+  attr(X,'model_id') <- model
+  attr(X,'ripf_id') <- ripf
   invisible(X)
 }
 
