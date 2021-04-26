@@ -56,7 +56,8 @@
 #' map(cdens,new=FALSE)
 #' }
 #' 
-#' @export map.trajectory
+#' @exportS3Method
+#' @export
 map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",param=NA,
                            projection="lonlat",verbose=FALSE,...) {
   if (verbose) print("map.trajectory")

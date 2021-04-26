@@ -123,7 +123,7 @@
 #' 
 #' ## Map of cyclone trajectories with the slp field in background
 #' cb <- list(pal="budrd",breaks=seq(990,1040,5))
-#' map(Ctracks, slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, 
+#' map(Ctracks, Y=slp.ERA5, it=as.POSIXct("2016-09-30 19:00"), colbar=cb, 
 #'     verbose=TRUE, new=FALSE)
 #' 
 #' ## Transform the cyclones into a 'trajectory' object which takes up less space
@@ -131,7 +131,6 @@
 #' map(Ctraj, new=FALSE)
 #' print(object.size(Ctracks), units="auto")
 #' print(object.size(Ctraj), units="auto")
-#' 
 #' 
 #' @export CCI
 CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
