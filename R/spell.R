@@ -368,6 +368,7 @@ exceedance.field <- function(x,threshold=1,FUN='mean',...) {
   return(y)
 }
 
+#' @exportS3Method
 #' @export hist.spell
 hist.spell <- function(x,family='geom',...) {
   n <- seq(0,ceiling(max(c(abs(x)),na.rm=TRUE))+1,by=1)
