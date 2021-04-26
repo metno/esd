@@ -1,4 +1,5 @@
 # Documentation in subset.R
+#' @exportS3Method
 #' @export subset.station
 subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
                            stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
