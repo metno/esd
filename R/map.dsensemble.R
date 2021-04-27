@@ -32,10 +32,31 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   if (verbose) for (ii in 1:length(X)) print(dim(X[[ii]]))
   ## Dimension of each downscaled GCM results
+  if (verbose) print(paste('subset.pc, it=',it))
+  ## Check if the ensemble members have the same size - if not, only keep the ones with most common sizes
+  if (verbose) print('Check ensemble member size')
+  n <- length(names(X))
+  if (verbose) print(paste('Original length of X is',n))
+  memsiz <- rep("?",n)
+  for (i in 1:n) memsiz[i] <- paste(dim(X[[i]]),collapse='x')
+  memsiztab <- table(memsiz)
+  if (verbose) print(memsiztab)
+  memkeep <- rownames( memsiztab)[as.numeric(memsiztab)==max(as.numeric(memsiztab))]
+  if (verbose) print(memkeep)
+  im <- sort((1:n)[-grep(memkeep,memsiz)],decreasing = TRUE)
+  if (verbose) print(im)
+  for (ix in im) X[[ix]] <- NULL
+  n <- length(names(X))
+  if (verbose) print(paste('New length of X is',n))
   V <- lapply(X,FUN='subset.pc',it=it)
+  memsiz <- rep("?",n)
+  for (i in 1:n) memsiz[i] <- paste(dim(V[[i]]),collapse='x')
+  memsiztab <- table(memsiz)
+  if (verbose) print(memsiztab)
   d <- dim(V[[1]])
-  n <- length(names(V))
-  if (verbose) {print(names(V)); print(c(d,n,length(unlist(V))))}
+  
+  if (verbose) {print(names(V)); print(c(d,n,length(unlist(V)))); print(paste('FUNX=',FUNX))}
+  ## Apply function FUNX
   if (!test) {
     V <- unlist(V)
     dim(V) <- c(d[1]*d[2],n)
@@ -46,10 +67,11 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
     n <- 1
     d <- dim(V)
   }
-  if (verbose) print(c(n,d))
+  if (verbose) {print('FUNX done'); print(c(n,d))}
   dim(V) <- d
   ## REB 2016-12-01: Can also aggregate in time to speed things up and create a vector  
   if (!is.null(FUN)) {  
+    if (verbose) print(paste('FUN=',FUN))
       if (FUN=='trend') FUN <- 'trend.coef'
       if (verbose) print(paste('FUN=',FUN,!is.null(dim(V))))
       if (is.null(dim(V))) dim(V) <- c(1,length(V))
