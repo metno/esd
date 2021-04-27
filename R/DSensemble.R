@@ -2098,7 +2098,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
       eval(parse(text=cl))
       if (verbose) {
-        print('Test to see if as.station has all information needed')
+        print('Test to see if as.station has all information needed.')
         test.stations.ds <- as.station(ds)
         a <- attrcp(y,z);  class(a) <- c("ds",class(y))
         test.stations.z <- as.station(a)
@@ -2110,8 +2110,9 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
 
       ## REB 2016-10-20 revised code
       if (verbose) print('examine residuals...')
-      cal <- attr(ds,"original_data")
-      fit <- attr(ds,"fitted_values")
+      ## REB 2021-04-26: revised code - changed the index of cal and res to years.
+      cal <- attr(ds,"original_data"); index(cal) <- year(cal)
+      fit <- attr(ds,"fitted_values"); index(fit) <- year(fit)
       res <- cal - fit 
       #REBres <- as.residual(ds)
       res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
@@ -2515,9 +2516,9 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
       # cross-validation and the common EOF diagnostics provide a set of
       # quality indicators.
       ## REB 2016-10-20
-      cal <- attr(ds,"original_data")
-      fit <- attr(ds,"fitted_values")
-      if (verbose) print('examine residuals...')
+      cal <- attr(ds,"original_data"); index(cal) <- year(cal)
+      fit <- attr(ds,"fitted_values"); index(fit) <- year(fit)
+      if (verbose) print('examine residuals:')
       res <- cal - fit ## REB 2016-10-20 test PCs
       res.trend <- 10*diff(range(trend(res)))/diff(range(year(res)))
       ks <- round(ks.test(coredata(res),pnorm)$p.value,4)
