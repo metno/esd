@@ -15,7 +15,8 @@
 #' data("dse.Oslo")
 #' summary(dse.Oslo)
 #' 
-#' @export summary.dsensemble
+#' @exportS3Method
+#' @export
 summary.dsensemble <- function(object,...,years=seq(1990,2090,by=20),verbose=FALSE) {
     if(verbose) print("summary.dsensemble")
     x <- object
@@ -70,7 +71,8 @@ summary.dsensemble <- function(object,...,years=seq(1990,2090,by=20),verbose=FAL
 #' data("Oslo")
 #' summary(Oslo)
 #' 
-#' @export summary.station
+#' @exportS3Method
+#' @export
 summary.station <- function(object,...,im=1:12,verbose=FALSE) {
   if(verbose) {print("summary.station"); print(table(month(object)))}
   x <- object

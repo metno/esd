@@ -32,8 +32,8 @@ regrid.irregweights <- function(xo,yo,xn,yn,verbose=FALSE) {
 }
 
 
-
-#' @export regrid.station
+#' @exportS3Method
+#' @export
 regrid.station <- function(x,is=NULL,...,approach="station",verbose=FALSE) {
 
   stopifnot(inherits(x,'station'))
@@ -126,7 +126,8 @@ regrid.station <- function(x,is=NULL,...,approach="station",verbose=FALSE) {
   invisible(y)
 }
 
-#' @export regrid.pca
+#' @exportS3Method
+#' @export
 regrid.pca <- function(x,is=NULL,...,verbose=FALSE) {
   stopifnot(inherits(x,'pca'))
   if (is.list(is)) {

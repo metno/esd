@@ -244,7 +244,6 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' # The downscaled 
 #' lines(y3,lty=2)
 #' 
-#' 
 #' @export
 DS <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) UseMethod("DS")

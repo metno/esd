@@ -8,6 +8,7 @@
 \alias{predict.ds.pca}
 \alias{predict.ds.station}
 \alias{predict.cca}
+\alias{project}
 \alias{project.ds}
 \title{Prediction based on DS or CCA model}
 \usage{
@@ -57,7 +58,7 @@ plot(ds.pre)
 # Display the attribute "aspect"
 attr(ds.pre, "aspect")
 ## Extract the projected results
-plot(project.ds(ds))
+plot(project(ds))
 
 }
 \seealso{

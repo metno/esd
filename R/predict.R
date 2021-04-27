@@ -7,7 +7,7 @@
 #' \code{project} returns projection of climate
 #' 
 #' @aliases predict.ds predict.ds.eof predict.ds.comb predict.mvr
-#' predict.ds.pca predict.ds.station predict.cca project.ds 
+#' predict.ds.pca predict.ds.station predict.cca project project.ds 
 #'
 #' @param x A ds object
 #' @param newdata An eof object containing the new data sets on which the prediction is made. 
@@ -41,9 +41,10 @@
 #' # Display the attribute "aspect"
 #' attr(ds.pre, "aspect")
 #' ## Extract the projected results
-#' plot(project.ds(ds))
+#' plot(project(ds))
 #' 
-#' @export predict.ds
+#' @exportS3Method
+#' @export
 predict.ds <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print(paste("predict.ds",paste(class(x),collapse='-')))
   
@@ -303,6 +304,12 @@ predict.ds.comb <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALS
   invisible(Y)
 }
 
+#' @export
+project <- function(x,...) {
+  UseMethod("project")
+}
+
+#' @exportS3Method
 #' @export project.ds
 project.ds <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
   if (verbose) print("project.ds")
@@ -385,7 +392,8 @@ project.ds <- function(x,...,newdata=NULL,addnoise=FALSE,n=100,verbose=FALSE) {
 # To get one predictor pattern, use predict with newdata set to
 # a vector where most variables are set to zero apart from one
 # variable set to unity for the identification of teleconnection pattern.
-#' @export predict.mvr
+#' @exportS3Method
+#' @export
 predict.mvr <- function(object, ..., newdata=NULL, verbose=FALSE) {
   if(verbose) print("predict.mvr")
   if (is.null(newdata)) newdata <- object$data
@@ -413,7 +421,8 @@ predict.mvr <- function(object, ..., newdata=NULL, verbose=FALSE) {
   invisible(Yhat)
 }
 
-#' @export predict.cca
+#' @exportS3Method
+#' @export
 predict.cca <- function(x, ..., newdata=NULL, verbose=FALSE) {
   if(verbose) print("predict.cca")
   if (!is.null(newdata)) X <- newdata else X <- x$X

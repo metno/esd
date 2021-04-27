@@ -191,7 +191,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## 
   if (show.colbar) {
     if (verbose) print('Add colourbar')
-    
     par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
         cex.lab=0.7,cex.axis=0.7)
     axis(2,at=pretty(lat(x)),col='grey')

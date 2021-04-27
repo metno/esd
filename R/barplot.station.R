@@ -7,7 +7,8 @@
 #'
 #' @importFrom graphics barplot title
 #'
-#' @export barplot.station
+#' @exportS3Method
+#' @export
 barplot.station <- function(height,...,threshold=0,verbose=FALSE) {
   if(verbose) print("barplot.station")
   stopifnot(inherits(height,'station'))

@@ -39,19 +39,20 @@
 #' 
 #' # plot storm tracks zoomed in on the north Atlantic and northern Europe
 #' data(imilast.M03)
-#' map.trajectory(imilast.M03,col="blue",alpha=0.1,
-#'           projection='latlon',xlim=c(-60,60),ylim=c(30,90),
-#'           new=FALSE)
+#' map(imilast.M03,col="blue",alpha=0.1,
+#'     projection='latlon',xlim=c(-60,60),ylim=c(30,90),
+#'     new=FALSE)
 #' 
 #' # spherical projection
-#' map.trajectory(imilast.M03,col="blue",alpha=0.1,projection='sphere',new=FALSE)
+#' map(imilast.M03,col="blue",alpha=0.1,projection='sphere',new=FALSE)
 #' 
-#' # plot number density for grid boxes of width 2 degrees and height 1 degree
-#' hexbin.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
-#' sunflower.trajectory(imilast.M03,xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
+#' # Quick way of plotting the number density for grid boxes 
+#' # of the width 2 degrees (dx) and height 1 degree (dy).
+#' map(imilast.M03,type="hexbin",xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
+#' map(imilast.M03,type="sunflower",xlim=c(-60,60),ylim=c(30,90),dx=2,dy=1,new=FALSE)
 #' 
 #' \dontrun{
-#' # calculate cyclone density, takes a little while
+#' # Calculate and plot the cyclone density - this takes a little while
 #' cdens <- as.field(imilast.M03)
 #' map(cdens,new=FALSE)
 #' }
@@ -85,7 +86,13 @@ map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",param=NA,
       }
     } else if ('density' %in% type) {
       densitymap(y,projection=projection,verbose=verbose,...)
-    } else print("unkown map type")
+    } else if ('hexbin' %in% type) {
+      hexbin.trajectory(y,verbose=verbose,...)
+    } else if ('sunflower' %in% type) {
+      sunflower.trajectory(y,verbose=verbose,...)
+    } else {
+      print("unkown map type")
+    }
   }
 }
 
@@ -119,9 +126,9 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
   if(is.null(param)) {
     type <- type[type!="colors"]
     if(length(type)==0) type <- "trajectory"
-    map.trajectory(x,xlim=xlim,ylim=ylim,type=type,
-                   alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,add=add,
-                   projection=projection,new=new,verbose=verbose,...)            
+    map(x,xlim=xlim,ylim=ylim,type=type,
+        alpha=alpha,cex=cex,lty=lty,lwd=lwd,main=main,add=add,
+        projection=projection,new=new,verbose=verbose,...)            
   } else {
   x0 <- x
   if(is.null(dim(x0))) {
@@ -241,8 +248,8 @@ segments.trajectory <- function(x,param="month",label.param=NULL,
     mlat <- geoborders$y[ok]
     par(bty="n",fig=fig)
     plot(mlon,mlat,pch=".",col="grey",main=main,
-     xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
-     xaxt="n",yaxt="n")
+         xlab="lon",ylab="lat",xlim=xlim,ylim=ylim,
+         xaxt="n",yaxt="n")
     axis(side=1,at=pretty(xlim,n=12),labels=pretty(xlim,n=12))
     axis(side=2,at=pretty(ylim,n=12),labels=pretty(ylim,n=12))
   }
@@ -597,24 +604,24 @@ trajectory2sphere <- function(x,
 
 densitymap <- function(x,dx=4,dy=2,it=NULL,is=NULL,
       colbar=list(pal='precip',rev=TRUE,breaks=NULL,cex=2,h=0.6,v=1),
-      projection='sphere',latR=90,lonR=10,gridlines=FALSE,...) {
+      projection='sphere',latR=90,lonR=10,gridlines=FALSE,verbose=FALSE,...) {
+  if(verbose) print("densitymap")
   stopifnot(inherits(x,c("trajectory","field")))
   x <- subset(x,it=it,is=is)
   if (!inherits(x,"field")) {
-    X <- trajectory2field(x,dt='year',dx=dx,dy=dy)
+    X <- trajectory2field(x,dt='year',dx=dx,dy=dy,verbose=verbose)
   } else X <- x
   map(X,colbar=colbar,projection=projection,latR=latR,
-      lonR=lonR,gridlines=gridlines,...)
+      lonR=lonR,gridlines=gridlines,verbose=verbose,...)
 }
 
-#' @export
 hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
           xgrid=NULL,ygrid=NULL,add=FALSE,leg=TRUE,
           xlim=NULL,ylim=NULL,col='red',border='firebrick4',
           colmap='heat.colors',scale.col=TRUE,scale.size=FALSE,
           main=NULL,new=TRUE,verbose=FALSE) {
 
-  x <- subset.trajectory(x,it=it,is=is)
+  x <- subset(x,it=it,is=is)
   ilon <- colnames(x)=='lon'
   ilat <- colnames(x)=='lat'
   ilen <- colnames(x)=='n'
@@ -631,9 +638,9 @@ hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
   if(!add) plot(lon, lat, xlab="lon", ylab="lat", main=main,
                 xlim=xlim,ylim=ylim,type="n",frame.plot=F)
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
-  scatter.hexbin(lon[OK],lat[OK],dx=dx,dy=dy,xgrid=xgrid,ygrid=ygrid,
-                 new=FALSE,leg=leg,col=col,border=border,Nmax=Nmax,
-                 scale.col=scale.col,scale.size=scale.size,colmap=colmap)
+  scatter(lon[OK],lat[OK],type="hexbin",dx=dx,dy=dy,xgrid=xgrid,ygrid=ygrid,
+          new=FALSE,leg=leg,col=col,border=border,Nmax=Nmax,
+          scale.col=scale.col,scale.size=scale.size,colmap=colmap)
   OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
   lines(mlon[OK],mlat[OK],lty=1,col='grey20',lwd=1.0)
   # box marking the spatial subset
@@ -663,14 +670,13 @@ hexbin.trajectory <- function(x,dx=6,dy=2,it=NULL,is=NULL,Nmax=NULL,
   }
 }
 
-#' @export
 sunflower.trajectory <- function(x,it=NULL,is=NULL,
       dx=6,dy=2,petalsize=7,
       xgrid=NULL,ygrid=NULL,leg=TRUE,leg.loc=2,
       xlim=NULL,ylim=NULL,rotate=TRUE,alpha=0.6,
       main=NULL,new=TRUE,verbose=FALSE) {
 
-  x <- subset.trajectory(x,it=it,is=is)
+  x <- subset(x,it=it,is=is)
   ilon <- colnames(x)=='lon'
   ilat <- colnames(x)=='lat'
   ilen <- colnames(x)=='n' 
@@ -686,11 +692,11 @@ sunflower.trajectory <- function(x,it=NULL,is=NULL,
   if(new) dev.new(width=8,height=7)
   par(bty="n",mar=c(4.4,4.0,1.0,1.0))
   OK <- (findInterval(lon,xlim)==1 & findInterval(lat,ylim)==1)
-  scatter.sunflower(lon[OK],lat[OK],petalsize=petalsize,
-           dx=dx,dy=dy,xlab='lon',ylab='lat',
-           xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
-           xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha,
-           main=main,new=FALSE)
+  scatter(lon[OK],lat[OK],type="sunflower",petalsize=petalsize,
+          dx=dx,dy=dy,xlab='lon',ylab='lat',
+          xgrid=xgrid,ygrid=ygrid,leg=leg,leg.loc=leg.loc,
+          xlim=xlim,ylim=ylim,rotate=rotate,alpha=alpha,
+          main=main,new=FALSE)
 
   OK <- (findInterval(mlon,xlim)==1 & findInterval(mlat,ylim)==1)
   if (leg) {
@@ -768,7 +774,7 @@ map.pca.trajectory <- function(x,projection="sphere",lonR=NULL,latR=NULL,
   mean.lon <- fnlon(mean)
   if (is.null(latR)) latR <- 90
   if (is.null(lonR)) lonR <- mean.lon(X[,colnames(X)=='lon'])
-  map.trajectory(X,projection=projection,lonR=lonR,latR=latR,
+  map(X,projection=projection,lonR=lonR,latR=latR,
     col='grey20',alpha=alpha,xlim=xlim,ylim=ylim,main=main,new=TRUE)
  
   for (i in 1:m) { 

@@ -38,7 +38,7 @@ Functions to process and analyse storm trajectories
 # Load trajectory example data
 data('imilast.M03')
 # Calculate anomaly
-x <- anomaly.trajectory(imilast.M03)
+x <- anomaly(imilast.M03)
 # Show maps of original trajectories and spatial anomalies
 map(imilast.M03, new=FALSE)
 map(x, new=FALSE)

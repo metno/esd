@@ -29,7 +29,8 @@
 #' pca <- PCA(x,param=c('lat'))
 #' plot(pca)
 #' 
-#' @export PCA.trajectory
+#' @exportS3Method
+#' @export
 PCA.trajectory <- function(X,...,neofs=20,param=c('lon','lat'),
                       anomaly=TRUE,verbose=FALSE) {
   if(verbose) print("PCA.trajectory")

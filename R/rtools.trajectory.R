@@ -18,7 +18,7 @@
 #' # Load trajectory example data
 #' data('imilast.M03')
 #' # Calculate anomaly
-#' x <- anomaly.trajectory(imilast.M03)
+#' x <- anomaly(imilast.M03)
 #' # Show maps of original trajectories and spatial anomalies
 #' map(imilast.M03, new=FALSE)
 #' map(x, new=FALSE)
@@ -102,7 +102,7 @@ sort.trajectory <- function(x, decreasing=FALSE, ...) {
 polyfit.trajectory <- function(x,verbose=FALSE) {
   if(verbose) print("polyfit.trajectory")
   stopifnot(is.trajectory(x))
-  if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly.trajectory(x)
+  if(!('anomaly' %in% attr(x,'aspect'))) x <- anomaly(x)
   ilon <- which(colnames(x)=='lon')
   ilat <- which(colnames(x)=='lat')
   OK <- apply(x[,ilon],1,function(y) !any(y>0) | !any(y<0) |
@@ -130,7 +130,7 @@ polyfit <- function(x,y=NULL) {
   return(z)
 }
 
-#' @export count.trajectory
+#' @export
 count.trajectory <- function(x,it=NULL,is=NULL,by='year',verbose=FALSE) {
   if(verbose) print("count.trajectory")
   y <- subset(x,it=it,is=is)
@@ -224,7 +224,8 @@ cartesian2spherical <- function(x,y,z,a=6.378e06,verbose=TRUE) {
   invisible(cbind(lon,lat))
 }
 
-#' @export anomaly.trajectory
+#' @exportS3Method
+#' @export
 anomaly.trajectory <- function(x,...,type='first',param=c('lon','lat'),
                                 verbose=FALSE) {
   if(verbose) print("anomaly.trajectory")

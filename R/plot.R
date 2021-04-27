@@ -213,10 +213,12 @@
 #' @export plot.double
 plot.double <- plot.default
 
-#' @export plot.numeric
+#' @exportS3Method
+#' @export
 plot.numeric <- plot.default
 
-#' @export plot.list
+#' @exportS3Method
+#' @export
 plot.list <- function(x,...,is=NULL,
                       col=c(rgb(1,1,0.5,0.05),rgb(1,0.5,0.5,0.05),rgb(0.5,1,0.5,0.05)),
                       lwd=3,xlim=NULL,ylim=NULL) {
@@ -1018,17 +1020,20 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
   #print(summary(yX))
   y0 <- yX$Y0
   ## KMP 2021-02-26: Plot attribute 'fitted value' instead of coredata
-
+  
   if (!is.null(attr(x,'n.apps'))) ns <- attr(x,'n.apps') else
                                   ns <- 0
   y.rng <- NA; x.rng <- NA
   if (ns > 0) {
     #print("Add other DS results")
-    for (i in 1:ns)
+    for (i in 1:ns) {
       eval(parse(text=paste("y <- attr(x,'appendix.",i,"')",sep="")))
       #print(summary(y))
       y.rng <- range(y.rng,y,na.rm=TRUE)
       x.rng <- range(x.rng,index(y),na.rm=TRUE)
+    }
+    ## KMP 2021-04-26: added following to solve problem when index is Date
+    if(is.numeric(x.rng) & is.dates(index(x))) x.rng <- as.Date(x.rng)
   }
   
   if (is.null(ylim)) {
