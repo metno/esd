@@ -363,7 +363,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
     if (is.null(attr(YYY,'source'))) attr(YYY,'source') <- as.character(i) else
       if (is.na(attr(YYY,'source')))  attr(YYY,'source') <- as.character(i)
     src <- paste(attr(YYY,'source'),i,sep="+")
-    id.t <- c(id.t,rep(src,length(index(YYY))))
+    id.t <- c(id.t,rep(src[1],length(index(YYY))))
     ID.t <- c(ID.t,src)
     #print('YY:'); print(dim(YY)); print("d:"); print(d)
   }

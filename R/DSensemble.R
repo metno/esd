@@ -2028,6 +2028,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     
     if (verbose) print('Estimate commne EOFs - combine fields')	
     if (is.null(src(T2M))) attr(T2M,'source') <- 'reanalysis'
+    if (length(src(GCM))>1) attr(GCM,'source') <- attr(GCM,'source')[1]
     T2MGCM <- combine(T2M,GCM)
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM,verbose=verbose))
@@ -2045,7 +2046,8 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     if (verbose) print("- - - > DS (pca)")
     Z0 <- Z
     if (verbose) print(class(attr(Z,'appendix.1')))
-    if (biascorrect) Z <- biasfix(Z)
+    if (biascorrect) Z <- try(biasfix(Z))
+    if(inherits(Z,"try-error")) Z <- Z0
     ds <- try(DS(y,Z,ip=ip,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
