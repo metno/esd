@@ -102,7 +102,7 @@ ltp <- function(x,type='exponential',...) {
 #' These functions are used using the following code
 #' \code{annual(f(x),FUN="mean")}
 #' @param mask TRUE mask out land
-#' @param ds.1900.2099 Default, only downscale for the period 1900-2099
+#' @param ds.interval Default set to NULL, otherwise set the time period for downscaling, e.g. c(1950,2100)
 #' @param \dots additional arguments
 #'
 #' @return A 'dsensembele' object - a list object holding DS-results.
@@ -188,7 +188,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="tas_Amon_",path.ds=NULL,file.ds="DSensemble.rda",
-                           nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE) {
+                           nmin=NULL,verbose=FALSE,ds.interval=NULL) {
 
   if (!inherits(y,'day')) warning('station is not daily data')
   if (verbose) print("predictand")
@@ -298,8 +298,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
     gcm <- retrieve(file = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
-                      gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
+    if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval)
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
     #gcmnm[i] <- attr(gcm,'model_id'))
@@ -524,7 +523,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
                               predictor="ERA40_pr_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               select=NULL,FUN="wetmean",FUNX="sum",xfuns='C.C.eq',threshold=1,
-                              pattern="pr_Amon_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
+                              pattern="pr_Amon_",verbose=FALSE,nmin=NULL,ds.interval=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
 
   if (verbose) print('DSensemble.precip')
@@ -626,8 +625,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
     #
     gcm <- retrieve(file = ncfiles[select[i]],
                     lon=range(lon(PRE))+c(-2,2),lat=range(lat(PRE))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
-                      gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
+    if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval)
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
@@ -784,7 +782,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
                               predictor="ERA40_t2m_mon.nc",non.stationarity.check=FALSE,
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,FUNX="mean",xfuns='C.C.eq',threshold=1,
-                              pattern="tas_Amon_",verbose=FALSE,nmin=NULL,ds.1900.2099=TRUE) {
+                              pattern="tas_Amon_",verbose=FALSE,nmin=NULL,ds.interval=NULL) {
   # FUN: exceedance, wetfreq, wet, dry
   
   if (verbose) print('DSensemble.annual')
@@ -878,8 +876,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
     if(inherits(gcm,"try-error")) {
       writeLines(ncfiles[select[i]],con=flog)
     } else {
-      if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
-                        gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
+      if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval)
       if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                              min(year(y),na.rm=TRUE),'2099'))
       # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
@@ -1044,7 +1041,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
                            ip=1:6,lon=c(-20,20),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",FUNX="mean",xfuns='C.C.eq',
                            pattern="psl_Amon_",lev=NULL,levgcm=NULL,path.ds=NULL,file.ds=NULL,
-                           nmin=NULL,verbose=FALSE,ds.1900.2099=TRUE) {
+                           nmin=NULL,verbose=FALSE,ds.interval=NULL) {
 
   if(verbose) print("DSensemble.season")
 
@@ -1165,8 +1162,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
     gcm <- retrieve(file = ncfiles[select[i]],
                           lon=range(lon(SLP))+c(-2,2),lev=levgcm,
                           lat=range(lat(SLP))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
-                      gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
+    if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval)
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
     # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
@@ -1347,7 +1343,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 #                           ip=1:16,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,
 #                           select=NULL,FUN="wetmean",threshold=1,
 #                           pattern=c("tas_Amon_ens_","olr_Amon_ens_","slp_Amon_ens_"),
-#                           verbose=FALSE,nmin=365,ds.1900.2099=TRUE) {
+#                           verbose=FALSE,nmin=365,ds.interval=TRUE) {
 # 
 # # This function is for downscaling wet-day mean using a combination of predictors
 # 
@@ -1450,17 +1446,17 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 #   #   print(paste(i,N,ncfiles1[select[i]],ncfiles2[select[i]],ncfiles3[select[i]]))
 #   #   gcm1 <- retrieve(file = ncfiles1[select[i]],
 #   #                   lon=range(lon(PRE1))+c(-2,2),lat=range(lat(PRE1))+c(-2,2),verbose=verbose)
-#   #   if (ds.1900.2099) gcm1 <- subset(gcm1,it=c(1900,2099)) else
+#   #   if (ds.interval) gcm1 <- subset(gcm1,it=c(1900,2099)) else
 #   #                     gcm1 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
 #   #   if (length(index(gcm1))<=1) print(paste('Problem selecting GCM results in period',
 #   #                                          min(year(y),na.rm=TRUE),'2099'))
 #   #   gcm2 <- retrieve(file = ncfiles2[select[i]],
 #   #                   lon=range(lon(PRE2))+c(-2,2),lat=range(lat(PRE2))+c(-2,2),verbose=verbose)
-#   #   if (ds.1900.2099) gcm2 <- subset(gcm2,it=c(1900,2099)) else
+#   #   if (ds.interval) gcm2 <- subset(gcm2,it=c(1900,2099)) else
 #   #                     gcm2 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
 #   #   gcm3 <- retrieve(file = ncfiles3[select[i]],
 #   #                   lon=range(lon(PRE3))+c(-2,2),lat=range(lat(PRE3))+c(-2,2),verbose=verbose)
-#   #   if (ds.1900.2099) gcm3 <- subset(gcm3,it=c(1900,2099)) else
+#   #   if (ds.interval) gcm3 <- subset(gcm3,it=c(1900,2099)) else
 #   #                     gcm3 <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
 #   #   # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
 #   #   gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'parent_experiment_rip'),sep="-")
@@ -1623,7 +1619,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
 DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA40_t2m_mon.nc",
                                     rcp="rcp45",biascorrect=FALSE,n=6,lon=c(-20,20),lat=c(-10,10),
                                     it=NULL,rel.cord=TRUE,select=NULL,FUN="wetmean",
-                                    pattern="tas_Amon_",mask=FALSE,verbose=FALSE,ds.1900.2099=TRUE) {
+                                    pattern="tas_Amon_",mask=FALSE,verbose=FALSE,ds.interval=NULL) {
   if (verbose) print('DSensemble.mu.worstcase')
 
   ## The predictor is based on the seasonal variations and assumes that the seasnoal cycle in the
@@ -1743,8 +1739,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
       if (verbose) print(ncfiles[select[i]])
       gcm <- retrieve(file = ncfiles[select[i]],lon=lon,lat=lat,
                       verbose=FALSE)
-      if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
-                        gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
+      if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval)
       if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                              min(year(y),na.rm=TRUE),'2099'))
       if (verbose) print(paste('mask=',mask))
@@ -1824,7 +1819,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
                            ip=1:16,lon=c(-30,20),lat=c(-20,10), it=NULL,rel.cord=TRUE,
                            select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",xfuns='C.C.eq',
                            threshold=1,pattern="tas_Amon_",verbose=FALSE,
-                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE,test=FALSE) {
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.interval=NULL,test=FALSE) {
 
   if (verbose) print('DSensemble.pca')
   cls <- class(y)
@@ -1969,8 +1964,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     gcm <- retrieve(file = ncfiles[select[i]],
                           lon=range(lon(T2M))+c(-2,2),
                           lat=range(lat(T2M))+c(-2,2),verbose=verbose)
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
-                      gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
+    if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval) 
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
     
@@ -2238,7 +2232,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
                            ip=1:5,lon=c(-30,20),lat=c(-20,10),it=NULL,rel.cord=TRUE,nmin=NULL,
                            lev=NULL,levgcm=NULL,select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",
                            xfuns='C.C.eq',threshold=1,pattern="psl_Amon_",verbose=FALSE,
-                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.1900.2099=TRUE,test=FALSE) {
+                           file.ds="DSensemble.eof.rda",path.ds=NULL,ds.interval=NULL,test=FALSE) {
 
   if(verbose) print("DSensemble.eof")
   stopifnot(inherits(y,c("EOF","field")))
@@ -2352,8 +2346,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
     if(inherits(gcm,"try-error")) {
       print(paste("retrieve failed for",ncfiles[select[i]]))
     } else {
-    if (ds.1900.2099) gcm <- subset(gcm,it=c(1900,2099)) else
-                      gcm <- subset(gcm,it=c(min(year(y),na.rm=TRUE),2099))
+    if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval)
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
     ## KMP 2016-08-09 added separate level input for slp and gcm
@@ -2628,7 +2621,7 @@ DSensemble.field <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",b
                            ip=1:16,lon=c(-30,20),lat=c(-20,10),it=c('djf','mam','jja','son'),
                            rel.cord=TRUE,select=NULL,FUN="mean",rmtrend=TRUE,FUNX="mean",
                            xfuns='C.C.eq',threshold=1,pattern="tas_Amon_",verbose=FALSE,
-                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.1900.2099=TRUE) {
+                           file.ds="DSensemble.rda",path.ds=NULL,nmin=NULL,ds.interval=NULL) {
   ## For downscaling gridded predictand. This is a wrap-around which extracts the season or aggregates
   ## to annual values and then calls the other types for the downscaling.
   ## KMP 2016-10-25: Redirect to DSensemble.eof
