@@ -456,12 +456,14 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       start <- c(lon.w,lat.w,lev.w[1],time.w[1])
       count <- c(1,1,length(lev.w),length(time.w))
       val <- ncvar_get(ncid,param,start[idim],count[idim])
+      dim(val) <- count[idim]
       val <- aperm(val, idim2)
     } else {
       if (verbose) print('Only three dimensions')
       start <- c(lon.w,lat.w,time.w[1])
       count <- c(1,1,length(time.w))
       val <- ncvar_get(ncid,param,start[idim],count[idim])
+      dim(val) <- count[idim]
       val <- aperm(val, idim2)
     }
     lon$vals <- lon$vals[lon.w]
@@ -503,10 +505,12 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         ## REB 2021-02-08: These lines causes problems with ERA5. 'idim' has repeated element 1 & 3 for some 
         ## strange reason. The original line does not seem consistent with the lines within this if-block.
         # val <- ncvar_get(ncid,param,start[idim],count[idim],collapse_degen=FALSE)
+        #dim(val) <- count[idim]
         # val <- aperm(val, idim2)
         val <- ncvar_get(ncid,param,start,count,collapse_degen=FALSE)
+        dim(val) <- count
       }
-      dim(val) <- count
+      #dim(val) <- count
       lon$vals <- lon$vals[lon.w]
       lon.srt <- order(lon$vals)
       if (sum(diff(lon.srt)!=1)) {
@@ -543,15 +547,17 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         dim(val2) <- c(d2[1],prod(d2[2:length(d2)]))
         val <- rbind(val1,val2)
         stopifnot((d1[2]==d2[2]) | (d1[3]==d2[3]))
+        dim(val) <- count
       } else {
         if (verbose) print('!((sum(id) > 0) & (sum(id2)!=0))')
         start <- c(lon.w[1],lat.w[1],time.w[1])
         count <- c(length(lon.w),length(lat.w),length(time.w))
         if (verbose) print(rbind(start,count))
         val <- ncvar_get(ncid,param,start[idim],count[idim])
+        dim(val) <- count[idim]
         val <- aperm(val, idim2)
       }
-      dim(val) <- count   
+      #dim(val) <- count
       lon$vals <- lon$vals[lon.w]
       lon.srt <- order(lon$vals)
       if (sum(diff(lon.srt)!=1)!=0) {
@@ -1025,7 +1031,10 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
           days <- time$vals%%time$daysayear - (cumsum(mndays)-mndays)[months] + 1#rep(cumsum(mndays),time$len/12)
           if(freq.data=='month') {
-            if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
+            ## KMP 2020-05-04: diff stops retrieve from reading 1 timestep data!
+            if (length(months)==1) {
+              time$vdate <- as.Date(paste(years,months,"01",sep="-"))
+            } else if ((sum(diff(months) > 1) > 1) | (sum(diff(years) > 1) > 1) | (sum(round(abs(diff(days)))>2)) > 1) {
               print("Warning : Jumps in data have been found !")
               print("Warning: Trust the first date and force a continuous vector of dates !")
               time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=time$len)
@@ -1036,16 +1045,20 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           } else if(freq.data %in% c('season','year')) {
             time$vdate <- as.Date(paste(years,months,"01",sep="-"))
           } else {
-            if(median(diff(days))<=1 & !requireNamespace("PCICt",quietly=TRUE)) {
+            # KMP 2018-10-23: subdaily
+            if(!requireNamespace("PCICt",quietly=TRUE)) {
               stop("Package \"PCICt\" needed to retrieve subdaily 360-day calendar data. Please install it.")
             }
-            if(median(diff(days))<1) { # KMP 2018-10-23: subdaily
+            if(length(days)==1) {
+              time$vdate <- PCICt::as.PCICt(paste(years,months,floor(days),sep="-"),cal=time$daysayear)
+            } else if(median(diff(days))<1) {
               hours <- (days-floor(days))*24
               days <- floor(days)
               time$vdate <- PCICt::as.PCICt(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H",
                                             cal=time$daysayear)
             } else if(median(diff(days))==1) {
-              time$vdate <- PCICt::as.PCICt(paste(years,months,floor(days),sep="-"),cal=time$daysayear)
+              time$vdate <- PCICt::as.PCICt(paste(years,months,floor(days),sep="-"),
+                                            cal=time$daysayear)
             }
           }
         }
@@ -1058,10 +1071,21 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     if (grepl("sec",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals
     if (grepl("min",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60
     if (grepl("hou",tunit)) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60*60
-    if (grepl("day",tunit) & median(diff(time$vals))<1) time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60*60*24
-    if (grepl("day",tunit) & median(diff(time$vals))>=1) time$vdate <- as.Date((time$vals),origin=as.Date(torigin))
+    if (grepl("day",tunit)) {
+      if(length(time$vals)==1) {
+        time$vdate <- as.Date((time$vals),origin=as.Date(torigin))
+      } else if(median(diff(time$vals))<1) {
+        time$vdate <- as.POSIXct(torigin,tz='UTC') + time$vals*60*60*24
+      } else if(median(diff(time$vals))>=1) {
+        time$vdate <- as.Date((time$vals),origin=as.Date(torigin))
+      }
+    } 
     if (grepl("mon",tunit)) {
-      if (sum(diff(time$vals)>1) < 1) {
+      if (length(time$vals)==1) {
+        year1 <- time$vals[1]%/%12 + yorigin
+        month1 <- morigin
+        time$vdate <- as.Date(paste(as.character(year1),month1,"01",sep="-"))
+      } else if (sum(diff(time$vals)>1) < 1) {
         year1 <- time$vals[1]%/%12 + yorigin
         month1 <- morigin
         time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=length(time$vals))
@@ -1069,8 +1093,10 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       } else print("Warning : Monthly data are mangeled") 
     } 
   }
-  if ((length(time$vdate)>0) & (grepl("mon",tunit)) & (sum(diff(as.numeric(format.Date(time$vdate,"%m")))>1))) {
-    if(verbose) stop("Vector date is mangeled! Need extra check!")
+  if ((length(time$vdate)>1) & (grepl("mon",tunit))) {
+    if(sum(diff(as.numeric(format.Date(time$vdate,"%m")))>1)) {
+      stop("Vector date is mangeled! Need extra check!")
+    }
   }
   ## Checking the data / Extra checks / Automatic calendar detection / etc.
   ## Check 1 # Regular frequency
@@ -1082,18 +1108,21 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   if (!is.null(time$vdate)) {
     if (verbose) print("Vector of date is in the form :")
     if (verbose) print(str(time$vdate))
-    if (verbose) print(diff(time$vdate))
+    if (verbose & length(time$vdate)>1) print(diff(time$vdate))
   } else {
-    if (grepl("sec",tunit))
+    if(length(ncid$dim$time$vals)==1) {
+      dt <- 1
+    } else if (grepl("sec",tunit)) {
       dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60*60)))))
-    if (grepl("min",tunit))
+    } else if (grepl("min",tunit)) {
       dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/(24*60)))))
-    if (grepl("day",tunit))
+    } else if (grepl("day",tunit)) {
       dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
-    if (grepl("hou",tunit))
+    } else if (grepl("hou",tunit)) { 
       dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals/24))))
-    if (grepl("mon",tunit))
+    } else if (grepl("mon",tunit)) {
       dt <- as.numeric(rownames(table(diff(ncid$dim$time$vals))))
+    }
     if (length(dt)==1) {
       if (verbose) print("Regular frequency has been detected from the data")
     } else if (verbose) print("Irregular frequency has been detected from the data")
