@@ -945,7 +945,9 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   } else {
     if (verbose) print("Checking Frequency from the data --> [fail]")
   }
-  ## Checking Calendar attribute if any, otherwise set to "ordinary"  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day"
+  ## Checking Calendar attribute if any, otherwise set to "ordinary"  
+  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day"
+  ## REB 2021-05-06 - CMIP6 also uses the Julian Calendar :-(
   ical <- grep(c("calend"),tatt)
   ## 
   if (length(ical)>0) {   
@@ -970,7 +972,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   ## Get calendar from attribute if any and create vector of dates vdate
   ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
   if (!is.null(calendar.att)) {
-    if (grepl("gregorian",calendar.att) | grepl("standard",calendar.att)) {
+    if (grepl("gregorian",calendar.att) | grepl("julian",calendar.att) | grepl("standard",calendar.att)) {
       if(grepl("%Y%m%d",tunit)) {
         t.day <- floor(time$vals)
         t.hr <- 24*(time$vals-t.day)
@@ -1149,7 +1151,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   }
   if (!is.null(model$frequency)) {
     if (verbose) print(paste("Frequency set to ",model$frequency,sep=""))
-    if (model$frequency %in% c("month","season","year")) {
+    if ( (model$frequency %in% c("month","season","year")) & (!is.null(time$vdate)) ) {
       yr <- year(time$vdate)
       mo <- month(time$vdate)
       dy <- "01"
