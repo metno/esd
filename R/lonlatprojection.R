@@ -98,9 +98,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    strftime(attr(x,"time")[1],format="%H:%M"))
       t2 <- paste0(strftime(attr(x,"time")[2],format="%Y%m%d"),"~",
                    strftime(attr(x,"time")[2],format="%H:%M"))
-    } else {
+    } else if(inherits(attr(x,"time"),c("Date","POSIXt"))) {
       t1 <- strftime(attr(x,"time")[1],format="%Y%m%d")
       t2 <- strftime(attr(x,"time")[2],format="%Y%m%d")
+    } else {
+      t1 <- attr(x,"time")[1]
+      t2 <- attr(x,"time")[2]
     }
     ##period <- paste('[',t1,', ',t2,']',sep='')  ## REB: square brackets have special role in expressions
     period <- paste('phantom(0)* (',t1,'-',t2,')',sep='')

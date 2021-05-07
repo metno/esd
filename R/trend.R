@@ -187,8 +187,13 @@ trend.field <- function(x,result="trend",model="y ~ t",verbose=FALSE,...) {
 
   gettrend <- function(x,model="y ~ t") {
     trendx <- data.frame(y=x,t=1:length(x))
-    eval(parse(text=paste("trendfit <- lm(",model,",data=trendx)")))
-    trend <- predict(trendfit,newdata=trendx)
+    if(any(!is.na(x))) {
+      eval(parse(text=paste("trendfit <- lm(",model,",data=trendx)")))
+      trend <- predict(trendfit,newdata=trendx)
+      return(trend)
+    } else {
+      trend <- x
+    }
     return(trend)
   }
 

@@ -502,7 +502,6 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   #print(length(x)); print(attr(x,'dimensions')[1:2])
   projection <- tolower(projection)
   if (FUN=='trend') FUN <- 'trend.coef'
-  
   if (!is.null(xlim)) {
     if (xlim[1] < 0) x <- g2dl(x,greenwich=FALSE)
   }
@@ -552,6 +551,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   attr(X,'variable') <- attr(x,'variable')[1]
   #  if (attr(x,'unit')=="deg C") attr(X,'unit') <- expression(degree*C) else
   unit <- attr(x,'unit')[1]
+  
   if (unit =='%') unit <- "'%'"
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
   if ((unit=='degree Celsius') | (unit=='deg C') | (unit=='degC'))
@@ -567,7 +567,6 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   dim(X) <- attr(x,'dimensions')[1:2]
   
   if (verbose) {print(str(X)); print(summary(c(X)))}
-  
   if (plot) {
     if (projection=="lonlat") {
       lonlatprojection(x=X,xlim=xlim,ylim=ylim,zlim=zlim,n=n,
