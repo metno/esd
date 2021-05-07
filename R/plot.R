@@ -618,7 +618,7 @@ plot.eof <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
                   ip=ip,what=what,colbar=colbar,verbose=verbose,...) else
-  if (inherits(x,"field"))
+  if (inherits(x,c("field","station")))
     plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
                    ip=ip,what=what,colbar=colbar,verbose=verbose,
                    it=it,is=is,...) else

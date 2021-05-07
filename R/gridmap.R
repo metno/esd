@@ -2,8 +2,9 @@
 #' 
 #' A function that uses \code{LatticeKrieg} and elevation data to grid station
 #' based data and present a map.
+#' @aliases gridmap gridmap.default gridmap.station gridmap.pca gridstations
 #'  
-#' @param Y A station object
+#' @param Y A station object or a PCA object. 
 #' @param FUN A function or name of a function, e.g, "mean" or "trend"
 #' @param colbar A list specifying the color bar, e.g., list(col="precip",
 #' breaks=seq(1,10), rev=FALSE)
@@ -19,10 +20,15 @@
 #' 
 #' data("precip.NORDKLIM")
 #' precip.gp <- gridmap(precip.NORDKLIM, plot=TRUE)
-#' 
-#' @export gridmap
+#' map(precip.gp)
+#' @export
 gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
-                    zlim=NULL,verbose=FALSE,plot=TRUE,new=TRUE) {
+                    zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) { UseMethod("gridmap") }
+
+#' @exportS3Method
+#' @export 
+gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
+                    zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
 
   if (verbose) print(paste('gridmap',FUN))
   if (!requireNamespace("LatticeKrig", quietly = TRUE)) {
@@ -81,3 +87,43 @@ gridmap <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NU
     invisible(W)
   }
 }
+
+#' @exportS3Method
+#' @export 
+gridmap.station <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
+                            zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+  if (verbose) print('gridmap.station')
+  x <- gridmap.station(Y=Y,FUN=FUN,colbar=colbar,project=project,xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=plot,new=new)
+  return(x)
+}
+## REB 2021-05-07: added a method to grid PCAs through kriging.
+#' @exportS3Method
+#' @export 
+gridmap.pca <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
+                            zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
+  ## Convert a PCA to EOF
+  if (verbose) print('gridmap.pca')
+  d <- dim(Y)
+  for (id in 1:d[2]) { 
+    if (verbose) print(paste('PCA pattern',id))
+    y <- attr(Y,'pattern')[,id]
+    attr(y,'longitude') <- lon(Y)
+    attr(y,'latitude') <- lat(Y)
+    attr(y,'altitude') <- alt(Y)
+    attr(y,'unit') <- 'weight'
+    attr(y,'variable') <- paste0(varid(y),'.pca')
+    x <- gridmap.default(Y=y,FUN=FUN,colbar=colbar,project=project,xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=plot,new=new)
+    D <- dim(x)
+    if (id==1) X <- c(x) else X <- cbind(X,c(x))
+  }
+  dim(X) <- c(D,d[2])
+  attr(Y,'longitude') <- lon(x)
+  attr(Y,'latitude') <- lat(x)
+  attr(Y,'pattern') <- X
+  attr(Y,'dimensions') <- c(D,d[1])
+  class(Y)[1] <- 'eof'
+  return(Y)
+}
+
+
+
