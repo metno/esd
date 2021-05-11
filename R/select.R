@@ -11,9 +11,10 @@
 select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=NULL, 
                             lon=NULL, lat=NULL, alt=NULL, cntr=NULL, src=NULL, it=NULL, 
                             nmin=NULL, user='external', update.meta=FALSE, verbose=FALSE) {
-  if (verbose) print('select.station')
+  if (verbose) print('select.station:')
   
   if (is.null(x)) {
+    if (verbose) print('x == NULL')
     data("station.meta",envir=environment())
     if(is.null(src)) {
       frost <- TRUE
@@ -80,10 +81,13 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
      # update ele using element
      ## ele <- element
      ## param <- esd2ele(ele)
-  } else {
-    stop("x must be an object of class 'station'") 
+  } else if (inherits(x,"data.frame")) station.meta <- x else {
+    stop("x must be an object of class 'station' or a station.meta object (data.frame)") 
   }
+  ## The variable 'src' seeems to be missing
+  src <- station.meta$source
 
+  if (verbose) {print(dim(station.meta)); print(table(src))}
   if (!is.null(param)) {
     ele <- apply(as.matrix(param),1,esd2ele)
     if (is.null(ele)) {
@@ -240,7 +244,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
 # There were two versions of this function. Which one is correct?
 select.station.v2 <- function(stid=NULL, param=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL, ...,
    src=NULL, file="station.meta.rda", path="esd/data", silent=FALSE, verbose=FALSE) {
-  if(verbose) print("select.station")
+  if(verbose) print("select.station.v2")
   if(!is.null(path)) file <- file.path(path,file)
   if(!file.exists(file)) {
     print(paste("metadata file",file,"not found"))

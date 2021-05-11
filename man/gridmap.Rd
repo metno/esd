@@ -51,4 +51,5 @@ based data and present a map.
 
 data("precip.NORDKLIM")
 precip.gp <- gridmap(precip.NORDKLIM, plot=TRUE)
+map(precip.gp)
 }

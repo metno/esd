@@ -211,7 +211,18 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
     return(y)
   }
   ## end of hack meant to streamline the use REB...
-  ss <- NULL
+  ## REB 2021-05-11
+  
+  l <- list(...)
+  dots <- names(l)
+  if (length(l) > 0) { 
+    if (verbose) print("Taking '...' to select station (station.meta/data.frame)")
+    ic <- match('ss',names(l))
+    if (!is.na(ic)) ss <- l$ss else ss <- l[[1]] 
+  } else {
+    if (verbose) print("ss <- NULL")
+    ss <- NULL
+  }
   if (inherits(loc,"stationmeta")) {
     ss <- loc
   } else if (is.character(loc)) {
@@ -476,16 +487,16 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   if (verbose) print('ecad.station...')
   ele <- esd2ele(param=param)
   if (is.null(ele)) {
-    param1 <-as.character(ele2param(ele=param,src="ECAD")[5])
+    param1 <-as.character(ele2param(ele=param,src="ECAD")$param[5])
   } else {
-    param1 <- as.character(ele2param(ele=ele,src="ECAD")[5])
+    param1 <- as.character(ele2param(ele=ele,src="ECAD")$param[5])
   }
   if (!is.null(param) & (!is.null(dim(param1)[1]))) {
     if (dim(param1)==0) { 
       stop('Please refresh your selection, element not found in meta data')
     }
   }
-  scale <-as.numeric(ele2param(ele=ele,src="ECAD")[3])
+  scale <-as.numeric(ele2param(ele=ele,src="ECAD")$scale[3])
   if (verbose) print(paste('scale=',scale))                      
   
   fdata <- paste(url,"_",tolower(param1),".zip",sep="") 
@@ -566,7 +577,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
                      param=param, aspect="original",
                      unit=switch(param1,'TG'='degree Celsius','TX'='deg C','TN'='deg C', 'CC'='oktas',
                                  'DD'='degrees','FG'='m/s', 'FX'='m/s','HU'='%','PP'='hPa', 'SS'='hours','RR'='mm/day'),
-                     longname=as.character(ele2param(ele=ele,src="ECAD")[2]),
+                     longname=as.character(ele2param(ele=ele,src="ECAD")$longname[2]),
                      reference=paste0("Klein Tank, A.M.G. and Coauthors, 2002.",
                                       " Daily dataset of 20th-century surface air temperature and precipitation series for the European Climate Assessment.",
                                       " Int. J. of Climatol., 22, 1441-1453."),
@@ -600,8 +611,8 @@ nacd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     return(NULL)
   }
   
-  x.name <- as.character(ele2param(ele=ele,src="NACD")[2])
-  unit <- as.character(ele2param(ele=ele,src="NACD")[4])
+  x.name <- as.character(ele2param(ele=ele,src="NACD")$param[2])
+  unit <- as.character(ele2param(ele=ele,src="NACD")$unit[4])
   unit <- switch(ele,
                  '101'='degree Celsius',
                  '111'='degree Celsius',
@@ -642,9 +653,9 @@ narp.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   data(NARP,envir=environment())
   ele <- esd2ele(param=param)
   
-  x.name <- as.character(ele2param(ele=ele,src="NARP")[2])
-  unit <-  as.character(ele2param(ele=ele,src="NARP")[4])
-  scale <- as.numeric(ele2param(ele=ele,src="NARP")[3])
+  x.name <- as.character(ele2param(ele=ele,src="NARP")$param[2])
+  unit <-  as.character(ele2param(ele=ele,src="NARP")$unit[4])
+  scale <- as.numeric(ele2param(ele=ele,src="NARP")$scale_factor[3])
   iii <- is.element(NARP[,1],stid) & is.element(NARP[,2],as.numeric(ele))
   
   if (sum(iii) ==0) {
@@ -686,16 +697,16 @@ nordklim.station <- function(stid=NULL,loc=NULL,lon=NULL,lat=NULL,alt=NULL,cntr=
   
   if (dim(x)[1] < 1) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
   x[x < -999] <- NA
-  scale_factor <- as.numeric(as.matrix(ele2param(ele=ele,src="NORDKLIM")[3]))
+  scale_factor <- as.numeric(as.matrix(ele2param(ele=ele,src="NORDKLIM")$scale_factor[3]))
   xx <- as.matrix(x[,4:15]*scale_factor)
-  unit <- as.character(as.matrix(ele2param(ele=ele,src="NORDKLIM")[4]))
+  unit <- as.character(as.matrix(ele2param(ele=ele,src="NORDKLIM")$unit[4]))
   ## Vector of dates
   year <- sort(rep(x$start,12))
   ny <- length(x$start)
   month <- rep(1:12,ny)
   day <- rep(1,length(year))
   ## Longname
-  lname <- as.character(ele2param(ele=ele,src="NORDKLIM")[2])
+  lname <- as.character(ele2param(ele=ele,src="NORDKLIM")$longname[2])
   
   ## format data into a zoo object
   NORDKLIM <- zoo(c(t(xx)),order.by = as.Date(paste(year, month, day, sep = "-"), by='month', length.out = ny))
@@ -720,8 +731,8 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   ele <-esd2ele(param=param) 
   
   ## extract param1 and scale variables
-  param1 <-as.character(ele2param(ele=ele,src="GHCNM")[5])
-  scale <-as.numeric(ele2param(ele=ele,src="GHCNM")[3])
+  param1 <-as.character(ele2param(ele=ele,src="GHCNM")$param[5])
+  scale <-as.numeric(ele2param(ele=ele,src="GHCNM")$scale_factor[3])
   
   if (verbose) print("station.GHCNM")
   
@@ -737,7 +748,7 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   if (sum(GHCNM,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
   ##print("attributes")
   GHCNM <- as.station(GHCNM,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,##frequency=1,calendar='gregorian',
-                      cntr=cntr, loc=loc, src='GHCNM', url=paste(url,ver,sep="/"),longname=as.character(ele2param(ele=ele,src="GHCNM")[2]),
+                      cntr=cntr, loc=loc, src='GHCNM', url=paste(url,ver,sep="/"),longname=as.character(ele2param(ele=ele,src="GHCNM")$longname[2]),
                       unit=switch(param1,'TAVG'='degree Celsius','TMAX'='degree Celsius','TMIN'='degree Celsius'), param=param, aspect="original",
                       reference=paste0("J. H. Lawrimore, M. J. Menne, B. E. Gleason, C. N. Williams, D. B. Wuertz, R. S. Vose, and J. Rennie ",
                                        "(2011), An overview of the Global Historical Climatology Network monthly mean temperature data set",
@@ -756,10 +767,11 @@ ghcnd.station <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cnt
                           path="data.GHCND", url=NULL, adj=TRUE, force=FALSE, flag=FALSE, off=FALSE, verbose=FALSE) {
   
   if (verbose) print("station.GHCND")
-  
   ele <- esd2ele(param=param) 
-  param1 <- as.character(ele2param(ele=ele,src="GHCND")[5])
-  scale <- as.numeric(ele2param(ele=ele,src="GHCND")[3])
+  param1 <- as.character(ele2param(ele=ele,src="GHCND")$param[5])
+  ## REB 2021-05-11 fix
+  #scale <- as.numeric(ele2param(ele=ele,src="GHCND")[3])
+  scale <- as.numeric(ele2param(ele=ele,src="GHCND")$scale_factor[3])
   ghcnd <- ghcnd.data(param=param1, stid=stid, src="ghcnd", path=path, url=url,
                       force=force, flag=flag, verbose=verbose, rm.file=FALSE)
   
@@ -784,8 +796,9 @@ ghcnd.station <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cnt
   if (sum(GHCND,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
   
   GHCND <- as.station(GHCND,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,##frequency=1,calendar='gregorian',
-                      cntr=cntr, loc=loc,src='GHCND', url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn",longname=as.character(ele2param(ele=ele,src="GHCND")[2]),
-                      unit=as.character(ele2param(ele=ele,src="GHCND")[4]), param=param, aspect="original",
+                      cntr=cntr, loc=loc,src='GHCND', url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn",
+                      longname=as.character(ele2param(ele=ele,src="GHCND")$longname[2]),
+                      unit=as.character(ele2param(ele=ele,src="GHCND")$unit[4]), param=param, aspect="original",
                       reference=paste0("J. H. Lawrimore, M. J. Menne, B. E. Gleason, C. N. Williams, D. B. Wuertz, R. S. Vose, and J. Rennie ",
                                        "(2011), An overview of the Global Historical Climatology Network monthly mean temperature data set",
                                        ", version 3, J. Geophys. Res., 116, D19121, doi:10.1029/2011JD016187."),
@@ -1100,8 +1113,8 @@ metno.station <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cnt
     METNO <- as.station(METNO,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,
                         ##frequency=1,calendar='gregorian',
                         cntr=cntr,loc=loc,src='METNO', url=filename,
-                        longname=as.character(ele2param(ele=esd2ele(param),src="METNO")[2]),
-                        unit=as.character(ele2param(ele=esd2ele(param),src="METNO")[4]),
+                        longname=as.character(ele2param(ele=esd2ele(param),src="METNO")$longname[2]),
+                        unit=as.character(ele2param(ele=esd2ele(param),src="METNO")$unit[4]),
                         param=param, aspect="original",
                         reference="Klimadata Vare Huset archive (http://eklima.met.no)",
                         info="Klima Data Vare Huset archive (http://eklima.met.no)")
