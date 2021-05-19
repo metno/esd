@@ -2,6 +2,10 @@
 % Please edit documentation in R/gridmap.R
 \name{gridmap}
 \alias{gridmap}
+\alias{gridmap.default}
+\alias{gridmap.station}
+\alias{gridmap.pca}
+\alias{gridstations}
 \title{Creates a griddded map}
 \usage{
 gridmap(
@@ -13,12 +17,12 @@ gridmap(
   ylim = NULL,
   zlim = NULL,
   verbose = FALSE,
-  plot = TRUE,
+  plot = FALSE,
   new = TRUE
 )
 }
 \arguments{
-\item{Y}{A station object}
+\item{Y}{A station object or a PCA object.}
 
 \item{FUN}{A function or name of a function, e.g, "mean" or "trend"}
 
@@ -47,5 +51,5 @@ based data and present a map.
 
 data("precip.NORDKLIM")
 precip.gp <- gridmap(precip.NORDKLIM, plot=TRUE)
-
+map(precip.gp)
 }

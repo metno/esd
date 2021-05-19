@@ -421,3 +421,32 @@ subset.stationmeta <- function(x, it=NULL, is=NULL, verbose=FALSE) {
     if (verbose) str(y)
     return(y)
 }
+
+#' @exportS3Method
+#' @export 
+subset.data.frame <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
+                           stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
+                           src=NULL, nmin=NULL, verbose=FALSE) {
+  if (verbose) print('subset.data.frame')
+  # > names(x)
+  # [1] "station_id" "location"   "country"    "longitude"  "latitude"  
+  # [6] "altitude"   "element"    "start"      "end"        "source"    
+  # [11] "variable"   "wmo"        "quality"   
+  d <- dim(x)
+  ii <- rep(TRUE,d[1])
+  if (!is.null(is)) ii[-is] <- FALSE
+  if (!is.null(loc)) ii[!is.element(tolower(substr(x$location,1,min(nchar(loc)))),tolower(substr(loc,1,min(nchar(loc)))))] <- FALSE
+  if (!is.null(param)) {
+    ele <- switch(tolower(param),'tmax'=111,'tmin'=121,'precip'=601,'')
+    ii[!is.element(tolower(x$element),tolower(ele))] <- FALSE
+  }
+  if (!is.null(stid)) ii[!is.element(x$station_id,stid)] <- FALSE
+  if (!is.null(lon)) ii[(x$longitude < lon[1]) | (x$longitude > lon[2])] <- FALSE
+  if (!is.null(lat)) ii[(x$latitude < lat[1]) | (x$latitude > lat[2])] <- FALSE
+  if (!is.null(alt)) ii[(x$altitude < alt[1]) | (x$altitude > alt[2])] <- FALSE
+  if (!is.null(cntr)) ii[!is.element(tolower(x$country),tolower(cntr))] <- FALSE
+  if (!is.null(src)) ii[!is.element(tolower(x$source),tolower(src))] <- FALSE
+  if (!is.null(nmin)) ii[!(as.numeric(x$end) - as.numeric(x$start)) < nmin - 1] <- FALSE
+  x <- x[ii,]
+  return(x)
+}

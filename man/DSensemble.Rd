@@ -78,7 +78,7 @@ These functions are used using the following code
 
 \item{mask}{TRUE mask out land}
 
-\item{ds.1900.2099}{Default, only downscale for the period 1900-2099}
+\item{ds.interval}{Default set to NULL, otherwise set the time period for downscaling, e.g. c(1950,2100)}
 }
 \value{
 A 'dsensembele' object - a list object holding DS-results.

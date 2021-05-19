@@ -10,8 +10,9 @@
 \method{plot}{diagnose}(x, ...)
 }
 \description{
-Produce plots to diagnose and examine different data types
-and check for consistency.
+Produce plots to diagnose and examine different data types and checks for consistency. The method
+plot.diagnose.matrix has an additional agrument 'calibrate' that can make the target plot presentation
+stricter or leaner (default is 100).
 }
 \seealso{
 diagnose
