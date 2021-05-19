@@ -131,6 +131,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   } else ylim=range(lat)
   
   if (new) {
+    if(verbose) print("Create new graphic device")
     dev.new()
     par(fig=fig0)
     par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)

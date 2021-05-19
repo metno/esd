@@ -33,7 +33,6 @@ day2IDF <- function(x,L=c(1,2,3,6,12,24),tau=10,zeta=NULL,n0=365.25,
   ## Choose L/24 which equals 1 for 24-hr data so that the results are tied to the 24-hr data and that
   ## x = const = return value for 24-hr data provided by x_t = alpha mu ln(fw tau).
   ## Th e value for zeta depends on the return interval tau:
-  
   stopifnot( ((is.precip(x)) & (class(x)[2]=='day')) | (is.list(x)) ) 
   if (is.list(x)) {
     if (sum(is.element(names(x),c('mu','fw')))!=2) stop("day2IDF: error - list object needs 'fw' and 'mu'!") 
