@@ -34,10 +34,13 @@ Where there are multiple measuring periods registered for the parameter,
 only the earliest start time and the latest end time are used.
 }
 \examples{
+
+\dontrun{
 # Fetch metadata for all stations and measuring periods of the t2m parameter
 metno.frost.meta.day(param=c('t2m'))
 # Fetch metadata for all stations and measuring periods of all available parameters
 metno.frost.meta.month()
+}
 
 }
 \author{

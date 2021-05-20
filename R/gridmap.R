@@ -93,7 +93,9 @@ gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
 gridmap.station <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xlim=NULL,ylim=NULL,
                             zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
   if (verbose) print('gridmap.station')
-  x <- gridmap.station(Y=Y,FUN=FUN,colbar=colbar,project=project,xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=plot,new=new)
+  ## KMP 2021-05-19: Calling gridmap.station from within itself creates an infinite loop
+  #x <- gridmap.station(Y=Y,FUN=FUN,colbar=colbar,project=project,xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=plot,new=new)
+  x <- gridmap.default(Y=Y,FUN=FUN,colbar=colbar,project=project,xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=plot,new=new)
   return(x)
 }
 ## REB 2021-05-07: added a method to grid PCAs through kriging.

@@ -19,11 +19,14 @@
 #' @keywords parameter,metadata,metno,norway,frost
 #'
 #' @examples
+#'
+#' \dontrun{
 #' # Fetch metadata for all stations and measuring periods of the t2m parameter
 #' metno.frost.meta.day(param=c('t2m'))
 #' # Fetch metadata for all stations and measuring periods of all available parameters
 #' metno.frost.meta.month()
-#' 
+#' }
+#'
 #' @export metno.frost.meta.day
 metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
                                  save2file=FALSE, path=NULL, verbose=FALSE, ...) {
@@ -166,13 +169,14 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     xs1$lat = sapply(xs1$geometry.coordinates, function(x) x[2])
     xs1$lat[sapply(xs1$lat, is.null)] <- NA
     xs1$lat <- unlist(xs1$lat)
-    df1 <- xs1[c("id","name","country","lon","lat","masl","municipality","municipalityId","county","countyId")]
+    df1 <- xs1[c("id","name","country","lon","lat","masl","municipality",
+                 "municipalityId","county","countyId")]
 
     xs2 <- jsonlite::fromJSON(URLencode(url2), flatten=TRUE)
     df2 <- xs2$data
     df2$sourceId = substring(df2$sourceId, 1, nchar(df2$sourceId)-2)
     df <- data.frame(NULL)
-    for (i in 1:length(param1s)) {
+    for (i in which(param1s %in% df2$elementId)) {
       # KT 2020-05-26: preserve NA as latest validTo
       dfparam = df2[df2$elementId == param1s[i], ]
       dfparam$validTo[is.na(dfparam$validTo)] = "9999-12-31T00:00:00.000Z"
@@ -188,8 +192,8 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
 
         colnames(stperiod) = c("station_id","location","country","lon","lat","altitude",
                                "municipality","municipalityid","county","countyid","start","end")
-
-        stperiod$element <- rep(names(param1s[i]),length(stperiod$station_id))
+        stperiod$element <- rep(names(param1s[i]),
+                                      length(stperiod$station_id))
 
         # convert to UTM
         utmZone <- 33
@@ -201,6 +205,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
         df <- rbind(stperiod, df, stringsAsFactors=FALSE)
       }
     }
+    
     #invisible(df)
     ## Same format as station.meta
     var <- df$element

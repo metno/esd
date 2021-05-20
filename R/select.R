@@ -84,8 +84,12 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   } else if (inherits(x,"data.frame")) station.meta <- x else {
     stop("x must be an object of class 'station' or a station.meta object (data.frame)") 
   }
-  ## The variable 'src' seeems to be missing
-  src <- station.meta$source
+  
+  ## KMP 2021-05-19: 'src' is an input argument (NULL by default) and if you redefine it here 
+  ## the user will not be able to select based on source! If 'src' is missing altogether 
+  ## we need to figure out why that happens.
+  ## REB 2021-05-11: The variable 'src' seeems to be missing
+  #src <- station.meta$source
 
   if (verbose) {print(dim(station.meta)); print(table(src))}
   if (!is.null(param)) {

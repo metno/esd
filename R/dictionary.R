@@ -49,9 +49,8 @@ ele2param <- function(ele = NULL , src = NULL) {
   x <- merge(x,ghcnd.ele(),all=TRUE)
   x <- merge(x,metno.ele(),all=TRUE)
   x <- merge(x,metno.frost.ele(),all=TRUE)
- 
-  if (length(src)>0) x <- subset(x, toupper(x[,6])==toupper(src))
-  if (length(ele)>0) x <- subset(x, x[,1] == ele)
+  if (length(src)>0) x <- subset(x, is=toupper(x[,6])==toupper(src))
+  if (length(ele)>0) x <- subset(x, is=x[,1]==ele)
   ## if ((length(src)==0) & (length(ele)==0)) 
   ##df <- as.data.frame(x,stringsAsFactors=FALSE)
   if (length(x)==0) print(paste("Selected element does not exist in the",src,"database",sep=" "))

@@ -432,8 +432,14 @@ subset.data.frame <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
   # [1] "station_id" "location"   "country"    "longitude"  "latitude"  
   # [6] "altitude"   "element"    "start"      "end"        "source"    
   # [11] "variable"   "wmo"        "quality"   
+  
   d <- dim(x)
   ii <- rep(TRUE,d[1])
+  ## KMP 2021-05-20: the input 'it' is not used so when subset is called without
+  ## specifying the second argument, no subsetting is done. I'm setting it to is
+  ## for now but perhaps we should consider removing the it argument altogether or
+  ## find a use for it. 
+  if(!is.null(it) & is.null(is)) is <- it
   if (!is.null(is)) ii[-is] <- FALSE
   if (!is.null(loc)) ii[!is.element(tolower(substr(x$location,1,min(nchar(loc)))),tolower(substr(loc,1,min(nchar(loc)))))] <- FALSE
   if (!is.null(param)) {
