@@ -1560,12 +1560,22 @@ plot.ds.pca <- function(x,...,ip=1,
     y0 <- attr(y,'original_data')
     plot(y0[,ip], lwd=2, type='b', pch=19, xlim=xlim, ylim=ylim,
          xlab="Date",ylab=paste("PC #",ip,sep=""))
+    grid()
     if ( (class(index(y))=='Date') & (class(index(y0))=='numeric') & inherits(y,'annual') )
       index(y) <- year(index(y))
     if ( (class(index(y))=='numeric') & (class(index(y0))=='Date') & inherits(y,'annual') )
       index(y) <- as.Date(paste(index(y),'01-01',sep='-'))
 
     lines(zoo(y[,ip]),lwd=2,col='red',type='b')
+    cal0 <- data.frame(y=coredata(y0[,ip]),t=year(y0))
+    #cal1 <- data.frame(y=coredata(x),t=year(x))
+    cal1 <- data.frame(y=coredata(y[,ip]),t=year(y[,ip]))
+    
+    trend0 <- lm(y ~ t, data=cal0)
+    trend1 <- lm(y ~ t, data=cal1)
+    lines(zoo(predict(trend0),order.by=index(y0)),lty=2)
+    lines(zoo(predict(trend1),order.by=index(x)),lty=2,col='red')
+    
     legend(x=index(attr(y,'original_data')[,ip])[1],
            y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
                0.2*diff(range(attr(y,'original_data')[,ip])),
@@ -1988,15 +1998,16 @@ plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
 #' @param anomaly a boolean; if TRUE show anomalies
 #' @param test a boolean; if TRUE perform some test?
 #' @param plot a boolean; if TRUE show plot
+#' @param xval a boolean; if TRUE show cross-validation statistics
 #' @param \dots additional arguments
 #'
 #' @export plot.dsensemble.one
 plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
-                                 envcol=rgb(1,0,0,0.2),legend.show=TRUE,ylab=NULL,
+                                 envcol=rgb(1,0,0,0.2),legend.show=FALSE,ylab=NULL,
                                  obs.show=TRUE,target.show=TRUE,map.show=TRUE,map.type=NULL,map.insert=TRUE,
                                  new=FALSE,xrange=NULL,yrange=NULL,
                                  alpha=0.5,alpha.map=0.7,mar=c(5.1,4.5,4.1,2.1),
-                                 cex.axis=1, cex.lab=1.2, cex.main=1.2, 
+                                 cex.axis=1, cex.lab=1.2, cex.main=1.2, xval.show=FALSE,
                                  verbose=FALSE,...) {
   if(verbose) print("plot.dsensemble.one")
   stopifnot(inherits(x,'dsensemble'))
@@ -2100,7 +2111,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   title(main=toupper(loc(x)),cex.main=cex.main)
   if ((target.show) & (!is.null(diag))) {
     if (verbose) print('add target diagnostic')
-    par(fig=c(0.23,0.45,0.75,0.95),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
+    par(fig=c(0.12,0.30,0.72,0.90),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
     plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
   } 
@@ -2112,37 +2123,6 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
             verbose=verbose,...)
     new <- TRUE
   }
-  # REB 2016-11-25
-  #if (map.show) {
-  #  if(verbose) print("add map")
-  #  if(is.null(xrange) & !is.null(lon(y))) {
-  #    xrange <- range(lon(y)) + c(-15,15)
-  #  }
-  #  if(is.null(yrange) & !is.null(lat(y))) {
-  #    yrange <- range(lat(y)) + c(-10,10)
-  #  }
-  #  if (!is.null(xrange) & !is.null(xrange)) {
-  #    data("geoborders", envir = environment())
-  #    lon <- geoborders$x
-  #    lat <- geoborders$y
-  #    lon2 <- attr(geoborders,"borders")$x
-  #    lat2 <- attr(geoborders,"borders")$y
-  #    par(fig=c(0.7,0.95,0.78,0.98),new=TRUE, mar=c(0,0,0,0),
-  #      cex.main=0.75,xpd=FALSE,col.main="grey",bty="n")
-  #    plot(lon,lat,lwd=1,col="black",type='l',xlab=NA,ylab=NA,
-  #       axes=FALSE,xlim=xrange,ylim=yrange)
-  #    axis(1,mgp=c(3,.5,0))
-  #    axis(2,mgp=c(2,.5,0))
-  #    lines(lon2,lat2,col = "pink",lwd=1)
-  #    if("points" %in% map.type) {
-  #      points(lon(y),lat(y),pch=21,cex=1,col='black',bg='red',lwd=1)
-  #  }
-  #    if("rectangle" %in% map.type) {
-  #      rect(min(lon(y)),min(lat(y)),max(lon(y)),max(lat(y)),lwd=1,col=NA,border='red',lty=2)
-  #    }
-  #  } else if (verbose) print(paste('lon=',lon(y),'lat=',lat(y)))
-  #}  
-  # finished plotting
   
   if (legend.show) {
     par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",xpd=NA)
@@ -2155,11 +2135,6 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                          paste(diag$outside,"observations"),
                          "p-value: "),
              bty="n",cex=0.7,text.col="grey40")
-      #legend(0.5,0.90,c(expression(paste(levels(factor(attr(x,'unit')))[1]/d*e*c*a*d*e)),
-      #                  "ensemble trends > obs.",
-      #                  "outside ensemble 90% conf.int.",
-      #                  paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
-      #        bty="n",cex=0.7,text.col="grey40")
       legend(0.5,0.90,c(paste(levels(factor(attr(y,'unit')))[1],"/decade",sep=""),
                         "ensemble trends > obs.",
                         "outside ensemble 90% conf.int.",
@@ -2172,6 +2147,19 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
                                      map.insert=map.insert,#usegooglemap=usegooglemap,
                                      xrange=xrange,yrange=yrange,
                                      verbose=verbose,...)
+  if(xval.show) {
+    ## REB 2021-05-15 - this part is unfinished and disabled.
+    ## corssval()
+    x$info <- NULL; x$eof <- NULL; x$pca <- NULL
+    xval <- lapply(x,function(x) diag(cor(attr(x,'evaluation'))[seq(2,2*n,by=2),seq(1,2*n-1,by=2)]))
+    for (i in 1:n) { 
+      iy <- (i-1)*0.5
+      par(fig=c(0.32,0.50,0.85-iy,0.90-iy),new=TRUE, mar=c(0,0,1,0),xaxt="s",yaxt="n",bty="n",
+          cex=0.5,xpd=NA,col.main="grey30")
+      hist(unlist(lapply(xval,function(x) x[i])),col='grey',lwd=2,xlim=c(-1,1),
+           main=paste('X-validation correlation for PCA',i),xlab='correlation')
+    }
+  }
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
       fig=c(0,1,0.1,1),new=TRUE)
   par(fig=fig,new=TRUE, mar=mar)

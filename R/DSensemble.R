@@ -2091,7 +2091,9 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       ## y is a pca with no missing values; z has no NAs.
       if (verbose) print(round(colMeans(y),2))             
       
-      cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
+      #cl <- paste('dse.pca$i',i,'_',gsub('-','.',gcmnm[i]),' <- z',sep='')
+      mod.ssp.ripf <- decipher(ncfiles[select[i]])
+      dse.pca[[paste0('i',i,'_',mod.ssp.ripf[1],'.',mod.ssp.ripf[3])]]
       eval(parse(text=cl))
       if (verbose) {
         print('Test to see if as.station has all information needed.')

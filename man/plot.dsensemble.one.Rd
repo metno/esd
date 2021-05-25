@@ -9,7 +9,7 @@
   pts = FALSE,
   it = 0,
   envcol = rgb(1, 0, 0, 0.2),
-  legend.show = TRUE,
+  legend.show = FALSE,
   ylab = NULL,
   obs.show = TRUE,
   target.show = TRUE,
@@ -25,6 +25,7 @@
   cex.axis = 1,
   cex.lab = 1.2,
   cex.main = 1.2,
+  xval.show = FALSE,
   verbose = FALSE,
   ...
 )
@@ -65,6 +66,8 @@
 \item{test}{a boolean; if TRUE perform some test?}
 
 \item{plot}{a boolean; if TRUE show plot}
+
+\item{xval}{a boolean; if TRUE show cross-validation statistics}
 }
 \description{
 Plot one station
