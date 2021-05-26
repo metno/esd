@@ -561,3 +561,25 @@ yyyymmddhh2time <- function(y,option='POSIXct',verbose=FALSE) {
   return(y)
 }
 
+
+## Function to check the time period covered
+#' @export
+getinterval <- function(file,param='tas',verbose=FALSE) {
+  if (!file.exists(file)) return(NULL)
+  ncid <- nc_open(file)
+  time <- check.ncdf4(ncid,param=param,verbose=verbose)$time 
+  nc_close(ncid)
+  print(range(time$vdate))
+  return(time$vdate)
+}
+
+## Function to split the CMIP file names into model, ssp and RIPF
+#' @export
+decipher <- function(x) {
+  i <- gregexpr('_',x)[[1]]
+  model <- substr(x,i[2]+1,i[3]-1)
+  ssp <- substr(x,i[3]+1,i[4]-1)
+  ripf <- substr(x,i[4]+1,i[4]+8)
+  return(c(model,ssp,ripf))
+}
+

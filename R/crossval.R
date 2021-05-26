@@ -143,7 +143,7 @@ crossval.list <- function(x, m=5, verbose=FALSE, ...) {
 
 #' @exportS3Method
 #' @export crossval.dsensemble
-crossval.dsensemble <- function(x,m=NULL,verbose=FALSE,...,plot=TRUE) {
+crossval.dsensemble <- function(x,m=NULL,verbose=FALSE,...,plot=TRUE,xlim=c(-0,1)) {
   if(verbose) print("crossval.dsensemble")
   X <- x
   n <- m
@@ -155,7 +155,7 @@ crossval.dsensemble <- function(x,m=NULL,verbose=FALSE,...,plot=TRUE) {
   if (plot) {
     par(mfrow=mfrow)
     for (i in 1:n) { 
-      hist(unlist(lapply(xval,function(x) x[i])),col='grey',lwd=2,
+      hist(unlist(lapply(xval,function(x) x[i])),col='grey',lwd=2,xlim=xlim,
          main=paste('X-validation correlation for PCA',i),xlab='correlation')
     }
   }
