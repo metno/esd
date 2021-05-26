@@ -56,10 +56,10 @@ empirical quantiles with the distribution function quantiles (see \code{\link[st
 \examples{
 
 # Example 1 : 
-precip <- station.metnod(stid="18700",param="precip")
-x <- spell(precip,threshold=.1)
-x.ann <- annual(x,FUN="max")
-plot(x.ann,plot.type="multiple",new=FALSE)
+data(bjornholt)
+x <- spell(bjornholt, threshold=.1)
+x.ann <- annual(x, FUN="max")
+plot(x.ann, plot.type="multiple",new=FALSE)
 # Example 2 :
 plot(x, new=FALSE)
 
@@ -69,7 +69,6 @@ plot(as.seasons(ferder,FUN='GDD'), new=FALSE)
 
 # Mild winter days - number of days in the winter season with
 # above freezing temperatures
-data(ferder)
 try(coldwinterdays(ferder))
 
 # Quantile-quantile plot

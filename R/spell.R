@@ -35,10 +35,10 @@
 #' @examples
 #' 
 #' # Example 1 : 
-#' precip <- station.metnod(stid="18700",param="precip")
-#' x <- spell(precip,threshold=.1)
-#' x.ann <- annual(x,FUN="max")
-#' plot(x.ann,plot.type="multiple",new=FALSE)
+#' data(bjornholt)
+#' x <- spell(bjornholt, threshold=.1)
+#' x.ann <- annual(x, FUN="max")
+#' plot(x.ann, plot.type="multiple",new=FALSE)
 #' # Example 2 :
 #' plot(x, new=FALSE)
 #' 
@@ -48,7 +48,6 @@
 #' 
 #' # Mild winter days - number of days in the winter season with
 #' # above freezing temperatures
-#' data(ferder)
 #' try(coldwinterdays(ferder))
 #'
 #' # Quantile-quantile plot
@@ -83,7 +82,8 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   mdate <- index(x)[!is.finite(x)]
   above <- z > threshold
   below <- z <= threshold
-  if (verbose) print(paste('above=',sum(above),'below=',sum(below)))
+  if (verbose) print(paste('above=',sum(above,na.rm=TRUE),
+                           'below=',sum(below,na.rm=TRUE)))
   
   ## Check if threshold is outside the range of data:
   if (sum(above,na.rm=TRUE)*sum(below,na.rm=TRUE)==0) {
@@ -104,7 +104,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   dt <- c(0,diff(above))
   if (verbose) print(table(dt))
   
-  ## A streak starts the fist day when values is above
+  ## A streak starts the fist day when the value is above
   start <- t[dt > 0]
   ## A strak ends the day before the value is below 
   end <- t[dt < 0]-1
@@ -121,10 +121,10 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   }
   ## Make sure that there are as many starts as endings
   if (length(start) > length(end)) {
-    start <- start[-length(start)]
+    start <- start[1:length(end)]#-length(start)]
   }
   if (length(start) < length(end)) {
-    end <- end[-length(end)]
+    end <- end[1:length(start)]#-length(end)]
   }
   
   chksum <- sum( (start - end) < 0)    

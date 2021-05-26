@@ -781,24 +781,29 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     
   } else {
     if (verbose) print(paste('Creating file',file))
-    if (is.T(x)) ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
-                                                  fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
-                                                  sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,maxid,minid,nhrid,nlrid,
-                                                  tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,lehrid,lelrid)) else
-                                                    if (is.precip(x)) ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
-                                                                                                       fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
-                                                                                                       maxid,minid,nhrid,muid,muid.djf,muid.mam,muid.jja,muid.son,
-                                                                                                       fwid,fwid.djf,fwid.mam,fwid.jja,fwid.son,
-                                                                                                       tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,
-                                                                                                       tdmuid,tdmuid.djf,tdmuid.mam,tdmuid.jja,tdmuid.son,
-                                                                                                       tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid,ldid,lehrid,
-                                                                                                       sigma2id,sigma2id.djf,sigma2id.mam,sigma2id.jja,sigma2id.son,
-                                                                                                       tsigma2id,tsigma2id.djf,tsigma2id.mam,tsigma2id.jja,tsigma2id.son,
-                                                                                                       mwslid,mdslid)) else 
-                                                                                                         ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
-                                                                                                                                          fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
-                                                                                                                                          sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,tdid,
-                                                                                                                                          tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,lehrid,lelrid))
+    ##browser()
+    if (is.T(x)) {
+      ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+                                       fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
+                                       sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,maxid,minid,nhrid,nlrid,
+                                       tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,lehrid,lelrid))
+    } else if (is.precip(x)) {
+      ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+				       fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
+                                       maxid,minid,nhrid,muid,muid.djf,muid.mam,muid.jja,muid.son,
+                                       fwid,fwid.djf,fwid.mam,fwid.jja,fwid.son,
+                                       tdid,tdid.djf,tdid.mam,tdid.jja,tdid.son,
+                                       tdmuid,tdmuid.djf,tdmuid.mam,tdmuid.jja,tdmuid.son,
+                                       tdfwid,tdfwid.djf,tdfwid.mam,tdfwid.jja,tdfwid.son,lrid,ldid,lehrid,
+                                       sigma2id,sigma2id.djf,sigma2id.mam,sigma2id.jja,sigma2id.son,
+                                       tsigma2id,tsigma2id.djf,tsigma2id.mam,tsigma2id.jja,tsigma2id.son,
+                                       mwslid,mdslid))
+    } else {
+      ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
+				       fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,
+                                       sdid,sdid.djf,sdid.mam,sdid.jja,sdid.son,tdid,
+                                       tdid.djf,tdid.mam,tdid.jja,tdid.son,maxid,minid,nhrid,lehrid,lelrid))
+    }
   }
   
   if (verbose) {
