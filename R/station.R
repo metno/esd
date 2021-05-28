@@ -326,8 +326,12 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
     }
     for(param0 in unique(param)) {
       if(grepl("FROST",toupper(s))) {
+        param0 <- metno.frost.ele()$param[is.element(metno.frost.ele()$element,esd2ele(param0))]
+        if (verbose) print(paste('Check FROST: param0=',param0))
         ## REB 2020-05-26: replaced start and end arguments with it to make the notation 'esd-consistent'.
-        x <- metno.frost.station(timeresolutions=timeres, stid=stid[param==param0], 
+        ## REB 2021-05-28: replaced 'stid[param==param0]' with stid 
+        #x <- metno.frost.station(timeresolutions=timeres, stid=stid[param==param0], 
+        x <- metno.frost.station(timeresolutions=timeres, stid=stid, 
                                  param=param0, verbose=verbose, path=path, 
                                  it=c(start, end), save2file=save2file)
         if(!is.null(x)) if(is.null(X)) X <- x else X <- combine.station(X,x)
@@ -348,6 +352,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
         for (i in 1:length(stid)) {
           if(verbose) print(paste(i,toupper(param0),stid[i],loc[i],cntr[i],s))
           if (grepl("METNOD",toupper(s))) {#(s=="METNOD") {
+            browser()
             if (param0!='dd') param1 <- esd2ele(param0) else param1 <- NULL
             if (!is.null(param1)) {
               if(grepl("THREDDS",toupper(s))) {
@@ -1157,7 +1162,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
   if (!is.null(it)) {
     start <- it[1]; end <- it[2]
   }
-  if(verbose) print(paste("metno.frost.station",param))
+  if(verbose) print(paste("metno.frost.station",param,' stid=',stid))
   if(verbose) print("Fetch data from the Frost API (http://frost.met.no)")
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     stop("Package 'jsonlite' needed to use 'metno.frost.station'. Please install it.")
@@ -1217,12 +1222,17 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
     }
     
     ## Get parameter information
+    # REB 2021-05-28: the following lines don't work
+    # browser()
     param1info <- ele2param(esd2ele(param), src="metno.frost")
-    param1 <- gsub('*', timeresolutions, param1info$param, fixed=TRUE)
+    # param1 <- gsub('*', timeresolutions, param1info$param, fixed=TRUE)
+    param1 <- gsub('*', timeresolutions, param, fixed=TRUE)
+    if (verbose) print(paste('Parameter text=',param1))
     
     ## If start and end are not specified, use start and end from meta data
     ## bur first, reorganize and clean up start and end dates 
-    i <- meta$station_id %in% stid & meta$element %in% param1info$element
+    #browser()
+    i <- meta$station_id %in% stid  & meta$element %in% param1info$element
     meta.start <- meta$start[i]
     meta.end <- meta$end[i]
     if(is.dates(meta.end)) {
