@@ -1157,7 +1157,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
   if (!is.null(it)) {
     start <- it[1]; end <- it[2]
   }
-  if(verbose) print("metno.frost.station")
+  if(verbose) print(paste("metno.frost.station",param))
   if(verbose) print("Fetch data from the Frost API (http://frost.met.no)")
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     stop("Package 'jsonlite' needed to use 'metno.frost.station'. Please install it.")
