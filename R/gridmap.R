@@ -118,11 +118,21 @@ gridmap.pca <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat',xli
     D <- dim(x)
     if (id==1) X <- c(x) else X <- cbind(X,c(x))
   }
+  ## Also grid the mean values
+  ym <-  attr(Y,'mean')
+  attr(ym,'longitude') <- lon(Y)
+  attr(ym,'latitude') <- lat(Y)
+  attr(ym,'altitude') <- alt(Y)
+  attr(ym,'unit') <- 'weight'
+  attr(ym,'variable') <- paste0(varid(y),'.pca')
+  xm <- gridmap.default(Y=ym,FUN=FUN,colbar=colbar,project=project,xlim=xlim,ylim=ylim,zlim=zlim,verbose=verbose,plot=plot,new=new)
+  
   dim(X) <- c(D,d[2])
   attr(Y,'longitude') <- lon(x)
   attr(Y,'latitude') <- lat(x)
   attr(Y,'pattern') <- X
   attr(Y,'dimensions') <- c(D,d[1])
+  attr(Y,'mean') <- xm
   class(Y)[1] <- 'eof'
   return(Y)
 }

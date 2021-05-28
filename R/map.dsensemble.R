@@ -14,9 +14,10 @@
 #' @param test if TRUE perform test on one GCM simulation
 #'
 #' @export
-expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE) {
+expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,eof=TRUE) {
   ## Get the spatial weights
   if (verbose) print('expandpca')
+  if ((eof) & (!is.null(x$eof))) x$pca <- x$eof
   if (test) print('--TEST ON ONE GCM simulation--')
   if (inherits(x,'pca')) UWD <- x$pca else UWD <- x$eof
   if (!is.null(FUN)) {
@@ -98,7 +99,7 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   }
                       
   if (verbose) {print(d); print(dU)}
-  if (inherits(x,'eof')) {
+  if (inherits(UWD,'eof')) {
     if (verbose) {print('eof'); print(dU)}
     dim(U) <- c(dU[1]*dU[2],dU[3])
   }
@@ -122,7 +123,12 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   Y <- attrcp(UWD,Y)
   attr(Y,'time') <- range(index(subset(X[[1]],it=it)))
   class(Y) <- class(UWD)[-1]
-  if (inherits(x,'eof')) attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
+  if (inherits(UWD,'eof')) {
+    if (verbose) print('Use dimensions and lon/lat from EOFs')
+    attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
+    attr(Y,'longitude') <- lon(UWD)
+    attr(Y,'latidude') <- lat(UWD)
+  }
   attr(Y,'mean') <- NULL
   if (verbose) {print('exit expandpca'); print(dim(Y))}
   return(Y)
