@@ -2,7 +2,9 @@
 % Please edit documentation in R/map.dsensemble.R
 \name{expandpca}
 \alias{expandpca}
-\title{Expand PCA to obtain station data}
+\alias{aggregate.dsensemble}
+\alias{map.dsensemble}
+\title{expandpca}
 \usage{
 expandpca(
   x,
@@ -11,7 +13,8 @@ expandpca(
   FUNX = "mean",
   verbose = FALSE,
   anomaly = FALSE,
-  test = FALSE
+  test = FALSE,
+  eof = TRUE
 )
 }
 \arguments{
@@ -30,5 +33,17 @@ expandpca(
 \item{test}{if TRUE perform test on one GCM simulation}
 }
 \description{
-Expand PCA to obtain station data
+The function \code{expandpca} is used to extract information from PCA-based dsensemble-objects,
+but takes care of extra house keeping, such as attributes with meta data. It applies operations onto the 
+PCs through the argument 'FUNX' to estimate quantities such as the ensemble mean. The argument 'FUN' is used to 
+aggregate the results from e.g. the ensemble mean to provide maps of means or trends. 
+Hence these functions are used to expand PCA to obtain station data or EOFs into field data.
+\code{aggregate.dsensemble} is used for aggregating ensembles in a similar fashion, but is slower and applies 
+the operation onto the data after it has been expanded by matrix multiplication of the singular vectors 
+(X = U %*% diag(W) %*% t(V)). 
+\code{map.dsensemble} is a wrapper for \code{map} that uses the one of the two former routines to distill selected
+information.
+}
+\seealso{
+aggregate map
 }
