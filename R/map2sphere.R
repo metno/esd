@@ -106,11 +106,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   nc <- length(colbar$col)
   if (is.null(colbar$col)) {
     colbar <- colbar.ini(map,colbar=colbar)
-    col <- colscal(n=colbar$n-1) 
+    colbar$col <- colscal(n=colbar$n-1) 
   } else if (nc==1) {
-    col <- colscal(pal=colbar$col,n=colbar$n-1)
+    colbar$col <- colscal(pal=colbar$col,n=colbar$n-1)
   }
-  if (colbar$rev) col <- rev(col)
+  if (colbar$rev) colbar$col <- rev(colbar$col)
   ## AM commented
   ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
   #index <- round( nc*( map - min(colbar$breaks) )/
@@ -190,7 +190,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (verbose) {print(c(length(X),length(Z),length(index),length(brightness),length(alpha)))
     print(dim(X))}
   
-  apply(rbind(X,Z,index,brightness,alpha),2,gridbox,col)
+  apply(rbind(X,Z,index,brightness,alpha),2,gridbox,colbar$col)
   # c(W,E,S,N, colour)
   # xleft, ybottom, xright, ytop
   # Plot the coast lines  
