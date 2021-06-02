@@ -52,11 +52,13 @@ to limit the spatial and/or temporal scope (see input options 'it', 'lon', 'lat'
 as you will otherwise run out of memory.
 }
 \examples{
+\dontrun{
 it <- "latest"
 lon <- c(-2,15)
 lat <- c(55,63)
 slp <- meps(param="slp", lon=lon, lat=lat, it=it, verbose=TRUE)
 map(slp, FUN="mean")
+}
 
 }
 \seealso{

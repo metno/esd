@@ -26,11 +26,13 @@
 #' @seealso senorge, station.thredds
 #' 
 #' @examples
+#' \dontrun{
 #' it <- "latest"
 #' lon <- c(-2,15)
 #' lat <- c(55,63)
 #' slp <- meps(param="slp", lon=lon, lat=lat, it=it, verbose=TRUE)
 #' map(slp, FUN="mean")
+#' }
 #' 
 #' @export
 meps <- function(url='https://thredds.met.no/thredds/catalog/metpplatest',
