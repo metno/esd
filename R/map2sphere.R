@@ -95,6 +95,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## AM commented
   ## KMP 2019-10-11: uncommented colour palette defintion
   ## because otherwise map2sphere doesn't work
+  ## AM 2021-06-02 There is still sth wrong with color palette definition but I cannot figure out what is the problem
   # Define colour palette:
   if (is.null(colbar$rev)) colbar$rev <- FALSE
   if (is.null(colbar$breaks)) {
@@ -106,11 +107,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   nc <- length(colbar$col)
   if (is.null(colbar$col)) {
     colbar <- colbar.ini(map,colbar=colbar)
-    colbar$col <- colscal(n=colbar$n-1) 
+    col <- colscal(n=colbar$n-1) 
   } else if (nc==1) {
-    colbar$col <- colscal(pal=colbar$col,n=colbar$n-1)
+    col <- colscal(pal=colbar$col,n=colbar$n-1)
   }
-  if (colbar$rev) colbar$col <- rev(colbar$col)
+  if (colbar$rev) col <- rev(col)
   
   ## AM 2021-06-03: Moved this before index
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
