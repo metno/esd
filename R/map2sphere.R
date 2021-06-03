@@ -111,6 +111,16 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     colbar$col <- colscal(pal=colbar$col,n=colbar$n-1)
   }
   if (colbar$rev) colbar$col <- rev(colbar$col)
+  
+  ## AM 2021-06-03: Moved this before index
+  ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
+  if (verbose) print('Clip the value range to extremes of colour scale')
+  toohigh <- map>max(colbar$breaks)
+  if (sum(toohigh)>0) map[toohigh] <- max(colbar$breaks)
+  toolow <- map<min(colbar$breaks)
+  if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
+  if (verbose) print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
+    
   ## AM commented
   ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
   #index <- round( nc*( map - min(colbar$breaks) )/
@@ -120,13 +130,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   index <- findInterval(map,colbar$breaks,all.inside=TRUE)
   ## where all.inside does to the indices what the clipping does to the values.
   
-  ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
-  if (verbose) print('Clip the value range to extremes of colour scale')
-  toohigh <- map>max(colbar$breaks)
-  if (sum(toohigh)>0) map[toohigh] <- max(colbar$breaks)
-  toolow <- map<min(colbar$breaks)
-  if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
-  if (verbose) print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
   
   ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
   #crgb <- col2rgb(colbar$col)
