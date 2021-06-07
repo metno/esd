@@ -248,16 +248,17 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (salt < 0) selz <- alt(x) <= abs(salt) else
         selz <- alt(x) >= salt
     }
-    if (length(scntr)>0) selc <- is.element(tolower(cntr(x)),scntr)
+    if (length(scntr)>0) selc <- is.element(tolower(cntr(x)),tolower(scntr))
     if (length(snmin)>0) selm <- apply(coredata(x),2,nval) > snmin
-    if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),sparam)
+    if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),tolower(sparam))
     if (length(sstid)==2) seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) else
       if (length(sstid)>0) seli <- is.element(stid(x),sstid)
     if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...
-    if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),sparam)
+    if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),tolower(sparam))
     if(length(sj)>0) selj <- is.element(seq(1,dim(x)[2]),sj)
     ##
     is <- sell & selx & sely & selz & selc & seli & selm & selp & selF & selj
+    browser()
     ##
     ## Need to make sure both it and is are same type: here integers for index rather than logical
     ## otherwise the subindexing results in an empty object
