@@ -95,6 +95,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## AM commented
   ## KMP 2019-10-11: uncommented colour palette defintion
   ## because otherwise map2sphere doesn't work
+  ## AM 2021-06-02 There is still sth wrong with color palette definition but I cannot figure out what is the problem
   # Define colour palette:
   if (is.null(colbar$rev)) colbar$rev <- FALSE
   if (is.null(colbar$breaks)) {
@@ -111,6 +112,16 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     col <- colscal(pal=colbar$col,n=colbar$n-1)
   }
   if (colbar$rev) col <- rev(col)
+  
+  ## AM 2021-06-03: Moved this before index
+  ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
+  if (verbose) print('Clip the value range to extremes of colour scale')
+  toohigh <- map>max(colbar$breaks)
+  if (sum(toohigh)>0) map[toohigh] <- max(colbar$breaks)
+  toolow <- map<min(colbar$breaks)
+  if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
+  if (verbose) print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
+    
   ## AM commented
   ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
   #index <- round( nc*( map - min(colbar$breaks) )/
@@ -120,13 +131,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   index <- findInterval(map,colbar$breaks,all.inside=TRUE)
   ## where all.inside does to the indices what the clipping does to the values.
   
-  ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
-  if (verbose) print('Clip the value range to extremes of colour scale')
-  toohigh <- map>max(colbar$breaks)
-  if (sum(toohigh)>0) map[toohigh] <- max(colbar$breaks)
-  toolow <- map<min(colbar$breaks)
-  if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
-  if (verbose) print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
   
   ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
   #crgb <- col2rgb(colbar$col)
@@ -190,7 +194,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (verbose) {print(c(length(X),length(Z),length(index),length(brightness),length(alpha)))
     print(dim(X))}
   
-  apply(rbind(X,Z,index,brightness,alpha),2,gridbox,col)
+  apply(rbind(X,Z,index,brightness,alpha),2,gridbox,colbar$col)
   # c(W,E,S,N, colour)
   # xleft, ybottom, xright, ytop
   # Plot the coast lines  
