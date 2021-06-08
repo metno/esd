@@ -741,6 +741,31 @@ combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
     coredata(y) <- 100*coredata(y)
     attr(y,'unit') <- 'Pa'
   }
+  if ( (unit(x)=='m') & (unit(y)=='mm/day')) {
+    if (verbose) print('Resetting unit of x: m -> mm/day')
+    coredata(x) <- 1000*coredata(x)
+    attr(x,'unit') <- 'mm'
+    # if (clsy[2] %in% c('month','season','annual')) {
+    #   if (clsy[2]=='month') coredata(y) <- 30*coredata(y)
+    #   if (clsy[2]=='season') coredata(y) <- 90*coredata(y)
+    #   if (clsy[2]=='annual') coredata(y) <- 365.25*coredata(y)
+    #   attr(y,'unit') <- 'mm'
+    # }
+  } 
+  if ( (unit(x)=='m') & (unit(y)=='kg m-2 s-1')) {
+    if (verbose) print('Resetting unit of x: m -> mm')
+    coredata(x) <- 1000*coredata(x)
+    attr(x,'unit') <- 'mm'
+    if (verbose) print('Resetting unit of y: m -> mm')
+    # if (clsy[2] %in% c('day','month','season','annual')) {
+    #   if (clsy[2]=='day') coredata(y) <- 3600*24*coredata(y)
+    #   if (clsy[2]=='month') coredata(y) <- 30*3600*24*coredata(y)
+    #   if (clsy[2]=='season') coredata(y) <- 90*3600*24*coredata(y)
+    #   if (clsy[2]=='annual') coredata(y) <- 365.25*3600*24*coredata(y)
+    #   attr(y,'unit') <- 'mm'
+    # }
+    attr(x,'unit') <- 'mm/day'
+  } 
   if (unit(x)=='mbar' & unit(y)=='hPa') attr(x,'unit') <- 'hPa'
   if (unit(y)=='mbar' & unit(x)=='hPa') attr(y,'unit') <- 'hPa'
   if (unit(x)=='deg C') attr(x,'unit') <- 'degC'
