@@ -774,6 +774,15 @@ combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
   
   if (missing(y)) return(x)
   
+  ## Check the scales/units
+  sx <- mean(coredata(x[1,]),na.rm=TRUE)
+  sy <- mean(coredata(y[1,]),na.rm=TRUE)
+  if (abs(log(sx/sy)/log(10)) > 2) {
+    print(paste('combine.field detected scale issues - sx=',sx,'sy=',sy,esd::unit(x)[1],esd::unit(y)))
+    warning(paste('combine.field detected scale issues - sx=',sx,'sy=',sy,esd::unit(x)[1],esd::unit(y)))
+  }
+    
+  
   dimension <- tolower(dimension)
   approach <- tolower(approach)
   x <- sp2np(x)

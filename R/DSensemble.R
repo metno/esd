@@ -2032,6 +2032,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     T2MGCM <- combine(T2M,GCM)
     if (verbose) print("- - - > EOFs")
     Z <- try(EOF(T2MGCM,verbose=verbose))
+    save(Z,file='ceof.DSensemble.temp.rda')
     
     ## The test lines are included to assess for non-stationarity
     if (non.stationarity.check) {
