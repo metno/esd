@@ -375,7 +375,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       attr(y,'na') <- attr(x,'na')
   
   if (verbose) print(paste('Final: ',loc(y),varid(y),esd::unit(y),lon(y),lat(y)))
-  if (length(loc(y))==0) browser()
+  if (length(loc(y))==0) warning('station.subset: no location information - loc(y) == 0')
   if (!is.null(err(y))) attr(y,'standard.error') <- err(x)[ii,is]
   ##attr(y,'date-stamp') <- date()
   ##attr(y,'call') <- match.call()
