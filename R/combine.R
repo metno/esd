@@ -778,10 +778,10 @@ combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
   sx <- mean(coredata(x[1,]),na.rm=TRUE)
   sy <- mean(coredata(y[1,]),na.rm=TRUE)
   test.ratio <- try(abs(log(sx/sy)/log(10)))  ## Needed because some CMIP6 data files are not well conformed...
-  if (inherits(test.ratio,'try-error')) test.ratio <- 99
+  if ((inherits(test.ratio,'try-error')) | (!is.finite(test.ratio))) test.ratio <- 99
   if (test.ratio > 2) {
-    print(paste('combine.field detected scale issues - sx=',sx,'sy=',sy,esd::unit(x)[1],esd::unit(y)))
-    warning(paste('combine.field detected scale issues - sx=',sx,'sy=',sy,esd::unit(x)[1],esd::unit(y)))
+    print(paste('combine.field detected scale issues - sx=',sx,'sy=',sy,esd::unit(x)[1],esd::unit(y)test.ratio))
+    warning(paste('combine.field detected scale issues - sx=',sx,'sy=',sy,esd::unit(x)[1],esd::unit(y)test.ratio))
   }
     
   dimension <- tolower(dimension)
