@@ -291,10 +291,12 @@ zeros <- function(x) (sum(is.infinite(1/x)) > 0)
 ## Estimate the root-mean-squared-error
 #' @export
 rmse <- function(x,y,na.rm=TRUE) {
-  z <- sqrt( (x - y)^2 )
+  z <- (x - y)^2
   z <- sum(z,na.rm=na.rm)/sum(is.finite(z),na.rm=na.rm)
+  z <- sqrt(z)
   return(z)             
 }
+
 
 #' @export
 RMSE <- function(x,y,...) return(rmse(x,y,...))
