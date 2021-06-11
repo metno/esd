@@ -107,7 +107,6 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   }
   
   if(inherits(it,c("POSIXt"))) it <- as.Date(it)
-  
   if(inherits(it,c("Date"))) {
     if (inherits(t,"yearmon")) t <- as.Date(t)
     if ( length(it) == 2 ) {
@@ -258,7 +257,6 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if(length(sj)>0) selj <- is.element(seq(1,dim(x)[2]),sj)
     ##
     is <- sell & selx & sely & selz & selc & seli & selm & selp & selF & selj
-    browser()
     ##
     ## Need to make sure both it and is are same type: here integers for index rather than logical
     ## otherwise the subindexing results in an empty object
@@ -288,7 +286,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   if (verbose) print(paste('Subset of',sum(ii),'data points between',
                            min(yr),'-',max(yr),'total:',length(yr),
                            'from',length(is),'locations'))
-
+  
   is[is.na(is)] <- FALSE
   if (is.logical(ii)) ii <- which(ii)
   if (is.logical(is)) is <- which(is)
@@ -298,12 +296,13 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     warning('subset.station: unsuccessfull subsetting')
     return(x)
   }
+  
   if ( (max(ii) <= d[1]) & (max(is) <= d[2]) ) {
     y <- x[ii,is]
   } else { 
     if(verbose) print(is)
     if(verbose) print(dim(x))
-    warning('subset.station: unsuccessfull subsetting')
+    warning('subset.station: unsuccessful subsetting')
     return(x)
   }
   
@@ -312,7 +311,6 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   class(y) <- cls
   y <- attrcp(x,y,ignore=c("names"))
   attr(y,'location') <- loc(x)[is]
-  
   if (length(esd::unit(x))== length(x[1,])) attr(y,'unit') <- esd::unit(x)[is] else
                                          attr(y,'unit') <- esd::unit(x)[1]
   if (length(varid(x))== length(x[1,])) attr(y,'variable') <- varid(x)[is] else
@@ -384,7 +382,8 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   return(y)
 }
     
-#' @export subset.stationmeta
+#' @exportS3Method
+#' @export
 subset.stationmeta <- function(x, it=NULL, is=NULL, verbose=FALSE) {
   if(verbose) print('subset.stationmeta')
   if (is.null(is)) is <- rep(TRUE,dim(x)[1])
@@ -423,37 +422,35 @@ subset.stationmeta <- function(x, it=NULL, is=NULL, verbose=FALSE) {
     return(y)
 }
 
-#' @exportS3Method
-#' @export 
-subset.data.frame <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
-                           stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
-                           src=NULL, nmin=NULL, verbose=FALSE) {
-  if (verbose) print('subset.data.frame')
-  # > names(x)
-  # [1] "station_id" "location"   "country"    "longitude"  "latitude"  
-  # [6] "altitude"   "element"    "start"      "end"        "source"    
-  # [11] "variable"   "wmo"        "quality"   
-  
-  d <- dim(x)
-  ii <- rep(TRUE,d[1])
-  ## KMP 2021-05-20: the input 'it' is not used so when subset is called without
-  ## specifying the second argument, no subsetting is done. I'm setting it to is
-  ## for now but perhaps we should consider removing the it argument altogether or
-  ## find a use for it. 
-  if(!is.null(it) & is.null(is)) is <- it
-  if (!is.null(is)) ii[-is] <- FALSE
-  if (!is.null(loc)) ii[!is.element(tolower(substr(x$location,1,min(nchar(loc)))),tolower(substr(loc,1,min(nchar(loc)))))] <- FALSE
-  if (!is.null(param)) {
-    ele <- switch(tolower(param),'tmax'=111,'tmin'=121,'precip'=601,'')
-    ii[!is.element(tolower(x$element),tolower(ele))] <- FALSE
-  }
-  if (!is.null(stid)) ii[!is.element(x$station_id,stid)] <- FALSE
-  if (!is.null(lon)) ii[(x$longitude < lon[1]) | (x$longitude > lon[2])] <- FALSE
-  if (!is.null(lat)) ii[(x$latitude < lat[1]) | (x$latitude > lat[2])] <- FALSE
-  if (!is.null(alt)) ii[(x$altitude < alt[1]) | (x$altitude > alt[2])] <- FALSE
-  if (!is.null(cntr)) ii[!is.element(tolower(x$country),tolower(cntr))] <- FALSE
-  if (!is.null(src)) ii[!is.element(tolower(x$source),tolower(src))] <- FALSE
-  if (!is.null(nmin)) ii[!(as.numeric(x$end) - as.numeric(x$start)) < nmin - 1] <- FALSE
-  x <- x[ii,]
-  return(x)
-}
+# subset.data.frame <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
+#                            stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
+#                            src=NULL, nmin=NULL, verbose=FALSE) {
+#   if (verbose) print('subset.data.frame')
+#   # > names(x)
+#   # [1] "station_id" "location"   "country"    "longitude"  "latitude"  
+#   # [6] "altitude"   "element"    "start"      "end"        "source"    
+#   # [11] "variable"   "wmo"        "quality"   
+#   
+#   d <- dim(x)
+#   ii <- rep(TRUE,d[1])
+#   ## KMP 2021-05-20: the input 'it' is not used so when subset is called without
+#   ## specifying the second argument, no subsetting is done. I'm setting it to is
+#   ## for now but perhaps we should consider removing the it argument altogether or
+#   ## find a use for it. 
+#   if(!is.null(it) & is.null(is)) is <- it
+#   if (!is.null(is)) ii[-is] <- FALSE
+#   if (!is.null(loc)) ii[!is.element(tolower(substr(x$location,1,min(nchar(loc)))),tolower(substr(loc,1,min(nchar(loc)))))] <- FALSE
+#   if (!is.null(param)) {
+#     ele <- switch(tolower(param),'tmax'=111,'tmin'=121,'precip'=601,'')
+#     ii[!is.element(tolower(x$element),tolower(ele))] <- FALSE
+#   }
+#   if (!is.null(stid)) ii[!is.element(x$station_id,stid)] <- FALSE
+#   if (!is.null(lon)) ii[(x$longitude < lon[1]) | (x$longitude > lon[2])] <- FALSE
+#   if (!is.null(lat)) ii[(x$latitude < lat[1]) | (x$latitude > lat[2])] <- FALSE
+#   if (!is.null(alt)) ii[(x$altitude < alt[1]) | (x$altitude > alt[2])] <- FALSE
+#   if (!is.null(cntr)) ii[!is.element(tolower(x$country),tolower(cntr))] <- FALSE
+#   if (!is.null(src)) ii[!is.element(tolower(x$source),tolower(src))] <- FALSE
+#   if (!is.null(nmin)) ii[!(as.numeric(x$end) - as.numeric(x$start)) < nmin - 1] <- FALSE
+#   x <- x[ii,]
+#   return(x)
+# }
