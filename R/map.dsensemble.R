@@ -123,7 +123,8 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
     if (verbose) print('add mean field')
   }
   # Not right if FUN is defined and time mean has been applied:
-  if(nrow(V[[1]])==length(index(subset(X[[1]],it=it)))) {
+  #if(nrow(V[[1]])==length(index(subset(X[[1]],it=it)))) {
+  if(dim(V)[1]==length(index(subset(X[[1]],it=it)))) {
     Y <- zoo(Y,order.by=index(subset(X[[1]],it=it)))
   } else {
     Y <- zoo(Y,order.by=seq(nrow(V[[1]])))

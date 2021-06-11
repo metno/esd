@@ -257,6 +257,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if(length(sj)>0) selj <- is.element(seq(1,dim(x)[2]),sj)
     ##
     is <- sell & selx & sely & selz & selc & seli & selm & selp & selF & selj
+    if (sum(is)==0) browser()
     ##
     ## Need to make sure both it and is are same type: here integers for index rather than logical
     ## otherwise the subindexing results in an empty object
@@ -373,7 +374,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       attr(y,'na') <- attr(x,'na')
   
   if (verbose) print(paste('Final: ',loc(y),varid(y),esd::unit(y),lon(y),lat(y)))
-  
+  if (length(loc(y))==0) warning('station.subset: no location information - loc(y) == 0')
   if (!is.null(err(y))) attr(y,'standard.error') <- err(x)[ii,is]
   ##attr(y,'date-stamp') <- date()
   ##attr(y,'call') <- match.call()
@@ -381,76 +382,96 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))
   return(y)
 }
-    
-#' @exportS3Method
-#' @export
-subset.stationmeta <- function(x, it=NULL, is=NULL, verbose=FALSE) {
-  if(verbose) print('subset.stationmeta')
-  if (is.null(is)) is <- rep(TRUE,dim(x)[1])
-  if (is.list(is)) {
-    i <- rep(TRUE,length(x[[1]]))
-    listnames <- names(is)
-    if ('lon' %in% listnames) 
-      i <- (lon(x) >= min(is$lon)) & (lon(x) <= max(is$lon)) 
-    if ('lat' %in% listnames) 
-      i <- i & (lat(x) >= min(is$lat)) & (lat(x) <= max(is$lat)) 
-    if ('alt' %in% listnames) 
-      i <- i & (alt(x) >= min(is$alt)) & (alt(x) <= max(is$alt))
-    if ('cntr' %in% listnames) 
-      i <- i & (is.element(tolower(substr(x$cntr,1,nchar(is$cntr))),tolower(is$cntr)))
-    if ('param' %in% listnames) 
-      i <- i & (is.element(tolower(substr(x$param,1,nchar(is$param))),tolower(is$param)))
-    if ('src' %in% listnames) 
-      i <- i & (is.element(tolower(substr(x$src,1,nchar(is$src))),tolower(is$src)))
-    if ('loc' %in% listnames) 
-      i <- i & (is.element(tolower(substr(x$location,1,nchar(is$loc))),tolower(is$loc)))
-    is <- i
-  } else if (is.numeric(is) | is.integer(is)) 
-    is <- is.element(1:dim(x)[1],is) else if (is.character(is))
-      is <- is.element(tolower(substr(x$location,1,nchar(is))),tolower(is))
-    if (!is.null(it)) {
-      is <- is & (x$start >= min(it)) & (x$end <= max(it))
-    }
-    if (verbose) print(paste('sub set of',sum(is),'elements'))
-    is <- (1:dim(x)[1])[is]
-    if (verbose) {print(dim(x)); print(is)}
-    y <- x[is,]  
-    if (verbose) print(dim(y))
-    class(y) <- class(x)
-    attr(y,'history') <- history.stamp(x)  
-    if (verbose) str(y)
-    return(y)
-}
 
-# subset.data.frame <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
-#                            stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
-#                            src=NULL, nmin=NULL, verbose=FALSE) {
-#   if (verbose) print('subset.data.frame')
-#   # > names(x)
-#   # [1] "station_id" "location"   "country"    "longitude"  "latitude"  
-#   # [6] "altitude"   "element"    "start"      "end"        "source"    
-#   # [11] "variable"   "wmo"        "quality"   
-#   
-#   d <- dim(x)
-#   ii <- rep(TRUE,d[1])
-#   ## KMP 2021-05-20: the input 'it' is not used so when subset is called without
-#   ## specifying the second argument, no subsetting is done. I'm setting it to is
-#   ## for now but perhaps we should consider removing the it argument altogether or
-#   ## find a use for it. 
-#   if(!is.null(it) & is.null(is)) is <- it
-#   if (!is.null(is)) ii[-is] <- FALSE
-#   if (!is.null(loc)) ii[!is.element(tolower(substr(x$location,1,min(nchar(loc)))),tolower(substr(loc,1,min(nchar(loc)))))] <- FALSE
-#   if (!is.null(param)) {
-#     ele <- switch(tolower(param),'tmax'=111,'tmin'=121,'precip'=601,'')
-#     ii[!is.element(tolower(x$element),tolower(ele))] <- FALSE
-#   }
-#   if (!is.null(stid)) ii[!is.element(x$station_id,stid)] <- FALSE
-#   if (!is.null(lon)) ii[(x$longitude < lon[1]) | (x$longitude > lon[2])] <- FALSE
-#   if (!is.null(lat)) ii[(x$latitude < lat[1]) | (x$latitude > lat[2])] <- FALSE
-#   if (!is.null(alt)) ii[(x$altitude < alt[1]) | (x$altitude > alt[2])] <- FALSE
-#   if (!is.null(cntr)) ii[!is.element(tolower(x$country),tolower(cntr))] <- FALSE
-#   if (!is.null(src)) ii[!is.element(tolower(x$source),tolower(src))] <- FALSE
-#   if (!is.null(nmin)) ii[!(as.numeric(x$end) - as.numeric(x$start)) < nmin - 1] <- FALSE
-#   x <- x[ii,]
-#   return(x)
+
+# subset.stationmeta <- function(x, it=NULL, is=NULL, ..., verbose=FALSE) {
+#   if(verbose) print(paste('subset.stationmeta: ',paste(dim(x),collapse=' - ')))
+#   if (is.null(is)) is <- rep(TRUE,dim(x)[1])
+#   if (is.list(is)) {
+#     i <- rep(TRUE,length(x[[1]]))
+#     listnames <- names(is)
+#     if (verbose) {print(sum(i)); print(listnames)}
+#     if ('lon' %in% listnames) 
+#       i <- (lon(x) >= min(is$lon)) & (lon(x) <= max(is$lon)) 
+#     if ('lat' %in% listnames) 
+#       i <- i & (lat(x) >= min(is$lat)) & (lat(x) <= max(is$lat)) 
+#     if ('alt' %in% listnames) 
+#       i <- i & (alt(x) >= min(is$alt)) & (alt(x) <= max(is$alt))
+#     if ('cntr' %in% listnames) 
+#       #i <- i & (is.element(tolower(substr(x$country,1,nchar(is$cntr))),tolower(is$cntr)))
+#       i <- i & (1:(length(i)))[grep(is$cntr,x$country,ignore.case=TRUE, ...)]
+#     if (verbose) print(table(tolower(substr(x$country,1,nchar(is$cntr)))))
+#     if ('src' %in% listnames) 
+#       i <- i & (is.element(tolower(substr(x$source,1,nchar(is$src))),tolower(is$src)))
+#     if ('param' %in% listnames) 
+#       i <- i & (is.element(tolower(substr(x$element,1,nchar(is$param))),esd2ele(is$param)))
+#     if ('loc' %in% listnames) 
+#       i <- i & (is.element(tolower(substr(x$location,1,nchar(is$loc))),tolower(is$loc)))
+#     is <- i
+#   } else if (is.numeric(is) | is.integer(is)) 
+#     is <- is.element(1:dim(x)[1],is) else if (is.character(is))
+#       is <- is.element(tolower(substr(x$location,1,nchar(is))),tolower(is))
+#     if (!is.null(it)) {
+#       is <- is & (x$start >= min(it)) & (x$end <= max(it))
+#     }
+#     if (verbose) print(paste('subset of',sum(is),'elements'))
+#     is <- (1:(length(i)))[is]
+#     if (verbose) print(str(x))
+#     y <- as.data.frame(as.matrix(x[is,]))  
+#     if (verbose) print(dim(y))
+#     class(y) <- class(x)
+#     attr(y,'history') <- history.stamp(x)  
+#     if (verbose) str(y)
+#     return(y)
 # }
+
+#' @exportS3Method    
+#' @export subset.stationmeta
+subset.stationmeta <- function(x, is=NULL, it=NULL, loc=NULL, param=NULL,
+                           stid=NULL, lon=NULL, lat=NULL, alt=NULL, cntr=NULL,
+                           src=NULL, nmin=NULL, ..., verbose=FALSE) {
+  if (verbose) print('subset.stationmeta')
+  # > names(x)
+  # [1] "station_id" "location"   "country"    "longitude"  "latitude"
+  # [6] "altitude"   "element"    "start"      "end"        "source"
+  # [11] "variable"   "wmo"        "quality"
+
+  cls <- class(x)
+  x <- as.data.frame(x)
+  d <- dim(x)
+  ii <- rep(TRUE,d[1])
+  if (!is.null(is)) {
+    if ( (is.integer(is)) | (is.numeric(is)) ) ii[-is] <- FALSE
+    else if (is.list(is)) {
+      listnames <- names(is)
+      for (nm in listnames) eval(parse(text=paste0(nm,' <- is$',nm)))
+    }
+  } 
+
+  if (!is.null(loc)) ii[!is.element(tolower(substr(x$location,1,min(nchar(loc)))),tolower(substr(loc,1,min(nchar(loc)))))] <- FALSE
+  if (!is.null(param)) {
+    ele <- switch(tolower(param),'tmax'=111,'tmin'=121,'precip'=601,'')
+    ii[!is.element(tolower(x$element),tolower(ele))] <- FALSE
+  }
+  if (!is.null(stid)) ii[!is.element(x$station_id,stid)] <- FALSE
+  if (!is.null(lon)) ii[(x$longitude < lon[1]) | (x$longitude > lon[2])] <- FALSE
+  if (!is.null(lat)) ii[(x$latitude < lat[1]) | (x$latitude > lat[2])] <- FALSE
+  if (!is.null(alt)) ii[(x$altitude < alt[1]) | (x$altitude > alt[2])] <- FALSE
+  if (!is.null(cntr)) {
+    if (length(cntr)>1) cntr <- paste(cntr,collapse='|')
+    ii[-grep(cntr,x$country,ignore.case=TRUE,...)] <- FALSE
+  }
+  #if (!is.null(cntr)) ii[!is.element(tolower(x$country),tolower(cntr))] <- FALSE
+  if (!is.null(src)) {
+    if (length(src)>1) src <- paste(src,collapse='|')
+    ii[-grep(src,x$source,ignore.case=TRUE,...)] <- FALSE
+  }
+  #if (!is.null(src)) ii[!is.element(tolower(x$source),tolower(src))] <- FALSE
+  if (!is.null(nmin)) ii[!(as.numeric(x$end) - as.numeric(x$start)) < nmin - 1] <- FALSE
+  if (!is.null(it)) {
+    ii[(as.numeric(x$start) > min(it)) < (as.numeric(x$end) < max(it))] <- FALSE
+  }
+  x <- x[ii,]
+  class(x) <- cls
+  return(x)
+}
