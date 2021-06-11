@@ -119,8 +119,8 @@
 #' map(x.201612, new=FALSE)
 #' 
 #' 
-#' @export
-subset <- function(x,...) UseMethod("subset")
+#' THis is part of base @export
+# subset <- function(x,...) UseMethod("subset")
 
 #' @exportS3Method
 #' @export

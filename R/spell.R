@@ -82,6 +82,8 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   mdate <- index(x)[!is.finite(x)]
   above <- z > threshold
   below <- z <= threshold
+  above[!is.finite(above)] <- 0
+  below[!is.finite(below)] <- 0
   if (verbose) print(paste('above=',sum(above,na.rm=TRUE),
                            'below=',sum(below,na.rm=TRUE)))
   
