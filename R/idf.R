@@ -15,8 +15,8 @@
 #' @param cols provies the colour pallette: default is ` rev(heat.colors)`.
 #'
 #' @examples
-#' y <- station(stid=18700,src='metnod.thredds',param='precip')
-#' z <- IDF(y)
+#' data(bjornholt)
+#' z <- IDF(bjornholt)
 #' View(z)
 #'
 #' @export day2IDF

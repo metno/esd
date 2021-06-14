@@ -67,10 +67,12 @@ files stored on Thredds. The analysis can also be applied to either EOFs or fiel
 }
 \examples{
 ## Get the daily minimum temperature for Oslo-Blindern (station ID 18700)
+\dontrun{
 tmin <- station.thredds(param='tmax',stid=18700)
 
 meta <- meta.thredds(param='precip')
 precip <- station.thredds(meta[1,])
+}
 
 }
 \seealso{

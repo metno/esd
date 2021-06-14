@@ -117,10 +117,385 @@
 #' # Subset cyclones in december 2016
 #' x.201612 <- subset(x,it=c("2016-12-01","2016-12-31")) 
 #' map(x.201612, new=FALSE)
-#' 
-#' 
-#' THis is part of base @export
-# subset <- function(x,...) UseMethod("subset")
+#'  
+#' @exportS3Method
+#' @export
+subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+  if (verbose) {print("subset.default"); print(it); print(is); print('---')}
+  
+  ## REB: Use select.station to condition the selection index is...
+  ## loc - selection by names
+  ## lon/lat selection be geography or closest if one coordinate lon/lat
+  ##         if two-element vectors, define a region
+  ## alt - positive values: any above; negative any below height
+  ## cntr - selection by country
+  
+  ## REB 2015-02-02: renamed to subset.default because this will be used to subset
+  ## both field and station objects.
+  
+  nval <- function(x) sum(is.finite(x))
+  ## Sometimes 'it' = 'integer(0)' - reset to NULL!
+  if (length(it)==0) it <- NULL
+  if (length(is)==0) is <- NULL
+  ## Return the original value if 'it' and 'is' are not specified
+  if (is.null(it) & is.null(is)) return(x)
+  
+  x0 <- x
+  ## 
+  d <- dim(x)
+  if (is.null(d)) {
+    if (verbose)
+      print("subset.default: Warning - One dimensional vector has been found in the coredata")
+    x <- zoo(as.matrix(coredata(x)),order.by=index(x))
+    x <- attrcp(x0,x)
+    class(x) <- class(x0)
+  } 
+  d <- dim(x)
+  if (is.null(is)) is <- 1:d[2]
+  #    if (is.null(it)) it <- 1:d[1] This lines causes a bug if is is given but not it...
+  
+  ## 
+  ##print("HERE")
+  ## get time in t
+  t <- index(x)
+  if(inherits(t,"Date")) t <- as.Date(format.Date(t,"%Y-%m-%d"))
+  if(!inherits(t,c("POSIXt","PCICt"))) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
+  if (verbose) {print('subset.default: time index it'); print(it)}
+  if (is.character(it)) {
+    if (levels(factor(nchar(it)))==10) it <- as.Date(it)
+  }
+  
+  ##  if (datetype=="Date") {
+  if (inherits(t,c("Date","yearmon"))) {
+    if (verbose) print('x is a Date or yearmon object')
+    ## REB: replaced by lines below:
+    ##    year <- as.numeric( format(t, '%Y') ) 
+    ##    month <- as.numeric( format(t, '%m') )
+    yr <- year(x)
+    mo <- month(x)
+    dy <- day(x)
+  } else if (inherits(t,c("numeric","integer"))) {
+    if (verbose) print('X has a numeric index - select by years')
+    yr <- t
+    mo <- dy <- rep(1,length(t))
+  } else if (inherits(t,c("POSIXt","PCICt"))) {
+    if (verbose) print('X has a POSIXt index')
+    yr <- year(t)
+    mo <- month(t)
+    dy <- day(t)
+    hr <- as.numeric(format(t,"%H"))
+    mn <- as.numeric(format(t,"%M"))
+    if (!inherits(it,c("POSIXt","PCICt"))) t <- format(t,"%Y-%m-%d")
+  } else print("Index of x should be a Date, yearmon, or numeric object")
+  
+  if (is.logical(it)) {
+    ii <- it 
+  } else if(inherits(it,c("Date"))) {
+    if ( length(it) == 2 ) {
+      if (verbose) print('Between two dates')
+      if (verbose) print(it)
+      ii <- (t >= min(it)) & (t <= max(it))
+    } else {
+      ii <- is.element(t,it)
+    }
+  } else if(inherits(it,"yearmon")) {
+    ii <- is.element(as.yearmon(t),it)
+  } else if (is.character(it)) {
+    if (verbose) print('it is a string')
+    if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
+      if (verbose) print('Monthly selected')
+      ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
+    } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
+      if (verbose) print("Seasonally selected")
+      if (verbose) print(table(month(x)))
+      if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
+      ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
+      #y <- x[ii,is] # REB Not here
+    } else if (inherits(it,"Date")) {
+      if (verbose) print('it is a Date object')
+      ii <- is.element(t,it)
+    } else {
+      str(it); print(class(it))
+      ii <- rep(FALSE,length(t))
+      warning("subset.default: did not recognise the selection citerion for 'it'")
+    }
+  } else if ((class(it)=="numeric") | (class(it)=="integer")) {
+    if (verbose) print('it is numeric or integer')
+    nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
+    if (verbose) {print(nlev); print(it)}
+    #       if ((length(nlev)==1)) { REB 2015-01-20: the lines below will never happen with this line:
+    if (length(it)==2) {
+      if ( (min(it) >= 1800) & (max(it) <= 2500) ) {
+        if (verbose) print("it most probably contains a years")
+        ii <- is.element(yr,year(it[1]):year(it[2]))
+      } else if ( (min(it) >= 1) & (max(it) <= length(yr)) ) {
+        if (verbose) print("it most probably contains a indices")
+        ii <- is.element(1:length(yr),it[1]:it[2])
+      } else  if (min(it) >= min(yr)) {
+        if (verbose) print("it most probably contains years")
+        ii <- is.element(yr,it[1]:max(yr))
+      } else  if (max(it) <= max(yr)) {
+        if (verbose) print("it most probably contains years")
+        ii <- is.element(yr,min(yr):it[2])
+      }
+    } else if ((length(it)>2) | length(it==1)) {
+      # if it is years:
+      if (min(it) > length(yr)) {
+        if (verbose) print("match years")
+        ii <- is.element(yr,it)
+      } else if (max(it) <= length(yr)) {
+        if (verbose) print("pick by indices")
+        ii <- is.element(1:length(t),it)
+      } else {
+        ii <- rep(FALSE,length(t))
+        warning("subset.default: did not reckognise the selection citerion for 'it'")
+      }
+    } else if (inherits(it,c("Date","yearmon"))) {     
+      ##        ii <- is.element(t,it)
+      if (verbose) print('it is a date object')
+      ii <- (t >= min(it)) & (t <= max(it))
+    } else if (inherits(it,"logical") & length(it)==length(yr)) {
+      ii <- it
+    } else if (inherits(it,c("POSIXt","PCICt"))) {
+      if (verbose) print('it is a date & time object')
+      if (!inherits(t,c("POSIXt","PCICt"))) it <- as.Date(format(it,"%Y-%m-%d"))
+      ii <- is.element(t,it)
+    } else if (!is.null(it)) {
+      ii <- rep(FALSE,length(t))
+      warning("subset.default: did not reckognise the selection citerion for 'it'")
+    } 
+    ## it <- (1:length(t))[ii]
+    ##
+  } else if (inherits(it,c("Date","yearmon"))) {       
+    ##        ii <- is.element(t,it)
+    if (verbose) print('it is a date object')
+    ii <- (t >= min(it)) & (t <= max(it))
+  } else if (inherits(it,"logical") & length(it)==length(yr)) {
+    ii <- it
+  } else if (inherits(it,c("POSIXt","PCICt"))) {
+    if (verbose) print('it is a date & time object')
+    if (!inherits(t,c("POSIXt","PCICt"))) it <- as.Date(format(it,"%Y-%m-%d"))
+    ii <- is.element(t,it)
+  } else if (!is.null(it)) {
+    ii <- rep(FALSE,length(t))
+    warning("subset.default: did not reckognise the selection citerion for 'it'")
+  }
+  
+  class(x) -> cls
+  ##print(cls)
+  ## update the class of x
+  #class(x) <- "zoo" 
+  
+  n <- dim(x)[2]
+  selx <- is.finite(lon(x)); sely <- is.finite(lat(x))
+  
+  selz <- rep(TRUE,n)
+  selc <- selz; seli <- selz; selm <- selz; salt <- selz
+  selp <- selz; selF <- selz ; sell <- selz
+  
+  # REB 11.04.2014: is can be a list to select region or according to other criterion
+  if ( inherits(is,'list') & inherits(x,'station') ) {
+    if (verbose) {
+      print('spatial selection: station & is=list')
+      print(is)
+    }
+    nms <- names(is)
+    il <- grep('loc',tolower(nms))
+    ix <- grep('lon',tolower(nms))
+    iy <- grep('lat',tolower(nms))
+    iz <- grep('alt',tolower(nms))
+    ic <- grep('cntr',tolower(nms))
+    im <- grep('nmin',tolower(nms))
+    ip <- grep('param',tolower(nms))
+    id <- grep('stid',tolower(nms))
+    iF <- grep('FUN',nms)
+    if (length(il)>0) sloc <- is[[il]] else sloc <- NULL
+    if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
+    if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
+    if (length(iz)>0) salt <- is[[iz]] else salt <- NULL
+    if (length(ic)>0) scntr <- is[[ic]] else scntr <- NULL
+    if (length(im)>0) snmin <- is[[im]] else snmin <- NULL
+    if (length(ip)>0) sparam <- is[[ip]] else sparam <- NULL        
+    if (length(id)>0) sstid <- is[[id]] else sstid <- NULL
+    if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
+    if (length(sloc)>0) sell <- is.element(tolower(sloc(x)),sloc)
+    
+    if (verbose) print(paste('Number of points: ',sum(ii),sum(is),
+                             'ii=',class(ii),'is=',class(is)))
+    ## REB 2021-03-31: something strange happened here!
+    if (!is.logical(is)) {
+      warning('subset: Something strange happened! class(is)==NULL...')
+      return(x[which(ii),])
+    }
+    y <- x[which(ii),which(is)]
+    
+    class(x) <- cls; class(y) <- cls
+    y <- attrcp(x,y,ignore=c("names"))
+    if ( (inherits(x,'station')) & (length(is)>1) ) {
+      if (verbose) print('station attributes')
+      attr(y,'longitude') <- attr(x,'longitude')[is]
+      attr(y,'latitude') <- attr(x,'latitude')[is]
+      if (!is.null(attr(y,'altitude')))
+        attr(y,'altitude') <- attr(x,'altitude')[is]
+      if (!is.null(attr(y,'country')))
+        attr(y,'country') <- attr(x,'country')[is]
+      if (!is.null(attr(y,'source')))
+        attr(y,'source') <- attr(x,'source')[is]
+      if (!is.null(attr(y,'station_id')))
+        attr(y,'station_id') <- attr(x,'station_id')[is]
+      if (!is.null(attr(y,'location')))
+        attr(y,'location') <- attr(x,'location')[is]
+      if (!is.null(attr(y,'quality')))
+        attr(y,'quality') <- attr(x,'quality')[is]
+    ## attr(y,'history') <- attr(x,'history')[is]
+    ## attr(y,'element') <- attr(x,'element')[is]
+      if (!is.null(attr(y,'aspect')))
+        attr(y,'aspect') <- attr(x,'aspect')[is]
+      if (!is.null(attr(y,'variable'))) {
+        if (length(attr(x,'variable'))==length(is)) {
+          attr(y,'variable') <- attr(x,'variable')[is] 
+        } else {
+          attr(y,'variable') <- attr(x,'variable')
+        }
+      }
+      if (!is.null(attr(y,'unit'))) {
+        if (length(attr(x,'unit'))==length(is)) {
+          attr(y,'unit') <- attr(x,'unit')[is] 
+        } else {
+          attr(y,'unit') <- attr(x,'unit')
+        }
+      }
+      if (!is.null(attr(y,'longname')))
+        attr(y,'longname') <- attr(x,'longname')[is]
+      if (!is.null(attr(y,'reference')))
+        attr(y,'reference') <- attr(x,'reference')[is]
+      if (!is.null(attr(y,'info')))
+        attr(y,'info') <- attr(x,'info')[is]
+      if (!is.null(attr(y,'method')))
+        attr(y,'method') <- attr(x,'method')[is]
+      if (!is.null(attr(y,'type')))
+        attr(y,'type') <- attr(x,'type')[is]
+      if (!is.null(attr(y,'URL')))
+        attr(y,'URL') <- attr(x,'URL')[is]
+      if (!is.null(attr(y,'na')))
+        attr(y,'na') <- attr(x,'na')[is]
+    }
+    if (length(salt)==2) selz <- (alt(x) >= min(salt)) & (alt(x) <= max(salt))
+    if (length(salt)==1) {
+      if (salt < 0) {
+        selz <- alt(x) <= abs(salt) 
+      } else {
+        selz <- alt(x) >= salt
+      }
+    }
+    if (length(scntr)>0) selc <- is.element(tolower(cntr(x)),scntr)
+    if (length(snmin)>0) selm <- apply(coredata(x),2,nval) > snmin
+    if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),sparam)
+    if (length(sstid)==2) {
+      seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) 
+    } else if (length(sstid)>0) {
+      seli <- is.element(stid(x),sstid)
+    }
+    if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...
+    ##
+    is <- sell & selx & sely & selz & selc & seli & selm & selp & selF
+    if (verbose) print(paste(sum(is),'spatial points'))
+    ##
+    ## Need to make sure both it and is are same type: here integers for index rather than logical
+    ## otherwise the subindexing results in an empty object
+  } else if ( inherits(is,'list') & inherits(x,'field') ) {
+    if (verbose) print('spatial selection: field & is=list')
+    ## KMP 2016-10-20 Can we subset across the dateline and greenwich now?
+    y <- subregion.default(x,is=is,verbose=verbose)
+    if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
+      x <- g2dl.field(x,greenwich=TRUE) 
+    }
+    is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
+  } else if (is.null(is)) {
+    if (verbose) print('spatial selection: is=NULL')
+    is <- rep(TRUE,d[2]) 
+  } else if (is.numeric(is)) {
+    if (verbose) print('spatial selection: is=numeric')
+    iss <- rep(FALSE,d[2]); iss[is] <- TRUE
+    is <- iss
+  } else {
+    if (verbose) print('spatial selection: otherwise')
+    is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
+  }
+  
+  if (verbose) print(paste('number of points: ',sum(ii),sum(is),
+                           'ii=',class(ii),'is=',class(is)))
+  y <- x[which(ii),which(is)]
+  
+  class(x) <- cls; class(y) <- cls
+  y <- attrcp(x,y,ignore=c("names"))
+  if (inherits(x,'station')) {
+    if (verbose) print('station attributes')
+    attr(y,'longitude') <- attr(x,'longitude')[is]
+    attr(y,'latitude') <- attr(x,'latitude')[is]
+    if (!is.null(attr(y,'altitude')))
+      attr(y,'altitude') <- attr(x,'altitude')[is]
+    if (!is.null(attr(y,'country')))
+      attr(y,'country') <- attr(x,'country')[is]
+    if (!is.null(attr(y,'source')))
+      attr(y,'source') <- attr(x,'source')[is]
+    if (!is.null(attr(y,'station_id')))
+      attr(y,'station_id') <- attr(x,'station_id')[is]
+    if (!is.null(attr(y,'location')))
+      attr(y,'location') <- attr(x,'location')[is]
+    if (!is.null(attr(y,'quality')))
+      attr(y,'quality') <- attr(x,'quality')[is]
+    ## attr(y,'history') <- attr(x,'history')[is]
+    if (!is.null(attr(y,'variable')))
+      attr(y,'variable') <- attr(x,'variable')[is]
+    ## attr(y,'element') <- attr(x,'element')[is]
+    if (!is.null(attr(y,'aspect')))
+      attr(y,'aspect') <- attr(x,'aspect')[is]
+    if (!is.null(attr(y,'unit'))) {
+      if (length(attr(x,'unit'))==length(is)) {
+        attr(y,'unit') <- attr(x,'unit')[is] 
+      } else {
+        attr(y,'unit') <- attr(x,'unit')
+      }
+    }
+    if (!is.null(attr(y,'longname')))
+      attr(y,'longname') <- attr(x,'longname')[is]
+    if (!is.null(attr(y,'reference')))
+      attr(y,'reference') <- attr(x,'reference')[is]
+    if (!is.null(attr(y,'info')))
+      attr(y,'info') <- attr(x,'info')[is]
+    if (!is.null(attr(y,'method')))
+      attr(y,'method') <- attr(x,'method')[is]
+    if (!is.null(attr(y,'type')))
+      attr(y,'type') <- attr(x,'type')[is]
+    if (!is.null(attr(y,'URL')))
+      attr(y,'URL') <- attr(x,'URL')[is]
+    if (!is.null(attr(y,'na')))
+      attr(y,'na') <- attr(x,'na')[is]
+    if (!is.null(err(y)))
+      attr(y,'standard.error') <- err(x)[ii,is]
+  } else {
+    attr(y,'longitude') <- attr(x,'longitude')[selx]
+    attr(y,'latitude') <- attr(x,'latitude')[sely]
+    c(sum(selx),sum(sely),sum(ii,na.rm=TRUE)) -> attr(y,'dimensions')
+  }
+  
+  if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
+    attr(y,"greenwich") <- TRUE
+  } else {
+    attr(y,"greenwich") <- FALSE
+  }
+  ## Check if there is only one series but if the dimension 
+  if ( (!is.null(d)) & is.null(dim(y)) ) {
+    if (d[2]==1) dim(y) <- c(length(y),1)
+  }
+  attr(y,'history') <- history.stamp(x)
+  if (verbose) print('exit subset.default')
+  if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))
+  return(y)
+}
+
+
 
 #' @exportS3Method
 #' @export
@@ -942,383 +1317,6 @@ subregion.default <- function(x,is=NULL,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)  
   return(y)
 } 
-
-#' @exportS3Method
-#' @export
-subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-  if (verbose) {print("subset.default"); print(it); print(is); print('---')}
-  
-  ## REB: Use select.station to condition the selection index is...
-  ## loc - selection by names
-  ## lon/lat selection be geography or closest if one coordinate lon/lat
-  ##         if two-element vectors, define a region
-  ## alt - positive values: any above; negative any below height
-  ## cntr - selection by country
-  
-  ## REB 2015-02-02: renamed to subset.default because this will be used to subset
-  ## both field and station objects.
-  
-  nval <- function(x) sum(is.finite(x))
-  ## Sometimes 'it' = 'integer(0)' - reset to NULL!
-  if (length(it)==0) it <- NULL
-  if (length(is)==0) is <- NULL
-  ## Return the original value if 'it' and 'is' are not specified
-  if (is.null(it) & is.null(is)) return(x)
-  
-  x0 <- x
-  ## 
-  d <- dim(x)
-  if (is.null(d)) {
-    if (verbose)
-      print("subset.default: Warning - One dimensional vector has been found in the coredata")
-    x <- zoo(as.matrix(coredata(x)),order.by=index(x))
-    x <- attrcp(x0,x)
-    class(x) <- class(x0)
-  } 
-  d <- dim(x)
-  if (is.null(is)) is <- 1:d[2]
-  #    if (is.null(it)) it <- 1:d[1] This lines causes a bug if is is given but not it...
-  
-  ## 
-  ##print("HERE")
-  ## get time in t
-  t <- index(x)
-  if(inherits(t,"Date")) t <- as.Date(format.Date(t,"%Y-%m-%d"))
-  if(!inherits(t,c("POSIXt","PCICt"))) ii <- is.finite(t) else ii <- rep(TRUE,length(t))
-  if (verbose) {print('subset.default: time index it'); print(it)}
-  if (is.character(it)) {
-    if (levels(factor(nchar(it)))==10) it <- as.Date(it)
-  }
-  
-  ##  if (datetype=="Date") {
-  if (inherits(t,c("Date","yearmon"))) {
-    if (verbose) print('x is a Date or yearmon object')
-    ## REB: replaced by lines below:
-    ##    year <- as.numeric( format(t, '%Y') ) 
-    ##    month <- as.numeric( format(t, '%m') )
-    yr <- year(x)
-    mo <- month(x)
-    dy <- day(x)
-  } else if (inherits(t,c("numeric","integer"))) {
-    if (verbose) print('X has a numeric index - select by years')
-    yr <- t
-    mo <- dy <- rep(1,length(t))
-  } else if (inherits(t,c("POSIXt","PCICt"))) {
-    if (verbose) print('X has a POSIXt index')
-    yr <- year(t)
-    mo <- month(t)
-    dy <- day(t)
-    hr <- as.numeric(format(t,"%H"))
-    mn <- as.numeric(format(t,"%M"))
-    if (!inherits(it,c("POSIXt","PCICt"))) t <- format(t,"%Y-%m-%d")
-  } else print("Index of x should be a Date, yearmon, or numeric object")
-  
-  if (is.logical(it)) {
-    ii <- it 
-  } else if(inherits(it,c("Date"))) {
-    if ( length(it) == 2 ) {
-      if (verbose) print('Between two dates')
-      if (verbose) print(it)
-      ii <- (t >= min(it)) & (t <= max(it))
-    } else {
-      ii <- is.element(t,it)
-    }
-  } else if(inherits(it,"yearmon")) {
-    ii <- is.element(as.yearmon(t),it)
-  } else if (is.character(it)) {
-    if (verbose) print('it is a string')
-    if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
-      if (verbose) print('Monthly selected')
-      ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
-    } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
-      if (verbose) print("Seasonally selected")
-      if (verbose) print(table(month(x)))
-      if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
-      ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
-      #y <- x[ii,is] # REB Not here
-    } else if (inherits(it,"Date")) {
-      if (verbose) print('it is a Date object')
-      ii <- is.element(t,it)
-    } else {
-      str(it); print(class(it))
-      ii <- rep(FALSE,length(t))
-      warning("subset.default: did not recognise the selection citerion for 'it'")
-    }
-  } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-    if (verbose) print('it is numeric or integer')
-    nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
-    if (verbose) {print(nlev); print(it)}
-    #       if ((length(nlev)==1)) { REB 2015-01-20: the lines below will never happen with this line:
-    if (length(it)==2) {
-      if ( (min(it) >= 1800) & (max(it) <= 2500) ) {
-        if (verbose) print("it most probably contains a years")
-        ii <- is.element(yr,year(it[1]):year(it[2]))
-      } else if ( (min(it) >= 1) & (max(it) <= length(yr)) ) {
-        if (verbose) print("it most probably contains a indices")
-        ii <- is.element(1:length(yr),it[1]:it[2])
-      } else  if (min(it) >= min(yr)) {
-        if (verbose) print("it most probably contains years")
-        ii <- is.element(yr,it[1]:max(yr))
-      } else  if (max(it) <= max(yr)) {
-        if (verbose) print("it most probably contains years")
-        ii <- is.element(yr,min(yr):it[2])
-      }
-    } else if ((length(it)>2) | length(it==1)) {
-      # if it is years:
-      if (min(it) > length(yr)) {
-        if (verbose) print("match years")
-        ii <- is.element(yr,it)
-      } else if (max(it) <= length(yr)) {
-        if (verbose) print("pick by indices")
-        ii <- is.element(1:length(t),it)
-      } else {
-        ii <- rep(FALSE,length(t))
-        warning("subset.default: did not reckognise the selection citerion for 'it'")
-      }
-    } else if (inherits(it,c("Date","yearmon"))) {     
-      ##        ii <- is.element(t,it)
-      if (verbose) print('it is a date object')
-      ii <- (t >= min(it)) & (t <= max(it))
-    } else if (inherits(it,"logical") & length(it)==length(yr)) {
-      ii <- it
-    } else if (inherits(it,c("POSIXt","PCICt"))) {
-      if (verbose) print('it is a date & time object')
-      if (!inherits(t,c("POSIXt","PCICt"))) it <- as.Date(format(it,"%Y-%m-%d"))
-      ii <- is.element(t,it)
-    } else if (!is.null(it)) {
-      ii <- rep(FALSE,length(t))
-      warning("subset.default: did not reckognise the selection citerion for 'it'")
-    } 
-    ## it <- (1:length(t))[ii]
-    ##
-  } else if (inherits(it,c("Date","yearmon"))) {       
-    ##        ii <- is.element(t,it)
-    if (verbose) print('it is a date object')
-    ii <- (t >= min(it)) & (t <= max(it))
-  } else if (inherits(it,"logical") & length(it)==length(yr)) {
-    ii <- it
-  } else if (inherits(it,c("POSIXt","PCICt"))) {
-    if (verbose) print('it is a date & time object')
-    if (!inherits(t,c("POSIXt","PCICt"))) it <- as.Date(format(it,"%Y-%m-%d"))
-    ii <- is.element(t,it)
-  } else if (!is.null(it)) {
-    ii <- rep(FALSE,length(t))
-    warning("subset.default: did not reckognise the selection citerion for 'it'")
-  }
-  
-  class(x) -> cls
-  ##print(cls)
-  ## update the class of x
-  #class(x) <- "zoo" 
-  
-  n <- dim(x)[2]
-  selx <- is.finite(lon(x)); sely <- is.finite(lat(x))
-  
-  selz <- rep(TRUE,n)
-  selc <- selz; seli <- selz; selm <- selz; salt <- selz
-  selp <- selz; selF <- selz ; sell <- selz
-  
-  # REB 11.04.2014: is can be a list to select region or according to other criterion
-  if ( inherits(is,'list') & inherits(x,'station') ) {
-    if (verbose) {
-      print('spatial selection: station & is=list')
-      print(is)
-    }
-    nms <- names(is)
-    il <- grep('loc',tolower(nms))
-    ix <- grep('lon',tolower(nms))
-    iy <- grep('lat',tolower(nms))
-    iz <- grep('alt',tolower(nms))
-    ic <- grep('cntr',tolower(nms))
-    im <- grep('nmin',tolower(nms))
-    ip <- grep('param',tolower(nms))
-    id <- grep('stid',tolower(nms))
-    iF <- grep('FUN',nms)
-    if (length(il)>0) sloc <- is[[il]] else sloc <- NULL
-    if (length(ix)>0) slon <- is[[ix]] else slon <- NULL
-    if (length(iy)>0) slat <- is[[iy]] else slat <- NULL
-    if (length(iz)>0) salt <- is[[iz]] else salt <- NULL
-    if (length(ic)>0) scntr <- is[[ic]] else scntr <- NULL
-    if (length(im)>0) snmin <- is[[im]] else snmin <- NULL
-    if (length(ip)>0) sparam <- is[[ip]] else sparam <- NULL        
-    if (length(id)>0) sstid <- is[[id]] else sstid <- NULL
-    if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
-    if (length(sloc)>0) sell <- is.element(tolower(sloc(x)),sloc)
-    
-    if (verbose) print(paste('Number of points: ',sum(ii),sum(is),
-                             'ii=',class(ii),'is=',class(is)))
-    ## REB 2021-03-31: something strange happened here!
-    if (!is.logical(is)) {
-      warning('subset: Something strange happened! class(is)==NULL...')
-      return(x[which(ii),])
-    }
-    y <- x[which(ii),which(is)]
-    
-    class(x) <- cls; class(y) <- cls
-    y <- attrcp(x,y,ignore=c("names"))
-    if ( (inherits(x,'station')) & (length(is)>1) ) {
-      if (verbose) print('station attributes')
-      attr(y,'longitude') <- attr(x,'longitude')[is]
-      attr(y,'latitude') <- attr(x,'latitude')[is]
-      if (!is.null(attr(y,'altitude')))
-        attr(y,'altitude') <- attr(x,'altitude')[is]
-      if (!is.null(attr(y,'country')))
-        attr(y,'country') <- attr(x,'country')[is]
-      if (!is.null(attr(y,'source')))
-        attr(y,'source') <- attr(x,'source')[is]
-      if (!is.null(attr(y,'station_id')))
-        attr(y,'station_id') <- attr(x,'station_id')[is]
-      if (!is.null(attr(y,'location')))
-        attr(y,'location') <- attr(x,'location')[is]
-      if (!is.null(attr(y,'quality')))
-        attr(y,'quality') <- attr(x,'quality')[is]
-    ## attr(y,'history') <- attr(x,'history')[is]
-    ## attr(y,'element') <- attr(x,'element')[is]
-      if (!is.null(attr(y,'aspect')))
-        attr(y,'aspect') <- attr(x,'aspect')[is]
-      if (!is.null(attr(y,'variable'))) {
-        if (length(attr(x,'variable'))==length(is)) {
-          attr(y,'variable') <- attr(x,'variable')[is] 
-        } else {
-          attr(y,'variable') <- attr(x,'variable')
-        }
-      }
-      if (!is.null(attr(y,'unit'))) {
-        if (length(attr(x,'unit'))==length(is)) {
-          attr(y,'unit') <- attr(x,'unit')[is] 
-        } else {
-          attr(y,'unit') <- attr(x,'unit')
-        }
-      }
-      if (!is.null(attr(y,'longname')))
-        attr(y,'longname') <- attr(x,'longname')[is]
-      if (!is.null(attr(y,'reference')))
-        attr(y,'reference') <- attr(x,'reference')[is]
-      if (!is.null(attr(y,'info')))
-        attr(y,'info') <- attr(x,'info')[is]
-      if (!is.null(attr(y,'method')))
-        attr(y,'method') <- attr(x,'method')[is]
-      if (!is.null(attr(y,'type')))
-        attr(y,'type') <- attr(x,'type')[is]
-      if (!is.null(attr(y,'URL')))
-        attr(y,'URL') <- attr(x,'URL')[is]
-      if (!is.null(attr(y,'na')))
-        attr(y,'na') <- attr(x,'na')[is]
-    }
-    if (length(salt)==2) selz <- (alt(x) >= min(salt)) & (alt(x) <= max(salt))
-    if (length(salt)==1) {
-      if (salt < 0) {
-        selz <- alt(x) <= abs(salt) 
-      } else {
-        selz <- alt(x) >= salt
-      }
-    }
-    if (length(scntr)>0) selc <- is.element(tolower(cntr(x)),scntr)
-    if (length(snmin)>0) selm <- apply(coredata(x),2,nval) > snmin
-    if (length(sparam)>0) selp <- is.element(tolower(attr(x,"variable")),sparam)
-    if (length(sstid)==2) {
-      seli <- (stid(x) >= min(sstid)) & (stid(x) <= max(sstid)) 
-    } else if (length(sstid)>0) {
-      seli <- is.element(stid(x),sstid)
-    }
-    if (length(sFUN)>0) selm <- apply(coredata(x),2,sFUN) # Not quite finished...
-    ##
-    is <- sell & selx & sely & selz & selc & seli & selm & selp & selF
-    if (verbose) print(paste(sum(is),'spatial points'))
-    ##
-    ## Need to make sure both it and is are same type: here integers for index rather than logical
-    ## otherwise the subindexing results in an empty object
-  } else if ( inherits(is,'list') & inherits(x,'field') ) {
-    if (verbose) print('spatial selection: field & is=list')
-    ## KMP 2016-10-20 Can we subset across the dateline and greenwich now?
-    y <- subregion.default(x,is=is,verbose=verbose)
-    if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
-      x <- g2dl.field(x,greenwich=TRUE) 
-    }
-    is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
-  } else if (is.null(is)) {
-    if (verbose) print('spatial selection: is=NULL')
-    is <- rep(TRUE,d[2]) 
-  } else if (is.numeric(is)) {
-    if (verbose) print('spatial selection: is=numeric')
-    iss <- rep(FALSE,d[2]); iss[is] <- TRUE
-    is <- iss
-  } else {
-    if (verbose) print('spatial selection: otherwise')
-    is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
-  }
-  
-  if (verbose) print(paste('number of points: ',sum(ii),sum(is),
-                           'ii=',class(ii),'is=',class(is)))
-  y <- x[which(ii),which(is)]
-  
-  class(x) <- cls; class(y) <- cls
-  y <- attrcp(x,y,ignore=c("names"))
-  if (inherits(x,'station')) {
-    if (verbose) print('station attributes')
-    attr(y,'longitude') <- attr(x,'longitude')[is]
-    attr(y,'latitude') <- attr(x,'latitude')[is]
-    if (!is.null(attr(y,'altitude')))
-      attr(y,'altitude') <- attr(x,'altitude')[is]
-    if (!is.null(attr(y,'country')))
-      attr(y,'country') <- attr(x,'country')[is]
-    if (!is.null(attr(y,'source')))
-      attr(y,'source') <- attr(x,'source')[is]
-    if (!is.null(attr(y,'station_id')))
-      attr(y,'station_id') <- attr(x,'station_id')[is]
-    if (!is.null(attr(y,'location')))
-      attr(y,'location') <- attr(x,'location')[is]
-    if (!is.null(attr(y,'quality')))
-      attr(y,'quality') <- attr(x,'quality')[is]
-    ## attr(y,'history') <- attr(x,'history')[is]
-    if (!is.null(attr(y,'variable')))
-      attr(y,'variable') <- attr(x,'variable')[is]
-    ## attr(y,'element') <- attr(x,'element')[is]
-    if (!is.null(attr(y,'aspect')))
-      attr(y,'aspect') <- attr(x,'aspect')[is]
-    if (!is.null(attr(y,'unit'))) {
-      if (length(attr(x,'unit'))==length(is)) {
-        attr(y,'unit') <- attr(x,'unit')[is] 
-      } else {
-        attr(y,'unit') <- attr(x,'unit')
-      }
-    }
-    if (!is.null(attr(y,'longname')))
-      attr(y,'longname') <- attr(x,'longname')[is]
-    if (!is.null(attr(y,'reference')))
-      attr(y,'reference') <- attr(x,'reference')[is]
-    if (!is.null(attr(y,'info')))
-      attr(y,'info') <- attr(x,'info')[is]
-    if (!is.null(attr(y,'method')))
-      attr(y,'method') <- attr(x,'method')[is]
-    if (!is.null(attr(y,'type')))
-      attr(y,'type') <- attr(x,'type')[is]
-    if (!is.null(attr(y,'URL')))
-      attr(y,'URL') <- attr(x,'URL')[is]
-    if (!is.null(attr(y,'na')))
-      attr(y,'na') <- attr(x,'na')[is]
-    if (!is.null(err(y)))
-      attr(y,'standard.error') <- err(x)[ii,is]
-  } else {
-    attr(y,'longitude') <- attr(x,'longitude')[selx]
-    attr(y,'latitude') <- attr(x,'latitude')[sely]
-    c(sum(selx),sum(sely),sum(ii,na.rm=TRUE)) -> attr(y,'dimensions')
-  }
-  
-  if(!any(attr(y,"longitude")<0) & any(attr(y,"longitude")>180)) {
-    attr(y,"greenwich") <- TRUE
-  } else {
-    attr(y,"greenwich") <- FALSE
-  }
-  ## Check if there is only one series but if the dimension 
-  if ( (!is.null(d)) & is.null(dim(y)) ) {
-    if (d[2]==1) dim(y) <- c(length(y),1)
-  }
-  attr(y,'history') <- history.stamp(x)
-  if (verbose) print('exit subset.default')
-  if (inherits(y,"annual")) index(y) <- as.numeric(year(index(y)))
-  return(y)
-}
 
 #' @exportS3Method
 #' @export

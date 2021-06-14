@@ -42,8 +42,8 @@ a crude downscaling in timescales.
 Calculate the residual of a 'ds' object, i.e., the original data minus the fitted values.
 }
 \examples{
-y <- station(stid=18700,src='metnod.thredds',param='precip')
-z <- IDF(y)
+data(bjornholt)
+z <- IDF(bjornholt)
 View(z)
 
 }
