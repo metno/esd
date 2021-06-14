@@ -321,6 +321,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
       if(!is.null(path.ghcnm)) path <- path.ghcnm
       if(is.null(url.ghcnm)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn" else url <- url.ghcnm
     } else if(s=="GHCND") {
+## https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access/
       if(!is.null(path.ghcnd)) path <- path.ghcnd
       if(is.null(url.ghcnd)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all" else url <- url.ghcnd
     }

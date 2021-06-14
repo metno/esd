@@ -485,10 +485,21 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     invisible(X)
   } else {
     #if (is.null(is)) is <- 1:length(loc(X$pca)) 
+    n <- length(X)
     if (verbose) print('Extract the results model-wise')
     ## Find the size of the PC matrices representing model projections
-    d <- apply(sapply(X[3:length(X)],dim),1,min)
+    d <- apply(sapply(X[3:n],dim),1,min)
     ## The PCs from the list are extracted into the matrix V 
+    ## Quality control
+    if (verbose) print(paste('Before quality control: original number of members=',n))
+    for (i in seq(n,3,by=-1)) {
+      #print(range(X[[i]],na.rm=TRUE)); print(dim(X[[i]]))
+      if (max(abs(X[[i]]),na.rm=TRUE) > 10)  {
+        print(paste(i,'Remove suspect results')); X[[i]] <- NULL
+      }
+    }
+    n <- length(X)
+    if (verbose) print(paste('After quality control: new number of members=',n))
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
     if (verbose) print(paste('dim V=',paste(dim(V),collapse='-')))
