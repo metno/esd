@@ -57,20 +57,43 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   for (ix in im) X[[ix]] <- NULL
   n <- length(names(X))
   if (verbose) print(paste('New length of X is',n))
+  if (is.null(it)) it <- range(index(X[[1]]))
   V <- lapply(X,FUN='subset.pc',it=it)
   memsiz <- rep("?",n)
   for (i in 1:n) memsiz[i] <- paste(dim(V[[i]]),collapse='x')
   memsiztab <- table(memsiz)
   if (verbose) print(memsiztab)
-  d <- dim(V[[1]])
+  ## Quality control
+  if (verbose) print(paste('Before quality control: original number of members=',n))
+  for (i in seq(n,1,by=-1)) {
+    print(range(V[[i]],na.rm=TRUE)); print(dim(V[[i]]))
+    if (max(abs(V[[i]]),na.rm=TRUE) > 10)  {
+      print(paste(i,'Remove suspect results')); V[[i]] <- NULL
+    }
+  }
+  n <- length(V)
+  if (verbose) print(paste('After quality control: new number of members=',n))
   
+  d <- dim(V[[1]])
   if (verbose) {print(names(V)); print(c(d,n,length(unlist(V)))); print(paste('FUNX=',FUNX))}
-  ## Apply function FUNX
+  ## Apply FUNX to each of the PCs across all members
+  lengths <- rep(NA,length(V))
+  for (i in 1:length(V)) lengths[i] <- length(index(V[[i]]))
+  #if (length(table(lengths))>1) 
   if (!test) {
     V <- unlist(V)
+    V[abs(V) > 10] <- NA
     dim(V) <- c(d[1]*d[2],n)
     if (verbose) print(FUNX)
     V <- apply(V,1,FUN=FUNX)
+    dim(V) <- d
+    # if (verbose) print('alternative way...')
+    # VV <- V[[1]]
+    # for (i in 2:length(V)) {
+    #   print(range(V[[i]],na.rm=TRUE)); print(dim(V[[i]]))
+    #   VV <- VV + V[[i]]
+    # }
+    # V <- VV/length(V)
   } else {
     V <- V[[1]] # Pick one member for testing ## Testing
     n <- 1
@@ -95,9 +118,6 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   
   ## Aggregate statistics over ensemble members
   if (verbose) print('Aggregate ensemble statistics')
-  ## Apply FUNX to each of the PCs across all members
-  #
-  
   U <- attr(UWD,'pattern')
   if (!is.null(dim(U))) {
     dU <- dim(U) 
@@ -137,12 +157,15 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
     attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
     attr(Y,'longitude') <- lon(UWD)
     attr(Y,'latidude') <- lat(UWD)
+    class(Y)[1] <- 'field'
   }
   attr(Y,'mean') <- NULL
   if (verbose) {print('exit expandpca'); print(dim(Y))}
   return(Y)
 }
 
+## Aggregate ensemble performs similar function to expandpca but applies the functions to the 
+## results after the transform from PCA to field and hence is a bit slower.
 #' @export
 aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,verbose=FALSE,anomaly=FALSE,test=FALSE,eof=TRUE) {
   ## Get the spatial weights
@@ -180,6 +203,7 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,verbose=FALSE,anomaly=FA
   n <- length(names(X))
   if (verbose) print(paste('New length of X is',n))
   ## Only select the selected time interval - saves time
+  if (is.null(it)) it <- range(index(X[[1]]))
   V <- lapply(X,FUN='subset.pc',it=it)
   if (verbose) print(paste('Interval',paste(range(index(V[[1]])),collapse=' - ')))
   memsiz <- rep("?",n)
@@ -187,8 +211,20 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,verbose=FALSE,anomaly=FA
   memsiztab <- table(memsiz)
   if (verbose) print(memsiztab)
   d <- dim(V[[1]])
-  
+  ## Quality control
+  if (verbose) print(paste('Before quality control: original number of members=',n))
+  for (i in seq(n,1,by=-1)) {
+    print(range(V[[i]],na.rm=TRUE)); print(dim(V[[i]]))
+    if (max(abs(V[[i]]),na.rm=TRUE) > 10)  {
+      print(paste(i,'Remove suspect results')); V[[i]] <- NULL
+    }
+  }
+  n <- length(V)
+  if (verbose) print(paste('After quality control: new number of members=',n))
   if (verbose) {print(names(V)); print(c(d,n,length(unlist(V)))); print(paste('FUN=',FUN))}
+  lengths <- rep(NA,length(V))
+  for (i in 1:length(V)) lengths[i] <- length(index(V[[i]]))
+  if (length(table(lengths))>1) browser()
   
   ## Aggregate statistics over ensemble members
   if (verbose) print('Aggregate ensemble statistics')
@@ -261,14 +297,20 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
   if (inherits(x,c('pca','eof'))) {
     ## Extract a subset of the data
     if (verbose) print(names(x)[2])
-    x <- subset(x,is=is,im=im,ip=ip,verbose=TRUE)#verbose)
+    x <- subset(x,is=is,im=im,ip=ip,verbose=verbose)
     ## REB 2016-12-01: Do all the analysis on the PC weights to speed up. Linearity.  
     #    Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
-    Y <- expandpca(x,it=it,FUN=FUN,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
+    if (FUNX=='mean') 
+      Y <- expandpca(x,it=it,FUN=FUN,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test) else
+        Y <- aggregate.dsensemble(x,it=it,FUN=FUN,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     if (verbose) {str(x[[2]]); str(Y)}
     #    if (plot) map(Y,FUN=FUN,colbar=colbar,verbose=verbose,...)
-    if (plot) map(Y,FUN="mean",colbar=colbar,verbose=verbose,...)
-    invisible(Y)
+    if (verbose) print('Visualise...')
+    if (plot) {
+      z <- map(Y,FUN="mean",colbar=colbar,verbose=verbose,...)
+      attr(z,'ensemble.data') <- Y
+    } else z <- Y
+    invisible(z)
   } else return(NULL)
 }
 

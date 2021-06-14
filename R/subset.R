@@ -1734,11 +1734,6 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
     #Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
   }
 
-  if (any('eof' %in% names(x))) {
-    if (verbose) print('subset eof')
-    Y$eof <- subset(x$eof,is=is,ip=ip,verbose=verbose)
-    #Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
-  }
   X <- x
 
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
@@ -1755,6 +1750,15 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
     if(verbose) print(paste('subset im',length(y)))
   }
   Y <- c(Y,y)
+  if (any('eof' %in% names(x))) {
+    if (verbose) print('subset eof')
+    Y$eof <- subset(x$eof,is=is,ip=ip,verbose=verbose)
+    #Y$eof <- subset(x$eof,it=it,is=is,ip=ip,verbose=verbose)
+  }
+  ## Also need to copy the attributes
+  if (verbose) print('copy the attributes')
+  if (!is.null(Y$eof)) n <- length(Y) - 3 else n <- length(Y) - 2
+  for (i in 1:n) Y[[i+2]] <- attrcp(x[[i+2]],Y[[i+2]])
   class(Y) <- cls
   return(Y)
 }
