@@ -12,12 +12,12 @@
 #' @param url lURL of the database
 #' 
 #' @examples
-#' meta <- ghcnd.meta()
+#' meta <- ghcnd.meta(is=list(cntr=c('Mozambique','Zimbabwe','Malawi')))
 #' m <- subset(meta,lon=c(24,35),lat=c(-30,-25),verbose=TRUE)
 #' y <- ghcnd.station(subset(m,is=1:10),verbose=TRUE)
 
 #' @export
-GHCND.meta <- function(url='https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/doc/ghcnd-stations.txt') {
+GHCND.meta <- function(is=NULL,url='https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/doc/ghcnd-stations.txt') {
   # meta <- read.fwf(url,widths = c(11,9,10,7,3,31,4,4,6),
   #                  col.names=c('ID','latitude','longitude','elevation','state','location','GSN-flag','HCN','WMO-ID'))
   ## GHCND
@@ -61,6 +61,7 @@ GHCND.meta <- function(url='https://www.ncei.noaa.gov/data/global-historical-cli
                      wmo=wmo.id,source=rep('GHCND',length(id)),quality=qlty,element=ele,variable=param,
                      start=rep(NA,length(id)),end=rep(NA,length(id)))
   class(meta) <- c('stationmeta','data.frame')
+  if (!is.null(is)) meta <- subset(meta,is=is)
   return(meta)
 }
 
