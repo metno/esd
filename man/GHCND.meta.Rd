@@ -6,6 +6,7 @@
 \title{Fetch station data from GHND and convert into \code{station} objects.}
 \usage{
 GHCND.meta(
+  is = NULL,
  
     url = "https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/doc/ghcnd-stations.txt"
 )
@@ -23,7 +24,7 @@ Transform an input object into the esd class \code{station}.
 \code{GHCND.station} reads the raw data (slow due to big data volume - requires Internet access).
 }
 \examples{
-meta <- ghcnd.meta()
+meta <- ghcnd.meta(is=list(cntr=c('Mozambique','Zimbabwe','Malawi')))
 m <- subset(meta,lon=c(24,35),lat=c(-30,-25),verbose=TRUE)
 y <- ghcnd.station(subset(m,is=1:10),verbose=TRUE)
 }
