@@ -68,8 +68,6 @@ projections.}
 
 \item{breaks}{graphics setting - see \code{\link{image}}}
 
-\item{type}{graphics setting - colour shading or contour}
-
 \item{gridlines}{Only for the lon-lat projection}
 
 \item{lonR}{Only for the spherical projection used by \code{map2sphere} to change viewing angle}
@@ -130,7 +128,9 @@ between 0 and 1)}
 
 \item{land}{if TRUE mask land, else mask ocean}
 
-\item{what}{What to map: ['eof','field] for EOF pattern or the field
+\item{what}{What to map: ['eof','field] for EOF pattern or the field}
+
+\item{type}{- default c('fill','contour')
 recovered from the EOFs.}
 
 \item{fig}{see \code{\link{par}}}

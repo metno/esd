@@ -106,7 +106,7 @@ GHCND.station <- function(x,url='https://www.ncei.noaa.gov/data/global-historica
     if (!is.null(0.1*y$TAVG)) { 
       if (sum(is.finite(y$TAVG))>0) { 
         if (verbose) print(paste('T2m:',paste(range(y$TAVG,na.rm=TRUE),collapse=' - ')))
-        t2m <- as.station(zoo(y$TAVG,order.by=t),loc=x$location[is],lon=x$longitude[is],lat=x$latitude[is],alt=x$altitude[is],
+        t2m <- as.station(zoo(0.1*y$TAVG,order.by=t),loc=x$location[is],lon=x$longitude[is],lat=x$latitude[is],alt=x$altitude[is],
                           stid=x$station_id[is],wmo.is=x$wmo.id,variable='t2m',unit='degC',cntr=x$country[is],
                           src='GHCND',url=csvfile)
         if (is.null(T2m)) T2m <- t2m else T2m <- combine.stations(T2m,t2m)

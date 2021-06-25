@@ -113,7 +113,7 @@
 #' @importFrom grDevices dev.new dev.off dev.copy2eps dev.copy2pdf dev.list
 #' @importFrom stats pbinom
 #'
-#' @aliases plot.list plot.numeric plot.xsection
+#' @aliases plot.list plot.numeric plot.xsection plot.eof plot.station plot.ds plot.eof plot.pca plot.spell plot.nevents plot.IDF
 #'
 #' @param x the object to be plotted
 #' @param plot.type "single"

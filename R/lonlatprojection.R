@@ -68,15 +68,17 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     varlabel <- NULL
   }
   if (inherits(varlabel,'try-error')) varlabel <- NULL
-  if (verbose) print(varlabel)
+  if (verbose) {print(varlabel); print(src(x))}
   
-  if (!is.null(attr(x,'source'))) {
+  #if (is.null(src(x))) attr(x,'source') <- NA
+  if (!is.null(src(x))) {
     ## KMP 2019-12-12: Added check of source attribute because basename can't handle NA
     ## But why is source set to NA in as.field as default rather than NULL?
-    if(is.na(attr(x,'source'))) {
+    if (length(src(x))==0) attr(x,'source') <- 'data'
+    if (is.na(src(x))) {
       sub <- NULL
     } else {
-      sub <- paste(basename(attr(x,'source')),'*phantom(0)',sep='')
+      sub <- paste(basename(src(x)),'*phantom(0)',sep='')
     }
   } else {
     sub <- NULL

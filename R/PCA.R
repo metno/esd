@@ -30,6 +30,7 @@ PCA.matrix <- function(X,...,verbose=FALSE) {
 #' @exportS3Method
 #' @export
 PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE) {
+  if (verbose) print('PCA.station')
   if (!is.null(it) | !is.null(is))
     X <- subset(X,it=it,is=is)
   
@@ -39,8 +40,10 @@ PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NUL
     d <- dim(X)
     for (i in 1:d[2]) {
       x <- coredata(X[,i]); ok <- is.finite(x)
-      X[,i] <- approx(y=x[ok],x=(1:d[1])[ok],xout=1:d[1])$y
+      if (sum(ok)>0) X[,i] <- approx(y=x[ok],x=(1:d[1])[ok],xout=1:d[1])$y else
+                     X[,i] <- NA
     }
+    if (sum(!is.finite(X))>0) stop('PCA.station: detected invalid data (NA, etc)')
   }
   
   # Re-order dimensions: space x time

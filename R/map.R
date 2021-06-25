@@ -71,6 +71,7 @@
 #' @param ... further arguments passed to or from other methods.
 #' @param land if TRUE mask land, else mask ocean
 #' @param what What to map: ['eof','field] for EOF pattern or the field
+#' @param type - default c('fill','contour')
 #' recovered from the EOFs.
 #' @param fig see \code{\link{par}}
 #' @param add set add=TRUE if adding the map as a subplot
@@ -525,7 +526,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
       if (verbose) print('Data is a vector')
       X <- coredata(X)
     } else if (inherits(X,"matrix")) {
-      if (verbose) print(paste('Data is a matrix',FUN))
+      if (verbose) {print(paste('Data is a matrix. FUN=',FUN)); print(dim(x))}
       ## If several time slices, map the required statistics
       good <- apply(coredata(x),2,nv) > 1
       X <- rep(NA,length(good))
