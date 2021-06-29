@@ -1,4 +1,4 @@
-#' Draw a gridbox
+#' Draw a gridbox with provided colour
 #'
 #' Draw a gridbox of color \code{col} in a location specified by \code{x}.
 #'
