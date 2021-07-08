@@ -134,17 +134,17 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   if (verbose) {
     print(paste('Check sum=',chksum))
     print(c(length(start),length(end)))
-    col <- c("blue","grey","red")
-    dev.new()
-    plot(t,cath,pch=19,cex=0.3,col=col[c(1+above-below)],...)
-    points(t[start],cath[start],col='red',lwd=2,cex=0.7)
-    points(t[end],cath[end],col='blue',lwd=2)
-    dev.new(); hist(diff(start),col="blue")
-    
-    dev.new(); hist(diff(end),col="red")
-    
-    dev.new(); plot(start,end,pch=19,cex=0.3)
-    lines(c(0,100000),c(0,100000),col=rgb(0.7,0.7,0.7,0.3))
+    # col <- c("blue","grey","red")
+    # dev.new()
+    # plot(t,cath,pch=19,cex=0.3,col=col[c(1+above-below)],...)
+    # points(t[start],cath[start],col='red',lwd=2,cex=0.7)
+    # points(t[end],cath[end],col='blue',lwd=2)
+    # dev.new(); hist(diff(start),col="blue")
+    # 
+    # dev.new(); hist(diff(end),col="red")
+    # 
+    # dev.new(); plot(start,end,pch=19,cex=0.3)
+    # lines(c(0,100000),c(0,100000),col=rgb(0.7,0.7,0.7,0.3))
   }
   
   ## Estimate the streaks:

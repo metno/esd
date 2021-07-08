@@ -783,7 +783,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
                               ip=1:6,lon=c(-10,10),lat=c(-10,10),it=NULL,rel.cord=TRUE,
                               abscoords=FALSE,select=NULL,FUN=NULL,FUNX="mean",xfuns='C.C.eq',threshold=1,
                               pattern="tas_Amon_",verbose=FALSE,nmin=NULL,ds.interval=NULL) {
-  # FUN: exceedance, wetfreq, wet, dry
+  # FUN: exceedance, wetfreq, wetmean, mean wet-spell length, mean dry-spell length
   
   if (verbose) print('DSensemble.annual')
 #  if (deparse(substitute(FUN))=='spell') {
@@ -881,6 +881,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
                                              min(year(y),na.rm=TRUE),'2099'))
       # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
       rip <- NULL
+      nmattsgcm <- names(attributes(gcm))
       if(any(grepl("rip", names(attributes(gcm))))) {
         nm.rip <- names(attributes(gcm))[grepl("rip",names(attributes(gcm)))][[1]]
         if(!is.null(attr(gcm, nm.rip))) {

@@ -50,13 +50,14 @@ day2IDF <- function(x,L=c(1,2,3,6,12,24),tau=10,zeta=NULL,n0=365.25,
   if (verbose) print(round(c(zeta,mu,fw,tau,n0),3))
   attr(x.L,'mu') <- mu
   attr(x.L,'fw') <- fw
+  attr(x.L,'L') <- L
   attr(x.L,'tau') <- tau
   attr(x.L,'zeta') <- zeta
   attr(x.L,'alpha') <- alpha
   attr(x.L,'n0') <- n0
   attr(x.L,'history') <- history.stamp()
   attr(x.L,'unit') <- 'mm'
-  class(x.L) <- c('return_value','numeric')
+  class(x.L) <- c('IDF','numeric')
   return(x.L)
 }
 
@@ -74,9 +75,11 @@ IDF <- function(x,plot=TRUE,L=c(0.25,0.5,1,2,3,6,12,24),tau=c(2,5,10,20,50,100),
   return(X)
 }
 
-#' @export plot.IDF
+#' @exportS3Method
+#' @export 
 plot.IDF <- function(x,type='l',xlab='timescale (hrs)',ylab='return value (mm)',main=NULL,cols=NULL,...) {
   d <- dim(x)
+  if (is.null(d)) d <- c(1,length(x))
   if (is.null(cols)) cols <- rev(heat.colors(d[2]))
   if ((is.null(main)) & !is.null(attr(x,'original_data'))) 
     main <- paste(loc(attr(x,'original_data')),stid(attr(x,'original_data'))) else
@@ -88,9 +91,11 @@ plot.IDF <- function(x,type='l',xlab='timescale (hrs)',ylab='return value (mm)',
   legend(0,max(x),colnames(x),cols,bty='n')
 }
 
-#' @export lines.IDF
+#' @exportS3Method
+#' @export 
 lines.IDF <- function(x,cols=NULL,...) {
   d <- dim(x)
+  if (is.null(d)) d <- c(1,length(x))
   if (is.null(cols)) cols <- rev(heat.colors(d[2])) else 
     if (length(col)==1) cols <- rep(cols,d[2])
   for (i in 1:d[2]) lines(attr(x,'L'),x[,i],col=cols[i],...)

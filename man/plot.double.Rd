@@ -5,6 +5,13 @@
 \alias{plot.list}
 \alias{plot.numeric}
 \alias{plot.xsection}
+\alias{plot.eof}
+\alias{plot.station}
+\alias{plot.ds}
+\alias{plot.pca}
+\alias{plot.spell}
+\alias{plot.nevents}
+\alias{plot.IDF}
 \title{Plot esd objects}
 \usage{
 \method{plot}{double}(

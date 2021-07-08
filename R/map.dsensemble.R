@@ -39,9 +39,13 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   if (verbose) print('PCA/EOF-based ensemble')
   X <- x
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
-  if (verbose) for (ii in 1:length(X)) print(dim(X[[ii]]))
+  n <- length(X)
+  dims <- rep('?',n)
+  for (ii in 1:n) dims[ii] <- paste(dim(X[[ii]]),collapse='x')
+  if (verbose) print(table(dims))
   ## Dimension of each downscaled GCM results
-  if (verbose) print(paste('subset.pc, it=',it))
+  if (verbose) print(paste('subset, it=',it))
+  if (!is.null(it)) X <- subset(X,it=it)
   ## Check if the ensemble members have the same size - if not, only keep the ones with most common sizes
   if (verbose) print('Check ensemble member size')
   n <- length(names(X))
@@ -58,30 +62,29 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   n <- length(names(X))
   if (verbose) print(paste('New length of X is',n))
   if (is.null(it)) it <- range(index(X[[1]]))
-  V <- lapply(X,FUN='subset.pc',it=it)
   memsiz <- rep("?",n)
-  for (i in 1:n) memsiz[i] <- paste(dim(V[[i]]),collapse='x')
+  for (i in 1:n) memsiz[i] <- paste(dim(X[[i]]),collapse='x')
   memsiztab <- table(memsiz)
   if (verbose) print(memsiztab)
   ## Quality control
   if (verbose) print(paste('Before quality control: original number of members=',n))
   for (i in seq(n,1,by=-1)) {
-    print(range(V[[i]],na.rm=TRUE)); print(dim(V[[i]]))
-    if (max(abs(V[[i]]),na.rm=TRUE) > 10)  {
-      print(paste(i,'Remove suspect results')); V[[i]] <- NULL
+    if (verbose) {print(range(X[[i]],na.rm=TRUE)); print(dim(X[[i]]))}
+    if (max(abs(X[[i]]),na.rm=TRUE) > 10)  {
+      print(paste(i,'Remove suspect results')); X[[i]] <- NULL
     }
   }
-  n <- length(V)
+  n <- length(X)
   if (verbose) print(paste('After quality control: new number of members=',n))
   
-  d <- dim(V[[1]])
-  if (verbose) {print(names(V)); print(c(d,n,length(unlist(V)))); print(paste('FUNX=',FUNX))}
+  d <- dim(X[[1]])
+  if (verbose) {print(names(X)); print(c(d,n,length(unlist(X)))); print(paste('FUNX=',FUNX))}
   ## Apply FUNX to each of the PCs across all members
-  lengths <- rep(NA,length(V))
-  for (i in 1:length(V)) lengths[i] <- length(index(V[[i]]))
+  lengths <- rep(NA,length(X))
+  for (i in 1:length(X)) lengths[i] <- length(index(X[[i]]))
   #if (length(table(lengths))>1) 
   if (!test) {
-    V <- unlist(V)
+    V <- unlist(X)
     V[abs(V) > 10] <- NA
     dim(V) <- c(d[1]*d[2],n)
     if (verbose) print(FUNX)
@@ -95,7 +98,7 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
     # }
     # V <- VV/length(V)
   } else {
-    V <- V[[1]] # Pick one member for testing ## Testing
+    V <- X[[1]] # Pick one member for testing ## Testing
     n <- 1
     d <- dim(V)
   }
@@ -144,11 +147,12 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   }
   # Not right if FUN is defined and time mean has been applied:
   #if(nrow(V[[1]])==length(index(subset(X[[1]],it=it)))) {
-  if(dim(V)[1]==length(index(subset(X[[1]],it=it)))) {
-    Y <- zoo(Y,order.by=index(subset(X[[1]],it=it)))
-  } else {
-    Y <- zoo(Y,order.by=seq(nrow(V[[1]])))
-  }
+  # if(dim(V)[1]==length(index(subset(X[[1]],it=it)))) {
+  #   Y <- zoo(Y,order.by=index(subset(X[[1]],it=it)))
+  # } else {
+  #   Y <- zoo(Y,order.by=seq(nrow(V[[1]])))
+  # }
+  Y <- zoo(Y,order.by=index(X[[1]]))
   Y <- attrcp(UWD,Y)
   attr(Y,'time') <- range(index(subset(X[[1]],it=it)))
   class(Y) <- class(UWD)[-1]
@@ -160,7 +164,7 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
     class(Y)[1] <- 'field'
   }
   attr(Y,'mean') <- NULL
-  if (verbose) {print('exit expandpca'); print(dim(Y))}
+  if (verbose) {print(range(it)); print(dim(Y)); print('exit expandpca')}
   return(Y)
 }
 
@@ -282,8 +286,6 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,verbose=FALSE,anomaly=FA
   return(Y)
 }
 
-
-
 #' @exportS3Method
 #' @export
 map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
@@ -305,9 +307,10 @@ map.dsensemble <- function(x,it=c(2000,2099),is=NULL,im=NULL,ip=NULL,
         Y <- aggregate.dsensemble(x,it=it,FUN=FUN,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     if (verbose) {str(x[[2]]); str(Y)}
     #    if (plot) map(Y,FUN=FUN,colbar=colbar,verbose=verbose,...)
-    if (verbose) print('Visualise...')
+    if (verbose) {print('Visualise...'); print(dim(Y))}
     if (plot) {
-      z <- map(Y,FUN="mean",colbar=colbar,verbose=verbose,...)
+      if (min(dim(Y))==0) stop(paste('dim(Y)=',paste(dim(Y),collapse='x')))
+      z <- map(Y,FUN=FUN,colbar=colbar,verbose=verbose,...)
       attr(z,'ensemble.data') <- Y
     } else z <- Y
     invisible(z)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/gridbox.R
 \name{gridbox}
 \alias{gridbox}
-\title{Draw a gridbox}
+\title{Draw a gridbox with provided colour}
 \usage{
 gridbox(x, col, verbose = FALSE)
 }

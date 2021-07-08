@@ -1,4 +1,4 @@
-# Documentation in map.R
+# Documentation in map.R - presents a map on a sphere
 #' @export
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        colbar= list(col='t2m',rev=FALSE,n=10,

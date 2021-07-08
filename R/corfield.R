@@ -74,7 +74,9 @@ corfield.zoo <- function(x,y,...,plot=TRUE,use='pairwise.complete.obs',verbose=F
   #print(length(r))
   
   r <- attrcp(y,r)
-
+  if (is.null(src(x))) attr(x,'source') <- NA
+  if (is.null(src(y))) attr(y,'source') <- NA
+  
   #print(names(attributes(x))); print(attr(y,'dimensions'))
   attr(r,'dimensions') <- attr(y,'dimensions')[1:2]
   attr(r,'longitude') <- attr(y,'longitude')
