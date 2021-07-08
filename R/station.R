@@ -353,7 +353,6 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
         for (i in 1:length(stid)) {
           if(verbose) print(paste(i,toupper(param0),stid[i],loc[i],cntr[i],s))
           if (grepl("METNOD",toupper(s))) {#(s=="METNOD") {
-            browser()
             if (param0!='dd') param1 <- esd2ele(param0) else param1 <- NULL
             if (!is.null(param1)) {
               if(grepl("THREDDS",toupper(s))) {
@@ -1223,9 +1222,13 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
     }
     
     ## Get parameter information
-    # REB 2021-05-28: the following lines don't work
+    ## KMP 2021-07-08: workaround because ele2param doesn't work
+    ## I think the problem has something to do with the esd subset functions
     # browser()
-    param1info <- ele2param(esd2ele(param), src="metno.frost")
+    meta.elements <- ele2param()
+    param1info <- meta.elements[meta.elements$source=="METNO.FROST" & 
+                                meta.elements$param %in% param, ]
+    #param1info <- ele2param(esd2ele(param), src="metno.frost")
     # param1 <- gsub('*', timeresolutions, param1info$param, fixed=TRUE)
     param1 <- gsub('*', timeresolutions, param, fixed=TRUE)
     if (verbose) print(paste('Parameter text=',param1))
@@ -1234,6 +1237,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
     ## bur first, reorganize and clean up start and end dates 
     #browser()
     i <- meta$station_id %in% stid  & meta$element %in% param1info$element
+
     meta.start <- meta$start[i]
     meta.end <- meta$end[i]
     if(is.dates(meta.end)) {
@@ -1375,7 +1379,6 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
         }
       }
     }
-    browser()
     ## Rearrange data and transform to zoo object
     if(is.null(data)) {
       invisible(NULL)
