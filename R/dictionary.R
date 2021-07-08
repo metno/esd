@@ -15,7 +15,7 @@ test.ele2param <- function() {
 #' Converts between esd element/parameter identifier and variable names from
 #' different data sources.
 #' 
-#' @aliases ele2param esd2ele param2ele
+#' @aliases ele2param esd2ele param2ele metno.frost.ele
 #'
 #' @param param parameter identifier
 #' @param ele element identifier
@@ -286,6 +286,7 @@ metno.ele <- function() { ## must be updated - AM 2014-02-21
   return(y)
 }
 
+#' @export
 metno.frost.ele <- function() {
   # TODO: wind direction is here so we can get DD06, DD12 and DD18 and perform an average.. how?
   x <- rbind(

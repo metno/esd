@@ -1375,7 +1375,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
         }
       }
     }
-    
+    browser()
     ## Rearrange data and transform to zoo object
     if(is.null(data)) {
       invisible(NULL)

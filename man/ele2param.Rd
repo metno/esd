@@ -4,6 +4,7 @@
 \alias{ele2param}
 \alias{esd2ele}
 \alias{param2ele}
+\alias{metno.frost.ele}
 \title{Dictionary and conversion tools between esd element identifier and variables
 names and specifications.}
 \usage{
