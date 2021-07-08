@@ -1,19 +1,19 @@
-#' Functions to fetch data from the Global Historical Climatology Network (GHCN) data base
-#'
-#' \code{ghcnd.meta} and \code{ghncm.meta} read and organize metadata of daily (ghcnd) and monthly (ghcnm) GHCN data.
-#' \code{ghncd.data} and \code{ghcnd.data} read daily and monthly mean GHCN data from NOAA (\url{ftp.ncdc.noaa.gov}).
-#'
-#' @aliases ghcnd.meta ghcnd.data ghcnm.meta ghcnm.data
-#'
-#' @param param climate variable
-#' @param src source of data
-#' @param path path to directory where to save data
-#' @param url url to data source
-#' @param save.file a boolean; if TRUE save data or metadata
-#' @param verbose a boolean; if TRUE print information about progress
-#' @param force a boolean; if TRUE overwrite old file
-#'
-#' @export
+# Functions to fetch data from the Global Historical Climatology Network (GHCN) data base
+#
+# \code{ghcnd.meta} and \code{ghncm.meta} read and organize metadata of daily (ghcnd) and monthly (ghcnm) GHCN data.
+# \code{ghncd.data} and \code{ghcnd.data} read daily and monthly mean GHCN data from NOAA (\url{ftp.ncdc.noaa.gov}).
+#
+# @aliases ghcnd.meta ghcnd.data ghcnm.meta ghcnm.data
+#
+# @param param climate variable
+# @param src source of data
+# @param path path to directory where to save data
+# @param url url to data source
+# @param save.file a boolean; if TRUE save data or metadata
+# @param verbose a boolean; if TRUE print information about progress
+# @param force a boolean; if TRUE overwrite old file
+#
+# @export
 ghcnd.meta <- function(param=NULL, src="ghcnd", path="data.GHCND",
                        url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily",
                        save.file=FALSE, verbose=TRUE, force=TRUE) {
@@ -27,7 +27,7 @@ ghcnd.meta <- function(param=NULL, src="ghcnd", path="data.GHCND",
     test <- readline(paste("Directory",path," does not exist ! Would you like to create it (yes or no)",sep=""))
     if ((tolower(test) == "yes") |(tolower(test) == "ye") | (tolower(test) == "y")) dir.create(path)
   }
-  setwd(path)
+  if(file.exists(path) & save.file) setwd(path)
   
   if (src == "ghcnd"){
     if (verbose) print(paste("Source",src))

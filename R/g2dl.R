@@ -177,7 +177,7 @@ g2dl.corfield <- function(x,greenwich=TRUE,verbose=FALSE,...) {
 #' @export g2dl.events
 g2dl.events <- function(x,greenwich=TRUE,verbose=FALSE,...) {
   if(verbose) print("g2dl.events")
-  lon <- x$lon                          
+  lon <- as.numeric(x$lon)
   if (greenwich) {
     wh <- lon < 0
     lon[wh] <- lon[wh] + 360

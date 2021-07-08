@@ -1485,6 +1485,8 @@ subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
           kk <- as.vector(x[ic$param]>=ic$pmin & x[ic$param]<=ic$pmax)
           #  nok.ev <- as.vector(x[ic$param]<ic$pmin | x[ic$param]>ic$pmax)
           #  kk <- !x$trajectory %in% unique(x$trajectory[nok.ev])
+        } else {
+          browser()
         }
       }
     }

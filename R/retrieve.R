@@ -111,18 +111,19 @@ retrieve.default <- function(file,param="auto",
   if(any(ilon) & any(ilat)) {
     lon <- ncvar_get(nc,dimnames[ilon])
     lat <- ncvar_get(nc,dimnames[ilat])
-    nc_close(nc)
   } else {
     lon <- NULL
     lat <- NULL
   }
+  nc_close(nc)
+  
   if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
     if (verbose) print(paste('Regular grid field found',ncfile))
     X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
   } else {
     if (verbose) print('Irregular grid field found')
     class.x <- file.class(ncfile)
-    if (tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0) {
+    if (tolower(class.x$value[1])=='station' | sum(is.element(class.x$dimnames,'stid')) > 0) {
       X <- retrieve.station(ncfile,param=param,verbose=verbose,...)
     } else {
       X <- retrieve.rcm(ncfile,param=param,verbose=verbose,...)
@@ -167,7 +168,6 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   lat.rng  <- lat
   lev.rng  <- lev
   time.rng <- it
-  
   
   ## Read and put attributes in model
   model <- ncatt_get(ncid,0)
@@ -1519,11 +1519,22 @@ retrieve.rcm <- function(file,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=F
     if (verbose) print("Calender found")
     tcal <- tatt$cale
   }
+  
   a <- regexpr("since",tunit)
   torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
   torig <- paste(unlist(strsplit(tunit," "))[3:4],collapse=" ")
   tunit <- tolower(substr(tunit,1,a-2))
   
+  if(tolower(param) == "auto") {
+    nvars <- length(names(ncid$var))
+    varpick <- 1
+    while ( ((ncid$var[[varpick]]$ndims==1) | 
+             grepl("lon|lat|projection|time",names(ncid$var)[varpick])) & 
+            (varpick <= nvars) ) varpick <- varpick + 1
+    if (verbose) print(paste("Selecting variable",varpick,names(ncid$var)[varpick]))
+    param <- names(ncid$var)[varpick]
+  }
+
   # Extract unit etc for the parameter
   vatt <- ncatt_get( ncid, varid=param )
   # 16.11.2017 hbe added option names(vatt below)
@@ -1781,19 +1792,24 @@ retrieve.rcm <- function(file,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=F
     rcm <- rcm[i1:i2,]
     lon <- lon[i1:i2]; lat <- lat[i1:i2]
   }
-  RCM <- zoo(t(rcm),order.by=time)
-  attr(RCM,'longitude') <- c(lon)
-  attr(RCM,'latitude') <- c(lat)
-  attr(RCM,'count') <- count
-  attr(RCM,'start') <- start
-  attr(RCM,'altitude') <- rep(NA,length(lon))
-  attr(RCM,'variable') <- param
-  attr(RCM,'unit') <- vunit
-  attr(RCM,'source') <- ncfile
-  attr(RCM,'location') <- rep(NA,length(lon))
-  attr(RCM,'longname') <- longname
-  attr(RCM,'history') <- history.stamp()
+  RCM <- as.station(zoo(t(rcm), order.by=time), 
+                    param=param, unit=vunit, 
+                    lon=lon, lat=lat, 
+                    longname=longname, src=ncfile,
+                    verbose=FALSE)
+  #RCM <- zoo(t(rcm),order.by=time)
+  #attr(RCM,'longitude') <- c(lon)
+  #attr(RCM,'latitude') <- c(lat)
+  #attr(RCM,'count') <- count
+  #attr(RCM,'start') <- start
+  #attr(RCM,'altitude') <- rep(NA,length(lon))
+  #attr(RCM,'variable') <- param
+  #attr(RCM,'unit') <- vunit
+  #attr(RCM,'source') <- ncfile
+  #attr(RCM,'location') <- rep(NA,length(lon))
+  #attr(RCM,'longname') <- longname
+  #attr(RCM,'history') <- history.stamp()
+  #class(RCM) <- c('station','day','zoo')
   rm('rcm')
-  class(RCM) <- c('station','day','zoo')
   return(RCM)
 }

@@ -15,7 +15,7 @@
 #' meta <- ghcnd.meta()
 #' m <- subset(meta,lon=c(24,35),lat=c(-30,-25),verbose=TRUE)
 #' y <- ghcnd.station(subset(m,is=1:10),verbose=TRUE)
-
+#'
 #' @export
 ghcnd.meta <- function(url='https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/doc/ghcnd-stations.txt') {
   # meta <- read.fwf(url,widths = c(11,9,10,7,3,31,4,4,6),
