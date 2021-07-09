@@ -1199,7 +1199,6 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   invisible(result)
 }
 
-#' @exportS3Method
 #' @export retrieve.station
 retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,it=NULL,
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
@@ -1415,7 +1414,6 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   return(y)
 }
 
-#' @exportS3Method
 #' @export retrieve.stationsummary
 retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                                     alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
@@ -1499,9 +1497,8 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
 }
 
 # Function that reads data stored on an irregular grid. The data is returned as a 'station' object.
-#' @exportS3Method
 #' @export retrieve.rcm
-retrieve.rcm <- function(file,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
+retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose=FALSE) {
   ncfile <- file
   if(verbose) print("retrieve.rcm")
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
@@ -1524,7 +1521,6 @@ retrieve.rcm <- function(file,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=F
   torg <- substr(tunit,a + attr(a,'match.length')+1,a + attr(a,'match.length')+10)
   torig <- paste(unlist(strsplit(tunit," "))[3:4],collapse=" ")
   tunit <- tolower(substr(tunit,1,a-2))
-  
   if(tolower(param) == "auto") {
     nvars <- length(names(ncid$var))
     varpick <- 1
