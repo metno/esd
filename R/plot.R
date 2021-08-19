@@ -362,11 +362,23 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
     if (verbose) print(map.type)
   }
   
-  if(is.null(fig) & new) {
-    fig <- c(0,1,0,0.95)
-    if (map.show & map.insert) fig[4] <- 0.8
+  if(is.null(fig)) {
+    if(new) {
+      fig <- c(0,1,0,0.95)
+    } else {
+      fig <- par()$fig
+    }
   }
-  if (legend.show) fig[3] <- 0.05  
+  #if (map.show & map.insert) {
+  #  fig[4] <- fig[4]-(fig[4]-fig[3])/5
+  #  fig.map[3] <- fig[4]
+  #}
+  if (legend.show) {
+    fig.legend <- fig
+    fig[3] <- fig[3] + (fig[4]-fig[3])/10
+    fig.legend[4] <- fig[3]
+  }
+  
   ## if (is.null(ylim))
   ##     if (is.null(dim(x)))
   ##         ylim <- pretty(x)
@@ -435,13 +447,14 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   if(map.show & !map.insert) {
     vis.map(x,col=col.map,map.type,add.text=FALSE,map.insert=map.insert,
             cex.axis=cex.axis,cex=1.8,verbose=verbose)
-    new <- TRUE
+    #new <- TRUE
   }
   
   #print(ylab)
   cls <- class(x)
   if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
   class(x) <- "zoo"
+  
   if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,new=add)
   plot.zoo(x,...,plot.type=plot.type,xlab=xlab,ylab=ylab,
@@ -471,31 +484,31 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
       #                lwd=1,col=rgb(1,0.5,0.5,0.25))
       #       }
     }
-    
-    par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
-    plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-    
+
     #if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
     #                       text.col=col,cex=0.75)
     #title(main=loc(x),cex=1)
-    
     if(legend.show) {
-      legend(0.01,0.95,paste(attr(x,'location'),": ",
-                             #attr(x,'aspect'),
-                             #attr(x,'longname')," - ",
-                             round(attr(x,'longitude'),2),"E/",
-                             round(attr(x,'latitude'),2),"N (",
-                             attr(x,'altitude')," masl)",sep=""),
-             bty="n",cex=0.6,ncol=3,text.col="grey40",lty=1,col=col)
+      #par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
+      par(fig=fig.legend,new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",
+          bty="n",xpd=TRUE)
+      plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+      legend(0.01,1,legend=paste(attr(x,'location'),": ",
+                                   round(attr(x,'longitude'),2),"E/",
+                                   round(attr(x,'latitude'),2),"N (",
+                                   attr(x,'altitude')," masl)",sep=""),
+             bty="n",cex=0.65,ncol=2,
+             text.col="grey40",lty=1,col=col)
+      
     }
-    if (map.show & map.insert) vis.map(x,col=col.map,map.type=map.type,cex=1,
-                                       cex.axis=0.65,add.text=FALSE,
-                                       map.insert=map.insert,verbose=verbose)
     par(fig=par0$fig,mar=par0$mar,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
              xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
+    if (map.show & map.insert) {
+      vis.map(x,col=col.map,map.type=map.type,cex=1,cex.axis=0.65,
+              add.text=FALSE,map.insert=map.insert,verbose=verbose)
+    }
     par(new=FALSE)
-    
   }
 }
 
