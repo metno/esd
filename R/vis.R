@@ -134,7 +134,7 @@ vis.ds <- function(x,...) {
 ## This is not an S3 method! It is called as vis.map in several of the 
 ## plot functions and not applied to an object of type 'map'.
 ## @exportS3Method
-#' @export 
+#' @export vis.map
 vis.map <- function(x,...,col='red',map.type=NULL,
                     xrange=NULL,yrange=NULL,cex=1,
                     add.text=FALSE,cex.axis=NULL,
@@ -151,6 +151,7 @@ vis.map <- function(x,...,col='red',map.type=NULL,
   if(is.null(xrange)) xrange <- range(lon(x)) + c(-5,5)
   if(is.null(yrange)) yrange <- range(lat(x)) + c(-2,2)
   if(!map.insert) new <- TRUE else new <- FALSE
+  par0 <- par()
   
   if (is.null(map.type)) {
     if( inherits(x,"field") | length(lon(x))!=length(lat(x)) |
@@ -161,49 +162,53 @@ vis.map <- function(x,...,col='red',map.type=NULL,
     }
   }
   
-    if (verbose) {
-      print('basic map')
-      print(cex.axis)
-    }
-    data("geoborders", envir = environment())
-    lon <- geoborders$x
-    lat <- geoborders$y
-    ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
-      lat>(min(yrange)-1) & lat<(max(yrange)+1) &
-      is.finite(lon) & is.finite(lat)
-    lon2 <- attr(geoborders,"borders")$x
-    lat2 <- attr(geoborders,"borders")$y
-    ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
-      lat2>(min(yrange)-1) & lat2<(max(yrange)+1) &
-      is.finite(lon2) & is.finite(lat2)
-    if (verbose) {print(sum(ok)); print(range(lon[ok])); print(range(lat[ok]))}
-    if(map.insert) {
-      par(fig=c(0.76,0.97,0.76,0.97),new=TRUE,
-          mar=c(0,0,0,0),xpd=NA,col.main="grey",bty="n")
-    } else {
-      dev.new()
-    }
-    plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=2,
-         #type='l', KMP 2016-03-16 problem with lines in map
-         xlab=NA,ylab=NA,axes=FALSE,new=new,
-         xlim=xrange,ylim=yrange)
-    #xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
-    #ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
-    par(xpd=FALSE)
-    lines(lon,lat) ## REB: 2016-11-25 need more solid lines.
-    axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
-    axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
-    lines(lon2,lat2,col = "pink",lwd=1)
-    #lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
-    if (verbose) print(map.type)
-    if (map.type=="points") {
-      if (verbose) {print(c(lon(x),lat(x),cex)); print(col)}
-      points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
-      if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
-    } else if (map.type=="rectangle") {
-      rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
-           border="black",lwd=1,lty=2)
-    }
+  if (verbose) {
+    print('basic map')
+    print(cex.axis)
+  }
+  data("geoborders", envir = environment())
+  lon <- geoborders$x
+  lat <- geoborders$y
+  ok <- lon>(min(xrange)-1) & lon<(max(xrange)+1) &
+    lat>(min(yrange)-1) & lat<(max(yrange)+1) &
+    is.finite(lon) & is.finite(lat)
+  lon2 <- attr(geoborders,"borders")$x
+  lat2 <- attr(geoborders,"borders")$y
+  ok2 <- lon2>(min(xrange)-1) & lon2<(max(xrange)+1) &
+    lat2>(min(yrange)-1) & lat2<(max(yrange)+1) &
+    is.finite(lon2) & is.finite(lat2)
+  if (verbose) {print(sum(ok)); print(range(lon[ok])); print(range(lat[ok]))}
+  if(map.insert) {
+    fig.map <- c(par0$fig[1] + (par0$fig[2]-par0$fig[1])*c(0.76, 0.97),
+                 par0$fig[3] + (par0$fig[4]-par0$fig[3])*c(0.76, 0.97))
+    par(fig=fig.map,new=TRUE,mar=c(0,0,0,0),xpd=NA,
+        col.main="grey",bty="n")
+  } else {
+    dev.new()
+  }
+  plot(lon[ok],lat[ok],lwd=1,col="black",type="p",pch='.',cex=2,
+       #type='l', KMP 2016-03-16 problem with lines in map
+       xlab=NA,ylab=NA,axes=FALSE,new=new,
+       xlim=xrange,ylim=yrange)
+  #xlim=range(c(lon[ok],lon2[ok2]),na.rm=TRUE),
+  #ylim=range(c(lat[ok],lat2[ok2]),na.rm=TRUE))
+  par(xpd=FALSE)
+  lines(lon,lat) ## REB: 2016-11-25 need more solid lines.
+  axis(1,mgp=c(3,0.5,0.3),cex.axis=cex.axis)
+  axis(2,mgp=c(2,0.5,0.3),cex.axis=cex.axis)
+  lines(lon2,lat2,col = "pink",lwd=1)
+  #lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
+  if (verbose) print(map.type)
+  if (map.type=="points") {
+    if (verbose) {print(c(lon(x),lat(x),cex)); print(col)}
+    points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
+    if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
+  } else if (map.type=="rectangle") {
+    rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
+         border="black",lwd=1,lty=2)
+  }
+  par(fig=par0$fig,mar=par0$mar,xpd=par0$xpd,
+      col.main=par0$col.main,bty=par0$bty)
   if(verbose) print("exit vis.map")
 }
 
@@ -448,7 +453,6 @@ vis.dsensemble.list <- function(x,...,verbose=FALSE,FUN='trend',
   lines(geoborders$x+360,geoborders$y,col="darkblue")
   points(lons,lats,pch=pch,col=col.q95,bg=col,cex=cex,lwd=cex)
   points(lons,lats,pch=pch,col=col,bg=col.q5,cex=cex/3,lwd=0.5)
-  ##browser()
   text(mean(xrange),min(yrange),cex=1,labels=paste(attr(x,"var"),
                                                    " ",label_fun," (",attr(x,"unit"),")",sep="")) 
   if (colbar$show) {
