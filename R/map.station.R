@@ -347,16 +347,19 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       ss <- select.station()
     }
     if (verbose) {
-      print('The station metadata')
+      print('The station metadata:')
       str(ss)
     }  
     
+    ## REB 2021-07-021: bugfix for new GHCND metadata
+    if (verbose) print('Set element if missing...')
+    if ( (is.null(ss$variable)) & !is.null(x$variable) ) ss$variable <- x$variable
     if (is.null(attr(ss,"element"))) ss$element <-apply(as.matrix(ss$variable),1,esd2ele)   
     
     if (verbose) str(ss)
     
     if (!is.null(unlist(is))) { ## highlight a subset of station
-      
+      if (verbose) print('HERE')
       if (is.null(is$x)) {
         highlight <- select.station(x=is$x,loc=is$loc,stid = is$stid,
                                     param = is$param, lon = is$lon,

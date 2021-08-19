@@ -26,17 +26,19 @@ subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
         x2 <- subset.station(x,is=loc(is))
         return(x2)
     }
-    if (is.character(is)) {
+    if (is.character(is) | is.character(loc)) {
       if (verbose) print('search on location names')
       ## search on location name: foce lower case for all
-      locs <- tolower(loc(x)); is <- tolower(is)
+      locs <- tolower(loc(x))
+      if (is.null(loc)) is <- tolower(is) else
+                        is <- tolower(loc)
       #mcl <- min(c(nchar(is),nchar(locs)))
       ## Set same lengths for all; minimum character
       #locs <- substr(locs,1,mcl)
       #is <- substr(is,1,mcl)
       #illoc <- is.element(locs,is)
       ns <- length(is)
-      for (ii in 1:ns) illoc <- grep(is[ii],locs)
+      for (ii in 1:ns) illoc <- grep(is[ii],locs, ignore.case = TRUE)
       x2 <- subset(x,it=it,is=illoc,verbose=verbose)
       if (verbose) {print(is); print(loc(x2))}
       return(x2)
@@ -216,7 +218,9 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     selc <- selx; seli <- selx; selm <- selx; salt <- selx
     selp <- selx; selF <- selx ; sell <- selx; selj <- selx
     nms <- names(is)
-    il <- grep('loc',tolower(nms))
+    if (verbose) print(nms)
+    ## See which options are provided in the list and get their indices
+    il <- grep('loc',tolower(nms), ignore.case = TRUE)
     ix <- grep('lon',tolower(nms))
     iy <- grep('lat',tolower(nms))
     #print(nms); print(c(ix,iy))
@@ -239,13 +243,18 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(iF)>0) sFUN <- is[[iF]] else sFUN <- NULL
     if (length(ij)>0) sj <- is[[ij]] else sj <- NULL
     #print(slat); print(range(lat(x)))
-    if (length(sloc)>0) sell <- is.element(tolower(loc(x)),tolower(sloc))
+    if (verbose) {
+      print(sloc); print(slon); print(slat); print(salt); print(scntr); print(smin); print(sparam)
+    }
+    ## REB 2021-08-19
+    #if (length(sloc)>0) sell <- is.element(tolower(loc(x)),tolower(sloc))
+    if (length(sloc)>0) sell <- is.element(1:length(loc(x)),grep(sloc,loc(x),ignore.case = TRUE))
     if (length(slon)==2) selx <- as.logical((lon(x) >= min(slon)) & (lon(x) <= max(slon)))
     if (length(slat)==2) sely <- as.logical((lat(x) >= min(slat)) & (lat(x) <= max(slat)))
     if (length(salt)==2) selz <- as.logical((alt(x) >= min(salt)) & (alt(x) <= max(salt)))
     if (length(salt)==1) {
-      if (salt < 0) selz <- alt(x) <= abs(salt) else
-        selz <- alt(x) >= salt
+      if (salt < 0) selz <- (alt(x) <= abs(salt)) else
+                    selz <- (alt(x) >= salt)
     }
     if (length(scntr)>0) selc <- is.element(tolower(cntr(x)),tolower(scntr))
     if (length(snmin)>0) selm <- apply(coredata(x),2,nval) > snmin
