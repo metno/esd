@@ -109,15 +109,15 @@ retrieve.default <- function(file,param="auto",
   ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
   ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
   if(any(ilon) & any(ilat)) {
-    lon <- ncvar_get(nc,dimnames[ilon])
-    lat <- ncvar_get(nc,dimnames[ilat])
+    lons <- ncvar_get(nc,dimnames[ilon])
+    lats <- ncvar_get(nc,dimnames[ilat])
   } else {
-    lon <- NULL
-    lat <- NULL
+    lons <- NULL
+    lats <- NULL
   }
   nc_close(nc)
   
-  if ( (length(dim(lon))==1) & (length(dim(lat))==1) )  {
+  if ( (length(dim(lons))==1) & (length(dim(lats))==1) )  {
     if (verbose) print(paste('Regular grid field found',ncfile))
     X <- retrieve.ncdf4(ncfile,param=param,verbose=verbose,...)
   } else {
