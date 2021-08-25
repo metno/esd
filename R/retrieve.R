@@ -135,7 +135,7 @@ retrieve.default <- function(file,param="auto",
 #' @exportS3Method
 #' @export retrieve.ncdf4
 retrieve.ncdf4 <- function (file, path=NULL , param="auto",
-                            lon=NULL, lat=NULL, lev=NULL, it=NULL,
+                            lon=NULL, lat=NULL, lev=NULL, is=NULL, it=NULL,
                             miss2na=TRUE, greenwich=FALSE,
                             plot=FALSE, verbose=FALSE, ...)  {
   ncfile <- file
@@ -154,7 +154,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       stop(paste("Sorry, the netcdf file '", ncfile,
                  "' does not exist or the path has not been set correctly!",sep =""))
     } else {
-      ncid <- nc_open(ncfile)
+      ncid <- nc_open(ncfile, verbose=verbose)
     }
   } else if (class(ncfile) == "ncdf4") {
     ncid <- ncfile
@@ -166,6 +166,15 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   if (verbose) {print('Check class'); print(class.x$value)}
   lon.rng  <- lon
   lat.rng  <- lat
+  ## KMP 2021-08-24: For consistency, adding the input argument 'is' 
+  ## which is standard for the esd package and used in retrieve.rcm
+  if (is.list(is)) {
+    nms <- names(is)
+    iy <- grep("lat", tolower(substr(nms, 1, 3)))
+    if (length(iy)>0) lat.rng <- range(is[[iy]])
+    ix <- grep("lon", tolower(substr(nms, 1, 3)))
+    if (length(ix)>0) lon.rng <- range(is[[ix]])
+  }
   lev.rng  <- lev
   time.rng <- it
   
@@ -471,7 +480,9 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   } else if ((!is.null(ilon)) & (!is.null(itime))) {
     if (verbose) print('!NULL(ilon) & !NULL(itime)')
     diff.lon.w <- diff(rank(lon$vals[lon.w]))
-    id2 <- which(diff.lon.w!=1)
+    if(any(diff.lon.w!=1)) {
+      id2 <- which(diff.lon.w!=1)
+    } else id2 <- 1
     if (!is.null(ilev)) {
       if (verbose) print('!is.null(ilev)')
       if ((sum(id) > 0) & (sum(id2)!=0)) { ## & !greenwich   
@@ -630,9 +641,17 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   nc_close(ncid)
   
   ## Create output and save attributes to the results # 
-  d <- dim(val)
-  if(is.null(d)) {
-    d <- c(length(lon$vals),length(lat$vals),length(time$vals))
+  ## KMP 2021-08-24: redefining d to solve problems with 
+  ## fields with only one lon, lat or time step
+  #d <- dim(val)
+  #if(is.null(d)) {
+  #  d <- c(length(lon$vals),length(lat$vals),time$len)
+  #  d <- d[match(seq(length(d)),c(ilon,ilat,itime))]
+  #}
+  if(is.null(ilon) | is.null(ilat) | is.null(itime)) {
+    d <- dim(val)
+  } else {
+    d <- c(lon$len,lat$len,time$len)
     d <- d[match(seq(length(d)),c(ilon,ilat,itime))]
   }
   if (verbose) {print("dimensions"); print(d)}
