@@ -443,14 +443,14 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   #  }
   
   errorbar <- errorbar & !is.null(err(x))
+  if(add) new <- FALSE
+  if(new) dev.new()
   
   if(map.show & !map.insert) {
     vis.map(x,col=col.map,map.type,add.text=FALSE,map.insert=map.insert,
             cex.axis=cex.axis,cex=1.8,verbose=verbose)
-    #new <- TRUE
   }
   
-  #print(ylab)
   cls <- class(x)
   if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
   class(x) <- "zoo"
@@ -501,13 +501,13 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
              text.col="grey40",lty=1,col=col)
       
     }
-    par(fig=par0$fig,mar=par0$mar,new=TRUE)
-    plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
-             xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
     if (map.show & map.insert) {
       vis.map(x,col=col.map,map.type=map.type,cex=1,cex.axis=0.65,
               add.text=FALSE,map.insert=map.insert,verbose=verbose)
     }
+    par(fig=par0$fig,mar=par0$mar,new=TRUE)
+    plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
+             xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
     par(new=FALSE)
   }
 }

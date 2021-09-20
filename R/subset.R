@@ -422,7 +422,6 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print('spatial selection: otherwise')
     is <- attr(y,'ixy'); selx <- attr(y,'ix'); sely <- attr(y,'iy')
   }
-  
   if (verbose) print(paste('number of points: ',sum(ii),sum(is),
                            'ii=',class(ii),'is=',class(is)))
   y <- x[which(ii),which(is)]

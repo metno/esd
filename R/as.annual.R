@@ -537,6 +537,7 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
   } 
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
+  attr(y,'season.interval') <- "4seasons"
   if (inherits(x,'field'))
     attr(y,'dimensions') <- c(attr(x,'dimensions')[1:2],sum(ok))
   class(y) <- class(x)
@@ -594,6 +595,7 @@ as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,v
   unit -> attr(y,'unit')
   #str(y); print(unit)
   attr(y,'history') <- history.stamp(x)
+  attr(y,'season.interval') <- "4seasons"
   class(y) <- class(x)
   class(y)[2] <- "season"
   invisible(y)
@@ -650,7 +652,6 @@ as.4seasons.dsensemble <- function(x,...,FUN='mean') {
     attr(y,"station") <- as.4seasons.station(attr(x,"station"))
    
     attr(y,'history') <- history.stamp(x)
-    
     class(y) <- c("dsensemble","season","zoo")
     return(y)
 }
@@ -705,7 +706,8 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...)
   }
   attr(y,'n.valid') <- k
   class(y) <- class(x)
-  class(y)[2] <- "annual"
+  class(y)[2] <- "season"
+  #class(y)[2] <- "annual"
   return(y)
 }
 
@@ -737,6 +739,7 @@ as.OctMar <- function(x,FUN='sum',nmin=90,plot=FALSE,verbose=FALSE) {
   #print(range(index(OctMar)))
   OctMar <- attrcp(JanMar,OctMar)
   class(OctMar) <- class(JanMar)
+  attr(OctMar,'season.interval') <- "10-01 to 03-31 the following year"
   
   if (plot==TRUE) {
     ## if the plot argument == TRUE, then do this:

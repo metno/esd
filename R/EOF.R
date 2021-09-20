@@ -334,6 +334,7 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
       month <- rep(1,length(year))
     }
     yearf <- year - min(year) + endsofar + 10
+
     if (inherits(ttt,'Date')) {
       fakedates <- c(fakedates,paste(yearf,"-",month,'-01',sep=''))
       realdates <- c(realdates,paste(year,"-",month,'-01',sep=''))

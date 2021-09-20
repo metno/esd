@@ -587,6 +587,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   
   
   ## Convert units
+  if(verbose) print("Check and convert units")
   iunit <- grep("unit",names(v1))
   if (length(iunit)>0) {
     text=paste("v1$",names(v1)[iunit],sep="")
@@ -683,6 +684,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     z <- zoo(x=t(val),order.by=time$vdate)
   }
   ## Add attributes to z
+  if(verbose) print("Adding attributes")
   if (!is.null(v1)) {
     attr(z,"variable") <- param
     attr(z,"longname") <- v1$longname
