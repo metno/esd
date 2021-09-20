@@ -29,7 +29,7 @@ reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
   ## Read only the reanalysis data for the local region surrounding the station data 
   lon <- round(range(lon(x)) + delta*c(-1,1),3)
   lat <- round(range(lat(x)) + delta*c(-1,1),3)
-  if (verbose) print(paste('reanfill',min(lon),max(lon),min(lat),max(lat)))
+  if (verbose) print(paste('reafill',min(lon),max(lon),min(lat),max(lat)))
   if (is.character(file)) Y <- retrieve(file,lon=lon,lat=lat) else
     if (is.field(file)) {Y <- file; file <- attr(Y,'source')}
   if (verbose) print(class(x))
@@ -38,7 +38,7 @@ reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
       if (inherits(x,'annual')) Y <- as.annual(Y)
   if (verbose) print(class(Y))
   if (verbose) print(loc(x))
-  ## Extract bilienarly interpolated series from reanalysis corresponding to the station
+  ## Extract bilinearly interpolated series from reanalysis corresponding to the station
   y <- regrid(Y,is=x)
   ## If anomaly==TRUE, then subtract the mean annual cycle before fitting. Use the climatology to 
   ## recover the original data.
@@ -49,30 +49,30 @@ reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
   }
   if (inherits(x,'day')) index(y) <- as.Date(index(y))
   z <- y
-  ## Take into acount the possibility of multiple (n) stations
+  ## Take into account the possibility of multiple (n) stations
   n <- dim(x)[2]; if (is.null(n)) n <- 1
   if (verbose) print(paste(n,'station(s)'))
   evaluation <- list()
   for (is in 1:n) {
-    x1 <- subset(x,is=is); z1 <- subset(z, is=is)
+    x1 <- subset(x,is=is); y1 <- subset(y, is=is)
     if (verbose) print(loc(x1))
-    xz <- merge(zoo(x1),zoo(z1))
-    cal <- data.frame(x=coredata(xz[,1],z=coredata(xz[,2])))
-    fill <- data.frame(z=coredata(z1))
+    xy <- merge(zoo(x1),zoo(y1))
+    cal <- data.frame(x=coredata(xy[,1]),y=coredata(xy[,2]))
+    fill <- data.frame(y=coredata(y1))
     ## fit is the interpolated data based on ordinary linear regression
-    fit <- zoo(predict(lm(x ~ z, data=cal),newdata=fill),order.by=index(z1))
-    evaluation[[is]] <- summary(lm(x ~ z, data=cal))
+    fit <- zoo(predict(lm(x ~ y, data=cal),newdata=fill),order.by=index(y1))
+    evaluation[[is]] <- summary(lm(x ~ y, data=cal))
     ## combine the fitted and original data
-    trange <- range(c(index(x1),index(z1)))
+    trange <- range(c(index(x1),index(y1)))
     if (verbose) print(trange)
     ## Common times
-    tc <- c(index(x1),index(z1))
+    tc <- c(index(x1),index(y1))
     tc[duplicated(tc)] <- NA; tc <- sort(tc[is.finite(tc)])
     ## Set up an empty time seris
     s1 <- rep(NA,length(tc))
     ## Add the interpolated data 
     if (verbose) print('Interpolated data')
-    s1[is.element(tc,index(z1))] <- coredata(fit)
+    s1[is.element(tc,index(y1))] <- coredata(fit)
     ## Add the original data (overwrite interpolated data wher they overlap)
     if (verbose) print('original valid data')
     good <- is.finite(coredata(x1))
@@ -83,36 +83,66 @@ reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
       lines(zoo(x1),col='black')
       lines(fit,col='red',lty=2)
     }
-    ## The final 
-    if (is > 1) z <- combine.stations(s1,fit) else z <- s1
+    ## The final
+    #if (is > 1) z <- combine.stations(s1,fit) else z <- s1
+    if (is > 1) z <- combine.stations(z,s1) else z <- s1
   }
   if (anomaly) { 
-    ## The climatology needs to be added as a repeated seqment
+    ## The climatology needs to be added as a repeated segment
     clim <- as.climatology(x0)
+    ## Take into acount the possibility of multiple (n) stations
+    if(is.null(dim(clim))) dim(clim) <- c(1, length(clim))
     tyrs <- table(year(z))
     nyrs <- length(rownames(tyrs))
-    if ((max(tyrs)==12) & (length(clim)==12)) {
-      ## Monthly data
-      for (im in 1:12) {
+    if (max(tyrs)<=12 & nrow(clim)<=12) {#(length(clim)==12)) {
+      ## Monthly or annual data
+      for (im in unique(month(z))) {
         it <- is.element(month(z),im)
-        coredata(z)[it] <- coredata(z)[it] + rep(clim[im],sum(it))
+        if(n==1) {
+          coredata(z)[it] <- coredata(z)[it] + 
+            rep(clim[is.element(month(clim), im)],sum(it))
+        } else {
+          for (is in 1:n) {
+            coredata(z)[it, is] <- coredata(z)[it, is] + 
+              rep(clim[is.element(month(clim), im), is], sum(it))
+          }
+        }
       } 
       #plot(zoo(x0),lwd=3,col='grey'); lines(z,col='red')
     } else {
       ## Daily data
       wt <- 2*pi/365.25 * c(as.numeric(index(clim)))
-      cal <- data.frame(y=coredata(clim),s1=sin(wt),c1=cos(wt),
-                        s2=sin(2*wt),c2=cos(2*wt),s3=sin(3*wt),c3=cos(3*wt))
       wt <- 2*pi/365.25 * as.numeric(index(z))
       pre <- data.frame(s1=sin(wt),c1=cos(wt),
                         s2=sin(2*wt),c2=cos(2*wt),s3=sin(3*wt),c3=cos(3*wt))
-      clim <- predict(lm(y ~c1 + s1 + c2 + s2 + c3 + s3, data=cal),newdata=pre)
-      z <- z + clim
+      if(n==1) {
+        cal <- data.frame(y=coredata(clim),s1=sin(wt),c1=cos(wt),
+                          s2=sin(2*wt),c2=cos(2*wt),s3=sin(3*wt),c3=cos(3*wt))
+        clim <- predict(lm(y ~ c1 + s1 + c2 + s2 + c3 + s3, data=cal),newdata=pre)
+        z <- z + clim
+      } else {
+        for(is in 1:n) {
+          cal <- data.frame(y=coredata(clim)[,n],s1=sin(wt),c1=cos(wt),
+                            s2=sin(2*wt),c2=cos(2*wt),s3=sin(3*wt),c3=cos(3*wt))
+          clim <- predict(lm(y ~ c1 + s1 + c2 + s2 + c3 + s3, data=cal),newdata=pre)
+          z[,n] <- z[,n] + clim
+        }
+      }
     }
-    
   }
-  
+  if(!is.null(err(x))) {
+    #browser()
+    if(nrow(z)>nrow(x)) {
+      z.err <- matrix(NA, nrow=nrow(z), ncol(z))
+      z.err[index(z) %in% index(x)] <- err(x)
+      attr(z, "standard.error") <- zoo(z.err, order.by=index(z))
+    }
+  }
+  class(z) <- class(x)
+  z <- attrcp(x,z)
+  attr(z,'aspect') <- 'filled'
   attr(z,'evaluation') <- evaluation
+  attr(z,'history') <- history.stamp(z)
   invisible(z) 
 }
 
