@@ -315,7 +315,8 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
     } else if(s=="ECAD") {
       if (!is.null(path.ecad)) path <- path.ecad
       if (is.null(url.ecad)) {
-        url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend"
+        url="https://knmi-ecad-assets-prd.s3.amazonaws.com/download/ECA_nonblend"
+        #url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend"
       } else url <- url.ecad
     } else if(s=="GHCNM") {
       if(!is.null(path.ghcnm)) path <- path.ghcnm
@@ -485,9 +486,12 @@ t2m.ghcnd.avg <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 }
 
 # NOT EXPORTED - internal function
+## KMP 2021-09-22: I updated the url as the old path seems not to work anymore. 
 ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,
                          param=NULL,qual=NULL,path="data.ECAD",remove.suspect=FALSE,
-                         url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",verbose=FALSE) {
+                         url="https://knmi-ecad-assets-prd.s3.amazonaws.com/download/ECA_nonblend",
+                         #url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",
+                         verbose=FALSE) {
   
   if (verbose) print('ecad.station...')
   ele <- esd2ele(param=param)
@@ -501,16 +505,15 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
       stop('Please refresh your selection, element not found in meta data')
     }
   }
-  scale <-as.numeric(ele2param(ele=ele,src="ECAD")$scale[3])
-  if (verbose) print(paste('scale=',scale))                      
-  
+  scale <-as.numeric(ele2param(ele=ele,src="ECAD")$scale)
+  if (verbose) print(paste('scale=',scale))
   fdata <- paste(url,"_",tolower(param1),".zip",sep="") 
-  text  <- unlist(strsplit(fdata,split="/"))
-  text2 <- text[length(text)]
-  destfile <- file.path(path,text2,fsep= .Platform$file.sep)
-  text3 <- paste('ECA','nonblend',tolower(param1),sep='_')
-  destfile2 <- file.path(path,text3,fsep= .Platform$file.sep)
-  
+  #text  <- unlist(strsplit(fdata,split="/"))
+  #text2 <- text[length(text)]
+  #destfile <- file.path(path,text2,fsep= .Platform$file.sep)
+  destfile <- file.path(path, basename(fdata), fsep= .Platform$file.sep)
+  destfile2 <- file.path(path, paste0('ECA_nonblend_',tolower(param1)),
+                         fsep= .Platform$file.sep)
   if (file.exists(destfile) & !file.exists(destfile2)) {
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   } 
@@ -521,7 +524,6 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     if(!file.exists(path)) dir.create(path,showWarnings = FALSE,recursive=TRUE)
     download.file(fdata,destfile,method = "wget", quiet = !verbose, mode = "w", cacheOK = TRUE,
                   extra = getOption("download.file.extra"))
-    #browser()
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   }
   if (verbose) print(paste("station.ecad: the folder has been found",destfile2))
@@ -545,8 +547,9 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   
   x <- read.table(fname,header=TRUE,skip=18,sep=",")
   
-  eval(parse(text=paste("ecad <- scale * x$",param1,sep="")))
-  year <- substr(as.character(x$DATE),1,4);L <- length(year)
+  eval(parse(text=paste0("ecad <- scale * x$",param1)))
+  year <- substr(as.character(x$DATE),1,4)
+  L <- length(year)
   month <- substr(as.character(x$DATE),5,6)
   day <- substr(as.character(x$DATE),7,8)
   if (verbose) {
@@ -576,13 +579,16 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   if (sum(ECAD,na.rm=TRUE)==0) {
     print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)
   } 
+  
   ECAD <- as.station(ECAD, stid=stid, lon=lon, lat=lat, alt=alt,
                      ## ele=esd2ele(param), freq=1,calendar='gregorian',
-                     quality=qual, cntr=cntr, loc=loc, src='ECAD',
-                     url=paste("http://eca.knmi.nl/utils/downloadfile.php?file=download/ECA_nonblend_",as.character(param),".zip",sep=''),
+                     quality=qual, cntr=cntr, loc=loc, src='ECAD', url=fdata,
+                     #url=paste0("http://eca.knmi.nl/utils/downloadfile.php?file=download/ECA_nonblend_",as.character(param),".zip"),
                      param=param, aspect="original",
-                     unit=switch(param1,'TG'='degree Celsius','TX'='deg C','TN'='deg C', 'CC'='oktas',
-                                 'DD'='degrees','FG'='m/s', 'FX'='m/s','HU'='%','PP'='hPa', 'SS'='hours','RR'='mm/day'),
+                     unit=switch(param1,'TG'='degree Celsius','TX'='deg C',
+                                 'TN'='deg C','CC'='oktas', 'DD'='degrees',
+                                 'FG'='m/s','FX'='m/s','HU'='%','PP'='hPa',
+                                 'SS'='hours','RR'='mm/day'),
                      longname=as.character(ele2param(ele=ele,src="ECAD")$longname[2]),
                      reference=paste0("Klein Tank, A.M.G. and Coauthors, 2002.",
                                       " Daily dataset of 20th-century surface air temperature and precipitation series for the European Climate Assessment.",
@@ -1225,7 +1231,6 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
     ## Get parameter information
     ## KMP 2021-07-08: workaround because ele2param doesn't work
     ## I think the problem has something to do with the esd subset functions
-    # browser()
     meta.elements <- ele2param()
     param1info <- meta.elements[meta.elements$source=="METNO.FROST" & 
                                 meta.elements$param %in% param, ]

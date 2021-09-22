@@ -9,7 +9,15 @@
 the station data based on an ordinary linear regression between data from the
 reanalysis interpolated to the coordinates of the station data.}
 \usage{
-reafill(x, file, anomaly = TRUE, verbose = FALSE, plot = FALSE, delta = 0.3)
+reafill(
+  x,
+  file,
+  anomaly = TRUE,
+  plot = FALSE,
+  delta = 0.3,
+  method = "linreg",
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{the station data with gaps that need interpolation}
@@ -18,9 +26,13 @@ reafill(x, file, anomaly = TRUE, verbose = FALSE, plot = FALSE, delta = 0.3)
 
 \item{anomaly}{(Not yet working) subtract the mean annual cycle before interpolation and then add it back for recovering original form.}
 
-\item{verbose}{Print out checks for diagnosing}
-
 \item{plot}{Graphical diagnostics}
+
+\item{delta}{Distance (in degrees) from edge of station domain to reanalysis domain}
+
+\item{method}{If 'linreg': use linear regression to fit station data based on reanalysis data; If 'direct', replace missing station data directly with values from the closest grid points of the reanalysis data.}
+
+\item{verbose}{Print out checks for diagnosing}
 }
 \description{
 The reanalysis is usually more complete than the station data and the final result 
