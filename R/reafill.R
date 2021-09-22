@@ -19,13 +19,16 @@
 #' @param x the station data with gaps that need interpolation
 #' @param file Name of the reanalysis data file (netCDF). NB use daily data if x contains daily data. 
 #' @param anomaly (Not yet working) subtract the mean annual cycle before interpolation and then add it back for recovering original form.
-#' @param verbose Print out checks for diagnosing
 #' @param plot Graphical diagnostics
-#'  
+#' @param delta Distance (in degrees) from edge of station domain to reanalysis domain
+#' @param method If 'linreg': use linear regression to fit station data based on reanalysis data; If 'direct', replace missing station data directly with values from the closest grid points of the reanalysis data. 
+#' @param verbose Print out checks for diagnosing
+#'
 #' @aliases pcafill reafill test.reafill 
 #' @author R.E. Benestad
 #' @export reafill
-reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
+reafill <- function(x,file,anomaly=TRUE,plot=FALSE,delta=0.3,
+                    method="linreg",verbose=FALSE) {
   ## Read only the reanalysis data for the local region surrounding the station data 
   lon <- round(range(lon(x)) + delta*c(-1,1),3)
   lat <- round(range(lat(x)) + delta*c(-1,1),3)
@@ -56,25 +59,34 @@ reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
   for (is in 1:n) {
     x1 <- subset(x,is=is); y1 <- subset(y, is=is)
     if (verbose) print(loc(x1))
-    xy <- merge(zoo(x1),zoo(y1))
-    cal <- data.frame(x=coredata(xy[,1]),y=coredata(xy[,2]))
-    fill <- data.frame(y=coredata(y1))
-    ## fit is the interpolated data based on ordinary linear regression
-    fit <- zoo(predict(lm(x ~ y, data=cal),newdata=fill),order.by=index(y1))
-    evaluation[[is]] <- summary(lm(x ~ y, data=cal))
-    ## combine the fitted and original data
+    ## Combine the fitted and original data
     trange <- range(c(index(x1),index(y1)))
     if (verbose) print(trange)
     ## Common times
     tc <- c(index(x1),index(y1))
     tc[duplicated(tc)] <- NA; tc <- sort(tc[is.finite(tc)])
-    ## Set up an empty time seris
+    ## Set up an empty time series
     s1 <- rep(NA,length(tc))
+    if(method=="linreg") {
+      if (verbose) print('Interpolating data with linear regression')
+      xy <- merge(zoo(x1),zoo(y1))
+      cal <- data.frame(x=coredata(xy[,1]),y=coredata(xy[,2]))
+      fill <- data.frame(y=coredata(y1))
+      ## fit is the interpolated data based on ordinary linear regression
+      fit <- zoo(predict(lm(x ~ y, data=cal),newdata=fill),order.by=index(y1))
+      evaluation[[is]] <- summary(lm(x ~ y, data=cal))
+    } else if(method=="direct") {
+      if (verbose) print('Fill in directly from reanalysis data')
+      fit <- y1
+    } else {
+      warning("Method not recognized. Missing values will not be filled in. Please select one of the available methods ('linreg' or 'direct').")
+      fit <- NULL
+    }
     ## Add the interpolated data 
-    if (verbose) print('Interpolated data')
-    s1[is.element(tc,index(y1))] <- coredata(fit)
-    ## Add the original data (overwrite interpolated data wher they overlap)
-    if (verbose) print('original valid data')
+    if (verbose) print('Add interpolated data')
+    if(!is.null(fit)) s1[is.element(tc,index(y1))] <- coredata(fit)
+    ## Add the original data (overwrite interpolated data where they overlap)
+    if (verbose) print('Add original valid data')
     good <- is.finite(coredata(x1))
     s1[is.element(tc,index(x1))][good] <- coredata(x1)[good]
     s1 <- zoo(s1,order.by=tc)
@@ -83,14 +95,14 @@ reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
       lines(zoo(x1),col='black')
       lines(fit,col='red',lty=2)
     }
-    ## The final
+    ## Add to output
     #if (is > 1) z <- combine.stations(s1,fit) else z <- s1
     if (is > 1) z <- combine.stations(z,s1) else z <- s1
   }
-  if (anomaly) { 
+  if (anomaly) {
     ## The climatology needs to be added as a repeated segment
-    clim <- as.climatology(x0)
-    ## Take into acount the possibility of multiple (n) stations
+    clim <- as.climatology(x)
+    ## Take into account the possibility of multiple (n) stations
     if(is.null(dim(clim))) dim(clim) <- c(1, length(clim))
     tyrs <- table(year(z))
     nyrs <- length(rownames(tyrs))
@@ -131,7 +143,6 @@ reafill <- function(x,file,anomaly=TRUE,verbose=FALSE,plot=FALSE,delta=0.3) {
     }
   }
   if(!is.null(err(x))) {
-    #browser()
     if(nrow(z)>nrow(x)) {
       z.err <- matrix(NA, nrow=nrow(z), ncol(z))
       z.err[index(z) %in% index(x)] <- err(x)

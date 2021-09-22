@@ -211,18 +211,40 @@ anomaly.season <- function(x,...,ref=NULL,verbose=FALSE) {
     if (substr(what,1,4)=='clim') x <- clim
     return(x)
   }
+  anomaly.season1.v2 <- function(x,t=NULL,verbose=FALSE,what='anomaly') {
+    x0 <- x
+    yr <- year(t)
+    mn <- month(t)
+    l <- length(x)
+    m <- length(unique(mn))
+    n <- length(unique(yr))
+    pad <- m*n - l
+    if (pad>0) x <- c(rep(NA,pad),x)
+    dim(x) <- c(m, n)
+    clim <- rowMeans(x, na.rm=TRUE)
+    x <- c(x - clim)
+    if (pad>0) x <- x[-(1:pad)]
+    if (substr(what,1,4)=='clim') x <- clim
+    return(x)
+  }
   X <- x
   if (verbose) print('anomaly.season')
   t <- index(x); yr <- year(x)
   if (is.null(dim(x))) {
-    y <- anomaly.season1(coredata(x),yr,ref=ref,verbose=verbose)
-    clim <- anomaly.season1(coredata(x),yr,ref=ref,verbose=verbose,what='clim')
+    #y <- anomaly.season1(coredata(x),yr=yr,ref=ref,verbose=verbose)
+    #clim <- anomaly.season1(coredata(x),yr=yr,ref=ref,verbose=verbose,what='clim')
+    y <- anomaly.season1.v2(coredata(x),t=index(x),verbose=verbose)
+    clim <- anomaly.season1.v2(coredata(x),t=index(x),verbose=verbose,what='clim')
   } else {
-    y <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref,verbose=verbose)
-    clim <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref,verbose=verbose,what='clim')
+    #y <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref,verbose=verbose)
+    #clim <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref,verbose=verbose,what='clim')
+    y <- apply(x,2,FUN='anomaly.season1.v2',t=index(x),verbose=verbose)
+    clim <- apply(x,2,FUN='anomaly.season1.v2',t=index(x),verbose=verbose,what='clim')
+    if(is.null(dim(clim))) dim(clim) <- c(1, length(clim))
   }
   x <- zoo(y,order.by=t)
   x <- attrcp(X,x)
+  clim <- zoo(clim, order.by=unique(month(index(x))))
   attr(x,'climatology') <- clim
   attr(x,'aspect') <- 'anomaly'
   class(x) <- class(X)
@@ -329,14 +351,18 @@ climatology <- function(x,...,verbose=FALSE) {
 # Handy conversion algorithms:
 #' @export as.climatology
 as.climatology <- function(x,...) {
-  ya <- as.anomaly(x,...)
-  clim <- coredata(attr(ya,'climatology'))
-  if (!is.null(dim(clim))) {
-    len.clim <- dim(clim)[1]
+  if(attr(x, "aspect")=="anomaly") ya <- x else ya <- as.anomaly(x,...)
+  clim <- attr(ya,'climatology')
+  if(inherits(clim,"zoo")) {
+    y <- clim
   } else {
-    len.clim <- length(clim)
+    if (!is.null(dim(clim))) {
+      len.clim <- dim(clim)[1]
+    } else {
+      len.clim <- length(clim)
+    }
+    y <- zoo(clim,order.by=1:len.clim)
   }
-  y <- zoo(clim,order.by=1:len.clim)      
   y <- attrcp(x,y)
   attr(y,'aspect') <- 'climatology'
   attr(y,'history') <- history.stamp(x)

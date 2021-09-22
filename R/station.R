@@ -492,9 +492,9 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   if (verbose) print('ecad.station...')
   ele <- esd2ele(param=param)
   if (is.null(ele)) {
-    param1 <-as.character(ele2param(ele=param,src="ECAD")$param[5])
+    param1 <- as.character(ele2param(ele=param,src="ECAD")$param)
   } else {
-    param1 <- as.character(ele2param(ele=ele,src="ECAD")$param[5])
+    param1 <- as.character(ele2param(ele=ele,src="ECAD")$param)
   }
   if (!is.null(param) & (!is.null(dim(param1)[1]))) {
     if (dim(param1)==0) { 
@@ -521,6 +521,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     if(!file.exists(path)) dir.create(path,showWarnings = FALSE,recursive=TRUE)
     download.file(fdata,destfile,method = "wget", quiet = !verbose, mode = "w", cacheOK = TRUE,
                   extra = getOption("download.file.extra"))
+    #browser()
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   }
   if (verbose) print(paste("station.ecad: the folder has been found",destfile2))
