@@ -18,9 +18,11 @@
 #' 
 #' @examples
 #' 
+#' \dontrun{
 #' nacd <- station(src='nacd')
 #' X <- annual(nacd)
 #' write2ncdf4(X,file='test.nc')
+#' }
 #' 
 #' @export write2ncdf4
 write2ncdf4 <- function(x,...) UseMethod("write2ncdf4")

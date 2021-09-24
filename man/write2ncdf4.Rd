@@ -21,9 +21,11 @@ structure and meta-data (attributes). The code tries to follow the netCDF
 }
 \examples{
 
+\dontrun{
 nacd <- station(src='nacd')
 X <- annual(nacd)
 write2ncdf4(X,file='test.nc')
+}
 
 }
 \seealso{
