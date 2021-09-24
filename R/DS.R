@@ -958,9 +958,11 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     stopifnot(!missing(y),!missing(X),
               inherits(X,"eof"),inherits(y,"station"))
 
+    if(inherits(y,"pca") & !is.null(npca)) y <- subset(y, ip=1:npca)
     cls <- class(y)
+    
     y0 <- y; X0 <- X
-                                        #nattr <- softattr(y)
+    #nattr <- softattr(y)
 
     # synchronise the two zoo objects through 'merge' (zoo)
     if (verbose) { print('Summary of predictand before matchdate'); print(summary(coredata(y)))
