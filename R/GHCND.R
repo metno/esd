@@ -125,7 +125,7 @@ ghcnd.data <- function(param="PRCP", stid="ACW00011604", src="ghcnd" , path="dat
   if(verbose) print("ghcnd.data")
   if(is.null(url)) url <- "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all"
   src <- tolower(src)
-
+  
   if (!file.exists(path) & save.file) {
     test <- readline(paste("Directory,",path," does not exist ! Would you like to create it (y or n)",sep=""))
     if ((tolower(test) == "yes") | (tolower(test) == "ye") | (tolower(test) == "y")) dir.create(path)
@@ -152,12 +152,13 @@ ghcnd.data <- function(param="PRCP", stid="ACW00011604", src="ghcnd" , path="dat
     }
     ##
     if (save.file) {
+      if (verbose) print(paste('Save: destfile=',destfile))
       if (file.info(destfile)$size==0) {
         print(paste("Warning : File",destfile,"has null size",sep=" "))
         return(NULL)
       }
     }
-
+    
     ## Reading data as text ...
     ## setwd(newpath)	
     ##	
@@ -165,15 +166,15 @@ ghcnd.data <- function(param="PRCP", stid="ACW00011604", src="ghcnd" , path="dat
     ##fdata <- "ghcnd.tavg.v3.2.0.20130120.qca.dat"   
     ## if (!is.null(stid) & save.file) datatext = readLines(destfile) ##readLines(fdata)
     ghcnd.data <- try(read.fwf(destfile, widths=c(3,8,4,2,4,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,
-                                              5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3),
-                           col.names=c("COUNTRY.CODE","ID","YEAR","MONTH","ELEMENT","DAY1","MQSFLAG1","DAY2","MQSFLAG2",
-			                      "DAY3","MQSFLAG3","DAY4","MQSFLAG4","DAY5","MQSFLAG5","DAY6","MQSFLAG6","DAY7","MQSFLAG7",
-				                    "DAY8","MQSFLAG8","DAY9","MQSFLAG9","DAY10","MQSFLAG10","DAY11","MQSFLAG11","DAY12","MQSFLAG12",
-				                    "DAY13","MQSFLAG13","DAY14","MQSFLAG14","DAY15","MQSFLAG15","DAY16","MQSFLAG16","DAY17",
-				                    "MQSFLAG17","DAY18","MQSFLAG18","DAY19","MQSFLAG19","DAY20","MQSFLAG20","DAY21","MQSFLAG21",
-				                    "DAY22","MQSFLAG22","DAY23","MQSFLAG23","DAY24","MQSFLAG24","DAY25","MQSFLAG25","DAY26",
-				                    "MQSFLAG26","DAY27","MQSFLAG27","DAY28","MQSFLAG28","DAY29","MQSFLAG29","DAY30","MQSFLAG30",
-				                    "DAY31","MQSFLAG31"), sep="\t", as.is=TRUE))
+                                                  5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3,5,3),
+                               col.names=c("COUNTRY.CODE","ID","YEAR","MONTH","ELEMENT","DAY1","MQSFLAG1","DAY2","MQSFLAG2",
+                                           "DAY3","MQSFLAG3","DAY4","MQSFLAG4","DAY5","MQSFLAG5","DAY6","MQSFLAG6","DAY7","MQSFLAG7",
+                                           "DAY8","MQSFLAG8","DAY9","MQSFLAG9","DAY10","MQSFLAG10","DAY11","MQSFLAG11","DAY12","MQSFLAG12",
+                                           "DAY13","MQSFLAG13","DAY14","MQSFLAG14","DAY15","MQSFLAG15","DAY16","MQSFLAG16","DAY17",
+                                           "MQSFLAG17","DAY18","MQSFLAG18","DAY19","MQSFLAG19","DAY20","MQSFLAG20","DAY21","MQSFLAG21",
+                                           "DAY22","MQSFLAG22","DAY23","MQSFLAG23","DAY24","MQSFLAG24","DAY25","MQSFLAG25","DAY26",
+                                           "MQSFLAG26","DAY27","MQSFLAG27","DAY28","MQSFLAG28","DAY29","MQSFLAG29","DAY30","MQSFLAG30",
+                                           "DAY31","MQSFLAG31"), sep="\t", as.is=TRUE))
     if (inherits(ghcnd.data,"try-error")) {#} | dim(ghcnd.data)[1]==0) {
       print("Warning : No data found for that station")
       return(NULL)
@@ -197,8 +198,11 @@ ghcnd.data <- function(param="PRCP", stid="ACW00011604", src="ghcnd" , path="dat
     ## save(ghcnd.data,file="ghcnd.data.rda")
     
     ## Remove downloaded files if necessary to save disk space
-    if (rm.file) file.remove(destfile)
-    
+    if (verbose) print(paste('Remove: destfile=',destfile))
+    if (save.file) { 
+      rm.file <- rm.file & file.exists(destfile)
+      if (rm.file) file.remove(destfile)
+    }
     #} ## else {if (verbose) print("Reading data from R-data file ...")
     ##      load("ghcnd.data.rda")
     ##      if (verbose) print("Done !")
@@ -228,8 +232,8 @@ ghcnd.data <- function(param="PRCP", stid="ACW00011604", src="ghcnd" , path="dat
 #
 # @export
 ghcnd.meta.old <- function(param=NULL, src="ghcnd", path="data.GHCND",
-                       url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily",
-                       save.file=FALSE, verbose=TRUE, force=TRUE) {
+                           url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily",
+                           save.file=FALSE, verbose=TRUE, force=TRUE) {
   ## Get old path
   ## oldpath <- getwd()
   if (!verbose) print(paste("Param", param, sep = " <-- "))
@@ -278,7 +282,7 @@ ghcnd.meta.old <- function(param=NULL, src="ghcnd", path="data.GHCND",
       meta <- read.fwf("ghcnd-stations.txt",widths=c(11,9,10,7,4,30,4,4,6),
                        col.names=c("stid","lat","lon","alt","state","stnm","gsnflag","hcnflag","wmo_id"), 
                        sep = "\t",as.is=TRUE,header=FALSE)
-     
+      
       ## meta <- read.fwf("ghcnd-stations.txt",widths=c(2,1,8,9,10,7,4,30,4,4,6),
       ##                  col.names=c("cntr.abb","cntr.netw.c","stid","lat","lon","alt","state","stnm","gsnflag","hcnflag","wmo_id"), sep = "\t",as.is=TRUE
       
@@ -292,17 +296,17 @@ ghcnd.meta.old <- function(param=NULL, src="ghcnd", path="data.GHCND",
       ## remove auxilary elements and keep only core element mentioned above
       id <- !is.na(as.numeric(meta1$param))
       meta1 <- subset(meta1,id)
-     
+      
       ## compute the number of stations
       cc <- as.integer(table(factor(meta1$stid)))
-
+      
       ## extract the country abbreviated name
       meta$cntr.abb <- substr(meta$stid,1,2)
-
+      
       ## Generate full country name
       cname <- ghcnd.country.abb()$name
       meta$cntr <- cname[as.integer(factor(meta$cntr.abb))]
-                                        # remove extra empty spaces
+      # remove extra empty spaces
       meta$stnm <- as.character(gsub("  ",x=meta$stnm,replacement=""))
       n <- nchar(meta$stnm)
       id <- (substr(meta$stnm,n,n)==" ")
@@ -316,7 +320,7 @@ ghcnd.meta.old <- function(param=NULL, src="ghcnd", path="data.GHCND",
                          longitude = as.numeric(meta1$lon), latitude = as.numeric(meta1$lat),  
                          altitude = as.numeric(rep(meta$alt,cc)), element = as.numeric(meta1$param), 
                          start = as.integer(meta1$start), end = as.integer(meta1$end))
-                                        # Add attributes
+      # Add attributes
       attr(ghcnd.meta, "source") <- src  
       attr(ghcnd.meta, "version") <- c(version.por,version.upd)
       attr(ghcnd.meta, "history") <- c("ghcnd-inventory.txt","ghcnd-stations.txt")
@@ -325,7 +329,7 @@ ghcnd.meta.old <- function(param=NULL, src="ghcnd", path="data.GHCND",
       attr(ghcnd.meta, "cite") <- "Klein Tank, A.M.G. and Coauthors, 2002. Daily dataset of 20th-century surface air temperature and precipitation series for the European Climate Assessment. Int. J. of Climatol., 22, 1441-1453."
       attr(ghcnd.meta, "date") <- date()
       attr(ghcnd.meta, "call") <- match.call()
-                                        # save ouptuts in file
+      # save ouptuts in file
       save(ghcnd.meta,file="ghcnd.meta.rda")
     } else {
       if (verbose) print("Reading Meta data from rda file ...")
