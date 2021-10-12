@@ -420,10 +420,10 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
                                path = path,url=url)
           } else if (s=="GHCND") {
             if(param0=="t2m") { ## compute the avg 
-              ghcnd.tmin <- ghcnd.station(param="tmin",stid=stid[i],lon=lon[i],lat=lat[i],
+              ghcnd.tmin <- ghcnd.station.int(param="tmin",stid=stid[i],lon=lon[i],lat=lat[i],
                                           alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
                                           verbose=verbose,path = path,url=url)
-              ghcnd.tmax <- ghcnd.station(param="tmax",stid=stid[i],lon=lon[i],lat=lat[i],
+              ghcnd.tmax <- ghcnd.station.int(param="tmax",stid=stid[i],lon=lon[i],lat=lat[i],
                                           alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
                                           verbose=verbose, path=path,url=url)
               if (is.null(ghcnd.tmax) |  is.null(ghcnd.tmin)) {
@@ -441,7 +441,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
                 attr(x,'longname') <- "Mean temperature"
               }
             } else {
-              x <- ghcnd.station(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
+              x <- ghcnd.station.int(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
                                  cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose,
                                  path = path,url=url)
             }
@@ -775,7 +775,7 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 }
 
 # NOT EXPORTED - internal function
-ghcnd.station <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL, qual=NULL, param=NULL,
+ghcnd.station.int <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL, qual=NULL, param=NULL,
                           path="data.GHCND", url=NULL, adj=TRUE, force=FALSE, flag=FALSE, off=FALSE, verbose=FALSE) {
   
   if (verbose) print("station.GHCND")
