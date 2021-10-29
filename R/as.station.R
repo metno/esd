@@ -76,7 +76,7 @@ as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                           aspect=NA,verbose=FALSE) {
   #print(c(length(X),length(index)))
   y <- zoo(x,order.by=index(x))
-
+  
   if (is.null(loc)) loc <- NA
   if ((is.na(loc[1])) & !is.null(attr(x,'location')))
     loc <- attr(x,'location')

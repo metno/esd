@@ -19,7 +19,7 @@ genfun <- function(x,FUN,verbose=FALSE) {
 
 ## Simplified function for mapping station objects.
 #' @exportS3Method
-#' @export 
+#' @export map.station
 map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          add=FALSE,projection="lonlat",
                          xlim = NULL, ylim = NULL,zlim=NULL,n=15,
@@ -43,6 +43,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          text=FALSE, fancy=FALSE, 
                          na.rm=TRUE,show.val=FALSE,#usegooglemap=FALSE,
                          ##colorbar=TRUE,
+                         add.significance=FALSE, pmax=0.01,
                          xlab="lon",ylab="lat",
                          legend.shrink=1,fig=c(0,1,0.05,0.95),
                          mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...) { 
@@ -201,6 +202,19 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       par(new=TRUE,fig=fig,mar=mar,yaxt='n',xaxt='n')
       plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim,xlab="",ylab="")#xlab,ylab=ylab)
       
+      if(!is.null(FUN)) if(add.significance & FUN %in% c("trend","trend.coef")) {
+        pval <- apply(x, 2, trend.pval)
+        if(is.null(col.pmax)) col.pmax <- colscal("gray.colors", n=length(pmax))
+        if(is.null(lwd.pmax)) lwd.pmax <- rep(1,length(pmax))
+        pmin <- 0
+        i <- 1
+        for(p in sort(pmax)) {
+          points(lon(x)[pval>=pmin & pval<p], lat(x)[pval>=pmin & pval<p], 
+                 col=col.pmax[i], lwd=lwd.pmax[i], pch=21, cex=cex)
+          pmin <- p
+          i <- i+1
+        }
+      }
       ## Add a title
       if(is.null(main)) {
         if(!is.null(FUN)) {

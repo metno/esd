@@ -707,7 +707,7 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 
 #' @exportS3Method
-#' @export
+#' @export map.pca
 map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
@@ -732,7 +732,6 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
     #print(dim(X))
     #str(x)
     X <- attrcp(x,X)
-    
     ## if zlim is specified, then mask data outside this range
     if (!is.null(zlim)) {
       d <- dim(X)

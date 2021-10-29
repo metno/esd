@@ -489,8 +489,14 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
       y <- aggregate(x=as.zoo(X),by=yq,#as.yearqtr,
                      FUN=match.fun(FUN),...)
       # convert yearqtr to yearmon
+      ## Remove season values with less than nmin data points
+      if(is.null(nmin)) nmin <- 3
+      nd <- aggregate(x=as.zoo(X),by=yq,FUN=nv)
+      ok <- nd >= nmin  
+      coredata(y)[!ok] <- NA
+      
       y <- zoo(x=y,order.by=as.Date(as.yearmon(index(y))))
-    } else y <- as.4seasons.day(x,FUN=FUN,nmin=nmin,...)
+    } else y <- as.4seasons.day(x,FUN=FUN,nmin=nmin,verbose=verbose,...)
     #y <- as.4seasons.day(x,FUN=match.fun(FUN),...)
     
     #print(dim(y))
@@ -550,8 +556,7 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
 #' @export
 as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,verbose=FALSE) {
   if(verbose) print('as.4seasons.day')
-  IV <- function(x) sum(is.finite(x))
-    if (inherits(x,'month')) nmin <- 3 # AM 06-07-2015
+  if (inherits(x,'month')) nmin <- 3 # AM 06-07-2015
   attr(x,'names') <- NULL  
   t <- index(x)
   year <- year(t) #as.numeric(format(t,'%Y'))
@@ -583,8 +588,8 @@ as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,v
      y <- aggregate(X,as.yearqtr,FUN=match.fun(FUN),...)
 
   # Set to missing for seasons with small data samples:
-  nd <- aggregate(X,as.yearqtr,FUN=IV)
-  ok <- nd >= nmin  
+  nd <- aggregate(X,as.yearqtr,FUN=nv)
+  ok <- nd >= nmin
   coredata(y)[!ok] <- NA
   # dateindex: convert "1775 Q1" to "1775-01-01"
   if (dateindex) {
@@ -669,7 +674,6 @@ leapdate <- function(years="2000", dates="02-29") {
 #' @export
 as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...) {
   if(verbose) print("as.seasons")
-  IV <- function(x) sum(is.finite(x))
   yrs <- year(x); d <- dim(x)
   # ns = number of stations
   if (is.null(d)) ns <- 1 else ns <- d[2]
@@ -693,7 +697,7 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...)
     if(verbose) print(paste("Aggregate for year",years[i]))
     z <- coredata(window(x, start=leapdate(years[i], start),
                             end=leapdate(years[i]+twoyears, end)))
-    k[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,IV)
+    k[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,nv)
     y[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,FUN, ...)
   }
   y <- zoo(y,order.by=as.Date(paste(years,start,sep='-')))

@@ -19,7 +19,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   varnm <- varid(x); unitx <- esd::unit(x)
   
   fig0 <- c(0,1,0,1)                        # REB 2015-06-25
-  
   ## Land contours
   data("geoborders",envir=environment())
   if(sum(is.finite(x))==0) stop('No valid data')
@@ -230,7 +229,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
         xaxt="s",yaxt="s",new=FALSE)
   }
-  
  
   result <- list(x=lon,y=lat,z=x,breaks=colbar$breaks)
   #par(fig=par0$fig)

@@ -340,7 +340,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
                          errorbar=TRUE,legend.show=FALSE,
                          map.show=TRUE,map.type=NULL,map.insert=TRUE,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
-                         mar=c(4.5,4.5,0.75,0.5),fig=NULL,
+                         mar=c(4.5,4.5,0.75,0.5),fig=NULL, 
                          alpha=0.5,alpha.map=0.7,add=FALSE,
                          verbose=FALSE) {
   
@@ -673,6 +673,15 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   #par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
   if (length(grep('eof',what))>0) {
     if (verbose) {print('Show map'); print(class(x))}
+    zlim <- range(attr(x,"pattern")[,ip])
+    digs <- ceiling(max(c(1,1-log10(max(abs(zlim))))))
+    zlim <- round(zlim, digits=digs)
+    if(all(zlim>=0) | all(zlim<=0)) {
+      if(is.null(colbar$breaks)) colbar$breaks <- pretty(zlim, n=10)
+    } else {
+      if(is.null(colbar$breaks)) colbar$breaks <- pretty(c(-1,1)*max(abs(zlim)), n=10)
+      if(is.null(colbar$pal)) colbar$pal <- "t2m"
+    }
     if (inherits(x,'eof')) {  ## inherits(x,'pca') |
       par(fig=c(0,0.5,0.5,1),mar=c(3,3,2,2))
       ## par(fig=c(0.025,0.5,0.5,0.975)) ## c(0,0.45,0.5,0.975) c(0.05,0.5,0.55,0.95)
@@ -963,7 +972,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
   if (inherits(x,'pca')) {
-    plot.ds.pca(x,verbose=verbose,...)
+    plot.ds.pca(x,verbose=verbose,new=new,...)
     return()
   }
   if (inherits(x,'eof')) {
@@ -1520,13 +1529,14 @@ plot.ds.pca <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                             type="p",cex=1,show=FALSE,h=0.6, v=1,pos=0.05),
                         colbar2=NULL,mar=c(3,2,2,0.5),mgp=c(1,0.5,0),
-                        verbose=FALSE) {
+                        new=FALSE,verbose=FALSE) {
   y <- x # quick fix
 
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
   #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
+  if(new) dev.new()
   par(fig=c(0,0.5,0.5,0.975), mar=mar, mgp=mgp) #par(fig=c(0,0.45,0.5,0.975))
 
   if (verbose) print('PCA ip')
@@ -1853,9 +1863,8 @@ plot.cca <- function(x,...,icca=1,
 #' @param new a boolean; if TRUE plot in new window
 #' @param verbose a boolean; if TRUE print information about progress
 #'
-#' @exportS3Method
 #' @export plot.xval
-plot.xval <- function(x,...,new=TRUE,verbose=FALSE) {
+plot.xval <- function(x,...,ip=1,new=TRUE,verbose=FALSE) {
   if(verbose) print("plot.xval")
   if (new) dev.new()
   par(bty="n")
@@ -1878,7 +1887,9 @@ plot.xval <- function(x,...,new=TRUE,verbose=FALSE) {
   
   ## par(new=TRUE,fig=c(0.1,1,0.1,0.5),bty="n")
   ## plot(c(0,1),c(0,1),col="white",xlab="",ylab="",axes=F)
-  legend(rep(range(index(x))[1],2),rep(range(x)[2],2),c("obs","x-valid","fit to all"), col=c("black","red","red"),lwd=c(2,2,1),lty=c(1,1,3),bty="n")
+  legend(rep(range(index(x))[1],2), rep(range(x)[2],2),
+         c("obs","x-valid","fit to all"), col=c("black","red","red"),
+         lwd=c(2,2,1), lty=c(1,1,3), bty="n")
   
   dev.new()
   par(bty="n")
