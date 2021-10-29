@@ -4,7 +4,7 @@
 \alias{plot.xval}
 \title{plot cross-validation}
 \usage{
-\method{plot}{xval}(x, ..., new = TRUE, verbose = FALSE)
+\method{plot}{xval}(x, ..., ip = 1, new = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{x}{input object to be shown in plot}
