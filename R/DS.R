@@ -436,7 +436,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     attr(ds,'history') <- history.stamp(X0)
     #print("HERE"); print(cls)				
     class(ds) <- c("ds",cls[-2])
-    ## KMP 2019-04-29: Added crossval in DS.default. Any reason why it shoudn't be here?
+    ## KMP 2019-04-29: Added crossval in DS.default. Any reason why it shouldn't be here?
     if (!is.null(m))  {
       if (verbose) print("Cross-validation")
       xval <- crossval(ds,m=m,...)
@@ -957,7 +957,7 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     
     stopifnot(!missing(y),!missing(X),
               inherits(X,"eof"),inherits(y,"station"))
-
+    
     if(inherits(y,"pca") & !is.null(npca)) y <- subset(y, ip=1:npca)
     cls <- class(y)
     

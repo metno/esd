@@ -47,11 +47,13 @@ scatter <- function(x,y,type='heat', verbose=FALSE,...) {
   if (tolower(type)=='hexbin') scatter.hexbin(x,y,verbose=verbose,...)
 }
 
-scatter.heat <- function(x,y,xlim=NULL,ylim=NULL,breaks=NULL,main='Scatter',xlab='',ylab='',sub='',
-                         ignorezero=TRUE,col=NULL,log=FALSE,dig=NULL, fig = c(0.65,0.85,0.22,0.32), 
+scatter.heat <- function(x,y,xlim=NULL,ylim=NULL,breaks=NULL,main='Scatter',
+                         xlab='',ylab='',sub='',
+                         ignorezero=TRUE,col=NULL,log=FALSE,dig=NULL,
+                         fig=NULL, fig.legend=NULL, show.legend=FALSE,
+                         new=FALSE,add=FALSE,mar=c(5.1,4.1,4.1,5.4),
                          verbose=FALSE) {
   if (verbose) print('scatter.heat')
-  par(bty='n',mar=c(5.1, 5.1, 4.1, 2.1))
   if (is.null(dig)) dig <- max(c(-2*log(max(c(x,y,na.rm=TRUE)))/log(10),0),na.rm=TRUE)
   if (verbose) print(paste(dig,'digits. Max:',max(c(x,y,na.rm=TRUE))))
   txy <- table(round(x,dig),round(y,dig))
@@ -69,19 +71,35 @@ scatter.heat <- function(x,y,xlim=NULL,ylim=NULL,breaks=NULL,main='Scatter',xlab
   }
   if (is.null(col)) col <- heat.colors(length(breaks) - 1)
   if (verbose) print(c(length(col),length(breaks)))
+  if(is.null(xlim)) xlim <- range(x,na.rm=TRUE) + 0.1*c(-1,1)*diff(range(x,na.rm=TRUE))
+  if(is.null(ylim)) ylim <- range(y,na.rm=TRUE) + 0.1*c(-1,1)*diff(range(y,na.rm=TRUE))
+  if(new) dev.new()
+  if(is.null(fig)) fig <- par()$fig
+  par(fig=fig, mar=mar, bty='n', new=add)
   image(as.numeric(rownames(txy)),as.numeric(colnames(txy)),txy,breaks=breaks,
-        main=main,xlab=xlab,ylab=ylab,sub=sub,col=col)
+        xlim=xlim,ylim=ylim,main=main,xlab=xlab,ylab=ylab,sub=sub,col=col)
   grid()
   lines(c(0,0.6),c(0,0.6),lty=2)
-  if (!is.null(fig)) { 
-    par(fig=fig,yaxt='n',yaxt='n',mar=c(2,0,0,0),new=TRUE,cex.axis=0.75,cex.lab=0.75,col.axis='white')
-    image(breaks,1:2,cbind(c(breaks),c(breaks)),breaks=breaks,col=heat.colors(length(breaks)-1))
+  if(show.legend) {
+    if(is.null(fig.legend)) {
+      fig.legend <- c(fig[1] + diff(fig[1:2])*0.65, 
+                      fig[1] + diff(fig[1:2])*0.85,
+                      fig[3] + diff(fig[3:4])*0.22,
+                      fig[3] + diff(fig[3:4])*0.32)
+    }
+    par(fig=fig.legend,yaxt='n',yaxt='n',mar=c(2,0,0,0),new=TRUE,
+        cex.axis=0.75,cex.lab=0.75,col.axis='white')
+    image(breaks,1:2,cbind(c(breaks),c(breaks)),breaks=breaks,
+          col=heat.colors(length(breaks)-1),add=TRUE)
     par(xaxt='s',col.axis='grey')
-    if (log) axis(1,at=breaks[seq(1,length(breaks),by=2)],labels=paste0('10^',
-                                                                        breaks[seq(1,length(breaks),by=2)]),cex=0.75) else
-                                                                          axis(1,at=breaks[seq(1,length(breaks),by=2)],labels=
-                                                                                 as.character(breaks[seq(1,length(breaks),by=2)]),cex=0.75)       
-    par(fig=c(0,1,0,1),yaxt='s',yaxt='s',c(5.1, 5.1, 4.1, 2.1),col.axis='black',new=FALSE)
+    if (log) {
+      axis(1,at=breaks[seq(1,length(breaks),by=2)],
+           labels=paste0('10^',breaks[seq(1,length(breaks),by=2)]),cex=0.75) 
+    } else {
+      axis(1,at=breaks[seq(1,length(breaks),by=2)],
+           labels=as.character(breaks[seq(1,length(breaks),by=2)]),cex=0.75)
+    }
+    par(fig=fig,yaxt='s',yaxt='s',mar=mar,col.axis='black',new=TRUE)
   }
 }
 
@@ -220,14 +238,19 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
 }
 
 # Binned scatterplot with hexagons
-scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
-                           dx=NULL,dy=NULL,xgrid=NULL,ygrid=NULL,
-                           xlim=NULL,ylim=NULL,
-                           xlab=NULL,ylab=NULL,main=NULL,
-                           leg=TRUE,col='blue',border='white',
-                           colmap='gray.colors',
-                           scale.col=TRUE,scale.size=FALSE, verbose=FALSE) {
+scatter.hexbin <- function(x, y, new=TRUE, Nmax=NULL,
+                           dx=NULL, dy=NULL, xgrid=NULL, ygrid=NULL,
+                           xlim=NULL, ylim=NULL,
+                           xlab=NULL, ylab=NULL, main=NULL,
+                           leg=TRUE, col='blue', border='white',
+                           colmap='gray.colors', mar=c(5.1,4.1,4.1,5.4),
+                           fig=NULL, add=FALSE,
+                           scale.col=TRUE, scale.size=FALSE, 
+                           add.loess=FALSE, span=2/3, degree=1, evaluation=50,
+                           family=c("symmetric", "gaussian"), lpars=list(),
+                           verbose=FALSE) {
   
+  if(verbose) print("scatter.hexbin")
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
   i <- !(is.na(x) | is.na(y))
   x <- x[i]; y <- y[i]
@@ -285,10 +308,12 @@ scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
   }
   if (is.null(xlim)) xlim <- c(min(X)-dx,max(X)+dx)
   if (is.null(ylim)) ylim <- c(min(Y)-dy,max(Y)+dy)
-  par(bty='n',xpd=NA,mar=c(5.1,4.1,4.1,5.4))
-  if(new) plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,main=main,type='n')
+  if(new) dev.new()
+  #if(new) plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,main=main,type='n')
+  if(is.null(fig)) fig <- par()$fig
+  par(fig=fig, mar=mar, bty='n', xpd=NA, new=add)
+  plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,main=main,type='n')
   mapply(polygon.fill,X,Y,dX,dY,n=6,col=col,border=border)
-  
   # Legend
   if (leg) {
     dn <- round(Nmax/7)
@@ -310,8 +335,8 @@ scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
     x0 <- max(xlim)
     y0 <- max(ylim)
     dy0 <- max(szticks)*dy*2.1
-    dx0 <- (max(xlim)-min(xlim))/10+max(szticks)*dy/2
-    text(x0+dx0,y0+dy0/2+(max(ylim)-min(ylim))/30,"count")
+    dx0 <- diff(range(xlim))/10 + max(szticks)*dy/2
+    text(x0+dx0, y0+dy0/2+diff(range(ylim))/20,"count")
     polygon.fill(x0+dx0,y0,dx*szticks[1],dy*szticks[1],
                  n=6,col=cticks[1],border=bticks[1])
     if (max(N)>Nmax) {
@@ -332,6 +357,12 @@ scatter.hexbin <- function(x,y,new=TRUE,Nmax=NULL,
       j <- j+1
     }
   }
+  
+  if(add.loess) {
+    pred <- loess.smooth(x, y, span, degree, family, evaluation)
+    do.call(lines, c(list(pred), lpars))
+  }
+    
 }
 
 # Count observations (x,y) in grid points (X,Y)

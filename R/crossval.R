@@ -44,7 +44,7 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
   # leave-m-out. These are masked by setting them to NA before the
   # regression.
   if(verbose) print("crossval.ds")
-
+  
   CALDAT <- attr(x,'calibration_data')
   calstr <- attr(CALDAT,'calibration_expression')
   #print(calstr)
@@ -52,7 +52,7 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
   if (is.null(attr(x,'standard.error'))) weighted <- FALSE
   
   nt <- length(CALDAT$y); nv <- dim(CALDAT)[2]
-
+  
   if (is.character(m)) {
     ## The settings for CORDEX-ESD experiment 1 Tier 2:
     ## 5-fold cross-validation: [1979,1983], [1984,1988],[1989,1993],[1994,1998],[1999,2003]
@@ -104,6 +104,7 @@ crossval.ds <- function(x, m=5, verbose=FALSE, ...) {
     z <- predict(model,newdata=caldat)
     Z[j] <- z[j]
   }
+  
   #str(Z);str(Y)
   if (!inherits(x,'pca')) { 
     Y <- Y + attr(x,'mean')
