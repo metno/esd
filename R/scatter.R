@@ -341,7 +341,8 @@ scatter.hexbin <- function(x, y, new=TRUE, Nmax=NULL,
                  n=6,col=cticks[1],border=bticks[1])
     if (max(N)>Nmax) {
       text(x0+dx0+max(szticks)*dx,y0,
-           paste("\u2265",as.character(nticks[1])),pos=4)
+           paste(">=",as.character(nticks[1])),pos=4)
+           #paste("\u2265",as.character(nticks[1])),pos=4)
     } else {
       text(x0+dx0+max(szticks)*dx,y0,as.character(nticks[1]),pos=4)
     }

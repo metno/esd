@@ -57,7 +57,7 @@
 #' 
 #' # Simple EOF for annual mean SST:
 #' sst <- sst.NCEP(lon=c(-90,20),lat=c(0,70))
-#' SST <- aggregate(sst, year, mean, na.rm = FALSE)
+#' SST <- annual(sst, FUN="mean", nmin=12)
 #' eof.sst <- EOF(SST)
 #' plot(eof.sst)
 #' 
@@ -72,8 +72,8 @@
 #' t2m.dnmi <- t2m.DNMI()
 #' dnmi <- subset(t2m.dnmi,is=list(lon=c(-50,60),lat=c(30,70)))
 #' 
-#' OBS <-  aggregate(dnmi, by=year, mean, na.rm = FALSE)
-#' GCM <- aggregate(gcm, by=year, mean, na.rm = FALSE)
+#' OBS <- annual(dnmi, FUN="mean", nmin=12)
+#' GCM <- annual(gcm, FUN="mean", nmin=12)
 #' OBSGCM <- combine(OBS,GCM,dimension='time')
 #' 
 #' ceof <- EOF(OBSGCM)
@@ -96,7 +96,7 @@
 #' plot(ds)
 #' 
 #' # Recover the station data:
-#' Z <- pca2station(pca)
+#' Z <- as.station(pca)
 #' plot(Z,plot.type='multiple')
 #' 
 #' @export EOF

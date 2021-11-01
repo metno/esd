@@ -126,10 +126,12 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
 
     ## Set breaks and n
     if (!is.null(colbar$col)) {
+      colbar$n <- length(colbar$col)
       if (is.null(colbar$breaks)) {
         colbar$breaks <- round(seq(x.rng[1],x.rng[2],length.out=length(colbar$col)+1),nd)
+      } else if(length(colbar$breaks)!=(colbar$n-1)) {
+        colbar$breaks <- pretty(colbar, n=colbar$n-1)
       }
-      colbar$n <- length(colbar$col)
     }
     if (is.null(colbar$breaks)) { 
       if (verbose) print("pretty is used here to set break values ...")
@@ -138,14 +140,10 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
       } else {
         colbar$breaks <- pretty(seq(x.rng[1],x.rng[2],length.out=10),n=11)
       }
-      colbar$n <- length(colbar$breaks) - 1
+    } else if(length(colbar$breaks)==2) {
+      colbar$breaks <-  pretty(seq(colbar$breaks[1],colbar$breaks[2],length.out=10),n=11)
     }
-    if(length(colbar$breaks)==2) {
-      if(is.null(colbar$n)) colbar$n <- 10
-      colbar$breaks <- seq(colbar$breaks[1],colbar$breaks[2],
-                           length=colbar$n+1)
-      colbar$n <- length(colbar$breaks) - 1
-    }
+    colbar$n <- length(colbar$breaks) - 1
 
     ## Activate pallette (pal)
     if (is.null(colbar$pal)) {

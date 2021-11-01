@@ -673,7 +673,13 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   #par(mfrow=mfrow)##,mar=c(1,1,1,2)) ##,bty="n",xaxt="n",yaxt="n")
   if (length(grep('eof',what))>0) {
     if (verbose) {print('Show map'); print(class(x))}
-    zlim <- range(attr(x,"pattern")[,ip])
+    if(length(dim(attr(x,"pattern")))==3) {
+      zlim <- range(attr(x,"pattern")[,,ip], na.rm=TRUE)
+    } else if(length(dim(attr(x,"pattern")))==2) {
+      zlim <- range(attr(x,"pattern")[,ip], na.rm=TRUE)
+    } else {
+      zlim <- range(attr(x,"pattern"), na.rm=TRUE)
+    }
     digs <- ceiling(max(c(1,1-log10(max(abs(zlim))))))
     zlim <- round(zlim, digits=digs)
     if(all(zlim>=0) | all(zlim<=0)) {
