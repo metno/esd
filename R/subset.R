@@ -1009,7 +1009,7 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
       for (i in 1:length(illoc)) {
         xx2 <- x[[illoc[i]]]
         xx2 <- subset(xx2,it=it,verbose=verbose)
-        eval(parse(text=paste('x2$',Locs[illoc[i]],' <- xx2',sep='')))
+        eval(parse(text=paste('x2$`',Locs[illoc[i]],'` <- xx2',sep='')))
         rm('xx2'); gc(reset=TRUE)
       } 
     } else if (length(illoc)==0) {
