@@ -970,15 +970,16 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #'
 #' @exportS3Method
 #' @export plot.ds
-plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRUE,
+plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
                     lwd=1,type='l',pch=0,main=NULL,col=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,
                         breaks=NULL,type="p",cex=2,show=TRUE,
                         h=0.6, v=1,pos=0.05),
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
-  if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
+  if (verbose) print(paste('plot.ds'))
+
   if (inherits(x,'pca')) {
-    plot.ds.pca(x,verbose=verbose,new=new,...)
+    plot.ds.pca(x,what=what,verbose=verbose,new=new,...)
     return()
   }
   if (inherits(x,'eof')) {
@@ -986,6 +987,8 @@ plot.ds <- function(x,...,plot.type="multiple",what=c("map","ts",'xval'),new=TRU
     return()
   }
   
+  if(is.null(what)) what <- c("map","ts",'xval')
+  if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
   unit <- attr(x,'unit')
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
   for (i in 1:length(unit)) {
@@ -1519,62 +1522,188 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
 #'
 #' @exportS3Method
 #' @export plot.pca
-plot.pca <- function(x,...,cex=1,verbose=FALSE,new=TRUE) {
+plot.pca <- function(x,...,ip=1,cex=1,verbose=FALSE,new=TRUE) {
   if (verbose) print('plot.pca')
   if(inherits(x,"trajectory")) {
     plot.pca.trajectory(x,cex=cex,new=new,verbose=verbose,...)
   } else {
     attr(x,'longname') <- attr(x,'longname')[1]
-    plot.eof.field(x,verbose=verbose,new=new,cex=cex,...)
+    if(is.null(ip)) ip <- 1
+    if(length(ip)>1) {
+      plot.pca.multiple(x,ip=ip,verbose=verbose,new=new,cex=cex,...)
+    } else {
+      plot.eof.field(x,ip=ip,verbose=verbose,new=new,cex=cex,...)
+    }
   }
 }
+
+#' @export plot.pca.multiple
+plot.pca.multiple <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1:3,
+                              colbar=NULL,cex.axis=0.9,cex.main=0.9,cex.lab=0.9,
+                              mar=c(3,3,4,2),mgp1=c(0.5,0.1,0),mgp2=c(2,0.5,0),
+                              verbose=FALSE,it=NULL,is=NULL,cex=1) {
+  if (verbose) print(paste('plot.pca.multiple'))
+  ## Save the original graphics settings
+  par0 <- par()
+  n <- ip
+  
+  D <- attr(x,'eigenvalues')
+  tot.var <- attr(x,'tot.var')
+  var.eof <- 100* D^2/tot.var
+  
+  if (new) dev.new()
+  
+  for(i in ip) {
+    j <- which(ip==i)
+    if (verbose) {print('Show map'); print(class(x))}
+    zlim <- range(attr(x,"pattern")[,i])
+    digs <- ceiling(max(c(1,1-log10(max(abs(zlim))))))
+    zlim <- round(zlim, digits=digs)
+    if(all(zlim>=0) | all(zlim<=0)) {
+      colbar$breaks <- pretty(zlim, n=10)
+    } else {
+      colbar$breaks <- pretty(c(-1,1)*max(abs(zlim)), n=10)
+    }
+    fig=c(0,1/3,1.02-j/length(ip),1-(j-1)/length(ip))
+    if (inherits(x,'eof')) {
+      par(fig=fig,mar=mar,mgp=c(0,0,0),new=j!=1)#TRUE)
+      map(x,ip=i,verbose=verbose,
+          cex.main=cex.main,cex.axis=cex.axis,
+          cex.lab=cex.lab,cex=cex,new=FALSE,colbar=colbar,...)
+    } else if (inherits(x,'pca')) {
+      main1 <- paste0('EOF ',i)
+      if(which(i==ip)==1) xlab1 <- "lon" else xlab1 <- " "
+      if(which(i==ip)==1) ylab1 <- "lat" else ylab1 <- " "
+      map(x,ip=i,verbose=verbose,mar=mar,mgp=mgp1,
+          cex.main=cex.main,cex.axis=cex.axis,
+          cex.lab=cex.lab,cex=cex,fig=fig,add=j!=1,
+          xlab=xlab1,ylab=ylab1,new=FALSE, colbar=colbar,
+          main=" ",...)
+      #title(main=main1,cex.main=cex.main)
+      mtext(main1, side=3, adj=0.1, line=-1, cex=cex.main)
+      par(xaxt='s',yaxt='s')
+    }
+    
+    ylab <- paste("PC",i)
+    if(which(ip==i)==1) {
+      main <- paste0('PC ',i,' of ',attr(x,'longname')[1],
+                     " - Explained variance = ",round(var.eof[i],digits=2),"%")
+    } else {
+      main <- paste0('PC ',i,
+                     " - Explained variance = ",round(var.eof[i],digits=2),"%")
+    }
+    if(inherits(x,"seasonalcycle")) xaxt <- "n" else  xaxt <- NULL
+    xi <- x[,i]
+    if(inherits(index(xi),"PCICt")) {
+      # KMP 2019-05-25: To handle data with PCICt format time index (special calendar data)
+      # works but the date format on the x-axis sometimes looks weird...
+      caldays <- as.numeric(substr(attr(x,"calendar"),1,3))
+      index(xi) <- as.numeric(format(index(x),"%Y")) +
+        (as.numeric(format(index(x),"%j"))+as.numeric(format(index(x),"%H"))/24)/caldays
+    }
+    par(fig=c(1/3,1,1.02-j/length(ip),1-(j-1)/length(ip)),mar=mar,mgp=mgp2,new=TRUE)
+    plot.zoo(xi,lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
+             cex.main=cex.main,bty="n",cex.axis=cex.axis,
+             cex.lab=cex.lab,xaxt=xaxt)
+    if(inherits(x,"seasonalcycle")) axis(1,at=seq(1,12),labels=month.abb,
+                                         cex.axis=cex.axis,las=2)
+    grid()
+  }
+}
+
 
 #' @exportS3Method
 #' @export plot.ds.pca
 plot.ds.pca <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                            type="p",cex=1,show=FALSE,h=0.6, v=1,pos=0.05),
-                        colbar2=NULL,mar=c(3,2,2,0.5),mgp=c(1,0.5,0),
-                        new=FALSE,verbose=FALSE) {
+                            type="p",cex=1,show=TRUE,h=0.6, v=1,pos=0.05),
+                        colbar2=NULL,mar=c(3,2.5,2,0.5),mgp=c(1.5,0.5,0),
+                        what=NULL, fig=NULL, new=FALSE, add=FALSE, verbose=FALSE) {
   y <- x # quick fix
-
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
-  #par(fig=c(0,0.45,0.5,0.975),new=TRUE)
+  
+  if(is.null(what)) what <- c("predictor.pattern","pca.pattern",
+                              "xval","timeseries")
+  if(is.null(attr(y,'evaluation'))) what <- what[!what %in% c("xval")]
+  
+  i <- 1
+  if(!is.null(fig)) {
+    if(length(what)==1) {
+      figlist <- list(fig1=fig)
+    } else if(inherits(fig, "list") & length(what)==length(list)) {
+      figlist <- fig
+    } else {
+      figlist <- NULL
+    }
+  }
+  if(is.null(fig)) {
+    if(length(what)==4) {
+      figlist <- list(fig1=c(0.05,0.45,0.5,0.975), 
+                      fig2=c(0.55,0.975,0.5,0.975),
+                      fig3=c(0.05,0.45,0.05,0.475),
+                      fig4=c(0.55,0.975,0.05,0.475))
+    } else if(length(what)==3) {
+      figlist <- list(fig1=c(0.05,0.45,0.5,0.975), 
+                      fig2=c(0.5,0.975,0.5,0.975),
+                      fig3=c(0.05,0.975,0.05,0.475))
+    } else if(length(what)==2) {
+      figlist <- list(fig1=c(0.05,0.45,0.05,0.975), 
+                      fig2=c(0.5,0.975,0.05,0.975))
+    } else figlist <- NULL
+  }
+  
   if(new) dev.new()
-  par(fig=c(0,0.5,0.5,0.975), mar=mar, mgp=mgp) #par(fig=c(0,0.45,0.5,0.975))
-
-  if (verbose) print('PCA ip')
-  map.pca(y,ip=ip,new=FALSE,colbar=colbar1,
-          fig=c(0,0.5,0.5,0.975),
-          main=paste("PCA Pattern #",ip," (unitless)",sep=""),
-          verbose=verbose,...)
-
-  #title(paste("PCA Pattern # ",ip,sep=""))
-  par(fig=c(0.55,0.975,0.5,0.975),new=TRUE)
-  if (verbose) print('Predictor pattern')
-  pp <- attr(y,'predictor.pattern')
-  attr(pp,"variable") <- paste("EOF.Pattern.",ip,sep="")
-  attr(pp,"unit") <- "unitless"
-  colbar2$show <- FALSE
-  map(pp,ip=ip,new=FALSE,
-      colbar=colbar2,verbose=verbose,
-      lab=paste("Predictor pattern # ",ip,sep=""))
-  par(cex=1)  ## REB 2019-08-06
-  #title(paste("Predictor pattern #",ip,sep=""), cex=0.8)
-  if (!is.null(attr(y,'evaluation'))) {
+  par(mar=mar, mgp=mgp)
+  
+  if('pca.pattern' %in% what) {
+    if (verbose) print('PCA ip')
+    map.pca(y,ip=ip,new=FALSE,colbar=colbar1,
+            fig=figlist[[i]], add=(add | i>1), #fig=c(0,0.5,0.5,0.975),
+            main=paste("PCA Pattern #",ip," (unitless)",sep=""),
+            verbose=verbose,...)
+    #title(paste("PCA Pattern # ",ip,sep=""))
+    i <- i+1
+  }
+  
+  if('predictor.pattern' %in% what) {
+    if (verbose) print('Predictor pattern')
+    par(new=(add | i>1))
+    if(!is.null(figlist)) par(fig=figlist[[i]])
+    #fig=c(0.55,0.975,0.5,0.975),new=TRUE)
+    i <- i+1
+    pp <- attr(y,'predictor.pattern')
+    attr(pp,"variable") <- paste("EOF.Pattern.",ip,sep="")
+    attr(pp,"unit") <- "unitless"
+    colbar2$show <- FALSE
+    map(pp,ip=ip,new=FALSE,
+        colbar=colbar2,verbose=verbose,
+        lab=paste("Predictor pattern # ",ip,sep=""))
+    par(cex=1)  ## REB 2019-08-06
+    #title(paste("Predictor pattern #",ip,sep=""), cex=0.8)
+  }
+  if('xval' %in% what) {
     if (verbose) print('Evaluation results')
-    par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
+    #browser()
+    par(new=(add | i>1))
+    if(!is.null(figlist)) par(fig=figlist[[i]])
+    i <- i+1
+    #par(fig=c(0.05,0.45,0.05,0.475),new=TRUE)
     ## Get the right pattern
     xvp <- (ip-1)*2 +1
     xok <- is.finite(attr(y,'evaluation')[,xvp]) & is.finite(attr(y,'evaluation')[,xvp+1])
     xcor <- cor(attr(y,'evaluation')[xok,xvp],attr(y,'evaluation')[xok,xvp+1])
 
-    par(mgp=c(2,0.5,0), mar=c(3,3.5,1.5,1.5))
+    xlim <- range(attr(y,'evaluation')[,xvp:(xvp+1)], na.rm=TRUE)
+    xlim <- xlim + c(-1,1)*diff(xlim)*0.1
+      
+    #par(mgp=c(2,0.5,0), mar=c(3,3.5,1.5,1.5), xaxt="s", yaxt="s")
+    par(xaxt="s", yaxt="s")
     plot(attr(y,'evaluation')[,xvp],attr(y,'evaluation')[,xvp+1],
          main=paste('Cross-validation: r=',round(xcor,2)),
-         xlab='original data',ylab='prediction',pch=19,col="grey")
+         xlab='original data',ylab='prediction',pch=19,col="grey",
+         xlim=xlim, ylim=xlim)
     lines(range(c(attr(y,'evaluation')),na.rm=TRUE),
           range(c(attr(y,'evaluation')),na.rm=TRUE),lty=2)
     cal <- data.frame(y=coredata(attr(y,'evaluation')[,1]),
@@ -1582,39 +1711,44 @@ plot.ds.pca <- function(x,...,ip=1,
     xvalfit <- lm(y ~ x, data = cal)
     abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
     #legend("bottomleft", )
-    par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
-    xlim <- range(index(attr(y,'original_data')),index(y))
-    ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE) +
-      diff(range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE))*c(-0.1,0.2)
-    y0 <- attr(y,'original_data')
-    plot(y0[,ip], lwd=2, type='b', pch=19, xlim=xlim, ylim=ylim,
-         xlab="Date",ylab=paste("PC #",ip,sep=""))
-    grid()
-    if ( (class(index(y))=='Date') & (class(index(y0))=='numeric') & inherits(y,'annual') )
-      index(y) <- year(index(y))
-    if ( (class(index(y))=='numeric') & (class(index(y0))=='Date') & inherits(y,'annual') )
-      index(y) <- as.Date(paste(index(y),'01-01',sep='-'))
-
-    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
-    cal0 <- data.frame(y=coredata(y0[,ip]),t=year(y0))
-    #cal1 <- data.frame(y=coredata(x),t=year(x))
-    cal1 <- data.frame(y=coredata(y[,ip]),t=year(y[,ip]))
+  }
+  if('timeseries' %in% what) {
+    par(new=(add | i>1), xaxt="s", yaxt="s")
+    if(!is.null(figlist)) par(fig=figlist[[i]])
+    #par(fig=c(0.55,0.975,0.05,0.475),new=TRUE)
+    if(is.null(attr(y, 'evaluation'))) {
+      plot(attr(y,'original_data')[,ip],lwd=2,type='b',pch=19)
+      lines(zoo(y[,ip]),lwd=2,col='red',type='b')
+      xvalfit <- NULL
+    } else {
+      xlim <- range(index(attr(y,'original_data')),index(y))
+      ylim <- range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE) +
+        diff(range(attr(y,'original_data')[,ip],y[,ip],na.rm=TRUE))*c(-0.1,0.2)
+      y0 <- attr(y,'original_data')
+      plot(y0[,ip], lwd=2, type='b', pch=19, xlim=xlim, ylim=ylim,
+           xlab="Date",ylab=paste("PC #",ip,sep=""))
+      grid()
+      if ( (class(index(y))=='Date') & (class(index(y0))=='numeric') & inherits(y,'annual') )
+        index(y) <- year(index(y))
+      if ( (class(index(y))=='numeric') & (class(index(y0))=='Date') & inherits(y,'annual') )
+        index(y) <- as.Date(paste(index(y),'01-01',sep='-'))
+  
+      lines(zoo(y[,ip]),lwd=2,col='red',type='b')
+      cal0 <- data.frame(y=coredata(y0[,ip]),t=year(y0))
+      #cal1 <- data.frame(y=coredata(x),t=year(x))
+      cal1 <- data.frame(y=coredata(y[,ip]),t=year(y[,ip]))
     
-    trend0 <- lm(y ~ t, data=cal0)
-    trend1 <- lm(y ~ t, data=cal1)
-    lines(zoo(predict(trend0),order.by=index(y0)),lty=2)
-    lines(zoo(predict(trend1),order.by=index(x)),lty=2,col='red')
+      trend0 <- lm(y ~ t, data=cal0)
+      trend1 <- lm(y ~ t, data=cal1)
+      lines(zoo(predict(trend0),order.by=index(y0)),lty=2)
+      lines(zoo(predict(trend1),order.by=index(x)),lty=2,col='red')
     
-    legend(x=index(attr(y,'original_data')[,ip])[1],
-           y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
-               0.2*diff(range(attr(y,'original_data')[,ip])),
-           legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
-           lwd=c(2,2),pch=c(21,19),bty="n")
-  } else {
-    par(fig=c(0.05,0.975,0.05,0.475),new=TRUE)
-    plot(attr(y,'original_data')[,ip],lwd=2,type='b',pch=19)
-    lines(zoo(y[,ip]),lwd=2,col='red',type='b')
-    xvalfit <- NULL
+      legend(x=index(attr(y,'original_data')[,ip])[1],
+             y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
+                   0.2*diff(range(attr(y,'original_data')[,ip])),
+             legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
+             lwd=c(2,2),pch=c(21,19),bty="n")
+    }
   }
 }
 

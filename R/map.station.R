@@ -43,7 +43,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          text=FALSE, fancy=FALSE, 
                          na.rm=TRUE,show.val=FALSE,#usegooglemap=FALSE,
                          ##colorbar=TRUE,
-                         add.significance=FALSE, pmax=0.01,
+                         add.significance=FALSE, pval=0.01, col.pval=NULL, lwd.pval=NULL,
                          xlab="lon",ylab="lat",
                          legend.shrink=1,fig=c(0,1,0.05,0.95),
                          mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...) { 
@@ -110,7 +110,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     ## KMP 2017-07-28: fig creates problems when you want to add map.station as a subplot.
     ## With this solution you have to use add=TRUE and set fig to your subplot or to NULL.
-    if(is.null(fig)) fig <- par(fig)
+    if(is.null(fig)) fig <- par()$fig
     if (plot) {
       if(add) {
         par(fig=fig,mar=mar,mgp=mgp,new=TRUE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
@@ -193,7 +193,8 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                    lab.breaks=colbar$breaks,horizontal = TRUE,
                    legend.only = T, zlim = range(colbar$breaks),
                    col = colbar$col, legend.width = 1,
-                   axis.args = list(cex.axis = 0.8), border = FALSE)
+                   axis.args = list(cex.axis = cex.axis), 
+                   border = FALSE)
         #image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),
         #      col=colbar$col,axes=FALSE)
         #par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=cex.axis,col.axis='grey')
@@ -204,13 +205,15 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       
       if(!is.null(FUN)) if(add.significance & FUN %in% c("trend","trend.coef")) {
         pval <- apply(x, 2, trend.pval)
-        if(is.null(col.pmax)) col.pmax <- colscal("gray.colors", n=length(pmax))
-        if(is.null(lwd.pmax)) lwd.pmax <- rep(1,length(pmax))
+        if(is.null(lwd.pval)) lwd.pval <- rep(0.75, length(pval))
+        if(is.null(col.pval)) col.pval <- colscal("gray.colors", n=length(pval))
+        if(length(lwd.pval)<length(pval)) lwd.pval <- rep(lwd.pval[1], length(pval))
+        if(length(col.pval)<length(pval)) col.pval <- colscal("gray.colors", n=length(pval))
         pmin <- 0
         i <- 1
-        for(p in sort(pmax)) {
+        for(p in sort(pval)) {
           points(lon(x)[pval>=pmin & pval<p], lat(x)[pval>=pmin & pval<p], 
-                 col=col.pmax[i], lwd=lwd.pmax[i], pch=21, cex=cex)
+                 col=col.pval[i], lwd=lwd.pval[i], pch=21, cex=cex)
           pmin <- p
           i <- i+1
         }
@@ -226,7 +229,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           }
         } else main <- esd::varid(x)[1]
       }
-      title(main=main,sub=sub,line=-2,adj=0,cex.main=cex.main,cex.sub=cex.sub,
+      title(main=main,sub=sub,line=-1,adj=0,cex.main=cex.main,cex.sub=cex.sub,
             col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
     }
     if (verbose) print('Organise output')
