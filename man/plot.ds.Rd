@@ -10,7 +10,7 @@
   x,
   ...,
   plot.type = "multiple",
-  what = c("map", "ts", "xval"),
+  what = NULL,
   new = TRUE,
   lwd = 1,
   type = "l",

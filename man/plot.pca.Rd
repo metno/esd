@@ -4,12 +4,14 @@
 \alias{plot.pca}
 \title{Plot esd objects}
 \usage{
-\method{plot}{pca}(x, ..., cex = 1, verbose = FALSE, new = TRUE)
+\method{plot}{pca}(x, ..., ip = 1, cex = 1, verbose = FALSE, new = TRUE)
 }
 \arguments{
 \item{x}{the object to be plotted}
 
 \item{\dots}{additional arguments}
+
+\item{ip}{Which EOF/CCA pattern (mode) to plot}
 
 \item{cex}{magnification factor, see \code{\link[graphics]{par}}}
 
@@ -44,8 +46,6 @@
 \item{is}{For subsetting in space - See \code{\link{subset}}. Can also be
 a station value and if provided, the plotting will involve an interpolation
 to the same coordinates as defined by \code{is}.}
-
-\item{ip}{Which EOF/CCA pattern (mode) to plot}
 
 \item{cex.axis}{see \code{\link[graphics]{par}}}
 
