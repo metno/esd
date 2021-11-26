@@ -484,7 +484,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
       #                lwd=1,col=rgb(1,0.5,0.5,0.25))
       #       }
     }
-
+    
     #if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
     #                       text.col=col,cex=0.75)
     #title(main=loc(x),cex=1)
@@ -494,9 +494,9 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
           bty="n",xpd=TRUE)
       plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
       legend(0.01,1,legend=paste(attr(x,'location'),": ",
-                                   round(attr(x,'longitude'),2),"E/",
-                                   round(attr(x,'latitude'),2),"N (",
-                                   attr(x,'altitude')," masl)",sep=""),
+                                 round(attr(x,'longitude'),2),"E/",
+                                 round(attr(x,'latitude'),2),"N (",
+                                 attr(x,'altitude')," masl)",sep=""),
              bty="n",cex=0.65,ncol=2,
              text.col="grey40",lty=1,col=col)
       
@@ -624,18 +624,18 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 plot.eof <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                      ip=1,what=c("pc","eof","var"),
                      colbar=list(pal=NULL,rev=FALSE,n=10,alpha=0.8,
-                         breaks=NULL,type="p",cex=2,show=TRUE,
-                         h=0.6,v=1,pos=0.05),
+                                 breaks=NULL,type="p",cex=2,show=TRUE,
+                                 h=0.6,v=1,pos=0.05),
                      verbose=FALSE,is=NULL,it=NULL) {
   if (verbose) print(paste('plot.eof',paste(what,collapse=',')))
   if (inherits(x,"comb"))
     plot.eof.comb(x,new=new,xlim=xlim,ylim=ylim,
                   ip=ip,what=what,colbar=colbar,verbose=verbose,...) else
-  if (inherits(x,c("field","station")))
-    plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
-                   ip=ip,what=what,colbar=colbar,verbose=verbose,
-                   it=it,is=is,...) else
-    print("x does not have 'comb' or 'field' aspects...")
+                    if (inherits(x,c("field","station")))
+                      plot.eof.field(x,new=new,xlim=xlim,ylim=ylim,
+                                     ip=ip,what=what,colbar=colbar,verbose=verbose,
+                                     it=it,is=is,...) else
+                                       print("x does not have 'comb' or 'field' aspects...")
 }
 
 #' @exportS3Method
@@ -698,7 +698,7 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
       #par(fig=c(0.5,1,0.5,1),mar=c(3,3,2,2))
       fig <-c(0,0.5,0.5,1)
       main1 <- paste0('Leading EOF#',ip, ' (',
-                     round(var.eof[ip],digits=2),"%)")
+                      round(var.eof[ip],digits=2),"%)")
       map(x,ip=ip,verbose=verbose,
           cex.main=cex.main,cex.axis=cex.axis,
           cex.lab=cex.lab,cex=cex, fig=fig,
@@ -727,7 +727,7 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
     ##par(bty="n", ##,xaxt="s",yaxt="s",xpd=FALSE,
     par(fig=c(0.05,1,0.025,0.475),mar=c(3,3,2,2),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
     main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
-                  " - Explained variance = ",round(var.eof[ip],digits=2),"%")
+                   " - Explained variance = ",round(var.eof[ip],digits=2),"%")
     if(inherits(x,"seasonalcycle")) xaxt <- "n" else  xaxt <- NULL
     xn <- x[,n]
     if(inherits(index(xn),"PCICt")) {
@@ -769,20 +769,20 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
-
+  
   if (length(what)==3) mfrow <- c(2,2) else
-  if (length(what)==2) mfrow <- c(2,1) else
-                       mfrow <- NULL
+    if (length(what)==2) mfrow <- c(2,1) else
+      mfrow <- NULL
   
   if (new) dev.new()
   #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   if (!is.null(mfrow)) par(mfrow=mfrow)
-
+  
   if (length(grep('eof',what))>0) {
     if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
     map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
-
+  
   n.app <- attr(x,'n.apps')
   col <- rep(col,n.app)
   src <- rep("",n.app+1)
@@ -792,12 +792,12 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                 round(var.eof[n],1),"% of variance")
   
   if (length(grep('var',what))>0)  {
-#    par(xaxt="s",yaxt="s")
-#    plot.eof.var(x,new=FALSE,cex.main=0.7)
+    #    par(xaxt="s",yaxt="s")
+    #    plot.eof.var(x,new=FALSE,cex.main=0.7)
     if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
     plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
   }
-
+  
   if (is.null(ylim)) {
     ylim <- range(coredata(x[,n]))
     for (i in 1:n.app) {
@@ -805,7 +805,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
       ylim <- range(c(ylim,coredata(z[,n])),na.rm=TRUE)
     }  
   }
-
+  
   if (is.null(xlim)) {
     xlim <- range(index(x))
     for (i in 1:n.app) {
@@ -814,46 +814,46 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     }
   }
   if(is.character(xlim)) xlim <- as.Date(xlim)
-
+  
   if (length(grep('pc',what))>0) {
     if (verbose) {print('time series');print(index(x)); print(index(attr(x,'appendix.1')))}
     if ( (sd(coredata(x)[,n])/sd(coredata(attr(x,'appendix.1'))[,n]) > 100) |
          (sd(coredata(attr(x,'appendix.1'))[,n])/sd(coredata(x)[,n]) > 100) )
-       warning('plot.comb.eof: PCs have very different scales')
-#    par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
-#      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
-#    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
-#                                          xlim=xlim,ylim=ylim)
+      warning('plot.comb.eof: PCs have very different scales')
+    #    par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,
+    #      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
+    #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
+    #                                          xlim=xlim,ylim=ylim)
     if (!is.null(mfrow)) par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
-      main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
-                 " - Explained variance = ",round(var.eof[ip],digits=2),"%")
-      
-      plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
-               cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
-      taxis <- pretty(index(x[,n]),n=10)              # REB 2016-03-03
-      if (min(diff(taxis))> 360) taxisl <- year(taxis)  else
-                                 taxisl <- taxis      # REB 2016-03-03
-      if (verbose) print(taxisl)
-      axis(1,at=taxis,labels=taxisl,cex.axis=0.9)      # REB 2016-03-03
-      grid()
-
-      ## Plot the common PCs
-      for (i in 1:n.app) {
-        z <- attr(x,paste('appendix.',i,sep=""))
-        lines(z[,n],col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
-        if (verbose) print(attr(z,'source'))
-        if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
-                                        src[i+1] <- paste('x',i,sep='.')
-      }
-
-      lines(x[,n],lwd=2,col="black")
+    main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
+                   " - Explained variance = ",round(var.eof[ip],digits=2),"%")
+    
+    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
+             cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
+    taxis <- pretty(index(x[,n]),n=10)              # REB 2016-03-03
+    if (min(diff(taxis))> 360) taxisl <- year(taxis)  else
+      taxisl <- taxis      # REB 2016-03-03
+    if (verbose) print(taxisl)
+    axis(1,at=taxis,labels=taxisl,cex.axis=0.9)      # REB 2016-03-03
+    grid()
+    
+    ## Plot the common PCs
+    for (i in 1:n.app) {
+      z <- attr(x,paste('appendix.',i,sep=""))
+      lines(z[,n],col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
+      if (verbose) print(attr(z,'source'))
+      if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
+        src[i+1] <- paste('x',i,sep='.')
     }
-#    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
-#        mar=rep(0,4),new=TRUE)
-#    plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-#    legend(0,1,src,col=c("black",col),lwd=2,ncol=4,bty="n",cex=0.7)
-#    par(xaxt="n",yaxt="n",bty="n",fig=par0$fig,mar=par0$mar,new=TRUE)
-#    plot.zoo(x[,n],type="n",xlab="",ylab="")
+    
+    lines(x[,n],lwd=2,col="black")
+  }
+  #    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
+  #        mar=rep(0,4),new=TRUE)
+  #    plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+  #    legend(0,1,src,col=c("black",col),lwd=2,ncol=4,bty="n",cex=0.7)
+  #    par(xaxt="n",yaxt="n",bty="n",fig=par0$fig,mar=par0$mar,new=TRUE)
+  #    plot.zoo(x[,n],type="n",xlab="",ylab="")
   
   par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
@@ -973,19 +973,23 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
                     lwd=1,type='l',pch=0,main=NULL,col=NULL,
                     colbar=list(pal=NULL,rev=FALSE,n=10,
-                        breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),
+                                breaks=NULL,type="p",cex=2,show=TRUE,
+                                h=0.6, v=1,pos=0.05),
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
   if (verbose) print(paste('plot.ds'))
-
+  
   if (inherits(x,'pca')) {
     plot.ds.pca(x,what=what,verbose=verbose,new=new,...)
     return()
-  }
-  if (inherits(x,'eof')) {
-    plot.ds.eof(x,verbose=verbose,...)
-    return()
-  }
+  } else
+    if (inherits(x,'eof')) {
+      plot.ds.eof(x,verbose=verbose,...)
+      return()
+    } else
+      if (inherits(x,'station')) {
+        plot.ds.station.pca(x,verbose=verbose,...)
+        return()
+      } 
   
   if(is.null(what)) what <- c("map","ts",'xval')
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
@@ -993,11 +997,11 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
   for (i in 1:length(unit)) {
     if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))
-         unit[i] <- 'degree*C'
+      unit[i] <- 'degree*C'
   }
   
   if (is.null(ylab))
-   ylab <- ylab(x)
+    ylab <- esd::ylab(x)
   
   if (verbose)  print(ylab)
   if (is.null(main)) main <- attr(x,'longname')[1]               
@@ -1007,7 +1011,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   model <- attr(x,'model')
   
   if (length(what)==2) mfrow <- c(2,1) else
-  if (length(what)==1) mfrow <- c(1,1)
+    if (length(what)==1) mfrow <- c(1,1)
   
   if (new) dev.new()
   if (plot.type=="single") new <- TRUE
@@ -1035,16 +1039,16 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
     #    xaxt='n',yaxt='n',cex.sub=0.7)
     #plot(c(0,1),c(0,1),type='n',xlab='',ylab='')
     ok <- is.finite(attr(x,'evaluation')[,1]) &
-          is.finite(attr(x,'evaluation')[,2])
+      is.finite(attr(x,'evaluation')[,2])
     text(par()$usr[1] + diff(range(par()$usr[1:2]))/24,
          par()$usr[4] - diff(range(par()$usr[3:4]))/12,
-          paste('correlation=',
-          round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
+         paste('correlation=',
+               round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
          pos=4,cex=0.8,col='grey')
   }  else {
     xvalfit <- NULL
   }
-
+  
   Y0 <- as.original.data(x)
   #print(index(Y0)); print(index(x))
   yX <- merge.zoo(Y0,x,all=FALSE)
@@ -1053,7 +1057,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   ## KMP 2021-02-26: Plot attribute 'fitted value' instead of coredata
   
   if (!is.null(attr(x,'n.apps'))) ns <- attr(x,'n.apps') else
-                                  ns <- 0
+    ns <- 0
   y.rng <- NA; x.rng <- NA
   if (ns > 0) {
     #print("Add other DS results")
@@ -1098,22 +1102,22 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   trend1 <- lm(y ~ t, data=cal1)
   lines(zoo(predict(trend0),order.by=index(y0)),lty=2)
   lines(zoo(predict(trend1),order.by=index(x)),lty=2,col='red')
-
+  
   st0 <- summary(trend0); st1 <- summary(trend1)
   obstrend <- paste('obs. trend: ', round(st0$coefficients[2],2),' (',
                     round(st0$coefficients[2]-2*st0$coefficients[4],2),',',
                     round(st0$coefficients[2]+2*st0$coefficients[4],2),')',
                     attr(x,'unit'),'/decade',sep='')
   dstrend <- paste('obs. trend: ', round(st1$coefficients[2],2),' (',
-                    round(st1$coefficients[2]-2*st1$coefficients[4],2),',',
-                    round(st1$coefficients[2]+2*st1$coefficients[4],2),')',
-                    attr(x,'unit'),'/decade',sep='')
+                   round(st1$coefficients[2]-2*st1$coefficients[4],2),',',
+                   round(st1$coefficients[2]+2*st1$coefficients[4],2),')',
+                   attr(x,'unit'),'/decade',sep='')
   
   if (is.null(attr(x,'source'))) attr(x,'source') <- 'ESD'
   if (is.na(attr(x,'source'))) attr(x,'source') <- 'ESD'
   legtext <- c("Observations",attr(x,'source')) 
   legcol <- c("black","red")
-
+  
   if (ns > 0) {
     #print("Add other DS results")
     for (i in 1:ns) {
@@ -1122,19 +1126,19 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
       legcol <- c(legcol,cols[i])
       legtext <- c(legtext,attr(y,'source'))
       eval(parse(text=paste("ds$result.",i,
-                   " <- attr(x,'appendix.",i,"')",sep="")))
+                            " <- attr(x,'appendix.",i,"')",sep="")))
     }
     
   } else  legcol <- c("black","red")
-
+  
   ## Replot observations and prediction for calibration period
-
+  
   lines(y0,lwd=1,type='b',pch=19)
   #lines(x,col="red",type="l",lwd=lwd)
   lines(attr(x,"fitted_values"),col="red",type="l",lwd=lwd)
   #print(legcol)
   if (!is.null(attr(x,'appendix.1'))) legend <- c("Obs.","Cal.","Proj") else
-                                      legend <- c("Obs.","Cal.")
+    legend <- c("Obs.","Cal.")
   legend(x="topleft",legend=legend,bty="n",horiz=TRUE,
          col=c("black","red","blue"),lwd=c(1,1,1),pch=c(19,1,1))
   
@@ -1142,11 +1146,11 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
     par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
     legend(0.01,0.95,c(paste(attr(x,'location'),": ",
-                           #attr(x,'aspect'),
-                           #attr(x,'longname')," - ",
-                           round(attr(x,'longitude'),2),"E/",
-                           round(attr(x,'latitude'),2),"N (",
-                           attr(x,'altitude')," masl)",sep=""),
+                             #attr(x,'aspect'),
+                             #attr(x,'longname')," - ",
+                             round(attr(x,'longitude'),2),"E/",
+                             round(attr(x,'latitude'),2),"N (",
+                             attr(x,'altitude')," masl)",sep=""),
                        obstrend,dstrend),ncol=3,
            bty="n",cex=0.6,text.col="grey40",
            lwd=c(1,rep(2,ns),1,1),lty=c(1,rep(1,ns),2,2),
@@ -1170,10 +1174,10 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
   var.eof <- 100* D^2/tot.var
   nt <- length(index(x)) 
   n.eff <- round(nt * (1.0-attr(x,'max.autocor'))/
-                      (1.0+attr(x,'max.autocor')))  
+                   (1.0+attr(x,'max.autocor')))  
   dD <- D*sqrt(2.0/n.eff)
   main <- paste(n,"leading EOFs: ", ## attr(x,'longname')
-                 round(sum(var.eof[1:n]),digits=1),"% of variance")
+                round(sum(var.eof[1:n]),digits=1),"% of variance")
   ##main <- paste(attr(x,'longname'),n,"leading EOFs: ",
   ##               round(sum(var.eof[1:n]),1),"% of variance")
   if (is.null(xlim)) xlim <- c(0,n) ##c(0.7,n+0.3)
@@ -1188,7 +1192,7 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
   lines(var.eof,type="b",pch=19)
   for (i in 1:length(var.eof)) {
     lines(rep(i,2),100*c((D[i]+dD[i])^2/tot.var,(D[i]-dD[i])^2/tot.var),
-           lty=1,col="darkgrey")
+          lty=1,col="darkgrey")
     lines(c(i-0.25,i+0.25),100*rep((D[i]+dD[i])^2/tot.var,2),
           lwd=1,col="darkgrey")
     lines(c(i-0.25,i+0.25),100*rep((D[i]-dD[i])^2/tot.var,2),
@@ -1310,14 +1314,14 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
 plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',verbose=FALSE) {
   if (verbose) print("plot.field")
   stopifnot(!missing(x),inherits(x,'field'))
-
+  
   d <- dim(x)
   if (d[2]==1) {
     if (verbose) print('one grid point')
     plot.station(x,verbose=verbose,...)
     return()
   }
-
+  
   # To distinguish between types of plots - movmuller or are mean
   twocoord <- (length(is)==2)
   if (twocoord) {
@@ -1329,34 +1333,34 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
   if (inherits(is,'station')) {
     # If a station object is provided - extract a time series for a
     # the corresponding location
-      lon <- attr(is,'longitude')
-      lat <- attr(is,'latitude')
+    lon <- attr(is,'longitude')
+    lat <- attr(is,'latitude')
   } else if ((inherits(x,'list')) & twocoord & (l1==1) & (l2==1) ) {
     # Is spatial coordinates  
+    lon <- is[[1]]
+    lat <- is[[2]]
+    z <- NULL
+  } else if (!is.null(is)) {
+    nms <- names(is)
+    lon <- attr(x,'longitude')
+    lat <- attr(x,'latitude')
+    #print(nms)
+    if (length(nms)==2) {
       lon <- is[[1]]
       lat <- is[[2]]
-      z <- NULL
-  } else if (!is.null(is)) {
-      nms <- names(is)
-      lon <- attr(x,'longitude')
-      lat <- attr(x,'latitude')
-                                        #print(nms)
-      if (length(nms)==2) {
-          lon <- is[[1]]
-          lat <- is[[2]]
-          y <- subset(x,is=is,it=it)
-          z <- aggregate.area(y,FUN=FUN)
-      } else if ( (length(nms)==1) & (tolower(nms)=="lon") ) {
+      y <- subset(x,is=is,it=it)
+      z <- aggregate.area(y,FUN=FUN)
+    } else if ( (length(nms)==1) & (tolower(nms)=="lon") ) {
       # Hovmuller diagram along latitude
       #print(is[[1]]); print(lon); print(d)
-          if (length(is[[1]])== 1) {
-              picklon <- lon[max( (1:length(lon))[lon <= is[[1]]] )]
+      if (length(is[[1]])== 1) {
+        picklon <- lon[max( (1:length(lon))[lon <= is[[1]]] )]
         #print(picklon)
-              xy <- rep(lon,length(lat))
-              yx <- sort(rep(lat,length(lon)))
-              ix <- is.element(xy,picklon)
-              z <- x[,ix]
-              z <- attrcp(x,z)
+        xy <- rep(lon,length(lat))
+        yx <- sort(rep(lat,length(lon)))
+        ix <- is.element(xy,picklon)
+        z <- x[,ix]
+        z <- attrcp(x,z)
         #image(z)
         attr(z,'longitude') <- picklon
         attr(z,'latitude') <- attr(x,'latitude')
@@ -1387,7 +1391,7 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
         attr(z,'dimensions') <- c(attr(x,'dimensions')[1],1,attr(x,'dimensions')[3])
         class(z) <- c('xsection',class(x)[-1])
       } else if (length(is[[1]])== 2) {
-          y <- subset(x,is=list(lon=range(lon),lat=is[[1]]))
+        y <- subset(x,is=list(lon=range(lon),lat=is[[1]]))
         xy <- rep(attr(x,'longitude'),d[2])
         yx <- sort(rep(attr(x,'latitude'),d[1]))
         X <- as.data.frame(coredata(x)); colnames(xy)
@@ -1398,7 +1402,7 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
     }
     
   } else {lon <- NULL; lat <- NULL}
-
+  
   if ( is.null(lon) & is.null(lat) ) {
     #print("aggregate")
     z <- aggregate.area(x,is=is,FUN=FUN)
@@ -1616,7 +1620,7 @@ plot.pca.multiple <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1:3,
 #' @export plot.ds.pca
 plot.ds.pca <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                            type="p",cex=1,show=TRUE,h=0.6, v=1,pos=0.05),
+                                     type="p",cex=1,show=TRUE,h=0.6, v=1,pos=0.05),
                         colbar2=NULL,mar=c(3,2.5,2,0.5),mgp=c(1.5,0.5,0),
                         what=NULL, fig=NULL, new=FALSE, add=FALSE, verbose=FALSE) {
   y <- x # quick fix
@@ -1694,10 +1698,10 @@ plot.ds.pca <- function(x,...,ip=1,
     xvp <- (ip-1)*2 +1
     xok <- is.finite(attr(y,'evaluation')[,xvp]) & is.finite(attr(y,'evaluation')[,xvp+1])
     xcor <- cor(attr(y,'evaluation')[xok,xvp],attr(y,'evaluation')[xok,xvp+1])
-
+    
     xlim <- range(attr(y,'evaluation')[,xvp:(xvp+1)], na.rm=TRUE)
     xlim <- xlim + c(-1,1)*diff(xlim)*0.1
-      
+    
     #par(mgp=c(2,0.5,0), mar=c(3,3.5,1.5,1.5), xaxt="s", yaxt="s")
     par(xaxt="s", yaxt="s")
     plot(attr(y,'evaluation')[,xvp],attr(y,'evaluation')[,xvp+1],
@@ -1732,20 +1736,20 @@ plot.ds.pca <- function(x,...,ip=1,
         index(y) <- year(index(y))
       if ( (class(index(y))=='numeric') & (class(index(y0))=='Date') & inherits(y,'annual') )
         index(y) <- as.Date(paste(index(y),'01-01',sep='-'))
-  
+      
       lines(zoo(y[,ip]),lwd=2,col='red',type='b')
       cal0 <- data.frame(y=coredata(y0[,ip]),t=year(y0))
       #cal1 <- data.frame(y=coredata(x),t=year(x))
       cal1 <- data.frame(y=coredata(y[,ip]),t=year(y[,ip]))
-    
+      
       trend0 <- lm(y ~ t, data=cal0)
       trend1 <- lm(y ~ t, data=cal1)
       lines(zoo(predict(trend0),order.by=index(y0)),lty=2)
       lines(zoo(predict(trend1),order.by=index(x)),lty=2,col='red')
-    
+      
       legend(x=index(attr(y,'original_data')[,ip])[1],
              y=max(attr(y,'original_data')[,ip],na.rm=TRUE)+
-                   0.2*diff(range(attr(y,'original_data')[,ip])),
+               0.2*diff(range(attr(y,'original_data')[,ip])),
              legend=c("estimated","original"),col=c("red","black"),lty=c(1,1),
              lwd=c(2,2),pch=c(21,19),bty="n")
     }
@@ -1756,7 +1760,7 @@ plot.ds.pca <- function(x,...,ip=1,
 #' @export plot.ds.eof
 plot.ds.eof <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,type1="fill",type2=c("fill","contour"),
+                                     h=0.6, v=1,pos=0.05),colbar2=NULL,type1="fill",type2=c("fill","contour"),
                         verbose=FALSE) {
   y <- x # quick fix
   if (verbose) print('plot.ds.eof')
@@ -1946,25 +1950,25 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #' @export plot.cca
 plot.cca <- function(x,...,icca=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                        h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE) {
+                                  h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE) {
   if (verbose) print("plot.cca")
   if (new) dev.new()
   par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
   if (is.null(colbar2)) colbar2 <- colbar1
   map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,verbose=verbose,...)
-
+  
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
-             sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
+               sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
   v.m <- zoo((x$v.m[,icca]-mean(x$v.m[,icca],na.rm=TRUE))/
-             sd(x$v.m[,icca],na.rm=TRUE),order.by=x$index)
+               sd(x$v.m[,icca],na.rm=TRUE),order.by=x$index)
   r <- cor(x$w.m[,icca],x$v.m[,icca])
   par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,mar=c(2,1.5,1.5,0.5),
       fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.8,cex.lab=0.8)
   plot(w.m,col="blue",lwd=2,
        main=paste("CCA pattern ",icca," for ",varid(x),
-         "; r= ",round(r,2),sep=""),xlab="",ylab="")
+                  "; r= ",round(r,2),sep=""),xlab="",ylab="")
   lines(v.m,col="red",lwd=2)
-
+  
   par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n",
       mar=c(0,0,0,0))
   plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
@@ -2012,7 +2016,7 @@ plot.xval <- function(x,...,ip=1,new=TRUE,verbose=FALSE) {
   cols <- rgb(seq(0,1,length=20),rep(0,20),rep(0,20))
   cexs <- seq(1.5,0.5,length=20)^2
   eofindex <- as.integer(gsub('X.','',
-                         names(attr(x,'original_model')$coefficients[-1])))
+                              names(attr(x,'original_model')$coefficients[-1])))
   print(eofindex)
   if (unit=='deg C') unit <- expression(degree*C)
   
@@ -2021,7 +2025,7 @@ plot.xval <- function(x,...,ip=1,new=TRUE,verbose=FALSE) {
        main=paste("Cross-validation:",attr(x,'location'),attr(x,'variable')),
        xlab="",ylab= unit,
        sub=paste("r=",attr(x,'correlation'),"rmse=", attr(x,'rmse'),
-         unit))
+                 unit))
   lines(x[,2],lwd=2,col="red")
   lines(attr(x,'fitted_values_all'),col="red",lty=3,pch="x")
   
@@ -2055,8 +2059,8 @@ plot.xval <- function(x,...,ip=1,new=TRUE,verbose=FALSE) {
 #' @exportS3Method 
 #' @export plot.dsensemble.pca
 plot.dsensemble.pca <- function(x,...,pts=FALSE,target.show=TRUE,map.show=TRUE,
-				it=0,ip=1,envcol=rgb(1,0,0,0.2),
-				legend.show=TRUE,verbose=FALSE) {
+                                it=0,ip=1,envcol=rgb(1,0,0,0.2),
+                                legend.show=TRUE,verbose=FALSE) {
   if (verbose) print("plot.dsensemble.pca")
   stopifnot(inherits(x,'dsensemble') & inherits(x,'pca'))
   d <- index(x[[3]])
@@ -2071,7 +2075,7 @@ plot.dsensemble.pca <- function(x,...,pts=FALSE,target.show=TRUE,map.show=TRUE,
   pc <- lapply(pc,fn)
   for (i in 1:length(pc)) {
     attr(pc[[i]],"station") <- as.station(x[[2]][,i],param=attr(x,"variable"),
-                              longname=attr(x,"longname"),unit=attr(x,"unit"))
+                                          longname=attr(x,"longname"),unit=attr(x,"unit"))
   }
   plot(pc[[ip]],ylab=paste("PC",ip,sep=""))
 }
@@ -2339,29 +2343,29 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
 
 #' @export plot.xsection
 plot.xsection <- function(x,...) {
-    #print("plot.xsection")
-    d <- attr(x,'dimensions')
-    #print(d)
-    X <- coredata(x)
+  #print("plot.xsection")
+  d <- attr(x,'dimensions')
+  #print(d)
+  X <- coredata(x)
+  
+  if (d[1]==1) {
+    attr(X,'longitude') <- index(x)
+    attr(X,'latitude') <- attr(x,'latitude')
+    attr(X,'dimensions') <- attr(x,'dimensions')[c(3,2)]
     
-    if (d[1]==1) {
-        attr(X,'longitude') <- index(x)
-        attr(X,'latitude') <- attr(x,'latitude')
-        attr(X,'dimensions') <- attr(x,'dimensions')[c(3,2)]
-        
-    } else {
-        attr(X,'longitude') <- attr(x,'longitude')
-        attr(X,'latitude') <- index(x)
-        attr(X,'dimensions') <- attr(x,'dimensions')[c(1,3)]
-        X <- t(X)
-    }
-    attr(X,'variable') <- attr(x,'variable')
-    
-    attr(X,'unit') <- attr(x,'unit')
-    attr(X,'source') <- attr(x,'source')
-
-                                        # print(dim(X)); print(c(length(lon(X)),length(lat(X))))
-    lonlatprojection(x=X,what="fill",geography=FALSE,...)
+  } else {
+    attr(X,'longitude') <- attr(x,'longitude')
+    attr(X,'latitude') <- index(x)
+    attr(X,'dimensions') <- attr(x,'dimensions')[c(1,3)]
+    X <- t(X)
+  }
+  attr(X,'variable') <- attr(x,'variable')
+  
+  attr(X,'unit') <- attr(x,'unit')
+  attr(X,'source') <- attr(x,'source')
+  
+  # print(dim(X)); print(c(length(lon(X)),length(lat(X))))
+  lonlatprojection(x=X,what="fill",geography=FALSE,...)
 }
 
 
@@ -2394,7 +2398,7 @@ plot.spell <- function(x,...,xlim=NULL,ylim=NULL) {
   l <- l[il]; tl1 <- t[il]
   th2 <- th1 + h; tl2 <- tl1 + l
   par(bty="n")
-
+  
   col <- c('red','blue')
   runs <- c('hot','cold')
   spelltype <- 'hot and cold'
@@ -2403,24 +2407,24 @@ plot.spell <- function(x,...,xlim=NULL,ylim=NULL) {
     runs <- c('wet','dry')
     spelltype <- 'wet and dry' 
   }
-
+  
   tunit <- attr(x,'threshold.unit')[1]
   for (i in 1:length(tunit)) {
     if ( (is.na(tunit[i]) | is.null(tunit[i])) ) tunit[i] <- " "
     if ((tunit[i]=='degree Celsius') | (tunit[i]=='deg C') | (tunit[i]=='degC'))
-         tunit[i] <- 'degree*C'
+      tunit[i] <- 'degree*C'
   }
-
-
+  
+  
   plot(range(t),c(-1,1)*max(c(h,l),na.rm=TRUE),type="n",
        xlab="",ylab="Spell length",xlim=xlim,ylim=ylim,
        main=paste(attr(x,'location')[1],": ",spelltype[1],sep=""))
   leg <- try(eval(parse(text=paste("expression(paste(X > ",
-                      attr(x,'threshold'),"*",tunit,"))"))))
+                                   attr(x,'threshold'),"*",tunit,"))"))))
   if (inherits(leg,'try-error')) leg <- ''
   text(t[1],0.75*max(c(h,l),na.rm=TRUE),leg,srt=90,cex=0.7,col="grey")
   leg <- try(eval(parse(text=paste("expression(paste(X <= ",
-                      attr(x,'threshold'),"*",tunit,"))"))))
+                                   attr(x,'threshold'),"*",tunit,"))"))))
   if (inherits(leg,'try-error')) leg <- ''
   text(t[1],-0.75*max(c(h,l),na.rm=TRUE),leg,srt=90,cex=0.7,col="grey")
   lines(range(t),rep(0,2))
@@ -2457,13 +2461,13 @@ plot.ssa <- function(x,...,main="SSA analysis",sub="",verbose=FALSE)  {
   dev.new()
   par(mfcol=c(3,1))
   plot(ssa$v[,1],type="l",main=main,sub=sub,
-         xlab="Time",ylab="SSA vector: mode 1",lwd=3,col="grey70")
+       xlab="Time",ylab="SSA vector: mode 1",lwd=3,col="grey70")
   grid()
   plot(ssa$v[,2],type="l",main=main,sub=sub,
-         xlab="Time",ylab="SSA vector: mode 2",lwd=3,col="grey70")
+       xlab="Time",ylab="SSA vector: mode 2",lwd=3,col="grey70")
   grid()
   plot(ssa$v[,3],type="l",main=main,sub=sub,
-         xlab="Time",ylab="SSA vector: mode 3",lwd=3,col="grey70")
+       xlab="Time",ylab="SSA vector: mode 3",lwd=3,col="grey70")
   grid()
   dev.new()
   par(mfcol=c(3,1))
@@ -2482,7 +2486,7 @@ plot.ssa <- function(x,...,main="SSA analysis",sub="",verbose=FALSE)  {
   } else if (class(ssa)[3] == "daily.station.record") {
     plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
          ssa$u[,1],type="l",main=main,sub=sub,
-       xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
+         xlab="Time",ylab="SSA loadings",lwd=3,col="grey70")
     grid()
     plot(ssa$x$yy[1:ssa$Nm] + ssa$x$mm[1:ssa$Nm]/12 + ssa$x$dd[1:ssa$Nm]/365,
          ssa$u[,2],type="l",main=main,sub=sub,
@@ -2537,11 +2541,11 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
     if (is.T(attr(x,'observation')))
       col <- c(rgb(0.5,0.5,0.7,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.8,0.5,0.8,0.5),
                rgb(0.3,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.6,0.3,0.6,0.5)) else
-      col <- c(rgb(0.3,0.3,0.6,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.5,0.5,0.7,0.5),
-               rgb(0.6,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.8,0.5,0.8,0.5))
+                 col <- c(rgb(0.3,0.3,0.6,0.5),rgb(0.8,0.5,0.5,0.5),rgb(0.5,0.5,0.7,0.5),
+                          rgb(0.6,0.3,0.6,0.5),rgb(0.6,0.3,0.3,0.5),rgb(0.8,0.5,0.8,0.5))
   }
   plot.zoo(x,plot.type='single',lwd=5,main=main,
-       xlab=xlab,ylab=ylab,col=col,...)
+           xlab=xlab,ylab=ylab,col=col,...)
   grid()
   points(attr(x,'observation'),pch=19)
   lines(attr(x,'nwd.pre'),col=rgb(0.5,0.5,0.5,0.5))
@@ -2627,3 +2631,186 @@ nam2expr <- function(x) {
   return(y)
 }
 
+## REB 2021-11-26: a plot routine for DS-objects that have used PCA (stations) as predictors
+plot.ds.station.pca <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
+                    lwd=1,type='l',pch=0,main=NULL,col=NULL,
+                    colbar=list(pal=NULL,rev=FALSE,n=10,
+                                breaks=NULL,type="p",cex=2,show=TRUE,
+                                h=0.6, v=1,pos=0.05),
+                    xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
+  if(is.null(what)) what <- c("map","ts",'xval')
+  if (verbose) print(paste('plot.ds.station.pca',paste(what,collapse=',')))
+  unit <- attr(x,'unit')
+  if ( (is.na(unit) | is.null(unit)) ) unit <- " "
+  for (i in 1:length(unit)) {
+    if ((unit[i]=='degree Celsius') | (unit[i]=='deg C') | (unit[i]=='degC'))
+      unit[i] <- 'degree*C'
+  }
+  
+  if (is.null(ylab))
+    ylab <- esd::ylab(x)
+  
+  if (verbose)  print(ylab)
+  if (is.null(main)) main <- attr(x,'longname')[1]               
+  if (is.null(col)) col <- rainbow(length(x[1,]))  
+  
+  cols <- rep("blue",100)
+  model <- attr(x,'model')
+  
+  mfrow <- c(2,2)
+  if (length(what)==2) mfrow <- c(2,1) else
+    if (length(what)==1) mfrow <- c(1,1) 
+
+  if (new) dev.new()
+  if (plot.type=="single") new <- TRUE
+  par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
+  
+  if (sum(is.element(what,'map'))>0) {
+    if (verbose) print('Show map...')
+    par(fig=c(0,0.5,0.5,1))
+    pattern <- attr(ds,'pattern')
+    class(pattern) <- class(attr(ds,'original_data'))
+    map(pattern,FUN='mean',new=FALSE,colbar=list(show=FALSE),verbose=verbose,...)
+    points(lon(x),lat(x),lwd=3,cex=1.5)
+  }
+  
+  if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ) {
+    par(new=TRUE,fig=c(0.5,1,0.5,1)) 
+    plot(attr(x,'evaluation')[,1],attr(x,'evaluation')[,2],
+         main='Cross-validation',xlab='original data',
+         ylab='prediction',pch=19,col="grey")
+    lines(range(c(attr(x,'evaluation')),na.rm=TRUE),
+          range(c(attr(x,'evaluation')),na.rm=TRUE),lty=2)
+    cal <- data.frame(y=coredata(attr(x,'evaluation')[,1]),
+                      x=coredata(attr(x,'evaluation')[,2]))
+    xvalfit <- lm(y ~ x, data = cal)
+    abline(xvalfit,col=rgb(1,0,0,0.3),lwd=2)
+    #par(bty="n",fig=c(0.6,0.95,0.48,0.52),mar=c(0,0,0,0),new=TRUE,
+    #    xaxt='n',yaxt='n',cex.sub=0.7)
+    #plot(c(0,1),c(0,1),type='n',xlab='',ylab='')
+    ok <- is.finite(attr(x,'evaluation')[,1]) &
+      is.finite(attr(x,'evaluation')[,2])
+    text(par()$usr[1] + diff(range(par()$usr[1:2]))/24,
+         par()$usr[4] - diff(range(par()$usr[3:4]))/12,
+         paste('correlation=',
+               round(cor(attr(x,'evaluation')[ok,1],attr(x,'evaluation')[ok,2]),2)),
+         pos=4,cex=0.8,col='grey')
+  }  else {
+    xvalfit <- NULL
+  }
+  
+  Y0 <- as.original.data(x)
+  #print(index(Y0)); print(index(x))
+  yX <- merge.zoo(Y0,x,all=FALSE)
+  #print(summary(yX))
+  y0 <- yX$Y0
+  ## KMP 2021-02-26: Plot attribute 'fitted value' instead of coredata
+  
+  if (!is.null(attr(x,'n.apps'))) ns <- attr(x,'n.apps') else
+    ns <- 0
+  y.rng <- NA; x.rng <- NA
+  if (ns > 0) {
+    #print("Add other DS results")
+    for (i in 1:ns) {
+      eval(parse(text=paste("y <- attr(x,'appendix.",i,"')",sep="")))
+      #print(summary(y))
+      y.rng <- range(y.rng,y,na.rm=TRUE)
+      x.rng <- range(x.rng,index(y),na.rm=TRUE)
+    }
+    ## KMP 2021-04-26: added following to solve problem when index is Date
+    if(is.numeric(x.rng) & is.dates(index(x))) x.rng <- as.Date(x.rng)
+  }
+  
+  if (is.null(ylim)) {
+    #ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
+    ylim <- range(attr(x,"fitted_values"),coredata(y0),y.rng,na.rm=TRUE)
+  }
+  if (is.null(xlim)) {
+    xlim <- range(index(x),index(y0),x.rng,na.rm=TRUE)
+  }
+  
+  par(fig=c(0.025,1,0.025,0.475),new=TRUE)
+  par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
+  ds <- list(obs=y0)
+  if (verbose) {print('zoo-plot'); print(main); print(xlab); print(ylab)}
+  plot.zoo(y0,plot.type=plot.type,ylab=ylab,xlab=xlab,
+           main=main,xlim=xlim,ylim=ylim,lwd=1,type='b',pch=19)
+  par0 <- par()
+  grid()
+  if (verbose) print(c(class(index(x)),class(index(y0))))
+  if ( (class(index(x))=='Date') & (class(index(y0))=='numeric') & inherits(x,'annual') ) 
+    index(x) <- year(index(x))
+  if ( (class(index(x))=='numeric') & (class(index(y0))=='Date') & inherits(x,'annual') ) 
+    index(x) <- as.Date(paste(index(x),'01-01',sep='-'))
+  #lines(x,col="red",type="l",lwd=lwd)
+  lines(attr(x,"fitted_values"),col="red",type="l",lwd=lwd)
+  
+  cal0 <- data.frame(y=coredata(y0),t=year(y0))
+  #cal1 <- data.frame(y=coredata(x),t=year(x))
+  cal1 <- data.frame(y=attr(x,"fitted_values"),t=year(x))
+  
+  trend0 <- lm(y ~ t, data=cal0)
+  trend1 <- lm(y ~ t, data=cal1)
+  lines(zoo(predict(trend0),order.by=index(y0)),lty=2)
+  lines(zoo(predict(trend1),order.by=index(x)),lty=2,col='red')
+  
+  st0 <- summary(trend0); st1 <- summary(trend1)
+  obstrend <- paste('obs. trend: ', round(st0$coefficients[2],2),' (',
+                    round(st0$coefficients[2]-2*st0$coefficients[4],2),',',
+                    round(st0$coefficients[2]+2*st0$coefficients[4],2),')',
+                    attr(x,'unit'),'/decade',sep='')
+  dstrend <- paste('obs. trend: ', round(st1$coefficients[2],2),' (',
+                   round(st1$coefficients[2]-2*st1$coefficients[4],2),',',
+                   round(st1$coefficients[2]+2*st1$coefficients[4],2),')',
+                   attr(x,'unit'),'/decade',sep='')
+  
+  if (is.null(attr(x,'source'))) attr(x,'source') <- 'ESD'
+  if (is.na(attr(x,'source'))) attr(x,'source') <- 'ESD'
+  legtext <- c("Observations",attr(x,'source')) 
+  legcol <- c("black","red")
+  
+  if (ns > 0) {
+    #print("Add other DS results")
+    for (i in 1:ns) {
+      eval(parse(text=paste("y <- attr(x,'appendix.",i,"')",sep="")))
+      lines(zoo(coredata(y),order.by=index(y)),col=cols[i],lwd=lwd)
+      legcol <- c(legcol,cols[i])
+      legtext <- c(legtext,attr(y,'source'))
+      eval(parse(text=paste("ds$result.",i,
+                            " <- attr(x,'appendix.",i,"')",sep="")))
+    }
+    
+  } else  legcol <- c("black","red")
+  
+  ## Replot observations and prediction for calibration period
+  
+  lines(y0,lwd=1,type='b',pch=19)
+  #lines(x,col="red",type="l",lwd=lwd)
+  lines(attr(x,"fitted_values"),col="red",type="l",lwd=lwd)
+  #print(legcol)
+  if (!is.null(attr(x,'appendix.1'))) legend <- c("Obs.","Cal.","Proj") else
+    legend <- c("Obs.","Cal.")
+  legend(x="topleft",legend=legend,bty="n",horiz=TRUE,
+         col=c("black","red","blue"),lwd=c(1,1,1),pch=c(19,1,1))
+  
+  if (plot.type=="single") {
+    par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
+    plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+    legend(0.01,0.95,c(paste(attr(x,'location'),": ",
+                             #attr(x,'aspect'),
+                             #attr(x,'longname')," - ",
+                             round(attr(x,'longitude'),2),"E/",
+                             round(attr(x,'latitude'),2),"N (",
+                             attr(x,'altitude')," masl)",sep=""),
+                       obstrend,dstrend),ncol=3,
+           bty="n",cex=0.6,text.col="grey40",
+           lwd=c(1,rep(2,ns),1,1),lty=c(1,rep(1,ns),2,2),
+           col=c(col,'black',col[1]))
+    
+    par(fig=c(0,1,0.05,0.95),new=TRUE,mar=par0$mar,xaxt="n",yaxt="n",bty="n")
+    #plot.zoo(x,plot.type=plot.type,type="n",ylab="",xlab="",xlim=xlim,ylim=ylim)
+    plot.zoo(attr(x,"fitted_values"),plot.type=plot.type,type="n",
+             ylab="",xlab="",xlim=xlim,ylim=ylim)
+  }
+  invisible(list(trend0=trend0,trend1=trend1,xvalfit=xvalfit))
+}

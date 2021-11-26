@@ -264,8 +264,8 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
         swapped <- TRUE
     }
     stopifnot(!missing(y),!missing(X), is.matrix(X),
-              inherits(X,c("eof","field")),inherits(y,"station"))
-    if(!inherits(X,"eof")) X <- EOF(X)
+              inherits(X,c("eof","field"))|inherits(X,c("pca","station")),inherits(y,"station"))
+    if(!inherits(X,c("eof","pca"))) X <- EOF(X)
     if (class(index(y)) != (class(index(X)))) {
       warning(paste('DS.default: different indices:', class(index(y)),class(index(X))))
       if (is.numeric(index(y))) index(X) <- year(X)
@@ -382,7 +382,8 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 ### REB 2015-01-19: Also allow for patterns consisting of vectors - weights of mixed predictors
 ### See DS.list.
     if (verbose) {print('pattern dimension'); print(du); str(U)}
-    if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3])
+    if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3]) else
+      if (length(du)==2) du <- c(1,du)
     if (!is.null(du)) {
       pattern <- t(COEFS[2:dc[1],1]) %*%
           diag(attr(X,'eigenvalues')[ip]) %*% t(U[,ip])
@@ -478,7 +479,8 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
         return(ds)
     }
     
-    if ( (!inherits(X,'eof')) & (inherits(X,'field')) ) {
+    if ( ((!inherits(X,'eof')) & (inherits(X,'field'))) |
+         ((!inherits(X,'pca')) & (inherits(X,'station'))) ) {
                                         #print("HERE")
       ds <- DS.field(y=y,X=X,biascorrect=biascorrect,
                      method=method,swsm=swsm,m=m,
