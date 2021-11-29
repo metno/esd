@@ -111,7 +111,7 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' 
 #' @aliases DS DS.default DS.station DS.station.pca DS.list DS.eof DS.comb
 #' DS.field DS.t2m.month.field DS.t2m.season.field DS.precip.season.field
-#' DS.freq DS.spell DS.pca DS.seasonalcycle DS.trajectory DS.mvcomb
+#' DS.freq DS.spell DS.pca DS.seasonalcycle DS.trajectory
 #' @seealso biasfix sametimescale
 #'
 #' @importFrom stats predict var
@@ -244,6 +244,7 @@ test.ds.field <- function(x,verbose=FALSE) {
 #' # The downscaled 
 #' lines(y3,lty=2)
 #' 
+#' 
 #' @export
 DS <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) UseMethod("DS")
@@ -264,8 +265,8 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
         swapped <- TRUE
     }
     stopifnot(!missing(y),!missing(X), is.matrix(X),
-              inherits(X,c("eof","field"))|inherits(X,c("pca","station")),inherits(y,"station"))
-    if(!inherits(X,c("eof","pca"))) X <- EOF(X)
+              inherits(X,c("eof","field")),inherits(y,"station"))
+    if(!inherits(X,"eof")) X <- EOF(X)
     if (class(index(y)) != (class(index(X)))) {
       warning(paste('DS.default: different indices:', class(index(y)),class(index(X))))
       if (is.numeric(index(y))) index(X) <- year(X)
@@ -350,40 +351,48 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     }
     
     MODEL <- eval(parse(text=calstr))
-    FSUM <- summary(MODEL)
-    if (verbose) print(FSUM)
-
-    ## Stepwise regression
-    if (!is.null(swsm)) {
-      cline <- paste("model <- ",swsm,"(MODEL,trace=0)",sep="")
-      eval(parse(text=cline))
-    } else {
+    if(method=="bas.lm") {
       model <- MODEL
-    }
-    terms1 <- attr(model$terms,'term.labels')
+      cfs <- coef(model)
+      COEFS <- cbind(cfs$postmean, cfs$postsd, cfs$probne0)
+      colnames(COEFS) <- c("postmean", "postsd", "probne0")
+      if (verbose) print('predict')
+      ds <- zoo(predict(model, newdata=predat, estimator="BMA")$fit, order.by=index(X)) + offset
+    } else {
+      FSUM <- summary(MODEL)
+      if (verbose) print(FSUM)
 
-    if (verbose) print(summary(model))
-    fsum <- summary(model)
-    COEFS <- FSUM$coefficients
-    COEFS[,1] <- 0; 
-    COEFS[,2:4] <- NA; 
-    coefs=fsum$coefficients
-    TERMS <- attr(FSUM$terms,'term.labels')
-    terms <- attr(fsum$terms,'term.labels')
-    ii <- is.element(attr(COEFS,"dimnames")[[1]],attr(coefs,"dimnames")[[1]])
-    COEFS[ii,1] <- coefs[,1]
-    COEFS[ii,2] <- coefs[,2]
-    COEFS[ii,3] <- coefs[,3]
-    COEFS[ii,4] <- coefs[,4]
-    if (verbose) print('predict')
-    ds <- zoo(predict(model,newdata=predat),order.by=index(X)) + offset
+      ## Stepwise regression
+      if (!is.null(swsm)) {
+        cline <- paste("model <- ",swsm,"(MODEL,trace=0)",sep="")
+        eval(parse(text=cline))
+      } else {
+        model <- MODEL
+      }
+      terms1 <- attr(model$terms,'term.labels')
+
+      if (verbose) print(summary(model))
+      fsum <- summary(model)
+      COEFS <- FSUM$coefficients
+      COEFS[,1] <- 0; 
+      COEFS[,2:4] <- NA; 
+      coefs=fsum$coefficients
+      TERMS <- attr(FSUM$terms,'term.labels')
+      terms <- attr(fsum$terms,'term.labels')
+      ii <- is.element(attr(COEFS,"dimnames")[[1]],attr(coefs,"dimnames")[[1]])
+      COEFS[ii,1] <- coefs[,1]
+      COEFS[ii,2] <- coefs[,2]
+      COEFS[ii,3] <- coefs[,3]
+      COEFS[ii,4] <- coefs[,4]
+      if (verbose) print('predict')
+      ds <- zoo(predict(model,newdata=predat),order.by=index(X)) + offset
+    }
     dc <- dim(COEFS)
     U <- attr(X,'pattern'); du <- dim(U)
 ### REB 2015-01-19: Also allow for patterns consisting of vectors - weights of mixed predictors
 ### See DS.list.
     if (verbose) {print('pattern dimension'); print(du); str(U)}
-    if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3]) else
-      if (length(du)==2) du <- c(1,du)
+    if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3])
     if (!is.null(du)) {
       pattern <- t(COEFS[2:dc[1],1]) %*%
           diag(attr(X,'eigenvalues')[ip]) %*% t(U[,ip])
@@ -437,7 +446,7 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
     attr(ds,'history') <- history.stamp(X0)
     #print("HERE"); print(cls)				
     class(ds) <- c("ds",cls[-2])
-    ## KMP 2019-04-29: Added crossval in DS.default. Any reason why it shouldn't be here?
+    ## KMP 2019-04-29: Added crossval in DS.default. Any reason why it shoudn't be here?
     if (!is.null(m))  {
       if (verbose) print("Cross-validation")
       xval <- crossval(ds,m=m,...)
@@ -462,10 +471,8 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
     stopifnot(!missing(y),!missing(X),inherits(y,"station"))
     #print('err(y)'); print(err(y))
     #print('index(y)'); print(index(y))
-    if (verbose) print('y <- matchdate(y,X,verbose=verbose)')
-    y <- matchdate(y,X,verbose=verbose)
-    if (verbose) print('X <- matchdate(X,y,verbose=verbose)')
-    X <- matchdate(X,y,verbose=verbose)
+    y <- matchdate(y,X)
+    X <- matchdate(X,y)
     
     ## Used for extracting a subset of calendar months
     if (!is.null(it)) {
@@ -479,8 +486,7 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
         return(ds)
     }
     
-    if ( ((!inherits(X,'eof')) & (inherits(X,'field'))) |
-         ((!inherits(X,'pca')) & (inherits(X,'station'))) ) {
+    if ( (!inherits(X,'eof')) & (inherits(X,'field')) ) {
                                         #print("HERE")
       ds <- DS.field(y=y,X=X,biascorrect=biascorrect,
                      method=method,swsm=swsm,m=m,
@@ -959,12 +965,10 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     
     stopifnot(!missing(y),!missing(X),
               inherits(X,"eof"),inherits(y,"station"))
-    
-    if(inherits(y,"pca") & !is.null(npca)) y <- subset(y, ip=1:npca)
+
     cls <- class(y)
-    
     y0 <- y; X0 <- X
-    #nattr <- softattr(y)
+                                        #nattr <- softattr(y)
 
     # synchronise the two zoo objects through 'merge' (zoo)
     if (verbose) { print('Summary of predictand before matchdate'); print(summary(coredata(y)))
@@ -1048,6 +1052,7 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
         ## pattern for each PC. Combine into one matrix. The predictor pattern
         ## for each station can be recovered by multiplying with the PCA pattern
         if (verbose) print('Predictor pattern')
+        #browser()
         x0p <- attr(X0,'pattern')
         dp <- dim(x0p)
         if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs

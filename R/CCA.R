@@ -75,16 +75,18 @@ CCA.eof <- function(Y,X,ip=1:8,verbose=FALSE,...) {
   # Synchronise the two time series objects:
   y <- zoo(coredata(Y),order.by=as.Date(format(index(Y),'%Y-%m-01')))
   x <- zoo(coredata(X),order.by=as.Date(format(index(X),'%Y-%m-01')))
+  if (verbose) {print(range(index(y))); print(range(index(x)))}
   
   oky <- is.finite(rowMeans(Y)); okx <- is.finite(rowMeans(X))
-  #print(length(oky))
+  if (verbose) print(paste('Number of time steps=',length(oky)))
   y <- y[oky,]; x <- x[okx,]
   colnames(y) <- paste("Y",1:dim(y)[2],sep=".")
   colnames(x) <- paste("X",1:dim(x)[2],sep=".")
   YX <- merge(y,x,all=FALSE)
-  #str(YX); str(Y); str(X)
+  if (verbose) str(YX); str(Y); str(X)
   vars <- names(YX)
-  #print(vars)
+  if (is.null(vars)) warning('Problems detected - check is the indices are of similar types')
+  if (verbose) print(vars)
   ys <- vars[grep('Y',vars)]
   Xs <- vars[grep('X',vars)]
   ix <- is.element(vars,Xs)

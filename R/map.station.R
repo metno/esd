@@ -146,6 +146,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           ylim <- range(lat(x),na.rm=TRUE) + c(-2,2)
         }
       }
+      
       plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=cex,new=FALSE,
            cex.lab=cex.lab,xlab=xlab,ylab=ylab)
       if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=cex.lab,col='grey',pos=1)
