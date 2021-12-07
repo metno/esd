@@ -102,3 +102,10 @@ PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NUL
   class(y) <- c("pca",class(X))
   invisible(y)
 }
+
+#' @exportS3Method
+#' @export
+PCA.radiosonde <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NULL,anomaly=TRUE) {
+  if (verbose) print('PCA.radiosonde - use method for station objects')
+  pca <- PCA.station(X,n,na.action,verbose,it,is,anomaly)
+}

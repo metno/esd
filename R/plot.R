@@ -699,10 +699,19 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
       fig <-c(0,0.5,0.5,1)
       main1 <- paste0('Leading EOF#',ip, ' (',
                       round(var.eof[ip],digits=2),"%)")
-      map(x,ip=ip,verbose=verbose,
-          cex.main=cex.main,cex.axis=cex.axis,
-          cex.lab=cex.lab,cex=cex, fig=fig,
-          new=FALSE,colbar=colbar,...) 
+      if (inherits(x,'station')) 
+        map(x,ip=ip,verbose=verbose,
+            cex.main=cex.main,cex.axis=cex.axis,
+            cex.lab=cex.lab,cex=cex, fig=fig,
+            new=FALSE,colbar=colbar,...)  else
+              if (inherits(x,'radiosonde')) {
+                if (verbose) print('plot PCA of radiosonde data')
+                par(fig=fig)
+                plot(attr(x,'pattern')[,1],alt(x),type='l',col='grey',xlab='')
+                np <- dim(attr(x,'pattern'))[1]
+                for (i in 2:np) lines(attr(x,'pattern')[,i],alt(x),col='grey')
+                lines(attr(x,'pattern')[,ip],alt(x))
+              }
       title(main=src(x)[1],cex.main=cex.main*0.8,
             col.main="grey40",adj=0,line=0)
       title(main=main1,cex.main=cex.main)
@@ -984,13 +993,13 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   } else if (inherits(x,'eof')) {
     plot.ds.eof(x,verbose=verbose,...)
     return()
-  }
-  ## KMP 2021-11-29: What's the intention here? This redirects plot.ds
-  ## to plot.ds.station.pca even for single stations (not PCA based downscaling). 
-  #} else if (inherits(x,'station')) {
-  #  plot.ds.station.pca(x,verbose=verbose,...)
-  #  return()
-  #} 
+    #}
+    ## KMP 2021-11-29: What's the intention here? This redirects plot.ds
+    ## to plot.ds.station.pca even for single stations (not PCA based downscaling). 
+  } else if ( (inherits(x,'station')) & (inherits(attr(x,'eof'),'pca')) ) {
+    plot.ds.station.pca(x,verbose=verbose,...)
+    return()
+  } 
   
   if(is.null(what)) what <- c("map","ts",'xval')
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
@@ -2634,11 +2643,11 @@ nam2expr <- function(x) {
 
 ## REB 2021-11-26: a plot routine for DS-objects that have used PCA (stations) as predictors
 plot.ds.station.pca <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
-                    lwd=1,type='l',pch=0,main=NULL,col=NULL,
-                    colbar=list(pal=NULL,rev=FALSE,n=10,
-                                breaks=NULL,type="p",cex=2,show=TRUE,
-                                h=0.6, v=1,pos=0.05),
-                    xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
+                                lwd=1,type='l',pch=0,main=NULL,col=NULL,
+                                colbar=list(pal=NULL,rev=FALSE,n=10,
+                                            breaks=NULL,type="p",cex=2,show=TRUE,
+                                            h=0.6, v=1,pos=0.05),
+                                xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
   if(is.null(what)) what <- c("map","ts",'xval')
   if (verbose) print(paste('plot.ds.station.pca',paste(what,collapse=',')))
   unit <- attr(x,'unit')
@@ -2661,19 +2670,32 @@ plot.ds.station.pca <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   #mfrow <- c(2,2)
   #if (length(what)==2) mfrow <- c(2,1) else
   #  if (length(what)==1) mfrow <- c(1,1) 
-
+  
   if (new) dev.new()
   if (plot.type=="single") new <- TRUE
   par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
   
   if (sum(is.element(what,'map'))>0) {
-    if (verbose) print('Show map...')
     #par(fig=c(0,0.5,0.5,1))
-    pattern <- attr(ds,'pattern')
-    class(pattern) <- class(attr(ds,'original_data'))
-    map(pattern,FUN='mean',new=FALSE,colbar=list(show=FALSE),
-	fig=c(0,0.5,0.5,1),verbose=verbose,...)
-    points(lon(x),lat(x),lwd=3,cex=1.5)
+    pattern <- attr(x,'pattern')
+    if (!inherits(x,'radiosonde')) {
+      if (verbose) print('Show map...')
+      class(pattern) <- class(attr(x,'original_data'))
+      attr(pattern,'longitude') <- lon(attr(x,'eof'))
+      attr(pattern,'latitude') <- lat(attr(x,'eof'))
+      map(pattern,FUN='mean',new=FALSE,colbar=list(show=FALSE),
+          fig=c(0,0.5,0.5,1),verbose=verbose,...)
+      points(lon(x),lat(x),lwd=3,cex=1.5)
+    } else {
+      pattern <- attr(pattern,'pattern') ## Here is a quick fix for a bug...
+      if (verbose) print('Show vertical profiles (radiosonde)')
+      if (verbose) str(pattern)
+      par(fig=c(0,0.5,0.5,1))
+      plot(pattern[,1],alt(attr(x,'eof')),type='l',col='grey',xlab='')
+      np <- dim(pattern)[1]
+      for (i in 2:np) lines(pattern[,i],alt(attr(x,'eof')),col='grey')
+      lines(pattern[,1],alt(attr(x,'eof')))
+    }
   }
   
   if ( (sum(is.element(what,'xval'))>0)  & (!is.null(attr(x,'evaluation'))) ) {
@@ -2816,3 +2838,18 @@ plot.ds.station.pca <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   }
   invisible(list(trend0=trend0,trend1=trend1,xvalfit=xvalfit))
 }
+
+#' @export plot.radiosonde
+plot.radiosonde <- function(x,...,plot.type="single",new=TRUE,
+                            lwd=3,type='l',pch=0,main=NULL,col=NULL,
+                            xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
+                            errorbar=TRUE,legend.show=FALSE,
+                            map.show=TRUE,map.type=NULL,map.insert=TRUE,
+                            cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
+                            mar=c(4.5,4.5,0.75,0.5),fig=NULL, 
+                            alpha=0.5,alpha.map=0.7,add=FALSE,
+                            verbose=FALSE) {
+  d <- dim(x)
+  plot(zoo(x),plot.type='single',col=heat.colors(d[2]),xlab='',ylab=esd::unit(x),main=loc(x))
+}
+

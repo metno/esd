@@ -1761,3 +1761,11 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   class(Y) <- cls
   return(Y)
 }
+
+#' exportS3Method
+#' @export
+subset.radiosonde <- function(x,it=NULL,is=NULL,verbose=FALSE) {
+  if (verbose) print('subset.radiosonde')
+  y <- subset.station(x,it,is,verbose)
+  return(y)
+}

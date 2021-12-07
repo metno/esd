@@ -120,7 +120,7 @@ par(bty='n',xpd=TRUE,las=3)
 
 ## Update the record of number of named cyclones manually: 2015-2020
 ## From Wikipedia
-ntc2 <- zoo(c(11,15,17,15,17,30),order.by=2015:2020)
+ntc2 <- zoo(c(11,15,17,15,17,30,21),order.by=2015:2021)
 ntc <- c(ntc,ntc2)
 
 plot(ntc,lty=2,xlim=range(index(y)),

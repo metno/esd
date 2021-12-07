@@ -99,7 +99,7 @@ pcafill <- function(X,insertmiss=0,ip=1:4,mnv=0,complete=FALSE,test=FALSE,verbos
     if (verbose) print(c(isx,sum(ok)))
     ## Save the original data set to NA
     x0 <- xok[isx]
-    ## Set theselected data points ot NA
+    ## Set the selected data points to NA
     xok[isx] <- NA
     ## Replace the data with that with introduced NAs
     x[ok] <- xok
@@ -107,11 +107,11 @@ pcafill <- function(X,insertmiss=0,ip=1:4,mnv=0,complete=FALSE,test=FALSE,verbos
     coredata(X) <- x
     if (verbose) print('---')
   }
-  nok <- apply(X,1,nv)
+  nok <- c(apply(X,1,nv))
   ## Remove the years with no (of little) data
   X <- subset(X,it=nok > mnv)
   if (verbose) print(dim(X))
-  mok <- apply(X,2,nv)
+  mok <- c(apply(X,2,nv))
 
   if (verbose) print(paste(sum(nok>mnv),'stations with',
                            sum(mok>0),'data points'))

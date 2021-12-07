@@ -252,204 +252,204 @@ DS <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 #' @export 
 DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...) {
-    if (verbose) print('DS.default')
-    if (verbose) {print('index(y)'); print(index(y))}
-    if (verbose) {print(class(y)); print(class(X))}
-    swapped <- FALSE
-    if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
-      if (verbose) print('SWAP y & X')
-        yy <- X
-        X <- y
-        y <- yy
-        swapped <- TRUE
-    }
-    stopifnot(!missing(y),!missing(X), is.matrix(X),
-              inherits(X,c("eof","field"))|inherits(X,c("pca","station")),inherits(y,"station"))
-    if(!inherits(X,c("eof","pca"))) X <- EOF(X)
-    if (class(index(y)) != (class(index(X)))) {
-      warning(paste('DS.default: different indices:', class(index(y)),class(index(X))))
-      if (is.numeric(index(y))) index(X) <- year(X)
-      if (is.numeric(index(X))) index(y) <- year(y)
-    }
-    
-    y0 <- y
-    X0 <- X
-    ip <- ip[ip <= length(attr(X,'eigenvalues'))]
-    
-    if (verbose) {print(paste(sum(!is.finite(coredata(y))),'missing values in y'))}
-    if (verbose)  {print('index and y before removing missing values:'); print(zoo(y))}
-    y <- subset(y,it=is.finite(coredata(y)))
-    W <- attr(X,'eigenvalues')
-    cls <- c(class(y)[1],class(X))
-    
-    if (verbose) print('Ensure matching time scale')
-    if (verbose) {print('index(y) before sametimescale:'); print(index(y))}
-    y <- sametimescale(y,X,verbose=verbose)
-    ## REB is needed to ensure that y is annual if X is annual
-    #if (verbose) {print('index(y) after sametimescale:'); print(index(y))}
-    #if (verbose) print('Match dates')
-    
-    y <- matchdate(y,X,verbose=verbose) ##
-    #if (verbose) {print('index(y) after matchdate'); print(index(y))}
-    X <- matchdate(X,y,verbose=verbose) # REB 2015-01-14
-    if (verbose) {print("index(y) & index(X) after synch:");
-                  print(index(y)); print(index(X))}
-    
-    if (!is.null(it)) y <- subset(y,it=it)
-    
-    ## synchronise the series: use the 'zoo' merge function through combine:
-    ##print(index(y)[1:24]); print(index(X)[1:24]);
-
-    ##
-    
-    #yX <- combine.station.eof(y,X)
-    #y <- yX$y; X <- yX$X
-    X0 <- X; y0 <- y
-    #year <- as.numeric( format(index(y), '%Y') ) 
-    #month <- as.numeric( format(index(y), '%m') )
-    year <- year(y)
-    month <- month(y)
-    ##print(length(y)); print(table(year)); print(table(month))
-    
-    ## De-trend the data used for model calibration:
-    if (rmtrend) {
-        if (verbose) print('detrend')
-        offset <- mean(y,na.rm=TRUE)
-        y <- trend(y,result="residual")
-        offset <- offset - mean(y,na.rm=TRUE)
-        X <- trend(X,result="residual")
-    } else offset <- 0
-
-    ##str(y); print(class(y))
-
-    ## REB: 2014-10-03: add weights if available
-    weights <- rep(1,length(y))
-    if (!is.null(attr(y,'standard.error'))) {
-      if (sum(is.finite(attr(y,'standard.error')))>0) weights <- 1/coredata(attr(y,'standard.error'))
-      weights[!is.finite(weights)] <- 0
-      if (is.null(attr(y,'standard.error'))) weighted <- FALSE
-      if (verbose) {print(paste('weights',weighted)); print(weights)}
-    }
-    #
-    ##if (length(index(X)) == length(index(y)))
-    caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
-                           weights=weights) 
-    predat <- data.frame(X=as.matrix(coredata(X0)))
-    colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
-    if (is.null(names(X))) names(X) <- 1:dim(X)[2]
-    Xnames <- paste("X.",1:length(names(X)),sep="")
-    colnames(caldat) <- c("y",Xnames,'weights')
-    Xnames <- Xnames[ip]
-    ## REB 2014-10-03:
-    if (weighted) {
-      calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
-                      ", weights=weights, data=caldat, ...)",sep="") 
-    } else {
-      calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
-                      ", data=caldat, ...)",sep="")
-    }
-    
-    MODEL <- eval(parse(text=calstr))
-    FSUM <- summary(MODEL)
-    if (verbose) print(FSUM)
-
-    ## Stepwise regression
-    if (!is.null(swsm)) {
-      cline <- paste("model <- ",swsm,"(MODEL,trace=0)",sep="")
-      eval(parse(text=cline))
-    } else {
-      model <- MODEL
-    }
-    terms1 <- attr(model$terms,'term.labels')
-
-    if (verbose) print(summary(model))
-    fsum <- summary(model)
-    COEFS <- FSUM$coefficients
-    COEFS[,1] <- 0; 
-    COEFS[,2:4] <- NA; 
-    coefs=fsum$coefficients
-    TERMS <- attr(FSUM$terms,'term.labels')
-    terms <- attr(fsum$terms,'term.labels')
-    ii <- is.element(attr(COEFS,"dimnames")[[1]],attr(coefs,"dimnames")[[1]])
-    COEFS[ii,1] <- coefs[,1]
-    COEFS[ii,2] <- coefs[,2]
-    COEFS[ii,3] <- coefs[,3]
-    COEFS[ii,4] <- coefs[,4]
-    if (verbose) print('predict')
-    ds <- zoo(predict(model,newdata=predat),order.by=index(X)) + offset
-    dc <- dim(COEFS)
-    U <- attr(X,'pattern'); du <- dim(U)
-### REB 2015-01-19: Also allow for patterns consisting of vectors - weights of mixed predictors
-### See DS.list.
-    if (verbose) {print('pattern dimension'); print(du); str(U)}
-    if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3]) else
-      if (length(du)==2) du <- c(1,du)
-    if (!is.null(du)) {
-      pattern <- t(COEFS[2:dc[1],1]) %*%
-          diag(attr(X,'eigenvalues')[ip]) %*% t(U[,ip])
-      dim(pattern) <- c(du[1],du[2]) 
-    } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[ip]
-                                                 
-    if (verbose) {
-      print('set attibutes')
-      print(names(attributes(y0)))
-      print(names(attributes(X0)))
-    }
-    ## Make sure that predictions have the same index class (time units) as the original data 
-    if (class(index(ds)) != class(index(y0))) {
-      ## For annual data:
-      if ( (class(index(ds))=='Date') & (class(index(y0))=='numeric') & inherits(y0,'annual') ) 
-        index(ds) <- year(index(ds))
-      if ( (class(index(ds))=='numeric') & (class(index(y0))=='Date') & inherits(y0,'annual') ) 
-        index(ds) <- as.Date(paste(index(ds),'01-01',sep='-'))
-    }
-    ds <- attrcp(y0,ds,ignore='names')
-    pattern <- attrcp(X0,pattern,ignore=c('longitude','latitude','names','dimnames'))
-    caldat <- zoo(as.matrix(caldat),order.by=index(X))
-    if (verbose) print('Set attributes')
-    attr(caldat,'calibration_expression') <- calstr
-    attr(caldat,'stepwise_screening') <- swsm
-    attr(ds,'calibration_data') <- caldat
-    attr(ds,'fitted_values') <- zoo(fitted(model) + offset,order.by=index(X))
-    class(attr(ds,'fitted_values')) <- class(y0)
-    attr(ds,'original_data') <- y0
-    r2 <- var(coredata(fitted(model)))/var(y,na.rm=TRUE)
-    attr(r2,'description') <- 'var(fitted.values))/var(y)'
-    attr(ds,'quality') <- r2
-    attr(ds,'variable') <- attr(y0,'variable')
-    attr(ds,'model') <- model
-    attr(ds,'mean') <- offset
-    attr(ds,'method') <- method
-    attr(ds,'eof') <- X0
-    attr(pattern,'longitude') <- attr(X0,'longitude')
-    attr(pattern,'latitude') <- attr(X0,'latitude')
-    attr(pattern,'variable') <- attr(X0,'variable')
-    attr(pattern,'unit') <- attr(X0,'unit')
-    attr(ds,'pattern') <- pattern
-    attr(ds,'dimensions') <- c(du[1],du[2])
-    attr(ds,'longitude') <- attr(y0,'longitude')
-    attr(ds,'latitude') <- attr(y0,'latitude')
-    ##attr(ds,'source') <- paste(attr(y0,'source'),attr(X0,'source'),sep="-")
-    attr(ds,'aspect') <- 'downscaled'
-    attr(ds,'source') <- attr(X0,'source')
-    attr(ds,'type') <- "downscaled results"
-    attr(ds,'history.predictand') <- attr(y0,'history')
-    attr(ds,'history') <- history.stamp(X0)
-    #print("HERE"); print(cls)				
-    class(ds) <- c("ds",cls[-2])
-    ## KMP 2019-04-29: Added crossval in DS.default. Any reason why it shouldn't be here?
-    if (!is.null(m))  {
-      if (verbose) print("Cross-validation")
-      xval <- crossval(ds,m=m,...)
-      attr(ds,'evaluation') <- zoo(xval)
-    } else attr(ds,'evaluation') <- NULL
-    rm("y0","X0")
-                                        #print("Completed")
-                                        #lines(ds,col="darkred",lwd=2,lty=2)
-                                        #lines(attr(ds,'original_data'),col="green",lwd=2,lty=2)
-    if (verbose) print('--- exit DS.default ---')
-    if (plot) plot(ds)
-    invisible(ds)
+  if (verbose) print('DS.default')
+  if (verbose) {print('index(y)'); print(index(y))}
+  if (verbose) {print(class(y)); print(class(X))}
+  swapped <- FALSE
+  if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
+    if (verbose) print('SWAP y & X')
+    yy <- X
+    X <- y
+    y <- yy
+    swapped <- TRUE
+  }
+  stopifnot(!missing(y),!missing(X), is.matrix(X),
+            inherits(X,c("eof","field"))|inherits(X,c("pca","station")),inherits(y,"station"))
+  if(!inherits(X,c("eof","pca"))) X <- EOF(X)
+  if (class(index(y)) != (class(index(X)))) {
+    warning(paste('DS.default: different indices:', class(index(y)),class(index(X))))
+    if (is.numeric(index(y))) index(X) <- year(X)
+    if (is.numeric(index(X))) index(y) <- year(y)
+  }
+  
+  y0 <- y
+  X0 <- X
+  ip <- ip[ip <= length(attr(X,'eigenvalues'))]
+  
+  if (verbose) {print(paste(sum(!is.finite(coredata(y))),'missing values in y'))}
+  if (verbose)  {print('index and y before removing missing values:'); print(zoo(y))}
+  y <- subset(y,it=is.finite(coredata(y)))
+  W <- attr(X,'eigenvalues')
+  cls <- c(class(y)[1],class(X))
+  
+  if (verbose) print('Ensure matching time scale')
+  if (verbose) {print('index(y) before sametimescale:'); print(index(y))}
+  y <- sametimescale(y,X,verbose=verbose)
+  ## REB is needed to ensure that y is annual if X is annual
+  #if (verbose) {print('index(y) after sametimescale:'); print(index(y))}
+  #if (verbose) print('Match dates')
+  
+  y <- matchdate(y,X,verbose=verbose) ##
+  #if (verbose) {print('index(y) after matchdate'); print(index(y))}
+  X <- matchdate(X,y,verbose=verbose) # REB 2015-01-14
+  if (verbose) {print("index(y) & index(X) after synch:");
+    print(index(y)); print(index(X))}
+  
+  if (!is.null(it)) y <- subset(y,it=it)
+  
+  ## synchronise the series: use the 'zoo' merge function through combine:
+  ##print(index(y)[1:24]); print(index(X)[1:24]);
+  
+  ##
+  
+  #yX <- combine.station.eof(y,X)
+  #y <- yX$y; X <- yX$X
+  X0 <- X; y0 <- y
+  #year <- as.numeric( format(index(y), '%Y') ) 
+  #month <- as.numeric( format(index(y), '%m') )
+  year <- year(y)
+  month <- month(y)
+  ##print(length(y)); print(table(year)); print(table(month))
+  
+  ## De-trend the data used for model calibration:
+  if (rmtrend) {
+    if (verbose) print('detrend')
+    offset <- mean(y,na.rm=TRUE)
+    y <- trend(y,result="residual")
+    offset <- offset - mean(y,na.rm=TRUE)
+    X <- trend(X,result="residual")
+  } else offset <- 0
+  
+  ##str(y); print(class(y))
+  
+  ## REB: 2014-10-03: add weights if available
+  weights <- rep(1,length(y))
+  if (!is.null(attr(y,'standard.error'))) {
+    if (sum(is.finite(attr(y,'standard.error')))>0) weights <- 1/coredata(attr(y,'standard.error'))
+    weights[!is.finite(weights)] <- 0
+    if (is.null(attr(y,'standard.error'))) weighted <- FALSE
+    if (verbose) {print(paste('weights',weighted)); print(weights)}
+  }
+  #
+  ##if (length(index(X)) == length(index(y)))
+  caldat <- data.frame(y=coredata(y),X=as.matrix(coredata(X)),
+                       weights=weights) 
+  predat <- data.frame(X=as.matrix(coredata(X0)))
+  colnames(predat) <- paste("X",1:ncol(predat),sep=".")#length(colnames(predat)),sep=".")
+  if (is.null(names(X))) names(X) <- 1:dim(X)[2]
+  Xnames <- paste("X.",1:length(names(X)),sep="")
+  colnames(caldat) <- c("y",Xnames,'weights')
+  Xnames <- Xnames[ip]
+  ## REB 2014-10-03:
+  if (weighted) {
+    calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
+                    ", weights=weights, data=caldat, ...)",sep="") 
+  } else {
+    calstr <- paste(method,"(y ~ ",paste(Xnames,collapse=" + "),
+                    ", data=caldat, ...)",sep="")
+  }
+  
+  MODEL <- eval(parse(text=calstr))
+  FSUM <- summary(MODEL)
+  if (verbose) print(FSUM)
+  
+  ## Stepwise regression
+  if (!is.null(swsm)) {
+    cline <- paste("model <- ",swsm,"(MODEL,trace=0)",sep="")
+    eval(parse(text=cline))
+  } else {
+    model <- MODEL
+  }
+  terms1 <- attr(model$terms,'term.labels')
+  
+  if (verbose) print(summary(model))
+  fsum <- summary(model)
+  COEFS <- FSUM$coefficients
+  COEFS[,1] <- 0; 
+  COEFS[,2:4] <- NA; 
+  coefs=fsum$coefficients
+  TERMS <- attr(FSUM$terms,'term.labels')
+  terms <- attr(fsum$terms,'term.labels')
+  ii <- is.element(attr(COEFS,"dimnames")[[1]],attr(coefs,"dimnames")[[1]])
+  COEFS[ii,1] <- coefs[,1]
+  COEFS[ii,2] <- coefs[,2]
+  COEFS[ii,3] <- coefs[,3]
+  COEFS[ii,4] <- coefs[,4]
+  if (verbose) print('predict')
+  ds <- zoo(predict(model,newdata=predat),order.by=index(X)) + offset
+  dc <- dim(COEFS)
+  U <- attr(X,'pattern'); du <- dim(U)
+  ### REB 2015-01-19: Also allow for patterns consisting of vectors - weights of mixed predictors
+  ### See DS.list.
+  if (verbose) {print('pattern dimension'); print(du); str(U)}
+  if (length(du)==3) dim(U) <- c(du[1]*du[2],du[3]) else
+    if (length(du)==2) du <- c(1,du)
+  if (!is.null(du)) {
+    pattern <- t(COEFS[2:dc[1],1]) %*%
+      diag(attr(X,'eigenvalues')[ip]) %*% t(U[,ip])
+    dim(pattern) <- c(du[1],du[2]) 
+  } else pattern <- c(COEFS[2:dc[1],1]) * attr(X,'eigenvalues')[ip]
+  
+  if (verbose) {
+    print('set attibutes')
+    print(names(attributes(y0)))
+    print(names(attributes(X0)))
+  }
+  ## Make sure that predictions have the same index class (time units) as the original data 
+  if (class(index(ds)) != class(index(y0))) {
+    ## For annual data:
+    if ( (class(index(ds))=='Date') & (class(index(y0))=='numeric') & inherits(y0,'annual') ) 
+      index(ds) <- year(index(ds))
+    if ( (class(index(ds))=='numeric') & (class(index(y0))=='Date') & inherits(y0,'annual') ) 
+      index(ds) <- as.Date(paste(index(ds),'01-01',sep='-'))
+  }
+  ds <- attrcp(y0,ds,ignore='names')
+  pattern <- attrcp(X0,pattern,ignore=c('longitude','latitude','names','dimnames'))
+  caldat <- zoo(as.matrix(caldat),order.by=index(X))
+  if (verbose) print('Set attributes')
+  attr(caldat,'calibration_expression') <- calstr
+  attr(caldat,'stepwise_screening') <- swsm
+  attr(ds,'calibration_data') <- caldat
+  attr(ds,'fitted_values') <- zoo(fitted(model) + offset,order.by=index(X))
+  class(attr(ds,'fitted_values')) <- class(y0)
+  attr(ds,'original_data') <- y0
+  r2 <- var(coredata(fitted(model)))/var(y,na.rm=TRUE)
+  attr(r2,'description') <- 'var(fitted.values))/var(y)'
+  attr(ds,'quality') <- r2
+  attr(ds,'variable') <- attr(y0,'variable')
+  attr(ds,'model') <- model
+  attr(ds,'mean') <- offset
+  attr(ds,'method') <- method
+  attr(ds,'eof') <- X0
+  attr(pattern,'longitude') <- attr(X0,'longitude')
+  attr(pattern,'latitude') <- attr(X0,'latitude')
+  attr(pattern,'variable') <- attr(X0,'variable')
+  attr(pattern,'unit') <- attr(X0,'unit')
+  attr(ds,'pattern') <- pattern
+  attr(ds,'dimensions') <- c(du[1],du[2])
+  attr(ds,'longitude') <- attr(y0,'longitude')
+  attr(ds,'latitude') <- attr(y0,'latitude')
+  ##attr(ds,'source') <- paste(attr(y0,'source'),attr(X0,'source'),sep="-")
+  attr(ds,'aspect') <- 'downscaled'
+  attr(ds,'source') <- attr(X0,'source')
+  attr(ds,'type') <- "downscaled results"
+  attr(ds,'history.predictand') <- attr(y0,'history')
+  attr(ds,'history') <- history.stamp(X0)
+  #print("HERE"); print(cls)				
+  class(ds) <- c("ds",cls[-2])
+  ## KMP 2019-04-29: Added crossval in DS.default. Any reason why it shouldn't be here?
+  if (!is.null(m))  {
+    if (verbose) print("Cross-validation")
+    xval <- crossval(ds,m=m,...)
+    attr(ds,'evaluation') <- zoo(xval)
+  } else attr(ds,'evaluation') <- NULL
+  rm("y0","X0")
+  #print("Completed")
+  #lines(ds,col="darkred",lwd=2,lty=2)
+  #lines(attr(ds,'original_data'),col="green",lwd=2,lty=2)
+  if (verbose) print('--- exit DS.default ---')
+  if (plot) plot(ds)
+  invisible(ds)
 }
 
 #' @exportS3Method
@@ -457,133 +457,138 @@ DS.default <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
                        method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,
                        ..., pca=FALSE, npca=20, biascorrect=FALSE) {
-    
-    if (verbose) print('DS.station')
-    stopifnot(!missing(y),!missing(X),inherits(y,"station"))
-    #print('err(y)'); print(err(y))
-    #print('index(y)'); print(index(y))
-    if (verbose) print('y <- matchdate(y,X,verbose=verbose)')
-    y <- matchdate(y,X,verbose=verbose)
-    if (verbose) print('X <- matchdate(X,y,verbose=verbose)')
-    X <- matchdate(X,y,verbose=verbose)
-    
-    ## Used for extracting a subset of calendar months
-    if (!is.null(it)) {
-      if (verbose) print(paste('it=',it))
-      if (inherits(y,'station')) y <- subset(y,it=it)
+  
+  if (verbose) print('DS.station')
+  stopifnot(!missing(y),!missing(X),inherits(y,"station"))
+  #print('err(y)'); print(err(y))
+  #print('index(y)'); print(index(y))
+  if (verbose) print('y <- matchdate(y,X,verbose=verbose)')
+  y <- matchdate(y,X,verbose=verbose)
+  if (verbose) print('X <- matchdate(X,y,verbose=verbose)')
+  X <- matchdate(X,y,verbose=verbose)
+  
+  ## Used for extracting a subset of calendar months
+  if (!is.null(it)) {
+    if (verbose) print(paste('it=',it))
+    if (inherits(y,'station')) y <- subset(y,it=it)
+  }
+  
+  if ( (!inherits(y,'seasonalcycle')) & (inherits(X,'seasonalcycle')) ) {
+    #print("HERE")
+    ds <- DS.seasonalcycle(y=y,X=X,ip=ip,verbose=verbose,...) 
+    return(ds)
+  }
+  
+  if ( ((!inherits(X,'eof')) & (inherits(X,'field'))) |
+       ((!inherits(X,'pca')) & (inherits(X,'station'))) ) {
+    #print("HERE")
+    ds <- DS.field(y=y,X=X,biascorrect=biascorrect,
+                   method=method,swsm=swsm,m=m,
+                   rmtrend=rmtrend,ip=ip,verbose=verbose,
+                   weighted=weighted,pca=pca,npca=npca,...) 
+    return(ds)
+  } else if (is.list(X)) {
+    if (verbose) print("The predictor is a list")
+    ds <- DS.list(y=y,X=X,biascorrect=biascorrect,
+                  method=method,swsm=swsm,m=m,
+                  rmtrend=rmtrend,ip=ip,verbose=verbose,
+                  weighted=weighted,pca=pca,npca=npca,...) 
+    return(ds)
+  } 
+  
+  ## REB inserted lines to accomodate for multiple stations
+  d <- dim(y)
+  if (!is.null(d)) ns <- d[2] else ns <- 1
+  if (!is.null(d)) {
+    if (verbose) print(paste('predictand contains',ns,'stations'))
+    ## More than one station
+    Y <- y
+    if (pca) {
+      if (verbose) print("PCA")
+      ## PCA is used when y represents a group of variables and when
+      ## their covariance is a concern: it preserves the covariance
+      ## as seen in the past, as the PCs and eigenvectors are orthogonal.
+      ## Useful for spatial response, wind vectors, temperature/precipitation
+      Y <- PCA(y,npca)
     }
-    
-    if ( (!inherits(y,'seasonalcycle')) & (inherits(X,'seasonalcycle')) ) {
-                                        #print("HERE")
-        ds <- DS.seasonalcycle(y=y,X=X,ip=ip,verbose=verbose,...) 
-        return(ds)
-    }
-    
-    if ( ((!inherits(X,'eof')) & (inherits(X,'field'))) |
-         ((!inherits(X,'pca')) & (inherits(X,'station'))) ) {
-                                        #print("HERE")
-      ds <- DS.field(y=y,X=X,biascorrect=biascorrect,
-                     method=method,swsm=swsm,m=m,
-                     rmtrend=rmtrend,ip=ip,verbose=verbose,
-                     weighted=weighted,pca=pca,npca=npca,...) 
-      return(ds)
-    } else if (is.list(X)) {
-      if (verbose) print("The predictor is a list")
-      ds <- DS.list(y=y,X=X,biascorrect=biascorrect,
-                    method=method,swsm=swsm,m=m,
-                    rmtrend=rmtrend,ip=ip,verbose=verbose,
-                    weighted=weighted,pca=pca,npca=npca,...) 
-      return(ds)
-    } 
-    
-    ## REB inserted lines to accomodate for multiple stations
-    d <- dim(y)
-    if (!is.null(d)) ns <- d[2] else ns <- 1
-    if (!is.null(d)) {
-      if (verbose) print(paste('predictand contains',ns,'stations'))
-      ## More than one station
-      Y <- y
-      if (pca) {
-        if (verbose) print("PCA")
-        ## PCA is used when y represents a group of variables and when
-        ## their covariance is a concern: it preserves the covariance
-        ## as seen in the past, as the PCs and eigenvectors are orthogonal.
-        ## Useful for spatial response, wind vectors, temperature/precipitation
-        Y <- PCA(y,npca)
+    ns <- dim(Y)[2]
+  } else {
+    Y <- y
+  }
+  
+  ## Loop over the different PCs or stations
+  for (i in 1:ns) {
+    if (verbose) print(paste("i=",i))
+    z <- subset(Y,is=i)
+    if (verbose) {print(class(z)); print(names(attributes(z)))}
+    if (inherits(X,'eof')) {
+      if (verbose) print("The predictor is some kind of EOF-object")
+      ## Call different functions, depending on the class of X:
+      #print("the predictor is an EOF-object")
+      if (inherits(X,'comb')) {
+        if (verbose) print("*** Comb ***")
+        ## X is combined EOFs
+        ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,
+                      method=method,swsm=swsm,it=it,
+                      rmtrend=rmtrend,ip=ip,verbose=verbose,...)            
+        if (verbose) print("---")
+      } else {
+        if (verbose) print("*** EOF ***")
+        ## X is ordinary EOF
+        ds <- DS.default(y=z,X=X,
+                         method=method,swsm=swsm,
+                         rmtrend=rmtrend,ip=ip,verbose=verbose,...)
+        if (verbose) print("+++")
       }
-      ns <- dim(Y)[2]
-    } else {
-      Y <- y
-    }
-    
-    ## Loop over the different PCs or stations
-    for (i in 1:ns) {
-      if (verbose) print(paste("i=",i))
-      z <- subset(Y,is=i)
-      if (verbose) {print(class(z)); print(names(attributes(z)))}
-      if (inherits(X,'eof')) {
-        if (verbose) print("The predictor is some kind of EOF-object")
-        ## Call different functions, depending on the class of X:
-        #print("the predictor is an EOF-object")
-        if (inherits(X,'comb')) {
-          if (verbose) print("*** Comb ***")
-          ## X is combined EOFs
-          ds <- DS.comb(y=z,X=X,biascorrect=biascorrect,
-                        method=method,swsm=swsm,it=it,
-                        rmtrend=rmtrend,ip=ip,verbose=verbose,...)            
-          if (verbose) print("---")
-        } else {
-          if (verbose) print("*** EOF ***")
-          ## X is ordinary EOF
-          ds <- DS.default(y=z,X=X,
-                           method=method,swsm=swsm,
-                           rmtrend=rmtrend,ip=ip,verbose=verbose,...)
-          if (verbose) print("+++")
-        }
-      } else if (inherits(X,'field')) {
-        if (verbose) print("the predictor is a field-object")
-        ## X is a field
-        ds <- DS.field(y=z,X=X,biascorrect=biascorrect,
+    } else if (inherits(X,'field')) {
+      if (verbose) print("the predictor is a field-object")
+      ## X is a field
+      ds <- DS.field(y=z,X=X,biascorrect=biascorrect,
+                     method=method,swsm=swsm,
+                     rmtrend=rmtrend,ip=ip,verbose=verbose,...)
+    } else if (inherits(X,c('station','radiosonde'))) {
+      if (verbose) print("the predictor is a station or radiosonde-object")
+      ds <- DS.default(y=z,X=X,biascorrect=biascorrect,
                        method=method,swsm=swsm,
                        rmtrend=rmtrend,ip=ip,verbose=verbose,...)
-      }
-      ## May need an option for coombined field: x is 'field' + 'comb'
-      #if (is.null(ds)) browser()
-      
-      ## Unless told not to - carry out a cross-validation
-      if (!is.null(m))  {
-        if (verbose) print("Cross-validation")
-        xval <- crossval(ds,m=m)
-        attr(ds,'evaluation') <- zoo(xval)
-      } else attr(ds,'evaluation') <- NULL
-      
-      if (verbose) print(names(attributes(ds)))
-      if (ns==1) {
-        dsall <- ds 
-      } else {
-        if (i==1) {
-          dsall <- list(ds.1=ds) 
-        } else {
-          eval(parse(text=paste('dsall$ds.',i,' <- ds',sep='')))
-        }
-      }
     }
+    ## May need an option for coombined field: x is 'field' + 'comb'
+    #if (is.null(ds)) browser()
     
-    ## If PCA was used to transform the predictands to preserve the
-    ## spatial covariance, then do the inverse to recover the results
-    ## in a structure comparable to the original stations.
-    if ( (ns>1) & pca ) {
-      attr(dsall,'pattern') <- attr(Y,'pattern')
-      attr(dsall,'eigenvalues') <- attr(Y,'eigenvalues')    
-      attr(dsall,'mean') <- attr(Y,'mean')    
-      ds.results <- pca2station(dsall)
+    ## Unless told not to - carry out a cross-validation
+    if (!is.null(m))  {
+      if (verbose) print("Cross-validation")
+      xval <- crossval(ds,m=m)
+      attr(ds,'evaluation') <- zoo(xval)
+    } else attr(ds,'evaluation') <- NULL
+    
+    if (verbose) print(names(attributes(ds)))
+    if (ns==1) {
+      dsall <- ds 
     } else {
-      ds.results <- dsall
+      if (i==1) {
+        dsall <- list(ds.1=ds) 
+      } else {
+        eval(parse(text=paste('dsall$ds.',i,' <- ds',sep='')))
+      }
     }
-    
-    if (verbose) print("--- exit DS.station ---")
-    if (plot) plot(ds.results, verbose=verbose)
-    invisible(ds.results)  
+  }
+  
+  ## If PCA was used to transform the predictands to preserve the
+  ## spatial covariance, then do the inverse to recover the results
+  ## in a structure comparable to the original stations.
+  if ( (ns>1) & pca ) {
+    attr(dsall,'pattern') <- attr(Y,'pattern')
+    attr(dsall,'eigenvalues') <- attr(Y,'eigenvalues')    
+    attr(dsall,'mean') <- attr(Y,'mean')    
+    ds.results <- pca2station(dsall)
+  } else {
+    ds.results <- dsall
+  }
+  
+  if (verbose) print("--- exit DS.station ---")
+  if (plot) plot(ds.results, verbose=verbose)
+  invisible(ds.results)  
 }
 
 ## DS for combined fields - to make predictions not based on the
@@ -592,68 +597,68 @@ DS.station <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL,
 #' @export 
 DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
                     swsm="step", m=5, rmtrend=TRUE, ip=1:7,
-		    weighted=TRUE, ..., pca=FALSE, npca=20,
-		    biascorrect=FALSE) {
-    if (verbose) { print('--- DS.comb ---'); print(summary(coredata(y)))}
-    ##print('index(y)'); print(index(y))
-    ##print('err(y)'); print(err(y))
-    if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
-        yy <- X
-        X <- y
-        y <- yy
-        swapped <- TRUE
-        rm("yy")
-    }
-    X0 <- X
+                    weighted=TRUE, ..., pca=FALSE, npca=20,
+                    biascorrect=FALSE) {
+  if (verbose) { print('--- DS.comb ---'); print(summary(coredata(y)))}
+  ##print('index(y)'); print(index(y))
+  ##print('err(y)'); print(err(y))
+  if ( inherits(y,c("eof")) & inherits(X,c("station"))) {
+    yy <- X
+    X <- y
+    y <- yy
+    swapped <- TRUE
+    rm("yy")
+  }
+  X0 <- X
+  
+  stopifnot(!missing(y),!missing(X),is.matrix(X),
+            inherits(X,"comb"),inherits(y,"station"))
+  
+  ## For combined fields/common EOFs, do the DS-fitting once, and then
+  ## use the model n times to predict the values associated with the
+  ## appended fields:
+  
+  if (class(index(y)) != (class(index(X)))) {
+    warning(paste('DS.comb: different indices:', class(index(y)),class(index(X))))
+    if (is.numeric(index(y))) index(X) <- year(X)
+    if (is.numeric(index(X))) index(y) <- year(y)
+  }
+  
+  if (!inherits(X,"eof")) X <- EOF(X,it=it)
+  
+  if (biascorrect) {
+    if (verbose) print("Bias correction - bias-fix common EOF")
+    X <- biasfix(X)
+  }
+  
+  ds <- DS.default(y,X,method=method,swsm=swsm,m=m,
+                   rmtrend=rmtrend,ip=ip,weighted=weighted,verbose=verbose,...)
+  
+  ## For combined fields, make sure to add the appended PCs to
+  ## the results.
+  #print(names(attributes(X)))
+  model <- attr(ds,'model')
+  n.app <- attr(X,'n.apps')
+  attr(ds,'n.apps') <- n.app
+  if (verbose) {print(paste('For combined fields, n.apps=',n.app));
+    print(names(attributes(X))[grep('app',names(attributes(X)))]) }
+  for (i in 1:n.app) {
+    #print("HERE")
+    Z <- eval(parse(text=paste("attr(X0,'appendix.",i,"')",sep="")))
+    #
+    newdata <- data.frame(X=Z)
+    colnames(newdata) <- paste("X",1:ncol(X),sep=".") 
+    #print(summary(newdata))
+    z <- predict(model,newdata=newdata) + attr(ds,'mean')
+    Y <- zoo(z,order.by=index(Z))
+    Y <- attrcp(Z,Y)
     
-    stopifnot(!missing(y),!missing(X),is.matrix(X),
-              inherits(X,"comb"),inherits(y,"station"))
-    
-    ## For combined fields/common EOFs, do the DS-fitting once, and then
-    ## use the model n times to predict the values associated with the
-    ## appended fields:
-    
-    if (class(index(y)) != (class(index(X)))) {
-      warning(paste('DS.comb: different indices:', class(index(y)),class(index(X))))
-      if (is.numeric(index(y))) index(X) <- year(X)
-      if (is.numeric(index(X))) index(y) <- year(y)
-    }
-    
-    if (!inherits(X,"eof")) X <- EOF(X,it=it)
-    
-    if (biascorrect) {
-        if (verbose) print("Bias correction - bias-fix common EOF")
-        X <- biasfix(X)
-    }
-    
-    ds <- DS.default(y,X,method=method,swsm=swsm,m=m,
-                     rmtrend=rmtrend,ip=ip,weighted=weighted,verbose=verbose,...)
-
-    ## For combined fields, make sure to add the appended PCs to
-    ## the results.
-                                        #print(names(attributes(X)))
-    model <- attr(ds,'model')
-    n.app <- attr(X,'n.apps')
-    attr(ds,'n.apps') <- n.app
-    if (verbose) {print(paste('For combined fields, n.apps=',n.app));
-                  print(names(attributes(X))[grep('app',names(attributes(X)))]) }
-    for (i in 1:n.app) {
-                                        #print("HERE")
-        Z <- eval(parse(text=paste("attr(X0,'appendix.",i,"')",sep="")))
-                                        #
-        newdata <- data.frame(X=Z)
-        colnames(newdata) <- paste("X",1:ncol(X),sep=".") 
-                                        #print(summary(newdata))
-        z <- predict(model,newdata=newdata) + attr(ds,'mean')
-        Y <- zoo(z,order.by=index(Z))
-        Y <- attrcp(Z,Y)
-
-        # Store in a similar structure as in the common EOF:
-        eval(parse(text=paste("attr(ds,'appendix.",i,"') <- Y",sep="")))
-    }
-    rm("X0"); gc(reset=TRUE)
-    if (plot) plot(ds)
-    invisible(ds)
+    # Store in a similar structure as in the common EOF:
+    eval(parse(text=paste("attr(ds,'appendix.",i,"') <- Y",sep="")))
+  }
+  rm("X0"); gc(reset=TRUE)
+  if (plot) plot(ds)
+  invisible(ds)
 }
 
 ## This function takes care of downscaling based on a field-object X.
@@ -663,61 +668,61 @@ DS.comb <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
 #' @export
 DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
                      method="lm",swsm="step",m=5,rmtrend=TRUE,ip=1:7,weighted=TRUE,...,biascorrect=FALSE) {
-    if (verbose) { print('--- DS.field ---'); print(summary(coredata(y)))}
-    ## Keep track of which is an eof object and which is a station record:
-    swapped <- FALSE
-    if ( inherits(y,c("field")) & inherits(X,c("station"))) {
-        yy <- X
-        X <- y
-        y <- yy
-        swapped <- TRUE
-    }
-    if (class(index(y)) != (class(index(X)))) {
-      warning(paste('DS.field: different indices:', class(index(y)),class(index(X))))
-      if (is.numeric(index(y))) index(X) <- year(X)
-      if (is.numeric(index(X))) index(y) <- year(y)
-    }
-                                        #print(class(X)); print(attr(y,'variable'))
-    if (verbose) {print(class(X)); print(varid(y))}
-    if (sum(is.element(tolower(attr(y,'variable')),c('t2m','tmax','tmin'))) >0) {
-      if (inherits(X,'month')) {
-        ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
-                         rmtrend=rmtrend,ip=ip,
-                         verbose=verbose)
-        #ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
-        #                         method=method,swsm=swsm,m=m,
-        #                         rmtrend=rmtrend,ip=ip,
-        #                         verbose=verbose)
-      } else if (inherits(X,'season')) {
-        # the DS.t2m.season.field is not in working order
-        #ds <- DS.t2m.season.field(y=y,X=X,biascorrect=biascorrect,
-        #                          method=method,swsm=swsm,m=m,
-        #                          rmtrend=rmtrend,ip=ip,
-        #                          verbose=verbose)
-        ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
-                         rmtrend=rmtrend,ip=ip,verbose=verbose)
-      } else if (inherits(X,'annual')) {
-        ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
-                         rmtrend=rmtrend,ip=ip,verbose=verbose)
-        #ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
-        #                          method=method,swsm=swsm,m=m,
-        #                          rmtrend=rmtrend,ip=ip,
-        #                          verbose=verbose)
-      }
-    } else if (tolower(attr(y,'variable'))=='precip') {
+  if (verbose) { print('--- DS.field ---'); print(summary(coredata(y)))}
+  ## Keep track of which is an eof object and which is a station record:
+  swapped <- FALSE
+  if ( inherits(y,c("field")) & inherits(X,c("station"))) {
+    yy <- X
+    X <- y
+    y <- yy
+    swapped <- TRUE
+  }
+  if (class(index(y)) != (class(index(X)))) {
+    warning(paste('DS.field: different indices:', class(index(y)),class(index(X))))
+    if (is.numeric(index(y))) index(X) <- year(X)
+    if (is.numeric(index(X))) index(y) <- year(y)
+  }
+  #print(class(X)); print(attr(y,'variable'))
+  if (verbose) {print(class(X)); print(varid(y))}
+  if (sum(is.element(tolower(attr(y,'variable')),c('t2m','tmax','tmin'))) >0) {
+    if (inherits(X,'month')) {
+      ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+                       rmtrend=rmtrend,ip=ip,
+                       verbose=verbose)
+      #ds <- DS.t2m.month.field(y=y,X=X,biascorrect=biascorrect,
+      #                         method=method,swsm=swsm,m=m,
+      #                         rmtrend=rmtrend,ip=ip,
+      #                         verbose=verbose)
+    } else if (inherits(X,'season')) {
+      # the DS.t2m.season.field is not in working order
+      #ds <- DS.t2m.season.field(y=y,X=X,biascorrect=biascorrect,
+      #                          method=method,swsm=swsm,m=m,
+      #                          rmtrend=rmtrend,ip=ip,
+      #                          verbose=verbose)
       ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
                        rmtrend=rmtrend,ip=ip,verbose=verbose)
-      #ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
-      #                             method=method,swsm=swsm,m=m,
-      #                             rmtrend=rmtrend,ip=ip,
-      #                             verbose=verbose)
-    } else {
+    } else if (inherits(X,'annual')) {
       ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
                        rmtrend=rmtrend,ip=ip,verbose=verbose)
+      #ds <- DS.t2m.annual.field(y=y,X=X,biascorrect=biascorrect,
+      #                          method=method,swsm=swsm,m=m,
+      #                          rmtrend=rmtrend,ip=ip,
+      #                          verbose=verbose)
     }
-    if (verbose) print('return downscaled results')
-    if (plot) plot(ds)
-    invisible(ds)
+  } else if (tolower(attr(y,'variable'))=='precip') {
+    ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+                     rmtrend=rmtrend,ip=ip,verbose=verbose)
+    #ds <- DS.precip.season.field(y=y,X=X,biascorrect=biascorrect,
+    #                             method=method,swsm=swsm,m=m,
+    #                             rmtrend=rmtrend,ip=ip,
+    #                             verbose=verbose)
+  } else {
+    ds <- DS.default(y=y,X=X,method=method,swsm=swsm,m=m,
+                     rmtrend=rmtrend,ip=ip,verbose=verbose)
+  }
+  if (verbose) print('return downscaled results')
+  if (plot) plot(ds)
+  invisible(ds)
 }
 
 
@@ -892,285 +897,285 @@ DS.field <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,
 DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
                    swsm=NULL, m=5, rmtrend=TRUE, ip=1:10,
                    weighted=TRUE,..., pca=TRUE, npca=20, biascorrect=FALSE) {
-
-    if (verbose) {
-      print('--- DS.pca ---')
-      print(summary(coredata(y)))
-      print(class(y))
-      print(class(X))
-    }
-    
-    if (class(index(y)) != (class(index(X)))) {
-      if (verbose) {print('different class'); summary(coredata(y))}
-      warning(paste('DS.pca: different indices:', class(index(y)),class(index(X))))
-      if (is.numeric(index(y)) | is.numeric(index(X))) {index(y) <- year(y); index(X) <- year(X)}
-      if (verbose) {print('Summary of predictand - intermediate inspection1'); print(zoo(y))}
-    }
   
-    ## If the predictor is a list, then use DS.list
-    if (is.list(X)) {
-      if (verbose) print('Predictors represented by a list object')
-      z <- DS.list(y,X,biascorrect=biascorrect,
-                   method=method,swsm=swsm,m=m,
-                   rmtrend=rmtrend,ip=ip,
-                   verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
-      return(z)
-    }
-
-    ## Check the predictor
-    if (!inherits(X,"eof") & inherits(X,"field")) {
-      X <- EOF(X)
-    } else if (!inherits(X,"eof") & !inherits(X,"field") & inherits(X,"zoo")) {
-      ## If the predictor is an index, then use the same code to
-      ## estimate teleconnection patterns
-      if (verbose) print('Predictor is a zoo object')
-      attr(X,'history') <- history.stamp()
-      attr(X,'pattern') <- attr(y,'pattern')
-      attr(X,'eigenvalues') <- attr(y,'eigenvalues')
-      attr(X,'longitude') <- lon(y)
-      attr(X,'latitude') <- lat(y)
-      attr(X,'variable') <- varid(y)
-      attr(X,'unit') <- unit(y)
+  if (verbose) {
+    print('--- DS.pca ---')
+    print(summary(coredata(y)))
+    print(class(y))
+    print(class(X))
+  }
   
-      class(X) <- c('eof',class(X))
-      z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
-                  ip=ip,rmtrend=rmtrend,verbose=verbose,
-                  weighted=weighted,pca=pca,npca=npca,...)
-      return(z)
-    } else if (verbose) print('Predictor is OK - an EOF object')
-   
-    ## Check the predictand
-    if (inherits(y,"eof") & inherits(y,"field")) {
-      if (verbose) print('Make the predictand EOF look like PCAs before downscaling')
-      cls0 <- class(y)
-      class(y)[1:2] <- c('pca','station')
-      z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
-                  ip=ip,rmtrend=rmtrend,verbose=verbose,
-                  weighted=weighted,...)
-      class(z)[2:3] <- c('eof','field')
-      attr(z,'pattern') <- attr(y,'pattern')
-      attr(z,'eigenvalues') <- attr(y,'eigenvalues')
-      attr(z,'longitude') <- lon(y)
-      attr(z,'latitude') <- lat(y)
-      attr(z,'variable') <- varid(y)
-      attr(z,'unit') <- unit(y)      
-      return(z)
+  if (class(index(y)) != (class(index(X)))) {
+    if (verbose) {print('different class'); summary(coredata(y))}
+    warning(paste('DS.pca: different indices:', class(index(y)),class(index(X))))
+    if (is.numeric(index(y)) | is.numeric(index(X))) {index(y) <- year(y); index(X) <- year(X)}
+    if (verbose) {print('Summary of predictand - intermediate inspection1'); print(zoo(y))}
+  }
+  
+  ## If the predictor is a list, then use DS.list
+  if (is.list(X)) {
+    if (verbose) print('Predictors represented by a list object')
+    z <- DS.list(y,X,biascorrect=biascorrect,
+                 method=method,swsm=swsm,m=m,
+                 rmtrend=rmtrend,ip=ip,
+                 verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+    return(z)
+  }
+  
+  ## Check the predictor
+  if (!inherits(X,"eof") & inherits(X,"field")) {
+    X <- EOF(X)
+  } else if (!inherits(X,"eof") & !inherits(X,"field") & inherits(X,"zoo")) {
+    ## If the predictor is an index, then use the same code to
+    ## estimate teleconnection patterns
+    if (verbose) print('Predictor is a zoo object')
+    attr(X,'history') <- history.stamp()
+    attr(X,'pattern') <- attr(y,'pattern')
+    attr(X,'eigenvalues') <- attr(y,'eigenvalues')
+    attr(X,'longitude') <- lon(y)
+    attr(X,'latitude') <- lat(y)
+    attr(X,'variable') <- varid(y)
+    attr(X,'unit') <- unit(y)
+    
+    class(X) <- c('eof',class(X))
+    z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
+                ip=ip,rmtrend=rmtrend,verbose=verbose,
+                weighted=weighted,pca=pca,npca=npca,...)
+    return(z)
+  } else if (verbose) print('Predictor is OK - an EOF object')
+  
+  ## Check the predictand
+  if (inherits(y,"eof") & inherits(y,"field")) {
+    if (verbose) print('Make the predictand EOF look like PCAs before downscaling')
+    cls0 <- class(y)
+    class(y)[1:2] <- c('pca','station')
+    z <- DS.pca(y,X,method=method,swsm=swsm,m=m,
+                ip=ip,rmtrend=rmtrend,verbose=verbose,
+                weighted=weighted,...)
+    class(z)[2:3] <- c('eof','field')
+    attr(z,'pattern') <- attr(y,'pattern')
+    attr(z,'eigenvalues') <- attr(y,'eigenvalues')
+    attr(z,'longitude') <- lon(y)
+    attr(z,'latitude') <- lat(y)
+    attr(z,'variable') <- varid(y)
+    attr(z,'unit') <- unit(y)      
+    return(z)
+  }
+  
+  stopifnot(!missing(y),!missing(X),
+            inherits(X,"eof"),inherits(y,"station"))
+  
+  if(inherits(y,"pca") & !is.null(npca)) y <- subset(y, ip=1:npca)
+  cls <- class(y)
+  
+  y0 <- y; X0 <- X
+  #nattr <- softattr(y)
+  
+  # synchronise the two zoo objects through 'merge' (zoo)
+  if (verbose) { print('Summary of predictand before matchdate'); print(summary(coredata(y)))
+    print(index(y)); print(index(X))
+  }
+  if (verbose) print('predictand y: match date with predictor X')
+  y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
+  if (verbose) {print('summary of predictand y after matchdate'); print(summary(coredata(y)))}
+  
+  if (verbose) print('predictor: match date with predictand')
+  X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
+  dy <- dim(y); if (is.null(dy)) dy <- c(length(y),1)
+  dx <- dim(X); if (is.null(dx)) dx <- c(length(X),1)
+  
+  # Use method for downscaling
+  #str(y); str(X)
+  if (verbose) print(method)
+  if (toupper(method)=='MVR') {
+    if (verbose) print('MVR')
+    if (is.null(dy)) dy <- c(length(y),1)
+    if (dy[2]>1) colnames(y) <- paste("y",1:dy[2],sep=".")
+    if (is.null(dx)) dx <- c(length(X),1)
+    if (dx[2]>1) colnames(X) <- paste("X",1:dx[2],sep=".") 
+    #colnames(y) <- paste("y",1:dim(y)[2],sep=".")
+    #colnames(X) <- paste("X",1:dim(y)[2],sep=".")
+    #    yX <- merge(y,X,all=FALSE)
+    #
+    #    vars <- names(yX)
+    #    ys <- vars[grep('y',vars)]
+    #    Xs <- vars[grep('X',vars)]
+    #    ix <- is.element(vars,Xs)
+    #    iy <- is.element(vars,ys)
+    #    x <- zoo(coredata(yX[,ix]),order.by=index(yX))
+    #    y <- zoo(coredata(yX[,iy]),order.by=index(yX))
+    #    class(y) <- cls
+    
+    print('WARNING: does not operate on combined objects')
+    model <- eval(parse(text=paste(method,"(y,x)",sep="")))
+    # Reconstruct the entire data, and then apply the PCA to this
+    V <- predict(model); W <- attr(y0,'eigenvalues')
+    U <- attr(y0,'pattern')
+    dU <- dim(U)
+    if (length(dU)==3) {
+      if (verbose) print('3D -> 2D')
+      dim(U) <- c(dU[1]*dU[2],dU[3])
     }
-    
-    stopifnot(!missing(y),!missing(X),
-              inherits(X,"eof"),inherits(y,"station"))
-    
-    if(inherits(y,"pca") & !is.null(npca)) y <- subset(y, ip=1:npca)
-    cls <- class(y)
-    
-    y0 <- y; X0 <- X
-    #nattr <- softattr(y)
-
-    # synchronise the two zoo objects through 'merge' (zoo)
-    if (verbose) { print('Summary of predictand before matchdate'); print(summary(coredata(y)))
-      print(index(y)); print(index(X))
-    }
-    if (verbose) print('predictand y: match date with predictor X')
-    y <- matchdate(y,it=X,verbose=verbose) # REB: 2014-12-16
-    if (verbose) {print('summary of predictand y after matchdate'); print(summary(coredata(y)))}
-    
-    if (verbose) print('predictor: match date with predictand')
-    X <- matchdate(X,it=y,verbose=verbose) # REB: 2014-12-16
-    dy <- dim(y); if (is.null(dy)) dy <- c(length(y),1)
-    dx <- dim(X); if (is.null(dx)) dx <- c(length(X),1)
-    
-    # Use method for downscaling
-    #str(y); str(X)
-    if (verbose) print(method)
-    if (toupper(method)=='MVR') {
-        if (verbose) print('MVR')
-        if (is.null(dy)) dy <- c(length(y),1)
-        if (dy[2]>1) colnames(y) <- paste("y",1:dy[2],sep=".")
-        if (is.null(dx)) dx <- c(length(X),1)
-        if (dx[2]>1) colnames(X) <- paste("X",1:dx[2],sep=".") 
-                                        #colnames(y) <- paste("y",1:dim(y)[2],sep=".")
-                                        #colnames(X) <- paste("X",1:dim(y)[2],sep=".")
-                                        #    yX <- merge(y,X,all=FALSE)
-                                        #
-                                        #    vars <- names(yX)
-                                        #    ys <- vars[grep('y',vars)]
-                                        #    Xs <- vars[grep('X',vars)]
-                                        #    ix <- is.element(vars,Xs)
-                                        #    iy <- is.element(vars,ys)
-                                        #    x <- zoo(coredata(yX[,ix]),order.by=index(yX))
-                                        #    y <- zoo(coredata(yX[,iy]),order.by=index(yX))
-                                        #    class(y) <- cls
-        
-        print('WARNING: does not operate on combined objects')
-        model <- eval(parse(text=paste(method,"(y,x)",sep="")))
-                                        # Reconstruct the entire data, and then apply the PCA to this
-        V <- predict(model); W <- attr(y0,'eigenvalues')
-        U <- attr(y0,'pattern')
-        dU <- dim(U)
-        if (length(dU)==3) {
-          if (verbose) print('3D -> 2D')
-          dim(U) <- c(dU[1]*dU[2],dU[3])
-        }
-        UWV <- U %*% diag(W) %*% t(V)
-        pca <- svd(UWV)
-                                        #str(pca)
-        ds <- zoo(pca$v,order.by=index(X))
-        model$fitted.values <- zoo(model$fitted.values,order.by=index(X)) # +
-          ##    attr(y0,'mean') + offset  # REB 04.12.13: included attr(y0,'mean') in
-          ##                              # addition to offset
-            model$calibration.data <- X
-        class(model$fitted.values) <- class(y0)
-        attr(ds,'model') <- model
-        attr(ds,'quality') <- var(coredata(model$fitted.values))/var(y,na.rm=TRUE)
-        attr(ds,'eigenvalues') <- pca$d
-        attr(ds,'sum.eigenv') <- sum(pca$d)
-        attr(ds,'pattern') <- pca$u
-    } else {
-        if (verbose) print('Default')
-        if (!verbose) pb <- txtProgressBar(style=3)
-        ## treat each PC as a station
-        if (verbose) print('Prepare output data')
-        ## If common EOFs, then accomodate for the additional predictions
-        if (!is.null(attr(X0,'n.apps'))) {
-          if (verbose) print(attr(X0,'n.apps'))
-          Xp <- attr(X0,'appendix.1')
-        } else Xp <- X
-
-        
-        y.out <- matrix(rep(NA,dx[1]*dy[2]),dx[1],dy[2])
-        fit.val <- y.out
-        dxp <- dim(Xp); if (is.null(dxp)) dxp <- c(length(Xp),1)
-        yp.out <- matrix(rep(NA,dxp[1]*dy[2]),dxp[1],dy[2])
-        if (verbose) print(paste('PC',ip,collapse=' '))
-                                        # Loop over the PCs...
-        ## REB 2015-03-23
-        ## The predictor pattern associated with PCA-predictands: one
-        ## pattern for each PC. Combine into one matrix. The predictor pattern
-        ## for each station can be recovered by multiplying with the PCA pattern
-        if (verbose) print('Predictor pattern')
-        x0p <- attr(X0,'pattern')
-        dp <- dim(x0p)
-        if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs
-        if (length(dp)==2) dp <- c(dp,1)[c(1,3,2)] # if PCA rather than EOF
-        if (verbose) {str(x0p); print(dp); print(dy)}
-        predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
-        dim(predpatt) <- c(dp[1]*dp[2],dy[2])
-        dim(x0p) <- c(dp[1]*dp[2],dp[3])
-        ## This works for single predictors, but is more complicated for
-        ## multiple predictors.
-        if (dp[3] == length(attr(X0,'eigenvalues'))) x0p <- x0p %*% diag(attr(X0,'eigenvalues'))
-        model <- list(); eof <- list()
-        if (verbose) {print('Summary of predictand'); print(summary(coredata(y)))}
-        for (i in 1:dy[2]) {
-            if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
-            ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],
-                             unit=unit(y)[i],lon=lon(y)[i],lat=lat(y)[i],
-                             alt=alt(y)[i],cntr=cntr(y)[i],stid=stid(y)[i])
-            class(ys) <- c('station',class(y)[-c(1:2)])
-            
-            if (verbose) {print(class(ys)); print(class(X))}
-            z <- DS(ys,X,biascorrect=biascorrect,m=m,swsm=swsm,
-                    ip=ip,rmtrend=rmtrend,verbose=verbose,...)
-            if (verbose) print('--- return to DS.pca ---')
-
-            model[[i]] <- attr(z,'model')
-            eof[[i]] <- X
-            attr(z,'mean') <- 0 # can't remember why... REB
-
-            ## Check:
-            if (verbose) print(paste(i,'y.out[,i]:',
-               length(y.out[is.finite(ys),i]),'=',length(z),'?'))
-            
-            ## Collect the projections in a matrix:
-            y.out[is.finite(ys),i] <- coredata(z)
-            fit.val[is.finite(ys),i] <- attr(z,'fitted_values')
-            if (!is.null(attr(X0,'n.apps')))
-                yp.out[,i] <- attr(z,'appendix.1')
-            
-            ## Also keep the cross-validation
-            if (!is.null(attr(z,'evaluation'))) { ## REB 2015-03-27
-              if (verbose) print('extract cross-validation')
-              if (i==1) cval <- attr(z,'evaluation') else
-                        cval <- merge(cval,attr(z,'evaluation'))
-            } else cval <- NULL
-            ## REB 2015-03-23
-            if (verbose) print('Calculate predictor pattern:')
-            ## Only if one type of predictor - case with mixed predictors a
-            ## bit more complicated -> return NAs.
-            ## KMP 2016-01-13 else if only two coefficients
-            if ( (dp[3] >= length(attr(z,'model')$coefficients)-1) &
-                 (length(attr(z,'model')$coefficients) > 2) ) {
-              predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] %*% attr(z,'model')$coefficients[-1]
-            } else if (length(attr(z,'model')$coefficients)==2) {
-              predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] * attr(z,'model')$coefficients[-1]
-            }
-        }
-
-        if (verbose) print(paste('Transform back into a PCA-object of dim',
-                                 dim(y.out),collapse=' '))
-        ds <- zoo(y.out,order.by=index(X))
-        ds <- attrcp(y,ds)
-        attr(ds,'eigenvalues') <- attr(y0,'eigenvalues')
-        attr(ds,'sum.eigenv') <- attr(y0,'sum.eigenv')
-        ## REB 2015-03-23
-        dim(predpatt) <- c(dp[1],dp[2],dy[2])
-        attr(predpatt,'longitude') <- lon(X0)
-        attr(predpatt,'latitude') <- lat(X0)
-        attr(predpatt,'variable') <- varid(X0)
-        attr(predpatt,'unit') <- unit(X0)
-        attr(ds,'predictor.pattern') <- predpatt
-        ## REB 2015-03-23
-        attr(ds,'pattern') <- attr(y0,'pattern')
-        if (!is.null(cval))
-          names(cval) <- paste(c('X','Z'),'PCA',sort(rep(1:dy[2],2)),sep='.')
-        attr(ds,'evaluation') <- cval
-        if (!is.null(attr(X0,'n.apps'))) {
-            attr(ds,'n.apps') <- 1
-            yp.out <- zoo(yp.out,order.by=index(Xp))
-            yp.out -> attr(ds,'appendix.1')
-        }
-    }
-    ## Check the 'eof' attribute
-    if ( (!is.list(X0)) & is.list(eof) ) {
-      eof <- eof[[1]]
-      if (verbose) print('Check suggests that eof is stored as list -> eof')
-    }
-    
-    ## Make sure that predictions have the same index class (time units) as the original data 
-    if (class(index(ds)) != class(index(y))) {
-      ## For annual data:
-      if ( (class(index(ds))=='Date') & (class(index(y0))=='numeric') & inherits(y0,'annual') ) 
-        index(ds) <- year(index(ds))
-      if ( (class(index(ds))=='numeric') & (class(index(y0))=='Date') & inherits(y0,'annual') ) 
-        index(ds) <- as.Date(paste(index(ds),'01-01',sep='-'))
-    }
-    ##print(class(model)); str(model)
-    attr(ds,'calibration_data') <- attr(z,'calibration_data')
-    attr(ds,'fitted_values') <- zoo(fit.val,order.by=index(attr(z,'fitted_values')))
-    class(attr(ds,'fitted_values')) <- class(y0)
+    UWV <- U %*% diag(W) %*% t(V)
+    pca <- svd(UWV)
+    #str(pca)
+    ds <- zoo(pca$v,order.by=index(X))
+    model$fitted.values <- zoo(model$fitted.values,order.by=index(X)) # +
+    ##    attr(y0,'mean') + offset  # REB 04.12.13: included attr(y0,'mean') in
+    ##                              # addition to offset
+    model$calibration.data <- X
+    class(model$fitted.values) <- class(y0)
     attr(ds,'model') <- model
-    attr(ds,'eof') <- eof
-    attr(ds,'original_data') <- y0
-    attr(ds,'variable') <- varid(y0)
-    attr(ds,'mean') <- attr(y0,'mean') # + offset
-    attr(ds,'max.autocor') <- attr(y0,'max.autocor')
-    attr(ds,'tot.var') <- attr(y0,'tot.var')
-                                        #attr(ds,'dimensions') <- c(du[1],du[2])
-    attr(ds,'longitude') <- lon(y0)
-    attr(ds,'latitude') <- lat(y0)
-                                        #  attr(ds,'source') <- paste(attr(y0,'source'),attr(X,'source'),sep="-")
-    attr(ds,'source') <- attr(X,'source')
-    attr(ds,'history') <- history.stamp(y)
-    #attr(ds,'call') <- match.call()
-    class(ds) <- c("ds",cls)
-
-                                        #plot(zoo(y[,1],order.by=year(y)),lwd=3)
-                                        #lines(zoo(y.out[,1],order.by=year(X)),col='blue',lwd=2)
-                                        #lines(zoo(ds[,1],order.by=year(ds)),col='red',lty=2)
-    if (verbose) print('--- return ---')
-    if (plot) plot(ds)
-    invisible(ds)
+    attr(ds,'quality') <- var(coredata(model$fitted.values))/var(y,na.rm=TRUE)
+    attr(ds,'eigenvalues') <- pca$d
+    attr(ds,'sum.eigenv') <- sum(pca$d)
+    attr(ds,'pattern') <- pca$u
+  } else {
+    if (verbose) print('Default')
+    if (!verbose) pb <- txtProgressBar(style=3)
+    ## treat each PC as a station
+    if (verbose) print('Prepare output data')
+    ## If common EOFs, then accomodate for the additional predictions
+    if (!is.null(attr(X0,'n.apps'))) {
+      if (verbose) print(attr(X0,'n.apps'))
+      Xp <- attr(X0,'appendix.1')
+    } else Xp <- X
     
+    
+    y.out <- matrix(rep(NA,dx[1]*dy[2]),dx[1],dy[2])
+    fit.val <- y.out
+    dxp <- dim(Xp); if (is.null(dxp)) dxp <- c(length(Xp),1)
+    yp.out <- matrix(rep(NA,dxp[1]*dy[2]),dxp[1],dy[2])
+    if (verbose) print(paste('PC',ip,collapse=' '))
+    # Loop over the PCs...
+    ## REB 2015-03-23
+    ## The predictor pattern associated with PCA-predictands: one
+    ## pattern for each PC. Combine into one matrix. The predictor pattern
+    ## for each station can be recovered by multiplying with the PCA pattern
+    if (verbose) print('Predictor pattern')
+    x0p <- attr(X0,'pattern')
+    dp <- dim(x0p)
+    if (is.null(dp)) dp <- c(length(x0p),1,1)  # list combining EOFs
+    if (length(dp)==2) dp <- c(dp,1)[c(1,3,2)] # if PCA rather than EOF
+    if (verbose) {str(x0p); print(dp); print(dy)}
+    predpatt <- rep(NA,dp[1]*dp[2]*dy[2])
+    dim(predpatt) <- c(dp[1]*dp[2],dy[2])
+    dim(x0p) <- c(dp[1]*dp[2],dp[3])
+    ## This works for single predictors, but is more complicated for
+    ## multiple predictors.
+    if (dp[3] == length(attr(X0,'eigenvalues'))) x0p <- x0p %*% diag(attr(X0,'eigenvalues'))
+    model <- list(); eof <- list()
+    if (verbose) {print('Summary of predictand'); print(summary(coredata(y)))}
+    for (i in 1:dy[2]) {
+      if (!verbose) setTxtProgressBar(pb,i/dy[2]) 
+      ys <- as.station(zoo(y[,i]),loc=loc(y)[i],param=varid(y)[i],
+                       unit=unit(y)[i],lon=lon(y)[i],lat=lat(y)[i],
+                       alt=alt(y)[i],cntr=cntr(y)[i],stid=stid(y)[i])
+      class(ys) <- c('station',class(y)[-c(1:2)])
+      
+      if (verbose) {print(class(ys)); print(class(X))}
+      z <- DS(ys,X,biascorrect=biascorrect,m=m,swsm=swsm,
+              ip=ip,rmtrend=rmtrend,verbose=verbose,...)
+      if (verbose) print('--- return to DS.pca ---')
+      
+      model[[i]] <- attr(z,'model')
+      eof[[i]] <- X
+      attr(z,'mean') <- 0 # can't remember why... REB
+      
+      ## Check:
+      if (verbose) print(paste(i,'y.out[,i]:',
+                               length(y.out[is.finite(ys),i]),'=',length(z),'?'))
+      
+      ## Collect the projections in a matrix:
+      y.out[is.finite(ys),i] <- coredata(z)
+      fit.val[is.finite(ys),i] <- attr(z,'fitted_values')
+      if (!is.null(attr(X0,'n.apps')))
+        yp.out[,i] <- attr(z,'appendix.1')
+      
+      ## Also keep the cross-validation
+      if (!is.null(attr(z,'evaluation'))) { ## REB 2015-03-27
+        if (verbose) print('extract cross-validation')
+        if (i==1) cval <- attr(z,'evaluation') else
+          cval <- merge(cval,attr(z,'evaluation'))
+      } else cval <- NULL
+      ## REB 2015-03-23
+      if (verbose) print('Calculate predictor pattern:')
+      ## Only if one type of predictor - case with mixed predictors a
+      ## bit more complicated -> return NAs.
+      ## KMP 2016-01-13 else if only two coefficients
+      if ( (dp[3] >= length(attr(z,'model')$coefficients)-1) &
+           (length(attr(z,'model')$coefficients) > 2) ) {
+        predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] %*% attr(z,'model')$coefficients[-1]
+      } else if (length(attr(z,'model')$coefficients)==2) {
+        predpatt[,i] <- x0p[,1:length(attr(z,'model')$coefficients)-1] * attr(z,'model')$coefficients[-1]
+      }
+    }
+    
+    if (verbose) print(paste('Transform back into a PCA-object of dim',
+                             dim(y.out),collapse=' '))
+    ds <- zoo(y.out,order.by=index(X))
+    ds <- attrcp(y,ds)
+    attr(ds,'eigenvalues') <- attr(y0,'eigenvalues')
+    attr(ds,'sum.eigenv') <- attr(y0,'sum.eigenv')
+    ## REB 2015-03-23
+    dim(predpatt) <- c(dp[1],dp[2],dy[2])
+    attr(predpatt,'longitude') <- lon(X0)
+    attr(predpatt,'latitude') <- lat(X0)
+    attr(predpatt,'variable') <- varid(X0)
+    attr(predpatt,'unit') <- unit(X0)
+    attr(ds,'predictor.pattern') <- predpatt
+    ## REB 2015-03-23
+    attr(ds,'pattern') <- attr(y0,'pattern')
+    if (!is.null(cval))
+      names(cval) <- paste(c('X','Z'),'PCA',sort(rep(1:dy[2],2)),sep='.')
+    attr(ds,'evaluation') <- cval
+    if (!is.null(attr(X0,'n.apps'))) {
+      attr(ds,'n.apps') <- 1
+      yp.out <- zoo(yp.out,order.by=index(Xp))
+      yp.out -> attr(ds,'appendix.1')
+    }
+  }
+  ## Check the 'eof' attribute
+  if ( (!is.list(X0)) & is.list(eof) ) {
+    eof <- eof[[1]]
+    if (verbose) print('Check suggests that eof is stored as list -> eof')
+  }
+  
+  ## Make sure that predictions have the same index class (time units) as the original data 
+  if (class(index(ds)) != class(index(y))) {
+    ## For annual data:
+    if ( (class(index(ds))=='Date') & (class(index(y0))=='numeric') & inherits(y0,'annual') ) 
+      index(ds) <- year(index(ds))
+    if ( (class(index(ds))=='numeric') & (class(index(y0))=='Date') & inherits(y0,'annual') ) 
+      index(ds) <- as.Date(paste(index(ds),'01-01',sep='-'))
+  }
+  ##print(class(model)); str(model)
+  attr(ds,'calibration_data') <- attr(z,'calibration_data')
+  attr(ds,'fitted_values') <- zoo(fit.val,order.by=index(attr(z,'fitted_values')))
+  class(attr(ds,'fitted_values')) <- class(y0)
+  attr(ds,'model') <- model
+  attr(ds,'eof') <- eof
+  attr(ds,'original_data') <- y0
+  attr(ds,'variable') <- varid(y0)
+  attr(ds,'mean') <- attr(y0,'mean') # + offset
+  attr(ds,'max.autocor') <- attr(y0,'max.autocor')
+  attr(ds,'tot.var') <- attr(y0,'tot.var')
+  #attr(ds,'dimensions') <- c(du[1],du[2])
+  attr(ds,'longitude') <- lon(y0)
+  attr(ds,'latitude') <- lat(y0)
+  #  attr(ds,'source') <- paste(attr(y0,'source'),attr(X,'source'),sep="-")
+  attr(ds,'source') <- attr(X,'source')
+  attr(ds,'history') <- history.stamp(y)
+  #attr(ds,'call') <- match.call()
+  class(ds) <- c("ds",cls)
+  
+  #plot(zoo(y[,1],order.by=year(y)),lwd=3)
+  #lines(zoo(y.out[,1],order.by=year(X)),col='blue',lwd=2)
+  #lines(zoo(ds[,1],order.by=year(ds)),col='red',lty=2)
+  if (verbose) print('--- return ---')
+  if (plot) plot(ds)
+  invisible(ds)
+  
 }
 
 #' @exportS3Method
@@ -1178,26 +1183,26 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
 DS.eof <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=FALSE,
                    method="lm",swsm=NULL,m=5,ip=1:10,rmtrend=TRUE,weighted=TRUE,
                    pca=TRUE,npca=20) {
-    if (verbose) { print('--- DS.eof ---'); print(summary(coredata(y)))}
-    ds <- DS.pca(y,X,biascorrect=biascorrect,
-                 method=method,swsm=swsm,m=m,
-                 rmtrend=rmtrend,ip=ip,
-                 verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
-    if(verbose) print("---return to DS.eof---")
-    ## Make sure that predictions have the same index class (time units) as the original data 
-    if (class(index(ds)) != class(index(y))) {
-      ## For annual data:
-      if ( (class(index(ds))=="Date") & class(index(y)=="numeric") & inherits(y,"annual") )
-        index(ds) <- year(index(ds))
-      if ( (class(index(ds))=="numeric") & (class(index(y))=="Date") & inherits(y,"annual") ) 
-        index(ds) <- as.Date(paste(index(ds),"01-01",sep="-"))
-    }
-    attr(ds,"original_data") <- y
-    class(attr(ds,"original_data")) <- class(y)
-    class(attr(ds,"fitted_values")) <- class(y)
-    if(verbose) print("return")
-    if (plot) plot(ds)
-    invisible(ds)
+  if (verbose) { print('--- DS.eof ---'); print(summary(coredata(y)))}
+  ds <- DS.pca(y,X,biascorrect=biascorrect,
+               method=method,swsm=swsm,m=m,
+               rmtrend=rmtrend,ip=ip,
+               verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+  if(verbose) print("---return to DS.eof---")
+  ## Make sure that predictions have the same index class (time units) as the original data 
+  if (class(index(ds)) != class(index(y))) {
+    ## For annual data:
+    if ( (class(index(ds))=="Date") & class(index(y)=="numeric") & inherits(y,"annual") )
+      index(ds) <- year(index(ds))
+    if ( (class(index(ds))=="numeric") & (class(index(y))=="Date") & inherits(y,"annual") ) 
+      index(ds) <- as.Date(paste(index(ds),"01-01",sep="-"))
+  }
+  attr(ds,"original_data") <- y
+  class(attr(ds,"original_data")) <- class(y)
+  class(attr(ds,"fitted_values")) <- class(y)
+  if(verbose) print("return")
+  if (plot) plot(ds)
+  invisible(ds)
 }
 
 #' @exportS3Method
@@ -1215,8 +1220,8 @@ DS.list <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
   for (ieof in 1:length(X)) {
     if (verbose) print(names(X)[ieof])
     z[[ieof]] <- DS(y,X[[ieof]],biascorrect=biascorrect,
-            method=method,swsm=swsm,m=m,rmtrend=rmtrend,ip=ip,
-            verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
+                    method=method,swsm=swsm,m=m,rmtrend=rmtrend,ip=ip,
+                    verbose=verbose,weighted=weighted,pca=pca,npca=npca,...)
     
     y <- as.residual(z[[ieof]])
   }
@@ -1227,90 +1232,90 @@ DS.list <- function(y,X,verbose=FALSE,plot=FALSE,...,biascorrect=TRUE,
 
 # NOT EXPORTED
 DS.mixedeof <- function(y,X,plot=FALSE,...,it=NULL,biascorrect=TRUE,
-                    method="lm",swsm="step",m=5,
-                    rmtrend=TRUE,ip=1:7,
-                    weighted=TRUE,pca=FALSE,npca=20,verbose=FALSE) {
-              ### This method combines different EOFs into one predictor by making a new
-              ### data matrix consisting of the PCs, then weight (w) these according to their
-              ### eigenvalues (normalised so that each predictor/EOF type carry similar
-              ### weight). Then a SVD is applied to this new set of combined PCs to make
-              ### an object that looks like on EOF.
-    if (verbose) { print('--- DS.mixedeof ---'); print(summary(coredata(y)))}
-    preds <- names(X)
-    if (verbose) print(preds)
-    np <- length(preds)
-
-## Test: if there is only one predictor, use the method for one predictor
-    if (np==1) {
-        if (verbose) print('Single predictor')
-        predictands <- names(y)
-        ds <- list(description='ESD')
-        for ( i in 1:length(predictands)) {
-          ds1 <- DS(y[[i]],X,biascorrect=biascorrect,
-                    method=method,swsm=swsm,
-                    rmtrend=rmtrend,ip=ip,
-                    weighted=TRUE,pca=FALSE,npca=20,...)
-          eval(parse(text=paste('ds$',predictands[i],' <- ds1',sep='')))
-        }
-        return(ds)
-        
-    } else if (verbose) print('Several predictors')
-
-## REB 2015-04-09: replace the lines below with
-      eof <- as.eof.list(X,verbose=verbose)
-
-    if (verbose) print('DS(y,eof,...)')
-    ds <- DS(y,eof,biascorrect=biascorrect,
-             method=method,swsm=swsm,m=m,
-             rmtrend=rmtrend,ip=ip,
-             weighted=TRUE,pca=FALSE,verbose=verbose,...)
-
-    ## Now, we need to reconstruct the spatial maps/patterns. There will be
-    ## one pattern for each EOF
-    if (verbose) print('synthesise patterns and store in a list')
-    zpattern <- list()
-    if (class(y)[1] != 'pca') {
-      ## When y is a pca-object, then pattern is defined for the predictands
-      ## and not the predictor.
-      if (verbose) str(attr(ds,'pattern'))
-      dp <- length(attr(ds,'pattern'))
-
-      ## udv holds the SVD results applied to the EOFs in the list.
-      udv <- attr(eof,'udv')
-      id <- attr(eof,'id')
-      for (i in 1:np) {
-            xp <- attr(ds,'pattern')
-            if (is.null(dim(xp))) {
-              ## PCA-based predictands: the pattern stores the weights of
-              ## the regression coefficients
-              if (verbose) print('DS pattern: 1D')
-              ##diag(c(xp)) %*% udv$v[1:dp,is.element(id,i)] -> eofweights
-              ## Y = beta U^T
-              xp %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
-            } else {
-              ## EOF-based predictand:
-              #
-              if (verbose) print('DS pattern: 3D')
-              xd <- dim(xp)
-              dim(xp) <- c(xd[1]*xd[2],xd[3])
-              xd %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
-            }
-              
-            U <- attr(X[[i]],'pattern'); du <- dim(U)
-            dim(U) <- c(du[1]*du[2],du[3])
-            if (is.null(dim(eofweights))) z <- U %*% diag(eofweights) else
-                                          z <- U %*% t(eofweights)
-            dim(z) <- c(du[1],du[2])
-            attr(z,'longitude') <- lon(X[[i]])
-            attr(z,'latitude') <- lat(X[[i]])
-                                        #attr(z,'dimensions') <-  attr(X[[i]],'dimensions')[1,2]
-            eval(parse(text=paste('zpattern$',preds[i],' <- z',sep='')))
-        }
-        if (verbose)print(summary(zpattern))
-        attr(ds,'pattern') <- zpattern
+                        method="lm",swsm="step",m=5,
+                        rmtrend=TRUE,ip=1:7,
+                        weighted=TRUE,pca=FALSE,npca=20,verbose=FALSE) {
+  ### This method combines different EOFs into one predictor by making a new
+  ### data matrix consisting of the PCs, then weight (w) these according to their
+  ### eigenvalues (normalised so that each predictor/EOF type carry similar
+  ### weight). Then a SVD is applied to this new set of combined PCs to make
+  ### an object that looks like on EOF.
+  if (verbose) { print('--- DS.mixedeof ---'); print(summary(coredata(y)))}
+  preds <- names(X)
+  if (verbose) print(preds)
+  np <- length(preds)
+  
+  ## Test: if there is only one predictor, use the method for one predictor
+  if (np==1) {
+    if (verbose) print('Single predictor')
+    predictands <- names(y)
+    ds <- list(description='ESD')
+    for ( i in 1:length(predictands)) {
+      ds1 <- DS(y[[i]],X,biascorrect=biascorrect,
+                method=method,swsm=swsm,
+                rmtrend=rmtrend,ip=ip,
+                weighted=TRUE,pca=FALSE,npca=20,...)
+      eval(parse(text=paste('ds$',predictands[i],' <- ds1',sep='')))
     }
-    if (plot) plot(ds)
-    invisible(ds)
+    return(ds)
+    
+  } else if (verbose) print('Several predictors')
+  
+  ## REB 2015-04-09: replace the lines below with
+  eof <- as.eof.list(X,verbose=verbose)
+  
+  if (verbose) print('DS(y,eof,...)')
+  ds <- DS(y,eof,biascorrect=biascorrect,
+           method=method,swsm=swsm,m=m,
+           rmtrend=rmtrend,ip=ip,
+           weighted=TRUE,pca=FALSE,verbose=verbose,...)
+  
+  ## Now, we need to reconstruct the spatial maps/patterns. There will be
+  ## one pattern for each EOF
+  if (verbose) print('synthesise patterns and store in a list')
+  zpattern <- list()
+  if (class(y)[1] != 'pca') {
+    ## When y is a pca-object, then pattern is defined for the predictands
+    ## and not the predictor.
+    if (verbose) str(attr(ds,'pattern'))
+    dp <- length(attr(ds,'pattern'))
+    
+    ## udv holds the SVD results applied to the EOFs in the list.
+    udv <- attr(eof,'udv')
+    id <- attr(eof,'id')
+    for (i in 1:np) {
+      xp <- attr(ds,'pattern')
+      if (is.null(dim(xp))) {
+        ## PCA-based predictands: the pattern stores the weights of
+        ## the regression coefficients
+        if (verbose) print('DS pattern: 1D')
+        ##diag(c(xp)) %*% udv$v[1:dp,is.element(id,i)] -> eofweights
+        ## Y = beta U^T
+        xp %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
+      } else {
+        ## EOF-based predictand:
+        #
+        if (verbose) print('DS pattern: 3D')
+        xd <- dim(xp)
+        dim(xp) <- c(xd[1]*xd[2],xd[3])
+        xd %*% t(udv$v[is.element(id,i),1:dp]) -> eofweights
+      }
+      
+      U <- attr(X[[i]],'pattern'); du <- dim(U)
+      dim(U) <- c(du[1]*du[2],du[3])
+      if (is.null(dim(eofweights))) z <- U %*% diag(eofweights) else
+        z <- U %*% t(eofweights)
+      dim(z) <- c(du[1],du[2])
+      attr(z,'longitude') <- lon(X[[i]])
+      attr(z,'latitude') <- lat(X[[i]])
+      #attr(z,'dimensions') <-  attr(X[[i]],'dimensions')[1,2]
+      eval(parse(text=paste('zpattern$',preds[i],' <- z',sep='')))
+    }
+    if (verbose)print(summary(zpattern))
+    attr(ds,'pattern') <- zpattern
+  }
+  if (plot) plot(ds)
+  invisible(ds)
 }
 
 #' @exportS3Method
@@ -1318,23 +1323,24 @@ DS.mixedeof <- function(y,X,plot=FALSE,...,it=NULL,biascorrect=TRUE,
 DS.station.pca <- function(y,X,verbose=FALSE,plot=FALSE,it=NULL,method="lm",swsm="step",m=5,
                            rmtrend=TRUE,ip=1:7,weighted=TRUE,...) {
   ## This function does the same as DS.eof
-    if (verbose) { print('--- DS.station.pca ---'); print(summary(coredata(y)))}
-    z <- DS.default(y=y,X=X,it=it,method=method,swsm=swsm,m=m,
-                    rmtrend=trend,ip=ip,verbose=verbose,weighted=weighted)
-    if (plot) plot(z)
-    return(z)
+  if (verbose) { print('--- DS.station.pca ---'); print(summary(coredata(y)))}
+  z <- DS.default(y=y,X=X,it=it,method=method,swsm=swsm,m=m,
+                  rmtrend=trend,ip=ip,verbose=verbose,weighted=weighted)
+  attr(z,'history') <- history.stamp()
+  if (plot) plot(z)
+  return(z)
 }
 
 #' @exportS3Method
 #' @export 
 DS.trajectory <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
                           swsm="step", m=5, rmtrend=TRUE, ip=1:7, weighted=TRUE, ...,
-			  pca=FALSE, npca=20, is=NULL, FUN='count', param=NULL, biascorrect=FALSE,
-			  unit=NULL,longname=NULL,loc=NULL) {
-   
+                          pca=FALSE, npca=20, is=NULL, FUN='count', param=NULL, biascorrect=FALSE,
+                          unit=NULL,longname=NULL,loc=NULL) {
+  
   if (verbose) { print('--- DS.trajectory ---'); print(summary(coredata(y)))}
   stopifnot(!missing(y),!missing(X),inherits(y,"trajectory"))
-
+  
   y <- subset(y,it=it,is=is)
   ys <- trajectory2station(y,...)
   
