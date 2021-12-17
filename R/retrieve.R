@@ -410,7 +410,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
       print(dimnames[grep("lev|hei|expver", dimnames)])
       print(lev)
     }
-    levid <- grep("lev|hei|expver", dimnames)
+    levid <- dimnames[grep("lev|hei|expver", dimnames)]
     
     ## REB: 2020-07-21: If the extra dimension is 'expver' pick the most recent one by default 
     if ((length(grep('expver',dimnames))>0) & is.null(lev.rng)) {
@@ -534,6 +534,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
         if (verbose) print("Sort Latitudes") 
         lat$vals <- lat$vals[lat.srt]
       }
+      dim(val) <- count
       val <- val[lon.srt,lat.srt,,]
       dim(val) <- count
     } else {
@@ -653,7 +654,10 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     d <- dim(val)
   } else {
     d <- c(lon$len,lat$len,time$len)
-    d <- d[match(seq(length(d)),c(ilon,ilat,itime))]
+    # REB&AM 2021-12-17: we dont understand why the next line is needed
+    #d <- d[match(seq(length(d)),c(ilon,ilat,itime))]
+    #browser()
+    itime <- 3
   }
   if (verbose) {print("dimensions"); print(d)}
   
