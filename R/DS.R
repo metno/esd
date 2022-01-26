@@ -960,12 +960,12 @@ DS.pca <- function(y, X, verbose=FALSE, plot=FALSE, it=NULL, method="lm",
     attr(z,'variable') <- varid(y)
     attr(z,'unit') <- unit(y)      
     return(z)
-  }
+  } else if (verbose) print('prdictand involves station(s)')
   
   stopifnot(!missing(y),!missing(X),
             inherits(X,"eof"),inherits(y,"station"))
   
-  if(inherits(y,"pca") & !is.null(npca)) y <- subset(y, ip=1:npca)
+  if(inherits(y,"pca") & !is.null(npca) & (npca <= dim(y)[2])) y <- subset(y, ip=1:npca)
   cls <- class(y)
   
   y0 <- y; X0 <- X

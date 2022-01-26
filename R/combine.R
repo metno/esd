@@ -780,8 +780,10 @@ combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
   test.ratio <- try(abs(log(sx/sy)/log(10)))  ## Needed because some CMIP6 data files are not well conformed...
   if ( (inherits(test.ratio,'try-error')) | (!is.finite(test.ratio)) ) test.ratio <- 99
   if (test.ratio > 2) {
-    print(paste('combine.field detected scale issues - sx=',sx,'sy=',sy,esd::unit(x)[1],esd::unit(y),src(y)))
-    warning(paste('combine.field detected scale issues - sx=',sx,'sy=',sy,esd::unit(x)[1],esd::unit(y),src(y)))
+    print(paste('combine.field detected scale issues - sx=',round(sx),'sy=',
+                round(sy),esd::unit(x)[1],esd::unit(y),src(y)))
+    warning(paste('combine.field detected scale issues - sx=',round(sx),'sy=',
+                  round(sy),esd::unit(x)[1],esd::unit(y),src(y)))
   }
     
   dimension <- tolower(dimension)
