@@ -62,10 +62,8 @@ represent stations in empirical-statistical downscaling, Tellus A 28326,
 accepted.
 }
 \examples{
-download.file('http://files.figshare.com/2073466/Norway.Tx.rda',
-              'Norway.Tx.rda')
-load('Norway.Tx.rda')
-X <- annual(Tx,FUN='mean',nmin=200)
+data('Tx.Norway')
+X <- annual(Tx.Norway,FUN='mean',nmin=200)
 ok<- apply(X,1,nv)
 X <- subset(X,it=ok > 0)
 Y <- pcafill(X)

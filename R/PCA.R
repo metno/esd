@@ -74,6 +74,7 @@ PCA.station <- function(X,...,n=20,na.action='fill',verbose=FALSE,it=NULL,is=NUL
   # Recover the original matrix size, and insert the results
   # where there was valid data
   U <- matrix(rep(NA,D[1]*neofs),D[1],neofs)
+  #browser()
   U[ok.site,] <- pca$u[,1:neofs]
   V <- matrix(rep(NA,D[2]*neofs),D[2],neofs)
   #print(D); print(dim(V)); print(dim(pca$v))

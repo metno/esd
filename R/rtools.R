@@ -519,22 +519,28 @@ leapyear <- function(years) {
 
 #' @export
 distance2ocean <- function(lon1, lat1, dlon=c(-10,10), dlat=c(-5,5), 
-                           delta=0.4, is=NULL) {
-  if(is.null(is)) is <- list(lon=lon1+dlon, lat=lat1+dlat)
+                           delta=0.4) {
   ## regridding to a coarser resolution to avoid problems with Fjords
   data(etopo5, envir=environment())
-  h <- regrid(etopo5, is=list(lon=seq(min(is$lon),max(is$lon),delta), 
-                              lat=seq(min(is$lat),max(is$lat),delta)))
-  if(h[which.min(abs(lon1-lon(h))),which.min(abs(lat1-lat(h)))]>0) {
+  d <- NULL; lon.d <- NULL; lat.d <- NULL 
+  for(j in seq_along(lon1)) {
+    is <- list(lon=lon1[j]+dlon, lat=lat1[j]+dlat)
+    h <- regrid(etopo5, is=list(lon=seq(min(is$lon),max(is$lon),delta), 
+                                lat=seq(min(is$lat),max(is$lat),delta)))
     ocean <- which(h < -100, arr.ind=TRUE)
-    d <- distAB(lon1,lat1,lon(h)[ocean[,1]],lat(h)[ocean[,2]])*1E-3
-    lon.d <- lon(h)[ocean[,1]][which.min(d)]
-    lat.d <- lat(h)[ocean[,2]][which.min(d)]
-    d <- d[which.min(d)]
-  } else {
-    d <- 0
-    lon.d <- lon1
-    lat.d <- lat1
+    if(h[which.min(abs(lon1[j]-lon(h))),which.min(abs(lat1[j]-lat(h)))]>0) {
+      di <- distAB(lon1[j],lat1[j],lon(h)[ocean[,1]],lat(h)[ocean[,2]])*1E-3
+      lon.dj <- lon(h)[ocean[,1]][which.min(di)]
+      lat.dj <- lat(h)[ocean[,2]][which.min(di)]
+      dj <- di[which.min(di)]
+    } else {
+      dj <- 0
+      lon.dj <- lon1[j]
+      lat.dj <- lat1[j]
+    }
+    d <- c(d, dj)
+    lon.d <- c(lon.d, lon.dj)
+    lat.d <- c(lat.d, lat.dj)
   }
   return(list("distance"=d, "lon"=lon.d, "lat"=lat.d))
 }
