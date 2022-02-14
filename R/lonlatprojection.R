@@ -9,6 +9,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              main=NA,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
+  attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
   ## for precipitation-palette
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
@@ -17,6 +18,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## Perpare the colurbar nevertheless...
   colbar <- colbar.ini(x,FUN=NULL,colbar=colbar,verbose=verbose)
   varnm <- varid(x); unitx <- esd::unit(x)
+  ## REB 2021-12-21: Sometimes the source information is a bit overwhelming and that too creates a problem
+  if (!is.null(src(x)))
+    if (nchar(src(x))> 10) {
+      first.space <- gregexpr('_',src(x))[[1]]
+      if (!is.na(first.space)) attr(x,'source') <- substr(src(x),1,first.space-1)
+    }
   
   fig0 <- c(0,1,0,1)                        # REB 2015-06-25
   ## Land contours
@@ -40,7 +47,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## Make sure the longitudes are ordered correctly
   srtx <- order(lon(x)); lon <- lon(x)[srtx]
   srty <- order(lat(x)); lat <- lat(x)[srty]
-
+  
   if (verbose) print('meta-stuff')
   unit <- attr(x,'unit'); variable <- varid(x); isprecip <- is.precip(x)
   
@@ -62,7 +69,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if(!is.null(variable)) {
     varlabel <- try(eval(parse(
       text=paste('expression(',gsub(" ","~",variable)," *~(",gsub(" ",
-                 "~",unit),"))",sep="")))) 
+                                                                  "~",unit),"))",sep="")))) 
   } else {
     varlabel <- NULL
   }
@@ -74,6 +81,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     ## KMP 2019-12-12: Added check of source attribute because basename can't handle NA
     ## But why is source set to NA in as.field as default rather than NULL?
     if (length(src(x))==0) attr(x,'source') <- 'data'
+    
     if (is.na(src(x))) {
       sub <- NULL
     } else {
@@ -166,12 +174,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ## REB 20202-06-10 - tried to 
   if(!is.null(varlabel) & (lab=='default')) label <- paste(varlabel,'*') else label <- ''
   label <- as.expression(parse(text=paste(label,'phantom(0) - phantom(0)')))
- 
+  
   if ((!is.null(sub)) & (length(sub)>0)) {
     sub <- paste('pattern derived from',sub)
     label <- try(parse(text=paste(label,'*',as.expression(paste('~ ',
-                                paste(unlist(strsplit(sub,split=' ')),
-				collapse = ' *~ '), sep='')))))
+                                                                paste(unlist(strsplit(sub,split=' ')),
+                                                                      collapse = ' *~ '), sep='')))))
     if (inherits(label,'try-error')) label <- ''
   }  #title(main = as.expression(sub),line = 3, adj =0.25)
   
@@ -229,7 +237,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
         xaxt="s",yaxt="s",new=FALSE)
   }
- 
+  
   result <- list(x=lon,y=lat,z=x,breaks=colbar$breaks)
   #par(fig=par0$fig)
   invisible(result)

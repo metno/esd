@@ -729,6 +729,8 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   }
   ## plot the results
   if (plot) map(z,...)
+  ## REB 2022-01-19 minor fix
+  if (class(z)[2]=="8760hour") class(z)[2] <- 'annual'
   invisible(z)
   #}  
 } 

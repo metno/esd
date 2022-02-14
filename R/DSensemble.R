@@ -2058,6 +2058,9 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     ds <- try(DS(y,Z,ip=ip,rmtrend=rmtrend,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
+      print(range(index(y)))
+      print(range(index(Z)))
+      print(range(index(attr(Z,'appendix.1'))))
     } else {
       if (verbose) print("post-processing")
       gcmnm[i] <- gcmnm.i
@@ -2470,6 +2473,9 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
     ds <- try(DS(y,Z,ip=ip,verbose=verbose))
     if(inherits(ds,"try-error")) {
       print(paste("esd failed for",gcmnm.i))
+      print(range(index(y)))
+      print(range(index(Z)))
+      print(range(index(attr(Z,'appendix.1'))))
     } else {
       if (verbose) print("post-processing")
       gcmnm[i] <- gcmnm.i
