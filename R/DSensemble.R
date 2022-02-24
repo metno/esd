@@ -1861,7 +1861,6 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   ## If some months are selected, make sure that the minimum number of months
   ## required in the annual aggregation is updated
   if ((is.null(nmin)) & (is.character(it))) nmin <- length(it)
-  
   if (inherits(y,'season')) {
     if (verbose) print('seasonal data found in the predictand')
     if (FUNX !='C.C.eq') {
@@ -1960,6 +1959,9 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
                   pca=y) ## KMP 06-08-2015
   if (verbose) print("loop...") 
 
+  r.xval.all <- matrix(NA, nrow=N, ncol=ncol(y))
+  colnames(r.xval.all) <- paste0("PC",seq(ncol(y)))
+  
   for (i in 1:N) {
     if (verbose) print(ncfiles[select[i]])
     gcm <- retrieve(file = ncfiles[select[i]],
@@ -2141,6 +2143,10 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       xval <- attr(ds,'evaluation')
       r.xval <- round(cor(xval[,1],xval[,2]),3)
       if (verbose) print(paste("x-validation r=",r.xval))
+      
+      for(j in seq(1,ncol(y))) r.xval.all[i,j] <- 
+        round(cor(xval[,j*2-1],xval[,j*2]),3)
+      
       ds.ratio <- round(sd(ds[,1],na.rm=TRUE)/sd(y[,1],na.rm=TRUE),4)
       
       if (verbose) print(paste("sd ratio=",ds.ratio))
@@ -2182,6 +2188,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       }
       scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,1-ds.ratio,
                           1-round(var(xval[,2])/var(xval[,1]),2))
+      
       if (verbose) print('scorestats')
       if (verbose) print(scorestats[i,])
       quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
@@ -2204,11 +2211,10 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
    
     if (verbose) print('Downscaling finished')
   }
-
+  
   ## Unpacking the information tangled up in GCMs, PCs and stations:
   ## Save GCM-wise in the form of PCAs
   gcmnm <- gsub('-','.',gcmnm)
-
   #Z <- attrcp(y,Z)
   if (verbose) print('Set attributes')
   if (test) {
@@ -2220,6 +2226,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   attr(dse.pca,"longname") <- attr(y,"longname")
   attr(dse.pca,'domain') <- list(lon=lon,lat=lat)
   attr(dse.pca,'scorestats') <- scorestats
+  attr(dse.pca,'r.xval') <- r.xval.all
   attr(dse.pca,'path') <- path
   attr(dse.pca,'scenario') <- rcp
   attr(dse.pca,'model_id') <- gcmnm
