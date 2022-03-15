@@ -2015,7 +2015,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (verbose) {print('Check: index(LSP)'); print(index(LSP))}
       GCM <- subset(GCM,it=season(LSP)[1])
     } else if (inherits(y,'annual')) {
-      if (verbose) print(paste('Annualy aggregated',FUNX,'for GCM'))
+      if (verbose) print(paste('Annually aggregated',FUNX,'for GCM'))
       if (sum(is.element(FUNX,xfuns))==0)
           GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
           eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
@@ -2225,7 +2225,15 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   attr(dse.pca,'predictor') <- attr(LSP,'source')
   attr(dse.pca,"longname") <- attr(y,"longname")
   attr(dse.pca,'domain') <- list(lon=lon,lat=lat)
+  attr(scorestats, "longname") <- paste("c(1 - cross validation correlation of first PC, mean bias,",
+                                       "1 - ratio of standard deviations,",
+                                       "1 - ratio of autocorrelations,",
+                                       "residual trend, Kolmogorov-Smirnov Test for normal distribution,"
+                                       "autocorrelation of the residual", 
+                                       "1 - ratio of standard deviations for first PC",
+                                       "1 - ratio of variance for first PC from cross-validation")
   attr(dse.pca,'scorestats') <- scorestats
+  attr(r.xval, "longname") <- "cross validation correlation scores for all PCs"
   attr(dse.pca,'r.xval') <- r.xval.all
   attr(dse.pca,'path') <- path
   attr(dse.pca,'scenario') <- rcp
@@ -2419,7 +2427,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
       if (verbose) {print(season(SLP)[1]); print(dim(GCM))}
       GCM <- subset(GCM,it=season(SLP)[1])
     } else if (inherits(y,'annual')) {
-      if (verbose) print(paste('Annualy aggregated',FUNX,'for GCM'))
+      if (verbose) print(paste('Annually aggregated',FUNX,'for GCM'))
       if (sum(is.element(FUNX,xfuns))==0)
           GCM <- annual(gcm,FUN=FUNX,nmin=nmin) else
           eval(parse(text=paste('GCM <- annual(',FUNX,'(gcm),FUN="mean",nmin=nmin)',sep="")))
