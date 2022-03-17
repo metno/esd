@@ -54,6 +54,7 @@
 #' @param onebyone Logical value. If TRUE, retrieve.station reads one station
 #' at the time rather than reading a block of data which can be demaning if the
 #' stations are stored in widely different parts of the netCDF file.
+#' @param sort - if TRUE, sort the metadata according to location name
 #' @return A "zoo" "field" object with additional attributes used for further
 #' processing.
 #'
@@ -1444,7 +1445,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
 #' @export retrieve.stationsummary
 retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                                     alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
-                                    nmin=NULL,verbose=FALSE,...) {
+                                    nmin=NULL,verbose=FALSE,sort=FALSE,...) {
   ncfile <- file
   if (verbose) print(paste('retrieve.stationsummary',ncfile))
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
@@ -1513,7 +1514,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   }
   
   nc_close(ncid)
-  y <- y[srt,]
+  if (sort) y <- y[srt,]
   good <- (y$location != "")
   y <- y[good,]
   y$location <- as.character(y$location)
