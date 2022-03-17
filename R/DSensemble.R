@@ -2225,13 +2225,13 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   attr(dse.pca,'predictor') <- attr(LSP,'source')
   attr(dse.pca,"longname") <- attr(y,"longname")
   attr(dse.pca,'domain') <- list(lon=lon,lat=lat)
-  attr(scorestats, "longname") <- paste("c(1 - cross validation correlation of first PC, mean bias,",
-                                       "1 - ratio of standard deviations,",
-                                       "1 - ratio of autocorrelations,",
-                                       "residual trend, Kolmogorov-Smirnov Test for normal distribution,"
+  attr(scorestats, "longname") <- paste(c("1 - cross validation correlation of first PC","mean bias",
+                                       "1 - ratio of standard deviations","1 - ratio of autocorrelations",
+                                       "residual trend","Kolmogorov-Smirnov Test for normal distribution",
                                        "autocorrelation of the residual", 
                                        "1 - ratio of standard deviations for first PC",
-                                       "1 - ratio of variance for first PC from cross-validation")
+                                       "1 - ratio of variance for first PC from cross-validation"),
+				       collapse=", ")
   attr(dse.pca,'scorestats') <- scorestats
   attr(r.xval, "longname") <- "cross validation correlation scores for all PCs"
   attr(dse.pca,'r.xval') <- r.xval.all
