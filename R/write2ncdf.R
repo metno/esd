@@ -251,7 +251,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   }
   if (is.T(x)) {
     #  cx <- coredata(x); cx[cx < -100] <- NA; cx[cx > 100] <- NA; cx -> coredata(x); rm('cx')
-    x[abs(coredata(x) > 100)] <- NA
+    x[abs(coredata(x)) > 100] <- NA
   }
   
   #cx <- coredata(x); cx[cx < -100] <- NA;
