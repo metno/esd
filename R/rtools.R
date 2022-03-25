@@ -51,6 +51,8 @@
 #'
 #' \code{difftime.month} returns the number of months between two dates
 #' 
+#' \code{lastelementrecord} checks last element of the record to see if they are the highest - a record
+#' 
 #' @aliases as.decimal nv cv q5 q95 q975 q995 filt
 #' filt.default exit figlab ndig ensemblemean propchange stand rmse RMSE
 #' firstyear lastyear eofvar test.num.predictors arec
