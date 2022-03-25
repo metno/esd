@@ -16,6 +16,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   if (is.null(x)) {
     if (verbose) print('x == NULL')
     data("station.meta",envir=environment())
+    station.meta <- as.data.frame(station.meta)
     if(is.null(src)) {
       frost <- TRUE
       thredds <- TRUE
@@ -101,6 +102,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       return(NULL)
     }
   }  
+  
   ## get the lenght of the data base
   #n <- length(station.meta$station_id)
   if (!is.null(stid) & dim(station.meta)[1]!=0) {
