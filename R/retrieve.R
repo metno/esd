@@ -1382,6 +1382,9 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   }
   
   x <- ncvar_get(ncid,param,start=start,count=count)
+  ## REB 2022-03-29: needed to add two lines for consistency between x and t.
+  tim <- tim[start[1]:(start[1]+count[1]-1)]
+  t <- t[start[1]:(start[1]+count[1]-1)]
   if (transpose) x <- t(x)
   nc_close(ncid)
   if (verbose) print('All data has been extracted from the netCDF file')
@@ -1412,7 +1415,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     jt <- (nv > 0)
   } else if (length(t)>1) jt <- is.finite(x) else jt <- is.finite(t)
   
-  if (verbose) print(paste('Number of valid data points',length(jt)))
+  if (verbose) print(paste('Number of valid data points',length(jt), 'remove empty periods'))
   lons <- lons[ii]; lats <- lats[ii]; alts <- alts[ii]; cntrs <- cntrs[ii]
   locs <- locs[ii]; stids <- stids[ii]
   if (verbose) print(paste('length(t)=',length(t),'length(x)=',length(x),'sum(jt)=',sum(jt)))
@@ -1424,8 +1427,8 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   if (verbose) print(paste('Dimensions of x is ',paste(dim(x),collapse=' - '),
                            'and length(t) is',length(t)))
   if (length(t) != dim(x)[1]) {
-    print(paste('Dimensions of x is ',paste(dim(x),collapse=' - '),
-                'and length(t) is',length(t)))
+    print(paste('Failed sanity check - Dimensions of x is ',paste(dim(x),collapse=' - '),
+                'and length(t) is',length(t),' there is a bug in the code'))
     stop('retrieve.station error:')
   }
   y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
