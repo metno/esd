@@ -1383,8 +1383,10 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   
   x <- ncvar_get(ncid,param,start=start,count=count)
   ## REB 2022-03-29: needed to add two lines for consistency between x and t.
-  tim <- tim[start[1]:(start[1]+count[1]-1)]
-  t <- t[start[1]:(start[1]+count[1]-1)]
+  it1 <- start[2]; it2 <- start[2]+count[2]-1; it12 <- it1:it2
+  if (verbose) {print('time start & count:'); print(range(it12)); print(length(it12))}
+  tim <- tim[it12]
+  t <- t[it12]
   if (transpose) x <- t(x)
   nc_close(ncid)
   if (verbose) print('All data has been extracted from the netCDF file')
