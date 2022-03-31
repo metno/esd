@@ -113,6 +113,8 @@ events for a time series of iid data (\code{sum(1/1:n)})
 \code{lastyear} checks the availability of data of a station object and returns the last year(s) of valid data entries
 
 \code{difftime.month} returns the number of months between two dates
+
+\code{lastelementrecord} checks last element of the record to see if they are the highest - a record
 }
 \examples{
 

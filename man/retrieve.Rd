@@ -72,6 +72,8 @@ comments (silent mode). If TRUE, displays extra information on progress.}
 \item{onebyone}{Logical value. If TRUE, retrieve.station reads one station
 at the time rather than reading a block of data which can be demaning if the
 stations are stored in widely different parts of the netCDF file.}
+
+\item{sort}{- if TRUE, sort the metadata according to location name}
 }
 \value{
 A "zoo" "field" object with additional attributes used for further

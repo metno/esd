@@ -54,6 +54,7 @@
 #' @param onebyone Logical value. If TRUE, retrieve.station reads one station
 #' at the time rather than reading a block of data which can be demaning if the
 #' stations are stored in widely different parts of the netCDF file.
+#' @param sort - if TRUE, sort the metadata according to location name
 #' @return A "zoo" "field" object with additional attributes used for further
 #' processing.
 #'
@@ -1381,6 +1382,11 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   }
   
   x <- ncvar_get(ncid,param,start=start,count=count)
+  ## REB 2022-03-29: needed to add two lines for consistency between x and t.
+  it1 <- start[2]; it2 <- start[2]+count[2]-1; it12 <- it1:it2
+  if (verbose) {print('time start & count:'); print(range(it12)); print(length(it12))}
+  tim <- tim[it12]
+  t <- t[it12]
   if (transpose) x <- t(x)
   nc_close(ncid)
   if (verbose) print('All data has been extracted from the netCDF file')
@@ -1411,7 +1417,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     jt <- (nv > 0)
   } else if (length(t)>1) jt <- is.finite(x) else jt <- is.finite(t)
   
-  if (verbose) print(paste('Number of valid data points',length(jt)))
+  if (verbose) print(paste('Number of valid data points',length(jt), 'remove empty periods'))
   lons <- lons[ii]; lats <- lats[ii]; alts <- alts[ii]; cntrs <- cntrs[ii]
   locs <- locs[ii]; stids <- stids[ii]
   if (verbose) print(paste('length(t)=',length(t),'length(x)=',length(x),'sum(jt)=',sum(jt)))
@@ -1423,8 +1429,8 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   if (verbose) print(paste('Dimensions of x is ',paste(dim(x),collapse=' - '),
                            'and length(t) is',length(t)))
   if (length(t) != dim(x)[1]) {
-    print(paste('Dimensions of x is ',paste(dim(x),collapse=' - '),
-                'and length(t) is',length(t)))
+    print(paste('Failed sanity check - Dimensions of x is ',paste(dim(x),collapse=' - '),
+                'and length(t) is',length(t),' there is a bug in the code'))
     stop('retrieve.station error:')
   }
   y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
@@ -1444,7 +1450,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
 #' @export retrieve.stationsummary
 retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,lat=NULL,
                                     alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
-                                    nmin=NULL,verbose=FALSE,...) {
+                                    nmin=NULL,verbose=FALSE,sort=FALSE,...) {
   ncfile <- file
   if (verbose) print(paste('retrieve.stationsummary',ncfile))
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
@@ -1513,7 +1519,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   }
   
   nc_close(ncid)
-  y <- y[srt,]
+  if (sort) y <- y[srt,]
   good <- (y$location != "")
   y <- y[good,]
   y$location <- as.character(y$location)

@@ -55,10 +55,16 @@ aggregate.station <- function(x, by, FUN='mean', ..., na.rm=TRUE, regular=NULL,
   if(is.character(by)) if(by=='yearmon') by <- as.Date(as.yearmon(index(x)))
   
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
-       (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0 ) ) {
-    y <- aggregate(x, by, FUN=FUN, na.rm=na.rm, ...,
-                   regular = regular, frequency = frequency, threshold = threshold)
+       (sum(is.element(FUN,c('mean','sd','min','max','sum','quantile')))>0 ) ) {
+    if (verbose) print('The argument na.rm is relevant')
+    y <- try(aggregate(x, by, FUN=FUN, na.rm=na.rm, ...,
+                   regular = regular, frequency = frequency, threshold = threshold),silent=TRUE)
+    ## Accomodate for functions that don't need the threshold argument
+    if (inherits(y,'try-error')) y <- aggregate(x, by, FUN=FUN, na.rm=na.rm, ...,
+                                                    regular = regular, frequency = frequency)
+             
   } else {
+    if (verbose) print('The argument na.rm is irrelevant')
     y <- aggregate(x, by, FUN=FUN, ..., regular = regular, frequency = frequency, threshold = threshold)
   }
 
