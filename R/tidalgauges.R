@@ -7,25 +7,25 @@
 # Daily means
 #' @export station.sonel
 station.sonel <- function(...,urls=c('https://www.sonel.org/msl/Demerliac/VALIDATED/dCHERB.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dRSCOF.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dLCONQ.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dBREST.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dHAVRE.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dDIEPP.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dBOULO.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dCALAI.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dDUNKE.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dCONCA.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dPTUDY.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dSNAZA.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dBOUCA.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dSJLUZ.slv',
-                             'https://www.sonel.org/msl/Demerliac/VALIDATED/dPBLOC.slv',
-                             'http:s//www.sonel.org/msl/Demerliac/VALIDATED/dLROCH.slv'),
-                      verbose=FALSE) {
-
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dRSCOF.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dLCONQ.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dBREST.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dHAVRE.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dDIEPP.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dBOULO.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dCALAI.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dDUNKE.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dCONCA.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dPTUDY.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dSNAZA.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dBOUCA.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dSJLUZ.slv',
+                                     'https://www.sonel.org/msl/Demerliac/VALIDATED/dPBLOC.slv',
+                                     'http:s//www.sonel.org/msl/Demerliac/VALIDATED/dLROCH.slv'),
+                          verbose=FALSE) {
+  
   param='sea-level'; unit='mm'; src='sonel'; cntr='France'
-
+  
   loc <- c('CHERBOURG','ROSCOFF','LE_CONQUET','BREST','LE_HAVRE','DIEPPE',
            'BOULOGNE-SUR-MER','CALAIS','DUNKERQUE','CONCARNEAU','PORT TUDY',
            'SAINT-NAZAIRE','BOUCAU-BAYONNE','SAINT JEAN-DE-LUZ','PORT_BLOC',
@@ -36,7 +36,7 @@ station.sonel <- function(...,urls=c('https://www.sonel.org/msl/Demerliac/VALIDA
   lat <- c(49.65129852,48.71839905,48.35940170,48.38285000,49.48189926,49.92918000,50.72750092,
            50.96939850,51.04809952,47.87369919,47.64427400,47.26686200,43.52730179,43.39523900,
            45.56850052,46.15847800)
-
+  
   for (i in 1:length(urls)) {
     if (verbose) print(paste(i,loc[i],urls[i]))
     sl <- read.table(urls[i])
@@ -74,15 +74,17 @@ station.gloss <- function(...,url='https://www.psmsl.org/data/obtaining/rlr.mont
   for (i in meta$V1[is]) {
     filename <- paste0("rlr_monthly/data/",i,".rlrdata")
     con1 <- unzip('rlr_monthly.zip', files=filename)
-    x <- read.table(filename,sep=';')
-    x$V2[x$V2 < -999] <- NA; yr <- trunc(x$V1)
-    y <- zoo(x$V2,order.by=as.Date(paste(yr,round(12*(x$V1 - yr)+0.5),'01',sep='-')))
-    ii <- is.element(meta$V1,i)
-    loc <- strstrip(as.character(meta[ii,4]))
-    if (verbose) print(paste(iv,i,loc)); iv <- iv + 1
-    y <- as.station(y,loc=loc,lon=meta[ii,3],lat=meta[ii,2],alt=0,src='GLOSS',url=url,stid=meta[ii,6],
-                    param = 'sea-level',unit='mm')
-    if (i==meta$V1[is][1]) Y <- y else Y <- combine.stations(Y,y)
+    x <- try(read.table(filename,sep=';'))
+    if (!inherits(x,'try-error')) { 
+      x$V2[x$V2 < -999] <- NA; yr <- trunc(x$V1)
+      y <- zoo(x$V2,order.by=as.Date(paste(yr,round(12*(x$V1 - yr)+0.5),'01',sep='-')))
+      ii <- is.element(meta$V1,i)
+      loc <- strstrip(as.character(meta[ii,4]))
+      if (verbose) print(paste(iv,i,loc)); iv <- iv + 1
+      y <- as.station(y,loc=loc,lon=meta[ii,3],lat=meta[ii,2],alt=0,src='GLOSS',url=url,stid=meta[ii,6],
+                      param = 'sea-level',unit='mm')
+      if (i==meta$V1[is][1]) Y <- y else Y <- combine.stations(Y,y)
+    }
   }
   return(Y)
 }
@@ -123,9 +125,9 @@ station.newlyn <- function(...,path='data/gloss-241_Newlyn',verbose=TRUE) {
   z <- as.station(z,loc=metadata$V1,lon=metadata$V4,lat=metadata$V3,alt=0,src='GLOSS',
                   cntr='UK',param='sea-level',unit='mm',
                   url='http://www.gloss-sealevel.org/station_handbook/stations/241/#.VqnZSkL4phh')
-
+  
   class(z) <- c('station','hour','zoo')
   return(z)
-
- 
+  
+  
 }

@@ -29,7 +29,8 @@
   publishername = "NA",
   publisheremail = "NA",
   publisherurl = "NA",
-  project = "NA"
+  project = "NA",
+  nspc = 300
 )
 }
 \arguments{
@@ -50,14 +51,14 @@ stored (to save space may be represented as 'short').}
 
 \item{stid}{station id}
 
-\item{append}{a boolean; if TRUE append output to existing file}
+\item{append}{a Boolean; if TRUE append output to existing file}
 
-\item{scale}{Sets the atttribute 'scale_factor' which is used to scale
+\item{scale}{Sets the attribute 'scale_factor' which is used to scale
 (multiply) the values stored (to save space may be represented as 'short').}
 
 \item{torg}{Time origin}
 
-\item{stid_unlim}{a boolean; if TRUE the stid dimension is unlimited}
+\item{stid_unlim}{a Boolean; if TRUE the stid dimension is unlimited}
 
 \item{namelength}{a numeric specifying the number of characters in dimension and variable names}
 
@@ -65,7 +66,11 @@ stored (to save space may be represented as 'short').}
 
 \item{verbose}{TRUE - clutter the screen.}
 
-\item{doi}{- Data ID. All the following arguments are meant to accomodate for the convention described at \url{https://adc.met.no/node/4}}
+\item{doi}{- Data ID. All the following arguments are meant to accommodate for the convention described 
+at \url{https://adc.met.no/node/4}}
+
+\item{nspc}{- the size of chunks of data processes sequentially in order to limit the need of computer memory. 
+Smaller number requires less memory.}
 }
 \value{
 None

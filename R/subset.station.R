@@ -449,6 +449,7 @@ subset.stationmeta <- function(x, is=NULL, it=NULL, loc=NULL, param=NULL,
   x <- as.data.frame(x)
   d <- dim(x)
   ii <- rep(TRUE,d[1])
+  if (verbose) print(paste('Original number of stations are',sum(ii)))
   if (!is.null(is)) {
     if ( (is.integer(is)) | (is.numeric(is)) ) ii[-is] <- FALSE
     else if (is.list(is)) {
@@ -467,8 +468,10 @@ subset.stationmeta <- function(x, is=NULL, it=NULL, loc=NULL, param=NULL,
   if (!is.null(lat)) ii[(x$latitude < lat[1]) | (x$latitude > lat[2])] <- FALSE
   if (!is.null(alt)) ii[(x$altitude < alt[1]) | (x$altitude > alt[2])] <- FALSE
   if (!is.null(cntr)) {
+    if (verbose) print(table(substr(x$country,1,6)))
     if (length(cntr)>1) cntr <- paste(cntr,collapse='|')
-    ii[-grep(cntr,x$country,ignore.case=TRUE,...)] <- FALSE
+    iselect <- grep(cntr,x$country,ignore.case=TRUE,...) 
+    if (sum(iselect) > 0) ii[-iselect] <- FALSE else ii[] <- FALSE
   }
   #if (!is.null(cntr)) ii[!is.element(tolower(x$country),tolower(cntr))] <- FALSE
   if (!is.null(src)) {
@@ -480,6 +483,7 @@ subset.stationmeta <- function(x, is=NULL, it=NULL, loc=NULL, param=NULL,
   if (!is.null(it)) {
     ii[(as.numeric(x$start) > min(it)) < (as.numeric(x$end) < max(it))] <- FALSE
   }
+  if (verbose) print(paste('Final number of stations are',sum(ii)))
   x <- x[ii,]
   class(x) <- cls
   return(x)
