@@ -1978,27 +1978,39 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (verbose) print(it)
       gcm <- subset(gcm,it=it,verbose=verbose)
     }
-    rip <- NULL
-    if(any(grepl("rip", names(attributes(gcm))))) {
-      nm.rip <- names(attributes(gcm))[grepl("rip",names(attributes(gcm)))][[1]]
-      if(!is.null(attr(gcm, nm.rip))) {
-        rip <- attr(gcm, nm.rip)
-        if(!grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", rip)) rip <- NULL
+    nc.i <- getncid(filename=ncfiles[select[i]], verbose=verbose)
+    if(!is.null(nc.i$project_id)) {
+      if(grepl("cmip",tolower(nc.i$project_id))) {
+        meta.i <- metaextract.cmip(nc.i,verbose=verbose)
+      } else {
+        meta.i <- NULL
       }
+    } else meta.i <- NULL
+    if(!is.null(meta.i)) {
+      gcmnm.i <- paste0(meta.i[,"gcm"],".",meta.i[,"gcm_rip"])
+    } else {
+      rip <- NULL
+      if(any(grepl("rip", names(attributes(gcm))))) {
+        nm.rip <- names(attributes(gcm))[grepl("rip",names(attributes(gcm)))][[1]]
+        if(!is.null(attr(gcm, nm.rip))) {
+          rip <- attr(gcm, nm.rip)
+          if(!grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}", rip)) rip <- NULL
+        }
+      }
+      if(is.null(rip)) {
+        if(any(grepl("realization", names(attributes(gcm)))))
+          nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]] else
+          nm.r <- 'NA'
+        if(any(grepl("initialization", names(attributes(gcm)))))
+          nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]] else
+          nm.i <- 'NA'
+        if(any(grepl("physics", names(attributes(gcm)))))
+          nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]] else
+          nm.p <- 'NA'
+        rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
+      }
+      gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     }
-    if(is.null(rip)) {
-      if(any(grepl("realization", names(attributes(gcm)))))
-        nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]] else
-        nm.r <- 'NA'
-      if(any(grepl("initialization", names(attributes(gcm)))))
-        nm.i <- names(attributes(gcm))[grep("initialization",names(attributes(gcm)))][[1]] else
-        nm.i <- 'NA'
-      if(any(grepl("physics", names(attributes(gcm)))))
-        nm.p <- names(attributes(gcm))[grep("physics",names(attributes(gcm)))][[1]] else
-        nm.p <- 'NA'
-      rip <- paste0("r",attr(gcm,nm.r),"i",attr(gcm,nm.i),"p",attr(gcm,nm.p))
-    }
-    gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     if (verbose) {
         print(paste('Extract month/season/annual data nmin=',nmin))
         print(class(y))
