@@ -852,16 +852,22 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     ncvar_put( ncid, tdmuid.son, tdmu.son,start=start[1],count=count[1])
     ncvar_put( ncid, lrid, lr, start=start[1],count=count[1])
     ncvar_put( ncid, ldid, ld, start=start[1],count=count[1])
-    ncvar_put( ncid, sigma2id, sigma2,start=start[1],count=count[1])
-    ncvar_put( ncid, sigma2id.djf, sigma2.djf,start=start[1],count=count[1])
-    ncvar_put( ncid, sigma2id.mam, sigma2.mam,start=start[1],count=count[1])
-    ncvar_put( ncid, sigma2id.jja, sigma2.jja,start=start[1],count=count[1])
-    ncvar_put( ncid, sigma2id.son, sigma2.son,start=start[1],count=count[1])
-    ncvar_put( ncid, tsigma2id, tsigma2,start=start[1],count=count[1])
-    ncvar_put( ncid, tsigma2id.djf, tsigma2.djf,start=start[1],count=count[1])
-    ncvar_put( ncid, tsigma2id.mam, tsigma2.mam,start=start[1],count=count[1])
-    ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[1],count=count[1])
-    ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[1],count=count[1])
+    if (verbose) print(paste('sigma2:',length(sigma2),start[1],count[1]))
+    if (length(tsigma2)==count[1]) { 
+      ncvar_put( ncid, sigma2id, sigma2,start=start[1],count=count[1])
+      ncvar_put( ncid, sigma2id.djf, sigma2.djf,start=start[1],count=count[1])
+      ncvar_put( ncid, sigma2id.mam, sigma2.mam,start=start[1],count=count[1])
+      ncvar_put( ncid, sigma2id.jja, sigma2.jja,start=start[1],count=count[1])
+      ncvar_put( ncid, sigma2id.son, sigma2.son,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id, tsigma2,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id.djf, tsigma2.djf,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id.mam, tsigma2.mam,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id.jja, tsigma2.jja,start=start[1],count=count[1])
+      ncvar_put( ncid, tsigma2id.son, tsigma2.son,start=start[1],count=count[1])
+    } else {
+      print('write2ncdf4.station - precip: detected something wrong!'); 
+      print(paste('sigma2:',length(sigma2),start[1],count[1]))
+    }
     if (verbose) print('Mean spell length')
     ncvar_put( ncid, mwslid, mwsl,start=start[1],count=count[1])
     ncvar_put( ncid, mdslid, mdsl,start=start[1],count=count[1])
@@ -1232,15 +1238,15 @@ write2ncdf4.dsensemble <- function(x,...,file='esd.dsensemble.nc',prec='short',o
 ## REB 2022-03-15
 combinelist <- function(x,y,verbose=FALSE) {
   if (verbose) print('combinelist')
-  ln <- names(x)
-  if (verbose) {print(ln); print(length(x[[1]]))}
+  ln <- names(x); ln2 <- length(names(y))
+  if (verbose) {print(ln); print(ln2); print(length(x[[1]]))}
   for (i in 1:length(ln)) x[[ln[i]]] <- c(x[[ln[i]]],y[[ln[i]]])
   if (verbose) print(str(x))
   return(x)
 }
 
 StationSumStats <- function(x,missval,ns=300,verbose=FALSE) {
-  if (verbose) print('StationSumStats')
+  if (verbose) print(paste('StationSumStats - precip?',is.precip(x)))
   
   if (is.null(dim(x))) {
     if (verbose) print('Single station - change dim(x)')
@@ -1248,6 +1254,11 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE) {
   }
   
   d <- dim(x)
+  ## REB 2022-03-31
+  ## Make sure that this algoritm keeps track of the type of data (precip, temp, etc)
+  ## NOTE - This will fail if there is a set of mixed variable types.
+  attr(x,'unit') <- rep(attr(x,'unit')[1],d[2])
+  attr(x,'variable') <- rep(attr(x,'variable')[1],d[2])
   Y <- NULL
   if (d[2] > ns) {
     if (verbose) print(d)
@@ -1255,106 +1266,114 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE) {
     for (is in seq(1,d[2],by=ns)) {
       if (verbose) print(paste('is =',is))
       js <- seq(is,min(c(is+ns-1,d[2])),by=1)
+      if (verbose) {
+        print(paste('is.precip(x) =',is.precip(x), paste(dim(x),collapse=' x '),
+                    paste(range(js),collapse='-')))
+        print(is.precip(subset(x,is=js))); str(subset(x,is=js,verbose=TRUE))
+      }
       y <- StationSumStats(subset(x,is=js),verbose=verbose)
       if (verbose) print(names(y))
       if (is.null(Y)) Y <- y else Y <- combinelist(Y,y,verbose=verbose)
     }
-    if (verbose) print(str(Y))
+    #if (verbose) print(str(Y))
     return(Y)
+  } else { 
+    
+    ## Different summary statistics for precipitation, temperature and other variables.
+    
+    ## If there are more than one stations, use matrix oprations
+    ## Esimate summary statistics for the station data
+    if (verbose) print(paste('Estimate summary statistics - data dimension:',
+                             paste(d,collapse='x'),' - precip?',is.precip(x)))
+    mx <- apply(x,2,'max',na.rm=TRUE)
+    mn <- apply(x,2,'min',na.rm=TRUE)
+    nhr <- apply(anomaly(x),2,'arec')
+    nlr <- apply(-anomaly(x),2,'arec')
+    
+    if (!is.precip(x)) {
+      if (verbose) print('Not precipitation')
+      ave <- apply(x,2,'mean',na.rm=TRUE)
+      ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
+      ave.mam <- apply(subset(x,it='mam'),2,'mean',na.rm=TRUE)
+      ave.jja <- apply(subset(x,it='jja'),2,'mean',na.rm=TRUE)
+      ave.son <- apply(subset(x,it='son'),2,'mean',na.rm=TRUE)
+      std <- apply(anomaly(x),2,'sd',na.rm=TRUE)
+      std.djf <- apply(subset(anomaly(x),it='djf'),2,'sd',na.rm=TRUE)
+      std.mam <- apply(subset(anomaly(x),it='mam'),2,'sd',na.rm=TRUE)
+      std.jja <- apply(subset(anomaly(x),it='jja'),2,'sd',na.rm=TRUE)
+      std.son <- apply(subset(anomaly(x),it='son'),2,'sd',na.rm=TRUE)
+      td <- apply(annual(x),2,'trend.coef')
+      td.djf <- apply(annual(subset(x,it='djf'),'mean',nmin=75),2,'trend.coef')
+      td.mam <- apply(annual(subset(x,it='mam'),'mean',nmin=75),2,'trend.coef')
+      td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
+      td.son <- apply(annual(subset(x,it='son'),'mean',nmin=75),2,'trend.coef')
+    } else if (is.precip(x)) {
+      if
+      (verbose) print('Precipitation')
+      ave <- apply(annual(x,'sum'),2,'mean',na.rm=TRUE)
+      ave.djf <- apply(annual(subset(x,it='djf'),'sum',nmin=90),2,'mean',na.rm=TRUE)
+      ave.mam <- apply(annual(subset(x,it='mam'),'sum',nmin=90),2,'mean',na.rm=TRUE)
+      ave.jja <- apply(annual(subset(x,it='jja'),'sum',nmin=90),2,'mean',na.rm=TRUE)
+      ave.son <- apply(annual(subset(x,it='son'),'sum',nmin=90),2,'mean',na.rm=TRUE)
+      mu <- apply(annual(x,'wetmean'),2,'mean',na.rm=TRUE)
+      mu.djf <- apply(annual(subset(x,it='djf'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
+      mu.mam <- apply(annual(subset(x,it='mam'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
+      mu.jja <- apply(annual(subset(x,it='jja'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
+      mu.son <- apply(annual(subset(x,it='son'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
+      fw <- apply(100*annual(x,'wetfreq'),2,'mean',na.rm=TRUE)
+      fw.djf <- apply(100*annual(subset(x,it='djf'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
+      fw.mam <- apply(100*annual(subset(x,it='mam'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
+      fw.jja <- apply(100*annual(subset(x,it='jja'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
+      fw.son <- apply(100*annual(subset(x,it='son'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
+      td <- apply(annual(x,FUN='sum'),2,'trend.coef')
+      td.djf <- apply(annual(subset(x,it='djf'),'sum',nmin=90),2,'trend.coef')
+      td.mam <- apply(annual(subset(x,it='mam'),'sum',nmin=90),2,'trend.coef')
+      td.jja <- apply(annual(subset(x,it='jja'),'sum',nmin=90),2,'trend.coef')
+      td.son <- apply(annual(subset(x,it='son'),'sum',nmin=90),2,'trend.coef')
+      tdfw <- apply(100*annual(x,FUN='wetfreq'),2,'trend.coef')
+      tdfw.djf <- apply(100*annual(subset(x,it='djf'),'wetfreq',nmin=75),2,'trend.coef')
+      tdfw.mam <- apply(100*annual(subset(x,it='mam'),'wetfreq',nmin=75),2,'trend.coef')
+      tdfw.jja <- apply(100*annual(subset(x,it='jja'),'wetfreq',nmin=75),2,'trend.coef')
+      tdfw.son <- apply(100*annual(subset(x,it='son'),'wetfreq',nmin=75),2,'trend.coef')
+      tdmu <- apply(annual(x,FUN='wetmean'),2,'trend.coef')
+      tdmu.djf <- apply(annual(subset(x,it='djf'),'wetmean',nmin=75),2,'trend.coef')
+      tdmu.mam <- apply(annual(subset(x,it='mam'),'wetmean',nmin=75),2,'trend.coef')
+      tdmu.jja <- apply(annual(subset(x,it='jja'),'wetmean',nmin=75),2,'trend.coef')
+      tdmu.son <- apply(annual(subset(x,it='son'),'wetmean',nmin=75),2,'trend.coef')
+      lr <- sapply(x,'lastrains')
+      ld <- sapply(x,'lastdry')
+      if (verbose) print('Sigma2')
+      sigma2 <- apply(x,2,'rainvar')
+      sigma2.djf <- apply(subset(x,it='djf'),2,'rainvar')
+      sigma2.mam <- apply(subset(x,it='mam'),2,'rainvar')
+      sigma2.jja <- apply(subset(x,it='jja'),2,'rainvar')
+      sigma2.son <- apply(subset(x,it='son'),2,'rainvar')
+      tsigma2 <- rainvartrend(x)
+      tsigma2.djf <- rainvartrend(subset(x,it='djf'),nmin=90)
+      tsigma2.mam <- rainvartrend(subset(x,it='mam'),nmin=90)
+      tsigma2.jja <- rainvartrend(subset(x,it='jja'),nmin=90)
+      tsigma2.son <- rainvartrend(subset(x,it='son'),nmin=90)
+      ## Mean wet/dry-spell length
+      if (verbose) print('Spell')
+      t <- index(x)
+      ss <- spell(x,threshold=1)
+      ## If spell resturns NULL, then return NAs...
+      if (inherits(ss,'spell')) { 
+        mwsl <- colMeans(subset.station(ss,is=list(param='wet')),na.rm=TRUE)
+        mdsl <- colMeans(subset.station(ss,is=list(param='dry')),na.rm=TRUE)
+      } else {mwsl <- missval; mdsl <- missval}
+    }
+    
+    if (verbose) print('lastelementrecord')
+    ## Is the last element a high or low record?
+    lehr <- lastelementrecord(x,verbose=verbose)
+    lelr <- lastelementrecord(-x)
+    
+    rm('x','t','ss','d','is','ns','Y', 'missval')
+    
+    if (verbose) {ls(); print('StationSumStats returns all results in a list object...')}
+    if (verbose) str(mget(ls()))
+    ## Return all the objects defined in this environment:
+    return(mget(ls()))
   }
-  ## Different summary statistics for precipitation, temperature and other variables.
-  
-  ## If there are more than one stations, use matrix oprations
-  ## Esimate summary statistics for the station data
-  if (verbose) print(paste('Estimate summary statistics - data dimension:',paste(d,collapse='x')))
-  mx <- apply(x,2,'max',na.rm=TRUE)
-  mn <- apply(x,2,'min',na.rm=TRUE)
-  nhr <- apply(anomaly(x),2,'arec')
-  nlr <- apply(-anomaly(x),2,'arec')
-  
-  if (!is.precip(x)) {
-    if (verbose) print('Not precipitation')
-    ave <- apply(x,2,'mean',na.rm=TRUE)
-    ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
-    ave.mam <- apply(subset(x,it='mam'),2,'mean',na.rm=TRUE)
-    ave.jja <- apply(subset(x,it='jja'),2,'mean',na.rm=TRUE)
-    ave.son <- apply(subset(x,it='son'),2,'mean',na.rm=TRUE)
-    std <- apply(anomaly(x),2,'sd',na.rm=TRUE)
-    std.djf <- apply(subset(anomaly(x),it='djf'),2,'sd',na.rm=TRUE)
-    std.mam <- apply(subset(anomaly(x),it='mam'),2,'sd',na.rm=TRUE)
-    std.jja <- apply(subset(anomaly(x),it='jja'),2,'sd',na.rm=TRUE)
-    std.son <- apply(subset(anomaly(x),it='son'),2,'sd',na.rm=TRUE)
-    td <- apply(annual(x),2,'trend.coef')
-    td.djf <- apply(annual(subset(x,it='djf'),'mean',nmin=75),2,'trend.coef')
-    td.mam <- apply(annual(subset(x,it='mam'),'mean',nmin=75),2,'trend.coef')
-    td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
-    td.son <- apply(annual(subset(x,it='son'),'mean',nmin=75),2,'trend.coef')
-  } else if (is.precip(x)) {
-    if
-    (verbose) print('Precipitation')
-    ave <- apply(annual(x,'sum'),2,'mean',na.rm=TRUE)
-    ave.djf <- apply(annual(subset(x,it='djf'),'sum',nmin=90),2,'mean',na.rm=TRUE)
-    ave.mam <- apply(annual(subset(x,it='mam'),'sum',nmin=90),2,'mean',na.rm=TRUE)
-    ave.jja <- apply(annual(subset(x,it='jja'),'sum',nmin=90),2,'mean',na.rm=TRUE)
-    ave.son <- apply(annual(subset(x,it='son'),'sum',nmin=90),2,'mean',na.rm=TRUE)
-    mu <- apply(annual(x,'wetmean'),2,'mean',na.rm=TRUE)
-    mu.djf <- apply(annual(subset(x,it='djf'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
-    mu.mam <- apply(annual(subset(x,it='mam'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
-    mu.jja <- apply(annual(subset(x,it='jja'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
-    mu.son <- apply(annual(subset(x,it='son'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
-    fw <- apply(100*annual(x,'wetfreq'),2,'mean',na.rm=TRUE)
-    fw.djf <- apply(100*annual(subset(x,it='djf'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
-    fw.mam <- apply(100*annual(subset(x,it='mam'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
-    fw.jja <- apply(100*annual(subset(x,it='jja'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
-    fw.son <- apply(100*annual(subset(x,it='son'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
-    td <- apply(annual(x,FUN='sum'),2,'trend.coef')
-    td.djf <- apply(annual(subset(x,it='djf'),'sum',nmin=90),2,'trend.coef')
-    td.mam <- apply(annual(subset(x,it='mam'),'sum',nmin=90),2,'trend.coef')
-    td.jja <- apply(annual(subset(x,it='jja'),'sum',nmin=90),2,'trend.coef')
-    td.son <- apply(annual(subset(x,it='son'),'sum',nmin=90),2,'trend.coef')
-    tdfw <- apply(100*annual(x,FUN='wetfreq'),2,'trend.coef')
-    tdfw.djf <- apply(100*annual(subset(x,it='djf'),'wetfreq',nmin=75),2,'trend.coef')
-    tdfw.mam <- apply(100*annual(subset(x,it='mam'),'wetfreq',nmin=75),2,'trend.coef')
-    tdfw.jja <- apply(100*annual(subset(x,it='jja'),'wetfreq',nmin=75),2,'trend.coef')
-    tdfw.son <- apply(100*annual(subset(x,it='son'),'wetfreq',nmin=75),2,'trend.coef')
-    tdmu <- apply(annual(x,FUN='wetmean'),2,'trend.coef')
-    tdmu.djf <- apply(annual(subset(x,it='djf'),'wetmean',nmin=75),2,'trend.coef')
-    tdmu.mam <- apply(annual(subset(x,it='mam'),'wetmean',nmin=75),2,'trend.coef')
-    tdmu.jja <- apply(annual(subset(x,it='jja'),'wetmean',nmin=75),2,'trend.coef')
-    tdmu.son <- apply(annual(subset(x,it='son'),'wetmean',nmin=75),2,'trend.coef')
-    lr <- sapply(x,'lastrains')
-    ld <- sapply(x,'lastdry')
-    if (verbose) print('Sigma2')
-    sigma2 <- apply(x,2,'rainvar')
-    sigma2.djf <- apply(subset(x,it='djf'),2,'rainvar')
-    sigma2.mam <- apply(subset(x,it='mam'),2,'rainvar')
-    sigma2.jja <- apply(subset(x,it='jja'),2,'rainvar')
-    sigma2.son <- apply(subset(x,it='son'),2,'rainvar')
-    tsigma2 <- rainvartrend(x)
-    tsigma2.djf <- rainvartrend(subset(x,it='djf'),nmin=90)
-    tsigma2.mam <- rainvartrend(subset(x,it='mam'),nmin=90)
-    tsigma2.jja <- rainvartrend(subset(x,it='jja'),nmin=90)
-    tsigma2.son <- rainvartrend(subset(x,it='son'),nmin=90)
-    ## Mean wet/dry-spell length
-    if (verbose) print('Spell')
-    t <- index(x)
-    ss <- spell(x,threshold=1)
-    ## If spell resturns NULL, then return NAs...
-    if (inherits(ss,'spell')) { 
-      mwsl <- colMeans(subset.station(ss,is=list(param='wet')),na.rm=TRUE)
-      mdsl <- colMeans(subset.station(ss,is=list(param='dry')),na.rm=TRUE)
-    } else {mwsl <- missval; mdsl <- missval}
-  }
-  
-  if (verbose) print('lastelementrecord')
-  ## Is the last element a high or low record?
-  lehr <- lastelementrecord(x,verbose=verbose)
-  lelr <- lastelementrecord(-x)
-  
-  rm('x','t','ss','d','is','ns','Y', 'missval')
-  
-  if (verbose) {ls(); print('StationSumStats returns all results in a list object...')}
-  
-  ## Return all the objects defined in this environment:
-  return(mget(ls()))
 }
