@@ -10,6 +10,12 @@ subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
     if (is.null(attr(x,'unit'))) attr(x,'unit') <- NA
     if (verbose) print(c(varid(x),esd::unit(x)))
     d <- dim(x)
+    ## REB 2022-03-31
+    ## Make sure that this algorithm keeps track of the type of data (precip, temp, etc)
+    if ( (length(esd::unit(x))!=d[2]) | (length(esd::varid(x))!=d[2]) ) {  
+      attr(x,'unit') <- rep(esd::unit(x)[1],d[2])
+      attr(x,'variable') <- rep(esd::varid(x)[1],d[2])
+    }
     ## subset times:
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
