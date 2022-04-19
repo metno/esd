@@ -1556,13 +1556,15 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
   tunit <- tolower(substr(tunit,1,a-2))
   if(tolower(param) == "auto") {
     nvars <- length(names(ncid$var))
+    if (verbose) print(names(ncid$var))
     varpick <- 1
     while ( ((ncid$var[[varpick]]$ndims==1) | 
-             grepl("lon|lat|projection|time",names(ncid$var)[varpick])) & 
+             grepl("lon|lat|projection|time|height",names(ncid$var)[varpick])) & 
             (varpick <= nvars) ) varpick <- varpick + 1
     if (verbose) print(paste("Selecting variable",varpick,names(ncid$var)[varpick]))
     param <- names(ncid$var)[varpick]
   }
+  if (verbose) print(param)
 
   # Extract unit etc for the parameter
   vatt <- ncatt_get( ncid, varid=param )
