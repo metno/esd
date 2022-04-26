@@ -797,6 +797,7 @@ as.OctMar <- function(x,FUN='sum',nmin=90,plot=FALSE,verbose=FALSE) {
 ## A function to assist more flexible definition of a 'year' that may start any day between
 ## January 1st and December 31st. The argument start may be a calendar name in {month.abb} or
 ## defined 
+#' @export
 shiftyear <- function(x,start,verbose=FALSE) {
   x0 <- x
   if (verbose) print(paste('shiftyear: The year start is',start))
@@ -806,16 +807,18 @@ shiftyear <- function(x,start,verbose=FALSE) {
   if (length(imon)>0) {
     ## If daily data, need to find he number of days into the year
     if (inherits(x,'day')) {
-      t1 <- index(x)[1]; yyyy1 <- year(x)[1]
+      yyyy1 <- year(x)[1]
+      t1 <- as.Date(paste(yyyy1,'01-01',sep='-'))
       t2 <- as.Date(paste(yyyy1,imon,'01',sep='-'))
       imon <- t2 - t1
-    }
+    } else imon <- imon - 1
     if (verbose) print(imon)
     x <- lag(x,imon) 
   } else if (is.character(start)) { 
     if (nchar(start)==5) {
       ## if start is in format 'MM-DD'
-      t1 <- index(x)[1]; yyyy1 <- year(x)[1]
+      yyyy1 <- year(x)[1]
+      t1 <- as.Date(paste(yyyy1,'01-01',sep='-'))
       t2 <- as.Date(paste(yyyy1,imon,sep='-'))
       imon <- t2 - t1
       if (verbose) print(imon)
