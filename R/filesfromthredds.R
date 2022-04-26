@@ -2,10 +2,10 @@
 #' A function that lists files on thredds catalogue.
 #' @aliases retrieve
 #'  
-#' @param caturl
-#' @param extension
-#' @param pattern
-#' @param verbose
+#' @param caturl url of the thredds ctalogue containing the files
+#' @param extension the extension ot the netCDF files (default is ".nc")
+#' @param pattern text pattern to filter file names
+#' @param verbose if true promt test lines
 #'
 #' @examples
 #' 

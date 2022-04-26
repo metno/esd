@@ -14,7 +14,13 @@ list_thredds(
 )
 }
 \arguments{
-\item{verbose}{}
+\item{caturl}{url of the thredds ctalogue containing the files}
+
+\item{extension}{the extension ot the netCDF files (default is ".nc")}
+
+\item{pattern}{text pattern to filter file names}
+
+\item{verbose}{if true promt test lines}
 }
 \description{
 A function that lists files on thredds catalogue.

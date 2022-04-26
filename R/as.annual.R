@@ -23,6 +23,8 @@
 #' @param FUN a function, see \code{\link{aggregate.zoo}}
 #' @param nmin Minimum number of data points (e.g. days or months) with valid
 #' data accepted for annual estimate. NULL demands complete years.
+#' @param start makes it possible to estimate annual aggregated statistics that start into the year. 
+#' E.g. start='Sep' starts the year on September 1st. Other allowed formats are start='MM-DD'. 
 #' @param format 'numeric' or 'character'
 #' @param na.rm a boolean; if TRUE, ignore NA - see see \code{\link{mean}}
 #' @param verbose a boolean; if TRUE print information about progress
@@ -36,6 +38,8 @@
 #' data(ferder)
 #' plot(annual(ferder,FUN="min"))
 #' plot(annual(ferder,FUN="IQR",na.rm=TRUE))
+#' plot(annual(ferder))
+#' lines(annual(ferder,start='Jul'))
 #' 
 #' data(bjornholt)
 #' plot(as.4seasons(bjornholt,threshold=1,FUN="exceedance"))
@@ -45,12 +49,15 @@ annual <- function(x, ...) UseMethod("annual")
 
 #' @exportS3Method
 #' @export annual.zoo
-annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
+annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, start = NULL, verbose=FALSE,...) {
   if (verbose) print("annual.zoo")
   if (inherits(x,'annual')) return(x)
   attr(x,'names') <- NULL
-#  yr <- year(x)  REB: 08.09.2014
+  #  yr <- year(x)  REB: 08.09.2014
   class(x) <- 'zoo'
+  ## If start specified, then use lag to make the series start to estimate annual aggregate
+  ## starting from any random day in the year
+  if (!is.null(start)) x <- shiftyear(x,start,verbose)
   ## Update the units for annual sums:
   if (FUN=='sum') {
     attr(x,'unit') <- sub('day','year',attr(x,'unit'))
@@ -58,14 +65,14 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
     attr(x,'unit') <- sub('season','year',attr(x,'unit'))
   }
   
-#  y <- aggregate(x,yr,FUN=match.fun(FUN),...,na.rm=na.rm)
+  #  y <- aggregate(x,yr,FUN=match.fun(FUN),...,na.rm=na.rm)
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) |
        (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0) )
-#    y <- aggregate(x,yr,FUN=FUN,...,na.rm=na.rm) else
-#    y <- aggregate(x,yr,FUN=FUN,...)
-      y <- aggregate(x,year,FUN=FUN,...,na.rm=na.rm)
+    #    y <- aggregate(x,yr,FUN=FUN,...,na.rm=na.rm) else
+    #    y <- aggregate(x,yr,FUN=FUN,...)
+    y <- aggregate(x,year,FUN=FUN,...,na.rm=na.rm)
   else
-      y <- aggregate(x,year,FUN=FUN,...)
+    y <- aggregate(x,year,FUN=FUN,...)
   ## replace infinite values by NA
   y[which(is.infinite(y))] <- NA
   ## Check minimum valid data points:
@@ -87,16 +94,19 @@ annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, verbose=FALSE,...) {
 
 #' @exportS3Method
 #' @export
-annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
+annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
                            threshold=NULL,regular=NULL,frequency=NULL,
                            verbose=FALSE) { ## 
-
+  
   if (verbose) print('annual.default')
   
   ## Case when subsetting one specific season / in this case nmin =1
   
   ## If already annual, then return
   if (inherits(x,'annual')) return(x)
+  ## If start specified, then use lag to make the series start to estimate annual aggregate
+  ## starting from any random day in the year
+  if (!is.null(start)) x <- shiftyear(x,start,verbose)
   ## Update the units for annual sums:
   if (FUN=='sum') {
     attr(x,'unit') <- sub('day','year',attr(x,'unit'))
@@ -117,7 +127,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   
   YR <- as.numeric(rownames(table(yr)))
   nyr <- as.numeric(table(yr))
-
+  
   # Need to accomodate for the possibility of more than one station series.
   if (inherits(x,'day')) {
     if (is.null(nmin)) nmin <- 30*nmo
@@ -133,15 +143,15 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
   ## Convert x to a zoo-object:
   if (verbose) print('Number of valid data points')
   X <- zoo(coredata(x),order.by=index(x))
-  attr(X,'units') <- unit(x)
+  attr(X,'units') <- esd::unit(x)
   attr(X,'variable') <- varid(x)
   
   ## Check how many valid data points)
   nok <- aggregate(X,year,FUN='nv')
-
+  
   if (FUN == 'sum') na.rm <- FALSE ## AM
   if (verbose) print(paste('aggregate: FUN=',FUN))
-
+  
   if (verbose) str(X)
   
   if (sum(is.element(names(formals(FUN)),'threshold')==1)) {
@@ -152,7 +162,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     }
     y <- aggregate(X,year,FUN=FUN,...,threshold=threshold) ## AM 20-05-2015
   } else if ((sum(is.element(names(formals(FUN)),'na.rm')==1)) |
-           (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0)) {
+             (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0)) {
     if (verbose) print('Function has na.rm-argument')
     y <- aggregate(X,year,FUN=FUN,...,na.rm=na.rm)
   } else {
@@ -160,7 +170,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     y <- aggregate(X,year,FUN=FUN,...) # REB
   }
   y[!is.finite(y)] <- NA ## AM
-
+  
   if (verbose) print('check for incomplete sampling')
   ## Flag the data with incomplete sampling as NA
   if (!is.na(nmin)) {
@@ -174,12 +184,12 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     y <- zoo(ycd,order.by=index(y))
     if (verbose) print(paste('mask',sum(nok < nmin),'years with nv <',nmin))
   }
-
+  
   ## Copy the old attributes and reset as the original class:
   y <- attrcp(x,y,ignore="names")
   args <- list(...)
   if (verbose) print(names(args))
-
+  
   ## Set appropriate units and variable names:
   if (verbose) print('Set appropriate units and variable names')
   if (FUN=="count")  {
@@ -190,21 +200,21 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     if (verbose) print("Frequency")
     attr(y,'variable') <- rep('f',d[2])
     attr(y,'unit') <- rep('fraction',d[2])
-#    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
+    #    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
   } else if (FUN=="wetfreq") {
     if (verbose) print("Wet-day frequency")
     attr(y,'variable') <- rep('f[w]',d[2])
     attr(y,'unit') <- rep('fraction',d[2])
     attr(y,'longname')[] <- 'Wet-day frequency'
-#    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
+    #    attr(y,'unit') <- rep(paste("frequency | X >",threshold," * ",attr(x,'unit')),d[2])
   } else if (FUN=="wetmean") {
     if (verbose) print("Wet-day mean")
     attr(y,'variable') <- rep('mu',d[2])
     attr(y,'longname')[] <- 'Wet-day mean precipitation'
     attr(y,'unit') <- rep('mm/day',d[2])
-#    n <- count(X,threshold=threshold) # REB
-#    n <- aggregate(X,year,FUN='count', threshold=threshold,...,
-#                   regular = regular, frequency = frequency)
+    #    n <- count(X,threshold=threshold) # REB
+    #    n <- aggregate(X,year,FUN='count', threshold=threshold,...,
+    #                   regular = regular, frequency = frequency)
     n <- nok  # Not the count above threshold byut number of valid data points
     bad <- coredata(n)==0
     coredata(n)[bad] <- 1
@@ -217,7 +227,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     if (verbose) print("mean")
     sigma <- aggregate(X, year, FUN='sd', ...,
                        regular = regular, frequency = frequency)
-#    n <- count(x,threshold=threshold)
+    #    n <- count(x,threshold=threshold)
     n <- aggregate(X,year,FUN='count', threshold=threshold,...,
                    regular = regular, frequency = frequency)
     bad <- coredata(n)==0
@@ -237,7 +247,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
     attr(y,'variable') <- rep('GDD',d[2])
     attr(y,'unit') <- rep('degree-days',d[2])
   } else attr(y,'unit') <- attr(x,'unit')
-
+  
   attr(y,'history') <- history.stamp(x)
   class(y) <- class(x)
   class(y)[length(class(y))-1] <- "annual"
@@ -248,10 +258,10 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,...,
 
 #' @exportS3Method
 #' @export
-annual.station <- function(x,FUN='mean',nmin=NULL,threshold=NULL,verbose=FALSE,...) {
+annual.station <- function(x,FUN='mean',nmin=NULL,start=NULL,threshold=NULL,verbose=FALSE,...) {
   if (verbose) print('annual.station')
   attr(x,'names') <- NULL
-  y <- annual.default(x,FUN=FUN,nmin=nmin,threshold=threshold,verbose=verbose,...)
+  y <- annual.default(x,FUN=FUN,nmin=nmin,start=start,threshold=threshold,verbose=verbose,...)
   y[which(is.infinite(y))] <- NA
   invisible(y)
 }
@@ -279,12 +289,12 @@ annual.dsensemble <- function(x,FUN='mean',verbose=FALSE,...) {
   clsx <- class(x)
   clss <- class(attr(x,'station'))
   if (!inherits(x,c('day','month','annual','season')))
-      class(x) <- c(clsx[1],clss[2],clsx[2])
+    class(x) <- c(clsx[1],clss[2],clsx[2])
   if (inherits(x,'season'))
-      y <- subset(x,it=0,verbose=verbose)
+    y <- subset(x,it=0,verbose=verbose)
   else
-      y <- annual.default(x,FUN=FUN,verbose=verbose,...)
-
+    y <- annual.default(x,FUN=FUN,verbose=verbose,...)
+  
   attr(y,'station') <- annual.station(attr(x,'station'),...)
   names(y) <- names(x)
   invisible(y)
@@ -298,7 +308,7 @@ annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
   if (inherits(FUN,'function')) FUN <- deparse(substitute(FUN)) # REB110314
   yr <- year(x)
   cls <- class(x)
-#  class(x) <- "zoo"
+  #  class(x) <- "zoo"
   if ( (inherits(x,'mon'))  & is.null(nmin) ) {
     iy <- year(x)
     nmy <- as.numeric(table(iy))
@@ -306,8 +316,8 @@ annual.field <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL,verbose=FALSE, ...) {
     x[is.element(iy,!full),] <- NA
     na.rm=FALSE
   }
-#  y <- aggregate(x,yr,FUN=match.fun(FUN),...,na.rm=na.rm)
-#  y <- aggregate(x,yr,FUN=FUN,...,na.rm=na.rm)
+  #  y <- aggregate(x,yr,FUN=match.fun(FUN),...,na.rm=na.rm)
+  #  y <- aggregate(x,yr,FUN=FUN,...,na.rm=na.rm)
   y <- annual.default(x,FUN=FUN,nmin=nmin,verbose=verbose,...) 
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
@@ -369,7 +379,7 @@ as.annual.integer <- function(x, ...) structure(x, class = "annual")
 #' @exportS3Method
 #' @export
 as.annual.yearqtr <- function(x, frac = 0, ...) {
-    if (frac == 0) annual(as.numeric(x)) else
+  if (frac == 0) annual(as.numeric(x)) else
     as.annual(as.Date(x, frac = frac), ...)
 }
 
@@ -396,7 +406,7 @@ as.monthly.default <- function(x,...) {
 #' @exportS3Method
 #' @export
 as.monthly.field <- function(x,FUN='mean',...) {
-if (inherits(x,'month')) return(x)
+  if (inherits(x,'month')) return(x)
   y <- aggregate(as.zoo(x), yyyymm, #function(tt) as.Date(as.yearmon(tt)),
                  FUN=FUN,...)
   y <- attrcp(x,y)
@@ -412,13 +422,13 @@ if (inherits(x,'month')) return(x)
 #' @export
 ## This is a dublicate of that in as.R
 as.monthly.station <- function (x, FUN = "mean", ...) {
-    y <- aggregate(zoo(x), yyyymm, #function(tt) as.Date(as.yearmon(tt)), 
-                   FUN = FUN, ...)
-    y <- attrcp(x, y)
-    attr(y, "history") <- history.stamp(x)
-    class(y) <- class(x)
-    class(y)[2] <- "month"
-    return(y)
+  y <- aggregate(zoo(x), yyyymm, #function(tt) as.Date(as.yearmon(tt)), 
+                 FUN = FUN, ...)
+  y <- attrcp(x, y)
+  attr(y, "history") <- history.stamp(x)
+  class(y) <- class(x)
+  class(y)[2] <- "month"
+  return(y)
 }
 
 #' @export
@@ -505,30 +515,30 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
   } else {
     yr <- sort(rep(as.integer(rownames(table(year(x)))),4))
     n <- length(yr)
-
+    
     q <- rbind(c(12,1,2),3:5,6:8,9:11)
     X <- matrix(rep(NA,n*d[2]),n,d[2]) 
     t <-rep(NA,n)
-
+    
     #print("start loop")
     for (i in 1:n) {
       iq <- (i-1) %% 4 + 1
       if (iq == 1) 
         ii <- (is.element(year(x),yr[i]) &
-               is.element(month(x),c(1,2))) |
-              (is.element(year(x),yr[i]-1) &
-               is.element(month(x),12))  else
-        ii <-  is.element(year(x),yr[i]) &
-               is.element(month(x),q[iq,])
-     if (d[2]==1) cline <- paste(FUN,"(coredata(x[ii,]),...)",sep="") else
-                  cline <- paste("apply(coredata(x[ii,]),2,",FUN,", ...)",sep="")
-      #print(cline)
-      if ( (inherits(x,'day')) & (sum(ii)>=85) |
-           (inherits(x,'month')) & (sum(ii)>=3) ) {
-        X[i,] <- eval(parse(text=cline))
-        t[i] <- yr[i] + (iq-1)/4
-        print(c(i,yr[i],round(mean(X[i,]),2),iq,sum(ii),round(X[i],2),t[i]))
-      }
+                 is.element(month(x),c(1,2))) |
+          (is.element(year(x),yr[i]-1) &
+             is.element(month(x),12))  else
+               ii <-  is.element(year(x),yr[i]) &
+                 is.element(month(x),q[iq,])
+             if (d[2]==1) cline <- paste(FUN,"(coredata(x[ii,]),...)",sep="") else
+               cline <- paste("apply(coredata(x[ii,]),2,",FUN,", ...)",sep="")
+             #print(cline)
+             if ( (inherits(x,'day')) & (sum(ii)>=85) |
+                  (inherits(x,'month')) & (sum(ii)>=3) ) {
+               X[i,] <- eval(parse(text=cline))
+               t[i] <- yr[i] + (iq-1)/4
+               print(c(i,yr[i],round(mean(X[i,]),2),iq,sum(ii),round(X[i],2),t[i]))
+             }
     } 
     #print("end loop")
     ok <- is.finite(rowMeans(X,na.rm=TRUE)) & is.finite(t)
@@ -578,15 +588,15 @@ as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,v
   tshifted <-  ISOdate(year=year,month=month,day=day,hour=hour)
   #print(summary(tshifted))
   X <- zoo(coredata(x),order.by=tshifted)
- 
+  
   # Test for the presens of 'na.rm' in argument list - this is a crude fix and not a
   # very satisfactory one. Fails for FUN==primitive function.
   if (is.function(FUN)) test.na.rm <- FALSE else
-      test.na.rm <- (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0)
+    test.na.rm <- (sum(is.element(FUN,c('mean','min','max','sum','quantile')))>0)
   if ( (sum(is.element(names(formals(FUN)),'na.rm')==1)) | (test.na.rm) )
-     y <- aggregate(X,as.yearqtr,FUN=match.fun(FUN),...,na.rm=na.rm) else
-     y <- aggregate(X,as.yearqtr,FUN=match.fun(FUN),...)
-
+    y <- aggregate(X,as.yearqtr,FUN=match.fun(FUN),...,na.rm=na.rm) else
+      y <- aggregate(X,as.yearqtr,FUN=match.fun(FUN),...)
+  
   # Set to missing for seasons with small data samples:
   nd <- aggregate(X,as.yearqtr,FUN=nv)
   ok <- nd >= nmin
@@ -611,10 +621,10 @@ as.4seasons.day <- function(x,...,FUN='mean',na.rm=TRUE,dateindex=TRUE,nmin=85,v
 as.4seasons.station <- function(x,...,FUN='mean') {
   #print('as.4seasons.station')
   y <- as.4seasons.default(x,FUN=FUN,...)
-#  y <- attrcp(x,y)
-#  attr(y,'history') <- history.stamp(x)
-#  class(y) <- class(x)
-#  class(y) <- gsub("month","season",class(x))
+  #  y <- attrcp(x,y)
+  #  attr(y,'history') <- history.stamp(x)
+  #  class(y) <- class(x)
+  #  class(y) <- gsub("month","season",class(x))
   return(y) 
 }
 
@@ -622,10 +632,10 @@ as.4seasons.station <- function(x,...,FUN='mean') {
 #' @export
 as.4seasons.spell <- function(x,...,FUN='mean') {
   y <- as.4seasons.default(as.station(x),FUN=FUN,...)
-#  y <- attrcp(x,y)
-#  attr(y,'history') <- history.stamp(x)
-#  class(y) <- class(x)
-#  class(y) <- gsub("month","season",class(x))
+  #  y <- attrcp(x,y)
+  #  attr(y,'history') <- history.stamp(x)
+  #  class(y) <- class(x)
+  #  class(y) <- gsub("month","season",class(x))
   return(y) 
 }
 
@@ -647,18 +657,18 @@ as.4seasons.field <- function(x,...,FUN='mean',verbose=FALSE) {
 #' @exportS3Method
 #' @export
 as.4seasons.dsensemble <- function(x,...,FUN='mean') {
-    cls <- class(x)
-    class(x) <- c("station",cls[2],"zoo") ## AM 06-07-2015 Quick fix here, time step added into the class of x
-    attrx <- attributes(x)
-    y <- as.4seasons.station(x,FUN=FUN,...)
-    ##attributes(y) <- attrx
-    
-    y <- attrcp(x,y)
-    attr(y,"station") <- as.4seasons.station(attr(x,"station"))
-   
-    attr(y,'history') <- history.stamp(x)
-    class(y) <- c("dsensemble","season","zoo")
-    return(y)
+  cls <- class(x)
+  class(x) <- c("station",cls[2],"zoo") ## AM 06-07-2015 Quick fix here, time step added into the class of x
+  attrx <- attributes(x)
+  y <- as.4seasons.station(x,FUN=FUN,...)
+  ##attributes(y) <- attrx
+  
+  y <- attrcp(x,y)
+  attr(y,"station") <- as.4seasons.station(attr(x,"station"))
+  
+  attr(y,'history') <- history.stamp(x)
+  class(y) <- c("dsensemble","season","zoo")
+  return(y)
 }
 
 # do not export - local function only used in as.seasons
@@ -692,11 +702,11 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...)
   start.1 <- as.numeric(leapdate(years[1], start))
   end.1 <- as.numeric(leapdate(years[1], end))
   if (start.1 > end.1) twoyears <- 1 else twoyears <- 0
-
+  
   for (i in 1:n) {
     if(verbose) print(paste("Aggregate for year",years[i]))
     z <- coredata(window(x, start=leapdate(years[i], start),
-                            end=leapdate(years[i]+twoyears, end)))
+                         end=leapdate(years[i]+twoyears, end)))
     k[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,nv)
     y[i,] <- apply(matrix(z,ceiling(length(z)/ns),ns),2,FUN, ...)
   }
@@ -783,3 +793,35 @@ as.OctMar <- function(x,FUN='sum',nmin=90,plot=FALSE,verbose=FALSE) {
   return(OctMar)
 }
 
+## @RasmusBenestad, 2021-04-12
+## A function to assist more flexible definition of a 'year' that may start any day between
+## January 1st and December 31st. The argument start may be a calendar name in {month.abb} or
+## defined 
+shiftyear <- function(x,start,verbose=FALSE) {
+  x0 <- x
+  if (verbose) print(paste('shiftyear: The year start is',start))
+  if (inherits(x,'season')) warning('annual: does not support start for seasonal aggregates')
+  imon <- grep(start,month.abb,ignore.case = TRUE)
+  ## If start is a month ('Jan',...'Dec)
+  if (length(imon)>0) {
+    ## If daily data, need to find he number of days into the year
+    if (inherits(x,'day')) {
+      t1 <- index(x)[1]; yyyy1 <- year(x)[1]
+      t2 <- as.Date(paste(yyyy1,imon,'01',sep='-'))
+      imon <- t2 - t1
+    }
+    if (verbose) print(imon)
+    x <- lag(x,imon) 
+  } else if (is.character(start)) { 
+    if (nchar(start)==5) {
+      ## if start is in format 'MM-DD'
+      t1 <- index(x)[1]; yyyy1 <- year(x)[1]
+      t2 <- as.Date(paste(yyyy1,imon,sep='-'))
+      imon <- t2 - t1
+      if (verbose) print(imon)
+      x <- lag(x,imon)
+    }
+  } else if (is.numeric(start)) x <- lag(x,start)
+  x <- attrcp(x0,x)
+  return(x)
+}

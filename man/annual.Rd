@@ -44,6 +44,9 @@ annual(x, ...)
 \item{nmin}{Minimum number of data points (e.g. days or months) with valid
 data accepted for annual estimate. NULL demands complete years.}
 
+\item{start}{makes it possible to estimate annual aggregated statistics that start into the year. 
+E.g. start='Sep' starts the year on September 1st. Other allowed formats are start='MM-DD'.}
+
 \item{format}{'numeric' or 'character'}
 
 \item{na.rm}{a boolean; if TRUE, ignore NA - see see \code{\link{mean}}}
@@ -71,6 +74,8 @@ Same class as x
 data(ferder)
 plot(annual(ferder,FUN="min"))
 plot(annual(ferder,FUN="IQR",na.rm=TRUE))
+plot(annual(ferder))
+lines(annual(ferder,start='Jul'))
 
 data(bjornholt)
 plot(as.4seasons(bjornholt,threshold=1,FUN="exceedance"))
