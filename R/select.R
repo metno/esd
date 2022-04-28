@@ -34,11 +34,15 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       station.meta <- merge(station.meta, meta, all=TRUE)
       meta <- metno.frost.meta.day(save2file=FALSE, verbose=verbose)
       station.meta <- merge(station.meta, meta, all=TRUE)
+      if("METNO.FROST.MINUTE" %in% src) {
+        meta <- metno.frost.meta.minute(save2file=FALSE, verbose=verbose)
+        station.meta <- merge(station.meta, meta, all=TRUE)
+      }
     }
     ## KMP 2020-02-18: Fetch Thredds metadata if it isn't already in station.meta
     if(thredds & !any(grepl("THREDDS",station.meta$source)) ) {
       if(is.null(param)) {
-        parami.thredds <- c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
+        param.thredds <- c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
       } else {
         param.thredds <- param
       }
@@ -232,7 +236,6 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     id <- is.element(station.meta$element,ele)
     station.meta <- station.meta[id,]
   }
-    
   ## Outputs
   if (dim(station.meta)[1]!=0) {
     station.meta$station_id <- as.character(station.meta$station_id)

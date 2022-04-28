@@ -212,7 +212,6 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   }
   ## end of hack meant to streamline the use REB...
   ## REB 2021-05-11
-  
   l <- list(...)
   dots <- names(l)
   if (length(l) > 0) { 
@@ -1162,7 +1161,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
                                 lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL,
                                 timeresolutions='P1M', levels="default", timeoffsets="default", 
                                 performancecategories="A,B,C", exposurecategories="1,2", 
-                                qualities='0,1,2,3,4,5', fetch.meta=FALSE, path=NULL, 
+                                qualities='0,1,2,3,4,5', fetch.meta=TRUE, path=NULL, 
                                 browser="firefox", save2file=FALSE, verbose=FALSE) {
   ## REB - replaced 'start=NULL, end=NULL' with 'it = NULL' to keep the same type of arguments...
   start <- NULL; end <- NULL
@@ -1194,12 +1193,12 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
       station.meta <- meta.function(save2file=FALSE, verbose=verbose)
     } else {
       data("station.meta", envir=environment())
-      id <- station.meta$source==switch(toupper(timeresolutions), 
-                                        "PT1M"="METNO.FROST.MINUTE",
-                                        "P1D"="METNOD.FROST",
-                                        "P1M"="METNOM.FROST")
-      meta <- station.meta[id,]
     }
+    id <- station.meta$source==switch(toupper(timeresolutions), 
+                                      "PT1M"="METNO.FROST.MINUTE",
+                                      "P1D"="METNOD.FROST",
+                                      "P1M"="METNOM.FROST")
+    meta <- station.meta[id,]
     
     ## If stid is not defined, use (lat,lon) to find station(s) in metadata table
     if(is.null(stid) && (!is.null(lon) & !is.null(lat))) {
@@ -1241,7 +1240,6 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
     
     ## If start and end are not specified, use start and end from meta data
     ## bur first, reorganize and clean up start and end dates 
-    #browser()
     i <- meta$station_id %in% stid  & meta$element %in% param1info$element
 
     meta.start <- meta$start[i]
@@ -1391,12 +1389,16 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
     } else {
       sourceId <- unique(data$sourceId)
       var <- sapply(data$observations, function(x) x$value)
-      time <- as.Date(data$referenceTime)
+      if(timeresolutions=="PT1M") {
+        time <- as.POSIXct(data$referenceTime)
+      } else {
+        time <- as.Date(data$referenceTime)
+      }
       if(length(sourceId)==1) {
         var <- zoo(var, order.by=time)
       } else {
         tvec <- seq(min(time), max(time), 
-                    by = switch(timeresolutions, "P1D"="day", "P1M"="month"))
+          by = switch(timeresolutions, "P1D"="day", "P1M"="month", "PT1M"="min"))
         X <- matrix(NA, nrow=length(tvec), ncol=length(sourceId))
         for(i in 1:ncol(X)) {
           j <- sapply(time[data$sourceId==sourceId[i]], function(x) which(tvec==x))
@@ -1415,6 +1417,7 @@ metno.frost.station <- function(keyfile='~/.FrostAPI.key', url='https://frost.me
                                 lat=meta$latitude[i], 
                                 alt=meta$altitude[i],
                                 src=switch(timeresolutions, 
+                                           'PT1M'='METNO.FROST.MINUTE',
                                            'P1D'='METNOD.FROST', 
                                            'P1M'='METNOM.FROST'),
                                 url="http://frost.met.no",

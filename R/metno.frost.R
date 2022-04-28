@@ -225,7 +225,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
                     "source"=switch(timeresolutions,
                                     "P1D"="METNOD.FROST",
                                     "P1M"="METNOM.FROST",
-                                    "PT1M"="METNOMIN.FROST"),
+                                    "PT1M"="METNO.FROST.MINUTE"),
                     "wmo"=rep(NA,length(df$station_id)),
                     "quality"=rep(NA,length(df$station_id)),
                     "variable"=var, stringsAsFactors=FALSE)
