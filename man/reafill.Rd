@@ -22,7 +22,7 @@ reafill(
 \arguments{
 \item{x}{the station data with gaps that need interpolation}
 
-\item{file}{Name of the reanalysis data file (netCDF). NB use daily data if x contains daily data.}
+\item{file}{Name of the reanalysis data file (netCDF) or a field object containing reanalysis data. NB use daily data if x contains daily data.}
 
 \item{anomaly}{(Not yet working) subtract the mean annual cycle before interpolation and then add it back for recovering original form.}
 

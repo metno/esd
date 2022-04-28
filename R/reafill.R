@@ -17,7 +17,7 @@
 #' consists of comparing with the data that has been removed before applying \code{reafill}.
 #' 
 #' @param x the station data with gaps that need interpolation
-#' @param file Name of the reanalysis data file (netCDF). NB use daily data if x contains daily data. 
+#' @param file Name of the reanalysis data file (netCDF) or a field object containing reanalysis data. NB use daily data if x contains daily data. 
 #' @param anomaly (Not yet working) subtract the mean annual cycle before interpolation and then add it back for recovering original form.
 #' @param plot Graphical diagnostics
 #' @param delta Distance (in degrees) from edge of station domain to reanalysis domain

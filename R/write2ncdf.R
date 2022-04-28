@@ -1255,10 +1255,11 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE) {
   
   d <- dim(x)
   ## REB 2022-03-31
-  ## Make sure that this algoritm keeps track of the type of data (precip, temp, etc)
-  ## NOTE - This will fail if there is a set of mixed variable types.
-  attr(x,'unit') <- rep(attr(x,'unit')[1],d[2])
-  attr(x,'variable') <- rep(attr(x,'variable')[1],d[2])
+  ## Make sure that this algorithm keeps track of the type of data (precip, temp, etc)
+  if ( (length(esd::unit(x))!=d[2]) | (length(esd::varid(x))!=d[2]) ) {  
+    attr(x,'unit') <- rep(esd::unit(x)[1],d[2])
+    attr(x,'variable') <- rep(esd::varid(x)[1],d[2])
+  }
   Y <- NULL
   if (d[2] > ns) {
     if (verbose) print(d)
