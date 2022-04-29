@@ -24,7 +24,7 @@
 #' @param method If 'linreg': use linear regression to fit station data based on reanalysis data; If 'direct', replace missing station data directly with values from the closest grid points of the reanalysis data. 
 #' @param verbose Print out checks for diagnosing
 #'
-#' @aliases pcafill reafill test.reafill 
+#' @seealso pcafill reafill test.reafill 
 #' @author R.E. Benestad
 #' @export reafill
 reafill <- function(x,file,anomaly=TRUE,plot=FALSE,delta=0.3,

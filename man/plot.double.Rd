@@ -2,16 +2,6 @@
 % Please edit documentation in R/plot.R
 \name{plot.double}
 \alias{plot.double}
-\alias{plot.list}
-\alias{plot.numeric}
-\alias{plot.xsection}
-\alias{plot.eof}
-\alias{plot.station}
-\alias{plot.ds}
-\alias{plot.pca}
-\alias{plot.spell}
-\alias{plot.nevents}
-\alias{plot.IDF}
 \title{Plot esd objects}
 \usage{
 \method{plot}{double}(
@@ -164,6 +154,9 @@ print("Downscale the January mean temperature")
 ds.jan <- DS(Oslo,eofxx)
 plot(ds.jan)
 
+}
+\seealso{
+plot.list plot.numeric plot.xsection plot.eof plot.station plot.ds plot.eof plot.pca plot.spell plot.nevents plot.IDF
 }
 \keyword{graphics}
 \keyword{plot}

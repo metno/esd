@@ -2,7 +2,6 @@
 % Please edit documentation in R/trend.dsensemble.R
 \name{trend.dsensemble}
 \alias{trend.dsensemble}
-\alias{}
 \title{trend.dsensemble}
 \usage{
 \method{trend}{dsensemble}(x, ..., it = NULL, verbose = FALSE, plot = FALSE, eof = FALSE)

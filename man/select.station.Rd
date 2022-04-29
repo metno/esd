@@ -23,6 +23,51 @@ select.station(
   verbose = FALSE
 )
 }
+\arguments{
+\item{loc}{A string of characters as the name of the location
+(weather/climate station) or an object of class "stationmeta".}
+
+\item{param}{Parameter or element type or variable identifier. There are
+several core parameters or elements as well as a number of additional
+parameters. The parameters or elements are: precip = Precipitation (mm) tas,
+tavg = 2m-surface temperature (in degrees Celcius) tmax, tasmax = Maximum
+temperature (in degrees Celcius) tmin, tasmin = Minimum temperature (in
+degrees Celcius)}
+
+\item{stid}{A string of characters as an identifier of the weather/climate
+station.}
+
+\item{lon}{Numeric value of longitude (in decimal degrees East) for the
+reference point (e.g. weather station) as a single value or a vector
+containing the range of longitude values in the form of c(lon.min,lon.max)}
+
+\item{lat}{Numeric value of latitude for the reference point (in decimal
+degrees North) or a vector containing the range of latitude values in the
+form of c(lat.min,lat.max)}
+
+\item{alt}{Numeric value of altitude (in meters a.s.l.) used for selection.
+Positive value, select all stations above this altitude; for negative
+values, select all stations below this latitude.}
+
+\item{cntr}{A string or a vector of strings of the full name of the country:
+Select the stations from a specified country or a set of countries.}
+
+\item{src}{Source: limit the downscaling to a specific data set ("NARP",
+"NACD", "NORDKLIMA", "GHCNM", "METNOM", "ECAD", "GHCND" and "METNOD")}
+
+\item{it}{A single integer or a vector of integers or Dates. An integer in
+the range of [1:12] for months, an integer of 4 digits for years (e.g.
+2014), or a vector of Dates in the form "2014-01-01").}
+
+\item{nmin}{Select only stations with at least nmin number of years, months
+or days depending on the class of object x (e.g. 30 years).}
+
+\item{verbose}{Logical value defaulting to FALSE. If FALSE, do not display
+comments (silent mode). If TRUE, displays extra information on progress.}
+}
+\value{
+A \code{data.frame} holding meta data about available station data.
+}
 \description{
 Function that searches the meta data base for the requested station data
 Search priority: ID, name, coordinates, altitude, country,...

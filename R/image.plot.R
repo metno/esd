@@ -16,7 +16,7 @@
 #' @param legend.only if TRUE show only legend
 #' @param col Specification of the plotting color (a single color or a vector)
 #' @param pal color palette, used only if col is NULL (see \code{\link{colscal}})
-#' @param lab.breaks 
+#' @param lab.breaks labels of breakpoints for the colours (argument \code{"breaks"})
 #' @param axis.args list containing arguments for axis
 #' @param legend.args list containing arguments for legend
 #' @param midpoint If TRUE color scale is formed for midpoints by averaging 4 corners.

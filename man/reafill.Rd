@@ -2,8 +2,6 @@
 % Please edit documentation in R/reafill.R
 \name{reafill}
 \alias{reafill}
-\alias{pcafill}
-\alias{test.reafill}
 \title{Fill in gaps of missing data.
 \code{reafill} is an alternative to \code{pcafill}, using ERA5 to fill in missing data and to evaluate
 the station data based on an ordinary linear regression between data from the
@@ -48,6 +46,9 @@ use of additional infromation other than assuming a stable spatio-temporal covar
 \code{test.reafill} provides a testing routine for \code{reafill} on sample data 
 (Oslo monthly temperature) where gaps of missing data have been introduced. The test 
 consists of comparing with the data that has been removed before applying \code{reafill}.
+}
+\seealso{
+pcafill reafill test.reafill
 }
 \author{
 R.E. Benestad

@@ -28,8 +28,7 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
 #' 
 #' The function \code{trend.dsensemble} is used to calculate trends of dsensemble objects and summarise the results in terms of ensemble statistics: the minimum (min), fifth percentile (q5), median, mean, 95th percentile (q95) and maximum trend (max), as well as the number and fraction of ensemble members with a positive (n.pos, f.pos) and negative (n.neg, f.neg) trend. The results of the trend analysis can be displayed visually with the function \code{trendplot.dsensemble}, which is called from \code{trend.dsensemble} if the argument plot=TRUE.
 #'
-#' @seealso trendplot.dsensemble map.dsensemble aggregate.dsensemble
-#' @aliases 
+#' @seealso trendplot.dsensemble map.dsensemble aggregate.dsensemble 
 #'
 #' @param x an object of type 'dsensemble'
 #' @param it time index (see \code{\link{subset}})
@@ -43,6 +42,7 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
 trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
   ## Get the spatial weights
   if (verbose) print('trend.dsensemble')
+  if (verbose) print('Calculate ensemble statistics of dsensemble trends')
   stopifnot(inherits(x, "dsensemble"))
   if(inherits(x,"station")) {
     if (verbose) print('station ensemble')
@@ -177,8 +177,7 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
 #' 
 #' The function \code{trendplot.dsensemble} is used to visualise the trends of downscaled ensembles, calculated with \code{trend.dsensemble}. 
 #'
-#' @seealso trend.dsensemble map.dsensemble aggregate.dsensemble
-#' @aliases 
+#' @seealso trend.dsensemble map.dsensemble aggregate.dsensemble 
 #'
 #' @param x A \code{data.frame} containing ensemble statistics of linear trends. Output from the function \code{trend.dsensemble}.
 #' @param statistic Ensemble statistic to show on the map. By default, statistic=\code{"mean"}, the ensemble mean of the trends. Other alternatives: \code{"median"}, \code{"min"} (minimum), \code{"max"} (maximum), \code{"q5"} (5th percentile), \code{"q95"} (95th percentile), \code{"n.pos"} and \code{"n.neg"} (number of ensemble members with positive or negative trends), and \code{"f.pos"} and \code{"f.neg"} (fraction of ensemble members with positive or negative trends).
@@ -200,16 +199,17 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
 trendplot.dsensemble <- function(trends.stats, statistic="mean", 
       significance="f", threshold=0.9, threshold.lower=TRUE,
       pch=1, cex=0.9, lwd=1, colbar=list(show=TRUE),
-      pch.significance=19, cex.significance=0.9, lwd.significance=1, col.significance=NULL,
+      pch.significance=19, cex.significance=0.9,
+      lwd.significance=1, col.significance=NULL,
       projection="lonlat", ..., verbose=FALSE) {
   if(verbose) print("trendplot.dsensemble")
   X <- trends.stats[[statistic]]
-  #X <- attrcp(trends.stats, X)
   attr(X,'longitude') <- attr(trends.stats,'longitude')
   attr(X,'latitude') <- attr(trends.stats,'latitude')
   attr(X,'variable') <- paste(attr(trends.stats,'variable'),statistic,'trend')
   attr(X,'unit') <- paste(attr(trends.stats,'unit'),'/decade')
   if(is.null(dim(X))) {
+    if(verbose) print(paste('Plot',statistic,'of the dsensemble trends'))
     dim(X) <- c(length(X), 1)
     class(X) <- c("station", "trend", "dsensemble")
     if(is.null(colbar$pal)) {
@@ -255,23 +255,26 @@ trendplot.dsensemble <- function(trends.stats, statistic="mean",
         }
       }
       s <- NULL
-      if(is.list(significance)) {
-	threshold <- significance$threshold
-        threshold.lower <- TRUE
-        if(!is.null(significance$threshold.lower)) threshold.lower <- significance$threshold.lower
-        if(significance$statistic=="f") {
+      if(!is.null(significance)) {
+        if(verbose) print('Show statistical significance of trend ensemble')
+	if(is.null(threshold.lower)) threshold.lower <- TRUE
+        if(significance=="f") {
           if(is.null(threshold)) threshold <- 0.9
           sig <- apply(trends.stats[,c("f.pos","f.neg")], 1, max)
-        } else if(significance$statistic=="n") {
+        } else if(significance=="n") {
           if(is.null(threshold)) threshold <- floor(length(X)*0.9)
           sig <- apply(trends.stats[,c("n.pos","n.neg")], 1, max)
-        } else if(significance$statistic %in% names(trends.stats)) {
+        } else if(significance %in% names(trends.stats)) {
 	  sig <- trends.stats[,significance$statistic]
         }
-	if(!is.null(threshold)) {
+	if(is.null(threshold)) {
+	  warning('threshold for significance not defined')
+	} else {
 	  if(threshold.lower) {
+	    if(verbose) print(paste('significance measure:',significance,'>',threshold))
 	    s <- sig>threshold
 	  } else {
+	    if(verbose) print(paste('significance measure:',significance,'<',threshold))
 	    s <- sig<threshold
 	  }
 	}

@@ -64,7 +64,7 @@ figure region.}
 
 \item{pal}{color palette, used only if col is NULL (see \code{\link{colscal}})}
 
-\item{lab.breaks}{}
+\item{lab.breaks}{labels of breakpoints for the colours (argument \code{"breaks"})}
 
 \item{axis.args}{list containing arguments for axis}
 

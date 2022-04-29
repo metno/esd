@@ -4,10 +4,10 @@
 #' objects.
 #' 
 #' @aliases map map.default map.matrix map.data.frame map.station
-#' map.stationmeta map.stationsummary map.comb map.eof map.ds map.dsensemble
+#' map.stationmeta map.stationsummary map.comb map.eof map.ds
 #' map.field map.corfield map.cca map.events map.mvr map.pca map.array
 #' map.trend map.mvcomb lonlatprojection rotM map2sphere
-#' @seealso map.trajectory vec
+#' @seealso map.trajectory vec map.dsensemble
 #'
 #' @param x the object to be plotted; in \code{rotM}, x holds a vector of
 #' x-coordinates.

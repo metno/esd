@@ -2,13 +2,30 @@
 #'
 #' Various functions for visual display of data and statistics
 #'
-#' \code{wheel} shows the seasonal cycle with different colors for different years
+#' \code{wheel} shows the seasonal cycle with different colors for different years. If the input is a \code{station} object, \code{wheel} calls the function \code{\link{wheel.station}} and if the input is \code{spell} object, it calls \code{\link{wheel.spell}}
 #'
-#' @aliases wheel.station wheel.spell
-#' @seealso graph visprob conf vis diagram cumugram scatter plot map
+#' @aliases wheel
+#' @seealso wheel.station wheel.spell graph visprob conf vis diagram cumugram scatter plot map
 #' 
 #' @param x an input object of class 'station' or 'spell'
-#' @param y an input object of class 'station' or 'spell'
+#' @param \dots additional arguments
+#'
+#' @examples
+#' data(bjornholt)
+#' wheel(bjornholt, new=FALSE)
+#'
+#' @export
+wheel <- function(x,...) UseMethod("wheel")
+
+#' S3 method of \code{wheel} for \code{'station'} objects
+#'
+#' \code{wheel} shows the seasonal cycle with different colors for different years.
+#'
+#' @aliases wheel.station
+#' @seealso wheel wheel.spell graph visprob conf vis diagram cumugram scatter plot map
+#' 
+#' @param x an input object of class 'station'
+#' @param y an input object of class 'station'
 #' @param new if new create new graphic device
 #' @param lwd relative line width
 #' @param col color of line
@@ -21,10 +38,6 @@
 #' data(bjornholt)
 #' wheel(bjornholt, new=FALSE)
 #'
-#' @export
-wheel <- function(x,...) UseMethod("wheel")
-
-# S3 method for 'station' object
 #' @exportS3Method
 #' @export wheel.station
 wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
@@ -121,8 +134,26 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
   image(1:2,years,colbar,col=col)
 }
 
-# S3 method for 'spell' object
-
+#' S3 method of \code{wheel} for \code{'spell'} objects
+#'
+#' \code{wheel} shows the seasonal cycle with different colors for different years.
+##'
+#' @seealso wheel wheel.station
+#'
+#' @param x an input object of class 'spell'
+#' @param y an input object of class 'spell'
+#' @param new if new create new graphic device
+#' @param lwd relative line width
+#' @param col color of line
+#' @param verbose a boolean; if TRUE print information about progress
+#' @param \dots additional arguments
+#'
+#' @examples
+#'
+#' data(bjornholt)
+#' wetspell <- spell(bjornholt, threshold=.1)
+#' wheel(wetspell, new=FALSE)
+#'
 #' @exportS3Method
 #' @export wheel.spell
 wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,verbose=FALSE,...) {

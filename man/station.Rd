@@ -2,7 +2,6 @@
 % Please edit documentation in R/station.R
 \name{station}
 \alias{station}
-\alias{select.station}
 \alias{station.default}
 \alias{station.ecad}
 \alias{station.nacd}
@@ -128,7 +127,7 @@ map(y, xlim = c(-10,30), ylim = c(50,70), cex=1, select=y1, cex.select=2, showal
 
 }
 \seealso{
-clean.station allgood station.thredds map.station
+clean.station allgood station.thredds map.station select.station
 }
 \author{
 A. Mezghani

@@ -11,7 +11,6 @@
 \alias{map.comb}
 \alias{map.eof}
 \alias{map.ds}
-\alias{map.dsensemble}
 \alias{map.field}
 \alias{map.corfield}
 \alias{map.cca}
@@ -182,7 +181,7 @@ map(subset(rr,it=it),FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=as.charact
 }
 }
 \seealso{
-map.trajectory vec
+map.trajectory vec map.dsensemble
 
 \code{\link{plot.station}}
 }

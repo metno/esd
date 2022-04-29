@@ -2,8 +2,6 @@
 % Please edit documentation in R/wheel.R
 \name{wheel}
 \alias{wheel}
-\alias{wheel.station}
-\alias{wheel.spell}
 \title{InfoGraphics}
 \usage{
 wheel(x, ...)
@@ -12,26 +10,12 @@ wheel(x, ...)
 \item{x}{an input object of class 'station' or 'spell'}
 
 \item{\dots}{additional arguments}
-
-\item{y}{an input object of class 'station' or 'spell'}
-
-\item{new}{if new create new graphic device}
-
-\item{lwd}{relative line width}
-
-\item{col}{color of line}
-
-\item{type}{'spiky' or 'flowy'}
-
-\item{bg}{background color}
-
-\item{verbose}{a boolean; if TRUE print information about progress}
 }
 \description{
 Various functions for visual display of data and statistics
 }
 \details{
-\code{wheel} shows the seasonal cycle with different colors for different years
+\code{wheel} shows the seasonal cycle with different colors for different years. If the input is a \code{station} object, \code{wheel} calls the function \code{\link{wheel.station}} and if the input is \code{spell} object, it calls \code{\link{wheel.spell}}
 }
 \examples{
 data(bjornholt)
@@ -39,5 +23,5 @@ wheel(bjornholt, new=FALSE)
 
 }
 \seealso{
-graph visprob conf vis diagram cumugram scatter plot map
+wheel.station wheel.spell graph visprob conf vis diagram cumugram scatter plot map
 }

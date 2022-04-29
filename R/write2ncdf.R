@@ -224,7 +224,16 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' @param verbose TRUE - clutter the screen.
 #' @param doi - Data ID. All the following arguments are meant to accommodate for the convention described 
 #' at \url{https://adc.met.no/node/4}
-#' @param nspc - the size of chunks of data processes sequentially in order to limit the need of computer memory. 
+#' @param namingauthority The organization that provides the initial id (see above) for the dataset (see \url{https://adc.met.no/node/4}).
+#' @param processinglevel A textual description of the processing (or quality control) level of the data. (see \url{https://adc.met.no/node/4}).
+#' @param creatortype Specifies type of creator with one of the following: 'person', 'group', 'institution', or 'position'. If this attribute is not specified, the creator is assumed to be a person. (see \url{https://adc.met.no/node/4}).
+#' @param creatoremail The email address of the person (or other creator type specified by the creator_type attribute) principally responsible for creating this data. (see \url{https://adc.met.no/node/4}).
+#' @param institution The name of the institution principally responsible for originating this data. (see \url{https://adc.met.no/node/4}).
+#' @param publishername The name of the person (or other entity specified by the publisher_type attribute) responsible for publishing the data file or product to users, with its current metadata and format. (see \url{https://adc.met.no/node/4}).
+#' @param publisheremail The email address of the person (or other entity specified by the publisher_type attribute) responsible for publishing the data file or product to users, with its current metadata and format. (see \url{https://adc.met.no/node/4}).
+#' @param publisherurl The URL of the person (or other entity specified by the publisher_type attribute) responsible for publishing the data file or product to users, with its current metadata and format. (see \url{https://adc.met.no/node/4}).
+#' @param project The name of the project(s) principally responsible for originating this data. (see \url{https://adc.met.no/node/4}).
+#' @param nspc The size of chunks of data processes sequentially in order to limit the need of computer memory. 
 #' Smaller number requires less memory.
 #' @param \dots additional arguments
 #' 

@@ -1,6 +1,6 @@
 #' 
 #' A function that lists files on thredds catalogue.
-#' @aliases retrieve
+#' @seealso retrieve
 #'  
 #' @param caturl url of the thredds ctalogue containing the files
 #' @param extension the extension ot the netCDF files (default is ".nc")

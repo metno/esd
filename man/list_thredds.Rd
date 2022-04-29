@@ -2,7 +2,6 @@
 % Please edit documentation in R/filesfromthredds.R
 \name{list_thredds}
 \alias{list_thredds}
-\alias{retrieve}
 \title{A function that lists files on thredds catalogue.}
 \usage{
 list_thredds(
@@ -33,4 +32,7 @@ list_thredds(caturl="http://esgf3.dkrz.de/thredds/catalog/esgcet/12/CMIP6.Scenar
 caturl <- "https://thredds.met.no/thredds/catalog/KSS/Klima_i_Norge_2100/bias_corrected/3DBC/cross-validation/noresm-r1i1p1-remo/tasmin/catalog.html"
 extension <- '.nc4'
 list_thredds(caturl,extension)
+}
+\seealso{
+retrieve
 }

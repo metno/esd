@@ -69,7 +69,25 @@ stored (to save space may be represented as 'short').}
 \item{doi}{- Data ID. All the following arguments are meant to accommodate for the convention described 
 at \url{https://adc.met.no/node/4}}
 
-\item{nspc}{- the size of chunks of data processes sequentially in order to limit the need of computer memory. 
+\item{namingauthority}{The organization that provides the initial id (see above) for the dataset (see \url{https://adc.met.no/node/4}).}
+
+\item{processinglevel}{A textual description of the processing (or quality control) level of the data. (see \url{https://adc.met.no/node/4}).}
+
+\item{creatortype}{Specifies type of creator with one of the following: 'person', 'group', 'institution', or 'position'. If this attribute is not specified, the creator is assumed to be a person. (see \url{https://adc.met.no/node/4}).}
+
+\item{creatoremail}{The email address of the person (or other creator type specified by the creator_type attribute) principally responsible for creating this data. (see \url{https://adc.met.no/node/4}).}
+
+\item{institution}{The name of the institution principally responsible for originating this data. (see \url{https://adc.met.no/node/4}).}
+
+\item{publishername}{The name of the person (or other entity specified by the publisher_type attribute) responsible for publishing the data file or product to users, with its current metadata and format. (see \url{https://adc.met.no/node/4}).}
+
+\item{publisheremail}{The email address of the person (or other entity specified by the publisher_type attribute) responsible for publishing the data file or product to users, with its current metadata and format. (see \url{https://adc.met.no/node/4}).}
+
+\item{publisherurl}{The URL of the person (or other entity specified by the publisher_type attribute) responsible for publishing the data file or product to users, with its current metadata and format. (see \url{https://adc.met.no/node/4}).}
+
+\item{project}{The name of the project(s) principally responsible for originating this data. (see \url{https://adc.met.no/node/4}).}
+
+\item{nspc}{The size of chunks of data processes sequentially in order to limit the need of computer memory. 
 Smaller number requires less memory.}
 }
 \value{

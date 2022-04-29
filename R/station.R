@@ -20,12 +20,12 @@ test.station <- function(ss=NULL,stid=NULL,alt=NULL,lat=c(50,70),lon=c(0,30),par
 #' sea level from tidal gauges in France (SONEL), on a global scale (GLOSS) and
 #' for a single station (sub-daily data)in the UK (Newlyn).
 #' 
-#' @aliases station select.station station.default station.ecad station.nacd
+#' @aliases station station.default station.ecad station.nacd
 #' station.narp station.nordklim station.metnod station.metnom station.ghcnd
 #' station.ghcnm station.ghcnm station.sonel station.gloss station.newlyn
 #' station.giss metno.frost.station
 #'
-#' @seealso clean.station allgood station.thredds map.station
+#' @seealso clean.station allgood station.thredds map.station select.station
 #'
 #' @param loc A string of characters as the name of the location
 #' (weather/climate station) or an object of class "stationmeta".

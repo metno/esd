@@ -103,16 +103,20 @@ calculate.trends <- function(x,minlen=15,is=1,verbose=FALSE){
   if(verbose) print("calculate.trends - calculate trends for all subperiods")
   stopifnot(inherits(x,'zoo'))
   if(!is.null(dim(x))) {
-    x <- subset(x,is=is)
-    if(!is.null(dim(x))) {
-      x <- apply(x,2,mean,na.rm=TRUE)
+    if(ncol(x)>1) {
+      x <- subset(x,is=is)
+      if(!is.null(dim(x))) {
+        x <- apply(x,2,mean,na.rm=TRUE)
+      }
     }
+    dim(x) <- length(x)
   }
+
   if(!inherits(x,c("annual","season"))) {
     xm <- aggregate(x,by=as.yearmon(index(x)),FUN="mean")
-    xy <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="mean")
-    ny <- aggregate(xm,by=strftime(index(xm),"%Y"),FUN="nv")
-    xy <- xy[ny==max(ny)] # exclude years with missing months
+    xy <- aggregate(xm,by=year(xm),FUN="mean")
+    ny <- aggregate(xm,by=year(xm),FUN="nv")
+    xy <- xy[(ny==max(ny))] # exclude years with missing months
   } else xy <- x
   year <- as.numeric(index(xy))
   firstyear <- min(year):(max(year)-minlen+1)
