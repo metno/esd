@@ -86,12 +86,11 @@
 #' # Select stations in ss and map the geographical location 
 #' # of the selected stations with a zoom on Norway.
 #' ss <- select.station(cntr="NORWAY",param="precip",src="GHCND")
-#' graphics.off()
 #' map(ss, col="blue",bg="lightblue",xlim = c(-10,30) , ylim = c(50,70), new=FALSE)
 #' 
 #' ## Get NACD data and map the mean values
 #' y <- station.nacd()
-#' map(y,FUN='mean',colbar=list(pal=varid(y),n=10), cex=2, new=FALSE)
+#' map(y,FUN='mean',colbar=list(pal="t2m",n=10), cex=2, new=FALSE)
 #' 
 #' # Examples of cyclone maps (map.events)
 #' data(storms)
