@@ -301,13 +301,6 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
     if (!is.null(ds.interval)) gcm <- subset(gcm,it=ds.interval)
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
-    #gcmnm[i] <- attr(gcm,'model_id'))
-    #gcmnm[i] <- paste(attr(gcm,'model_id'),attr(gcm,'realization'),sep="-")
-    # KMP: 10.03.2017 - pass on additional information about GCM runs (gcm + rip - realization, initialization, physics version)
-    ## REB: 2020-12-23: These lines cause some problems sometimes:
-    ## Error in names(attributes(gcm))[grep("realization", names(attributes(gcm)))][[1]] : 
-    ##  subscript out of bounds
-    ## Included checks to avoid unnecessary stops 
     nmattsgcm <- names(attributes(gcm))
     if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
     if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
@@ -1979,14 +1972,8 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       gcm <- subset(gcm,it=it,verbose=verbose)
     }
     nc.i <- getncid(filename=ncfiles[select[i]], verbose=verbose)
-    if(!is.null(nc.i$project_id)) {
-      if(grepl("cmip",tolower(nc.i$project_id))) {
-        meta.i <- metaextract.cmip(nc.i,verbose=verbose)
-      } else {
-        meta.i <- NULL
-      }
-    } else meta.i <- NULL
-    if(!is.null(meta.i)) {
+    meta.i <- try(metaextract.cmip(nc.i,verbose=verbose))
+    if(!inherits(meta.i,"try-error")) {
       gcmnm.i <- paste0(meta.i[,"gcm"],".",meta.i[,"gcm_rip"])
     } else {
       rip <- NULL

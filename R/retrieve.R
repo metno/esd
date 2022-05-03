@@ -1347,15 +1347,15 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     if(it[1]<min(t)) {
       it1 <- 1
     } else {
-      it1 <- (1:length(t))[is.element(t,it)][1]
+      it1 <- min(which(t>=it[1] & t<=it[2]))
     }
     if(it[2]>max(t)) {
       it2 <- nt - it1 + 1
     } else {
-      it2 <- (1:length(t))[is.element(t,it)][2] - it1 + 1
+      it2 <- max(which(t>=it[1] & t<=it[2])) - it1 + 1
     }
     if (verbose) print(c(it1,it2))
-    t <- t[it1:(it1+it2-1)]
+    #t <- t[it1:(it1+it2-1)] ## KMP 2022-05-03: this is done on line 1386
   }
   
   if (nt == size[1]) { 
