@@ -60,7 +60,7 @@ These plot functions are S3 methods for esd objects, based on \code{plot}.
 }
 \examples{
 data(imilast.M03)
-plot(imilast.M03)
+plot(imilast.M03, new=FALSE)
 
 }
 \seealso{
