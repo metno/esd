@@ -53,7 +53,7 @@
 # # Example: use aggregate to compute annual mean temperature for Svalbard:
 # data(Svalbard)
 # y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE)
-# plot(y)
+# plot(y, new=FALSE)
 # 
 # # Example with downscaling:
 # lon <- c(-12,37)
@@ -69,20 +69,20 @@
 # residual <- as.residual(ds)
 # obs <- as.anomaly(as.calibrationdata(ds))
 # 
-# plot.zoo(obs[,1],lwd=2)
-# lines(residual,col="red")
+# plot.zoo(obs[,1], lwd=2, new=FALSE)
+# lines(residual, col="red")
 # 
 # print("Global climate model simulation NorESM")
 # T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 # 
 # # Plot the global mean of the field:
-# plot(T2m)
+# plot(T2m, new=FALSE)
 # # Plot area mean of a sub region
-# plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+# plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 # 
 # # Plot interpolated results corresponding to ferder
 # data(ferder)
-# plot(T2m,ferder)
+# plot(T2m,ferder, new=FALSE)
 # 
 # # Plot Hovmuller diagram: Not working ...
 # ## plot(T2m,is=list(lon=0))
@@ -96,11 +96,11 @@
 # 
 # print("Compute common EOFs")
 # eofxx <- EOF(XX)
-# plot(eofxx)
+# plot(eofxx, new=FALSE)
 # 
 # print("Downscale the January mean temperature")
 # ds.jan <- DS(Oslo,eofxx)
-# plot(ds.jan)
+# plot(ds.jan, new=FALSE)
 # 
 # @export 
 # plot <- function(x,...)  UseMethod("plot")
@@ -162,7 +162,7 @@
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:
 #' data(Svalbard)
 #' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-#' plot(y)
+#' plot(y, new=FALSE)
 #' 
 #' # Example with downscaling:
 #' lon <- c(-12,37)
@@ -172,25 +172,25 @@
 #' ds <- DS(Oslo,t2m)
 #' 
 #' # Plot the results for January month
-#' plot(subset(ds,it='Jan'))
+#' plot(subset(ds,it='Jan'), new=FALSE)
 #' 
 #' # Plot the residuals:
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds)$y)
-#' plot.zoo(obs[,1],lwd=2)
-#' lines(residual,col="red")
+#' plot.zoo(obs[,1], lwd=2, new=FALSE)
+#' lines(residual, col="red")
 #' 
 #' print("Global climate model simulation NorESM")
 #' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 #' 
 #' # Plot the global mean of the field:
-#' plot(T2m)
+#' plot(T2m, new=FALSE)
 #' # Plot area mean of a sub region
-#' plot(T2m, is=list(lon=c(0,10),lat=c(60,70)))
+#' plot(T2m, is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 #' 
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m, ferder)
+#' plot(T2m, ferder, new=FALSE)
 #' 
 #' # Plot Hovmuller diagram: Not working ...
 #' ## plot(T2m,is=list(lon=0)) 
@@ -204,11 +204,11 @@
 #' 
 #' print("Compute common EOFs")
 #' eofxx <- EOF(XX)
-#' plot(eofxx)
+#' plot(eofxx, new=FALSE)
 #' 
 #' print("Downscale the January mean temperature") 
 #' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
+#' plot(ds.jan, new=FALSE)
 #'
 #' @export plot.double
 plot.double <- plot.default
@@ -286,7 +286,7 @@ plot.list <- function(x,...,is=NULL,
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:
 #' data(Svalbard)
 #' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-#' plot(y)
+#' plot(y, new=FALSE)
 #' 
 #' # Example with downscaling:
 #' lon <- c(-12,37)
@@ -302,20 +302,20 @@ plot.list <- function(x,...,is=NULL,
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs[,1],lwd=2)
-#' lines(residual,col="red")
+#' plot.zoo(obs[,1], lwd=2, new=FALSE)
+#' lines(residual, col="red")
 #' 
 #' print("Global climate model simulation NorESM")
 #' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 #' 
 #' # Plot the global mean of the field:
-#' plot(T2m)
+#' plot(T2m, new=FALSE)
 #' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 #' 
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m,ferder)
+#' plot(T2m,ferder, new=FALSE)
 #' 
 #' print("Extract a subset - the January month")
 #' x <- subset(t2m,it="jan")
@@ -326,11 +326,11 @@ plot.list <- function(x,...,is=NULL,
 #' 
 #' print("Compute common EOFs")
 #' eofxx <- EOF(XX)
-#' plot(eofxx)
+#' plot(eofxx, new=FALSE)
 #' 
 #' print("Downscale the January mean temperature") 
 #' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
+#' plot(ds.jan, new=FALSE)
 #'
 #' @exportS3Method
 #' @export plot.station
@@ -570,7 +570,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:
 #' data(Svalbard)
 #' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE)
-#' plot(y)
+#' plot(y, new=FALSE)
 #' 
 #' # Example with downscaling:
 #' lon <- c(-12,37)
@@ -580,26 +580,26 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' ds <- DS(Oslo,t2m)
 #' 
 #' # Plot the results for January month
-#' plot(subset(ds,it='Jan'))
+#' plot(subset(ds,it='Jan'), new=FALSE)
 #' 
 #' # Plot the residuals:
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs[,1],lwd=2)
-#' lines(residual,col="red")
+#' plot.zoo(obs[,1], lwd=2, new=FALSE)
+#' lines(residual, col="red")
 #' 
 #' print("Global climate model simulation NorESM")
 #' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 #' 
 #' # Plot the global mean of the field:
-#' plot(T2m)
+#' plot(T2m, new=FALSE)
 #' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 #' 
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m,ferder)
+#' plot(T2m,ferder, new=FALSE)
 #' 
 #' # Plot Hovmuller diagram: Not working ...
 #' ## plot(T2m,is=list(lon=0))
@@ -613,11 +613,11 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
 #' 
 #' print("Compute common EOFs")
 #' eofxx <- EOF(XX)
-#' plot(eofxx)
+#' plot(eofxx, new=FALSE)
 #' 
 #' print("Downscale the January mean temperature") 
 #' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
+#' plot(ds.jan, new=FALSE)
 #'
 #' @exportS3Method
 #' @export plot.eof
@@ -931,7 +931,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:
 #' data(Svalbard)
 #' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-#' plot(y)
+#' plot(y, new=FALSE)
 #' 
 #' # Example with downscaling:
 #' lon <- c(-12,37)
@@ -947,20 +947,20 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs[,1],lwd=2)
-#' lines(residual,col="red")
+#' plot.zoo(obs[,1], lwd=2, new=FALSE)
+#' lines(residual, col="red")
 #' 
 #' print("Global climate model simulation NorESM")
 #' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 #' 
 #' # Plot the global mean of the field:
-#' plot(T2m)
+#' plot(T2m, new=FALSE)
 #' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 #'
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m,ferder)
+#' plot(T2m,ferder, new=FALSE)
 #'
 #' print("Extract a subset - the January month")
 #' x <- subset(t2m,it="jan")
@@ -971,11 +971,11 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
 #' 
 #' print("Compute common EOFs")
 #' eofxx <- EOF(XX)
-#' plot(eofxx)
+#' plot(eofxx, new=FALSE)
 #' 
 #' print("Downscale the January mean temperature") 
 #' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
+#' plot(ds.jan, new=FALSE)
 #'
 #' @exportS3Method
 #' @export plot.ds
@@ -1270,7 +1270,7 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:
 #' data(Svalbard)
 #' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-#' plot(y)
+#' plot(y, new=FALSE)
 #' 
 #' # Example with downscaling:
 #' lon <- c(-12,37)
@@ -1286,20 +1286,20 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs[,1],lwd=2)
-#' lines(residual,col="red")
+#' plot.zoo(obs[,1], lwd=2, new=FALSE)
+#' lines(residual, col="red")
 #' 
 #' print("Global climate model simulation NorESM")
 #' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 #' 
 #' # Plot the global mean of the field:
-#' plot(T2m)
+#' plot(T2m, new=FALSE)
 #' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 #' 
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m, is=ferder)
+#' plot(T2m, is=ferder, new=FALSE)
 #' 
 #' # Plot Hovmuller diagram: Not working ...
 #' ## plot(T2m,is=list(lon=0)) 
@@ -1313,11 +1313,11 @@ plot.eof.var <- function(x,...,ip=1,new=TRUE,xlim=NULL,ylim=NULL,n=20,verbose=FA
 #' 
 #' print("Compute common EOFs")
 #' eofxx <- EOF(XX)
-#' plot(eofxx)
+#' plot(eofxx, new=FALSE)
 #' 
 #' print("Downscale the January mean temperature") 
 #' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
+#' plot(ds.jan, new=FALSE)
 #'
 #' @exportS3Method
 #' @export plot.field
@@ -1485,7 +1485,7 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:
 #' data(Svalbard)
 #' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-#' plot(y)
+#' plot(y, new=FALSE)
 #' 
 #' # Example with downscaling:
 #' lon <- c(-12,37)
@@ -1501,20 +1501,20 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs[,1],lwd=2)
-#' lines(residual,col="red")
+#' plot.zoo(obs[,1], lwd=2, new=FALSE)
+#' lines(residual, col="red")
 #' 
 #' print("Global climate model simulation NorESM")
 #' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 #' 
 #' # Plot the global mean of the field:
-#' plot(T2m)
+#' plot(T2m, new=FALSE)
 #' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 #' 
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m,ferder)
+#' plot(T2m,ferder, new=FALSE)
 #' 
 #' # Plot Hovmuller diagram: Not working ...
 #' ## plot(T2m,is=list(lon=0)) 
@@ -1528,11 +1528,11 @@ plot.field <- function(x,...,is=NULL,it=NULL,FUN="mean",map.type='rectangle',ver
 #' 
 #' print("Compute common EOFs")
 #' eofxx <- EOF(XX)
-#' plot(eofxx)
+#' plot(eofxx, new=FALSE)
 #' 
 #' print("Downscale the January mean temperature") 
 #' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
+#' plot(ds.jan, new=FALSE)
 #'
 #' @exportS3Method
 #' @export plot.pca
@@ -1907,7 +1907,7 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #' # Example: use aggregate to compute annual mean temperature for Svalbard:
 #' data(Svalbard)
 #' y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-#' plot(y)
+#' plot(y, new=FALSE)
 #' 
 #' # Example with downscaling:
 #' lon <- c(-12,37)
@@ -1923,20 +1923,20 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #' residual <- as.residual(ds)
 #' obs <- as.anomaly(as.calibrationdata(ds))
 #' 
-#' plot.zoo(obs[,1],lwd=2)
+#' plot.zoo(obs[,1],lwd=2, new=FALSE)
 #' lines(residual,col="red")
 #' 
 #' print("Global climate model simulation NorESM")
 #' T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 #' 
 #' # Plot the global mean of the field:
-#' plot(T2m)
+#' plot(T2m, new=FALSE)
 #' # Plot area mean of a sub region
-#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+#' plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 #' 
 #' # Plot interpolated results corresponding to ferder
 #' data(ferder)
-#' plot(T2m,ferder)
+#' plot(T2m,ferder, new=FALSE)
 #' 
 #' # Plot Hovmuller diagram: Not working ...
 #' ## plot(T2m,is=list(lon=0)) 
@@ -1950,11 +1950,11 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #' 
 #' print("Compute common EOFs")
 #' eofxx <- EOF(XX)
-#' plot(eofxx)
+#' plot(eofxx, new=FALSE)
 #' 
 #' print("Downscale the January mean temperature") 
 #' ds.jan <- DS(Oslo,eofxx)
-#' plot(ds.jan)
+#' plot(ds.jan, new=FALSE)
 #'
 #' @exportS3Method 
 #' @export plot.cca
@@ -2589,7 +2589,7 @@ plot.nevents <- function(x,verbose=FALSE,main=NULL,xlab=NULL,ylab=NULL,col=NULL,
 #'
 #' @examples
 #' data(imilast.M03)
-#' plot(imilast.M03)
+#' plot(imilast.M03, new=FALSE)
 #'
 #' @exportS3Method
 #' @export plot.trajectory

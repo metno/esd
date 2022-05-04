@@ -94,7 +94,7 @@ These plot functions are S3 methods for esd objects, based on \code{plot}.
 # Example: use aggregate to compute annual mean temperature for Svalbard:
 data(Svalbard)
 y <- aggregate(Svalbard, by=year(Svalbard), FUN='mean', na.rm = FALSE) 
-plot(y)
+plot(y, new=FALSE)
 
 # Example with downscaling:
 lon <- c(-12,37)
@@ -110,20 +110,20 @@ ds <- DS(Oslo,t2m)
 residual <- as.residual(ds)
 obs <- as.anomaly(as.calibrationdata(ds))
 
-plot.zoo(obs[,1],lwd=2)
-lines(residual,col="red")
+plot.zoo(obs[,1], lwd=2, new=FALSE)
+lines(residual, col="red")
 
 print("Global climate model simulation NorESM")
 T2m <- t2m.NorESM.M(lon=lon,lat=lat)
 
 # Plot the global mean of the field:
-plot(T2m)
+plot(T2m, new=FALSE)
 # Plot area mean of a sub region
-plot(T2m,is=list(lon=c(0,10),lat=c(60,70)))
+plot(T2m,is=list(lon=c(0,10),lat=c(60,70)), new=FALSE)
 
 # Plot interpolated results corresponding to ferder
 data(ferder)
-plot(T2m, is=ferder)
+plot(T2m, is=ferder, new=FALSE)
 
 # Plot Hovmuller diagram: Not working ...
 ## plot(T2m,is=list(lon=0)) 
@@ -137,11 +137,11 @@ XX <- combine(x,X)
 
 print("Compute common EOFs")
 eofxx <- EOF(XX)
-plot(eofxx)
+plot(eofxx, new=FALSE)
 
 print("Downscale the January mean temperature") 
 ds.jan <- DS(Oslo,eofxx)
-plot(ds.jan)
+plot(ds.jan, new=FALSE)
 
 }
 \keyword{graphics}

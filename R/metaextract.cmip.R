@@ -61,7 +61,7 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     
   if(frequency=="month") frequency <- "mon"
   
-  ## KMP 2022-05-02: If defined, using parent_source_id instead of model_id because 
+  ## KMP 2022-05-02: If defined, using parent_source_id instead of model_id because
   ## the latter is wrong in some CMIP6 files. For CMIP5, parent_source_id is not defined.
   if(!is.null(x$model$parent_source_id)) {
     gcm <- x$model$parent_source_id
@@ -150,8 +150,12 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     }
   }
   if(!is.na(filename)) filename <- gsub(".*/","",filename)
+<<<<<<< HEAD
   mx <- data.frame(project_id=paste(project_id,collapse=","), 
                    filename=filename, 
+=======
+  mx <- data.frame(project_id=paste(project_id,collapse=","), filename=filename, 
+>>>>>>> a224b272d3ae103ee204523d3465a5ebb61a611c
                    dim=paste(dim,collapse=","), dates=dates, var=paste(var,collapse=","),
                    longname=paste(longname,collapse=","), unit=paste(vunit,collapse=","),
                    resolution=res, lon=lon.rng, lon_unit=lon.unit, 
