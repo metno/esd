@@ -40,6 +40,7 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     }
   }
   
+  if(any(grepl("CMIP[0-9]{1}",project_id))) project_id <- project_id[grep("CMIP[0-9]{1}",project_id)]
   for(mi in c("realization","initialization","physics","forcing","realm")) {
     if(any(grepl(mi,names(x$model)))) {
       xi <- x$model[grep(mi,names(x$model))]#[1]]
@@ -60,7 +61,13 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     
   if(frequency=="month") frequency <- "mon"
   
-  if(!is.null(x$model$model_id)) gcm <- x$model$model_id
+  ## KMP 2022-05-02: If defined, using parent_source_id instead of model_id because 
+  ## the latter is wrong in some CMIP6 files. For CMIP5, parent_source_id is not defined.
+  if(!is.null(x$model$parent_source_id)) {
+    gcm <- x$model$parent_source_id
+  } else if(!is.null(x$model$model_id)) {
+    gcm <- x$model$model_id
+  }
   if(any(grep("parent_experiment_rip",names(x$model)))) {
     nm <- names(x$model)[grep("parent_experiment_rip",names(x$model))[1]]
     gcm.rip <- x$model[[nm]]
@@ -106,7 +113,6 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     }
     if(is.na(experiment_id)) experiment_id <- experiment
   } 
-
   experiment_id <- tolower(sub("[.]","",experiment_id))
   if(min(x$dates)<as.Date("2010-01-01") & !grepl("historical",experiment_id)) {
     experiment_id <- paste("historical",experiment_id,sep="+")
@@ -144,7 +150,8 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     }
   }
   if(!is.na(filename)) filename <- gsub(".*/","",filename)
-  mx <- data.frame(project_id=project_id, filename=filename, 
+  mx <- data.frame(project_id=paste(project_id,collapse=","), 
+                   filename=filename, 
                    dim=paste(dim,collapse=","), dates=dates, var=paste(var,collapse=","),
                    longname=paste(longname,collapse=","), unit=paste(vunit,collapse=","),
                    resolution=res, lon=lon.rng, lon_unit=lon.unit, 

@@ -657,7 +657,6 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     d <- c(lon$len,lat$len,time$len)
     # REB&AM 2021-12-17: we dont understand why the next line is needed
     #d <- d[match(seq(length(d)),c(ilon,ilat,itime))]
-    #browser()
     itime <- 3
   }
   if (verbose) {print("dimensions"); print(d)}
@@ -1333,7 +1332,6 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
         t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 month') else
           if (length(grep('years since',tunit$value))) 
             t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
-  
   if (is.null(it)) {
     if (verbose) print('Read whole record')
     it1 <- 1; it2 <- nt
@@ -1347,15 +1345,15 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     if(it[1]<min(t)) {
       it1 <- 1
     } else {
-      it1 <- (1:length(t))[is.element(t,it)][1]
+      it1 <- min(which(t>=it[1] & t<=it[2]))
     }
     if(it[2]>max(t)) {
       it2 <- nt - it1 + 1
     } else {
-      it2 <- (1:length(t))[is.element(t,it)][2] - it1 + 1
+      it2 <- max(which(t>=it[1] & t<=it[2])) - it1 + 1
     }
     if (verbose) print(c(it1,it2))
-    t <- t[it1:(it1+it2-1)]
+    #t <- t[it1:(it1+it2-1)] ## KMP 2022-05-03: this is done on line 1386
   }
   
   if (nt == size[1]) { 
@@ -1380,7 +1378,6 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     print(count)
     #print(ncid)
   }
-  
   x <- ncvar_get(ncid,param,start=start,count=count)
   ## REB 2022-03-29: needed to add two lines for consistency between x and t.
   it1 <- start[2]; it2 <- start[2]+count[2]-1; it12 <- it1:it2
@@ -1433,6 +1430,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
                 'and length(t) is',length(t),' there is a bug in the code'))
     stop('retrieve.station error:')
   }
+  
   y <- as.station(zoo(x,order.by=t),loc=locs,lon=lons,lat=lats,alt=alts,
                   cntr = cntrs,stid = stids,longname=longname$value,
                   unit=unit$value,param=param)

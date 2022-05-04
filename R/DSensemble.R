@@ -1979,14 +1979,8 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       gcm <- subset(gcm,it=it,verbose=verbose)
     }
     nc.i <- getncid(filename=ncfiles[select[i]], verbose=verbose)
-    if(!is.null(nc.i$project_id)) {
-      if(grepl("cmip",tolower(nc.i$project_id))) {
-        meta.i <- metaextract.cmip(nc.i,verbose=verbose)
-      } else {
-        meta.i <- NULL
-      }
-    } else meta.i <- NULL
-    if(!is.null(meta.i)) {
+    meta.i <- try(metaextract.cmip(nc.i,verbose=verbose))
+    if(!inherits(meta.i, "try-error")) {
       gcmnm.i <- paste0(meta.i[,"gcm"],".",meta.i[,"gcm_rip"])
     } else {
       rip <- NULL
@@ -2011,6 +2005,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       }
       gcmnm.i <- paste0(attr(gcm,'model_id'),".",rip)
     }
+    if(verbose) print(gcmnm.i)
     if (verbose) {
         print(paste('Extract month/season/annual data nmin=',nmin))
         print(class(y))
