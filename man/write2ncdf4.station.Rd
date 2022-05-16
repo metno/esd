@@ -30,7 +30,8 @@
   publisheremail = "NA",
   publisherurl = "NA",
   project = "NA",
-  nspc = 300
+  nspc = 300,
+  start = "Jan"
 )
 }
 \arguments{
@@ -89,6 +90,8 @@ at \url{https://adc.met.no/node/4}}
 
 \item{nspc}{The size of chunks of data processes sequentially in order to limit the need of computer memory. 
 Smaller number requires less memory.}
+
+\item{start}{specifies the start month of the year (default is January)}
 }
 \value{
 None

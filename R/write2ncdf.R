@@ -51,6 +51,7 @@ write2ncdf4.default <- function(x,...) {
 #' @param torg Time origin
 #' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
 #' @param verbose if TRUE print progress
+#' @param start defines the start of the year (default is 'January')
 #' @param \dots additional arguments
 #' 
 #' @return None
@@ -235,6 +236,7 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
 #' @param project The name of the project(s) principally responsible for originating this data. (see \url{https://adc.met.no/node/4}).
 #' @param nspc The size of chunks of data processes sequentially in order to limit the need of computer memory. 
 #' Smaller number requires less memory.
+#' @param start specifies the start month of the year (default is January)
 #' @param \dots additional arguments
 #' 
 #' @return None
@@ -247,7 +249,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
                                 scale=0.1,torg='1899-12-31',stid_unlim=FALSE,namelength=24,nmin=30,verbose=FALSE,
                                 doi='NA',namingauthority='NA',processinglevel='NA',creatortype='NA',
                                 creatoremail='NA',institution='NA',publishername='NA',publisheremail='NA',
-                                publisherurl='NA',project='NA',nspc=300) {
+                                publisherurl='NA',project='NA',nspc=300,start='Jan') {
   
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- attr(x,'unit')
@@ -340,9 +342,9 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   if (verbose) print(paste('attributes:', paste(atts, collapse=', '),
                            '; types:',paste(attrprec, collapse=', ')))
   
-  ## Compute summart statistics for the stations, e.g. mean, max, trend, etc.
+  ## Compute summary statistics for the stations, e.g. mean, max, trend, etc.
   x0 <- x; missval0 <- missval
-  list2env(StationSumStats(x=x,missval=missval,ns=nspc,verbose=verbose),envir=environment())
+  list2env(StationSumStats(x=x,missval=missval,ns=nspc,verbose=verbose,start=start),envir=environment())
   x <- x0; missval <- missval0; rm('x0','missval0'); gc(reset=TRUE) ## REB in case something happened to x in the function call above...
   if (verbose) print('Summary statistics computed')
   ## Only do summary statistics for stations with more than 30 years
@@ -1254,7 +1256,7 @@ combinelist <- function(x,y,verbose=FALSE) {
   return(x)
 }
 
-StationSumStats <- function(x,missval,ns=300,verbose=FALSE) {
+StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
   if (verbose) print(paste('StationSumStats - precip?',is.precip(x)))
   
   if (is.null(dim(x))) {
@@ -1312,7 +1314,7 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE) {
       std.mam <- apply(subset(anomaly(x),it='mam'),2,'sd',na.rm=TRUE)
       std.jja <- apply(subset(anomaly(x),it='jja'),2,'sd',na.rm=TRUE)
       std.son <- apply(subset(anomaly(x),it='son'),2,'sd',na.rm=TRUE)
-      td <- apply(annual(x),2,'trend.coef')
+      td <- apply(annual(x,start=start),2,'trend.coef',start=start)
       td.djf <- apply(annual(subset(x,it='djf'),'mean',nmin=75),2,'trend.coef')
       td.mam <- apply(annual(subset(x,it='mam'),'mean',nmin=75),2,'trend.coef')
       td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
@@ -1320,32 +1322,32 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE) {
     } else if (is.precip(x)) {
       if
       (verbose) print('Precipitation')
-      ave <- apply(annual(x,'sum'),2,'mean',na.rm=TRUE)
+      ave <- apply(annual(x,'sum',start=start),2,'mean',na.rm=TRUE)
       ave.djf <- apply(annual(subset(x,it='djf'),'sum',nmin=90),2,'mean',na.rm=TRUE)
       ave.mam <- apply(annual(subset(x,it='mam'),'sum',nmin=90),2,'mean',na.rm=TRUE)
       ave.jja <- apply(annual(subset(x,it='jja'),'sum',nmin=90),2,'mean',na.rm=TRUE)
       ave.son <- apply(annual(subset(x,it='son'),'sum',nmin=90),2,'mean',na.rm=TRUE)
-      mu <- apply(annual(x,'wetmean'),2,'mean',na.rm=TRUE)
+      mu <- apply(annual(x,'wetmean',start=start),2,'mean',na.rm=TRUE)
       mu.djf <- apply(annual(subset(x,it='djf'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
       mu.mam <- apply(annual(subset(x,it='mam'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
       mu.jja <- apply(annual(subset(x,it='jja'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
       mu.son <- apply(annual(subset(x,it='son'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
-      fw <- apply(100*annual(x,'wetfreq'),2,'mean',na.rm=TRUE)
+      fw <- apply(100*annual(x,'wetfreq',start=start),2,'mean',na.rm=TRUE)
       fw.djf <- apply(100*annual(subset(x,it='djf'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
       fw.mam <- apply(100*annual(subset(x,it='mam'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
       fw.jja <- apply(100*annual(subset(x,it='jja'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
       fw.son <- apply(100*annual(subset(x,it='son'),'wetfreq',nmin=75),2,'mean',na.rm=TRUE)
-      td <- apply(annual(x,FUN='sum'),2,'trend.coef')
+      td <- apply(annual(x,FUN='sum',start=start),2,'trend.coef')
       td.djf <- apply(annual(subset(x,it='djf'),'sum',nmin=90),2,'trend.coef')
       td.mam <- apply(annual(subset(x,it='mam'),'sum',nmin=90),2,'trend.coef')
       td.jja <- apply(annual(subset(x,it='jja'),'sum',nmin=90),2,'trend.coef')
       td.son <- apply(annual(subset(x,it='son'),'sum',nmin=90),2,'trend.coef')
-      tdfw <- apply(100*annual(x,FUN='wetfreq'),2,'trend.coef')
+      tdfw <- apply(100*annual(x,FUN='wetfreq',start=start),2,'trend.coef')
       tdfw.djf <- apply(100*annual(subset(x,it='djf'),'wetfreq',nmin=75),2,'trend.coef')
       tdfw.mam <- apply(100*annual(subset(x,it='mam'),'wetfreq',nmin=75),2,'trend.coef')
       tdfw.jja <- apply(100*annual(subset(x,it='jja'),'wetfreq',nmin=75),2,'trend.coef')
       tdfw.son <- apply(100*annual(subset(x,it='son'),'wetfreq',nmin=75),2,'trend.coef')
-      tdmu <- apply(annual(x,FUN='wetmean'),2,'trend.coef')
+      tdmu <- apply(annual(x,FUN='wetmean',start=start),2,'trend.coef')
       tdmu.djf <- apply(annual(subset(x,it='djf'),'wetmean',nmin=75),2,'trend.coef')
       tdmu.mam <- apply(annual(subset(x,it='mam'),'wetmean',nmin=75),2,'trend.coef')
       tdmu.jja <- apply(annual(subset(x,it='jja'),'wetmean',nmin=75),2,'trend.coef')

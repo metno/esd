@@ -37,6 +37,8 @@ stored (to save space may be represented as 'short').}
 \item{missval}{Missing value: see \code{\link[ncdf4]{ncvar_def}}}
 
 \item{verbose}{if TRUE print progress}
+
+\item{start}{defines the start of the year (default is 'January')}
 }
 \value{
 None
