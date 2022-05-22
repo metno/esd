@@ -791,7 +791,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
     map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
-  
+  if (verbose) print('...')
   n.app <- attr(x,'n.apps')
   col <- rep(col,n.app)
   src <- rep("",n.app+1)
@@ -799,26 +799,33 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   ylab <- paste("PC",n)
   main <- paste("EOF: ",n,"accounts for",
                 round(var.eof[n],1),"% of variance")
+  if (verbose) {print(main); print(what)}
   
   if (length(grep('var',what))>0)  {
     #    par(xaxt="s",yaxt="s")
     #    plot.eof.var(x,new=FALSE,cex.main=0.7)
     if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
+    plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n",verbose=verbose)
   }
-  
+  if(verbose) {print(ylim); print(names(attributes(x))); print(n.app)}
+  anms <- names(attributes(x))
+  apps <- anms[grep('appendix',anms)]
+  n.app <- length(apps)
   if (is.null(ylim)) {
-    ylim <- range(coredata(x[,n]))
-    for (i in 1:n.app) {
-      z <- attr(x,paste('appendix.',i,sep=""))
-      ylim <- range(c(ylim,coredata(z[,n])),na.rm=TRUE)
-    }  
+     ylim <- range(coredata(x[,n]))
+     for (i in 1:n.app) {
+       if(verbose) print(apps[i])
+       z <- attr(x,apps[i])
+       zz <- try(coredata(z[,n]))
+       if (!inherits(zz,'try-error')) ylim <- range(c(ylim,zz),na.rm=TRUE)
+     }  
   }
   
+  if(verbose) print(xlim)
   if (is.null(xlim)) {
     xlim <- range(index(x))
     for (i in 1:n.app) {
-      z <- attr(x,paste('appendix.',i,sep=""))
+      z <- attr(x,apps[i])
       xlim <- range(xlim,index(z))
     }
   }
@@ -837,9 +844,9 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
                    " - Explained variance = ",round(var.eof[ip],digits=2),"%")
     
-    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
+    plot.zoo(x[,ip],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
              cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
-    taxis <- pretty(index(x[,n]),n=10)              # REB 2016-03-03
+    taxis <- pretty(index(x[,ip]),n=10)              # REB 2016-03-03
     if (min(diff(taxis))> 360) taxisl <- year(taxis)  else
       taxisl <- taxis      # REB 2016-03-03
     if (verbose) print(taxisl)
@@ -848,14 +855,18 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     
     ## Plot the common PCs
     for (i in 1:n.app) {
-      z <- attr(x,paste('appendix.',i,sep=""))
-      lines(z[,n],col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
+      z <- attr(x,apps[i])
+      zz <- try(z[,ip])
+      if (!inherits(zz,'try-error')) {
+        if (verbose) {print(apps[i]); print(c(dim(z),ip))}
+        lines(zz,col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
+      }
       if (verbose) print(attr(z,'source'))
       if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
         src[i+1] <- paste('x',i,sep='.')
     }
     
-    lines(x[,n],lwd=2,col="black")
+    lines(x[,ip],lwd=2,col="black")
   }
   #    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
   #        mar=rep(0,4),new=TRUE)

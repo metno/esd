@@ -561,6 +561,11 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(ip)) return(x) 
   d <- dim(x); greenwich <- TRUE
   clim <- attr(x,'mean')
+  ## grep for appendices
+  nm <- names(attributes(x))
+  if (verbose) {print(nm); print(is)}
+  id <- grep("appendix",nm)
+  apps <- nm[id]
   
   # Pattern extracts certain modes/patterns
   if (!is.null(ip)) {
@@ -570,13 +575,28 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     class(y) <- class(x)
     attr(y,'eigenvalues') <- attr(y,'eigenvalues')[ip]
     attr(y,'pattern') <- attr(y,'pattern')[,,ip]
+    attr(y,'longitude') <- lon(x)
+    attr(y,'latitude') <- lat(x)
+    attr(y,'variable') <- varid(x)
+    attr(y,'unit') <- esd::unit(x)
+    attr(y,'long_name') <- attr(x,'long_name')
+    attr(y,'history') <- attr(x,'history')
+    attr(y,'info') <- attr(x,'info')
+    attr(y,'ref') <- attr(x,'ref')
+    attr(y,'source') <- attr(x,'source')
     if (!is.null(attr(x,'n.apps'))) {
-      attr(y,'n.apps') <- attr(x,'n.apps')
-      attr(y,'appendix.1') <- attr(x,'appendix.1')
+      n.app <- attr(x,'n.apps')
+      if (verbose) print(paste(n.app,'appendixes'))
+      attr(y,'n.apps') <- n.app
+      for (j in 1:n.app) {
+        appj <- attr(x,apps[j])[,ip]
+        appj <- attrcp(attr(x,apps[j]),appj)
+        attr(y,apps[j]) <- appj
+      }
     }
     x <- y
   }
-  
+  if (verbose) {print('spatial selection: is='); print(is); print(d)}
   if (is.null(is)) is <- 1:d[length(d)] else
     
     if (is.list(is)) {
@@ -660,23 +680,23 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print(c(sum(keept),length(keept)))
   }
   
-  ## grep for appendices
-  nm <- names(attributes(x))
-  id <- grep("appendix",nm)
-  if (length(id)>0) {
-    nm <- nm[id]
-    for (i in 1:length(nm)) {
-      eval(parse(text=paste("a <- attr(x,'",nm,"')",sep="")))
-      cls <- class(a)
-      ## KMP 2021-04-22: The appendix has a different 
-      ## time index than x so keept can't be applied to it! 
-      #ais <- zoo(coredata(a)[keept,is],order.by=dates)
-      ais <- zoo(coredata(a)[,is],order.by=index(a))
-      ais <- attrcp(a,ais)
-      eval(parse(text=paste("attr(x,'",nm,"') <- ais",sep="")))
-      rm(a,ais,cls)
-    }
-  }
+  ## REB 2022-05-22 The operation done here has already bee ncarried out above...
+  # if (length(id)>0) {
+  #   nm <- nm[id]
+  #   for (i in 1:length(nm)) {
+  #     eval(parse(text=paste("a <- attr(x,'",nm,"')",sep="")))
+  #     cls <- class(a)
+  #     ## KMP 2021-04-22: The appendix has a different 
+  #     ## time index than x so keept can't be applied to it! 
+  #     #ais <- zoo(coredata(a)[keept,is],order.by=dates)
+  #     #ais <- zoo(coredata(a)[,is],order.by=index(a))
+  #     ## REB 2022-05-22
+  #     ais <- zoo(coredata(a)[,ip],order.by=index(a))
+  #     ais <- attrcp(a,ais)
+  #     eval(parse(text=paste("attr(x,'",nm,"') <- ais",sep="")))
+  #     rm(a,ais,cls)
+  #   }
+  # }
   
   class(x) -> cls
   ##keept <- is.element(index(x),it)
