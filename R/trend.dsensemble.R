@@ -66,7 +66,6 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
       if (is.null(x$eof)) x$eof <- gridmap(x$pca)
       x$pca <- x$eof
     }
-    if (test) print('--TEST ON ONE GCM simulation--')
     if (inherits(x,'pca')) UWD <- x$pca else UWD <- x$eof
     if (verbose) print(names(attributes(UWD)))
     ## Eigenvalues
@@ -201,13 +200,13 @@ trendplot.dsensemble <- function(trends.stats, statistic="mean",
       pch=1, cex=0.9, lwd=1, colbar=list(show=TRUE),
       pch.significance=19, cex.significance=0.9,
       lwd.significance=1, col.significance=NULL,
-      projection="lonlat", ..., verbose=FALSE) {
+      par=NULL, projection="lonlat", ..., verbose=FALSE) {
   if(verbose) print("trendplot.dsensemble")
   X <- trends.stats[[statistic]]
   attr(X,'longitude') <- attr(trends.stats,'longitude')
   attr(X,'latitude') <- attr(trends.stats,'latitude')
-  attr(X,'variable') <- paste(attr(trends.stats,'variable'),statistic,'trend')
-  attr(X,'unit') <- paste(attr(trends.stats,'unit'),'/decade')
+  attr(X,'variable') <- paste(attr(trends.stats,'variable')[[1]],statistic,'trend')
+  attr(X,'unit') <- paste(attr(trends.stats,'unit')[[1]],'/decade')
   if(is.null(dim(X))) {
     if(verbose) print(paste('Plot',statistic,'of the dsensemble trends'))
     dim(X) <- c(length(X), 1)
@@ -222,6 +221,8 @@ trendplot.dsensemble <- function(trends.stats, statistic="mean",
         colbar$breaks <- pretty(c(-1,1)*max(abs(X)), n=10)
       }
     }
+    #par(bg="black") ## TRY BLACK BACKGROUND
+    # if(!is.null(par)) CONTINUE HERE!!
     map.X <- map(X, pch=pch, cex=cex, lwd=lwd, FUN="mean", colbar=colbar,
                  main=paste0(attr(X,"variable"),"\n(", attr(X,'unit'),")"),...)
     colbar <- colbar.ini(X,colbar=colbar)
@@ -245,19 +246,19 @@ trendplot.dsensemble <- function(trends.stats, statistic="mean",
       col.s <- col
       if(!is.null(col.significance)) {
         if(is.list(col.significance)) {
-          if(!is.null(col.significance$pos &
-	     !is.null(col.significance$neg))) {
+          if(!is.null(col.significance$pos) &
+	     !is.null(col.significance$neg)) {
 	    col.s <- rep(col.significance$pos[[1]], length(X))
 	    col.s[X<0] <- col.significance$neg[[1]]
-	  }
-	} else {
-          col.s <- col.significance
+	        }
+	      } else {
+          col.s <- rep(col.significance[[1]], length(X))
         }
       }
       s <- NULL
       if(!is.null(significance)) {
         if(verbose) print('Show statistical significance of trend ensemble')
-	if(is.null(threshold.lower)) threshold.lower <- TRUE
+	      if(is.null(threshold.lower)) threshold.lower <- TRUE
         if(significance=="f") {
           if(is.null(threshold)) threshold <- 0.9
           sig <- apply(trends.stats[,c("f.pos","f.neg")], 1, max)
@@ -279,7 +280,8 @@ trendplot.dsensemble <- function(trends.stats, statistic="mean",
 	  }
 	}
       }
-      if(any(s)) points(lon(X)[s], lat(X)[s], col=col.s[s], pch=pch.s, cex=cex)
+      if(any(s)) points(lon(X)[s], lat(X)[s], col=col.s[s], 
+                        pch=pch.significance, cex=cex.significance)
     }
   } else {
     ## NOT FINISHED!

@@ -691,10 +691,15 @@ as.seasons <- function(x,start='01-01',end='12-31',FUN='mean',verbose=FALSE,...)
   y <- matrix(rep(NA,n*ns),n,ns); k <- y
   if(is.numeric(start) & is.numeric(end)) {
     if(verbose) print("input 'start' and 'end' are likely months")
-    tx <- paste(year(index(x)), month(index(x)), "01", sep="-")
-    index(x) <- tx
     if(start>=10) start <- paste0(start,"-01") else start <- paste0("0",start,"-01")
-    if(end>=10) end <- paste0(end,"-01") else end <- paste0("0",end,"-01")
+    if(end==2) {
+      end <- "02-29"
+    } else {
+      if(end<10) end <- "01"
+      ym <- as.yearmon(paste0("2020-",end,"-01"))
+      days <- as.Date(ym, frac = 1) - as.Date(ym) + 1
+      end <- paste0(end, "-", days)
+    }
   } else {
     if(verbose) print("input 'start' and 'end' are likely dates (mm-dd)")
   }

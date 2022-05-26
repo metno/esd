@@ -112,7 +112,6 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     }
     if(is.na(experiment_id)) experiment_id <- experiment
   } 
-
   experiment_id <- tolower(sub("[.]","",experiment_id))
   if(min(x$dates)<as.Date("2010-01-01") & !grepl("historical",experiment_id)) {
     experiment_id <- paste("historical",experiment_id,sep="+")
