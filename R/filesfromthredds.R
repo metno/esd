@@ -147,9 +147,9 @@ station.s_enda <- function(stid=18700,param='precip',freq='day',FUN='default',st
   
   is <- 0
   for (url in urls) {
-    is <- is + 1
     ncid <- try(nc_open(url))
     if (!inherits(ncid,'try-error')) { 
+      is <- is + 1
       x <- ncvar_get(ncid,'obs')
       units[is] <- ncatt_get(ncid,'obs','units')$value
       t <- ncvar_get(ncid,'time')
