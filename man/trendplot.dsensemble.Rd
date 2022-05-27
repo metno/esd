@@ -18,6 +18,7 @@ trendplot.dsensemble(
   cex.significance = 0.9,
   lwd.significance = 1,
   col.significance = NULL,
+  par = NULL,
   projection = "lonlat",
   ...,
   verbose = FALSE
