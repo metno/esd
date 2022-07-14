@@ -194,13 +194,14 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
 #' @param col.significance Color of plotting characters to show significance. If NULL, the same color is used as for the trend. \code{col} can be one color, e.g. "black", or a list of two colors, one for positive and one for negative trends, e.g., list("pos"="red", "neg"="blue")).
 #' @param projection Projections: c("lonlat","sphere","np","sp") - the latter gives stereographic views from the North and south poles.
 #'
-#' @export trend.dsensemble
-trendplot.dsensemble <- function(trends.stats, statistic="mean", 
-      significance="f", threshold=0.9, threshold.lower=TRUE,
-      pch=1, cex=0.9, lwd=1, colbar=list(show=TRUE),
-      pch.significance=19, cex.significance=0.9,
-      lwd.significance=1, col.significance=NULL,
-      par=NULL, projection="lonlat", ..., verbose=FALSE) {
+#' @export trendmap.dsensemble
+trendmap.dsensemble <- function(trends.stats, statistic="mean", new=TRUE,
+                                significance="f", threshold=0.9, threshold.lower=TRUE,
+                                pch=19, cex=0.9, lwd=1, colbar=list(show=TRUE),
+                                pch.significance=1, cex.significance=0.9,
+                                lwd.significance=1.2, main=NULL,
+                                bg="grey55", col.significance="black",
+                                projection="lonlat", ..., verbose=FALSE) {
   if(verbose) print("trendplot.dsensemble")
   X <- trends.stats[[statistic]]
   attr(X,'longitude') <- attr(trends.stats,'longitude')
@@ -223,8 +224,14 @@ trendplot.dsensemble <- function(trends.stats, statistic="mean",
     }
     #par(bg="black") ## TRY BLACK BACKGROUND
     # if(!is.null(par)) CONTINUE HERE!!
+    
+    if(is.null(main)) main <- paste0(attr(X,"variable"),"\n(", attr(X,'unit'),")")
+      
+    if(new) dev.new()
+    par(bg=bg)
     map.X <- map(X, pch=pch, cex=cex, lwd=lwd, FUN="mean", colbar=colbar,
-                 main=paste0(attr(X,"variable"),"\n(", attr(X,'unit'),")"),...)
+                 main=paste0(attr(X,"variable"),"\n(", attr(X,'unit'),")"),
+                 new=FALSE, ...)
     colbar <- colbar.ini(X,colbar=colbar)
     if (verbose) print('Set colour scheme')
     wr <- round(strtoi(paste('0x',substr(colbar$col,2,3),sep=''))/255,2)
@@ -247,18 +254,18 @@ trendplot.dsensemble <- function(trends.stats, statistic="mean",
       if(!is.null(col.significance)) {
         if(is.list(col.significance)) {
           if(!is.null(col.significance$pos) &
-	     !is.null(col.significance$neg)) {
-	    col.s <- rep(col.significance$pos[[1]], length(X))
-	    col.s[X<0] <- col.significance$neg[[1]]
-	        }
-	      } else {
+             !is.null(col.significance$neg)) {
+            col.s <- rep(col.significance$pos[[1]], length(X))
+            col.s[X<0] <- col.significance$neg[[1]]
+          }
+        } else {
           col.s <- rep(col.significance[[1]], length(X))
         }
       }
       s <- NULL
       if(!is.null(significance)) {
         if(verbose) print('Show statistical significance of trend ensemble')
-	      if(is.null(threshold.lower)) threshold.lower <- TRUE
+        if(is.null(threshold.lower)) threshold.lower <- TRUE
         if(significance=="f") {
           if(is.null(threshold)) threshold <- 0.9
           sig <- apply(trends.stats[,c("f.pos","f.neg")], 1, max)
@@ -266,22 +273,23 @@ trendplot.dsensemble <- function(trends.stats, statistic="mean",
           if(is.null(threshold)) threshold <- floor(length(X)*0.9)
           sig <- apply(trends.stats[,c("n.pos","n.neg")], 1, max)
         } else if(significance %in% names(trends.stats)) {
-	  sig <- trends.stats[,significance$statistic]
+          sig <- trends.stats[,significance$statistic]
         }
-	if(is.null(threshold)) {
-	  warning('threshold for significance not defined')
-	} else {
-	  if(threshold.lower) {
-	    if(verbose) print(paste('significance measure:',significance,'>',threshold))
-	    s <- sig>threshold
-	  } else {
-	    if(verbose) print(paste('significance measure:',significance,'<',threshold))
-	    s <- sig<threshold
-	  }
-	}
+        if(is.null(threshold)) {
+          warning('threshold for significance not defined')
+        } else {
+          if(threshold.lower) {
+            if(verbose) print(paste('significance measure:',significance,'>',threshold))
+            s <- sig>threshold
+          } else {
+            if(verbose) print(paste('significance measure:',significance,'<',threshold))
+            s <- sig<threshold
+          }
+        }
       }
       if(any(s)) points(lon(X)[s], lat(X)[s], col=col.s[s], 
-                        pch=pch.significance, cex=cex.significance)
+                        pch=pch.significance, cex=cex.significance,
+                        lwd=lwd.significance)
     }
   } else {
     ## NOT FINISHED!

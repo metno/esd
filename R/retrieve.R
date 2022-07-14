@@ -1077,6 +1077,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           } else if(freq.data %in% c('season','year')) {
             time$vdate <- as.Date(paste(years,months,"01",sep="-"))
           } else {
+            browser()
             # KMP 2018-10-23: subdaily
             if (verbose) print('Needs to use the PCICt-package...')
             if(!requireNamespace("PCICt",quietly=TRUE)) {

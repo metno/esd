@@ -12,9 +12,11 @@
 #' list_thredds()
 #' list_thredds(pattern=c("rcp45","r1i1p1","RACMO"))
 #' list_thredds(caturl="http://esgf3.dkrz.de/thredds/catalog/esgcet/12/CMIP6.ScenarioMIP.DKRZ.MPI-ESM1-2-HR.ssp585.r1i1p1f1.day.pr.gn.v20190710.html")
+#' \dontrun{
 #' caturl <- "https://thredds.met.no/thredds/catalog/KSS/Klima_i_Norge_2100/bias_corrected/3DBC/cross-validation/noresm-r1i1p1-remo/tasmin/catalog.html"
 #' extension <- '.nc4'
 #' list_thredds(caturl,extension)
+#' }
 #' @export
 
 list_thredds <- function(caturl="https://thredds.met.no/thredds/catalog/KSS/Klima_i_Norge_2100/seasonal_RCM/catalog.html", 
@@ -127,26 +129,39 @@ station.senda <- function(stid=18700,param='precip',freq='day',FUN='default',sta
   if (verbose) print('station.s_enda')
   if (inherits(stid,'S-ENDA')) { 
     if (verbose) print('Using S-ENDA metadata')
-    #param <- stid$element
-    stid <- stid$station_id
-    if (verbose) print(table(param))
-  }
-  ## Get thevariable names
-  ns <- length(param)
-  vars <- rep('?',ns)
-  for (is in 1:ns) { 
-    vars[is] <- switch(param[is],'precip'='precipitation_amount','t2m'='air_temperature_2m','fx'='wind_speed_10m')
-    if (is.na(vars[is])) vars[is] <- param
+    meta <- stid
+    stid <- NULL; vars <- NULL
+    for(s in meta$station_id) {
+      ps <- trimws(unlist(strsplit(meta$element[meta$station_id==s], split=",")))
+      vars <- c(vars, ps)
+      stid <- c(stid, rep(s, length(ps)))
+    }
+  } else {
+    ## Get the variable names - not necessary when using metadata
+    ns <- length(param)
+    vars <- rep('?',ns)
+    for (is in 1:ns) { 
+      vars[is] <- switch(param[is], 'precip'='precipitation_amount',
+				    't2m'='air_temperature_2m',
+				    'fx'='wind_speed_10m')
+      if (is.na(vars[is])) vars[is] <- param[is]
+    }
   }
   
   ## get station data based on station_id
   urls <- paste0(caturl,stid,'/',vars,'_st_',stid,'.nc')
   if (verbose) print(urls)
+  stid <- gsub(".*._st_|.nc", "", urls)
+  varid <- gsub(".*./|_st_.*.", "", urls)
+  param <- sapply(vars, function(x) switch(x, 'precipitation_amount'='precip',
+                       	      		      'air_temperature_2m'='t2m',
+					      'wind_speed_10m'='fx'))
+  if (verbose) print(table(param))
+
   ns <- length(urls)
   lons <- rep(NA,ns); lats <- lons; alts <- lons; 
-  locs <- rep('?',ns); units <- locs; params <- locs; lonms <- locs; srcs <- locs
-  
-  
+  locs <- rep('?',ns); units <- locs; lonms <- locs; srcs <- locs
+
   is <- 0
   for (url in urls) {
     ncid <- try(nc_open(url))
@@ -172,7 +187,7 @@ station.senda <- function(stid=18700,param='precip',freq='day',FUN='default',sta
           if (freq=='month') time <- as.yearmon(tim)
       if (verbose) print(time[1:50])
       if (FUN=='default') {
-        if (param=='precip') {
+        if (param[is]=='precip') {
           ## The standard observations start 07:00 in the morning
           FUN <- 'sum' 
           index(X) <- index(X) - start.precip*3600

@@ -202,7 +202,8 @@ vis.map <- function(x,...,col='red',map.type=NULL,
   if (map.type=="points") {
     if (verbose) {print(c(lon(x),lat(x),cex)); print(col)}
     points(lon(x),lat(x),pch=21,cex=cex,col=col,bg=col,lwd=1)
-    if (add.text) text(lon(x),lat(x),labels=loc(x),col=col) 
+    if (add.text) text(lon(x),lat(x),labels=loc(x),col=col,
+                       cex=cex.axis, pos=1) 
   } else if (map.type=="rectangle") {
     rect(min(lon(x)),min(lat(x)),max(lon(x)),max(lat(x)),
          border="black",lwd=1,lty=2)
