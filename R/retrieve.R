@@ -1057,10 +1057,11 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           } 
           if (month1>12) month1 <- month1 - 12 
           # construct vdate
-          months <- ((time$vals%%time$daysayear)%/%round(mean(mndays))) + 1
           years <- time$vals%/%time$daysayear + yorigin
-          if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
-          days <- time$vals%%time$daysayear - (cumsum(mndays)-mndays)[months] + 1#rep(cumsum(mndays),time$len/12)
+          dayofyear <- time$vals%%time$daysayear
+          months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)), 
+                                 rightmost.closed=TRUE, left.open=TRUE)
+          days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {
             ## KMP 2020-05-04: diff stops retrieve from reading 1 timestep data!
@@ -1077,7 +1078,6 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           } else if(freq.data %in% c('season','year')) {
             time$vdate <- as.Date(paste(years,months,"01",sep="-"))
           } else {
-            browser()
             # KMP 2018-10-23: subdaily
             if (verbose) print('Needs to use the PCICt-package...')
             if(!requireNamespace("PCICt",quietly=TRUE)) {
