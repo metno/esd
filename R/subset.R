@@ -196,7 +196,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (verbose) print(it)
       ii <- (t >= min(it)) & (t <= max(it))
     } else {
-      ii <- is.element(t,it)
+      ii <- is.element(as.Date(t),it) #is.element(t,it)
     }
   } else if(inherits(it,"yearmon")) {
     ii <- is.element(as.yearmon(t),it)
@@ -213,7 +213,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       #y <- x[ii,is] # REB Not here
     } else if (inherits(it,"Date")) {
       if (verbose) print('it is a Date object')
-      ii <- is.element(t,it)
+      ii <- is.element(as.Date(t),it)
     } else {
       str(it); print(class(it))
       ii <- rep(FALSE,length(t))
