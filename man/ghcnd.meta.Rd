@@ -7,8 +7,8 @@
 \usage{
 ghcnd.meta(
   is = NULL,
- 
-    url = "https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/doc/ghcnd-stations.txt"
+  url =
+    "https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/doc/ghcnd-stations.txt"
 )
 }
 \arguments{

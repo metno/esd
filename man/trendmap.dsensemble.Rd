@@ -5,7 +5,7 @@
 \title{trendplot.dsensemble}
 \usage{
 trendmap.dsensemble(
-  trends.stats,
+  trends,
   statistic = "mean",
   new = TRUE,
   significance = "f",

@@ -60,6 +60,7 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
                           apply(trends, 2, function(x) sum(x<0)/length(x)))
     colnames(trends.stats) <- c("min","q5","median","mean","q95","max",
                                 "n.pos","n.neg","f.pos","f.neg")
+    rownames(trends.stats) <- attr(x[[1]], "model_id")
     trends.stats <- data.frame(trends.stats)
   } else {
     if (eof) {
@@ -147,29 +148,39 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
       z <- V[[im]] %*% diag(D) %*% t(U)
       trends[im,] <- apply(z, 2, trend.coef)
     }
-    trends.stats <- cbind(apply(trends, 2, min), apply(trends, 2, q5), 
-                          apply(trends, 2, median), apply(trends, 2, mean),
-                          apply(trends, 2, q95), apply(trends, 2, max),
-                          apply(trends, 2, function(x) sum(x>0)), 
-                          apply(trends, 2, function(x) sum(x<0)),
-                          apply(trends, 2, function(x) sum(x>0)/length(x)), 
-                          apply(trends, 2, function(x) sum(x<0)/length(x)))
-    colnames(trends.stats) <- c("min","q5","median","mean","q95","max",
-                                "n.pos","n.neg","f.pos","f.neg")
-    trends.stats <- data.frame(trends.stats)
-    trends.stats <- attrcp(UWD,trends.stats)
+    # trends.stats <- cbind(apply(trends, 2, min), apply(trends, 2, q5), 
+    #                       apply(trends, 2, median), apply(trends, 2, mean),
+    #                       apply(trends, 2, q95), apply(trends, 2, max),
+    #                       apply(trends, 2, function(x) sum(x>0)), 
+    #                       apply(trends, 2, function(x) sum(x<0)),
+    #                       apply(trends, 2, function(x) sum(x>0)/length(x)), 
+    #                       apply(trends, 2, function(x) sum(x<0)/length(x)))
+    # colnames(trends.stats) <- c("min","q5","median","mean","q95","max",
+    #                             "n.pos","n.neg","f.pos","f.neg")
+    # trends.stats <- data.frame(trends.stats)
+    # trends.stats <- attrcp(UWD,trends.stats)
+    # attr(trends.stats, "model_id") <- attr(x, "model_id")
+    # if(eof) {
+    #   attr(trends.stats,'dimension') <- attr(UWD,'dimension')[1:2]
+    # } else {
+    #   attr(trends.stats,'dimension') <- attr(UWD,'dimension')[1]
+    # }
+    attr(trends,'time') <- range(index(subset(X[[1]],it=it)))
+    trends <- attrcp(UWD,trends)
+    attr(trends, "model_id") <- attr(x, "model_id")
     if(eof) {
-      attr(trends.stats,'dimension') <- attr(UWD,'dimension')[1:2]
+     attr(trends,'dimension') <- attr(UWD,'dimension')[1:2]
     } else {
-      attr(trends.stats,'dimension') <- attr(UWD,'dimension')[1]
+     attr(trends,'dimension') <- attr(UWD,'dimension')[1]
     }
-    attr(trends.stats,'time') <- range(index(subset(X[[1]],it=it)))
+    attr(trends,'time') <- range(index(subset(X[[1]],it=it)))
   }
   
-  if(plot) trendplot.dsensemble(trends.stats, ...)
-  
+  #if(plot) trendplot.dsensemble(trends.stats, ...)
+  if(plot) trendplot.dsensemble(trends, ...)
   if (verbose) {print('exit trend.dsensemble')}
-  return(trends.stats)
+  #return(trends.stats)
+  return(trends)
 }
 
 #' trendplot.dsensemble
@@ -195,7 +206,8 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
 #' @param projection Projections: c("lonlat","sphere","np","sp") - the latter gives stereographic views from the North and south poles.
 #'
 #' @export trendmap.dsensemble
-trendmap.dsensemble <- function(trends.stats, statistic="mean", new=TRUE,
+trendmap.dsensemble <- function(trends,#.stats, 
+                                statistic="mean", new=TRUE,
                                 significance="f", threshold=0.9, threshold.lower=TRUE,
                                 pch=19, cex=0.9, lwd=1, colbar=list(show=TRUE),
                                 pch.significance=1, cex.significance=0.9,
@@ -203,11 +215,35 @@ trendmap.dsensemble <- function(trends.stats, statistic="mean", new=TRUE,
                                 bg="grey55", col.significance="black",
                                 projection="lonlat", ..., verbose=FALSE) {
   if(verbose) print("trendplot.dsensemble")
-  X <- trends.stats[[statistic]]
-  attr(X,'longitude') <- attr(trends.stats,'longitude')
-  attr(X,'latitude') <- attr(trends.stats,'latitude')
-  attr(X,'variable') <- paste(attr(trends.stats,'variable')[[1]],statistic,'trend')
-  attr(X,'unit') <- paste(attr(trends.stats,'unit')[[1]],'/decade')
+  #X <- trends.stats[[statistic]]
+  #trends.stats <- cbind(apply(trends, 2, min), apply(trends, 2, q5), 
+  #                      apply(trends, 2, median), apply(trends, 2, mean),
+  #                      apply(trends, 2, q95), apply(trends, 2, max),
+  #                      apply(trends, 2, function(x) sum(x>0)), 
+  #                      apply(trends, 2, function(x) sum(x<0)),
+  #                      apply(trends, 2, function(x) sum(x>0)/length(x)), 
+  #                      apply(trends, 2, function(x) sum(x<0)/length(x)))
+  #colnames(trends.stats) <- c("min","q5","median","mean","q95","max",
+  #                            "n.pos","n.neg","f.pos","f.neg")
+  #trends.stats <- data.frame(trends.stats)
+  #trends.stats <- attrcp(UWD,trends.stats)
+  #attr(trends.stats, "model_id") <- attr(x, "model_id")
+  #if(eof) {
+  #  attr(trends.stats,'dimension') <- attr(UWD,'dimension')[1:2]
+  #} else {
+  #  attr(trends.stats,'dimension') <- attr(UWD,'dimension')[1]
+  #}
+  #attr(trends.stats,'time') <- range(index(subset(X[[1]],it=it)))
+  eval(parse(text=paste0("X <- apply(trends, 2,", statistic, ")")))
+
+  attr(X,'longitude') <- attr(trends,'longitude')
+  attr(X,'latitude') <- attr(trends,'latitude')
+  attr(X,'variable') <- paste(attr(trends,'variable')[[1]],statistic,'trend')
+  attr(X,'unit') <- paste(attr(trends,'unit')[[1]],'/decade')
+  #attr(X,'longitude') <- attr(trends.stats,'longitude')
+  #attr(X,'latitude') <- attr(trends.stats,'latitude')
+  #attr(X,'variable') <- paste(attr(trends.stats,'variable')[[1]],statistic,'trend')
+  #attr(X,'unit') <- paste(attr(trends.stats,'unit')[[1]],'/decade')
   if(is.null(dim(X))) {
     if(verbose) print(paste('Plot',statistic,'of the dsensemble trends'))
     dim(X) <- c(length(X), 1)
@@ -268,12 +304,14 @@ trendmap.dsensemble <- function(trends.stats, statistic="mean", new=TRUE,
         if(is.null(threshold.lower)) threshold.lower <- TRUE
         if(significance=="f") {
           if(is.null(threshold)) threshold <- 0.9
-          sig <- apply(trends.stats[,c("f.pos","f.neg")], 1, max)
+          #sig <- apply(trends.stats[,c("f.pos","f.neg")], 1, max)
+          sig <- apply(trends, 2, function(x) max(sum(x>0), sum(x<0))/length(x))
         } else if(significance=="n") {
           if(is.null(threshold)) threshold <- floor(length(X)*0.9)
-          sig <- apply(trends.stats[,c("n.pos","n.neg")], 1, max)
-        } else if(significance %in% names(trends.stats)) {
-          sig <- trends.stats[,significance$statistic]
+          #sig <- apply(trends.stats[,c("n.pos","n.neg")], 1, max)
+          sig <- apply(trends, 2, function(x) max(sum(x>0), sum(x<0)))
+        } else {
+          eval(parse(text=paste0("sig <- apply(trends, 2, ",significance,")")))
         }
         if(is.null(threshold)) {
           warning('threshold for significance not defined')

@@ -13,8 +13,8 @@ windrose(
   saw = 10,
   max.scale = NULL,
   main = NULL,
-  cols = c("grey90", "yellow", "green", "red", "blue", "darkgreen", "darkred",
-    "magenta", "black"),
+  cols = c("grey90", "yellow", "green", "red", "blue", "darkgreen", "darkred", "magenta",
+    "black"),
   param = c("u", "v"),
   simple = TRUE,
   verbose = FALSE
