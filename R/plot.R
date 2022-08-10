@@ -1103,6 +1103,9 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   par(fig=c(0.025,1,0.025,0.475),new=TRUE)
   par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
   ds <- list(obs=y0)
+  ## REB 2022-08-10 testing for sensible ranges
+  if (sum(!is.finite(xlim))>0) xlim <- NULL
+  if (sum(!is.finite(ylim))>0) ylim <- NULL
   plot.zoo(y0,plot.type=plot.type,ylab=ylab,xlab=xlab,
            main=main,xlim=xlim,ylim=ylim,lwd=1,type='b',pch=19)
   par0 <- par()
