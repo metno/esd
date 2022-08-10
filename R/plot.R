@@ -996,7 +996,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
                                 breaks=NULL,type="p",cex=2,show=TRUE,
                                 h=0.6, v=1,pos=0.05),
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
-  if (verbose) print(paste('plot.ds'))
+  if (verbose) {print(paste('plot.ds')); print(names(attributes(ds)))}
   
   if (inherits(x,'pca')) {
     plot.ds.pca(x,what=what,verbose=verbose,new=new,...)
@@ -1076,7 +1076,6 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   #print(summary(yX))
   y0 <- yX$Y0
   ## KMP 2021-02-26: Plot attribute 'fitted value' instead of coredata
-  
   if (!is.null(attr(x,'n.apps'))) ns <- attr(x,'n.apps') else
     ns <- 0
   y.rng <- NA; x.rng <- NA
@@ -1091,6 +1090,9 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
     ## KMP 2021-04-26: added following to solve problem when index is Date
     if(is.numeric(x.rng) & is.dates(index(x))) x.rng <- as.Date(x.rng)
   }
+  
+  if (sum(!is.finite(x.rng))>0) x.rng <- NULL
+  if (sum(!is.finite(y.rng))>0) y.rng <- NULL
   
   if (is.null(ylim)) {
     #ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
