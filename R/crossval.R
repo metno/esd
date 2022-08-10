@@ -144,17 +144,20 @@ crossval.list <- function(x, m=5, verbose=FALSE, ...) {
 
 #' @exportS3Method
 #' @export crossval.dsensemble
-crossval.dsensemble <- function(x,m=NULL,verbose=FALSE,...,plot=TRUE,xlim=c(-0,1)) {
+crossval.dsensemble <- function(x,m=NULL,verbose=FALSE,...,
+                                mar=c(3,4,1.5,0.5),plot=TRUE,xlim=c(-0,1)) {
   if(verbose) print("crossval.dsensemble")
   X <- x
   n <- m
   if (is.null(n)) n <- dim(x$pca)[2]
-  m <- (n-1)%%3+1; k <- (n-1)%/%m+1
+  #m <- (n-1)%%3+1; k <- (n-1)%/%m+1
+  k <- ceiling(n/3)
+  m <- ceiling(n/k)
   mfrow=c(m,k)
   X$info <- NULL; X$eof <- NULL; X$pca <- NULL
   xval <- lapply(X,function(x) diag(cor(attr(x,'evaluation'))[seq(2,2*n,by=2),seq(1,2*n-1,by=2)]))
   if (plot) {
-    par(mfrow=mfrow)
+    par(mfrow=mfrow,mar=mar)
     for (i in 1:n) { 
       hist(unlist(lapply(xval,function(x) x[i])),col='grey',lwd=2,xlim=xlim,
          main=paste('X-validation correlation for PCA',i),xlab='correlation')
