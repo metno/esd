@@ -788,15 +788,14 @@ combine.field <- function(x=NULL,y=NULL,...,all=FALSE,dimension="time",
     
   dimension <- tolower(dimension)
   approach <- tolower(approach)
+  ## Make sure that both fields are presented on the same gid
+  if (verbose) print (paste('Greenwich dateline - X:',attr(x,'greenwich'),'Y:',attr(y,'greenwich')))
+  # x <- g2dl(x,greenwich=attr(y,'greenwich'))
+  # if (verbose) print(rbind(range(lon(x)),range(lon(y))))
+  x <- g2dl(x, greenwich = FALSE)
+  y <- g2dl(y, greenwich = FALSE)
   x <- sp2np(x)
   y <- sp2np(y)
-  # Make sure that the longitude conventions are the same:
-  if ( (!is.null(attr(x,'greenwich'))) & (!is.null(attr(y,'greenwich'))) ) { 
-    if ( ( as.logical(attr(x,'greenwich')) &
-           !as.logical(attr(y,'greenwich')) ) |
-         ( !as.logical(attr(x,'greenwich')) &
-           as.logical(attr(y,'greenwich')) ) ) y <- g2dl(y,attr(x,'greenwich'))
-  }
   
   if (sum(is.element(dimension,"time"))) {
     # Combine the two gridded data sets along the time axis:

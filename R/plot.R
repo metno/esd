@@ -999,7 +999,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
                                 breaks=NULL,type="p",cex=2,show=TRUE,
                                 h=0.6, v=1,pos=0.05),
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
-  if (verbose) print(paste('plot.ds'))
+  if (verbose) {print(paste('plot.ds')); print(names(attributes(ds)))}
   
   if (inherits(x,'pca')) {
     plot.ds.pca(x,what=what,verbose=verbose,new=new,...)
@@ -1079,7 +1079,6 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   #print(summary(yX))
   y0 <- yX$Y0
   ## KMP 2021-02-26: Plot attribute 'fitted value' instead of coredata
-  
   if (!is.null(attr(x,'n.apps'))) ns <- attr(x,'n.apps') else
     ns <- 0
   y.rng <- NA; x.rng <- NA
@@ -1095,6 +1094,9 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
     if(is.numeric(x.rng) & is.dates(index(x))) x.rng <- as.Date(x.rng)
   }
   
+  if (sum(!is.finite(x.rng))>0) x.rng <- NULL
+  if (sum(!is.finite(y.rng))>0) y.rng <- NULL
+  
   if (is.null(ylim)) {
     #ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
     ylim <- range(attr(x,"fitted_values"),coredata(y0),y.rng,na.rm=TRUE)
@@ -1106,6 +1108,9 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   par(fig=c(0.025,1,0.025,0.475),new=TRUE)
   par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
   ds <- list(obs=y0)
+  ## REB 2022-08-10 testing for sensible ranges
+  if (sum(!is.finite(xlim))>0) xlim <- NULL
+  if (sum(!is.finite(ylim))>0) ylim <- NULL
   plot.zoo(y0,plot.type=plot.type,ylab=ylab,xlab=xlab,
            main=main,xlim=xlim,ylim=ylim,lwd=1,type='b',pch=19)
   par0 <- par()
