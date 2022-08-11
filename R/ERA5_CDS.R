@@ -37,7 +37,7 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
   if (verbose) print(AREA)
   if (!file.exists('~/.cdsapirc')) {
     print('You need to install the CDS API key according to the web site and then re-run the call...')
-    browser('https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key')
+    system('firefox https://cds.climate.copernicus.eu/api-how-to#install-the-cds-api-key')
     return()
   }
   dir <- getwd()
