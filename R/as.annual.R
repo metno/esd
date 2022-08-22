@@ -487,13 +487,15 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
       if ( (is.null(d)) | (d[2]==1) ) {
         X <- c(NA,coredata(x)[1:length(x)-1]) # shift the coredata by 1 to start on December. This works only for monthly data !!!  
       } else {
+        # shift the coredata by 1 to start on December. slow...
+        if (verbose) print('Shift series')
         X <- rbind(rep(NA,d[2],1),coredata(x)[1:d[1]-1,])
       }
-      #print(dim(X))
+      if (verbose) print(dim(X))
       X <- zoo(X,order.by=index(x))
       ##yrseas <- fourseasons(ix)
       ##print(yrseas)
-      #print('aggregate')
+      if (verbose) print('aggregate')
       #print(names(list(...)))
       yq <- function(t) as.yearqtr(year(t) + 0.25*floor((month(t)-1)/3))
       y <- aggregate(x=as.zoo(X),by=yq,#as.yearqtr,
@@ -504,7 +506,7 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
       nd <- aggregate(x=as.zoo(X),by=yq,FUN=nv)
       ok <- nd >= nmin  
       coredata(y)[!ok] <- NA
-      
+      if (verbose) print('define y')
       y <- zoo(x=y,order.by=as.Date(as.yearmon(index(y))))
     } else y <- as.4seasons.day(x,FUN=FUN,nmin=nmin,verbose=verbose,...)
     #y <- as.4seasons.day(x,FUN=match.fun(FUN),...)
@@ -520,7 +522,7 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
     X <- matrix(rep(NA,n*d[2]),n,d[2]) 
     t <-rep(NA,n)
     
-    #print("start loop")
+    if (verbose) print("start loop")
     for (i in 1:n) {
       iq <- (i-1) %% 4 + 1
       if (iq == 1) 
@@ -540,9 +542,9 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
                print(c(i,yr[i],round(mean(X[i,]),2),iq,sum(ii),round(X[i],2),t[i]))
              }
     } 
-    #print("end loop")
+    if (verbose) print("end loop")
     ok <- is.finite(rowMeans(X,na.rm=TRUE)) & is.finite(t)
-    #print(table(as.yearqtr(t[ok])))
+    if (verbose) print(table(as.yearqtr(t[ok])))
     #print(summary(c(X)))
     y <- zoo(X[ok,],order.by=as.Date(as.yearqtr(t[ok])))
     #names(y) <- FUN
@@ -551,6 +553,7 @@ as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=N
     ok <- is.finite(rowMeans(y,na.rm=TRUE))
     y <- y[ok,]
   } 
+  if (verbose) print('attributes')
   y <- attrcp(x,y)
   attr(y,'history') <- history.stamp(x)
   attr(y,'season.interval') <- "4seasons"
