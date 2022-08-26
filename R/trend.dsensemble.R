@@ -46,7 +46,6 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
   stopifnot(inherits(x, "dsensemble"))
   if(inherits(x,"station")) {
     if (verbose) print('station ensemble')
-    x <- X
     trends <- matrix(NA, ncol=length(x), nrow=ncol(x[[1]]))
     colnames(trends) <- names(x)
     rownames(trends) <- attr(x[[1]], "model_id")
@@ -83,6 +82,7 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
     if (verbose) print('Check ensemble member size')
     n <- length(names(X))
     if (verbose) print(paste('Original length of X is',n))
+    gcms <- attr(X, "model_id")
     memsiz <- rep("?",n)
     for (i in 1:n) memsiz[i] <- paste(dim(X[[i]]),collapse='x')
     memsiztab <- table(memsiz)
@@ -91,7 +91,10 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
     if (verbose) print(memkeep)
     im <- sort((1:n)[-grep(memkeep,memsiz)],decreasing = TRUE)
     if (verbose) print(im)
-    for (ix in im) X[[ix]] <- NULL
+    for (ix in im) {
+      X[[ix]] <- NULL
+      gcms <- gcms[-ix]
+    }
     n <- length(names(X))
     if (verbose) print(paste('New length of X is',n))
     ## Only select the selected time interval - saves time
@@ -110,6 +113,7 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
       if (max(abs(V[[i]]),na.rm=TRUE) > 10)  {
         if(verbose) print(paste(i,'Remove suspect results'))
         V[[i]] <- NULL
+        gcms <- gcms[-i]
       }
     }
     n <- length(V)
@@ -167,7 +171,7 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
     # }
     attr(trends,'time') <- range(index(subset(X[[1]],it=it)))
     trends <- attrcp(UWD,trends)
-    attr(trends, "model_id") <- attr(x, "model_id")
+    attr(trends, "model_id") <- gcms#attr(x, "model_id")
     if(eof) {
      attr(trends,'dimension') <- attr(UWD,'dimension')[1:2]
     } else {

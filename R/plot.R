@@ -1718,7 +1718,6 @@ plot.ds.pca <- function(x,...,ip=1,
   }
   if('xval' %in% what) {
     if (verbose) print('Evaluation results')
-    #browser()
     par(new=(add | i>1))
     if(!is.null(figlist)) par(fig=figlist[[i]])
     i <- i+1
@@ -2254,16 +2253,13 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   iyl <- grep('ylim',names(args))
   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
     ylim <- args[[iyl]]  
-  #print("...")
-  if(new) dev.new()
   index(y) <- year(y)
-  if(!is.null(mar)) par(mar=mar)
-  par0 <- par()
   if (obs.show) obscol <- 'black' else obscol='white'
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
-       cex.axis=cex.axis,cex.lab=cex.lab,
+       cex.axis=cex.axis,cex.lab=cex.lab,mar=mar,
        ylab=ylab,map.show=FALSE,new=new, verbose=verbose)
   grid()
+  par0 <- par()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)
   

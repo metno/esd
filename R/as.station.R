@@ -545,6 +545,8 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     alts <- attr(X$pca,"altitude")
     stid <- attr(X$pca,"station_id")
     locs <- attr(X$pca,"location")
+    src <- attr(X$pca,"source")
+    rcp <- attr(X,"scenario")
     gcms <- sub("^i[0-9]{1,3}_","",names(X)[3:length(X)])
     for (i in 1:length(S)) {
       yi <- Y[,i]
@@ -558,6 +560,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
       attr(yi,"unit") <- unit
       attr(yi,"variable") <- param
       attr(yi,"longname") <- longname
+      attr(yi,"source") <- src
       attr(S[[i]],"station") <- yi
       attr(S[[i]],'aspect') <- 'original'
       attr(S[[i]],"longitude") <- lons[i]
@@ -565,7 +568,6 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
       attr(S[[i]],"altitude") <- alts[i]
       attr(S[[i]],"station_id") <- stid[i]
       attr(S[[i]],"location") <- locs[i]
-      attr(S[[i]],'model_id') <- gcms
       class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
@@ -576,9 +578,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     }
     #REB 2018-03-02: The line below causes big problems. Besides, I don't understand why it's there
     if ( (is.list(S)) & (length(S)==length(locs)) ) names(S) <- locs
-    attr(S,"unit") <- unit
-    attr(S,"variable") <- param
-    attr(S,"longname") <- longname
+    S <- attrcp(x, S)
     attr(S,"aspect") <- "dsensemble.pca transformed to stations"
     attr(S,"history") <- history.stamp()
     invisible(S)

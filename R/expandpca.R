@@ -29,7 +29,8 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   if (test) print('--TEST ON ONE GCM simulation--')
   if (inherits(x,'pca')) UWD <- x$pca else UWD <- x$eof
   if (!is.null(FUN)) {
-    if (FUN != 'mean') anomaly <- TRUE; 
+    #if (!FUN %in% c('min','mean','max') anomaly <- TRUE
+    if (FUN %in% c('trend','trend.coef','sd')) anomaly <- TRUE
     if (verbose) print(c(FUN,anomaly))
   }
   if (verbose) print(names(attributes(UWD)))

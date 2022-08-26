@@ -131,16 +131,19 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
     str(U); str(D); str(V)
   }
   ## Loop through each time step - aggregate ensemble statistics for each time step
-  Y <- matrix(rep(NA,dU[1]*dU[2]*d[1]),d[1],dU[1]*dU[2])
+  #Y <- matrix(rep(NA,dU[1]*dU[2]*d[1]),d[1],dU[1]*dU[2])
+  Y <- matrix(rep(NA, dU[1]*d[1]), nrow=d[1], ncol=dU[1])
   for (it in 1:d[1]) { 
     ## loop through each ensemble member
-    z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
+    #z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
+    z <- matrix(rep(NA, dU[1]*n), dU[1], n)
     for (im in 1:n) { 
       v <- V[[im]]
       z[,im] <- v[it,] %*% diag(D) %*% t(U)
     }
     Y[it,] <- apply(z,1,FUNX)
   }
+  
   ## Add mean and insert into zoo frame
   if (!anomaly) {
     if (verbose) print('add mean field')
@@ -163,6 +166,7 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
     class(Y)[1] <- 'field'
   }
   attr(Y,'mean') <- NULL
+  if(!is.null(FUN)) Y <- map(Y, FUN=FUN, plot=FALSE)
   if (verbose) {print('exit aggregate.dsensemble'); print(dim(Y))}
   return(Y)
 }

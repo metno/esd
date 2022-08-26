@@ -23,6 +23,8 @@
   map.show = TRUE,
   map.type = NULL,
   map.insert = TRUE,
+  xrange = NULL,
+  yrange = NULL,
   cex.axis = 1.2,
   cex.lab = 1.2,
   cex.main = 1.2,
