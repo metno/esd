@@ -90,7 +90,7 @@ retrieve <- function(file=NULL,...) UseMethod("retrieve")
 retrieve.default <- function(file,param="auto",
                              path=NULL,verbose=FALSE,...) {
   ncfile <- file
-  if (verbose) print('retrieve.default')
+  if (verbose) print(paste('retrieve.default - param=',param,'in',ncfile))
   
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   X <- NULL
@@ -99,17 +99,25 @@ retrieve.default <- function(file,param="auto",
   
   nc <- nc_open(ncfile)
   dimnames <- names(nc$dim)
+  varnames <- names(nc$var)
+  if (verbose) {print(dimnames); print(varnames)}
   ## REB 2021-04-16: Check if the file contains station data - if it does, use the retrieve.station method
   if (sum(tolower(dimnames) %in% c("stid"))>0) {
     if (verbose) print('Detected station netCDF')
     nc_close(nc)
     Y <- retrieve.station(file=file,param=param,path=path,verbose=verbose,...)
     return(Y)
-  }
+  } else if (sum(tolower(varnames) %in% c("longitude","latitude"))>1) {
+    if (verbose) print('Detected rotated-grid netCDF (RCMs)')
+    nc_close(nc)
+    Y <- retrieve.rcm(file=file,param=param,path=path,verbose=verbose,...)
+    return(Y)
+  } else if (verbose) print('Detected ordinary netCDF')
   
   ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
   ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
   if(any(ilon) & any(ilat)) {
+    if (verbose) print(c(dimnames[ilon],dimnames[ilat]))
     lons <- ncvar_get(nc,dimnames[ilon])
     lats <- ncvar_get(nc,dimnames[ilat])
   } else {
@@ -1691,11 +1699,21 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
     starty <- 1; county <- d[2];
     subx <- rep(TRUE,d[1]); suby <- rep(TRUE,d[2])
   }
+  if (verbose) print(paste('Find time based on this information:',torg,'and',tunit))
+  ## Add a sanity check for poorly designed netCDF files (CARRA)
+  if ( (substr(tunit,1,3)=="hou") & (nchar(torg)==10) ) {
+    if (verbose) print("Need to add %H to time orgigin")
+    torg <- paste(torg,'00')
+  }
+  if ( (substr(tunit,1,3)=="sec") & (nchar(torg)==10) ) {
+    if (verbose) print("Need to add %H:%M:%S to time orgigin")
+    torg <- paste(torg,'00:00:00')
+  }
   time <- switch(substr(tunit,1,3),
                  'day'=as.Date(time+julian(as.Date(torg))),
                  'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))),
-                 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600,
-                 'sec'=strptime(torig,format="%Y-%m-%d %H") + time)
+                 'hou'=strptime(torg,format="%Y-%m-%d %H") + time*3600,
+                 'sec'=strptime(torg,format="%Y-%m-%d %H:%M:%S") + time)
   # next save for later if adding no_leap func
   #if ((tcal %in% c("365_day", "365day", "no_leap", "no leap")) && (any(grepl('hou',tunit))) && ((diff(ttest)>29) && (diff(ttest) <= 31 )) )
   #HBE 2018/1/17 saving POSIX with monthly freq as Date at month start
