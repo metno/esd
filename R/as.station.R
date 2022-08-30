@@ -489,13 +489,16 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     if (verbose) print('Extract the results model-wise')
     ## Find the size of the PC matrices representing model projections
     d <- apply(sapply(X[3:n],dim),1,min)
+    gcmnames <- attr(X, "model_id")
     ## The PCs from the list are extracted into the matrix V 
     ## Quality control
     if (verbose) print(paste('Before quality control: original number of members=',n))
     for (i in seq(n,3,by=-1)) {
       #print(range(X[[i]],na.rm=TRUE)); print(dim(X[[i]]))
       if (max(abs(X[[i]]),na.rm=TRUE) > 10)  {
-        print(paste(i,'Remove suspect results')); X[[i]] <- NULL
+        print(paste(i,'Remove suspect results',gcmnames[i]))
+        X[[i]] <- NULL
+        gcmnames <- gcmnames[-i]
       }
     }
     n <- length(X)
@@ -568,6 +571,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
       attr(S[[i]],"altitude") <- alts[i]
       attr(S[[i]],"station_id") <- stid[i]
       attr(S[[i]],"location") <- locs[i]
+      #attr(S[[i]],"model_id") <- gcmnames
       class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
@@ -580,6 +584,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     if ( (is.list(S)) & (length(S)==length(locs)) ) names(S) <- locs
     S <- attrcp(x, S)
     attr(S,"aspect") <- "dsensemble.pca transformed to stations"
+    attr(S,"model_id") <- gcmnames
     attr(S,"history") <- history.stamp()
     invisible(S)
   }

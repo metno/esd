@@ -2160,7 +2160,6 @@ plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
 plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
                                   anomaly=FALSE,test=FALSE, plot = TRUE, ...) {
   if (verbose) print('plot.dsensemble.multi')
-  
   if (inherits(x,c('pca','eof'))) {
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     if (plot) plot(Y,verbose=verbose,...)

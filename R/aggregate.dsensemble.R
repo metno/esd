@@ -95,12 +95,15 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
   memsiztab <- table(memsiz)
   if (verbose) print(memsiztab)
   d <- dim(V[[1]])
+  gcmnames <- attr(X, "model_id")
   ## Quality control
   if (verbose) print(paste('Before quality control: original number of members=',n))
   for (i in seq(n,1,by=-1)) {
-    print(range(V[[i]],na.rm=TRUE)); print(dim(V[[i]]))
+    #print(range(V[[i]],na.rm=TRUE)); print(dim(V[[i]]))
     if (max(abs(V[[i]]),na.rm=TRUE) > 10)  {
-      print(paste(i,'Remove suspect results')); V[[i]] <- NULL
+      print(paste(i,'Remove suspect results: ',gcmnames[i]))
+      V[[i]] <- NULL
+      gcmnames <- gcmnames[-i]
     }
   }
   n <- length(V)
@@ -112,7 +115,6 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
   
   ## Aggregate statistics over ensemble members
   if (verbose) print('Aggregate ensemble statistics')
-  
   U <- attr(UWD,'pattern')
   if (!is.null(dim(U))) {
     dU <- dim(U) 
@@ -131,12 +133,10 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
     str(U); str(D); str(V)
   }
   ## Loop through each time step - aggregate ensemble statistics for each time step
-  #Y <- matrix(rep(NA,dU[1]*dU[2]*d[1]),d[1],dU[1]*dU[2])
-  Y <- matrix(rep(NA, dU[1]*d[1]), nrow=d[1], ncol=dU[1])
+  Y <- matrix(rep(NA,dU[1]*dU[2]*d[1]),d[1],dU[1]*dU[2])
   for (it in 1:d[1]) { 
     ## loop through each ensemble member
-    #z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
-    z <- matrix(rep(NA, dU[1]*n), dU[1], n)
+    z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
     for (im in 1:n) { 
       v <- V[[im]]
       z[,im] <- v[it,] %*% diag(D) %*% t(U)
@@ -165,6 +165,7 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
     attr(Y,'latidude') <- lat(UWD)
     class(Y)[1] <- 'field'
   }
+  attr(Y, 'model_id') <- gcmnames
   attr(Y,'mean') <- NULL
   if(!is.null(FUN)) Y <- map(Y, FUN=FUN, plot=FALSE)
   if (verbose) {print('exit aggregate.dsensemble'); print(dim(Y))}
