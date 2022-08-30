@@ -28,6 +28,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   fig0 <- c(0,1,0,1)                        # REB 2015-06-25
   ## Land contours
   data("geoborders",envir=environment())
+  if(!is.null(attr(x,"greenwich"))) if(!attr(x,"greenwich")) {
+    gbl <- geoborders$lon
+    gbl[gbl < 0] <- gbl[gbl < 0] + 360
+    geoborders$lon <- gbl
+  }
   if(sum(is.finite(x))==0) stop('No valid data')
   ## To deal with grid-conventions going from north-to-south or east-to-west:
   if(is.null(xlim)) xlim <- range(lon(x))

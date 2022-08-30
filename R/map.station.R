@@ -983,10 +983,10 @@ test.map.station <- function(save=FALSE) {
 }
 
 
-## The main function to produce map of subseted stations
+## The main function to produce map of subset of stations
 #' @export map.stationmeta
 map.stationmeta <- function(x,...)
-  map.station(x,...)
+  map.stationsummary(x,...)
 
 #' @export map.data.frame
 map.data.frame <- function(x,...) {
@@ -996,7 +996,7 @@ map.data.frame <- function(x,...) {
   if (sum(is.element(names(x),att))==12) {   
     class(x) <- c("stationmeta","data.frame")
     map.station(x,...)
-  } else if (inherits(x,'stationsummary')) {
+  } else if (inherits(x,c('stationsummary','stationmeta'))) {
     map.stationsummary(x,...)
   } else print("x is not a stationmeta object")
 }

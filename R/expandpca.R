@@ -29,7 +29,8 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   if (test) print('--TEST ON ONE GCM simulation--')
   if (inherits(x,'pca')) UWD <- x$pca else UWD <- x$eof
   if (!is.null(FUN)) {
-    if (FUN != 'mean') anomaly <- TRUE; 
+    #if (!FUN %in% c('min','mean','max') anomaly <- TRUE
+    if (FUN %in% c('trend','trend.coef','sd')) anomaly <- TRUE
     if (verbose) print(c(FUN,anomaly))
   }
   if (verbose) print(names(attributes(UWD)))
@@ -49,6 +50,7 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   ## Check if the ensemble members have the same size - if not, only keep the ones with most common sizes
   if (verbose) print('Check ensemble member size')
   n <- length(names(X))
+  gcmnames <- attr(X, "model_id")
   if (verbose) print(paste('Original length of X is',n))
   memsiz <- rep("?",n)
   for (i in 1:n) memsiz[i] <- paste(dim(X[[i]]),collapse='x')
@@ -71,7 +73,9 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   for (i in seq(n,1,by=-1)) {
     if (verbose) {print(range(X[[i]],na.rm=TRUE)); print(dim(X[[i]]))}
     if (max(abs(X[[i]]),na.rm=TRUE) > 10)  {
-      print(paste(i,'Remove suspect results')); X[[i]] <- NULL
+      print(paste(i,'Remove suspect results',gcmnames[i]))
+      X[[i]] <- NULL
+      gcmnames <- gcmnames[-i]
     }
   }
   n <- length(X)
@@ -153,6 +157,7 @@ expandpca <- function(x,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE
   # }
   Y <- zoo(Y,order.by=index(X[[1]]))
   Y <- attrcp(UWD,Y)
+  attr(Y, 'model_id') <- gcmnames
   attr(Y,'time') <- range(index(subset(X[[1]],it=it)))
   class(Y) <- class(UWD)[-1]
   if (inherits(UWD,'eof')) {

@@ -134,11 +134,12 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
   #  nok <- !is.finite(rowMeans(X))
   # The regridded appendix may contain some NA's if its domain exceeds that of the original field.
   # Get rid of time slices with all NAs.
-  nok <- apply(X,1,nv) < 0.5*dim(X)[2]
-  if (sum(nok)> 0) {
-    it <- (1:length(nok))[!nok]
-    if (verbose) print(paste('removing ',sum(nok),'NA time slices'))
-  }
+  ## REB 2022-08-10 The following lines were commented out as they unintentionally removed GCM data 
+  # nok <- apply(X,1,nv) < 0.5*dim(X)[2]
+  # if (sum(nok)> 0) {
+  #   it <- (1:length(nok))[!nok]
+  #   if (verbose) print(paste('removing ',sum(nok),'NA time slices'))
+  # }
   
   x <- subset(X,it=it,is=is,verbose=verbose)
   x <- sp2np(x)

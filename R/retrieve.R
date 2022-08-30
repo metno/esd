@@ -90,7 +90,7 @@ retrieve <- function(file=NULL,...) UseMethod("retrieve")
 retrieve.default <- function(file,param="auto",
                              path=NULL,verbose=FALSE,...) {
   ncfile <- file
-  if (verbose) print('retrieve.default')
+  if (verbose) print(paste('retrieve.default - param=',param,'in',ncfile))
   
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   X <- NULL
@@ -99,17 +99,25 @@ retrieve.default <- function(file,param="auto",
   
   nc <- nc_open(ncfile)
   dimnames <- names(nc$dim)
+  varnames <- names(nc$var)
+  if (verbose) {print(dimnames); print(varnames)}
   ## REB 2021-04-16: Check if the file contains station data - if it does, use the retrieve.station method
   if (sum(tolower(dimnames) %in% c("stid"))>0) {
     if (verbose) print('Detected station netCDF')
     nc_close(nc)
     Y <- retrieve.station(file=file,param=param,path=path,verbose=verbose,...)
     return(Y)
-  }
+  } else if (sum(tolower(varnames) %in% c("longitude","latitude"))>1) {
+    if (verbose) print('Detected rotated-grid netCDF (RCMs)')
+    nc_close(nc)
+    Y <- retrieve.rcm(file=file,param=param,path=path,verbose=verbose,...)
+    return(Y)
+  } else if (verbose) print('Detected ordinary netCDF')
   
   ilon <- tolower(dimnames) %in% c("x","i") | grepl("lon",tolower(dimnames))
   ilat <- tolower(dimnames) %in% c("y","j") | grepl("lat",tolower(dimnames))
   if(any(ilon) & any(ilat)) {
+    if (verbose) print(c(dimnames[ilon],dimnames[ilat]))
     lons <- ncvar_get(nc,dimnames[ilon])
     lats <- ncvar_get(nc,dimnames[ilat])
   } else {
@@ -979,7 +987,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     if (verbose) print("Checking Frequency from the data --> [fail]")
   }
   ## Checking Calendar attribute if any, otherwise set to "ordinary"  
-  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day"
+  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day" 
   ## REB 2021-05-06 - CMIP6 also uses the Julian Calendar :-(
   ical <- grep(c("calend"),tatt)
   ## 
@@ -1005,7 +1013,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   ## Get calendar from attribute if any and create vector of dates vdate
   ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
   if (!is.null(calendar.att)) {
-    if (grepl("gregorian",calendar.att) | grepl("julian",calendar.att) | grepl("standard",calendar.att)) {
+    if (grepl("gregorian|proleptic_gregorian",calendar.att) | grepl("julian",calendar.att) | grepl("standard",calendar.att)) {
       if(grepl("%Y%m%d",tunit)) {
         t.day <- floor(time$vals)
         t.hr <- 24*(time$vals-t.day)
@@ -1026,9 +1034,9 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
                              'mon'= seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
                              'yea'= year(as.Date(torigin)) + time$vals)
       }
-    } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap",calendar.att)) {
+    } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap|365_day|360_day",calendar.att)) {
       if (verbose) print(paste0(substr(calendar.att,1, 3), "-days model year found in calendar attribute"))
-      if (grepl("noleap",calendar.att)) {
+      if (grepl("noleap|365_day",calendar.att)) {
         time$daysayear <- 365
       } else {
         time$daysayear <- as.numeric(substr(calendar.att, 1, 3))
@@ -1042,6 +1050,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
         } else {
           if(verbose) print('Warning! unknown calendar type')
         }
+        if (verbose) print(mndays)
         if (!is.null(mndays)) {
           year1 <- time$vals[1]%/%time$daysayear + yorigin
           month1 <- morigin
@@ -1055,10 +1064,12 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           } 
           if (month1>12) month1 <- month1 - 12 
           # construct vdate
-          months <- ((time$vals%%time$daysayear)%/%round(mean(mndays))) + 1
           years <- time$vals%/%time$daysayear + yorigin
-          if(month1>1) mndays <- c(mndays[month1:length(mndays)],mndays[1:(month1-1)])
-          days <- time$vals%%time$daysayear - (cumsum(mndays)-mndays)[months] + 1#rep(cumsum(mndays),time$len/12)
+          dayofyear <- time$vals%%time$daysayear
+          months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)), 
+                                 rightmost.closed=TRUE, left.open=TRUE)
+          days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
+          if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {
             ## KMP 2020-05-04: diff stops retrieve from reading 1 timestep data!
             if (length(months)==1) {
@@ -1075,20 +1086,25 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
             time$vdate <- as.Date(paste(years,months,"01",sep="-"))
           } else {
             # KMP 2018-10-23: subdaily
+            if (verbose) print('Needs to use the PCICt-package...')
             if(!requireNamespace("PCICt",quietly=TRUE)) {
               stop("Package \"PCICt\" needed to retrieve subdaily 360-day calendar data. Please install it.")
             }
             if(length(days)==1) {
+              if (verbose) print('Only one day')
               time$vdate <- PCICt::as.PCICt(paste(years,months,floor(days),sep="-"),cal=time$daysayear)
-            } else if(median(diff(days))<1) {
+            } else if(median(diff(days),na.rm=TRUE)<1) {
+              if (verbose) print('Sub-daily')
               hours <- (days-floor(days))*24
               days <- floor(days)
               time$vdate <- PCICt::as.PCICt(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H",
                                             cal=time$daysayear)
-            } else if(median(diff(days))==1) {
-              time$vdate <- PCICt::as.PCICt(paste(years,months,floor(days),sep="-"),
-                                            cal=time$daysayear)
-            }
+            } else if(median(diff(days),na.rm=TRUE)==1) {
+              if (verbose) {print('Daily'); print(table(years)); print(table(months)); print(table(floor(days)))}
+              time$vdate <- try(PCICt::as.PCICt(paste(years,months,floor(days),sep="-"),
+                                            cal=time$daysayear))
+              if (inherits(time$vdate,'try-error')) time$vdate <- seq(1,length(years),by=1)
+            } 
           }
         }
       }
@@ -1681,11 +1697,21 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
     starty <- 1; county <- d[2];
     subx <- rep(TRUE,d[1]); suby <- rep(TRUE,d[2])
   }
+  if (verbose) print(paste('Find time based on this information:',torg,'and',tunit))
+  ## Add a sanity check for poorly designed netCDF files (CARRA)
+  if ( (substr(tunit,1,3)=="hou") & (nchar(torg)==10) ) {
+    if (verbose) print("Need to add %H to time orgigin")
+    torg <- paste(torg,'00')
+  }
+  if ( (substr(tunit,1,3)=="sec") & (nchar(torg)==10) ) {
+    if (verbose) print("Need to add %H:%M:%S to time orgigin")
+    torg <- paste(torg,'00:00:00')
+  }
   time <- switch(substr(tunit,1,3),
                  'day'=as.Date(time+julian(as.Date(torg))),
                  'mon'=as.Date(julian(as.Date(paste(time%/%12,time%%12+1,'01',sep='-'))) + julian(as.Date(torg))),
-                 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600,
-                 'sec'=strptime(torig,format="%Y-%m-%d %H") + time)
+                 'hou'=strptime(torg,format="%Y-%m-%d %H") + time*3600,
+                 'sec'=strptime(torg,format="%Y-%m-%d %H:%M:%S") + time)
   # next save for later if adding no_leap func
   #if ((tcal %in% c("365_day", "365day", "no_leap", "no leap")) && (any(grepl('hou',tunit))) && ((diff(ttest)>29) && (diff(ttest) <= 31 )) )
   #HBE 2018/1/17 saving POSIX with monthly freq as Date at month start

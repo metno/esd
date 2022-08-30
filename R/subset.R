@@ -196,7 +196,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       if (verbose) print(it)
       ii <- (t >= min(it)) & (t <= max(it))
     } else {
-      ii <- is.element(t,it)
+      ii <- is.element(as.Date(t),it) #is.element(t,it)
     }
   } else if(inherits(it,"yearmon")) {
     ii <- is.element(as.yearmon(t),it)
@@ -213,7 +213,7 @@ subset.default <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       #y <- x[ii,is] # REB Not here
     } else if (inherits(it,"Date")) {
       if (verbose) print('it is a Date object')
-      ii <- is.element(t,it)
+      ii <- is.element(as.Date(t),it)
     } else {
       str(it); print(class(it))
       ii <- rep(FALSE,length(t))
@@ -561,6 +561,11 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
   if (is.null(it) & is.null(is[1]) & is.null(is[2]) & is.null(ip)) return(x) 
   d <- dim(x); greenwich <- TRUE
   clim <- attr(x,'mean')
+  ## grep for appendices
+  nm <- names(attributes(x))
+  if (verbose) {print(nm); print(is)}
+  id <- grep("appendix",nm)
+  apps <- nm[id]
   
   # Pattern extracts certain modes/patterns
   if (!is.null(ip)) {
@@ -570,13 +575,28 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     class(y) <- class(x)
     attr(y,'eigenvalues') <- attr(y,'eigenvalues')[ip]
     attr(y,'pattern') <- attr(y,'pattern')[,,ip]
+    attr(y,'longitude') <- lon(x)
+    attr(y,'latitude') <- lat(x)
+    attr(y,'variable') <- varid(x)
+    attr(y,'unit') <- esd::unit(x)
+    attr(y,'long_name') <- attr(x,'long_name')
+    attr(y,'history') <- attr(x,'history')
+    attr(y,'info') <- attr(x,'info')
+    attr(y,'ref') <- attr(x,'ref')
+    attr(y,'source') <- attr(x,'source')
     if (!is.null(attr(x,'n.apps'))) {
-      attr(y,'n.apps') <- attr(x,'n.apps')
-      attr(y,'appendix.1') <- attr(x,'appendix.1')
+      n.app <- attr(x,'n.apps')
+      if (verbose) print(paste(n.app,'appendixes'))
+      attr(y,'n.apps') <- n.app
+      for (j in 1:n.app) {
+        appj <- attr(x,apps[j])[,ip]
+        appj <- attrcp(attr(x,apps[j]),appj)
+        attr(y,apps[j]) <- appj
+      }
     }
     x <- y
   }
-  
+  if (verbose) {print('spatial selection: is='); print(is); print(d)}
   if (is.null(is)) is <- 1:d[length(d)] else
     
     if (is.list(is)) {
@@ -660,23 +680,23 @@ subset.eof <- function(x,...,ip=NULL,it=NULL,is=NULL,verbose=FALSE) {
     if (verbose) print(c(sum(keept),length(keept)))
   }
   
-  ## grep for appendices
-  nm <- names(attributes(x))
-  id <- grep("appendix",nm)
-  if (length(id)>0) {
-    nm <- nm[id]
-    for (i in 1:length(nm)) {
-      eval(parse(text=paste("a <- attr(x,'",nm,"')",sep="")))
-      cls <- class(a)
-      ## KMP 2021-04-22: The appendix has a different 
-      ## time index than x so keept can't be applied to it! 
-      #ais <- zoo(coredata(a)[keept,is],order.by=dates)
-      ais <- zoo(coredata(a)[,is],order.by=index(a))
-      ais <- attrcp(a,ais)
-      eval(parse(text=paste("attr(x,'",nm,"') <- ais",sep="")))
-      rm(a,ais,cls)
-    }
-  }
+  ## REB 2022-05-22 The operation done here has already bee ncarried out above...
+  # if (length(id)>0) {
+  #   nm <- nm[id]
+  #   for (i in 1:length(nm)) {
+  #     eval(parse(text=paste("a <- attr(x,'",nm,"')",sep="")))
+  #     cls <- class(a)
+  #     ## KMP 2021-04-22: The appendix has a different 
+  #     ## time index than x so keept can't be applied to it! 
+  #     #ais <- zoo(coredata(a)[keept,is],order.by=dates)
+  #     #ais <- zoo(coredata(a)[,is],order.by=index(a))
+  #     ## REB 2022-05-22
+  #     ais <- zoo(coredata(a)[,ip],order.by=index(a))
+  #     ais <- attrcp(a,ais)
+  #     eval(parse(text=paste("attr(x,'",nm,"') <- ais",sep="")))
+  #     rm(a,ais,cls)
+  #   }
+  # }
   
   class(x) -> cls
   ##keept <- is.element(index(x),it)
@@ -964,7 +984,7 @@ subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
 
 #' @exportS3Method
 #' @export
-subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
+subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE) {
   if (verbose) print('subset.dsensemble')
   if (inherits(x,'list') & inherits(x,c('pca','eof')) &
@@ -972,14 +992,13 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
     if (verbose) print('list + pca/eof detected')
     #x <- as.station(x)
     ## Subset the PCA/EOF
-    x <- subset.dsensemble.multi(x,it=it,is=is,ip=ip,verbose=verbose)
+    x <- subset.dsensemble.multi(x,it=it,is=is,ip=ip,im=im,verbose=verbose)
     if (verbose) print('exit subset.dsensemble')
     return(x)
   }
   if (verbose) {print('list + pca/eof NOT detected');print(ensemble.aggregate)}
   
   if (!is.null(is) & !inherits(x,"station")) x <- as.station(x,verbose=verbose)
-  
   if (inherits(x,'list') & !inherits(x,'zoo')) {
     if (verbose) print('list of elements')
     ## If x is a list of objects search through its elements
@@ -996,19 +1015,21 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
       illoc <- (1:length(x))[is.element(locs,tolower(is))]
     } else if(is.numeric(is)) {
       if(verbose) print('is is numeric')
-      illoc <- is[is %in% (1:length(x))] 
+      illoc <- is#is[is %in% (1:length(x))]
     } else {
       if(verbose) print("is format not recognized - no spatial selection")
       illoc <- (1:length(x))
     }
     if (length(illoc)==1) {
       x2 <- x[[illoc]]
-      x2 <- subset(x2,it=it,verbose=verbose)
+      x2 <- attrcp(x, x2, ignore=names(attributes(x2)))
+      x2 <- subset(x2,it=it,im=im,verbose=verbose)
     } else if (length(illoc)>1) {
       x2 <- list()
       for (i in 1:length(illoc)) {
         xx2 <- x[[illoc[i]]]
-        xx2 <- subset(xx2,it=it,verbose=verbose)
+        xx2 <- attrcp(x, xx2, ignore=names(attributes(xx2)))
+        xx2 <- subset(xx2,it=it,im=im,verbose=verbose)
         eval(parse(text=paste('x2$`',Locs[illoc[i]],'` <- xx2',sep='')))
         rm('xx2'); gc(reset=TRUE)
       } 
@@ -1021,13 +1042,31 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
   }
   class(x) <- c(class(x)[1],class(attr(x,'station'))[2],"zoo")
   
-  if (is.null(it) & is.null(is) & length(table(month(x)))==1) return(x)
+  if (is.null(it) & is.null(is) & is.null(im) & length(table(month(x)))==1) return(x)
   if (verbose) print(paste("it=",it))
   
   x0 <- x
   d <- dim(x)
   if (verbose) print(d)
-  if (is.null(is)) is <- 1:d[2]
+  if (is.null(im)) {
+    im <- 1:d[2]
+  } else if(is.logical(im) & length(im)==d[2]) {
+    im <- (1:d[2])[im]
+  } else if(is.numeric(im)) {
+    if(any(im>d[2])) {
+      if(verbose) print("Warning! Model index 'im' contains values that are higher than number of ensemble members.")
+      im <- im[im<=d[2]]
+      if(length(im)==0) im <- 1:d[2]
+    }
+  } else {
+    if(verbose) print("Warning! Unexpected format of input 'im'. Keep all ensemble members.")
+    im <- 1:d[2]
+  }
+  x <- as.zoo(x0[,im], order.by=index(x0))
+  x <- attrcp(x0, x)
+  if("model_id" %in% names(attributes(x0))) {
+    attr(x,"model_id") <- attr(x0,"model_id")[im]
+  }
   if (!is.null(it)) {
     if (is.character(it)) it <- tolower(it)
     if (verbose) print(table(month(x)))
@@ -1037,8 +1076,8 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
     }
     ## Different ways of selecting along the time dimension
     if ( inherits(it[1],"logical") & (length(it)==length(x)) ) {
-      if (verbose) print('subindexing with boolean index: y <- x[it,is]')
-      y <- x[it,is]
+      if (verbose) print('subindexing with boolean index: y <- x[it,]')
+      y <- x[it,]
     } else if (it[1]==0) {
       if (verbose) print("Annual means")
       if (inherits(x,'season')) {
@@ -1149,21 +1188,21 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
         ii <- is.element(months,(1:12)[is.element(tolower(month.abb),
                                                   tolower(substr(it,1,3)))])
         if (verbose) print(ii)
-        y <- x[ii,is]
+        y <- x[ii,]
       } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
         if (verbose) print("season")
         sea <- eval(parse(text=paste('season.abb()$',it,sep='')))
         if (verbose) print(sea)
         ii <- is.element(months,sea)
         if (verbose) print(ii)
-        y <- x[ii,is]
+        y <- x[ii,]
       } else if (sum(is.element(tolower(it),tolower(month.abb)))>0) {
         if (verbose) print("month")
         mon <- which(is.element(tolower(it),tolower(month.abb))>0)
         if (verbose) print(mon)
         ii <- is.element(months,mon)
         if (verbose) print(ii)
-        y <- x[ii,is]
+        y <- x[ii,]
       }
     } else {
       if (sum(is.element(it,1600:2200)) > 0) {
@@ -1174,7 +1213,7 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
         }
         ii <- is.element(year(x),it)
         if (verbose) print(paste("Number of matches=",sum(ii)))
-        y <- x[ii,is]
+        y <- x[ii,]
       } else if (is.character(it)) {
         if (verbose) print("Dates")
         x <- matchdate(x,it)
@@ -1196,7 +1235,7 @@ subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,#im=NULL,
       attr(y,'station') <- annual(attr(x,'station'))
     }
   } else {
-    y <- x[,is]
+    y <- x
     y <- attrcp(x,y)
     attr(y, "model_id") <- attr(x, "model_id")[is]
     attr(y, "scorestats") <- attr(x, "scorestats")[is]
@@ -1734,18 +1773,21 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   }
 
   X <- x
-
+  gcmnames <- attr(X, "model_id")
+  
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
   y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
   if (verbose) print(dim(y[[1]]))
-
   if (!is.null(im)) {
     ## Subset ensemble members
     if(verbose) print(paste('subset im',length(y)))
-    if (is.logical(im)) im <- (1:n)[im]
-    for (i in rev(setdiff(1:n,im))) y[[i]] <- NULL
+    if (is.logical(im)) if(length(im)==n) im <- (1:n)[im] else im <- 1:n
+    for (i in rev(setdiff(1:n,im))) {
+      y[[i]] <- NULL
+      gcmnames <- gcmnames[-i]
+    }
     if(verbose) print(paste('subset im',length(y)))
   }
   Y <- c(Y,y)
@@ -1756,6 +1798,8 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   }
   ## Also need to copy the attributes
   if (verbose) print('copy the attributes')
+  Y <- attrcp(X, Y)
+  attr(Y, "model_id") <- gcmnames
   if (!is.null(Y$eof)) n <- length(Y) - 3 else n <- length(Y) - 2
   for (i in 1:n) Y[[i+2]] <- attrcp(x[[i+2]],Y[[i+2]])
   class(Y) <- cls

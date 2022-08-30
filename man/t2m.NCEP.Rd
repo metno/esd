@@ -56,8 +56,7 @@ t2m.NCEP(
   lat = NULL,
   anomaly = FALSE,
   latest = FALSE,
- 
-    url = "ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc",
+  url = "ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.derived/surface/air.mon.mean.nc",
   verbose = FALSE
 )
 }

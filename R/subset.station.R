@@ -90,7 +90,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   
   if (is.null(is)) is <- 1:d[2]
   if (is.null(it)) it <- 1:d[1]
-  if (is.logical(it)) it <- (1:d[1])[it]
+  #if (is.logical(it)) it <- (1:d[1])[it]
   if (is.logical(is)) is <- (1:d[2])[is]
   
   ## get time in t
@@ -151,6 +151,8 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   } else if (inherits(it,"Date")) {
     if (verbose) print('it is a Date object')
     ii <- is.element(t,it)
+  } else if (is.logical(it)) {
+    ii <- (1:d[1])[it]
   } else if ((class(it)=="numeric") | (class(it)=="integer")) {
     if (verbose) print('it is numeric or integer')
     nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug        

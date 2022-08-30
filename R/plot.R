@@ -339,6 +339,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
                          xlim=NULL,ylim=NULL,xlab="",ylab=NULL,
                          errorbar=TRUE,legend.show=FALSE,
                          map.show=TRUE,map.type=NULL,map.insert=TRUE,
+                         xrange=NULL,yrange=NULL,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
                          mar=c(4.5,4.5,0.75,0.5),fig=NULL, 
                          alpha=0.5,alpha.map=0.7,add=FALSE,
@@ -448,7 +449,8 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   
   if(map.show & !map.insert) {
     vis.map(x,col=col.map,map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.8,verbose=verbose)
+            cex.axis=cex.axis,xrange=xrange,yrange=yrange,
+            cex=1.8,verbose=verbose)
   }
   
   cls <- class(x)
@@ -503,7 +505,8 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
     }
     if (map.show & map.insert) {
       vis.map(x,col=col.map,map.type=map.type,cex=1,cex.axis=0.65,
-              add.text=FALSE,map.insert=map.insert,verbose=verbose)
+              add.text=FALSE,map.insert=map.insert,
+              xrange=xrange,yrange=yrange,verbose=verbose)
     }
     par(fig=par0$fig,mar=par0$mar,new=TRUE)
     plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
@@ -791,7 +794,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
     map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
-  
+  if (verbose) print('...')
   n.app <- attr(x,'n.apps')
   col <- rep(col,n.app)
   src <- rep("",n.app+1)
@@ -799,26 +802,33 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   ylab <- paste("PC",n)
   main <- paste("EOF: ",n,"accounts for",
                 round(var.eof[n],1),"% of variance")
+  if (verbose) {print(main); print(what)}
   
   if (length(grep('var',what))>0)  {
     #    par(xaxt="s",yaxt="s")
     #    plot.eof.var(x,new=FALSE,cex.main=0.7)
     if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
-    plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n")
+    plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n",verbose=verbose)
   }
-  
+  if(verbose) {print(ylim); print(names(attributes(x))); print(n.app)}
+  anms <- names(attributes(x))
+  apps <- anms[grep('appendix',anms)]
+  n.app <- length(apps)
   if (is.null(ylim)) {
-    ylim <- range(coredata(x[,n]))
-    for (i in 1:n.app) {
-      z <- attr(x,paste('appendix.',i,sep=""))
-      ylim <- range(c(ylim,coredata(z[,n])),na.rm=TRUE)
-    }  
+     ylim <- range(coredata(x[,n]))
+     for (i in 1:n.app) {
+       if(verbose) print(apps[i])
+       z <- attr(x,apps[i])
+       zz <- try(coredata(z[,n]))
+       if (!inherits(zz,'try-error')) ylim <- range(c(ylim,zz),na.rm=TRUE)
+     }  
   }
   
+  if(verbose) print(xlim)
   if (is.null(xlim)) {
     xlim <- range(index(x))
     for (i in 1:n.app) {
-      z <- attr(x,paste('appendix.',i,sep=""))
+      z <- attr(x,apps[i])
       xlim <- range(xlim,index(z))
     }
   }
@@ -837,9 +847,9 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
                    " - Explained variance = ",round(var.eof[ip],digits=2),"%")
     
-    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
+    plot.zoo(x[,ip],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
              cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
-    taxis <- pretty(index(x[,n]),n=10)              # REB 2016-03-03
+    taxis <- pretty(index(x[,ip]),n=10)              # REB 2016-03-03
     if (min(diff(taxis))> 360) taxisl <- year(taxis)  else
       taxisl <- taxis      # REB 2016-03-03
     if (verbose) print(taxisl)
@@ -848,14 +858,18 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     
     ## Plot the common PCs
     for (i in 1:n.app) {
-      z <- attr(x,paste('appendix.',i,sep=""))
-      lines(z[,n],col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
+      z <- attr(x,apps[i])
+      zz <- try(z[,ip])
+      if (!inherits(zz,'try-error')) {
+        if (verbose) {print(apps[i]); print(c(dim(z),ip))}
+        lines(zz,col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
+      }
       if (verbose) print(attr(z,'source'))
       if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
         src[i+1] <- paste('x',i,sep='.')
     }
     
-    lines(x[,n],lwd=2,col="black")
+    lines(x[,ip],lwd=2,col="black")
   }
   #    par(xaxt="n",yaxt="n",bty="n",fig=c(0,1,0,0.1),
   #        mar=rep(0,4),new=TRUE)
@@ -985,7 +999,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
                                 breaks=NULL,type="p",cex=2,show=TRUE,
                                 h=0.6, v=1,pos=0.05),
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
-  if (verbose) print(paste('plot.ds'))
+  if (verbose) {print(paste('plot.ds')); print(names(attributes(ds)))}
   
   if (inherits(x,'pca')) {
     plot.ds.pca(x,what=what,verbose=verbose,new=new,...)
@@ -1065,7 +1079,6 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   #print(summary(yX))
   y0 <- yX$Y0
   ## KMP 2021-02-26: Plot attribute 'fitted value' instead of coredata
-  
   if (!is.null(attr(x,'n.apps'))) ns <- attr(x,'n.apps') else
     ns <- 0
   y.rng <- NA; x.rng <- NA
@@ -1081,6 +1094,9 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
     if(is.numeric(x.rng) & is.dates(index(x))) x.rng <- as.Date(x.rng)
   }
   
+  if (sum(!is.finite(x.rng))>0) x.rng <- NULL
+  if (sum(!is.finite(y.rng))>0) y.rng <- NULL
+  
   if (is.null(ylim)) {
     #ylim <- range(coredata(x),coredata(y0),y.rng,na.rm=TRUE)
     ylim <- range(attr(x,"fitted_values"),coredata(y0),y.rng,na.rm=TRUE)
@@ -1092,6 +1108,9 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   par(fig=c(0.025,1,0.025,0.475),new=TRUE)
   par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
   ds <- list(obs=y0)
+  ## REB 2022-08-10 testing for sensible ranges
+  if (sum(!is.finite(xlim))>0) xlim <- NULL
+  if (sum(!is.finite(ylim))>0) ylim <- NULL
   plot.zoo(y0,plot.type=plot.type,ylab=ylab,xlab=xlab,
            main=main,xlim=xlim,ylim=ylim,lwd=1,type='b',pch=19)
   par0 <- par()
@@ -1699,7 +1718,6 @@ plot.ds.pca <- function(x,...,ip=1,
   }
   if('xval' %in% what) {
     if (verbose) print('Evaluation results')
-    #browser()
     par(new=(add | i>1))
     if(!is.null(figlist)) par(fig=figlist[[i]])
     i <- i+1
@@ -2142,7 +2160,6 @@ plot.dsensemble <- function(x,verbose=FALSE,plot = TRUE, ...) {
 plot.dsensemble.multi <- function(x,it=c(2000,2099),FUNX='mean',verbose=FALSE,
                                   anomaly=FALSE,test=FALSE, plot = TRUE, ...) {
   if (verbose) print('plot.dsensemble.multi')
-  
   if (inherits(x,c('pca','eof'))) {
     Y <- expandpca(x,it=it,FUNX=FUNX,verbose=verbose,anomaly=anomaly,test=test)
     if (plot) plot(Y,verbose=verbose,...)
@@ -2235,16 +2252,13 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   iyl <- grep('ylim',names(args))
   if (length(iyl)==0) ylim <- pscl*range(coredata(z),na.rm=TRUE) else
     ylim <- args[[iyl]]  
-  #print("...")
-  if(new) dev.new()
   index(y) <- year(y)
-  if(!is.null(mar)) par(mar=mar)
-  par0 <- par()
   if (obs.show) obscol <- 'black' else obscol='white'
   plot(y,type="b",pch=19,xlim=xlim,ylim=ylim,col=obscol,main='',
-       cex.axis=cex.axis,cex.lab=cex.lab,
+       cex.axis=cex.axis,cex.lab=cex.lab,mar=mar,
        ylab=ylab,map.show=FALSE,new=new, verbose=verbose)
   grid()
+  par0 <- par()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- index(z)
   
@@ -2296,8 +2310,7 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   
   if(map.show & !map.insert) {
     vis.map(x,col="red",map.type,add.text=FALSE,map.insert=map.insert,
-            cex.axis=cex.axis,cex=1.5,#usegooglemap=usegooglemap,
-            xrange=xrange,yrange=yrange,
+            cex.axis=cex.axis,cex=1.5,xrange=xrange,yrange=yrange,
             verbose=verbose,...)
     new <- TRUE
   }

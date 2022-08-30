@@ -476,7 +476,7 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
 as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   if(verbose) print("as.station.dsensemble.pca")
   X <- x ## quick fix
-  if (verbose) print('as.station.dsensemble.pca')
+  ## if (verbose) print('as.station.dsensemble.pca') # AM added two times
   ## REB: need to remove the EOF object if it is present:
   if (!is.null(X$eof)) X$eof <- NULL
   if (inherits(X,"station")) return(X)
@@ -489,17 +489,20 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     if (verbose) print('Extract the results model-wise')
     ## Find the size of the PC matrices representing model projections
     d <- apply(sapply(X[3:n],dim),1,min)
+    gcmnames <- attr(X, "model_id")
     ## The PCs from the list are extracted into the matrix V 
     ## Quality control
-    if (verbose) print(paste('Before quality control: original number of members=',n))
+    if (verbose) print(paste('Before quality control: original number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
     for (i in seq(n,3,by=-1)) {
       #print(range(X[[i]],na.rm=TRUE)); print(dim(X[[i]]))
       if (max(abs(X[[i]]),na.rm=TRUE) > 10)  {
-        print(paste(i,'Remove suspect results')); X[[i]] <- NULL
+        print(paste(i,'Remove suspect results',gcmnames[i]))
+        X[[i]] <- NULL
+        gcmnames <- gcmnames[-i]
       }
     }
     n <- length(X)
-    if (verbose) print(paste('After quality control: new number of members=',n))
+    if (verbose) print(paste('After quality control: new number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
     if (verbose) print(paste('dim V=',paste(dim(V),collapse='-')))
@@ -545,6 +548,8 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     alts <- attr(X$pca,"altitude")
     stid <- attr(X$pca,"station_id")
     locs <- attr(X$pca,"location")
+    src <- attr(X$pca,"source")
+    rcp <- attr(X,"scenario")
     gcms <- sub("^i[0-9]{1,3}_","",names(X)[3:length(X)])
     for (i in 1:length(S)) {
       yi <- Y[,i]
@@ -558,6 +563,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
       attr(yi,"unit") <- unit
       attr(yi,"variable") <- param
       attr(yi,"longname") <- longname
+      attr(yi,"source") <- src
       attr(S[[i]],"station") <- yi
       attr(S[[i]],'aspect') <- 'original'
       attr(S[[i]],"longitude") <- lons[i]
@@ -565,7 +571,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
       attr(S[[i]],"altitude") <- alts[i]
       attr(S[[i]],"station_id") <- stid[i]
       attr(S[[i]],"location") <- locs[i]
-      attr(S[[i]],'model_id') <- gcms
+      #attr(S[[i]],"model_id") <- gcmnames
       class(S[[i]]) <- c('dsensemble','zoo')
     }
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
@@ -576,10 +582,9 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     }
     #REB 2018-03-02: The line below causes big problems. Besides, I don't understand why it's there
     if ( (is.list(S)) & (length(S)==length(locs)) ) names(S) <- locs
-    attr(S,"unit") <- unit
-    attr(S,"variable") <- param
-    attr(S,"longname") <- longname
+    S <- attrcp(x, S)
     attr(S,"aspect") <- "dsensemble.pca transformed to stations"
+    attr(S,"model_id") <- gcmnames
     attr(S,"history") <- history.stamp()
     invisible(S)
   }
