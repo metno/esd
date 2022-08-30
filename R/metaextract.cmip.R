@@ -40,7 +40,6 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     }
   }
   
-  if(any(grepl("CMIP[0-9]{1}",project_id))) project_id <- project_id[grep("CMIP[0-9]{1}",project_id)]
   for(mi in c("realization","initialization","physics","forcing","realm")) {
     if(any(grepl(mi,names(x$model)))) {
       xi <- x$model[grep(mi,names(x$model))]#[1]]
@@ -150,12 +149,8 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     }
   }
   if(!is.na(filename)) filename <- gsub(".*/","",filename)
-<<<<<<< HEAD
-  mx <- data.frame(project_id=paste(project_id,collapse=","), 
-                   filename=filename, 
-=======
+  #if(is.na(gcm) | is.na(gcm.rip)) browser()
   mx <- data.frame(project_id=paste(project_id,collapse=","), filename=filename, 
->>>>>>> a224b272d3ae103ee204523d3465a5ebb61a611c
                    dim=paste(dim,collapse=","), dates=dates, var=paste(var,collapse=","),
                    longname=paste(longname,collapse=","), unit=paste(vunit,collapse=","),
                    resolution=res, lon=lon.rng, lon_unit=lon.unit, 
