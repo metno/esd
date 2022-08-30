@@ -476,7 +476,7 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
 as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
   if(verbose) print("as.station.dsensemble.pca")
   X <- x ## quick fix
-  if (verbose) print('as.station.dsensemble.pca')
+  ## if (verbose) print('as.station.dsensemble.pca') # AM added two times
   ## REB: need to remove the EOF object if it is present:
   if (!is.null(X$eof)) X$eof <- NULL
   if (inherits(X,"station")) return(X)
@@ -492,7 +492,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     gcmnames <- attr(X, "model_id")
     ## The PCs from the list are extracted into the matrix V 
     ## Quality control
-    if (verbose) print(paste('Before quality control: original number of members=',n))
+    if (verbose) print(paste('Before quality control: original number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
     for (i in seq(n,3,by=-1)) {
       #print(range(X[[i]],na.rm=TRUE)); print(dim(X[[i]]))
       if (max(abs(X[[i]]),na.rm=TRUE) > 10)  {
@@ -502,7 +502,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
       }
     }
     n <- length(X)
-    if (verbose) print(paste('After quality control: new number of members=',n))
+    if (verbose) print(paste('After quality control: new number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
     V <- array(unlist(lapply( X[3:length(X)],
       function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
     if (verbose) print(paste('dim V=',paste(dim(V),collapse='-')))
