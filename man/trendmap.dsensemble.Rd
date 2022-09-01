@@ -8,19 +8,19 @@ trendmap.dsensemble(
   trends,
   statistic = "mean",
   new = TRUE,
-  significance = "f",
+  robustness = "f",
   threshold = 0.9,
   threshold.lower = TRUE,
   pch = 19,
   cex = 0.9,
   lwd = 1,
   colbar = list(show = TRUE),
-  pch.significance = 1,
-  cex.significance = 0.9,
-  lwd.significance = 1.2,
+  pch.robustness = 1,
+  cex.robustness = 0.9,
+  lwd.robustness = 1.2,
   main = NULL,
   bg = "grey55",
-  col.significance = "black",
+  col.robustness = "black",
   projection = "lonlat",
   ...,
   verbose = FALSE
@@ -29,11 +29,11 @@ trendmap.dsensemble(
 \arguments{
 \item{statistic}{Ensemble statistic to show on the map. By default, statistic=\code{"mean"}, the ensemble mean of the trends. Other alternatives: \code{"median"}, \code{"min"} (minimum), \code{"max"} (maximum), \code{"q5"} (5th percentile), \code{"q95"} (95th percentile), \code{"n.pos"} and \code{"n.neg"} (number of ensemble members with positive or negative trends), and \code{"f.pos"} and \code{"f.neg"} (fraction of ensemble members with positive or negative trends).}
 
-\item{significance}{Ensemble statistic to use as a measure of statistical significance. Default: \code{"f"}, the fraction of ensemble members with the same sign of trends. Other options: \code{"n"}, the number of ensemble members with the same sign of trends, and any ensemble statistic in the input \code{x}. If NULL, the statistical significance is not estimated and displayed.}
+\item{robustness}{Ensemble statistic to use as a measure of trend robustness. Default: \code{"f"}, the fraction of ensemble members with the same sign of trends. Other options: \code{"n"}, the number of ensemble members with the same sign of trends, and any ensemble statistic in the input \code{x}. If NULL, the robustness is not estimated and displayed.}
 
-\item{threshold}{Threshold for estimating statistical significance.}
+\item{threshold}{Threshold for estimating trend robustness.}
 
-\item{threshold.lower}{if TRUE, \code{threshold} is used as a lower threshold for \code{significance}, otherwise it is used as an upper threshold.}
+\item{threshold.lower}{if TRUE, \code{threshold} is used as a lower threshold for \code{robustnes}, otherwise it is used as an upper threshold.}
 
 \item{pch}{A vector of plotting characters or symbols: see points.}
 
@@ -43,13 +43,13 @@ trendmap.dsensemble(
 
 \item{colbar}{The colour scales defined through colscal. Users can specify the colour ‘pal’*ette (‘pal’), the number of breaks (‘n’), values of ‘breaks’, and the position of the color bar from the main plot (‘pos’). The ‘rev’ argument, will produce a reversed color bar if set to TRUE. The other arguments (‘type’,‘h’ and ‘v’) are more specific to col.bar and are used only if argument ‘fancy’ is set to TRUE (not yet finished). colbar=NULL is used if the colourbar is not to be shown. Also use colbar=NULL to present several maps in one figure (e.g. with par(mfcol=c(2,2))).}
 
-\item{pch.significance}{Plotting character to show significance}
+\item{pch.robustness}{Plotting character to show robustness}
 
-\item{cex.significance}{Scaling of plotting characters to show significance}
+\item{cex.robustness}{Scaling of plotting characters to show robustness}
 
-\item{lwd.significance}{Line widths for plotting characters to show significance}
+\item{lwd.robustness}{Line widths for plotting characters to show robustness}
 
-\item{col.significance}{Color of plotting characters to show significance. If NULL, the same color is used as for the trend. \code{col} can be one color, e.g. "black", or a list of two colors, one for positive and one for negative trends, e.g., list("pos"="red", "neg"="blue")).}
+\item{col.robustness}{Color of plotting characters to show robustness. If NULL, the same color is used as for the trend. \code{col} can be one color, e.g. "black", or a list of two colors, one for positive and one for negative trends, e.g., list("pos"="red", "neg"="blue")).}
 
 \item{projection}{Projections: c("lonlat","sphere","np","sp") - the latter gives stereographic views from the North and south poles.}
 

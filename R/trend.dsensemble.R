@@ -46,7 +46,6 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
   stopifnot(inherits(x, "dsensemble"))
   if(inherits(x,"station")) {
     if (verbose) print('station ensemble')
-    x <- X
     trends <- matrix(NA, ncol=length(x), nrow=ncol(x[[1]]))
     colnames(trends) <- names(x)
     rownames(trends) <- attr(x[[1]], "model_id")
@@ -83,6 +82,7 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
     if (verbose) print('Check ensemble member size')
     n <- length(names(X))
     if (verbose) print(paste('Original length of X is',n))
+    gcms <- attr(X, "model_id")
     memsiz <- rep("?",n)
     for (i in 1:n) memsiz[i] <- paste(dim(X[[i]]),collapse='x')
     memsiztab <- table(memsiz)
@@ -91,7 +91,10 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
     if (verbose) print(memkeep)
     im <- sort((1:n)[-grep(memkeep,memsiz)],decreasing = TRUE)
     if (verbose) print(im)
-    for (ix in im) X[[ix]] <- NULL
+    for (ix in im) {
+      X[[ix]] <- NULL
+      gcms <- gcms[-ix]
+    }
     n <- length(names(X))
     if (verbose) print(paste('New length of X is',n))
     ## Only select the selected time interval - saves time
@@ -110,6 +113,7 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
       if (max(abs(V[[i]]),na.rm=TRUE) > 10)  {
         if(verbose) print(paste(i,'Remove suspect results'))
         V[[i]] <- NULL
+        gcms <- gcms[-i]
       }
     }
     n <- length(V)
@@ -167,7 +171,7 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
     # }
     attr(trends,'time') <- range(index(subset(X[[1]],it=it)))
     trends <- attrcp(UWD,trends)
-    attr(trends, "model_id") <- attr(x, "model_id")
+    attr(trends, "model_id") <- gcms#attr(x, "model_id")
     if(eof) {
      attr(trends,'dimension') <- attr(UWD,'dimension')[1:2]
     } else {
@@ -191,28 +195,28 @@ trend.dsensemble <- function(x,...,it=NULL,verbose=FALSE,plot=FALSE,eof=FALSE) {
 #'
 #' @param x A \code{data.frame} containing ensemble statistics of linear trends. Output from the function \code{trend.dsensemble}.
 #' @param statistic Ensemble statistic to show on the map. By default, statistic=\code{"mean"}, the ensemble mean of the trends. Other alternatives: \code{"median"}, \code{"min"} (minimum), \code{"max"} (maximum), \code{"q5"} (5th percentile), \code{"q95"} (95th percentile), \code{"n.pos"} and \code{"n.neg"} (number of ensemble members with positive or negative trends), and \code{"f.pos"} and \code{"f.neg"} (fraction of ensemble members with positive or negative trends).
-#' @param significance Ensemble statistic to use as a measure of statistical significance. Default: \code{"f"}, the fraction of ensemble members with the same sign of trends. Other options: \code{"n"}, the number of ensemble members with the same sign of trends, and any ensemble statistic in the input \code{x}. If NULL, the statistical significance is not estimated and displayed.
-#' @param threshold Threshold for estimating statistical significance. 
-#' @param threshold.lower if TRUE, \code{threshold} is used as a lower threshold for \code{significance}, otherwise it is used as an upper threshold. 
+#' @param robustness Ensemble statistic to use as a measure of trend robustness. Default: \code{"f"}, the fraction of ensemble members with the same sign of trends. Other options: \code{"n"}, the number of ensemble members with the same sign of trends, and any ensemble statistic in the input \code{x}. If NULL, the robustness is not estimated and displayed.
+#' @param threshold Threshold for estimating trend robustness. 
+#' @param threshold.lower if TRUE, \code{threshold} is used as a lower threshold for \code{robustnes}, otherwise it is used as an upper threshold. 
 #' @param verbose if TRUE print progress
 #' @param pch A vector of plotting characters or symbols: see points.
 #' @param cex A numerical vector giving the amount by which plotting characters and symbols should be scaled relative to the default. This works as a multiple of par("cex"). NULL and NA are equivalent to 1.0. Note that this does not affect annotation: see below. 
 #' @param lwd a vector of line widths, see \code{link{par}}. 
 #' @param colbar The colour scales defined through colscal. Users can specify the colour ‘pal’*ette (‘pal’), the number of breaks (‘n’), values of ‘breaks’, and the position of the color bar from the main plot (‘pos’). The ‘rev’ argument, will produce a reversed color bar if set to TRUE. The other arguments (‘type’,‘h’ and ‘v’) are more specific to col.bar and are used only if argument ‘fancy’ is set to TRUE (not yet finished). colbar=NULL is used if the colourbar is not to be shown. Also use colbar=NULL to present several maps in one figure (e.g. with par(mfcol=c(2,2))).
-#' @param pch.significance Plotting character to show significance
-#' @param cex.significance Scaling of plotting characters to show significance
-#' @param lwd.significance Line widths for plotting characters to show significance
-#' @param col.significance Color of plotting characters to show significance. If NULL, the same color is used as for the trend. \code{col} can be one color, e.g. "black", or a list of two colors, one for positive and one for negative trends, e.g., list("pos"="red", "neg"="blue")).
+#' @param pch.robustness Plotting character to show robustness
+#' @param cex.robustness Scaling of plotting characters to show robustness
+#' @param lwd.robustness Line widths for plotting characters to show robustness
+#' @param col.robustness Color of plotting characters to show robustness. If NULL, the same color is used as for the trend. \code{col} can be one color, e.g. "black", or a list of two colors, one for positive and one for negative trends, e.g., list("pos"="red", "neg"="blue")).
 #' @param projection Projections: c("lonlat","sphere","np","sp") - the latter gives stereographic views from the North and south poles.
 #'
 #' @export trendmap.dsensemble
 trendmap.dsensemble <- function(trends,#.stats, 
                                 statistic="mean", new=TRUE,
-                                significance="f", threshold=0.9, threshold.lower=TRUE,
+                                robustness="f", threshold=0.9, threshold.lower=TRUE,
                                 pch=19, cex=0.9, lwd=1, colbar=list(show=TRUE),
-                                pch.significance=1, cex.significance=0.9,
-                                lwd.significance=1.2, main=NULL,
-                                bg="grey55", col.significance="black",
+                                pch.robustness=1, cex.robustness=0.9,
+                                lwd.robustness=1.2, main=NULL,
+                                bg="grey55", col.robustness="black",
                                 projection="lonlat", ..., verbose=FALSE) {
   if(verbose) print("trendplot.dsensemble")
   #X <- trends.stats[[statistic]]
@@ -285,49 +289,49 @@ trendmap.dsensemble <- function(trends,#.stats,
       } else col[i] <- rgb(0.5,0.5,0.5,0.2)
     }
     points(lon(X), lat(X), col=col, pch=pch, cex=cex, lwd=lwd)
-    if(!is.null(significance)) {
+    if(!is.null(robustness)) {
       col.s <- col
-      if(!is.null(col.significance)) {
-        if(is.list(col.significance)) {
-          if(!is.null(col.significance$pos) &
-             !is.null(col.significance$neg)) {
-            col.s <- rep(col.significance$pos[[1]], length(X))
-            col.s[X<0] <- col.significance$neg[[1]]
+      if(!is.null(col.robustness)) {
+        if(is.list(col.robustness)) {
+          if(!is.null(col.robustness$pos) &
+             !is.null(col.robustness$neg)) {
+            col.s <- rep(col.robustness$pos[[1]], length(X))
+            col.s[X<0] <- col.robustness$neg[[1]]
           }
         } else {
-          col.s <- rep(col.significance[[1]], length(X))
+          col.s <- rep(col.robustness[[1]], length(X))
         }
       }
       s <- NULL
-      if(!is.null(significance)) {
-        if(verbose) print('Show statistical significance of trend ensemble')
+      if(!is.null(robustness)) {
+        if(verbose) print('Show statistical robustness of trend ensemble')
         if(is.null(threshold.lower)) threshold.lower <- TRUE
-        if(significance=="f") {
+        if(robustness=="f") {
           if(is.null(threshold)) threshold <- 0.9
           #sig <- apply(trends.stats[,c("f.pos","f.neg")], 1, max)
           sig <- apply(trends, 2, function(x) max(sum(x>0), sum(x<0))/length(x))
-        } else if(significance=="n") {
+        } else if(robustness=="n") {
           if(is.null(threshold)) threshold <- floor(length(X)*0.9)
           #sig <- apply(trends.stats[,c("n.pos","n.neg")], 1, max)
           sig <- apply(trends, 2, function(x) max(sum(x>0), sum(x<0)))
         } else {
-          eval(parse(text=paste0("sig <- apply(trends, 2, ",significance,")")))
+          eval(parse(text=paste0("sig <- apply(trends, 2, ",robustness,")")))
         }
         if(is.null(threshold)) {
-          warning('threshold for significance not defined')
+          warning('threshold for trend robustness not defined')
         } else {
           if(threshold.lower) {
-            if(verbose) print(paste('significance measure:',significance,'>',threshold))
-            s <- sig>threshold
+            if(verbose) print(paste('robustness measure:',robustness,'>',threshold))
+            s <- sig>=threshold
           } else {
-            if(verbose) print(paste('significance measure:',significance,'<',threshold))
-            s <- sig<threshold
+            if(verbose) print(paste('robustness measure:',robustness,'<',threshold))
+            s <- sig<=threshold
           }
         }
       }
       if(any(s)) points(lon(X)[s], lat(X)[s], col=col.s[s], 
-                        pch=pch.significance, cex=cex.significance,
-                        lwd=lwd.significance)
+                        pch=pch.robustness, cex=cex.robustness,
+                        lwd=lwd.robustness)
     }
   } else {
     ## NOT FINISHED!

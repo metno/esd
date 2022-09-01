@@ -90,7 +90,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
   ## Check if threshold is outside the range of data:
   if (sum(above,na.rm=TRUE)*sum(below,na.rm=TRUE)==0) {
     print(paste('The threshold',threshold,'is outside the range',
-                paste(range(coredata(x,na.rm=TRUE)),collapse=' - ')))
+                paste(range(coredata(x,na.rm=TRUE),na.rm=TRUE),collapse=' - ')))
     print("returning NULL")
     return(NULL)
   }
@@ -422,7 +422,7 @@ qqgeom <- function(x,treshold=1,pois=FALSE,...) {
   
   par(bty='n')
   xy <- c(x1,x2,xp1,xp2,y1,y2,y1,y2); ok <- is.finite(xy)
-  plot(range(xy[ok]),range(xy[ok]),
+  plot(range(xy[ok],na.rm=TRUE),range(xy[ok],na.rm=TRUE),
        type='l',main='q-q geometric of streak statistics',
        xlab='distribution function',ylab=expression(q[p]))
   if (pois) {
