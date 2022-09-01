@@ -39,6 +39,7 @@ metaextract.cmip <- function(x, verbose=FALSE) {
       eval(parse(text=paste(mi," <- x$model$",mi,sep="")))
     }
   }
+  if(is.na(project_id) & !is.na(mip_era)) project_id <- mip_era 
   
   for(mi in c("realization","initialization","physics","forcing","realm")) {
     if(any(grepl(mi,names(x$model)))) {
@@ -116,7 +117,7 @@ metaextract.cmip <- function(x, verbose=FALSE) {
   if(min(x$dates)<as.Date("2010-01-01") & !grepl("historical",experiment_id)) {
     experiment_id <- paste("historical",experiment_id,sep="+")
   }
-
+  
   ## Check and correct rip - some simulations have the wrong rip attached.
   #if (is.na(gcm.rip)) qf <- c(qf,"Missing experiment_rip in netCDF header.")
   if (is.na(gcm.rip)) qf <- c(qf,"Missing experiment_rip in netCDF header.")
@@ -148,8 +149,8 @@ metaextract.cmip <- function(x, verbose=FALSE) {
                        "Replaced experiment_rip with information from model history."))
     }
   }
+  
   if(!is.na(filename)) filename <- gsub(".*/","",filename)
-  #if(is.na(gcm) | is.na(gcm.rip)) browser()
   mx <- data.frame(project_id=paste(project_id,collapse=","), filename=filename, 
                    dim=paste(dim,collapse=","), dates=dates, var=paste(var,collapse=","),
                    longname=paste(longname,collapse=","), unit=paste(vunit,collapse=","),
