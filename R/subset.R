@@ -1778,7 +1778,7 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
-  y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
+  y <- lapply(X,FUN='subset.pca',ip=ip,it=it)
   if (verbose) print(dim(y[[1]]))
   if (!is.null(im)) {
     ## Subset ensemble members
