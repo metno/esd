@@ -87,6 +87,7 @@ metaextract <- function(files.in,file.out="meta.rda",path.in=NULL,path.out=NULL,
   meta$gcm.i <- gcm.i
   id <- paste(meta$project_id,gsub("[.]","",tolower(meta$experiment)),
               meta$var,meta$gcm,meta$gcm_rip,sep=".")
+  #browser()
   meta <- meta[order(id),]
   meta <- meta[!duplicated(meta),]
   save(meta,file=file.out)

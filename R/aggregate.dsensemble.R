@@ -143,7 +143,6 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
     }
     Y[it,] <- apply(z,1,FUNX)
   }
-  
   ## Add mean and insert into zoo frame
   if (!anomaly) {
     if (verbose) print('add mean field')

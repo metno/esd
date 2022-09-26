@@ -3,6 +3,7 @@
 metaextract.cmip <- function(x, verbose=FALSE) {
   if(verbose) print("metaextract.cmip")
   ## argument 'x' is input from getCM, getGCMs, getRCMs etc
+  if(!inherits(x, "ncdf4")) if(file.exists(x)) x <- nc_open(x)
   
   project_id <- NA; mip_era <- NA; filename <- NA; dim <- NA; dates <- NA
   var <- NA; longname <- NA; vunit <- NA; vid <- NA
@@ -40,6 +41,7 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     }
   }
   if(is.na(project_id) & !is.na(mip_era)) project_id <- mip_era 
+  if(is.na(frequency)) frequency <- check.ncdf4(x)$model$frequency
   
   for(mi in c("realization","initialization","physics","forcing","realm")) {
     if(any(grepl(mi,names(x$model)))) {
@@ -135,21 +137,22 @@ metaextract.cmip <- function(x, verbose=FALSE) {
   }
   
   ## An extra check of the experiment_rip:
-  h <- strsplit(x$model$history," ")
-  fname <- unlist(h)[grep(".*.nc",unlist(h))[1]]
-  if(grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}",fname)) {
-    gcm.rip3 <- unlist(strsplit(substr(fname,regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}",fname)[1],
-                       nchar(fname)),split="_"))[1]
-    if(is.na(gcm.rip)) {
-      gcm.rip <- gcm.rip3
-      qf <- c(qf,"Missing experiment_rip in netCDF header. Using information from model history.")
-    } else if(gcm.rip!=gcm.rip3) {
-      gcm.rip <- gcm.rip3
-      qf <- c(qf,paste("Discrepancy in experiment_rip in netCDF header.",
-                       "Replaced experiment_rip with information from model history."))
+  if(!is.null(x$model$history)) {
+    h <- strsplit(x$model$history," ")
+    fname <- unlist(h)[grep(".*.nc",unlist(h))[1]]
+    if(grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}",fname)) {
+      gcm.rip3 <- unlist(strsplit(substr(fname,regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}",fname)[1],
+                         nchar(fname)),split="_"))[1]
+      if(is.na(gcm.rip)) {
+        gcm.rip <- gcm.rip3
+        qf <- c(qf,"Missing experiment_rip in netCDF header. Using information from model history.")
+      } else if(gcm.rip!=gcm.rip3) {
+        gcm.rip <- gcm.rip3
+        qf <- c(qf,paste("Discrepancy in experiment_rip in netCDF header.",
+                         "Replaced experiment_rip with information from model history."))
+      }
     }
   }
-  
   if(!is.na(filename)) filename <- gsub(".*/","",filename)
   mx <- data.frame(project_id=paste(project_id,collapse=","), filename=filename, 
                    dim=paste(dim,collapse=","), dates=dates, var=paste(var,collapse=","),

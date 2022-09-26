@@ -961,6 +961,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   ifreq <- grep("freq",names(model))
   if (length(ifreq)>0) {  
     frq <- tolower(eval(parse(text=paste0("model$",names(model)[ifreq]))))
+    if(!frq %in% type & !is.null(model$timeunit)) frq <- paste0(frq, model$timeunit)
     frq2 <- sub('hr','hou',sub('[[:digit:]]','',frq))
     itype <- grep(frq2, type)
     if (length(itype>0)) {

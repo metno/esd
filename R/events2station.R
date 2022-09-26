@@ -13,7 +13,7 @@
 #' @return a 'station' object
 #'
 #' @export
-events2station <- function(x,param="count",FUN="mean",verbose=TRUE,
+events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
                          longname=NULL,unit=NULL,...) {
   if (verbose) print("events2station")
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")

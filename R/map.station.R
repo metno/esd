@@ -43,7 +43,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                          text=FALSE, fancy=FALSE, 
                          na.rm=TRUE,show.val=FALSE,#usegooglemap=FALSE,
                          ##colorbar=TRUE,
-                         add.significance=FALSE, pval=0.01, col.pval=NULL, lwd.pval=NULL,
+                         add.significance=FALSE, pval=0.01, col.pval='black', lwd.pval=2,
                          xlab="lon",ylab="lat",
                          legend.shrink=1,fig=c(0,1,0.05,0.95),
                          mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...) { 
@@ -209,7 +209,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         if(is.null(lwd.pval)) lwd.pval <- rep(0.75, length(pval))
         if(is.null(col.pval)) col.pval <- colscal("gray.colors", n=length(pval))
         if(length(lwd.pval)<length(pval)) lwd.pval <- rep(lwd.pval[1], length(pval))
-        if(length(col.pval)<length(pval)) col.pval <- colscal("gray.colors", n=length(pval))
+        if(length(col.pval)<length(pval)) col.pval <- rep(col.pval[1], length(pval))#colscal("gray.colors", n=length(pval))
         pmin <- 0
         i <- 1
         for(p in sort(pval)) {

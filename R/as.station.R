@@ -473,7 +473,9 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
 #' 
 #' @exportS3Method
 #' @export
-as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
+as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
+                                      threshold_missing=1,
+                                      verbose=FALSE) {
   if(verbose) print("as.station.dsensemble.pca")
   X <- x ## quick fix
   ## if (verbose) print('as.station.dsensemble.pca') # AM added two times
@@ -485,27 +487,64 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     invisible(X)
   } else {
     #if (is.null(is)) is <- 1:length(loc(X$pca)) 
-    n <- length(X)
-    if (verbose) print('Extract the results model-wise')
-    ## Find the size of the PC matrices representing model projections
-    d <- apply(sapply(X[3:n],dim),1,min)
+    ## ====== Alternative version start =======
+    eof <- X$eof; pca <- X$pca; info <- X$info
+    X$eof <- X$pca <- X$info <- NULL
     gcmnames <- attr(X, "model_id")
-    ## The PCs from the list are extracted into the matrix V 
-    ## Quality control
-    if (verbose) print(paste('Before quality control: original number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
-    for (i in seq(n,3,by=-1)) {
-      #print(range(X[[i]],na.rm=TRUE)); print(dim(X[[i]]))
-      if (max(abs(X[[i]]),na.rm=TRUE) > 10)  {
-        print(paste(i,'Remove suspect results',gcmnames[i]))
-        X[[i]] <- NULL
-        gcmnames <- gcmnames[-i]
-      }
+    scorestats <-  attr(X, "scorestats")
+    tx <- sort(unique(unlist(sapply(X, index))))
+    n <- length(tx)
+    m <- min(sapply(X, ncol))
+    d <- c(n, m, length(X))
+    V <- array(NA, dim=d)
+    if (verbose) print('Extract the results model-wise')
+    for(i in 1:length(X)) {
+      j <- tx %in% index(X[[i]])
+      V[j,,i] <- X[[i]]
     }
-    n <- length(X)
-    if (verbose) print(paste('After quality control: new number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
-    V <- array(unlist(lapply( X[3:length(X)],
-      function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    if(threshold_missing < 1) {
+      exclude_times <- apply(V, 1, function(x) sum(is.na(x))) > 
+        (d[1]*threshold_missing) 
+      if(verbose) print(paste("Removing time indices", 
+                              paste(tx[exclude_times], collapse=", "),
+                              "due to few data points."))
+      V <- V[-which(exclude_times), , ]
+      tx <- tx[-which(exclude_times)]
+      exclude_gcms <- apply(V, 3, function(x) sum(is.na(x))) > 
+        (d[3]*threshold_missing)
+      if(verbose) print(paste("Removing gcms", 
+                              paste(gcmnames[exclude_gcms], collapse=", "),
+                              "due to few data points."))
+      V <- V[, , -which(exclude_gcms)]
+      gcmnames <- gcmnames[-which(exclude_gcms)]
+      scorestats <-  scorestats[-which(exclude_gcms), ]
+    }
     if (verbose) print(paste('dim V=',paste(dim(V),collapse='-')))
+    X$info <- info; X$pca <- pca; X$eof <- eof 
+    ## ====== Alternative version end =========
+    ## ====== Old version start =============== 
+    # n <- length(X)
+    # if (verbose) print('Extract the results model-wise')
+    # ## Find the size of the PC matrices representing model projections
+    # d <- apply(sapply(X[3:n],dim),1,min)
+    # gcmnames <- attr(X, "model_id")
+    # ## The PCs from the list are extracted into the matrix V 
+    # ## Quality control
+    # if (verbose) print(paste('Before quality control: original number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
+    # for (i in seq(n,3,by=-1)) {
+    #   #print(range(X[[i]],na.rm=TRUE)); print(dim(X[[i]]))
+    #   if (max(abs(X[[i]]),na.rm=TRUE) > 10)  {
+    #     print(paste(i,'Remove suspect results',gcmnames[i]))
+    #     X[[i]] <- NULL
+    #     gcmnames <- gcmnames[-i]
+    #   }
+    # }
+    # n <- length(X)
+    # if (verbose) print(paste('After quality control: new number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
+    # V <- array(unlist(lapply( X[3:length(X)],
+    #   function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
+    # if (verbose) print(paste('dim V=',paste(dim(V),collapse='-')))
+    ## ====== Old version end =================
     ## Select number of patterns
 
     ## REB 2016-11-03
@@ -521,7 +560,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
       U <- attr(X$pca,'pattern')[,ip]
       W <- attr(X$pca,'eigenvalues')[ip]
       V <- V[,ip,]
-    }    
+    }
     ## Multi-station case (REB 2016-11-03)
     if (verbose) print('multiple stations')
     d <- dim(U)
@@ -532,7 +571,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,verbose=FALSE) {
     }
     S <- lapply(split(S, arrayInd(seq_along(S),dim(S))[,1]),
                 array,dim=dim(S)[-1])
-    S <- lapply(S,function(x) zoo(x,order.by=index(X[[3]])))
+    S <- lapply(S,function(x) zoo(x,order.by=tx))#index(X[[3]])))
     if (verbose) print('Set attributes')
     Y <- as.station(X$pca,verbose=verbose)
     locations <- gsub("[[:space:][:punct:]]","_",tolower(attr(Y,"location")))

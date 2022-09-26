@@ -209,7 +209,7 @@ lon2greenwich <- function(lon) {
 }
 
 
-spherical2cartesian <- function(lon,lat,n=10,a=6.378e06,verbose=TRUE) {
+spherical2cartesian <- function(lon,lat,n=10,a=6.378e06,verbose=FALSE) {
   if (verbose) print("spherical2cartesian")
   x <- a * cos( lat*pi/180 ) * cos( lon*pi/180 )
   y <- a * cos( lat*pi/180 ) * sin( lon*pi/180 )
