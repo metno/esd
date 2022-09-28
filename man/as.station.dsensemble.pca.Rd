@@ -9,7 +9,8 @@
   ...,
   is = NULL,
   ip = NULL,
-  threshold_missing = 1,
+  nmin.m = 1,
+  nmin.t = 1,
   verbose = FALSE
 )
 }
@@ -22,6 +23,10 @@
 latitude range like list(lon=c(0,60), lat=c(35,60)).}
 
 \item{ip}{selection of patterns in PCA or EOF (used for e.g. filtering the data)}
+
+\item{nmin.m}{Threshold used to remove ensemble members with few available values. Ensemble members with valid data for less than nmin.m time steps are removed.}
+
+\item{nmin.t}{Threshold used to remove time steps with few available values. Time steps with valid data for less than nmin.t ensemble members are removed.}
 
 \item{verbose}{if TRUE print progress}
 }
