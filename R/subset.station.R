@@ -63,7 +63,6 @@ subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
 }
 
 station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
-  
   ## REB: Use select.station to condition the selection index is...
   ## loc - selection by names
   ## lon/lat selection be geography or closest if one coordinate lon/lat
@@ -329,7 +328,10 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   class(x) <- cls
   class(y) <- cls
   y <- attrcp(x,y,ignore=c("names"))
-  attr(y,'location') <- loc(x)[is]
+  for(a in c('location','longitude','latitude','altitude','station_id')) {
+    if(a %in% names(attributes(x))) attr(y,a) <- attr(x,a)[is]
+  }
+  
   if (length(esd::unit(x))== length(x[1,])) attr(y,'unit') <- esd::unit(x)[is] else
                                          attr(y,'unit') <- esd::unit(x)[1]
   if (length(varid(x))== length(x[1,])) attr(y,'variable') <- varid(x)[is] else

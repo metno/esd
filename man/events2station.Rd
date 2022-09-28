@@ -8,7 +8,7 @@ events2station(
   x,
   param = "count",
   FUN = "mean",
-  verbose = TRUE,
+  verbose = FALSE,
   longname = NULL,
   unit = NULL,
   ...

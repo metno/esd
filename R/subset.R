@@ -1732,6 +1732,30 @@ subset.trajectory <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
   invisible(y)
 }
 
+## Function for extracting the subset from PCs stored as zoo
+## not exported without keeping all metadata
+subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
+  if (verbose) print('subset.pc')
+  d <- dim(x)
+  if (!is.null(it)) {
+    if (verbose) print('subset it')
+    if ((is.numeric(it) | is.integer(it)) & is.dates(index(x))) {
+      it <- c(as.Date(paste(it,'01-01',sep='-')),
+              as.Date(paste(it,'12-31',sep='-')))
+    }
+    x <- window(x,start=min(it),end=max(it))
+  }
+  if (!is.null(ip)) {
+    if (verbose) print('subset pattern')
+    x <- x[,ip]
+    d <- dim(x)
+  }
+  dim(x) <- c(length(index(x)),d[2])
+  if(verbose) print(dim(x))
+  return(x)
+}
+
+
 #' Routine for sorting the order of station series.
 #' @export
 sort.station <- function(x,decreasing=TRUE,...,is=NULL) {
@@ -1766,7 +1790,7 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   if (any('pca' %in% names(x))) {
     if (verbose) print('subset pca')
     ## KMP 2017-06-07 Do not subset pca and eof in time!
-    ## They typcially cover a shorter time span than the ensemble members and
+    ## They typically cover a shorter time span than the ensemble members and
     ## if e.g., it = c(2050,2100) you will end up with an empty pca and eof.
     Y$pca <- subset(x$pca,is=is,ip=ip,verbose=verbose)
     #Y$pca <- subset(x$pca,it=it,is=is,ip=ip,verbose=verbose)
@@ -1778,7 +1802,12 @@ subset.dsensemble.multi <- function(x,ip=NULL,it=NULL,is=NULL,im=NULL,
   X$info <- NULL; X$pca <- NULL; X$eof <- NULL
   n <- length(names(X))
   if (verbose) print('subset gcm-zoo')
-  y <- lapply(X,FUN='subset.pca',ip=ip,it=it)
+  ## KMP 2022-09-27 It is actually supposed to be subset.pc which is a 
+  ## local function, not exported, defined above (and in aggregate.dsensemble 
+  ## where it is also used). subset.pc is similar to subset.pca but much faster 
+  ## as it isn't so careful about metadata and classes   
+  y <- lapply(X,FUN='subset.pc',ip=ip,it=it)
+
   if (verbose) print(dim(y[[1]]))
   if (!is.null(im)) {
     ## Subset ensemble members

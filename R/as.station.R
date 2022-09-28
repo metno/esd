@@ -466,6 +466,8 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
 #' @param is A list or data.frame providing space index, e.g. a list of longitude and
 #' latitude range like list(lon=c(0,60), lat=c(35,60)).
 #' @param ip selection of patterns in PCA or EOF (used for e.g. filtering the data)
+#' @param nmin.t Threshold used to remove time steps with few available values. Time steps with valid data for less than nmin.t ensemble members are removed. 
+#' @param nmin.m Threshold used to remove ensemble members with few available values. Ensemble members with valid data for less than nmin.m time steps are removed. 
 #' @param verbose if TRUE print progress
 #' @param \dots additional arguments
 #'
@@ -474,7 +476,7 @@ as.station.dsensemble <- function(x,...,verbose=FALSE) {
 #' @exportS3Method
 #' @export
 as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
-                                      threshold_missing=1,
+                                      nmin.m=1, nmin.t=1,
                                       verbose=FALSE) {
   if(verbose) print("as.station.dsensemble.pca")
   X <- x ## quick fix
@@ -492,7 +494,8 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
     X$eof <- X$pca <- X$info <- NULL
     gcmnames <- attr(X, "model_id")
     scorestats <-  attr(X, "scorestats")
-    tx <- sort(unique(unlist(sapply(X, index))))
+    #for(i in 1:length(X)) print(paste(i, min(index(X[[i]])), max(index(X[[i]]))))
+    tx <- sort(unique(unlist(lapply(X, index))))
     n <- length(tx)
     m <- min(sapply(X, ncol))
     d <- c(n, m, length(X))
@@ -502,16 +505,20 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
       j <- tx %in% index(X[[i]])
       V[j,,i] <- X[[i]]
     }
-    if(threshold_missing < 1) {
-      exclude_times <- apply(V, 1, function(x) sum(is.na(x))) > 
-        (d[1]*threshold_missing) 
+    exclude_times <- apply(V, 1, function(x) sum(is.na(x))) > 
+      min(d[1], nmin.m)#(d[1]*threshold_missing) 
+    exclude_gcms <- apply(V, 3, function(x) sum(is.na(x))) > 
+      min(d[3], nmin.t)#(d[3]*threshold_missing)
+    if(any(exclude_times)) {
+      #browser()
       if(verbose) print(paste("Removing time indices", 
                               paste(tx[exclude_times], collapse=", "),
                               "due to few data points."))
       V <- V[-which(exclude_times), , ]
       tx <- tx[-which(exclude_times)]
-      exclude_gcms <- apply(V, 3, function(x) sum(is.na(x))) > 
-        (d[3]*threshold_missing)
+    }
+    if(any(exclude_gcms)) {
+      #browser()
       if(verbose) print(paste("Removing gcms", 
                               paste(gcmnames[exclude_gcms], collapse=", "),
                               "due to few data points."))
@@ -561,11 +568,13 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
       W <- attr(X$pca,'eigenvalues')[ip]
       V <- V[,ip,]
     }
+    
     ## Multi-station case (REB 2016-11-03)
     if (verbose) print('multiple stations')
     d <- dim(U)
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
     dim(S) <- c(dim(U)[1], dim(V)[1], length(X)-2)
+    
     for (i in seq(1:dim(S)[1])) {
       S[i,,] <- S[i,,] + c(attr(X$pca,'mean'))[i]
     }
@@ -631,7 +640,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
 
 #' @exportS3Method
 #' @export
-as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',verbose=FALSE) {
+as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',na.rm=TRUE,verbose=FALSE) {
 
     if (verbose) print('as.station.dsensemble.station')
     ns <- length(x)
@@ -641,7 +650,7 @@ as.station.dsensemble.station <- function(x,...,is=NULL,it=NULL,FUN='mean',verbo
     #V <- array(unlist(lapply( X[3:length(X)],
     #  function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
     V <- unlist(lapply(x,FUN=
-             function(x,FUN) apply(coredata(x),1,FUN=FUN),FUN))
+             function(x,FUN) apply(coredata(x),1,FUN=FUN,na.rm=na.rm),FUN))
     dim(V) <- c(nt,ns)
     if (verbose) str(V)
     loc <- unlist(lapply(x,esd::loc)); lon <- unlist(lapply(x,esd::lon)); lat <- unlist(lapply(x,esd::lat))
