@@ -341,6 +341,9 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
     tot.var <- attr(x,'tot.var')
     D <- attr(x,'eigenvalues')
     var.eof <- 100* D^2/tot.var
+    d.eof <- dim(attr(x,'pattern'))
+    if (verbose) {print('Dimensions of pattern'); print(d.eof)}
+    if (length(d.eof)==2) dim(attr(x,'pattern')) <- c(d.eof,1)
     X <- attr(x,'pattern')[,,ip]
     
     ## if zlim is specified, then mask data outside this range

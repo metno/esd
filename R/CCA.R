@@ -83,7 +83,7 @@ CCA.eof <- function(Y,X,ip=1:8,verbose=FALSE,...) {
   colnames(y) <- paste("Y",1:dim(y)[2],sep=".")
   colnames(x) <- paste("X",1:dim(x)[2],sep=".")
   YX <- merge(y,x,all=FALSE)
-  if (verbose) str(YX); str(Y); str(X)
+  if (verbose) {str(YX); str(Y); str(X)}
   vars <- names(YX)
   if (is.null(vars)) warning('Problems detected - check is the indices are of similar types')
   if (verbose) print(vars)
