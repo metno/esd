@@ -194,7 +194,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                    lab.breaks=colbar$breaks,horizontal = TRUE,
                    legend.only = T, zlim = range(colbar$breaks),
                    col = colbar$col, legend.width = 1,
-                   axis.args = list(cex.axis = cex.axis), 
+                   axis.args = list(cex.axis = cex.axis, hadj = 0.5,mgp = c(0, 0.5, 0)), 
                    border = FALSE)
         #image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),
         #      col=colbar$col,axes=FALSE)

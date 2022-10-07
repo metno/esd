@@ -139,7 +139,6 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   if (!is.null(colbar)) {
     colbar <- colbar.ini(x,FUN=FUN,colbar=colbar,verbose=FALSE)
   }
-  
   x <- subset(x,it=it,is=is)
   X <- attr(x,'pattern')
   

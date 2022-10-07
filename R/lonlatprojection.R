@@ -6,7 +6,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
                              verbose=FALSE,geography=TRUE,fancy=FALSE,
-                             main=NA,...) {
+                             main=NA,cex.sub=0.8,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
@@ -204,7 +204,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (lab=='simple')   label <- eval(parse(text=paste('expression(',varnm,')'))) else 
     if (lab=='unit') label <- eval(parse(text=paste('expression(',varnm,'* phantom0 * (',unitx,')',')'))) else
       if (is.character(lab) & lab!="default") label <- lab
-  title(sub = label,line = 0 , adj = 0.5)
+  title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
   
   ## 
   if (show.colbar) {
