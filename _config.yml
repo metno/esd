@@ -8,7 +8,7 @@ logo        : "/assets/images/Met_RGB_Horisontal_ENG.jpeg"
 markdown: kramdown
 # remote_theme: pmarsceill/just-the-docs
 # remote_theme: "mmistakes/minimal-mistakes@4.19.0"
-theme: "jekyll-theme-rtd"
+remote_theme: "carlosperate/jekyll-theme-rtd"
 
 defaults:
   # _pages
