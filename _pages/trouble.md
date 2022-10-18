@@ -1,6 +1,6 @@
 ---
 title: "Trouble Shooting"
-layout: home
+layout: default
 permalink: /trouble/
 ---
 
