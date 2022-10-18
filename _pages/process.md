@@ -1,7 +1,7 @@
 ---
 title: "Data processing"
 layout: default
-nav_bar: 3
+nav_order: 3
 permalink: /process/
 ---
 
