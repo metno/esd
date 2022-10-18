@@ -1,6 +1,7 @@
 ---
 title: "Analyses and Diagnostics"
-layout: default 
+layout: default
+nav_order: 2
 permalink: /analyses/
 ---
 
