@@ -1,7 +1,6 @@
 ---
 title: "Analyses and Diagnostics"
-layout: home
-toc: true
+layout: default 
 classes: wide
 permalink: /analyses/
 ---
