@@ -6,7 +6,7 @@ permalink: /evaluate/
 ---
 
 # Central limit theorem
-The central limit theorem states that the distribution of the sum or average of a large number of independent, identically distributed variables (iid) will be approximately normal, regardless of the underlying distribution (src. [](http://www.math.uah.edu/stat/sample/CLT.html)).
+The central limit theorem states that the distribution of the sum or average of a large number of independent, identically distributed variables (iid) will be approximately normal, regardless of the underlying distribution (src. [](https://www.math.uah.edu/stat/sample/CLT.html)).
 
 # Huth’s dilemma
 Huth’s dilemma is the situation where ESD is calibrated on short-term (fast) fluctuation but is not capable of predicting long-term (slow) changes. This is a problem if there are different
