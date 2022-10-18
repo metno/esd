@@ -1,11 +1,10 @@
 ---
 title: "Analyses and Diagnostics"
 layout: default 
-classes: wide
 permalink: /analyses/
 ---
 
-## Empirical Orthogonal Functions
+# Empirical Orthogonal Functions
 Empirical orthogonal functions (EOFs; Lorenz (1956)) provide a handy framework for multivariate data analysis. Here EOFs refer to a class of data objects, however, in a more general
 context, EOFs refer to the spatial coherent structures which maximise the variance, whereas the principal components (PCs) refer to time series describing the degree of their presence at any time. The eigenvalues refer to the variance of each EOF mode.
 In ‘esd’, the EOFs are estimated using a singular value decomposition (SVD) (Press et al., 1989a; Strang, 1988):
@@ -16,7 +15,7 @@ where $$ X $$ is a matrix of data with two dimensions (space, time),$$U$$ hold 
 The EOFs are used as input to other analysis, such as downscaling (`DS`) and canonical correlation analysis (`CCA`). It is also possible to recover the original data from EOFs through `eof2field`, however, the number of EOFs are usually truncated, and only the most prominent features are recovered. The function `eof2field` can be used to filter the data in terms of removing small scale and noisy features.
 The EOFs can provide an indication of some of the most prominent phenomena in the climate system, such as the annual cycle, the El Ni˜no Southern Oscillation, and the Arctic Oscillation.
 
-## Principal Component Analysis
+# Principal Component Analysis
 The method called PCA - principal component analysis - is similar to EOF, but is designed for groups of stations rather than gridded fields (Example 4.2). The PCA can also be used to represent data on an irregular grid (such as rotated fields from regional climate models). It is possible to grid the spatial modes of the PCA onto a regular grid, and hence convert the pca class into a eof class (the gridding is currently not performed in esd, but could be done using optimal interpolation, or kriging taking geographical features into account (Benestad et al., 2012)). Whereas EOF weights each grid box with its grid box area, PCA does not apply any weighting to the different series (which may imply that correlated variability from nearby stations is emphasised by the PCA).
 
 PCAs are useful for investigating large-scale dependency, as the leading mode will pick up patterns with coherent variations across the stations. They are also used in CCA and identifying stations with suspect data.
