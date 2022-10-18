@@ -1,6 +1,6 @@
 ---
 title: "Data processing"
-layout: home
+layout: default
 permalink: /process/
 ---
 
