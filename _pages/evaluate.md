@@ -1,6 +1,6 @@
 ---
 title: "Evaluation, assessment & validation"
-layout: home
+layout: default
 permalink: /evaluate/
 ---
 
