@@ -1,23 +1,11 @@
 ---
 title: "Examples"
 layout: home
-toc: true
-classes: wide
 permalink: /examples/
 ---
 
-<details open markdown="block">
-  <summary>
-    Table of contents
-  </summary>
-  {: .text-delta }
-1. TOC
-{:toc}
-</details>
-
-
-## Example 2.1 on how to select weather stations and retrieve recorded values
-```R
+# Example 2.1 on how to select weather stations and retrieve recorded values
+```r
 # Select a station across India recording daily maximum temperature
 # from the global historical climate network-daily
 ss <- select.station(cntr=’India’,param=’tmax’,src=’ghcnd’)
@@ -41,8 +29,8 @@ plot(ya,ylim=c(29.5,32.5))
 lines(trend(ya),col="red",lwd=2)
 ```
 
-## Example 2.2 on the different esd objects and clasees
-```R
+# Example 2.2 on the different esd objects and clasees
+```r
 # Example of monthly station data:
 > data(Oslo)
 > class(Oslo)
@@ -104,8 +92,8 @@ Index:
 Date[1:41611], format: "1900-01-01" "1900-01-02" "1900-01-03" "1900-01-04" ...
 ```
 
-## Example 2.3. # Load the data for Ferder weather station
-```R
+# Example 2.3. # Load the data for Ferder weather station
+```r
 data(ferder)
 # Display the structure of the data as
 > str(ferder)
@@ -142,16 +130,16 @@ Data: atomic [1:41611] 2.1 -1.8 -0.9 -3 -7.2 -6.5 -2.6 -2.4 -1.6 -0.3 ...
 Index: Date[1:41611], format: "1900-01-01" "1900-01-02" "1900-01-03" "1900-01-04" ...
 ```
 
-## Example 2.4 on how to load some data sets and display the summary of statistics
-```R
+# Example 2.4 on how to load some data sets and display the summary of statistics
+```r
 ## Load data for Ferder
 > data(ferder)
 ## Display the summary of statistics
 > summary(ferder)
 ```
 
-## Example 2.5 on how to load a weather station object and display the location on a map
-```R
+# Example 2.5 on how to load a weather station object and display the location on a map
+```r
 # Load bjornholt data set
 data(bjornholt)
 # plot the time series
@@ -160,8 +148,8 @@ plot(bjornholt)
 map(bjornholt)
 ```
 
-## Example 2.6 on how to read a field object and plot the results
-```R
+# Example 2.6 on how to read a field object and plot the results
+```r
 #Get NCEP 2m air temperature for the selected spatial window defined by lon and lat
 t2m <- t2m.NCEP(lon=c(-30,30),lat=c(40,70))
 # Computes the EOFs
@@ -170,8 +158,8 @@ X <- EOF(t2m)
 plot(X)
 ```
 
-## Example 2.7 on how to retrieve wind data sets and visualise the results
-```R
+# Example 2.7 on how to retrieve wind data sets and visualise the results
+```r
 # Load 10m zonal and meridional wind components
 u10 <- retrieve(’data/ERAINT/eraint_elnino.nc’,param=’u10’)
 v10 <- retrieve(’data/ERAINT/eraint_elnino.nc’,param=’v10’)
@@ -181,8 +169,8 @@ map(u10,colorbar=FALSE)
 vec(u10,v10,new=FALSE,a=2,length=0.05)
 ```
 
-## Example 2.8. test
-```R
+# Example 2.8. test
+```r
 # Get 2m temperature data for Oslo
 # (works within MET Norway firewall only)
 x <- station(stid=18700,param=’t2m’,src=’metnod’)
@@ -200,8 +188,8 @@ climvar(x)
 diagram(x)
 ```
 
-## Example 2.9 on how to process the data and visualise the trend of the time series
-```R
+# Example 2.9 on how to process the data and visualise the trend of the time series
+```r
 # Get 2m temperature data for Ferder and calculate annual mean
 data(ferder)
 x <- annual(ferder)
@@ -214,8 +202,8 @@ vis.trends(x,minlen=40,pmax=0.01)
 t2m trend (deg C/decade)
 ```
 
-## Example 3.1. # Load data for Bjornholt 
-```R
+# Example 3.1. # Load data for Bjornholt 
+```r
 data(bjornholt)
 y <- bjornholt
 # Annual wet-mean:
@@ -236,8 +224,8 @@ sp <- spell(y,threshold=1)
 plot(sp)
 ```
 
-## Example 3.2.
-```R
+# Example 3.2.
+```r
 # Load ECAD dataset over Norway recording a 100 years of daily data
 ecad <- station(param="precip",src="ecad",cntr="Norway",nmin=100)
 # Map the vulnerability index:
@@ -246,8 +234,8 @@ map(ecad,FUN=’precip.vul’,cex=1.2,xlim=c(-10,40), col="black",colbar=list(co
 map(ecad,FUN=’precip.rv’,cex=1.2,xlim=c(-10,40), col="black",colbar=list(col=heat.colors(20)))
 ```
 
-## Example 3.3.
-```R
+# Example 3.3.
+```r
 # Load NCEP 2m air temperature
 t2m <- t2m.NCEP(lon=c(-30,30),lat=c(40,70))
 # map the original field
@@ -258,8 +246,8 @@ y <- regrid(t2m,is=list(lon=seq(-5,15,by=0.5),lat=seq(55,65,by=0.5)))
 map(y)
 ```
 
-## Example 3.4.
-```R
+# Example 3.4.
+```r
 # Get NCEP data
 > ncep <- t2m.NCEP(lon=c(-15,45),lat=c(35,70))
 # Display the latitude values
@@ -287,8 +275,8 @@ map(y)
 > lon(gcm.regrid)
 ```
 
-## Example 3.5.
-```R
+# Example 3.5.
+```r
 data(Oslo)
 # Extract an interval:
 y <- subset(Oslo,it=as.Date(c("1883-01-01","2013-12-05")))
@@ -298,8 +286,8 @@ djf <- subset(y,it=’djf’)
 may <- subset(y,it=’May’)
 ```
 
-## Example 3.6.
-```R
+# Example 3.6.
+```r
 # Retrieve stations across Scandinavian regions from the
 # ECA$\&$D dataset with a minimum of 50 years of data
 y <- station(src="ecad",cntr="norway",nmin=50)
@@ -314,8 +302,8 @@ y2 <- subset(y,is=list(alt=-100))
 map(y2,cex=1.4,col="darkred",bg="orange",showall=TRUE)
 ```
 
-## Example 3.7.
-```R
+# Example 3.7.
+```r
 # Load data for "Bjornholt" station
 data(bjornholt)
 # Check the class of the object
@@ -332,8 +320,8 @@ class(bjornholt)
 plot(bjornholt)
 ```
 
-## Example 3.8.
-```R
+# Example 3.8.
+```r
 # Load 2m air temperature from NCEP reanalysis on a resoltuion of 2.5 deg.
 t2m <- t2m.NCEP()
 # Do the spatial aggregation
@@ -342,8 +330,8 @@ x <- aggregate(t2m,by=list(lon=seq(0,360,by=10),lat=seq(0,360,by=10)),FUN=’mea
 map(x)
 ```
 
-## Example 3.9.
-```R
+# Example 3.9.
+```r
 # Load 2m air temperature from the NorESM.M global climate model
 t2m <- t2m.NorESM.M()
 # Compute the areal mean over the whole domain
@@ -352,7 +340,7 @@ T2m <- aggregate.area(t2m,FUN=’mean’)
 plot(annual(T2m),ylim=c(11.5,17.5))
 ```
 
-```R
+```r
 ds <- DS(Oslo,ceof)
 # Subset the calibration
 z.calibration <- predict(ds,newdata=EOF(t2m))
@@ -360,8 +348,8 @@ z.calibration <- predict(ds,newdata=EOF(t2m))
 z.projection <- project.ds(ds)
 ```
 
-## Example 4.1.
-```R
+# Example 4.1.
+```r
 # Load 2m air temperature from NCEP reanalysis
 t2m <- t2m.NCEP()
 # Compute the EOFs
@@ -370,8 +358,8 @@ eof <- EOF(t2m)
 plot(eof)
 ```
 
-## Example 4.2.
-```R
+# Example 4.2.
+```r
 # Retrieve NACD temperature weather stations
 nacd <- station(src=’nacd’,param=’t2m’)
 # Compute the annual mean values
@@ -386,8 +374,8 @@ pca <- PCA(NACD)
 vis(pca)
 ```
 
-## Example 4.3.
-```R
+# Example 4.3.
+```r
 # Get NACD stations
 nacd <- station(src=’nacd’,param=’t2m’)
 # Aggregate to annual values
@@ -408,8 +396,8 @@ plot(cca)
 slp(hPa)
 ```
 
-## Example 4.4. # Sample temperature data for Oslo
-```R
+# Example 4.4. # Sample temperature data for Oslo
+```r
 data(Oslo)
 # Get ERA40 2m air temperature
 t2m <- t2m.ERA40(lon=c(0,20),lat=c(50,70))
@@ -427,8 +415,8 @@ z.calibration <- predict(ds,newdata=EOF(t2m))
 z.projection <- project.ds(ds)
 ```
 
-## Example 4.5.
-```R
+# Example 4.5.
+```r
 # Sample trajectory object
 data(imilast.M03)
 # Select storm trajectories in region 40-60N
@@ -444,8 +432,8 @@ lines(n,col=’blue’,lty=2)
 legend(’topright’,c(’all year’,’djf’),lty=c(1,2),col=(’black’,’blue’))
 ```
 
-## Example 4.6. # Sample trajectory object
-```R
+# Example 4.6. # Sample trajectory object
+```r
 data(imilast.M03)
 #Map storm trajectories for the winter season (djf)
 map(imilast.M03,it=’djf’,projection=’sphere’)
@@ -453,8 +441,8 @@ map(imilast.M03,it=’djf’,projection=’sphere’)
 map.density.trajectory(imilast.M03,it=’djf’, xlim=c(-90,60),ylim=c(30,90),dx=4,dy=2)
 ```
 
-## Example 4.7.
-```R
+# Example 4.7.
+```r
 # Sample trajectory object
 data(imilast.M03)
 # Perform PCA of storm tracks
@@ -465,8 +453,8 @@ plot.pca.trajectory(pca)
 map.pca.trajectory(pca)
 ```
 
-## Example 5.1.
-```R
+# Example 5.1.
+```r
 # Load eofs of NCEP 2m air temperature
 data(eof.t2m.NCEP)
 # Load eofs of NCEP sea level pressure
@@ -479,8 +467,8 @@ z <- DS(Oslo,list(t2m=eof.t2m.NCEP,slp=eof.slp.NCEP),mon=1)
 plot(z)
 ```
 
-## Example 5.2.
-```R
+# Example 5.2.
+```r
 # Load ERAINT 2m air temperature from file
 T2m <- t2m.ERAINT(lon=c(-10,30),lat=c(50,70))
 # Compute the EOFs on annual values
@@ -510,8 +498,8 @@ obspre <- combine.stations(obs,pre)
 plot(obspre,plot.type="single")
 ```
 
-## Example 5.3.
-```R
+# Example 5.3.
+```r
 # Get the predictand: Maximum temperature for some Norwegian sttions
 download.file(url="http://files.figshare.com/2073466/Norway.Tx.rda",destfile="NorwayTx.rda")
 load("NorwayTx.rda")
@@ -532,8 +520,8 @@ lines(subset(as.station(pca),is=is),lty=2,col="darkred")
 lines(subset(as.station(z),is=is),lwd=2)
 ```
 
-## Example 5.4.
-```R
+# Example 5.4.
+```r
 # Load storm trajectories
 data(imilast.M03)
 # Load NCEP sea level pressure data for the northern hemisphere
@@ -550,8 +538,8 @@ plot(ds)
 plot(ds.slp)
 ```
 
-## Example 6.1.
-```R
+# Example 6.1.
+```r
 # Retrieve NACD data sets
 nacd <- station(src=’nacd’)
 # Diagnose for data availability
@@ -575,8 +563,8 @@ a <- diagnose(eof)
 plot(a)
 ```
 
-## Example 6.4. # Load temperature data for Oslo
-```R
+# Example 6.4. # Load temperature data for Oslo
+```r
 data(Oslo)
 # Get the 2m air temperature from NCEP reanalysis
 t2m <- t2m.NCEP(lon=c(-5,20),lat=c(50,65))
