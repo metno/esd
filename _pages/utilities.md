@@ -10,15 +10,6 @@ A short and single line in R produces a complex figure with various information:
 The command library(‘esd’) must be given at any new open R session. The R-package can be installed directly from [Github](https://github.com/metno/esd) or
 Figshare for [Mac/Linux and Windows](http://figshare.com/articles/esd\_for\_Mac\_amp\_Linux/1160493).
 
-<details open markdown="block">
-  <summary>
-    Table of contents
-  </summary>
-  {: .text-delta }
-1. TOC
-{:toc}
-</details>
-
 # Retrieving data: I/O
 There are different types of data that can be handled by the ‘esd’ tool: station data, gridded data, and (storm) trajectories. Station data contain meteorological observations recorded at weather (or hydrological) stations, while gridded data can comprise various analyses (e.g. E-OBS gridded version of the European and Climate Assessment data set), reanalyses (e.g. NCEP, ERA, ...) or global/regional climate model results (e.g. CMIP3/5 experiment). Trajectories are
 mainly used for analysis of storm tracks (e.g. [IMILAST](http://www.proclim.ch/imilast/index.html)). There are two main methods for retrieving data in the ‘esd’ tool: ‘station’ and ‘retrieve’.
