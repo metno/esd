@@ -29,7 +29,7 @@ plot(ya,ylim=c(29.5,32.5))
 lines(trend(ya),col="red",lwd=2)
 ```
 
-# Example 2.2 on the different esd objects and clasees
+# Example 2.2 on the different esd objects and classes
 ```r
 # Example of monthly station data:
 > data(Oslo)
