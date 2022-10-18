@@ -20,14 +20,14 @@ The method called PCA - principal component analysis - is similar to EOF, but is
 
 PCAs are useful for investigating large-scale dependency, as the leading mode will pick up patterns with coherent variations across the stations. They are also used in CCA and identifying stations with suspect data.
 
-## Canonical Correlation Analysis
+# Canonical Correlation Analysis
 Canonical correlation analysis (CCA) can be used to explore dependencies between different data sets (Example 4.3). It is a useful tool for investigating suitable predictors for downscaling or identifying tele-connections. Sometimes it can provide some indications of suspect station data.
 The computation of the CCA in ‘esd’ is based on the method by Barnett-Preisendorfer (Barnett and Preisendorfer , 1987; Wilks, 1995). The inputs are either an ‘pca’ or ‘eof’ class.
 
-## Other types of analysis
+# Other types of analysis
 Methods such as singular spectrum analysis (`SSA`) and ‘coherence’ have been adapted from the ‘clim.pact’ package, but have not been elaborated and tested yet for the ‘esd’ objects. There is also a set of low-pass filters such as `filt`. Other type of analysis can be included such as performing a multivariate regression analysis (MVR) and using eof to do the downscaling.
 
-## Predict & project
+# Predict & project
 In ‘esd’, the S3 method ‘predict’ is extended to the ‘ds’ class and may be extended to CCA (`cca`) and singular spectrum analysis (`ssa`) in the future. The call `predict` will return the downscaled results for the calibration method by default, but can also be used to return a projection if the downscaling was based on a common EOF or a prediction based on a new EOF. The method ‘project’ is a more specific version of ‘predict’ that returns results from a projection (Example 4.4). The downscaled results from a projection are also contained in the `ds` object.
 
 ![](/esd/assets/images/)
@@ -40,11 +40,11 @@ _Figure 17: Summary of maps and plot showing the a) climatology, EOF 1 to 3, and
 _Figure 18: Plot of CCA analysis based on PCs of annual mean surface temperature and EOF of annual mean Sea level pressure from DNMI._
 
 
-## Trajectory objects
+# Trajectory objects
 The esd package includes functions for statistical analysis and visualisation of trajectory data, e.g., the paths of extra-tropical cyclones or ice bergs. Many of the standard tools and methods are applicable to ‘trajectory’ objects, e. g., limiting the range of data by `subset`, visualising the trajectories by `map` or `plot`, as well as principal component analysis and downscaling (`PCA` and `DS`).
 The trajectory methods have been designed with the analysis of storm tracks in mind, in particular cyclone path data produced under the IMILAST (Inter-comparison of mid latitude storm diagnostics) project (Neu et al., 2012). Trajectory data that follow the format specified for IMILAST can be imported into R using the function ‘read.imilast’. The IMILAST data must then be transformed into a trajectory object with the function ‘trajectory’ before other esd methods can be applied.
 
-```R
+```r
 x <- read.imilast(filename,path=pathtofile)
 y <- trajectory(x)
 ```
