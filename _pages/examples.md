@@ -1,6 +1,6 @@
 ---
 title: "Examples"
-layout: home
+layout: default
 permalink: /examples/
 ---
 
