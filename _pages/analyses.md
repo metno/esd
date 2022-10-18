@@ -6,15 +6,6 @@ classes: wide
 permalink: /analyses/
 ---
 
-<details open markdown="block">
-  <summary>
-    Table of contents
-  </summary>
-  {: .text-delta }
-1. TOC
-{:toc}
-</details>
-
 ## Empirical Orthogonal Functions
 Empirical orthogonal functions (EOFs; Lorenz (1956)) provide a handy framework for multivariate data analysis. Here EOFs refer to a class of data objects, however, in a more general
 context, EOFs refer to the spatial coherent structures which maximise the variance, whereas the principal components (PCs) refer to time series describing the degree of their presence at any time. The eigenvalues refer to the variance of each EOF mode.
