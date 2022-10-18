@@ -1,4 +1,5 @@
 ---
+title: "Data Analyses"
 layout: default
 nav_order: 2
 permalink: /analyses/
