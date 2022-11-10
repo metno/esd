@@ -125,6 +125,8 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
       
       nof_hist_files <- jsonlite::fromJSON(paste(url,"?limit=0&type=File&replica=false&latest=true&",facet_cmip,"=",mip,"&",facet_var,"=",param,"&",facet_freq,"=",freq,"&",facet_exp,"=historical&",facet_mod,"=",ESGF_hist_query$response$docs[i,facet_mod],"&",facet_ens,"=",ESGF_hist_query$response$docs[i,facet_ens],"&",facet_ins,"=",ESGF_hist_query$response$docs[i,facet_ins],"&format=application%2Fsolr%2Bjson",sep=""))$response$numFound
       
+      ESGF_hist_file_query <- jsonlite::fromJSON(paste(url,"?limit=", nof_hist_files, "&type=File&replica=false&latest=true&",facet_cmip, "=", mip, "&", facet_var, "=", param,facet_mod, "=", ESGF_hist_query$response$docs[i, facet_mod],"&", facet_ens, "=", ESGF_hist_query$response$docs[i,facet_ens], "&", facet_ins, "=", ESGF_hist_query$response$docs[i,facet_ins], "&format=application%2Fsolr%2Bjson", sep = ""))
+      
       if (verbose) {
         print(paste("Found", nof_files, " scenario file(s) and ", nof_hist_files, " historical file(s) in dataset", i))
         print(paste(rep("=",nchar(ESGF_query$response$docs$id[i])+9),collapse=""))
