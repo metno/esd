@@ -78,6 +78,31 @@ metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","p
   invisible(X)
 }
 
+# Get metadata for minute timeseries
+#' @export metno.frost.meta.minute
+metno.frost.meta.minute <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
+                                    save2file=FALSE, path=NULL, verbose=FALSE, ...) {
+  if(verbose) print("metno.frost.meta.minute")
+  X <- metno.frost.meta.default(param=param, timeresolutions="PT1M", verbose=verbose, ...)
+  filename <- "meta.metno.frost.minute.rda"
+  attr(X, "source") <- "METNO.FROST.MINUTE"
+  attr(X, "version") <- NA
+  attr(X, "URL") <- "http://frost.met.no"
+  attr(X, "file") <- filename
+  attr(X, "cite") <- ""
+  attr(X, "date") <- date()
+  attr(X,"call") <- match.call()
+  attr(X, "history") <- history.stamp(X)
+  if (save2file) {
+    meta.metno.frost.min <- X
+    if(!is.null(path)) filename <- file.path(path,filename)
+    save(meta.metno.frost.min, file=filename, version=2)
+    rm("meta.metno.frost.min")
+  }
+  invisible(X)
+}
+
+
 metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"), 
                                      timeresolutions="P1M", levels="default", timeoffsets="default", 
                                      performancecategories="A,B,C", exposurecategories="1,2", 
@@ -236,28 +261,4 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     class(X) <- c("stationmeta", class(X))
     invisible(X)
   }
-}
-
-# Get metadata for minute timeseries
-#' @export metno.frost.meta.minute
-metno.frost.meta.minute <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
-                                    save2file=FALSE, path=NULL, verbose=FALSE, ...) {
-  if(verbose) print("metno.frost.meta.minute")
-  X <- metno.frost.meta.default(param=param, timeresolutions="PT1M", verbose=verbose, ...)
-  filename <- "meta.metno.frost.minute.rda"
-  attr(X, "source") <- "METNO.FROST.MINUTE"
-  attr(X, "version") <- NA
-  attr(X, "URL") <- "http://frost.met.no"
-  attr(X, "file") <- filename
-  attr(X, "cite") <- ""
-  attr(X, "date") <- date()
-  attr(X,"call") <- match.call()
-  attr(X, "history") <- history.stamp(X)
-  if (save2file) {
-    meta.metno.frost.min <- X
-    if(!is.null(path)) filename <- file.path(path,filename)
-    save(meta.metno.frost.min, file=filename, version=2)
-    rm("meta.metno.frost.min")
-  }
-  invisible(X)
 }
