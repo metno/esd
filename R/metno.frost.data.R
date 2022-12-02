@@ -76,7 +76,8 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
     timeoffsets = timeoffsets,
     performancecategories = performancecategories,
     exposurecategories = exposurecategories,
-    qualities = qualities
+    qualities = qualities,
+    fields = "referenceTime,sourceId,elementId,value"
   )
 
   ## Attempt an initial request
@@ -105,7 +106,7 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
       halflength = floor( length(frostelements)/2 )
       elementpart1 <- frostelements[1:halflength]
       elementpart2 <- tail(frostelements, halflength)
-      
+
       resultpart1 <- metno.frost.querysplitter(frostID, frostsources, elementpart1, it, timeresolutions, 
                                             levels, timeoffsets, performancecategories, exposurecategories, 
                                             qualities, verbose)
@@ -147,31 +148,31 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
 ## Perform a single frost query and return parsed JSON results
 metno.frost.dataquery <- function(frostID, parameters, verbose=FALSE) {
   ## Perform request
-  endpoint <- "https://frost.met.no/observations/v0.jsonld"
+  endpoint <- "https://frost.met.no/observations/v0.csv"
   resp <- httr::GET(
     URLencode(endpoint),
     query = parameters,
     httr::authenticate(frostID[1], '')
   )
+  statuscode <- httr::status_code(resp)
 
   ## Print URL if desired
   if (verbose) print(resp$url)
-
-  # Handle any returned error
-  statuscode <- httr::status_code(resp)
-  table <- NULL
+  
+  ## Parse the CSV (hopefully good enough)
   if (statuscode == 200) {
-    ## Parse the JSON
-    xs <- httr::content(resp)
-    marshalled <- jsonlite::toJSON(xs$data)
-    table <- jsonlite::fromJSON(marshalled, flatten=TRUE)
-    ## TODO: flatten in a better way without using tidyr?
+    xs <- httr::content(resp, encoding='UTF-8')
+    table <- read.table(text=xs, sep=',', header=TRUE, check.names=FALSE)
+    colnames(table) = gsub("\\(-\\)", "", colnames(table))
+  } else {
+    table <- NULL
   }
+
   ## Return both the table and the status code
   list(data=table, statuscode=statuscode)
 }
 
-# Ensure a keyfile exists, ask user to generate one if not
+## Ensure a keyfile exists, ask user to generate one if not
 metno.frost.keyfile <- function(keyfile, verbose) {
   if (file.exists(keyfile)) {
     if (verbose) print(paste('Read client ID from',keyfile))
