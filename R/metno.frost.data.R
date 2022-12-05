@@ -1,10 +1,77 @@
-#' Developing a new frost query splitter/data fetcher here
 
-# 1. Receive lists of sources, elements, from/totime
-# 2. Form URL, check length. Too long? Halve the longest of the sources term and the elements term. Call recursively (once for each part).
-# 3. URL not too long? Try call and check if error says asking for too much data. If so, halve the from/to and call recursively (once for each part).
+#' Retrieve records from frost.met.no, for one element and one or more stations
+#' 
+#' @aliases metno.frost.data metno.frost.station
+#' 
+#' @param stid A string of characters as an identifier of the weather/climate
+#' station.
+#' @param param Parameter or element type or variable identifier. There are
+#' several core parameters or elements as well as a number of additional
+#' parameters. The parameters or elements are: precip = Precipitation (mm) tas,
+#' tavg = 2m-surface temperature (in degrees Celcius) tmax, tasmax = Maximum
+#' temperature (in degrees Celcius) tmin, tasmin = Minimum temperature (in
+#' degrees Celcius)
+#' @param it A vector of two dates (from and to) in the form "2014-01-01".
+#' @param \dots additional arguments  
+#' @param keyfile The path where the frost.met.no credentials keyfile is stored locally.
+#' @param url The URL of the data portal or webpage for requesting new client credentials. 
+#' @param lon Numeric value of longitude (in decimal degrees East) for the
+#' reference point (e.g. weather station) as a single value or a vector
+#' containing the range of longitude values in the form of c(lon.min,lon.max)
+#' @param lat Numeric value of latitude for the reference point (in decimal
+#' degrees North) or a vector containing the range of latitude values in the
+#' form of c(lat.min,lat.max)
+#' @param loc A string of characters as the name of the location
+#' (weather/climate station) or an object of class "stationmeta".
+#' @param alt Numeric value of altitude (in meters a.s.l.) used for selection.
+#' Positive value, select all stations above this altitude; for negative
+#' values, select all stations below this latitude.
+#' @param cntr A string or a vector of strings of the full name of the country:
+#' Select the stations from a specified country or a set of countries.
+#' @param timeresolutions A string of the desired time resolution. Accepted strings
+#' are the ISO 8601 durations P1M, P1D and PT1M, as well as the strings MONTHLY,
+#' MONTH, DAILY, DAY, MINUTE and MIN. If no value is set, this defaults to P1M.
+#' @param levels Numeric value of sensor height used for selection. If no value
+#' is set, then standard heights will be selected.
+#' @param timeoffsets A string of the ISO 8601 duration desired for the offset
+#' value of timeseries. If no value is set, then the best available option will 
+#' be selected.
+#' @param performancecategories A string with a comma-separated list of categories
+#' to accept for sensor performance. If no value is set, then the default A,B,C
+#' will be used.
+#' @param exposurecategories A string with a comma-separated list of categories to
+#' accept for siting quality of the sensor. If no value is set, then the default
+#' 1,2 will be used.
+#' @param qualities A string with a comma-separated list of quality codes to
+#' accept for the individual measurements. If no value is set, then the default
+#' 0,1,2,3,4,5 will be used.
+#' @param fetch.meta Logical value defaulting to TRUE. If TRUE, download timeseries
+#' metadata from frost.met.no. If FALSE, try to load data file station.meta instead.
+#' @param path The path where the data are stored. Can be a symbolic link.
+#' @param browser A string signifying which internet browser to open to ask
+#' user to create new credentials for frost.met.no
+#' @param save2file Logical value defaulting to FALSE. If TRUE, save a file
+#' with the output data.
+#' @param verbose Logical value defaulting to FALSE. If FALSE, do not display
+#' comments (silent mode). If TRUE, displays extra information on progress.
+#' @return A time series of "zoo" "station" class with additional attributes
+#' used for further processing.
+#'
+#' @author K. Tunheim
+#'
+#' @keywords parameter,data,metno,norway,frost
+#' 
+#' @examples
+#'
+#' \dontrun{
+#' # 
+#' metno.frost.data(param='t2m', stid=18700, it=c('2020-01-01','2020-02-01'), timeresolutions='P1D')
+#' }
 
-## main function, this is the only one that should be exported
+#' Add alias metno.frost.station
+metno.frost.station <- metno.frost.data
+
+#' Fetch data from frost.met.no and return station object
 #' @export metno.frost.data
 metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.no/auth/requestCredentials.html',
                              stid=NULL, param=NULL, it=NULL,
@@ -13,7 +80,7 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
                              performancecategories="A,B,C", exposurecategories="1,2", 
                              qualities='0,1,2,3,4,5', fetch.meta=TRUE, path=NULL, 
                              browser="firefox", save2file=FALSE, verbose=FALSE) {
-  
+
   if(verbose) print("Fetch data from the Frost API (http://frost.met.no)")
 
   ## Check requirements
@@ -33,11 +100,12 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
                             "DAILY"="P1D", "DAY"="P1D",
                             "MINUTE"="PT1M", "MIN"="PT1M",
                             timeresolutions)
-
+  
   ## Get parameter metadata for desired param and time resolution
   elementid <- esd2ele(param)
-  frostelements <- metno.frost.elements(elementid, timeresolutions)
-  if (verbose) print( paste('Frost parameters = ', paste(frostelements, collapse=",")) )
+  frostparaminfo <- ele2param(elementid, src="metno.frost")
+  frostcfname <- gsub('*', timeresolutions, frostparaminfo$param, fixed=TRUE)
+  if (verbose) print( paste('Frost parameters = ', frostcfname) )
 
   ## Get all station metadata for desired param and time resolution
   meta <- metno.frost.getmetadata(fetch.meta, param, timeresolutions)
@@ -51,11 +119,74 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
   if (verbose) print( paste("Frost dates =", it[1], it[2]) )
 
   ## Fetch the data in as many API queries as frost.met.no requires
-  data <- metno.frost.querysplitter(frostID, frostsources, frostelements, it,
+  data <- metno.frost.querysplitter(frostID, frostsources, c(frostcfname), it,
                                     timeresolutions, levels, timeoffsets, performancecategories, 
                                     exposurecategories, qualities, verbose)
 
-  ## TODO: create zoo object and station object
+  ## If empty result then return here
+  if(is.null(data)) {
+    return(invisible(NULL))
+  }
+  
+  ## Rearrange data and transform into zoo and station object
+
+  ## Get list of stations
+  sourceId <- unique(data$sourceId)
+  ## Extract data column
+  var <- data[[3]]
+  ## Parse time column into appropriate type
+  if(timeresolutions=="PT1M") {
+    time <- as.POSIXct(data$referenceTime)
+  } else {
+    time <- as.Date(data$referenceTime)
+  }
+  ## Get unique time steps
+  tvec <- seq(
+    min(time),
+    max(time), 
+    by = switch(timeresolutions, "P1D"="day", "P1M"="month", "PT1M"="min")
+  )
+  ## Set up matrix with a row per time step and a column per station
+  X <- matrix(NA, nrow=length(tvec), ncol=length(sourceId))
+  for(i in 1:ncol(X)) {
+    j <- sapply(time[data$sourceId==sourceId[i]], function(x) which(tvec==x))
+    X[j,i] <- var[data$sourceId==sourceId[i]]
+  }
+  ## Turn the matrix into a zoo object
+  varzoo <- zoo(X, order.by=tvec)
+
+  # Transform to station object and attach attributes
+  stid <- gsub("[A-Z]|:.*","",toupper(sourceId))
+  inds <- sapply(stid, function(x) which(meta$station_id==x)[1])
+  METNO.FROST <- as.station(varzoo, stid=stid, loc=meta$location[inds],
+                            param=param, quality=qualities, 
+                            cntr=meta$country[inds],
+                            lon=meta$longitude[inds], 
+                            lat=meta$latitude[inds], 
+                            alt=meta$altitude[inds],
+                            src=switch(timeresolutions, 
+                                       'PT1M'='METNO.FROST.MINUTE',
+                                       'P1D'='METNOD.FROST', 
+                                       'P1M'='METNOM.FROST'),
+                            url="http://frost.met.no",
+                            longname=frostparaminfo$longname,
+                            unit=frostparaminfo$unit,
+                            aspect="original",
+                            reference="Frost API (http://frost.met.no)",
+                            info="Frost API (http://frost.met.no)"
+  )
+  attr(METNO.FROST,'history') <- history.stamp(METNO.FROST)
+
+  ## Save to file if requested
+  if(save2file) {
+    if (is.null(path)) path <- 'data.METNO'
+    dir.create(path, showWarnings=FALSE, recursive=TRUE)
+    stid <- sprintf("%05d", as.numeric(stid))
+    filename <- paste(attr(METNO.FROST,"source"),param,paste(stid,collapse="_"),"txt",sep=".")
+    write.table(METNO.FROST, file=file.path(path,filename), row.names=FALSE, col.names = names(X))
+  }
+
+  invisible(METNO.FROST)
 }
 
 ## Split a data request into multiple frost API requests as needed
@@ -189,7 +320,7 @@ metno.frost.keyfile <- function(keyfile, verbose) {
 }
 
 ## Return metadata data frame for station metadata
-metno.frost.getmetadata <- function(fetch.meta, param, timeresolutions) {
+metno.frost.getmetadata <- function(fetch.meta, param, timeresolutions, verbose=FALSE) {
   if(fetch.meta | timeresolutions=="PT1M") {
     meta.function <- switch(toupper(timeresolutions),
                             "PT1M"=metno.frost.meta.minute,
@@ -224,13 +355,6 @@ metno.frost.stations <- function(stid, lat, lon, meta) {
     stid <- unique(meta$station_id)
   }
   stid
-}
-
-## Return the CF name corresponding to the given esd element id
-metno.frost.elements <- function(elementid, timeresolutions) {
-  frostparaminfo <- ele2param(elementid, src="metno.frost")
-  frostcfname <- gsub('*', timeresolutions, frostparaminfo$param, fixed=TRUE)
-  frostelements <- c(frostcfname)
 }
 
 ## Decide from and to dates to use for frost query
