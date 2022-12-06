@@ -1030,8 +1030,9 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
         time$vdate <- switch(substr(tunit,1,3),
                              'sec'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
                              'min'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
-                             'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*3600,
-                             'day'= as.Date(torigin) + time$vals,
+                             'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*60*60,
+			     'day'= strptime(torigin,format="%Y-%m-%d %H:%M") + time$vals*60*60*24,
+                             #'day'= as.Date(torigin) + time$vals,
                              'mon'= seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
                              'yea'= year(as.Date(torigin)) + time$vals)
       }
@@ -1067,8 +1068,10 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           # construct vdate
           years <- time$vals%/%time$daysayear + yorigin
           dayofyear <- time$vals%%time$daysayear
-          months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)), 
-                                 rightmost.closed=TRUE, left.open=TRUE)
+          #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)), 
+          #                       rightmost.closed=TRUE, left.open=TRUE)
+	  months <- findInterval(floor(dayofyear)+1, c(1,cumsum(mndays)),
+	                         rightmost.closed=TRUE, left.open=TRUE)
           days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {
@@ -1236,6 +1239,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     #  time$vdate <- as.Date(paste(yr,mo,dy,sep="-"))     
     #}
   }
+  #browser()
   ## End check 2
   if (verbose) print("Checking --> [Done!]")
   model$qf <- qf
