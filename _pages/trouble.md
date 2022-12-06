@@ -1,6 +1,7 @@
 ---
 title: "Trouble Shooting"
 layout: default
+nav_order: 6
 permalink: /trouble/
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: "Downscaling"
 layout: default
+nav_order: 4
 permalink: /downscale/
 ---
 

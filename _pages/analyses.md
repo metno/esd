@@ -1,5 +1,5 @@
 ---
-title: "Analyses and Diagnostics"
+title: "Data Analyses"
 layout: default
 nav_order: 2
 permalink: /analyses/
@@ -10,9 +10,9 @@ Empirical orthogonal functions (EOFs; Lorenz (1956)) provide a handy framework f
 context, EOFs refer to the spatial coherent structures which maximise the variance, whereas the principal components (PCs) refer to time series describing the degree of their presence at any time. The eigenvalues refer to the variance of each EOF mode.
 In ‘esd’, the EOFs are estimated using a singular value decomposition (SVD) (Press et al., 1989a; Strang, 1988):
 
-\\( X = U \Lambda V^T \\), (2)
+//( X = U \Lambda V^T )//, (2)
 
-where $$ X $$ is a matrix of data with two dimensions (space, time),$$U$$ hold the EOF patterns, $$ Λ $$ is a diagonal matrix with the eigenvalues, and $$ V $$ contains the PCs. The EOFs are used to extract the essence of the information embedded in the data, taking advantage of redundancy and emphasising the most prominent characteristics. Example 4.1 shows how the EOFs can be estimated and visualised in ‘esd’.
+where $$ X $$ is a matrix of data with two dimensions (space, time),$$ U $$ hold the EOF patterns, $$ Λ $$ is a diagonal matrix with the eigenvalues, and $$ V $$ contains the PCs. The EOFs are used to extract the essence of the information embedded in the data, taking advantage of redundancy and emphasising the most prominent characteristics. Example 4.1 shows how the EOFs can be estimated and visualised in ‘esd’.
 The EOFs are used as input to other analysis, such as downscaling (`DS`) and canonical correlation analysis (`CCA`). It is also possible to recover the original data from EOFs through `eof2field`, however, the number of EOFs are usually truncated, and only the most prominent features are recovered. The function `eof2field` can be used to filter the data in terms of removing small scale and noisy features.
 The EOFs can provide an indication of some of the most prominent phenomena in the climate system, such as the annual cycle, the El Ni˜no Southern Oscillation, and the Arctic Oscillation.
 

@@ -11,9 +11,9 @@ mainly used for analysis of storm tracks (e.g. IMILAST13). There are two main me
 It is also possible to read data using the R-built in functions and convert it to esd data format. This requires more effort from the user using the ‘esd’ pre-defined functions `as.station`, `as.field`), and `as.trajectory`. The package comes with a set of sample data mainly included for demonstration purposes,
 testing, or troubleshooting. For gridded data, these are filtered data (mainly for reducing the size of the data objects) and should not be used as predictors in the actual analysis. For instance, air temperature reanalysis data are stored as a set of 20 empirical orthogonal functions (EOFs) with global coverage, which are then transformed to a field object upon a retrieval. However, the sample station data can be used without restrictions and corresponds to observed values at a specific location (e.g. `data(Oslo)` or `nacd=station(src='nacd')`).
 
-11http://figshare.com/articles/esd\_for\_Mac\_amp\_Linux/1160493
-12http://figshare.com/articles/esd\_for\_windows/1160494
-13http://www.proclim.ch/imilast/index.html
+11https://figshare.com/articles/esd\_for\_Mac\_amp\_Linux/1160493
+12https://figshare.com/articles/esd\_for\_windows/1160494
+13https://www.proclim.ch/imilast/index.html
 
 # Function `retrieve()`
 The ‘retrieve’ is designed to read data from NetCDF files following the standard Climate and Forecast (‘CF’) conventions and ordered on a longitude-latitude grid. The latter could be regular or irregular grid (e.g. the output of the Weather Research and Forecasting model (WRF) or any outputs on a rotated grid from RCMs). The function ‘retrieve’ also performs quick checks of the data itself to verify that the meta data and data are consistent. For instance, in case the frequency of the data is missing, `retrieve()` will try to detect the frequency automatically form the data itself. The function `retrieve` returns two types of objects depending on the type of the spatial grid. For instance, data stored on a regular grid is returned as `field` objects including attributes containing meta data, and data stored on irregular grid - such as rotated longitude-latitude grids - are returned as a `station` objects. 
@@ -24,9 +24,9 @@ the returned object.
 
 # Function `station()`
 The package ‘esd’ includes the function ‘station’ for obtaining historical climate data by querying various web portals, for instance, the MET Norway archive (KDVH) provided by the Norwegian Meteorological Institute14. Data from MET climate web service ‘eKlima’ needs to be adapted manually, the Global Historical Climate Network (GHCN, (Peterson and Vose,1997)) provided by the American National Climatic Data Center15, and the European Climate
-Assessment and Dataset (ECA&D, (Klein Tank et al., 2002)) made available by the Royal Netherlands Meteorological Institute (KNMI) (http://eca.knmi.nl/). Some of the data that is 14http://eklima.met.no; however, this function only works within the firewall included in the package has been pre-formatted within the ‘clim.pact’ package and adapted to meet the new ‘esd’ data format requirements.
+Assessment and Dataset (ECA&D, (Klein Tank et al., 2002)) made available by the Royal Netherlands Meteorological Institute (KNMI) (https://eca.knmi.nl/). Some of the data that is 14https://eklima.met.no; however, this function only works within the firewall included in the package has been pre-formatted within the ‘clim.pact’ package and adapted to meet the new ‘esd’ data format requirements.
 
-15http://www1.ncdc.noaa.gov/pub/
+15https://www1.ncdc.noaa.gov/pub/
 
 SOURCE(S) :  ECAD/GHCNM/METNOD/METNOM/NACD/NORDKLIM
 T2M/
