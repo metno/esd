@@ -17,8 +17,8 @@
   pch = 0,
   main = NULL,
   col = NULL,
-  colbar = list(pal = NULL, rev = FALSE, n = 10, breaks = NULL, type = "p", cex = 2, show
-    = TRUE, h = 0.6, v = 1, pos = 0.05),
+  colbar = list(pal = NULL, rev = FALSE, n = 10, breaks = NULL, type = "p", cex = 2,
+    show = TRUE, h = 0.6, v = 1, pos = 0.05),
   xlim = NULL,
   ylim = NULL,
   xlab = "",

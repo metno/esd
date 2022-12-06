@@ -10,8 +10,8 @@
   is = NULL,
   im = NULL,
   ip = NULL,
-  colbar = list(pal = NULL, rev = FALSE, n = 10, breaks = NULL, pos = 0.05, show = TRUE,
-    type = "p", cex = 2, h = 0.6, v = 1),
+  colbar = list(pal = NULL, rev = FALSE, n = 10, breaks = NULL, pos = 0.05, show =
+    TRUE, type = "p", cex = 2, h = 0.6, v = 1),
   FUN = "mean",
   FUNX = "mean",
   verbose = FALSE,
