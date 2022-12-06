@@ -98,7 +98,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
                            threshold=NULL,regular=NULL,frequency=NULL,
                            verbose=FALSE) { ## 
   
-  if (verbose) print('annual.default')
+  if (verbose) print(paste('annual.default',FUN))
   
   ## Case when subsetting one specific season / in this case nmin =1
   
@@ -184,7 +184,14 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
     y <- zoo(ycd,order.by=index(y))
     if (verbose) print(paste('mask',sum(nok < nmin),'years with nv <',nmin))
   }
-  
+  ## Check if the series is gappy:
+  if (verbose) print('Fill in gaps')
+  it <- seq(min(index(y)),max(index(y)),by=1)
+  if (verbose) print(c(range(it),length(it)))
+  z <- zoo(rep(NA,length(it)),order.by=it)
+  z[is.element(it,index(y))] <- y
+  y <- z; rm('z')
+     
   ## Copy the old attributes and reset as the original class:
   y <- attrcp(x,y,ignore="names")
   args <- list(...)
@@ -215,7 +222,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
     #    n <- count(X,threshold=threshold) # REB
     #    n <- aggregate(X,year,FUN='count', threshold=threshold,...,
     #                   regular = regular, frequency = frequency)
-    n <- nok  # Not the count above threshold byut number of valid data points
+    n <- nok  # Not the count above threshold, but number of valid data points
     bad <- coredata(n)==0
     coredata(n)[bad] <- 1
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
@@ -259,7 +266,7 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
 #' @exportS3Method
 #' @export
 annual.station <- function(x,FUN='mean',nmin=NULL,start=NULL,threshold=NULL,verbose=FALSE,...) {
-  if (verbose) print('annual.station')
+  if (verbose) print(paste('annual.station',FUN))
   attr(x,'names') <- NULL
   y <- annual.default(x,FUN=FUN,nmin=nmin,start=start,threshold=threshold,verbose=verbose,...)
   y[which(is.infinite(y))] <- NA
