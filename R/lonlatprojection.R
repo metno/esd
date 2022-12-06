@@ -9,6 +9,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              verbose=FALSE,geography=TRUE,fancy=TRUE,
                              main=NA,cex.sub=0.8,cex.axis=0.8,
                              fig=NULL,add=FALSE,...) {
+  
   if (verbose) {print('lonlatprojection'); str(x)}
   par0 <- par()
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
