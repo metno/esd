@@ -804,18 +804,15 @@ Displacement <- function(x,verbose=FALSE) {
   invisible(dx)
 }
 
+
 #' Enumerate trajectories
 #'
-#' The function enumerates the trajectories ("trajectory") of an event object 
-#' for which the events have been tracked using the function \code{track}. 
-#' \code{enumerate} is called from \code{trackstats} and \code{as.trajectory}
-#' and can also be applied after selecting cyclones using \code{subset} to give 
-#' the trajectories new numbers. 
+#' The function enumerates the trajectories ("trajectory"). It is used in the function \code{"trackstats"} and can be applied to re-enumerate cyclone trajectories in an \code{events} object after selecting a subset using the function \code{"subset"}. 
 #'
 #' @param x an \code{events} object
-#' @param param Name of the column holding the trajectory numbers (default: "trajectory")
+#' @param param parameter name of the trajectory numbers. Default: trajectory.
 #' @param verbose a boolean; if TRUE print information about progress
-#' @return an \code{events} object
+#' @return an \code{events} object with statistics describing the trajectories
 #'
 #' @export
 enumerate <- function(x,param="trajectory",verbose=FALSE) {

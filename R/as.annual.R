@@ -188,12 +188,10 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   if (verbose) print('Fill in gaps')
   it <- seq(min(index(y)),max(index(y)),by=1)
   if (verbose) print(c(range(it),length(it)))
-  if (is.null(dim(y))) { 
-    z <- zoo(rep(NA,length(it)),order.by=it)
-    z[is.element(it,index(y))] <- y
-    y <- z; rm('z')
-  }
-  
+  z <- zoo(rep(NA,length(it)),order.by=it)
+  z[is.element(it,index(y))] <- y
+  y <- z; rm('z')
+     
   ## Copy the old attributes and reset as the original class:
   y <- attrcp(x,y,ignore="names")
   args <- list(...)

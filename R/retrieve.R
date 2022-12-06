@@ -1032,7 +1032,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
                              'min'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
                              'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*60*60,
 			     'day'= strptime(torigin,format="%Y-%m-%d %H:%M") + time$vals*60*60*24,
-                             #'day'= as.Date(torigin) + time$vals,
+-                            #'day'= as.Date(torigin) + time$vals,
                              'mon'= seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
                              'yea'= year(as.Date(torigin)) + time$vals)
       }
@@ -1070,8 +1070,8 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           dayofyear <- time$vals%%time$daysayear
           #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)), 
           #                       rightmost.closed=TRUE, left.open=TRUE)
-	  months <- findInterval(floor(dayofyear)+1, c(1,cumsum(mndays)),
-	                         rightmost.closed=TRUE, left.open=TRUE)
+	  months <- findInterval(floor(dayofyear)+, c(1,cumsum(mndays)), 
+                                 rightmost.closed=TRUE, left.open=TRUE)
           days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {
@@ -1239,7 +1239,6 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     #  time$vdate <- as.Date(paste(yr,mo,dy,sep="-"))     
     #}
   }
-  #browser()
   ## End check 2
   if (verbose) print("Checking --> [Done!]")
   model$qf <- qf
@@ -1720,10 +1719,16 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
   # next save for later if adding no_leap func
   #if ((tcal %in% c("365_day", "365day", "no_leap", "no leap")) && (any(grepl('hou',tunit))) && ((diff(ttest)>29) && (diff(ttest) <= 31 )) )
   #HBE 2018/1/17 saving POSIX with monthly freq as Date at month start
-  if (((diff(time)>=28) && (diff(time) <= 31 )) | (length(time) == 1)) {
+  #if ( ( diff(time)>=28 && diff(time) <= 31 ) |
+  if ( all( diff(time)>=28 & diff(time) <= 31 ) |
+       (length(time) == 1) ) {
     time <- as.Date(strftime(time, format="%Y-%m-01"))
     if (verbose) print("monthly frequency, saving as Date Y-m-01")
-  }
+  #} else if (diff(time)>=360 && diff(time) <= 366) {
+  } else if (all(diff(time)>=360 & diff(time) <= 366)) {
+    time <- as.Date(strftime(time, format="%Y-%m-01"))
+    if (verbose) print("monthly frequency, saving as Date Y-m-01")
+  } else 
   if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
     if (inherits(it,c('field','station'))) {
@@ -1813,6 +1818,7 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
     countt <- d[3] - startt + 1
     warning("retrieve.rcm: number of points in time exceeds data dimensions")
   }
+  
   #HBE added y-dimension to lon as well as lat (before only lat had)
   if(length(d)==3) {
     lon <- lon[startx:(startx+countx-1),starty:(starty+county-1)]
