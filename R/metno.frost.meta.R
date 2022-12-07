@@ -131,18 +131,8 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     strparam <- paste0(param1s, collapse=",")
     if (verbose) print(strparam)
     
-    # Get a client_id
-    if (file.exists(keyfile)) {
-      if (verbose) print(paste('Read client ID from',keyfile))
-      frostID <- readLines(keyfile) 
-    } else { 
-      if (verbose) print(paste('Generate new client ID from',url))  
-      system(paste(browser,url))
-      frostID <- rep("",2)
-      frostID[1] <- readline('Please give me the first key:')
-      frostID[2] <- readline('Please give me the second key:')
-      writeLines(frostID,con=keyfile)
-    }
+    # Get a client_id using function from metno.frost.data.R
+    frostID <- metno.frost.keyfile(keyfile, verbose)
 
     url1 <- paste0(
       "https://", 
