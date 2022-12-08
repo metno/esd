@@ -6,9 +6,9 @@ subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
 			   src=NULL, nmin=NULL, verbose=FALSE) {
     
     ##
-    if (verbose) print('subset.station')
+    if (verbose) print(match.call())
     if (is.null(attr(x,'unit'))) attr(x,'unit') <- NA
-    if (verbose) print(c(varid(x),esd::unit(x)))
+    if (verbose) print(paste("subset.station:",c(varid(x),esd::unit(x))))
     d <- dim(x)
     if (is.null(d)) d <- c(length(x),1)
     ## REB 2022-03-31
@@ -20,7 +20,7 @@ subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
     ## subset times:
     if (inherits(it,c('field','station','zoo'))) {
         ## Match the times of another esd-data object
-        if (verbose) print('field/station')
+        if (verbose) print('subset.station: field/station')
         x2 <- matchdate(x,it)
         x2 <- attrcp(x,x2)
         attr(x2,'history') <- history.stamp()
@@ -29,12 +29,12 @@ subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
     ## subset space:
     if (inherits(is,c('field','station','zoo'))) {
         ## Match the space index of another esd-data object
-        if (verbose) print('is: field/station')
+        if (verbose) print('subset.station: is: field/station')
         x2 <- subset.station(x,is=loc(is))
         return(x2)
     }
     if (is.character(is) | is.character(loc)) {
-      if (verbose) print('search on location names')
+      if (verbose) print('subset.station: search on location names')
       ## search on location name: foce lower case for all
       locs <- tolower(loc(x))
       if (is.null(loc)) is <- tolower(is) else
@@ -47,13 +47,16 @@ subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
       ns <- length(is)
       for (ii in 1:ns) illoc <- grep(is[ii],locs, ignore.case = TRUE)
       x2 <- subset(x,it=it,is=illoc,verbose=verbose)
-      if (verbose) {print(is); print(loc(x2))}
+      if (verbose) {
+        print(paste("subset.station:",is))
+        print(paste("subset.station:",loc(x2)))
+      }
       return(x2)
     }
     if (is.null(dim(x))) {
         x2 <- station.subset(x,it=it,verbose=verbose)
     } else {
-        ##print("here")
+        ##print("subset.station: here")
         x2 <- station.subset(x,it=it,is=is,verbose=verbose)
     }
     ## Check if there is only one series but if the dimension 
@@ -70,8 +73,10 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   ## alt - positive values: any above; negative any below height
   ## cntr - selection by country
   ## 
-  if (verbose) print("station.subset")
-  if (verbose) print(c(varid(x),esd::unit(x)))
+  if (verbose) {
+    print(match.call())
+    print(paste("station.subset:",c(varid(x),esd::unit(x))))
+  }
   nval <- function(x) sum(is.finite(x))
   x0 <- x
   if (is.null(it) & is.null(is)) return(x)
@@ -80,7 +85,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   d <- dim(x)
   if (is.null(d)) {
     if (verbose)
-      print("Warning : One dimensional vector has been found in the coredata")
+      print("station.subset: Warning : One dimensional vector has been found in the coredata")
     x <- zoo(as.matrix(coredata(x)),order.by=index(x))
     x <- attrcp(x0,x)
     class(x) <- class(x0)
@@ -96,19 +101,19 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   t <- index(x)
   ii <- is.finite(t)
   
-  if (verbose) print('it - temporal indexing')
+  if (verbose) print('station.subset: it - temporal indexing')
   if (verbose) print(it)
   
   if (inherits(t,c("Date","yearmon"))) {
-    if (verbose) print('years ++')
+    if (verbose) print('station.subset: years ++')
     yr <- year(x)
     mo <- month(x)
     dy <- day(x)
   } else if (inherits(t,c("numeric","integer"))) {
-    if (verbose) print('years')
+    if (verbose) print('station.subset: years')
     yr <- t
     mo <- dy <- rep(1,length(t))
-  } else print("Index of x should be a Date, yearmon, or numeric object")
+  } else print("station.subset: Index of x should be a Date, yearmon, or numeric object")
   
   if(is.character(it)) {
     if ((levels(factor(nchar(it)))==10)) it <- as.Date(it)
@@ -118,7 +123,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   if(inherits(it,c("Date"))) {
     if (inherits(t,"yearmon")) t <- as.Date(t)
     if ( length(it) == 2 ) {
-      if (verbose) print('Between two dates')
+      if (verbose) print('station.subset: Between two dates')
       if (verbose) print(it)
       ii <- (t >= min(it)) & (t <= max(it))
     } else {
@@ -127,9 +132,9 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   } else if(inherits(it,"yearmon")) {
     ii <- is.element(as.yearmon(t),it)
   } else if (is.character(it)) {
-    if (verbose) print('it is character')
+    if (verbose) print('station.subset: it is character')
     if (sum(is.element(tolower(substr(it,1,3)),tolower(month.abb)))>0) {
-      if (verbose) print('Monthly selected')
+      if (verbose) print('station.subset: Monthly selected')
       if (is.seasonal(x)) {
         it <- gsub('Dec', 'Jan', it, ignore.case=TRUE)
         it <- gsub('Feb', 'Jan', it, ignore.case=TRUE)
@@ -142,70 +147,70 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       }
       ii <- is.element(month(x),(1:12)[is.element(tolower(month.abb),tolower(substr(it,1,3)))])
     } else if (sum(is.element(tolower(it),names(season.abb())))>0) {
-      if (verbose) print("Seasonally selected")
+      if (verbose) print("station.subset: Seasonally selected")
       if (verbose) print(table(month(x)))
       if (verbose) print(eval(parse(text=paste('season.abb()$',it,sep=''))))
       ii <- is.element(month(x),eval(parse(text=paste('season.abb()$',it,sep=''))))
     }
   } else if (inherits(it,"Date")) {
-    if (verbose) print('it is a Date object')
+    if (verbose) print('station.subset: it is a Date object')
     ii <- is.element(t,it)
   } else if (is.logical(it)) {
     ii <- (1:d[1])[it]
   } else if ((class(it)=="numeric") | (class(it)=="integer")) {
-    if (verbose) print('it is numeric or integer')
+    if (verbose) print('station.subset: it is numeric or integer')
     nlev <- as.numeric(levels(factor(nchar(it)))) # REB bug        
     # nchar returns the string length, but these lines need to find the number of different levels/categories
     # AM 2015-02-16 DO not agree    nlev <- as.numeric(levels(factor(as.character(it)))) # REB 2015-01-15
     if (verbose) {print(nlev); print(it)}
     if ((length(nlev)==1)) {
       if (nlev==4) {
-        if (verbose) print("it are most probably years")
+        if (verbose) print("station.subset: it are most probably years")
         if (length(it)==2) {
           ii <- is.element(yr,it[1]:it[2])
           if (verbose) print(paste('Subset of',sum(ii),'data points between',
                                    min(yr),'-',max(yr),'total:',length(yr)))
           # if it is years:
         } else if (min(it)> length(it)) {
-          if (verbose) print("match years")
+          if (verbose) print("station.subset: match years")
           ii <- is.element(yr,it)
         } 
       } else if (nlev<=4) {
-        if (verbose) print("it are most probably seasons")
+        if (verbose) print("station.subset: it are most probably seasons")
         if (inherits(x,'season') & (length(it)==1)) {
-          if (verbose) print(paste("The 'it' value must be a season index between 1 and 4.",
+          if (verbose) print(paste("station.subset: The 'it' value must be a season index between 1 and 4.",
                                    "If not please use character strings instead. e.g. it='djf'"))
           it <- switch(tolower(it),'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
           ii <- is.element(mo,it)
         } else if ( (inherits(x,'month') | (inherits(x,'day'))) &
                     ( (max(it) <= 12) & (min(it) >= 1) ) ) {
           if (verbose) {
-            print(paste("The 'it' value must be a month index.",
+            print(paste("station.subset: The 'it' value must be a month index.",
                         "If not please use character strings instead"))
             print(range(it))
           }
           ii <- is.element(mo,it)
         } else {
-          if (verbose) print("it represents indices")
+          if (verbose) print("station.subset: it represents indices")
           ii <- it
         }
       } else if (nlev<=12  & ( (max(it) <= 12) & (min(it) >= 1) )) {
         if (verbose) {
-          print(paste("The 'it' value is most probably a month index.",
+          print(paste("station.subset: The 'it' value is most probably a month index.",
                       "If not please use character strings instead"))
           print(range(it))
         }
         ii <- is.element(mo,it)
       } else {
         if (verbose) {
-          print("The 'it' value is most probably an index.")
+          print("station.subset: The 'it' value is most probably an index.")
           print(range(it))
         }
         ii <- it
       }
     } else {
       #  length(nlev) > 1
-      if (verbose) print("it most probably holds indices")
+      if (verbose) print("station.subset: it most probably holds indices")
       ii <- it
     }
   } else {
@@ -218,10 +223,10 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   ## update the class of x
   class(x) <- "zoo"
   
-  if (verbose) print('is - spatial indexing')
+  if (verbose) print('station.subset: is - spatial indexing')
   ## REB 11.04.2014: is can be a list to select region or according to other criterion
   if (inherits(is,'list')) {
-    if (verbose) print("'is' is a list object")
+    if (verbose) print("station.subset: 'is' is a list object")
     selx <- rep(TRUE,dim(x)[2]); sely <- selx; selz <- selx
     selc <- selx; seli <- selx; selm <- selx; salt <- selx
     selp <- selx; selF <- selx ; sell <- selx; selj <- selx
@@ -252,6 +257,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(ij)>0) sj <- is[[ij]] else sj <- NULL
     #print(slat); print(range(lat(x)))
     if (verbose) {
+      print('station.subset:')
       print(sloc); print(slon); print(slat); print(salt); print(scntr); print(smin); print(sparam)
     }
     ## REB 2021-08-19
@@ -278,22 +284,22 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     ##
     ## Need to make sure both it and is are same type: here integers for index rather than logical
     ## otherwise the subindexing results in an empty object
-    if (verbose) print(paste(sum(is),'locations'))
+    if (verbose) print(paste('station.subset:',sum(is),'locations'))
   } else if(is.numeric(is) | is.integer(is)) {
-    if(verbose) print("'is' is numeric or integer.")
+    if(verbose) print("station.subset: 'is' is numeric or integer.")
     if(all(is<=dim(x)[2])) {
       if(is.null(stid(x))) {
-        if(verbose) print("is most probably holds indices")
+        if(verbose) print("station.subset: is most probably holds indices")
         is <- is.element(seq(1,dim(x)[2]),is)
       } else if (all(is.element(is,stid(x)))) {
-        if(verbose) print("is most probably holds station id:s")
+        if(verbose) print("station.subset: is most probably holds station id:s")
         is <- is.element(stid(x),is)
       } else {
-        if(verbose) print("is most probably holds indices")
+        if(verbose) print("station.subset: is most probably holds indices")
         is <- is.element(seq(1,dim(x)[2]),is)
       }
     } else {
-      if(verbose) print("is most probably holds station id:s")
+      if(verbose) print("station.subset: is most probably holds station id:s")
       is <- is.element(stid(x),is)
     }
   } else {
@@ -301,7 +307,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     warning("subset.station: did not recognise the selection citerion for 'is'")
   }
   
-  if (verbose) print(paste('Subset of',sum(ii),'data points between',
+  if (verbose) print(paste('station.subset: Subset of',sum(ii),'data points between',
                            min(yr),'-',max(yr),'total:',length(yr),
                            'from',length(is),'locations'))
   
@@ -393,7 +399,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(attr(y,'na'))>1) attr(y,'na') <- attr(x,'na')[is] else
       attr(y,'na') <- attr(x,'na')
   
-  if (verbose) print(paste('Final: ',loc(y),varid(y),esd::unit(y),lon(y),lat(y)))
+  if (verbose) print(paste('station.subset:Final: ',loc(y),varid(y),esd::unit(y),lon(y),lat(y)))
   if (length(loc(y))==0) warning('station.subset: no location information - loc(y) == 0')
   if (!is.null(err(y))) attr(y,'standard.error') <- err(x)[ii,is]
   ##attr(y,'date-stamp') <- date()
