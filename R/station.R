@@ -203,7 +203,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
                             path.metnod=NULL,url.metnod=NULL,
                             user='external',save2file=FALSE) {
   
-  if (verbose) {print('station.default'); print(match.call())}
+  if (verbose) print(match.call())
   ## REB 2020-05-26: a hack - the old code took forever...
   if (!is.null(src)) if (src=='metnod.thredds') {
     y <- station.thredds(locs=loc,param=param,stid=stid,lon=lon,lat=lat,
@@ -215,11 +215,11 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   l <- list(...)
   dots <- names(l)
   if (length(l) > 0) { 
-    if (verbose) print("Taking '...' to select station (station.meta/data.frame)")
+    if (verbose) print("station.default: Taking '...' to select station (station.meta/data.frame)")
     ic <- match('ss',names(l))
     if (!is.na(ic)) ss <- l$ss else ss <- l[[1]] 
   } else {
-    if (verbose) print("ss <- NULL")
+    if (verbose) print("station.default: ss <- NULL")
     ss <- NULL
   }
   if (inherits(loc,"stationmeta")) {
@@ -234,7 +234,6 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   }
   
   if (is.null(ss)) {
-    if (verbose) print('select.station')
     ss <- select.station(stid=stid,loc=loc,lon=lon,lat=lat,alt=alt,cntr=cntr,
                          param=param,src=src,it=it,nmin=nmin,user=user,
                          verbose=verbose)
@@ -249,25 +248,25 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
     if (!is.null(ssn) & !is.null(ssx)) {
       class(ssn) <- class(ssx) <- "data.frame"
     } else {
-      print('Found no stations with given criteria')
+      print('station.default: Found no stations with given criteria')
       return(NULL)
     }
     ss <- subset(ssx,ssx$station_id==ssn$station_id) # keep only stations recording both min and max
     if (is.null(ss)) {
       return(NULL)
     } else {
-      rl <- readline(paste0("T2m is not available for your selection but TMIN and TMAX have been found",
+      rl <- readline(paste0("station.default: T2m is not available for your selection but TMIN and TMAX have been found",
                             " - Would you like to continue using the averaged values? (y or n): "))
       if ((rl=="y") | rl==("ye") | (rl=="yes")) {
         ss$element <- rep(esd2ele(param),length(ss$station_id)) ## update element with param
       } else {
-        stop("Process stopped")
+        stop("station.default: Process stopped")
       }
     }
   } 
 
   if (verbose) {
-    print("Station ID:")
+    print("station.default: Station ID:")
     str(ss$station_id)
   }
 
@@ -285,7 +284,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
 
   ## Loop through requested data sources
   for(s in sources) {
-    if(verbose) print(paste("Retrieving data from source",s))
+    if(verbose) print(paste("station.default: Retrieving data from source",s))
 
     ## Set stid, param and a default retrieval path
     stid <- ss$station_id[src==s]
@@ -330,13 +329,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
     for(param0 in unique(param)) {
       if(grepl("FROST",toupper(s))) {
         ## Special treatment for FROST, because multiple stations should be fetched in one query for efficiency
-        param0 <- metno.frost.ele()$param[is.element(metno.frost.ele()$element,esd2ele(param0))]
-        if (verbose) {
-          print(paste('Check FROST: param0=',param0))
-        }
-        ## REB 2020-05-26: replaced start and end arguments with it to make the notation 'esd-consistent'.
-        ## REB 2021-05-28: replaced 'stid[param==param0]' with stid 
-        #x <- metno.frost.station(timeresolutions=timeres, stid=stid[param==param0], 
+        ## (TODO: If X can contain multiple parameters, metno.frost.station can be modified to allow this as well)
         x <- metno.frost.station(timeresolutions=timeres, stid=stid, 
                                  param=param0, verbose=verbose, path=path, 
                                  it=c(start, end), save2file=save2file)
@@ -354,12 +347,12 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
         qual <- ss$quality[j]
         start <- ss$start[j]
         end <- ss$end[j]
-        if(verbose) print(paste("Retrieving data from",length(stid),
-                                "records ..."))
+        if(verbose) print(paste("station.default: Retrieving data from",
+                                length(stid), "records ..."))
 
         ## Fetch data from one station at a time
         for (i in 1:length(stid)) {
-          if(verbose) print(paste(i,toupper(param0),stid[i],loc[i],cntr[i],s))
+          if(verbose) print(paste('station.default:',i,toupper(param0),stid[i],loc[i],cntr[i],s))
 
           ## Custom treatment for the different source types
           if (grepl("METNOD",toupper(s))) {
@@ -379,7 +372,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
               x <- attrcp(dd06,x)
               class(x) <- class(dd06)
               rm(dd06,dd12,dd18)
-              if(verbose) print("WARNING : Averaged wind direction values computed from 06, 12,and 18 UTC")
+              if(verbose) print("station.default: WARNING : Averaged wind direction values computed from 06, 12,and 18 UTC")
               param1 <- "DD"
               ele <-  "502"
               attr(x,'variable') <- param1
@@ -419,7 +412,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
                 x <- attrcp(ghcnd.tmin,x)
                 class(x) <- class(ghcnd.tmin)
                 rm(ghcnd.tmin,ghcnd.tmax)
-                if(verbose) print("WARNING : Average temperature values have been computed from TMIN and TMAX values")
+                if(verbose) print("station.default: WARNING : Average temperature values have been computed from TMIN and TMAX values")
                 param1 <- "TAVG"
                 ele <-  "101"
                 attr(x,'variable') <- param
@@ -435,14 +428,14 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
 
           ## Let user know if no data was found, otherwise set data to variable X
           if (is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
-            if(verbose) print("Warning : No values found in the time series for-> This station will be ignored")
-            if(verbose) print(paste('stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],
+            if(verbose) print("station.default: Warning : No values found in the time series for-> This station will be ignored")
+            if(verbose) print(paste('station.default: stid=',stid[i],'lon=',lon[i],'lat=',lat[i],'alt=',alt[i],
                                     'loc=',loc[i],'cntr=',cntr[i],'param=',param0,'path=',path,
                                     'url=',url)) # REB 2016-07-26
             x <- NULL
           } else {
-            if (verbose) {print("obs"); str(x)}
-            if (verbose) print(paste('Combine the station records for i=',i))
+            if (verbose) {print("station.default: obs"); str(x)}
+            if (verbose) print(paste('station.default: Combine the station records for i=',i))
             if (is.null(X)) X <- x else X <- combine.station(X,x)
           }
         }
@@ -463,7 +456,7 @@ t2m.ghcnd.avg <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   if (is.null(ghcnd.tmax)) return(NULL)
   ghcnd <- (ghcnd.tmin + ghcnd.tmax) / 2
   ghcnd <- attrcp(ghcnd.tmin,ghcnd)
-  if(verbose) print("WARNING : Average temperature values have been computed from TMIN and TMAX values")
+  if(verbose) print("station.default: WARNING : Average temperature values have been computed from TMIN and TMAX values")
   param1 <- "TAVG"
   ele <-  "101"
   attr(ghcnd,'variable') <- switch(toupper(param1),'TAVG'=expression(T[2*m]),
@@ -481,7 +474,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
                          #url="http://www.ecad.eu/utils/downloadfile.php?file=download/ECA_nonblend",
                          verbose=FALSE) {
   
-  if (verbose) print('ecad.station...')
+  if (verbose) print('station.default: ecad.station...')
   ele <- esd2ele(param=param)
   if (is.null(ele)) {
     param1 <- as.character(ele2param(ele=param,src="ECAD")$param)
@@ -494,7 +487,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
     }
   }
   scale <-as.numeric(ele2param(ele=ele,src="ECAD")$scale)
-  if (verbose) print(paste('scale=',scale))
+  if (verbose) print(paste('station.default: scale=',scale))
   fdata <- paste(url,"_",tolower(param1),".zip",sep="") 
   #text  <- unlist(strsplit(fdata,split="/"))
   #text2 <- text[length(text)]
@@ -507,14 +500,14 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   } 
   ## If folder does not exist, then download and unzip
   if (!file.exists(destfile2)) {
-    print(paste('Could not find',destfile2))
-    print('Download the ECA&D data... please be patient.')
+    print(paste('station.default: Could not find',destfile2))
+    print('station.default: Download the ECA&D data... please be patient.')
     if(!file.exists(path)) dir.create(path,showWarnings = FALSE,recursive=TRUE)
     download.file(fdata,destfile,method = "wget", quiet = !verbose, mode = "w", cacheOK = TRUE,
                   extra = getOption("download.file.extra"))
     unzip(destfile,exdir=substr(destfile,1,nchar(destfile)-4))
   }
-  if (verbose) print(paste("station.ecad: the folder has been found",destfile2))
+  if (verbose) print(paste("station.default: station.ecad: the folder has been found",destfile2))
   newpath <- substr(destfile,1,nchar(destfile)-4) 
   stid <- gsub(' ','',stid)
   for (i in 1:length(stid)) {
@@ -524,14 +517,14 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   fnames <- file.path(newpath,fnames,fsep = .Platform$file.sep)
   
   ipick <- file.exists(fnames)
-  if (verbose) print(paste('Looking for',fnames[1]))
+  if (verbose) print(paste('station.default: Looking for',fnames[1]))
   if (sum(ipick)==0)  return(NULL)
   if (sum(ipick)!=1) {
-    warning('More than one matches - I choose the first!')
+    warning('station.default: More than one matches - I choose the first!')
     ipick <- (1:length(ipick))[ipick][1]
   }
   fname <- fnames[ipick]
-  if (verbose) print(paste('FILENAME:',fname))
+  if (verbose) print(paste('station.default: FILENAME:',fname))
   
   x <- read.table(fname,header=TRUE,skip=18,sep=",")
   
@@ -541,7 +534,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   month <- substr(as.character(x$DATE),5,6)
   day <- substr(as.character(x$DATE),7,8)
   if (verbose) {
-    print('Make use of the quality flags')
+    print('station.default: Make use of the quality flags')
     str(x)
   }        
   if (dim(x)[2]==5) dataQ <- x[[5]] else dataQ <- ecad*0               
@@ -550,22 +543,23 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   ecad[dataQ == 9] <- NA                        
   
   if (verbose) {
-    print(c(year[1],month[1],day[1]))
-    print(c(year[L],month[L],day[L]))
-    print(summary(ecad))
-    print(length(ecad))
-    print(stid)
+    print(paste('station.default:',c(year[1],month[1],day[1])))
+    print(paste('station.default:',c(year[L],month[L],day[L])))
+    print(paste('station.default:',summary(ecad)))
+    print(paste('station.default:',length(ecad)))
+    print(paste('station.default:',stid))
   }
   
-  if (!check.bad.dates(year,month,day))  
+  if (!check.bad.dates(year,month,day)) {
     ECAD <- zoo(ecad, order.by = as.Date(paste(year, month, day, sep = "-"), 
-                                         by='day', length.out = L)) else {
-                                           print("Warning : Bad dates were found for this station -> Ignored")
-                                           return(NULL)                                          
-                                         }
+                                         by='day', length.out = L))
+  } else {
+    print("station.default: Warning : Bad dates were found for this station -> Ignored")
+    return(NULL)
+  }
   
   if (sum(ECAD,na.rm=TRUE)==0) {
-    print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)
+    print("station.default: Warning : No recorded values are found for this station -> Ignored") ; return(NULL)
   } 
   
   ECAD <- as.station(ECAD, stid=stid, lon=lon, lat=lat, alt=alt,
@@ -584,7 +578,7 @@ ecad.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
                      info= "Data and metadata available at http://eca.knmi.nl")
   attr(ECAD,'history') <- c(match.call(),date())
   attr(ECAD,'history') <- history.stamp(ECAD)
-  if (verbose) print('--- exit ecad.station ---')
+  if (verbose) print('station.default: --- exit ecad.station ---')
   invisible(ECAD)
 }
 
@@ -607,7 +601,7 @@ nacd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   eval(parse(text=txt))
   
   if (is.null(x)) {
-    print("No recorded values are found for this station")
+    print("station.default: No recorded values are found for this station")
     return(NULL)
   }
   
@@ -649,7 +643,7 @@ nacd.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
 
 # NOT EXPORTED
 narp.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL,qual=NULL,param=NULL,verbose=FALSE) {
-  if(verbose) print("narp.station")
+  if(verbose) print("station.default: narp.station")
   data(NARP,envir=environment())
   ele <- esd2ele(param=param)
   
@@ -659,7 +653,7 @@ narp.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
   iii <- is.element(NARP[,1],stid) & is.element(NARP[,2],as.numeric(ele))
   
   if (sum(iii) ==0) {
-    print("Warning : No recorded values are found for this station -> Ignored")
+    print("station.default: Warning : No recorded values are found for this station -> Ignored")
     return(NULL)
   }
   x <- NARP[iii,4:15]*scale
@@ -686,7 +680,7 @@ narp.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NULL
 
 # NOT EXPORTED - internal function
 nordklim.station <- function(stid=NULL,loc=NULL,lon=NULL,lat=NULL,alt=NULL,cntr=NULL,qual=NULL,param=NULL,verbose=FALSE,path=NULL) {
-  if(verbose) print("nordklim.station") 
+  if(verbose) print("station.default: nordklim.station") 
   if (is.null(stid)) return(NULL)
   data(nordklim.data,envir=environment())
   x <- nordklim.data ; rm(nordklim.data)
@@ -695,7 +689,10 @@ nordklim.station <- function(stid=NULL,loc=NULL,lon=NULL,lat=NULL,alt=NULL,cntr=
   ele <- esd2ele(param) 
   x <- subset(x,element==ele)
   
-  if (dim(x)[1] < 1) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)}
+  if (dim(x)[1] < 1) {
+    print("station.default: Warning : No recorded values are found for this station -> Ignored")
+    return(NULL)
+  }
   x[x < -999] <- NA
   scale_factor <- as.numeric(as.matrix(ele2param(ele=ele,src="NORDKLIM")$scale_factor[3]))
   xx <- as.matrix(x[,4:15]*scale_factor)
@@ -734,7 +731,7 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   param1 <-as.character(ele2param(ele=ele,src="GHCNM")$param[5])
   scale <-as.numeric(ele2param(ele=ele,src="GHCNM")$scale_factor[3])
   
-  if (verbose) print("station.GHCNM")
+  if (verbose) print("station.default: station.GHCNM")
   
   ghcnm <- ghcnm.data(ele=ele,stid=stid,src="ghcnm",ver=ver,adj=adj,path=path,url=url,force=force,flag=flag,verbose=verbose)
   x <- c(t(ghcnm[,5:16]))*scale
@@ -745,8 +742,11 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
   
   GHCNM <- zoo(x,order.by = as.Date(paste(year, month, day, sep = "-"), by='month', length.out = L))
   
-  if (sum(GHCNM,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
-  ##print("attributes")
+  if (sum(GHCNM,na.rm=TRUE)==0) {
+    print("station.default: Warning : No recorded values are found for this station -> Ignored")
+    return(NULL)
+  } 
+  ##print("station.default: attributes")
   GHCNM <- as.station(GHCNM,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,##frequency=1,calendar='gregorian',
                       cntr=cntr, loc=loc, src='GHCNM', url=paste(url,ver,sep="/"),longname=as.character(ele2param(ele=ele,src="GHCNM")$longname[2]),
                       unit=switch(param1,'TAVG'='degree Celsius','TMAX'='degree Celsius','TMIN'='degree Celsius'), param=param, aspect="original",
@@ -766,7 +766,7 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 ghcnd.station.int <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL, qual=NULL, param=NULL,
                           path="data.GHCND", url=NULL, adj=TRUE, force=FALSE, flag=FALSE, off=FALSE, verbose=FALSE) {
   
-  if (verbose) print("station.GHCND")
+  if (verbose) print("station.default: station.GHCND")
   ele <- esd2ele(param=param) 
   param1 <- as.character(ele2param(ele=ele,src="GHCND")$param[5])
   ## REB 2021-05-11 fix
@@ -793,7 +793,10 @@ ghcnd.station.int <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL,
   
   GHCND <- zoo(x,order.by = vdate)
   
-  if (sum(GHCND,na.rm=TRUE)==0) {print("Warning : No recorded values are found for this station -> Ignored") ; return(NULL)} 
+  if (sum(GHCND,na.rm=TRUE)==0) {
+    print("station.default: Warning : No recorded values are found for this station -> Ignored")
+    return(NULL)
+  } 
   
   GHCND <- as.station(GHCND,stid=stid, quality=qual, lon=lon,lat=lat,alt=alt,##frequency=1,calendar='gregorian',
                       cntr=cntr, loc=loc,src='GHCND', url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn",

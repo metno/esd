@@ -30,7 +30,7 @@
 #' @export metno.frost.meta.day
 metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
                                  save2file=FALSE, path=NULL, verbose=FALSE, ...) {
-  if(verbose) print("metno.frost.meta.day")
+  if (verbose) print(match.call())
   X <- metno.frost.meta.default(param=param, timeresolutions="P1D", verbose=verbose, ...)
   filename <- "meta.metno.frost.day.rda"
   attr(X, "source") <- "METNOD.FROST"
@@ -56,7 +56,7 @@ metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon
 #' @export metno.frost.meta.month
 metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
                                    save2file=FALSE, path=NULL, verbose=FALSE,...) {
-  if(verbose) print("metno.frost.meta.month")
+  if (verbose) print(match.call())
   X <- metno.frost.meta.default(param=param, timeresolutions="P1M", verbose=verbose, ...)
   filename <- "meta.metno.frost.month.rda"
   attr(X, "source") <- "METNOM.FROST"  
@@ -82,7 +82,7 @@ metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","p
 #' @export metno.frost.meta.minute
 metno.frost.meta.minute <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
                                     save2file=FALSE, path=NULL, verbose=FALSE, ...) {
-  if(verbose) print("metno.frost.meta.minute")
+  if (verbose) print(match.call())
   X <- metno.frost.meta.default(param=param, timeresolutions="PT1M", verbose=verbose, ...)
   filename <- "meta.metno.frost.minute.rda"
   attr(X, "source") <- "METNO.FROST.MINUTE"
@@ -108,9 +108,9 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
                                      performancecategories="A,B,C", exposurecategories="1,2", 
                                      url='https://frost.met.no/auth/requestCredentials.html',
                                      browser="firefox", verbose = FALSE) {
-  if(verbose) print("metno.frost.meta.default")
+  if (verbose) print(match.call())
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
-    stop("Package 'jsonlite' needed to use 'meta.frost.meta.default'. Please install it.")
+    stop("metno.frost.meta.default: Package 'jsonlite' needed, please install it.")
   } else {
     
     # KMP 2020-01-22: enable timeresolutions notation monthly and daily
@@ -129,7 +129,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     param1s <- sapply(ele, getparam1)
     names(param1s) <- ele
     strparam <- paste0(param1s, collapse=",")
-    if (verbose) print(strparam)
+    if (verbose) print(paste('metno.frost.meta.default: params:', strparam))
     
     # Get a client_id using function from metno.frost.data.R
     frostID <- metno.frost.keyfile(keyfile, verbose)
@@ -170,9 +170,9 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       "&fields=sourceId,elementId,validFrom,validTo"
     )
     if (verbose) {
-      print(url1)
-      print(url_sj)
-      print(url2)
+      print(paste('metno.frost.meta.default:', url1))
+      print(paste('metno.frost.meta.default:', url_sj))
+      print(paste('metno.frost.meta.default:', url2))
     }
     # KT 2020-05-26: getting data from both Norge and Svalbard and Jan Mayen
     xs_no <- jsonlite::fromJSON(URLencode(url1), flatten=TRUE)
