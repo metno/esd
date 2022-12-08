@@ -68,9 +68,6 @@
 #' metno.frost.data(param='t2m', stid=18700, it=c('2020-01-01','2020-02-01'), timeresolutions='P1D')
 #' }
 
-#' Add alias metno.frost.station
-metno.frost.station <- metno.frost.data
-
 #' Fetch data from frost.met.no and return station object
 #' @export metno.frost.data
 metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.no/auth/requestCredentials.html',
@@ -81,14 +78,14 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
                              qualities='0,1,2,3,4,5', fetch.meta=TRUE, path=NULL, 
                              browser="firefox", save2file=FALSE, verbose=FALSE) {
 
-  if(verbose) print("Fetch data from the Frost API (http://frost.met.no)")
+  if (verbose) print(match.call())
 
   ## Check requirements
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
-    stop("Package 'jsonlite' needed to use 'metno.frost.station'. Please install it.")
+    stop("metno.frost.data: Package 'jsonlite' needed to use 'metno.frost.station'. Please install it.")
   }
   if (is.null(param)) {
-    stop("param must be defined")
+    stop("metno.frost.data: param must be defined")
   }
 
   ## Ensure there is a key file and get frost keys
@@ -105,18 +102,18 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
   elementid <- esd2ele(param)
   frostparaminfo <- ele2param(elementid, src="metno.frost")
   frostcfname <- gsub('*', timeresolutions, frostparaminfo$param, fixed=TRUE)
-  if (verbose) print( paste('Frost parameters = ', frostcfname) )
+  if (verbose) print( paste('metno.frost.data: Frost parameters:', frostcfname) )
 
   ## Get all station metadata for desired param and time resolution
   meta <- metno.frost.getmetadata(fetch.meta, param, timeresolutions)
 
   ## Get list of relevant stations / source IDs
   frostsources <- metno.frost.stations(stid, lat, lon, meta)
-  if (verbose) print( paste("Frost stations:", paste(frostsources, collapse=",")) )
+  if (verbose) print( paste("metno.frost.data: Frost stations:", paste(frostsources, collapse=",")) )
 
   ## Update or set start and end dates using metadata
   it <- metno.frost.dates(it, stid, elementid, meta)
-  if (verbose) print( paste("Frost dates =", it[1], it[2]) )
+  if (verbose) print( paste0("metno.frost.data: Frost dates: ", it[1], '/', it[2]) )
 
   ## Fetch the data in as many API queries as frost.met.no requires
   data <- metno.frost.querysplitter(frostID, frostsources, c(frostcfname), it,
@@ -148,6 +145,8 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
   )
   ## Set up matrix with a row per time step and a column per station
   X <- matrix(NA, nrow=length(tvec), ncol=length(sourceId))
+  rownames(X) <- as.character(tvec)
+  colnames(X) <- stid
   for(i in 1:ncol(X)) {
     j <- sapply(time[data$sourceId==sourceId[i]], function(x) which(tvec==x))
     X[j,i] <- var[data$sourceId==sourceId[i]]
@@ -181,9 +180,9 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
   if(save2file) {
     if (is.null(path)) path <- 'data.METNO'
     dir.create(path, showWarnings=FALSE, recursive=TRUE)
-    stid <- sprintf("%05d", as.numeric(stid))
-    filename <- paste(attr(METNO.FROST,"source"),param,paste(stid,collapse="_"),"txt",sep=".")
-    write.table(METNO.FROST, file=file.path(path,filename), row.names=FALSE, col.names = names(X))
+    ext <- switch(timeresolutions, 'PT1M'='obs', 'P1D'='dly', 'P1M'='mon')
+    filename <- paste(attr(METNO.FROST,"source"),param,ext,sep=".")
+    write.table(X, file=file.path(path,filename), col.names = NA, sep=",", quote = FALSE)
   }
 
   invisible(METNO.FROST)
@@ -194,7 +193,7 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
                                    timeresolutions='P1M', levels="default", timeoffsets="default", 
                                    performancecategories="A,B,C", exposurecategories="1,2", 
                                    qualities='0,1,2,3,4,5', verbose=FALSE) {
-
+  
   ## Set up frost.met.no API query parameters
   sourcestring <- paste(paste0('SN', frostsources), collapse=',')
   elementstring <- paste(frostelements, collapse=',')
@@ -221,7 +220,7 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
   } else if (result$statuscode == 414) {
     ## Split longest list (frostsources or frostelements) and try again
     if (nchar(sourcestring) > nchar(elementstring)) {
-      if (verbose) print("Splitting station list for frost.met.no query")
+      if (verbose) print("metno.frost.querysplitter: Splitting station list for frost.met.no query")
       halflength = floor( length(frostsources)/2 )
       sourcespart1 <- frostsources[1:halflength]
       sourcespart2 <- tail(frostsources, halflength)
@@ -233,7 +232,7 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
                                             levels, timeoffsets, performancecategories,
                                             exposurecategories, qualities, verbose)
     } else {
-      if (verbose) print("Splitting param list for frost.met.no query")
+      if (verbose) print("metno.frost.querysplitter: Splitting param list for frost.met.no query")
       halflength = floor( length(frostelements)/2 )
       elementpart1 <- frostelements[1:halflength]
       elementpart2 <- tail(frostelements, halflength)
@@ -248,7 +247,7 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
     ## Merge and return the two results
     data <- merge(resultpart1, resultpart2, all=TRUE)
   } else if (result$statuscode == 403) {
-    if (verbose) print("Splitting time interval for frost.met.no query")
+    if (verbose) print("metno.frost.querysplitter: Splitting time interval for frost.met.no query")
     t1 <- as.numeric(as.POSIXct(it[1], tz='UTC'))
     t2 <- as.numeric(as.POSIXct(it[2], tz='UTC'))
     tmid <- as.POSIXct((t1 + t2) / 2, origin = '1970-01-01', tz='UTC')
@@ -265,13 +264,14 @@ metno.frost.querysplitter <- function(frostID, frostsources=NULL, frostelements=
     ## Merge and return the two results
     data <- merge(resultpart1, resultpart2, all=TRUE)
   } else if (result$statuscode == 412) {
-    stop('No data in frost.met.no for these criteria')
+    ## TODO: this one should be accepted, with a legitimate NULL return that is handled upstream
+    stop('metno.frost.querysplitter: No data in frost.met.no for these criteria')
   } else if (result$statuscode == 400) {
-    stop('Something went wrong in esd (invalid frost.met.no API request)')
+    stop('metno.frost.querysplitter: Something went wrong in esd (invalid frost.met.no API request)')
   } else if (result$statuscode == 500) {
-    stop('Something went wrong in frost.met.no')
+    stop('metno.frost.querysplitter: Something went wrong in frost.met.no')
   } else if (result$statuscode == 429 | result$statuscode == 503) {
-    stop('frost.met.no is under high load, try again later')
+    stop('metno.frost.querysplitter: frost.met.no is under high load, try again later')
   }
   data
 }
@@ -288,7 +288,7 @@ metno.frost.dataquery <- function(frostID, parameters, verbose=FALSE) {
   statuscode <- httr::status_code(resp)
 
   ## Print URL if desired
-  if (verbose) print(resp$url)
+  if (verbose) print(paste('metno.frost.dataquery:', resp$url))
   
   ## Parse the CSV (hopefully good enough)
   if (statuscode == 200) {
@@ -306,10 +306,10 @@ metno.frost.dataquery <- function(frostID, parameters, verbose=FALSE) {
 ## Ensure a keyfile exists, ask user to generate one if not
 metno.frost.keyfile <- function(keyfile, verbose) {
   if (file.exists(keyfile)) {
-    if (verbose) print(paste('Read client ID from',keyfile))
+    if (verbose) print(paste('metno.frost.keyfile: Read client ID from',keyfile))
     frostID <- readLines(keyfile)
   } else { 
-    if (verbose) print(paste('Generate new client ID',url))  
+    if (verbose) print(paste('metno.frost.keyfile: Generate new client ID',url))  
     system(paste(browser,url))
     frostID <- rep("",2)
     frostID[1] <- readline('Please give me the first key:')
@@ -368,7 +368,7 @@ metno.frost.dates <- function(it, stid, elementid, meta) {
   ## Select index for subset of stations that have the desired parameter
   i <- meta$station_id %in% stid & meta$element %in% elementid
   if(sum(i)==0) {
-    stop('Found no stations with given criteria')
+    stop('metno.frost.dates: Found no stations with given criteria')
   }
   
   ## Get earliest start and latest end of the relevant timeseries
@@ -406,9 +406,13 @@ metno.frost.dates <- function(it, stid, elementid, meta) {
   hasdata <- meta.start<=end & meta.end>=start
   ## Check if there are any stations left
   if(sum(hasdata)==0) {
-    stop('Found no stations with given criteria')
+    stop('metno.frost.dates: Found no stations with given criteria')
   }
 
   ## Return an updated it variable
   it <- c(start, end)
 }
+
+
+## Add alias metno.frost.station
+metno.frost.station <- metno.frost.data
