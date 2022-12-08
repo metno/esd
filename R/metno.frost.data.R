@@ -77,7 +77,7 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
                              performancecategories="A,B,C", exposurecategories="1,2", 
                              qualities='0,1,2,3,4,5', fetch.meta=TRUE, path=NULL, 
                              browser="firefox", save2file=FALSE, verbose=FALSE) {
-
+  
   if (verbose) print(match.call())
 
   ## Check requirements
@@ -145,8 +145,6 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
   )
   ## Set up matrix with a row per time step and a column per station
   X <- matrix(NA, nrow=length(tvec), ncol=length(sourceId))
-  rownames(X) <- as.character(tvec)
-  colnames(X) <- stid
   for(i in 1:ncol(X)) {
     j <- sapply(time[data$sourceId==sourceId[i]], function(x) which(tvec==x))
     X[j,i] <- var[data$sourceId==sourceId[i]]
@@ -178,6 +176,9 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
 
   ## Save to file if requested
   if(save2file) {
+    ## add rownames and colnames for titles
+    rownames(X) <- as.character(tvec)
+    colnames(X) <- substring(sourceId, 3, nchar(sourceId)-2)
     if (is.null(path)) path <- 'data.METNO'
     dir.create(path, showWarnings=FALSE, recursive=TRUE)
     ext <- switch(timeresolutions, 'PT1M'='obs', 'P1D'='dly', 'P1M'='mon')
@@ -294,7 +295,7 @@ metno.frost.dataquery <- function(frostID, parameters, verbose=FALSE) {
   if (statuscode == 200) {
     xs <- httr::content(resp, encoding='UTF-8')
     table <- read.table(text=xs, sep=',', header=TRUE, check.names=FALSE)
-    colnames(table) = gsub("\\(-\\)", "", colnames(table))
+    colnames(table) = sub("\\(-\\)", "", colnames(table))
   } else {
     table <- NULL
   }
