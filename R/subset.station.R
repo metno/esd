@@ -215,7 +215,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     }
   } else {
     ii <- rep(FALSE,length(t))
-    warning("subset.station: did not recognise the selection citerion for 'it'")
+    warning("station.subset: did not recognise the selection citerion for 'it'")
   }
   
   class(x) -> cls
@@ -304,7 +304,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     }
   } else {
     is <- rep(FALSE,dim(x)[2])
-    warning("subset.station: did not recognise the selection citerion for 'is'")
+    warning("station.subset: did not recognise the selection citerion for 'is'")
   }
   
   if (verbose) print(paste('station.subset: Subset of',sum(ii),'data points between',
@@ -317,7 +317,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   
   d <- dim(x)
   if (is.null(d)) {
-    warning('subset.station: unsuccessfull subsetting')
+    warning('station.subset: unsuccessfull subsetting')
     return(x)
   }
   
@@ -326,7 +326,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   } else { 
     if(verbose) print(is)
     if(verbose) print(dim(x))
-    warning('subset.station: unsuccessful subsetting')
+    warning('station.subset: unsuccessful subsetting')
     return(x)
   }
   
@@ -345,10 +345,10 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   if (is.null(attr(y,'unit'))) attr(y,'unit') <- NA
   if (verbose) print(c(varid(x),esd::unit(x)))
   
-  if (verbose) print(paste('Before subsetting',loc(x)[is],varid(x)[is],
+  if (verbose) print(paste('subset.station: Before subsetting',loc(x)[is],varid(x)[is],
                            esd::unit(x)[is],lon(x)[is],lat(x)[is]))
   if (verbose) print(is)
-  
+
   attr(y,'longitude') <- attr(x,'longitude')[is]
   attr(y,'latitude') <- attr(x,'latitude')[is]
   
@@ -399,7 +399,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if (length(attr(y,'na'))>1) attr(y,'na') <- attr(x,'na')[is] else
       attr(y,'na') <- attr(x,'na')
   
-  if (verbose) print(paste('station.subset:Final: ',loc(y),varid(y),esd::unit(y),lon(y),lat(y)))
+  if (verbose) print(paste('station.subset: Final:',loc(y),varid(y),esd::unit(y),lon(y),lat(y)))
   if (length(loc(y))==0) warning('station.subset: no location information - loc(y) == 0')
   if (!is.null(err(y))) attr(y,'standard.error') <- err(x)[ii,is]
   ##attr(y,'date-stamp') <- date()
