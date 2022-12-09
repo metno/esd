@@ -37,19 +37,15 @@ Station or field objects
 }
 \description{
 Statistics of spell durations (consecutive wet and dry days), e.g. dry and
-wet periods or duration of extremes.
-}
-\details{
-\code{exceedance} estimates statistics for peak-over-treshold, and
+wet periods or duration of extremes. Similar functions include:
+\code{count} returns a count of cases with values over s threshold value.
+\code{exceedance} estimates statistics for peak-over-threshold, and
 \code{nevents} returns the number of events with exceeding values (e.g. the
 number of rainy days X > 1 mm/day).
-
 \code{wetfreq} returns the wet-day frequency (a fraction) and \code{wetmean} returns the wet-day mean.
-
 \code{CDD}: Cooling degree day
 \code{GDD}: Growing degree days (\url{http://en.wikipedia.org/wiki/Growing_degree-day})
 \code{HDD}: Heating degree day
-
 \code{qqgeom} produces a quantile-quantile plot of streak statistics comparing the
 empirical quantiles with the distribution function quantiles (see \code{\link[stats]{qgeom}}).
 }

@@ -280,7 +280,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     if(length(sj)>0) selj <- is.element(seq(1,dim(x)[2]),sj)
     ##
     is <- sell & selx & sely & selz & selc & seli & selm & selp & selF & selj
-    if (sum(is)==0) browser()
+    if (sum(is)==0) {warning('Returning empty station set'); return(NULL)}
     ##
     ## Need to make sure both it and is are same type: here integers for index rather than logical
     ## otherwise the subindexing results in an empty object

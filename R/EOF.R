@@ -188,7 +188,7 @@ EOF.field <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,ano
     y <- y - ave
   } else ave <- rowMeans(y)*0
   npca <- min(dim(y)) 
-  ny <- min(c(dim(y),20))
+  ny <- min(c(dim(y),n))
 
   # REB 2015-05-21
   # Apply the SVD decomposition: see e.g. Strang (1988) or Press et al. (1989)
