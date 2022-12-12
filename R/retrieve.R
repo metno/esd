@@ -987,12 +987,13 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   } else {
     if (verbose) print("Checking Frequency from the data --> [fail]")
   }
+  
   ## Checking Calendar attribute if any, otherwise set to "ordinary"  
-  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day" 
-  ## REB 2021-05-06 - CMIP6 also uses the Julian Calendar :-(
+  # Possible values for CMIP5 files are : "365_day", "standard", "proleptic_gregorian", "360_day" 
+  ## REB 2021-05-06 - CMIP6 also uses the Julian Calendar
   ical <- grep(c("calend"),tatt)
   ## 
-  if (length(ical)>0) {   
+  if (length(ical)>0) {
     calendar.att <- eval(parse(text = paste("time$",tatt[ical],sep="")))
     if (verbose) print("Checking Calendar from time attribute --> [ok]") 
     if (verbose) print(paste("Calendar attribute has been found in time$calendar (",time$calendar,")",sep =""))
@@ -1032,8 +1033,8 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
                              'min'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
                              'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*60*60,
 			     'day'= strptime(torigin,format="%Y-%m-%d %H:%M") + time$vals*60*60*24,
--                            #'day'= as.Date(torigin) + time$vals,
-                             'mon'= seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
+			     ## 'day' = as.Date(torigin) + time$vals,
+			     'mon'=seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
                              'yea'= year(as.Date(torigin)) + time$vals)
       }
     } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap|365_day|360_day",calendar.att)) {
@@ -1068,10 +1069,10 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           # construct vdate
           years <- time$vals%/%time$daysayear + yorigin
           dayofyear <- time$vals%%time$daysayear
-          #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)), 
-          #                       rightmost.closed=TRUE, left.open=TRUE)
-	  months <- findInterval(floor(dayofyear)+, c(1,cumsum(mndays)), 
-                                 rightmost.closed=TRUE, left.open=TRUE)
+	  #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
+	  #	     		  rightmost.closed=TRUE, left.open=TRUE)
+	  months <- findInterval(floor(dayofyear)+1, c(1,cumsum(mndays)),
+	  	    		 rightmost.closed=FALSE, left.open=FALSE)
           days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {
@@ -1084,7 +1085,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
               time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=time$len)
               qf <- c(qf,"jumps in data found - continuous vector forced")
             } else {
-              time$vdate <- as.Date(paste(years,months,"01",sep="-"))#"15",sep="-"))
+              time$vdate <- as.Date(paste(years,months,"01",sep="-")) #"15",sep="-"
             }
           } else if(freq.data %in% c('season','year')) {
             time$vdate <- as.Date(paste(years,months,"01",sep="-"))

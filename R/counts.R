@@ -25,15 +25,15 @@
 #' @keywords utilities
 #' @examples
 #' 
-#' number of warm days:
+#' # number of warm days:
 #' data(ferder)
 #' plot(as.seasons(ferder,FUN='count',threshold=20), new=FALSE)
 #' 
-#' Mild winter days - number of days in the winter season with
-#' above freezing temperatures
+#' # Mild winter days - number of days in the winter season with
+#' # above freezing temperatures
 #' try(coldwinterdays(ferder))
 #'
-#' Quantile-quantile plot
+#' # Quantile-quantile plot
 #' qqgeom(ferder, treshold=1, pois=TRUE)
 #'
 #'@export

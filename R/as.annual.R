@@ -188,10 +188,17 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
   if (verbose) print('Fill in gaps')
   it <- seq(min(index(y)),max(index(y)),by=1)
   if (verbose) print(c(range(it),length(it)))
-  z <- zoo(rep(NA,length(it)),order.by=it)
-  z[is.element(it,index(y))] <- y
+  if(is.null(dim(y))) {
+    z <- zoo(rep(NA,length(it)),order.by=it)
+    z[is.element(it,index(y))] <- y
+  } else {
+    z <- zoo(matrix(rep(NA,ncol(y)*length(it)),
+                    ncol=ncol(y), nrow=length(it)),
+	     order.by=it)
+    z[is.element(it,index(y)),] <- y
+  }
   y <- z; rm('z')
-     
+  
   ## Copy the old attributes and reset as the original class:
   y <- attrcp(x,y,ignore="names")
   args <- list(...)
@@ -223,8 +230,9 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
     #    n <- aggregate(X,year,FUN='count', threshold=threshold,...,
     #                   regular = regular, frequency = frequency)
     n <- nok  # Not the count above threshold, but number of valid data points
-    bad <- coredata(n)==0
-    coredata(n)[bad] <- 1
+    bad <- n<nmin
+    #bad <- coredata(n)==0
+    #coredata(n)[bad] <- 1
     std.err <- 2*coredata(y)/sqrt(coredata(n)-1)
     std.err[bad] <- NA
     attributes(std.err) <- NULL
@@ -234,11 +242,15 @@ annual.default <- function(x,FUN='mean',na.rm=TRUE, nmin=NULL,start=NULL,...,
     if (verbose) print("mean")
     sigma <- aggregate(X, year, FUN='sd', ...,
                        regular = regular, frequency = frequency)
+    ## KMP 2022-12-09: threshold is not set by default
+    ## n should be the numnber of valid data points, not count above threshold
+    n <- nok
+    bad <- n<nmin
     #    n <- count(x,threshold=threshold)
-    n <- aggregate(X,year,FUN='count', threshold=threshold,...,
-                   regular = regular, frequency = frequency)
-    bad <- coredata(n)==0
-    coredata(n)[bad] <- 1
+    #n <- aggregate(X,year,FUN='count', threshold=threshold,...,
+    #               regular = regular, frequency = frequency)
+    #bad <- coredata(n)==0
+    #coredata(n)[bad] <- 1
     std.err <- 2*coredata(sigma)/sqrt(coredata(n)-1)
     std.err[bad] <- NA
     attributes(std.err) <- NULL

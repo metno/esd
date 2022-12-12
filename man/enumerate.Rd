@@ -9,17 +9,13 @@ enumerate(x, param = "trajectory", verbose = FALSE)
 \arguments{
 \item{x}{an \code{events} object}
 
-\item{param}{Name of the column holding the trajectory numbers (default: "trajectory")}
+\item{param}{parameter name of the trajectory numbers. Default: trajectory.}
 
 \item{verbose}{a boolean; if TRUE print information about progress}
 }
 \value{
-an \code{events} object
+an \code{events} object with statistics describing the trajectories
 }
 \description{
-The function enumerates the trajectories ("trajectory") of an event object 
-for which the events have been tracked using the function \code{track}. 
-\code{enumerate} is called from \code{trackstats} and \code{as.trajectory}
-and can also be applied after selecting cyclones using \code{subset} to give 
-the trajectories new numbers.
+The function enumerates the trajectories ("trajectory"). It is used in the function \code{"trackstats"} and can be applied to re-enumerate cyclone trajectories in an \code{events} object after selecting a subset using the function \code{"subset"}.
 }
