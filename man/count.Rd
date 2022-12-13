@@ -2,13 +2,6 @@
 % Please edit documentation in R/counts.R
 \name{count}
 \alias{count}
-\alias{wetfreq}
-\alias{wetmean}
-\alias{nevents}
-\alias{exceedance}
-\alias{exceedance.default}
-\alias{exceedance.station}
-\alias{exceedance.field}
 \title{Count statistics}
 \usage{
 count(x, threshold = 1, fraction = FALSE, ...)
@@ -28,14 +21,7 @@ count(x, threshold = 1, fraction = FALSE, ...)
 Station or field objects
 }
 \description{
-Returns a count of cases with values over s threshold value.
-\code{exceedance} estimates statistics (default is mean) for peak-over-threshold, e.g. mean-over-threshold. 
-Similar functions nclude: 
-\code{nevents} returns the number of events with exceeding values (e.g. the
-number of rainy days X > 1 mm/day).
-\code{wetfreq} returns the wet-day frequency (a fraction) and \code{wetmean} returns the wet-day mean.
-\code{qqgeom} produces a quantile-quantile plot of streak statistics comparing the
-empirical quantiles with the distribution function quantiles (see \code{\link[stats]{qgeom}}).
+Returns a count of cases with values over a threshold value.
 }
 \examples{
 
@@ -52,6 +38,6 @@ qqgeom(ferder, treshold=1, pois=TRUE)
 
 }
 \seealso{
-spell hotsummerdays coldwinterdays nwetdays plot
+spell exceedance nevents wetfreq hotsummerdays coldwinterdays nwetdays plot
 }
 \keyword{utilities}
