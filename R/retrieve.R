@@ -1716,10 +1716,16 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
   # next save for later if adding no_leap func
   #if ((tcal %in% c("365_day", "365day", "no_leap", "no leap")) && (any(grepl('hou',tunit))) && ((diff(ttest)>29) && (diff(ttest) <= 31 )) )
   #HBE 2018/1/17 saving POSIX with monthly freq as Date at month start
-  if (((diff(time)>=28) && (diff(time) <= 31 )) | (length(time) == 1)) {
+  #if ( ( diff(time)>=28 && diff(time) <= 31 ) |
+  if ( all( diff(time)>=28 & diff(time) <= 31 ) |
+       (length(time) == 1) ) {
     time <- as.Date(strftime(time, format="%Y-%m-01"))
     if (verbose) print("monthly frequency, saving as Date Y-m-01")
-  }
+  #} else if (diff(time)>=360 && diff(time) <= 366) {
+  } else if (all(diff(time)>=360 & diff(time) <= 366)) {
+    time <- as.Date(strftime(time, format="%Y-%m-01"))
+    if (verbose) print("monthly frequency, saving as Date Y-m-01")
+  } else 
   if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
     if (inherits(it,c('field','station'))) {
@@ -1809,6 +1815,7 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
     countt <- d[3] - startt + 1
     warning("retrieve.rcm: number of points in time exceeds data dimensions")
   }
+  
   #HBE added y-dimension to lon as well as lat (before only lat had)
   if(length(d)==3) {
     lon <- lon[startx:(startx+countx-1),starty:(starty+county-1)]
