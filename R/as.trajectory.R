@@ -86,7 +86,7 @@ rence")
   if(dim(X)[1]==0) {
     if(verbose) print(paste("No trajectories >",nmin-1,"time steps"))
   } else {
-    x["trajectory"] <- Enumerate(x)
+    x["trajectory"] <- enumerate(x)
     # interpolate all trajectories to same length n
     if(verbose) print('interpolate trajectories')
     aggregate(x$date, list(x$trajectory), function(x) x[1])$x -> d1

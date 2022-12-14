@@ -31,6 +31,7 @@ gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
                     zlim=NULL,verbose=FALSE,plot=FALSE,new=TRUE) {
 
   if (verbose) print(paste('gridmap',FUN))
+  if (is.null(Y)) {warning('Empty station object'); return(NULL)}
   if (!requireNamespace("LatticeKrig", quietly = TRUE)) {
     stop("Package 'LatticeKrig' needed to use 'gridmap'. Please install it.")
   } else {

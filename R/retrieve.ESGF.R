@@ -210,9 +210,14 @@ meta.ESGF <- function(url="https://esgf-data.dkrz.de/esg-search/search/",mip="CM
     type <- grep('type',names(results))
     title <- grep('title',names(results))
     timestamp <- grep('timestamp',names(results))
-    period <- substr(as.character(results[title]),nchar(as.character(results[title]))-15,
-                     nchar(as.character(results[title]))-3)
-    
+    ## KMP 2022-11-18: changed period extraction to be more flexible (for sub-daily frequencies)                 
+    #period <- substr(as.character(results[title]),nchar(as.character(results[title]))-15,                       
+    #                 nchar(as.character(results[title]))-3)                                                     
+    period <- sapply(as.character(results[title]),
+                     function(x) {
+                       i <- regexpr('[0-9]{8,14}-[0-9]{8,14}',x)
+                       return(substr(x, i, i+attr(i,"match.length")-1)) })
+
     meta <- data.frame(OpenDap=as.character(results[opendap]),http=as.character(results[http]),
                        member.id=as.character(results[mem]),grid=as.character(results[grid]),
                        model=as.character(results[model]),type=as.character(results[type]),

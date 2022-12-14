@@ -372,7 +372,7 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     ok <- x$n>=nmin | ends
     ok <- ok & (x$distance>=(dmin*1E-3) | ends)
     y <- subset(x,it=ok,verbose=verbose)
-    rnum <- Enumerate(y,verbose=verbose)
+    rnum <- enumerate(y,verbose=verbose)
     rnum[y$trajectory<=n00 & !is.na(rnum)] <- y$trajectory[y$trajectory<=n00 & !is.na(rnum)]
     rnum[y$trajectory>n00 & !is.na(rnum)] <- n00 + rnum[y$trajectory>n00 & !is.na(rnum)]
     y$trajectory <- rnum
@@ -724,7 +724,7 @@ trackstats <- function(x,verbose=FALSE) {
   lats <- y["lat"][[1]]
 
   if(verbose) print("Enumerate")
-  rnum <- Enumerate(y)
+  rnum <- enumerate(y)
   nummax <- max(rnum,na.rm=TRUE)
   rnum[is.na(rnum)] <- nummax+1
   if(verbose) print("trackcount")
@@ -804,9 +804,19 @@ Displacement <- function(x,verbose=FALSE) {
   invisible(dx)
 }
 
-# NOT EXPORTED
-Enumerate <- function(x,param="trajectory",verbose=FALSE) {
-  if(verbose) print("Enumerate")
+
+#' Enumerate trajectories
+#'
+#' The function enumerates the trajectories ("trajectory"). It is used in the function \code{"trackstats"} and can be applied to re-enumerate cyclone trajectories in an \code{events} object after selecting a subset using the function \code{"subset"}. 
+#'
+#' @param x an \code{events} object
+#' @param param parameter name of the trajectory numbers. Default: trajectory.
+#' @param verbose a boolean; if TRUE print information about progress
+#' @return an \code{events} object with statistics describing the trajectories
+#'
+#' @export
+enumerate <- function(x,param="trajectory",verbose=FALSE) {
+  if(verbose) print("enumerate")
   stopifnot(inherits(x,"data.frame"))
   num <- x[param][[1]]
   if (identical(unique(num),seq_along(unique(num)))) {

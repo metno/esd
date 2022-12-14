@@ -610,7 +610,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*9),N,9)
-  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
+  colnames(scorestats) <- c("1-r.xval","mean.diff","1-sd.ratio","1-autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration','1-R2')
 
   flog <- file("DSensemble.precip-log.txt","at")
@@ -858,7 +858,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   X <- matrix(rep(NA,N*m),N,m)
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*9),N,9)
-  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
+  colnames(scorestats) <- c("1-r.xval","mean.diff","1-sd.ratio","1-autocorr.ratio",
                             "res.trend","res.K-S","res.ar1",'amplitude.ration','1-R2')
 
   flog <- file("DSensemble.precip-log.txt","at")
@@ -1924,7 +1924,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
     select <- 1:N
   }
   if (verbose) {print('GCMs:'); print(path); print(pattern); print(ncfiles[select])}
-
+  
   d.y <- dim(y)
   years <- 1900:2100
   m <- length(years)
@@ -1932,11 +1932,11 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   X <- matrix(rep(NA,N*m*d.y[2]),N,m*d.y[2])
   dim(X) <- c(d.y[2],N,m)
   gcmnm <- rep("",N)
-  scorestats <- matrix(rep(NA,N*9),N,9)
-  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.ratio",
-                            "res.trend","res.K-S","res.ar1",'amplitude.ration',
-                            "1-R2")
-
+  scorestats <- matrix(rep(NA,N*11),N,11)
+  colnames(scorestats) <- c("1-r.xval","mean.diff","1-sd.ratio","1-autocorr.ratio",
+                            "res.trend","res.K-S","res.ar1","amplitude.ratio",
+                            "1-R2","1-sd.ratio.predict","1-autocorr.ratio.predict")  
+  
   t <- as.Date(paste(years,months,'01',sep='-'))
 
   if (plot) {
@@ -2058,7 +2058,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
         rm("testGCM"); gc(reset=TRUE)
     }
     rm("gcm","GCM"); gc(reset=TRUE)
-
+    
     if (verbose) print("- - - > DS (pca)")
     Z0 <- Z
     if (verbose) print(class(attr(Z,'appendix.1')))
@@ -2166,12 +2166,14 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       
         # diagnose for ds-objects
         if (verbose) print('...')
-        #
+
+        srati.predict <- sd(subset(attr(ds,'appendix.1'),it=range(year(y))),na.rm=TRUE)/
+            sd(subset(ds,it=range(year(y))),na.rm=TRUE)
+        arati.predict <- ar1(coredata(subset(attr(ds,'appendix.1'),it=range(year(y)))))/
+            ar1(subset(ds,it=range(year(y))))
+                
         if (is.null(diag)) {
           if (verbose) print('no diag')
-          ##diag <- diagnose(ds,plot=FALSE)
-          scorestats[i,] <- c(1-r.xval,NA,NA,NA,res.trend,ks,ar,1-ds.ratio,
-          1-round(var(xval[,2])/var(xval[,1]),2))
           mdiff <- (mean(subset(y,it=range(year(ds))),na.rm=TRUE)-
                     mean(subset(ds,it=range(year(y))),na.rm=TRUE))/
                       sd(y,na.rm=TRUE)
@@ -2185,27 +2187,28 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
                         diag$s.2$mean.diff[1]/diag$s.2$sd0[1],
                         diag$s.3$mean.diff[1]/diag$s.3$sd0[1],
                         diag$s.4$mean.diff[1]/diag$s.4$sd0[1]))
-          srati <- mean(1 - c(diag$s.1$sd.ratio[1],diag$s.2$sd.ratio[1],
-                            diag$s.3$sd.ratio[1],diag$s.4$sd.ratio[1]))
-          arati <- mean(1 - c(diag$s.1$autocorr.ratio[1],
-                            diag$s.2$autocorr.ratio[1],
-                            diag$s.3$autocorr.ratio[1],
-                            diag$s.4$autocorr.ratio[1]))
-        
+          srati <- mean(c(diag$s.1$sd.ratio[1],diag$s.2$sd.ratio[1],
+                          diag$s.3$sd.ratio[1],diag$s.4$sd.ratio[1]))
+          arati <- mean(c(diag$s.1$autocorr.ratio[1],
+                          diag$s.2$autocorr.ratio[1],
+                          diag$s.3$autocorr.ratio[1],
+                          diag$s.4$autocorr.ratio[1]))
         }
-        scorestats[i,] <- c(1-r.xval,mdiff,srati,arati,res.trend,ks,ar,1-ds.ratio,
-                          1-round(var(xval[,2])/var(xval[,1]),2))
-      
+        scorestats[i,] <- c(1-r.xval,mdiff,1-srati,1-arati,res.trend,ks,ar,1-ds.ratio,
+                            1-round(var(xval[,2])/var(xval[,1]),2),
+                            1-srati.predict,1-arati.predict)
         if (verbose) print('scorestats')
         if (verbose) print(scorestats[i,])
-        quality <- 100*(1-mean(abs(scorestats[i,]),na.rm=TRUE))
+        quality <- 100*(1-mean(sapply(scorestats[i,], function(x) min(1,abs(x))),na.rm=TRUE))
         R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
         print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                   "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
                   ' sd1/sd2=',round(srati,3),
-                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),'quality=',
+                  ' sd1(ds.gcm)/sd2(ds.reanalysis)=',round(srati.predict,3),
+                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),
+                  'quality=',
                   round(quality)))
-
+        
         index(y) <- year(y); index(z) <- year(z)
         if (plot) {
           qcol <- quality
@@ -2237,8 +2240,10 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
                                        "residual trend","Kolmogorov-Smirnov Test for normal distribution",
                                        "autocorrelation of the residual", 
                                        "1 - ratio of standard deviations for first PC",
-                                       "1 - ratio of variance for first PC from cross-validation"),
-				       collapse=", ")
+                                       "1 - ratio of variance for first PC from cross-validation",
+                                       "1 - ratio of standard deviations (predictions from GCM simulations/predictions from reanalysis)",
+                                       "1 - ratio of autocorrelations (predicttions from GCM simulations/predictions from reanalysis)",
+				       collapse=", "))
   attr(dse.pca,'scorestats') <- scorestats
   attr(r.xval, "longname") <- "cross validation correlation scores for all PCs"
   attr(dse.pca,'r.xval') <- r.xval.all
@@ -2363,7 +2368,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
   dim(X) <- c(d.y[2],N,m)
   gcmnm <- rep("",N)
   scorestats <- matrix(rep(NA,N*9),N,9)
-  colnames(scorestats) <- c("1-r.xval","mean.diff","sd.ratio","autocorr.diff",
+  colnames(scorestats) <- c("1-r.xval","mean.diff","1-sd.ratio","autocorr.diff",
                             "res.trend","res.K-S","res.ar1",'amplitude.ratio',
                             "1-R2")
 
