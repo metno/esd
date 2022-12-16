@@ -75,6 +75,7 @@ as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
                           url=NA,reference=NA,info=NA, method= NA,type=NA,
                           aspect=NA,verbose=FALSE) {
   #print(c(length(X),length(index)))
+  if(verbose) print("as.station.zoo")
   y <- zoo(x,order.by=index(x))
   
   if (is.null(loc)) loc <- NA
@@ -179,8 +180,20 @@ as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
           tscale <- 'annual'
       else tscale <- 'annual'
       class(y) <- c("station",tscale,"zoo")
+  } else {
+    if (verbose) print("A single value has been recorded in the time index of the data.")
+    if (verbose) print("Cannot determine time scale of the data. Guessing based on index.")
+    if(is.years(index(y))) {
+      tscale <- "year" 
+    } else if(is.dates(index(y))) {
+      if(day(y)==1) {
+        tscale <- "month"
+      } else {
+        tscale <- "day" 
+      }
+    }
+    class(y) <- c("station",tscale,"zoo")
   }
-  else if (verbose) print("Warning - A single value has been recorded in the time index of the data")
   return(y)
 }
 
