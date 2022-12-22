@@ -1838,17 +1838,17 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
   }
   if (verbose) {print(start); print(count)}
   rcm <- ncvar_get(ncid,varid=param,start=start, count=count)
-  browser()
+  
   nc_close( ncid )
   if(length(dim(rcm))==3) {
     d <- dim(rcm)
   } else if (length(dim(rcm))!=3 & length(d)==3) {
-    # If there are less than 3 dimensions, add one dummy dimension. To avoid crashes...
-    #n1 <- (1:3)[count==1]; 
-    nm <- (1:3)[count>1]
-    ## KMP 2022-12-16: changed D[nm] <- d to D[nm] <- d[nm] because D[nm] and d 
-    ## were of different length. Are there any situations when this doesn't work?
-    D <- rep(1,3); D[nm] <- d[nm]#; D[n1] <- 1
+    ## If there are less than 3 dimensions, add one dummy dimension. To avoid crashes...
+    D <- rep(1,3)
+    if(any(count>1)) {
+      nm <- (1:3)[count>1]
+      D[nm] <- d[nm]
+    }
     d <- D; rm('D')
   } else {
     d <- c(1,dim(rcm))
