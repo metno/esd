@@ -345,6 +345,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   ## Compute summary statistics for the stations, e.g. mean, max, trend, etc.
   x0 <- x; missval0 <- missval
   list2env(StationSumStats(x=x,missval=missval,ns=nspc,verbose=verbose,start=start),envir=environment())
+  verbose <- verbose[1]  ## There seemed to be several versions of 'verbose'
   x <- x0; missval <- missval0; rm('x0','missval0'); gc(reset=TRUE) ## REB in case something happened to x in the function call above...
   if (verbose) print('Summary statistics computed')
   ## Only do summary statistics for stations with more than 30 years
