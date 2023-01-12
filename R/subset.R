@@ -1487,7 +1487,7 @@ subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
       if ( (min(lon.rng) < 0) & (max(lon.rng) <= 180) ) {
         x <- g2dl(x,greenwich=FALSE) 
       } else if ( (min(lon.rng) >= 0) & (max(lon.rng) > 180) ) {
-        x <- g2dl(x,greenwich=TRUE))
+        x <- g2dl(x,greenwich=TRUE)
       }
     }
     for (n in nm.is[ok]) {
