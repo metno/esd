@@ -1484,10 +1484,10 @@ subset.events <- function(x,...,it=NULL,is=NULL,ic=NULL,verbose=FALSE) {
     if (verbose) print(nm.is[ok])
     if(any(ok)) if(any(grepl("lon", nm.is[ok]))) {
       lon.rng <- range(is$lon)
-      if(min(lon.rng) < 0) & (max(lon.rng) <= 180) ) {
+      if ( (min(lon.rng) < 0) & (max(lon.rng) <= 180) ) {
         x <- g2dl(x,greenwich=FALSE) 
       } else if ( (min(lon.rng) >= 0) & (max(lon.rng) > 180) ) {
-        x <- g2dl(x,greenwich=TRUE))
+        x <- g2dl(x,greenwich=TRUE)
       }
     }
     for (n in nm.is[ok]) {
