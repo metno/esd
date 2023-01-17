@@ -18,7 +18,8 @@ colscal(
 
 \item{pal}{color palette: "bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors",
 "terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor",
-"buorr","bu","rd","cat","cold", or "warm"}
+"buorr","bu","rd","brgrbu","grwbu","burd","buyrd","cat","cold", "warm", "t2m", "precip", "fw", "mu", 
+"precip.kin2100", "precip.trend.kin2100", "t2m.kin2100"}
 
 \item{rev}{a boolean; if TRUE reverse color scale}
 
@@ -37,6 +38,11 @@ Palette options are as follows:
 'precip', 'mu' and 'fw': white-blue (from seNorge),
 'cold': a cold color scale (from seNorge),
 'warm': a warm color scale (from seNorge),
+'t2m.kin2100': blue-red color scale from Klima i Norge 2100 (KiN2100)
+'precip.kin2100': brown-green-blue color scale (from KiN2100)
+'precip.trend.kin2100': green-white-blue color scale (from KiN2100)
+'cold.kin2100': a cold color scale (from KiN2100),
+'warm.kin2100': a warm color scale (from KiN2100),
 'bwr' (blue-white-red),
 'slp' and 'mslp' (same as 'bwr'),
 'rwb' (red-white-blue), 
@@ -52,6 +58,10 @@ Palette options are as follows:
 'buorr': blue-green (brighter and more yellow than 'buor' and 'budor'),
 'bu': blues,
 'rd': reds,
+'brgrbu': brown-green-blue, same as precip.kin2100
+'grwbu': green-white-blue, same as precip.change.kin2100
+'burd': blue-red, same as t2m.kin2100
+'buyrd': blue-yellow-red, same as t2m
 'cat': categorical color scale,
  color scales from grDevices: 'rainbow', 'gray.colors', 'heat.colors', 'terrain.colors',
 'topo.colors', and 'cm.colors'.

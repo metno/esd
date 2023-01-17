@@ -228,7 +228,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
 #' 'bu': blues,
 #' 'rd': reds,
 #' 'brgrbu': brown-green-blue, same as precip.kin2100
-#' 'grwbu': green-white-blue, same as precip.change.kin2100
+#' 'grwbu': green-white-blue, same as precip.trend.kin2100
 #' 'burd': blue-red, same as t2m.kin2100
 #' 'buyrd': blue-yellow-red, same as t2m
 #' 'cat': categorical color scale,
@@ -496,10 +496,15 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     b <- approx(kssT[3,1:7],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
   }  else if (pal[1]=="warm.kin2100") {
-    r <- approx(kssT[1,8:14],n=n)$y/255
-    g <- approx(kssT[2,8:14],n=n)$y/255
-    b <- approx(kssT[3,8:14],n=n)$y/255
+    r <- approx(kssT[1,8:13],n=n)$y/255
+    g <- approx(kssT[2,8:13],n=n)$y/255
+    b <- approx(kssT[3,8:13],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
+  } else {
+    r <- approx(seNorgeT[1,],n=n)$y/255
+    g <- approx(seNorgeT[2,],n=n)$y/255
+    b <- approx(seNorgeT[3,],n=n)$y/255
+    col <- rgb(r,g,b,alpha)
   }
   
   if (test) { #& !exists("r")) {
