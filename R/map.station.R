@@ -205,15 +205,15 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim,xlab="",ylab="")#xlab,ylab=ylab)
       
       if(!is.null(FUN)) if(add.significance & FUN %in% c("trend","trend.coef")) {
-        pval <- apply(x, 2, trend.pval)
-        if(is.null(lwd.pval)) lwd.pval <- rep(0.75, length(pval))
-        if(is.null(col.pval)) col.pval <- colscal("gray.colors", n=length(pval))
-        if(length(lwd.pval)<length(pval)) lwd.pval <- rep(lwd.pval[1], length(pval))
-        if(length(col.pval)<length(pval)) col.pval <- rep(col.pval[1], length(pval))#colscal("gray.colors", n=length(pval))
+        pval.x <- apply(x, 2, trend.pval) # pval.x = the p-values of the trends at each station in the object x
+        if(is.null(col.pval)) col.pval <- colscal("gray.colors", n=length(pval)) # col.pval = colors for the thresholds pval
+        if(is.null(lwd.pval)) lwd.pval <- pretty(c(2,1), n=length(pval)) # lwd.pval = line width for the thresholds pval
+        if(length(col.pval)<length(pmax)) col.pval <- rep(col.pval, length(pval)) # if only one color has been defined but several thresholds
+        if(length(lwd.pval)<length(pmax)) lwd.pval <- rep(lwd.pval, length(pval)) # if only line width has been defined but several thresholds
         pmin <- 0
         i <- 1
-        for(p in sort(pval)) {
-          points(lon(x)[pval>=pmin & pval<p], lat(x)[pval>=pmin & pval<p], 
+        for(p in sort(pval)) { # loop through all the thresholds and add points
+          points(lon(x)[pval.x>=pmin & pval.x<p], lat(x)[pval.x>=pmin & pval.x<p], 
                  col=col.pval[i], lwd=lwd.pval[i], pch=21, cex=cex)
           pmin <- p
           i <- i+1

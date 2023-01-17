@@ -13,7 +13,7 @@
 #' \code{qqgeom} produces a quantile-quantile plot of streak statistics comparing the
 #' empirical quantiles with the distribution function quantiles (see \code{\link[stats]{qgeom}}). 
 #'
-#' @aliases spell spell.default spell.station hist.spell count wetfreq wetmean
+#' @aliases spell spell.default spell.station hist.spell wetfreq wetmean
 #' nevents exceedance exceedance.default exceedance.station exceedance.field
 #' HDD CDD GDD qqgeom
 #' @seealso hotsummerdays coldwinterdays coldspells heatwavespells nwetdays plot

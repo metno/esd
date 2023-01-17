@@ -1,16 +1,9 @@
 #' Count statistics
 #' 
-#' Returns a count of cases with values over s threshold value.
-#' \code{exceedance} estimates statistics (default is mean) for peak-over-threshold, e.g. mean-over-threshold. 
-#' Similar functions nclude: 
-#' \code{nevents} returns the number of events with exceeding values (e.g. the
-#' number of rainy days X > 1 mm/day).
-#' \code{wetfreq} returns the wet-day frequency (a fraction) and \code{wetmean} returns the wet-day mean.
-#' \code{qqgeom} produces a quantile-quantile plot of streak statistics comparing the
-#' empirical quantiles with the distribution function quantiles (see \code{\link[stats]{qgeom}}). 
+#' Returns a count of cases with values over a threshold value.
 #'
-#' @aliases count wetfreq wetmean nevents exceedance exceedance.default exceedance.station exceedance.field
-#' @seealso spell hotsummerdays coldwinterdays nwetdays plot
+#' @aliases count
+#' @seealso spell exceedance nevents wetfreq hotsummerdays coldwinterdays nwetdays plot
 #'
 #' @importFrom stats glm qqline
 #'
@@ -25,15 +18,15 @@
 #' @keywords utilities
 #' @examples
 #' 
-#' number of warm days:
+#' # number of warm days:
 #' data(ferder)
 #' plot(as.seasons(ferder,FUN='count',threshold=20), new=FALSE)
 #' 
-#' Mild winter days - number of days in the winter season with
-#' above freezing temperatures
+#' # Mild winter days - number of days in the winter season with
+#' # above freezing temperatures
 #' try(coldwinterdays(ferder))
 #'
-#' Quantile-quantile plot
+#' # Quantile-quantile plot
 #' qqgeom(ferder, treshold=1, pois=TRUE)
 #'
 #'@export

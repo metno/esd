@@ -167,7 +167,7 @@ diagnose.cca <- function(x,...) {
 #' @exportS3Method
 #' @export diagnose.station
 diagnose.station <- function(x,...,main='Data availability',
-                            xlab='',ylab='station',
+                            xlab='',ylab='station',nletters=6,
                             sub=src(x),verbose=FALSE) {
   if(verbose) print("diagnose.station")
   d <- dim(x)
@@ -180,7 +180,8 @@ diagnose.station <- function(x,...,main='Data availability',
   image(index(x),1:d[2],coredata(x),
         main=main,xlab=xlab,ylab=ylab,
         sub=sub,...)
-  axis(4,at=1:d[2],labels=substr(loc(x),1,6),cex.lab=0.5,col='grey')
+  axis(4,at=1:d[2],labels=substr(loc(x),1,nletters),
+       cex.lab=0.5,col='grey')
   par(xpd=FALSE)
   nyrs <- length(rownames(table(year(x))))
   grid(nx=nyrs,ny=d[2])

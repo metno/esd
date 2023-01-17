@@ -345,7 +345,12 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   ## Compute summary statistics for the stations, e.g. mean, max, trend, etc.
   x0 <- x; missval0 <- missval; verbose0 <- verbose
   list2env(StationSumStats(x=x,missval=missval,ns=nspc,verbose=verbose,start=start),envir=environment())
-  x <- x0; missval <- missval0; verbose <- verbose0; rm('x0','missval0','verbose0'); gc(reset=TRUE) ## REB in case something happened to x in the function call above...
+#<<<<<<< frost-2022
+#  x <- x0; missval <- missval0; verbose <- verbose0; rm('x0','missval0','verbose0'); gc(reset=TRUE) ## REB in case something happened to x in the function call above...
+#=======
+  verbose <- verbose[1]  ## There seemed to be several versions of 'verbose'
+  x <- x0; missval <- missval0; rm('x0','missval0'); gc(reset=TRUE) ## REB in case something happened to x in the function call above...
+#>>>>>>> master
   if (verbose) print('Summary statistics computed')
   ## Only do summary statistics for stations with more than 30 years
   insufficient <- apply(coredata(x),2,nv) < nmin*365

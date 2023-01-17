@@ -987,12 +987,13 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   } else {
     if (verbose) print("Checking Frequency from the data --> [fail]")
   }
+  
   ## Checking Calendar attribute if any, otherwise set to "ordinary"  
-  # Possible values for CMIP5 files are : "365_day" , "standard" , "proleptic_gregorian" , "360_day" 
-  ## REB 2021-05-06 - CMIP6 also uses the Julian Calendar :-(
+  # Possible values for CMIP5 files are : "365_day", "standard", "proleptic_gregorian", "360_day" 
+  ## REB 2021-05-06 - CMIP6 also uses the Julian Calendar
   ical <- grep(c("calend"),tatt)
   ## 
-  if (length(ical)>0) {   
+  if (length(ical)>0) {
     calendar.att <- eval(parse(text = paste("time$",tatt[ical],sep="")))
     if (verbose) print("Checking Calendar from time attribute --> [ok]") 
     if (verbose) print(paste("Calendar attribute has been found in time$calendar (",time$calendar,")",sep =""))
@@ -1030,9 +1031,10 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
         time$vdate <- switch(substr(tunit,1,3),
                              'sec'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals,
                              'min'= strptime(torigin,format="%Y-%m-%d %H%M%S") + time$vals*60,
-                             'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*3600,
-                             'day'= as.Date(torigin) + time$vals,
-                             'mon'= seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
+                             'hou'= strptime(torigin,format="%Y-%m-%d %H:%M:%S") + time$vals*60*60,
+			     'day'= strptime(torigin,format="%Y-%m-%d %H:%M") + time$vals*60*60*24,
+			     ## 'day' = as.Date(torigin) + time$vals,
+			     'mon'=seq(as.Date(torigin1),length.out=length(time$vals),by='month'),
                              'yea'= year(as.Date(torigin)) + time$vals)
       }
     } else if (!is.na(strtoi(substr(calendar.att, 1, 3))) | grepl("noleap|365_day|360_day",calendar.att)) {
@@ -1067,8 +1069,10 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           # construct vdate
           years <- time$vals%/%time$daysayear + yorigin
           dayofyear <- time$vals%%time$daysayear
-          months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)), 
-                                 rightmost.closed=TRUE, left.open=TRUE)
+	  #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
+	  #	     		  rightmost.closed=TRUE, left.open=TRUE)
+	  months <- findInterval(floor(dayofyear)+1, c(1,cumsum(mndays)),
+	  	    		 rightmost.closed=FALSE, left.open=FALSE)
           days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {
@@ -1081,7 +1085,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
               time$vdate <- seq(as.Date(paste(as.character(year1),month1,"01",sep="-")), by = "month",length.out=time$len)
               qf <- c(qf,"jumps in data found - continuous vector forced")
             } else {
-              time$vdate <- as.Date(paste(years,months,"01",sep="-"))#"15",sep="-"))
+              time$vdate <- as.Date(paste(years,months,"01",sep="-")) #"15",sep="-"
             }
           } else if(freq.data %in% c('season','year')) {
             time$vdate <- as.Date(paste(years,months,"01",sep="-"))
@@ -1725,10 +1729,16 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
   # next save for later if adding no_leap func
   #if ((tcal %in% c("365_day", "365day", "no_leap", "no leap")) && (any(grepl('hou',tunit))) && ((diff(ttest)>29) && (diff(ttest) <= 31 )) )
   #HBE 2018/1/17 saving POSIX with monthly freq as Date at month start
-  if (((diff(time)>=28) && (diff(time) <= 31 )) | (length(time) == 1)) {
+  #if ( ( diff(time)>=28 && diff(time) <= 31 ) |
+  if ( all( diff(time)>=28 & diff(time) <= 31 ) |
+       (length(time) == 1) ) {
     time <- as.Date(strftime(time, format="%Y-%m-01"))
     if (verbose) print("monthly frequency, saving as Date Y-m-01")
-  }
+  #} else if (diff(time)>=360 && diff(time) <= 366) {
+  } else if (all(diff(time)>=360 & diff(time) <= 366)) {
+    time <- as.Date(strftime(time, format="%Y-%m-01"))
+    if (verbose) print("monthly frequency, saving as Date Y-m-01")
+  } else 
   if (verbose) print(paste(start(time),end(time),sep=' - '))
   if (!is.null(it)) {
     if (inherits(it,c('field','station'))) {
@@ -1818,6 +1828,7 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
     countt <- d[3] - startt + 1
     warning("retrieve.rcm: number of points in time exceeds data dimensions")
   }
+  
   #HBE added y-dimension to lon as well as lat (before only lat had)
   if(length(d)==3) {
     lon <- lon[startx:(startx+countx-1),starty:(starty+county-1)]
@@ -1841,8 +1852,13 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
     d <- dim(rcm)
   } else if (length(dim(rcm))!=3 & length(d)==3) {
     # If there are less than 3 dimensions, add one dummy dimension. To avoid crashes...
-    n1 <- (1:3)[count==1]; nm <- (1:3)[count>1]
-    D <- rep(1,3); D[nm] <- d; D[n1] <- 1
+    ## KMP 2022-12-16: changed D[nm] <- d to D[nm] <- d[nm] because D[nm] and d 
+    ## were of different length. Are there any situations when this doesn't work?
+    D <- rep(1,3)
+    if(any(count>1)) {
+      nm <- (1:3)[count>1]
+      D[nm] <- d[nm]
+    }
     d <- D; rm('D')
   } else {
     d <- c(1,dim(rcm))

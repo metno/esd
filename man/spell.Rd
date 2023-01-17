@@ -5,7 +5,6 @@
 \alias{spell.default}
 \alias{spell.station}
 \alias{hist.spell}
-\alias{count}
 \alias{wetfreq}
 \alias{wetmean}
 \alias{nevents}
