@@ -1619,8 +1619,8 @@ retrieve.rcm <- function(file,param="auto",...,path=NULL,is=NULL,it=NULL,verbose
   #latid <- vnames[grep('lat',tolower(vnames))]
   #lonid <- vnames[grep('lon',tolower(vnames))]
   ## KMP 2016-12-20: grep('lat',...) sometimes finds more than 1 match
-  latid <- vnames[tolower(vnames) %in% c("lat","latitude")]
-  lonid <- vnames[tolower(vnames) %in% c("lon","longitude")]
+  latid <- vnames[tolower(vnames) %in% c("lat","latitude","y")]
+  lonid <- vnames[tolower(vnames) %in% c("lon","longitude","x")]
   lat <- ncvar_get(ncid,varid=latid)
   lon <- ncvar_get(ncid,varid=lonid)
   time <- ncvar_get(ncid,varid='time')

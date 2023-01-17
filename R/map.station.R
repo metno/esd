@@ -21,32 +21,32 @@ genfun <- function(x,FUN,verbose=FALSE) {
 #' @exportS3Method
 #' @export map.station
 map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
-                         add=FALSE,projection="lonlat",
-                         xlim = NULL, ylim = NULL,zlim=NULL,n=15,
-                         col='darkred',bg='orange',
-                         colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
-                                      breaks=NULL,type="p",cex=2,h=0.6, v=1,
-                                      pos=0.1,show=TRUE),
-                         # col=NULL replaced by palette
-                         type=NULL,gridlines=TRUE,
-                         lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
-                         cex=2,zexpr="alt",cex.subset=1,
-                         add.text.subset=FALSE,showall=FALSE,
-                         add.text=FALSE,main=NULL,sub=NULL,
-                         height=NULL,width=NULL,
-                         cex.main=1,cex.sub=0.75,cex.axis=1,cex.lab=0.9,
-                         col.main="black",col.sub="grey",col.border="grey",
-                         font.main=1,font.sub=4,
-                         pch=19, from=NULL,to=NULL,showaxis=FALSE,
-                         border=FALSE,full.names=FALSE,
-                         full.names.subset=FALSE, use.old=FALSE,
-                         text=FALSE, fancy=FALSE, 
-                         na.rm=TRUE,show.val=FALSE,#usegooglemap=FALSE,
-                         ##colorbar=TRUE,
-                         add.significance=FALSE, pval=0.01, col.pval='black', lwd.pval=2,
-                         xlab="lon",ylab="lat",
-                         legend.shrink=1,fig=c(0,1,0.05,0.95),
-                         mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...) { 
+                        add=FALSE,projection="lonlat",
+                        xlim = NULL, ylim = NULL,zlim=NULL,n=15,
+                        col='darkred',bg='orange',
+                        colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
+                                     breaks=NULL,type="p",cex=2,h=0.6, v=1,
+                                     pos=0.1,show=TRUE),
+                        # col=NULL replaced by palette
+                        type=NULL,gridlines=TRUE,
+                        lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
+                        cex=2,zexpr="alt",cex.subset=1,
+                        add.text.subset=FALSE,showall=FALSE,
+                        add.text=FALSE,main=NULL,sub=NULL,
+                        height=NULL,width=NULL,
+                        cex.main=1,cex.sub=0.75,cex.axis=1,cex.lab=0.9,
+                        col.main="black",col.sub="grey",col.border="grey",
+                        font.main=1,font.sub=4,
+                        pch=19, from=NULL,to=NULL,showaxis=FALSE,
+                        border=FALSE,full.names=FALSE,
+                        full.names.subset=FALSE, use.old=FALSE,
+                        text=FALSE, fancy=FALSE, 
+                        na.rm=TRUE,show.val=FALSE,#usegooglemap=FALSE,
+                        ##colorbar=TRUE,
+                        add.significance=FALSE, pval=0.01, col.pval='black', lwd.pval=2,
+                        xlab="lon",ylab="lat",
+                        legend.shrink=1,fig=c(0,1,0.05,0.95),
+                        mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...) { 
   if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | use.old) {#| usegooglemap) {
     map.station.old(x=x,FUN=FUN,it=it,is=is,new=new,projection=projection,
                     xlim=xlim,ylim=ylim,zlim=zlim,n=n,col=col,bg=bg,
@@ -61,6 +61,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                     legend.shrink=legend.shrink,...)#,usegooglemap=usegooglemap)
   } else {
     if (verbose) print('map.station - new version')
+    if (is.null(add)) new <- FALSE
     if (new) dev.new()
     if ( (!is.null(it)) | (!is.null(is)) ) x <- subset(x,it=it,is=is)
     if (!is.null(FUN)) if (FUN=='trend') {
@@ -112,12 +113,14 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     ## With this solution you have to use add=TRUE and set fig to your subplot or to NULL.
     if(is.null(fig)) fig <- par()$fig
     if (plot) {
-      if(add) {
-        par(fig=fig,mar=mar,mgp=mgp,new=TRUE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
-            col.axis='grey30',col.lab='grey30',las=1)
-      } else {
-        par(fig=fig,mar=mar,mgp=mgp,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
-            col.axis='grey30',col.lab='grey30',las=1)
+      if (!is.null(add)) { 
+        if(add) {
+          par(fig=fig,mar=mar,mgp=mgp,new=TRUE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
+              col.axis='grey30',col.lab='grey30',las=1)
+        } else {
+          par(fig=fig,mar=mar,mgp=mgp,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
+              col.axis='grey30',col.lab='grey30',las=1)
+        }
       }
       ## Avoid errors when plotting the colorbar with small figure windows
       ## fin collects information about the figure size (in inches)
@@ -201,8 +204,10 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         #par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=cex.axis,col.axis='grey')
         #axis(1,colbar$breaks)
       } 
-      par(new=TRUE,fig=fig,mar=mar,yaxt='n',xaxt='n')
-      plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim,xlab="",ylab="")#xlab,ylab=ylab)
+      if (!is.null(add)) {
+        par(new=TRUE,fig=fig,mar=mar,yaxt='n',xaxt='n')
+        plot(lon(x),lat(x),type='n',xlim=xlim,ylim=ylim,xlab="",ylab="")#xlab,ylab=ylab)
+      } else par(new=FALSE)
       
       if(!is.null(FUN)) if(add.significance & FUN %in% c("trend","trend.coef")) {
         pval.x <- apply(x, 2, trend.pval) # pval.x = the p-values of the trends at each station in the object x
@@ -564,7 +569,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     if(new) dev.new()
     par(fig=fig0,mar=mar0)
-        
+    
     if (!is.null(highlight)) {
       plot(highlight$longitude, highlight$latitude, pch = pch, col = col,
            bg = bg.all, cex = cex*scale, xlab = "", ylab = "",
@@ -1055,7 +1060,7 @@ map.stationsummary <- function(x,FUN=NULL,cex=1,cex0=1,col='red',pal='t2m',pch=1
     nd <- 2
     if (max(abs(z),na.rm=TRUE) > 100) nd <- 0 else if (max(abs(z),na.rm=TRUE) >= 10) nd <- 1
     main=paste0(FUN,' (mean= ',round(mean(z,na.rm=TRUE),nd),', sd=',round(sd(z,na.rm=TRUE),nd),
-               ' [',round(min(z,na.rm=TRUE),nd),', ',round(max(z,na.rm=TRUE),nd),'])')
+                ' [',round(min(z,na.rm=TRUE),nd),', ',round(max(z,na.rm=TRUE),nd),'])')
   } else main <- ''
   plot(x$longitude[ok&ok2],x$latitude[ok&ok2],col=col,cex=cex,pch=pch,xlab='',ylab='',
        main=main,...)

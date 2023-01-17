@@ -709,7 +709,7 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 #' @exportS3Method
 #' @export map.pca
-map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
+map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,add=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
@@ -753,11 +753,11 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
     if (is.element(FUN,args)) {
       map.station(X,new=new,colbar=colbar,
                   xlim=xlim,ylim=ylim,zlim=zlim,
-                  plot=TRUE,fig=fig,verbose=verbose,...)
+                  plot=TRUE,add=add,fig=fig,verbose=verbose,...)
     } else {
       map.station(X,new=new,colbar=colbar,FUN=FUN,
                   xlim=xlim,ylim=ylim,zlim=zlim,
-                  plot=TRUE,fig=fig,verbose=verbose,...)
+                  plot=TRUE,add=add,fig=fig,verbose=verbose,...)
     }
   }
 }
@@ -830,26 +830,69 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ##                    col.y <- col
   ## REB: removed col=col.y,bg=col.y
   
-  if (sum(is.element(type,'map'))>0) {
-    par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
-  } else {
-    par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
-  }
+  ## REB 2023-01-03
+  # if (sum(is.element(type,'map'))>0) {
+  #   par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
+  # } else {
+  #   par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
+  # }
   ##colbar <- list(col=NULL, breaks=NULL, type="r",cex=2, h=0.6, v=1)
+  # def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  # 
+  # ## divide the device into two rows and two columns
+  # ## allocate figure 1 all of row 1
+  # ## allocate figure 2 the intersection of column 2 and row 2
+  # layout(matrix(c(1,1,0,2), 2, 2, byrow = TRUE))
+  # ## show the regions that have been allocated to each plot
+  # layout.show(2)
+  # 
+  # ## divide device into two rows and two columns
+  # ## allocate figure 1 and figure 2 as above
+  # ## respect relations between widths and heights
+  # nf <- layout(matrix(c(1,1,0,2), 2, 2, byrow = TRUE), respect = TRUE)
+  # layout.show(nf)
+  # 
+  # ## create single figure which is 5cm square
+  # nf <- layout(matrix(1), widths = lcm(5), heights = lcm(5))
+  # layout.show(nf)
+  # 
+  # 
+  # ##-- Create a scatterplot with marginal histograms -----
+  # 
+  # x <- pmin(3, pmax(-3, stats::rnorm(50)))
+  # y <- pmin(3, pmax(-3, stats::rnorm(50)))
+  # xhist <- hist(x, breaks = seq(-3,3,0.5), plot = FALSE)
+  # yhist <- hist(y, breaks = seq(-3,3,0.5), plot = FALSE)
+  # top <- max(c(xhist$counts, yhist$counts))
+  # xrange <- c(-3, 3)
+  # yrange <- c(-3, 3)
+  # nf <- layout(matrix(c(2,0,1,3),2,2,byrow = TRUE), c(3,1), c(1,3), TRUE)
+  # layout.show(nf)
+  # 
+  # par(mar = c(3,3,1,1))
+  # plot(x, y, xlim = xrange, ylim = yrange, xlab = "", ylab = "")
+  # par(mar = c(0,3,1,1))
+  # barplot(xhist$counts, axes = FALSE, ylim = c(0, top), space = 0)
+  # par(mar = c(3,0,1,1))
+  # barplot(yhist$counts, axes = FALSE, xlim = c(0, top), space = 0, horiz = TRUE)
+  # 
+  # par(def.par)  #- reset to default
+  
+  
   map(Y,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',verbose=verbose,
-      colbar=colbar1,showall=FALSE,new=FALSE)
+      colbar=colbar1,showall=FALSE,new=FALSE,fig=NULL,add=NULL,plot=TRUE)
   
-  if (sum(is.element(type,'ts'))>0) {
-    par(fig=c(0,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
-  } else {
-    par(fig=c(0.5,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
-  }
+  # if (sum(is.element(type,'ts'))>0) {
+  #   par(fig=c(0,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
+  # } else {
+  #   par(fig=c(0.5,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
+  # }
   map(X,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',verbose=verbose,
-      colbar=colbar2,showall=FALSE,new=FALSE,plot=TRUE)
+      colbar=colbar2,showall=FALSE,new=FALSE,fig=NULL,add=NULL,plot=TRUE)
   
   invisible(list(U=U,V=V))
 }
