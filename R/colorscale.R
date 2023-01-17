@@ -207,6 +207,11 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
 #' 'precip', 'mu' and 'fw': white-blue (from seNorge),
 #' 'cold': a cold color scale (from seNorge),
 #' 'warm': a warm color scale (from seNorge),
+#' 't2m.kin2100': blue-red color scale from Klima i Norge 2100 (KiN2100)
+#' 'precip.kin2100': brown-green-blue color scale (from KiN2100)
+#' 'precip.trend.kin2100': green-white-blue color scale (from KiN2100)
+#' 'cold.kin2100': a cold color scale (from KiN2100),
+#' 'warm.kin2100': a warm color scale (from KiN2100),
 #' 'bwr' (blue-white-red),
 #' 'slp' and 'mslp' (same as 'bwr'),
 #' 'rwb' (red-white-blue), 
@@ -222,6 +227,10 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
 #' 'buorr': blue-green (brighter and more yellow than 'buor' and 'budor'),
 #' 'bu': blues,
 #' 'rd': reds,
+#' 'brgrbu': brown-green-blue, same as precip.kin2100
+#' 'grwbu': green-white-blue, same as precip.change.kin2100
+#' 'burd': blue-red, same as t2m.kin2100
+#' 'buyrd': blue-yellow-red, same as t2m
 #' 'cat': categorical color scale,
 #'  color scales from grDevices: 'rainbow', 'gray.colors', 'heat.colors', 'terrain.colors',
 #' 'topo.colors', and 'cm.colors'.
@@ -231,7 +240,8 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
 #' @param n length of color vector
 #' @param pal color palette: "bwr",rwb","faint.bwr","faint.rwb","rainbow","gray.colors","heat.colors",
 #' "terrain.colors","topo.colors","cm.colors","grmg","brbu","budor","budrd","bugr","bugy","buor",
-#' "buorr","bu","rd","cat","cold", or "warm"
+#' "buorr","bu","rd","brgrbu","grwbu","burd","buyrd","cat","cold", "warm", "t2m", "precip", "fw", "mu", 
+#' "precip.kin2100", "precip.trend.kin2100", "t2m.kin2100"
 #' @param rev a boolean; if TRUE reverse color scale
 #' @param alpha factor defining transparency of color
 #' @param test a boolean; if TRUE show a sample of the color scale
@@ -287,9 +297,51 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
                 0, 25, 255,
                 0, 0, 153)
   dim(seNorgeP) <- c(3,8)
+  
+  kssT <- c(15,	0,	5,
+            66,	1,	20,
+            103,	0,	31,
+            178,	24,	43,
+            214,	96,	77,
+            244,	165,	130,
+            253,	219,	199,
+            247,	247,	247,
+            209,	229,	240,
+            146,	197,	222,
+            67,	147,	195,
+            33,	102,	172,
+            5,	48,	97)
+  dim(kssT) <- c(3,13)
+  
+  kssP <- c(69,	80,	138,
+            64,	106,	168,
+            52,	132,	201,
+            26,	160,	237,
+            106,	187,	217,
+            156,	214,	193,
+            181,	222,	159,
+            199,	224,	123,
+            255,	236,	191,
+            230,	201,	145,
+            204,	170,	102,
+            143,	109,	40,
+            110,	79,	18)
+  dim(kssP) <- c(3,13)
+  
+  kssdP <- c(84,	48,	5,
+             140,	81,	10,
+             191,	129,	45,
+             223,	194,	125,
+             246,	232,	195,
+             245,	245,	245,
+             199,	234,	229,
+             128,	205,	193,
+             53,	151,	143,
+             1,	102,	94,
+             0,	60,	48)
+  dim(kssdP) <- c(3,11)
 
   if (!is.null(alpha)) alpha <- rep(alpha[1],n)
-  
   if ( (pal[1]=="bwr") | (pal[1]=="slp") | (pal[1]=="mslp") |
       (pal[1]=="pressure") ) {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
@@ -318,6 +370,15 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     g <- approx(seNorgeP[2,],n=n)$y/255
     b <- approx(seNorgeP[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
+  } else if (pal[1] %in% c("precip.kin2100","brgrbu")) {
+    r <- approx(kssP[1,],n=n)$y/255
+    g <- approx(kssP[2,],n=n)$y/255
+    b <- approx(kssP[3,],n=n)$y/255
+    col <- rgb(r,g,b,alpha)
+  } else if (pal[1] %in% c("precip.trend.kin2100","grwbu")) {
+    r <- approx(kssdP[1,],n=n)$y/255
+    g <- approx(kssdP[2,],n=n)$y/255
+    b <- approx(kssdP[3,],n=n)$y/255
   } else if (pal[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6,alpha=alpha[1])
   } else if (pal[1]=="gray.colors") {
@@ -419,11 +480,26 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     g <- approx(seNorgeT[2,8:14],n=n)$y/255
     b <- approx(seNorgeT[3,8:14],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
-  } else {
+  } else if(pal[1]=="t2m") {
     r <- approx(seNorgeT[1,],n=n)$y/255
     g <- approx(seNorgeT[2,],n=n)$y/255
     b <- approx(seNorgeT[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
+  } else if(pal[1] %in% c("t2m.kin2100","burd")) {
+    r <- approx(kssT[1,],n=n)$y/255
+    g <- approx(kssT[2,],n=n)$y/255
+    b <- approx(kssT[3,],n=n)$y/255
+    col <- rgb(r,g,b,alpha)
+  } else if (pal[1]=="cold.kin2100") {
+    r <- approx(kssT[1,1:7],n=n)$y/255
+    g <- approx(kssT[2,1:7],n=n)$y/255
+    b <- approx(kssT[3,1:7],n=n)$y/255
+    col <- rgb(r,g,b,alpha)    
+  }  else if (pal[1]=="warm.kin2100") {
+    r <- approx(kssT[1,8:14],n=n)$y/255
+    g <- approx(kssT[2,8:14],n=n)$y/255
+    b <- approx(kssT[3,8:14],n=n)$y/255
+    col <- rgb(r,g,b,alpha)    
   }
   
   if (test) { #& !exists("r")) {
