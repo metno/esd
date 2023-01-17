@@ -43,13 +43,19 @@
 select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=NULL, 
                             lon=NULL, lat=NULL, alt=NULL, cntr=NULL, src=NULL, it=NULL, 
                             nmin=NULL, user='external', update.meta=FALSE, verbose=FALSE) {
-  if (verbose) print('select.station:')
-  
+  if (verbose) print(match.call())
+
+  ## Use provided metadata in x, or fetch fresh metadata as defined by src
   if (is.null(x)) {
-    if (verbose) print('x == NULL')
+    if (verbose) {
+      print('select.station: Fetching metadata from file data/station.meta.r. (x == NULL)')
+    }
+    ## Load station.meta, either from the esd package itself or, in lieu of that, from the local data folder
     data("station.meta",envir=environment())
     station.meta <- as.data.frame(station.meta)
+
     if(is.null(src)) {
+      if (verbose) print('select.station: Will fetch from frost and thredds. (src == NULL)')
       frost <- TRUE
       thredds <- TRUE
     } else {
@@ -61,18 +67,22 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     }
     ## KMP 2020-02-18: Fetch Frost metadata if it isn't already in station.meta
     if(frost & (update.meta | !any(grepl("FROST",station.meta$source))) ) {
+      if (verbose) print("select.station: Fetching frost metadata (month and diurnal).")
       station.meta <- station.meta[!grepl("FROST",station.meta$source),]
       meta <- metno.frost.meta.month(save2file=FALSE, verbose=verbose)
       station.meta <- merge(station.meta, meta, all=TRUE)
       meta <- metno.frost.meta.day(save2file=FALSE, verbose=verbose)
       station.meta <- merge(station.meta, meta, all=TRUE)
       if("METNO.FROST.MINUTE" %in% src) {
+        if (verbose) print("select.station: Fetching frost metadata (minute).")
         meta <- metno.frost.meta.minute(save2file=FALSE, verbose=verbose)
         station.meta <- merge(station.meta, meta, all=TRUE)
       }
+      if (verbose) print("Fetched fresh frost metadata. What is the status now?")
     }
     ## KMP 2020-02-18: Fetch Thredds metadata if it isn't already in station.meta
     if(thredds & !any(grepl("THREDDS",station.meta$source)) ) {
+      if (verbose) print("select.station: Fetching thredds metadata.")
       if(is.null(param)) {
         param.thredds <- c('t2m','tmax','tmin','precip','slp','sd','fx','fg','dd')
       } else {
@@ -83,7 +93,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
                                                           "start"="first.year",
                                                           "end"="last.year", x))
       for(p in param.thredds) {
-        if(verbose) print(paste("meta.thredds for variable",p))
+        if(verbose) print(paste("select.station: meta.thredds for variable",p))
         meta <- meta.thredds(param=p, verbose=verbose)
         meta <- meta[, names.meta[names.meta %in% names(meta)]]
         names(meta) <- sapply(names(meta), function(x) switch(x, "station.id"="station_id", 
@@ -97,7 +107,8 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     }
     station.meta$end[is.na(station.meta$end)] <- strftime(Sys.time(), format='%Y')
     #station.meta <- as.data.frame(station.meta,stringsAsFactors=FALSE)
-  } else if (inherits(x,"station")) {      
+  } else if (inherits(x,"station")) {
+     if (verbose) print("select.station: Using metadata passed through input variable x")
      station_id <- attr(x, "station_id")
      location <- attr(x,"location")
      country <- attr(x,"country")
@@ -109,7 +120,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
      end <- rep(year(x)[length(index(x))],length(station_id))
      source <- attr(x,"source")
      quality <- attr(x,"quality")
-     
+
      station.meta <- data.frame(station_id = station_id,location = location, country = country,
                                 longitude = longitude, latitude = latitude, altitude = altitude,
                                 element = element, start = start, end = end,
@@ -119,7 +130,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
      ## ele <- element
      ## param <- esd2ele(ele)
   } else if (inherits(x,"data.frame")) station.meta <- x else {
-    stop("x must be an object of class 'station' or a station.meta object (data.frame)") 
+    stop("select.station: x must be an object of class 'station' or a station.meta object (data.frame)") 
   }
   
   ## KMP 2021-05-19: 'src' is an input argument (NULL by default) and if you redefine it here 
@@ -128,21 +139,27 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   ## REB 2021-05-11: The variable 'src' seeems to be missing
   #src <- station.meta$source
 
-  if (verbose) {print(dim(station.meta)); print(table(src))}
+  if (verbose) {
+    print(paste("select.station: station.meta dim:", dim(station.meta)[0], dim(station.meta)[1]))
+    print(paste("select.station: station.meta sources:", table(src)))
+  }
   if (!is.null(param)) {
     ele <- apply(as.matrix(param),1,esd2ele)
     if (is.null(ele)) {
-      print("No variable found for your selection or the param identifier has not been set correctly.")
-      print("Please refresh your selection based on the list below")
+      print("select.station: No variable found for your selection or the param identifier has not been set correctly.")
+      print("select.station: Please refresh your selection based on the list below")
       print(as.matrix(ele2param(src=src))[,c(2,5,6)])
       return(NULL)
     }
   }  
+
+  ## (DEBUG) Save into a file data/station.meta.rda
+  #save(file=file.path("data","station.meta.rda"),station.meta)
   
-  ## get the lenght of the data base
+  ## get the length of the data base
   #n <- length(station.meta$station_id)
   if (!is.null(stid) & dim(station.meta)[1]!=0) {
-    if(verbose) print("Search by station identifier")
+    if(verbose) print("select.station: Search by station identifier")
     if (is.numeric(stid)) {
       id <- is.element(station.meta$station_id,stid)
       station.meta <- station.meta[id,]
@@ -153,14 +170,14 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   }
   if(dim(station.meta)[1]!=0) {
     if (length(lon)==1 & length(lat)==1) {
-      if(verbose) print("Search by the closest station to longitude and latitude values")
+      if(verbose) print("select.station: Search by the closest station to longitude and latitude values")
       d <- distAB(lon, lat, station.meta$longitude, station.meta$latitude)
       id <- d==min(d,na.rm=TRUE)
       ##id[is.na(id)] <- FALSE # Ak some of the lon values are NA's
       station.meta <- station.meta[id,]
     } else {
       if (!is.null(lon)) {
-        if(verbose) print("Search by longitude values or range of values")
+        if(verbose) print("select.station: Search by longitude values or range of values")
         lon.rng <- range(lon,na.rm=TRUE)
         id <- (station.meta$longitude >= lon.rng[1]) & 
               (station.meta$longitude <= lon.rng[2]) &
@@ -168,7 +185,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
         station.meta <- station.meta[id,]  
       }
       if (!is.null(lat)) {
-        if(verbose) print("Search by latitude values or range of values")
+        if(verbose) print("select.station: Search by latitude values or range of values")
         lat.rng <- range(lat) 
         id <- (station.meta$latitude >= lat.rng[1]) & 
               (station.meta$latitude <= lat.rng[2]) & 
@@ -179,7 +196,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   }
   ## Search by altitude values or range of values
   if (!is.null(alt) & dim(station.meta)[1]!=0) {
-    if(verbose) print("Search by altitude values or range of values")
+    if(verbose) print("select.station: Search by altitude values or range of values")
     if (length(alt) == 1) {
       if (alt > 0) alt.rng <- c(alt,10000)
       else alt.rng <- c(0,abs(alt))
@@ -193,14 +210,14 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   }
   ## Search by country name
   if (!is.null(cntr) & dim(station.meta)[1]!=0) {
-    if(verbose) print("Search by country")
+    if(verbose) print("select.station: Search by country")
     id <- is.element(tolower(station.meta$country),tolower(cntr))
     station.meta <- station.meta[id,]
   }
   ##
   ## Search by data source
   if (!is.null(src) & dim(station.meta)[1]!=0) {
-    if(verbose) print("Search by data source")
+    if(verbose) print("select.station: Search by data source")
     ## Redirect external users to Frost and Thredds for metno data
     if(user!='metno') src <- sapply(src, function(x) {
       switch(toupper(x), "METNOM"="METNOM.FROST", "METNOD"="METNOD.THREDDS", x)})
@@ -213,7 +230,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   }
   
   if (!is.null(loc) & dim(station.meta)[1]!=0) {
-    if(verbose) print("Search by location")
+    if(verbose) print("select.station: Search by location")
     ## id <- is.element(tolower(station.meta$location),tolower(loc))
     pattern <- paste(loc,collapse='|')
     id <- grepl(pattern=pattern,station.meta$location,ignore.case=TRUE,...)
@@ -222,21 +239,21 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
 
   ## Search by esd element
   if (!is.null(ele) & dim(station.meta)[1]!=0) {
-    if(verbose) print("Search by element")
+    if(verbose) print("select.station: Search by element")
     id <- is.element(station.meta$element,ele)
     station.meta <- station.meta[id,]
   }
   
   ## Search by minimum number of observations
   if (!is.null(nmin) & dim(station.meta)[1]!=0) { 
-    if(verbose) print("Search by minimum number of observations")
+    if(verbose) print("select.station: Search by minimum number of observations")
     ny <- as.numeric(station.meta$end) - as.numeric(station.meta$start) + 1
     id <- (ny >= nmin)
     station.meta <- station.meta[id,]
   }
   
   if (!is.null(it) & dim(station.meta)[1]!=0) {  
-    if(verbose) print("Search by starting and ending years")
+    if(verbose) print("select.station: Search by starting and ending years")
     if(is.dates(it)) it <- as.numeric(strftime(it, format="%Y"))
     it.rng <- range(it)
     ## Keep only stations with data covering the whole selected period:
@@ -252,7 +269,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       id <- n.rng>0
     }
     if (!any(id)) {
-      print(paste('No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
+      print(paste('select.station: No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
                   min(as.numeric(station.meta$start)),' and latest observation from ',
                   max(as.numeric(station.meta$end)),sep=''))
       return(NULL)
@@ -264,7 +281,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
   }
   ## Search by esd element
   if (!is.null(ele) & dim(station.meta)[1]!=0) {
-    if(verbose) print("Search by element")
+    if(verbose) print("select.station: Search by element")
     id <- is.element(station.meta$element,ele)
     station.meta <- station.meta[id,]
   }
@@ -277,7 +294,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     class(station.meta) <- c("stationmeta","data.frame")
     return(station.meta)
   } else {
-    print("No available stations found for your selection")
+    print("select.station: No available stations found for your selection")
     return(NULL)
   }
 }

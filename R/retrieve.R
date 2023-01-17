@@ -1252,11 +1252,17 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
                              alt=NULL,cntr=NULL,start.year.before=NULL,end.year.after=NULL,
                              nmin=NULL,verbose=FALSE,onebyone=FALSE,...) {
   ncfile <- file
-  if (verbose) print(paste('retrieve.station',ncfile))
+  if (verbose) {
+    print(match.call())
+    print(paste('retrieve.station',ncfile))
+  }
   if (!is.null(path)) ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)
   
   class.x <- file.class(ncfile)
-  if (verbose) {print('Check class'); print(class.x$value)}
+  if (verbose) {
+    print('retrieve.station: Check class:')
+    print(class.x$value)
+  }
   stopifnot(tolower(class.x$value[1])=='station' | length(is.element(class.x$dimnames,'stid')) > 0)
   ncid <- nc_open(ncfile)
   if (param=='auto') { 
@@ -1264,18 +1270,21 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     varpick <- 1
     while ( ((ncid$var[[varpick]]$ndims==1) | (sum(is.element(names(ncid$var)[varpick],c('loc','cntr','stationID')))==1)) & 
             (varpick <= nvars) ) varpick <- varpick + 1
-    if (verbose) print(paste(varpick,names(ncid$var)[varpick]))
+    if (verbose) print(paste('retrieve.station:',varpick,names(ncid$var)[varpick]))
     param <- names(ncid$var)[varpick]
   }
   size <- eval(parse(text=paste('ncid$var$',param,'$size',sep='')))
   if (verbose) {
-    print(paste('The variable to read is',param))
-    print(paste('Variable size in netCDF file:',paste(size,collapse=' - ')))
+    print(paste('retrieve.station: The variable to read is',param))
+    print(paste('retrieve.station: Variable size in netCDF file:',paste(size,collapse=' - ')))
   }
   ## Read the metadata:
   tim <- ncvar_get(ncid,'time'); nt <- length(tim)
   stids <- ncvar_get(ncid,'stationID'); ns <- length(stids)
-  if (verbose) {print('Get metadata');print(stids)}
+  if (verbose) {
+    print('retrieve.station: Get metadata')
+    print(stids)
+  }
   tunit <- ncatt_get(ncid,'time','units')
   lons <- ncvar_get(ncid,'lon')
   lats <- ncvar_get(ncid,'lat')
@@ -1291,7 +1300,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   missing <- ncatt_get(ncid,param,'missing_value')
   ## Use the metadata to select the stations to read: there is no need to read
   ## all the stations if only a subset is desired
-  if (verbose) print('Metadata is read - Select selected stations')
+  if (verbose) print('retrieve.station: Metadata is read - Select selected stations')
   if (is.null(is)) ii <- rep(TRUE,length(stids)) else
     if (!is.logical(is)) {
       ii <- rep(FALSE,length(stids)); ii[is] <- TRUE
@@ -1312,7 +1321,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     is.element(tolower(substr(locs,1,nchar(loc))),tolower(loc))
   if (!is.null(cntr)) ii <-ii & 
     is.element(tolower(substr(cntrs,1,nchar(cntr))),tolower(cntr))
-  if (verbose) {print('Read following locations');
+  if (verbose) {print('retrieve.station: Read following locations');
     print((1:ns)[ii]); print(locs[ii])}
   if (!is.null(nmin)) ii <- ii & (nv >= nmin)
   if (!is.null(start.year.before)) ii <- ii & (fyr <= start.year.before)
@@ -1320,7 +1329,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   is <- (1:ns)[ii]
   
   if (onebyone) {
-    if (verbose) print("Read stations one by one")
+    if (verbose) print("retrieve.station: Read stations one by one")
     ## For large files and where the stations are seperated far from each other in the
     ## netCDF file, it may be faster to read the files individually and then combine them 
     ## into one object
@@ -1343,10 +1352,10 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   ## Find the real dates:
   if (sum(tim > 10e7)>0) {
     ## If silly values due to missing data
-    print(paste(sum(tim > 10e7),'suspect time stamps!'))
+    print(paste('retrieve.station:',sum(tim > 10e7),'suspect time stamps!'))
     notsuspect <- tim <= 10e7
   } else notsuspect <- rep(TRUE,length(tim))
-  if (verbose) {print('Time information'); print(tunit$value); print(range(tim,na.rm=TRUE))}
+  if (verbose) {print('retrieve.station: Time information'); print(tunit$value); print(range(tim,na.rm=TRUE))}
   if (length(grep('days since',tunit$value))) 
     t <- as.Date(substr(tunit$value,12,21)) + tim else
       if (length(grep('months since',tunit$value))) 
@@ -1354,14 +1363,14 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
           if (length(grep('years since',tunit$value))) 
             t <- seq(as.Date(substr(tunit$value,14,23)),max(tim),'1 year')
   if (is.null(it)) {
-    if (verbose) print('Read whole record')
+    if (verbose) print('retrieve.station: Read whole record')
     it1 <- 1; it2 <- nt
   } else {
-    if (verbose) print('it is not NULL')
+    if (verbose) print('retrieve.station: it is not NULL')
     if ( (is.numeric(it)) & (length(it)==2) ) 
       it <- as.Date(c(paste(it[1],'01-01',sep='-'),(paste(it[2],'12-31',sep='-'))))
     if (is.character(it)) it <- as.Date(it)
-    if (verbose) print(paste('Read selected period',min(it),'-',max(it),
+    if (verbose) print(paste('retrieve.station: Read selected period',min(it),'-',max(it),
                              'from interval',min(t),max(t)))
     if(it[1]<min(t)) {
       it1 <- 1
@@ -1373,7 +1382,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     } else {
       it2 <- max(which(t>=it[1] & t<=it[2])) - it1 + 1
     }
-    if (verbose) print(c(it1,it2))
+    if (verbose) print(paste('retrieve.station:',c(it1,it2)))
     #t <- t[it1:(it1+it2-1)] ## KMP 2022-05-03: this is done on line 1386
   }
   
@@ -1390,24 +1399,24 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   
   ## Read the actual data:
   if (verbose) {
-    print(paste('reading',param))
-    print(paste('Number of stations in file=',ns,' reading',sum(ii)))
-    print('Confirmation of station IDs:'); print(stids[is])
-    print('start=')
+    print(paste('retrieve.station: reading',param))
+    print(paste('retrieve.station: Number of stations in file=',ns,' reading',sum(ii)))
+    print('retrieve.station: Confirmation of station IDs:'); print(stids[is])
+    print('retrieve.station: start=')
     print(start)
-    print('count=')
+    print('retrieve.station: count=')
     print(count)
     #print(ncid)
   }
   x <- ncvar_get(ncid,param,start=start,count=count)
   ## REB 2022-03-29: needed to add two lines for consistency between x and t.
   it1 <- start[2]; it2 <- start[2]+count[2]-1; it12 <- it1:it2
-  if (verbose) {print('time start & count:'); print(range(it12)); print(length(it12))}
+  if (verbose) {print('retrieve.station: time start & count:'); print(range(it12)); print(length(it12))}
   tim <- tim[it12]
   t <- t[it12]
   if (transpose) x <- t(x)
   nc_close(ncid)
-  if (verbose) print('All data has been extracted from the netCDF file')
+  if (verbose) print('retrieve.station: All data has been extracted from the netCDF file')
   
   if (sum(!notsuspect)>0) {
     if (length(dim(x))==2) x <- x[notsuspect,] else x <- x[notsuspect] 
@@ -1419,7 +1428,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   ## The data matrix is not full and may not necessarily correspond to the selection
   ## Need to remove unwanted stations with station numbers in the range of those selected
   iii <- seq(min((1:ns)[ii]),max((1:ns)[ii]),by=1)
-  if (verbose) print(paste(' Number of stations read so far',length(iii),
+  if (verbose) print(paste(' retrieve.station:  Number of stations read so far',length(iii),
                            ' Total number of stations',length(ii),
                            ' Selected stations=',sum(ii)))
   if (sum(ii)>1) {
@@ -1427,7 +1436,7 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     if (length(dim(x))==2) x <- x[,iv] else x <- x[iv]
   } else dim(x) <- NULL
   if (verbose) {
-    print(paste('Dimensions of x is ',paste(dim(x),collapse=' - ')))
+    print(paste('retrieve.station: Dimensions of x is ',paste(dim(x),collapse=' - ')))
     print(summary(c(x))); print(sum(is.finite(x)))
   }
   if (length(dim(x))==2) { 
@@ -1435,19 +1444,19 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
     jt <- (nv > 0)
   } else if (length(t)>1) jt <- is.finite(x) else jt <- is.finite(t)
   
-  if (verbose) print(paste('Number of valid data points',length(jt), 'remove empty periods'))
+  if (verbose) print(paste('retrieve.station: Number of valid data points',length(jt), 'remove empty periods'))
   lons <- lons[ii]; lats <- lats[ii]; alts <- alts[ii]; cntrs <- cntrs[ii]
   locs <- locs[ii]; stids <- stids[ii]
-  if (verbose) print(paste('length(t)=',length(t),'length(x)=',length(x),'sum(jt)=',sum(jt)))
+  if (verbose) print(paste('retrieve.station: length(t)=',length(t),'length(x)=',length(x),'sum(jt)=',sum(jt)))
   if (length(dim(x))==2) x <- x[jt,] else if (length(t)>1) x <- x[jt]
   tim <- tim[jt]; t <- t[jt]
   
   if (length(t)==1) dim(x) <- c(1,length(x)) else 
     if (is.null(dim(x))) dim(x) <- c(length(x),1)
-  if (verbose) print(paste('Dimensions of x is ',paste(dim(x),collapse=' - '),
+  if (verbose) print(paste('retrieve.station: Dimensions of x is ',paste(dim(x),collapse=' - '),
                            'and length(t) is',length(t)))
   if (length(t) != dim(x)[1]) {
-    print(paste('Failed sanity check - Dimensions of x is ',paste(dim(x),collapse=' - '),
+    print(paste('retrieve.station: Failed sanity check - Dimensions of x is ',paste(dim(x),collapse=' - '),
                 'and length(t) is',length(t),' there is a bug in the code'))
     stop('retrieve.station error:')
   }
@@ -1457,11 +1466,11 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
                   unit=unit$value,param=param)
   
   if (length(t)>1) {
-    if (verbose) print('Exclude empty time periods')
+    if (verbose) print('retrieve.station: Exclude empty time periods')
     if (length(dim(y))==2) iv <- apply(coredata(y),1,FUN='nv') else iv <- nv(y)
-    y <- subset(y,it=iv > 0)
+    y <- subset(y,it=iv > 0, verbose=verbose)
   }
-  if (verbose) print(paste('as.station',min(index(y)),max(index(y)),'Data size=',length(x),'record length=',length(index(y))))
+  if (verbose) print(paste('retrieve.station: as.station',min(index(y)),max(index(y)),'Data size=',length(x),'record length=',length(index(y))))
   if (verbose) print('exit retrieve.station')
   return(y)
 }
