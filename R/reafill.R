@@ -108,15 +108,21 @@ reafill <- function(x,file,anomaly=TRUE,plot=FALSE,delta=0.3,
     nyrs <- length(rownames(tyrs))
     if (max(tyrs)<=12 & nrow(clim)<=12) {#(length(clim)==12)) {
       ## Monthly or annual data
+      if (verbose) {str(clim); print(month(clim))}
       for (im in unique(month(z))) {
+        ## Select each calendar month individually:
         it <- is.element(month(z),im)
-        if(n==1) {
-          coredata(z)[it] <- coredata(z)[it] + 
-            rep(clim[is.element(month(clim), im)],sum(it))
-        } else {
-          for (is in 1:n) {
-            coredata(z)[it, is] <- coredata(z)[it, is] + 
-              rep(clim[is.element(month(clim), im), is], sum(it))
+        if (verbose) print(c(im,sum(it),sum(is.element(month(clim), im))))
+        if (sum(it) > 0) { 
+          if(n==1) {
+            if (verbose) print(clim[is.element(month(clim), im)])
+            coredata(z)[it] <- coredata(z)[it] + 
+              rep(coredata(clim)[is.element(month(clim), im)],sum(it))
+          } else {
+            for (is in 1:n) {
+              coredata(z)[it, is] <- coredata(z)[it, is] + 
+                rep(coredata(clim)[is.element(month(clim), im), is], sum(it))
+            }
           }
         }
       } 
