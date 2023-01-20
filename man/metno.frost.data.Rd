@@ -26,7 +26,8 @@ metno.frost.data(
   path = NULL,
   browser = "firefox",
   save2file = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  ...
 )
 }
 \arguments{
@@ -108,15 +109,14 @@ A time series of "zoo" "station" class with additional attributes
 used for further processing.
 }
 \description{
-Retrieve records from frost.met.no, for one element and one or more stations
+Fetch data from frost.met.no and return station object
 }
 \examples{
 
-\dontrun{
-# 
+\dontrun{ 
 metno.frost.data(param='t2m', stid=18700, it=c('2020-01-01','2020-02-01'), timeresolutions='P1D')
 }
-Fetch data from frost.met.no and return station object
+
 }
 \author{
 K. Tunheim

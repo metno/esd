@@ -1,6 +1,8 @@
 
 #' Retrieve records from frost.met.no, for one element and one or more stations
 #' 
+#' Fetch data from frost.met.no and return station object
+#'
 #' @aliases metno.frost.data metno.frost.station
 #' 
 #' @param stid A string of characters as an identifier of the weather/climate
@@ -63,12 +65,10 @@
 #' 
 #' @examples
 #'
-#' \dontrun{
-#' # 
+#' \dontrun{ 
 #' metno.frost.data(param='t2m', stid=18700, it=c('2020-01-01','2020-02-01'), timeresolutions='P1D')
 #' }
-
-#' Fetch data from frost.met.no and return station object
+#'
 #' @export metno.frost.data
 metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.no/auth/requestCredentials.html',
                              stid=NULL, param=NULL, it=NULL,
@@ -76,7 +76,7 @@ metno.frost.data <- function(keyfile='~/.FrostAPI.key', url='https://frost.met.n
                              timeresolutions='P1M', levels="default", timeoffsets="default", 
                              performancecategories="A,B,C", exposurecategories="1,2", 
                              qualities='0,1,2,3,4,5', fetch.meta=TRUE, path=NULL, 
-                             browser="firefox", save2file=FALSE, verbose=FALSE) {
+                             browser="firefox", save2file=FALSE, verbose=FALSE, ...) {
   
   if (verbose) print(match.call())
 
