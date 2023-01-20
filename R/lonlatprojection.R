@@ -6,7 +6,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
                              verbose=FALSE,geography=TRUE,fancy=FALSE,
-                             main=NA,cex.sub=0.8,add=FALSE,...) {
+                             main=NA,cex.sub=0.8,add=FALSE,fig=NULL,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
@@ -25,7 +25,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (!is.na(first.space)) attr(x,'source') <- substr(src(x),1,first.space-1)
     }
   
-  fig0 <- c(0,1,0,1)                        # REB 2015-06-25
   ## Land contours
   data("geoborders",envir=environment())
   if(!is.null(attr(x,"greenwich"))) if(!attr(x,"greenwich")) {
@@ -147,12 +146,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (new) {
     if(verbose) print("Create new graphic device")
     dev.new()
-    par(fig=fig0)
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
-  } else {
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=(add & dev.cur()>1))
-    fig0 <- par()$fig
+    add <- FALSE
   }
+  #  if(!is.null(fig)) par(fig=fig)
+  #}# else {
+  #  browser()
+  #  if(!is.null(fig)) par(fig=fig, new=(add & dev.cur()>1))
+  #}
+  if(!is.null(fig)) suppressWarnings(par(fig=fig, new=(add & dev.cur()>1)))
+  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
   
   if (verbose) print('Set up the figure')
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
@@ -237,7 +239,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         #par(op)
       }
     }
-    if (!new) par(fig=fig0)
+    #if (!new) par(fig=fig)
+    if(!is.null(fig)) par(fig=fig)
     par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
         xaxt="s",yaxt="s",new=FALSE)
   }

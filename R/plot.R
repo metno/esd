@@ -1981,9 +1981,13 @@ plot.cca <- function(x,...,icca=1,
                                   h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE) {
   if (verbose) print("plot.cca")
   if (new) dev.new()
-  par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
+  #par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
+  par(bty="n",xaxt="n",yaxt="n")
   if (is.null(colbar2)) colbar2 <- colbar1
-  map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,verbose=verbose,...)
+  map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,
+          fig1=c(0.02,0.5,0.5,1),fig2=c(0.5,0.98,0.5,1),
+	  add=TRUE,
+	  verbose=verbose,new=FALSE,...)
   
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
                sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
