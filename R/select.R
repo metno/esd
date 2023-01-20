@@ -252,15 +252,22 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     station.meta <- station.meta[id,]
   }
   
+  if (verbose) str(station.meta)
+  
+  
   if (!is.null(it) & dim(station.meta)[1]!=0) {  
     if(verbose) print("select.station: Search by starting and ending years")
+    it[it =="now"] <- as.character(as.Date(Sys.time()),format='%Y-%m-%d')
     if(is.dates(it)) it <- as.numeric(strftime(it, format="%Y"))
     it.rng <- range(it)
+    if (verbose) print(it)
     ## Keep only stations with data covering the whole selected period:
     #id <- (as.numeric(station.meta$start) <= it.rng[1]) & (as.numeric(station.meta$end) >= it.rng[2])
-    start.rng <- sapply(as.numeric(station.meta$start), function(x) max(it.rng[1], x))
-    end.rng <- sapply(as.numeric(station.meta$end), function(x) min(it.rng[2], x))
-    n.rng <- sapply(end.rng-start.rng+1, function(x) max(0,x))
+    start.rng <- as.numeric( sapply(as.numeric(station.meta$start), function(x) max(it.rng[1], x)) )
+    end.rng <- as.numeric( sapply(as.numeric(station.meta$end), function(x) min(it.rng[2], x)) )
+    n.rng <- as.numeric( sapply(end.rng-start.rng+1, function(x) max(0,x)) )
+    
+    if (verbose) {print('Number of years of data'); print(summary(n.rng))}
     if(!is.null(nmin)) {
       ## Keep only stations with nmin years of data in the selected period:
       id <- n.rng>=nmin
@@ -268,6 +275,7 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
       ## Keep all stations with any data within selected period:
       id <- n.rng>0
     }
+    if (verbose) print(paste(sum(id),'stations with more than',nmin,'years of data'))
     if (!any(id)) {
       print(paste('select.station: No records that cover the period ',it.rng[1],'-',it.rng[2],'. Earliest observation from ',
                   min(as.numeric(station.meta$start)),' and latest observation from ',
@@ -279,19 +287,21 @@ select.station <- function (x=NULL, ..., loc=NULL, param=NULL,  ele=NULL, stid=N
     #station.meta$start <- rep(it.rng[1],length(station.meta$loc))
     #station.meta$end <- rep(it.rng[2],length(station.meta$loc))
   }
-  ## Search by esd element
-  if (!is.null(ele) & dim(station.meta)[1]!=0) {
-    if(verbose) print("select.station: Search by element")
-    id <- is.element(station.meta$element,ele)
-    station.meta <- station.meta[id,]
-  }
+  # ## Search by esd element - already done!?!
+  # if (!is.null(ele) & dim(station.meta)[1]!=0) {
+  #   if(verbose) print("select.station: Search by element")
+  #   id <- is.element(station.meta$element,ele)
+  #   station.meta <- station.meta[id,]
+  # }
   ## Outputs
+  
   if (dim(station.meta)[1]!=0) {
     station.meta$station_id <- as.character(station.meta$station_id)
     station.meta$location <- as.character(station.meta$location)
     station.meta$country <- as.character(station.meta$country)
     station.meta$source <- as.character(station.meta$source)
     class(station.meta) <- c("stationmeta","data.frame")
+    if (verbose) {str(station.meta); print('Returning from select.station')}
     return(station.meta)
   } else {
     print("select.station: No available stations found for your selection")
