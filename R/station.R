@@ -224,12 +224,18 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
   }
   if (inherits(loc,"stationmeta")) {
     ss <- loc
+  } else if (inherits(loc,"stationsummary")) {
+    ss <- loc$station_id
   } else if (is.character(loc)) {
     loc <- loc
     ss <- NULL
   } else if(length(list(...))>0) {
     if(inherits(list(...)[[1]],"stationmeta")) {
       ss <- list(...)[[1]]
+    } else if(length(list(...))>0) {
+      if(inherits(list(...)[[1]],"stationsummary")) {
+        ss <- list(...)[[1]]$station_id
+      }
     }
   }
   
@@ -264,16 +270,16 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
       }
     }
   } 
-
+  
   if (verbose) {
     print("station.default: Station ID:")
     str(ss$station_id)
   }
-
+  
   X <- NULL
   src <- as.character(ss$source)
   sources <- unique(src)
-
+  
   ## Add .FROST to METNOM and METNOD source names for backwards compatibility – unless internal user!
   if(any(grepl("METNO",sources))) {
     if(user!="metno") {
@@ -281,11 +287,11 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
         switch(toupper(x), "METNOM"="METNOM.FROST", "METNOD"="METNOD.FROST", x)}))
     }
   }
-
+  
   ## Loop through requested data sources
   for(s in sources) {
     if(verbose) print(paste("station.default: Retrieving data from source",s))
-
+    
     ## Set stid, param and a default retrieval path
     stid <- ss$station_id[src==s]
     param <- apply(as.matrix(ss$element),1,esd2ele)[src==s]
@@ -298,7 +304,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
       if("end" %in% names(args)) end <- args$end else end <- NULL
     }
     path <- paste0("data.",toupper(s))
-
+    
     ## Set specific path and other defaults depending on source
     if(grepl("METNOM.FROST",toupper(s))) {
       if(!is.null(path.metnom)) path <- path.metnom
@@ -324,7 +330,7 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
       if(!is.null(path.ghcnd)) path <- path.ghcnd
       if(is.null(url.ghcnd)) url="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/all" else url <- url.ghcnd
     }
-
+    
     ## Loop through requested parameters
     for(param0 in unique(param)) {
       if(grepl("FROST",toupper(s))) {
@@ -349,11 +355,11 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
         end <- ss$end[j]
         if(verbose) print(paste("station.default: Retrieving data from",
                                 length(stid), "records ..."))
-
+        
         ## Fetch data from one station at a time
         for (i in 1:length(stid)) {
           if(verbose) print(paste('station.default:',i,toupper(param0),stid[i],loc[i],cntr[i],s))
-
+          
           ## Custom treatment for the different source types
           if (grepl("METNOD",toupper(s))) {
             ## NOTE: this block will only trigger for internal users
@@ -400,11 +406,11 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
           } else if (s=="GHCND") {
             if(param0=="t2m") { ## compute the avg 
               ghcnd.tmin <- ghcnd.station.int(param="tmin",stid=stid[i],lon=lon[i],lat=lat[i],
-                                          alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
-                                          verbose=verbose,path = path,url=url)
+                                              alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
+                                              verbose=verbose,path = path,url=url)
               ghcnd.tmax <- ghcnd.station.int(param="tmax",stid=stid[i],lon=lon[i],lat=lat[i],
-                                          alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
-                                          verbose=verbose, path=path,url=url)
+                                              alt=alt[i],loc=loc[i],cntr=cntr[i],qual=qual[i],
+                                              verbose=verbose, path=path,url=url)
               if (is.null(ghcnd.tmax) |  is.null(ghcnd.tmin)) {
                 x <- NULL
               } else {
@@ -421,11 +427,11 @@ station.default <- function(..., loc=NULL, param='t2m', src=NULL, path=NULL,
               }
             } else {
               x <- ghcnd.station.int(stid=stid[i],lon=lon[i],lat=lat[i],alt=alt[i],loc=loc[i],
-                                 cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose,
-                                 path = path,url=url)
+                                     cntr=cntr[i],qual=qual[i],param=param0,verbose=verbose,
+                                     path = path,url=url)
             }
           }
-
+          
           ## Let user know if no data was found, otherwise set data to variable X
           if (is.null(x) | (sum(is.na(coredata(x)))==length(coredata(x))) ) {
             if(verbose) print("station.default: Warning : No values found in the time series for-> This station will be ignored")
@@ -764,7 +770,7 @@ ghcnm.station <- function(stid=NULL,lon=NULL,lat=NULL,loc=NULL,alt=NULL,cntr=NUL
 
 # NOT EXPORTED - internal function
 ghcnd.station.int <- function(stid=NULL, lon=NULL, lat=NULL, loc=NULL, alt=NULL, cntr=NULL, qual=NULL, param=NULL,
-                          path="data.GHCND", url=NULL, adj=TRUE, force=FALSE, flag=FALSE, off=FALSE, verbose=FALSE) {
+                              path="data.GHCND", url=NULL, adj=TRUE, force=FALSE, flag=FALSE, off=FALSE, verbose=FALSE) {
   
   if (verbose) print("station.default: station.GHCND")
   ele <- esd2ele(param=param) 
