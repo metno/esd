@@ -15,7 +15,6 @@
 \alias{station.gloss}
 \alias{station.newlyn}
 \alias{station.giss}
-\alias{metno.frost.station}
 \title{Retrieve station record from a given data source.}
 \usage{
 station(...)
