@@ -134,6 +134,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   ## data in the esd package.
   
   if (verbose) print('map.default')
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (is.logical(colbar)) colbar <- NULL
   ## If only a few items are provided in colbar - then set the rest to the default
   if (!is.null(colbar)) {
@@ -195,6 +196,7 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ##  image(lon(x),lat(x),x)
   
   if (verbose) print('map.matrix')
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
   if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
   if (verbose) str(x)
@@ -226,7 +228,8 @@ map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            type=c("fill","contour"),gridlines=FALSE,
                            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                            ip=1,plot=TRUE) {
-  
+  if (verbose) print('map.data.frame')
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   attr(x,'location') <- x$location; x$location <- NULL
   attr(x,'longitude') <- x$longitude; x$longitude <- NULL
   attr(x,'latitude') <- x$latitude; x$latitude <- NULL
@@ -250,6 +253,7 @@ map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       type=c("fill","contour"),gridlines=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.array')
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
   if (is.null(ip)) {
     ## If it is NULL, then aggregate all of 3rd dimension
@@ -291,6 +295,7 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                      ip=1,plot=TRUE) {
   if (verbose) print('map.comb')
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'eof'))
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -321,6 +326,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
                     ip=1,cex=1,plot=TRUE) {
   
   if (verbose) print('map.eof')
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'eof'))
   ##x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -399,6 +405,7 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.ds')
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'ds'))
   x <- subset(x,is=is)
   
@@ -499,6 +506,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   
   stopifnot(inherits(x,'field'))
   if (verbose) print('map.field')
+  def.par <- par(no.readonly = TRUE)
   
   x <- subset(x,it=it,is=is)
   #print(length(x)); print(attr(x,'dimensions')[1:2])
@@ -606,6 +614,7 @@ map.corfield <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   
   if (verbose) print("map.corfield")
   stopifnot(inherits(x,'corfield'))
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   x <- subset(x,it=it,is=is,verbose=verbose)
   projection <- tolower(projection)
   dim(x) <- attr(x,'dimensions')[1:2]
@@ -661,6 +670,7 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.trend')
   stopifnot(inherits(x,'field'),inherits(x,'trend'))
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
   X <- attr(x,'pattern')
@@ -718,7 +728,7 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,add=FALSE,projection="l
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   ##
   if (verbose) print(paste('map.pca',FUN))
-  
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if(inherits(x,"trajectory")) {
     map.pca.trajectory(x,projection=projection,lonR=lonR,latR=latR,
                        xlim=xlim,ylim=ylim,...)
@@ -753,13 +763,14 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,add=FALSE,projection="l
     if (is.element(FUN,args)) {
       map.station(X,new=new,colbar=colbar,
                   xlim=xlim,ylim=ylim,zlim=zlim,
-                  plot=TRUE,add=add,fig=fig,verbose=verbose,...)
+                  plot=TRUE,add=add,fig=fig,verbose=verbose,...) -> z
     } else {
       map.station(X,new=new,colbar=colbar,FUN=FUN,
                   xlim=xlim,ylim=ylim,zlim=zlim,
-                  plot=TRUE,add=add,fig=fig,verbose=verbose,...)
+                  plot=TRUE,add=add,fig=fig,verbose=verbose,...) -> z
     }
   }
+  invisible(z)
 }
 
 #' @exportS3Method
@@ -771,9 +782,11 @@ map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     type=c("fill","contour"),gridlines=FALSE,
                     verbose=FALSE,plot=TRUE) {
   if(verbose) print("map.mvr")
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   x <- subset(x,it=it,is=is)
   map.field(x,new=new,FUN="mean",colbar=colbar,xlim=xlim,ylim=ylim,
-            verbose=verbose,plot=TRUE,...)
+            verbose=verbose,plot=TRUE,...) -> z
+  invisible(z)
   
 }
 
@@ -786,6 +799,7 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE) {
   if (verbose) print('map.cca')
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (is.null(colbar2)) colbar2 <- colbar1
   ##x <- subset(x,it=it,is=is)
   
@@ -893,7 +907,7 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',verbose=verbose,
       colbar=colbar2,showall=FALSE,new=FALSE,fig=NULL,add=NULL,plot=TRUE)
-  
+  par(def.par) # reset to default
   invisible(list(U=U,V=V))
 }
 
@@ -909,6 +923,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
                        projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,add=FALSE,
                        verbose=FALSE) {
   if(verbose) print("map.events")
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   x0 <- x
   x <- subset(x,it=it,is=is,verbose=verbose)
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
@@ -1051,6 +1066,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
          par("usr")[4] - 0.10*diff(range(par("usr")[3:4])),
          main,pos=4,cex=1,col="black")
   }
+  par(def.par) # reset to default
 }
 
 #' Function that masks either ocean or land

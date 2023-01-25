@@ -38,17 +38,23 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
                         midpoint = FALSE, border = NA, lwd = 1, rev=FALSE,verbose=FALSE) {
   
   if(verbose) print("image.plot")
+  def.par <- par() # save default, for resetting...
+  args <- names(list(...))
+  if (verbose) print(args)
   
-  #breaks <- list(...)$breaks
   if(!is.null(breaks)) nlevel <- length(breaks)-1
   if(is.null(col)) col <- colscal(n=nlevel, pal=pal)
   if (rev) col <- rev(col)
-  old <- par()
-  ## print("old") ; print(old$fig)
-  old.par <- par(no.readonly = TRUE)
+  if (length(breaks) != (length(col)+1)) {
+    print(breaks)
+    print(col)
+    browser()
+  }
+  if (verbose) print(c(nlevel,pal))
   info <- imageplot.info(verbose=verbose,...)
+  if (verbose) print(info)
   if (add) {
-    big.plot <- old.par$plt
+    big.plot <- def.par$plt
   }
   if (legend.only) {
     graphics.reset <- TRUE
@@ -56,6 +62,7 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
   if (is.null(legend.mar)) {
     legend.mar <- ifelse(horizontal, 3.1, 5.1)
   }
+  if (verbose) print('set up plot')
   temp <- imageplot.setup(add = add, legend.shrink = legend.shrink, 
                           legend.width = legend.width, legend.mar = legend.mar, 
                           horizontal = horizontal, bigplot = bigplot, smallplot = smallplot, verbose=verbose)
@@ -72,10 +79,10 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
       poly.image(..., add = add, col = col, midpoint = midpoint, 
                  border = border, lwd.poly = lwd, verbose=verbose)
     }
-    big.par <- par(no.readonly = TRUE)
+    #big.par <- par(no.readonly = TRUE)  # This has been commented out...
   }
   if ((smallplot[2] < smallplot[1]) | (smallplot[4] < smallplot[3])) {
-    par(old.par)
+    par(def.par)
     stop("plot region too small to add legend\n")
   }
   
@@ -84,18 +91,20 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
   maxz <- info$zlim[2]
   ## KMP 2015-09-23: for unevenly spaced breaks
   if(is.null(breaks)) {
+    if (verbose) print('unevenly spaced breaks')
     binwidth <- (maxz - minz)/nlevel
     midpoints <- seq(minz + binwidth/2, maxz - binwidth/2, by = binwidth)
     iy <- midpoints
     iz <- matrix(iy, nrow = 1, ncol = length(iy))
   } else {
+    if (verbose) print('evenly spaced breaks')
     z <- unique(c(minz,breaks,maxz))
     binwidth <- diff(z)
     midpoints <- z[1:(length(z)-1)]+binwidth/2
     iy <- midpoints
     iz <- matrix(iy, nrow = 1, ncol = length(iy))
   }
-  par(new = TRUE, pty = "m", plt = smallplot, err = -1)
+  par(new = FALSE, pty = "m", plt = smallplot, err = -1)
   if (!is.null(breaks) & !is.null(lab.breaks)) {
     axis.args <- c(list(side = ifelse(horizontal, 1, 4), 
                         mgp = c(2, 0.5, 0), las = ifelse(horizontal, 0, 2), 
@@ -105,11 +114,14 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
                         mgp = c(2, 0.5, 0), las = ifelse(horizontal, 0, 2)), 
                    axis.args)
   }
+  if (verbose) str(axis.args)
   if (!horizontal) {
+    if (verbose) print("not horizontal")
     if (is.null(breaks)) {
       image(ix, iy, iz, xaxt = "n", yaxt = "n", xlab = "", 
             ylab = "", col = col)
     } else {
+      if (verbose) print("horizontal")
       image(ix, iy, iz, xaxt = "n", yaxt = "n", xlab = "", 
             ylab = "", col = col, breaks = breaks)
     }
@@ -131,20 +143,8 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
   if (!is.null(legend.args)) {
     do.call(mtext, legend.args)
   }
-  mfg.save <- par()$mfg
-  if (graphics.reset | add) {
-    par(old.par)
-    par(mfg = mfg.save, new = FALSE)
-    invisible()
-  } else {
-    par(big.par)
-    par(plt = big.par$plt, xpd = FALSE)
-    par(mfg = mfg.save, new = FALSE)
-    invisible()
-  }
-  ## print(old$fig)
-  par(fig = old$fig)
-  par(mfrow=old$mfrow)
+  if (verbose) {print('image.plot - def.par()'); print(def.par$mfcol); print(def.par$mfrow); print(def.par$mfg)}
+  par(def.par) # reset to default
 }
 
 
@@ -208,6 +208,7 @@ poly.image <- function (x, y, z, col = colscal(n=64,pal="heat"), breaks, transpa
                         midpoint = FALSE, zlim = range(z, na.rm = TRUE), xlim = range(x), 
                         ylim = range(y), add = FALSE, border = NA, lwd.poly = 1, verbose=FALSE, ...) {
   if(verbose) print("poly.image")
+  def.par <- par() # save default, for resetting...
   if(!requireNamespace("fields",quietly=TRUE)) {
     stop("Package \"fields\" needed to regrid image. Please install it.")
   } else {
@@ -254,7 +255,7 @@ imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width =
                              horizontal = FALSE, legend.mar = NULL, bigplot = NULL, smallplot = NULL, 
                              verbose=FALSE, ...) {
   if(verbose) print("imageplot.setup")
-  old.par <- par(no.readonly = TRUE)
+  def.par <- par() # save default, for resetting...
   if (is.null(smallplot)) {
     stick <- TRUE
   } else {
@@ -263,13 +264,14 @@ imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width =
   if (is.null(legend.mar)) {
     legend.mar <- ifelse(horizontal, 3.1, 5.1)
   }
-  char.size <- ifelse(horizontal, par()$cin[2]/par()$din[2], 
-                      par()$cin[1]/par()$din[1])
-  offset <- char.size * ifelse(horizontal, par()$mar[1], par()$mar[4])
+  char.size <- ifelse(horizontal, def.par$cin[2]/def.par$din[2], 
+                      def.par$cin[1]/def.par$din[1])
+  offset <- char.size * ifelse(horizontal, def.par$mar[1], def.par$mar[4])
   legend.width <- char.size * legend.width
   legend.mar <- legend.mar * char.size
+  if (verbose) print(paste('legend.mar=',legend.mar,'char.size=',char.size,'offset=',offset,'legend.width=',legend.width))
   if (is.null(smallplot)) {
-    smallplot <- old.par$plt
+    smallplot <- def.par$plt
     if (horizontal) {
       smallplot[3] <- legend.mar
       smallplot[4] <- legend.width + smallplot[3]
@@ -285,11 +287,11 @@ imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width =
     }
   }
   if (is.null(bigplot)) {
-    bigplot <- old.par$plt
+    bigplot <- def.par$plt
     if (!horizontal) {
       bigplot[2] <- min(bigplot[2], smallplot[1] - offset)
     } else {
-      bottom.space <- old.par$mar[1] * char.size
+      bottom.space <- def.par$mar[1] * char.size
       bigplot[3] <- smallplot[4] + offset
     }
   }
@@ -298,5 +300,6 @@ imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width =
     smallplot[1] <- min(bigplot[2] + offset, smallplot[1])
     smallplot[2] <- smallplot[1] + dp
   }
+  if (verbose) {print(list(smallplot = smallplot, bigplot = bigplot)); print('exit imageplot.setup')}
   return(list(smallplot = smallplot, bigplot = bigplot))
 }

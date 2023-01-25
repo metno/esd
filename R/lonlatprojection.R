@@ -4,11 +4,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              xlim=NULL,ylim=NULL,zlim=NULL,lab='default',
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                             type=c("fill","contour"),gridlines=FALSE,
-                             verbose=FALSE,geography=TRUE,fancy=FALSE,
+                             type=c("fill","contour"),scaletype='r',gridlines=FALSE,
+                             verbose=FALSE,geography=TRUE,fancy=TRUE,
                              main=NA,cex.sub=0.8,add=FALSE,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
+  def.par <- par() # save default, for resetting...
+  if (verbose) {print('def.par()'); print(def.par$mfcol); print(def.par$mfrow); print(def.par$mfg)}
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
   ## for precipitation-palette
@@ -25,7 +27,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (!is.na(first.space)) attr(x,'source') <- substr(src(x),1,first.space-1)
     }
   
-  fig0 <- c(0,1,0,1)                        # REB 2015-06-25
+  #fig0 <- c(0,1,0,1)                        # REB 2015-06-25
   ## Land contours
   data("geoborders",envir=environment())
   if(!is.null(attr(x,"greenwich"))) if(!attr(x,"greenwich")) {
@@ -127,7 +129,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (verbose) {
     print(c(dim(x),length(srtx),length(srty)))
     # There is something strange happening with x - in some cases it is filled with NAs (REB)
-    print(srtx); print(srty)
+    # print(srtx); print(srty)
   }
   x <- x[srtx,srty]
   
@@ -146,23 +148,24 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   
   if (new) {
     if(verbose) print("Create new graphic device")
-    dev.new()
-    par(fig=fig0)
+    #dev.new()   # REB 2023-01-24
+    #par(fig=fig0) # REB 2023-01-24
     par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
   } else {
     par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=(add & dev.cur()>1))
-    fig0 <- par()$fig
+    #fig0 <- par()$fig
   }
   
   if (verbose) print('Set up the figure')
-  plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
+  plot(range(lon),range(lat),type="l",xlab="",ylab="", # REB 10.03
        xlim=xlim,ylim=ylim,main=main,# to sumerimpose.
        xaxt="n",yaxt="n") # AM 17.06.2015
-  ##par0 <- par()
-  if (sum(is.element(tolower(type),'fill'))>0)   
-    image(lon,lat,x,xlab="",ylab="",add=TRUE,
-          col=colbar$col,breaks=colbar$breaks,xlim=xlim,ylim=ylim)#,...)
+  #par0 <- par()
   
+  if (sum(is.element(tolower(type),'fill'))>0)   
+    image(lon,lat,x,xlab="",ylab="", add=TRUE,
+          col=colbar$col,breaks=colbar$breaks,xlim=xlim,ylim=ylim)
+
   if (geography) {
     lines(geoborders$x,geoborders$y,col="darkblue")
     lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,col="pink")
@@ -171,7 +174,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (sum(is.element(tolower(type),'contour'))>0)
     contour(lon,lat,x,lwd=1,col="grey70",add=TRUE)
   if (gridlines) grid()
-  par(xpd=FALSE)
+  
+  ## REB 2023-01-24
+  #par(xpd=FALSE)
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub);  print(varlabel)}
   
@@ -205,44 +210,46 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (is.character(lab) & lab!="default") label <- lab
   title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
   
-  ## 
   if (show.colbar) {
     if (verbose) print('Add colourbar')
-    par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
-        cex.lab=0.7,cex.axis=0.7)
+    ## REB 2023-01-24
+    #par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
+    #    cex.lab=0.7,cex.axis=0.7)
     axis(2,at=pretty(lat(x)),col='grey')
     axis(3,at=pretty(lon(x)),col='grey')
     if(gridlines) grid()
-    
-    par(col.axis='black',col.lab='black',
-        cex.lab=0.5,cex.axis=0.5)
+    ## REB 2023-01-24
+    #par(col.axis='black',col.lab='black',
+    #    cex.lab=0.5,cex.axis=0.5)
     
     #if (!is.null(colbar)) {
     if (colbar$show) {
+      if (verbose) print('Show colourbar')
       if (fancy) {
+        if (verbose) print('fnc')
         col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
                 col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
-                type=type,verbose=FALSE,vl=1,border=FALSE)
-        #}
-        #  }
+                type=scaletype,verbose=FALSE,vl=1,border=FALSE)
       } else {
-        #par(fig=par0$fig)
-        #op <- par()
-        #par(mgp = c(0, 2, 0))
         image.plot(breaks=colbar$breaks,
                    lab.breaks=colbar$breaks,horizontal = TRUE,
                    legend.only = TRUE, zlim = range(colbar$breaks),
                    col = colbar$col, legend.width = 1,
-                   axis.args = list(cex.axis = 1,hadj = 0.5,mgp = c(0, 0.5, 0)), border = FALSE)
+                   axis.args = list(cex.axis = 1,hadj = 0.5,mgp = c(0, 0.5, 0)), 
+                   border = FALSE, verbose=verbose)
         #par(op)
       }
     }
-    if (!new) par(fig=fig0)
-    par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
-        xaxt="s",yaxt="s",new=FALSE)
+    ## REB 2023-01-24
+    #if (!new) par(fig=fig0)
+    #par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
+    #    xaxt="s",yaxt="s",new=FALSE)
   }
   
   result <- list(x=lon,y=lat,z=x,breaks=colbar$breaks)
+  ## REB 2023-01-25
+  if (verbose) print(unlist(def.par))
+  #par(def.par) # reset to default but indicate next figure in the array of figures is to be drawn next
   #par(fig=par0$fig)
   invisible(result)
 }

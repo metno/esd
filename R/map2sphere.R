@@ -6,9 +6,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
                        type=c("fill","contour"),                      
-                       gridlines=TRUE,fancy=FALSE,
+                       gridlines=TRUE,fancy=TRUE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (verbose) {print(lon(x)); print(lat(x))}
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
   
@@ -97,6 +98,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## because otherwise map2sphere doesn't work
   ## AM 2021-06-02 There is still sth wrong with color palette definition but I cannot figure out what is the problem
   # Define colour palette:
+  if (is.null(colbar)) show.colbar <- FALSE else show.colbar <- TRUE
   if (is.null(colbar$rev)) colbar$rev <- FALSE
   if (is.null(colbar$breaks)) {
     colbar$breaks <- pretty(c(map),n=31)
@@ -122,35 +124,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
   if (verbose) print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
     
-  ## AM commented
-  ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
-  #index <- round( nc*( map - min(colbar$breaks) )/
-  #                  ( max(colbar$breaks) - min(colbar$breaks) ) )
-  ## The findInterval implementation can use irregularly spaced breaks.
-  ## (If a point has the same value as a break it will be assigned to the bin above it.)
   index <- findInterval(map,colbar$breaks,all.inside=TRUE)
   ## where all.inside does to the indices what the clipping does to the values.
-  
-  
-  ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
-  #crgb <- col2rgb(colbar$col)
-  #if(any(map>max(colbar$breaks))) {
-  #  cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
-  #  crgb <- cbind(crgb,cmax)
-  #  index[index>nc] <- nc+1
-  #  colbar$breaks <- c(colbar$breaks,max(map))
-  #}
-  #if(any(map<min(colbar$breaks))) {
-  #  cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
-  #  crgb <- cbind(cmin,crgb)
-  #  index[index>nc] <- nc+1
-  #  colbar$breaks <- c(min(map),colbar$breaks)
-  #}
-  #crgb[crgb>255] <- 255; crgb[crgb<0] <- 0
-  #colbar$col <- rgb(t(crgb),maxColorValue=255)
-  #colbar$n <- length(colbar$col)-1
-  #if (min(colbar$breaks)<min(map)) index[map<min(colbar$breaks)] <- 1
-  #if (max(colbar$breaks)>max(map)) index[map>max(colbar$breaks)] <- nc
+ 
   if (verbose) {print('map2sphere: set colours'); print(colbar)}
   
   # Rotate coastlines:
@@ -172,7 +148,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   
   # Plot the results:
   if (new) {
-    dev.new()
+    #dev.new()
     par(fig=c(0,1,0.1,1), mgp=c(2,0.5,0), mar=c(4,1,2,1))
   }
   par(bty="n") ## ,xaxt="n",yaxt="n")
@@ -205,7 +181,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   # Add contour lines?
   # Add grid ?
   # Colourbar:
-  if (!is.null(colbar)) {
+  if (show.colbar) {
     if (verbose) print('plot colourbar')
     #par0 <- par()
     #par(fig = c(0.3, 0.7, 0.05, 0.10),cex=0.8,
@@ -228,14 +204,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
       col.bar(colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,#v=1,h=1,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,
-              type=type,verbose=FALSE,vl=1,border=FALSE)
+              type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
     } else if (!is.null(colbar)) {
       if (verbose) print("regular colbar")
-      image.plot(breaks=colbar$breaks,
+      image.plot(col=colbar$col,breaks=colbar$breaks,
                  lab.breaks=colbar$breaks,
                  horizontal = TRUE, legend.only = TRUE,
                  zlim = range(colbar$breaks),
-                 pal = colbar$col, nlevel=length(colbar$breaks)-1, 
+                 pal = colbar$pal, nlevel=length(colbar$breaks)-1, 
                  legend.width = 1,rev = colbar$rev,
                  axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
                  verbose=verbose, ...)
