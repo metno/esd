@@ -30,7 +30,7 @@
 #' attr(t2m,'sub') <- paste0('Trend over: ',period,'; source: NCEP')
 #' showmaps(t2m,FUN='trend',colbar=list(breaks=seq(-1,1,by=0.1),show=FALSE))
 #' @export
-showmaps <- function(x,FUN='mean',colbar=list(show=FALSE),nnum=11, ...) { 
+showmaps <- function(x,FUN='mean',colbar=list(pal='bwr',show=FALSE),nnum=11, ...) { 
   z <- map(x,FUN=FUN,plot=FALSE)
   def.par <- par(no.readonly = TRUE)
   par(mar=c(0.5,0.2,0.5,0.2),xaxt='n',yaxt='n',xpd=TRUE)
