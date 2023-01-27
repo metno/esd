@@ -182,6 +182,6 @@ map(subset(rr,it=it),FUN='mean',new=FALSE,type='fill',colbar=NULL,lab=as.charact
 \seealso{
 map.trajectory vec map.dsensemble
 
-\code{\link{plot.station}}
+\code{\link{plot.station}}, \code{\link{showmaps}}
 }
 \keyword{map}

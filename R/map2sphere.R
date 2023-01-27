@@ -236,7 +236,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
          cex=1.5,pos=4)
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
-  result <- NULL # For now...
-  invisible(result)
+  attr(Z,'longitude') <- X
+  attr(Z,'latitude') <- Y
+  attr(Z,'variable') <- esd::varid(x)
+  attr(Z,'unit') <- esd::unit(x)
+  attr(Z,'colbar') <- colbar
+  
+  invisible(Z)
 }
 

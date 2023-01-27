@@ -246,10 +246,16 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     #    xaxt="s",yaxt="s",new=FALSE)
   }
   
-  result <- list(x=lon,y=lat,z=x,breaks=colbar$breaks)
+  #result <- list(x=lon,y=lat,z=x,colbar=colbar)
+  attr(x,'longitude') <- lon
+  attr(x,'latitude') <- lat
+  attr(x,'variable') <- variable
+  attr(x,'unit') <- unit
+  attr(x,'colbar') <- colbar
+  
   ## REB 2023-01-25
   if (verbose) print(unlist(def.par))
   #par(def.par) # reset to default but indicate next figure in the array of figures is to be drawn next
   #par(fig=par0$fig)
-  invisible(result)
+  invisible(x)
 }
