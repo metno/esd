@@ -207,14 +207,15 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ## REB 2023-01-31
         ## Make a simple legend for colour scales based on points along the lower part of the figure
         if (verbose) {print('Alternative colour bar'); print(colbar$breaks)}
-        nb <- length(colbar$breaks)
+        nb <- length(colbar$breaks) - 1
         xs <- seq(xlim[1],xlim[2],length=nb)
         def.par <- par(no.readonly = TRUE)
         par(xpd = TRUE)
         rect(xlim[1]-1,ylim[1]-1.5,xlim[2]+1,ylim[1]+0.5,col=rgb(1,1,1,0.7),border=rgb(0.5,0.5,0.5,0.7),lwd=2)
         points(xs,rep(ylim[1],nb)-0.5,col=colbar$col,pch=19,cex=3)
-        ib <- c(1,(1:nb)[(1:nb)%%3 == 0],nb)
-        text(xs[ib],rep(ylim[1],sum(ib))-0.5,colbar$breaks[ib],cex=0.7,col='grey40')
+        if (nb > 15) ib <- c(1,(1:nb)[(1:nb)%%3 == 0],nb) else ib <- 1:nb
+        levels <- round(0.5*(colbar$breaks[-1] + colbar$breaks[-(nb+1)])[ib],2)
+        text(xs[ib],rep(ylim[1],sum(ib))-0.5,levels,cex=0.7,col='grey40')
         par(def.par)
       }
       if (!is.null(add)) {
