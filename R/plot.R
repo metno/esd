@@ -1017,6 +1017,8 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   
   if(is.null(what)) what <- c("map","ts",'xval')
   if (verbose) print(paste('plot.ds',paste(what,collapse=',')))
+  par0 <- par()
+  
   unit <- attr(x,'unit')
   if ( (is.na(unit) | is.null(unit)) ) unit <- " "
   for (i in 1:length(unit)) {
@@ -1105,7 +1107,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
     xlim <- range(index(x),index(y0),x.rng,na.rm=TRUE)
   }
   
-  par(fig=c(0.025,1,0.025,0.475),new=TRUE)
+  #par(fig=c(0.025,1,0.025,0.475),new=TRUE)
   par(bty="n",fig=c(0,1,0.1,0.5),mar=c(1,4.5,1,1),new=TRUE, xaxt='s',yaxt='s')
   ds <- list(obs=y0)
   ## REB 2022-08-10 testing for sensible ranges
@@ -1113,7 +1115,6 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
   if (sum(!is.finite(ylim))>0) ylim <- NULL
   plot.zoo(y0,plot.type=plot.type,ylab=ylab,xlab=xlab,
            main=main,xlim=xlim,ylim=ylim,lwd=1,type='b',pch=19)
-  par0 <- par()
   grid()
   if (verbose) print(c(class(index(x)),class(index(y0))))
   if ( (class(index(x))=='Date') & (class(index(y0))=='numeric') & inherits(x,'annual') ) 
@@ -1190,6 +1191,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
     plot.zoo(attr(x,"fitted_values"),plot.type=plot.type,type="n",
              ylab="",xlab="",xlim=xlim,ylim=ylim)
   }
+  par(fig=par0$fig, mar=par0$mar, mgp=par0$mgp, xaxt=par0$xaxt, yaxt=par0$yaxt)
   invisible(list(trend0=trend0,trend1=trend1,xvalfit=xvalfit))
 }
 

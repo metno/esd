@@ -9,8 +9,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              main=NA,cex.sub=0.8,add=FALSE,fig=NULL,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
-  def.par <- par() # save default, for resetting...
-  if (verbose) {print('def.par()'); print(def.par$mfcol); print(def.par$mfrow); print(def.par$mfg)}
+  #def.par <- par() # save default, for resetting...
+  #if (verbose) {print('def.par()'); print(def.par$mfcol); print(def.par$mfrow); print(def.par$mfg)}
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
   ## for precipitation-palette

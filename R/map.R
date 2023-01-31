@@ -801,8 +801,8 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE,
 		    fig1=NULL,fig2=NULL,add=FALSE) {
   if (verbose) print('map.cca')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
-  layout(matrix(c(1,2),1,2,byrow = TRUE), rep(1,2), rep(1,2), TRUE)
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #layout(matrix(c(1,2),1,2,byrow = TRUE), rep(1,2), rep(1,2), TRUE)
   if (is.null(colbar2)) colbar2 <- colbar1
   ##x <- subset(x,it=it,is=is)
   
@@ -838,7 +838,7 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       gridlines=gridlines,FUN='mean',verbose=verbose,
       colbar=colbar2,showall=FALSE,new=FALSE,fig=fig2,add=add,plot=TRUE)
   
-  invisible(list(z1 = z1, z2 = z2))
+  invisible(list(U=U,V=V))
 }
 
 #' @exportS3Method
