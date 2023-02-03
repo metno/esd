@@ -47,7 +47,7 @@ showmaps <- function(x,FUN='mean',colbar=list(pal='bwr',show=FALSE),nnum=11, ...
   n <- length(breaks)
   mids <- round(0.5 * (breaks[-1] + breaks[-n]),2)
   par(mar=c(0.25,0.25,0.25,0.25),xaxt='n',yaxt='n')
-  plot(mids,rep(0.5,n-1),col=attr(z1,'colbar')$col,pch=19,cex=3,ylim=c(0,1))
+  plot(mids,rep(0.5,n-1),col=attr(z1,'colbar')$col,pch=15,cex=3,ylim=c(0,1))
   ii <- (1:n)%%(round(n/nnum)) == 1; ii[n] <- TRUE
   text(breaks[ii],rep(0.2,n)[ii],round(breaks,2)[ii],cex=0.7, col='grey30')
   par(def.par)

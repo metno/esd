@@ -25,37 +25,50 @@
 #' @param \dots Additional graphical parameters to be passed on
 #' 
 #' @export
-col.bar <- function(breaks,horiz=TRUE,pch=21,v=1,h=1,col=col,cex=2,cex.lab=0.6,
-                    cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border=FALSE,...) {
-  def.par <- par(no.readonly=TRUE)
-  xleft <- def.par$usr[1] 
-  xright <- def.par$usr[2]
-  ybottom <- def.par$usr[4] - 1 - h
-  ytop <-  def.par$usr[4] - 1 
+col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
+                    pch=15,v=1,h=1,col=col,cex=5,cex.lab=0.6,
+                    cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border="black",...) {
+  if (verbose) print('col.bar')
+  # def.par <- par(no.readonly=TRUE)
+  # xleft <- def.par$usr[1] 
+  # xright <- def.par$usr[2]
+  # ybottom <- def.par$usr[4] - 1 - h
+  # ytop <-  def.par$usr[4] - 1 
   
-  by <- (xright - xleft - v * (length(col)))/(length(breaks))
-  steps <-   seq(0, (xright -xleft - v * (length(col))) ,by=by ) # 
-  nsteps <- length(steps) 
+  # by <- (xright - xleft - v * (length(col)))/(length(breaks))
+  # steps <-   seq(0, (xright -xleft - v * (length(col))) ,by=by ) # 
+  # nsteps <- length(steps) 
+  # 
+  # if (verbose) print(steps)
+  # if (verbose) print(breaks)
+  # if (verbose) print(nsteps)
+  # 
+  # k <- 1/2
+  # for (i in 1 :(nsteps-2)) {  
+  #   if (!is.null(v)) 
+  #     if (i == 1) k <- k + v/2 else k <- k + v  
+  #     if (type == "r") { ## "r" for rectangle
+  #       rect(xleft= k  + xleft + steps[i] ,xright= k + xleft + steps[i+1],
+  #            ybottom=ybottom,ytop=ytop,col=col[i],border=border)
+  #     } else if (type == "p") { ## "p" points
+  #       points(x= k + xleft + (steps[i]+ steps[i+1])/2, y=(ybottom + ytop)/2,
+  #              pch=pch, bg=col[i],cex=cex,...)
+  #       
+  #     }        
+  #     text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl,
+  #          labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
+  # } 
   
-  if (verbose) print(steps)
-  if (verbose) print(breaks)
-  if (verbose) print(nsteps)
-  
-  k <- 1/2
-  for (i in 1 :(nsteps-2)) {  
-    if (!is.null(v)) 
-      if (i == 1) k <- k + v/2 else k <- k + v  
-      if (type == "r") { ## "r" for rectangle
-        rect(xleft= k  + xleft + steps[i] ,xright= k + xleft + steps[i+1],
-             ybottom=ybottom,ytop=ytop,col=col[i],border=border)
-      } else if (type == "p") { ## "p" points
-        points(x= k + xleft + (steps[i]+ steps[i+1])/2, y=(ybottom + ytop)/2,
-               pch=pch, bg=col[i],cex=cex,...)
-        
-      }        
-      text(x = k + xleft + (steps[i]+ steps[i+1])/2,  y = ybottom - vl,
-           labels=levels(cut(breaks,breaks))[i],col="grey50",cex=cex.lab)
-  } 
+  ymid <- 0.5*(ybottom + ytop)
+  n <- length(breaks)
+  dx <- 0.1*(xright - xleft)
+  dy <- 0.1*(ytop - ybottom)
+  mids <- seq(xleft+dx,xright-dx,length=length(col)+1)
+  #points(mids,rep(ymid,n-1),col=col,pch=pch,cex=cex)
+  image(0.9*mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE)
+  #rect(min(mids),ymid,max(mids),ytop,border="black")
+  ii <- (1:n)%%2 == 1
+  text(mids[ii],rep(ybottom,n)[ii],round(breaks,2)[ii],cex=cex.lab, col='grey30')
 }
 
 #' @export

@@ -42,13 +42,14 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   } else {
     greenwich <- FALSE
   }
-  ## Make sure to use the right arrangement: frome dateline og Greenwich 
+  ## Make sure to use the right arrangement: from dateline or Greenwich 
   if(inherits(x,"matrix") & is.null(attr(x,"dimensions"))) {
     x <- g2dl(x,d=c(length(lon(x)),length(lat(x)),1),
               greenwich=greenwich,verbose=verbose)
   } else {
     x <- g2dl(x,greenwich=greenwich,verbose=verbose)
   }
+  if (verbose) print(paste('dimensions of x:',dim(x),'lon=',length(lon(x)),'lat=',length(lat(x)),collapse=' - '))
   dim(x) <- c(length(lon(x)),length(lat(x)))
   ## Make sure the longitudes are ordered correctly
   srtx <- order(lon(x)); lon <- lon(x)[srtx]
@@ -139,11 +140,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     x[outside,] <- NA
   } else xlim <- range(lon)
   
+  dy <- 0.1*( max(lat) - min(lat) )
+  #print(dy); print(range(lat))
   if (!is.null(ylim)) {
+    dy <- 0.1*(max(ylim) - min(ylim))
     outside <- (lat < min(ylim)) | (lat > max(ylim))
     if (verbose) print(paste('mask',sum(outside),length(outside)))
     x[,outside] <- NA
-  } else ylim=range(lat)
+    ylim <- ylim + c(-dy,0)
+  } else ylim=range(lat) + c(-dy,0)
   
   if (new) {
     if(verbose) print("Create new graphic device")
@@ -153,14 +158,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if(!is.null(fig)) suppressWarnings(par(fig=fig, new=(add & dev.cur()>1)))
   par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
   
+  #print(ylim); print(dy)
   if (verbose) print('Set up the figure')
-  plot(range(lon),range(lat),type="l",xlab="",ylab="", # REB 10.03
+  plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
        xlim=xlim,ylim=ylim,main=main,# to sumerimpose.
        xaxt="n",yaxt="n") # AM 17.06.2015
   
   if (sum(is.element(tolower(type),'fill'))>0)   
     image(lon,lat,x,xlab="",ylab="", add=TRUE,
-          col=colbar$col,breaks=colbar$breaks,xlim=xlim,ylim=ylim)
+          col=colbar$col,breaks=colbar$breaks)
 
   if (geography) {
     lines(geoborders$x,geoborders$y,col="darkblue")
@@ -223,7 +229,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (verbose) print('Show colourbar')
       if (fancy) {
         if (verbose) print('fnc')
-        col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
+        col.bar(min(lon),min(lat)-dy,max(lon),min(lat),colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
                 col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
                 type=scaletype,verbose=FALSE,vl=1,border=FALSE)
       } else {
