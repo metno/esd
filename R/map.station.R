@@ -109,26 +109,25 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     }
     if (verbose) print(paste('show.colbar=',show.colbar))
     
+    par(mar=mar,mgp=mgp,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
+        col.axis='grey30',col.lab='grey30',las=1)
     ## KMP 2017-07-28: fig creates problems when you want to add map.station as a subplot.
     ## With this solution you have to use add=TRUE and set fig to your subplot or to NULL.
-    if(is.null(fig)) fig <- par()$fig
+    ## KMP 2023-01-31: Only use fig when it is defined. 
+    #if(is.null(fig)) fig <- par()$fig
     if (plot) {
-      if (!is.null(add)) { 
-        if(add) {
-          par(fig=fig,mar=mar,mgp=mgp,new=TRUE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
-              col.axis='grey30',col.lab='grey30',las=1)
-        } else {
-          par(fig=fig,mar=mar,mgp=mgp,new=FALSE,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
-              col.axis='grey30',col.lab='grey30',las=1)
-        }
-      }
+      if(!is.null(fig)) {
+        if (is.null(add)) add <- FALSE 
+        par(fig=fig,new=add)
+      }	
+      
       ## Avoid errors when plotting the colorbar with small figure windows
       ## fin collects information about the figure size (in inches)
-      fin <- par()$fin
+      #fin <- par()$fin
       
       ## For checking & debugging
       if (verbose) {
-        print(paste('window size=',fin,collapse=' '))
+        #print(paste('window size=',fin,collapse=' '))
         print(summary(lon(x)))
         print(summary(lat(x)))
         str(col)
@@ -206,6 +205,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       } else {
         ## REB 2023-01-31
         ## Make a simple legend for colour scales based on points along the lower part of the figure
+	browser()
         if (verbose) {print('Alternative colour bar'); print(colbar$breaks)}
         nb <- length(colbar$breaks) - 1
         xs <- seq(xlim[1],xlim[2],length=nb)
