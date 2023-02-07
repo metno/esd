@@ -6,8 +6,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
                        type=c("fill","contour"),                      
-                       gridlines=TRUE,fancy=FALSE,
-                       fig=NULL,add=FALSE,
+                       gridlines=TRUE,fancy=TRUE,
+		       fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
@@ -98,6 +98,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## because otherwise map2sphere doesn't work
   ## AM 2021-06-02 There is still sth wrong with color palette definition but I cannot figure out what is the problem
   # Define colour palette:
+  if (is.null(colbar)) show.colbar <- FALSE else show.colbar <- TRUE
   if (is.null(colbar$rev)) colbar$rev <- FALSE
   if (is.null(colbar$breaks)) {
     colbar$breaks <- pretty(c(map),n=31)
@@ -123,35 +124,9 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (sum(toolow)>0) map[toolow] <- min(colbar$breaks)
   if (verbose) print(paste(sum(toohigh),'set to highest colour and',sum(toolow),'to lowest'))
     
-  ## AM commented
-  ## OL 2018-01-26: The following line assumes that breaks are regularly spaced
-  #index <- round( nc*( map - min(colbar$breaks) )/
-  #                  ( max(colbar$breaks) - min(colbar$breaks) ) )
-  ## The findInterval implementation can use irregularly spaced breaks.
-  ## (If a point has the same value as a break it will be assigned to the bin above it.)
   index <- findInterval(map,colbar$breaks,all.inside=TRUE)
   ## where all.inside does to the indices what the clipping does to the values.
-  
-  
-  ## KMP 2015-09-29: extra colors if higher/lower values occur  # REB: this gives strange colour bars
-  #crgb <- col2rgb(colbar$col)
-  #if(any(map>max(colbar$breaks))) {
-  #  cmax <- crgb[,nc] + (crgb[,nc]-crgb[,nc-1])*0.5
-  #  crgb <- cbind(crgb,cmax)
-  #  index[index>nc] <- nc+1
-  #  colbar$breaks <- c(colbar$breaks,max(map))
-  #}
-  #if(any(map<min(colbar$breaks))) {
-  #  cmin <- crgb[,1] + (crgb[,1]-crgb[,2])*0.5
-  #  crgb <- cbind(cmin,crgb)
-  #  index[index>nc] <- nc+1
-  #  colbar$breaks <- c(min(map),colbar$breaks)
-  #}
-  #crgb[crgb>255] <- 255; crgb[crgb<0] <- 0
-  #colbar$col <- rgb(t(crgb),maxColorValue=255)
-  #colbar$n <- length(colbar$col)-1
-  #if (min(colbar$breaks)<min(map)) index[map<min(colbar$breaks)] <- 1
-  #if (max(colbar$breaks)>max(map)) index[map>max(colbar$breaks)] <- nc
+ 
   if (verbose) {print('map2sphere: set colours'); print(colbar)}
   
   # Rotate coastlines:
@@ -209,7 +184,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   # Add contour lines?
   # Add grid ?
   # Colourbar:
-  if (!is.null(colbar)) {
+  if (show.colbar) {
     if (verbose) print('plot colourbar')
     #par0 <- par()
     #par(fig = c(0.3, 0.7, 0.05, 0.10),cex=0.8,
@@ -227,29 +202,28 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     if(is.null(colbar$show)) colbar$show <- TRUE
     par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.9)
     if(colbar$show) {
-      if (fancy & !is.null(colbar)) {
-        if (verbose) print("fancy colbar")
-        col.bar(colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,#v=1,h=1,
-                col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
-                cex.axis=colbar$cex.axis,
-                type=type,verbose=FALSE,vl=1,border=FALSE)
-      } else if (!is.null(colbar)) {
-        if (verbose) print("regular colbar")
-        image.plot(breaks=colbar$breaks,
-                   lab.breaks=colbar$breaks,
-                   horizontal = TRUE, legend.only = TRUE,
-                   zlim = range(colbar$breaks),
-                   pal = colbar$col, nlevel=length(colbar$breaks)-1, 
-                   legend.width = 1,rev = colbar$rev,
-                   axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
-                   verbose=verbose, ...)
-                   #xaxp=c(range(colbar$breaks),colbar$n)),
-                   #border = FALSE,...)
-        ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-        ##             legend.only = T, zlim = range(colbar$breaks),
-        ##             col = colbar$col, legend.width = 1,
-        ##             axis.args = list(cex.axis = 0.8), border = FALSE)
-      }
+    if (fancy & !is.null(colbar)) {
+      if (verbose) print("fancy colbar")
+      col.bar(colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,#v=1,h=1,
+              col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
+              cex.axis=colbar$cex.axis,
+              type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
+    } else if (!is.null(colbar)) {
+      if (verbose) print("regular colbar")
+      image.plot(col=colbar$col,breaks=colbar$breaks,
+                 lab.breaks=colbar$breaks,
+                 horizontal = TRUE, legend.only = TRUE,
+                 zlim = range(colbar$breaks),
+                 pal = colbar$pal, nlevel=length(colbar$breaks)-1, 
+                 legend.width = 1,rev = colbar$rev,
+                 axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
+                 verbose=verbose, ...)
+                 #xaxp=c(range(colbar$breaks),colbar$n)),
+                 #border = FALSE,...)
+      ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+      ##             legend.only = T, zlim = range(colbar$breaks),
+      ##             col = colbar$col, legend.width = 1,
+      ##             axis.args = list(cex.axis = 0.8), border = FALSE)
     }
     if(!is.null(fig)) par(fig=fig)
   }
@@ -265,7 +239,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
          cex=1.5,pos=4)
   }
   #result <- data.frame(x=colMeans(Y),y=colMeans(Z),z=c(map))
-  result <- NULL # For now...
-  invisible(result)
+  attr(Z,'longitude') <- X
+  attr(Z,'latitude') <- Y
+  attr(Z,'variable') <- esd::varid(x)
+  attr(Z,'unit') <- esd::unit(x)
+  attr(Z,'colbar') <- colbar
+  
+  invisible(Z)
 }
 

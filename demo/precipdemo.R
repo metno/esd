@@ -1,0 +1,30 @@
+## Demo - exponentiell nedbørsfodelingdata(bjornholt)
+
+
+library(esd)
+data(bjornholt)
+s <- spell(bjornholt,1)
+plot(s)
+hist(s)
+y <- subset(s,is=2)
+plot(annual(y,nmin=10),new=FALSE)
+grid()
+
+y <- subset(s,is=1)
+plot(annual(y,nmin=10),new=FALSE)
+grid()
+lines(trend(annual(y,nmin=10)),lty=2)
+plot(annual(bjornholt,FUN='wetfreq'),new=FALSE)
+grid()
+lines(trend(annual(bjornholt,FUN='wetfreq')),lty=2)
+plot(annual(bjornholt,FUN='wetmean'),new=FALSE)
+grid()
+lines(trend(annual(bjornholt,FUN='wetmean')),lty=2)
+plot(bjornholt,new=FALSE)
+grid()
+x <- bjornholt[coredata(bjornholt) > 1]
+x <- coredata(x)
+hist(x,main='Bjørnholt: Histogram for wet days (X > 1 mm)',freq=FALSE,xlab='mm')
+lines(dexp(0:100,rate = 1/mean(x)),lwd=2,col='red')
+grid()
+

@@ -191,13 +191,23 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   model <- ncatt_get(ncid,0)
   ## Get variable attributes in v1
   namevars <- names(ncid$var)
+  ## REB 2023-01-18: If unspecified, select the variable that has the most dimensions 
   if (tolower(param) == "auto") {
-    if (ncid$nvars > 1) {
-      i <- length(namevars)
-    } else {
-      i <- 1
+    if (verbose) print('<<< varid not provided - selecting variable with the most dimensions >>>')
+    # if (ncid$nvars > 1) {
+    #   i <- length(namevars)
+    # } else {
+    #   i <- 1
+    # }
+    i <- 0; dmax <- 0
+    for (iv in 1:length(namevars)) {
+      if (ncid$var[[iv]]$ndims > dmax) {
+        i <- iv; dmax <- ncid$var[[iv]]$ndims
+      }
+      if (verbose) print(c(iv,ncid$var[[iv]]$ndims,i,dmax))
     }
     param <- names(ncid$var)[i]
+    if (verbose) print(paste('selected',param))
     v1 <- ncid$var[[i]] 
   } else {
     v1 <- NULL
