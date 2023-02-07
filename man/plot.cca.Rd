@@ -11,8 +11,8 @@
   colbar1 = list(pal = NULL, rev = FALSE, n = 10, breaks = NULL, type = "p", cex = 2,
     show = TRUE, h = 0.6, v = 1, pos = 0.05),
   colbar2 = NULL,
-  verbose = FALSE,
-  new = TRUE
+  new = TRUE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -20,9 +20,9 @@
 
 \item{\dots}{additional arguments}
 
-\item{verbose}{a boolean; if TRUE print information about progress}
-
 \item{new}{if TRUE plot in new window}
+
+\item{verbose}{a boolean; if TRUE print information about progress}
 
 \item{plot.type}{"single"}
 

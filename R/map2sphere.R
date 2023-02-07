@@ -98,7 +98,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## because otherwise map2sphere doesn't work
   ## AM 2021-06-02 There is still sth wrong with color palette definition but I cannot figure out what is the problem
   # Define colour palette:
-  if (is.null(colbar)) show.colbar <- FALSE else show.colbar <- TRUE
+  if (is.null(colbar)) {
+    colbar$show <- FALSE
+  } else if (is.null(colbar$show)) {
+    colbar$show <- TRUE
+  }
   if (is.null(colbar$rev)) colbar$rev <- FALSE
   if (is.null(colbar$breaks)) {
     colbar$breaks <- pretty(c(map),n=31)
@@ -154,8 +158,14 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     add <- FALSE
   }
   if(!is.null(fig)) par(fig=fig,new=(add & dev.cur()>1))
-  par(bty="n") ## ,xaxt="n",yaxt="n")
-  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",main=main)
+  par(bty="n")
+  ## KMP 2023-02-07: add ylim and here and then colorbar below the plot
+  xlim <- range(x,na.rm=TRUE)
+  zlim <- range(z,na.rm=TRUE)
+  dz <- 0.2*diff(zlim)
+  zlim <- zlim + c(-1,0)*dz
+  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",
+       xlim=xlim,ylim=zlim,xlab="",ylab="",main=main)
   
   # plot the grid boxes, but only the gridboxes facing the view point:
   Visible <- colMeans(Y) > 0
@@ -170,25 +180,19 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   } else brightness <- rep(1,length(index))
   alpha <- rep(1,length(index))
   
-  if (verbose) {print(c(length(X),length(Z),length(index),length(brightness),length(alpha)))
-    print(dim(X))}
+  if (verbose) {
+    print(c(length(X),length(Z),length(index),
+            length(brightness),length(alpha)))
+    print(dim(X))
+  }
   
   apply(rbind(X,Z,index,brightness,alpha),2,gridbox,colbar$col)
-  # c(W,E,S,N, colour)
-  # xleft, ybottom, xright, ytop
   # Plot the coast lines  
   visible <- y > 0
   points(x[visible],z[visible],pch=".")
-  #plot(x[visible],y[visible],type="l",xlab="",ylab="")
   lines(cos(pi/180*1:360),sin(pi/180*1:360))
-  # Add contour lines?
-  # Add grid ?
-  # Colourbar:
-  if (show.colbar) {
+  if (colbar$show) {
     if (verbose) print('plot colourbar')
-    #par0 <- par()
-    #par(fig = c(0.3, 0.7, 0.05, 0.10),cex=0.8,
-    #    new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
     #if (is.null(breaks))
     #  breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/
     #                  ( max(map) - min(map) ) )
@@ -199,16 +203,18 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     #    xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
     #
     # Adopt from map.station
-    if(is.null(colbar$show)) colbar$show <- TRUE
     par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.9)
-    if(colbar$show) {
-    if (fancy & !is.null(colbar)) {
+    if (fancy) {
       if (verbose) print("fancy colbar")
-      col.bar(colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,#v=1,h=1,
+      col.bar(min(x,na.rm=TRUE),
+              min(z,na.rm=TRUE)-dz,
+	      max(x,na.rm=TRUE),
+	      min(z,na.rm=TRUE),
+              colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,
               type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
-    } else if (!is.null(colbar)) {
+    } else {
       if (verbose) print("regular colbar")
       image.plot(col=colbar$col,breaks=colbar$breaks,
                  lab.breaks=colbar$breaks,
@@ -218,12 +224,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                  legend.width = 1,rev = colbar$rev,
                  axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
                  verbose=verbose, ...)
-                 #xaxp=c(range(colbar$breaks),colbar$n)),
-                 #border = FALSE,...)
-      ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-      ##             legend.only = T, zlim = range(colbar$breaks),
-      ##             col = colbar$col, legend.width = 1,
-      ##             axis.args = list(cex.axis = 0.8), border = FALSE)
+        ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+        ##             legend.only = T, zlim = range(colbar$breaks),
+        ##             col = colbar$col, legend.width = 1,
+        ##             axis.args = list(cex.axis = 0.8), border = FALSE)
     }
     if(!is.null(fig)) par(fig=fig)
   }

@@ -4,7 +4,13 @@
 \alias{showmaps}
 \title{combined maps with northern and southern stereographic projections respectively.}
 \usage{
-showmaps(x, FUN = "mean", colbar = list(show = FALSE), nnum = 11, ...)
+showmaps(
+  x,
+  FUN = "mean",
+  colbar = list(pal = "bwr", show = FALSE),
+  nnum = 11,
+  ...
+)
 }
 \arguments{
 \item{x}{a 'field' object}
