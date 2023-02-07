@@ -51,7 +51,7 @@ annual <- function(x, ...) UseMethod("annual")
 #' @export annual.zoo
 annual.zoo <- function(x,FUN='mean',na.rm=TRUE,nmin=NULL, start = NULL, verbose=FALSE,...) {
   if (verbose) print("annual.zoo")
-  if (inherits(x,'annual')) return(x)
+  if (inherits(x,c('annual','year'))) return(x)
   attr(x,'names') <- NULL
   #  yr <- year(x)  REB: 08.09.2014
   class(x) <- 'zoo'
@@ -496,7 +496,7 @@ as.4seasons <- function(x,...) UseMethod("as.4seasons")
 #' @export
 as.4seasons.default <- function(x,...,FUN='mean',slow=FALSE,verbose=FALSE,nmin=NULL) {
   if(verbose) print('as.4seasons.default')
-  if (inherits(x,'season')) return(x)
+  if (inherits(x,c('season','seasonal'))) return(x)
   attr(x,'names') <- NULL
   d <- dim(coredata(x))
   #print(d)

@@ -298,7 +298,7 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
                 0, 0, 153)
   dim(seNorgeP) <- c(3,8)
   
-  kssT <- c(15,	0,	5,
+  kinT <- c(15,	0,	5,
             66,	1,	20,
             103,	0,	31,
             178,	24,	43,
@@ -311,9 +311,9 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
             67,	147,	195,
             33,	102,	172,
             5,	48,	97)
-  dim(kssT) <- c(3,13)
+  dim(kinT) <- c(3,13)
   
-  kssP <- c(69,	80,	138,
+  kinP <- c(69,	80,	138,
             64,	106,	168,
             52,	132,	201,
             26,	160,	237,
@@ -326,9 +326,9 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
             204,	170,	102,
             143,	109,	40,
             110,	79,	18)
-  dim(kssP) <- c(3,13)
+  dim(kinP) <- c(3,13)
   
-  kssdP <- c(84,	48,	5,
+  kindP <- c(84,	48,	5,
              140,	81,	10,
              191,	129,	45,
              223,	194,	125,
@@ -339,7 +339,7 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
              53,	151,	143,
              1,	102,	94,
              0,	60,	48)
-  dim(kssdP) <- c(3,11)
+  dim(kindP) <- c(3,11)
 
   if (!is.null(alpha)) alpha <- rep(alpha[1],n)
   if ( (pal[1]=="bwr") | (pal[1]=="slp") | (pal[1]=="mslp") |
@@ -371,14 +371,14 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     b <- approx(seNorgeP[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   } else if (pal[1] %in% c("precip.kin2100","brgrbu")) {
-    r <- approx(kssP[1,],n=n)$y/255
-    g <- approx(kssP[2,],n=n)$y/255
-    b <- approx(kssP[3,],n=n)$y/255
+    r <- approx(kinP[1,],n=n)$y/255
+    g <- approx(kinP[2,],n=n)$y/255
+    b <- approx(kinP[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   } else if (pal[1] %in% c("precip.trend.kin2100","grwbu")) {
-    r <- approx(kssdP[1,],n=n)$y/255
-    g <- approx(kssdP[2,],n=n)$y/255
-    b <- approx(kssdP[3,],n=n)$y/255
+    r <- approx(kindP[1,],n=n)$y/255
+    g <- approx(kindP[2,],n=n)$y/255
+    b <- approx(kindP[3,],n=n)$y/255
   } else if (pal[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6,alpha=alpha[1])
   } else if (pal[1]=="gray.colors") {
@@ -486,19 +486,19 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     b <- approx(seNorgeT[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   } else if(pal[1] %in% c("t2m.kin2100","burd")) {
-    r <- approx(kssT[1,],n=n)$y/255
-    g <- approx(kssT[2,],n=n)$y/255
-    b <- approx(kssT[3,],n=n)$y/255
+    r <- approx(kinT[1,],n=n)$y/255
+    g <- approx(kinT[2,],n=n)$y/255
+    b <- approx(kinT[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   } else if (pal[1]=="cold.kin2100") {
-    r <- approx(kssT[1,1:7],n=n)$y/255
-    g <- approx(kssT[2,1:7],n=n)$y/255
-    b <- approx(kssT[3,1:7],n=n)$y/255
+    r <- approx(kinT[1,1:7],n=n)$y/255
+    g <- approx(kinT[2,1:7],n=n)$y/255
+    b <- approx(kinT[3,1:7],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
   }  else if (pal[1]=="warm.kin2100") {
-    r <- approx(kssT[1,8:13],n=n)$y/255
-    g <- approx(kssT[2,8:13],n=n)$y/255
-    b <- approx(kssT[3,8:13],n=n)$y/255
+    r <- approx(kinT[1,8:13],n=n)$y/255
+    g <- approx(kinT[2,8:13],n=n)$y/255
+    b <- approx(kinT[3,8:13],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
   } else {
     r <- approx(seNorgeT[1,],n=n)$y/255

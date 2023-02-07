@@ -30,7 +30,7 @@
 #' @export metno.frost.meta.day
 metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
                                  save2file=FALSE, path=NULL, verbose=FALSE, ...) {
-  if(verbose) print("metno.frost.meta.day")
+  if (verbose) print(match.call())
   X <- metno.frost.meta.default(param=param, timeresolutions="P1D", verbose=verbose, ...)
   filename <- "meta.metno.frost.day.rda"
   attr(X, "source") <- "METNOD.FROST"
@@ -56,7 +56,7 @@ metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon
 #' @export metno.frost.meta.month
 metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
                                    save2file=FALSE, path=NULL, verbose=FALSE,...) {
-  if(verbose) print("metno.frost.meta.month")
+  if (verbose) print(match.call())
   X <- metno.frost.meta.default(param=param, timeresolutions="P1M", verbose=verbose, ...)
   filename <- "meta.metno.frost.month.rda"
   attr(X, "source") <- "METNOM.FROST"  
@@ -78,14 +78,39 @@ metno.frost.meta.month <- function(param=c("t2m","precip","tmin","tmax","slp","p
   invisible(X)
 }
 
+# Get metadata for minute timeseries
+#' @export metno.frost.meta.minute
+metno.frost.meta.minute <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
+                                    save2file=FALSE, path=NULL, verbose=FALSE, ...) {
+  if (verbose) print(match.call())
+  X <- metno.frost.meta.default(param=param, timeresolutions="PT1M", verbose=verbose, ...)
+  filename <- "meta.metno.frost.minute.rda"
+  attr(X, "source") <- "METNO.FROST.MINUTE"
+  attr(X, "version") <- NA
+  attr(X, "URL") <- "http://frost.met.no"
+  attr(X, "file") <- filename
+  attr(X, "cite") <- ""
+  attr(X, "date") <- date()
+  attr(X,"call") <- match.call()
+  attr(X, "history") <- history.stamp(X)
+  if (save2file) {
+    meta.metno.frost.min <- X
+    if(!is.null(path)) filename <- file.path(path,filename)
+    save(meta.metno.frost.min, file=filename, version=2)
+    rm("meta.metno.frost.min")
+  }
+  invisible(X)
+}
+
+
 metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"), 
                                      timeresolutions="P1M", levels="default", timeoffsets="default", 
                                      performancecategories="A,B,C", exposurecategories="1,2", 
                                      url='https://frost.met.no/auth/requestCredentials.html',
                                      browser="firefox", verbose = FALSE) {
-  if(verbose) print("metno.frost.meta.default")
+  if (verbose) print(match.call())
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
-    stop("Package 'jsonlite' needed to use 'meta.frost.meta.default'. Please install it.")
+    stop("metno.frost.meta.default: Package 'jsonlite' needed, please install it.")
   } else {
     
     # KMP 2020-01-22: enable timeresolutions notation monthly and daily
@@ -104,20 +129,10 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     param1s <- sapply(ele, getparam1)
     names(param1s) <- ele
     strparam <- paste0(param1s, collapse=",")
-    if (verbose) print(strparam)
+    if (verbose) print(paste('metno.frost.meta.default: params:', strparam))
     
-    # Get a client_id
-    if (file.exists(keyfile)) {
-      if (verbose) print(paste('Read client ID from',keyfile))
-      frostID <- readLines(keyfile) 
-    } else { 
-      if (verbose) print(paste('Generate new client ID from',url))  
-      system(paste(browser,url))
-      frostID <- rep("",2)
-      frostID[1] <- readline('Please give me the first key:')
-      frostID[2] <- readline('Please give me the second key:')
-      writeLines(frostID,con=keyfile)
-    }
+    # Get a client_id using function from metno.frost.data.R
+    frostID <- metno.frost.keyfile(keyfile, verbose)
 
     url1 <- paste0(
       "https://", 
@@ -155,9 +170,9 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
       "&fields=sourceId,elementId,validFrom,validTo"
     )
     if (verbose) {
-      print(url1)
-      print(url_sj)
-      print(url2)
+      print(paste('metno.frost.meta.default:', url1))
+      print(paste('metno.frost.meta.default:', url_sj))
+      print(paste('metno.frost.meta.default:', url2))
     }
     # KT 2020-05-26: getting data from both Norge and Svalbard and Jan Mayen
     xs_no <- jsonlite::fromJSON(URLencode(url1), flatten=TRUE)
@@ -236,28 +251,4 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     class(X) <- c("stationmeta", class(X))
     invisible(X)
   }
-}
-
-# Get metadata for minute timeseries
-#' @export metno.frost.meta.minute
-metno.frost.meta.minute <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
-                                    save2file=FALSE, path=NULL, verbose=FALSE, ...) {
-  if(verbose) print("metno.frost.meta.minute")
-  X <- metno.frost.meta.default(param=param, timeresolutions="PT1M", verbose=verbose, ...)
-  filename <- "meta.metno.frost.minute.rda"
-  attr(X, "source") <- "METNO.FROST.MINUTE"
-  attr(X, "version") <- NA
-  attr(X, "URL") <- "http://frost.met.no"
-  attr(X, "file") <- filename
-  attr(X, "cite") <- ""
-  attr(X, "date") <- date()
-  attr(X,"call") <- match.call()
-  attr(X, "history") <- history.stamp(X)
-  if (save2file) {
-    meta.metno.frost.min <- X
-    if(!is.null(path)) filename <- file.path(path,filename)
-    save(meta.metno.frost.min, file=filename, version=2)
-    rm("meta.metno.frost.min")
-  }
-  invisible(X)
 }

@@ -1978,12 +1978,14 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #' @export plot.cca
 plot.cca <- function(x,...,icca=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                                  h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE) {
+                                  h=0.6, v=1,pos=0.05),colbar2=NULL,new=TRUE,verbose=FALSE) {
   if (verbose) print("plot.cca")
   if (new) dev.new()
-  par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
   if (is.null(colbar2)) colbar2 <- colbar1
-  map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,verbose=verbose,...)
+  #par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
+  #map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,verbose=verbose,...)
+  map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,
+          fig1=fig1,fig2=fig2,verbose=verbose)
   
   w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
                sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)

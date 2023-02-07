@@ -6,7 +6,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                           pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
                              verbose=FALSE,geography=TRUE,fancy=FALSE,
-                             main=NA,cex.sub=0.8,add=FALSE,...) {
+                             main=NA,cex.sub=0.8,add=FALSE,
+                             fig=NULL,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
@@ -25,7 +26,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (!is.na(first.space)) attr(x,'source') <- substr(src(x),1,first.space-1)
     }
   
-  fig0 <- c(0,1,0,1)                        # REB 2015-06-25
+  ##if(is.null(fig)) fig <- par()$fig
+  
   ## Land contours
   data("geoborders",envir=environment())
   if(!is.null(attr(x,"greenwich"))) if(!attr(x,"greenwich")) {
@@ -144,21 +146,19 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     x[,outside] <- NA
   } else ylim=range(lat)
   
+  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
   if (new) {
     if(verbose) print("Create new graphic device")
     dev.new()
-    par(fig=fig0)
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
-  } else {
-    par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,new=(add & dev.cur()>1))
-    fig0 <- par()$fig
+    add <- FALSE
   }
-  
+  if(!is.null(fig)) par(fig=fig,new=(add & dev.cur()>1))
+
   if (verbose) print('Set up the figure')
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
        xlim=xlim,ylim=ylim,main=main,# to sumerimpose.
        xaxt="n",yaxt="n") # AM 17.06.2015
-  ##par0 <- par()
+
   if (sum(is.element(tolower(type),'fill'))>0)   
     image(lon,lat,x,xlab="",ylab="",add=TRUE,
           col=colbar$col,breaks=colbar$breaks,xlim=xlim,ylim=ylim)#,...)
@@ -185,7 +185,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                                                 paste(unlist(strsplit(sub,split=' ')),
                                                                       collapse = ' *~ '), sep='')))))
     if (inherits(label,'try-error')) label <- ''
-  }  #title(main = as.expression(sub),line = 3, adj =0.25)
+  } 
   
   if (!is.null(method)) {
     label <- try(parse(text=paste(label,'*',as.expression(method))))
@@ -205,7 +205,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (is.character(lab) & lab!="default") label <- lab
   title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
   
-  ## 
   if (show.colbar) {
     if (verbose) print('Add colourbar')
     par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
@@ -217,32 +216,25 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     par(col.axis='black',col.lab='black',
         cex.lab=0.5,cex.axis=0.5)
     
-    #if (!is.null(colbar)) {
     if (colbar$show) {
       if (fancy) {
         col.bar(colbar$breaks,horiz=TRUE,pch=21,v=1,h=1,
                 col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
                 type=type,verbose=FALSE,vl=1,border=FALSE)
-        #}
-        #  }
       } else {
-        #par(fig=par0$fig)
-        #op <- par()
-        #par(mgp = c(0, 2, 0))
         image.plot(breaks=colbar$breaks,
                    lab.breaks=colbar$breaks,horizontal = TRUE,
                    legend.only = TRUE, zlim = range(colbar$breaks),
                    col = colbar$col, legend.width = 1,
-                   axis.args = list(cex.axis = 1,hadj = 0.5,mgp = c(0, 0.5, 0)), border = FALSE)
-        #par(op)
+                   axis.args = list(cex.axis = 1,hadj = 0.5,mgp = c(0, 0.5, 0)), 
+                   border = FALSE)
       }
     }
-    if (!new) par(fig=fig0)
+    if (!is.null(fig)) par(fig=fig)
     par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
         xaxt="s",yaxt="s",new=FALSE)
   }
   
   result <- list(x=lon,y=lat,z=x,breaks=colbar$breaks)
-  #par(fig=par0$fig)
   invisible(result)
 }

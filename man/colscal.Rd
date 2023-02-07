@@ -59,7 +59,7 @@ Palette options are as follows:
 'bu': blues,
 'rd': reds,
 'brgrbu': brown-green-blue, same as precip.kin2100
-'grwbu': green-white-blue, same as precip.change.kin2100
+'grwbu': green-white-blue, same as precip.trend.kin2100
 'burd': blue-red, same as t2m.kin2100
 'buyrd': blue-yellow-red, same as t2m
 'cat': categorical color scale,

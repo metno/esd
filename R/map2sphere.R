@@ -7,6 +7,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                        lonR=NULL,latR=NULL,axiR=0,
                        type=c("fill","contour"),                      
                        gridlines=TRUE,fancy=FALSE,
+                       fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
   if (verbose) {print(lon(x)); print(lat(x))}
@@ -172,9 +173,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   
   # Plot the results:
   if (new) {
+    if(verbose) print("Create new graphic device")
     dev.new()
-    par(fig=c(0,1,0.1,1), mgp=c(2,0.5,0), mar=c(4,1,2,1))
+    par(mgp=c(2,0.5,0), mar=c(4,1,2,1))
+    add <- FALSE
   }
+  if(!is.null(fig)) par(fig=fig,new=(add & dev.cur()>1))
   par(bty="n") ## ,xaxt="n",yaxt="n")
   plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",main=main)
   
@@ -223,30 +227,31 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     if(is.null(colbar$show)) colbar$show <- TRUE
     par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.9)
     if(colbar$show) {
-    if (fancy & !is.null(colbar)) {
-      if (verbose) print("fancy colbar")
-      col.bar(colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,#v=1,h=1,
-              col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
-              cex.axis=colbar$cex.axis,
-              type=type,verbose=FALSE,vl=1,border=FALSE)
-    } else if (!is.null(colbar)) {
-      if (verbose) print("regular colbar")
-      image.plot(breaks=colbar$breaks,
-                 lab.breaks=colbar$breaks,
-                 horizontal = TRUE, legend.only = TRUE,
-                 zlim = range(colbar$breaks),
-                 pal = colbar$col, nlevel=length(colbar$breaks)-1, 
-                 legend.width = 1,rev = colbar$rev,
-                 axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
-                 verbose=verbose, ...)
-                 #xaxp=c(range(colbar$breaks),colbar$n)),
-                 #border = FALSE,...)
-      ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-      ##             legend.only = T, zlim = range(colbar$breaks),
-      ##             col = colbar$col, legend.width = 1,
-      ##             axis.args = list(cex.axis = 0.8), border = FALSE)
+      if (fancy & !is.null(colbar)) {
+        if (verbose) print("fancy colbar")
+        col.bar(colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,#v=1,h=1,
+                col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
+                cex.axis=colbar$cex.axis,
+                type=type,verbose=FALSE,vl=1,border=FALSE)
+      } else if (!is.null(colbar)) {
+        if (verbose) print("regular colbar")
+        image.plot(breaks=colbar$breaks,
+                   lab.breaks=colbar$breaks,
+                   horizontal = TRUE, legend.only = TRUE,
+                   zlim = range(colbar$breaks),
+                   pal = colbar$col, nlevel=length(colbar$breaks)-1, 
+                   legend.width = 1,rev = colbar$rev,
+                   axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
+                   verbose=verbose, ...)
+                   #xaxp=c(range(colbar$breaks),colbar$n)),
+                   #border = FALSE,...)
+        ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+        ##             legend.only = T, zlim = range(colbar$breaks),
+        ##             col = colbar$col, legend.width = 1,
+        ##             axis.args = list(cex.axis = 0.8), border = FALSE)
+      }
     }
-    }  
+    if(!is.null(fig)) par(fig=fig)
   }
 
   ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",

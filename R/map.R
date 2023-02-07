@@ -709,7 +709,7 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 #' @exportS3Method
 #' @export map.pca
-map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
+map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,add=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
@@ -753,11 +753,11 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
     if (is.element(FUN,args)) {
       map.station(X,new=new,colbar=colbar,
                   xlim=xlim,ylim=ylim,zlim=zlim,
-                  plot=TRUE,fig=fig,verbose=verbose,...)
+                  plot=TRUE,add=add,fig=fig,verbose=verbose,...)
     } else {
       map.station(X,new=new,colbar=colbar,FUN=FUN,
                   xlim=xlim,ylim=ylim,zlim=zlim,
-                  plot=TRUE,fig=fig,verbose=verbose,...)
+                  plot=TRUE,add=add,fig=fig,verbose=verbose,...)
     }
   }
 }
@@ -784,7 +784,8 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",
                                  cex=2,show=TRUE,h=0.6, v=1,pos=0.05), colbar2= NULL,
                     type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE) {
+                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE,
+                    fig1=NULL,fig2=NULL,add=FALSE) {
   if (verbose) print('map.cca')
   if (is.null(colbar2)) colbar2 <- colbar1
   ##x <- subset(x,it=it,is=is)
@@ -810,46 +811,16 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(X,'eigenvalues') <- rep(1,length(x$ip))
   attr(X,'time') <- range(index(x))
   
-  ## REB removed '...' in the two following map calls.
-  ##  map(Y,icca,xlim=xlim,ylim=ylim,type=type,
-  ##      projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-  ##      gridlines=gridlines,col=col,breaks=breaks,FUN='mean')
-  ##  dev.new()
-  ##  map(X,icca,xlim=xlim,ylim=ylim,type=type,
-  ##      projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-  ##      gridlines=gridlines,col=col,breaks=breaks,FUN='mean')
-  ##  print('Need to fix breaks and map.station')
-  
-  ##  col <- rgb( c(rep(0,15),1-sqrt(seq(0,1,length=15))),
-  ##              abs(sin(seq(0,pi,length=30))),
-  ##              c(sqrt(seq(0,1,length=15)),rep(1,15)) )
-  ##  col <- colscal(30,pal=varid(x))
-  ##  if (is.precip(X)) col.x <- rev(col) else
-  ##                    col.x <- col
-  ##  if (is.precip(Y)) col.y <- rev(col) else
-  ##                    col.y <- col
-  ## REB: removed col=col.y,bg=col.y
-  
-  if (sum(is.element(type,'map'))>0) {
-    par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
-  } else {
-    par(fig=c(0,0.5,0.5,1),mar=c(3,2,2,1))
-  }
-  ##colbar <- list(col=NULL, breaks=NULL, type="r",cex=2, h=0.6, v=1)
   map(Y,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',verbose=verbose,
-      colbar=colbar1,showall=FALSE,new=FALSE)
+      colbar=colbar1,showall=FALSE,new=new,fig=fig1,
+      add=add,plot=TRUE)
   
-  if (sum(is.element(type,'ts'))>0) {
-    par(fig=c(0,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
-  } else {
-    par(fig=c(0.5,1,0.5,1),new=TRUE,mar=c(3,2,2,1))
-  }
   map(X,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
       projection=projection,lonR=lonR,latR=latR,axiR=axiR,
       gridlines=gridlines,FUN='mean',verbose=verbose,
-      colbar=colbar2,showall=FALSE,new=FALSE,plot=TRUE)
+      colbar=colbar2,showall=FALSE,new=FALSE,fig=fig2,add=add,plot=TRUE)
   
   invisible(list(U=U,V=V))
 }
