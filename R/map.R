@@ -507,7 +507,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   
   stopifnot(inherits(x,'field'))
   if (verbose) print('map.field')
-  def.par <- par(no.readonly = TRUE)
+  #def.par <- par(no.readonly = TRUE)
   
   x <- subset(x,it=it,is=is)
   #print(length(x)); print(attr(x,'dimensions')[1:2])
@@ -832,7 +832,6 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(X,'pattern') <- V
   attr(X,'eigenvalues') <- rep(1,length(x$ip))
   attr(X,'time') <- range(index(x))
-  
   z1 <- map(Y,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
             projection=projection,lonR=lonR,latR=latR,axiR=axiR,
             gridlines=gridlines,FUN='mean',verbose=verbose,

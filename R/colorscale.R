@@ -64,11 +64,13 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
   dx <- 0.1*(xright - xleft)
   dy <- 0.1*(ytop - ybottom)
   mids <- seq(xleft+dx,xright-dx,length=length(col)+1)
+  
   #points(mids,rep(ymid,n-1),col=col,pch=pch,cex=cex)
-  image(0.9*mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE)
+  #image(0.9*mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE)
+  image(mids,c(ymid,ytop)+c(dy,-dy),cbind(breaks,breaks),col=col,ylim=c(ybottom,ytop),add=TRUE)
   #rect(min(mids),ymid,max(mids),ytop,border="black")
   ii <- (1:n)%%2 == 1
-  text(mids[ii],rep(ybottom,n)[ii],round(breaks,2)[ii],cex=cex.lab, col='grey30')
+  text(mids[ii],rep(ybottom,n)[ii],round(breaks,2)[ii],cex=cex.axis, col='grey30')
 }
 
 #' @export

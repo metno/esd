@@ -5,9 +5,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                           pos=0.05,show=TRUE,type="r",cex=2,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
-                             verbose=FALSE,geography=TRUE,fancy=FALSE,
-                             main=NA,cex.sub=0.8,
-			     fig=NULL,add=FALSE,...) {
+                             verbose=FALSE,geography=TRUE,fancy=TRUE,
+                             main=NA,cex.sub=0.8,cex.axis=0.8,
+                             fig=NULL,add=FALSE,...) {
   if (verbose) {print('lonlatprojection'); str(x)}
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
@@ -138,27 +138,26 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     x[outside,] <- NA
   } else xlim <- range(lon)
   
-  dy <- 0.1*( max(lat) - min(lat) )
+  dy <- 0.2*( max(lat) - min(lat) )
   #print(dy); print(range(lat))
   if (!is.null(ylim)) {
-    dy <- 0.1*(max(ylim) - min(ylim))
     outside <- (lat < min(ylim)) | (lat > max(ylim))
     if (verbose) print(paste('mask',sum(outside),length(outside)))
     x[,outside] <- NA
     ylim <- ylim + c(-dy,0)
   } else ylim=range(lat) + c(-dy,0)
   
-  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
   if (new) {
     if(verbose) print("Create new graphic device")
     dev.new()
     add <- FALSE
   }
   if(!is.null(fig)) par(fig=fig,new=(add & dev.cur()>1))
+  par(bty="n",xpd=FALSE)
   
   if (verbose) print('Set up the figure')
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
-       xlim=xlim,ylim=ylim,main=main,# to sumerimpose.
+       xlim=xlim,ylim=ylim,main=main,# to superimpose.
        xaxt="n",yaxt="n") # AM 17.06.2015
   
   if (sum(is.element(tolower(type),'fill'))>0)   
@@ -173,6 +172,8 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (sum(is.element(tolower(type),'contour'))>0)
     contour(lon,lat,x,lwd=1,col="grey70",add=TRUE)
   if (gridlines) grid()
+  axis(2,at=pretty(lat),col='grey',cex=cex.axis)
+  axis(3,at=pretty(lon),col='grey',cex=cex.axis)
   
   ## REB 2023-01-24
   #par(xpd=FALSE)
@@ -207,16 +208,14 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (lab=='simple')   label <- eval(parse(text=paste('expression(',varnm,')'))) else 
     if (lab=='unit') label <- eval(parse(text=paste('expression(',varnm,'* phantom0 * (',unitx,')',')'))) else
       if (is.character(lab) & lab!="default") label <- lab
-  title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
+  ## KMP 2023-02-08: removing title here and trying to place it above colorbar instead
+  #title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
   
   if (show.colbar) {
     if (verbose) print('Add colourbar')
     ## REB 2023-01-24
     #par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
     #    cex.lab=0.7,cex.axis=0.7)
-    axis(2,at=pretty(lat(x)),col='grey')
-    axis(3,at=pretty(lon(x)),col='grey')
-    if(gridlines) grid()
     ## REB 2023-01-24
     #par(col.axis='black',col.lab='black',
     #    cex.lab=0.5,cex.axis=0.5)
@@ -225,11 +224,14 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (verbose) print('Show colourbar')
       if (fancy) {
         if (verbose) print('fnc')
-        col.bar(min(lon),min(lat)-dy,max(lon),min(lat),colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
+        text(mean(xlim), min(ylim)+dy*0.4, label, cex=cex.sub)
+        col.bar(min(xlim),min(ylim),max(xlim),min(ylim)+dy/5,
+                colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
                 col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
                 type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
       } else {
-        image.plot(breaks=colbar$breaks,
+        title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
+        image.plot(breaks=colbar$breaks, 
                    lab.breaks=colbar$breaks,horizontal = TRUE,
                    legend.only = TRUE, zlim = range(colbar$breaks),
                    col = colbar$col, legend.width = 1,
