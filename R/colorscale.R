@@ -140,6 +140,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
   nd <- max(0,ndig(x.rng)+2)
   
   ## Set breaks and n
+  if (verbose) {print('Set breaks and n:')}
   if (!is.null(colbar$col)) {
     colbar$n <- length(colbar$col)
     if (is.null(colbar$breaks)) {
@@ -304,9 +305,45 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
                 0, 0, 153)
   dim(seNorgeP) <- c(3,8)
   
-  if (!is.null(alpha)) alpha <- rep(alpha[1],n)
+  # https://www.ipcc.ch/site/assets/uploads/2019/04/IPCC-visual-style-guide.pdf
+  t2m.IPCC <- c(103, 0, 31,
+                178, 24, 43,
+                214, 96, 77,
+                244, 165, 130,
+                253, 219, 199,
+                247, 247, 247,
+                209, 229, 240,
+                146, 197, 222,
+                67, 147, 195,
+                33, 102, 172,
+                5, 48, 97)
+  dim(t2m.IPCC) <- c(3,11)
   
-  if ( (pal[1]=="bwr") | (pal[1]=="slp") | (pal[1]=="mslp") |
+  precip.IPCC <- c(84, 48, 5,
+                   140, 81, 10,
+                   191, 129, 45,
+                   223, 194, 125,
+                   246, 232, 195,
+                   245, 245, 245,
+                   199, 234, 229,
+                   128, 205, 193,
+                   53, 151, 143,
+                   1, 102, 94,
+                   0, 60, 48)
+  dim(precip.IPCC) <- c(3,11)
+  
+  if (!is.null(alpha)) alpha <- rep(alpha[1],n)
+  if (tolower(pal[1])=='t2m.ipcc') {
+    r <- approx(t2m.IPCC[1,],n=n)$y/255
+    g <- approx(t2m.IPCC[2,],n=n)$y/255
+    b <- approx(t2m.IPCC[3,],n=n)$y/255
+    col <- rgb(r,g,b,alpha)
+  } else if (tolower(pal[1])=='precip.ipcc') {
+    r <- approx(precip.IPCC[1,],n=n)$y/255
+    g <- approx(precip.IPCC[2,],n=n)$y/255
+    b <- approx(precip.IPCC[3,],n=n)$y/255
+    col <- rgb(r,g,b,alpha)
+  } else if ( (pal[1]=="bwr") | (pal[1]=="slp") | (pal[1]=="mslp") |
        (pal[1]=="pressure") ) {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
     g <- exp(sg*(x - g0)^2)^2

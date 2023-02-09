@@ -8,7 +8,11 @@ attr(t2m,'sub') <- paste0('Average over: ',period,'; source: NCEP')
 showmaps(t2m,FUN='mean',colbar=list(breaks=seq(-60,20,by=5),show=FALSE))
 
 ## Ordinary lon-lat map
-map(t2m)
+map(t2m,colbar=list(pal='t2m.IPCC')) -> mymap
+
+## Make the same map with same colour palette but with a northern polar seterographic projection
+map(mymap,colbar=attr(mymap,'colbar'),projection='np')
+
 ## This demo is used to test the various uses of map()
 
 ## A spherical projection
