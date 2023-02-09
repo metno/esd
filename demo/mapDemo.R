@@ -9,6 +9,7 @@ showmaps(t2m,FUN='mean',colbar=list(breaks=seq(-60,20,by=5),show=FALSE))
 
 ## Ordinary lon-lat map
 map(t2m)
+## This demo is used to test the various uses of map()
 
 ## A spherical projection
 par(bg='black')
