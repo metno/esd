@@ -1,7 +1,7 @@
 # Documentation in map.R - presents a map on a sphere
 #' @export
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
-                       colbar= list(col='t2m',rev=FALSE,n=10,
+                       colbar= list(pal='t2m.IPCC',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
@@ -110,14 +110,18 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   } else {
     colbar$n <- length(colbar$breaks) -1
   }
+  ## REB 2023-02-09: flexibility to deal with old habit of confusing colbar$col with colbar$pal
+  if ( (is.null(colbar$pal)) & (is.character(colbar$col)) ) {colbar$pal <- colbar$col; colbar$col <- NULL}
   nc <- length(colbar$col)
   if (is.null(colbar$col)) {
     colbar <- colbar.ini(map,colbar=colbar)
-    col <- colscal(n=colbar$n-1) 
-  } else if (nc==1) {
-    col <- colscal(pal=colbar$col,n=colbar$n-1)
-  }
+    col <- colscal(n=colbar$n) 
+  } # following lines are probably no longer needed REB 2023-02-09: 
+  # else if (nc==1) {
+  #  col <- colscal(pal=colbar$col,n=colbar$n-1)
+  #}
   if (colbar$rev) col <- rev(col)
+  colbar$col <- col
   
   ## AM 2021-06-03: Moved this before index
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes

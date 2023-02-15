@@ -142,6 +142,7 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
   nd <- max(0,ndig(x.rng)+2)
   
   ## Set breaks and n
+  if (verbose) {print('Set breaks and n:')}
   if (!is.null(colbar$col)) {
     colbar$n <- length(colbar$col)
     if (is.null(colbar$breaks)) {
@@ -288,9 +289,10 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
   s <- -0.1/n
   if (n < 30) sg <- s*2.5 else sg <- s
   n1 <- g0; n2 <- n-n1
-  
+
+  ## Palettes for seNorge
   #R	G	B
-  seNorgeT <- c(0,   0, 153,
+  t2m.seNorge <- c(0,   0, 153,
                 0,  25, 255,
                 0, 153, 255,
                 64, 204, 255,
@@ -304,9 +306,9 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
                 255, 102,   0,
                 255, 25,    0,	
                 204,  0,    0)	
-  dim(seNorgeT) <- c(3,14)
+  dim(t2m.seNorge) <- c(3,14)
   
-  seNorgeP <- c(229, 229, 229,
+  precip.seNorge <- c(229, 229, 229,
                 217, 255, 255,
                 179, 255, 255,
                 128, 235, 255,
@@ -314,9 +316,10 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
                 0, 153, 255,
                 0, 25, 255,
                 0, 0, 153)
-  dim(seNorgeP) <- c(3,8)
-  
-  kinT <- c(15,	0,	5,
+  dim(precip.seNorge) <- c(3,8)
+
+  ## Palettes for Klima i Norge 2100
+  t2m.kin2100 <- c(15,	0,	5,
             66,	1,	20,
             103,	0,	31,
             178,	24,	43,
@@ -329,9 +332,9 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
             67,	147,	195,
             33,	102,	172,
             5,	48,	97)
-  dim(kinT) <- c(3,13)
+  dim(t2m.kin2100) <- c(3,13)
   
-  kinP <- c(69,	80,	138,
+  precip.kin2100 <- c(69,	80,	138,
             64,	106,	168,
             52,	132,	201,
             26,	160,	237,
@@ -344,9 +347,9 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
             204,	170,	102,
             143,	109,	40,
             110,	79,	18)
-  dim(kinP) <- c(3,13)
+  dim(precip.kin2100) <- c(3,13)
   
-  kindP <- c(84,	48,	5,
+  dpr.kin2100 <- c(84,	48,	5,
              140,	81,	10,
              191,	129,	45,
              223,	194,	125,
@@ -357,10 +360,47 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
              53,	151,	143,
              1,	102,	94,
              0,	60,	48)
-  dim(kindP) <- c(3,11)
+  dim(dpr.kin2100) <- c(3,11)
 
+  # https://www.ipcc.ch/site/assets/uploads/2019/04/IPCC-visual-style-guide.pdf
+  t2m.IPCC <- c(103, 0, 31,
+                178, 24, 43,
+                214, 96, 77,
+                244, 165, 130,
+                253, 219, 199,
+                247, 247, 247,
+                209, 229, 240,
+                146, 197, 222,
+                67, 147, 195,
+                33, 102, 172,
+                5, 48, 97)
+  dim(t2m.IPCC) <- c(3,11)
+  
+  precip.IPCC <- c(84, 48, 5,
+                   140, 81, 10,
+                   191, 129, 45,
+                   223, 194, 125,
+                   246, 232, 195,
+                   245, 245, 245,
+                   199, 234, 229,
+                   128, 205, 193,
+                   53, 151, 143,
+                   1, 102, 94,
+                   0, 60, 48)
+  dim(precip.IPCC) <- c(3,11)
+  
   if (!is.null(alpha)) alpha <- rep(alpha[1],n)
-  if ( (pal[1]=="bwr") | (pal[1]=="slp") | (pal[1]=="mslp") |
+  if (tolower(pal[1])=='t2m.ipcc') {
+    r <- approx(t2m.IPCC[1,],n=n)$y/255
+    g <- approx(t2m.IPCC[2,],n=n)$y/255
+    b <- approx(t2m.IPCC[3,],n=n)$y/255
+    col <- rgb(r,g,b,alpha)
+  } else if (tolower(pal[1])=='precip.ipcc') {
+    r <- approx(precip.IPCC[1,],n=n)$y/255
+    g <- approx(precip.IPCC[2,],n=n)$y/255
+    b <- approx(precip.IPCC[3,],n=n)$y/255
+    col <- rgb(r,g,b,alpha)
+  } else if ( (pal[1]=="bwr") | (pal[1]=="slp") | (pal[1]=="mslp") |
        (pal[1]=="pressure") ) {
     r <- exp(s*(x - r0)^2)^0.5 * c(seq(0,1,length=n1),rep(1,n2))
     g <- exp(sg*(x - g0)^2)^2
@@ -384,19 +424,19 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     col <- rgb(r,g,b,alpha)
   } else if ( (pal[1]=="precip") | (pal[1]=="mu") | (pal[1]=="fw") |
               (pal[1]=="f[w]") | (pal[1]=="tp") | (pal[1]=='rr') | (pal[1]=='prate') ) {
-    r <- approx(seNorgeP[1,],n=n)$y/255
-    g <- approx(seNorgeP[2,],n=n)$y/255
-    b <- approx(seNorgeP[3,],n=n)$y/255
+    r <- approx(precip.seNorge[1,],n=n)$y/255
+    g <- approx(precip.seNorge[2,],n=n)$y/255
+    b <- approx(precip.seNorge[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   } else if (pal[1] %in% c("precip.kin2100","brgrbu")) {
-    r <- approx(kinP[1,],n=n)$y/255
-    g <- approx(kinP[2,],n=n)$y/255
-    b <- approx(kinP[3,],n=n)$y/255
+    r <- approx(precip.kin2100[1,],n=n)$y/255
+    g <- approx(precip.kin2100[2,],n=n)$y/255
+    b <- approx(precip.kin2100[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   } else if (pal[1] %in% c("precip.trend.kin2100","grwbu")) {
-    r <- approx(kindP[1,],n=n)$y/255
-    g <- approx(kindP[2,],n=n)$y/255
-    b <- approx(kindP[3,],n=n)$y/255
+    r <- approx(dpr.kin2100[1,],n=n)$y/255
+    g <- approx(dpr.kin2100[2,],n=n)$y/255
+    b <- approx(dpr.kin2100[3,],n=n)$y/255
   } else if (pal[1]=="rainbow") {
     col <- rainbow(n,start=0,end=4/6,alpha=alpha[1])
   } else if (pal[1]=="gray.colors") {
@@ -489,34 +529,34 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     cols <- lapply(cols,function(x) approx(x,n=n)$y)
     col <- rgb(cols$r,cols$g,cols$b,alpha)
   } else if (pal[1]=="cold") {
-    r <- approx(seNorgeT[1,1:7],n=n)$y/255
-    g <- approx(seNorgeT[2,1:7],n=n)$y/255
-    b <- approx(seNorgeT[3,1:7],n=n)$y/255
+    r <- approx(t2m.seNorge[1,1:7],n=n)$y/255
+    g <- approx(t2m.seNorge[2,1:7],n=n)$y/255
+    b <- approx(t2m.seNorge[3,1:7],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
   }  else if (pal[1]=="warm") {
-    r <- approx(seNorgeT[1,8:14],n=n)$y/255
-    g <- approx(seNorgeT[2,8:14],n=n)$y/255
-    b <- approx(seNorgeT[3,8:14],n=n)$y/255
+    r <- approx(t2m.seNorge[1,8:14],n=n)$y/255
+    g <- approx(t2m.seNorge[2,8:14],n=n)$y/255
+    b <- approx(t2m.seNorge[3,8:14],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
   } else if(pal[1]=="t2m") {
-    r <- approx(seNorgeT[1,],n=n)$y/255
-    g <- approx(seNorgeT[2,],n=n)$y/255
-    b <- approx(seNorgeT[3,],n=n)$y/255
+    r <- approx(t2m.seNorge[1,],n=n)$y/255
+    g <- approx(t2m.seNorge[2,],n=n)$y/255
+    b <- approx(t2m.seNorge[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   } else if(pal[1] %in% c("t2m.kin2100","burd")) {
-    r <- approx(kinT[1,],n=n)$y/255
-    g <- approx(kinT[2,],n=n)$y/255
-    b <- approx(kinT[3,],n=n)$y/255
+    r <- approx(t2m.kin2100[1,],n=n)$y/255
+    g <- approx(t2m.kin2100[2,],n=n)$y/255
+    b <- approx(t2m.kin2100[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   } else if (pal[1]=="cold.kin2100") {
-    r <- approx(kinT[1,1:7],n=n)$y/255
-    g <- approx(kinT[2,1:7],n=n)$y/255
-    b <- approx(kinT[3,1:7],n=n)$y/255
+    r <- approx(t2m.kin2100[1,1:7],n=n)$y/255
+    g <- approx(t2m.kin2100[2,1:7],n=n)$y/255
+    b <- approx(t2m.kin2100[3,1:7],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
   }  else if (pal[1]=="warm.kin2100") {
-    r <- approx(kinT[1,8:13],n=n)$y/255
-    g <- approx(kinT[2,8:13],n=n)$y/255
-    b <- approx(kinT[3,8:13],n=n)$y/255
+    r <- approx(t2m.kin2100[1,8:13],n=n)$y/255
+    g <- approx(t2m.kin2100[2,8:13],n=n)$y/255
+    b <- approx(t2m.kin2100[3,8:13],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
   } else {
     r <- approx(seNorgeT[1,],n=n)$y/255
