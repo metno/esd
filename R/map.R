@@ -793,12 +793,12 @@ map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 #' @exportS3Method
 #' @export
-map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+map.cca <- function(x,...,ip=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,
                     colbar1=list(pal=NULL,rev=FALSE,n=10,
 		                 breaks=seq(-1,1,by=0.1),type="p",
 		                 cex=2,show=FALSE,h=0.6,v=1,pos=0.05),
-		    colbar2= NULL,
+                    colbar2= NULL,
                     type=c("fill","contour"),gridlines=FALSE,
                     lonR=NULL,latR=NULL,axiR=NULL,cex=2,
 		    plot=TRUE,verbose=FALSE) {
@@ -832,12 +832,12 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(X,'pattern') <- V
   attr(X,'eigenvalues') <- rep(1,length(x$ip))
   attr(X,'time') <- range(index(x))
-  z1 <- map(Y,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
+  z1 <- map(Y,ip=ip,xlim=xlim,ylim=ylim,type=type,cex=cex,
             projection=projection,lonR=lonR,latR=latR,axiR=axiR,
             gridlines=gridlines,FUN='mean',verbose=verbose,
             colbar=colbar1,showall=FALSE,new=FALSE,plot=TRUE)
 
-  z2 <- map(X,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
+  z2 <- map(X,ip=ip,xlim=xlim,ylim=ylim,type=type,cex=cex,
             projection=projection,lonR=lonR,latR=latR,axiR=axiR,
             gridlines=gridlines,FUN='mean',verbose=verbose,
             colbar=colbar2,showall=FALSE,new=FALSE,plot=TRUE)
@@ -857,7 +857,6 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
                        projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE) {
   if(verbose) print("map.events")
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   x0 <- x
   x <- subset(x,it=it,is=is,verbose=verbose)
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
@@ -952,6 +951,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
     #     xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
     #     verbose=verbose)
   }
+  # #browser()
   if(dim(x)[1]>0) {
     cols <- adjustcolor(col,alpha.f=alpha)
     if("points" %in% type) {

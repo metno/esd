@@ -3,7 +3,8 @@
 lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              xlim=NULL,ylim=NULL,zlim=NULL,lab='default',
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                                          pos=0.05,show=TRUE,type="r",cex=2,h=0.6,v=1),
+                                          pos=0.05,show=TRUE,type="r",cex=2,
+                                          cex.lab=0.7,h=0.6,v=1),
                              type=c("fill","contour"),gridlines=FALSE,
                              verbose=FALSE,geography=TRUE,fancy=TRUE,
                              main=NA,cex.sub=0.8,cex.axis=0.8,
@@ -138,7 +139,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     x[outside,] <- NA
   } else xlim <- range(lon)
   
-  dy <- 0.2*( max(lat) - min(lat) )
+  dy <- 0.25*( max(lat) - min(lat) )
   #print(dy); print(range(lat))
   if (!is.null(ylim)) {
     outside <- (lat < min(ylim)) | (lat > max(ylim))
@@ -157,7 +158,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   
   if (verbose) print('Set up the figure')
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
-       xlim=xlim,ylim=ylim,main=main,# to superimpose.
+       xlim=xlim,ylim=ylim,main=main,
        xaxt="n",yaxt="n") # AM 17.06.2015
   
   if (sum(is.element(tolower(type),'fill'))>0)   
@@ -166,8 +167,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
   if (geography) {
     lines(geoborders$x,geoborders$y,col="darkblue")
-    lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,col="pink")
-    lines(geoborders$x+360,geoborders$y,col="darkblue")
+    lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,
+          col="pink")
+    lines(geoborders$x+360,geoborders$y,
+          col="darkblue")
   }
   if (sum(is.element(tolower(type),'contour'))>0)
     contour(lon,lat,x,lwd=1,col="grey70",add=TRUE)
@@ -176,7 +179,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   axis(3,at=pretty(lon),col='grey',cex=cex.axis)
   
   ## REB 2023-01-24
-  #par(xpd=FALSE)
+  par(xpd=TRUE)
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub);  print(varlabel)}
   
@@ -224,11 +227,15 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (verbose) print('Show colourbar')
       if (fancy) {
         if (verbose) print('fnc')
-        text(mean(xlim), min(ylim)+dy*0.4, label, cex=cex.sub)
-        col.bar(min(xlim),min(ylim),max(xlim),min(ylim)+dy/5,
+        below <- c(min(xlim), min(ylim), max(xlim), min(lat)-diff(lat)[1]/2)
+        dy_below <- below[4]-below[2]
+        rect(below[1], below[2]-dy_below*0.2, below[3], below[4], 
+             col = "white", border = "white")
+        col.bar(below[1],below[2],below[3],below[4]-dy_below*0.2,
                 colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
-                col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
+                col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
                 type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
+        title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
       } else {
         title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
         image.plot(breaks=colbar$breaks, 
@@ -251,3 +258,4 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(x,'colbar') <- colbar
   invisible(x)
 }
+

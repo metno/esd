@@ -1976,7 +1976,7 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #'
 #' @exportS3Method 
 #' @export plot.cca
-plot.cca <- function(x,...,icca=1,
+plot.cca <- function(x,...,ip=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
                                   h=0.6, v=1,pos=0.05),
                      what=c("maps","timeseries"),
@@ -1984,40 +1984,44 @@ plot.cca <- function(x,...,icca=1,
   if (verbose) print("plot.cca")
   if (new) dev.new()
   if (is.null(colbar2)) colbar2 <- colbar1
-  ## KMP 2023-02-08: setting up panels with mfrow or layout
-  #browser()
-  #if("maps" %in% what) panels <- length(what)+1 else panels <- length(what)
-  #if(panels==2) {
-  #  par(mfrow=c(1,2))
-  #} else if(panels==3) {
-  #  par(mfrow=c(1,2))
-  #}
   
-  #map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,verbose=verbose,new=FALSE)
-  map(x,icca=icca,colbar1=colbar1,colbar2=colbar2,verbose=verbose,new=FALSE)
+  if("maps" %in% what) panels <- length(what)+1 else panels <- length(what)
+  if(panels==3) {
+    nf <- layout( matrix(c(1,2,3,3), nrow=2, byrow=TRUE))
+  } else if(panels>1) {
+    m <- seq(1,panels)
+    if(panels %% 2) m <- c(m, max(m)+1)
+    nf <- layout(matrix(m, nrow=round(max(m)/2), byrow=TRUE))
+  }
   
-  w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
-               sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
-  v.m <- zoo((x$v.m[,icca]-mean(x$v.m[,icca],na.rm=TRUE))/
-               sd(x$v.m[,icca],na.rm=TRUE),order.by=x$index)
-  r <- cor(x$w.m[,icca],x$v.m[,icca])
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,mar=c(2,1.5,1.5,0.5),
-      cex.axis=0.8,cex.lab=0.8)
-  #par(fig=c(0.02,1,0.1,0.45),new=TRUE)
-  plot(w.m,col="blue",lwd=2,new=FALSE,
-       main=paste("CCA pattern ",icca," for ",varid(x),
-                  "; r= ",round(r,2),sep=""),xlab="",ylab="")
-  lines(v.m,col="red",lwd=2)
-
-  par(xaxt="n",yaxt="n",bty="n",mar=c(0,0,0,0))
-  #par(fig=c(0,1,0,0.1),new=TRUE)
-  plot(c(0,1),c(0,1),type="n",xlab="",ylab="",new=FALSE)
-  legend(0.01,0.90,c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
-                     paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),
-         col=c("red","blue"),lwd=2,lty=1,
-         bty="n",cex=0.5,ncol=2,text.col="grey40")
+  if("maps" %in% what) map(x,ip=ip,colbar1=colbar1,colbar2=colbar2,
+                           verbose=verbose,new=FALSE)
   
-  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
+  if("timeseries" %in% what) {
+    w.m <- zoo((x$w.m[,ip]-mean(x$w.m[,ip],na.rm=TRUE))/
+                 sd(x$w.m[,ip],na.rm=TRUE),order.by=x$index)
+    v.m <- zoo((x$v.m[,ip]-mean(x$v.m[,ip],na.rm=TRUE))/
+                 sd(x$v.m[,ip],na.rm=TRUE),order.by=x$index)
+    r <- cor(x$w.m[,ip],x$v.m[,ip])
+    plot(w.m,col="blue",lwd=2,new=FALSE,
+         main=paste("CCA pattern ",ip," for ",varid(x),
+                    "; r= ",round(r,2),sep=""),xlab="",ylab="")
+    lines(v.m,col="red",lwd=2)
+    legend("topleft",#0.01,0.90,
+           c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
+             paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),
+           col=c("red","blue"),lwd=2,lty=1,
+           bty="n",cex=0.75,ncol=1,text.col="grey40")
+  }
+  
+  ## KMP 2023-02-09: What is this fourth panel in plot.cca? 
+  ## All I see here is a legend so I moved it into the time series above
+  #par(xaxt="n",yaxt="n",bty="n",mar=c(0,0,0,0))
+  #plot(c(0,1),c(0,1),type="n",xlab="",ylab="",new=FALSE)
+  #legend(0.01,0.90,c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
+  #                   paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),
+  #       col=c("red","blue"),lwd=2,lty=1,
+  #       bty="n",cex=0.5,ncol=2,text.col="grey40")
 }
 
 # Plot esd objects
