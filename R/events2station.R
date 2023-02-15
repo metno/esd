@@ -24,7 +24,21 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
     dates <- as.POSIXct(paste(x$date,x$time),format="%Y%m%d %H")
     fn <- function(x) as.Date(as.yearmon(x))
   }
-  if (param=="count") {
+  if("location" %in% c(FUN,param)) {
+    dt <- unique(dates)
+    y <- matrix(rep(NA, nrow(x)*length(dt)), 
+                ncol=nrow(x), nrow=length(dt))
+    if(param %in% names(x)) j <- which(names(x)==param) else j <- 5
+    for(i in seq(1,nrow(x))) y[dt==dates[i],i] <- x[i,j]
+    N <- as.station(zoo(y, order.by=dt), 
+                    lon=x$lon, lat=x$lat)#,
+                    #variable=colnames(x)[j], unit=attr(x,"unit")[j])
+    if("trajectory" %in% names(x)) attr(N, "trajectory") <- x$trajectory
+    param <- colnames(x)[j]
+    longname <- paste(FUN," of ",param,sep="")
+    unit <- attr(x,"unit")[j]
+    class(N) <- c("station", "hourly", "zoo")
+  } else if (param=="count") {
     N <- count.events(x,...)
     longname <- paste(attr(x,"variable"),param)
     unit <- "events/months"
@@ -40,6 +54,9 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
     N <- merge(N, N0)
     N <- attrcp(x,N)
     N <- as.station(N)
+    attr(N,"lat") <- attr(x,"lat")
+    attr(N,"lon") <- attr(x,"lon")
+    N <- subset(N, it=paste(range(format(dates,format="%Y-%m")),"01",sep="-"))
   } else {
     print(paste("input error: param =",param))
   }
@@ -62,9 +79,6 @@ events2station <- function(x,param="count",FUN="mean",verbose=FALSE,
   attr(N,"longname") <- longname
   attr(N,"calendar") <- calendar
   attr(N,"unit") <- unit
-  attr(N,"lat") <- attr(x,"lat")
-  attr(N,"lon") <- attr(x,"lon")
-  N <- subset(N, it=paste(range(format(dates,format="%Y-%m")),"01",sep="-"))
   #N <- subset(N, it=paste(range(strftime(dates,format="%Y-%m")),"01",sep="-"))
   invisible(N)
 }

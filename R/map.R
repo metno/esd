@@ -134,7 +134,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   ## data in the esd package.
   
   if (verbose) print('map.default')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (is.logical(colbar)) colbar <- NULL
   ## If only a few items are provided in colbar - then set the rest to the default
   if (!is.null(colbar)) {
@@ -196,7 +196,7 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ##  image(lon(x),lat(x),x)
   
   if (verbose) print('map.matrix')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
   if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
   if (verbose) str(x)
@@ -229,7 +229,7 @@ map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                            ip=1,plot=TRUE) {
   if (verbose) print('map.data.frame')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   attr(x,'location') <- x$location; x$location <- NULL
   attr(x,'longitude') <- x$longitude; x$longitude <- NULL
   attr(x,'latitude') <- x$latitude; x$latitude <- NULL
@@ -253,7 +253,7 @@ map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       type=c("fill","contour"),gridlines=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.array')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
   if (is.null(ip)) {
     ## If it is NULL, then aggregate all of 3rd dimension
@@ -296,7 +296,7 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                      ip=1,plot=TRUE) {
   if (verbose) print('map.comb')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'eof'))
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -327,7 +327,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
                     ip=1,cex=1,plot=TRUE) {
   
   if (verbose) print('map.eof')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'eof'))
   ##x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -406,7 +406,7 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.ds')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'ds'))
   x <- subset(x,is=is)
   
@@ -894,24 +894,24 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
   
   if (!is.null(Y)) {
     Y <- subset(Y,is=is)
-  }
-  if(length(Y)>0) {
-    if(dim(x)[1]==0) {
-      Y <- subset(Y,it=it)
-    } else {
-      ty <- index(Y)
-      if (inherits(Y,"month")) {
-        tx <- round(x[,"date"]*1E-2)*1E2+1
-        ty <- as.numeric(format(ty,"%Y%m%d"))
-      } else if (inherits(ty,"Date")) {
-        tx <- x[,"date"]
-        ty <- as.numeric(format(ty,"%Y%m%d"))
-      } else if (inherits(ty,c("POSIXt","PCICt"))) {
-        tx <- x[,"date"]*1E2 + x[,"time"]
-        ty <- as.numeric(format(ty,"%Y%m%d%H"))
+    if(length(Y)>0) {
+      if(dim(x)[1]==0) {
+        Y <- subset(Y,it=it)
+      } else {
+        ty <- index(Y)
+        if (inherits(Y,"month")) {
+          tx <- round(x[,"date"]*1E-2)*1E2+1
+          ty <- as.numeric(format(ty,"%Y%m%d"))
+        } else if (inherits(ty,"Date")) {
+          tx <- x[,"date"]
+          ty <- as.numeric(format(ty,"%Y%m%d"))
+        } else if (inherits(ty,c("POSIXt","PCICt"))) {
+          tx <- x[,"date"]*1E2 + x[,"time"]
+          ty <- as.numeric(format(ty,"%Y%m%d%H"))
+        }
+        ii <- is.element(ty,tx)
+        Y <- subset(Y,it=ii)
       }
-      ii <- is.element(ty,tx)
-      Y <- subset(Y,it=ii)
     }
   }
   if(length(Y)!=0) {
@@ -941,17 +941,14 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
         latR <- 90
       }
     }
-    ## REB 2023-01-26 - stranges lines of code below...
-    # data(Oslo, envir = environment())
-    # map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
-    #     bg=adjustcolor("black",alpha.f=0),new=new,add=add,
-    #     projection=projection,main="",xlab="",ylab="",
-    #     fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
-    #     border=border,
-    #     xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
-    #     verbose=verbose)
+    xs <- events2station(x, FUN="location", param="pcent", verbose=verbose)
+    map(xs, FUN="mean", col="grey", cex=0.1, pch='.',
+        new=new,projection=projection,main="",xlab="",ylab="",
+        fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
+        border=border,
+        xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
+        verbose=verbose)
   }
-  # #browser()
   if(dim(x)[1]>0) {
     cols <- adjustcolor(col,alpha.f=alpha)
     if("points" %in% type) {
@@ -981,7 +978,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
       if(dim(xt)[1]>1) {
         xall <- as.trajectory(xt,nmin=2,n=45,verbose=verbose)
         map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
-            add=TRUE,col=col,lonR=lonR,latR=latR,
+            col=col,lonR=lonR,latR=latR,
             projection=projection,type=type,param=param,
             showaxis=FALSE,
             colbar=colbar,verbose=verbose,...)
@@ -1001,7 +998,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
          par("usr")[4] - 0.10*diff(range(par("usr")[3:4])),
          main,pos=4,cex=1,col="black")
   }
-  par(def.par) # reset to default
+  #par(def.par) # reset to default
 }
 
 #' Function that masks either ocean or land

@@ -229,7 +229,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
         if (verbose) print('fnc')
         below <- c(min(xlim), min(ylim), max(xlim), min(lat)-diff(lat)[1]/2)
         dy_below <- below[4]-below[2]
-        rect(below[1], below[2]-dy_below*0.2, below[3], below[4], 
+        rect(below[1], below[2]-dy_below*0.2, below[3], below[4]-dy_below*0.2, 
              col = "white", border = "white")
         col.bar(below[1],below[2],below[3],below[4]-dy_below*0.2,
                 colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,

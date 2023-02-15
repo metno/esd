@@ -58,7 +58,7 @@
 #' }
 #' 
 #' @exportS3Method
-#' @export
+#' @export map.trajectory
 map.trajectory <- function(x,it=NULL,is=NULL,type="trajectory",param=NA,
                            projection="lonlat",verbose=FALSE,...) {
   if (verbose) print("map.trajectory")
