@@ -147,7 +147,7 @@ ltp <- function(x,type='exponential',...) {
 #' ## Evaluation: 
 #' ## (1) combare the past trend with downscaled trends for same
 #' ## interval by ranking and by fitting a Gaussian to the model ensemble;
-#' ## (2) estimate the probabilty for the counts outside the 90
+#' ## (2) estimate the probability for the counts outside the 90
 #' ## percent confidence interval according to a binomial distribution.
 #' diagnose(rcp4.5, plot = TRUE, type = "target")
 #' }
@@ -268,6 +268,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
   path <- file.path(path,rcp,fsep = .Platform$file.sep)
   ncfiles <- list.files(path=path,pattern=pattern,full.names=TRUE)
   N <- length(ncfiles)
+  if (N==0) {print('DSensembles: no files found and N=0...'); return()}
 
   if (is.null(select)) select <- 1:N else
       select <- select[select<=N]; N <- length(select)
@@ -302,6 +303,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
     if (length(index(gcm))<=1) print(paste('Problem selecting GCM results in period',
                                            min(year(y),na.rm=TRUE),'2099'))
     nmattsgcm <- names(attributes(gcm))
+    if (verbose) print('nmattsgcm <- names(attributes(gcm))')
     if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
     if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
     if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
@@ -631,6 +633,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
       }
     }
     if(is.null(rip)) {
+      if (verbose) print('is.null(rip)...1')
       if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
       if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
       if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
@@ -883,6 +886,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
         }
       }
       if(is.null(rip)) {
+        if (verbose) print('is.null(rip)...2')
         if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
         if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
         if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
@@ -1169,6 +1173,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
       }
     }
     if(is.null(rip)) {
+      if (verbose) print('is.null(rip)...3')
       if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
       if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
       if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
@@ -1748,6 +1753,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
         }
       }
       if(is.null(rip)) {
+        if (verbose) print('is.null(rip)...4')
         if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
         if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
         if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
@@ -1987,6 +1993,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
           }
         }
         if(is.null(rip)) {
+          if (verbose) print('is.null(rip)...5')
           if(any(grepl("realization", names(attributes(gcm)))))
             nm.r <- names(attributes(gcm))[grep("realization",names(attributes(gcm)))][[1]] else
             nm.r <- 'NA'
@@ -2415,6 +2422,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
       }
     }
     if(is.null(rip)) {
+      if (verbose) print('is.null(rip)...6')
       if (length(grep("realization",nmattsgcm)) > 0) nm.r <- attributes(gcm)[grep("realization",nmattsgcm)][[1]] else nm.r <- '_'
       if (length(grep("initialization",nmattsgcm)) > 0) nm.i <- attributes(gcm)[grep("initialization",nmattsgcm)][[1]] else nm.i <- '_'
       if (length(grep("physics",nmattsgcm)) > 0) nm.p <- attributes(gcm)[grep("physics",nmattsgcm)][[1]] else nm.p <- '_'
