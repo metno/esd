@@ -958,7 +958,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       if (!is.na(unlist(strsplit(torigin,split=" "))[2])) 
         torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ") else
           torigin <- paste(torigin1,'12:00')
-    }
+    } 
   }
   
   if (!is.null(torigin)) {
