@@ -362,8 +362,9 @@ EOF.comb <- function(X,it=NULL,is=NULL,n=20,lon=NULL,lat=NULL,verbose=FALSE,anom
     #print(length(index(YYY)))
     
     # Keep track of the different fields:
+    if (verbose) print(paste('EOF.comb',attr(YYY,'source')))
     if (is.null(attr(YYY,'source'))) attr(YYY,'source') <- as.character(i) else
-      if (is.na(attr(YYY,'source')))  attr(YYY,'source') <- as.character(i)
+      if (is.na(attr(YYY,'source')[1]))  attr(YYY,'source') <- as.character(i)
     src <- paste(attr(YYY,'source'),i,sep="+")
     id.t <- c(id.t,rep(src[1],length(index(YYY))))
     ID.t <- c(ID.t,src)
