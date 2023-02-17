@@ -728,6 +728,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     attr(z,"calendar") <- time$calendar
   }
   ## Add attributes
+  if (is.null(model$project_id)) model$project_id <- 'NA'
   attr(z, "file") <- model$filename
   attr(z, "source")         <- model$project_id
   attr(z, 'timeunit')       <- model$frequency

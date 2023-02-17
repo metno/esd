@@ -2302,7 +2302,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
   if (sum(!is.finite(lat))>0) 
     warning(paste('Bad latitude range provided: ',paste(lat,collapse='-')))
   
-  if (is.character(predictor))
+  if (is.character(predictor)) 
     slp <- retrieve(file=predictor,lon=lon,lat=lat,lev=lev,
                     verbose=verbose) else
                       if (inherits(predictor,'field'))
@@ -2491,6 +2491,7 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
       if (verbose) print("- - - > EOFs")
       
       Z <- try(EOF(SLPGCM))
+      if(inherits(Z,"try-error")) biascorrect <- FALSE
       
       ## The test lines are included to assess for non-stationarity
       ## KMP 2018-11-02: Does the nonstationarity test work for DSensemble.eof?
@@ -2557,6 +2558,8 @@ DSensemble.eof <- function(y,...,plot=TRUE,path="CMIP5.monthly",rcp="rcp45",bias
         
         ## Store the results in a list element
         cl <- paste('dse.eof$i',i,'_',gcmnm[i],' <- z',sep='')
+        cl <- sub('=','_',cl)
+        if (verbose) print(paste('execute this line:',cl))
         eval(parse(text=cl))
         if (verbose) {
           print('Test to see if as.field has all information needed')
