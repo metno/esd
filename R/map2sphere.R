@@ -111,17 +111,20 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     colbar$n <- length(colbar$breaks) -1
   }
   ## REB 2023-02-09: flexibility to deal with old habit of confusing colbar$col with colbar$pal
-  if ( (is.null(colbar$pal)) & (is.character(colbar$col)) ) {colbar$pal <- colbar$col; colbar$col <- NULL}
+  if ( is.null(colbar$pal) & is.character(colbar$col) ) {colbar$pal <- colbar$col; colbar$col <- NULL}
   nc <- length(colbar$col)
   if (is.null(colbar$col)) {
     colbar <- colbar.ini(map,colbar=colbar)
     col <- colscal(n=colbar$n) 
-  } # following lines are probably no longer needed REB 2023-02-09: 
+  }
+  # following lines are probably no longer needed REB 2023-02-09: 
   # else if (nc==1) {
   #  col <- colscal(pal=colbar$col,n=colbar$n-1)
   #}
-  if (colbar$rev) col <- rev(col)
-  colbar$col <- col
+  if (colbar$rev) {
+    col <- rev(col)
+    colbar$col <- col
+  }
   
   ## AM 2021-06-03: Moved this before index
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
@@ -152,9 +155,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   A <- rotM(x=latR,y=0,z=0) %*% A
   X <- A[1,]; Y <- A[2,]; Z <- A[3,]
   dim(X) <- d; dim(Y) <- d; dim(Z) <- d
-  #print(dim(rbind(X,Z)))
-  
-  # Plot the results:
+ 
+   # Plot the results:
   if (new) {
     if(verbose) print("Create new graphic device")
     dev.new()
@@ -189,7 +191,6 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
             length(brightness),length(alpha)))
     print(dim(X))
   }
-  
   apply(rbind(X,Z,index,brightness,alpha),2,gridbox,colbar$col)
   # Plot the coast lines  
   visible <- y > 0
@@ -212,8 +213,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
       if (verbose) print("fancy colbar")
       col.bar(min(x,na.rm=TRUE),
               min(z,na.rm=TRUE)-dz,
-	      max(x,na.rm=TRUE),
-	      min(z,na.rm=TRUE),
+	            max(x,na.rm=TRUE),
+	            min(z,na.rm=TRUE),
               colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,

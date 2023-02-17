@@ -720,16 +720,17 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 #' @exportS3Method
 #' @export map.pca
-map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,add=FALSE,projection="lonlat",
+map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
+                    type=c("fill","contour"),gridlines=FALSE,
                     #cex.axis=1,cex.main=1,cex.lab=1,
-                    type=c("fill","contour"),gridlines=FALSE,fig=c(0,1,0.05,0.95),
+                    #add=FALSE,fig=c(0,1,0.05,0.95),
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   ##
   if (verbose) print(paste('map.pca',FUN))
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if(inherits(x,"trajectory")) {
     z <- map.pca.trajectory(x,projection=projection,lonR=lonR,latR=latR,
                             xlim=xlim,ylim=ylim,...)
@@ -760,15 +761,16 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,add=FALSE,projection="l
     ##  colbar$col <- colscal(30,pal=varid(x))
     ##}
     if (verbose) str(X)
-    
     if (is.element(FUN,args)) {
       z <- map.station(X,new=new,colbar=colbar,
                        xlim=xlim,ylim=ylim,zlim=zlim,
-                       plot=TRUE,add=add,fig=fig,verbose=verbose,...) -> z
+                       plot=TRUE,#add=add,fig=fig,
+                       verbose=verbose,...)
     } else {
       z <- map.station(X,new=new,colbar=colbar,FUN=FUN,
                        xlim=xlim,ylim=ylim,zlim=zlim,
-                       plot=TRUE,add=add,fig=fig,verbose=verbose,...) -> z
+                       plot=TRUE,#add=add,fig=fig,
+                       verbose=verbose,...)
     } 
   } 
   invisible(z)
@@ -980,7 +982,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
         map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
             col=col,lonR=lonR,latR=latR,
             projection=projection,type=type,param=param,
-            showaxis=FALSE,
+            showaxis=FALSE,add=TRUE,
             colbar=colbar,verbose=verbose,...)
       }
     }

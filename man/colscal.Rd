@@ -38,6 +38,8 @@ Palette options are as follows:
 'precip', 'mu' and 'fw': white-blue (from seNorge),
 'cold': a cold color scale (from seNorge),
 'warm': a warm color scale (from seNorge),
+'t2m.IPCC': blue-red color scale from the IPCC visual guide for authors from 2019
+'precip.IPCC': green-brown colros scale from the IPCC visual guide for authors from 2019
 't2m.kin2100': blue-red color scale from Klima i Norge 2100 (KiN2100)
 'precip.kin2100': brown-green-blue color scale (from KiN2100)
 'precip.trend.kin2100': green-white-blue color scale (from KiN2100)

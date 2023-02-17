@@ -182,42 +182,42 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         col=adjustcolor(col.border, alpha.f=0.7), lwd=0.75)#'grey')
       
       if (show.colbar) {
+        par(xpd=TRUE)
         if(fancy) {
           if (verbose) print('show.colorbar')
-          ## KMP 2017-07-28: If fig is something other than the default
-          ## the colbar may be misplaced relative to the plot.
-          #if (fin[2] >= 8) {
-          #  cf <- cf <- c(fig[1:3],min(fig[3]+0.1,1))#c(0.2,0.8,0,0.1)
-          #  cf[cf>1] <- 1
-          #  par(new=TRUE,fig=cf,mar=rep(1.5,4),yaxt='n')
-          #} else {
-          #  cf <- c(fig[1:3],min(fig[3]+0.15,1))#c(0.2,0.8,0,0.15)
-          #  par(new=TRUE,fig=cf,mar=rep(2,4),yaxt='n')
-          #}
-          image.plot(breaks=colbar$breaks,
-                     lab.breaks=colbar$breaks,horizontal = TRUE,
-                     legend.only = T, zlim = range(colbar$breaks),
-                     col = colbar$col, legend.width = 1,
-                     axis.args = list(cex.axis = cex.axis, hadj = 0.5,mgp = c(0, 0.5, 0)), 
-                     border = FALSE)
+          #image.plot(breaks=colbar$breaks,
+          #           lab.breaks=colbar$breaks,horizontal = TRUE,
+          #           legend.only = T, zlim = range(colbar$breaks),
+          #           col = colbar$col, legend.width = 1,
+          #           axis.args = list(cex.axis = cex.axis, hadj = 0.5,mgp = c(0, 0.5, 0)), 
+          #           border = FALSE)
           #image(colbar$breaks,1:2,cbind(colbar$breaks,colbar$breaks),
           #      col=colbar$col,axes=FALSE)
           #par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=cex.axis,col.axis='grey')
           #axis(1,colbar$breaks)
+          ## KMP 2023-02-16: testing alternative colorbar
+          dy <- diff(ylim)*0.1
+          below <- c(min(xlim), min(ylim)-dy/2, max(xlim), min(ylim)+dy/2)
+          rect(below[1], below[2], below[3], below[4], 
+               col = "white", border = "white")
+          col.bar(below[1],below[2],below[3],below[4],
+                  colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
+                  col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
+                  type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
         } else {
           ## REB 2023-01-31
           ## Make a simple legend for colour scales based on points along the lower part of the figure
         if (verbose) {print('Alternative colour bar'); print(colbar$breaks)}
           nb <- length(colbar$breaks) - 1
           xs <- seq(xlim[1],xlim[2],length=nb)
-          def.par <- par(no.readonly = TRUE)
+          #def.par <- par(no.readonly = TRUE)
           par(xpd = TRUE)
           rect(xlim[1]-1,ylim[1]-1.5,xlim[2]+1,ylim[1]+0.5,col=rgb(1,1,1,0.7),border=rgb(0.5,0.5,0.5,0.7),lwd=2)
           points(xs,rep(ylim[1],nb)-0.5,col=colbar$col,pch=19,cex=3)
           if (nb > 15) ib <- c(1,(1:nb)[(1:nb)%%3 == 0],nb) else ib <- 1:nb
           levels <- round(0.5*(colbar$breaks[-1] + colbar$breaks[-(nb+1)])[ib],2)
           text(xs[ib],rep(ylim[1],sum(ib))-0.5,levels,cex=0.7,col='grey40')
-          par(def.par)
+          #par(def.par)
         }
       }
       #if (!is.null(add)) {

@@ -225,6 +225,8 @@ colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
 #' 'precip', 'mu' and 'fw': white-blue (from seNorge),
 #' 'cold': a cold color scale (from seNorge),
 #' 'warm': a warm color scale (from seNorge),
+#' 't2m.IPCC': blue-red color scale from the IPCC visual guide for authors from 2019
+#' 'precip.IPCC': green-brown colros scale from the IPCC visual guide for authors from 2019
 #' 't2m.kin2100': blue-red color scale from Klima i Norge 2100 (KiN2100)
 #' 'precip.kin2100': brown-green-blue color scale (from KiN2100)
 #' 'precip.trend.kin2100': green-white-blue color scale (from KiN2100)
@@ -559,9 +561,9 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
     b <- approx(t2m.kin2100[3,8:13],n=n)$y/255
     col <- rgb(r,g,b,alpha)    
   } else {
-    r <- approx(seNorgeT[1,],n=n)$y/255
-    g <- approx(seNorgeT[2,],n=n)$y/255
-    b <- approx(seNorgeT[3,],n=n)$y/255
+    r <- approx(t2m.seNorge[1,],n=n)$y/255
+    g <- approx(t2m.seNorge[2,],n=n)$y/255
+    b <- approx(t2m.seNorge[3,],n=n)$y/255
     col <- rgb(r,g,b,alpha)
   }
   
