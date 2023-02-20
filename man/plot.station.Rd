@@ -28,11 +28,9 @@
   cex.axis = 1.2,
   cex.lab = 1.2,
   cex.main = 1.2,
-  mar = c(4.5, 4.5, 0.75, 0.5),
-  fig = NULL,
+  mar = NULL,
   alpha = 0.5,
   alpha.map = 0.7,
-  add = FALSE,
   verbose = FALSE
 )
 }
@@ -81,8 +79,6 @@
 
 \item{mar}{see \code{\link[graphics]{par}}}
 
-\item{fig}{coordinates of figure region, see \code{\link[graphics]{par}}}
-
 \item{alpha}{transparency factor for main plot}
 
 \item{alpha.map}{transparency factor for map}
@@ -98,6 +94,8 @@ to the same coordinates as defined by \code{is}.}
 \item{ip}{Which EOF/CCA pattern (mode) to plot}
 
 \item{cex}{magnification factor, see \code{\link[graphics]{par}}}
+
+\item{fig}{coordinates of figure region, see \code{\link[graphics]{par}}}
 
 \item{what}{Indicate what to plot. For \code{plot.eof}, c('pc', 'eof', 'var') is the default setting which means that
 the plot will include the principle components, EOF patterns and explained variance. 'field' expands eof to field before
