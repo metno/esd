@@ -444,7 +444,6 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
            cex.axis=cex.axis,cex.lab=cex.lab,cex.main=cex.main,
            xaxt=xaxt,main=main)
-  
   if("seasonalcycle" %in% cls) {
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
   }

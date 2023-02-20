@@ -8,10 +8,10 @@
 #' @param verbose if true promt test lines
 #'
 #' @examples
-#' 
+#'
+#' \dontrun{
 #' list_thredds()
 #' list_thredds(pattern=c("rcp45","r1i1p1","RACMO")) 
-#' \dontrun{
 #' list_thredds(caturl="http://esgf3.dkrz.de/thredds/catalog/esgcet/12/CMIP6.ScenarioMIP.DKRZ.MPI-ESM1-2-HR.ssp585.r1i1p1f1.day.pr.gn.v20190710.html")
 #'
 #' caturl <- "https://thredds.met.no/thredds/catalog/KSS/Klima_i_Norge_2100/bias_corrected/3DBC/cross-validation/noresm-r1i1p1-remo/tasmin/catalog.html"
