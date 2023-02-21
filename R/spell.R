@@ -34,18 +34,15 @@
 #' # Example 1 : 
 #' data(bjornholt)
 #' x <- spell(bjornholt, threshold=.1)
-#' x.ann <- annual(x, FUN="max")
-#' plot(x.ann, plot.type="multiple",new=FALSE)
-#' # Example 2 :
 #' plot(x, new=FALSE)
+#'
+#' # Example 2 :
+#' x.ann <- annual(x, FUN="max")
+#' plot(x.ann, plot.type="multiple", new=FALSE)
 #' 
 #' # Growing degree days:
 #' data(ferder)
 #' plot(as.seasons(ferder,FUN='GDD'), new=FALSE)
-#' 
-#' # Mild winter days - number of days in the winter season with
-#' # above freezing temperatures
-#' try(coldwinterdays(ferder))
 #'
 #' # Quantile-quantile plot
 #' qqgeom(ferder, treshold=1, pois=TRUE)

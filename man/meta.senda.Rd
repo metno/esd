@@ -20,7 +20,9 @@ A function that provides metadata for S-ENDA data on thredds.
 }
 \examples{
 
+\dontrun{
 meta <- meta.senda()
+}
 }
 \seealso{
 retrieve list_thredds station.s_enda
