@@ -341,12 +341,13 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
                          map.show=TRUE,map.type=NULL,map.insert=TRUE,
                          xrange=NULL,yrange=NULL,
                          cex.axis=1.2,cex.lab=1.2,cex.main=1.2,
-                         mar=c(4.5,4.5,0.75,0.5),fig=NULL, 
-                         alpha=0.5,alpha.map=0.7,add=FALSE,
+                         mar=NULL,
+                         alpha=0.5,alpha.map=0.7,#add=FALSE,
                          verbose=FALSE) {
   
   if (verbose) print('plot.station')
   par(las=1)
+  
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
     map.show <- FALSE
   }
@@ -363,32 +364,21 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
     if (verbose) print(map.type)
   }
   
-  if(is.null(fig)) {
-    if(new) {
-      fig <- c(0,1,0,0.95)
+  if(is.null(mar)) {
+    if(map.show & map.insert) {
+      mar <- c(4.5, 4.5, 0.75, 0.5)
     } else {
-      fig <- par()$fig
+      mar <- c(4.5, 4.5, 4.5, 1.0)
     }
   }
-  #if (map.show & map.insert) {
-  #  fig[4] <- fig[4]-(fig[4]-fig[3])/5
-  #  fig.map[3] <- fig[4]
-  #}
-  if (legend.show) {
-    fig.legend <- fig
-    fig[3] <- fig[3] + (fig[4]-fig[3])/10
-    fig.legend[4] <- fig[3]
+
+  if (is.null(ylim)) {
+    ylim <- range(pretty(range(x,na.rm=TRUE)))
+    ylim <- ylim + diff(ylim)*0.1*c(-0.05,0.05)
+    if(legend.show) ylim[1] <- ylim[1]-diff(ylim)*0.05
+    if(map.show & map.insert) ylim[2] <- ylim[2]+diff(ylim)*0.05
   }
-  
-  ## if (is.null(ylim))
-  ##     if (is.null(dim(x)))
-  ##         ylim <- pretty(x)
-  ##     else              
-  ##         ylim <- apply(x,2,pretty,n=5)
-  if (is.null(xlim))
-    xlim <- range(index(x))
-  #if (is.null(ylim))
-  #  ylim <- pretty(as.numeric(x))
+  if (is.null(xlim)) xlim <- range(index(x))
   if (verbose) {print(xlim); print(ylim)}
   
   if (plot.type=="single") {
@@ -435,20 +425,12 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   col <- adjustcolor(col,alpha.f=alpha)
   
   ns <- length(stid(x))
-  #  if ( (ns > 1) & (plot.type=="multiple") ) {
-  #    for (i in 1:ns) {
-  #        z <- try(eval(parse(text=paste("ylab[",i,"] <- expression(",ylab[i],
-  #                      "*phantom(0)*(",unit[i],"))"))),silent=TRUE)
-  #        if (inherits(z,"try-error")) ylab[i] <- unit[i]
-  #      }
-  #  }
-  
+
   errorbar <- errorbar & !is.null(err(x))
-  if(add) new <- FALSE
   if(new) dev.new()
   
   if(map.show & !map.insert) {
-    vis.map(x,col=col.map,map.type,add.text=FALSE,map.insert=map.insert,
+    vis.map(x,col=col.map,map.type,add.text=FALSE,map.insert=FALSE,
             cex.axis=cex.axis,xrange=xrange,yrange=yrange,
             cex=1.8,verbose=verbose)
   }
@@ -457,61 +439,34 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
   if("seasonalcycle" %in% cls) xaxt <- "n" else  xaxt <- NULL
   class(x) <- "zoo"
   
-  if(!is.null(fig)) par(cex.axis=1,fig=fig,mar=mar)
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,new=add)
+  par(cex.axis=1,mar=mar, bty="n",xaxt="s",yaxt="s",xpd=FALSE)
   plot.zoo(x,...,plot.type=plot.type,xlab=xlab,ylab=ylab,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
            cex.axis=cex.axis,cex.lab=cex.lab,cex.main=cex.main,
            xaxt=xaxt,main=main)
-  #mtext(main,side=3,line=1,adj=0,cex=cex.main)
   if("seasonalcycle" %in% cls) {
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
   }
-  par0 <- par()
+  
   if (plot.type=="single") {
     if (errorbar) {
-      # REB 2014-10-03: add an errorbar to the plots.
       segments(index(x),x-err(x),index(x),x+err(x),
                lwd=3,col=rgb(0.5,0.5,0.5,0.25))
-      #      d.err <- dim(err(x))
-      #      dt <- 0.3*diff(index(x))[1]
-      #      if (is.null(d.err)) d.err <- c(length(err(x),1)
-      #      for (i in 1:d.err[2]) {
-      #        for (j in 1:d.err[splot.dse1])
-      #          lines(rep(index(x)[j],2),rep(x[j],2) + err(x)[j]*c(-1,1),
-      #                lwd=3,col=rgb(1,0.5,0.5,0.25))
-      #          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) + err(x)[j],
-      #                lwd=1,col=rgb(1,0.5,0.5,0.25))
-      #          lines(rep(index(x)[j],2) + dt*c(-1,1),rep(x[j],2) - err(x)[j],
-      #                lwd=1,col=rgb(1,0.5,0.5,0.25))
-      #       }
     }
     
-    #if(legend.show) legend(0.01,0.75,loc(x),bty='n',ncol=4,
-    #                       text.col=col,cex=0.75)
-    #title(main=loc(x),cex=1)
     if(legend.show) {
-      #par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="s",bty="n")
-      par(fig=fig.legend,new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",
-          bty="n",xpd=TRUE)
-      plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-      legend(0.01,1,legend=paste(attr(x,'location'),": ",
+      legend("bottomleft",legend=paste(attr(x,'location'),": ",
                                  round(attr(x,'longitude'),2),"E/",
                                  round(attr(x,'latitude'),2),"N (",
                                  attr(x,'altitude')," masl)",sep=""),
              bty="n",cex=0.65,ncol=2,
              text.col="grey40",lty=1,col=col)
-      
     }
     if (map.show & map.insert) {
       vis.map(x,col=col.map,map.type=map.type,cex=1,cex.axis=0.65,
               add.text=FALSE,map.insert=map.insert,
               xrange=xrange,yrange=yrange,verbose=verbose)
     }
-    par(fig=par0$fig,mar=par0$mar,new=TRUE)
-    plot.zoo(x,plot.type=plot.type,type="n",xlab="",ylab="",
-             xaxt="n",yaxt="n",xlim=xlim,ylim=ylim,new=FALSE)
-    par(new=FALSE)
   }
 }
 
@@ -1978,42 +1933,55 @@ plot.mvr <- function(x,verbose=FALSE,...) {
 #'
 #' @exportS3Method 
 #' @export plot.cca
-plot.cca <- function(x,...,icca=1,
+plot.cca <- function(x,...,ip=1,
                      colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,type="p",cex=2,show=TRUE,
-                                  h=0.6, v=1,pos=0.05),colbar2=NULL,verbose=FALSE,new=TRUE) {
+                                  h=0.6, v=1,pos=0.05),
+                     what=c("maps","timeseries"),
+                     colbar2=NULL,new=TRUE,verbose=FALSE) {
   if (verbose) print("plot.cca")
   if (new) dev.new()
-  #par(mfrow=c(2,2),bty="n",xaxt="n",yaxt="n")
-  par(bty="n",xaxt="n",yaxt="n")
   if (is.null(colbar2)) colbar2 <- colbar1
-  map.cca(x,icca=icca,colbar1=colbar1,colbar2=colbar2,
-          fig1=c(0.02,0.5,0.5,1),fig2=c(0.5,0.98,0.5,1),
-	  add=TRUE,
-	  verbose=verbose,new=FALSE,...)
   
-  w.m <- zoo((x$w.m[,icca]-mean(x$w.m[,icca],na.rm=TRUE))/
-               sd(x$w.m[,icca],na.rm=TRUE),order.by=x$index)
-  v.m <- zoo((x$v.m[,icca]-mean(x$v.m[,icca],na.rm=TRUE))/
-               sd(x$v.m[,icca],na.rm=TRUE),order.by=x$index)
-  r <- cor(x$w.m[,icca],x$v.m[,icca])
-  par(bty="n",xaxt="s",yaxt="s",xpd=FALSE,mar=c(2,1.5,1.5,0.5),
-      fig=c(0.02,1,0.1,0.45),new=TRUE,cex.axis=0.8,cex.lab=0.8)
-  plot(w.m,col="blue",lwd=2,
-       main=paste("CCA pattern ",icca," for ",varid(x),
-                  "; r= ",round(r,2),sep=""),xlab="",ylab="")
-  lines(v.m,col="red",lwd=2)
+  if("maps" %in% what) panels <- length(what)+1 else panels <- length(what)
+  if(panels==3) {
+    nf <- layout( matrix(c(1,2,3,3), nrow=2, byrow=TRUE))
+  } else if(panels>1) {
+    m <- seq(1,panels)
+    if(panels %% 2) m <- c(m, max(m)+1)
+    nf <- layout(matrix(m, nrow=round(max(m)/2), byrow=TRUE))
+  }
   
-  par(fig=c(0,1,0,0.1),new=TRUE, xaxt="n",yaxt="n",bty="n",
-      mar=c(0,0,0,0))
-  plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-  legend(0.01,0.90,c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
-                     paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),
-         col=c("red","blue"),lwd=2,lty=1,
-         bty="n",cex=0.5,ncol=2,text.col="grey40")
+  if("maps" %in% what) map(x,ip=ip,colbar1=colbar1,colbar2=colbar2,
+                           verbose=verbose,new=FALSE)
   
-  ##par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-  ##    fig=c(0,1,0.1,1),new=TRUE)
-  ## par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))
+  if("timeseries" %in% what) {
+    w.m <- zoo((x$w.m[,ip]-mean(x$w.m[,ip],na.rm=TRUE))/
+                 sd(x$w.m[,ip],na.rm=TRUE),order.by=x$index)
+    v.m <- zoo((x$v.m[,ip]-mean(x$v.m[,ip],na.rm=TRUE))/
+                 sd(x$v.m[,ip],na.rm=TRUE),order.by=x$index)
+    r <- cor(x$w.m[,ip],x$v.m[,ip])
+    plot(w.m,col="blue",lwd=2,new=FALSE,
+         main=paste("CCA pattern ",ip," for ",varid(x),
+                    "; r= ",round(r,2),sep=""),xlab="",ylab="")
+    lines(v.m,col="red",lwd=2)
+    legend("topleft",#0.01,0.90,
+           c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
+             paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),
+           col=c("red","blue"),lwd=2,lty=1,
+           bty="n",cex=0.75,ncol=1,text.col="grey40")
+  }
+  
+  ## KMP 2023-02-09: What is this fourth panel in plot.cca? 
+  ## All I see here is a legend so I moved it into the time series above
+  #par(xaxt="n",yaxt="n",bty="n",mar=c(0,0,0,0))
+  #plot(c(0,1),c(0,1),type="n",xlab="",ylab="",new=FALSE)
+  #legend(0.01,0.90,c(paste(attr(x$X,'source')[1],attr(x$X,'variable')[1]),
+  #                   paste(attr(x$Y,'source')[1],attr(x$Y,'variable')[1])),
+  #       col=c("red","blue"),lwd=2,lty=1,
+  #       bty="n",cex=0.5,ncol=2,text.col="grey40")
+
+  ## KMP 2023-02-22: reset if layout has been used
+  if(panels>1) par(mfrow=c(1,1))
 }
 
 # Plot esd objects

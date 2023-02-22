@@ -109,7 +109,7 @@ A time series of "zoo" "station" class with additional attributes
 used for further processing.
 }
 \description{
-Fetch data from frost.met.no and return station object
+Retrieve records from frost.met.no, for one element and one or more stations
 }
 \examples{
 

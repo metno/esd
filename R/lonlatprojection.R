@@ -3,14 +3,13 @@
 lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              xlim=NULL,ylim=NULL,zlim=NULL,lab='default',
                              colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
-                                          pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
-                             type=c("fill","contour"),scaletype='r',gridlines=FALSE,
-                             verbose=FALSE,geography=TRUE,fancy=FALSE,
-                             main=NA,cex.sub=0.8,add=FALSE,fig=NULL,...) {
-  
+                                          pos=0.05,show=TRUE,type="r",cex=2,
+                                          cex.lab=0.7,h=0.6,v=1),
+                             type=c("fill","contour"),gridlines=FALSE,
+                             verbose=FALSE,geography=TRUE,fancy=TRUE,
+                             main=NA,cex.sub=0.8,cex.axis=0.8,
+                             fig=NULL,add=FALSE,...) {
   if (verbose) {print('lonlatprojection'); str(x)}
-  #def.par <- par() # save default, for resetting...
-  #if (verbose) {print('def.par()'); print(def.par$mfcol); print(def.par$mfrow); print(def.par$mfg)}
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
   ## for precipitation-palette
@@ -140,10 +139,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     x[outside,] <- NA
   } else xlim <- range(lon)
   
-  dy <- 0.1*( max(lat) - min(lat) )
+  dy <- 0.25*( max(lat) - min(lat) )
   #print(dy); print(range(lat))
   if (!is.null(ylim)) {
-    dy <- 0.1*(max(ylim) - min(ylim))
     outside <- (lat < min(ylim)) | (lat > max(ylim))
     if (verbose) print(paste('mask',sum(outside),length(outside)))
     x[,outside] <- NA
@@ -155,13 +153,12 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     dev.new()
     add <- FALSE
   }
-  if(!is.null(fig)) suppressWarnings(par(fig=fig, new=(add & dev.cur()>1)))
-  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE)
+  if(!is.null(fig)) par(fig=fig,new=(add & dev.cur()>1))
+  par(bty="n",xpd=FALSE)
   
-  #print(ylim); print(dy)
   if (verbose) print('Set up the figure')
   plot(range(lon),range(lat),type="n",xlab="",ylab="", # REB 10.03
-       xlim=xlim,ylim=ylim,main=main,# to sumerimpose.
+       xlim=xlim,ylim=ylim,main=main,
        xaxt="n",yaxt="n") # AM 17.06.2015
   
   if (sum(is.element(tolower(type),'fill'))>0)   
@@ -170,15 +167,19 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
   if (geography) {
     lines(geoborders$x,geoborders$y,col="darkblue")
-    lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,col="pink")
-    lines(geoborders$x+360,geoborders$y,col="darkblue")
+    lines(attr(geoborders,'borders')$x,attr(geoborders,'borders')$y,
+          col="pink")
+    lines(geoborders$x+360,geoborders$y,
+          col="darkblue")
   }
   if (sum(is.element(tolower(type),'contour'))>0)
     contour(lon,lat,x,lwd=1,col="grey70",add=TRUE)
   if (gridlines) grid()
+  axis(2,at=pretty(lat),col='grey',cex=cex.axis)
+  axis(3,at=pretty(lon),col='grey',cex=cex.axis)
   
   ## REB 2023-01-24
-  #par(xpd=FALSE)
+  par(xpd=TRUE)
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub);  print(varlabel)}
   
@@ -192,7 +193,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                                                                 paste(unlist(strsplit(sub,split=' ')),
                                                                       collapse = ' *~ '), sep='')))))
     if (inherits(label,'try-error')) label <- ''
-  }  #title(main = as.expression(sub),line = 3, adj =0.25)
+  } 
   
   if (!is.null(method)) {
     label <- try(parse(text=paste(label,'*',as.expression(method))))
@@ -210,39 +211,42 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (lab=='simple')   label <- eval(parse(text=paste('expression(',varnm,')'))) else 
     if (lab=='unit') label <- eval(parse(text=paste('expression(',varnm,'* phantom0 * (',unitx,')',')'))) else
       if (is.character(lab) & lab!="default") label <- lab
-  title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
+  ## KMP 2023-02-08: removing title here and trying to place it above colorbar instead
+  #title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
   
   if (show.colbar) {
     if (verbose) print('Add colourbar')
     ## REB 2023-01-24
     #par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
     #    cex.lab=0.7,cex.axis=0.7)
-    axis(2,at=pretty(lat(x)),col='grey')
-    axis(3,at=pretty(lon(x)),col='grey')
-    if(gridlines) grid()
     ## REB 2023-01-24
     #par(col.axis='black',col.lab='black',
     #    cex.lab=0.5,cex.axis=0.5)
     
-    #if (!is.null(colbar)) {
     if (colbar$show) {
       if (verbose) print('Show colourbar')
       if (fancy) {
         if (verbose) print('fnc')
-        col.bar(min(lon),min(lat)-dy,max(lon),min(lat),colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
-                col=colbar$col, cex=2,cex.lab=colbar$cex.lab,
-                type=scaletype,verbose=FALSE,vl=1,border=FALSE)
+        below <- c(min(xlim), min(ylim), max(xlim), min(lat)-diff(lat)[1]/2)
+        dy_below <- below[4]-below[2]
+        rect(below[1], below[2]-dy_below*0.2, below[3], below[4]-dy_below*0.2, 
+             col = "white", border = "white")
+        col.bar(below[1],below[2],below[3],below[4]-dy_below*0.2,
+                colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
+                col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
+                type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
+        title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
       } else {
-        image.plot(breaks=colbar$breaks,
+        title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
+        image.plot(breaks=colbar$breaks, 
                    lab.breaks=colbar$breaks,horizontal = TRUE,
                    legend.only = TRUE, zlim = range(colbar$breaks),
                    col = colbar$col, legend.width = 1,
                    axis.args = list(cex.axis = 1,hadj = 0.5,mgp = c(0, 0.5, 0)), 
                    border = FALSE, verbose=verbose)
-        #par(op)
       }
     }
-    if(!is.null(fig)) par(fig=fig)
+    if (!is.null(fig)) par(fig=fig)
     par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
         xaxt="s",yaxt="s",new=FALSE)
   }
@@ -252,7 +256,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(x,'variable') <- variable
   attr(x,'unit') <- unit
   attr(x,'colbar') <- colbar
-  
-  if (verbose) print(unlist(def.par))
   invisible(x)
 }
+

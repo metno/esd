@@ -1,7 +1,5 @@
 
 #' Retrieve records from frost.met.no, for one element and one or more stations
-#' 
-#' Fetch data from frost.met.no and return station object
 #'
 #' @aliases metno.frost.data metno.frost.station
 #' 

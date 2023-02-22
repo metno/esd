@@ -134,7 +134,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   ## data in the esd package.
   
   if (verbose) print('map.default')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (is.logical(colbar)) colbar <- NULL
   ## If only a few items are provided in colbar - then set the rest to the default
   if (!is.null(colbar)) {
@@ -196,7 +196,7 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ##  image(lon(x),lat(x),x)
   
   if (verbose) print('map.matrix')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
   if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
   if (verbose) str(x)
@@ -229,7 +229,7 @@ map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                            ip=1,plot=TRUE) {
   if (verbose) print('map.data.frame')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   attr(x,'location') <- x$location; x$location <- NULL
   attr(x,'longitude') <- x$longitude; x$longitude <- NULL
   attr(x,'latitude') <- x$latitude; x$latitude <- NULL
@@ -253,7 +253,7 @@ map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       type=c("fill","contour"),gridlines=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.array')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
   if (is.null(ip)) {
     ## If it is NULL, then aggregate all of 3rd dimension
@@ -296,7 +296,7 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                      ip=1,plot=TRUE) {
   if (verbose) print('map.comb')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'eof'))
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -327,7 +327,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
                     ip=1,cex=1,plot=TRUE) {
   
   if (verbose) print('map.eof')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'eof'))
   ##x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -406,7 +406,7 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.ds')
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'ds'))
   x <- subset(x,is=is)
   
@@ -507,7 +507,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   
   stopifnot(inherits(x,'field'))
   if (verbose) print('map.field')
-  def.par <- par(no.readonly = TRUE)
+  #def.par <- par(no.readonly = TRUE)
   
   x <- subset(x,it=it,is=is)
   #print(length(x)); print(attr(x,'dimensions')[1:2])
@@ -720,16 +720,17 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 
 #' @exportS3Method
 #' @export map.pca
-map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,add=FALSE,projection="lonlat",
+map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     xlim=NULL,ylim=NULL,zlim=NULL,FUN='mean',##n=15,
                     colbar=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                 pos=0.05,show=TRUE,type="p",cex=1,h=0.6,v=1),
+                    type=c("fill","contour"),gridlines=FALSE,
                     #cex.axis=1,cex.main=1,cex.lab=1,
-                    type=c("fill","contour"),gridlines=FALSE,fig=c(0,1,0.05,0.95),
+                    #add=FALSE,fig=c(0,1,0.05,0.95),
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   ##
   if (verbose) print(paste('map.pca',FUN))
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if(inherits(x,"trajectory")) {
     z <- map.pca.trajectory(x,projection=projection,lonR=lonR,latR=latR,
                             xlim=xlim,ylim=ylim,...)
@@ -760,15 +761,16 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,add=FALSE,projection="l
     ##  colbar$col <- colscal(30,pal=varid(x))
     ##}
     if (verbose) str(X)
-    
     if (is.element(FUN,args)) {
       z <- map.station(X,new=new,colbar=colbar,
                        xlim=xlim,ylim=ylim,zlim=zlim,
-                       plot=TRUE,add=add,fig=fig,verbose=verbose,...) -> z
+                       plot=TRUE,#add=add,fig=fig,
+                       verbose=verbose,...)
     } else {
       z <- map.station(X,new=new,colbar=colbar,FUN=FUN,
                        xlim=xlim,ylim=ylim,zlim=zlim,
-                       plot=TRUE,add=add,fig=fig,verbose=verbose,...) -> z
+                       plot=TRUE,#add=add,fig=fig,
+                       verbose=verbose,...)
     } 
   } 
   invisible(z)
@@ -792,17 +794,24 @@ map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 }
 
 #' @exportS3Method
-#' @export map.cca
-map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
-                    xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
-                    colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=seq(-1,1,by=0.1),type="p",
-                                 cex=2,show=FALSE,h=0.6, v=1,pos=0.05), colbar2= NULL,
+#' @export
+map.cca <- function(x,...,ip=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
+                    xlim=NULL,ylim=NULL,zlim=NULL,
+                    colbar1=list(pal=NULL,rev=FALSE,n=10,
+		                 breaks=seq(-1,1,by=0.1),type="p",
+		                 cex=2,show=FALSE,h=0.6,v=1,pos=0.05),
+                    colbar2= NULL,
+		    fig1=NULL,fig2=NULL,add=FALSE,
                     type=c("fill","contour"),gridlines=FALSE,
-                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,cex=2,plot=TRUE,
-		    fig1=NULL,fig2=NULL,add=FALSE) {
+                    lonR=NULL,latR=NULL,axiR=NULL,cex=2,
+		    plot=TRUE,verbose=FALSE) {
   if (verbose) print('map.cca')
-  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+
+  ## KMP 2023-02-07: It's not a good idea to set the layout here
+  ## because map.cca is used in plot.cca and this will interfere with
+  ## the layout specified there
   #layout(matrix(c(1,2),1,2,byrow = TRUE), rep(1,2), rep(1,2), TRUE)
+  
   if (is.null(colbar2)) colbar2 <- colbar1
   ##x <- subset(x,it=it,is=is)
   
@@ -826,19 +835,18 @@ map.cca <- function(x,...,icca=1,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(X,'pattern') <- V
   attr(X,'eigenvalues') <- rep(1,length(x$ip))
   attr(X,'time') <- range(index(x))
-    
-  map(Y,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
-      projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-      gridlines=gridlines,FUN='mean',verbose=verbose,
-      colbar=colbar1,showall=FALSE,new=new,fig=fig1,
-      add=add,plot=TRUE)
+
+  z1 <- map(Y,ip=ip,xlim=xlim,ylim=ylim,type=type,cex=cex,
+            projection=projection,lonR=lonR,latR=latR,axiR=axiR,
+            gridlines=gridlines,FUN='mean',verbose=verbose,
+            colbar=colbar1,showall=FALSE,new=FALSE,plot=plot)
+	    
+  z2 <- map(X,ip=ip,xlim=xlim,ylim=ylim,type=type,cex=cex,
+            projection=projection,lonR=lonR,latR=latR,axiR=axiR,
+            gridlines=gridlines,FUN='mean',verbose=verbose,
+            colbar=colbar2,showall=FALSE,new=FALSE,plot=plot)
   
-  map(X,ip=icca,xlim=xlim,ylim=ylim,type=type,cex=cex,
-      projection=projection,lonR=lonR,latR=latR,axiR=axiR,
-      gridlines=gridlines,FUN='mean',verbose=verbose,
-      colbar=colbar2,showall=FALSE,new=FALSE,fig=fig2,add=add,plot=TRUE)
-  
-  invisible(list(U=U,V=V))
+  invisible(list(z1 = z1, z2 = z2))
 }
 
 #' @exportS3Method
@@ -850,10 +858,9 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
                        showaxis=TRUE,fig=c(0,1,0.05,0.95),mgp=c(2,0.5,0),mar=rep(2,4),
                        lty=1,type=c("points","trajectory","start","end"),
                        border=FALSE,
-                       projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,add=FALSE,
+                       projection="lonlat",latR=NULL,lonR=NULL,new=TRUE,
                        verbose=FALSE) {
   if(verbose) print("map.events")
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   x0 <- x
   x <- subset(x,it=it,is=is,verbose=verbose)
   if(is.null(attr(x,"calendar"))) calendar <- "gregorian" else calendar <- attr(x,"calendar")
@@ -891,24 +898,24 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
   
   if (!is.null(Y)) {
     Y <- subset(Y,is=is)
-  }
-  if(length(Y)>0) {
-    if(dim(x)[1]==0) {
-      Y <- subset(Y,it=it)
-    } else {
-      ty <- index(Y)
-      if (inherits(Y,"month")) {
-        tx <- round(x[,"date"]*1E-2)*1E2+1
-        ty <- as.numeric(format(ty,"%Y%m%d"))
-      } else if (inherits(ty,"Date")) {
-        tx <- x[,"date"]
-        ty <- as.numeric(format(ty,"%Y%m%d"))
-      } else if (inherits(ty,c("POSIXt","PCICt"))) {
-        tx <- x[,"date"]*1E2 + x[,"time"]
-        ty <- as.numeric(format(ty,"%Y%m%d%H"))
+    if(length(Y)>0) {
+      if(dim(x)[1]==0) {
+        Y <- subset(Y,it=it)
+      } else {
+        ty <- index(Y)
+        if (inherits(Y,"month")) {
+          tx <- round(x[,"date"]*1E-2)*1E2+1
+          ty <- as.numeric(format(ty,"%Y%m%d"))
+        } else if (inherits(ty,"Date")) {
+          tx <- x[,"date"]
+          ty <- as.numeric(format(ty,"%Y%m%d"))
+        } else if (inherits(ty,c("POSIXt","PCICt"))) {
+          tx <- x[,"date"]*1E2 + x[,"time"]
+          ty <- as.numeric(format(ty,"%Y%m%d%H"))
+        }
+        ii <- is.element(ty,tx)
+        Y <- subset(Y,it=ii)
       }
-      ii <- is.element(ty,tx)
-      Y <- subset(Y,it=ii)
     }
   }
   if(length(Y)!=0) {
@@ -938,15 +945,13 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
         latR <- 90
       }
     }
-    ## REB 2023-01-26 - stranges lines of code below...
-    # data(Oslo, envir = environment())
-    # map(Oslo,type="n",col=adjustcolor(col,alpha.f=0),
-    #     bg=adjustcolor("black",alpha.f=0),new=new,add=add,
-    #     projection=projection,main="",xlab="",ylab="",
-    #     fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
-    #     border=border,
-    #     xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
-    #     verbose=verbose)
+    xs <- events2station(x, FUN="location", param="pcent", verbose=verbose)
+    map(xs, FUN="mean", col="grey", cex=0.1, pch='.',
+        new=new,projection=projection,main="",xlab="",ylab="",
+        fig=fig,mar=mar,mgp=mgp,showaxis=showaxis,
+        border=border,
+        xlim=xlim,ylim=ylim,latR=latR,lonR=lonR,
+        verbose=verbose)
   }
   if(dim(x)[1]>0) {
     cols <- adjustcolor(col,alpha.f=alpha)
@@ -977,9 +982,9 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
       if(dim(xt)[1]>1) {
         xall <- as.trajectory(xt,nmin=2,n=45,verbose=verbose)
         map(xall,lty=lty,lwd=lwd,alpha=alpha,new=FALSE,
-            add=TRUE,col=col,lonR=lonR,latR=latR,
+            col=col,lonR=lonR,latR=latR,
             projection=projection,type=type,param=param,
-            showaxis=FALSE,
+            showaxis=FALSE,add=TRUE,
             colbar=colbar,verbose=verbose,...)
       }
     }
@@ -997,7 +1002,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
          par("usr")[4] - 0.10*diff(range(par("usr")[3:4])),
          main,pos=4,cex=1,col="black")
   }
-  par(def.par) # reset to default
+  #par(def.par) # reset to default
 }
 
 #' Function that masks either ocean or land

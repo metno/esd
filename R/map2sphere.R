@@ -1,15 +1,15 @@
 # Documentation in map.R - presents a map on a sphere
 #' @export
 map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
-                       colbar= list(col='t2m',rev=FALSE,n=10,
+                       colbar= list(pal='t2m.IPCC',rev=FALSE,n=10,
                            breaks=NULL,type="p",cex=2, cex.axis=0.9,
                            cex.lab = 0.9, h=0.6, v=1,pos=0.05),
                        lonR=NULL,latR=NULL,axiR=0,
                        type=c("fill","contour"),                      
                        gridlines=TRUE,fancy=TRUE,
+		       fig=NULL,add=FALSE,
                        main=NULL,xlim=NULL,ylim=NULL,verbose=FALSE,...) {
   if (verbose) print(paste('map2sphere:',lonR,latR,axiR))
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
   if (verbose) {print(lon(x)); print(lat(x))}
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
   
@@ -98,7 +98,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## because otherwise map2sphere doesn't work
   ## AM 2021-06-02 There is still sth wrong with color palette definition but I cannot figure out what is the problem
   # Define colour palette:
-  if (is.null(colbar)) show.colbar <- FALSE else show.colbar <- TRUE
+  if (is.null(colbar)) {
+    colbar$show <- FALSE
+  } else if (is.null(colbar$show)) {
+    colbar$show <- TRUE
+  }
   if (is.null(colbar$rev)) colbar$rev <- FALSE
   if (is.null(colbar$breaks)) {
     colbar$breaks <- pretty(c(map),n=31)
@@ -106,14 +110,21 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   } else {
     colbar$n <- length(colbar$breaks) -1
   }
+  ## REB 2023-02-09: flexibility to deal with old habit of confusing colbar$col with colbar$pal
+  if ( is.null(colbar$pal) & is.character(colbar$col) ) {colbar$pal <- colbar$col; colbar$col <- NULL}
   nc <- length(colbar$col)
   if (is.null(colbar$col)) {
     colbar <- colbar.ini(map,colbar=colbar)
-    col <- colscal(n=colbar$n-1) 
-  } else if (nc==1) {
-    col <- colscal(pal=colbar$col,n=colbar$n-1)
+    col <- colscal(n=colbar$n) 
   }
-  if (colbar$rev) col <- rev(col)
+  # following lines are probably no longer needed REB 2023-02-09: 
+  # else if (nc==1) {
+  #  col <- colscal(pal=colbar$col,n=colbar$n-1)
+  #}
+  if (colbar$rev) {
+    col <- rev(col)
+    colbar$col <- col
+  }
   
   ## AM 2021-06-03: Moved this before index
   ## REB 2015-11-25: Set all values outside the colour scales to the colour scale extremes
@@ -144,15 +155,23 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   A <- rotM(x=latR,y=0,z=0) %*% A
   X <- A[1,]; Y <- A[2,]; Z <- A[3,]
   dim(X) <- d; dim(Y) <- d; dim(Z) <- d
-  #print(dim(rbind(X,Z)))
-  
-  # Plot the results:
+ 
+   # Plot the results:
   if (new) {
-    #dev.new()
-    par(fig=c(0,1,0.1,1), mgp=c(2,0.5,0), mar=c(4,1,2,1))
+    if(verbose) print("Create new graphic device")
+    dev.new()
+    par(mgp=c(2,0.5,0), mar=c(4,1,2,1))
+    add <- FALSE
   }
-  par(bty="n") ## ,xaxt="n",yaxt="n")
-  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",xlab="",ylab="",main=main)
+  if(!is.null(fig)) par(fig=fig,new=(add & dev.cur()>1))
+  par(bty="n")
+  ## KMP 2023-02-07: add ylim and here and then colorbar below the plot
+  xlim <- range(x,na.rm=TRUE)
+  zlim <- range(z,na.rm=TRUE)
+  dz <- 0.2*diff(zlim)
+  zlim <- zlim + c(-1,0)*dz
+  plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",
+       xlim=xlim,ylim=zlim,xlab="",ylab="",main=main)
   
   # plot the grid boxes, but only the gridboxes facing the view point:
   Visible <- colMeans(Y) > 0
@@ -167,25 +186,18 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   } else brightness <- rep(1,length(index))
   alpha <- rep(1,length(index))
   
-  if (verbose) {print(c(length(X),length(Z),length(index),length(brightness),length(alpha)))
-    print(dim(X))}
-  
+  if (verbose) {
+    print(c(length(X),length(Z),length(index),
+            length(brightness),length(alpha)))
+    print(dim(X))
+  }
   apply(rbind(X,Z,index,brightness,alpha),2,gridbox,colbar$col)
-  # c(W,E,S,N, colour)
-  # xleft, ybottom, xright, ytop
   # Plot the coast lines  
   visible <- y > 0
   points(x[visible],z[visible],pch=".")
-  #plot(x[visible],y[visible],type="l",xlab="",ylab="")
   lines(cos(pi/180*1:360),sin(pi/180*1:360))
-  # Add contour lines?
-  # Add grid ?
-  # Colourbar:
-  if (show.colbar) {
+  if (colbar$show) {
     if (verbose) print('plot colourbar')
-    #par0 <- par()
-    #par(fig = c(0.3, 0.7, 0.05, 0.10),cex=0.8,
-    #    new = TRUE, mar=c(1,0,0,0), xaxt = "s",yaxt = "n",bty = "n")
     #if (is.null(breaks))
     #  breaks <- round( nc*(seq(min(map),max(map),length=nc)- min(map) )/
     #                  ( max(map) - min(map) ) )
@@ -196,16 +208,18 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
     #    xaxt = "n",fig=par0$fig,mar=par0$mar,new=TRUE)
     #
     # Adopt from map.station
-    if(is.null(colbar$show)) colbar$show <- TRUE
     par(xaxt="s",yaxt="s",cex.lab=0.7,cex.axis=0.9)
-    if(colbar$show) {
-    if (fancy & !is.null(colbar)) {
+    if (fancy) {
       if (verbose) print("fancy colbar")
-      col.bar(colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,#v=1,h=1,
+      col.bar(min(x,na.rm=TRUE),
+              min(z,na.rm=TRUE)-dz,
+	            max(x,na.rm=TRUE),
+	            min(z,na.rm=TRUE),
+              colbar$breaks,horiz=TRUE,pch=21,v=colbar$v,h=colbar$h,
               col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
               cex.axis=colbar$cex.axis,
               type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
-    } else if (!is.null(colbar)) {
+    } else {
       if (verbose) print("regular colbar")
       image.plot(col=colbar$col,breaks=colbar$breaks,
                  lab.breaks=colbar$breaks,
@@ -215,14 +229,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
                  legend.width = 1,rev = colbar$rev,
                  axis.args = list(cex.axis = colbar$cex.axis),border=FALSE,
                  verbose=verbose, ...)
-                 #xaxp=c(range(colbar$breaks),colbar$n)),
-                 #border = FALSE,...)
-      ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-      ##             legend.only = T, zlim = range(colbar$breaks),
-      ##             col = colbar$col, legend.width = 1,
-      ##             axis.args = list(cex.axis = 0.8), border = FALSE)
+        ##image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
+        ##             legend.only = T, zlim = range(colbar$breaks),
+        ##             col = colbar$col, legend.width = 1,
+        ##             axis.args = list(cex.axis = 0.8), border = FALSE)
     }
-    }  
+    if(!is.null(fig)) par(fig=fig)
   }
 
   ## plot(range(x,na.rm=TRUE),range(z,na.rm=TRUE),type="n",

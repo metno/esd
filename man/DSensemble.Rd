@@ -204,7 +204,7 @@ rcp4.5 <- DSensemble.t2m(Oslo, path='~', rcp='', pattern="tas_Amon_",
 ## Evaluation: 
 ## (1) combare the past trend with downscaled trends for same
 ## interval by ranking and by fitting a Gaussian to the model ensemble;
-## (2) estimate the probabilty for the counts outside the 90
+## (2) estimate the probability for the counts outside the 90
 ## percent confidence interval according to a binomial distribution.
 diagnose(rcp4.5, plot = TRUE, type = "target")
 }

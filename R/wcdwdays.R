@@ -164,12 +164,18 @@ coldwinterdays <- function(x,y=NULL,dse=NULL,it='djf',threshold=0,
   mwd2 <- annual(mam,FUN='mean',nmin=nmin)
 
   ## REB 2016-11-17: exclude temperatures far from the threshold:
-  xcld1 <- (mwd1 < threshold - 15) | (mwd1 > threshold + 20)
+  xcld1 <- !is.na(mwd1) & 
+    ( (mwd1 < threshold - 15) | (mwd1 > threshold + 20) )
   if (verbose) print(paste('Exclude',sum(xcld1),'outliers'))
-  mwd1[xcld1] <- NA
-  xcld2 <- (mwd2 < threshold - 15) | (mwd2 > threshold + 20)
+  if(sum(xcld1)>0) {
+    mwd1[xcld1] <- NA
+  }
+  xcld2 <- !is.na(mwd2) & 
+    ( (mwd2 < threshold - 15) | (mwd2 > threshold + 20) )
   if (verbose) print(paste('Exclude',sum(xcld2),'outliers'))
-  mwd1[xcld2] <- NA
+  if(sum(xcld2)>0) {
+    mwd1[xcld2] <- NA
+  }
   
   cal <- data.frame(x=c(coredata(mwd1),coredata(mwd2)),
                     y=c(coredata(nwd1),coredata(nwd2)))

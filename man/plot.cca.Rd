@@ -7,12 +7,13 @@
 \method{plot}{cca}(
   x,
   ...,
-  icca = 1,
+  ip = 1,
   colbar1 = list(pal = NULL, rev = FALSE, n = 10, breaks = NULL, type = "p", cex = 2,
     show = TRUE, h = 0.6, v = 1, pos = 0.05),
+  what = c("maps", "timeseries"),
   colbar2 = NULL,
-  verbose = FALSE,
-  new = TRUE
+  new = TRUE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -20,9 +21,15 @@
 
 \item{\dots}{additional arguments}
 
-\item{verbose}{a boolean; if TRUE print information about progress}
+\item{ip}{Which EOF/CCA pattern (mode) to plot}
+
+\item{what}{Indicate what to plot. For \code{plot.eof}, c('pc', 'eof', 'var') is the default setting which means that
+the plot will include the principle components, EOF patterns and explained variance. 'field' expands eof to field before
+plotting}
 
 \item{new}{if TRUE plot in new window}
+
+\item{verbose}{a boolean; if TRUE print information about progress}
 
 \item{plot.type}{"single"}
 
@@ -52,8 +59,6 @@
 a station value and if provided, the plotting will involve an interpolation
 to the same coordinates as defined by \code{is}.}
 
-\item{ip}{Which EOF/CCA pattern (mode) to plot}
-
 \item{cex}{magnification factor, see \code{\link[graphics]{par}}}
 
 \item{cex.axis}{see \code{\link[graphics]{par}}}
@@ -77,10 +82,6 @@ to the same coordinates as defined by \code{is}.}
 \item{xlim}{range of x-axis}
 
 \item{ylim}{range of y-axis}
-
-\item{what}{Indicate what to plot. For \code{plot.eof}, c('pc', 'eof', 'var') is the default setting which means that
-the plot will include the principle components, EOF patterns and explained variance. 'field' expands eof to field before
-plotting}
 
 \item{colbar}{a list, see \code{\link{colbar}}}
 }

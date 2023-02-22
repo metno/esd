@@ -34,12 +34,13 @@
 A function that provides reads S-ENDA data from thredds.
 }
 \examples{
-
+\dontrun{
 x <- station.senda()
 x <- station.senda(param='t2m')
 ## Using the S-ENDA metadata (it takes some time to fetch themetadata...)
 meta <- meta.senda()
 x <- station.senda(meta[1:2,])
+}
 }
 \seealso{
 retrieve list_thredds meta.s_enda

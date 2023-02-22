@@ -728,6 +728,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
     attr(z,"calendar") <- time$calendar
   }
   ## Add attributes
+  if (is.null(model$project_id)) model$project_id <- 'NA'
   attr(z, "file") <- model$filename
   attr(z, "source")         <- model$project_id
   attr(z, 'timeunit')       <- model$frequency
@@ -953,8 +954,12 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
         if (verbose) warning("Warning : Month origin has been set to:",morigin)
       }
       torigin1 <- paste(yorigin,morigin,dorigin,sep="-")
-      torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ") 
-    }
+      ## REB 2023-02-16
+      if (verbose) print(c(torigin1,torigin))
+      if (!is.na(unlist(strsplit(torigin,split=" "))[2])) 
+        torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ") else
+          torigin <- paste(torigin1,'12:00')
+    } 
   }
   
   if (!is.null(torigin)) {
@@ -1024,6 +1029,10 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   
   ## Get calendar from attribute if any and create vector of dates vdate
   ## 'hou'=strptime(torig,format="%Y-%m-%d %H") + time*3600
+  if (verbose) {
+    print('<<< Check time metadata >>>')
+    print(range(time$vals)); print(torigin); print(tunit)
+  }
   if (!is.null(calendar.att)) {
     if (grepl("gregorian|proleptic_gregorian",calendar.att) | grepl("julian",calendar.att) | grepl("standard",calendar.att)) {
       if(grepl("%Y%m%d",tunit)) {

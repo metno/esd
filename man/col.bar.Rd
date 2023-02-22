@@ -6,19 +6,23 @@
 \title{Display a color bar object on an existing plot.}
 \usage{
 col.bar(
+  xleft,
+  ybottom,
+  xright,
+  ytop,
   breaks,
   horiz = TRUE,
-  pch = 21,
+  pch = 15,
   v = 1,
   h = 1,
   col = col,
-  cex = 2,
+  cex = 5,
   cex.lab = 0.6,
   cex.axis = 0.9,
   type = "r",
   verbose = FALSE,
   vl = 0.5,
-  border = FALSE,
+  border = "black",
   ...
 )
 }
