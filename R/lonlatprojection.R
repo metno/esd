@@ -183,7 +183,6 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   dlat <- diff(range(lat))/60
   if (verbose) {print(dlat); print(sub);  print(varlabel)}
   
-  ## REB 20202-06-10 - tried to 
   if(!is.null(varlabel) & (lab=='default')) label <- paste(varlabel,'*') else label <- ''
   label <- as.expression(parse(text=paste(label,'phantom(0) - phantom(0)')))
   

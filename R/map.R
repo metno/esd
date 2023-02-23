@@ -166,16 +166,16 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   if (plot) {
     if (projection=="lonlat") {
       z <- lonlatprojection(x=X,xlim=xlim,ylim=ylim,colbar=colbar,verbose=verbose,
-                            type=type,new=new,gridlines=gridlines,...)
+                            lab=lab,type=type,new=new,gridlines=gridlines,...)
     } else if (projection=="sphere") {
       z <- map2sphere(x=X,lonR=lonR,latR=latR,axiR=axiR,xlim=xlim,ylim=ylim,
-                      type=type,gridlines=gridlines,colbar=colbar,new=new,...)
+                      lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
     } else if (projection=="np") {
       z <- map2sphere(X,lonR=lonR,latR=90,axiR=axiR,xlim=xlim,ylim=ylim,
-                      type=type,gridlines=gridlines,colbar=colbar,new=new,...)
+                      lab=lab,type=type,gridlines=gridlines,colbar=colbar,new=new,...)
     } else if (projection=="sp") {
       z <- map2sphere(X,lonR=lonR,latR=-90,axiR=axiR,new=new,xlim=xlim,ylim=ylim,
-                      type=type,gridlines=gridlines,colbar=colbar,...)
+                      lab=lab,type=type,gridlines=gridlines,colbar=colbar,...)
     } 
   } else z <- X
   invisible(z)
@@ -184,7 +184,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
 #' @exportS3Method
 #' @export
 map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
-                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,
+                       xlim=NULL,ylim=NULL,zlim=NULL,n=15,lab="default",
                        colbar= list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                     pos=0.05,show=TRUE,type="p",cex=2,h=0.6,v=1),
                        type=c("fill","contour"),gridlines=FALSE,
@@ -203,16 +203,16 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   if (plot) {
     if (projection=="lonlat") {
       z <- lonlatprojection(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
-                            type=type,gridlines=gridlines,verbose=verbose,...)
+                            lab=lab,type=type,gridlines=gridlines,verbose=verbose,...)
     } else if (projection=="sphere") {
       z <- map2sphere(x=x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
-                      lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...)
+                      lab=lab,lonR=lonR,latR=latR,axiR=axiR,verbose=verbose,...)
     } else if (projection=="np") {
       z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=90,
-                      colbar=colbar,verbose=verbose,...)
+                      lab=lab,colbar=colbar,verbose=verbose,...)
     } else if (projection=="sp") {
       z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=-90,
-                      colbar=colbar,verbose=verbose,...)
+                      lab=lab,colbar=colbar,verbose=verbose,...)
     }
   }
   invisible(z)
@@ -246,7 +246,7 @@ map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
 #' @exportS3Method
 #' @export
 map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
-                      projection="lonlat",na.rm=TRUE,
+                      projection="lonlat",na.rm=TRUE,lab="default",
                       xlim=NULL,ylim=NULL,zlim=NULL,##n=15,
                       colbar=list(col=NULL,rev=FALSE,breaks=NULL,pos=0.05,
                                   show=TRUE,type="r",cex=2,h=0.6,v=1),
@@ -280,7 +280,7 @@ map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
   attr(z,'colbar') <- colbar
   
   if (plot) map(z,new=new,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,
-                lonR=lonR,latR=latR,axiR=axiR,
+                lonR=lonR,latR=latR,axiR=axiR,lab=lab,
                 type=type,gridlines=gridlines,projection=projection,
                 verbose=verbose,...)
   invisible(z)

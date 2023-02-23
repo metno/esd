@@ -622,7 +622,6 @@ plot.eof.field <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1,
   var.eof <- 100* D^2/tot.var
   if (length(what)==3) {
     mfrow <- c(2,2)
-    
   } else
     if (length(what)==2) mfrow <- c(2,1) else
       if (length(what)==1) mfrow <- c(1,1)
@@ -732,21 +731,25 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
                           ip=1,col=c("red"),alpha=1,
                           what=c("pc","eof","var"),colbar=NULL,verbose=FALSE) {
   if (verbose) print("plot.eof.comb")
+  par0 <- par()
   n <- ip
   D <- attr(x,'eigenvalues')
   tot.var <- attr(x,'tot.var')
   var.eof <- 100* D^2/tot.var
   
-  if (length(what)==3) mfrow <- c(2,2) else
-    if (length(what)==2) mfrow <- c(2,1) else
-      mfrow <- NULL
-  
   if (new) dev.new()
-  #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
-  if (!is.null(mfrow)) par(mfrow=mfrow)
+  if (length(what)==4) {
+    par(mfrow=c(2,2))
+  } else if(length(what)==3) {
+    layout( matrix(c(1,2,3,3), nrow=2, byrow=TRUE) )
+  } else if (length(what)==2) {
+    par(mfrow=c(2,1))
+  }
   
+  #par(cex.axis=0.75,cex.lab=0.7,cex.main=0.8)
+
   if (length(grep('eof',what))>0) {
-    if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
+    #if (!is.null(mfrow)) par(fig=c(0,0.5,0.5,1))
     map(x,ip=ip,verbose=verbose,colbar=colbar,...)
   }
   if (verbose) print('...')
@@ -762,7 +765,7 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   if (length(grep('var',what))>0)  {
     #    par(xaxt="s",yaxt="s")
     #    plot.eof.var(x,new=FALSE,cex.main=0.7)
-    if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
+    #if (!is.null(mfrow)) par(new=TRUE,fig=c(0.5,1,0.5,1))##,xaxt="s",yaxt="s")fig=c(0.5,0.95,0.5,0.975) 
     plot.eof.var(x,ip=ip,new=FALSE,cex.main=0.8,cex.axis=0.9,bty="n",verbose=verbose)
   }
   if(verbose) {print(ylim); print(names(attributes(x))); print(n.app)}
@@ -798,19 +801,14 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
     #      fig=c(0.1,0.9,0.1,0.5),new=TRUE,cex.axis=0.6,cex.lab=0.6)
     #    plot.zoo(x[,n],lwd=2,ylab=ylab,main=main,sub=attr(x,'longname'),
     #                                          xlim=xlim,ylim=ylim)
-    if (!is.null(mfrow)) par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
+    #if (!is.null(mfrow)) par(fig=c(0.025,1,0.025,0.475),new=TRUE) ##,cex.axis=0.9,cex.lab=1) ##(0.05,0.95,0.02,0.45)
     main <- paste0('Leading PC#',ip,' of ',attr(x,'longname'),
                    " - Explained variance = ",round(var.eof[ip],digits=2),"%")
     
     plot.zoo(x[,ip],lwd=2,ylab=ylab,main=main,xlim=xlim,ylim=ylim,
              cex.main=0.8,bty="n",cex.axis=0.9,cex.lab=1,xaxt="n")
-    taxis <- pretty(index(x[,ip]),n=10)              # REB 2016-03-03
-    if (min(diff(taxis))> 360) taxisl <- year(taxis)  else
-      taxisl <- taxis      # REB 2016-03-03
-    if (verbose) print(taxisl)
-    axis(1,at=taxis,labels=taxisl,cex.axis=0.9)      # REB 2016-03-03
-    grid()
-    
+    taxis <- range(index(x))
+
     ## Plot the common PCs
     for (i in 1:n.app) {
       z <- attr(x,apps[i])
@@ -818,11 +816,20 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
       if (!inherits(zz,'try-error')) {
         if (verbose) {print(apps[i]); print(c(dim(z),ip))}
         lines(zz,col=adjustcolor(col[i],alpha.f=alpha),lwd=2)
+        taxis <- range(c(taxis, index(zz)))
       }
       if (verbose) print(attr(z,'source'))
       if (!is.null(attr(z,'source'))) src[i+1] <- attr(z,'source') else
         src[i+1] <- paste('x',i,sep='.')
     }
+    
+    taxis <- pretty(taxis, n=10)
+    if (min(diff(taxis))> 360) taxisl <- year(taxis)  else
+      taxisl <- taxis      # REB 2016-03-03
+    if (verbose) print(taxisl)
+    axis(1,at=taxis,labels=taxisl,cex.axis=0.9)      # REB 2016-03-03
+    grid()
+    
     
     lines(x[,ip],lwd=2,col="black")
   }
@@ -833,14 +840,18 @@ plot.eof.comb <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,
   #    par(xaxt="n",yaxt="n",bty="n",fig=par0$fig,mar=par0$mar,new=TRUE)
   #    plot.zoo(x[,n],type="n",xlab="",ylab="")
   
-  par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
-  plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
+  #par(fig=c(0,1,0,0.55),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+  #plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
   varnm <- varid(x)
-  legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
+  #legend(0,0.83,varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
+  legend("bottomright",varnm,bty="n",cex=0.8,ncol=2,text.col="grey40")
   
-  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-      fig=c(0,1,0.1,1),new=TRUE)
-  par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))  
+  #par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
+  #    fig=c(0,1,0.1,1),new=TRUE)
+  #par(fig=c(0,1,0,0.1),new=TRUE, mar=c(0,0,0,0))  
+  
+  ## Reset the graphics settings that have been changed to original
+  par(fig=par0$fig, mar=par0$mar, mgp=par0$mgp, xaxt=par0$xaxt , yaxt=par0$yaxt)
 }
 
 #' Plot esd objects
@@ -1599,6 +1610,8 @@ plot.pca.multiple <- function(x,...,new=FALSE,xlim=NULL,ylim=NULL,ip=1:3,
                                          cex.axis=cex.axis,las=2)
     grid()
   }
+  ## Reset the graphics settings that have been changed to original
+  par(fig=par0$fig, mar=par0$mar, mgp=par0$mgp, xaxt=par0$xaxt , yaxt=par0$yaxt)
 }
 
 
@@ -1608,8 +1621,9 @@ plot.ds.pca <- function(x,...,ip=1,
                         colbar1=list(pal=NULL,rev=FALSE,n=10,breaks=NULL,
                                      type="p",cex=1,show=TRUE,h=0.6, v=1,pos=0.05),
                         colbar2=NULL,mar=c(3,2.5,2,0.5),mgp=c(1.5,0.5,0),
-                        what=NULL, fig=NULL, new=FALSE, add=FALSE, verbose=FALSE) {
+                        what=NULL, new=FALSE, add=FALSE, verbose=FALSE) {
   y <- x # quick fix
+  par0 <- par()
   if (verbose) print('plot.ds.pca')
   if (is.null(colbar2)) colbar2 <- colbar1
   attr(y,'longname') <- attr(y,'longname')[1]
@@ -1619,34 +1633,22 @@ plot.ds.pca <- function(x,...,ip=1,
   if(is.null(attr(y,'evaluation'))) what <- what[!what %in% c("xval")]
   
   i <- 1
-  if(!is.null(fig)) {
-    if(length(what)==1) {
-      figlist <- list(fig1=fig)
-    } else if(inherits(fig, "list") & length(what)==length(list)) {
-      figlist <- fig
-    } else {
-      figlist <- NULL
-    }
-  }
-  if(is.null(fig)) {
-    if(length(what)==4) {
-      figlist <- list(fig1=c(0.05,0.45,0.5,0.975), 
-                      fig2=c(0.55,0.975,0.5,0.975),
-                      fig3=c(0.05,0.45,0.05,0.475),
-                      fig4=c(0.55,0.975,0.05,0.475))
-    } else if(length(what)==3) {
-      figlist <- list(fig1=c(0.05,0.45,0.5,0.975), 
-                      fig2=c(0.5,0.975,0.5,0.975),
-                      fig3=c(0.05,0.975,0.05,0.475))
-    } else if(length(what)==2) {
-      figlist <- list(fig1=c(0.05,0.45,0.05,0.975), 
-                      fig2=c(0.5,0.975,0.05,0.975))
-    } else figlist <- NULL
-  }
-  
+  if(length(what)==4) {
+    figlist <- list(fig1=c(0.05,0.45,0.5,0.975), 
+                    fig2=c(0.55,0.975,0.5,0.975),
+                    fig3=c(0.05,0.45,0.05,0.475),
+                    fig4=c(0.55,0.975,0.05,0.475))
+  } else if(length(what)==3) {
+    figlist <- list(fig1=c(0.05,0.45,0.5,0.975), 
+                    fig2=c(0.5,0.975,0.5,0.975),
+                    fig3=c(0.05,0.975,0.05,0.475))
+  } else if(length(what)==2) {
+    figlist <- list(fig1=c(0.05,0.45,0.05,0.975), 
+                    fig2=c(0.5,0.975,0.05,0.975))
+  } else figlist <- NULL
+
   if(new) dev.new()
   par(mar=mar, mgp=mgp)
-  
   if('pca.pattern' %in% what) {
     if (verbose) print('PCA ip')
     map.pca(y,ip=ip,new=FALSE,colbar=colbar1,
@@ -1687,7 +1689,7 @@ plot.ds.pca <- function(x,...,ip=1,
     xlim <- range(attr(y,'evaluation')[,xvp:(xvp+1)], na.rm=TRUE)
     xlim <- xlim + c(-1,1)*diff(xlim)*0.1
     
-    #par(mgp=c(2,0.5,0), mar=c(3,3.5,1.5,1.5), xaxt="s", yaxt="s")
+    par(mgp=c(2,0.5,0), mar=c(3,3.5,1.5,1.5))
     par(xaxt="s", yaxt="s")
     plot(attr(y,'evaluation')[,xvp],attr(y,'evaluation')[,xvp+1],
          main=paste('Cross-validation: r=',round(xcor,2)),
@@ -1739,6 +1741,8 @@ plot.ds.pca <- function(x,...,ip=1,
              lwd=c(2,2),pch=c(21,19),bty="n")
     }
   }
+  ## Reset the graphics settings that have been changed to original
+  par(fig=par0$fig, mar=par0$mar, mgp=par0$mgp, xaxt=par0$xaxt , yaxt=par0$yaxt)
 }
 
 #' @exportS3Method
@@ -1748,6 +1752,7 @@ plot.ds.eof <- function(x,...,ip=1,
                                      h=0.6, v=1,pos=0.05),colbar2=NULL,type1="fill",type2=c("fill","contour"),
                         verbose=FALSE) {
   y <- x # quick fix
+  par0 <- par()
   if (verbose) print('plot.ds.eof')
   if (is.null(colbar2)) colbar2 <- colbar1 
   attr(y,'longname') <- attr(y,'longname')[1]
@@ -1802,6 +1807,8 @@ plot.ds.eof <- function(x,...,ip=1,
            lwd=c(2,2),pch=c(21,19),bty="n")
     xvalfit <- NULL
   }  
+  ## Reset the graphics settings that have been changed to original
+  par(fig=par0$fig, mar=par0$mar, mgp=par0$mgp, xaxt=par0$xaxt , yaxt=par0$yaxt)
 }
 
 #' Plot esd objects
@@ -1941,6 +1948,7 @@ plot.cca <- function(x,...,ip=1,
   if (verbose) print("plot.cca")
   if (new) dev.new()
   if (is.null(colbar2)) colbar2 <- colbar1
+  par0 <- par()
   
   if("maps" %in% what) panels <- length(what)+1 else panels <- length(what)
   if(panels==3) {
@@ -1982,6 +1990,7 @@ plot.cca <- function(x,...,ip=1,
 
   ## KMP 2023-02-22: reset if layout has been used
   if(panels>1) par(mfrow=c(1,1))
+  par(mar=par0$mar, mgp=par0$mgp, xaxt=par0$xaxt , yaxt=par0$yaxt)
 }
 
 # Plot esd objects
@@ -2013,6 +2022,7 @@ plot.cca <- function(x,...,ip=1,
 plot.xval <- function(x,...,ip=1,new=TRUE,verbose=FALSE) {
   if(verbose) print("plot.xval")
   if (new) dev.new()
+  par0 <- par()
   par(bty="n")
   unit <- attr(x,'unit')
   cols <- rgb(seq(0,1,length=20),rep(0,20),rep(0,20))
@@ -2065,6 +2075,7 @@ plot.dsensemble.pca <- function(x,...,pts=FALSE,target.show=TRUE,map.show=TRUE,
                                 legend.show=TRUE,verbose=FALSE) {
   if (verbose) print("plot.dsensemble.pca")
   stopifnot(inherits(x,'dsensemble') & inherits(x,'pca'))
+
   d <- index(x[[3]])
   pc <- x[3:length(x)]
   pc <- array(unlist(pc), dim = c(dim(pc[[1]]), length(pc)))
