@@ -45,7 +45,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         ##colorbar=TRUE,
                         add.significance=FALSE, pval=0.01, col.pval='black', lwd.pval=2,
                         xlab="lon",ylab="lat",
-                        legend.shrink=1,fig=c(0,1,0.05,0.95),
+                        legend.shrink=1,fig=NULL,#fig=c(0,1,0.05,0.95),
                         mar=rep(2,4),mgp=c(3,1,0),plot=TRUE,...) { 
   if ( (inherits(x,"stationmeta")) | (projection != 'lonlat') | use.old) {#| usegooglemap) {
     map.station.old(x=x,FUN=FUN,it=it,is=is,new=new,projection=projection,
@@ -109,6 +109,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     }
     if (verbose) print(paste('show.colbar=',show.colbar))
     
+    par0 <- par()
     par(mar=mar,mgp=mgp,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
         col.axis='grey30',col.lab='grey30',las=1)
     ## KMP 2017-07-28: fig creates problems when you want to add map.station as a subplot.
@@ -132,7 +133,6 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         print(summary(lat(x)))
         str(col)
       }
-      
       if (is.null(xlim)) {
         if (length(is$lon)>1) {
           xlim <- range(is$lon,na.rm=TRUE) + c(-1,1)
@@ -148,7 +148,6 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           ylim <- range(lat(x),na.rm=TRUE) + c(-2.5,2)
         }
       }
-      
       plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=cex,new=FALSE,
            cex.lab=cex.lab,xlab=xlab,ylab=ylab)
       if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=cex.lab,col='grey',pos=1)
@@ -161,20 +160,20 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         } else if(diff(range(xlim))<2) {
           dlon <- round(diff(range(xlim))/3, 2)
         } else {
-          dlon <- round(diff(range(xlim))/3)
+          dlon <- round(diff(range(xlim))/4)
         }
         if(diff(range(ylim))>10) {
           dlat <- round(round(diff(range(ylim))/4)/5)*5
         } else if(diff(range(ylim))<2) {
           dlat <- round(diff(range(ylim))/3, 2)
         } else {
-          dlat <- round(diff(range(ylim))/3)
+          dlat <- round(diff(range(ylim))/4)
         }
         axis(3,seq(floor(par("xaxp")[1]/dlon)*dlon,par("xaxp")[2],by=dlon),col='grey')
         axis(4,seq(floor(par("yaxp")[1]/dlat)*dlat,par("yaxp")[2],by=dlat),col='grey')
         if (gridlines) grid()
       }
-      
+
       data("geoborders", envir = environment())
       lines(geoborders$x,geoborders$y,col=col.border, lwd=1.5)
       if (border) lines(attr(geoborders,'border')$x,attr(geoborders,'border')$y,
@@ -209,7 +208,6 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           if (verbose) {print('Alternative colour bar'); print(colbar$breaks)}
           nb <- length(colbar$breaks) - 1
           xs <- seq(xlim[1],xlim[2],length=nb)
-          par(xpd = TRUE)
           rect(xlim[1]-1,ylim[1]-1.5,xlim[2]+1,ylim[1]+0.5,col=rgb(1,1,1,0.7),border=rgb(0.5,0.5,0.5,0.7),lwd=2)
           points(xs,rep(ylim[1],nb)-0.5,col=colbar$col,pch=19,cex=3)
           if (nb > 15) ib <- c(1,(1:nb)[(1:nb)%%3 == 0],nb) else ib <- 1:nb
@@ -247,6 +245,10 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       title(main=main,sub=sub,line=-1,adj=0,cex.main=cex.main,cex.sub=cex.sub,
             col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
     }
+    par(mar=par0$mar,mgp=par0$mgp,bty=par0$bty,xaxt=par0$xaxt,
+        yaxt=par0$yaxt,cex.axis=par0$cex.axis,
+        col.axis=par0$col.axis,col.lab=par0$col.lab,
+        las=par0$las,xpd=par0$xpd)
     if (verbose) print('Organise output')
     if (inherits(x,'station')) {
       dim(y) <- c(1,length(y))
