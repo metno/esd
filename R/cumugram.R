@@ -24,7 +24,7 @@
 cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,plot=TRUE,verbose=FALSE,FUN='mean',main=NULL,...) {
   stopifnot(!missing(x),inherits(x,"station"))
   
-  #print("cumugram")
+  if(verbose) print("cumugram")
   yrs <- as.numeric(rownames(table(year(x))))
   today <- Sys.Date(); yesterday <- seq(today, length.out=2, by=-1)[2]
   
@@ -33,7 +33,7 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,plot=TRUE,verbose=FALSE
   j <- 1:ny
   col <- rgb(j/ny,abs(sin(pi*j/ny)),(1-j/ny),0.3)
   class(x) <- "zoo"
-
+  
   if ( (attr(x,'unit') == "deg C") | (attr(x,'unit') == "degree Celsius") )
       unit <- expression(degree*C) else
       unit <- attr(x,'unit')
@@ -71,6 +71,7 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,plot=TRUE,verbose=FALSE
   y2n <- round(sort(y2n,decreasing=TRUE),2)
   
   if (plot) {
+    par0 <- par()
     plot(c(0,length(y)),ylim,
          type="n",xlab="",
          main=main,sub=attr(x,'location'),ylab=ylab(x),...)
@@ -154,6 +155,8 @@ cumugram <- function(x,it=NULL,start='-01-01',prog=FALSE,plot=TRUE,verbose=FALSE
           cex.axis=0.7,yaxt="s",xaxt="n",las=1)
     colbar <- rbind(1:ny,1:ny)
     image(1:2,yrs,colbar,col=col)
+    par(fig=par0$fig,mar=par0$mar,cex.axis=par0$cex.axis,
+        yaxt=par0$yaxt,xaxt=par0$xaxt,las=par0$las)
   }
   srt <- order(cm,decreasing=TRUE)
   if (verbose) print(y2n)
