@@ -2245,12 +2245,13 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   grid()
   par0 <- par()
   usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
+  setfig <- FALSE
   t <- index(z)
   
   if (pts) for (i in 1:d[2]) {
     points(year(t),coredata(z[,i]),pch=19,col="red",cex=0.3)
   }
-  
+
   # Produce a transparent envelope
   nt <- length(index(z))
   t2 <- c(year(t),rev(year(t)))
@@ -2277,20 +2278,25 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
   lines(zoo(q05,order.by=year(z)),lty=2,col=lcol)  
   lines(zoo(q95,order.by=year(z)),lty=2,col=lcol)
   if (obs.show) lines(y,type="b",pch=19)
-  
   if (!is.null(diag)) {
     index(diag$y) <- year(diag$y)
     outside <- diag$above | diag$below
     points(zoo(coredata(diag$y)[which(outside)],
                order.by=year(diag$y)[which(outside)]),col="grey")
   }
-  
   title(main=toupper(loc(x)),cex.main=cex.main)
   if ((target.show) & (!is.null(diag))) {
     if (verbose) print('add target diagnostic')
-    par(fig=c(0.12,0.30,0.72,0.90),new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
+    dx0 <- fig[2]-fig[1]
+    dy0 <- fig[4]-fig[3]
+    fig.target <- c(fig[1]+dx0*0.25, fig[1]+dy0*0.43,
+                    fig[3]+dx0*0.72, fig[3]+dy0*0.9)
+    #fig=c(0.12,0.30,0.72,0.90)
+    par(fig=fig.target,
+        new=TRUE, mar=c(0,0,0,0),xaxt="s",yaxt="n",bty="n",
         cex.main=0.75,xpd=NA,col.main="grey30")
     plot(diag,map.show=FALSE,new=FALSE,cex=0.75)
+    setfig <- TRUE
   } 
   
   if(map.show & !map.insert) {
@@ -2300,51 +2306,62 @@ plot.dsensemble.one <-  function(x,pts=FALSE,it=0,
     new <- TRUE
   }
   
-  if (legend.show) {
-    par(fig=c(0.1,0.5,0.2,0.25),new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",xpd=NA)
-    #par(fig=c(0.1,0.5,0.65,0.70),new=TRUE, mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n")
+  if (legend.show & !is.null(diag)) {
+    dx0 <- fig[2]-fig[1]
+    dy0 <- fig[4]-fig[3]
+    fig.legend <- c(fig[1]+dx0*0.1, fig[1]+dy0*0.5,
+                    fig[3]+dx0*0.2, fig[3]+dy0*0.25)
+    par(fig=fig.legend,#c(0.1,0.5,0.2,0.25),
+        new=TRUE,mar=c(0,0,0,0),xaxt="n",yaxt="n",bty="n",xpd=NA)
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
-    ## KMP 2017-09-13: move this text!!! vvv
-    if(!is.null(diag)) {
-      legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
-                         paste(diag$robs,'%'),
-                         paste(diag$outside,"observations"),
-                         "p-value: "),
-             bty="n",cex=0.7,text.col="grey40")
-      legend(0.5,0.90,c(paste(levels(factor(attr(y,'unit')))[1],"/decade",sep=""),
-                        "ensemble trends > obs.",
-                        "outside ensemble 90% conf.int.",
-                        paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
-             bty="n",cex=0.7,text.col="grey40")
-    }
+    legend(0.05,0.90,c(paste("Past trend:",round(diag$deltaobs,2)),
+                       paste(diag$robs,'%'),
+                       paste(diag$outside,"observations"),
+                       "p-value: "),
+           bty="n",cex=0.7,text.col="grey40")
+    legend(0.5,0.90,c(paste(levels(factor(attr(y,'unit')))[1],"/decade",sep=""),
+                      "ensemble trends > obs.",
+                      "outside ensemble 90% conf.int.",
+                      paste(round(100*pbinom(diag$outside,size=diag$N,prob=0.1)),"%")),
+           bty="n",cex=0.7,text.col="grey40")
+    setfig <- TRUE
   }
-  if (map.show & map.insert) vis.map(x,col="red",map.type=map.type,cex=1.5,
-                                     cex.axis=cex.axis*0.65,add.text=FALSE,
-                                     map.insert=map.insert,#usegooglemap=usegooglemap,
-                                     xrange=xrange,yrange=yrange,
-                                     verbose=verbose,...)
+  
+  if (map.show & map.insert) {
+    par(fig=par0$fig)
+    vis.map(x,col="red",map.type=map.type,cex=1.5,
+            cex.axis=cex.axis*0.65,add.text=FALSE,
+            map.insert=map.insert,
+            xrange=xrange,yrange=yrange,
+            verbose=verbose,...)
+  }
   if(xval.show) {
     ## REB 2021-05-15 - this part is unfinished and disabled.
-    ## corssval()
+    ## crossval()
+    dx0 <- fig[2]-fig[1]
+    dy0 <- fig[4]-fig[3]
+    fig.xval <- c(fig[1]+dx*0.35, fig[2]+dx*0.53,
+                  fig[3]+dx*0.85, fig[4]+dx*0.9)
     x$info <- NULL; x$eof <- NULL; x$pca <- NULL
     xval <- lapply(x,function(x) diag(cor(attr(x,'evaluation'))[seq(2,2*n,by=2),seq(1,2*n-1,by=2)]))
     for (i in 1:n) { 
       iy <- (i-1)*0.5
-      par(fig=c(0.32,0.50,0.85-iy,0.90-iy),new=TRUE, mar=c(0,0,1,0),xaxt="s",yaxt="n",bty="n",
+      par(fig=fig.xval + c(0,0,-iy,-iy),#c(0.32,0.50,0.85-iy,0.90-iy),
+          new=TRUE, mar=c(0,0,1,0),xaxt="s",yaxt="n",bty="n",
           cex=0.5,xpd=NA,col.main="grey30")
       hist(unlist(lapply(xval,function(x) x[i])),col='grey',lwd=2,xlim=c(-1,1),
            main=paste('X-validation correlation for PCA',i),xlab='correlation')
     }
+    setfig <- TRUE
   }
-  par(bty="n",xaxt="n",yaxt="n",xpd=FALSE,
-      fig=c(0,1,0.1,1),new=TRUE)
-  par(fig=fig,new=TRUE, mar=mar)
-  plot(usr[1:2],usr[3:4],
-       type="n",ylab="",xlab="",xlim=usr[1:2],ylim=usr[3:4])
-  
-  # target: perfect score is bull's eye
-  # from diagnostics?
-  par(fig=par0$fig,new=TRUE, mar=par0$mar)
+  ## Reset to the settings of the main plot so that additional things may be 
+  ## added after the function has finished (except for some things that cannot be set)
+  dontset <- c("cin","cra","csi","cxy","din","page")
+  for(p in names(par0)[!names(par0) %in% dontset]) {
+    if(p!="fig" | (p=="fig" & setfig)) {
+      eval(parse(text=paste0("par(",p,"=par0$",p,")")))
+    }
+  }
   if(verbose) print("exit plot.dsensemble.one")
   invisible(z)
 }

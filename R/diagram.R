@@ -26,7 +26,7 @@ diagram.dsensemble <- function(x,...,it=0,verbose=FALSE) {
        xlim=range(year(z)),
        ylim=pscl*range(coredata(z),na.rm=TRUE))
   grid()
-  usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
+  #usr <- par()$usr; mar <- par()$mar; fig <- par()$fig
   t <- year(z); n <- dim(z)[2]
   col <- rgb(seq(1,0,length=n)^2,sin(seq(0,pi,length=n))^2,seq(0,1,length=n)^2,0.2)
   for (i in 1:n) lines(t,z[,i],col=col[i],lwd=2)
@@ -93,11 +93,13 @@ diagram.station <- function(x,...,it=NULL,new=TRUE,plot=TRUE,verbose=FALSE) {
   if (plot) {
     if (is.null(d)) points(t,coredata(y),col="black",cex=0.7) else
       points(rep(t,d[2]),coredata(y),col="black",cex=0.7)
-    
+    par0 <- par()
     par(new=TRUE,fig=c(0.70,0.85,0.70,0.85),mar=c(0,3,0,0),
         cex.axis=0.7,yaxt="s",xaxt="n",las=1)
     colbar <- rbind(1:ny,1:ny)
     image(1:2,yrs,colbar,col=col)
+    par(fig=par0$fig,mar=par0$mar,cex.axis=par0$cex.axis,
+        yaxt=par0$yaxt,xaxt=par0$xaxt,las=par0$las)
   }
   rownames(Z) <- yrs
   invisible(t(Z))

@@ -40,6 +40,7 @@ climvar <- function(x,FUN='sd',plot=TRUE,verbose=FALSE,...) {
   acfit <- predict(lm(z ~s1 + c1 + s2 + c2 + s3 + c3 + c4 + s4))
     
   if (plot) {
+    par0 <- par()
     dev.new()
     par(bty="n")
     plot(c(0,365),range(z,na.rm=TRUE),
@@ -56,6 +57,8 @@ climvar <- function(x,FUN='sd',plot=TRUE,verbose=FALSE,...) {
         yaxt="n",xaxt="n",las=1)
     plot(c(0,1),c(0,1),type="n",xlab="",ylab="")
     legend(0,1,c("raw data","harmonic fit"),lwd=3,col=c("grey","red"),bty="n",cex=0.6)  
+    par(bty=par0$bty, fig=par0$fig, mar=par0$mar, 
+        yaxt=par0$yaxt, xaxt=par0$xaxt, las=par0$las)
   }
   
   #acfit <- attrcp(x,acfit)

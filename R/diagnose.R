@@ -481,7 +481,6 @@ diagnose.dsensemble <- function(x,...,plot=TRUE,type='target',xrange=NULL,
 #  deltagcm <- c(apply(coredata(yz)[,-1],2,FUN='trend.coef'))
 #  robs <- round(100*sum(deltaobs < deltagcm)/d[2])
 #  if(verbose) {print(deltaobs); print(deltagcm); print(order(c(deltaobs,deltagcm))[1])}
-  
   # apply to extract mean and sd from the selected objects:
   mu <- apply(coredata(yz[,-1]),1,mean,na.rm=TRUE)
   si <- apply(coredata(yz[,-1]),1,sd,na.rm=TRUE)
@@ -544,6 +543,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
   if(is.null(main)) main <- attr(X,"variable")[1]
   if(plot) {
     if(verbose) print("target plot") 
+    par0 <- par()
     if (new) dev.new()
     par(bty="n",fig=c(0.05,0.95,0,0.95),mgp=c(2,1,.5),xpd=TRUE)
     plot(c(-100,100),c(-100,100),type="n",
@@ -613,6 +613,7 @@ diagnose.dsensemble.list <- function(x,...,plot=FALSE,is=NULL,ip=NULL,
       lines(lon2[ok2],lat2[ok2],col = "pink",lwd=1)
       points(xlon,xlat,pch=21,cex=1,col='Grey',bg=col,lwd=0.5)
     }
+    par(bty=par0$bty,fig=par0$fig,mgp=par0$mgp,xpd=par0$xpd)
   }
   invisible(d)
 }

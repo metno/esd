@@ -179,8 +179,8 @@ vis.map <- function(x,...,col='red',map.type=NULL,
     is.finite(lon2) & is.finite(lat2)
   if (verbose) {print(sum(ok)); print(range(lon[ok])); print(range(lat[ok]))}
   if(map.insert) {
-    fig.map <- c(par0$fig[1] + (par0$fig[2]-par0$fig[1])*c(0.76, 0.97),
-                 par0$fig[3] + (par0$fig[4]-par0$fig[3])*c(0.76, 0.97))
+    fig.map <- c(par0$fig[1] + (par0$fig[2]-par0$fig[1])*c(0.75, 0.94),
+                 par0$fig[3] + (par0$fig[4]-par0$fig[3])*c(0.75, 0.92))
     par(fig=fig.map,new=TRUE,mar=c(0,0,0,0),xpd=NA,
         col.main="grey",bty="n")
   } else {

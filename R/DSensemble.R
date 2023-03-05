@@ -228,6 +228,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
     ylim <- c(0,0)
     ylim <- switch(FUN,'mean'=c(-2,8),'sd'=c(-0.5,1),'ar1'=c(-0.5,0.7)) # assuming y is the temperature?
     if (verbose) print(paste('set ylim based on "',FUN,'" -> c(',ylim[1],', ',ylim[2],')',sep=''))
+    par0 <- par()
     par(bty="n")
     plot.zoo(ya,type="b",pch=19,main=attr(y,'location'),
              xlab="year",ylab=unit,
@@ -237,6 +238,7 @@ DSensemble.t2m <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predictor="ERA4
                        attr(y,'altitude'),'m.a.s.l',sep=''),
              ylim=ylim + range(coredata(ya),na.rm=TRUE),xlim=c(1900,2100))
     grid()
+    par(bty=par0$bty)
   }
   if(verbose) print("Retrieve predictor data")
   if (is.character(predictor))
@@ -586,6 +588,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
                    'mean'=c(-10,50),'sd'=c(-5,10),'ar1'=c(-0.5,0.7),
                    'HDD'=c(0,5000),'CDD'=c(0,500),'GDD'=c(0,2000))
     if (is.null(ylim)) ylim <- c(0,0)
+    par0 <- par()
     par(bty="n")
     plot.zoo(y,type="b",pch=19,main=attr(y,'location'),
              xlab="year",ylab=unit,
@@ -595,6 +598,7 @@ DSensemble.precip <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
                        attr(y,'altitude'),'m.a.s.l',sep=''),
              ylim=ylim + range(coredata(y),na.rm=TRUE),xlim=c(1900,2100))
     grid()
+    par(bty=par0$bty)
   }
   
   # Ensemble GCMs
@@ -835,6 +839,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
   
   if (plot) {
     ylim <- c(0,10)
+    par0 <- par()
     par(bty="n")
     plot.zoo(y,type="b",pch=19,main=attr(y,'location'),
              xlab="year",ylab=unit,
@@ -844,6 +849,7 @@ DSensemble.annual <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",
                        attr(y,'altitude'),'m.a.s.l',sep=''),
              ylim=ylim + range(coredata(y),na.rm=TRUE),xlim=c(1900,2100))
     grid()
+    par(bty=par0$bty)
   }
   
   # Ensemble GCMs
@@ -1095,6 +1101,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
                      'sum'=c(-6,12))
       if (verbose) print(paste('set ylim based on "',FUN,
                                '" -> c(',ylim[1],', ',ylim[2],')',sep=''))
+      par0 <- par()
       par(bty="n")
       plot.zoo(ys,type="b",pch=19,main=attr(y,'location'),
                xlab="year",ylab=unit,
@@ -1105,6 +1112,7 @@ DSensemble.season <- function(y,...,season=NULL,plot=TRUE,path="CMIP5.monthly/",
                ylim=ylim + range(coredata(ys),na.rm=TRUE),
                xlim=as.Date(c("1900-01-01","2100-12-31")))
       grid()
+      par(bty=par0$bty)
     }
     
     if(verbose) print("Retrieve predictor data")
@@ -1698,6 +1706,7 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
       stats <- cor.test(as.matrix(cal)[,1],cal$x)
     wc.model <- lm(y ~ x, data=cal)
     if (plot) {
+      par0 <- par()
       par(bty='n',cex.sub=0.7,col.sub='grey40')
       ylim <- range(cal$y,na.rm=TRUE); xlim=range(cal$x,na.rm=TRUE); dy <- diff(ylim)/25
       plot(cal$x,cal$y,pch=19,cex=1.5,col='grey',
@@ -1725,6 +1734,9 @@ DSensemble.mu.worstcase <- function(y,...,plot=TRUE,path="CMIP5.monthly/",predic
       axis(1,col='grey')
       lines((cal$y - mean(cal$y))/sd(cal$y),type='l',lwd=2,col=rgb(0,0.3,0.6))
       #dev.copy2eps(file='DSensemble.mu.worstcase.cal.eps')
+      par(fig=par0$fig, yaxt=par0$yaxt, xpd=par0$xpd, bty=par0$bty,
+          cex.sub=par0$cex.sub, col.sub=par0$col.sub,
+          cex.axis=par0$cex.axis, col.axis=par0$col.axis)
     }
     
     if (plot) {
@@ -1950,9 +1962,11 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
   t <- as.Date(paste(years,months,'01',sep='-'))
   
   if (plot) {
+    par0 <- par()
     par(bty='n')
     index(y) <- year(y)
     plot.zoo(y[,1],lwd=3,main='PC1',ylab='',xlab='',xlim=range(years))
+    par(bty=par0$bty)
   }
   
   flog <- file("DSensemble.pca-log.txt","at")
