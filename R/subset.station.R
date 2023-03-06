@@ -99,12 +99,16 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   
   ## get time in t
   t <- index(x)
-  ii <- is.finite(t)
+  if(inherits(index(cc), "POSIXt")) { ## KMP 2023-03-06: is.finite does not work when the index is of class POSIXt (needed for sub-daily data)
+    ii <- is.finite(as.Date(t))
+  } else {
+    ii <- is.finite(t)
+  }
   
   if (verbose) print('station.subset: it - temporal indexing')
   if (verbose) print(it)
   
-  if (inherits(t,c("Date","yearmon"))) {
+  if (inherits(t,c("Date","yearmon","POSIXt"))) {
     if (verbose) print('station.subset: years ++')
     yr <- year(x)
     mo <- month(x)

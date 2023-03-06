@@ -23,6 +23,7 @@
 #' @param x station or field object
 #' @param threshold threshold value
 #' @param upper upper limit for maximum length - ignore any above this because they are likely erronoeus
+#' @param higher argument of count, if TRUE: count values above threshold, FALSE: count values below threshold 
 #' @param fraction TRUE: divide the number of counts by number of samples
 #' @param FUN function
 #'
@@ -277,8 +278,8 @@ spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
 }
 
 #' @export
-count <- function(x,threshold=1,fraction=FALSE,...) {
-  count <- sum(x > threshold,na.rm=TRUE)
+count <- function(x,threshold=1,fraction=FALSE,higher=TRUE,...) {
+  if(higher) count <- sum(x > threshold,na.rm=TRUE) else count <- sum(x < threshold,na.rm=TRUE)
   if (fraction) count <- count/sum(is.finite(x))
   return(count)
 }
