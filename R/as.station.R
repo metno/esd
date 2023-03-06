@@ -169,7 +169,16 @@ as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
   }
   dfi <- diff(index(y))
   if (length(dfi)>0) {
-      dt <- as.numeric(median(dfi))
+    dt <- as.numeric(median(dfi))
+    if(units(dfi)=='hours') {
+      tscale <- paste0(dt,'hours')
+    } else if(units(dfi)=='secs') {
+      if(dt<(60*60)) {
+        tscale <- paste0(dt,'secs')
+      } else {
+        tscale <- paste0(dt/60/60,'hours')
+      }
+    } else if(units(dfi)=='days') {
       if (dt==1)
           tscale <- 'day'
       else if (((dt>=28) & (dt <=31)) | (dt < 0.1))
@@ -179,7 +188,8 @@ as.station.zoo <- function(x,...,loc=NA,param=NA,unit=NA,lon=NA,lat=NA,alt=NA,
       if ((dt>=360) & (dt <=366))
           tscale <- 'annual'
       else tscale <- 'annual'
-      class(y) <- c("station",tscale,"zoo")
+    } else browser()
+    class(y) <- c("station",tscale,"zoo")
   } else {
     if (verbose) print("A single value has been recorded in the time index of the data.")
     if (verbose) print("Cannot determine time scale of the data. Guessing based on index.")

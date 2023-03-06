@@ -44,6 +44,7 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
                           bg="grey90",verbose=FALSE,...) {
 
   if (verbose) print('wheel.station')
+  par0 <- par()
   ## Copied from visprob.station.precip:
   ## If y is provided, synchronise the two time series:
   if (!is.null(y)) {
@@ -63,7 +64,7 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
   #print(md)
   m <- length(md)
   if (new) dev.new()
-  par(bty="n",xaxt="n",yaxt="n") -> par0
+  par(bty="n",xaxt="n",yaxt="n")
   plot(c(-1.2,1.2)*(r+mx),c(-1.2,1.2)*(r+mx),type="n",
        xlab="",ylab="",
        main=paste("Seasonal 'wheel' for",attr(x,'location')[1]),
@@ -123,15 +124,18 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
                            coredata(x)[i-1]*sin(theta1),coredata(x)[i]*sin(theta2)))
     }
   }
-  #clim <- coredata(climatology(x))
-  #r <- approx(1:length(clim),clim,xout = 1:360)$y
-  #lines(r[1:360]*cos(pi*(1:360)/180),r[1:360]*sin(pi*(1:360)/180),lwd=2,col=rgb(0.5,0.5,0.5,0.2))
-  
-  par(new=TRUE,fig=c(0.05,0.15,0.05,0.2),mar=c(0,3,0,0),
-      cex.axis=0.7,yaxt="s",xaxt="n",las=1)
+
+  dx0 <- par0$fig[2] - par0$fig[1]
+  dy0 <- par0$fig[4] - par0$fig[3]
+  fig.colbar <- c(par0$fig[1]+0.05*dx0, par0$fig[1]+0.2*dx0, 
+                  par0$fig[3]+0.05*dy0, par0$fig[3]+0.3*dy0)
+  par(new=TRUE,fig=fig.colbar,
+      mar=c(0,3,0,0),cex.axis=0.7,yaxt="s",xaxt="n",las=1)
   colbar <- rbind(1:ny,1:ny)
-  #print(years)
   image(1:2,years,colbar,col=col)
+  
+  par(bty=par0$bty,xaxt=par0$xaxt,yaxt=par0$yaxt,fig=par0$fig,
+      mar=par0$mar,cex.axis=par0$cex.axis,yaxt=par0$yaxt,las=par0$las)
 }
 
 #' S3 method of \code{wheel} for \code{'spell'} objects
@@ -158,8 +162,9 @@ wheel.station <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,type=NULL,
 #' @export wheel.spell
 wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,verbose=FALSE,...) {
 
-    if (verbose) print('wheel.spell')
-    ## Copied from visprob.station.precip:
+  if (verbose) print('wheel.spell')
+  par0 <- par()
+  ## Copied from visprob.station.precip:
   ## If y is provided, synchronise the two time series:
   if (!is.null(y)) {
     y <- subset(y,it=c(start(x),end(x)))
@@ -177,8 +182,8 @@ wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,verbose=FALSE,...) {
   md <- as.integer(rownames(table(MD)))
   #print(md)
   m <- length(md)
-  dev.new()
-  par(bty="n",xaxt="n",yaxt="n") -> par0
+  if(new) dev.new()
+  par(bty="n",xaxt="n",yaxt="n")
   plot(c(-1.2,1.2)*(r+mx),c(-1.2,1.2)*(r+mx),type="n",
        xlab="",ylab="",
        main=paste("Seasonal 'wheel' for",attr(x,'location')[1]),
@@ -226,10 +231,16 @@ wheel.spell <- function(x,y=NULL,new=TRUE,lwd=2,col=NULL,verbose=FALSE,...) {
   }
   lines(r*cos(pi*(1:360)/180),r*sin(pi*(1:360)/180),lwd=2)
   
-  par(new=TRUE,fig=c(0.05,0.15,0.05,0.2),mar=c(0,3,0,0),
-      cex.axis=0.7,yaxt="s",las=1)
+  dx0 <- par0$fig[2] - par0$fig[1]
+  dy0 <- par0$fig[4] - par0$fig[3]
+  fig.colbar <- c(par0$fig[1]+0.05*dx0, par0$fig[1]+0.2*dx0, 
+                  par0$fig[3]+0.05*dy0, par0$fig[3]+0.3*dy0)
+  par(new=TRUE,fig=fig.colbar,
+      mar=c(0,3,0,0),cex.axis=0.7,yaxt="s",xaxt="n",las=1)
   colbar <- rbind(1:ny,1:ny)
-  #print(years)
   image(1:2,years,colbar,col=col)
+  
+  par(bty=par0$bty,xaxt=par0$xaxt,yaxt=par0$yaxt,fig=par0$fig,
+      mar=par0$mar,cex.axis=par0$cex.axis,yaxt=par0$yaxt,las=par0$las)
 }
 

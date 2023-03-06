@@ -32,7 +32,7 @@
 #' @export
 showmaps <- function(x,FUN='mean',colbar=list(pal='bwr',show=FALSE),nnum=11, ...) { 
   z <- map(x,FUN=FUN,plot=FALSE)
-  #def.par <- par(no.readonly = TRUE)
+  par0 <- par(no.readonly = TRUE)
   par(mar=c(0.5,0.2,0.5,0.2),xaxt='n',yaxt='n',xpd=TRUE)
   nf <- layout(matrix(c(1,1,1,2,2,2,1,1,1,2,2,2,1,1,1,2,2,2,1,1,1,2,2,2,1,1,1,2,2,2,0,0,3,3,0,0),6,6,byrow = TRUE), 
                widths=rep(1,36), heights=rep(0.5,36), respect= TRUE)
@@ -49,7 +49,7 @@ showmaps <- function(x,FUN='mean',colbar=list(pal='bwr',show=FALSE),nnum=11, ...
   plot(mids,rep(0.5,n-1),col=attr(z1,'colbar')$col,pch=15,cex=3,ylim=c(0,1))
   ii <- (1:n)%%(round(n/nnum)) == 1; ii[n] <- TRUE
   text(breaks[ii],rep(0.2,n)[ii],round(breaks,2)[ii],cex=0.7, col='grey30')
-  #par(def.par)
+  par(par0)
   invisible(list(z1 = z1, z2 = z2))
 }
 

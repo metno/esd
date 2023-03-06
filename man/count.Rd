@@ -15,6 +15,8 @@ count(x, threshold = 1, fraction = FALSE, ...)
 
 \item{upper}{upper limit for maximum length - ignore any above this because they are likely erronoeus}
 
+\item{higher}{argument of count, if TRUE: count values above threshold, FALSE: count values below threshold}
+
 \item{FUN}{function}
 }
 \value{

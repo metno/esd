@@ -346,6 +346,7 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
                          verbose=FALSE) {
   
   if (verbose) print('plot.station')
+  par0 <- par()
   par(las=1)
   
   if (!is.numeric(lon(x)) | !is.numeric(lat(x))) {
@@ -444,6 +445,10 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
            col=col,xlim=xlim,ylim=ylim,lwd=lwd,type=type,pch=pch,
            cex.axis=cex.axis,cex.lab=cex.lab,cex.main=cex.main,
            xaxt=xaxt,main=main)
+  setfig <- FALSE
+  fig <- par()$fig; usr <- par()$usr; xaxp <- par()$xaxp; 
+  yaxp <- par()$yaxp; plt <- par()$plt
+  par1 <- par()
   if("seasonalcycle" %in% cls) {
     axis(1,at=seq(1,12),labels=month.abb,cex.axis=cex.axis,las=2)
   }
@@ -466,8 +471,15 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
       vis.map(x,col=col.map,map.type=map.type,cex=1,cex.axis=0.65,
               add.text=FALSE,map.insert=map.insert,
               xrange=xrange,yrange=yrange,verbose=verbose)
+      setfig <- TRUE
     }
   }
+  if(setfig) par(fig=fig)
+  
+  dontset <- c("cin","cra","csi","cxy","din","page")
+  for(p in names(par1)[!names(par1) %in% dontset]) eval(parse(text=paste0("par(",p,"=par1$",p,")")))
+  par(cex.axis=par0$cex.axis, mar=par0$mar, bty=par0$bty,
+      xaxt=par0$xaxt, yaxt=par0$yaxt, xpd=par0$xpd)
 }
 
 #' Plot esd objects

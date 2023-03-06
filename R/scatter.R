@@ -51,8 +51,7 @@ scatter.heat <- function(x,y,xlim=NULL,ylim=NULL,breaks=NULL,main='Scatter',
                          xlab='',ylab='',sub='',
                          ignorezero=TRUE,col=NULL,log=FALSE,dig=NULL,
                          fig=NULL, fig.legend=NULL, show.legend=FALSE,
-                         new=FALSE,add=FALSE,mar=c(5.1,4.1,4.1,5.4),
-                         verbose=FALSE) {
+                         new=FALSE,add=FALSE,verbose=FALSE) {
   if (verbose) print('scatter.heat')
   if (is.null(dig)) dig <- max(c(-2*log(max(c(x,y,na.rm=TRUE)))/log(10),0),na.rm=TRUE)
   if (verbose) print(paste(dig,'digits. Max:',max(c(x,y,na.rm=TRUE))))
@@ -74,8 +73,9 @@ scatter.heat <- function(x,y,xlim=NULL,ylim=NULL,breaks=NULL,main='Scatter',
   if(is.null(xlim)) xlim <- range(x,na.rm=TRUE) + 0.1*c(-1,1)*diff(range(x,na.rm=TRUE))
   if(is.null(ylim)) ylim <- range(y,na.rm=TRUE) + 0.1*c(-1,1)*diff(range(y,na.rm=TRUE))
   if(new) dev.new()
-  if(is.null(fig)) fig <- par()$fig
-  par(fig=fig, mar=mar, bty='n', new=add)
+  par0 <- par()
+  if(!is.null(fig)) par(fig=fig, new=add) else fig <- par()$fig
+  par(bty='n', xpd=FALSE)
   image(as.numeric(rownames(txy)),as.numeric(colnames(txy)),txy,breaks=breaks,
         xlim=xlim,ylim=ylim,main=main,xlab=xlab,ylab=ylab,sub=sub,col=col)
   grid()
@@ -99,14 +99,17 @@ scatter.heat <- function(x,y,xlim=NULL,ylim=NULL,breaks=NULL,main='Scatter',
       axis(1,at=breaks[seq(1,length(breaks),by=2)],
            labels=as.character(breaks[seq(1,length(breaks),by=2)]),cex=0.75)
     }
-    par(fig=fig,yaxt='s',yaxt='s',mar=mar,col.axis='black',new=TRUE)
+    par(fig=fig, yaxt='s',yaxt='s',col.axis='black',new=TRUE)
   }
+  par(bty=par0$bty, xpd=par0$xpd, yaxt=par0$yaxt, yaxt=par0$yaxt, 
+      col.axis=par0$col.axis)
 }
 
 scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
                               xgrid=NULL,ygrid=NULL,xlim=NULL,ylim=NULL,
                               xlab=NULL,ylab=NULL,main=NULL,leg=TRUE,rotate=TRUE,
-                              alpha=0.6,leg.loc=2,new=TRUE, verbose=FALSE) {
+                              alpha=0.6,leg.loc=2,fig=NULL,add=FALSE,
+                              new=TRUE, verbose=FALSE) {
   
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
   i <- !(is.na(x) | is.na(y))
@@ -156,12 +159,15 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
   
   # Generate figure
   if(new) dev.new()
+  par0 <- par()
+  if(!is.null(fig)) par(fig=fig, new=add)
+  par(bty='n', xpd=FALSE)
   plot(X,Y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,main=main,type='n')
   
   # Grid points with 1 observation
   if (any(N==1)) symbols(X[N==1],Y[N==1],
-                         circles=rep(1,sum(N==1)),fg='blue',bg=F,
-                         inches=xr/(max(xlim)-min(xlim)),add=T)
+                         circles=rep(1,sum(N==1)),fg='blue',bg=FALSE,
+                         inches=xr/(max(xlim)-min(xlim)),add=TRUE)
   
   # Grid points with few observations
   if (any(N>1) & any(N<petalsize*2)) {
@@ -235,6 +241,7 @@ scatter.sunflower <- function(x,y,petalsize=7,dx=NULL,dy=NULL,
     text(xy[3,1]+dx*1.5,xy[3,2]+dy*0.5,paste('1 petal = ',
                                              as.character(petalsize),' obs'),pos=4)
   }
+  par(bty=par0$bty, xpd=par0$xpd)
 }
 
 # Binned scatterplot with hexagons
@@ -243,8 +250,7 @@ scatter.hexbin <- function(x, y, new=TRUE, Nmax=NULL,
                            xlim=NULL, ylim=NULL,
                            xlab=NULL, ylab=NULL, main=NULL,
                            leg=TRUE, col='blue', border='white',
-                           colmap='gray.colors', mar=c(5.1,4.1,4.1,5.4),
-                           fig=NULL, add=FALSE,
+                           colmap='gray.colors', fig=NULL, add=FALSE,
                            scale.col=TRUE, scale.size=FALSE, 
                            add.loess=FALSE, span=2/3, degree=1, evaluation=50,
                            family=c("symmetric", "gaussian"), lpars=list(),
@@ -254,7 +260,6 @@ scatter.hexbin <- function(x, y, new=TRUE, Nmax=NULL,
   stopifnot(is.numeric(x) & is.numeric(y) & length(x)==length(y))
   i <- !(is.na(x) | is.na(y))
   x <- x[i]; y <- y[i]
-  
   # Define grid
   if (is.null(dx) & length(xgrid)<=2) dx <- (max(x)-min(x))/20
   if (is.null(dy) & length(ygrid)<=2) dy <- (max(y)-min(y))/20
@@ -310,8 +315,9 @@ scatter.hexbin <- function(x, y, new=TRUE, Nmax=NULL,
   if (is.null(ylim)) ylim <- c(min(Y)-dy,max(Y)+dy)
   if(new) dev.new()
   #if(new) plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,main=main,type='n')
-  if(is.null(fig)) fig <- par()$fig
-  par(fig=fig, mar=mar, bty='n', xpd=NA, new=add)
+  par0 <- par()
+  if(!is.null(fig)) par(fig=fig, new=add)
+  par(bty='n', xpd=FALSE)
   plot(x,y,xlim=xlim,ylim=ylim,xlab=xlab,ylab=ylab,main=main,type='n')
   mapply(polygon.fill,X,Y,dX,dY,n=6,col=col,border=border)
   # Legend
@@ -363,14 +369,14 @@ scatter.hexbin <- function(x, y, new=TRUE, Nmax=NULL,
     pred <- loess.smooth(x, y, span, degree, family, evaluation)
     do.call(lines, c(list(pred), lpars))
   }
-    
+  par(bty=par0$bty, xpd=par0$xpd)
 }
 
 # Count observations (x,y) in grid points (X,Y)
 bin <- function(x,y,X,Y) {
   fn <- function(x,y) {
     d <- sqrt( (X-x)**2 + (Y-y)**2 )
-    imin <- which(d==min(d),arr.ind=T)
+    imin <- which(d==min(d),arr.ind=TRUE)
     if (length(imin)>2) imin <- imin[1,]
     invisible(imin)
   }

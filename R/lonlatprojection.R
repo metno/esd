@@ -10,6 +10,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              main=NA,cex.sub=0.8,cex.axis=0.8,
                              fig=NULL,add=FALSE,...) {
   if (verbose) {print('lonlatprojection'); str(x)}
+  par0 <- par()
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
   ## for precipitation-palette
@@ -246,10 +247,11 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       }
     }
     if (!is.null(fig)) par(fig=fig)
-    par(col.axis='black',col.lab='black',cex.lab=1,cex.axis=1,
-        xaxt="s",yaxt="s",new=FALSE)
   }
-  
+  par(bty=par0$bty,xpd=par0$xpd,col.axis=par0$col.axis,col.lab=par0$col.lab, 
+      cex.lab=par0$cex.lab, cex.axis=par0$cex.axis,xaxt=par0$xaxt,yaxt=par0$yaxt,
+      new=FALSE)
+
   attr(x,'longitude') <- lon
   attr(x,'latitude') <- lat
   attr(x,'variable') <- variable

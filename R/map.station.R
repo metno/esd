@@ -24,7 +24,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         add=FALSE,projection="lonlat",
                         xlim = NULL, ylim = NULL,zlim=NULL,n=15,
                         col='darkred',bg='orange',
-                        colbar= list(pal='t2m',col=NULL,rev=FALSE,n=10,
+                        colbar= list(pal='t2m',col=NULL,rev=FALSE,n=6,
                                      breaks=NULL,type="p",cex=2,h=0.6, v=1,
                                      pos=0.1,show=FALSE),
                         # col=NULL replaced by palette
@@ -111,7 +111,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
     
     par0 <- par()
     par(mar=mar,mgp=mgp,bty='n',xaxt='n',yaxt='n',cex.axis=0.7,
-        col.axis='grey30',col.lab='grey30',las=1)
+        xpd=FALSE,col.axis='grey30',col.lab='grey30',las=1)
     ## KMP 2017-07-28: fig creates problems when you want to add map.station as a subplot.
     ## With this solution you have to use add=TRUE and set fig to your subplot or to NULL.
     ## KMP 2023-01-31: Only use fig when it is defined. 
@@ -196,7 +196,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           ## KMP 2023-02-16: testing alternative colorbar
           dy <- diff(ylim)*0.1
           below <- c(min(xlim), min(ylim)-dy/2, max(xlim), min(ylim)+dy/2)
-          rect(below[1], below[2], below[3], below[4], 
+          rect(below[1], below[2]-2*dy, below[3], below[4], 
                col = "white", border = "white")
           col.bar(below[1],below[2],below[3],below[4],
                   colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
@@ -246,7 +246,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
             col.main=col.main,col.sub=col.sub,font.main=font.main,font.sub=font.sub)
     }
     par(mar=par0$mar,mgp=par0$mgp,bty=par0$bty,xaxt=par0$xaxt,
-        yaxt=par0$yaxt,cex.axis=par0$cex.axis,
+        yaxt=par0$yaxt,cex.axis=par0$cex.axis,xpd=par0$xpd,
         col.axis=par0$col.axis,col.lab=par0$col.lab,
         las=par0$las,xpd=par0$xpd)
     if (verbose) print('Organise output')

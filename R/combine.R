@@ -259,7 +259,6 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
     ele <- c(ele,attr(Z,'element'))
     asp <- c(asp,attr(Z,'aspect'))
   }
-  
   if (dim(X)[2]==length(loc)) colnames(X) <- loc
   attr(X,'location') <- loc
   attr(X,'country') <- cn
