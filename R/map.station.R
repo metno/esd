@@ -32,10 +32,11 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
                         lonR=NULL,latR=45,axiR=NULL,verbose=FALSE,
                         cex=2,zexpr="alt",cex.subset=1,
                         add.text.subset=FALSE,showall=FALSE,
-                        add.text=FALSE,main=NULL,sub=NULL,
+                        add.text=FALSE,n.text=5,main=NULL,sub=NULL,
                         height=NULL,width=NULL,
                         cex.main=1,cex.sub=0.75,cex.axis=1,cex.lab=0.9,
                         col.main="black",col.sub="grey",col.border="grey",
+                        col.text='grey',
                         font.main=1,font.sub=4,
                         pch=19, from=NULL,to=NULL,showaxis=FALSE,
                         border=FALSE,full.names=FALSE,
@@ -150,7 +151,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
       }
       plot(lon(x),lat(x),xlim=xlim,ylim=ylim,col=col,pch=pch,cex=cex,new=FALSE,
            cex.lab=cex.lab,xlab=xlab,ylab=ylab)
-      if (add.text) text(lon(x),lat(x),substr(loc(x),1,6),cex=cex.lab,col='grey',pos=1)
+      if (add.text) text(lon(x),lat(x),substr(loc(x),1,n.text),cex=cex.lab,col=col.text,pos=1)
       
       if(showaxis | gridlines) {
         par(xaxt="s",yaxt="s",las=1,col.axis='grey',col.lab='grey',
@@ -194,7 +195,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           #par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=cex.axis,col.axis='grey')
           #axis(1,colbar$breaks)
           ## KMP 2023-02-16: testing alternative colorbar
-          dy <- diff(ylim)*0.1
+          dy <- diff(ylim)*0.07
           below <- c(min(xlim), min(ylim)-dy/2, max(xlim), min(ylim)+dy/2)
           rect(below[1], below[2]-2*dy, below[3], below[4], 
                col = "white", border = "white")
@@ -705,7 +706,7 @@ map.station.old <- function (x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
         ##fig1 <- par0$fig
         par(fig=par0$fig,new=TRUE)
         image.plot(lab.breaks=colbar$breaks,horizontal = TRUE,
-                   legend.only = T, zlim = range(colbar$breaks),
+                   legend.only = TRUE, zlim = range(colbar$breaks),
                    col = colbar$col, legend.width = 1,
                    axis.args = list(cex.axis = cex.axis,
                                     xaxp=c(range(colbar$breaks),n=colbar$n)),

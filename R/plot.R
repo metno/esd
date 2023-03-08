@@ -2424,7 +2424,8 @@ plot.xsection <- function(x,...) {
 #'
 #' @exportS3Method
 #' @export plot.spell
-plot.spell <- function(x,...,xlim=NULL,ylim=NULL) {
+plot.spell <- function(x,...,xlim=NULL,ylim=NULL,verbose=FALSE) {
+  if(verbose) print("plot.spell")
   bar <- function(x,col) {
     rect(x[1],x[2],x[3],x[4],col=col,border=col)
   }

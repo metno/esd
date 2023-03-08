@@ -135,7 +135,6 @@ combine.default <- function(x=NULL,y=NULL,...,all=FALSE,orig.format=TRUE,verbose
     X <- combine.station.field(x=x,y=y,all=all,orig.format=orig.format,verbose=verbose)
   } else { 
     print("combine.default - don't know what to do :-(")
-    browser()
     X <- NULL
   }
   attr(X,'history') <- history.stamp(x)
@@ -237,7 +236,7 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   loc <- NULL; cn <- loc; ID <- NULL; unit <- loc
   lon <- ID; lat <- ID; alt <- ID; param <- loc; lname <- loc
   src <- loc; qlty <- loc; url <- loc; ref <- loc
-  info <- loc; ele <- asp <- ID
+  info <- loc; ele <- asp <- ID; th <- NULL; thu <- NULL
   if (verbose) print('Organise the attributes')
   for (i in 1:n) {
     Z <- args[[i]]
@@ -258,8 +257,11 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
     info <- c(info,attr(Z,'info'))
     ele <- c(ele,attr(Z,'element'))
     asp <- c(asp,attr(Z,'aspect'))
+    th <- c(th,attr(Z,'threshold'))
+    thu <- c(thu,attr(Z,'threshold.unit'))
   }
   if (dim(X)[2]==length(loc)) colnames(X) <- loc
+  if(any(is.na(colnames(X)))) colnames(X) <- paste("X",seq(ncol(X)),sep=".")
   attr(X,'location') <- loc
   attr(X,'country') <- cn
   attr(X,'station_id') <- ID
@@ -273,6 +275,8 @@ combine.stations <- function(...,all=TRUE,verbose=FALSE) {
   attr(X,'source') <- src
   attr(X,'element') <- ele
   attr(X,'quality') <- qlty
+  attr(X,'threshold') <- th
+  attr(X,'threshold.unit') <- thu
   attr(X,'URL') <- url
   attr(X,'history') <- history.stamp(Z)
   #attr(X,'date-stamp') <- date()

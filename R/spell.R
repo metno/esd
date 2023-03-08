@@ -71,7 +71,7 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
     y <- attrcp(x,y)
     y -> x ; rm('y')
   }
-  ## Highligh the times when the values is above and below the given
+  ## Highlight the times when the values is above and below the given
   ## threshold:
   z <- coredata(x)
   mdate <- index(x)[!is.finite(x)]
@@ -182,7 +182,6 @@ spell.default <- function(x,threshold,upper=NULL,verbose=FALSE,...) {
     if (sum(is.element(seq(fromd,tod,by="1 day"),mdate)>0)) Below[ii] <- NA
   }
   
-  #browser()
   y <- merge(Above,Below,all=TRUE)
   if (is.null(attr(x,'unit'))) attr(x,'unit') <- 'NA'
   
@@ -252,7 +251,6 @@ spell.station <-  function(x,threshold,upper=150,verbose=FALSE,...) {
     }
   } else {
     ## Single station
-    #
     missing <- (1:length(x))[!is.finite(x)]
     if (min(missing)==1) {
       if (verbose) {

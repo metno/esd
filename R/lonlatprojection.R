@@ -140,7 +140,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     x[outside,] <- NA
   } else xlim <- range(lon)
   
-  dy <- 0.25*( max(lat) - min(lat) )
+  dy <- 0.2*( max(lat) - min(lat) )
   #print(dy); print(range(lat))
   if (!is.null(ylim)) {
     outside <- (lat < min(ylim)) | (lat > max(ylim))
@@ -227,17 +227,19 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       if (verbose) print('Show colourbar')
       if (fancy) {
         if (verbose) print('fnc')
-        below <- c(min(xlim), min(ylim), max(xlim), min(lat)-diff(lat)[1]/2)
+        dy <- diff(ylim)*0.1
+        below <- c(min(xlim), min(ylim)-dy/2, max(xlim), min(ylim)+dy/2)
         dy_below <- below[4]-below[2]
-        rect(below[1], below[2]-dy_below*0.2, below[3], below[4]-dy_below*0.2, 
+        rect(below[1], below[2], 
+             below[3], below[4]-dy_below*0.2, 
              col = "white", border = "white")
-        col.bar(below[1],below[2],below[3],below[4]-dy_below*0.2,
+        col.bar(below[1],below[2]+dy_below*0.1,below[3],below[4]-dy_below*0.1,
                 colbar$breaks,horiz=TRUE,pch=15,v=1,h=1,
                 col=colbar$col,cex=2,cex.lab=colbar$cex.lab,
                 type=colbar$type,verbose=FALSE,vl=1,border=FALSE)
-        title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
+        title(sub = label, line = 0.5, cex.sub = cex.sub)
       } else {
-        title(sub = label, line = 0, adj = 0.5, cex.sub = cex.sub)
+        title(sub = label, line = 0.5, cex.sub = cex.sub)
         image.plot(breaks=colbar$breaks, 
                    lab.breaks=colbar$breaks,horizontal = TRUE,
                    legend.only = TRUE, zlim = range(colbar$breaks),
