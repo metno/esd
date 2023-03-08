@@ -99,7 +99,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   
   ## get time in t
   t <- index(x)
-  if(inherits(index(cc), "POSIXt")) { ## KMP 2023-03-06: is.finite does not work when the index is of class POSIXt (needed for sub-daily data)
+  if(inherits(t, "POSIXt")) { ## KMP 2023-03-06: is.finite does not work when the index is of class POSIXt (needed for sub-daily data)
     ii <- is.finite(as.Date(t))
   } else {
     ii <- is.finite(t)
