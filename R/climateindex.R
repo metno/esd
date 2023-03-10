@@ -35,22 +35,28 @@
 #' @param verbose a boolean; if TRUE print information about progress
 #'
 #' @export
-NAO <- function(freq="monthly", url=NULL, header=FALSE, verbose=FALSE) {
-  if(verbose) print("NAO")
+NAO <- function(freq="monthly", url=NULL, header=NULL, verbose=FALSE) {
   if(is.null(url)) {
     if(freq=="daily") {
       url <- "ftp://ftp.cpc.ncep.noaa.gov/cwlinks/norm.daily.nao.index.b500101.current.ascii"
+      if (is.null(header)) header <- FALSE
     } else {
       url <- 'http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii.table'
+      if (is.null(header)) header <- TRUE
     }
   }
+  if(verbose) print(paste("NAO",url,sep=": "))
+  
   nao <- read.table(url,header,fill=TRUE)
+  ## Strip headers
+  if (verbose) str(nao)
   if(ncol(nao)==4) {
     d <- as.Date(paste(nao[,1],nao[,2],nao[,3],sep="-"))
     naoi <- zoo(nao[,4], order.by=d)
-  } else if(ncol(nao)==13) {
-    d <- as.Date(paste(sort(rep(nao[,1],12)),1:12,'01',sep='-'))
-    naoi <- zoo(c(unlist(t(nao[,2:13]))), order.by=d)
+  } else if(ncol(nao)==12) {
+    d <- as.Date(paste(sort(rep(rownames(nao),12)),1:12,'01',sep='-'))
+    if (verbose) print(range(d))
+    naoi <- zoo(c(unlist(t(nao[,1:12]))), order.by=d)
   } else {
     print("Warning! Unknown file structure of downloaded NAO data")
   }
