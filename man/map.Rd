@@ -58,10 +58,12 @@ Other strings will be used as the label for the plot and \code{NULL} shows no la
 gives stereographic views from the North and south poles.}
 
 \item{xlim}{see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
-projections.}
+projections. Default \code{xlim=NULL} is the same as \code{c(-1,+1)} and refers to coordiates
+on a unit sphere (radius = 1). If plotting should be limited to a range of longitudes and latitudes
+then \code{subset(.)} can be used prior to \code{map}.}
 
 \item{ylim}{see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
-projections.}
+projections. See \code{xlim}.}
 
 \item{n}{The number of colour breaks in the color bar}
 
