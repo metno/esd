@@ -27,6 +27,8 @@ spell(x, threshold, ...)
 
 \item{upper}{upper limit for maximum length - ignore any above this because they are likely erronoeus}
 
+\item{higher}{argument of count, if TRUE: count values above threshold, FALSE: count values below threshold}
+
 \item{fraction}{TRUE: divide the number of counts by number of samples}
 
 \item{FUN}{function}

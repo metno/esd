@@ -136,7 +136,7 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   ## data in the esd package.
   
   if (verbose) print('map.default')
-  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   if (is.logical(colbar)) colbar <- NULL
   ## If only a few items are provided in colbar - then set the rest to the default
   if (!is.null(colbar)) {
@@ -198,7 +198,7 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   ##  image(lon(x),lat(x),x)
   
   if (verbose) print('map.matrix')
-  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #par0 <- par(no.readonly = TRUE) # save default, for resetting...
   if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
   if (inherits(x,'zoo')) attr(x,'time') <- range(index(x))
   if (verbose) str(x)
@@ -231,7 +231,7 @@ map.data.frame <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                            lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                            ip=1,plot=TRUE) {
   if (verbose) print('map.data.frame')
-  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #par0 <- par(no.readonly = TRUE) # save default, for resetting...
   attr(x,'location') <- x$location; x$location <- NULL
   attr(x,'longitude') <- x$longitude; x$longitude <- NULL
   attr(x,'latitude') <- x$latitude; x$latitude <- NULL
@@ -255,7 +255,7 @@ map.array <- function(x,...,FUN='mean',ip=NULL,is=NULL,new=FALSE,
                       type=c("fill","contour"),gridlines=FALSE,
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.array')
-  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  #par0 <- par(no.readonly = TRUE) # save default, for resetting...
   if (!is.null(is)) x <- subset(x,is=is)  # if is is set, then call subset
   if (is.null(ip)) {
     ## If it is NULL, then aggregate all of 3rd dimension
@@ -298,7 +298,7 @@ map.comb <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                      lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,
                      ip=1,plot=TRUE) {
   if (verbose) print('map.comb')
-  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'eof'))
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -329,7 +329,7 @@ map.eof <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",what="eo
                     ip=1,cex=1,plot=TRUE) {
   
   if (verbose) print('map.eof')
-  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'eof'))
   ##x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
@@ -408,7 +408,7 @@ map.ds <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                    type=c("fill","contour"),gridlines=FALSE,
                    lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.ds')
-  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   stopifnot(inherits(x,'ds'))
   x <- subset(x,is=is)
   
@@ -509,7 +509,7 @@ map.field <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   
   stopifnot(inherits(x,'field'))
   if (verbose) print('map.field')
-  #def.par <- par(no.readonly = TRUE)
+  par0 <- par(no.readonly = TRUE)
   
   x <- subset(x,it=it,is=is)
   #print(length(x)); print(attr(x,'dimensions')[1:2])
@@ -617,7 +617,7 @@ map.corfield <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   
   if (verbose) print("map.corfield")
   stopifnot(inherits(x,'corfield'))
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   x <- subset(x,it=it,is=is,verbose=verbose)
   projection <- tolower(projection)
   dim(x) <- attr(x,'dimensions')[1:2]
@@ -673,7 +673,7 @@ map.trend <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                       lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   if (verbose) print('map.trend')
   stopifnot(inherits(x,'field'),inherits(x,'trend'))
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   x <- subset(x,it=it,is=is)
   projection <- tolower(projection)
   X <- attr(x,'pattern')
@@ -732,7 +732,7 @@ map.pca <- function(x,...,it=NULL,is=NULL,ip=1,new=FALSE,projection="lonlat",
                     lonR=NULL,latR=NULL,axiR=NULL,verbose=FALSE,plot=TRUE) {
   ##
   if (verbose) print(paste('map.pca',FUN))
-  #def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   if(inherits(x,"trajectory")) {
     z <- map.pca.trajectory(x,projection=projection,lonR=lonR,latR=latR,
                             xlim=xlim,ylim=ylim,...)
@@ -787,7 +787,7 @@ map.mvr <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                     type=c("fill","contour"),gridlines=FALSE,
                     verbose=FALSE,plot=TRUE) {
   if(verbose) print("map.mvr")
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   x <- subset(x,it=it,is=is)
   z <- map.field(x,new=new,FUN="mean",colbar=colbar,xlim=xlim,ylim=ylim,
                  verbose=verbose,plot=TRUE,...) -> z
@@ -1004,7 +1004,7 @@ map.events <- function(x,Y=NULL,...,it=NULL,is=NULL,xlim=NULL,ylim=NULL,main=NUL
          par("usr")[4] - 0.10*diff(range(par("usr")[3:4])),
          main,pos=4,cex=1,col="black")
   }
-  #par(def.par) # reset to default
+  #par(par0) # reset to default
 }
 
 #' Function that masks either ocean or land

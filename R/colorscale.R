@@ -29,11 +29,11 @@ col.bar <- function(xleft,ybottom,xright,ytop,breaks,horiz=TRUE,
                     pch=15,v=1,h=1,col=col,cex=5,cex.lab=0.6,
                     cex.axis=0.9,type="r",verbose=FALSE,vl=0.5,border="black",...) {
   if (verbose) print('col.bar')
-  # def.par <- par(no.readonly=TRUE)
-  # xleft <- def.par$usr[1] 
-  # xright <- def.par$usr[2]
-  # ybottom <- def.par$usr[4] - 1 - h
-  # ytop <-  def.par$usr[4] - 1 
+  # par0 <- par(no.readonly=TRUE)
+  # xleft <- par0$usr[1] 
+  # xright <- par0$usr[2]
+  # ybottom <- par0$usr[4] - 1 - h
+  # ytop <-  par0$usr[4] - 1 
   
   # by <- (xright - xleft - v * (length(col)))/(length(breaks))
   # steps <-   seq(0, (xright -xleft - v * (length(col))) ,by=by ) # 
@@ -112,7 +112,7 @@ colbar <- function(breaks,col,fig=c(0.15,0.2,0.15,0.3),horiz=FALSE,
 #' @export
 colbar.ini <- function(x,FUN=NULL,colbar=NULL,verbose=FALSE) {
   if (verbose) {print('colbar.ini'); print(colbar)}
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   if (length(x)==0) stop('colbar.ini: x is empty!')
   if (is.null(colbar)) colbar <- list(show=FALSE,n=14,rev=NULL,alpha=NULL)
   if (is.logical(colbar)) colbar <- list(show=colbar)
@@ -281,7 +281,7 @@ colscal <- function(n=14,pal="t2m",rev=FALSE,alpha=NULL,test=FALSE,verbose=FALSE
   }
   
   if (verbose) print(paste('colscal:',pal,'rev=',rev,'n=',n,'alpha=',alpha))
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   if ( (is.null(pal)) | (is.na(pal)) ) pal <- 't2m'
   if (is.null(alpha)) alpha <- 1
   # Set up colour-palette

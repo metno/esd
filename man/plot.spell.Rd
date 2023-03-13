@@ -4,7 +4,7 @@
 \alias{plot.spell}
 \title{Plot esd objects}
 \usage{
-\method{plot}{spell}(x, ..., xlim = NULL, ylim = NULL)
+\method{plot}{spell}(x, ..., xlim = NULL, ylim = NULL, verbose = FALSE)
 }
 \arguments{
 \item{x}{the object to be plotted}
