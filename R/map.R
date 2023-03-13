@@ -30,9 +30,11 @@
 #' @param projection Projections: c("lonlat","sphere","np","sp") - the latter
 #' gives stereographic views from the North and south poles.
 #' @param xlim see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
-#' projections.
+#' projections. Default \code{xlim=NULL} is the same as \code{c(-1,+1)} and refers to coordiates
+#' on a unit sphere (radius = 1). If plotting should be limited to a range of longitudes and latitudes
+#' then \code{subset(.)} can be used prior to \code{map}.
 #' @param ylim see \code{\link{plot}} - only used for 'lonlat' and 'sphere'
-#' projections.
+#' projections. See \code{xlim}.
 #' @param n The number of colour breaks in the color bar
 #' @param breaks graphics setting - see \code{\link{image}}
 #' @param type graphics setting - colour shading or contour

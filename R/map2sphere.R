@@ -14,10 +14,12 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (!is.null(it) | !is.null(is)) x <- subset(x,it=it,is=is,verbose=verbose)
   
   ## KMP 10-11-2015: apply xlim and ylim
-  is <- NULL
-  if (!is.null(xlim)) is$lon <- xlim
-  if (!is.null(ylim)) is$lat <- ylim
-  x <- subset(x,is=is)
+  ## REB 2023-03-10: we want to use  xlim/ylim only to crop the figure like in plot, and not 
+  ## for subsetting the data...
+  # is <- NULL
+  # if (!is.null(xlim)) is$lon <- xlim
+  # if (!is.null(ylim)) is$lat <- ylim
+  # x <- subset(x,is=is)
   
   # Data to be plotted:
   lon <- lon(x)  # attr(x,'longitude')
@@ -44,8 +46,8 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   # }
  
   # Rotation:
-  if (is.null(lonR)) lonR <- mean(lon,na.rm=TRUE)  # logitudinal rotation
-  if (is.null(latR)) latR <- mean(lat,na.rm=TRUE)  # Latitudinal rotation
+  if (is.null(lonR)) lonR <- round(mean(lon,na.rm=TRUE),4)  # logitudinal rotation
+  if (is.null(latR)) latR <- round(mean(lat,na.rm=TRUE),4)  # Latitudinal rotation
   if (verbose) print(paste('lonR=',lonR,'latR=',latR))
   # axiR: rotation of Earth's axis
 
@@ -56,11 +58,16 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   #theta <- pi*geoborders$x[ok]/180; phi <- pi*geoborders$y[ok]/180
 
   ## KMP 10-11-2015: apply xlim and ylim
+  ## REB 2023-03-10: xlim/ylim are not lon/lat but 
   gx <- geoborders$x
   gy <- geoborders$y
   ok <- is.finite(gx) & is.finite(gy)
-  if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
-  if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  # if (!is.null(xlim)) ok <- ok & gx>=min(xlim) & gx<=max(xlim)
+  # if (!is.null(ylim)) ok <- ok & gy>=min(ylim) & gy<=max(ylim)
+  ## REB 2023-03-10
+  xrng <- range(lon); yrng <- range(lat)
+  ok <- ok & gx>=min(xrng) & gx<=max(xrng)
+  ok <- ok & gy>=min(yrng) & gy<=max(yrng)
   theta <- pi*gx[ok]/180
   phi <- pi*gy[ok]/180
 
@@ -70,6 +77,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
 
 # Calculate contour lines if requested...  
 #contourLines
+  if (verbose) print('contour lines...')
   lonxy <- rep(lon,length(lat))
   latxy <- sort(rep(lat,length(lon)))
   map <- c(map)
@@ -98,6 +106,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   ## because otherwise map2sphere doesn't work
   ## AM 2021-06-02 There is still sth wrong with color palette definition but I cannot figure out what is the problem
   # Define colour palette:
+  if (verbose) print('colbar...')
   if (is.null(colbar)) {
     colbar$show <- FALSE
   } else if (is.null(colbar$show)) {
@@ -166,20 +175,30 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if(!is.null(fig)) par(fig=fig,new=(add & dev.cur()>1))
   par(bty="n")
   ## KMP 2023-02-07: add ylim and here and then colorbar below the plot
-  xlim <- range(x,na.rm=TRUE)
-  zlim <- range(z,na.rm=TRUE)
+  ## REB 2023-03-10: Need to allow for specifying xlim and ylim - 
+  ## Error in colbar.ini(map, colbar = colbar) : colbar.ini: x is empty!
+  ## ...when xlim and ylim are specified...
+  # xlim <- range(x,na.rm=TRUE)
+  # zlim <- range(z,na.rm=TRUE)
+  ## REB 2023-03-10
+  if (verbose) print(paste('xlim',paste(xlim,collapse=','),' & ylim',paste(ylim,collapse=',')))
+  if (is.null(xlim)) xlim <- range(x,na.rm=TRUE)
+  ## REB: Why 'zlim' and not 'ylim'?
+  if (is.null(ylim)) zlim <- range(z,na.rm=TRUE) else zlim <- ylim
   dz <- 0.2*diff(zlim)
   zlim <- zlim + c(-1,0)*dz
   plot(x,z,xaxt="n",yaxt="n",pch=".",col="grey90",
        xlim=xlim,ylim=zlim,xlab="",ylab="",main=main)
   
   # plot the grid boxes, but only the gridboxes facing the view point:
+  if (verbose) print('Visible grid boxes')
   Visible <- colMeans(Y) > 0
   X <- X[,Visible]; Y <- Y[,Visible]; Z <- Z[,Visible]
   index <- index[Visible]
   
   ## REB 2020-01-26
   if (style=='night') {
+    if (verbose) print('Add night-day shading')
     ## Add shadow effect to collours
     brightness <- cos(Theta[1,Visible] - pi*lonR/180)
     
@@ -193,8 +212,11 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   }
   apply(rbind(X,Z,index,brightness,alpha),2,gridbox,colbar$col)
   # Plot the coast lines  
+  if (verbose) print('plot the coast lines')
   visible <- y > 0
+  if (verbose) print(paste(sum(visible),'coast-line points'))
   points(x[visible],z[visible],pch=".")
+  if (verbose) {print(summary(x)); print(summary(y))}
   lines(cos(pi/180*1:360),sin(pi/180*1:360))
   if (colbar$show) {
     if (verbose) print('plot colourbar')

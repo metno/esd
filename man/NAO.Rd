@@ -14,7 +14,7 @@
 \alias{Sunspots}
 \title{Functions to read climate indices from sources on the internet}
 \usage{
-NAO(freq = "monthly", url = NULL, header = FALSE, verbose = FALSE)
+NAO(freq = "monthly", url = NULL, header = NULL, verbose = FALSE)
 }
 \arguments{
 \item{freq}{frequency}
