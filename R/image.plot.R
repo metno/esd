@@ -103,7 +103,8 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
     iy <- midpoints
     iz <- matrix(iy, nrow = 1, ncol = length(iy))
   }
-  par(new = FALSE, pty = "m", plt = smallplot, err = -1)
+  #par(new = FALSE, pty = "m", plt = smallplot, err = -1)
+  par(pty = "m", plt = smallplot, err = -1)
   if (!is.null(breaks) & !is.null(lab.breaks)) {
     axis.args <- c(list(side = ifelse(horizontal, 1, 4), 
                         mgp = c(2, 0.5, 0), las = ifelse(horizontal, 0, 2), 
