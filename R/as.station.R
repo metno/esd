@@ -503,7 +503,6 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
                                       verbose=FALSE) {
   if(verbose) print("as.station.dsensemble.pca")
   X <- x ## quick fix
-  ## if (verbose) print('as.station.dsensemble.pca') # AM added two times
   ## REB: need to remove the EOF object if it is present:
   if (!is.null(X$eof)) X$eof <- NULL
   if (inherits(X,"station")) return(X)
@@ -528,12 +527,13 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
       j <- tx %in% index(X[[i]])
       V[j,,i] <- X[[i]]
     }
-    exclude_times <- apply(V, 1, function(x) sum(is.na(x))) > 
-      min(d[1], nmin.m)#(d[1]*threshold_missing) 
-    exclude_gcms <- apply(V, 3, function(x) sum(is.na(x))) > 
-      min(d[3], nmin.t)#(d[3]*threshold_missing)
+    ## Exclude time steps with less than nmin.m ensemble members
+    exclude_times <- apply(V[,1,], 1, function(x) sum(!is.na(x))) < 
+      min(d[3], nmin.m)
+    ## Exclude ensemble members with less than nmin.t time steps
+    exclude_gcms <- apply(V[,1,], 2, function(x) sum(!is.na(x))) <
+      min(d[1], nmin.t)
     if(any(exclude_times)) {
-      #browser()
       if(verbose) print(paste("Removing time indices", 
                               paste(tx[exclude_times], collapse=", "),
                               "due to few data points."))
@@ -541,7 +541,6 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
       tx <- tx[-which(exclude_times)]
     }
     if(any(exclude_gcms)) {
-      #browser()
       if(verbose) print(paste("Removing gcms", 
                               paste(gcmnames[exclude_gcms], collapse=", "),
                               "due to few data points."))
@@ -551,33 +550,6 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
     }
     if (verbose) print(paste('dim V=',paste(dim(V),collapse='-')))
     X$info <- info; X$pca <- pca; X$eof <- eof 
-    ## ====== Alternative version end =========
-    ## ====== Old version start =============== 
-    # n <- length(X)
-    # if (verbose) print('Extract the results model-wise')
-    # ## Find the size of the PC matrices representing model projections
-    # d <- apply(sapply(X[3:n],dim),1,min)
-    # gcmnames <- attr(X, "model_id")
-    # ## The PCs from the list are extracted into the matrix V 
-    # ## Quality control
-    # if (verbose) print(paste('Before quality control: original number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
-    # for (i in seq(n,3,by=-1)) {
-    #   #print(range(X[[i]],na.rm=TRUE)); print(dim(X[[i]]))
-    #   if (max(abs(X[[i]]),na.rm=TRUE) > 10)  {
-    #     print(paste(i,'Remove suspect results',gcmnames[i]))
-    #     X[[i]] <- NULL
-    #     gcmnames <- gcmnames[-i]
-    #   }
-    # }
-    # n <- length(X)
-    # if (verbose) print(paste('After quality control: new number of members=',n - 2))  # AM added - 2 as you have to remove 'info' and 'pca' attributes from the list 
-    # V <- array(unlist(lapply( X[3:length(X)],
-    #   function(x) coredata(x[1:d[1],1:d[2]]))),dim=c(d,length(X)-2))
-    # if (verbose) print(paste('dim V=',paste(dim(V),collapse='-')))
-    ## ====== Old version end =================
-    ## Select number of patterns
-
-    ## REB 2016-11-03
     ## If there is only one single station, avoid collapse of dimension
     if (is.null(dim(attr(X$pca,'pattern')))) {
       dim(attr(X$pca,'pattern')) <- c(1,length(attr(X$pca,'pattern')))
@@ -596,7 +568,7 @@ as.station.dsensemble.pca <- function(x,...,is=NULL,ip=NULL,
     if (verbose) print('multiple stations')
     d <- dim(U)
     S <- apply(V, 3, function(x) U %*% diag(W) %*% t(x))
-    dim(S) <- c(dim(U)[1], dim(V)[1], length(X)-2)
+    dim(S) <- c(dim(U)[1], dim(V)[1], dim(V)[3])
     
     for (i in seq(1:dim(S)[1])) {
       S[i,,] <- S[i,,] + c(attr(X$pca,'mean'))[i]
