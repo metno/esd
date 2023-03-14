@@ -41,7 +41,6 @@ image.plot <- function (..., breaks=NULL, add = FALSE, nlevel = 64, horizontal =
   par0 <- par(no.readonly = TRUE) # save default, for resetting...
   args <- names(list(...))
   if (verbose) print(args)
-  
   if(!is.null(breaks)) nlevel <- length(breaks)-1
   if(is.null(col)) col <- colscal(n=nlevel, pal=pal)
   if (rev) col <- rev(col)
@@ -208,7 +207,6 @@ poly.image <- function (x, y, z, col = colscal(n=64,pal="heat"), breaks, transpa
                         midpoint = FALSE, zlim = range(z, na.rm = TRUE), xlim = range(x), 
                         ylim = range(y), add = FALSE, border = NA, lwd.poly = 1, verbose=FALSE, ...) {
   if(verbose) print("poly.image")
-  par0 <- par(no.readonly = TRUE) # save default, for resetting...
   if(!requireNamespace("fields",quietly=TRUE)) {
     stop("Package \"fields\" needed to regrid image. Please install it.")
   } else {
@@ -255,7 +253,7 @@ imageplot.setup <- function (x, add = FALSE, legend.shrink = 0.9, legend.width =
                              horizontal = FALSE, legend.mar = NULL, bigplot = NULL, smallplot = NULL, 
                              verbose=FALSE, ...) {
   if(verbose) print("imageplot.setup")
-  par0 <- par(no.readonly = TRUE) # save default, for resetting...
+  par0 <- par() 
   if (is.null(smallplot)) {
     stick <- TRUE
   } else {
