@@ -48,8 +48,14 @@
 vec <- function(x,y,it=NULL,a=NULL,r=1,ix=NULL,iy=NULL,new=TRUE,nx=150,ny=80,
                 projection='lonlat',lonR=NULL,latR=NULL,axiR=0,verbose=FALSE,length=NULL,...) {
   if (verbose) print(paste('Add vector to a a map or sphere:',projection))
-  if (!is.null(it)) {x <- subset(x,it=it); y <- subset(y,it=it)} else
-  {x <- map(x,plot=FALSE); y <- map(y,plot=FALSE); attr(x,'dimensions') <- dim(x)}
+  if (!is.null(it)) {
+    x <- subset(x,it=it); y <- subset(y,it=it)
+  } else {
+    if (verbose) print(class(x))
+    x <- map(x,plot=FALSE,verbose=verbose)
+    y <- map(y,plot=FALSE) 
+    attr(x,'dimensions') <- dim(x)
+  }
   d <- attr(x,'dimensions')
   if (is.null(d)) stop('vec needs esd field objects with proper attributes')
   if (verbose) {print(d); print(dim(x))}
