@@ -28,7 +28,7 @@
 #' }
 #'
 #' @export metno.frost.meta.day
-metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
+metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx","pp","sd"), 
                                  save2file=FALSE, path=NULL, verbose=FALSE, ...) {
   if (verbose) print(match.call())
   X <- metno.frost.meta.default(param=param, timeresolutions="P1D", verbose=verbose, ...)
