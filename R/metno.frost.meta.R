@@ -132,7 +132,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     if (verbose) print(paste('metno.frost.meta.default: params:', strparam))
     
     # Get a client_id using function from metno.frost.data.R
-    frostID <- metno.frost.keyfile(keyfile, verbose)
+    frostID <- metno.frost.keyfile(keyfile, browser, url, verbose)
 
     url1 <- paste0(
       "https://", 
