@@ -351,6 +351,10 @@ climatology <- function(x,...,verbose=FALSE) {
 # Handy conversion algorithms:
 #' @export as.climatology
 as.climatology <- function(x,...) {
+  if (is.null(attr(x, "aspect"))) {
+    warning('esd::as.climatolody - aspect not set, but assumed to be "measured"')
+    attr(y,'aspect') <- 'measured'
+  }
   if(attr(x, "aspect")=="anomaly") ya <- x else ya <- as.anomaly(x,...)
   clim <- attr(ya,'climatology')
   if(inherits(clim,"zoo")) {
