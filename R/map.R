@@ -216,7 +216,7 @@ map.matrix <- function(x,...,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       z <- map2sphere(x,new=new,xlim=xlim,ylim=ylim,zlim=zlim,lonR=lonR,latR=-90,
                       lab=lab,colbar=colbar,verbose=verbose,...)
     }
-  }
+  } else z <- lonlatprojection(x,,xlim=xlim,ylim=ylim,zlim=zlim,colbar=colbar,plot=plot)
   invisible(z)
   #map.station(NULL,...)
 }

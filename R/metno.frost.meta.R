@@ -28,7 +28,7 @@
 #' }
 #'
 #' @export metno.frost.meta.day
-metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx"), 
+metno.frost.meta.day <- function(param=c("t2m","precip","tmin","tmax","slp","pon","pox","fg","fx","pp","sd"), 
                                  save2file=FALSE, path=NULL, verbose=FALSE, ...) {
   if (verbose) print(match.call())
   X <- metno.frost.meta.default(param=param, timeresolutions="P1D", verbose=verbose, ...)
@@ -132,7 +132,7 @@ metno.frost.meta.default <- function(keyfile='~/.FrostAPI.key', param=c("t2m"),
     if (verbose) print(paste('metno.frost.meta.default: params:', strparam))
     
     # Get a client_id using function from metno.frost.data.R
-    frostID <- metno.frost.keyfile(keyfile, verbose)
+    frostID <- metno.frost.keyfile(keyfile, browser, url, verbose)
 
     url1 <- paste0(
       "https://", 

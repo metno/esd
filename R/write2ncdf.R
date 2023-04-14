@@ -345,9 +345,6 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   ## Compute summary statistics for the stations, e.g. mean, max, trend, etc.
   x0 <- x; missval0 <- missval; verbose0 <- verbose
   list2env(StationSumStats(x=x,missval=missval,ns=nspc,verbose=verbose,start=start),envir=environment())
-#<<<<<<< frost-2022
-#  x <- x0; missval <- missval0; verbose <- verbose0; rm('x0','missval0','verbose0'); gc(reset=TRUE) ## REB in case something happened to x in the function call above...
-#=======
   verbose <- verbose[1]  ## There seemed to be several versions of 'verbose'
   x <- x0; missval <- missval0; rm('x0','missval0'); gc(reset=TRUE) ## REB in case something happened to x in the function call above...
 #>>>>>>> master
@@ -366,7 +363,6 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     calendar <- 'standard'
   }
   
-  
   ## Put the data into y in the form of a matrix with scaled values around zero and an offset: 
   y <- coredata(x)
   if (verbose) {print('Scale the data after removing offset'); print(str(x)); print(summary(c(y))); 
@@ -380,7 +376,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     if (is.null(it)) {
       time <- julian(index(x)) - julian(as.Date(torg)) 
     } else {
-      ## If it is provided, then ensure that the stations are saved for thistime interval
+      ## If it is provided, then ensure that the stations are saved for this time interval
       ## pad with NAs if necessary...
       if (verbose) print(paste('Use prescribed time coordinates',it[1],'-',it[2]))
       if (is.numeric(it)) {
@@ -1373,12 +1369,12 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
       ## Mean wet/dry-spell length
       if (verbose) print('Spell')
       t <- index(x)
-      ss <- spell(x,threshold=1)
+      ss <- try(spell(x,threshold=1))
       ## If spell resturns NULL, then return NAs...
-      if (inherits(ss,'spell')) { 
+      if ( (inherits(ss,'spell')) & (!is.null(ss)) ) { 
         mwsl <- colMeans(subset.station(ss,is=list(param='wet')),na.rm=TRUE)
         mdsl <- colMeans(subset.station(ss,is=list(param='dry')),na.rm=TRUE)
-      } else {mwsl <- missval; mdsl <- missval}
+      } else {mwsl <- rep(missval,length(ave)); mdsl <- rep(missval,length(ave))}
     }
     
     if (verbose) print('lastelementrecord')

@@ -27,8 +27,10 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   if (verbose) {print(summary(lon)); print(summary(lat))}
   # To deal with grid-conventions going from north-to-south or east-to-west:
   if (inherits(x,'field')) map <- map(x,plot=FALSE) else map <- x
+  if (verbose) print(class(map))
   srtx <- order(lon); lon <- lon[srtx]
   srty <- order(lat); lat <- lat[srty]
+  if (length(dim(map))!= 2) dim(map) <- c(length(srtx),length(srty))
   map <- map[srtx,srty]
   param <- attr(x,'variable')
   unit <- attr(x,'unit')[1]
