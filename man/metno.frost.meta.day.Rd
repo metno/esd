@@ -7,7 +7,7 @@
 \title{Download METNO station metadata using frost.met.no}
 \usage{
 metno.frost.meta.day(
-  param = c("t2m", "precip", "tmin", "tmax", "slp", "pon", "pox", "fg", "fx"),
+  param = c("t2m", "precip", "tmin", "tmax", "slp", "pon", "pox", "fg", "fx", "pp", "sd"),
   save2file = FALSE,
   path = NULL,
   verbose = FALSE,
