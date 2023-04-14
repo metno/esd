@@ -93,19 +93,19 @@ regrid.station <- function(x,is=NULL,...,approach="station",verbose=FALSE) {
     print("Weight matrix");  print(dim(beta))
     print('input data dimensions'); print(c(D,D[1]*D[2]))
     print('output data dimensions'); print(dim(y))
-    print('indx:'); print(dim(attr(beta,'index')))
+    print('index:'); print(dim(attr(beta,'index')))
     print(range(c(attr(beta,'index'))))
   }
   
   pb <- txtProgressBar(style=3)
   #str(X); str(beta)
-
   for (i in 1:d[1]) {
     setTxtProgressBar(pb,i/d[1])  
     M <- as.matrix(X[i,attr(beta,"index")])
     dim(M) <- c(D[1] * D[2],4)
     y[, i] <- rowSums(as.matrix(beta) * M)      
   }
+  
   print("set attributes:")
   y <- zoo(t(y),order.by=index(x))
   class(y) <- c('field',class(x)[2:3]) 
