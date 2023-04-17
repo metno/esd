@@ -317,7 +317,7 @@ as.field.station <- function(x,...,lon=NULL,lat=NULL,nx=30,ny=30,
   if(verbose) print("as.field.station")
   if (is.null(lon)) lon <- seq(min(lon(x)),max(lon(x)),length=nx)
   if (is.null(lat)) lat <- seq(min(lat(x)),max(lat(x)),length=ny)
-  y <- regrid(x,is=list(lon=lon,lat=lat))
+  y <- regrid(x,is=list(lon=lon,lat=lat),verbose=verbose)
   attr(y,'history') <- history.stamp(x)
   return(y)  
 }

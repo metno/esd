@@ -6,7 +6,7 @@
 \alias{gridmap.station}
 \alias{gridmap.pca}
 \alias{gridstations}
-\title{Creates a griddded map}
+\title{Creates a gridded map}
 \usage{
 gridmap(
   Y,

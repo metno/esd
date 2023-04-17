@@ -1,4 +1,4 @@
-#' Creates a griddded map
+#' Creates a gridded map
 #' 
 #' A function that uses \code{LatticeKrieg} and elevation data to grid station
 #' based data and present a map.
@@ -43,6 +43,7 @@ gridmap.default <- function(Y,FUN='mean',colbar=list(pal='t2m'),project='lonlat'
     } else {
       y <- Y  ## single specific date
     }
+    if(!is.null(dim(lon(Y)))) dim(y) <- dim(lon(Y))
   
     ## Get data on the topography on the 5-minute resolution
     if (verbose) print('Use etopo5 elevation data')
