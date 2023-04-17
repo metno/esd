@@ -195,7 +195,7 @@ map.station <- function(x=NULL,FUN=NULL, it=NULL,is=NULL,new=FALSE,
           #par(mar=c(2,1,2,1),mgp=c(2,0.4,0),cex.axis=cex.axis,col.axis='grey')
           #axis(1,colbar$breaks)
           ## KMP 2023-02-16: testing alternative colorbar
-          dy <- diff(ylim)*0.07
+          dy <- diff(ylim)*0.1
           below <- c(min(xlim), min(ylim)-dy/2, max(xlim), min(ylim)+dy/2)
           rect(below[1], below[2]-2*dy, below[3], below[4], 
                col = "white", border = "white")

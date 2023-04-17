@@ -474,10 +474,11 @@ plot.station <- function(x,...,plot.type="single",new=TRUE,
       setfig <- TRUE
     }
   }
-  if(setfig) par(fig=fig)
+  ## Don't reset fig unless it has been set within the function. This will ruin the use of layout and mfrow.
+  if(setfig) par(fig=fig) 
   
-  dontset <- c("cin","cra","csi","cxy","din","page")
-  for(p in names(par1)[!names(par1) %in% dontset]) eval(parse(text=paste0("par(",p,"=par1$",p,")")))
+  #dontset <- c("cin","cra","csi","cxy","din","page","fig") 
+  #for(p in names(par1)[!names(par1) %in% dontset]) eval(parse(text=paste0("par(",p,"=par1$",p,")")))
   par(cex.axis=par0$cex.axis, mar=par0$mar, bty=par0$bty,
       xaxt=par0$xaxt, yaxt=par0$yaxt, xpd=par0$xpd)
 }
