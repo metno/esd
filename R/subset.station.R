@@ -88,12 +88,15 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       print("station.subset: Warning : One dimensional vector has been found in the coredata")
     x <- zoo(as.matrix(coredata(x)),order.by=index(x))
     x <- attrcp(x0,x)
-    ## REB 2023-03-22
-    dim(x) <- c(length(index(x)),length(stid(x)))
+    ## REB 2023-03-22 ## KMP 2023-04-17 stid may not always be specified
+    if(!any(is.null(stid(x)))) {
+      dim(x) <- c(length(index(x)), length(stid(x)))
+    } else {
+      dim(x) <- c(length(index(x)), length(x)/length(index(x)))
+    }
     class(x) <- class(x0)
   } 
   d <- dim(x)
-  
   if (is.null(is)) is <- 1:d[2]
   if (is.null(it)) it <- 1:d[1]
   #if (is.logical(it)) it <- (1:d[1])[it]
@@ -329,6 +332,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   
   if ( (max(ii) <= d[1]) & (max(is) <= d[2]) ) {
     y <- x[ii,is]
+    dim(y) <- c(length(ii), length(is))
   } else { 
     if(verbose) print(is)
     if(verbose) print(dim(x))

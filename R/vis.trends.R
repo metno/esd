@@ -131,7 +131,7 @@ calculate.trends <- function(x,minlen=15,is=1,verbose=FALSE){
   for (i in firstyear) {
     jvec <- i+trendlen[trendlen<=(max(year)-i+1)]-1#(i+minlen-1):(max(year)+1)
     for (j in jvec) {
-      if(!is.na(xy[year==i]) & !is.na(xy[year==j])) {
+      if(all(c(i,j) %in% year)) if(!is.na(xy[year==i]) & !is.na(xy[year==j])) {
         #if(verbose) print(paste(i,j))
         ij <- which(year %in% i:j & !is.na(xy))
         ij.model <- lm(xy[ij]~year[ij])
