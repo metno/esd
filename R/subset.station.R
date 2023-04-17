@@ -8,7 +8,7 @@ subset.station <- function(x, it=NULL, is=NULL, loc=NULL, param=NULL,
     ##
     if (verbose) print(match.call())
     if (is.null(attr(x,'unit'))) attr(x,'unit') <- NA
-    if (verbose) print(paste("subset.station:",c(varid(x),esd::unit(x))))
+    if (verbose) print(paste("subset.station:",c(varid(x),esd::unit(x)))[1])
     d <- dim(x)
     if (is.null(d)) d <- c(length(x),1)
     ## REB 2022-03-31
@@ -75,7 +75,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   ## 
   if (verbose) {
     print(match.call())
-    print(paste("station.subset:",c(varid(x),esd::unit(x))))
+    print(paste("station.subset:",c(varid(x),esd::unit(x)))[1])
   }
   nval <- function(x) sum(is.finite(x))
   x0 <- x
@@ -88,6 +88,8 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
       print("station.subset: Warning : One dimensional vector has been found in the coredata")
     x <- zoo(as.matrix(coredata(x)),order.by=index(x))
     x <- attrcp(x0,x)
+    ## REB 2023-03-22
+    dim(x) <- c(length(index(x)),length(stid(x)))
     class(x) <- class(x0)
   } 
   d <- dim(x)
@@ -180,20 +182,20 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
           ii <- is.element(yr,it)
         } 
       } else if (nlev<=4) {
-        if (verbose) print("station.subset: it are most probably seasons")
-        if (inherits(x,'season') & (length(it)==1)) {
-          if (verbose) print(paste("station.subset: The 'it' value must be a season index between 1 and 4.",
-                                   "If not please use character strings instead. e.g. it='djf'"))
-          it <- switch(tolower(it),'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
+        if (verbose) print("station.subset: it are most probably seasons, month, or indices")
+        if ( inherits(x,'season') & (length(it)==1) & is.character(it) ) {
+          if (verbose) print(paste("station.subset: The 'it' value must be a season index.",
+                                   "such as character strings instead. e.g. it='djf'"))
+          #it <- switch(tolower(it),'1'=1,'2'=4,'3'=7,'4'=10,'djf'=1,'mam'=4,'jja'=7,'son'=10)
           ii <- is.element(mo,it)
         } else if ( (inherits(x,'month') | (inherits(x,'day'))) &
-                    ( (max(it) <= 12) & (min(it) >= 1) ) ) {
+                    (is.character(it)) ) {
           if (verbose) {
             print(paste("station.subset: The 'it' value must be a month index.",
                         "If not please use character strings instead"))
             print(range(it))
-          }
-          ii <- is.element(mo,it)
+            ii <- is.element(mo,it)
+          } else if (is.numeric(it) | is.integer(it) | is.logical(it)) ii <- it
         } else {
           if (verbose) print("station.subset: it represents indices")
           ii <- it
@@ -334,7 +336,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
     return(x)
   }
   
-  if (verbose) print(summary(coredata(y)))
+  if (verbose) print(summary(c(coredata(y))))
   class(x) <- cls
   class(y) <- cls
   y <- attrcp(x,y,ignore=c("names"))
@@ -347,7 +349,7 @@ station.subset <- function(x,it=NULL,is=NULL,verbose=FALSE) {
   if (length(varid(x))== length(x[1,])) attr(y,'variable') <- varid(x)[is] else
                                      attr(y,'variable') <- varid(x)[1]
   if (is.null(attr(y,'unit'))) attr(y,'unit') <- NA
-  if (verbose) print(c(varid(x),esd::unit(x)))
+  if (verbose) print(c(varid(x),esd::unit(x))[1])
   
   if (verbose) print(paste('subset.station: Before subsetting',loc(x)[is],varid(x)[is],
                            esd::unit(x)[is],lon(x)[is],lat(x)[is]))
