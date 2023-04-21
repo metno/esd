@@ -149,6 +149,12 @@ reafill <- function(x,file,anomaly=TRUE,plot=FALSE,delta=0.3,
     }
   }
   if(!is.null(err(x))) {
+    if (verbose) {
+      print(paste('nrow(z)=',nrow(z),'nrow(x)=',nrow(x)))
+      str(z)
+      str(x)
+    }
+    if (length(dim(z))==0) dim(z) <- c(length(z),1)
     if(nrow(z)>nrow(x)) {
       z.err <- matrix(NA, nrow=nrow(z), ncol(z))
       z.err[index(z) %in% index(x)] <- err(x)
