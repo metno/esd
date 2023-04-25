@@ -500,7 +500,11 @@ eof2field <- function(x,it=NULL,is=NULL,ip=NULL,anomaly=FALSE,verbose=FALSE) {
   attr(y,'history') <- history.stamp(x)
   if (anomaly) attr(y,'aspect') <- 'anomaly' else
     attr(y,'aspect') <- 'original'
-  class(y) <- class(eof)[-1]
-  
+  #class(y) <- class(eof)[-1]
+  cl <- class(eof)
+  if("eof" %in% cl) cl <- cl[!cl=="eof"]
+  # KMP 2023-04-25: Replace class 'station' with 'field' (relevant in very few cases - really should not happen)
+  if("station" %in% cl) cl[cl=="station"] <- "field"
+  class(y) <- cl
   invisible(y)
 }

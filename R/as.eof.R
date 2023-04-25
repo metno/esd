@@ -142,26 +142,32 @@ as.eof.list <- function(x,...,verbose=FALSE) {
   return(eof)
 }
 
-#' @exportS3Method
-#' @export
-as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
+# @exportS3Method
+# @export
+as.eof.dsensemble <- function(x,...,FUN='mean',aggregate=TRUE,verbose=FALSE) {
   ## R.E. Benestad, 2017-05-19
   ## Convert the dsensemble object to an EOF of the multi-model mean
   if (verbose) print('as.eof.dsensemble')
   stopifnot(inherits(x,'dsensemble'),inherits(x[[2]],'eof')|inherits(x[[2]],'pca'))
-  eof0 <- x[[2]]
-  x[[2]] <- NULL
-  x[[1]] -> info
-  x[[1]] <- NULL
-  d <- c(dim(x[[1]]),length(x))
-  y <- unlist(x)
-  dim(y) <- c(d[1]*d[2],d[3])
-  Y <- apply(y,1,FUN)
-  dim(Y) <- c(d[1],d[2])
-  eof <- zoo(Y,order.by=index(x[[1]]))
-  eof <- attrcp(eof0,eof)
-  class(eof) <- class(eof0)
-  attr(eof,'info') <- info
+  if(aggregate) {
+    ## KMP 2023-04-25: this code doesn't work for me. Adding input argument 'aggregate'
+    ## to go to as.eof.dsensemble.pca instead.
+    eof0 <- x[[2]]
+    x[[2]] <- NULL
+    x[[1]] -> info
+    x[[1]] <- NULL
+    d <- c(dim(x[[1]]),length(x))
+    y <- unlist(x)
+    dim(y) <- c(d[1]*d[2],d[3])
+    Y <- apply(y,1,FUN)
+    dim(Y) <- c(d[1],d[2])
+    eof <- zoo(Y,order.by=index(x[[1]]))
+    eof <- attrcp(eof0,eof)
+    class(eof) <- class(eof0)
+    attr(eof,'info') <- info
+  } else {
+    eof <- as.eof.dsensemble.pca(x,verbose=verbose,...)
+  }
   attr(eof,'history') <- history.stamp()
   return(eof)
 }
@@ -170,11 +176,13 @@ as.eof.dsensemble <- function(x,...,FUN='mean',verbose=FALSE) {
 #' @export
 as.eof.dsensemble.pca <- function(x,...,is=NULL,it=NULL,ip=NULL,verbose=FALSE) {
   if (verbose) print('as.eof.dsensemble.pca')
-  stopifnot(inherits(x,"dsensemble") & inherits(x,"pca"))
+  stopifnot(inherits(x,"dsensemble") & (inherits(x,"pca")|inherits(x,"eof")))
   if (inherits(x,"eof")) {
     invisible(x)
   } else {
-    eof <- pca2eof(x$pca)
+    eof <- NULL
+    if(!is.null(x$eof)) if(inherits(x$eof,"eof")) eof <- x$eof
+    if(is.null(eof)) eof <- pca2eof(x$pca)
     eof <- subset(eof,ip=ip)
     if (!is.null(is)) eof <- subset(eof,is=is,it=it,verbose=verbose)
     x$eof <- eof 

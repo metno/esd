@@ -238,14 +238,14 @@ as.field.comb <- function(x,...,iapp=NULL,verbose=FALSE) {
 #' 
 #' @return a \code{field} object
 #' 
-#' @seealso as.field eof2field EOF as.field.dsensemble.eof
+#' @seealso as.field eof2field EOF as.field.dsensemble
 #' 
 #' @exportS3Method
 #' @export
 as.field.eof <- function(x,...,iapp=NULL,anomaly=FALSE,verbose=FALSE) {
   if(verbose) print("as.field.eof")
   if (inherits(x,'dsensemble')) {
-    y <- as.field.dsensemble.eof(x,verbose=verbose,...)
+    y <- as.field.dsensemble(x,verbose=verbose,...)
   } else if (!inherits(x,'comb')) {
     y <- eof2field(x,verbose=verbose,...)
   } else {
@@ -342,10 +342,11 @@ as.field.station <- function(x,...,lon=NULL,lat=NULL,nx=30,ny=30,
 #' 
 #' @exportS3Method
 #' @export
-as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
+as.field.dsensemble <- function(x,...,is=NULL,ip=NULL,im=NULL,
                                     anomaly=FALSE,verbose=FALSE) {
-  if (verbose) print('as.field.dsensemble.eof')
-  stopifnot(inherits(x,"dsensemble") & inherits(x,"eof"))
+  if (verbose) print('as.field.dsensemble')
+  stopifnot(inherits(x,"dsensemble") & (inherits(x,"eof")|inherits(x,"pca")))
+  if(inherits(x,"pca")) x <- as.eof(x,is=is,ip=ip,aggregate=FALSE,verbose=verbose,...)
   if (inherits(x,"field")) {
     invisible(x)
   } else {
@@ -381,13 +382,13 @@ as.field.dsensemble.eof <- function(x,...,is=NULL,ip=NULL,im=NULL,
                 array,dim=dim(S)[2:3])
     
     if (verbose) print('Set attributes')
-    Y <- as.field(x$eof)
-    gcms <- sub(".*_","",names(x)[ix])
+    Y <- as.field(x$eof, verbose=verbose)
+    gcms <- names(x)[ix]
     S <- setNames(S,gcms)
-    for (i in seq_along(ix)) {
+    for (i in seq_along(ix)) { 
       S[[i]] <- as.field(S[[i]],index=index(x[[ix[i]]]),
                          lon=attr(Y,"longitude"),lat=attr(Y,"latitude"),
-                         param=varid(Y),unit=unit(Y),
+                         param=varid(Y),unit=attr(Y,'unit'),
                          longname=paste('fitted',attr(Y,'longname')),
                          greenwich=attr(Y,'greenwich'),aspect='fitted')
       attr(S[[i]],'unitarea') <- attr(x,"unitarea")

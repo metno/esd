@@ -24,5 +24,5 @@ a \code{field} object
 Transform an \code{eof} object into the esd class \code{field}. If the input is a \code{dsensemble} object, it will be redirected to \code{as.field.dsensemble}. Otherwise the object is transformed using the function \code{eof2field}.
 }
 \seealso{
-as.field eof2field EOF as.field.dsensemble.eof
+as.field eof2field EOF as.field.dsensemble
 }
