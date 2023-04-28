@@ -1524,7 +1524,7 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
   if (verbose) print("retrieve.station: locs <- tolower(sub('\xc3','',locs))")
-  locs <- tolower(sub('\xc3','',locs,fixed=TRUE))
+  locs <- tolower(sub('\\xc3','',locs,fixed=TRUE))
   
   ## Order alphabetically
   if (verbose) 'Sort alphabetically and in proper order with Scandinavian characters'
