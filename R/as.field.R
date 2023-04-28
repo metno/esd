@@ -397,6 +397,7 @@ as.field.dsensemble <- function(x,...,is=NULL,ip=NULL,im=NULL,
     if (!is.null(is)) S <- subset(S,is=is,verbose=verbose)
     class(S) <- c("dsensemble","field","list")
     S <- attrcp(x,S)
+    if(!is.null(attr(x,"model_id"))) attr(S,"model_id") <- attr(x,"model_id")[ix]
     attr(S,"unit") <- attr(Y,"unit")
     attr(S,"variable") <- attr(Y,"variable")
     attr(S,"longname") <- attr(Y,"longname")

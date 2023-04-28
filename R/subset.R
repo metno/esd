@@ -982,8 +982,40 @@ subset.trend <- function(x,it=NULL,is=NULL,...,verbose=FALSE) {
   return(y)
 }
 
+#' Subsetting esd objects
+#' 
+#' The subset method tries to be 'intelligent', and if the list has no names,
+#' then the list contains two vectors of length 2, then this is interpreted as
+#' a region, e.g. argument \code{is = list(
+#' c(lon.min,lon.max),c(lat.min,lat.max) )}. If, on the other hand, \code{is =
+#' list( lon=1:50,lat=55:65 )}, then the function picks the longitudes and
+#' latitudes which match these. This makes it flexible so that one can pick any
+#' irregular sequence.
+#' 
+#' 
+#' @aliases subset subset.station subset.eof subset.pca subset.cca
+#' subset.events subset.trajectory subset.trend subset.corfield subset.ds
+#' subset.dsensemble subset.comb subset.field subset.spell subset.zoo
+#' subset.trajectory station.subset subset.zoo subset.stationmeta
+#' subset.matrix subset.pattern subset.default subset.mvcomb
+#' @seealso matchdate sort.station
+#'
+#' @param x 'dsensemble' object (output of \code{DSensemble}) from which the subset is taken
+#' @param it A list or data.frame providing time index, e.g. a range of years like c(1979,2010), a season ('djf'), or a month ('dec' or 'december').
+#' @param is a list or data.frame providing a space index, e.g., station record or a lon(gitude) and lat(itude) range. If NULL include all.
+#' @param ip a numerical or numerical vector with indices of the principle components to be included. If NULL include all.
+#' @param im a numerical or numerical vector with indices of the ensemble members to be included. If NULL include all.
+#' @param ensemble.aggregate If TRUE, call \code{subset.dsensemble.multi} if
+#' appropriate.
+#' @param verbose If TRUE, print out diagnosics
+#' @param \dots additional arguments 
+#'
+#' @return An object of the same class as the input object
+#' @author R.E. Benestad, A. Mezghani and K. Parding
+#' @keywords utilities
+#'  
 #' @exportS3Method
-#' @export
+#' @export subset.dsensemble
 subset.dsensemble <- function(x,...,it=NULL,is=NULL,ip=NULL,im=NULL,
                               ensemble.aggregate=TRUE,verbose=FALSE) {
   if (verbose) print('subset.dsensemble')
