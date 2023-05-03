@@ -79,7 +79,13 @@
 #' @param publisher_type	Specifies type of publisher with one of the following: 'person', 'group', 'institution', or 'position'. If this attribute is not specified, the publisher is assumed to be a person.
 #' @param publisher_institution	The institution that presented the data file or equivalent product to users; should uniquely identify the institution. If publisher_type is institution, this should have the same value as publisher_name.
 #' @param product_version	Version identifier of the data file or product as assigned by the data creator. For example, a new algorithm or methodology could result in a new product_version.
+#' @param summary Summary
+#' @param summary_no Summary in Norwegian
+#' @param keywords Keywords
+#' @param keywords_vocabulary Vocabulary of keywords. Default: GCMDSK:GCMD Science Keywords:https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords, GCMDPROV:GCMD
 #' @param references	Published or web-based references that describe the data or methods used to produce it. Recommend URIs (such as a URL or DOI) for papers or other references. This attribute is defined in the CF conventions.
+#' @param title Title of data set
+#' @param title_no Title of data set in Norwegian
 #' @param additional_attributes List of attributes to add to the netCDF file. The default is NULL 
 #' but it could be something like list("distribution_statement"="Free", "title"="Temperature projections for Norway")
 #' @param verbose TRUE - clutter the screen.
@@ -98,7 +104,7 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,
                                    conventions="ACDD-1.3",
                                    id=NA,naming_authority=NA,
                                    source=NA,processing_level="Scientific",
-                                   comment=NA,acknowledgment=NA,
+                                   comment=NA,acknowledgement=NA,
                                    license="Freely distributed",
                                    standard_name_vocabulary="CF Standard Name Table v27",
                                    creator_name=NA,creator_email=NA,creator_url=NA,
@@ -107,9 +113,10 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,
                                    project=NA,project_short_name=NA,
                                    publisher_name=NA,publisher_email=NA,publisher_url=NA,
                                    publisher_type=NA,publisher_institution=NA,
-                                   product_version=NA,
-                                   references=NA,
-                                   additional_attributes=NULL,verbose=FALSE) {
+                                   product_version=NA,summary=NA,keywords=NA,
+                                   keywords_vocabulary="GCMDSK:GCMD Science Keywords:https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords, GCMDPROV:GCMD",
+                                   references=NA,title=NA,title_no=NA,
+                                   additional_attributes=NA,verbose=FALSE) {
   
   if(verbose) print('write2ncdf4.dsensemble')
   if("model" %in% type & length(im)>1) {
@@ -122,7 +129,7 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,
                   conventions=conventions,
                   id=id,naming_authority=naming_authority,
                   source=source,processing_level=processing_level,
-                  comment=comment,acknowledgment=acknowledgment,license=license,
+                  comment=comment,acknowledgement=acknowledgement,license=license,
                   standard_name_vocabulary=standard_name_vocabulary,
                   creator_name=creator_name,creator_email=creator_email,creator_url=creator_url,
                   creator_institution=creator_institution,creator_type=creator_type,
@@ -130,8 +137,8 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,
                   project=project,project_short_name=project_short_name,
                   publisher_name=publisher_name,publisher_email=publisher_email,publisher_url=publisher_url,
                   publisher_type=publisher_type,publisher_institution=publisher_institution,
-                  product_version=product_version,
-                  references=references,
+                  product_version=product_version,summary=summary,keywords=keywords,
+                  references=references,title=title,title_no=title_no,
                   additional_attributes=additional_attributes,verbose=verbose)
     }
   } else {
@@ -146,28 +153,30 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,
                                   offset=offset,torg=torg,missval=missval,im=im,verbose=verbose)
     }
     
-    nc <- add_ncattributes(conventions=conventions,id=id,naming_authority=naming_authority,
-                           source=source,processing_level=processing_level,
-                           comment=comment,acknowledgment=acknowledgment,
-                           license=license,standard_name_vocabulary=standard_name_vocabulary,
-                           creator_name=creator_name,creator_email=creator_email,creator_url=creator_url,
-                           creator_institution=creator_institution,creator_type=creator_type,
-                           institution=institution,institution_short_name=institution_short_name,
-                           project=project,project_short_name=project_short_name,
-                           publisher_name=publisher_name,publisher_email=publisher_email,publisher_url=publisher_url,
-                           publisher_type=publisher_type,publisher_institution=publisher_institution,
-                           product_version=product_version,references=references,
-                           additional_attributes=additional_attributes)
-    
-    if (verbose) print(paste('Successfully finished writing dsensemble data and attributes to file', file))
-    nc_close(nc)
+    if(inherits(nc, "ncdf4")) {
+      nc <- add_ncattributes(nc, conventions=conventions,id=id,naming_authority=naming_authority,
+                             source=source,processing_level=processing_level,
+                             comment=comment,acknowledgement=acknowledgement,
+                             license=license,standard_name_vocabulary=standard_name_vocabulary,
+                             creator_name=creator_name,creator_email=creator_email,creator_url=creator_url,
+                             creator_institution=creator_institution,creator_type=creator_type,
+                             institution=institution,institution_short_name=institution_short_name,
+                             project=project,project_short_name=project_short_name,
+                             publisher_name=publisher_name,publisher_email=publisher_email,publisher_url=publisher_url,
+                             publisher_type=publisher_type,publisher_institution=publisher_institution,
+                             product_version=product_version,summary=summary,keywords=keywords,
+                             references=references,title=title,title_no=title_no,
+                             additional_attributes=additional_attributes)
+      nc_close(nc)
+      if (verbose) print(paste('Successfully finished writing dsensemble data and attributes to file', file))
+    }
   }
 }
 
 add_ncattributes <- function(nc, conventions="ACDD-1.3",
                              id=NA,naming_authority=NA,
                              source=NA,processing_level="Scientific",
-                             comment=NA,acknowledgment=NA,
+                             comment=NA,acknowledgement=NA,
                              license="Freely distributed",
                              standard_name_vocabulary="CF Standard Name Table v27",
                              creator_name=NA,creator_email=NA,creator_url=NA,
@@ -176,12 +185,11 @@ add_ncattributes <- function(nc, conventions="ACDD-1.3",
                              project=NA,project_short_name=NA,
                              publisher_name=NA,publisher_email=NA,publisher_url=NA,
                              publisher_type=NA,publisher_institution=NA,
-                             product_version=NA,
-                             references=NA,
-                             additional_attributes=NULL,verbose=FALSE) {
+                             product_version=NA,summary=NA,keywords=NA,
+                             references=NA,title=NA,title_no=NA,
+                             additional_attributes=NA,verbose=FALSE) {
   if(verbose) print("add_ncattributes")
-  
-  stopifnot("The input nc must be a 'ncdf4' object"=!inherits(nc, "ncdf4"))
+  stopifnot("The input nc must be a 'ncdf4' object"=inherits(nc, "ncdf4"))
   if(verbose) print("Adding attributes from input arguments.")
   ncatt_put( nc, 0, "title", as.character(title), prec="text")
   ncatt_put( nc, 0, "title_no", as.character(title_no), prec="text")
@@ -428,7 +436,7 @@ ncdf4_dsmodel <- function(x,...,file=NULL,path=NULL,
       file <- paste0(file,"_monthly-mean")
     }
     file <- paste0(file,"_",paste(range(year(x[[1]])),collapse="-"))
-    if(type=="station") file <- paste0(file,"_station")
+    if("station" %in% type) file <- paste0(file,"_station")
     file <- paste0(file, ".nc4")
   }
   if(!is.null(path)) file <- file.path(path, basename(file))
@@ -473,9 +481,9 @@ ncdf4_dsmodel <- function(x,...,file=NULL,path=NULL,
   #ncatt_put( nc, 0, 'class', class(x))
   ncatt_put( nc, 0, "description", 
              paste("Saved from esd using write2ncdf4",date()))
-  if (verbose) print(attr(x,'history'))
+  #if (verbose) print(attr(x,'history'))
   ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
-  
+   
   # Add the attributes of object x
   attnames <- names(attributes(x))
   if (verbose) print(attnames)
@@ -487,25 +495,37 @@ ncdf4_dsmodel <- function(x,...,file=NULL,path=NULL,
   attnames <- attnames[!grepl('longitude',attnames)]
   attnames <- attnames[!grepl('latitude',attnames)]
   attnames <- attnames[!grepl('greenwich',attnames)]
+  attnames <- attnames[!grepl('domain',attnames)]
   attnames <- attnames[!grepl('call',attnames)]
-  for (ia in 1:length(attnames)) {
-    if (verbose) print(paste(attnames[ia], attr(x,attnames[ia])))
-    ncatt_put( nc, 0, attnames[ia], as.character(attr(x,attnames[ia])), prec="text")
+  attnames <- attnames[!grepl('original_data',attnames)]
+  attnames <- attnames[!grepl('scorestats',attnames)]
+  attnames <- attnames[!grepl('r.xval',attnames)]
+  for (ia in seq_along(attnames)) {
+    if(inherits(attr(x,attnames[ia]),"matrix")) {
+      browser()
+    } else {
+      if (verbose) print(paste(attnames[ia], paste(attr(x,attnames[ia]), collapse=", ")))
+      ncatt_put( nc, 0, attnames[ia], as.character(attr(x,attnames[ia])), prec="text")
+    }
   }
-  
+  if(!is.null(attr(x, "domain"))) ncatt_put( nc, 0, "predictor_domain", 
+                                             paste0(paste(attr(x,"domain")$lon, collapse="-"), "E/",
+                                                    paste(attr(x,"domain")$lat, collapse="-"), "N"), prec="text")
+  if(!is.null(attr(x, "r.xval"))) ncatt_put( nc, 0, "r.xval", attr(x,"r.xval"), prec="double")
+
   # Add standard attributes
   ncatt_put( nc, 0, "date_created", as.character(as.Date(Sys.time())), prec="text")
   ncatt_put( nc, 0, "units", attr(x0,"unit")[[1]], prec="text")
-  ncatt_put( nc, 0, "geospatial_lon_min", as.character(min(lon(x0))), prec="text")
-  ncatt_put( nc, 0, "geospatial_lon_max", as.character(max(lon(x0))), prec="text")
+  ncatt_put( nc, 0, "geospatial_lon_min", as.character(round(min(lon(x0)))), prec="text")
+  ncatt_put( nc, 0, "geospatial_lon_max", as.character(round(max(lon(x0)))), prec="text")
   ncatt_put( nc, 0, "geospatial_lon_units", "degrees E", prec="text")
   ncatt_put( nc, 0, "geospatial_lon_resolution", as.character(diff(lon(x0))[[1]]), prec="text")
-  ncatt_put( nc, 0, "geospatial_lat_min", as.character(min(lat(x0))), prec="text")
-  ncatt_put( nc, 0, "geospatial_lat_max", as.character(max(lat(x0))), prec="text")
+  ncatt_put( nc, 0, "geospatial_lat_min", as.character(round(min(lat(x0)))), prec="text")
+  ncatt_put( nc, 0, "geospatial_lat_max", as.character(round(max(lat(x0)))), prec="text")
   ncatt_put( nc, 0, "geospatial_lat_units", "degrees N", prec="text")
   ncatt_put( nc, 0, "geospatial_lat_resolution", as.character(diff(lat(x0))[[1]]), prec="text")
-  ncatt_put( nc, 0, "time_coverage_start", as.character(index), prec="text")
-  ncatt_put( nc, 0, "time_coverage_end", as.character(index), prec="text")
+  ncatt_put( nc, 0, "time_coverage_start", as.character(min(index(x0))), prec="text")
+  ncatt_put( nc, 0, "time_coverage_end", as.character(max(index(x0))), prec="text")
   
   if(inherits(x,"field")) {
     ncatt_put( nc, 0, "spatial_representation", "grid", prec="text")
