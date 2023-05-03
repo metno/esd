@@ -17,6 +17,7 @@
 #' @param FUN the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum',
 #' 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).
 #' @param path The path where the data are stored. Can be a symbolic link.
+#' @param python The version of python to use
 #' @param verbose a boolean; if TRUE print information about progress
 #' @examples
 #' \dontrun{
@@ -31,7 +32,7 @@
 ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
                      varnm=NULL, lon=c(-180,180),lat=c(-90,90),
                      FNAME="'ERA5_XXX_YYYY.nc'",FUN='monsum',
-                     path='~/Downloads/',verbose=TRUE) { 
+                     path='~/Downloads/',python='python3',verbose=TRUE) { 
   system('pip install cdsapi')
   AREA <- paste0("['",min(lat),"','",min(lon),"','",max(lat),"','",max(lon),"']")
   if (verbose) print(AREA)
@@ -65,8 +66,8 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
     writeLines(py.script,con=filename)
     #     print(py.script[13])
     rm('py.script')
-    if (verbose) print(paste0('python ./',filename))
-    system(paste0('python ./',filename))
+    if (verbose) print(paste0(python,' ./',filename))
+    system(paste0(python,' ./',filename))
     if (!is.null(FUN)) {
       ## If FUN is provided for aggregation:
       system(paste('cdo -b 64 ',FUN,gsub('YYYY',as.character(yr),FNAME),'aggregated.nc'))
