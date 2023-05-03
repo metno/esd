@@ -8,6 +8,7 @@ dscmip5                       Blue print for downscaling CMIP5 GCM simulations
 ecad2nc4                      R script transforming ECA&D data into netCDF files - one for each element
 eklima                        R script reading old output from eklima.met.no as esd station object
 EuropeT2mRconstr              Reads the Luterbacher et al. (2004) temperature for Europe
+exptest                       Test for exponential and normal distributions in rain gauge data aggregated over a day and multiple days.
 ghcn2nc4                      Save the GHCN station data as a netCDF4 file.
 global.t2m.gcm                Gets global/regional mean temperature/precipitation from GCMs
 global_tas_anomaly_cmip3      Computes the spatial mean surface temperature based on the 92 GCM outputs from the CMIP3 experiment or any other experiment.

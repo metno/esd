@@ -18,6 +18,7 @@ ERA5.CDS(
   FNAME = "'ERA5_XXX_YYYY.nc'",
   FUN = "monsum",
   path = "~/Downloads/",
+  python = "python3",
   verbose = TRUE
 )
 }
@@ -39,6 +40,8 @@ ERA5.CDS(
 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).}
 
 \item{path}{The path where the data are stored. Can be a symbolic link.}
+
+\item{python}{The version of python to use}
 
 \item{verbose}{a boolean; if TRUE print information about progress}
 }
