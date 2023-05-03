@@ -65,8 +65,8 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
     writeLines(py.script,con=filename)
     #     print(py.script[13])
     rm('py.script')
-    if (verbose) print(paste0('python ./',filename))
-    system(paste0('python ./',filename))
+    if (verbose) print(paste0('python3 ./',filename))
+    system(paste0('python3 ./',filename))
     if (!is.null(FUN)) {
       ## If FUN is provided for aggregation:
       system(paste('cdo -b 64 ',FUN,gsub('YYYY',as.character(yr),FNAME),'aggregated.nc'))
