@@ -1,6 +1,6 @@
 Package: esd
-Version: 1.10.38
-Date: May 03 2023
+Version: 1.10.39
+Date: May 04 2023
 Title: Climate analysis and empirical-statistical downscaling (ESD) package for monthly and daily data
 Author: Rasmus E. Benestad, Abdelkader Mezghani, Kajsa M. Parding, Helene B. Erlandsen, Ketil Tunheim, and Cristian Lussana    
 Maintainer: Rasmus E. Benestad <rasmus.benestad@met.no>

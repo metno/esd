@@ -15,7 +15,8 @@
 #' @param lat latitude of the area/region to extract.
 #' @param FNAME the name of the local files for storing the data
 #' @param FUN the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum',
-#' 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).
+#' 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data). If a vector (e.g. FUN=c('daymean','daymin'm',daymas')) it will 
+#' use CDO repeated times to estimate each statistic.
 #' @param path The path where the data are stored. Can be a symbolic link.
 #' @param python The version of python to use
 #' @param verbose a boolean; if TRUE print information about progress
@@ -44,14 +45,14 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
   dir <- getwd()
   setwd(path)
   if (is.null(varnm)) {
-     if (sum(is.element(c("total_precipitation", "2m_temperature", "mean_sea_level_pressure",
+    if (sum(is.element(c("total_precipitation", "2m_temperature", "mean_sea_level_pressure",
                          "10m_u_component_of_wind", "10m_v_component_of_wind", "relative_humidity",
                          "dewpoint_depression", "snow_depth"),param)>0)) {
       varnm <- switch(param,"total_precipitation"='tp', "2m_temperature"='t2m', 
-                        "mean_sea_level_pressure"='slp',
+                      "mean_sea_level_pressure"='slp',
                       "10m_u_component_of_wind"='u10', "10m_v_component_of_wind"='v10',
                       "relative_humidity"='rh', "dewpoint_depression"='dpt', "snow_depth"='sd')
-     } else varnm <-'x'
+    } else varnm <-'x'
   }
   FNAME <- sub('XXX',varnm,FNAME)
   if (verbose) print(FNAME)
@@ -70,8 +71,10 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
     system(paste0(python,' ./',filename))
     if (!is.null(FUN)) {
       ## If FUN is provided for aggregation:
-      system(paste('cdo -b 64 ',FUN,gsub('YYYY',as.character(yr),FNAME),'aggregated.nc'))
-      file.rename('aggregated.nc',gsub("'","",gsub('YYYY',as.character(yr),FNAME)))
+      for (ifs in length(FUN)) {
+        system(paste('cdo -b 64 ',FUN[ifs],gsub('YYYY',as.character(yr),FNAME),'aggregated.nc'))
+        file.rename('aggregated.nc',sub('.nc',paste0('_',FUN[ifs],'.nc'),gsub("'","",gsub('YYYY',as.character(yr),FNAME))),fixed=TRUE)
+      }
     }
     print(gsub('YYYY',as.character(yr),FNAME))
     #file.remove(filename)

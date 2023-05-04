@@ -37,7 +37,8 @@ ERA5.CDS(
 \item{FNAME}{the name of the local files for storing the data}
 
 \item{FUN}{the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum',
-'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data).}
+'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data). If a vector (e.g. FUN=c('daymean','daymin'm',daymas')) it will 
+use CDO repeated times to estimate each statistic.}
 
 \item{path}{The path where the data are stored. Can be a symbolic link.}
 
