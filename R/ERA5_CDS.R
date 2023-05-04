@@ -71,13 +71,13 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
     system(paste0(python,' ./',filename))
     if (!is.null(FUN)) {
       ## If FUN is provided for aggregation:
-      for (ifs in length(FUN)) {
+      for (ifs in 1:length(FUN)) {
         system(paste('cdo -b 64 ',FUN[ifs],gsub('YYYY',as.character(yr),FNAME),'aggregated.nc'))
-        file.rename('aggregated.nc',sub('.nc',paste0('_',FUN[ifs],'.nc'),gsub("'","",gsub('YYYY',as.character(yr),FNAME))),fixed=TRUE)
+        file.rename('aggregated.nc',sub('.nc',paste0('_',FUN[ifs],'.nc'),gsub("'","",gsub('YYYY',as.character(yr),FNAME)),fixed=TRUE))
       }
     }
     print(gsub('YYYY',as.character(yr),FNAME))
-    #file.remove(filename)
+    file.remove(filename)
   }
   if (verbose) print('merge the years to single file')
   if (length(it)>1) { 
