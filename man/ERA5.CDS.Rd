@@ -17,6 +17,7 @@ ERA5.CDS(
   lat = c(-90, 90),
   FNAME = "'ERA5_XXX_YYYY.nc'",
   FUN = "monsum",
+  cleanup = TRUE,
   path = "~/Downloads/",
   python = "python3",
   verbose = TRUE
@@ -39,6 +40,8 @@ ERA5.CDS(
 \item{FUN}{the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum',
 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data). If a vector (e.g. FUN=c('daymean','daymin'm',daymas')) it will 
 use CDO repeated times to estimate each statistic.}
+
+\item{cleanup}{If true, remove the original netCDF-file with hourly data to avoid clogging up the disc.}
 
 \item{path}{The path where the data are stored. Can be a symbolic link.}
 

@@ -17,6 +17,7 @@
 #' @param FUN the function for CDO to aggregate the data, eg 'monsum', 'daymean',monmean', 'yearsum',
 #' 'yearmax', etc. If NULL, then leave the data as they are (e.g. daily data). If a vector (e.g. FUN=c('daymean','daymin'm',daymas')) it will 
 #' use CDO repeated times to estimate each statistic.
+#' @param cleanup If true, remove the original netCDF-file with hourly data to avoid clogging up the disc.
 #' @param path The path where the data are stored. Can be a symbolic link.
 #' @param python The version of python to use
 #' @param verbose a boolean; if TRUE print information about progress
@@ -32,7 +33,7 @@
 #' @export
 ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
                      varnm=NULL, lon=c(-180,180),lat=c(-90,90),
-                     FNAME="'ERA5_XXX_YYYY.nc'",FUN='monsum',
+                     FNAME="'ERA5_XXX_YYYY.nc'",FUN='monsum',cleanup=TRUE,
                      path='~/Downloads/',python='python3',verbose=TRUE) { 
   system('pip install cdsapi')
   AREA <- paste0("['",min(lat),"','",min(lon),"','",max(lat),"','",max(lon),"']")
@@ -77,7 +78,10 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
       }
     }
     print(gsub('YYYY',as.character(yr),FNAME))
-    file.remove(filename)
+    if (cleanup) {
+      file.remove(filename)
+      file.remove(gsub('YYYY',as.character(yr),FNAME))
+    }
   }
   if (verbose) print('merge the years to single file')
   if (length(it)>1) { 
