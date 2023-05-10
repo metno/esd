@@ -56,11 +56,13 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
     } else varnm <-'x'
   }
   FNAME <- sub('XXX',varnm,FNAME)
-  if (verbose) print(FNAME)
+  if (verbose) print(paste('Template filename:',FNAME))
   
   for (yr in it) {
     data("py.script")
     filename <- paste0('get-era5-',varnm,'_cds_',yr,'.py')
+    netCDFfile <- gsub('YYYY',as.character(yr),FNAME)
+    if (verbose) print(netCDFfile)
     py.script <- gsub('FNAME',FNAME,py.script)
     py.script <- gsub('YYYY',as.character(yr),py.script)
     py.script <- gsub('AREA',AREA,py.script)
@@ -73,14 +75,16 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
     if (!is.null(FUN)) {
       ## If FUN is provided for aggregation:
       for (ifs in 1:length(FUN)) {
+        if (verbose) print(paste('cdo -b 64 ',FUN[ifs],gsub('YYYY',as.character(yr),FNAME),'aggregated.nc'))
         system(paste('cdo -b 64 ',FUN[ifs],gsub('YYYY',as.character(yr),FNAME),'aggregated.nc'))
-        file.rename('aggregated.nc',sub('.nc',paste0('_',FUN[ifs],'.nc'),gsub("'","",gsub('YYYY',as.character(yr),FNAME)),fixed=TRUE))
+        file.rename('aggregated.nc',sub('.nc',paste0('_',FUN[ifs],'.nc'),gsub("'","",netCDFfile,fixed=TRUE)))
       }
     }
     print(gsub('YYYY',as.character(yr),FNAME))
     if (cleanup) {
+      print(paste("Cleanup - remove ",filename,gsub("'","",netCDFfile)))
       file.remove(filename)
-      file.remove(gsub('YYYY',as.character(yr),FNAME))
+      file.remove(gsub("'","",netCDFfile))
     }
   }
   if (verbose) print('merge the years to single file')
