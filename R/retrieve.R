@@ -465,6 +465,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   lonid <- dimnames[dimnames %in% c("lon","longitude","nlon")]
   latid <- dimnames[dimnames %in% c("lat","latitude","nlat")]
   timeid <- dimnames[grep("time",dimnames)]
+  if(length(timeid)>1 & "time" %in% dimnames) timeid <- "time"  
   idlon <- ncid$dim[[lonid]]$id
   idlat <- ncid$dim[[latid]]$id
   if (!is.null(levid)) idlev <- ncid$dim[[levid]]$id else idlev <- NULL
@@ -900,6 +901,9 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       tunit < time$units
       tsplit <- unlist(strsplit(tunit,split=" "))
       torigin <- time$origin <- paste(tsplit[grep("%Y%m%d", tsplit)],collapse=" ")
+    } else if(grepl("year",tunit)) {
+      tunit < time$units
+      torigin <- NULL
     }
     if (verbose) print(paste("Updating time$unit (",time$unit,") and creating time$origin (",time$origin,") attribute",sep= ""))
   } else if (length(itorigin)>0) {   
