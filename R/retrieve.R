@@ -765,7 +765,7 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
 #'
 #' @export check.ncdf4
 check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
-  if(verbose) print("check.ncdf4")
+  if(verbose) print(paste("check.ncdf4",param))
   qf <- NULL
   if (tolower(param) == "auto") {
     if (ncid$nvars > 1) {
@@ -785,6 +785,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   } 
   ## Checking : Variable dimensions ...
   ndims <- eval(parse(text=paste("ncid$var[[",i,"]]$ndims",sep="")))
+  if (verbose) print(paste('check.ncdf4: ndims=',ndims))
   dimnames <- rep(NA,ndims)
   if (ndims>0) {
     for (j in 1:ndims) {
@@ -800,8 +801,11 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     if (verbose) print("The variable has no dimensions. The file may be corrupted!")  
   }
   dimnames <- dimnames
+  if (verbose) print(paste('check.ncdf4: dimnames',dimnames))
   ## Get all attributes in model, check and update
   model <- ncatt_get(ncid,0)
+  
+  if (verbose) print(paste('check.ncdf4: ','CMIP chekcs..'))
   ## Update CMIP3 attributes to match those of CMIP5 
   mnames <- names(model)
   history <- ncatt_get(ncid,0,"history")
@@ -876,6 +880,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   }
   
   ## Get time unit and origin
+  if (verbose) print(paste('chekc.ncdf4: ','time unit and origin'))
   tatt <- tolower(names(time))
   itunit <- grep(c("unit"),tatt)
   itorigin <- grep(c("orig"),tatt)
