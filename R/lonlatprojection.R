@@ -259,6 +259,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(x,'variable') <- variable
   attr(x,'unit') <- unit
   attr(x,'colbar') <- colbar
+  attr(x,'time') <- c(t1,t2)
   invisible(x)
 }
 

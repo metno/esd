@@ -10,6 +10,7 @@
 #' @param param variable name in CDS call, e.g. 'total_precipitation', '2m_temperature', 'mean_sea_level_pressure',
 #' '10m_u_component_of_wind', '10m_v_component_of_wind', 'relative_humidity', 'dewpoint_depression', 'snow_depth'
 #' @param it the years to extract.
+#' @param statistic NULL returns raw (hourly) data, 'daily_mean' returns daysum - not tested!!!
 #' @param varnm variable name for local data file.
 #' @param lon longitude of the area/region to extract.
 #' @param lat latitude of the area/region to extract.
@@ -31,7 +32,7 @@
 #'          FUN='monmean')
 #'}
 #' @export
-ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
+ERA5.CDS <- function(param='total_precipitation',it=1979:2018,statistic=NULL,
                      varnm=NULL, lon=c(-180,180),lat=c(-90,90),
                      FNAME="'ERA5_XXX_YYYY.nc'",FUN='monsum',cleanup=TRUE,
                      path='~/Downloads/',python='python3',verbose=TRUE) { 
@@ -67,6 +68,12 @@ ERA5.CDS <- function(param='total_precipitation',it=1979:2018,
     py.script <- gsub('YYYY',as.character(yr),py.script)
     py.script <- gsub('AREA',AREA,py.script)
     py.script <- gsub('XXX',param,py.script)
+    if (!is.null(statistic)) {
+      ## If statistic is provided, insert the line specifying it into the python script used in the API call.
+      py.script <- c(py.script[1:44],paste0('"statistic": "',statistic,'",'),py.script[45:49])
+      ## If downloading daily statistics, don't do th CDO or remove the downloaded netCDF file. 
+      FUN <- NULL; cleanup <- FALSE
+    }
     writeLines(py.script,con=filename)
     #     print(py.script[13])
     rm('py.script')

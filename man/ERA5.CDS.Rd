@@ -12,6 +12,7 @@ See https://cds.climate.copernicus.eu/api-how-to}
 ERA5.CDS(
   param = "total_precipitation",
   it = 1979:2018,
+  statistic = NULL,
   varnm = NULL,
   lon = c(-180, 180),
   lat = c(-90, 90),
@@ -28,6 +29,8 @@ ERA5.CDS(
 '10m_u_component_of_wind', '10m_v_component_of_wind', 'relative_humidity', 'dewpoint_depression', 'snow_depth'}
 
 \item{it}{the years to extract.}
+
+\item{statistic}{NULL returns raw (hourly) data, 'daily_mean' returns daysum - not tested!!!}
 
 \item{varnm}{variable name for local data file.}
 
