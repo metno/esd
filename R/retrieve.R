@@ -805,7 +805,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   ## Get all attributes in model, check and update
   model <- ncatt_get(ncid,0)
   
-  if (verbose) print(paste('check.ncdf4: ','CMIP chekcs..'))
+  if (verbose) print(paste('check.ncdf4: ','CMIP checks..'))
   ## Update CMIP3 attributes to match those of CMIP5 
   mnames <- names(model)
   history <- ncatt_get(ncid,0,"history")

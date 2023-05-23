@@ -2,6 +2,7 @@ retrieve.dsensemble <- function(ncfile,param="auto",
                              path=NULL,verbose=FALSE,...) {
   if(verbose) print("retrieve.dsensemble")
   nc <- nc_open(file.path(path,ncfile))
+  #browser()
   dimnames <- names(nc$dim)
   lon <- ncvar_get(nc,dimnames[grep("lon|x",tolower(dimnames))])
   lat <- ncvar_get(nc,dimnames[grep("lat|y",tolower(dimnames))])

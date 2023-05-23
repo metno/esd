@@ -142,8 +142,8 @@ as.eof.list <- function(x,...,verbose=FALSE) {
   return(eof)
 }
 
-# @exportS3Method
-# @export
+#' @exportS3Method
+#' @export
 as.eof.dsensemble <- function(x,...,FUN='mean',aggregate=TRUE,verbose=FALSE) {
   ## R.E. Benestad, 2017-05-19
   ## Convert the dsensemble object to an EOF of the multi-model mean

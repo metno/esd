@@ -9,20 +9,25 @@
   ...,
   file = NULL,
   path = NULL,
+  force = TRUE,
   prec = "short",
-  scale = NULL,
-  offset = NULL,
+  offset = 0,
+  scale = 0.1,
   type = "dsensemble",
-  im = 1,
+  im = NULL,
+  is = NULL,
+  it = NULL,
   torg = "1970-01-01",
   missval = -999,
+  method = "metnoESD",
+  region = NULL,
   conventions = "ACDD-1.3",
   id = NA,
   naming_authority = NA,
   source = NA,
   processing_level = "Scientific",
   comment = NA,
-  acknowledgment = NA,
+  acknowledgement = NA,
   license = "Freely distributed",
   standard_name_vocabulary = "CF Standard Name Table v27",
   creator_name = NA,
@@ -40,8 +45,14 @@
   publisher_type = NA,
   publisher_institution = NA,
   product_version = NA,
+  summary = NA,
+  keywords = NA,
+  keywords_vocabulary =
+    "GCMDSK:GCMD Science Keywords:https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords, GCMDPROV:GCMD",
   references = NA,
-  additional_attributes = NULL,
+  title = NA,
+  title_no = NA,
+  additional_attributes = NA,
   verbose = FALSE
 )
 }
@@ -54,20 +65,22 @@
 
 \item{path}{path to output file}
 
-\item{prec}{Precision: see \code{\link[ncdf4]{ncvar_def}}}
+\item{force}{If TRUE (default), overwrite existing files. If FALSE, do not write data to a file if there is already one with the same file name.}
 
-\item{scale}{Sets the attribute 'scale_factor' which is used to scale
-(multiply) the values stored (to save space may be represented as 'short').}
+\item{prec}{Precision: see \code{\link[ncdf4]{ncvar_def}}}
 
 \item{offset}{Sets the attribute 'add_offset' which is added to the values
 stored (to save space may be represented as 'short').}
 
+\item{scale}{Sets the attribute 'scale_factor' which is used to scale
+(multiply) the values stored (to save space may be represented as 'short').}
+
 \item{type}{a vector defining the type of data to write to the netCDF file. 
 The default type is "dsensemble" which writes dsensemble data in its original form.
-Other options are "ensemblestats" to calculate and write ensemble statistics,
+Other options are "ensemblestatistics" to calculate and write ensemble statistics,
 or "model" which writes downscaled results for a single model simulation   
 (the ensemble member is then selected with the input argument \code{'im'}).
-The options 'ensemblestats' and 'model' can be used in conjunction with the additional argument, 
+The options 'ensemblestatistics' and 'model' can be used in conjunction with the additional argument, 
 e.g. c('model','field') or c('model','station') to save the downscaled results as a field (gridded data) 
 or a 'station' object (the stations that were used as predictand in the downscaling).}
 
@@ -86,6 +99,8 @@ or a 'station' object (the stations that were used as predictand in the downscal
 \item{processing_level}{A textual description of the processing (or quality control) level of the data.}
 
 \item{comment}{Miscellaneous information about the data, not captured elsewhere. This attribute is defined in the CF Conventions.}
+
+\item{acknowledgement}{A place to acknowledge various types of support for the project that produced this data.}
 
 \item{license}{Provide the URL to a standard or specific license, enter "Freely Distributed" or "None", or describe any restrictions to data access and distribution in free text.}
 
@@ -117,25 +132,35 @@ or a 'station' object (the stations that were used as predictand in the downscal
 
 \item{product_version}{Version identifier of the data file or product as assigned by the data creator. For example, a new algorithm or methodology could result in a new product_version.}
 
+\item{summary}{Summary}
+
+\item{keywords}{Keywords}
+
+\item{keywords_vocabulary}{Vocabulary of keywords. Default: GCMDSK:GCMD Science Keywords:https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords, GCMDPROV:GCMD}
+
 \item{references}{Published or web-based references that describe the data or methods used to produce it. Recommend URIs (such as a URL or DOI) for papers or other references. This attribute is defined in the CF conventions.}
+
+\item{title}{Title of data set}
+
+\item{title_no}{Title of data set in Norwegian}
 
 \item{additional_attributes}{List of attributes to add to the netCDF file. The default is NULL 
 but it could be something like list("distribution_statement"="Free", "title"="Temperature projections for Norway")}
 
-\item{verbose}{TRUE - clutter the screen.}
+\item{verbose}{TRUE If TRUE, print information on progress.}
 
 \item{history}{Provides an audit trail for modifications to the original data. This attribute is also in the NetCDF Users Guide: 'This is a character array with a line for each invocation of a program that has modified the dataset. Well-behaved generic netCDF applications should append a line containing: date, time of day, user name, program name and command arguments.' To include a more complete description you can append a reference to an ISO Lineage entity; see NOAA EDM ISO Lineage guidance.}
 
-\item{acknowledgement}{A place to acknowledge various types of support for the project that produced this data.}
-
 \item{date_created}{The date on which this version of the data was created. (Modification of values implies a new version, hence this would be assigned the date of the most recent values modification.) Metadata changes are not considered when assigning the date_created. The ISO 8601:2004 extended date format is recommended, as described in the Attribute Content Guidance section.}
+
+\item{summary_no}{Summary in Norwegian}
 }
 \value{
 None
 }
 \description{
 Method to save station data as netCDF, making sure to include the data
-structure and meta-data (attributes). The code tries to follow the netCDf
+structure and meta-data (attributes). The code tries to follow the netCDF
 'CF' convention. The method is built on the \code{ncdf4} package.
 }
 \details{

@@ -57,10 +57,6 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
   ##x$eof <- gridmap(x$pca)
   if (test) print('--TEST ON ONE GCM simulation--')
   if (inherits(x,'pca')) UWD <- x$pca else UWD <- x$eof
-  if (!is.null(FUNX)) {
-    if (FUNX != 'mean') anomaly <- TRUE; 
-    if (verbose) print(c(FUNX,anomaly))
-  }
   if (verbose) print(names(attributes(UWD)))
   ## Eigenvalues
   D <- attr(UWD,'eigenvalues')
@@ -133,40 +129,111 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
     str(U); str(D); str(V)
   }
   ## Loop through each time step - aggregate ensemble statistics for each time step
-  Y <- matrix(rep(NA,dU[1]*dU[2]*d[1]),d[1],dU[1]*dU[2])
-  for (it in 1:d[1]) { 
-    ## loop through each ensemble member
-    z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
-    for (im in 1:n) { 
-      v <- V[[im]]
-      z[,im] <- v[it,] %*% diag(D) %*% t(U)
+  if(length(FUNX)>1) {
+    eval(parse(text=paste0(paste0("Y.",FUNX,collapse=" <- "),
+                           " <- matrix(rep(NA,dU[1]*dU[2]*d[1]),d[1],dU[1]*dU[2])")))
+    for (i.t in 1:d[1]) { 
+      if(verbose) print(paste("Calculating ensemble statistics for time step",i.t,"of",d[1]))
+      ## loop through each ensemble member
+      z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
+      for (im in 1:n) { 
+        v <- V[[im]]
+        z[,im] <- v[i.t,] %*% diag(D) %*% t(U)
+      }
+      for(f in FUNX) {
+        eval(parse(text=paste0("Y.",f,"[i.t,] <- apply(z,1,",f,")")))
+      }
+      rm(v,z); gc(reset=TRUE)
     }
-    Y[it,] <- apply(z,1,FUNX)
-  }
-  ## Add mean and insert into zoo frame
-  if (!anomaly) {
-    if (verbose) print('add mean field')
-    Y <- t(t(Y) + c(attr(UWD,'mean')))
-  }
-  # Not right if FUNX is defined and time mean has been applied:
-  if(nrow(V[[1]])==length(index(V[[1]]))) {
-    Y <- zoo(Y,order.by=index(V[[1]]))
+    for(f in FUNX) eval(parse(text=paste0("attr(Y.",f,",'FUN') <- '",f,"'")))
+    eval(parse(text=paste0("Y <- list(",paste0("'",FUNX,"'=Y.",FUNX, collapse=", "),")")))
+    
+    if(nrow(V[[1]])==length(index(V[[1]]))) {
+      ty <- index(V[[1]])
+    } else {
+      ty <- seq(nrow(V[[1]]))
+    }
+    
+    for(f in names(Y)) {
+      ## Add mean and insert into zoo frame
+      if (f != 'mean') anomaly <- TRUE
+      y <- Y[[f]]
+      if (!anomaly) {
+        if (verbose) print('add mean field')
+        y <- t(t(y) + c(attr(UWD,'mean')))
+      }
+      y <- as.zoo(y, order.by=ty)
+      Y[[f]] <- y
+    }
+    Y <- attrcp(UWD,Y)
+    attr(Y,'timeindex') <- ty
+    attr(Y,'time') <- range(index(subset(X[[1]],it=it)))
+    if(!is.null(x$pca)) {
+      if(inherits(x$pca, "season")) {
+        attr(Y,'season') <- season(x$pca)[1]
+      } else {
+        attr(Y,'season') <- class(x$pca)[length(class(x$pca))-1]
+      }
+    } else {
+      if(inherits(x, "season")) {
+        attr(Y,'season') <- season(x[[2]])[1]
+      } else {
+        attr(Y,'season') <- class(x[[2]])[length(class(x[[2]]))-1]
+      }
+    }
+    class(Y) <- c("list", "dsensemblestatistics", class(UWD)[length(class(UWD))-1])
+    if (inherits(UWD,'eof')) {
+      if (verbose) print('Use dimensions and lon/lat from EOFs')
+      attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
+      attr(Y,'longitude') <- lon(UWD)
+      attr(Y,'latidude') <- lat(UWD)
+    }
+    attr(Y, 'model_id') <- gcmnames
+    attr(Y , 'mean') <- NULL
   } else {
-    Y <- zoo(Y,order.by=seq(nrow(V[[1]])))
+    Y <- matrix(rep(NA,dU[1]*dU[2]*d[1]),d[1],dU[1]*dU[2])
+    for (i.t in 1:d[1]) { 
+      ## loop through each ensemble member
+      z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
+      for (im in 1:n) { 
+        v <- V[[im]]
+        z[,im] <- v[i.t,] %*% diag(D) %*% t(U)
+      }
+      Y[i.t,] <- apply(z,1,FUNX)
+      rm(v,z); gc(reset=TRUE)
+    }
+  
+    if (!is.null(FUNX)) {
+      if (FUNX != 'mean') anomaly <- TRUE; 
+      if (verbose) print(c(FUNX,anomaly))
+    }
+    
+    ## Add mean and insert into zoo frame
+    if (!anomaly) {
+      if (verbose) print('add mean field')
+      Y <- t(t(Y) + c(attr(UWD,'mean')))
+    }
+    # Not right if FUNX is defined and time mean has been applied:
+    if(nrow(V[[1]])==length(index(V[[1]]))) {
+      Y <- zoo(Y,order.by=index(V[[1]]))
+    } else {
+      Y <- zoo(Y,order.by=seq(nrow(V[[1]])))
+    }
+    Y <- attrcp(UWD,Y)
+    attr(Y,'time') <- range(index(subset(X[[1]],it=it)))
+    class(Y) <- class(UWD)[-1]
+    if (inherits(UWD,'eof')) {
+      if (verbose) print('Use dimensions and lon/lat from EOFs')
+      attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
+      attr(Y,'longitude') <- lon(UWD)
+      attr(Y,'latidude') <- lat(UWD)
+      class(Y)[1] <- 'field'
+    }
+    attr(Y, 'model_id') <- gcmnames
+    attr(Y,'mean') <- NULL
+    if(!is.null(FUN)) Y <- map(Y, FUN=FUN, plot=FALSE)
   }
-  Y <- attrcp(UWD,Y)
-  attr(Y,'time') <- range(index(subset(X[[1]],it=it)))
-  class(Y) <- class(UWD)[-1]
-  if (inherits(UWD,'eof')) {
-    if (verbose) print('Use dimensions and lon/lat from EOFs')
-    attr(Y,'dimensions') <- c(attr(x$eof,'dimensions')[1:2],length(index(V)))
-    attr(Y,'longitude') <- lon(UWD)
-    attr(Y,'latidude') <- lat(UWD)
-    class(Y)[1] <- 'field'
-  }
-  attr(Y, 'model_id') <- gcmnames
-  attr(Y,'mean') <- NULL
-  if(!is.null(FUN)) Y <- map(Y, FUN=FUN, plot=FALSE)
   if (verbose) {print('exit aggregate.dsensemble'); print(dim(Y))}
+  gc(reset=TRUE)
   return(Y)
 }

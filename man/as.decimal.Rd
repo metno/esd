@@ -36,6 +36,7 @@
 \alias{leapyear}
 \alias{distance2ocean}
 \alias{difftime.month}
+\alias{round2magnitude}
 \title{Simple and handy functions}
 \usage{
 as.decimal(x = NULL)
@@ -115,6 +116,8 @@ events for a time series of iid data (\code{sum(1/1:n)})
 \code{difftime.month} returns the number of months between two dates
 
 \code{lastelementrecord} checks last element of the record to see if they are the highest - a record
+
+\code{round2magnitude} applied to a number, rounds up to the nearest order of magnitude
 }
 \examples{
 

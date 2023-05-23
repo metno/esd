@@ -53,11 +53,13 @@
 #' 
 #' \code{lastelementrecord} checks last element of the record to see if they are the highest - a record
 #' 
+#' \code{round2magnitude} applied to a number, rounds up to the nearest order of magnitude
+#' 
 #' @aliases as.decimal nv cv q5 q95 q975 q995 filt
 #' filt.default exit figlab ndig ensemblemean propchange stand rmse RMSE
 #' firstyear lastyear eofvar test.num.predictors arec
 #' arec.default arec.station lastrains lastdry lastelementrecord strstrip bin
-#' factor2numeric zeros missval leapyear distance2ocean difftime.month
+#' factor2numeric zeros missval leapyear distance2ocean difftime.month round2magnitude
 #' @seealso attrcp
 #'
 #' @importFrom stats quantile qgeom qpois dnorm filter 
@@ -591,5 +593,11 @@ decipher <- function(x) {
   ssp <- substr(x,i[3]+1,i[4]-1)
   ripf <- substr(x,i[4]+1,i[4]+8)
   return(c(model,ssp,ripf))
+}
+
+# Function to round a number up to its order of magnitude 
+#' @export
+round2magnitude <- function(x) {
+  10^(ceiling(log10(x)))
 }
 

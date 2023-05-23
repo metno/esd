@@ -4,8 +4,8 @@
 ## The input argument 'type' is used to redirect to different functions:
 ##
 ## type = c('dsensemble') -> ncdf4_dsensemble -> write PCA based dsensemble to a netCDF file, including an extraction method as an attribute
-## type = c('dsensemblestats', 'station') -> ncdf4_dsensemblestats -> convert PCA based dsensemble to station objects, calculate ensemble statistics, write to a netCDF file
-## type = c('dsensemblestats', 'field') -> ncdf4_dsensemblestats -> convert PCA based dsensemble to field objects, calculate ensemble statistics, write to a netCDF file
+## type = c('ensemblestatistics', 'station') -> ncdf4_dsensemblestatistics -> convert PCA based dsensemble to station objects, calculate ensemble statistics, write to a netCDF file
+## type = c('ensemblestatistics', 'field') -> ncdf4_dsensemblestatistics -> convert PCA based dsensemble to field objects, calculate ensemble statistics, write to a netCDF file
 ## type = c('model', 'field') -> ncdf4_model -> write downscaled results to netCDF files for individual models as gridded data
 ## type = c('model', 'station') -> ncdf4_model -> write downscaled results to netCDF files for individual models as station data
 #
@@ -18,7 +18,7 @@
 ##
 ## ncdf4_dsensemble and ncdf4_model exist and work (mostly)
 ##
-## ncdf4_dsensemblestats is empty
+## ncdf4_dsensemblestatistics is empty
 ##
 ## ncdf_model works for writing data as gridded fields, but not for station data.
 ##
@@ -27,7 +27,7 @@
 #' Saves climate data as netCDF.
 #' 
 #' Method to save station data as netCDF, making sure to include the data
-#' structure and meta-data (attributes). The code tries to follow the netCDf
+#' structure and meta-data (attributes). The code tries to follow the netCDF
 #' 'CF' convention. The method is built on the \code{ncdf4} package.
 #'
 #' To save space, the values are saved as short (16-bit signed integer that
@@ -39,6 +39,7 @@
 #' @param x a 'dsensemble' object containing empirically-statistically downscaled results (output from \code{'DSensemble'})
 #' @param file name of output file 
 #' @param path path to output file
+#' @param force If TRUE (default), overwrite existing files. If FALSE, do not write data to a file if there is already one with the same file name.  
 #' @param prec Precision: see \code{\link[ncdf4]{ncvar_def}}
 #' @param scale Sets the attribute 'scale_factor' which is used to scale
 #' (multiply) the values stored (to save space may be represented as 'short').
@@ -46,17 +47,17 @@
 #' @param im a numerical or numerical vector with indices of the ensemble members to be included. If NULL include all.
 #' @param type a vector defining the type of data to write to the netCDF file. 
 #' The default type is "dsensemble" which writes dsensemble data in its original form.
-#' Other options are "ensemblestats" to calculate and write ensemble statistics,
+#' Other options are "ensemblestatistics" to calculate and write ensemble statistics,
 #' or "model" which writes downscaled results for a single model simulation   
 #' (the ensemble member is then selected with the input argument \code{'im'}).
-#' The options 'ensemblestats' and 'model' can be used in conjunction with the additional argument, 
+#' The options 'ensemblestatistics' and 'model' can be used in conjunction with the additional argument, 
 #' e.g. c('model','field') or c('model','station') to save the downscaled results as a field (gridded data) 
 #' or a 'station' object (the stations that were used as predictand in the downscaling).
 #' @param offset Sets the attribute 'add_offset' which is added to the values
 #' stored (to save space may be represented as 'short').
 #' @param torg Time origin
 #' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
-#' @param id	An identifier for the data set, provided by and unique within its naming authority. The combination of the "naming authority" and the "id" should be globally unique, but the id can be globally unique by itself also. IDs can be URLs, URNs, DOIs, meaningful text strings, a local key, or any other unique string of characters. The id should not include white space characters.
+#' @param id An identifier for the data set, provided by and unique within its naming authority. The combination of the "naming authority" and the "id" should be globally unique, but the id can be globally unique by itself also. IDs can be URLs, URNs, DOIs, meaningful text strings, a local key, or any other unique string of characters. The id should not include white space characters.
 #' @param naming_authority	The organization that provides the initial id (see above) for the dataset. The naming authority should be uniquely specified by this attribute. We recommend using reverse-DNS naming for the naming authority; URIs are also acceptable. Example: 'edu.ucar.unidata'.
 #' @param history	Provides an audit trail for modifications to the original data. This attribute is also in the NetCDF Users Guide: 'This is a character array with a line for each invocation of a program that has modified the dataset. Well-behaved generic netCDF applications should append a line containing: date, time of day, user name, program name and command arguments.' To include a more complete description you can append a reference to an ISO Lineage entity; see NOAA EDM ISO Lineage guidance.
 #' @param source	The method of production of the original data. If it was model-generated, source should name the model and its version. If it is observational, source should characterize it. This attribute is defined in the CF Conventions. Examples: 'temperature from CTD #1234'; 'world model v.0.1'.
@@ -88,7 +89,7 @@
 #' @param title_no Title of data set in Norwegian
 #' @param additional_attributes List of attributes to add to the netCDF file. The default is NULL 
 #' but it could be something like list("distribution_statement"="Free", "title"="Temperature projections for Norway")
-#' @param verbose TRUE - clutter the screen.
+#' @param verbose TRUE If TRUE, print information on progress.
 #' @param \dots additional arguments
 #' 
 #' @return None
@@ -97,10 +98,11 @@
 #' 
 #' @exportS3Method
 #' @export write2ncdf4.dsensemble
-write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,
-                                   prec='short',scale=NULL,offset=NULL,
-                                   type='dsensemble',im=1,
+write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
+                                   prec='short',offset=0,scale=0.1 ,
+                                   type='dsensemble',im=NULL,is=NULL,it=NULL,
                                    torg="1970-01-01",missval=-999,
+                                   method="metnoESD",region=NULL,
                                    conventions="ACDD-1.3",
                                    id=NA,naming_authority=NA,
                                    source=NA,processing_level="Scientific",
@@ -121,10 +123,12 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,
   if(verbose) print('write2ncdf4.dsensemble')
   if("model" %in% type & length(im)>1) {
     if(verbose) print(paste("Writing",length(im),"netCDF files."))
+    if(length(im)>1) file <- NULL
     for(i in im) {
-      write2ncdf4(x,...,im=i,file=file,path=path,
+      write2ncdf4(x,...,file=file,path=path,
+                  im=i,is=is,it=it,
                   prec=prec,scale=scale,offset=offset,
-                  type=type,
+                  type=type,method=method,region=region,
                   torg=torg,missval=missval,
                   conventions=conventions,
                   id=id,naming_authority=naming_authority,
@@ -139,38 +143,56 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,
                   publisher_type=publisher_type,publisher_institution=publisher_institution,
                   product_version=product_version,summary=summary,keywords=keywords,
                   references=references,title=title,title_no=title_no,
-                  additional_attributes=additional_attributes,verbose=verbose)
-    }
+                  additional_attributes=additional_attributes,
+                  force=force,verbose=verbose)
+    } 
   } else {
     if("dsensemble" %in% type) {
-      nc <- ncdf4_dsensemble(x,...,file=file,path=path,prec=prec,scale=scale,type=type,
-                             offset=offset,torg=torg,missval=missval,verbose=verbose)
-    } else if ("model" %in% type) {
-      nc <- ncdf4_dsmodel(x,...,file=file,path=path,prec=prec,scale=scale,type=type,
-                          offset=offset,torg=torg,missval=missval,im=im,verbose=verbose)
-    } else if ("ensemblestats" %in% type) {
-      nc <- ncdf4_dsensemblestats(x,...,file=file,path=path,prec=prec,scale=scale,type=type,
-                                  offset=offset,torg=torg,missval=missval,im=im,verbose=verbose)
-    }
-    
-    if(inherits(nc, "ncdf4")) {
-      nc <- add_ncattributes(nc, conventions=conventions,id=id,naming_authority=naming_authority,
-                             source=source,processing_level=processing_level,
-                             comment=comment,acknowledgement=acknowledgement,
-                             license=license,standard_name_vocabulary=standard_name_vocabulary,
-                             creator_name=creator_name,creator_email=creator_email,creator_url=creator_url,
-                             creator_institution=creator_institution,creator_type=creator_type,
-                             institution=institution,institution_short_name=institution_short_name,
-                             project=project,project_short_name=project_short_name,
-                             publisher_name=publisher_name,publisher_email=publisher_email,publisher_url=publisher_url,
-                             publisher_type=publisher_type,publisher_institution=publisher_institution,
-                             product_version=product_version,summary=summary,keywords=keywords,
-                             references=references,title=title,title_no=title_no,
-                             additional_attributes=additional_attributes)
-      nc_close(nc)
+      file <- ncdf4_dsensemble(x,...,file=file,path=path,prec=prec,
+                             im=im,is=is,it=it,
+                             scale=scale,type=type,
+                             offset=offset,torg=torg,missval=missval,
+                             method=method,region=region,
+                             force=force,verbose=verbose)
+    } else if ("ensemblestatistics" %in% type) {
+      file <- ncdf4_dsensemblestatistics(x,...,file=file,path=path,prec=prec,
+                                       im=im,is=is,it=it,
+                                       scale=scale,type=type,
+                                       offset=offset,torg=torg,missval=missval,
+                                       method=method,region=region,
+                                       force=force,verbose=verbose)
+    } else if("model" %in% type) {
+      file <- ncdf4_dsmodel(x,...,file=file,path=path,
+                          im=im,is=is,it=it,
+                          prec=prec,scale=scale,type=type,
+                          offset=offset,torg=torg,missval=missval,
+                          method=method,region=region,
+                                       force=force,verbose=verbose)
+    } else file <- NULL
+   
+    if(!is.null(file)) if(file.exists(file)) {
+      nc <- try(nc_open(file, write=TRUE))
+      if(inherits(nc, "ncdf4")) {
+        nc <- add_ncattributes(nc, conventions=conventions,id=id,naming_authority=naming_authority,
+                         source=source,processing_level=processing_level,
+                         comment=comment,acknowledgement=acknowledgement,
+                         license=license,standard_name_vocabulary=standard_name_vocabulary,
+                         creator_name=creator_name,creator_email=creator_email,creator_url=creator_url,
+                         creator_institution=creator_institution,creator_type=creator_type,
+                         institution=institution,institution_short_name=institution_short_name,
+                         project=project,project_short_name=project_short_name,
+                         publisher_name=publisher_name,publisher_email=publisher_email,publisher_url=publisher_url,
+                         publisher_type=publisher_type,publisher_institution=publisher_institution,
+                         product_version=product_version,summary=summary,keywords=keywords,
+                         references=references,title=title,title_no=title_no,
+                         additional_attributes=additional_attributes)
+        nc_close(nc)
+      }
       if (verbose) print(paste('Successfully finished writing dsensemble data and attributes to file', file))
     }
   }
+  if (verbose) print(paste('exit write2ncdf4.dsensemble'))
+  gc(reset=TRUE)
 }
 
 add_ncattributes <- function(nc, conventions="ACDD-1.3",
@@ -227,203 +249,478 @@ add_ncattributes <- function(nc, conventions="ACDD-1.3",
   
   ## Return nc object with added attributes
   if (verbose) print(paste('Finished writing attributes to file', file))
+  if (verbose) print(paste('exit add_ncattributes'))
   return(nc)
 }
 
-ncdf4_dsensemble <- function(x,...,file='esd.dsensemble.nc',prec='short',offset=0,scale=0.1,
-                             torg="1970-01-01",missval=-99,verbose=TRUE) {
-  ## prec - see http://james.hiebert.name/blog/work/2015/04/18/NetCDF-Scale-Factors/
+ncdf4_dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
+                             prec='short',offset=0,scale=0.1,
+                             torg="1970-01-01",missval=-99,
+                             im=NULL, is=NULL, it=NULL,
+                             method="metnoESD",region=NULL,verbose=TRUE) {
   if (verbose) print('ncdf4_dsensemble')
-  class.x <- class(x)
-  ngcms <- length(x) - 2
-  ## Get the two first elements of the list which contain information common to the rest
+  if(!is.null(im) | !is.null(is) | !is.null(it)) x <- subset(x, im=im, is=is, it=it)
+  
+  ## Put the PCA and EOF patterns into a list
+  x0 <- x
   info <- x$info
-  if (!is.null(x$pca)) pca <- x$pca
-  if (!is.null(x$eof)) pca <- x$eof
-  lons <- lon(pca)
-  lats <- lat(pca)
-  
-  ## Clear these so that the rest are zoo objects describing the model runs
-  x$info <- NULL
+  pattern <- list()
+  if(!is.null(x$pca)) pattern$pca <- x$pca
+  if(!is.null(x$eof)) {
+    pattern$eof <- x$eof
+    res <- paste0(round(diff(lon(x$eof))[1], digits=2),"x",
+                  round(diff(lat(x$eof))[1], digits=2),"deg")
+  } else res <- "stations"
   x$pca <- NULL
+  x$info <- NULL
   x$eof <- NULL
-  names.x <- names(x)
-  if (verbose) print(names.x)
   
-  ## Define the variables and dimensions
-  if (verbose) {print('Check index type - set to year'); print(index(x[[1]]))}
-  if (is.list(x)) {
-    if (class(index(x))=='Date') tim <- year(x[[1]]) + (month(x[[1]])-1)/12 else
-      tim <- year(x[[1]])
-    dimgcm <- dim(x[[1]])
-    nloc <- length(x)
-  } else {
-    if (class(index(x))=='Date') tim <- year(x) + (month(x)-1)/12 else
-      tim <- year(x)
-    dimgcm <- dim(x)
-    nloc <- 1
-  }
-  if (!is.null(pca)) {
-    pcaatts <- names(attributes(pca))
-    pattern <- attr(pca,'pattern')
-    dpat <- dim(pattern)
-  } else dpat <- 1
-  if (verbose) {print(pcaatts); print(dim(pattern))}
-  
-  ## Set dimensions  
-  dimtim <- ncdim_def( "time", 'year', as.integer(tim) )
-  dimens <- ncdim_def( "ensemble_member", 'index', 1:nloc )
-  if (!is.null(pca)) {
-    if (class(index(pca))=='Date') index(pca) <- year(pca) + (month(pca)-1)/12 else
-      index(pca) <- year(pca)
-    dimpca <- ncdim_def( "i_pca", "index", 1:dimgcm[2] )
-    dimtimpca <- ncdim_def( "time_pca", "year", index(pca) )
-    if (length(dpat)==2) {
-      dimxy <- ncdim_def( "space_pca", "index", 1:dim(pattern)[1] )
-    } else {
-      dimx <- ncdim_def( "longitude", "degrees_east", lons )
-      dimy <- ncdim_def( "latitude", "degrees_north", lats )
+  if(is.null(file)) {
+    file <- "dsensemble" 
+    file <- paste0(file,"_",attr(x,"scenario"))
+    if(!is.null(method)) file <- paste0(file,"_",method)
+    if(!is.null(region)) file <- paste0(file,"_",region)
+    file <- paste0(file,"_",res)
+    file <- paste0(file,"_",attr(x,"variable")[1])
+    if(inherits(x[[2]],"season")) {
+      file <- paste0(file,"_sem")
+      file <- paste0(file,"_",toupper(season(x[[2]])[1]))
+    } else if(inherits(x[[2]],"annual")) {
+      file <- paste0(file,"_annual-mean")
+    } else if(inherits(x[[2]],"month")) {
+      file <- paste0(file,"_monthly-mean")
     }
+    file <- paste0(file,"_",paste(range(year(x[[1]])),collapse="-"))
+    file <- paste0(file,"_ngcm",length(attr(x, "model_id")))
+    file <- paste0(file, ".nc")
   }
-  dimsea <- ncdim_def( "season", "index", 1:4 )
-  if (verbose) print(tim)
-  varlist <- list() # For single-station dsensemble objects
-  varlist$gcm <- ncvar_def("gcm", "weights", list(dimtim,dimpca,dimens), missval, 
-                           longname='principal components', prec=prec)
+  if(!is.null(path)) file <- file.path(path, basename(file))
   
-  ## set up the dimensions of the PCA
-  if (!is.null(pca)) {
-    varlist$pca <- ncvar_def("PC", "weights", list(dimtimpca,dimpca), missval, 
-                             longname='principal components', prec=prec)
-    ## EOFs and PCA have different number of dimensions
-    if (length(dpat)==2) {
-      if (verbose) print('--- PCA ---')
-      varlist$pat <- ncvar_def("pattern", "weights", list(dimxy,dimpca), missval, 
-                               longname='principal component analysis patterns', prec=prec)
-      varlist$lon <- ncvar_def("longitude", "degree_east", dimxy,missval, 
-                               longname='longitude', prec='float')
-      varlist$lat <- ncvar_def("latitude", "degree_north", dimxy,missval, 
-                               longname='latitude', prec='float')
-      varlist$alt <- ncvar_def("altitude", "m", dimxy,missval, 
-                               longname='altitude', prec='float')
-      varlist$stid <- ncvar_def("station_id", "number", dimxy,"NA", 
-                                longname='station ID', prec="char")
-      varlist$loc <- ncvar_def("location", "name", dimxy,"NA", 
-                               longname='location name', prec="char")
-      varlist$cntr <- ncvar_def("country", "name", dimxy,"NA", 
-                                longname='country name', prec="char")
-      varlist$src <- ncvar_def("src", "name", dimxy,"NA", 
-                               longname='source', prec="char")
-    } else
-      if (length(dpat)==3) {
-        if (verbose) print('--- EOF ---')
-        varlist$pat <- ncvar_def("pattern", "weights", list(dimx,dimy,dimpca), missval, 
-                                 longname='principal component analysis patterns', prec=prec)
+  if(file.exists(file) & !force) {
+    nc <- NULL
+    if (verbose) print(paste('File',file,'already exists. No new file created.'))
+  } else {
+    ## Get the two first elements of the list which contain information common to the rest
+    if(inherits(x,"pca")) {
+      ## Organise the time index
+      tx <- index(x[[1]])
+      if(inherits(tx,"numeric")) {
+        yr <- seq(min(tx), max(tx))
+        mn <- month(attr(x[[1]], "evaluation"))[1]
+        tx <- as.Date(paste(yr,mn,"01",sep="-"), torg=torg)
       }
-    varlist$lambda <- ncvar_def("lambda", "number", dimpca,missval, 
-                                longname='eigenvalues', prec="float")
+      yr <- year(tx)
+      
+      ## Put the eigenvectors into an array Y with dimensions [PC mode, model simulation, time step]
+      Y <- array(NA, dim=c(max(sapply(x,ncol)), length(x), length(tx)))
+      for(j in seq(1,length(x))) {
+        i <- 1:ncol(x[[j]])
+        k <- which(year(x[[j]]) %in% yr)
+        Y[i,j,k] <- x[[j]]
+      }
+      d <- dim(Y)
+      offset <- mean(Y,na.rm=TRUE)
+      scale <- round2magnitude((max(abs(c(Y)),na.rm=TRUE) - offset)/10000)
+      Y <- round((Y-offset)/scale)
+      
+      ## Create dimensions and define a variable for the eigenvectors
+      dimpc <- ncdim_def("mode", "index", seq(dim(Y)[1]),
+                         longname="Mode of variability")
+      dimim <- ncdim_def("ensemble_member", "index", seq(dim(Y)[2]),
+                          longname="Ensemble member index")
+      dimtim <- ncdim_def("time", paste("days since",torg),
+                          as.numeric(as.Date(tx,origin=torg)) )
+      x4nc <- ncvar_def("eigenvectors", "unitless", list(dimpc,dimim,dimtim), -1, 
+                        longname=paste("Eigenvectors of the",
+                                       gsub("_"," ",attr(x0,'longname'))), prec=prec)
+      
+      ## Add eigenvalues as a variable
+      nc <- nc_create( file, x4nc )
+      ncvar_put( nc, "eigenvectors", Y)
+      ncatt_put( nc, "eigenvectors", "add_offset", offset, prec="float" )
+      ncatt_put( nc, "eigenvectors", "scale_factor", scale, prec="float" ) 
+      ncatt_put( nc, "eigenvectors", "_FillValue", missval, prec="float" ) 
+      ncatt_put( nc, "eigenvectors", "missing_value", missval, prec="float" )
+      ncatt_put( nc, "eigenvectors", "time_coverage_start", as.character(min(tx)), prec="text")
+      ncatt_put( nc, "eigenvectors", "time_coverage_end", as.character(max(tx)), prec="text")
+      if(!is.null(attr(x,"model_id"))) ncatt_put( nc, "eigenvectors", "ensemble_members", 
+                                                  attr(x,"model_id"), prec="text" ) 
+      nc_close(nc)
+      
+      ## Add eigenvalues as a separate variable
+      if(!is.null(pattern$pca)) {
+        eig <- attr(pattern$pca, "eigenvalues") 
+      } else if (!is.null(pattern$eof)) {
+        eig <- attr(pattern$eof, "eigenvalues") 
+      } else eig <- NULL
+      if(!is.null(eig)) {
+        offset <- 0
+        scale <- round2magnitude((max(abs(c(eig)),na.rm=TRUE) - offset)/10000)
+        eig <- round((eig-offset)/scale)
+        dimpc <- ncdim_def("mode", "index", seq(length(eig)),
+                           longname="Mode of variability")
+        var_new <- ncvar_def("eigenvalues", "unitless", list(dimpc), 
+                             missval, prec=prec,
+                             longname=paste("Eigenvalues of the",
+                                            gsub("_"," ",attr(x,'longname')[1])))
+        nc <- nc_open(file, write=TRUE)
+        nc <- ncvar_add( nc, var_new )
+        nc_close(nc)
+        nc <- nc_open(file, write=TRUE)
+        ncvar_put( nc, "eigenvalues", eig)
+        ncatt_put( nc, "eigenvalues", "add_offset", offset, prec="float" )
+        ncatt_put( nc, "eigenvalues", "scale_factor", scale, prec="float" ) 
+        ncatt_put( nc, "eigenvalues", "_FillValue", missval, prec="float" ) 
+        ncatt_put( nc, "eigenvalues", "missing_value", missval, prec="float" )
+      }
+      
+      ## Add PCA pattern as a separate variable
+      if(!is.null(pattern$pca)) {
+        pca <- attr(pattern$pca, "pattern")
+        offset <- 0
+        scale <- round2magnitude((max(abs(c(pca)),na.rm=TRUE) - offset)/10000)
+        pca <- round((pca-offset)/scale)
+        lons <- attr(pattern$pca, "longitude")
+        lats <- attr(pattern$pca, "latitude")
+        alts <- attr(pattern$pca, "altitude")
+        stid <- as.numeric(attr(pattern$pca, "station_id"))
+        locs <- attr(pattern$pca, "location")
+        dimst <- ncdim_def("stid", "id", stid, longname="Station id")
+        dimpc <- ncdim_def("mode", "index", seq(ncol(pca)),
+                           longname="Mode of variability")
+        var_new <- ncvar_def("PCA_pattern", "unitless", list(dimst,dimpc), missval, 
+                             longname=paste("PCA pattern of the",
+                                            gsub("_"," ",attr(x,'longname')[1])),
+                             prec=prec)
+        nc <- nc_open(file, write=TRUE)
+        nc <- ncvar_add( nc, var_new )
+        nc_close(nc)
+        nc <- nc_open(file, write=TRUE)
+        ncvar_put( nc, "PCA_pattern", pca)
+        ncatt_put( nc, "PCA_pattern", "add_offset", offset, prec="float" )
+        ncatt_put( nc, "PCA_pattern", "scale_factor", scale, prec="float" ) 
+        ncatt_put( nc, "PCA_pattern", "_FillValue", missval, prec="float" ) 
+        ncatt_put( nc, "PCA_pattern", "missing_value", missval, prec="float" )
+        ncatt_put( nc, "PCA_pattern", "station_id", stid, prec="float" )
+        ncatt_put( nc, "PCA_pattern", "location", locs, prec="text" )
+        ncatt_put( nc, "PCA_pattern", "longitude", lons, prec="float" )
+        ncatt_put( nc, "PCA_pattern", "longitude_unit", "degrees E", prec="text" )
+        ncatt_put( nc, "PCA_pattern", "latitude", lats, prec="float" )
+        ncatt_put( nc, "PCA_pattern", "latitude_unit", "degrees N", prec="text" )
+        ncatt_put( nc, "PCA_pattern", "altitude", alts, prec="float" )
+        ncatt_put( nc, "PCA_pattern", "altitude_unit", "masl", prec="text" )
+        ncatt_put( nc, "PCA_pattern", "spatial_representation", "vector", prec="text")
+        nc_close(nc)
+      }
+      
+      ## Add PCA pattern as a separate variable
+      if(!is.null(pattern$eof)) {
+        eof <- attr(pattern$eof, "pattern")
+        offset <- 0
+        scale <- round2magnitude((max(abs(c(eof)),na.rm=TRUE) - offset)/10000)
+        eof <- round((eof-offset)/scale)
+        lons <- attr(pattern$eof, "longitude")
+        lats <- attr(pattern$eof, "latitude")
+        dimlon <- ncdim_def( "longitude", "degree_east", lons )
+        dimlat <- ncdim_def( "latitude", "degree_north", lats )
+        dimpc <- ncdim_def("mode", "index", seq(dim(eof)[3]),
+                           longname="Mode of variability")
+        var_new <- ncvar_def("EOF_pattern", "unitless", list(dimlon, dimlat, dimpc), 
+                             missval, prec=prec,
+                             longname=paste("EOF pattern of the",
+                                            gsub("_"," ",attr(x,'longname')[1])))
+        nc <- nc_open(file, write=TRUE)
+        nc <- ncvar_add( nc, var_new )
+        nc_close(nc)
+        nc <- nc_open(file, write=TRUE)
+        ncvar_put( nc, "EOF_pattern", eof)
+        ncatt_put( nc, "EOF_pattern", "add_offset", offset, prec="float" )
+        ncatt_put( nc, "EOF_pattern", "scale_factor", scale, prec="float" ) 
+        ncatt_put( nc, "EOF_pattern", "_FillValue", missval, prec="float" ) 
+        ncatt_put( nc, "EOF_pattern", "missing_value", missval, prec="float" )
+        ncatt_put( nc, "EOF_pattern", "geospatial_lon_min", as.character(round(min(lons))), prec="text")
+        ncatt_put( nc, "EOF_pattern", "geospatial_lon_max", as.character(round(max(lons))), prec="text")
+        ncatt_put( nc, "EOF_pattern", "geospatial_lon_units", "degrees E", prec="text")
+        ncatt_put( nc, "EOF_pattern", "geospatial_lon_resolution", as.character(diff(lons)[[1]]), prec="text")
+        ncatt_put( nc, "EOF_pattern", "geospatial_lat_min", as.character(round(min(lats))), prec="text")
+        ncatt_put( nc, "EOF_pattern", "geospatial_lat_max", as.character(round(max(lats))), prec="text")
+        ncatt_put( nc, "EOF_pattern", "geospatial_lat_units", "degrees N", prec="text")
+        ncatt_put( nc, "EOF_pattern", "geospatial_lat_resolution", as.character(diff(lats)[[1]]), prec="text")
+        ncatt_put( nc, "EOF_pattern", "spatial_representation", "grid", prec="text")
+        nc_close(nc)
+      }
+      
+      if(!is.null(attr(x, "r.xval"))) {
+        rx <- attr(x,"r.xval")
+        offset <- 0
+        scale <- round2magnitude((max(abs(c(rx)),na.rm=TRUE) - offset)/10000)
+        rx <- round((rx-offset)/scale)
+        dimpc <- ncdim_def("mode", "index", seq(ncol(rx)),
+                           longname="Mode of variability")
+        dimim <- ncdim_def("ensemble_member", "index", seq(nrow(rx)),
+                            longname="Ensemble member index")
+        
+        var_new <- ncvar_def("r_xval", "unitless", list(dimim,dimpc), missval, 
+                             longname="Cross-validation correlation coefficient",
+                             prec=prec)
+        nc <- nc_open(file, write=TRUE)
+        nc <- ncvar_add( nc, var_new )
+        nc_close(nc)
+        nc <- nc_open(file, write=TRUE)
+        ncvar_put( nc, "r_xval", rx)
+        ncatt_put( nc, "r_xval", "add_offset", offset, prec="float" )
+        ncatt_put( nc, "r_xval", "scale_factor", scale, prec="float" ) 
+        ncatt_put( nc, "r_xval", "_FillValue", missval, prec="float" ) 
+        ncatt_put( nc, "r_xval", "missing_value", missval, prec="float" )
+        nc_close(nc)
+      }
+    } else {
+      ## What should we do when applying this function to a non PCA-based DSensemble object?
+      print(paste("write2netcdf4.dsensemble cannot yet be applied to this type of input object.",
+                  "The function has not been adapted to write objects of class",
+                  paste(class(x), sep=", ")))
+      browser()
+    }
+    
+    ## Add global attributes
+    if(file.exists(file)) {
+      nc <- nc_open(file, write=TRUE)
+      ncatt_put( nc, 0, "description", 
+                 paste("Saved from esd on",date(),"using write2ncdf4.dsensemble to",
+                       "write DSensemble data for all ensemble members in its original format."))
+      ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
+      ncatt_put( nc, 0, "date_created", as.character(as.Date(Sys.time())), prec="text")
+      ncatt_put( nc, 0, 'class', class(x))
+      ncatt_put( nc, 0, "variable", attr(x,"variable")[1], prec="text")
+      ncatt_put( nc, 0, "unit", attr(x,"unit")[1], prec="text")
+      if(!is.null(attr(x,"model_id"))) ncatt_put( nc, 0, "ensemble_members", attr(x, "model_id"), prec="text" )
+      if(!is.null(attr(x,"domain"))) ncatt_put( nc, 0, "predictor_domain", 
+                                                paste0(paste(attr(x,"domain")$lon, collapse="-"), "E/",
+                                                       paste(attr(x,"domain")$lat, collapse="-"), "N"), prec="text")
+      
+      # Add the attributes of object x
+      attnames <- names(attributes(x))
+      if (verbose) print(attnames)
+      exclude <- c('history','units','variable','dim','index','longitude',
+                   'latitude','greenwich','domain','call','original_data',
+                   'r.xval')
+      for(a in exclude) attnames <- attnames[!grepl(a,attnames)]
+      for (ia in seq_along(attnames)) {
+        if(!inherits(attr(x,attnames[ia]),c("matrix","array","data.frame","list"))) {
+          if (verbose) print(paste(attnames[ia], paste(attr(x,attnames[ia]), collapse=", ")))
+          ncatt_put( nc, 0, attnames[ia], as.character(attr(x,attnames[ia])), prec="text")
+        }
+      }
+      nc_close(nc)
+    }
+    if (verbose) print(paste('Finished writing dsensemble to file', file))
   }
-  
-  if (verbose) print(names(varlist))
-  
-  ## Create a netCDF file with this variable
-  if (verbose) print('Create netCDF-file')
-  
-  nc <- nc_create( file, varlist,verbose=verbose)
-  
-  if (verbose) print('write pca/eof data')                   
-  ## Add the information stored in the list elements as 2D zoo objects
-  X <- unlist(lapply(x,function(x) x[1:239,]))
-  X <- round((X - offset)/scale)
-  if (verbose) print(c(length(X),dim(x[[1]]),length(x)))
-  if (verbose) print(table(unlist(lapply(x,dim))))
-  dim(X) <- c(dim(x[[1]]),length(x))
-  if (verbose) print('write zoo data')     
-  ## Write some values to this variable on disk: GCM results
-  ncvar_put( nc, varlist$gcm, X )
-  ncatt_put( nc, varlist$gcm, "add_offset", offset, prec="float" )
-  ncatt_put( nc, varlist$gcm, "scale_factor", scale, prec="float" ) 
-  ncatt_put( nc, varlist$gcm, "_FillValue", missval, prec="float" ) 
-  ncatt_put( nc, varlist$gcm, "missing_value", missval, prec="float" )
-  ## GCM names
-  if (verbose) print('write GCM names')  
-  ncatt_put( nc, varlist$gcm, "GCM runs", paste(names.x,collapse=','),prec="char" )
-  ## PCA/EOF variables:
-  if (verbose) print('EOF/PCA variables')
-  ncvar_put( nc, varlist$pca, round((pca - offset)/scale) )
-  ncatt_put( nc, varlist$pca, "add_offset", offset, prec="float" )
-  ncatt_put( nc, varlist$pca, "scale_factor", scale, prec="float" ) 
-  ncatt_put( nc, varlist$pca, "_FillValue", missval, prec="float" ) 
-  ncatt_put( nc, varlist$pca, "missing_value", missval, prec="float" ) 
-  ncvar_put( nc, varlist$pat, round((pattern - offset)/scale) )
-  ncatt_put( nc, varlist$pat, "add_offset", offset, prec="float" )
-  ncatt_put( nc, varlist$pat, "scale_factor", scale, prec="float" ) 
-  ncatt_put( nc, varlist$pat, "_FillValue", missval, prec="float" ) 
-  ncatt_put( nc, varlist$pat, "missing_value", missval, prec="float" ) 
-  ncatt_put( nc, varlist$pat, "dimensions_pca", paste(attr(pattern,'dimensions'),collapse=', '), prec="char" )
-  ## If the object contains PCAs
-  if (length(dpat)==2) {
-    if (verbose) print('PCA only variables')
-    ncvar_put( nc, varlist$lon, lon(x) )
-    ncvar_put( nc, varlist$lat, lat(x) )
-    ncvar_put( nc, varlist$alt, alt(x) )
-    ncvar_put( nc, varlist$loc, loc(x) )
-    ncvar_put( nc, varlist$stid, as.character(stid(x)) )
-    ncvar_put( nc, varlist$cntr, cntr(x) )
-    ncvar_put( nc, varlist$src, src(x) )
-    ncvar_put( nc, varlist$lambda, attr(pca,'eigenvalues') )
-  } else if (length(dpat)==3)
-    ncvar_put( nc, varlist$lambda, attr(pca,'eigenvalues') )
-  if (verbose) print('history')
-  ncatt_put( nc, varlist$pca, "history", paste(attr(x,'history'),collapse=';'), prec="char" )  
-  ## Global attributes:
-  ncatt_put( nc, 0, 'class', class(x))
-  ncatt_put( nc, 0, "description", "Saved from esd using write2ncdf4.dsensemble")
-  #ncatt_put( nc, 0, "class", paste(class.x,collapse='-'))
-  ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
-  if (verbose) print(paste('Finished writing dsensemble to file', file))
-  return(nc)
+  if (verbose) print(paste('exit ncdf4_dsensemble'))
+  return(file)
 }
 
-ncdf4_dsensemblestats <- function(x,...,file='esd.dsensemble.nc',prec='short',offset=0,scale=0.1,
-                                  type="field",torg="1970-01-01",missval=-99,verbose=TRUE) {
-  ## prec - see http://james.hiebert.name/blog/work/2015/04/18/NetCDF-Scale-Factors/
-  if (verbose) print('ncdf4_dsensemblestats')
-  print("Function ncdf4_dsensemblestats is not finished - returning nothing!")
-  nc <- NULL
-  return(nc)
+ncdf4_dsensemblestatistics <- function(x,...,file=NULL,path=NULL,force=TRUE,
+                                  prec='short',offset=0,scale=0.01,
+                                  method="metnoESD",region=NULL,
+                                  FUNX=c("mean","median","max","min","q95","q5"),
+                                  im=NULL, is=NULL, it=NULL, eof=TRUE,#type="field",
+                                  torg="1970-01-01",missval=-99,verbose=TRUE) {
+  if (verbose) print('ncdf4_dsensemblestatistics')
+  if(verbose) print("Function for writing ensemble statistics of downscaled results (output from DSensemble) to a netCDF file.")
+  stopifnot(inherits(x,"dsensemble") & inherits(x,"list"))
+  if(!is.null(im) | !is.null(is) | !is.null(it)) x <- subset(x, im=im, is=is, it=it)
+  
+  if(is.null(file)) {
+    file <- "dsensemblestatistics"
+    file <- paste0(file,"_",attr(x,"scenario"))
+    if(!is.null(method)) file <- paste0(file,"_",method)
+    if(!is.null(region)) file <- paste0(file,"_",region)
+    if(!is.null(x$eof)) {
+      res <- paste0(round(diff(lon(x$eof))[1], digits=2),"x",
+                    round(diff(lat(x$eof))[1], digits=2),"deg")
+    } else res <- "stations"
+    file <- paste0(file,"_",res)
+    file <- paste0(file,"_",attr(x,"variable")[1])
+    if(inherits(x[[2]],"season")) {
+      file <- paste0(file,"_sem")
+      file <- paste0(file,"_",toupper(season(x[[2]])[1]))
+    } else if(inherits(x[[2]],"annual")) {
+      file <- paste0(file,"_annual-mean")
+    } else if(inherits(x[[2]],"month")) {
+      file <- paste0(file,"_monthly-mean")
+    }
+    file <- paste0(file,"_",paste(range(year(x[[3]])),collapse="-"))
+    file <- paste0(file,"_ngcm",length(attr(x, "model_id")))
+    file <- paste0(file, ".nc")
+  }
+  if(!is.null(path)) file <- file.path(path, basename(file))
+  
+  if(file.exists(file) & !force) {
+    nc <- NULL
+    if (verbose) print(paste('File',file,'already exists. No new file created.'))
+  } else {
+    if(verbose) print("Calculate ensemble statistics.")
+    xstats <- aggregate(x, FUNX=FUNX, eof=eof, verbose=verbose)
+    if(length(FUNX)==1 & !is.list(xstats)) {
+      xf <- xstats
+      xstats <- list()
+      xstats[[FUNX]] <- xf
+    }
+    ## Generate time index
+    if(is.list(xstats)) tx <- index(xstats[[1]]) else tx <- index(xstats)
+    if (inherits(tx,c('numeric','integer'))) {
+      yr <- tx
+      if(!is.null(x$pca)) {
+        mn <- switch(season(x$pca)[[1]], "djf"="01", "mam"="03", 
+                     "jja"="06", "son"="10", "01") 
+      } else {
+        mn <- switch(season(x)[[1]], "djf"="01", "mam"="03", 
+                     "jja"="06", "son"="10", "01")
+      }
+      tx <- as.Date(paste(yr,'-',mn,'-01',sep=''))
+    }
+
+    ## Replace missing values, organize dimensions of data, and subtract offset and divide by scale 
+    if (is.null(offset)) offset <- mean(xstats$mean,na.rm=TRUE)
+    if (is.null(scale)) scale <- (max(abs(c(xstats$mean)),na.rm=TRUE) - offset)/10000
+    for(fn in names(xstats)) {
+      xf <- xstats[[fn]]
+      xf <- t(xf)
+      if(eof) {
+        d <- c(dim(attr(x$eof,"pattern"))[1:2], dim(xf)[2])
+      } else {
+        d <- dim(xf)
+      }
+      xf <- as.vector(xf)
+      xf <- round((xf-offset)/scale)
+      xf[!is.finite(xf)] <- missval
+      dim(xf) <- d
+      xstats[[paste0("ens",fn)]] <- xf
+    }
+    
+    if (verbose) {
+      print(attr(xstats[[1]],'dimensions')); print(c(scale,offset))
+      print(range(c(xstats[[1]]))); print(range(c(xstats[[1]]),na.rm=TRUE))
+    }
+
+    ## Set dimensions for the netCDF file
+    dimlon <- ncdim_def( "longitude", "degree_east", lon(xstats) )
+    dimlat <- ncdim_def( "latitude", "degree_north", lat(xstats) )
+    dimtim <- ncdim_def( "time", paste("days since",torg),
+                         as.numeric(as.Date(tx,origin=torg)) )
+    
+    for(i in seq_along(names(xstats))) {
+      fn <- names(xstats)[i]
+      x4nc <- ncvar_def(fn, attr(xstats,"unit")[1], list(dimlon,dimlat,dimtim), -1, 
+                        longname=paste("ensemble",fn,"of the",
+                                     gsub("_"," ",attr(xstats,'longname'))), 
+                                     prec=prec)
+      # Create a netCDF file with this variable or put it in an existing file
+      if(i>1) {
+        nc <- nc_open(file, write=TRUE)
+        nc <- ncvar_add(nc, x4nc)
+        nc_close(nc)
+        nc <- nc_open(file, write=TRUE)
+      } else {
+        nc <- nc_create( file, x4nc )
+        ncatt_put( nc, 0, "description", 
+                   paste("Saved from esd on",date(),"using write2ncdf4.dsensemble to",
+                         "write DSensemble data as ensemble statistics."))
+        #if (verbose) print(attr(x,'history'))
+        ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
+        # Add standard attributes
+        ncatt_put( nc, 0, "date_created", as.character(as.Date(Sys.time())), prec="text")
+        ncatt_put( nc, 0, "units", attr(x,"unit")[[1]], prec="text")
+        ncatt_put( nc, 0, "geospatial_lon_min", as.character(round(min(lon(xstats)))), prec="text")
+        ncatt_put( nc, 0, "geospatial_lon_max", as.character(round(max(lon(xstats)))), prec="text")
+        ncatt_put( nc, 0, "geospatial_lon_units", "degrees E", prec="text")
+        ncatt_put( nc, 0, "geospatial_lon_resolution", as.character(diff(lon(xstats))[[1]]), prec="text")
+        ncatt_put( nc, 0, "geospatial_lat_min", as.character(round(min(lat(xstats)))), prec="text")
+        ncatt_put( nc, 0, "geospatial_lat_max", as.character(round(max(lat(xstats)))), prec="text")
+        ncatt_put( nc, 0, "geospatial_lat_units", "degrees N", prec="text")
+        ncatt_put( nc, 0, "geospatial_lat_resolution", as.character(diff(lat(xstats))[[1]]), prec="text")
+        ncatt_put( nc, 0, "time_coverage_start", as.character(min(tx)), prec="text")
+        ncatt_put( nc, 0, "time_coverage_end", as.character(max(tx)), prec="text")
+        # Add the attributes of object x
+        attnames <- names(attributes(x))
+        if (verbose) print(attnames)
+        attnames <- attnames[!grepl('history',attnames)]
+        attnames <- attnames[!grepl('units',attnames)]
+        attnames <- attnames[!grepl('variable',attnames)]
+        attnames <- attnames[!grepl('dim',attnames)]
+        attnames <- attnames[!grepl('index',attnames)]
+        attnames <- attnames[!grepl('longitude',attnames)]
+        attnames <- attnames[!grepl('latitude',attnames)]
+        attnames <- attnames[!grepl('greenwich',attnames)]
+        attnames <- attnames[!grepl('domain',attnames)]
+        attnames <- attnames[!grepl('call',attnames)]
+        attnames <- attnames[!grepl('original_data',attnames)]
+        attnames <- attnames[!grepl('scorestats',attnames)]
+        attnames <- attnames[!grepl('r.xval',attnames)]
+        for (ia in seq_along(attnames)) {
+          if(!inherits(attr(x,attnames[ia]),c("matrix","array","data.frame","list"))) {
+            if (verbose) print(paste(attnames[ia], paste(attr(x,attnames[ia]), collapse=", ")))
+            ncatt_put( nc, 0, attnames[ia], as.character(attr(x,attnames[ia])), prec="text")
+          }
+        }
+        if(!is.null(attr(x, "domain"))) ncatt_put( nc, 0, "predictor_domain", 
+                                                   paste0(paste(attr(x,"domain")$lon, collapse="to"), "E/",
+                                                          paste(attr(x,"domain")$lat, collapse="-"), "N"), prec="text")
+        if(!is.null(attr(x, "r.xval"))) ncatt_put( nc, 0, "r.xval", attr(x,"r.xval")[im,], prec="double")
+        
+        if(inherits(xstats[[fn]],c("array","field"))) {
+          ncatt_put( nc, 0, "spatial_representation", "grid", prec="text")
+        } else if(inherits(xstats[[fn]],c("vector","station"))) {
+          ncatt_put( nc, 0, "spatial_representation", "station", prec="text")
+        }
+      }
+    
+      # Write some values to this variable on disk.
+      ncvar_put( nc, fn, xstats[[fn]])
+      ncatt_put( nc, fn, "add_offset", offset, prec="float" )
+      ncatt_put( nc, fn, "scale_factor", scale, prec="float" ) 
+      ncatt_put( nc, fn, "_FillValue", missval, prec="float" ) 
+      ncatt_put( nc, fn, "missing_value", missval, prec="float" ) 
+      history <- toString(attr(x,'history')$call)
+      ncatt_put( nc, fn, "history", history, prec="text" ) 
+      nc_close(nc)
+      if (verbose) print(paste('Finished writing ensemble',fn,'to file', file))
+    }
+    if (verbose) print(paste('Finished writing downscaled ensemble statistics to file', file))
+  }
+  if (verbose) print(paste('exit ncdf4_dsensemblestatistics'))
+  return(file)
 }
 
-ncdf4_dsmodel <- function(x,...,file=NULL,path=NULL,
-                          method="metnoESD",region="nordic",
-                          im=1, is=NULL, it=NULL, type="field",
+ncdf4_dsmodel <- function(x,...,file=NULL,path=NULL,force=TRUE,
+                          method="metnoESD",region=NULL,
+                          im=NULL, is=NULL, it=NULL, type="field",
                           prec='short',scale=NULL,offset=NULL,
                           torg="1970-01-01",missval=-999,verbose=FALSE) {
   if (verbose) {print('write2ncdf4_dsmodel'); print(names(attributes(x)))}
   if(verbose) print("Function for writing downscaled results for a single model simulation (output from DSensemble) to a netCDF file.")
   stopifnot(inherits(x,"dsensemble") & inherits(x,"list"))
-  
+  if(is.null(im)) im <- 1
   if(inherits(x, "pca")|inherits(x, "eof")) {
     if("station" %in% type) {
-      x <- as.station(x, im=im)
+      x <- as.station(x, im=im, is=is, it=it)
     } else if("field" %in% type) {
-      x <- as.field(x, im=im)
+      x <- as.field(x, im=im, is=is, it=it)
     } else {
-      x <- as.field(x, im=im) # Transform to field if the format is not specified
+      x <- as.field(x, im=im, is=is, it=it) # Transform to field if the format is not specified
     }
   }
   
   if(is.null(file)) {
     #forcing_scenario_bias-baseline_impactmodel_region_1km_ variablename_datetime_years.nc4
-    #Example: ecearth-r12i1p1-cclm_rcp26_eqm-sn2018v2005_rawbc_norway_1km_tas_daily_2021.nc4
-    #ESD example: ecearth-r12i1p1-cclm_rcp26_metnoESD_nordic_0.08x0.08deg_tas_seasavg_djf_1950-2100.nc4
+    #Example: ecearth-r12i1p1-cclm_rcp26_metnoESD_nordic_0.08x0.08deg_tas_seasavg_djf_1950-2100.nc4
     file <- NULL
     if(length(attr(x, "model_id"))==1) {
       file <- attr(x, "model_id")
     } else file <- attr(x, "model_id")[im]
     file <- paste0(file,"_",attr(x,"scenario"))
-    file <- paste0(file,"_",method)
-    file <- paste0(file,"_",region)
+    if(!is.null(method)) file <- paste0(file,"_",method)
+    if(!is.null(region)) file <- paste0(file,"_",region)
     file <- paste0(file,"_",round(diff(lon(x[[1]]))[1], digits=2),"x",
                    round(diff(lat(x[[1]]))[1], digits=2),"deg")
     file <- paste0(file,"_",attr(x,"variable")[1])
@@ -441,100 +738,108 @@ ncdf4_dsmodel <- function(x,...,file=NULL,path=NULL,
   }
   if(!is.null(path)) file <- file.path(path, basename(file))
   
-  x0 <- x[[1]]
-  y <- coredata(x0)
-  if (is.null(offset)) offset <- mean(y,na.rm=TRUE)
-  if (is.null(scale)) scale <- (max(abs(c(y)),na.rm=TRUE) - offset)/10000
-  y <- t(y)
-  y <- round((y-offset)/scale)
-  y[!is.finite(y)] <- missval
-  if (verbose) {
-    print(attr(y,'dimensions')); print(c(scale,offset))
-    print(range(c(y))); print(range(c(x0),na.rm=TRUE))
-  }
-  dim(y) <- attr(x0,'dimensions')
-  
-  dimlon <- ncdim_def( "longitude", "degree_east", lon(x0) )
-  dimlat <- ncdim_def( "latitude", "degree_north", lat(x0) )
-  if (inherits(index(x),c('numeric','integer'))) {
-    mn <- switch(season(x0)[[1]], "djf"="01", "mam"="03", 
-                 "jja"="06", "son"="10", "01")
-    tx <- as.Date(paste(index(x0),'-',mn,'-01',sep=''))
-  }
-  
-  dimtim <- ncdim_def( "time", paste("days since",torg),
-                       as.numeric(as.Date(tx,origin=torg)) )
-  x4nc <- ncvar_def(varid(x0)[1], attr(x0,"unit")[1], list(dimlon,dimlat,dimtim), -1, 
-                    longname=attr(x0,'longname'), prec=prec)
-  
-  # Create a netCDF file with this variable
-  nc <- nc_create( file, x4nc )
-  
-  # Write some values to this variable on disk.
-  ncvar_put( nc, x4nc, round(y) )
-  ncatt_put( nc, x4nc, "add_offset", offset, prec="float" )
-  ncatt_put( nc, x4nc, "scale_factor", scale, prec="float" ) 
-  ncatt_put( nc, x4nc, "_FillValue", missval, prec="float" ) 
-  ncatt_put( nc, x4nc, "missing_value", missval, prec="float" ) 
-  history <- toString(attr(x,'history')$call)
-  ncatt_put( nc, x4nc, "history", history, prec="text" ) 
-  #ncatt_put( nc, 0, 'class', class(x))
-  ncatt_put( nc, 0, "description", 
-             paste("Saved from esd using write2ncdf4",date()))
-  #if (verbose) print(attr(x,'history'))
-  ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
-   
-  # Add the attributes of object x
-  attnames <- names(attributes(x))
-  if (verbose) print(attnames)
-  attnames <- attnames[!grepl('history',attnames)]
-  attnames <- attnames[!grepl('units',attnames)]
-  attnames <- attnames[!grepl('variable',attnames)]
-  attnames <- attnames[!grepl('dim',attnames)]
-  attnames <- attnames[!grepl('index',attnames)]
-  attnames <- attnames[!grepl('longitude',attnames)]
-  attnames <- attnames[!grepl('latitude',attnames)]
-  attnames <- attnames[!grepl('greenwich',attnames)]
-  attnames <- attnames[!grepl('domain',attnames)]
-  attnames <- attnames[!grepl('call',attnames)]
-  attnames <- attnames[!grepl('original_data',attnames)]
-  attnames <- attnames[!grepl('scorestats',attnames)]
-  attnames <- attnames[!grepl('r.xval',attnames)]
-  for (ia in seq_along(attnames)) {
-    if(inherits(attr(x,attnames[ia]),"matrix")) {
-      browser()
-    } else {
-      if (verbose) print(paste(attnames[ia], paste(attr(x,attnames[ia]), collapse=", ")))
-      ncatt_put( nc, 0, attnames[ia], as.character(attr(x,attnames[ia])), prec="text")
+  if(file.exists(file) & !force) {
+    nc <- NULL
+    if (verbose) print(paste('File',file,'already exists. No new file created.'))
+  } else {
+    x0 <- x[[1]]
+    y <- coredata(x0)
+    if (is.null(offset)) offset <- mean(y,na.rm=TRUE)
+    if (is.null(scale)) scale <- (max(abs(c(y)),na.rm=TRUE) - offset)/10000
+    y <- t(y)
+    y <- round((y-offset)/scale)
+    y[!is.finite(y)] <- missval
+    if (verbose) {
+      print(attr(y,'dimensions')); print(c(scale,offset))
+      print(range(c(y))); print(range(c(x0),na.rm=TRUE))
     }
-  }
-  if(!is.null(attr(x, "domain"))) ncatt_put( nc, 0, "predictor_domain", 
-                                             paste0(paste(attr(x,"domain")$lon, collapse="-"), "E/",
-                                                    paste(attr(x,"domain")$lat, collapse="-"), "N"), prec="text")
-  if(!is.null(attr(x, "r.xval"))) ncatt_put( nc, 0, "r.xval", attr(x,"r.xval"), prec="double")
+    dim(y) <- attr(x0,'dimensions')
+    
+    dimlon <- ncdim_def( "longitude", "degree_east", lon(x0) )
+    dimlat <- ncdim_def( "latitude", "degree_north", lat(x0) )
+    if (inherits(index(x),c('numeric','integer'))) {
+      mn <- switch(season(x0)[[1]], "djf"="01", "mam"="03", 
+                   "jja"="06", "son"="10", "01")
+      tx <- as.Date(paste(index(x0),'-',mn,'-01',sep=''))
+    }
+    
+    dimtim <- ncdim_def( "time", paste("days since",torg),
+                         as.numeric(as.Date(tx,origin=torg)) )
+    x4nc <- ncvar_def(varid(x0)[1], attr(x0,"unit")[1], list(dimlon,dimlat,dimtim), -1, 
+                      longname=attr(x0,'longname'), prec=prec)
+    
+    # Create a netCDF file with this variable
+    nc <- nc_create( file, x4nc )
+    
+    # Write some values to this variable on disk.
+    ncvar_put( nc, x4nc, round(y) )
+    ncatt_put( nc, x4nc, "add_offset", offset, prec="float" )
+    ncatt_put( nc, x4nc, "scale_factor", scale, prec="float" ) 
+    ncatt_put( nc, x4nc, "_FillValue", missval, prec="float" ) 
+    ncatt_put( nc, x4nc, "missing_value", missval, prec="float" ) 
+    history <- toString(attr(x,'history')$call)
+    ncatt_put( nc, x4nc, "history", history, prec="text" ) 
+    #ncatt_put( nc, 0, 'class', class(x))
+    ncatt_put( nc, 0, "description", 
+               paste("Saved from esd on",date(),"using write2ncdf4.dsensemble to",
+                     "write DSensemble data for a single ensemble member."))
+    #if (verbose) print(attr(x,'history'))
+    ncatt_put( nc, 0, "esd-version", attr(x,'history')$session$esd.version)
+    
+    # Add standard attributes
+    ncatt_put( nc, 0, "date_created", as.character(as.Date(Sys.time())), prec="text")
+    ncatt_put( nc, 0, "units", attr(x0,"unit")[[1]], prec="text")
+    ncatt_put( nc, 0, "geospatial_lon_min", as.character(round(min(lon(x0)))), prec="text")
+    ncatt_put( nc, 0, "geospatial_lon_max", as.character(round(max(lon(x0)))), prec="text")
+    ncatt_put( nc, 0, "geospatial_lon_units", "degrees E", prec="text")
+    ncatt_put( nc, 0, "geospatial_lon_resolution", as.character(diff(lon(x0))[[1]]), prec="text")
+    ncatt_put( nc, 0, "geospatial_lat_min", as.character(round(min(lat(x0)))), prec="text")
+    ncatt_put( nc, 0, "geospatial_lat_max", as.character(round(max(lat(x0)))), prec="text")
+    ncatt_put( nc, 0, "geospatial_lat_units", "degrees N", prec="text")
+    ncatt_put( nc, 0, "geospatial_lat_resolution", as.character(diff(lat(x0))[[1]]), prec="text")
+    ncatt_put( nc, 0, "time_coverage_start", as.character(min(index(x0))), prec="text")
+    ncatt_put( nc, 0, "time_coverage_end", as.character(max(index(x0))), prec="text")
+    #ncatt_put( nc, 0, "lon_bnds", as.character(round(min(lon(x0)))), prec="text")
+    #ncatt_put( nc, 0, "lat_bnds", as.character(round(min(lon(x0)))), prec="text")
+    
+    # Add the attributes of object x
+    attnames <- names(attributes(x))
+    if (verbose) print(attnames)
+    attnames <- attnames[!grepl('history',attnames)]
+    attnames <- attnames[!grepl('units',attnames)]
+    attnames <- attnames[!grepl('variable',attnames)]
+    attnames <- attnames[!grepl('dim',attnames)]
+    attnames <- attnames[!grepl('index',attnames)]
+    attnames <- attnames[!grepl('longitude',attnames)]
+    attnames <- attnames[!grepl('latitude',attnames)]
+    attnames <- attnames[!grepl('greenwich',attnames)]
+    attnames <- attnames[!grepl('domain',attnames)]
+    attnames <- attnames[!grepl('call',attnames)]
+    attnames <- attnames[!grepl('original_data',attnames)]
+    attnames <- attnames[!grepl('scorestats',attnames)]
+    attnames <- attnames[!grepl('r.xval',attnames)]
+    for (ia in seq_along(attnames)) {
+      if(!inherits(attr(x,attnames[ia]),c("matrix","array","data.frame","list"))) {
+        if (verbose) print(paste(attnames[ia], paste(attr(x,attnames[ia]), collapse=", ")))
+        ncatt_put( nc, 0, attnames[ia], as.character(attr(x,attnames[ia])), prec="text")
+      }
+    }
+    if(!is.null(attr(x, "domain"))) ncatt_put( nc, 0, "predictor_domain", 
+                                               paste0(paste(attr(x,"domain")$lon, collapse="to"), "E/",
+                                                      paste(attr(x,"domain")$lat, collapse="-"), "N"), prec="text")
+    if(!is.null(attr(x, "r.xval"))) ncatt_put( nc, 0, "r.xval", attr(x,"r.xval")[im,], prec="double")
+    
+    if(inherits(x,"field")) {
+      ncatt_put( nc, 0, "spatial_representation", "grid", prec="text")
+    } else if(inherits(x,"station")) {
+      ncatt_put( nc, 0, "spatial_representation", "station", prec="text")
+    }
 
-  # Add standard attributes
-  ncatt_put( nc, 0, "date_created", as.character(as.Date(Sys.time())), prec="text")
-  ncatt_put( nc, 0, "units", attr(x0,"unit")[[1]], prec="text")
-  ncatt_put( nc, 0, "geospatial_lon_min", as.character(round(min(lon(x0)))), prec="text")
-  ncatt_put( nc, 0, "geospatial_lon_max", as.character(round(max(lon(x0)))), prec="text")
-  ncatt_put( nc, 0, "geospatial_lon_units", "degrees E", prec="text")
-  ncatt_put( nc, 0, "geospatial_lon_resolution", as.character(diff(lon(x0))[[1]]), prec="text")
-  ncatt_put( nc, 0, "geospatial_lat_min", as.character(round(min(lat(x0)))), prec="text")
-  ncatt_put( nc, 0, "geospatial_lat_max", as.character(round(max(lat(x0)))), prec="text")
-  ncatt_put( nc, 0, "geospatial_lat_units", "degrees N", prec="text")
-  ncatt_put( nc, 0, "geospatial_lat_resolution", as.character(diff(lat(x0))[[1]]), prec="text")
-  ncatt_put( nc, 0, "time_coverage_start", as.character(min(index(x0))), prec="text")
-  ncatt_put( nc, 0, "time_coverage_end", as.character(max(index(x0))), prec="text")
-  
-  if(inherits(x,"field")) {
-    ncatt_put( nc, 0, "spatial_representation", "grid", prec="text")
-  } else if(inherits(x,"station")) {
-    ncatt_put( nc, 0, "spatial_representation", "station", prec="text")
+    if (verbose) print(paste('Finished writing dsensemble for a single model to file', file))
+    nc_close(nc)
   }
-  
-  if (verbose) print(paste('Finished writing dsensemble for a single model to file', file))
-  return(nc)
+  if (verbose) print(paste('exit ncdf4_dsmodel'))
+  return(file)
 }
 
 
