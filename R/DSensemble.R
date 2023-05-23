@@ -2200,10 +2200,10 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       if (is.null(diag)) {
         if (verbose) print('no diag')
         mdiff <- (mean(subset(y,it=range(year(ds))),na.rm=TRUE)-
-                    mean(subset(ds,it=range(year(y))),na.rm=TRUE))/
-          sd(y,na.rm=TRUE)
-        srati <- sd(subset(ds,it=range(year(y))),na.rm=TRUE)/
-          sd(subset(y,it=range(year(ds))),na.rm=TRUE)
+			mean(subset(ds,it=range(year(y))),na.rm=TRUE))/
+			sd(y,na.rm=TRUE)
+  	srati <- sd(subset(ds,it=range(year(y))),na.rm=TRUE)/
+	                sd(subset(y,it=range(year(ds))),na.rm=TRUE)
         arati <- ar1(ds)/ar1(y)
       } else {
         if (verbose) print('diag ok')
@@ -2227,12 +2227,27 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       quality <- 100*(1-mean(sapply(scorestats[i,], function(x) min(1,abs(x))),na.rm=TRUE))
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
-                  "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
-                  ' sd1/sd2=',round(srati,3),
-                  ' sd1(ds.gcm)/sd2(ds.reanalysis)=',round(srati.predict,3),
-                  "mean=",round(mean(coredata(y),na.rm=TRUE),2),
-                  'quality=',
-                  round(quality)))
+          srati <- mean(c(diag$s.1$sd.ratio[1],diag$s.2$sd.ratio[1],
+                          diag$s.3$sd.ratio[1],diag$s.4$sd.ratio[1]))
+          arati <- mean(c(diag$s.1$autocorr.ratio[1],
+                          diag$s.2$autocorr.ratio[1],
+                          diag$s.3$autocorr.ratio[1],
+                          diag$s.4$autocorr.ratio[1]))
+        }
+        scorestats[i,] <- c(1-r.xval,mdiff,1-srati,1-arati,res.trend,ks,ar,1-ds.ratio,
+                            1-round(var(xval[,2])/var(xval[,1]),2),
+                            1-srati.predict,1-arati.predict)
+        if (verbose) print('scorestats')
+        if (verbose) print(scorestats[i,])
+        quality <- 100*(1-mean(sapply(scorestats[i,], function(x) min(1,abs(x))),na.rm=TRUE))
+        R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
+        print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
+                    "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
+                    ' sd1/sd2=',round(srati,3),
+                    ' sd1(ds.gcm)/sd2(ds.reanalysis)=',round(srati.predict,3),
+                    "mean=",round(mean(coredata(y),na.rm=TRUE),2),
+                    'quality=',
+                    round(quality)))
       
       index(y) <- year(y); index(z) <- year(z)
       if (plot) {
@@ -2241,8 +2256,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
         cols <- rgb(seq(1,0,length=100),rep(0,100),seq(0,1,length=100),0.15)
         lines(z[,1],lwd=2,col=cols[qcol])
         lines(y[,1],lwd=3,main='PC1')
-      }
-      
+      }      
     }
     if (verbose) print('Downscaling finished')
   }
@@ -2267,7 +2281,7 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
                                           "1 - ratio of standard deviations for first PC",
                                           "1 - ratio of variance for first PC from cross-validation",
                                           "1 - ratio of standard deviations (predictions from GCM simulations/predictions from reanalysis)",
-                                          "1 - ratio of autocorrelations (predicttions from GCM simulations/predictions from reanalysis)",
+                                          "1 - ratio of autocorrelations (predictions from GCM simulations/predictions from reanalysis)",
                                           collapse=", "))
   attr(dse.pca,'scorestats') <- scorestats
   attr(r.xval, "longname") <- "cross validation correlation scores for all PCs"
