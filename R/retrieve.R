@@ -305,7 +305,6 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   if (length(grep("model",ls())) > 0) model <- ncid2$model 
   if (!is.null(itime)) time <- ncid2$time
   rm(ncid2)
-  
   if (verbose) print(model$frequency)
   ## Subselect a spatial and a temporal domain
   ## Single point extraction
@@ -1097,10 +1096,12 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           # construct vdate
           years <- time$vals%/%time$daysayear + yorigin
           dayofyear <- time$vals%%time$daysayear
-	  #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
-	  #	     		  rightmost.closed=TRUE, left.open=TRUE)
-	  months <- findInterval(floor(dayofyear)+1, c(1,cumsum(mndays)),
-	  	    		 rightmost.closed=FALSE, left.open=FALSE)
+	  months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
+	  	     		  rightmost.closed=TRUE, left.open=TRUE)
+          ## KMP 2023-05-23: The lines below do not work for reading subdaily GCM data with 365-day calendar.
+	  ## Why was the month definition changed at some point? In what situation does the lines above not work?
+	  #months <- findInterval(floor(dayofyear)+1, c(1,cumsum(mndays)),
+	  #	    		 rightmost.closed=FALSE, left.open=FALSE) 
           days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {

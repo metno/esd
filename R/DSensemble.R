@@ -2227,21 +2227,6 @@ DSensemble.pca <- function(y,...,plot=TRUE,path="CMIP5.monthly/",rcp="rcp45",bia
       quality <- 100*(1-mean(sapply(scorestats[i,], function(x) min(1,abs(x))),na.rm=TRUE))
       R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
       print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
-          srati <- mean(c(diag$s.1$sd.ratio[1],diag$s.2$sd.ratio[1],
-                          diag$s.3$sd.ratio[1],diag$s.4$sd.ratio[1]))
-          arati <- mean(c(diag$s.1$autocorr.ratio[1],
-                          diag$s.2$autocorr.ratio[1],
-                          diag$s.3$autocorr.ratio[1],
-                          diag$s.4$autocorr.ratio[1]))
-        }
-        scorestats[i,] <- c(1-r.xval,mdiff,1-srati,1-arati,res.trend,ks,ar,1-ds.ratio,
-                            1-round(var(xval[,2])/var(xval[,1]),2),
-                            1-srati.predict,1-arati.predict)
-        if (verbose) print('scorestats')
-        if (verbose) print(scorestats[i,])
-        quality <- 100*(1-mean(sapply(scorestats[i,], function(x) min(1,abs(x))),na.rm=TRUE))
-        R2 <- round(100*sd(xval[,2])/sd(xval[,1]),2)
-        print(paste("i=",i,"GCM=",gcmnm[i],' x-valid cor=',round(100*r.xval,2),
                     "R2=",R2,'% ','Common EOF: bias=',round(mdiff,2),
                     ' sd1/sd2=',round(srati,3),
                     ' sd1(ds.gcm)/sd2(ds.reanalysis)=',round(srati.predict,3),
