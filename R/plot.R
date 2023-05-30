@@ -978,7 +978,7 @@ plot.ds <- function(x,...,plot.type="multiple",what=NULL,new=TRUE,
                                 breaks=NULL,type="p",cex=2,show=TRUE,
                                 h=0.6, v=1,pos=0.05),
                     xlim=NULL,ylim=NULL,xlab="",ylab=NULL,verbose=FALSE) {
-  if (verbose) {print(paste('plot.ds')); print(names(attributes(ds)))}
+  if (verbose) {print(paste('plot.ds')); print(names(attributes(x)))}
   
   if (inherits(x,'pca')) {
     plot.ds.pca(x,what=what,verbose=verbose,new=new,...)

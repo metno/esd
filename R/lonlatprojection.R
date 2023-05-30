@@ -11,6 +11,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              fig=NULL,add=FALSE,...) {
   
   if (verbose) {print('lonlatprojection'); str(x)}
+  
   par0 <- par()
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
@@ -28,7 +29,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       first.space <- gregexpr('_',src(x))[[1]]
       if (!is.na(first.space)) attr(x,'source') <- substr(src(x),1,first.space-1)
     }
-  
+
   ## Land contours
   data("geoborders",envir=environment())
   if(!is.null(attr(x,"greenwich"))) if(!attr(x,"greenwich")) {
@@ -125,7 +126,10 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     }
     ##period <- paste('[',t1,', ',t2,']',sep='')  ## REB: square brackets have special role in expressions
     period <- paste('phantom(0)* (',t1,'-',t2,')',sep='')
-  } else period <- NULL
+  } else {
+    period <- NULL
+    t1 <- t2 <- NULL
+  }
   if (verbose) print(paste('period:',period))
   method <- attr(x,'method')
   if (verbose) {
@@ -255,14 +259,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   par(bty=par0$bty,xpd=par0$xpd,col.axis=par0$col.axis,col.lab=par0$col.lab, 
       cex.lab=par0$cex.lab, cex.axis=par0$cex.axis,xaxt=par0$xaxt,yaxt=par0$yaxt,
       new=FALSE)
-
   if (verbose) print('Add attributes to returned results')
   attr(x,'longitude') <- lon
   attr(x,'latitude') <- lat
   attr(x,'variable') <- variable
   attr(x,'unit') <- unit
   attr(x,'colbar') <- colbar
-  attr(x,'time') <- c(t1,t2)
+  if(!is.null(t1) & !is.null(t2)) attr(x,'time') <- c(t1,t2)
   invisible(x)
 }
 

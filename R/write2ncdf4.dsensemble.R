@@ -57,6 +57,8 @@
 #' stored (to save space may be represented as 'short').
 #' @param torg Time origin
 #' @param missval Missing value: see \code{\link[ncdf4]{ncvar_def}}
+#' @param region Name of the region of the downscaled data, if not NULL (which is the default) used in the filename that is generated if \code{file} is not specified.
+#' @param ensemblename Name of the ensemble - goes into the filename that is generated if \code{file} is not specified. The default is NULL and the ensemble name does not have to be set unless a subset of models are selected (e.g., with the input \code{im}).
 #' @param id An identifier for the data set, provided by and unique within its naming authority. The combination of the "naming authority" and the "id" should be globally unique, but the id can be globally unique by itself also. IDs can be URLs, URNs, DOIs, meaningful text strings, a local key, or any other unique string of characters. The id should not include white space characters.
 #' @param naming_authority	The organization that provides the initial id (see above) for the dataset. The naming authority should be uniquely specified by this attribute. We recommend using reverse-DNS naming for the naming authority; URIs are also acceptable. Example: 'edu.ucar.unidata'.
 #' @param history	Provides an audit trail for modifications to the original data. This attribute is also in the NetCDF Users Guide: 'This is a character array with a line for each invocation of a program that has modified the dataset. Well-behaved generic netCDF applications should append a line containing: date, time of day, user name, program name and command arguments.' To include a more complete description you can append a reference to an ISO Lineage entity; see NOAA EDM ISO Lineage guidance.
@@ -102,7 +104,7 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
                                    prec='short',offset=0,scale=0.1 ,
                                    type='dsensemble',im=NULL,is=NULL,it=NULL,
                                    torg="1970-01-01",missval=-999,
-                                   method="metnoESD",region=NULL,
+                                   method="metnoESD",region=NULL,ensemblename=NULL,
                                    conventions="ACDD-1.3",
                                    id=NA,naming_authority=NA,
                                    source=NA,processing_level="Scientific",
@@ -128,7 +130,7 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
       write2ncdf4(x,...,file=file,path=path,
                   im=i,is=is,it=it,
                   prec=prec,scale=scale,offset=offset,
-                  type=type,method=method,region=region,
+                  type=type,method=method,region=region,ensemblename=ensemblename,
                   torg=torg,missval=missval,
                   conventions=conventions,
                   id=id,naming_authority=naming_authority,
@@ -152,14 +154,14 @@ write2ncdf4.dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
                              im=im,is=is,it=it,
                              scale=scale,type=type,
                              offset=offset,torg=torg,missval=missval,
-                             method=method,region=region,
+                             method=method,region=region,ensemblename=ensemblename,
                              force=force,verbose=verbose)
     } else if ("ensemblestatistics" %in% type) {
       file <- ncdf4_dsensemblestatistics(x,...,file=file,path=path,prec=prec,
                                        im=im,is=is,it=it,
                                        scale=scale,type=type,
                                        offset=offset,torg=torg,missval=missval,
-                                       method=method,region=region,
+                                       method=method,region=region,ensemblename=ensemblename,
                                        force=force,verbose=verbose)
     } else if("model" %in% type) {
       file <- ncdf4_dsmodel(x,...,file=file,path=path,
@@ -257,7 +259,8 @@ ncdf4_dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
                              prec='short',offset=0,scale=0.1,
                              torg="1970-01-01",missval=-99,
                              im=NULL, is=NULL, it=NULL,
-                             method="metnoESD",region=NULL,verbose=TRUE) {
+                             method="metnoESD",region=NULL,ensemblename=NULL,
+                             verbose=TRUE) {
   if (verbose) print('ncdf4_dsensemble')
   if(!is.null(im) | !is.null(is) | !is.null(it)) x <- subset(x, im=im, is=is, it=it)
   
@@ -292,6 +295,7 @@ ncdf4_dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
     }
     file <- paste0(file,"_",paste(range(year(x[[1]])),collapse="-"))
     file <- paste0(file,"_ngcm",length(attr(x, "model_id")))
+    if(!is.null(ensemblename)) file <- paste0(file, "_", ensemblename)
     file <- paste0(file, ".nc")
   }
   if(!is.null(path)) file <- file.path(path, basename(file))
@@ -497,6 +501,7 @@ ncdf4_dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
       if(!is.null(attr(x,"domain"))) ncatt_put( nc, 0, "predictor_domain", 
                                                 paste0(paste(attr(x,"domain")$lon, collapse="-"), "E/",
                                                        paste(attr(x,"domain")$lat, collapse="-"), "N"), prec="text")
+      if(!is.null(ensemblename)) ncatt_put( nc, 0, "ensemble_name", ensemblename, prec="text" )
       
       # Add the attributes of object x
       attnames <- names(attributes(x))
@@ -521,14 +526,14 @@ ncdf4_dsensemble <- function(x,...,file=NULL,path=NULL,force=TRUE,
 
 ncdf4_dsensemblestatistics <- function(x,...,file=NULL,path=NULL,force=TRUE,
                                   prec='short',offset=0,scale=0.01,
-                                  method="metnoESD",region=NULL,
-                                  FUNX=c("mean","median","max","min","q95","q5"),
-                                  im=NULL, is=NULL, it=NULL, eof=TRUE,#type="field",
+                                  method="metnoESD",region=NULL,ensemblename=NULL,
+                                  FUNX=c("mean","median","max","min","q95","q5","sd"),
+                                  im=NULL, is=NULL, it=NULL, eof=TRUE,
                                   torg="1970-01-01",missval=-99,verbose=TRUE) {
   if (verbose) print('ncdf4_dsensemblestatistics')
   if(verbose) print("Function for writing ensemble statistics of downscaled results (output from DSensemble) to a netCDF file.")
   stopifnot(inherits(x,"dsensemble") & inherits(x,"list"))
-  if(!is.null(im) | !is.null(is) | !is.null(it)) x <- subset(x, im=im, is=is, it=it)
+  if(!is.null(im) | !is.null(is) | !is.null(it)) x <- subset(x, is=is, it=it)
   
   if(is.null(file)) {
     file <- "dsensemblestatistics"
@@ -551,6 +556,7 @@ ncdf4_dsensemblestatistics <- function(x,...,file=NULL,path=NULL,force=TRUE,
     }
     file <- paste0(file,"_",paste(range(year(x[[3]])),collapse="-"))
     file <- paste0(file,"_ngcm",length(attr(x, "model_id")))
+    if(!is.null(ensemblename)) file <- paste0(file, "_", ensemblename)
     file <- paste0(file, ".nc")
   }
   if(!is.null(path)) file <- file.path(path, basename(file))
@@ -560,11 +566,13 @@ ncdf4_dsensemblestatistics <- function(x,...,file=NULL,path=NULL,force=TRUE,
     if (verbose) print(paste('File',file,'already exists. No new file created.'))
   } else {
     if(verbose) print("Calculate ensemble statistics.")
-    xstats <- aggregate(x, FUNX=FUNX, eof=eof, verbose=verbose)
+    ## KMP 2023-05-23: Moved the selection of models ('im') from subset (on line 536) to aggregate (below) 
+    ## so that same ensemble member can be subset multiple times calculating weighted ensemble statistics
+    xstats <- aggregate(x, FUNX=FUNX, eof=eof, im=im, verbose=verbose)
     if(length(FUNX)==1 & !is.list(xstats)) {
       xf <- xstats
       xstats <- list()
-      xstats[[FUNX]] <- xf
+      xstats[[paste0(FUNX)]] <- xf
     }
     ## Generate time index
     if(is.list(xstats)) tx <- index(xstats[[1]]) else tx <- index(xstats)
@@ -595,7 +603,7 @@ ncdf4_dsensemblestatistics <- function(x,...,file=NULL,path=NULL,force=TRUE,
       xf <- round((xf-offset)/scale)
       xf[!is.finite(xf)] <- missval
       dim(xf) <- d
-      xstats[[paste0("ens",fn)]] <- xf
+      xstats[[fn]] <- xf
     }
     
     if (verbose) {
@@ -611,7 +619,8 @@ ncdf4_dsensemblestatistics <- function(x,...,file=NULL,path=NULL,force=TRUE,
     
     for(i in seq_along(names(xstats))) {
       fn <- names(xstats)[i]
-      x4nc <- ncvar_def(fn, attr(xstats,"unit")[1], list(dimlon,dimlat,dimtim), -1, 
+      varname <- paste0("ens",fn)
+      x4nc <- ncvar_def(varname, attr(xstats,"unit")[1], list(dimlon,dimlat,dimtim), -1, 
                         longname=paste("ensemble",fn,"of the",
                                      gsub("_"," ",attr(xstats,'longname'))), 
                                      prec=prec)
@@ -641,6 +650,7 @@ ncdf4_dsensemblestatistics <- function(x,...,file=NULL,path=NULL,force=TRUE,
         ncatt_put( nc, 0, "geospatial_lat_resolution", as.character(diff(lat(xstats))[[1]]), prec="text")
         ncatt_put( nc, 0, "time_coverage_start", as.character(min(tx)), prec="text")
         ncatt_put( nc, 0, "time_coverage_end", as.character(max(tx)), prec="text")
+        if(!is.null(ensemblename)) ncatt_put( nc, 0, "ensemble_name", ensemblename, prec="text" )
         # Add the attributes of object x
         attnames <- names(attributes(x))
         if (verbose) print(attnames)
@@ -676,13 +686,21 @@ ncdf4_dsensemblestatistics <- function(x,...,file=NULL,path=NULL,force=TRUE,
       }
     
       # Write some values to this variable on disk.
-      ncvar_put( nc, fn, xstats[[fn]])
-      ncatt_put( nc, fn, "add_offset", offset, prec="float" )
-      ncatt_put( nc, fn, "scale_factor", scale, prec="float" ) 
-      ncatt_put( nc, fn, "_FillValue", missval, prec="float" ) 
-      ncatt_put( nc, fn, "missing_value", missval, prec="float" ) 
+      ncvar_put( nc, varname, xstats[[fn]])
+      ncatt_put( nc, varname, "add_offset", offset, prec="float" )
+      ncatt_put( nc, varname, "scale_factor", scale, prec="float" ) 
+      ncatt_put( nc, varname, "_FillValue", missval, prec="float" ) 
+      ncatt_put( nc, varname, "missing_value", missval, prec="float" ) 
+
       history <- toString(attr(x,'history')$call)
-      ncatt_put( nc, fn, "history", history, prec="text" ) 
+      ncatt_put( nc, varname, "history", history, prec="text" )
+
+      if(inherits(xstats[[fn]],c("array","field"))) {
+        ncatt_put( nc, varname, "spatial_representation", "grid", prec="text")
+      } else if(inherits(xstats[[fn]],c("vector","station"))) {
+        ncatt_put( nc, varname, "spatial_representation", "station", prec="text")
+      }
+
       nc_close(nc)
       if (verbose) print(paste('Finished writing ensemble',fn,'to file', file))
     }
