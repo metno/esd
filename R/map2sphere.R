@@ -277,7 +277,7 @@ map2sphere <- function(x,it=NULL,is=NULL,new=TRUE,style="plain",
   attr(Z,'variable') <- esd::varid(x)
   attr(Z,'unit') <- esd::unit(x)
   attr(Z,'colbar') <- colbar
-  
+  attr(Z,'time') <- range(index(x))
   invisible(Z)
 }
 

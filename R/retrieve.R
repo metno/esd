@@ -305,7 +305,6 @@ retrieve.ncdf4 <- function (file, path=NULL , param="auto",
   if (length(grep("model",ls())) > 0) model <- ncid2$model 
   if (!is.null(itime)) time <- ncid2$time
   rm(ncid2)
-  
   if (verbose) print(model$frequency)
   ## Subselect a spatial and a temporal domain
   ## Single point extraction
@@ -1105,7 +1104,9 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
 	  #	    		 rightmost.closed=FALSE, left.open=FALSE)
 	  months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
 	  	     		  rightmost.closed=TRUE, left.open=TRUE)
-
+	  ## The month calculation above doesn't work when dayofyear=0.
+	  ## Simple solution: replace values 0 with 1 in months.
+	  months[dayofyear==0] <- 1
           days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {

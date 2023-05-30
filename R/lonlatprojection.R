@@ -9,11 +9,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
                              verbose=FALSE,geography=TRUE,fancy=TRUE,
                              main=NA,cex.sub=0.8,cex.axis=0.8,
                              fig=NULL,add=FALSE,...) {
+  
   if (verbose) {print('lonlatprojection'); str(x)}
   par0 <- par()
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
   ## for precipitation-palette
+  if (!is.null(attr(x,'time'))) {t1 <- attr(x,'time')[1]; t2 <- attr(x,'time')[2]}
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   ## If colbar is set to NULL then remember this and do not show the colourbar
   show.colbar <- !is.null(colbar)
@@ -174,7 +176,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
           col="darkblue")
   }
   if (sum(is.element(tolower(type),'contour'))>0)
-    contour(lon,lat,x,lwd=1,col="grey70",add=TRUE)
+    contour(lon,lat,x,lwd=1,col="grey70",add=TRUE,...)
   if (gridlines) grid()
   axis(2,at=pretty(lat),col='grey',cex=cex.axis)
   axis(3,at=pretty(lon),col='grey',cex=cex.axis)
@@ -226,7 +228,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
     if (colbar$show) {
       if (verbose) print('Show colourbar')
       if (fancy) {
-        if (verbose) print('fnc')
+        if (verbose) print('fancy')
         dy <- diff(ylim)*0.1
         below <- c(min(xlim), min(ylim)-dy/2, max(xlim), min(ylim)+dy/2)
         dy_below <- below[4]-below[2]
@@ -254,11 +256,13 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       cex.lab=par0$cex.lab, cex.axis=par0$cex.axis,xaxt=par0$xaxt,yaxt=par0$yaxt,
       new=FALSE)
 
+  if (verbose) print('Add attributes to returned results')
   attr(x,'longitude') <- lon
   attr(x,'latitude') <- lat
   attr(x,'variable') <- variable
   attr(x,'unit') <- unit
   attr(x,'colbar') <- colbar
+  attr(x,'time') <- c(t1,t2)
   invisible(x)
 }
 

@@ -5,8 +5,8 @@
 \title{A function that provides metadata for S-ENDA data on thredds.}
 \usage{
 meta.senda(
-  caturl =
-    "https://thredds.met.no/thredds/catalog/met.no/observations/surface/catalog.html",
+ 
+    caturl = "https://thredds.met.no/thredds/catalog/met.no/observations/surface/catalog.html",
   verbose = FALSE
 )
 }
