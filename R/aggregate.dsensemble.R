@@ -50,7 +50,7 @@ subset.pc <- function(x,ip=NULL,it=NULL,verbose=FALSE) {
 #'
 #' @exportS3Method
 #' @export aggregate.dsensemble
-aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,eof=TRUE) {
+aggregate.dsensemble <- function(x,...,it=NULL,im=NULL,FUN=NULL,FUNX='mean',verbose=FALSE,anomaly=FALSE,test=FALSE,eof=TRUE) {
   ## Get the spatial weights
   if (verbose) print('aggregate.ensemble')
   if ((eof) & (!is.null(x$eof))) x$pca <- x$eof
@@ -102,7 +102,12 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
       gcmnames <- gcmnames[-i]
     }
   }
-  n <- length(V)
+  #=========================================
+  ## KMP 2023-05-23: Changing how 'im' subsets from the ensemble so that the same member can be sampled multiple times
+  #n <- length(V)
+  if(is.null(im)) im <- 1:length(V) else if(is.logical(im)) im <- which(im)
+  n <- length(im)
+  #=========================================
   if (verbose) print(paste('After quality control: new number of members=',n))
   if (verbose) {print(names(V)); print(c(d,n,length(unlist(V)))); print(paste('FUNX=',FUNX))}
   lengths <- rep(NA,length(V))
@@ -136,10 +141,17 @@ aggregate.dsensemble <- function(x,...,it=NULL,FUN=NULL,FUNX='mean',verbose=FALS
       if(verbose) print(paste("Calculating ensemble statistics for time step",i.t,"of",d[1]))
       ## loop through each ensemble member
       z <- matrix(rep(NA,dU[1]*dU[2]*n),dU[1]*dU[2],n)
-      for (im in 1:n) { 
-        v <- V[[im]]
-        z[,im] <- v[i.t,] %*% diag(D) %*% t(U)
+      #=========================================
+      ## KMP 2023-05-23: Changing how 'im' subsets from the ensemble so that the same member can be sampled multiple times
+      for (i.m in seq_along(im)) { 
+        v <- V[[im[i.m]]]
+        z[,i.m] <- v[i.t,] %*% diag(D) %*% t(U)
       }
+      #for (im in 1:n) { 
+      #  v <- V[[im]]
+      #  z[,im] <- v[i.t,] %*% diag(D) %*% t(U)
+      #}
+      #=========================================
       for(f in FUNX) {
         eval(parse(text=paste0("Y.",f,"[i.t,] <- apply(z,1,",f,")")))
       }

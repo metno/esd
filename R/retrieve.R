@@ -1097,10 +1097,15 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           # construct vdate
           years <- time$vals%/%time$daysayear + yorigin
           dayofyear <- time$vals%%time$daysayear
-	  #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
-	  #	     		  rightmost.closed=TRUE, left.open=TRUE)
-	  months <- findInterval(floor(dayofyear)+1, c(1,cumsum(mndays)),
-	  	    		 rightmost.closed=FALSE, left.open=FALSE)
+	  ## KMP 2023-05-23:
+	  ## The lines below don't work for reading subdaily data with a 365-day calendar.
+          ## Why was the month definition changed at some point? In what situation does
+	  ## the option with closed right and open left not work?
+	  #months <- findInterval(floor(dayofyear)+1, c(1,cumsum(mndays)),
+	  #	    		 rightmost.closed=FALSE, left.open=FALSE)
+	  months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
+	  	     		  rightmost.closed=TRUE, left.open=TRUE)
+
           days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {
