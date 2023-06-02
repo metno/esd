@@ -1096,14 +1096,11 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           # construct vdate
           years <- time$vals%/%time$daysayear + yorigin
           dayofyear <- time$vals%%time$daysayear
-	  months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
-	  	     		  rightmost.closed=TRUE, left.open=TRUE)				  
-          ## KMP 2023-05-23: The lines below do not work for reading subdaily GCM data with 365-day calendar.
-	  ## Why was the month definition changed at some point? In what situation does the lines above not work?
-	  ## The month calculation above doesn't work when dayofyear=0. Simple solution: replace values 0 with 1 in months.
-	  #months <- findInterval(floor(dayofyear)+1, c(1,cumsum(mndays)),
-	  #	    		 rightmost.closed=FALSE, left.open=FALSE)
-	  months[dayofyear==0] <- 1
+	  months <- findInterval(floor(dayofyear), c(0,cumsum(mndays)),
+	                         rightmost.closed=FALSE, left.open=FALSE)
+	  ## KMP 2023-06-01: the month calculation below gave wrong results for some values, e.g., dayofyear=0 and dayofyear=59
+	  #months <- findInterval(ceiling(dayofyear), c(1,cumsum(mndays)),
+	  #	     		  rightmost.closed=TRUE, left.open=TRUE)
           days <- dayofyear - (cumsum(mndays)-mndays)[months] + 1
           if (verbose) {print(freq.data); print(median(days,na.rm=TRUE))}
           if(freq.data=='month') {

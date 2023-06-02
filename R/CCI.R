@@ -185,6 +185,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   
   ## Calculate first and second derivative
   if(verbose) print("Calculate first and second derivative")
+  #browser()
   resx <- dX(Z,m=m,accuracy=accuracy,verbose=verbose,progress=progress)
   resy <- dY(Z,m=m,accuracy=accuracy,verbose=verbose,progress=progress)
   
@@ -514,7 +515,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     closed <- rep(0,length(date))
     ok <- rep(TRUE,length(date))
     for (i in seq(1,length(date))) {
-      #print(paste(i,date[i]))
+      #if(verbose) print(paste(i,date[i]))
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
       infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
