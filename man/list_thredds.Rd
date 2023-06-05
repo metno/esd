@@ -5,8 +5,8 @@
 \title{A function that lists files on thredds catalogue.}
 \usage{
 list_thredds(
- 
-    caturl = "https://thredds.met.no/thredds/catalog/KSS/Klima_i_Norge_2100/seasonal_RCM/catalog.html",
+  caturl =
+    "https://thredds.met.no/thredds/catalog/KSS/Klima_i_Norge_2100/seasonal_RCM/catalog.html",
   extension = ".nc",
   pattern = NULL,
   verbose = FALSE

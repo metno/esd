@@ -54,3 +54,6 @@ IOD: Indian Ocean Dipole index
 
 Sunspots: updated monthly sunspot number
 }
+\seealso{
+AreaClimateIndicator
+}
