@@ -136,6 +136,13 @@ map.default <- function(x,...,FUN='mean',it=NULL,is=NULL,new=FALSE,
   ## data in the esd package.
   
   if (verbose) print('map.default')
+  if (inherits(x,'station')) {
+    z <- map.station(x,FUN=FUN,it=it,is=is,new=new,projection=projection,
+             xlim=xlim,ylim=ylim,zlim=zlim,n=15,
+             colbar= colbar,gridlines=gridlines,verbose=verbose,
+             plot=plot,...)
+    invisible(z)
+  }
   par0 <- par(no.readonly = TRUE) # save default, for resetting...
   if (is.logical(colbar)) colbar <- NULL
   ## If only a few items are provided in colbar - then set the rest to the default
