@@ -91,7 +91,7 @@ track <- function(x,...) UseMethod("track")
 #' @export track.events
 track.events <- function(x,...,verbose=FALSE) {
   if(verbose) print("track.events")
-  track.default(x,verbose=verbose,...)
+  track.default(x,...,verbose=verbose)
 }
 
 #' @exportS3Method
@@ -129,8 +129,12 @@ track.default <- function(x,...,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=200,nmin=3
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
 		     f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
                      progress=FALSE,verbose=verbose)
-        x.tracked <- x.t$y
-      } else {
+        if("trajectory" %in% names(x.t$y)) {
+	  x.tracked <- x.t$y
+	} else {
+	  x0 <- merge(x0,x.t$y,all=TRUE)
+	}
+      } else {      
         x.t <- Track(x.y,x0=x.tracked,plot=plot,dh=dh,
                      dmax=dmax,dmin=dmin,nmax=nmax,nmin=nmin,
 		     f.d=f.d,f.da=f.da,f.dd=f.dd,f.dp=f.dp,f.depth=f.depth,
@@ -163,7 +167,6 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
 		  cleanup.x0=TRUE,plot=FALSE,progress=TRUE,verbose=FALSE) {
   if (verbose) print("Track - cyclone tracking based on the distance and change in angle of direction between three subsequent time steps")
   options(digits=12)
-
   x <- x[!is.na(x[,1]),]
   x <- x[order(x$date*1E2+x$time),]
   if(!is.null(x0)) x0 <- x0[!is.na(x0[,1]),]
@@ -183,7 +186,6 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
   }
   d <- sort(unique(datetime))
   #dh <- min(as.numeric(diff(d,units="hours")))
-  
   if(!is.null(x0)) {
     if (dim(x0)[1]>0) {
       if (requireNamespace("PCICt", quietly = TRUE)) {
@@ -230,7 +232,6 @@ Track <- function(x,x0=NULL,it=NULL,is=NULL,dmax=1E6,nmax=124,nmin=3,dmin=1E5,
     n00 <- 0
     nend0 <- 0
   }
-  
   if(length(d)<3) {
     y <- x
     y0 <- x0

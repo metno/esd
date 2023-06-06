@@ -329,6 +329,12 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
   qf[lows1] <- 1
   qf[lows2] <- 2
 
+  ## Make sure dimensions are correct
+  dim(DX) <- c(nt, nx-1, ny-1)
+  dim(DX2) <- dim(DX)
+  dim(DY) <- dim(DX)
+  dim(DY2) <- dim(DX)
+  
   ## Lat, lon, and dates of cyclones
   lon<-rep(lonXY,nt); dim(lon)<-c(nx-1,ny-1,nt); lon<-aperm(lon,c(3,1,2)) 
   lat<-rep(latXY,nt); dim(lat)<-c(nx-1,ny-1,nt); lat<-aperm(lat,c(3,1,2))
@@ -515,7 +521,7 @@ CCI <- function(Z,m=12,it=NULL,is=NULL,cyclones=TRUE,greenwich=NULL,
     closed <- rep(0,length(date))
     ok <- rep(TRUE,length(date))
     for (i in seq(1,length(date))) {
-      #if(verbose) print(paste(i,date[i]))
+      if(verbose) print(paste(i,date[i]))
       inflx <- DX2[date[i]==t,2:NX,latXY[1,]==lat[i]]*
         DX2[date[i]==t,1:(NX-1),latXY[1,]==lat[i]]
       infly <- DY2[date[i]==t,lonXY[,1]==lon[i],2:NY]*
