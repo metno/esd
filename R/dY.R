@@ -5,7 +5,7 @@
 #
 # where PHI is the latitude in radians and THETA the longitude.
 # R.E. Benestad & Kajsa Parding, 2015-05-26
-
+#' @export
 dY <- function(Z,m=10,mask.bad=TRUE,plot=FALSE,r=6.378e06,
                accuracy=NULL,progress=TRUE,verbose=FALSE) {
 

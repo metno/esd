@@ -16,7 +16,9 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
   ## for precipitation-palette
-  if (!is.null(attr(x,'time'))) {t1 <- attr(x,'time')[1]; t2 <- attr(x,'time')[2]}
+  if (!is.null(attr(x,'time'))) {t1 <- attr(x,'time')[1]; t2 <- attr(x,'time')[2]} else
+    if (is.null(index(x))) {t1 <- min(index(x)); t2 <- max(index(x))} else 
+    {t1 <- NA; t2 <- NA}
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   ## If colbar is set to NULL then remember this and do not show the colourbar
   show.colbar <- !is.null(colbar)

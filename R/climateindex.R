@@ -28,6 +28,7 @@
 #' Sunspots: updated monthly sunspot number
 #' 
 #' @aliases NAO NINO3.4 SOI GSL GSL.nasa QBO CET CO2 AMO IOD Sunspots
+#' @seealso AreaClimateIndicator
 #'
 #' @param freq frequency
 #' @param url a URL or web address to location of data
