@@ -41,7 +41,7 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
       t2 <- attr(x,"time")[2]
     }
   } else { 
-    print('Attribute timescale is not provided')
+    if (verbose) print('Attribute timescale is not provided')
     if (!is.null(attr(x,'time'))) {t1 <- attr(x,'time')[1]; t2 <- attr(x,'time')[2]} else
     if (is.null(index(x))) {t1 <- min(index(x)); t2 <- max(index(x))} else 
     {t1 <- NA; t2 <- NA}

@@ -90,7 +90,8 @@ write2ncdf4.list <- function(x,...,file='field.nc',prec='short',scale=0.1,offset
   if (verbose) {print(varids); print(units); print(n)}
   x4nc <- list()
   for (i in 1:n) {
-    if (verbose) print(paste(i,'ncvar_def',varids[i]))
+    if (verbose) print(paste('write2ncdf4.list: ',i,'ncvar_def',varids[i]))
+    if (verbose) print(paste('write2ncdf4.list: longname=',attr(x[[i]],'longname')))
     x4nc[[varids[i]]] <- ncvar_def(varids[i], units[i], list(dimlon,dimlat,dimtim), -1, 
                                    longname=attr(x[[i]],'longname'), prec=prec[i])
   }
@@ -156,8 +157,9 @@ write2ncdf4.field <- function(x,...,file='field.nc',prec='short',scale=NULL,offs
   
   dimtim <- ncdim_def( "time", paste("days since",torg),
                        as.numeric(as.Date(index(x),origin=torg)) )
+  if (verbose) print(paste('write2ncdf4.field: longname=',attr(x,'longname')[1]))
   x4nc <- ncvar_def(varid(x)[1], attr(x,"unit")[1], list(dimlon,dimlat,dimtim), -1, 
-                    longname=attr(x,'longname'), prec=prec)
+                    longname=attr(x,'longname')[1], prec=prec)
   
   # Create a netCDF file with this variable
   ncnew <- nc_create( file, x4nc )
@@ -447,11 +449,11 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
     #    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
     #                       longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
-    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimS,dimT), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
+    if (verbose) print(paste('write2ncdf4.station: longname=',attr(x,'longname')))
+     ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimS,dimT), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
                        longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
     
     if (verbose) print('The variables have been defined - now the summary statistics...')
-    
     fyrid <- ncvar_def(name="first",dim=list(dimS), units="year", missval=missval,longname="first_year", 
                        prec="short",verbose=verbose)
     lyrid <- ncvar_def(name="last",dim=list(dimS), units="year", missval=missval,longname="last_year", 
@@ -462,9 +464,9 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     ## KMP 2018-11-02: devtools (run_examples) can only handle ASCII characters so I had to replace the 
     ## degree symbol with "\u00B0", but I'm not sure if it is going to work here.
     maxid <- ncvar_def(name="summary_max",dim=list(dimS), units= ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]),
-                       missval=missval,longname=varid(x),prec="float",verbose=verbose)
+                       missval=missval,longname=varid(x)[1],prec="float",verbose=verbose)
     minid <- ncvar_def(name="summary_min",dim=list(dimS), ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
-                       missval=missval,longname=varid(x),prec="float",verbose=verbose)
+                       missval=missval,longname=varid(x)[1],prec="float",verbose=verbose)
     nhrid <- ncvar_def(name="summary_records",dim=list(dimS),
                        units=ifelse(attr(x,"unit")[1]=="\u00B0C", "degC",attr(x,"unit")[1]), 
                        missval=missval,longname="fraction_of_high_records",prec="float",verbose=verbose)
@@ -726,8 +728,8 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     start <- c(ns0,it1); count <- c(dim(t(y)))
     
   } else {
-    if (verbose) print(paste('Creating file',file))
-    ##browser()
+    if (verbose) {print(paste('Creating file',file)); str(ncvar)}
+    #browser()
     if (is.T(x)) {
       ncid <- nc_create(file,vars=list(ncvar,lonid,latid,altid,locid,stid,cntrid, 
                                        fyrid,lyrid,nvid,meanid,meanid.djf,meanid.mam,meanid.jja,meanid.son,

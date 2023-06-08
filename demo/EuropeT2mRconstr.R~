@@ -1,2 +1,0 @@
-url <- "ftp://ftp.ncdc.noaa.gov/pub/data/paleo/historical/europe-seasonal.txt"
-Luterbacher <- read.table(url,skip=118,header=TRUE)
