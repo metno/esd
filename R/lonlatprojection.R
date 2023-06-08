@@ -16,9 +16,38 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   attr(x,'source') <- NULL ## REB "2021-12-21: Fed up with problems with silly source information...
   ## Use temperature-palette as default, and check if the variable is precipitation
   ## for precipitation-palette
-  if (!is.null(attr(x,'time'))) {t1 <- attr(x,'time')[1]; t2 <- attr(x,'time')[2]} else
+  if (verbose) print('time')
+  ## Set up the attribute 'time'
+  if ( (is.null(attr(x,"time"))) & (length(index(x))>1) ) attr(x,"time") <- range(index(x))
+  if (!is.null(attr(x,'timescale'))) {
+    if (verbose) print(paste('timescale',attr(x,'timescale')))
+    timescale <- attr(x,'timescale')
+    if (timescale == 'annual') {
+      t1 <- year(attr(x,'time'))[1]
+      t2 <- year(attr(x,'time'))[2]
+    } else if (sum(is.element(c('month','season'),timescale))>0) {
+      t1 <- paste0(year(attr(x,'time'))[1],"~",month(attr(x,'time'))[1])
+      t2 <- paste0(year(attr(x,'time'))[2],"~",month(attr(x,'time'))[2])
+    } else if (grepl("hour|minute",timescale)) {
+      t1 <- paste0(strftime(attr(x,"time")[1],format="%Y%m%d"),"~",
+                   strftime(attr(x,"time")[1],format="%H:%M"))
+      t2 <- paste0(strftime(attr(x,"time")[2],format="%Y%m%d"),"~",
+                   strftime(attr(x,"time")[2],format="%H:%M"))
+    } else if(inherits(attr(x,"time"),c("Date","POSIXt"))) {
+      t1 <- strftime(attr(x,"time")[1],format="%Y%m%d")
+      t2 <- strftime(attr(x,"time")[2],format="%Y%m%d")
+    } else {
+      t1 <- attr(x,"time")[1]
+      t2 <- attr(x,"time")[2]
+    }
+  } else { 
+    print('Attribute timescale is not provided')
+    if (!is.null(attr(x,'time'))) {t1 <- attr(x,'time')[1]; t2 <- attr(x,'time')[2]} else
     if (is.null(index(x))) {t1 <- min(index(x)); t2 <- max(index(x))} else 
     {t1 <- NA; t2 <- NA}
+  }
+  if (verbose) print(paste('t1=',t1,'t2=',t2))
+  
   colid <- 't2m'; if (is.precip(x)) colid <- 'precip'
   ## If colbar is set to NULL then remember this and do not show the colourbar
   show.colbar <- !is.null(colbar)
@@ -104,33 +133,14 @@ lonlatprojection <- function(x,it=NULL,is=NULL,new=FALSE,projection="lonlat",
   }
   if (sum(is.element(type,'fill'))==0) colbar <- NULL
   
-  if (verbose) print('time')
-  if (!is.null(attr(x,'timescale'))) {
-    if (verbose) print(attr(x,'timescale'))
-    timescale <- attr(x,'timescale')
-    if (timescale == 'annual') {
-      t1 <- year(attr(x,'time'))[1]
-      t2 <- year(attr(x,'time'))[2]
-    } else if (sum(is.element(c('month','season'),timescale))>0) {
-      t1 <- paste0(year(attr(x,'time'))[1],"~",month(attr(x,'time'))[1])
-      t2 <- paste0(year(attr(x,'time'))[2],"~",month(attr(x,'time'))[2])
-    } else if (grepl("hour|minute",timescale)) {
-      t1 <- paste0(strftime(attr(x,"time")[1],format="%Y%m%d"),"~",
-                   strftime(attr(x,"time")[1],format="%H:%M"))
-      t2 <- paste0(strftime(attr(x,"time")[2],format="%Y%m%d"),"~",
-                   strftime(attr(x,"time")[2],format="%H:%M"))
-    } else if(inherits(attr(x,"time"),c("Date","POSIXt"))) {
-      t1 <- strftime(attr(x,"time")[1],format="%Y%m%d")
-      t2 <- strftime(attr(x,"time")[2],format="%Y%m%d")
-    } else {
-      t1 <- attr(x,"time")[1]
-      t2 <- attr(x,"time")[2]
-    }
+  if (!is.null(t1) & !is.null(t2)) { 
     ##period <- paste('[',t1,', ',t2,']',sep='')  ## REB: square brackets have special role in expressions
     period <- paste('phantom(0)* (',t1,'-',t2,')',sep='')
+    if (verbose) print(period)
   } else {
-    period <- NULL
-    t1 <- t2 <- NULL
+    if (verbose) print('<No time information provided!>')
+    period <- NA
+    t1 <- t2 <- NA
   }
   if (verbose) print(paste('period:',period))
   method <- attr(x,'method')

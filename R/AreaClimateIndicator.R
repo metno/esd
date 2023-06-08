@@ -51,7 +51,7 @@ AreaClimateIndicator <- function(param='precip',is='Global',it='annual',FUN='mea
   
   if (plot) { 
     par(bty='n')
-    plot(X,main=paste('ERA5:',is,'surface area fraction with',param,'exceeding',threshold,unit,'each day'),lwd=2,
+    plot(X,main=paste('ERA5:',is,'surface area fraction with',param,'exceeding',threshold,unit,'on a daily basis'),lwd=2,
          ylab='fraction',xlab=paste(range(index(X)),collapse=' - '),new=FALSE); grid()
   }
   attr(X,'url') <-url
