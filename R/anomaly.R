@@ -35,13 +35,18 @@ anomaly <-function(x,...) UseMethod("anomaly")
 #' @exportS3Method
 #' @export anomaly.default
 anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
-  if(verbose) print('anomaly.default')
-  if (verbose) print(class(x))
+  if(verbose) {
+    print('anomaly.default')
+    print(match.call())
+    print(class(x))
+  }
   if (!is.null(ref)) {
     it <- is.element(year(x),ref) 
   } else {
     it <- rep(TRUE,length(index(x)))
   }
+  if (verbose) print(paste('ref=',year(x)[it][1],'-',year(x)[it][sum(it)],
+                           'n=',sum(it)))
   if (inherits(x,'annual')) {
     y <- anomaly.annual(x,ref=ref,na.rm=na.rm,verbose=verbose,...) 
   } else if (inherits(x,'month')) {
@@ -108,28 +113,45 @@ anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
 
 #' @exportS3Method
 #' @export anomaly.station
-anomaly.station <- function(x,verbose=FALSE,...) {
-  if(verbose) print("anomaly.station")
+anomaly.station <- function(x,...) {
+  verbose <-list(...)$verbose
+  if(verbose) { 
+    print("anomaly.station")
+    print(match.call())
+  }
   x <- anomaly.default(x,...)
   return(x)
 }
 
 #' @exportS3Method
 #' @export anomaly.annual
-anomaly.annual <- function(x,...,ref=1961:1990,na.rm=TRUE,verbose=FALSE) {
-  if (verbose) print('anomaly.annual')
+anomaly.annual <- function(x,...) {
+  verbose <-list(...)$verbose
+  if (is.null(verbose)) verbose <- FALSE
+  na.rm <- list(...)$na.rm
+  if (is.null(na.rm)) na.rm <- TRUE
+  ref <- list(...)$ref
+  if (verbose) {
+    print('anomaly.annual')
+    print(match.call())
+    print(range(ref)); print(dim(x))
+  }
   if(is.null(ref)) ref <- 1961:1990
-  if(length(ref)==2) ref <- seq(min(ref),max(ref))
+  # if(length(ref)==2) ref <- seq(min(ref),max(ref))
   X <- x;  x <- coredata(X)
   t <- index(X)
+  d <- dim(x)
+  if (!is.null(d)) ns <- d[2] else ns <- 1
   datetype <- class(t)
   if (verbose) print(datetype)
   if (datetype=="Date") years <- year(X) else
   if (datetype=="numeric") years <- t
-  if (is.null(dim(x))) { 
+  if (ns==1) { 
+    if (verbose) print('single series')
     clim <- mean(x[is.element(years,ref)],na.rm=TRUE) 
   } else {
-    clim <- apply(x,2,FUN=mean,na.rm=TRUE) 
+    if (verbose) print('field')
+    clim <- apply(x[is.element(years,ref),],2,FUN=mean,na.rm=TRUE) 
   }
   if (verbose) print(clim)
   x <- t(t(x) - clim)
