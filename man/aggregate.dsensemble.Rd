@@ -8,10 +8,12 @@
   x,
   ...,
   it = NULL,
+  im = NULL,
   FUN = NULL,
   FUNX = "mean",
   verbose = FALSE,
   anomaly = FALSE,
+  qc = TRUE,
   test = FALSE,
   eof = TRUE
 )
@@ -28,6 +30,8 @@
 \item{verbose}{if TRUE print progress}
 
 \item{anomaly}{if FALSE add the mean value stored as attribute in x}
+
+\item{qc}{if TRUE perform quality control and exclude ensemble members with incomplete or suspect data}
 
 \item{test}{if TRUE perform test on one GCM simulation}
 

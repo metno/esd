@@ -21,6 +21,7 @@
   missval = -999,
   method = "metnoESD",
   region = NULL,
+  ensemblename = NULL,
   conventions = "ACDD-1.3",
   id = NA,
   naming_authority = NA,
@@ -89,6 +90,10 @@ or a 'station' object (the stations that were used as predictand in the downscal
 \item{torg}{Time origin}
 
 \item{missval}{Missing value: see \code{\link[ncdf4]{ncvar_def}}}
+
+\item{region}{Name of the region of the downscaled data, if not NULL (which is the default) used in the filename that is generated if \code{file} is not specified.}
+
+\item{ensemblename}{Name of the ensemble - goes into the filename that is generated if \code{file} is not specified. The default is NULL and the ensemble name does not have to be set unless a subset of models are selected (e.g., with the input \code{im}).}
 
 \item{id}{An identifier for the data set, provided by and unique within its naming authority. The combination of the "naming authority" and the "id" should be globally unique, but the id can be globally unique by itself also. IDs can be URLs, URNs, DOIs, meaningful text strings, a local key, or any other unique string of characters. The id should not include white space characters.}
 
