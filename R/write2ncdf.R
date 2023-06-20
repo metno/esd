@@ -1113,16 +1113,21 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
     ## Different summary statistics for precipitation, temperature and other variables.
     
     ## If there are more than one stations, use matrix oprations
-    ## Esimate summary statistics for the station data
+    ## Estimate summary statistics for the station data
     if (verbose) print(paste('Estimate summary statistics - data dimension:',
-                             paste(d,collapse='x'),' - precip?',is.precip(x)))
-    mx <- apply(x,2,'max',na.rm=TRUE)
-    mn <- apply(x,2,'min',na.rm=TRUE)
-    nhr <- apply(anomaly(x),2,'arec')
-    nlr <- apply(-anomaly(x),2,'arec')
+                             paste(d,collapse='x'),' - precipitation?',is.precip(x)))
+    #browser()
+    mx <- apply(x,2,'max',na.rm=TRUE)  ## Maximum
+    mn <- apply(x,2,'min',na.rm=TRUE)  ## Minimum
+    # nhr <- apply(anomaly(x),2,'arec')  ## Record-high statistics: on anomalies
+    # nlr <- apply(-anomaly(x),2,'arec') ## Record-low statistics
+    ## REB 2023-06-20: the previous lines of codes crashed
+    nhr <- apply(x,2,'arec')  ## Record-high statistics: on the absolute data
+    nlr <- rep(NA,dim(x)[2])
     
     if (!is.precip(x)) {
       if (verbose) print('Not precipitation')
+      nlr <- apply(x,2,'arec') ## Record-low statistics
       ave <- apply(x,2,'mean',na.rm=TRUE)
       ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
       ave.mam <- apply(subset(x,it='mam'),2,'mean',na.rm=TRUE)
@@ -1139,8 +1144,7 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
       td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
       td.son <- apply(annual(subset(x,it='son'),'mean',nmin=75),2,'trend.coef')
     } else if (is.precip(x)) {
-      if
-      (verbose) print('Precipitation')
+      if (verbose) print('Precipitation')
       ave <- apply(annual(x,'sum',start=start),2,'mean',na.rm=TRUE)
       ave.djf <- apply(annual(subset(x,it='djf'),'sum',nmin=90),2,'mean',na.rm=TRUE)
       ave.mam <- apply(annual(subset(x,it='mam'),'sum',nmin=90),2,'mean',na.rm=TRUE)
@@ -1188,7 +1192,7 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
       if (verbose) print('Spell')
       t <- index(x)
       ss <- try(spell(x,threshold=1))
-      ## If spell resturns NULL, then return NAs...
+      ## If spell returns NULL, then return NAs...
       if ( (inherits(ss,'spell')) & (!is.null(ss)) ) { 
         mwsl <- colMeans(subset.station(ss,is=list(param='wet')),na.rm=TRUE)
         mdsl <- colMeans(subset.station(ss,is=list(param='dry')),na.rm=TRUE)

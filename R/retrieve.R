@@ -1142,7 +1142,8 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
         }
       }
     }
-    if (verbose) print(paste("Starting date : ",time$vdate[1],"Ending date : ",time$vdate[length(time$vdate)], sep = " "))
+    if (verbose) print(paste("Starting date : ",time$vdate[1],
+                             "Ending date : ",time$vdate[length(time$vdate)], sep = " "))
   } else {
     if (verbose) print("warnings : Automatic detection of the calendar")
     calendar.detect <- "auto"
