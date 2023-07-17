@@ -34,12 +34,20 @@ anomaly <-function(x,...) UseMethod("anomaly")
 
 #' @exportS3Method
 #' @export anomaly.default
-anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
+anomaly.default <- function(x,...) {
+
+  ### REB 2023-07-17
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  
   if(verbose) {
     print('anomaly.default')
     print(match.call())
     print(class(x))
   }
+      
   if (!is.null(ref)) {
     it <- is.element(year(x),ref) 
   } else {
@@ -74,29 +82,48 @@ anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
 
 #' @exportS3Method
 #' @export anomaly.dsensemble
-anomaly.dsensemble <- function(x,...,ref=NULL,verbose=FALSE) {
+anomaly.dsensemble <- function(x,...) {
+  ### REB 2023-07-17
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
     if(verbose) print("anomaly.dsensemble")
     yr.obs <- year(attr(x,'station'))
     ref <- range(yr.obs[!is.na(attr(x,'station'))],na.rm=TRUE)
     stopifnot(inherits(x,"dsensemble"))
-    x <- anomaly.default(x,ref=ref,...)
+    x <- anomaly.default(x,...)
     attr(x,'station') <- anomaly(attr(x,'station'),ref=ref,...)
     return(x)
 }
 
 #' @exportS3Method
 #' @export anomaly.field
-anomaly.field <- function(x,verbose=FALSE,...,ref=NULL,na.rm=TRUE) {
+anomaly.field <- function(x,...,verbose=FALSE) {
+  ### REB 2023-07-17
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  if(verbose) print("anomaly.field")
   stopifnot(inherits(x,"field"))
-  x <- as.anomaly(x,ref=ref,na.rm=na.rm,verbose=verbose,...)
+ 
+  x <- as.anomaly(x,...)
   return(x)
 }
 
 #' @exportS3Method
 #' @export anomaly.comb
-anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
+anomaly.comb <- function(x,...) {
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   if(verbose) print("anomaly.comb")
   stopifnot(inherits(x,"field"),inherits(x,"comb"))
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   y <- anomaly(x)
   n.apps <- attr(x,'n.apps')
   for (i in 1:n.apps) {
@@ -114,7 +141,12 @@ anomaly.comb <- function(x,verbose=FALSE,...,ref=NULL) {
 #' @exportS3Method
 #' @export anomaly.station
 anomaly.station <- function(x,...) {
-  verbose <-list(...)$verbose
+  #verbose <-list(...)$verbose
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
   if(verbose) { 
     print("anomaly.station")
     print(match.call())
@@ -169,7 +201,11 @@ anomaly.annual <- function(x,...) {
 
 #' @exportS3Method
 #' @export anomaly.month
-anomaly.month <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
+anomaly.month <- function(x,...) {
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   if(verbose) print("anomaly.month")
   clim.month <- function(x,months,years,ref=NULL,na.rm=TRUE,verbose=FALSE) {
     ## This function calculated the mean for each calendar month.
@@ -214,7 +250,12 @@ anomaly.month <- function(x,...,ref=NULL,na.rm=TRUE,verbose=FALSE) {
 
 #' @exportS3Method
 #' @export anomaly.season
-anomaly.season <- function(x,...,ref=NULL,verbose=FALSE) {
+anomaly.season <- function(x,...) {
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  
   anomaly.season1 <- function(x,yr=NULL,ref=NULL,verbose=FALSE,what='anomaly') {
     l <- length(x); n <- ceiling(l/4)
     pad <- 4*n - l
@@ -255,13 +296,13 @@ anomaly.season <- function(x,...,ref=NULL,verbose=FALSE) {
   if (is.null(dim(x))) {
     #y <- anomaly.season1(coredata(x),yr=yr,ref=ref,verbose=verbose)
     #clim <- anomaly.season1(coredata(x),yr=yr,ref=ref,verbose=verbose,what='clim')
-    y <- anomaly.season1.v2(coredata(x),t=index(x),verbose=verbose)
-    clim <- anomaly.season1.v2(coredata(x),t=index(x),verbose=verbose,what='clim')
+    y <- anomaly.season1.v2(coredata(x),t=index(x),verbose=verbose,ref=ref)
+    clim <- anomaly.season1.v2(coredata(x),t=index(x),verbose=verbose,what='clim',ref=ref)
   } else {
     #y <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref,verbose=verbose)
     #clim <- apply(coredata(x),2,FUN='anomaly.season1',yr=yr,ref=ref,verbose=verbose,what='clim')
-    y <- apply(x,2,FUN='anomaly.season1.v2',t=index(x),verbose=verbose)
-    clim <- apply(x,2,FUN='anomaly.season1.v2',t=index(x),verbose=verbose,what='clim')
+    y <- apply(x,2,FUN='anomaly.season1.v2',t=index(x),verbose=verbose,ref=ref)
+    clim <- apply(x,2,FUN='anomaly.season1.v2',t=index(x),verbose=verbose,what='clim',ref=ref)
     if(is.null(dim(clim))) dim(clim) <- c(1, length(clim))
   }
   x <- zoo(y,order.by=t)
@@ -274,7 +315,11 @@ anomaly.season <- function(x,...,ref=NULL,verbose=FALSE) {
 }
 
 #' @export anomaly.day
-anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
+anomaly.day <- function(x,...) {
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
   anomaly.day.1 <- function(x,t0,t,ref=NULL) {
     ## One station 
     c1 <- cos(pi*t0/365.25); s1 <- sin(pi*t0/365.25)
@@ -322,51 +367,57 @@ anomaly.day <- function(x,...,ref=NULL,verbose=FALSE) {
 }
 
 
-
-
 #' @export as.anomaly
 as.anomaly <- function(x,...) UseMethod("as.anomaly")
 
 #' @exportS3Method
 #' @export
-as.anomaly.default <- function(x,...,ref=NULL,na.rm=TRUE) anomaly.default(x,ref=ref,na.rm=na.rm,...)
+as.anomaly.default <- function(x,...) anomaly.default(x,...)
 
 #' @exportS3Method
 #' @export as.anomaly.zoo
-as.anomaly.zoo <- function(x,...,ref=NULL,na.rm=TRUE) {
-  y <- as.anomaly.station(x,ref=ref,na.rm=na.rm,...)
+as.anomaly.zoo <- function(x,...) {
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  y <- as.anomaly.station(x,...)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
 #' @exportS3Method
 #' @export as.anomaly.list
-as.anomaly.list <- function(x,...,ref=NULL,na.rm=TRUE) {
-  y <- lapply(x,anomaly(x))
+as.anomaly.list <- function(x,...) {
+  arguments <<- c(as.list(environment()), list(...))
+  ref <- arguments$ref
+  if (is.null(arguments$na.rm)) na.rm <- arguments$na.rm else na.rm <- TRUE
+  if (!is.null(arguments$verbose)) verbose <- arguments$verbose else verbose <- FALSE
+  y <- lapply(x,anomaly(x),ref=ref,na.rm=na.rm,verbose=verbose)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
 #' @exportS3Method
 #' @export as.anomaly.station
-as.anomaly.station <- function(x,...,ref=NULL,na.rm=TRUE) {
-  y <- as.anomaly.default(x,ref=ref,na.rm=na.rm,...)
+as.anomaly.station <- function(x,...) {
+  y <- as.anomaly.default(x,...)
   attr(y,'history') <- history.stamp(x)
   invisible(y)
 }
 
 #' @exportS3Method
 #' @export as.anomaly.field
-as.anomaly.field <- function(x,...,ref=NULL,na.rm=TRUE) {
-   y <- anomaly.default(x,ref=ref,na.rm=na.rm,...)
+as.anomaly.field <- function(x,...) {
+   y <- anomaly.default(x,...)
    attr(y,'history') <- history.stamp(x)
    attr(y,'dimensions') <- attr(x,'dimensions')
    invisible(y)
 }
 
 #' @export
-climatology <- function(x,...,verbose=FALSE) {
-  x <- as.climatology(x,...,verbose=verbose)
+climatology <- function(x,...) {
+  x <- as.climatology(x,...)
   return(x)
 }
 
