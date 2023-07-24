@@ -1326,8 +1326,8 @@ retrieve.station <- function(file,param="auto",path=NULL,is=NULL,stid=NULL,loc=N
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
   if (verbose) testsub <- try(print("retrieve.station: locs <- sub('\xc3','',locs,fixed=TRUE,perl=TRUE)")) else 
-    testsub <- try(sub('\\xc3','',locs,fixed=TRUE))
-  if (!inherits(testsub,'try-error')) locs <- sub('\\xc3','',locs,fixed=TRUE) else 
+    testsub <- try(sub('\xc3','',locs,fixed=TRUE))
+  if (!inherits(testsub,'try-error')) locs <- sub('\xc3','',locs,fixed=TRUE) else 
     
   missing <- ncatt_get(ncid,param,'missing_value')
   ## Use the metadata to select the stations to read: there is no need to read
@@ -1536,8 +1536,8 @@ retrieve.stationsummary <- function(file,path=NULL,stid=NULL,loc=NULL,lon=NULL,l
   unit <- ncatt_get(ncid,param,'units')
   locs <- try(ncvar_get(ncid,'loc'))
   if (verbose) testsub <- try(print("retrieve.station: locs <- tolower(sub('\xc3','',locs))")) else 
-    testsub <- try(sub('\\xc3','',locs,fixed=TRUE))
-  if (!inherits(testsub,'try-error')) locs <- tolower(sub('\\xc3','',locs,fixed=TRUE))
+    testsub <- try(sub('\xc3','',locs,fixed=TRUE))
+  if (!inherits(testsub,'try-error')) locs <- tolower(sub('\xc3','',locs,fixed=TRUE))
   
   ## Order alphabetically
   if (verbose) 'Sort alphabetically and in proper order with Scandinavian characters'
