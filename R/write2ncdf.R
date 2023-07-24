@@ -252,11 +252,15 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
                                 doi='NA',namingauthority='NA',processinglevel='NA',creatortype='NA',
                                 creatoremail='NA',institution='NA',publishername='NA',publisheremail='NA',
                                 publisherurl='NA',project='NA',nspc=300,start='Jan') {
-
+  
   if (!inherits(x,"station")) stop('x argument must be a station object') 
   unitx <- attr(x,'unit')
   
-  if (verbose) {print('write2ncdf4.station'); print(range(index(x))); print(range(c(coredata(x)),na.rm=TRUE))}
+  if (verbose) {
+    print('write2ncdf4.station'); print(range(index(x)))
+    print(class(x)); print(dim(x))
+    print(range(c(coredata(x)),na.rm=TRUE)); print('---')
+  }
   ## Quality check - remove obviously unrealistic values
   if (is.precip(x)) {
     #  cx <- coredata(x); cx[cx < 0] <- NA; cx[cx > 1500] <- NA; cx -> coredata(x); rm('cx') 
@@ -285,6 +289,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   rm('x0'); gc(reset=TRUE)
   ## Weed out stations with short time series:
   if (length(dim(x))==2) {
+    if (verbose) print('Excude short series')
     good <- apply(coredata(x),2,FUN='nv')
     #x <- subset(x,is=good > 365) # doesn't work for annual/seasonal data
     if(inherits(x,c("annual","season"))) {
@@ -349,7 +354,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
   list2env(StationSumStats(x=x,missval=missval,ns=nspc,verbose=verbose,start=start),envir=environment())
   verbose <- verbose[1]  ## There seemed to be several versions of 'verbose'
   x <- x0; missval <- missval0; rm('x0','missval0'); gc(reset=TRUE) ## REB in case something happened to x in the function call above...
-#>>>>>>> master
+  #>>>>>>> master
   if (verbose) print('Summary statistics computed')
   ## Only do summary statistics for stations with more than 30 years
   insufficient <- apply(coredata(x),2,nv) < nmin*365
@@ -450,7 +455,7 @@ write2ncdf4.station <- function(x,...,file='station.nc',prec='short',offset=0, m
     #    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimT,dimS), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
     #                       longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
     if (verbose) print(paste('write2ncdf4.station: longname=',attr(x,'longname')))
-     ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimS,dimT), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
+    ncvar <- ncvar_def(name=varid(x)[1],dim=list(dimS,dimT), units=ifelse(unitx[1]=="\u00B0C", "degC",unitx[1]),
                        longname=attr(x,'longname')[1], prec=prec,compression=9,verbose=verbose)
     
     if (verbose) print('The variables have been defined - now the summary statistics...')
@@ -1126,30 +1131,36 @@ StationSumStats <- function(x,missval,ns=300,verbose=FALSE,start='Jan') {
     nlr <- rep(NA,dim(x)[2])
     
     if (!is.precip(x)) {
-      if (verbose) print('Not precipitation')
+      if (verbose) print('*** Not precipitation ***')
+      if (verbose) print('Records')
       nlr <- apply(x,2,'arec') ## Record-low statistics
       ave <- apply(x,2,'mean',na.rm=TRUE)
+      if (verbose) print('averages')
       ave.djf <- apply(subset(x,it='djf'),2,'mean',na.rm=TRUE)
       ave.mam <- apply(subset(x,it='mam'),2,'mean',na.rm=TRUE)
       ave.jja <- apply(subset(x,it='jja'),2,'mean',na.rm=TRUE)
       ave.son <- apply(subset(x,it='son'),2,'mean',na.rm=TRUE)
+      if (verbose) print('standard deviations of anomalies')
       std <- apply(anomaly(x),2,'sd',na.rm=TRUE)
       std.djf <- apply(subset(anomaly(x),it='djf'),2,'sd',na.rm=TRUE)
       std.mam <- apply(subset(anomaly(x),it='mam'),2,'sd',na.rm=TRUE)
       std.jja <- apply(subset(anomaly(x),it='jja'),2,'sd',na.rm=TRUE)
       std.son <- apply(subset(anomaly(x),it='son'),2,'sd',na.rm=TRUE)
+      if (verbose) print('trends')
       td <- apply(annual(x,start=start),2,'trend.coef',start=start)
       td.djf <- apply(annual(subset(x,it='djf'),'mean',nmin=75),2,'trend.coef')
       td.mam <- apply(annual(subset(x,it='mam'),'mean',nmin=75),2,'trend.coef')
       td.jja <- apply(annual(subset(x,it='jja'),'mean',nmin=75),2,'trend.coef')
       td.son <- apply(annual(subset(x,it='son'),'mean',nmin=75),2,'trend.coef')
     } else if (is.precip(x)) {
-      if (verbose) print('Precipitation')
+      if (verbose) print('ooo Precipitation ooo')
+      if (verbose) print('sums')
       ave <- apply(annual(x,'sum',start=start),2,'mean',na.rm=TRUE)
       ave.djf <- apply(annual(subset(x,it='djf'),'sum',nmin=90),2,'mean',na.rm=TRUE)
       ave.mam <- apply(annual(subset(x,it='mam'),'sum',nmin=90),2,'mean',na.rm=TRUE)
       ave.jja <- apply(annual(subset(x,it='jja'),'sum',nmin=90),2,'mean',na.rm=TRUE)
       ave.son <- apply(annual(subset(x,it='son'),'sum',nmin=90),2,'mean',na.rm=TRUE)
+      if (verbose) print('wet-day mean')
       mu <- apply(annual(x,'wetmean',start=start),2,'mean',na.rm=TRUE)
       mu.djf <- apply(annual(subset(x,it='djf'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
       mu.mam <- apply(annual(subset(x,it='mam'),'wetmean',nmin=75),2,'mean',na.rm=TRUE)
